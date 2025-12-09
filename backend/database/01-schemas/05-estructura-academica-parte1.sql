@@ -1,8 +1,7 @@
 -- ============================================
 -- ESTRUCTURA ACADÉMICA - PARTE 1
 -- Sistema de Gestión Académica - Instituto INCOS
--- 10 Tablas: carreras, gestiones, periodos, materias, plan_estudios,
---            prerrequisitos, cursos, docentes, asignaciones_docentes, turnos_cursos
+-- 7 Tablas: carreras, gestiones, etapas_gestion, periodos, materias, plan_estudios, prerrequisitos
 -- ============================================
 
 USE instituto_incos;
@@ -17,15 +16,15 @@ DROP TABLE IF EXISTS carreras;
 
 CREATE TABLE carreras (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    codigo VARCHAR(10) NOT NULL UNIQUE COMMENT 'CONT, ADM, SIS',
-    nombre VARCHAR(150) NOT NULL COMMENT 'Contaduría General, Administración de Empresas, Sistemas Informáticos',
+    codigo VARCHAR(10) NOT NULL COMMENT 'Código de la carrera',
+    nombre VARCHAR(150) NOT NULL COMMENT 'Nombre de la carrera',
     descripcion TEXT COMMENT 'Descripción de la carrera',
-    duracion_semestres INT NOT NULL DEFAULT 4 COMMENT 'Duración en semestres (4 = 2 años)',
-    titulo_otorgado VARCHAR(200) COMMENT 'Técnico Superior en...',
-    resolucion_ministerial VARCHAR(100) COMMENT 'R.M. 0426/2016',
+    duracion_anios INT NOT NULL DEFAULT 4 COMMENT 'Duración en años académicos',
+    titulo_otorgado VARCHAR(200) COMMENT 'Título otorgado',
+    resolucion_ministerial VARCHAR(100) COMMENT 'Resolución ministerial',
     fecha_vigencia DATE COMMENT 'Fecha desde que está vigente',
     carga_horaria_total INT COMMENT 'Carga horaria total de la carrera',
-    color_hex VARCHAR(7) COMMENT 'Color para UI (#FF5733)',
+    color_hex VARCHAR(7) COMMENT 'Color para UI',
     
     -- Campos de auditoría y control (ESTÁNDAR)
     activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
@@ -36,18 +35,16 @@ CREATE TABLE carreras (
     updated_by INT COMMENT 'Usuario que modificó',
     deleted_by INT COMMENT 'Usuario que eliminó',
     
-    -- Foreign Keys de auditoría
     FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
-    -- Índices
-    INDEX idx_activo (activo),
-    INDEX idx_deleted_at (deleted_at),
-    INDEX idx_codigo (codigo)
+    INDEX idx_codigo (codigo) COMMENT 'Búsqueda por código',
+    INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
+    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete'
     
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Carreras del instituto (Contaduría, Administración, Sistemas)';
+COMMENT='Carreras del instituto';
 
 -- ============================================
 -- TABLA: gestiones
@@ -57,18 +54,11 @@ DROP TABLE IF EXISTS gestiones;
 
 CREATE TABLE gestiones (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    codigo VARCHAR(20) NOT NULL UNIQUE COMMENT '2025-1, 2025-2, 2026-1',
-    anio INT NOT NULL COMMENT '2025, 2026, 2027',
-    periodo ENUM('1', '2') NOT NULL COMMENT 'Primer o segundo semestre',
-    fecha_inicio DATE NOT NULL COMMENT 'Fecha de inicio del semestre',
-    fecha_fin DATE NOT NULL COMMENT 'Fecha de fin del semestre',
-    estado ENUM('PLANIFICACION', 'INSCRIPCION_ABIERTA', 'EN_CURSO', 'FINALIZADA', 'CERRADA') DEFAULT 'PLANIFICACION',
-    
-    -- Fechas importantes del semestre
-    fecha_inicio_inscripciones DATE COMMENT 'Inicio del período de inscripciones',
-    fecha_fin_inscripciones DATE COMMENT 'Fin del período de inscripciones',
-    fecha_inicio_clases DATE COMMENT 'Inicio de clases',
-    fecha_fin_clases DATE COMMENT 'Fin de clases',
+    codigo VARCHAR(20) NOT NULL COMMENT 'Código de la gestión (ej: 2025-1, 2025-2)',
+    anio INT NOT NULL COMMENT 'Año académico',
+    imagen_promocion_url VARCHAR(500) COMMENT 'URL de la imagen de promoción de la gestión',
+    fecha_inicio_administrativa DATE NOT NULL COMMENT 'Fecha de inicio administrativo de la gestión (inicio del año lectivo)',
+    fecha_fin_administrativa DATE NOT NULL COMMENT 'Fecha de fin administrativo de la gestión (cierre de notas, exámenes, etc.)',
     
     -- Campos de auditoría y control (ESTÁNDAR)
     activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
@@ -79,32 +69,99 @@ CREATE TABLE gestiones (
     updated_by INT COMMENT 'Usuario que modificó',
     deleted_by INT COMMENT 'Usuario que eliminó',
     
-    -- Foreign Keys de auditoría
     FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
-    -- Índices
-    UNIQUE KEY unique_anio_periodo (anio, periodo, deleted_at),
-    INDEX idx_activo (activo),
-    INDEX idx_deleted_at (deleted_at),
-    INDEX idx_estado (estado),
-    INDEX idx_anio (anio)
+    INDEX idx_codigo (codigo) COMMENT 'Búsqueda por código',
+    INDEX idx_anio (anio) COMMENT 'Búsqueda por año',
+    INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
+    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
+    INDEX idx_anio_activo (anio, activo, deleted_at) COMMENT 'Búsqueda por año y estado activo',
+    INDEX idx_fechas (fecha_inicio_administrativa, fecha_fin_administrativa) COMMENT 'Búsqueda por rango de fechas',
+    
+    CHECK (fecha_fin_administrativa >= fecha_inicio_administrativa)
     
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Gestiones académicas (semestres)';
+COMMENT='Gestiones académicas (años académicos). Las fechas específicas de etapas están en etapas_gestion.';
+
+-- ============================================
+-- TABLA: etapas_gestion
+-- ============================================
+-- Etapas/fases temporales dentro de una gestión académica
+-- Permite flexibilidad para universidades con múltiples periodos dentro de una gestión
+-- Ejemplo: Pre-inscripción, Inscripciones, Clases, Exámenes, Entrega de Notas, Fin de Gestión
+
+DROP TABLE IF EXISTS etapas_gestion;
+
+CREATE TABLE etapas_gestion (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    gestion_id INT NOT NULL COMMENT 'Gestión académica',
+    nombre VARCHAR(100) NOT NULL COMMENT 'Nombre de la etapa (ej: Pre-inscripción, Clases, Exámenes)',
+    tipo ENUM(
+        'PRE_INSCRIPCION',
+        'INSCRIPCIONES',
+        'CLASES',
+        'EVALUACIONES',
+        'EXAMENES',
+        'ENTREGA_NOTAS',
+        'CIERRE_ADMINISTRATIVO',
+        'OTRO'
+    ) NOT NULL COMMENT 'Tipo de etapa',
+    fecha_inicio DATE NOT NULL COMMENT 'Fecha de inicio de la etapa',
+    fecha_fin DATE COMMENT 'Fecha de fin de la etapa (NULL si aún no termina)',
+    vigente BOOLEAN DEFAULT FALSE COMMENT 'Si la etapa está vigente actualmente (pueden haber múltiples etapas vigentes al mismo tiempo)',
+    descripcion TEXT COMMENT 'Descripción de la etapa',
+    
+    -- Campos de auditoría y control (ESTÁNDAR)
+    activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo (si está FALSE, la etapa ya pasó o fue cancelada)',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
+    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
+    created_by INT COMMENT 'Usuario que creó',
+    updated_by INT COMMENT 'Usuario que modificó',
+    deleted_by INT COMMENT 'Usuario que eliminó',
+    
+    FOREIGN KEY (gestion_id) REFERENCES gestiones(id) ON DELETE SET NULL,
+    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    
+    INDEX idx_gestion_id (gestion_id) COMMENT 'Búsqueda por gestión',
+    INDEX idx_tipo (tipo) COMMENT 'Búsqueda por tipo',
+    INDEX idx_fecha_inicio (fecha_inicio) COMMENT 'Búsqueda por fecha de inicio',
+    INDEX idx_vigente (vigente) COMMENT 'Búsqueda por etapa vigente',
+    INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
+    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
+    INDEX idx_gestion_vigente (gestion_id, vigente, activo, deleted_at) COMMENT 'Búsqueda de etapas vigentes por gestión',
+    INDEX idx_tipo_vigente (tipo, vigente, activo) COMMENT 'Búsqueda por tipo y vigencia',
+    
+    CHECK (fecha_fin IS NULL OR fecha_fin >= fecha_inicio)
+    
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+COMMENT='Etapas/fases temporales dentro de una gestión académica. Si no existe la etapa, no está activa. El campo activo indica si la etapa ya pasó o fue cancelada.';
 
 -- ============================================
 -- TABLA: periodos
 -- ============================================
+-- IMPORTANTE: Los "periodos" son SEMESTRES/AÑOS de la CARRERA (1º, 2º, 3º, 4º)
+-- NO son etapas temporales de la gestión (eso es etapas_gestion)
+-- 
+-- Ejemplo:
+--   - Carrera "Contaduría" tiene 4 periodos: 1º Semestre, 2º Semestre, 3º Semestre, 4º Semestre
+--   - Estos periodos definen qué materias se ven en cada semestre del plan de estudios
+--   - Un estudiante en "1º Semestre" cursa las materias del periodo 1 de su carrera
+--
+-- Para etapas temporales de gestión (pre-inscripción, clases, exámenes, etc.)
+-- ver tabla: etapas_gestion
 
 DROP TABLE IF EXISTS periodos;
 
 CREATE TABLE periodos (
     id INT AUTO_INCREMENT PRIMARY KEY,
     carrera_id INT NOT NULL COMMENT 'Carrera a la que pertenece',
-    nombre VARCHAR(50) NOT NULL COMMENT '1º Semestre, 2º Semestre, 3º Semestre, 4º Semestre',
-    numero INT NOT NULL COMMENT '1, 2, 3, 4',
+    nombre VARCHAR(50) NOT NULL COMMENT 'Nombre del periodo (ej: 1º Semestre, 2º Semestre)',
+    numero INT NOT NULL COMMENT 'Número del periodo (1, 2, 3, 4...)',
     orden_visualizacion INT NOT NULL DEFAULT 1 COMMENT 'Orden de visualización',
     descripcion TEXT COMMENT 'Descripción del periodo',
     
@@ -117,20 +174,20 @@ CREATE TABLE periodos (
     updated_by INT COMMENT 'Usuario que modificó',
     deleted_by INT COMMENT 'Usuario que eliminó',
     
-    -- Foreign Keys
-    FOREIGN KEY (carrera_id) REFERENCES carreras(id) ON DELETE RESTRICT,
+    FOREIGN KEY (carrera_id) REFERENCES carreras(id) ON DELETE SET NULL,
     FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
-    -- Índices
-    UNIQUE KEY unique_carrera_numero (carrera_id, numero, deleted_at),
-    INDEX idx_activo (activo),
-    INDEX idx_deleted_at (deleted_at),
-    INDEX idx_carrera_id (carrera_id)
+    INDEX idx_carrera_id (carrera_id) COMMENT 'Búsqueda por carrera',
+    INDEX idx_numero (numero) COMMENT 'Búsqueda por número',
+    INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
+    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
+    INDEX idx_carrera_numero (carrera_id, numero, activo, deleted_at) COMMENT 'Búsqueda por carrera y número de periodo',
+    INDEX idx_carrera_activo (carrera_id, activo, deleted_at) COMMENT 'Búsqueda de periodos activos por carrera'
     
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Periodos académicos por carrera (1º, 2º, 3º, 4º semestre)';
+COMMENT='Periodos académicos de la carrera (semestres/años: 1º, 2º, 3º, 4º). Define el plan de estudios. NO confundir con etapas temporales de gestión.';
 
 -- ============================================
 -- TABLA: materias
@@ -140,20 +197,16 @@ DROP TABLE IF EXISTS materias;
 
 CREATE TABLE materias (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    codigo VARCHAR(20) NOT NULL UNIQUE COMMENT 'CONT-101, ADM-201, SIS-301',
+    codigo VARCHAR(20) NOT NULL COMMENT 'Código de la materia',
     nombre VARCHAR(200) NOT NULL COMMENT 'Nombre de la materia',
     nombre_corto VARCHAR(100) COMMENT 'Nombre abreviado',
     descripcion TEXT COMMENT 'Descripción de la materia',
-    
-    -- Carga horaria
-    carga_horaria_teorica INT NOT NULL DEFAULT 0 COMMENT 'Horas teóricas semanales',
-    carga_horaria_practica INT NOT NULL DEFAULT 0 COMMENT 'Horas prácticas semanales',
-    carga_horaria_total INT GENERATED ALWAYS AS (carga_horaria_teorica + carga_horaria_practica) STORED,
+    carga_horaria_teorica INT NOT NULL DEFAULT 0 COMMENT 'Horas teóricas totales (no semanales)',
+    carga_horaria_practica INT NOT NULL DEFAULT 0 COMMENT 'Horas prácticas totales (no semanales)',
+    carga_horaria_total INT GENERATED ALWAYS AS (carga_horaria_teorica + carga_horaria_practica) STORED COMMENT 'Carga horaria total (suma de teórica + práctica)',
     creditos DECIMAL(4,2) COMMENT 'Créditos académicos',
-    
-    -- Clasificación
-    tipo ENUM('TEORICA', 'PRACTICA', 'TEORICA_PRACTICA') DEFAULT 'TEORICA_PRACTICA',
-    area_conocimiento VARCHAR(100) COMMENT 'Contabilidad, Finanzas, Programación, etc.',
+    tipo ENUM('TEORICA', 'PRACTICA', 'TEORICA_PRACTICA') DEFAULT 'TEORICA_PRACTICA' COMMENT 'Tipo de materia según su naturaleza',
+    area_conocimiento VARCHAR(100) COMMENT 'Área de conocimiento (ej: Contabilidad, Administración, Informática). Puede ser específica por carrera',
     
     -- Campos de auditoría y control (ESTÁNDAR)
     activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
@@ -164,18 +217,17 @@ CREATE TABLE materias (
     updated_by INT COMMENT 'Usuario que modificó',
     deleted_by INT COMMENT 'Usuario que eliminó',
     
-    -- Foreign Keys de auditoría
     FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
-    -- Índices
-    INDEX idx_activo (activo),
-    INDEX idx_deleted_at (deleted_at),
-    INDEX idx_codigo (codigo),
-    INDEX idx_tipo (tipo),
+    INDEX idx_codigo (codigo) COMMENT 'Búsqueda por código',
+    INDEX idx_tipo (tipo) COMMENT 'Filtrado por tipo',
+    INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
+    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
+    INDEX idx_area_conocimiento (area_conocimiento) COMMENT 'Búsqueda por área de conocimiento',
+    INDEX idx_codigo_activo (codigo, activo, deleted_at) COMMENT 'Búsqueda por código y estado',
     
-    -- Constraints
     CHECK (carga_horaria_teorica >= 0),
     CHECK (carga_horaria_practica >= 0)
     
@@ -191,9 +243,8 @@ DROP TABLE IF EXISTS plan_estudios;
 CREATE TABLE plan_estudios (
     id INT AUTO_INCREMENT PRIMARY KEY,
     carrera_id INT NOT NULL COMMENT 'Carrera',
-    periodo_id INT NOT NULL COMMENT 'Periodo (1º, 2º, 3º, 4º semestre)',
+    periodo_id INT NOT NULL COMMENT 'Periodo',
     materia_id INT NOT NULL COMMENT 'Materia',
-    es_obligatoria BOOLEAN DEFAULT TRUE COMMENT 'Materia obligatoria u optativa',
     orden_visualizacion INT NOT NULL DEFAULT 1 COMMENT 'Orden de visualización en el plan',
     
     -- Campos de auditoría y control (ESTÁNDAR)
@@ -205,40 +256,71 @@ CREATE TABLE plan_estudios (
     updated_by INT COMMENT 'Usuario que modificó',
     deleted_by INT COMMENT 'Usuario que eliminó',
     
-    -- Foreign Keys
-    FOREIGN KEY (carrera_id) REFERENCES carreras(id) ON DELETE RESTRICT,
-    FOREIGN KEY (periodo_id) REFERENCES periodos(id) ON DELETE RESTRICT,
-    FOREIGN KEY (materia_id) REFERENCES materias(id) ON DELETE RESTRICT,
+    FOREIGN KEY (carrera_id) REFERENCES carreras(id) ON DELETE SET NULL,
+    FOREIGN KEY (periodo_id) REFERENCES periodos(id) ON DELETE SET NULL,
+    FOREIGN KEY (materia_id) REFERENCES materias(id) ON DELETE SET NULL,
     FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
-    -- Índices
-    UNIQUE KEY unique_carrera_periodo_materia (carrera_id, periodo_id, materia_id, deleted_at),
-    INDEX idx_activo (activo),
-    INDEX idx_deleted_at (deleted_at),
-    INDEX idx_carrera_id (carrera_id),
-    INDEX idx_periodo_id (periodo_id)
+    INDEX idx_carrera_id (carrera_id) COMMENT 'Búsqueda por carrera',
+    INDEX idx_periodo_id (periodo_id) COMMENT 'Búsqueda por periodo',
+    INDEX idx_materia_id (materia_id) COMMENT 'Búsqueda por materia',
+    INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
+    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
+    INDEX idx_carrera_periodo (carrera_id, periodo_id, activo, deleted_at) COMMENT 'Búsqueda por carrera y periodo',
+    INDEX idx_carrera_materia (carrera_id, materia_id, activo, deleted_at) COMMENT 'Búsqueda por carrera y materia',
+    INDEX idx_periodo_materia (periodo_id, materia_id, activo, deleted_at) COMMENT 'Búsqueda por periodo y materia',
+    INDEX idx_carrera_periodo_materia (carrera_id, periodo_id, materia_id, activo, deleted_at) COMMENT 'Búsqueda completa por carrera, periodo y materia'
     
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Plan de estudios por carrera y periodo';
+COMMENT='Plan de estudios: relación entre carrera × periodo × materia. Define qué materias se cursan en cada periodo de cada carrera. carrera_id es redundancia controlada para acceso rápido.';
 
 -- ============================================
--- VERIFICACIÓN PARCIAL
+-- TABLA: prerrequisitos
 -- ============================================
+-- Prerrequisitos de materias: define qué materias deben aprobarse antes de inscribirse a otra
+-- Relacionado con el plan de estudios, por eso está en parte 1
+-- IMPORTANTE: Si es prerrequisito, es obligatorio por definición. Las materias del periodo N
+-- tienen prerrequisitos de materias del periodo N-1 (o anteriores) que figuran en plan_estudios
 
-SELECT 'Estructura académica - Parte 1/2 creada (5 tablas)' as mensaje;
+DROP TABLE IF EXISTS prerrequisitos;
 
-SELECT 
-    TABLE_NAME as tabla,
-    TABLE_COMMENT as descripcion
-FROM information_schema.TABLES
-WHERE TABLE_SCHEMA = 'instituto_incos'
-  AND TABLE_NAME IN ('carreras', 'gestiones', 'periodos', 'materias', 'plan_estudios')
-ORDER BY TABLE_NAME;
+CREATE TABLE prerrequisitos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    materia_id INT NOT NULL COMMENT 'Materia que tiene el prerrequisito (ej: materia del periodo 2)',
+    materia_prerrequisito_id INT NOT NULL COMMENT 'Materia que debe aprobarse antes (ej: materia del periodo 1)',
+    descripcion TEXT COMMENT 'Descripción adicional del prerrequisito',
+    
+    -- Campos de auditoría y control (ESTÁNDAR)
+    activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
+    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
+    created_by INT COMMENT 'Usuario que creó',
+    updated_by INT COMMENT 'Usuario que modificó',
+    deleted_by INT COMMENT 'Usuario que eliminó',
+    
+    FOREIGN KEY (materia_id) REFERENCES materias(id) ON DELETE SET NULL,
+    FOREIGN KEY (materia_prerrequisito_id) REFERENCES materias(id) ON DELETE SET NULL,
+    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    
+    INDEX idx_materia_id (materia_id) COMMENT 'Búsqueda por materia',
+    INDEX idx_materia_prerrequisito_id (materia_prerrequisito_id) COMMENT 'Búsqueda por materia prerrequisito',
+    INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
+    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
+    INDEX idx_materia_activo (materia_id, activo, deleted_at) COMMENT 'Búsqueda de prerrequisitos activos por materia',
+    INDEX idx_prerrequisito_activo (materia_prerrequisito_id, activo, deleted_at) COMMENT 'Búsqueda de materias que requieren este prerrequisito',
+    
+    CHECK (materia_id != materia_prerrequisito_id)
+    
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+COMMENT='Prerrequisitos de materias: define qué materias deben aprobarse antes de inscribirse a otra. Si es prerrequisito, es obligatorio por definición.';
 
--- Continuar con 05-estructura-academica-parte2.sql
+SET FOREIGN_KEY_CHECKS = 1;
 
 -- ============================================
--- FIN DE LA PARTE 1
+-- FIN DEL SCRIPT
 -- ============================================

@@ -1,12 +1,69 @@
 -- ============================================
 -- SISTEMA DE SEGURIDAD
 -- Sistema de Gestión Académica - Instituto INCOS
--- 3 Tablas: usuarios, roles_permisos, auditoria
+-- Tablas: roles, permisos, usuarios, roles_permisos, sesiones
+-- Tablas de usuarios específicos: personal (base), rectores, directores, secretarias
 -- ============================================
 
 USE instituto_incos;
 
 SET FOREIGN_KEY_CHECKS = 0;
+
+-- ============================================
+-- TABLA: roles
+-- ============================================
+
+DROP TABLE IF EXISTS roles;
+
+CREATE TABLE roles (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    codigo VARCHAR(50) NOT NULL COMMENT 'Código único del rol (opcional, puede usarse para validaciones programáticas)',
+    nombre VARCHAR(100) NOT NULL COMMENT 'Nombre descriptivo del rol',
+    nivel_acceso INT DEFAULT 1 COMMENT 'Nivel jerárquico (1=bajo, 5=alto) - define qué permisos puede tener',
+    
+    activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
+    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
+    created_by INT COMMENT 'Usuario que creó',
+    updated_by INT COMMENT 'Usuario que modificó',
+    deleted_by INT COMMENT 'Usuario que eliminó',
+    
+    INDEX idx_codigo (codigo) COMMENT 'Búsqueda por código',
+    INDEX idx_nombre (nombre) COMMENT 'Búsqueda por nombre',
+    INDEX idx_nivel_acceso (nivel_acceso) COMMENT 'Búsqueda por nivel de acceso',
+    INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
+    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete'
+    
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+COMMENT='Roles del sistema (RBAC)';
+
+-- ============================================
+-- TABLA: permisos
+-- ============================================
+
+DROP TABLE IF EXISTS permisos;
+
+CREATE TABLE permisos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    codigo VARCHAR(250) NOT NULL COMMENT 'estudiantes.ver, calificaciones.registrar (endpoint interno)',
+    modulo VARCHAR(50) NOT NULL COMMENT 'ESTUDIANTES, INSCRIPCIONES, CALIFICACIONES, etc.',
+    
+    activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
+    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
+    created_by INT COMMENT 'Usuario que creó',
+    updated_by INT COMMENT 'Usuario que modificó',
+    deleted_by INT COMMENT 'Usuario que eliminó',
+    
+    INDEX idx_codigo (codigo) COMMENT 'Búsqueda por código',
+    INDEX idx_modulo (modulo) COMMENT 'Búsqueda por módulo',
+    INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
+    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete'
+    
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+COMMENT='Permisos del sistema (RBAC - endpoints internos)';
 
 -- ============================================
 -- TABLA: usuarios
@@ -16,42 +73,19 @@ DROP TABLE IF EXISTS usuarios;
 
 CREATE TABLE usuarios (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    
-    -- Credenciales
-    username VARCHAR(50) NOT NULL UNIQUE COMMENT 'Nombre de usuario único',
-    email VARCHAR(150) NOT NULL UNIQUE COMMENT 'Email único',
+    username VARCHAR(50) NOT NULL COMMENT 'Nombre de usuario',
+    email VARCHAR(150) NOT NULL COMMENT 'Email',
     password_hash VARCHAR(255) NOT NULL COMMENT 'Hash bcrypt de la contraseña',
-    
-    -- Rol principal
+    foto_url VARCHAR(255) COMMENT 'URL de la foto de perfil',
     rol_id INT NOT NULL COMMENT 'Rol principal del usuario',
     
-    -- Datos personales básicos
-    nombres VARCHAR(150) COMMENT 'Nombres del usuario',
-    apellido_paterno VARCHAR(100) COMMENT 'Apellido paterno',
-    apellido_materno VARCHAR(100) COMMENT 'Apellido materno',
-    foto_url VARCHAR(255) COMMENT 'URL de la foto de perfil',
+    referencia_id INT NULL COMMENT 'ID de referencia según tipo_referencia (apunta a personal.id para rectores/directores/secretarias)',
+    tipo_referencia ENUM('ESTUDIANTE', 'DOCENTE', 'RECTOR', 'DIRECTOR', 'SECRETARIA') NULL COMMENT 'Tipo de referencia polimórfica',
     
-    -- Seguridad
-    ultimo_login TIMESTAMP NULL COMMENT 'Última vez que inició sesión',
-    intentos_fallidos INT DEFAULT 0 COMMENT 'Intentos fallidos de login consecutivos',
-    bloqueado_hasta TIMESTAMP NULL COMMENT 'Bloqueado temporalmente hasta esta fecha/hora',
-    debe_cambiar_password BOOLEAN DEFAULT FALSE COMMENT 'Forzar cambio de contraseña en próximo login',
-    token_recuperacion VARCHAR(255) COMMENT 'Token para recuperación de contraseña',
-    token_recuperacion_expira TIMESTAMP NULL COMMENT 'Expiración del token de recuperación',
-    ultimo_cambio_password TIMESTAMP NULL COMMENT 'Última vez que cambió su contraseña',
+    estado ENUM('BLOQUEADO', 'SUSPENDIDO', 'RETIRADO') NULL COMMENT 'Estado del usuario (NULL = activo)',
+    fecha_cambio_estado DATE COMMENT 'Fecha del último cambio de estado',
+    motivo_cambio_estado TEXT COMMENT 'Razón del cambio de estado',
     
-    -- Estado del usuario
-    estado ENUM('ACTIVO', 'INACTIVO', 'BLOQUEADO', 'SUSPENDIDO', 'PENDIENTE_ACTIVACION') DEFAULT 'PENDIENTE_ACTIVACION',
-    fecha_activacion DATE COMMENT 'Fecha en que se activó el usuario',
-    fecha_suspension DATE COMMENT 'Fecha de suspensión',
-    fecha_desbloqueo DATE COMMENT 'Fecha programada de desbloqueo',
-    motivo_suspension TEXT COMMENT 'Razón de la suspensión',
-    
-    -- Preferencias
-    idioma_preferido VARCHAR(5) DEFAULT 'es' COMMENT 'Idioma de la interfaz (es, en)',
-    zona_horaria VARCHAR(50) DEFAULT 'America/La_Paz' COMMENT 'Zona horaria del usuario',
-    
-    -- Campos de auditoría y control (ESTÁNDAR)
     activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
@@ -60,20 +94,22 @@ CREATE TABLE usuarios (
     updated_by INT COMMENT 'Usuario que modificó',
     deleted_by INT COMMENT 'Usuario que eliminó',
     
-    -- Foreign Keys
-    FOREIGN KEY (rol_id) REFERENCES roles(id) ON DELETE RESTRICT,
+    FOREIGN KEY (rol_id) REFERENCES roles(id) ON DELETE SET NULL,
     FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
-    -- Índices
-    INDEX idx_activo (activo),
-    INDEX idx_deleted_at (deleted_at),
-    INDEX idx_estado (estado),
-    INDEX idx_rol_id (rol_id),
-    INDEX idx_email (email),
-    INDEX idx_username (username),
-    INDEX idx_ultimo_login (ultimo_login)
+    INDEX idx_rol_id (rol_id) COMMENT 'Búsqueda por rol',
+    INDEX idx_email (email) COMMENT 'Búsqueda por email',
+    INDEX idx_username (username) COMMENT 'Búsqueda por username',
+    INDEX idx_referencia (referencia_id, tipo_referencia) COMMENT 'Búsqueda por referencia polimórfica',
+    INDEX idx_tipo_referencia (tipo_referencia) COMMENT 'Filtrado por tipo de referencia',
+    INDEX idx_estado (estado) COMMENT 'Filtrado por estado',
+    INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
+    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
+    INDEX idx_rol_estado (rol_id, estado, activo, deleted_at) COMMENT 'Búsqueda por rol y estado',
+    INDEX idx_email_activo (email, activo, deleted_at) COMMENT 'Búsqueda por email y estado',
+    INDEX idx_username_activo (username, activo, deleted_at) COMMENT 'Búsqueda por username y estado'
     
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Usuarios del sistema';
@@ -88,8 +124,8 @@ CREATE TABLE roles_permisos (
     id INT AUTO_INCREMENT PRIMARY KEY,
     rol_id INT NOT NULL COMMENT 'ID del rol',
     permiso_id INT NOT NULL COMMENT 'ID del permiso',
+    accion ENUM('VER', 'CREAR', 'EDITAR', 'ELIMINAR', 'APROBAR', 'EXPORTAR') NOT NULL COMMENT 'Acción específica permitida para este rol y permiso',
     
-    -- Campos de auditoría y control (ESTÁNDAR)
     activo BOOLEAN DEFAULT TRUE COMMENT 'Asignación activa/inactiva',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
@@ -98,166 +134,214 @@ CREATE TABLE roles_permisos (
     updated_by INT COMMENT 'Usuario que modificó',
     deleted_by INT COMMENT 'Usuario que eliminó',
     
-    -- Foreign Keys
-    FOREIGN KEY (rol_id) REFERENCES roles(id) ON DELETE CASCADE,
-    FOREIGN KEY (permiso_id) REFERENCES permisos(id) ON DELETE CASCADE,
+    FOREIGN KEY (rol_id) REFERENCES roles(id) ON DELETE SET NULL,
+    FOREIGN KEY (permiso_id) REFERENCES permisos(id) ON DELETE SET NULL,
     FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
-    -- Índices
-    UNIQUE KEY unique_rol_permiso (rol_id, permiso_id, deleted_at),
-    INDEX idx_activo (activo),
-    INDEX idx_deleted_at (deleted_at),
-    INDEX idx_rol_id (rol_id),
-    INDEX idx_permiso_id (permiso_id)
+    INDEX idx_rol_permiso_accion (rol_id, permiso_id, accion) COMMENT 'Búsqueda por rol, permiso y acción',
+    INDEX idx_rol_id (rol_id) COMMENT 'Búsqueda por rol',
+    INDEX idx_permiso_id (permiso_id) COMMENT 'Búsqueda por permiso',
+    INDEX idx_accion (accion) COMMENT 'Búsqueda por acción',
+    INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
+    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
+    INDEX idx_rol_activo (rol_id, activo, deleted_at) COMMENT 'Búsqueda de permisos activos por rol',
+    INDEX idx_permiso_activo (permiso_id, activo, deleted_at) COMMENT 'Búsqueda de roles activos por permiso'
     
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Tabla pivote roles-permisos (many-to-many)';
+COMMENT='Tabla pivote roles-permisos (define acción específica por rol y permiso)';
 
 -- ============================================
--- TABLA: auditoria
+-- TABLA: sesiones
 -- ============================================
 
-DROP TABLE IF EXISTS auditoria;
+DROP TABLE IF EXISTS sesiones;
 
-CREATE TABLE auditoria (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+CREATE TABLE sesiones (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT NOT NULL COMMENT 'Usuario de la sesión',
     
-    -- Identificación del usuario
-    usuario_id INT COMMENT 'Usuario que realizó la acción',
-    username VARCHAR(50) COMMENT 'Username del usuario (desnormalizado para histórico)',
+    -- Información de autenticación
+    token_sesion VARCHAR(500) COMMENT 'Token JWT o similar de la sesión activa',
+    token_recuperacion VARCHAR(255) COMMENT 'Token para recuperación de contraseña (incluye expiración en el token)',
+    fecha_expiracion TIMESTAMP NULL COMMENT 'Fecha de expiración de la sesión',
     
-    -- Acción realizada
-    accion ENUM('CREATE', 'READ', 'UPDATE', 'DELETE', 'LOGIN', 'LOGOUT', 'LOGIN_FAILED') NOT NULL,
-    tabla VARCHAR(100) COMMENT 'Tabla afectada (si aplica)',
-    registro_id INT COMMENT 'ID del registro afectado (si aplica)',
-    modulo VARCHAR(50) COMMENT 'Módulo del sistema (ESTUDIANTES, CALIFICACIONES, etc.)',
+    -- Información de acceso
+    ultimo_login TIMESTAMP NULL COMMENT 'Última vez que inició sesión',
+    ip_ultimo_login VARCHAR(45) COMMENT 'IP del último login (IPv4 o IPv6)',
+    dispositivo VARCHAR(50) COMMENT 'Tipo de dispositivo: MOVIL, TABLET, DESKTOP',
     
-    -- Datos del cambio
-    valores_anteriores JSON COMMENT 'Valores antes del cambio (UPDATE/DELETE)',
-    valores_nuevos JSON COMMENT 'Valores después del cambio (CREATE/UPDATE)',
-    descripcion TEXT COMMENT 'Descripción adicional de la acción',
+    -- Campos de auditoría y control (ESTÁNDAR)
+    activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
+    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
+    created_by INT COMMENT 'Usuario que creó',
+    updated_by INT COMMENT 'Usuario que modificó',
+    deleted_by INT COMMENT 'Usuario que eliminó',
     
-    -- Información del request
-    ip_cliente VARCHAR(45) COMMENT 'IP del cliente (IPv4 o IPv6)',
-    user_agent TEXT COMMENT 'User agent del navegador',
-    metodo_http VARCHAR(10) COMMENT 'GET, POST, PUT, DELETE',
-    url VARCHAR(500) COMMENT 'URL del endpoint llamado',
-    
-    -- Información adicional
-    duracion_ms INT COMMENT 'Duración de la operación en milisegundos',
-    fue_exitoso BOOLEAN DEFAULT TRUE COMMENT 'Si la operación fue exitosa',
-    mensaje_error TEXT COMMENT 'Mensaje de error si falló',
-    
-    -- Timestamp
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha y hora de la acción',
-    
-    -- Foreign Keys
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE SET NULL,
+    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
-    -- Índices para búsquedas frecuentes
-    INDEX idx_usuario_id (usuario_id),
-    INDEX idx_tabla (tabla),
-    INDEX idx_accion (accion),
-    INDEX idx_created_at (created_at),
-    INDEX idx_modulo (modulo),
-    INDEX idx_registro_id (registro_id),
-    INDEX idx_tabla_registro (tabla, registro_id),
-    INDEX idx_usuario_fecha (usuario_id, created_at)
+    INDEX idx_usuario_id (usuario_id) COMMENT 'Búsqueda por usuario',
+    INDEX idx_token_sesion (token_sesion(255)) COMMENT 'Búsqueda por token de sesión',
+    INDEX idx_ultimo_login (ultimo_login) COMMENT 'Búsqueda por último login',
+    INDEX idx_fecha_expiracion (fecha_expiracion) COMMENT 'Búsqueda por fecha de expiración',
+    INDEX idx_ip_ultimo_login (ip_ultimo_login) COMMENT 'Búsqueda por IP',
+    INDEX idx_dispositivo (dispositivo) COMMENT 'Filtrado por tipo de dispositivo'
     
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Auditoría de operaciones críticas del sistema';
+COMMENT='Sesiones de usuarios del sistema';
+
+-- ============================================
+-- TABLAS ESPECÍFICAS POR TIPO DE USUARIO
+-- Estructura normalizada: tabla base + herencias específicas
+-- ============================================
+
+-- ============================================
+-- TABLA BASE: personal
+-- Contiene todos los campos comunes
+-- ============================================
+
+DROP TABLE IF EXISTS personal;
+
+CREATE TABLE personal (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT COMMENT 'Relación con usuario del sistema',
+    
+    -- Datos personales básicos
+    ci VARCHAR(20) NOT NULL COMMENT 'Cédula de identidad',
+    nombres VARCHAR(150) NOT NULL COMMENT 'Nombres completos',
+    apellido_paterno VARCHAR(100) NOT NULL COMMENT 'Apellido paterno',
+    apellido_materno VARCHAR(100) COMMENT 'Apellido materno',
+    fecha_nacimiento DATE COMMENT 'Fecha de nacimiento',
+    genero ENUM('MASCULINO', 'FEMENINO', 'OTRO') COMMENT 'Género',
+    estado_civil_id INT COMMENT 'Estado civil',
+    
+    -- Contacto
+    telefono VARCHAR(20) COMMENT 'Teléfono fijo',
+    celular VARCHAR(20) COMMENT 'Teléfono celular',
+    direccion TEXT COMMENT 'Dirección completa',
+    municipio_id INT COMMENT 'Municipio de residencia (FK)',
+    
+    -- Datos laborales básicos
+    fecha_nombramiento DATE COMMENT 'Fecha de nombramiento/contratación',
+    resolucion_nombramiento VARCHAR(100) COMMENT 'Resolución o número de contrato',
+    observaciones TEXT COMMENT 'Observaciones adicionales',
+    
+    -- Campos de auditoría y control (ESTÁNDAR)
+    activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
+    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
+    created_by INT COMMENT 'Usuario que creó',
+    updated_by INT COMMENT 'Usuario que modificó',
+    deleted_by INT COMMENT 'Usuario que eliminó',
+    
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE SET NULL,
+    FOREIGN KEY (estado_civil_id) REFERENCES estados_civiles(id) ON DELETE SET NULL,
+    FOREIGN KEY (municipio_id) REFERENCES municipios(id) ON DELETE SET NULL,
+    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    
+    INDEX idx_ci_expedicion (ci, expedicion) COMMENT 'Búsqueda por CI y expedición',
+    INDEX idx_usuario_id (usuario_id) COMMENT 'JOIN con usuarios',
+    INDEX idx_ci (ci) COMMENT 'Búsqueda por CI',
+    INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
+    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
+    INDEX idx_apellidos (apellido_paterno, apellido_materno) COMMENT 'Búsqueda por apellidos',
+    INDEX idx_municipio (municipio_id) COMMENT 'Búsqueda por municipio'
+    
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+COMMENT='Tabla base para personal institucional (rectores, directores, secretarias) - solo datos personales y laborales básicos';
+
+-- ============================================
+-- TABLA: rectores
+-- Herencia nivel 1: solo campos específicos
+-- ============================================
+
+DROP TABLE IF EXISTS rectores;
+
+CREATE TABLE rectores (
+    id INT PRIMARY KEY COMMENT 'Hereda de personal.id',
+    
+    -- Información académica (solo para cargos superiores)
+    titulo_profesional VARCHAR(200) COMMENT 'Título profesional',
+    especialidad VARCHAR(200) COMMENT 'Especialidad',
+    nivel_academico ENUM('TECNICO', 'LICENCIATURA', 'MAESTRIA', 'DOCTORADO') COMMENT 'Nivel académico',
+    institucion_egreso VARCHAR(200) COMMENT 'Institución de egreso (universidad o instituto técnico)',
+    anio_egreso INT COMMENT 'Año de egreso',
+    
+    -- Datos específicos del cargo
+    periodo_mandato_inicio DATE COMMENT 'Inicio del período de mandato',
+    periodo_mandato_fin DATE NULL COMMENT 'Fin del período de mandato (NULL = mandato indefinido)',
+    
+    FOREIGN KEY (id) REFERENCES personal(id) ON DELETE SET NULL,
+    INDEX idx_periodo_mandato (periodo_mandato_inicio, periodo_mandato_fin) COMMENT 'Búsqueda por período de mandato'
+    
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+COMMENT='Rector del instituto (hereda de personal) - incluye información académica y datos del mandato';
+
+-- ============================================
+-- TABLA: directores
+-- Herencia nivel 2: campos específicos + tipo
+-- ============================================
+
+DROP TABLE IF EXISTS directores;
+
+CREATE TABLE directores (
+    id INT PRIMARY KEY COMMENT 'Hereda de personal.id',
+    
+    -- Datos específicos del cargo
+    tipo ENUM('ACADEMICO', 'ADMINISTRATIVO') NOT NULL COMMENT 'Tipo de director',
+    fecha_nombramiento DATE COMMENT 'Fecha de nombramiento como director (cuando asumió el cargo)',
+    
+    -- Información académica (solo para cargos superiores)
+    titulo_profesional VARCHAR(200) COMMENT 'Título profesional o técnico',
+    especialidad VARCHAR(200) COMMENT 'Especialidad',
+    nivel_academico ENUM('TECNICO', 'LICENCIATURA', 'MAESTRIA', 'DOCTORADO') COMMENT 'Nivel académico',
+    institucion_egreso VARCHAR(200) COMMENT 'Institución de egreso (universidad o instituto técnico)',
+    anio_egreso INT COMMENT 'Año de egreso',
+    
+    FOREIGN KEY (id) REFERENCES personal(id) ON DELETE SET NULL,
+    INDEX idx_tipo (tipo) COMMENT 'Filtrado por tipo de director',
+    INDEX idx_fecha_nombramiento (fecha_nombramiento) COMMENT 'Búsqueda por fecha de nombramiento'
+    
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+COMMENT='Directores del instituto (hereda de personal) - incluye información académica y fecha de nombramiento';
+
+-- ============================================
+-- TABLA: secretarias
+-- Herencia nivel 3: campos específicos + tipo
+-- ============================================
+
+DROP TABLE IF EXISTS secretarias;
+
+CREATE TABLE secretarias (
+    id INT PRIMARY KEY COMMENT 'Hereda de personal.id',
+    
+    -- Datos específicos del cargo
+    tipo ENUM('ACADEMICA', 'ADMINISTRATIVA') NOT NULL COMMENT 'Tipo de secretaria',
+    nivel_academico ENUM('ESTUDIANTE', 'TECNICO', 'LICENCIATURA', 'MAESTRIA', 'DOCTORADO') COMMENT 'Nivel académico',
+    
+    -- Datos específicos del contrato
+    fecha_contratacion DATE COMMENT 'Fecha de contratación',
+    fecha_fin_contrato DATE NULL COMMENT 'Fecha de fin de contrato (NULL = contrato indefinido)',
+    tipo_contrato ENUM('EVENTUAL', 'TEMPORAL', 'INDEFINIDO') COMMENT 'Tipo de contrato',
+    
+    FOREIGN KEY (id) REFERENCES personal(id) ON DELETE SET NULL,
+    INDEX idx_tipo (tipo) COMMENT 'Filtrado por tipo de secretaria',
+    INDEX idx_nivel_academico (nivel_academico) COMMENT 'Filtrado por nivel académico',
+    INDEX idx_tipo_contrato (tipo_contrato) COMMENT 'Filtrado por tipo de contrato'
+    
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+COMMENT='Secretarias del instituto (hereda de personal) - datos específicos del contrato';
 
 SET FOREIGN_KEY_CHECKS = 1;
-
--- ============================================
--- TRIGGER: Limpiar intentos fallidos después de login exitoso
--- ============================================
-
-DELIMITER $$
-
-DROP TRIGGER IF EXISTS trg_usuarios_reset_intentos$$
-
-CREATE TRIGGER trg_usuarios_reset_intentos
-BEFORE UPDATE ON usuarios
-FOR EACH ROW
-BEGIN
-    -- Si el último login cambió (login exitoso), resetear intentos fallidos
-    IF NEW.ultimo_login != OLD.ultimo_login OR (OLD.ultimo_login IS NULL AND NEW.ultimo_login IS NOT NULL) THEN
-        SET NEW.intentos_fallidos = 0;
-        SET NEW.bloqueado_hasta = NULL;
-    END IF;
-    
-    -- Si se resetean manualmente los intentos, desbloquear
-    IF NEW.intentos_fallidos = 0 AND OLD.intentos_fallidos > 0 THEN
-        SET NEW.bloqueado_hasta = NULL;
-    END IF;
-    
-    -- Si el estado cambia a ACTIVO, limpiar bloqueos
-    IF NEW.estado = 'ACTIVO' AND OLD.estado != 'ACTIVO' THEN
-        SET NEW.intentos_fallidos = 0;
-        SET NEW.bloqueado_hasta = NULL;
-        IF NEW.fecha_activacion IS NULL THEN
-            SET NEW.fecha_activacion = CURDATE();
-        END IF;
-    END IF;
-END$$
-
-DELIMITER ;
-
--- ============================================
--- VERIFICACIÓN
--- ============================================
-
-SELECT 'Sistema de seguridad creado exitosamente' as mensaje;
-
-SELECT 
-    TABLE_NAME as tabla,
-    TABLE_COMMENT as descripcion,
-    TABLE_ROWS as filas_aprox
-FROM information_schema.TABLES
-WHERE TABLE_SCHEMA = 'instituto_incos'
-  AND TABLE_NAME IN ('usuarios', 'roles_permisos', 'auditoria')
-ORDER BY TABLE_NAME;
-
--- ============================================
--- NOTAS IMPORTANTES DE SEGURIDAD
--- ============================================
-
-/*
-CONFIGURACIÓN DE SEGURIDAD:
-
-1. PASSWORD_HASH:
-   - Usar bcrypt con salt rounds = 10
-   - Nunca almacenar contraseñas en texto plano
-   - Ejemplo en Node.js: bcrypt.hash(password, 10)
-
-2. INTENTOS FALLIDOS:
-   - Bloquear después de 5 intentos fallidos
-   - Bloqueo temporal: 15 minutos (bloqueado_hasta)
-   - Resetear automáticamente después de login exitoso
-
-3. TOKEN RECUPERACIÓN:
-   - Generar token aleatorio seguro (UUID v4 o similar)
-   - Expiración: 1 hora
-   - Usar solo una vez (invalidar después de uso)
-
-4. SESIONES:
-   - JWT con expiración de 8 horas
-   - Refresh token con expiración de 7 días
-   - Invalidar tokens en logout
-
-5. AUDITORÍA:
-   - Registrar TODAS las operaciones críticas
-   - Logins exitosos y fallidos
-   - Cambios en calificaciones, estudiantes, pagos
-   - Mantener auditoría por mínimo 2 años
-
-6. RATE LIMITING:
-   - Login: 5 intentos por 15 minutos por IP
-   - API general: 100 requests por 15 minutos por usuario
-*/
 
 -- ============================================
 -- FIN DEL SCRIPT
