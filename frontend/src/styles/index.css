@@ -1,0 +1,46 @@
+/* src/styles/index.css */
+
+/* 1. Theme - Variables y colores */
+@import './theme/colors.css';
+@import './theme/typography.css';
+@import './theme/variables.css';
+
+/* 2. Base - Reset y globales */
+@import './base/reset.css';
+@import './base/global.css';
+
+/* 3. Layout - Estructura */
+@import './layout/header.css';
+@import './layout/sidebar.css';
+@import './layout/content.css';
+
+/* 4. Components - Estilos generales de Ant Design */
+@import './components/menu.css';
+@import './components/buttons.css';
+@import './components/cards.css';
+@import './components/utilities.css';
+
+/* 5. Components - Atoms */
+@import './components/atoms/logo.css';
+@import './components/atoms/button.css';
+@import './components/atoms/typography.css';
+@import './components/atoms/card.css';
+@import './components/atoms/avatar.css';
+@import './components/atoms/image.css';
+@import './components/atoms/divider.css';
+
+/* 6. Components - Molecules */
+@import './components/molecules/navigation-menu.css';
+@import './components/molecules/section-header.css';
+@import './components/molecules/product-card.css';
+@import './components/molecules/seller-card.css';
+@import './components/molecules/activity-item.css';
+@import './components/molecules/banner-content.css';
+
+/* 7. Components - Organisms */
+@import './components/organisms/sidebar.css';
+@import './components/organisms/banner.css';
+@import './components/organisms/product-list.css';
+@import './components/organisms/seller-lists.css';
+@import './components/organisms/activity.css';
+@import './components/organisms/content-sidebar.css';

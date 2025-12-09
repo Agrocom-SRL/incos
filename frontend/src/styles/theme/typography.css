@@ -1,0 +1,63 @@
+/* ============================================================================
+   TIPOGRAFÍA
+   ============================================================================ */
+
+/* Importar SOLO Poppins (como el original) */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800&display=swap');
+
+/* Aplicar Poppins a TODO */
+* {
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Headers */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.ant-typography {
+    font-family: 'Poppins', sans-serif !important;
+}
+
+/* Párrafos */
+p {
+    font-family: 'Poppins', sans-serif;
+    line-height: var(--line-height-normal);
+}
+
+/* Botones */
+.ant-btn {
+    font-family: 'Poppins', sans-serif !important;
+}
+
+/* Inputs */
+.ant-input,
+.ant-input-search {
+    font-family: 'Poppins', sans-serif !important;
+}
+
+/* Menú */
+.ant-menu {
+    font-family: 'Poppins', sans-serif !important;
+}
+
+/* Cards */
+.ant-card {
+    font-family: 'Poppins', sans-serif !important;
+}
+
+/* Todos los componentes de Ant Design */
+.ant-typography,
+.ant-menu-item,
+.ant-card-meta-title,
+.ant-card-meta-description,
+.ant-list-item-meta-title,
+.ant-list-item-meta-description {
+    font-family: 'Poppins', sans-serif !important;
+}

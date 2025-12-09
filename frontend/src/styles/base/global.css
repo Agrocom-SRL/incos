@@ -1,0 +1,17 @@
+/* ============================================================================
+   ESTILOS GLOBALES
+   ============================================================================ */
+
+body {
+    font-family: 'Poppins', sans-serif !important;
+    background-color: var(--color-gris-muy-claro);
+    color: var(--color-gris-oscuro);
+    line-height: var(--line-height-normal);
+    font-size: var(--font-size-base);
+}
+
+/* Contenedor principal */
+#root {
+    min-height: 100vh;
+    font-family: 'Poppins', sans-serif;
+}

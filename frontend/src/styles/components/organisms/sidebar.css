@@ -1,0 +1,15 @@
+/* src/styles/layout/sidebar.css */
+.sider {
+    height: 100vh;
+    position: sticky !important;
+    left: 0;
+    bottom: 0;
+    top: 0;
+    border-right: 1px solid var(--color-gris-claro);
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.02);
+}
+
+/* Sidebar colapsado */
+.ant-layout-sider-collapsed .sidebar-container {
+    padding: 8px 0;
+}

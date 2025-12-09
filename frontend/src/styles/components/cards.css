@@ -1,0 +1,50 @@
+/* ============================================================================
+   CARDS
+   ============================================================================ */
+
+/* Card con gradiente verde (ContentSidebar) */
+.card {
+    background: var(--gradiente-card) !important;
+    box-shadow: var(--sombra-verde);
+    transition: var(--transition-base);
+    border-radius: var(--radio-lg) !important;
+    position: relative;
+    overflow: visible;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--sombra-lg);
+}
+
+/* Texto dentro del card verde en blanco */
+.card .ant-typography {
+    color: var(--color-blanco) !important;
+}
+
+/* Plant cards */
+.plant-card {
+    flex: 1;
+    height: 250px;
+    text-align: center;
+    transition: var(--transition-base);
+    border-radius: var(--radio-lg) !important;
+}
+
+.plant-card:hover {
+    box-shadow: var(--sombra-verde);
+    transform: translateY(-2px);
+}
+
+/* Divider verde */
+.divider {
+    border-color: var(--color-verde-institucional) !important;
+    border-width: 2px !important;
+    height: 50px;
+}
+
+/* Seller lists */
+.top-seller,
+.featured-seller {
+    flex: 1;
+}

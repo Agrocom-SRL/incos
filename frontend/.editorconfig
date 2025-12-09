@@ -1,0 +1,205 @@
+# ============================================================================
+# EDITORCONFIG - SISTEMA INCOS SANTA CRUZ
+# Configuración para mantener consistencia de estilo de código entre editores
+# ============================================================================
+#
+# EditorConfig ayuda a mantener estilos de codificación consistentes para
+# múltiples desarrolladores trabajando en el mismo proyecto en varios editores
+#
+# Más información: https://editorconfig.org
+#
+# ============================================================================
+
+# Indica que este es el archivo raíz de configuración
+root = true
+
+# ============================================================================
+# CONFIGURACIÓN GLOBAL (Todos los archivos)
+# ============================================================================
+[*]
+# Codificación de caracteres
+charset = utf-8
+
+# Tipo de fin de línea (lf = Unix/Mac, crlf = Windows)
+end_of_line = lf
+
+# Insertar nueva línea al final del archivo
+insert_final_newline = true
+
+# Remover espacios en blanco al final de las líneas
+trim_trailing_whitespace = true
+
+# ============================================================================
+# ARCHIVOS JAVASCRIPT Y TYPESCRIPT
+# ============================================================================
+[*.{js,jsx,ts,tsx,mjs,cjs}]
+# Usar espacios (no tabs)
+indent_style = space
+
+# Tamaño de indentación: 2 espacios
+indent_size = 2
+
+# Ancho máximo de línea (opcional, ayuda a mantener legibilidad)
+max_line_length = 80
+
+# ============================================================================
+# ARCHIVOS JSON
+# ============================================================================
+[*.{json,json5}]
+indent_style = space
+indent_size = 2
+
+# ============================================================================
+# ARCHIVOS CSS, SCSS, LESS
+# ============================================================================
+[*.{css,scss,sass,less}]
+indent_style = space
+indent_size = 2
+
+# ============================================================================
+# ARCHIVOS HTML
+# ============================================================================
+[*.{html,htm}]
+indent_style = space
+indent_size = 2
+
+# ============================================================================
+# ARCHIVOS MARKDOWN
+# ============================================================================
+[*.{md,mdx}]
+indent_style = space
+indent_size = 2
+# No remover espacios al final en Markdown (puede ser significativo)
+trim_trailing_whitespace = false
+
+# ============================================================================
+# ARCHIVOS YAML
+# ============================================================================
+[*.{yml,yaml}]
+indent_style = space
+indent_size = 2
+
+# ============================================================================
+# ARCHIVOS DE CONFIGURACIÓN
+# ============================================================================
+[*.config.{js,ts}]
+indent_style = space
+indent_size = 2
+
+# ============================================================================
+# PACKAGE.JSON Y LOCK FILES
+# ============================================================================
+[package.json]
+indent_style = space
+indent_size = 2
+
+[package-lock.json]
+indent_style = space
+indent_size = 2
+
+[pnpm-lock.yaml]
+indent_style = space
+indent_size = 2
+
+# ============================================================================
+# ARCHIVOS DE CONFIGURACIÓN DE HERRAMIENTAS
+# ============================================================================
+[{.eslintrc,.prettierrc,.babelrc}]
+indent_style = space
+indent_size = 2
+
+[{.eslintrc.*,.prettierrc.*,.babelrc.*}]
+indent_style = space
+indent_size = 2
+
+# ============================================================================
+# MAKEFILE (Requiere tabs)
+# ============================================================================
+[Makefile]
+indent_style = tab
+
+# ============================================================================
+# ARCHIVOS DE SHELL SCRIPTS
+# ============================================================================
+[*.sh]
+indent_style = space
+indent_size = 2
+end_of_line = lf
+
+# ============================================================================
+# ARCHIVOS BATCH (Windows)
+# ============================================================================
+[*.{bat,cmd}]
+indent_style = space
+indent_size = 2
+end_of_line = crlf
+
+# ============================================================================
+# ARCHIVOS XML
+# ============================================================================
+[*.xml]
+indent_style = space
+indent_size = 2
+
+# ============================================================================
+# ARCHIVOS SVG
+# ============================================================================
+[*.svg]
+indent_style = space
+indent_size = 2
+
+# ============================================================================
+# ARCHIVOS DE PRUEBAS
+# ============================================================================
+[*.{test,spec}.{js,jsx,ts,tsx}]
+indent_style = space
+indent_size = 2
+
+# ============================================================================
+# GITIGNORE Y ARCHIVOS DE GIT
+# ============================================================================
+[.gitignore]
+indent_style = space
+indent_size = 2
+
+[.gitattributes]
+indent_style = space
+indent_size = 2
+
+# ============================================================================
+# DOCKERFILE
+# ============================================================================
+[Dockerfile*]
+indent_style = space
+indent_size = 2
+
+# ============================================================================
+# ARCHIVOS DE DOCUMENTACIÓN
+# ============================================================================
+[{README,CHANGELOG,CONTRIBUTING,LICENSE}.md]
+indent_style = space
+indent_size = 2
+
+# ============================================================================
+# NOTAS IMPORTANTES
+# ============================================================================
+#
+# 💡 COMPATIBILIDAD:
+# - La mayoría de editores modernos soportan EditorConfig nativamente
+# - VSCode, WebStorm, Sublime Text, Atom, Vim, etc.
+# - Si tu editor no lo soporta, instala un plugin
+#
+# 🔧 CONFIGURACIÓN:
+# - VSCode: Extensión "EditorConfig for VS Code"
+# - WebStorm/IntelliJ: Soporte nativo
+# - Sublime Text: Package "EditorConfig"
+#
+# 📝 PRIORIDAD:
+# - La configuración más específica tiene mayor prioridad
+# - [*.js] es más específico que [*]
+#
+# 🔄 SINCRONIZACIÓN:
+# - Este archivo asegura que todo el equipo use el mismo estilo
+# - Commitea este archivo al repositorio
+#
+# ============================================================================

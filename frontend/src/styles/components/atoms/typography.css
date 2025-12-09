@@ -1,0 +1,19 @@
+/* ============================================================================
+   ATOMS - TYPOGRAPHY
+   ============================================================================ */
+
+.incos-typography {
+    /* Los estilos se aplican desde theme.config.js */
+}
+
+.incos-typography-title {
+    color: var(--color-verde-institucional);
+}
+
+.incos-typography-text {
+    /* Estilos base desde theme */
+}
+
+.incos-typography-paragraph {
+    /* Estilos base desde theme */
+}

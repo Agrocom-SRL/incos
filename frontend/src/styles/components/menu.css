@@ -1,0 +1,38 @@
+/* ============================================================================
+   MENÚ
+   ============================================================================ */
+
+.menu-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-weight: 500;
+}
+
+/* Items del menú con borde redondeado */
+.ant-menu-item {
+    border-radius: var(--radio-md) !important;
+    margin: 4px 8px !important;
+}
+
+/* Item seleccionado */
+.ant-menu-item-selected {
+    background-color: var(--color-verde-institucional) !important;
+    color: var(--color-blanco) !important;
+    border-radius: var(--radio-md) !important;
+}
+
+.ant-menu-item-selected:hover {
+    background-color: var(--color-verde-institucional-hover) !important;
+}
+
+/* Items no seleccionados al hacer hover */
+.ant-menu-item:hover:not(.ant-menu-item-selected) {
+    background-color: rgba(25, 107, 69, 0.08) !important;
+    color: var(--color-verde-institucional) !important;
+}
+
+/* Ícono del item seleccionado */
+.ant-menu-item-selected .anticon {
+    color: var(--color-blanco) !important;
+}

@@ -1,0 +1,39 @@
+/* src/styles/components/molecules/navigation-menu.css */
+.navigation-menu {
+    border: none !important;
+    background: transparent !important;
+    padding: 0 8px;
+}
+
+.navigation-menu .ant-menu-item {
+    border-radius: var(--radio-md) !important;
+    margin: 4px 0 !important;
+    height: 44px !important;
+    line-height: 44px !important;
+    font-weight: 500;
+    transition: all var(--transition-fast);
+}
+
+.navigation-menu .ant-menu-item-selected {
+    background-color: var(--color-verde-institucional) !important;
+    color: var(--color-blanco) !important;
+}
+
+.navigation-menu .ant-menu-item-selected::after {
+    display: none !important;
+}
+
+.navigation-menu .ant-menu-item:hover:not(.ant-menu-item-selected) {
+    background-color: rgba(25, 107, 69, 0.08) !important;
+    color: var(--color-verde-institucional) !important;
+}
+
+.navigation-menu .ant-menu-item-selected .anticon,
+.navigation-menu .ant-menu-item-selected span {
+    color: var(--color-blanco) !important;
+}
+
+.navigation-menu .ant-menu-item .anticon {
+    font-size: 16px;
+    margin-right: 10px;
+}

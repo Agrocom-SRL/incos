@@ -1,0 +1,45 @@
+{
+  "name": "incos",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"src/**/*.{js,jsx,css,scss,md}\"",
+    "format:check": "prettier --check \"src/**/*.{js,jsx,css,scss,md}\""
+  },
+  "dependencies": {
+    "@ant-design/icons": "^6.1.0",
+    "@hookform/resolvers": "^5.2.2",
+    "@tanstack/react-query": "^5.90.12",
+    "antd": "^6.0.1",
+    "axios": "^1.13.2",
+    "date-fns": "^4.1.0",
+    "lodash-es": "^4.17.21",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-hook-form": "^7.68.0",
+    "react-icons": "^5.5.0",
+    "react-router-dom": "^7.10.1",
+    "yup": "^1.7.1",
+    "zustand": "^5.0.9"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@types/react": "^19.2.5",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.1",
+    "eslint": "^9.39.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.4.24",
+    "globals": "^16.5.0",
+    "prettier": "^3.7.4",
+    "sass": "^1.94.2",
+    "vite": "^7.2.4"
+  }
+}

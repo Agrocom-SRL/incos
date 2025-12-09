@@ -1,0 +1,23 @@
+/* ============================================================================
+   MOLECULES - SELLER CARD
+   ============================================================================ */
+
+.seller-card {
+    padding: 1rem;
+}
+
+.seller-card .divider {
+    height: 60px;
+    margin: 0 1rem;
+}
+
+.seller-card__avatar-group {
+    /* Estilos para el grupo de avatares */
+}
+
+/* Estilos para el avatar que muestra el contador cuando hay más de 5 */
+.seller-card__avatar-group .ant-avatar-group-max-count {
+    color: var(--color-avatar-count-text) !important;
+    background-color: var(--color-avatar-count-bg) !important;
+    cursor: pointer !important;
+}

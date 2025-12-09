@@ -1,0 +1,17 @@
+/* ============================================================================
+   ORGANISMS - CONTENT SIDEBAR
+   ============================================================================ */
+
+.content-sidebar-card {
+    position: relative;
+    overflow: visible;
+}
+
+.content-sidebar__image {
+    pointer-events: none;
+    position: absolute;
+    bottom: -50px;
+    left: 96px;
+    width: auto;
+    height: 300px;
+}

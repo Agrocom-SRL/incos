@@ -1,0 +1,20 @@
+/* ============================================================================
+   MOLECULES - PRODUCT CARD
+   ============================================================================ */
+
+.product-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px rgba(25, 107, 69, 0.15);
+}
+
+.product-card__image {
+    width: 130px;
+}
+
+.product-card__meta {
+    margin-top: 1rem;
+}

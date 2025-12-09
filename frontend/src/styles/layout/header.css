@@ -1,0 +1,47 @@
+/* ============================================================================
+   HEADER
+   ============================================================================ */
+
+.header {
+    padding: 12px 24px;
+    background: var(--color-blanco);
+    border-bottom: 1px solid var(--color-gris-claro);
+}
+
+.header-icon {
+    background: var(--color-success-bg);
+    padding: var(--spacing-sm);
+    border-radius: var(--radio-md);
+    font-size: 16px;
+    color: var(--color-verde-institucional);
+    cursor: pointer;
+    transition: var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+}
+
+.header-icon:hover {
+    background: var(--color-verde-institucional-lighter);
+    color: var(--color-verde-institucional-hover);
+    transform: scale(1.05);
+}
+
+/* Search bar en header */
+.header .ant-input-search {
+    border-radius: var(--radio-md) !important;
+}
+
+.header .ant-input-search .ant-input {
+    border-radius: var(--radio-md) !important;
+}
+
+.header .ant-input-search-button {
+    border-radius: 0 var(--radio-md) var(--radio-md) 0 !important;
+}
+
+.header__title {
+    margin: 0 !important;
+}

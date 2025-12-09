@@ -1,0 +1,12 @@
+/* ============================================================================
+   ORGANISMS - BANNER
+   ============================================================================ */
+
+.banner-card {
+    background: var(--gradiente-card, linear-gradient(to bottom right, var(--color-verde-institucional), var(--color-verde-menta)));
+    border: none;
+    position: relative;
+    overflow: hidden;
+    height: 260px;
+    padding: 20px;
+}
