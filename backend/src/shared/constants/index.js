@@ -1,0 +1,17 @@
+module.exports = {
+  ESTADOS_ACADEMICOS: {
+    REGULAR: 'REGULAR',
+    NIVELACION: 'NIVELACION',
+    RETIRADO: 'RETIRADO',
+    EGRESADO: 'EGRESADO',
+    ABANDONO: 'ABANDONO'
+  },
+  
+  NOTA_MINIMA_APROBACION: 60,
+  
+  TURNOS: {
+    MANANA: 'MAÑANA',
+    TARDE: 'TARDE',
+    NOCHE: 'NOCHE'
+  }
+};
