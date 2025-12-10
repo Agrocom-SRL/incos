@@ -2,28 +2,51 @@
 
 ## 📋 Información del Instituto
 
-**Nombre**: Instituto Comercial Superior de la Nación INCOS Santa Cruz  
-**Fundación**: 2 de agosto de 1985  
-**Resolución Ministerial**: 0426/2016  
-**Ubicación**: Calle Ñuflo de Chávez Nº 62, Santa Cruz de la Sierra  
+**Nombre Completo**: El Instituto Comercial Superior de la Nación INCOS Santa Cruz
+
+**Historia**:
+El Instituto Comercial Superior de la Nación INCOS Santa Cruz fue fundado el **2 de agosto de 1985** mediante la **Resolución Ministerial 746/1985**. Actualmente cuenta con la **R.M. 0426/2016**, ofertando inicialmente las Carreras de **Contaduría General** y **Secretariado Ejecutivo**. Posteriormente, en el año **1988**, se ampliaron las carreras de **Administración de Empresas** e **Informática**.
+
+**Ubicación**: 
+Calle Ñuflo de Chavez Nº 62, entre René Moreno y Calle Chuquisaca, dentro del centro histórico del municipio de **Santa Cruz de la Sierra**.
 
 **Horarios de Atención**:
 
-- Turno Tarde: Lunes a Viernes 14:00 - 16:30
-- Turno Noche: Lunes a Viernes 18:45 - 22:30
-- Sábados: 17:00 - 21:00
+- **Turno Tarde**: Lunes a Viernes 14:00 - 16:30
+- **Turno Noche**: Lunes a Viernes 18:45 - 22:30
+- **Sábados**: 17:00 - 21:00
 
 **Carreras Técnicas** (Nivel Técnico Superior):
 
-1. Sistemas Informáticos
-2. Administración de Empresas
-3. Contaduría General
+Actualmente el instituto ofrece **tres carreras** al nivel de Técnico Superior:
+
+1. **Sistemas Informáticos**
+2. **Administración de Empresas**
+3. **Contaduría General**
 
 **Perfil de Estudiantes**:
 
-- Provienen de zonas periurbanas
-- Trabajan en instituciones privadas, empresas, fábricas o negocios informales
-- Requieren horarios flexibles (tarde/noche)
+- En su mayoría provienen de zonas periurbanas de la ciudad
+- Trabajan en instituciones privadas, empresas, fábricas, industrias o en negocios informales
+- Requieren horarios flexibles (tarde/noche/sábado)
+- Necesitan accesibilidad móvil y consulta rápida de información académica
+
+**Naturaleza Institucional**:
+
+Somos una **Institución de Educación Superior Estatal**, abierta al conjunto de la sociedad, establecida con plenas facultades legales dentro del sistema Educativo Nacional.
+
+---
+
+## 👥 Equipo de Desarrollo
+
+**Jefe del Proyecto**: Carlos Ferrufino  
+🔗 GitHub: [@agrocom-developer](https://github.com/agrocom-developer)
+
+**Desarrollador Frontend**: Nelson Farel  
+🔗 GitHub: [@hfarel](https://github.com/hfarel)
+
+**Desarrollador Backend**: Miguel Escobar  
+🔗 GitHub: [@Angello-27](https://github.com/Angello-27)
 
 ---
 
@@ -373,9 +396,13 @@ class Subject {
   - careerId (FK)
   - code
   - name
-  - semester (1-6)
+  - nombreCorto
+  - cargaHorariaTeorica
+  - cargaHorariaPractica
+  - cargaHorariaTotal (generated)
   - credits
-  - hours
+  - tipo: 'TEORICA' | 'PRACTICA' | 'TEORICA_PRACTICA'
+  - areaConocimiento
   - description
   - isActive
 }
@@ -386,31 +413,62 @@ class Subject {
 ```javascript
 class Course {
   - id
-  - subjectId (FK)
-  - academicPeriodId (FK)
-  - teacherId (FK)
-  - shift: 'afternoon' | 'night' | 'saturday'
-  - maxStudents
-  - enrolledStudents
-  - classroom
-  - schedule: [{day, startTime, endTime}]
-  - status: 'open' | 'closed' | 'in_progress' | 'finished'
+  - materiaId (FK)
+  - periodoId (FK) // Periodo de la gestión académica
+  - paralelo: 'A' | 'B' | 'C' | ...
+  - turno: 'MAÑANA' | 'TARDE' | 'NOCHE'
+  - docenteId (FK)
+  - cupoMaximo
+  - horario: string // JSON o texto con el horario
+  - aula: string
+  - estado: 'PLANIFICADO' | 'EN_CURSO' | 'FINALIZADO' | 'CANCELADO'
+  - created_at
+  - updated_at
 }
 ```
 
 ### 6. Enrollment (Inscripción)
 
+**Inscripción Principal** (por gestión):
 ```javascript
-class Enrollment {
+class Inscripcion {
   - id
-  - studentId (FK)
-  - courseId (FK)
-  - academicPeriodId (FK)
-  - enrollmentDate
-  - status: 'pending' | 'confirmed' | 'cancelled'
-  - paymentStatus: 'pending' | 'paid'
-  - paymentAmount
-  - paymentDate
+  - estudianteId (FK)
+  - gestionId (FK) // Año académico (2025-I, 2025-II)
+  - carreraId (FK)
+  - periodoId (FK) // Semestre de la carrera (1º, 2º, 3º, 4º)
+  - fechaInscripcion
+  - fechaAprobacion
+  - turno: 'MAÑANA' | 'TARDE' | 'NOCHE'
+  - estado: 'BORRADOR' | 'PENDIENTE' | 'APROBADA' | 'RECHAZADA' | 'ANULADA'
+  - motivoRechazo
+  - motivoAnulacion
+  - aprobadaPor (FK)
+  - numeroMaterias
+  - cargaHorariaTotal
+  - observaciones
+}
+```
+
+**Inscripción a Materias** (dentro de una inscripción):
+```javascript
+class InscripcionMateria {
+  - id
+  - inscripcionId (FK)
+  - cursoId (FK)
+  - fechaInscripcion
+  - estado: 'INSCRITO' | 'APROBADO' | 'REPROBADO' | 'RETIRADO' | 'ABANDONO'
+  - notaFinal
+  - asistenciaPorcentaje
+  // Sistema de calificaciones complejo
+  - nota1erParcial
+  - nota2doParcial
+  - sumaParciales
+  - nota3erParcial
+  - notaPractico
+  - sumaTotal
+  - notaRecuperatorio
+  - observaciones
 }
 ```
 
@@ -443,19 +501,91 @@ class Attendance {
 
 ### 9. AcademicPeriod (Gestión Académica)
 
+**Gestión** (Año académico completo):
 ```javascript
-class AcademicPeriod {
+class Gestion {
   - id
-  - year: 2025
-  - semester: 'I' | 'II'
-  - name: '2025-I'
-  - startDate
-  - endDate
-  - enrollmentStartDate
-  - enrollmentEndDate
-  - isActive
+  - codigo: '2025-1' | '2025-2'
+  - anio: 2025
+  - imagenPromocionUrl
+  - fechaInicioAdministrativa
+  - fechaFinAdministrativa
+  - activo
 }
 ```
+
+**Etapa de Gestión** (Fases dentro de una gestión):
+```javascript
+class EtapaGestion {
+  - id
+  - gestionId (FK)
+  - nombre: 'Pre-inscripción' | 'Inscripciones' | 'Clases' | 'Exámenes'
+  - tipo: 'PRE_INSCRIPCION' | 'INSCRIPCIONES' | 'CLASES' | 'EVALUACIONES' | 'EXAMENES' | 'ENTREGA_NOTAS' | 'CIERRE_ADMINISTRATIVO'
+  - fechaInicio
+  - fechaFin
+  - vigente: boolean
+  - descripcion
+}
+```
+
+**Periodo** (Semestre de la carrera: 1º, 2º, 3º, 4º):
+```javascript
+class Periodo {
+  - id
+  - carreraId (FK)
+  - nombre: '1º Semestre' | '2º Semestre' | ...
+  - numero: 1 | 2 | 3 | 4
+  - ordenVisualizacion
+  - descripcion
+}
+```
+
+---
+
+## 🗄️ ESTRUCTURA DE BASE DE DATOS
+
+El sistema utiliza una base de datos MySQL con arquitectura modular y normalizada. Los scripts SQL están organizados en el directorio `backend/database/01-schemas/`:
+
+### Scripts de Schema (Orden de Ejecución):
+
+1. **`01-base.sql`** - Configuración inicial y estándares
+2. **`02-catalogos-geograficos.sql`** - Catálogos geográficos (países, departamentos, provincias, municipios)
+3. **`03-catalogos-referencia.sql`** - Catálogos de referencia (estados civiles, idiomas, tipos de discapacidad, etc.)
+4. **`04-sistema-seguridad.sql`** - Sistema de autenticación y autorización (usuarios, roles, permisos)
+5. **`05-estructura-academica-parte1.sql`** - Carreras, gestiones, periodos, materias, plan de estudios, prerrequisitos
+6. **`05-estructura-academica-parte2.sql`** - Docentes, asignaciones, horarios, aulas, turnos
+7. **`06-estudiantes-parte1.sql`** - Estudiantes, datos académicos, documentos
+8. **`06-estudiantes-parte2.sql`** - Datos económicos, becas, descuentos, contactos de emergencia
+9. **`07-inscripciones-parte1.sql`** - Inscripciones principales por gestión
+10. **`07-inscripciones-parte2.sql`** - Inscripciones a materias, calificaciones, asistencias
+11. **`10-pagos.sql`** - Sistema de pagos (aranceles, detalle de pagos)
+12. **`11-modulos-operativos-parte1.sql`** - Pasantías (empresas, asignaciones, evaluaciones), Supervisión docente
+13. **`11-modulos-operativos-parte2.sql`** - Licencias estudiantiles, Historial académico oficial (libros, folios)
+14. **`12-indices.sql`** - Índices de optimización
+15. **`12-sincronizacion.sql`** - Sistema de sincronización con sistema nacional
+16. **`13-indices-optimizacion.sql`** - Índices adicionales de optimización
+
+### Características de la Base de Datos:
+
+✅ **Normalización 3FN**: Todas las tablas siguen tercera forma normal  
+✅ **Soft Delete**: Todas las tablas tienen `deleted_at` para eliminación lógica  
+✅ **Auditoría Completa**: Campos estándar `created_at`, `updated_at`, `created_by`, `updated_by`, `deleted_by`  
+✅ **ON DELETE SET NULL**: Todas las foreign keys usan `ON DELETE SET NULL`  
+✅ **Sin UNIQUE**: Se eliminaron restricciones UNIQUE para permitir flexibilidad  
+✅ **Campos Generados**: Uso de `GENERATED ALWAYS AS` para campos calculados  
+✅ **Índices Optimizados**: Índices compuestos para consultas frecuentes  
+
+### Estándares de Tablas:
+
+Todas las tablas incluyen:
+- `id INT AUTO_INCREMENT PRIMARY KEY`
+- `activo BOOLEAN DEFAULT TRUE`
+- `created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`
+- `updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`
+- `deleted_at TIMESTAMP NULL DEFAULT NULL`
+- `created_by INT` (FK a usuarios)
+- `updated_by INT` (FK a usuarios)
+- `deleted_by INT` (FK a usuarios)
 
 ---
 
@@ -477,18 +607,22 @@ class AcademicPeriod {
 
 ### Horarios
 
-1. Turno Tarde: 14:00 - 16:30
-2. Turno Noche: 18:45 - 22:30
-3. Sábados: 17:00 - 21:00
+1. **Turno Tarde**: Lunes a Viernes 14:00 - 16:30
+2. **Turno Noche**: Lunes a Viernes 18:45 - 22:30
+3. **Sábados**: 17:00 - 21:00
 4. No puede haber solapamiento de horarios por aula
 5. Docente no puede tener clases simultáneas
+6. Los turnos están definidos en el enum `'MAÑANA' | 'TARDE' | 'NOCHE'` en la base de datos
 
 ### Carreras y Materias
 
-1. Sistemas Informáticos: 6 semestres
-2. Administración de Empresas: 6 semestres
-3. Contaduría General: 6 semestres
-4. Prerequisitos deben ser validados antes de inscripción
+1. **Sistemas Informáticos**: Nivel Técnico Superior (estructura de periodos definida en `plan_estudios`)
+2. **Administración de Empresas**: Nivel Técnico Superior (estructura de periodos definida en `plan_estudios`)
+3. **Contaduría General**: Nivel Técnico Superior (estructura de periodos definida en `plan_estudios`)
+4. Las carreras tienen duración variable (definida en campo `duracion_anios` de la tabla `carreras`)
+5. El plan de estudios está normalizado en la tabla `plan_estudios` (carrera × periodo × materia)
+6. Los **prerrequisitos** están normalizados en la tabla `prerrequisitos` y deben ser validados antes de inscripción
+7. Las materias tienen carga horaria teórica y práctica separadas, con total generado automáticamente
 
 ---
 

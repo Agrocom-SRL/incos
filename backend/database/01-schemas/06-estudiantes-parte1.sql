@@ -1,8 +1,7 @@
 -- ============================================
--- MÓDULO DE ESTUDIANTES
+-- MÓDULO DE ESTUDIANTES - PARTE 1
 -- Sistema de Gestión Académica - Instituto INCOS
--- 6 Tablas: estudiantes, estudiantes_becas, documentos_estudiante,
---           estados_especiales_estudiante, licencias_solicitudes, licencias_documentos
+-- 3 Tablas: estudiantes, estudiantes_datos_academicos, documentos_estudiante
 -- ============================================
 
 USE instituto_incos;
@@ -17,109 +16,37 @@ DROP TABLE IF EXISTS estudiantes;
 
 CREATE TABLE estudiantes (
     id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT COMMENT 'Relación con usuario del sistema',
+    codigo_estudiante VARCHAR(20) NOT NULL COMMENT 'Código único del estudiante',
     
-    -- Código único del estudiante
-    codigo_estudiante VARCHAR(20) NOT NULL UNIQUE COMMENT 'EST-2025-0001',
-    
-    -- Identificación
-    ci VARCHAR(15) NOT NULL COMMENT 'Cédula de identidad sin guiones',
-    expedicion VARCHAR(5) NOT NULL COMMENT 'SC, LP, CB, OR, PT, TJ, CH, BE, PD',
-    complemento VARCHAR(10) COMMENT 'Complemento del CI (1A, 2B, etc.)',
-    tipo_documento ENUM('CI', 'PASAPORTE', 'EXTRANJERO') DEFAULT 'CI',
-    libreta_militar VARCHAR(50) COMMENT 'Número de libreta militar (varones)',
-    
-    -- Datos personales
-    nombres VARCHAR(150) NOT NULL,
-    apellido_paterno VARCHAR(100) NOT NULL,
-    apellido_materno VARCHAR(100),
-    genero ENUM('M', 'F', 'OTRO') NOT NULL,
-    fecha_nacimiento DATE NOT NULL,
-    
-    -- Lugar de nacimiento
-    pais_nacimiento_id INT,
-    departamento_nacimiento_id INT,
-    provincia_nacimiento_id INT,
-    municipio_nacimiento_id INT,
-    comunidad_nacimiento_id INT,
-    localidad_nacimiento_id INT,
-    
-    -- Información adicional
+    -- Datos personales básicos
+    ci VARCHAR(20) NOT NULL COMMENT 'Cédula de identidad',
+    nombres VARCHAR(150) NOT NULL COMMENT 'Nombres completos',
+    apellido_paterno VARCHAR(100) NOT NULL COMMENT 'Apellido paterno',
+    apellido_materno VARCHAR(100) COMMENT 'Apellido materno',
+    fecha_nacimiento DATE NOT NULL COMMENT 'Fecha de nacimiento',
+    genero ENUM('MASCULINO', 'FEMENINO', 'OTRO') NOT NULL COMMENT 'Género',
+    estado_civil_id INT COMMENT 'Estado civil',
+    nacionalidad VARCHAR(50) DEFAULT 'Boliviana' COMMENT 'Nacionalidad',
+    municipio_nacimiento_id INT COMMENT 'Municipio de nacimiento (contiene toda la info geográfica)',
+    ciudad_nacimiento VARCHAR(100) COMMENT 'Ciudad de nacimiento',
     idioma_natal_id INT COMMENT 'Idioma materno',
-    estado_civil_id INT,
-    tipo_sangre_id INT,
-    nacionalidad VARCHAR(50) DEFAULT 'Boliviana',
+    tipo_sangre ENUM('A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-') COMMENT 'Tipo de sangre',
     
-    -- Discapacidad
-    tiene_discapacidad BOOLEAN DEFAULT FALSE,
-    tipo_discapacidad_id INT,
-    grado_discapacidad ENUM('LEVE', 'MODERADA', 'GRAVE', 'MUY_GRAVE') COMMENT 'Grado de discapacidad',
-    carnet_discapacidad VARCHAR(50) COMMENT 'Número de carnet de discapacidad',
-    porcentaje_discapacidad DECIMAL(5,2) COMMENT 'Porcentaje de discapacidad',
-    
-    -- Nacionalidad adicional
-    tiene_doble_nacionalidad BOOLEAN DEFAULT FALSE,
-    pais_segunda_nacionalidad_id INT,
+    -- Discapacidad (necesario para becas)
+    tiene_discapacidad BOOLEAN DEFAULT FALSE COMMENT 'Tiene discapacidad',
+    tipo_discapacidad_id INT COMMENT 'Tipo de discapacidad',
     
     -- Contacto
-    email VARCHAR(150) UNIQUE COMMENT 'Email institucional o personal',
-    email_secundario VARCHAR(150),
-    celular VARCHAR(20) NOT NULL,
-    telefono_fijo VARCHAR(20),
-    
-    -- Dirección actual
-    direccion_actual TEXT,
-    zona_barrio VARCHAR(100),
-    ciudad_residencia VARCHAR(100),
-    localidad_id INT,
-    departamento_residencia_id INT,
-    pais_residencia_id INT DEFAULT 1 COMMENT 'Bolivia por defecto',
-    
-    -- Redes sociales (opcional)
-    facebook VARCHAR(100),
-    instagram VARCHAR(100),
-    whatsapp VARCHAR(20),
-    
-    -- Información de contacto de emergencia
-    contacto_emergencia_nombre VARCHAR(150),
-    contacto_emergencia_relacion VARCHAR(50) COMMENT 'Padre, Madre, Hermano, etc.',
-    contacto_emergencia_telefono VARCHAR(20),
-    
-    -- Datos académicos
-    carrera_id INT NOT NULL COMMENT 'Carrera en la que está inscrito',
-    gestion_ingreso_id INT NOT NULL COMMENT 'Gestión en la que ingresó',
-    turno_preferido VARCHAR(20) COMMENT 'MAÑANA, TARDE, NOCHE',
-    
-    -- Estado académico
-    estado_academico ENUM('REGULAR', 'NIVELACION', 'RETIRADO', 'EGRESADO', 'ABANDONO') DEFAULT 'REGULAR',
-    fecha_egreso DATE COMMENT 'Fecha de egreso',
-    motivo_retiro TEXT COMMENT 'Motivo de retiro/abandono',
-    fecha_retiro DATE,
-    
-    -- Datos de ingreso
-    unidad_educativa_procedencia VARCHAR(200) COMMENT 'Colegio de procedencia',
-    anio_egreso_secundaria INT,
-    modalidad_ingreso ENUM('EXAMEN', 'DIRECTO', 'TRANSFERENCIA', 'CONVENIO') DEFAULT 'DIRECTO',
-    
-    -- Información económica
-    trabaja BOOLEAN DEFAULT FALSE,
-    lugar_trabajo VARCHAR(200),
-    ocupacion VARCHAR(100),
-    ingreso_mensual_aproximado DECIMAL(10,2),
-    
-    -- Datos familiares
-    nombre_padre VARCHAR(150),
-    ocupacion_padre VARCHAR(100),
-    telefono_padre VARCHAR(20),
-    nombre_madre VARCHAR(150),
-    ocupacion_madre VARCHAR(100),
-    telefono_madre VARCHAR(20),
-    vive_con ENUM('AMBOS_PADRES', 'MADRE', 'PADRE', 'OTROS_FAMILIARES', 'SOLO', 'OTRO'),
-    
-    -- Fotografía
-    foto_url VARCHAR(255) COMMENT 'URL de la fotografía del estudiante',
+    email_personal VARCHAR(150) COMMENT 'Email personal (para emergencias, el email institucional está en usuarios) para el estudiante',
+    celular VARCHAR(20) NOT NULL COMMENT 'Teléfono celular',
+    telefono_fijo VARCHAR(20) COMMENT 'Teléfono fijo',
+    direccion TEXT COMMENT 'Dirección completa',
+    municipio_residencia_id INT COMMENT 'Municipio de residencia (contiene toda la info geográfica)',
+    zona VARCHAR(100) COMMENT 'Zona/barrio',
     
     -- Observaciones
-    observaciones TEXT,
+    observaciones TEXT COMMENT 'Observaciones adicionales',
     
     -- Campos de auditoría y control (ESTÁNDAR)
     activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
@@ -130,74 +57,48 @@ CREATE TABLE estudiantes (
     updated_by INT COMMENT 'Usuario que modificó',
     deleted_by INT COMMENT 'Usuario que eliminó',
     
-    -- Foreign Keys
-    FOREIGN KEY (pais_nacimiento_id) REFERENCES paises(id) ON DELETE SET NULL,
-    FOREIGN KEY (departamento_nacimiento_id) REFERENCES departamentos(id) ON DELETE SET NULL,
-    FOREIGN KEY (provincia_nacimiento_id) REFERENCES provincias(id) ON DELETE SET NULL,
-    FOREIGN KEY (municipio_nacimiento_id) REFERENCES municipios(id) ON DELETE SET NULL,
-    FOREIGN KEY (comunidad_nacimiento_id) REFERENCES comunidades(id) ON DELETE SET NULL,
-    FOREIGN KEY (localidad_nacimiento_id) REFERENCES localidades(id) ON DELETE SET NULL,
-    FOREIGN KEY (idioma_natal_id) REFERENCES idiomas(id) ON DELETE SET NULL,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE SET NULL,
     FOREIGN KEY (estado_civil_id) REFERENCES estados_civiles(id) ON DELETE SET NULL,
-    FOREIGN KEY (tipo_sangre_id) REFERENCES tipos_sangre(id) ON DELETE SET NULL,
+    FOREIGN KEY (municipio_nacimiento_id) REFERENCES municipios(id) ON DELETE SET NULL,
+    FOREIGN KEY (idioma_natal_id) REFERENCES idiomas(id) ON DELETE SET NULL,
     FOREIGN KEY (tipo_discapacidad_id) REFERENCES tipos_discapacidad(id) ON DELETE SET NULL,
-    FOREIGN KEY (pais_segunda_nacionalidad_id) REFERENCES paises(id) ON DELETE SET NULL,
-    FOREIGN KEY (localidad_id) REFERENCES localidades(id) ON DELETE SET NULL,
-    FOREIGN KEY (departamento_residencia_id) REFERENCES departamentos(id) ON DELETE SET NULL,
-    FOREIGN KEY (pais_residencia_id) REFERENCES paises(id) ON DELETE SET NULL,
-    FOREIGN KEY (carrera_id) REFERENCES carreras(id) ON DELETE RESTRICT,
-    FOREIGN KEY (gestion_ingreso_id) REFERENCES gestiones(id) ON DELETE RESTRICT,
+    FOREIGN KEY (municipio_residencia_id) REFERENCES municipios(id) ON DELETE SET NULL,
     FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
-    -- Índices
-    UNIQUE KEY unique_ci_expedicion (ci, expedicion, deleted_at),
-    INDEX idx_activo (activo),
-    INDEX idx_deleted_at (deleted_at),
-    INDEX idx_codigo_estudiante (codigo_estudiante),
-    INDEX idx_estado_academico (estado_academico),
-    INDEX idx_carrera_id (carrera_id),
-    INDEX idx_email (email),
-    INDEX idx_nombres_apellidos (nombres, apellido_paterno, apellido_materno)
+    INDEX idx_codigo_estudiante (codigo_estudiante) COMMENT 'Búsqueda por código',
+    INDEX idx_ci_expedicion (ci, expedicion) COMMENT 'Búsqueda por CI y expedición',
+    INDEX idx_usuario_id (usuario_id) COMMENT 'Búsqueda por usuario',
+    INDEX idx_email (email) COMMENT 'Búsqueda por email',
+    INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
+    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
+    INDEX idx_apellidos (apellido_paterno, apellido_materno) COMMENT 'Búsqueda por apellidos',
+    INDEX idx_municipio_residencia (municipio_residencia_id) COMMENT 'Búsqueda por municipio de residencia',
+    INDEX idx_tiene_discapacidad (tiene_discapacidad, tipo_discapacidad_id) COMMENT 'Búsqueda por discapacidad'
     
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Estudiantes del instituto';
 
 -- ============================================
--- TABLA: estudiantes_becas
+-- TABLA: estudiantes_datos_academicos
 -- ============================================
 
-DROP TABLE IF EXISTS estudiantes_becas;
+DROP TABLE IF EXISTS estudiantes_datos_academicos;
 
-CREATE TABLE estudiantes_becas (
+CREATE TABLE estudiantes_datos_academicos (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    estudiante_id INT NOT NULL COMMENT 'Estudiante beneficiario',
-    beca_descuento_id INT NOT NULL COMMENT 'Tipo de beca/descuento',
-    gestion_id INT NOT NULL COMMENT 'Gestión en la que se otorga',
-    
-    -- Detalles de la beca
-    porcentaje DECIMAL(5,2) NOT NULL COMMENT 'Porcentaje de descuento otorgado',
-    fecha_inicio DATE NOT NULL COMMENT 'Fecha de inicio de la beca',
-    fecha_fin DATE COMMENT 'Fecha de fin de la beca',
-    
-    -- Estado de la beca
-    estado ENUM('PENDIENTE', 'ACTIVA', 'SUSPENDIDA', 'FINALIZADA', 'RECHAZADA') DEFAULT 'PENDIENTE',
-    motivo_suspension TEXT COMMENT 'Motivo de suspensión',
-    fecha_suspension DATE,
-    
-    -- Aprobación
-    requiere_aprobacion_rector BOOLEAN DEFAULT FALSE,
-    aprobada_por INT COMMENT 'Usuario que aprobó',
-    fecha_aprobacion DATE,
-    observaciones_aprobacion TEXT,
-    
-    -- Documentación
-    documentos_completos BOOLEAN DEFAULT FALSE COMMENT 'Documentación entregada completa',
-    fecha_entrega_documentos DATE,
-    
-    -- Observaciones
-    observaciones TEXT,
+    estudiante_id INT NOT NULL COMMENT 'Estudiante',
+    carrera_id INT NOT NULL COMMENT 'Carrera',
+    gestion_ingreso_id INT NOT NULL COMMENT 'Gestión de ingreso',
+    estado_academico ENUM('REGULAR', 'NIVELACION', 'RETIRADO', 'EGRESADO', 'ABANDONO') DEFAULT 'REGULAR' COMMENT 'Estado académico',
+    unidad_educativa_procedencia VARCHAR(200) COMMENT 'Unidad educativa de procedencia',
+    anio_egreso_secundaria INT COMMENT 'Año de egreso de secundaria',
+    promedio_anual DECIMAL(5,2) COMMENT 'Promedio anual (se usa para cálculo de descuentos en becas)',
+    fecha_egreso DATE COMMENT 'Fecha de egreso',
+    fecha_retiro DATE COMMENT 'Fecha de retiro',
+    motivo_retiro TEXT COMMENT 'Motivo de retiro/abandono',
+    foto_url VARCHAR(255) COMMENT 'URL de la fotografía',
     
     -- Campos de auditoría y control (ESTÁNDAR)
     activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
@@ -208,27 +109,27 @@ CREATE TABLE estudiantes_becas (
     updated_by INT COMMENT 'Usuario que modificó',
     deleted_by INT COMMENT 'Usuario que eliminó',
     
-    -- Foreign Keys
-    FOREIGN KEY (estudiante_id) REFERENCES estudiantes(id) ON DELETE RESTRICT,
-    FOREIGN KEY (beca_descuento_id) REFERENCES becas_descuentos(id) ON DELETE RESTRICT,
-    FOREIGN KEY (gestion_id) REFERENCES gestiones(id) ON DELETE RESTRICT,
-    FOREIGN KEY (aprobada_por) REFERENCES usuarios(id) ON DELETE SET NULL,
+    FOREIGN KEY (estudiante_id) REFERENCES estudiantes(id) ON DELETE SET NULL,
+    FOREIGN KEY (carrera_id) REFERENCES carreras(id) ON DELETE SET NULL,
+    FOREIGN KEY (gestion_ingreso_id) REFERENCES gestiones(id) ON DELETE SET NULL,
     FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
-    -- Índices
-    INDEX idx_activo (activo),
-    INDEX idx_deleted_at (deleted_at),
-    INDEX idx_estudiante_id (estudiante_id),
-    INDEX idx_estado (estado),
-    INDEX idx_gestion_id (gestion_id),
-    
-    -- Constraints
-    CHECK (porcentaje >= 0 AND porcentaje <= 100)
+    INDEX idx_estudiante_id (estudiante_id) COMMENT 'Búsqueda por estudiante',
+    INDEX idx_carrera_id (carrera_id) COMMENT 'Búsqueda por carrera',
+    INDEX idx_estado_academico (estado_academico) COMMENT 'Filtrado por estado académico',
+    INDEX idx_promedio_anual (promedio_anual) COMMENT 'Búsqueda por promedio anual',
+    INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
+    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
+    INDEX idx_estudiante_activo (estudiante_id, activo, deleted_at) COMMENT 'Búsqueda por estudiante y estado activo',
+    INDEX idx_carrera_estado (carrera_id, estado_academico, activo, deleted_at) COMMENT 'Búsqueda por carrera y estado académico',
+    INDEX idx_gestion_ingreso (gestion_ingreso_id, activo, deleted_at) COMMENT 'Búsqueda por gestión de ingreso',
+    INDEX idx_estado_activo (estado_academico, activo, deleted_at) COMMENT 'Búsqueda por estado académico y activo',
+    INDEX idx_carrera_gestion (carrera_id, gestion_ingreso_id, activo, deleted_at) COMMENT 'Búsqueda por carrera y gestión de ingreso'
     
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Becas y descuentos asignados a estudiantes';
+COMMENT='Datos académicos detallados de estudiantes. Relación 1:1 con estudiantes.';
 
 -- ============================================
 -- TABLA: documentos_estudiante
@@ -239,36 +140,38 @@ DROP TABLE IF EXISTS documentos_estudiante;
 CREATE TABLE documentos_estudiante (
     id INT AUTO_INCREMENT PRIMARY KEY,
     estudiante_id INT NOT NULL COMMENT 'Estudiante',
-    
-    -- Tipo de documento
     tipo_documento ENUM(
-        'CEDULA_IDENTIDAD',
-        'CERTIFICADO_NACIMIENTO',
-        'TITULO_BACHILLER',
-        'LIBRETA_MILITAR',
-        'FOTO_CARNET',
-        'CERTIFICADO_MEDICO',
-        'CARNET_DISCAPACIDAD',
-        'COMPROBANTE_PAGO',
+        'INSCRIPCION',
+        'LICENCIA',
+        'PASANTIA',
+        'DESCUENTO',
+        'PAGO_INSCRIPCION',
+        'PAGO_TITULACION',
+        'PAGO_TRASLADO_INSTITUTO',
+        'PAGO_CAMBIO_CARRERA',
         'OTRO'
-    ) NOT NULL,
-    descripcion TEXT COMMENT 'Descripción adicional del documento',
-    
-    -- Archivo
-    nombre_archivo VARCHAR(255) NOT NULL,
-    ruta_archivo VARCHAR(500) NOT NULL COMMENT 'Ruta completa del archivo',
-    extension VARCHAR(10) COMMENT 'pdf, jpg, png, etc.',
+    ) NOT NULL COMMENT 'Tipo de documento: inscripción, licencia, pasantía, descuento, pagos (inscripción, titulación, traslado, cambio de carrera) u otro',
+    motivo_documento VARCHAR(200) COMMENT 'Motivo específico del documento (ej: licencia por enfermedad, descuento por promedio, etc.)',
+    tipo_referencia ENUM(
+        'licencias_solicitudes',
+        'estudiantes_becas',
+        'pasantias_asignaciones',
+        'inscripciones',
+        'pagos',
+        'otro'
+    ) COMMENT 'Tipo de referencia: indica a qué tabla pertenece el referencia_id (solo se usa cuando referencia_id no es NULL). Para pagos, referencia_id puede apuntar a registros de pago relacionados con estudiantes_datos_economicos.',
+    referencia_id INT COMMENT 'ID de referencia según tipo_referencia (ej: si tipo_referencia es licencias_solicitudes, entonces referencia_id es el id de esa tabla)',
+    descripcion TEXT COMMENT 'Descripción del documento',
+    nombre_archivo VARCHAR(255) NOT NULL COMMENT 'Nombre del archivo',
+    ruta_archivo VARCHAR(500) NOT NULL COMMENT 'Ruta del archivo',
+    extension VARCHAR(10) COMMENT 'Extensión del archivo',
     tamano_kb INT COMMENT 'Tamaño en kilobytes',
-    
-    -- Verificación
-    verificado BOOLEAN DEFAULT FALSE COMMENT 'Documento verificado por personal',
+    verificado BOOLEAN DEFAULT FALSE COMMENT 'Documento verificado',
     verificado_por INT COMMENT 'Usuario que verificó',
-    fecha_verificacion DATE,
-    observaciones_verificacion TEXT,
-    
-    -- Estado
-    estado ENUM('PENDIENTE', 'APROBADO', 'RECHAZADO', 'REQUERIDO') DEFAULT 'PENDIENTE',
-    motivo_rechazo TEXT,
+    fecha_verificacion DATE COMMENT 'Fecha de verificación',
+    observaciones_verificacion TEXT COMMENT 'Observaciones de verificación',
+    estado ENUM('PENDIENTE', 'APROBADO', 'RECHAZADO', 'REQUERIDO') DEFAULT 'PENDIENTE' COMMENT 'Estado del documento',
+    motivo_rechazo TEXT COMMENT 'Motivo de rechazo',
     
     -- Campos de auditoría y control (ESTÁNDAR)
     activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
@@ -279,25 +182,29 @@ CREATE TABLE documentos_estudiante (
     updated_by INT COMMENT 'Usuario que modificó',
     deleted_by INT COMMENT 'Usuario que eliminó',
     
-    -- Foreign Keys
-    FOREIGN KEY (estudiante_id) REFERENCES estudiantes(id) ON DELETE CASCADE,
+    FOREIGN KEY (estudiante_id) REFERENCES estudiantes(id) ON DELETE SET NULL,
     FOREIGN KEY (verificado_por) REFERENCES usuarios(id) ON DELETE SET NULL,
     FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
-    -- Índices
-    INDEX idx_activo (activo),
-    INDEX idx_deleted_at (deleted_at),
-    INDEX idx_estudiante_id (estudiante_id),
-    INDEX idx_tipo_documento (tipo_documento),
-    INDEX idx_estado (estado)
+    INDEX idx_estudiante_id (estudiante_id) COMMENT 'Búsqueda por estudiante',
+    INDEX idx_tipo_documento (tipo_documento) COMMENT 'Filtrado por tipo',
+    INDEX idx_tipo_referencia (tipo_referencia, referencia_id) COMMENT 'Búsqueda por tipo de referencia y ID',
+    INDEX idx_referencia (referencia_id, tipo_referencia) COMMENT 'Búsqueda por referencia',
+    INDEX idx_estado (estado) COMMENT 'Filtrado por estado',
+    INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
+    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
+    INDEX idx_estudiante_tipo (estudiante_id, tipo_documento, activo, deleted_at) COMMENT 'Búsqueda de documentos por estudiante y tipo',
+    INDEX idx_tipo_estado (tipo_documento, estado, activo, deleted_at) COMMENT 'Búsqueda por tipo y estado',
+    INDEX idx_verificado (verificado, estado, activo) COMMENT 'Búsqueda por documentos verificados',
+    INDEX idx_estado_activo (estado, activo, deleted_at) COMMENT 'Búsqueda por estado y activo'
     
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Documentos digitalizados de estudiantes';
+COMMENT='Documentos digitalizados de estudiantes: inscripción, licencias, pasantías, descuentos, pagos. Relación 1 a muchos (un estudiante puede tener muchos documentos de respaldo). Los pagos pueden ser: inscripción, titulación, traslado de instituto, cambio de carrera. Los documentos de pago están relacionados con estudiantes_datos_economicos.';
+
+SET FOREIGN_KEY_CHECKS = 1;
 
 -- ============================================
--- Continuará en parte 2...
+-- FIN DEL SCRIPT
 -- ============================================
-
-SELECT 'Módulo de estudiantes - Parte 1/2 creada (3 tablas)' as mensaje;

@@ -172,46 +172,9 @@ CREATE TABLE IF NOT EXISTS fichas_supervision (
 -- ============================================
 -- MÓDULO DE LICENCIAS ESTUDIANTILES
 -- ============================================
-
--- Tabla de Solicitudes de Licencias
-CREATE TABLE IF NOT EXISTS licencias_solicitudes (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    estudiante_id INT NOT NULL,
-    carrera_id INT NOT NULL,
-    curso VARCHAR(50),
-    fecha_solicitud DATE NOT NULL,
-    fecha_desde DATE NOT NULL,
-    fecha_hasta DATE NOT NULL,
-    total_dias INT NOT NULL,
-    motivo ENUM('ENFERMEDAD', 'TRABAJO', 'FAMILIAR', 'OTRO') NOT NULL,
-    detalle_motivo TEXT,
-    estado ENUM('PENDIENTE', 'APROBADA', 'RECHAZADA', 'CANCELADA') DEFAULT 'PENDIENTE',
-    fecha_decision DATE,
-    decidido_por INT, -- usuario_id que aprobó/rechazó
-    motivo_rechazo TEXT,
-    observaciones TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (estudiante_id) REFERENCES estudiantes(id),
-    FOREIGN KEY (carrera_id) REFERENCES carreras(id),
-    FOREIGN KEY (decidido_por) REFERENCES usuarios(id),
-    INDEX idx_estudiante (estudiante_id),
-    INDEX idx_estado (estado),
-    INDEX idx_fecha_solicitud (fecha_solicitud)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- Tabla de Documentos de Respaldo de Licencias
-CREATE TABLE IF NOT EXISTS licencias_documentos (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    licencia_id INT NOT NULL,
-    tipo_documento VARCHAR(100),
-    nombre_archivo VARCHAR(255),
-    ruta_archivo VARCHAR(255),
-    tamano_kb INT,
-    fecha_subida TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (licencia_id) REFERENCES licencias_solicitudes(id),
-    INDEX idx_licencia (licencia_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- NOTA: Ya está normalizado en → 06-estudiantes-parte2.sql
+-- - licencias_solicitudes (estructura mejorada)
+-- - licencias_documentos → Eliminada (integrada en documentos_estudiante con sistema polimórfico)
 
 -- ============================================
 -- MÓDULO DE HISTORIAL ACADÉMICO OFICIAL

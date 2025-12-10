@@ -1,6 +1,45 @@
-# Instituto INCOS - Backend
+# 🎓 Instituto INCOS - Backend
 
-Sistema de Gestión Académica del Instituto Comercial Superior (INCOS) Santa Cruz, Bolivia.
+Sistema de Gestión Académica del **Instituto Comercial Superior de la Nación INCOS Santa Cruz**, Bolivia.
+
+## 📋 Información del Instituto
+
+**Nombre Completo**: El Instituto Comercial Superior de la Nación INCOS Santa Cruz
+
+**Historia**:
+El Instituto Comercial Superior de la Nación INCOS Santa Cruz fue fundado el **2 de agosto de 1985** mediante la **Resolución Ministerial 746/1985**. Actualmente cuenta con la **R.M. 0426/2016**, ofertando inicialmente las Carreras de **Contaduría General** y **Secretariado Ejecutivo**. Posteriormente, en el año **1988**, se ampliaron las carreras de **Administración de Empresas** e **Informática**.
+
+**Ubicación**: 
+Calle Ñuflo de Chavez Nº 62, entre René Moreno y Calle Chuquisaca, dentro del centro histórico del municipio de **Santa Cruz de la Sierra**.
+
+**Horarios de Atención**:
+- **Turno Tarde**: Lunes a Viernes 14:00 - 16:30
+- **Turno Noche**: Lunes a Viernes 18:45 - 22:30
+- **Sábados**: 17:00 - 21:00
+
+**Carreras Técnicas** (Nivel Técnico Superior):
+Actualmente el instituto ofrece **tres carreras**:
+1. **Sistemas Informáticos**
+2. **Administración de Empresas**
+3. **Contaduría General**
+
+**Naturaleza Institucional**:
+Somos una **Institución de Educación Superior Estatal**, abierta al conjunto de la sociedad, establecida con plenas facultades legales dentro del sistema Educativo Nacional.
+
+---
+
+## 👥 Equipo de Desarrollo
+
+**Jefe del Proyecto**: Carlos Ferrufino  
+🔗 GitHub: [@agrocom-developer](https://github.com/agrocom-developer)
+
+**Desarrollador Frontend**: Nelson Farel  
+🔗 GitHub: [@hfarel](https://github.com/hfarel)
+
+**Desarrollador Backend**: Miguel Escobar  
+🔗 GitHub: [@Angello-27](https://github.com/Angello-27)
+
+---
 
 ## 🏗️ Arquitectura
 
@@ -78,8 +117,7 @@ Los scripts SQL están organizados en:
 
 ```
 database/
-├── 00-config/              # Configuración de MySQL
-├── 01-schemas/             # DDL (CREATE TABLE)
+├── 01-schemas/             # DDL (CREATE TABLE) - Scripts de schema principales
 ├── 02-seeders/             # Datos iniciales
 ├── 03-views/               # Vistas de BD
 ├── 04-stored-procedures/   # Procedimientos almacenados
@@ -89,14 +127,69 @@ database/
 └── 08-rollback/            # Scripts de rollback
 ```
 
+### Scripts de Schema (Orden de Ejecución)
+
+Los scripts principales están en `database/01-schemas/` y deben ejecutarse en este orden:
+
+1. **`01-base.sql`** - Configuración inicial y estándares
+2. **`02-catalogos-geograficos.sql`** - Catálogos geográficos (países, departamentos, provincias, municipios)
+3. **`03-catalogos-referencia.sql`** - Catálogos de referencia (estados civiles, idiomas, tipos de discapacidad, etc.)
+4. **`04-sistema-seguridad.sql`** - Sistema de autenticación y autorización (usuarios, roles, permisos)
+5. **`05-estructura-academica-parte1.sql`** - Carreras, gestiones, periodos, materias, plan de estudios, prerrequisitos
+6. **`05-estructura-academica-parte2.sql`** - Docentes, asignaciones, horarios, aulas, turnos
+7. **`06-estudiantes-parte1.sql`** - Estudiantes, datos académicos, documentos
+8. **`06-estudiantes-parte2.sql`** - Datos económicos, becas, descuentos, contactos de emergencia
+9. **`07-inscripciones-parte1.sql`** - Inscripciones principales por gestión
+10. **`07-inscripciones-parte2.sql`** - Inscripciones a materias, calificaciones, asistencias
+11. **`10-pagos.sql`** - Sistema de pagos (aranceles, detalle de pagos)
+12. **`11-modulos-operativos-parte1.sql`** - Pasantías (empresas, asignaciones, evaluaciones), Supervisión docente
+13. **`11-modulos-operativos-parte2.sql`** - Licencias estudiantiles, Historial académico oficial (libros, folios)
+14. **`12-indices.sql`** - Índices de optimización
+15. **`12-sincronizacion.sql`** - Sistema de sincronización con sistema nacional
+16. **`13-indices-optimizacion.sql`** - Índices adicionales de optimización
+
+### Características de la Base de Datos
+
+✅ **Normalización 3FN**: Todas las tablas siguen tercera forma normal  
+✅ **Soft Delete**: Todas las tablas tienen `deleted_at` para eliminación lógica  
+✅ **Auditoría Completa**: Campos estándar `created_at`, `updated_at`, `created_by`, `updated_by`, `deleted_by`  
+✅ **ON DELETE SET NULL**: Todas las foreign keys usan `ON DELETE SET NULL`  
+✅ **Sin UNIQUE**: Se eliminaron restricciones UNIQUE para permitir flexibilidad  
+✅ **Campos Generados**: Uso de `GENERATED ALWAYS AS` para campos calculados  
+✅ **Índices Optimizados**: Índices compuestos para consultas frecuentes  
+
+### Estándares de Tablas
+
+Todas las tablas incluyen los siguientes campos de auditoría y control:
+- `id INT AUTO_INCREMENT PRIMARY KEY`
+- `activo BOOLEAN DEFAULT TRUE`
+- `created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`
+- `updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`
+- `deleted_at TIMESTAMP NULL DEFAULT NULL`
+- `created_by INT` (FK a usuarios)
+- `updated_by INT` (FK a usuarios)
+- `deleted_by INT` (FK a usuarios)
+
 ### Ejecutar Schema Completo
 
 ```bash
-# Opción 1: Script por script
-mysql -u root -p < database/00-config/database-config.sql
-mysql -u root -p < database/01-schemas/01-base.sql
-mysql -u root -p < database/01-schemas/02-catalogos-geograficos.sql
-# ... etc
+# Opción 1: Script por script (recomendado para primera vez)
+mysql -u root -p instituto_incos < database/01-schemas/01-base.sql
+mysql -u root -p instituto_incos < database/01-schemas/02-catalogos-geograficos.sql
+mysql -u root -p instituto_incos < database/01-schemas/03-catalogos-referencia.sql
+mysql -u root -p instituto_incos < database/01-schemas/04-sistema-seguridad.sql
+mysql -u root -p instituto_incos < database/01-schemas/05-estructura-academica-parte1.sql
+mysql -u root -p instituto_incos < database/01-schemas/05-estructura-academica-parte2.sql
+mysql -u root -p instituto_incos < database/01-schemas/06-estudiantes-parte1.sql
+mysql -u root -p instituto_incos < database/01-schemas/06-estudiantes-parte2.sql
+mysql -u root -p instituto_incos < database/01-schemas/07-inscripciones-parte1.sql
+mysql -u root -p instituto_incos < database/01-schemas/07-inscripciones-parte2.sql
+mysql -u root -p instituto_incos < database/01-schemas/10-pagos.sql
+mysql -u root -p instituto_incos < database/01-schemas/11-modulos-operativos-parte1.sql
+mysql -u root -p instituto_incos < database/01-schemas/11-modulos-operativos-parte2.sql
+mysql -u root -p instituto_incos < database/01-schemas/12-indices.sql
+mysql -u root -p instituto_incos < database/01-schemas/12-sincronizacion.sql
+mysql -u root -p instituto_incos < database/01-schemas/13-indices-optimizacion.sql
 
 # Opción 2: Script maestro (cuando esté disponible)
 npm run db:setup
@@ -206,8 +299,11 @@ Uso privado - Instituto INCOS © 2025
 
 ## 👥 Equipo
 
-- Desarrollo: Equipo Técnico INCOS
-- Documentación: Ver `/docs`
+**Jefe del Proyecto**: Carlos Ferrufino ([@agrocom-developer](https://github.com/agrocom-developer))  
+**Desarrollador Frontend**: Nelson Farel ([@hfarel](https://github.com/hfarel))  
+**Desarrollador Backend**: Miguel Escobar ([@Angello-27](https://github.com/Angello-27))
+
+Para más información sobre el equipo y la documentación, ver `/docs`
 
 ## 📞 Soporte
 

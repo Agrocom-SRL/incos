@@ -1,15 +1,15 @@
 # DOCUMENTACIÓN TÉCNICA COMPLETA
 ## Sistema de Gestión Académica - Instituto INCOS Santa Cruz
 
-**Versión:** 1.0  
-**Fecha:** Diciembre 2025  
+**Versión:** 1.1  
+**Fecha:** Enero 2025  
 **Estado:** Documentación Base Consolidada
 
 ---
 
 ## 📚 ÍNDICE DE DOCUMENTOS
 
-### 📋 DOCUMENTOS GENERADOS (13/13)
+### 📋 DOCUMENTOS GENERADOS (15/15)
 
 #### 1. Documentación de Proyecto y Requerimientos
 
@@ -42,7 +42,14 @@
 | 11 | [Configuración de Entornos](11-configuracion-entornos.md) | Dev, Test, Prod: instalación, deployment, backups, troubleshooting | ~55 | ✅ |
 | 12 | [Gestión de Errores y Logging](12-gestion-errores.md) | Jerarquía de errores, Winston, auditoría, códigos de error | ~45 | ✅ |
 
-#### 5. Referencias
+#### 5. Implementación Técnica
+
+| # | Documento | Descripción | Páginas | Estado |
+|---|-----------|-------------|---------|--------|
+| 14 | [Frontend](14-frontend.md) | Arquitectura, tecnologías y estructura del frontend (React, Vite, Ant Design, Atomic Design) | ~60 | ✅ |
+| 15 | [Backend](15-backend.md) | Arquitectura, tecnologías y estructura del backend (Node.js, Express, Sequelize, Clean Architecture) | ~65 | ✅ |
+
+#### 6. Referencias
 
 | # | Documento | Descripción | Páginas | Estado |
 |---|-----------|-------------|---------|--------|
@@ -56,26 +63,27 @@
 
 | Métrica | Cantidad |
 |---------|----------|
-| **Total de Documentos** | 13 |
-| **Total de Páginas** | ~690 páginas |
-| **Total de Líneas** | ~13,000 líneas |
-| **Tamaño Total** | ~800 KB |
+| **Total de Documentos** | 15 |
+| **Total de Páginas** | ~815 páginas |
+| **Total de Líneas** | ~16,000 líneas |
+| **Tamaño Total** | ~950 KB |
 | **Requerimientos Funcionales** | 60 RFs |
 | **Requerimientos No Funcionales** | 37 RNFs |
 | **Reglas de Negocio** | 80+ RNs |
 | **Endpoints API** | 80+ endpoints |
-| **Tablas de Base de Datos** | 58 tablas |
+| **Tablas de Base de Datos** | 40+ tablas |
 | **Casos de Uso** | 40+ casos de uso |
 | **Códigos de Error** | 30+ códigos |
 
 ### Distribución por Categoría
 
 ```
-Proyecto y Requerimientos:  120 páginas (17%)
-Arquitectura y Diseño:      260 páginas (38%)
-Casos de Uso y Reglas:      125 páginas (18%)
-Estándares y Config:        150 páginas (22%)
-Referencias:                 35 páginas (5%)
+Proyecto y Requerimientos:  120 páginas (15%)
+Arquitectura y Diseño:      260 páginas (32%)
+Casos de Uso y Reglas:      125 páginas (15%)
+Estándares y Config:        150 páginas (18%)
+Implementación Técnica:     125 páginas (15%)
+Referencias:                 35 páginas (4%)
 ```
 
 ---
@@ -84,9 +92,10 @@ Referencias:                 35 páginas (5%)
 
 ### Contexto
 
-**Institución:** Instituto Comercial Superior (INCOS) - Santa Cruz, Bolivia  
-**Fundación:** 1985  
-**Resolución Ministerial:** R.M. 0426/2016  
+**Institución:** El Instituto Comercial Superior de la Nación INCOS Santa Cruz  
+**Fundación:** 2 de agosto de 1985 (R.M. 746/1985)  
+**Resolución Ministerial Actual:** R.M. 0426/2016  
+**Ubicación:** Calle Ñuflo de Chavez Nº 62, entre René Moreno y Calle Chuquisaca, Santa Cruz de la Sierra  
 
 ### Datos Institucionales
 
@@ -133,14 +142,14 @@ Referencias:                 35 páginas (5%)
 - **Testing:** Jest
 
 #### Frontend
-- **Framework:** React 18.x
-- **Build Tool:** Vite
-- **UI Framework:** Tailwind CSS
-- **State Management:** Context API
-- **Routing:** React Router 6.x
+- **Framework:** React 19.x
+- **Build Tool:** Vite 7.x
+- **UI Framework:** Ant Design 6.x
+- **State Management:** Zustand (global) + TanStack React Query (server state)
+- **Routing:** React Router DOM 7.x
 - **HTTP Client:** Axios
-- **Forms:** React Hook Form
-- **Tables:** TanStack Table
+- **Forms:** React Hook Form + Yup
+- **Arquitectura:** Clean Architecture + Atomic Design
 
 #### DevOps
 - **Containerización:** Docker + Docker Compose
@@ -300,15 +309,26 @@ Referencias:                 35 páginas (5%)
 
 ## 📖 CÓMO USAR ESTA DOCUMENTACIÓN
 
-### Para Desarrolladores
+### Para Desarrolladores Frontend
 
 1. **Comenzar con:** `01-vision-y-alcance.md` (contexto general)
-2. **Entender funcionalidades:** `02-requerimientos-funcionales.md`
-3. **Arquitectura:** `04-arquitectura-sistema.md`
-4. **Base de Datos:** `05-modelo-datos.md`
-5. **Implementar:** `06-diseno-api.md` + `09-estandares-codigo.md`
-6. **Desplegar:** `11-configuracion-entornos.md`
-7. **Debugging:** `12-gestion-errores.md`
+2. **Arquitectura Frontend:** `14-frontend.md` (React, Vite, Ant Design, Atomic Design)
+3. **Arquitectura General:** `04-arquitectura-sistema.md`
+4. **Base de Datos:** `05-modelo-datos.md` (para entender entidades)
+5. **API:** `06-diseno-api.md` (contratos de endpoints)
+6. **Estándares:** `09-estandares-codigo.md`
+
+### Para Desarrolladores Backend
+
+1. **Comenzar con:** `01-vision-y-alcance.md` (contexto general)
+2. **Arquitectura Backend:** `15-backend.md` (Node.js, Express, Clean Architecture)
+3. **Arquitectura General:** `04-arquitectura-sistema.md`
+4. **Base de Datos:** `05-modelo-datos.md` (estructura completa)
+5. **API:** `06-diseno-api.md` (endpoints a implementar)
+6. **Reglas de Negocio:** `08-reglas-negocio.md`
+7. **Estándares:** `09-estandares-codigo.md`
+8. **Configuración:** `11-configuracion-entornos.md`
+9. **Errores:** `12-gestion-errores.md`
 
 ### Para Analistas de Negocio
 
@@ -319,10 +339,12 @@ Referencias:                 35 páginas (5%)
 
 ### Para Arquitectos
 
-1. `04-arquitectura-sistema.md` - Decisiones arquitectónicas
-2. `05-modelo-datos.md` - Diseño de BD
-3. `03-requerimientos-no-funcionales.md` - Requisitos de calidad
-4. `06-diseno-api.md` - Contratos de integración
+1. `04-arquitectura-sistema.md` - Decisiones arquitectónicas generales
+2. `14-frontend.md` - Arquitectura y diseño del frontend
+3. `15-backend.md` - Arquitectura y diseño del backend
+4. `05-modelo-datos.md` - Diseño de BD
+5. `03-requerimientos-no-funcionales.md` - Requisitos de calidad
+6. `06-diseno-api.md` - Contratos de integración
 
 ### Para DevOps
 
@@ -360,7 +382,7 @@ Para consultar definiciones técnicas, ver: **[13-glosario-terminos.md](13-glosa
 Sistema de Gestión Académica - Instituto INCOS
 
 **Documentación:**  
-Versión 1.0 - Diciembre 2025
+Versión 1.1 - Enero 2025
 
 **Repositorio:**  
 GitHub: `instituto-incos/sistema-gestion-academica`
@@ -412,20 +434,22 @@ GitHub: `instituto-incos/sistema-gestion-academica`
 
 ## 🎉 ESTADO FINAL
 
-✅ **DOCUMENTACIÓN COMPLETA - 13/13 DOCUMENTOS**
+✅ **DOCUMENTACIÓN COMPLETA - 15/15 DOCUMENTOS**
 
-**Total generado:** ~13,000 líneas de documentación técnica profesional
+**Total generado:** ~16,000 líneas de documentación técnica profesional
 
 **Cobertura:**
 - ✅ Visión y Alcance
 - ✅ Requerimientos (Funcionales + No Funcionales)
 - ✅ Arquitectura Completa
-- ✅ Modelo de Datos (58 tablas)
+- ✅ Modelo de Datos (40+ tablas)
 - ✅ Diseño de API (80+ endpoints)
 - ✅ Casos de Uso y Reglas de Negocio
 - ✅ Estándares de Código
 - ✅ Configuración de Entornos
 - ✅ Gestión de Errores
+- ✅ **Frontend** (React, Vite, Ant Design, Atomic Design)
+- ✅ **Backend** (Node.js, Express, Sequelize, Clean Architecture)
 - ✅ Glosario Completo
 
 **Listo para:** Comenzar desarrollo ✨

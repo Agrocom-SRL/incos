@@ -11,11 +11,14 @@
 
 ### 1.1 Datos del Instituto
 
-**Nombre Oficial:** Instituto de Capacitación de Obreros en Soldadura - INCOS  
-**Ubicación:** Santa Cruz de la Sierra, Departamento de Santa Cruz, Bolivia  
-**Fundación:** 1985  
-**Resolución Ministerial:** R.M. 0426/2016  
-**Tipo de Institución:** Instituto Técnico de Formación Profesional
+**Nombre Completo:** El Instituto Comercial Superior de la Nación INCOS Santa Cruz  
+**Ubicación:** Calle Ñuflo de Chavez Nº 62, entre René Moreno y Calle Chuquisaca, dentro del centro histórico del municipio de Santa Cruz de la Sierra, Bolivia  
+**Fundación:** 2 de agosto de 1985 mediante la Resolución Ministerial 746/1985  
+**Resolución Ministerial Actual:** R.M. 0426/2016  
+**Tipo de Institución:** Institución de Educación Superior Estatal, abierta al conjunto de la sociedad, establecida con plenas facultades legales dentro del sistema Educativo Nacional
+
+**Historia:**
+El instituto fue fundado ofertando inicialmente las Carreras de **Contaduría General** y **Secretariado Ejecutivo**. Posteriormente, en el año **1988**, se ampliaron las carreras de **Administración de Empresas** e **Informática**.
 
 ### 1.2 Personal Directivo
 
@@ -27,24 +30,24 @@
 
 ### 1.3 Estructura Académica Actual
 
-**Carreras Técnicas en Operación:**
+**Carreras Técnicas en Operación (Nivel Técnico Superior):**
 
-1. **Contaduría General**
-   - Estudiantes activos: ~280
-   - Duración: 4 semestres
-   - Turnos: Mañana, Tarde, Noche
+1. **Sistemas Informáticos**
+   - Estudiantes activos: ~145
+   - Duración: Variable (definida en plan de estudios)
+   - Turnos: Tarde (14:00-16:30), Noche (18:45-22:30), Sábados (17:00-21:00)
    - Modalidad: Presencial
 
 2. **Administración de Empresas**
    - Estudiantes activos: ~195
-   - Duración: 4 semestres
-   - Turnos: Mañana, Tarde, Noche
+   - Duración: Variable (definida en plan de estudios)
+   - Turnos: Tarde (14:00-16:30), Noche (18:45-22:30), Sábados (17:00-21:00)
    - Modalidad: Presencial
 
-3. **Sistemas Informáticos**
-   - Estudiantes activos: ~145
-   - Duración: 4 semestres
-   - Turnos: Mañana, Tarde, Noche
+3. **Contaduría General**
+   - Estudiantes activos: ~280
+   - Duración: Variable (definida en plan de estudios)
+   - Turnos: Tarde (14:00-16:30), Noche (18:45-22:30), Sábados (17:00-21:00)
    - Modalidad: Presencial
 
 **Totales:**

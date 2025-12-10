@@ -222,15 +222,11 @@ CREATE TABLE personal (
     estado_civil_id INT COMMENT 'Estado civil',
     
     -- Contacto
+    email_personal VARCHAR(150) COMMENT 'Email personal (como referencias de los empleados)',
     telefono VARCHAR(20) COMMENT 'Teléfono fijo',
     celular VARCHAR(20) COMMENT 'Teléfono celular',
     direccion TEXT COMMENT 'Dirección completa',
     municipio_id INT COMMENT 'Municipio de residencia (FK)',
-    
-    -- Datos laborales básicos
-    fecha_nombramiento DATE COMMENT 'Fecha de nombramiento/contratación',
-    resolucion_nombramiento VARCHAR(100) COMMENT 'Resolución o número de contrato',
-    observaciones TEXT COMMENT 'Observaciones adicionales',
     
     -- Campos de auditoría y control (ESTÁNDAR)
     activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
@@ -277,6 +273,8 @@ CREATE TABLE rectores (
     anio_egreso INT COMMENT 'Año de egreso',
     
     -- Datos específicos del cargo
+    fecha_nombramiento DATE COMMENT 'Fecha de nombramiento/contratación',
+    resolucion_nombramiento VARCHAR(100) COMMENT 'Resolución o número de contrato',
     periodo_mandato_inicio DATE COMMENT 'Inicio del período de mandato',
     periodo_mandato_fin DATE NULL COMMENT 'Fin del período de mandato (NULL = mandato indefinido)',
     
@@ -299,6 +297,7 @@ CREATE TABLE directores (
     -- Datos específicos del cargo
     tipo ENUM('ACADEMICO', 'ADMINISTRATIVO') NOT NULL COMMENT 'Tipo de director',
     fecha_nombramiento DATE COMMENT 'Fecha de nombramiento como director (cuando asumió el cargo)',
+    resolucion_nombramiento VARCHAR(100) COMMENT 'Resolución o número de contrato',
     
     -- Información académica (solo para cargos superiores)
     titulo_profesional VARCHAR(200) COMMENT 'Título profesional o técnico',

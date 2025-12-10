@@ -1,7 +1,7 @@
 -- ============================================
 -- CATÁLOGOS DE REFERENCIA
 -- Sistema de Gestión Académica - Instituto INCOS
--- 4 Tablas: idiomas, estados_civiles, tipos_discapacidad, turnos_horarios
+-- 5 Tablas: idiomas, estados_civiles, tipos_discapacidad, turnos_horarios, tipos_parentesco
 -- ============================================
 
 USE instituto_incos;
@@ -92,6 +92,34 @@ CREATE TABLE tipos_discapacidad (
     
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Tipos de discapacidad (para estadísticas de estudiantes)';
+
+-- ============================================
+-- TABLA: tipos_parentesco
+-- ============================================
+
+DROP TABLE IF EXISTS tipos_parentesco;
+
+CREATE TABLE tipos_parentesco (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(50) NOT NULL COMMENT 'Padre, Madre, Abuelo(a), Tío(a), Hermano(a), Tutor(a), Apoderado(a), Orfanato, Otro',
+    descripcion TEXT COMMENT 'Descripción del tipo de parentesco',
+    
+    -- Campos de auditoría y control (ESTÁNDAR)
+    activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
+    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
+    created_by INT COMMENT 'Usuario que creó',
+    updated_by INT COMMENT 'Usuario que modificó',
+    deleted_by INT COMMENT 'Usuario que eliminó',
+    
+    -- Índices esenciales
+    INDEX idx_nombre (nombre) COMMENT 'Búsqueda por nombre',
+    INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
+    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete'
+    
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+COMMENT='Tipos de parentesco para apoderados/tutores de estudiantes';
 
 SET FOREIGN_KEY_CHECKS = 1;
 

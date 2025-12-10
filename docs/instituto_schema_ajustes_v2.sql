@@ -41,84 +41,11 @@ ADD COLUMN observaciones_nivelacion TEXT AFTER gestion_aprobacion;
 -- ============================================
 -- NUEVAS TABLAS
 -- ============================================
-
--- Tabla de Becas y Descuentos
-CREATE TABLE IF NOT EXISTS becas_descuentos (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    codigo VARCHAR(20) NOT NULL UNIQUE,
-    nombre VARCHAR(100) NOT NULL,
-    descripcion TEXT,
-    tipo ENUM('BECA_COMPLETA', 'BECA_PARCIAL', 'DESCUENTO', 'ESPECIAL') NOT NULL,
-    porcentaje_descuento DECIMAL(5,2) DEFAULT 0, -- 100.00 = 100%, 25.00 = 25%
-    cantidad_cupos INT DEFAULT NULL, -- NULL = sin límite
-    cupos_disponibles INT DEFAULT NULL,
-    cupos_usados INT DEFAULT 0,
-    gestion_id INT,
-    requiere_documentacion BOOLEAN DEFAULT FALSE,
-    requisitos TEXT, -- JSON con requisitos específicos
-    activo BOOLEAN DEFAULT TRUE,
-    observaciones TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (gestion_id) REFERENCES gestiones(id),
-    INDEX idx_activo (activo),
-    INDEX idx_tipo (tipo)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- Tabla Relacional: Estudiantes - Becas
-CREATE TABLE IF NOT EXISTS estudiantes_becas (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    estudiante_id INT NOT NULL,
-    beca_id INT NOT NULL,
-    gestion_id INT NOT NULL,
-    fecha_asignacion DATE NOT NULL,
-    fecha_vigencia_desde DATE NOT NULL,
-    fecha_vigencia_hasta DATE,
-    estado ENUM('ACTIVA', 'SUSPENDIDA', 'FINALIZADA') DEFAULT 'ACTIVA',
-    motivo_asignacion TEXT,
-    documento_respaldo VARCHAR(255), -- Ruta al documento que justifica la beca
-    aprobado_por INT, -- usuario_id que aprobó
-    observaciones TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (estudiante_id) REFERENCES estudiantes(id),
-    FOREIGN KEY (beca_id) REFERENCES becas_descuentos(id),
-    FOREIGN KEY (gestion_id) REFERENCES gestiones(id),
-    INDEX idx_estudiante_activa (estudiante_id, estado),
-    INDEX idx_gestion (gestion_id),
-    UNIQUE KEY unique_estudiante_beca_gestion (estudiante_id, beca_id, gestion_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- Tabla de Documentos de Estudiante
-CREATE TABLE IF NOT EXISTS documentos_estudiante (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    estudiante_id INT NOT NULL,
-    tipo_documento ENUM(
-        'CARNET_IDENTIDAD',
-        'DIPLOMA_BACHILLER',
-        'CERTIFICADO_NACIMIENTO',
-        'FOTOGRAFIAS',
-        'COMPROBANTE_PAGO',
-        'CERTIFICADO_NOTAS',
-        'CARTA_COMPROMISO',
-        'OTROS'
-    ) NOT NULL,
-    nombre_documento VARCHAR(200),
-    estado ENUM('PENDIENTE', 'ENTREGADO', 'FALTA', 'EN_REVISION', 'APROBADO', 'RECHAZADO') DEFAULT 'PENDIENTE',
-    ruta_archivo VARCHAR(255),
-    fecha_entrega DATE,
-    fecha_verificacion DATE,
-    verificado_por INT, -- usuario_id
-    motivo_rechazo TEXT,
-    observaciones TEXT,
-    es_obligatorio BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (estudiante_id) REFERENCES estudiantes(id),
-    INDEX idx_estudiante (estudiante_id),
-    INDEX idx_estado (estado),
-    INDEX idx_obligatorio (es_obligatorio, estado)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- NOTA: Estas tablas ya están normalizadas en los scripts actuales:
+-- - becas_descuentos, estudiantes_becas → 06-estudiantes-parte2.sql
+-- - documentos_estudiante → 06-estudiantes-parte1.sql
+-- - historial_nivelaciones → 07-inscripciones-parte2.sql
+-- - turnos_horarios → Convertido en "turnos" → 05-estructura-academica-parte2.sql
 
 -- Tabla de Historial de Nivelaciones
 CREATE TABLE IF NOT EXISTS historial_nivelaciones (
@@ -147,22 +74,11 @@ CREATE TABLE IF NOT EXISTS historial_nivelaciones (
     INDEX idx_programada (fecha_programada)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Tabla de Turnos y Horarios
-CREATE TABLE IF NOT EXISTS turnos_horarios (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    codigo VARCHAR(20) NOT NULL UNIQUE,
-    nombre VARCHAR(50) NOT NULL,
-    hora_inicio TIME NOT NULL,
-    hora_fin TIME NOT NULL,
-    activo BOOLEAN DEFAULT TRUE,
-    observaciones TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    UNIQUE KEY unique_turno (nombre),
-    INDEX idx_activo (activo)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 -- Tabla de Estados Especiales de Estudiantes
+-- ⚠️ PENDIENTE DE NORMALIZAR
+-- Esta tabla aún NO está normalizada en los scripts actuales
+-- Falta agregar: deleted_at, created_by, updated_by, deleted_by
+-- Falta: Foreign keys con ON DELETE SET NULL
 CREATE TABLE IF NOT EXISTS estados_especiales_estudiante (
     id INT AUTO_INCREMENT PRIMARY KEY,
     estudiante_id INT NOT NULL,
