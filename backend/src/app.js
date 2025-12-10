@@ -1,14 +1,15 @@
-const express = require('express');
-const cors = require('cors');
-const helmet = require('helmet');
-const compression = require('compression');
-const cookieParser = require('cookie-parser');
-require('express-async-errors');
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import compression from 'compression';
+import cookieParser from 'cookie-parser';
+import 'express-async-errors';
 
-const logger = require('./config/logger');
-const httpLogger = require('./presentation/middleware/logger.middleware');
-const errorHandler = require('./presentation/middleware/errorHandler.middleware');
-const notFoundHandler = require('./presentation/middleware/notFound.middleware');
+import { logger } from './config/logger.js';
+import httpLogger from './presentation/middleware/logger.middleware.js';
+import errorHandler from './presentation/middleware/errorHandler.middleware.js';
+import notFoundHandler from './presentation/middleware/notFound.middleware.js';
+import routes from './presentation/routes/index.js';
 
 const app = express();
 
@@ -20,10 +21,12 @@ const app = express();
 app.use(helmet());
 
 // CORS
-app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+    credentials: true,
+  })
+);
 
 // Body parsing
 app.use(express.json({ limit: '10mb' }));
@@ -51,12 +54,12 @@ app.get('/health', (req, res) => {
     status: 'OK',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
-    environment: process.env.NODE_ENV
+    environment: process.env.NODE_ENV,
   });
 });
 
 // API v1 routes
-app.use('/api/v1', require('./presentation/routes'));
+app.use('/api/v1', routes);
 
 // Servir uploads (solo en desarrollo)
 if (process.env.NODE_ENV === 'development') {
@@ -67,7 +70,7 @@ if (process.env.NODE_ENV === 'development') {
 app.get('/api-docs', (req, res) => {
   res.json({
     message: 'Documentación API en construcción',
-    version: '1.0.0'
+    version: '1.0.0',
   });
 });
 
@@ -81,4 +84,4 @@ app.use(notFoundHandler);
 // Error handler global
 app.use(errorHandler);
 
-module.exports = app;
+export default app;

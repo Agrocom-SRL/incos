@@ -1,12 +1,12 @@
-require('dotenv').config();
-const app = require('./app');
-const logger = require('./config/logger');
+import 'dotenv/config';
+import app from './app.js';
+import { logger } from './config/logger.js';
 
 const PORT = process.env.PORT || 3000;
 
 const server = app.listen(PORT, () => {
   logger.info(`🚀 Servidor corriendo en puerto ${PORT}`);
-  logger.info(`📝 Entorno: ${process.env.NODE_ENV}`);
+  logger.info(`📝 Entorno: ${process.env.NODE_ENV || 'development'}`);
   logger.info(`🔗 API: http://localhost:${PORT}/api/v1`);
   logger.info(`📚 Docs: http://localhost:${PORT}/api-docs`);
 });
@@ -27,4 +27,4 @@ process.on('SIGTERM', () => {
   });
 });
 
-module.exports = server;
+export default server;

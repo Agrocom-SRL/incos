@@ -3,10 +3,12 @@ function notFoundHandler(req, res) {
     success: false,
     error: {
       code: 'NOT_FOUND',
-      message: `Ruta ${req.originalUrl} no encontrada`
+      message: `Ruta ${req.originalUrl} no encontrada`,
     },
-    timestamp: new Date().toISOString()
+    meta: {
+      timestamp: new Date().toISOString(),
+    },
   });
 }
 
-module.exports = notFoundHandler;
+export default notFoundHandler;

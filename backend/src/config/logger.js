@@ -1,8 +1,12 @@
-const winston = require('winston');
-const DailyRotateFile = require('winston-daily-rotate-file');
-const path = require('path');
+import winston from 'winston';
+import DailyRotateFile from 'winston-daily-rotate-file';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-const logDir = process.env.LOG_DIR || 'logs';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const logDir = process.env.LOG_DIR || path.join(__dirname, '../../logs');
 
 // Niveles de log personalizados
 const levels = {
@@ -10,7 +14,7 @@ const levels = {
   warn: 1,
   info: 2,
   http: 3,
-  debug: 4
+  debug: 4,
 };
 
 // Colores para consola
@@ -19,7 +23,7 @@ const colors = {
   warn: 'yellow',
   info: 'green',
   http: 'magenta',
-  debug: 'blue'
+  debug: 'blue',
 };
 
 winston.addColors(colors);
@@ -35,9 +39,7 @@ const logFormat = winston.format.combine(
 const consoleFormat = winston.format.combine(
   winston.format.colorize({ all: true }),
   winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-  winston.format.printf(
-    (info) => `${info.timestamp} ${info.level}: ${info.message}`
-  )
+  winston.format.printf((info) => `${info.timestamp} ${info.level}: ${info.message}`)
 );
 
 // Transports
@@ -45,7 +47,7 @@ const transports = [
   // Consola
   new winston.transports.Console({
     format: consoleFormat,
-    level: process.env.NODE_ENV === 'production' ? 'info' : 'debug'
+    level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
   }),
 
   // Archivo de errores (rotación diaria)
@@ -55,7 +57,7 @@ const transports = [
     level: 'error',
     format: logFormat,
     maxSize: '50m',
-    maxFiles: '30d'
+    maxFiles: '30d',
   }),
 
   // Archivo general (rotación diaria)
@@ -64,22 +66,22 @@ const transports = [
     datePattern: 'YYYY-MM-DD',
     format: logFormat,
     maxSize: '50m',
-    maxFiles: '30d'
-  })
+    maxFiles: '30d',
+  }),
 ];
 
 // Logger principal
-const logger = winston.createLogger({
+export const logger = winston.createLogger({
   levels,
   level: process.env.LOG_LEVEL || 'info',
   format: logFormat,
   transports,
-  exitOnError: false
+  exitOnError: false,
 });
 
 // Stream para Morgan
 logger.stream = {
-  write: (message) => logger.http(message.trim())
+  write: (message) => logger.http(message.trim()),
 };
 
-module.exports = logger;
+export default logger;

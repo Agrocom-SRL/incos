@@ -21,6 +21,7 @@ CREATE TABLE estudiantes (
     
     -- Datos personales básicos
     ci VARCHAR(20) NOT NULL COMMENT 'Cédula de identidad',
+    expedicion VARCHAR(5) NOT NULL COMMENT 'Expedición del CI (SC, LP, CB, etc.)',
     nombres VARCHAR(150) NOT NULL COMMENT 'Nombres completos',
     apellido_paterno VARCHAR(100) NOT NULL COMMENT 'Apellido paterno',
     apellido_materno VARCHAR(100) COMMENT 'Apellido materno',
@@ -70,7 +71,7 @@ CREATE TABLE estudiantes (
     INDEX idx_codigo_estudiante (codigo_estudiante) COMMENT 'Búsqueda por código',
     INDEX idx_ci_expedicion (ci, expedicion) COMMENT 'Búsqueda por CI y expedición',
     INDEX idx_usuario_id (usuario_id) COMMENT 'Búsqueda por usuario',
-    INDEX idx_email (email) COMMENT 'Búsqueda por email',
+    INDEX idx_email_personal (email_personal) COMMENT 'Búsqueda por email personal',
     INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
     INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
     INDEX idx_apellidos (apellido_paterno, apellido_materno) COMMENT 'Búsqueda por apellidos',

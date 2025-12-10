@@ -1,4 +1,4 @@
-const logger = require('../../config/logger');
+import { logger } from '../../config/logger.js';
 
 function errorHandler(err, req, res, next) {
   // Log del error
@@ -8,36 +8,44 @@ function errorHandler(err, req, res, next) {
     url: req.originalUrl,
     method: req.method,
     ip: req.ip,
-    userId: req.user?.id
+    userId: req.user?.id,
   });
 
-  // Error operacional conocido
-  if (err.statusCode && err.statusCode < 500) {
+  // Error operacional conocido (AppError)
+  if (err.isOperational && err.statusCode < 500) {
     return res.status(err.statusCode).json({
       success: false,
       error: {
         code: err.code || 'ERROR',
-        message: err.message
+        message: err.message,
+        ...(err.details && { details: err.details }),
       },
-      timestamp: new Date().toISOString()
+      meta: {
+        timestamp: new Date().toISOString(),
+        requestId: req.id, // Si se implementa request ID tracking
+      },
     });
   }
 
   // Error inesperado
-  const statusCode = 500;
-  const message = process.env.NODE_ENV === 'production'
-    ? 'Error interno del servidor'
-    : err.message;
+  const statusCode = err.statusCode || 500;
+  const message =
+    process.env.NODE_ENV === 'production'
+      ? 'Error interno del servidor'
+      : err.message;
 
   res.status(statusCode).json({
     success: false,
     error: {
-      code: 'INTERNAL_SERVER_ERROR',
+      code: err.code || 'INTERNAL_SERVER_ERROR',
       message,
-      ...(process.env.NODE_ENV !== 'production' && { stack: err.stack })
+      ...(process.env.NODE_ENV !== 'production' && { stack: err.stack }),
     },
-    timestamp: new Date().toISOString()
+    meta: {
+      timestamp: new Date().toISOString(),
+      requestId: req.id,
+    },
   });
 }
 
-module.exports = errorHandler;
+export default errorHandler;

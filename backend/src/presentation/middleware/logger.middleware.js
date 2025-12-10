@@ -1,5 +1,5 @@
-const morgan = require('morgan');
-const logger = require('../../config/logger');
+import morgan from 'morgan';
+import { logger } from '../../config/logger.js';
 
 // Formato personalizado
 morgan.token('user-id', (req) => req.user?.id || 'anonymous');
@@ -11,7 +11,7 @@ const httpLogger = morgan(morganFormat, {
   skip: (req) => {
     // No loguear health checks en producción
     return process.env.NODE_ENV === 'production' && req.url === '/health';
-  }
+  },
 });
 
-module.exports = httpLogger;
+export default httpLogger;

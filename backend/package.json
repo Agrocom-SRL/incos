@@ -1,6 +1,7 @@
 {
   "name": "instituto-incos-backend",
   "version": "1.0.0",
+  "type": "module",
   "description": "Sistema de Gestión Académica - Instituto INCOS Santa Cruz",
   "main": "src/server.js",
   "scripts": {

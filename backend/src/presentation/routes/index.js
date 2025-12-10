@@ -1,10 +1,7 @@
-const express = require('express');
-const router = express.Router();
+import express from 'express';
+import studentRoutes from './student.routes.js';
 
-// TODO: Importar rutas de módulos aquí
-// const authRoutes = require('./auth.routes');
-// const estudiantesRoutes = require('./estudiantes.routes');
-// etc...
+const router = express.Router();
 
 // Rutas base
 router.get('/', (req, res) => {
@@ -16,13 +13,12 @@ router.get('/', (req, res) => {
       estudiantes: '/api/v1/estudiantes',
       inscripciones: '/api/v1/inscripciones',
       calificaciones: '/api/v1/calificaciones',
-      docentes: '/api/v1/docentes'
-    }
+      docentes: '/api/v1/docentes',
+    },
   });
 });
 
 // Montar rutas de módulos
-// router.use('/auth', authRoutes);
-// router.use('/estudiantes', estudiantesRoutes);
+router.use('/estudiantes', studentRoutes);
 
-module.exports = router;
+export default router;
