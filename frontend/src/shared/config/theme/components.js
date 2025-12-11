@@ -20,13 +20,9 @@ export const componentConfig = {
     // Sider y Header: Blanco para diferenciarse del Content
     siderBg: allColors.colorBgContainer,  // Blanco
     headerBg: allColors.colorBgContainer,  // Blanco
-    
+
     // Content: Gris más oscuro para diferenciarse del fondo blanco
-    bodyBg: allColors.colorBgLayout,  // Gris (#f5f5f5)
-    
-    // Trigger: Color primario para iconos
-    triggerBg: allColors.colorPrimaryHover,
-    triggerColor: allColors.colorPrimary,  // Verde primario para el icono
+    bodyBg: allColors.colorBgLayout,  // Gris
   },
 
   /**
@@ -39,6 +35,8 @@ export const componentConfig = {
     colorTextSecondary: allColors.colorTextSecondary,
     // Borde claro para fondo blanco
     colorBorder: allColors.colorBorder,
+    // Sombra (desde shadows.js) - Se usa en CSS personalizado
+    boxShadow: shadows.shadowElevation2,
   },
 
   /**
@@ -55,6 +53,8 @@ export const componentConfig = {
     height: allSpacing.headerHeight,
     padding: `0 ${allSpacing.marginLG}px`,
     borderRadius: 0,
+    // Sombra (desde shadows.js)
+    boxShadow: shadows.shadowElevation1,
   },
 
   /**
@@ -63,4 +63,26 @@ export const componentConfig = {
    * usa los valores del Layout general (bodyBg)
    * Los estilos personalizados se aplican vía CSS
    */
+
+  /**
+   * Button - Botones (usado para el trigger hamburguesa)
+   */
+  Button: {
+    // Verde más oscuro: colorSuccess
+    colorText: allColors.colorSuccess,
+    // Hover: Gris (colorTextSecondary)
+    colorTextHover: allColors.colorTextSecondary,
+    colorTextActive: allColors.colorSuccessActive,
+
+    // Color para botones tipo "primary"
+    colorPrimary: allColors.colorPrimary,
+    colorPrimaryHover: allColors.colorPrimaryHover,
+    colorPrimaryActive: allColors.colorPrimaryActive,
+
+    borderRadius: allSpacing.borderRadius,
+    controlHeight: allSpacing.controlHeight,
+    paddingInline: allSpacing.marginSM,
+    paddingBlock: allSpacing.paddingXS,
+    controlHeightSM: allSpacing.controlHeightSM,
+  },
 };

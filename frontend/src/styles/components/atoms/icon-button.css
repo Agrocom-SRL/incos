@@ -1,0 +1,14 @@
+/* ============================================================================
+   ICON BUTTON (Componente Atómico)
+   ============================================================================
+   SOLO estilos de posicionamiento
+   Los colores se aplican AUTOMÁTICAMENTE desde componentConfig.Button
+   Ant Design aplica estos valores cuando se pasa el tema al ConfigProvider
+   ============================================================================ */
+
+.icon-button {
+    /* Solo posicionamiento - los colores vienen del tema de Ant Design */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}

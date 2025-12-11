@@ -1,0 +1,111 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ],
+      // Domain Layer
+      "@core/*": [
+        "./src/core/*"
+      ],
+      "@entities/*": [
+        "./src/core/entities/*"
+      ],
+      "@useCases/*": [
+        "./src/core/useCases/*"
+      ],
+      "@repositories/*": [
+        "./src/core/repositories/*"
+      ],
+      // Application Layer
+      "@application/*": [
+        "./src/application/*"
+      ],
+      "@hooks/*": [
+        "./src/application/hooks/*"
+      ],
+      "@store/*": [
+        "./src/application/store/*"
+      ],
+      "@providers/*": [
+        "./src/application/providers/*"
+      ],
+      // Infrastructure Layer
+      "@infrastructure/*": [
+        "./src/infrastructure/*"
+      ],
+      "@api/*": [
+        "./src/infrastructure/api/*"
+      ],
+      "@repo-impl/*": [
+        "./src/infrastructure/repositories/*"
+      ],
+      "@storage/*": [
+        "./src/infrastructure/storage/*"
+      ],
+      // Presentation Layer
+      "@presentation/*": [
+        "./src/presentation/*"
+      ],
+      "@atoms/*": [
+        "./src/presentation/components/atoms/*"
+      ],
+      "@molecules/*": [
+        "./src/presentation/components/molecules/*"
+      ],
+      "@organisms/*": [
+        "./src/presentation/components/organisms/*"
+      ],
+      "@templates/*": [
+        "./src/presentation/templates/*"
+      ],
+      "@pages/*": [
+        "./src/presentation/pages/*"
+      ],
+      // Shared
+      "@shared/*": [
+        "./src/shared/*"
+      ],
+      "@constants/*": [
+        "./src/shared/constants/*"
+      ],
+      "@utils/*": [
+        "./src/shared/utils/*"
+      ],
+      "@config/*": [
+        "./src/shared/config/*"
+      ],
+      // Others
+      "@router/*": [
+        "./src/router/*"
+      ],
+      "@assets/*": [
+        "./src/assets/*"
+      ],
+      "@styles/*": [
+        "./src/styles/*"
+      ],
+      "@data/*": [
+        "./src/data/*"
+      ]
+    },
+    "jsx": "react-jsx",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "target": "ES2020",
+    "allowJs": true,
+    "checkJs": false,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "build"
+  ]
+}

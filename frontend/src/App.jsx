@@ -7,7 +7,7 @@ import SideContent from '@pages/Dashboard/SideContent';
 const App = () => {
     return (
         <MainLayout
-            sidebar={<Sidebar />}
+            header={(props) => <Header {...props} />}
         >
         </MainLayout>
     );

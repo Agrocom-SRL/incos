@@ -15,7 +15,8 @@
 }
 
 /* Ajustar el contenido cuando el sidebar está colapsado */
-.ant-layout-sider-collapsed ~ .ant-layout .content {
+.ant-layout-sider-collapsed ~ .ant-layout-content.content,
+.ant-layout-sider-collapsed + * .content {
     margin-left: calc(var(--sidebar-collapsed-width) + var(--spacing-base));
 }
 

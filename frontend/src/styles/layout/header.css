@@ -10,14 +10,24 @@
     /* Solo posicionamiento - los colores vienen del tema de Ant Design */
     position: fixed;
     top: 0;
-    left: var(--sidebar-width);
+    left: 0;
     right: 0;
     z-index: calc(var(--z-fixed) + 1);
-    box-shadow: var(--sombra-sm);
-    transition: left var(--transition-base);
+    box-shadow: var(--sombra-header);
+    display: flex;
+    align-items: center;
 }
 
-/* Ajustar el header cuando el sidebar está colapsado */
-.ant-layout-sider-collapsed ~ .ant-layout .header {
-    left: var(--sidebar-collapsed-width);
+/* ============================================================================
+   TRIGGER BUTTON (Botón hamburguesa)
+   ============================================================================
+   SOLO estilos de posicionamiento
+   Los colores se aplican AUTOMÁTICAMENTE desde componentConfig.Button
+   ============================================================================ */
+
+.header-trigger {
+    /* Solo posicionamiento - los colores vienen del tema de Ant Design */
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }

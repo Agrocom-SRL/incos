@@ -15,6 +15,7 @@
 /* 5. Components - Atoms */
 @import './components/atoms/logo.css';
 @import './components/atoms/button.css';
+@import './components/atoms/icon-button.css';
 @import './components/atoms/typography.css';
 @import './components/atoms/card.css';
 @import './components/atoms/avatar.css';

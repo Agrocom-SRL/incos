@@ -9,13 +9,13 @@
 
 .sider {
     /* Solo posicionamiento - los colores vienen del tema de Ant Design */
-    height: 100vh;
+    height: calc(100vh - var(--header-height));
     position: fixed;
     left: 0;
-    top: 0;
+    top: var(--header-height);
     bottom: 0;
     z-index: var(--z-fixed);
-    box-shadow: var(--sombra-sm);
+    box-shadow: var(--sombra-sider);
     overflow-y: auto;
     overflow-x: hidden;
 }

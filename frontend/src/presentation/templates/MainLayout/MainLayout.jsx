@@ -25,20 +25,31 @@ const MainLayout = ({ header, children }) => {
     const sidebarWidth = allSpacing.sidebarWidth;
     const sidebarCollapsedWidth = allSpacing.sidebarCollapsedWidth;
 
+    // Función para toggle del sidebar
+    const handleToggle = () => {
+        setCollapsed(!collapsed);
+    };
+
     return (
         <Layout>
-            <Sider
-                trigger={null}
-                collapsible
-                collapsed={collapsed}
-                className="sider"
-                width={sidebarWidth}
-                collapsedWidth={sidebarCollapsedWidth}
-            >
-            </Sider>
+            {/* Header siempre visible en la parte superior */}
+            <Header className="header">
+                {header && typeof header === 'function' 
+                    ? header({ collapsed, onToggle: handleToggle })
+                    : header}
+            </Header>
 
             <Layout>
-                <Header className="header">{header}</Header>
+                {/* Sider que se muestra/oculta según el trigger */}
+                <Sider
+                    trigger={null}
+                    collapsible
+                    collapsed={collapsed}
+                    className="sider"
+                    width={sidebarWidth}
+                    collapsedWidth={sidebarCollapsedWidth}
+                >
+                </Sider>
 
                 <Content className="content">{children}</Content>
             </Layout>
