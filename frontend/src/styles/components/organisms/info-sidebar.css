@@ -1,0 +1,32 @@
+/* ============================================================================
+   INFO SIDEBAR
+   ============================================================================
+   Barra lateral de información/resumen (reutilizable)
+   - min-width: 300px en pantallas lg+
+   - col-12 (100% ancho) en pantallas menores
+   ============================================================================ */
+
+.info-sidebar {
+    width: 100%;
+    min-width: 300px;
+}
+
+/* En pantallas grandes (lg+) - 30% con min-width 300px */
+@media (min-width: 992px) {
+    .info-sidebar {
+        flex: 0 0 30%;
+        max-width: 30%;
+        width: 30%;
+        min-width: 300px;
+    }
+}
+
+/* En pantallas medianas y pequeñas - col-12 (100% ancho) */
+@media (max-width: 991px) {
+    .info-sidebar {
+        width: 100%;
+        flex: 0 0 100%;
+        max-width: 100%;
+        min-width: 100%;
+    }
+}

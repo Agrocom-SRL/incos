@@ -1,0 +1,31 @@
+/* ============================================================================
+   MAIN CONTENT
+   ============================================================================
+   Contenido principal de página (reutilizable)
+   - Ocupa 70% en pantallas grandes (lg+)
+   - Se expande cuando el sidebar está abajo en pantallas menores
+   ============================================================================ */
+
+.main-content {
+    width: 100%;
+    flex: 1;
+    min-width: 0; /* Permite que se comprima si es necesario */
+}
+
+/* En pantallas grandes (lg+) - 70% */
+@media (min-width: 992px) {
+    .main-content {
+        flex: 0 0 70%;
+        max-width: 70%;
+        width: 70%;
+    }
+}
+
+/* En pantallas medianas y pequeñas - se expande */
+@media (max-width: 991px) {
+    .main-content {
+        width: 100%;
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+}

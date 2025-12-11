@@ -14,26 +14,11 @@
 
 /* 5. Components - Atoms */
 @import './components/atoms/logo.css';
-@import './components/atoms/button.css';
 @import './components/atoms/icon-button.css';
-@import './components/atoms/typography.css';
-@import './components/atoms/card.css';
 @import './components/atoms/avatar.css';
-@import './components/atoms/image.css';
-@import './components/atoms/divider.css';
 
 /* 6. Components - Molecules */
 @import './components/molecules/navigation-menu.css';
-@import './components/molecules/section-header.css';
-@import './components/molecules/product-card.css';
-@import './components/molecules/seller-card.css';
-@import './components/molecules/activity-item.css';
-@import './components/molecules/banner-content.css';
 
 /* 7. Components - Organisms */
 @import './components/organisms/sidebar.css';
-@import './components/organisms/banner.css';
-@import './components/organisms/product-list.css';
-@import './components/organisms/seller-lists.css';
-@import './components/organisms/activity.css';
-@import './components/organisms/content-sidebar.css';

@@ -1,22 +1,84 @@
 // src/presentation/components/molecules/ProductCard/ProductCard.jsx
-import { Card, Image } from '@atoms';
-import '@styles/components/molecules/product-card.css';
-
 /**
- * Componente molecular ProductCard
- * Combina Card, Image y Meta para mostrar un producto
- * 
- * @param {object} product - Objeto del producto con id, picture y name
- * @param {string} className - Clases CSS adicionales
- * @param {function} onClick - Callback al hacer clic en la tarjeta
+ * ProductCard - Card individual de producto
+ * Usa el tema para todos los estilos
  */
-const ProductCard = ({ product, className = '', onClick }) => {
-    const { id, picture, name } = product;
 
+import { Card, Typography } from 'antd';
+import { componentConfig } from '@config/theme/components';
+import { allColors } from '@config/theme/colors';
+import { allSpacing } from '@config/theme/spacing';
+import { typography } from '@config/theme/typography';
+
+const { Text } = Typography;
+
+const ProductCard = ({ 
+    image,
+    imageAlt = "Product",
+    label,
+    onClick
+}) => {
     return (
-        <Card key={id} hoverable className={`product-card ${className}`} onClick={onClick}>
-            <Image src={picture} className="product-card__image" />
-            <Card.Meta title={name} className="product-card__meta" />
+        <Card
+            hoverable
+            onClick={onClick}
+            style={{
+                backgroundColor: componentConfig.Card.colorBgContainer,
+                borderRadius: `${componentConfig.Card.borderRadius}px`,
+                boxShadow: componentConfig.Card.boxShadow,
+                border: `1px solid ${componentConfig.Card.colorBorder}`,
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                width: '100%',
+                maxWidth: '300px',
+                flex: '1 1 300px',
+            }}
+            onMouseEnter={(e) => {
+                e.currentTarget.style.boxShadow = componentConfig.Card.boxShadowHover;
+                e.currentTarget.style.transform = 'translateY(-4px)';
+            }}
+            onMouseLeave={(e) => {
+                e.currentTarget.style.boxShadow = componentConfig.Card.boxShadow;
+                e.currentTarget.style.transform = 'translateY(0)';
+            }}
+            bodyStyle={{
+                padding: `${componentConfig.Card.padding}px`,
+            }}
+        >
+            {image && (
+                <div
+                    style={{
+                        width: '100%',
+                        height: '200px',
+                        marginBottom: `${allSpacing.margin}px`,
+                        borderRadius: `${componentConfig.Card.borderRadius}px`,
+                        overflow: 'hidden',
+                        backgroundColor: allColors.colorBgElevated,
+                    }}
+                >
+                    <img
+                        src={image}
+                        alt={imageAlt}
+                        style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                        }}
+                    />
+                </div>
+            )}
+            
+            {label && (
+                <Text
+                    style={{
+                        color: allColors.colorText,
+                        fontSize: `${typography.fontSize}px`,
+                        fontWeight: typography.fontWeightStrong,
+                    }}
+                >
+                    {label}
+                </Text>
+            )}
         </Card>
     );
 };

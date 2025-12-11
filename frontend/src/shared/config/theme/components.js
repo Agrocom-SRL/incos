@@ -53,13 +53,6 @@ export const componentConfig = {
   },
 
   /**
-   * Content - Área de contenido principal
-   * Nota: Ant Design no tiene configuración específica para Content,
-   * usa los valores del Layout general (bodyBg)
-   * Los estilos personalizados se aplican vía CSS
-   */
-
-  /**
    * IconButton - Botones con solo icono (componente personalizado)
    * Configuración simple: color base y hover
    */
@@ -119,5 +112,37 @@ export const componentConfig = {
     borderRadius: allSpacing.borderRadiusMD,
     paddingBlock: allSpacing.paddingLG,
     paddingInline: allSpacing.paddingLG,
+  },
+
+  /**
+   * Card - Cards para contenido
+   */
+  Card: {
+    colorBgContainer: allColors.colorBgContainer,
+    colorBorder: allColors.colorBorder,
+    borderRadius: allSpacing.borderRadius,
+    borderRadiusLG: allSpacing.borderRadiusLG,
+    boxShadow: shadows.shadowElevation1,
+    boxShadowHover: shadows.shadowElevation2,
+    padding: allSpacing.paddingLG,
+    paddingLG: allSpacing.paddingXL,
+  },
+
+  /**
+   * Button - Botones
+   */
+  Button: {
+    colorPrimary: allColors.colorPrimary,
+    colorPrimaryHover: allColors.colorPrimaryHover,
+    colorPrimaryActive: allColors.colorPrimaryActive,
+    colorPrimaryBg: allColors.colorPrimaryBg,
+    colorPrimaryBorder: allColors.colorPrimaryBorder,
+    colorPrimaryText: allColors.colorPrimaryTextHover,
+    borderRadius: allSpacing.borderRadius,
+    controlHeight: allSpacing.controlHeight,
+    controlHeightSM: allSpacing.controlHeightSM,
+    controlHeightLG: allSpacing.controlHeightLG,
+    paddingInline: allSpacing.marginLG,
+    paddingBlock: allSpacing.paddingSM,
   },
 };

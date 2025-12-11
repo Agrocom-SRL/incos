@@ -42,7 +42,7 @@ export function injectCSSVariables() {
   root.style.setProperty('--color-header-text-secondary', componentConfig.Header.colorTextSecondary);
   root.style.setProperty('--color-header-border', componentConfig.Header.colorBorder);
 
-  // Content - Variables CSS desde componentConfig.Layout
+  // Content - Variables CSS desde componentConfig.Layout y componentConfig.Content
   root.style.setProperty('--color-content-bg', componentConfig.Layout.bodyBg);
 
   // ========================================
@@ -89,6 +89,32 @@ export function injectCSSVariables() {
   root.style.setProperty('--tooltip-padding-inline', `${componentConfig.Tooltip.paddingInline}px`);
 
   // ========================================
+  // CARD - Variables CSS
+  // ========================================
+  root.style.setProperty('--color-card-bg', componentConfig.Card.colorBgContainer);
+  root.style.setProperty('--color-card-border', componentConfig.Card.colorBorder);
+  root.style.setProperty('--card-border-radius', `${componentConfig.Card.borderRadius}px`);
+  root.style.setProperty('--card-border-radius-lg', `${componentConfig.Card.borderRadiusLG}px`);
+  root.style.setProperty('--card-shadow', componentConfig.Card.boxShadow);
+  root.style.setProperty('--card-shadow-hover', componentConfig.Card.boxShadowHover);
+  root.style.setProperty('--card-padding', `${componentConfig.Card.padding}px`);
+  root.style.setProperty('--card-padding-lg', `${componentConfig.Card.paddingLG}px`);
+
+  // ========================================
+  // BUTTON - Variables CSS
+  // ========================================
+  root.style.setProperty('--color-button-primary', componentConfig.Button.colorPrimary);
+  root.style.setProperty('--color-button-primary-hover', componentConfig.Button.colorPrimaryHover);
+  root.style.setProperty('--color-button-primary-active', componentConfig.Button.colorPrimaryActive);
+  root.style.setProperty('--color-button-primary-bg', componentConfig.Button.colorPrimaryBg);
+  root.style.setProperty('--color-button-primary-border', componentConfig.Button.colorPrimaryBorder);
+  root.style.setProperty('--color-button-primary-text', componentConfig.Button.colorPrimaryText);
+  root.style.setProperty('--button-border-radius', `${componentConfig.Button.borderRadius}px`);
+  root.style.setProperty('--button-height', `${componentConfig.Button.controlHeight}px`);
+  root.style.setProperty('--button-height-sm', `${componentConfig.Button.controlHeightSM}px`);
+  root.style.setProperty('--button-height-lg', `${componentConfig.Button.controlHeightLG}px`);
+
+  // ========================================
   // SOMBRAS (Desde componentConfig para mantener consistencia)
   // ========================================
   root.style.setProperty('--sombra-sider', componentConfig.Sider.boxShadow);
@@ -101,6 +127,7 @@ export function injectCSSVariables() {
   root.style.setProperty('--spacing-sm', `${allSpacing.marginSM}px`);
   root.style.setProperty('--spacing-base', `${allSpacing.margin}px`);
   root.style.setProperty('--spacing-lg', `${allSpacing.marginLG}px`);
+  root.style.setProperty('--spacing-xl', `${allSpacing.marginXL}px`);
 
   // ========================================
   // ALTURAS Y ANCHOS DE LAYOUT
@@ -120,7 +147,7 @@ export function injectCSSVariables() {
   root.style.setProperty('--logo-icon-small', `${allSpacing.logoIconSmall}px`);
   root.style.setProperty('--logo-icon-medium', `${allSpacing.logoIconMedium}px`);
   root.style.setProperty('--logo-icon-large', `${allSpacing.logoIconLarge}px`);
-  
+
   // Logo horizontal
   root.style.setProperty('--logo-horizontal-small-width', `${allSpacing.logoHorizontalSmall}px`);
   root.style.setProperty('--logo-horizontal-small-height', `${allSpacing.logoHorizontalSmallHeight}px`);

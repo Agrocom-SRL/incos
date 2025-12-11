@@ -18,7 +18,7 @@ const LoadingFallback = () => {
                 overflow: 'auto'
             }}
         >
-            <Space direction="vertical" size="large" style={{ width: '100%' }}>
+            <Space orientation="vertical" size="large" style={{ width: '100%' }}>
                 {/* Skeleton para el título */}
                 <Skeleton.Input 
                     active 

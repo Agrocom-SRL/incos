@@ -1,32 +1,70 @@
 // src/presentation/components/molecules/ActivityItem/ActivityItem.jsx
-import { List } from 'antd';
-import { Avatar, Typography } from '@atoms';
-import '@styles/components/molecules/activity-item.css';
-
 /**
- * Componente molecular ActivityItem
- * Combina List.Item, Avatar y Typography para mostrar una actividad reciente
- * 
- * @param {object} activity - Objeto de actividad con name, orderTime y avatar opcional
- * @param {string} className - Clases CSS adicionales
+ * ActivityItem - Item individual de actividad reciente
+ * Usa el tema para todos los estilos
  */
-const ActivityItem = ({ activity, className = '' }) => {
-    const { name, orderTime, avatar } = activity;
-    const timeText = `${orderTime} ${orderTime === 1 ? 'day ago' : 'days ago'}`;
 
+import { Flex, Avatar, Typography } from 'antd';
+import { allColors } from '@config/theme/colors';
+import { allSpacing } from '@config/theme/spacing';
+import { typography } from '@config/theme/typography';
+import { componentConfig } from '@config/theme/components';
+
+const { Text } = Typography;
+
+const ActivityItem = ({ 
+    name,
+    action,
+    timeAgo,
+    avatarColor,
+    avatarText
+}) => {
     return (
-        <List.Item className={`activity-item ${className}`}>
-            <List.Item.Meta
-                avatar={
-                    <Avatar
-                        src={avatar || `https://api.dicebear.com/7.x/miniavs/svg?seed=${name}`}
-                    />
-                }
-                title={<a href="#">{name}</a>}
-                description="Ordered a new plant"
-            />
-            <Typography.Text className="gray--color">{timeText}</Typography.Text>
-        </List.Item>
+        <Flex gap={allSpacing.margin} align="flex-start">
+            <Avatar
+                size={40}
+                style={{
+                    backgroundColor: avatarColor || componentConfig.Avatar.colorBgContainer,
+                    color: avatarColor ? allColors.colorTextOnDark : componentConfig.Avatar.colorText,
+                    flexShrink: 0,
+                }}
+            >
+                {avatarText || name?.[0] || 'U'}
+            </Avatar>
+            
+            <Flex vertical gap={allSpacing.marginXS} style={{ flex: 1, minWidth: 0 }}>
+                <Text
+                    strong
+                    style={{
+                        color: allColors.colorText,
+                        fontSize: `${typography.fontSize}px`,
+                    }}
+                >
+                    {name}
+                </Text>
+                
+                <Text
+                    style={{
+                        color: allColors.colorTextSecondary,
+                        fontSize: `${typography.fontSizeSM}px`,
+                    }}
+                >
+                    {action}
+                </Text>
+                
+                {timeAgo && (
+                    <Text
+                        type="secondary"
+                        style={{
+                            color: allColors.colorTextTertiary,
+                            fontSize: `${typography.fontSizeSM}px`,
+                        }}
+                    >
+                        {timeAgo}
+                    </Text>
+                )}
+            </Flex>
+        </Flex>
     );
 };
 
