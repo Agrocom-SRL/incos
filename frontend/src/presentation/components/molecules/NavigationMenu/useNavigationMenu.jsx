@@ -1,13 +1,18 @@
 // src/presentation/components/molecules/NavigationMenu/useNavigationMenu.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { navigationMenuItems } from '@data/navigationMenuData';
+import { getRouteFromMenuKey, getMenuKeyFromRoute } from '@utils/router/routeMapperService';
 import MenuItemIcon from '@atoms/MenuItemIcon';
 
 /**
  * Hook personalizado para manejar la lógica del menú de navegación
  * Al seleccionar un módulo raíz, los demás se cierran automáticamente
+ * Conectado con react-router-dom para navegación
  */
 export const useNavigationMenu = (defaultSelectedKey = 'DASH', onMenuClick) => {
+    const navigate = useNavigate();
+    const location = useLocation();
     const [selectedKeys, setSelectedKeys] = useState([defaultSelectedKey]);
     const [openKeys, setOpenKeys] = useState([]);
 
@@ -70,10 +75,42 @@ export const useNavigationMenu = (defaultSelectedKey = 'DASH', onMenuClick) => {
             return mappedItem;
         });
     };
+    
+    // Sincronizar el item seleccionado con la ruta actual
+    useEffect(() => {
+        const currentRoute = location.pathname;
+        const menuKey = getMenuKeyFromRoute(currentRoute);
+        
+        if (menuKey && menuKey !== selectedKeys[0]) {
+            setSelectedKeys([menuKey]);
+            
+            // Asegurar que los padres del item estén abiertos
+            const parentKeys = findParentKeys(navigationMenuItems, menuKey);
+            const selectedRootModule = getRootModuleKey(navigationMenuItems, menuKey);
+            
+            if (selectedRootModule && selectedRootModule !== menuKey) {
+                const keysToOpen = [...new Set([selectedRootModule, ...(parentKeys || [])])];
+                setOpenKeys(keysToOpen);
+            } else if (parentKeys && parentKeys.length > 0) {
+                setOpenKeys(parentKeys);
+            }
+        } else if (!menuKey && currentRoute === '/') {
+            // Si estamos en la ruta raíz y no hay key, usar DASH
+            setSelectedKeys(['DASH']);
+        }
+    }, [location.pathname, selectedKeys]);
 
     // Manejar click en el menú
     const handleMenuClick = (info) => {
         const clickedKey = info.key;
+        
+        // Obtener la ruta correspondiente a la key del menú
+        const route = getRouteFromMenuKey(clickedKey);
+        
+        // Si hay una ruta válida, navegar a ella
+        if (route) {
+            navigate(route);
+        }
         
         // Guardar el item anteriormente seleccionado ANTES de actualizar el estado
         const previousSelectedKey = selectedKeys[0];
