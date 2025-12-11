@@ -2,20 +2,24 @@
 import { useState } from 'react';
 import { Layout, Flex } from 'antd';
 import Sidebar from '@organisms/Sidebar';
+import { allSpacing } from '@config/theme/spacing';
 
 const { Sider, Header, Content } = Layout;
 
 const MainLayout = ({ header, children, sideContent }) => {
-    const [collapsed, setCollapsed] = useState(false);
+    const [collapsed, setCollapsed] = useState(true);
 
     const handleMenuClick = ({ key }) => {
-        console.log('Menu clicked:', key);
         // Aquí puedes manejar la navegación
     };
 
     const handleLogoClick = () => {
         setCollapsed(!collapsed); // Toggle al hacer click en logo
     };
+
+    // Usar valores del tema para el sidebar
+    const sidebarWidth = allSpacing.sidebarWidth;
+    const sidebarCollapsedWidth = allSpacing.sidebarCollapsedWidth;
 
     return (
         <Layout>
@@ -25,8 +29,8 @@ const MainLayout = ({ header, children, sideContent }) => {
                 collapsible
                 collapsed={collapsed}
                 className="sider"
-                width={250}
-                collapsedWidth={80}
+                width={sidebarWidth}
+                collapsedWidth={sidebarCollapsedWidth}
             >
                 <Sidebar
                     collapsed={collapsed}           // Pasar estado

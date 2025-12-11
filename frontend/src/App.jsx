@@ -5,15 +5,12 @@ import Dashboard from '@pages/Dashboard';
 import SideContent from '@pages/Dashboard/SideContent';
 
 const App = () => {
-  return (
-    <MainLayout
-      sidebar={<Sidebar />}
-      header={<Header />}
-      sideContent={<SideContent />}
-    >
-      <Dashboard />
-    </MainLayout>
-  );
+    return (
+        <MainLayout
+            sidebar={<Sidebar />}
+        >
+        </MainLayout>
+    );
 };
 
 export default App;

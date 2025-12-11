@@ -1,26 +1,40 @@
 /* ============================================================================
    HEADER
+   ============================================================================
+   Estilos de POSICIONAMIENTO y LAYOUT únicamente
+   Los colores, espaciados y otros valores vienen de components.js (Ant Design)
    ============================================================================ */
 
 .header {
-    padding: 12px 24px;
-    background: var(--color-blanco);
-    border-bottom: 1px solid var(--color-gris-claro);
+    /* Solo estilos de posicionamiento - los colores vienen de Ant Design */
+    position: fixed;
+    top: 0;
+    left: var(--sidebar-width);
+    right: 0;
+    z-index: calc(var(--z-fixed) + 1);
+    box-shadow: var(--sombra-sm);
+    transition: left var(--transition-base);
 }
 
+/* Ajustar el header cuando el sidebar está colapsado */
+.ant-layout-sider-collapsed ~ .ant-layout .header {
+    left: var(--sidebar-collapsed-width);
+}
+
+/* Estilos adicionales para elementos dentro del header */
 .header-icon {
     background: var(--color-success-bg);
     padding: var(--spacing-sm);
     border-radius: var(--radio-md);
-    font-size: 16px;
+    font-size: var(--font-size-base);
     color: var(--color-verde-institucional);
     cursor: pointer;
     transition: var(--transition-fast);
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 36px;
-    height: 36px;
+    width: var(--control-height-sm);
+    height: var(--control-height-sm);
 }
 
 .header-icon:hover {

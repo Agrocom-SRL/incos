@@ -1,48 +1,46 @@
-/* src/styles/layout/sidebar.css */
+/* ============================================================================
+   SIDEBAR
+   ============================================================================
+   Estilos de POSICIONAMIENTO y LAYOUT únicamente
+   Los colores, espaciados y otros valores vienen de components.js (Ant Design)
+   ============================================================================ */
+
 .sider {
+    /* Solo estilos de posicionamiento - los colores vienen de Ant Design */
     height: 100vh;
-    position: sticky !important;
+    position: fixed !important;
     left: 0;
-    bottom: 0;
     top: 0;
-    border-right: 1px solid var(--color-gris-claro);
-    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.02);
+    bottom: 0;
+    z-index: var(--z-fixed);
+    box-shadow: var(--sombra-sm);
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 /* Botón de colapsar */
 .triger-btn {
-    font-size: 18px;
-    width: 48px;
-    height: 48px;
+    font-size: var(--font-size-lg);
+    width: var(--control-height);
+    height: var(--control-height);
     position: fixed;
-    bottom: 16px;
-    left: 16px;
+    bottom: var(--spacing-base);
+    left: var(--spacing-base);
     transition: var(--transition-base);
     border-radius: var(--radio-md) !important;
     z-index: var(--z-fixed);
-    background: var(--color-blanco);
-    border: 1px solid var(--color-gris-claro);
+    background: var(--color-sidebar-bg);
+    border: 1px solid var(--color-sidebar-border);
     box-shadow: var(--sombra-sm);
 }
 
 .triger-btn:hover {
     color: var(--color-verde-institucional) !important;
     border-color: var(--color-verde-institucional) !important;
-    background-color: rgba(25, 107, 69, 0.05) !important;
+    background-color: var(--color-sidebar-hover) !important;
     box-shadow: var(--sombra-md);
 }
 
 .triger-btn .anticon {
-    font-size: 18px;
-}
-
-/* Sidebar colapsado */
-.ant-layout-sider-collapsed .app-logo {
-    font-size: 1.2rem;
-    margin: 20px 0;
-}
-
-.ant-layout-sider-collapsed .navigation-menu .ant-menu-item {
-    padding-left: 24px !important;
-    justify-content: center;
+    font-size: var(--font-size-lg);
 }

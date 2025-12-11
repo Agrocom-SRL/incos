@@ -10,6 +10,7 @@ import {
 
 const NavigationMenu = ({
     defaultSelectedKey = '1',
+    collapsed = false,
     onMenuClick
 }) => {
     const menuItems = [
@@ -47,6 +48,7 @@ const NavigationMenu = ({
             className="navigation-menu"
             items={menuItems}
             onClick={onMenuClick}
+            inlineCollapsed={collapsed}
         />
     );
 };

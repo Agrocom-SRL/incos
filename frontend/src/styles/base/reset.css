@@ -1,26 +1,29 @@
 /* ============================================================================
-   RESET CSS
+   RESET CSS - INCOS SANTA CRUZ
+   ============================================================================
+   
+   Todas las variables CSS se generan desde el tema JS (css-variables.js)
    ============================================================================ */
 
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Poppins', sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: var(--font-family-base, 'Poppins', sans-serif);
 }
 
 html {
-    scroll-behavior: smooth;
+  scroll-behavior: smooth;
 }
 
 body {
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    font-family: 'Poppins', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-family: var(--font-family-base, 'Poppins', sans-serif);
 }
 
 /* Accesibilidad - Focus visible */
 *:focus-visible {
-    outline: 2px solid var(--color-verde-institucional);
-    outline-offset: 2px;
+  outline: 2px solid var(--color-verde-institucional);
+  outline-offset: 2px;
 }

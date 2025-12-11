@@ -589,6 +589,61 @@ Todas las tablas incluyen:
 
 ---
 
+## 🎨 SISTEMA DE TEMAS Y DISEÑO
+
+El sistema utiliza un tema personalizado basado en los colores institucionales del logo de INCOS, organizado siguiendo principios SOLID.
+
+### Estructura Modular del Tema
+
+El tema está dividido en módulos especializados ubicados en `src/shared/config/theme/`:
+
+- **`colors.js`** - Colores principales y semánticos (verde, rojo, dorado, azul)
+- **`accentColors.js`** - Colores de acento complementarios (rosa, naranja, teal, lima, púrpura)
+- **`componentColors.js`** - Colores específicos para sidebar, header y content
+- **`gradients.js`** - Gradientes metálicos inspirados en el logo
+- **`shadows.js`** - Sistema de sombras y profundidad (elevación 1-4)
+- **`typography.js`** - Configuración de tipografía (Poppins)
+- **`spacing.js`** - Espaciado, border radius, control heights
+- **`components.js`** - Configuración de componentes Ant Design
+
+### Paleta de Colores
+
+**Colores Principales** (del logo):
+- **Verde**: `#196b45` → Sidebar activo, Header, CTAs principales
+- **Rojo**: `#e41c24` → Errores, alertas críticas
+- **Dorado**: `#f59e0b` → Advertencias, elementos premium
+- **Azul Cielo**: `#7d9bdc` → Información, estados neutros
+
+**Colores de Acento** (complementarios del verde):
+- Rosa-Magenta, Naranja, Azul-Verde, Verde-Lima, Púrpura
+
+### Uso del Tema
+
+```jsx
+import { useToken } from 'antd';
+
+const { token } = useToken();
+
+// Usar colores del tema
+<div style={{ color: token.colorAccentPurple }}>Elemento premium</div>
+
+// Usar gradientes
+<Button style={{ background: token.gradientPrimary }}>
+  Botón con efecto metálico
+</Button>
+
+// Usar sombras de elevación
+<div style={{ boxShadow: token.shadowElevation2 }}>Card elevada</div>
+```
+
+### Componentes del Layout
+
+- **Sidebar**: Fondo blanco, items activos en verde (#196b45)
+- **Header**: Fondo verde (#196b45), texto blanco
+- **Content**: Fondo gris claro (#fafafa), cards blancas
+
+---
+
 ## 🎨 REGLAS DE NEGOCIO PRINCIPALES
 
 ### Inscripciones

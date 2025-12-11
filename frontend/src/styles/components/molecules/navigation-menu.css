@@ -1,17 +1,26 @@
-/* src/styles/components/molecules/navigation-menu.css */
+/* ============================================================================
+   NAVIGATION MENU
+   ============================================================================
+   Todos los valores usan variables CSS generadas desde el tema JS
+   ============================================================================ */
+
 .navigation-menu {
     border: none !important;
     background: transparent !important;
-    padding: 0 8px;
+    padding: 0 var(--spacing-sm);
 }
 
 .navigation-menu .ant-menu-item {
     border-radius: var(--radio-md) !important;
-    margin: 4px 0 !important;
-    height: 44px !important;
-    line-height: 44px !important;
-    font-weight: 500;
-    transition: all var(--transition-fast);
+    margin: var(--spacing-xs) 0 !important;
+    height: var(--control-height) !important;
+    line-height: var(--control-height) !important;
+    font-weight: var(--font-weight-medium);
+    transition: all var(--transition-base);
+    padding-left: var(--spacing-base) !important;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
 }
 
 .navigation-menu .ant-menu-item-selected {
@@ -24,7 +33,7 @@
 }
 
 .navigation-menu .ant-menu-item:hover:not(.ant-menu-item-selected) {
-    background-color: rgba(25, 107, 69, 0.08) !important;
+    background-color: var(--color-sidebar-hover) !important;
     color: var(--color-verde-institucional) !important;
 }
 
@@ -34,6 +43,111 @@
 }
 
 .navigation-menu .ant-menu-item .anticon {
-    font-size: 16px;
-    margin-right: 10px;
+    font-size: var(--font-size-base);
+    margin-right: var(--spacing-sm);
+    flex-shrink: 0;
+    min-width: var(--font-size-base);
+    text-align: center;
+}
+
+.navigation-menu .ant-menu-item span {
+    white-space: nowrap;
+    overflow: hidden;
+    transition: opacity var(--transition-base), width var(--transition-base);
+}
+
+/* ============================================================================
+   ESTADO COLAPSANDO (en transición)
+   ============================================================================ */
+
+.ant-layout-sider-collapsing .navigation-menu {
+    padding: 0 !important;
+}
+
+.ant-layout-sider-collapsing .navigation-menu .ant-menu-item {
+    padding: 0 !important;
+    justify-content: center;
+    align-items: center;
+    margin: var(--spacing-xs) auto !important;
+    width: var(--control-height) !important;
+    min-width: var(--control-height) !important;
+    max-width: var(--control-height) !important;
+    height: var(--control-height) !important;
+    display: flex !important;
+}
+
+.ant-layout-sider-collapsing .navigation-menu .ant-menu-item .anticon {
+    margin: 0 !important;
+    font-size: var(--font-size-lg);
+    display: inline-flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    align-items: center;
+    justify-content: center;
+}
+
+.ant-layout-sider-collapsing .navigation-menu .ant-menu-item span {
+    opacity: 0;
+    width: 0;
+    margin: 0;
+    padding: 0;
+    display: none !important;
+}
+
+/* ============================================================================
+   ESTADO COLAPSADO
+   ============================================================================ */
+
+.ant-layout-sider-collapsed .navigation-menu {
+    padding: 0 !important;
+}
+
+.ant-layout-sider-collapsed .navigation-menu .ant-menu-item {
+    padding: 0 !important;
+    justify-content: center;
+    align-items: center;
+    margin: var(--spacing-xs) auto !important;
+    width: var(--control-height) !important;
+    min-width: var(--control-height) !important;
+    max-width: var(--control-height) !important;
+    height: var(--control-height) !important;
+    display: flex !important;
+}
+
+.ant-layout-sider-collapsed .navigation-menu .ant-menu-item span {
+    display: none !important;
+}
+
+/* Asegurar que los iconos siempre se muestren cuando está colapsado */
+.ant-layout-sider-collapsed .navigation-menu .ant-menu-item .anticon {
+    margin: 0 !important;
+    font-size: var(--font-size-lg) !important;
+    display: inline-flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    align-items: center;
+    justify-content: center;
+    width: auto !important;
+    height: auto !important;
+    color: var(--color-text) !important;
+}
+
+/* Item seleccionado cuando está colapsado - cuadrado verde sólido con icono */
+.ant-layout-sider-collapsed .navigation-menu .ant-menu-item-selected {
+    background-color: var(--color-verde-institucional) !important;
+    border-radius: var(--radio-md) !important;
+}
+
+.ant-layout-sider-collapsed .navigation-menu .ant-menu-item-selected .anticon {
+    color: var(--color-blanco) !important;
+}
+
+.ant-layout-sider-collapsed .navigation-menu .ant-menu-item:hover:not(.ant-menu-item-selected) .anticon {
+    color: var(--color-verde-institucional) !important;
+}
+
+/* Asegurar que los tooltips se muestren correctamente cuando está colapsado */
+.ant-layout-sider-collapsed .navigation-menu .ant-menu-item,
+.ant-layout-sider-collapsing .navigation-menu .ant-menu-item {
+    position: relative;
 }
