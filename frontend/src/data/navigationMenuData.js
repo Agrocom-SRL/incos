@@ -74,6 +74,28 @@ export const navigationMenuItems = [
                 label: 'Estado',
                 module: 'EST',
             },
+            {
+                key: 'EST-DOCUMENTOS',
+                label: 'Documentos',
+                module: 'EST',
+                children: [
+                    {
+                        key: 'EST-DOCUMENTOS-VER',
+                        label: 'Ver Documentos',
+                        module: 'EST',
+                    },
+                    {
+                        key: 'EST-DOCUMENTOS-VERIFICAR',
+                        label: 'Verificar',
+                        module: 'EST',
+                    },
+                    {
+                        key: 'EST-DOCUMENTOS-ESTADO',
+                        label: 'Estado',
+                        module: 'EST',
+                    },
+                ],
+            },
         ],
     },
     {
@@ -252,7 +274,7 @@ export const navigationMenuItems = [
             },
             {
                 key: 'SUP-FICHA',
-                label: 'Ficha de Supervisión',
+                label: 'Evaluación Docente',
                 module: 'SUP',
                 children: [
                     {

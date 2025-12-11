@@ -14,7 +14,7 @@
 
 .navigation-menu .ant-menu-item {
     border-radius: var(--border-radius-sm);
-    margin: var(--spacing-xs) 0;
+    margin: var(--spacing-sm) 0;
     height: var(--control-height);
     line-height: var(--control-height);
     transition: all var(--transition-base);
@@ -45,39 +45,39 @@
 }
 
 /* Submenu padre con background cuando un hijo está seleccionado (solo en la cadena del item seleccionado) */
-.navigation-menu .ant-menu-submenu-selected > .ant-menu-submenu-title {
+.navigation-menu .ant-menu-submenu-selected>.ant-menu-submenu-title {
     background-color: var(--color-menu-item-parent-selected-bg) !important;
     border: 1px solid var(--color-menu-item-parent-selected-border) !important;
     color: var(--color-menu-item-parent-selected-color) !important;
 }
 
-.navigation-menu .ant-menu-submenu-selected > .ant-menu-submenu-title .anticon,
-.navigation-menu .ant-menu-submenu-selected > .ant-menu-submenu-title span {
+.navigation-menu .ant-menu-submenu-selected>.ant-menu-submenu-title .anticon,
+.navigation-menu .ant-menu-submenu-selected>.ant-menu-submenu-title span {
     color: var(--color-menu-item-parent-selected-color) !important;
 }
 
 /* Submenu padre ABIERTO pero SIN hijos seleccionados (estado activo solo si no hay ningún item seleccionado en otro módulo) */
 /* Solo aplicar estilo active si el submenu está abierto Y no hay ningún submenu seleccionado en el menú */
-.navigation-menu:not(:has(.ant-menu-submenu-selected)) .ant-menu-submenu-open > .ant-menu-submenu-title {
+.navigation-menu:not(:has(.ant-menu-submenu-selected)) .ant-menu-submenu-open>.ant-menu-submenu-title {
     background-color: var(--color-menu-item-active-bg) !important;
     border: 1px solid var(--color-menu-item-active-border) !important;
     color: var(--color-menu-item-active-color) !important;
 }
 
-.navigation-menu:not(:has(.ant-menu-submenu-selected)) .ant-menu-submenu-open > .ant-menu-submenu-title .anticon,
-.navigation-menu:not(:has(.ant-menu-submenu-selected)) .ant-menu-submenu-open > .ant-menu-submenu-title span {
+.navigation-menu:not(:has(.ant-menu-submenu-selected)) .ant-menu-submenu-open>.ant-menu-submenu-title .anticon,
+.navigation-menu:not(:has(.ant-menu-submenu-selected)) .ant-menu-submenu-open>.ant-menu-submenu-title span {
     color: var(--color-menu-item-active-color) !important;
 }
 
 /* Si hay un submenu seleccionado, los demás submenús abiertos NO deben tener estilo active */
-.navigation-menu:has(.ant-menu-submenu-selected) .ant-menu-submenu-open:not(.ant-menu-submenu-selected) > .ant-menu-submenu-title {
+.navigation-menu:has(.ant-menu-submenu-selected) .ant-menu-submenu-open:not(.ant-menu-submenu-selected)>.ant-menu-submenu-title {
     background-color: transparent !important;
     border: none !important;
     color: var(--color-menu-item) !important;
 }
 
-.navigation-menu:has(.ant-menu-submenu-selected) .ant-menu-submenu-open:not(.ant-menu-submenu-selected) > .ant-menu-submenu-title .anticon,
-.navigation-menu:has(.ant-menu-submenu-selected) .ant-menu-submenu-open:not(.ant-menu-submenu-selected) > .ant-menu-submenu-title span {
+.navigation-menu:has(.ant-menu-submenu-selected) .ant-menu-submenu-open:not(.ant-menu-submenu-selected)>.ant-menu-submenu-title .anticon,
+.navigation-menu:has(.ant-menu-submenu-selected) .ant-menu-submenu-open:not(.ant-menu-submenu-selected)>.ant-menu-submenu-title span {
     color: var(--color-menu-item) !important;
 }
 
@@ -103,6 +103,29 @@
     white-space: nowrap;
     overflow: hidden;
     transition: opacity var(--transition-base), width var(--transition-base);
+}
+
+/* ============================================================================
+   AJUSTE DE POSICIÓN DEL CONTENEDOR UL POR NIVEL DE ANIDACIÓN
+   Sobrescribir el padding-left que Ant Design aplica por JavaScript
+   Usar margin-left en el contenedor ul y mantener padding-left consistente
+   ============================================================================ */
+
+/* Contenedor ul de submenús de primer nivel (segundo nivel) - desplazar con margin-left */
+.navigation-menu .ant-menu-submenu .ant-menu {
+    margin-left: var(--spacing-base) !important;
+    padding-left: var(--spacing-sm) !important;
+}
+
+/* Items dentro de submenús de primer nivel - padding consistente igual al nivel 1 */
+.navigation-menu .ant-menu-submenu .ant-menu-item {
+    padding-left: var(--spacing-base) !important;
+}
+
+/* Títulos de submenú de segundo nivel - alinear con items del mismo nivel */
+.navigation-menu .ant-menu-submenu .ant-menu-submenu>.ant-menu-submenu-title {
+    margin-left: 0 !important;
+    padding-left: var(--spacing-base) !important;
 }
 
 /* ============================================================================

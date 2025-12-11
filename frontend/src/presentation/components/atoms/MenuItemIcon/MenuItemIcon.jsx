@@ -10,6 +10,8 @@ import {
     GiftOutlined,
     CheckCircleOutlined,
     FileTextOutlined,
+    FolderOutlined,
+    InfoCircleOutlined,
     // Inscripciones
     FileAddOutlined,
     BookOutlined,
@@ -77,6 +79,10 @@ const iconMap = {
     'EST-LICENCIAS-APROBAR': CheckCircleOutlined,
     'EST-LICENCIAS-LIST': UnorderedListOutlined,
     'EST-ESTADO': EditOutlined,
+    'EST-DOCUMENTOS': FolderOutlined,
+    'EST-DOCUMENTOS-VER': EyeOutlined,
+    'EST-DOCUMENTOS-VERIFICAR': CheckCircleOutlined,
+    'EST-DOCUMENTOS-ESTADO': InfoCircleOutlined,
     
     // Inscripciones - Nivel 1
     'INS': FileAddOutlined,
@@ -121,7 +127,7 @@ const iconMap = {
     // Supervisión - Nivel 1
     'SUP': EyeOutlined,
     'SUP-PROGRAMAR': ScheduleOutlined,
-    'SUP-FICHA': FormOutlined,
+    'SUP-FICHA': UsergroupAddOutlined,
     'SUP-FICHA-CREAR': FileAddOutlined,
     'SUP-FICHA-EDITAR': EditOutlined,
     'SUP-FICHA-VER': EyeOutlined,
