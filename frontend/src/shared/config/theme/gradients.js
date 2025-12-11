@@ -6,7 +6,6 @@
  */
 
 import { allColors } from './colors';
-import { accentColors } from './accentColors';
 
 export const gradients = {
   // Gradiente verde metálico (como el texto "INCOS" del logo)
@@ -18,11 +17,11 @@ export const gradients = {
   gradientGoldHover: `linear-gradient(135deg, #fcd34d 0%, #fbbf24 50%, ${allColors.colorWarning} 100%)`,
   
   // Gradientes de colores de acento
-  gradientAccentRed: `linear-gradient(135deg, ${accentColors.colorAccentRed} 0%, ${accentColors.colorAccentRedHover} 100%)`,
-  gradientAccentOrange: `linear-gradient(135deg, ${accentColors.colorAccentOrange} 0%, ${accentColors.colorAccentOrangeHover} 100%)`,
-  gradientAccentTeal: `linear-gradient(135deg, ${accentColors.colorAccentTeal} 0%, ${accentColors.colorAccentTealHover} 100%)`,
-  gradientAccentLime: `linear-gradient(135deg, ${accentColors.colorAccentLime} 0%, ${accentColors.colorAccentLimeHover} 100%)`,
-  gradientAccentPurple: `linear-gradient(135deg, ${accentColors.colorAccentPurple} 0%, ${accentColors.colorAccentPurpleHover} 100%)`,
+  gradientAccentRed: `linear-gradient(135deg, ${allColors.colorAccentRed} 0%, ${allColors.colorAccentRedHover} 100%)`,
+  gradientAccentOrange: `linear-gradient(135deg, ${allColors.colorAccentOrange} 0%, ${allColors.colorAccentOrangeHover} 100%)`,
+  gradientAccentTeal: `linear-gradient(135deg, ${allColors.colorAccentTeal} 0%, ${allColors.colorAccentTealHover} 100%)`,
+  gradientAccentLime: `linear-gradient(135deg, ${allColors.colorAccentLime} 0%, ${allColors.colorAccentLimeHover} 100%)`,
+  gradientAccentPurple: `linear-gradient(135deg, ${allColors.colorAccentPurple} 0%, ${allColors.colorAccentPurpleHover} 100%)`,
   
   // Gradientes semánticos
   gradientSuccess: `linear-gradient(135deg, ${allColors.colorSuccessBorder} 0%, ${allColors.colorSuccess} 100%)`,

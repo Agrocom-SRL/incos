@@ -1,14 +1,51 @@
 /* ============================================================================
    ICON BUTTON (Componente Atómico)
    ============================================================================
-   SOLO estilos de posicionamiento
-   Los colores se aplican AUTOMÁTICAMENTE desde componentConfig.Button
-   Ant Design aplica estos valores cuando se pasa el tema al ConfigProvider
+   Estilos simples: color base, hover con color más oscuro y texto blanco
+   Los colores vienen del tema via variables CSS
    ============================================================================ */
 
 .icon-button {
-    /* Solo posicionamiento - los colores vienen del tema de Ant Design */
     display: inline-flex;
     align-items: center;
     justify-content: center;
+}
+
+/* Color base del icono */
+.icon-button.ant-btn-text {
+    color: var(--color-icon-button);
+}
+
+.icon-button.ant-btn-text .anticon {
+    color: var(--color-icon-button) !important;
+}
+
+/* Hover: fondo verde oscuro con icono blanco */
+.icon-button.ant-btn-text:hover {
+    background-color: var(--color-icon-button-hover-bg) !important;
+    color: var(--color-icon-button-hover-text);
+}
+
+.icon-button.ant-btn-text:hover .anticon {
+    color: var(--color-icon-button-hover-text) !important;
+}
+
+/* Active: fondo verde oscuro con icono blanco */
+.icon-button.ant-btn-text:active {
+    background-color: var(--color-icon-button-active-bg) !important;
+    color: var(--color-icon-button-active-text);
+}
+
+.icon-button.ant-btn-text:active .anticon {
+    color: var(--color-icon-button-active-text) !important;
+}
+
+/* Disabled: fondo gris claro con icono gris claro */
+.icon-button.ant-btn-text:disabled {
+    background-color: var(--color-icon-button-disabled-bg) !important;
+    color: var(--color-icon-button-disabled-text);
+}
+
+.icon-button.ant-btn-text:disabled .anticon {
+    color: var(--color-icon-button-disabled-text) !important;
 }

@@ -7,6 +7,7 @@ const Header = ({ collapsed, onToggle }) => {
         <IconButton
             icon={<MenuOutlined />}
             onClick={onToggle}
+            size="large"
             className="header-trigger"
         />
     );

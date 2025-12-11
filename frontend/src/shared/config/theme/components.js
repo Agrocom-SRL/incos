@@ -65,24 +65,17 @@ export const componentConfig = {
    */
 
   /**
-   * Button - Botones (usado para el trigger hamburguesa)
+   * IconButton - Botones con solo icono (componente personalizado)
+   * Configuración simple: color base y hover
    */
-  Button: {
-    // Verde más oscuro: colorSuccess
-    colorText: allColors.colorSuccess,
-    // Hover: Gris (colorTextSecondary)
-    colorTextHover: allColors.colorTextSecondary,
-    colorTextActive: allColors.colorSuccessActive,
-
-    // Color para botones tipo "primary"
-    colorPrimary: allColors.colorPrimary,
-    colorPrimaryHover: allColors.colorPrimaryHover,
-    colorPrimaryActive: allColors.colorPrimaryActive,
-
-    borderRadius: allSpacing.borderRadius,
-    controlHeight: allSpacing.controlHeight,
-    paddingInline: allSpacing.marginSM,
-    paddingBlock: allSpacing.paddingXS,
-    controlHeightSM: allSpacing.controlHeightSM,
+  IconButton: {
+    // Color base: verde oscuro (colorSuccess)
+    color: allColors.colorPrimary,
+    colorHoverBg: allColors.colorPrimaryHover,
+    colorHoverText: allColors.colorPrimaryTextHover,
+    colorActiveBg: allColors.colorPrimaryActive,
+    colorActiveText: allColors.colorPrimaryText,
+    colorDisabledBg: allColors.colorPrimaryBgDisabled,
+    colorDisabledText: allColors.colorPrimaryTextDisabled,
   },
 };

@@ -5,7 +5,7 @@
  * 
  * TODAS las variables CSS se generan desde el tema JS (single source of truth)
  * 
- * FASE 1: Solo variables esenciales para Layout, Header, Sider, Content y Button
+ * FASE 1: Solo variables esenciales para Layout, Header, Sider, Content e IconButton
  */
 
 import { allSpacing } from '@config/theme/spacing';
@@ -43,6 +43,17 @@ export function injectCSSVariables() {
 
   // Content - Variables CSS desde componentConfig.Layout
   root.style.setProperty('--color-content-bg', componentConfig.Layout.bodyBg);
+
+  // ========================================
+  // ICON BUTTON - Variables CSS simples
+  // ========================================
+  root.style.setProperty('--color-icon-button', componentConfig.IconButton.color);
+  root.style.setProperty('--color-icon-button-hover-bg', componentConfig.IconButton.colorHoverBg);
+  root.style.setProperty('--color-icon-button-hover-text', componentConfig.IconButton.colorHoverText);
+  root.style.setProperty('--color-icon-button-active-bg', componentConfig.IconButton.colorActiveBg);
+  root.style.setProperty('--color-icon-button-active-text', componentConfig.IconButton.colorActiveText);
+  root.style.setProperty('--color-icon-button-disabled-bg', componentConfig.IconButton.colorDisabledBg);
+  root.style.setProperty('--color-icon-button-disabled-text', componentConfig.IconButton.colorDisabledText);
 
   // ========================================
   // SOMBRAS (Desde componentConfig para mantener consistencia)
