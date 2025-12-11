@@ -78,4 +78,16 @@ export const componentConfig = {
     colorDisabledBg: allColors.colorPrimaryBgDisabled,
     colorDisabledText: allColors.colorPrimaryTextDisabled,
   },
+
+  /**
+   * Avatar - Avatar de usuario
+   * Usa colorInfo (azul) que complementa bien con el verde del logo/icon button
+   */
+  Avatar: {
+    // Color de fondo: azul suave (colorInfo)
+    colorBgContainer: allColors.colorAccentBlueBg,
+    colorText: allColors.colorAccentBlue,
+    colorTextHover: allColors.colorAccentBlueHover,
+    colorBorder: allColors.colorAccentBlueBorder,
+  },
 };

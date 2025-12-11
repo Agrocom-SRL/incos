@@ -16,9 +16,8 @@
     box-shadow: var(--sombra-header);
     display: flex;
     align-items: center;
-    gap: var(--spacing-base);
-    /* Espacio entre trigger y logo */
-    padding-left: var(--spacing-base);
+    justify-content: space-between; /* Separar izquierda y derecha */
+    padding: 0 var(--spacing-base);
 }
 
 /* ============================================================================

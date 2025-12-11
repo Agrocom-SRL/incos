@@ -20,18 +20,18 @@ export const primaryColors = {
 };
 
 export const semanticColors = {
-  // Color de éxito - Verde cruceño
-  colorSuccess: '#06532b',
-  colorSuccessHover: '#043d20',
-  colorSuccessActive: '#032b16',
-  colorSuccessBg: '#e8f5e9',
-  colorSuccessBgHover: '#c8e6c9',
-  colorSuccessBgDisabled: '#f5f5f5', // Fondo gris claro cuando está deshabilitado
-  colorSuccessBorder: '#087d3f',
-  colorSuccessBorderHover: '#06532b',
-  colorSuccessText: '#06532b',
-  colorSuccessTextHover: '#ffffff', // Blanco en hover
-  colorSuccessTextDisabled: '#cccccc', // Texto gris cuando está deshabilitado
+  // Color de éxito - Verde medio del logo 
+  colorSuccess: '#399f53',
+  colorSuccessHover: '#2d7f42',
+  colorSuccessActive: '#235f32',
+  colorSuccessBg: '#f0f7ef',
+  colorSuccessBgHover: '#e0efe5',
+  colorSuccessBgDisabled: '#f5f5f5',
+  colorSuccessBorder: '#4db066',
+  colorSuccessBorderHover: '#399f53',
+  colorSuccessText: '#399f53',
+  colorSuccessTextHover: '#ffffff',
+  colorSuccessTextDisabled: '#cccccc',
 
   // Color de información - Azul cielo
   colorInfo: '#7d9bdc',
@@ -121,57 +121,91 @@ export const overlayColors = {
   colorBgHoverOnDark: 'rgba(255, 255, 255, 0.25)',
 };
 
-// Colores de acento complementarios (para elementos decorativos y gradientes)
+// Colores de acento extraídos del logo INCOS
 export const accentColors = {
-  // Rojo-Magenta (complementario directo del verde)
-  colorAccentRed: '#d81b60',
-  colorAccentRedHover: '#c2185b',
-  colorAccentRedActive: '#ad1457',
-  colorAccentRedBg: '#fce4ec',
-  colorAccentRedBgDisabled: '#f5f5f5', // Fondo gris claro cuando está deshabilitado
-  colorAccentRedText: '#d81b60',
-  colorAccentRedTextHover: '#ffffff', // Blanco en hover
-  colorAccentRedTextDisabled: '#cccccc', // Texto gris cuando está deshabilitado
+  // Amarillo/Beige claro del logo
+  colorAccentBeige: '#e2dba0',
+  colorAccentBeigeHover: '#c9c186',
+  colorAccentBeigeActive: '#b0a76d',
+  colorAccentBeigeBg: '#faf9f0',
+  colorAccentBeigeBgDisabled: '#f5f5f5',
+  colorAccentBeigeBorder: '#d4ca8a',
+  colorAccentBeigeBorderHover: '#e2dba0',
+  colorAccentBeigeText: '#8b8253',
+  colorAccentBeigeTextHover: '#ffffff',
+  colorAccentBeigeTextDisabled: '#cccccc',
   
-  // Naranja-Coral (complementario dividido)
-  colorAccentOrange: '#ff6b35',
-  colorAccentOrangeHover: '#e55a2b',
-  colorAccentOrangeActive: '#cc4f26',
-  colorAccentOrangeBg: '#fff3e0',
-  colorAccentOrangeBgDisabled: '#f5f5f5', // Fondo gris claro cuando está deshabilitado
-  colorAccentOrangeText: '#ff6b35',
-  colorAccentOrangeTextHover: '#ffffff', // Blanco en hover
-  colorAccentOrangeTextDisabled: '#cccccc', // Texto gris cuando está deshabilitado
+  // Azul del logo (similar a colorInfo pero del logo)
+  colorAccentBlue: '#7d9bdc',
+  colorAccentBlueHover: '#5a78b8',
+  colorAccentBlueActive: '#4a6599',
+  colorAccentBlueBg: '#e3f2fd',
+  colorAccentBlueBgDisabled: '#f5f5f5',
+  colorAccentBlueBorder: '#99b1e8',
+  colorAccentBlueBorderHover: '#7d9bdc',
+  colorAccentBlueText: '#7d9bdc',
+  colorAccentBlueTextHover: '#ffffff',
+  colorAccentBlueTextDisabled: '#cccccc',
   
-  // Azul-Verde (análogo)
-  colorAccentTeal: '#2d9cdb',
-  colorAccentTealHover: '#2196f3',
-  colorAccentTealActive: '#1976d2',
-  colorAccentTealBg: '#e0f2f1',
-  colorAccentTealBgDisabled: '#f5f5f5', // Fondo gris claro cuando está deshabilitado
-  colorAccentTealText: '#2d9cdb',
-  colorAccentTealTextHover: '#ffffff', // Blanco en hover
-  colorAccentTealTextDisabled: '#cccccc', // Texto gris cuando está deshabilitado
+  // Verde oliva/amarillo verdoso del logo
+  colorAccentOlive: '#878c49',
+  colorAccentOliveHover: '#6b6f3a',
+  colorAccentOliveActive: '#56592e',
+  colorAccentOliveBg: '#f1f2e4',
+  colorAccentOliveBgDisabled: '#f5f5f5',
+  colorAccentOliveBorder: '#9fa45a',
+  colorAccentOliveBorderHover: '#878c49',
+  colorAccentOliveText: '#878c49',
+  colorAccentOliveTextHover: '#ffffff',
+  colorAccentOliveTextDisabled: '#cccccc',
   
-  // Amarillo-Verde (análogo)
-  colorAccentLime: '#6bcf7f',
-  colorAccentLimeHover: '#52c41a',
-  colorAccentLimeActive: '#389e0d',
-  colorAccentLimeBg: '#f6ffed',
-  colorAccentLimeBgDisabled: '#f5f5f5', // Fondo gris claro cuando está deshabilitado
-  colorAccentLimeText: '#6bcf7f',
-  colorAccentLimeTextHover: '#ffffff', // Blanco en hover
-  colorAccentLimeTextDisabled: '#cccccc', // Texto gris cuando está deshabilitado
+  // Marrón oscuro/Negro del logo
+  colorAccentBrown: '#381110',
+  colorAccentBrownHover: '#2a0c0c',
+  colorAccentBrownActive: '#1d0808',
+  colorAccentBrownBg: '#e8e5e5',
+  colorAccentBrownBgDisabled: '#f5f5f5',
+  colorAccentBrownBorder: '#4a1a1a',
+  colorAccentBrownBorderHover: '#381110',
+  colorAccentBrownText: '#381110',
+  colorAccentBrownTextHover: '#ffffff',
+  colorAccentBrownTextDisabled: '#cccccc',
   
-  // Púrpura-Violeta (triádico)
-  colorAccentPurple: '#9d4edd',
-  colorAccentPurpleHover: '#7b2cbf',
-  colorAccentPurpleActive: '#5a189a',
-  colorAccentPurpleBg: '#f3e5f5',
-  colorAccentPurpleBgDisabled: '#f5f5f5', // Fondo gris claro cuando está deshabilitado
-  colorAccentPurpleText: '#9d4edd',
-  colorAccentPurpleTextHover: '#ffffff', // Blanco en hover
-  colorAccentPurpleTextDisabled: '#cccccc', // Texto gris cuando está deshabilitado
+  // Rojo del logo (similar a colorError pero del logo)
+  colorAccentRed: '#e41c24',
+  colorAccentRedHover: '#b81620',
+  colorAccentRedActive: '#8f111a',
+  colorAccentRedBg: '#fee2e2',
+  colorAccentRedBgDisabled: '#f5f5f5',
+  colorAccentRedBorder: '#ed4a50',
+  colorAccentRedBorderHover: '#e41c24',
+  colorAccentRedText: '#e41c24',
+  colorAccentRedTextHover: '#ffffff',
+  colorAccentRedTextDisabled: '#cccccc',
+  
+  // Verde claro del logo
+  colorAccentGreenLight: '#a4c79e',
+  colorAccentGreenLightHover: '#85b27a',
+  colorAccentGreenLightActive: '#6b9d5f',
+  colorAccentGreenLightBg: '#f0f7ef',
+  colorAccentGreenLightBgDisabled: '#f5f5f5',
+  colorAccentGreenLightBorder: '#b8d6b1',
+  colorAccentGreenLightBorderHover: '#a4c79e',
+  colorAccentGreenLightText: '#6b9d5f',
+  colorAccentGreenLightTextHover: '#ffffff',
+  colorAccentGreenLightTextDisabled: '#cccccc',
+  
+  // Verde medio del logo
+  colorAccentGreen: '#399f53',
+  colorAccentGreenHover: '#2d7f42',
+  colorAccentGreenActive: '#235f32',
+  colorAccentGreenBg: '#e8f5e9',
+  colorAccentGreenBgDisabled: '#f5f5f5',
+  colorAccentGreenBorder: '#4db066',
+  colorAccentGreenBorderHover: '#399f53',
+  colorAccentGreenText: '#399f53',
+  colorAccentGreenTextHover: '#ffffff',
+  colorAccentGreenTextDisabled: '#cccccc',
 };
 
 export const allColors = {

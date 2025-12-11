@@ -1,7 +1,23 @@
 /* ============================================================================
    ATOMS - AVATAR
+   ============================================================================
+   Estilos para el Avatar desde el tema
+   Los colores vienen de componentConfig.Avatar vía css-variables.js
    ============================================================================ */
 
 .incos-avatar {
-    /* Estilos base desde Ant Design */
+    background-color: var(--color-avatar-bg) !important;
+    color: var(--color-avatar-text) !important;
+    border: 1px solid var(--color-avatar-border);
+    transition: all var(--transition-base);
+}
+
+.incos-avatar:hover {
+    background-color: var(--color-avatar-text-hover) !important;
+    color: #ffffff !important;
+    border-color: var(--color-avatar-text-hover);
+}
+
+.incos-avatar .anticon {
+    color: inherit;
 }

@@ -56,6 +56,14 @@ export function injectCSSVariables() {
   root.style.setProperty('--color-icon-button-disabled-text', componentConfig.IconButton.colorDisabledText);
 
   // ========================================
+  // AVATAR - Variables CSS
+  // ========================================
+  root.style.setProperty('--color-avatar-bg', componentConfig.Avatar.colorBgContainer);
+  root.style.setProperty('--color-avatar-text', componentConfig.Avatar.colorText);
+  root.style.setProperty('--color-avatar-text-hover', componentConfig.Avatar.colorTextHover);
+  root.style.setProperty('--color-avatar-border', componentConfig.Avatar.colorBorder);
+
+  // ========================================
   // SOMBRAS (Desde componentConfig para mantener consistencia)
   // ========================================
   root.style.setProperty('--sombra-sider', componentConfig.Sider.boxShadow);
