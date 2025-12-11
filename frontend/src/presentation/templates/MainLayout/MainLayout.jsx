@@ -19,7 +19,7 @@ import { allSpacing } from '@config/theme/spacing';
 const { Sider, Header, Content } = Layout;
 
 const MainLayout = ({ header, sidebar, children }) => {
-    const [collapsed, setCollapsed] = useState(true);
+    const [collapsed, setCollapsed] = useState(false);
 
     // Usar valores del tema para el sidebar
     const sidebarWidth = allSpacing.sidebarWidth;

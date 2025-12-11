@@ -72,7 +72,14 @@ export function injectCSSVariables() {
   root.style.setProperty('--color-menu-item-selected-color', componentConfig.Menu.itemSelectedColor);
   root.style.setProperty('--color-menu-item-hover-bg', componentConfig.Menu.itemHoverBg);
   root.style.setProperty('--color-menu-item-hover-color', componentConfig.Menu.itemHoverColor);
+  // Items activos (padres seleccionados directamente)
   root.style.setProperty('--color-menu-item-active-bg', componentConfig.Menu.itemActiveBg);
+  root.style.setProperty('--color-menu-item-active-color', componentConfig.Menu.itemActiveColor);
+  root.style.setProperty('--color-menu-item-active-border', componentConfig.Menu.itemActiveBorder);
+  // Items padre cuando tienen un hijo seleccionado
+  root.style.setProperty('--color-menu-item-parent-selected-bg', componentConfig.Menu.itemParentSelectedBg);
+  root.style.setProperty('--color-menu-item-parent-selected-border', componentConfig.Menu.itemParentSelectedBorder);
+  root.style.setProperty('--color-menu-item-parent-selected-color', componentConfig.Menu.itemParentSelectedColor);
 
   // ========================================
   // TOOLTIP - Variables CSS (para tooltips del menú)

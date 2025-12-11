@@ -33,9 +33,52 @@
     color: var(--color-menu-item);
 }
 
+/* Items seleccionados (todos los items finales, incluyendo Dashboard) */
 .navigation-menu .ant-menu-item-selected {
     background-color: var(--color-menu-item-selected-bg) !important;
     color: var(--color-menu-item-selected-color) !important;
+}
+
+.navigation-menu .ant-menu-item-selected .anticon,
+.navigation-menu .ant-menu-item-selected span {
+    color: var(--color-menu-item-selected-color) !important;
+}
+
+/* Submenu padre con background cuando un hijo está seleccionado (solo en la cadena del item seleccionado) */
+.navigation-menu .ant-menu-submenu-selected > .ant-menu-submenu-title {
+    background-color: var(--color-menu-item-parent-selected-bg) !important;
+    border: 1px solid var(--color-menu-item-parent-selected-border) !important;
+    color: var(--color-menu-item-parent-selected-color) !important;
+}
+
+.navigation-menu .ant-menu-submenu-selected > .ant-menu-submenu-title .anticon,
+.navigation-menu .ant-menu-submenu-selected > .ant-menu-submenu-title span {
+    color: var(--color-menu-item-parent-selected-color) !important;
+}
+
+/* Submenu padre ABIERTO pero SIN hijos seleccionados (estado activo solo si no hay ningún item seleccionado en otro módulo) */
+/* Solo aplicar estilo active si el submenu está abierto Y no hay ningún submenu seleccionado en el menú */
+.navigation-menu:not(:has(.ant-menu-submenu-selected)) .ant-menu-submenu-open > .ant-menu-submenu-title {
+    background-color: var(--color-menu-item-active-bg) !important;
+    border: 1px solid var(--color-menu-item-active-border) !important;
+    color: var(--color-menu-item-active-color) !important;
+}
+
+.navigation-menu:not(:has(.ant-menu-submenu-selected)) .ant-menu-submenu-open > .ant-menu-submenu-title .anticon,
+.navigation-menu:not(:has(.ant-menu-submenu-selected)) .ant-menu-submenu-open > .ant-menu-submenu-title span {
+    color: var(--color-menu-item-active-color) !important;
+}
+
+/* Si hay un submenu seleccionado, los demás submenús abiertos NO deben tener estilo active */
+.navigation-menu:has(.ant-menu-submenu-selected) .ant-menu-submenu-open:not(.ant-menu-submenu-selected) > .ant-menu-submenu-title {
+    background-color: transparent !important;
+    border: none !important;
+    color: var(--color-menu-item) !important;
+}
+
+.navigation-menu:has(.ant-menu-submenu-selected) .ant-menu-submenu-open:not(.ant-menu-submenu-selected) > .ant-menu-submenu-title .anticon,
+.navigation-menu:has(.ant-menu-submenu-selected) .ant-menu-submenu-open:not(.ant-menu-submenu-selected) > .ant-menu-submenu-title span {
+    color: var(--color-menu-item) !important;
 }
 
 .navigation-menu .ant-menu-item:hover:not(.ant-menu-item-selected) {

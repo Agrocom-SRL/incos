@@ -1,7 +1,7 @@
 // src/presentation/components/molecules/HeaderRight/HeaderRight.jsx
 import { Flex } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
-import Avatar from '@atoms/Avatar';
+import { Avatar } from '@atoms';
 import { allSpacing } from '@config/theme/spacing';
 
 /**

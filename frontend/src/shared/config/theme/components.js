@@ -93,18 +93,22 @@ export const componentConfig = {
   Menu: {
     // Color de texto: mismo que Sider
     itemColor: allColors.colorText,
-    // Fondo del item seleccionado: verde primario puro (no bg)
+    // Items seleccionados (solo hijos finales)
     itemSelectedBg: allColors.colorPrimary,
-    // Texto del item seleccionado: blanco sobre fondo verde
     itemSelectedColor: allColors.colorPrimaryTextHover,
-    // Fondo en hover: verde primario bg (suave)
+    // Items en hover
     itemHoverBg: allColors.colorPrimaryBg,
-    // Texto en hover: verde primario puro
     itemHoverColor: allColors.colorPrimary,
-    // Fondo activo: verde primario puro
-    itemActiveBg: allColors.colorPrimary,
+    // Items activos (padres seleccionados directamente, sin hijos seleccionados)
+    itemActiveBg: allColors.colorPrimaryBg,
+    itemActiveColor: allColors.colorPrimary,
+    itemActiveBorder: allColors.colorPrimaryBorder,
     // Fondo del menú (transparente para usar el del Sider)
     subMenuItemBg: 'transparent',
+    // Items padre cuando tienen un hijo seleccionado
+    itemParentSelectedBg: allColors.colorPrimaryBg,
+    itemParentSelectedBorder: allColors.colorPrimary,
+    itemParentSelectedColor: allColors.colorPrimary,
   },
 
   /**

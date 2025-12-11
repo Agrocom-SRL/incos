@@ -1,53 +1,29 @@
 // src/presentation/components/molecules/NavigationMenu/NavigationMenu.jsx
 import { Menu } from 'antd';
-import {
-    UserOutlined,
-    ProfileOutlined,
-    OrderedListOutlined,
-    CarryOutFilled,
-    SettingOutlined,
-} from '@ant-design/icons';
+import { useNavigationMenu } from './useNavigationMenu';
 
 const NavigationMenu = ({
-    defaultSelectedKey = '1',
+    defaultSelectedKey = 'DASH',
     collapsed = false,
     onMenuClick
 }) => {
-    const menuItems = [
-        {
-            key: '1',
-            icon: <UserOutlined />,
-            label: 'Dashboard',
-        },
-        {
-            key: '2',
-            icon: <CarryOutFilled />,
-            label: 'My Orders',
-        },
-        {
-            key: '3',
-            icon: <OrderedListOutlined />,
-            label: 'ToDo',
-        },
-        {
-            key: '4',
-            icon: <ProfileOutlined />,
-            label: 'Profile',
-        },
-        {
-            key: '5',
-            icon: <SettingOutlined />,
-            label: 'Settings',
-        },
-    ];
+    const {
+        selectedKeys,
+        openKeys,
+        menuItemsWithIcons,
+        handleMenuClick,
+        handleOpenChange,
+    } = useNavigationMenu(defaultSelectedKey, onMenuClick);
 
     return (
         <Menu
             mode="inline"
-            defaultSelectedKeys={[defaultSelectedKey]}
+            selectedKeys={selectedKeys}
+            openKeys={openKeys}
             className="navigation-menu"
-            items={menuItems}
-            onClick={onMenuClick}
+            items={menuItemsWithIcons}
+            onClick={handleMenuClick}
+            onOpenChange={handleOpenChange}
             inlineCollapsed={collapsed}
         />
     );

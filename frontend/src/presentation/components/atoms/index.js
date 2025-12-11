@@ -7,3 +7,4 @@ export { default as Card } from './Card';
 export { default as Avatar } from './Avatar';
 export { default as Image } from './Image';
 export { default as Divider } from './Divider';
+export { default as MenuItemIcon } from './MenuItemIcon';
