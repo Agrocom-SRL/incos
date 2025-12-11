@@ -1,102 +1,55 @@
 /* ============================================================================
-   LOGO
+   LOGO (Componente Atómico)
    ============================================================================
-   Todos los valores usan variables CSS generadas desde el tema JS
+   Estilos simples para el logo en el Header
    ============================================================================ */
 
 .app-logo {
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
-    transition: var(--transition-base);
-    position: relative;
-    border-radius: var(--radio-md);
 }
 
 .app-logo img {
     width: 100%;
     height: 100%;
     object-fit: contain;
-    transition: var(--transition-base);
-}
-
-.app-logo:hover img {
-    transform: scale(1.05);
-    filter: brightness(1.1);
-}
-
-/* Indicador visual de que es clickeable */
-.app-logo::after {
-    content: '';
-    position: absolute;
-    bottom: calc(var(--spacing-xs) * -1);
-    left: 50%;
-    transform: translateX(-50%);
-    width: var(--spacing-lg);
-    height: 2px;
-    background: var(--color-verde-institucional);
-    border-radius: var(--radio-xs);
-    opacity: 0;
-    transition: var(--transition-fast);
-}
-
-.app-logo:hover::after {
-    opacity: 1;
 }
 
 /* ========================================
-     VARIANTE: ICONO (Cuadrado)
-     ======================================== */
+   VARIANTE: ICONO (Cuadrado)
+   ======================================== */
 
 .app-logo--icon.app-logo--small {
-    width: var(--control-height-lg);
-    height: var(--control-height-lg);
-    margin: var(--spacing-base) 0;
+    width: var(--logo-icon-small);
+    height: var(--logo-icon-small);
 }
 
 .app-logo--icon.app-logo--medium {
-    width: var(--control-height-xl);
-    height: var(--control-height-xl);
-    margin: var(--spacing-lg) 0;
+    width: var(--logo-icon-medium);
+    height: var(--logo-icon-medium);
 }
 
 .app-logo--icon.app-logo--large {
-    width: 80px;
-    height: 80px;
-    margin: var(--spacing-2xl) 0;
+    width: var(--logo-icon-large);
+    height: var(--logo-icon-large);
 }
 
 /* ========================================
-     VARIANTE: HORIZONTAL
-     ======================================== */
+   VARIANTE: HORIZONTAL
+   ======================================== */
 
 .app-logo--horizontal.app-logo--small {
-    width: 120px;
-    height: var(--control-height);
-    margin: var(--spacing-sm) 0;
+    width: var(--logo-horizontal-small-width);
+    height: var(--logo-horizontal-small-height);
 }
 
 .app-logo--horizontal.app-logo--medium {
-    width: 180px;
-    height: 60px;
-    margin: var(--spacing-md) 0;
+    width: var(--logo-horizontal-medium-width);
+    height: var(--logo-horizontal-medium-height);
 }
 
 .app-logo--horizontal.app-logo--large {
-    width: 240px;
-    height: 80px;
-    margin: var(--spacing-base) 0;
-}
-
-/* ========================================
-     ESTADO COLAPSADO
-     ======================================== */
-
-.ant-layout-sider-collapsed .app-logo--horizontal {
-    display: none !important;
-}
-
-.ant-layout-sider-collapsed .app-logo--icon {
-    display: flex !important;
+    width: var(--logo-horizontal-large-width);
+    height: var(--logo-horizontal-large-height);
 }

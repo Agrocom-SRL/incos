@@ -16,6 +16,9 @@
     box-shadow: var(--sombra-header);
     display: flex;
     align-items: center;
+    gap: var(--spacing-base);
+    /* Espacio entre trigger y logo */
+    padding-left: var(--spacing-base);
 }
 
 /* ============================================================================
@@ -30,4 +33,12 @@
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+/* ============================================================================
+   LOGO EN HEADER
+   ============================================================================ */
+
+.header .app-logo {
+    margin: 0;
 }

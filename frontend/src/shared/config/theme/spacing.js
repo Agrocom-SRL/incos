@@ -44,6 +44,21 @@ export const layoutHeights = {
   sidebarCollapsedWidth: 80,
 };
 
+// Tamaños del logo
+export const logoSizes = {
+  // Logo icono (cuadrado)
+  logoIconSmall: 32,
+  logoIconMedium: 40,
+  logoIconLarge: 48,
+  // Logo horizontal
+  logoHorizontalSmall: 100,
+  logoHorizontalSmallHeight: 32,
+  logoHorizontalMedium: 140,
+  logoHorizontalMediumHeight: 48,
+  logoHorizontalLarge: 220,
+  logoHorizontalLargeHeight: 64,
+};
+
 export const zIndex = {
   zIndexBase: 0,
   zIndexPopupBase: 1000,
@@ -63,6 +78,7 @@ export const allSpacing = {
   ...borderRadius,
   ...controlHeights,
   ...layoutHeights,
+  ...logoSizes,
   ...zIndex,
   ...motion,
   wireframe: false,

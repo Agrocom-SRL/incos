@@ -81,6 +81,22 @@ export function injectCSSVariables() {
   root.style.setProperty('--control-height-sm', `${allSpacing.controlHeightSM}px`);
 
   // ========================================
+  // LOGO - Tamaños
+  // ========================================
+  // Logo icono
+  root.style.setProperty('--logo-icon-small', `${allSpacing.logoIconSmall}px`);
+  root.style.setProperty('--logo-icon-medium', `${allSpacing.logoIconMedium}px`);
+  root.style.setProperty('--logo-icon-large', `${allSpacing.logoIconLarge}px`);
+  
+  // Logo horizontal
+  root.style.setProperty('--logo-horizontal-small-width', `${allSpacing.logoHorizontalSmall}px`);
+  root.style.setProperty('--logo-horizontal-small-height', `${allSpacing.logoHorizontalSmallHeight}px`);
+  root.style.setProperty('--logo-horizontal-medium-width', `${allSpacing.logoHorizontalMedium}px`);
+  root.style.setProperty('--logo-horizontal-medium-height', `${allSpacing.logoHorizontalMediumHeight}px`);
+  root.style.setProperty('--logo-horizontal-large-width', `${allSpacing.logoHorizontalLarge}px`);
+  root.style.setProperty('--logo-horizontal-large-height', `${allSpacing.logoHorizontalLargeHeight}px`);
+
+  // ========================================
   // Z-INDEX
   // ========================================
   root.style.setProperty('--z-fixed', '1030');

@@ -1,27 +1,26 @@
 // src/presentation/components/atoms/Logo/Logo.jsx
 import { Image } from 'antd';
-import { useState } from 'react';
 import logoIcon from '@assets/images/branding/logo-icon.webp';
 import logoHorizontal from '@assets/images/branding/logo-horizontal.webp';
 
+/**
+ * Logo - Componente atómico del logo de INCOS
+ * 
+ * @param {string} variant - Variante del logo: 'icon' | 'horizontal'
+ * @param {string} size - Tamaño: 'small' | 'medium' | 'large'
+ * @param {function} onClick - Función opcional que se ejecuta al hacer click
+ */
 const Logo = ({
-    variant = 'icon',
+    variant = 'horizontal',
     size = 'medium',
     onClick
 }) => {
-    const [isAnimating, setIsAnimating] = useState(false);
     const logoSrc = variant === 'horizontal' ? logoHorizontal : logoIcon;
-
-    const handleClick = () => {
-        setIsAnimating(true);
-        setTimeout(() => setIsAnimating(false), 300);
-        onClick?.();
-    };
 
     return (
         <div
-            className={`app-logo app-logo--${size} app-logo--${variant} ${isAnimating ? 'app-logo--animating' : ''}`}
-            onClick={handleClick}
+            className={`app-logo app-logo--${size} app-logo--${variant}`}
+            onClick={onClick}
         >
             <Image
                 src={logoSrc}
