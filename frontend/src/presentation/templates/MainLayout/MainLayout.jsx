@@ -18,7 +18,7 @@ import { allSpacing } from '@config/theme/spacing';
 
 const { Sider, Header, Content } = Layout;
 
-const MainLayout = ({ header, children }) => {
+const MainLayout = ({ header, sidebar, children }) => {
     const [collapsed, setCollapsed] = useState(true);
 
     // Usar valores del tema para el sidebar
@@ -30,11 +30,16 @@ const MainLayout = ({ header, children }) => {
         setCollapsed(!collapsed);
     };
 
+    // Handler para el Sidebar
+    const handleMenuClick = () => {
+        // Lógica para manejar clicks en el menú
+    };
+
     return (
         <Layout>
             {/* Header siempre visible en la parte superior */}
             <Header className="header">
-                {header && typeof header === 'function' 
+                {header && typeof header === 'function'
                     ? header({ collapsed, onToggle: handleToggle })
                     : header}
             </Header>
@@ -49,6 +54,12 @@ const MainLayout = ({ header, children }) => {
                     width={sidebarWidth}
                     collapsedWidth={sidebarCollapsedWidth}
                 >
+                    {sidebar && typeof sidebar === 'function'
+                        ? sidebar({
+                            collapsed,
+                            onMenuClick: handleMenuClick
+                        })
+                        : sidebar}
                 </Sider>
 
                 <Content className="content">{children}</Content>

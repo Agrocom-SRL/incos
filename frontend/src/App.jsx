@@ -8,6 +8,7 @@ const App = () => {
     return (
         <MainLayout
             header={(props) => <Header {...props} />}
+            sidebar={(props) => <Sidebar {...props} />}
         >
         </MainLayout>
     );

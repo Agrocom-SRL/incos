@@ -11,6 +11,7 @@
 import { allSpacing } from '@config/theme/spacing';
 import { shadows } from '@config/theme/shadows';
 import { componentConfig } from '@config/theme/components';
+import { typography } from '@config/theme/typography';
 
 /**
  * Genera TODAS las variables CSS desde el tema JS
@@ -64,6 +65,23 @@ export function injectCSSVariables() {
   root.style.setProperty('--color-avatar-border', componentConfig.Avatar.colorBorder);
 
   // ========================================
+  // MENU - Variables CSS (para NavigationMenu)
+  // ========================================
+  root.style.setProperty('--color-menu-item', componentConfig.Menu.itemColor);
+  root.style.setProperty('--color-menu-item-selected-bg', componentConfig.Menu.itemSelectedBg);
+  root.style.setProperty('--color-menu-item-selected-color', componentConfig.Menu.itemSelectedColor);
+  root.style.setProperty('--color-menu-item-hover-bg', componentConfig.Menu.itemHoverBg);
+  root.style.setProperty('--color-menu-item-hover-color', componentConfig.Menu.itemHoverColor);
+  root.style.setProperty('--color-menu-item-active-bg', componentConfig.Menu.itemActiveBg);
+
+  // ========================================
+  // TOOLTIP - Variables CSS (para tooltips del menú)
+  // ========================================
+  root.style.setProperty('--color-tooltip-bg', componentConfig.Tooltip.colorBgSpotlight);
+  root.style.setProperty('--tooltip-padding-block', `${componentConfig.Tooltip.paddingBlock}px`);
+  root.style.setProperty('--tooltip-padding-inline', `${componentConfig.Tooltip.paddingInline}px`);
+
+  // ========================================
   // SOMBRAS (Desde componentConfig para mantener consistencia)
   // ========================================
   root.style.setProperty('--sombra-sider', componentConfig.Sider.boxShadow);
@@ -108,6 +126,20 @@ export function injectCSSVariables() {
   // Z-INDEX
   // ========================================
   root.style.setProperty('--z-fixed', '1030');
+
+  // ========================================
+  // BORDER RADIUS
+  // ========================================
+  root.style.setProperty('--border-radius', `${allSpacing.borderRadius}px`);
+  root.style.setProperty('--border-radius-sm', `${allSpacing.borderRadiusSM}px`);
+  root.style.setProperty('--border-radius-lg', `${allSpacing.borderRadiusLG}px`);
+
+  // ========================================
+  // TIPOGRAFÍA
+  // ========================================
+  root.style.setProperty('--font-size-base', `${typography.fontSize}px`);
+  root.style.setProperty('--font-size-sm', `${typography.fontSizeSM}px`);
+  root.style.setProperty('--font-size-lg', `${typography.fontSizeLG}px`);
 
   // ========================================
   // TRANSICIONES

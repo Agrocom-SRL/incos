@@ -10,7 +10,7 @@ import { allSpacing } from '@config/theme/spacing';
  */
 const HeaderRight = () => {
     return (
-        <Flex className="header-right" align="center" gap={allSpacing.margin}>
+        <Flex align="center" gap={allSpacing.margin}>
             <Avatar icon={<UserOutlined />} />
         </Flex>
     );

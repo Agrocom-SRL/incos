@@ -1,49 +1,51 @@
 /* ============================================================================
    NAVIGATION MENU
    ============================================================================
-   Todos los valores usan variables CSS generadas desde el tema JS
+   SOLO estilos de layout y posicionamiento
+   Los colores vienen de componentConfig.Menu (via Ant Design y variables CSS)
    ============================================================================ */
 
 .navigation-menu {
-    /* Usar valores del tema - Ant Design aplica los colores de componentConfig.Menu */
     border: none;
     background: transparent;
     padding: 0 var(--spacing-sm);
+    width: 94%;
 }
 
 .navigation-menu .ant-menu-item {
-    /* Usar valores del tema - componentConfig.Menu controla los colores */
-    border-radius: var(--radio-md);
+    border-radius: var(--border-radius-sm);
     margin: var(--spacing-xs) 0;
     height: var(--control-height);
     line-height: var(--control-height);
-    font-weight: var(--font-weight-medium);
     transition: all var(--transition-base);
-    padding-left: var(--spacing-base);
     display: flex;
     align-items: center;
     overflow: hidden;
 }
 
-.navigation-menu .ant-menu-item-selected {
-    /* Ant Design aplica automáticamente componentConfig.Menu.itemSelectedBg y itemSelectedColor */
-    background-color: var(--color-sidebar-active);
-    color: var(--color-sidebar-text-active);
-}
-
+/* Eliminar borde lateral de Ant Design en item seleccionado */
 .navigation-menu .ant-menu-item-selected::after {
     display: none;
 }
 
+/* Colores desde variables CSS del tema (componentConfig.Menu) */
+.navigation-menu .ant-menu-item {
+    color: var(--color-menu-item);
+}
+
+.navigation-menu .ant-menu-item-selected {
+    background-color: var(--color-menu-item-selected-bg) !important;
+    color: var(--color-menu-item-selected-color) !important;
+}
+
 .navigation-menu .ant-menu-item:hover:not(.ant-menu-item-selected) {
-    /* Ant Design aplica automáticamente componentConfig.Menu.itemHoverBg y itemHoverColor */
-    background-color: var(--color-sidebar-hover);
-    color: var(--color-verde-institucional);
+    background-color: var(--color-menu-item-hover-bg) !important;
+    color: var(--color-menu-item-hover-color) !important;
 }
 
 .navigation-menu .ant-menu-item-selected .anticon,
 .navigation-menu .ant-menu-item-selected span {
-    color: var(--color-sidebar-text-active);
+    color: var(--color-menu-item-selected-color) !important;
 }
 
 .navigation-menu .ant-menu-item .anticon {
@@ -72,10 +74,7 @@
     padding: 0;
     justify-content: center;
     align-items: center;
-    margin: var(--spacing-xs) auto;
-    width: var(--control-height);
-    min-width: var(--control-height);
-    max-width: var(--control-height);
+    margin: var(--spacing-xs) 0;
     height: var(--control-height);
     display: flex;
 }
@@ -104,16 +103,14 @@
 
 .ant-layout-sider-collapsed .navigation-menu {
     padding: 0;
+    width: 100% !important;
+    margin: 0 var(--spacing-xs);
 }
 
-.ant-layout-sider-collapsed .navigation-menu .ant-menu-item {
+.ant-layout-sider-collapsed .navigation-menu .ant-mƒenu-item {
     padding: 0;
     justify-content: center;
     align-items: center;
-    margin: var(--spacing-xs) auto;
-    width: var(--control-height);
-    min-width: var(--control-height);
-    max-width: var(--control-height);
     height: var(--control-height);
     display: flex;
 }
@@ -122,7 +119,6 @@
     display: none;
 }
 
-/* Asegurar que los iconos siempre se muestren cuando está colapsado */
 .ant-layout-sider-collapsed .navigation-menu .ant-menu-item .anticon {
     margin: 0;
     font-size: var(--font-size-lg);
@@ -133,27 +129,23 @@
     justify-content: center;
     width: auto;
     height: auto;
-    color: var(--color-sidebar-text);
+    color: var(--color-menu-item);
 }
 
-/* Item seleccionado cuando está colapsado - usa colores del tema */
 .ant-layout-sider-collapsed .navigation-menu .ant-menu-item-selected {
-    /* Ant Design aplica automáticamente componentConfig.Menu.itemSelectedBg */
-    background-color: var(--color-sidebar-active);
-    border-radius: var(--radio-md);
+    background-color: var(--color-menu-item-selected-bg) !important;
+    border-radius: var(--border-radius-sm);
 }
 
 .ant-layout-sider-collapsed .navigation-menu .ant-menu-item-selected .anticon {
-    /* Ant Design aplica automáticamente componentConfig.Menu.itemSelectedColor */
-    color: var(--color-sidebar-text-active);
+    color: var(--color-menu-item-selected-color) !important;
 }
 
 .ant-layout-sider-collapsed .navigation-menu .ant-menu-item:hover:not(.ant-menu-item-selected) .anticon {
-    /* Ant Design aplica automáticamente componentConfig.Menu.itemHoverColor */
-    color: var(--color-verde-institucional);
+    color: var(--color-menu-item-hover-color) !important;
 }
 
-/* Asegurar que los tooltips se muestren correctamente cuando está colapsado */
+/* Tooltips cuando está colapsado */
 .ant-layout-sider-collapsed .navigation-menu .ant-menu-item,
 .ant-layout-sider-collapsing .navigation-menu .ant-menu-item {
     position: relative;

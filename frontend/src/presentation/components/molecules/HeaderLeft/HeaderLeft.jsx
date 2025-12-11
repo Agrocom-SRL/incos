@@ -11,7 +11,7 @@ import { allSpacing } from '@config/theme/spacing';
  */
 const HeaderLeft = ({ collapsed, onToggle }) => {
     return (
-        <Flex className="header-left" align="center" gap={allSpacing.margin}>
+        <Flex align="center" gap={allSpacing.margin}>
             <Logo variant="horizontal" size="medium" />
             <IconButton
                 icon={<MenuOutlined />}

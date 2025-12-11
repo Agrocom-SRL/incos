@@ -2,56 +2,14 @@
    SIDEBAR COMPONENT (Organism)
    ============================================================================
    Estilos para el componente Sidebar interno (sidebar-container)
-   Todos los valores usan variables CSS generadas desde el tema JS
-   Los colores del fondo vienen de componentConfig.Sider en components.js
+   SOLO estilos de layout y posicionamiento
+   Los colores vienen de componentConfig.Menu y componentConfig.Sider
    ============================================================================ */
 
 .sidebar-container {
     height: 100%;
+    width: 110%;
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-sm);
-    align-items: stretch;
-}
-
-/* Logo container en sidebar */
-.sidebar-container .ant-flex {
-    padding: var(--spacing-sm) 0;
-    width: 100%;
-}
-
-/* Sidebar colapsando - ajustes durante la transición */
-.ant-layout-sider-collapsing .sidebar-container {
-    padding: var(--spacing-sm) 0;
-    align-items: center;
-    gap: var(--spacing-base);
-    transition: all var(--transition-base);
-}
-
-.ant-layout-sider-collapsing .sidebar-container .ant-flex {
-    padding: var(--spacing-xs) 0;
-    justify-content: center;
-    transition: all var(--transition-base);
-}
-
-/* Sidebar colapsado - ajustes del contenido interno */
-.ant-layout-sider-collapsed .sidebar-container {
-    padding: var(--spacing-sm) 0;
-    align-items: center;
-    gap: var(--spacing-base);
-}
-
-.ant-layout-sider-collapsed .sidebar-container .ant-flex {
-    padding: var(--spacing-xs) 0;
-    justify-content: center;
-}
-
-/* Ajustes para el menú de navegación dentro del sidebar */
-.sidebar-container .navigation-menu {
-    flex: 1;
-    width: 100%;
-}
-
-.ant-layout-sider-collapsed .sidebar-container .navigation-menu {
-    width: auto;
+    padding: var(--spacing-lg) 0;
 }

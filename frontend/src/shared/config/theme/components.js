@@ -33,9 +33,7 @@ export const componentConfig = {
     // Texto oscuro sobre fondo blanco
     colorText: allColors.colorText,
     colorTextSecondary: allColors.colorTextSecondary,
-    // Borde claro para fondo blanco
     colorBorder: allColors.colorBorder,
-    // Sombra (desde shadows.js) - Se usa en CSS personalizado
     boxShadow: shadows.shadowElevation2,
   },
 
@@ -45,15 +43,12 @@ export const componentConfig = {
   Header: {
     // Fondo blanco (igual que Sider)
     colorBgContainer: allColors.colorBgContainer,
-    // Texto oscuro sobre fondo blanco
     colorText: allColors.colorText,
     colorTextSecondary: allColors.colorTextSecondary,
-    // Borde claro para fondo blanco
     colorBorder: allColors.colorBorder,
     height: allSpacing.headerHeight,
     padding: `0 ${allSpacing.marginLG}px`,
     borderRadius: 0,
-    // Sombra (desde shadows.js)
     boxShadow: shadows.shadowElevation1,
   },
 
@@ -89,5 +84,36 @@ export const componentConfig = {
     colorText: allColors.colorAccentBlue,
     colorTextHover: allColors.colorAccentBlueHover,
     colorBorder: allColors.colorAccentBlueBorder,
+  },
+
+  /**
+   * Menu - Menú de navegación del Sidebar
+   * Usa colores del Sider como base y verde primario para estados activos/seleccionados
+   */
+  Menu: {
+    // Color de texto: mismo que Sider
+    itemColor: allColors.colorText,
+    // Fondo del item seleccionado: verde primario puro (no bg)
+    itemSelectedBg: allColors.colorPrimary,
+    // Texto del item seleccionado: blanco sobre fondo verde
+    itemSelectedColor: allColors.colorPrimaryTextHover,
+    // Fondo en hover: verde primario bg (suave)
+    itemHoverBg: allColors.colorPrimaryBg,
+    // Texto en hover: verde primario puro
+    itemHoverColor: allColors.colorPrimary,
+    // Fondo activo: verde primario puro
+    itemActiveBg: allColors.colorPrimary,
+    // Fondo del menú (transparente para usar el del Sider)
+    subMenuItemBg: 'transparent',
+  },
+
+  /**
+   * Tooltip - Tooltips del menú cuando el sidebar está colapsado
+   */
+  Tooltip: {
+    colorBgSpotlight: allColors.colorBgTooltip,
+    borderRadius: allSpacing.borderRadiusMD,
+    paddingBlock: allSpacing.paddingLG,
+    paddingInline: allSpacing.paddingLG,
   },
 };
