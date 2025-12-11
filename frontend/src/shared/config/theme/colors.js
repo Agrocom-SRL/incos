@@ -66,10 +66,10 @@ export const linkColors = {
 };
 
 export const backgroundColors = {
-  colorBgContainer: '#ffffff',
+  colorBgContainer: '#ffffff',      // Blanco para Header y Sider
   colorBgElevated: '#ffffff',
-  colorBgLayout: '#fafafa',
-  colorBgSpotlight: '#f5f5f5',
+  colorBgLayout: '#f5f5f5',         // Gris más oscuro para Content (diferenciarse del blanco)
+  colorBgSpotlight: '#f0f0f0',
   colorBgMask: 'rgba(0, 0, 0, 0.45)',
   colorBgTooltip: 'rgba(0, 0, 0, 0.85)', // Color oscuro para tooltips
 };

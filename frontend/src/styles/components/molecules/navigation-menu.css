@@ -5,41 +5,45 @@
    ============================================================================ */
 
 .navigation-menu {
-    border: none !important;
-    background: transparent !important;
+    /* Usar valores del tema - Ant Design aplica los colores de componentConfig.Menu */
+    border: none;
+    background: transparent;
     padding: 0 var(--spacing-sm);
 }
 
 .navigation-menu .ant-menu-item {
-    border-radius: var(--radio-md) !important;
-    margin: var(--spacing-xs) 0 !important;
-    height: var(--control-height) !important;
-    line-height: var(--control-height) !important;
+    /* Usar valores del tema - componentConfig.Menu controla los colores */
+    border-radius: var(--radio-md);
+    margin: var(--spacing-xs) 0;
+    height: var(--control-height);
+    line-height: var(--control-height);
     font-weight: var(--font-weight-medium);
     transition: all var(--transition-base);
-    padding-left: var(--spacing-base) !important;
+    padding-left: var(--spacing-base);
     display: flex;
     align-items: center;
     overflow: hidden;
 }
 
 .navigation-menu .ant-menu-item-selected {
-    background-color: var(--color-verde-institucional) !important;
-    color: var(--color-blanco) !important;
+    /* Ant Design aplica automáticamente componentConfig.Menu.itemSelectedBg y itemSelectedColor */
+    background-color: var(--color-sidebar-active);
+    color: var(--color-sidebar-text-active);
 }
 
 .navigation-menu .ant-menu-item-selected::after {
-    display: none !important;
+    display: none;
 }
 
 .navigation-menu .ant-menu-item:hover:not(.ant-menu-item-selected) {
-    background-color: var(--color-sidebar-hover) !important;
-    color: var(--color-verde-institucional) !important;
+    /* Ant Design aplica automáticamente componentConfig.Menu.itemHoverBg y itemHoverColor */
+    background-color: var(--color-sidebar-hover);
+    color: var(--color-verde-institucional);
 }
 
 .navigation-menu .ant-menu-item-selected .anticon,
 .navigation-menu .ant-menu-item-selected span {
-    color: var(--color-blanco) !important;
+    color: var(--color-sidebar-text-active);
 }
 
 .navigation-menu .ant-menu-item .anticon {
@@ -61,27 +65,27 @@
    ============================================================================ */
 
 .ant-layout-sider-collapsing .navigation-menu {
-    padding: 0 !important;
+    padding: 0;
 }
 
 .ant-layout-sider-collapsing .navigation-menu .ant-menu-item {
-    padding: 0 !important;
+    padding: 0;
     justify-content: center;
     align-items: center;
-    margin: var(--spacing-xs) auto !important;
-    width: var(--control-height) !important;
-    min-width: var(--control-height) !important;
-    max-width: var(--control-height) !important;
-    height: var(--control-height) !important;
-    display: flex !important;
+    margin: var(--spacing-xs) auto;
+    width: var(--control-height);
+    min-width: var(--control-height);
+    max-width: var(--control-height);
+    height: var(--control-height);
+    display: flex;
 }
 
 .ant-layout-sider-collapsing .navigation-menu .ant-menu-item .anticon {
-    margin: 0 !important;
+    margin: 0;
     font-size: var(--font-size-lg);
-    display: inline-flex !important;
-    visibility: visible !important;
-    opacity: 1 !important;
+    display: inline-flex;
+    visibility: visible;
+    opacity: 1;
     align-items: center;
     justify-content: center;
 }
@@ -91,7 +95,7 @@
     width: 0;
     margin: 0;
     padding: 0;
-    display: none !important;
+    display: none;
 }
 
 /* ============================================================================
@@ -99,51 +103,54 @@
    ============================================================================ */
 
 .ant-layout-sider-collapsed .navigation-menu {
-    padding: 0 !important;
+    padding: 0;
 }
 
 .ant-layout-sider-collapsed .navigation-menu .ant-menu-item {
-    padding: 0 !important;
+    padding: 0;
     justify-content: center;
     align-items: center;
-    margin: var(--spacing-xs) auto !important;
-    width: var(--control-height) !important;
-    min-width: var(--control-height) !important;
-    max-width: var(--control-height) !important;
-    height: var(--control-height) !important;
-    display: flex !important;
+    margin: var(--spacing-xs) auto;
+    width: var(--control-height);
+    min-width: var(--control-height);
+    max-width: var(--control-height);
+    height: var(--control-height);
+    display: flex;
 }
 
 .ant-layout-sider-collapsed .navigation-menu .ant-menu-item span {
-    display: none !important;
+    display: none;
 }
 
 /* Asegurar que los iconos siempre se muestren cuando está colapsado */
 .ant-layout-sider-collapsed .navigation-menu .ant-menu-item .anticon {
-    margin: 0 !important;
-    font-size: var(--font-size-lg) !important;
-    display: inline-flex !important;
-    visibility: visible !important;
-    opacity: 1 !important;
+    margin: 0;
+    font-size: var(--font-size-lg);
+    display: inline-flex;
+    visibility: visible;
+    opacity: 1;
     align-items: center;
     justify-content: center;
-    width: auto !important;
-    height: auto !important;
-    color: var(--color-text) !important;
+    width: auto;
+    height: auto;
+    color: var(--color-sidebar-text);
 }
 
-/* Item seleccionado cuando está colapsado - cuadrado verde sólido con icono */
+/* Item seleccionado cuando está colapsado - usa colores del tema */
 .ant-layout-sider-collapsed .navigation-menu .ant-menu-item-selected {
-    background-color: var(--color-verde-institucional) !important;
-    border-radius: var(--radio-md) !important;
+    /* Ant Design aplica automáticamente componentConfig.Menu.itemSelectedBg */
+    background-color: var(--color-sidebar-active);
+    border-radius: var(--radio-md);
 }
 
 .ant-layout-sider-collapsed .navigation-menu .ant-menu-item-selected .anticon {
-    color: var(--color-blanco) !important;
+    /* Ant Design aplica automáticamente componentConfig.Menu.itemSelectedColor */
+    color: var(--color-sidebar-text-active);
 }
 
 .ant-layout-sider-collapsed .navigation-menu .ant-menu-item:hover:not(.ant-menu-item-selected) .anticon {
-    color: var(--color-verde-institucional) !important;
+    /* Ant Design aplica automáticamente componentConfig.Menu.itemHoverColor */
+    color: var(--color-verde-institucional);
 }
 
 /* Asegurar que los tooltips se muestren correctamente cuando está colapsado */

@@ -1,12 +1,13 @@
 /* ============================================================================
    CONTENT
    ============================================================================
-   Estilos de POSICIONAMIENTO y LAYOUT únicamente
-   Los colores, espaciados y otros valores vienen de components.js (Ant Design)
+   SOLO estilos de posicionamiento y layout
+   Los colores se aplican AUTOMÁTICAMENTE desde componentConfig.Layout.bodyBg
+   Ant Design aplica estos valores cuando se pasa el tema al ConfigProvider
    ============================================================================ */
 
 .content {
-    /* Solo estilos de posicionamiento y márgenes - los colores vienen de Ant Design */
+    /* Solo posicionamiento y márgenes - los colores vienen del tema de Ant Design */
     margin: var(--spacing-base);
     margin-top: calc(var(--header-height) + var(--spacing-base));
     margin-left: calc(var(--sidebar-width) + var(--spacing-base));

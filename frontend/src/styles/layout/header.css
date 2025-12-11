@@ -1,12 +1,13 @@
 /* ============================================================================
    HEADER
    ============================================================================
-   Estilos de POSICIONAMIENTO y LAYOUT únicamente
-   Los colores, espaciados y otros valores vienen de components.js (Ant Design)
+   SOLO estilos de posicionamiento y layout
+   Los colores se aplican AUTOMÁTICAMENTE desde componentConfig.Header
+   Ant Design aplica estos valores cuando se pasa el tema al ConfigProvider
    ============================================================================ */
 
 .header {
-    /* Solo estilos de posicionamiento - los colores vienen de Ant Design */
+    /* Solo posicionamiento - los colores vienen del tema de Ant Design */
     position: fixed;
     top: 0;
     left: var(--sidebar-width);
@@ -19,43 +20,4 @@
 /* Ajustar el header cuando el sidebar está colapsado */
 .ant-layout-sider-collapsed ~ .ant-layout .header {
     left: var(--sidebar-collapsed-width);
-}
-
-/* Estilos adicionales para elementos dentro del header */
-.header-icon {
-    background: var(--color-success-bg);
-    padding: var(--spacing-sm);
-    border-radius: var(--radio-md);
-    font-size: var(--font-size-base);
-    color: var(--color-verde-institucional);
-    cursor: pointer;
-    transition: var(--transition-fast);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: var(--control-height-sm);
-    height: var(--control-height-sm);
-}
-
-.header-icon:hover {
-    background: var(--color-verde-institucional-lighter);
-    color: var(--color-verde-institucional-hover);
-    transform: scale(1.05);
-}
-
-/* Search bar en header */
-.header .ant-input-search {
-    border-radius: var(--radio-md) !important;
-}
-
-.header .ant-input-search .ant-input {
-    border-radius: var(--radio-md) !important;
-}
-
-.header .ant-input-search-button {
-    border-radius: 0 var(--radio-md) var(--radio-md) 0 !important;
-}
-
-.header__title {
-    margin: 0 !important;
 }

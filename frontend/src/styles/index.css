@@ -9,7 +9,7 @@
 
 /* 3. Layout - Estructura */
 @import './layout/header.css';
-@import './layout/sidebar.css';
+@import './layout/sider.css';
 @import './layout/content.css';
 
 /* 5. Components - Atoms */

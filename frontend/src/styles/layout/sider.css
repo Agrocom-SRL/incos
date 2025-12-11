@@ -1,0 +1,21 @@
+/* ============================================================================
+   SIDEBAR (Ant Design Sider Component)
+   ============================================================================
+   SOLO estilos de posicionamiento y layout
+   Los colores se aplican AUTOMÁTICAMENTE desde componentConfig.Layout.siderBg
+   Ant Design aplica estos valores cuando se pasa el tema al ConfigProvider
+   NO FORZAMOS colores aquí - el tema debe funcionar automáticamente
+   ============================================================================ */
+
+.sider {
+    /* Solo posicionamiento - los colores vienen del tema de Ant Design */
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: var(--z-fixed);
+    box-shadow: var(--sombra-sm);
+    overflow-y: auto;
+    overflow-x: hidden;
+}

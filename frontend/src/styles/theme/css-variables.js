@@ -14,6 +14,7 @@ import { typography } from '@config/theme/typography';
 import { shadows } from '@config/theme/shadows';
 import { gradients } from '@config/theme/gradients';
 import { accentColors } from '@config/theme/accentColors';
+import { componentConfig } from '@config/theme/components';
 
 /**
  * Genera TODAS las variables CSS desde el tema JS
@@ -136,23 +137,41 @@ export function injectCSSVariables() {
   
   // ========================================
   // COLORES DE COMPONENTES LAYOUT
-  // (Usando directamente allColors - eliminamos componentColors.js)
+  // (Usando componentConfig para que vengan del tema de Ant Design)
+  // FASE 1: Solo Layout, Sider y Header
   // ========================================
-  root.style.setProperty('--color-sidebar-bg', allColors.colorBgContainer);
+  
+  // Layout - Configuración general desde componentConfig.Layout
+  // IMPORTANTE: Layout.siderBg es lo que Ant Design usa para el fondo del Sider
+  root.style.setProperty('--color-layout-sider-bg', componentConfig.Layout.siderBg);
+  root.style.setProperty('--color-layout-header-bg', componentConfig.Layout.headerBg);
+  root.style.setProperty('--color-layout-body-bg', componentConfig.Layout.bodyBg);
+  root.style.setProperty('--color-layout-trigger-bg', componentConfig.Layout.triggerBg);
+  root.style.setProperty('--color-layout-trigger-color', componentConfig.Layout.triggerColor);
+  
+  // Sider - Variables CSS para componentes personalizados (NO para el Sider de Ant Design)
+  // El Sider de Ant Design usa Layout.siderBg automáticamente
+  // Estas variables son solo para componentes personalizados que necesiten los colores
+  root.style.setProperty('--color-sidebar-bg', componentConfig.Layout.siderBg);
+  root.style.setProperty('--color-sidebar-text', componentConfig.Sider.colorText);
+  root.style.setProperty('--color-sidebar-text-secondary', componentConfig.Sider.colorTextSecondary);
+  root.style.setProperty('--color-sidebar-border', componentConfig.Sider.colorBorder);
+  
+  // Sider - Colores interactivos (temporales desde allColors hasta agregar Menu)
+  // TODO: Mover a componentConfig.Menu cuando se implemente
   root.style.setProperty('--color-sidebar-active', allColors.colorPrimary);
   root.style.setProperty('--color-sidebar-hover', allColors.colorPrimaryBg);
-  root.style.setProperty('--color-sidebar-text', allColors.colorText);
   root.style.setProperty('--color-sidebar-text-active', allColors.colorBgContainer);
-  root.style.setProperty('--color-sidebar-border', allColors.colorBorderSecondary);
-  root.style.setProperty('--color-sidebar-icon', allColors.colorTextSecondary);
+  root.style.setProperty('--color-sidebar-icon', componentConfig.Sider.colorTextSecondary);
   root.style.setProperty('--color-sidebar-icon-active', allColors.colorBgContainer);
   
-  root.style.setProperty('--color-header-bg', allColors.colorPrimary);
-  root.style.setProperty('--color-header-text', allColors.colorTextOnDark);
-  root.style.setProperty('--color-header-text-secondary', allColors.colorTextSecondaryOnDark);
-  root.style.setProperty('--color-header-border', allColors.colorBorderOnDark);
-  root.style.setProperty('--color-header-icon', allColors.colorTextOnDark);
-  root.style.setProperty('--color-header-icon-hover', allColors.colorTextSecondaryOnDark);
+  // Header - Configuración específica desde componentConfig.Header
+  root.style.setProperty('--color-header-bg', componentConfig.Header.colorBgContainer);
+  root.style.setProperty('--color-header-text', componentConfig.Header.colorText);
+  root.style.setProperty('--color-header-text-secondary', componentConfig.Header.colorTextSecondary);
+  root.style.setProperty('--color-header-border', componentConfig.Header.colorBorder);
+  root.style.setProperty('--color-header-icon', componentConfig.Header.colorText);
+  root.style.setProperty('--color-header-icon-hover', componentConfig.Header.colorTextSecondary);
   root.style.setProperty('--color-header-search-bg', allColors.colorBgOnDark);
   root.style.setProperty('--color-header-search-border', allColors.colorBorderSecondaryOnDark);
   

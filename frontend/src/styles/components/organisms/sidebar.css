@@ -3,6 +3,7 @@
    ============================================================================
    Estilos para el componente Sidebar interno (sidebar-container)
    Todos los valores usan variables CSS generadas desde el tema JS
+   Los colores del fondo vienen de componentConfig.Sider en components.js
    ============================================================================ */
 
 .sidebar-container {

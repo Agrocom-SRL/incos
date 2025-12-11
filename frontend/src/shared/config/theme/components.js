@@ -1,105 +1,66 @@
 // src/shared/config/theme/components.js
 /**
- * Configuración específica de componentes de Ant Design
+ * Configuración específica de componentes de Ant Design - LAYOUT
  * TODOS los valores deben venir del tema (allColors, allSpacing, etc.)
+ * 
+ * FASE 1: Enfocados solo en Layout y sus componentes (Sider, Header, Content)
+ * Los demás componentes se agregarán paso a paso
  */
 
 import { allColors } from './colors';
 import { allSpacing } from './spacing';
 import { shadows } from './shadows';
-import { typography } from './typography';
 
 export const componentConfig = {
-  Button: {
-    colorPrimary: allColors.colorPrimary,
-    colorPrimaryHover: allColors.colorPrimaryHover,
-    colorPrimaryActive: allColors.colorPrimaryActive,
-    primaryShadow: shadows.shadowPrimary,
-    defaultShadow: shadows.shadowElevation1,
-    dangerShadow: shadows.shadowRed,
-    borderRadius: allSpacing.borderRadius,
-    controlHeight: allSpacing.controlHeight,
-    controlHeightLG: allSpacing.controlHeightLG,
-    controlHeightSM: allSpacing.controlHeightSM,
-    fontWeight: typography.fontWeightStrong,
-  },
-  Input: {
-    colorPrimary: allColors.colorPrimary,
-    colorPrimaryHover: allColors.colorPrimaryHover,
-    activeBorderColor: allColors.colorPrimary,
-    hoverBorderColor: allColors.colorPrimaryBorder,
-    controlHeight: allSpacing.controlHeight,
-    controlHeightLG: allSpacing.controlHeightLG,
-    controlHeightSM: allSpacing.controlHeightSM,
-    borderRadius: allSpacing.borderRadius,
-  },
-  Menu: {
-    itemSelectedBg: allColors.colorPrimary,
-    itemSelectedColor: allColors.colorBgContainer,
-    itemHoverBg: allColors.colorPrimaryBg,
-    itemHoverColor: allColors.colorPrimary,
-    itemActiveBg: allColors.colorPrimaryActive,
-    horizontalItemSelectedColor: allColors.colorPrimary,
-    horizontalItemSelectedBg: allColors.colorPrimaryBg,
-    itemColor: allColors.colorText,
-    itemBorderRadius: allSpacing.borderRadius,
-  },
+  /**
+   * Layout - Configuración general del Layout de Ant Design
+   * Aplica a TODO el sistema de Layout (Sider, Header, Content, Footer)
+   */
   Layout: {
-    siderBg: allColors.colorBgContainer,
-    headerBg: allColors.colorPrimary,
-    bodyBg: allColors.colorBgLayout,
+    // Sider y Header: Blanco para diferenciarse del Content
+    siderBg: allColors.colorBgContainer,  // Blanco
+    headerBg: allColors.colorBgContainer,  // Blanco
+    
+    // Content: Gris más oscuro para diferenciarse del fondo blanco
+    bodyBg: allColors.colorBgLayout,  // Gris (#f5f5f5)
+    
+    // Trigger: Color primario para iconos
     triggerBg: allColors.colorPrimaryHover,
-    triggerColor: allColors.colorBgContainer,
+    triggerColor: allColors.colorPrimary,  // Verde primario para el icono
   },
-  Card: {
-    headerBg: 'transparent',
-    colorBorderSecondary: allColors.colorBorderSecondary,
-    boxShadowTertiary: shadows.shadowElevation1,
-    borderRadius: allSpacing.borderRadiusLG,
-  },
+
+  /**
+   * Sider - Panel lateral (Sidebar)
+   * Nota: En Ant Design v5, el color de fondo del Sider se controla con Layout.siderBg
+   */
   Sider: {
-    colorBgContainer: allColors.colorBgContainer,
+    // Texto oscuro sobre fondo blanco
     colorText: allColors.colorText,
     colorTextSecondary: allColors.colorTextSecondary,
-    colorBorder: allColors.colorBorderSecondary,
-    borderRadius: 0,
+    // Borde claro para fondo blanco
+    colorBorder: allColors.colorBorder,
   },
+
+  /**
+   * Header - Barra superior
+   */
   Header: {
-    colorBgContainer: allColors.colorPrimary,
-    colorText: allColors.colorTextOnDark,
-    colorTextSecondary: allColors.colorTextSecondaryOnDark,
-    colorBorder: allColors.colorBorderOnDark,
+    // Fondo blanco (igual que Sider)
+    colorBgContainer: allColors.colorBgContainer,
+    // Texto oscuro sobre fondo blanco
+    colorText: allColors.colorText,
+    colorTextSecondary: allColors.colorTextSecondary,
+    // Borde claro para fondo blanco
+    colorBorder: allColors.colorBorder,
     height: allSpacing.headerHeight,
     padding: `0 ${allSpacing.marginLG}px`,
     borderRadius: 0,
   },
-  Badge: {
-    colorError: allColors.colorError,
-    colorWarning: allColors.colorWarning,
-    colorInfo: allColors.colorInfo,
-    colorSuccess: allColors.colorSuccess,
-    colorText: allColors.colorBgContainer,
-    fontSize: typography.fontSizeSM,
-    lineHeight: typography.lineHeight,
-  },
-  Tag: {
-    borderRadius: allSpacing.borderRadiusSM,
-    fontSize: typography.fontSizeSM,
-    lineHeight: typography.lineHeight,
-  },
-  Divider: {
-    colorSplit: allColors.colorSplit,
-    margin: `${allSpacing.margin}px 0`,
-  },
-  Tooltip: {
-    colorBgSpotlight: allColors.colorBgTooltip, // Color oscuro del tema (colors.js)
-    borderRadius: allSpacing.borderRadius, // spacing.js
-    fontSize: typography.fontSizeBase, // typography.js
-    zIndexPopup: allSpacing.zIndexPopupBase + 70, // 1070 desde zIndexPopupBase (spacing.js)
-  },
-  Dropdown: {
-    colorBgElevated: allColors.colorBgElevated,
-    borderRadius: allSpacing.borderRadius,
-    boxShadowSecondary: shadows.shadowElevation2,
-  },
+
+  /**
+   * Content - Área de contenido principal
+   * Nota: Ant Design no tiene configuración específica para Content,
+   * usa los valores del Layout general (bodyBg)
+   * Los estilos personalizados se aplican vía CSS
+   */
 };
