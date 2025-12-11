@@ -74,6 +74,14 @@ export const useNavigationMenu = (defaultSelectedKey = 'DASH', onMenuClick) => {
     // Manejar click en el menú
     const handleMenuClick = (info) => {
         const clickedKey = info.key;
+        
+        // Guardar el item anteriormente seleccionado ANTES de actualizar el estado
+        const previousSelectedKey = selectedKeys[0];
+        const previousRootModule = previousSelectedKey 
+            ? getRootModuleKey(navigationMenuItems, previousSelectedKey) 
+            : null;
+        
+        // Actualizar el estado del item seleccionado
         setSelectedKeys([clickedKey]);
         
         // Encontrar todos los padres del item seleccionado
@@ -83,23 +91,33 @@ export const useNavigationMenu = (defaultSelectedKey = 'DASH', onMenuClick) => {
         // Obtener el módulo raíz del item seleccionado
         const selectedRootModule = getRootModuleKey(navigationMenuItems, clickedKey);
         
-        // Filtrar openKeys para mantener solo las keys del módulo que contiene el item seleccionado
-        const filteredKeys = openKeys.filter(key => {
-            const keyRoot = getRootModuleKey(navigationMenuItems, key);
-            return keyRoot === selectedRootModule;
-        });
-        
-        // Combinar:
-        // 1. El módulo raíz (si no es el item seleccionado mismo)
-        // 2. Los padres del item seleccionado
-        // 3. Las keys filtradas del módulo
-        const keysToKeep = [];
-        if (selectedRootModule && selectedRootModule !== clickedKey) {
-            keysToKeep.push(selectedRootModule);
+        // Si estamos cambiando de item dentro del mismo módulo, cerrar todos los submenus
+        // que no sean parte de la cadena del nuevo item seleccionado
+        if (previousRootModule === selectedRootModule && previousRootModule) {
+            // Solo mantener: el módulo raíz + los padres del nuevo item seleccionado
+            // Esto cierra todos los submenus hermanos que no sean parte de la cadena del nuevo item
+            const keysToKeep = [];
+            if (selectedRootModule && selectedRootModule !== clickedKey) {
+                keysToKeep.push(selectedRootModule);
+            }
+            
+            // Solo los padres del nuevo item, no otros submenus del módulo
+            const finalKeys = [...new Set([...keysToKeep, ...keysToOpen])];
+            setOpenKeys(finalKeys);
+        } else {
+            // Si es un módulo diferente: CERRAR TODO primero, luego abrir solo el módulo raíz y padres del nuevo item
+            const keysToKeep = [];
+            
+            // Agregar el módulo raíz (si no es el item seleccionado mismo)
+            if (selectedRootModule && selectedRootModule !== clickedKey) {
+                keysToKeep.push(selectedRootModule);
+            }
+            
+            // Solo mantener: módulo raíz + padres del nuevo item seleccionado
+            // NO mantener ningún otro módulo abierto
+            const finalKeys = [...new Set([...keysToKeep, ...keysToOpen])];
+            setOpenKeys(finalKeys);
         }
-        
-        const finalKeys = [...new Set([...keysToKeep, ...filteredKeys, ...keysToOpen])];
-        setOpenKeys(finalKeys);
         
         if (onMenuClick) {
             onMenuClick(info);
