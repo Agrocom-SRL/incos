@@ -1,8 +1,12 @@
-// src/data/navigationMenuData.js
+// src/router/config/navigationMenuData.js
 /**
  * Items del menú de navegación basados en los módulos funcionales del sistema
  * Referencia: docs/02-requerimientos-funcionales.md y docs/06-diseno-api.md
  * 
+ * Ubicación: router/config/ (configuración del router, no es data genérica)
+ * 
+ * TODO: En el futuro, este menú debería generarse automáticamente desde las rutas
+ * para evitar duplicación de keys entre rutas y menú.
  */
 export const navigationMenuItems = [
     {

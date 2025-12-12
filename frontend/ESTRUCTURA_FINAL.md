@@ -42,8 +42,10 @@ frontend/src/
 ├── router/                          # 🎯 NAVEGACIÓN Y RUTAS
 │   ├── index.jsx                   # ✅ AppRouter component
 │   ├── routerService.jsx          # ✅ Servicio de configuración del router
-│   └── modules/                    # ✅ Rutas por módulo
-│       └── estudiantes.routes.jsx
+│   ├── modules/                    # ✅ Rutas por módulo
+│   │   └── estudiantes.routes.jsx
+│   └── config/                      # ✅ Configuración del router
+│       └── navigationMenuData.js   # ✅ Menú de navegación
 │
 ├── presentation/                    # 🎯 UI Y COMPONENTES
 │   ├── components/

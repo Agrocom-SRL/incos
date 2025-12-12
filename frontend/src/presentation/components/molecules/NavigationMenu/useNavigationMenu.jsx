@@ -1,7 +1,7 @@
 // src/presentation/components/molecules/NavigationMenu/useNavigationMenu.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { navigationMenuItems } from '@data/navigationMenuData';
+import { navigationMenuItems } from '@router/config/navigationMenuData';
 import { getRouteFromMenuKey, getMenuKeyFromRoute } from '@utils/router/routeMapperService';
 import MenuItemIcon from '@atoms/MenuItemIcon';
 

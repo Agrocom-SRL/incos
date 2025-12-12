@@ -2,11 +2,14 @@
  * Interceptors para el API Client
  */
 
+import { LocalStorageAdapter } from '../storage/LocalStorageAdapter.js';
+
 /**
  * Interceptor de request: Agrega token de autenticación
  */
 export const requestInterceptor = (config) => {
-  const token = localStorage.getItem('authToken');
+  // Usar adapter en lugar de localStorage directo
+  const token = LocalStorageAdapter.getString('authToken');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -21,8 +24,9 @@ export const responseInterceptor = {
   onRejected: (error) => {
     // Si es 401 (no autorizado), limpiar sesión y redirigir
     if (error.response?.status === 401) {
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('user');
+      // Usar adapter en lugar de localStorage directo
+      LocalStorageAdapter.remove('authToken');
+      LocalStorageAdapter.remove('user');
       window.location.href = '/login';
     }
     return Promise.reject(error);
