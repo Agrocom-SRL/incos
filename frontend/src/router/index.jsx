@@ -6,7 +6,7 @@
  */
 
 import { RouterProvider } from 'react-router-dom';
-import { createAppRouter } from '@infrastructure/router/routerService';
+import { createAppRouter } from './routerService';
 
 // Crear el router una sola vez
 const router = createAppRouter();

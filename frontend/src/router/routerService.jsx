@@ -1,8 +1,11 @@
-// src/infrastructure/router/routerService.jsx
+// src/router/routerService.jsx
 /**
  * Servicio para crear y configurar el router
+ * 
  * Single Responsibility: Solo crea y configura el router
  * Dependency Inversion: Depende de abstracciones (config, normalizer, layout)
+ * 
+ * Ubicación: router/ (capa de navegación, no es infraestructura técnica)
  */
 
 import { createBrowserRouter } from 'react-router-dom';

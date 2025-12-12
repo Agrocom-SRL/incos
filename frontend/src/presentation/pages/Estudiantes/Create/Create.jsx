@@ -1,9 +1,9 @@
 // src/presentation/pages/Estudiantes/Create/Create.jsx
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Form, Input, Button, Select, DatePicker, Switch, InputNumber, message, Card, Row, Col, Space, Typography, Flex } from 'antd';
 import dayjs from 'dayjs';
-import studentRepository from '@repo-impl/StudentRepository.js';
 import { useNavigate } from 'react-router-dom';
+import { useStudentContext } from '@application/modules/estudiantes';
 import { MainContent, InfoSidebar } from '@organisms';
 import { StudentsSummaryCard, HelpGuideCard } from '@molecules';
 import { componentConfig } from '@config/theme/components';
@@ -44,44 +44,19 @@ const getSectionCardProps = (title) => ({
 const EstudiantesCreate = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
   const [tieneDiscapacidad, setTieneDiscapacidad] = useState(false);
-  const [stats, setStats] = useState({
-    todayStudents: 0,
-    monthStudents: 0,
-    totalStudents: 0,
-  });
-
-  // Opciones para los select
-  const expediciones = ['SC', 'LP', 'CB', 'TJ', 'BN', 'PD', 'OR', 'PT', 'CH'];
-  const generos = ['MASCULINO', 'FEMENINO', 'OTRO'];
-  const tiposSangre = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
-
-  // Cargar estadísticas de estudiantes
-  useEffect(() => {
-    const loadStats = async () => {
-      try {
-        const today = new Date();
-        const startOfDay = new Date(today.setHours(0, 0, 0, 0));
-        const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-
-        // TODO: Implementar llamadas a la API para obtener estadísticas reales
-        // Por ahora usamos valores de ejemplo
-        setStats({
-          todayStudents: 5,
-          monthStudents: 127,
-          totalStudents: 1543,
-        });
-      } catch (error) {
-        console.error('Error al cargar estadísticas:', error);
-      }
-    };
-
-    loadStats();
-  }, []);
+  
+  // Obtener datos y funciones del contexto (Provider)
+  const {
+    stats,
+    expediciones,
+    generos,
+    tiposSangre,
+    createStudent,
+    loading,
+  } = useStudentContext();
 
   const onFinish = async (values) => {
-    setLoading(true);
     try {
       // Formatear fecha de nacimiento
       const formattedValues = {
@@ -98,19 +73,13 @@ const EstudiantesCreate = () => {
         }
       });
 
-      const result = await studentRepository.register(formattedValues);
+      // Usar createStudent del contexto (Provider)
+      const result = await createStudent(formattedValues);
 
       if (result.success) {
         message.success('Estudiante registrado correctamente');
         
-        // Actualizar estadísticas
-        setStats((prev) => ({
-          ...prev,
-          todayStudents: prev.todayStudents + 1,
-          monthStudents: prev.monthStudents + 1,
-          totalStudents: prev.totalStudents + 1,
-        }));
-
+        // Las estadísticas se actualizan automáticamente en el Provider
         form.resetFields();
         setTieneDiscapacidad(false);
         
@@ -138,8 +107,6 @@ const EstudiantesCreate = () => {
     } catch (error) {
       message.error('Error inesperado al registrar el estudiante');
       console.error('Error:', error);
-    } finally {
-      setLoading(false);
     }
   };
 

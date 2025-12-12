@@ -33,9 +33,17 @@ frontend/src/
 │
 ├── infrastructure/                  # 🎯 IMPLEMENTACIONES TÉCNICAS
 │   ├── api/
-│   │   └── client.js               # ✅ Cliente HTTP (Axios)
+│   │   ├── client.js               # ✅ Cliente HTTP (Axios)
+│   │   ├── config.js               # ✅ Configuración del cliente
+│   │   └── interceptors.js         # ✅ Interceptors del cliente
 │   └── repositories/
 │       └── StudentRepository.js    # ✅ Implementa IStudentRepository
+│
+├── router/                          # 🎯 NAVEGACIÓN Y RUTAS
+│   ├── index.jsx                   # ✅ AppRouter component
+│   ├── routerService.jsx          # ✅ Servicio de configuración del router
+│   └── modules/                    # ✅ Rutas por módulo
+│       └── estudiantes.routes.jsx
 │
 ├── presentation/                    # 🎯 UI Y COMPONENTES
 │   ├── components/

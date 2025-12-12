@@ -1,12 +1,14 @@
-import apiClient from '../api/client.js';
-import { IStudentRepository } from '@repositories/IStudentRepository';
-
 /**
  * Implementación del Repositorio de Estudiantes
  * Implementa IStudentRepository usando API client
  * 
+ * Single Responsibility: Solo maneja la creación de estudiantes
  * Liskov Substitution Principle: Puede reemplazar IStudentRepository
  */
+
+import apiClient from '../api/client.js';
+import { IStudentRepository } from '@repositories/IStudentRepository';
+
 export class StudentRepository extends IStudentRepository {
   /**
    * Crea un nuevo estudiante
@@ -45,44 +47,29 @@ export class StudentRepository extends IStudentRepository {
     }
   }
 
-  /**
-   * Obtiene la lista de estudiantes
-   * @param {Object} params - Parámetros de búsqueda y paginación
-   * @returns {Promise<Object>} Lista de estudiantes
-   */
-  async list(params = {}) {
-    try {
-      const response = await apiClient.get('/v1/estudiantes', { params });
-      return {
-        success: true,
-        data: response.data.data,
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.response?.data?.error?.message || error.message || 'Error al obtener estudiantes',
-      };
-    }
+  // Métodos no implementados (solo crear estudiante por ahora)
+  async list(params) {
+    throw new Error('Method not implemented: list');
   }
 
-  /**
-   * Obtiene un estudiante por ID
-   * @param {string|number} id - ID del estudiante
-   * @returns {Promise<Object>} Datos del estudiante
-   */
   async getById(id) {
-    try {
-      const response = await apiClient.get(`/v1/estudiantes/${id}`);
-      return {
-        success: true,
-        data: response.data.data,
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.response?.data?.error?.message || error.message || 'Error al obtener el estudiante',
-      };
-    }
+    throw new Error('Method not implemented: getById');
+  }
+
+  async update(id, studentData) {
+    throw new Error('Method not implemented: update');
+  }
+
+  async changeStatus(id, status) {
+    throw new Error('Method not implemented: changeStatus');
+  }
+
+  async assignBeca(id, becaData) {
+    throw new Error('Method not implemented: assignBeca');
+  }
+
+  async requestLicencia(id, licenciaData) {
+    throw new Error('Method not implemented: requestLicencia');
   }
 }
 
