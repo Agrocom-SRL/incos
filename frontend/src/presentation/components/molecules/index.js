@@ -9,3 +9,5 @@ export { default as SellerSection } from './SellerSection';
 export { default as OrdersSummaryCard } from './OrdersSummaryCard';
 export { default as ActivityItem } from './ActivityItem';
 export { default as ActivityList } from './ActivityList';
+export { default as StudentsSummaryCard } from './StudentsSummaryCard';
+export { default as HelpGuideCard } from './HelpGuideCard';
