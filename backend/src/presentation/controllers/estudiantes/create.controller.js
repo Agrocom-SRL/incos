@@ -1,7 +1,7 @@
 import { RegisterStudentUseCase } from '../../../application/use-cases/Estudiantes/RegisterStudentUseCase.js';
 import { RegisterStudentDTO } from '../../../application/dtos/request/RegisterStudentDTO.js';
 import { StudentResponseDTO } from '../../../application/dtos/response/StudentResponseDTO.js';
-import { logger } from '../../../config/logger.js';
+import { logger } from '../../../shared/logger.js';
 
 /**
  * POST /api/v1/estudiantes

@@ -1,4 +1,4 @@
-import { logger } from '../../config/logger.js';
+import { logger } from '../../shared/logger.js';
 
 /**
  * Middleware genérico para manejo global de errores

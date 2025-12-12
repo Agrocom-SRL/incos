@@ -1,4 +1,4 @@
-import { logger } from '../../../config/logger.js';
+import { logger } from '../../../shared/logger.js';
 
 /**
  * GET /api/v1/estudiantes

@@ -9,7 +9,7 @@ import {
   requestLicenciaValidator,
 } from '../validators/estudiantes/index.js';
 import validateRequest from '../middleware/validation.middleware.js';
-import container from '../../shared/container/index.js';
+import container from '../../infrastructure/container/index.js';
 
 const router = express.Router();
 
