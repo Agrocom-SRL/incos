@@ -48,14 +48,26 @@
       "@presentation/*": [
         "./src/presentation/*"
       ],
+      "@atoms": [
+        "./src/presentation/components/atoms/index.js"
+      ],
       "@atoms/*": [
         "./src/presentation/components/atoms/*"
+      ],
+      "@molecules": [
+        "./src/presentation/components/molecules/index.js"
       ],
       "@molecules/*": [
         "./src/presentation/components/molecules/*"
       ],
+      "@organisms": [
+        "./src/presentation/components/organisms/index.js"
+      ],
       "@organisms/*": [
         "./src/presentation/components/organisms/*"
+      ],
+      "@templates": [
+        "./src/presentation/templates/index.js"
       ],
       "@templates/*": [
         "./src/presentation/templates/*"
@@ -76,7 +88,9 @@
       "@config/*": [
         "./src/shared/config/*"
       ],
-      // Others
+      "@router": [
+        "./src/router/index.jsx"
+      ],
       "@router/*": [
         "./src/router/*"
       ],

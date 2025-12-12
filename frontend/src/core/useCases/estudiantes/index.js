@@ -1,0 +1,2 @@
+export { CreateStudentUseCase } from './CreateStudentUseCase';
+

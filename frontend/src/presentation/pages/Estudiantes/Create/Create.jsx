@@ -489,9 +489,6 @@ const EstudiantesCreate = () => {
                 <Form.Item
                   label="Carrera (ID)"
                   name="carreraId"
-                  rules={[
-                    { required: true, message: 'La carrera es requerida' },
-                  ]}
                 >
                   <InputNumber
                     style={{ width: '100%' }}
@@ -505,9 +502,6 @@ const EstudiantesCreate = () => {
                 <Form.Item
                   label="Gestión de Ingreso (ID)"
                   name="gestionIngresoId"
-                  rules={[
-                    { required: true, message: 'La gestión de ingreso es requerida' },
-                  ]}
                 >
                   <InputNumber
                     style={{ width: '100%' }}

@@ -1,15 +1,19 @@
 import apiClient from '../api/client.js';
+import { IStudentRepository } from '@repositories/IStudentRepository';
 
 /**
- * Repositorio para operaciones relacionadas con estudiantes
+ * Implementación del Repositorio de Estudiantes
+ * Implementa IStudentRepository usando API client
+ * 
+ * Liskov Substitution Principle: Puede reemplazar IStudentRepository
  */
-export class StudentRepository {
+export class StudentRepository extends IStudentRepository {
   /**
-   * Registra un nuevo estudiante
+   * Crea un nuevo estudiante
    * @param {Object} studentData - Datos del estudiante a registrar
    * @returns {Promise<Object>} Respuesta del servidor con el estudiante creado
    */
-  async register(studentData) {
+  async create(studentData) {
     try {
       const response = await apiClient.post('/v1/estudiantes', studentData);
       return {

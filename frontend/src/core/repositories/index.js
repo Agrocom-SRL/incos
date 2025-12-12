@@ -1,1 +1,1 @@
-export { IAuthRepository } from './IAuthRepository';
+export { IStudentRepository } from './IStudentRepository';
