@@ -13,12 +13,15 @@ El Instituto Comercial Superior de la Nación INCOS Santa Cruz fue fundado el **
 Calle Ñuflo de Chavez Nº 62, entre René Moreno y Calle Chuquisaca, dentro del centro histórico del municipio de **Santa Cruz de la Sierra**.
 
 **Horarios de Atención**:
+
 - **Turno Tarde**: Lunes a Viernes 14:00 - 16:30
 - **Turno Noche**: Lunes a Viernes 18:45 - 22:30
 - **Sábados**: 17:00 - 21:00
 
 **Carreras Técnicas** (Nivel Técnico Superior):
+
 Actualmente el instituto ofrece **tres carreras**:
+
 1. **Sistemas Informáticos**
 2. **Administración de Empresas**
 3. **Contaduría General**
@@ -45,7 +48,7 @@ Somos una **Institución de Educación Superior Estatal**, abierta al conjunto d
 
 Este proyecto sigue **Clean Architecture** con las siguientes capas:
 
-```
+```text
 src/
 ├── config/              # Configuraciones (DB, JWT, Logger)
 ├── domain/              # Lógica de negocio pura (Entities, Value Objects)
@@ -115,7 +118,7 @@ npm run db:restore     # Restaurar desde backup
 
 Los scripts SQL están organizados en:
 
-```
+```text
 database/
 ├── 01-schemas/             # DDL (CREATE TABLE) - Scripts de schema principales
 ├── 02-seeders/             # Datos iniciales
@@ -161,6 +164,7 @@ Los scripts principales están en `database/01-schemas/` y deben ejecutarse en e
 ### Estándares de Tablas
 
 Todas las tablas incluyen los siguientes campos de auditoría y control:
+
 - `id INT AUTO_INCREMENT PRIMARY KEY`
 - `activo BOOLEAN DEFAULT TRUE`
 - `created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`
@@ -217,6 +221,7 @@ Los logs se guardan en el directorio `logs/`:
 - Máximo 30 días de retención
 
 Niveles de log:
+
 - `error` - Errores críticos
 - `warn` - Advertencias
 - `info` - Información general
@@ -246,7 +251,7 @@ npm test -- --coverage
 
 Una vez iniciado el servidor, la documentación interactiva de la API estará disponible en:
 
-```
+```text
 http://localhost:3000/api-docs
 ```
 
@@ -307,4 +312,4 @@ Para más información sobre el equipo y la documentación, ver `/docs`
 
 ## 📞 Soporte
 
-Para soporte técnico, contactar a: sistema@incos.edu.bo
+Para soporte técnico, contactar a: [sistema@incos.edu.bo](mailto:sistema@incos.edu.bo)
