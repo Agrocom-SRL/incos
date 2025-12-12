@@ -1,9 +1,12 @@
 # 04 - ARQUITECTURA DEL SISTEMA
 ## Sistema de Gestión Académica - Instituto INCOS Santa Cruz
 
-**Versión:** 1.0  
-**Fecha:** Diciembre 2025  
-**Estado:** Documento Base Consolidado
+**Versión:**
+ 1.1  
+**Fecha:**
+ Enero 2025  
+**Estado:**
+ Documento Actualizado - Estructura con Dependency Injection
 
 ---
 
@@ -36,9 +39,11 @@ El documento cubre:
 
 ### 2.1 Contexto de la Decisión
 
-**Pregunta Clave:** ¿Microservicios o Monolito?
+**Pregunta Clave:**
+ ¿Microservicios o Monolito?
 
 **Factores Considerados:**
+
 - Tamaño del equipo: 1-3 desarrolladores
 - Complejidad del dominio: Media (13 módulos)
 - Volumen de usuarios: 850-1500 usuarios (5 años)
@@ -62,13 +67,20 @@ El documento cubre:
 ### 2.3 Decisión Final: MONOLITO MODULAR
 
 **Justificación:**
-1. **Velocidad:** 8 semanas de desarrollo requieren enfoque pragmático
-2. **Equipo pequeño:** 1-3 desarrolladores no pueden manejar complejidad de microservicios
-3. **Presupuesto limitado:** 1 servidor es más económico que infraestructura distribuida
-4. **Volumen manejable:** 850-1500 usuarios NO justifican arquitectura distribuida
-5. **Dominio cohesivo:** Los módulos están fuertemente relacionados (estudiantes → inscripciones → calificaciones)
+
+1. **Velocidad:**
+ 8 semanas de desarrollo requieren enfoque pragmático
+2. **Equipo pequeño:**
+ 1-3 desarrolladores no pueden manejar complejidad de microservicios
+3. **Presupuesto limitado:**
+ 1 servidor es más económico que infraestructura distribuida
+4. **Volumen manejable:**
+ 850-1500 usuarios NO justifican arquitectura distribuida
+5. **Dominio cohesivo:**
+ Los módulos están fuertemente relacionados (estudiantes → inscripciones → calificaciones)
 
 **Estrategia de Evolución:**
+
 - Implementar **Monolito Modular** con módulos bien definidos
 - **Preparar para futura migración** a microservicios si se requiere
 - Aplicar principios de **bajo acoplamiento** entre módulos
@@ -83,6 +95,7 @@ El documento cubre:
 - Los módulos se comunican a través de **interfaces bien definidas**
 
 **Ventajas para INCOS:**
+
 - ✅ Deployment simple: `docker-compose up` o `pm2 start`
 - ✅ Transacciones ACID fáciles (misma BD)
 - ✅ Debugging simplificado (todo en un proceso)
@@ -90,6 +103,7 @@ El documento cubre:
 - ✅ Compartir código común (utilidades, helpers)
 
 **Preparación para Microservicios (futuro):**
+
 - 📦 Módulos con **bajo acoplamiento**
 - 🔌 Interfaces explícitas (no acceso directo a BD de otros módulos)
 - 📨 Eventos para comunicación asíncrona
@@ -102,10 +116,12 @@ El documento cubre:
 ### 3.1 Backend
 
 #### 3.1.1 Lenguaje y Runtime
+
 - **Node.js 20 LTS** (Long Term Support)
 - **JavaScript** (ES2022+) con módulos ES6 (import/export)
 
 **Justificación:**
+
 - Ecosistema maduro con npm (millones de paquetes)
 - Ideal para I/O intensivo (operaciones de BD)
 - JavaScript full-stack (backend + frontend)
@@ -115,6 +131,7 @@ El documento cubre:
 - **Express.js 4.x**
 
 **Justificación:**
+
 - Framework minimalista y flexible
 - Gran ecosistema de middleware
 - Rendimiento probado en producción
@@ -124,6 +141,7 @@ El documento cubre:
 - **Sequelize 6.x**
 
 **Justificación:**
+
 - ORM maduro para Node.js
 - Soporte para MySQL (nuestra BD)
 - Migraciones de esquema integradas
@@ -156,6 +174,7 @@ El documento cubre:
 - **MySQL 8.0**
 
 **Justificación:**
+
 - Base de datos relacional madura y estable
 - Excelente para datos estructurados (estudiantes, inscripciones, calificaciones)
 - Soporte robusto de transacciones ACID
@@ -164,6 +183,7 @@ El documento cubre:
 - Familiaridad del equipo
 
 **Alternativas Consideradas:**
+
 - PostgreSQL: ✅ Excelente, pero MySQL es suficiente para nuestras necesidades
 - MongoDB: ❌ NoSQL no ideal para datos altamente relacionales
 
@@ -178,6 +198,7 @@ El documento cubre:
 - **Redis 7.x** (si se requiere optimización adicional)
 
 **Uso Potencial:**
+
 - Caché de sesiones (alternativa a JWT en cookies)
 - Caché de consultas frecuentes (catálogos, configuraciones)
 - Rate limiting distribuido
@@ -188,6 +209,7 @@ El documento cubre:
 - **React 18.x** con **Vite**
 
 **Justificación:**
+
 - Framework moderno y popular
 - Component-based architecture
 - Virtual DOM para rendimiento
@@ -205,6 +227,7 @@ El documento cubre:
 - **Tailwind CSS** - Utility-first CSS framework
 
 **Alternativas:**
+
 - Bootstrap 5: ✅ Buena opción, pero Tailwind es más flexible
 - Material UI: ✅ Completo, pero más pesado
 
@@ -238,6 +261,7 @@ El documento cubre:
 - **PM2** - Process manager para Node.js
 
 **Características:**
+
 - Auto-restart en caso de crash
 - Clustering (múltiples instancias de Node.js)
 - Logs management
@@ -247,6 +271,7 @@ El documento cubre:
 - **Nginx** - Reverse proxy y servir archivos estáticos
 
 **Responsabilidades:**
+
 - Proxy inverso hacia aplicación Node.js
 - Servir archivos estáticos de frontend
 - SSL/TLS termination (HTTPS)
@@ -256,6 +281,7 @@ El documento cubre:
 - **GitHub Actions** - Integración continua
 
 **Pipeline Básico:**
+
 ```yaml
 Test → Lint → Build → Deploy
 ```
@@ -290,14 +316,21 @@ Test → Lint → Build → Deploy
 
 ### 4.1 Principios de Clean Architecture
 
-**Objetivo:** Separar responsabilidades para facilitar mantenibilidad, testabilidad y escalabilidad.
+**Objetivo:**
+ Separar responsabilidades para facilitar mantenibilidad, testabilidad y escalabilidad.
 
 **Principios Fundamentales:**
-1. **Independencia de frameworks:** La lógica de negocio NO depende de Express, Sequelize, etc.
-2. **Testeable:** La lógica de negocio se puede testear sin UI, BD, o servicios externos
-3. **Independencia de UI:** La UI puede cambiar sin afectar lógica de negocio
-4. **Independencia de BD:** Podemos cambiar MySQL por PostgreSQL sin afectar lógica de negocio
-5. **Independencia de agentes externos:** La lógica de negocio no sabe sobre servicios externos
+
+1. **Independencia de frameworks:**
+ La lógica de negocio NO depende de Express, Sequelize, etc.
+2. **Testeable:**
+ La lógica de negocio se puede testear sin UI, BD, o servicios externos
+3. **Independencia de UI:**
+ La UI puede cambiar sin afectar lógica de negocio
+4. **Independencia de BD:**
+ Podemos cambiar MySQL por PostgreSQL sin afectar lógica de negocio
+5. **Independencia de agentes externos:**
+ La lógica de negocio no sabe sobre servicios externos
 
 ### 4.2 Capas del Sistema
 
@@ -340,15 +373,22 @@ Test → Lint → Build → Deploy
 
 #### 4.3.1 Infrastructure Layer (Capa de Infraestructura)
 
-**Responsabilidad:** Detalles de implementación (BD, servicios externos, file system)
+**Responsabilidad:**
+ Detalles de implementación (BD, servicios externos, file system)
 
 **Componentes:**
-- **Models (Sequelize):** Definición de esquemas de BD
-- **Repositories:** Interfaz para acceso a datos
-- **External Services:** Integración con servicios externos (email, SMS, etc.)
-- **File Storage:** Manejo de archivos subidos
+
+- **Models (Sequelize):**
+ Definición de esquemas de BD
+- **Repositories:**
+ Interfaz para acceso a datos
+- **External Services:**
+ Integración con servicios externos (email, SMS, etc.)
+- **File Storage:**
+ Manejo de archivos subidos
 
 **Ejemplo:**
+
 ```javascript
 // infrastructure/repositories/EstudianteRepository.js
 class EstudianteRepository {
@@ -368,15 +408,22 @@ class EstudianteRepository {
 
 #### 4.3.2 Domain Layer (Capa de Dominio)
 
-**Responsabilidad:** Lógica de negocio pura, reglas del dominio
+**Responsabilidad:**
+ Lógica de negocio pura, reglas del dominio
 
 **Componentes:**
-- **Entities:** Objetos de negocio (Estudiante, Inscripcion, Calificacion)
-- **Value Objects:** Objetos inmutables (CI, Email, Nota)
-- **Domain Services:** Lógica de negocio que no pertenece a una entidad específica
-- **Business Rules:** Validaciones y reglas del dominio
+
+- **Entities:**
+ Objetos de negocio (Estudiante, Inscripcion, Calificacion)
+- **Value Objects:**
+ Objetos inmutables (CI, Email, Nota)
+- **Domain Services:**
+ Lógica de negocio que no pertenece a una entidad específica
+- **Business Rules:**
+ Validaciones y reglas del dominio
 
 **Ejemplo:**
+
 ```javascript
 // domain/entities/Estudiante.js
 class Estudiante {
@@ -408,14 +455,20 @@ class Estudiante {
 
 #### 4.3.3 Application Layer (Capa de Aplicación)
 
-**Responsabilidad:** Orquestar casos de uso, coordinar entre capas
+**Responsabilidad:**
+ Orquestar casos de uso, coordinar entre capas
 
 **Componentes:**
-- **Use Cases:** Implementación de casos de uso específicos
-- **DTOs (Data Transfer Objects):** Objetos para transferir datos entre capas
-- **Interfaces de Repositories:** Contratos que la capa de infraestructura debe cumplir
+
+- **Use Cases:**
+ Implementación de casos de uso específicos
+- **DTOs (Data Transfer Objects):**
+ Objetos para transferir datos entre capas
+- **Interfaces de Repositories:**
+ Contratos que la capa de infraestructura debe cumplir
 
 **Ejemplo:**
+
 ```javascript
 // application/use-cases/estudiantes/CrearEstudianteUseCase.js
 class CrearEstudianteUseCase {
@@ -452,15 +505,22 @@ class CrearEstudianteUseCase {
 
 #### 4.3.4 Presentation Layer (Capa de Presentación)
 
-**Responsabilidad:** Manejar HTTP requests/responses, validación de inputs
+**Responsabilidad:**
+ Manejar HTTP requests/responses, validación de inputs
 
 **Componentes:**
-- **Controllers:** Manejan requests HTTP, llaman a Use Cases
-- **Routes:** Definen endpoints de la API
-- **Middleware:** Autenticación, autorización, validación, logging
-- **DTOs/Validators:** Validación de requests
+
+- **Controllers:**
+ Manejan requests HTTP, llaman a Use Cases
+- **Routes:**
+ Definen endpoints de la API
+- **Middleware:**
+ Autenticación, autorización, validación, logging
+- **DTOs/Validators:**
+ Validación de requests
 
 **Ejemplo:**
+
 ```javascript
 // presentation/controllers/EstudianteController.js
 class EstudianteController {
@@ -530,41 +590,82 @@ router.post(
 
 ### 5.1 Estructura General del Proyecto
 
-```
+```text
 instituto-incos/
 ├── backend/
 │   ├── src/
-│   │   ├── config/              # Configuraciones (DB, JWT, etc.)
 │   │   ├── domain/              # Capa de Dominio
 │   │   │   ├── entities/        # Entidades de negocio
+│   │   │   │   ├── BaseEntity.js # Clase base para entidades
+│   │   │   │   └── ...
+│   │   │   ├── interfaces/      # Interfaces (repositorios, servicios)
+│   │   │   │   ├── repositories/
+│   │   │   │   │   ├── IRepository.js # Interfaz base
+│   │   │   │   │   └── ...
+│   │   │   │   └── services/
+│   │   │   ├── services/        # Domain services
 │   │   │   ├── value-objects/   # Value objects
-│   │   │   └── services/        # Domain services
+│   │   │   └── constants/       # Constantes del dominio
 │   │   ├── application/         # Capa de Aplicación
 │   │   │   ├── use-cases/       # Casos de uso
-│   │   │   └── dtos/            # Data Transfer Objects
+│   │   │   │   ├── Estudiantes/
+│   │   │   │   ├── Inscripciones/
+│   │   │   │   └── ...
+│   │   │   ├── dtos/            # Data Transfer Objects
+│   │   │   │   ├── request/
+│   │   │   │   └── response/
+│   │   │   ├── mappers/         # Mappers (Entity ↔ DTO)
+│   │   │   ├── utils/          # Utilidades de aplicación
+│   │   │   └── validators/     # Validadores de aplicación
 │   │   ├── infrastructure/      # Capa de Infraestructura
+│   │   │   ├── config/         # Configuraciones
+│   │   │   │   └── database.js
+│   │   │   ├── container/      # Dependency Injection Container
+│   │   │   │   ├── Container.js # Contenedor de DI
+│   │   │   │   ├── index.js     # Punto de entrada
+│   │   │   │   └── modules/    # Módulos de registro
+│   │   │   │       ├── repositories.container.js
+│   │   │   │       └── estudiantes.container.js
 │   │   │   ├── database/
-│   │   │   │   ├── models/      # Sequelize models
-│   │   │   │   ├── migrations/  # Migraciones de BD
-│   │   │   │   └── seeders/     # Datos iniciales
+│   │   │   │   ├── config/
+│   │   │   │   │   └── sequelize.js
+│   │   │   │   └── models/      # Sequelize models
 │   │   │   ├── repositories/    # Implementación de repositories
+│   │   │   │   ├── BaseRepository.js # Clase base con Template Method
+│   │   │   │   └── ...
 │   │   │   └── external/        # Servicios externos
+│   │   │       ├── email/
+│   │   │       ├── pdf/
+│   │   │       └── storage/
 │   │   ├── presentation/        # Capa de Presentación
-│   │   │   ├── controllers/     # Controladores
+│   │   │   ├── controllers/     # Controladores (separados por funcionalidad)
+│   │   │   │   ├── estudiantes/
+│   │   │   │   │   ├── create.controller.js
+│   │   │   │   │   ├── list.controller.js
+│   │   │   │   │   └── ...
+│   │   │   │   └── ...
 │   │   │   ├── routes/          # Rutas de la API
-│   │   │   ├── middleware/      # Middleware (auth, validation, etc.)
+│   │   │   ├── middleware/      # Middleware
+│   │   │   │   ├── errorHandler.middleware.js
+│   │   │   │   ├── logger.middleware.js
+│   │   │   │   └── validation.middleware.js
 │   │   │   └── validators/      # Validadores de inputs
+│   │   │       └── estudiantes/
 │   │   ├── shared/              # Código compartido
-│   │   │   ├── utils/           # Utilidades
-│   │   │   ├── constants/       # Constantes
-│   │   │   └── errors/          # Manejo de errores
-│   │   └── app.js               # Configuración de Express
+│   │   │   ├── AppError.js      # Jerarquía de errores
+│   │   │   └── logger.js        # Logger configurado
+│   │   ├── app.js               # Configuración de Express
+│   │   └── server.js            # Entry point
+│   ├── database/                # Scripts SQL
+│   │   ├── 01-schemas/          # Scripts DDL
+│   │   ├── 02-seeders/         # Datos iniciales
+│   │   └── ...
 │   ├── tests/                   # Tests (unitarios, integración)
 │   ├── .env.example             # Variables de entorno de ejemplo
 │   ├── .eslintrc.json           # Configuración de ESLint
 │   ├── .prettierrc              # Configuración de Prettier
 │   ├── package.json             # Dependencias de Node.js
-│   └── server.js                # Entry point
+│   └── README.md                # Documentación del backend
 │
 ├── frontend/
 │   ├── src/
@@ -600,110 +701,106 @@ instituto-incos/
 
 ### 5.2 Estructura Detallada del Backend
 
-```
+```text
 backend/src/
-├── config/
-│   ├── database.js              # Configuración de Sequelize
-│   ├── jwt.js                   # Configuración de JWT
-│   └── logger.js                # Configuración de Winston
-│
-├── domain/
+├── domain/                      # Domain Layer (Lógica de negocio pura)
 │   ├── entities/
-│   │   ├── Estudiante.js
-│   │   ├── Inscripcion.js
-│   │   ├── Calificacion.js
+│   │   ├── BaseEntity.js        # Clase base para todas las entidades
+│   │   ├── Student.js
+│   │   ├── Career.js
+│   │   ├── Management.js
 │   │   └── ...
-│   ├── value-objects/
-│   │   ├── CI.js                # Value object para CI
-│   │   ├── Email.js
-│   │   └── Nota.js              # Value object para notas (0-100)
-│   └── services/
-│       ├── CalculadoraNotasService.js
-│       └── ValidadorPrerrequisitosService.js
-│
-├── application/
-│   ├── use-cases/
-│   │   ├── estudiantes/
-│   │   │   ├── CrearEstudianteUseCase.js
-│   │   │   ├── ActualizarEstudianteUseCase.js
-│   │   │   ├── BuscarEstudianteUseCase.js
-│   │   │   └── CambiarEstadoAcademicoUseCase.js
-│   │   ├── inscripciones/
-│   │   │   ├── InscribirAGestionUseCase.js
-│   │   │   ├── InscribirAMateriasUseCase.js
-│   │   │   └── AnularInscripcionUseCase.js
-│   │   ├── calificaciones/
-│   │   │   ├── RegistrarCalificacionesUseCase.js
-│   │   │   ├── ModificarCalificacionUseCase.js
-│   │   │   └── CerrarPeriodoUseCase.js
-│   │   └── ...
-│   └── dtos/
-│       ├── EstudianteDTO.js
-│       ├── InscripcionDTO.js
-│       └── ...
-│
-├── infrastructure/
-│   ├── database/
-│   │   ├── models/
-│   │   │   ├── index.js         # Inicialización de Sequelize
-│   │   │   ├── Estudiante.js    # Modelo Sequelize
-│   │   │   ├── Inscripcion.js
-│   │   │   ├── Calificacion.js
+│   ├── interfaces/
+│   │   ├── repositories/
+│   │   │   ├── IRepository.js   # Interfaz base para repositorios
+│   │   │   ├── IStudentRepository.js
 │   │   │   └── ...
-│   │   ├── migrations/
-│   │   │   └── 20250101_create_tables.js
-│   │   └── seeders/
-│   │       └── 20250101_usuarios_iniciales.js
-│   ├── repositories/
-│   │   ├── EstudianteRepository.js
-│   │   ├── InscripcionRepository.js
-│   │   ├── CalificacionRepository.js
-│   │   └── ...
-│   └── external/
-│       └── EmailService.js      # Servicio de envío de emails
+│   │   └── services/
+│   ├── services/
+│   │   └── StudentCodeGenerator.js
+│   ├── value-objects/
+│   └── constants/
+│       └── index.js
 │
-├── presentation/
-│   ├── controllers/
-│   │   ├── EstudianteController.js
-│   │   ├── InscripcionController.js
-│   │   ├── CalificacionController.js
-│   │   ├── AuthController.js
+├── application/                # Application Layer (Casos de uso)
+│   ├── use-cases/
+│   │   ├── Estudiantes/
+│   │   │   └── RegisterStudentUseCase.js
+│   │   ├── Inscripciones/
+│   │   ├── Calificaciones/
+│   │   └── ...
+│   ├── dtos/
+│   │   ├── request/
+│   │   │   └── RegisterStudentDTO.js
+│   │   └── response/
+│   │       └── StudentResponseDTO.js
+│   ├── mappers/
+│   │   └── StudentMapper.js
+│   ├── utils/
+│   │   └── StudentCodeUtils.js
+│   └── validators/
+│       └── StudentValidator.js
+│
+├── infrastructure/             # Infrastructure Layer
+│   ├── config/
+│   │   └── database.js         # Configuración de base de datos
+│   ├── container/              # Dependency Injection Container
+│   │   ├── Container.js         # Contenedor de DI
+│   │   ├── index.js            # Punto de entrada del container
+│   │   └── modules/            # Módulos de registro
+│   │       ├── repositories.container.js
+│   │       ├── estudiantes.container.js
+│   │       └── index.js
+│   ├── database/
+│   │   ├── config/
+│   │   │   └── sequelize.js    # Configuración de Sequelize
+│   │   └── models/              # Sequelize Models
+│   │       ├── Student.js
+│   │       ├── Career.js
+│   │       └── ...
+│   ├── repositories/           # Implementaciones de repositorios
+│   │   ├── BaseRepository.js   # Clase base con Template Method
+│   │   ├── StudentRepository.js
+│   │   ├── CareerRepository.js
+│   │   └── ...
+│   └── external/               # Servicios externos
+│       ├── email/
+│       ├── pdf/
+│       └── storage/
+│
+├── presentation/               # Presentation Layer
+│   ├── controllers/            # Controladores (separados por funcionalidad)
+│   │   ├── estudiantes/
+│   │   │   ├── index.js        # Exportaciones centralizadas
+│   │   │   ├── create.controller.js
+│   │   │   ├── list.controller.js
+│   │   │   ├── getById.controller.js
+│   │   │   ├── update.controller.js
+│   │   │   ├── status.controller.js
+│   │   │   ├── becas.controller.js
+│   │   │   └── licencias.controller.js
 │   │   └── ...
 │   ├── routes/
-│   │   ├── index.js             # Router principal
-│   │   ├── estudiantes.routes.js
-│   │   ├── inscripciones.routes.js
-│   │   ├── calificaciones.routes.js
-│   │   ├── auth.routes.js
-│   │   └── ...
+│   │   ├── index.js            # Router principal
+│   │   └── student.routes.js
 │   ├── middleware/
-│   │   ├── auth.middleware.js   # Verificación de JWT
-│   │   ├── authorization.middleware.js  # RBAC
-│   │   ├── validation.middleware.js
 │   │   ├── errorHandler.middleware.js
-│   │   └── logger.middleware.js
+│   │   ├── logger.middleware.js
+│   │   ├── notFound.middleware.js
+│   │   └── validation.middleware.js
 │   └── validators/
-│       ├── estudiante.validator.js
-│       ├── inscripcion.validator.js
-│       └── ...
+│       └── estudiantes/
+│           ├── index.js
+│           ├── create.validator.js
+│           ├── list.validator.js
+│           └── ...
 │
-├── shared/
-│   ├── utils/
-│   │   ├── encryption.js
-│   │   ├── dateHelpers.js
-│   │   └── pdfGenerator.js
-│   ├── constants/
-│   │   ├── estadosAcademicos.js
-│   │   ├── roles.js
-│   │   └── permisos.js
-│   └── errors/
-│       ├── AppError.js          # Clase base de errores
-│       ├── ValidationError.js
-│       ├── NotFoundError.js
-│       └── UnauthorizedError.js
+├── shared/                     # Código compartido
+│   ├── AppError.js             # Jerarquía de errores
+│   └── logger.js               # Logger configurado
 │
-├── app.js                       # Configuración de Express
-└── server.js                    # Entry point
+├── app.js                      # Configuración de Express
+└── server.js                   # Entry point
 ```
 
 ---
@@ -712,9 +809,11 @@ backend/src/
 
 ### 6.1 Repository Pattern
 
-**Objetivo:** Abstraer el acceso a datos, permitir cambiar la BD sin afectar la lógica de negocio.
+**Objetivo:**
+ Abstraer el acceso a datos, permitir cambiar la BD sin afectar la lógica de negocio.
 
 **Implementación:**
+
 ```javascript
 // Interfaz (contrato)
 class IEstudianteRepository {
@@ -739,43 +838,156 @@ class EstudianteRepository extends IEstudianteRepository {
 }
 ```
 
-### 6.2 Dependency Injection (DI)
+### 6.2 Dependency Injection (DI) - Container Personalizado
 
-**Objetivo:** Invertir dependencias, facilitar testing y desacoplamiento.
+El sistema implementa un **Container de Dependency Injection** personalizado para gestionar las dependencias de forma centralizada y facilitar el testing y mantenimiento.
 
-**Implementación:**
+**Características:**
+
+- ✅ Gestión centralizada de dependencias
+- ✅ Soporte para singletons
+- ✅ Factory functions para creación lazy
+- ✅ Resolución automática de dependencias anidadas
+- ✅ Módulos de registro por dominio
+
+**Estructura:**
+
+```
+infrastructure/container/
+├── Container.js                    # Contenedor principal
+├── index.js                        # Punto de entrada
+└── modules/
+    ├── repositories.container.js   # Registro de repositorios
+    └── estudiantes.container.js   # Registro de módulo de estudiantes
+```
+
+**Uso:**
+
 ```javascript
-// container.js - Contenedor de DI
-class Container {
+// Resolver dependencias desde el container
+import container from './infrastructure/container/index.js';
+
+const controller = container.resolve('estudiantes.createStudentController');
+const repository = container.resolve('studentRepository');
+```
+
+### 6.2.1 Patrones de Diseño Aplicados
+
+#### Template Method (BaseRepository)
+
+El patrón **Template Method** se aplica en `BaseRepository` para proporcionar funcionalidad común a todos los repositorios, mientras permite personalización mediante métodos abstractos.
+
+**Ventajas:**
+
+- ✅ Eliminación de código duplicado
+- ✅ Consistencia en operaciones CRUD
+- ✅ Facilidad de mantenimiento
+- ✅ Extensibilidad mediante herencia
+
+#### BaseEntity (Herencia de Entidades)
+
+Todas las entidades extienden de `BaseEntity`, proporcionando campos comunes de auditoría y métodos de utilidad.
+
+**Ventajas:**
+
+- ✅ Consistencia en campos de auditoría
+- ✅ Métodos reutilizables (softDelete, activate, etc.)
+- ✅ Facilidad de mantenimiento
+
+**Objetivo:**
+ Invertir dependencias, facilitar testing y desacoplamiento mediante un contenedor centralizado.
+
+**Implementación Actual:**
+
+```javascript
+// infrastructure/container/Container.js
+export class Container {
   constructor() {
-    this.dependencies = {};
+    this.services = new Map();
+    this.singletons = new Map();
   }
-  
-  register(name, dependency) {
-    this.dependencies[name] = dependency;
+
+  register(name, factory, singleton = true) {
+    this.services.set(name, { factory, singleton });
+    return this;
   }
-  
+
   resolve(name) {
-    return this.dependencies[name];
+    const service = this.services.get(name);
+    if (!service) {
+      throw new Error(`Service '${name}' not found`);
+    }
+    
+    if (service.singleton && this.singletons.has(name)) {
+      return this.singletons.get(name);
+    }
+
+    const instance = typeof service.factory === 'function'
+      ? service.factory(this)  // Pasa el container para resolver dependencias
+      : service.factory;
+
+    if (service.singleton) {
+      this.singletons.set(name, instance);
+    }
+
+    return instance;
   }
 }
-
-// Registro de dependencias
-const container = new Container();
-container.register('estudianteRepository', new EstudianteRepository());
-container.register('crearEstudianteUseCase', new CrearEstudianteUseCase(
-  container.resolve('estudianteRepository')
-));
-container.register('estudianteController', new EstudianteController(
-  container.resolve('crearEstudianteUseCase')
-));
 ```
+
+**Registro de Módulos:**
+
+```javascript
+// infrastructure/container/modules/estudiantes.container.js
+export function registerEstudiantesModule(container) {
+  container.register(
+    'estudiantes.registerStudentUseCase',
+    (c) => new RegisterStudentUseCase({
+      studentRepository: c.resolve('studentRepository'),
+      logger: c.resolve('logger'),
+    }),
+    true
+  );
+
+  container.register(
+    'estudiantes.createStudentController',
+    (c) => new CreateStudentController({
+      registerStudentUseCase: c.resolve('estudiantes.registerStudentUseCase'),
+    }),
+    true
+  );
+  return container;
+}
+```
+
+**Uso:**
+
+```javascript
+// presentation/routes/student.routes.js
+import container from '../../infrastructure/container/index.js';
+
+const createController = container.resolve('estudiantes.createStudentController');
+
+router.post('/', authMiddleware, (req, res, next) => 
+  createController.handle(req, res, next)
+);
+```
+
+**Ventajas:**
+
+- ✅ Gestión centralizada de dependencias
+- ✅ Soporte para singletons (instancias únicas)
+- ✅ Factory functions para creación lazy
+- ✅ Resolución automática de dependencias anidadas
+- ✅ Módulos organizados por dominio
 
 ### 6.3 Factory Pattern
 
-**Objetivo:** Crear objetos de forma centralizada.
+**Objetivo:**
+ Crear objetos de forma centralizada.
 
 **Implementación:**
+
 ```javascript
 class EstudianteFactory {
   static create(data) {
@@ -791,9 +1003,11 @@ class EstudianteFactory {
 
 ### 6.4 Middleware Pattern
 
-**Objetivo:** Procesar requests en cadena (autenticación, validación, logging).
+**Objetivo:**
+ Procesar requests en cadena (autenticación, validación, logging).
 
 **Implementación:**
+
 ```javascript
 // Middleware de autenticación
 const authMiddleware = (req, res, next) => {
@@ -816,9 +1030,11 @@ router.get('/estudiantes', authMiddleware, authorize('estudiantes.ver'), estudia
 
 ### 6.5 Strategy Pattern
 
-**Objetivo:** Encapsular algoritmos intercambiables.
+**Objetivo:**
+ Encapsular algoritmos intercambiables.
 
 **Implementación:**
+
 ```javascript
 // Estrategias de cálculo de descuentos
 class CalculadoraDescuentoStrategy {
@@ -846,9 +1062,11 @@ class DescuentoMontoFijoStrategy extends CalculadoraDescuentoStrategy {
 
 ### 7.1 Autenticación
 
-**Mecanismo:** JWT (JSON Web Tokens)
+**Mecanismo:**
+ JWT (JSON Web Tokens)
 
 **Flujo:**
+
 1. Usuario envía credenciales (username + password)
 2. Backend valida credenciales contra BD (hash bcrypt)
 3. Si válido, genera JWT con payload:
@@ -868,9 +1086,11 @@ class DescuentoMontoFijoStrategy extends CalculadoraDescuentoStrategy {
 
 ### 7.2 Autorización (RBAC)
 
-**Mecanismo:** Role-Based Access Control
+**Mecanismo:**
+ Role-Based Access Control
 
 **Middleware:**
+
 ```javascript
 const authorize = (permission) => {
   return async (req, res, next) => {
@@ -894,19 +1114,23 @@ router.post('/estudiantes', authMiddleware, authorize('estudiantes.crear'), estu
 ### 7.3 Protección contra OWASP Top 10
 
 **1. SQL Injection:**
+
 - Uso de ORM (Sequelize) con prepared statements
 - NO concatenación de strings en queries
 
 **2. XSS (Cross-Site Scripting):**
+
 - Sanitización de inputs con express-validator
 - Escapado automático en frontend (React)
 - Content Security Policy headers
 
 **3. CSRF:**
+
 - Tokens CSRF en formularios críticos
 - SameSite cookies
 
 **4. Rate Limiting:**
+
 ```javascript
 const rateLimit = require('express-rate-limit');
 
@@ -920,6 +1144,7 @@ router.post('/auth/login', loginLimiter, authController.login);
 ```
 
 **5. Helmet (Headers de Seguridad):**
+
 ```javascript
 const helmet = require('helmet');
 app.use(helmet());
@@ -985,6 +1210,7 @@ volumes:
 ```
 
 **Comandos:**
+
 ```bash
 # Levantar servicios
 docker-compose up -d
@@ -1230,15 +1456,18 @@ jobs:
 
 ### 10.1 Logs
 
-**Herramienta:** Winston
+**Herramienta:**
+ Winston
 
 **Niveles:**
+
 - ERROR: Errores críticos
 - WARN: Advertencias
 - INFO: Información operacional
 - DEBUG: Debugging (solo dev)
 
 **Formato:**
+
 ```json
 {
   "timestamp": "2025-12-08T14:30:00.000Z",
@@ -1255,10 +1484,14 @@ jobs:
 ### 10.2 Métricas
 
 **Herramientas Potenciales (Fase 2):**
-- **PM2 Monitor:** Métricas básicas (CPU, RAM, requests/min)
-- **Prometheus + Grafana:** Métricas avanzadas
+
+- **PM2 Monitor:**
+ Métricas básicas (CPU, RAM, requests/min)
+- **Prometheus + Grafana:**
+ Métricas avanzadas
 
 **Métricas Clave:**
+
 - Requests por segundo
 - Tiempo de respuesta promedio
 - Tasa de errores
@@ -1269,6 +1502,7 @@ jobs:
 ### 10.3 Alertas
 
 **Configuración:**
+
 - Sistema caído → Email + SMS inmediato
 - CPU > 80% → Email
 - Errores > 10/min → Email
@@ -1281,6 +1515,7 @@ jobs:
 | Versión | Fecha | Autor | Descripción de Cambios |
 |---------|-------|-------|------------------------|
 | 1.0 | 2025-12-08 | Equipo de Desarrollo | Versión inicial consolidada - Monolito Modular + Clean Architecture |
+| 1.1 | 2025-01-XX | Equipo de Desarrollo | Actualización estructural: Dependency Injection Container, BaseRepository con Template Method, BaseEntity, Controllers separados por funcionalidad |
 
 ---
 

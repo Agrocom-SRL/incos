@@ -1,9 +1,9 @@
 # 15 - BACKEND
 ## Sistema de Gestión Académica - Instituto INCOS Santa Cruz
 
-**Versión:** 1.0  
+**Versión:** 1.1  
 **Fecha:** Enero 2025  
-**Estado:** Documento Base Consolidado
+**Estado:** Documento Actualizado - Estructura con Dependency Injection
 
 ---
 
@@ -16,6 +16,7 @@ Este documento describe en detalle la arquitectura, tecnologías, estructura y e
 ### 1.2 Alcance
 
 El documento cubre:
+
 - Stack tecnológico completo del backend
 - Arquitectura: Clean Architecture
 - Estructura de directorios y organización del código
@@ -220,55 +221,85 @@ El backend sigue estrictamente los principios de **Clean Architecture**:
 src/
 ├── domain/                    # Domain Layer (Lógica de negocio pura)
 │   ├── entities/             # Entidades del dominio
+│   │   ├── BaseEntity.js      # Clase base para todas las entidades
+│   │   ├── Student.js
+│   │   ├── Career.js
+│   │   └── ...
 │   ├── interfaces/           # Interfaces (repositorios, servicios)
 │   │   ├── repositories/
+│   │   │   ├── IRepository.js # Interfaz base para repositorios
+│   │   │   └── ...
 │   │   └── services/
 │   ├── services/             # Servicios de dominio
-│   └── value-objects/        # Value Objects
+│   ├── value-objects/        # Value Objects
+│   └── constants/            # Constantes del dominio
 │
 ├── application/              # Application Layer (Casos de uso)
 │   ├── use-cases/           # Casos de uso específicos
-│   │   ├── auth/
-│   │   ├── estudiantes/
-│   │   ├── inscripciones/
+│   │   ├── Estudiantes/
+│   │   │   └── RegisterStudentUseCase.js
+│   │   ├── Inscripciones/
+│   │   ├── Calificaciones/
 │   │   └── ...
 │   ├── dtos/                # Data Transfer Objects
 │   │   ├── request/
 │   │   └── response/
-│   └── mappers/             # Mappers (Entity ↔ DTO)
+│   ├── mappers/             # Mappers (Entity ↔ DTO)
+│   ├── utils/               # Utilidades de aplicación
+│   └── validators/          # Validadores de aplicación
 │
 ├── infrastructure/           # Infrastructure Layer
+│   ├── config/              # Configuraciones
+│   │   └── database.js      # Config de base de datos
+│   ├── container/           # Dependency Injection Container
+│   │   ├── Container.js     # Contenedor de DI
+│   │   ├── index.js         # Punto de entrada del container
+│   │   └── modules/         # Módulos de registro
+│   │       ├── repositories.container.js
+│   │       ├── estudiantes.container.js
+│   │       └── ...
 │   ├── database/            # Implementaciones de BD
 │   │   ├── config/
-│   │   ├── models/          # Sequelize Models
-│   │   ├── migrations/
-│   │   └── seeders/
+│   │   │   └── sequelize.js # Configuración de Sequelize
+│   │   └── models/          # Sequelize Models
 │   ├── repositories/        # Implementaciones de repositorios
-│   ├── external/            # Servicios externos
-│   │   ├── email/
-│   │   ├── pdf/
-│   │   └── storage/
-│   └── adapters/            # Adaptadores (JWT, Bcrypt, etc.)
+│   │   ├── BaseRepository.js # Clase base con Template Method
+│   │   ├── StudentRepository.js
+│   │   └── ...
+│   └── external/            # Servicios externos
+│       ├── email/
+│       ├── pdf/
+│       └── storage/
 │
 ├── presentation/            # Presentation Layer
-│   ├── controllers/         # Controladores HTTP
-│   ├── routes/             # Definición de rutas
-│   ├── middleware/         # Middleware personalizado
-│   │   ├── auth.middleware.js
+│   ├── controllers/         # Controladores HTTP (separados por funcionalidad)
+│   │   ├── estudiantes/
+│   │   │   ├── index.js
+│   │   │   ├── create.controller.js
+│   │   │   ├── list.controller.js
+│   │   │   ├── getById.controller.js
+│   │   │   ├── update.controller.js
+│   │   │   ├── status.controller.js
+│   │   │   ├── becas.controller.js
+│   │   │   └── licencias.controller.js
+│   │   └── ...
+│   ├── routes/              # Definición de rutas
+│   │   ├── index.js
+│   │   └── student.routes.js
+│   ├── middleware/          # Middleware personalizado
 │   │   ├── errorHandler.middleware.js
-│   │   ├── validator.middleware.js
-│   │   └── logger.middleware.js
-│   └── validators/         # Validadores de request
+│   │   ├── logger.middleware.js
+│   │   ├── notFound.middleware.js
+│   │   └── validation.middleware.js
+│   └── validators/          # Validadores de request
+│       └── estudiantes/
+│           ├── create.validator.js
+│           ├── list.validator.js
+│           └── ...
 │
 ├── shared/                  # Código compartido
-│   ├── constants/          # Constantes
-│   ├── errors/             # Errores personalizados
-│   ├── utils/              # Utilidades
-│   └── validators/         # Validadores genéricos
-│
-├── config/                  # Configuraciones
-│   ├── database.js         # Config de Sequelize
-│   └── logger.js           # Config de Winston
+│   ├── AppError.js          # Jerarquía de errores
+│   └── logger.js            # Logger configurado
 │
 ├── app.js                   # Configuración de Express
 └── server.js                # Punto de entrada
@@ -280,25 +311,68 @@ src/
 
 **Responsabilidad:** Contiene la lógica de negocio pura, independiente de frameworks y tecnologías.
 
-#### 3.3.1 Entities (Entidades)
+#### 3.3.1 BaseEntity (Entidad Base)
 
-Representan las entidades del dominio con su lógica de negocio.
+Todas las entidades extienden de `BaseEntity`, que proporciona campos comunes de auditoría y métodos de utilidad.
+
+**Características:**
+- Campos de auditoría: `id`, `active`, `createdAt`, `updatedAt`, `deletedAt`, `createdBy`, `updatedBy`, `deletedBy`
+- Métodos: `isActive()`, `isDeleted()`, `activate()`, `deactivate()`, `softDelete()`, `restore()`
+
+**Ejemplo:**
+```javascript
+// domain/entities/BaseEntity.js
+export class BaseEntity {
+  constructor(data = {}) {
+    this.id = data.id || null;
+    this.active = data.active !== undefined ? data.active : true;
+    this.createdAt = data.createdAt || null;
+    this.updatedAt = data.updatedAt || null;
+    this.deletedAt = data.deletedAt || null;
+    this.createdBy = data.createdBy || null;
+    this.updatedBy = data.updatedBy || null;
+    this.deletedBy = data.deletedBy || null;
+  }
+
+  isActive() {
+    return this.active === true;
+  }
+
+  isDeleted() {
+    return this.deletedAt !== null;
+  }
+
+  softDelete(userId = null) {
+    this.deletedAt = new Date();
+    this.deletedBy = userId;
+    this.active = false;
+  }
+}
+```
+
+#### 3.3.2 Entities (Entidades)
+
+Las entidades extienden de `BaseEntity` y representan las entidades del dominio con su lógica de negocio.
 
 **Ejemplo:**
 ```javascript
 // domain/entities/Student.js
-export class Student {
-  constructor({ id, ci, nombres, apellidos, carreraId, estadoAcademico }) {
-    this.id = id;
-    this.ci = ci;
-    this.nombres = nombres;
-    this.apellidos = apellidos;
-    this.carreraId = carreraId;
-    this.estadoAcademico = estadoAcademico;
+import { BaseEntity } from './BaseEntity.js';
+
+export class Student extends BaseEntity {
+  constructor(data = {}) {
+    super(data);
+    this.ci = data.ci;
+    this.expedicion = data.expedicion;
+    this.nombres = data.nombres;
+    this.apellidoPaterno = data.apellidoPaterno;
+    this.apellidoMaterno = data.apellidoMaterno;
+    this.carreraId = data.carreraId;
+    this.estadoAcademico = data.estadoAcademico;
   }
 
   get fullName() {
-    return `${this.nombres} ${this.apellidos}`.trim();
+    return `${this.nombres} ${this.apellidoPaterno} ${this.apellidoMaterno || ''}`.trim();
   }
 
   canEnroll(gestion) {
@@ -321,30 +395,54 @@ export class Student {
 
 #### 3.3.2 Interfaces (Repositorios)
 
-Definen contratos que deben cumplir las implementaciones.
+Definen contratos que deben cumplir las implementaciones. Todas las interfaces de repositorio extienden de `IRepository`, que define los métodos base comunes.
 
-**Ejemplo:**
+**IRepository (Interfaz Base):**
 ```javascript
-// domain/interfaces/repositories/IStudentRepository.js
-export class IStudentRepository {
+// domain/interfaces/repositories/IRepository.js
+export class IRepository {
   async findById(id) {
     throw new Error('Method findById must be implemented');
   }
 
+  async findAll(filters, page, limit) {
+    throw new Error('Method findAll must be implemented');
+  }
+
+  async create(data, userId) {
+    throw new Error('Method create must be implemented');
+  }
+
+  async update(id, data, userId) {
+    throw new Error('Method update must be implemented');
+  }
+
+  async delete(id, userId) {
+    throw new Error('Method delete must be implemented');
+  }
+
+  async search(searchTerm, options) {
+    throw new Error('Method search must be implemented');
+  }
+
+  async count(filters) {
+    throw new Error('Method count must be implemented');
+  }
+}
+```
+
+**Interfaces Específicas:**
+```javascript
+// domain/interfaces/repositories/IStudentRepository.js
+import { IRepository } from './IRepository.js';
+
+export class IStudentRepository extends IRepository {
   async findByCI(ci, expedicion) {
     throw new Error('Method findByCI must be implemented');
   }
 
-  async create(studentData) {
-    throw new Error('Method create must be implemented');
-  }
-
-  async update(id, studentData) {
-    throw new Error('Method update must be implemented');
-  }
-
-  async findAll(filters) {
-    throw new Error('Method findAll must be implemented');
+  async findByCode(codigoEstudiante) {
+    throw new Error('Method findByCode must be implemented');
   }
 }
 ```
@@ -462,7 +560,185 @@ export class RegisterStudentDTO {
 
 **Responsabilidad:** Implementaciones concretas de las interfaces del dominio.
 
-#### 3.5.1 Database Models (Sequelize)
+#### 3.5.1 Dependency Injection Container
+
+El sistema utiliza un **Container de Dependency Injection** personalizado para gestionar las dependencias de forma centralizada.
+
+**Container:**
+```javascript
+// infrastructure/container/Container.js
+export class Container {
+  constructor() {
+    this.services = new Map();
+    this.singletons = new Map();
+  }
+
+  register(name, factory, singleton = true) {
+    this.services.set(name, { factory, singleton });
+    return this;
+  }
+
+  resolve(name) {
+    const service = this.services.get(name);
+    if (!service) {
+      throw new Error(`Service '${name}' not found`);
+    }
+    
+    if (service.singleton && this.singletons.has(name)) {
+      return this.singletons.get(name);
+    }
+
+    const instance = typeof service.factory === 'function'
+      ? service.factory(this)
+      : service.factory;
+
+    if (service.singleton) {
+      this.singletons.set(name, instance);
+    }
+
+    return instance;
+  }
+}
+```
+
+**Registro de Módulos:**
+```javascript
+// infrastructure/container/modules/repositories.container.js
+export function registerRepositoriesModule(container) {
+  container.register('studentRepository', () => new StudentRepository(), true);
+  container.register('careerRepository', () => new CareerRepository(), true);
+  // ... más repositorios
+  return container;
+}
+
+// infrastructure/container/modules/estudiantes.container.js
+export function registerEstudiantesModule(container) {
+  container.register(
+    'estudiantes.registerStudentUseCase',
+    (c) => new RegisterStudentUseCase({
+      studentRepository: c.resolve('studentRepository'),
+      logger: c.resolve('logger'),
+    }),
+    true
+  );
+
+  container.register(
+    'estudiantes.createStudentController',
+    (c) => new CreateStudentController({
+      registerStudentUseCase: c.resolve('estudiantes.registerStudentUseCase'),
+    }),
+    true
+  );
+  return container;
+}
+```
+
+**Uso:**
+```javascript
+import container from './infrastructure/container/index.js';
+
+const controller = container.resolve('estudiantes.createStudentController');
+```
+
+#### 3.5.2 BaseRepository (Patrón Template Method)
+
+Todos los repositorios extienden de `BaseRepository`, que implementa el patrón **Template Method** para proporcionar funcionalidad común.
+
+**Características:**
+- Métodos template: `findAll()`, `create()`, `update()`, `delete()`, `search()`, `count()`
+- Métodos abstractos: `getModel()`, `toEntity()`, `buildWhereClause()`, `getSearchFields()`, `mapDataToModel()`
+- Manejo automático de soft delete (con `paranoid: true` en Sequelize)
+- Filtrado automático de registros activos/inactivos
+- Paginación integrada
+
+**Ejemplo:**
+```javascript
+// infrastructure/repositories/BaseRepository.js
+import { IRepository } from '../../domain/interfaces/repositories/IRepository.js';
+
+export class BaseRepository extends IRepository {
+  // Métodos abstractos que deben implementarse
+  getModel() {
+    throw new Error('Method getModel must be implemented');
+  }
+
+  toEntity(model) {
+    throw new Error('Method toEntity must be implemented');
+  }
+
+  getSearchFields() {
+    throw new Error('Method getSearchFields must be implemented');
+  }
+
+  // Métodos template con lógica común
+  async findAll(filters = {}, page = null, limit = null) {
+    const Model = this.getModel();
+    const where = {
+      ...this.buildWhereClause(filters),
+    };
+
+    if (!filters.includeInactive) {
+      where.activo = true;
+    }
+
+    if (filters.search) {
+      const searchFields = this.getSearchFields();
+      where[Op.or] = searchFields.map((field) => ({
+        [field]: { [Op.like]: `%${filters.search}%` },
+      }));
+    }
+
+    // ... lógica de paginación y ordenamiento
+    const rows = await Model.findAll(options);
+    return {
+      [this.getCollectionName()]: rows.map((model) => this.toEntity(model)),
+      total: rows.length,
+    };
+  }
+}
+```
+
+**Implementación Específica:**
+```javascript
+// infrastructure/repositories/StudentRepository.js
+import { BaseRepository } from './BaseRepository.js';
+import { Student } from '../../domain/entities/Student.js';
+import { Student as StudentModel } from '../database/models/Student.js';
+
+export class StudentRepository extends BaseRepository {
+  getModel() {
+    return StudentModel;
+  }
+
+  toEntity(model) {
+    if (!model) return null;
+    return new Student({
+      id: model.id,
+      ci: model.ci,
+      nombres: model.nombres,
+      // ... mapear campos
+    });
+  }
+
+  getSearchFields() {
+    return ['nombres', 'apellidoPaterno', 'apellidoMaterno', 'ci'];
+  }
+
+  getCollectionName() {
+    return 'students';
+  }
+
+  // Métodos específicos adicionales
+  async findByCI(ci, expedicion) {
+    const model = await this.getModel().findOne({
+      where: { ci, expedicion },
+    });
+    return this.toEntity(model);
+  }
+}
+```
+
+#### 3.5.3 Database Models (Sequelize)
 
 **Ejemplo:**
 ```javascript
@@ -501,45 +777,6 @@ export const Student = sequelize.define('Student', {
 });
 ```
 
-#### 3.5.2 Repository Implementations
-
-**Ejemplo:**
-```javascript
-// infrastructure/repositories/StudentRepository.js
-import { IStudentRepository } from '../../domain/interfaces/repositories/IStudentRepository.js';
-import { Student } from '../database/models/Student.js';
-import { Student as StudentEntity } from '../../domain/entities/Student.js';
-
-export class StudentRepository extends IStudentRepository {
-  async findById(id) {
-    const studentModel = await Student.findByPk(id);
-    if (!studentModel) return null;
-    return this.toEntity(studentModel);
-  }
-
-  async findByCI(ci, expedicion) {
-    const studentModel = await Student.findOne({
-      where: { ci, expedicion },
-    });
-    if (!studentModel) return null;
-    return this.toEntity(studentModel);
-  }
-
-  async create(studentData) {
-    const studentModel = await Student.create(studentData);
-    return this.toEntity(studentModel);
-  }
-
-  toEntity(model) {
-    return new StudentEntity({
-      id: model.id,
-      ci: model.ci,
-      nombres: model.nombres,
-      // ... mapear campos
-    });
-  }
-}
-```
 
 ---
 
@@ -547,39 +784,50 @@ export class StudentRepository extends IStudentRepository {
 
 **Responsabilidad:** Maneja las peticiones HTTP y responde al cliente.
 
-#### 3.6.1 Controllers
+#### 3.6.1 Controllers (Separados por Funcionalidad)
 
-**Ejemplo:**
+Los controllers están organizados por funcionalidad, no por entidad. Cada endpoint tiene su propio controller.
+
+**Estructura:**
+```
+presentation/controllers/estudiantes/
+├── index.js                    # Exportaciones centralizadas
+├── create.controller.js        # POST /estudiantes
+├── list.controller.js          # GET /estudiantes
+├── getById.controller.js       # GET /estudiantes/:id
+├── update.controller.js        # PUT /estudiantes/:id
+├── status.controller.js        # PATCH /estudiantes/:id/estado
+├── becas.controller.js         # POST /estudiantes/:id/becas
+└── licencias.controller.js     # POST /estudiantes/:id/licencias
+```
+
+**Ejemplo de Controller:**
 ```javascript
-// presentation/controllers/StudentController.js
-export class StudentController {
-  constructor({ registerStudentUseCase, getStudentUseCase }) {
+// presentation/controllers/estudiantes/create.controller.js
+import { RegisterStudentUseCase } from '../../../application/use-cases/Estudiantes/RegisterStudentUseCase.js';
+import { RegisterStudentDTO } from '../../../application/dtos/request/RegisterStudentDTO.js';
+import { StudentResponseDTO } from '../../../application/dtos/response/StudentResponseDTO.js';
+
+export class CreateStudentController {
+  constructor({ registerStudentUseCase }) {
     this.registerStudentUseCase = registerStudentUseCase;
-    this.getStudentUseCase = getStudentUseCase;
   }
 
-  async register(req, res, next) {
+  async handle(req, res, next) {
     try {
       const dto = RegisterStudentDTO.fromRequest(req);
-      const student = await this.registerStudentUseCase.execute(dto);
-      
+      const userId = req.user?.id || req.user?.userId;
+
+      const student = await this.registerStudentUseCase.execute(dto, userId);
+      const responseDTO = StudentResponseDTO.fromEntity(student);
+
       res.status(201).json({
         success: true,
-        data: StudentResponseDTO.fromEntity(student),
-      });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  async getById(req, res, next) {
-    try {
-      const { id } = req.params;
-      const student = await this.getStudentUseCase.execute(id);
-      
-      res.json({
-        success: true,
-        data: StudentResponseDTO.fromEntity(student),
+        data: responseDTO,
+        message: 'Estudiante creado correctamente',
+        meta: {
+          timestamp: new Date().toISOString(),
+        },
       });
     } catch (error) {
       next(error);
@@ -588,29 +836,49 @@ export class StudentController {
 }
 ```
 
+**Ventajas de esta estructura:**
+- ✅ Separación de responsabilidades: cada controller tiene una única responsabilidad
+- ✅ Facilidad de testing: controllers pequeños y enfocados
+- ✅ Mantenibilidad: cambios en un endpoint no afectan otros
+- ✅ Escalabilidad: fácil agregar nuevos endpoints
+
 #### 3.6.2 Routes
+
+Las rutas resuelven los controllers desde el Container de DI.
 
 **Ejemplo:**
 ```javascript
 // presentation/routes/student.routes.js
 import express from 'express';
-import { StudentController } from '../controllers/StudentController.js';
+import container from '../../infrastructure/container/index.js';
 import { authMiddleware } from '../middleware/auth.middleware.js';
-import { validateRequest } from '../middleware/validator.middleware.js';
-import { registerStudentSchema } from '../validators/student.validators.js';
+import { validateRequest } from '../middleware/validation.middleware.js';
+import { registerStudentSchema } from '../validators/estudiantes/create.validator.js';
 
 const router = express.Router();
-const studentController = new StudentController(/* dependencies */);
+
+// Resolver controllers desde el container
+const createController = container.resolve('estudiantes.createStudentController');
+const listController = container.resolve('estudiantes.listStudentsController');
+const getByIdController = container.resolve('estudiantes.getStudentByIdController');
 
 router.post(
   '/',
   authMiddleware,
   validateRequest(registerStudentSchema),
-  (req, res, next) => studentController.register(req, res, next)
+  (req, res, next) => createController.handle(req, res, next)
 );
 
-router.get('/:id', authMiddleware, (req, res, next) => 
-  studentController.getById(req, res, next)
+router.get(
+  '/',
+  authMiddleware,
+  (req, res, next) => listController.handle(req, res, next)
+);
+
+router.get(
+  '/:id',
+  authMiddleware,
+  (req, res, next) => getByIdController.handle(req, res, next)
 );
 
 export default router;
@@ -1046,6 +1314,7 @@ npm run format        # Formatear código
 | Versión | Fecha | Autor | Descripción de Cambios |
 |---------|-------|-------|------------------------|
 | 1.0 | 2025-01-XX | Equipo de Desarrollo | Versión inicial - Documentación completa del backend |
+| 1.1 | 2025-01-XX | Equipo de Desarrollo | Actualización estructural: Dependency Injection Container, BaseRepository con Template Method, BaseEntity, Controllers separados por funcionalidad |
 
 ---
 

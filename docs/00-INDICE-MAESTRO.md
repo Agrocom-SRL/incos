@@ -1,15 +1,15 @@
 # DOCUMENTACIÓN TÉCNICA COMPLETA
 ## Sistema de Gestión Académica - Instituto INCOS Santa Cruz
 
-**Versión:** 1.1  
+**Versión:** 1.2  
 **Fecha:** Enero 2025  
-**Estado:** Documentación Base Consolidada
+**Estado:** Documentación Actualizada - Estructura Completa
 
 ---
 
 ## 📚 ÍNDICE DE DOCUMENTOS
 
-### 📋 DOCUMENTOS GENERADOS (15/15)
+### 📋 DOCUMENTOS GENERADOS (16/16)
 
 #### 1. Documentación de Proyecto y Requerimientos
 
@@ -48,6 +48,7 @@
 |---|-----------|-------------|---------|--------|
 | 14 | [Frontend](14-frontend.md) | Arquitectura, tecnologías y estructura del frontend (React, Vite, Ant Design, Atomic Design) | ~60 | ✅ |
 | 15 | [Backend](15-backend.md) | Arquitectura, tecnologías y estructura del backend (Node.js, Express, Sequelize, Clean Architecture) | ~65 | ✅ |
+| 16 | [Mantenimiento de Documentación](16-mantenimiento-documentacion.md) | Guía para mantener actualizada la documentación, especialmente cambios en BD | ~40 | ✅ |
 
 #### 6. Referencias
 
@@ -63,7 +64,7 @@
 
 | Métrica | Cantidad |
 |---------|----------|
-| **Total de Documentos** | 15 |
+| **Total de Documentos** | 16 |
 | **Total de Páginas** | ~815 páginas |
 | **Total de Líneas** | ~16,000 líneas |
 | **Tamaño Total** | ~950 KB |
@@ -71,7 +72,7 @@
 | **Requerimientos No Funcionales** | 37 RNFs |
 | **Reglas de Negocio** | 80+ RNs |
 | **Endpoints API** | 80+ endpoints |
-| **Tablas de Base de Datos** | 40+ tablas |
+| **Tablas de Base de Datos** | 49 tablas |
 | **Casos de Uso** | 40+ casos de uso |
 | **Códigos de Error** | 30+ códigos |
 
@@ -175,17 +176,17 @@ Referencias:                 35 páginas (4%)
 
 | Categoría | Cantidad |
 |-----------|----------|
-| Catálogos Geográficos | 6 tablas |
+| Catálogos Geográficos | 4 tablas |
 | Catálogos de Referencia | 8 tablas |
-| Estructura Académica | 10 tablas |
+| Estructura Académica | 11 tablas |
 | Gestión de Estudiantes | 6 tablas |
 | Inscripciones y Calificaciones | 3 tablas |
 | Pasantías | 3 tablas |
 | Supervisión Docente | 2 tablas |
 | Historial Oficial | 2 tablas |
 | Pagos | 2 tablas |
-| Sistema y Auditoría | 6 tablas |
-| **TOTAL** | **58 tablas** |
+| Sistema y Auditoría | 5 tablas |
+| **TOTAL** | **49 tablas** |
 
 ### Características Técnicas
 
@@ -434,7 +435,7 @@ GitHub: `instituto-incos/sistema-gestion-academica`
 
 ## 🎉 ESTADO FINAL
 
-✅ **DOCUMENTACIÓN COMPLETA - 15/15 DOCUMENTOS**
+✅ **DOCUMENTACIÓN COMPLETA - 16/16 DOCUMENTOS**
 
 **Total generado:** ~16,000 líneas de documentación técnica profesional
 
@@ -450,6 +451,7 @@ GitHub: `instituto-incos/sistema-gestion-academica`
 - ✅ Gestión de Errores
 - ✅ **Frontend** (React, Vite, Ant Design, Atomic Design)
 - ✅ **Backend** (Node.js, Express, Sequelize, Clean Architecture)
+- ✅ **Mantenimiento de Documentación** (Guía de actualización)
 - ✅ Glosario Completo
 
 **Listo para:** Comenzar desarrollo ✨
