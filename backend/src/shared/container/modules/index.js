@@ -13,6 +13,9 @@ import { logger } from '../../../config/logger.js';
 // ============================================
 // REGISTRADORES DE MÓDULOS
 // ============================================
+// Módulo base: Repositorios (debe registrarse primero)
+import { registerRepositoriesModule } from './repositories.container.js';
+// Módulos funcionales
 import { registerEstudiantesModule } from './estudiantes.container.js';
 // TODO: Agregar más módulos cuando se implementen:
 // import { registerInscripcionesModule } from './inscripciones.container.js';
@@ -30,9 +33,12 @@ export const container = new Container();
 container.register('logger', () => logger, true);
 
 // ============================================
-// REGISTRAR MÓDULOS FUNCIONALES
+// REGISTRAR MÓDULOS
 // ============================================
+// IMPORTANTE: Los repositorios deben registrarse primero ya que son dependencias
+// de los módulos funcionales (use cases, controllers, etc.)
 const modules = [
+  { name: 'Repositorios', register: registerRepositoriesModule },
   { name: 'Estudiantes', register: registerEstudiantesModule },
   // Agregar más módulos aquí cuando se implementen:
   // { name: 'Inscripciones', register: registerInscripcionesModule },

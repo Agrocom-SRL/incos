@@ -14,7 +14,7 @@ export class IRepository {
 
   /**
    * Buscar todos los registros activos
-   * @param {Object} filters - Filtros opcionales
+   * @param {Object} filters - Filtros opcionales (puede incluir 'includeInactive' para incluir inactivos)
    * @param {number} page - Página (opcional, para paginación)
    * @param {number} limit - Límite por página (opcional, para paginación)
    * @returns {Promise<Object[]|{data: Object[], total: number}>}
@@ -57,9 +57,19 @@ export class IRepository {
   /**
    * Buscar con término de búsqueda
    * @param {string} searchTerm - Término de búsqueda
+   * @param {Object} options - Opciones opcionales (puede incluir 'includeInactive' para incluir inactivos)
    * @returns {Promise<Object[]>}
    */
-  async search(searchTerm) {
+  async search(searchTerm, options = {}) {
     throw new Error('Method search must be implemented');
+  }
+
+  /**
+   * Contar registros según filtros
+   * @param {Object} filters - Filtros opcionales (puede incluir 'includeInactive' para incluir inactivos)
+   * @returns {Promise<number>}
+   */
+  async count(filters = {}) {
+    throw new Error('Method count must be implemented');
   }
 }
