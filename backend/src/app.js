@@ -5,7 +5,6 @@ import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import 'express-async-errors';
 
-import { logger } from './config/logger.js';
 import httpLogger from './presentation/middleware/logger.middleware.js';
 import errorHandler from './presentation/middleware/errorHandler.middleware.js';
 import notFoundHandler from './presentation/middleware/notFound.middleware.js';
