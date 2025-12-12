@@ -7,7 +7,7 @@
 **Historia**:
 El Instituto Comercial Superior de la Nación INCOS Santa Cruz fue fundado el **2 de agosto de 1985** mediante la **Resolución Ministerial 746/1985**. Actualmente cuenta con la **R.M. 0426/2016**, ofertando inicialmente las Carreras de **Contaduría General** y **Secretariado Ejecutivo**. Posteriormente, en el año **1988**, se ampliaron las carreras de **Administración de Empresas** e **Informática**.
 
-**Ubicación**: 
+**Ubicación**:
 Calle Ñuflo de Chavez Nº 62, entre René Moreno y Calle Chuquisaca, dentro del centro histórico del municipio de **Santa Cruz de la Sierra**.
 
 **Horarios de Atención**:
@@ -430,6 +430,7 @@ class Course {
 ### 6. Enrollment (Inscripción)
 
 **Inscripción Principal** (por gestión):
+
 ```javascript
 class Inscripcion {
   - id
@@ -451,6 +452,7 @@ class Inscripcion {
 ```
 
 **Inscripción a Materias** (dentro de una inscripción):
+
 ```javascript
 class InscripcionMateria {
   - id
@@ -502,6 +504,7 @@ class Attendance {
 ### 9. AcademicPeriod (Gestión Académica)
 
 **Gestión** (Año académico completo):
+
 ```javascript
 class Gestion {
   - id
@@ -515,6 +518,7 @@ class Gestion {
 ```
 
 **Etapa de Gestión** (Fases dentro de una gestión):
+
 ```javascript
 class EtapaGestion {
   - id
@@ -529,6 +533,7 @@ class EtapaGestion {
 ```
 
 **Periodo** (Semestre de la carrera: 1º, 2º, 3º, 4º):
+
 ```javascript
 class Periodo {
   - id
@@ -546,7 +551,7 @@ class Periodo {
 
 El sistema utiliza una base de datos MySQL con arquitectura modular y normalizada. Los scripts SQL están organizados en el directorio `backend/database/01-schemas/`:
 
-### Scripts de Schema (Orden de Ejecución):
+### Scripts de Schema (Orden de Ejecución)
 
 1. **`01-base.sql`** - Configuración inicial y estándares
 2. **`02-catalogos-geograficos.sql`** - Catálogos geográficos (países, departamentos, provincias, municipios)
@@ -565,7 +570,7 @@ El sistema utiliza una base de datos MySQL con arquitectura modular y normalizad
 15. **`12-sincronizacion.sql`** - Sistema de sincronización con sistema nacional
 16. **`13-indices-optimizacion.sql`** - Índices adicionales de optimización
 
-### Características de la Base de Datos:
+### Características de la Base de Datos
 
 ✅ **Normalización 3FN**: Todas las tablas siguen tercera forma normal  
 ✅ **Soft Delete**: Todas las tablas tienen `deleted_at` para eliminación lógica  
@@ -575,9 +580,10 @@ El sistema utiliza una base de datos MySQL con arquitectura modular y normalizad
 ✅ **Campos Generados**: Uso de `GENERATED ALWAYS AS` para campos calculados  
 ✅ **Índices Optimizados**: Índices compuestos para consultas frecuentes  
 
-### Estándares de Tablas:
+### Estándares de Tablas
 
 Todas las tablas incluyen:
+
 - `id INT AUTO_INCREMENT PRIMARY KEY`
 - `activo BOOLEAN DEFAULT TRUE`
 - `created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`
@@ -609,12 +615,14 @@ El tema está dividido en módulos especializados ubicados en `src/shared/config
 ### Paleta de Colores
 
 **Colores Principales** (del logo):
+
 - **Verde**: `#196b45` → Sidebar activo, Header, CTAs principales
 - **Rojo**: `#e41c24` → Errores, alertas críticas
 - **Dorado**: `#f59e0b` → Advertencias, elementos premium
 - **Azul Cielo**: `#7d9bdc` → Información, estados neutros
 
 **Colores de Acento** (complementarios del verde):
+
 - Rosa-Magenta, Naranja, Azul-Verde, Verde-Lima, Púrpura
 
 ### Uso del Tema

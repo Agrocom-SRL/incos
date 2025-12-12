@@ -11,15 +11,17 @@ Sistema integral de gestión académica, administrativa y operativa para el **In
 **Historia**:
 Fundado el **2 de agosto de 1985** mediante la **Resolución Ministerial 746/1985**. Actualmente cuenta con la **R.M. 0426/2016**, ofertando inicialmente las Carreras de **Contaduría General** y **Secretariado Ejecutivo**. Posteriormente, en el año **1988**, se ampliaron las carreras de **Administración de Empresas** e **Informática**.
 
-**Ubicación**: 
+**Ubicación**:
 Calle Ñuflo de Chavez Nº 62, entre René Moreno y Calle Chuquisaca, dentro del centro histórico del municipio de **Santa Cruz de la Sierra**.
 
 **Horarios de Atención**:
+
 - **Turno Tarde**: Lunes a Viernes 14:00 - 16:30
 - **Turno Noche**: Lunes a Viernes 18:45 - 22:30
 - **Sábados**: 17:00 - 21:00
 
 **Carreras Técnicas** (Nivel Técnico Superior):
+
 1. **Sistemas Informáticos**
 2. **Administración de Empresas**
 3. **Contaduría General**
@@ -65,6 +67,7 @@ El sistema incluye **13 módulos funcionales**:
 ### Stack Tecnológico
 
 **Backend:**
+
 - Node.js 20 LTS
 - Express.js 4.x
 - Sequelize ORM
@@ -73,6 +76,7 @@ El sistema incluye **13 módulos funcionales**:
 - Clean Architecture
 
 **Frontend:**
+
 - React 19.x
 - Vite 7.x
 - Ant Design 6.x
@@ -81,6 +85,7 @@ El sistema incluye **13 módulos funcionales**:
 - React Router DOM 7.x
 
 **DevOps:**
+
 - Docker + Docker Compose
 - PM2 (Process Manager)
 - Nginx (Web Server)
@@ -115,67 +120,67 @@ La documentación completa del sistema se encuentra en el directorio [`docs/`](.
 
 ### 🏛️ Arquitectura y Diseño Técnico
 
-4. **[Arquitectura del Sistema](docs/04-arquitectura-sistema.md)**
+1. **[Arquitectura del Sistema](docs/04-arquitectura-sistema.md)**
    - Monolito Modular, Clean Architecture, stack tecnológico completo
    - ~70 páginas
 
-5. **[Modelo de Datos](docs/05-modelo-datos.md)**
+2. **[Modelo de Datos](docs/05-modelo-datos.md)**
    - Tablas documentadas con relaciones, índices y características
    - ~110 páginas
 
-6. **[Diseño de API REST](docs/06-diseno-api.md)**
+3. **[Diseño de API REST](docs/06-diseno-api.md)**
    - 80+ endpoints, contratos HTTP, validaciones, códigos de error
    - ~80 páginas
 
 ### 📋 Casos de Uso y Reglas de Negocio
 
-7. **[Casos de Uso Detallados](docs/07-casos-de-uso.md)**
+1. **[Casos de Uso Detallados](docs/07-casos-de-uso.md)**
    - Flujos de negocio por módulo con actores y precondiciones
    - ~60 páginas
 
-8. **[Reglas de Negocio](docs/08-reglas-negocio.md)**
+2. **[Reglas de Negocio](docs/08-reglas-negocio.md)**
    - 80+ reglas consolidadas por módulo con validaciones
    - ~65 páginas
 
 ### ⚙️ Estándares y Configuración
 
-9. **[Estándares de Código](docs/09-estandares-codigo.md)**
+1. **[Estándares de Código](docs/09-estandares-codigo.md)**
    - Convenciones, ESLint, Prettier, patrones, mejores prácticas
    - ~50 páginas
 
-10. **[Configuración de Entornos](docs/11-configuracion-entornos.md)**
-    - Dev, Test, Prod: instalación, deployment, backups, troubleshooting
-    - ~55 páginas
+2. **[Configuración de Entornos](docs/11-configuracion-entornos.md)**
+   - Dev, Test, Prod: instalación, deployment, backups, troubleshooting
+   - ~55 páginas
 
-11. **[Gestión de Errores y Logging](docs/12-gestion-errores.md)**
-    - Jerarquía de errores, Winston, auditoría, códigos de error
-    - ~45 páginas
+3. **[Gestión de Errores y Logging](docs/12-gestion-errores.md)**
+   - Jerarquía de errores, Winston, auditoría, códigos de error
+   - ~45 páginas
 
 ### 💻 Implementación Técnica
 
-12. **[Frontend](docs/14-frontend.md)**
-    - Arquitectura, tecnologías y estructura del frontend
-    - React 19, Vite 7, Ant Design 6, Atomic Design, Clean Architecture
-    - Zustand, TanStack React Query, React Hook Form, Yup
-    - ~60 páginas
+1. **[Frontend](docs/14-frontend.md)**
+   - Arquitectura, tecnologías y estructura del frontend
+   - React 19, Vite 7, Ant Design 6, Atomic Design, Clean Architecture
+   - Zustand, TanStack React Query, React Hook Form, Yup
+   - ~60 páginas
 
-13. **[Backend](docs/15-backend.md)**
-    - Arquitectura, tecnologías y estructura del backend
-    - Node.js 20, Express 4, Sequelize 6, Clean Architecture
-    - JWT, RBAC, Middleware, Logging, Testing
-    - ~65 páginas
+2. **[Backend](docs/15-backend.md)**
+   - Arquitectura, tecnologías y estructura del backend
+   - Node.js 20, Express 4, Sequelize 6, Clean Architecture
+   - JWT, RBAC, Middleware, Logging, Testing
+   - ~65 páginas
 
 ### 📖 Referencias
 
-14. **[Glosario de Términos](docs/13-glosario-terminos.md)**
-    - Definiciones técnicas, siglas, acrónimos, términos del dominio
-    - ~35 páginas
+1. **[Glosario de Términos](docs/13-glosario-terminos.md)**
+   - Definiciones técnicas, siglas, acrónimos, términos del dominio
+   - ~35 páginas
 
 ### 📑 Índice Maestro
 
-15. **[Índice Maestro](docs/00-INDICE-MAESTRO.md)**
-    - Guía completa de navegación por toda la documentación
-    - ~30 páginas
+1. **[Índice Maestro](docs/00-INDICE-MAESTRO.md)**
+   - Guía completa de navegación por toda la documentación
+   - ~30 páginas
 
 ---
 
@@ -208,12 +213,14 @@ La documentación completa del sistema se encuentra en el directorio [`docs/`](.
 ### Instalación
 
 1. **Clonar el repositorio**
+
    ```bash
    git clone <repository-url>
    cd incos
    ```
 
 2. **Backend**
+
    ```bash
    cd backend
    npm install
@@ -223,6 +230,7 @@ La documentación completa del sistema se encuentra en el directorio [`docs/`](.
    ```
 
 3. **Frontend**
+
    ```bash
    cd frontend
    npm install
@@ -232,6 +240,7 @@ La documentación completa del sistema se encuentra en el directorio [`docs/`](.
    ```
 
 4. **Base de Datos**
+
    ```bash
    # Ejecutar scripts SQL en orden (ver backend/database/01-schemas/)
    mysql -u root -p < backend/database/01-schemas/01-base.sql
@@ -239,6 +248,7 @@ La documentación completa del sistema se encuentra en el directorio [`docs/`](.
    ```
 
 Para más detalles, consulta:
+
 - **[Backend README](backend/README.md)** - Configuración completa del backend
 - **[Frontend README](frontend/README.md)** - Configuración completa del frontend
 
@@ -259,7 +269,7 @@ Para más detalles, consulta:
 
 ## 📁 Estructura del Proyecto
 
-```
+```text
 incos/
 ├── backend/                 # API REST - Node.js + Express
 │   ├── src/                # Código fuente (Clean Architecture)
@@ -356,22 +366,26 @@ npm test              # Ejecutar todos los tests
 ### Fases
 
 **Fase 1 (MVP)** - 4 semanas
+
 - ✅ Autenticación y Usuarios
 - ✅ Gestión de Estudiantes
 - ✅ Carreras y Materias
 - ✅ Inscripciones básicas
 
 **Fase 2** - 3 semanas
+
 - Gestión de Docentes
 - Creación de Cursos
 - Horarios y Turnos
 
 **Fase 3** - 3 semanas
+
 - Registro de Notas
 - Cálculo de promedios
 - Registro de Asistencias
 
 **Fase 4** - 2 semanas
+
 - Dashboard administrativo
 - Reportes y estadísticas
 - Generación de documentos
@@ -412,7 +426,7 @@ Uso privado - Instituto INCOS © 2025
 
 ## 📞 Soporte
 
-Para soporte técnico, contactar a: sistema@incos.edu.bo
+Para soporte técnico, contactar a: [sistema@incos.edu.bo](mailto:sistema@incos.edu.bo)
 
 ---
 

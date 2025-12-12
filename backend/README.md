@@ -9,7 +9,7 @@ Sistema de Gestión Académica del **Instituto Comercial Superior de la Nación 
 **Historia**:
 El Instituto Comercial Superior de la Nación INCOS Santa Cruz fue fundado el **2 de agosto de 1985** mediante la **Resolución Ministerial 746/1985**. Actualmente cuenta con la **R.M. 0426/2016**, ofertando inicialmente las Carreras de **Contaduría General** y **Secretariado Ejecutivo**. Posteriormente, en el año **1988**, se ampliaron las carreras de **Administración de Empresas** e **Informática**.
 
-**Ubicación**: 
+**Ubicación**:
 Calle Ñuflo de Chavez Nº 62, entre René Moreno y Calle Chuquisaca, dentro del centro histórico del municipio de **Santa Cruz de la Sierra**.
 
 **Horarios de Atención**:
