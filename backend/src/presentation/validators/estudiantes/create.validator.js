@@ -1,8 +1,9 @@
 import { body } from 'express-validator';
 
 /**
- * Validaciones para el registro de estudiantes
- * Basadas en RF-EST-001 y CU-001
+ * POST /api/v1/estudiantes
+ * Validaciones para crear un nuevo estudiante
+ * Basadas en RF-EST-001, CU-001 y schema 06-estudiantes-parte1.sql
  */
 export const registerStudentValidator = [
   // Datos personales básicos
@@ -50,8 +51,11 @@ export const registerStudentValidator = [
       const hoy = new Date();
       const edad = hoy.getFullYear() - fechaNac.getFullYear();
       const mesDiff = hoy.getMonth() - fechaNac.getMonth();
-      const edadReal = mesDiff < 0 || (mesDiff === 0 && hoy.getDate() < fechaNac.getDate()) ? edad - 1 : edad;
-      
+      const edadReal =
+        mesDiff < 0 || (mesDiff === 0 && hoy.getDate() < fechaNac.getDate())
+          ? edad - 1
+          : edad;
+
       if (edadReal < 17) {
         throw new Error('El estudiante debe tener al menos 17 años de edad');
       }
@@ -138,7 +142,7 @@ export const registerStudentValidator = [
     .isFloat({ min: 0, max: 100 })
     .withMessage('El promedio anual debe estar entre 0 y 100'),
 
-  // Becas
+  // Becas (opcional en creación)
   body('becaDescuentoId')
     .optional()
     .isInt({ min: 1 })

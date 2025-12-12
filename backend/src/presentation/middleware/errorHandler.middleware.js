@@ -1,7 +1,14 @@
 import { logger } from '../../config/logger.js';
 
+/**
+ * Middleware genérico para manejo global de errores
+ * Captura todos los errores no manejados y formatea respuestas según el estándar de la API
+ *
+ * Uso:
+ * app.use(errorHandler); // Al final de todas las rutas
+ */
 function errorHandler(err, req, res, next) {
-  // Log del error
+  // Log del error para debugging
   logger.error('Error:', {
     message: err.message,
     stack: err.stack,
@@ -11,7 +18,7 @@ function errorHandler(err, req, res, next) {
     userId: req.user?.id,
   });
 
-  // Error operacional conocido (AppError)
+  // Error operacional conocido (AppError con isOperational = true)
   if (err.isOperational && err.statusCode < 500) {
     return res.status(err.statusCode).json({
       success: false,
@@ -22,12 +29,12 @@ function errorHandler(err, req, res, next) {
       },
       meta: {
         timestamp: new Date().toISOString(),
-        requestId: req.id, // Si se implementa request ID tracking
+        requestId: req.id,
       },
     });
   }
 
-  // Error inesperado
+  // Error inesperado del sistema
   const statusCode = err.statusCode || 500;
   const message =
     process.env.NODE_ENV === 'production'
