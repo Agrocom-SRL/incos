@@ -2,6 +2,10 @@
 -- SCHEMA BASE - CREACIÓN DE BASE DE DATOS
 -- Sistema de Gestión Académica - Instituto INCOS Santa Cruz
 -- ============================================
+-- NOTA: El nombre de la base de datos debe coincidir con:
+-- - database/00-config/database-config.sql (CREATE DATABASE)
+-- - backend/src/config/database.js (constante DATABASE_NAME)
+-- - backend/.env (variable DB_NAME)
 
 -- Usar la base de datos
 USE instituto_incos;

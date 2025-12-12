@@ -1,82 +1,26 @@
 import { Sequelize } from 'sequelize';
-import dotenv from 'dotenv';
+import databaseConfig from '../../../config/database.js';
 
-dotenv.config();
-
-const env = process.env.NODE_ENV || 'development';
-const config = {
-  development: {
-    username: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || '',
-    database: process.env.DB_NAME || 'instituto_incos_dev',
-    host: process.env.DB_HOST || 'localhost',
-    port: process.env.DB_PORT || 3306,
-    dialect: 'mysql',
-    logging: process.env.DB_LOGGING === 'true' ? console.log : false,
-    timezone: '-04:00', // Bolivia (UTC-4)
-    pool: {
-      max: parseInt(process.env.DB_POOL_MAX) || 20,
-      min: parseInt(process.env.DB_POOL_MIN) || 5,
-      acquire: parseInt(process.env.DB_POOL_ACQUIRE) || 30000,
-      idle: parseInt(process.env.DB_POOL_IDLE) || 10000,
-    },
-    define: {
-      timestamps: true,
-      underscored: true,
-      freezeTableName: true,
-      charset: 'utf8mb4',
-      collate: 'utf8mb4_unicode_ci',
-    },
-  },
-  test: {
-    username: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || '',
-    database: process.env.DB_NAME || 'instituto_incos_test',
-    host: process.env.DB_HOST || 'localhost',
-    port: process.env.DB_PORT || 3306,
-    dialect: 'mysql',
-    logging: false,
-    timezone: '-04:00',
-  },
-  production: {
-    username: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT || 3306,
-    dialect: 'mysql',
-    logging: false,
-    timezone: '-04:00',
-    pool: {
-      max: parseInt(process.env.DB_POOL_MAX) || 20,
-      min: parseInt(process.env.DB_POOL_MIN) || 5,
-      acquire: parseInt(process.env.DB_POOL_ACQUIRE) || 30000,
-      idle: parseInt(process.env.DB_POOL_IDLE) || 10000,
-    },
-    define: {
-      timestamps: true,
-      underscored: true,
-      freezeTableName: true,
-      charset: 'utf8mb4',
-      collate: 'utf8mb4_unicode_ci',
-    },
-  },
-};
-
-const dbConfig = config[env];
-
+/**
+ * Instancia de Sequelize
+ * 
+ * Usa la configuración centralizada de config/database.js
+ * Esta es la única instancia de conexión a la base de datos en toda la aplicación
+ * 
+ * @see config/database.js - Configuración de la base de datos
+ */
 export const sequelize = new Sequelize(
-  dbConfig.database,
-  dbConfig.username,
-  dbConfig.password,
+  databaseConfig.database,
+  databaseConfig.username,
+  databaseConfig.password,
   {
-    host: dbConfig.host,
-    port: dbConfig.port,
-    dialect: dbConfig.dialect,
-    logging: dbConfig.logging,
-    timezone: dbConfig.timezone,
-    pool: dbConfig.pool,
-    define: dbConfig.define,
+    host: databaseConfig.host,
+    port: databaseConfig.port,
+    dialect: databaseConfig.dialect,
+    logging: databaseConfig.logging,
+    timezone: databaseConfig.timezone,
+    pool: databaseConfig.pool,
+    define: databaseConfig.define,
   }
 );
 
