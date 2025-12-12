@@ -1,23 +1,24 @@
 /**
  * Registrador de dependencias del módulo de Estudiantes (EST)
- * Centraliza la configuración de repositories, use cases y controllers
+ * Centraliza la configuración de use cases y controllers
  *
  * Estructura del módulo:
- * - Repositories: Acceso a datos (estudiantes, carreras, gestiones, becas)
+ * - Repositories: Ya están registrados en repositories.container.js
  * - Use Cases: Lógica de negocio (register, list, update, etc.)
  * - Controllers: Manejo de peticiones HTTP
+ *
+ * NOTA: Los repositorios se registran en repositories.container.js y se resuelven
+ * usando container.resolve() con los siguientes nombres:
+ * - studentRepository
+ * - managementRepository
+ * - careerRepository
+ * - scholarshipRepository
+ * - studentScholarshipRepository
+ * - studentAcademicDataRepository
  */
 
-// Repositories
-import { StudentRepository } from '../../../infrastructure/repositories/StudentRepository.js';
-import { GestionRepository } from '../../../infrastructure/repositories/GestionRepository.js';
-import { CarreraRepository } from '../../../infrastructure/repositories/CarreraRepository.js';
-import { BecaDescuentoRepository } from '../../../infrastructure/repositories/BecaDescuentoRepository.js';
-import { StudentBecaRepository } from '../../../infrastructure/repositories/StudentBecaRepository.js';
-import { StudentAcademicDataRepository } from '../../../infrastructure/repositories/StudentAcademicDataRepository.js';
-
 // Use Cases
-import { RegisterStudentUseCase } from '../../../application/use-cases/estudiantes/RegisterStudentUseCase.js';
+import { RegisterStudentUseCase } from '../../../application/use-cases/Estudiantes/RegisterStudentUseCase.js';
 
 // Controllers
 import {
@@ -35,37 +36,9 @@ import {
  * @param {Container} container - Contenedor de DI
  */
 export function registerEstudiantesModule(container) {
-  // Repositories (singletons - se comparten entre módulos)
-  if (!container.has('studentRepository')) {
-    container.register('studentRepository', () => new StudentRepository(), true);
-  }
-  if (!container.has('gestionRepository')) {
-    container.register('gestionRepository', () => new GestionRepository(), true);
-  }
-  if (!container.has('carreraRepository')) {
-    container.register('carreraRepository', () => new CarreraRepository(), true);
-  }
-  if (!container.has('becaDescuentoRepository')) {
-    container.register(
-      'becaDescuentoRepository',
-      () => new BecaDescuentoRepository(),
-      true
-    );
-  }
-  if (!container.has('studentBecaRepository')) {
-    container.register(
-      'studentBecaRepository',
-      () => new StudentBecaRepository(),
-      true
-    );
-  }
-  if (!container.has('academicDataRepository')) {
-    container.register(
-      'academicDataRepository',
-      () => new StudentAcademicDataRepository(),
-      true
-    );
-  }
+  // NOTA: Los repositorios ya están registrados en repositories.container.js
+  // No es necesario registrarlos aquí. Se resuelven usando container.resolve()
+  // con los nombres definidos en repositories.container.js
 
   // Use Cases específicos del módulo
   container.register(
@@ -73,11 +46,6 @@ export function registerEstudiantesModule(container) {
     (c) =>
       new RegisterStudentUseCase({
         studentRepository: c.resolve('studentRepository'),
-        gestionRepository: c.resolve('gestionRepository'),
-        carreraRepository: c.resolve('carreraRepository'),
-        becaDescuentoRepository: c.resolve('becaDescuentoRepository'),
-        studentBecaRepository: c.resolve('studentBecaRepository'),
-        academicDataRepository: c.resolve('academicDataRepository'),
         logger: c.resolve('logger'),
       }),
     true
