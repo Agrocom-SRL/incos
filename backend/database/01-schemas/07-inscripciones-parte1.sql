@@ -6,13 +6,24 @@
 
 USE instituto_incos;
 
+-- ============================================
+-- FASE 1: ELIMINACIÓN DE TABLAS
+-- Deshabilitamos foreign key checks para poder eliminar en cualquier orden
+-- ============================================
+
 SET FOREIGN_KEY_CHECKS = 0;
+
+-- Eliminar todas las tablas (orden no importa con foreign key checks deshabilitado)
+DROP TABLE IF EXISTS inscripciones;
+
+-- ============================================
+-- FASE 2: CREACIÓN DE TABLAS
+-- Las foreign key checks siguen deshabilitadas durante la creación
+-- ============================================
 
 -- ============================================
 -- TABLA: inscripciones
 -- ============================================
-
-DROP TABLE IF EXISTS inscripciones;
 
 CREATE TABLE inscripciones (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -60,5 +71,9 @@ CREATE TABLE inscripciones (
     
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Inscripciones de estudiantes por gestión y periodo de carrera. periodo_id = semestre de la carrera (1º, 2º, 3º, 4º)';
+
+-- ============================================
+-- FASE 3: REHABILITAR FOREIGN KEY CHECKS
+-- ============================================
 
 SET FOREIGN_KEY_CHECKS = 1;

@@ -6,13 +6,27 @@
 
 USE instituto_incos;
 
+-- ============================================
+-- FASE 1: ELIMINACIÓN DE TABLAS
+-- Deshabilitamos foreign key checks para poder eliminar en cualquier orden
+-- ============================================
+
 SET FOREIGN_KEY_CHECKS = 0;
+
+-- Eliminar todas las tablas (orden no importa con foreign key checks deshabilitado)
+DROP TABLE IF EXISTS estudiantes_apoderados;
+DROP TABLE IF EXISTS licencias_solicitudes;
+DROP TABLE IF EXISTS estudiantes_becas;
+DROP TABLE IF EXISTS becas_descuentos;
+
+-- ============================================
+-- FASE 2: CREACIÓN DE TABLAS
+-- Las foreign key checks siguen deshabilitadas durante la creación
+-- ============================================
 
 -- ============================================
 -- TABLA: becas_descuentos
 -- ============================================
-
-DROP TABLE IF EXISTS becas_descuentos;
 
 CREATE TABLE becas_descuentos (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -53,13 +67,11 @@ COMMENT='Catálogo de becas y descuentos sobre el aporte anual de matrícula (40
 -- TABLA: estudiantes_becas
 -- ============================================
 
-DROP TABLE IF EXISTS estudiantes_becas;
-
 CREATE TABLE estudiantes_becas (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    estudiante_id INT NOT NULL COMMENT 'Estudiante beneficiario',
-    beca_descuento_id INT NOT NULL COMMENT 'Tipo de beca/descuento sobre el aporte anual de matrícula (400 bs)',
-    gestion_id INT NOT NULL COMMENT 'Gestión',
+    estudiante_id INT NULL COMMENT 'Estudiante beneficiario (NULL permite flexibilidad en migraciones)',
+    beca_descuento_id INT NULL COMMENT 'Tipo de beca/descuento sobre el aporte anual de matrícula (400 bs) (NULL permite flexibilidad en migraciones)',
+    gestion_id INT NULL COMMENT 'Gestión (NULL permite flexibilidad en migraciones)',
     fecha_solicitud DATE NOT NULL COMMENT 'Fecha en que se solicitó el descuento',
     estado ENUM('PENDIENTE', 'ACTIVA', 'FINALIZADA', 'RECHAZADA') DEFAULT 'PENDIENTE' COMMENT 'Estado de la beca',
     documentos_completos BOOLEAN DEFAULT FALSE COMMENT 'Documentación completa',
@@ -102,13 +114,11 @@ COMMENT='Becas y descuentos sobre el aporte anual de matrícula de 400 bs. Regla
 -- TABLA: licencias_solicitudes
 -- ============================================
 
-DROP TABLE IF EXISTS licencias_solicitudes;
-
 CREATE TABLE licencias_solicitudes (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    estudiante_id INT NOT NULL COMMENT 'Estudiante solicitante',
-    carrera_id INT NOT NULL COMMENT 'Carrera',
-    gestion_id INT NOT NULL COMMENT 'Gestión',
+    estudiante_id INT NULL COMMENT 'Estudiante solicitante (NULL permite flexibilidad en migraciones)',
+    carrera_id INT NULL COMMENT 'Carrera (NULL permite flexibilidad en migraciones)',
+    gestion_id INT NULL COMMENT 'Gestión (NULL permite flexibilidad en migraciones)',
     turno_curso_id INT COMMENT 'Turno/curso paralelo donde está matriculado (para verificar si la licencia aplica para ese curso en esa gestión)',
     fecha_solicitud DATE NOT NULL DEFAULT (CURDATE()) COMMENT 'Fecha de solicitud',
     fecha_desde DATE NOT NULL COMMENT 'Inicio de la licencia (Desde)',
@@ -169,12 +179,10 @@ COMMENT='Solicitudes de licencias estudiantiles (máx 15 días/gestión). Requie
 -- TABLA: estudiantes_apoderados
 -- ============================================
 
-DROP TABLE IF EXISTS estudiantes_apoderados;
-
 CREATE TABLE estudiantes_apoderados (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    estudiante_id INT NOT NULL COMMENT 'Estudiante',
-    tipo_parentesco_id INT NOT NULL COMMENT 'Tipo de parentesco (padre, madre, abuelo, tío, tutor, apoderado, orfanato, etc.)',
+    estudiante_id INT NULL COMMENT 'Estudiante (NULL permite flexibilidad en migraciones)',
+    tipo_parentesco_id INT NULL COMMENT 'Tipo de parentesco (padre, madre, abuelo, tío, tutor, apoderado, orfanato, etc.) (NULL permite flexibilidad en migraciones)',
     
     -- Datos personales básicos
     nombres VARCHAR(150) NOT NULL COMMENT 'Nombres completos del apoderado/tutor',
@@ -224,6 +232,10 @@ CREATE TABLE estudiantes_apoderados (
     
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Apoderados, tutores y referencias familiares de estudiantes. Relación 1 a muchos (un estudiante puede tener múltiples apoderados/tutores). Contempla casos de huérfanos, orfanatos, tíos, abuelos, hermanos mayores, etc.';
+
+-- ============================================
+-- FASE 3: REHABILITAR FOREIGN KEY CHECKS
+-- ============================================
 
 SET FOREIGN_KEY_CHECKS = 1;
 

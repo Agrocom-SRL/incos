@@ -6,13 +6,27 @@
 
 USE instituto_incos;
 
+-- ============================================
+-- FASE 1: ELIMINACIÓN DE TABLAS
+-- Deshabilitamos foreign key checks para poder eliminar en cualquier orden
+-- ============================================
+
 SET FOREIGN_KEY_CHECKS = 0;
+
+-- Eliminar todas las tablas (orden no importa con foreign key checks deshabilitado)
+DROP TABLE IF EXISTS municipios;
+DROP TABLE IF EXISTS provincias;
+DROP TABLE IF EXISTS departamentos;
+DROP TABLE IF EXISTS paises;
+
+-- ============================================
+-- FASE 2: CREACIÓN DE TABLAS
+-- Las foreign key checks siguen deshabilitadas durante la creación
+-- ============================================
 
 -- ============================================
 -- TABLA: paises
 -- ============================================
-
-DROP TABLE IF EXISTS paises;
 
 CREATE TABLE paises (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -41,11 +55,9 @@ COMMENT='Catálogo de países';
 -- TABLA: departamentos
 -- ============================================
 
-DROP TABLE IF EXISTS departamentos;
-
 CREATE TABLE departamentos (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    pais_id INT NOT NULL COMMENT 'País al que pertenece',
+    pais_id INT NULL COMMENT 'País al que pertenece (NULL permite flexibilidad en migraciones)',
     nombre VARCHAR(100) NOT NULL COMMENT 'Nombre del departamento',
     codigo VARCHAR(10) COMMENT 'Código abreviado (SC, LP, CB, etc.)',
     
@@ -58,7 +70,7 @@ CREATE TABLE departamentos (
     updated_by INT COMMENT 'Usuario que modificó',
     deleted_by INT COMMENT 'Usuario que eliminó',
     
-    -- Foreign Keys (SET NULL para facilitar migraciones)
+    -- Foreign Keys (SET NULL para permitir eliminaciones y flexibilidad en migraciones)
     FOREIGN KEY (pais_id) REFERENCES paises(id) ON DELETE SET NULL,
     
     -- Índices esenciales
@@ -76,11 +88,9 @@ COMMENT='Departamentos de Bolivia';
 -- TABLA: provincias
 -- ============================================
 
-DROP TABLE IF EXISTS provincias;
-
 CREATE TABLE provincias (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    departamento_id INT NOT NULL COMMENT 'Departamento al que pertenece',
+    departamento_id INT NULL COMMENT 'Departamento al que pertenece (NULL permite flexibilidad en migraciones)',
     nombre VARCHAR(100) NOT NULL COMMENT 'Nombre de la provincia',
     codigo VARCHAR(10) COMMENT 'Código abreviado',
     
@@ -93,7 +103,7 @@ CREATE TABLE provincias (
     updated_by INT COMMENT 'Usuario que modificó',
     deleted_by INT COMMENT 'Usuario que eliminó',
     
-    -- Foreign Keys (SET NULL para facilitar migraciones)
+    -- Foreign Keys (SET NULL para permitir eliminaciones y flexibilidad en migraciones)
     FOREIGN KEY (departamento_id) REFERENCES departamentos(id) ON DELETE SET NULL,
     
     -- Índices esenciales
@@ -111,11 +121,9 @@ COMMENT='Provincias de Bolivia';
 -- TABLA: municipios
 -- ============================================
 
-DROP TABLE IF EXISTS municipios;
-
 CREATE TABLE municipios (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    provincia_id INT NOT NULL COMMENT 'Provincia a la que pertenece',
+    provincia_id INT NULL COMMENT 'Provincia a la que pertenece (NULL permite flexibilidad en migraciones)',
     nombre VARCHAR(100) NOT NULL COMMENT 'Nombre del municipio',
     codigo VARCHAR(10) COMMENT 'Código abreviado',
     
@@ -128,7 +136,7 @@ CREATE TABLE municipios (
     updated_by INT COMMENT 'Usuario que modificó',
     deleted_by INT COMMENT 'Usuario que eliminó',
     
-    -- Foreign Keys (SET NULL para facilitar migraciones)
+    -- Foreign Keys (SET NULL para permitir eliminaciones y flexibilidad en migraciones)
     FOREIGN KEY (provincia_id) REFERENCES provincias(id) ON DELETE SET NULL,
     
     -- Índices esenciales
@@ -141,6 +149,10 @@ CREATE TABLE municipios (
     
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Municipios de Bolivia';
+
+-- ============================================
+-- FASE 3: REHABILITAR FOREIGN KEY CHECKS
+-- ============================================
 
 SET FOREIGN_KEY_CHECKS = 1;
 

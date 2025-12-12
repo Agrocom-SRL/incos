@@ -7,13 +7,32 @@
 
 USE instituto_incos;
 
+-- ============================================
+-- FASE 1: ELIMINACIÓN DE TABLAS
+-- Deshabilitamos foreign key checks para poder eliminar en cualquier orden
+-- ============================================
+
 SET FOREIGN_KEY_CHECKS = 0;
+
+-- Eliminar todas las tablas (orden no importa con foreign key checks deshabilitado)
+DROP TABLE IF EXISTS secretarias;
+DROP TABLE IF EXISTS directores;
+DROP TABLE IF EXISTS rectores;
+DROP TABLE IF EXISTS personal;
+DROP TABLE IF EXISTS sesiones;
+DROP TABLE IF EXISTS roles_permisos;
+DROP TABLE IF EXISTS usuarios;
+DROP TABLE IF EXISTS permisos;
+DROP TABLE IF EXISTS roles;
+
+-- ============================================
+-- FASE 2: CREACIÓN DE TABLAS
+-- Las foreign key checks siguen deshabilitadas durante la creación
+-- ============================================
 
 -- ============================================
 -- TABLA: roles
 -- ============================================
-
-DROP TABLE IF EXISTS roles;
 
 CREATE TABLE roles (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -42,8 +61,6 @@ COMMENT='Roles del sistema (RBAC)';
 -- TABLA: permisos
 -- ============================================
 
-DROP TABLE IF EXISTS permisos;
-
 CREATE TABLE permisos (
     id INT AUTO_INCREMENT PRIMARY KEY,
     codigo VARCHAR(250) NOT NULL COMMENT 'estudiantes.ver, calificaciones.registrar (endpoint interno)',
@@ -69,15 +86,13 @@ COMMENT='Permisos del sistema (RBAC - endpoints internos)';
 -- TABLA: usuarios
 -- ============================================
 
-DROP TABLE IF EXISTS usuarios;
-
 CREATE TABLE usuarios (
     id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) NOT NULL COMMENT 'Nombre de usuario',
     email VARCHAR(150) NOT NULL COMMENT 'Email',
     password_hash VARCHAR(255) NOT NULL COMMENT 'Hash bcrypt de la contraseña',
     foto_url VARCHAR(255) COMMENT 'URL de la foto de perfil',
-    rol_id INT NOT NULL COMMENT 'Rol principal del usuario',
+    rol_id INT NULL COMMENT 'Rol principal del usuario (NULL permite flexibilidad en migraciones)',
     
     referencia_id INT NULL COMMENT 'ID de referencia según tipo_referencia (apunta a personal.id para rectores/directores/secretarias)',
     tipo_referencia ENUM('ESTUDIANTE', 'DOCENTE', 'RECTOR', 'DIRECTOR', 'SECRETARIA') NULL COMMENT 'Tipo de referencia polimórfica',
@@ -118,12 +133,10 @@ COMMENT='Usuarios del sistema';
 -- TABLA: roles_permisos
 -- ============================================
 
-DROP TABLE IF EXISTS roles_permisos;
-
 CREATE TABLE roles_permisos (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    rol_id INT NOT NULL COMMENT 'ID del rol',
-    permiso_id INT NOT NULL COMMENT 'ID del permiso',
+    rol_id INT NULL COMMENT 'ID del rol (NULL permite flexibilidad en migraciones)',
+    permiso_id INT NULL COMMENT 'ID del permiso (NULL permite flexibilidad en migraciones)',
     accion ENUM('VER', 'CREAR', 'EDITAR', 'ELIMINAR', 'APROBAR', 'EXPORTAR') NOT NULL COMMENT 'Acción específica permitida para este rol y permiso',
     
     activo BOOLEAN DEFAULT TRUE COMMENT 'Asignación activa/inactiva',
@@ -156,11 +169,9 @@ COMMENT='Tabla pivote roles-permisos (define acción específica por rol y permi
 -- TABLA: sesiones
 -- ============================================
 
-DROP TABLE IF EXISTS sesiones;
-
 CREATE TABLE sesiones (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    usuario_id INT NOT NULL COMMENT 'Usuario de la sesión',
+    usuario_id INT NULL COMMENT 'Usuario de la sesión (NULL permite flexibilidad en migraciones)',
     
     -- Información de autenticación
     token_sesion VARCHAR(500) COMMENT 'Token JWT o similar de la sesión activa',
@@ -206,14 +217,13 @@ COMMENT='Sesiones de usuarios del sistema';
 -- Contiene todos los campos comunes
 -- ============================================
 
-DROP TABLE IF EXISTS personal;
-
 CREATE TABLE personal (
     id INT AUTO_INCREMENT PRIMARY KEY,
     usuario_id INT COMMENT 'Relación con usuario del sistema',
     
     -- Datos personales básicos
     ci VARCHAR(20) NOT NULL COMMENT 'Cédula de identidad',
+    expedicion VARCHAR(5) NOT NULL COMMENT 'Expedición del CI (SC, LP, CB, etc.)',
     nombres VARCHAR(150) NOT NULL COMMENT 'Nombres completos',
     apellido_paterno VARCHAR(100) NOT NULL COMMENT 'Apellido paterno',
     apellido_materno VARCHAR(100) COMMENT 'Apellido materno',
@@ -260,10 +270,9 @@ COMMENT='Tabla base para personal institucional (rectores, directores, secretari
 -- Herencia nivel 1: solo campos específicos
 -- ============================================
 
-DROP TABLE IF EXISTS rectores;
-
 CREATE TABLE rectores (
-    id INT PRIMARY KEY COMMENT 'Hereda de personal.id',
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    personal_id INT NULL COMMENT 'Referencia a personal.id (NULL permite flexibilidad en migraciones)',
     
     -- Información académica (solo para cargos superiores)
     titulo_profesional VARCHAR(200) COMMENT 'Título profesional',
@@ -278,7 +287,8 @@ CREATE TABLE rectores (
     periodo_mandato_inicio DATE COMMENT 'Inicio del período de mandato',
     periodo_mandato_fin DATE NULL COMMENT 'Fin del período de mandato (NULL = mandato indefinido)',
     
-    FOREIGN KEY (id) REFERENCES personal(id) ON DELETE SET NULL,
+    FOREIGN KEY (personal_id) REFERENCES personal(id) ON DELETE SET NULL,
+    INDEX idx_personal_id (personal_id) COMMENT 'Búsqueda por personal',
     INDEX idx_periodo_mandato (periodo_mandato_inicio, periodo_mandato_fin) COMMENT 'Búsqueda por período de mandato'
     
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
@@ -289,10 +299,9 @@ COMMENT='Rector del instituto (hereda de personal) - incluye información acadé
 -- Herencia nivel 2: campos específicos + tipo
 -- ============================================
 
-DROP TABLE IF EXISTS directores;
-
 CREATE TABLE directores (
-    id INT PRIMARY KEY COMMENT 'Hereda de personal.id',
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    personal_id INT NULL COMMENT 'Referencia a personal.id (NULL permite flexibilidad en migraciones)',
     
     -- Datos específicos del cargo
     tipo ENUM('ACADEMICO', 'ADMINISTRATIVO') NOT NULL COMMENT 'Tipo de director',
@@ -306,7 +315,8 @@ CREATE TABLE directores (
     institucion_egreso VARCHAR(200) COMMENT 'Institución de egreso (universidad o instituto técnico)',
     anio_egreso INT COMMENT 'Año de egreso',
     
-    FOREIGN KEY (id) REFERENCES personal(id) ON DELETE SET NULL,
+    FOREIGN KEY (personal_id) REFERENCES personal(id) ON DELETE SET NULL,
+    INDEX idx_personal_id (personal_id) COMMENT 'Búsqueda por personal',
     INDEX idx_tipo (tipo) COMMENT 'Filtrado por tipo de director',
     INDEX idx_fecha_nombramiento (fecha_nombramiento) COMMENT 'Búsqueda por fecha de nombramiento'
     
@@ -318,10 +328,9 @@ COMMENT='Directores del instituto (hereda de personal) - incluye información ac
 -- Herencia nivel 3: campos específicos + tipo
 -- ============================================
 
-DROP TABLE IF EXISTS secretarias;
-
 CREATE TABLE secretarias (
-    id INT PRIMARY KEY COMMENT 'Hereda de personal.id',
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    personal_id INT NULL COMMENT 'Referencia a personal.id (NULL permite flexibilidad en migraciones)',
     
     -- Datos específicos del cargo
     tipo ENUM('ACADEMICA', 'ADMINISTRATIVA') NOT NULL COMMENT 'Tipo de secretaria',
@@ -332,13 +341,18 @@ CREATE TABLE secretarias (
     fecha_fin_contrato DATE NULL COMMENT 'Fecha de fin de contrato (NULL = contrato indefinido)',
     tipo_contrato ENUM('EVENTUAL', 'TEMPORAL', 'INDEFINIDO') COMMENT 'Tipo de contrato',
     
-    FOREIGN KEY (id) REFERENCES personal(id) ON DELETE SET NULL,
+    FOREIGN KEY (personal_id) REFERENCES personal(id) ON DELETE SET NULL,
+    INDEX idx_personal_id (personal_id) COMMENT 'Búsqueda por personal',
     INDEX idx_tipo (tipo) COMMENT 'Filtrado por tipo de secretaria',
     INDEX idx_nivel_academico (nivel_academico) COMMENT 'Filtrado por nivel académico',
     INDEX idx_tipo_contrato (tipo_contrato) COMMENT 'Filtrado por tipo de contrato'
     
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Secretarias del instituto (hereda de personal) - datos específicos del contrato';
+
+-- ============================================
+-- FASE 3: REHABILITAR FOREIGN KEY CHECKS
+-- ============================================
 
 SET FOREIGN_KEY_CHECKS = 1;
 

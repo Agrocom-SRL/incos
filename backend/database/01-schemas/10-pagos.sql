@@ -7,13 +7,25 @@
 
 USE instituto_incos;
 
+-- ============================================
+-- FASE 1: ELIMINACIÓN DE TABLAS
+-- Deshabilitamos foreign key checks para poder eliminar en cualquier orden
+-- ============================================
+
 SET FOREIGN_KEY_CHECKS = 0;
+
+-- Eliminar todas las tablas (orden no importa con foreign key checks deshabilitado)
+DROP TABLE IF EXISTS detalle_pagos;
+DROP TABLE IF EXISTS pagos_aranceles;
+
+-- ============================================
+-- FASE 2: CREACIÓN DE TABLAS
+-- Las foreign key checks siguen deshabilitadas durante la creación
+-- ============================================
 
 -- ============================================
 -- TABLA: pagos_aranceles
 -- ============================================
-
-DROP TABLE IF EXISTS pagos_aranceles;
 
 CREATE TABLE pagos_aranceles (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -103,8 +115,6 @@ COMMENT='Pagos de aranceles de estudiantes';
 -- TABLA: detalle_pagos
 -- ============================================
 
-DROP TABLE IF EXISTS detalle_pagos;
-
 CREATE TABLE detalle_pagos (
     id INT AUTO_INCREMENT PRIMARY KEY,
     
@@ -150,6 +160,10 @@ CREATE TABLE detalle_pagos (
     
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Detalle de conceptos pagados';
+
+-- ============================================
+-- FASE 3: REHABILITAR FOREIGN KEY CHECKS
+-- ============================================
 
 SET FOREIGN_KEY_CHECKS = 1;
 

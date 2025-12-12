@@ -8,13 +8,26 @@
 
 USE instituto_incos;
 
+-- ============================================
+-- FASE 1: ELIMINACIÓN DE TABLAS
+-- Deshabilitamos foreign key checks para poder eliminar en cualquier orden
+-- ============================================
+
 SET FOREIGN_KEY_CHECKS = 0;
+
+-- Eliminar todas las tablas (orden no importa con foreign key checks deshabilitado)
+DROP TABLE IF EXISTS pasantias_evaluaciones;
+DROP TABLE IF EXISTS pasantias_asignaciones;
+DROP TABLE IF EXISTS pasantias_empresas;
+
+-- ============================================
+-- FASE 2: CREACIÓN DE TABLAS
+-- Las foreign key checks siguen deshabilitadas durante la creación
+-- ============================================
 
 -- ============================================
 -- TABLA: pasantias_empresas
 -- ============================================
-
-DROP TABLE IF EXISTS pasantias_empresas;
 
 CREATE TABLE pasantias_empresas (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -80,8 +93,6 @@ COMMENT='Catálogo de empresas para pasantías laborales (240 horas)';
 -- ============================================
 -- TABLA: pasantias_asignaciones
 -- ============================================
-
-DROP TABLE IF EXISTS pasantias_asignaciones;
 
 CREATE TABLE pasantias_asignaciones (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -156,8 +167,6 @@ COMMENT='Asignaciones de estudiantes a pasantías (240 horas obligatorias)';
 -- TABLA: pasantias_evaluaciones
 -- ============================================
 
-DROP TABLE IF EXISTS pasantias_evaluaciones;
-
 CREATE TABLE pasantias_evaluaciones (
     id INT AUTO_INCREMENT PRIMARY KEY,
     
@@ -220,5 +229,11 @@ CREATE TABLE pasantias_evaluaciones (
 COMMENT='Evaluaciones de desempeño en pasantías (ALTO/MEDIO/BAJO)';
 
 -- Continuar en parte 2...
+
+-- ============================================
+-- FASE 3: REHABILITAR FOREIGN KEY CHECKS
+-- ============================================
+
+SET FOREIGN_KEY_CHECKS = 1;
 
 SELECT 'Módulos operativos - Parte 1 creada (3 tablas: pasantías)' as mensaje;

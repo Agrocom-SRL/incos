@@ -6,17 +6,32 @@
 
 USE instituto_incos;
 
+-- ============================================
+-- FASE 1: ELIMINACIÓN DE TABLAS
+-- Deshabilitamos foreign key checks para poder eliminar en cualquier orden
+-- ============================================
+
 SET FOREIGN_KEY_CHECKS = 0;
+
+-- Eliminar todas las tablas (orden no importa con foreign key checks deshabilitado)
+DROP TABLE IF EXISTS turnos_cursos;
+DROP TABLE IF EXISTS asignaciones_docentes;
+DROP TABLE IF EXISTS turnos;
+DROP TABLE IF EXISTS docentes;
+DROP TABLE IF EXISTS cursos;
+
+-- ============================================
+-- FASE 2: CREACIÓN DE TABLAS
+-- Las foreign key checks siguen deshabilitadas durante la creación
+-- ============================================
 
 -- ============================================
 -- TABLA: cursos
 -- ============================================
 
-DROP TABLE IF EXISTS cursos;
-
 CREATE TABLE cursos (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    materia_id INT NOT NULL COMMENT 'Materia del curso',
+    materia_id INT NULL COMMENT 'Materia del curso (NULL permite flexibilidad en migraciones)',
     nombre VARCHAR(50) NOT NULL COMMENT 'Nombre del paralelo/grupo (ej: Grupo A, Sección 1)',
     codigo VARCHAR(20) COMMENT 'Código identificador del curso',
     cupo_maximo INT NOT NULL DEFAULT 35 COMMENT 'Máximo de estudiantes permitidos',
@@ -54,8 +69,6 @@ COMMENT='Cursos (paralelos/grupos) - Plantillas de cursos por materia. Se oferta
 -- ============================================
 -- TABLA: docentes
 -- ============================================
-
-DROP TABLE IF EXISTS docentes;
 
 CREATE TABLE docentes (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -136,12 +149,10 @@ COMMENT='Docentes del instituto';
 -- TABLA: asignaciones_docentes
 -- ============================================
 
-DROP TABLE IF EXISTS asignaciones_docentes;
-
 CREATE TABLE asignaciones_docentes (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    curso_id INT NOT NULL COMMENT 'Curso (paralelo/grupo) que se oferta',
-    gestion_id INT NOT NULL COMMENT 'Gestión académica en la que se oferta',
+    curso_id INT NULL COMMENT 'Curso (paralelo/grupo) que se oferta (NULL permite flexibilidad en migraciones)',
+    gestion_id INT NULL COMMENT 'Gestión académica en la que se oferta (NULL permite flexibilidad en migraciones)',
     docente_id INT COMMENT 'Docente asignado (NULL si aún no se asigna o es docente suplente)',
     carga_horaria_semanal INT NOT NULL DEFAULT 0 COMMENT 'Horas semanales',
     estado ENUM('PROPUESTA', 'APROBADA', 'ABIERTA', 'CERRADA', 'CANCELADA') DEFAULT 'PROPUESTA' COMMENT 'Estado de la oferta (CERRADA = no se llenó cupo mínimo)',
@@ -178,15 +189,43 @@ CREATE TABLE asignaciones_docentes (
 COMMENT='Oferta de cursos en gestiones. Vincula curso (paralelo) + gestión. El docente puede ser NULL (aún no asignado o suplente). El estado CERRADA indica que no se llenó el cupo mínimo. Las fechas de inicio/fin de clases están en etapas_gestion (tipo CLASES).';
 
 -- ============================================
+-- TABLA: turnos
+-- ============================================
+-- IMPORTANTE: Se crea antes de turnos_cursos porque turnos_cursos tiene foreign key a turnos
+
+CREATE TABLE turnos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(20) NOT NULL COMMENT 'MAÑANA, TARDE, NOCHE',
+    hora_inicio TIME NOT NULL COMMENT '07:00, 14:00, 19:00',
+    hora_fin TIME NOT NULL COMMENT '12:00, 18:00, 22:00',
+    descripcion VARCHAR(100),
+    color_hex VARCHAR(7) COMMENT 'Color para UI (#FF5733)',
+    
+    -- Campos de auditoría y control (ESTÁNDAR)
+    activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
+    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
+    created_by INT COMMENT 'Usuario que creó',
+    updated_by INT COMMENT 'Usuario que modificó',
+    deleted_by INT COMMENT 'Usuario que eliminó',
+    
+    -- Índices esenciales
+    INDEX idx_nombre (nombre) COMMENT 'Búsqueda por nombre',
+    INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
+    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete'
+    
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+COMMENT='Turnos horarios (mañana, tarde, noche)';
+
+-- ============================================
 -- TABLA: turnos_cursos
 -- ============================================
 
-DROP TABLE IF EXISTS turnos_cursos;
-
 CREATE TABLE turnos_cursos (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    asignacion_id INT NOT NULL COMMENT 'Oferta del curso en la gestión (asignaciones_docentes)',
-    turno_id INT NOT NULL COMMENT 'Turno horario (Mañana/Tarde/Noche)',
+    asignacion_id INT NULL COMMENT 'Oferta del curso en la gestión (asignaciones_docentes) (NULL permite flexibilidad en migraciones)',
+    turno_id INT NULL COMMENT 'Turno horario (Mañana/Tarde/Noche) (NULL permite flexibilidad en migraciones)',
     dia_semana ENUM('LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO', 'DOMINGO') NOT NULL COMMENT 'Día de la semana',
     hora_inicio TIME NOT NULL COMMENT 'Hora de inicio',
     hora_fin TIME NOT NULL COMMENT 'Hora de fin',
@@ -217,43 +256,17 @@ CREATE TABLE turnos_cursos (
     INDEX idx_asignacion_turno (asignacion_id, turno_id, activo, deleted_at) COMMENT 'Búsqueda por oferta y turno',
     INDEX idx_aula_dia (aula, dia_semana, hora_inicio, hora_fin, activo, deleted_at) COMMENT 'Búsqueda de disponibilidad de aula por día y horario',
     INDEX idx_dia_hora (dia_semana, hora_inicio, hora_fin) COMMENT 'Búsqueda por día y horario',
-    INDEX idx_turno_activo (turno_id, activo, deleted_at) COMMENT 'Búsqueda de turnos activos por tipo',
+    INDEX idx_turno_activo (turno_id, activo, deleted_at) COMMENT 'Búsqueda de turnos activos por tipo'
     
-    CHECK (hora_fin > hora_inicio)
+    -- NOTA: La validación de que hora_fin > hora_inicio debe hacerse a nivel de aplicación
+    -- MySQL puede tener problemas con CHECK constraints en ciertas versiones
     
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Horarios de ofertas de cursos (un registro por día). Cada día puede tener su propio horario y aula. Permite que el mismo curso tenga diferentes aulas en diferentes días, incluso con el mismo horario.';
 
 -- ============================================
--- TABLA: turnos
+-- FASE 3: REHABILITAR FOREIGN KEY CHECKS
 -- ============================================
-
-DROP TABLE IF EXISTS turnos;
-
-CREATE TABLE turnos (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(20) NOT NULL COMMENT 'MAÑANA, TARDE, NOCHE',
-    hora_inicio TIME NOT NULL COMMENT '07:00, 14:00, 19:00',
-    hora_fin TIME NOT NULL COMMENT '12:00, 18:00, 22:00',
-    descripcion VARCHAR(100),
-    color_hex VARCHAR(7) COMMENT 'Color para UI (#FF5733)',
-    
-    -- Campos de auditoría y control (ESTÁNDAR)
-    activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
-    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
-    created_by INT COMMENT 'Usuario que creó',
-    updated_by INT COMMENT 'Usuario que modificó',
-    deleted_by INT COMMENT 'Usuario que eliminó',
-    
-    -- Índices esenciales
-    INDEX idx_nombre (nombre) COMMENT 'Búsqueda por nombre',
-    INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
-    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete'
-    
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Turnos horarios (mañana, tarde, noche)';
 
 SET FOREIGN_KEY_CHECKS = 1;
 

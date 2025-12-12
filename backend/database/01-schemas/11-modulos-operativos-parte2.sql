@@ -7,13 +7,27 @@
 
 USE instituto_incos;
 
+-- ============================================
+-- FASE 1: ELIMINACIÓN DE TABLAS
+-- Deshabilitamos foreign key checks para poder eliminar en cualquier orden
+-- ============================================
+
 SET FOREIGN_KEY_CHECKS = 0;
+
+-- Eliminar todas las tablas (orden no importa con foreign key checks deshabilitado)
+DROP TABLE IF EXISTS folios_estudiantes;
+DROP TABLE IF EXISTS libros_registro;
+DROP TABLE IF EXISTS fichas_supervision;
+DROP TABLE IF EXISTS supervisiones_programadas;
+
+-- ============================================
+-- FASE 2: CREACIÓN DE TABLAS
+-- Las foreign key checks siguen deshabilitadas durante la creación
+-- ============================================
 
 -- ============================================
 -- TABLA: supervisiones_programadas
 -- ============================================
-
-DROP TABLE IF EXISTS supervisiones_programadas;
 
 CREATE TABLE supervisiones_programadas (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -72,8 +86,6 @@ COMMENT='Programación de supervisiones docentes';
 -- ============================================
 -- TABLA: fichas_supervision
 -- ============================================
-
-DROP TABLE IF EXISTS fichas_supervision;
 
 CREATE TABLE fichas_supervision (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -164,8 +176,6 @@ COMMENT='Fichas detalladas de supervisión docente (según formato INCOS)';
 -- TABLA: libros_registro
 -- ============================================
 
-DROP TABLE IF EXISTS libros_registro;
-
 CREATE TABLE libros_registro (
     id INT AUTO_INCREMENT PRIMARY KEY,
     
@@ -217,8 +227,6 @@ COMMENT='Libros físicos de registro académico oficial';
 -- ============================================
 -- TABLA: folios_estudiantes
 -- ============================================
-
-DROP TABLE IF EXISTS folios_estudiantes;
 
 CREATE TABLE folios_estudiantes (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -317,6 +325,12 @@ BEGIN
 END$$
 
 DELIMITER ;
+
+-- ============================================
+-- FASE 3: REHABILITAR FOREIGN KEY CHECKS
+-- ============================================
+
+SET FOREIGN_KEY_CHECKS = 1;
 
 -- ============================================
 -- VERIFICACIÓN

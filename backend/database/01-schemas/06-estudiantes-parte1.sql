@@ -6,13 +6,26 @@
 
 USE instituto_incos;
 
+-- ============================================
+-- FASE 1: ELIMINACIÓN DE TABLAS
+-- Deshabilitamos foreign key checks para poder eliminar en cualquier orden
+-- ============================================
+
 SET FOREIGN_KEY_CHECKS = 0;
+
+-- Eliminar todas las tablas (orden no importa con foreign key checks deshabilitado)
+DROP TABLE IF EXISTS documentos_estudiante;
+DROP TABLE IF EXISTS estudiantes_datos_academicos;
+DROP TABLE IF EXISTS estudiantes;
+
+-- ============================================
+-- FASE 2: CREACIÓN DE TABLAS
+-- Las foreign key checks siguen deshabilitadas durante la creación
+-- ============================================
 
 -- ============================================
 -- TABLA: estudiantes
 -- ============================================
-
-DROP TABLE IF EXISTS estudiantes;
 
 CREATE TABLE estudiantes (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -85,13 +98,11 @@ COMMENT='Estudiantes del instituto';
 -- TABLA: estudiantes_datos_academicos
 -- ============================================
 
-DROP TABLE IF EXISTS estudiantes_datos_academicos;
-
 CREATE TABLE estudiantes_datos_academicos (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    estudiante_id INT NOT NULL COMMENT 'Estudiante',
-    carrera_id INT NOT NULL COMMENT 'Carrera',
-    gestion_ingreso_id INT NOT NULL COMMENT 'Gestión de ingreso',
+    estudiante_id INT NULL COMMENT 'Estudiante (NULL permite flexibilidad en migraciones)',
+    carrera_id INT NULL COMMENT 'Carrera (NULL permite flexibilidad en migraciones)',
+    gestion_ingreso_id INT NULL COMMENT 'Gestión de ingreso (NULL permite flexibilidad en migraciones)',
     estado_academico ENUM('REGULAR', 'NIVELACION', 'RETIRADO', 'EGRESADO', 'ABANDONO') DEFAULT 'REGULAR' COMMENT 'Estado académico',
     unidad_educativa_procedencia VARCHAR(200) COMMENT 'Unidad educativa de procedencia',
     anio_egreso_secundaria INT COMMENT 'Año de egreso de secundaria',
@@ -136,11 +147,9 @@ COMMENT='Datos académicos detallados de estudiantes. Relación 1:1 con estudian
 -- TABLA: documentos_estudiante
 -- ============================================
 
-DROP TABLE IF EXISTS documentos_estudiante;
-
 CREATE TABLE documentos_estudiante (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    estudiante_id INT NOT NULL COMMENT 'Estudiante',
+    estudiante_id INT NULL COMMENT 'Estudiante (NULL permite flexibilidad en migraciones)',
     tipo_documento ENUM(
         'INSCRIPCION',
         'LICENCIA',
@@ -203,6 +212,10 @@ CREATE TABLE documentos_estudiante (
     
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Documentos digitalizados de estudiantes: inscripción, licencias, pasantías, descuentos, pagos. Relación 1 a muchos (un estudiante puede tener muchos documentos de respaldo). Los pagos pueden ser: inscripción, titulación, traslado de instituto, cambio de carrera. Los documentos de pago están relacionados con estudiantes_datos_economicos.';
+
+-- ============================================
+-- FASE 3: REHABILITAR FOREIGN KEY CHECKS
+-- ============================================
 
 SET FOREIGN_KEY_CHECKS = 1;
 

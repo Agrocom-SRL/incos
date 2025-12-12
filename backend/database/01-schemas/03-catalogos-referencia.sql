@@ -6,13 +6,27 @@
 
 USE instituto_incos;
 
+-- ============================================
+-- FASE 1: ELIMINACIÓN DE TABLAS
+-- Deshabilitamos foreign key checks para poder eliminar en cualquier orden
+-- ============================================
+
 SET FOREIGN_KEY_CHECKS = 0;
+
+-- Eliminar todas las tablas (orden no importa con foreign key checks deshabilitado)
+DROP TABLE IF EXISTS tipos_parentesco;
+DROP TABLE IF EXISTS tipos_discapacidad;
+DROP TABLE IF EXISTS estados_civiles;
+DROP TABLE IF EXISTS idiomas;
+
+-- ============================================
+-- FASE 2: CREACIÓN DE TABLAS
+-- Las foreign key checks siguen deshabilitadas durante la creación
+-- ============================================
 
 -- ============================================
 -- TABLA: idiomas
 -- ============================================
-
-DROP TABLE IF EXISTS idiomas;
 
 CREATE TABLE idiomas (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -41,8 +55,6 @@ COMMENT='Idiomas';
 -- TABLA: estados_civiles
 -- ============================================
 
-DROP TABLE IF EXISTS estados_civiles;
-
 CREATE TABLE estados_civiles (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(20) NOT NULL COMMENT 'Soltero(a), Casado(a), Divorciado(a), Viudo(a), Conviviente',
@@ -68,8 +80,6 @@ COMMENT='Estados civiles';
 -- ============================================
 -- TABLA: tipos_discapacidad
 -- ============================================
-
-DROP TABLE IF EXISTS tipos_discapacidad;
 
 CREATE TABLE tipos_discapacidad (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -97,8 +107,6 @@ COMMENT='Tipos de discapacidad (para estadísticas de estudiantes)';
 -- TABLA: tipos_parentesco
 -- ============================================
 
-DROP TABLE IF EXISTS tipos_parentesco;
-
 CREATE TABLE tipos_parentesco (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(50) NOT NULL COMMENT 'Padre, Madre, Abuelo(a), Tío(a), Hermano(a), Tutor(a), Apoderado(a), Orfanato, Otro',
@@ -120,6 +128,10 @@ CREATE TABLE tipos_parentesco (
     
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Tipos de parentesco para apoderados/tutores de estudiantes';
+
+-- ============================================
+-- FASE 3: REHABILITAR FOREIGN KEY CHECKS
+-- ============================================
 
 SET FOREIGN_KEY_CHECKS = 1;
 

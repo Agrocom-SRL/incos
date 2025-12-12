@@ -6,14 +6,26 @@
 
 USE instituto_incos;
 
+-- ============================================
+-- FASE 1: ELIMINACIÓN DE TABLAS
+-- Deshabilitamos foreign key checks para poder eliminar en cualquier orden
+-- ============================================
+
 SET FOREIGN_KEY_CHECKS = 0;
+
+-- Eliminar todas las tablas (orden no importa con foreign key checks deshabilitado)
+DROP TABLE IF EXISTS historial_nivelaciones;
+DROP TABLE IF EXISTS inscripciones_materias;
+
+-- ============================================
+-- FASE 2: CREACIÓN DE TABLAS
+-- Las foreign key checks siguen deshabilitadas durante la creación
+-- ============================================
 
 -- ============================================
 -- TABLA: inscripciones_materias
 -- Sistema de calificaciones flexible (máximo 4 parciales, no siempre completos)
 -- ============================================
-
-DROP TABLE IF EXISTS inscripciones_materias;
 
 CREATE TABLE inscripciones_materias (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -161,8 +173,6 @@ COMMENT='Inscripciones a materias con sistema de calificaciones flexible';
 -- TABLA: historial_nivelaciones
 -- ============================================
 
-DROP TABLE IF EXISTS historial_nivelaciones;
-
 CREATE TABLE historial_nivelaciones (
     id INT AUTO_INCREMENT PRIMARY KEY,
     estudiante_id INT NOT NULL COMMENT 'Estudiante en nivelación',
@@ -209,8 +219,6 @@ CREATE TABLE historial_nivelaciones (
     
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Historial de nivelaciones (máximo 3 intentos por materia)';
-
-SET FOREIGN_KEY_CHECKS = 1;
 
 -- ============================================
 -- TRIGGERS
@@ -267,3 +275,9 @@ BEGIN
 END$$
 
 DELIMITER ;
+
+-- ============================================
+-- FASE 3: REHABILITAR FOREIGN KEY CHECKS
+-- ============================================
+
+SET FOREIGN_KEY_CHECKS = 1;

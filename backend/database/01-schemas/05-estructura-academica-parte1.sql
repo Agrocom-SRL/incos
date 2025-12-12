@@ -6,13 +6,30 @@
 
 USE instituto_incos;
 
+-- ============================================
+-- FASE 1: ELIMINACIÓN DE TABLAS
+-- Deshabilitamos foreign key checks para poder eliminar en cualquier orden
+-- ============================================
+
 SET FOREIGN_KEY_CHECKS = 0;
+
+-- Eliminar todas las tablas (orden no importa con foreign key checks deshabilitado)
+DROP TABLE IF EXISTS prerrequisitos;
+DROP TABLE IF EXISTS plan_estudios;
+DROP TABLE IF EXISTS materias;
+DROP TABLE IF EXISTS periodos;
+DROP TABLE IF EXISTS etapas_gestion;
+DROP TABLE IF EXISTS gestiones;
+DROP TABLE IF EXISTS carreras;
+
+-- ============================================
+-- FASE 2: CREACIÓN DE TABLAS
+-- Las foreign key checks siguen deshabilitadas durante la creación
+-- ============================================
 
 -- ============================================
 -- TABLA: carreras
 -- ============================================
-
-DROP TABLE IF EXISTS carreras;
 
 CREATE TABLE carreras (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -49,8 +66,6 @@ COMMENT='Carreras del instituto';
 -- ============================================
 -- TABLA: gestiones
 -- ============================================
-
-DROP TABLE IF EXISTS gestiones;
 
 CREATE TABLE gestiones (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -92,11 +107,9 @@ COMMENT='Gestiones académicas (años académicos). Las fechas específicas de e
 -- Permite flexibilidad para universidades con múltiples periodos dentro de una gestión
 -- Ejemplo: Pre-inscripción, Inscripciones, Clases, Exámenes, Entrega de Notas, Fin de Gestión
 
-DROP TABLE IF EXISTS etapas_gestion;
-
 CREATE TABLE etapas_gestion (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    gestion_id INT NOT NULL COMMENT 'Gestión académica',
+    gestion_id INT NULL COMMENT 'Gestión académica (NULL permite flexibilidad en migraciones)',
     nombre VARCHAR(100) NOT NULL COMMENT 'Nombre de la etapa (ej: Pre-inscripción, Clases, Exámenes)',
     tipo ENUM(
         'PRE_INSCRIPCION',
@@ -155,11 +168,9 @@ COMMENT='Etapas/fases temporales dentro de una gestión académica. Si no existe
 -- Para etapas temporales de gestión (pre-inscripción, clases, exámenes, etc.)
 -- ver tabla: etapas_gestion
 
-DROP TABLE IF EXISTS periodos;
-
 CREATE TABLE periodos (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    carrera_id INT NOT NULL COMMENT 'Carrera a la que pertenece',
+    carrera_id INT NULL COMMENT 'Carrera a la que pertenece (NULL permite flexibilidad en migraciones)',
     nombre VARCHAR(50) NOT NULL COMMENT 'Nombre del periodo (ej: 1º Semestre, 2º Semestre)',
     numero INT NOT NULL COMMENT 'Número del periodo (1, 2, 3, 4...)',
     orden_visualizacion INT NOT NULL DEFAULT 1 COMMENT 'Orden de visualización',
@@ -192,8 +203,6 @@ COMMENT='Periodos académicos de la carrera (semestres/años: 1º, 2º, 3º, 4º
 -- ============================================
 -- TABLA: materias
 -- ============================================
-
-DROP TABLE IF EXISTS materias;
 
 CREATE TABLE materias (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -238,13 +247,11 @@ COMMENT='Materias/asignaturas del instituto';
 -- TABLA: plan_estudios
 -- ============================================
 
-DROP TABLE IF EXISTS plan_estudios;
-
 CREATE TABLE plan_estudios (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    carrera_id INT NOT NULL COMMENT 'Carrera',
-    periodo_id INT NOT NULL COMMENT 'Periodo',
-    materia_id INT NOT NULL COMMENT 'Materia',
+    carrera_id INT NULL COMMENT 'Carrera (NULL permite flexibilidad en migraciones)',
+    periodo_id INT NULL COMMENT 'Periodo (NULL permite flexibilidad en migraciones)',
+    materia_id INT NULL COMMENT 'Materia (NULL permite flexibilidad en migraciones)',
     orden_visualizacion INT NOT NULL DEFAULT 1 COMMENT 'Orden de visualización en el plan',
     
     -- Campos de auditoría y control (ESTÁNDAR)
@@ -284,12 +291,10 @@ COMMENT='Plan de estudios: relación entre carrera × periodo × materia. Define
 -- IMPORTANTE: Si es prerrequisito, es obligatorio por definición. Las materias del periodo N
 -- tienen prerrequisitos de materias del periodo N-1 (o anteriores) que figuran en plan_estudios
 
-DROP TABLE IF EXISTS prerrequisitos;
-
 CREATE TABLE prerrequisitos (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    materia_id INT NOT NULL COMMENT 'Materia que tiene el prerrequisito (ej: materia del periodo 2)',
-    materia_prerrequisito_id INT NOT NULL COMMENT 'Materia que debe aprobarse antes (ej: materia del periodo 1)',
+    materia_id INT NULL COMMENT 'Materia que tiene el prerrequisito (ej: materia del periodo 2) (NULL permite flexibilidad en migraciones)',
+    materia_prerrequisito_id INT NULL COMMENT 'Materia que debe aprobarse antes (ej: materia del periodo 1) (NULL permite flexibilidad en migraciones)',
     descripcion TEXT COMMENT 'Descripción adicional del prerrequisito',
     
     -- Campos de auditoría y control (ESTÁNDAR)
@@ -312,12 +317,17 @@ CREATE TABLE prerrequisitos (
     INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
     INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
     INDEX idx_materia_activo (materia_id, activo, deleted_at) COMMENT 'Búsqueda de prerrequisitos activos por materia',
-    INDEX idx_prerrequisito_activo (materia_prerrequisito_id, activo, deleted_at) COMMENT 'Búsqueda de materias que requieren este prerrequisito',
+    INDEX idx_prerrequisito_activo (materia_prerrequisito_id, activo, deleted_at) COMMENT 'Búsqueda de materias que requieren este prerrequisito'
     
-    CHECK (materia_id != materia_prerrequisito_id)
+    -- NOTA: La validación de que materia_id != materia_prerrequisito_id debe hacerse a nivel de aplicación
+    -- MySQL no permite CHECK constraints en columnas con foreign keys ON DELETE SET NULL
     
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Prerrequisitos de materias: define qué materias deben aprobarse antes de inscribirse a otra. Si es prerrequisito, es obligatorio por definición.';
+
+-- ============================================
+-- FASE 3: REHABILITAR FOREIGN KEY CHECKS
+-- ============================================
 
 SET FOREIGN_KEY_CHECKS = 1;
 

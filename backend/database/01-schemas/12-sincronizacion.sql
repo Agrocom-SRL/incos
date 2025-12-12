@@ -6,13 +6,24 @@
 
 USE instituto_incos;
 
+-- ============================================
+-- FASE 1: ELIMINACIÓN DE TABLAS
+-- Deshabilitamos foreign key checks para poder eliminar en cualquier orden
+-- ============================================
+
 SET FOREIGN_KEY_CHECKS = 0;
+
+-- Eliminar todas las tablas (orden no importa con foreign key checks deshabilitado)
+DROP TABLE IF EXISTS sincronizacion_logs;
+
+-- ============================================
+-- FASE 2: CREACIÓN DE TABLAS
+-- Las foreign key checks siguen deshabilitadas durante la creación
+-- ============================================
 
 -- ============================================
 -- TABLA: sincronizacion_logs
 -- ============================================
-
-DROP TABLE IF EXISTS sincronizacion_logs;
 
 CREATE TABLE sincronizacion_logs (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -89,8 +100,6 @@ CREATE TABLE sincronizacion_logs (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Log de sincronizaciones y operaciones de importación/exportación';
 
-SET FOREIGN_KEY_CHECKS = 1;
-
 -- ============================================
 -- TRIGGER PARA CALCULAR DURACIÓN
 -- ============================================
@@ -109,6 +118,12 @@ BEGIN
 END$$
 
 DELIMITER ;
+
+-- ============================================
+-- FASE 3: REHABILITAR FOREIGN KEY CHECKS
+-- ============================================
+
+SET FOREIGN_KEY_CHECKS = 1;
 
 -- ============================================
 -- VERIFICACIÓN
