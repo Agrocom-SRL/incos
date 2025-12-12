@@ -1,9 +1,14 @@
+import { StudentMapper } from '../../mappers/StudentMapper.js';
+
 /**
  * DTO: RegisterStudentDTO
  * Data Transfer Object para el registro de un nuevo estudiante
+ * Recibe datos en castellano del request y los convierte a formato de dominio (inglés)
+ * Solo incluye datos básicos del estudiante (sin datos académicos, becas, etc.)
  */
 export class RegisterStudentDTO {
   constructor(data) {
+    // El DTO recibe datos en castellano del request
     // Datos personales básicos
     this.nombres = data.nombres;
     this.apellidoPaterno = data.apellidoPaterno;
@@ -18,7 +23,7 @@ export class RegisterStudentDTO {
     this.ciudadNacimiento = data.ciudadNacimiento;
     this.idiomaNatalId = data.idiomaNatalId;
     this.tipoSangre = data.tipoSangre;
-    this.tieneDiscapacidad = data.tieneDiscapacidad || false;
+    this.tieneDiscapacidad = data.tieneDiscapacidad !== undefined ? data.tieneDiscapacidad : false;
     this.tipoDiscapacidadId = data.tipoDiscapacidadId;
 
     // Contacto
@@ -29,23 +34,12 @@ export class RegisterStudentDTO {
     this.municipioResidenciaId = data.municipioResidenciaId;
     this.zona = data.zona;
 
-    // Datos académicos
-    this.carreraId = data.carreraId;
-    this.gestionIngresoId = data.gestionIngresoId;
-    this.unidadEducativaProcedencia = data.unidadEducativaProcedencia;
-    this.anioEgresoSecundaria = data.anioEgresoSecundaria;
-    this.promedioAnual = data.promedioAnual;
-
-    // Becas
-    this.becaDescuentoId = data.becaDescuentoId;
-    this.becaMotivo = data.becaMotivo;
-
     // Observaciones
     this.observaciones = data.observaciones;
   }
 
   /**
-   * Crea un DTO desde el request HTTP
+   * Crea un DTO desde el request HTTP (datos en castellano)
    * @param {Object} req - Express request
    * @returns {RegisterStudentDTO}
    */
@@ -54,33 +48,11 @@ export class RegisterStudentDTO {
   }
 
   /**
-   * Convierte el DTO a objeto plano para persistencia
+   * Convierte el DTO (castellano) a formato de entidad Student (inglés)
    * @returns {Object}
    */
-  toPlainObject() {
-    return {
-      nombres: this.nombres,
-      apellidoPaterno: this.apellidoPaterno,
-      apellidoMaterno: this.apellidoMaterno,
-      ci: this.ci,
-      expedicion: this.expedicion,
-      fechaNacimiento: this.fechaNacimiento,
-      genero: this.genero,
-      estadoCivilId: this.estadoCivilId,
-      nacionalidad: this.nacionalidad,
-      municipioNacimientoId: this.municipioNacimientoId,
-      ciudadNacimiento: this.ciudadNacimiento,
-      idiomaNatalId: this.idiomaNatalId,
-      tipoSangre: this.tipoSangre,
-      tieneDiscapacidad: this.tieneDiscapacidad,
-      tipoDiscapacidadId: this.tipoDiscapacidadId,
-      emailPersonal: this.emailPersonal,
-      celular: this.celular,
-      telefonoFijo: this.telefonoFijo,
-      direccion: this.direccion,
-      municipioResidenciaId: this.municipioResidenciaId,
-      zona: this.zona,
-      observaciones: this.observaciones,
-    };
+  toEntityData() {
+    // Pasa el objeto completo, el mapper se encarga de mapear solo los campos que existen
+    return StudentMapper.toDomain(this);
   }
 }
