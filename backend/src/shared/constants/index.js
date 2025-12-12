@@ -110,22 +110,8 @@ export const TIPOS_SANGRE = {
 export const TIPOS_SANGRE_VALUES = Object.values(TIPOS_SANGRE);
 
 // ============================================
-// TURNOS Y HORARIOS
+// HORARIOS
 // ============================================
-
-/**
- * Turnos disponibles
- */
-export const TURNOS = {
-  MANANA: 'MAÑANA',
-  TARDE: 'TARDE',
-  NOCHE: 'NOCHE',
-};
-
-/**
- * Array de turnos válidos (útil para validators)
- */
-export const TURNOS_VALUES = Object.values(TURNOS);
 
 /**
  * Días de la semana
@@ -171,6 +157,11 @@ export const TIPOS_BECA_AUTOMATICA = {
   PROMEDIO_90: 'PROMEDIO_90',
   MANUAL: 'MANUAL',
 };
+
+/**
+ * Array de tipos de beca automática válidos (útil para validators)
+ */
+export const TIPOS_BECA_AUTOMATICA_VALUES = Object.values(TIPOS_BECA_AUTOMATICA);
 
 /**
  * Promedio mínimo para beca automática
@@ -404,6 +395,175 @@ export const ACCIONES_PERMISOS = {
  */
 export const ACCIONES_PERMISOS_VALUES = Object.values(ACCIONES_PERMISOS);
 
+/**
+ * Array de estados de usuarios válidos (útil para validators)
+ * Nota: null = activo, por lo que no se incluye en el array
+ */
+export const ESTADOS_USUARIOS_VALUES = ['BLOQUEADO', 'SUSPENDIDO', 'RETIRADO'];
+
+/**
+ * Tipos de dispositivo
+ */
+export const TIPOS_DISPOSITIVO = {
+  MOVIL: 'MOVIL',
+  TABLET: 'TABLET',
+  DESKTOP: 'DESKTOP',
+};
+
+/**
+ * Array de tipos de dispositivo válidos (útil para validators)
+ */
+export const TIPOS_DISPOSITIVO_VALUES = Object.values(TIPOS_DISPOSITIVO);
+
+// ============================================
+// DOCUMENTOS DE ESTUDIANTES
+// ============================================
+
+/**
+ * Tipos de documentos de estudiantes
+ */
+export const TIPOS_DOCUMENTO_ESTUDIANTE = {
+  INSCRIPCION: 'INSCRIPCION',
+  LICENCIA: 'LICENCIA',
+  PASANTIA: 'PASANTIA',
+  DESCUENTO: 'DESCUENTO',
+  PAGO_INSCRIPCION: 'PAGO_INSCRIPCION',
+  PAGO_TITULACION: 'PAGO_TITULACION',
+  PAGO_TRASLADO_INSTITUTO: 'PAGO_TRASLADO_INSTITUTO',
+  PAGO_CAMBIO_CARRERA: 'PAGO_CAMBIO_CARRERA',
+  OTRO: 'OTRO',
+};
+
+/**
+ * Array de tipos de documento válidos (útil para validators)
+ */
+export const TIPOS_DOCUMENTO_ESTUDIANTE_VALUES = Object.values(TIPOS_DOCUMENTO_ESTUDIANTE);
+
+/**
+ * Estados de documentos de estudiantes
+ */
+export const ESTADOS_DOCUMENTO = {
+  PENDIENTE: 'PENDIENTE',
+  APROBADO: 'APROBADO',
+  RECHAZADO: 'RECHAZADO',
+  REQUERIDO: 'REQUERIDO',
+};
+
+/**
+ * Array de estados de documento válidos (útil para validators)
+ */
+export const ESTADOS_DOCUMENTO_VALUES = Object.values(ESTADOS_DOCUMENTO);
+
+// ============================================
+// GESTIONES ACADÉMICAS
+// ============================================
+
+/**
+ * Tipos de etapas de gestión
+ */
+export const TIPOS_ETAPA_GESTION = {
+  PRE_INSCRIPCION: 'PRE_INSCRIPCION',
+  INSCRIPCIONES: 'INSCRIPCIONES',
+  CLASES: 'CLASES',
+  EVALUACIONES: 'EVALUACIONES',
+  EXAMENES: 'EXAMENES',
+  ENTREGA_NOTAS: 'ENTREGA_NOTAS',
+  CIERRE_ADMINISTRATIVO: 'CIERRE_ADMINISTRATIVO',
+  OTRO: 'OTRO',
+};
+
+/**
+ * Array de tipos de etapa válidos (útil para validators)
+ */
+export const TIPOS_ETAPA_GESTION_VALUES = Object.values(TIPOS_ETAPA_GESTION);
+
+// ============================================
+// ASIGNACIONES DE DOCENTES
+// ============================================
+
+/**
+ * Estados de asignaciones de docentes
+ */
+export const ESTADOS_ASIGNACION_DOCENTE = {
+  PROPUESTA: 'PROPUESTA',
+  APROBADA: 'APROBADA',
+  ABIERTA: 'ABIERTA',
+  CERRADA: 'CERRADA',
+  CANCELADA: 'CANCELADA',
+};
+
+/**
+ * Array de estados de asignación válidos (útil para validators)
+ */
+export const ESTADOS_ASIGNACION_DOCENTE_VALUES = Object.values(ESTADOS_ASIGNACION_DOCENTE);
+
+// ============================================
+// DIRECTORES Y SECRETARIAS
+// ============================================
+
+/**
+ * Tipos de director
+ */
+export const TIPOS_DIRECTOR = {
+  ACADEMICO: 'ACADEMICO',
+  ADMINISTRATIVO: 'ADMINISTRATIVO',
+};
+
+/**
+ * Array de tipos de director válidos (útil para validators)
+ */
+export const TIPOS_DIRECTOR_VALUES = Object.values(TIPOS_DIRECTOR);
+
+/**
+ * Tipos de secretaria
+ */
+export const TIPOS_SECRETARIA = {
+  ACADEMICA: 'ACADEMICA',
+  ADMINISTRATIVA: 'ADMINISTRATIVA',
+};
+
+/**
+ * Array de tipos de secretaria válidos (útil para validators)
+ */
+export const TIPOS_SECRETARIA_VALUES = Object.values(TIPOS_SECRETARIA);
+
+/**
+ * Tipos de contrato para docentes (subconjunto de TIPOS_CONTRATO)
+ */
+export const TIPOS_CONTRATO_DOCENTE = {
+  PLANTA: 'PLANTA',
+  CONTRATO: 'CONTRATO',
+  HORARIO: 'HORARIO',
+  CONSULTOR: 'CONSULTOR',
+};
+
+/**
+ * Array de tipos de contrato para docentes válidos (útil para validators)
+ */
+export const TIPOS_CONTRATO_DOCENTE_VALUES = Object.values(TIPOS_CONTRATO_DOCENTE);
+
+/**
+ * Tipos de contrato para secretarias (subconjunto de TIPOS_CONTRATO)
+ */
+export const TIPOS_CONTRATO_SECRETARIA = {
+  EVENTUAL: 'EVENTUAL',
+  TEMPORAL: 'TEMPORAL',
+  INDEFINIDO: 'INDEFINIDO',
+};
+
+/**
+ * Array de tipos de contrato para secretarias válidos (útil para validators)
+ */
+export const TIPOS_CONTRATO_SECRETARIA_VALUES = Object.values(TIPOS_CONTRATO_SECRETARIA);
+
+/**
+ * Niveles académicos para personal (sin ESTUDIANTE)
+ * Útil para validaciones en Rector, Director, Teacher
+ */
+export const NIVELES_ACADEMICOS_PERSONAL_VALUES = NIVELES_ACADEMICOS_VALUES.filter(
+  (level) => level !== 'ESTUDIANTE'
+);
+
 // ============================================
 // PAGINACIÓN Y BÚSQUEDA
 // ============================================
@@ -525,9 +685,7 @@ export default {
   TIPOS_SANGRE,
   TIPOS_SANGRE_VALUES,
   
-  // Turnos y horarios
-  TURNOS,
-  TURNOS_VALUES,
+  // Horarios
   DIAS_SEMANA,
   DIAS_SEMANA_VALUES,
   
@@ -535,6 +693,7 @@ export default {
   ESTADOS_BECAS,
   ESTADOS_BECAS_VALUES,
   TIPOS_BECA_AUTOMATICA,
+  TIPOS_BECA_AUTOMATICA_VALUES,
   PROMEDIO_MINIMO_BECA_AUTOMATICA,
   
   // Licencias
@@ -569,10 +728,38 @@ export default {
   
   // Usuarios y seguridad
   ESTADOS_USUARIOS,
+  ESTADOS_USUARIOS_VALUES,
   TIPOS_REFERENCIA,
   TIPOS_REFERENCIA_VALUES,
   ACCIONES_PERMISOS,
   ACCIONES_PERMISOS_VALUES,
+  TIPOS_DISPOSITIVO,
+  TIPOS_DISPOSITIVO_VALUES,
+  
+  // Documentos de estudiantes
+  TIPOS_DOCUMENTO_ESTUDIANTE,
+  TIPOS_DOCUMENTO_ESTUDIANTE_VALUES,
+  ESTADOS_DOCUMENTO,
+  ESTADOS_DOCUMENTO_VALUES,
+  
+  // Gestiones académicas
+  TIPOS_ETAPA_GESTION,
+  TIPOS_ETAPA_GESTION_VALUES,
+  
+  // Asignaciones de docentes
+  ESTADOS_ASIGNACION_DOCENTE,
+  ESTADOS_ASIGNACION_DOCENTE_VALUES,
+  
+  // Directores y secretarias
+  TIPOS_DIRECTOR,
+  TIPOS_DIRECTOR_VALUES,
+  TIPOS_SECRETARIA,
+  TIPOS_SECRETARIA_VALUES,
+  TIPOS_CONTRATO_DOCENTE,
+  TIPOS_CONTRATO_DOCENTE_VALUES,
+  TIPOS_CONTRATO_SECRETARIA,
+  TIPOS_CONTRATO_SECRETARIA_VALUES,
+  NIVELES_ACADEMICOS_PERSONAL_VALUES,
   
   // Paginación
   PAGINACION_LIMITE_MAXIMO,
