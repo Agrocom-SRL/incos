@@ -1,5 +1,5 @@
 import { BaseEntity } from './BaseEntity.js';
-import { EXPEDICIONES_CI_VALUES, GENEROS_VALUES } from '../../shared/constants/index.js';
+import { EXPEDICIONES_CI_VALUES, GENEROS_VALUES } from '../constants/index.js';
 
 /**
  * Entidad de Dominio: Staff

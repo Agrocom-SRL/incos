@@ -1,7 +1,7 @@
 import { Student } from '../../../domain/entities/Student.js';
-import { ValidationError } from '../../../shared/errors/AppError.js';
-import { StudentValidator } from '../../../shared/validators/StudentValidator.js';
-import { StudentCodeUtils } from '../../../shared/utils/StudentCodeUtils.js';
+import { ValidationError } from '../../../shared/AppError.js';
+import { StudentValidator } from '../../validators/StudentValidator.js';
+import { StudentCodeUtils } from '../../utils/StudentCodeUtils.js';
 
 /**
  * Use Case: RegisterStudentUseCase

@@ -1,5 +1,5 @@
 import { BaseEntity } from './BaseEntity.js';
-import { TIPOS_DISPOSITIVO_VALUES } from '../../shared/constants/index.js';
+import { TIPOS_DISPOSITIVO_VALUES } from '../constants/index.js';
 
 /**
  * Entidad de Dominio: Session

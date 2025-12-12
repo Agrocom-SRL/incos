@@ -1,5 +1,5 @@
 import { BaseEntity } from './BaseEntity.js';
-import { EXPEDICIONES_CI_VALUES, NIVELES_ACADEMICOS_PERSONAL_VALUES, TIPOS_CONTRATO_DOCENTE_VALUES, ESTADOS_LABORALES_VALUES } from '../../shared/constants/index.js';
+import { EXPEDICIONES_CI_VALUES, NIVELES_ACADEMICOS_PERSONAL_VALUES, TIPOS_CONTRATO_DOCENTE_VALUES, ESTADOS_LABORALES_VALUES } from '../constants/index.js';
 
 /**
  * Entidad de Dominio: Teacher

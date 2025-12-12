@@ -1,5 +1,5 @@
 import { BaseEntity } from './BaseEntity.js';
-import { NIVELES_ACADEMICOS_PERSONAL_VALUES, TIPOS_DIRECTOR_VALUES } from '../../shared/constants/index.js';
+import { NIVELES_ACADEMICOS_PERSONAL_VALUES, TIPOS_DIRECTOR_VALUES } from '../constants/index.js';
 
 /**
  * Entidad de Dominio: Director

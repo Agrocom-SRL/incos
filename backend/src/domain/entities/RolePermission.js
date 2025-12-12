@@ -1,5 +1,5 @@
 import { BaseEntity } from './BaseEntity.js';
-import { ACCIONES_PERMISOS_VALUES } from '../../shared/constants/index.js';
+import { ACCIONES_PERMISOS_VALUES } from '../constants/index.js';
 
 /**
  * Entidad de Dominio: RolePermission

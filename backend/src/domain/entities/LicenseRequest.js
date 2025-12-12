@@ -1,5 +1,5 @@
 import { BaseEntity } from './BaseEntity.js';
-import { MOTIVOS_LICENCIAS_VALUES, ESTADOS_LICENCIAS_VALUES } from '../../shared/constants/index.js';
+import { MOTIVOS_LICENCIAS_VALUES, ESTADOS_LICENCIAS_VALUES } from '../constants/index.js';
 
 /**
  * Entidad de Dominio: LicenseRequest

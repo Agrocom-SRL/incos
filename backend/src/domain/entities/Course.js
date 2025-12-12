@@ -1,5 +1,5 @@
 import { BaseEntity } from './BaseEntity.js';
-import { ESTADOS_CURSOS_VALUES } from '../../shared/constants/index.js';
+import { ESTADOS_CURSOS_VALUES } from '../constants/index.js';
 
 /**
  * Entidad de Dominio: Course

@@ -1,5 +1,5 @@
 import { BaseEntity } from './BaseEntity.js';
-import { NIVELES_ACADEMICOS_VALUES, TIPOS_SECRETARIA_VALUES, TIPOS_CONTRATO_SECRETARIA_VALUES } from '../../shared/constants/index.js';
+import { NIVELES_ACADEMICOS_VALUES, TIPOS_SECRETARIA_VALUES, TIPOS_CONTRATO_SECRETARIA_VALUES } from '../constants/index.js';
 
 /**
  * Entidad de Dominio: Secretary

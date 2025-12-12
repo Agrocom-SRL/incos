@@ -1,5 +1,5 @@
 import { BaseEntity } from './BaseEntity.js';
-import { EXPEDICIONES_CI_VALUES, GENEROS_VALUES, TIPOS_SANGRE_VALUES, EDAD_MINIMA_ESTUDIANTE } from '../../shared/constants/index.js';
+import { EXPEDICIONES_CI_VALUES, GENEROS_VALUES, TIPOS_SANGRE_VALUES, EDAD_MINIMA_ESTUDIANTE } from '../constants/index.js';
 
 /**
  * Entidad de Dominio: Student

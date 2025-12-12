@@ -1,5 +1,5 @@
 import { BaseEntity } from './BaseEntity.js';
-import { TIPOS_ETAPA_GESTION_VALUES } from '../../shared/constants/index.js';
+import { TIPOS_ETAPA_GESTION_VALUES } from '../constants/index.js';
 
 /**
  * Entidad de Dominio: ManagementStage

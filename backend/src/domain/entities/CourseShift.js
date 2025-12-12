@@ -1,5 +1,5 @@
 import { BaseEntity } from './BaseEntity.js';
-import { DIAS_SEMANA_VALUES } from '../../shared/constants/index.js';
+import { DIAS_SEMANA_VALUES } from '../constants/index.js';
 
 /**
  * Entidad de Dominio: CourseShift
