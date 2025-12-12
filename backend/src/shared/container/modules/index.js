@@ -31,4 +31,3 @@ modules.forEach((module) => {
 });
 
 export default container;
-export { container };

@@ -2,7 +2,6 @@
  * Container específico para el módulo de Estudiantes
  * Centraliza la configuración de dependencias de este módulo
  */
-import container from '../Container.js';
 
 // Repositories
 import { StudentRepository } from '../../../infrastructure/repositories/StudentRepository.js';
