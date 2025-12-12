@@ -3,16 +3,17 @@ import { body } from 'express-validator';
 /**
  * POST /api/v1/estudiantes
  * Validaciones para crear un nuevo estudiante
- * Basadas en RF-EST-001, CU-001 y schema 06-estudiantes-parte1.sql
+ * Valida datos en castellano (como vienen del request)
+ * Solo valida datos básicos del estudiante (sin datos académicos, becas, etc.)
  */
 export const registerStudentValidator = [
   // Datos personales básicos
   body('nombres')
     .trim()
     .notEmpty()
-    .withMessage('Los nombres son requeridos')
+    .withMessage('El nombre es requerido')
     .isLength({ min: 2, max: 150 })
-    .withMessage('Los nombres deben tener entre 2 y 150 caracteres'),
+    .withMessage('El nombre debe tener entre 2 y 150 caracteres'),
 
   body('apellidoPaterno')
     .trim()
@@ -73,10 +74,22 @@ export const registerStudentValidator = [
     .isInt({ min: 1 })
     .withMessage('El estado civil debe ser un ID válido'),
 
+  body('nacionalidad')
+    .optional()
+    .trim()
+    .isLength({ max: 50 })
+    .withMessage('La nacionalidad no puede exceder 50 caracteres'),
+
   body('municipioNacimientoId')
     .optional()
     .isInt({ min: 1 })
     .withMessage('El municipio de nacimiento debe ser un ID válido'),
+
+  body('ciudadNacimiento')
+    .optional()
+    .trim()
+    .isLength({ max: 100 })
+    .withMessage('La ciudad de nacimiento no puede exceder 100 caracteres'),
 
   body('idiomaNatalId')
     .optional()
@@ -87,6 +100,23 @@ export const registerStudentValidator = [
     .optional()
     .isIn(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'])
     .withMessage('El tipo de sangre debe ser uno de los valores válidos'),
+
+  body('tieneDiscapacidad')
+    .optional()
+    .isBoolean()
+    .withMessage('El campo tieneDiscapacidad debe ser un booleano'),
+
+  body('tipoDiscapacidadId')
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage('El tipo de discapacidad debe ser un ID válido')
+    .custom((value, { req }) => {
+      // Si tiene discapacidad, el tipo es requerido
+      if (req.body.tieneDiscapacidad === true && !value) {
+        throw new Error('El tipo de discapacidad es requerido cuando tieneDiscapacidad es true');
+      }
+      return true;
+    }),
 
   // Contacto
   body('emailPersonal')
@@ -108,49 +138,27 @@ export const registerStudentValidator = [
     .matches(/^\d{7,8}$/)
     .withMessage('El teléfono fijo debe tener entre 7 y 8 dígitos'),
 
+  body('direccion')
+    .optional()
+    .trim()
+    .isLength({ max: 500 })
+    .withMessage('La dirección no puede exceder 500 caracteres'),
+
   body('municipioResidenciaId')
     .optional()
     .isInt({ min: 1 })
     .withMessage('El municipio de residencia debe ser un ID válido'),
 
-  // Datos académicos
-  body('carreraId')
-    .notEmpty()
-    .withMessage('La carrera es requerida')
-    .isInt({ min: 1 })
-    .withMessage('La carrera debe ser un ID válido'),
-
-  body('gestionIngresoId')
-    .notEmpty()
-    .withMessage('La gestión de ingreso es requerida')
-    .isInt({ min: 1 })
-    .withMessage('La gestión de ingreso debe ser un ID válido'),
-
-  body('unidadEducativaProcedencia')
+  body('zona')
     .optional()
     .trim()
-    .isLength({ max: 200 })
-    .withMessage('La unidad educativa de procedencia no puede exceder 200 caracteres'),
+    .isLength({ max: 100 })
+    .withMessage('La zona no puede exceder 100 caracteres'),
 
-  body('anioEgresoSecundaria')
-    .optional()
-    .isInt({ min: 1950, max: new Date().getFullYear() })
-    .withMessage('El año de egreso debe ser válido'),
-
-  body('promedioAnual')
-    .optional()
-    .isFloat({ min: 0, max: 100 })
-    .withMessage('El promedio anual debe estar entre 0 y 100'),
-
-  // Becas (opcional en creación)
-  body('becaDescuentoId')
-    .optional()
-    .isInt({ min: 1 })
-    .withMessage('La beca/descuento debe ser un ID válido'),
-
-  body('becaMotivo')
+  // Observaciones
+  body('observaciones')
     .optional()
     .trim()
-    .isLength({ min: 10 })
-    .withMessage('El motivo de la beca debe tener al menos 10 caracteres'),
+    .isLength({ max: 1000 })
+    .withMessage('Las observaciones no pueden exceder 1000 caracteres'),
 ];

@@ -1,4 +1,4 @@
-import { RegisterStudentUseCase } from '../../../application/use-cases/estudiantes/RegisterStudentUseCase.js';
+import { RegisterStudentUseCase } from '../../../application/use-cases/Estudiantes/RegisterStudentUseCase.js';
 import { RegisterStudentDTO } from '../../../application/dtos/request/RegisterStudentDTO.js';
 import { StudentResponseDTO } from '../../../application/dtos/response/StudentResponseDTO.js';
 import { logger } from '../../../config/logger.js';
