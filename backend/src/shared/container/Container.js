@@ -1,6 +1,11 @@
 /**
  * Contenedor de Dependency Injection
  * Gestiona las dependencias de la aplicación de forma centralizada
+ *
+ * Uso:
+ * const container = new Container();
+ * container.register('serviceName', () => new Service(), true);
+ * const service = container.resolve('serviceName');
  */
 export class Container {
   constructor() {
@@ -13,6 +18,7 @@ export class Container {
    * @param {string} name - Nombre del servicio
    * @param {Function|Object} factory - Factory function o instancia
    * @param {boolean} singleton - Si es singleton (instancia única)
+   * @returns {Container} Retorna this para encadenamiento
    */
   register(name, factory, singleton = true) {
     this.services.set(name, {
@@ -26,6 +32,7 @@ export class Container {
    * Obtiene una instancia del servicio
    * @param {string} name - Nombre del servicio
    * @returns {*} Instancia del servicio
+   * @throws {Error} Si el servicio no está registrado
    */
   resolve(name) {
     const service = this.services.get(name);
@@ -42,7 +49,8 @@ export class Container {
     // Crear nueva instancia
     let instance;
     if (typeof service.factory === 'function') {
-      // Si es una función, ejecutarla (puede ser factory o clase)
+      // Si es una función, ejecutarla pasando el container como contexto
+      // Esto permite que la factory resuelva otras dependencias
       instance = service.factory(this);
     } else {
       // Si es un valor directo, usarlo
@@ -73,6 +81,3 @@ export class Container {
     this.singletons.clear();
   }
 }
-
-// Instancia global del contenedor
-export const container = new Container();

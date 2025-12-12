@@ -1,10 +1,10 @@
 /**
- * Configuración del contenedor de DI
- * Registra todos los módulos de la aplicación
+ * Punto de entrada del contenedor de Dependency Injection
+ * Re-exporta el container configurado con todos los módulos registrados
+ *
+ * Uso:
+ * import container from './shared/container/index.js';
+ * const controller = container.resolve('estudiantes.createStudentController');
  */
-
-// Importar el registro de módulos que carga todos los módulos
-import container from './modules/index.js';
-
-export default container;
-export { container };
+export { default as container } from './modules/index.js';
+export { default } from './modules/index.js';
