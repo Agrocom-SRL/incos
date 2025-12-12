@@ -1,17 +1,11 @@
+import { IRepository } from './IRepository.js';
+
 /**
  * Interfaz de Repositorio: IStudentRepository
  * Define el contrato que debe cumplir el repositorio de estudiantes
+ * Extiende IRepository para métodos comunes
  */
-export class IStudentRepository {
-  /**
-   * Buscar estudiante por ID
-   * @param {number} id
-   * @returns {Promise<Student|null>}
-   */
-  async findById(id) {
-    throw new Error('Method findById must be implemented');
-  }
-
+export class IStudentRepository extends IRepository {
   /**
    * Buscar estudiante por CI y expedición
    * @param {string} ci
@@ -41,32 +35,11 @@ export class IStudentRepository {
   }
 
   /**
-   * Crear un nuevo estudiante
-   * @param {Student} student
-   * @returns {Promise<Student>}
+   * Obtiene el siguiente número para generar código de estudiante
+   * @param {string} gestionCodigo - Código de la gestión (ej: "2025-1")
+   * @returns {Promise<number>}
    */
-  async create(student) {
-    throw new Error('Method create must be implemented');
-  }
-
-  /**
-   * Actualizar un estudiante
-   * @param {number} id
-   * @param {Object} studentData
-   * @returns {Promise<Student>}
-   */
-  async update(id, studentData) {
-    throw new Error('Method update must be implemented');
-  }
-
-  /**
-   * Buscar estudiantes con filtros y paginación
-   * @param {Object} filters
-   * @param {number} page
-   * @param {number} limit
-   * @returns {Promise<{students: Student[], total: number}>}
-   */
-  async findAll(filters = {}, page = 1, limit = 50) {
-    throw new Error('Method findAll must be implemented');
+  async getNextStudentNumber(gestionCodigo) {
+    throw new Error('Method getNextStudentNumber must be implemented');
   }
 }

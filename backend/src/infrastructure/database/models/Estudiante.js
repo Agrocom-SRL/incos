@@ -1,14 +1,11 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../config/sequelize.js';
+import { baseModelFields, baseModelOptions } from './baseModel.js';
 
-export const Student = sequelize.define(
-  'Student',
+export const Estudiante = sequelize.define(
+  'Estudiante',
   {
-    id: {
-      type: DataTypes.INTEGER,
-      primaryKey: true,
-      autoIncrement: true,
-    },
+    ...baseModelFields,
     usuarioId: {
       type: DataTypes.INTEGER,
       field: 'usuario_id',
@@ -147,48 +144,10 @@ export const Student = sequelize.define(
       allowNull: true,
       comment: 'Observaciones adicionales',
     },
-    activo: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false,
-      defaultValue: true,
-      comment: 'Registro activo/inactivo',
-    },
-    createdAt: {
-      type: DataTypes.DATE,
-      field: 'created_at',
-      allowNull: false,
-    },
-    updatedAt: {
-      type: DataTypes.DATE,
-      field: 'updated_at',
-      allowNull: false,
-    },
-    deletedAt: {
-      type: DataTypes.DATE,
-      field: 'deleted_at',
-      allowNull: true,
-    },
-    createdBy: {
-      type: DataTypes.INTEGER,
-      field: 'created_by',
-      allowNull: true,
-    },
-    updatedBy: {
-      type: DataTypes.INTEGER,
-      field: 'updated_by',
-      allowNull: true,
-    },
-    deletedBy: {
-      type: DataTypes.INTEGER,
-      field: 'deleted_by',
-      allowNull: true,
-    },
   },
   {
+    ...baseModelOptions,
     tableName: 'estudiantes',
-    timestamps: true,
-    underscored: true,
-    paranoid: true, // Habilita soft delete (usa deletedAt)
     defaultScope: {
       where: {
         activo: true,

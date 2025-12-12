@@ -1,5 +1,5 @@
 import { IStudentRepository } from '../../domain/interfaces/repositories/IStudentRepository.js';
-import { Student as StudentModel } from '../database/models/Student.js';
+import { Estudiante as EstudianteModel } from '../database/models/Estudiante.js';
 import { Student } from '../../domain/entities/Student.js';
 import { Op } from 'sequelize';
 
@@ -49,7 +49,7 @@ export class StudentRepository extends IStudentRepository {
    * Buscar estudiante por ID
    */
   async findById(id) {
-    const model = await StudentModel.findByPk(id);
+    const model = await EstudianteModel.findByPk(id);
     return this.toEntity(model);
   }
 
@@ -57,7 +57,7 @@ export class StudentRepository extends IStudentRepository {
    * Buscar estudiante por CI y expedición
    */
   async findByCI(ci, expedicion) {
-    const model = await StudentModel.findOne({
+    const model = await EstudianteModel.findOne({
       where: {
         ci,
         expedicion: expedicion.toUpperCase(),
@@ -71,7 +71,7 @@ export class StudentRepository extends IStudentRepository {
    * Buscar estudiante por código
    */
   async findByCodigo(codigoEstudiante) {
-    const model = await StudentModel.findOne({
+    const model = await EstudianteModel.findOne({
       where: {
         codigoEstudiante,
         activo: true,
@@ -85,7 +85,7 @@ export class StudentRepository extends IStudentRepository {
    */
   async findByEmail(email) {
     if (!email) return null;
-    const model = await StudentModel.findOne({
+    const model = await EstudianteModel.findOne({
       where: {
         emailPersonal: email,
         activo: true,
@@ -126,7 +126,7 @@ export class StudentRepository extends IStudentRepository {
       createdBy: userId,
     };
 
-    const model = await StudentModel.create(modelData);
+    const model = await EstudianteModel.create(modelData);
     return this.toEntity(model);
   }
 
@@ -139,7 +139,7 @@ export class StudentRepository extends IStudentRepository {
       updatedBy: userId,
     };
 
-    await StudentModel.update(updateData, {
+    await EstudianteModel.update(updateData, {
       where: { id },
     });
 
@@ -170,7 +170,7 @@ export class StudentRepository extends IStudentRepository {
     }
 
     const offset = (page - 1) * limit;
-    const { count, rows } = await StudentModel.findAndCountAll({
+    const { count, rows } = await EstudianteModel.findAndCountAll({
       where,
       limit,
       offset,
@@ -193,7 +193,7 @@ export class StudentRepository extends IStudentRepository {
     const prefix = `EST-${anio}-`;
 
     // Buscar el último código con ese prefijo
-    const lastStudent = await StudentModel.findOne({
+    const lastStudent = await EstudianteModel.findOne({
       where: {
         codigoEstudiante: {
           [Op.like]: `${prefix}%`,
