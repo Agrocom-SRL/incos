@@ -165,6 +165,10 @@ const iconMap = {
     'DOC': UsergroupAddOutlined,
     'DOC-LIST': UnorderedListOutlined,
     'DOC-CREATE': UserAddOutlined,
+    'DOC-LICENCIAS': FileTextOutlined,
+    'DOC-LICENCIAS-LIST': UnorderedListOutlined,
+    'DOC-LICENCIAS-SOLICITAR': FileAddOutlined,
+    'DOC-LICENCIAS-APROBAR': CheckCircleOutlined,
 
     // Supervisión - Nivel 1
     'SUP': EyeOutlined,
