@@ -32,7 +32,7 @@ export const estudiantesRoutes = [
         element: <EstudiantesListPage />,
         key: 'EST-LIST',
         menu: {
-            label: 'Listar',
+            label: 'Listar Estudiantes',
             module: 'EST',
             parent: 'EST',
             order: 1,
@@ -67,7 +67,7 @@ export const estudiantesRoutes = [
         element: <BecasListPage />,
         key: 'EST-BECAS-LIST',
         menu: {
-            label: 'Listar',
+            label: 'Listar Becas',
             module: 'EST',
             parent: 'EST-BECAS',
             order: 1, // Listar primero
@@ -112,7 +112,7 @@ export const estudiantesRoutes = [
         element: <LicenciasListPage />,
         key: 'EST-LICENCIAS-LIST',
         menu: {
-            label: 'Listar',
+            label: 'Listar Licencias',
             module: 'EST',
             parent: 'EST-LICENCIAS',
             order: 1, // Listar primero

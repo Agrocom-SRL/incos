@@ -65,7 +65,7 @@ import {
 const iconMap = {
     // Dashboard
     'DASH': DashboardOutlined,
-    
+
     // Gestiones - Nivel 1
     'GES': CalendarOutlined,
     'GES-ACTUAL': CalendarOutlined,
@@ -73,7 +73,7 @@ const iconMap = {
     'GES-ETAPAS': ScheduleOutlined,
     'GES-OFERTA': BookOutlined,
     'GES-HORARIOS-ASIGNAR': CalendarOutlined,
-    
+
     // Configuración - Nivel 1
     'CFG': SettingOutlined,
     'CFG-CARRERAS': BookOutlined,
@@ -81,7 +81,7 @@ const iconMap = {
     'CFG-PLAN': FileTextOutlined,
     'CFG-CURSOS': TableOutlined,
     'CFG-TURNOS': ClockCircleOutlined,
-    
+
     // Estudiantes - Nivel 1
     'EST': TeamOutlined,
     'EST-LIST': UnorderedListOutlined,
@@ -95,89 +95,66 @@ const iconMap = {
     'EST-LICENCIAS-APROBAR': CheckCircleOutlined,
     'EST-LICENCIAS-LIST': UnorderedListOutlined,
     'EST-DOCUMENTOS': FolderOutlined,
-    // 'EST-DOCUMENTOS-VER': EyeOutlined, // Eliminado del menú - acción dentro de la página
-    // 'EST-DOCUMENTOS-VERIFICAR': CheckCircleOutlined, // Eliminado del menú - acción dentro de la página
-    // 'EST-DOCUMENTOS-ESTADO': InfoCircleOutlined, // Eliminado del menú - acción dentro de la página
-    
+
     // Inscripciones - Nivel 1
     'INS': FileAddOutlined,
     'INS-CREATE': FileAddOutlined,
-    'INS-HORARIO': SyncOutlined, // Generar Horarios - proceso automático
+    'INS-HORARIO': SyncOutlined,
     'INS-MATERIAS-INSCRIBIR': BookOutlined,
     'INS-MATERIAS-CURSO': TableOutlined,
     'INS-ANULAR': CloseCircleOutlined,
-    // 'INS-MATERIAS-VALIDAR': CheckCircleOutlined, // Eliminado del menú - acción dentro de las páginas de inscripción
-    
+
     // Calificaciones - Nivel 1
     'CAL': CheckCircleOutlined,
     'CAL-REGISTRAR': EditOutlined,
-    'CAL-REGISTRAR-PARCIAL': FileTextOutlined, // Icono para notas/documentos de parciales
+    'CAL-REGISTRAR-PARCIAL': FileTextOutlined, 
     'CAL-REGISTRAR-PRACTICO': EditOutlined,
     'CAL-REGISTRAR-RECUPERATORIO': SyncOutlined,
     'CAL-CURSO': TableOutlined,
     'CAL-CERRAR': LockOutlined,
-    // 'CAL-REGISTRAR-1PARCIAL': EditOutlined, // Eliminado del menú - se accede desde registrar parcial
-    // 'CAL-REGISTRAR-2PARCIAL': EditOutlined, // Eliminado del menú - se accede desde registrar parcial
-    // 'CAL-REGISTRAR-3PARCIAL': EditOutlined, // Eliminado del menú - se accede desde registrar parcial
-    // 'CAL-MODIFICAR': EditOutlined, // Eliminado del menú - acción dentro de la página
-    
+
     // Nivelaciones - Nivel 1
     'NIV': SyncOutlined,
     'NIV-LIST': UnorderedListOutlined,
     'NIV-INSCRIBIR': BookOutlined,
     'NIV-APROBAR': CheckCircleOutlined,
-    
+
     // Docentes - Nivel 1
     'DOC': UsergroupAddOutlined,
     'DOC-LIST': UnorderedListOutlined,
     'DOC-CREATE': UserAddOutlined,
-    // 'DOC-ASIGNAR': TableOutlined, // Eliminado del menú - se accede desde Gestiones -> Oferta Académica
-    
+
     // Supervisión - Nivel 1
     'SUP': EyeOutlined,
-    'SUP-FICHA-VER': UsergroupAddOutlined, // Evaluación Docente
+    'SUP-FICHA-VER': UsergroupAddOutlined,
     'SUP-REPORTE': BarChartOutlined,
-    // 'SUP-PROGRAMAR': ScheduleOutlined, // Eliminado del menú - acción dentro de evaluación docente
-    // Pasantías - dentro de Supervisión
     'SUP-PASANTIAS': BankOutlined,
     'SUP-PASANTIAS-SOLICITAR': BankOutlined,
     'SUP-PASANTIAS-SEGUIMIENTO': EyeOutlined,
     'SUP-PASANTIAS-EVALUAR': FileSearchOutlined,
-    // 'SUP-FICHA-CREAR': FileAddOutlined, // Eliminado del menú - acción dentro de la página
-    // 'SUP-FICHA-EDITAR': EditOutlined, // Eliminado del menú - acción dentro de la página
-    // Pasantías - Módulo independiente eliminado (ahora dentro de Supervisión)
-    // 'PAS': BankOutlined,
-    // 'PAS-ASIGNAR': BankOutlined,
-    // 'PAS-EVALUAR': FileSearchOutlined,
-    // 'PAS-SEGUIMIENTO': EyeOutlined,
-    
-    // Horarios - Módulo independiente eliminado (ahora dentro de Gestiones)
-    // 'HOR': CalendarOutlined,
-    // 'HOR-TURNOS': ClockCircleOutlined,
-    // 'HOR-ASIGNAR': CalendarOutlined,
-    // 'HOR-GENERAR': CalendarOutlined,
-    
+
     // Pagos - Nivel 1
     'PAG': DollarOutlined,
-    'PAG-ARANCELES': DollarOutlined,
+    'PAG-CONFIG': SettingOutlined,
+    'PAG-LIST': UnorderedListOutlined,
     'PAG-REGISTRAR': CreditCardOutlined,
-    'PAG-REGISTRAR-EFECTIVO': DollarOutlined,
-    'PAG-REGISTRAR-TRANSFERENCIA': CreditCardOutlined,
-    'PAG-REGISTRAR-QR': QrcodeOutlined,
-    'PAG-COMPROBANTE': FileDoneOutlined,
-    'PAG-MOROSIDAD': WarningOutlined,
-    
+    'PAG-REPORTES': BarChartOutlined,
+    'PAG-REPORTES-CARRERA': BookOutlined,
+    'PAG-REPORTES-ESTUDIANTE': UserOutlined,
+    'PAG-REPORTES-GESTION': CalendarOutlined,
+    'PAG-ADICIONALES': FileAddOutlined,
+
     // Historial - Nivel 1
     'HIS': HistoryOutlined,
     'HIS-GENERAR': FileTextOutlined,
     'HIS-VALIDAR': SafetyCertificateOutlined,
     'HIS-LIBROS': BookOutlined,
-    
+
     // Boletines - Nivel 1
     'BOL': FilePdfOutlined,
     'BOL-GENERAR': FilePdfOutlined,
     'BOL-PUBLICAR': SendOutlined,
-    
+
     // Reportes - Nivel 1
     'REP': BarChartOutlined,
     'REP-RENDIMIENTO': LineChartOutlined,
@@ -185,7 +162,7 @@ const iconMap = {
     'REP-DESERCION': FallOutlined,
     'REP-BECAS': GiftOutlined,
     'REP-FINANCIERO': PieChartOutlined,
-    
+
     // Usuarios - Nivel 1
     'USR': SettingOutlined,
     'USR-LIST': UnorderedListOutlined,
@@ -202,11 +179,11 @@ const iconMap = {
  */
 const MenuItemIcon = ({ iconName, ...props }) => {
     const IconComponent = iconMap[iconName];
-    
+
     if (!IconComponent) {
         return null;
     }
-    
+
     return <IconComponent {...props} />;
 };
 

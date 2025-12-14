@@ -24,7 +24,7 @@ export const usuariosRoutes = [
         element: <UsuariosListPage />,
         key: 'USR-LIST',
         menu: {
-            label: 'Listar',
+            label: 'Listar Usuarios',
             module: 'USR',
             parent: 'USR',
             order: 1, // Listar primero

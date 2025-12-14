@@ -1,12 +1,17 @@
 // src/router/modules/pagos.routes.js
 import { lazy } from 'react';
 
-const PagosArancelesPage = lazy(() => import('@pages/Pagos/Aranceles'));
-const PagosRegistrarEfectivoPage = lazy(() => import('@pages/Pagos/Registrar/Efectivo'));
-const PagosRegistrarTransferenciaPage = lazy(() => import('@pages/Pagos/Registrar/Transferencia'));
-const PagosRegistrarQRPage = lazy(() => import('@pages/Pagos/Registrar/QR'));
-const PagosComprobantePage = lazy(() => import('@pages/Pagos/Comprobante'));
-const PagosMorosidadPage = lazy(() => import('@pages/Pagos/Morosidad'));
+// Configuración y listado
+const PagosConfiguracionPage = lazy(() => import('@pages/Pagos/Configuracion'));
+const PagosListPage = lazy(() => import('@pages/Pagos/List'));
+// Registro
+const PagosRegistrarPage = lazy(() => import('@pages/Pagos/Registrar'));
+// Reportes/Consultas
+const PagosReporteCarreraPage = lazy(() => import('@pages/Pagos/Reportes/Carrera'));
+const PagosReporteEstudiantePage = lazy(() => import('@pages/Pagos/Reportes/Estudiante'));
+const PagosReporteGestionPage = lazy(() => import('@pages/Pagos/Reportes/Gestion'));
+// Pagos adicionales
+const PagosAdicionalesPage = lazy(() => import('@pages/Pagos/Adicionales'));
 
 export const pagosRoutes = [
     // Módulo raíz: Pagos
@@ -21,81 +26,92 @@ export const pagosRoutes = [
         },
     },
     {
-        path: '/pagos/aranceles',
-        element: <PagosArancelesPage />,
-        key: 'PAG-ARANCELES',
+        path: '/pagos/listar',
+        element: <PagosListPage />,
+        key: 'PAG-LIST',
         menu: {
-            label: 'Aranceles',
+            label: 'Listar Pagos',
             module: 'PAG',
             parent: 'PAG',
-            order: 1, // Consultar primero
+            order: 1, // Listar primero
         },
     },
-    // Registrar Pago - Grupo padre
     {
         path: '/pagos/registrar',
-        element: null, // No tiene página propia, es solo un grupo
+        element: <PagosRegistrarPage />,
         key: 'PAG-REGISTRAR',
         menu: {
             label: 'Registrar Pago',
             module: 'PAG',
             parent: 'PAG',
-            order: 2,
+            order: 2, // Registrar segundo
         },
     },
+    // Reportes/Consultas - Grupo padre (opcional, para ver ingresos de manera específica)
     {
-        path: '/pagos/registrar/efectivo',
-        element: <PagosRegistrarEfectivoPage />,
-        key: 'PAG-REGISTRAR-EFECTIVO',
+        path: '/pagos/reportes',
+        element: null, // No tiene página propia, es solo un grupo
+        key: 'PAG-REPORTES',
         menu: {
-            label: 'Efectivo',
+            label: 'Reportes',
             module: 'PAG',
-            parent: 'PAG-REGISTRAR',
-            order: 1,
-        },
-    },
-    {
-        path: '/pagos/registrar/transferencia',
-        element: <PagosRegistrarTransferenciaPage />,
-        key: 'PAG-REGISTRAR-TRANSFERENCIA',
-        menu: {
-            label: 'Transferencia',
-            module: 'PAG',
-            parent: 'PAG-REGISTRAR',
-            order: 2,
-        },
-    },
-    {
-        path: '/pagos/registrar/qr',
-        element: <PagosRegistrarQRPage />,
-        key: 'PAG-REGISTRAR-QR',
-        menu: {
-            label: 'QR',
-            module: 'PAG',
-            parent: 'PAG-REGISTRAR',
+            parent: 'PAG',
             order: 3,
         },
     },
     {
-        path: '/pagos/comprobantes',
-        element: <PagosComprobantePage />,
-        key: 'PAG-COMPROBANTE',
+        path: '/pagos/reportes/carrera',
+        element: <PagosReporteCarreraPage />,
+        key: 'PAG-REPORTES-CARRERA',
         menu: {
-            label: 'Comprobantes',
+            label: 'Por Carrera',
             module: 'PAG',
-            parent: 'PAG',
-            order: 3, // Consultar comprobantes
+            parent: 'PAG-REPORTES',
+            order: 1,
         },
     },
     {
-        path: '/pagos/morosidad',
-        element: <PagosMorosidadPage />,
-        key: 'PAG-MOROSIDAD',
+        path: '/pagos/reportes/estudiante',
+        element: <PagosReporteEstudiantePage />,
+        key: 'PAG-REPORTES-ESTUDIANTE',
         menu: {
-            label: 'Morosidad',
+            label: 'Por Estudiante',
+            module: 'PAG',
+            parent: 'PAG-REPORTES',
+            order: 2,
+        },
+    },
+    {
+        path: '/pagos/reportes/gestion',
+        element: <PagosReporteGestionPage />,
+        key: 'PAG-REPORTES-GESTION',
+        menu: {
+            label: 'Por Gestión',
+            module: 'PAG',
+            parent: 'PAG-REPORTES',
+            order: 3,
+        },
+    },
+    {
+        path: '/pagos/adicionales',
+        element: <PagosAdicionalesPage />,
+        key: 'PAG-ADICIONALES',
+        menu: {
+            label: 'Pagos Adicionales',
             module: 'PAG',
             parent: 'PAG',
-            order: 4, // Reportes/Estados
+            order: 4, // Pagos especiales
+        },
+    },
+    {
+        path: '/pagos/configuracion',
+        element: <PagosConfiguracionPage />,
+        key: 'PAG-CONFIG',
+        menu: {
+            label: 'Configuración',
+            module: 'PAG',
+            parent: 'PAG',
+            order: 5, // Configuración al final
         },
     },
 ];

@@ -22,7 +22,7 @@ export const nivelacionesRoutes = [
         element: <NivelacionesListPage />,
         key: 'NIV-LIST',
         menu: {
-            label: 'Listar',
+            label: 'Listar Nivelaciones',
             module: 'NIV',
             parent: 'NIV',
             order: 1,

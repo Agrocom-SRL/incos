@@ -22,7 +22,7 @@ export const docentesRoutes = [
         element: <DocentesListPage />,
         key: 'DOC-LIST',
         menu: {
-            label: 'Listar',
+            label: 'Listar Docentes',
             module: 'DOC',
             parent: 'DOC',
             order: 1,

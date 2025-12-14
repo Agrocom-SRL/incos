@@ -7,7 +7,7 @@ const { Title } = Typography;
 const NivelacionesList = () => {
     return (
         <div>
-            <Title level={2}>Listar</Title>
+            <Title level={2}>Listar Nivelaciones</Title>
             <p>Página en desarrollo - Listado de nivelaciones</p>
         </div>
     );
