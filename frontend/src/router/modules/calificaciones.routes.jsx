@@ -8,6 +8,7 @@ const CalificacionesRegistrarPracticoPage = lazy(() => import('@pages/Calificaci
 const CalificacionesRegistrarRecuperatorioPage = lazy(() => import('@pages/Calificaciones/Registrar/Recuperatorio'));
 const CalificacionesModificarPage = lazy(() => import('@pages/Calificaciones/Modificar'));
 const CalificacionesCursoPage = lazy(() => import('@pages/Calificaciones/Curso'));
+const CalificacionesPeriodoPage = lazy(() => import('@pages/Calificaciones/Periodo'));
 const CalificacionesCerrarPage = lazy(() => import('@pages/Calificaciones/Cerrar'));
 
 export const calificacionesRoutes = [
@@ -39,37 +40,18 @@ export const calificacionesRoutes = [
         element: <CalificacionesRegistrar1ParcialPage />, // La página manejará qué parcial registrar
         key: 'CAL-REGISTRAR-PARCIAL',
         menu: {
-            label: 'Parcial',
+            label: 'Nota de Parciales',
             module: 'CAL',
             parent: 'CAL-REGISTRAR',
             order: 1,
         },
-    },
-    // Rutas sin menú (se acceden desde la página de registrar parcial)
-    {
-        path: '/calificaciones/registrar/1-parcial',
-        element: <CalificacionesRegistrar1ParcialPage />,
-        key: 'CAL-REGISTRAR-1PARCIAL',
-        // Sin menu - se accede desde registrar parcial
-    },
-    {
-        path: '/calificaciones/registrar/2-parcial',
-        element: <CalificacionesRegistrar2ParcialPage />,
-        key: 'CAL-REGISTRAR-2PARCIAL',
-        // Sin menu - se accede desde registrar parcial
-    },
-    {
-        path: '/calificaciones/registrar/3-parcial',
-        element: <CalificacionesRegistrar3ParcialPage />,
-        key: 'CAL-REGISTRAR-3PARCIAL',
-        // Sin menu - se accede desde registrar parcial
     },
     {
         path: '/calificaciones/registrar/practico',
         element: <CalificacionesRegistrarPracticoPage />,
         key: 'CAL-REGISTRAR-PRACTICO',
         menu: {
-            label: 'Práctico',
+            label: 'Notas de Prácticos',
             module: 'CAL',
             parent: 'CAL-REGISTRAR',
             order: 2,
@@ -91,10 +73,21 @@ export const calificacionesRoutes = [
         element: <CalificacionesCursoPage />,
         key: 'CAL-CURSO',
         menu: {
-            label: 'Por Curso',
+            label: 'Notas Por Curso',
             module: 'CAL',
             parent: 'CAL',
             order: 2,
+        },
+    },
+    {
+        path: '/calificaciones/periodo',
+        element: <CalificacionesPeriodoPage />,
+        key: 'CAL-PERIODO',
+        menu: {
+            label: 'Notas por Periodo',
+            module: 'CAL',
+            parent: 'CAL',
+            order: 3,
         },
     },
     {
@@ -105,7 +98,7 @@ export const calificacionesRoutes = [
             label: 'Cerrar Periodo',
             module: 'CAL',
             parent: 'CAL',
-            order: 3,
+            order: 4,
         },
     },
     // Ruta sin menú (se accede desde la página de calificaciones)

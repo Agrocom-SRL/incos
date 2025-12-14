@@ -15,6 +15,5 @@ export { docentesRoutes } from './docentes.routes.jsx';
 export { supervisionRoutes } from './supervision.routes.jsx';
 export { pagosRoutes } from './pagos.routes.jsx';
 export { historialRoutes } from './historial.routes.jsx';
-export { boletinesRoutes } from './boletines.routes.jsx';
 export { reportesRoutes } from './reportes.routes.jsx';
 export { usuariosRoutes } from './usuarios.routes.jsx';

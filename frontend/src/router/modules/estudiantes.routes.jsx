@@ -78,7 +78,7 @@ export const estudiantesRoutes = [
         element: <BecasAsignarPage />,
         key: 'EST-BECAS-ASIGNAR',
         menu: {
-            label: 'Asignar',
+            label: 'Asignar Beca',
             module: 'EST',
             parent: 'EST-BECAS',
             order: 2, // Crear/Asignar segundo
@@ -89,7 +89,7 @@ export const estudiantesRoutes = [
         element: <BecasAprobarPage />,
         key: 'EST-BECAS-APROBAR',
         menu: {
-            label: 'Aprobar',
+            label: 'Aprobar Beca',
             module: 'EST',
             parent: 'EST-BECAS',
             order: 3, // Estados (Aprobar) tercero
@@ -123,7 +123,7 @@ export const estudiantesRoutes = [
         element: <LicenciasSolicitarPage />,
         key: 'EST-LICENCIAS-SOLICITAR',
         menu: {
-            label: 'Solicitar',
+            label: 'Solicitar Licencia',
             module: 'EST',
             parent: 'EST-LICENCIAS',
             order: 2, // Crear/Solicitar segundo
@@ -134,7 +134,7 @@ export const estudiantesRoutes = [
         element: <LicenciasAprobarPage />,
         key: 'EST-LICENCIAS-APROBAR',
         menu: {
-            label: 'Aprobar',
+            label: 'Aprobar Licencia',
             module: 'EST',
             parent: 'EST-LICENCIAS',
             order: 3, // Estados (Aprobar) tercero

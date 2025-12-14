@@ -16,7 +16,6 @@ import { docentesRoutes } from '@router/modules/docentes.routes.jsx';
 import { supervisionRoutes } from '@router/modules/supervision.routes.jsx';
 import { pagosRoutes } from '@router/modules/pagos.routes.jsx';
 import { historialRoutes } from '@router/modules/historial.routes.jsx';
-import { boletinesRoutes } from '@router/modules/boletines.routes.jsx';
 import { reportesRoutes } from '@router/modules/reportes.routes.jsx';
 import { usuariosRoutes } from '@router/modules/usuarios.routes.jsx';
 
@@ -37,7 +36,6 @@ export const getAllRoutes = () => {
         ...supervisionRoutes,
         ...pagosRoutes,
         ...historialRoutes,
-        ...boletinesRoutes,
         ...reportesRoutes,
         ...usuariosRoutes,
     ];

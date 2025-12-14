@@ -33,7 +33,7 @@ export const nivelacionesRoutes = [
         element: <NivelacionesInscribirPage />,
         key: 'NIV-INSCRIBIR',
         menu: {
-            label: 'Inscribir',
+            label: 'Inscribir Nivelación',
             module: 'NIV',
             parent: 'NIV',
             order: 2,
@@ -44,7 +44,7 @@ export const nivelacionesRoutes = [
         element: <NivelacionesAprobarPage />,
         key: 'NIV-APROBAR',
         menu: {
-            label: 'Aprobar',
+            label: 'Aprobar Nivelación',
             module: 'NIV',
             parent: 'NIV',
             order: 3,

@@ -111,6 +111,7 @@ const iconMap = {
     'CAL-REGISTRAR-PRACTICO': EditOutlined,
     'CAL-REGISTRAR-RECUPERATORIO': SyncOutlined,
     'CAL-CURSO': TableOutlined,
+    'CAL-PERIODO': FilePdfOutlined,
     'CAL-CERRAR': LockOutlined,
 
     // Nivelaciones - Nivel 1
@@ -146,14 +147,10 @@ const iconMap = {
 
     // Historial - Nivel 1
     'HIS': HistoryOutlined,
+    'HIS-FOLIO': BookOutlined,
+    'HIS-ACADEMICO': FileTextOutlined,
     'HIS-GENERAR': FileTextOutlined,
     'HIS-VALIDAR': SafetyCertificateOutlined,
-    'HIS-LIBROS': BookOutlined,
-
-    // Boletines - Nivel 1
-    'BOL': FilePdfOutlined,
-    'BOL-GENERAR': FilePdfOutlined,
-    'BOL-PUBLICAR': SendOutlined,
 
     // Reportes - Nivel 1
     'REP': BarChartOutlined,
