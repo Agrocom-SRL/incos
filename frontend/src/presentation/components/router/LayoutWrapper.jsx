@@ -7,7 +7,7 @@
 import { Suspense } from 'react';
 import { Outlet } from 'react-router-dom';
 import MainLayout from '@templates/MainLayout';
-import { Sidebar, Header } from '@organisms';
+import { Sidebar, Header } from '@templates/MainLayout/components';
 import LoadingFallback from './LoadingFallback';
 
 const LayoutWrapper = () => {

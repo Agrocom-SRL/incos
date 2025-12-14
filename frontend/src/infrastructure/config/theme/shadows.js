@@ -1,4 +1,4 @@
-// src/shared/config/theme/shadows.js
+// src/infrastructure/config/theme/shadows.js
 /**
  * Sistema de sombras y profundidad
  * Para efectos 3D como el logo

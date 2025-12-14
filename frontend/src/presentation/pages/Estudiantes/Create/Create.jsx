@@ -6,10 +6,10 @@ import { useNavigate } from 'react-router-dom';
 import { useStudentContext } from '@application/modules/estudiantes';
 import { MainContent, InfoSidebar } from '@organisms';
 import { StudentsSummaryCard, HelpGuideCard } from '@molecules';
-import { componentConfig } from '@config/theme/components';
-import { allColors } from '@config/theme/colors';
-import { allSpacing } from '@config/theme/spacing';
-import { typography } from '@config/theme/typography';
+import { componentConfig } from '@theme/components';
+import { allColors } from '@theme/colors';
+import { allSpacing } from '@theme/spacing';
+import { typography } from '@theme/typography';
 import '@styles/pages/estudiantes-create.css';
 
 const { Option } = Select;

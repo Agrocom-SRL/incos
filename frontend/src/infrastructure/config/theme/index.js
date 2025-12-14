@@ -1,4 +1,4 @@
-// src/shared/config/theme/index.js
+// src/infrastructure/config/theme/index.js
 /**
  * Exportación centralizada de todos los tokens del tema
  * Este archivo combina todos los módulos del tema

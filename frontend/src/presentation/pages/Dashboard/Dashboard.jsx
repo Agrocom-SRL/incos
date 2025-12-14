@@ -8,7 +8,7 @@ import {
     OrdersSummaryCard,
     ActivityList,
 } from '@molecules';
-import { allSpacing } from '@config/theme/spacing';
+import { allSpacing } from '@theme/spacing';
 import plant02 from '@assets/plant02.png';
 import plant01 from '@assets/plant01.png';
 import plant03 from '@assets/plant03.png';

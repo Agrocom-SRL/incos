@@ -44,10 +44,18 @@ export default defineConfig({
       '@shared': path.resolve(__dirname, './src/shared'),
       '@constants': path.resolve(__dirname, './src/shared/constants'),
       '@utils': path.resolve(__dirname, './src/shared/utils'),
-      '@config': path.resolve(__dirname, './src/shared/config'),
+      '@config': path.resolve(__dirname, './src/infrastructure/config'),
 
-      // Others
+      // Router
       '@router': path.resolve(__dirname, './src/router'),
+      '@router-config': path.resolve(__dirname, './src/router/config'),
+      '@router-utils': path.resolve(__dirname, './src/router/utils'),
+      
+      // Theme
+      '@theme': path.resolve(__dirname, './src/infrastructure/config/theme'),
+      
+      // Layout Components
+      '@layout-components': path.resolve(__dirname, './src/presentation/templates/MainLayout/components'),
       '@assets': path.resolve(__dirname, './src/assets'),
       '@styles': path.resolve(__dirname, './src/styles'),
       '@data': path.resolve(__dirname, './src/data'),

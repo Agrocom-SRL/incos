@@ -1,4 +1,4 @@
-// src/shared/config/theme/components.js
+// src/infrastructure/config/theme/components.js
 /**
  * Configuración específica de componentes de Ant Design - LAYOUT
  * TODOS los valores deben venir del tema (allColors, allSpacing, etc.)

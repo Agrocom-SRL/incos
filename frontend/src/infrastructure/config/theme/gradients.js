@@ -1,4 +1,4 @@
-// src/shared/config/theme/gradients.js
+// src/infrastructure/config/theme/gradients.js
 /**
  * Gradientes y efectos metálicos
  * Inspirados en el logo de INCOS

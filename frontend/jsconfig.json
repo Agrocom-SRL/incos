@@ -86,13 +86,25 @@
         "./src/shared/utils/*"
       ],
       "@config/*": [
-        "./src/shared/config/*"
+        "./src/infrastructure/config/*"
       ],
       "@router": [
         "./src/router/index.jsx"
       ],
       "@router/*": [
         "./src/router/*"
+      ],
+      "@router-config/*": [
+        "./src/router/config/*"
+      ],
+      "@router-utils/*": [
+        "./src/router/utils/*"
+      ],
+      "@theme/*": [
+        "./src/infrastructure/config/theme/*"
+      ],
+      "@layout-components/*": [
+        "./src/presentation/templates/MainLayout/components/*"
       ],
       "@assets/*": [
         "./src/assets/*"

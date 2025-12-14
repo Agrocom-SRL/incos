@@ -1,4 +1,4 @@
-// src/shared/config/theme/spacing.js
+// src/infrastructure/config/theme/spacing.js
 /**
  * Configuración de espaciado y sizing
  */

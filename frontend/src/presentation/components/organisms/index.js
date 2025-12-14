@@ -1,5 +1,4 @@
 // src/presentation/components/organisms/index.js
-export { default as Sidebar } from './Sidebar';
-export { default as Header } from './Header';
+// Sidebar y Header se movieron a @templates/MainLayout/components
 export { default as MainContent } from './MainContent';
 export { default as InfoSidebar } from './InfoSidebar';

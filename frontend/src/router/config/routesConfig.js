@@ -1,4 +1,4 @@
-// src/shared/config/router/routesConfig.js
+// src/router/config/routesConfig.js
 /**
  * Configuración centralizada de rutas
  * Single Responsibility: Solo agrupa y exporta todas las rutas

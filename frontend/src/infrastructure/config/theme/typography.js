@@ -1,4 +1,4 @@
-// src/shared/config/theme/typography.js
+// src/infrastructure/config/theme/typography.js
 /**
  * Configuración de tipografía
  * Solo Poppins como fuente principal

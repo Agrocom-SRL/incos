@@ -8,10 +8,10 @@
  * FASE 1: Solo variables esenciales para Layout, Header, Sider, Content e IconButton
  */
 
-import { allSpacing } from '@config/theme/spacing';
-import { shadows } from '@config/theme/shadows';
-import { componentConfig } from '@config/theme/components';
-import { typography } from '@config/theme/typography';
+import { allSpacing } from '@theme/spacing';
+import { shadows } from '@theme/shadows';
+import { componentConfig } from '@theme/components';
+import { typography } from '@theme/typography';
 
 /**
  * Genera TODAS las variables CSS desde el tema JS

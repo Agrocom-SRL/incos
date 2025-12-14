@@ -78,7 +78,6 @@ const iconMap = {
     'EST-LICENCIAS-SOLICITAR': FileAddOutlined,
     'EST-LICENCIAS-APROBAR': CheckCircleOutlined,
     'EST-LICENCIAS-LIST': UnorderedListOutlined,
-    'EST-ESTADO': EditOutlined,
     'EST-DOCUMENTOS': FolderOutlined,
     'EST-DOCUMENTOS-VER': EyeOutlined,
     'EST-DOCUMENTOS-VERIFICAR': CheckCircleOutlined,

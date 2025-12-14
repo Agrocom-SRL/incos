@@ -5,10 +5,10 @@
 
 import { Card, Typography, Flex, List, Divider } from 'antd';
 import { InfoCircleOutlined, CheckCircleOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
-import { allColors } from '@config/theme/colors';
-import { allSpacing } from '@config/theme/spacing';
-import { typography } from '@config/theme/typography';
-import { componentConfig } from '@config/theme/components';
+import { allColors } from '@theme/colors';
+import { allSpacing } from '@theme/spacing';
+import { typography } from '@theme/typography';
+import { componentConfig } from '@theme/components';
 
 const { Title, Text } = Typography;
 

@@ -2,7 +2,7 @@
 import { Flex } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 import { Avatar } from '@atoms';
-import { allSpacing } from '@config/theme/spacing';
+import { allSpacing } from '@theme/spacing';
 
 /**
  * HeaderRight - Componente molecular para la sección derecha del Header

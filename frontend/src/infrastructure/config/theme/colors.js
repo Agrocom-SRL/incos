@@ -1,4 +1,4 @@
-// src/shared/config/theme/colors.js
+// src/infrastructure/config/theme/colors.js
 /**
  * Colores principales del sistema
  * Basados en los colores institucionales del logo INCOS

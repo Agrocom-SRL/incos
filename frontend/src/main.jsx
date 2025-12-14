@@ -2,7 +2,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { ConfigProvider } from 'antd';
-import incosTheme from '@config/theme.config';
+import incosTheme from '@infrastructure/config/theme.config';
 import { injectCSSVariables } from '@styles/theme/css-variables';
 import '@styles/index.css';
 import App from './App.jsx';

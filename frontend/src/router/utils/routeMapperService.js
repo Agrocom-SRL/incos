@@ -1,23 +1,29 @@
-// src/shared/utils/router/routeMapperService.js
+// src/router/utils/routeMapperService.js
 /**
  * Utilidad para mapear keys del menú con rutas del router
  * Single Responsibility: Solo maneja el mapeo entre menú y rutas
  * 
  * Este servicio genera automáticamente el mapeo desde las rutas definidas en los módulos.
- * Cada ruta debe tener una propiedad 'key' que corresponda a una key en navigationMenuData.js
+ * Cada ruta debe tener una propiedad 'key' y metadata 'menu' para generar el menú automáticamente.
  * 
- * Ejemplo de ruta con key:
+ * Ejemplo de ruta con key y metadata:
  * {
  *   path: '/estudiantes',
  *   element: <EstudiantesListPage />,
- *   key: 'EST-LIST',  // ← Esta key debe existir en navigationMenuData.js
+ *   key: 'EST-LIST',
+ *   menu: {
+ *     label: 'Listar',
+ *     module: 'EST',
+ *     parent: 'EST',
+ *     order: 1
+ *   }
  * }
  * 
  * El mapeo se genera automáticamente, evitando duplicación y manteniendo una única fuente de verdad.
  * Las rutas son la fuente de verdad, y el mapeo se deriva de ellas.
  */
 
-import { getAllRoutes } from '@config/router/routesConfig';
+import { getAllRoutes } from '@router-config/routesConfig';
 
 /**
  * Genera el mapeo entre keys del menú y rutas automáticamente
@@ -30,7 +36,12 @@ export const generateMenuKeyToRouteMap = () => {
     
     allRoutes.forEach(route => {
         if (route.key && route.path) {
-            map[route.key] = route.path;
+            // Si ya existe una ruta para esta key, priorizar la que tiene metadata de menú
+            if (map[route.key] && route.menu) {
+                map[route.key] = route.path;
+            } else if (!map[route.key]) {
+                map[route.key] = route.path;
+            }
         }
     });
     
@@ -74,12 +85,8 @@ export const getMenuKeyFromRoute = (route) => {
         }
     }
     
-    // Caso especial: si no se encuentra y es '/', buscar 'DASH' (Dashboard)
-    // También manejar '/dashboard' como alias de '/'
-    if (normalizedRoute === '/' || normalizedRoute === '/dashboard') {
-        return map['DASH'] ? 'DASH' : null;
-    }
-    
+    // Si no se encuentra, retornar null
+    // El routerService maneja las redirecciones (como '/' -> '/dashboard')
     return null;
 };
 

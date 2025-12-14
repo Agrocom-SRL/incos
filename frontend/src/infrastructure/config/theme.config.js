@@ -7,7 +7,7 @@
  */
 
 import { theme } from 'antd';
-import { allThemeTokens, componentConfig } from './theme';
+import { allThemeTokens, componentConfig } from './theme/index';
 
 const { defaultAlgorithm, darkAlgorithm } = theme;
 

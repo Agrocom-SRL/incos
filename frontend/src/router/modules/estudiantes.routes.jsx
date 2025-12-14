@@ -4,7 +4,6 @@ import { lazy } from 'react';
 // Lazy loading de componentes - se crearán las páginas después
 const EstudiantesListPage = lazy(() => import('@pages/Estudiantes/List'));
 const EstudiantesCreatePage = lazy(() => import('@pages/Estudiantes/Create'));
-const EstudiantesEstadoPage = lazy(() => import('@pages/Estudiantes/Estado'));
 const BecasAsignarPage = lazy(() => import('@pages/Estudiantes/Becas/Asignar'));
 const BecasAprobarPage = lazy(() => import('@pages/Estudiantes/Becas/Aprobar'));
 const BecasListPage = lazy(() => import('@pages/Estudiantes/Becas/List'));
@@ -16,73 +15,175 @@ const DocumentosVerificarPage = lazy(() => import('@pages/Estudiantes/Documentos
 const DocumentosEstadoPage = lazy(() => import('@pages/Estudiantes/Documentos/Estado'));
 
 export const estudiantesRoutes = [
+    // Módulo raíz: Estudiantes
     {
         path: '/estudiantes',
         element: <EstudiantesListPage />,
-        key: 'EST-LIST',
+        key: 'EST',
+        menu: {
+            label: 'Estudiantes',
+            module: 'EST',
+            order: 2,
+        },
     },
+    // Listar (alias de la ruta principal)
     {
         path: '/estudiantes/listar',
         element: <EstudiantesListPage />,
         key: 'EST-LIST',
+        menu: {
+            label: 'Listar',
+            module: 'EST',
+            parent: 'EST',
+            order: 1,
+        },
     },
+    // Registrar
     {
         path: '/estudiantes/registrar',
         element: <EstudiantesCreatePage />,
         key: 'EST-CREATE',
+        menu: {
+            label: 'Registrar Nuevo',
+            module: 'EST',
+            parent: 'EST',
+            order: 2,
+        },
     },
+    // Becas - Grupo padre
     {
-        path: '/estudiantes/estado',
-        element: <EstudiantesEstadoPage />,
-        key: 'EST-ESTADO',
-    },
-    // Becas
-    {
-        path: '/estudiantes/becas/asignar',
-        element: <BecasAsignarPage />,
-        key: 'EST-BECAS-ASIGNAR',
-    },
-    {
-        path: '/estudiantes/becas/aprobar',
-        element: <BecasAprobarPage />,
-        key: 'EST-BECAS-APROBAR',
+        path: '/estudiantes/becas',
+        element: null, // No tiene página propia, es solo un grupo
+        key: 'EST-BECAS',
+        menu: {
+            label: 'Becas',
+            module: 'EST',
+            parent: 'EST',
+            order: 3,
+        },
     },
     {
         path: '/estudiantes/becas/listar',
         element: <BecasListPage />,
         key: 'EST-BECAS-LIST',
+        menu: {
+            label: 'Listar',
+            module: 'EST',
+            parent: 'EST-BECAS',
+            order: 1, // Listar primero
+        },
     },
-    // Licencias
     {
-        path: '/estudiantes/licencias/solicitar',
-        element: <LicenciasSolicitarPage />,
-        key: 'EST-LICENCIAS-SOLICITAR',
+        path: '/estudiantes/becas/asignar',
+        element: <BecasAsignarPage />,
+        key: 'EST-BECAS-ASIGNAR',
+        menu: {
+            label: 'Asignar',
+            module: 'EST',
+            parent: 'EST-BECAS',
+            order: 2, // Crear/Asignar segundo
+        },
     },
     {
-        path: '/estudiantes/licencias/aprobar',
-        element: <LicenciasAprobarPage />,
-        key: 'EST-LICENCIAS-APROBAR',
+        path: '/estudiantes/becas/aprobar',
+        element: <BecasAprobarPage />,
+        key: 'EST-BECAS-APROBAR',
+        menu: {
+            label: 'Aprobar',
+            module: 'EST',
+            parent: 'EST-BECAS',
+            order: 3, // Estados (Aprobar) tercero
+        },
+    },
+    // Licencias - Grupo padre
+    {
+        path: '/estudiantes/licencias',
+        element: null, // No tiene página propia, es solo un grupo
+        key: 'EST-LICENCIAS',
+        menu: {
+            label: 'Licencias',
+            module: 'EST',
+            parent: 'EST',
+            order: 4,
+        },
     },
     {
         path: '/estudiantes/licencias/listar',
         element: <LicenciasListPage />,
         key: 'EST-LICENCIAS-LIST',
+        menu: {
+            label: 'Listar',
+            module: 'EST',
+            parent: 'EST-LICENCIAS',
+            order: 1, // Listar primero
+        },
     },
-    // Documentos
+    {
+        path: '/estudiantes/licencias/solicitar',
+        element: <LicenciasSolicitarPage />,
+        key: 'EST-LICENCIAS-SOLICITAR',
+        menu: {
+            label: 'Solicitar',
+            module: 'EST',
+            parent: 'EST-LICENCIAS',
+            order: 2, // Crear/Solicitar segundo
+        },
+    },
+    {
+        path: '/estudiantes/licencias/aprobar',
+        element: <LicenciasAprobarPage />,
+        key: 'EST-LICENCIAS-APROBAR',
+        menu: {
+            label: 'Aprobar',
+            module: 'EST',
+            parent: 'EST-LICENCIAS',
+            order: 3, // Estados (Aprobar) tercero
+        },
+    },
+    // Documentos - Grupo padre
+    {
+        path: '/estudiantes/documentos',
+        element: null, // No tiene página propia, es solo un grupo
+        key: 'EST-DOCUMENTOS',
+        menu: {
+            label: 'Documentos',
+            module: 'EST',
+            parent: 'EST',
+            order: 6,
+        },
+    },
     {
         path: '/estudiantes/documentos/ver',
         element: <DocumentosVerPage />,
         key: 'EST-DOCUMENTOS-VER',
+        menu: {
+            label: 'Ver Documentos',
+            module: 'EST',
+            parent: 'EST-DOCUMENTOS',
+            order: 1, // Ver/Listar primero
+        },
     },
     {
         path: '/estudiantes/documentos/verificar',
         element: <DocumentosVerificarPage />,
         key: 'EST-DOCUMENTOS-VERIFICAR',
+        menu: {
+            label: 'Verificar',
+            module: 'EST',
+            parent: 'EST-DOCUMENTOS',
+            order: 2, // Acciones segundo
+        },
     },
     {
         path: '/estudiantes/documentos/estado',
         element: <DocumentosEstadoPage />,
         key: 'EST-DOCUMENTOS-ESTADO',
+        menu: {
+            label: 'Estado',
+            module: 'EST',
+            parent: 'EST-DOCUMENTOS',
+            order: 3, // Estados tercero
+        },
     },
 ];
 

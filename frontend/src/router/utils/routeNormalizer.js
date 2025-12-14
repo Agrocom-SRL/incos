@@ -1,4 +1,4 @@
-// src/shared/utils/router/routeNormalizer.js
+// src/router/utils/routeNormalizer.js
 /**
  * Utilidades para normalizar rutas
  * Single Responsibility: Solo normaliza paths de rutas

@@ -5,9 +5,9 @@
  */
 
 import { Flex, Typography } from 'antd';
-import { allColors } from '@config/theme/colors';
-import { allSpacing } from '@config/theme/spacing';
-import { typography } from '@config/theme/typography';
+import { allColors } from '@theme/colors';
+import { allSpacing } from '@theme/spacing';
+import { typography } from '@theme/typography';
 import ProductCard from '../ProductCard';
 
 const { Title } = Typography;
