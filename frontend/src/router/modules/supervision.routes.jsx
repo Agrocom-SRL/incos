@@ -20,7 +20,7 @@ export const supervisionRoutes = [
         menu: {
             label: 'Supervisión',
             module: 'SUP',
-            order: 8, // Usado periódicamente
+            order: 7, // Usado periódicamente
         },
     },
     {

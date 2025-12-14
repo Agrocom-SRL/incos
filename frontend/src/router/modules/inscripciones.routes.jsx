@@ -36,7 +36,7 @@ export const inscripcionesRoutes = [
         element: <InscripcionesHorarioPage />,
         key: 'INS-HORARIO',
         menu: {
-            label: 'Horarios',
+            label: 'Generar Horarios',
             module: 'INS',
             parent: 'INS',
             order: 2,

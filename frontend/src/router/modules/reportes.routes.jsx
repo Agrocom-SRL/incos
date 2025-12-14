@@ -16,7 +16,7 @@ export const reportesRoutes = [
         menu: {
             label: 'Reportes',
             module: 'REP',
-            order: 12, // Usado ocasionalmente
+            order: 11, // Usado ocasionalmente
         },
     },
     {

@@ -14,7 +14,7 @@ export const historialRoutes = [
         menu: {
             label: 'Historial',
             module: 'HIS',
-            order: 10, // Usado ocasionalmente
+            order: 9, // Usado ocasionalmente
         },
     },
     {

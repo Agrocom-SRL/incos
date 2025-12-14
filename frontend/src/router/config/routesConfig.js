@@ -7,6 +7,7 @@
 
 import { dashboardRoutes } from '@router/modules/dashboard.routes.jsx';
 import { gestionesRoutes } from '@router/modules/gestiones.routes.jsx';
+import { configuracionRoutes } from '@router/modules/configuracion.routes.jsx';
 import { estudiantesRoutes } from '@router/modules/estudiantes.routes.jsx';
 import { inscripcionesRoutes } from '@router/modules/inscripciones.routes.jsx';
 import { calificacionesRoutes } from '@router/modules/calificaciones.routes.jsx';
@@ -27,6 +28,7 @@ export const getAllRoutes = () => {
     return [
         ...dashboardRoutes,
         ...gestionesRoutes,
+        ...configuracionRoutes,
         ...estudiantesRoutes,
         ...inscripcionesRoutes,
         ...calificacionesRoutes,

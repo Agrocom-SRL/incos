@@ -7,8 +7,8 @@ const { Title } = Typography;
 const GestionesListPage = () => {
     return (
         <div>
-            <Title level={2}>Listar Gestiones</Title>
-            <p>Página en desarrollo - Listado de gestiones académicas</p>
+            <Title level={2}>Gestiones Pasadas</Title>
+            <p>Página en desarrollo - Consultar gestiones académicas anteriores (historial de gestiones cerradas)</p>
         </div>
     );
 };

@@ -7,8 +7,8 @@ const { Title } = Typography;
 const GestionesEtapasPage = () => {
     return (
         <div>
-            <Title level={2}>Etapas/Periodos</Title>
-            <p>Página en desarrollo - Configurar etapas de la gestión (fechas de inscripción, clases, entrega de notas, cierre)</p>
+            <Title level={2}>Cronograma</Title>
+            <p>Página en desarrollo - Configurar cronograma de la gestión (fechas de inscripción, clases, entrega de notas, cierre, y etapas específicas como becas, pasantías, pagos)</p>
         </div>
     );
 };

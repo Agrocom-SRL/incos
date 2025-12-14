@@ -13,7 +13,7 @@ export const boletinesRoutes = [
         menu: {
             label: 'Boletines',
             module: 'BOL',
-            order: 11, // Usado periódicamente
+            order: 10, // Usado periódicamente
         },
     },
     {

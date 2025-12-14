@@ -68,16 +68,19 @@ const iconMap = {
     
     // Gestiones - Nivel 1
     'GES': CalendarOutlined,
+    'GES-ACTUAL': CalendarOutlined,
     'GES-LIST': UnorderedListOutlined,
-    'GES-CREATE': FileAddOutlined,
-    'GES-OFERTA': BookOutlined,
-    'GES-PLAN': FileTextOutlined,
     'GES-ETAPAS': ScheduleOutlined,
-    // Horarios - dentro de Gestiones
-    'GES-HORARIOS': ClockCircleOutlined,
-    'GES-HORARIOS-TURNOS': ClockCircleOutlined,
+    'GES-OFERTA': BookOutlined,
     'GES-HORARIOS-ASIGNAR': CalendarOutlined,
-    'GES-HORARIOS-GENERAR': CalendarOutlined,
+    
+    // Configuración - Nivel 1
+    'CFG': SettingOutlined,
+    'CFG-CARRERAS': BookOutlined,
+    'CFG-MATERIAS': FileTextOutlined,
+    'CFG-PLAN': FileTextOutlined,
+    'CFG-CURSOS': TableOutlined,
+    'CFG-TURNOS': ClockCircleOutlined,
     
     // Estudiantes - Nivel 1
     'EST': TeamOutlined,
@@ -99,7 +102,7 @@ const iconMap = {
     // Inscripciones - Nivel 1
     'INS': FileAddOutlined,
     'INS-CREATE': FileAddOutlined,
-    'INS-HORARIO': CalendarOutlined,
+    'INS-HORARIO': SyncOutlined, // Generar Horarios - proceso automático
     'INS-MATERIAS-INSCRIBIR': BookOutlined,
     'INS-MATERIAS-CURSO': TableOutlined,
     'INS-ANULAR': CloseCircleOutlined,

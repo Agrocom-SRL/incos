@@ -6,6 +6,7 @@
 
 export { dashboardRoutes } from './dashboard.routes.jsx';
 export { gestionesRoutes } from './gestiones.routes.jsx';
+export { configuracionRoutes } from './configuracion.routes.jsx';
 export { estudiantesRoutes } from './estudiantes.routes.jsx';
 export { inscripcionesRoutes } from './inscripciones.routes.jsx';
 export { calificacionesRoutes } from './calificaciones.routes.jsx';
