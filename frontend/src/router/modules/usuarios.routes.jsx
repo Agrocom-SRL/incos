@@ -4,8 +4,6 @@ import { lazy } from 'react';
 const UsuariosListPage = lazy(() => import('@pages/Usuarios/List'));
 const UsuariosCreatePage = lazy(() => import('@pages/Usuarios/Create'));
 const UsuariosRolesPage = lazy(() => import('@pages/Usuarios/Roles'));
-const UsuariosPermisosPage = lazy(() => import('@pages/Usuarios/Permisos'));
-const UsuariosAuditoriaPage = lazy(() => import('@pages/Usuarios/Auditoria'));
 
 export const usuariosRoutes = [
     // Módulo raíz: Usuarios
@@ -20,25 +18,25 @@ export const usuariosRoutes = [
         },
     },
     {
-        path: '/usuarios/listar',
-        element: <UsuariosListPage />,
-        key: 'USR-LIST',
-        menu: {
-            label: 'Listar Usuarios',
-            module: 'USR',
-            parent: 'USR',
-            order: 1, // Listar primero
-        },
-    },
-    {
         path: '/usuarios/crear',
         element: <UsuariosCreatePage />,
         key: 'USR-CREATE',
         menu: {
-            label: 'Crear',
+            label: 'Crear Nuevo Usuario',
             module: 'USR',
             parent: 'USR',
-            order: 2, // Crear segundo
+            order: 1, // Crear primero
+        },
+    },
+    {
+        path: '/usuarios/administrar',
+        element: <UsuariosListPage />,
+        key: 'USR-LIST',
+        menu: {
+            label: 'Administrar Usuarios',
+            module: 'USR',
+            parent: 'USR',
+            order: 2, // Administrar segundo
         },
     },
     {
@@ -46,32 +44,10 @@ export const usuariosRoutes = [
         element: <UsuariosRolesPage />,
         key: 'USR-ROLES',
         menu: {
-            label: 'Roles',
+            label: 'Administrar Roles de Usuario',
             module: 'USR',
             parent: 'USR',
-            order: 3, // Configuración
-        },
-    },
-    {
-        path: '/usuarios/permisos',
-        element: <UsuariosPermisosPage />,
-        key: 'USR-PERMISOS',
-        menu: {
-            label: 'Permisos',
-            module: 'USR',
-            parent: 'USR',
-            order: 4, // Configuración
-        },
-    },
-    {
-        path: '/usuarios/auditoria',
-        element: <UsuariosAuditoriaPage />,
-        key: 'USR-AUDITORIA',
-        menu: {
-            label: 'Auditoría',
-            module: 'USR',
-            parent: 'USR',
-            order: 5, // Consultar último
+            order: 3, // Configuración de roles y permisos
         },
     },
 ];

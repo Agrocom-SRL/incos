@@ -1,7 +1,7 @@
 // src/presentation/pages/Reportes/Rendimiento/Rendimiento.jsx
 const ReportesRendimiento = () => {
     return (
-        <div>Contenido de Reporte de Rendimiento</div>
+        <div>Contenido de Reporte de Avance Académico</div>
     );
 };
 

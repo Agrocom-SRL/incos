@@ -83,7 +83,7 @@ export const calificacionesRoutes = [
         element: <CalificacionesPeriodoPage />,
         key: 'CAL-PERIODO',
         menu: {
-            label: 'Notas por Periodo',
+            label: 'Entregar Notas',
             module: 'CAL',
             parent: 'CAL',
             order: 3, // Incluye cierre de periodo y generación de boletín

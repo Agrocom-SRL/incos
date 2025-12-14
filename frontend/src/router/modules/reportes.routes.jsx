@@ -4,8 +4,13 @@ import { lazy } from 'react';
 const ReportesRendimientoPage = lazy(() => import('@pages/Reportes/Rendimiento'));
 const ReportesAsistenciaPage = lazy(() => import('@pages/Reportes/Asistencia'));
 const ReportesDesercionPage = lazy(() => import('@pages/Reportes/Desercion'));
-const ReportesBecasPage = lazy(() => import('@pages/Reportes/Becas'));
-const ReportesFinancieroPage = lazy(() => import('@pages/Reportes/Financiero'));
+
+// Reportes de Solicitudes
+const ReportesSolicitudesGeneralPage = lazy(() => import('@pages/Reportes/Solicitudes/General'));
+const ReportesSolicitudesBecasPage = lazy(() => import('@pages/Reportes/Solicitudes/Becas'));
+const ReportesSolicitudesTraspasoPage = lazy(() => import('@pages/Reportes/Solicitudes/Traspaso'));
+const ReportesSolicitudesTransferenciaPage = lazy(() => import('@pages/Reportes/Solicitudes/Transferencia'));
+const ReportesSolicitudesPasantiaPage = lazy(() => import('@pages/Reportes/Solicitudes/Pasantia'));
 
 export const reportesRoutes = [
     // Módulo raíz: Reportes
@@ -20,11 +25,11 @@ export const reportesRoutes = [
         },
     },
     {
-        path: '/reportes/rendimiento',
+        path: '/reportes/avance-academico',
         element: <ReportesRendimientoPage />,
-        key: 'REP-RENDIMIENTO',
+        key: 'REP-AVANCE-ACADEMICO',
         menu: {
-            label: 'Rendimiento',
+            label: 'Avance Académico',
             module: 'REP',
             parent: 'REP',
             order: 1,
@@ -35,7 +40,7 @@ export const reportesRoutes = [
         element: <ReportesAsistenciaPage />,
         key: 'REP-ASISTENCIA',
         menu: {
-            label: 'Asistencia',
+            label: 'Reporte de Asistencia',
             module: 'REP',
             parent: 'REP',
             order: 2,
@@ -46,31 +51,76 @@ export const reportesRoutes = [
         element: <ReportesDesercionPage />,
         key: 'REP-DESERCION',
         menu: {
-            label: 'Deserción',
+            label: 'Reporte de Deserción',
             module: 'REP',
             parent: 'REP',
             order: 3,
         },
     },
+    // Submenu: Solicitudes
     {
-        path: '/reportes/becas',
-        element: <ReportesBecasPage />,
-        key: 'REP-BECAS',
+        path: '/reportes/solicitudes',
+        element: null, // No tiene página propia, es solo un grupo
+        key: 'REP-SOLICITUDES',
         menu: {
-            label: 'Becas',
+            label: 'Solicitudes',
             module: 'REP',
             parent: 'REP',
             order: 4,
         },
     },
     {
-        path: '/reportes/financiero',
-        element: <ReportesFinancieroPage />,
-        key: 'REP-FINANCIERO',
+        path: '/reportes/solicitudes/general',
+        element: <ReportesSolicitudesGeneralPage />,
+        key: 'REP-SOLICITUDES-GENERAL',
         menu: {
-            label: 'Financiero',
+            label: 'Reporte General',
             module: 'REP',
-            parent: 'REP',
+            parent: 'REP-SOLICITUDES',
+            order: 1,
+        },
+    },
+    {
+        path: '/reportes/solicitudes/becas',
+        element: <ReportesSolicitudesBecasPage />,
+        key: 'REP-SOLICITUDES-BECAS',
+        menu: {
+            label: 'Por Becas',
+            module: 'REP',
+            parent: 'REP-SOLICITUDES',
+            order: 2,
+        },
+    },
+    {
+        path: '/reportes/solicitudes/traspaso',
+        element: <ReportesSolicitudesTraspasoPage />,
+        key: 'REP-SOLICITUDES-TRASPASO',
+        menu: {
+            label: 'Por Traspaso',
+            module: 'REP',
+            parent: 'REP-SOLICITUDES',
+            order: 3,
+        },
+    },
+    {
+        path: '/reportes/solicitudes/transferencia',
+        element: <ReportesSolicitudesTransferenciaPage />,
+        key: 'REP-SOLICITUDES-TRANSFERENCIA',
+        menu: {
+            label: 'Por Transferencia',
+            module: 'REP',
+            parent: 'REP-SOLICITUDES',
+            order: 4,
+        },
+    },
+    {
+        path: '/reportes/solicitudes/pasantia',
+        element: <ReportesSolicitudesPasantiaPage />,
+        key: 'REP-SOLICITUDES-PASANTIA',
+        menu: {
+            label: 'Por Pasantía',
+            module: 'REP',
+            parent: 'REP-SOLICITUDES',
             order: 5,
         },
     },

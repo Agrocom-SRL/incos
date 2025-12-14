@@ -10,6 +10,7 @@ import { gestionesRoutes } from '@router/modules/gestiones.routes.jsx';
 import { configuracionRoutes } from '@router/modules/configuracion.routes.jsx';
 import { estudiantesRoutes } from '@router/modules/estudiantes.routes.jsx';
 import { inscripcionesRoutes } from '@router/modules/inscripciones.routes.jsx';
+import { traspasosTransferenciasRoutes } from '@router/modules/traspasos-transferencias.routes.jsx';
 import { calificacionesRoutes } from '@router/modules/calificaciones.routes.jsx';
 import { nivelacionesRoutes } from '@router/modules/nivelaciones.routes.jsx';
 import { docentesRoutes } from '@router/modules/docentes.routes.jsx';
@@ -30,6 +31,7 @@ export const getAllRoutes = () => {
         ...configuracionRoutes,
         ...estudiantesRoutes,
         ...inscripcionesRoutes,
+        ...traspasosTransferenciasRoutes,
         ...calificacionesRoutes,
         ...nivelacionesRoutes,
         ...docentesRoutes,

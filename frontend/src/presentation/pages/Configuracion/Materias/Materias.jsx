@@ -7,7 +7,7 @@ const { Title } = Typography;
 const ConfiguracionMateriasPage = () => {
     return (
         <div>
-            <Title level={2}>Materias</Title>
+            <Title level={2}>Gestión de Materias</Title>
             <p>Página en desarrollo - Gestión de materias (crear, editar materias del instituto)</p>
         </div>
     );

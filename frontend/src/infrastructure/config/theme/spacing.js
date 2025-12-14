@@ -41,7 +41,7 @@ export const controlHeights = {
 export const layoutHeights = {
   headerHeight: 64,
   footerHeight: 48,
-  sidebarWidth: 280,
+  sidebarWidth: 286,
   sidebarCollapsedWidth: 80,
 };
 

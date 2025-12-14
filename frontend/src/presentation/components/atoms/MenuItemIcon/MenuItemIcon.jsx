@@ -57,6 +57,15 @@ import {
     UserSwitchOutlined,
     SafetyOutlined,
     AuditOutlined,
+    // Configuración adicional
+    FolderOpenOutlined,
+    GlobalOutlined,
+    TransactionOutlined,
+    ReloadOutlined,
+    // Traspasos y Transferencias
+    SwapOutlined,
+    ExportOutlined,
+    ImportOutlined,
 } from '@ant-design/icons';
 
 /**
@@ -76,11 +85,27 @@ const iconMap = {
 
     // Configuración - Nivel 1
     'CFG': SettingOutlined,
+    // Submenu Académico
+    'CFG-ACADEMICO': BookOutlined,
     'CFG-CARRERAS': BookOutlined,
     'CFG-MATERIAS': FileTextOutlined,
     'CFG-PLAN': FileTextOutlined,
     'CFG-CURSOS': TableOutlined,
     'CFG-TURNOS': ClockCircleOutlined,
+    // Submenu Documentación
+    'CFG-DOCUMENTACION': FolderOpenOutlined,
+    'CFG-DOCUMENTACION-INSCRIPCION': FileAddOutlined,
+    'CFG-DOCUMENTACION-BECAS': GiftOutlined,
+    'CFG-DOCUMENTACION-PASANTIAS': BankOutlined,
+    'CFG-DOCUMENTACION-TRASLADO': TransactionOutlined,
+    'CFG-DOCUMENTACION-TRANSFERENCIA': ReloadOutlined,
+    // Submenu Datos Complementarios
+    'CFG-DATOS-COMPLEMENTARIOS': InfoCircleOutlined,
+    'CFG-DISCAPACIDAD': SafetyCertificateOutlined,
+    'CFG-APODERADOS': UserOutlined,
+    'CFG-IDIOMAS': GlobalOutlined,
+    // Historial de Actividades
+    'CFG-HISTORIAL-ACTIVIDADES': HistoryOutlined,
 
     // Estudiantes - Nivel 1
     'EST': TeamOutlined,
@@ -103,6 +128,23 @@ const iconMap = {
     'INS-MATERIAS-INSCRIBIR': BookOutlined,
     'INS-MATERIAS-CURSO': TableOutlined,
     'INS-ANULAR': CloseCircleOutlined,
+
+    // Traspasos y Transferencias - Nivel 1
+    'TRA': SwapOutlined,
+    // Submenu Traspasos
+    'TRA-TRASPASOS': TransactionOutlined,
+    'TRA-TRASPASOS-LIST': UnorderedListOutlined,
+    'TRA-TRASPASOS-SOLICITAR': ExportOutlined,
+    'TRA-TRASPASOS-RECIBIR': ImportOutlined,
+    'TRA-TRASPASOS-CONVALIDAR-NOTAS': FileDoneOutlined,
+    'TRA-TRASPASOS-APROBAR': CheckCircleOutlined,
+    // Submenu Transferencias
+    'TRA-TRANSFERENCIAS': ReloadOutlined,
+    'TRA-TRANSFERENCIAS-LIST': UnorderedListOutlined,
+    'TRA-TRANSFERENCIAS-SOLICITAR': ExportOutlined,
+    'TRA-TRANSFERENCIAS-RECIBIR': ImportOutlined,
+    'TRA-TRANSFERENCIAS-CONVALIDAR-NOTAS': FileDoneOutlined,
+    'TRA-TRANSFERENCIAS-APROBAR': CheckCircleOutlined,
 
     // Calificaciones - Nivel 1
     'CAL': CheckCircleOutlined,
@@ -151,19 +193,22 @@ const iconMap = {
 
     // Reportes - Nivel 1
     'REP': BarChartOutlined,
-    'REP-RENDIMIENTO': LineChartOutlined,
+    'REP-AVANCE-ACADEMICO': LineChartOutlined,
     'REP-ASISTENCIA': UserOutlined,
     'REP-DESERCION': FallOutlined,
-    'REP-BECAS': GiftOutlined,
-    'REP-FINANCIERO': PieChartOutlined,
+    // Submenu Solicitudes
+    'REP-SOLICITUDES': FileDoneOutlined,
+    'REP-SOLICITUDES-GENERAL': BarChartOutlined,
+    'REP-SOLICITUDES-BECAS': GiftOutlined,
+    'REP-SOLICITUDES-TRASPASO': TransactionOutlined,
+    'REP-SOLICITUDES-TRANSFERENCIA': ReloadOutlined,
+    'REP-SOLICITUDES-PASANTIA': BankOutlined,
 
     // Usuarios - Nivel 1
     'USR': SettingOutlined,
-    'USR-LIST': UnorderedListOutlined,
     'USR-CREATE': UserAddOutlined,
+    'USR-LIST': UsergroupAddOutlined,
     'USR-ROLES': UserSwitchOutlined,
-    'USR-PERMISOS': SafetyOutlined,
-    'USR-AUDITORIA': AuditOutlined,
 };
 
 /**
