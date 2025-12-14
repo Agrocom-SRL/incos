@@ -16,7 +16,7 @@ export const usuariosRoutes = [
         menu: {
             label: 'Usuarios',
             module: 'USR',
-            order: 14,
+            order: 13, // Configuración del sistema, último
         },
     },
     {

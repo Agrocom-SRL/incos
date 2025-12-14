@@ -1,7 +1,15 @@
 // src/presentation/pages/Estudiantes/Licencias/Aprobar/Aprobar.jsx
+import React from 'react';
+import { Typography } from 'antd';
+
+const { Title } = Typography;
+
 const LicenciasAprobar = () => {
     return (
-        <div>Contenido de Aprobar Licencias</div>
+        <div>
+            <Title level={2}>Aprobar</Title>
+            <p>Página en desarrollo - Aprobar solicitudes de licencias</p>
+        </div>
     );
 };
 

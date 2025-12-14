@@ -1,7 +1,15 @@
 // src/presentation/pages/Pasantias/Seguimiento/Seguimiento.jsx
+import React from 'react';
+import { Typography } from 'antd';
+
+const { Title } = Typography;
+
 const PasantiasSeguimiento = () => {
     return (
-        <div>Contenido de Seguimiento de Pasantías</div>
+        <div>
+            <Title level={2}>Seguimiento</Title>
+            <p>Página en desarrollo - Seguimiento continuo de pasantías (visitas, reportes periódicos)</p>
+        </div>
     );
 };
 

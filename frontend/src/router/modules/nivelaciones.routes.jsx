@@ -14,7 +14,7 @@ export const nivelacionesRoutes = [
         menu: {
             label: 'Nivelaciones',
             module: 'NIV',
-            order: 5,
+            order: 5, // Usado regularmente
         },
     },
     {

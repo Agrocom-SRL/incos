@@ -1,7 +1,7 @@
 // src/presentation/components/molecules/NavigationMenu/useNavigationMenu.jsx
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { generateNavigationMenu, findMenuItemByKey } from '@router-utils/menuGeneratorService';
+import { generateNavigationMenu, findMenuItemByKey, isRootModule, getRootModuleKey } from '@router-utils/menuGeneratorService';
 import { getRouteFromMenuKey, getMenuKeyFromRoute } from '@router-utils/routeMapperService';
 import MenuItemIcon from '@atoms/MenuItemIcon';
 
@@ -49,6 +49,20 @@ export const useNavigationMenu = (defaultSelectedKey = 'DASH', onMenuClick) => {
     const handleMenuClick = (info) => {
         const clickedKey = info.key;
         
+        // Caso especial: Dashboard - cerrar todos los módulos
+        if (clickedKey === 'DASH') {
+            setOpenKeys([]);
+            const route = getRouteFromMenuKey(clickedKey);
+            if (route) {
+                navigate(route);
+            }
+            setSelectedKeys([clickedKey]);
+            if (onMenuClick) {
+                onMenuClick(info);
+            }
+            return;
+        }
+        
         // Verificar si el item tiene children
         const menuItem = findMenuItemByKey(navigationMenuItems, clickedKey);
         
@@ -74,8 +88,29 @@ export const useNavigationMenu = (defaultSelectedKey = 'DASH', onMenuClick) => {
         }
     };
 
-    // Manejar cambio de submenús abiertos (versión básica - sin restricciones)
+    // Manejar cambio de submenús abiertos
+    // Regla: Solo un módulo raíz abierto a la vez
     const handleOpenChange = (keys) => {
+        // Detectar qué keys se están abriendo (nuevas keys que no estaban en openKeys)
+        const newKeys = keys.filter(key => !openKeys.includes(key));
+        
+        // Si se está abriendo un módulo raíz nuevo
+        if (newKeys.length > 0) {
+            const openedRootModule = newKeys.find(key => isRootModule(navigationMenuItems, key));
+            
+            if (openedRootModule) {
+                // Cerrar todos los demás módulos raíz, mantener solo el nuevo
+                const filteredKeys = keys.filter(key => {
+                    const keyRoot = getRootModuleKey(navigationMenuItems, key);
+                    // Mantener solo keys del nuevo módulo raíz
+                    return keyRoot === openedRootModule || key === openedRootModule;
+                });
+                setOpenKeys(filteredKeys);
+                return;
+            }
+        }
+        
+        // Si no se está abriendo un módulo raíz, permitir el cambio normal
         setOpenKeys(keys);
     };
 

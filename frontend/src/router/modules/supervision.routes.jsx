@@ -6,6 +6,10 @@ const SupervisionFichaCrearPage = lazy(() => import('@pages/Supervision/Ficha/Cr
 const SupervisionFichaEditarPage = lazy(() => import('@pages/Supervision/Ficha/Editar'));
 const SupervisionFichaVerPage = lazy(() => import('@pages/Supervision/Ficha/Ver'));
 const SupervisionReportePage = lazy(() => import('@pages/Supervision/Reporte'));
+// Pasantías - movidas dentro de Supervisión
+const PasantiasAsignarPage = lazy(() => import('@pages/Pasantias/Asignar'));
+const PasantiasEvaluarPage = lazy(() => import('@pages/Pasantias/Evaluar'));
+const PasantiasSeguimientoPage = lazy(() => import('@pages/Pasantias/Seguimiento'));
 
 export const supervisionRoutes = [
     // Módulo raíz: Supervisión
@@ -16,30 +20,7 @@ export const supervisionRoutes = [
         menu: {
             label: 'Supervisión',
             module: 'SUP',
-            order: 8,
-        },
-    },
-    {
-        path: '/supervision/programar',
-        element: <SupervisionProgramarPage />,
-        key: 'SUP-PROGRAMAR',
-        menu: {
-            label: 'Programar',
-            module: 'SUP',
-            parent: 'SUP',
-            order: 1, // Crear/Programar primero
-        },
-    },
-    // Ficha - Grupo padre
-    {
-        path: '/supervision/ficha',
-        element: null, // No tiene página propia, es solo un grupo
-        key: 'SUP-FICHA',
-        menu: {
-            label: 'Evaluación Docente',
-            module: 'SUP',
-            parent: 'SUP',
-            order: 2,
+            order: 8, // Usado periódicamente
         },
     },
     {
@@ -47,32 +28,22 @@ export const supervisionRoutes = [
         element: <SupervisionFichaVerPage />,
         key: 'SUP-FICHA-VER',
         menu: {
-            label: 'Ver',
+            label: 'Evaluar Docente',
             module: 'SUP',
-            parent: 'SUP-FICHA',
-            order: 1, // Ver/Listar primero
+            parent: 'SUP',
+            order: 1,
         },
     },
+    // Pasantías - Grupo padre (supervisión de estudiantes en pasantías)
     {
-        path: '/supervision/ficha/crear',
-        element: <SupervisionFichaCrearPage />,
-        key: 'SUP-FICHA-CREAR',
+        path: '/supervision/pasantias',
+        element: null, // No tiene página propia, es solo un grupo
+        key: 'SUP-PASANTIAS',
         menu: {
-            label: 'Crear',
+            label: 'Pasantías',
             module: 'SUP',
-            parent: 'SUP-FICHA',
-            order: 2, // Crear segundo
-        },
-    },
-    {
-        path: '/supervision/ficha/editar',
-        element: <SupervisionFichaEditarPage />,
-        key: 'SUP-FICHA-EDITAR',
-        menu: {
-            label: 'Editar',
-            module: 'SUP',
-            parent: 'SUP-FICHA',
-            order: 3, // Editar tercero
+            parent: 'SUP',
+            order: 2,
         },
     },
     {
@@ -83,8 +54,60 @@ export const supervisionRoutes = [
             label: 'Reporte',
             module: 'SUP',
             parent: 'SUP',
-            order: 3, // Reporte último
+            order: 3,
         },
+    },
+    {
+        path: '/supervision/pasantias/solicitar',
+        element: <PasantiasAsignarPage />,
+        key: 'SUP-PASANTIAS-SOLICITAR',
+        menu: {
+            label: 'Solicitar Pasantía',
+            module: 'SUP',
+            parent: 'SUP-PASANTIAS',
+            order: 1,
+        },
+    },
+    {
+        path: '/supervision/pasantias/seguimiento',
+        element: <PasantiasSeguimientoPage />,
+        key: 'SUP-PASANTIAS-SEGUIMIENTO',
+        menu: {
+            label: 'Seguimiento',
+            module: 'SUP',
+            parent: 'SUP-PASANTIAS',
+            order: 2,
+        },
+    },
+    {
+        path: '/supervision/pasantias/evaluar',
+        element: <PasantiasEvaluarPage />,
+        key: 'SUP-PASANTIAS-EVALUAR',
+        menu: {
+            label: 'Evaluación Final',
+            module: 'SUP',
+            parent: 'SUP-PASANTIAS',
+            order: 3,
+        },
+    },
+    // Rutas sin menú (se acceden desde las páginas de supervisión)
+    {
+        path: '/supervision/programar',
+        element: <SupervisionProgramarPage />,
+        key: 'SUP-PROGRAMAR',
+        // Sin menu - se accede desde la página de evaluación docente (programar supervisión)
+    },
+    {
+        path: '/supervision/ficha/crear',
+        element: <SupervisionFichaCrearPage />,
+        key: 'SUP-FICHA-CREAR',
+        // Sin menu - se accede desde la página de evaluación docente (crear ficha después de supervisar)
+    },
+    {
+        path: '/supervision/ficha/editar',
+        element: <SupervisionFichaEditarPage />,
+        key: 'SUP-FICHA-EDITAR',
+        // Sin menu - se accede desde la página de evaluación docente (editar ficha existente)
     },
 ];
 

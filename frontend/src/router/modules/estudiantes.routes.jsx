@@ -23,7 +23,7 @@ export const estudiantesRoutes = [
         menu: {
             label: 'Estudiantes',
             module: 'EST',
-            order: 2,
+            order: 2, // Módulo más usado, después de Dashboard
         },
     },
     // Listar (alias de la ruta principal)

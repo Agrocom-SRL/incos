@@ -66,6 +66,19 @@ const iconMap = {
     // Dashboard
     'DASH': DashboardOutlined,
     
+    // Gestiones - Nivel 1
+    'GES': CalendarOutlined,
+    'GES-LIST': UnorderedListOutlined,
+    'GES-CREATE': FileAddOutlined,
+    'GES-OFERTA': BookOutlined,
+    'GES-PLAN': FileTextOutlined,
+    'GES-ETAPAS': ScheduleOutlined,
+    // Horarios - dentro de Gestiones
+    'GES-HORARIOS': ClockCircleOutlined,
+    'GES-HORARIOS-TURNOS': ClockCircleOutlined,
+    'GES-HORARIOS-ASIGNAR': CalendarOutlined,
+    'GES-HORARIOS-GENERAR': CalendarOutlined,
+    
     // Estudiantes - Nivel 1
     'EST': TeamOutlined,
     'EST-LIST': UnorderedListOutlined,
@@ -115,28 +128,31 @@ const iconMap = {
     'DOC': UsergroupAddOutlined,
     'DOC-LIST': UnorderedListOutlined,
     'DOC-CREATE': UserAddOutlined,
-    'DOC-ASIGNAR': UsergroupAddOutlined,
-    
-    // Pasantías - Nivel 1
-    'PAS': BankOutlined,
-    'PAS-ASIGNAR': BankOutlined,
-    'PAS-EVALUAR': FileSearchOutlined,
-    'PAS-SEGUIMIENTO': EyeOutlined,
+    // 'DOC-ASIGNAR': TableOutlined, // Eliminado del menú - se accede desde Gestiones -> Oferta Académica
     
     // Supervisión - Nivel 1
     'SUP': EyeOutlined,
-    'SUP-PROGRAMAR': ScheduleOutlined,
-    'SUP-FICHA': UsergroupAddOutlined,
-    'SUP-FICHA-CREAR': FileAddOutlined,
-    'SUP-FICHA-EDITAR': EditOutlined,
-    'SUP-FICHA-VER': EyeOutlined,
+    'SUP-FICHA-VER': UsergroupAddOutlined, // Evaluación Docente
     'SUP-REPORTE': BarChartOutlined,
+    // 'SUP-PROGRAMAR': ScheduleOutlined, // Eliminado del menú - acción dentro de evaluación docente
+    // Pasantías - dentro de Supervisión
+    'SUP-PASANTIAS': BankOutlined,
+    'SUP-PASANTIAS-SOLICITAR': BankOutlined,
+    'SUP-PASANTIAS-SEGUIMIENTO': EyeOutlined,
+    'SUP-PASANTIAS-EVALUAR': FileSearchOutlined,
+    // 'SUP-FICHA-CREAR': FileAddOutlined, // Eliminado del menú - acción dentro de la página
+    // 'SUP-FICHA-EDITAR': EditOutlined, // Eliminado del menú - acción dentro de la página
+    // Pasantías - Módulo independiente eliminado (ahora dentro de Supervisión)
+    // 'PAS': BankOutlined,
+    // 'PAS-ASIGNAR': BankOutlined,
+    // 'PAS-EVALUAR': FileSearchOutlined,
+    // 'PAS-SEGUIMIENTO': EyeOutlined,
     
-    // Horarios - Nivel 1
-    'HOR': CalendarOutlined,
-    'HOR-TURNOS': ClockCircleOutlined,
-    'HOR-ASIGNAR': CalendarOutlined,
-    'HOR-GENERAR': CalendarOutlined,
+    // Horarios - Módulo independiente eliminado (ahora dentro de Gestiones)
+    // 'HOR': CalendarOutlined,
+    // 'HOR-TURNOS': ClockCircleOutlined,
+    // 'HOR-ASIGNAR': CalendarOutlined,
+    // 'HOR-GENERAR': CalendarOutlined,
     
     // Pagos - Nivel 1
     'PAG': DollarOutlined,

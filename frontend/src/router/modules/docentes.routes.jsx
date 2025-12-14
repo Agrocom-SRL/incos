@@ -14,7 +14,7 @@ export const docentesRoutes = [
         menu: {
             label: 'Docentes',
             module: 'DOC',
-            order: 6,
+            order: 6, // Usado regularmente
         },
     },
     {
@@ -33,22 +33,18 @@ export const docentesRoutes = [
         element: <DocentesCreatePage />,
         key: 'DOC-CREATE',
         menu: {
-            label: 'Registrar',
+            label: 'Nuevo Docente',
             module: 'DOC',
             parent: 'DOC',
             order: 2,
         },
     },
+    // Ruta sin menú (se accede desde Gestiones -> Oferta Académica)
     {
         path: '/docentes/asignar',
         element: <DocentesAsignarPage />,
         key: 'DOC-ASIGNAR',
-        menu: {
-            label: 'Asignar',
-            module: 'DOC',
-            parent: 'DOC',
-            order: 3,
-        },
+        // Sin menu - se accede desde Gestiones -> Oferta Académica (asignar docentes a ofertas)
     },
 ];
 

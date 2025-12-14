@@ -17,7 +17,7 @@ export const pagosRoutes = [
         menu: {
             label: 'Pagos',
             module: 'PAG',
-            order: 10,
+            order: 9, // Usado regularmente
         },
     },
     {

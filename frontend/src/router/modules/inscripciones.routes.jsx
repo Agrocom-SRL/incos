@@ -17,7 +17,7 @@ export const inscripcionesRoutes = [
         menu: {
             label: 'Inscripciones',
             module: 'INS',
-            order: 3,
+            order: 3, // Muy usado, después de Estudiantes
         },
     },
     {

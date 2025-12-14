@@ -19,7 +19,7 @@ export const calificacionesRoutes = [
         menu: {
             label: 'Calificaciones',
             module: 'CAL',
-            order: 4,
+            order: 4, // Muy usado, después de Inscripciones
         },
     },
     // Registrar - Grupo padre

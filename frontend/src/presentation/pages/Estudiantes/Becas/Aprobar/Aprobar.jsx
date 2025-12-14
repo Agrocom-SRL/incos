@@ -1,7 +1,15 @@
 // src/presentation/pages/Estudiantes/Becas/Aprobar/Aprobar.jsx
+import React from 'react';
+import { Typography } from 'antd';
+
+const { Title } = Typography;
+
 const BecasAprobar = () => {
     return (
-        <div>Contenido de Aprobar Becas</div>
+        <div>
+            <Title level={2}>Aprobar</Title>
+            <p>Página en desarrollo - Aprobar solicitudes de becas</p>
+        </div>
     );
 };
 
