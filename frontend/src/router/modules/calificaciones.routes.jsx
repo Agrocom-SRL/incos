@@ -9,7 +9,6 @@ const CalificacionesRegistrarRecuperatorioPage = lazy(() => import('@pages/Calif
 const CalificacionesModificarPage = lazy(() => import('@pages/Calificaciones/Modificar'));
 const CalificacionesCursoPage = lazy(() => import('@pages/Calificaciones/Curso'));
 const CalificacionesPeriodoPage = lazy(() => import('@pages/Calificaciones/Periodo'));
-const CalificacionesCerrarPage = lazy(() => import('@pages/Calificaciones/Cerrar'));
 
 export const calificacionesRoutes = [
     // Módulo raíz: Calificaciones
@@ -87,18 +86,7 @@ export const calificacionesRoutes = [
             label: 'Notas por Periodo',
             module: 'CAL',
             parent: 'CAL',
-            order: 3,
-        },
-    },
-    {
-        path: '/calificaciones/cerrar-periodo',
-        element: <CalificacionesCerrarPage />,
-        key: 'CAL-CERRAR',
-        menu: {
-            label: 'Cerrar Periodo',
-            module: 'CAL',
-            parent: 'CAL',
-            order: 4,
+            order: 3, // Incluye cierre de periodo y generación de boletín
         },
     },
     // Ruta sin menú (se accede desde la página de calificaciones)

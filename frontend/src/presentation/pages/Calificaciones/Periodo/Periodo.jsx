@@ -10,11 +10,12 @@ const CalificacionesPeriodoPage = () => {
             <Title level={2}>Notas por Periodo</Title>
             <p>Página en desarrollo - Gestión de notas finales por periodo académico:</p>
             <ul>
-                <li>Ver notas finales de estudiantes por periodo</li>
-                <li>Publicar calificaciones (cerrar estado para no editar)</li>
+                <li>Ver y gestionar notas finales de estudiantes por periodo</li>
+                <li>Indicar notas finales y cerrar periodo (cierra estado para no editar)</li>
+                <li>Publicar calificaciones (disponible después de cerrar periodo)</li>
                 <li>Generar boletín de calificaciones (exportar PDF) - solo disponible después de publicar</li>
             </ul>
-            <p><strong>Nota:</strong> La publicación cierra el estado de las notas para evitar ediciones. Una vez publicadas, se puede generar el boletín oficial.</p>
+            <p><strong>Nota:</strong> El proceso incluye: indicar notas finales → cerrar periodo → publicar → generar boletín. Todo en un solo flujo.</p>
         </div>
     );
 };

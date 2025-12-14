@@ -8,13 +8,14 @@ const HistorialAcademicoPage = () => {
     return (
         <div>
             <Title level={2}>Historial Académico</Title>
-            <p>Página en desarrollo - Gestión de historial académico oficial:</p>
+            <p>Página en desarrollo - Generar historial académico oficial:</p>
             <ul>
                 <li>Ver historiales académicos generados</li>
-                <li>Generar historial académico oficial (documento tipo Libro/Folio para egresados)</li>
-                <li>Validar autenticidad de historial académico mediante hash</li>
+                <li>Validación automática de pre-requisitos (estudiante egresado, materias aprobadas, sin deudas)</li>
+                <li>Generar historial académico oficial (documento tipo Libro/Folio)</li>
+                <li>Incluye: lista completa de materias, carga horaria, notas finales, promedio general, hash SHA256</li>
             </ul>
-            <p><strong>Nota:</strong> El historial académico es el documento oficial que se genera cuando el estudiante egresa, con todas sus materias aprobadas y formato Libro/Folio.</p>
+            <p><strong>Nota:</strong> El proceso incluye validación automática previa. Si el estudiante cumple los requisitos, se genera el historial académico oficial con formato Libro/Folio.</p>
         </div>
     );
 };

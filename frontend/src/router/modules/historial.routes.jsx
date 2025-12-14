@@ -3,7 +3,6 @@ import { lazy } from 'react';
 
 const HistorialFolioPage = lazy(() => import('@pages/Historial/Folio'));
 const HistorialAcademicoPage = lazy(() => import('@pages/Historial/Academico'));
-const HistorialGenerarPage = lazy(() => import('@pages/Historial/Generar'));
 const HistorialValidarPage = lazy(() => import('@pages/Historial/Validar'));
 
 export const historialRoutes = [
@@ -29,39 +28,23 @@ export const historialRoutes = [
             order: 1, // Folio primero (incluye libros y actas)
         },
     },
-    // Historial Académico - Grupo padre
     {
         path: '/historial/academico',
-        element: null, // No tiene página propia, es solo un grupo
+        element: <HistorialAcademicoPage />,
         key: 'HIS-ACADEMICO',
         menu: {
             label: 'Historial Académico',
             module: 'HIS',
             parent: 'HIS',
-            order: 2,
+            order: 2, // Incluye validación automática y generación
         },
     },
+    // Ruta sin menú (validación independiente de historiales existentes)
     {
-        path: '/historial/academico/generar',
-        element: <HistorialGenerarPage />,
-        key: 'HIS-GENERAR',
-        menu: {
-            label: 'Generar',
-            module: 'HIS',
-            parent: 'HIS-ACADEMICO',
-            order: 1,
-        },
-    },
-    {
-        path: '/historial/academico/validar',
+        path: '/historial/validar',
         element: <HistorialValidarPage />,
         key: 'HIS-VALIDAR',
-        menu: {
-            label: 'Validar',
-            module: 'HIS',
-            parent: 'HIS-ACADEMICO',
-            order: 2,
-        },
+        // Sin menu - validación independiente de historiales existentes (opcional)
     },
 ];
 
