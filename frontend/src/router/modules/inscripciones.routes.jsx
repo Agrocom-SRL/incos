@@ -25,19 +25,18 @@ export const inscripcionesRoutes = [
         element: <InscripcionesCreatePage />,
         key: 'INS-CREATE',
         menu: {
-            label: 'Nueva',
+            label: 'Estudiante Nuevo',
             module: 'INS',
             parent: 'INS',
             order: 1,
         },
     },
-    // Materias - Grupo padre
     {
-        path: '/inscripciones/materias',
-        element: null, // No tiene página propia, es solo un grupo
-        key: 'INS-MATERIAS',
+        path: '/inscripciones/horario',
+        element: <InscripcionesHorarioPage />,
+        key: 'INS-HORARIO',
         menu: {
-            label: 'Inscribir Materias',
+            label: 'Horarios',
             module: 'INS',
             parent: 'INS',
             order: 2,
@@ -48,10 +47,10 @@ export const inscripcionesRoutes = [
         element: <InscripcionesMateriasInscribirPage />,
         key: 'INS-MATERIAS-INSCRIBIR',
         menu: {
-            label: 'Por Materia',
+            label: 'Inscribir por Materia',
             module: 'INS',
-            parent: 'INS-MATERIAS',
-            order: 1,
+            parent: 'INS',
+            order: 3,
         },
     },
     {
@@ -59,32 +58,10 @@ export const inscripcionesRoutes = [
         element: <InscripcionesMateriasCursoPage />,
         key: 'INS-MATERIAS-CURSO',
         menu: {
-            label: 'Por Curso',
-            module: 'INS',
-            parent: 'INS-MATERIAS',
-            order: 2,
-        },
-    },
-    {
-        path: '/inscripciones/materias/validar',
-        element: <InscripcionesMateriasValidarPage />,
-        key: 'INS-MATERIAS-VALIDAR',
-        menu: {
-            label: 'Validar',
-            module: 'INS',
-            parent: 'INS-MATERIAS',
-            order: 3,
-        },
-    },
-    {
-        path: '/inscripciones/horario',
-        element: <InscripcionesHorarioPage />,
-        key: 'INS-HORARIO',
-        menu: {
-            label: 'Horario',
+            label: 'Inscribir por Curso',
             module: 'INS',
             parent: 'INS',
-            order: 3,
+            order: 4,
         },
     },
     {
@@ -92,11 +69,18 @@ export const inscripcionesRoutes = [
         element: <InscripcionesAnularPage />,
         key: 'INS-ANULAR',
         menu: {
-            label: 'Anular',
+            label: 'Anular Inscripcion',
             module: 'INS',
             parent: 'INS',
-            order: 4,
+            order: 5,
         },
+    },
+    // Ruta sin menú (se accede desde las páginas de inscripción)
+    {
+        path: '/inscripciones/materias/validar',
+        element: <InscripcionesMateriasValidarPage />,
+        key: 'INS-MATERIAS-VALIDAR',
+        // Sin menu - la validación es una acción dentro de las páginas de inscripción
     },
 ];
 

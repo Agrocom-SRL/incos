@@ -79,31 +79,31 @@ const iconMap = {
     'EST-LICENCIAS-APROBAR': CheckCircleOutlined,
     'EST-LICENCIAS-LIST': UnorderedListOutlined,
     'EST-DOCUMENTOS': FolderOutlined,
-    'EST-DOCUMENTOS-VER': EyeOutlined,
-    'EST-DOCUMENTOS-VERIFICAR': CheckCircleOutlined,
-    'EST-DOCUMENTOS-ESTADO': InfoCircleOutlined,
+    // 'EST-DOCUMENTOS-VER': EyeOutlined, // Eliminado del menú - acción dentro de la página
+    // 'EST-DOCUMENTOS-VERIFICAR': CheckCircleOutlined, // Eliminado del menú - acción dentro de la página
+    // 'EST-DOCUMENTOS-ESTADO': InfoCircleOutlined, // Eliminado del menú - acción dentro de la página
     
     // Inscripciones - Nivel 1
     'INS': FileAddOutlined,
     'INS-CREATE': FileAddOutlined,
-    'INS-MATERIAS': BookOutlined,
+    'INS-HORARIO': CalendarOutlined,
     'INS-MATERIAS-INSCRIBIR': BookOutlined,
     'INS-MATERIAS-CURSO': TableOutlined,
-    'INS-MATERIAS-VALIDAR': CheckCircleOutlined,
-    'INS-HORARIO': CalendarOutlined,
     'INS-ANULAR': CloseCircleOutlined,
+    // 'INS-MATERIAS-VALIDAR': CheckCircleOutlined, // Eliminado del menú - acción dentro de las páginas de inscripción
     
     // Calificaciones - Nivel 1
     'CAL': CheckCircleOutlined,
     'CAL-REGISTRAR': EditOutlined,
-    'CAL-REGISTRAR-1PARCIAL': EditOutlined,
-    'CAL-REGISTRAR-2PARCIAL': EditOutlined,
-    'CAL-REGISTRAR-3PARCIAL': EditOutlined,
+    'CAL-REGISTRAR-PARCIAL': FileTextOutlined, // Icono para notas/documentos de parciales
     'CAL-REGISTRAR-PRACTICO': EditOutlined,
     'CAL-REGISTRAR-RECUPERATORIO': SyncOutlined,
-    'CAL-MODIFICAR': EditOutlined,
     'CAL-CURSO': TableOutlined,
     'CAL-CERRAR': LockOutlined,
+    // 'CAL-REGISTRAR-1PARCIAL': EditOutlined, // Eliminado del menú - se accede desde registrar parcial
+    // 'CAL-REGISTRAR-2PARCIAL': EditOutlined, // Eliminado del menú - se accede desde registrar parcial
+    // 'CAL-REGISTRAR-3PARCIAL': EditOutlined, // Eliminado del menú - se accede desde registrar parcial
+    // 'CAL-MODIFICAR': EditOutlined, // Eliminado del menú - acción dentro de la página
     
     // Nivelaciones - Nivel 1
     'NIV': SyncOutlined,

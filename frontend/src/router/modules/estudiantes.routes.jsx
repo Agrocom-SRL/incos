@@ -44,7 +44,7 @@ export const estudiantesRoutes = [
         element: <EstudiantesCreatePage />,
         key: 'EST-CREATE',
         menu: {
-            label: 'Registrar Nuevo',
+            label: 'Nuevo Estudiante',
             module: 'EST',
             parent: 'EST',
             order: 2,
@@ -140,10 +140,10 @@ export const estudiantesRoutes = [
             order: 3, // Estados (Aprobar) tercero
         },
     },
-    // Documentos - Grupo padre
+    // Documentos - Solo listar (verificar y estado son acciones dentro de la lista)
     {
         path: '/estudiantes/documentos',
-        element: null, // No tiene página propia, es solo un grupo
+        element: <DocumentosVerPage />,
         key: 'EST-DOCUMENTOS',
         menu: {
             label: 'Documentos',
@@ -152,38 +152,18 @@ export const estudiantesRoutes = [
             order: 6,
         },
     },
-    {
-        path: '/estudiantes/documentos/ver',
-        element: <DocumentosVerPage />,
-        key: 'EST-DOCUMENTOS-VER',
-        menu: {
-            label: 'Ver Documentos',
-            module: 'EST',
-            parent: 'EST-DOCUMENTOS',
-            order: 1, // Ver/Listar primero
-        },
-    },
+    // Rutas sin menú (acciones que se manejan dentro de la página de documentos)
     {
         path: '/estudiantes/documentos/verificar',
         element: <DocumentosVerificarPage />,
         key: 'EST-DOCUMENTOS-VERIFICAR',
-        menu: {
-            label: 'Verificar',
-            module: 'EST',
-            parent: 'EST-DOCUMENTOS',
-            order: 2, // Acciones segundo
-        },
+        // Sin menu - se accede desde la página de documentos
     },
     {
         path: '/estudiantes/documentos/estado',
         element: <DocumentosEstadoPage />,
         key: 'EST-DOCUMENTOS-ESTADO',
-        menu: {
-            label: 'Estado',
-            module: 'EST',
-            parent: 'EST-DOCUMENTOS',
-            order: 3, // Estados tercero
-        },
+        // Sin menu - se accede desde la página de documentos
     },
 ];
 

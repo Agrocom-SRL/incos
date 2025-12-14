@@ -35,37 +35,34 @@ export const calificacionesRoutes = [
         },
     },
     {
-        path: '/calificaciones/registrar/1-parcial',
-        element: <CalificacionesRegistrar1ParcialPage />,
-        key: 'CAL-REGISTRAR-1PARCIAL',
+        path: '/calificaciones/registrar/parcial',
+        element: <CalificacionesRegistrar1ParcialPage />, // La página manejará qué parcial registrar
+        key: 'CAL-REGISTRAR-PARCIAL',
         menu: {
-            label: '1º Parcial',
+            label: 'Parcial',
             module: 'CAL',
             parent: 'CAL-REGISTRAR',
             order: 1,
         },
     },
+    // Rutas sin menú (se acceden desde la página de registrar parcial)
+    {
+        path: '/calificaciones/registrar/1-parcial',
+        element: <CalificacionesRegistrar1ParcialPage />,
+        key: 'CAL-REGISTRAR-1PARCIAL',
+        // Sin menu - se accede desde registrar parcial
+    },
     {
         path: '/calificaciones/registrar/2-parcial',
         element: <CalificacionesRegistrar2ParcialPage />,
         key: 'CAL-REGISTRAR-2PARCIAL',
-        menu: {
-            label: '2º Parcial',
-            module: 'CAL',
-            parent: 'CAL-REGISTRAR',
-            order: 2,
-        },
+        // Sin menu - se accede desde registrar parcial
     },
     {
         path: '/calificaciones/registrar/3-parcial',
         element: <CalificacionesRegistrar3ParcialPage />,
         key: 'CAL-REGISTRAR-3PARCIAL',
-        menu: {
-            label: '3º Parcial',
-            module: 'CAL',
-            parent: 'CAL-REGISTRAR',
-            order: 3,
-        },
+        // Sin menu - se accede desde registrar parcial
     },
     {
         path: '/calificaciones/registrar/practico',
@@ -75,7 +72,7 @@ export const calificacionesRoutes = [
             label: 'Práctico',
             module: 'CAL',
             parent: 'CAL-REGISTRAR',
-            order: 4,
+            order: 2,
         },
     },
     {
@@ -86,18 +83,7 @@ export const calificacionesRoutes = [
             label: 'Recuperatorio',
             module: 'CAL',
             parent: 'CAL-REGISTRAR',
-            order: 5,
-        },
-    },
-    {
-        path: '/calificaciones/modificar',
-        element: <CalificacionesModificarPage />,
-        key: 'CAL-MODIFICAR',
-        menu: {
-            label: 'Modificar',
-            module: 'CAL',
-            parent: 'CAL',
-            order: 2,
+            order: 3,
         },
     },
     {
@@ -108,19 +94,26 @@ export const calificacionesRoutes = [
             label: 'Por Curso',
             module: 'CAL',
             parent: 'CAL',
-            order: 3,
+            order: 2,
         },
     },
     {
-        path: '/calificaciones/cerrar',
+        path: '/calificaciones/cerrar-periodo',
         element: <CalificacionesCerrarPage />,
         key: 'CAL-CERRAR',
         menu: {
-            label: 'Cerrar',
+            label: 'Cerrar Periodo',
             module: 'CAL',
             parent: 'CAL',
-            order: 4,
+            order: 3,
         },
+    },
+    // Ruta sin menú (se accede desde la página de calificaciones)
+    {
+        path: '/calificaciones/modificar',
+        element: <CalificacionesModificarPage />,
+        key: 'CAL-MODIFICAR',
+        // Sin menu - se accede desde la página de calificaciones
     },
 ];
 
