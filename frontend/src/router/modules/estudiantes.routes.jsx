@@ -3,7 +3,7 @@ import { lazy } from 'react';
 
 // Lazy loading de componentes - se crearán las páginas después
 const EstudiantesListPage = lazy(() => import('@pages/Estudiantes/List'));
-const EstudiantesCreatePage = lazy(() => import('@pages/Estudiantes/Create'));
+const EstudiantesRegistrarPage = lazy(() => import('@estudiantes/pages/Registrar'));
 const BecasAsignarPage = lazy(() => import('@pages/Estudiantes/Becas/Asignar'));
 const BecasAprobarPage = lazy(() => import('@pages/Estudiantes/Becas/Aprobar'));
 const BecasListPage = lazy(() => import('@pages/Estudiantes/Becas/List'));
@@ -41,8 +41,8 @@ export const estudiantesRoutes = [
     // Registrar
     {
         path: '/estudiantes/registrar',
-        element: <EstudiantesCreatePage />,
-        key: 'EST-CREATE',
+        element: <EstudiantesRegistrarPage />,
+        key: 'EST-REGISTRAR',
         menu: {
             label: 'Nuevo Estudiante',
             module: 'EST',

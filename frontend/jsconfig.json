@@ -75,6 +75,12 @@
       "@pages/*": [
         "./src/presentation/pages/*"
       ],
+      "@modules/*": [
+        "./src/presentation/modules/*"
+      ],
+      "@estudiantes/*": [
+        "./src/presentation/modules/estudiantes/*"
+      ],
       // Shared
       "@shared/*": [
         "./src/shared/*"

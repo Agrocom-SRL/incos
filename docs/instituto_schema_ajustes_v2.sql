@@ -10,19 +10,6 @@ USE instituto_incos;
 -- AJUSTES A TABLAS EXISTENTES
 -- ============================================
 
--- Ajustar tabla de estudiantes con campos adicionales
-ALTER TABLE estudiantes 
-ADD COLUMN expedido_departamento VARCHAR(10) AFTER complemento,
-ADD COLUMN correo_institucional VARCHAR(150) UNIQUE AFTER correo_electronico,
-ADD COLUMN clave_acceso VARCHAR(100) AFTER correo_institucional,
-ADD COLUMN turno_preferencia ENUM('MAÑANA', 'TARDE', 'NOCHE') DEFAULT 'TARDE',
-MODIFY COLUMN expedido VARCHAR(20); -- Permitir extensiones como "SC", "LP", "3498977 LP"
-
--- Ajustar tabla de cursos
-ALTER TABLE cursos 
-ADD COLUMN turno ENUM('MAÑANA', 'TARDE', 'NOCHE') NOT NULL AFTER paralelo,
-ADD COLUMN cupo_minimo INT DEFAULT 15 AFTER cupo_maximo;
-
 -- Ajustar tabla de inscripciones_materias para incluir sistema de nivelación
 ALTER TABLE inscripciones_materias 
 ADD COLUMN estado_nivelacion ENUM(

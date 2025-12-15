@@ -1,0 +1,11 @@
+/* ============================================================================
+   FORM SECTION (Componente Molecular)
+   ============================================================================
+   Estilos principalmente para layout y espaciado
+   Los colores y temas vienen automáticamente de Ant Design via ConfigProvider
+   ============================================================================ */
+
+.molecule-form-section {
+  /* Layout y espaciado */
+  margin-bottom: var(--spacing-lg);
+}

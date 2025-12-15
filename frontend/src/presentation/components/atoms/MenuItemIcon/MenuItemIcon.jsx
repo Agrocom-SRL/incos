@@ -110,7 +110,7 @@ const iconMap = {
     // Estudiantes - Nivel 1
     'EST': TeamOutlined,
     'EST-LIST': UnorderedListOutlined,
-    'EST-CREATE': UserAddOutlined,
+    'EST-REGISTRAR': UserAddOutlined,
     'EST-BECAS': GiftOutlined,
     'EST-BECAS-ASIGNAR': GiftOutlined,
     'EST-BECAS-APROBAR': CheckCircleOutlined,

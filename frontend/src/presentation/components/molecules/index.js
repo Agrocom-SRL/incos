@@ -11,3 +11,6 @@ export { default as ActivityItem } from './ActivityItem';
 export { default as ActivityList } from './ActivityList';
 export { default as StudentsSummaryCard } from './StudentsSummaryCard';
 export { default as HelpGuideCard } from './HelpGuideCard';
+export { default as FormField } from './FormField';
+export { default as FormSection } from './FormSection';
+export { default as FormActions } from './FormActions';

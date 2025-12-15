@@ -22,27 +22,10 @@ export function injectCSSVariables() {
 
   // ========================================
   // COLORES DE COMPONENTES LAYOUT
-  // (Usando componentConfig para que vengan del tema de Ant Design)
+  // (Solo las variables que se usan en CSS)
   // ========================================
 
-  // Layout - Configuración general desde componentConfig.Layout
-  root.style.setProperty('--color-layout-sider-bg', componentConfig.Layout.siderBg);
-  root.style.setProperty('--color-layout-header-bg', componentConfig.Layout.headerBg);
-  root.style.setProperty('--color-layout-body-bg', componentConfig.Layout.bodyBg);
-
-  // Sider - Variables CSS para componentes personalizados
-  root.style.setProperty('--color-sidebar-bg', componentConfig.Layout.siderBg);
-  root.style.setProperty('--color-sidebar-text', componentConfig.Sider.colorText);
-  root.style.setProperty('--color-sidebar-text-secondary', componentConfig.Sider.colorTextSecondary);
-  root.style.setProperty('--color-sidebar-border', componentConfig.Sider.colorBorder);
-
-  // Header - Configuración desde componentConfig.Header
-  root.style.setProperty('--color-header-bg', componentConfig.Header.colorBgContainer);
-  root.style.setProperty('--color-header-text', componentConfig.Header.colorText);
-  root.style.setProperty('--color-header-text-secondary', componentConfig.Header.colorTextSecondary);
-  root.style.setProperty('--color-header-border', componentConfig.Header.colorBorder);
-
-  // Content - Variables CSS desde componentConfig.Layout y componentConfig.Content
+  // Content - Variable CSS usada en global.css
   root.style.setProperty('--color-content-bg', componentConfig.Layout.bodyBg);
 
   // ========================================
@@ -82,34 +65,17 @@ export function injectCSSVariables() {
   root.style.setProperty('--color-menu-item-parent-selected-color', componentConfig.Menu.itemParentSelectedColor);
 
   // ========================================
-  // TOOLTIP - Variables CSS (para tooltips del menú)
+  // CARD - Variables CSS (solo las usadas)
   // ========================================
-  root.style.setProperty('--color-tooltip-bg', componentConfig.Tooltip.colorBgSpotlight);
-  root.style.setProperty('--tooltip-padding-block', `${componentConfig.Tooltip.paddingBlock}px`);
-  root.style.setProperty('--tooltip-padding-inline', `${componentConfig.Tooltip.paddingInline}px`);
-
-  // ========================================
-  // CARD - Variables CSS
-  // ========================================
-  root.style.setProperty('--color-card-bg', componentConfig.Card.colorBgContainer);
-  root.style.setProperty('--color-card-border', componentConfig.Card.colorBorder);
-  root.style.setProperty('--card-border-radius', `${componentConfig.Card.borderRadius}px`);
-  root.style.setProperty('--card-border-radius-lg', `${componentConfig.Card.borderRadiusLG}px`);
-  root.style.setProperty('--card-shadow', componentConfig.Card.boxShadow);
-  root.style.setProperty('--card-shadow-hover', componentConfig.Card.boxShadowHover);
-  root.style.setProperty('--card-padding', `${componentConfig.Card.padding}px`);
+  // Nota: Ant Design aplica automáticamente colorBgContainer, colorBorder, borderRadius
+  // Solo definimos variables para layout/espaciado
   root.style.setProperty('--card-padding-lg', `${componentConfig.Card.paddingLG}px`);
 
   // ========================================
-  // BUTTON - Variables CSS
+  // BUTTON - Variables CSS (solo las usadas)
   // ========================================
-  root.style.setProperty('--color-button-primary', componentConfig.Button.colorPrimary);
-  root.style.setProperty('--color-button-primary-hover', componentConfig.Button.colorPrimaryHover);
-  root.style.setProperty('--color-button-primary-active', componentConfig.Button.colorPrimaryActive);
-  root.style.setProperty('--color-button-primary-bg', componentConfig.Button.colorPrimaryBg);
-  root.style.setProperty('--color-button-primary-border', componentConfig.Button.colorPrimaryBorder);
-  root.style.setProperty('--color-button-primary-text', componentConfig.Button.colorPrimaryText);
-  root.style.setProperty('--button-border-radius', `${componentConfig.Button.borderRadius}px`);
+  // Nota: Ant Design aplica automáticamente colorPrimary, borderRadius
+  // Solo definimos variables para layout/altura
   root.style.setProperty('--button-height', `${componentConfig.Button.controlHeight}px`);
   root.style.setProperty('--button-height-sm', `${componentConfig.Button.controlHeightSM}px`);
   root.style.setProperty('--button-height-lg', `${componentConfig.Button.controlHeightLG}px`);
@@ -162,17 +128,18 @@ export function injectCSSVariables() {
   root.style.setProperty('--z-fixed', '1030');
 
   // ========================================
-  // BORDER RADIUS
+  // BORDER RADIUS (solo las usadas)
   // ========================================
-  root.style.setProperty('--border-radius', `${allSpacing.borderRadius}px`);
+  // Nota: Ant Design aplica automáticamente borderRadius desde componentConfig
+  // Solo definimos variables para casos específicos de layout
   root.style.setProperty('--border-radius-sm', `${allSpacing.borderRadiusSM}px`);
-  root.style.setProperty('--border-radius-lg', `${allSpacing.borderRadiusLG}px`);
 
   // ========================================
-  // TIPOGRAFÍA
+  // TIPOGRAFÍA (solo las usadas)
   // ========================================
+  // Nota: Ant Design aplica automáticamente fontSize desde componentConfig.Typography
+  // Solo definimos variables para casos específicos de layout
   root.style.setProperty('--font-size-base', `${typography.fontSize}px`);
-  root.style.setProperty('--font-size-sm', `${typography.fontSizeSM}px`);
   root.style.setProperty('--font-size-lg', `${typography.fontSizeLG}px`);
 
   // ========================================

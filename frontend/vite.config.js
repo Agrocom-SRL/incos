@@ -39,6 +39,9 @@ export default defineConfig({
       '@organisms': path.resolve(__dirname, './src/presentation/components/organisms'),
       '@templates': path.resolve(__dirname, './src/presentation/templates'),
       '@pages': path.resolve(__dirname, './src/presentation/pages'),
+      '@modules': path.resolve(__dirname, './src/presentation/modules'),
+      // Módulos específicos (para evitar rutas relativas)
+      '@estudiantes': path.resolve(__dirname, './src/presentation/modules/estudiantes'),
 
       // Shared
       '@shared': path.resolve(__dirname, './src/shared'),

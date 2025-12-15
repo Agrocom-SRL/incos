@@ -1,0 +1,11 @@
+/* ============================================================================
+   FORM CARD (Componente Atómico)
+   ============================================================================
+   Estilos principalmente para layout y espaciado
+   Los colores y temas vienen automáticamente de Ant Design via ConfigProvider
+   ============================================================================ */
+
+.atom-form-card {
+  /* Layout y espaciado */
+  padding: var(--card-padding-lg);
+}

@@ -16,9 +16,13 @@
 @import './components/atoms/logo.css';
 @import './components/atoms/icon-button.css';
 @import './components/atoms/avatar.css';
+@import './components/atoms/button.css';
+@import './components/atoms/heading.css';
+@import './components/atoms/form-card.css';
 
 /* 6. Components - Molecules */
 @import './components/molecules/navigation-menu.css';
+@import './components/molecules/form-section.css';
 
 /* 7. Components - Organisms */
 @import './components/organisms/sidebar.css';

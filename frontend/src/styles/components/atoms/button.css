@@ -1,0 +1,28 @@
+/* ============================================================================
+   BUTTON (Componente Atómico)
+   ============================================================================
+   Estilos principalmente para layout y posicionamiento
+   Los colores y temas vienen automáticamente de Ant Design via ConfigProvider
+   
+   Nota: Las clases .incos-button son PERSONALIZADAS (no de Ant Design)
+   Ant Design usa .ant-btn internamente, nuestras clases se agregan adicionalmente
+   
+   Convención: incos-* (consistente con incos-avatar, etc.)
+   
+   Ant Design aplica automáticamente:
+   - colorPrimary (desde theme.components.Button.colorPrimary)
+   - borderRadius (desde theme.components.Button.borderRadius)
+   - controlHeight (desde theme.components.Button.controlHeight según el prop 'size')
+   ============================================================================ */
+
+.incos-button {
+  /* Layout y posicionamiento */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-base);
+}
+
+/* Nota: Las alturas (height) ya las aplica Ant Design automáticamente
+   según el prop 'size' y theme.components.Button.controlHeight
+   Solo mantenemos estas clases si necesitamos override específico */
