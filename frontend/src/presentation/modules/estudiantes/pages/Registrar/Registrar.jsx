@@ -20,6 +20,7 @@ import { GenericForm } from '@organisms';
 import { StudentsSummaryCard, HelpGuideCard } from '@molecules';
 import { useStudentContext } from '@application/modules/estudiantes';
 import { studentFormFields, studentFormSections } from '@estudiantes/config/formFields';
+import './Registrar.css';
 
 const Registrar = () => {
   const navigate = useNavigate();
@@ -53,10 +54,10 @@ const Registrar = () => {
     <Flex
       gap="large"
       align="flex-start"
-      style={{ width: '100%', height: '100%' }}
-      className="dashboard-container"
+      style={{ width: '100%', height: '100%', overflowX: 'hidden' }}
+      className="registrar-container"
     >
-      <MainContent style={{ flex: 1 }}>
+      <MainContent>
         <GenericForm
           title="Registrar Nuevo Estudiante"
           config={studentFormFields}

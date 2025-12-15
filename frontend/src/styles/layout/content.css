@@ -12,9 +12,12 @@
     margin-top: calc(var(--header-height) + var(--spacing-xl));
     margin-left: calc(var(--sidebar-width) + var(--spacing-base));
     margin-right: var(--spacing-base);
-    padding: var(--spacing-lg);
-    padding-right: var(--spacing-lg);
     transition: margin-left var(--transition-base), padding var(--transition-base);
+    
+    /* Prevenir overflow horizontal */
+    overflow-x: hidden;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 /* ============================================================================
@@ -42,34 +45,16 @@
    ============================================================================ */
 
 /* Extra Small (xs) - Móviles pequeños */
-@media (max-width: 575px) {
+@media (max-width: 767px) {
     .content {
         margin: var(--spacing-sm);
-        margin-top: calc(var(--header-height) + var(--spacing-sm));
-        margin-left: var(--spacing-sm);
-        margin-right: var(--spacing-sm);
-        padding: var(--spacing-base);
-        padding-right: var(--spacing-base);
+        margin-top: calc(var(--header-height) + var(--spacing-base));
+        padding-top: var(--spacing-base);
+        padding-right: var(--spacing-sm);
+        padding-bottom: var(--spacing-xl);
     }
     
     /* En móviles, el sidebar colapsado también usa el mismo margin */
-    .ant-layout-sider-collapsed ~ .ant-layout-content.content {
-        margin-left: var(--spacing-sm);
-    }
-}
-
-/* Small (sm) - Móviles grandes / Tablets pequeñas */
-@media (min-width: 576px) and (max-width: 767px) {
-    .content {
-        margin: var(--spacing-base);
-        margin-top: calc(var(--header-height) + var(--spacing-base));
-        margin-left: var(--spacing-base);
-        margin-right: var(--spacing-base);
-        padding: var(--spacing-base);
-        padding-right: var(--spacing-base);
-    }
-    
-    /* En tablets pequeñas, el sidebar colapsado también usa el mismo margin */
     .ant-layout-sider-collapsed ~ .ant-layout-content.content {
         margin-left: var(--spacing-base);
     }
@@ -77,15 +62,6 @@
 
 /* Medium (md) - Tablets */
 @media (min-width: 768px) and (max-width: 991px) {
-    .content {
-        margin: var(--spacing-base);
-        margin-top: calc(var(--header-height) + var(--spacing-lg));
-        margin-left: calc(var(--sidebar-width) + var(--spacing-base));
-        margin-right: var(--spacing-base);
-        padding: var(--spacing-lg);
-        padding-right: var(--spacing-lg);
-    }
-    
     /* En tablets, ajustar cuando el sidebar está colapsado */
     .ant-layout-sider-collapsed ~ .ant-layout-content.content {
         margin-left: calc(var(--sidebar-collapsed-width) + var(--spacing-base));

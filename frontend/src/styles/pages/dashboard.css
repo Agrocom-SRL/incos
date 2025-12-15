@@ -5,13 +5,31 @@
    ============================================================================ */
 
 .dashboard-container {
-    /* En pantallas grandes: NO wrap, elementos lado a lado */
+    /* Prevenir overflow horizontal */
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    /* En pantallas grandes (> md): NO wrap, elementos lado a lado */
     flex-wrap: nowrap;
 }
 
-/* En pantallas medianas y pequeñas: permitir wrap */
-@media (max-width: 991px) {
+/* En pantallas medianas y pequeñas (<= md): permitir wrap */
+@media (max-width: 767px) {
     .dashboard-container {
         flex-wrap: wrap;
+    }
+}
+
+/* En pantallas medianas (768px - 991px): permitir wrap */
+@media (min-width: 768px) and (max-width: 991px) {
+    .dashboard-container {
+        flex-wrap: wrap;
+    }
+}
+
+/* En pantallas grandes (>= 992px): NO wrap, elementos lado a lado */
+@media (min-width: 992px) {
+    .dashboard-container {
+        flex-wrap: nowrap;
     }
 }

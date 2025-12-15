@@ -21,7 +21,7 @@ const FormSection = ({ title, fields, form, resolveOptions }) => {
       className="molecule-form-section"
       title={title}
     >
-      <Row gutter={16}>
+      <Row gutter={[24, 8]}>
         {fields.map((field) => {
           // Sistema de columnas de Ant Design (24 columnas totales)
           // span: 24 = 1 columna (100% ancho)
@@ -34,8 +34,8 @@ const FormSection = ({ title, fields, form, resolveOptions }) => {
             <Col 
               key={field.name} 
               xs={24}        // Móviles: siempre 1 columna (100% ancho)
-              sm={span > 12 ? 24 : span}  // Tablets: si span > 12, usar 24 (1 columna), sino usar el span
-              md={span}      // Desktop: usar el span definido en el config
+              sm={span >= 4 ? 24 : span}  // Tablets: si span >= 4, usar 24 (1 columna), sino usar el span
+              md={span >= 8 ? 12 : span}      // Desktop: usar el span definido en el config
               lg={span}      // Desktop grande: usar el span definido
             >
               <FormField
