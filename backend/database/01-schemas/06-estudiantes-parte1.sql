@@ -104,6 +104,7 @@ CREATE TABLE estudiantes_datos_academicos (
     carrera_id INT NULL COMMENT 'Carrera (NULL permite flexibilidad en migraciones)',
     gestion_ingreso_id INT NULL COMMENT 'Gestión de ingreso (NULL permite flexibilidad en migraciones)',
     estado_academico ENUM('REGULAR', 'NIVELACION', 'RETIRADO', 'EGRESADO', 'ABANDONO') DEFAULT 'REGULAR' COMMENT 'Estado académico',
+    estado_registro ENUM('BORRADOR', 'PENDIENTE', 'ADMITIDO') DEFAULT 'BORRADOR' COMMENT 'Estado del proceso de registro: BORRADOR (datos completos, documentos pendientes), PENDIENTE (al menos un documento original), ADMITIDO (todos los documentos originales verificados)',
     unidad_educativa_procedencia VARCHAR(200) COMMENT 'Unidad educativa de procedencia',
     anio_egreso_secundaria INT COMMENT 'Año de egreso de secundaria',
     promedio_anual DECIMAL(5,2) COMMENT 'Promedio anual (se usa para cálculo de descuentos en becas)',
@@ -131,6 +132,7 @@ CREATE TABLE estudiantes_datos_academicos (
     INDEX idx_estudiante_id (estudiante_id) COMMENT 'Búsqueda por estudiante',
     INDEX idx_carrera_id (carrera_id) COMMENT 'Búsqueda por carrera',
     INDEX idx_estado_academico (estado_academico) COMMENT 'Filtrado por estado académico',
+    INDEX idx_estado_registro (estado_registro, activo, deleted_at) COMMENT 'Búsqueda por estado de registro',
     INDEX idx_promedio_anual (promedio_anual) COMMENT 'Búsqueda por promedio anual',
     INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
     INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
@@ -150,17 +152,7 @@ COMMENT='Datos académicos detallados de estudiantes. Relación 1:1 con estudian
 CREATE TABLE documentos_estudiante (
     id INT AUTO_INCREMENT PRIMARY KEY,
     estudiante_id INT NULL COMMENT 'Estudiante (NULL permite flexibilidad en migraciones)',
-    tipo_documento ENUM(
-        'INSCRIPCION',
-        'LICENCIA',
-        'PASANTIA',
-        'DESCUENTO',
-        'PAGO_INSCRIPCION',
-        'PAGO_TITULACION',
-        'PAGO_TRASLADO_INSTITUTO',
-        'PAGO_CAMBIO_CARRERA',
-        'OTRO'
-    ) NOT NULL COMMENT 'Tipo de documento: inscripción, licencia, pasantía, descuento, pagos (inscripción, titulación, traslado, cambio de carrera) u otro',
+    documentacion_id INT NULL COMMENT 'Tipo de documentación requerida (referencia a documentacion). NULL si no es documento de inscripción estándar.',
     motivo_documento VARCHAR(200) COMMENT 'Motivo específico del documento (ej: licencia por enfermedad, descuento por promedio, etc.)',
     tipo_referencia ENUM(
         'licencias_solicitudes',
@@ -180,7 +172,8 @@ CREATE TABLE documentos_estudiante (
     verificado_por INT COMMENT 'Usuario que verificó',
     fecha_verificacion DATE COMMENT 'Fecha de verificación',
     observaciones_verificacion TEXT COMMENT 'Observaciones de verificación',
-    estado ENUM('PENDIENTE', 'APROBADO', 'RECHAZADO', 'REQUERIDO') DEFAULT 'PENDIENTE' COMMENT 'Estado del documento',
+    estado ENUM('PENDIENTE', 'APROBADO', 'RECHAZADO') DEFAULT 'PENDIENTE' COMMENT 'Estado del documento',
+    es_original BOOLEAN DEFAULT FALSE COMMENT 'Indica si el documento es original (TRUE) o fotocopia (FALSE). Permite tener el mismo documento dos veces: primero copia, luego original.',
     motivo_rechazo TEXT COMMENT 'Motivo de rechazo',
     
     -- Campos de auditoría y control (ESTÁNDAR)
@@ -193,20 +186,22 @@ CREATE TABLE documentos_estudiante (
     deleted_by INT COMMENT 'Usuario que eliminó',
     
     FOREIGN KEY (estudiante_id) REFERENCES estudiantes(id) ON DELETE SET NULL,
+    FOREIGN KEY (documentacion_id) REFERENCES documentacion(id) ON DELETE SET NULL,
     FOREIGN KEY (verificado_por) REFERENCES usuarios(id) ON DELETE SET NULL,
     FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     INDEX idx_estudiante_id (estudiante_id) COMMENT 'Búsqueda por estudiante',
-    INDEX idx_tipo_documento (tipo_documento) COMMENT 'Filtrado por tipo',
+    INDEX idx_documentacion_id (documentacion_id) COMMENT 'Búsqueda por tipo de documentación',
     INDEX idx_tipo_referencia (tipo_referencia, referencia_id) COMMENT 'Búsqueda por tipo de referencia y ID',
     INDEX idx_referencia (referencia_id, tipo_referencia) COMMENT 'Búsqueda por referencia',
     INDEX idx_estado (estado) COMMENT 'Filtrado por estado',
+    INDEX idx_es_original (es_original, estado, activo) COMMENT 'Búsqueda por tipo de documento (original/fotocopia)',
     INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
     INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
-    INDEX idx_estudiante_tipo (estudiante_id, tipo_documento, activo, deleted_at) COMMENT 'Búsqueda de documentos por estudiante y tipo',
-    INDEX idx_tipo_estado (tipo_documento, estado, activo, deleted_at) COMMENT 'Búsqueda por tipo y estado',
+    INDEX idx_estudiante_documentacion (estudiante_id, documentacion_id, activo, deleted_at) COMMENT 'Búsqueda de documentos por estudiante y tipo de documentación',
+    INDEX idx_documentacion_estado (documentacion_id, estado, activo, deleted_at) COMMENT 'Búsqueda por tipo de documentación y estado',
     INDEX idx_verificado (verificado, estado, activo) COMMENT 'Búsqueda por documentos verificados',
     INDEX idx_estado_activo (estado, activo, deleted_at) COMMENT 'Búsqueda por estado y activo'
     

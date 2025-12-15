@@ -1,0 +1,124 @@
+-- ============================================
+-- SEEDER: materias
+-- Sistema de Gestión Académica - Instituto INCOS
+-- Datos iniciales: Materias por carrera según Plan de Estudios 2024
+-- ============================================
+-- NOTA: Los códigos y nombres están basados en el Plan de Estudios oficial 2024
+-- Las horas semanales se convierten a horas anuales (semanas * horas semanales)
+-- Total de semanas académicas: ~40 semanas por año
+
+USE instituto_incos;
+
+-- Deshabilitar foreign key checks temporalmente
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- Limpiar datos existentes (opcional, comentar si no se desea)
+-- TRUNCATE TABLE materias;
+
+-- ============================================
+-- INSERTAR MATERIAS
+-- ============================================
+
+-- CONTADURÍA GENERAL - Primer Año
+INSERT INTO materias (codigo, nombre, carga_horaria_teorica, carga_horaria_practica, creditos, tipo) VALUES
+('LSA-101', 'LEGISLACIÓN LABORAL Y SEGURIDAD SOCIAL APLICADA', 80, 0, 2.7, 'TEORICA'),
+('INT-102', 'INGLÉS TÉCNICO', 80, 0, 2.7, 'TEORICA'),
+('CON-103', 'CONTABILIDAD I', 320, 0, 10.7, 'TEORICA'),
+('MAF-104', 'MATEMÁTICA FINANCIERA', 160, 0, 5.3, 'TEORICA'),
+('ICO-105', 'INFORMÁTICA CONTABLE', 160, 0, 5.3, 'TEORICA_PRACTICA'),
+('EGA-106', 'ECONOMÍA GENERAL APLICADA', 80, 0, 2.7, 'TEORICA'),
+('DCM-107', 'DOCUMENTOS COMERCIALES Y MERCANTILES', 80, 0, 2.7, 'TEORICA'),
+('ESA-108', 'ESTADÍSTICA APLICADA', 80, 0, 2.7, 'TEORICA'),
+('ADG-109', 'ADMINISTRACIÓN GENERAL', 160, 0, 5.3, 'TEORICA');
+
+-- CONTADURÍA GENERAL - Segundo Año
+INSERT INTO materias (codigo, nombre, carga_horaria_teorica, carga_horaria_practica, creditos, tipo) VALUES
+('CON-201', 'CONTABILIDAD II', 240, 0, 8.0, 'TEORICA'),
+('COC-202', 'CONTABILIDAD DE COSTOS I', 240, 0, 8.0, 'TEORICA'),
+('COS-203', 'CONTABILIDAD DE SOCIEDADES', 160, 0, 5.3, 'TEORICA'),
+('CDS-204', 'CONTABILIDAD DE SEGUROS', 80, 0, 2.7, 'TEORICA'),
+('CBC-205', 'CONTABILIDAD BANCARIA Y COOPERATIVAS', 160, 0, 5.3, 'TEORICA'),
+('SIT-206', 'SISTEMA TRIBUTARIO', 160, 0, 5.3, 'TEORICA'),
+('IAE-207', 'INVESTIGACIÓN APLICADA Y EMPRENDIMIENTO', 160, 0, 5.3, 'TEORICA_PRACTICA');
+
+-- CONTADURÍA GENERAL - Tercer Año
+INSERT INTO materias (codigo, nombre, carga_horaria_teorica, carga_horaria_practica, creditos, tipo) VALUES
+('COA-301', 'CONTABILIDAD AGROPECUARIA', 160, 0, 5.3, 'TEORICA'),
+('COC-302', 'CONTABILIDAD DE COSTOS II', 160, 0, 5.3, 'TEORICA'),
+('COG-303', 'CONTABILIDAD GUBERNAMENTAL', 160, 0, 5.3, 'TEORICA'),
+('CEP-304', 'CONTABILIDAD EXTRACTIVA (MINERA, PETROLERA Y FORESTAL)', 160, 0, 5.3, 'TEORICA'),
+('CHS-305', 'CONTABILIDAD DE SERVICIOS (CONSTRUCCIÓN, HOTELERÍA Y TRANSPORTE)', 80, 0, 2.7, 'TEORICA'),
+('GCI-306', 'GABINETE CONTABLE INFORMÁTICO', 160, 0, 5.3, 'TEORICA_PRACTICA'),
+('AEF-307', 'ANÁLISIS E INTERPRETACIONES DE ESTADOS FINANCIEROS', 160, 0, 5.3, 'TEORICA'),
+('TMG-308', 'TALLER DE MODALIDAD DE GRADUACIÓN', 160, 0, 5.3, 'TEORICA_PRACTICA');
+
+-- SISTEMAS INFORMÁTICOS - Primer Año
+INSERT INTO materias (codigo, nombre, carga_horaria_teorica, carga_horaria_practica, creditos, tipo) VALUES
+('HSA-101', 'HARDWARE DE COMPUTADORAS', 160, 0, 5.3, 'TEORICA_PRACTICA'),
+('INT-102', 'INGLÉS TÉCNICO', 80, 0, 2.7, 'TEORICA'),
+('MPI-103', 'MATEMÁTICA PARA LA INFORMÁTICA', 160, 0, 5.3, 'TEORICA'),
+('PRG-104', 'PROGRAMACIÓN I', 320, 0, 10.7, 'TEORICA_PRACTICA'),
+('TSO-105', 'TALLER DE SISTEMAS OPERATIVOS', 160, 0, 5.3, 'PRACTICA'),
+('OTM-106', 'OFIMÁTICA Y TECNOLOGÍA MULTIMEDIA', 160, 0, 5.3, 'TEORICA_PRACTICA'),
+('DPW-107', 'DISEÑO Y PROGRAMACIÓN WEB I', 160, 0, 5.3, 'TEORICA_PRACTICA');
+
+-- SISTEMAS INFORMÁTICOS - Segundo Año
+INSERT INTO materias (codigo, nombre, carga_horaria_teorica, carga_horaria_practica, creditos, tipo) VALUES
+('EST-201', 'ESTADÍSTICA', 80, 0, 2.7, 'TEORICA'),
+('PRG-202', 'PROGRAMACIÓN II', 240, 0, 8.0, 'TEORICA_PRACTICA'),
+('RDC-203', 'REDES DE COMPUTADORAS I', 160, 0, 5.3, 'TEORICA_PRACTICA'),
+('PDM-204', 'PROGRAMACIÓN MÓVIL I', 160, 0, 5.3, 'TEORICA_PRACTICA'),
+('ADS-205', 'ANÁLISIS Y DISEÑO DE SISTEMAS I', 160, 0, 5.3, 'TEORICA_PRACTICA'),
+('DPW-206', 'DISEÑO Y PROGRAMACIÓN WEB II', 160, 0, 5.3, 'TEORICA_PRACTICA'),
+('BDD-207', 'BASE DE DATOS I', 160, 0, 5.3, 'TEORICA_PRACTICA'),
+('ELE-208', 'EMPRENDIMIENTO PRODUCTIVO', 80, 0, 2.7, 'TEORICA_PRACTICA');
+
+-- SISTEMAS INFORMÁTICOS - Tercer Año
+INSERT INTO materias (codigo, nombre, carga_horaria_teorica, carga_horaria_practica, creditos, tipo) VALUES
+('GMC-301', 'GESTIÓN Y MEJORAMIENTO DE LA CALIDAD DE SOFTWARE', 80, 0, 2.7, 'TEORICA_PRACTICA'),
+('RDC-302', 'REDES DE COMPUTADORAS II', 160, 0, 5.3, 'TEORICA_PRACTICA'),
+('DPW-303', 'DISEÑO Y PROGRAMACIÓN WEB III', 160, 0, 5.3, 'TEORICA_PRACTICA'),
+('PDM-304', 'PROGRAMACIÓN MÓVIL II', 160, 0, 5.3, 'TEORICA_PRACTICA'),
+('ADS-305', 'ANÁLISIS Y DISEÑO DE SISTEMAS II', 160, 0, 5.3, 'TEORICA_PRACTICA'),
+('BDD-306', 'BASE DE DATOS II', 160, 0, 5.3, 'TEORICA_PRACTICA'),
+('PIC-307', 'PROYECTOS DE INNOVACIÓN Y COMPUTACIÓN EN LA NUBE', 160, 0, 5.3, 'TEORICA_PRACTICA'),
+('TMG-308', 'TALLER DE MODALIDAD DE GRADUACIÓN', 160, 0, 5.3, 'TEORICA_PRACTICA');
+
+-- ADMINISTRACIÓN DE EMPRESAS - Primer Año
+INSERT INTO materias (codigo, nombre, carga_horaria_teorica, carga_horaria_practica, creditos, tipo) VALUES
+('FUA-101', 'FUNDAMENTO DE LA ADMINISTRACIÓN', 240, 0, 8.0, 'TEORICA'),
+('ING-102', 'INGLÉS TÉCNICO', 80, 0, 2.7, 'TEORICA'),
+('CGA-103', 'CONTABILIDAD GENERAL PARA ADMINISTRACIÓNES', 240, 0, 8.0, 'TEORICA'),
+('MAF-104', 'MATEMÁTICA FINANCIERA', 160, 0, 5.3, 'TEORICA'),
+('ESN-105', 'ESTADÍSTICA PARA LOS NEGOCIOS', 160, 0, 5.3, 'TEORICA'),
+('PLT-106', 'PRÁCTICA LABORAL Y TRIBUTARIA', 160, 0, 5.3, 'TEORICA_PRACTICA'),
+('IFE-107', 'INFORMÁTICA EMPRESARIAL', 80, 0, 2.7, 'TEORICA_PRACTICA'),
+('EMP-108', 'EMPRENDIMIENTO PRODUCTIVO', 80, 0, 2.7, 'TEORICA_PRACTICA');
+
+-- ADMINISTRACIÓN DE EMPRESAS - Segundo Año
+INSERT INTO materias (codigo, nombre, carga_horaria_teorica, carga_horaria_practica, creditos, tipo) VALUES
+('ORA-201', 'ORGANIZACION DE LA ADMINISTRACIÓN', 80, 0, 2.7, 'TEORICA'),
+('IDM-202', 'INVESTIGACIÓN DE MERCADO', 160, 0, 5.3, 'TEORICA'),
+('ADO-203', 'ADMINISTRACIÓN DE OPERACIONES', 160, 0, 5.3, 'TEORICA'),
+('GTH-204', 'GESTIÓN DEL TALENTO HUMANO', 160, 0, 5.3, 'TEORICA'),
+('ADF-205', 'ADMINISTRACIÓN FINANCIERA I', 160, 0, 5.3, 'TEORICA'),
+('PEP-206', 'PREPARACIÓN Y EVALUACIÓN DE PROYECTOS', 160, 0, 5.3, 'TEORICA_PRACTICA'),
+('ACP-207', 'ADMINISTRACIÓN DE COSTOS Y PRESUPUESTOS', 160, 0, 5.3, 'TEORICA'),
+('EMP-208', 'ECONOMÍA DE LA EMPRESA', 160, 0, 5.3, 'TEORICA');
+
+-- ADMINISTRACIÓN DE EMPRESAS - Tercer Año
+INSERT INTO materias (codigo, nombre, carga_horaria_teorica, carga_horaria_practica, creditos, tipo) VALUES
+('AMP-301', 'ADMINSTRACIÓN DE LA MICRO Y PEQUEÑA Y MEDIANA EMPRESA', 240, 0, 8.0, 'TEORICA'),
+('INM-302', 'INCUBACIÓN Y MODELOS DE NEGOCIOS', 160, 0, 5.3, 'TEORICA_PRACTICA'),
+('ESM-303', 'ESTRATEGÍAS DE MERCADOTECNIA', 160, 0, 5.3, 'TEORICA'),
+('ADF-304', 'ADMINISTRACIÓN FINANCIERA II', 160, 0, 5.3, 'TEORICA'),
+('CMI-305', 'COMERCIO INTERNACIONAL', 160, 0, 5.3, 'TEORICA'),
+('GEE-306', 'GESTIÓN ESTRATÉGICA', 160, 0, 5.3, 'TEORICA'),
+('TMG-307', 'TALLER DE MODALIDAD DE GRADO', 160, 0, 5.3, 'TEORICA_PRACTICA');
+
+-- Rehabilitar foreign key checks
+SET FOREIGN_KEY_CHECKS = 1;
+
+-- ============================================
+-- FIN DEL SEEDER
+-- ============================================

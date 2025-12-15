@@ -1,7 +1,7 @@
 -- ============================================
 -- CATÁLOGOS DE REFERENCIA
 -- Sistema de Gestión Académica - Instituto INCOS
--- 5 Tablas: idiomas, estados_civiles, tipos_discapacidad, turnos_horarios, tipos_parentesco
+-- 6 Tablas: idiomas, estados_civiles, tipos_discapacidad, turnos_horarios, tipos_parentesco, documentacion
 -- ============================================
 
 USE instituto_incos;
@@ -14,6 +14,7 @@ USE instituto_incos;
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- Eliminar todas las tablas (orden no importa con foreign key checks deshabilitado)
+DROP TABLE IF EXISTS documentacion;
 DROP TABLE IF EXISTS tipos_parentesco;
 DROP TABLE IF EXISTS tipos_discapacidad;
 DROP TABLE IF EXISTS estados_civiles;
@@ -128,6 +129,50 @@ CREATE TABLE tipos_parentesco (
     
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Tipos de parentesco para apoderados/tutores de estudiantes';
+
+-- ============================================
+-- TABLA: documentacion
+-- ============================================
+
+CREATE TABLE documentacion (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(200) NOT NULL COMMENT 'Nombre del documento requerido (ej: Cédula de Identidad, Certificado de Nacimiento, Diploma de Bachiller)',
+    tipo_documento ENUM(
+        'INSCRIPCION',
+        'LICENCIA',
+        'PASANTIA',
+        'DESCUENTO',
+        'TITULACION',
+        'TRASPASO',
+        'TRANSFERENCIA',
+        'OTRO'
+    ) NOT NULL COMMENT 'Tipo de documento según categoría: inscripción, licencia, pasantía, descuento, titulación, traspaso, transferencia u otro',
+    acepta_fotocopia BOOLEAN DEFAULT FALSE COMMENT 'Indica si se acepta fotocopia del documento. Si es TRUE, se acepta fotocopia simple o legalizada según política del instituto. Si es FALSE, solo se acepta documento original.',
+    requerido BOOLEAN DEFAULT TRUE COMMENT 'Indica si el documento es requerido para completar la inscripción',
+    orden INT DEFAULT 0 COMMENT 'Orden de visualización en el formulario',
+    descripcion TEXT COMMENT 'Descripción adicional del documento requerido',
+    
+    -- Campos de auditoría y control (ESTÁNDAR)
+    activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
+    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
+    created_by INT COMMENT 'Usuario que creó',
+    updated_by INT COMMENT 'Usuario que modificó',
+    deleted_by INT COMMENT 'Usuario que eliminó',
+    
+    -- Índices esenciales
+    INDEX idx_nombre (nombre) COMMENT 'Búsqueda por nombre',
+    INDEX idx_tipo_documento (tipo_documento) COMMENT 'Filtrado por tipo de documento',
+    INDEX idx_requerido (requerido) COMMENT 'Filtrado por documentos requeridos',
+    INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
+    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
+    INDEX idx_orden (orden) COMMENT 'Ordenamiento',
+    INDEX idx_tipo_requerido (tipo_documento, requerido, activo, deleted_at) COMMENT 'Búsqueda por tipo y requerido',
+    INDEX idx_activo_orden (activo, orden, deleted_at) COMMENT 'Búsqueda de activos ordenados'
+    
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+COMMENT='Catálogo de documentación requerida para inscripción de estudiantes. Define qué documentos se necesitan y si aceptan fotocopia según política del instituto.';
 
 -- ============================================
 -- FASE 3: REHABILITAR FOREIGN KEY CHECKS

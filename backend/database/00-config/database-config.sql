@@ -47,23 +47,6 @@ SET SESSION group_concat_max_len = 100000;
 SET GLOBAL max_allowed_packet = 67108864; -- 64MB
 
 -- ============================================
--- FUNCIÓN AUXILIAR PARA SOFT DELETE
--- ============================================
-
-DELIMITER $$
-
--- Función para verificar si un registro está activo (no eliminado)
-DROP FUNCTION IF EXISTS is_active$$
-CREATE FUNCTION is_active(deleted_at_value TIMESTAMP)
-RETURNS BOOLEAN
-DETERMINISTIC
-BEGIN
-    RETURN deleted_at_value IS NULL;
-END$$
-
-DELIMITER ;
-
--- ============================================
 -- MOSTRAR CONFIGURACIÓN APLICADA
 -- ============================================
 
