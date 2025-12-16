@@ -193,8 +193,9 @@ if [ -f ".env.example" ]; then
     echo -e "${GREEN}✓${NC} Archivo .env creado desde .env.example"
     
     # Actualizar URL de API (el frontend usa VITE_API_BASE_URL)
-    # El .env.example ya debe tener la URL correcta, pero la actualizamos por si acaso
-    sed -i "s|VITE_API_BASE_URL=.*|VITE_API_BASE_URL=https://$DOMAIN/api/v1|g" .env
+    # IMPORTANTE: La baseURL debe ser solo hasta /api, no /api/v1
+    # porque el código ya agrega /v1/ en las rutas
+    sed -i "s|VITE_API_BASE_URL=.*|VITE_API_BASE_URL=https://$DOMAIN/api|g" .env
     
     # Actualizar otras URLs para producción
     sed -i "s|VITE_STATIC_URL=.*|VITE_STATIC_URL=https://$DOMAIN|g" .env
@@ -216,11 +217,11 @@ else
     # Crear .env básico si no existe
     echo -e "${YELLOW}⚠${NC} .env.example no encontrado, creando .env básico..."
     cat > .env << EOF
-VITE_API_BASE_URL=https://$DOMAIN/api/v1
+VITE_API_BASE_URL=https://$DOMAIN/api
 VITE_ENVIRONMENT=production
 EOF
     echo -e "${GREEN}✓${NC} Frontend .env creado desde cero"
-    echo -e "${BLUE}   ${NC} VITE_API_BASE_URL=https://$DOMAIN/api/v1"
+    echo -e "${BLUE}   ${NC} VITE_API_BASE_URL=https://$DOMAIN/api"
 fi
 
 # Build
@@ -428,9 +429,14 @@ elif [ "$WEB_SERVER" = "apache" ]; then
     </Directory>
 
     # Backend API - Proxy a Express
+    # Proxy todas las rutas /api/* al backend en puerto 3000
     ProxyPreserveHost On
     ProxyPass /api http://localhost:3000/api
     ProxyPassReverse /api http://localhost:3000/api
+    
+    # Headers para proxy
+    ProxyRequests Off
+    ProxyVia Off
     
     # Timeouts para operaciones largas
     Timeout 300
@@ -596,9 +602,9 @@ echo -e "      • DB_PORT=3306"
 echo -e "\n${GREEN}4. Verificar configuración del frontend:${NC}"
 echo -e "   ${BLUE}cat $FRONTEND_PATH/.env${NC}"
 echo -e "   ${YELLOW}⚠${NC} Debe contener:"
-echo -e "      • VITE_API_BASE_URL=https://$DOMAIN/api/v1"
+echo -e "      • VITE_API_BASE_URL=https://$DOMAIN/api"
 echo -e "   ${YELLOW}⚠${NC} Si no está configurado correctamente:"
-echo -e "      ${BLUE}echo 'VITE_API_BASE_URL=https://$DOMAIN/api/v1' > $FRONTEND_PATH/.env${NC}"
+echo -e "      ${BLUE}echo 'VITE_API_BASE_URL=https://$DOMAIN/api' > $FRONTEND_PATH/.env${NC}"
 echo -e "      ${BLUE}cd $FRONTEND_PATH && npm run build${NC}"
 
 echo -e "\n${GREEN}5. Verificar backend:${NC}"
