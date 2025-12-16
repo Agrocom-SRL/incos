@@ -321,12 +321,30 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange }) =
         
         // Mostrar input de upload
         const currentFileList = form?.getFieldValue(field.name) || [];
+        
+        // Obtener el ID de documentación del nombre del campo
+        // Formato: documento_{id}_archivo
+        const docIdMatch = field.name?.match(/documento_(\d+)_archivo/);
+        const docId = docIdMatch ? docIdMatch[1] : null;
+        const checkboxFieldName = docId ? `documento_${docId}_entregado` : null;
+        
         return (
           <Upload
             beforeUpload={(file) => {
               // No subir automáticamente, solo agregar a la lista
               // La subida se manejará en el onSubmit del formulario
               return false;
+            }}
+            onChange={(info) => {
+              // Cuando se agrega un archivo, marcar automáticamente el checkbox como entregado
+              if (info.fileList.length > 0 && checkboxFieldName && form) {
+                // Marcar el checkbox correspondiente como entregado
+                form.setFieldValue(checkboxFieldName, true);
+              }
+              // Llamar al onChange original si existe
+              if (handleChange) {
+                handleChange(info.fileList);
+              }
             }}
             fileList={currentFileList}
             maxCount={field.maxCount || 1}

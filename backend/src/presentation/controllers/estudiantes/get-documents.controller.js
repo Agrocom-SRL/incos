@@ -29,8 +29,25 @@ export class GetStudentDocumentsController {
       // Obtener repositorio de documentos
       const studentDocumentRepository = container.resolve('studentDocumentRepository');
 
+      logger.info('Buscando documentos del estudiante', {
+        estudianteId,
+        tipoEstudianteId: typeof estudianteId,
+      });
+
       // Buscar documentos del estudiante
       const documentos = await studentDocumentRepository.findByEstudianteId(estudianteId);
+      
+      logger.info('Documentos encontrados en repositorio', {
+        estudianteId,
+        total: documentos.length,
+        documentos: documentos.map(doc => ({
+          id: doc.id,
+          studentId: doc.studentId,
+          documentacionId: doc.documentacionId,
+          fileName: doc.fileName,
+          activo: doc.activo,
+        })),
+      });
 
       // Convertir entidades a formato de presentación (castellano)
       const documentosData = documentos.map((doc) => ({

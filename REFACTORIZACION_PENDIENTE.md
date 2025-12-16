@@ -11,6 +11,7 @@
 Este documento lista **TODOS** los archivos que fueron creados o modificados durante la implementación rápida para la presentación. Cada archivo debe ser revisado y refactorizado según la arquitectura limpia establecida.
 
 **Total de archivos afectados:** 55
+
 - **Backend:** 27 archivos (9 nuevos, 17 modificados, 1 eliminado)
 - **Frontend:** 27 archivos (4 nuevos, 22 modificados, 1 eliminado)
 - **Documentación:** 1 archivo modificado
@@ -22,27 +23,33 @@ Este documento lista **TODOS** los archivos que fueron creados o modificados dur
 ## 🔴 BACKEND - Archivos Creados (NUEVOS)
 
 ### 1. `backend/src/domain/entities/Documentacion.js`
+
 **Prioridad:** 🟢 BAJA  
 **Estado:** ✅ Entidad completa siguiendo patrón BaseEntity  
 **Acción requerida:**
+
 - [ ] Verificar que todos los campos estén correctamente mapeados
 - [ ] Revisar métodos de validación si es necesario
 
 ---
 
 ### 2. `backend/src/infrastructure/database/models/Documentacion.js`
+
 **Prioridad:** 🟢 BAJA  
 **Estado:** ✅ Modelo completo siguiendo patrón establecido  
 **Acción requerida:**
+
 - [ ] Verificar que todos los campos estén correctamente mapeados
 - [ ] Revisar relaciones con otras tablas si es necesario
 
 ---
 
 ### 3. `backend/src/infrastructure/repositories/DocumentacionRepository.js`
+
 **Prioridad:** 🟢 BAJA  
 **Estado:** ✅ Repositorio completo siguiendo patrón BaseRepository  
 **Acción requerida:**
+
 - [ ] Verificar métodos `findByTipoDocumento()` y `findRequeridos()`
 - [ ] Revisar mapeo `activo` → `active` (corregido recientemente)
 
@@ -51,9 +58,11 @@ Este documento lista **TODOS** los archivos que fueron creados o modificados dur
 ---
 
 ### 4. `backend/src/presentation/controllers/catalogs.controller.js`
+
 **Prioridad:** 🔴 ALTA  
 **Problema:** Usa repositorios directamente sin use cases (viola arquitectura limpia)  
 **Acción requerida:**
+
 - [ ] Crear use cases específicos para cada catálogo o un `CatalogUseCase` genérico
 - [ ] Mover lógica de negocio a use cases
 - [ ] Controller solo debe orquestar use cases
@@ -63,9 +72,11 @@ Este documento lista **TODOS** los archivos que fueron creados o modificados dur
 ---
 
 ### 5. `backend/src/presentation/routes/catalogs.routes.js`
+
 **Prioridad:** 🟢 BAJA  
 **Estado:** ✅ Correcto, solo rutas  
 **Acción requerida:**
+
 - [ ] Verificar que todas las rutas estén correctamente documentadas
 - [ ] Agregar validadores si es necesario
 
@@ -74,9 +85,11 @@ Este documento lista **TODOS** los archivos que fueron creados o modificados dur
 ---
 
 ### 6. `backend/src/presentation/controllers/estudiantes/upload-document.controller.js`
+
 **Prioridad:** 🔴 ALTA  
 **Problema:** Usa repositorio directamente sin use case  
 **Acción requerida:**
+
 - [ ] Crear `UploadDocumentUseCase`
 - [ ] Mover lógica de negocio (validación, guardado, movimiento de archivos) al use case
 - [ ] Controller solo debe orquestar use case y manejar request/response
@@ -86,9 +99,11 @@ Este documento lista **TODOS** los archivos que fueron creados o modificados dur
 ---
 
 ### 7. `backend/src/infrastructure/external/storage/multer.config.js`
+
 **Prioridad:** 🟡 MEDIA  
 **Estado:** ✅ Configuración correcta  
 **Acción requerida:**
+
 - [ ] Revisar estructura de guardado de archivos (actualmente `{estudianteId}/`)
 - [ ] Verificar límites de tamaño y tipos de archivo
 - [ ] Considerar mover a configuración centralizada
@@ -98,9 +113,11 @@ Este documento lista **TODOS** los archivos que fueron creados o modificados dur
 ---
 
 ### 8. `backend/MIGRACIONES_PENDIENTES.md`
+
 **Prioridad:** 🟡 MEDIA  
 **Estado:** ✅ Documentación  
 **Acción requerida:**
+
 - [ ] Revisar migraciones pendientes
 - [ ] Implementar migraciones necesarias
 - [ ] Actualizar documentación después de implementar
@@ -108,15 +125,18 @@ Este documento lista **TODOS** los archivos que fueron creados o modificados dur
 ---
 
 ### 9. `backend/src/presentation/controllers/estudiantes/get-documents.controller.js` ⭐ **NUEVO (2025-12-16)**
+
 **Prioridad:** 🟡 MEDIA  
 **Estado:** ✅ Controlador creado para obtener documentos de estudiante  
 **Acción requerida:**
+
 - [ ] Verificar que el mapeo de entidades a formato de presentación sea correcto
 - [ ] Considerar crear `GetStudentDocumentsUseCase` para seguir arquitectura limpia
 - [ ] Revisar manejo de errores
 - [ ] Verificar que el repositorio esté correctamente inyectado
 
-**Notas:** 
+**Notas:**
+
 - Creado para resolver error 404 al verificar registros incompletos
 - Usa repositorio directamente (debería usar use case)
 - Convierte entidades de dominio a formato de presentación (castellano)
@@ -124,15 +144,18 @@ Este documento lista **TODOS** los archivos que fueron creados o modificados dur
 ---
 
 ### 11. `backend/src/presentation/controllers/estudiantes/getById.controller.js` ⭐ **NUEVO (2025-12-16 tarde)**
+
 **Prioridad:** 🟡 MEDIA  
 **Estado:** ✅ Controlador implementado para obtener estudiante por ID  
 **Acción requerida:**
+
 - [ ] Verificar que el mapeo de entidades a formato de presentación sea correcto
 - [ ] Considerar crear `GetStudentByIdUseCase` para seguir arquitectura limpia
 - [ ] Revisar manejo de errores (retorna 404 si no existe)
 - [ ] Verificar que el repositorio esté correctamente inyectado
 
-**Notas:** 
+**Notas:**
+
 - Creado para permitir cargar datos de estudiante existente al completar registro
 - Usa repositorio directamente (debería usar use case)
 - Convierte entidades de dominio a formato de presentación (castellano)
@@ -141,15 +164,18 @@ Este documento lista **TODOS** los archivos que fueron creados o modificados dur
 ---
 
 ### 10. `backend/src/presentation/controllers/estudiantes/get-academic-data.controller.js` ⭐ **NUEVO (2025-12-16)**
+
 **Prioridad:** 🟡 MEDIA  
 **Estado:** ✅ Controlador creado para obtener datos académicos de estudiante  
 **Acción requerida:**
+
 - [ ] Verificar que el mapeo de entidades a formato de presentación sea correcto
 - [ ] Considerar crear `GetStudentAcademicDataUseCase` para seguir arquitectura limpia
 - [ ] Revisar manejo de errores (retorna 404 si no hay datos, podría retornar 200 con null)
 - [ ] Verificar que el repositorio esté correctamente inyectado
 
-**Notas:** 
+**Notas:**
+
 - Creado para resolver error 404 al verificar registros incompletos
 - Usa repositorio directamente (debería usar use case)
 - Convierte entidades de dominio a formato de presentación (castellano)
@@ -160,34 +186,41 @@ Este documento lista **TODOS** los archivos que fueron creados o modificados dur
 ## 🟡 BACKEND - Archivos Modificados
 
 ### 1. `backend/src/presentation/routes/index.js`
+
 **Prioridad:** 🟢 BAJA  
 **Cambio:** Agregada ruta `/catalogs`  
 **Acción requerida:**
+
 - [ ] Verificar que la ruta esté correctamente montada
 - [ ] Revisar orden de rutas si es necesario
 
 ---
 
 ### 2. `backend/src/application/dtos/request/RegisterStudentDTO.js` ⭐ **MODIFICADO (2025-12-16)**
+
 **Prioridad:** 🟡 MEDIA  
 **Cambio:** Agregados campos `carreraId`, `gestionIngresoId`, campos de documentos, y flag `skipDocumentValidation`  
 **Acción requerida:**
+
 - [ ] Verificar que todos los campos estén correctamente validados
 - [ ] Revisar extracción de `documentosEntregados`
 - [ ] Revisar lógica de `skipDocumentValidation` (permite guardado parcial)
 - [ ] Asegurar que el DTO sigue el patrón establecido
 
-**Notas:** 
+**Notas:**
+
 - Agregado `skipDocumentValidation` para permitir guardar estudiantes sin validar documentos requeridos
 - Útil para guardados parciales durante el proceso de registro
 
 ---
 
 ### 3. `backend/src/application/use-cases/Estudiantes/RegisterStudentUseCase.js` ⭐ **MODIFICADO (2025-12-16)**
+
 **Prioridad:** 🔴 ALTA  
 **Problema:** Lógica de creación de datos académicos y documentos mezclada con creación de estudiante  
 **Cambio adicional:** Agregada validación condicional de documentos requeridos basada en `skipDocumentValidation`  
 **Acción requerida:**
+
 - [ ] Crear `CreateStudentAcademicDataUseCase` separado
 - [ ] Crear `CreateStudentDocumentsUseCase` separado
 - [ ] Orquestar use cases desde un use case superior o desde el controller
@@ -196,7 +229,8 @@ Este documento lista **TODOS** los archivos que fueron creados o modificados dur
 - [ ] Revisar cálculo de estado (actualmente no se guarda en BD)
 - [ ] Verificar que `documentosEntregadosNormalizados` esté siempre definido (corregido bug)
 
-**Notas:** 
+**Notas:**
+
 - Agregado `studentAcademicDataRepository` y `studentDocumentRepository`
 - Lógica de validación y creación de documentos mezclada
 - **NUEVO:** Validación condicional permite guardar estudiantes parcialmente sin documentos requeridos
@@ -205,18 +239,22 @@ Este documento lista **TODOS** los archivos que fueron creados o modificados dur
 ---
 
 ### 4. `backend/src/infrastructure/container/modules/estudiantes.container.js`
+
 **Prioridad:** 🟡 MEDIA  
 **Cambio:** Agregados repositorios a dependencias de `RegisterStudentUseCase`  
 **Acción requerida:**
+
 - [ ] Verificar que todas las dependencias estén correctamente inyectadas
 - [ ] Revisar si se necesitan más dependencias después de refactorizar use cases
 
 ---
 
 ### 5. `backend/src/presentation/controllers/estudiantes/list.controller.js`
+
 **Prioridad:** 🔴 ALTA  
 **Problema:** Implementación rápida usando repositorio directamente sin use case  
 **Acción requerida:**
+
 - [ ] Crear `ListStudentsUseCase` completo con:
   - Filtros avanzados
   - Paginación del lado del servidor
@@ -227,15 +265,18 @@ Este documento lista **TODOS** los archivos que fueron creados o modificados dur
 ---
 
 ### 6. `backend/src/presentation/routes/student.routes.js` ⭐ **MODIFICADO (2025-12-16)**
+
 **Prioridad:** 🟡 MEDIA  
 **Cambio:** Agregada ruta `POST /:id/documentos` con middleware de multer, ruta `GET /:id/documentos`, y ruta `GET /:id/datos-academicos`  
 **Acción requerida:**
+
 - [ ] Verificar orden de rutas (específicas antes de genéricas)
 - [ ] Revisar middleware de multer
 - [ ] Agregar validadores si es necesario
 - [ ] Verificar que las rutas GET estén correctamente posicionadas antes de `/:id`
 
-**Notas:** 
+**Notas:**
+
 - Ruta reordenada para evitar conflictos con `/:id`
 - **NUEVO:** Agregada ruta GET para obtener documentos de un estudiante (resuelve error 404)
 - **NUEVO:** Agregada ruta GET para obtener datos académicos de un estudiante (resuelve error 404)
@@ -243,35 +284,43 @@ Este documento lista **TODOS** los archivos que fueron creados o modificados dur
 ---
 
 ### 19. `backend/src/infrastructure/container/modules/repositories.container.js`
+
 **Prioridad:** 🟢 BAJA  
 **Cambio:** Agregado registro de `documentacionRepository`  
 **Acción requerida:**
+
 - [ ] Verificar que el registro esté correcto
 - [ ] Revisar si hay otros repositorios pendientes de registrar
 
 ---
 
 ### 20. `backend/src/infrastructure/database/models/index.js`
+
 **Prioridad:** 🟢 BAJA  
 **Cambio:** Agregado export de Documentacion  
 **Acción requerida:**
+
 - [ ] Verificar que el export esté correcto
 
 ---
 
 ### 12. `backend/src/infrastructure/database/models/DocumentoEstudiante.js`
+
 **Prioridad:** 🟡 MEDIA  
 **Cambio:** Agregados campos `documentacionId` y `esOriginal`  
 **Acción requerida:**
+
 - [ ] Verificar que todos los campos estén sincronizados con schema de BD
 - [ ] Revisar que `tipoDocumento` haya sido removido correctamente
 
 ---
 
 ### 13. `backend/src/infrastructure/repositories/StudentDocumentRepository.js`
+
 **Prioridad:** 🟡 MEDIA  
 **Cambio:** Actualizado mapeo para incluir `documentacionId` y `esOriginal`  
 **Acción requerida:**
+
 - [ ] Verificar que `toEntity()` y `mapDataToModel()` estén correctos
 - [ ] Revisar método `findByTipoDocumento()` (ahora consulta documentacion primero)
 - [ ] Verificar que `tipoDocumento` haya sido removido correctamente
@@ -279,9 +328,11 @@ Este documento lista **TODOS** los archivos que fueron creados o modificados dur
 ---
 
 ### 14. `backend/src/domain/constants/index.js`
+
 **Prioridad:** 🟡 MEDIA  
 **Cambio:** Probablemente agregadas constantes relacionadas con documentos  
 **Acción requerida:**
+
 - [ ] Revisar constantes agregadas
 - [ ] Verificar que sigan el patrón establecido
 - [ ] Documentar nuevas constantes si es necesario
@@ -289,9 +340,11 @@ Este documento lista **TODOS** los archivos que fueron creados o modificados dur
 ---
 
 ### 15. `backend/src/presentation/controllers/estudiantes/create.controller.js`
+
 **Prioridad:** 🟡 MEDIA  
 **Cambio:** Probablemente agregados logs de debug  
 **Acción requerida:**
+
 - [ ] Revisar logs de debug agregados
 - [ ] Remover logs innecesarios
 - [ ] Mantener solo logs esenciales para producción
@@ -299,9 +352,11 @@ Este documento lista **TODOS** los archivos que fueron creados o modificados dur
 ---
 
 ### 16. `backend/src/presentation/middleware/errorHandler.middleware.js`
+
 **Prioridad:** 🟡 MEDIA  
 **Cambio:** Posibles mejoras en manejo de errores  
 **Acción requerida:**
+
 - [ ] Revisar cambios en manejo de errores
 - [ ] Verificar que todos los errores se manejen correctamente
 - [ ] Asegurar que los mensajes de error sean apropiados
@@ -309,9 +364,11 @@ Este documento lista **TODOS** los archivos que fueron creados o modificados dur
 ---
 
 ### 17. `backend/src/presentation/middleware/validation.middleware.js`
-**Prioridad:** 🟡 MEDIA  
+
+**Prioridad:** 🟡 MEDIA
 **Cambio:** Posibles mejoras en validación  
 **Acción requerida:**
+
 - [ ] Revisar cambios en validación
 - [ ] Verificar que todas las validaciones funcionen correctamente
 - [ ] Asegurar que los mensajes de validación sean claros
@@ -319,19 +376,23 @@ Este documento lista **TODOS** los archivos que fueron creados o modificados dur
 ---
 
 ### 18. `backend/src/infrastructure/external/storage/.gitkeep` [ELIMINADO]
+
 **Prioridad:** 🟢 BAJA  
 **Estado:** Archivo eliminado (reemplazado por multer.config.js)  
 **Acción requerida:**
+
 - [ ] Verificar que el directorio se mantenga en git
 - [ ] No requiere acción adicional
 
 ---
 
 ### 14. `backend/src/presentation/controllers/catalogs.controller.js` (MODIFICADO después de creación)
+
 **Prioridad:** 🔴 ALTA  
 **Cambio:** Agregados endpoints geográficos con filtrado  
 **Problema:** Usa repositorios directamente sin use cases  
 **Acción requerida:**
+
 - [ ] Crear use cases para catálogos geográficos
 - [ ] Mover lógica de filtrado a use cases
 - [ ] Controller solo debe orquestar use cases
@@ -617,13 +678,14 @@ Este documento lista **TODOS** los archivos que fueron creados o modificados dur
 
 ### 13. `frontend/src/application/modules/estudiantes/hooks/useUpdateStudent.js` ⭐ **MODIFICADO (2025-12-16)**
 **Prioridad:** 🟡 MEDIA  
-**Cambio:** Agregado soporte para guardado parcial, actualización de estudiantes existentes, y flag `skipDocumentValidation`  
+**Cambio:** Agregado soporte para guardado parcial, actualización de estudiantes existentes, flag `skipDocumentValidation`, y subida automática de documentos  
 **Acción requerida:**
 - [ ] Revisar implementación del hook
 - [ ] Verificar manejo de errores
 - [ ] Revisar subida de archivos en actualización
 - [ ] Verificar lógica de detección de `estudianteId` en datos (nueva funcionalidad)
 - [ ] Revisar envío de flag `skipDocumentValidation` al backend
+- [ ] Verificar que la subida automática de documentos funcione correctamente (nueva funcionalidad)
 - [ ] Asegurar que siga el patrón de otros hooks
 
 **Notas:** 
@@ -631,6 +693,8 @@ Este documento lista **TODOS** los archivos que fueron creados o modificados dur
 - **NUEVO:** Envía `skipDocumentValidation=true` cuando es guardado temporal
 - **NUEVO:** Permite crear estudiante en primer paso y actualizar en pasos siguientes
 - **NUEVO:** Maneja actualización de estudiantes existentes cuando se completa registro
+- **NUEVO:** Sube documentos automáticamente si hay archivo, aunque el checkbox no esté marcado (el hecho de subir un archivo implica que el documento está entregado)
+- **NUEVO:** Agregados logs de depuración para rastrear subida de documentos
 
 ---
 
@@ -778,6 +842,7 @@ Este documento lista **TODOS** los archivos que fueron creados o modificados dur
 13. **Preservación de valores geográficos en wizard:** Los valores seleccionados en campos geográficos se mantienen al navegar entre pasos del wizard (avanzar/retroceder)
 14. **Guardado de valores antes de retroceder:** WizardForm guarda valores actuales antes de cambiar de paso para preservar datos ingresados
 15. **Actualización ordenada de valores geográficos:** GenericForm establece valores en orden de dependencias (país → departamento → provincia → municipio) para asegurar que las dependencias estén establecidas antes que los dependientes
+16. **Subida automática de documentos:** Si hay un archivo seleccionado, se sube automáticamente al servidor aunque el checkbox "entregado" no esté marcado (el hecho de subir un archivo implica que el documento está entregado)
 
 ### Archivos Nuevos:
 - `backend/src/presentation/controllers/estudiantes/get-documents.controller.js`
@@ -791,7 +856,7 @@ Este documento lista **TODOS** los archivos que fueron creados o modificados dur
 - `backend/src/presentation/controllers/estudiantes/getById.controller.js` ⭐ - Implementado endpoint GET estudiante por ID
 - `frontend/src/presentation/pages/Estudiantes/List/List.jsx` - Funcionalidad completar registro
 - `frontend/src/presentation/modules/estudiantes/pages/Registrar/Registrar.jsx` ⭐ - Carga datos existentes, mejora en generación de campos de documentos, manejo de documentos existentes
-- `frontend/src/application/modules/estudiantes/hooks/useUpdateStudent.js` - Guardado parcial
+- `frontend/src/application/modules/estudiantes/hooks/useUpdateStudent.js` ⭐ - Guardado parcial, subida automática de documentos (si hay archivo, se sube aunque checkbox no esté marcado)
 - `frontend/src/application/modules/estudiantes/providers/StudentProvider.jsx` - Manejo estudianteId, método `setCurrentStudentId`
 - `frontend/src/presentation/components/organisms/WizardForm/WizardForm.jsx` ⭐ - Validación parcial, actualización de valores cuando cambian initialValues, guardado de valores antes de retroceder
 - `frontend/src/presentation/components/organisms/GenericForm/GenericForm.jsx` ⭐ - Actualización de valores cuando cambian initialValues, orden de dependencias geográficas
@@ -801,6 +866,14 @@ Este documento lista **TODOS** los archivos que fueron creados o modificados dur
 
 ⭐ = Modificado en sesión de tarde (2025-12-16)
 
-**Última actualización:** 2025-12-16 (incluye cambios de mañana y tarde)  
+**Última actualización:** 2025-12-16 (incluye cambios de mañana, tarde y noche)  
 **Próximo paso:** Revisar archivo por archivo según prioridad
+
+---
+
+## 🔧 Cambios Recientes (2025-12-16 noche)
+
+### Mejoras en Subida de Documentos:
+- **`useUpdateStudent.js`:** Modificado para subir documentos automáticamente si hay un archivo seleccionado, aunque el checkbox "entregado" no esté marcado. Esto resuelve el problema de que los documentos no se subían cuando el usuario seleccionaba un archivo pero olvidaba marcar el checkbox.
+- Agregados logs de depuración para rastrear el proceso de subida de documentos y facilitar el diagnóstico de problemas.
 

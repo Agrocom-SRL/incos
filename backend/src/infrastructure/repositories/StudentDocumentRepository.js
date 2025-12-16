@@ -205,6 +205,9 @@ export class StudentDocumentRepository extends BaseRepository {
    * @returns {Promise<StudentDocument[]>}
    */
   async findByEstudianteId(estudianteId) {
+    // Log para debugging
+    console.log('[StudentDocumentRepository] Buscando documentos para estudianteId:', estudianteId, 'tipo:', typeof estudianteId);
+    
     const models = await this.getModel().findAll({
       where: {
         estudianteId: estudianteId,
@@ -213,6 +216,18 @@ export class StudentDocumentRepository extends BaseRepository {
       },
       order: [['createdAt', 'DESC']],
     });
+    
+    console.log('[StudentDocumentRepository] Modelos encontrados:', models.length, 'para estudianteId:', estudianteId);
+    if (models.length > 0) {
+      console.log('[StudentDocumentRepository] Primer modelo:', {
+        id: models[0].id,
+        estudianteId: models[0].estudianteId,
+        documentacionId: models[0].documentacionId,
+        nombreArchivo: models[0].nombreArchivo,
+        activo: models[0].activo,
+      });
+    }
+    
     return models.map((model) => this.toEntity(model));
   }
 

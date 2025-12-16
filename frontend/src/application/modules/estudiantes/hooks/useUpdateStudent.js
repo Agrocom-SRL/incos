@@ -102,9 +102,12 @@ export const useUpdateStudent = () => {
           const nuevoEstudianteId = response.data.data.id;
 
           // Subir archivos después de crear el estudiante
+          // IMPORTANTE: Si hay un archivo, subirlo aunque el checkbox no esté marcado
+          // El hecho de subir un archivo implica que el documento está entregado
           const uploadPromises = [];
           Object.keys(archivosASubir).forEach((docId) => {
-            if (documentosEntregados[docId] && archivosASubir[docId]) {
+            if (archivosASubir[docId]) {
+              // Si hay archivo, marcar automáticamente como entregado
               // Asegurar que documentacionId sea un número
               const documentacionId = typeof docId === 'string' ? parseInt(docId, 10) : docId;
               
@@ -113,13 +116,18 @@ export const useUpdateStudent = () => {
               formData.append('documentacionId', documentacionId.toString());
               formData.append('esOriginal', 'false'); // Por defecto es copia
 
+              console.log(`[useUpdateStudent] Subiendo documento ${docId} para estudiante ${nuevoEstudianteId}`);
+
               uploadPromises.push(
                 apiClient.post(`/v1/estudiantes/${nuevoEstudianteId}/documentos`, formData, {
                   headers: {
                     'Content-Type': 'multipart/form-data',
                   },
+                }).then((response) => {
+                  console.log(`[useUpdateStudent] Documento ${docId} subido correctamente:`, response.data);
+                  return response;
                 }).catch((err) => {
-                  console.error(`Error al subir documento ${docId}:`, err);
+                  console.error(`[useUpdateStudent] Error al subir documento ${docId}:`, err);
                   return null; // Continuar con otros documentos aunque falle uno
                 })
               );
@@ -160,9 +168,12 @@ export const useUpdateStudent = () => {
 
       if (response.data?.success) {
         // Subir archivos si los hay
+        // IMPORTANTE: Si hay un archivo, subirlo aunque el checkbox no esté marcado
+        // El hecho de subir un archivo implica que el documento está entregado
         const uploadPromises = [];
         Object.keys(archivosASubir).forEach((docId) => {
-          if (documentosEntregados[docId] && archivosASubir[docId]) {
+          if (archivosASubir[docId]) {
+            // Si hay archivo, marcar automáticamente como entregado
             // Asegurar que documentacionId sea un número
             const documentacionId = typeof docId === 'string' ? parseInt(docId, 10) : docId;
             
@@ -171,13 +182,18 @@ export const useUpdateStudent = () => {
             formData.append('documentacionId', documentacionId.toString());
             formData.append('esOriginal', 'false'); // Por defecto es copia
 
+            console.log(`[useUpdateStudent] Subiendo documento ${docId} para estudiante ${studentIdFinal}`);
+
             uploadPromises.push(
               apiClient.post(`/v1/estudiantes/${studentIdFinal}/documentos`, formData, {
                 headers: {
                   'Content-Type': 'multipart/form-data',
                 },
+              }).then((response) => {
+                console.log(`[useUpdateStudent] Documento ${docId} subido correctamente:`, response.data);
+                return response;
               }).catch((err) => {
-                console.error(`Error al subir documento ${docId}:`, err);
+                console.error(`[useUpdateStudent] Error al subir documento ${docId}:`, err);
                 return null; // Continuar con otros documentos aunque falle uno
               })
             );

@@ -57,12 +57,26 @@ const Registrar = () => {
   } = useStudentContext();
 
   // Cargar datos del estudiante si se pasa un ID
+  // IMPORTANTE: Esperar a que los datos geográficos estén disponibles para resolver la cascada
   useEffect(() => {
     let isMounted = true; // Flag para evitar actualizaciones si el componente se desmonta
     let abortController = new AbortController(); // Para cancelar la petición si el componente se desmonta
     
     const cargarEstudiante = async () => {
       if (!estudianteId) {
+        return;
+      }
+      
+      // Esperar a que los datos geográficos estén disponibles antes de resolver la cascada
+      // Si no están disponibles, esperar un poco y reintentar
+      if (!municipios || municipios.length === 0 || !provincias || provincias.length === 0 || !departamentos || departamentos.length === 0) {
+        console.log('[Registrar] Esperando datos geográficos...');
+        // Reintentar después de un breve delay
+        setTimeout(() => {
+          if (isMounted && estudianteId) {
+            cargarEstudiante();
+          }
+        }, 500);
         return;
       }
 
@@ -79,8 +93,13 @@ const Registrar = () => {
         try {
           const documentosResponse = await apiClient.get(`/v1/estudiantes/${estudianteId}/documentos`);
           documentos = documentosResponse.data?.data || documentosResponse.data || [];
+          console.log('[Registrar] Documentos cargados del estudiante:', documentos);
         } catch (err) {
-          console.warn('Error al cargar documentos del estudiante:', err);
+          console.error('[Registrar] Error al cargar documentos del estudiante:', err);
+          // Si es 404, no hay documentos, eso está bien
+          if (err.response?.status !== 404) {
+            console.warn('[Registrar] Error inesperado al cargar documentos:', err);
+          }
         }
 
         // Cargar datos académicos del estudiante
@@ -93,43 +112,46 @@ const Registrar = () => {
         }
 
         // Obtener datos geográficos si el estudiante tiene municipios
-        // Solo intentar resolver si municipios y provincias están disponibles
-        if (municipios && municipios.length > 0 && provincias && provincias.length > 0) {
-          // Buscar municipio de nacimiento para obtener provincia y departamento
+        // Resolver la cascada completa: municipio → provincia → departamento → país
+        // Solo intentar resolver si todos los datos geográficos están disponibles
+        if (municipios && municipios.length > 0 && provincias && provincias.length > 0 && departamentos && departamentos.length > 0) {
+          // Buscar municipio de nacimiento para obtener provincia, departamento y país
           if (estudiante.municipioNacimientoId) {
             const municipioNac = municipios.find(m => m.id === estudiante.municipioNacimientoId);
             if (municipioNac && municipioNac.provinciaId) {
               const provinciaNac = provincias.find(p => p.id === municipioNac.provinciaId);
               if (provinciaNac && provinciaNac.departamentoId) {
-                // Establecer departamento y provincia de nacimiento para que los selects se llenen correctamente
-                estudiante.departamentoNacimientoId = provinciaNac.departamentoId;
-                estudiante.provinciaNacimientoId = municipioNac.provinciaId;
-                // También establecer el país si es necesario (asumiendo que es Bolivia por defecto)
-                if (estudiante.paisNacimientoId === undefined) {
-                  estudiante.paisNacimientoId = 1; // Bolivia por defecto
+                const departamentoNac = departamentos.find(d => d.id === provinciaNac.departamentoId);
+                if (departamentoNac) {
+                  // Establecer la cascada completa: país → departamento → provincia → municipio
+                  estudiante.paisNacimientoId = departamentoNac.paisId || estudiante.paisNacimientoId || 1;
+                  estudiante.departamentoNacimientoId = provinciaNac.departamentoId;
+                  estudiante.provinciaNacimientoId = municipioNac.provinciaId;
+                  // El municipio ya está establecido en estudiante.municipioNacimientoId
                 }
               }
             }
           }
 
-          // Buscar municipio de residencia para obtener provincia y departamento
+          // Buscar municipio de residencia para obtener provincia, departamento y país
           if (estudiante.municipioResidenciaId) {
             const municipioRes = municipios.find(m => m.id === estudiante.municipioResidenciaId);
             if (municipioRes && municipioRes.provinciaId) {
               const provinciaRes = provincias.find(p => p.id === municipioRes.provinciaId);
               if (provinciaRes && provinciaRes.departamentoId) {
-                // Establecer departamento y provincia de residencia para que los selects se llenen correctamente
-                estudiante.departamentoResidenciaId = provinciaRes.departamentoId;
-                estudiante.provinciaResidenciaId = municipioRes.provinciaId;
-                // También establecer el país si es necesario (asumiendo que es Bolivia por defecto)
-                if (estudiante.paisResidenciaId === undefined) {
-                  estudiante.paisResidenciaId = 1; // Bolivia por defecto
+                const departamentoRes = departamentos.find(d => d.id === provinciaRes.departamentoId);
+                if (departamentoRes) {
+                  // Establecer la cascada completa: país → departamento → provincia → municipio
+                  estudiante.paisResidenciaId = departamentoRes.paisId || estudiante.paisResidenciaId || 1;
+                  estudiante.departamentoResidenciaId = provinciaRes.departamentoId;
+                  estudiante.provinciaResidenciaId = municipioRes.provinciaId;
+                  // El municipio ya está establecido en estudiante.municipioResidenciaId
                 }
               }
             }
           }
         } else {
-          console.warn('[Registrar] Municipios o provincias no están disponibles aún, se omitirá la resolución geográfica');
+          console.warn('[Registrar] Datos geográficos no están disponibles aún, se omitirá la resolución geográfica');
         }
 
         // Formatear datos para el formulario
@@ -148,25 +170,64 @@ const Registrar = () => {
         // Agregar documentos marcados como entregados
         // Guardar información de documentos existentes para mostrar enlaces
         const documentosExistentes = {};
+        console.log('[Registrar] Procesando documentos:', documentos);
+        
         documentos.forEach((doc) => {
-          if (doc.documentacionId) {
-            datosFormateados[`documento_${doc.documentacionId}_entregado`] = true;
+          console.log('[Registrar] Procesando documento:', doc);
+          // El campo puede ser documentacionId o documentacion_id dependiendo del formato del backend
+          const docId = doc.documentacionId || doc.documentacion_id;
+          
+          if (docId) {
+            // IMPORTANTE: Marcar checkbox como entregado (siempre que haya un documento registrado)
+            // Esto es crítico para que el checkbox se muestre marcado cuando se carga el estudiante
+            datosFormateados[`documento_${docId}_entregado`] = true;
+            console.log(`[Registrar] Marcado documento_${docId}_entregado = true para documentacionId ${docId}`);
+            
             // Si hay archivo, guardar información del documento existente
-            if (doc.fileName && doc.fileName !== 'tmp' && doc.fileName !== 'pendiente_') {
-              documentosExistentes[doc.documentacionId] = {
+            // El backend retorna: nombreArchivo y rutaArchivo
+            const fileName = doc.nombreArchivo || doc.fileName || doc.nombre_archivo;
+            const filePath = doc.rutaArchivo || doc.filePath || doc.ruta_archivo;
+            
+            console.log(`[Registrar] Documento ${docId} - fileName:`, fileName, 'filePath:', filePath);
+            
+            // Verificar si hay un archivo válido
+            // Un documento puede estar marcado como entregado pero no tener archivo aún
+            // Solo guardar como documento existente si tiene archivo válido
+            if (fileName && fileName.trim() !== '' && fileName !== 'tmp' && fileName !== 'pendiente_') {
+              // Construir URL completa si es necesario
+              let url = filePath;
+              if (filePath && !filePath.startsWith('http') && !filePath.startsWith('/')) {
+                // Si la ruta es relativa, construir URL completa
+                url = `/api/v1/estudiantes/${estudianteId}/documentos/${doc.id}/archivo`;
+              } else if (!filePath && fileName) {
+                // Si no hay ruta pero hay nombre, construir URL
+                url = `/api/v1/estudiantes/${estudianteId}/documentos/${doc.id}/archivo`;
+              } else if (filePath && filePath.startsWith('/uploads')) {
+                // Si la ruta es relativa desde la raíz del servidor, construir URL completa
+                url = `http://localhost:3000${filePath}`;
+              }
+              
+              documentosExistentes[docId] = {
                 id: doc.id,
-                nombreArchivo: doc.nombreArchivo || doc.fileName,
-                rutaArchivo: doc.rutaArchivo || doc.filePath,
-                url: doc.rutaArchivo || doc.filePath,
+                nombreArchivo: fileName,
+                rutaArchivo: filePath,
+                url: url || filePath,
               };
-              // NO agregar al fileList inicialmente - se mostrará como enlace
+              console.log(`[Registrar] Documento existente guardado para documentacionId ${docId}:`, documentosExistentes[docId]);
+            } else {
+              console.log(`[Registrar] Documento ${docId} marcado como entregado pero sin archivo válido. fileName:`, fileName, 'filePath:', filePath);
             }
+          } else {
+            console.warn('[Registrar] Documento sin documentacionId:', doc);
           }
         });
         
         // Guardar documentos existentes en el estado para usarlos en la generación de campos
         if (Object.keys(documentosExistentes).length > 0) {
           datosFormateados._documentosExistentes = documentosExistentes;
+          console.log('[Registrar] Documentos existentes guardados:', documentosExistentes);
+        } else {
+          console.log('[Registrar] No hay documentos existentes para mostrar');
         }
 
         // Agregar datos académicos si existen
@@ -177,6 +238,13 @@ const Registrar = () => {
 
         // Solo actualizar el estado si el componente sigue montado
         if (isMounted) {
+          console.log('[Registrar] Datos formateados para el formulario:', datosFormateados);
+          console.log('[Registrar] Checkboxes de documentos marcados:', 
+            Object.keys(datosFormateados).filter(key => key.startsWith('documento_') && key.endsWith('_entregado'))
+              .map(key => ({ [key]: datosFormateados[key] }))
+          );
+          console.log('[Registrar] Documentos existentes:', datosFormateados._documentosExistentes);
+          
           setEstudianteData(datosFormateados);
           
           // Establecer el currentStudentId en el Provider para que el wizardSubmit lo use
@@ -204,7 +272,7 @@ const Registrar = () => {
       isMounted = false;
       abortController.abort();
     };
-  }, [estudianteId, setCurrentStudentId, message]);
+  }, [estudianteId, setCurrentStudentId, message, municipios, provincias, departamentos]);
 
   // Resolver opciones dinámicas del Provider
   const resolveOptions = (fieldName) => {
