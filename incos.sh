@@ -97,9 +97,9 @@ echo -e "${GREEN}✓${NC} Directorios creados"
 echo -e "${YELLOW}[3/10]${NC} Clonando repositorio desde GitHub..."
 git clone "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_USER}/${REPO_NAME}.git" "$TEMP_CLONE" || handle_error "Falló el clonado del repositorio"
 
-# Mover contenido
-mv "$TEMP_CLONE"/* "$BASE_PATH/" 2>/dev/null
-mv "$TEMP_CLONE"/.* "$BASE_PATH/" 2>/dev/null
+# Mover contenido preservando estructura y permisos
+cp -r "$TEMP_CLONE"/* "$BASE_PATH/" 2>/dev/null
+cp -r "$TEMP_CLONE"/.* "$BASE_PATH/" 2>/dev/null || true
 rm -rf "$TEMP_CLONE"
 
 if [ ! -d "$BASE_PATH/.git" ]; then
@@ -136,11 +136,15 @@ if [ -f ".env.example" ]; then
     sed -i "s|NODE_ENV=.*|NODE_ENV=production|g" .env
     sed -i "s|PORT=.*|PORT=$BACKEND_PORT|g" .env
     
-    # Asegurar que DB_NAME sea instituto_incos (sin _dev)
+    # Configurar credenciales de base de datos
+    # Asegurar que DB_NAME sea instituto_incos
     sed -i "s|DB_NAME=.*|DB_NAME=instituto_incos|g" .env
     
-    # Asegurar que DB_PORT sea 3306 (puerto estándar de MySQL)
+    # Configurar host, puerto, usuario y contraseña de base de datos
+    sed -i "s|DB_HOST=.*|DB_HOST=192.168.100.247|g" .env
     sed -i "s|DB_PORT=.*|DB_PORT=3306|g" .env
+    sed -i "s|DB_USER=.*|DB_USER=instituto|g" .env
+    sed -i "s|DB_PASSWORD=.*|DB_PASSWORD=Yinux9isql|g" .env
     
     # Actualizar URLs para producción
     sed -i "s|CORS_ORIGIN=.*|CORS_ORIGIN=https://$DOMAIN|g" .env
@@ -165,8 +169,10 @@ PORT=$BACKEND_PORT
 
 # Database
 DB_NAME=instituto_incos
-DB_USER=root
-DB_PASSWORD=
+DB_HOST=192.168.100.247
+DB_PORT=3306
+DB_USER=instituto
+DB_PASSWORD=Yinux9isql
 DB_HOST=localhost
 DB_PORT=3306
 
@@ -678,6 +684,37 @@ echo -e "      ${BLUE}cd $FRONTEND_PATH && npm run build${NC}"
 echo -e "\n${GREEN}5. Verificar backend:${NC}"
 echo -e "   ${BLUE}curl https://$DOMAIN/api/v1/health${NC}"
 echo -e "   ${BLUE}$SUDO_CMD journalctl -u incos-backend -n 50${NC}"
+
+echo -e "\n${YELLOW}🔍 DIAGNÓSTICO RÁPIDO DEL BACKEND:${NC}"
+echo -e "   Si el backend no está funcionando (error 502), ejecuta estos comandos:"
+echo -e ""
+echo -e "   ${BLUE}# 1. Ver estado del servicio${NC}"
+echo -e "   $SUDO_CMD systemctl status incos-backend"
+echo -e ""
+echo -e "   ${BLUE}# 2. Ver logs del sistema (últimas 50 líneas)${NC}"
+echo -e "   $SUDO_CMD journalctl -u incos-backend -n 50 --no-pager"
+echo -e ""
+echo -e "   ${BLUE}# 3. Ver logs de error de la aplicación${NC}"
+echo -e "   tail -50 $LOG_PATH/backend-error.log"
+echo -e ""
+echo -e "   ${BLUE}# 4. Ver logs de salida estándar${NC}"
+echo -e "   tail -50 $LOG_PATH/backend.log"
+echo -e ""
+echo -e "   ${BLUE}# 5. Verificar credenciales de base de datos${NC}"
+echo -e "   cat $BACKEND_PATH/.env | grep DB_"
+echo -e ""
+echo -e "   ${BLUE}# 6. Intentar iniciar manualmente (para ver errores en tiempo real)${NC}"
+echo -e "   cd $BACKEND_PATH"
+echo -e "   node src/server.js"
+echo -e ""
+echo -e "   ${BLUE}# 7. Verificar que el puerto 3000 esté disponible${NC}"
+echo -e "   netstat -tuln | grep :3000"
+echo -e "   # O"
+echo -e "   ss -tuln | grep :3000"
+echo -e ""
+echo -e "   ${BLUE}# 8. Reiniciar el servicio${NC}"
+echo -e "   $SUDO_CMD systemctl restart incos-backend"
+echo -e "   $SUDO_CMD systemctl status incos-backend"
 
 echo -e "\n${GREEN}🎓 Sistema desplegado correctamente!${NC}\n"
 
