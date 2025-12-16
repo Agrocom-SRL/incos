@@ -18,7 +18,7 @@
  */
 
 // Use Cases
-import { RegisterStudentUseCase } from '../../../application/use-cases/Estudiantes/RegisterStudentUseCase.js';
+import { RegisterStudentUseCase } from '../../../application/use-cases/estudiantes/RegisterStudentUseCase.js';
 
 // Controllers
 import {
