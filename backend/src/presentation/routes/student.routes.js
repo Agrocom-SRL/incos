@@ -11,6 +11,8 @@ import {
 import validateRequest from '../middleware/validation.middleware.js';
 import container from '../../infrastructure/container/index.js';
 import { uploadSingle, UploadDocumentController } from '../controllers/estudiantes/upload-document.controller.js';
+import { GetStudentDocumentsController } from '../controllers/estudiantes/get-documents.controller.js';
+import { GetStudentAcademicDataController } from '../controllers/estudiantes/get-academic-data.controller.js';
 import { logger } from '../../shared/logger.js';
 
 const router = express.Router();
@@ -40,6 +42,8 @@ const requestLicenciaController = container.resolve(
 const uploadDocumentController = new UploadDocumentController({
   uploadDocumentUseCase: null, // TODO: Implementar use case
 });
+const getStudentDocumentsController = new GetStudentDocumentsController();
+const getStudentAcademicDataController = new GetStudentAcademicDataController();
 
 /**
  * POST /api/v1/estudiantes
@@ -65,6 +69,38 @@ router.get(
   listStudentsValidator,
   validateRequest,
   (req, res, next) => listStudentsController.handle(req, res, next)
+);
+
+/**
+ * GET /api/v1/estudiantes/:id/documentos
+ * Obtener documentos de un estudiante
+ * Permisos: estudiantes.documentos.ver
+ * IMPORTANTE: Esta ruta debe estar ANTES de /:id para que Express la capture correctamente
+ */
+router.get(
+  '/:id/documentos',
+  // authMiddleware,
+  (req, res, next) => getStudentDocumentsController.handle(req, res, next)
+);
+
+/**
+ * GET /api/v1/estudiantes/:id/datos-academicos
+ * Obtener datos académicos de un estudiante
+ * Permisos: estudiantes.ver
+ * IMPORTANTE: Esta ruta debe estar ANTES de /:id para que Express la capture correctamente
+ */
+router.get(
+  '/:id/datos-academicos',
+  // authMiddleware,
+  (req, res, next) => {
+    logger.info('Ruta /:id/datos-academicos capturada', {
+      method: req.method,
+      url: req.url,
+      originalUrl: req.originalUrl,
+      params: req.params,
+    });
+    getStudentAcademicDataController.handle(req, res, next);
+  }
 );
 
 /**

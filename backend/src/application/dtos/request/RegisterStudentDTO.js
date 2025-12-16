@@ -41,6 +41,10 @@ export class RegisterStudentDTO {
     this.carreraId = data.carreraId;
     this.gestionIngresoId = data.gestionIngresoId;
 
+    // Flag para indicar si es un guardado parcial (no validar documentos requeridos)
+    // Útil cuando el usuario guarda progreso sin completar todos los pasos
+    this.skipDocumentValidation = data.skipDocumentValidation === true || data.skipDocumentValidation === 'true';
+
     // Documentos: array de IDs de documentacion que fueron marcados como entregados
     // El frontend envía campos como documento_{id}_entregado: true
     // Extraemos estos IDs para crear el array

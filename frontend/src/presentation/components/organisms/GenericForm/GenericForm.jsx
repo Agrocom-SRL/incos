@@ -8,7 +8,7 @@
  * Atomic Design: Usa moléculas (FormSection, FormActions) y átomos (FormCard, Button, Heading)
  */
 
-import React, { forwardRef, useImperativeHandle } from 'react';
+import React, { forwardRef, useImperativeHandle, useEffect } from 'react';
 import { Form, App } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { FormSection, FormActions } from '@molecules';
@@ -36,6 +36,60 @@ const GenericForm = forwardRef(({
 
   // Exponer el form via ref
   useImperativeHandle(ref, () => form, [form]);
+
+  // Actualizar valores del formulario cuando cambien los initialValues
+  // Esto es importante en modo wizard cuando se cambia de paso
+  useEffect(() => {
+    if (initialValues && Object.keys(initialValues).length > 0 && form) {
+      // Usar un pequeño delay para asegurar que el formulario y las opciones estén listas
+      const timeoutId = setTimeout(() => {
+        try {
+          // Obtener valores actuales del formulario
+          const currentValues = form.getFieldsValue() || {};
+          // Combinar valores actuales con nuevos initialValues, dando prioridad a initialValues
+          // Esto preserva valores que el usuario haya ingresado pero no estén en initialValues
+          const mergedValues = { ...currentValues, ...initialValues };
+          
+          // IMPORTANTE: Establecer valores en orden de dependencias para campos geográficos
+          // Primero establecer dependencias (país), luego departamento, luego provincia, luego municipio
+          // Esto asegura que cuando se establezca un valor dependiente, su dependencia ya esté establecida
+          
+          // Orden de dependencias geográficas
+          const geographicOrder = [
+            'paisNacimientoId', 'paisResidenciaId',
+            'departamentoNacimientoId', 'departamentoResidenciaId',
+            'provinciaNacimientoId', 'provinciaResidenciaId',
+            'municipioNacimientoId', 'municipioResidenciaId'
+          ];
+          
+          // Establecer primero las dependencias, luego los dependientes
+          const valuesToSet = {};
+          
+          // Primero: establecer dependencias geográficas en orden
+          geographicOrder.forEach(fieldName => {
+            if (mergedValues[fieldName] !== undefined && mergedValues[fieldName] !== null) {
+              valuesToSet[fieldName] = mergedValues[fieldName];
+            }
+          });
+          
+          // Segundo: establecer el resto de los valores
+          Object.keys(mergedValues).forEach(key => {
+            if (!geographicOrder.includes(key)) {
+              valuesToSet[key] = mergedValues[key];
+            }
+          });
+          
+          // Establecer todos los valores de una vez
+          // Ant Design manejará el orden interno
+          form.setFieldsValue(valuesToSet);
+        } catch (error) {
+          console.warn('Error al actualizar campos del formulario:', error);
+        }
+      }, 50); // Pequeño delay para asegurar que todo esté listo
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [initialValues, form]);
 
   const handleSubmit = async (values) => {
     try {

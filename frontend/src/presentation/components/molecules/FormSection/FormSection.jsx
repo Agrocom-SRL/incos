@@ -22,12 +22,24 @@ const FormSection = ({ title, fields, form, resolveOptions, onFieldChange }) => 
     const watchFields = [];
     fields.forEach(field => {
       if (field.shouldRender) {
-        // Si tiene shouldRender, necesitamos observar todos los campos que usa en la condición
-        // Por ahora, observamos todos los campos del formulario, pero de forma optimizada
-        watchFields.push(...(field.watchFields || []));
+        // Si tiene shouldRender, usar watchFields explícito o dependencies como fallback
+        if (field.watchFields && field.watchFields.length > 0) {
+          watchFields.push(...field.watchFields);
+        } else if (field.dependencies && field.dependencies.length > 0) {
+          // Si no hay watchFields explícito, usar dependencies como fallback
+          watchFields.push(...field.dependencies);
+        }
       }
-      if (field.dependencies && field.dependencies.length > 0) {
-        watchFields.push(...field.dependencies);
+      // Para campos geográficos con dependencies, observar las dependencias
+      // Esto incluye: pais, departamento, provincia, municipio
+      if (field.dependencies && field.dependencies.length > 0 && field.type === 'select') {
+        const isGeographic = field.name.includes('departamento') || 
+                            field.name.includes('provincia') || 
+                            field.name.includes('municipio') ||
+                            field.name.includes('pais');
+        if (isGeographic) {
+          watchFields.push(...field.dependencies);
+        }
       }
     });
     // Eliminar duplicados
@@ -41,47 +53,80 @@ const FormSection = ({ title, fields, form, resolveOptions, onFieldChange }) => 
     ? Form.useWatch(fieldsToWatch, form) 
     : null;
   
+  
+  // Inicializar campos visibles - todos los campos inicialmente
   const [visibleFields, setVisibleFields] = useState(fields);
   const prevFormValuesRef = useRef(null);
+  
+  // Función para calcular campos visibles basándose en valores del formulario
+  const calculateVisibleFields = useMemo(() => {
+    return (formValues) => {
+      return fields.filter((field) => {
+        if (field.shouldRender) {
+          // Normalizar valores booleanos (pueden venir como 1/0 desde el backend)
+          const normalizedValues = { ...formValues };
+          if (normalizedValues.tieneDiscapacidad !== undefined) {
+            normalizedValues.tieneDiscapacidad = Boolean(normalizedValues.tieneDiscapacidad);
+          }
+          return field.shouldRender(normalizedValues);
+        }
+        return true;
+      });
+    };
+  }, [fields]);
 
-  // Memoizar los campos visibles para evitar recálculos innecesarios
-  // Solo recalcular si hay campos con shouldRender y formValues cambió
-  const filteredFields = useMemo(() => {
-    const hasShouldRenderFields = fields.some(f => f.shouldRender);
-    if (!hasShouldRenderFields) {
-      // Si no hay campos con shouldRender, retornar todos los campos sin filtrar
-      return fields;
-    }
-    
-    // Solo obtener valores del formulario si hay campos con shouldRender
-    const currentFormValues = form?.getFieldsValue() || {};
-    return fields.filter((field) => {
-      if (field.shouldRender) {
-        return field.shouldRender(currentFormValues);
-      }
-      return true;
-    });
-  }, [fields, form]); // Removido formValues de las dependencias para evitar re-renders innecesarios
-
-  // Actualizar campos visibles solo cuando realmente cambian
+  // Inicializar campos visibles cuando el formulario está listo o cuando cambian los valores
   useEffect(() => {
-    // Solo actualizar si hay campos con shouldRender y formValues cambió
-    if (formValues !== null) {
-      const formValuesKey = JSON.stringify(formValues);
+    if (form) {
+      const hasShouldRenderFields = fields.some(f => f.shouldRender);
+      if (hasShouldRenderFields) {
+        // Usar un pequeño delay para asegurar que los valores iniciales se hayan establecido
+        const timeoutId = setTimeout(() => {
+          const initialFormValues = form.getFieldsValue() || {};
+          const initialFilteredFields = calculateVisibleFields(initialFormValues);
+          setVisibleFields(initialFilteredFields);
+        }, 100);
+        
+        return () => clearTimeout(timeoutId);
+      }
+    }
+  }, [form, fields, calculateVisibleFields]);
+
+  // Actualizar campos visibles cuando cambian los valores observados
+  // IMPORTANTE: Solo observar campos específicos que afectan shouldRender (no todos los campos)
+  useEffect(() => {
+    // Si hay campos con shouldRender, siempre recalcular basándose en los valores actuales
+    const hasShouldRenderFields = fields.some(f => f.shouldRender);
+    if (hasShouldRenderFields && form) {
+      // Obtener valores actuales del formulario (siempre obtener los más recientes)
+      const currentFormValues = form.getFieldsValue() || {};
+      
+      // Si hay formValues observados, combinarlos con los valores actuales
+      // formValues tiene prioridad porque es reactivo
+      const mergedValues = formValues 
+        ? { ...currentFormValues, ...formValues }
+        : currentFormValues;
+      
+      // Normalizar valores booleanos (pueden venir como 1/0 desde el backend)
+      if (mergedValues.tieneDiscapacidad !== undefined) {
+        mergedValues.tieneDiscapacidad = Boolean(mergedValues.tieneDiscapacidad);
+      }
+      
+      // Crear una clave basada solo en los campos que afectan shouldRender
+      const relevantValues = {};
+      fieldsToWatch.forEach(fieldName => {
+        relevantValues[fieldName] = mergedValues[fieldName];
+      });
+      const formValuesKey = JSON.stringify(relevantValues);
+      
+      // Solo actualizar si los valores relevantes realmente cambiaron
       if (prevFormValuesRef.current !== formValuesKey) {
         prevFormValuesRef.current = formValuesKey;
-        // Recalcular campos visibles cuando formValues cambia
-        const currentFormValues = form?.getFieldsValue() || {};
-        const newFilteredFields = fields.filter((field) => {
-          if (field.shouldRender) {
-            return field.shouldRender(currentFormValues);
-          }
-          return true;
-        });
+        const newFilteredFields = calculateVisibleFields(mergedValues);
         setVisibleFields(newFilteredFields);
       }
     }
-  }, [formValues, fields, form]);
+  }, [formValues, fields, form, fieldsToWatch, calculateVisibleFields]);
 
   return (
     <Card
@@ -107,6 +152,7 @@ const FormSection = ({ title, fields, form, resolveOptions, onFieldChange }) => 
               lg={span}      // Desktop grande: usar el span definido
             >
               <FormField
+                key={`${field.name}-${field.dependencies ? JSON.stringify(formValues?.[field.dependencies[0]]) : ''}`}
                 field={field}
                 form={form}
                 resolveOptions={resolveOptions}

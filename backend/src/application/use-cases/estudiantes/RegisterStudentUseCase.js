@@ -108,39 +108,48 @@ export class RegisterStudentUseCase {
     });
 
     // Validar que los documentos requeridos estén presentes
+    // Solo validar si NO es un guardado parcial (skipDocumentValidation = false)
     const documentosEntregados = dto.documentosEntregados || [];
     
-    this.logger.info('[Estudiantes] Documentos entregados recibidos', {
-      documentosEntregados,
-      total: documentosEntregados.length,
-    });
-    
-    const documentosRequeridosIds = documentosRequeridos.map(doc => doc.id);
-    // Normalizar IDs a números para comparación
+    // Normalizar IDs a números para comparación (siempre necesario, incluso en guardado parcial)
     const documentosEntregadosNormalizados = documentosEntregados.map(id => 
       typeof id === 'string' ? parseInt(id, 10) : id
     ).filter(id => !isNaN(id));
     
-    this.logger.info('[Estudiantes] Comparando documentos requeridos vs entregados', {
-      documentosRequeridosIds,
+    this.logger.info('[Estudiantes] Documentos entregados recibidos', {
       documentosEntregados,
       documentosEntregadosNormalizados,
-      tiposRequeridos: documentosRequeridosIds.map(id => typeof id),
-      tiposEntregados: documentosEntregados.map(id => typeof id),
+      total: documentosEntregados.length,
+      skipDocumentValidation: dto.skipDocumentValidation,
     });
     
-    const documentosFaltantes = documentosRequeridosIds.filter(
-      docId => !documentosEntregadosNormalizados.includes(docId)
-    );
-
-    if (documentosFaltantes.length > 0) {
-      const nombresFaltantes = documentosRequeridos
-        .filter(doc => documentosFaltantes.includes(doc.id))
-        .map(doc => doc.name)
-        .join(', ');
-      throw new ValidationError(
-        `Los siguientes documentos son requeridos y no fueron marcados como entregados: ${nombresFaltantes}`
+    // Si es un guardado parcial, saltar la validación de documentos requeridos
+    if (!dto.skipDocumentValidation) {
+      const documentosRequeridosIds = documentosRequeridos.map(doc => doc.id);
+      
+      this.logger.info('[Estudiantes] Comparando documentos requeridos vs entregados', {
+        documentosRequeridosIds,
+        documentosEntregados,
+        documentosEntregadosNormalizados,
+        tiposRequeridos: documentosRequeridosIds.map(id => typeof id),
+        tiposEntregados: documentosEntregados.map(id => typeof id),
+      });
+      
+      const documentosFaltantes = documentosRequeridosIds.filter(
+        docId => !documentosEntregadosNormalizados.includes(docId)
       );
+
+      if (documentosFaltantes.length > 0) {
+        const nombresFaltantes = documentosRequeridos
+          .filter(doc => documentosFaltantes.includes(doc.id))
+          .map(doc => doc.name)
+          .join(', ');
+        throw new ValidationError(
+          `Los siguientes documentos son requeridos y no fueron marcados como entregados: ${nombresFaltantes}`
+        );
+      }
+    } else {
+      this.logger.info('[Estudiantes] Guardado parcial detectado - saltando validación de documentos requeridos');
     }
 
     // 12. Crear registros de documentos marcados como entregados

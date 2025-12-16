@@ -125,6 +125,7 @@ export const studentFormFields = {
         allowClear: true,
         span: 8,
         dependencies: ['tieneDiscapacidad'],
+        watchFields: ['tieneDiscapacidad'], // Campos a observar para shouldRender
         shouldRender: (formValues) => formValues?.tieneDiscapacidad === true,
       },
     ],

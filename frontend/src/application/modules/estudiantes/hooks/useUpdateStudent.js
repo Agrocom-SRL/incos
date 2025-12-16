@@ -12,7 +12,7 @@ export const useUpdateStudent = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const updateStudent = async (studentId, studentData, step = null, isFinalStep = false) => {
+  const updateStudent = async (studentId, studentData, step = null, isFinalStep = false, isTemporarySave = false) => {
     setLoading(true);
     setError(null);
 
@@ -72,8 +72,29 @@ export const useUpdateStudent = () => {
         }
       });
 
-      // Si es el primer paso (step 0), crear el estudiante
-      if (step === 0 || !studentId) {
+      // Si es un guardado temporal y ya hay un estudiante, no actualizar en el backend
+      // Solo guardar localmente (el progreso se guardará cuando se finalice el registro)
+      if (isTemporarySave && studentId) {
+        return {
+          success: true,
+          message: 'Progreso guardado localmente',
+          studentId,
+        };
+      }
+
+      // Verificar si hay un estudianteId en los datos (viene de la URL cuando se completa registro)
+      const estudianteIdEnDatos = studentData.estudianteId || studentData.id;
+      const studentIdFinal = studentId || estudianteIdEnDatos;
+
+      // Si no hay estudiante creado, crear el estudiante (independientemente del paso)
+      // Esto puede ocurrir si el usuario avanzó usando "Siguiente" sin presionar "Guardar y Continuar Después"
+      // O cuando se presiona "Guardar y Continuar Después" en el primer paso
+      if (!studentIdFinal) {
+        // Si es un guardado parcial, indicar al backend que no valide documentos requeridos
+        if (isTemporarySave) {
+          datosEstudiante.skipDocumentValidation = true;
+        }
+        
         // El backend extrae los campos documento_{id}_entregado y los procesa usando la tabla documentacion
         const response = await apiClient.post('/v1/estudiantes', datosEstudiante);
 
@@ -124,9 +145,18 @@ export const useUpdateStudent = () => {
         };
       }
 
-      // Para pasos siguientes, actualizar el estudiante existente
+      // Para pasos siguientes o cuando se completa un registro existente, actualizar el estudiante
+      // Si es un guardado parcial, indicar al backend que no valide documentos requeridos
+      if (isTemporarySave) {
+        datosEstudiante.skipDocumentValidation = true;
+      }
+      
+      // Remover estudianteId del body si existe (no debe enviarse al backend)
+      delete datosEstudiante.estudianteId;
+      delete datosEstudiante.id;
+      
       // El backend extrae los campos documento_{id}_entregado y los procesa usando la tabla documentacion
-      const response = await apiClient.put(`/v1/estudiantes/${studentId}`, datosEstudiante);
+      const response = await apiClient.put(`/v1/estudiantes/${studentIdFinal}`, datosEstudiante);
 
       if (response.data?.success) {
         // Subir archivos si los hay
@@ -142,7 +172,7 @@ export const useUpdateStudent = () => {
             formData.append('esOriginal', 'false'); // Por defecto es copia
 
             uploadPromises.push(
-              apiClient.post(`/v1/estudiantes/${studentId}/documentos`, formData, {
+              apiClient.post(`/v1/estudiantes/${studentIdFinal}/documentos`, formData, {
                 headers: {
                   'Content-Type': 'multipart/form-data',
                 },
@@ -163,7 +193,7 @@ export const useUpdateStudent = () => {
           success: true,
           data: response.data.data,
           message: response.data.message || 'Estudiante actualizado correctamente',
-          studentId,
+          studentId: studentIdFinal,
         };
       }
 

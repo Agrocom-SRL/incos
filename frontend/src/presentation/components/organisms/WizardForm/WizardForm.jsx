@@ -7,7 +7,7 @@
  * Atomic Design: Usa organismos (GenericForm), moléculas (Steps) y átomos (Button, Heading)
  */
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Steps, Button, Space, App } from 'antd';
 import { GenericForm } from '@organisms';
 import { FormCard, Heading } from '@atoms';
@@ -28,25 +28,93 @@ const WizardForm = ({
   const [currentStep, setCurrentStep] = useState(0);
   const [formValues, setFormValues] = useState(initialValues);
   const formRef = useRef(null);
+  const currentStepConfig = steps[currentStep];
+
+  // Actualizar formValues cuando cambien los initialValues (útil cuando se cargan datos del estudiante)
+  // Usar useRef para rastrear si ya se inicializaron los valores para evitar actualizaciones innecesarias
+  const hasInitialized = useRef(false);
+  
+  useEffect(() => {
+    // Solo actualizar si initialValues tiene datos y son diferentes a los actuales
+    if (initialValues && Object.keys(initialValues).length > 0) {
+      // Verificar si hay cambios significativos (ignorar valores undefined/null vacíos)
+      const initialValuesFiltered = Object.fromEntries(
+        Object.entries(initialValues).filter(([_, value]) => value !== undefined && value !== null)
+      );
+      
+      if (Object.keys(initialValuesFiltered).length > 0) {
+        setFormValues(prevValues => {
+          // Si ya se inicializó y los valores son los mismos, no actualizar
+          if (hasInitialized.current) {
+            const hasChanges = Object.keys(initialValuesFiltered).some(
+              key => prevValues[key] !== initialValuesFiltered[key]
+            );
+            if (!hasChanges) {
+              return prevValues;
+            }
+          }
+          
+          // Combinar valores previos con nuevos, dando prioridad a los nuevos
+          const merged = { ...prevValues, ...initialValuesFiltered };
+          hasInitialized.current = true;
+          return merged;
+        });
+      }
+    }
+  }, [initialValues]);
+
+  // Actualizar el formulario de Ant Design después de que formValues cambie
+  // Esto se hace en un useEffect separado para evitar actualizaciones durante el renderizado
+  useEffect(() => {
+    if (formRef.current && formValues && Object.keys(formValues).length > 0) {
+      // Usar requestAnimationFrame para asegurar que se ejecute después del renderizado
+      const frameId = requestAnimationFrame(() => {
+        try {
+          formRef.current.setFieldsValue(formValues);
+        } catch (error) {
+          console.warn('Error al actualizar campos del formulario:', error);
+        }
+      });
+      
+      return () => cancelAnimationFrame(frameId);
+    }
+  }, [formValues]);
+
+  // Obtener los nombres de los campos del paso actual
+  const getCurrentStepFields = () => {
+    if (!currentStepConfig || !currentStepConfig.config) {
+      return [];
+    }
+    
+    const fields = [];
+    currentStepConfig.sections?.forEach((sectionKey) => {
+      const section = currentStepConfig.config[sectionKey];
+      if (section && section.fields) {
+        section.fields.forEach((field) => {
+          if (field.name) {
+            fields.push(field.name);
+          }
+        });
+      }
+    });
+    
+    return fields;
+  };
 
   // Validar y avanzar al siguiente paso
   const handleNext = async () => {
     try {
-      // Validar campos del paso actual
-      await formRef.current?.validateFields();
+      // Validar solo los campos del paso actual (no los siguientes)
+      const currentStepFields = getCurrentStepFields();
+      if (currentStepFields.length > 0) {
+        await formRef.current?.validateFields(currentStepFields);
+      }
       
       // Obtener valores actuales del formulario
       const currentValues = formRef.current?.getFieldsValue() || {};
       // Guardar valores acumulados antes de cambiar de paso
       const updatedFormValues = { ...formValues, ...currentValues };
       setFormValues(updatedFormValues);
-      
-      console.log('WizardForm - Guardando valores antes de avanzar:', {
-        currentStep,
-        currentValues,
-        previousFormValues: formValues,
-        updatedFormValues,
-      });
       
       // Avanzar al siguiente paso
       if (currentStep < steps.length - 1) {
@@ -61,26 +129,37 @@ const WizardForm = ({
   // Retroceder al paso anterior
   const handlePrev = () => {
     if (currentStep > 0) {
+      // IMPORTANTE: Guardar valores actuales del formulario antes de retroceder
+      // Esto asegura que los valores geográficos y otros campos no se pierdan
+      const currentValues = formRef.current?.getFieldsValue() || {};
+      const updatedFormValues = { ...formValues, ...currentValues };
+      setFormValues(updatedFormValues);
+      
       setCurrentStep(currentStep - 1);
     }
   };
 
-  // Guardar/actualizar datos del paso actual
+  // Guardar/actualizar datos del paso actual (validar solo campos del paso actual y anteriores)
   const handleSaveStep = async () => {
     try {
-      // Validar campos del paso actual
-      await formRef.current?.validateFields();
+      // Validar solo los campos del paso actual (no los siguientes)
+      // Esto permite guardar progreso parcial sin completar todos los pasos
+      const currentStepFields = getCurrentStepFields();
+      if (currentStepFields.length > 0) {
+        await formRef.current?.validateFields(currentStepFields);
+      }
       
-      // Obtener valores actuales
-      const currentValues = formRef.current?.getFieldsValue();
+      // Obtener valores actuales del formulario
+      const currentValues = formRef.current?.getFieldsValue() || {};
       const allValues = { ...formValues, ...currentValues };
       
-      // Llamar a onSubmit con los valores actuales (para guardar progreso)
+      // Llamar a onSubmit para guardar en el backend (crear o actualizar estudiante parcialmente)
       if (onSubmit) {
-        const result = await onSubmit(allValues, currentStep);
+        // Pasar flag indicando que es un guardado parcial (skipDocumentValidation)
+        const result = await onSubmit(allValues, currentStep, false, true); // isFinalStep=false, isTemporarySave=true
         
         if (result && result.success) {
-          message.success('Datos guardados correctamente');
+          message.success('Datos guardados correctamente. Puede continuar después.');
           setFormValues(allValues);
           if (onSuccess) {
             onSuccess(result);
@@ -91,9 +170,19 @@ const WizardForm = ({
             onError(result);
           }
         }
+      } else {
+        // Si no hay onSubmit, solo guardar valores localmente
+        setFormValues(allValues);
+        message.success('Progreso guardado localmente');
       }
     } catch (error) {
+      // Los errores de validación ya se muestran automáticamente por Ant Design
       console.error('Error al guardar paso:', error);
+      if (error?.errorFields && error.errorFields.length > 0) {
+        // Error de validación - Ant Design ya muestra los errores
+        return;
+      }
+      message.error('Error al guardar el progreso');
     }
   };
 
@@ -109,14 +198,6 @@ const WizardForm = ({
       // Combinar valores de pasos anteriores con valores del paso actual
       // Los valores del paso actual sobrescriben los anteriores si hay conflictos
       const allValues = { ...formValues, ...currentValues };
-      
-      console.log('WizardForm - Valores acumulados:', {
-        formValues,
-        currentValues,
-        allValues,
-        currentStep,
-        formRefExists: !!formRef.current,
-      });
       
       // Formatear fechas si existen
       const formattedValues = {
@@ -136,11 +217,9 @@ const WizardForm = ({
         }
       });
       
-      console.log('WizardForm - Valores formateados a enviar:', formattedValues);
-      
-      // Llamar a onSubmit
+      // Llamar a onSubmit (finalizar registro - validar todo)
       if (onSubmit) {
-        const result = await onSubmit(formattedValues, currentStep, true);
+        const result = await onSubmit(formattedValues, currentStep, true, false); // isFinalStep=true, isTemporarySave=false
         
         if (result && result.success) {
           message.success(successMessage);
@@ -180,7 +259,6 @@ const WizardForm = ({
     }
   };
 
-  const currentStepConfig = steps[currentStep];
   const isLastStep = currentStep === steps.length - 1;
 
   return (

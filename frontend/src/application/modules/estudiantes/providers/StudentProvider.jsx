@@ -61,12 +61,19 @@ export const StudentProvider = ({ children }) => {
    * Maneja la actualización/creación de estudiante en el wizard
    * Crea en el primer paso, actualiza en los siguientes
    */
-  const handleWizardSubmit = useCallback(async (studentData, step, isFinalStep) => {
-    const result = await updateStudent(currentStudentId, studentData, step, isFinalStep);
+  const handleWizardSubmit = useCallback(async (studentData, step, isFinalStep, isTemporarySave = false) => {
+    // Verificar si hay un estudianteId en los datos (viene de la URL cuando se completa registro)
+    const estudianteIdEnDatos = studentData.estudianteId || studentData.id;
+    const studentIdToUse = currentStudentId || estudianteIdEnDatos;
+    
+    const result = await updateStudent(studentIdToUse, studentData, step, isFinalStep, isTemporarySave);
     
     // Si se creó un nuevo estudiante (primer paso), guardar el ID
-    if (result.success && result.studentId && !currentStudentId) {
+    if (result.success && result.studentId && !currentStudentId && !estudianteIdEnDatos) {
       setCurrentStudentId(result.studentId);
+    } else if (estudianteIdEnDatos && !currentStudentId) {
+      // Si viene un estudianteId de los datos (completar registro), usarlo
+      setCurrentStudentId(estudianteIdEnDatos);
     }
     
     // Si es el último paso y fue exitoso, refrescar datos y limpiar ID
@@ -77,6 +84,13 @@ export const StudentProvider = ({ children }) => {
     
     return result;
   }, [updateStudent, currentStudentId, refetchFormData]);
+
+  // Método para establecer el currentStudentId desde fuera (útil cuando se carga un estudiante desde la URL)
+  const setCurrentStudentIdFromOutside = useCallback((studentId) => {
+    if (studentId) {
+      setCurrentStudentId(studentId);
+    }
+  }, []);
 
   const value = {
     // Datos para mostrar en la página (GET)
@@ -94,11 +108,15 @@ export const StudentProvider = ({ children }) => {
     tiposDiscapacidad,
     documentacionInscripcion,
     
+    // Estados
+    currentStudentId,
+    
     // Acciones (POST)
     createStudent: handleCreateStudent,
     // Acciones para wizard (crea/actualiza según el paso)
     wizardSubmit: handleWizardSubmit,
     refetchFormData,
+    setCurrentStudentId: setCurrentStudentIdFromOutside,
     
     // Funciones para cargar datos geográficos en cascada
     loadDepartamentos,

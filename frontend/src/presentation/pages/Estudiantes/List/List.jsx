@@ -1,8 +1,8 @@
 // src/presentation/pages/Estudiantes/List/List.jsx
 import React, { useState, useEffect, useCallback } from 'react';
-import { Table, Typography, Input, Space, Tag, App, Card } from 'antd';
-import { SearchOutlined, UserOutlined, PhoneOutlined, MailOutlined } from '@ant-design/icons';
-import { useLocation } from 'react-router-dom';
+import { Table, Typography, Input, Space, Tag, App, Card, Button } from 'antd';
+import { SearchOutlined, UserOutlined, PhoneOutlined, MailOutlined, EditOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import { useLocation, useNavigate } from 'react-router-dom';
 import apiClient from '@infrastructure/api/client.js';
 import dayjs from 'dayjs';
 
@@ -12,10 +12,12 @@ const { Search } = Input;
 const EstudiantesList = () => {
     const { message } = App.useApp();
     const location = useLocation();
+    const navigate = useNavigate();
     const [estudiantes, setEstudiantes] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [searchText, setSearchText] = useState('');
+    const [registrosIncompletos, setRegistrosIncompletos] = useState({}); // { studentId: { tieneDocumentos, tieneDatosAcademicos } }
 
     // Función para cargar estudiantes desde la API
     const loadEstudiantes = useCallback(async () => {
@@ -37,6 +39,76 @@ const EstudiantesList = () => {
             setLoading(false);
         }
     }, []);
+
+    // Función para verificar si un estudiante tiene registro incompleto
+    const verificarRegistroIncompleto = useCallback(async (estudianteId) => {
+        try {
+            // Verificar documentos del estudiante
+            let tieneDocumentos = false;
+            try {
+                const documentosResponse = await apiClient.get(`/v1/estudiantes/${estudianteId}/documentos`);
+                tieneDocumentos = (documentosResponse.data?.data?.length > 0) || 
+                                 (documentosResponse.data?.length > 0);
+            } catch (err) {
+                // Si el endpoint retorna 404 o error, asumimos que no hay documentos
+                if (err.response?.status === 404) {
+                    tieneDocumentos = false;
+                } else {
+                    console.warn(`Error al verificar documentos del estudiante ${estudianteId}:`, err);
+                    tieneDocumentos = false;
+                }
+            }
+
+            // Verificar datos académicos del estudiante
+            // Nota: Necesitamos un endpoint para obtener datos académicos, por ahora asumimos que no hay
+            // TODO: Crear endpoint GET /v1/estudiantes/:id/datos-academicos
+            let tieneDatosAcademicos = false;
+            try {
+                const academicosResponse = await apiClient.get(`/v1/estudiantes/${estudianteId}/datos-academicos`);
+                tieneDatosAcademicos = !!academicosResponse.data?.data;
+            } catch (err) {
+                // Si el endpoint no existe (404) o hay error, asumimos que no hay datos académicos
+                if (err.response?.status === 404) {
+                    tieneDatosAcademicos = false;
+                } else {
+                    console.warn(`Error al verificar datos académicos del estudiante ${estudianteId}:`, err);
+                    tieneDatosAcademicos = false;
+                }
+            }
+
+            return {
+                tieneDocumentos,
+                tieneDatosAcademicos,
+                incompleto: !tieneDocumentos || !tieneDatosAcademicos
+            };
+        } catch (err) {
+            console.error(`Error al verificar registro del estudiante ${estudianteId}:`, err);
+            // Si hay error, asumimos que está incompleto para mostrar el botón
+            return {
+                tieneDocumentos: false,
+                tieneDatosAcademicos: false,
+                incompleto: true
+            };
+        }
+    }, []);
+
+    // Verificar registros incompletos después de cargar estudiantes
+    useEffect(() => {
+        const verificarTodos = async () => {
+            const incompletos = {};
+            for (const estudiante of estudiantes) {
+                if (estudiante.id) {
+                    const estado = await verificarRegistroIncompleto(estudiante.id);
+                    incompletos[estudiante.id] = estado;
+                }
+            }
+            setRegistrosIncompletos(incompletos);
+        };
+
+        if (estudiantes.length > 0) {
+            verificarTodos();
+        }
+    }, [estudiantes, verificarRegistroIncompleto]);
 
     // Cargar estudiantes al montar el componente
     useEffect(() => {
@@ -196,6 +268,55 @@ const EstudiantesList = () => {
                     )}
                 </Space>
             ),
+        },
+        {
+            title: 'Estado',
+            key: 'estado',
+            width: 150,
+            fixed: 'right',
+            render: (_, record) => {
+                const estado = registrosIncompletos[record.id];
+                if (!estado) {
+                    return <Tag color="default">Verificando...</Tag>;
+                }
+                if (estado.incompleto) {
+                    return (
+                        <Tag color="warning" icon={<EditOutlined />}>
+                            Registro Incompleto
+                        </Tag>
+                    );
+                }
+                return (
+                    <Tag color="success" icon={<CheckCircleOutlined />}>
+                        Completo
+                    </Tag>
+                );
+            },
+        },
+        {
+            title: 'Acciones',
+            key: 'acciones',
+            width: 180,
+            fixed: 'right',
+            render: (_, record) => {
+                const estado = registrosIncompletos[record.id];
+                const tieneRegistroIncompleto = estado?.incompleto;
+
+                return (
+                    <Space>
+                        {tieneRegistroIncompleto && (
+                            <Button
+                                type="primary"
+                                icon={<EditOutlined />}
+                                onClick={() => navigate(`/estudiantes/registrar?estudianteId=${record.id}`)}
+                                size="small"
+                            >
+                                Completar Registro
+                            </Button>
+                        )}
+                    </Space>
+                );
+            },
         },
     ];
 
