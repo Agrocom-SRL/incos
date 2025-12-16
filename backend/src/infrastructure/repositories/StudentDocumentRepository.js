@@ -29,10 +29,12 @@ export class StudentDocumentRepository extends BaseRepository {
    */
   toEntity(model) {
     if (!model) return null;
+    // documentType no existe en documentos_estudiante, se obtiene de documentacion a través de documentacion_id
     return new StudentDocument({
       id: model.id,
       studentId: model.estudianteId,
-      documentType: model.tipoDocumento,
+      documentacionId: model.documentacionId,
+      // documentType se obtiene de la tabla documentacion, no se almacena aquí
       documentReason: model.motivoDocumento,
       referenceType: model.tipoReferencia,
       referenceId: model.referenciaId,
@@ -47,6 +49,7 @@ export class StudentDocumentRepository extends BaseRepository {
       verificationObservations: model.observacionesVerificacion,
       state: model.estado,
       rejectionReason: model.motivoRechazo,
+      esOriginal: model.esOriginal,
       activo: model.activo,
       createdAt: model.createdAt,
       updatedAt: model.updatedAt,
@@ -61,9 +64,9 @@ export class StudentDocumentRepository extends BaseRepository {
   buildWhereClause(filters) {
     const where = {};
 
-    if (filters.documentType) {
-      where.tipoDocumento = filters.documentType;
-    }
+    // Nota: documentType no existe directamente en documentos_estudiante
+    // Se debe filtrar mediante JOIN con documentacion si es necesario
+    // Por ahora, si se necesita filtrar por tipo, se debe hacer en el método que llama
     if (filters.state) {
       where.estado = filters.state;
     }
@@ -99,7 +102,8 @@ export class StudentDocumentRepository extends BaseRepository {
   mapDataToModel(data, userId = null) {
     return {
       estudianteId: data.studentId || null,
-      tipoDocumento: data.documentType,
+      documentacionId: data.documentacionId || null,
+      // tipoDocumento no existe en la tabla, se obtiene de documentacion a través de documentacion_id
       motivoDocumento: data.documentReason || null,
       tipoReferencia: data.referenceType || null,
       referenciaId: data.referenceId || null,
@@ -114,6 +118,7 @@ export class StudentDocumentRepository extends BaseRepository {
       observacionesVerificacion: data.verificationObservations || null,
       estado: data.state || 'PENDIENTE',
       motivoRechazo: data.rejectionReason || null,
+      esOriginal: data.esOriginal !== undefined ? data.esOriginal : false,
     };
   }
 
@@ -129,9 +134,11 @@ export class StudentDocumentRepository extends BaseRepository {
     if (data.studentId !== undefined) {
       updateData.estudianteId = data.studentId || null;
     }
-    if (data.documentType !== undefined) {
-      updateData.tipoDocumento = data.documentType;
+    if (data.documentacionId !== undefined) {
+      updateData.documentacionId = data.documentacionId || null;
     }
+    // documentType no existe en la tabla, se obtiene de documentacion a través de documentacion_id
+    // Si se necesita cambiar el tipo, se debe actualizar documentacion_id
     if (data.documentReason !== undefined) {
       updateData.motivoDocumento = data.documentReason || null;
     }
@@ -174,6 +181,9 @@ export class StudentDocumentRepository extends BaseRepository {
     if (data.rejectionReason !== undefined) {
       updateData.motivoRechazo = data.rejectionReason || null;
     }
+    if (data.esOriginal !== undefined) {
+      updateData.esOriginal = data.esOriginal;
+    }
     if (data.activo !== undefined) {
       updateData.activo = data.activo;
     }
@@ -212,9 +222,29 @@ export class StudentDocumentRepository extends BaseRepository {
    * @returns {Promise<StudentDocument[]>}
    */
   async findByTipoDocumento(tipoDocumento) {
-    const models = await this.getModel().findAll({
+    // Necesitamos hacer JOIN con documentacion para filtrar por tipo_documento
+    // ya que tipo_documento no existe directamente en documentos_estudiante
+    const { Documentacion } = await import('../database/models/Documentacion.js');
+    
+    // Primero obtener los IDs de documentacion con ese tipo
+    const documentaciones = await Documentacion.findAll({
       where: {
         tipoDocumento: tipoDocumento,
+        activo: true,
+      },
+      attributes: ['id'],
+    });
+    
+    const documentacionIds = documentaciones.map(doc => doc.id);
+    
+    if (documentacionIds.length === 0) {
+      return [];
+    }
+    
+    // Luego buscar documentos_estudiante con esos documentacion_ids
+    const models = await this.getModel().findAll({
+      where: {
+        documentacionId: documentacionIds,
         activo: true,
         // paranoid: true automáticamente excluye deletedAt !== null
       },

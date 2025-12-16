@@ -580,7 +580,7 @@ Este documento describe el **modelo de datos** completo del Sistema de Gestión 
 - `tipo_documento` (INSCRIPCION, LICENCIA, PASANTIA, DESCUENTO, PAGO_INSCRIPCION, etc.)
 - `tipo_referencia` y `referencia_id` (referencia polimórfica)
 - `nombre_archivo`, `ruta_archivo`, `extension`, `tamano_kb`
-- `verificado`, `verificado_por`, `estado` (PENDIENTE, APROBADO, RECHAZADO, REQUERIDO)
+- `verificado`, `verificado_por`, `estado` (PENDIENTE, APROBADO, RECHAZADO)
 
 **Relaciones:**
 

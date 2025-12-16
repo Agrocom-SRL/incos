@@ -1,7 +1,7 @@
 // src/main.jsx
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { ConfigProvider } from 'antd';
+import { ConfigProvider, App as AntApp } from 'antd';
 import incosTheme from '@infrastructure/config/theme.config';
 import { injectCSSVariables } from '@styles/theme/css-variables';
 import '@styles/index.css';
@@ -13,7 +13,9 @@ injectCSSVariables();
 createRoot(document.getElementById('root')).render(
     <StrictMode>
         <ConfigProvider theme={incosTheme}>
-            <App />
+            <AntApp>
+                <App />
+            </AntApp>
         </ConfigProvider>
     </StrictMode>
 );

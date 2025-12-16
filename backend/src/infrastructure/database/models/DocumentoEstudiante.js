@@ -12,21 +12,11 @@ export const DocumentoEstudiante = sequelize.define(
       allowNull: true,
       comment: 'Estudiante',
     },
-    tipoDocumento: {
-      type: DataTypes.ENUM(
-        'INSCRIPCION',
-        'LICENCIA',
-        'PASANTIA',
-        'DESCUENTO',
-        'PAGO_INSCRIPCION',
-        'PAGO_TITULACION',
-        'PAGO_TRASLADO_INSTITUTO',
-        'PAGO_CAMBIO_CARRERA',
-        'OTRO'
-      ),
-      field: 'tipo_documento',
-      allowNull: false,
-      comment: 'Tipo de documento',
+    documentacionId: {
+      type: DataTypes.INTEGER,
+      field: 'documentacion_id',
+      allowNull: true,
+      comment: 'Tipo de documentación requerida (referencia a documentacion). El tipo_documento se obtiene de la tabla documentacion.',
     },
     motivoDocumento: {
       type: DataTypes.STRING(200),
@@ -102,7 +92,7 @@ export const DocumentoEstudiante = sequelize.define(
       allowNull: true,
     },
     estado: {
-      type: DataTypes.ENUM('PENDIENTE', 'APROBADO', 'RECHAZADO', 'REQUERIDO'),
+      type: DataTypes.ENUM('PENDIENTE', 'APROBADO', 'RECHAZADO'),
       defaultValue: 'PENDIENTE',
       comment: 'Estado del documento',
     },
@@ -110,6 +100,12 @@ export const DocumentoEstudiante = sequelize.define(
       type: DataTypes.TEXT,
       field: 'motivo_rechazo',
       allowNull: true,
+    },
+    esOriginal: {
+      type: DataTypes.BOOLEAN,
+      field: 'es_original',
+      defaultValue: false,
+      comment: 'Indica si el documento es original (TRUE) o fotocopia (FALSE)',
     },
   },
   {

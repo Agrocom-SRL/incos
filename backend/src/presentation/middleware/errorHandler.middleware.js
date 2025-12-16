@@ -8,14 +8,20 @@ import { logger } from '../../shared/logger.js';
  * app.use(errorHandler); // Al final de todas las rutas
  */
 function errorHandler(err, req, res, next) {
-  // Log del error para debugging
-  logger.error('Error:', {
+  // Log del error para debugging con más detalles
+  logger.error('Error en errorHandler:', {
     message: err.message,
     stack: err.stack,
+    name: err.name,
     url: req.originalUrl,
     method: req.method,
     ip: req.ip,
     userId: req.user?.id,
+    body: req.body,
+    isOperational: err.isOperational,
+    statusCode: err.statusCode,
+    code: err.code,
+    details: err.details,
   });
 
   // Error operacional conocido (AppError con isOperational = true)
@@ -26,6 +32,22 @@ function errorHandler(err, req, res, next) {
         code: err.code || 'ERROR',
         message: err.message,
         ...(err.details && { details: err.details }),
+      },
+      meta: {
+        timestamp: new Date().toISOString(),
+        requestId: req.id,
+      },
+    });
+  }
+
+  // Error de validación de express-validator (si viene después del middleware de validación)
+  if (err.statusCode === 400 && err.errors) {
+    return res.status(400).json({
+      success: false,
+      error: {
+        code: 'VALIDATION_ERROR',
+        message: err.message || 'Los datos proporcionados son inválidos',
+        details: err.errors,
       },
       meta: {
         timestamp: new Date().toISOString(),
@@ -46,7 +68,10 @@ function errorHandler(err, req, res, next) {
     error: {
       code: err.code || 'INTERNAL_SERVER_ERROR',
       message,
-      ...(process.env.NODE_ENV !== 'production' && { stack: err.stack }),
+      ...(process.env.NODE_ENV !== 'production' && { 
+        stack: err.stack,
+        name: err.name,
+      }),
     },
     meta: {
       timestamp: new Date().toISOString(),

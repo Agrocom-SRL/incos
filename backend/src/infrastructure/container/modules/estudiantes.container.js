@@ -46,6 +46,9 @@ export function registerEstudiantesModule(container) {
     (c) =>
       new RegisterStudentUseCase({
         studentRepository: c.resolve('studentRepository'),
+        studentAcademicDataRepository: c.resolve('studentAcademicDataRepository'),
+        studentDocumentRepository: c.resolve('studentDocumentRepository'),
+        documentacionRepository: c.resolve('documentacionRepository'),
         logger: c.resolve('logger'),
       }),
     true

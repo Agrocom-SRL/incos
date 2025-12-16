@@ -1,5 +1,6 @@
 import express from 'express';
 import studentRoutes from './student.routes.js';
+import catalogsRoutes from './catalogs.routes.js';
 
 const router = express.Router();
 
@@ -10,6 +11,7 @@ router.get('/', (req, res) => {
   // Solo mostrar endpoints implementados
   const endpoints = {
     estudiantes: '/api/v1/estudiantes',
+    catalogs: '/api/v1/catalogs',
   };
 
   res.json({
@@ -26,6 +28,9 @@ router.get('/', (req, res) => {
 
 // Módulo: Gestión de Estudiantes (EST)
 router.use('/estudiantes', studentRoutes);
+
+// Catálogos: Endpoints para obtener datos de catálogos
+router.use('/catalogs', catalogsRoutes);
 
 // Para agregar un nuevo módulo:
 // 1. Crear archivo: routes/{modulo}.routes.js

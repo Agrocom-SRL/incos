@@ -28,8 +28,10 @@ const StudentsSummaryCard = ({
         padding: `${componentConfig.Card.paddingLG}px`,
         minHeight: '200px',
       }}
-      bodyStyle={{
-        padding: 0,
+      styles={{
+        body: {
+          padding: 0,
+        }
       }}
     >
       <Flex vertical gap={allSpacing.marginLG} style={{ height: '100%' }}>

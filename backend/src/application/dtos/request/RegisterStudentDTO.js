@@ -36,6 +36,50 @@ export class RegisterStudentDTO {
 
     // Observaciones
     this.observaciones = data.observaciones;
+
+    // Datos académicos (para estudiantes_datos_academicos)
+    this.carreraId = data.carreraId;
+    this.gestionIngresoId = data.gestionIngresoId;
+
+    // Documentos: array de IDs de documentacion que fueron marcados como entregados
+    // El frontend envía campos como documento_{id}_entregado: true
+    // Extraemos estos IDs para crear el array
+    this.documentosEntregados = [];
+    Object.keys(data).forEach(key => {
+      if (key.startsWith('documento_') && key.endsWith('_entregado') && data[key] === true) {
+        const docIdStr = key.replace('documento_', '').replace('_entregado', '');
+        const docId = parseInt(docIdStr, 10);
+        // Validar que sea un número válido y positivo
+        if (!isNaN(docId) && docId > 0) {
+          this.documentosEntregados.push(docId);
+        } else {
+          console.warn(`[RegisterStudentDTO] No se pudo parsear el ID del documento de la clave: ${key}, valor extraído: ${docIdStr}, docId parseado: ${docId}`);
+        }
+      }
+    });
+    
+    // También aceptar formato array directo si viene del frontend
+    if (data.documentosEntregados && Array.isArray(data.documentosEntregados)) {
+      // Normalizar y validar IDs del array directo
+      const idsNormalizados = data.documentosEntregados
+        .map(id => typeof id === 'string' ? parseInt(id, 10) : id)
+        .filter(id => !isNaN(id) && id > 0);
+      this.documentosEntregados = [...new Set([...this.documentosEntregados, ...idsNormalizados])];
+    }
+    
+    // Eliminar duplicados y ordenar
+    this.documentosEntregados = [...new Set(this.documentosEntregados)].sort((a, b) => a - b);
+    
+    // Log para debugging
+    if (this.documentosEntregados.length > 0) {
+      console.log('[RegisterStudentDTO] Documentos entregados extraídos:', {
+        documentosEntregados: this.documentosEntregados,
+        total: this.documentosEntregados.length,
+        camposEncontrados: Object.keys(data).filter(key => 
+          key.startsWith('documento_') && key.endsWith('_entregado')
+        ),
+      });
+    }
   }
 
   /**

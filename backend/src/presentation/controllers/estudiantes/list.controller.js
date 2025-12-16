@@ -1,8 +1,12 @@
 import { logger } from '../../../shared/logger.js';
+import { StudentMapper } from '../../../application/mappers/StudentMapper.js';
+import container from '../../../infrastructure/container/index.js';
 
 /**
  * GET /api/v1/estudiantes
  * Controller para listar estudiantes con filtros y paginación
+ * 
+ * NOTA: Implementación rápida para presentación - usa repositorio directamente
  */
 export class ListStudentsController {
   constructor({ listStudentsUseCase }) {
@@ -22,33 +26,55 @@ export class ListStudentsController {
         userId,
       });
 
-      // TODO: Implementar ListStudentsUseCase
-      // const result = await this.listStudentsUseCase.execute({
-      //   page: parseInt(page),
-      //   limit: parseInt(limit),
-      //   search,
-      //   carreraId: carrera ? parseInt(carrera) : undefined,
-      //   estado,
-      //   gestion,
-      //   sort,
-      // }, userId);
+      // Implementación rápida: usar repositorio directamente
+      // TODO: Crear ListStudentsUseCase cuando se tenga tiempo
+      const studentRepository = container.resolve('studentRepository');
+      
+      const filters = {};
+      if (search) {
+        filters.search = search;
+      }
+      if (estado) {
+        filters.estado = estado;
+      }
+      if (sort) {
+        filters.sort = sort;
+      }
 
-      // Por ahora retornar placeholder
+      const pageNum = parseInt(page);
+      const limitNum = parseInt(limit);
+      
+      // Obtener estudiantes con paginación
+      const result = await studentRepository.findAll(
+        filters,
+        pageNum,
+        limitNum
+      );
+
+      // Convertir entidades a formato de presentación (castellano)
+      const estudiantesData = StudentMapper.entitiesToPresentation(
+        result.students || []
+      );
+
+      // Calcular total de páginas
+      const totalPages = Math.ceil(result.total / limitNum);
+
       res.status(200).json({
         success: true,
-        data: [],
-        message: 'Listado de estudiantes (pendiente de implementación)',
+        data: estudiantesData,
+        message: 'Listado de estudiantes obtenido correctamente',
         pagination: {
-          page: parseInt(page),
-          limit: parseInt(limit),
-          total: 0,
-          totalPages: 0,
+          page: pageNum,
+          limit: limitNum,
+          total: result.total,
+          totalPages: totalPages,
         },
         meta: {
           timestamp: new Date().toISOString(),
         },
       });
     } catch (error) {
+      logger.error('Error al listar estudiantes', { error: error.message, stack: error.stack });
       next(error);
     }
   }

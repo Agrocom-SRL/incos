@@ -8,12 +8,13 @@
  * Atomic Design: Usa moléculas (FormSection, FormActions) y átomos (FormCard, Button, Heading)
  */
 
-import { Form, message } from 'antd';
+import React, { forwardRef, useImperativeHandle } from 'react';
+import { Form, App } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { FormSection, FormActions } from '@molecules';
 import { FormCard, Heading } from '@atoms';
 
-const GenericForm = ({
+const GenericForm = forwardRef(({
   title,
   config,
   sections = [],
@@ -26,9 +27,15 @@ const GenericForm = ({
   onSuccess,
   onError,
   successMessage = 'Operación realizada correctamente',
-}) => {
+  onFieldChange,
+  wizardMode = false, // Si es true, no muestra botones de acción
+}, ref) => {
+  const { message } = App.useApp();
   const [form] = Form.useForm();
   const navigate = useNavigate();
+
+  // Exponer el form via ref
+  useImperativeHandle(ref, () => form, [form]);
 
   const handleSubmit = async (values) => {
     try {
@@ -105,7 +112,7 @@ const GenericForm = ({
       <Form
         form={form}
         layout="vertical"
-        onFinish={handleSubmit}
+        onFinish={wizardMode ? undefined : handleSubmit}
         initialValues={initialValues}
       >
         {sections.map((sectionKey) => {
@@ -119,19 +126,24 @@ const GenericForm = ({
               fields={section.fields}
               form={form}
               resolveOptions={resolveOptions}
+              onFieldChange={onFieldChange}
             />
           );
         })}
 
-        <FormActions
-          mode={mode}
-          loading={loading}
-          onReset={handleReset}
-          onCancel={handleCancel}
-        />
+        {!wizardMode && (
+          <FormActions
+            mode={mode}
+            loading={loading}
+            onReset={handleReset}
+            onCancel={handleCancel}
+          />
+        )}
       </Form>
     </FormCard>
   );
-};
+});
+
+GenericForm.displayName = 'GenericForm';
 
 export default GenericForm;

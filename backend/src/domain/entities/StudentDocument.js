@@ -1,4 +1,5 @@
 import { BaseEntity } from './BaseEntity.js';
+import { ESTADOS_DOCUMENTO_VALUES } from '../constants/index.js';
 
 /**
  * Entidad de Dominio: StudentDocument
@@ -8,8 +9,10 @@ export class StudentDocument extends BaseEntity {
   constructor(data = {}) {
     super(data);
     this.studentId = data.studentId || null;
-    this.documentType = data.documentType || null;
+    this.documentacionId = data.documentacionId || null;
+    // documentType se obtiene de la tabla documentacion a través de documentacion_id, no se almacena aquí
     this.documentReason = data.documentReason || null;
+    this.esOriginal = data.esOriginal !== undefined ? data.esOriginal : false;
     this.referenceType = data.referenceType || null;
     this.referenceId = data.referenceId || null;
     this.description = data.description || null;
@@ -21,17 +24,8 @@ export class StudentDocument extends BaseEntity {
     this.verifiedBy = data.verifiedBy || null;
     this.verificationDate = data.verificationDate || null;
     this.verificationObservations = data.verificationObservations || null;
-    this.state = data.state || 'PENDIENTE'; // PENDIENTE, APROBADO, RECHAZADO, REQUERIDO
+    this.state = data.state || 'PENDIENTE'; // PENDIENTE, APROBADO, RECHAZADO
     this.rejectionReason = data.rejectionReason || null;
-  }
-
-  /**
-   * Valida el tipo de documento
-   * @returns {boolean}
-   */
-  isValidDocumentType() {
-    if (!this.documentType) return false;
-    return TIPOS_DOCUMENTO_ESTUDIANTE_VALUES.includes(this.documentType);
   }
 
   /**
@@ -59,8 +53,10 @@ export class StudentDocument extends BaseEntity {
     return {
       ...super.toPlainObject(),
       studentId: this.studentId,
-      documentType: this.documentType,
+      documentacionId: this.documentacionId,
+      // documentType se obtiene de documentacion a través de documentacion_id
       documentReason: this.documentReason,
+      esOriginal: this.esOriginal,
       referenceType: this.referenceType,
       referenceId: this.referenceId,
       description: this.description,

@@ -18,6 +18,7 @@ export { Idioma } from './Idioma.js';
 export { EstadoCivil } from './EstadoCivil.js';
 export { TipoDiscapacidad } from './TipoDiscapacidad.js';
 export { TipoParentesco } from './TipoParentesco.js';
+export { Documentacion } from './Documentacion.js';
 
 // ============================================
 // SISTEMA DE SEGURIDAD

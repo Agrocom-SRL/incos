@@ -3,7 +3,8 @@
  * Muestra información importante sobre cómo completar el formulario
  */
 
-import { Card, Typography, Flex, List, Divider } from 'antd';
+import { useState } from 'react';
+import { Card, Typography, Flex, Collapse } from 'antd';
 import { InfoCircleOutlined, CheckCircleOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import { allColors } from '@theme/colors';
 import { allSpacing } from '@theme/spacing';
@@ -13,35 +14,68 @@ import { componentConfig } from '@theme/components';
 const { Title, Text } = Typography;
 
 const HelpGuideCard = () => {
-  const importantNotes = [
+  // Primer panel abierto por defecto
+  const [activeKey, setActiveKey] = useState(['1']);
+
+  const generalInfo = [
     {
-      icon: <ExclamationCircleOutlined style={{ color: allColors.colorWarning }} />,
+      icon: <InfoCircleOutlined style={{ color: allColors.colorInfo }} />,
+      text: 'Complete el registro en 3 pasos. Puede guardar y continuar después en cualquier momento.',
+    },
+    {
+      icon: <InfoCircleOutlined style={{ color: allColors.colorInfo }} />,
       text: 'Los campos marcados con * son obligatorios',
-    },
-    {
-      icon: <InfoCircleOutlined style={{ color: allColors.colorInfo }} />,
-      text: 'El CI debe tener entre 7 y 9 dígitos',
-    },
-    {
-      icon: <InfoCircleOutlined style={{ color: allColors.colorInfo }} />,
-      text: 'El estudiante debe tener al menos 17 años',
-    },
-    {
-      icon: <InfoCircleOutlined style={{ color: allColors.colorInfo }} />,
-      text: 'El celular es requerido para contacto',
-    },
-    {
-      icon: <InfoCircleOutlined style={{ color: allColors.colorInfo }} />,
-      text: 'La carrera y gestión de ingreso son obligatorias',
     },
   ];
 
-  const quickTips = [
-    'Verifica que todos los datos estén correctos antes de enviar',
-    'El código de estudiante se genera automáticamente',
-    'Puedes agregar información adicional en observaciones',
-    'Los campos opcionales pueden completarse más tarde',
+  const documentInfo = [
+    {
+      icon: <ExclamationCircleOutlined style={{ color: allColors.colorWarning }} />,
+      text: 'El documento de Pago por Matrícula Anual es OBLIGATORIO para finalizar el registro',
+    },
+    {
+      icon: <InfoCircleOutlined style={{ color: allColors.colorInfo }} />,
+      text: 'Marque los documentos entregados y suba los archivos digitales si están disponibles',
+    },
+    {
+      icon: <InfoCircleOutlined style={{ color: allColors.colorInfo }} />,
+      text: 'Documentos requeridos: CI, Certificado de Nacimiento, Diploma de Bachiller, Pago de Matrícula y Folder Amarillo',
+    },
   ];
+
+  const stateInfo = [
+    {
+      icon: <CheckCircleOutlined style={{ color: allColors.colorWarning }} />,
+      text: 'BORRADOR: Solo datos personales completos',
+    },
+    {
+      icon: <InfoCircleOutlined style={{ color: allColors.colorInfo }} />,
+      text: 'PENDIENTE: Al menos un documento original entregado',
+    },
+    {
+      icon: <CheckCircleOutlined style={{ color: allColors.colorSuccess }} />,
+      text: 'ADMITIDO: Todos los datos y documentos originales completos',
+    },
+  ];
+
+  const renderNotes = (notes) => (
+    <Flex vertical gap={allSpacing.marginXS}>
+      {notes.map((item, index) => (
+        <Flex key={index} align="flex-start" gap={allSpacing.marginSM} style={{ padding: `${allSpacing.paddingXS}px 0` }}>
+          <span style={{ marginTop: '2px' }}>{item.icon}</span>
+          <Text
+            style={{
+              color: allColors.colorText,
+              fontSize: `${typography.fontSize}px`,
+              lineHeight: typography.lineHeight,
+            }}
+          >
+            {item.text}
+          </Text>
+        </Flex>
+      ))}
+    </Flex>
+  );
 
   return (
     <Card
@@ -50,10 +84,12 @@ const HelpGuideCard = () => {
         borderRadius: `${componentConfig.Card.borderRadiusLG}px`,
         boxShadow: componentConfig.Card.boxShadow,
         border: `1px solid ${allColors.colorBorder}`,
-        padding: `${componentConfig.Card.paddingLG}px`,
+        padding: `${componentConfig.Card.padding}px`,
       }}
-      bodyStyle={{
-        padding: 0,
+      styles={{
+        body: {
+          padding: 0,
+        }
       }}
     >
       <Flex vertical gap={allSpacing.marginLG}>
@@ -67,59 +103,30 @@ const HelpGuideCard = () => {
           }}
         >
           <InfoCircleOutlined style={{ marginRight: allSpacing.marginSM }} />
-          Información Importante
+          Guía Rápida
         </Title>
 
-        <List
-          dataSource={importantNotes}
-          renderItem={(item) => (
-            <List.Item style={{ padding: `${allSpacing.paddingSM}px 0`, border: 'none' }}>
-              <Flex align="flex-start" gap={allSpacing.marginSM}>
-                <span style={{ marginTop: '2px' }}>{item.icon}</span>
-                <Text
-                  style={{
-                    color: allColors.colorText,
-                    fontSize: `${typography.fontSize}px`,
-                    lineHeight: typography.lineHeight,
-                  }}
-                >
-                  {item.text}
-                </Text>
-              </Flex>
-            </List.Item>
-          )}
-        />
-
-        <Divider style={{ margin: `${allSpacing.margin}px 0` }} />
-
-        <Title
-          level={5}
-          style={{
-            color: allColors.colorTextHeading,
-            fontSize: `${typography.fontSizeHeading5}px`,
-            fontWeight: typography.fontWeightStrong,
-            margin: 0,
-          }}
-        >
-          <CheckCircleOutlined style={{ marginRight: allSpacing.marginSM, color: allColors.colorSuccess }} />
-          Consejos Rápidos
-        </Title>
-
-        <List
-          dataSource={quickTips}
-          renderItem={(item) => (
-            <List.Item style={{ padding: `${allSpacing.paddingSM}px 0`, border: 'none' }}>
-              <Text
-                style={{
-                  color: allColors.colorTextSecondary,
-                  fontSize: `${typography.fontSizeSM}px`,
-                  lineHeight: typography.lineHeightSM,
-                }}
-              >
-                • {item}
-              </Text>
-            </List.Item>
-          )}
+        <Collapse
+          activeKey={activeKey}
+          onChange={setActiveKey}
+          accordion
+          items={[
+            {
+              key: '1',
+              label: 'Información General',
+              children: renderNotes(generalInfo),
+            },
+            {
+              key: '2',
+              label: 'Documentos Requeridos',
+              children: renderNotes(documentInfo),
+            },
+            {
+              key: '3',
+              label: 'Estados del Registro',
+              children: renderNotes(stateInfo),
+            },
+          ]}
         />
       </Flex>
     </Card>

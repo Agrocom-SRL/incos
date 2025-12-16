@@ -21,6 +21,7 @@ import { LanguageRepository } from '../../../infrastructure/repositories/Languag
 import { CivilStatusRepository } from '../../../infrastructure/repositories/CivilStatusRepository.js';
 import { DisabilityTypeRepository } from '../../../infrastructure/repositories/DisabilityTypeRepository.js';
 import { RelationshipTypeRepository } from '../../../infrastructure/repositories/RelationshipTypeRepository.js';
+import { DocumentacionRepository } from '../../../infrastructure/repositories/DocumentacionRepository.js';
 
 // ============================================
 // SISTEMA DE SEGURIDAD
@@ -98,6 +99,9 @@ export function registerRepositoriesModule(container) {
   }
   if (!container.has('relationshipTypeRepository')) {
     container.register('relationshipTypeRepository', () => new RelationshipTypeRepository(), true);
+  }
+  if (!container.has('documentacionRepository')) {
+    container.register('documentacionRepository', () => new DocumentacionRepository(), true);
   }
 
   // ============================================

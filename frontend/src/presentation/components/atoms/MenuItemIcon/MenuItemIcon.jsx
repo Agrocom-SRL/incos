@@ -149,7 +149,7 @@ const iconMap = {
     // Calificaciones - Nivel 1
     'CAL': CheckCircleOutlined,
     'CAL-REGISTRAR': EditOutlined,
-    'CAL-REGISTRAR-PARCIAL': FileTextOutlined, 
+    'CAL-REGISTRAR-PARCIAL': FileTextOutlined,
     'CAL-REGISTRAR-PRACTICO': EditOutlined,
     'CAL-REGISTRAR-RECUPERATORIO': SyncOutlined,
     'CAL-CURSO': TableOutlined,
@@ -209,9 +209,9 @@ const iconMap = {
     'REP-SOLICITUDES-PASANTIA': BankOutlined,
 
     // Usuarios - Nivel 1
-    'USR': SettingOutlined,
+    'USR': UsergroupAddOutlined,
     'USR-CREATE': UserAddOutlined,
-    'USR-LIST': UsergroupAddOutlined,
+    'USR-LIST': SettingOutlined,
     'USR-ROLES': UserSwitchOutlined,
 };
 
