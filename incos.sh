@@ -36,11 +36,23 @@ else
 fi
 
 # DETECTAR SERVIDOR WEB (Apache o Nginx)
-if command -v apache2 &> /dev/null || command -v httpd &> /dev/null; then
+# Permitir forzar Nginx con variable de entorno o parámetro
+FORCE_NGINX="${FORCE_NGINX:-false}"
+if [ "$1" = "--nginx" ] || [ "$1" = "-n" ]; then
+    FORCE_NGINX="true"
+fi
+
+if [ "$FORCE_NGINX" = "true" ] || command -v nginx &> /dev/null; then
+    if command -v nginx &> /dev/null; then
+        WEB_SERVER="nginx"
+    else
+        echo -e "${RED}✗${NC} Nginx no está instalado pero se solicitó forzar su uso"
+        echo -e "${YELLOW}   ${NC} Instala Nginx primero: apt-get update && apt-get install -y nginx"
+        exit 1
+    fi
+elif command -v apache2 &> /dev/null || command -v httpd &> /dev/null; then
     WEB_SERVER="apache"
     APACHE_CMD=$(command -v apache2 || command -v httpd)
-elif command -v nginx &> /dev/null; then
-    WEB_SERVER="nginx"
 else
     WEB_SERVER="none"
 fi
@@ -50,6 +62,15 @@ echo -e "${GREEN}  Sistema de Gestión Académica INCOS  ${NC}"
 echo -e "${GREEN}  Despliegue Automatizado ${NC}"
 echo -e "${GREEN}========================================${NC}"
 echo -e "${BLUE}Servidor web detectado: ${WEB_SERVER}${NC}"
+if [ "$WEB_SERVER" = "apache" ] && command -v nginx &> /dev/null; then
+    echo -e "${YELLOW}⚠${NC} Apache detectado, pero Nginx también está instalado"
+    echo -e "${YELLOW}   ${NC} Para usar Nginx en lugar de Apache, ejecuta:"
+    echo -e "${BLUE}      ./incos.sh --nginx${NC}"
+    echo -e "${YELLOW}   ${NC} O deshabilita Apache primero:"
+    echo -e "${BLUE}      systemctl stop apache2${NC}"
+    echo -e "${BLUE}      systemctl disable apache2${NC}"
+    echo ""
+fi
 
 # FUNCIÓN DE ERROR
 handle_error() {
