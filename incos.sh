@@ -123,7 +123,7 @@ fi
 
 # Instalar dependencias
 echo -e "${YELLOW}📦${NC} Instalando dependencias de Node.js..."
-npm ci --production --silent || npm install --production --silent || handle_error "Falló instalación de dependencias Node.js"
+npm ci --silent || npm install --silent || handle_error "Falló instalación de dependencias Node.js"
 
 # Configurar .env
 echo -e "${YELLOW}📋${NC} Configurando archivo .env..."
