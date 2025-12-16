@@ -323,14 +323,61 @@ for i in {1..15}; do
     fi
     if [ $i -eq 15 ]; then
         echo -e "${YELLOW}⚠${NC} Backend no responde después de 15 intentos"
-        echo -e "${YELLOW}   ${NC} Verificar estado del servicio:"
+        echo -e "${YELLOW}   ${NC} Verificando estado del servicio..."
+        
+        # Mostrar estado del servicio
+        SERVICE_STATUS=$($SUDO_CMD systemctl is-active incos-backend 2>&1 || echo "inactive")
+        echo -e "${BLUE}   ${NC} Estado del servicio: ${SERVICE_STATUS}"
+        
+        # Mostrar últimos logs del sistema
+        echo -e "${YELLOW}   ${NC} Últimos logs del sistema (journalctl):"
+        $SUDO_CMD journalctl -u incos-backend -n 20 --no-pager 2>&1 | tail -20 || true
+        
+        # Mostrar últimos logs de error
+        if [ -f "$LOG_PATH/backend-error.log" ]; then
+            echo -e "${YELLOW}   ${NC} Últimos logs de error:"
+            tail -20 "$LOG_PATH/backend-error.log" 2>&1 || true
+        fi
+        
+        # Verificar credenciales de base de datos
+        echo -e "${YELLOW}   ${NC} Verificando configuración de base de datos..."
+        if [ -f "$BACKEND_PATH/.env" ]; then
+            DB_NAME=$(grep "^DB_NAME=" "$BACKEND_PATH/.env" | cut -d'=' -f2 | tr -d '"' || echo "NO_CONFIGURADO")
+            DB_USER=$(grep "^DB_USER=" "$BACKEND_PATH/.env" | cut -d'=' -f2 | tr -d '"' || echo "NO_CONFIGURADO")
+            DB_HOST=$(grep "^DB_HOST=" "$BACKEND_PATH/.env" | cut -d'=' -f2 | tr -d '"' || echo "localhost")
+            DB_PORT=$(grep "^DB_PORT=" "$BACKEND_PATH/.env" | cut -d'=' -f2 | tr -d '"' || echo "3306")
+            
+            echo -e "${BLUE}      DB_NAME=${DB_NAME}${NC}"
+            echo -e "${BLUE}      DB_USER=${DB_USER}${NC}"
+            echo -e "${BLUE}      DB_HOST=${DB_HOST}${NC}"
+            echo -e "${BLUE}      DB_PORT=${DB_PORT}${NC}"
+            
+            # Intentar conectar a la base de datos
+            if command -v mysql &> /dev/null; then
+                echo -e "${YELLOW}   ${NC} Intentando conectar a la base de datos..."
+                if mysql -h"$DB_HOST" -P"$DB_PORT" -u"$DB_USER" -e "SELECT 1;" 2>&1 | grep -q "ERROR"; then
+                    echo -e "${RED}      ✗ Error al conectar a la base de datos${NC}"
+                    echo -e "${YELLOW}      ${NC} Verifica las credenciales en: $BACKEND_PATH/.env"
+                else
+                    echo -e "${GREEN}      ✓ Conexión a base de datos exitosa${NC}"
+                fi
+            fi
+        else
+            echo -e "${RED}      ✗ Archivo .env no encontrado en: $BACKEND_PATH/.env${NC}"
+        fi
+        
+        # Verificar que el puerto 3000 esté disponible
+        echo -e "${YELLOW}   ${NC} Verificando puerto 3000..."
+        if netstat -tuln 2>/dev/null | grep -q ":3000" || ss -tuln 2>/dev/null | grep -q ":3000"; then
+            echo -e "${GREEN}      ✓ Puerto 3000 está en uso${NC}"
+        else
+            echo -e "${RED}      ✗ Puerto 3000 no está en uso (backend no está escuchando)${NC}"
+        fi
+        
+        echo -e "${YELLOW}   ${NC} Para más información, ejecuta:"
         echo -e "${BLUE}      $SUDO_CMD systemctl status incos-backend${NC}"
-        echo -e "${YELLOW}   ${NC} Ver logs del sistema:"
         echo -e "${BLUE}      $SUDO_CMD journalctl -u incos-backend -n 50${NC}"
-        echo -e "${YELLOW}   ${NC} Ver logs de aplicación:"
         echo -e "${BLUE}      tail -50 $LOG_PATH/backend-error.log${NC}"
-        echo -e "${YELLOW}   ${NC} Verificar que el archivo .env tenga las credenciales correctas:"
-        echo -e "${BLUE}      cat $BACKEND_PATH/.env | grep DB_${NC}"
     else
         sleep 2
     fi
