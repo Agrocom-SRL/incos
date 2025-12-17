@@ -24,8 +24,9 @@ export function injectCSSVariables() {
   // (Solo las variables que se usan en CSS)
   // ========================================
 
-  // Content - Variable CSS usada en global.css
+  // Content - Variables CSS usadas en global.css
   root.style.setProperty('--color-content-bg', componentConfig.Layout.bodyBg);
+  root.style.setProperty('--color-content-text', allThemeTokens.colorText);
   
   // Color verde institucional (usado en reset.css para focus)
   root.style.setProperty('--color-verde-main', allThemeTokens.colorPrimary);

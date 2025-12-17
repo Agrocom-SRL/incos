@@ -12,7 +12,6 @@ import { allSpacing } from '@theme/tokens';
 import plant02 from '@assets/plant02.png';
 import plant01 from '@assets/plant01.png';
 import plant03 from '@assets/plant03.png';
-import '@presentation/styles/pages/dashboard.css';
 
 const Dashboard = () => {
     // Datos de ejemplo para productos
@@ -52,7 +51,7 @@ const Dashboard = () => {
             gap="large" 
             align="flex-start"
             style={{ width: '100%', height: '100%' }}
-            className="dashboard-container"
+            className="page-container"
         >
             {/* Contenido Principal - 70% en lg+, expandible en menores */}
             <MainContent>

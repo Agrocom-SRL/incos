@@ -24,11 +24,15 @@ export const Card = {
 /**
  * Typography - Tipografía
  * Propiedades reconocidas por Ant Design v5
+ * 
+ * NOTA: fontFamily se define en tokens globales (allThemeTokens.fontFamily)
+ * y se aplica automáticamente a todos los componentes de Ant Design
  */
 export const Typography = {
   colorText: allColors.colorText,
   colorTextHeading: allColors.colorPrimary,
-  // Nota: fontSize y fontWeightStrong se definen en tokens globales
+  // fontFamily, fontSize, fontWeightStrong se definen en tokens globales
+  // y se aplican automáticamente a través de ConfigProvider
 };
 
 /**

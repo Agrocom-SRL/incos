@@ -19,3 +19,22 @@
     overflow-y: auto;
     overflow-x: hidden;
 }
+
+/* ============================================================================
+   RESPONSIVE BREAKPOINTS
+   ============================================================================
+   Ajustes para diferentes tamaños de pantalla
+   ============================================================================ */
+
+/* Móviles Portrait (< 576px) - Ocultar sidebar solo cuando está colapsado */
+@media (max-width: 575px) {
+    
+    /* Cuando el sidebar está colapsado: ocultar completamente */
+    .ant-layout-sider-collapsed.sider,
+    .ant-layout .ant-layout-sider-collapsed.sider {
+        width: 0 !important;
+        min-width: 0 !important;
+        max-width: 0 !important;
+        overflow: hidden;
+    }
+}

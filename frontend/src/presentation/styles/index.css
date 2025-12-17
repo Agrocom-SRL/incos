@@ -3,8 +3,7 @@
  * Entry point de todos los estilos de presentación
  * 
  * Organización según Atomic Design y Arquitectura Limpia:
- * - Base: Reset y estilos globales
- * - Theme: Tipografía (variables CSS se generan desde JS en infrastructure)
+ * - Base: Reset, tipografía y estilos globales
  * - Layout: Estructura de la aplicación (Header, Sider, Content)
  * - Components: Estilos de componentes organizados por Atomic Design
  *   - Atoms: Componentes básicos
@@ -13,10 +12,8 @@
  * - Pages: Estilos específicos de páginas
  */
 
-/* 1. Theme - Tipografía (las variables CSS se generan desde JS) */
-@import './theme/typography.css';
-
-/* 2. Base - Reset y globales */
+/* 1. Base - Tipografía, reset y globales */
+@import './base/typography.css';
 @import './base/reset.css';
 @import './base/global.css';
 
@@ -42,5 +39,5 @@
 @import './components/organisms/info-sidebar.css';
 @import './components/organisms/main-content.css';
 
-/* 7. Pages - Estilos específicos de páginas */
-@import './pages/dashboard.css';
+/* 7. Pages - Estilos genéricos para todas las páginas */
+@import './pages/page.css';

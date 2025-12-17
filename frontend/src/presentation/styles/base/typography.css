@@ -1,0 +1,26 @@
+/* ============================================================================
+   TIPOGRAFÍA - INCOS SANTA CRUZ
+   ============================================================================
+   
+   NOTA: La tipografía se maneja principalmente a través del tema de Ant Design
+   (ConfigProvider con Typography component). Este archivo solo:
+   - Importa la fuente Poppins desde Google Fonts
+   - Aplica fontFamily a elementos HTML nativos (h1-h6, p) que no son componentes Ant Design
+   
+   Los componentes de Ant Design (Button, Input, Menu, Card, etc.) ya usan
+   automáticamente la fontFamily definida en el tema (Typography.fontFamily).
+   ============================================================================ */
+
+/* Importar SOLO Poppins desde Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800&display=swap');
+
+/* Aplicar Poppins a elementos HTML nativos (no componentes Ant Design) */
+/* Ant Design ya aplica automáticamente la fuente a sus componentes via ConfigProvider */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-family-heading, 'Poppins', sans-serif);
+}
+
+p {
+  font-family: var(--font-family-base, 'Poppins', sans-serif);
+  line-height: var(--line-height-normal);
+}

@@ -2,19 +2,21 @@
    ESTILOS GLOBALES - INCOS SANTA CRUZ
    ============================================================================
    
-   Todas las variables CSS se generan desde el tema JS (root.js) e inyectadas en :root
+   NOTA: La mayoría de estilos globales se manejan a través del tema de Ant Design
+   (ConfigProvider). Este archivo solo define lo mínimo necesario que no puede
+   manejarse directamente con el sistema de temas.
+   
+   Variables CSS se generan desde el tema JS (root.js) e inyectadas en :root
    ============================================================================ */
 
+/* Body - Ant Design maneja fontFamily y fontSize a través de tokens
+   Solo definimos background-color que viene del Layout.bodyBg */
 body {
-  font-family: var(--font-family-base, 'Poppins', sans-serif) !important;
-  background-color: var(--color-content-bg, var(--color-blanco-suave));
-  color: var(--color-content-text, var(--color-gris-oscuro));
-  line-height: var(--line-height-normal);
-  font-size: var(--font-size-base);
+  background-color: var(--color-content-bg);
+  color: var(--color-content-text);
 }
 
 /* Contenedor principal */
 #root {
   min-height: 100vh;
-  font-family: var(--font-family-base, 'Poppins', sans-serif);
 }

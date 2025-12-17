@@ -1,0 +1,23 @@
+/* ============================================================================
+   PAGE CONTAINER (Genérico para todas las páginas)
+   ============================================================================
+   Contenedor genérico reutilizable para todas las páginas
+   - Maneja el layout de MainContent e InfoSidebar
+   - Responsive para todas las dimensiones de pantalla
+   - En <= md: InfoSidebar va abajo, ambos ocupan 100% del ancho
+   - En > md: MainContent e InfoSidebar lado a lado
+   ============================================================================ */
+
+.page-container {
+    /* Prevenir overflow horizontal */
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: row;
+    gap: var(--spacing-lg);
+    /* En pantallas grandes: NO wrap, elementos lado a lado */
+    flex-wrap: nowrap;
+    /* Asegurar que ocupe todo el ancho disponible del content */
+    min-width: 0;
+}

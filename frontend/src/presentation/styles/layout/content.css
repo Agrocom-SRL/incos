@@ -8,12 +8,11 @@
 
 .content {
     /* Solo posicionamiento y márgenes - los colores vienen del tema de Ant Design */
-    margin: var(--spacing-base);
     margin-top: calc(var(--header-height) + var(--spacing-xl));
     margin-left: calc(var(--sidebar-width) + var(--spacing-base));
     margin-right: var(--spacing-base);
     transition: margin-left var(--transition-base), padding var(--transition-base);
-    
+
     /* Prevenir overflow horizontal */
     overflow-x: hidden;
     max-width: 100%;
@@ -27,77 +26,34 @@
    ============================================================================ */
 
 /* Cuando el sidebar está colapsado, ajustar margin-left y opcionalmente padding */
-.ant-layout-sider-collapsed ~ .ant-layout-content.content,
-.ant-layout .ant-layout-sider-collapsed ~ .ant-layout-content.content {
+.ant-layout-sider-collapsed~.ant-layout-content.content,
+.ant-layout .ant-layout-sider-collapsed~.ant-layout-content.content {
     margin-left: calc(var(--sidebar-collapsed-width) + var(--spacing-base));
 }
 
-/* ============================================================================
-   RESPONSIVE BREAKPOINTS
-   ============================================================================
-   Ajustes para diferentes tamaños de pantalla
-   Breakpoints basados en Ant Design:
-   - xs: < 576px
-   - sm: 576px - 767px
-   - md: 768px - 991px
-   - lg: 992px - 1199px
-   - xl: >= 1200px
-   ============================================================================ */
+/* ========================================
+   MÓVILES Y TABLETS (< lg) - Sidebar se sobrepone
+   ======================================== */
 
-/* Extra Small (xs) - Móviles pequeños */
-@media (max-width: 767px) {
+/* Móviles Portrait (< 576px) - Sidebar se sobrepone cuando visible, oculto cuando colapsado */
+@media (max-width: 575px) {
+
+    /* Cuando el sidebar está visible: solo spacing base (el sidebar se sobrepone) */
     .content {
-        margin: var(--spacing-sm);
-        margin-top: calc(var(--header-height) + var(--spacing-base));
-        padding-top: var(--spacing-base);
-        padding-right: var(--spacing-sm);
-        padding-bottom: var(--spacing-xl);
+        margin-left: var(--spacing-base);
     }
-    
-    /* En móviles, el sidebar colapsado también usa el mismo margin */
-    .ant-layout-sider-collapsed ~ .ant-layout-content.content {
+
+    /* Cuando el sidebar está colapsado: también solo spacing base (sidebar oculto) */
+    .ant-layout-sider-collapsed~.ant-layout-content.content,
+    .ant-layout .ant-layout-sider-collapsed~.ant-layout-content.content {
         margin-left: var(--spacing-base);
     }
 }
 
-/* Medium (md) - Tablets */
-@media (min-width: 768px) and (max-width: 991px) {
-    /* En tablets, ajustar cuando el sidebar está colapsado */
-    .ant-layout-sider-collapsed ~ .ant-layout-content.content {
-        margin-left: calc(var(--sidebar-collapsed-width) + var(--spacing-base));
-    }
-}
-
-/* Large (lg) - Desktop pequeño */
-@media (min-width: 992px) and (max-width: 1199px) {
+/* Tablets y móviles landscape (576px - 991px) - Sidebar se sobrepone */
+@media (min-width: 576px) and (max-width: 991px) {
     .content {
-        margin: var(--spacing-base);
-        margin-top: calc(var(--header-height) + var(--spacing-xl));
-        margin-left: calc(var(--sidebar-width) + var(--spacing-base));
-        margin-right: var(--spacing-base);
-        padding: var(--spacing-lg);
-        padding-right: var(--spacing-lg);
-    }
-    
-    /* En desktop pequeño, ajustar cuando el sidebar está colapsado */
-    .ant-layout-sider-collapsed ~ .ant-layout-content.content {
-        margin-left: calc(var(--sidebar-collapsed-width) + var(--spacing-base));
-    }
-}
-
-/* Extra Large (xl) - Desktop grande */
-@media (min-width: 1200px) {
-    .content {
-        margin: var(--spacing-base);
-        margin-top: calc(var(--header-height) + var(--spacing-xl));
-        margin-left: calc(var(--sidebar-width) + var(--spacing-base));
-        margin-right: var(--spacing-base);
-        padding: var(--spacing-lg);
-        padding-right: var(--spacing-lg);
-    }
-    
-    /* En desktop grande, ajustar cuando el sidebar está colapsado */
-    .ant-layout-sider-collapsed ~ .ant-layout-content.content {
-        margin-left: calc(var(--sidebar-collapsed-width) + var(--spacing-base));
+        /* Cuando el sidebar está visible: solo spacing base (el sidebar se sobrepone) */
+        margin-left: var(--spacing-base);
     }
 }

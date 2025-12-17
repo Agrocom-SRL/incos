@@ -2,14 +2,18 @@
    RESET CSS - INCOS SANTA CRUZ
    ============================================================================
    
-   Todas las variables CSS se generan desde el tema JS (root.js) e inyectadas en :root
+   NOTA: Ant Design ya incluye un reset CSS básico. Este archivo solo agrega:
+   - box-sizing (necesario para layout consistente)
+   - scroll-behavior (mejora UX)
+   - font-smoothing (mejora renderizado de fuentes)
+   - focus-visible personalizado (accesibilidad con color institucional)
+   
+   Variables CSS se generan desde el tema JS (root.js) e inyectadas en :root
    ============================================================================ */
 
+/* Box-sizing - Necesario para layout consistente */
 * {
-  margin: 0;
-  padding: 0;
   box-sizing: border-box;
-  font-family: var(--font-family-base, 'Poppins', sans-serif);
 }
 
 html {
@@ -19,10 +23,9 @@ html {
 body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  font-family: var(--font-family-base, 'Poppins', sans-serif);
 }
 
-/* Accesibilidad - Focus visible */
+/* Accesibilidad - Focus visible con color institucional */
 *:focus-visible {
   outline: 2px solid var(--color-verde-main);
   outline-offset: 2px;
