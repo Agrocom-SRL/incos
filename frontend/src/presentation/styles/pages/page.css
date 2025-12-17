@@ -21,3 +21,30 @@
     /* Asegurar que ocupe todo el ancho disponible del content */
     min-width: 0;
 }
+
+/* ============================================================================
+   RESPONSIVE BREAKPOINTS
+   ============================================================================
+   Ajustes para diferentes tamaños de pantalla
+   ============================================================================ */
+
+/* Móviles y Tablets (<= md) - InfoSidebar abajo, ambos ocupan 100% */
+@media (max-width: 767px) {
+    .page-container {
+        flex-direction: column;
+        flex-wrap: nowrap;
+        gap: var(--spacing-base);
+    }
+
+    /* Los estilos de .main-content e .info-sidebar están en sus archivos CSS individuales */
+}
+
+/* Desktop (>= md) - MainContent e InfoSidebar lado a lado */
+@media (min-width: 768px) {
+    .page-container {
+        flex-direction: row;
+        /* Permitir wrap cuando no hay espacio suficiente (min-width de MainContent fuerza el wrap) */
+        flex-wrap: wrap;
+        gap: var(--spacing-lg);
+    }
+}

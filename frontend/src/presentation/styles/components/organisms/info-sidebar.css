@@ -2,13 +2,47 @@
    INFO SIDEBAR
    ============================================================================
    Barra lateral de información/resumen (reutilizable)
-   - max-width: 300px en pantallas > md y < xl (fijo)
-   - 30% del ancho en pantallas >= xl (porcentaje)
-   - Ocupa 100% del ancho en pantallas <= md (se va abajo)
+   - min-width: 300px en pantallas >= md y < xl
+   - max-width: 300px en pantallas >= md y < xl (fijo)
+   - min-width: 350px en pantallas >= xl
+   - max-width: 350px en pantallas >= xl (fijo)
+   - Ocupa 100% del ancho en pantallas < md (se va abajo)
    ============================================================================ */
 
 .info-sidebar {
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
+}
+
+/* ============================================================================
+   RESPONSIVE BREAKPOINTS
+   ============================================================================
+   Ajustes para diferentes tamaños de pantalla
+   ============================================================================ */
+
+/* Móviles y Tablets (< md) - ocupa 100% del ancho, se va abajo */
+@media (max-width: 991px) {
+    .info-sidebar {
+        width: 100%;
+        flex: 0 0 auto;
+        max-width: 100%;
+        min-width: 0;
+        /* Asegurar que sea visible */
+        display: flex;
+        visibility: visible;
+        opacity: 1;
+        order: 2;
+        /* Asegurar que esté después del MainContent */
+    }
+}
+
+/* Desktop mediano (>= md y < xl) - min-width: 300px, max-width: 300px fijo */
+@media (min-width: 992px) {
+    .info-sidebar {
+        flex: 0 0 auto;
+        width: auto;
+        min-width: 350px;
+        max-width: 350px;
+    }
 }

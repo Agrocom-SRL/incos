@@ -4,7 +4,7 @@
    Contenido principal de página (reutilizable)
    - Ocupa todo el espacio disponible (flex: 1) cuando existe InfoSidebar
    - Ocupa 100% del ancho cuando no existe InfoSidebar
-   - Se expande cuando el sidebar está abajo en pantallas menores (<= md)
+   - Se expande cuando el sidebar está abajo en pantallas menores (< lg)
    ============================================================================ */
 
 .main-content {
@@ -12,4 +12,31 @@
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
+}
+
+/* ============================================================================
+   RESPONSIVE BREAKPOINTS
+   ============================================================================
+   Ajustes para diferentes tamaños de pantalla
+   ============================================================================ */
+
+/* Móviles y Tablets (< md) - ocupa 100% del ancho, info-sidebar abajo */
+@media (max-width: 991px) {
+    .main-content {
+        width: 100%;
+        flex: 0 0 auto;
+        max-width: 100%;
+        min-width: 0;
+        order: 1; /* Asegurar que esté antes del InfoSidebar */
+    }
+}
+
+/* Desktop (>= md) - flex: 1 para ocupar el resto del espacio cuando hay InfoSidebar */
+@media (min-width: 992px) {
+    .main-content {
+        flex: 1;
+        width: auto;
+    }
+    
+    /* Si no hay InfoSidebar, MainContent ocupa 100% automáticamente */
 }
