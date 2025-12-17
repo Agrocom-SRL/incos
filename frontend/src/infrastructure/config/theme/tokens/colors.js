@@ -105,25 +105,29 @@ export const borderColors = {
   colorSplit: '#e8e8e8',
 };
 
-// Colores para elementos sobre fondos oscuros (Header, etc.)
+// Colores para elementos sobre fondos oscuros/gradientes
+// Se mantienen para el tema claro porque se usan en cards con gradientes oscuros
+// (por ejemplo, OrdersSummaryCard y StudentsSummaryCard con gradientes verdes)
 export const overlayColors = {
-  // Texto sobre fondo oscuro
+  // Texto sobre fondo oscuro/gradiente
   colorTextOnDark: 'rgba(255, 255, 255, 1)',
   colorTextSecondaryOnDark: 'rgba(255, 255, 255, 0.85)',
   colorTextTertiaryOnDark: 'rgba(255, 255, 255, 0.65)',
   
-  // Bordes sobre fondo oscuro
+  // Bordes sobre fondo oscuro/gradiente
   colorBorderOnDark: 'rgba(255, 255, 255, 0.1)',
   colorBorderSecondaryOnDark: 'rgba(255, 255, 255, 0.2)',
   
-  // Fondos semitransparentes sobre oscuro
+  // Fondos semitransparentes sobre oscuro/gradiente
   colorBgOnDark: 'rgba(255, 255, 255, 0.15)',
   colorBgHoverOnDark: 'rgba(255, 255, 255, 0.25)',
 };
 
 // Colores de acento extraídos del logo INCOS
+// Solo se mantienen colores únicos que no duplican semanticColors
+// Eliminados: Blue (duplica Info), Red (duplica Error), Green (duplica Success)
 export const accentColors = {
-  // Amarillo/Beige claro del logo
+  // Amarillo/Beige claro del logo - ÚNICO
   colorAccentBeige: '#e2dba0',
   colorAccentBeigeHover: '#c9c186',
   colorAccentBeigeActive: '#b0a76d',
@@ -135,19 +139,7 @@ export const accentColors = {
   colorAccentBeigeTextHover: '#ffffff',
   colorAccentBeigeTextDisabled: '#cccccc',
   
-  // Azul del logo (similar a colorInfo pero del logo)
-  colorAccentBlue: '#7d9bdc',
-  colorAccentBlueHover: '#5a78b8',
-  colorAccentBlueActive: '#4a6599',
-  colorAccentBlueBg: '#e3f2fd',
-  colorAccentBlueBgDisabled: '#f5f5f5',
-  colorAccentBlueBorder: '#99b1e8',
-  colorAccentBlueBorderHover: '#7d9bdc',
-  colorAccentBlueText: '#7d9bdc',
-  colorAccentBlueTextHover: '#ffffff',
-  colorAccentBlueTextDisabled: '#cccccc',
-  
-  // Verde oliva/amarillo verdoso del logo
+  // Verde oliva/amarillo verdoso del logo - ÚNICO
   colorAccentOlive: '#878c49',
   colorAccentOliveHover: '#6b6f3a',
   colorAccentOliveActive: '#56592e',
@@ -159,7 +151,7 @@ export const accentColors = {
   colorAccentOliveTextHover: '#ffffff',
   colorAccentOliveTextDisabled: '#cccccc',
   
-  // Marrón oscuro/Negro del logo
+  // Marrón oscuro/Negro del logo - ÚNICO
   colorAccentBrown: '#381110',
   colorAccentBrownHover: '#2a0c0c',
   colorAccentBrownActive: '#1d0808',
@@ -171,19 +163,7 @@ export const accentColors = {
   colorAccentBrownTextHover: '#ffffff',
   colorAccentBrownTextDisabled: '#cccccc',
   
-  // Rojo del logo (similar a colorError pero del logo)
-  colorAccentRed: '#e41c24',
-  colorAccentRedHover: '#b81620',
-  colorAccentRedActive: '#8f111a',
-  colorAccentRedBg: '#fee2e2',
-  colorAccentRedBgDisabled: '#f5f5f5',
-  colorAccentRedBorder: '#ed4a50',
-  colorAccentRedBorderHover: '#e41c24',
-  colorAccentRedText: '#e41c24',
-  colorAccentRedTextHover: '#ffffff',
-  colorAccentRedTextDisabled: '#cccccc',
-  
-  // Verde claro del logo
+  // Verde claro del logo - ÚNICO (diferente de Success)
   colorAccentGreenLight: '#a4c79e',
   colorAccentGreenLightHover: '#85b27a',
   colorAccentGreenLightActive: '#6b9d5f',
@@ -194,18 +174,6 @@ export const accentColors = {
   colorAccentGreenLightText: '#6b9d5f',
   colorAccentGreenLightTextHover: '#ffffff',
   colorAccentGreenLightTextDisabled: '#cccccc',
-  
-  // Verde medio del logo
-  colorAccentGreen: '#399f53',
-  colorAccentGreenHover: '#2d7f42',
-  colorAccentGreenActive: '#235f32',
-  colorAccentGreenBg: '#e8f5e9',
-  colorAccentGreenBgDisabled: '#f5f5f5',
-  colorAccentGreenBorder: '#4db066',
-  colorAccentGreenBorderHover: '#399f53',
-  colorAccentGreenText: '#399f53',
-  colorAccentGreenTextHover: '#ffffff',
-  colorAccentGreenTextDisabled: '#cccccc',
 };
 
 export const allColors = {

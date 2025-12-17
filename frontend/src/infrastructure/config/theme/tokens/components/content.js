@@ -36,9 +36,9 @@ export const Typography = {
  * Usa colorInfo (azul) que complementa bien con el verde del logo/icon button
  */
 export const Avatar = {
-  // Color de fondo: azul suave (colorInfo)
-  colorBgContainer: allColors.colorAccentBlueBg,
-  colorText: allColors.colorAccentBlue,
-  colorTextHover: allColors.colorAccentBlueHover,
-  colorBorder: allColors.colorAccentBlueBorder,
+  // Color de fondo: azul suave (colorInfo - reemplaza colorAccentBlue que era duplicado)
+  colorBgContainer: allColors.colorInfoBg,
+  colorText: allColors.colorInfo,
+  colorTextHover: allColors.colorInfoHover,
+  colorBorder: allColors.colorInfoBorder,
 };

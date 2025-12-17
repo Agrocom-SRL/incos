@@ -11,11 +11,12 @@ import ActivityItem from '../ActivityItem';
 const { Title } = Typography;
 
 // Colores de acento para avatares de actividades
+// Usa accentColors únicos + semanticColors para mayor variedad
 const activityAvatarColors = [
     allColors.colorAccentBeige,
     allColors.colorAccentBrown,
-    allColors.colorAccentBlue,
-    allColors.colorAccentRed,
+    allColors.colorInfo,        // Reemplaza colorAccentBlue (duplicado)
+    allColors.colorError,       // Reemplaza colorAccentRed (duplicado)
     allColors.colorAccentOlive,
     allColors.colorAccentGreenLight,
 ];

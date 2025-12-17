@@ -11,7 +11,7 @@
  * Ubicación: tokens/index.js (dentro de tokens/ porque combina tokens)
  */
 
-export { allColors, accentColors } from './colors';
+export { allColors } from './colors';
 export { gradients } from './gradients';
 export { shadows } from './shadows';
 export { typography } from './typography';

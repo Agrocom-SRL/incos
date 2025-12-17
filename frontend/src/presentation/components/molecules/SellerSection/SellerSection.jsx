@@ -16,12 +16,13 @@ const SellerSection = ({
     onViewAll
 }) => {
     // Colores de acento para avatares (rotando entre los disponibles)
+    // Usa accentColors únicos + semanticColors para mayor variedad
     const accentColors = [
         allColors.colorAccentBeige,
-        allColors.colorAccentBlue,
+        allColors.colorInfo,        // Reemplaza colorAccentBlue (duplicado)
         allColors.colorAccentOlive,
         allColors.colorAccentBrown,
-        allColors.colorAccentRed,
+        allColors.colorError,        // Reemplaza colorAccentRed (duplicado)
         allColors.colorAccentGreenLight,
     ];
 
