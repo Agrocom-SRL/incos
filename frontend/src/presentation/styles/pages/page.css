@@ -12,9 +12,11 @@
     /* Prevenir overflow horizontal */
     width: 100%;
     max-width: 100%;
+    height: 100%;
     box-sizing: border-box;
     display: flex;
     flex-direction: row;
+    align-items: flex-start;
     gap: var(--spacing-lg);
     /* En pantallas grandes: NO wrap, elementos lado a lado */
     flex-wrap: nowrap;

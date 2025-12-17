@@ -1,9 +1,12 @@
 // modules/estudiantes/config/wizardSteps.js
 /**
  * Configuración de pasos para el wizard de registro de estudiantes
+ * 
+ * Responsabilidad: Generar configuración de pasos del wizard
  */
 
 import { studentFormFields } from './formFields.js';
+import { generateDocumentFields } from '../helpers';
 
 // Paso 1: Datos Personales, Geográficos y Contacto
 export const wizardStep1 = {
@@ -18,16 +21,19 @@ export const wizardStep1 = {
   sections: ['personalData', 'geographicData', 'contactData'],
 };
 
-// Paso 2: Documentos
-export const wizardStep2 = {
+// Paso 2: Documentos (generado dinámicamente)
+export const createWizardStep2 = (documentacionInscripcion = [], documentosExistentes = {}) => ({
   title: 'Documentos',
   description: 'Documentación requerida',
   formTitle: 'Documentos Requeridos',
   config: {
-    documents: studentFormFields.documents,
+    documents: {
+      title: 'Documentos Requeridos',
+      fields: generateDocumentFields(documentacionInscripcion, documentosExistentes),
+    },
   },
   sections: ['documents'],
-};
+});
 
 // Paso 3: Datos Académicos
 export const wizardStep3 = {
@@ -41,10 +47,33 @@ export const wizardStep3 = {
   sections: ['academicData', 'observations'],
 };
 
-// Configuración completa del wizard
+/**
+ * Genera la configuración completa del wizard con campos de documentos dinámicos
+ * @param {Array} documentacionInscripcion - Lista de documentos requeridos
+ * @param {Object} documentosExistentes - Documentos ya subidos
+ * @returns {Array} Configuración completa de pasos del wizard
+ */
+export const generateStudentWizardSteps = (
+  documentacionInscripcion = [],
+  documentosExistentes = {}
+) => [
+  wizardStep1,
+  createWizardStep2(documentacionInscripcion, documentosExistentes),
+  wizardStep3,
+];
+
+// Configuración por defecto (sin documentos dinámicos)
 export const studentWizardSteps = [
   wizardStep1,
-  wizardStep2,
+  {
+    title: 'Documentos',
+    description: 'Documentación requerida',
+    formTitle: 'Documentos Requeridos',
+    config: {
+      documents: studentFormFields.documents || { title: 'Documentos Requeridos', fields: [] },
+    },
+    sections: ['documents'],
+  },
   wizardStep3,
 ];
 

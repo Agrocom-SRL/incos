@@ -169,8 +169,12 @@
 
 .ant-layout-sider-collapsed .navigation-menu {
     padding: 0;
-    width: 100% !important;
-    margin: 0 var(--spacing-xs);
+    width: 94% !important;
+    margin: 0 0 0 var(--spacing-xs);
+}
+
+.ant-layout-sider-collapsed .navigation-menu .ant-menu-submenu {
+    margin: 0 var(--spacing-sm) 0 0;
 }
 
 .ant-layout-sider-collapsed .navigation-menu .ant-mƒenu-item {
