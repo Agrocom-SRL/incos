@@ -1,7 +1,14 @@
-// src/infrastructure/config/theme/index.js
+// src/infrastructure/config/theme/tokens/index.js
 /**
  * Exportación centralizada de todos los tokens del tema
- * Este archivo combina todos los módulos del tema
+ * Este archivo combina todos los módulos de tokens y exporta allThemeTokens
+ * 
+ * Responsabilidades:
+ * - Exportar todos los tokens individuales (colors, spacing, typography, etc.)
+ * - Combinar todos los tokens en allThemeTokens para uso en light.js
+ * - Exportar componentConfig para configuración de componentes de Ant Design
+ * 
+ * Ubicación: tokens/index.js (dentro de tokens/ porque combina tokens)
  */
 
 export { allColors, accentColors } from './colors';

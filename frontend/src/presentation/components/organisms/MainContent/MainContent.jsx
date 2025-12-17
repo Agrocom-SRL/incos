@@ -6,7 +6,7 @@
  */
 
 import { Flex } from 'antd';
-import '@styles/components/organisms/main-content.css';
+import '@presentation/styles/components/organisms/main-content.css';
 
 const MainContent = ({ children }) => {
     return (

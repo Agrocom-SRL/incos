@@ -1,17 +1,16 @@
-// src/styles/theme/css-variables.js
+// src/infrastructure/config/theme/root.js
 /**
  * Generador de variables CSS desde el tema de Ant Design
- * Este archivo sincroniza las variables CSS con el tema JS
+ * Este archivo sincroniza las variables CSS con el tema JS e inyecta en :root
  * 
  * TODAS las variables CSS se generan desde el tema JS (single source of truth)
+ * y se inyectan en el elemento root del HTML (document.documentElement)
  * 
- * FASE 1: Solo variables esenciales para Layout, Header, Sider, Content e IconButton
+ * Responsabilidad: Inyectar variables CSS en :root desde la configuración del tema
+ * Ubicación: Infrastructure/theme (parte del sistema de tema)
  */
 
-import { allSpacing } from '@theme/spacing';
-import { shadows } from '@theme/shadows';
-import { componentConfig } from '@theme/components';
-import { typography } from '@theme/typography';
+import { allThemeTokens, componentConfig } from './tokens';
 
 /**
  * Genera TODAS las variables CSS desde el tema JS
@@ -27,6 +26,9 @@ export function injectCSSVariables() {
 
   // Content - Variable CSS usada en global.css
   root.style.setProperty('--color-content-bg', componentConfig.Layout.bodyBg);
+  
+  // Color verde institucional (usado en reset.css para focus)
+  root.style.setProperty('--color-verde-main', allThemeTokens.colorPrimary);
 
   // ========================================
   // ICON BUTTON - Variables CSS simples
@@ -64,21 +66,6 @@ export function injectCSSVariables() {
   root.style.setProperty('--color-menu-item-parent-selected-border', componentConfig.Menu.itemParentSelectedBorder);
   root.style.setProperty('--color-menu-item-parent-selected-color', componentConfig.Menu.itemParentSelectedColor);
 
-  // ========================================
-  // CARD - Variables CSS (solo las usadas)
-  // ========================================
-  // Nota: Ant Design aplica automáticamente colorBgContainer, colorBorder, borderRadius
-  // Solo definimos variables para layout/espaciado
-  root.style.setProperty('--card-padding-lg', `${componentConfig.Card.paddingLG}px`);
-
-  // ========================================
-  // BUTTON - Variables CSS (solo las usadas)
-  // ========================================
-  // Nota: Ant Design aplica automáticamente colorPrimary, borderRadius
-  // Solo definimos variables para layout/altura
-  root.style.setProperty('--button-height', `${componentConfig.Button.controlHeight}px`);
-  root.style.setProperty('--button-height-sm', `${componentConfig.Button.controlHeightSM}px`);
-  root.style.setProperty('--button-height-lg', `${componentConfig.Button.controlHeightLG}px`);
 
   // ========================================
   // SOMBRAS (Desde componentConfig para mantener consistencia)
@@ -89,38 +76,37 @@ export function injectCSSVariables() {
   // ========================================
   // ESPACIADO (Solo lo necesario para Layout)
   // ========================================
-  root.style.setProperty('--spacing-xs', `${allSpacing.marginXS}px`);
-  root.style.setProperty('--spacing-sm', `${allSpacing.marginSM}px`);
-  root.style.setProperty('--spacing-base', `${allSpacing.margin}px`);
-  root.style.setProperty('--spacing-lg', `${allSpacing.marginLG}px`);
-  root.style.setProperty('--spacing-xl', `${allSpacing.marginXL}px`);
+  root.style.setProperty('--spacing-xs', `${allThemeTokens.marginXS}px`);
+  root.style.setProperty('--spacing-sm', `${allThemeTokens.marginSM}px`);
+  root.style.setProperty('--spacing-base', `${allThemeTokens.margin}px`);
+  root.style.setProperty('--spacing-lg', `${allThemeTokens.marginLG}px`);
+  root.style.setProperty('--spacing-xl', `${allThemeTokens.marginXL}px`);
 
   // ========================================
   // ALTURAS Y ANCHOS DE LAYOUT
   // ========================================
-  root.style.setProperty('--header-height', `${allSpacing.headerHeight}px`);
-  root.style.setProperty('--sidebar-width', `${allSpacing.sidebarWidth}px`);
-  root.style.setProperty('--sidebar-collapsed-width', `${allSpacing.sidebarCollapsedWidth}px`);
+  root.style.setProperty('--header-height', `${allThemeTokens.headerHeight}px`);
+  root.style.setProperty('--sidebar-width', `${allThemeTokens.sidebarWidth}px`);
+  root.style.setProperty('--sidebar-collapsed-width', `${allThemeTokens.sidebarCollapsedWidth}px`);
 
-  // Control heights (para botones)
-  root.style.setProperty('--control-height', `${allSpacing.controlHeight}px`);
-  root.style.setProperty('--control-height-sm', `${allSpacing.controlHeightSM}px`);
+  // Control heights (para botones y menús)
+  root.style.setProperty('--control-height', `${allThemeTokens.controlHeight}px`);
 
   // ========================================
   // LOGO - Tamaños
   // ========================================
   // Logo icono
-  root.style.setProperty('--logo-icon-small', `${allSpacing.logoIconSmall}px`);
-  root.style.setProperty('--logo-icon-medium', `${allSpacing.logoIconMedium}px`);
-  root.style.setProperty('--logo-icon-large', `${allSpacing.logoIconLarge}px`);
+  root.style.setProperty('--logo-icon-small', `${allThemeTokens.logoIconSmall}px`);
+  root.style.setProperty('--logo-icon-medium', `${allThemeTokens.logoIconMedium}px`);
+  root.style.setProperty('--logo-icon-large', `${allThemeTokens.logoIconLarge}px`);
 
   // Logo horizontal
-  root.style.setProperty('--logo-horizontal-small-width', `${allSpacing.logoHorizontalSmall}px`);
-  root.style.setProperty('--logo-horizontal-small-height', `${allSpacing.logoHorizontalSmallHeight}px`);
-  root.style.setProperty('--logo-horizontal-medium-width', `${allSpacing.logoHorizontalMedium}px`);
-  root.style.setProperty('--logo-horizontal-medium-height', `${allSpacing.logoHorizontalMediumHeight}px`);
-  root.style.setProperty('--logo-horizontal-large-width', `${allSpacing.logoHorizontalLarge}px`);
-  root.style.setProperty('--logo-horizontal-large-height', `${allSpacing.logoHorizontalLargeHeight}px`);
+  root.style.setProperty('--logo-horizontal-small-width', `${allThemeTokens.logoHorizontalSmall}px`);
+  root.style.setProperty('--logo-horizontal-small-height', `${allThemeTokens.logoHorizontalSmallHeight}px`);
+  root.style.setProperty('--logo-horizontal-medium-width', `${allThemeTokens.logoHorizontalMedium}px`);
+  root.style.setProperty('--logo-horizontal-medium-height', `${allThemeTokens.logoHorizontalMediumHeight}px`);
+  root.style.setProperty('--logo-horizontal-large-width', `${allThemeTokens.logoHorizontalLarge}px`);
+  root.style.setProperty('--logo-horizontal-large-height', `${allThemeTokens.logoHorizontalLargeHeight}px`);
 
   // ========================================
   // Z-INDEX
@@ -132,18 +118,21 @@ export function injectCSSVariables() {
   // ========================================
   // Nota: Ant Design aplica automáticamente borderRadius desde componentConfig
   // Solo definimos variables para casos específicos de layout
-  root.style.setProperty('--border-radius-sm', `${allSpacing.borderRadiusSM}px`);
+  root.style.setProperty('--border-radius-sm', `${allThemeTokens.borderRadiusSM}px`);
 
   // ========================================
   // TIPOGRAFÍA (solo las usadas)
   // ========================================
   // Nota: Ant Design aplica automáticamente fontSize desde componentConfig.Typography
   // Solo definimos variables para casos específicos de layout
-  root.style.setProperty('--font-size-base', `${typography.fontSize}px`);
-  root.style.setProperty('--font-size-lg', `${typography.fontSizeLG}px`);
+  root.style.setProperty('--font-family-base', allThemeTokens.fontFamily);
+  root.style.setProperty('--font-family-heading', allThemeTokens.fontFamily);
+  root.style.setProperty('--font-size-base', `${allThemeTokens.fontSize}px`);
+  root.style.setProperty('--font-size-lg', `${allThemeTokens.fontSizeLG}px`);
+  root.style.setProperty('--line-height-normal', `${allThemeTokens.lineHeight}`);
 
   // ========================================
   // TRANSICIONES
   // ========================================
-  root.style.setProperty('--transition-base', allSpacing.motionDurationMid);
+  root.style.setProperty('--transition-base', allThemeTokens.motionDurationMid);
 }

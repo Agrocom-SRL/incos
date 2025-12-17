@@ -15,16 +15,13 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src'),
       // Domain Layer
-      '@core': path.resolve(__dirname, './src/core'),
-      '@entities': path.resolve(__dirname, './src/core/entities'),
-      '@useCases': path.resolve(__dirname, './src/core/useCases'),
-      '@repositories': path.resolve(__dirname, './src/core/repositories'),
+      '@domain': path.resolve(__dirname, './src/domain'),
+      '@entities': path.resolve(__dirname, './src/domain/entities'),
+      '@useCases': path.resolve(__dirname, './src/domain/useCases'),
+      '@repositories': path.resolve(__dirname, './src/domain/repositories'),
 
       // Application Layer
       '@application': path.resolve(__dirname, './src/application'),
-      '@hooks': path.resolve(__dirname, './src/application/hooks'),
-      '@store': path.resolve(__dirname, './src/application/store'),
-      '@providers': path.resolve(__dirname, './src/application/providers'),
 
       // Infrastructure Layer
       '@infrastructure': path.resolve(__dirname, './src/infrastructure'),
@@ -43,10 +40,7 @@ export default defineConfig({
       // Módulos específicos (para evitar rutas relativas)
       '@estudiantes': path.resolve(__dirname, './src/presentation/modules/estudiantes'),
 
-      // Shared
-      '@shared': path.resolve(__dirname, './src/shared'),
-      '@constants': path.resolve(__dirname, './src/shared/constants'),
-      '@utils': path.resolve(__dirname, './src/shared/utils'),
+      // Shared (no existe actualmente, se puede agregar en el futuro)
       '@config': path.resolve(__dirname, './src/infrastructure/config'),
 
       // Router
@@ -59,9 +53,8 @@ export default defineConfig({
       
       // Layout Components
       '@layout-components': path.resolve(__dirname, './src/presentation/templates/MainLayout/components'),
-      '@assets': path.resolve(__dirname, './src/assets'),
-      '@styles': path.resolve(__dirname, './src/styles'),
-      '@data': path.resolve(__dirname, './src/data'),
+      '@assets': path.resolve(__dirname, './src/presentation/assets'),
+      '@styles': path.resolve(__dirname, './src/presentation/styles'),
     },
   },
 

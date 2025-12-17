@@ -14,7 +14,7 @@
 
 import { useState } from 'react';
 import { Layout } from 'antd';
-import { allSpacing } from '@theme/spacing';
+import { allSpacing } from '@theme/tokens';
 
 const { Sider, Header, Content } = Layout;
 

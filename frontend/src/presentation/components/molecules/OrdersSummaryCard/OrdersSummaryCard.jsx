@@ -5,12 +5,7 @@
  */
 
 import { Card, Typography, Flex } from 'antd';
-import { allColors } from '@theme/colors';
-import { allSpacing } from '@theme/spacing';
-import { typography } from '@theme/typography';
-import { gradients } from '@theme/gradients';
-import { shadows } from '@theme/shadows';
-import { componentConfig } from '@theme/components';
+import { allColors, allSpacing, typography, gradients, shadows, componentConfig } from '@theme/tokens';
 
 const { Title } = Typography;
 

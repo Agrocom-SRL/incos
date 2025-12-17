@@ -6,7 +6,7 @@
  */
 
 import { Skeleton, Space, Flex } from 'antd';
-import { allSpacing } from '@theme/spacing';
+import { allSpacing } from '@theme/tokens';
 
 const LoadingFallback = () => {
     return (

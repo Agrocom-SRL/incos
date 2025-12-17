@@ -5,10 +5,7 @@
  */
 
 import { Card, Typography, Button, Flex } from 'antd';
-import { componentConfig } from '@theme/components';
-import { allColors } from '@theme/colors';
-import { allSpacing } from '@theme/spacing';
-import { typography } from '@theme/typography';
+import { componentConfig, allColors, allSpacing, typography } from '@theme/tokens';
 
 const { Title, Text } = Typography;
 

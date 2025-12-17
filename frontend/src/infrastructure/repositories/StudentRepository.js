@@ -7,7 +7,7 @@
  */
 
 import apiClient from '../api/client.js';
-import { IStudentRepository } from '@repositories/IStudentRepository';
+import { IStudentRepository } from '@/domain/repositories/IStudentRepository.js';
 
 export class StudentRepository extends IStudentRepository {
   /**

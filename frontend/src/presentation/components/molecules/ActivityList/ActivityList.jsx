@@ -5,9 +5,7 @@
  */
 
 import { Flex, Typography } from 'antd';
-import { allColors } from '@theme/colors';
-import { allSpacing } from '@theme/spacing';
-import { typography } from '@theme/typography';
+import { allColors, allSpacing, typography } from '@theme/tokens';
 import ActivityItem from '../ActivityItem';
 
 const { Title } = Typography;

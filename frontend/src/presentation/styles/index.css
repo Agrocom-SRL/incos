@@ -1,0 +1,46 @@
+/* src/presentation/styles/index.css */
+/**
+ * Entry point de todos los estilos de presentación
+ * 
+ * Organización según Atomic Design y Arquitectura Limpia:
+ * - Base: Reset y estilos globales
+ * - Theme: Tipografía (variables CSS se generan desde JS en infrastructure)
+ * - Layout: Estructura de la aplicación (Header, Sider, Content)
+ * - Components: Estilos de componentes organizados por Atomic Design
+ *   - Atoms: Componentes básicos
+ *   - Molecules: Componentes compuestos
+ *   - Organisms: Componentes complejos
+ * - Pages: Estilos específicos de páginas
+ */
+
+/* 1. Theme - Tipografía (las variables CSS se generan desde JS) */
+@import './theme/typography.css';
+
+/* 2. Base - Reset y globales */
+@import './base/reset.css';
+@import './base/global.css';
+
+/* 3. Layout - Estructura */
+@import './layout/header.css';
+@import './layout/sider.css';
+@import './layout/content.css';
+
+/* 4. Components - Atoms */
+@import './components/atoms/logo.css';
+@import './components/atoms/icon-button.css';
+@import './components/atoms/avatar.css';
+@import './components/atoms/button.css';
+@import './components/atoms/heading.css';
+@import './components/atoms/form-card.css';
+
+/* 5. Components - Molecules */
+@import './components/molecules/navigation-menu.css';
+@import './components/molecules/form-section.css';
+
+/* 6. Components - Organisms */
+@import './components/organisms/sidebar.css';
+@import './components/organisms/info-sidebar.css';
+@import './components/organisms/main-content.css';
+
+/* 7. Pages - Estilos específicos de páginas */
+@import './pages/dashboard.css';

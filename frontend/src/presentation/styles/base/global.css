@@ -2,7 +2,7 @@
    ESTILOS GLOBALES - INCOS SANTA CRUZ
    ============================================================================
    
-   Todas las variables CSS se generan desde el tema JS (css-variables.js)
+   Todas las variables CSS se generan desde el tema JS (root.js) e inyectadas en :root
    ============================================================================ */
 
 body {

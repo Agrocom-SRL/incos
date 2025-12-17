@@ -1,21 +1,22 @@
 // src/main.jsx
+/**
+ * Punto de entrada de la aplicación
+ * 
+ * Responsabilidades:
+ * - Inicializar React y renderizar la aplicación
+ * - Configurar StrictMode para desarrollo
+ * - NO debe contener lógica de negocio ni providers
+ * 
+ * Arquitectura:
+ * - main.jsx (disparador) → App.jsx (configuración + providers) → AppRouter
+ */
+
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { ConfigProvider, App as AntApp } from 'antd';
-import incosTheme from '@infrastructure/config/theme.config';
-import { injectCSSVariables } from '@styles/theme/css-variables';
-import '@styles/index.css';
 import App from './App.jsx';
-
-// Inyectar variables CSS desde el tema JS (sincronización)
-injectCSSVariables();
 
 createRoot(document.getElementById('root')).render(
     <StrictMode>
-        <ConfigProvider theme={incosTheme}>
-            <AntApp>
-                <App />
-            </AntApp>
-        </ConfigProvider>
+        <App />
     </StrictMode>
 );

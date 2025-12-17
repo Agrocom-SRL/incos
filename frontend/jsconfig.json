@@ -6,30 +6,21 @@
         "./src/*"
       ],
       // Domain Layer
-      "@core/*": [
-        "./src/core/*"
+      "@domain/*": [
+        "src/domain/*"
       ],
       "@entities/*": [
-        "./src/core/entities/*"
+        "src/domain/entities/*"
       ],
       "@useCases/*": [
-        "./src/core/useCases/*"
+        "src/domain/useCases/*"
       ],
       "@repositories/*": [
-        "./src/core/repositories/*"
+        "src/domain/repositories/*"
       ],
       // Application Layer
       "@application/*": [
         "./src/application/*"
-      ],
-      "@hooks/*": [
-        "./src/application/hooks/*"
-      ],
-      "@store/*": [
-        "./src/application/store/*"
-      ],
-      "@providers/*": [
-        "./src/application/providers/*"
       ],
       // Infrastructure Layer
       "@infrastructure/*": [
@@ -81,16 +72,7 @@
       "@estudiantes/*": [
         "./src/presentation/modules/estudiantes/*"
       ],
-      // Shared
-      "@shared/*": [
-        "./src/shared/*"
-      ],
-      "@constants/*": [
-        "./src/shared/constants/*"
-      ],
-      "@utils/*": [
-        "./src/shared/utils/*"
-      ],
+      // Shared (no existe actualmente, se puede agregar en el futuro)
       "@config/*": [
         "./src/infrastructure/config/*"
       ],
@@ -113,10 +95,10 @@
         "./src/presentation/templates/MainLayout/components/*"
       ],
       "@assets/*": [
-        "./src/assets/*"
+        "./src/presentation/assets/*"
       ],
       "@styles/*": [
-        "./src/styles/*"
+        "./src/presentation/styles/*"
       ]
     },
     "jsx": "react-jsx",

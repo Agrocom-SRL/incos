@@ -5,10 +5,7 @@
  */
 
 import { Flex, Avatar, Typography } from 'antd';
-import { allColors } from '@theme/colors';
-import { allSpacing } from '@theme/spacing';
-import { typography } from '@theme/typography';
-import { componentConfig } from '@theme/components';
+import { allColors, allSpacing, typography, componentConfig } from '@theme/tokens';
 
 const { Text } = Typography;
 

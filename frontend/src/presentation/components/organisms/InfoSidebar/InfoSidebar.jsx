@@ -6,7 +6,7 @@
  */
 
 import { Flex } from 'antd';
-import '@styles/components/organisms/info-sidebar.css';
+import '@presentation/styles/components/organisms/info-sidebar.css';
 
 const InfoSidebar = ({ children }) => {
     return (

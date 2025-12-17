@@ -6,10 +6,7 @@
 import { useState } from 'react';
 import { Card, Typography, Flex, Collapse } from 'antd';
 import { InfoCircleOutlined, CheckCircleOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
-import { allColors } from '@theme/colors';
-import { allSpacing } from '@theme/spacing';
-import { typography } from '@theme/typography';
-import { componentConfig } from '@theme/components';
+import { allColors, allSpacing, typography, componentConfig } from '@theme/tokens';
 
 const { Title, Text } = Typography;
 

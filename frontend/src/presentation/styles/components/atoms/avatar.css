@@ -2,7 +2,7 @@
    ATOMS - AVATAR
    ============================================================================
    Estilos para el Avatar desde el tema
-   Los colores vienen de componentConfig.Avatar vía css-variables.js
+   Los colores vienen de componentConfig.Avatar vía root.js (inyectadas en :root)
    ============================================================================ */
 
 .incos-avatar {

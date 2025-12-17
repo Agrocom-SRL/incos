@@ -1,6 +1,6 @@
 // src/presentation/components/atoms/Avatar/Avatar.jsx
 import { Avatar as AntAvatar } from 'antd';
-import '@styles/components/atoms/avatar.css';
+import '@presentation/styles/components/atoms/avatar.css';
 
 const { Group } = AntAvatar;
 

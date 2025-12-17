@@ -3,7 +3,7 @@ import { Flex } from 'antd';
 import IconButton from '@atoms/IconButton';
 import Logo from '@atoms/Logo';
 import { MenuOutlined } from '@ant-design/icons';
-import { allSpacing } from '@theme/spacing';
+import { allSpacing } from '@theme/tokens';
 
 /**
  * HeaderLeft - Componente molecular para la sección izquierda del Header

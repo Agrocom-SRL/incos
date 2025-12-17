@@ -5,7 +5,7 @@
  * Dependency Inversion: Depende de la abstracción IStudentRepository
  */
 
-import { Student } from '@entities/Student';
+import { Student } from '@/domain/entities/Student';
 
 export class CreateStudentUseCase {
   /**
