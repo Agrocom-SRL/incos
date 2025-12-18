@@ -1,1 +1,1 @@
-export { default } from './academico';
+export { default } from './Academico';

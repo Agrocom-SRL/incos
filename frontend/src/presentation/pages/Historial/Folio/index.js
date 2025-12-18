@@ -1,1 +1,1 @@
-export { default } from './folio';
+export { default } from './Folio';

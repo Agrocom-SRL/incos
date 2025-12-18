@@ -1,1 +1,1 @@
-export { default } from './editar';
+export { default } from './Editar';

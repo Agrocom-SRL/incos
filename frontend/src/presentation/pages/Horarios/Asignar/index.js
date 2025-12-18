@@ -1,1 +1,1 @@
-export { default } from './asignar';
+export { default } from './Asignar';

@@ -1,1 +1,1 @@
-export { default } from './horario';
+export { default } from './Horario';

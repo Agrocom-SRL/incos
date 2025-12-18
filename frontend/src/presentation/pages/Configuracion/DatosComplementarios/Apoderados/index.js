@@ -1,1 +1,1 @@
-export { default } from './apoderados';
+export { default } from './Apoderados';

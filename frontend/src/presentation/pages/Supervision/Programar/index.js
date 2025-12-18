@@ -1,1 +1,1 @@
-export { default } from './programar';
+export { default } from './Programar';

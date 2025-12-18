@@ -1,1 +1,1 @@
-export { default } from './discapacidad';
+export { default } from './Discapacidad';

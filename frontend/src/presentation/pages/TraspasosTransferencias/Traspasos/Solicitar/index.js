@@ -1,1 +1,1 @@
-export { default } from './solicitar';
+export { default } from './Solicitar';

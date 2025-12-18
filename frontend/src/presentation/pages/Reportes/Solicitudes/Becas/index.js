@@ -1,1 +1,1 @@
-export { default } from './becas';
+export { default } from './Becas';

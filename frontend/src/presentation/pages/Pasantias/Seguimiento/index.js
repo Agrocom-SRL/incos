@@ -1,1 +1,1 @@
-export { default } from './seguimiento';
+export { default } from './Seguimiento';

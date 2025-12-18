@@ -1,1 +1,1 @@
-export { default } from './recibir';
+export { default } from './Recibir';

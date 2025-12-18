@@ -1,1 +1,1 @@
-export { default } from './ver';
+export { default } from './Ver';

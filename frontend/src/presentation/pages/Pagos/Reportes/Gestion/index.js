@@ -1,1 +1,1 @@
-export { default } from './gestion';
+export { default } from './Gestion';

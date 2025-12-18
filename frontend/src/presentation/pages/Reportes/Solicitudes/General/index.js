@@ -1,1 +1,1 @@
-export { default } from './general';
+export { default } from './General';

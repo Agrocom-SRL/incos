@@ -1,1 +1,1 @@
-export { default } from './auditoria';
+export { default } from './Auditoria';

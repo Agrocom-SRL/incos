@@ -1,1 +1,1 @@
-export { default } from './periodo';
+export { default } from './Periodo';

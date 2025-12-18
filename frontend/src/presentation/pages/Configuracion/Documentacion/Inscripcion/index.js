@@ -1,1 +1,1 @@
-export { default } from './inscripcion';
+export { default } from './Inscripcion';

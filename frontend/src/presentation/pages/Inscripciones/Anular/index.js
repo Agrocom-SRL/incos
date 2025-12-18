@@ -1,1 +1,1 @@
-export { default } from './anular';
+export { default } from './Anular';

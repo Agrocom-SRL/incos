@@ -1,1 +1,1 @@
-export { default } from './planestudios';
+export { default } from './PlanEstudios';

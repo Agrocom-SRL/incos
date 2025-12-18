@@ -1,1 +1,1 @@
-export { default } from './actividades';
+export { default } from './Actividades';

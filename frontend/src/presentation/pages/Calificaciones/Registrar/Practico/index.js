@@ -1,1 +1,1 @@
-export { default } from './practico';
+export { default } from './Practico';

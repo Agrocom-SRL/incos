@@ -1,1 +1,1 @@
-export { default } from './convalidarnotas';
+export { default } from './ConvalidarNotas';

@@ -1,1 +1,1 @@
-export { default } from './estado';
+export { default } from './Estado';

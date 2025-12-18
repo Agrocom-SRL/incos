@@ -1,1 +1,1 @@
-export { default } from './aprobar';
+export { default } from './Aprobar';

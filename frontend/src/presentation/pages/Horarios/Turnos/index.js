@@ -1,1 +1,1 @@
-export { default } from './turnos';
+export { default } from './Turnos';

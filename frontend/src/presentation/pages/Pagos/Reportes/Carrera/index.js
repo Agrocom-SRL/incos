@@ -1,1 +1,1 @@
-export { default } from './carrera';
+export { default } from './Carrera';
