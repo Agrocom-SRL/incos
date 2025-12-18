@@ -59,10 +59,16 @@ export const generateDocumentFields = (documentacionInscripcion = [], documentos
     // Verificar si ya existe un documento para este campo
     const documentoExistente = documentosExistentes[doc.id];
     
-    // El campo de archivo NO es requerido, solo muestra "Acepta fotocopia" si corresponde
+    // El campo de archivo es requerido SOLO si:
+    // 1. El documento es requerido
+    // 2. NO acepta fotocopia (badge "Solo original")
+    // 3. NO hay documento existente
+    const esRequerido = doc.requerido && !doc.aceptaFotocopia && !documentoExistente;
+    
+    // Construir label: mostrar "Acepta fotocopia" si acepta, o "Solo original" si no acepta
     const labelUpload = doc.aceptaFotocopia 
       ? `Subir ${doc.nombre} (Acepta fotocopia)`
-      : `Subir ${doc.nombre}`;
+      : `Subir ${doc.nombre} (Solo original)${esRequerido ? ' *' : ''}`;
     
     fields.push({
       name: `documento_${doc.id}_archivo`,
@@ -73,52 +79,29 @@ export const generateDocumentFields = (documentacionInscripcion = [], documentos
       maxCount: 1,
       uploadText: 'Seleccionar archivo',
       documentacionId: doc.id,
-      required: false, // NUNCA requerido - solo el checkbox "Solo original" será requerido
+      required: esRequerido, // Requerido solo si no acepta fotocopia y es requerido
       aceptaFotocopia: doc.aceptaFotocopia,
       descripcion: doc.descripcion,
       documentoExistente: documentoExistente, // Pasar información del documento existente
-      rules: [], // Sin validación requerida para el archivo
-    });
-    
-    // Campo checkbox "Solo original" - SOLO este es requerido cuando el documento no acepta fotocopia
-    if (!doc.aceptaFotocopia) {
-      fields.push({
-        name: `documento_${doc.id}_soloOriginal`,
-        label: 'Solo original *',
-        type: 'checkbox',
-        span: 8,
-        required: doc.requerido, // Requerido solo si el documento es requerido
-        rules: doc.requerido
-          ? [
-              {
-                validator: (_, value) => {
-                  if (!value) {
-                    return Promise.reject(
-                      new Error('Debe confirmar que el documento es original')
-                    );
-                  }
+      rules: esRequerido
+        ? [
+            {
+              validator: (_, value) => {
+                // Si hay documento existente, no es requerido
+                if (documentoExistente) {
                   return Promise.resolve();
-                },
+                }
+                if (!value || (Array.isArray(value) && value.length === 0)) {
+                  return Promise.reject(
+                    new Error(`Debe subir el archivo de ${doc.nombre} (Solo original)`)
+                  );
+                }
+                return Promise.resolve();
               },
-            ]
-          : [],
-        documentacionId: doc.id,
-        soloOriginal: true, // Flag para identificar este campo
-      });
-    }
-  });
-
-  // Agregar checkbox adicional para "Folder con nepaco" al final
-  // Este checkbox no se guarda en BD, es solo para marcar requisito físico
-  fields.push({
-    name: 'folderConNepaco',
-    label: 'Folder con nepaco',
-    type: 'checkbox',
-    span: 8,
-    required: false,
-    rules: [],
-    descripcion: 'Marcar si el folder físico del estudiante tiene nepaco',
-    esRequisitoFisico: true, // Flag para identificar que es un requisito físico, no un documento
+            },
+          ]
+        : [],
+    });
   });
 
   return fields;
