@@ -38,7 +38,9 @@ export const processStudentDocuments = (documentos = [], estudianteId) => {
         } else if (!filePath && fileName) {
           url = `/api/v1/estudiantes/${estudianteId}/documentos/${doc.id}/archivo`;
         } else if (filePath && filePath.startsWith('/uploads')) {
-          url = `http://localhost:3000${filePath}`;
+          // Usar URL relativa para que funcione con el proxy de Nginx
+          // Nginx servirá /uploads/ directamente desde el backend
+          url = filePath; // Ya es una ruta relativa (/uploads/...)
         }
         
         documentosExistentes[docId] = {
