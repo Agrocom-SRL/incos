@@ -44,8 +44,27 @@ export const useStudentFormData = () => {
       const catalogErrors = [];
 
       try {
-        console.log('[useStudentFormData] Iniciando carga de catálogos...');
+        console.log('[useStudentFormData] ⚠️ MODO DEBUG: Todas las llamadas a catálogos están deshabilitadas temporalmente');
+        console.log('[useStudentFormData] Esto es para identificar qué catálogo causa el problema');
         
+        // ============================================
+        // TEMPORALMENTE DESHABILITADO PARA DEBUG
+        // Agregar uno por uno para identificar el problema
+        // ============================================
+        
+        // TODO: Descomentar uno por uno para identificar el problema
+        // Paso 1: Verificar que sin catálogos no hay errores
+        // Paso 2: Agregar carreras (suele funcionar)
+        // Paso 3: Agregar gestiones
+        // Paso 4: Agregar paises
+        // Paso 5: Agregar idiomas
+        // Paso 6: Agregar tipos-discapacidad
+        // Paso 7: Agregar documentacion-inscripcion
+        // Paso 8: Agregar departamentos
+        // Paso 9: Agregar provincias
+        // Paso 10: Agregar municipios
+        
+        /*
         // Cargar catálogos en paralelo
         // Usar Promise.allSettled para que si una falla, las demás continúen
         const catalogResults = await Promise.allSettled([
@@ -127,6 +146,18 @@ export const useStudentFormData = () => {
         setDepartamentos(departamentosRes.data?.data || []);
         setProvincias(provinciasRes.data?.data || []);
         setMunicipios(municipiosRes.data?.data || []);
+        */
+        
+        // Por ahora, establecer arrays vacíos
+        setCarreras([]);
+        setGestiones([]);
+        setPaises([]);
+        setIdiomas([]);
+        setTiposDiscapacidad([]);
+        setDocumentacionInscripcion([]);
+        setDepartamentos([]);
+        setProvincias([]);
+        setMunicipios([]);
 
         // TODO: Implementar llamadas a la API para obtener estadísticas reales
         setStats({
@@ -136,6 +167,8 @@ export const useStudentFormData = () => {
         });
 
         // Mostrar resumen de errores si los hay
+        // TEMPORALMENTE DESHABILITADO
+        /*
         if (catalogErrors.length > 0) {
           console.warn(`[useStudentFormData] ⚠️ ${catalogErrors.length} de ${totalRequests} catálogos fallaron:`, catalogErrors);
           // Solo mostrar error si TODAS las peticiones fallaron
@@ -147,6 +180,8 @@ export const useStudentFormData = () => {
         } else {
           console.log('[useStudentFormData] ✓ Todos los catálogos cargados correctamente');
         }
+        */
+        console.log('[useStudentFormData] ✓ Modo debug: Sin catálogos cargados (verificar que no hay errores)');
       } catch (err) {
         // Error inesperado (no debería llegar aquí con Promise.allSettled, pero por si acaso)
         console.error('[useStudentFormData] ✗ Error inesperado al cargar datos del formulario:', {
@@ -173,8 +208,10 @@ export const useStudentFormData = () => {
     const catalogErrors = [];
 
     try {
-      console.log('[useStudentFormData] Refetch: Recargando catálogos...');
+      console.log('[useStudentFormData] ⚠️ Refetch: Modo debug - catálogos deshabilitados');
       
+      // TEMPORALMENTE DESHABILITADO - igual que en loadFormData
+      /*
       // Usar Promise.allSettled para que si una falla, las demás continúen
       const catalogResults = await Promise.allSettled([
         apiClient.get('/v1/catalogs/carreras'),
@@ -238,6 +275,18 @@ export const useStudentFormData = () => {
       setDepartamentos(departamentosRes.data?.data || []);
       setProvincias(provinciasRes.data?.data || []);
       setMunicipios(municipiosRes.data?.data || []);
+      */
+      
+      // Por ahora, mantener arrays vacíos
+      setCarreras([]);
+      setGestiones([]);
+      setPaises([]);
+      setIdiomas([]);
+      setTiposDiscapacidad([]);
+      setDocumentacionInscripcion([]);
+      setDepartamentos([]);
+      setProvincias([]);
+      setMunicipios([]);
 
       setStats({
         todayStudents: 5,
@@ -245,6 +294,8 @@ export const useStudentFormData = () => {
         totalStudents: 1543,
       });
 
+      // TEMPORALMENTE DESHABILITADO
+      /*
       // Solo mostrar error si TODAS las peticiones fallaron
       if (failedRequests === totalRequests) {
         setError('No se pudieron recargar los datos. Por favor, intenta nuevamente.');
@@ -253,6 +304,8 @@ export const useStudentFormData = () => {
       } else {
         console.log('[useStudentFormData] ✓ Todos los catálogos recargados correctamente');
       }
+      */
+      console.log('[useStudentFormData] ✓ Refetch: Modo debug - sin catálogos');
     } catch (err) {
       console.error('[useStudentFormData] ✗ Error inesperado al recargar datos del formulario:', {
         message: err.message,
