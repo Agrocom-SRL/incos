@@ -1,10 +1,12 @@
 import { logger } from '../../../shared/logger.js';
 import { StudentRepository } from '../../../infrastructure/repositories/StudentRepository.js';
+import { StudentAcademicDataRepository } from '../../../infrastructure/repositories/StudentAcademicDataRepository.js';
 import { StudentMapper } from '../../../application/mappers/StudentMapper.js';
 import { StudentResponseDTO } from '../../../application/dtos/response/StudentResponseDTO.js';
 
-// Crear instancia del repositorio directamente
+// Crear instancias de repositorios directamente
 const studentRepository = new StudentRepository();
+const studentAcademicDataRepository = new StudentAcademicDataRepository();
 
 /**
  * PUT /api/v1/estudiantes/:id
@@ -25,8 +27,42 @@ export class UpdateStudentController {
           apellidoPaterno: updateData.apellidoPaterno,
           ci: updateData.ci,
           celular: updateData.celular,
+          carreraId: updateData.carreraId,
+          gestionIngresoId: updateData.gestionIngresoId,
         },
         userId,
+      });
+      
+      // Separar datos académicos del resto de los datos del estudiante
+      const datosAcademicos = {};
+      const camposAcademicos = [
+        'carreraId',
+        'gestionIngresoId',
+        'unidadEducativaProcedencia',
+        'anioEgresoSecundaria',
+        'promedioAnual',
+        'fechaEgreso',
+        'fechaRetiro',
+        'motivoRetiro',
+        'estadoAcademico',
+      ];
+      
+      camposAcademicos.forEach(campo => {
+        if (updateData[campo] !== undefined) {
+          datosAcademicos[campo] = updateData[campo];
+        }
+      });
+      
+      // Crear una copia de updateData sin los campos académicos para actualizar el estudiante
+      const datosEstudiante = { ...updateData };
+      camposAcademicos.forEach(campo => {
+        delete datosEstudiante[campo];
+      });
+      
+      logger.info('Datos separados', {
+        tieneDatosAcademicos: Object.keys(datosAcademicos).length > 0,
+        camposAcademicos: Object.keys(datosAcademicos),
+        camposEstudiante: Object.keys(datosEstudiante),
       });
 
       // Verificar que el estudiante existe
@@ -53,7 +89,8 @@ export class UpdateStudentController {
       }
 
       // Convertir datos del request (castellano) a formato de dominio (inglés)
-      const datosDominio = StudentMapper.toDomain(updateData);
+      // Usar datosEstudiante (sin campos académicos) para el mapper
+      const datosDominio = StudentMapper.toDomain(datosEstudiante);
       
       logger.info('Datos convertidos a dominio', {
         dominioFields: Object.keys(datosDominio),
@@ -120,6 +157,78 @@ export class UpdateStudentController {
         studentId: estudianteId,
         updatedFields: Object.keys(datosDominio),
       });
+
+      // Si hay datos académicos, guardarlos/actualizarlos
+      if (Object.keys(datosAcademicos).length > 0) {
+        try {
+          // Buscar si ya existen datos académicos para este estudiante
+          const datosAcademicosExistentes = await studentAcademicDataRepository.findByEstudianteId(estudianteId);
+          
+          // Mapear campos académicos de castellano a dominio
+          const datosAcademicosDominio = {
+            studentId: estudianteId,
+            careerId: datosAcademicos.carreraId,
+            managementId: datosAcademicos.gestionIngresoId,
+            previousSchool: datosAcademicos.unidadEducativaProcedencia || null,
+            highSchoolGraduationYear: datosAcademicos.anioEgresoSecundaria || null,
+            annualAverage: datosAcademicos.promedioAnual || null,
+            graduationDate: datosAcademicos.fechaEgreso || null,
+            withdrawalDate: datosAcademicos.fechaRetiro || null,
+            withdrawalReason: datosAcademicos.motivoRetiro || null,
+            academicState: datosAcademicos.estadoAcademico || 'REGULAR',
+          };
+          
+          // Limpiar campos undefined
+          Object.keys(datosAcademicosDominio).forEach(key => {
+            if (datosAcademicosDominio[key] === undefined) {
+              delete datosAcademicosDominio[key];
+            }
+          });
+          
+          if (datosAcademicosExistentes) {
+            // Actualizar datos académicos existentes
+            logger.info('Actualizando datos académicos existentes', {
+              studentId: estudianteId,
+              academicDataId: datosAcademicosExistentes.id,
+              camposAActualizar: Object.keys(datosAcademicosDominio),
+            });
+            
+            await studentAcademicDataRepository.update(
+              datosAcademicosExistentes.id,
+              datosAcademicosDominio,
+              userId
+            );
+            
+            logger.info('Datos académicos actualizados correctamente', {
+              studentId: estudianteId,
+            });
+          } else {
+            // Crear nuevos datos académicos
+            logger.info('Creando nuevos datos académicos', {
+              studentId: estudianteId,
+              camposACrear: Object.keys(datosAcademicosDominio),
+            });
+            
+            await studentAcademicDataRepository.create(
+              datosAcademicosDominio,
+              userId
+            );
+            
+            logger.info('Datos académicos creados correctamente', {
+              studentId: estudianteId,
+            });
+          }
+        } catch (academicError) {
+          logger.error('Error al guardar datos académicos', {
+            error: academicError.message,
+            stack: academicError.stack,
+            studentId: estudianteId,
+            datosAcademicos: datosAcademicos,
+          });
+          // No fallar la actualización del estudiante si falla la de datos académicos
+          // Solo loguear el error
+        }
+      }
 
       res.status(200).json({
         success: true,
