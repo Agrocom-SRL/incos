@@ -40,26 +40,30 @@ export const useStudentFormData = () => {
 
       // Contador para rastrear cuántas peticiones fallaron
       let failedRequests = 0;
-      const totalRequests = 1; // Solo gestiones (modo debug)
+      const totalRequests = 4; // Paises, departamentos, provincias, municipios (modo debug)
       const catalogErrors = [];
 
       try {
-        console.log('[useStudentFormData] 🔍🔍🔍 MODO DEBUG: Probando SOLO GESTIONES (carreras e idiomas deshabilitados)');
-        console.log('[useStudentFormData] 📍 Paso 1: Iniciando carga de gestiones...');
-        console.log('[useStudentFormData] 📍 Paso 2: Preparando llamada a API...');
-        console.log('[useStudentFormData] 📍 Paso 3: URL objetivo: /v1/catalogs/gestiones');
+        console.log('[useStudentFormData] 🔍🔍🔍 MODO DEBUG: Probando datos geográficos (paises, departamentos, provincias, municipios)');
+        console.log('[useStudentFormData] 📍 Paso 1: Iniciando carga de catálogos geográficos...');
+        console.log('[useStudentFormData] 📍 Paso 2: Preparando llamadas a API...');
+        console.log('[useStudentFormData] 📍 Paso 3: URLs objetivo: /v1/catalogs/paises, /v1/catalogs/departamentos, /v1/catalogs/provincias, /v1/catalogs/municipios');
         
         // ============================================
-        // DEBUG: Habilitar SOLO GESTIONES
-        // Carreras e idiomas deshabilitados para aislar el problema
+        // DEBUG: Habilitar SOLO DATOS GEOGRÁFICOS
+        // Paises, departamentos, provincias, municipios
+        // Gestiones, carreras e idiomas deshabilitados
         // ============================================
         
         const startTime = performance.now();
         console.log('[useStudentFormData] 📍 Paso 4: Iniciando Promise.allSettled...', { timestamp: new Date().toISOString() });
         
-        // Cargar solo gestiones
+        // Cargar datos geográficos
         const catalogResults = await Promise.allSettled([
-          apiClient.get('/v1/catalogs/gestiones'),
+          apiClient.get('/v1/catalogs/paises'),
+          apiClient.get('/v1/catalogs/departamentos'),
+          apiClient.get('/v1/catalogs/provincias'),
+          apiClient.get('/v1/catalogs/municipios'),
         ]);
 
         const endTime = performance.now();
@@ -70,14 +74,14 @@ export const useStudentFormData = () => {
         });
 
         // Procesar resultados
-        const catalogNames = ['gestiones'];
+        const catalogNames = ['paises', 'departamentos', 'provincias', 'municipios'];
         console.log('[useStudentFormData] 📍 Paso 6: Procesando resultados...', { 
           resultsLength: catalogResults.length,
           catalogNames,
         });
         
-        const [gestionesRes] = catalogResults.map((result, index) => {
-          console.log(`[useStudentFormData] 📍 Paso 6.${index + 1}: Procesando resultado ${index}...`, {
+        const [paisesRes, departamentosRes, provinciasRes, municipiosRes] = catalogResults.map((result, index) => {
+          console.log(`[useStudentFormData] 📍 Paso 6.${index + 1}: Procesando resultado ${index} (${catalogNames[index]})...`, {
             status: result.status,
             hasValue: !!result.value,
             hasReason: !!result.reason,
@@ -125,21 +129,26 @@ export const useStudentFormData = () => {
         });
 
         console.log('[useStudentFormData] 📍 Paso 7: Estableciendo estados...', {
-          hasGestionesRes: !!gestionesRes,
-          gestionesData: gestionesRes?.data?.data || [],
-          gestionesCount: gestionesRes?.data?.data?.length || 0,
+          hasPaisesRes: !!paisesRes,
+          paisesCount: paisesRes?.data?.data?.length || 0,
+          hasDepartamentosRes: !!departamentosRes,
+          departamentosCount: departamentosRes?.data?.data?.length || 0,
+          hasProvinciasRes: !!provinciasRes,
+          provinciasCount: provinciasRes?.data?.data?.length || 0,
+          hasMunicipiosRes: !!municipiosRes,
+          municipiosCount: municipiosRes?.data?.data?.length || 0,
         });
 
-        // Establecer solo gestiones, el resto vacío
+        // Establecer solo datos geográficos, el resto vacío
         setCarreras([]); // Deshabilitado temporalmente
-        setGestiones(gestionesRes.data?.data || []);
-        setPaises([]);
+        setGestiones([]); // Deshabilitado temporalmente
+        setPaises(paisesRes.data?.data || []);
         setIdiomas([]); // Deshabilitado temporalmente
         setTiposDiscapacidad([]);
         setDocumentacionInscripcion([]);
-        setDepartamentos([]);
-        setProvincias([]);
-        setMunicipios([]);
+        setDepartamentos(departamentosRes.data?.data || []);
+        setProvincias(provinciasRes.data?.data || []);
+        setMunicipios(municipiosRes.data?.data || []);
         
         console.log('[useStudentFormData] 📍 Paso 8: Estados establecidos correctamente');
 
@@ -159,7 +168,7 @@ export const useStudentFormData = () => {
             console.warn(`[useStudentFormData] La página continuará funcionando con ${totalRequests - failedRequests} catálogos cargados correctamente.`);
           }
         } else {
-          console.log('[useStudentFormData] ✓ Catálogo de gestiones cargado correctamente');
+          console.log('[useStudentFormData] ✓ Todos los catálogos geográficos cargados correctamente');
           console.log('[useStudentFormData] 📍 Paso 9: Carga completada sin errores');
         }
       } catch (err) {
@@ -184,26 +193,29 @@ export const useStudentFormData = () => {
     setError(null);
 
     let failedRequests = 0;
-    const totalRequests = 1; // Solo gestiones (modo debug)
+    const totalRequests = 4; // Paises, departamentos, provincias, municipios (modo debug)
       const catalogErrors = [];
 
     try {
-      console.log('[useStudentFormData] 🔍🔍🔍 Refetch: Recargando SOLO GESTIONES...');
+      console.log('[useStudentFormData] 🔍🔍🔍 Refetch: Recargando datos geográficos...');
       console.log('[useStudentFormData] 📍 Refetch Paso 1: Iniciando recarga...');
       
-      // Cargar solo gestiones (carreras e idiomas deshabilitados)
+      // Cargar datos geográficos
       const startTime = performance.now();
       const catalogResults = await Promise.allSettled([
-        apiClient.get('/v1/catalogs/gestiones'),
+        apiClient.get('/v1/catalogs/paises'),
+        apiClient.get('/v1/catalogs/departamentos'),
+        apiClient.get('/v1/catalogs/provincias'),
+        apiClient.get('/v1/catalogs/municipios'),
       ]);
       const endTime = performance.now();
       console.log('[useStudentFormData] 📍 Refetch Paso 2: Promise.allSettled completado', {
         duration: `${(endTime - startTime).toFixed(2)}ms`,
       });
 
-      const catalogNames = ['gestiones'];
-      const [gestionesRes] = catalogResults.map((result, index) => {
-        console.log(`[useStudentFormData] 📍 Refetch Paso 3.${index + 1}: Procesando resultado...`, {
+      const catalogNames = ['paises', 'departamentos', 'provincias', 'municipios'];
+      const [paisesRes, departamentosRes, provinciasRes, municipiosRes] = catalogResults.map((result, index) => {
+        console.log(`[useStudentFormData] 📍 Refetch Paso 3.${index + 1}: Procesando resultado (${catalogNames[index]})...`, {
           status: result.status,
         });
         
@@ -230,14 +242,14 @@ export const useStudentFormData = () => {
       });
 
       setCarreras([]); // Deshabilitado temporalmente
-      setGestiones(gestionesRes.data?.data || []);
-      setPaises([]);
+      setGestiones([]); // Deshabilitado temporalmente
+      setPaises(paisesRes.data?.data || []);
       setIdiomas([]); // Deshabilitado temporalmente
       setTiposDiscapacidad([]);
       setDocumentacionInscripcion([]);
-      setDepartamentos([]);
-      setProvincias([]);
-      setMunicipios([]);
+      setDepartamentos(departamentosRes.data?.data || []);
+      setProvincias(provinciasRes.data?.data || []);
+      setMunicipios(municipiosRes.data?.data || []);
       
       console.log('[useStudentFormData] 📍 Refetch Paso 4: Estados actualizados');
 
@@ -254,7 +266,7 @@ export const useStudentFormData = () => {
           setError('No se pudieron recargar los catálogos. Por favor, intenta nuevamente.');
         }
       } else {
-        console.log('[useStudentFormData] ✓ Catálogo de gestiones recargado correctamente');
+        console.log('[useStudentFormData] ✓ Todos los catálogos geográficos recargados correctamente');
         console.log('[useStudentFormData] 📍 Refetch Paso 5: Recarga completada sin errores');
       }
     } catch (err) {
