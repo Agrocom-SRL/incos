@@ -40,31 +40,32 @@ export const useStudentFormData = () => {
 
       // Contador para rastrear cuántas peticiones fallaron
       let failedRequests = 0;
-      const totalRequests = 4; // Paises, departamentos, provincias, municipios (modo debug)
+      const totalRequests = 5; // Paises, departamentos, provincias, municipios, documentacion-inscripcion
       const catalogErrors = [];
 
       try {
-        console.log('[useStudentFormData] 🔍🔍🔍 MODO DEBUG: Probando datos geográficos (paises, departamentos, provincias, municipios)');
-        console.log('[useStudentFormData] 📍 Paso 1: Iniciando carga de catálogos geográficos...');
+        console.log('[useStudentFormData] 🔍🔍🔍 MODO DEBUG: Probando datos geográficos y documentación (paises, departamentos, provincias, municipios, documentacion-inscripcion)');
+        console.log('[useStudentFormData] 📍 Paso 1: Iniciando carga de catálogos...');
         console.log('[useStudentFormData] 📍 Paso 2: Preparando llamadas a API...');
-        console.log('[useStudentFormData] 📍 Paso 3: URLs objetivo: /v1/catalogs/paises, /v1/catalogs/departamentos, /v1/catalogs/provincias, /v1/catalogs/municipios');
+        console.log('[useStudentFormData] 📍 Paso 3: URLs objetivo: /v1/catalogs/paises, /v1/catalogs/departamentos, /v1/catalogs/provincias, /v1/catalogs/municipios, /v1/catalogs/documentacion-inscripcion');
         
         // ============================================
-        // DEBUG: Habilitar SOLO DATOS GEOGRÁFICOS
-        // Paises, departamentos, provincias, municipios
-        // Gestiones, carreras e idiomas deshabilitados
+        // Habilitar datos geográficos y documentación
+        // Paises, departamentos, provincias, municipios, documentacion-inscripcion
+        // Carga SECUENCIAL para evitar problemas de concurrencia
         // ============================================
         
         const startTime = performance.now();
         console.log('[useStudentFormData] 📍 Paso 4: Iniciando carga SECUENCIAL (no paralela) para evitar problemas de concurrencia...', { timestamp: new Date().toISOString() });
         
-        // Cargar datos geográficos de forma SECUENCIAL para evitar problemas de concurrencia
-        const catalogNames = ['paises', 'departamentos', 'provincias', 'municipios'];
+        // Cargar catálogos de forma SECUENCIAL para evitar problemas de concurrencia
+        const catalogNames = ['paises', 'departamentos', 'provincias', 'municipios', 'documentacion-inscripcion'];
         const catalogUrls = [
           '/v1/catalogs/paises',
           '/v1/catalogs/departamentos',
           '/v1/catalogs/provincias',
           '/v1/catalogs/municipios',
+          '/v1/catalogs/documentacion-inscripcion',
         ];
         
         const catalogResults = [];
@@ -136,7 +137,7 @@ export const useStudentFormData = () => {
           catalogNames,
         });
         
-        const [paisesRes, departamentosRes, provinciasRes, municipiosRes] = catalogResults.map((result, index) => {
+        const [paisesRes, departamentosRes, provinciasRes, municipiosRes, documentacionRes] = catalogResults.map((result, index) => {
           console.log(`[useStudentFormData] 📍 Paso 6.${index + 1}: Procesando resultado ${index} (${catalogNames[index]})...`, {
             status: result.status,
             hasValue: !!result.value,
@@ -162,15 +163,17 @@ export const useStudentFormData = () => {
           provinciasCount: provinciasRes?.data?.data?.length || 0,
           hasMunicipiosRes: !!municipiosRes,
           municipiosCount: municipiosRes?.data?.data?.length || 0,
+          hasDocumentacionRes: !!documentacionRes,
+          documentacionCount: documentacionRes?.data?.data?.length || 0,
         });
 
-        // Establecer solo datos geográficos, el resto vacío
+        // Establecer datos geográficos y documentación, el resto vacío
         setCarreras([]); // Deshabilitado temporalmente
         setGestiones([]); // Deshabilitado temporalmente
         setPaises(paisesRes.data?.data || []);
         setIdiomas([]); // Deshabilitado temporalmente
         setTiposDiscapacidad([]);
-        setDocumentacionInscripcion([]);
+        setDocumentacionInscripcion(documentacionRes.data?.data || []);
         setDepartamentos(departamentosRes.data?.data || []);
         setProvincias(provinciasRes.data?.data || []);
         setMunicipios(municipiosRes.data?.data || []);
@@ -193,7 +196,7 @@ export const useStudentFormData = () => {
             console.warn(`[useStudentFormData] La página continuará funcionando con ${totalRequests - failedRequests} catálogos cargados correctamente.`);
           }
         } else {
-          console.log('[useStudentFormData] ✓ Todos los catálogos geográficos cargados correctamente');
+          console.log('[useStudentFormData] ✓ Todos los catálogos (geográficos y documentación) cargados correctamente');
           console.log('[useStudentFormData] 📍 Paso 9: Carga completada sin errores');
         }
       } catch (err) {
@@ -218,20 +221,21 @@ export const useStudentFormData = () => {
     setError(null);
 
     let failedRequests = 0;
-    const totalRequests = 4; // Paises, departamentos, provincias, municipios (modo debug)
+    const totalRequests = 5; // Paises, departamentos, provincias, municipios, documentacion-inscripcion
       const catalogErrors = [];
 
     try {
-      console.log('[useStudentFormData] 🔍🔍🔍 Refetch: Recargando datos geográficos SECUENCIALMENTE...');
+      console.log('[useStudentFormData] 🔍🔍🔍 Refetch: Recargando catálogos SECUENCIALMENTE...');
       console.log('[useStudentFormData] 📍 Refetch Paso 1: Iniciando recarga secuencial...');
       
-      // Cargar datos geográficos de forma SECUENCIAL
-      const catalogNames = ['paises', 'departamentos', 'provincias', 'municipios'];
+      // Cargar catálogos de forma SECUENCIAL
+      const catalogNames = ['paises', 'departamentos', 'provincias', 'municipios', 'documentacion-inscripcion'];
       const catalogUrls = [
         '/v1/catalogs/paises',
         '/v1/catalogs/departamentos',
         '/v1/catalogs/provincias',
         '/v1/catalogs/municipios',
+        '/v1/catalogs/documentacion-inscripcion',
       ];
       
       const startTime = performance.now();
@@ -268,7 +272,7 @@ export const useStudentFormData = () => {
         duration: `${(endTime - startTime).toFixed(2)}ms`,
       });
 
-      const [paisesRes, departamentosRes, provinciasRes, municipiosRes] = catalogResults.map((result, index) => {
+      const [paisesRes, departamentosRes, provinciasRes, municipiosRes, documentacionRes] = catalogResults.map((result, index) => {
         if (result.status === 'fulfilled') {
           return result.value;
         } else {
@@ -281,7 +285,7 @@ export const useStudentFormData = () => {
       setPaises(paisesRes.data?.data || []);
       setIdiomas([]); // Deshabilitado temporalmente
       setTiposDiscapacidad([]);
-      setDocumentacionInscripcion([]);
+      setDocumentacionInscripcion(documentacionRes.data?.data || []);
       setDepartamentos(departamentosRes.data?.data || []);
       setProvincias(provinciasRes.data?.data || []);
       setMunicipios(municipiosRes.data?.data || []);
@@ -301,7 +305,7 @@ export const useStudentFormData = () => {
           setError('No se pudieron recargar los catálogos. Por favor, intenta nuevamente.');
         }
       } else {
-        console.log('[useStudentFormData] ✓ Todos los catálogos geográficos recargados correctamente');
+        console.log('[useStudentFormData] ✓ Todos los catálogos (geográficos y documentación) recargados correctamente');
         console.log('[useStudentFormData] 📍 Refetch Paso 5: Recarga completada sin errores');
       }
     } catch (err) {
