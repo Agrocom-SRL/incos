@@ -143,6 +143,8 @@ export class StudentRepository extends BaseRepository {
   mapDataToUpdate(data, userId = null) {
     const updateData = {};
 
+    // IMPORTANTE: Incluir todos los campos que vienen en data, incluso si son null
+    // Esto permite actualizar campos a null (limpiarlos)
     if (data.userId !== undefined) {
       updateData.usuarioId = data.userId || null;
     }
@@ -150,15 +152,18 @@ export class StudentRepository extends BaseRepository {
       updateData.codigoEstudiante = data.studentCode;
     }
     if (data.ci !== undefined) {
+      // Permitir null para limpiar CI (aunque normalmente no debería ser null)
       updateData.ci = data.ci;
     }
     if (data.expedition !== undefined) {
       updateData.expedicion = data.expedition ? data.expedition.toUpperCase() : null;
     }
     if (data.firstName !== undefined) {
+      // Permitir null para limpiar nombre (aunque normalmente no debería ser null)
       updateData.nombres = data.firstName;
     }
     if (data.lastName !== undefined) {
+      // Permitir null para limpiar apellido (aunque normalmente no debería ser null)
       updateData.apellidoPaterno = data.lastName;
     }
     if (data.motherLastName !== undefined) {

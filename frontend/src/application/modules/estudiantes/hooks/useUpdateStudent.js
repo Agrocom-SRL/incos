@@ -165,16 +165,43 @@ export const useUpdateStudent = () => {
       delete datosEstudiante.estudianteId;
       delete datosEstudiante.id;
       
+      // Procesar fechaNacimiento: si viene como objeto dayjs, convertirlo a string ISO
+      if (datosEstudiante.fechaNacimiento && typeof datosEstudiante.fechaNacimiento === 'object' && datosEstudiante.fechaNacimiento.format) {
+        // Es un objeto dayjs
+        datosEstudiante.fechaNacimiento = datosEstudiante.fechaNacimiento.format('YYYY-MM-DD');
+      } else if (datosEstudiante.fechaNacimiento && typeof datosEstudiante.fechaNacimiento === 'object' && datosEstudiante.fechaNacimiento.toISOString) {
+        // Es un objeto Date
+        datosEstudiante.fechaNacimiento = datosEstudiante.fechaNacimiento.toISOString().split('T')[0];
+      }
+      
+      // Limpiar campos vacíos: convertir strings vacíos a null para que el backend los procese correctamente
+      // Esto es importante porque algunos campos pueden venir como "" en lugar de null
+      Object.keys(datosEstudiante).forEach(key => {
+        // Si el campo es un string vacío, convertirlo a null
+        if (typeof datosEstudiante[key] === 'string' && datosEstudiante[key].trim() === '') {
+          datosEstudiante[key] = null;
+        }
+        // Si el campo es undefined, eliminarlo (no enviarlo)
+        if (datosEstudiante[key] === undefined) {
+          delete datosEstudiante[key];
+        }
+      });
+      
       // IMPORTANTE: Si hay studentIdFinal, siempre ACTUALIZAR (PUT) en lugar de crear (POST)
       // Esto asegura que cuando hay estudianteId en la URL, se actualicen los datos existentes
       console.log(`[useUpdateStudent] Actualizando estudiante existente ID: ${studentIdFinal}`);
-      console.log(`[useUpdateStudent] Datos a enviar:`, {
+      console.log(`[useUpdateStudent] Datos a enviar (después de limpiar):`, {
         campos: Object.keys(datosEstudiante),
+        totalCampos: Object.keys(datosEstudiante).length,
         muestra: {
           nombres: datosEstudiante.nombres,
           apellidoPaterno: datosEstudiante.apellidoPaterno,
+          apellidoMaterno: datosEstudiante.apellidoMaterno,
           ci: datosEstudiante.ci,
+          expedicion: datosEstudiante.expedicion,
           celular: datosEstudiante.celular,
+          emailPersonal: datosEstudiante.emailPersonal,
+          fechaNacimiento: datosEstudiante.fechaNacimiento,
         },
       });
       

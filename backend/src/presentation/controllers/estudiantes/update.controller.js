@@ -57,20 +57,51 @@ export class UpdateStudentController {
       
       logger.info('Datos convertidos a dominio', {
         dominioFields: Object.keys(datosDominio),
+        totalCampos: Object.keys(datosDominio).length,
         sampleDominio: {
           firstName: datosDominio.firstName,
           lastName: datosDominio.lastName,
+          motherLastName: datosDominio.motherLastName,
           ci: datosDominio.ci,
+          expedition: datosDominio.expedition,
           mobilePhone: datosDominio.mobilePhone,
+          emailPersonal: datosDominio.personalEmail,
+          birthDate: datosDominio.birthDate,
         },
       });
 
+      // Verificar que hay datos para actualizar
+      if (Object.keys(datosDominio).length === 0) {
+        logger.warn('No hay datos para actualizar', {
+          studentId: estudianteId,
+          originalFields: Object.keys(updateData),
+        });
+        return res.status(400).json({
+          success: false,
+          error: {
+            code: 'NO_DATA_TO_UPDATE',
+            message: 'No se proporcionaron datos para actualizar',
+          },
+        });
+      }
+
       // Actualizar el estudiante usando el repositorio
+      logger.info('Llamando a studentRepository.update', {
+        studentId: estudianteId,
+        camposAActualizar: Object.keys(datosDominio),
+      });
+      
       const estudianteActualizado = await studentRepository.update(
         estudianteId,
         datosDominio,
         userId
       );
+      
+      logger.info('Repositorio update completado', {
+        studentId: estudianteId,
+        estudianteActualizado: !!estudianteActualizado,
+        nuevoNombre: estudianteActualizado?.firstName,
+      });
 
       if (!estudianteActualizado) {
         return res.status(500).json({

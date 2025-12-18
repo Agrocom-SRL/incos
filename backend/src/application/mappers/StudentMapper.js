@@ -15,11 +15,13 @@ export class StudentMapper {
     const result = {};
     
     // Identificación
+    // IMPORTANTE: Incluir null también para permitir limpiar campos
     if (dataCastellano.ci !== undefined) result.ci = dataCastellano.ci;
     if (dataCastellano.expedicion !== undefined) result.expedition = dataCastellano.expedicion;
     if (dataCastellano.codigoEstudiante !== undefined) result.codigoEstudiante = dataCastellano.codigoEstudiante;
     
     // Datos personales
+    // IMPORTANTE: Incluir null también para permitir limpiar campos
     if (dataCastellano.nombres !== undefined) result.firstName = dataCastellano.nombres;
     if (dataCastellano.apellidoPaterno !== undefined) result.lastName = dataCastellano.apellidoPaterno;
     if (dataCastellano.apellidoMaterno !== undefined) result.motherLastName = dataCastellano.apellidoMaterno;
