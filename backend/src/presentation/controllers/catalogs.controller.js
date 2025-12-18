@@ -8,6 +8,17 @@
 import { logger } from '../../shared/logger.js';
 import { sequelize } from '../../infrastructure/database/config/sequelize.js';
 
+// Importar modelos para asegurar su inicialización
+import '../../infrastructure/database/models/Pais.js';
+import '../../infrastructure/database/models/Idioma.js';
+import '../../infrastructure/database/models/TipoDiscapacidad.js';
+import '../../infrastructure/database/models/Municipio.js';
+import '../../infrastructure/database/models/Documentacion.js';
+import '../../infrastructure/database/models/Carrera.js';
+import '../../infrastructure/database/models/Gestion.js';
+import '../../infrastructure/database/models/Departamento.js';
+import '../../infrastructure/database/models/Provincia.js';
+
 // Importar repositorios directamente
 import { CareerRepository } from '../../infrastructure/repositories/CareerRepository.js';
 import { ManagementRepository } from '../../infrastructure/repositories/ManagementRepository.js';
@@ -121,8 +132,19 @@ export const getPaises = async (req, res, next) => {
     logger.debug('[Catalogs] Resultado de findAll:', { 
       hasResult: !!result, 
       hasCountries: !!(result?.countries),
-      countriesCount: result?.countries?.length || 0 
+      countriesCount: result?.countries?.length || 0,
+      resultKeys: result ? Object.keys(result) : [],
+      resultType: typeof result,
     });
+    
+    if (!result) {
+      logger.warn('[Catalogs] Resultado de findAll es null o undefined');
+      return res.status(200).json({
+        success: true,
+        data: [],
+        message: 'Países obtenidos correctamente (vacío)',
+      });
+    }
     
     const paises = (result.countries || []).map(pais => ({
       id: pais.id,
@@ -254,28 +276,64 @@ export const getProvincias = async (req, res, next) => {
 export const getMunicipios = async (req, res, next) => {
   try {
     const { provinciaId } = req.query;
+    logger.debug('[Catalogs] Obteniendo municipios...', { provinciaId });
     
     let result;
     if (provinciaId) {
       // Filtrar por provincia usando el método específico del repositorio
       result = await municipalityRepository.findByProvinciaId(parseInt(provinciaId));
+      logger.debug('[Catalogs] Resultado de findByProvinciaId:', { 
+        hasResult: !!result,
+        isArray: Array.isArray(result),
+        count: result?.length || 0,
+      });
+      
+      // findByProvinciaId retorna un array directamente
+      const municipios = (result || []).map(municipio => ({
+        id: municipio.id,
+        nombre: municipio.name,
+        provinciaId: municipio.provinceId,
+        codigo: municipio.code,
+      }));
+
+      return res.status(200).json({
+        success: true,
+        data: municipios,
+        message: 'Municipios obtenidos correctamente',
+      });
     } else {
       // Obtener todos los municipios
       result = await municipalityRepository.findAll({}, null, null);
-    }
-    
-    const municipios = (result.municipalities || result || []).map(municipio => ({
-      id: municipio.id,
-      nombre: municipio.name,
-      provinciaId: municipio.provinceId,
-      codigo: municipio.code,
-    }));
+      logger.debug('[Catalogs] Resultado de findAll:', { 
+        hasResult: !!result,
+        hasMunicipalities: !!(result?.municipalities),
+        municipalitiesCount: result?.municipalities?.length || 0,
+        resultKeys: result ? Object.keys(result) : [],
+        resultType: typeof result,
+      });
+      
+      if (!result) {
+        logger.warn('[Catalogs] Resultado de findAll es null o undefined');
+        return res.status(200).json({
+          success: true,
+          data: [],
+          message: 'Municipios obtenidos correctamente (vacío)',
+        });
+      }
+      
+      const municipios = (result.municipalities || []).map(municipio => ({
+        id: municipio.id,
+        nombre: municipio.name,
+        provinciaId: municipio.provinceId,
+        codigo: municipio.code,
+      }));
 
-    res.status(200).json({
-      success: true,
-      data: municipios,
-      message: 'Municipios obtenidos correctamente',
-    });
+      return res.status(200).json({
+        success: true,
+        data: municipios,
+        message: 'Municipios obtenidos correctamente',
+      });
+    }
   } catch (error) {
     logger.error('Error al obtener municipios', { 
       error: error.message, 
@@ -297,7 +355,7 @@ export const getMunicipios = async (req, res, next) => {
  */
 export const getIdiomas = async (req, res, next) => {
   try {
-    logger.debug('[Catalogs] Obteniendo idiomas (modo prueba - SQL directo)...');
+    logger.debug('[Catalogs] Obteniendo idiomas...');
     
     // Usar repositorio directamente
     try {
@@ -306,8 +364,19 @@ export const getIdiomas = async (req, res, next) => {
       logger.debug('[Catalogs] Resultado de findAll:', { 
         hasResult: !!result, 
         hasLanguages: !!(result?.languages),
-        languagesCount: result?.languages?.length || 0 
+        languagesCount: result?.languages?.length || 0,
+        resultKeys: result ? Object.keys(result) : [],
+        resultType: typeof result,
       });
+      
+      if (!result) {
+        logger.warn('[Catalogs] Resultado de findAll es null o undefined');
+        return res.status(200).json({
+          success: true,
+          data: [],
+          message: 'Idiomas obtenidos correctamente (vacío)',
+        });
+      }
       
       const idiomas = (result.languages || []).map(idioma => ({
         id: idioma.id,
@@ -322,6 +391,7 @@ export const getIdiomas = async (req, res, next) => {
     } catch (repoError) {
       logger.warn('[Catalogs] Error con repositorio, intentando SQL directo:', {
         error: repoError.message,
+        stack: repoError.stack,
       });
       
       // FALLBACK: Consulta SQL directa
@@ -377,8 +447,19 @@ export const getTiposDiscapacidad = async (req, res, next) => {
     logger.debug('[Catalogs] Resultado de findAll:', { 
       hasResult: !!result, 
       hasDisabilityTypes: !!(result?.disabilityTypes),
-      disabilityTypesCount: result?.disabilityTypes?.length || 0 
+      disabilityTypesCount: result?.disabilityTypes?.length || 0,
+      resultKeys: result ? Object.keys(result) : [],
+      resultType: typeof result,
     });
+    
+    if (!result) {
+      logger.warn('[Catalogs] Resultado de findAll es null o undefined');
+      return res.status(200).json({
+        success: true,
+        data: [],
+        message: 'Tipos de discapacidad obtenidos correctamente (vacío)',
+      });
+    }
     
     const tipos = (result.disabilityTypes || []).map(tipo => ({
       id: tipo.id,
@@ -421,8 +502,18 @@ export const getDocumentacionInscripcion = async (req, res, next) => {
     });
     logger.debug('[Catalogs] Documentos encontrados:', { 
       tipo,
-      total: documentos?.length || 0 
+      total: documentos?.length || 0,
+      isArray: Array.isArray(documentos),
     });
+    
+    if (!documentos || !Array.isArray(documentos)) {
+      logger.warn('[Catalogs] Resultado de findByTipoDocumento no es un array válido');
+      return res.status(200).json({
+        success: true,
+        data: [],
+        message: 'Documentos requeridos obtenidos correctamente (vacío)',
+      });
+    }
     
     logger.info('[Catalogs] Documentos de inscripción encontrados', {
       tipo,
@@ -435,7 +526,7 @@ export const getDocumentacionInscripcion = async (req, res, next) => {
         requerido: doc.required,
         orden: doc.order,
         descripcion: doc.description,
-        activo: doc.activo,
+        activo: doc.active,
       })),
     });
     
@@ -449,7 +540,7 @@ export const getDocumentacionInscripcion = async (req, res, next) => {
       orden: doc.order,
       descripcion: doc.description,
       // Incluir activo para debugging (aunque no se use en el formulario)
-      activo: doc.activo,
+      activo: doc.active,
     }));
 
     res.status(200).json({

@@ -8,7 +8,6 @@
  * - Controllers: Manejo de peticiones HTTP
  *
  * NOTA: Los repositorios se registran en repositories.container.js y se resuelven
- * usando container.resolve() con los siguientes nombres:
  * - studentRepository
  * - managementRepository
  * - careerRepository
@@ -37,7 +36,6 @@ import {
  */
 export function RegisterEstudiantesModule(container) {
   // NOTA: Los repositorios ya están registrados en repositories.container.js
-  // No es necesario registrarlos aquí. Se resuelven usando container.resolve()
   // con los nombres definidos en repositories.container.js
 
   // Use Cases específicos del módulo

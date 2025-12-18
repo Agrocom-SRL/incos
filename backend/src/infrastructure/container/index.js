@@ -4,7 +4,6 @@
  *
  * Uso:
  * import container from '../../infrastructure/container/index.js';
- * const controller = container.resolve('estudiantes.createStudentController');
  */
 export { default as container } from './modules/index.js';
 export { default } from './modules/index.js';
