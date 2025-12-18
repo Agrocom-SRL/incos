@@ -69,8 +69,27 @@ export const getCarreras = async (req, res, next) => {
  */
 export const getGestiones = async (req, res, next) => {
   try {
-    const managementRepository = container.resolve('managementRepository');
+    logger.debug('[Catalogs] Obteniendo gestiones...');
+    
+    let managementRepository;
+    try {
+      managementRepository = container.resolve('managementRepository');
+      logger.debug('[Catalogs] Repositorio de gestiones resuelto correctamente');
+    } catch (resolveError) {
+      logger.error('[Catalogs] Error al resolver managementRepository:', {
+        error: resolveError.message,
+        stack: resolveError.stack,
+        hasRepository: container.has('managementRepository'),
+      });
+      throw new Error(`No se pudo resolver el repositorio de gestiones: ${resolveError.message}`);
+    }
+    
     const result = await managementRepository.findAll({}, null, null);
+    logger.debug('[Catalogs] Resultado de findAll:', { 
+      hasResult: !!result, 
+      hasManagements: !!(result?.managements),
+      managementsCount: result?.managements?.length || 0 
+    });
     
     const gestiones = (result.managements || []).map(gestion => ({
       id: gestion.id,
@@ -91,6 +110,8 @@ export const getGestiones = async (req, res, next) => {
       code: error.code,
       original: error.original?.message,
       sql: error.sql,
+      sqlState: error.original?.sqlState,
+      sqlCode: error.original?.code,
     });
     next(error);
   }
@@ -102,8 +123,27 @@ export const getGestiones = async (req, res, next) => {
  */
 export const getPaises = async (req, res, next) => {
   try {
-    const countryRepository = container.resolve('countryRepository');
+    logger.debug('[Catalogs] Obteniendo paises...');
+    
+    let countryRepository;
+    try {
+      countryRepository = container.resolve('countryRepository');
+      logger.debug('[Catalogs] Repositorio de paises resuelto correctamente');
+    } catch (resolveError) {
+      logger.error('[Catalogs] Error al resolver countryRepository:', {
+        error: resolveError.message,
+        stack: resolveError.stack,
+        hasRepository: container.has('countryRepository'),
+      });
+      throw new Error(`No se pudo resolver el repositorio de paises: ${resolveError.message}`);
+    }
+    
     const result = await countryRepository.findAll({}, null, null);
+    logger.debug('[Catalogs] Resultado de findAll:', { 
+      hasResult: !!result, 
+      hasCountries: !!(result?.countries),
+      countriesCount: result?.countries?.length || 0 
+    });
     
     const paises = (result.countries || []).map(pais => ({
       id: pais.id,
@@ -125,6 +165,8 @@ export const getPaises = async (req, res, next) => {
       code: error.code,
       original: error.original?.message,
       sql: error.sql,
+      sqlState: error.original?.sqlState,
+      sqlCode: error.original?.code,
     });
     next(error);
   }
