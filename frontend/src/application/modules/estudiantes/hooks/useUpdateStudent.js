@@ -88,32 +88,30 @@ export const useUpdateStudent = () => {
       // Priorizar: studentId (parámetro) > estudianteIdEnDatos (de los datos)
       const studentIdFinal = studentId || estudianteIdEnDatos;
       
-      // IMPORTANTE: Si es un guardado temporal y NO hay estudiante existente, solo guardar localmente
-      // Pero si HAY un estudiante existente (studentIdFinal), SIEMPRE actualizar en el backend
-      // Esto permite que los cambios se guarden incluso en guardados temporales cuando se edita un estudiante existente
-      if (isTemporarySave && !studentIdFinal) {
-        console.log(`[useUpdateStudent] Guardado temporal sin estudiante existente - retornando sin actualizar backend`);
-        return {
-          success: true,
-          message: 'Progreso guardado localmente',
-          studentId: null,
-        };
-      }
-      
       console.log(`[useUpdateStudent] Determinando studentIdFinal:`, {
         studentIdParam: studentId,
         estudianteIdEnDatos: estudianteIdEnDatos,
         studentIdFinal: studentIdFinal,
         isTemporarySave: isTemporarySave,
         decision: studentIdFinal ? 'ACTUALIZAR (PUT)' : 'CREAR (POST)',
-        willUpdate: studentIdFinal ? 'SÍ - Actualizar en backend' : 'NO - Crear nuevo o guardar localmente',
+        willUpdate: studentIdFinal ? 'SÍ - Actualizar en backend' : isTemporarySave ? 'NO - Guardado local (nuevo estudiante)' : 'SÍ - Crear en backend',
       });
 
-      // Si no hay estudiante creado, crear el estudiante (independientemente del paso)
-      // Esto puede ocurrir si el usuario avanzó usando "Siguiente" sin presionar "Guardar y Continuar Después"
-      // O cuando se presiona "Guardar y Continuar Después" en el primer paso
-      // IMPORTANTE: Si hay studentIdFinal, significa que el estudiante ya existe y debemos ACTUALIZAR
-      if (!studentIdFinal) {
+      // Si HAY un estudiante existente, SIEMPRE actualizar en el backend (no importa si es guardado temporal)
+      if (studentIdFinal) {
+        // Continuar con la lógica de actualización más abajo
+      } 
+      // Si NO hay estudiante existente y es guardado temporal, solo guardar localmente (no crear aún)
+      else if (isTemporarySave) {
+        console.log(`[useUpdateStudent] Guardado temporal sin estudiante existente - retornando sin crear en backend`);
+        return {
+          success: true,
+          message: 'Progreso guardado localmente',
+          studentId: null,
+        };
+      }
+      // Si NO hay estudiante existente y NO es guardado temporal, crear en el backend
+      else {
         // Si es un guardado parcial, indicar al backend que no valide documentos requeridos
         if (isTemporarySave) {
           datosEstudiante.skipDocumentValidation = true;
