@@ -1,6 +1,9 @@
 import { logger } from '../../../shared/logger.js';
 import { StudentMapper } from '../../../application/mappers/StudentMapper.js';
-import container from '../../../infrastructure/container/index.js';
+import { StudentRepository } from '../../../infrastructure/repositories/StudentRepository.js';
+
+// Crear instancia del repositorio
+const studentRepository = new StudentRepository();
 
 /**
  * GET /api/v1/estudiantes
@@ -28,7 +31,6 @@ export class ListStudentsController {
 
       // Implementación rápida: usar repositorio directamente
       // TODO: Crear ListStudentsUseCase cuando se tenga tiempo
-      const studentRepository = container.resolve('studentRepository');
       
       const filters = {};
       if (search) {

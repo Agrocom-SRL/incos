@@ -4,7 +4,10 @@
  */
 
 import { logger } from '../../../shared/logger.js';
-import container from '../../../infrastructure/container/index.js';
+import { StudentDocumentRepository } from '../../../infrastructure/repositories/StudentDocumentRepository.js';
+
+// Crear instancia del repositorio
+const studentDocumentRepository = new StudentDocumentRepository();
 
 export class GetStudentDocumentsController {
   async handle(req, res, next) {
@@ -26,8 +29,7 @@ export class GetStudentDocumentsController {
         });
       }
 
-      // Obtener repositorio de documentos
-      const studentDocumentRepository = container.resolve('studentDocumentRepository');
+      // Usar repositorio directamente
 
       logger.info('Buscando documentos del estudiante', {
         estudianteId,

@@ -1,6 +1,9 @@
 import { logger } from '../../../shared/logger.js';
 import { StudentMapper } from '../../../application/mappers/StudentMapper.js';
-import container from '../../../infrastructure/container/index.js';
+import { StudentRepository } from '../../../infrastructure/repositories/StudentRepository.js';
+
+// Crear instancia del repositorio
+const studentRepository = new StudentRepository();
 
 /**
  * GET /api/v1/estudiantes/:id
@@ -36,7 +39,6 @@ export class GetStudentByIdController {
 
       // Implementación rápida: usar repositorio directamente
       // TODO: Crear GetStudentByIdUseCase cuando se tenga tiempo
-      const studentRepository = container.resolve('studentRepository');
       const student = await studentRepository.findById(estudianteId);
 
       if (!student) {

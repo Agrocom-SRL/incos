@@ -6,8 +6,15 @@
  */
 
 import { logger } from '../../../shared/logger.js';
-import container from '../../../infrastructure/container/index.js';
 import upload from '../../../infrastructure/external/storage/multer.config.js';
+import { StudentRepository } from '../../../infrastructure/repositories/StudentRepository.js';
+import { DocumentacionRepository } from '../../../infrastructure/repositories/DocumentacionRepository.js';
+import { StudentDocumentRepository } from '../../../infrastructure/repositories/StudentDocumentRepository.js';
+
+// Crear instancias de repositorios
+const studentRepository = new StudentRepository();
+const documentacionRepository = new DocumentacionRepository();
+const studentDocumentRepository = new StudentDocumentRepository();
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
@@ -84,7 +91,6 @@ export class UploadDocumentController {
       }
 
       // Obtener información de la documentación
-      const documentacionRepository = container.resolve('documentacionRepository');
       const parsedDocumentacionId = parseInt(documentacionId);
       
       logger.info('UploadDocumentController - Buscando documentación', {
@@ -199,7 +205,6 @@ export class UploadDocumentController {
       });
 
       // Implementación rápida: usar repositorio directamente
-      const studentDocumentRepository = container.resolve('studentDocumentRepository');
       
       // Verificar que el archivo existe en la ruta final antes de guardar en BD
       const finalFilePath = fs.existsSync(targetPath) ? targetPath : file.path;

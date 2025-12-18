@@ -4,7 +4,10 @@
  */
 
 import { logger } from '../../../shared/logger.js';
-import container from '../../../infrastructure/container/index.js';
+import { StudentAcademicDataRepository } from '../../../infrastructure/repositories/StudentAcademicDataRepository.js';
+
+// Crear instancia del repositorio
+const studentAcademicDataRepository = new StudentAcademicDataRepository();
 
 export class GetStudentAcademicDataController {
   async handle(req, res, next) {
@@ -26,8 +29,7 @@ export class GetStudentAcademicDataController {
         });
       }
 
-      // Obtener repositorio de datos académicos
-      const studentAcademicDataRepository = container.resolve('studentAcademicDataRepository');
+      // Usar repositorio directamente
 
       // Buscar datos académicos del estudiante
       const datosAcademicos = await studentAcademicDataRepository.findByEstudianteId(estudianteId);

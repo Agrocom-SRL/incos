@@ -9,39 +9,79 @@ import {
   requestLicenciaValidator,
 } from '../validators/estudiantes/index.js';
 import validateRequest from '../middleware/validation.middleware.js';
-import container from '../../infrastructure/container/index.js';
 import { uploadSingle, UploadDocumentController } from '../controllers/estudiantes/upload-document.controller.js';
 import { GetStudentDocumentsController } from '../controllers/estudiantes/get-documents.controller.js';
 import { GetStudentAcademicDataController } from '../controllers/estudiantes/get-academic-data.controller.js';
 import { logger } from '../../shared/logger.js';
 
+// Importar controladores directamente
+import {
+  CreateStudentController,
+  ListStudentsController,
+  GetStudentByIdController,
+  UpdateStudentController,
+  ChangeStudentStatusController,
+  AssignBecaController,
+  RequestLicenciaController,
+} from '../controllers/estudiantes/index.js';
+
+// Importar use cases y repositorios directamente
+import { RegisterStudentUseCase } from '../../application/use-cases/estudiantes/RegisterStudentUseCase.js';
+import { StudentRepository } from '../../infrastructure/repositories/StudentRepository.js';
+import { StudentAcademicDataRepository } from '../../infrastructure/repositories/StudentAcademicDataRepository.js';
+import { StudentDocumentRepository } from '../../infrastructure/repositories/StudentDocumentRepository.js';
+import { DocumentacionRepository } from '../../infrastructure/repositories/DocumentacionRepository.js';
+
 const router = express.Router();
 
-// Obtener controladores desde el contenedor de DI
-const createStudentController = container.resolve(
-  'estudiantes.createStudentController'
-);
-const listStudentsController = container.resolve(
-  'estudiantes.listStudentsController'
-);
-const getStudentByIdController = container.resolve(
-  'estudiantes.getStudentByIdController'
-);
-const updateStudentController = container.resolve(
-  'estudiantes.updateStudentController'
-);
-const changeStudentStatusController = container.resolve(
-  'estudiantes.changeStudentStatusController'
-);
-const assignBecaController = container.resolve(
-  'estudiantes.assignBecaController'
-);
-const requestLicenciaController = container.resolve(
-  'estudiantes.requestLicenciaController'
-);
+// Crear instancias de repositorios
+const studentRepository = new StudentRepository();
+const studentAcademicDataRepository = new StudentAcademicDataRepository();
+const studentDocumentRepository = new StudentDocumentRepository();
+const documentacionRepository = new DocumentacionRepository();
+
+// Crear use cases
+const registerStudentUseCase = new RegisterStudentUseCase({
+  studentRepository,
+  studentAcademicDataRepository,
+  studentDocumentRepository,
+  documentacionRepository,
+  logger,
+});
+
+// Crear instancias de controladores
+const createStudentController = new CreateStudentController({
+  registerStudentUseCase,
+});
+
+const listStudentsController = new ListStudentsController({
+  listStudentsUseCase: null, // TODO: Implementar use case
+});
+
+const getStudentByIdController = new GetStudentByIdController({
+  getStudentByIdUseCase: null, // TODO: Implementar use case
+});
+
+const updateStudentController = new UpdateStudentController({
+  updateStudentUseCase: null, // TODO: Implementar use case
+});
+
+const changeStudentStatusController = new ChangeStudentStatusController({
+  changeStudentStatusUseCase: null, // TODO: Implementar use case
+});
+
+const assignBecaController = new AssignBecaController({
+  assignBecaUseCase: null, // TODO: Implementar use case
+});
+
+const requestLicenciaController = new RequestLicenciaController({
+  requestLicenciaUseCase: null, // TODO: Implementar use case
+});
+
 const uploadDocumentController = new UploadDocumentController({
   uploadDocumentUseCase: null, // TODO: Implementar use case
 });
+
 const getStudentDocumentsController = new GetStudentDocumentsController();
 const getStudentAcademicDataController = new GetStudentAcademicDataController();
 
