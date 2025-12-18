@@ -14,7 +14,7 @@
 import { Card, Row, Col } from 'antd';
 import { Form } from 'antd';
 import { useEffect, useState, useRef, useMemo } from 'react';
-import FormField from '../Formfield';
+import FormField from '../FormField';
 
 const FormSection = ({ title, fields, form, resolveOptions, onFieldChange }) => {
   // Solo observar los campos que tienen shouldRender o dependencies para evitar re-renders innecesarios
