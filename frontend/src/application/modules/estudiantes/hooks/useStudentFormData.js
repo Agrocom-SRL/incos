@@ -38,6 +38,10 @@ export const useStudentFormData = () => {
       setLoading(true);
       setError(null);
 
+      // Contador para rastrear cuántas peticiones fallaron
+      let failedRequests = 0;
+      const totalRequests = 9; // 6 catálogos + 3 geográficos
+
       try {
         // Cargar catálogos en paralelo
         // Usar Promise.allSettled para que si una falla, las demás continúen
@@ -57,6 +61,7 @@ export const useStudentFormData = () => {
           } else {
             const catalogNames = ['carreras', 'gestiones', 'paises', 'idiomas', 'tipos-discapacidad', 'documentacion-inscripcion'];
             console.error(`Error al cargar catálogo ${catalogNames[index]}:`, result.reason);
+            failedRequests++;
             // Retornar respuesta vacía para que no rompa el código
             return { data: { data: [] } };
           }
@@ -88,6 +93,7 @@ export const useStudentFormData = () => {
           } else {
             const geoNames = ['departamentos', 'provincias', 'municipios'];
             console.error(`Error al cargar datos geográficos ${geoNames[index]}:`, result.reason);
+            failedRequests++;
             return { data: { data: [] } };
           }
         });
@@ -102,25 +108,20 @@ export const useStudentFormData = () => {
           monthStudents: 127,
           totalStudents: 1543,
         });
-      } catch (err) {
-        // Solo establecer error si TODAS las peticiones fallaron
-        // Si algunas fallaron pero otras funcionaron, solo loguear el error
-        const errorMessage = err.response?.data?.error?.message || 
-                            err.response?.data?.message ||
-                            err.message || 
-                            'Error al cargar datos del formulario';
-        
-        // Si es un error de red o de servidor, intentar mostrar un mensaje más útil
-        if (err.code === 'ERR_NETWORK' || err.code === 'ECONNABORTED') {
-          console.error('Error de conexión al cargar datos del formulario:', err);
-          setError('Error de conexión con el servidor. Por favor, verifica tu conexión a internet.');
-        } else if (err.response?.status >= 500) {
-          console.error('Error del servidor al cargar datos del formulario:', err);
-          setError('Error del servidor. Por favor, intenta recargar la página.');
-        } else {
-          console.error('Error al cargar datos del formulario:', err);
-          setError(errorMessage);
+
+        // Solo mostrar error si TODAS las peticiones fallaron
+        // Si algunas funcionaron, solo loguear advertencia
+        if (failedRequests === totalRequests) {
+          setError('No se pudieron cargar los datos del formulario. Por favor, intenta recargar la página.');
+        } else if (failedRequests > 0) {
+          console.warn(`[useStudentFormData] ${failedRequests} de ${totalRequests} peticiones fallaron. La página continuará funcionando con datos limitados.`);
+          // No establecer error, solo loguear advertencia para que la página siga funcionando
         }
+      } catch (err) {
+        // Error inesperado (no debería llegar aquí con Promise.allSettled, pero por si acaso)
+        console.error('Error inesperado al cargar datos del formulario:', err);
+        // No establecer error fatal, permitir que la página funcione con datos vacíos
+        console.warn('[useStudentFormData] Continuando con datos vacíos debido a error inesperado');
       } finally {
         setLoading(false);
       }
@@ -132,6 +133,10 @@ export const useStudentFormData = () => {
   const refetch = async () => {
     setLoading(true);
     setError(null);
+    
+    let failedRequests = 0;
+    const totalRequests = 9;
+
     try {
       // Usar Promise.allSettled para que si una falla, las demás continúen
       const catalogResults = await Promise.allSettled([
@@ -149,6 +154,7 @@ export const useStudentFormData = () => {
         } else {
           const catalogNames = ['carreras', 'gestiones', 'paises', 'idiomas', 'tipos-discapacidad', 'documentacion-inscripcion'];
           console.error(`Error al recargar catálogo ${catalogNames[index]}:`, result.reason);
+          failedRequests++;
           return { data: { data: [] } };
         }
       });
@@ -173,6 +179,7 @@ export const useStudentFormData = () => {
         } else {
           const geoNames = ['departamentos', 'provincias', 'municipios'];
           console.error(`Error al recargar datos geográficos ${geoNames[index]}:`, result.reason);
+          failedRequests++;
           return { data: { data: [] } };
         }
       });
@@ -186,13 +193,16 @@ export const useStudentFormData = () => {
         monthStudents: 127,
         totalStudents: 1543,
       });
+
+      // Solo mostrar error si TODAS las peticiones fallaron
+      if (failedRequests === totalRequests) {
+        setError('No se pudieron recargar los datos. Por favor, intenta nuevamente.');
+      } else if (failedRequests > 0) {
+        console.warn(`[useStudentFormData] ${failedRequests} de ${totalRequests} peticiones fallaron al recargar.`);
+      }
     } catch (err) {
-      const errorMessage = err.response?.data?.error?.message || 
-                          err.response?.data?.message ||
-                          err.message || 
-                          'Error al recargar datos del formulario';
-      setError(errorMessage);
-      console.error('Error al recargar datos del formulario:', err);
+      console.error('Error inesperado al recargar datos del formulario:', err);
+      // No establecer error fatal
     } finally {
       setLoading(false);
     }
