@@ -240,66 +240,89 @@ export const useUpdateStudent = () => {
       
       // El backend extrae los campos documento_{id}_entregado y los procesa usando la tabla documentacion
       console.log(`[useUpdateStudent] Enviando PUT a /v1/estudiantes/${studentIdFinal}`);
-      const response = await apiClient.put(`/v1/estudiantes/${studentIdFinal}`, datosEstudiante);
       
-      console.log(`[useUpdateStudent] Respuesta del backend:`, {
-        success: response.data?.success,
-        message: response.data?.message,
-        dataKeys: response.data?.data ? Object.keys(response.data.data) : null,
-        status: response.status,
-      });
-
-      if (response.data?.success) {
-        // Subir archivos si los hay de forma SECUENCIAL
-        // IMPORTANTE: Si hay un archivo, subirlo aunque el checkbox no esté marcado
-        // El hecho de subir un archivo implica que el documento está entregado
-        const docIds = Object.keys(archivosASubir);
+      try {
+        const response = await apiClient.put(`/v1/estudiantes/${studentIdFinal}`, datosEstudiante);
         
-        for (let i = 0; i < docIds.length; i++) {
-          const docId = docIds[i];
-          if (archivosASubir[docId]) {
-            // Si hay archivo, marcar automáticamente como entregado
-            // Asegurar que documentacionId sea un número
-            const documentacionId = typeof docId === 'string' ? parseInt(docId, 10) : docId;
-            
-            const formData = new FormData();
-            formData.append('archivo', archivosASubir[docId]);
-            formData.append('documentacionId', documentacionId.toString());
-            formData.append('esOriginal', 'false'); // Por defecto es copia
+        console.log(`[useUpdateStudent] Respuesta del backend:`, {
+          success: response.data?.success,
+          message: response.data?.message,
+          dataKeys: response.data?.data ? Object.keys(response.data.data) : null,
+          status: response.status,
+        });
 
-            console.log(`[useUpdateStudent] Subiendo documento ${docId} para estudiante ${studentIdFinal}`);
+        if (response.data?.success) {
+          // Subir archivos si los hay de forma SECUENCIAL
+          // IMPORTANTE: Si hay un archivo, subirlo aunque el checkbox no esté marcado
+          // El hecho de subir un archivo implica que el documento está entregado
+          const docIds = Object.keys(archivosASubir);
+          
+          for (let i = 0; i < docIds.length; i++) {
+            const docId = docIds[i];
+            if (archivosASubir[docId]) {
+              // Si hay archivo, marcar automáticamente como entregado
+              // Asegurar que documentacionId sea un número
+              const documentacionId = typeof docId === 'string' ? parseInt(docId, 10) : docId;
+              
+              const formData = new FormData();
+              formData.append('archivo', archivosASubir[docId]);
+              formData.append('documentacionId', documentacionId.toString());
+              formData.append('esOriginal', 'false'); // Por defecto es copia
 
-            try {
-              const uploadResponse = await apiClient.post(`/v1/estudiantes/${studentIdFinal}/documentos`, formData, {
-                headers: {
-                  'Content-Type': 'multipart/form-data',
-                },
-              });
-              console.log(`[useUpdateStudent] Documento ${docId} subido correctamente:`, uploadResponse.data);
-            } catch (err) {
-              console.error(`[useUpdateStudent] Error al subir documento ${docId}:`, err);
-              // Continuar con otros documentos aunque falle uno
-            }
-            
-            // Pequeño delay entre subidas para evitar problemas de concurrencia
-            if (i < docIds.length - 1) {
-              await new Promise(resolve => setTimeout(resolve, 100)); // 100ms de delay
+              console.log(`[useUpdateStudent] Subiendo documento ${docId} para estudiante ${studentIdFinal}`);
+
+              try {
+                const uploadResponse = await apiClient.post(`/v1/estudiantes/${studentIdFinal}/documentos`, formData, {
+                  headers: {
+                    'Content-Type': 'multipart/form-data',
+                  },
+                });
+                console.log(`[useUpdateStudent] Documento ${docId} subido correctamente:`, uploadResponse.data);
+              } catch (err) {
+                console.error(`[useUpdateStudent] Error al subir documento ${docId}:`, err);
+                // Continuar con otros documentos aunque falle uno
+              }
+              
+              // Pequeño delay entre subidas para evitar problemas de concurrencia
+              if (i < docIds.length - 1) {
+                await new Promise(resolve => setTimeout(resolve, 100)); // 100ms de delay
+              }
             }
           }
+
+          return {
+            success: true,
+            data: response.data.data,
+            message: response.data.message || 'Estudiante actualizado correctamente',
+            studentId: studentIdFinal,
+          };
         }
 
         return {
-          success: true,
-          data: response.data.data,
-          message: response.data.message || 'Estudiante actualizado correctamente',
-          studentId: studentIdFinal,
+          success: false,
+          error: response.data?.message || 'Error al actualizar el estudiante',
         };
+      } catch (putError) {
+        // Capturar errores específicos del PUT para ver qué está fallando
+        console.error(`[useUpdateStudent] Error en PUT /v1/estudiantes/${studentIdFinal}:`, {
+          status: putError.response?.status,
+          statusText: putError.response?.statusText,
+          error: putError.response?.data,
+          errorMessage: putError.message,
+          dataEnviada: {
+            campos: Object.keys(datosEstudiante),
+            muestra: {
+              nombres: datosEstudiante.nombres,
+              apellidoPaterno: datosEstudiante.apellidoPaterno,
+              ci: datosEstudiante.ci,
+              fechaNacimiento: datosEstudiante.fechaNacimiento,
+            },
+          },
+        });
+        
+        // Re-lanzar el error para que se maneje en el catch general
+        throw putError;
       }
-
-      return {
-        success: false,
-        error: response.data?.message || 'Error al actualizar el estudiante',
-      };
     } catch (err) {
       // Manejo de errores de validación del servidor
       if (err.response?.data?.error?.details) {
