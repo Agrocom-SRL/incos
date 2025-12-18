@@ -108,5 +108,18 @@ export const generateDocumentFields = (documentacionInscripcion = [], documentos
     }
   });
 
+  // Agregar checkbox adicional para "Folder con nepaco" al final
+  // Este checkbox no se guarda en BD, es solo para marcar requisito físico
+  fields.push({
+    name: 'folderConNepaco',
+    label: 'Folder con nepaco',
+    type: 'checkbox',
+    span: 8,
+    required: false,
+    rules: [],
+    descripcion: 'Marcar si el folder físico del estudiante tiene nepaco',
+    esRequisitoFisico: true, // Flag para identificar que es un requisito físico, no un documento
+  });
+
   return fields;
 };
