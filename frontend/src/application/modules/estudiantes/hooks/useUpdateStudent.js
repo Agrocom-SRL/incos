@@ -101,11 +101,13 @@ export const useUpdateStudent = () => {
         if (response.data?.success) {
           const nuevoEstudianteId = response.data.data.id;
 
-          // Subir archivos después de crear el estudiante
+          // Subir archivos después de crear el estudiante de forma SECUENCIAL
           // IMPORTANTE: Si hay un archivo, subirlo aunque el checkbox no esté marcado
           // El hecho de subir un archivo implica que el documento está entregado
-          const uploadPromises = [];
-          Object.keys(archivosASubir).forEach((docId) => {
+          const docIds = Object.keys(archivosASubir);
+          
+          for (let i = 0; i < docIds.length; i++) {
+            const docId = docIds[i];
             if (archivosASubir[docId]) {
               // Si hay archivo, marcar automáticamente como entregado
               // Asegurar que documentacionId sea un número
@@ -118,25 +120,23 @@ export const useUpdateStudent = () => {
 
               console.log(`[useUpdateStudent] Subiendo documento ${docId} para estudiante ${nuevoEstudianteId}`);
 
-              uploadPromises.push(
-                apiClient.post(`/v1/estudiantes/${nuevoEstudianteId}/documentos`, formData, {
+              try {
+                const response = await apiClient.post(`/v1/estudiantes/${nuevoEstudianteId}/documentos`, formData, {
                   headers: {
                     'Content-Type': 'multipart/form-data',
                   },
-                }).then((response) => {
-                  console.log(`[useUpdateStudent] Documento ${docId} subido correctamente:`, response.data);
-                  return response;
-                }).catch((err) => {
-                  console.error(`[useUpdateStudent] Error al subir documento ${docId}:`, err);
-                  return null; // Continuar con otros documentos aunque falle uno
-                })
-              );
+                });
+                console.log(`[useUpdateStudent] Documento ${docId} subido correctamente:`, response.data);
+              } catch (err) {
+                console.error(`[useUpdateStudent] Error al subir documento ${docId}:`, err);
+                // Continuar con otros documentos aunque falle uno
+              }
+              
+              // Pequeño delay entre subidas para evitar problemas de concurrencia
+              if (i < docIds.length - 1) {
+                await new Promise(resolve => setTimeout(resolve, 100)); // 100ms de delay
+              }
             }
-          });
-
-          // Esperar a que se suban todos los documentos (o fallen)
-          if (uploadPromises.length > 0) {
-            await Promise.all(uploadPromises);
           }
 
           return {
@@ -167,11 +167,13 @@ export const useUpdateStudent = () => {
       const response = await apiClient.put(`/v1/estudiantes/${studentIdFinal}`, datosEstudiante);
 
       if (response.data?.success) {
-        // Subir archivos si los hay
+        // Subir archivos si los hay de forma SECUENCIAL
         // IMPORTANTE: Si hay un archivo, subirlo aunque el checkbox no esté marcado
         // El hecho de subir un archivo implica que el documento está entregado
-        const uploadPromises = [];
-        Object.keys(archivosASubir).forEach((docId) => {
+        const docIds = Object.keys(archivosASubir);
+        
+        for (let i = 0; i < docIds.length; i++) {
+          const docId = docIds[i];
           if (archivosASubir[docId]) {
             // Si hay archivo, marcar automáticamente como entregado
             // Asegurar que documentacionId sea un número
@@ -184,25 +186,23 @@ export const useUpdateStudent = () => {
 
             console.log(`[useUpdateStudent] Subiendo documento ${docId} para estudiante ${studentIdFinal}`);
 
-            uploadPromises.push(
-              apiClient.post(`/v1/estudiantes/${studentIdFinal}/documentos`, formData, {
+            try {
+              const uploadResponse = await apiClient.post(`/v1/estudiantes/${studentIdFinal}/documentos`, formData, {
                 headers: {
                   'Content-Type': 'multipart/form-data',
                 },
-              }).then((response) => {
-                console.log(`[useUpdateStudent] Documento ${docId} subido correctamente:`, response.data);
-                return response;
-              }).catch((err) => {
-                console.error(`[useUpdateStudent] Error al subir documento ${docId}:`, err);
-                return null; // Continuar con otros documentos aunque falle uno
-              })
-            );
+              });
+              console.log(`[useUpdateStudent] Documento ${docId} subido correctamente:`, uploadResponse.data);
+            } catch (err) {
+              console.error(`[useUpdateStudent] Error al subir documento ${docId}:`, err);
+              // Continuar con otros documentos aunque falle uno
+            }
+            
+            // Pequeño delay entre subidas para evitar problemas de concurrencia
+            if (i < docIds.length - 1) {
+              await new Promise(resolve => setTimeout(resolve, 100)); // 100ms de delay
+            }
           }
-        });
-
-        // Esperar a que se suban todos los documentos (o fallen)
-        if (uploadPromises.length > 0) {
-          await Promise.all(uploadPromises);
         }
 
         return {
