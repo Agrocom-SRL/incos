@@ -40,45 +40,24 @@ export const useStudentFormData = () => {
 
       // Contador para rastrear cuántas peticiones fallaron
       let failedRequests = 0;
-      const totalRequests = 9; // 6 catálogos + 3 geográficos
+      const totalRequests = 1; // Solo idiomas por ahora (modo debug)
       const catalogErrors = [];
 
       try {
-        console.log('[useStudentFormData] ⚠️ MODO DEBUG: Todas las llamadas a catálogos están deshabilitadas temporalmente');
-        console.log('[useStudentFormData] Esto es para identificar qué catálogo causa el problema');
+        console.log('[useStudentFormData] 🔍 MODO DEBUG: Probando solo catálogo de IDIOMAS');
         
         // ============================================
-        // TEMPORALMENTE DESHABILITADO PARA DEBUG
-        // Agregar uno por uno para identificar el problema
+        // DEBUG: Solo habilitar IDIOMAS para probar
         // ============================================
         
-        // TODO: Descomentar uno por uno para identificar el problema
-        // Paso 1: Verificar que sin catálogos no hay errores
-        // Paso 2: Agregar carreras (suele funcionar)
-        // Paso 3: Agregar gestiones
-        // Paso 4: Agregar paises
-        // Paso 5: Agregar idiomas
-        // Paso 6: Agregar tipos-discapacidad
-        // Paso 7: Agregar documentacion-inscripcion
-        // Paso 8: Agregar departamentos
-        // Paso 9: Agregar provincias
-        // Paso 10: Agregar municipios
-        
-        /*
-        // Cargar catálogos en paralelo
-        // Usar Promise.allSettled para que si una falla, las demás continúen
+        // Cargar solo idiomas para probar
         const catalogResults = await Promise.allSettled([
-          apiClient.get('/v1/catalogs/carreras'),
-          apiClient.get('/v1/catalogs/gestiones'),
-          apiClient.get('/v1/catalogs/paises'),
           apiClient.get('/v1/catalogs/idiomas'),
-          apiClient.get('/v1/catalogs/tipos-discapacidad'),
-          apiClient.get('/v1/catalogs/documentacion-inscripcion?tipo=INSCRIPCION'),
         ]);
 
-        // Procesar resultados de catálogos con logging detallado
-        const catalogNames = ['carreras', 'gestiones', 'paises', 'idiomas', 'tipos-discapacidad', 'documentacion-inscripcion'];
-        const [carrerasRes, gestionesRes, paisesRes, idiomasRes, tiposDiscRes, documentacionRes] = catalogResults.map((result, index) => {
+        // Procesar resultado de idiomas
+        const catalogNames = ['idiomas'];
+        const [idiomasRes] = catalogResults.map((result, index) => {
           if (result.status === 'fulfilled') {
             console.log(`[useStudentFormData] ✓ Catálogo "${catalogNames[index]}" cargado correctamente`);
             return result.value;
@@ -100,59 +79,11 @@ export const useStudentFormData = () => {
           }
         });
 
-        setCarreras(carrerasRes.data?.data || []);
-        setGestiones(gestionesRes.data?.data || []);
-        setPaises(paisesRes.data?.data || []);
-        setIdiomas(idiomasRes.data?.data || []);
-        setTiposDiscapacidad(tiposDiscRes.data?.data || []);
-        
-        const documentacionData = documentacionRes.data?.data || [];
-        console.log('[useStudentFormData] Documentos de inscripción recibidos del backend:', {
-          total: documentacionData.length,
-          documentos: documentacionData,
-        });
-        setDocumentacionInscripcion(documentacionData);
-        
-        // Cargar todos los datos geográficos al inicio (se filtrarán en el frontend)
-        console.log('[useStudentFormData] Cargando datos geográficos...');
-        const geoResults = await Promise.allSettled([
-          apiClient.get('/v1/catalogs/departamentos'),
-          apiClient.get('/v1/catalogs/provincias'),
-          apiClient.get('/v1/catalogs/municipios'),
-        ]);
-
-        const geoNames = ['departamentos', 'provincias', 'municipios'];
-        const [departamentosRes, provinciasRes, municipiosRes] = geoResults.map((result, index) => {
-          if (result.status === 'fulfilled') {
-            console.log(`[useStudentFormData] ✓ Datos geográficos "${geoNames[index]}" cargados correctamente`);
-            return result.value;
-          } else {
-            failedRequests++;
-            const error = result.reason;
-            const errorDetails = {
-              catalog: geoNames[index],
-              message: error.message,
-              status: error.response?.status,
-              statusText: error.response?.statusText,
-              url: error.config?.url,
-              data: error.response?.data,
-            };
-            catalogErrors.push(errorDetails);
-            console.error(`[useStudentFormData] ✗ Error al cargar datos geográficos "${geoNames[index]}":`, errorDetails);
-            return { data: { data: [] } };
-          }
-        });
-        
-        setDepartamentos(departamentosRes.data?.data || []);
-        setProvincias(provinciasRes.data?.data || []);
-        setMunicipios(municipiosRes.data?.data || []);
-        */
-        
-        // Por ahora, establecer arrays vacíos
+        // Establecer solo idiomas, el resto vacío
         setCarreras([]);
         setGestiones([]);
         setPaises([]);
-        setIdiomas([]);
+        setIdiomas(idiomasRes.data?.data || []);
         setTiposDiscapacidad([]);
         setDocumentacionInscripcion([]);
         setDepartamentos([]);
@@ -167,21 +98,14 @@ export const useStudentFormData = () => {
         });
 
         // Mostrar resumen de errores si los hay
-        // TEMPORALMENTE DESHABILITADO
-        /*
         if (catalogErrors.length > 0) {
-          console.warn(`[useStudentFormData] ⚠️ ${catalogErrors.length} de ${totalRequests} catálogos fallaron:`, catalogErrors);
-          // Solo mostrar error si TODAS las peticiones fallaron
-          if (failedRequests === totalRequests) {
-            setError('No se pudieron cargar los datos del formulario. Por favor, intenta recargar la página.');
-          } else {
-            console.warn(`[useStudentFormData] La página continuará funcionando con ${totalRequests - failedRequests} catálogos cargados correctamente.`);
+          console.warn(`[useStudentFormData] ⚠️ Error al cargar idiomas:`, catalogErrors);
+          if (failedRequests === 1) {
+            setError('No se pudo cargar el catálogo de idiomas. Por favor, intenta recargar la página.');
           }
         } else {
-          console.log('[useStudentFormData] ✓ Todos los catálogos cargados correctamente');
+          console.log('[useStudentFormData] ✓ Catálogo de idiomas cargado correctamente');
         }
-        */
-        console.log('[useStudentFormData] ✓ Modo debug: Sin catálogos cargados (verificar que no hay errores)');
       } catch (err) {
         // Error inesperado (no debería llegar aquí con Promise.allSettled, pero por si acaso)
         console.error('[useStudentFormData] ✗ Error inesperado al cargar datos del formulario:', {
@@ -204,26 +128,19 @@ export const useStudentFormData = () => {
     setError(null);
 
     let failedRequests = 0;
-    const totalRequests = 9;
+    const totalRequests = 1; // Solo idiomas por ahora (modo debug)
     const catalogErrors = [];
 
     try {
-      console.log('[useStudentFormData] ⚠️ Refetch: Modo debug - catálogos deshabilitados');
+      console.log('[useStudentFormData] 🔍 Refetch: Recargando solo idiomas...');
       
-      // TEMPORALMENTE DESHABILITADO - igual que en loadFormData
-      /*
-      // Usar Promise.allSettled para que si una falla, las demás continúen
+      // Cargar solo idiomas
       const catalogResults = await Promise.allSettled([
-        apiClient.get('/v1/catalogs/carreras'),
-        apiClient.get('/v1/catalogs/gestiones'),
-        apiClient.get('/v1/catalogs/paises'),
         apiClient.get('/v1/catalogs/idiomas'),
-        apiClient.get('/v1/catalogs/tipos-discapacidad'),
-        apiClient.get('/v1/catalogs/documentacion-inscripcion?tipo=INSCRIPCION'),
       ]);
 
-      const catalogNames = ['carreras', 'gestiones', 'paises', 'idiomas', 'tipos-discapacidad', 'documentacion-inscripcion'];
-      const [carrerasRes, gestionesRes, paisesRes, idiomasRes, tiposDiscRes, documentacionRes] = catalogResults.map((result, index) => {
+      const catalogNames = ['idiomas'];
+      const [idiomasRes] = catalogResults.map((result, index) => {
         if (result.status === 'fulfilled') {
           return result.value;
         } else {
@@ -240,48 +157,10 @@ export const useStudentFormData = () => {
         }
       });
 
-      setCarreras(carrerasRes.data?.data || []);
-      setGestiones(gestionesRes.data?.data || []);
-      setPaises(paisesRes.data?.data || []);
-      setIdiomas(idiomasRes.data?.data || []);
-      setTiposDiscapacidad(tiposDiscRes.data?.data || []);
-      setDocumentacionInscripcion(documentacionRes.data?.data || []);
-      
-      // Cargar todos los datos geográficos
-      const geoResults = await Promise.allSettled([
-        apiClient.get('/v1/catalogs/departamentos'),
-        apiClient.get('/v1/catalogs/provincias'),
-        apiClient.get('/v1/catalogs/municipios'),
-      ]);
-
-      const geoNames = ['departamentos', 'provincias', 'municipios'];
-      const [departamentosRes, provinciasRes, municipiosRes] = geoResults.map((result, index) => {
-        if (result.status === 'fulfilled') {
-          return result.value;
-        } else {
-          failedRequests++;
-          const error = result.reason;
-          catalogErrors.push({
-            catalog: geoNames[index],
-            message: error.message,
-            status: error.response?.status,
-            url: error.config?.url,
-          });
-          console.error(`[useStudentFormData] ✗ Error al recargar datos geográficos "${geoNames[index]}":`, error);
-          return { data: { data: [] } };
-        }
-      });
-      
-      setDepartamentos(departamentosRes.data?.data || []);
-      setProvincias(provinciasRes.data?.data || []);
-      setMunicipios(municipiosRes.data?.data || []);
-      */
-      
-      // Por ahora, mantener arrays vacíos
       setCarreras([]);
       setGestiones([]);
       setPaises([]);
-      setIdiomas([]);
+      setIdiomas(idiomasRes.data?.data || []);
       setTiposDiscapacidad([]);
       setDocumentacionInscripcion([]);
       setDepartamentos([]);
@@ -294,18 +173,13 @@ export const useStudentFormData = () => {
         totalStudents: 1543,
       });
 
-      // TEMPORALMENTE DESHABILITADO
-      /*
-      // Solo mostrar error si TODAS las peticiones fallaron
-      if (failedRequests === totalRequests) {
-        setError('No se pudieron recargar los datos. Por favor, intenta nuevamente.');
-      } else if (failedRequests > 0) {
-        console.warn(`[useStudentFormData] ⚠️ ${failedRequests} de ${totalRequests} peticiones fallaron al recargar:`, catalogErrors);
+      // Mostrar resultado del refetch
+      if (failedRequests > 0) {
+        console.warn(`[useStudentFormData] ⚠️ Error al recargar idiomas:`, catalogErrors);
+        setError('No se pudo recargar el catálogo de idiomas. Por favor, intenta nuevamente.');
       } else {
-        console.log('[useStudentFormData] ✓ Todos los catálogos recargados correctamente');
+        console.log('[useStudentFormData] ✓ Catálogo de idiomas recargado correctamente');
       }
-      */
-      console.log('[useStudentFormData] ✓ Refetch: Modo debug - sin catálogos');
     } catch (err) {
       console.error('[useStudentFormData] ✗ Error inesperado al recargar datos del formulario:', {
         message: err.message,
