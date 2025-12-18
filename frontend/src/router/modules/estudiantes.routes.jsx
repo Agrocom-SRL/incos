@@ -3,7 +3,7 @@ import { lazy } from 'react';
 
 // Lazy loading de componentes - se crearán las páginas después
 const EstudiantesListPage = lazy(() => import('@pages/Estudiantes/List'));
-const EstudiantesRegistrarPage = lazy(() => import('@estudiantes/pages/registrar'));
+const EstudiantesRegistrarPage = lazy(() => import('@estudiantes/pages/Registrar'));
 const BecasAsignarPage = lazy(() => import('@pages/Estudiantes/Becas/Asignar'));
 const BecasAprobarPage = lazy(() => import('@pages/Estudiantes/Becas/Aprobar'));
 const BecasListPage = lazy(() => import('@pages/Estudiantes/Becas/List'));

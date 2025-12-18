@@ -11,7 +11,7 @@
  */
 
 import { StudentProvider } from '@application/modules/estudiantes';
-import Registrar from '@estudiantes/pages/Registrar/registrar';
+import Registrar from '@estudiantes/pages/Registrar/Registrar';
 
 const RegistrarConnector = () => {
   return (
