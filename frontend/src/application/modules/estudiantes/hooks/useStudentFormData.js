@@ -40,26 +40,26 @@ export const useStudentFormData = () => {
 
       // Contador para rastrear cuántas peticiones fallaron
       let failedRequests = 0;
-      const totalRequests = 3; // Carreras, gestiones e idiomas (modo debug)
+      const totalRequests = 2; // Solo carreras e idiomas (modo debug, gestiones deshabilitada)
       const catalogErrors = [];
 
       try {
-        console.log('[useStudentFormData] 🔍 MODO DEBUG: Probando carreras, gestiones e idiomas');
+        console.log('[useStudentFormData] 🔍 MODO DEBUG: Probando solo carreras e idiomas (sin gestiones)');
         
         // ============================================
-        // DEBUG: Habilitar CARRERAS, GESTIONES e IDIOMAS
+        // DEBUG: Habilitar solo CARRERAS e IDIOMAS
+        // Gestiones deshabilitada temporalmente (parece causar problemas)
         // ============================================
         
-        // Cargar carreras, gestiones e idiomas
+        // Cargar solo carreras e idiomas
         const catalogResults = await Promise.allSettled([
           apiClient.get('/v1/catalogs/carreras'),
-          apiClient.get('/v1/catalogs/gestiones'),
           apiClient.get('/v1/catalogs/idiomas'),
         ]);
 
         // Procesar resultados
-        const catalogNames = ['carreras', 'gestiones', 'idiomas'];
-        const [carrerasRes, gestionesRes, idiomasRes] = catalogResults.map((result, index) => {
+        const catalogNames = ['carreras', 'idiomas'];
+        const [carrerasRes, idiomasRes] = catalogResults.map((result, index) => {
           if (result.status === 'fulfilled') {
             console.log(`[useStudentFormData] ✓ Catálogo "${catalogNames[index]}" cargado correctamente`);
             return result.value;
@@ -81,9 +81,9 @@ export const useStudentFormData = () => {
           }
         });
 
-        // Establecer carreras, gestiones e idiomas, el resto vacío
+        // Establecer solo carreras e idiomas, el resto vacío
         setCarreras(carrerasRes.data?.data || []);
-        setGestiones(gestionesRes.data?.data || []);
+        setGestiones([]); // Deshabilitado temporalmente
         setPaises([]);
         setIdiomas(idiomasRes.data?.data || []);
         setTiposDiscapacidad([]);
@@ -108,7 +108,7 @@ export const useStudentFormData = () => {
             console.warn(`[useStudentFormData] La página continuará funcionando con ${totalRequests - failedRequests} catálogos cargados correctamente.`);
           }
         } else {
-          console.log('[useStudentFormData] ✓ Todos los catálogos (carreras, gestiones, idiomas) cargados correctamente');
+          console.log('[useStudentFormData] ✓ Todos los catálogos (carreras, idiomas) cargados correctamente');
         }
       } catch (err) {
         // Error inesperado (no debería llegar aquí con Promise.allSettled, pero por si acaso)
@@ -132,21 +132,20 @@ export const useStudentFormData = () => {
     setError(null);
 
     let failedRequests = 0;
-    const totalRequests = 3; // Carreras, gestiones e idiomas (modo debug)
-    const catalogErrors = [];
+    const totalRequests = 2; // Solo carreras e idiomas (modo debug, gestiones deshabilitada)
+      const catalogErrors = [];
 
     try {
-      console.log('[useStudentFormData] 🔍 Refetch: Recargando carreras, gestiones e idiomas...');
+      console.log('[useStudentFormData] 🔍 Refetch: Recargando solo carreras e idiomas...');
       
-      // Cargar carreras, gestiones e idiomas
+      // Cargar solo carreras e idiomas (gestiones deshabilitada)
       const catalogResults = await Promise.allSettled([
         apiClient.get('/v1/catalogs/carreras'),
-        apiClient.get('/v1/catalogs/gestiones'),
         apiClient.get('/v1/catalogs/idiomas'),
       ]);
 
-      const catalogNames = ['carreras', 'gestiones', 'idiomas'];
-      const [carrerasRes, gestionesRes, idiomasRes] = catalogResults.map((result, index) => {
+      const catalogNames = ['carreras', 'idiomas'];
+      const [carrerasRes, idiomasRes] = catalogResults.map((result, index) => {
         if (result.status === 'fulfilled') {
           return result.value;
         } else {
@@ -164,7 +163,7 @@ export const useStudentFormData = () => {
       });
 
       setCarreras(carrerasRes.data?.data || []);
-      setGestiones(gestionesRes.data?.data || []);
+      setGestiones([]); // Deshabilitado temporalmente
       setPaises([]);
       setIdiomas(idiomasRes.data?.data || []);
       setTiposDiscapacidad([]);
@@ -186,7 +185,7 @@ export const useStudentFormData = () => {
           setError('No se pudieron recargar los catálogos. Por favor, intenta nuevamente.');
         }
       } else {
-        console.log('[useStudentFormData] ✓ Todos los catálogos (carreras, gestiones, idiomas) recargados correctamente');
+        console.log('[useStudentFormData] ✓ Todos los catálogos (carreras, idiomas) recargados correctamente');
       }
     } catch (err) {
       console.error('[useStudentFormData] ✗ Error inesperado al recargar datos del formulario:', {
