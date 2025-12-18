@@ -64,7 +64,13 @@ export const StudentProvider = ({ children }) => {
   const handleWizardSubmit = useCallback(async (studentData, step, isFinalStep, isTemporarySave = false) => {
     // Verificar si hay un estudianteId en los datos (viene de la URL cuando se completa registro)
     const estudianteIdEnDatos = studentData.estudianteId || studentData.id;
+    // Priorizar: currentStudentId (de la URL) > estudianteIdEnDatos (de los datos) > null
     const studentIdToUse = currentStudentId || estudianteIdEnDatos;
+    
+    // Si hay un ID, asegurarse de que esté en los datos para que el hook lo detecte
+    if (studentIdToUse && !studentData.estudianteId && !studentData.id) {
+      studentData.estudianteId = studentIdToUse;
+    }
     
     const result = await updateStudent(studentIdToUse, studentData, step, isFinalStep, isTemporarySave);
     

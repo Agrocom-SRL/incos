@@ -59,12 +59,16 @@ const Registrar = () => {
     departamentos,
   });
 
-  // Establecer currentStudentId cuando se cargan los datos
+  // Establecer currentStudentId cuando hay estudianteId en la URL o cuando se cargan los datos
   useEffect(() => {
-    if (estudianteData?.estudianteId) {
+    if (estudianteId) {
+      // Si hay estudianteId en la URL, establecerlo inmediatamente
+      setCurrentStudentId(parseInt(estudianteId, 10));
+    } else if (estudianteData?.estudianteId) {
+      // Si no hay en URL pero viene en los datos cargados, usarlo
       setCurrentStudentId(estudianteData.estudianteId);
     }
-  }, [estudianteData, setCurrentStudentId]);
+  }, [estudianteId, estudianteData, setCurrentStudentId]);
 
 
   // Resolver opciones dinámicas del Provider

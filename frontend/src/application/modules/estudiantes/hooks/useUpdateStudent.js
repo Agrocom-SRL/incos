@@ -84,11 +84,13 @@ export const useUpdateStudent = () => {
 
       // Verificar si hay un estudianteId en los datos (viene de la URL cuando se completa registro)
       const estudianteIdEnDatos = studentData.estudianteId || studentData.id;
+      // Priorizar: studentId (parámetro) > estudianteIdEnDatos (de los datos)
       const studentIdFinal = studentId || estudianteIdEnDatos;
 
       // Si no hay estudiante creado, crear el estudiante (independientemente del paso)
       // Esto puede ocurrir si el usuario avanzó usando "Siguiente" sin presionar "Guardar y Continuar Después"
       // O cuando se presiona "Guardar y Continuar Después" en el primer paso
+      // IMPORTANTE: Si hay studentIdFinal, significa que el estudiante ya existe y debemos ACTUALIZAR
       if (!studentIdFinal) {
         // Si es un guardado parcial, indicar al backend que no valide documentos requeridos
         if (isTemporarySave) {
@@ -162,6 +164,10 @@ export const useUpdateStudent = () => {
       // Remover estudianteId del body si existe (no debe enviarse al backend)
       delete datosEstudiante.estudianteId;
       delete datosEstudiante.id;
+      
+      // IMPORTANTE: Si hay studentIdFinal, siempre ACTUALIZAR (PUT) en lugar de crear (POST)
+      // Esto asegura que cuando hay estudianteId en la URL, se actualicen los datos existentes
+      console.log(`[useUpdateStudent] Actualizando estudiante existente ID: ${studentIdFinal}`);
       
       // El backend extrae los campos documento_{id}_entregado y los procesa usando la tabla documentacion
       const response = await apiClient.put(`/v1/estudiantes/${studentIdFinal}`, datosEstudiante);
