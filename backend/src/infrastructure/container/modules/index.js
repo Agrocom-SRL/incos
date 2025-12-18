@@ -3,17 +3,32 @@
  * 
  * NOTA: Los controladores ahora importan repositorios directamente.
  * Este contenedor se mantiene solo para compatibilidad con codigo legacy.
+ * Implementacion minima sin dependencias.
  */
-import { Container } from '../Container.js';
 import { logger } from '../../../shared/logger.js';
 
-// Crear instancia del contenedor vacia
-export const container = new Container();
+// Contenedor minimo - solo para compatibilidad
+class SimpleContainer {
+  constructor() {
+    this.services = new Map();
+    this.services.set('logger', logger);
+  }
 
-// Registrar solo el logger como servicio global
-container.register('logger', () => logger, true);
+  register(name, factory, singleton = false) {
+    this.services.set(name, singleton ? factory() : factory);
+  }
 
-// Los modulos se registran bajo demanda cuando se necesiten
-// No se registran automaticamente para evitar problemas de inicializacion
+  resolve(name) {
+    if (!this.services.has(name)) {
+      throw new Error(`Service '${name}' not found in container`);
+    }
+    return this.services.get(name);
+  }
 
+  has(name) {
+    return this.services.has(name);
+  }
+}
+
+export const container = new SimpleContainer();
 export default container;
