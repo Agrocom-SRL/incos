@@ -17,6 +17,17 @@ export const useUpdateStudent = () => {
     setError(null);
 
     try {
+      console.log(`[useUpdateStudent] ===== INICIO updateStudent =====`);
+      console.log(`[useUpdateStudent] Parámetros recibidos:`, {
+        studentId: studentId,
+        step: step,
+        isFinalStep: isFinalStep,
+        isTemporarySave: isTemporarySave,
+        studentDataKeys: Object.keys(studentData),
+        studentDataEstudianteId: studentData.estudianteId,
+        studentDataId: studentData.id,
+      });
+      
       // Separar documentos del resto de los datos
       // El backend ahora maneja los documentos dinámicamente usando documentacion_id
       const datosEstudiante = { ...studentData };
@@ -86,6 +97,13 @@ export const useUpdateStudent = () => {
       const estudianteIdEnDatos = studentData.estudianteId || studentData.id;
       // Priorizar: studentId (parámetro) > estudianteIdEnDatos (de los datos)
       const studentIdFinal = studentId || estudianteIdEnDatos;
+      
+      console.log(`[useUpdateStudent] Determinando studentIdFinal:`, {
+        studentIdParam: studentId,
+        estudianteIdEnDatos: estudianteIdEnDatos,
+        studentIdFinal: studentIdFinal,
+        decision: studentIdFinal ? 'ACTUALIZAR (PUT)' : 'CREAR (POST)',
+      });
 
       // Si no hay estudiante creado, crear el estudiante (independientemente del paso)
       // Esto puede ocurrir si el usuario avanzó usando "Siguiente" sin presionar "Guardar y Continuar Después"
@@ -206,7 +224,15 @@ export const useUpdateStudent = () => {
       });
       
       // El backend extrae los campos documento_{id}_entregado y los procesa usando la tabla documentacion
+      console.log(`[useUpdateStudent] Enviando PUT a /v1/estudiantes/${studentIdFinal}`);
       const response = await apiClient.put(`/v1/estudiantes/${studentIdFinal}`, datosEstudiante);
+      
+      console.log(`[useUpdateStudent] Respuesta del backend:`, {
+        success: response.data?.success,
+        message: response.data?.message,
+        dataKeys: response.data?.data ? Object.keys(response.data.data) : null,
+        status: response.status,
+      });
 
       if (response.data?.success) {
         // Subir archivos si los hay de forma SECUENCIAL

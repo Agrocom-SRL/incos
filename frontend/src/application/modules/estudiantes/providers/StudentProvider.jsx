@@ -62,14 +62,31 @@ export const StudentProvider = ({ children }) => {
    * Crea en el primer paso, actualiza en los siguientes
    */
   const handleWizardSubmit = useCallback(async (studentData, step, isFinalStep, isTemporarySave = false) => {
+    console.log(`[StudentProvider] handleWizardSubmit llamado:`, {
+      step,
+      isFinalStep,
+      isTemporarySave,
+      currentStudentId,
+      estudianteIdEnDatos: studentData.estudianteId || studentData.id,
+      studentDataKeys: Object.keys(studentData),
+    });
+    
     // Verificar si hay un estudianteId en los datos (viene de la URL cuando se completa registro)
     const estudianteIdEnDatos = studentData.estudianteId || studentData.id;
     // Priorizar: currentStudentId (de la URL) > estudianteIdEnDatos (de los datos) > null
     const studentIdToUse = currentStudentId || estudianteIdEnDatos;
     
+    console.log(`[StudentProvider] studentIdToUse determinado:`, {
+      currentStudentId,
+      estudianteIdEnDatos,
+      studentIdToUse,
+      decision: studentIdToUse ? 'ACTUALIZAR' : 'CREAR',
+    });
+    
     // Si hay un ID, asegurarse de que esté en los datos para que el hook lo detecte
     if (studentIdToUse && !studentData.estudianteId && !studentData.id) {
       studentData.estudianteId = studentIdToUse;
+      console.log(`[StudentProvider] Agregado estudianteId a studentData:`, studentIdToUse);
     }
     
     const result = await updateStudent(studentIdToUse, studentData, step, isFinalStep, isTemporarySave);
