@@ -35,7 +35,7 @@ import {
  * Registra todas las dependencias del módulo de Estudiantes
  * @param {Container} container - Contenedor de DI
  */
-export function registerEstudiantesModule(container) {
+export function RegisterEstudiantesModule(container) {
   // NOTA: Los repositorios ya están registrados en repositories.container.js
   // No es necesario registrarlos aquí. Se resuelven usando container.resolve()
   // con los nombres definidos en repositories.container.js

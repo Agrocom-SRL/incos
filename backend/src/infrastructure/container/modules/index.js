@@ -19,7 +19,7 @@ import { registerRepositoriesModule } from './repositories.container.js';
 // Módulos funcionales - Importación estática normal
 // Si el módulo no se puede importar, el servidor no iniciará (comportamiento esperado)
 // Esto ayuda a detectar problemas de configuración temprano
-import { registerEstudiantesModule } from './estudiantes.container.js';
+import { RegisterEstudiantesModule } from './estudiantes.container.js';
 
 // TODO: Agregar más módulos cuando se implementen:
 // import { registerInscripcionesModule } from './inscripciones.container.js';
@@ -44,7 +44,7 @@ container.register('logger', () => logger, true);
 const modules = [
   { name: 'Repositorios', register: registerRepositoriesModule },
   // Solo agregar módulo de Estudiantes si se importó correctamente
-  ...(registerEstudiantesModule ? [{ name: 'Estudiantes', register: registerEstudiantesModule }] : []),
+  ...(RegisterEstudiantesModule ? [{ name: 'Estudiantes', register: RegisterEstudiantesModule }] : []),
   // Agregar más módulos aquí cuando se implementen:
   // { name: 'Inscripciones', register: registerInscripcionesModule },
   // { name: 'Calificaciones', register: registerCalificacionesModule },
