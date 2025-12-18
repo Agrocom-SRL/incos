@@ -115,10 +115,9 @@ app.get('/health', (req, res) => {
 // API v1 routes
 app.use('/api/v1', routes);
 
-// Servir uploads (solo en desarrollo)
-if (process.env.NODE_ENV === 'development') {
-  app.use('/uploads', express.static('uploads'));
-}
+// Servir uploads (en desarrollo y producción)
+// En producción, Nginx también hace proxy de /uploads/ pero esto sirve como fallback
+app.use('/uploads', express.static('uploads'));
 
 // API Docs (TODO: agregar swagger)
 app.get('/api-docs', (req, res) => {
