@@ -385,38 +385,163 @@ export const getPaises = async (req, res, next) => {
  * Query params: paisId (opcional) - Filtrar por país
  */
 export const getDepartamentos = async (req, res, next) => {
+  const startTime = Date.now();
+  const requestId = `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  
   try {
+    logger.debug(`[Catalogs] [${requestId}] 🔍🔍🔍 INICIO: Obteniendo departamentos...`);
+    logger.debug(`[Catalogs] [${requestId}] 📍 Paso 1: Función getDepartamentos iniciada`, {
+      timestamp: new Date().toISOString(),
+      method: req.method,
+      url: req.url,
+      query: req.query,
+      params: req.params,
+      paisId: req.query.paisId,
+    });
+    
     const { paisId } = req.query;
     
+    logger.debug(`[Catalogs] [${requestId}] 📍 Paso 2: Verificando departmentRepository...`, {
+      hasRepository: !!departmentRepository,
+      repositoryType: typeof departmentRepository,
+      hasFindAll: typeof departmentRepository?.findAll === 'function',
+      hasFindByPaisId: typeof departmentRepository?.findByPaisId === 'function',
+    });
+    
     let result;
-    if (paisId) {
-      // Filtrar por país usando el método específico del repositorio
-      result = await departmentRepository.findByPaisId(parseInt(paisId));
-    } else {
-      // Obtener todos los departamentos
-      result = await departmentRepository.findAll({}, null, null);
+    try {
+      if (paisId) {
+        logger.debug(`[Catalogs] [${requestId}] 📍 Paso 3: Filtrando por paisId=${paisId}...`);
+        const repoStartTime = Date.now();
+        result = await departmentRepository.findByPaisId(parseInt(paisId));
+        const repoEndTime = Date.now();
+        logger.debug(`[Catalogs] [${requestId}] 📍 Paso 4: findByPaisId completado`, {
+          duration: `${repoEndTime - repoStartTime}ms`,
+        });
+      } else {
+        logger.debug(`[Catalogs] [${requestId}] 📍 Paso 3: Obteniendo todos los departamentos...`);
+        const repoStartTime = Date.now();
+        result = await departmentRepository.findAll({}, null, null);
+        const repoEndTime = Date.now();
+        logger.debug(`[Catalogs] [${requestId}] 📍 Paso 4: findAll completado`, {
+          duration: `${repoEndTime - repoStartTime}ms`,
+        });
+      }
+      
+      logger.debug(`[Catalogs] [${requestId}] 📍 Paso 5: Analizando resultado...`, {
+        hasResult: !!result,
+        resultType: typeof result,
+        isArray: Array.isArray(result),
+        isNull: result === null,
+        isUndefined: result === undefined,
+        resultConstructor: result?.constructor?.name,
+        resultKeys: result ? Object.keys(result) : [],
+        hasDepartments: !!(result?.departments),
+        departmentsType: typeof result?.departments,
+        departmentsIsArray: Array.isArray(result?.departments),
+        departmentsCount: result?.departments?.length || (Array.isArray(result) ? result.length : 0),
+        resultStringified: JSON.stringify(result).substring(0, 500),
+      });
+    } catch (repoError) {
+      logger.error(`[Catalogs] [${requestId}] ✗✗✗ ERROR en repository:`, {
+        error: repoError.message,
+        errorName: repoError.name,
+        errorCode: repoError.code,
+        stack: repoError.stack,
+        original: repoError.original?.message,
+        originalStack: repoError.original?.stack,
+        sql: repoError.sql,
+        sqlState: repoError.original?.sqlState,
+        sqlCode: repoError.original?.code,
+        fullError: JSON.stringify(repoError, Object.getOwnPropertyNames(repoError)).substring(0, 1000),
+      });
+      throw repoError;
     }
     
-    const departamentos = (result.departments || result || []).map(depto => ({
-      id: depto.id,
-      nombre: depto.name,
-      paisId: depto.countryId,
-      codigo: depto.code,
-    }));
+    logger.debug(`[Catalogs] [${requestId}] 📍 Paso 6: Iniciando mapeo de departamentos...`, {
+      hasDepartments: !!(result?.departments),
+      departmentsLength: result?.departments?.length || (Array.isArray(result) ? result.length : 0),
+      isDirectArray: Array.isArray(result),
+    });
+    
+    let departamentos = [];
+    try {
+      const mapStartTime = Date.now();
+      const rawData = result.departments || result || [];
+      
+      logger.debug(`[Catalogs] [${requestId}] 📍 Paso 7: Procesando ${rawData.length} departamentos...`);
+      
+      departamentos = rawData.map((depto, index) => {
+        logger.debug(`[Catalogs] [${requestId}] 📍 Paso 7.${index + 1}: Procesando departamento ${index}...`, {
+          hasDepto: !!depto,
+          deptoType: typeof depto,
+          deptoKeys: depto ? Object.keys(depto) : [],
+          hasId: depto?.id !== undefined && depto?.id !== null,
+          hasName: depto?.name !== undefined,
+          hasCountryId: depto?.countryId !== undefined,
+          hasCode: depto?.code !== undefined,
+        });
+        
+        return {
+          id: depto.id,
+          nombre: depto.name,
+          paisId: depto.countryId,
+          codigo: depto.code,
+        };
+      });
+      
+      const mapEndTime = Date.now();
+      logger.debug(`[Catalogs] [${requestId}] 📍 Paso 8: Mapeo completado`, {
+        duration: `${mapEndTime - mapStartTime}ms`,
+        total: departamentos.length,
+        sample: departamentos[0] || null,
+      });
+    } catch (mapError) {
+      logger.error(`[Catalogs] [${requestId}] ✗✗✗ ERROR al mapear departamentos:`, {
+        error: mapError.message,
+        errorName: mapError.name,
+        stack: mapError.stack,
+        resultDepartments: result?.departments?.length || (Array.isArray(result) ? result.length : 0),
+        fullError: JSON.stringify(mapError, Object.getOwnPropertyNames(mapError)).substring(0, 1000),
+      });
+      throw mapError;
+    }
 
-    res.status(200).json({
+    logger.debug(`[Catalogs] [${requestId}] 📍 Paso 9: Preparando respuesta JSON...`, {
+      departamentosCount: departamentos.length,
+      responseSize: JSON.stringify(departamentos).length,
+    });
+
+    const response = {
       success: true,
       data: departamentos,
       message: 'Departamentos obtenidos correctamente',
+    };
+    
+    const endTime = Date.now();
+    logger.debug(`[Catalogs] [${requestId}] 📍 Paso 10: Enviando respuesta`, {
+      totalDuration: `${endTime - startTime}ms`,
+      statusCode: 200,
+      dataLength: departamentos.length,
     });
+
+    res.status(200).json(response);
+    
+    logger.debug(`[Catalogs] [${requestId}] ✅✅✅ FIN: getDepartamentos completado exitosamente`);
   } catch (error) {
-    logger.error('Error al obtener departamentos', { 
-      error: error.message, 
+    const endTime = Date.now();
+    logger.error(`[Catalogs] [${requestId}] ✗✗✗ ERROR FINAL al obtener departamentos`, { 
+      totalDuration: `${endTime - startTime}ms`,
+      error: error.message,
+      errorName: error.name,
+      errorCode: error.code,
       stack: error.stack,
-      name: error.name,
-      code: error.code,
       original: error.original?.message,
+      originalStack: error.original?.stack,
       sql: error.sql,
+      sqlState: error.original?.sqlState,
+      sqlCode: error.original?.code,
+      fullError: JSON.stringify(error, Object.getOwnPropertyNames(error)).substring(0, 2000),
     });
     next(error);
   }
@@ -481,74 +606,183 @@ export const getProvincias = async (req, res, next) => {
  * Query params: provinciaId (opcional) - Filtrar por provincia
  */
 export const getMunicipios = async (req, res, next) => {
+  const startTime = Date.now();
+  const requestId = `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  
   try {
+    logger.debug(`[Catalogs] [${requestId}] 🔍🔍🔍 INICIO: Obteniendo municipios...`);
+    logger.debug(`[Catalogs] [${requestId}] 📍 Paso 1: Función getMunicipios iniciada`, {
+      timestamp: new Date().toISOString(),
+      method: req.method,
+      url: req.url,
+      query: req.query,
+      params: req.params,
+      provinciaId: req.query.provinciaId,
+    });
+    
     const { provinciaId } = req.query;
-    logger.debug('[Catalogs] Obteniendo municipios...', { provinciaId });
+    
+    logger.debug(`[Catalogs] [${requestId}] 📍 Paso 2: Verificando municipalityRepository...`, {
+      hasRepository: !!municipalityRepository,
+      repositoryType: typeof municipalityRepository,
+      hasFindAll: typeof municipalityRepository?.findAll === 'function',
+      hasFindByProvinciaId: typeof municipalityRepository?.findByProvinciaId === 'function',
+    });
     
     let result;
-    if (provinciaId) {
-      // Filtrar por provincia usando el método específico del repositorio
-      result = await municipalityRepository.findByProvinciaId(parseInt(provinciaId));
-      logger.debug('[Catalogs] Resultado de findByProvinciaId:', { 
-        hasResult: !!result,
-        isArray: Array.isArray(result),
-        count: result?.length || 0,
-      });
-      
-      // findByProvinciaId retorna un array directamente
-      const municipios = (result || []).map(municipio => ({
-        id: municipio.id,
-        nombre: municipio.name,
-        provinciaId: municipio.provinceId,
-        codigo: municipio.code,
-      }));
+    try {
+      if (provinciaId) {
+        logger.debug(`[Catalogs] [${requestId}] 📍 Paso 3: Filtrando por provinciaId=${provinciaId}...`);
+        const repoStartTime = Date.now();
+        result = await municipalityRepository.findByProvinciaId(parseInt(provinciaId));
+        const repoEndTime = Date.now();
+        logger.debug(`[Catalogs] [${requestId}] 📍 Paso 4: findByProvinciaId completado`, {
+          duration: `${repoEndTime - repoStartTime}ms`,
+          hasResult: !!result,
+          isArray: Array.isArray(result),
+          count: result?.length || 0,
+        });
+        
+        logger.debug(`[Catalogs] [${requestId}] 📍 Paso 5: Mapeando municipios filtrados...`);
+        const municipios = (result || []).map((municipio, index) => {
+          logger.debug(`[Catalogs] [${requestId}] 📍 Paso 5.${index + 1}: Procesando municipio ${index}...`, {
+            hasMunicipio: !!municipio,
+            municipioKeys: municipio ? Object.keys(municipio) : [],
+          });
+          return {
+            id: municipio.id,
+            nombre: municipio.name,
+            provinciaId: municipio.provinceId,
+            codigo: municipio.code,
+          };
+        });
 
-      return res.status(200).json({
-        success: true,
-        data: municipios,
-        message: 'Municipios obtenidos correctamente',
-      });
-    } else {
-      // Obtener todos los municipios
-      result = await municipalityRepository.findAll({}, null, null);
-      logger.debug('[Catalogs] Resultado de findAll:', { 
-        hasResult: !!result,
-        hasMunicipalities: !!(result?.municipalities),
-        municipalitiesCount: result?.municipalities?.length || 0,
-        resultKeys: result ? Object.keys(result) : [],
-        resultType: typeof result,
-      });
-      
-      if (!result) {
-        logger.warn('[Catalogs] Resultado de findAll es null o undefined');
+        const endTime = Date.now();
+        logger.debug(`[Catalogs] [${requestId}] 📍 Paso 6: Enviando respuesta (filtrado)`, {
+          totalDuration: `${endTime - startTime}ms`,
+          municipiosCount: municipios.length,
+        });
+
         return res.status(200).json({
           success: true,
-          data: [],
-          message: 'Municipios obtenidos correctamente (vacío)',
+          data: municipios,
+          message: 'Municipios obtenidos correctamente',
+        });
+      } else {
+        logger.debug(`[Catalogs] [${requestId}] 📍 Paso 3: Obteniendo todos los municipios...`);
+        const repoStartTime = Date.now();
+        result = await municipalityRepository.findAll({}, null, null);
+        const repoEndTime = Date.now();
+        logger.debug(`[Catalogs] [${requestId}] 📍 Paso 4: findAll completado`, {
+          duration: `${repoEndTime - repoStartTime}ms`,
+        });
+        
+        logger.debug(`[Catalogs] [${requestId}] 📍 Paso 5: Analizando resultado...`, {
+          hasResult: !!result,
+          resultType: typeof result,
+          isArray: Array.isArray(result),
+          isNull: result === null,
+          isUndefined: result === undefined,
+          resultConstructor: result?.constructor?.name,
+          resultKeys: result ? Object.keys(result) : [],
+          hasMunicipalities: !!(result?.municipalities),
+          municipalitiesType: typeof result?.municipalities,
+          municipalitiesIsArray: Array.isArray(result?.municipalities),
+          municipalitiesCount: result?.municipalities?.length || 0,
+          resultStringified: JSON.stringify(result).substring(0, 500),
+        });
+        
+        if (!result) {
+          logger.warn(`[Catalogs] [${requestId}] ⚠️ Resultado de findAll es null o undefined`);
+          const endTime = Date.now();
+          logger.debug(`[Catalogs] [${requestId}] 📍 Paso 6: Retornando respuesta vacía`, {
+            totalDuration: `${endTime - startTime}ms`,
+          });
+          return res.status(200).json({
+            success: true,
+            data: [],
+            message: 'Municipios obtenidos correctamente (vacío)',
+          });
+        }
+        
+        logger.debug(`[Catalogs] [${requestId}] 📍 Paso 7: Iniciando mapeo de municipios...`, {
+          hasMunicipalities: !!(result?.municipalities),
+          municipalitiesLength: result?.municipalities?.length || 0,
+        });
+        
+        const mapStartTime = Date.now();
+        const rawMunicipalities = result.municipalities || [];
+        
+        logger.debug(`[Catalogs] [${requestId}] 📍 Paso 8: Procesando ${rawMunicipalities.length} municipios...`);
+        
+        const municipios = rawMunicipalities.map((municipio, index) => {
+          logger.debug(`[Catalogs] [${requestId}] 📍 Paso 8.${index + 1}: Procesando municipio ${index}...`, {
+            hasMunicipio: !!municipio,
+            municipioType: typeof municipio,
+            municipioKeys: municipio ? Object.keys(municipio) : [],
+            hasId: municipio?.id !== undefined && municipio?.id !== null,
+            hasName: municipio?.name !== undefined,
+            hasProvinceId: municipio?.provinceId !== undefined,
+            hasCode: municipio?.code !== undefined,
+          });
+          
+          return {
+            id: municipio.id,
+            nombre: municipio.name,
+            provinciaId: municipio.provinceId,
+            codigo: municipio.code,
+          };
+        });
+        
+        const mapEndTime = Date.now();
+        logger.debug(`[Catalogs] [${requestId}] 📍 Paso 9: Mapeo completado`, {
+          duration: `${mapEndTime - mapStartTime}ms`,
+          total: municipios.length,
+          sample: municipios[0] || null,
+        });
+
+        const endTime = Date.now();
+        logger.debug(`[Catalogs] [${requestId}] 📍 Paso 10: Enviando respuesta`, {
+          totalDuration: `${endTime - startTime}ms`,
+          statusCode: 200,
+          dataLength: municipios.length,
+        });
+
+        return res.status(200).json({
+          success: true,
+          data: municipios,
+          message: 'Municipios obtenidos correctamente',
         });
       }
-      
-      const municipios = (result.municipalities || []).map(municipio => ({
-        id: municipio.id,
-        nombre: municipio.name,
-        provinciaId: municipio.provinceId,
-        codigo: municipio.code,
-      }));
-
-      return res.status(200).json({
-        success: true,
-        data: municipios,
-        message: 'Municipios obtenidos correctamente',
+    } catch (repoError) {
+      logger.error(`[Catalogs] [${requestId}] ✗✗✗ ERROR en repository:`, {
+        error: repoError.message,
+        errorName: repoError.name,
+        errorCode: repoError.code,
+        stack: repoError.stack,
+        original: repoError.original?.message,
+        originalStack: repoError.original?.stack,
+        sql: repoError.sql,
+        sqlState: repoError.original?.sqlState,
+        sqlCode: repoError.original?.code,
+        fullError: JSON.stringify(repoError, Object.getOwnPropertyNames(repoError)).substring(0, 1000),
       });
+      throw repoError;
     }
   } catch (error) {
-    logger.error('Error al obtener municipios', { 
-      error: error.message, 
+    const endTime = Date.now();
+    logger.error(`[Catalogs] [${requestId}] ✗✗✗ ERROR FINAL al obtener municipios`, { 
+      totalDuration: `${endTime - startTime}ms`,
+      error: error.message,
+      errorName: error.name,
+      errorCode: error.code,
       stack: error.stack,
-      name: error.name,
-      code: error.code,
       original: error.original?.message,
+      originalStack: error.original?.stack,
       sql: error.sql,
+      sqlState: error.original?.sqlState,
+      sqlCode: error.original?.code,
+      fullError: JSON.stringify(error, Object.getOwnPropertyNames(error)).substring(0, 2000),
     });
     next(error);
   }
