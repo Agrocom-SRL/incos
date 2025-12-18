@@ -1,2 +1,2 @@
-// src/presentation/components/organisms/Header/index.js
-export { default } from './header';
+// src/presentation/templates/MainLayout/components/Header/index.js
+export { default } from './Header';

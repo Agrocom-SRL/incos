@@ -1,2 +1,2 @@
-// src/presentation/components/organisms/Sidebar/index.js
-export { default } from './sidebar';
+// src/presentation/templates/MainLayout/components/Sidebar/index.js
+export { default } from './Sidebar';
