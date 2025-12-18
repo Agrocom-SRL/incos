@@ -245,7 +245,7 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange }) =
         return (
           <DatePicker
             style={{ width: '100%' }}
-            format={field.format || 'YYYY-MM-DD'}
+            format={field.format || 'DD/MM/YYYY'}
             disabledDate={field.disabledDate}
             {...commonProps}
           />

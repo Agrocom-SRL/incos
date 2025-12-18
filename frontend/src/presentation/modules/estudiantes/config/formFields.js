@@ -43,7 +43,7 @@ export const studentFormFields = {
         rules: [
           { required: true, message: 'La fecha de nacimiento es requerida' },
         ],
-        format: 'YYYY-MM-DD',
+        format: 'DD/MM/YYYY',
         disabledDate: (current) => {
           // No permitir fechas futuras y validar edad mínima (17 años)
           if (current && current > dayjs().endOf('day')) {
@@ -390,7 +390,7 @@ export const studentFormFields = {
         name: 'fechaEgreso',
         label: 'Fecha de Egreso',
         type: 'datePicker',
-        format: 'YYYY-MM-DD',
+        format: 'DD/MM/YYYY',
         disabledDate: (current) => {
           // No permitir fechas futuras
           return current && current > dayjs().endOf('day');

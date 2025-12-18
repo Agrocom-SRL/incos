@@ -78,7 +78,7 @@ const Registrar = () => {
       generos: generos || [],
       tiposSangre: tiposSangre || [],
       carreras: (carreras || []).map(c => ({ label: c.nombre, value: c.id })),
-      gestiones: (gestiones || []).map(g => ({ label: `${g.codigo} - ${g.anio}`, value: g.id })),
+      gestiones: (gestiones || []).map(g => ({ label: `${g.anio}`, value: g.id })),
       paises: (paises || []).map(p => ({ label: p.nombre, value: p.id })),
       departamentos: (departamentos || []).map(d => ({ label: d.nombre, value: d.id, paisId: d.paisId })),
       provincias: (provincias || []).map(p => ({ label: p.nombre, value: p.id, departamentoId: p.departamentoId })),
