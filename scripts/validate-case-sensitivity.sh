@@ -12,14 +12,24 @@ ERRORS=0
 echo "📁 Verificando archivos de rutas..."
 for route_file in frontend/src/router/modules/*.routes.jsx; do
     if [ -f "$route_file" ]; then
-        # Buscar importaciones con minúsculas
+        # Buscar importaciones con minúsculas en @pages y @estudiantes
         while IFS= read -r line; do
-            if echo "$line" | grep -q "@pages/[a-z]"; then
+            if echo "$line" | grep -qE "@pages/[a-z]|@estudiantes/[^/]*/[a-z]"; then
                 echo "⚠️  $route_file: Importación con minúsculas encontrada:"
                 echo "   $line"
                 ERRORS=$((ERRORS + 1))
             fi
         done < "$route_file"
+    fi
+done
+
+# Verificar importaciones en módulos
+echo "📦 Verificando importaciones en módulos..."
+find frontend/src -name "*.jsx" -o -name "*.js" | while read file; do
+    if grep -qE "@estudiantes/[^/]*/[a-z]|@modules/[^/]*/[a-z]" "$file" 2>/dev/null; then
+        echo "⚠️  $file: Importación con minúsculas encontrada en módulos"
+        grep -E "@estudiantes/[^/]*/[a-z]|@modules/[^/]*/[a-z]" "$file" | head -3
+        ERRORS=$((ERRORS + 1))
     fi
 done
 
