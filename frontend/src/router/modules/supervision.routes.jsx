@@ -1,15 +1,15 @@
 // src/router/modules/supervision.routes.js
 import { lazy } from 'react';
 
-const SupervisionProgramarPage = lazy(() => import('@pages/supervision/programar'));
-const SupervisionFichaCrearPage = lazy(() => import('@pages/supervision/ficha/crear'));
-const SupervisionFichaEditarPage = lazy(() => import('@pages/supervision/ficha/editar'));
-const SupervisionFichaVerPage = lazy(() => import('@pages/supervision/ficha/ver'));
-const SupervisionReportePage = lazy(() => import('@pages/supervision/reporte'));
+const SupervisionProgramarPage = lazy(() => import('@pages/Supervision/Programar'));
+const SupervisionFichaCrearPage = lazy(() => import('@pages/Supervision/Ficha/Crear'));
+const SupervisionFichaEditarPage = lazy(() => import('@pages/Supervision/Ficha/Editar'));
+const SupervisionFichaVerPage = lazy(() => import('@pages/Supervision/Ficha/Ver'));
+const SupervisionReportePage = lazy(() => import('@pages/Supervision/Reporte'));
 // Pasantías - movidas dentro de Supervisión
-const PasantiasAsignarPage = lazy(() => import('@pages/pasantias/asignar'));
-const PasantiasEvaluarPage = lazy(() => import('@pages/pasantias/evaluar'));
-const PasantiasSeguimientoPage = lazy(() => import('@pages/pasantias/seguimiento'));
+const PasantiasAsignarPage = lazy(() => import('@pages/Pasantias/Asignar'));
+const PasantiasEvaluarPage = lazy(() => import('@pages/Pasantias/Evaluar'));
+const PasantiasSeguimientoPage = lazy(() => import('@pages/Pasantias/Seguimiento'));
 
 export const supervisionRoutes = [
     // Módulo raíz: Supervisión

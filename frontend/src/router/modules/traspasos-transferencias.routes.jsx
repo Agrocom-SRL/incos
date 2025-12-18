@@ -2,18 +2,18 @@
 import { lazy } from 'react';
 
 // Traspasos (misma ciudad/región)
-const TraspasosSolicitarPage = lazy(() => import('@pages/traspasostransferencias/traspasos/solicitar'));
-const TraspasosRecibirPage = lazy(() => import('@pages/traspasostransferencias/traspasos/recibir'));
-const TraspasosConvalidarNotasPage = lazy(() => import('@pages/traspasostransferencias/traspasos/convalidarnotas'));
-const TraspasosAprobarPage = lazy(() => import('@pages/traspasostransferencias/traspasos/aprobar'));
-const TraspasosListarPage = lazy(() => import('@pages/traspasostransferencias/traspasos/listar'));
+const TraspasosSolicitarPage = lazy(() => import('@pages/TraspasosTransferencias/Traspasos/Solicitar'));
+const TraspasosRecibirPage = lazy(() => import('@pages/TraspasosTransferencias/Traspasos/Recibir'));
+const TraspasosConvalidarNotasPage = lazy(() => import('@pages/TraspasosTransferencias/Traspasos/ConvalidarNotas'));
+const TraspasosAprobarPage = lazy(() => import('@pages/TraspasosTransferencias/Traspasos/Aprobar'));
+const TraspasosListarPage = lazy(() => import('@pages/TraspasosTransferencias/Traspasos/Listar'));
 
 // Transferencias (otra ciudad/región)
-const TransferenciasSolicitarPage = lazy(() => import('@pages/traspasostransferencias/transferencias/solicitar'));
-const TransferenciasRecibirPage = lazy(() => import('@pages/traspasostransferencias/transferencias/recibir'));
-const TransferenciasConvalidarNotasPage = lazy(() => import('@pages/traspasostransferencias/transferencias/convalidarnotas'));
-const TransferenciasAprobarPage = lazy(() => import('@pages/traspasostransferencias/transferencias/aprobar'));
-const TransferenciasListarPage = lazy(() => import('@pages/traspasostransferencias/transferencias/listar'));
+const TransferenciasSolicitarPage = lazy(() => import('@pages/TraspasosTransferencias/Transferencias/Solicitar'));
+const TransferenciasRecibirPage = lazy(() => import('@pages/TraspasosTransferencias/Transferencias/Recibir'));
+const TransferenciasConvalidarNotasPage = lazy(() => import('@pages/TraspasosTransferencias/Transferencias/ConvalidarNotas'));
+const TransferenciasAprobarPage = lazy(() => import('@pages/TraspasosTransferencias/Transferencias/Aprobar'));
+const TransferenciasListarPage = lazy(() => import('@pages/TraspasosTransferencias/Transferencias/Listar'));
 
 export const traspasosTransferenciasRoutes = [
     // Módulo raíz: Traspasos y Transferencias

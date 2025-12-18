@@ -2,26 +2,26 @@
 import { lazy } from 'react';
 
 // Configuración Académica
-const ConfiguracionCarrerasPage = lazy(() => import('@pages/configuracion/carreras'));
-const ConfiguracionMateriasPage = lazy(() => import('@pages/configuracion/materias'));
-const ConfiguracionPlanEstudiosPage = lazy(() => import('@pages/configuracion/planestudios'));
-const ConfiguracionCursosPage = lazy(() => import('@pages/configuracion/cursos'));
-const ConfiguracionTurnosPage = lazy(() => import('@pages/configuracion/turnos'));
+const ConfiguracionCarrerasPage = lazy(() => import('@pages/Configuracion/Carreras'));
+const ConfiguracionMateriasPage = lazy(() => import('@pages/Configuracion/Materias'));
+const ConfiguracionPlanEstudiosPage = lazy(() => import('@pages/Configuracion/PlanEstudios'));
+const ConfiguracionCursosPage = lazy(() => import('@pages/Configuracion/Cursos'));
+const ConfiguracionTurnosPage = lazy(() => import('@pages/Configuracion/Turnos'));
 
 // Configuración Documentación
-const ConfiguracionDocumentacionInscripcionPage = lazy(() => import('@pages/configuracion/documentacion/inscripcion'));
-const ConfiguracionDocumentacionBecasPage = lazy(() => import('@pages/configuracion/documentacion/becas'));
-const ConfiguracionDocumentacionPasantiasPage = lazy(() => import('@pages/configuracion/documentacion/pasantias'));
-const ConfiguracionDocumentacionTrasladoPage = lazy(() => import('@pages/configuracion/documentacion/traslado'));
-const ConfiguracionDocumentacionTransferenciaPage = lazy(() => import('@pages/configuracion/documentacion/transferencia'));
+const ConfiguracionDocumentacionInscripcionPage = lazy(() => import('@pages/Configuracion/Documentacion/Inscripcion'));
+const ConfiguracionDocumentacionBecasPage = lazy(() => import('@pages/Configuracion/Documentacion/Becas'));
+const ConfiguracionDocumentacionPasantiasPage = lazy(() => import('@pages/Configuracion/Documentacion/Pasantias'));
+const ConfiguracionDocumentacionTrasladoPage = lazy(() => import('@pages/Configuracion/Documentacion/Traslado'));
+const ConfiguracionDocumentacionTransferenciaPage = lazy(() => import('@pages/Configuracion/Documentacion/Transferencia'));
 
 // Configuración Datos Complementarios
-const ConfiguracionDiscapacidadPage = lazy(() => import('@pages/configuracion/datoscomplementarios/discapacidad'));
-const ConfiguracionApoderadosPage = lazy(() => import('@pages/configuracion/datoscomplementarios/apoderados'));
-const ConfiguracionIdiomasPage = lazy(() => import('@pages/configuracion/datoscomplementarios/idiomas'));
+const ConfiguracionDiscapacidadPage = lazy(() => import('@pages/Configuracion/DatosComplementarios/Discapacidad'));
+const ConfiguracionApoderadosPage = lazy(() => import('@pages/Configuracion/DatosComplementarios/Apoderados'));
+const ConfiguracionIdiomasPage = lazy(() => import('@pages/Configuracion/DatosComplementarios/Idiomas'));
 
 // Configuración Historial
-const ConfiguracionLogActividadesPage = lazy(() => import('@pages/configuracion/log/actividades'));
+const ConfiguracionLogActividadesPage = lazy(() => import('@pages/Configuracion/Log/Actividades'));
 
 export const configuracionRoutes = [
     // Módulo raíz: Configuración

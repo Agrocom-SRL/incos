@@ -1,12 +1,12 @@
 // src/router/modules/inscripciones.routes.js
 import { lazy } from 'react';
 
-const InscripcionesCreatePage = lazy(() => import('@pages/inscripciones/create'));
-const InscripcionesMateriasInscribirPage = lazy(() => import('@pages/inscripciones/materias/inscribir'));
-const InscripcionesMateriasCursoPage = lazy(() => import('@pages/inscripciones/materias/curso'));
-const InscripcionesMateriasValidarPage = lazy(() => import('@pages/inscripciones/materias/validar'));
-const InscripcionesHorarioPage = lazy(() => import('@pages/inscripciones/horario'));
-const InscripcionesAnularPage = lazy(() => import('@pages/inscripciones/anular'));
+const InscripcionesCreatePage = lazy(() => import('@pages/Inscripciones/Create'));
+const InscripcionesMateriasInscribirPage = lazy(() => import('@pages/Inscripciones/Materias/Inscribir'));
+const InscripcionesMateriasCursoPage = lazy(() => import('@pages/Inscripciones/Materias/Curso'));
+const InscripcionesMateriasValidarPage = lazy(() => import('@pages/Inscripciones/Materias/Validar'));
+const InscripcionesHorarioPage = lazy(() => import('@pages/Inscripciones/Horario'));
+const InscripcionesAnularPage = lazy(() => import('@pages/Inscripciones/Anular'));
 
 export const inscripcionesRoutes = [
     // Módulo raíz: Inscripciones

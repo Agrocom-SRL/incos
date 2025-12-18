@@ -1,16 +1,16 @@
 // src/router/modules/reportes.routes.js
 import { lazy } from 'react';
 
-const ReportesRendimientoPage = lazy(() => import('@pages/reportes/rendimiento'));
-const ReportesAsistenciaPage = lazy(() => import('@pages/reportes/asistencia'));
-const ReportesDesercionPage = lazy(() => import('@pages/reportes/desercion'));
+const ReportesRendimientoPage = lazy(() => import('@pages/Reportes/Rendimiento'));
+const ReportesAsistenciaPage = lazy(() => import('@pages/Reportes/Asistencia'));
+const ReportesDesercionPage = lazy(() => import('@pages/Reportes/Desercion'));
 
 // Reportes de Solicitudes
-const ReportesSolicitudesGeneralPage = lazy(() => import('@pages/reportes/solicitudes/general'));
-const ReportesSolicitudesBecasPage = lazy(() => import('@pages/reportes/solicitudes/becas'));
-const ReportesSolicitudesTraspasoPage = lazy(() => import('@pages/reportes/solicitudes/traspaso'));
-const ReportesSolicitudesTransferenciaPage = lazy(() => import('@pages/reportes/solicitudes/transferencia'));
-const ReportesSolicitudesPasantiaPage = lazy(() => import('@pages/reportes/solicitudes/pasantia'));
+const ReportesSolicitudesGeneralPage = lazy(() => import('@pages/Reportes/Solicitudes/General'));
+const ReportesSolicitudesBecasPage = lazy(() => import('@pages/Reportes/Solicitudes/Becas'));
+const ReportesSolicitudesTraspasoPage = lazy(() => import('@pages/Reportes/Solicitudes/Traspaso'));
+const ReportesSolicitudesTransferenciaPage = lazy(() => import('@pages/Reportes/Solicitudes/Transferencia'));
+const ReportesSolicitudesPasantiaPage = lazy(() => import('@pages/Reportes/Solicitudes/Pasantia'));
 
 export const reportesRoutes = [
     // Módulo raíz: Reportes

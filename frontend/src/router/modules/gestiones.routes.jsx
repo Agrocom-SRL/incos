@@ -2,11 +2,11 @@
 import { lazy } from 'react';
 
 // Gestiones
-const GestionesListPage = lazy(() => import('@pages/gestiones/list'));
-const GestionesHabilitarPage = lazy(() => import('@pages/gestiones/habilitar'));
-const GestionesOfertaPage = lazy(() => import('@pages/gestiones/oferta'));
-const GestionesEtapasPage = lazy(() => import('@pages/gestiones/etapas'));
-const GestionesHorariosPage = lazy(() => import('@pages/horarios/asignar'));
+const GestionesListPage = lazy(() => import('@pages/Gestiones/List'));
+const GestionesHabilitarPage = lazy(() => import('@pages/Gestiones/Habilitar'));
+const GestionesOfertaPage = lazy(() => import('@pages/Gestiones/Oferta'));
+const GestionesEtapasPage = lazy(() => import('@pages/Gestiones/Etapas'));
+const GestionesHorariosPage = lazy(() => import('@pages/Horarios/Asignar'));
 
 export const gestionesRoutes = [
     // Módulo raíz: Gestiones

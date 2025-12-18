@@ -1,14 +1,14 @@
 // src/router/modules/calificaciones.routes.js
 import { lazy } from 'react';
 
-const CalificacionesRegistrar1ParcialPage = lazy(() => import('@pages/calificaciones/registrar/1parcial'));
-const CalificacionesRegistrar2ParcialPage = lazy(() => import('@pages/calificaciones/registrar/2parcial'));
-const CalificacionesRegistrar3ParcialPage = lazy(() => import('@pages/calificaciones/registrar/3parcial'));
-const CalificacionesRegistrarPracticoPage = lazy(() => import('@pages/calificaciones/registrar/practico'));
-const CalificacionesRegistrarRecuperatorioPage = lazy(() => import('@pages/calificaciones/registrar/recuperatorio'));
-const CalificacionesModificarPage = lazy(() => import('@pages/calificaciones/modificar'));
-const CalificacionesCursoPage = lazy(() => import('@pages/calificaciones/curso'));
-const CalificacionesPeriodoPage = lazy(() => import('@pages/calificaciones/periodo'));
+const CalificacionesRegistrar1ParcialPage = lazy(() => import('@pages/Calificaciones/Registrar/1Parcial'));
+const CalificacionesRegistrar2ParcialPage = lazy(() => import('@pages/Calificaciones/Registrar/2Parcial'));
+const CalificacionesRegistrar3ParcialPage = lazy(() => import('@pages/Calificaciones/Registrar/3Parcial'));
+const CalificacionesRegistrarPracticoPage = lazy(() => import('@pages/Calificaciones/Registrar/Practico'));
+const CalificacionesRegistrarRecuperatorioPage = lazy(() => import('@pages/Calificaciones/Registrar/Recuperatorio'));
+const CalificacionesModificarPage = lazy(() => import('@pages/Calificaciones/Modificar'));
+const CalificacionesCursoPage = lazy(() => import('@pages/Calificaciones/Curso'));
+const CalificacionesPeriodoPage = lazy(() => import('@pages/Calificaciones/Periodo'));
 
 export const calificacionesRoutes = [
     // Módulo raíz: Calificaciones

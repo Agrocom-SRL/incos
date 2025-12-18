@@ -2,16 +2,16 @@
 import { lazy } from 'react';
 
 // Configuración y listado
-const PagosConfiguracionPage = lazy(() => import('@pages/pagos/configuracion'));
-const PagosListPage = lazy(() => import('@pages/pagos/list'));
+const PagosConfiguracionPage = lazy(() => import('@pages/Pagos/Configuracion'));
+const PagosListPage = lazy(() => import('@pages/Pagos/List'));
 // Registro
-const PagosRegistrarPage = lazy(() => import('@pages/pagos/registrar'));
+const PagosRegistrarPage = lazy(() => import('@pages/Pagos/Registrar'));
 // Reportes/Consultas
-const PagosReporteCarreraPage = lazy(() => import('@pages/pagos/reportes/carrera'));
-const PagosReporteEstudiantePage = lazy(() => import('@pages/pagos/reportes/estudiante'));
-const PagosReporteGestionPage = lazy(() => import('@pages/pagos/reportes/gestion'));
+const PagosReporteCarreraPage = lazy(() => import('@pages/Pagos/Reportes/Carrera'));
+const PagosReporteEstudiantePage = lazy(() => import('@pages/Pagos/Reportes/Estudiante'));
+const PagosReporteGestionPage = lazy(() => import('@pages/Pagos/Reportes/Gestion'));
 // Pagos adicionales
-const PagosAdicionalesPage = lazy(() => import('@pages/pagos/adicionales'));
+const PagosAdicionalesPage = lazy(() => import('@pages/Pagos/Adicionales'));
 
 export const pagosRoutes = [
     // Módulo raíz: Pagos
