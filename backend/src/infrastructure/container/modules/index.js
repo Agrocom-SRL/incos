@@ -1,27 +1,27 @@
 /**
- * Configuración central del contenedor de Dependency Injection
- * Crea la instancia del container y registra todos los módulos de la aplicación
+ * Configuraci?n central del contenedor de Dependency Injection
+ * Crea la instancia del container y registra todos los m?dulos de la aplicaci?n
  *
  * Estructura:
  * - Container.js: Clase base del contenedor
- * - modules/*.container.js: Registradores de cada módulo funcional
- * - index.js (este archivo): Punto de configuración central
+ * - modules/*.container.js: Registradores de cada m?dulo funcional
+ * - index.js (este archivo): Punto de configuraci?n central
  */
 import { Container } from '../Container.js';
 import { logger } from '../../../shared/logger.js';
 
 // ============================================
-// REGISTRADORES DE MÓDULOS
+// REGISTRADORES DE M?DULOS
 // ============================================
-// Módulo base: Repositorios (debe registrarse primero)
+// M?dulo base: Repositorios (debe registrarse primero)
 import { registerRepositoriesModule } from './repositories.container.js';
 
-// Módulos funcionales - Importación estática normal
-// Si el módulo no se puede importar, el servidor no iniciará (comportamiento esperado)
-// Esto ayuda a detectar problemas de configuración temprano
+// M?dulos funcionales - Importaci?n est?tica normal
+// Si el m?dulo no se puede importar, el servidor no iniciar? (comportamiento esperado)
+// Esto ayuda a detectar problemas de configuraci?n temprano
 import { RegisterEstudiantesModule } from './estudiantes.container.js';
 
-// TODO: Agregar más módulos cuando se implementen:
+// TODO: Agregar m?s m?dulos cuando se implementen:
 // import { registerInscripcionesModule } from './inscripciones.container.js';
 // import { registerCalificacionesModule } from './calificaciones.container.js';
 // import { registerAuthModule } from './auth.container.js';
@@ -32,20 +32,20 @@ import { RegisterEstudiantesModule } from './estudiantes.container.js';
 export const container = new Container();
 
 // ============================================
-// SERVICIOS GLOBALES (compartidos por todos los módulos)
+// SERVICIOS GLOBALES (compartidos por todos los m?dulos)
 // ============================================
 container.register('logger', () => logger, true);
 
 // ============================================
-// REGISTRAR MÓDULOS
+// REGISTRAR M?DULOS
 // ============================================
 // IMPORTANTE: Los repositorios deben registrarse primero ya que son dependencias
-// de los módulos funcionales (use cases, controllers, etc.)
+// de los m?dulos funcionales (use cases, controllers, etc.)
 const modules = [
   { name: 'Repositorios', register: registerRepositoriesModule },
-  // Solo agregar módulo de Estudiantes si se importó correctamente
+  // Solo agregar m?dulo de Estudiantes si se import? correctamente
   ...(RegisterEstudiantesModule ? [{ name: 'Estudiantes', register: RegisterEstudiantesModule }] : []),
-  // Agregar más módulos aquí cuando se implementen:
+  // Agregar m?s m?dulos aqu? cuando se implementen:
   // { name: 'Inscripciones', register: registerInscripcionesModule },
   // { name: 'Calificaciones', register: registerCalificacionesModule },
   // { name: 'Auth', register: registerAuthModule },
@@ -54,9 +54,9 @@ const modules = [
 modules.forEach((module) => {
   try {
     module.register(container);
-    logger.info(`Módulo '${module.name}' registrado en el contenedor de DI`);
+    logger.info(`Modulo '${module.name}' registrado en el contenedor de DI`);
   } catch (error) {
-    logger.error(`Error al registrar módulo '${module.name}':`, error);
+    logger.error(`Error al registrar modulo '${module.name}':`, error);
   }
 });
 
