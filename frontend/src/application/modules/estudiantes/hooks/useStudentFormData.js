@@ -40,24 +40,26 @@ export const useStudentFormData = () => {
 
       // Contador para rastrear cuántas peticiones fallaron
       let failedRequests = 0;
-      const totalRequests = 1; // Solo idiomas por ahora (modo debug)
+      const totalRequests = 3; // Carreras, gestiones e idiomas (modo debug)
       const catalogErrors = [];
 
       try {
-        console.log('[useStudentFormData] 🔍 MODO DEBUG: Probando solo catálogo de IDIOMAS');
+        console.log('[useStudentFormData] 🔍 MODO DEBUG: Probando carreras, gestiones e idiomas');
         
         // ============================================
-        // DEBUG: Solo habilitar IDIOMAS para probar
+        // DEBUG: Habilitar CARRERAS, GESTIONES e IDIOMAS
         // ============================================
         
-        // Cargar solo idiomas para probar
+        // Cargar carreras, gestiones e idiomas
         const catalogResults = await Promise.allSettled([
+          apiClient.get('/v1/catalogs/carreras'),
+          apiClient.get('/v1/catalogs/gestiones'),
           apiClient.get('/v1/catalogs/idiomas'),
         ]);
 
-        // Procesar resultado de idiomas
-        const catalogNames = ['idiomas'];
-        const [idiomasRes] = catalogResults.map((result, index) => {
+        // Procesar resultados
+        const catalogNames = ['carreras', 'gestiones', 'idiomas'];
+        const [carrerasRes, gestionesRes, idiomasRes] = catalogResults.map((result, index) => {
           if (result.status === 'fulfilled') {
             console.log(`[useStudentFormData] ✓ Catálogo "${catalogNames[index]}" cargado correctamente`);
             return result.value;
@@ -79,9 +81,9 @@ export const useStudentFormData = () => {
           }
         });
 
-        // Establecer solo idiomas, el resto vacío
-        setCarreras([]);
-        setGestiones([]);
+        // Establecer carreras, gestiones e idiomas, el resto vacío
+        setCarreras(carrerasRes.data?.data || []);
+        setGestiones(gestionesRes.data?.data || []);
         setPaises([]);
         setIdiomas(idiomasRes.data?.data || []);
         setTiposDiscapacidad([]);
@@ -99,12 +101,14 @@ export const useStudentFormData = () => {
 
         // Mostrar resumen de errores si los hay
         if (catalogErrors.length > 0) {
-          console.warn(`[useStudentFormData] ⚠️ Error al cargar idiomas:`, catalogErrors);
-          if (failedRequests === 1) {
-            setError('No se pudo cargar el catálogo de idiomas. Por favor, intenta recargar la página.');
+          console.warn(`[useStudentFormData] ⚠️ ${catalogErrors.length} de ${totalRequests} catálogos fallaron:`, catalogErrors);
+          if (failedRequests === totalRequests) {
+            setError('No se pudieron cargar los catálogos. Por favor, intenta recargar la página.');
+          } else {
+            console.warn(`[useStudentFormData] La página continuará funcionando con ${totalRequests - failedRequests} catálogos cargados correctamente.`);
           }
         } else {
-          console.log('[useStudentFormData] ✓ Catálogo de idiomas cargado correctamente');
+          console.log('[useStudentFormData] ✓ Todos los catálogos (carreras, gestiones, idiomas) cargados correctamente');
         }
       } catch (err) {
         // Error inesperado (no debería llegar aquí con Promise.allSettled, pero por si acaso)
@@ -128,19 +132,21 @@ export const useStudentFormData = () => {
     setError(null);
 
     let failedRequests = 0;
-    const totalRequests = 1; // Solo idiomas por ahora (modo debug)
+    const totalRequests = 3; // Carreras, gestiones e idiomas (modo debug)
     const catalogErrors = [];
 
     try {
-      console.log('[useStudentFormData] 🔍 Refetch: Recargando solo idiomas...');
+      console.log('[useStudentFormData] 🔍 Refetch: Recargando carreras, gestiones e idiomas...');
       
-      // Cargar solo idiomas
+      // Cargar carreras, gestiones e idiomas
       const catalogResults = await Promise.allSettled([
+        apiClient.get('/v1/catalogs/carreras'),
+        apiClient.get('/v1/catalogs/gestiones'),
         apiClient.get('/v1/catalogs/idiomas'),
       ]);
 
-      const catalogNames = ['idiomas'];
-      const [idiomasRes] = catalogResults.map((result, index) => {
+      const catalogNames = ['carreras', 'gestiones', 'idiomas'];
+      const [carrerasRes, gestionesRes, idiomasRes] = catalogResults.map((result, index) => {
         if (result.status === 'fulfilled') {
           return result.value;
         } else {
@@ -157,8 +163,8 @@ export const useStudentFormData = () => {
         }
       });
 
-      setCarreras([]);
-      setGestiones([]);
+      setCarreras(carrerasRes.data?.data || []);
+      setGestiones(gestionesRes.data?.data || []);
       setPaises([]);
       setIdiomas(idiomasRes.data?.data || []);
       setTiposDiscapacidad([]);
@@ -175,10 +181,12 @@ export const useStudentFormData = () => {
 
       // Mostrar resultado del refetch
       if (failedRequests > 0) {
-        console.warn(`[useStudentFormData] ⚠️ Error al recargar idiomas:`, catalogErrors);
-        setError('No se pudo recargar el catálogo de idiomas. Por favor, intenta nuevamente.');
+        console.warn(`[useStudentFormData] ⚠️ ${failedRequests} de ${totalRequests} catálogos fallaron al recargar:`, catalogErrors);
+        if (failedRequests === totalRequests) {
+          setError('No se pudieron recargar los catálogos. Por favor, intenta nuevamente.');
+        }
       } else {
-        console.log('[useStudentFormData] ✓ Catálogo de idiomas recargado correctamente');
+        console.log('[useStudentFormData] ✓ Todos los catálogos (carreras, gestiones, idiomas) recargados correctamente');
       }
     } catch (err) {
       console.error('[useStudentFormData] ✗ Error inesperado al recargar datos del formulario:', {
