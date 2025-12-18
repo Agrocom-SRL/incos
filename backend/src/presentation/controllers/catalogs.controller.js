@@ -2,12 +2,33 @@
  * Controller para catálogos
  * Endpoints simples para obtener datos de catálogos (carreras, gestiones, municipios, etc.)
  * 
- * NOTA: Implementación rápida para presentación - usa repositorios directamente
+ * NOTA: Implementación directa - importa repositorios directamente sin contenedor DI
  */
 
 import { logger } from '../../shared/logger.js';
-import container from '../../infrastructure/container/index.js';
 import { sequelize } from '../../infrastructure/database/config/sequelize.js';
+
+// Importar repositorios directamente
+import { CareerRepository } from '../../infrastructure/repositories/CareerRepository.js';
+import { ManagementRepository } from '../../infrastructure/repositories/ManagementRepository.js';
+import { CountryRepository } from '../../infrastructure/repositories/CountryRepository.js';
+import { DepartmentRepository } from '../../infrastructure/repositories/DepartmentRepository.js';
+import { ProvinceRepository } from '../../infrastructure/repositories/ProvinceRepository.js';
+import { MunicipalityRepository } from '../../infrastructure/repositories/MunicipalityRepository.js';
+import { LanguageRepository } from '../../infrastructure/repositories/LanguageRepository.js';
+import { DisabilityTypeRepository } from '../../infrastructure/repositories/DisabilityTypeRepository.js';
+import { DocumentacionRepository } from '../../infrastructure/repositories/DocumentacionRepository.js';
+
+// Crear instancias de repositorios
+const careerRepository = new CareerRepository();
+const managementRepository = new ManagementRepository();
+const countryRepository = new CountryRepository();
+const departmentRepository = new DepartmentRepository();
+const provinceRepository = new ProvinceRepository();
+const municipalityRepository = new MunicipalityRepository();
+const languageRepository = new LanguageRepository();
+const disabilityTypeRepository = new DisabilityTypeRepository();
+const documentacionRepository = new DocumentacionRepository();
 
 /**
  * GET /api/v1/catalogs/carreras
@@ -16,20 +37,6 @@ import { sequelize } from '../../infrastructure/database/config/sequelize.js';
 export const getCarreras = async (req, res, next) => {
   try {
     logger.debug('[Catalogs] Obteniendo carreras...');
-    
-    let careerRepository;
-    try {
-      careerRepository = container.resolve('careerRepository');
-      logger.debug('[Catalogs] Repositorio de carreras resuelto correctamente');
-    } catch (resolveError) {
-      logger.error('[Catalogs] Error al resolver careerRepository:', {
-        error: resolveError.message,
-        stack: resolveError.stack,
-        hasRepository: container.has('careerRepository'),
-      });
-      throw new Error(`No se pudo resolver el repositorio de carreras: ${resolveError.message}`);
-    }
-    
     const result = await careerRepository.findAll({}, null, null);
     logger.debug('[Catalogs] Resultado de findAll:', { 
       hasResult: !!result, 
@@ -70,20 +77,6 @@ export const getCarreras = async (req, res, next) => {
 export const getGestiones = async (req, res, next) => {
   try {
     logger.debug('[Catalogs] Obteniendo gestiones...');
-    
-    let managementRepository;
-    try {
-      managementRepository = container.resolve('managementRepository');
-      logger.debug('[Catalogs] Repositorio de gestiones resuelto correctamente');
-    } catch (resolveError) {
-      logger.error('[Catalogs] Error al resolver managementRepository:', {
-        error: resolveError.message,
-        stack: resolveError.stack,
-        hasRepository: container.has('managementRepository'),
-      });
-      throw new Error(`No se pudo resolver el repositorio de gestiones: ${resolveError.message}`);
-    }
-    
     const result = await managementRepository.findAll({}, null, null);
     logger.debug('[Catalogs] Resultado de findAll:', { 
       hasResult: !!result, 
@@ -124,20 +117,6 @@ export const getGestiones = async (req, res, next) => {
 export const getPaises = async (req, res, next) => {
   try {
     logger.debug('[Catalogs] Obteniendo paises...');
-    
-    let countryRepository;
-    try {
-      countryRepository = container.resolve('countryRepository');
-      logger.debug('[Catalogs] Repositorio de paises resuelto correctamente');
-    } catch (resolveError) {
-      logger.error('[Catalogs] Error al resolver countryRepository:', {
-        error: resolveError.message,
-        stack: resolveError.stack,
-        hasRepository: container.has('countryRepository'),
-      });
-      throw new Error(`No se pudo resolver el repositorio de paises: ${resolveError.message}`);
-    }
-    
     const result = await countryRepository.findAll({}, null, null);
     logger.debug('[Catalogs] Resultado de findAll:', { 
       hasResult: !!result, 
@@ -179,7 +158,6 @@ export const getPaises = async (req, res, next) => {
  */
 export const getDepartamentos = async (req, res, next) => {
   try {
-    const departmentRepository = container.resolve('departmentRepository');
     const { paisId } = req.query;
     
     let result;
@@ -224,20 +202,6 @@ export const getDepartamentos = async (req, res, next) => {
 export const getProvincias = async (req, res, next) => {
   try {
     logger.debug('[Catalogs] Obteniendo provincias...', { departamentoId: req.query.departamentoId });
-    
-    let provinceRepository;
-    try {
-      provinceRepository = container.resolve('provinceRepository');
-      logger.debug('[Catalogs] Repositorio de provincias resuelto correctamente');
-    } catch (resolveError) {
-      logger.error('[Catalogs] Error al resolver provinceRepository:', {
-        error: resolveError.message,
-        stack: resolveError.stack,
-        hasRepository: container.has('provinceRepository'),
-      });
-      throw new Error(`No se pudo resolver el repositorio de provincias: ${resolveError.message}`);
-    }
-    
     const { departamentoId } = req.query;
     
     let result;
@@ -290,7 +254,6 @@ export const getProvincias = async (req, res, next) => {
  */
 export const getMunicipios = async (req, res, next) => {
   try {
-    const municipalityRepository = container.resolve('municipalityRepository');
     const { provinciaId } = req.query;
     
     let result;
@@ -337,11 +300,9 @@ export const getIdiomas = async (req, res, next) => {
   try {
     logger.debug('[Catalogs] Obteniendo idiomas (modo prueba - SQL directo)...');
     
-    // Intentar primero con el repositorio (método normal)
+    // Usar repositorio directamente
     try {
-      const languageRepository = container.resolve('languageRepository');
-      logger.debug('[Catalogs] Repositorio de idiomas resuelto correctamente');
-      
+      logger.debug('[Catalogs] Usando repositorio de idiomas...');
       const result = await languageRepository.findAll({}, null, null);
       logger.debug('[Catalogs] Resultado de findAll:', { 
         hasResult: !!result, 
@@ -362,7 +323,6 @@ export const getIdiomas = async (req, res, next) => {
     } catch (repoError) {
       logger.warn('[Catalogs] Error con repositorio, intentando SQL directo:', {
         error: repoError.message,
-        hasRepository: container.has('languageRepository'),
       });
       
       // FALLBACK: Consulta SQL directa
@@ -414,20 +374,6 @@ export const getIdiomas = async (req, res, next) => {
 export const getTiposDiscapacidad = async (req, res, next) => {
   try {
     logger.debug('[Catalogs] Obteniendo tipos de discapacidad...');
-    
-    let disabilityTypeRepository;
-    try {
-      disabilityTypeRepository = container.resolve('disabilityTypeRepository');
-      logger.debug('[Catalogs] Repositorio de tipos de discapacidad resuelto correctamente');
-    } catch (resolveError) {
-      logger.error('[Catalogs] Error al resolver disabilityTypeRepository:', {
-        error: resolveError.message,
-        stack: resolveError.stack,
-        hasRepository: container.has('disabilityTypeRepository'),
-      });
-      throw new Error(`No se pudo resolver el repositorio de tipos de discapacidad: ${resolveError.message}`);
-    }
-    
     const result = await disabilityTypeRepository.findAll({}, null, null);
     logger.debug('[Catalogs] Resultado de findAll:', { 
       hasResult: !!result, 
@@ -469,19 +415,6 @@ export const getDocumentacionInscripcion = async (req, res, next) => {
   try {
     const { tipo = 'INSCRIPCION' } = req.query;
     logger.debug('[Catalogs] Obteniendo documentación de inscripción...', { tipo });
-    
-    let documentacionRepository;
-    try {
-      documentacionRepository = container.resolve('documentacionRepository');
-      logger.debug('[Catalogs] Repositorio de documentación resuelto correctamente');
-    } catch (resolveError) {
-      logger.error('[Catalogs] Error al resolver documentacionRepository:', {
-        error: resolveError.message,
-        stack: resolveError.stack,
-        hasRepository: container.has('documentacionRepository'),
-      });
-      throw new Error(`No se pudo resolver el repositorio de documentación: ${resolveError.message}`);
-    }
     
     // Usar repositorio para obtener documentos por tipo
     const documentos = await documentacionRepository.findByTipoDocumento(tipo, {
