@@ -1,1 +1,1 @@
-export { default } from './Idiomas';
+export { default } from './idiomas';

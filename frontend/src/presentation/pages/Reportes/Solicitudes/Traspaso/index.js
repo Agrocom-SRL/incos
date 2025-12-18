@@ -1,1 +1,1 @@
-export { default } from './Traspaso';
+export { default } from './traspaso';

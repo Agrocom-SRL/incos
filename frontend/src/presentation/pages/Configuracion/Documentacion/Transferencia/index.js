@@ -1,1 +1,1 @@
-export { default } from './Transferencia';
+export { default } from './transferencia';

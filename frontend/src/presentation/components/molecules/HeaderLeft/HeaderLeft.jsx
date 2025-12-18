@@ -1,7 +1,7 @@
 // src/presentation/components/molecules/HeaderLeft/HeaderLeft.jsx
 import { Flex } from 'antd';
-import IconButton from '@atoms/IconButton';
-import Logo from '@atoms/Logo';
+import IconButton from '@atoms/iconbutton';
+import Logo from '@atoms/logo';
 import { MenuOutlined } from '@ant-design/icons';
 import { allSpacing } from '@theme/tokens';
 

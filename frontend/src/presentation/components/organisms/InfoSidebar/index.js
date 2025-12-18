@@ -1,2 +1,2 @@
 // src/presentation/components/organisms/InfoSidebar/index.js
-export { default } from './InfoSidebar';
+export { default } from './Infosidebar';

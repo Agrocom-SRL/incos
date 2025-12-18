@@ -1,2 +1,2 @@
 // src/presentation/components/molecules/ActivityList/index.js
-export { default } from './ActivityList';
+export { default } from './Activitylist';

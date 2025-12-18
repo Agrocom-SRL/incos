@@ -1,1 +1,1 @@
-export { default } from './Modificar';
+export { default } from './modificar';

@@ -1,1 +1,1 @@
-export { default } from './Financiero';
+export { default } from './financiero';

@@ -1,1 +1,1 @@
-export { default } from './Pasantia';
+export { default } from './pasantia';

@@ -6,7 +6,7 @@
  */
 
 import { Space, Form } from 'antd';
-import Button from '@atoms/Button';
+import Button from '@atoms/button';
 
 const FormActions = ({
   mode = 'create',

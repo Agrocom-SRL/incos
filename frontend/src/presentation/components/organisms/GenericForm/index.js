@@ -1,1 +1,1 @@
-export { default } from './GenericForm';
+export { default } from './genericform';

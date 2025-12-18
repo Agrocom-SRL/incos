@@ -38,8 +38,10 @@ const ProductCard = ({
                 e.currentTarget.style.boxShadow = componentConfig.Card.boxShadow;
                 e.currentTarget.style.transform = 'translateY(0)';
             }}
-            bodyStyle={{
-                padding: `${componentConfig.Card.padding}px`,
+            styles={{
+                body: {
+                    padding: `${componentConfig.Card.padding}px`,
+                }
             }}
         >
             {image && (

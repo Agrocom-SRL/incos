@@ -1,9 +1,9 @@
 // src/router/modules/usuarios.routes.js
 import { lazy } from 'react';
 
-const UsuariosListPage = lazy(() => import('@pages/Usuarios/List'));
-const UsuariosCreatePage = lazy(() => import('@pages/Usuarios/Create'));
-const UsuariosRolesPage = lazy(() => import('@pages/Usuarios/Roles'));
+const UsuariosListPage = lazy(() => import('@pages/usuarios/list'));
+const UsuariosCreatePage = lazy(() => import('@pages/usuarios/create'));
+const UsuariosRolesPage = lazy(() => import('@pages/usuarios/roles'));
 
 export const usuariosRoutes = [
     // Módulo raíz: Usuarios

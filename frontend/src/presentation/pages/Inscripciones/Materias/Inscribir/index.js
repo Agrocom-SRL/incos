@@ -1,1 +1,1 @@
-export { default } from './Inscribir';
+export { default } from './inscribir';

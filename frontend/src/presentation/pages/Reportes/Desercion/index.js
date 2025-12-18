@@ -1,1 +1,1 @@
-export { default } from './Desercion';
+export { default } from './desercion';

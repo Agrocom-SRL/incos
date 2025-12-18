@@ -1,1 +1,1 @@
-export { default } from './Validar';
+export { default } from './validar';

@@ -1,1 +1,1 @@
-export { default } from './1Parcial';
+export { default } from './1parcial';

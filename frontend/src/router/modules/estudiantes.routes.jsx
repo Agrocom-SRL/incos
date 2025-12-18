@@ -2,17 +2,17 @@
 import { lazy } from 'react';
 
 // Lazy loading de componentes - se crearán las páginas después
-const EstudiantesListPage = lazy(() => import('@pages/Estudiantes/List'));
-const EstudiantesRegistrarPage = lazy(() => import('@estudiantes/pages/Registrar'));
-const BecasAsignarPage = lazy(() => import('@pages/Estudiantes/Becas/Asignar'));
-const BecasAprobarPage = lazy(() => import('@pages/Estudiantes/Becas/Aprobar'));
-const BecasListPage = lazy(() => import('@pages/Estudiantes/Becas/List'));
-const LicenciasSolicitarPage = lazy(() => import('@pages/Estudiantes/Licencias/Solicitar'));
-const LicenciasAprobarPage = lazy(() => import('@pages/Estudiantes/Licencias/Aprobar'));
-const LicenciasListPage = lazy(() => import('@pages/Estudiantes/Licencias/List'));
-const DocumentosVerPage = lazy(() => import('@pages/Estudiantes/Documentos/Ver'));
-const DocumentosVerificarPage = lazy(() => import('@pages/Estudiantes/Documentos/Verificar'));
-const DocumentosEstadoPage = lazy(() => import('@pages/Estudiantes/Documentos/Estado'));
+const EstudiantesListPage = lazy(() => import('@pages/estudiantes/list'));
+const EstudiantesRegistrarPage = lazy(() => import('@estudiantes/pages/registrar'));
+const BecasAsignarPage = lazy(() => import('@pages/estudiantes/becas/asignar'));
+const BecasAprobarPage = lazy(() => import('@pages/estudiantes/becas/aprobar'));
+const BecasListPage = lazy(() => import('@pages/estudiantes/becas/list'));
+const LicenciasSolicitarPage = lazy(() => import('@pages/estudiantes/licencias/solicitar'));
+const LicenciasAprobarPage = lazy(() => import('@pages/estudiantes/licencias/aprobar'));
+const LicenciasListPage = lazy(() => import('@pages/estudiantes/licencias/list'));
+const DocumentosVerPage = lazy(() => import('@pages/estudiantes/documentos/ver'));
+const DocumentosVerificarPage = lazy(() => import('@pages/estudiantes/documentos/verificar'));
+const DocumentosEstadoPage = lazy(() => import('@pages/estudiantes/documentos/estado'));
 
 export const estudiantesRoutes = [
     // Módulo raíz: Estudiantes

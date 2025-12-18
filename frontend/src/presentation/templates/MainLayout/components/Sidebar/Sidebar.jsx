@@ -1,5 +1,5 @@
 // src/presentation/components/organisms/Sidebar/Sidebar.jsx
-import NavigationMenu from '@molecules/NavigationMenu';
+import NavigationMenu from '@molecules/navigationmenu';
 
 const Sidebar = ({ collapsed, onMenuClick }) => {
     return (

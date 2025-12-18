@@ -40,7 +40,8 @@ export const useStudentFormData = () => {
 
       try {
         // Cargar catálogos en paralelo
-        const [carrerasRes, gestionesRes, paisesRes, idiomasRes, tiposDiscRes, documentacionRes] = await Promise.all([
+        // Usar Promise.allSettled para que si una falla, las demás continúen
+        const catalogResults = await Promise.allSettled([
           apiClient.get('/v1/catalogs/carreras'),
           apiClient.get('/v1/catalogs/gestiones'),
           apiClient.get('/v1/catalogs/paises'),
@@ -49,28 +50,51 @@ export const useStudentFormData = () => {
           apiClient.get('/v1/catalogs/documentacion-inscripcion?tipo=INSCRIPCION'),
         ]);
 
+        // Procesar resultados de catálogos
+        const [carrerasRes, gestionesRes, paisesRes, idiomasRes, tiposDiscRes, documentacionRes] = catalogResults.map((result, index) => {
+          if (result.status === 'fulfilled') {
+            return result.value;
+          } else {
+            const catalogNames = ['carreras', 'gestiones', 'paises', 'idiomas', 'tipos-discapacidad', 'documentacion-inscripcion'];
+            console.error(`Error al cargar catálogo ${catalogNames[index]}:`, result.reason);
+            // Retornar respuesta vacía para que no rompa el código
+            return { data: { data: [] } };
+          }
+        });
+
         setCarreras(carrerasRes.data?.data || []);
         setGestiones(gestionesRes.data?.data || []);
         setPaises(paisesRes.data?.data || []);
-        
-        // Cargar todos los datos geográficos al inicio (se filtrarán en el frontend)
-        const [departamentosRes, provinciasRes, municipiosRes] = await Promise.all([
-          apiClient.get('/v1/catalogs/departamentos'),
-          apiClient.get('/v1/catalogs/provincias'),
-          apiClient.get('/v1/catalogs/municipios'),
-        ]);
-        
-        setDepartamentos(departamentosRes.data?.data || []);
-        setProvincias(provinciasRes.data?.data || []);
-        setMunicipios(municipiosRes.data?.data || []);
         setIdiomas(idiomasRes.data?.data || []);
         setTiposDiscapacidad(tiposDiscRes.data?.data || []);
+        
         const documentacionData = documentacionRes.data?.data || [];
         console.log('[useStudentFormData] Documentos de inscripción recibidos del backend:', {
           total: documentacionData.length,
           documentos: documentacionData,
         });
         setDocumentacionInscripcion(documentacionData);
+        
+        // Cargar todos los datos geográficos al inicio (se filtrarán en el frontend)
+        const geoResults = await Promise.allSettled([
+          apiClient.get('/v1/catalogs/departamentos'),
+          apiClient.get('/v1/catalogs/provincias'),
+          apiClient.get('/v1/catalogs/municipios'),
+        ]);
+
+        const [departamentosRes, provinciasRes, municipiosRes] = geoResults.map((result, index) => {
+          if (result.status === 'fulfilled') {
+            return result.value;
+          } else {
+            const geoNames = ['departamentos', 'provincias', 'municipios'];
+            console.error(`Error al cargar datos geográficos ${geoNames[index]}:`, result.reason);
+            return { data: { data: [] } };
+          }
+        });
+        
+        setDepartamentos(departamentosRes.data?.data || []);
+        setProvincias(provinciasRes.data?.data || []);
+        setMunicipios(municipiosRes.data?.data || []);
 
         // TODO: Implementar llamadas a la API para obtener estadísticas reales
         setStats({
@@ -79,11 +103,24 @@ export const useStudentFormData = () => {
           totalStudents: 1543,
         });
       } catch (err) {
+        // Solo establecer error si TODAS las peticiones fallaron
+        // Si algunas fallaron pero otras funcionaron, solo loguear el error
         const errorMessage = err.response?.data?.error?.message || 
+                            err.response?.data?.message ||
                             err.message || 
                             'Error al cargar datos del formulario';
-        setError(errorMessage);
-        console.error('Error al cargar datos del formulario:', err);
+        
+        // Si es un error de red o de servidor, intentar mostrar un mensaje más útil
+        if (err.code === 'ERR_NETWORK' || err.code === 'ECONNABORTED') {
+          console.error('Error de conexión al cargar datos del formulario:', err);
+          setError('Error de conexión con el servidor. Por favor, verifica tu conexión a internet.');
+        } else if (err.response?.status >= 500) {
+          console.error('Error del servidor al cargar datos del formulario:', err);
+          setError('Error del servidor. Por favor, intenta recargar la página.');
+        } else {
+          console.error('Error al cargar datos del formulario:', err);
+          setError(errorMessage);
+        }
       } finally {
         setLoading(false);
       }
@@ -94,8 +131,10 @@ export const useStudentFormData = () => {
 
   const refetch = async () => {
     setLoading(true);
+    setError(null);
     try {
-      const [carrerasRes, gestionesRes, paisesRes, idiomasRes, tiposDiscRes, documentacionRes] = await Promise.all([
+      // Usar Promise.allSettled para que si una falla, las demás continúen
+      const catalogResults = await Promise.allSettled([
         apiClient.get('/v1/catalogs/carreras'),
         apiClient.get('/v1/catalogs/gestiones'),
         apiClient.get('/v1/catalogs/paises'),
@@ -104,23 +143,43 @@ export const useStudentFormData = () => {
         apiClient.get('/v1/catalogs/documentacion-inscripcion?tipo=INSCRIPCION'),
       ]);
 
+      const [carrerasRes, gestionesRes, paisesRes, idiomasRes, tiposDiscRes, documentacionRes] = catalogResults.map((result, index) => {
+        if (result.status === 'fulfilled') {
+          return result.value;
+        } else {
+          const catalogNames = ['carreras', 'gestiones', 'paises', 'idiomas', 'tipos-discapacidad', 'documentacion-inscripcion'];
+          console.error(`Error al recargar catálogo ${catalogNames[index]}:`, result.reason);
+          return { data: { data: [] } };
+        }
+      });
+
       setCarreras(carrerasRes.data?.data || []);
       setGestiones(gestionesRes.data?.data || []);
       setPaises(paisesRes.data?.data || []);
+      setIdiomas(idiomasRes.data?.data || []);
+      setTiposDiscapacidad(tiposDiscRes.data?.data || []);
+      setDocumentacionInscripcion(documentacionRes.data?.data || []);
       
       // Cargar todos los datos geográficos
-      const [departamentosRes, provinciasRes, municipiosRes] = await Promise.all([
+      const geoResults = await Promise.allSettled([
         apiClient.get('/v1/catalogs/departamentos'),
         apiClient.get('/v1/catalogs/provincias'),
         apiClient.get('/v1/catalogs/municipios'),
       ]);
+
+      const [departamentosRes, provinciasRes, municipiosRes] = geoResults.map((result, index) => {
+        if (result.status === 'fulfilled') {
+          return result.value;
+        } else {
+          const geoNames = ['departamentos', 'provincias', 'municipios'];
+          console.error(`Error al recargar datos geográficos ${geoNames[index]}:`, result.reason);
+          return { data: { data: [] } };
+        }
+      });
       
       setDepartamentos(departamentosRes.data?.data || []);
       setProvincias(provinciasRes.data?.data || []);
       setMunicipios(municipiosRes.data?.data || []);
-      setIdiomas(idiomasRes.data?.data || []);
-      setTiposDiscapacidad(tiposDiscRes.data?.data || []);
-      setDocumentacionInscripcion(documentacionRes.data?.data || []);
 
       setStats({
         todayStudents: 5,
@@ -128,7 +187,12 @@ export const useStudentFormData = () => {
         totalStudents: 1543,
       });
     } catch (err) {
-      setError(err.response?.data?.error?.message || err.message);
+      const errorMessage = err.response?.data?.error?.message || 
+                          err.response?.data?.message ||
+                          err.message || 
+                          'Error al recargar datos del formulario';
+      setError(errorMessage);
+      console.error('Error al recargar datos del formulario:', err);
     } finally {
       setLoading(false);
     }

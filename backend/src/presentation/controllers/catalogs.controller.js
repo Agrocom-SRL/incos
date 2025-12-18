@@ -218,7 +218,14 @@ export const getIdiomas = async (req, res, next) => {
       message: 'Idiomas obtenidos correctamente',
     });
   } catch (error) {
-    logger.error('Error al obtener idiomas', { error: error.message, stack: error.stack });
+    logger.error('Error al obtener idiomas', { 
+      error: error.message, 
+      stack: error.stack,
+      name: error.name,
+      code: error.code,
+      original: error.original?.message,
+      sql: error.sql,
+    });
     next(error);
   }
 };
@@ -243,7 +250,14 @@ export const getTiposDiscapacidad = async (req, res, next) => {
       message: 'Tipos de discapacidad obtenidos correctamente',
     });
   } catch (error) {
-    logger.error('Error al obtener tipos de discapacidad', { error: error.message, stack: error.stack });
+    logger.error('Error al obtener tipos de discapacidad', { 
+      error: error.message, 
+      stack: error.stack,
+      name: error.name,
+      code: error.code,
+      original: error.original?.message,
+      sql: error.sql,
+    });
     next(error);
   }
 };
@@ -297,7 +311,15 @@ export const getDocumentacionInscripcion = async (req, res, next) => {
       message: 'Documentos requeridos obtenidos correctamente',
     });
   } catch (error) {
-    logger.error('Error al obtener documentación de inscripción', { error: error.message, stack: error.stack });
+    logger.error('Error al obtener documentación de inscripción', { 
+      error: error.message, 
+      stack: error.stack,
+      name: error.name,
+      code: error.code,
+      original: error.original?.message,
+      sql: error.sql,
+      tipo,
+    });
     next(error);
   }
 };

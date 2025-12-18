@@ -1,1 +1,1 @@
-export { default } from './Habilitar';
+export { default } from './habilitar';

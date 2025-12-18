@@ -1,1 +1,1 @@
-export { default } from './Rendimiento';
+export { default } from './rendimiento';

@@ -1,9 +1,9 @@
 // src/router/modules/nivelaciones.routes.js
 import { lazy } from 'react';
 
-const NivelacionesListPage = lazy(() => import('@pages/Nivelaciones/List'));
-const NivelacionesInscribirPage = lazy(() => import('@pages/Nivelaciones/Inscribir'));
-const NivelacionesAprobarPage = lazy(() => import('@pages/Nivelaciones/Aprobar'));
+const NivelacionesListPage = lazy(() => import('@pages/nivelaciones/list'));
+const NivelacionesInscribirPage = lazy(() => import('@pages/nivelaciones/inscribir'));
+const NivelacionesAprobarPage = lazy(() => import('@pages/nivelaciones/aprobar'));
 
 export const nivelacionesRoutes = [
     // Módulo raíz: Nivelaciones

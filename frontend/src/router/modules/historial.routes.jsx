@@ -1,9 +1,9 @@
 // src/router/modules/historial.routes.js
 import { lazy } from 'react';
 
-const HistorialFolioPage = lazy(() => import('@pages/Historial/Folio'));
-const HistorialAcademicoPage = lazy(() => import('@pages/Historial/Academico'));
-const HistorialValidarPage = lazy(() => import('@pages/Historial/Validar'));
+const HistorialFolioPage = lazy(() => import('@pages/historial/folio'));
+const HistorialAcademicoPage = lazy(() => import('@pages/historial/academico'));
+const HistorialValidarPage = lazy(() => import('@pages/historial/validar'));
 
 export const historialRoutes = [
     // Módulo raíz: Historial

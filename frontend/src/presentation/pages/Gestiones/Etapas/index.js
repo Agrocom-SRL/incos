@@ -1,1 +1,1 @@
-export { default } from './Etapas';
+export { default } from './etapas';

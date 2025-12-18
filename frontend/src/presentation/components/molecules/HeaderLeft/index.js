@@ -1,1 +1,1 @@
-export { default } from './HeaderLeft';
+export { default } from './headerleft';

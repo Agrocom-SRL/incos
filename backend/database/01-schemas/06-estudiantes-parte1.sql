@@ -160,8 +160,10 @@ CREATE TABLE documentos_estudiante (
         'pasantias_asignaciones',
         'inscripciones',
         'pagos',
+        'transferencias',
+        'traspasos',
         'otro'
-    ) COMMENT 'Tipo de referencia: indica a qué tabla pertenece el referencia_id (solo se usa cuando referencia_id no es NULL). Para pagos, referencia_id puede apuntar a registros de pago relacionados con estudiantes_datos_economicos.',
+    ) COMMENT 'Tipo de referencia: indica a qué tabla pertenece el referencia_id (solo se usa cuando referencia_id no es NULL). Para pagos, referencia_id puede apuntar a registros de pago relacionados con estudiantes_datos_economicos. Para transferencias y traspasos, referencia_id apunta a las tablas transferencias y traspasos respectivamente.',
     referencia_id INT COMMENT 'ID de referencia según tipo_referencia (ej: si tipo_referencia es licencias_solicitudes, entonces referencia_id es el id de esa tabla)',
     descripcion TEXT COMMENT 'Descripción del documento',
     nombre_archivo VARCHAR(255) NOT NULL COMMENT 'Nombre del archivo',

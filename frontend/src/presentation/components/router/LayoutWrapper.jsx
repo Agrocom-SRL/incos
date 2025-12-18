@@ -6,7 +6,7 @@
 
 import { Suspense } from 'react';
 import { Outlet } from 'react-router-dom';
-import MainLayout from '@templates/MainLayout';
+import MainLayout from '@templates/mainlayout';
 import { Sidebar, Header } from '@templates/MainLayout/components';
 import LoadingFallback from './LoadingFallback';
 

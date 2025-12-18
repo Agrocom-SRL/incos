@@ -1,1 +1,1 @@
-export { default } from './Asistencia';
+export { default } from './asistencia';

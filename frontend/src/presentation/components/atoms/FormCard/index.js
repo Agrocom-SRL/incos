@@ -1,1 +1,1 @@
-export { default } from './FormCard';
+export { default } from './formcard';

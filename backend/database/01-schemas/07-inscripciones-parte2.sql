@@ -3,6 +3,23 @@
 -- Sistema de Gestión Académica - Instituto INCOS
 -- 2 Tablas: inscripciones_materias, historial_nivelaciones
 -- ============================================
+--
+-- Esta parte contiene las tablas relacionadas con:
+-- 1. inscripciones_materias: Materias específicas inscritas por un estudiante
+--    - Sistema de calificaciones flexible (máximo 4 parciales + práctico)
+--    - Control de asistencia
+--    - Estados de la materia (aprobado, reprobado, nivelación, etc.)
+-- 2. historial_nivelaciones: Historial de nivelaciones de materias reprobadas
+--    - Máximo 3 intentos por materia
+--    - Seguimiento de aprobación/reprobación
+--
+-- RELACIÓN CON OTRAS TABLAS:
+-- - inscripciones: Inscripción principal a la que pertenecen estas materias
+-- - materias: Materia inscrita
+-- - cursos: Curso/grupo específico al que se inscribe
+-- - docentes: Docente asignado al curso
+-- - gestiones: Gestión en la que se aprobó/reprobó (para materias vencidas)
+-- ============================================
 
 USE instituto_incos;
 
@@ -24,7 +41,44 @@ DROP TABLE IF EXISTS inscripciones_materias;
 
 -- ============================================
 -- TABLA: inscripciones_materias
--- Sistema de calificaciones flexible (máximo 4 parciales, no siempre completos)
+-- ============================================
+-- Registra la inscripción de un estudiante a una materia específica
+-- dentro de una inscripción principal.
+--
+-- SISTEMA DE CALIFICACIONES:
+-- - Máximo 4 parciales + 1 práctico (flexible, no todos deben existir)
+-- - Nota final = promedio de los componentes evaluados
+-- - Recuperatorio/Habilitación: máximo 3 intentos, nota mínima 60 para aprobar
+-- - Nota definitiva: considera recuperatorio si aplica
+--
+-- CONTROL DE ASISTENCIA:
+-- - Se registran asistencias, faltas y total de clases
+-- - Porcentaje de asistencia se calcula automáticamente
+--
+-- ESTADOS DE LA MATERIA:
+-- - INSCRITO: Inscrito pero aún no inicia clases
+-- - CURSANDO: Actualmente cursando la materia
+-- - APROBADO: Aprobó la materia (nota definitiva >= 60)
+-- - REPROBADO: Reprobó la materia (nota definitiva < 60)
+-- - ABANDONO: Abandonó la materia
+-- - RETIRADO: Se retiró de la materia
+-- - VENCIDA_GESTION_ANTERIOR: Aprobó en gestión anterior
+-- - NIVELACION_1RA_INSTANCIA: En nivelación primera instancia
+-- - NIVELACION_2DA_INSTANCIA: En nivelación segunda instancia
+-- - PRUEBA_EXCEPCIONAL: Prueba excepcional
+-- - HOMOLOGACION: Materia homologada
+-- - REINCOPRPORACION: Reincorporación
+-- - CHOQUE_HORARIO: Choque de horario
+-- - PRE_REQUISITO: No cumple prerrequisitos
+-- - LLEVA_PROXIMA_GESTION: Llevará en próxima gestión
+-- - NO_LLEVA_VOLUNTAD: No lleva por voluntad propia
+-- - NO_PRESENTO: No se presentó a evaluaciones
+--
+-- VALIDACIONES:
+-- - El curso_id debe corresponder a la materia_id
+-- - El docente_id debe estar asignado al curso en la gestión
+-- - Las notas deben estar entre 0 y 100
+-- - El porcentaje de asistencia debe estar entre 0 y 100
 -- ============================================
 
 CREATE TABLE inscripciones_materias (
@@ -33,6 +87,12 @@ CREATE TABLE inscripciones_materias (
     materia_id INT NOT NULL COMMENT 'Materia inscrita',
     curso_id INT NOT NULL COMMENT 'Curso/grupo específico',
     docente_id INT COMMENT 'Docente asignado',
+    
+    -- Control de intentos (crucial para sistema de nivelaciones)
+    -- IMPORTANTE: Este campo rastrea cuántas veces el estudiante ha intentado cursar esta materia.
+    -- Se incrementa automáticamente cuando se inscribe nuevamente después de reprobar.
+    -- Si tiene 2+ intentos con estado REPROBADO, se crea automáticamente una nivelación.
+    numero_intento INT DEFAULT 1 COMMENT 'Número de intento de cursar esta materia (1, 2, 3, ...). Se incrementa automáticamente cada vez que se inscribe nuevamente después de reprobar. Crucial para el sistema de nivelaciones.',
     
     -- Asistencia
     asistencias INT DEFAULT 0 COMMENT 'Número de asistencias',
@@ -156,6 +216,8 @@ CREATE TABLE inscripciones_materias (
     INDEX idx_gestion_lleva (gestion_lleva) COMMENT 'Búsqueda por gestión a llevar',
     INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
     INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
+    INDEX idx_estudiante_materia_intento (inscripcion_id, materia_id, numero_intento) COMMENT 'Búsqueda por estudiante, materia e intento (para conteo de aplazos)',
+    INDEX idx_materia_estado_intento (materia_id, estado, numero_intento, activo, deleted_at) COMMENT 'Búsqueda de aplazos por materia',
     
     CHECK (nota_1er_parcial IS NULL OR (nota_1er_parcial >= 0 AND nota_1er_parcial <= 100)),
     CHECK (nota_2do_parcial IS NULL OR (nota_2do_parcial >= 0 AND nota_2do_parcial <= 100)),
@@ -164,13 +226,38 @@ CREATE TABLE inscripciones_materias (
     CHECK (nota_practico IS NULL OR (nota_practico >= 0 AND nota_practico <= 100)),
     CHECK (nota_recuperatorio IS NULL OR (nota_recuperatorio >= 0 AND nota_recuperatorio <= 100)),
     CHECK (intento_recuperatorio >= 0 AND intento_recuperatorio <= 3),
-    CHECK (asistencia_porcentaje >= 0 AND asistencia_porcentaje <= 100)
+    CHECK (asistencia_porcentaje >= 0 AND asistencia_porcentaje <= 100),
+    CHECK (numero_intento >= 1) COMMENT 'El número de intento debe ser al menos 1'
     
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Inscripciones a materias con sistema de calificaciones flexible';
 
 -- ============================================
 -- TABLA: historial_nivelaciones
+-- ============================================
+-- Registra el historial de nivelaciones de materias reprobadas.
+-- Una nivelación es un examen especial para aprobar una materia reprobada.
+--
+-- REGLAS DE NIVELACIÓN:
+-- - Máximo 3 intentos por materia
+-- - Se programa en una gestión específica
+-- - Nota mínima para aprobar: 60
+-- - Si aprueba, se actualiza el estado de la materia original
+--
+-- FLUJO:
+-- 1. Estudiante reprueba una materia (inscripciones_materias con estado REPROBADO)
+-- 2. Se crea un registro en historial_nivelaciones con estado PROGRAMADA
+-- 3. Se programa el examen (fecha_examen)
+-- 4. Se realiza el examen (estado EN_CURSO)
+-- 5. Se registra la nota (nota_nivelacion)
+-- 6. Si nota >= 60: estado APROBADA, aprobado = TRUE
+-- 7. Si nota < 60: estado REPROBADA, aprobado = FALSE
+-- 8. Si es el 3er intento y reprueba, no puede nivelar más
+--
+-- RELACIÓN:
+-- - inscripcion_materia_id: Materia reprobada original
+-- - materia_id: Materia a nivelar (puede ser la misma o diferente si es equivalencia)
+-- - gestion_nivelacion_id: Gestión en la que se realizará la nivelación
 -- ============================================
 
 CREATE TABLE historial_nivelaciones (
@@ -221,63 +308,14 @@ CREATE TABLE historial_nivelaciones (
 COMMENT='Historial de nivelaciones (máximo 3 intentos por materia)';
 
 -- ============================================
--- TRIGGERS
--- ============================================
-
-DELIMITER $$
-
--- Trigger para actualizar estado automáticamente según nota definitiva
-DROP TRIGGER IF EXISTS trg_inscripcion_materia_actualizar_estado$$
-
-CREATE TRIGGER trg_inscripcion_materia_actualizar_estado
-BEFORE UPDATE ON inscripciones_materias
-FOR EACH ROW
-BEGIN
-    IF NEW.notas_cerradas = FALSE THEN
-        IF NEW.nota_definitiva IS NOT NULL THEN
-            IF NEW.nota_definitiva >= 60 THEN
-                SET NEW.estado = 'APROBADO';
-            ELSE
-                SET NEW.estado = 'REPROBADO';
-            END IF;
-        END IF;
-    END IF;
-END$$
-
--- Trigger para actualizar porcentaje de asistencia
-DROP TRIGGER IF EXISTS trg_actualizar_asistencia_porcentaje$$
-
-CREATE TRIGGER trg_actualizar_asistencia_porcentaje
-BEFORE UPDATE ON inscripciones_materias
-FOR EACH ROW
-BEGIN
-    IF NEW.total_clases > 0 THEN
-        SET NEW.asistencia_porcentaje = (NEW.asistencias / NEW.total_clases) * 100;
-    END IF;
-END$$
-
--- Trigger para actualizar aprobado en nivelaciones
-DROP TRIGGER IF EXISTS trg_nivelacion_actualizar_aprobado$$
-
-CREATE TRIGGER trg_nivelacion_actualizar_aprobado
-BEFORE UPDATE ON historial_nivelaciones
-FOR EACH ROW
-BEGIN
-    IF NEW.nota_nivelacion IS NOT NULL THEN
-        IF NEW.nota_nivelacion >= 60 THEN
-            SET NEW.aprobado = TRUE;
-            SET NEW.estado = 'APROBADA';
-        ELSE
-            SET NEW.aprobado = FALSE;
-            SET NEW.estado = 'REPROBADA';
-        END IF;
-    END IF;
-END$$
-
-DELIMITER ;
-
--- ============================================
 -- FASE 3: REHABILITAR FOREIGN KEY CHECKS
 -- ============================================
 
 SET FOREIGN_KEY_CHECKS = 1;
+
+-- ============================================
+-- FIN DEL SCRIPT
+-- ============================================
+-- NOTA: Los triggers, stored procedures y vistas se encuentran en:
+-- 07-inscripciones-logica.sql
+-- ============================================

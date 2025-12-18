@@ -1,6 +1,6 @@
 // src/presentation/components/molecules/NavigationMenu/NavigationMenu.jsx
 import { Menu } from 'antd';
-import { useNavigationMenu } from './useNavigationMenu';
+import { useNavigationMenu } from './usenavigationmenu';
 
 const NavigationMenu = ({
     defaultSelectedKey = 'DASH',

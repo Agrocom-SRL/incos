@@ -1,6 +1,6 @@
 // src/presentation/components/organisms/Header/Header.jsx
-import HeaderLeft from '@molecules/HeaderLeft';
-import HeaderRight from '@molecules/HeaderRight';
+import HeaderLeft from '@molecules/headerleft';
+import HeaderRight from '@molecules/headerright';
 
 /**
  * Header - Componente organismo del Header principal

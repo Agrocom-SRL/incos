@@ -1,13 +1,13 @@
 // src/router/modules/docentes.routes.js
 import { lazy } from 'react';
 
-const DocentesListPage = lazy(() => import('@pages/Docentes/List'));
-const DocentesCreatePage = lazy(() => import('@pages/Docentes/Create'));
-const DocentesAsignarPage = lazy(() => import('@pages/Docentes/Asignar'));
+const DocentesListPage = lazy(() => import('@pages/docentes/list'));
+const DocentesCreatePage = lazy(() => import('@pages/docentes/create'));
+const DocentesAsignarPage = lazy(() => import('@pages/docentes/asignar'));
 // Licencias de Docentes
-const LicenciasListPage = lazy(() => import('@pages/Docentes/Licencias/List'));
-const LicenciasSolicitarPage = lazy(() => import('@pages/Docentes/Licencias/Solicitar'));
-const LicenciasAprobarPage = lazy(() => import('@pages/Docentes/Licencias/Aprobar'));
+const LicenciasListPage = lazy(() => import('@pages/docentes/licencias/list'));
+const LicenciasSolicitarPage = lazy(() => import('@pages/docentes/licencias/solicitar'));
+const LicenciasAprobarPage = lazy(() => import('@pages/docentes/licencias/aprobar'));
 
 export const docentesRoutes = [
     // Módulo raíz: Docentes

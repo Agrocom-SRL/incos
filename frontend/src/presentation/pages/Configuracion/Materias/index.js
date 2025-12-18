@@ -1,1 +1,1 @@
-export { default } from './Materias';
+export { default } from './materias';

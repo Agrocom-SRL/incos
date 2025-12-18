@@ -25,8 +25,10 @@ const OrdersSummaryCard = ({
                 padding: `${componentConfig.Card.paddingLG}px`,
                 minHeight: '200px',
             }}
-            bodyStyle={{
-                padding: 0,
+            styles={{
+                body: {
+                    padding: 0,
+                }
             }}
         >
             <Flex justify="space-between" align="center" style={{ height: '100%' }}>

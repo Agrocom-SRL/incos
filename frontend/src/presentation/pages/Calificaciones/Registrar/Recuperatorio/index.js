@@ -1,1 +1,1 @@
-export { default } from './Recuperatorio';
+export { default } from './recuperatorio';

@@ -1,1 +1,1 @@
-export { default } from './Listar';
+export { default } from './listar';

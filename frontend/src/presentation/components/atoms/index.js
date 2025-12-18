@@ -1,8 +1,8 @@
 // src/presentation/components/atoms/index.js
-export { default as Logo } from './Logo';
-export { default as IconButton } from './IconButton';
-export { default as Avatar } from './Avatar';
-export { default as MenuItemIcon } from './MenuItemIcon';
-export { default as Button } from './Button';
-export { default as Heading } from './Heading';
-export { default as FormCard } from './FormCard';
+export { default as Logo } from './logo';
+export { default as IconButton } from './iconbutton';
+export { default as Avatar } from './avatar';
+export { default as MenuItemIcon } from './menuitemicon';
+export { default as Button } from './button';
+export { default as Heading } from './heading';
+export { default as FormCard } from './formcard';
