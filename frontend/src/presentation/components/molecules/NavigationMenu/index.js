@@ -1,2 +1,2 @@
 // src/presentation/components/molecules/NavigationMenu/index.js
-export { default } from './navigationmenu';
+export { default } from './NavigationMenu';

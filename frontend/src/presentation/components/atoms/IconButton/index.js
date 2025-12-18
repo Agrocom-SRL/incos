@@ -1,2 +1,2 @@
 // src/presentation/components/atoms/iconbutton/index.js
-export { default } from './iconbutton';
+export { default } from './IconButton';

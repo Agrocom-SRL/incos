@@ -1,2 +1,2 @@
 // src/presentation/components/atoms/Avatar/index.js
-export { default } from './avatar';
+export { default } from './Avatar';

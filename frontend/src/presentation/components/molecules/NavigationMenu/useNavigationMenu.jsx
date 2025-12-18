@@ -3,7 +3,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { generateNavigationMenu, findMenuItemByKey, isRootModule, getRootModuleKey } from '@router-utils/menuGeneratorService';
 import { getRouteFromMenuKey, getMenuKeyFromRoute } from '@router-utils/routeMapperService';
-import MenuItemIcon from '@atoms/menuitemicon';
+import MenuItemIcon from '@atoms/MenuItemIcon';
 
 /**
  * Hook personalizado para manejar la lógica del menú de navegación

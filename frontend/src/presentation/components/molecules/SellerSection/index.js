@@ -1,2 +1,2 @@
 // src/presentation/components/molecules/SellerSection/index.js
-export { default } from './sellersection';
+export { default } from './SellerSection';

@@ -1,2 +1,2 @@
 // src/presentation/components/molecules/ProductListSection/index.js
-export { default } from './productlistsection';
+export { default } from './ProductListSection';

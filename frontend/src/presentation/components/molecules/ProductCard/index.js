@@ -1,2 +1,2 @@
 // src/presentation/components/molecules/ProductCard/index.js
-export { default } from './productcard';
+export { default } from './ProductCard';

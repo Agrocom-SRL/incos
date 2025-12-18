@@ -1,1 +1,1 @@
-export { default } from './helpguidecard';
+export { default } from './HelpGuideCard';

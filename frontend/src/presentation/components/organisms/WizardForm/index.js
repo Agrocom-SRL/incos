@@ -1,2 +1,2 @@
-export { default } from './wizardform';
+export { default } from './WizardForm';
 

@@ -1,2 +1,2 @@
 // src/presentation/components/molecules/OrdersSummaryCard/index.js
-export { default } from './orderssummarycard';
+export { default } from './OrdersSummaryCard';
