@@ -88,9 +88,10 @@ export const useStudentFormData = () => {
             console.error(`[useStudentFormData] Error al cargar ${catalogName}:`, error.message);
           }
           
-          // Pequeño delay entre peticiones para evitar saturar el servidor
+          // Delay entre peticiones para evitar saturar el servidor
+          // Aumentado a 100ms para dar más tiempo al servidor entre peticiones
           if (i < catalogUrls.length - 1) {
-            await new Promise(resolve => setTimeout(resolve, 50));
+            await new Promise(resolve => setTimeout(resolve, 100)); // 100ms de delay (aumentado de 50ms)
           }
         }
 
@@ -158,6 +159,11 @@ export const useStudentFormData = () => {
       const catalogErrors = [];
 
     try {
+      // IMPORTANTE: Esperar un momento antes de empezar a cargar catálogos
+      // Esto es especialmente importante después de operaciones pesadas (subida de documentos, etc.)
+      // para dar tiempo al servidor de procesar las operaciones anteriores
+      await new Promise(resolve => setTimeout(resolve, 200)); // 200ms de delay inicial
+      
       // Cargar todos los catálogos de forma SECUENCIAL
       const catalogNames = [
         'carreras',
@@ -202,9 +208,10 @@ export const useStudentFormData = () => {
           console.error(`[useStudentFormData] Error al recargar ${catalogName}:`, error.message);
         }
         
-        // Pequeño delay entre peticiones
+        // Aumentar delay entre peticiones para evitar saturar el servidor
+        // especialmente después de operaciones pesadas
         if (i < catalogUrls.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, 50));
+          await new Promise(resolve => setTimeout(resolve, 100)); // 100ms de delay (aumentado de 50ms)
         }
       }
 
