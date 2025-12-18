@@ -73,7 +73,6 @@ export class UploadDocumentController {
       }
 
       // Obtener datos del estudiante para construir la ruta correcta
-      const studentRepository = container.resolve('studentRepository');
       const student = await studentRepository.findById(estudianteId);
       
       logger.info('UploadDocumentController - Estudiante buscado', {

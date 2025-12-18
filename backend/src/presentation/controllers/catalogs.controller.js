@@ -127,7 +127,6 @@ export const getPaises = async (req, res, next) => {
     const paises = (result.countries || []).map(pais => ({
       id: pais.id,
       nombre: pais.name,
-      codigo: pais.code,
       codigoIso: pais.isoCode,
     }));
 
