@@ -96,8 +96,36 @@ export const formatStudentDataForForm = (
 
   // Agregar datos académicos si existen
   if (datosAcademicos) {
+    // Campos académicos principales
     datosFormateados.carreraId = datosAcademicos.carreraId;
     datosFormateados.gestionIngresoId = datosAcademicos.gestionId || datosAcademicos.gestionIngresoId;
+    
+    // Campos académicos adicionales
+    if (datosAcademicos.unidadEducativaProcedencia !== undefined) {
+      datosFormateados.unidadEducativaProcedencia = datosAcademicos.unidadEducativaProcedencia;
+    }
+    if (datosAcademicos.anioEgresoSecundaria !== undefined) {
+      datosFormateados.anioEgresoSecundaria = datosAcademicos.anioEgresoSecundaria;
+    }
+    if (datosAcademicos.promedioAnual !== undefined) {
+      datosFormateados.promedioAnual = datosAcademicos.promedioAnual;
+    }
+    if (datosAcademicos.fechaEgreso !== undefined) {
+      datosFormateados.fechaEgreso = datosAcademicos.fechaEgreso 
+        ? dayjs(datosAcademicos.fechaEgreso) 
+        : undefined;
+    }
+    if (datosAcademicos.fechaRetiro !== undefined) {
+      datosFormateados.fechaRetiro = datosAcademicos.fechaRetiro 
+        ? dayjs(datosAcademicos.fechaRetiro) 
+        : undefined;
+    }
+    if (datosAcademicos.motivoRetiro !== undefined) {
+      datosFormateados.motivoRetiro = datosAcademicos.motivoRetiro;
+    }
+    if (datosAcademicos.estadoAcademico !== undefined) {
+      datosFormateados.estadoAcademico = datosAcademicos.estadoAcademico;
+    }
   }
 
   return datosFormateados;
