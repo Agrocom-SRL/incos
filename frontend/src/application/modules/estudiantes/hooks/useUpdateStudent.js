@@ -97,11 +97,24 @@ export const useUpdateStudent = () => {
         willUpdate: studentIdFinal ? 'SÍ - Actualizar en backend' : 'SÍ - Crear en backend (siempre crear, incluso en guardado temporal)',
       });
 
-      // Si HAY un estudiante existente, SIEMPRE actualizar en el backend (no importa si es guardado temporal)
+      // ============================================
+      // LÓGICA PARA AMBOS CASOS:
+      // 1. Si HAY estudiante existente (studentIdFinal) → ACTUALIZAR (PUT) - líneas 170-281
+      // 2. Si NO hay estudiante existente → CREAR (POST) - líneas 106-168
+      // ============================================
+      
+      // CASO 1: Si HAY un estudiante existente, SIEMPRE actualizar en el backend
+      // Esto funciona tanto para:
+      // - Editar estudiante existente desde URL (?estudianteId=1)
+      // - Completar registro de estudiante incompleto
+      // - Guardado temporal de estudiante existente
       if (studentIdFinal) {
-        // Continuar con la lógica de actualización más abajo
+        // Continuar con la lógica de actualización más abajo (línea 170)
       } 
-      // Si NO hay estudiante existente, SIEMPRE crear en el backend (incluso si es guardado temporal)
+      // CASO 2: Si NO hay estudiante existente, SIEMPRE crear en el backend
+      // Esto funciona para:
+      // - Registrar nuevo estudiante
+      // - Guardado temporal de nuevo estudiante (también se crea)
       // El guardado temporal solo afecta la validación de documentos, no si se crea o no
       else {
         // Si es un guardado parcial, indicar al backend que no valide documentos requeridos
@@ -167,7 +180,15 @@ export const useUpdateStudent = () => {
         };
       }
 
-      // Para pasos siguientes o cuando se completa un registro existente, actualizar el estudiante
+      // ============================================
+      // CASO 1: ACTUALIZAR ESTUDIANTE EXISTENTE (PUT)
+      // ============================================
+      // Este bloque se ejecuta cuando studentIdFinal existe
+      // Funciona para:
+      // - Editar estudiante existente desde URL (?estudianteId=1)
+      // - Completar registro de estudiante incompleto
+      // - Guardado temporal de estudiante existente
+      
       // Si es un guardado parcial, indicar al backend que no valide documentos requeridos
       if (isTemporarySave) {
         datosEstudiante.skipDocumentValidation = true;
