@@ -36,29 +36,42 @@ export const useLoadStudent = (estudianteId, geographicData = {}) => {
         return;
       }
       
-      // Esperar a que los datos geográficos estén disponibles antes de resolver la cascada
-      if (!municipios || municipios.length === 0 || 
-          !provincias || provincias.length === 0 || 
-          !departamentos || departamentos.length === 0) {
-        console.log('[useLoadStudent] Esperando datos geográficos...');
-        // Reintentar después de un breve delay
-        setTimeout(() => {
-          if (isMounted && estudianteId) {
-            cargarEstudiante();
-          }
-        }, 500);
-        return;
+      // MODIFICADO: No esperar datos geográficos si están deshabilitados para diagnóstico
+      // Si los arrays están vacíos pero fueron inicializados, continuar sin ellos
+      const datosGeograficosDisponibles = 
+        (municipios && municipios.length > 0) || 
+        (provincias && provincias.length > 0) || 
+        (departamentos && departamentos.length > 0);
+      
+      // Si los datos geográficos no están disponibles, intentar cargar el estudiante de todas formas
+      // (útil cuando los catálogos están deshabilitados para diagnóstico)
+      if (!datosGeograficosDisponibles) {
+        console.log('[useLoadStudent] Datos geográficos no disponibles, cargando estudiante sin resolver cascada geográfica...');
+        // Continuar sin esperar, pero loguear advertencia
       }
 
       setLoadingEstudiante(true);
       setError(null);
       
       try {
+        console.log(`[useLoadStudent] Iniciando carga de estudiante ID: ${estudianteId}`);
+        
         // Cargar datos del estudiante
         const estudianteResponse = await apiClient.get(`/v1/estudiantes/${estudianteId}`);
         const estudiante = estudianteResponse.data?.data || estudianteResponse.data;
         
+        console.log('[useLoadStudent] Datos del estudiante recibidos:', {
+          tieneDatos: !!estudiante,
+          estudianteId: estudiante?.id,
+          nombres: estudiante?.nombres,
+        });
+        
         if (!isMounted) return;
+        
+        if (!estudiante) {
+          console.error('[useLoadStudent] No se recibieron datos del estudiante');
+          throw new Error('No se encontraron datos del estudiante');
+        }
 
         // Cargar documentos del estudiante
         let documentos = [];
@@ -81,13 +94,19 @@ export const useLoadStudent = (estudianteId, geographicData = {}) => {
           console.warn('[useLoadStudent] Error al cargar datos académicos:', err);
         }
 
-        // Resolver cascada geográfica completa
-        let estudianteResuelto = resolveAllGeographicCascades(
-          estudiante,
-          municipios,
-          provincias,
-          departamentos
-        );
+        // Resolver cascada geográfica completa (solo si hay datos geográficos disponibles)
+        let estudianteResuelto = estudiante;
+        if (datosGeograficosDisponibles) {
+          estudianteResuelto = resolveAllGeographicCascades(
+            estudiante,
+            municipios || [],
+            provincias || [],
+            departamentos || []
+          );
+        } else {
+          console.warn('[useLoadStudent] No se puede resolver cascada geográfica - datos geográficos no disponibles');
+          console.warn('[useLoadStudent] El estudiante se cargará con IDs directos (sin nombres resueltos)');
+        }
 
         // Formatear datos para el formulario
         const datosFormateados = formatStudentDataForForm(
@@ -97,14 +116,31 @@ export const useLoadStudent = (estudianteId, geographicData = {}) => {
           estudianteId
         );
 
+        console.log('[useLoadStudent] Datos formateados para el formulario:', {
+          tieneDatos: !!datosFormateados,
+          keys: datosFormateados ? Object.keys(datosFormateados) : [],
+        });
+
         if (isMounted) {
           setEstudianteData(datosFormateados);
+          console.log('[useLoadStudent] ✓ Estudiante cargado correctamente');
         }
       } catch (err) {
         if (isMounted) {
-          console.error('[useLoadStudent] Error al cargar estudiante:', err);
+          console.error('[useLoadStudent] ✗ Error al cargar estudiante:', {
+            message: err.message,
+            response: err.response?.data,
+            status: err.response?.status,
+            statusText: err.response?.statusText,
+            url: err.config?.url,
+            estudianteId,
+          });
           setError(err);
-          message.error('Error al cargar los datos del estudiante. Por favor, intenta nuevamente.');
+          const errorMessage = err.response?.data?.error?.message || 
+                              err.response?.data?.message ||
+                              err.message ||
+                              'Error al cargar los datos del estudiante';
+          message.error(errorMessage);
         }
       } finally {
         if (isMounted) {
