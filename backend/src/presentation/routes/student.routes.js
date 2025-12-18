@@ -62,9 +62,7 @@ const getStudentByIdController = new GetStudentByIdController({
   getStudentByIdUseCase: null, // TODO: Implementar use case
 });
 
-const updateStudentController = new UpdateStudentController({
-  updateStudentUseCase: null, // TODO: Implementar use case
-});
+const updateStudentController = new UpdateStudentController();
 
 const changeStudentStatusController = new ChangeStudentStatusController({
   changeStudentStatusUseCase: null, // TODO: Implementar use case

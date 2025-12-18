@@ -168,6 +168,15 @@ export const useUpdateStudent = () => {
       // IMPORTANTE: Si hay studentIdFinal, siempre ACTUALIZAR (PUT) en lugar de crear (POST)
       // Esto asegura que cuando hay estudianteId en la URL, se actualicen los datos existentes
       console.log(`[useUpdateStudent] Actualizando estudiante existente ID: ${studentIdFinal}`);
+      console.log(`[useUpdateStudent] Datos a enviar:`, {
+        campos: Object.keys(datosEstudiante),
+        muestra: {
+          nombres: datosEstudiante.nombres,
+          apellidoPaterno: datosEstudiante.apellidoPaterno,
+          ci: datosEstudiante.ci,
+          celular: datosEstudiante.celular,
+        },
+      });
       
       // El backend extrae los campos documento_{id}_entregado y los procesa usando la tabla documentacion
       const response = await apiClient.put(`/v1/estudiantes/${studentIdFinal}`, datosEstudiante);
