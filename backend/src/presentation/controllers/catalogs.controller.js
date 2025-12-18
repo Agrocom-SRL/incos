@@ -97,41 +97,112 @@ export const getCarreras = async (req, res, next) => {
  * Obtener lista de gestiones activas
  */
 export const getGestiones = async (req, res, next) => {
+  const startTime = Date.now();
+  const requestId = `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  
   try {
-    logger.debug('[Catalogs] Obteniendo gestiones...');
+    logger.debug(`[Catalogs] [${requestId}] 🔍🔍🔍 INICIO: Obteniendo gestiones...`);
+    logger.debug(`[Catalogs] [${requestId}] 📍 Paso 1: Función getGestiones iniciada`, {
+      timestamp: new Date().toISOString(),
+      method: req.method,
+      url: req.url,
+      query: req.query,
+      params: req.params,
+      headers: {
+        'content-type': req.headers['content-type'],
+        'user-agent': req.headers['user-agent'],
+      },
+    });
+    
+    logger.debug(`[Catalogs] [${requestId}] 📍 Paso 2: Verificando managementRepository...`, {
+      hasRepository: !!managementRepository,
+      repositoryType: typeof managementRepository,
+      hasFindAll: typeof managementRepository?.findAll === 'function',
+    });
     
     // Intentar obtener gestiones con manejo de errores detallado
     let result;
     try {
-      result = await managementRepository.findAll({}, null, null);
-      logger.debug('[Catalogs] Resultado de findAll:', { 
-        hasResult: !!result, 
-        hasManagements: !!(result?.managements),
-        managementsCount: result?.managements?.length || 0,
-        resultKeys: result ? Object.keys(result) : [],
-        resultType: typeof result,
-        sampleManagement: result?.managements?.[0] ? {
-          id: result.managements[0].id,
-          code: result.managements[0].code,
-          year: result.managements[0].year,
-          hasCode: !!result.managements[0].code,
-          hasYear: result.managements[0].year !== undefined && result.managements[0].year !== null,
-        } : null,
+      logger.debug(`[Catalogs] [${requestId}] 📍 Paso 3: Llamando a managementRepository.findAll...`, {
+        params: {},
+        timestamp: new Date().toISOString(),
       });
+      
+      const repoStartTime = Date.now();
+      result = await managementRepository.findAll({}, null, null);
+      const repoEndTime = Date.now();
+      
+      logger.debug(`[Catalogs] [${requestId}] 📍 Paso 4: managementRepository.findAll completado`, {
+        duration: `${repoEndTime - repoStartTime}ms`,
+        timestamp: new Date().toISOString(),
+      });
+      
+      logger.debug(`[Catalogs] [${requestId}] 📍 Paso 5: Analizando resultado de findAll...`, { 
+        hasResult: !!result,
+        resultType: typeof result,
+        isArray: Array.isArray(result),
+        isNull: result === null,
+        isUndefined: result === undefined,
+        resultConstructor: result?.constructor?.name,
+        resultKeys: result ? Object.keys(result) : [],
+        resultStringified: JSON.stringify(result).substring(0, 500),
+      });
+      
+      logger.debug(`[Catalogs] [${requestId}] 📍 Paso 6: Verificando estructura de resultado...`, {
+        hasManagements: !!(result?.managements),
+        managementsType: typeof result?.managements,
+        managementsIsArray: Array.isArray(result?.managements),
+        managementsCount: result?.managements?.length || 0,
+        hasManagementsProperty: 'managements' in (result || {}),
+      });
+      
+      if (result?.managements) {
+        logger.debug(`[Catalogs] [${requestId}] 📍 Paso 7: Analizando array de managements...`, {
+          length: result.managements.length,
+          firstItem: result.managements[0] ? {
+            id: result.managements[0].id,
+            code: result.managements[0].code,
+            year: result.managements[0].year,
+            allKeys: Object.keys(result.managements[0] || {}),
+            fullItem: JSON.stringify(result.managements[0]).substring(0, 300),
+          } : null,
+          sampleManagement: result.managements[0] ? {
+            id: result.managements[0].id,
+            code: result.managements[0].code,
+            year: result.managements[0].year,
+            hasCode: !!result.managements[0].code,
+            hasYear: result.managements[0].year !== undefined && result.managements[0].year !== null,
+            codeType: typeof result.managements[0].code,
+            yearType: typeof result.managements[0].year,
+          } : null,
+        });
+      }
     } catch (repoError) {
-      logger.error('[Catalogs] Error en managementRepository.findAll:', {
+      logger.error(`[Catalogs] [${requestId}] ✗✗✗ ERROR en managementRepository.findAll:`, {
         error: repoError.message,
+        errorName: repoError.name,
+        errorCode: repoError.code,
         stack: repoError.stack,
-        name: repoError.name,
-        code: repoError.code,
         original: repoError.original?.message,
+        originalStack: repoError.original?.stack,
         sql: repoError.sql,
+        sqlState: repoError.original?.sqlState,
+        sqlCode: repoError.original?.code,
+        sqlMessage: repoError.original?.message,
+        fullError: JSON.stringify(repoError, Object.getOwnPropertyNames(repoError)).substring(0, 1000),
       });
       throw repoError;
     }
     
+    logger.debug(`[Catalogs] [${requestId}] 📍 Paso 8: Verificando si result es null/undefined...`, {
+      isNull: result === null,
+      isUndefined: result === undefined,
+      hasResult: !!result,
+    });
+    
     if (!result) {
-      logger.warn('[Catalogs] Resultado de findAll es null o undefined');
+      logger.warn(`[Catalogs] [${requestId}] ⚠️ Resultado de findAll es null o undefined`);
+      logger.debug(`[Catalogs] [${requestId}] 📍 Paso 9: Retornando respuesta vacía`);
       return res.status(200).json({
         success: true,
         data: [],
@@ -139,57 +210,119 @@ export const getGestiones = async (req, res, next) => {
       });
     }
     
+    logger.debug(`[Catalogs] [${requestId}] 📍 Paso 10: Iniciando mapeo de gestiones...`, {
+      hasManagements: !!(result.managements),
+      managementsLength: result.managements?.length || 0,
+    });
+    
     // Mapear gestiones con validación
     let gestiones = [];
     try {
-      gestiones = (result.managements || []).map((gestion, index) => {
+      const mapStartTime = Date.now();
+      const rawManagements = result.managements || [];
+      
+      logger.debug(`[Catalogs] [${requestId}] 📍 Paso 11: Procesando ${rawManagements.length} gestiones...`);
+      
+      gestiones = rawManagements.map((gestion, index) => {
+        logger.debug(`[Catalogs] [${requestId}] 📍 Paso 11.${index + 1}: Procesando gestión ${index}...`, {
+          hasGestion: !!gestion,
+          gestionType: typeof gestion,
+          gestionKeys: gestion ? Object.keys(gestion) : [],
+        });
+        
         // Validar que la gestión tenga los campos necesarios
         if (!gestion) {
-          logger.warn(`[Catalogs] Gestión nula encontrada en el índice ${index}`);
+          logger.warn(`[Catalogs] [${requestId}] ⚠️ Gestión nula encontrada en el índice ${index}`);
           return null;
         }
+        
+        logger.debug(`[Catalogs] [${requestId}] 📍 Paso 11.${index + 1}.1: Validando campos de gestión ${index}...`, {
+          hasId: gestion.id !== undefined && gestion.id !== null,
+          idValue: gestion.id,
+          idType: typeof gestion.id,
+          hasCode: gestion.code !== undefined,
+          codeValue: gestion.code,
+          codeType: typeof gestion.code,
+          hasYear: gestion.year !== undefined,
+          yearValue: gestion.year,
+          yearType: typeof gestion.year,
+        });
         
         // Validar campos requeridos
         if (gestion.id === undefined || gestion.id === null) {
-          logger.warn(`[Catalogs] Gestión sin ID en el índice ${index}:`, gestion);
+          logger.warn(`[Catalogs] [${requestId}] ⚠️ Gestión sin ID en el índice ${index}:`, {
+            gestion: JSON.stringify(gestion).substring(0, 200),
+            allKeys: Object.keys(gestion),
+          });
           return null;
         }
         
-        return {
+        const mappedGestion = {
           id: gestion.id,
           codigo: gestion.code || null,
           anio: gestion.year || null,
         };
+        
+        logger.debug(`[Catalogs] [${requestId}] 📍 Paso 11.${index + 1}.2: Gestión ${index} mapeada:`, mappedGestion);
+        
+        return mappedGestion;
       }).filter(gestion => gestion !== null); // Filtrar nulos
       
-      logger.debug('[Catalogs] Gestiones mapeadas:', {
+      const mapEndTime = Date.now();
+      
+      logger.debug(`[Catalogs] [${requestId}] 📍 Paso 12: Mapeo completado`, {
+        duration: `${mapEndTime - mapStartTime}ms`,
         total: gestiones.length,
+        filtered: rawManagements.length - gestiones.length,
         sample: gestiones[0] || null,
+        firstThree: gestiones.slice(0, 3),
       });
     } catch (mapError) {
-      logger.error('[Catalogs] Error al mapear gestiones:', {
+      logger.error(`[Catalogs] [${requestId}] ✗✗✗ ERROR al mapear gestiones:`, {
         error: mapError.message,
+        errorName: mapError.name,
         stack: mapError.stack,
         resultManagements: result?.managements?.length || 0,
+        fullError: JSON.stringify(mapError, Object.getOwnPropertyNames(mapError)).substring(0, 1000),
       });
       throw mapError;
     }
 
-    res.status(200).json({
+    logger.debug(`[Catalogs] [${requestId}] 📍 Paso 13: Preparando respuesta JSON...`, {
+      gestionesCount: gestiones.length,
+      responseSize: JSON.stringify(gestiones).length,
+    });
+
+    const response = {
       success: true,
       data: gestiones,
       message: 'Gestiones obtenidas correctamente',
+    };
+    
+    const endTime = Date.now();
+    logger.debug(`[Catalogs] [${requestId}] 📍 Paso 14: Enviando respuesta`, {
+      totalDuration: `${endTime - startTime}ms`,
+      statusCode: 200,
+      dataLength: gestiones.length,
     });
+
+    res.status(200).json(response);
+    
+    logger.debug(`[Catalogs] [${requestId}] ✅✅✅ FIN: getGestiones completado exitosamente`);
   } catch (error) {
-    logger.error('Error al obtener gestiones', { 
-      error: error.message, 
+    const endTime = Date.now();
+    logger.error(`[Catalogs] [${requestId}] ✗✗✗ ERROR FINAL al obtener gestiones`, { 
+      totalDuration: `${endTime - startTime}ms`,
+      error: error.message,
+      errorName: error.name,
+      errorCode: error.code,
       stack: error.stack,
-      name: error.name,
-      code: error.code,
       original: error.original?.message,
+      originalStack: error.original?.stack,
       sql: error.sql,
       sqlState: error.original?.sqlState,
       sqlCode: error.original?.code,
+      fullError: JSON.stringify(error, Object.getOwnPropertyNames(error)).substring(0, 2000),
     });
     next(error);
   }
