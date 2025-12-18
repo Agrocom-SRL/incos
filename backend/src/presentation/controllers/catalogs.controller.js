@@ -7,6 +7,7 @@
 
 import { logger } from '../../shared/logger.js';
 import container from '../../infrastructure/container/index.js';
+import { sequelize } from '../../infrastructure/database/config/sequelize.js';
 
 /**
  * GET /api/v1/catalogs/carreras
@@ -287,41 +288,68 @@ export const getMunicipios = async (req, res, next) => {
 /**
  * GET /api/v1/catalogs/idiomas
  * Obtener lista de idiomas activos
+ * 
+ * VERSIÓN DE PRUEBA: Usa consulta SQL directa para aislar problemas del contenedor
  */
 export const getIdiomas = async (req, res, next) => {
   try {
-    logger.debug('[Catalogs] Obteniendo idiomas...');
+    logger.debug('[Catalogs] Obteniendo idiomas (modo prueba - SQL directo)...');
     
-    let languageRepository;
+    // Intentar primero con el repositorio (método normal)
     try {
-      languageRepository = container.resolve('languageRepository');
+      const languageRepository = container.resolve('languageRepository');
       logger.debug('[Catalogs] Repositorio de idiomas resuelto correctamente');
-    } catch (resolveError) {
-      logger.error('[Catalogs] Error al resolver languageRepository:', {
-        error: resolveError.message,
-        stack: resolveError.stack,
+      
+      const result = await languageRepository.findAll({}, null, null);
+      logger.debug('[Catalogs] Resultado de findAll:', { 
+        hasResult: !!result, 
+        hasLanguages: !!(result?.languages),
+        languagesCount: result?.languages?.length || 0 
+      });
+      
+      const idiomas = (result.languages || []).map(idioma => ({
+        id: idioma.id,
+        nombre: idioma.name,
+      }));
+
+      return res.status(200).json({
+        success: true,
+        data: idiomas,
+        message: 'Idiomas obtenidos correctamente',
+      });
+    } catch (repoError) {
+      logger.warn('[Catalogs] Error con repositorio, intentando SQL directo:', {
+        error: repoError.message,
         hasRepository: container.has('languageRepository'),
       });
-      throw new Error(`No se pudo resolver el repositorio de idiomas: ${resolveError.message}`);
-    }
-    
-    const result = await languageRepository.findAll({}, null, null);
-    logger.debug('[Catalogs] Resultado de findAll:', { 
-      hasResult: !!result, 
-      hasLanguages: !!(result?.languages),
-      languagesCount: result?.languages?.length || 0 
-    });
-    
-    const idiomas = (result.languages || []).map(idioma => ({
-      id: idioma.id,
-      nombre: idioma.name,
-    }));
+      
+      // FALLBACK: Consulta SQL directa
+      logger.debug('[Catalogs] Ejecutando consulta SQL directa...');
+      const [results] = await sequelize.query(
+        'SELECT id, nombre FROM idiomas WHERE activo = 1 ORDER BY nombre ASC',
+        { type: sequelize.QueryTypes.SELECT }
+      );
+      
+      logger.debug('[Catalogs] Resultado SQL directo:', { 
+        count: results?.length || 0,
+        sample: results?.[0] 
+      });
+      
+      const idiomas = (results || []).map(row => ({
+        id: row.id,
+        nombre: row.nombre,
+      }));
 
-    res.status(200).json({
-      success: true,
-      data: idiomas,
-      message: 'Idiomas obtenidos correctamente',
-    });
+      return res.status(200).json({
+        success: true,
+        data: idiomas,
+        message: 'Idiomas obtenidos correctamente (modo fallback)',
+        _debug: {
+          method: 'sql_direct',
+          originalError: repoError.message,
+        },
+      });
+    }
   } catch (error) {
     logger.error('Error al obtener idiomas', { 
       error: error.message, 
