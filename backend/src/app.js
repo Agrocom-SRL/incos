@@ -3,6 +3,8 @@ import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import 'express-async-errors';
 
 import httpLogger from './presentation/middleware/logger.middleware.js';
@@ -10,6 +12,10 @@ import errorHandler from './presentation/middleware/errorHandler.middleware.js';
 import notFoundHandler from './presentation/middleware/notFound.middleware.js';
 import routes from './presentation/routes/index.js';
 import { logger } from './shared/logger.js';
+
+// Obtener __dirname en ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 
@@ -116,8 +122,11 @@ app.get('/health', (req, res) => {
 app.use('/api/v1', routes);
 
 // Servir uploads (en desarrollo y producción)
+// Usar ruta absoluta basada en el directorio del backend
 // En producción, Nginx también hace proxy de /uploads/ pero esto sirve como fallback
-app.use('/uploads', express.static('uploads'));
+const uploadsPath = path.join(process.cwd(), 'uploads');
+logger.info('Serviendo archivos estáticos desde:', uploadsPath);
+app.use('/uploads', express.static(uploadsPath));
 
 // API Docs (TODO: agregar swagger)
 app.get('/api-docs', (req, res) => {
