@@ -52,8 +52,19 @@ export const getCarreras = async (req, res, next) => {
     logger.debug('[Catalogs] Resultado de findAll:', { 
       hasResult: !!result, 
       hasCareers: !!(result?.careers),
-      careersCount: result?.careers?.length || 0 
+      careersCount: result?.careers?.length || 0,
+      resultKeys: result ? Object.keys(result) : [],
+      resultType: typeof result,
     });
+    
+    if (!result) {
+      logger.warn('[Catalogs] Resultado de findAll es null o undefined');
+      return res.status(200).json({
+        success: true,
+        data: [],
+        message: 'Carreras obtenidas correctamente (vacío)',
+      });
+    }
     
     const carreras = (result.careers || []).map(career => ({
       id: career.id,
@@ -88,18 +99,81 @@ export const getCarreras = async (req, res, next) => {
 export const getGestiones = async (req, res, next) => {
   try {
     logger.debug('[Catalogs] Obteniendo gestiones...');
-    const result = await managementRepository.findAll({}, null, null);
-    logger.debug('[Catalogs] Resultado de findAll:', { 
-      hasResult: !!result, 
-      hasManagements: !!(result?.managements),
-      managementsCount: result?.managements?.length || 0 
-    });
     
-    const gestiones = (result.managements || []).map(gestion => ({
-      id: gestion.id,
-      codigo: gestion.code,
-      anio: gestion.year,
-    }));
+    // Intentar obtener gestiones con manejo de errores detallado
+    let result;
+    try {
+      result = await managementRepository.findAll({}, null, null);
+      logger.debug('[Catalogs] Resultado de findAll:', { 
+        hasResult: !!result, 
+        hasManagements: !!(result?.managements),
+        managementsCount: result?.managements?.length || 0,
+        resultKeys: result ? Object.keys(result) : [],
+        resultType: typeof result,
+        sampleManagement: result?.managements?.[0] ? {
+          id: result.managements[0].id,
+          code: result.managements[0].code,
+          year: result.managements[0].year,
+          hasCode: !!result.managements[0].code,
+          hasYear: result.managements[0].year !== undefined && result.managements[0].year !== null,
+        } : null,
+      });
+    } catch (repoError) {
+      logger.error('[Catalogs] Error en managementRepository.findAll:', {
+        error: repoError.message,
+        stack: repoError.stack,
+        name: repoError.name,
+        code: repoError.code,
+        original: repoError.original?.message,
+        sql: repoError.sql,
+      });
+      throw repoError;
+    }
+    
+    if (!result) {
+      logger.warn('[Catalogs] Resultado de findAll es null o undefined');
+      return res.status(200).json({
+        success: true,
+        data: [],
+        message: 'Gestiones obtenidas correctamente (vacío)',
+      });
+    }
+    
+    // Mapear gestiones con validación
+    let gestiones = [];
+    try {
+      gestiones = (result.managements || []).map((gestion, index) => {
+        // Validar que la gestión tenga los campos necesarios
+        if (!gestion) {
+          logger.warn(`[Catalogs] Gestión nula encontrada en el índice ${index}`);
+          return null;
+        }
+        
+        // Validar campos requeridos
+        if (gestion.id === undefined || gestion.id === null) {
+          logger.warn(`[Catalogs] Gestión sin ID en el índice ${index}:`, gestion);
+          return null;
+        }
+        
+        return {
+          id: gestion.id,
+          codigo: gestion.code || null,
+          anio: gestion.year || null,
+        };
+      }).filter(gestion => gestion !== null); // Filtrar nulos
+      
+      logger.debug('[Catalogs] Gestiones mapeadas:', {
+        total: gestiones.length,
+        sample: gestiones[0] || null,
+      });
+    } catch (mapError) {
+      logger.error('[Catalogs] Error al mapear gestiones:', {
+        error: mapError.message,
+        stack: mapError.stack,
+        resultManagements: result?.managements?.length || 0,
+      });
+      throw mapError;
+    }
 
     res.status(200).json({
       success: true,
