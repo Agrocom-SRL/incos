@@ -14,8 +14,27 @@ import container from '../../infrastructure/container/index.js';
  */
 export const getCarreras = async (req, res, next) => {
   try {
-    const careerRepository = container.resolve('careerRepository');
+    logger.debug('[Catalogs] Obteniendo carreras...');
+    
+    let careerRepository;
+    try {
+      careerRepository = container.resolve('careerRepository');
+      logger.debug('[Catalogs] Repositorio de carreras resuelto correctamente');
+    } catch (resolveError) {
+      logger.error('[Catalogs] Error al resolver careerRepository:', {
+        error: resolveError.message,
+        stack: resolveError.stack,
+        hasRepository: container.has('careerRepository'),
+      });
+      throw new Error(`No se pudo resolver el repositorio de carreras: ${resolveError.message}`);
+    }
+    
     const result = await careerRepository.findAll({}, null, null);
+    logger.debug('[Catalogs] Resultado de findAll:', { 
+      hasResult: !!result, 
+      hasCareers: !!(result?.careers),
+      careersCount: result?.careers?.length || 0 
+    });
     
     const carreras = (result.careers || []).map(career => ({
       id: career.id,
@@ -29,7 +48,16 @@ export const getCarreras = async (req, res, next) => {
       message: 'Carreras obtenidas correctamente',
     });
   } catch (error) {
-    logger.error('Error al obtener carreras', { error: error.message, stack: error.stack });
+    logger.error('Error al obtener carreras', { 
+      error: error.message, 
+      stack: error.stack,
+      name: error.name,
+      code: error.code,
+      original: error.original?.message,
+      sql: error.sql,
+      sqlState: error.original?.sqlState,
+      sqlCode: error.original?.code,
+    });
     next(error);
   }
 };
@@ -152,7 +180,21 @@ export const getDepartamentos = async (req, res, next) => {
  */
 export const getProvincias = async (req, res, next) => {
   try {
-    const provinceRepository = container.resolve('provinceRepository');
+    logger.debug('[Catalogs] Obteniendo provincias...', { departamentoId: req.query.departamentoId });
+    
+    let provinceRepository;
+    try {
+      provinceRepository = container.resolve('provinceRepository');
+      logger.debug('[Catalogs] Repositorio de provincias resuelto correctamente');
+    } catch (resolveError) {
+      logger.error('[Catalogs] Error al resolver provinceRepository:', {
+        error: resolveError.message,
+        stack: resolveError.stack,
+        hasRepository: container.has('provinceRepository'),
+      });
+      throw new Error(`No se pudo resolver el repositorio de provincias: ${resolveError.message}`);
+    }
+    
     const { departamentoId } = req.query;
     
     let result;
@@ -163,6 +205,12 @@ export const getProvincias = async (req, res, next) => {
       // Obtener todas las provincias
       result = await provinceRepository.findAll({}, null, null);
     }
+    
+    logger.debug('[Catalogs] Resultado de provincias:', { 
+      hasResult: !!result, 
+      hasProvinces: !!(result?.provinces),
+      provincesCount: result?.provinces?.length || result?.length || 0 
+    });
     
     const provincias = (result.provinces || result || []).map(prov => ({
       id: prov.id,
@@ -177,7 +225,17 @@ export const getProvincias = async (req, res, next) => {
       message: 'Provincias obtenidas correctamente',
     });
   } catch (error) {
-    logger.error('Error al obtener provincias', { error: error.message, stack: error.stack });
+    logger.error('Error al obtener provincias', { 
+      error: error.message, 
+      stack: error.stack,
+      name: error.name,
+      code: error.code,
+      original: error.original?.message,
+      sql: error.sql,
+      sqlState: error.original?.sqlState,
+      sqlCode: error.original?.code,
+      departamentoId: req.query.departamentoId,
+    });
     next(error);
   }
 };
@@ -232,8 +290,27 @@ export const getMunicipios = async (req, res, next) => {
  */
 export const getIdiomas = async (req, res, next) => {
   try {
-    const languageRepository = container.resolve('languageRepository');
+    logger.debug('[Catalogs] Obteniendo idiomas...');
+    
+    let languageRepository;
+    try {
+      languageRepository = container.resolve('languageRepository');
+      logger.debug('[Catalogs] Repositorio de idiomas resuelto correctamente');
+    } catch (resolveError) {
+      logger.error('[Catalogs] Error al resolver languageRepository:', {
+        error: resolveError.message,
+        stack: resolveError.stack,
+        hasRepository: container.has('languageRepository'),
+      });
+      throw new Error(`No se pudo resolver el repositorio de idiomas: ${resolveError.message}`);
+    }
+    
     const result = await languageRepository.findAll({}, null, null);
+    logger.debug('[Catalogs] Resultado de findAll:', { 
+      hasResult: !!result, 
+      hasLanguages: !!(result?.languages),
+      languagesCount: result?.languages?.length || 0 
+    });
     
     const idiomas = (result.languages || []).map(idioma => ({
       id: idioma.id,
@@ -253,6 +330,8 @@ export const getIdiomas = async (req, res, next) => {
       code: error.code,
       original: error.original?.message,
       sql: error.sql,
+      sqlState: error.original?.sqlState,
+      sqlCode: error.original?.code,
     });
     next(error);
   }
@@ -264,8 +343,27 @@ export const getIdiomas = async (req, res, next) => {
  */
 export const getTiposDiscapacidad = async (req, res, next) => {
   try {
-    const disabilityTypeRepository = container.resolve('disabilityTypeRepository');
+    logger.debug('[Catalogs] Obteniendo tipos de discapacidad...');
+    
+    let disabilityTypeRepository;
+    try {
+      disabilityTypeRepository = container.resolve('disabilityTypeRepository');
+      logger.debug('[Catalogs] Repositorio de tipos de discapacidad resuelto correctamente');
+    } catch (resolveError) {
+      logger.error('[Catalogs] Error al resolver disabilityTypeRepository:', {
+        error: resolveError.message,
+        stack: resolveError.stack,
+        hasRepository: container.has('disabilityTypeRepository'),
+      });
+      throw new Error(`No se pudo resolver el repositorio de tipos de discapacidad: ${resolveError.message}`);
+    }
+    
     const result = await disabilityTypeRepository.findAll({}, null, null);
+    logger.debug('[Catalogs] Resultado de findAll:', { 
+      hasResult: !!result, 
+      hasDisabilityTypes: !!(result?.disabilityTypes),
+      disabilityTypesCount: result?.disabilityTypes?.length || 0 
+    });
     
     const tipos = (result.disabilityTypes || []).map(tipo => ({
       id: tipo.id,
@@ -285,6 +383,8 @@ export const getTiposDiscapacidad = async (req, res, next) => {
       code: error.code,
       original: error.original?.message,
       sql: error.sql,
+      sqlState: error.original?.sqlState,
+      sqlCode: error.original?.code,
     });
     next(error);
   }
@@ -298,11 +398,28 @@ export const getTiposDiscapacidad = async (req, res, next) => {
 export const getDocumentacionInscripcion = async (req, res, next) => {
   try {
     const { tipo = 'INSCRIPCION' } = req.query;
-    const documentacionRepository = container.resolve('documentacionRepository');
+    logger.debug('[Catalogs] Obteniendo documentación de inscripción...', { tipo });
+    
+    let documentacionRepository;
+    try {
+      documentacionRepository = container.resolve('documentacionRepository');
+      logger.debug('[Catalogs] Repositorio de documentación resuelto correctamente');
+    } catch (resolveError) {
+      logger.error('[Catalogs] Error al resolver documentacionRepository:', {
+        error: resolveError.message,
+        stack: resolveError.stack,
+        hasRepository: container.has('documentacionRepository'),
+      });
+      throw new Error(`No se pudo resolver el repositorio de documentación: ${resolveError.message}`);
+    }
     
     // Usar repositorio para obtener documentos por tipo
     const documentos = await documentacionRepository.findByTipoDocumento(tipo, {
       includeInactive: false,
+    });
+    logger.debug('[Catalogs] Documentos encontrados:', { 
+      tipo,
+      total: documentos?.length || 0 
     });
     
     logger.info('[Catalogs] Documentos de inscripción encontrados', {
