@@ -56,25 +56,81 @@ export const useStudentFormData = () => {
         // ============================================
         
         const startTime = performance.now();
-        console.log('[useStudentFormData] 📍 Paso 4: Iniciando Promise.allSettled...', { timestamp: new Date().toISOString() });
+        console.log('[useStudentFormData] 📍 Paso 4: Iniciando carga SECUENCIAL (no paralela) para evitar problemas de concurrencia...', { timestamp: new Date().toISOString() });
         
-        // Cargar datos geográficos
-        const catalogResults = await Promise.allSettled([
-          apiClient.get('/v1/catalogs/paises'),
-          apiClient.get('/v1/catalogs/departamentos'),
-          apiClient.get('/v1/catalogs/provincias'),
-          apiClient.get('/v1/catalogs/municipios'),
-        ]);
+        // Cargar datos geográficos de forma SECUENCIAL para evitar problemas de concurrencia
+        const catalogNames = ['paises', 'departamentos', 'provincias', 'municipios'];
+        const catalogUrls = [
+          '/v1/catalogs/paises',
+          '/v1/catalogs/departamentos',
+          '/v1/catalogs/provincias',
+          '/v1/catalogs/municipios',
+        ];
+        
+        const catalogResults = [];
+        
+        for (let i = 0; i < catalogUrls.length; i++) {
+          const catalogName = catalogNames[i];
+          const catalogUrl = catalogUrls[i];
+          
+          console.log(`[useStudentFormData] 📍 Paso 4.${i + 1}: Cargando ${catalogName}...`, {
+            url: catalogUrl,
+            timestamp: new Date().toISOString(),
+          });
+          
+          const requestStartTime = performance.now();
+          
+          try {
+            const result = await apiClient.get(catalogUrl);
+            const requestEndTime = performance.now();
+            
+            console.log(`[useStudentFormData] ✓ ${catalogName} cargado correctamente`, {
+              duration: `${(requestEndTime - requestStartTime).toFixed(2)}ms`,
+              hasData: !!result?.data,
+              hasDataData: !!result?.data?.data,
+              dataLength: result?.data?.data?.length || 0,
+            });
+            
+            catalogResults.push({ status: 'fulfilled', value: result });
+          } catch (error) {
+            const requestEndTime = performance.now();
+            failedRequests++;
+            
+            console.error(`[useStudentFormData] ✗ Error al cargar ${catalogName}`, {
+              duration: `${(requestEndTime - requestStartTime).toFixed(2)}ms`,
+              message: error.message,
+              status: error.response?.status,
+              responseData: error.response?.data,
+            });
+            
+            const errorDetails = {
+              catalog: catalogName,
+              message: error.message,
+              status: error.response?.status,
+              statusText: error.response?.statusText,
+              url: error.config?.url,
+              data: error.response?.data,
+              fullError: error,
+            };
+            catalogErrors.push(errorDetails);
+            
+            catalogResults.push({ status: 'rejected', reason: error });
+          }
+          
+          // Pequeño delay entre peticiones para evitar saturar el servidor
+          if (i < catalogUrls.length - 1) {
+            await new Promise(resolve => setTimeout(resolve, 50)); // 50ms de delay
+          }
+        }
 
         const endTime = performance.now();
-        console.log('[useStudentFormData] 📍 Paso 5: Promise.allSettled completado', { 
+        console.log('[useStudentFormData] 📍 Paso 5: Carga secuencial completada', { 
           duration: `${(endTime - startTime).toFixed(2)}ms`,
           timestamp: new Date().toISOString(),
           resultsCount: catalogResults.length,
         });
 
         // Procesar resultados
-        const catalogNames = ['paises', 'departamentos', 'provincias', 'municipios'];
         console.log('[useStudentFormData] 📍 Paso 6: Procesando resultados...', { 
           resultsLength: catalogResults.length,
           catalogNames,
@@ -88,41 +144,10 @@ export const useStudentFormData = () => {
           });
           
           if (result.status === 'fulfilled') {
-            console.log(`[useStudentFormData] ✓ Catálogo "${catalogNames[index]}" cargado correctamente`);
-            console.log(`[useStudentFormData] 📍 Paso 6.${index + 1}.1: Resultado exitoso`, {
-              hasData: !!result.value?.data,
-              hasDataData: !!result.value?.data?.data,
-              dataLength: result.value?.data?.data?.length || 0,
-              fullResponse: result.value,
-            });
+            console.log(`[useStudentFormData] ✓ Catálogo "${catalogNames[index]}" procesado correctamente`);
             return result.value;
           } else {
-            failedRequests++;
-            const error = result.reason;
-            console.error(`[useStudentFormData] ✗ Error al cargar catálogo "${catalogNames[index]}"`);
-            console.error(`[useStudentFormData] 📍 Paso 6.${index + 1}.2: Error detallado:`, {
-              message: error.message,
-              name: error.name,
-              stack: error.stack,
-              response: error.response,
-              responseStatus: error.response?.status,
-              responseStatusText: error.response?.statusText,
-              responseData: error.response?.data,
-              config: error.config,
-              request: error.request,
-            });
-            
-            const errorDetails = {
-              catalog: catalogNames[index],
-              message: error.message,
-              status: error.response?.status,
-              statusText: error.response?.statusText,
-              url: error.config?.url,
-              data: error.response?.data,
-              fullError: error,
-            };
-            catalogErrors.push(errorDetails);
-            console.error(`[useStudentFormData] ✗ Error al cargar catálogo "${catalogNames[index]}":`, errorDetails);
+            console.error(`[useStudentFormData] ✗ Error procesando catálogo "${catalogNames[index]}"`);
             // Retornar respuesta vacía para que no rompa el código
             return { data: { data: [] } };
           }
@@ -197,46 +222,56 @@ export const useStudentFormData = () => {
       const catalogErrors = [];
 
     try {
-      console.log('[useStudentFormData] 🔍🔍🔍 Refetch: Recargando datos geográficos...');
-      console.log('[useStudentFormData] 📍 Refetch Paso 1: Iniciando recarga...');
+      console.log('[useStudentFormData] 🔍🔍🔍 Refetch: Recargando datos geográficos SECUENCIALMENTE...');
+      console.log('[useStudentFormData] 📍 Refetch Paso 1: Iniciando recarga secuencial...');
       
-      // Cargar datos geográficos
-      const startTime = performance.now();
-      const catalogResults = await Promise.allSettled([
-        apiClient.get('/v1/catalogs/paises'),
-        apiClient.get('/v1/catalogs/departamentos'),
-        apiClient.get('/v1/catalogs/provincias'),
-        apiClient.get('/v1/catalogs/municipios'),
-      ]);
-      const endTime = performance.now();
-      console.log('[useStudentFormData] 📍 Refetch Paso 2: Promise.allSettled completado', {
-        duration: `${(endTime - startTime).toFixed(2)}ms`,
-      });
-
+      // Cargar datos geográficos de forma SECUENCIAL
       const catalogNames = ['paises', 'departamentos', 'provincias', 'municipios'];
-      const [paisesRes, departamentosRes, provinciasRes, municipiosRes] = catalogResults.map((result, index) => {
-        console.log(`[useStudentFormData] 📍 Refetch Paso 3.${index + 1}: Procesando resultado (${catalogNames[index]})...`, {
-          status: result.status,
-        });
+      const catalogUrls = [
+        '/v1/catalogs/paises',
+        '/v1/catalogs/departamentos',
+        '/v1/catalogs/provincias',
+        '/v1/catalogs/municipios',
+      ];
+      
+      const startTime = performance.now();
+      const catalogResults = [];
+      
+      for (let i = 0; i < catalogUrls.length; i++) {
+        const catalogName = catalogNames[i];
+        const catalogUrl = catalogUrls[i];
         
-        if (result.status === 'fulfilled') {
-          console.log(`[useStudentFormData] ✓ Catálogo "${catalogNames[index]}" recargado correctamente`);
-          return result.value;
-        } else {
+        try {
+          const result = await apiClient.get(catalogUrl);
+          catalogResults.push({ status: 'fulfilled', value: result });
+          console.log(`[useStudentFormData] ✓ ${catalogName} recargado correctamente`);
+        } catch (error) {
           failedRequests++;
-          const error = result.reason;
-          console.error(`[useStudentFormData] ✗ Error al recargar catálogo "${catalogNames[index]}":`, {
-            message: error.message,
-            status: error.response?.status,
-            responseData: error.response?.data,
-            fullError: error,
-          });
           catalogErrors.push({
-            catalog: catalogNames[index],
+            catalog: catalogName,
             message: error.message,
             status: error.response?.status,
             url: error.config?.url,
           });
+          catalogResults.push({ status: 'rejected', reason: error });
+          console.error(`[useStudentFormData] ✗ Error al recargar ${catalogName}:`, error.message);
+        }
+        
+        // Pequeño delay entre peticiones
+        if (i < catalogUrls.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 50));
+        }
+      }
+      
+      const endTime = performance.now();
+      console.log('[useStudentFormData] 📍 Refetch Paso 2: Recarga secuencial completada', {
+        duration: `${(endTime - startTime).toFixed(2)}ms`,
+      });
+
+      const [paisesRes, departamentosRes, provinciasRes, municipiosRes] = catalogResults.map((result, index) => {
+        if (result.status === 'fulfilled') {
+          return result.value;
+        } else {
           return { data: { data: [] } };
         }
       });
