@@ -9,6 +9,7 @@ import httpLogger from './presentation/middleware/logger.middleware.js';
 import errorHandler from './presentation/middleware/errorHandler.middleware.js';
 import notFoundHandler from './presentation/middleware/notFound.middleware.js';
 import routes from './presentation/routes/index.js';
+import { logger } from './shared/logger.js';
 
 const app = express();
 
@@ -17,15 +18,69 @@ const app = express();
 // ============================================
 
 // Seguridad
-app.use(helmet());
-
-// CORS
 app.use(
-  cors({
-    origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
-    credentials: true,
+  helmet({
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+    contentSecurityPolicy: false, // Deshabilitar CSP estricto si causa problemas
   })
 );
+
+// CORS - Configuración mejorada para producción
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Permitir requests sin origen (como Postman, curl, o navegador directo)
+    if (!origin) {
+      logger.debug('CORS: Request sin origen, permitido');
+      return callback(null, true);
+    }
+    
+    // Lista de orígenes permitidos
+    const allowedOrigins = [
+      process.env.CORS_ORIGIN || 'https://incos.wiiz.com.bo',
+      'https://incos.wiiz.com.bo',
+      'http://localhost:5173',
+      'http://localhost:3000',
+    ];
+    
+    // Si el origen está en la lista, permitirlo
+    if (allowedOrigins.includes(origin)) {
+      logger.debug(`CORS: Origen permitido: ${origin}`);
+      callback(null, true);
+    } else {
+      // En desarrollo, permitir cualquier origen
+      if (process.env.NODE_ENV === 'development') {
+        logger.debug(`CORS: Origen permitido en desarrollo: ${origin}`);
+        callback(null, true);
+      } else {
+        logger.warn(`CORS: Origen bloqueado: ${origin}`);
+        callback(new Error('No permitido por CORS'));
+      }
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  exposedHeaders: ['Content-Range', 'X-Content-Range'],
+};
+
+app.use(cors(corsOptions));
+
+// Manejar preflight OPTIONS requests explícitamente
+app.options('*', cors(corsOptions));
+
+// Logging de CORS para debugging
+if (process.env.NODE_ENV !== 'production') {
+  app.use((req, res, next) => {
+    logger.debug('Request headers:', {
+      origin: req.headers.origin,
+      'user-agent': req.headers['user-agent'],
+      method: req.method,
+      url: req.url,
+      'access-control-request-method': req.headers['access-control-request-method'],
+    });
+    next();
+  });
+}
 
 // Body parsing
 app.use(express.json({ limit: '10mb' }));

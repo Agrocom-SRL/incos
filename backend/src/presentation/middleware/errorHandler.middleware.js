@@ -16,12 +16,22 @@ function errorHandler(err, req, res, next) {
     url: req.originalUrl,
     method: req.method,
     ip: req.ip,
+    origin: req.headers.origin,
+    'user-agent': req.headers['user-agent'],
+    'content-type': req.headers['content-type'],
+    authorization: req.headers.authorization ? 'Present' : 'Missing',
     userId: req.user?.id,
     body: req.body,
     isOperational: err.isOperational,
     statusCode: err.statusCode,
     code: err.code,
     details: err.details,
+    // Información adicional de Sequelize si existe
+    ...(err.original && {
+      sqlError: err.original.message,
+      sqlCode: err.original.code,
+      sqlState: err.original.sqlState,
+    }),
   });
 
   // Error operacional conocido (AppError con isOperational = true)
