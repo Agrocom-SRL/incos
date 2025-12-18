@@ -55,7 +55,14 @@ export const getGestiones = async (req, res, next) => {
       message: 'Gestiones obtenidas correctamente',
     });
   } catch (error) {
-    logger.error('Error al obtener gestiones', { error: error.message, stack: error.stack });
+    logger.error('Error al obtener gestiones', { 
+      error: error.message, 
+      stack: error.stack,
+      name: error.name,
+      code: error.code,
+      original: error.original?.message,
+      sql: error.sql,
+    });
     next(error);
   }
 };
@@ -82,7 +89,14 @@ export const getPaises = async (req, res, next) => {
       message: 'Países obtenidos correctamente',
     });
   } catch (error) {
-    logger.error('Error al obtener países', { error: error.message, stack: error.stack });
+    logger.error('Error al obtener países', { 
+      error: error.message, 
+      stack: error.stack,
+      name: error.name,
+      code: error.code,
+      original: error.original?.message,
+      sql: error.sql,
+    });
     next(error);
   }
 };
@@ -119,7 +133,14 @@ export const getDepartamentos = async (req, res, next) => {
       message: 'Departamentos obtenidos correctamente',
     });
   } catch (error) {
-    logger.error('Error al obtener departamentos', { error: error.message, stack: error.stack });
+    logger.error('Error al obtener departamentos', { 
+      error: error.message, 
+      stack: error.stack,
+      name: error.name,
+      code: error.code,
+      original: error.original?.message,
+      sql: error.sql,
+    });
     next(error);
   }
 };
@@ -193,7 +214,14 @@ export const getMunicipios = async (req, res, next) => {
       message: 'Municipios obtenidos correctamente',
     });
   } catch (error) {
-    logger.error('Error al obtener municipios', { error: error.message, stack: error.stack });
+    logger.error('Error al obtener municipios', { 
+      error: error.message, 
+      stack: error.stack,
+      name: error.name,
+      code: error.code,
+      original: error.original?.message,
+      sql: error.sql,
+    });
     next(error);
   }
 };
