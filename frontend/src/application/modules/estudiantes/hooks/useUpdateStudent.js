@@ -94,23 +94,15 @@ export const useUpdateStudent = () => {
         studentIdFinal: studentIdFinal,
         isTemporarySave: isTemporarySave,
         decision: studentIdFinal ? 'ACTUALIZAR (PUT)' : 'CREAR (POST)',
-        willUpdate: studentIdFinal ? 'SÍ - Actualizar en backend' : isTemporarySave ? 'NO - Guardado local (nuevo estudiante)' : 'SÍ - Crear en backend',
+        willUpdate: studentIdFinal ? 'SÍ - Actualizar en backend' : 'SÍ - Crear en backend (siempre crear, incluso en guardado temporal)',
       });
 
       // Si HAY un estudiante existente, SIEMPRE actualizar en el backend (no importa si es guardado temporal)
       if (studentIdFinal) {
         // Continuar con la lógica de actualización más abajo
       } 
-      // Si NO hay estudiante existente y es guardado temporal, solo guardar localmente (no crear aún)
-      else if (isTemporarySave) {
-        console.log(`[useUpdateStudent] Guardado temporal sin estudiante existente - retornando sin crear en backend`);
-        return {
-          success: true,
-          message: 'Progreso guardado localmente',
-          studentId: null,
-        };
-      }
-      // Si NO hay estudiante existente y NO es guardado temporal, crear en el backend
+      // Si NO hay estudiante existente, SIEMPRE crear en el backend (incluso si es guardado temporal)
+      // El guardado temporal solo afecta la validación de documentos, no si se crea o no
       else {
         // Si es un guardado parcial, indicar al backend que no valide documentos requeridos
         if (isTemporarySave) {
