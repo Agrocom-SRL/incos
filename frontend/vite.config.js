@@ -52,7 +52,7 @@ export default defineConfig({
       '@theme': path.resolve(__dirname, './src/infrastructure/config/theme'),
       
       // Layout Components
-      '@layout-components': path.resolve(__dirname, './src/presentation/templates/MainLayout/components'),
+      '@layout-components': path.resolve(__dirname, './src/presentation/templates/mainlayout/components'),
       '@assets': path.resolve(__dirname, './src/presentation/assets'),
       '@styles': path.resolve(__dirname, './src/presentation/styles'),
     },

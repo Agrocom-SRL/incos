@@ -92,7 +92,7 @@
         "./src/infrastructure/config/theme/*"
       ],
       "@layout-components/*": [
-        "./src/presentation/templates/MainLayout/components/*"
+        "./src/presentation/templates/mainlayout/components/*"
       ],
       "@assets/*": [
         "./src/presentation/assets/*"
