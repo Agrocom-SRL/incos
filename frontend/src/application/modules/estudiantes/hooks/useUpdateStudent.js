@@ -34,6 +34,9 @@ export const useUpdateStudent = () => {
       const documentosEntregados = {}; // Para subida de archivos (usa docId)
       const archivosASubir = {}; // Para subida de archivos (usa docId)
 
+      // Eliminar campos que no se guardan en BD (requisitos físicos)
+      delete datosEstudiante.folderConNepaco; // No se guarda, es solo un requisito físico
+
       // Extraer archivos para subirlos después de crear el estudiante
       Object.keys(studentData).forEach((key) => {
         if (key.startsWith('documento') && key.endsWith('_archivo')) {
