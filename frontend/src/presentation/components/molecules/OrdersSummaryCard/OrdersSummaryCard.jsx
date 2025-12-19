@@ -37,7 +37,7 @@ const OrdersSummaryCard = ({
                         level={3}
                         style={{
                             color: allColors.colorTextOnDark,
-                            fontSize: `${typography.fontSizeHeading3}px`,
+                            fontSize: `${typography.fontSizeHeading4}px`,
                             fontWeight: typography.fontWeightStrong,
                             margin: 0,
                             lineHeight: typography.lineHeightHeading3,
@@ -51,7 +51,7 @@ const OrdersSummaryCard = ({
                         level={3}
                         style={{
                             color: allColors.colorTextOnDark,
-                            fontSize: `${typography.fontSizeHeading3}px`,
+                            fontSize: `${typography.fontSizeHeading4}px`,
                             fontWeight: typography.fontWeightStrong,
                             margin: 0,
                             lineHeight: typography.lineHeightHeading3,

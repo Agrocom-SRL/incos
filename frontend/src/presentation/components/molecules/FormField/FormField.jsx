@@ -5,8 +5,8 @@
  * Single Responsibility: Renderizar un campo de formulario basado en configuración
  */
 
-import { Form, Input, Select, DatePicker, InputNumber, Switch, Checkbox, Upload, Button, Tooltip, Tag, Space } from 'antd';
-import { UploadOutlined, InfoCircleOutlined, FileTextOutlined, EditOutlined } from '@ant-design/icons';
+import { Form, Input, Select, DatePicker, InputNumber, Switch, Checkbox, Upload, Button, Tooltip, Tag, Space, Typography } from 'antd';
+import { UploadOutlined, InfoCircleOutlined, FileTextOutlined, EditOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import { useEffect, useRef, useState, useMemo } from 'react';
 import dayjs from 'dayjs';
 
@@ -177,6 +177,35 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange, rea
         );
 
       case 'select':
+        // En modo readOnly, mostrar solo el valor seleccionado como texto
+        if (readOnly) {
+          const currentValue = form ? form.getFieldValue(field.name) : null;
+          let selectOptions = typeof field.options === 'string'
+            ? resolveOptions(field.options)
+            : field.options || [];
+          
+          // Encontrar la opción seleccionada
+          const selectedOption = selectOptions.find(opt => {
+            const optValue = typeof opt === 'string' ? opt : opt.value;
+            return optValue === currentValue;
+          });
+          
+          const displayText = selectedOption 
+            ? (typeof selectedOption === 'string' ? selectedOption : selectedOption.label)
+            : (currentValue || 'No seleccionado');
+          
+          return (
+            <Input
+              readOnly
+              value={displayText}
+              style={{ 
+                backgroundColor: '#f5f5f5',
+                cursor: 'default'
+              }}
+            />
+          );
+        }
+        
         // Calcular opciones directamente (sin useMemo) para que se recalcule en cada render
         // cuando cambian las dependencias
         let selectOptions = typeof field.options === 'string'
@@ -242,7 +271,7 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange, rea
         // NO filtrar opciones - las dependencias solo se usan para shouldRender
 
         return (
-          <Select {...commonProps} {...disabledProps} allowClear={field.allowClear}>
+          <Select {...commonProps} allowClear={field.allowClear}>
             {selectOptions.map((option) => {
               const value = typeof option === 'string' ? option : option.value;
               const label = typeof option === 'string' ? option : option.label;
@@ -283,6 +312,50 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange, rea
         return <Switch {...commonProps} {...disabledProps} />;
 
       case 'checkbox':
+        // En modo readOnly, mostrar el estado como texto con icono en lugar del checkbox
+        if (readOnly) {
+          const currentValue = form ? form.getFieldValue(field.name) : null;
+          const isChecked = currentValue === true || currentValue === 1;
+          
+          // Si hay información de documento, mostrar solo el tooltip (sin badge) en el checkbox
+          if (field.aceptaFotocopia !== undefined || field.descripcion) {
+            const tooltipContent = field.descripcion 
+              ? `${field.descripcion}${field.aceptaFotocopia ? ' (Se acepta fotocopia)' : ' (Solo original, no se acepta fotocopia)'}`
+              : (field.aceptaFotocopia ? 'Se acepta fotocopia' : 'Solo original, no se acepta fotocopia');
+            
+            return (
+              <Space size="small" style={{ color: isChecked ? '#52c41a' : '#8c8c8c' }}>
+                {isChecked ? (
+                  <CheckCircleOutlined style={{ color: '#52c41a' }} />
+                ) : (
+                  <CloseCircleOutlined style={{ color: '#d9d9d9' }} />
+                )}
+                <Typography.Text style={{ color: 'inherit' }}>
+                  {field.label}
+                </Typography.Text>
+                {tooltipContent && (
+                  <Tooltip title={tooltipContent}>
+                    <InfoCircleOutlined style={{ color: '#8c8c8c', cursor: 'help' }} />
+                  </Tooltip>
+                )}
+              </Space>
+            );
+          }
+          
+          return (
+            <Space size="small" style={{ color: isChecked ? '#52c41a' : '#8c8c8c' }}>
+              {isChecked ? (
+                <CheckCircleOutlined style={{ color: '#52c41a' }} />
+              ) : (
+                <CloseCircleOutlined style={{ color: '#d9d9d9' }} />
+              )}
+              <Typography.Text style={{ color: 'inherit' }}>
+                {field.label || 'Sin etiqueta'}
+              </Typography.Text>
+            </Space>
+          );
+        }
+        
         // Si hay información de documento, mostrar solo el tooltip (sin badge) en el checkbox
         if (field.aceptaFotocopia !== undefined || field.descripcion) {
           const tooltipContent = field.descripcion 
@@ -290,7 +363,7 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange, rea
             : (field.aceptaFotocopia ? 'Se acepta fotocopia' : 'Solo original, no se acepta fotocopia');
           
           return (
-            <Checkbox {...commonProps} {...disabledProps}>
+            <Checkbox {...commonProps}>
               <Space size="small">
                 <span>{field.label}</span>
                 {tooltipContent && (
@@ -302,7 +375,7 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange, rea
             </Checkbox>
           );
         }
-        return <Checkbox {...commonProps} {...disabledProps}>{field.label}</Checkbox>;
+        return <Checkbox {...commonProps}>{field.label}</Checkbox>;
 
       case 'upload':
         // Si hay un documento existente y no se está mostrando el input, mostrar enlace
