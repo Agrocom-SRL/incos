@@ -311,7 +311,7 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange, rea
         // NO filtrar opciones - las dependencias solo se usan para shouldRender
 
         return (
-          <Select {...commonProps} allowClear={field.allowClear}>
+          <Select {...commonProps} {...disabledProps} allowClear={field.allowClear}>
             {selectOptions.map((option) => {
               const value = typeof option === 'string' ? option : option.value;
               const label = typeof option === 'string' ? option : option.label;
