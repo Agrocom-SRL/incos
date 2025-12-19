@@ -29,6 +29,7 @@ const GenericForm = forwardRef(({
   successMessage = 'Operación realizada correctamente',
   onFieldChange,
   wizardMode = false, // Si es true, no muestra botones de acción
+  readOnly = false, // Si es true, todos los campos están deshabilitados
 }, ref) => {
   const { message } = App.useApp();
   const [form] = Form.useForm();
@@ -181,6 +182,7 @@ const GenericForm = forwardRef(({
               form={form}
               resolveOptions={resolveOptions}
               onFieldChange={onFieldChange}
+              readOnly={readOnly}
             />
           );
         })}

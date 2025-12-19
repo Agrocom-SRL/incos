@@ -23,6 +23,7 @@ const WizardForm = ({
   onSuccess,
   onError,
   successMessage = 'Operación realizada correctamente',
+  viewMode = false, // Si es true, solo muestra botones de navegación (Anterior/Siguiente)
 }) => {
   const { message } = App.useApp();
   const [currentStep, setCurrentStep] = useState(0);
@@ -285,6 +286,7 @@ const WizardForm = ({
           resolveOptions={resolveOptions}
           onFieldChange={onFieldChange}
           wizardMode={true}
+          readOnly={viewMode}
         />
       )}
 
@@ -295,13 +297,16 @@ const WizardForm = ({
             Anterior
           </Button>
         )}
-        <Button 
-          onClick={handleSaveStep} 
-          size="large"
-          loading={loading}
-        >
-          Guardar y Continuar Después
-        </Button>
+        {/* En modo visualización, solo mostrar botones de navegación */}
+        {!viewMode && (
+          <Button 
+            onClick={handleSaveStep} 
+            size="large"
+            loading={loading}
+          >
+            Guardar y Continuar Después
+          </Button>
+        )}
         {!isLastStep ? (
           <Button 
             type="primary" 
@@ -311,14 +316,16 @@ const WizardForm = ({
             Siguiente
           </Button>
         ) : (
-          <Button 
-            type="primary" 
-            onClick={handleFinish} 
-            size="large"
-            loading={loading}
-          >
-            Finalizar Registro
-          </Button>
+          !viewMode && (
+            <Button 
+              type="primary" 
+              onClick={handleFinish} 
+              size="large"
+              loading={loading}
+            >
+              Finalizar Registro
+            </Button>
+          )
         )}
       </Space>
     </FormCard>

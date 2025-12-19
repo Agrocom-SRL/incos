@@ -28,6 +28,7 @@ const Registrar = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const estudianteId = searchParams.get('estudianteId');
+  const viewMode = searchParams.get('view') === 'true'; // Modo visualización (solo lectura)
 
   // Consumir solo el contexto del Provider (sin manejar estados)
   const {
@@ -121,9 +122,9 @@ const Registrar = () => {
     <Flex className="page-container">
       <MainContent>
         <WizardForm
-          title={estudianteId ? "Completar Registro de Estudiante" : "Registrar Nuevo Estudiante"}
+          title={viewMode ? "Ver Información del Estudiante" : (estudianteId ? "Completar Registro de Estudiante" : "Registrar Nuevo Estudiante")}
           steps={wizardSteps}
-          onSubmit={wizardSubmit}
+          onSubmit={viewMode ? undefined : wizardSubmit}
           loading={loading || loadingEstudiante}
           initialValues={{
             nacionalidad: 'Boliviana',
@@ -136,6 +137,7 @@ const Registrar = () => {
           onFieldChange={handleFieldChange}
           onSuccess={handleSuccess}
           successMessage={estudianteId ? "Registro completado correctamente" : "Estudiante registrado correctamente"}
+          viewMode={viewMode}
         />
       </MainContent>
 

@@ -16,7 +16,7 @@ import { Form } from 'antd';
 import { useEffect, useState, useRef, useMemo } from 'react';
 import FormField from '../FormField';
 
-const FormSection = ({ title, fields, form, resolveOptions, onFieldChange }) => {
+const FormSection = ({ title, fields, form, resolveOptions, onFieldChange, readOnly = false }) => {
   // Solo observar los campos que tienen shouldRender o dependencies para evitar re-renders innecesarios
   const fieldsToWatch = useMemo(() => {
     const watchFields = [];
@@ -158,6 +158,7 @@ const FormSection = ({ title, fields, form, resolveOptions, onFieldChange }) => 
                 resolveOptions={resolveOptions}
                 formValues={field.dependencies ? formValues : undefined}
                 onFieldChange={onFieldChange}
+                readOnly={readOnly}
               />
             </Col>
           );

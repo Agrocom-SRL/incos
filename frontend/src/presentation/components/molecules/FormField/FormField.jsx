@@ -13,7 +13,7 @@ import dayjs from 'dayjs';
 const { Option } = Select;
 const { TextArea } = Input;
 
-const FormField = ({ field, form, resolveOptions, formValues, onFieldChange }) => {
+const FormField = ({ field, form, resolveOptions, formValues, onFieldChange, readOnly = false }) => {
   // Ref para rastrear los valores previos de las dependencias y evitar loops infinitos
   const prevDependencyValuesRef = useRef(null);
   
@@ -139,8 +139,8 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange }) =
   const renderField = () => {
     const commonProps = {
       placeholder: field.placeholder,
-      disabled: field.disabled,
-      onChange: handleChange,
+      disabled: readOnly || field.disabled,
+      onChange: readOnly ? undefined : handleChange,
     };
 
     switch (field.type) {
@@ -306,14 +306,16 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange }) =
                 >
                   {documento.nombreArchivo || 'Ver documento'}
                 </a>
-                <Button 
-                  type="link" 
-                  size="small"
-                  icon={<EditOutlined />}
-                  onClick={() => setMostrarInputUpload(true)}
-                >
-                  Modificar
-                </Button>
+                {!readOnly && (
+                  <Button 
+                    type="link" 
+                    size="small"
+                    icon={<EditOutlined />}
+                    onClick={() => setMostrarInputUpload(true)}
+                  >
+                    Modificar
+                  </Button>
+                )}
               </Space>
             </Space>
           );
@@ -330,6 +332,7 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange }) =
         
         return (
           <Upload
+            disabled={readOnly}
             beforeUpload={(file) => {
               // No subir automáticamente, solo agregar a la lista
               // La subida se manejará en el onSubmit del formulario
@@ -351,7 +354,7 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange }) =
             accept={field.accept}
             listType={field.listType || 'text'}
           >
-            <Button icon={<UploadOutlined />}>
+            <Button icon={<UploadOutlined />} disabled={readOnly}>
               {field.uploadText || 'Seleccionar archivo'}
             </Button>
           </Upload>
