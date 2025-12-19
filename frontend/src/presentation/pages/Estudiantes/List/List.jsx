@@ -1,7 +1,7 @@
 // src/presentation/pages/Estudiantes/List/List.jsx
 import React, { useState, useEffect, useCallback } from 'react';
 import { Table, Typography, Input, Space, Tag, App, Card, Button } from 'antd';
-import { SearchOutlined, UserOutlined, PhoneOutlined, MailOutlined, EditOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import { SearchOutlined, UserOutlined, PhoneOutlined, MailOutlined, EditOutlined, CheckCircleOutlined, EyeOutlined } from '@ant-design/icons';
 import { useLocation, useNavigate } from 'react-router-dom';
 import apiClient from '@infrastructure/api/client.js';
 import dayjs from 'dayjs';
@@ -301,6 +301,7 @@ const EstudiantesList = () => {
             render: (_, record) => {
                 const estado = registrosIncompletos[record.id];
                 const tieneRegistroIncompleto = estado?.incompleto;
+                const tieneRegistroCompleto = estado && !estado.incompleto;
 
                 return (
                     <Space>
@@ -312,6 +313,29 @@ const EstudiantesList = () => {
                                 size="small"
                             >
                                 Completar Registro
+                            </Button>
+                        )}
+                        {tieneRegistroCompleto && (
+                            <Button
+                                type="default"
+                                icon={<EyeOutlined />}
+                                onClick={() => navigate(`/estudiantes/registrar?estudianteId=${record.id}&view=true`)}
+                                size="small"
+                                style={{
+                                    backgroundColor: '#52c41a',
+                                    borderColor: '#52c41a',
+                                    color: '#fff'
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.backgroundColor = '#73d13d';
+                                    e.currentTarget.style.borderColor = '#73d13d';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.backgroundColor = '#52c41a';
+                                    e.currentTarget.style.borderColor = '#52c41a';
+                                }}
+                            >
+                                Ver Registro
                             </Button>
                         )}
                     </Space>
