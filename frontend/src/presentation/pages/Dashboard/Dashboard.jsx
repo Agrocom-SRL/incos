@@ -14,36 +14,36 @@ import plant01 from '@assets/plant01.png';
 import plant03 from '@assets/plant03.png';
 
 const Dashboard = () => {
-    // Datos de ejemplo para productos
-    const products = [
-        { image: plant01, label: 'Arecaceae' },
-        { image: plant02, label: 'Indoor Potted' },
-        { image: plant03, label: 'Succulent' },
+    // Carreras del instituto
+    const carreras = [
+        { image: plant01, label: 'Administración de Empresas' },
+        { image: plant02, label: 'Contaduría' },
+        { image: plant03, label: 'Sistemas Informáticos' },
     ];
 
-    // Datos de ejemplo para vendedores
-    const topSellers = [
-        { name: 'Seller 1', description: '1,200 plants sold, 10 seller' },
-        { name: 'Seller 2', description: '' },
-        { name: 'Seller 3', description: '' },
-        { name: 'Seller 4', description: '' },
-        { name: 'Seller 5', description: '' },
+    // Docentes destacados
+    const docentesDestacados = [
+        { name: 'Docente 1', description: '15 años de experiencia, 200 estudiantes' },
+        { name: 'Docente 2', description: '' },
+        { name: 'Docente 3', description: '' },
+        { name: 'Docente 4', description: '' },
+        { name: 'Docente 5', description: '' },
     ];
 
-    const featuredSellers = [
-        { name: 'Featured 1', description: '800 plants sold, 5 seller' },
-        { name: 'Featured 2', description: '' },
-        { name: 'Featured 3', description: '' },
+    const docentesPrincipales = [
+        { name: 'Docente A', description: '10 años de experiencia, 150 estudiantes' },
+        { name: 'Docente B', description: '' },
+        { name: 'Docente C', description: '' },
     ];
 
-    // Datos de ejemplo para actividades
-    const activities = [
-        { name: 'Emma Turner', action: 'Ordered a new plant', timeAgo: '1 day ago' },
-        { name: 'John Smith', action: 'Added a product', timeAgo: '2 days ago' },
-        { name: 'Sarah Johnson', action: 'Completed an order', timeAgo: '3 days ago' },
-        { name: 'Mike Davis', action: 'Updated profile', timeAgo: '4 days ago' },
-        { name: 'Lisa Wilson', action: 'Created a listing', timeAgo: '5 days ago' },
-        { name: 'Tom Brown', action: 'Made a purchase', timeAgo: '6 days ago' },
+    // Actividades recientes del instituto
+    const actividades = [
+        { name: 'María González', action: 'Completó su registro de estudiante', timeAgo: 'Hace 1 día' },
+        { name: 'Carlos Pérez', action: 'Se inscribió en Administración de Empresas', timeAgo: 'Hace 2 días' },
+        { name: 'Ana Martínez', action: 'Subió documentos académicos', timeAgo: 'Hace 3 días' },
+        { name: 'Luis Rodríguez', action: 'Actualizó su información personal', timeAgo: 'Hace 4 días' },
+        { name: 'Laura Sánchez', action: 'Completó su registro de estudiante', timeAgo: 'Hace 5 días' },
+        { name: 'Pedro López', action: 'Se inscribió en Sistemas Informáticos', timeAgo: 'Hace 6 días' },
     ];
 
     return (
@@ -55,18 +55,27 @@ const Dashboard = () => {
         >
             {/* Contenido Principal - 70% en lg+, expandible en menores */}
             <MainContent>
-                <BannerContent />
+                <BannerContent 
+                    title="Bienvenido al Instituto INCOS"
+                    description="Formamos profesionales competentes en Administración de Empresas, Contaduría y Sistemas Informáticos. Únete a nuestra comunidad educativa y construye tu futuro profesional."
+                    primaryButtonText="Ver Carreras"
+                    secondaryButtonText="Registrar Estudiante"
+                />
                 <ProductListSection 
-                    products={products}
+                    title="Nuestras Carreras"
+                    viewAllText="Ver Todas"
+                    products={carreras}
                 />
                 <Flex gap={allSpacing.marginXL} wrap="wrap">
                     <SellerSection 
-                        title="Top Seller"
-                        sellers={topSellers}
+                        title="Docentes Destacados"
+                        viewAllText="Ver Todos"
+                        sellers={docentesDestacados}
                     />
                     <SellerSection 
-                        title="Featured Seller"
-                        sellers={featuredSellers}
+                        title="Docentes Principales"
+                        viewAllText="Ver Todos"
+                        sellers={docentesPrincipales}
                     />
                 </Flex>
             </MainContent>
@@ -79,7 +88,9 @@ const Dashboard = () => {
                     image={plant02}
                 />
                 <ActivityList 
-                    activities={activities}
+                    title="Actividades Recientes"
+                    viewAllText="Ver Todas"
+                    activities={actividades}
                 />
             </InfoSidebar>
         </Flex>
