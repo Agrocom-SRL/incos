@@ -180,19 +180,59 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange, rea
         // En modo readOnly, mostrar solo el valor seleccionado como texto
         if (readOnly) {
           const currentValue = form ? form.getFieldValue(field.name) : null;
-          let selectOptions = typeof field.options === 'string'
+          
+          // Obtener TODAS las opciones disponibles (sin filtrar por dependencias)
+          // Esto es importante para encontrar el label correcto incluso si las dependencias cambiaron
+          let allSelectOptions = typeof field.options === 'string'
             ? resolveOptions(field.options)
             : field.options || [];
           
+          // Si el campo tiene dependencias geográficas, también intentar obtener opciones sin filtrar
+          // para asegurar que encontremos el label correcto
+          if (field.dependencies && field.dependencies.length > 0 && isGeographicField) {
+            // Para campos geográficos, las opciones ya vienen con toda la información
+            // pero si no encontramos la opción, intentar buscar en todas las opciones originales
+          }
+          
           // Encontrar la opción seleccionada
-          const selectedOption = selectOptions.find(opt => {
+          // Comparar valores convirtiendo ambos a string para evitar problemas de tipo
+          const selectedOption = allSelectOptions.find(opt => {
             const optValue = typeof opt === 'string' ? opt : opt.value;
-            return optValue === currentValue;
+            // Convertir ambos a string para comparación
+            return String(optValue) === String(currentValue);
           });
           
-          const displayText = selectedOption 
-            ? (typeof selectedOption === 'string' ? selectedOption : selectedOption.label)
-            : (currentValue || 'No seleccionado');
+          // Si no encontramos en las opciones actuales, intentar buscar en todas las opciones disponibles
+          // Esto puede pasar si el campo tiene dependencias y las opciones fueron filtradas
+          let displayText = 'No seleccionado';
+          
+          if (selectedOption) {
+            displayText = typeof selectedOption === 'string' 
+              ? selectedOption 
+              : (selectedOption.label || String(selectedOption.value) || 'No seleccionado');
+          } else if (currentValue !== null && currentValue !== undefined && currentValue !== '') {
+            // Si hay un valor pero no encontramos la opción, mostrar el valor como fallback
+            // pero intentar buscar en todas las opciones del resolveOptions si es un string
+            if (typeof field.options === 'string') {
+              // Intentar obtener todas las opciones nuevamente para asegurar que tenemos todas
+              const allOptions = resolveOptions(field.options);
+              const foundOption = allOptions.find(opt => {
+                const optValue = typeof opt === 'string' ? opt : opt.value;
+                return String(optValue) === String(currentValue);
+              });
+              
+              if (foundOption) {
+                displayText = typeof foundOption === 'string' 
+                  ? foundOption 
+                  : (foundOption.label || String(foundOption.value));
+              } else {
+                // Si aún no encontramos, mostrar el ID como último recurso
+                displayText = `ID: ${currentValue}`;
+              }
+            } else {
+              displayText = `ID: ${currentValue}`;
+            }
+          }
           
           return (
             <Input
