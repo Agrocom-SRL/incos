@@ -43,8 +43,8 @@ const OrdersSummaryCard = ({
                             lineHeight: typography.lineHeightHeading3,
                         }}
                     >
-                        Today <br />
-                        {todayOrders} orders
+                        Hoy <br />
+                        {todayOrders} estudiantes
                     </Title>
                     
                     <Title
@@ -57,8 +57,8 @@ const OrdersSummaryCard = ({
                             lineHeight: typography.lineHeightHeading3,
                         }}
                     >
-                        This month <br />
-                        {monthOrders} orders
+                        Este mes <br />
+                        {monthOrders} estudiantes
                     </Title>
                 </Flex>
                 
