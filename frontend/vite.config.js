@@ -61,5 +61,19 @@ export default defineConfig({
   server: {
     port: 5173,
     open: true,
+    proxy: {
+      // Proxy para archivos de uploads (documentos, fotos)
+      '/uploads': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+        secure: false,
+      },
+      // Proxy para la API (ya configurado en apiClient, pero por si acaso)
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+        secure: false,
+      },
+    },
   },
 });
