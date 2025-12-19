@@ -137,10 +137,22 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange, rea
   };
 
   const renderField = () => {
+    // Separar props para campos que soportan readOnly vs disabled
     const commonProps = {
       placeholder: field.placeholder,
-      disabled: readOnly || field.disabled,
+      disabled: field.disabled, // disabled solo para campos que no soportan readOnly
       onChange: readOnly ? undefined : handleChange,
+    };
+    
+    // Props para campos que soportan readOnly (Input, TextArea, InputNumber)
+    const readOnlyProps = {
+      readOnly: readOnly,
+      disabled: field.disabled, // Mantener disabled del campo si existe
+    };
+    
+    // Props para campos que solo soportan disabled (Select, DatePicker, Switch, Checkbox)
+    const disabledProps = {
+      disabled: readOnly || field.disabled,
     };
 
     switch (field.type) {
@@ -148,6 +160,7 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange, rea
         return (
           <Input
             {...commonProps}
+            {...readOnlyProps}
             type={field.inputType || 'text'}
             maxLength={field.maxLength}
           />
@@ -157,6 +170,7 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange, rea
         return (
           <TextArea
             {...commonProps}
+            {...readOnlyProps}
             rows={field.rows || 4}
             maxLength={field.maxLength}
           />
@@ -228,7 +242,7 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange, rea
         // NO filtrar opciones - las dependencias solo se usan para shouldRender
 
         return (
-          <Select {...commonProps} allowClear={field.allowClear}>
+          <Select {...commonProps} {...disabledProps} allowClear={field.allowClear}>
             {selectOptions.map((option) => {
               const value = typeof option === 'string' ? option : option.value;
               const label = typeof option === 'string' ? option : option.label;
@@ -248,6 +262,7 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange, rea
             format={field.format || 'DD/MM/YYYY'}
             disabledDate={field.disabledDate}
             {...commonProps}
+            {...disabledProps}
           />
         );
 
@@ -260,11 +275,12 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange, rea
             step={field.step}
             precision={field.precision}
             {...commonProps}
+            {...readOnlyProps}
           />
         );
 
       case 'switch':
-        return <Switch {...commonProps} />;
+        return <Switch {...commonProps} {...disabledProps} />;
 
       case 'checkbox':
         // Si hay información de documento, mostrar solo el tooltip (sin badge) en el checkbox
@@ -274,7 +290,7 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange, rea
             : (field.aceptaFotocopia ? 'Se acepta fotocopia' : 'Solo original, no se acepta fotocopia');
           
           return (
-            <Checkbox {...commonProps}>
+            <Checkbox {...commonProps} {...disabledProps}>
               <Space size="small">
                 <span>{field.label}</span>
                 {tooltipContent && (
@@ -286,7 +302,7 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange, rea
             </Checkbox>
           );
         }
-        return <Checkbox {...commonProps}>{field.label}</Checkbox>;
+        return <Checkbox {...commonProps} {...disabledProps}>{field.label}</Checkbox>;
 
       case 'upload':
         // Si hay un documento existente y no se está mostrando el input, mostrar enlace
@@ -361,7 +377,7 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange, rea
         );
 
       default:
-        return <Input {...commonProps} />;
+        return <Input {...commonProps} {...readOnlyProps} />;
     }
   };
 
