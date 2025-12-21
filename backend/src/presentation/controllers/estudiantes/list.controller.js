@@ -1,15 +1,8 @@
 import { logger } from '../../../shared/logger.js';
-import { StudentMapper } from '../../../application/mappers/StudentMapper.js';
-import { StudentRepository } from '../../../infrastructure/repositories/StudentRepository.js';
-
-// Crear instancia del repositorio
-const studentRepository = new StudentRepository();
 
 /**
  * GET /api/v1/estudiantes
  * Controller para listar estudiantes con filtros y paginación
- * 
- * NOTA: Implementación rápida para presentación - usa repositorio directamente
  */
 export class ListStudentsController {
   constructor({ listStudentsUseCase }) {
@@ -29,9 +22,10 @@ export class ListStudentsController {
         userId,
       });
 
-      // Implementación rápida: usar repositorio directamente
-      // TODO: Crear ListStudentsUseCase cuando se tenga tiempo
-      
+      if (!this.listStudentsUseCase) {
+        throw new Error('ListStudentsUseCase no está configurado');
+      }
+
       const filters = {};
       if (search) {
         filters.search = search;
@@ -43,33 +37,17 @@ export class ListStudentsController {
         filters.sort = sort;
       }
 
-      const pageNum = parseInt(page);
-      const limitNum = parseInt(limit);
-      
-      // Obtener estudiantes con paginación
-      const result = await studentRepository.findAll(
-        filters,
-        pageNum,
-        limitNum
-      );
-
-      // Convertir entidades a formato de presentación (castellano)
-      const estudiantesData = StudentMapper.entitiesToPresentation(
-        result.students || []
-      );
-
-      // Calcular total de páginas
-      const totalPages = Math.ceil(result.total / limitNum);
+      const result = await this.listStudentsUseCase.execute(filters, page, limit);
 
       res.status(200).json({
         success: true,
-        data: estudiantesData,
+        data: result.students,
         message: 'Listado de estudiantes obtenido correctamente',
         pagination: {
-          page: pageNum,
-          limit: limitNum,
+          page: result.page,
+          limit: result.limit,
           total: result.total,
-          totalPages: totalPages,
+          totalPages: result.totalPages,
         },
         meta: {
           timestamp: new Date().toISOString(),

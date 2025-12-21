@@ -19,3 +19,4 @@ export { UpdateStudentController } from './update.controller.js';
 export { ChangeStudentStatusController } from './status.controller.js';
 export { AssignBecaController } from './becas.controller.js';
 export { RequestLicenciaController } from './licencias.controller.js';
+export { GenerateCompromisoActaController } from './generate-compromiso-acta.controller.js';

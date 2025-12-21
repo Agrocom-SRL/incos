@@ -12,6 +12,7 @@ import validateRequest from '../middleware/validation.middleware.js';
 import { uploadSingle, UploadDocumentController } from '../controllers/estudiantes/upload-document.controller.js';
 import { GetStudentDocumentsController } from '../controllers/estudiantes/get-documents.controller.js';
 import { GetStudentAcademicDataController } from '../controllers/estudiantes/get-academic-data.controller.js';
+import { GenerateCompromisoActaController } from '../controllers/estudiantes/generate-compromiso-acta.controller.js';
 import { logger } from '../../shared/logger.js';
 
 // Importar controladores directamente
@@ -27,10 +28,15 @@ import {
 
 // Importar use cases y repositorios directamente
 import { RegisterStudentUseCase } from '../../application/use-cases/estudiantes/RegisterStudentUseCase.js';
+import { GenerateCompromisoActaUseCase } from '../../application/use-cases/estudiantes/GenerateCompromisoActaUseCase.js';
+import { ListStudentsUseCase } from '../../application/use-cases/estudiantes/ListStudentsUseCase.js';
+import { UploadDocumentUseCase } from '../../application/use-cases/estudiantes/UploadDocumentUseCase.js';
 import { StudentRepository } from '../../infrastructure/repositories/StudentRepository.js';
 import { StudentAcademicDataRepository } from '../../infrastructure/repositories/StudentAcademicDataRepository.js';
 import { StudentDocumentRepository } from '../../infrastructure/repositories/StudentDocumentRepository.js';
 import { DocumentacionRepository } from '../../infrastructure/repositories/DocumentacionRepository.js';
+import { ConfiguracionSistemaRepository } from '../../infrastructure/repositories/ConfiguracionSistemaRepository.js';
+import { ManagementRepository } from '../../infrastructure/repositories/ManagementRepository.js';
 
 const router = express.Router();
 
@@ -39,6 +45,8 @@ const studentRepository = new StudentRepository();
 const studentAcademicDataRepository = new StudentAcademicDataRepository();
 const studentDocumentRepository = new StudentDocumentRepository();
 const documentacionRepository = new DocumentacionRepository();
+const configuracionSistemaRepository = new ConfiguracionSistemaRepository();
+const managementRepository = new ManagementRepository();
 
 // Crear use cases
 const registerStudentUseCase = new RegisterStudentUseCase({
@@ -46,6 +54,20 @@ const registerStudentUseCase = new RegisterStudentUseCase({
   studentAcademicDataRepository,
   studentDocumentRepository,
   documentacionRepository,
+  configuracionSistemaRepository,
+  managementRepository,
+  logger,
+});
+
+const listStudentsUseCase = new ListStudentsUseCase({
+  studentRepository,
+  logger,
+});
+
+const uploadDocumentUseCase = new UploadDocumentUseCase({
+  studentRepository,
+  documentacionRepository,
+  studentDocumentRepository,
   logger,
 });
 
@@ -55,7 +77,7 @@ const createStudentController = new CreateStudentController({
 });
 
 const listStudentsController = new ListStudentsController({
-  listStudentsUseCase: null, // TODO: Implementar use case
+  listStudentsUseCase,
 });
 
 const getStudentByIdController = new GetStudentByIdController({
@@ -77,11 +99,22 @@ const requestLicenciaController = new RequestLicenciaController({
 });
 
 const uploadDocumentController = new UploadDocumentController({
-  uploadDocumentUseCase: null, // TODO: Implementar use case
+  uploadDocumentUseCase,
 });
 
 const getStudentDocumentsController = new GetStudentDocumentsController();
 const getStudentAcademicDataController = new GetStudentAcademicDataController();
+
+// Crear use case para generar ACTA
+const generateCompromisoActaUseCase = new GenerateCompromisoActaUseCase({
+  studentRepository,
+  documentacionRepository,
+  logger,
+});
+
+const generateCompromisoActaController = new GenerateCompromisoActaController({
+  generateCompromisoActaUseCase,
+});
 
 /**
  * POST /api/v1/estudiantes
@@ -139,6 +172,18 @@ router.get(
     });
     getStudentAcademicDataController.handle(req, res, next);
   }
+);
+
+/**
+ * GET /api/v1/estudiantes/:id/acta-compromiso
+ * Generar y descargar el ACTA DE COMPROMISO para la entrega de documentos
+ * Permisos: estudiantes.documentos.ver
+ * IMPORTANTE: Esta ruta debe estar ANTES de /:id para que Express la capture correctamente
+ */
+router.get(
+  '/:id/acta-compromiso',
+  // authMiddleware,
+  (req, res, next) => generateCompromisoActaController.handle(req, res, next)
 );
 
 /**
