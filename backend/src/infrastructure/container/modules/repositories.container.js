@@ -14,14 +14,19 @@ import { DepartmentRepository } from '../../../infrastructure/repositories/Depar
 import { ProvinceRepository } from '../../../infrastructure/repositories/ProvinceRepository.js';
 import { MunicipalityRepository } from '../../../infrastructure/repositories/MunicipalityRepository.js';
 
-// ============================================
-// CATÁLOGOS DE REFERENCIA
-// ============================================
-import { LanguageRepository } from '../../../infrastructure/repositories/LanguageRepository.js';
-import { CivilStatusRepository } from '../../../infrastructure/repositories/CivilStatusRepository.js';
-import { DisabilityTypeRepository } from '../../../infrastructure/repositories/DisabilityTypeRepository.js';
-import { RelationshipTypeRepository } from '../../../infrastructure/repositories/RelationshipTypeRepository.js';
-import { DocumentacionRepository } from '../../../infrastructure/repositories/DocumentacionRepository.js';
+  // ============================================
+  // CATÁLOGOS DE REFERENCIA
+  // ============================================
+  import { LanguageRepository } from '../../../infrastructure/repositories/LanguageRepository.js';
+  import { CivilStatusRepository } from '../../../infrastructure/repositories/CivilStatusRepository.js';
+  import { DisabilityTypeRepository } from '../../../infrastructure/repositories/DisabilityTypeRepository.js';
+  import { RelationshipTypeRepository } from '../../../infrastructure/repositories/RelationshipTypeRepository.js';
+  import { DocumentacionRepository } from '../../../infrastructure/repositories/DocumentacionRepository.js';
+
+  // ============================================
+  // CONFIGURACIÓN DEL SISTEMA
+  // ============================================
+  import { ConfiguracionSistemaRepository } from '../../../infrastructure/repositories/ConfiguracionSistemaRepository.js';
 
 // ============================================
 // SISTEMA DE SEGURIDAD
@@ -193,6 +198,13 @@ export function registerRepositoriesModule(container) {
   }
   if (!container.has('studentGuardianRepository')) {
     container.register('studentGuardianRepository', () => new StudentGuardianRepository(), true);
+  }
+
+  // ============================================
+  // CONFIGURACIÓN DEL SISTEMA
+  // ============================================
+  if (!container.has('configuracionSistemaRepository')) {
+    container.register('configuracionSistemaRepository', () => new ConfiguracionSistemaRepository(), true);
   }
 
   return container;

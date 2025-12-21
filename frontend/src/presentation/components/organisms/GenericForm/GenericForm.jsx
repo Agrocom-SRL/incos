@@ -161,6 +161,26 @@ const GenericForm = forwardRef(({
     }
   };
 
+  // Handler para cambios en valores del formulario
+  // Esto es necesario para que FormSection pueda detectar cambios en switches y otros campos
+  const handleValuesChange = (changedValues, allValues) => {
+    // Cuando cambia tieneDiscapacidad, forzar actualización del formulario
+    // Esto asegura que FormSection detecte el cambio inmediatamente
+    if (changedValues.tieneDiscapacidad !== undefined && form) {
+      // Forzar actualización estableciendo el valor nuevamente
+      // Esto dispara Form.useWatch en FormSection
+      form.setFieldsValue({ tieneDiscapacidad: changedValues.tieneDiscapacidad });
+    }
+    
+    // Cuando cambia esExtranjero, forzar actualización del formulario
+    // Esto asegura que FormSection detecte el cambio inmediatamente
+    if (changedValues.esExtranjero !== undefined && form) {
+      // Forzar actualización estableciendo el valor nuevamente
+      // Esto dispara Form.useWatch en FormSection
+      form.setFieldsValue({ esExtranjero: changedValues.esExtranjero });
+    }
+  };
+
   return (
     <FormCard>
       {title && <Heading level={3}>{title}</Heading>}
@@ -168,6 +188,7 @@ const GenericForm = forwardRef(({
         form={form}
         layout="vertical"
         onFinish={wizardMode ? undefined : handleSubmit}
+        onValuesChange={handleValuesChange}
         initialValues={initialValues}
       >
         {sections.map((sectionKey) => {

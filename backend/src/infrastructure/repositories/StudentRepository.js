@@ -49,6 +49,11 @@ export class StudentRepository extends BaseRepository {
       bloodType: model.tipoSangre,
       hasDisability: model.tieneDiscapacidad,
       disabilityTypeId: model.tipoDiscapacidadId,
+      // TODO: Descomentar cuando se confirme la estructura de la base de datos
+      // disabilityDegree: model.gradoInvalidez,
+      // disabilityDetails: model.detallesDiscapacidad,
+      disabilityDegree: null, // Temporalmente null hasta confirmar estructura
+      disabilityDetails: null, // Temporalmente null hasta confirmar estructura
       personalEmail: model.emailPersonal,
       mobilePhone: model.celular,
       landlinePhone: model.telefonoFijo,
@@ -93,10 +98,11 @@ export class StudentRepository extends BaseRepository {
 
   /**
    * Retorna el orden por defecto
+   * Orden: primero por código de estudiante (año y correlativo), luego por apellidos y nombres
    * @returns {Array}
    */
   getDefaultSort() {
-    return [['apellidoPaterno', 'ASC'], ['apellidoMaterno', 'ASC'], ['nombres', 'ASC']];
+    return [['codigoEstudiante', 'ASC'], ['apellidoPaterno', 'ASC'], ['apellidoMaterno', 'ASC'], ['nombres', 'ASC']];
   }
 
   /**
@@ -124,6 +130,9 @@ export class StudentRepository extends BaseRepository {
       tipoSangre: data.bloodType || null,
       tieneDiscapacidad: data.hasDisability !== undefined ? data.hasDisability : false,
       tipoDiscapacidadId: data.disabilityTypeId || null,
+      // TODO: Descomentar cuando se confirme la estructura de la base de datos
+      // gradoInvalidez: data.disabilityDegree || null,
+      // detallesDiscapacidad: data.disabilityDetails || null,
       emailPersonal: data.personalEmail ? data.personalEmail.toLowerCase() : null,
       celular: data.mobilePhone,
       telefonoFijo: data.landlinePhone || null,
@@ -199,6 +208,13 @@ export class StudentRepository extends BaseRepository {
     if (data.disabilityTypeId !== undefined) {
       updateData.tipoDiscapacidadId = data.disabilityTypeId || null;
     }
+    // TODO: Descomentar cuando se confirme la estructura de la base de datos
+    // if (data.disabilityDegree !== undefined) {
+    //   updateData.gradoInvalidez = data.disabilityDegree || null;
+    // }
+    // if (data.disabilityDetails !== undefined) {
+    //   updateData.detallesDiscapacidad = data.disabilityDetails || null;
+    // }
     if (data.personalEmail !== undefined) {
       updateData.emailPersonal = data.personalEmail ? data.personalEmail.toLowerCase() : null;
     }

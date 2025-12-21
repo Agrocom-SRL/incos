@@ -133,25 +133,37 @@ const EstudiantesList = () => {
     const filteredEstudiantes = estudiantes.filter(estudiante => {
         if (!searchText) return true;
         const searchLower = searchText.toLowerCase();
-        const fullName = `${estudiante.nombres || ''} ${estudiante.apellidoPaterno || ''} ${estudiante.apellidoMaterno || ''}`.toLowerCase();
+        // Buscar en nombre completo (apellidos, nombres)
+        const fullName = getFullName(estudiante).toLowerCase();
+        // Buscar en código de estudiante
+        const codigo = (estudiante.codigoEstudiante || '').toLowerCase();
         const ci = (estudiante.ci || '').toString();
         const email = (estudiante.emailPersonal || '').toLowerCase();
         const celular = (estudiante.celular || '').toString();
         
         return fullName.includes(searchLower) ||
+               codigo.includes(searchLower) ||
                ci.includes(searchLower) ||
                email.includes(searchLower) ||
                celular.includes(searchLower);
     });
 
-    // Función para formatear nombre completo
+    // Función para formatear nombre completo (apellidos primero, luego nombres)
     const getFullName = (estudiante) => {
-        const parts = [
-            estudiante.nombres,
+        const apellidos = [
             estudiante.apellidoPaterno,
             estudiante.apellidoMaterno
-        ].filter(Boolean);
-        return parts.join(' ') || 'Sin nombre';
+        ].filter(Boolean).join(' ');
+        const nombres = estudiante.nombres || '';
+        
+        if (apellidos && nombres) {
+            return `${apellidos}, ${nombres}`;
+        } else if (apellidos) {
+            return apellidos;
+        } else if (nombres) {
+            return nombres;
+        }
+        return 'Sin nombre';
     };
 
     // Función para formatear CI completo
@@ -177,23 +189,30 @@ const EstudiantesList = () => {
     // Columnas de la tabla
     const columns = [
         {
-            title: 'CI',
-            dataIndex: 'ci',
-            key: 'ci',
-            width: 140,
+            title: 'Código de Estudiante',
+            dataIndex: 'codigoEstudiante',
+            key: 'codigoEstudiante',
+            width: 160,
             fixed: 'left',
-            render: (_, record) => (
+            render: (codigo) => (
                 <Space size="small">
-                    <UserOutlined />
-                    <strong>{getCIFull(record)}</strong>
+                    <strong style={{ fontFamily: 'monospace', fontSize: '13px' }}>
+                        {codigo || 'N/A'}
+                    </strong>
                 </Space>
             ),
-            sorter: (a, b) => (a.ci || '').localeCompare(b.ci || ''),
+            sorter: (a, b) => {
+                // Ordenar por código: primero por año, luego por correlativo
+                const codigoA = a.codigoEstudiante || '';
+                const codigoB = b.codigoEstudiante || '';
+                return codigoA.localeCompare(codigoB, undefined, { numeric: true, sensitivity: 'base' });
+            },
+            defaultSortOrder: 'ascend',
         },
         {
             title: 'Nombre Completo',
             key: 'nombre',
-            width: 280,
+            width: 300,
             render: (_, record) => (
                 <div>
                     <div style={{ fontWeight: 500 }}>{getFullName(record)}</div>
@@ -204,7 +223,25 @@ const EstudiantesList = () => {
                     )}
                 </div>
             ),
-            sorter: (a, b) => getFullName(a).localeCompare(getFullName(b)),
+            sorter: (a, b) => {
+                // Ordenar por apellidos primero, luego nombres
+                const nombreA = getFullName(a);
+                const nombreB = getFullName(b);
+                return nombreA.localeCompare(nombreB);
+            },
+        },
+        {
+            title: 'CI',
+            dataIndex: 'ci',
+            key: 'ci',
+            width: 140,
+            render: (_, record) => (
+                <Space size="small">
+                    <UserOutlined />
+                    <strong>{getCIFull(record)}</strong>
+                </Space>
+            ),
+            sorter: (a, b) => (a.ci || '').localeCompare(b.ci || ''),
         },
         {
             title: 'Fecha de Nacimiento',
@@ -363,7 +400,7 @@ const EstudiantesList = () => {
                             Lista de Estudiantes
                         </Title>
                         <Search
-                            placeholder="Buscar por nombre, CI, email o celular..."
+                            placeholder="Buscar por código, nombre, CI, email o celular..."
                             allowClear
                             enterButton={<SearchOutlined />}
                             size="middle"
@@ -399,6 +436,10 @@ const EstudiantesList = () => {
                         }}
                         scroll={{ x: 'max-content' }}
                         size="middle"
+                        defaultSort={{
+                            field: 'codigoEstudiante',
+                            order: 'ascend',
+                        }}
                     />
                 </Space>
             </Card>

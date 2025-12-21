@@ -41,6 +41,11 @@ const FormSection = ({ title, fields, form, resolveOptions, onFieldChange, readO
           watchFields.push(...field.dependencies);
         }
       }
+      // IMPORTANTE: Si un campo tiene dependencies, también observar esas dependencias
+      // Esto asegura que cuando cambia tieneDiscapacidad, se detecte el cambio
+      if (field.dependencies && field.dependencies.length > 0) {
+        watchFields.push(...field.dependencies);
+      }
     });
     // Eliminar duplicados
     return [...new Set(watchFields)];
@@ -49,24 +54,52 @@ const FormSection = ({ title, fields, form, resolveOptions, onFieldChange, readO
   // Solo observar campos específicos si hay campos con shouldRender o dependencies
   // Si no hay campos especiales, no observar nada (evita re-renders innecesarios)
   // IMPORTANTE: No usar Form.useWatch si no hay campos para observar, para evitar re-renders innecesarios
+  // Usar Form.useWatch con todos los campos a observar para que sea reactivo
   const formValues = fieldsToWatch.length > 0 && form
     ? Form.useWatch(fieldsToWatch, form) 
+    : null;
+  
+  // Observar específicamente tieneDiscapacidad si hay campos que dependen de él
+  // Esto asegura que los cambios en el switch se detecten inmediatamente
+  const hasDiscapacidadFields = fields.some(f => 
+    f.dependencies?.includes('tieneDiscapacidad') || f.watchFields?.includes('tieneDiscapacidad')
+  );
+  const tieneDiscapacidadValue = hasDiscapacidadFields && form
+    ? Form.useWatch('tieneDiscapacidad', form)
+    : null;
+  
+  // Observar específicamente esExtranjero si hay campos que dependen de él
+  // Esto asegura que los cambios en el checkbox se detecten inmediatamente
+  const hasExtranjeroFields = fields.some(f => 
+    f.dependencies?.includes('esExtranjero') || f.watchFields?.includes('esExtranjero')
+  );
+  const esExtranjeroValue = hasExtranjeroFields && form
+    ? Form.useWatch('esExtranjero', form)
     : null;
   
   
   // Inicializar campos visibles - todos los campos inicialmente
   const [visibleFields, setVisibleFields] = useState(fields);
   const prevFormValuesRef = useRef(null);
+  // Estado para forzar actualización cuando cambia tieneDiscapacidad
+  const [forceUpdate, setForceUpdate] = useState(0);
   
   // Función para calcular campos visibles basándose en valores del formulario
   const calculateVisibleFields = useMemo(() => {
     return (formValues) => {
       return fields.filter((field) => {
         if (field.shouldRender) {
-          // Normalizar valores booleanos (pueden venir como 1/0 desde el backend)
+          // Normalizar valores booleanos (pueden venir como 1/0 desde el backend o como true/false del switch/checkbox)
           const normalizedValues = { ...formValues };
           if (normalizedValues.tieneDiscapacidad !== undefined) {
             normalizedValues.tieneDiscapacidad = Boolean(normalizedValues.tieneDiscapacidad);
+          }
+          if (normalizedValues.esExtranjero !== undefined) {
+            normalizedValues.esExtranjero = Boolean(normalizedValues.esExtranjero);
+          }
+          // Asegurar que tipoDiscapacidadId sea null/undefined si no tiene valor
+          if (normalizedValues.tipoDiscapacidadId === '') {
+            normalizedValues.tipoDiscapacidadId = null;
           }
           return field.shouldRender(normalizedValues);
         }
@@ -99,23 +132,45 @@ const FormSection = ({ title, fields, form, resolveOptions, onFieldChange, readO
     const hasShouldRenderFields = fields.some(f => f.shouldRender);
     if (hasShouldRenderFields && form) {
       // Obtener valores actuales del formulario (siempre obtener los más recientes)
+      // Esto asegura que capturamos cambios inmediatos, incluso si Form.useWatch no los ha capturado aún
       const currentFormValues = form.getFieldsValue() || {};
       
       // Si hay formValues observados, combinarlos con los valores actuales
-      // formValues tiene prioridad porque es reactivo
-      const mergedValues = formValues 
-        ? { ...currentFormValues, ...formValues }
+      // formValues tiene prioridad porque es reactivo, pero currentFormValues puede tener valores más recientes
+      // También usar tieneDiscapacidadValue y esExtranjeroValue para asegurar que los cambios se detecten
+      const mergedValues = formValues || tieneDiscapacidadValue !== null || esExtranjeroValue !== null
+        ? { 
+            ...currentFormValues, 
+            ...(formValues || {}),
+            ...(tieneDiscapacidadValue !== null ? { tieneDiscapacidad: tieneDiscapacidadValue } : {}),
+            ...(esExtranjeroValue !== null ? { esExtranjero: esExtranjeroValue } : {})
+          }
         : currentFormValues;
       
-      // Normalizar valores booleanos (pueden venir como 1/0 desde el backend)
+      // Normalizar valores booleanos (pueden venir como 1/0 desde el backend o como true/false del switch/checkbox)
       if (mergedValues.tieneDiscapacidad !== undefined) {
         mergedValues.tieneDiscapacidad = Boolean(mergedValues.tieneDiscapacidad);
+      }
+      if (mergedValues.esExtranjero !== undefined) {
+        mergedValues.esExtranjero = Boolean(mergedValues.esExtranjero);
       }
       
       // Crear una clave basada solo en los campos que afectan shouldRender
       const relevantValues = {};
       fieldsToWatch.forEach(fieldName => {
-        relevantValues[fieldName] = mergedValues[fieldName];
+        let value = mergedValues[fieldName];
+        // Normalizar valores booleanos en la clave también
+        if (fieldName === 'tieneDiscapacidad' && value !== undefined) {
+          value = Boolean(value);
+        }
+        if (fieldName === 'esExtranjero' && value !== undefined) {
+          value = Boolean(value);
+        }
+        // Normalizar strings vacíos a null para tipoDiscapacidadId
+        if (fieldName === 'tipoDiscapacidadId' && value === '') {
+          value = null;
+        }
+        relevantValues[fieldName] = value;
       });
       const formValuesKey = JSON.stringify(relevantValues);
       
@@ -126,7 +181,66 @@ const FormSection = ({ title, fields, form, resolveOptions, onFieldChange, readO
         setVisibleFields(newFilteredFields);
       }
     }
-  }, [formValues, fields, form, fieldsToWatch, calculateVisibleFields]);
+  }, [formValues, tieneDiscapacidadValue, esExtranjeroValue, fields, form, fieldsToWatch, calculateVisibleFields]);
+  
+  // Efecto adicional para forzar actualización cuando cambia tieneDiscapacidad
+  // Esto asegura que los campos se muestren inmediatamente cuando se activa el switch
+  useEffect(() => {
+    if (form && hasDiscapacidadFields) {
+      // Obtener el valor actual de tieneDiscapacidad
+      const currentValue = form.getFieldValue('tieneDiscapacidad');
+      const tipoValue = form.getFieldValue('tipoDiscapacidadId');
+      
+      // Recalcular campos visibles
+      const currentValues = form.getFieldsValue() || {};
+      const normalizedValues = {
+        ...currentValues,
+        tieneDiscapacidad: Boolean(currentValue),
+        tipoDiscapacidadId: tipoValue === '' ? null : tipoValue,
+      };
+      
+      const newFilteredFields = calculateVisibleFields(normalizedValues);
+      setVisibleFields(newFilteredFields);
+    }
+  }, [tieneDiscapacidadValue, forceUpdate, form, hasDiscapacidadFields, calculateVisibleFields]);
+  
+  // Listener para detectar cambios en tieneDiscapacidad usando un intervalo corto
+  // Esto es necesario porque Form.useWatch puede no capturar cambios en switches inmediatamente
+  useEffect(() => {
+    if (form && hasDiscapacidadFields) {
+      let lastValue = form.getFieldValue('tieneDiscapacidad');
+      
+      const checkInterval = setInterval(() => {
+        const currentValue = form.getFieldValue('tieneDiscapacidad');
+        if (currentValue !== lastValue) {
+          lastValue = currentValue;
+          setForceUpdate(prev => prev + 1);
+        }
+      }, 100); // Verificar cada 100ms
+      
+      return () => clearInterval(checkInterval);
+    }
+  }, [form, hasDiscapacidadFields]);
+  
+  // Efecto adicional para forzar actualización cuando cambia esExtranjero
+  // Esto asegura que los campos se muestren inmediatamente cuando se activa el checkbox
+  useEffect(() => {
+    if (form && hasExtranjeroFields) {
+      // Obtener el valor actual de esExtranjero
+      const currentValue = form.getFieldValue('esExtranjero');
+      
+      // Recalcular campos visibles
+      const currentValues = form.getFieldsValue() || {};
+      const normalizedValues = {
+        ...currentValues,
+        esExtranjero: Boolean(currentValue),
+      };
+      
+      const newFilteredFields = calculateVisibleFields(normalizedValues);
+      setVisibleFields(newFilteredFields);
+    }
+  }, [esExtranjeroValue, form, hasExtranjeroFields, calculateVisibleFields]);
+  
 
   return (
     <Card

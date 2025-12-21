@@ -8,6 +8,7 @@ import {
   getMunicipios,
   getIdiomas,
   getTiposDiscapacidad,
+  getEstadosCiviles,
   getDocumentacionInscripcion,
 } from '../controllers/catalogs.controller.js';
 
@@ -63,6 +64,12 @@ router.get('/idiomas', getIdiomas);
  * Obtener lista de tipos de discapacidad activos
  */
 router.get('/tipos-discapacidad', getTiposDiscapacidad);
+
+/**
+ * GET /api/v1/catalogs/estados-civiles
+ * Obtener lista de estados civiles activos
+ */
+router.get('/estados-civiles', getEstadosCiviles);
 
 /**
  * GET /api/v1/catalogs/documentacion-inscripcion

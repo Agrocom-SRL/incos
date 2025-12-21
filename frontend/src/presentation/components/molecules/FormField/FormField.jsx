@@ -9,6 +9,10 @@ import { Form, Input, Select, DatePicker, InputNumber, Switch, Checkbox, Upload,
 import { UploadOutlined, InfoCircleOutlined, FileTextOutlined, EditOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import { useEffect, useRef, useState, useMemo } from 'react';
 import dayjs from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
+
+// Configurar dayjs para parsear formatos personalizados
+dayjs.extend(customParseFormat);
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -20,6 +24,47 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange, rea
   // Estado para controlar si se muestra el input de upload o el documento existente
   // Usar el nombre del campo como clave para rastrear múltiples campos de upload
   const [uploadStates, setUploadStates] = useState({});
+  
+  // Observar el valor de tipoDiscapacidadId para mostrar la descripción
+  // Esto debe estar fuera del switch para que Form.useWatch funcione correctamente
+  const shouldShowDescription = field.name === 'tipoDiscapacidadId';
+  const tipoDiscapacidadValue = shouldShowDescription && form 
+    ? Form.useWatch('tipoDiscapacidadId', form) 
+    : undefined;
+  
+  // Estado para almacenar la descripción del tipo de discapacidad seleccionado
+  const [selectedDescription, setSelectedDescription] = useState(null);
+  
+  // Efecto para actualizar la descripción cuando cambia el tipo de discapacidad seleccionado
+  useEffect(() => {
+    if (shouldShowDescription && form && resolveOptions) {
+      const currentValue = tipoDiscapacidadValue !== undefined ? tipoDiscapacidadValue : form.getFieldValue('tipoDiscapacidadId');
+      
+      if (currentValue !== null && currentValue !== undefined && currentValue !== '') {
+        // Obtener las opciones del campo usando resolveOptions
+        try {
+          const options = typeof field.options === 'string' ? resolveOptions(field.options) : field.options || [];
+          const selectedOption = options.find(opt => {
+            const optValue = typeof opt === 'string' ? opt : opt.value;
+            return optValue === currentValue;
+          });
+          
+          if (selectedOption && typeof selectedOption === 'object' && selectedOption.descripcion) {
+            setSelectedDescription(selectedOption.descripcion);
+          } else {
+            setSelectedDescription(null);
+          }
+        } catch (error) {
+          console.warn('Error al obtener descripción de discapacidad:', error);
+          setSelectedDescription(null);
+        }
+      } else {
+        setSelectedDescription(null);
+      }
+    } else if (!shouldShowDescription) {
+      setSelectedDescription(null);
+    }
+  }, [tipoDiscapacidadValue, shouldShowDescription, form, field.options, resolveOptions]);
   
   // Inicializar el estado cuando el campo cambia
   useEffect(() => {
@@ -155,14 +200,56 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange, rea
       disabled: readOnly || field.disabled,
     };
 
+    // Función para capitalizar texto (primera letra de cada palabra en mayúscula)
+    const capitalizeText = (text) => {
+      if (!text) return text;
+      return text
+        .toLowerCase()
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+    };
+
+    // Función para manejar el cambio en inputs que requieren capitalización
+    const handleCapitalizeChange = (e, fieldName) => {
+      const value = e.target.value;
+      const capitalizedValue = capitalizeText(value);
+      if (form) {
+        form.setFieldsValue({ [fieldName]: capitalizedValue });
+      }
+    };
+
     switch (field.type) {
       case 'input':
+        // Campos que requieren capitalización automática
+        const shouldCapitalize = ['nombres', 'apellidoPaterno', 'apellidoMaterno'].includes(field.name);
+        
+        // Para el campo de nacionalidad, cambiar placeholder dinámicamente si es extranjero
+        let dynamicPlaceholder = field.placeholder;
+        if (field.name === 'nacionalidad' && form) {
+          const esExtranjero = Form.useWatch('esExtranjero', form);
+          if (esExtranjero) {
+            dynamicPlaceholder = 'Ej: Argentina, Boliviana, etc.';
+          } else {
+            dynamicPlaceholder = field.placeholder || 'Ej: Boliviana';
+          }
+        }
+        
         return (
           <Input
             {...commonProps}
             {...readOnlyProps}
             type={field.inputType || 'text'}
             maxLength={field.maxLength}
+            placeholder={dynamicPlaceholder}
+            onChange={shouldCapitalize && !readOnly ? (e) => handleCapitalizeChange(e, field.name) : undefined}
+            onBlur={shouldCapitalize && !readOnly ? (e) => {
+              const value = e.target.value;
+              const capitalizedValue = capitalizeText(value);
+              if (form && value !== capitalizedValue) {
+                form.setFieldsValue({ [field.name]: capitalizedValue });
+              }
+            } : undefined}
           />
         );
 
@@ -241,28 +328,93 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange, rea
         // Para campos no geográficos con dependencies (como tipoDiscapacidadId),
         // NO filtrar opciones - las dependencias solo se usan para shouldRender
 
+        // La descripción se obtiene del estado local actualizado por el efecto
+
         return (
-          <Select {...commonProps} {...disabledProps} allowClear={field.allowClear}>
-            {selectOptions.map((option) => {
-              const value = typeof option === 'string' ? option : option.value;
-              const label = typeof option === 'string' ? option : option.label;
-              return (
-                <Option key={value} value={value}>
-                  {label}
-                </Option>
-              );
-            })}
-          </Select>
+          <div>
+            <Select {...commonProps} {...disabledProps} allowClear={field.allowClear}>
+              {selectOptions.map((option) => {
+                const value = typeof option === 'string' ? option : option.value;
+                const label = typeof option === 'string' ? option : option.label;
+                const descripcion = typeof option === 'object' ? option.descripcion : null;
+                return (
+                  <Option key={value} value={value} title={descripcion || label}>
+                    {label}
+                  </Option>
+                );
+              })}
+            </Select>
+            {selectedDescription && (
+              <div style={{ 
+                marginTop: 8, 
+                padding: '8px 12px', 
+                backgroundColor: '#f0f0f0', 
+                borderRadius: 4,
+                fontSize: '12px',
+                color: '#666',
+                lineHeight: '1.5'
+              }}>
+                <strong>Descripción:</strong> {selectedDescription}
+              </div>
+            )}
+          </div>
         );
 
       case 'datePicker':
+        // Función para parsear fechas con guiones o barras (DD-MM-YYYY o DD/MM/YYYY)
+        const parseDateWithMultipleFormats = (dateString) => {
+          if (!dateString || typeof dateString !== 'string') return null;
+          
+          // Limpiar espacios
+          const cleaned = dateString.trim();
+          
+          // Intentar parsear con guiones primero (DD-MM-YYYY)
+          let parsed = dayjs(cleaned, 'DD-MM-YYYY', true);
+          if (parsed.isValid()) {
+            return parsed;
+          }
+          
+          // Si no funciona, intentar con barras (DD/MM/YYYY)
+          parsed = dayjs(cleaned, 'DD/MM/YYYY', true);
+          if (parsed.isValid()) {
+            return parsed;
+          }
+          
+          return null;
+        };
+        
+        // Handler personalizado para onChange que acepta ambos formatos
+        const handleDateChange = (date, dateString) => {
+          // Si hay un dateString pero el date no es válido o es null, intentar parsear manualmente
+          if (dateString && (!date || !dayjs.isDayjs(date) || !date.isValid())) {
+            const parsed = parseDateWithMultipleFormats(dateString);
+            if (parsed && parsed.isValid()) {
+              // Usar el formato configurado para mostrar (normalizar a guiones)
+              const format = field.format || 'DD-MM-YYYY';
+              const formattedString = parsed.format(format);
+              if (commonProps.onChange) {
+                commonProps.onChange(parsed, formattedString);
+              }
+              return;
+            }
+          }
+          
+          // Si hay un date válido o es null, pasar directamente
+          if (commonProps.onChange) {
+            commonProps.onChange(date, dateString);
+          }
+        };
+        
         return (
           <DatePicker
             style={{ width: '100%' }}
-            format={field.format || 'DD/MM/YYYY'}
+            format={field.format || 'DD-MM-YYYY'}
             disabledDate={field.disabledDate}
+            getPopupContainer={(trigger) => trigger.parentElement}
+            placeholder={field.placeholder || 'DD-MM-YYYY o DD/MM/YYYY'}
             {...commonProps}
             {...disabledProps}
+            onChange={handleDateChange}
           />
         );
 

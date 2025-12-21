@@ -10,13 +10,13 @@
 
 Este documento lista **TODOS** los archivos que fueron creados o modificados durante la implementación rápida para la presentación. Cada archivo debe ser revisado y refactorizado según la arquitectura limpia establecida.
 
-**Total de archivos afectados:** 55
+**Total de archivos afectados:** 68 (actualizado 2025-12-19)
 
-- **Backend:** 27 archivos (9 nuevos, 17 modificados, 1 eliminado)
-- **Frontend:** 27 archivos (4 nuevos, 22 modificados, 1 eliminado)
+- **Backend:** 36 archivos (13 nuevos, 22 modificados, 1 eliminado)
+- **Frontend:** 31 archivos (4 nuevos, 26 modificados, 1 eliminado)
 - **Documentación:** 1 archivo modificado
 
-**Última actualización:** 2025-12-16 (incluye cambios del día de hoy)
+**Última actualización:** 2025-12-19 (incluye cambios de 2025-12-16 y 2025-12-19)
 
 ---
 
@@ -183,6 +183,75 @@ Este documento lista **TODOS** los archivos que fueron creados o modificados dur
 
 ---
 
+### 11. `backend/database/01-schemas/15-configuracion-sistema.sql` ⭐ **NUEVO (2025-12-19)**
+
+**Prioridad:** 🟡 MEDIA  
+**Estado:** ✅ Schema SQL para tabla de configuración del sistema  
+**Acción requerida:**
+
+- [ ] Ejecutar migración en base de datos
+- [ ] Verificar que la tabla se creó correctamente
+- [ ] Revisar índices y constraints
+
+**Notas:**
+
+- Creada para almacenar configuraciones del sistema, especialmente correlativos de códigos de estudiantes por gestión
+- Estructura: `clave`, `valor`, `tipo`, `descripcion`, `categoria`
+- Permite manejar múltiples gestiones académicas con correlativos independientes
+
+---
+
+### 12. `backend/src/infrastructure/database/models/ConfiguracionSistema.js` ⭐ **NUEVO (2025-12-19)**
+
+**Prioridad:** 🟢 BAJA  
+**Estado:** ✅ Modelo Sequelize completo siguiendo patrón establecido  
+**Acción requerida:**
+
+- [ ] Verificar que todos los campos estén correctamente mapeados
+- [ ] Revisar relaciones con otras tablas si es necesario
+
+**Notas:**
+
+- Modelo para la tabla `configuracion_sistema`
+- Extiende `baseModelFields` y `baseModelOptions`
+
+---
+
+### 13. `backend/src/infrastructure/repositories/ConfiguracionSistemaRepository.js` ⭐ **NUEVO (2025-12-19)**
+
+**Prioridad:** 🟢 BAJA  
+**Estado:** ✅ Repositorio completo siguiendo patrón BaseRepository  
+**Acción requerida:**
+
+- [ ] Verificar métodos personalizados: `findByClave`, `findByCategoria`, `findOrCreate`, `incrementValue`
+- [ ] Revisar manejo de tipos de datos (STRING, NUMBER, BOOLEAN, JSON, DATE)
+
+**Notas:**
+
+- Métodos personalizados para gestión de configuraciones del sistema
+- `incrementValue` usado específicamente para incrementar correlativos de códigos de estudiantes
+- `findOrCreate` usado para crear configuración inicial si no existe
+
+---
+
+### 14. `backend/database/01-schemas/16-estudiantes-discapacidad-campos.sql` ⭐ **NUEVO (2025-12-19)**
+
+**Prioridad:** 🟡 MEDIA  
+**Estado:** ✅ Schema SQL para agregar campos de discapacidad  
+**Acción requerida:**
+
+- [ ] Ejecutar migración en base de datos
+- [ ] Verificar que las columnas se agregaron correctamente
+- [ ] Descomentar campos en modelos/repositorios después de ejecutar
+
+**Notas:**
+
+- Agrega columnas `grado_invalidez` (VARCHAR(50)) y `detalles_discapacidad` (TEXT) a tabla `estudiantes`
+- Los campos están implementados en código pero comentados hasta ejecutar esta migración
+- Ver archivos relacionados en sección de modificados
+
+---
+
 ## 🟡 BACKEND - Archivos Modificados
 
 ### 1. `backend/src/presentation/routes/index.js`
@@ -195,6 +264,44 @@ Este documento lista **TODOS** los archivos que fueron creados o modificados dur
 - [ ] Revisar orden de rutas si es necesario
 
 ---
+
+### 22. `backend/src/infrastructure/container/modules/repositories.container.js` ⭐ **MODIFICADO (2025-12-19)**
+
+**Prioridad:** 🟢 BAJA  
+**Cambio:** Registrado `ConfiguracionSistemaRepository` en el contenedor de DI  
+**Acción requerida:**
+
+- [ ] Verificar que el registro esté correcto
+
+**Notas:**
+- Agregado para inyección de dependencias del nuevo repositorio
+
+---
+
+### 23. `backend/src/infrastructure/container/modules/estudiantes.container.js` ⭐ **MODIFICADO (2025-12-19)**
+
+**Prioridad:** 🟡 MEDIA  
+**Cambio:** Agregados `configuracionSistemaRepository` y `managementRepository` a dependencias de `RegisterStudentUseCase`  
+**Acción requerida:**
+
+- [ ] Verificar que todas las dependencias estén correctamente inyectadas
+- [ ] Revisar si se necesitan más dependencias después de refactorizar use cases
+
+**Notas:**
+- Agregado para permitir generación de códigos de estudiante con correlativos por gestión
+
+---
+
+### 24. `frontend/src/router/modules/estudiantes.routes.jsx` ⭐ **MODIFICADO (2025-12-19)**
+
+**Prioridad:** 🟢 BAJA  
+**Cambio:** Label de menú cambiado de "Nuevo Estudiante" a "Nueva Admisión"  
+**Acción requerida:**
+
+- [ ] Verificar que el cambio de label sea consistente en toda la aplicación
+
+**Notas:**
+- Cambio solicitado por usuario para mejor claridad del proceso
 
 ### 2. `backend/src/application/dtos/request/RegisterStudentDTO.js` ⭐ **MODIFICADO (2025-12-16)**
 
@@ -401,10 +508,100 @@ Este documento lista **TODOS** los archivos que fueron creados o modificados dur
 
 ### 15. `backend/src/presentation/routes/catalogs.routes.js` (MODIFICADO después de creación)
 **Prioridad:** 🟢 BAJA  
-**Cambio:** Agregadas rutas geográficas con query params  
+**Cambio:** Agregadas rutas geográficas con query params, agregada ruta `/estados-civiles` (2025-12-19)  
 **Acción requerida:**
 - [ ] Verificar que todas las rutas estén correctamente documentadas
 - [ ] Agregar validadores para query params si es necesario
+
+---
+
+### 16. `backend/src/presentation/controllers/catalogs.controller.js` (MODIFICADO - 2025-12-19) ⭐
+
+**Prioridad:** 🔴 ALTA  
+**Cambio:** Agregado endpoint `getEstadosCiviles`, modificado `getTiposDiscapacidad` para incluir `descripcion`  
+**Problema:** Usa repositorios directamente sin use cases  
+**Acción requerida:**
+- [ ] Crear use cases para catálogos (ya mencionado anteriormente)
+- [ ] Verificar que `descripcion` se devuelva correctamente en tipos de discapacidad
+
+---
+
+### 17. `backend/src/domain/services/StudentCodeGenerator.js` ⭐ **MODIFICADO (2025-12-19)**
+
+**Prioridad:** 🟡 MEDIA  
+**Cambio:** Formato de código cambiado de `EST-AÑO-CORRELATIVO` a `AÑO-CORRELATIVO`, agregado método `extractCorrelativo`  
+**Acción requerida:**
+- [ ] Verificar que el formato nuevo sea consistente
+- [ ] Revisar método `isValid` y `extractYear` para nuevo formato
+- [ ] Actualizar tests si existen
+
+**Notas:**
+- Formato anterior: `EST-2025-0001`
+- Formato nuevo: `2025-0001`
+- Correlativo con padding de 4 dígitos (ej: `0001`, `0123`)
+
+---
+
+### 18. `backend/src/application/use-cases/estudiantes/RegisterStudentUseCase.js` (MODIFICADO - 2025-12-19) ⭐
+
+**Prioridad:** 🔴 ALTA  
+**Cambio adicional:** Agregado uso de `configuracionSistemaRepository` y `managementRepository` para generación de código de estudiante  
+**Acción requerida:**
+- [ ] Verificar lógica de obtención de año de gestión
+- [ ] Revisar manejo de correlativos (incremento y persistencia)
+- [ ] Verificar que se crea configuración inicial correctamente
+- [ ] Revisar migración de estudiantes antiguos (casos edge)
+
+**Notas:**
+- Ahora determina año de gestión desde `dto.gestionIngresoId` o usa año actual
+- Usa `findOrCreate` para obtener/crear configuración de correlativo
+- Usa `incrementValue` para obtener siguiente correlativo
+- Ver cambios anteriores en sección 3
+
+---
+
+### 19. `backend/src/infrastructure/database/models/Estudiante.js` ⭐ **MODIFICADO (2025-12-19)**
+
+**Prioridad:** 🟡 MEDIA  
+**Cambio:** Campos `gradoInvalidez` y `detallesDiscapacidad` agregados pero TEMPORALMENTE COMENTADOS  
+**Acción requerida:**
+- [ ] Ejecutar migración SQL `16-estudiantes-discapacidad-campos.sql`
+- [ ] Descomentar campos después de ejecutar migración
+- [ ] Verificar mapeo de campos
+
+**Notas:**
+- Campos comentados para evitar error SQL `Unknown column 'grado_invalidez'`
+- Descomentar cuando se ejecute la migración
+- Ver archivo relacionado: `backend/database/01-schemas/16-estudiantes-discapacidad-campos.sql`
+
+---
+
+### 20. `backend/src/infrastructure/repositories/StudentRepository.js` ⭐ **MODIFICADO (2025-12-19)**
+
+**Prioridad:** 🟡 MEDIA  
+**Cambio:** Ordenamiento por defecto actualizado para incluir `codigoEstudiante` primero, campos de discapacidad comentados temporalmente  
+**Acción requerida:**
+- [ ] Verificar que el ordenamiento funcione correctamente
+- [ ] Descomentar campos de discapacidad después de ejecutar migración
+- [ ] Revisar métodos `toEntity`, `mapDataToModel`, `mapDataToUpdate`
+
+**Notas:**
+- Orden por defecto: `[['codigoEstudiante', 'ASC'], ['apellidoPaterno', 'ASC'], ['apellidoMaterno', 'ASC'], ['nombres', 'ASC']]`
+- Campos de discapacidad comentados temporalmente (ver sección 19)
+
+---
+
+### 21. `backend/src/application/mappers/StudentMapper.js` ⭐ **MODIFICADO (2025-12-19)**
+
+**Prioridad:** 🟡 MEDIA  
+**Cambio:** Mapeos de `gradoInvalidez` y `detallesDiscapacidad` TEMPORALMENTE COMENTADOS  
+**Acción requerida:**
+- [ ] Descomentar mapeos después de ejecutar migración SQL
+- [ ] Verificar que los mapeos funcionen correctamente
+
+**Notas:**
+- Mapeos comentados en: `castellanoToDomain`, `domainToCastellano`, `entityToPresentation`
+- Ver archivo relacionado: `backend/database/01-schemas/16-estudiantes-discapacidad-campos.sql`
 
 ---
 
@@ -445,9 +642,15 @@ Este documento lista **TODOS** los archivos que fueron creados o modificados dur
 
 ## 🔴 FRONTEND - Archivos Modificados
 
-### 1. `frontend/src/application/modules/estudiantes/hooks/useStudentFormData.js`
+### 1. `frontend/src/application/modules/estudiantes/hooks/useStudentFormData.js` ⭐ **MODIFICADO (2025-12-19)**
 **Prioridad:** 🟡 MEDIA  
-**Cambio:** Agregadas llamadas a API para cargar catálogos y datos geográficos  
+**Cambio adicional (2025-12-19):**
+- Agregada carga de `estadosCiviles` desde endpoint `/v1/catalogs/estados-civiles`
+- Actualizado `totalRequests` de 9 a 10
+- Agregado `estados-civiles` a `catalogNames` y `/v1/catalogs/estados-civiles` a `catalogUrls`
+- Procesamiento de `estadosCivilesRes` para actualizar estado
+
+**Cambio anterior:** Agregadas llamadas a API para cargar catálogos y datos geográficos  
 **Acción requerida:**
 - [ ] Revisar si se puede optimizar la carga de datos
 - [ ] Considerar caché para catálogos
@@ -473,10 +676,15 @@ Este documento lista **TODOS** los archivos que fueron creados o modificados dur
 
 ---
 
-### 3. `frontend/src/presentation/modules/estudiantes/pages/Registrar/Registrar.jsx` ⭐ **MODIFICADO (2025-12-16)**
+### 3. `frontend/src/presentation/modules/estudiantes/pages/Registrar/Registrar.jsx` ⭐ **MODIFICADO (2025-12-16, 2025-12-19)**
 **Prioridad:** 🔴 ALTA  
 **Problema:** Lógica de generación de campos de documentos mezclada con componente  
-**Cambio adicional:** Agregada funcionalidad para cargar datos de estudiante existente, completar registro, y gestión de documentos existentes  
+**Cambio adicional (2025-12-19):**
+- Destruido `estadosCiviles` del contexto
+- Actualizado `resolveOptions` para mapear `estadosCiviles`
+- Mapeo de `tiposDiscapacidad` actualizado para incluir `descripcion` en las opciones
+
+**Cambio anterior (2025-12-16):** Agregada funcionalidad para cargar datos de estudiante existente, completar registro, y gestión de documentos existentes  
 **Acción requerida:**
 - [ ] Mover lógica de generación de campos de documentos a función helper o a `formFields.js`
 - [ ] Separar responsabilidades claramente
@@ -499,32 +707,48 @@ Este documento lista **TODOS** los archivos que fueron creados o modificados dur
 
 ---
 
-### 4. `frontend/src/presentation/modules/estudiantes/config/formFields.js` ⭐ **MODIFICADO (2025-12-16 tarde)**
+### 4. `frontend/src/presentation/modules/estudiantes/config/formFields.js` ⭐ **MODIFICADO (2025-12-16 tarde, 2025-12-19)**
 **Prioridad:** 🔴 ALTA  
 **Problema:** Configuración compleja con muchas dependencias y renderizado condicional  
-**Cambio adicional:** Agregado `watchFields` explícito para campo de discapacidad  
+**Cambio adicional (2025-12-19):** 
+- Agregado campo `estadoCivilId` (select con estados civiles)
+- Cambio de label "Ciudad de Nacimiento" → "Localidad o Comunidad de Nacimiento"
+- Agregados campos `gradoInvalidez` y `detallesDiscapacidad` (condicionales, dependen de tieneDiscapacidad y tipoDiscapacidadId)
+- Agregado checkbox `esExtranjero` ("Es Extranjero / Doble Nacionalidad")
+- Agregado campo `paisOrigenId` (select con lista temporal de países sudamericanos, visible cuando esExtranjero está marcado)
+- Agregado `watchFields` explícito para campo de discapacidad
+
 **Acción requerida:**
 - [ ] Revisar estructura de secciones
 - [ ] Verificar que todos los campos estén correctamente configurados
 - [ ] Revisar dependencias geográficas (cascada)
-- [ ] Verificar renderizado condicional de `tipoDiscapacidadId`
+- [ ] Verificar renderizado condicional de `tipoDiscapacidadId`, `gradoInvalidez`, `detallesDiscapacidad`, `paisOrigenId`
 - [ ] Revisar validación custom de `documentoPagoMatricula`
 - [ ] Considerar separar en múltiples archivos si es muy grande
 - [ ] Verificar que `watchFields` esté correctamente configurado para todos los campos con `shouldRender`
+- [ ] Reemplazar lista temporal de países con datos dinámicos cuando esté disponible la tabla de países
 
 **Notas:** 
 - Reorganización de secciones
 - Cascada geográfica completa
 - Renderizado condicional
 - Validación custom
-- **NUEVO:** Agregado `watchFields: ['tieneDiscapacidad']` al campo `tipoDiscapacidadId` para que se observe correctamente el switch
+- **2025-12-16:** Agregado `watchFields: ['tieneDiscapacidad']` al campo `tipoDiscapacidadId`
+- **2025-12-19:** Campos de discapacidad adicionales, estado civil, extranjeros
 
 ---
 
-### 5. `frontend/src/presentation/pages/Estudiantes/List/List.jsx` ⭐ **MODIFICADO (2025-12-16)**
+### 5. `frontend/src/presentation/pages/Estudiantes/List/List.jsx` ⭐ **MODIFICADO (2025-12-16, 2025-12-19)**
 **Prioridad:** 🔴 ALTA  
 **Problema:** ⚠️ **VIOLACIÓN GRAVE DE ARQUITECTURA** - Todo el código está en un solo archivo  
-**Cambio adicional:** Agregada funcionalidad de "Completar Registro" para estudiantes con registro incompleto  
+**Cambio adicional (2025-12-19):**
+- Nuevo orden de columnas: Código de Estudiante (primera), Nombre Completo (segunda), CI (tercera)
+- Formato de nombre: "Apellido Paterno Apellido Materno, Nombres" (apellidos primero)
+- Ordenamiento por defecto por código de estudiante
+- Búsqueda mejorada para incluir código de estudiante
+- Placeholder actualizado: "Buscar por código, nombre, CI, email o celular..."
+
+**Cambio anterior (2025-12-16):** Agregada funcionalidad de "Completar Registro" para estudiantes con registro incompleto  
 **Acción requerida:**
 - [ ] Separar en componentes (molecules/organisms):
   - Tabla de estudiantes
@@ -550,9 +774,15 @@ Este documento lista **TODOS** los archivos que fueron creados o modificados dur
 
 ---
 
-### 6. `frontend/src/presentation/components/molecules/FormField/FormField.jsx` ⭐ **MODIFICADO (2025-12-16)**
+### 6. `frontend/src/presentation/components/molecules/FormField/FormField.jsx` ⭐ **MODIFICADO (2025-12-16, 2025-12-19)**
 **Prioridad:** 🟡 MEDIA  
-**Cambio:** Agregado soporte para `checkbox`, filtrado dinámico basado en dependencias, props `help` y `required`, badges/tooltips para documentos, gestión de documentos existentes, optimización de observación de dependencias geográficas, y preservación de valores seleccionados al navegar entre pasos del wizard  
+**Cambio adicional (2025-12-19):**
+- Capitalización automática de nombres y apellidos (función `capitalizeText`, handlers en `onChange` y `onBlur`)
+- Placeholder dinámico para campo de nacionalidad según estado de `esExtranjero`
+- Renderizado reactivo de descripción de discapacidad cuando se selecciona tipo (usa `Form.useWatch`)
+- Parser personalizado para fechas que acepta guiones y barras (DD-MM-YYYY o DD/MM/YYYY) usando `dayjs` con `customParseFormat`
+
+**Cambio anterior (2025-12-16):** Agregado soporte para `checkbox`, filtrado dinámico basado en dependencias, props `help` y `required`, badges/tooltips para documentos, gestión de documentos existentes, optimización de observación de dependencias geográficas, y preservación de valores seleccionados al navegar entre pasos del wizard  
 **Acción requerida:**
 - [ ] Revisar implementación de filtrado dinámico
 - [ ] Verificar que el filtrado funcione correctamente para todos los casos
@@ -582,9 +812,14 @@ Este documento lista **TODOS** los archivos que fueron creados o modificados dur
 
 ---
 
-### 7. `frontend/src/presentation/components/molecules/FormSection/FormSection.jsx` ⭐ **MODIFICADO (2025-12-16 tarde)**
+### 7. `frontend/src/presentation/components/molecules/FormSection/FormSection.jsx` ⭐ **MODIFICADO (2025-12-16 tarde, 2025-12-19)**
 **Prioridad:** 🟡 MEDIA  
-**Cambio:** Implementado renderizado condicional de campos, optimización de observación de campos, y mejoras para switch de discapacidad  
+**Cambio adicional (2025-12-19):**
+- Observación de `esExtranjero` para renderizado condicional de campos relacionados con extranjeros
+- Normalización de valores booleanos para `esExtranjero` en cálculo de campos visibles
+- Efecto adicional para forzar actualización cuando cambia `esExtranjero`
+
+**Cambio anterior (2025-12-16):** Implementado renderizado condicional de campos, optimización de observación de campos, y mejoras para switch de discapacidad  
 **Acción requerida:**
 - [ ] Revisar implementación de `Form.useWatch()`
 - [ ] Verificar que el renderizado condicional funcione correctamente
@@ -605,9 +840,13 @@ Este documento lista **TODOS** los archivos que fueron creados o modificados dur
 
 ---
 
-### 8. `frontend/src/presentation/components/organisms/GenericForm/GenericForm.jsx` ⭐ **MODIFICADO (2025-12-16 tarde)**
+### 8. `frontend/src/presentation/components/organisms/GenericForm/GenericForm.jsx` ⭐ **MODIFICADO (2025-12-16 tarde, 2025-12-19)**
 **Prioridad:** 🟡 MEDIA  
-**Cambio:** Agregado prop `onFieldChange` y `wizardMode`, y actualización de valores cuando cambian initialValues con orden de dependencias geográficas  
+**Cambio adicional (2025-12-19):**
+- Manejo de `esExtranjero` en `handleValuesChange` (similar a `tieneDiscapacidad`)
+- Fuerza actualización del formulario cuando cambia `esExtranjero` para que Form.useWatch detecte el cambio
+
+**Cambio anterior (2025-12-16):** Agregado prop `onFieldChange` y `wizardMode`, y actualización de valores cuando cambian initialValues con orden de dependencias geográficas  
 **Acción requerida:**
 - [ ] Verificar que `wizardMode` esté correctamente implementado
 - [ ] Revisar que `onFieldChange` se pase correctamente a las secciones
@@ -820,8 +1059,8 @@ Este documento lista **TODOS** los archivos que fueron creados o modificados dur
 - **Archivos con violaciones de arquitectura:** 5
 - **Archivos que requieren creación de use cases:** 6 (agregados `GetStudentDocumentsUseCase` y `GetStudentAcademicDataUseCase`)
 - **Archivos que requieren separación de componentes:** 2
-- **Archivos nuevos (código):** 13 (agregados `get-documents.controller.js` y `get-academic-data.controller.js`)
-- **Archivos modificados (código):** 39 (7 archivos modificados hoy)
+- **Archivos nuevos (código):** 17 (agregados en 2025-12-16: `get-documents.controller.js`, `get-academic-data.controller.js`, `getById.controller.js`; agregados en 2025-12-19: `15-configuracion-sistema.sql`, `ConfiguracionSistema.js`, `ConfiguracionSistemaRepository.js`, `16-estudiantes-discapacidad-campos.sql`)
+- **Archivos modificados (código):** 48 (actualizado 2025-12-19)
 - **Archivos eliminados:** 2
 
 ## 🆕 Cambios del Día (2025-12-16)
@@ -866,7 +1105,7 @@ Este documento lista **TODOS** los archivos que fueron creados o modificados dur
 
 ⭐ = Modificado en sesión de tarde (2025-12-16)
 
-**Última actualización:** 2025-12-16 (incluye cambios de mañana, tarde y noche)  
+**Última actualización:** 2025-12-19 (incluye cambios de 2025-12-16 y 2025-12-19)  
 **Próximo paso:** Revisar archivo por archivo según prioridad
 
 ---
@@ -876,4 +1115,142 @@ Este documento lista **TODOS** los archivos que fueron creados o modificados dur
 ### Mejoras en Subida de Documentos:
 - **`useUpdateStudent.js`:** Modificado para subir documentos automáticamente si hay un archivo seleccionado, aunque el checkbox "entregado" no esté marcado. Esto resuelve el problema de que los documentos no se subían cuando el usuario seleccionaba un archivo pero olvidaba marcar el checkbox.
 - Agregados logs de depuración para rastrear el proceso de subida de documentos y facilitar el diagnóstico de problemas.
+
+---
+
+## 🆕 Cambios Recientes (2025-12-19)
+
+### Funcionalidades Agregadas:
+
+#### 1. **Sistema de Configuración del Sistema y Código de Estudiante Mejorado:**
+- **Nuevo formato de código:** `AÑO-CORRELATIVO` (ej: `2025-0001`, `2025-0123`)
+- **Nueva tabla `configuracion_sistema`:** Para almacenar correlativos por gestión académica
+- **Correlativo por gestión:** Cada gestión académica tiene su propio correlativo que se reinicia
+- **Migración de estudiantes antiguos:** La tabla permite manejar correlativos para estudiantes migrados
+
+**Archivos Nuevos:**
+- `backend/database/01-schemas/15-configuracion-sistema.sql` - Schema de tabla de configuración
+- `backend/src/infrastructure/database/models/ConfiguracionSistema.js` - Modelo Sequelize
+- `backend/src/infrastructure/repositories/ConfiguracionSistemaRepository.js` - Repositorio con métodos `findByClave`, `findOrCreate`, `incrementValue`
+
+**Archivos Modificados:**
+- `backend/src/domain/services/StudentCodeGenerator.js` - Cambio de formato a `AÑO-CORRELATIVO`
+- `backend/src/application/use-cases/estudiantes/RegisterStudentUseCase.js` - Usa configuración del sistema para correlativos
+- `backend/src/infrastructure/container/modules/repositories.container.js` - Registro de ConfiguracionSistemaRepository
+- `backend/src/infrastructure/container/modules/estudiantes.container.js` - Inyección de configuracionSistemaRepository y managementRepository
+
+#### 2. **Cambio de Menú: "Nuevo Registro" → "Nueva Admisión":**
+- **Archivo Modificado:**
+- `frontend/src/router/modules/estudiantes.routes.jsx` - Cambio de label de menú
+
+#### 3. **Estado Civil como Catálogo:**
+- **Backend:**
+  - `backend/src/presentation/controllers/catalogs.controller.js` - Agregado endpoint `getEstadosCiviles`
+  - `backend/src/presentation/routes/catalogs.routes.js` - Agregada ruta `/estados-civiles`
+- **Frontend:**
+  - `frontend/src/application/modules/estudiantes/hooks/useStudentFormData.js` - Carga de estados civiles
+  - `frontend/src/application/modules/estudiantes/providers/StudentProvider.jsx` - Exposición de estados civiles
+  - `frontend/src/presentation/modules/estudiantes/pages/Registrar/Registrar.jsx` - Mapeo de estados civiles
+  - `frontend/src/presentation/modules/estudiantes/config/formFields.js` - Campo `estadoCivilId` agregado
+
+#### 4. **Mejoras en Formulario de Estudiante:**
+- **Capitalización automática:** Nombres y apellidos se capitalizan automáticamente (primera letra de cada palabra)
+  - `frontend/src/presentation/components/molecules/FormField/FormField.jsx` - Función `capitalizeText` y handlers en inputs
+  
+- **Cambio de label:** "Ciudad de Nacimiento" → "Localidad o Comunidad de Nacimiento"
+  - `frontend/src/presentation/modules/estudiantes/config/formFields.js` - Actualizado label, placeholder y mensaje de validación
+
+- **Descripción de tipos de discapacidad:** Muestra descripción cuando se selecciona un tipo
+  - `backend/src/presentation/controllers/catalogs.controller.js` - Agregado `descripcion` en respuesta de tipos de discapacidad
+  - `frontend/src/presentation/components/molecules/FormField/FormField.jsx` - Renderizado reactivo de descripción usando `Form.useWatch`
+
+- **Formato de fecha de nacimiento:** Acepta guiones y barras (DD-MM-YYYY o DD/MM/YYYY)
+  - `frontend/src/presentation/modules/estudiantes/config/formFields.js` - Formato cambiado a `DD-MM-YYYY`
+  - `frontend/src/presentation/components/molecules/FormField/FormField.jsx` - Parser personalizado para ambos formatos usando `dayjs` con `customParseFormat`
+
+#### 5. **Campos de Discapacidad (Temporalmente Comentados):**
+- **Schema SQL creado:**
+  - `backend/database/01-schemas/16-estudiantes-discapacidad-campos.sql` - Agrega `grado_invalidez` y `detalles_discapacidad`
+  
+- **Campos agregados pero temporalmente comentados:**
+  - `backend/src/infrastructure/database/models/Estudiante.js` - Campos comentados con TODO
+  - `backend/src/infrastructure/repositories/StudentRepository.js` - Mapeos comentados
+  - `backend/src/application/mappers/StudentMapper.js` - Mapeos comentados
+  - `backend/src/domain/entities/Student.js` - Campos mantienen propiedades (no interactúa con BD)
+  
+- **Razón:** Error SQL `Unknown column 'grado_invalidez'` hasta que se ejecute la migración
+
+- **Frontend implementado:**
+  - `frontend/src/presentation/modules/estudiantes/config/formFields.js` - Campos `gradoInvalidez` y `detallesDiscapacidad` configurados
+  - `frontend/src/presentation/components/molecules/FormField/FormField.jsx` - Renderizado condicional de descripción
+  - `frontend/src/presentation/components/organisms/GenericForm/GenericForm.jsx` - Manejo de `tieneDiscapacidad` en `onValuesChange`
+  - `frontend/src/presentation/components/molecules/FormSection/FormSection.jsx` - Observación de `tieneDiscapacidad` para renderizado condicional
+
+#### 6. **Doble Nacionalidad y Extranjeros:**
+- **Checkbox "Es Extranjero / Doble Nacionalidad":**
+  - `frontend/src/presentation/modules/estudiantes/config/formFields.js` - Campo `esExtranjero` agregado
+  
+- **Campo "País de Origen" (temporal - lista hardcodeada de países sudamericanos):**
+  - `frontend/src/presentation/modules/estudiantes/config/formFields.js` - Campo `paisOrigenId` con lista temporal
+  - Lista incluye: Argentina, Bolivia, Brasil, Chile, Colombia, Ecuador, Guyana, Paraguay, Perú, Surinam, Uruguay, Venezuela
+  
+- **Placeholder dinámico de nacionalidad:**
+  - `frontend/src/presentation/components/molecules/FormField/FormField.jsx` - Cambia según estado de `esExtranjero`
+  
+- **Manejo reactivo:**
+  - `frontend/src/presentation/components/organisms/GenericForm/GenericForm.jsx` - Manejo de `esExtranjero` en `onValuesChange`
+  - `frontend/src/presentation/components/molecules/FormSection/FormSection.jsx` - Observación de `esExtranjero` para renderizado condicional
+
+#### 7. **Ordenamiento y Visualización en Lista de Estudiantes:**
+- **Nuevo orden de columnas:**
+  1. Código de Estudiante (primera columna, fija)
+  2. Nombre Completo (apellidos primero, luego nombres)
+  3. CI (después del nombre)
+  
+- **Formato de nombre:** "Apellido Paterno Apellido Materno, Nombres"
+  - `frontend/src/presentation/pages/Estudiantes/List/List.jsx` - Función `getFullName` actualizada
+  
+- **Ordenamiento por defecto:** Por código de estudiante (año y correlativo)
+  - `backend/src/infrastructure/repositories/StudentRepository.js` - `getDefaultSort()` actualizado
+  - `frontend/src/presentation/pages/Estudiantes/List/List.jsx` - `defaultSort` configurado en tabla
+  
+- **Búsqueda mejorada:** Incluye búsqueda por código de estudiante
+  - `frontend/src/presentation/pages/Estudiantes/List/List.jsx` - Filtrado actualizado
+
+### Archivos Nuevos (2025-12-19):
+1. `backend/database/01-schemas/15-configuracion-sistema.sql`
+2. `backend/src/infrastructure/database/models/ConfiguracionSistema.js`
+3. `backend/src/infrastructure/repositories/ConfiguracionSistemaRepository.js`
+4. `backend/database/01-schemas/16-estudiantes-discapacidad-campos.sql`
+
+### Archivos Modificados (2025-12-19):
+**Backend:**
+1. `backend/src/domain/services/StudentCodeGenerator.js`
+2. `backend/src/application/use-cases/estudiantes/RegisterStudentUseCase.js`
+3. `backend/src/infrastructure/container/modules/repositories.container.js`
+4. `backend/src/infrastructure/container/modules/estudiantes.container.js`
+5. `backend/src/presentation/controllers/catalogs.controller.js`
+6. `backend/src/presentation/routes/catalogs.routes.js`
+7. `backend/src/infrastructure/database/models/Estudiante.js`
+8. `backend/src/infrastructure/repositories/StudentRepository.js`
+9. `backend/src/application/mappers/StudentMapper.js`
+
+**Frontend:**
+1. `frontend/src/router/modules/estudiantes.routes.jsx`
+2. `frontend/src/application/modules/estudiantes/hooks/useStudentFormData.js`
+3. `frontend/src/application/modules/estudiantes/providers/StudentProvider.jsx`
+4. `frontend/src/presentation/modules/estudiantes/pages/Registrar/Registrar.jsx`
+5. `frontend/src/presentation/modules/estudiantes/config/formFields.js`
+6. `frontend/src/presentation/components/molecules/FormField/FormField.jsx`
+7. `frontend/src/presentation/components/organisms/GenericForm/GenericForm.jsx`
+8. `frontend/src/presentation/components/molecules/FormSection/FormSection.jsx`
+9. `frontend/src/presentation/pages/Estudiantes/List/List.jsx`
+
+### Notas Importantes:
+- ⚠️ **Campos de discapacidad comentados:** Los campos `grado_invalidez` y `detalles_discapacidad` están implementados en el código pero comentados temporalmente hasta que se ejecute la migración SQL `16-estudiantes-discapacidad-campos.sql`
+- 📋 **Lista temporal de países:** El campo "País de Origen" usa una lista hardcodeada de países sudamericanos. Se debe reemplazar por una tabla de países cuando esté disponible
+- 🔄 **Migración requerida:** Se debe ejecutar `15-configuracion-sistema.sql` antes de usar el nuevo sistema de códigos de estudiante
+- 🔄 **Migración pendiente:** Se debe ejecutar `16-estudiantes-discapacidad-campos.sql` y luego descomentar los campos en el código
+
+**Última actualización:** 2025-12-19
 

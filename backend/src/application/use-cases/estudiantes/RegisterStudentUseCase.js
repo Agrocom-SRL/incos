@@ -1,7 +1,7 @@
 import { Student } from '../../../domain/entities/Student.js';
 import { ValidationError } from '../../../shared/AppError.js';
 import { StudentValidator } from '../../validators/StudentValidator.js';
-import { StudentCodeUtils } from '../../utils/StudentCodeUtils.js';
+import { StudentCodeGenerator } from '../../../domain/services/StudentCodeGenerator.js';
 
 /**
  * Use Case: RegisterStudentUseCase
@@ -16,12 +16,16 @@ export class RegisterStudentUseCase {
     studentAcademicDataRepository,
     studentDocumentRepository,
     documentacionRepository,
+    configuracionSistemaRepository,
+    managementRepository,
     logger,
   }) {
     this.studentRepository = studentRepository;
     this.studentAcademicDataRepository = studentAcademicDataRepository;
     this.studentDocumentRepository = studentDocumentRepository;
     this.documentacionRepository = documentacionRepository;
+    this.configuracionSistemaRepository = configuracionSistemaRepository;
+    this.managementRepository = managementRepository;
     this.logger = logger;
   }
 
@@ -66,9 +70,60 @@ export class RegisterStudentUseCase {
       throw new ValidationError('El formato del email es inválido');
     }
 
-    // 8. Generar código único de estudiante (temporal, se generará después con gestión)
-    // TODO: Implementar generación de código con gestión cuando se agregue esa funcionalidad
-    student.studentCode = StudentCodeUtils.generateTemporaryCode(dto.ci);
+    // 8. Generar código único de estudiante usando año de gestión + correlativo
+    let anioGestion = new Date().getFullYear(); // Fallback: año actual
+    
+    // Si hay gestión de ingreso, obtener el año de esa gestión
+    if (dto.gestionIngresoId) {
+      try {
+        const gestion = await this.managementRepository.findById(dto.gestionIngresoId);
+        if (gestion && gestion.year) {
+          anioGestion = gestion.year;
+          this.logger.info('[Estudiantes] Gestión encontrada para código de estudiante', {
+            gestionId: dto.gestionIngresoId,
+            anio: gestion.year,
+          });
+        }
+      } catch (error) {
+        this.logger.warn('[Estudiantes] No se pudo obtener la gestión, usando año actual', {
+          gestionId: dto.gestionIngresoId,
+          error: error.message,
+        });
+      }
+    }
+
+    // Obtener o crear configuración de correlativo para esta gestión
+    const claveCorrelativo = `codigo_estudiante_correlativo_${anioGestion}`;
+    let configCorrelativo = await this.configuracionSistemaRepository.findByClave(claveCorrelativo, { includeInactive: true });
+    
+    if (!configCorrelativo) {
+      // Crear configuración inicial con correlativo 0
+      configCorrelativo = await this.configuracionSistemaRepository.findOrCreate(
+        claveCorrelativo,
+        '0',
+        'NUMBER',
+        `Último número correlativo usado para códigos de estudiantes en la gestión ${anioGestion}`,
+        'CODIGOS_ESTUDIANTE',
+        userId
+      );
+      this.logger.info('[Estudiantes] Configuración de correlativo creada', {
+        clave: claveCorrelativo,
+        anio: anioGestion,
+      });
+    }
+
+    // Incrementar correlativo
+    const nuevoCorrelativo = await this.configuracionSistemaRepository.incrementValue(claveCorrelativo, 1, userId);
+    const correlativo = parseInt(nuevoCorrelativo.valor, 10);
+
+    // Generar código de estudiante
+    student.studentCode = StudentCodeGenerator.generate(anioGestion, correlativo);
+    
+    this.logger.info('[Estudiantes] Código de estudiante generado', {
+      codigo: student.studentCode,
+      anio: anioGestion,
+      correlativo,
+    });
 
     // 9. Persistir estudiante
     const savedStudent = await this.studentRepository.create(student, userId);

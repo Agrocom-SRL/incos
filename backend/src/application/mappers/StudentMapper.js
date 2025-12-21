@@ -35,6 +35,9 @@ export class StudentMapper {
     if (dataCastellano.tipoSangre !== undefined) result.bloodType = dataCastellano.tipoSangre;
     if (dataCastellano.tieneDiscapacidad !== undefined) result.hasDisability = dataCastellano.tieneDiscapacidad;
     if (dataCastellano.tipoDiscapacidadId !== undefined) result.disabilityTypeId = dataCastellano.tipoDiscapacidadId;
+    // TODO: Descomentar cuando se confirme la estructura de la base de datos
+    // if (dataCastellano.gradoInvalidez !== undefined) result.disabilityDegree = dataCastellano.gradoInvalidez;
+    // if (dataCastellano.detallesDiscapacidad !== undefined) result.disabilityDetails = dataCastellano.detallesDiscapacidad;
     
     // Contacto
     if (dataCastellano.emailPersonal !== undefined) result.personalEmail = dataCastellano.emailPersonal;
@@ -85,6 +88,9 @@ export class StudentMapper {
       tipoSangre: dataDominio.bloodType,
       tieneDiscapacidad: dataDominio.hasDisability,
       tipoDiscapacidadId: dataDominio.disabilityTypeId,
+      // TODO: Descomentar cuando se confirme la estructura de la base de datos
+      // gradoInvalidez: dataDominio.disabilityDegree,
+      // detallesDiscapacidad: dataDominio.disabilityDetails,
       
       // Contacto
       emailPersonal: dataDominio.personalEmail,
@@ -134,6 +140,9 @@ export class StudentMapper {
       tipoSangre: student.bloodType,
       tieneDiscapacidad: student.hasDisability,
       tipoDiscapacidadId: student.disabilityTypeId,
+      // TODO: Descomentar cuando se confirme la estructura de la base de datos
+      // gradoInvalidez: student.disabilityDegree,
+      // detallesDiscapacidad: student.disabilityDetails,
       emailPersonal: student.personalEmail,
       celular: student.mobilePhone,
       telefonoFijo: student.landlinePhone,

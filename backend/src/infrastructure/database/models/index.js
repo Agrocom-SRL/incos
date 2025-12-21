@@ -67,3 +67,8 @@ export { BecaDescuento } from './BecaDescuento.js';
 export { EstudianteBeca } from './EstudianteBeca.js';
 export { LicenciaSolicitud } from './LicenciaSolicitud.js';
 export { EstudianteApoderado } from './EstudianteApoderado.js';
+
+// ============================================
+// CONFIGURACIÓN DEL SISTEMA
+// ============================================
+export { ConfiguracionSistema } from './ConfiguracionSistema.js';

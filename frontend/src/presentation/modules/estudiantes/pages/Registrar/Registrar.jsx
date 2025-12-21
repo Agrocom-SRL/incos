@@ -46,6 +46,7 @@ const Registrar = () => {
     municipios,
     idiomas,
     tiposDiscapacidad,
+    estadosCiviles,
     documentacionInscripcion,
     loadDepartamentos,
     loadProvincias,
@@ -85,7 +86,12 @@ const Registrar = () => {
       provincias: (provincias || []).map(p => ({ label: p.nombre, value: p.id, departamentoId: p.departamentoId })),
       municipios: (municipios || []).map(m => ({ label: m.nombre, value: m.id, provinciaId: m.provinciaId })),
       idiomas: (idiomas || []).map(i => ({ label: i.nombre, value: i.id })),
-      tiposDiscapacidad: (tiposDiscapacidad || []).map(t => ({ label: t.nombre, value: t.id })),
+      tiposDiscapacidad: (tiposDiscapacidad || []).map(t => ({ 
+        label: t.nombre, 
+        value: t.id,
+        descripcion: t.descripcion || null
+      })),
+      estadosCiviles: (estadosCiviles || []).map(e => ({ label: e.nombre, value: e.id })),
     };
     return optionsMap[fieldName] || [];
   };

@@ -106,6 +106,19 @@ export const Estudiante = sequelize.define(
       allowNull: true,
       comment: 'Tipo de discapacidad',
     },
+    // TODO: Descomentar cuando se confirme la estructura de la base de datos
+    // gradoInvalidez: {
+    //   type: DataTypes.STRING(50),
+    //   field: 'grado_invalidez',
+    //   allowNull: true,
+    //   comment: 'Grado de invalidez (leve, moderado, severo, profundo)',
+    // },
+    // detallesDiscapacidad: {
+    //   type: DataTypes.TEXT,
+    //   field: 'detalles_discapacidad',
+    //   allowNull: true,
+    //   comment: 'Detalles específicos de la discapacidad',
+    // },
     emailPersonal: {
       type: DataTypes.STRING(150),
       field: 'email_personal',

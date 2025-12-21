@@ -32,6 +32,8 @@ export class Student extends BaseEntity {
     this.bloodType = data.bloodType || null;
     this.hasDisability = data.hasDisability !== undefined ? data.hasDisability : false;
     this.disabilityTypeId = data.disabilityTypeId || null;
+    this.disabilityDegree = data.disabilityDegree || null;
+    this.disabilityDetails = data.disabilityDetails || null;
     
     // Contacto
     this.personalEmail = data.personalEmail || null;

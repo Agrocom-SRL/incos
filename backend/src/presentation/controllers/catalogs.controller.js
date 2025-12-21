@@ -12,6 +12,7 @@ import { sequelize } from '../../infrastructure/database/config/sequelize.js';
 import '../../infrastructure/database/models/Pais.js';
 import '../../infrastructure/database/models/Idioma.js';
 import '../../infrastructure/database/models/TipoDiscapacidad.js';
+import '../../infrastructure/database/models/EstadoCivil.js';
 import '../../infrastructure/database/models/Municipio.js';
 import '../../infrastructure/database/models/Documentacion.js';
 import '../../infrastructure/database/models/Carrera.js';
@@ -28,6 +29,7 @@ import { ProvinceRepository } from '../../infrastructure/repositories/ProvinceRe
 import { MunicipalityRepository } from '../../infrastructure/repositories/MunicipalityRepository.js';
 import { LanguageRepository } from '../../infrastructure/repositories/LanguageRepository.js';
 import { DisabilityTypeRepository } from '../../infrastructure/repositories/DisabilityTypeRepository.js';
+import { CivilStatusRepository } from '../../infrastructure/repositories/CivilStatusRepository.js';
 import { DocumentacionRepository } from '../../infrastructure/repositories/DocumentacionRepository.js';
 
 // Crear instancias de repositorios
@@ -39,6 +41,7 @@ const provinceRepository = new ProvinceRepository();
 const municipalityRepository = new MunicipalityRepository();
 const languageRepository = new LanguageRepository();
 const disabilityTypeRepository = new DisabilityTypeRepository();
+const civilStatusRepository = new CivilStatusRepository();
 const documentacionRepository = new DocumentacionRepository();
 
 /**
@@ -455,6 +458,7 @@ export const getTiposDiscapacidad = async (req, res, next) => {
     const tipos = (result.disabilityTypes || []).map(tipo => ({
       id: tipo.id,
       nombre: tipo.name,
+      descripcion: tipo.description || null,
     }));
 
     res.status(200).json({
@@ -464,6 +468,57 @@ export const getTiposDiscapacidad = async (req, res, next) => {
     });
   } catch (error) {
     logger.error('Error al obtener tipos de discapacidad', { 
+      error: error.message, 
+      stack: error.stack,
+      name: error.name,
+      code: error.code,
+      original: error.original?.message,
+      sql: error.sql,
+      sqlState: error.original?.sqlState,
+      sqlCode: error.original?.code,
+    });
+    next(error);
+  }
+};
+
+/**
+ * GET /api/v1/catalogs/estados-civiles
+ * Obtener lista de estados civiles activos
+ */
+export const getEstadosCiviles = async (req, res, next) => {
+  try {
+    logger.debug('[Catalogs] Obteniendo estados civiles...');
+    const result = await civilStatusRepository.findAll({}, null, null);
+    logger.debug('[Catalogs] Resultado de findAll:', { 
+      hasResult: !!result, 
+      hasCivilStatuses: !!(result?.civilStatuses),
+      civilStatusesCount: result?.civilStatuses?.length || 0,
+      resultKeys: result ? Object.keys(result) : [],
+      resultType: typeof result,
+    });
+    
+    if (!result) {
+      logger.warn('[Catalogs] Resultado de findAll es null o undefined');
+      return res.status(200).json({
+        success: true,
+        data: [],
+        message: 'Estados civiles obtenidos correctamente (vacío)',
+      });
+    }
+    
+    const estadosCiviles = (result.civilStatuses || []).map(estado => ({
+      id: estado.id,
+      nombre: estado.name,
+      abreviatura: estado.abbreviation || null,
+    }));
+
+    res.status(200).json({
+      success: true,
+      data: estadosCiviles,
+      message: 'Estados civiles obtenidos correctamente',
+    });
+  } catch (error) {
+    logger.error('Error al obtener estados civiles', { 
       error: error.message, 
       stack: error.stack,
       name: error.name,

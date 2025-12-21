@@ -44,7 +44,7 @@ export const estudiantesRoutes = [
         element: <EstudiantesRegistrarPage />,
         key: 'EST-REGISTRAR',
         menu: {
-            label: 'Nuevo Estudiante',
+            label: 'Nueva Admisión',
             module: 'EST',
             parent: 'EST',
             order: 2,

@@ -708,9 +708,53 @@ Convertir el registro de estudiantes en un asistente (wizard) de múltiples paso
 
 ---
 
-**Última actualización:** 2025-12-15 (Documentación dinámica, modelo/repositorio de documentación, subida de archivos)  
+**Última actualización:** 2025-12-19 (incluye cambios de 2025-12-15, 2025-12-16 y 2025-12-19)  
 **Autor:** Cambios realizados para acelerar presentación  
 **Revisión requerida:** ✅ SÍ - Después de la presentación
+
+---
+
+## 🆕 Cambios Adicionales (2025-12-19)
+
+### Funcionalidades Implementadas:
+
+#### 1. Sistema de Código de Estudiante Mejorado
+- **Formato nuevo:** `AÑO-CORRELATIVO` (ej: `2025-0001`)
+- **Tabla de configuración:** Nueva tabla `configuracion_sistema` para gestionar correlativos por gestión académica
+- **Correlativo por gestión:** Cada gestión académica mantiene su propio correlativo
+- Ver detalles completos en `REFACTORIZACION_PENDIENTE.md` sección "Cambios Recientes (2025-12-19)"
+
+#### 2. Cambio de Menú
+- "Nuevo Registro" → "Nueva Admisión" en el módulo de estudiantes
+
+#### 3. Estado Civil como Catálogo
+- Agregado como campo selectable en el formulario de registro
+- Endpoint backend: `GET /v1/catalogs/estados-civiles`
+
+#### 4. Mejoras en Formulario
+- **Capitalización automática** de nombres y apellidos
+- **Cambio de label:** "Ciudad" → "Localidad o Comunidad de Nacimiento"
+- **Descripción de discapacidad:** Muestra descripción cuando se selecciona tipo
+- **Formato de fecha:** Acepta `DD-MM-YYYY` o `DD/MM/YYYY`
+
+#### 5. Campos de Discapacidad (Implementados pero Temporalmente Comentados)
+- Campos `grado_invalidez` y `detalles_discapacidad` agregados al schema SQL
+- Código implementado pero comentado hasta ejecutar migración
+- Frontend completamente funcional con renderizado condicional
+
+#### 6. Doble Nacionalidad y Extranjeros
+- Checkbox "Es Extranjero / Doble Nacionalidad"
+- Campo "País de Origen" (lista temporal de países sudamericanos)
+- Placeholder dinámico de nacionalidad según estado
+
+#### 7. Ordenamiento en Lista de Estudiantes
+- Nuevo orden: Código → Apellidos, Nombres → CI
+- Formato de nombre: "Apellido Paterno Apellido Materno, Nombres"
+- Ordenamiento por defecto por código de estudiante
+
+### Notas:
+- Ver `REFACTORIZACION_PENDIENTE.md` para lista completa de archivos modificados
+- Migraciones SQL pendientes de ejecución: `15-configuracion-sistema.sql` y `16-estudiantes-discapacidad-campos.sql`
 
 ---
 

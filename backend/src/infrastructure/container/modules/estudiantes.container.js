@@ -47,6 +47,8 @@ export function RegisterEstudiantesModule(container) {
         studentAcademicDataRepository: c.resolve('studentAcademicDataRepository'),
         studentDocumentRepository: c.resolve('studentDocumentRepository'),
         documentacionRepository: c.resolve('documentacionRepository'),
+        configuracionSistemaRepository: c.resolve('configuracionSistemaRepository'),
+        managementRepository: c.resolve('managementRepository'),
         logger: c.resolve('logger'),
       }),
     true

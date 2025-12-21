@@ -43,7 +43,7 @@ export const studentFormFields = {
         rules: [
           { required: true, message: 'La fecha de nacimiento es requerida' },
         ],
-        format: 'DD/MM/YYYY',
+        format: 'DD-MM-YYYY', // Formato de visualización: día-mes-año con guiones
         disabledDate: (current) => {
           // No permitir fechas futuras y validar edad mínima (17 años)
           if (current && current > dayjs().endOf('day')) {
@@ -53,7 +53,7 @@ export const studentFormFields = {
           const minDate = dayjs().subtract(17, 'year');
           return current && current > minDate;
         },
-        placeholder: 'Seleccione la fecha de nacimiento',
+        placeholder: 'DD-MM-YYYY o DD/MM/YYYY',
         span: 8,
       },
       {
@@ -102,6 +102,15 @@ export const studentFormFields = {
         span: 8,
       },
       {
+        name: 'estadoCivilId',
+        label: 'Estado Civil',
+        type: 'select',
+        options: 'estadosCiviles', // Referencia a datos del Provider
+        placeholder: 'Seleccione el estado civil',
+        allowClear: true,
+        span: 8,
+      },
+      {
         name: 'tipoSangre',
         label: 'Tipo de Sangre',
         type: 'select',
@@ -126,7 +135,46 @@ export const studentFormFields = {
         span: 8,
         dependencies: ['tieneDiscapacidad'],
         watchFields: ['tieneDiscapacidad'], // Campos a observar para shouldRender
-        shouldRender: (formValues) => formValues?.tieneDiscapacidad === true,
+        shouldRender: (formValues) => {
+          const tieneDiscapacidad = formValues?.tieneDiscapacidad;
+          return Boolean(tieneDiscapacidad) === true;
+        },
+      },
+      {
+        name: 'gradoInvalidez',
+        label: 'Grado de Invalidez',
+        type: 'select',
+        options: [
+          { label: 'Leve', value: 'LEVE' },
+          { label: 'Moderado', value: 'MODERADO' },
+          { label: 'Severo', value: 'SEVERO' },
+          { label: 'Profundo', value: 'PROFUNDO' },
+        ],
+        placeholder: 'Seleccione el grado de invalidez',
+        allowClear: true,
+        span: 8,
+        dependencies: ['tieneDiscapacidad', 'tipoDiscapacidadId'],
+        watchFields: ['tieneDiscapacidad', 'tipoDiscapacidadId'], // Campos a observar para shouldRender
+        shouldRender: (formValues) => {
+          const tieneDiscapacidad = Boolean(formValues?.tieneDiscapacidad);
+          const tieneTipo = formValues?.tipoDiscapacidadId !== null && formValues?.tipoDiscapacidadId !== undefined;
+          return tieneDiscapacidad && tieneTipo;
+        },
+      },
+      {
+        name: 'detallesDiscapacidad',
+        label: 'Detalles Específicos de la Discapacidad',
+        type: 'textarea',
+        placeholder: 'Ingrese los detalles específicos de la discapacidad',
+        rows: 3,
+        span: 16,
+        dependencies: ['tieneDiscapacidad', 'tipoDiscapacidadId'],
+        watchFields: ['tieneDiscapacidad', 'tipoDiscapacidadId'], // Campos a observar para shouldRender
+        shouldRender: (formValues) => {
+          const tieneDiscapacidad = Boolean(formValues?.tieneDiscapacidad);
+          const tieneTipo = formValues?.tipoDiscapacidadId !== null && formValues?.tipoDiscapacidadId !== undefined;
+          return tieneDiscapacidad && tieneTipo;
+        },
       },
     ],
   },
@@ -136,11 +184,51 @@ export const studentFormFields = {
     title: 'Origen y Ubicación Geográfica',
     fields: [
       {
+        name: 'esExtranjero',
+        label: 'Es Extranjero / Doble Nacionalidad',
+        type: 'checkbox',
+        span: 8,
+      },
+      {
         name: 'nacionalidad',
         label: 'Nacionalidad',
         type: 'input',
         placeholder: 'Ej: Boliviana',
         span: 8,
+        dependencies: ['esExtranjero'],
+        watchFields: ['esExtranjero'],
+        shouldRender: (formValues) => {
+          // Mostrar siempre
+          return true;
+        },
+        // El placeholder se puede actualizar dinámicamente en el componente si es necesario
+      },
+      {
+        name: 'paisOrigenId',
+        label: 'País de Origen',
+        type: 'select',
+        options: [
+          { label: 'Argentina', value: 'AR' },
+          { label: 'Bolivia', value: 'BO' },
+          { label: 'Brasil', value: 'BR' },
+          { label: 'Chile', value: 'CL' },
+          { label: 'Colombia', value: 'CO' },
+          { label: 'Ecuador', value: 'EC' },
+          { label: 'Guyana', value: 'GY' },
+          { label: 'Paraguay', value: 'PY' },
+          { label: 'Perú', value: 'PE' },
+          { label: 'Surinam', value: 'SR' },
+          { label: 'Uruguay', value: 'UY' },
+          { label: 'Venezuela', value: 'VE' },
+        ],
+        placeholder: 'Seleccione el país de origen',
+        allowClear: true,
+        span: 8,
+        dependencies: ['esExtranjero'],
+        watchFields: ['esExtranjero'],
+        shouldRender: (formValues) => {
+          return Boolean(formValues?.esExtranjero) === true;
+        },
       },
       {
         name: 'idiomaNatalId',
@@ -159,6 +247,12 @@ export const studentFormFields = {
         placeholder: 'Seleccione el país de nacimiento',
         allowClear: true,
         span: 8,
+        dependencies: ['esExtranjero'],
+        watchFields: ['esExtranjero'],
+        shouldRender: (formValues) => {
+          // Mostrar siempre, pero cuando es extranjero, se puede seleccionar cualquier país
+          return true;
+        },
       },
       {
         name: 'departamentoNacimientoId',
@@ -192,12 +286,12 @@ export const studentFormFields = {
       },
       {
         name: 'ciudadNacimiento',
-        label: 'Ciudad de Nacimiento',
+        label: 'Localidad o Comunidad de Nacimiento',
         type: 'input',
         rules: [
-          { max: 100, message: 'La ciudad no puede exceder 100 caracteres' },
+          { max: 100, message: 'La localidad o comunidad no puede exceder 100 caracteres' },
         ],
-        placeholder: 'Ingrese la ciudad de nacimiento',
+        placeholder: 'Ingrese la localidad o comunidad de nacimiento',
         span: 8,
       },
     ],
