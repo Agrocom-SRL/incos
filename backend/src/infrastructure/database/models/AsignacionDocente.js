@@ -1,5 +1,5 @@
 import { DataTypes } from 'sequelize';
-import { sequelize } from '../config/sequelize.js';
+import { sequelize } from '../sequelize.js';
 import { baseModelFields, baseModelOptions } from './baseModel.js';
 
 export const AsignacionDocente = sequelize.define(

@@ -6,7 +6,7 @@
  */
 
 import { logger } from '../../shared/logger.js';
-import { sequelize } from '../../infrastructure/database/config/sequelize.js';
+import { sequelize } from '../../infrastructure/database/sequelize.js';
 
 // Importar modelos para asegurar su inicialización
 import '../../infrastructure/database/models/Pais.js';

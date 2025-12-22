@@ -4,14 +4,11 @@
  */
 
 import { logger } from '../../../shared/logger.js';
-import upload from '../../../infrastructure/external/storage/multer.config.js';
+import { fileUploadService } from '../../../infrastructure/services/FileUploadService.js';
 
-// Middleware de multer para un solo archivo
-export const uploadSingle = upload.single('archivo');
+// OJO: el field name debe coincidir con tu service: .single('documento')
+export const uploadSingle = fileUploadService.uploadStudentDocument();
 
-/**
- * Maneja la subida de un documento
- */
 export class UploadDocumentController {
   constructor({ uploadDocumentUseCase }) {
     this.uploadDocumentUseCase = uploadDocumentUseCase;
@@ -36,16 +33,11 @@ export class UploadDocumentController {
         throw new Error('UploadDocumentUseCase no está configurado');
       }
 
-      const estudianteId = parseInt(req.params.id);
+      const estudianteId = parseInt(req.params.id, 10);
       const { documentacionId, esOriginal = false } = req.body;
       const file = req.file;
 
       if (!file) {
-        logger.warn('UploadDocumentController - No se proporcionó archivo', {
-          estudianteId,
-          documentacionId,
-          body: req.body,
-        });
         return res.status(400).json({
           success: false,
           error: 'No se proporcionó ningún archivo',
@@ -53,10 +45,6 @@ export class UploadDocumentController {
       }
 
       if (!documentacionId) {
-        logger.warn('UploadDocumentController - No se proporcionó documentacionId', {
-          estudianteId,
-          body: req.body,
-        });
         return res.status(400).json({
           success: false,
           error: 'El ID de documentación es requerido',
@@ -64,8 +52,7 @@ export class UploadDocumentController {
       }
 
       const userId = req.user?.id || req.user?.userId;
-      
-      // Usar el use case
+
       const document = await this.uploadDocumentUseCase.execute(
         estudianteId,
         documentacionId,
@@ -74,7 +61,7 @@ export class UploadDocumentController {
         userId
       );
 
-      res.status(201).json({
+      return res.status(201).json({
         success: true,
         data: {
           id: document.id,
@@ -94,4 +81,3 @@ export class UploadDocumentController {
     }
   }
 }
-
