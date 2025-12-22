@@ -64,7 +64,7 @@ export class UploadDocumentController {
       }
 
       const userId = req.user?.id || req.user?.userId;
-
+      
       // Usar el use case
       const document = await this.uploadDocumentUseCase.execute(
         estudianteId,

@@ -25,7 +25,7 @@ export class ListStudentsController {
       if (!this.listStudentsUseCase) {
         throw new Error('ListStudentsUseCase no está configurado');
       }
-
+      
       const filters = {};
       if (search) {
         filters.search = search;

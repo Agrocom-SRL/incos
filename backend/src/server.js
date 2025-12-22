@@ -13,9 +13,9 @@ async function initializeDatabase() {
     
     // Opcional: Verificar que las tablas principales existan
     if (process.env.NODE_ENV !== 'production') {
-      const [results] = await sequelize.query("SHOW TABLES LIKE 'gestion'");
+      const [results] = await sequelize.query("SHOW TABLES LIKE 'gestiones'");
       if (results.length === 0) {
-        logger.warn('⚠ Advertencia: La tabla "gestion" no existe. Verifica que las migraciones se hayan ejecutado.');
+        logger.warn('⚠ Advertencia: La tabla "gestiones" no existe. Verifica que las migraciones se hayan ejecutado.');
       }
     }
   } catch (error) {

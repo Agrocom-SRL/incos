@@ -1,35 +1,35 @@
-// src/router/modules/traspasos-transferencias.routes.js
+// src/router/modules/trazabilidad.routes.js
 import { lazy } from 'react';
 
 // Traspasos (misma ciudad/región)
-const TraspasosSolicitarPage = lazy(() => import('@pages/TraspasosTransferencias/Traspasos/Solicitar'));
-const TraspasosRecibirPage = lazy(() => import('@pages/TraspasosTransferencias/Traspasos/Recibir'));
-const TraspasosConvalidarNotasPage = lazy(() => import('@pages/TraspasosTransferencias/Traspasos/ConvalidarNotas'));
-const TraspasosAprobarPage = lazy(() => import('@pages/TraspasosTransferencias/Traspasos/Aprobar'));
-const TraspasosListarPage = lazy(() => import('@pages/TraspasosTransferencias/Traspasos/Listar'));
+const TraspasosSolicitarPage = lazy(() => import('@pages/trazabilidad/Traspasos/Solicitar'));
+const TraspasosRecibirPage = lazy(() => import('@pages/trazabilidad/Traspasos/Recibir'));
+const TraspasosConvalidarNotasPage = lazy(() => import('@pages/trazabilidad/Traspasos/ConvalidarNotas'));
+const TraspasosAprobarPage = lazy(() => import('@pages/trazabilidad/Traspasos/Aprobar'));
+const TraspasosListarPage = lazy(() => import('@pages/trazabilidad/Traspasos/Listar'));
 
 // Transferencias (otra ciudad/región)
-const TransferenciasSolicitarPage = lazy(() => import('@pages/TraspasosTransferencias/Transferencias/Solicitar'));
-const TransferenciasRecibirPage = lazy(() => import('@pages/TraspasosTransferencias/Transferencias/Recibir'));
-const TransferenciasConvalidarNotasPage = lazy(() => import('@pages/TraspasosTransferencias/Transferencias/ConvalidarNotas'));
-const TransferenciasAprobarPage = lazy(() => import('@pages/TraspasosTransferencias/Transferencias/Aprobar'));
-const TransferenciasListarPage = lazy(() => import('@pages/TraspasosTransferencias/Transferencias/Listar'));
+const TransferenciasSolicitarPage = lazy(() => import('@pages/trazabilidad/Transferencias/Solicitar'));
+const TransferenciasRecibirPage = lazy(() => import('@pages/trazabilidad/Transferencias/Recibir'));
+const TransferenciasConvalidarNotasPage = lazy(() => import('@pages/trazabilidad/Transferencias/ConvalidarNotas'));
+const TransferenciasAprobarPage = lazy(() => import('@pages/trazabilidad/Transferencias/Aprobar'));
+const TransferenciasListarPage = lazy(() => import('@pages/trazabilidad/Transferencias/Listar'));
 
-export const traspasosTransferenciasRoutes = [
+export const trazabilidad = [
     // Módulo raíz: Traspasos y Transferencias
     {
-        path: '/traspasos-transferencias',
+        path: '/trazabilidad',
         element: null, // No tiene página propia, es solo un grupo
         key: 'TRA',
         menu: {
-            label: 'Traspasos y Transferencias',
+            label: 'Trazabilidad',
             module: 'TRA',
             order: 5, // Después de Inscripciones, antes de Calificaciones
         },
     },
     // Submenu: Traspasos (misma ciudad/región)
     {
-        path: '/traspasos-transferencias/traspasos',
+        path: '/trazabilidad/traspasos',
         element: null, // No tiene página propia, es solo un grupo
         key: 'TRA-TRASPASOS',
         menu: {
@@ -40,7 +40,7 @@ export const traspasosTransferenciasRoutes = [
         },
     },
     {
-        path: '/traspasos-transferencias/traspasos/listar',
+        path: '/trazabilidad/traspasos/listar',
         element: <TraspasosListarPage />,
         key: 'TRA-TRASPASOS-LIST',
         menu: {
@@ -51,7 +51,7 @@ export const traspasosTransferenciasRoutes = [
         },
     },
     {
-        path: '/traspasos-transferencias/traspasos/solicitar',
+        path: '/trazabilidad/traspasos/solicitar',
         element: <TraspasosSolicitarPage />,
         key: 'TRA-TRASPASOS-SOLICITAR',
         menu: {
@@ -62,7 +62,7 @@ export const traspasosTransferenciasRoutes = [
         },
     },
     {
-        path: '/traspasos-transferencias/traspasos/recibir',
+        path: '/trazabilidad/traspasos/recibir',
         element: <TraspasosRecibirPage />,
         key: 'TRA-TRASPASOS-RECIBIR',
         menu: {
@@ -73,7 +73,7 @@ export const traspasosTransferenciasRoutes = [
         },
     },
     {
-        path: '/traspasos-transferencias/traspasos/convalidar-notas',
+        path: '/trazabilidad/traspasos/convalidar-notas',
         element: <TraspasosConvalidarNotasPage />,
         key: 'TRA-TRASPASOS-CONVALIDAR-NOTAS',
         menu: {
@@ -84,7 +84,7 @@ export const traspasosTransferenciasRoutes = [
         },
     },
     {
-        path: '/traspasos-transferencias/traspasos/aprobar',
+        path: '/trazabilidad/traspasos/aprobar',
         element: <TraspasosAprobarPage />,
         key: 'TRA-TRASPASOS-APROBAR',
         menu: {
@@ -96,7 +96,7 @@ export const traspasosTransferenciasRoutes = [
     },
     // Submenu: Transferencias (otra ciudad/región)
     {
-        path: '/traspasos-transferencias/transferencias',
+        path: '/trazabilidad/transferencias',
         element: null, // No tiene página propia, es solo un grupo
         key: 'TRA-TRANSFERENCIAS',
         menu: {
@@ -107,7 +107,7 @@ export const traspasosTransferenciasRoutes = [
         },
     },
     {
-        path: '/traspasos-transferencias/transferencias/listar',
+        path: '/trazabilidad/transferencias/listar',
         element: <TransferenciasListarPage />,
         key: 'TRA-TRANSFERENCIAS-LIST',
         menu: {
@@ -118,7 +118,7 @@ export const traspasosTransferenciasRoutes = [
         },
     },
     {
-        path: '/traspasos-transferencias/transferencias/solicitar',
+        path: '/trazabilidad/transferencias/solicitar',
         element: <TransferenciasSolicitarPage />,
         key: 'TRA-TRANSFERENCIAS-SOLICITAR',
         menu: {
@@ -129,7 +129,7 @@ export const traspasosTransferenciasRoutes = [
         },
     },
     {
-        path: '/traspasos-transferencias/transferencias/recibir',
+        path: '/trazabilidad/transferencias/recibir',
         element: <TransferenciasRecibirPage />,
         key: 'TRA-TRANSFERENCIAS-RECIBIR',
         menu: {
@@ -140,7 +140,7 @@ export const traspasosTransferenciasRoutes = [
         },
     },
     {
-        path: '/traspasos-transferencias/transferencias/convalidar-notas',
+        path: '/trazabilidad/transferencias/convalidar-notas',
         element: <TransferenciasConvalidarNotasPage />,
         key: 'TRA-TRANSFERENCIAS-CONVALIDAR-NOTAS',
         menu: {
@@ -151,7 +151,7 @@ export const traspasosTransferenciasRoutes = [
         },
     },
     {
-        path: '/traspasos-transferencias/transferencias/aprobar',
+        path: '/trazabilidad/transferencias/aprobar',
         element: <TransferenciasAprobarPage />,
         key: 'TRA-TRANSFERENCIAS-APROBAR',
         menu: {
@@ -163,4 +163,4 @@ export const traspasosTransferenciasRoutes = [
     },
 ];
 
-export default traspasosTransferenciasRoutes;
+export default trazabilidad;

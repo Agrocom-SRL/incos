@@ -3,7 +3,7 @@ import { sequelize } from '../config/sequelize.js';
 import { baseModelFields, baseModelOptions } from './baseModel.js';
 
 export const Gestion = sequelize.define(
-  'Gestion',
+  'gestiones',
   {
     ...baseModelFields,
     codigo: {

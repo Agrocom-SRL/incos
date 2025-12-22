@@ -33,7 +33,7 @@ export const listStudentsValidator = [
       'El estado debe ser uno de: REGULAR, NIVELACION, RETIRADO, EGRESADO, ABANDONO'
     ),
 
-  query('gestion')
+  query('gestiones')
     .optional()
     .trim()
     .matches(/^\d{4}-[12]$/)
