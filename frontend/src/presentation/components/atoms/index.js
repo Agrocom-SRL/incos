@@ -6,3 +6,6 @@ export { default as MenuItemIcon } from './MenuItemIcon';
 export { default as Button } from './Button';
 export { default as Heading } from './Heading';
 export { default as FormCard } from './FormCard';
+
+// Exportar componentes de campos (fields)
+export * from './fields';

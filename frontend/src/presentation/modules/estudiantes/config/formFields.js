@@ -132,6 +132,34 @@ export const studentFormFields = {
   geographicData: {
     title: 'Origen y Ubicación Geográfica',
     fields: [
+      // Idiomas
+      {
+        name: 'idiomaPrincipalId',
+        label: 'Idioma Principal o Más Hablado',
+        type: 'select',
+        options: 'idiomas',
+        placeholder: 'Seleccione el idioma que más habla o utiliza (ej: Español, Francés, Inglés, etc.)',
+        allowClear: true,
+        span: 8,
+        rules: [
+          { required: true, message: 'Debe seleccionar el idioma principal' },
+        ],
+      },
+      {
+        name: 'idiomaSecundarioId',
+        label: 'Idioma Secundario',
+        type: 'select',
+        options: 'idiomas',
+        placeholder: 'Seleccione el idioma secundario (puede ser el idioma materno si no lo habla frecuentemente)',
+        allowClear: true,
+        span: 8,
+      },
+      // Separador entre origen geográfico e idiomas
+      {
+        name: 'idiomasDivider',
+        type: 'divider',
+        span: 24,
+      },
       {
         name: 'tipoNacionalidad',
         label: 'Nacionalidad',
@@ -349,7 +377,7 @@ export const studentFormFields = {
             formValues?.primeraNacionalidadTipo === 'BOLIVIANA';
         },
       },
-      
+
       // ============================================
       // CAMPOS PARA DOBLE NACIONALIDAD - SEGUNDA NACIONALIDAD
       // ============================================
@@ -460,34 +488,6 @@ export const studentFormFields = {
           return formValues?.tipoNacionalidad === 'DOBLE_NACIONALIDAD' &&
             formValues?.segundaNacionalidadTipo === 'BOLIVIANA';
         },
-      },
-      // Separador entre origen geográfico e idiomas
-      {
-        name: 'idiomasDivider',
-        type: 'divider',
-        span: 24,
-      },
-      // Idiomas
-      {
-        name: 'idiomaPrincipalId',
-        label: 'Idioma Principal o Más Hablado',
-        type: 'select',
-        options: 'idiomas',
-        placeholder: 'Seleccione el idioma que más habla o utiliza (ej: Español, Francés, Inglés, etc.)',
-        allowClear: true,
-        span: 8,
-        rules: [
-          { required: true, message: 'Debe seleccionar el idioma principal' },
-        ],
-      },
-      {
-        name: 'idiomaSecundarioId',
-        label: 'Idioma Secundario',
-        type: 'select',
-        options: 'idiomas',
-        placeholder: 'Seleccione el idioma secundario (puede ser el idioma materno si no lo habla frecuentemente)',
-        allowClear: true,
-        span: 8,
       },
     ],
   },
