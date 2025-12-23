@@ -77,6 +77,33 @@ const FormSection = ({ title, fields, form, resolveOptions, onFieldChange, readO
     ? Form.useWatch('esExtranjero', form)
     : null;
   
+  // Observar específicamente tipoNacionalidad si hay campos que dependen de él
+  // Esto asegura que los cambios en el radio group se detecten inmediatamente
+  const hasTipoNacionalidadFields = fields.some(f => 
+    f.dependencies?.includes('tipoNacionalidad') || f.watchFields?.includes('tipoNacionalidad')
+  );
+  const tipoNacionalidadValue = hasTipoNacionalidadFields && form
+    ? Form.useWatch('tipoNacionalidad', form)
+    : null;
+  
+  // Observar específicamente primeraNacionalidadTipo si hay campos que dependen de él
+  // Esto asegura que los cambios en el radio group se detecten inmediatamente
+  const hasPrimeraNacionalidadTipoFields = fields.some(f => 
+    f.dependencies?.includes('primeraNacionalidadTipo') || f.watchFields?.includes('primeraNacionalidadTipo')
+  );
+  const primeraNacionalidadTipoValue = hasPrimeraNacionalidadTipoFields && form
+    ? Form.useWatch('primeraNacionalidadTipo', form)
+    : null;
+  
+  // Observar específicamente segundaNacionalidadTipo si hay campos que dependen de él
+  // Esto asegura que los cambios en el radio group se detecten inmediatamente
+  const hasSegundaNacionalidadTipoFields = fields.some(f => 
+    f.dependencies?.includes('segundaNacionalidadTipo') || f.watchFields?.includes('segundaNacionalidadTipo')
+  );
+  const segundaNacionalidadTipoValue = hasSegundaNacionalidadTipoFields && form
+    ? Form.useWatch('segundaNacionalidadTipo', form)
+    : null;
+  
   
   // Inicializar campos visibles - todos los campos inicialmente
   const [visibleFields, setVisibleFields] = useState(fields);
@@ -96,6 +123,10 @@ const FormSection = ({ title, fields, form, resolveOptions, onFieldChange, readO
           }
           if (normalizedValues.esExtranjero !== undefined) {
             normalizedValues.esExtranjero = Boolean(normalizedValues.esExtranjero);
+          }
+          // Normalizar tipoNacionalidad
+          if (normalizedValues.tipoNacionalidad === '') {
+            normalizedValues.tipoNacionalidad = null;
           }
           // Asegurar que tipoDiscapacidadId sea null/undefined si no tiene valor
           if (normalizedValues.tipoDiscapacidadId === '') {
@@ -137,13 +168,16 @@ const FormSection = ({ title, fields, form, resolveOptions, onFieldChange, readO
       
       // Si hay formValues observados, combinarlos con los valores actuales
       // formValues tiene prioridad porque es reactivo, pero currentFormValues puede tener valores más recientes
-      // También usar tieneDiscapacidadValue y esExtranjeroValue para asegurar que los cambios se detecten
-      const mergedValues = formValues || tieneDiscapacidadValue !== null || esExtranjeroValue !== null
+      // También usar tieneDiscapacidadValue, esExtranjeroValue, tipoNacionalidadValue, primeraNacionalidadTipoValue y segundaNacionalidadTipoValue para asegurar que los cambios se detecten
+      const mergedValues = formValues || tieneDiscapacidadValue !== null || esExtranjeroValue !== null || tipoNacionalidadValue !== null || primeraNacionalidadTipoValue !== null || segundaNacionalidadTipoValue !== null
         ? { 
             ...currentFormValues, 
             ...(formValues || {}),
             ...(tieneDiscapacidadValue !== null ? { tieneDiscapacidad: tieneDiscapacidadValue } : {}),
-            ...(esExtranjeroValue !== null ? { esExtranjero: esExtranjeroValue } : {})
+            ...(esExtranjeroValue !== null ? { esExtranjero: esExtranjeroValue } : {}),
+            ...(tipoNacionalidadValue !== null ? { tipoNacionalidad: tipoNacionalidadValue } : {}),
+            ...(primeraNacionalidadTipoValue !== null ? { primeraNacionalidadTipo: primeraNacionalidadTipoValue } : {}),
+            ...(segundaNacionalidadTipoValue !== null ? { segundaNacionalidadTipo: segundaNacionalidadTipoValue } : {})
           }
         : currentFormValues;
       
@@ -153,6 +187,10 @@ const FormSection = ({ title, fields, form, resolveOptions, onFieldChange, readO
       }
       if (mergedValues.esExtranjero !== undefined) {
         mergedValues.esExtranjero = Boolean(mergedValues.esExtranjero);
+      }
+      // Normalizar tipoNacionalidad
+      if (mergedValues.tipoNacionalidad === '') {
+        mergedValues.tipoNacionalidad = null;
       }
       
       // Crear una clave basada solo en los campos que afectan shouldRender
@@ -181,7 +219,7 @@ const FormSection = ({ title, fields, form, resolveOptions, onFieldChange, readO
         setVisibleFields(newFilteredFields);
       }
     }
-  }, [formValues, tieneDiscapacidadValue, esExtranjeroValue, fields, form, fieldsToWatch, calculateVisibleFields]);
+  }, [formValues, tieneDiscapacidadValue, esExtranjeroValue, tipoNacionalidadValue, primeraNacionalidadTipoValue, segundaNacionalidadTipoValue, fields, form, fieldsToWatch, calculateVisibleFields]);
   
   // Efecto adicional para forzar actualización cuando cambia tieneDiscapacidad
   // Esto asegura que los campos se muestren inmediatamente cuando se activa el switch
@@ -240,6 +278,50 @@ const FormSection = ({ title, fields, form, resolveOptions, onFieldChange, readO
       setVisibleFields(newFilteredFields);
     }
   }, [esExtranjeroValue, form, hasExtranjeroFields, calculateVisibleFields]);
+  
+  // Efecto adicional para forzar actualización cuando cambia tipoNacionalidad
+  // Esto asegura que los campos se muestren inmediatamente cuando se cambia el radio group
+  useEffect(() => {
+    if (form && hasTipoNacionalidadFields) {
+      // Obtener el valor actual de tipoNacionalidad
+      const currentValue = form.getFieldValue('tipoNacionalidad');
+      
+      // Recalcular campos visibles
+      const currentValues = form.getFieldsValue() || {};
+      const normalizedValues = {
+        ...currentValues,
+        tipoNacionalidad: currentValue === '' ? null : currentValue,
+      };
+      
+      const newFilteredFields = calculateVisibleFields(normalizedValues);
+      setVisibleFields(newFilteredFields);
+    }
+  }, [tipoNacionalidadValue, form, hasTipoNacionalidadFields, calculateVisibleFields]);
+  
+  // Listener para detectar cambios en tipoNacionalidad usando un intervalo corto
+  // Esto es necesario porque Form.useWatch puede no capturar cambios en radio groups inmediatamente
+  useEffect(() => {
+    if (form && hasTipoNacionalidadFields) {
+      let lastValue = form.getFieldValue('tipoNacionalidad');
+      
+      const checkInterval = setInterval(() => {
+        const currentValue = form.getFieldValue('tipoNacionalidad');
+        if (currentValue !== lastValue) {
+          lastValue = currentValue;
+          // Forzar actualización recalculando campos visibles
+          const currentValues = form.getFieldsValue() || {};
+          const normalizedValues = {
+            ...currentValues,
+            tipoNacionalidad: currentValue === '' ? null : currentValue,
+          };
+          const newFilteredFields = calculateVisibleFields(normalizedValues);
+          setVisibleFields(newFilteredFields);
+        }
+      }, 100); // Verificar cada 100ms
+      
+      return () => clearInterval(checkInterval);
+    }
+  }, [form, hasTipoNacionalidadFields, calculateVisibleFields]);
   
 
   return (

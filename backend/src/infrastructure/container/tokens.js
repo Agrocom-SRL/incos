@@ -23,6 +23,8 @@ export const TOKENS = {
     studentRepository: 'studentRepository',
     studentAcademicDataRepository: 'studentAcademicDataRepository',
     studentDocumentRepository: 'studentDocumentRepository',
+    studentDisabilityRepository: 'studentDisabilityRepository',
+    studentOriginRepository: 'studentOriginRepository',
 
     // ============================================
     // REPOSITORIOS - CATÁLOGOS

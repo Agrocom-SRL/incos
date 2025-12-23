@@ -8,7 +8,7 @@
  * Atomic Design: Usa moléculas (FormSection, FormActions) y átomos (FormCard, Button, Heading)
  */
 
-import React, { forwardRef, useImperativeHandle, useEffect } from 'react';
+import React, { forwardRef, useImperativeHandle, useEffect, useState } from 'react';
 import { Form, App } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { FormSection, FormActions } from '@molecules';
@@ -34,6 +34,14 @@ const GenericForm = forwardRef(({
   const { message } = App.useApp();
   const [form] = Form.useForm();
   const navigate = useNavigate();
+
+  // Observar tieneDiscapacidad para mostrar/ocultar sección de discapacidad
+  const tieneDiscapacidad = form ? Form.useWatch('tieneDiscapacidad', form) : false;
+  
+  // Observar tipoNacionalidad y tipos de nacionalidad para doble nacionalidad
+  const tipoNacionalidad = form ? Form.useWatch('tipoNacionalidad', form) : null;
+  const primeraNacionalidadTipo = form ? Form.useWatch('primeraNacionalidadTipo', form) : null;
+  const segundaNacionalidadTipo = form ? Form.useWatch('segundaNacionalidadTipo', form) : null;
 
   // Exponer el form via ref
   useImperativeHandle(ref, () => form, [form]);
@@ -167,12 +175,174 @@ const GenericForm = forwardRef(({
     // Cuando cambia tieneDiscapacidad, forzar actualización del formulario
     // Esto asegura que FormSection detecte el cambio inmediatamente
     if (changedValues.tieneDiscapacidad !== undefined && form) {
-      // Forzar actualización estableciendo el valor nuevamente
-      // Esto dispara Form.useWatch en FormSection
-      form.setFieldsValue({ tieneDiscapacidad: changedValues.tieneDiscapacidad });
+      // Si se desactiva el switch, limpiar campos relacionados
+      if (changedValues.tieneDiscapacidad === false) {
+        form.setFieldsValue({ 
+          tieneDiscapacidad: false,
+          tipoDiscapacidadId: null,
+          detallesDiscapacidad: null,
+          gradoInvalidez: null,
+          causa: null,
+        });
+      } else {
+        // Si se activa, solo forzar actualización
+        form.setFieldsValue({ tieneDiscapacidad: true });
+      }
     }
     
-    // Cuando cambia esExtranjero, forzar actualización del formulario
+    // Cuando cambia tipoNacionalidad, limpiar campos relacionados y forzar actualización
+    if (changedValues.tipoNacionalidad !== undefined && form) {
+      const camposALimpiar = {
+        // Campos de extranjero simple
+        paisNacimientoId: null,
+        ciudadNacimientoExtranjero: null,
+        // Campos de boliviano simple
+        departamentoNacimientoId: null,
+        provinciaNacimientoId: null,
+        municipioNacimientoId: null,
+        ciudadNacimiento: null,
+        // Campos de doble nacionalidad - primera
+        primeraNacionalidadTipo: null,
+        primeraNacionalidadPaisId: null,
+        primeraNacionalidadCiudad: null,
+        primeraNacionalidadDepartamentoId: null,
+        primeraNacionalidadProvinciaId: null,
+        primeraNacionalidadMunicipioId: null,
+        primeraNacionalidadLocalidad: null,
+        // Campos de doble nacionalidad - segunda
+        segundaNacionalidadTipo: null,
+        segundaNacionalidadPaisId: null,
+        segundaNacionalidadCiudad: null,
+        segundaNacionalidadDepartamentoId: null,
+        segundaNacionalidadProvinciaId: null,
+        segundaNacionalidadMunicipioId: null,
+        segundaNacionalidadLocalidad: null,
+      };
+      
+      // Si se selecciona DOBLE_NACIONALIDAD, no establecer automáticamente la segunda
+      // Se establecerá cuando el usuario seleccione la primera nacionalidad
+      
+      form.setFieldsValue({
+        tipoNacionalidad: changedValues.tipoNacionalidad,
+        ...camposALimpiar,
+      });
+    }
+    
+    // Cuando cambia primeraNacionalidadTipo, establecer automáticamente la segunda como el contrario
+    // y limpiar campos correspondientes
+    if (changedValues.primeraNacionalidadTipo !== undefined && form) {
+      const camposALimpiar = {
+        primeraNacionalidadPaisId: null,
+        primeraNacionalidadCiudad: null,
+        primeraNacionalidadDepartamentoId: null,
+        primeraNacionalidadProvinciaId: null,
+        primeraNacionalidadMunicipioId: null,
+        primeraNacionalidadLocalidad: null,
+      };
+      
+      // Establecer automáticamente la segunda nacionalidad como el contrario de la primera
+      if (changedValues.primeraNacionalidadTipo === 'EXTRANJERA') {
+        camposALimpiar.segundaNacionalidadTipo = 'BOLIVIANA';
+        // Limpiar campos de segunda nacionalidad extranjera si existían
+        camposALimpiar.segundaNacionalidadPaisId = null;
+        camposALimpiar.segundaNacionalidadCiudad = null;
+        // Limpiar campos de segunda nacionalidad boliviana para que se rellenen de nuevo
+        camposALimpiar.segundaNacionalidadDepartamentoId = null;
+        camposALimpiar.segundaNacionalidadProvinciaId = null;
+        camposALimpiar.segundaNacionalidadMunicipioId = null;
+        camposALimpiar.segundaNacionalidadLocalidad = null;
+      } else if (changedValues.primeraNacionalidadTipo === 'BOLIVIANA') {
+        camposALimpiar.segundaNacionalidadTipo = 'EXTRANJERA';
+        // Limpiar campos de segunda nacionalidad boliviana si existían
+        camposALimpiar.segundaNacionalidadDepartamentoId = null;
+        camposALimpiar.segundaNacionalidadProvinciaId = null;
+        camposALimpiar.segundaNacionalidadMunicipioId = null;
+        camposALimpiar.segundaNacionalidadLocalidad = null;
+        // Limpiar campos de segunda nacionalidad extranjera para que se rellenen de nuevo
+        camposALimpiar.segundaNacionalidadPaisId = null;
+        camposALimpiar.segundaNacionalidadCiudad = null;
+      }
+      
+      form.setFieldsValue(camposALimpiar);
+    }
+    
+    // La segunda nacionalidad está siempre deshabilitada, no se debe escuchar su evento
+    // Solo se establece automáticamente cuando cambia la primera nacionalidad
+    
+    // Limpiar campos dependientes cuando cambia un campo geográfico
+    // Cuando cambia departamento, limpiar provincia y municipio
+    if (changedValues.departamentoNacimientoId !== undefined && form) {
+      if (changedValues.departamentoNacimientoId === null || changedValues.departamentoNacimientoId === undefined) {
+        form.setFieldsValue({
+          provinciaNacimientoId: null,
+          municipioNacimientoId: null,
+        });
+      }
+    }
+    
+    // Cuando cambia provincia, limpiar municipio
+    if (changedValues.provinciaNacimientoId !== undefined && form) {
+      if (changedValues.provinciaNacimientoId === null || changedValues.provinciaNacimientoId === undefined) {
+        form.setFieldsValue({
+          municipioNacimientoId: null,
+        });
+      }
+    }
+    
+    // Lo mismo para residencia
+    if (changedValues.departamentoResidenciaId !== undefined && form) {
+      if (changedValues.departamentoResidenciaId === null || changedValues.departamentoResidenciaId === undefined) {
+        form.setFieldsValue({
+          provinciaResidenciaId: null,
+          municipioResidenciaId: null,
+        });
+      }
+    }
+    
+    if (changedValues.provinciaResidenciaId !== undefined && form) {
+      if (changedValues.provinciaResidenciaId === null || changedValues.provinciaResidenciaId === undefined) {
+        form.setFieldsValue({
+          municipioResidenciaId: null,
+        });
+      }
+    }
+    
+    // Limpiar campos de doble nacionalidad cuando cambian
+    if (changedValues.primeraNacionalidadDepartamentoId !== undefined && form) {
+      if (changedValues.primeraNacionalidadDepartamentoId === null || changedValues.primeraNacionalidadDepartamentoId === undefined) {
+        form.setFieldsValue({
+          primeraNacionalidadProvinciaId: null,
+          primeraNacionalidadMunicipioId: null,
+        });
+      }
+    }
+    
+    if (changedValues.primeraNacionalidadProvinciaId !== undefined && form) {
+      if (changedValues.primeraNacionalidadProvinciaId === null || changedValues.primeraNacionalidadProvinciaId === undefined) {
+        form.setFieldsValue({
+          primeraNacionalidadMunicipioId: null,
+        });
+      }
+    }
+    
+    if (changedValues.segundaNacionalidadDepartamentoId !== undefined && form) {
+      if (changedValues.segundaNacionalidadDepartamentoId === null || changedValues.segundaNacionalidadDepartamentoId === undefined) {
+        form.setFieldsValue({
+          segundaNacionalidadProvinciaId: null,
+          segundaNacionalidadMunicipioId: null,
+        });
+      }
+    }
+    
+    if (changedValues.segundaNacionalidadProvinciaId !== undefined && form) {
+      if (changedValues.segundaNacionalidadProvinciaId === null || changedValues.segundaNacionalidadProvinciaId === undefined) {
+        form.setFieldsValue({
+          segundaNacionalidadMunicipioId: null,
+        });
+      }
+    }
+    
+    // Cuando cambia esExtranjero (mantener compatibilidad temporal), forzar actualización del formulario
     // Esto asegura que FormSection detecte el cambio inmediatamente
     if (changedValues.esExtranjero !== undefined && form) {
       // Forzar actualización estableciendo el valor nuevamente
@@ -194,6 +364,11 @@ const GenericForm = forwardRef(({
         {sections.map((sectionKey) => {
           const section = config[sectionKey];
           if (!section) return null;
+
+          // Ocultar sección de discapacidad si el switch está desactivado
+          if (sectionKey === 'disabilityData' && !Boolean(tieneDiscapacidad)) {
+            return null;
+          }
 
           return (
             <FormSection

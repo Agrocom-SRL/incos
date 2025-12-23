@@ -125,57 +125,6 @@ export const studentFormFields = {
         type: 'switch',
         span: 8,
       },
-      {
-        name: 'tipoDiscapacidadId',
-        label: 'Tipo de Discapacidad',
-        type: 'select',
-        options: 'tiposDiscapacidad',
-        placeholder: 'Seleccione el tipo de discapacidad',
-        allowClear: true,
-        span: 8,
-        dependencies: ['tieneDiscapacidad'],
-        watchFields: ['tieneDiscapacidad'], // Campos a observar para shouldRender
-        shouldRender: (formValues) => {
-          const tieneDiscapacidad = formValues?.tieneDiscapacidad;
-          return Boolean(tieneDiscapacidad) === true;
-        },
-      },
-      {
-        name: 'gradoInvalidez',
-        label: 'Grado de Invalidez',
-        type: 'select',
-        options: [
-          { label: 'Leve', value: 'LEVE' },
-          { label: 'Moderado', value: 'MODERADO' },
-          { label: 'Severo', value: 'SEVERO' },
-          { label: 'Profundo', value: 'PROFUNDO' },
-        ],
-        placeholder: 'Seleccione el grado de invalidez',
-        allowClear: true,
-        span: 8,
-        dependencies: ['tieneDiscapacidad', 'tipoDiscapacidadId'],
-        watchFields: ['tieneDiscapacidad', 'tipoDiscapacidadId'], // Campos a observar para shouldRender
-        shouldRender: (formValues) => {
-          const tieneDiscapacidad = Boolean(formValues?.tieneDiscapacidad);
-          const tieneTipo = formValues?.tipoDiscapacidadId !== null && formValues?.tipoDiscapacidadId !== undefined;
-          return tieneDiscapacidad && tieneTipo;
-        },
-      },
-      {
-        name: 'detallesDiscapacidad',
-        label: 'Detalles Específicos de la Discapacidad',
-        type: 'textarea',
-        placeholder: 'Ingrese los detalles específicos de la discapacidad',
-        rows: 3,
-        span: 16,
-        dependencies: ['tieneDiscapacidad', 'tipoDiscapacidadId'],
-        watchFields: ['tieneDiscapacidad', 'tipoDiscapacidadId'], // Campos a observar para shouldRender
-        shouldRender: (formValues) => {
-          const tieneDiscapacidad = Boolean(formValues?.tieneDiscapacidad);
-          const tieneTipo = formValues?.tipoDiscapacidadId !== null && formValues?.tipoDiscapacidadId !== undefined;
-          return tieneDiscapacidad && tieneTipo;
-        },
-      },
     ],
   },
 
@@ -184,61 +133,22 @@ export const studentFormFields = {
     title: 'Origen y Ubicación Geográfica',
     fields: [
       {
-        name: 'esExtranjero',
-        label: 'Es Extranjero / Doble Nacionalidad',
-        type: 'checkbox',
-        span: 8,
-      },
-      {
-        name: 'nacionalidad',
+        name: 'tipoNacionalidad',
         label: 'Nacionalidad',
-        type: 'input',
-        placeholder: 'Ej: Boliviana',
-        span: 8,
-        dependencies: ['esExtranjero'],
-        watchFields: ['esExtranjero'],
-        shouldRender: (formValues) => {
-          // Mostrar siempre
-          return true;
-        },
-        // El placeholder se puede actualizar dinámicamente en el componente si es necesario
-      },
-      {
-        name: 'paisOrigenId',
-        label: 'País de Origen',
-        type: 'select',
+        type: 'radio',
         options: [
-          { label: 'Argentina', value: 'AR' },
-          { label: 'Bolivia', value: 'BO' },
-          { label: 'Brasil', value: 'BR' },
-          { label: 'Chile', value: 'CL' },
-          { label: 'Colombia', value: 'CO' },
-          { label: 'Ecuador', value: 'EC' },
-          { label: 'Guyana', value: 'GY' },
-          { label: 'Paraguay', value: 'PY' },
-          { label: 'Perú', value: 'PE' },
-          { label: 'Surinam', value: 'SR' },
-          { label: 'Uruguay', value: 'UY' },
-          { label: 'Venezuela', value: 'VE' },
+          { label: 'Boliviana', value: 'BOLIVIANA' },
+          { label: 'Extranjera', value: 'EXTRANJERA' },
+          { label: 'Doble Nacionalidad', value: 'DOBLE_NACIONALIDAD' },
         ],
-        placeholder: 'Seleccione el país de origen',
-        allowClear: true,
-        span: 8,
-        dependencies: ['esExtranjero'],
-        watchFields: ['esExtranjero'],
-        shouldRender: (formValues) => {
-          return Boolean(formValues?.esExtranjero) === true;
-        },
+        rules: [
+          { required: true, message: 'Debe seleccionar el tipo de nacionalidad' },
+        ],
+        span: 24,
       },
-      {
-        name: 'idiomaNatalId',
-        label: 'Idioma Natal',
-        type: 'select',
-        options: 'idiomas',
-        placeholder: 'Seleccione el idioma natal',
-        allowClear: true,
-        span: 8,
-      },
+      // ============================================
+      // CAMPOS PARA EXTRANJEROS (tipoNacionalidad === 'EXTRANJERA')
+      // ============================================
       {
         name: 'paisNacimientoId',
         label: 'País de Nacimiento',
@@ -247,13 +157,35 @@ export const studentFormFields = {
         placeholder: 'Seleccione el país de nacimiento',
         allowClear: true,
         span: 8,
-        dependencies: ['esExtranjero'],
-        watchFields: ['esExtranjero'],
+        dependencies: ['tipoNacionalidad'],
         shouldRender: (formValues) => {
-          // Mostrar siempre, pero cuando es extranjero, se puede seleccionar cualquier país
-          return true;
+          return formValues?.tipoNacionalidad === 'EXTRANJERA';
+        },
+        // Filtrar Bolivia de la lista (solo para extranjeros simples)
+        filterOption: (input, option) => {
+          // Si el país es Bolivia, no mostrarlo en extranjeros simples
+          return option?.label?.toLowerCase().includes(input.toLowerCase());
         },
       },
+      {
+        name: 'ciudadNacimientoExtranjero',
+        label: 'Ciudad de Nacimiento',
+        type: 'input',
+        rules: [
+          { required: true, message: 'La ciudad de nacimiento es requerida' },
+          { max: 100, message: 'La ciudad no puede exceder 100 caracteres' },
+        ],
+        placeholder: 'Ingrese la ciudad de nacimiento',
+        span: 8,
+        dependencies: ['tipoNacionalidad'],
+        shouldRender: (formValues) => {
+          return formValues?.tipoNacionalidad === 'EXTRANJERA';
+        },
+      },
+
+      // ============================================
+      // CAMPOS PARA BOLIVIANOS (tipoNacionalidad === 'BOLIVIANA')
+      // ============================================
       {
         name: 'departamentoNacimientoId',
         label: 'Departamento de Nacimiento',
@@ -262,7 +194,10 @@ export const studentFormFields = {
         placeholder: 'Seleccione el departamento de nacimiento',
         allowClear: true,
         span: 8,
-        dependencies: ['paisNacimientoId'],
+        dependencies: ['tipoNacionalidad'],
+        shouldRender: (formValues) => {
+          return formValues?.tipoNacionalidad === 'BOLIVIANA';
+        },
       },
       {
         name: 'provinciaNacimientoId',
@@ -273,6 +208,9 @@ export const studentFormFields = {
         allowClear: true,
         span: 8,
         dependencies: ['departamentoNacimientoId'],
+        shouldRender: (formValues) => {
+          return formValues?.tipoNacionalidad === 'BOLIVIANA';
+        },
       },
       {
         name: 'municipioNacimientoId',
@@ -283,6 +221,9 @@ export const studentFormFields = {
         allowClear: true,
         span: 8,
         dependencies: ['provinciaNacimientoId'],
+        shouldRender: (formValues) => {
+          return formValues?.tipoNacionalidad === 'BOLIVIANA';
+        },
       },
       {
         name: 'ciudadNacimiento',
@@ -291,7 +232,261 @@ export const studentFormFields = {
         rules: [
           { max: 100, message: 'La localidad o comunidad no puede exceder 100 caracteres' },
         ],
-        placeholder: 'Ingrese la localidad o comunidad de nacimiento',
+        placeholder: 'Ingrese la localidad o comunidad de nacimiento (opcional)',
+        span: 8,
+        dependencies: ['tipoNacionalidad'],
+        shouldRender: (formValues) => {
+          return formValues?.tipoNacionalidad === 'BOLIVIANA';
+        },
+      },
+
+      // ============================================
+      // CAMPOS PARA DOBLE NACIONALIDAD - PRIMERA NACIONALIDAD
+      // ============================================
+      {
+        name: 'primeraNacionalidadTipo',
+        label: 'Primera Nacionalidad',
+        type: 'radio',
+        options: [
+          { label: 'Extranjera', value: 'EXTRANJERA' },
+          { label: 'Boliviana', value: 'BOLIVIANA' },
+        ],
+        rules: [
+          { required: true, message: 'Debe seleccionar el tipo de primera nacionalidad' },
+        ],
+        span: 8,
+        dependencies: ['tipoNacionalidad'],
+        shouldRender: (formValues) => {
+          return formValues?.tipoNacionalidad === 'DOBLE_NACIONALIDAD';
+        },
+      },
+      // Primera nacionalidad - Extranjera
+      {
+        name: 'primeraNacionalidadPaisId',
+        label: 'País de la Primera Nacionalidad',
+        type: 'select',
+        options: 'paises',
+        placeholder: 'Seleccione el país de la primera nacionalidad',
+        allowClear: true,
+        span: 8,
+        dependencies: ['tipoNacionalidad', 'primeraNacionalidadTipo'],
+        shouldRender: (formValues) => {
+          return formValues?.tipoNacionalidad === 'DOBLE_NACIONALIDAD' &&
+            formValues?.primeraNacionalidadTipo === 'EXTRANJERA';
+        },
+      },
+      {
+        name: 'primeraNacionalidadCiudad',
+        label: 'Ciudad de la Primera Nacionalidad',
+        type: 'input',
+        rules: [
+          { required: true, message: 'La ciudad es requerida' },
+          { max: 100, message: 'La ciudad no puede exceder 100 caracteres' },
+        ],
+        placeholder: 'Ingrese la ciudad de la primera nacionalidad',
+        span: 8,
+        dependencies: ['tipoNacionalidad', 'primeraNacionalidadTipo'],
+        shouldRender: (formValues) => {
+          return formValues?.tipoNacionalidad === 'DOBLE_NACIONALIDAD' &&
+            formValues?.primeraNacionalidadTipo === 'EXTRANJERA';
+        },
+      },
+      // Primera nacionalidad - Boliviana
+      {
+        name: 'primeraNacionalidadDepartamentoId',
+        label: 'Departamento (Primera Nacionalidad)',
+        type: 'select',
+        options: 'departamentos',
+        placeholder: 'Seleccione el departamento',
+        allowClear: true,
+        span: 8,
+        dependencies: ['tipoNacionalidad', 'primeraNacionalidadTipo'],
+        shouldRender: (formValues) => {
+          return formValues?.tipoNacionalidad === 'DOBLE_NACIONALIDAD' &&
+            formValues?.primeraNacionalidadTipo === 'BOLIVIANA';
+        },
+      },
+      {
+        name: 'primeraNacionalidadProvinciaId',
+        label: 'Provincia (Primera Nacionalidad)',
+        type: 'select',
+        options: 'provincias',
+        placeholder: 'Seleccione la provincia',
+        allowClear: true,
+        span: 8,
+        dependencies: ['tipoNacionalidad', 'primeraNacionalidadTipo', 'primeraNacionalidadDepartamentoId'],
+        shouldRender: (formValues) => {
+          return formValues?.tipoNacionalidad === 'DOBLE_NACIONALIDAD' &&
+            formValues?.primeraNacionalidadTipo === 'BOLIVIANA';
+        },
+      },
+      {
+        name: 'primeraNacionalidadMunicipioId',
+        label: 'Municipio (Primera Nacionalidad)',
+        type: 'select',
+        options: 'municipios',
+        placeholder: 'Seleccione el municipio',
+        allowClear: true,
+        span: 8,
+        dependencies: ['tipoNacionalidad', 'primeraNacionalidadTipo', 'primeraNacionalidadProvinciaId'],
+        shouldRender: (formValues) => {
+          return formValues?.tipoNacionalidad === 'DOBLE_NACIONALIDAD' &&
+            formValues?.primeraNacionalidadTipo === 'BOLIVIANA';
+        },
+      },
+      {
+        name: 'primeraNacionalidadLocalidad',
+        label: 'Localidad o Comunidad (Primera Nacionalidad)',
+        type: 'input',
+        rules: [
+          { max: 100, message: 'La localidad no puede exceder 100 caracteres' },
+        ],
+        placeholder: 'Ingrese la localidad o comunidad (opcional)',
+        span: 8,
+        dependencies: ['tipoNacionalidad', 'primeraNacionalidadTipo'],
+        shouldRender: (formValues) => {
+          return formValues?.tipoNacionalidad === 'DOBLE_NACIONALIDAD' &&
+            formValues?.primeraNacionalidadTipo === 'BOLIVIANA';
+        },
+      },
+      
+      // ============================================
+      // CAMPOS PARA DOBLE NACIONALIDAD - SEGUNDA NACIONALIDAD
+      // ============================================
+      {
+        name: 'segundaNacionalidadTipo',
+        label: 'Segunda Nacionalidad',
+        type: 'radio',
+        options: [
+          { label: 'Extranjera', value: 'EXTRANJERA' },
+          { label: 'Boliviana', value: 'BOLIVIANA' },
+        ],
+        rules: [
+          { required: true, message: 'Debe seleccionar el tipo de segunda nacionalidad' },
+        ],
+        span: 8,
+        dependencies: ['tipoNacionalidad', 'primeraNacionalidadTipo'],
+        // La segunda nacionalidad siempre está deshabilitada (se establece automáticamente como el contrario de la primera)
+        disabled: true,
+        shouldRender: (formValues) => {
+          return formValues?.tipoNacionalidad === 'DOBLE_NACIONALIDAD';
+        },
+      },
+      // Segunda nacionalidad - Extranjera
+      {
+        name: 'segundaNacionalidadPaisId',
+        label: 'País de la Segunda Nacionalidad',
+        type: 'select',
+        options: 'paises',
+        placeholder: 'Seleccione el país de la segunda nacionalidad',
+        allowClear: true,
+        span: 8,
+        dependencies: ['tipoNacionalidad', 'segundaNacionalidadTipo', 'primeraNacionalidadPaisId'],
+        shouldRender: (formValues) => {
+          return formValues?.tipoNacionalidad === 'DOBLE_NACIONALIDAD' &&
+            formValues?.segundaNacionalidadTipo === 'EXTRANJERA';
+        },
+      },
+      {
+        name: 'segundaNacionalidadCiudad',
+        label: 'Ciudad de la Segunda Nacionalidad',
+        type: 'input',
+        rules: [
+          { required: true, message: 'La ciudad es requerida' },
+          { max: 100, message: 'La ciudad no puede exceder 100 caracteres' },
+        ],
+        placeholder: 'Ingrese la ciudad de la segunda nacionalidad',
+        span: 8,
+        dependencies: ['tipoNacionalidad', 'segundaNacionalidadTipo'],
+        shouldRender: (formValues) => {
+          return formValues?.tipoNacionalidad === 'DOBLE_NACIONALIDAD' &&
+            formValues?.segundaNacionalidadTipo === 'EXTRANJERA';
+        },
+      },
+      // Segunda nacionalidad - Boliviana
+      {
+        name: 'segundaNacionalidadDepartamentoId',
+        label: 'Departamento (Segunda Nacionalidad)',
+        type: 'select',
+        options: 'departamentos',
+        placeholder: 'Seleccione el departamento',
+        allowClear: true,
+        span: 8,
+        dependencies: ['tipoNacionalidad', 'segundaNacionalidadTipo'],
+        shouldRender: (formValues) => {
+          return formValues?.tipoNacionalidad === 'DOBLE_NACIONALIDAD' &&
+            formValues?.segundaNacionalidadTipo === 'BOLIVIANA';
+        },
+      },
+      {
+        name: 'segundaNacionalidadProvinciaId',
+        label: 'Provincia (Segunda Nacionalidad)',
+        type: 'select',
+        options: 'provincias',
+        placeholder: 'Seleccione la provincia',
+        allowClear: true,
+        span: 8,
+        dependencies: ['tipoNacionalidad', 'segundaNacionalidadTipo', 'segundaNacionalidadDepartamentoId'],
+        shouldRender: (formValues) => {
+          return formValues?.tipoNacionalidad === 'DOBLE_NACIONALIDAD' &&
+            formValues?.segundaNacionalidadTipo === 'BOLIVIANA';
+        },
+      },
+      {
+        name: 'segundaNacionalidadMunicipioId',
+        label: 'Municipio (Segunda Nacionalidad)',
+        type: 'select',
+        options: 'municipios',
+        placeholder: 'Seleccione el municipio',
+        allowClear: true,
+        span: 8,
+        dependencies: ['tipoNacionalidad', 'segundaNacionalidadTipo', 'segundaNacionalidadProvinciaId'],
+        shouldRender: (formValues) => {
+          return formValues?.tipoNacionalidad === 'DOBLE_NACIONALIDAD' &&
+            formValues?.segundaNacionalidadTipo === 'BOLIVIANA';
+        },
+      },
+      {
+        name: 'segundaNacionalidadLocalidad',
+        label: 'Localidad o Comunidad (Segunda Nacionalidad)',
+        type: 'input',
+        rules: [
+          { max: 100, message: 'La localidad no puede exceder 100 caracteres' },
+        ],
+        placeholder: 'Ingrese la localidad o comunidad (opcional)',
+        span: 8,
+        dependencies: ['tipoNacionalidad', 'segundaNacionalidadTipo'],
+        shouldRender: (formValues) => {
+          return formValues?.tipoNacionalidad === 'DOBLE_NACIONALIDAD' &&
+            formValues?.segundaNacionalidadTipo === 'BOLIVIANA';
+        },
+      },
+      // Separador entre origen geográfico e idiomas
+      {
+        name: 'idiomasDivider',
+        type: 'divider',
+        span: 24,
+      },
+      // Idiomas
+      {
+        name: 'idiomaPrincipalId',
+        label: 'Idioma Principal o Más Hablado',
+        type: 'select',
+        options: 'idiomas',
+        placeholder: 'Seleccione el idioma que más habla o utiliza (ej: Español, Francés, Inglés, etc.)',
+        allowClear: true,
+        span: 8,
+        rules: [
+          { required: true, message: 'Debe seleccionar el idioma principal' },
+        ],
+      },
+      {
+        name: 'idiomaSecundarioId',
+        label: 'Idioma Secundario',
+        type: 'select',
+        options: 'idiomas',
+        placeholder: 'Seleccione el idioma secundario (puede ser el idioma materno si no lo habla frecuentemente)',
+        allowClear: true,
         span: 8,
       },
     ],
@@ -574,6 +769,56 @@ export const studentFormFields = {
         label: 'Folder Amarillo con NEPACO',
         type: 'checkbox',
         span: 8,
+      },
+    ],
+  },
+
+  // Sección: Datos de Discapacidad
+  disabilityData: {
+    title: 'Datos de Discapacidad',
+    fields: [
+      {
+        name: 'tipoDiscapacidadId',
+        label: 'Tipo de Discapacidad',
+        type: 'select',
+        options: 'tiposDiscapacidad',
+        rules: [
+          { required: true, message: 'El tipo de discapacidad es requerido' },
+        ],
+        placeholder: 'Seleccione el tipo de discapacidad',
+        allowClear: true,
+        span: 8,
+      },
+      {
+        name: 'gradoInvalidez',
+        label: 'Grado de Invalidez',
+        type: 'radio',
+        options: [
+          { label: 'Leve', value: 'LEVE' },
+          { label: 'Moderado', value: 'MODERADO' },
+          { label: 'Severo', value: 'SEVERO' },
+          { label: 'Profundo', value: 'PROFUNDO' },
+        ],
+        span: 16,
+      },
+      {
+        name: 'causa',
+        label: 'Causa de la Discapacidad',
+        type: 'textarea',
+        placeholder: 'Ej: Congénito, Adquirido, Accidente, Enfermedad, Por diabetes, etc.',
+        rows: 4,
+        span: 8,
+      },
+      {
+        name: 'detallesDiscapacidad',
+        label: 'Descripción Detallada de la Discapacidad',
+        type: 'textarea',
+        rules: [
+          { required: true, message: 'La descripción de la discapacidad es requerida' },
+        ],
+        placeholder: 'Proporcione información detallada sobre la discapacidad: subtipo específico, limitaciones, necesidades especiales, etc. Si tiene múltiples discapacidades, describa cada una.',
+        rows: 4,
+        span: 16,
       },
     ],
   },

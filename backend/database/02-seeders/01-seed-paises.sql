@@ -17,7 +17,37 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- ============================================
 
 INSERT INTO paises (nombre, codigo_iso) VALUES
-('Bolivia', 'BOL');
+('Bolivia', 'BOL'),
+('Argentina', 'ARG'),
+('Brasil', 'BRA'),
+('Chile', 'CHL'),
+('Colombia', 'COL'),
+('Ecuador', 'ECU'),
+('Guyana', 'GUY'),
+('Paraguay', 'PRY'),
+('Perú', 'PER'),
+('Surinam', 'SUR'),
+('Uruguay', 'URY'),
+('Venezuela', 'VEN'),
+('Estados Unidos', 'USA'),
+('España', 'ESP'),
+('México', 'MEX'),
+('Panamá', 'PAN'),
+('Costa Rica', 'CRI'),
+('República Dominicana', 'DOM'),
+('Cuba', 'CUB'),
+('Honduras', 'HND'),
+('El Salvador', 'SLV'),
+('Guatemala', 'GTM'),
+('Nicaragua', 'NIC'),
+('Haití', 'HTI'),
+('Jamaica', 'JAM'),
+('Trinidad y Tobago', 'TTO'),
+('Barbados', 'BRB'),
+('Bahamas', 'BHS'),
+('Belice', 'BLZ'),
+('Guyana Francesa', 'GUF'),
+('Puerto Rico', 'PRI');
 
 -- Rehabilitar foreign key checks
 SET FOREIGN_KEY_CHECKS = 1;

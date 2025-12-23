@@ -25,15 +25,8 @@ export class Student extends BaseEntity {
     this.birthDate = data.birthDate || null;
     this.gender = data.gender || null;
     this.civilStatusId = data.civilStatusId || null;
-    this.nationality = data.nationality || 'Boliviana';
-    this.birthMunicipalityId = data.birthMunicipalityId || null;
-    this.birthCity = data.birthCity || null;
-    this.nativeLanguageId = data.nativeLanguageId || null;
     this.bloodType = data.bloodType || null;
     this.hasDisability = data.hasDisability !== undefined ? data.hasDisability : false;
-    this.disabilityTypeId = data.disabilityTypeId || null;
-    this.disabilityDegree = data.disabilityDegree || null;
-    this.disabilityDetails = data.disabilityDetails || null;
     
     // Contacto
     this.personalEmail = data.personalEmail || null;

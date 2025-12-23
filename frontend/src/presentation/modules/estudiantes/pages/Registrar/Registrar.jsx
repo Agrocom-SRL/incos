@@ -93,24 +93,18 @@ const Registrar = () => {
       })),
       estadosCiviles: (estadosCiviles || []).map(e => ({ label: e.nombre, value: e.id })),
     };
-    return optionsMap[fieldName] || [];
+    
+    const result = optionsMap[fieldName] || [];
+    
+    return result;
   };
 
   // Manejar cambios en campos con dependencias geográficas
+  // NOTA: Ya no necesitamos cargar provincias/municipios dinámicamente porque
+  // todas las opciones ya están cargadas al inicio y se filtran en el frontend
   const handleFieldChange = (fieldName, value, dependencies) => {
-    if (fieldName === 'paisNacimientoId') {
-      loadDepartamentos(value);
-    } else if (fieldName === 'departamentoNacimientoId') {
-      loadProvincias(value);
-    } else if (fieldName === 'provinciaNacimientoId') {
-      loadMunicipios(value);
-    } else if (fieldName === 'paisResidenciaId') {
-      loadDepartamentos(value);
-    } else if (fieldName === 'departamentoResidenciaId') {
-      loadProvincias(value);
-    } else if (fieldName === 'provinciaResidenciaId') {
-      loadMunicipios(value);
-    }
+    // Ya no hacemos nada aquí porque el filtrado se hace automáticamente en FormField
+    // basándose en las dependencias y todas las opciones ya están cargadas
   };
 
   // Generar steps del wizard con campos dinámicos

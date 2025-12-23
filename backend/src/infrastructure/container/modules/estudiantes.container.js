@@ -58,6 +58,8 @@ export function registerEstudiantesModule(container) {
                 studentRepository: c.resolve(TOKENS.studentRepository),
                 studentAcademicDataRepository: c.resolve(TOKENS.studentAcademicDataRepository),
                 studentDocumentRepository: c.resolve(TOKENS.studentDocumentRepository),
+                studentDisabilityRepository: c.resolve(TOKENS.studentDisabilityRepository),
+                studentOriginRepository: c.resolve(TOKENS.studentOriginRepository),
                 documentacionRepository: c.resolve(TOKENS.documentacionRepository),
                 configuracionSistemaRepository: c.resolve(TOKENS.configuracionSistemaRepository),
                 managementRepository: c.resolve(TOKENS.managementRepository),

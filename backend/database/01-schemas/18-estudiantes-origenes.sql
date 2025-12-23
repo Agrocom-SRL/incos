@@ -1,0 +1,86 @@
+-- ============================================
+-- TABLA INTERMEDIA: estudiantes_origenes
+-- Sistema de Gestión Académica - Instituto INCOS
+-- Relación muchos a muchos entre estudiantes y países/orígenes
+-- Permite que un estudiante tenga múltiples nacionalidades (doble nacionalidad)
+-- ============================================
+
+USE instituto_incos;
+
+-- ============================================
+-- FASE 1: ELIMINACIÓN DE TABLA
+-- Deshabilitamos foreign key checks para poder eliminar en cualquier orden
+-- ============================================
+
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- Eliminar tabla si existe
+DROP TABLE IF EXISTS estudiantes_origenes;
+
+-- ============================================
+-- FASE 2: CREACIÓN DE TABLA
+-- Las foreign key checks siguen deshabilitadas durante la creación
+-- ============================================
+
+-- ============================================
+-- TABLA: estudiantes_origenes
+-- ============================================
+
+CREATE TABLE estudiantes_origenes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    
+    -- Relaciones
+    estudiante_id INT COMMENT 'Estudiante',
+    pais_id INT COMMENT 'País de origen/nacionalidad (NULL si es Bolivia y se usa municipio_nacimiento_id). LÓGICA: Si tiene municipio_nacimiento_id → Es Bolivia. Si tiene pais_id y NO tiene municipio_nacimiento_id → Es extranjero.',
+    municipio_nacimiento_id INT COMMENT 'Municipio de nacimiento (solo si es Bolivia, contiene toda la info geográfica). LÓGICA: Si este campo tiene valor, el origen es BOLIVIANA (los municipios son solo de Bolivia).',
+    ciudad_nacimiento VARCHAR(100) COMMENT 'Ciudad/localidad de nacimiento (para extranjeros o localidad específica en Bolivia)',
+    
+    -- Idiomas relacionados con este origen
+    idioma_materno_id INT COMMENT 'Idioma materno del país de origen o comunidad donde nació (relacionado con este origen específico)',
+    idioma_secundario_id INT COMMENT 'Idioma secundario que más habla relacionado con este origen (ej: si es de Brasil, puede hablar más portugués que español)',
+    
+    -- Tipo de origen
+    tipo_origen ENUM('NACIONALIDAD_PRINCIPAL', 'NACIONALIDAD_SECUNDARIA', 'ORIGEN_NACIMIENTO') DEFAULT 'NACIONALIDAD_PRINCIPAL' COMMENT 'Tipo: principal, secundaria (doble nacionalidad), o solo origen de nacimiento. Para doble nacionalidad: un registro con NACIONALIDAD_PRINCIPAL (es_principal=TRUE) y otro con NACIONALIDAD_SECUNDARIA (es_principal=FALSE).',
+    es_principal BOOLEAN DEFAULT TRUE COMMENT 'Indica si es la nacionalidad/origen principal. Para doble nacionalidad: TRUE para la principal, FALSE para la secundaria.',
+    
+    -- Campos de auditoría y control (ESTÁNDAR)
+    activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
+    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
+    created_by INT COMMENT 'Usuario que creó',
+    updated_by INT COMMENT 'Usuario que modificó',
+    deleted_by INT COMMENT 'Usuario que eliminó',
+    
+    -- Foreign Keys
+    FOREIGN KEY (estudiante_id) REFERENCES estudiantes(id) ON DELETE SET NULL,
+    FOREIGN KEY (pais_id) REFERENCES paises(id) ON DELETE SET NULL,
+    FOREIGN KEY (municipio_nacimiento_id) REFERENCES municipios(id) ON DELETE SET NULL,
+    FOREIGN KEY (idioma_materno_id) REFERENCES idiomas(id) ON DELETE SET NULL,
+    FOREIGN KEY (idioma_secundario_id) REFERENCES idiomas(id) ON DELETE SET NULL,
+    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    
+    -- Índices
+    INDEX idx_estudiante (estudiante_id) COMMENT 'Búsqueda por estudiante',
+    INDEX idx_pais (pais_id) COMMENT 'Búsqueda por país',
+    INDEX idx_municipio (municipio_nacimiento_id) COMMENT 'Búsqueda por municipio',
+    INDEX idx_idioma_materno (idioma_materno_id) COMMENT 'Búsqueda por idioma materno',
+    INDEX idx_idioma_secundario (idioma_secundario_id) COMMENT 'Búsqueda por idioma secundario',
+    INDEX idx_estudiante_principal (estudiante_id, es_principal, activo, deleted_at) COMMENT 'Búsqueda por estudiante y origen principal',
+    INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
+    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete'
+    
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+COMMENT='Relación entre estudiantes y países/orígenes con sus idiomas. Permite manejar nacionalidad principal, doble nacionalidad, y origen de nacimiento. Si es Bolivia, se usa municipio_nacimiento_id; si es extranjero, se usa pais_id y ciudad_nacimiento. Los idiomas están relacionados con el origen específico (ej: si es de Brasil, idioma_materno puede ser Portugués y idioma_secundario puede ser Español).';
+
+-- ============================================
+-- FASE 3: REHABILITAR FOREIGN KEY CHECKS
+-- ============================================
+
+SET FOREIGN_KEY_CHECKS = 1;
+
+-- ============================================
+-- FIN DEL SCRIPT
+

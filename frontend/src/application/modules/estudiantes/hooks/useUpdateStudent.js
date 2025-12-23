@@ -34,6 +34,127 @@ export const useUpdateStudent = () => {
       const documentosEntregados = {}; // Para subida de archivos (usa docId)
       const archivosASubir = {}; // Para subida de archivos (usa docId)
 
+      // Transformar discapacidades al formato esperado por el backend
+      // El backend espera: discapacidades = [{ tipoDiscapacidadId: 1, descripcion: "...", gradoDiscapacidad: "LEVE", causa: "..." }]
+      if (datosEstudiante.tieneDiscapacidad && datosEstudiante.tipoDiscapacidadId) {
+        datosEstudiante.discapacidades = [{
+          tipoDiscapacidadId: datosEstudiante.tipoDiscapacidadId,
+          descripcion: datosEstudiante.detallesDiscapacidad || null,
+          gradoDiscapacidad: datosEstudiante.gradoInvalidez || null,
+          causa: datosEstudiante.causa || null,
+        }];
+      } else {
+        datosEstudiante.discapacidades = [];
+      }
+
+      // Transformar orígenes al formato esperado por el backend
+      // El backend espera: origenes = [{ tipoOrigen: 'NACIONALIDAD_PRINCIPAL'|'NACIONALIDAD_SECUNDARIA', paisId?, municipioNacimientoId?, ciudadNacimiento?, idiomaMaternoId?, idiomaSecundarioId?, esPrincipal: boolean }]
+      datosEstudiante.origenes = [];
+      
+      if (datosEstudiante.tipoNacionalidad === 'BOLIVIANA') {
+        // Nacionalidad boliviana simple
+        const origen = {
+          tipoOrigen: 'NACIONALIDAD_PRINCIPAL',
+          esPrincipal: true,
+          municipioNacimientoId: datosEstudiante.municipioNacimientoId || null,
+          ciudadNacimiento: datosEstudiante.ciudadNacimiento || null,
+          paisId: null,
+          idiomaMaternoId: datosEstudiante.idiomaPrincipalId || null,
+          idiomaSecundarioId: datosEstudiante.idiomaSecundarioId || null,
+        };
+        if (origen.municipioNacimientoId) {
+          datosEstudiante.origenes.push(origen);
+        }
+      } else if (datosEstudiante.tipoNacionalidad === 'EXTRANJERA') {
+        // Nacionalidad extranjera simple
+        const origen = {
+          tipoOrigen: 'NACIONALIDAD_PRINCIPAL',
+          esPrincipal: true,
+          paisId: datosEstudiante.paisNacimientoId || null,
+          ciudadNacimiento: datosEstudiante.ciudadNacimientoExtranjero || null,
+          municipioNacimientoId: null,
+          idiomaMaternoId: datosEstudiante.idiomaPrincipalId || null,
+          idiomaSecundarioId: datosEstudiante.idiomaSecundarioId || null,
+        };
+        if (origen.paisId) {
+          datosEstudiante.origenes.push(origen);
+        }
+      } else if (datosEstudiante.tipoNacionalidad === 'DOBLE_NACIONALIDAD') {
+        // Doble nacionalidad: crear dos orígenes
+        
+        // Primera nacionalidad
+        const primeraOrigen = {
+          tipoOrigen: 'NACIONALIDAD_PRINCIPAL',
+          esPrincipal: true,
+          idiomaMaternoId: datosEstudiante.idiomaPrincipalId || null,
+          idiomaSecundarioId: datosEstudiante.idiomaSecundarioId || null,
+        };
+        
+        if (datosEstudiante.primeraNacionalidadTipo === 'BOLIVIANA') {
+          primeraOrigen.municipioNacimientoId = datosEstudiante.primeraNacionalidadMunicipioId || null;
+          primeraOrigen.ciudadNacimiento = datosEstudiante.primeraNacionalidadLocalidad || null;
+          primeraOrigen.paisId = null;
+        } else if (datosEstudiante.primeraNacionalidadTipo === 'EXTRANJERA') {
+          primeraOrigen.paisId = datosEstudiante.primeraNacionalidadPaisId || null;
+          primeraOrigen.ciudadNacimiento = datosEstudiante.primeraNacionalidadCiudad || null;
+          primeraOrigen.municipioNacimientoId = null;
+        }
+        
+        if (primeraOrigen.paisId || primeraOrigen.municipioNacimientoId) {
+          datosEstudiante.origenes.push(primeraOrigen);
+        }
+        
+        // Segunda nacionalidad
+        const segundaOrigen = {
+          tipoOrigen: 'NACIONALIDAD_SECUNDARIA',
+          esPrincipal: false,
+          // Los idiomas se asocian con la primera nacionalidad (principal)
+          idiomaMaternoId: null,
+          idiomaSecundarioId: null,
+        };
+        
+        if (datosEstudiante.segundaNacionalidadTipo === 'BOLIVIANA') {
+          segundaOrigen.municipioNacimientoId = datosEstudiante.segundaNacionalidadMunicipioId || null;
+          segundaOrigen.ciudadNacimiento = datosEstudiante.segundaNacionalidadLocalidad || null;
+          segundaOrigen.paisId = null;
+        } else if (datosEstudiante.segundaNacionalidadTipo === 'EXTRANJERA') {
+          segundaOrigen.paisId = datosEstudiante.segundaNacionalidadPaisId || null;
+          segundaOrigen.ciudadNacimiento = datosEstudiante.segundaNacionalidadCiudad || null;
+          segundaOrigen.municipioNacimientoId = null;
+        }
+        
+        if (segundaOrigen.paisId || segundaOrigen.municipioNacimientoId) {
+          datosEstudiante.origenes.push(segundaOrigen);
+        }
+      }
+
+      // Eliminar campos individuales de origen del objeto principal
+      delete datosEstudiante.tipoNacionalidad;
+      delete datosEstudiante.paisNacimientoId;
+      delete datosEstudiante.ciudadNacimientoExtranjero;
+      delete datosEstudiante.departamentoNacimientoId;
+      delete datosEstudiante.provinciaNacimientoId;
+      delete datosEstudiante.municipioNacimientoId;
+      delete datosEstudiante.ciudadNacimiento;
+      delete datosEstudiante.idiomaNatalId;
+      delete datosEstudiante.idiomaPrincipalId;
+      delete datosEstudiante.idiomaSecundarioId;
+      // Campos de doble nacionalidad
+      delete datosEstudiante.primeraNacionalidadTipo;
+      delete datosEstudiante.primeraNacionalidadPaisId;
+      delete datosEstudiante.primeraNacionalidadCiudad;
+      delete datosEstudiante.primeraNacionalidadDepartamentoId;
+      delete datosEstudiante.primeraNacionalidadProvinciaId;
+      delete datosEstudiante.primeraNacionalidadMunicipioId;
+      delete datosEstudiante.primeraNacionalidadLocalidad;
+      delete datosEstudiante.segundaNacionalidadTipo;
+      delete datosEstudiante.segundaNacionalidadPaisId;
+      delete datosEstudiante.segundaNacionalidadCiudad;
+      delete datosEstudiante.segundaNacionalidadDepartamentoId;
+      delete datosEstudiante.segundaNacionalidadProvinciaId;
+      delete datosEstudiante.segundaNacionalidadMunicipioId;
+      delete datosEstudiante.segundaNacionalidadLocalidad;
+
       // Extraer archivos para subirlos después de crear el estudiante
       Object.keys(studentData).forEach((key) => {
         if (key.startsWith('documento') && key.endsWith('_archivo')) {

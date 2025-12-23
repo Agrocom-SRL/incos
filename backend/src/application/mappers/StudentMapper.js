@@ -28,13 +28,8 @@ export class StudentMapper {
     if (dataCastellano.fechaNacimiento !== undefined) result.birthDate = dataCastellano.fechaNacimiento;
     if (dataCastellano.genero !== undefined) result.gender = dataCastellano.genero;
     if (dataCastellano.estadoCivilId !== undefined) result.civilStatusId = dataCastellano.estadoCivilId;
-    if (dataCastellano.nacionalidad !== undefined) result.nationality = dataCastellano.nacionalidad;
-    if (dataCastellano.municipioNacimientoId !== undefined) result.birthMunicipalityId = dataCastellano.municipioNacimientoId;
-    if (dataCastellano.ciudadNacimiento !== undefined) result.birthCity = dataCastellano.ciudadNacimiento;
-    if (dataCastellano.idiomaNatalId !== undefined) result.nativeLanguageId = dataCastellano.idiomaNatalId;
     if (dataCastellano.tipoSangre !== undefined) result.bloodType = dataCastellano.tipoSangre;
     if (dataCastellano.tieneDiscapacidad !== undefined) result.hasDisability = dataCastellano.tieneDiscapacidad;
-    if (dataCastellano.tipoDiscapacidadId !== undefined) result.disabilityTypeId = dataCastellano.tipoDiscapacidadId;
     // TODO: Descomentar cuando se confirme la estructura de la base de datos
     // if (dataCastellano.gradoInvalidez !== undefined) result.disabilityDegree = dataCastellano.gradoInvalidez;
     // if (dataCastellano.detallesDiscapacidad !== undefined) result.disabilityDetails = dataCastellano.detallesDiscapacidad;
@@ -81,13 +76,8 @@ export class StudentMapper {
       fechaNacimiento: dataDominio.birthDate,
       genero: dataDominio.gender,
       estadoCivilId: dataDominio.civilStatusId,
-      nacionalidad: dataDominio.nationality,
-      municipioNacimientoId: dataDominio.birthMunicipalityId,
-      ciudadNacimiento: dataDominio.birthCity,
-      idiomaNatalId: dataDominio.nativeLanguageId,
       tipoSangre: dataDominio.bloodType,
       tieneDiscapacidad: dataDominio.hasDisability,
-      tipoDiscapacidadId: dataDominio.disabilityTypeId,
       // TODO: Descomentar cuando se confirme la estructura de la base de datos
       // gradoInvalidez: dataDominio.disabilityDegree,
       // detallesDiscapacidad: dataDominio.disabilityDetails,
@@ -133,13 +123,8 @@ export class StudentMapper {
       fechaNacimiento: student.birthDate,
       genero: student.gender,
       estadoCivilId: student.civilStatusId,
-      nacionalidad: student.nationality,
-      municipioNacimientoId: student.birthMunicipalityId,
-      ciudadNacimiento: student.birthCity,
-      idiomaNatalId: student.nativeLanguageId,
       tipoSangre: student.bloodType,
       tieneDiscapacidad: student.hasDisability,
-      tipoDiscapacidadId: student.disabilityTypeId,
       // TODO: Descomentar cuando se confirme la estructura de la base de datos
       // gradoInvalidez: student.disabilityDegree,
       // detallesDiscapacidad: student.disabilityDetails,

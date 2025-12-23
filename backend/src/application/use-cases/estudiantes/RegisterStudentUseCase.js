@@ -15,6 +15,8 @@ export class RegisterStudentUseCase {
     studentRepository,
     studentAcademicDataRepository,
     studentDocumentRepository,
+    studentDisabilityRepository,
+    studentOriginRepository,
     documentacionRepository,
     configuracionSistemaRepository,
     managementRepository,
@@ -23,6 +25,8 @@ export class RegisterStudentUseCase {
     this.studentRepository = studentRepository;
     this.studentAcademicDataRepository = studentAcademicDataRepository;
     this.studentDocumentRepository = studentDocumentRepository;
+    this.studentDisabilityRepository = studentDisabilityRepository;
+    this.studentOriginRepository = studentOriginRepository;
     this.documentacionRepository = documentacionRepository;
     this.configuracionSistemaRepository = configuracionSistemaRepository;
     this.managementRepository = managementRepository;
@@ -128,7 +132,45 @@ export class RegisterStudentUseCase {
     // 9. Persistir estudiante
     const savedStudent = await this.studentRepository.create(student, userId);
 
-    // 10. Crear datos académicos si se proporcionan
+    // 10. Crear discapacidades si se proporcionan
+    if (dto.discapacidades && dto.discapacidades.length > 0) {
+      await this.studentDisabilityRepository.createMultiple(
+        savedStudent.id,
+        dto.discapacidades,
+        userId
+      );
+      
+      this.logger.info('[Estudiantes] Discapacidades registradas', {
+        estudianteId: savedStudent.id,
+        totalDiscapacidades: dto.discapacidades.length,
+        discapacidades: dto.discapacidades.map(d => ({
+          tipoDiscapacidadId: d.tipoDiscapacidadId,
+          tieneDescripcion: !!d.descripcion,
+        })),
+      });
+    }
+
+    // 10.5. Crear orígenes si se proporcionan
+    if (dto.origenes && dto.origenes.length > 0) {
+      await this.studentOriginRepository.createMultiple(
+        savedStudent.id,
+        dto.origenes,
+        userId
+      );
+      
+      this.logger.info('[Estudiantes] Orígenes registrados', {
+        estudianteId: savedStudent.id,
+        totalOrigenes: dto.origenes.length,
+        origenes: dto.origenes.map(o => ({
+          tipoOrigen: o.tipoOrigen,
+          esPrincipal: o.esPrincipal,
+          tienePais: !!o.paisId,
+          tieneMunicipio: !!o.municipioNacimientoId,
+        })),
+      });
+    }
+
+    // 11. Crear datos académicos si se proporcionan
     if (dto.carreraId || dto.gestionIngresoId) {
       const academicData = {
         studentId: savedStudent.id,

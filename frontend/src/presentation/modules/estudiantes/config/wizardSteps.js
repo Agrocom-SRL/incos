@@ -17,8 +17,9 @@ export const wizardStep1 = {
     personalData: studentFormFields.personalData,
     geographicData: studentFormFields.geographicData,
     contactData: studentFormFields.contactData,
+    disabilityData: studentFormFields.disabilityData, // Sección condicional
   },
-  sections: ['personalData', 'geographicData', 'contactData'],
+  sections: ['personalData', 'disabilityData', 'geographicData', 'contactData'],
 };
 
 // Paso 2: Documentos (generado dinámicamente)

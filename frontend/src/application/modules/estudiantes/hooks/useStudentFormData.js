@@ -272,18 +272,45 @@ export const useStudentFormData = () => {
     }
   };
 
-  // Funciones para cargar datos geográficos (mantenidas para compatibilidad, pero ya no son necesarias)
-  // Los datos se cargan todos al inicio y se filtran en el frontend
-  const loadDepartamentos = async (paisId) => {
-    // No hacer nada, los datos ya están cargados y se filtran en FormField
-  };
-
+  // Funciones para cargar datos geográficos en cascada
+  // Cuando se selecciona un departamento, cargar provincias de ese departamento
+  // Cuando se selecciona una provincia, cargar municipios de esa provincia
   const loadProvincias = async (departamentoId) => {
-    // No hacer nada, los datos ya están cargados y se filtran en FormField
+    if (!departamentoId) {
+      setProvincias([]);
+      return;
+    }
+    
+    try {
+      const result = await apiClient.get(`/v1/catalogs/provincias?departamentoId=${departamentoId}`);
+      const provinciasData = result.data?.data || [];
+      setProvincias(provinciasData);
+    } catch (error) {
+      console.error('[useStudentFormData] Error al cargar provincias:', error);
+      setProvincias([]);
+    }
   };
 
   const loadMunicipios = async (provinciaId) => {
-    // No hacer nada, los datos ya están cargados y se filtran en FormField
+    if (!provinciaId) {
+      setMunicipios([]);
+      return;
+    }
+    
+    try {
+      const result = await apiClient.get(`/v1/catalogs/municipios?provinciaId=${provinciaId}`);
+      const municipiosData = result.data?.data || [];
+      setMunicipios(municipiosData);
+    } catch (error) {
+      console.error('[useStudentFormData] Error al cargar municipios:', error);
+      setMunicipios([]);
+    }
+  };
+
+  // loadDepartamentos se mantiene vacío porque los departamentos ya están cargados
+  // y se filtran automáticamente por país (Bolivia) en FormField
+  const loadDepartamentos = async (paisId) => {
+    // No hacer nada, los departamentos ya están cargados y se filtran en FormField
   };
 
   return {

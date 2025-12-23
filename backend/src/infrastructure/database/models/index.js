@@ -59,6 +59,8 @@ export { TurnoCurso } from './TurnoCurso.js';
 export { Estudiante } from './Estudiante.js';
 export { EstudianteDatosAcademicos } from './EstudianteDatosAcademicos.js';
 export { DocumentoEstudiante } from './DocumentoEstudiante.js';
+export { EstudianteDiscapacidad } from './EstudianteDiscapacidad.js';
+export { EstudianteOrigen } from './EstudianteOrigen.js';
 
 // ============================================
 // ESTUDIANTES - PARTE 2

@@ -41,15 +41,11 @@ CREATE TABLE estudiantes (
     fecha_nacimiento DATE NOT NULL COMMENT 'Fecha de nacimiento',
     genero ENUM('MASCULINO', 'FEMENINO', 'OTRO') NOT NULL COMMENT 'Género',
     estado_civil_id INT COMMENT 'Estado civil',
-    nacionalidad VARCHAR(50) DEFAULT 'Boliviana' COMMENT 'Nacionalidad',
-    municipio_nacimiento_id INT COMMENT 'Municipio de nacimiento (contiene toda la info geográfica)',
-    ciudad_nacimiento VARCHAR(100) COMMENT 'Ciudad de nacimiento',
-    idioma_natal_id INT COMMENT 'Idioma materno',
     tipo_sangre ENUM('A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-') COMMENT 'Tipo de sangre',
     
     -- Discapacidad (necesario para becas)
-    tiene_discapacidad BOOLEAN DEFAULT FALSE COMMENT 'Tiene discapacidad',
-    tipo_discapacidad_id INT COMMENT 'Tipo de discapacidad',
+    -- Los detalles de discapacidad están en la tabla estudiantes_discapacidades
+    tiene_discapacidad BOOLEAN DEFAULT FALSE COMMENT 'Tiene discapacidad (los detalles están en estudiantes_discapacidades)',
     
     -- Contacto
     email_personal VARCHAR(150) COMMENT 'Email personal (para emergencias, el email institucional está en usuarios) para el estudiante',
@@ -73,9 +69,6 @@ CREATE TABLE estudiantes (
     
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE SET NULL,
     FOREIGN KEY (estado_civil_id) REFERENCES estados_civiles(id) ON DELETE SET NULL,
-    FOREIGN KEY (municipio_nacimiento_id) REFERENCES municipios(id) ON DELETE SET NULL,
-    FOREIGN KEY (idioma_natal_id) REFERENCES idiomas(id) ON DELETE SET NULL,
-    FOREIGN KEY (tipo_discapacidad_id) REFERENCES tipos_discapacidad(id) ON DELETE SET NULL,
     FOREIGN KEY (municipio_residencia_id) REFERENCES municipios(id) ON DELETE SET NULL,
     FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
@@ -89,7 +82,7 @@ CREATE TABLE estudiantes (
     INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
     INDEX idx_apellidos (apellido_paterno, apellido_materno) COMMENT 'Búsqueda por apellidos',
     INDEX idx_municipio_residencia (municipio_residencia_id) COMMENT 'Búsqueda por municipio de residencia',
-    INDEX idx_tiene_discapacidad (tiene_discapacidad, tipo_discapacidad_id) COMMENT 'Búsqueda por discapacidad'
+    INDEX idx_tiene_discapacidad (tiene_discapacidad) COMMENT 'Búsqueda por discapacidad'
     
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Estudiantes del instituto';

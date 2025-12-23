@@ -16,7 +16,6 @@ export const Estudiante = sequelize.define(
       type: DataTypes.STRING(20),
       field: 'codigo_estudiante',
       allowNull: false,
-      unique: true,
       comment: 'Código único del estudiante',
     },
     ci: {
@@ -63,30 +62,6 @@ export const Estudiante = sequelize.define(
       allowNull: true,
       comment: 'Estado civil',
     },
-    nacionalidad: {
-      type: DataTypes.STRING(50),
-      allowNull: true,
-      defaultValue: 'Boliviana',
-      comment: 'Nacionalidad',
-    },
-    municipioNacimientoId: {
-      type: DataTypes.INTEGER,
-      field: 'municipio_nacimiento_id',
-      allowNull: true,
-      comment: 'Municipio de nacimiento',
-    },
-    ciudadNacimiento: {
-      type: DataTypes.STRING(100),
-      field: 'ciudad_nacimiento',
-      allowNull: true,
-      comment: 'Ciudad de nacimiento',
-    },
-    idiomaNatalId: {
-      type: DataTypes.INTEGER,
-      field: 'idioma_natal_id',
-      allowNull: true,
-      comment: 'Idioma materno',
-    },
     tipoSangre: {
       type: DataTypes.ENUM('A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'),
       field: 'tipo_sangre',
@@ -98,13 +73,7 @@ export const Estudiante = sequelize.define(
       field: 'tiene_discapacidad',
       allowNull: false,
       defaultValue: false,
-      comment: 'Tiene discapacidad',
-    },
-    tipoDiscapacidadId: {
-      type: DataTypes.INTEGER,
-      field: 'tipo_discapacidad_id',
-      allowNull: true,
-      comment: 'Tipo de discapacidad',
+      comment: 'Tiene discapacidad (los detalles están en estudiantes_discapacidades)',
     },
     // TODO: Descomentar cuando se confirme la estructura de la base de datos
     // gradoInvalidez: {
