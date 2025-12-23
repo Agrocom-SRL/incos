@@ -1,7 +1,7 @@
 -- ============================================
 -- MÓDULO DE ESTUDIANTES - PARTE 1
 -- Sistema de Gestión Académica - Instituto INCOS
--- 3 Tablas: estudiantes, estudiantes_datos_academicos, documentos_estudiante
+-- 4 Tablas: estudiantes, estudiantes_datos_academicos, estudiantes_documentos_entrega, documentos_estudiante
 -- ============================================
 
 USE instituto_incos;
@@ -15,6 +15,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 
 -- Eliminar todas las tablas (orden no importa con foreign key checks deshabilitado)
 DROP TABLE IF EXISTS documentos_estudiante;
+DROP TABLE IF EXISTS estudiantes_documentos_entrega;
 DROP TABLE IF EXISTS estudiantes_datos_academicos;
 DROP TABLE IF EXISTS estudiantes;
 
@@ -139,37 +140,81 @@ CREATE TABLE estudiantes_datos_academicos (
 COMMENT='Datos académicos detallados de estudiantes. Relación 1:1 con estudiantes.';
 
 -- ============================================
+-- TABLA: estudiantes_documentos_entrega
+-- ============================================
+-- Tabla para registrar la RELACIÓN entre estudiante y documento requerido
+-- IMPORTANTE: Esta tabla representa la relación entre un estudiante y un tipo de documento requerido.
+-- Indica si el documento fue entregado, si está en trámite, fecha de entrega, etc.
+-- NO almacena archivos digitales, solo el estado de la relación estudiante-documento.
+-- Los archivos digitales se almacenan en documentos_estudiante.
+
+CREATE TABLE estudiantes_documentos_entrega (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    estudiante_id INT NULL COMMENT 'Estudiante',
+    documentacion_id INT NULL COMMENT 'Tipo de documentación requerida (referencia a documentacion)',
+    entregado BOOLEAN DEFAULT FALSE COMMENT 'Indica si el documento fue entregado físicamente (TRUE) o no (FALSE)',
+    en_tramite BOOLEAN DEFAULT FALSE COMMENT 'Indica si el documento está en trámite. Si es TRUE, el estudiante puede registrar aunque no lo tenga físicamente, pero debe presentarlo posteriormente',
+    es_original BOOLEAN DEFAULT FALSE COMMENT 'Indica si el documento entregado es original (TRUE) o fotocopia (FALSE). Solo aplica si entregado = TRUE y en_tramite = FALSE.',
+    fecha_entrega DATE COMMENT 'Fecha en que se entregó físicamente el documento',
+    fecha_vencimiento_tramite DATE COMMENT 'Fecha límite para entregar el documento si está en trámite (ej: 10 días desde el registro)',
+    observaciones TEXT COMMENT 'Observaciones adicionales sobre la entrega del documento (incluye motivo de trámite si aplica)',
+    
+    -- Campos de auditoría y control (ESTÁNDAR)
+    activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
+    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
+    created_by INT COMMENT 'Usuario que creó',
+    updated_by INT COMMENT 'Usuario que modificó',
+    deleted_by INT COMMENT 'Usuario que eliminó',
+    
+    FOREIGN KEY (estudiante_id) REFERENCES estudiantes(id) ON DELETE SET NULL,
+    FOREIGN KEY (documentacion_id) REFERENCES documentacion(id) ON DELETE SET NULL,
+    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    
+    -- Índices esenciales
+    INDEX idx_estudiante_id (estudiante_id) COMMENT 'Búsqueda por estudiante',
+    INDEX idx_documentacion_id (documentacion_id) COMMENT 'Búsqueda por tipo de documentación',
+    INDEX idx_entregado (entregado) COMMENT 'Filtrado por documentos entregados',
+    INDEX idx_en_tramite (en_tramite) COMMENT 'Filtrado por documentos en trámite',
+    INDEX idx_es_original (es_original, entregado, activo, deleted_at) COMMENT 'Filtrado por tipo de documento entregado (original/fotocopia)',
+    INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
+    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
+    INDEX idx_estudiante_documentacion (estudiante_id, documentacion_id, activo, deleted_at) COMMENT 'Búsqueda de entrega por estudiante y tipo de documentación',
+    INDEX idx_entregado_tramite (entregado, en_tramite, activo, deleted_at) COMMENT 'Búsqueda por estado de entrega y trámite',
+    INDEX idx_fecha_vencimiento (fecha_vencimiento_tramite, en_tramite, activo, deleted_at) COMMENT 'Búsqueda de documentos en trámite próximos a vencer'
+    
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+COMMENT='Relación entre estudiantes y documentos requeridos. Rastrea el estado de entrega de cada documento requerido por estudiante (entregado, en trámite, fecha de entrega). NO almacena archivos digitales, solo la relación y estado. Los archivos digitales se almacenan en documentos_estudiante.';
+
+-- ============================================
 -- TABLA: documentos_estudiante
 -- ============================================
+-- Tabla para almacenar los ARCHIVOS DIGITALES (reflejo del documento físico digitalizado)
+-- IMPORTANTE: Esta tabla almacena los archivos digitales subidos al sistema.
+-- Es el reflejo del documento físico digitalizado (escaneado, fotografiado, etc.).
+-- Tiene relación directa con documentacion (tipo de documento) y estudiantes.
+-- Un archivo puede contener un solo documento o múltiples documentos.
+-- Ejemplo: Un PDF puede contener el Diploma de Bachiller y el Boletín de Calificaciones.
 
 CREATE TABLE documentos_estudiante (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    estudiante_id INT NULL COMMENT 'Estudiante (NULL permite flexibilidad en migraciones)',
-    documentacion_id INT NULL COMMENT 'Tipo de documentación requerida (referencia a documentacion). NULL si no es documento de inscripción estándar.',
-    motivo_documento VARCHAR(200) COMMENT 'Motivo específico del documento (ej: licencia por enfermedad, descuento por promedio, etc.)',
-    tipo_referencia ENUM(
-        'licencias_solicitudes',
-        'estudiantes_becas',
-        'pasantias_asignaciones',
-        'inscripciones',
-        'pagos',
-        'transferencias',
-        'traspasos',
-        'otro'
-    ) COMMENT 'Tipo de referencia: indica a qué tabla pertenece el referencia_id (solo se usa cuando referencia_id no es NULL). Para pagos, referencia_id puede apuntar a registros de pago relacionados con estudiantes_datos_economicos. Para transferencias y traspasos, referencia_id apunta a las tablas transferencias y traspasos respectivamente.',
-    referencia_id INT COMMENT 'ID de referencia según tipo_referencia (ej: si tipo_referencia es licencias_solicitudes, entonces referencia_id es el id de esa tabla)',
-    descripcion TEXT COMMENT 'Descripción del documento',
-    nombre_archivo VARCHAR(255) NOT NULL COMMENT 'Nombre del archivo',
-    ruta_archivo VARCHAR(500) NOT NULL COMMENT 'Ruta del archivo',
-    extension VARCHAR(10) COMMENT 'Extensión del archivo',
-    tamano_kb INT COMMENT 'Tamaño en kilobytes',
-    verificado BOOLEAN DEFAULT FALSE COMMENT 'Documento verificado',
-    verificado_por INT COMMENT 'Usuario que verificó',
+    estudiante_id INT NULL COMMENT 'Estudiante propietario del archivo',
+    tipo_documento VARCHAR(50) NULL COMMENT 'Tipo de documento según categoría (INSCRIPCION, LICENCIA, PASANTIA, DESCUENTO, TITULACION, TRASPASO, TRANSFERENCIA, BECA, OTRO). El usuario selecciona el tipo y luego puede elegir un documento específico de ese tipo.',
+    documentacion_id INT NULL COMMENT 'Documento específico de la categoría tipo_documento (referencia a documentacion). NULL si el archivo contiene TODOS los documentos del tipo_documento o múltiples documentos de diferentes tipos.',
+    nombre_archivo VARCHAR(255) NOT NULL COMMENT 'Nombre del archivo digital',
+    ruta_archivo VARCHAR(500) NOT NULL COMMENT 'Ruta del archivo en el servidor',
+    extension VARCHAR(10) COMMENT 'Extensión del archivo (pdf, jpg, png, etc.)',
+    tipo_mime VARCHAR(100) COMMENT 'Tipo MIME del archivo',
+    contiene_multiple_documentos BOOLEAN DEFAULT FALSE COMMENT 'Indica si el archivo contiene múltiples documentos (TRUE) o un solo documento (FALSE). Si es TRUE y documentacion_id es NULL, el archivo contiene TODOS los documentos del tipo_documento.',
+    verificado BOOLEAN DEFAULT FALSE COMMENT 'Documento verificado por personal administrativo',
+    verificado_por INT COMMENT 'Usuario que verificó el documento',
     fecha_verificacion DATE COMMENT 'Fecha de verificación',
     observaciones_verificacion TEXT COMMENT 'Observaciones de verificación',
-    estado ENUM('PENDIENTE', 'APROBADO', 'RECHAZADO') DEFAULT 'PENDIENTE' COMMENT 'Estado del documento',
-    es_original BOOLEAN DEFAULT FALSE COMMENT 'Indica si el documento es original (TRUE) o fotocopia (FALSE). Permite tener el mismo documento dos veces: primero copia, luego original.',
-    motivo_rechazo TEXT COMMENT 'Motivo de rechazo',
+    estado ENUM('PENDIENTE', 'APROBADO', 'RECHAZADO') DEFAULT 'PENDIENTE' COMMENT 'Estado del documento: PENDIENTE (pendiente de revisión), APROBADO (aprobado), RECHAZADO (rechazado)',
+    motivo_rechazo TEXT COMMENT 'Motivo de rechazo si el estado es RECHAZADO',
     
     -- Campos de auditoría y control (ESTÁNDAR)
     activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
@@ -188,20 +233,20 @@ CREATE TABLE documentos_estudiante (
     FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     INDEX idx_estudiante_id (estudiante_id) COMMENT 'Búsqueda por estudiante',
-    INDEX idx_documentacion_id (documentacion_id) COMMENT 'Búsqueda por tipo de documentación',
-    INDEX idx_tipo_referencia (tipo_referencia, referencia_id) COMMENT 'Búsqueda por tipo de referencia y ID',
-    INDEX idx_referencia (referencia_id, tipo_referencia) COMMENT 'Búsqueda por referencia',
+    INDEX idx_tipo_documento (tipo_documento) COMMENT 'Búsqueda por tipo de documento',
+    INDEX idx_documentacion_id (documentacion_id) COMMENT 'Búsqueda por documento específico',
     INDEX idx_estado (estado) COMMENT 'Filtrado por estado',
-    INDEX idx_es_original (es_original, estado, activo) COMMENT 'Búsqueda por tipo de documento (original/fotocopia)',
+    INDEX idx_verificado (verificado, estado, activo) COMMENT 'Búsqueda por documentos verificados',
+    INDEX idx_contiene_multiple (contiene_multiple_documentos, activo, deleted_at) COMMENT 'Búsqueda de archivos que contienen múltiples documentos',
+    INDEX idx_tipo_documentacion (tipo_documento, documentacion_id, activo, deleted_at) COMMENT 'Búsqueda por tipo de documento y documento específico',
     INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
     INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
-    INDEX idx_estudiante_documentacion (estudiante_id, documentacion_id, activo, deleted_at) COMMENT 'Búsqueda de documentos por estudiante y tipo de documentación',
-    INDEX idx_documentacion_estado (documentacion_id, estado, activo, deleted_at) COMMENT 'Búsqueda por tipo de documentación y estado',
-    INDEX idx_verificado (verificado, estado, activo) COMMENT 'Búsqueda por documentos verificados',
-    INDEX idx_estado_activo (estado, activo, deleted_at) COMMENT 'Búsqueda por estado y activo'
+    INDEX idx_estudiante_estado (estudiante_id, estado, activo, deleted_at) COMMENT 'Búsqueda por estudiante y estado',
+    INDEX idx_estado_activo (estado, activo, deleted_at) COMMENT 'Búsqueda por estado y activo',
+    INDEX idx_estudiante_documentacion (estudiante_id, documentacion_id, activo, deleted_at) COMMENT 'Búsqueda por estudiante y tipo de documentación'
     
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Documentos digitalizados de estudiantes: inscripción, licencias, pasantías, descuentos, pagos. Relación 1 a muchos (un estudiante puede tener muchos documentos de respaldo). Los pagos pueden ser: inscripción, titulación, traslado de instituto, cambio de carrera. Los documentos de pago están relacionados con estudiantes_datos_economicos.';
+COMMENT='Archivos digitales subidos por estudiantes. Es el reflejo del documento físico digitalizado. El usuario selecciona el tipo_documento (INSCRIPCION, LICENCIA, etc.) y luego puede elegir un documento específico de ese tipo (documentacion_id) o subir un archivo que contenga TODOS los documentos del tipo (documentacion_id NULL, contiene_multiple_documentos = TRUE). La relación entre estudiante y documento requerido se registra en estudiantes_documentos_entrega.';
 
 -- ============================================
 -- FASE 3: REHABILITAR FOREIGN KEY CHECKS

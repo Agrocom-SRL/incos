@@ -145,10 +145,14 @@ CREATE TABLE documentacion (
         'TITULACION',
         'TRASPASO',
         'TRANSFERENCIA',
+        'BECA',
         'OTRO'
-    ) NOT NULL COMMENT 'Tipo de documento según categoría: inscripción, licencia, pasantía, descuento, titulación, traspaso, transferencia u otro',
+    ) NOT NULL COMMENT 'Tipo de documento según categoría: inscripción, licencia, pasantía, descuento, titulación, traspaso, transferencia, beca u otro',
+    documento_padre_id INT NULL COMMENT 'ID del documento padre al que reemplaza. Si es NULL, es un documento de primer orden. Si tiene valor, es un documento alternativo/reemplazo del padre. Permite crear jerarquías de documentos (ej: Boletín de Calificaciones como alternativa de Diploma de Bachiller)',
     acepta_fotocopia BOOLEAN DEFAULT FALSE COMMENT 'Indica si se acepta fotocopia del documento. Si es TRUE, se acepta fotocopia simple o legalizada según política del instituto. Si es FALSE, solo se acepta documento original.',
-    requerido BOOLEAN DEFAULT TRUE COMMENT 'Indica si el documento es requerido para completar la inscripción',
+    es_original BOOLEAN DEFAULT FALSE COMMENT 'Indica si el documento debe ser original (TRUE) o puede ser fotocopia (FALSE). Documentos originales: Diploma de Bachiller, Boletín de Calificaciones, Foto 3x3, Folder con nepaco.',
+    requerido BOOLEAN DEFAULT TRUE COMMENT 'Indica si el documento es requerido para completar la inscripción. Si es FALSE, no se generará acta de compromiso si falta.',
+    es_documento_sistema BOOLEAN DEFAULT FALSE COMMENT 'Indica si el documento es generado automáticamente por el sistema (ej: Acta de Compromiso). Si es TRUE, el documento se genera cuando falta documentación requerida.',
     orden INT DEFAULT 0 COMMENT 'Orden de visualización en el formulario',
     descripcion TEXT COMMENT 'Descripción adicional del documento requerido',
     
@@ -161,15 +165,21 @@ CREATE TABLE documentacion (
     updated_by INT COMMENT 'Usuario que modificó',
     deleted_by INT COMMENT 'Usuario que eliminó',
     
+    FOREIGN KEY (documento_padre_id) REFERENCES documentacion(id) ON DELETE SET NULL,
+    
     -- Índices esenciales
     INDEX idx_nombre (nombre) COMMENT 'Búsqueda por nombre',
     INDEX idx_tipo_documento (tipo_documento) COMMENT 'Filtrado por tipo de documento',
+    INDEX idx_documento_padre_id (documento_padre_id) COMMENT 'Búsqueda de documentos alternativos por padre',
     INDEX idx_requerido (requerido) COMMENT 'Filtrado por documentos requeridos',
+    INDEX idx_es_original (es_original) COMMENT 'Filtrado por documentos originales',
+    INDEX idx_es_documento_sistema (es_documento_sistema) COMMENT 'Filtrado por documentos generados por el sistema',
     INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
     INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
     INDEX idx_orden (orden) COMMENT 'Ordenamiento',
     INDEX idx_tipo_requerido (tipo_documento, requerido, activo, deleted_at) COMMENT 'Búsqueda por tipo y requerido',
-    INDEX idx_activo_orden (activo, orden, deleted_at) COMMENT 'Búsqueda de activos ordenados'
+    INDEX idx_activo_orden (activo, orden, deleted_at) COMMENT 'Búsqueda de activos ordenados',
+    INDEX idx_padre_activo (documento_padre_id, activo, deleted_at) COMMENT 'Búsqueda de alternativas activas de un documento padre'
     
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Catálogo de documentación requerida para inscripción de estudiantes. Define qué documentos se necesitan y si aceptan fotocopia según política del instituto.';
