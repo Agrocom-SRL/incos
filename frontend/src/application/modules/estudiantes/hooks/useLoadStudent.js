@@ -17,7 +17,7 @@ import { formatStudentDataForForm, resolveAllGeographicCascades } from '@estudia
  * @param {Object} geographicData - Datos geográficos { municipios, provincias, departamentos }
  * @returns {Object} { estudianteData, loadingEstudiante, error }
  */
-export const useLoadStudent = (estudianteId, geographicData = {}) => {
+export const useLoadStudent = (estudianteId, geographicData = {}, documentacionInscripcion = []) => {
   const { message } = App.useApp();
   const [estudianteData, setEstudianteData] = useState(null);
   const [loadingEstudiante, setLoadingEstudiante] = useState(false);
@@ -73,7 +73,7 @@ export const useLoadStudent = (estudianteId, geographicData = {}) => {
           throw new Error('No se encontraron datos del estudiante');
         }
 
-        // Cargar documentos del estudiante
+        // Cargar documentos digitales del estudiante (archivos subidos)
         let documentos = [];
         try {
           const documentosResponse = await apiClient.get(`/v1/estudiantes/${estudianteId}/documentos`);
@@ -81,7 +81,19 @@ export const useLoadStudent = (estudianteId, geographicData = {}) => {
         } catch (err) {
           // Si es 404, no hay documentos, eso está bien
           if (err.response?.status !== 404) {
-            console.warn('[useLoadStudent] Error inesperado al cargar documentos:', err);
+            console.warn('[useLoadStudent] Error inesperado al cargar documentos digitales:', err);
+          }
+        }
+
+        // Cargar entregas físicas de documentos (estudiantes_documentos_entrega)
+        let entregasDocumentos = [];
+        try {
+          const entregasResponse = await apiClient.get(`/v1/estudiantes/${estudianteId}/documentos-entregados`);
+          entregasDocumentos = entregasResponse.data?.data || entregasResponse.data || [];
+        } catch (err) {
+          // Si es 404, no hay entregas, eso está bien
+          if (err.response?.status !== 404) {
+            console.warn('[useLoadStudent] Error inesperado al cargar entregas de documentos:', err);
           }
         }
 
@@ -113,7 +125,9 @@ export const useLoadStudent = (estudianteId, geographicData = {}) => {
           estudianteResuelto,
           documentos,
           datosAcademicos,
-          estudianteId
+          estudianteId,
+          entregasDocumentos,
+          documentacionInscripcion
         );
 
         console.log('[useLoadStudent] Datos formateados para el formulario:', {

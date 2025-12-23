@@ -12,7 +12,7 @@ export const useUpdateStudent = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const updateStudent = async (studentId, studentData, step = null, isFinalStep = false, isTemporarySave = false) => {
+  const updateStudent = async (studentId, studentData, step = null, isFinalStep = false, isTemporarySave = false, documentacionInscripcion = []) => {
     setLoading(true);
     setError(null);
 
@@ -29,10 +29,21 @@ export const useUpdateStudent = () => {
       });
       
       // Separar documentos del resto de los datos
-      // El backend ahora maneja los documentos dinámicamente usando documentacion_id
+      // El backend ahora separa entregas físicas (estudiantes_documentos_entrega) de archivos digitales (documentos_estudiante)
+      // Los checkboxes documento_{id}_entregado se procesan en el backend para crear/actualizar entregas
+      // Los archivos documento_{id}_archivo se suben después como archivos digitales
       const datosEstudiante = { ...studentData };
-      const documentosEntregados = {}; // Para subida de archivos (usa docId)
-      const archivosASubir = {}; // Para subida de archivos (usa docId)
+      const documentosEntregados = {}; // Para tracking de entregas (usa docId)
+      const archivosASubir = {}; // Para subida de archivos digitales (usa docId)
+      const documentosInfo = {}; // Para almacenar info de documentación (tipoDocumento, etc.)
+      
+      // Crear mapa de documentación para acceso rápido
+      const documentacionMap = {};
+      if (Array.isArray(documentacionInscripcion)) {
+        documentacionInscripcion.forEach((doc) => {
+          documentacionMap[doc.id] = doc;
+        });
+      }
 
       // Transformar discapacidades al formato esperado por el backend
       // El backend espera: discapacidades = [{ tipoDiscapacidadId: 1, descripcion: "...", gradoDiscapacidad: "LEVE", causa: "..." }]
@@ -155,7 +166,7 @@ export const useUpdateStudent = () => {
       delete datosEstudiante.segundaNacionalidadMunicipioId;
       delete datosEstudiante.segundaNacionalidadLocalidad;
 
-      // Extraer archivos para subirlos después de crear el estudiante
+      // Extraer archivos y documentos entregados
       Object.keys(studentData).forEach((key) => {
         if (key.startsWith('documento') && key.endsWith('_archivo')) {
           // Extraer el ID de documentación del nombre del campo
@@ -182,6 +193,10 @@ export const useUpdateStudent = () => {
           
           if (fileObj) {
             archivosASubir[docId] = fileObj;
+            // Guardar info de documentación para usar al subir
+            if (documentacionMap[docId]) {
+              documentosInfo[docId] = documentacionMap[docId];
+            }
           }
           
           // Eliminar del body ya que los archivos se suben por separado
@@ -199,8 +214,12 @@ export const useUpdateStudent = () => {
           
           if (studentData[key]) {
             documentosEntregados[docId] = true;
+            // Guardar info de documentación si no está ya guardada
+            if (!documentosInfo[docId] && documentacionMap[docId]) {
+              documentosInfo[docId] = documentacionMap[docId];
+            }
           }
-          // Mantener en el body, el backend lo procesará
+          // Mantener en el body, el backend lo procesará para crear/actualizar entregas en estudiantes_documentos_entrega
         }
       });
 
@@ -249,24 +268,32 @@ export const useUpdateStudent = () => {
         if (response.data?.success) {
           const nuevoEstudianteId = response.data.data.id;
 
-          // Subir archivos después de crear el estudiante de forma SECUENCIAL
-          // IMPORTANTE: Si hay un archivo, subirlo aunque el checkbox no esté marcado
-          // El hecho de subir un archivo implica que el documento está entregado
+          // Subir archivos digitales después de crear el estudiante de forma SECUENCIAL
+          // IMPORTANTE: Los documentos ya fueron marcados como entregados en el backend (estudiantes_documentos_entrega)
+          // Ahora subimos los archivos digitales (documentos_estudiante)
           const docIds = Object.keys(archivosASubir);
           
           for (let i = 0; i < docIds.length; i++) {
             const docId = docIds[i];
             if (archivosASubir[docId]) {
-              // Si hay archivo, marcar automáticamente como entregado
-              // Asegurar que documentacionId sea un número
               const documentacionId = typeof docId === 'string' ? parseInt(docId, 10) : docId;
+              const docInfo = documentosInfo[docId];
+              
+              if (!docInfo) {
+                console.warn(`[useUpdateStudent] No se encontró información de documentación para ID ${docId}, saltando subida`);
+                continue;
+              }
+              
+              // Obtener tipoDocumento de la documentación
+              const tipoDocumento = docInfo.tipoDocumento || 'INSCRIPCION';
               
               const formData = new FormData();
               formData.append('archivo', archivosASubir[docId]);
+              formData.append('tipoDocumento', tipoDocumento);
               formData.append('documentacionId', documentacionId.toString());
-              formData.append('esOriginal', 'false'); // Por defecto es copia
+              formData.append('contieneMultipleDocumentos', 'false'); // Por defecto un archivo = un documento
 
-              console.log(`[useUpdateStudent] Subiendo documento ${docId} para estudiante ${nuevoEstudianteId}`);
+              console.log(`[useUpdateStudent] Subiendo documento ${docId} (${tipoDocumento}) para estudiante ${nuevoEstudianteId}`);
 
               try {
                 const response = await apiClient.post(`/v1/estudiantes/${nuevoEstudianteId}/documentos`, formData, {
@@ -373,24 +400,32 @@ export const useUpdateStudent = () => {
         });
 
         if (response.data?.success) {
-          // Subir archivos si los hay de forma SECUENCIAL
-          // IMPORTANTE: Si hay un archivo, subirlo aunque el checkbox no esté marcado
-          // El hecho de subir un archivo implica que el documento está entregado
+          // Subir archivos digitales si los hay de forma SECUENCIAL
+          // IMPORTANTE: Los documentos ya fueron marcados como entregados en el backend (estudiantes_documentos_entrega)
+          // Ahora subimos los archivos digitales (documentos_estudiante)
           const docIds = Object.keys(archivosASubir);
           
           for (let i = 0; i < docIds.length; i++) {
             const docId = docIds[i];
             if (archivosASubir[docId]) {
-              // Si hay archivo, marcar automáticamente como entregado
-              // Asegurar que documentacionId sea un número
               const documentacionId = typeof docId === 'string' ? parseInt(docId, 10) : docId;
+              const docInfo = documentosInfo[docId];
+              
+              if (!docInfo) {
+                console.warn(`[useUpdateStudent] No se encontró información de documentación para ID ${docId}, saltando subida`);
+                continue;
+              }
+              
+              // Obtener tipoDocumento de la documentación
+              const tipoDocumento = docInfo.tipoDocumento || 'INSCRIPCION';
               
               const formData = new FormData();
               formData.append('archivo', archivosASubir[docId]);
+              formData.append('tipoDocumento', tipoDocumento);
               formData.append('documentacionId', documentacionId.toString());
-              formData.append('esOriginal', 'false'); // Por defecto es copia
+              formData.append('contieneMultipleDocumentos', 'false'); // Por defecto un archivo = un documento
 
-              console.log(`[useUpdateStudent] Subiendo documento ${docId} para estudiante ${studentIdFinal}`);
+              console.log(`[useUpdateStudent] Subiendo documento ${docId} (${tipoDocumento}) para estudiante ${studentIdFinal}`);
 
               try {
                 const uploadResponse = await apiClient.post(`/v1/estudiantes/${studentIdFinal}/documentos`, formData, {

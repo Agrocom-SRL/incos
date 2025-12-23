@@ -59,7 +59,7 @@ const Registrar = () => {
     municipios,
     provincias,
     departamentos,
-  });
+  }, documentacionInscripcion);
 
   // Establecer currentStudentId cuando hay estudianteId en la URL o cuando se cargan los datos
   useEffect(() => {

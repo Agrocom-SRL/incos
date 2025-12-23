@@ -5,10 +5,9 @@
  * Open/Closed: Abierto para extensión, cerrado para modificación
  */
 
-import { createContext, useContext, useCallback, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useCreateStudent, useUpdateStudent, useStudentFormData } from '../hooks';
-
-const StudentContext = createContext(null);
+import { StudentContext } from '../context/StudentContext';
 
 export const StudentProvider = ({ children }) => {
   // Hook para obtener datos iniciales (GET) - cuando se carga la página
@@ -48,7 +47,8 @@ export const StudentProvider = ({ children }) => {
    * Maneja la creación de un estudiante y actualiza el estado
    */
   const handleCreateStudent = useCallback(async (studentData) => {
-    const result = await createStudent(studentData);
+    // Pasar documentacionInscripcion para obtener tipoDocumento al subir archivos
+    const result = await createStudent(studentData, documentacionInscripcion);
     
     if (result.success) {
       // Refrescar datos del formulario (estadísticas actualizadas)
@@ -56,7 +56,7 @@ export const StudentProvider = ({ children }) => {
     }
     
     return result;
-  }, [createStudent, refetchFormData]);
+  }, [createStudent, documentacionInscripcion, refetchFormData]);
 
   /**
    * Maneja la actualización/creación de estudiante en el wizard
@@ -90,7 +90,8 @@ export const StudentProvider = ({ children }) => {
       console.log(`[StudentProvider] Agregado estudianteId a studentData:`, studentIdToUse);
     }
     
-    const result = await updateStudent(studentIdToUse, studentData, step, isFinalStep, isTemporarySave);
+    // Pasar documentacionInscripcion para obtener tipoDocumento al subir archivos
+    const result = await updateStudent(studentIdToUse, studentData, step, isFinalStep, isTemporarySave, documentacionInscripcion);
     
     // Si se creó un nuevo estudiante (primer paso), guardar el ID
     if (result.success && result.studentId && !currentStudentId && !estudianteIdEnDatos) {
@@ -107,7 +108,7 @@ export const StudentProvider = ({ children }) => {
     }
     
     return result;
-  }, [updateStudent, currentStudentId, refetchFormData]);
+  }, [updateStudent, currentStudentId, documentacionInscripcion, refetchFormData]);
 
   // Método para establecer el currentStudentId desde fuera (útil cuando se carga un estudiante desde la URL)
   const setCurrentStudentIdFromOutside = useCallback((studentId) => {
@@ -166,18 +167,5 @@ export const StudentProvider = ({ children }) => {
       {children}
     </StudentContext.Provider>
   );
-};
-
-/**
- * Hook para consumir el contexto de estudiantes
- * @returns {Object} Contexto de estudiantes
- * @throws {Error} Si se usa fuera del StudentProvider
- */
-export const useStudentContext = () => {
-  const context = useContext(StudentContext);
-  if (!context) {
-    throw new Error('useStudentContext must be used within StudentProvider');
-  }
-  return context;
 };
 

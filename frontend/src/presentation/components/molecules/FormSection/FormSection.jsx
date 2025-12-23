@@ -132,6 +132,13 @@ const FormSection = ({ title, fields, form, resolveOptions, onFieldChange, readO
           if (normalizedValues.tipoDiscapacidadId === '') {
             normalizedValues.tipoDiscapacidadId = null;
           }
+          // Normalizar checkboxes de documentos: si tienen initialValue: true y el valor es undefined, asumir true
+          // Esto evita parpadeos cuando los campos se inicializan
+          if (field.name && field.name.startsWith('documento_') && field.name.endsWith('_entregado')) {
+            if (normalizedValues[field.name] === undefined && field.initialValue === true) {
+              normalizedValues[field.name] = true;
+            }
+          }
           return field.shouldRender(normalizedValues);
         }
         return true;

@@ -504,15 +504,32 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange, rea
       case 'checkbox':
         const checkboxValue = form ? form.getFieldValue(field.name) : undefined;
         return (
-          <FieldCheckbox
-            label={field.label}
-            disabled={getDisabledValue()}
-            readOnly={readOnly}
-            checked={checkboxValue}
-            onChange={(e) => handleChange(e.target.checked)}
-            aceptaFotocopia={field.aceptaFotocopia}
-            descripcion={field.descripcion}
-          />
+          <div>
+            <FieldCheckbox
+              label={field.label}
+              disabled={getDisabledValue()}
+              readOnly={readOnly}
+              checked={checkboxValue}
+              onChange={(e) => handleChange(e.target.checked)}
+              aceptaFotocopia={field.aceptaFotocopia}
+              descripcion={field.descripcion}
+            />
+            {field.descripcion && (
+              <div style={{ 
+                marginTop: 4, 
+                marginLeft: 24, // Alinear con el texto del checkbox
+                padding: '6px 12px', 
+                backgroundColor: '#f0f7ff', 
+                borderRadius: 4,
+                fontSize: '12px',
+                color: '#666',
+                lineHeight: '1.5',
+                borderLeft: '3px solid #1890ff'
+              }}>
+                <strong>Descripción:</strong> {field.descripcion}
+              </div>
+            )}
+          </div>
         );
 
       case 'upload':

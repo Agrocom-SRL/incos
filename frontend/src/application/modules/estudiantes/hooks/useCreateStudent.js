@@ -12,19 +12,29 @@ export const useCreateStudent = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const createStudent = async (studentData) => {
+  const createStudent = async (studentData, documentacionInscripcion = []) => {
     setLoading(true);
     setError(null);
 
     try {
       // Separar documentos del resto de los datos
-      // El backend ahora maneja los documentos dinámicamente usando documentacion_id
-      // Solo necesitamos separar los archivos para subirlos después
+      // El backend ahora separa entregas físicas (estudiantes_documentos_entrega) de archivos digitales (documentos_estudiante)
+      // Los checkboxes documento_{id}_entregado se procesan en el backend para crear entregas
+      // Los archivos documento_{id}_archivo se suben después como archivos digitales
       const datosEstudiante = { ...studentData };
-      const documentosEntregados = {}; // Para subida de archivos (usa docId)
-      const archivosASubir = {}; // Para subida de archivos (usa docId)
+      const documentosEntregados = {}; // Para tracking de entregas (usa docId)
+      const archivosASubir = {}; // Para subida de archivos digitales (usa docId)
+      const documentosInfo = {}; // Para almacenar info de documentación (tipoDocumento, etc.)
 
-      // Extraer archivos para subirlos después de crear el estudiante
+      // Crear mapa de documentación para acceso rápido
+      const documentacionMap = {};
+      if (Array.isArray(documentacionInscripcion)) {
+        documentacionInscripcion.forEach((doc) => {
+          documentacionMap[doc.id] = doc;
+        });
+      }
+
+      // Extraer archivos y documentos entregados
       Object.keys(studentData).forEach((key) => {
         if (key.startsWith('documento') && key.endsWith('_archivo')) {
           // Extraer el ID de documentación del nombre del campo
@@ -51,6 +61,10 @@ export const useCreateStudent = () => {
           
           if (fileObj) {
             archivosASubir[docId] = fileObj;
+            // Guardar info de documentación para usar al subir
+            if (documentacionMap[docId]) {
+              documentosInfo[docId] = documentacionMap[docId];
+            }
           }
           
           // Eliminar del body ya que los archivos se suben por separado
@@ -68,8 +82,12 @@ export const useCreateStudent = () => {
           
           if (studentData[key]) {
             documentosEntregados[docId] = true;
+            // Guardar info de documentación si no está ya guardada
+            if (!documentosInfo[docId] && documentacionMap[docId]) {
+              documentosInfo[docId] = documentacionMap[docId];
+            }
           }
-          // Mantener en el body, el backend lo procesará
+          // Mantener en el body, el backend lo procesará para crear entregas en estudiantes_documentos_entrega
         }
       });
 
@@ -80,17 +98,28 @@ export const useCreateStudent = () => {
       if (response.data?.success) {
         const estudianteId = response.data.data.id;
 
-        // Subir archivos después de crear el estudiante
+        // Subir archivos digitales después de crear el estudiante
+        // IMPORTANTE: Los documentos ya fueron marcados como entregados en el backend (estudiantes_documentos_entrega)
+        // Ahora subimos los archivos digitales (documentos_estudiante)
         const uploadPromises = [];
         Object.keys(archivosASubir).forEach((docId) => {
-          if (documentosEntregados[docId] && archivosASubir[docId]) {
+          if (archivosASubir[docId]) {
             const formData = new FormData();
-            // Asegurar que documentacionId sea un número
             const documentacionId = typeof docId === 'string' ? parseInt(docId, 10) : docId;
+            const docInfo = documentosInfo[docId];
+            
+            if (!docInfo) {
+              console.warn(`[useCreateStudent] No se encontró información de documentación para ID ${docId}, saltando subida`);
+              return;
+            }
+            
+            // Obtener tipoDocumento de la documentación
+            const tipoDocumento = docInfo.tipoDocumento || 'INSCRIPCION';
             
             formData.append('archivo', archivosASubir[docId]);
+            formData.append('tipoDocumento', tipoDocumento);
             formData.append('documentacionId', documentacionId.toString());
-            formData.append('esOriginal', 'false'); // Por defecto es copia, se puede cambiar después
+            formData.append('contieneMultipleDocumentos', 'false'); // Por defecto un archivo = un documento
 
             uploadPromises.push(
               apiClient.post(`/v1/estudiantes/${estudianteId}/documentos`, formData, {

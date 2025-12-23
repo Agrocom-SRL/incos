@@ -6,7 +6,7 @@
  */
 
 import { studentFormFields } from './formFields.js';
-import { generateDocumentFields } from '../helpers';
+import { generateDocumentFields, generateUploadDocumentFields } from '../helpers';
 
 // Paso 1: Datos Personales, Geográficos y Contacto
 export const wizardStep1 = {
@@ -29,11 +29,15 @@ export const createWizardStep2 = (documentacionInscripcion = [], documentosExist
   formTitle: 'Documentos Requeridos',
   config: {
     documents: {
-      title: 'Documentos Requeridos',
+      title: 'Documentos Entregados',
       fields: generateDocumentFields(documentacionInscripcion, documentosExistentes),
     },
+    uploadDocuments: {
+      title: 'Subir Documentos',
+      fields: generateUploadDocumentFields(documentacionInscripcion),
+    },
   },
-  sections: ['documents'],
+  sections: ['documents', 'uploadDocuments'],
 });
 
 // Paso 3: Datos Académicos
@@ -58,8 +62,8 @@ export const generateStudentWizardSteps = (
   documentacionInscripcion = [],
   documentosExistentes = {}
 ) => [
+    createWizardStep2(documentacionInscripcion, documentosExistentes), // Documentos primero para pruebas
     wizardStep1,
-    createWizardStep2(documentacionInscripcion, documentosExistentes),
     wizardStep3,
   ];
 

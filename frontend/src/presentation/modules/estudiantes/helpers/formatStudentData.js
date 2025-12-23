@@ -9,20 +9,46 @@ import dayjs from 'dayjs';
 
 /**
  * Procesa documentos del estudiante y genera estructura de documentos existentes
- * @param {Array} documentos - Lista de documentos del backend
+ * @param {Array} documentos - Lista de documentos digitales del backend (documentos_estudiante)
  * @param {string|number} estudianteId - ID del estudiante
+ * @param {Array} entregasDocumentos - Lista de entregas físicas del backend (estudiantes_documentos_entrega)
  * @returns {Object} Objeto con { documentosExistentes, datosFormateados }
  */
-export const processStudentDocuments = (documentos = [], estudianteId) => {
+export const processStudentDocuments = (documentos = [], estudianteId, entregasDocumentos = [], documentacionInscripcion = []) => {
   const documentosExistentes = {};
   const datosFormateados = {};
 
+  // Primero, marcar TODOS los documentos como entregados por defecto (initialValue: true)
+  // Esto asegura que todos aparezcan marcados inicialmente
+  if (Array.isArray(documentacionInscripcion)) {
+    documentacionInscripcion.forEach((doc) => {
+      // Solo documentos de tipo INSCRIPCION que son padres (sin documentoPadreId)
+      const documentoPadreId = doc.documentoPadreId || doc.documento_padre_id;
+      if (doc.tipoDocumento === 'INSCRIPCION' && (documentoPadreId === null || documentoPadreId === undefined)) {
+        datosFormateados[`documento_${doc.id}_entregado`] = true;
+      }
+    });
+  }
+
+  // Luego procesar entregas físicas para actualizar estados
+  entregasDocumentos.forEach((entrega) => {
+    // El campo puede ser documentacionId o documentacion_id dependiendo del formato del backend
+    const docId = entrega.documentacionId || entrega.documentacion_id;
+    
+    if (docId) {
+      // Actualizar el estado según la entrega física
+      // Si entregado es false, desmarcar; si es true, marcar
+      datosFormateados[`documento_${docId}_entregado`] = entrega.entregado === true || entrega.entregado === 1;
+    }
+  });
+
+  // Luego procesar documentos digitales (archivos subidos)
   documentos.forEach((doc) => {
     // El campo puede ser documentacionId o documentacion_id dependiendo del formato del backend
     const docId = doc.documentacionId || doc.documentacion_id;
     
     if (docId) {
-      // IMPORTANTE: Marcar checkbox como entregado (siempre que haya un documento registrado)
+      // Si hay un archivo digital, marcar como entregado (el archivo implica entrega)
       datosFormateados[`documento_${docId}_entregado`] = true;
       
       // Si hay archivo, guardar información del documento existente
@@ -59,21 +85,27 @@ export const processStudentDocuments = (documentos = [], estudianteId) => {
 /**
  * Formatea datos del estudiante para el formulario
  * @param {Object} estudiante - Datos del estudiante del backend
- * @param {Array} documentos - Lista de documentos del estudiante
+ * @param {Array} documentos - Lista de documentos digitales del estudiante (documentos_estudiante)
  * @param {Object} datosAcademicos - Datos académicos del estudiante
  * @param {string|number} estudianteId - ID del estudiante
+ * @param {Array} entregasDocumentos - Lista de entregas físicas del estudiante (estudiantes_documentos_entrega)
+ * @param {Array} documentacionInscripcion - Lista de documentación requerida para establecer valores por defecto
  * @returns {Object} Datos formateados para el formulario
  */
 export const formatStudentDataForForm = (
   estudiante = {},
   documentos = [],
   datosAcademicos = null,
-  estudianteId = null
+  estudianteId = null,
+  entregasDocumentos = [],
+  documentacionInscripcion = []
 ) => {
-  // Procesar documentos
+  // Procesar documentos (digitales y entregas físicas)
   const { documentosExistentes, datosFormateados: docData } = processStudentDocuments(
     documentos,
-    estudianteId || estudiante.id
+    estudianteId || estudiante.id,
+    entregasDocumentos,
+    documentacionInscripcion
   );
 
   // Formatear datos básicos del estudiante

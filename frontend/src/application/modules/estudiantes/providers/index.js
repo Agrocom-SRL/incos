@@ -1,2 +1,2 @@
-export { StudentProvider, useStudentContext } from './StudentProvider';
+export { StudentProvider } from './StudentProvider';
 
