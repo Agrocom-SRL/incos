@@ -1,34 +1,36 @@
 /**
- * Contenedor de Dependency Injection - Version simplificada
+ * Punto de entrada del registro de módulos
  * 
- * NOTA: Los controladores ahora importan repositorios directamente.
- * Este contenedor se mantiene solo para compatibilidad con codigo legacy.
- * Implementacion minima sin dependencias.
+ * Responsabilidades:
+ * - Registrar servicios base (logger, file upload, etc.)
+ * - Registrar repositorios de infraestructura
+ * - Registrar módulos de dominio (estudiantes, etc.)
+ * 
+ * Orden de registro:
+ * 1. Servicios base (no dependen de nada)
+ * 2. Repositorios (dependen de servicios)
+ * 3. Módulos de dominio (dependen de repositorios y servicios)
  */
-import { logger } from '../../../shared/logger.js';
 
-// Contenedor minimo - solo para compatibilidad
-class SimpleContainer {
-  constructor() {
-    this.services = new Map();
-    this.services.set('logger', logger);
-  }
+import { registerServicesModule } from './services.container.js';
+import { registerRepositoriesModule } from './repositories.container.js';
+import { registerEstudiantesModule } from './estudiantes.container.js';
 
-  register(name, factory, singleton = false) {
-    this.services.set(name, singleton ? factory() : factory);
-  }
+/**
+ * Registra todos los módulos en el contenedor
+ * 
+ * @param {Container} container - Contenedor de DI
+ * @returns {Container} Contenedor con todos los módulos registrados
+ */
+export function registerAllModules(container) {
+    // 1. Servicios base (logger, upload, pdf, etc.)
+    registerServicesModule(container);
 
-  resolve(name) {
-    if (!this.services.has(name)) {
-      throw new Error(`Service '${name}' not found in container`);
-    }
-    return this.services.get(name);
-  }
+    // 2. Repositorios (infraestructura)
+    registerRepositoriesModule(container);
 
-  has(name) {
-    return this.services.has(name);
-  }
+    // 3. Módulos de dominio (use cases + controllers + routers)
+    registerEstudiantesModule(container);
+
+    return container;
 }
-
-export const container = new SimpleContainer();
-export default container;

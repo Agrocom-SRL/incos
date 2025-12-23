@@ -1,6 +1,7 @@
 import express from 'express';
-import studentRoutes from './student.routes.js';
 import catalogsRoutes from './catalogs.routes.js';
+import container from '../../infrastructure/container/index.js';
+import { TOKENS } from '../../infrastructure/container/tokens.js';
 
 const router = express.Router();
 
@@ -8,17 +9,14 @@ const router = express.Router();
 // RUTA BASE - Información de la API
 // ============================================
 router.get('/', (req, res) => {
-  // Solo mostrar endpoints implementados
-  const endpoints = {
-    estudiantes: '/api/v1/estudiantes',
-    catalogs: '/api/v1/catalogs',
-  };
-
-  res.json({
-    message: 'API Instituto INCOS v1',
-    version: '1.0.0',
-    endpoints,
-  });
+    res.json({
+        message: 'API Instituto INCOS v1',
+        version: '1.0.0',
+        endpoints: {
+            estudiantes: '/api/v1/estudiantes',
+            catalogs: '/api/v1/catalogs',
+        },
+    });
 });
 
 // ============================================
@@ -27,7 +25,7 @@ router.get('/', (req, res) => {
 // IMPORTANTE: Solo descomentar cuando el módulo esté implementado
 
 // Módulo: Gestión de Estudiantes (EST)
-router.use('/estudiantes', studentRoutes);
+router.use('/estudiantes', container.resolve(TOKENS.est_router));
 
 // Catálogos: Endpoints para obtener datos de catálogos
 router.use('/catalogs', catalogsRoutes);
