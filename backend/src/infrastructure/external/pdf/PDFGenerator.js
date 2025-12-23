@@ -37,15 +37,7 @@ export class PDFGenerator {
         const stream = fs.createWriteStream(outputPath);
         doc.pipe(stream);
 
-        // Encabezado
-        doc
-          .fontSize(14)
-          .font('Helvetica-Bold')
-          .text('ACTA DE COMPROMISO PARA LA ENTREGA DE DOCUMENTOS', {
-            align: 'center',
-          })
-          .moveDown(0.5);
-
+        // Encabezado - Nombre del instituto (centrado)
         doc
           .fontSize(12)
           .font('Helvetica-Bold')
@@ -58,17 +50,24 @@ export class PDFGenerator {
           })
           .moveDown(1);
 
+        // Título principal (centrado, más grande)
+        doc
+          .fontSize(16)
+          .font('Helvetica-Bold')
+          .text('ACTA DE COMPROMISO PARA LA ENTREGA DE DOCUMENTOS', {
+            align: 'center',
+          })
+          .moveDown(1.5);
+
         // Sección I: FECHA DE REGISTRO
         doc
           .fontSize(11)
           .font('Helvetica-Bold')
           .text('I. FECHA DE REGISTRO', { continued: false })
           .font('Helvetica')
-          .text(`Ciudad: ${data.ciudad || 'Santa Cruz de la Sierra'}`)
-          .text(`Día: ${data.dia || new Date().getDate()}`)
-          .text(`Mes: ${data.mes || PDFGenerator.getMonthName(new Date().getMonth())}`)
-          .text(`Año: ${data.anio || new Date().getFullYear()}`)
-          .moveDown(0.5);
+          .text(`En la Ciudad de ${data.ciudad || 'Santa Cruz de la Sierra'},`, { indent: 20 })
+          .text(`${data.dia || new Date().getDate()} del mes de ${data.mes || PDFGenerator.getMonthName(new Date().getMonth())} de ${data.anio || new Date().getFullYear()}.`, { indent: 20 })
+          .moveDown(0.8);
 
         // Sección II: NOMBRE COMPLETO Y NUMERO DE IDENTIFICACION
         doc
@@ -77,28 +76,27 @@ export class PDFGenerator {
             continued: false,
           })
           .font('Helvetica')
-          .text(`Nombre: ${data.nombreCompleto || ''}`)
-          .text(`C.I. Nº: ${data.ci || ''} ${data.expedicion || 'S.C.'}`)
-          .moveDown(0.5);
+          .text(`Yo ${data.nombreCompleto || ''}`, { indent: 20 })
+          .text(`con C.I. Nº ${data.ci || ''} ${data.expedicion || 'S.C.'}`, { indent: 20 })
+          .moveDown(0.8);
 
         // Sección III: AÑO Y CARRERA A LA QUE POSTULA
         doc
           .font('Helvetica-Bold')
           .text('III. AÑO Y CARRERA A LA QUE POSTULA', { continued: false })
           .font('Helvetica')
-          .text(`Del (From) Año: ${data.anioCarrera || ''}`)
-          .text(`Paralelo: ${data.paralelo || ''}`)
-          .text(`Carrera: ${data.carrera || ''}`)
-          .moveDown(0.5);
+          .text(`Del ${data.anioCarrera || ''} Año`, { indent: 20 })
+          .text(`Paralelo: ${data.paralelo || ''}`, { indent: 20 })
+          .text(`Carrera: ${data.carrera || ''}`, { indent: 20 })
+          .moveDown(0.8);
 
         // Sección IV: REQUISITOS
         doc
           .font('Helvetica-Bold')
-          .text(
-            'IV. Marcar con una "X" en el recuadro, el requisito que no está presentando',
-            { continued: false }
-          )
-          .moveDown(0.3);
+          .text('IV. Marcar con una "X" en el recuadro, el requisito que no está presentando.', {
+            continued: false
+          })
+          .moveDown(0.5);
 
         const requisitos = [
           'Copia de simple del Diploma de Bachiller',
@@ -110,36 +108,59 @@ export class PDFGenerator {
 
         requisitos.forEach((requisito, index) => {
           const tieneX = data.documentosFaltantes?.includes(index);
+          const yPos = doc.y;
+          
+          // Dibujar recuadro (checkbox)
+          doc
+            .rect(70, yPos - 2, 12, 12)
+            .stroke();
+          
+          // Si tiene X, dibujarla centrada en el recuadro
+          if (tieneX) {
+            doc
+              .font('Helvetica-Bold')
+              .fontSize(12)
+              .text('X', 72, yPos - 1, { width: 10, align: 'center' });
+          }
+          
+          // Texto del requisito
           doc
             .font('Helvetica')
-            .text(`[${tieneX ? 'X' : ' '}] ${requisito}`, {
-              indent: 20,
-            });
+            .fontSize(11)
+            .text(requisito, 90, yPos, { width: 450 });
         });
 
-        doc.moveDown(0.5);
+        doc.moveDown(1);
 
         // COMPROMISO
         doc
-          .font('Helvetica-Bold')
-          .text('COMPROMISO:', { continued: false })
           .font('Helvetica')
-          .text(
-            'Me comprometo completar la documentación Faltante.',
-            { indent: 20 }
-          )
-          .text(`Plazo máximo: ${data.plazoMaximo || '10'} días a partir de la fecha de registro.`)
-          .moveDown(0.5);
+          .fontSize(11)
+          .text('Me comprometo completar la documentación Faltante.', { indent: 20 })
+          .text(`En un plazo máximo de ${data.plazoMaximo || '10'} días, a partir de la fecha de registro.`, { indent: 20 })
+          .moveDown(0.8);
 
         // MOTIVOS
         doc
-          .font('Helvetica-Bold')
-          .text('Motivos:', { continued: false })
           .font('Helvetica')
-          .text(data.motivos || 'Actualización de carta aval del presente año.', {
-            indent: 20,
-          })
-          .moveDown(0.5);
+          .fontSize(11)
+          .text('Mencione los motivos por lo que no ha presentado los mencionados documentos:', { indent: 20 })
+          .moveDown(0.3);
+
+        // Área de texto para motivos (con borde)
+        const motivoY = doc.y;
+        doc
+          .rect(50, motivoY, 500, 60)
+          .stroke()
+          .font('Helvetica')
+          .fontSize(10)
+          .text(data.motivos || 'Actualización de carta aval del presente año.', 55, motivoY + 5, {
+            width: 490,
+            align: 'left',
+          });
+
+        doc.y = motivoY + 65;
+        doc.moveDown(0.8);
 
         // DECLARACIÓN FINAL
         doc
@@ -149,17 +170,17 @@ export class PDFGenerator {
             'Una vez vencido el plazo y en caso de no haber completado los requisitos exigidos por el Instituto Técnico INCOS SANTA CRUZ; me sujeto a las disposiciones de las Autoridades del Instituto.',
             { indent: 20 }
           )
-          .moveDown(1);
+          .moveDown(1.5);
 
         // FIRMA
         doc
           .font('Helvetica')
           .fontSize(11)
-          .text('Firma:', { continued: false })
-          .moveDown(2)
-          .text('_________________________')
+          .text('Firma', { indent: 20 })
+          .moveDown(0.5)
+          .text('_________________________', { indent: 20 })
           .moveDown(0.3)
-          .text(`C.I. ${data.ci || ''} ${data.expedicion || 'S.C.'}`);
+          .text(`C.I. ${data.ci || ''} ${data.expedicion || 'S.C.'}`, { indent: 20 });
 
         // Finalizar documento
         doc.end();

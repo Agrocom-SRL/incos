@@ -19,34 +19,34 @@ export class GenerateCompromisoActaController {
   async handle(req, res, next) {
     try {
       const estudianteId = parseInt(req.params.id);
-      const { documentosFaltantes, motivos, plazoMaximo, anioCarrera, paralelo, carrera } = req.query;
+      
+      // Opciones opcionales (solo motivos personalizados y plazo)
+      const { motivos, plazoMaximo } = req.query;
 
       logger.info('Generando ACTA DE COMPROMISO', {
         estudianteId,
-        documentosFaltantes,
-        motivos,
       });
 
-      // Parsear documentos faltantes si viene como string
-      let documentosFaltantesArray = [];
-      if (documentosFaltantes) {
-        if (typeof documentosFaltantes === 'string') {
-          documentosFaltantesArray = documentosFaltantes.split(',').map(id => parseInt(id.trim()));
-        } else if (Array.isArray(documentosFaltantes)) {
-          documentosFaltantesArray = documentosFaltantes.map(id => parseInt(id));
-        }
+      if (isNaN(estudianteId)) {
+        return res.status(400).json({
+          success: false,
+          error: {
+            code: 'INVALID_ID',
+            message: 'ID de estudiante inválido',
+          },
+        });
       }
 
-      const options = {
-        documentosFaltantes: documentosFaltantesArray,
-        motivos: motivos || undefined,
-        plazoMaximo: plazoMaximo ? parseInt(plazoMaximo) : undefined,
-        anioCarrera: anioCarrera || undefined,
-        paralelo: paralelo || undefined,
-        carrera: carrera || undefined,
-      };
+      // Opciones opcionales (solo para personalizar motivos o plazo)
+      const options = {};
+      if (motivos) {
+        options.motivos = motivos;
+      }
+      if (plazoMaximo) {
+        options.plazoMaximo = parseInt(plazoMaximo);
+      }
 
-      // Generar el PDF
+      // Generar el PDF (todos los datos se recuperan automáticamente)
       const result = await this.generateCompromisoActaUseCase.execute(estudianteId, options);
 
       // Construir ruta absoluta

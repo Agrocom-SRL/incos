@@ -94,6 +94,10 @@ export function registerEstudiantesModule(container) {
             new GenerateCompromisoActaUseCase({
                 studentRepository: c.resolve(TOKENS.studentRepository),
                 documentacionRepository: c.resolve(TOKENS.documentacionRepository),
+                studentAcademicDataRepository: c.resolve(TOKENS.studentAcademicDataRepository),
+                studentDocumentRepository: c.resolve(TOKENS.studentDocumentRepository),
+                careerRepository: c.resolve(TOKENS.careerRepository),
+                managementRepository: c.resolve(TOKENS.managementRepository),
                 logger: c.resolve(TOKENS.logger),
             }),
         { singleton: true }

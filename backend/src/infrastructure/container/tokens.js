@@ -30,6 +30,7 @@ export const TOKENS = {
     documentacionRepository: 'documentacionRepository',
     configuracionSistemaRepository: 'configuracionSistemaRepository',
     managementRepository: 'managementRepository',
+    careerRepository: 'careerRepository',
 
     // ============================================
     // MÓDULO ESTUDIANTES - USE CASES
