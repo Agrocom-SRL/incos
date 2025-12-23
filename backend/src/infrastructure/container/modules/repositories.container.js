@@ -75,6 +75,7 @@ import { CourseShiftRepository } from '../../../infrastructure/repositories/Cour
 import { StudentRepository } from '../../../infrastructure/repositories/StudentRepository.js';
 import { StudentAcademicDataRepository } from '../../../infrastructure/repositories/StudentAcademicDataRepository.js';
 import { StudentDocumentRepository } from '../../../infrastructure/repositories/StudentDocumentRepository.js';
+import { StudentDocumentDeliveryRepository } from '../../../infrastructure/repositories/StudentDocumentDeliveryRepository.js';
 import { StudentDisabilityRepository } from '../../../infrastructure/repositories/StudentDisabilityRepository.js';
 import { StudentOriginRepository } from '../../../infrastructure/repositories/StudentOriginRepository.js';
 import { ScholarshipRepository } from '../../../infrastructure/repositories/ScholarshipRepository.js';
@@ -147,6 +148,7 @@ export function registerRepositoriesModule(container) {
     container.register('studentRepository', () => new StudentRepository(), { singleton: true });
     container.register('studentAcademicDataRepository', () => new StudentAcademicDataRepository(), { singleton: true });
     container.register('studentDocumentRepository', () => new StudentDocumentRepository(), { singleton: true });
+    container.register('studentDocumentDeliveryRepository', () => new StudentDocumentDeliveryRepository(), { singleton: true });
     container.register('studentDisabilityRepository', () => new StudentDisabilityRepository(), { singleton: true });
     container.register('studentOriginRepository', () => new StudentOriginRepository(), { singleton: true });
     container.register('scholarshipRepository', () => new ScholarshipRepository(), { singleton: true });

@@ -12,40 +12,17 @@ export const DocumentoEstudiante = sequelize.define(
       allowNull: true,
       comment: 'Estudiante',
     },
+    tipoDocumento: {
+      type: DataTypes.STRING(50),
+      field: 'tipo_documento',
+      allowNull: true,
+      comment: 'Tipo de documento según categoría (INSCRIPCION, LICENCIA, PASANTIA, DESCUENTO, TITULACION, TRASPASO, TRANSFERENCIA, BECA, OTRO). El usuario selecciona el tipo y luego puede elegir un documento específico de ese tipo.',
+    },
     documentacionId: {
       type: DataTypes.INTEGER,
       field: 'documentacion_id',
       allowNull: true,
-      comment: 'Tipo de documentación requerida (referencia a documentacion). El tipo_documento se obtiene de la tabla documentacion.',
-    },
-    motivoDocumento: {
-      type: DataTypes.STRING(200),
-      field: 'motivo_documento',
-      allowNull: true,
-      comment: 'Motivo específico del documento',
-    },
-    tipoReferencia: {
-      type: DataTypes.ENUM(
-        'licencias_solicitudes',
-        'estudiantes_becas',
-        'pasantias_asignaciones',
-        'inscripciones',
-        'pagos',
-        'otro'
-      ),
-      field: 'tipo_referencia',
-      allowNull: true,
-      comment: 'Tipo de referencia',
-    },
-    referenciaId: {
-      type: DataTypes.INTEGER,
-      field: 'referencia_id',
-      allowNull: true,
-      comment: 'ID de referencia según tipo_referencia',
-    },
-    descripcion: {
-      type: DataTypes.TEXT,
-      allowNull: true,
+      comment: 'Documento específico de la categoría tipo_documento (referencia a documentacion). NULL si el archivo contiene TODOS los documentos del tipo_documento o múltiples documentos de diferentes tipos.',
     },
     nombreArchivo: {
       type: DataTypes.STRING(255),
@@ -64,11 +41,17 @@ export const DocumentoEstudiante = sequelize.define(
       allowNull: true,
       comment: 'Extensión del archivo',
     },
-    tamanoKb: {
-      type: DataTypes.INTEGER,
-      field: 'tamano_kb',
+    tipoMime: {
+      type: DataTypes.STRING(100),
+      field: 'tipo_mime',
       allowNull: true,
-      comment: 'Tamaño en kilobytes',
+      comment: 'Tipo MIME del archivo',
+    },
+    contieneMultipleDocumentos: {
+      type: DataTypes.BOOLEAN,
+      field: 'contiene_multiple_documentos',
+      defaultValue: false,
+      comment: 'Indica si el archivo contiene múltiples documentos (TRUE) o un solo documento (FALSE). Si es TRUE y documentacion_id es NULL, el archivo contiene TODOS los documentos del tipo_documento.',
     },
     verificado: {
       type: DataTypes.BOOLEAN,
@@ -100,12 +83,6 @@ export const DocumentoEstudiante = sequelize.define(
       type: DataTypes.TEXT,
       field: 'motivo_rechazo',
       allowNull: true,
-    },
-    esOriginal: {
-      type: DataTypes.BOOLEAN,
-      field: 'es_original',
-      defaultValue: false,
-      comment: 'Indica si el documento es original (TRUE) o fotocopia (FALSE)',
     },
   },
   {

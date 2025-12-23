@@ -77,6 +77,11 @@ export function buildStudentRouter({ controllers, middlewares }) {
         (req, res, next) => controllers.uploadDocumentController.handle(req, res, next)
     );
 
+    router.get(
+        '/:id/entregas-documentos',
+        (req, res, next) => controllers.getStudentDocumentDeliveriesController.handle(req, res, next)
+    );
+
     // ============================================
     // DATOS ACADÉMICOS
     // ============================================

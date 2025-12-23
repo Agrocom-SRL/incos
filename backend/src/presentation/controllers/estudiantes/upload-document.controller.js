@@ -34,7 +34,7 @@ export class UploadDocumentController {
       }
 
       const estudianteId = parseInt(req.params.id, 10);
-      const { documentacionId, esOriginal = false } = req.body;
+      const { tipoDocumento, documentacionId, contieneMultipleDocumentos = false } = req.body;
       const file = req.file;
 
       if (!file) {
@@ -44,10 +44,10 @@ export class UploadDocumentController {
         });
       }
 
-      if (!documentacionId) {
+      if (!tipoDocumento) {
         return res.status(400).json({
           success: false,
-          error: 'El ID de documentación es requerido',
+          error: 'El tipo de documento es requerido (INSCRIPCION, LICENCIA, etc.)',
         });
       }
 
@@ -55,9 +55,10 @@ export class UploadDocumentController {
 
       const document = await this.uploadDocumentUseCase.execute(
         estudianteId,
-        documentacionId,
+        tipoDocumento,
+        documentacionId || null,
         file,
-        esOriginal,
+        contieneMultipleDocumentos,
         userId
       );
 
@@ -65,13 +66,14 @@ export class UploadDocumentController {
         success: true,
         data: {
           id: document.id,
+          tipoDocumento: document.tipoDocumento,
           documentacionId: document.documentacionId,
           nombreArchivo: document.fileName,
           rutaArchivo: document.filePath,
           extension: document.extension,
-          tamanoKb: document.sizeKb,
+          tipoMime: document.tipoMime,
+          contieneMultipleDocumentos: document.contieneMultipleDocumentos,
           estado: document.state,
-          esOriginal: document.esOriginal,
         },
         message: 'Documento subido correctamente',
       });

@@ -9,17 +9,13 @@ export class StudentDocument extends BaseEntity {
   constructor(data = {}) {
     super(data);
     this.studentId = data.studentId || null;
-    this.documentacionId = data.documentacionId || null;
-    // documentType se obtiene de la tabla documentacion a través de documentacion_id, no se almacena aquí
-    this.documentReason = data.documentReason || null;
-    this.esOriginal = data.esOriginal !== undefined ? data.esOriginal : false;
-    this.referenceType = data.referenceType || null;
-    this.referenceId = data.referenceId || null;
-    this.description = data.description || null;
+    this.tipoDocumento = data.tipoDocumento || null; // INSCRIPCION, LICENCIA, PASANTIA, etc.
+    this.documentacionId = data.documentacionId || null; // Documento específico de ese tipo (opcional)
     this.fileName = data.fileName || null;
     this.filePath = data.filePath || null;
     this.extension = data.extension || null;
-    this.sizeKb = data.sizeKb || null;
+    this.tipoMime = data.tipoMime || null;
+    this.contieneMultipleDocumentos = data.contieneMultipleDocumentos !== undefined ? data.contieneMultipleDocumentos : false;
     this.verified = data.verified !== undefined ? data.verified : false;
     this.verifiedBy = data.verifiedBy || null;
     this.verificationDate = data.verificationDate || null;
@@ -53,17 +49,13 @@ export class StudentDocument extends BaseEntity {
     return {
       ...super.toPlainObject(),
       studentId: this.studentId,
+      tipoDocumento: this.tipoDocumento,
       documentacionId: this.documentacionId,
-      // documentType se obtiene de documentacion a través de documentacion_id
-      documentReason: this.documentReason,
-      esOriginal: this.esOriginal,
-      referenceType: this.referenceType,
-      referenceId: this.referenceId,
-      description: this.description,
       fileName: this.fileName,
       filePath: this.filePath,
       extension: this.extension,
-      sizeKb: this.sizeKb,
+      tipoMime: this.tipoMime,
+      contieneMultipleDocumentos: this.contieneMultipleDocumentos,
       verified: this.verified,
       verifiedBy: this.verifiedBy,
       verificationDate: this.verificationDate,

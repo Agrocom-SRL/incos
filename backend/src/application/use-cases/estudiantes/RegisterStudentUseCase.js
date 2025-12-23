@@ -15,6 +15,7 @@ export class RegisterStudentUseCase {
     studentRepository,
     studentAcademicDataRepository,
     studentDocumentRepository,
+    studentDocumentDeliveryRepository,
     studentDisabilityRepository,
     studentOriginRepository,
     documentacionRepository,
@@ -25,6 +26,7 @@ export class RegisterStudentUseCase {
     this.studentRepository = studentRepository;
     this.studentAcademicDataRepository = studentAcademicDataRepository;
     this.studentDocumentRepository = studentDocumentRepository;
+    this.studentDocumentDeliveryRepository = studentDocumentDeliveryRepository;
     this.studentDisabilityRepository = studentDisabilityRepository;
     this.studentOriginRepository = studentOriginRepository;
     this.documentacionRepository = documentacionRepository;
@@ -249,32 +251,20 @@ export class RegisterStudentUseCase {
       this.logger.info('[Estudiantes] Guardado parcial detectado - saltando validación de documentos requeridos');
     }
 
-    // 12. Crear registros de documentos marcados como entregados
-    const documentosCreados = [];
+    // 12. Crear registros de entrega de documentos marcados como entregados
+    // IMPORTANTE: Ahora se registra en estudiantes_documentos_entrega (entrega física)
+    // Los archivos digitales se suben posteriormente en documentos_estudiante
+    const entregasCreadas = [];
     
-    this.logger.info('[Estudiantes] Procesando documentos entregados', {
+    this.logger.info('[Estudiantes] Procesando documentos entregados físicamente', {
       documentosEntregados,
       documentosEntregadosNormalizados,
       totalDocumentos: documentosEntregadosNormalizados.length,
-      documentosEntregadosDetalle: documentosEntregadosNormalizados.map(id => ({
-        id,
-        tipo: typeof id,
-        esNumero: typeof id === 'number',
-      })),
     });
     
-    // Obtener información de todos los documentos marcados
+    // Obtener información de todos los documentos marcados como entregados
     for (const docId of documentosEntregadosNormalizados) {
-      // Asegurar que el ID sea un número
       const docIdNum = typeof docId === 'string' ? parseInt(docId, 10) : docId;
-      
-      this.logger.info(`[Estudiantes] Buscando documentación con ID ${docIdNum}`, {
-        docIdOriginal: docId,
-        docIdNum,
-        docIdType: typeof docId,
-        docIdNumType: typeof docIdNum,
-        esNaN: isNaN(docIdNum),
-      });
       
       if (isNaN(docIdNum)) {
         this.logger.warn(`[Estudiantes] ID de documento inválido: ${docId}, saltando`);
@@ -283,72 +273,50 @@ export class RegisterStudentUseCase {
       
       const documentacion = await this.documentacionRepository.findById(docIdNum);
       
-      this.logger.info(`[Estudiantes] Resultado de búsqueda documentación ID ${docIdNum}`, {
-        encontrada: !!documentacion,
-        activa: documentacion?.activo,
-        activoTipo: typeof documentacion?.activo,
-        activoValue: documentacion?.activo,
-        nombre: documentacion?.name,
-        id: documentacion?.id,
-        // Log completo del objeto para debugging
-        documentacionObj: documentacion ? JSON.stringify(documentacion) : null,
-      });
-      
-      // IMPORTANTE: El repositorio findById ya filtra por activo=true en la consulta SQL
-      // Si encuentra un documento, significa que está activo. No necesitamos verificar nuevamente.
-      // Si el documento no existe o está inactivo, findById retornará null
       if (!documentacion) {
-        this.logger.warn(`Documentación con ID ${docIdNum} no encontrada o inactiva (el repositorio ya filtra por activo=true), saltando`, {
-          docIdNum,
-          docIdOriginal: docId,
-          docIdType: typeof docId,
-        });
+        this.logger.warn(`Documentación con ID ${docIdNum} no encontrada o inactiva, saltando`);
         continue;
       }
       
-      // El documento existe y está activo (el repositorio ya lo verificó)
-      // No necesitamos verificar nuevamente documentacion.activo
-
-      const documentData = {
+      // Crear registro de entrega física del documento
+      const entregaData = {
         studentId: savedStudent.id,
         documentacionId: documentacion.id,
-        // documentType no existe en la tabla documentos_estudiante, se obtiene de documentacion a través de documentacion_id
-        documentReason: documentacion.name,
-        referenceType: 'inscripciones',
-        description: `${documentacion.name} - Marcado como entregado en registro inicial (pendiente subida de archivo)`,
-        fileName: `pendiente_${documentacion.name.replace(/\s+/g, '_')}_${savedStudent.id}.tmp`,
-        filePath: `/uploads/documentos/estudiantes/${savedStudent.id}/`,
-        extension: 'tmp', // Temporal hasta que se suba el archivo
-        sizeKb: 0,
-        verified: false,
-        state: 'PENDIENTE', // Pendiente hasta que se suba el archivo
-        esOriginal: false, // Por defecto, se marcará cuando se suba el archivo
+        entregado: true,
+        enTramite: false,
+        esOriginal: false, // Se actualizará cuando se suba el archivo digital
+        fechaEntrega: new Date().toISOString().split('T')[0], // Fecha actual
+        observaciones: `Documento marcado como entregado en registro inicial`,
       };
       
-      const documento = await this.studentDocumentRepository.create(documentData, userId);
-      documentosCreados.push(documento);
+      const entrega = await this.studentDocumentDeliveryRepository.create(entregaData, userId);
+      entregasCreadas.push(entrega);
+      
+      this.logger.info(`[Estudiantes] Entrega de documento registrada`, {
+        entregaId: entrega.id,
+        documentacionId: documentacion.id,
+        documentacionNombre: documentacion.name,
+      });
     }
 
-    // 13. Calcular estado de registro basado en documentos
-    // NOTA: Esta lógica calcula el estado pero NO lo guarda en BD aún
-    // TODO: Agregar campo estado_registro en estudiantes_datos_academicos
+    // 13. Calcular estado de registro basado en entregas de documentos
     // Estados: BORRADOR, PENDIENTE, ADMITIDO
     let estadoRegistro = 'BORRADOR'; // Por defecto
     
-    // Si tiene todos los documentos requeridos marcados, es PENDIENTE
-    if (documentosCreados.length >= documentosRequeridos.length) {
+    // Si tiene todos los documentos requeridos marcados como entregados, es PENDIENTE
+    if (entregasCreadas.length >= documentosRequeridos.length) {
       estadoRegistro = 'PENDIENTE';
     }
     
     // TODO: Implementar lógica completa para ADMITIDO
-    // Requiere: todos los documentos originales subidos y verificados
-    // Por ahora solo se marca como PENDIENTE si tiene todos los documentos requeridos
+    // Requiere: todos los documentos originales subidos y verificados en documentos_estudiante
+    // Por ahora solo se marca como PENDIENTE si tiene todos los documentos requeridos entregados físicamente
 
     this.logger.info('[Estudiantes] Estudiante registrado exitosamente', {
       id: savedStudent.id,
       codigoEstudiante: savedStudent.studentCode,
       estadoRegistro,
-      documentosCreados: documentosCreados.length,
+      entregasCreadas: entregasCreadas.length,
     });
 
     return savedStudent;

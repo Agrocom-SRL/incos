@@ -29,27 +29,22 @@ export class StudentDocumentRepository extends BaseRepository {
    */
   toEntity(model) {
     if (!model) return null;
-    // documentType no existe en documentos_estudiante, se obtiene de documentacion a través de documentacion_id
     return new StudentDocument({
       id: model.id,
       studentId: model.estudianteId,
+      tipoDocumento: model.tipoDocumento,
       documentacionId: model.documentacionId,
-      // documentType se obtiene de la tabla documentacion, no se almacena aquí
-      documentReason: model.motivoDocumento,
-      referenceType: model.tipoReferencia,
-      referenceId: model.referenciaId,
-      description: model.descripcion,
       fileName: model.nombreArchivo,
       filePath: model.rutaArchivo,
       extension: model.extension,
-      sizeKb: model.tamanoKb,
+      tipoMime: model.tipoMime,
+      contieneMultipleDocumentos: model.contieneMultipleDocumentos,
       verified: model.verificado,
       verifiedBy: model.verificadoPor,
       verificationDate: model.fechaVerificacion,
       verificationObservations: model.observacionesVerificacion,
       state: model.estado,
       rejectionReason: model.motivoRechazo,
-      esOriginal: model.esOriginal,
       activo: model.activo,
       createdAt: model.createdAt,
       updatedAt: model.updatedAt,
@@ -82,7 +77,7 @@ export class StudentDocumentRepository extends BaseRepository {
    * @returns {string[]}
    */
   getSearchFields() {
-    return ['nombreArchivo', 'descripcion', 'motivoDocumento'];
+    return ['nombreArchivo', 'tipoDocumento'];
   }
 
   /**
@@ -102,23 +97,19 @@ export class StudentDocumentRepository extends BaseRepository {
   mapDataToModel(data, userId = null) {
     return {
       estudianteId: data.studentId || null,
+      tipoDocumento: data.tipoDocumento || null,
       documentacionId: data.documentacionId || null,
-      // tipoDocumento no existe en la tabla, se obtiene de documentacion a través de documentacion_id
-      motivoDocumento: data.documentReason || null,
-      tipoReferencia: data.referenceType || null,
-      referenciaId: data.referenceId || null,
-      descripcion: data.description || null,
       nombreArchivo: data.fileName,
       rutaArchivo: data.filePath,
       extension: data.extension || null,
-      tamanoKb: data.sizeKb || null,
+      tipoMime: data.tipoMime || null,
+      contieneMultipleDocumentos: data.contieneMultipleDocumentos !== undefined ? data.contieneMultipleDocumentos : false,
       verificado: data.verified !== undefined ? data.verified : false,
       verificadoPor: data.verifiedBy || null,
       fechaVerificacion: data.verificationDate || null,
       observacionesVerificacion: data.verificationObservations || null,
       estado: data.state || 'PENDIENTE',
       motivoRechazo: data.rejectionReason || null,
-      esOriginal: data.esOriginal !== undefined ? data.esOriginal : false,
     };
   }
 
@@ -237,29 +228,9 @@ export class StudentDocumentRepository extends BaseRepository {
    * @returns {Promise<StudentDocument[]>}
    */
   async findByTipoDocumento(tipoDocumento) {
-    // Necesitamos hacer JOIN con documentacion para filtrar por tipo_documento
-    // ya que tipo_documento no existe directamente en documentos_estudiante
-    const { Documentacion } = await import('../database/models/Documentacion.js');
-    
-    // Primero obtener los IDs de documentacion con ese tipo
-    const documentaciones = await Documentacion.findAll({
-      where: {
-        tipoDocumento: tipoDocumento,
-        activo: true,
-      },
-      attributes: ['id'],
-    });
-    
-    const documentacionIds = documentaciones.map(doc => doc.id);
-    
-    if (documentacionIds.length === 0) {
-      return [];
-    }
-    
-    // Luego buscar documentos_estudiante con esos documentacion_ids
     const models = await this.getModel().findAll({
       where: {
-        documentacionId: documentacionIds,
+        tipoDocumento: tipoDocumento,
         activo: true,
         // paranoid: true automáticamente excluye deletedAt !== null
       },

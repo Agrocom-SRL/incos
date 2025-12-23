@@ -28,18 +28,20 @@ export class UploadDocumentUseCase {
   /**
    * Ejecuta el caso de uso
    * @param {number} studentId - ID del estudiante
-   * @param {number} documentacionId - ID del tipo de documentación
+   * @param {string} tipoDocumento - Tipo de documento (INSCRIPCION, LICENCIA, etc.)
+   * @param {number|null} documentacionId - ID del documento específico (opcional, NULL si contiene todos los documentos del tipo)
    * @param {Object} file - Archivo subido (de multer)
-   * @param {boolean} esOriginal - Si el documento es original o fotocopia
+   * @param {boolean} contieneMultipleDocumentos - Si el archivo contiene múltiples documentos
    * @param {number} userId - ID del usuario que realiza la operación
    * @returns {Promise<Object>} Documento creado
    */
-  async execute(studentId, documentacionId, file, esOriginal = false, userId) {
+  async execute(studentId, tipoDocumento, documentacionId, file, contieneMultipleDocumentos = false, userId) {
     this.logger.info('[Estudiantes] Subiendo documento', {
       studentId,
+      tipoDocumento,
       documentacionId,
       fileName: file?.originalname,
-      esOriginal,
+      contieneMultipleDocumentos,
     });
 
     // 1. Validar que el estudiante existe
@@ -48,18 +50,31 @@ export class UploadDocumentUseCase {
       throw new Error(`Estudiante con ID ${studentId} no encontrado`);
     }
 
-    // 2. Validar que el tipo de documentación existe y está activo
-    const documentacion = await this.documentacionRepository.findById(
-      parseInt(documentacionId)
-    );
-    if (!documentacion) {
-      throw new Error('Tipo de documentación no encontrado');
-    }
-    if (!documentacion.active) {
-      throw new Error('Tipo de documentación inactivo');
+    // 2. Validar tipo de documento
+    const tiposValidos = ['INSCRIPCION', 'LICENCIA', 'PASANTIA', 'DESCUENTO', 'TITULACION', 'TRASPASO', 'TRANSFERENCIA', 'BECA', 'OTRO'];
+    if (!tiposValidos.includes(tipoDocumento)) {
+      throw new Error(`Tipo de documento inválido: ${tipoDocumento}`);
     }
 
-    // 3. Mover archivo a la estructura correcta
+    // 3. Si se proporciona documentacionId, validar que existe y está activo
+    let documentacion = null;
+    if (documentacionId) {
+      documentacion = await this.documentacionRepository.findById(
+        parseInt(documentacionId)
+      );
+      if (!documentacion) {
+        throw new Error('Documento específico no encontrado');
+      }
+      if (!documentacion.active) {
+        throw new Error('Documento específico inactivo');
+      }
+      // Validar que el tipo de documento coincide
+      if (documentacion.documentType !== tipoDocumento) {
+        throw new Error(`El documento específico no pertenece al tipo ${tipoDocumento}`);
+      }
+    }
+
+    // 4. Mover archivo a la estructura correcta
     const uploadsBaseDir = path.join(
       __dirname,
       '../../../../uploads/documentos/estudiantes'
@@ -74,7 +89,8 @@ export class UploadDocumentUseCase {
 
     // Generar nuevo nombre de archivo
     const ext = path.extname(file.originalname);
-    const newFileName = `${documentacionId}_${Date.now()}${ext}`;
+    const documentacionPrefix = documentacionId ? `${documentacionId}_` : `${tipoDocumento}_`;
+    const newFileName = `${documentacionPrefix}${Date.now()}${ext}`;
     const targetPath = path.join(targetDir, newFileName);
 
     // Mover archivo de temp a la ubicación final
@@ -88,22 +104,21 @@ export class UploadDocumentUseCase {
       }
     }
 
-    // 4. Guardar información del documento en BD
+    // 5. Guardar información del documento en BD
     const relativeFilePath = `/uploads/documentos/estudiantes/${studentId}/${newFileName}`;
+    const mimeType = file.mimetype || null;
 
     const documentData = {
       studentId,
-      documentacionId: parseInt(documentacionId),
-      documentReason: documentacion.name,
-      referenceType: 'inscripciones',
-      description: documentacion.description || documentacion.name,
+      tipoDocumento: tipoDocumento,
+      documentacionId: documentacionId ? parseInt(documentacionId) : null,
       fileName: newFileName,
       filePath: relativeFilePath,
       extension: ext.substring(1),
-      sizeKb: Math.round(file.size / 1024),
+      tipoMime: mimeType,
+      contieneMultipleDocumentos: contieneMultipleDocumentos === 'true' || contieneMultipleDocumentos === true,
       verified: false,
       state: 'PENDIENTE',
-      esOriginal: esOriginal === 'true' || esOriginal === true,
     };
 
     const document = await this.studentDocumentRepository.create(

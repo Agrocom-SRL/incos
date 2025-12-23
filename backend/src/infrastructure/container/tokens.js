@@ -23,6 +23,7 @@ export const TOKENS = {
     studentRepository: 'studentRepository',
     studentAcademicDataRepository: 'studentAcademicDataRepository',
     studentDocumentRepository: 'studentDocumentRepository',
+    studentDocumentDeliveryRepository: 'studentDocumentDeliveryRepository',
     studentDisabilityRepository: 'studentDisabilityRepository',
     studentOriginRepository: 'studentOriginRepository',
 
@@ -51,6 +52,7 @@ export const TOKENS = {
     est_updateStudentController: 'estudiantes.updateStudentController',
     est_uploadDocumentController: 'estudiantes.uploadDocumentController',
     est_getDocumentsController: 'estudiantes.getStudentDocumentsController',
+    est_getDocumentDeliveriesController: 'estudiantes.getStudentDocumentDeliveriesController',
     est_getAcademicDataController: 'estudiantes.getStudentAcademicDataController',
     est_generateActaController: 'estudiantes.generateCompromisoActaController',
 

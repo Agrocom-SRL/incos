@@ -32,6 +32,7 @@ import {
 
 import { UploadDocumentController } from '../../../presentation/controllers/estudiantes/upload-document.controller.js';
 import { GetStudentDocumentsController } from '../../../presentation/controllers/estudiantes/get-documents.controller.js';
+import { GetStudentDocumentDeliveriesController } from '../../../presentation/controllers/estudiantes/get-document-deliveries.controller.js';
 import { GetStudentAcademicDataController } from '../../../presentation/controllers/estudiantes/get-academic-data.controller.js';
 import { GetStudentByIdController } from '../../../presentation/controllers/estudiantes/get-by-id.controller.js'
 import { GenerateCompromisoActaController } from '../../../presentation/controllers/estudiantes/generate-compromiso-acta.controller.js';
@@ -58,6 +59,7 @@ export function registerEstudiantesModule(container) {
                 studentRepository: c.resolve(TOKENS.studentRepository),
                 studentAcademicDataRepository: c.resolve(TOKENS.studentAcademicDataRepository),
                 studentDocumentRepository: c.resolve(TOKENS.studentDocumentRepository),
+                studentDocumentDeliveryRepository: c.resolve(TOKENS.studentDocumentDeliveryRepository),
                 studentDisabilityRepository: c.resolve(TOKENS.studentDisabilityRepository),
                 studentOriginRepository: c.resolve(TOKENS.studentOriginRepository),
                 documentacionRepository: c.resolve(TOKENS.documentacionRepository),
@@ -152,6 +154,12 @@ export function registerEstudiantesModule(container) {
     );
 
     container.register(
+        TOKENS.est_getDocumentDeliveriesController,
+        () => new GetStudentDocumentDeliveriesController(),
+        { singleton: true }
+    );
+
+    container.register(
         TOKENS.est_getAcademicDataController,
         () => new GetStudentAcademicDataController(),
         { singleton: true }
@@ -179,6 +187,7 @@ export function registerEstudiantesModule(container) {
                 uploadDocumentController: c.resolve(TOKENS.est_uploadDocumentController),
                 getStudentByIdController: c.resolve(TOKENS.est_getStudentByIdController),
                 getStudentDocumentsController: c.resolve(TOKENS.est_getDocumentsController),
+                getStudentDocumentDeliveriesController: c.resolve(TOKENS.est_getDocumentDeliveriesController),
                 getStudentAcademicDataController: c.resolve(TOKENS.est_getAcademicDataController),
                 generateCompromisoActaController: c.resolve(TOKENS.est_generateActaController),
             };
