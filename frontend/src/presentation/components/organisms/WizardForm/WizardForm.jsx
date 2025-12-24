@@ -102,6 +102,56 @@ const WizardForm = ({
     return fields;
   };
 
+  // Filtrar initialValues para incluir solo los campos del paso actual
+  // Esto evita que valores de otros pasos se apliquen a campos del paso actual
+  const getCurrentStepInitialValues = () => {
+    const currentStepFields = getCurrentStepFields();
+    if (currentStepFields.length === 0) {
+      return {};
+    }
+    
+    // Obtener todos los campos del paso actual con sus configuraciones
+    const allFields = [];
+    if (currentStepConfig && currentStepConfig.config) {
+      currentStepConfig.sections?.forEach((sectionKey) => {
+        const section = currentStepConfig.config[sectionKey];
+        if (section && section.fields) {
+          allFields.push(...section.fields);
+        }
+      });
+    }
+    
+    // Crear un mapa de initialValue por nombre de campo
+    const initialValuesMap = {};
+    allFields.forEach((field) => {
+      if (field.name && field.initialValue !== undefined) {
+        initialValuesMap[field.name] = field.initialValue;
+      }
+    });
+    
+    // Filtrar formValues para incluir solo los campos del paso actual
+    // Y combinar con initialValues de los campos
+    const filteredValues = { ...initialValuesMap };
+    currentStepFields.forEach((fieldName) => {
+      // Si el campo ya tiene un valor en formValues, usar ese (tiene prioridad)
+      // Si no, usar el initialValue del campo si existe
+      if (formValues[fieldName] !== undefined && formValues[fieldName] !== null) {
+        filteredValues[fieldName] = formValues[fieldName];
+      } else if (initialValuesMap[fieldName] !== undefined) {
+        // Asegurar que los valores booleanos se establezcan explícitamente
+        // Especialmente importante para switches que deben iniciar en true
+        const initialValue = initialValuesMap[fieldName];
+        if (typeof initialValue === 'boolean') {
+          filteredValues[fieldName] = Boolean(initialValue);
+        } else {
+          filteredValues[fieldName] = initialValue;
+        }
+      }
+    });
+    
+    return filteredValues;
+  };
+
   // Validar y avanzar al siguiente paso
   const handleNext = async () => {
     try {
@@ -282,7 +332,7 @@ const WizardForm = ({
           title={currentStepConfig.formTitle}
           config={currentStepConfig.config}
           sections={currentStepConfig.sections}
-          initialValues={formValues}
+          initialValues={getCurrentStepInitialValues()}
           resolveOptions={resolveOptions}
           onFieldChange={onFieldChange}
           wizardMode={true}

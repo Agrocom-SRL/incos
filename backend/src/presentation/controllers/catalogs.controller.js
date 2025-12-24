@@ -562,6 +562,9 @@ export const getDocumentacionInscripcion = async (req, res, next) => {
       orden: doc.order,
       descripcion: doc.description,
       activo: doc.active,
+      documentoPadreId: doc.documentoPadreId,
+      esOriginal: doc.esOriginal,
+      esDocumentoSistema: doc.esDocumentoSistema,
     }));
 
     res.status(200).json({

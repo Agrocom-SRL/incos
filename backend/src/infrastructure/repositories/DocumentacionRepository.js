@@ -31,6 +31,9 @@ export class DocumentacionRepository extends BaseRepository {
       required: model.requerido === 1 || model.requerido === true,
       order: model.orden,
       description: model.descripcion,
+      documentoPadreId: model.documentoPadreId ?? null,
+      esOriginal: model.esOriginal === 1 || model.esOriginal === true,
+      esDocumentoSistema: model.esDocumentoSistema === 1 || model.esDocumentoSistema === true,
       // MySQL puede retornar 0/1, Sequelize puede retornar true/false
       // Normalizamos a boolean true/false
       // BaseEntity espera 'active' (inglés), no 'activo' (español)

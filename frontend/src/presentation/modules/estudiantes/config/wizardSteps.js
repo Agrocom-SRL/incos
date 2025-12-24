@@ -62,13 +62,14 @@ export const generateStudentWizardSteps = (
   documentacionInscripcion = [],
   documentosExistentes = {}
 ) => [
-    createWizardStep2(documentacionInscripcion, documentosExistentes), // Documentos primero para pruebas
+    createWizardStep2(documentacionInscripcion, documentosExistentes), // Documentos primero
     wizardStep1,
     wizardStep3,
   ];
 
 // Configuración por defecto (sin documentos dinámicos)
 export const studentWizardSteps = [
+  wizardStep1,
   {
     title: 'Documentos',
     description: 'Documentación requerida',
@@ -78,7 +79,6 @@ export const studentWizardSteps = [
     },
     sections: ['documents'],
   },
-  wizardStep1,
   wizardStep3,
 ];
 

@@ -47,6 +47,28 @@ export const Documentacion = sequelize.define(
       allowNull: true,
       comment: 'Descripción adicional del documento requerido',
     },
+    documentoPadreId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      field: 'documento_padre_id',
+      comment: 'ID del documento padre al que reemplaza',
+      references: {
+        model: 'documentacion',
+        key: 'id',
+      },
+    },
+    esOriginal: {
+      type: DataTypes.BOOLEAN,
+      field: 'es_original',
+      defaultValue: false,
+      comment: 'Indica si el documento debe ser original',
+    },
+    esDocumentoSistema: {
+      type: DataTypes.BOOLEAN,
+      field: 'es_documento_sistema',
+      defaultValue: false,
+      comment: 'Indica si el documento es generado automáticamente por el sistema',
+    },
   },
   {
     ...baseModelOptions,

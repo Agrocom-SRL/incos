@@ -59,6 +59,19 @@ const GenericForm = forwardRef(({
           // Esto preserva valores que el usuario haya ingresado pero no estén en initialValues
           const mergedValues = { ...currentValues, ...initialValues };
           
+          // IMPORTANTE: Normalizar valores booleanos para switches y checkboxes
+          // Ant Design necesita valores booleanos explícitos (true/false) no undefined
+          Object.keys(mergedValues).forEach(key => {
+            // Si el valor es undefined pero está en initialValues como true/false, mantenerlo
+            if (mergedValues[key] === undefined && initialValues[key] !== undefined) {
+              mergedValues[key] = initialValues[key];
+            }
+            // Normalizar valores booleanos explícitamente
+            if (typeof mergedValues[key] === 'boolean') {
+              mergedValues[key] = Boolean(mergedValues[key]);
+            }
+          });
+          
           // IMPORTANTE: Establecer valores en orden de dependencias para campos geográficos
           // Primero establecer dependencias (país), luego departamento, luego provincia, luego municipio
           // Esto asegura que cuando se establezca un valor dependiente, su dependencia ya esté establecida
@@ -81,10 +94,15 @@ const GenericForm = forwardRef(({
             }
           });
           
-          // Segundo: establecer el resto de los valores
+          // Segundo: establecer el resto de los valores (incluyendo switches y checkboxes)
           Object.keys(mergedValues).forEach(key => {
             if (!geographicOrder.includes(key)) {
+              // Asegurar que los valores booleanos se establezcan explícitamente
+              if (typeof mergedValues[key] === 'boolean') {
+                valuesToSet[key] = mergedValues[key];
+              } else if (mergedValues[key] !== undefined) {
               valuesToSet[key] = mergedValues[key];
+              }
             }
           });
           

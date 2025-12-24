@@ -16,97 +16,96 @@ import { Form } from 'antd';
 import { useEffect, useState, useRef, useMemo } from 'react';
 import FormField from '../FormField';
 
-const FormSection = ({ title, fields, form, resolveOptions, onFieldChange, readOnly = false }) => {
+const FormSection = ({ title, fields = [], form, resolveOptions, onFieldChange, readOnly = false }) => {
+  // Asegurar que fields siempre sea un array
+  const safeFields = Array.isArray(fields) ? fields : [];
+  
   // Solo observar los campos que tienen shouldRender o dependencies para evitar re-renders innecesarios
   const fieldsToWatch = useMemo(() => {
+    if (!safeFields || safeFields.length === 0) {
+      return [];
+    }
     const watchFields = [];
-    fields.forEach(field => {
-      if (field.shouldRender) {
+    safeFields.forEach(field => {
+      if (field && field.shouldRender) {
         // Si tiene shouldRender, usar watchFields explícito o dependencies como fallback
-        if (field.watchFields && field.watchFields.length > 0) {
+        if (field.watchFields && Array.isArray(field.watchFields) && field.watchFields.length > 0) {
           watchFields.push(...field.watchFields);
-        } else if (field.dependencies && field.dependencies.length > 0) {
+        } else if (field.dependencies && Array.isArray(field.dependencies) && field.dependencies.length > 0) {
           // Si no hay watchFields explícito, usar dependencies como fallback
           watchFields.push(...field.dependencies);
         }
       }
       // Para campos geográficos con dependencies, observar las dependencias
       // Esto incluye: pais, departamento, provincia, municipio
-      if (field.dependencies && field.dependencies.length > 0 && field.type === 'select') {
-        const isGeographic = field.name.includes('departamento') || 
-                            field.name.includes('provincia') || 
-                            field.name.includes('municipio') ||
-                            field.name.includes('pais');
+      if (field && field.dependencies && Array.isArray(field.dependencies) && field.dependencies.length > 0 && field.type === 'select') {
+        const isGeographic = field.name?.includes('departamento') || 
+                            field.name?.includes('provincia') || 
+                            field.name?.includes('municipio') ||
+                            field.name?.includes('pais');
         if (isGeographic) {
           watchFields.push(...field.dependencies);
         }
       }
       // IMPORTANTE: Si un campo tiene dependencies, también observar esas dependencias
       // Esto asegura que cuando cambia tieneDiscapacidad, se detecte el cambio
-      if (field.dependencies && field.dependencies.length > 0) {
+      if (field && field.dependencies && Array.isArray(field.dependencies) && field.dependencies.length > 0) {
         watchFields.push(...field.dependencies);
       }
     });
-    // Eliminar duplicados
+    // Eliminar duplicados y asegurar que siempre sea un array
     return [...new Set(watchFields)];
-  }, [fields]);
+  }, [safeFields]);
 
-  // Solo observar campos específicos si hay campos con shouldRender o dependencies
-  // Si no hay campos especiales, no observar nada (evita re-renders innecesarios)
-  // IMPORTANTE: No usar Form.useWatch si no hay campos para observar, para evitar re-renders innecesarios
-  // Usar Form.useWatch con todos los campos a observar para que sea reactivo
-  const formValues = fieldsToWatch.length > 0 && form
+  // IMPORTANTE: Llamar Form.useWatch incondicionalmente para cumplir con las reglas de hooks
+  // form siempre está disponible porque viene de GenericForm que siempre crea un form
+  const formValues = form && fieldsToWatch.length > 0
     ? Form.useWatch(fieldsToWatch, form) 
-    : null;
+    : (form ? Form.useWatch([], form) : null);
   
-  // Observar específicamente tieneDiscapacidad si hay campos que dependen de él
-  // Esto asegura que los cambios en el switch se detecten inmediatamente
-  const hasDiscapacidadFields = fields.some(f => 
-    f.dependencies?.includes('tieneDiscapacidad') || f.watchFields?.includes('tieneDiscapacidad')
-  );
-  const tieneDiscapacidadValue = hasDiscapacidadFields && form
+  // Observar específicamente tieneDiscapacidad - siempre llamar el hook incondicionalmente
+  const hasDiscapacidadFields = safeFields.some(f => 
+    f?.dependencies?.includes('tieneDiscapacidad') || f?.watchFields?.includes('tieneDiscapacidad')
+  ) || false;
+  const tieneDiscapacidadValue = form
     ? Form.useWatch('tieneDiscapacidad', form)
     : null;
   
-  // Observar específicamente esExtranjero si hay campos que dependen de él
-  // Esto asegura que los cambios en el checkbox se detecten inmediatamente
-  const hasExtranjeroFields = fields.some(f => 
-    f.dependencies?.includes('esExtranjero') || f.watchFields?.includes('esExtranjero')
-  );
-  const esExtranjeroValue = hasExtranjeroFields && form
+  // Observar específicamente esExtranjero - siempre llamar el hook incondicionalmente
+  const hasExtranjeroFields = safeFields.some(f => 
+    f?.dependencies?.includes('esExtranjero') || f?.watchFields?.includes('esExtranjero')
+  ) || false;
+  const esExtranjeroValue = form
     ? Form.useWatch('esExtranjero', form)
     : null;
   
-  // Observar específicamente tipoNacionalidad si hay campos que dependen de él
-  // Esto asegura que los cambios en el radio group se detecten inmediatamente
-  const hasTipoNacionalidadFields = fields.some(f => 
-    f.dependencies?.includes('tipoNacionalidad') || f.watchFields?.includes('tipoNacionalidad')
-  );
-  const tipoNacionalidadValue = hasTipoNacionalidadFields && form
+  // Observar específicamente tipoNacionalidad - siempre llamar el hook incondicionalmente
+  const hasTipoNacionalidadFields = safeFields.some(f => 
+    f?.dependencies?.includes('tipoNacionalidad') || f?.watchFields?.includes('tipoNacionalidad')
+  ) || false;
+  const tipoNacionalidadValue = form
     ? Form.useWatch('tipoNacionalidad', form)
     : null;
   
-  // Observar específicamente primeraNacionalidadTipo si hay campos que dependen de él
-  // Esto asegura que los cambios en el radio group se detecten inmediatamente
-  const hasPrimeraNacionalidadTipoFields = fields.some(f => 
-    f.dependencies?.includes('primeraNacionalidadTipo') || f.watchFields?.includes('primeraNacionalidadTipo')
-  );
-  const primeraNacionalidadTipoValue = hasPrimeraNacionalidadTipoFields && form
+  // Observar específicamente primeraNacionalidadTipo - siempre llamar el hook incondicionalmente
+  const hasPrimeraNacionalidadTipoFields = safeFields.some(f => 
+    f?.dependencies?.includes('primeraNacionalidadTipo') || f?.watchFields?.includes('primeraNacionalidadTipo')
+  ) || false;
+  const primeraNacionalidadTipoValue = form
     ? Form.useWatch('primeraNacionalidadTipo', form)
     : null;
   
-  // Observar específicamente segundaNacionalidadTipo si hay campos que dependen de él
-  // Esto asegura que los cambios en el radio group se detecten inmediatamente
-  const hasSegundaNacionalidadTipoFields = fields.some(f => 
-    f.dependencies?.includes('segundaNacionalidadTipo') || f.watchFields?.includes('segundaNacionalidadTipo')
-  );
-  const segundaNacionalidadTipoValue = hasSegundaNacionalidadTipoFields && form
+  // Observar específicamente segundaNacionalidadTipo - siempre llamar el hook incondicionalmente
+  const hasSegundaNacionalidadTipoFields = safeFields.some(f => 
+    f?.dependencies?.includes('segundaNacionalidadTipo') || f?.watchFields?.includes('segundaNacionalidadTipo')
+  ) || false;
+  const segundaNacionalidadTipoValue = form
     ? Form.useWatch('segundaNacionalidadTipo', form)
     : null;
   
   
   // Inicializar campos visibles - todos los campos inicialmente
-  const [visibleFields, setVisibleFields] = useState(fields);
+  const [visibleFields, setVisibleFields] = useState(safeFields);
   const prevFormValuesRef = useRef(null);
   // Estado para forzar actualización cuando cambia tieneDiscapacidad
   const [forceUpdate, setForceUpdate] = useState(0);
@@ -149,7 +148,7 @@ const FormSection = ({ title, fields, form, resolveOptions, onFieldChange, readO
   // Inicializar campos visibles cuando el formulario está listo o cuando cambian los valores
   useEffect(() => {
     if (form) {
-      const hasShouldRenderFields = fields.some(f => f.shouldRender);
+      const hasShouldRenderFields = safeFields.some(f => f?.shouldRender);
       if (hasShouldRenderFields) {
         // Usar un pequeño delay para asegurar que los valores iniciales se hayan establecido
         const timeoutId = setTimeout(() => {
@@ -161,13 +160,13 @@ const FormSection = ({ title, fields, form, resolveOptions, onFieldChange, readO
         return () => clearTimeout(timeoutId);
       }
     }
-  }, [form, fields, calculateVisibleFields]);
+  }, [form, safeFields, calculateVisibleFields]);
 
   // Actualizar campos visibles cuando cambian los valores observados
   // IMPORTANTE: Solo observar campos específicos que afectan shouldRender (no todos los campos)
   useEffect(() => {
     // Si hay campos con shouldRender, siempre recalcular basándose en los valores actuales
-    const hasShouldRenderFields = fields.some(f => f.shouldRender);
+    const hasShouldRenderFields = safeFields.some(f => f?.shouldRender);
     if (hasShouldRenderFields && form) {
       // Obtener valores actuales del formulario (siempre obtener los más recientes)
       // Esto asegura que capturamos cambios inmediatos, incluso si Form.useWatch no los ha capturado aún
@@ -226,12 +225,12 @@ const FormSection = ({ title, fields, form, resolveOptions, onFieldChange, readO
         setVisibleFields(newFilteredFields);
       }
     }
-  }, [formValues, tieneDiscapacidadValue, esExtranjeroValue, tipoNacionalidadValue, primeraNacionalidadTipoValue, segundaNacionalidadTipoValue, fields, form, fieldsToWatch, calculateVisibleFields]);
+  }, [formValues, tieneDiscapacidadValue, esExtranjeroValue, tipoNacionalidadValue, primeraNacionalidadTipoValue, segundaNacionalidadTipoValue, safeFields, form, fieldsToWatch, calculateVisibleFields]);
   
   // Efecto adicional para forzar actualización cuando cambia tieneDiscapacidad
   // Esto asegura que los campos se muestren inmediatamente cuando se activa el switch
   useEffect(() => {
-    if (form && hasDiscapacidadFields) {
+    if (form && hasDiscapacidadFields && safeFields.length > 0) {
       // Obtener el valor actual de tieneDiscapacidad
       const currentValue = form.getFieldValue('tieneDiscapacidad');
       const tipoValue = form.getFieldValue('tipoDiscapacidadId');
@@ -252,7 +251,7 @@ const FormSection = ({ title, fields, form, resolveOptions, onFieldChange, readO
   // Listener para detectar cambios en tieneDiscapacidad usando un intervalo corto
   // Esto es necesario porque Form.useWatch puede no capturar cambios en switches inmediatamente
   useEffect(() => {
-    if (form && hasDiscapacidadFields) {
+    if (form && hasDiscapacidadFields && safeFields.length > 0) {
       let lastValue = form.getFieldValue('tieneDiscapacidad');
       
       const checkInterval = setInterval(() => {
@@ -270,7 +269,7 @@ const FormSection = ({ title, fields, form, resolveOptions, onFieldChange, readO
   // Efecto adicional para forzar actualización cuando cambia esExtranjero
   // Esto asegura que los campos se muestren inmediatamente cuando se activa el checkbox
   useEffect(() => {
-    if (form && hasExtranjeroFields) {
+    if (form && hasExtranjeroFields && safeFields.length > 0) {
       // Obtener el valor actual de esExtranjero
       const currentValue = form.getFieldValue('esExtranjero');
       
@@ -289,7 +288,7 @@ const FormSection = ({ title, fields, form, resolveOptions, onFieldChange, readO
   // Efecto adicional para forzar actualización cuando cambia tipoNacionalidad
   // Esto asegura que los campos se muestren inmediatamente cuando se cambia el radio group
   useEffect(() => {
-    if (form && hasTipoNacionalidadFields) {
+    if (form && hasTipoNacionalidadFields && safeFields.length > 0) {
       // Obtener el valor actual de tipoNacionalidad
       const currentValue = form.getFieldValue('tipoNacionalidad');
       
@@ -308,7 +307,7 @@ const FormSection = ({ title, fields, form, resolveOptions, onFieldChange, readO
   // Listener para detectar cambios en tipoNacionalidad usando un intervalo corto
   // Esto es necesario porque Form.useWatch puede no capturar cambios en radio groups inmediatamente
   useEffect(() => {
-    if (form && hasTipoNacionalidadFields) {
+    if (form && hasTipoNacionalidadFields && safeFields.length > 0) {
       let lastValue = form.getFieldValue('tipoNacionalidad');
       
       const checkInterval = setInterval(() => {

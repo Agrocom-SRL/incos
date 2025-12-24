@@ -13,6 +13,9 @@ export class Documentacion extends BaseEntity {
     this.required = data.required !== undefined ? data.required : true;
     this.order = data.order || 0;
     this.description = data.description || null;
+    this.documentoPadreId = data.documentoPadreId !== undefined ? data.documentoPadreId : null;
+    this.esOriginal = data.esOriginal !== undefined ? data.esOriginal : false;
+    this.esDocumentoSistema = data.esDocumentoSistema !== undefined ? data.esDocumentoSistema : false;
   }
 
   /**
@@ -28,6 +31,9 @@ export class Documentacion extends BaseEntity {
       required: this.required,
       order: this.order,
       description: this.description,
+      documentoPadreId: this.documentoPadreId,
+      esOriginal: this.esOriginal,
+      esDocumentoSistema: this.esDocumentoSistema,
     };
   }
 }
