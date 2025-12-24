@@ -367,6 +367,39 @@ const GenericForm = forwardRef(({
       // Esto dispara Form.useWatch en FormSection
       form.setFieldsValue({ esExtranjero: changedValues.esExtranjero });
     }
+    
+    // IMPORTANTE: Cuando cambia un switch de documento (documento_X_entregado), 
+    // limpiar SOLO los valores de los campos condicionales asociados a ESE switch específico
+    // Cada switch es completamente independiente y NO afecta a otros switches
+    Object.keys(changedValues).forEach(key => {
+      if (key.startsWith('documento_') && key.endsWith('_entregado') && form) {
+        const docId = key.match(/documento_(\d+)_entregado/)?.[1];
+        if (docId) {
+          const newValue = changedValues[key];
+          
+          // IMPORTANTE: Solo limpiar campos condicionales asociados a ESTE documento específico
+          // No tocar campos de otros documentos (cada switch es independiente)
+          const fieldsToReset = {
+            [`documento_${docId}_en_tramite`]: false,
+            [`documento_${docId}_observaciones`]: undefined,
+          };
+          
+          // Limpiar campos condicionales cuando cambia el switch
+          // Esto asegura que cuando los campos aparecen, tienen valores limpios
+          if (newValue === true || newValue === false) {
+            // Usar setFieldValue para cada campo individualmente para evitar efectos secundarios
+            form.setFieldValue(`documento_${docId}_en_tramite`, false);
+            form.setFieldValue(`documento_${docId}_observaciones`, undefined);
+          }
+          
+          // NOTA CRÍTICA: 
+          // - NO limpiar campos de otros documentos (alternativos o padres)
+          // - NO usar setFieldsValue con múltiples campos a la vez
+          // - Cada switch debe ser completamente independiente
+          // - Los campos alternativos se manejan por su propia lógica de shouldRender
+        }
+      }
+    });
   };
 
   return (

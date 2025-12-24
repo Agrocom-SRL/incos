@@ -100,74 +100,9 @@ export const generateDocumentFields = (documentacionInscripcion = [], documentos
       documentoPadreId: doc.documentoPadreId || doc.documento_padre_id,
       showTooltip: false, // No mostrar tooltip
     });
-
-    // Campo checkbox "En trámite" - solo mostrar cuando el documento NO está entregado
-    fields.push({
-      name: `documento_${doc.id}_en_tramite`,
-      label: 'En Trámite',
-      type: 'checkbox',
-      span: 12,
-      initialValue: false,
-      dependencies: [`documento_${doc.id}_entregado`],
-      watchFields: [`documento_${doc.id}_entregado`],
-      shouldRender: (formValues) => {
-        const entregado = formValues?.[`documento_${doc.id}_entregado`];
-        return entregado === false; // Solo mostrar si NO está entregado
-      },
-      documentacionId: doc.id,
-    });
-
-    // Campo de fecha de vencimiento del trámite - solo mostrar cuando está en trámite
-    fields.push({
-      name: `documento_${doc.id}_fecha_vencimiento_tramite`,
-      label: 'Fecha de Vencimiento del Trámite',
-      type: 'datePicker',
-      span: 12,
-      dependencies: [`documento_${doc.id}_entregado`, `documento_${doc.id}_en_tramite`],
-      watchFields: [`documento_${doc.id}_entregado`, `documento_${doc.id}_en_tramite`],
-      shouldRender: (formValues) => {
-        const entregado = formValues?.[`documento_${doc.id}_entregado`];
-        const enTramite = formValues?.[`documento_${doc.id}_en_tramite`];
-        return entregado === false && enTramite === true; // Solo mostrar si NO está entregado Y está en trámite
-      },
-      documentacionId: doc.id,
-    });
-
-    // Campo checkbox "Es Original" - solo mostrar cuando está entregado Y NO está en trámite
-    // Este campo corresponde a la columna es_original de la tabla estudiantes_documentos_entrega
-    fields.push({
-      name: `documento_${doc.id}_es_original`,
-      label: 'Es Original',
-      type: 'checkbox',
-      span: 12,
-      initialValue: false,
-      dependencies: [`documento_${doc.id}_entregado`, `documento_${doc.id}_en_tramite`],
-      watchFields: [`documento_${doc.id}_entregado`, `documento_${doc.id}_en_tramite`],
-      shouldRender: (formValues) => {
-        const entregado = formValues?.[`documento_${doc.id}_entregado`];
-        const enTramite = formValues?.[`documento_${doc.id}_en_tramite`];
-        return entregado === true && enTramite === false; // Solo mostrar si está entregado Y NO está en trámite
-      },
-      documentacionId: doc.id,
-    });
-
-    // Campo de observaciones - solo mostrar cuando el documento NO está entregado
-    fields.push({
-      name: `documento_${doc.id}_observaciones`,
-      label: 'Observaciones',
-      type: 'textarea',
-      span: 24,
-      rows: 2,
-      placeholder: 'Ingrese observaciones sobre la entrega del documento...',
-      dependencies: [`documento_${doc.id}_entregado`],
-      watchFields: [`documento_${doc.id}_entregado`],
-      shouldRender: (formValues) => {
-        const entregado = formValues?.[`documento_${doc.id}_entregado`];
-        return entregado === false; // Solo mostrar si NO está entregado
-      },
-      documentacionId: doc.id,
-    });
     
+    // IMPORTANTE: Agregar documentos alternativos (hijos) ANTES de los campos del padre
+    // Esto asegura que los campos del padre (En Trámite y Observaciones) aparezcan después de los hijos
     // Agregar documentos alternativos (hijos) que se muestran cuando se desmarca el padre
     const documentosHijos = documentosHijosMap[doc.id] || [];
     documentosHijos.forEach((hijo) => {
@@ -224,49 +159,14 @@ export const generateDocumentFields = (documentacionInscripcion = [], documentos
         name: `documento_${hijo.id}_en_tramite`,
         label: 'En Trámite',
         type: 'checkbox',
-        span: 12,
+        span: 8,
         initialValue: false,
         dependencies: [`documento_${doc.id}_entregado`, `documento_${hijo.id}_entregado`],
         watchFields: [`documento_${doc.id}_entregado`, `documento_${hijo.id}_entregado`],
         shouldRender: (formValues) => {
           const padreDesmarcado = formValues?.[`documento_${doc.id}_entregado`] === false;
           const hijoNoMarcado = formValues?.[`documento_${hijo.id}_entregado`] === false;
-          return padreDesmarcado && hijoNoMarcado; // Solo mostrar si el padre está desmarcado y el hijo TAMBIÉN está desmarcado
-        },
-        documentacionId: hijo.id,
-      });
-
-      // Campo de fecha de vencimiento del trámite para documento alternativo
-      fields.push({
-        name: `documento_${hijo.id}_fecha_vencimiento_tramite`,
-        label: 'Fecha de Vencimiento del Trámite',
-        type: 'datePicker',
-        span: 12,
-        dependencies: [`documento_${doc.id}_entregado`, `documento_${hijo.id}_entregado`, `documento_${hijo.id}_en_tramite`],
-        watchFields: [`documento_${doc.id}_entregado`, `documento_${hijo.id}_entregado`, `documento_${hijo.id}_en_tramite`],
-        shouldRender: (formValues) => {
-          const padreDesmarcado = formValues?.[`documento_${doc.id}_entregado`] === false;
-          const hijoNoMarcado = formValues?.[`documento_${hijo.id}_entregado`] === false;
-          const enTramite = formValues?.[`documento_${hijo.id}_en_tramite`] === true;
-          return padreDesmarcado && hijoNoMarcado && enTramite === true;
-        },
-        documentacionId: hijo.id,
-      });
-
-      // Campo checkbox "Es Original" para documento alternativo - solo mostrar cuando está entregado Y NO está en trámite
-      fields.push({
-        name: `documento_${hijo.id}_es_original`,
-        label: 'Es Original',
-        type: 'checkbox',
-        span: 12,
-        initialValue: false,
-        dependencies: [`documento_${doc.id}_entregado`, `documento_${hijo.id}_entregado`, `documento_${hijo.id}_en_tramite`],
-        watchFields: [`documento_${doc.id}_entregado`, `documento_${hijo.id}_entregado`, `documento_${hijo.id}_en_tramite`],
-        shouldRender: (formValues) => {
-          const padreDesmarcado = formValues?.[`documento_${doc.id}_entregado`] === false;
-          const hijoMarcado = formValues?.[`documento_${hijo.id}_entregado`] === true;
-          const enTramite = formValues?.[`documento_${hijo.id}_en_tramite`] === true;
-          return padreDesmarcado && hijoMarcado === true && enTramite === false;
+          return padreDesmarcado && hijoNoMarcado; // Solo mostrar si el padre está desmarcado y el hijo NO está entregado
         },
         documentacionId: hijo.id,
       });
@@ -276,7 +176,7 @@ export const generateDocumentFields = (documentacionInscripcion = [], documentos
         name: `documento_${hijo.id}_observaciones`,
         label: 'Observaciones',
         type: 'textarea',
-        span: 24,
+        span: 16,
         rows: 2,
         placeholder: 'Ingrese observaciones sobre la entrega del documento...',
         dependencies: [`documento_${doc.id}_entregado`, `documento_${hijo.id}_entregado`],
@@ -288,6 +188,42 @@ export const generateDocumentFields = (documentacionInscripcion = [], documentos
         },
         documentacionId: hijo.id,
       });
+    });
+    
+    // IMPORTANTE: Agregar campos del padre (En Trámite y Observaciones) DESPUÉS de los hijos
+    // Esto asegura que aparezcan por debajo de los documentos alternativos
+    
+    // Campo checkbox "En trámite" del padre - solo mostrar cuando el documento NO está entregado
+    fields.push({
+      name: `documento_${doc.id}_en_tramite`,
+      label: 'En Trámite',
+      type: 'checkbox',
+      span: 8,
+      initialValue: false,
+      dependencies: [`documento_${doc.id}_entregado`],
+      watchFields: [`documento_${doc.id}_entregado`],
+      shouldRender: (formValues) => {
+        const entregado = formValues?.[`documento_${doc.id}_entregado`];
+        return entregado === false; // Solo mostrar si NO está entregado
+      },
+      documentacionId: doc.id,
+    });
+
+    // Campo de observaciones del padre - solo mostrar cuando el documento NO está entregado
+    fields.push({
+      name: `documento_${doc.id}_observaciones`,
+      label: 'Observaciones',
+      type: 'textarea',
+      span: 16,
+      rows: 3,
+      placeholder: 'Ingrese observaciones sobre la entrega del documento...',
+      dependencies: [`documento_${doc.id}_entregado`],
+      watchFields: [`documento_${doc.id}_entregado`],
+      shouldRender: (formValues) => {
+        const entregado = formValues?.[`documento_${doc.id}_entregado`];
+        return entregado === false; // Solo mostrar si NO está entregado
+      },
+      documentacionId: doc.id,
     });
   });
 

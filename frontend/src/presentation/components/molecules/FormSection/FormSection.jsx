@@ -131,13 +131,24 @@ const FormSection = ({ title, fields = [], form, resolveOptions, onFieldChange, 
           if (normalizedValues.tipoDiscapacidadId === '') {
             normalizedValues.tipoDiscapacidadId = null;
           }
-          // Normalizar checkboxes de documentos: si tienen initialValue: true y el valor es undefined, asumir true
+          // Normalizar switches de documentos: si tienen initialValue: true y el valor es undefined, asumir true
           // Esto evita parpadeos cuando los campos se inicializan
-          if (field.name && field.name.startsWith('documento_') && field.name.endsWith('_entregado')) {
-            if (normalizedValues[field.name] === undefined && field.initialValue === true) {
-              normalizedValues[field.name] = true;
+          Object.keys(normalizedValues).forEach(key => {
+            if (key.startsWith('documento_') && key.endsWith('_entregado')) {
+              // Normalizar valores booleanos de switches de documentos
+              if (normalizedValues[key] !== undefined && normalizedValues[key] !== null) {
+                normalizedValues[key] = Boolean(normalizedValues[key]);
+              } else {
+                // Si es undefined y el campo tiene initialValue, usar ese valor
+                const docField = fields.find(f => f.name === key);
+                if (docField && docField.initialValue !== undefined) {
+                  normalizedValues[key] = docField.initialValue;
+                } else {
+                  normalizedValues[key] = true; // Por defecto true para switches de documentos
+                }
+              }
             }
-          }
+          });
           return field.shouldRender(normalizedValues);
         }
         return true;
@@ -199,6 +210,15 @@ const FormSection = ({ title, fields = [], form, resolveOptions, onFieldChange, 
         mergedValues.tipoNacionalidad = null;
       }
       
+      // Normalizar switches de documentos (documento_X_entregado)
+      Object.keys(mergedValues).forEach(key => {
+        if (key.startsWith('documento_') && key.endsWith('_entregado')) {
+          if (mergedValues[key] !== undefined && mergedValues[key] !== null) {
+            mergedValues[key] = Boolean(mergedValues[key]);
+          }
+        }
+      });
+      
       // Crear una clave basada solo en los campos que afectan shouldRender
       const relevantValues = {};
       fieldsToWatch.forEach(fieldName => {
@@ -214,6 +234,10 @@ const FormSection = ({ title, fields = [], form, resolveOptions, onFieldChange, 
         if (fieldName === 'tipoDiscapacidadId' && value === '') {
           value = null;
         }
+        // Normalizar switches de documentos
+        if (fieldName.startsWith('documento_') && fieldName.endsWith('_entregado')) {
+          value = value !== undefined && value !== null ? Boolean(value) : true;
+        }
         relevantValues[fieldName] = value;
       });
       const formValuesKey = JSON.stringify(relevantValues);
@@ -222,10 +246,40 @@ const FormSection = ({ title, fields = [], form, resolveOptions, onFieldChange, 
       if (prevFormValuesRef.current !== formValuesKey) {
         prevFormValuesRef.current = formValuesKey;
         const newFilteredFields = calculateVisibleFields(mergedValues);
+        const previousVisibleFields = visibleFields;
         setVisibleFields(newFilteredFields);
+        
+        // IMPORTANTE: Cuando aparecen nuevos campos condicionales (checkboxes),
+        // asegurar que se inicialicen con sus valores por defecto
+        // Cada campo es independiente y solo se resetea a sí mismo
+        const newlyVisibleFields = newFilteredFields.filter(newField => {
+          // Un campo es "nuevamente visible" si:
+          // 1. Tiene shouldRender (es condicional)
+          // 2. No estaba en la lista anterior de campos visibles
+          return newField.shouldRender && 
+                 !previousVisibleFields.some(prevField => prevField.name === newField.name);
+        });
+        
+        // Resetear valores de checkboxes que aparecen por primera vez
+        // IMPORTANTE: Cada campo se resetea independientemente, sin afectar a otros campos
+        newlyVisibleFields.forEach(field => {
+          if ((field.type === 'checkbox' || field.type === 'switch') && field.initialValue !== undefined) {
+            const currentValue = form.getFieldValue(field.name);
+            // Solo resetear si el valor actual no coincide con el initialValue
+            // y si el campo debe ser visible según shouldRender
+            if (currentValue !== field.initialValue) {
+              const shouldBeVisible = field.shouldRender ? field.shouldRender(mergedValues) : true;
+              if (shouldBeVisible) {
+                // IMPORTANTE: Usar setFieldValue para actualizar solo este campo específico
+                // No usar setFieldsValue con múltiples campos para evitar efectos secundarios
+                form.setFieldValue(field.name, field.initialValue);
+              }
+            }
+          }
+        });
       }
     }
-  }, [formValues, tieneDiscapacidadValue, esExtranjeroValue, tipoNacionalidadValue, primeraNacionalidadTipoValue, segundaNacionalidadTipoValue, safeFields, form, fieldsToWatch, calculateVisibleFields]);
+  }, [formValues, tieneDiscapacidadValue, esExtranjeroValue, tipoNacionalidadValue, primeraNacionalidadTipoValue, segundaNacionalidadTipoValue, safeFields, form, fieldsToWatch, calculateVisibleFields, visibleFields]);
   
   // Efecto adicional para forzar actualización cuando cambia tieneDiscapacidad
   // Esto asegura que los campos se muestren inmediatamente cuando se activa el switch
@@ -329,6 +383,158 @@ const FormSection = ({ title, fields = [], form, resolveOptions, onFieldChange, 
     }
   }, [form, hasTipoNacionalidadFields, calculateVisibleFields]);
   
+  // Detectar campos de documentos que necesitan observación
+  const documentoFields = useMemo(() => {
+    const docFields = [];
+    safeFields.forEach(field => {
+      if (field && field.watchFields) {
+        field.watchFields.forEach(watchField => {
+          if (watchField.startsWith('documento_') && watchField.endsWith('_entregado')) {
+            if (!docFields.includes(watchField)) {
+              docFields.push(watchField);
+            }
+          }
+        });
+      }
+      if (field && field.dependencies) {
+        field.dependencies.forEach(depField => {
+          if (depField.startsWith('documento_') && depField.endsWith('_entregado')) {
+            if (!docFields.includes(depField)) {
+              docFields.push(depField);
+            }
+          }
+        });
+      }
+    });
+    return docFields;
+  }, [safeFields]);
+  
+  // Observar todos los switches de documentos para actualizar campos condicionales
+  useEffect(() => {
+    if (form && documentoFields.length > 0 && safeFields.length > 0) {
+      // Obtener valores actuales de todos los switches de documentos
+      const currentDocValues = {};
+      documentoFields.forEach(fieldName => {
+        const value = form.getFieldValue(fieldName);
+        currentDocValues[fieldName] = value !== undefined && value !== null ? Boolean(value) : true;
+      });
+      
+      // Obtener todos los valores del formulario y normalizar switches de documentos
+      const currentValues = form.getFieldsValue() || {};
+      const normalizedValues = {
+        ...currentValues,
+        ...currentDocValues,
+      };
+      
+      // Normalizar otros valores booleanos
+      if (normalizedValues.tieneDiscapacidad !== undefined) {
+        normalizedValues.tieneDiscapacidad = Boolean(normalizedValues.tieneDiscapacidad);
+      }
+      if (normalizedValues.esExtranjero !== undefined) {
+        normalizedValues.esExtranjero = Boolean(normalizedValues.esExtranjero);
+      }
+      
+      // Recalcular campos visibles
+      const newFilteredFields = calculateVisibleFields(normalizedValues);
+      setVisibleFields(newFilteredFields);
+    }
+  }, [form, documentoFields, safeFields, calculateVisibleFields, formValues]);
+  
+  // Listener para detectar cambios en switches de documentos usando un intervalo
+  // Esto asegura que los campos condicionales aparezcan inmediatamente cuando se desmarca un switch
+  useEffect(() => {
+    if (form && documentoFields.length > 0 && safeFields.length > 0) {
+      const lastValues = {};
+      documentoFields.forEach(fieldName => {
+        lastValues[fieldName] = form.getFieldValue(fieldName);
+      });
+      
+      const checkInterval = setInterval(() => {
+        let hasChanged = false;
+        const currentValues = {};
+        const changedSwitches = [];
+        
+        documentoFields.forEach(fieldName => {
+          const currentValue = form.getFieldValue(fieldName);
+          currentValues[fieldName] = currentValue;
+          if (currentValue !== lastValues[fieldName]) {
+            hasChanged = true;
+            changedSwitches.push(fieldName);
+            lastValues[fieldName] = currentValue;
+          }
+        });
+        
+        if (hasChanged) {
+          // Obtener todos los valores del formulario
+          const allFormValues = form.getFieldsValue() || {};
+          const normalizedValues = {
+            ...allFormValues,
+            ...currentValues,
+          };
+          
+          // Normalizar valores booleanos
+          Object.keys(normalizedValues).forEach(key => {
+            if (key.startsWith('documento_') && key.endsWith('_entregado')) {
+              normalizedValues[key] = normalizedValues[key] !== undefined && normalizedValues[key] !== null 
+                ? Boolean(normalizedValues[key]) 
+                : true;
+            }
+          });
+          
+          if (normalizedValues.tieneDiscapacidad !== undefined) {
+            normalizedValues.tieneDiscapacidad = Boolean(normalizedValues.tieneDiscapacidad);
+          }
+          if (normalizedValues.esExtranjero !== undefined) {
+            normalizedValues.esExtranjero = Boolean(normalizedValues.esExtranjero);
+          }
+          
+          // Recalcular campos visibles
+          const newFilteredFields = calculateVisibleFields(normalizedValues);
+          setVisibleFields(newFilteredFields);
+          
+          // IMPORTANTE: Cuando un switch cambia y los campos condicionales aparecen,
+          // asegurar que SOLO los checkboxes de ESE switch se inicialicen con sus valores por defecto
+          // Cada switch es independiente y solo afecta a sus propios campos
+          changedSwitches.forEach(switchFieldName => {
+            const docId = switchFieldName.match(/documento_(\d+)_entregado/)?.[1];
+            if (docId) {
+              const switchValue = normalizedValues[switchFieldName];
+              
+              // IMPORTANTE: Solo procesar campos relacionados a ESTE switch específico
+              // No tocar campos de otros switches
+              if (switchValue === false) {
+                // Buscar SOLO campos relacionados a ESTE documento específico
+                const relatedFields = safeFields.filter(f => 
+                  (f.name === `documento_${docId}_en_tramite` ||
+                   f.name === `documento_${docId}_es_original`) &&
+                  // Asegurar que el campo pertenece a este documento específico
+                  f.documentacionId === parseInt(docId)
+                );
+                
+                // Resetear valores de checkboxes SOLO de este switch
+                relatedFields.forEach(field => {
+                  const currentCheckboxValue = form.getFieldValue(field.name);
+                  const shouldBeVisible = field.shouldRender ? field.shouldRender(normalizedValues) : true;
+                  
+                  // Si el campo debe ser visible y no tiene el valor inicial correcto, resetearlo
+                  // IMPORTANTE: Solo resetear si el campo pertenece a este switch específico
+                  if (shouldBeVisible && field.initialValue !== undefined && field.name.includes(`documento_${docId}_`)) {
+                    const expectedValue = field.initialValue;
+                    if (currentCheckboxValue !== expectedValue) {
+                      // Usar setFieldValue para actualizar solo este campo específico
+                      form.setFieldValue(field.name, expectedValue);
+                    }
+                  }
+                });
+              }
+            }
+          });
+        }
+      }, 100); // Verificar cada 100ms
+      
+      return () => clearInterval(checkInterval);
+    }
+  }, [form, documentoFields, safeFields, calculateVisibleFields]);
 
   return (
     <Card

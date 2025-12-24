@@ -32,14 +32,9 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange, rea
   // Estado para controlar si se muestra el input de upload o el documento existente
   const [uploadStates, setUploadStates] = useState({});
   
-  // Estado local para switches para actualización inmediata del texto dinámico
-  const [switchLocalValue, setSwitchLocalValue] = useState(() => {
-    // Solo inicializar si es un switch
-    if (field.type === 'switch') {
-      return field.initialValue !== undefined ? field.initialValue : true;
-    }
-    return undefined;
-  });
+  // NOTA: Eliminamos el estado local para switches porque causa problemas de sincronización
+  // Ahora confiamos completamente en el estado del formulario de Ant Design
+  // Cada switch es independiente y maneja su propio estado a través del Form.Item
 
   // Observar el valor de tipoDiscapacidadId para mostrar la descripción
   const shouldShowDescription = field.name === 'tipoDiscapacidadId';
@@ -284,8 +279,9 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange, rea
     disabled: getDisabledValue(),
   };
 
-  // Observar el valor del switch para mostrar texto dinámico (solo para switches)
-  const switchValue = field.type === 'switch' && form 
+  // IMPORTANTE: Cada switch observa SOLO su propio campo, no otros switches
+  // Esto asegura que cada switch sea completamente independiente
+  const switchValue = field.type === 'switch' && form && field.name
     ? Form.useWatch(field.name, form) 
     : undefined;
 
@@ -513,17 +509,42 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange, rea
         );
 
       case 'switch':
-        // Obtener el valor actual del switch del formulario
-        const formSwitchValue = form ? form.getFieldValue(field.name) : undefined;
-        const currentSwitchValue = switchValue !== undefined 
-          ? switchValue 
-          : (formSwitchValue !== undefined 
-            ? formSwitchValue 
-            : (field.initialValue !== undefined ? field.initialValue : true));
+        // IMPORTANTE: Cada switch es completamente independiente
+        // Obtiene su valor SOLO de su propio campo en el formulario
+        // No depende de otros switches ni comparte estado con ellos
         
-        const switchText = currentSwitchValue === true 
-          ? 'Documento entregado' 
-          : 'Documento sin presentar';
+        // Obtener el valor actual de ESTE switch específico
+        const currentSwitchValue = switchValue !== undefined 
+          ? Boolean(switchValue)
+          : (field.initialValue !== undefined 
+            ? Boolean(field.initialValue) 
+            : true);
+        
+        // IMPORTANTE: Solo mostrar el texto dinámico para switches de documentos
+        // Los switches de documentos tienen nombres que siguen el patrón: documento_X_entregado
+        const isDocumentSwitch = field.name && 
+          field.name.startsWith('documento_') && 
+          field.name.endsWith('_entregado');
+        
+        // Solo generar el texto si es un switch de documento
+        const switchText = isDocumentSwitch
+          ? (currentSwitchValue === true 
+            ? 'Documento entregado' 
+            : 'Documento sin presentar')
+          : null;
+        
+        // Handler completamente independiente para ESTE switch específico
+        // Solo actualiza el campo de este switch, no afecta a otros switches
+        const handleSwitchChange = (checked) => {
+          // IMPORTANTE: Solo actualizar el campo de ESTE switch
+          // No tocar otros campos del formulario
+          if (form && field.name) {
+            // Usar setFieldValue para actualizar solo este campo específico
+            form.setFieldValue(field.name, checked);
+            // No llamar a handleChange aquí porque puede causar efectos secundarios
+            // El Form.Item de Ant Design ya maneja la actualización del valor
+          }
+        };
         
         return (
           <div>
@@ -531,11 +552,14 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange, rea
               <FieldSwitch 
                 disabled={getDisabledValue()} 
                 checked={currentSwitchValue}
-                onChange={handleChange}
+                onChange={handleSwitchChange}
               />
-              <span style={{ color: currentSwitchValue === true ? '#52c41a' : '#ff4d4f' }}>
-                {switchText}
-              </span>
+              {/* Solo mostrar el texto si es un switch de documento */}
+              {isDocumentSwitch && switchText && (
+                <span style={{ color: currentSwitchValue === true ? '#52c41a' : '#ff4d4f' }}>
+                  {switchText}
+                </span>
+              )}
             </Space>
             {field.descripcion && (
               <Alert
@@ -566,7 +590,35 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange, rea
         return <FieldDivider />;
 
       case 'checkbox':
-        const checkboxValue = form ? form.getFieldValue(field.name) : undefined;
+        // IMPORTANTE: Cada checkbox es completamente independiente
+        // Observa SOLO su propio campo, no otros checkboxes
+        const checkboxObservedValue = field.type === 'checkbox' && form && field.name
+          ? Form.useWatch(field.name, form) 
+          : undefined;
+        
+        // Usar el valor observado o el valor del formulario, con fallback a initialValue
+        const checkboxValue = checkboxObservedValue !== undefined 
+          ? Boolean(checkboxObservedValue)
+          : (form && field.name
+            ? (form.getFieldValue(field.name) !== undefined 
+              ? Boolean(form.getFieldValue(field.name))
+              : (field.initialValue !== undefined ? Boolean(field.initialValue) : false))
+            : (field.initialValue !== undefined ? Boolean(field.initialValue) : false));
+        
+        // Handler completamente independiente para ESTE checkbox específico
+        // Solo actualiza el campo de este checkbox, no afecta a otros checkboxes
+        const handleCheckboxChange = (e) => {
+          const checked = e.target.checked;
+          // IMPORTANTE: Solo actualizar el campo de ESTE checkbox
+          // No tocar otros campos del formulario
+          if (form && field.name) {
+            // Usar setFieldValue para actualizar solo este campo específico
+            form.setFieldValue(field.name, checked);
+            // No llamar a handleChange aquí porque puede causar efectos secundarios
+            // El Form.Item de Ant Design ya maneja la actualización del valor
+          }
+        };
+        
         return (
           <div>
             <FieldCheckbox
@@ -574,7 +626,7 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange, rea
               disabled={getDisabledValue()}
               readOnly={readOnly}
               checked={checkboxValue}
-              onChange={(e) => handleChange(e.target.checked)}
+              onChange={handleCheckboxChange}
               aceptaFotocopia={field.aceptaFotocopia}
               descripcion={field.descripcion}
             />

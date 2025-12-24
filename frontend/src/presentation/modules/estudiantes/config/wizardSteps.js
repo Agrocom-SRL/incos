@@ -32,12 +32,13 @@ export const createWizardStep2 = (documentacionInscripcion = [], documentosExist
       title: 'Documentos Entregados',
       fields: generateDocumentFields(documentacionInscripcion, documentosExistentes),
     },
-    uploadDocuments: {
-      title: 'Subir Documentos',
-      fields: generateUploadDocumentFields(documentacionInscripcion),
-    },
+    // Sección de Subir Documentos temporalmente oculta
+    // uploadDocuments: {
+    //   title: 'Subir Documentos',
+    //   fields: generateUploadDocumentFields(documentacionInscripcion),
+    // },
   },
-  sections: ['documents', 'uploadDocuments'],
+  sections: ['documents'], // Removido 'uploadDocuments' temporalmente
 });
 
 // Paso 3: Datos Académicos
@@ -62,8 +63,8 @@ export const generateStudentWizardSteps = (
   documentacionInscripcion = [],
   documentosExistentes = {}
 ) => [
-    createWizardStep2(documentacionInscripcion, documentosExistentes), // Documentos primero
     wizardStep1,
+    createWizardStep2(documentacionInscripcion, documentosExistentes), // Documentos primero
     wizardStep3,
   ];
 
