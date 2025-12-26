@@ -35,6 +35,17 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange, rea
   // NOTA: Eliminamos el estado local para switches porque causa problemas de sincronización
   // Ahora confiamos completamente en el estado del formulario de Ant Design
   // Cada switch es independiente y maneja su propio estado a través del Form.Item
+  
+  // IMPORTANTE: Obtener la instancia del form usando Form.useFormInstance() como fallback
+  // Esto asegura que los validators tengan acceso al form incluso si no se pasa como prop
+  let formInstance = null;
+  try {
+    formInstance = Form.useFormInstance();
+  } catch (e) {
+    // Si no hay contexto de Form, usar el form pasado como prop
+    formInstance = null;
+  }
+  const formToUse = form || formInstance;
 
   // Observar el valor de tipoDiscapacidadId para mostrar la descripción
   const shouldShowDescription = field.name === 'tipoDiscapacidadId';
@@ -723,11 +734,44 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange, rea
     return formItemLabel;
   };
 
+  // IMPORTANTE: Procesar las rules para asegurar que los validators tengan acceso al form
+  // Los validators en generateDocumentFields esperan recibir el form como tercer parámetro
+  // Capturamos el form en el nivel del componente y lo pasamos al validator a través de un closure
+  const processedRules = useMemo(() => {
+    if (!field.rules || !Array.isArray(field.rules)) {
+      return field.rules;
+    }
+    
+    // Capturar el form actual para usarlo en el closure del validator
+    const capturedForm = formToUse;
+    
+    return field.rules.map(rule => {
+      // Si el rule tiene un validator que es una función, envolverlo para pasar el form
+      if (rule.validator && typeof rule.validator === 'function') {
+        const originalValidator = rule.validator;
+        return {
+          ...rule,
+          validator: async (ruleParam, value) => {
+            // Usar el form capturado en el closure
+            // Esto asegura que el validator tenga acceso al form para obtener otros valores
+            if (capturedForm && typeof capturedForm.getFieldsValue === 'function') {
+              return await originalValidator(ruleParam, value, capturedForm);
+            } else {
+              // Si no hay form disponible, llamar sin el tercer parámetro
+              return await originalValidator(ruleParam, value);
+            }
+          },
+        };
+      }
+      return rule;
+    });
+  }, [field.rules, formToUse]);
+
   return (
     <Form.Item
       label={renderLabel()}
       name={field.name}
-      rules={field.rules}
+      rules={processedRules}
       valuePropName={valuePropName}
       getValueFromEvent={getValueFromEvent}
       help={field.help}

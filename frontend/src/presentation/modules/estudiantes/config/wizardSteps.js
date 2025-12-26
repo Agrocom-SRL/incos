@@ -63,8 +63,8 @@ export const generateStudentWizardSteps = (
   documentacionInscripcion = [],
   documentosExistentes = {}
 ) => [
-    wizardStep1,
     createWizardStep2(documentacionInscripcion, documentosExistentes), // Documentos primero
+    wizardStep1,
     wizardStep3,
   ];
 

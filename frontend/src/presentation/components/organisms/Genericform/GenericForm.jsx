@@ -392,6 +392,33 @@ const GenericForm = forwardRef(({
             form.setFieldValue(`documento_${docId}_observaciones`, undefined);
           }
           
+          // IMPORTANTE: Si este es un documento hijo (alternativo) que cambió,
+          // revalidar el documento padre para actualizar el estado de validación
+          // Esto asegura que cuando el hijo está marcado, el padre se considere válido
+          
+          // Buscar el documento padre de este hijo
+          // Los hijos tienen documento_padre_id, pero aquí solo tenemos el docId del hijo
+          // Necesitamos encontrar el padre buscando en todos los campos de documentos
+          const allFormValues = form.getFieldsValue() || {};
+          const allDocumentFields = Object.keys(allFormValues).filter(
+            fieldName => fieldName.startsWith('documento_') && fieldName.endsWith('_entregado')
+          );
+          
+          if (allDocumentFields.length > 0) {
+            // Revalidar todos los campos de documentos para actualizar estados
+            // Esto permite que cuando un hijo cambia, el padre se revalide
+            // Usar un delay para asegurar que el valor del hijo se haya actualizado completamente
+            setTimeout(() => {
+              // Revalidar todos los campos de documentos
+              form.validateFields(allDocumentFields).then(() => {
+                // Si la validación pasa, limpiar cualquier error previo
+              }).catch((errorInfo) => {
+                // Si hay errores, Ant Design los mostrará automáticamente
+                // Los mensajes de error personalizados se mostrarán correctamente
+              });
+            }, 150);
+          }
+          
           // NOTA CRÍTICA: 
           // - NO limpiar campos de otros documentos (alternativos o padres)
           // - NO usar setFieldsValue con múltiples campos a la vez

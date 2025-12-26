@@ -52,6 +52,11 @@ export const generateDocumentFields = (documentacionInscripcion = [], documentos
     // Verificar si el documento ya está marcado como entregado (por entregas físicas o documentos existentes)
     const estaEntregado = documentosExistentes[doc.id] || false;
     
+    // Obtener los nombres de los campos de los hijos para agregarlos como dependencias
+    // Esto permite que el padre se revalide cuando cambien los hijos
+    const documentosHijos = documentosHijosMap[doc.id] || [];
+    const hijosWatchFields = documentosHijos.map(hijo => `documento_${hijo.id}_entregado`);
+    
     // Campo switch para marcar si el documento está entregado
     // Por defecto marcado como true (entregado)
     fields.push({
@@ -62,32 +67,73 @@ export const generateDocumentFields = (documentacionInscripcion = [], documentos
       required: doc.requerido,
       initialValue: true, // Marcado por defecto
       descripcion: doc.descripcion, // Descripción para mostrar en Alert
+      // Agregar dependencias de los hijos para que se revalide cuando cambien
+      dependencies: hijosWatchFields.length > 0 ? hijosWatchFields : undefined,
+      watchFields: hijosWatchFields.length > 0 ? hijosWatchFields : undefined,
       rules: doc.requerido
         ? [
             {
-              validator: (_, value, form) => {
-                // Si se desmarca un documento requerido, verificar que haya un alternativo marcado
-                if (!value) {
-                  const documentosHijos = documentosHijosMap[doc.id] || [];
-                  if (documentosHijos.length > 0) {
-                    // Hay alternativos, verificar que al menos uno esté marcado
-                    const algunHijoMarcado = documentosHijos.some(hijo => {
-                      const hijoValue = form?.getFieldValue(`documento_${hijo.id}_entregado`);
-                      return hijoValue === true;
-                    });
-                    if (!algunHijoMarcado) {
-                      return Promise.reject(
-                        new Error(`${doc.nombre} es requerido. Si no lo tiene, debe marcar su documento alternativo.`)
-                      );
-                    }
-                  } else {
-                    // No hay alternativos, es requerido
+              validator: async (_, value, form) => {
+                // IMPORTANTE: Si el documento padre está desmarcado pero es requerido,
+                // verificar que haya un documento alternativo (hijo) marcado
+                // Si hay un hijo marcado, el padre se considera válido aunque esté desmarcado
+                
+                // Verificar que form esté disponible y tenga el método getFieldsValue
+                if (!form || typeof form.getFieldsValue !== 'function') {
+                  // Si no hay form disponible, solo validar que el valor esté marcado
+                  if (value !== true) {
                     return Promise.reject(
                       new Error(`${doc.nombre} es requerido`)
                     );
                   }
+                  return Promise.resolve();
                 }
-                return Promise.resolve();
+                
+                // Si el padre está marcado, es válido directamente
+                if (value === true) {
+                  return Promise.resolve();
+                }
+                
+                // Si el padre está desmarcado, verificar si hay hijos
+                const documentosHijos = documentosHijosMap[doc.id] || [];
+                if (documentosHijos.length > 0) {
+                  // Hay alternativos, verificar que al menos uno esté marcado
+                  // IMPORTANTE: Usar un pequeño delay para asegurar que los valores se hayan actualizado
+                  // Esto es necesario porque cuando el hijo cambia, puede haber un pequeño retraso
+                  await new Promise(resolve => setTimeout(resolve, 100));
+                  
+                  // Obtener valores actualizados del formulario
+                  const allFormValues = form.getFieldsValue() || {};
+                  
+                  // Verificar cada hijo individualmente
+                  const algunHijoMarcado = documentosHijos.some(hijo => {
+                    const hijoFieldName = `documento_${hijo.id}_entregado`;
+                    const hijoValue = allFormValues[hijoFieldName];
+                    // Normalizar valores booleanos (pueden venir como true, 1, o "true")
+                    const isHijoMarcado = hijoValue === true || 
+                                         hijoValue === 1 || 
+                                         hijoValue === "true" ||
+                                         String(hijoValue).toLowerCase() === 'true';
+                    return isHijoMarcado;
+                  });
+                  
+                  if (algunHijoMarcado) {
+                    // Si hay un hijo marcado, el padre es válido aunque esté desmarcado
+                    return Promise.resolve();
+                  } else {
+                    // No hay hijos marcados, mostrar error con el nombre del documento
+                    // IMPORTANTE: El mensaje debe ser claro y mostrar el nombre del documento
+                    return Promise.reject(
+                      new Error(`${doc.nombre} es requerido. Si no lo tiene, debe marcar su documento alternativo.`)
+                    );
+                  }
+                } else {
+                  // No hay alternativos, es requerido y debe estar marcado
+                  // IMPORTANTE: El mensaje debe mostrar el nombre del documento, no el nombre del campo
+                  return Promise.reject(
+                    new Error(`${doc.nombre} es requerido`)
+                  );
+                }
               },
             },
           ]
@@ -104,7 +150,7 @@ export const generateDocumentFields = (documentacionInscripcion = [], documentos
     // IMPORTANTE: Agregar documentos alternativos (hijos) ANTES de los campos del padre
     // Esto asegura que los campos del padre (En Trámite y Observaciones) aparezcan después de los hijos
     // Agregar documentos alternativos (hijos) que se muestran cuando se desmarca el padre
-    const documentosHijos = documentosHijosMap[doc.id] || [];
+    // NOTA: documentosHijos ya se obtuvo arriba para las dependencias
     documentosHijos.forEach((hijo) => {
       const asteriscoHijo = hijo.requerido ? ' *' : '';
       const labelHijo = `${hijo.nombre}${asteriscoHijo} (Alternativo)`;
@@ -134,11 +180,14 @@ export const generateDocumentFields = (documentacionInscripcion = [], documentos
           ? [
               {
                 validator: (_, value) => {
+                  // Validar que el hijo esté marcado si es requerido
                   if (!value) {
                     return Promise.reject(
                       new Error(`${hijo.nombre} es requerido como documento alternativo`)
                     );
                   }
+                  // Si el hijo está marcado, es válido
+                  // La revalidación del padre se maneja automáticamente en GenericForm
                   return Promise.resolve();
                 },
               },
@@ -152,42 +201,8 @@ export const generateDocumentFields = (documentacionInscripcion = [], documentos
         documentoPadreId: hijo.documentoPadreId || hijo.documento_padre_id,
       });
 
-      // Agregar checkboxes para propiedades booleanas del documento alternativo
-
-      // Campo checkbox "En trámite" para documento alternativo - solo mostrar cuando NO está entregado
-      fields.push({
-        name: `documento_${hijo.id}_en_tramite`,
-        label: 'En Trámite',
-        type: 'checkbox',
-        span: 8,
-        initialValue: false,
-        dependencies: [`documento_${doc.id}_entregado`, `documento_${hijo.id}_entregado`],
-        watchFields: [`documento_${doc.id}_entregado`, `documento_${hijo.id}_entregado`],
-        shouldRender: (formValues) => {
-          const padreDesmarcado = formValues?.[`documento_${doc.id}_entregado`] === false;
-          const hijoNoMarcado = formValues?.[`documento_${hijo.id}_entregado`] === false;
-          return padreDesmarcado && hijoNoMarcado; // Solo mostrar si el padre está desmarcado y el hijo NO está entregado
-        },
-        documentacionId: hijo.id,
-      });
-
-      // Campo de observaciones para documento alternativo - solo mostrar cuando NO está entregado
-      fields.push({
-        name: `documento_${hijo.id}_observaciones`,
-        label: 'Observaciones',
-        type: 'textarea',
-        span: 16,
-        rows: 2,
-        placeholder: 'Ingrese observaciones sobre la entrega del documento...',
-        dependencies: [`documento_${doc.id}_entregado`, `documento_${hijo.id}_entregado`],
-        watchFields: [`documento_${doc.id}_entregado`, `documento_${hijo.id}_entregado`],
-        shouldRender: (formValues) => {
-          const padreDesmarcado = formValues?.[`documento_${doc.id}_entregado`] === false;
-          const hijoNoMarcado = formValues?.[`documento_${hijo.id}_entregado`] === false;
-          return padreDesmarcado && hijoNoMarcado; // Solo mostrar si el padre está desmarcado y el hijo NO está entregado
-        },
-        documentacionId: hijo.id,
-      });
+      // NOTA: Los documentos hijos (alternativos) NO tienen campos "En Trámite" ni "Observaciones"
+      // Solo el documento padre tiene estos campos
     });
     
     // IMPORTANTE: Agregar campos del padre (En Trámite y Observaciones) DESPUÉS de los hijos
