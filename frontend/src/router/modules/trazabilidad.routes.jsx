@@ -2,18 +2,18 @@
 import { lazy } from 'react';
 
 // Traspasos (misma ciudad/región)
-const TraspasosSolicitarPage = lazy(() => import('@pages/trazabilidad/Traspasos/Solicitar'));
-const TraspasosRecibirPage = lazy(() => import('@pages/trazabilidad/Traspasos/Recibir'));
-const TraspasosConvalidarNotasPage = lazy(() => import('@pages/trazabilidad/Traspasos/ConvalidarNotas'));
-const TraspasosAprobarPage = lazy(() => import('@pages/trazabilidad/Traspasos/Aprobar'));
-const TraspasosListarPage = lazy(() => import('@pages/trazabilidad/Traspasos/Listar'));
+const TraspasosSolicitarPage = lazy(() => import('@pages/trazabilidad/traspasos/solicitar'));
+const TraspasosRecibirPage = lazy(() => import('@pages/trazabilidad/traspasos/recibir'));
+const TraspasosConvalidarNotasPage = lazy(() => import('@pages/trazabilidad/traspasos/convalidarnotas'));
+const TraspasosAprobarPage = lazy(() => import('@pages/trazabilidad/traspasos/aprobar'));
+const TraspasosListarPage = lazy(() => import('@pages/trazabilidad/traspasos/listar'));
 
 // Transferencias (otra ciudad/región)
-const TransferenciasSolicitarPage = lazy(() => import('@pages/trazabilidad/Transferencias/Solicitar'));
-const TransferenciasRecibirPage = lazy(() => import('@pages/trazabilidad/Transferencias/Recibir'));
-const TransferenciasConvalidarNotasPage = lazy(() => import('@pages/trazabilidad/Transferencias/ConvalidarNotas'));
-const TransferenciasAprobarPage = lazy(() => import('@pages/trazabilidad/Transferencias/Aprobar'));
-const TransferenciasListarPage = lazy(() => import('@pages/trazabilidad/Transferencias/Listar'));
+const TransferenciasSolicitarPage = lazy(() => import('@pages/trazabilidad/transferencias/solicitar'));
+const TransferenciasRecibirPage = lazy(() => import('@pages/trazabilidad/transferencias/recibir'));
+const TransferenciasConvalidarNotasPage = lazy(() => import('@pages/trazabilidad/transferencias/convalidarnotas'));
+const TransferenciasAprobarPage = lazy(() => import('@pages/trazabilidad/transferencias/aprobar'));
+const TransferenciasListarPage = lazy(() => import('@pages/trazabilidad/transferencias/listar'));
 
 export const trazabilidad = [
     // Módulo raíz: Traspasos y Transferencias
