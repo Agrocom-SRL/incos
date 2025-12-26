@@ -6,7 +6,7 @@
 
 import { Flex, Typography } from 'antd';
 import { allColors, allSpacing, typography } from '@theme/tokens';
-import ProductCard from '../ProductCard';
+import ProductCard from '../Productcard';
 
 const { Title } = Typography;
 
