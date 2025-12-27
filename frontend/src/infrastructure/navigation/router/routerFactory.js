@@ -17,7 +17,7 @@
  * 
  * Clean Architecture:
  * - Infrastructure Layer: Implementa la creación del router usando react-router-dom
- * - Depende de: routes/modules (presentation layer), navigation services, presentation (LayoutWrapper)
+ * - Depende de: routes/modules (presentation layer), navigation services, presentation (MainLayout template)
  * 
  * TODO: Cuando se implemente autenticación, aquí se verificará:
  * - Si el usuario está autenticado → redirigir a /dashboard
@@ -28,7 +28,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { getAllRoutes } from '@routes/modules';
 import { normalizeRoutes } from '@navigation-services/routeNormalizer';
 import { filterRoutesWithElements } from '@navigation-services/routeFilter';
-import LayoutWrapper from '@components-router/LayoutWrapper';
+import { MainLayout } from '@templates';
 
 /**
  * Factory function que crea y configura el router de la aplicación
@@ -37,7 +37,7 @@ import LayoutWrapper from '@components-router/LayoutWrapper';
  * 1. Obtiene todas las rutas de los módulos (routes/modules en presentation layer)
  * 2. Filtra rutas con elementos (excluye grupos padre)
  * 3. Normaliza los paths (navigation services)
- * 4. Crea el router con LayoutWrapper (presentation layer)
+ * 4. Crea el router con MainLayout template (presentation layer)
  * 
  * Maneja la verificación de autenticación en la ruta raíz:
  * - Por ahora: siempre redirige a /dashboard (simula usuario logueado)
@@ -58,11 +58,11 @@ export const createAppRouter = () => {
     // TODO: Verificación de autenticación
     // const isAuthenticated = checkAuth(); // Implementar cuando haya módulo de auth
     
-    // Crear el router con el layout principal
+    // Crear el router con el template principal
     return createBrowserRouter([
         {
             path: '/',
-            element: <LayoutWrapper />,
+            element: <MainLayout />,
             children: [
                 // Ruta raíz: verificación de autenticación y redirección
                 // Por ahora simula usuario logueado (siempre redirige a dashboard)

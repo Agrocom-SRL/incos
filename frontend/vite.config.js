@@ -37,7 +37,6 @@ export default defineConfig({
       '@molecules': path.resolve(__dirname, './src/presentation/components/molecules'),
       '@organisms': path.resolve(__dirname, './src/presentation/components/organisms'),
       '@templates': path.resolve(__dirname, './src/presentation/templates'),
-      '@components-layout': path.resolve(__dirname, './src/presentation/templates/mainlayout/components'),
       '@pages': path.resolve(__dirname, './src/presentation/pages'),
       '@modules': path.resolve(__dirname, './src/presentation/modules'),
 

@@ -136,4 +136,12 @@ export function injectCSSVariables() {
   // TRANSICIONES
   // ========================================
   root.style.setProperty('--transition-base', allThemeTokens.motionDurationMid);
+
+  // ========================================
+  // SKELETON (Loading Fallback)
+  // ========================================
+  root.style.setProperty('--skeleton-title-width', `${allThemeTokens.skeletonTitleWidth}px`);
+  root.style.setProperty('--skeleton-title-height', `${allThemeTokens.skeletonTitleHeight}px`);
+  root.style.setProperty('--skeleton-card-width', `${allThemeTokens.skeletonCardWidth}px`);
+  root.style.setProperty('--skeleton-card-height', `${allThemeTokens.skeletonCardHeight}px`);
 }

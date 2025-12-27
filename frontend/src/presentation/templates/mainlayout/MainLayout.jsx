@@ -1,6 +1,17 @@
-// src/presentation/templates/MainLayout/MainLayout.jsx
+// src/presentation/templates/mainlayout/MainLayout.jsx
 /**
  * MainLayout - Template principal de la aplicación
+ * 
+ * Responsabilidades integradas:
+ * - Router integration: Suspense + Outlet + LoadingFallback
+ * - Estructura visual: Header + Sidebar + Content
+ * - Estado del sidebar: usa useSidebarState hook del organismo Sidebar
+ * 
+ * Single Responsibility: Template completo que integra router y layout
+ * 
+ * Clean Architecture:
+ * - Presentation Layer: Template de nivel más alto
+ * - Usa: Organisms (Header, Sidebar) y hooks del Sidebar (useSidebarState)
  * 
  * Componentes del Layout configurados desde componentConfig:
  * - Layout: componentConfig.Layout (colores generales)
@@ -9,17 +20,21 @@
  * - Content: usa componentConfig.Layout.bodyBg (área de contenido)
  * 
  * Todos los colores y estilos se controlan desde:
- * src/shared/config/theme/components.js
+ * src/infrastructure/config/theme/components.js
  */
 
+import { Suspense } from 'react';
+import { Outlet } from 'react-router-dom';
 import { Layout } from 'antd';
 import { allSpacing } from '@theme/tokens';
-import { useSidebarState } from './hooks/useSidebarState';
+import { useSidebarState } from '@organisms/Sidebar/hooks/useSidebarState';
+import { Sidebar, Header } from '@organisms';
+import LoadingFallback from '@components-router/LoadingFallback';
 
-const { Sider, Header, Content } = Layout;
+const { Sider, Header: AntHeader, Content } = Layout;
 
-const MainLayout = ({ header, sidebar, children }) => {
-    // Extraer lógica de estado del sidebar a hook personalizado
+const MainLayout = () => {
+    // Estado del sidebar (hook del organismo Sidebar)
     const { collapsed, toggle } = useSidebarState(false);
 
     // Usar valores del tema para el sidebar
@@ -34,11 +49,9 @@ const MainLayout = ({ header, sidebar, children }) => {
     return (
         <Layout>
             {/* Header siempre visible en la parte superior */}
-            <Header className="header">
-                {header && typeof header === 'function'
-                    ? header({ collapsed, onToggle: toggle })
-                    : header}
-            </Header>
+            <AntHeader className="header">
+                <Header collapsed={collapsed} onToggle={toggle} />
+            </AntHeader>
 
             <Layout>
                 {/* Sider que se muestra/oculta según el trigger */}
@@ -50,15 +63,18 @@ const MainLayout = ({ header, sidebar, children }) => {
                     width={sidebarWidth}
                     collapsedWidth={sidebarCollapsedWidth}
                 >
-                    {sidebar && typeof sidebar === 'function'
-                        ? sidebar({
-                            collapsed,
-                            onMenuClick: handleMenuClick
-                        })
-                        : sidebar}
+                    <Sidebar
+                        collapsed={collapsed}
+                        onMenuClick={handleMenuClick}
+                    />
                 </Sider>
 
-                <Content className="content">{children}</Content>
+                {/* Content con router integration (Suspense + Outlet) */}
+                <Content className="content">
+                    <Suspense fallback={<LoadingFallback />}>
+                        <Outlet />
+                    </Suspense>
+                </Content>
             </Layout>
         </Layout>
     );

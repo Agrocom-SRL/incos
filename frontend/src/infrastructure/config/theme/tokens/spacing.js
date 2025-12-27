@@ -65,6 +65,14 @@ export const zIndex = {
   zIndexPopupBase: 1000,
 };
 
+// Tamaños para Skeleton (Loading Fallback)
+export const skeletonSizes = {
+  skeletonTitleWidth: 300,
+  skeletonTitleHeight: 32,
+  skeletonCardWidth: 300,
+  skeletonCardHeight: 200,
+};
+
 export const motion = {
   motionDurationFast: '0.15s',
   motionDurationMid: '0.2s',
@@ -82,5 +90,6 @@ export const allSpacing = {
   ...logoSizes,
   ...zIndex,
   ...motion,
+  ...skeletonSizes,
   wireframe: false,
 };

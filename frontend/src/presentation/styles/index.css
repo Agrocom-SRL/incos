@@ -21,6 +21,7 @@
 @import './layout/header.css';
 @import './layout/sider.css';
 @import './layout/content.css';
+@import './layout/loading.css';
 
 /* 4. Components - Atoms */
 @import './components/atoms/logo.css';
@@ -39,5 +40,5 @@
 @import './components/organisms/info-sidebar.css';
 @import './components/organisms/main-content.css';
 
-/* 7. Pages - Estilos genéricos para todas las páginas */
+/* 8. Pages - Estilos genéricos para todas las páginas */
 @import './pages/page.css';

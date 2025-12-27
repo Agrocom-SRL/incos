@@ -1,0 +1,35 @@
+/* ============================================================================
+   LOADING (Layout Component)
+   ============================================================================
+   Estilos para el componente de carga mientras se cargan las rutas lazy
+   TODOS los valores vienen del tema via variables CSS (sin valores hardcodeados)
+   
+   - Colores: componentConfig.Skeleton (via Ant Design ConfigProvider)
+   - Espaciado: variables CSS del tema (--spacing-*)
+   - Tamaños: variables CSS del tema (--skeleton-*)
+   ============================================================================ */
+
+.loading-fallback {
+    padding: var(--spacing-lg);
+    height: 100vh;
+    overflow: auto;
+}
+
+.loading-fallback__title {
+    width: var(--skeleton-title-width);
+    height: var(--skeleton-title-height);
+}
+
+.loading-fallback__content {
+    width: 100%;
+}
+
+.loading-fallback__card {
+    width: var(--skeleton-card-width);
+    height: var(--skeleton-card-height);
+}
+
+.loading-fallback__list {
+    width: 100%;
+}
+

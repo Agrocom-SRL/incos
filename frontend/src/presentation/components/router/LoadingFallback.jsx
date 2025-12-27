@@ -1,55 +1,60 @@
 // src/presentation/components/router/LoadingFallback.jsx
 /**
  * Componente de carga mientras se cargan las rutas lazy
+ * 
  * Single Responsibility: Solo maneja el estado de carga
- * Usa Skeleton de Ant Design para mostrar un loader visual similar a Material UI
+ * 
+ * Clean Architecture:
+ * - Presentation Layer: Componente router para mostrar estado de carga
+ * - Usa: Skeleton de Ant Design (configurado en componentConfig.Skeleton)
+ * - Estilos: Clases CSS desde styles/layout/loading.css (importado en styles/index.css)
+ * 
+ * El componente depende principalmente del tema de Ant Design via ConfigProvider:
+ * - Colores: componentConfig.Skeleton (colorFill, colorFillContent, borderRadius)
+ * - Tamaños: Variables CSS del tema (--skeleton-*)
+ * - CSS solo para layout específico del componente
  */
-
 import { Skeleton, Space, Flex } from 'antd';
-import { allSpacing } from '@theme/tokens';
 
 const LoadingFallback = () => {
     return (
         <Flex 
             vertical
-            style={{ 
-                padding: `${allSpacing.paddingLG}px`,
-                height: '100vh',
-                overflow: 'auto'
-            }}
+            className="loading-fallback"
         >
-            <Space orientation="vertical" size="large" style={{ width: '100%' }}>
-                {/* Skeleton para el título */}
+            <Space orientation="vertical" size="large" className="loading-fallback__content">
+                {/* Skeleton para el título - usa className para tamaño específico */}
                 <Skeleton.Input 
                     active 
                     size="large" 
-                    style={{ width: 300, height: 32 }} 
+                    className="loading-fallback__title"
                 />
                 
-                {/* Skeleton para contenido principal */}
+                {/* Skeleton para contenido principal - usa props del componente */}
                 <Skeleton 
                     active 
                     paragraph={{ rows: 4 }} 
                     title={{ width: '60%' }}
                 />
                 
-                {/* Skeleton para cards/secciones */}
-                <Flex gap={allSpacing.marginLG} wrap="wrap">
+                {/* Skeleton para cards/secciones - usa className para tamaño específico */}
+                <Flex gap="large" wrap="wrap">
                     <Skeleton.Image 
                         active 
-                        style={{ width: 300, height: 200 }} 
+                        className="loading-fallback__card"
                     />
                     <Skeleton.Image 
                         active 
-                        style={{ width: 300, height: 200 }} 
+                        className="loading-fallback__card"
                     />
                 </Flex>
                 
-                {/* Skeleton para tabla o lista */}
+                {/* Skeleton para tabla o lista - usa props del componente */}
                 <Skeleton 
                     active 
                     paragraph={{ rows: 6 }}
                     title={false}
+                    className="loading-fallback__list"
                 />
             </Space>
         </Flex>

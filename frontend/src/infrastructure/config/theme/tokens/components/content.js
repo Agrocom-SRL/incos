@@ -46,3 +46,18 @@ export const Avatar = {
   colorTextHover: allColors.colorInfoHover,
   colorBorder: allColors.colorInfoBorder,
 };
+
+/**
+ * Skeleton - Componente de carga/placeholder
+ * Propiedades reconocidas por Ant Design v5
+ * 
+ * Configuración completa para que el componente dependa menos de clases CSS
+ */
+export const Skeleton = {
+  // Colores
+  colorFill: allColors.colorFillSecondary,
+  colorFillContent: allColors.colorFill,
+  
+  // Bordes
+  borderRadius: allSpacing.borderRadiusSM,
+};

@@ -1,11 +1,12 @@
-// src/presentation/templates/mainlayout/hooks/useSidebarState.js
+// src/presentation/components/organisms/Sidebar/hooks/useSidebarState.js
 /**
  * Hook para manejar el estado del sidebar
  * 
  * Single Responsibility: Solo maneja el estado collapsed del sidebar
  * 
  * Clean Architecture:
- * - Presentation Layer: Hook de React para manejar estado de UI
+ * - Presentation Layer: Hook de React para manejar estado de UI del Sidebar
+ * - Pertenece al organismo Sidebar
  */
 
 import { useState } from 'react';
@@ -37,4 +38,3 @@ export const useSidebarState = (initialCollapsed = false) => {
         setCollapsed,
     };
 };
-

@@ -41,4 +41,5 @@ export const componentConfig = {
   Card: content.Card,
   Typography: content.Typography,
   Avatar: content.Avatar,
+  Skeleton: content.Skeleton,
 };

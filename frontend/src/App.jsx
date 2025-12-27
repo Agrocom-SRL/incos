@@ -9,7 +9,7 @@
  * - NO incluye Providers de módulos específicos (estos van en cada página)
  * 
  * Arquitectura:
- * - main.jsx → App.jsx (providers + lógica app) → AppRouter → LayoutWrapper → Pages
+ * - main.jsx → App.jsx (providers + lógica app) → AppRouter → MainLayout → Pages
  * 
  * Single Responsibility: Configurar la aplicación y sus providers globales
  * Open/Closed: Abierto para agregar Providers globales (Auth, Theme, etc.)

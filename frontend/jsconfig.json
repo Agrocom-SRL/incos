@@ -65,9 +65,6 @@
       "@templates": [
         "./src/presentation/templates"
       ],
-      "@components-layout": [
-        "./src/presentation/templates/mainlayout/components"
-      ],
       "@pages/*": [
         "./src/presentation/pages/*"
       ],
