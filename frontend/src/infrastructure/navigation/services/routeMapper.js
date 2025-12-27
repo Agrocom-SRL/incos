@@ -1,7 +1,12 @@
-// src/router/utils/routeMapperService.js
+// src/infrastructure/navigation/services/routeMapper.js
 /**
- * Utilidad para mapear keys del menú con rutas del router
+ * Servicio para mapear keys del menú con rutas del router
+ * 
  * Single Responsibility: Solo maneja el mapeo entre menú y rutas
+ * 
+ * Clean Architecture:
+ * - Infrastructure Layer: Servicio técnico que procesa datos de rutas
+ * - Depende de: routesConfig (temporalmente en router/config, se moverá después)
  * 
  * Este servicio genera automáticamente el mapeo desde las rutas definidas en los módulos.
  * Cada ruta debe tener una propiedad 'key' y metadata 'menu' para generar el menú automáticamente.
@@ -23,7 +28,7 @@
  * Las rutas son la fuente de verdad, y el mapeo se deriva de ellas.
  */
 
-import { getAllRoutes } from '@router-config/routesConfig';
+import { getAllRoutes } from '@navigation-router/routerConfig';
 
 /**
  * Genera el mapeo entre keys del menú y rutas automáticamente
@@ -86,7 +91,7 @@ export const getMenuKeyFromRoute = (route) => {
     }
     
     // Si no se encuentra, retornar null
-    // El routerService maneja las redirecciones (como '/' -> '/dashboard')
+    // El createAppRouter maneja las redirecciones (como '/' -> '/dashboard')
     return null;
 };
 

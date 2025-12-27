@@ -17,7 +17,7 @@
 
 import { ConfigProvider, App as AntApp } from 'antd';
 import { initStyles } from '@theme/init';
-import AppRouter from '@router';
+import AppRouter from '@presentation/components/router/AppRouter';
 
 // Inicializar sistema de estilos (tema + variables CSS + estilos)
 const incosTheme = initStyles();

@@ -1,6 +1,6 @@
-// src/router/utils/menuGeneratorService.js
+// src/infrastructure/navigation/services/menuGenerator.js
 /**
- * Utilidad para generar el menú de navegación desde las rutas definidas en los módulos
+ * Servicio para generar el menú de navegación desde las rutas definidas en los módulos
  * 
  * Single Responsibility: Solo genera la estructura del menú desde las rutas
  * Open/Closed: Extensible agregando metadata a las rutas sin modificar este servicio
@@ -8,10 +8,12 @@
  * Este servicio elimina la necesidad de mantener navigationMenuData.js como fuente de verdad separada.
  * Las rutas ahora son la única fuente de verdad, y el menú se genera automáticamente.
  * 
- * Ubicación: router/utils/ (utilidad del router, consistente con routeMapperService y routeNormalizer)
+ * Clean Architecture:
+ * - Infrastructure Layer: Servicio técnico que procesa datos de rutas
+ * - Depende de: routesConfig (temporalmente en router/config, se moverá después)
  */
 
-import { getAllRoutes } from '@router-config/routesConfig';
+import { getAllRoutes } from '@navigation-router/routerConfig';
 
 /**
  * Construye la estructura jerárquica del menú desde las rutas

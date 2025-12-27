@@ -1,8 +1,8 @@
 // src/presentation/components/molecules/NavigationMenu/useNavigationMenu.jsx
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { generateNavigationMenu, findMenuItemByKey, isRootModule, getRootModuleKey } from '@router-utils/menuGeneratorService';
-import { getRouteFromMenuKey, getMenuKeyFromRoute } from '@router-utils/routeMapperService';
+import { generateNavigationMenu, findMenuItemByKey, isRootModule, getRootModuleKey } from '@navigation-services/menuGenerator';
+import { getRouteFromMenuKey, getMenuKeyFromRoute } from '@navigation-services/routeMapper';
 import MenuItemIcon from '@atoms/MenuItemIcon';
 
 /**
@@ -42,7 +42,7 @@ export const useNavigationMenu = (defaultSelectedKey = 'DASH', onMenuClick) => {
         if (menuKey && menuKey !== selectedKeys[0]) {
             setSelectedKeys([menuKey]);
         }
-        // Si no hay key, no hacer nada - el routerService maneja las redirecciones
+        // Si no hay key, no hacer nada - el createAppRouter maneja las redirecciones
     }, [location.pathname, selectedKeys]);
 
     // Manejar click en el menú (versión básica)

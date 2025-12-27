@@ -13,6 +13,7 @@ import { allSpacing } from '../spacing';
  */
 export const Button = {
   colorPrimary: allColors.colorPrimary,
+  colorPrimaryHover: allColors.colorPrimaryHover,
   borderRadius: allSpacing.borderRadius,
   controlHeight: allSpacing.controlHeight,
   controlHeightSM: allSpacing.controlHeightSM,

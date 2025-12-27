@@ -1,7 +1,11 @@
-// src/router/utils/routeNormalizer.js
+// src/infrastructure/navigation/services/routeNormalizer.js
 /**
- * Utilidades para normalizar rutas
- * Single Responsibility: Solo normaliza paths de rutas
+ * Servicio para normalizar rutas
+ * 
+ * Single Responsibility: Solo normaliza paths de rutas para react-router
+ * 
+ * Clean Architecture:
+ * - Infrastructure Layer: Servicio técnico que adapta paths para react-router-dom
  */
 
 /**

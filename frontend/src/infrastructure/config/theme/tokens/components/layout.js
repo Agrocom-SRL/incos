@@ -18,7 +18,7 @@ export const Layout = {
   headerBg: allColors.colorBgContainer,  // Blanco
 
   // Content: Gris más oscuro para diferenciarse del fondo blanco
-  bodyBg: allColors.colorBgLayout,  // Gris
+  bodyBg: allColors.colorAccentBrownBg,  // Marrón oscuro
 };
 
 /**

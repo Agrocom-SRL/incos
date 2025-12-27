@@ -1,16 +1,18 @@
-// src/router/routerService.jsx
+// src/infrastructure/navigation/router/createAppRouter.js
 /**
- * Servicio para crear y configurar el router de la aplicación
+ * Factory para crear y configurar el router de la aplicación
  * 
  * Responsabilidades:
  * - Configurar todas las rutas de la aplicación
  * - Manejar verificación de autenticación (ruta raíz)
  * - Aplicar layout principal a todas las rutas protegidas
  * 
- * Single Responsibility: Solo crea y configura el router
- * Dependency Inversion: Depende de abstracciones (config, normalizer, layout)
+ * Single Responsibility: Solo crea y configura el router (Factory Pattern)
+ * Dependency Inversion: Depende de abstracciones (config, services, layout)
  * 
- * Ubicación: router/ (capa de navegación, no es infraestructura técnica)
+ * Clean Architecture:
+ * - Infrastructure Layer: Implementa la creación del router usando react-router-dom
+ * - Depende de: routerConfig (mismo directorio), navigation services, presentation (LayoutWrapper)
  * 
  * TODO: Cuando se implemente autenticación, aquí se verificará:
  * - Si el usuario está autenticado → redirigir a /dashboard
@@ -18,18 +20,24 @@
  */
 
 import { createBrowserRouter, Navigate } from 'react-router-dom';
-import { getAllRoutes } from '@router-config/routesConfig';
-import { normalizeRoutes } from '@router-utils/routeNormalizer';
+import { getAllRoutes } from '@navigation-router/routerConfig';
+import { normalizeRoutes } from '@navigation-services/routeNormalizer';
 import LayoutWrapper from '@presentation/components/router/LayoutWrapper';
 
 /**
- * Crea y configura el router de la aplicación
+ * Factory function que crea y configura el router de la aplicación
+ * 
+ * Arquitectura:
+ * 1. Obtiene todas las rutas de los módulos (routerConfig en mismo directorio)
+ * 2. Filtra rutas con elementos (excluye grupos padre)
+ * 3. Normaliza los paths (navigation services)
+ * 4. Crea el router con LayoutWrapper (presentation layer)
  * 
  * Maneja la verificación de autenticación en la ruta raíz:
  * - Por ahora: siempre redirige a /dashboard (simula usuario logueado)
  * - Futuro: verificar token/sesión y redirigir según autenticación
  * 
- * @returns {Router} - El router configurado
+ * @returns {Router} - El router configurado de react-router-dom
  */
 export const createAppRouter = () => {
     // Obtener todas las rutas de los módulos

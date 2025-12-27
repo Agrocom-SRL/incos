@@ -37,22 +37,25 @@ export default defineConfig({
       '@templates': path.resolve(__dirname, './src/presentation/templates'),
       '@pages': path.resolve(__dirname, './src/presentation/pages'),
       '@modules': path.resolve(__dirname, './src/presentation/modules'),
-      // Módulos específicos (para evitar rutas relativas)
+
+      // Módulos específicos
       '@estudiantes': path.resolve(__dirname, './src/presentation/modules/estudiantes'),
 
-      // Shared (no existe actualmente, se puede agregar en el futuro)
+      // Configuración
       '@config': path.resolve(__dirname, './src/infrastructure/config'),
 
-      // Router
-      '@router': path.resolve(__dirname, './src/router'),
-      '@router-config': path.resolve(__dirname, './src/router/config'),
-      '@router-utils': path.resolve(__dirname, './src/router/utils'),
+      // Rutas
+      '@routes': path.resolve(__dirname, './src/presentation/routes'),
+      
+      // Navegación
+      '@navigation': path.resolve(__dirname, './src/infrastructure/navigation'),
+      '@navigation-services': path.resolve(__dirname, './src/infrastructure/navigation/services'),
+      '@navigation-router': path.resolve(__dirname, './src/infrastructure/navigation/router'),
       
       // Theme
       '@theme': path.resolve(__dirname, './src/infrastructure/config/theme'),
       
       // Layout Components
-      '@layout-components': path.resolve(__dirname, './src/presentation/templates/mainlayout/components'),
       '@assets': path.resolve(__dirname, './src/presentation/assets'),
       '@styles': path.resolve(__dirname, './src/presentation/styles'),
     },

@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Table, Typography, Input, Space, Tag, App, Card, Button } from 'antd';
 import { SearchOutlined, UserOutlined, PhoneOutlined, MailOutlined, EditOutlined, CheckCircleOutlined, EyeOutlined } from '@ant-design/icons';
 import { useLocation, useNavigate } from 'react-router-dom';
-import apiClient from '@infrastructure/api/client.js';
+import apiClient from '@api-client';
 import dayjs from 'dayjs';
 
 const { Title } = Typography;
