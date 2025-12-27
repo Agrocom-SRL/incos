@@ -1,5 +1,6 @@
 // src/presentation/components/organisms/Sidebar/Sidebar.jsx
-import NavigationMenu from '@molecules/Navigationmenu';
+import { Flex } from 'antd';
+import NavigationMenu from '@molecules/NavigationMenu';
 
 /**
  * Sidebar - Componente organismo del Sidebar principal
@@ -10,14 +11,16 @@ import NavigationMenu from '@molecules/Navigationmenu';
  * - Presentation Layer: Organism component
  * - Usa: Molecules (NavigationMenu)
  */
-const Sidebar = ({ collapsed, onMenuClick }) => {
+const Sidebar = ({ collapsed }) => {
     return (
-        <div className="sidebar-container">
+        <Flex 
+            vertical 
+            className="sidebar-container"
+        >
             <NavigationMenu
                 collapsed={collapsed}
-                onMenuClick={onMenuClick}
             />
-        </div>
+        </Flex>
     );
 };
 

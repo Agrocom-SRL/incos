@@ -1,7 +1,7 @@
 // src/presentation/components/molecules/index.js
-export { default as NavigationMenu } from './Navigationmenu';
-export { default as HeaderLeft } from './Headerleft';
-export { default as HeaderRight } from './Headerright';
+export { default as NavigationMenu } from './NavigationMenu';
+export { default as HeaderLeft } from './HeaderLeft';
+export { default as HeaderRight } from './HeaderRight';
 export { default as BannerContent } from './Bannercontent';
 export { default as ProductCard } from './Productcard';
 export { default as ProductListSection } from './Productlistsection';

@@ -25,6 +25,12 @@
       "@application-estudiantes": [
         "./src/application/modules/estudiantes"
       ],
+      "@application-navigation": [
+        "./src/application/navigation"
+      ],
+      "@application-navigation/*": [
+        "./src/application/navigation/*"
+      ],
       // Infrastructure Layer
       "@infrastructure/*": [
         "./src/infrastructure/*"

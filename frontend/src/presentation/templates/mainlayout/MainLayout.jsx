@@ -12,6 +12,7 @@
  * Clean Architecture:
  * - Presentation Layer: Template de nivel más alto
  * - Usa: Organisms (Header, Sidebar) y hooks del Sidebar (useSidebarState)
+ * - Usa: NavigationProvider (application layer) para proporcionar contexto de navegación
  * 
  * Componentes del Layout configurados desde componentConfig:
  * - Layout: componentConfig.Layout (colores generales)
@@ -30,6 +31,7 @@ import { allSpacing } from '@theme/tokens';
 import { useSidebarState } from '@organisms/Sidebar/hooks/useSidebarState';
 import { Sidebar, Header } from '@organisms';
 import LoadingFallback from '@components-router/LoadingFallback';
+import { NavigationProvider } from '@application-navigation';
 
 const { Sider, Header: AntHeader, Content } = Layout;
 
@@ -41,42 +43,38 @@ const MainLayout = () => {
     const sidebarWidth = allSpacing.sidebarWidth;
     const sidebarCollapsedWidth = allSpacing.sidebarCollapsedWidth;
 
-    // Handler para el Sidebar
-    const handleMenuClick = () => {
-        // Lógica para manejar clicks en el menú
-    };
-
     return (
-        <Layout>
-            {/* Header siempre visible en la parte superior */}
-            <AntHeader className="header">
-                <Header collapsed={collapsed} onToggle={toggle} />
-            </AntHeader>
-
+        <NavigationProvider defaultSelectedKey="DASH">
             <Layout>
-                {/* Sider que se muestra/oculta según el trigger */}
-                <Sider
-                    trigger={null}
-                    collapsible
-                    collapsed={collapsed}
-                    className="sider"
-                    width={sidebarWidth}
-                    collapsedWidth={sidebarCollapsedWidth}
-                >
-                    <Sidebar
-                        collapsed={collapsed}
-                        onMenuClick={handleMenuClick}
-                    />
-                </Sider>
+                {/* Header siempre visible en la parte superior */}
+                <AntHeader className="header">
+                    <Header collapsed={collapsed} onToggle={toggle} />
+                </AntHeader>
 
-                {/* Content con router integration (Suspense + Outlet) */}
-                <Content className="content">
-                    <Suspense fallback={<LoadingFallback />}>
-                        <Outlet />
-                    </Suspense>
-                </Content>
+                <Layout>
+                    {/* Sider que se muestra/oculta según el trigger */}
+                    <Sider
+                        trigger={null}
+                        collapsible
+                        collapsed={collapsed}
+                        className="sider"
+                        width={sidebarWidth}
+                        collapsedWidth={sidebarCollapsedWidth}
+                    >
+                        <Sidebar
+                            collapsed={collapsed}
+                        />
+                    </Sider>
+
+                    {/* Content con router integration (Suspense + Outlet) */}
+                    <Content className="content">
+                        <Suspense fallback={<LoadingFallback />}>
+                            <Outlet />
+                        </Suspense>
+                    </Content>
+                </Layout>
             </Layout>
-        </Layout>
+        </NavigationProvider>
     );
 };
 

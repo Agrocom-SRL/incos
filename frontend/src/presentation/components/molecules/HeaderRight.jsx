@@ -1,4 +1,4 @@
-// src/presentation/components/molecules/HeaderRight/HeaderRight.jsx
+// src/presentation/components/molecules/HeaderRight.jsx
 import { Flex } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 import { Avatar } from '@atoms';

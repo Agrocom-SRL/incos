@@ -1,4 +1,4 @@
-// src/presentation/components/atoms/Logo/Logo.jsx
+// src/presentation/components/atoms/Logo.jsx
 import { Image } from 'antd';
 import logoIcon from '@assets/images/branding/logo-icon.webp';
 import logoHorizontal from '@assets/images/branding/logo-horizontal.webp';

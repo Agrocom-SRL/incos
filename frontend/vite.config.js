@@ -23,6 +23,7 @@ export default defineConfig({
       // Application Layer
       '@application': path.resolve(__dirname, './src/application'),
       '@application-estudiantes': path.resolve(__dirname, './src/application/modules/estudiantes'),
+      '@application-navigation': path.resolve(__dirname, './src/application/navigation'),
 
       // Infrastructure Layer
       '@infrastructure': path.resolve(__dirname, './src/infrastructure'),

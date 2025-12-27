@@ -1,4 +1,4 @@
-// src/presentation/components/atoms/Avatar/Avatar.jsx
+// src/presentation/components/atoms/Avatar.jsx
 import { Avatar as AntAvatar } from 'antd';
 import '@presentation/styles/components/atoms/avatar.css';
 

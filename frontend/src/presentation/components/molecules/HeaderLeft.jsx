@@ -1,4 +1,4 @@
-// src/presentation/components/molecules/HeaderLeft/HeaderLeft.jsx
+// src/presentation/components/molecules/HeaderLeft.jsx
 import { Flex } from 'antd';
 import IconButton from '@atoms/IconButton';
 import Logo from '@atoms/Logo';

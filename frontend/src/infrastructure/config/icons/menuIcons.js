@@ -1,5 +1,19 @@
-// src/presentation/components/atoms/MenuItemIcon/MenuItemIcon.jsx
-import React from 'react';
+// src/infrastructure/config/icons/menuIcons.js
+/**
+ * Configuración de iconos del menú de navegación
+ * 
+ * Single Responsibility: Solo mapea keys del menú a componentes de iconos
+ * 
+ * Clean Architecture:
+ * - Infrastructure Layer: Configuración de iconos
+ * - Depende de: @ant-design/icons (librería externa)
+ * 
+ * Esta configuración centraliza el mapeo de iconos, facilitando:
+ * - Mantenimiento (cambiar un icono en un solo lugar)
+ * - Consistencia (mismo icono para misma funcionalidad)
+ * - Extensibilidad (agregar nuevos iconos fácilmente)
+ */
+
 import {
     // Dashboard
     DashboardOutlined,
@@ -70,8 +84,10 @@ import {
 
 /**
  * Mapeo completo de iconos para todos los items del menú
+ * Key: Identificador del item del menú
+ * Value: Componente de icono de Ant Design
  */
-const iconMap = {
+export const menuIconMap = {
     // Dashboard
     'DASH': DashboardOutlined,
 
@@ -215,20 +231,3 @@ const iconMap = {
     'USR-ROLES': UserSwitchOutlined,
 };
 
-/**
- * Componente atómico para renderizar iconos del menú
- * @param {string} iconName - Nombre del icono (key del item)
- * @param {object} props - Props adicionales para el icono
- */
-const MenuItemIcon = ({ iconName, ...props }) => {
-    const IconComponent = iconMap[iconName];
-
-    if (!IconComponent) {
-        return null;
-    }
-
-    return <IconComponent {...props} />;
-};
-
-export default MenuItemIcon;
-export { iconMap };

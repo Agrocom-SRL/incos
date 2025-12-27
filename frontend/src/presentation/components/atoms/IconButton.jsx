@@ -1,4 +1,4 @@
-// src/presentation/components/atoms/IconButton/IconButton.jsx
+// src/presentation/components/atoms/IconButton.jsx
 import { Button as AntButton } from 'antd';
 
 /**
