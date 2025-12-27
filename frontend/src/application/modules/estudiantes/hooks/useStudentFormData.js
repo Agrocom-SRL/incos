@@ -8,7 +8,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import apiClient from '@infrastructure/api/client.js';
+import apiClient from '@api-client';
 
 export const useStudentFormData = () => {
   const [stats, setStats] = useState({

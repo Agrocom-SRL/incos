@@ -20,7 +20,7 @@ import { useMemo, useEffect } from 'react';
 import { MainContent, InfoSidebar } from '@organisms';
 import { WizardForm } from '@organisms';
 import { StudentsSummaryCard, HelpGuideCard } from '@molecules';
-import { useStudentContext, useLoadStudent } from '@application/modules/estudiantes';
+import { useStudentContext, useLoadStudent } from '@application-estudiantes';
 import { generateStudentWizardSteps } from '@estudiantes/config/wizardSteps';
 import './Registrar.css';
 

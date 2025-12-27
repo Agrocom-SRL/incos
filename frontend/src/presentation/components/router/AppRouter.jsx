@@ -3,15 +3,15 @@
  * Componente principal del router de la aplicación
  * 
  * Single Responsibility: Envuelve el RouterProvider con el router configurado
- * Dependency Inversion: Depende de la factory createAppRouter (infrastructure)
+ * Dependency Inversion: Depende de la factory routerFactory (infrastructure)
  * 
  * Clean Architecture:
  * - Presentation Layer: Componente React que consume el router configurado
- * - Depende de: createAppRouter (factory del router en infrastructure/navigation)
+ * - Depende de: routerFactory (factory del router en infrastructure/navigation)
  */
 
 import { RouterProvider } from 'react-router-dom';
-import { createAppRouter } from '@navigation-router/appRouter';
+import { createAppRouter } from '@navigation-router/routerFactory';
 
 // Crear el router una sola vez
 const router = createAppRouter();

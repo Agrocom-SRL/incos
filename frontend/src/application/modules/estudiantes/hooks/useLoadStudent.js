@@ -8,7 +8,7 @@
 
 import { useState, useEffect } from 'react';
 import { App } from 'antd';
-import apiClient from '@infrastructure/api/client.js';
+import apiClient from '@api-client';
 import { formatStudentDataForForm, resolveAllGeographicCascades } from '@estudiantes/helpers';
 
 /**

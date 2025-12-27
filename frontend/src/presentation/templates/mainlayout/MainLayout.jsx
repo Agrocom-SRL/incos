@@ -12,23 +12,19 @@
  * src/shared/config/theme/components.js
  */
 
-import { useState } from 'react';
 import { Layout } from 'antd';
 import { allSpacing } from '@theme/tokens';
+import { useSidebarState } from './hooks/useSidebarState';
 
 const { Sider, Header, Content } = Layout;
 
 const MainLayout = ({ header, sidebar, children }) => {
-    const [collapsed, setCollapsed] = useState(false);
+    // Extraer lógica de estado del sidebar a hook personalizado
+    const { collapsed, toggle } = useSidebarState(false);
 
     // Usar valores del tema para el sidebar
     const sidebarWidth = allSpacing.sidebarWidth;
     const sidebarCollapsedWidth = allSpacing.sidebarCollapsedWidth;
-
-    // Función para toggle del sidebar
-    const handleToggle = () => {
-        setCollapsed(!collapsed);
-    };
 
     // Handler para el Sidebar
     const handleMenuClick = () => {
@@ -40,7 +36,7 @@ const MainLayout = ({ header, sidebar, children }) => {
             {/* Header siempre visible en la parte superior */}
             <Header className="header">
                 {header && typeof header === 'function'
-                    ? header({ collapsed, onToggle: handleToggle })
+                    ? header({ collapsed, onToggle: toggle })
                     : header}
             </Header>
 

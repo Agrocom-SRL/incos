@@ -1,18 +1,23 @@
-// src/infrastructure/navigation/router/createAppRouter.js
+// src/infrastructure/navigation/router/routerFactory.js
 /**
- * Factory para crear y configurar el router de la aplicación
+ * Router Factory - Factory Pattern
+ * 
+ * Propósito: Encapsular la lógica de creación del router de react-router-dom
  * 
  * Responsabilidades:
- * - Configurar todas las rutas de la aplicación
- * - Manejar verificación de autenticación (ruta raíz)
+ * - Orquestar la creación del router de la aplicación
  * - Aplicar layout principal a todas las rutas protegidas
  * 
- * Single Responsibility: Solo crea y configura el router (Factory Pattern)
+ * Single Responsibility: Solo orquesta la creación del router (Factory Pattern)
+ * - Delegación de responsabilidades:
+ *   - Filtrado de rutas → routeFilter service
+ *   - Normalización de rutas → routeNormalizer service
+ *   - Autenticación → (futuro: authGuard service)
  * Dependency Inversion: Depende de abstracciones (config, services, layout)
  * 
  * Clean Architecture:
  * - Infrastructure Layer: Implementa la creación del router usando react-router-dom
- * - Depende de: routerConfig (mismo directorio), navigation services, presentation (LayoutWrapper)
+ * - Depende de: routes/modules (presentation layer), navigation services, presentation (LayoutWrapper)
  * 
  * TODO: Cuando se implemente autenticación, aquí se verificará:
  * - Si el usuario está autenticado → redirigir a /dashboard
@@ -20,15 +25,16 @@
  */
 
 import { createBrowserRouter, Navigate } from 'react-router-dom';
-import { getAllRoutes } from '@navigation-router/routerConfig';
+import { getAllRoutes } from '@routes/modules';
 import { normalizeRoutes } from '@navigation-services/routeNormalizer';
-import LayoutWrapper from '@presentation/components/router/LayoutWrapper';
+import { filterRoutesWithElements } from '@navigation-services/routeFilter';
+import LayoutWrapper from '@components-router/LayoutWrapper';
 
 /**
  * Factory function que crea y configura el router de la aplicación
  * 
  * Arquitectura:
- * 1. Obtiene todas las rutas de los módulos (routerConfig en mismo directorio)
+ * 1. Obtiene todas las rutas de los módulos (routes/modules en presentation layer)
  * 2. Filtra rutas con elementos (excluye grupos padre)
  * 3. Normaliza los paths (navigation services)
  * 4. Crea el router con LayoutWrapper (presentation layer)
@@ -44,7 +50,7 @@ export const createAppRouter = () => {
     const allRoutes = getAllRoutes();
     
     // Filtrar solo rutas con elemento (excluir grupos padre sin página)
-    const routesWithElements = allRoutes.filter(route => route.element !== null && route.element !== undefined);
+    const routesWithElements = filterRoutesWithElements(allRoutes);
     
     // Normalizar las rutas
     const normalizedRoutes = normalizeRoutes(routesWithElements);

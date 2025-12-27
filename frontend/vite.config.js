@@ -22,10 +22,12 @@ export default defineConfig({
 
       // Application Layer
       '@application': path.resolve(__dirname, './src/application'),
+      '@application-estudiantes': path.resolve(__dirname, './src/application/modules/estudiantes'),
 
       // Infrastructure Layer
       '@infrastructure': path.resolve(__dirname, './src/infrastructure'),
       '@api': path.resolve(__dirname, './src/infrastructure/api'),
+      '@api-client': path.resolve(__dirname, './src/infrastructure/api/client.js'),
       '@repo-impl': path.resolve(__dirname, './src/infrastructure/repositories'),
       '@storage': path.resolve(__dirname, './src/infrastructure/storage'),
 
@@ -35,6 +37,7 @@ export default defineConfig({
       '@molecules': path.resolve(__dirname, './src/presentation/components/molecules'),
       '@organisms': path.resolve(__dirname, './src/presentation/components/organisms'),
       '@templates': path.resolve(__dirname, './src/presentation/templates'),
+      '@components-layout': path.resolve(__dirname, './src/presentation/templates/mainlayout/components'),
       '@pages': path.resolve(__dirname, './src/presentation/pages'),
       '@modules': path.resolve(__dirname, './src/presentation/modules'),
 
@@ -46,8 +49,10 @@ export default defineConfig({
 
       // Rutas
       '@routes': path.resolve(__dirname, './src/presentation/routes'),
+      // Router Components (Presentation)
+      '@components-router': path.resolve(__dirname, './src/presentation/components/router'),
       
-      // Navegación
+      // Navegación (Infrastructure)
       '@navigation': path.resolve(__dirname, './src/infrastructure/navigation'),
       '@navigation-services': path.resolve(__dirname, './src/infrastructure/navigation/services'),
       '@navigation-router': path.resolve(__dirname, './src/infrastructure/navigation/router'),

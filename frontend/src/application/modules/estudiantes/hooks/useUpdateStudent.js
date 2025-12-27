@@ -6,7 +6,7 @@
  */
 
 import { useState } from 'react';
-import apiClient from '@infrastructure/api/client.js';
+import apiClient from '@api-client';
 
 export const useUpdateStudent = () => {
   const [loading, setLoading] = useState(false);

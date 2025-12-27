@@ -6,7 +6,7 @@
  * 
  * Clean Architecture:
  * - Infrastructure Layer: Servicio técnico que procesa datos de rutas
- * - Depende de: routesConfig (temporalmente en router/config, se moverá después)
+ * - Depende de: routes/modules (presentation layer)
  * 
  * Este servicio genera automáticamente el mapeo desde las rutas definidas en los módulos.
  * Cada ruta debe tener una propiedad 'key' y metadata 'menu' para generar el menú automáticamente.
@@ -28,7 +28,7 @@
  * Las rutas son la fuente de verdad, y el mapeo se deriva de ellas.
  */
 
-import { getAllRoutes } from '@navigation-router/routerConfig';
+import { getAllRoutes } from '@routes/modules';
 
 /**
  * Genera el mapeo entre keys del menú y rutas automáticamente

@@ -22,12 +22,18 @@
       "@application/*": [
         "./src/application/*"
       ],
+      "@application-estudiantes": [
+        "./src/application/modules/estudiantes"
+      ],
       // Infrastructure Layer
       "@infrastructure/*": [
         "./src/infrastructure/*"
       ],
       "@api/*": [
         "./src/infrastructure/api/*"
+      ],
+      "@api-client": [
+        "./src/infrastructure/api/client.js"
       ],
       "@repo-impl/*": [
         "./src/infrastructure/repositories/*"
@@ -40,28 +46,27 @@
         "./src/presentation/*"
       ],
       "@atoms": [
-        "./src/presentation/components/atoms/index.js"
+        "./src/presentation/components/atoms"
       ],
       "@atoms/*": [
         "./src/presentation/components/atoms/*"
       ],
       "@molecules": [
-        "./src/presentation/components/molecules/index.js"
+        "./src/presentation/components/molecules"
       ],
       "@molecules/*": [
         "./src/presentation/components/molecules/*"
       ],
+      // @organisms solo se usa sin / (tiene index.js)
       "@organisms": [
-        "./src/presentation/components/organisms/index.js"
+        "./src/presentation/components/organisms"
       ],
-      "@organisms/*": [
-        "./src/presentation/components/organisms/*"
-      ],
+      // @templates solo se usa sin / (tiene index.js)
       "@templates": [
-        "./src/presentation/templates/index.js"
+        "./src/presentation/templates"
       ],
-      "@templates/*": [
-        "./src/presentation/templates/*"
+      "@components-layout": [
+        "./src/presentation/templates/mainlayout/components"
       ],
       "@pages/*": [
         "./src/presentation/pages/*"
@@ -72,28 +77,35 @@
       "@estudiantes/*": [
         "./src/presentation/modules/estudiantes/*"
       ],
-      // Shared (no existe actualmente, se puede agregar en el futuro)
+      // Router Components (Presentation) - Solo se usa con / (ej: @components-router/AppRouter)
+      "@components-router/*": [
+        "./src/presentation/components/router/*"
+      ],
+      // Rutas
+      "@routes/*": [
+        "./src/presentation/routes/*"
+      ],
+      // Navegación (Infrastructure) - Solo se usa con / (ej: @navigation-router/routerConfig)
+      "@navigation/*": [
+        "./src/infrastructure/navigation/*"
+      ],
+      "@navigation-services/*": [
+        "./src/infrastructure/navigation/services/*"
+      ],
+      "@navigation-router/*": [
+        "./src/infrastructure/navigation/router/*"
+      ],
+      // Configuración
       "@config/*": [
         "./src/infrastructure/config/*"
-      ],
-      "@router": [
-        "./src/router/index.jsx"
-      ],
-      "@router/*": [
-        "./src/router/*"
-      ],
-      "@router-config/*": [
-        "./src/router/config/*"
-      ],
-      "@router-utils/*": [
-        "./src/router/utils/*"
       ],
       "@theme/*": [
         "./src/infrastructure/config/theme/*"
       ],
-      "@layout-components/*": [
-        "./src/presentation/templates/mainlayout/components/*"
+      "@theme": [
+        "./src/infrastructure/config/theme"
       ],
+      // Assets y estilos
       "@assets/*": [
         "./src/presentation/assets/*"
       ],

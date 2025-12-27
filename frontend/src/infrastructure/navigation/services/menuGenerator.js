@@ -10,10 +10,10 @@
  * 
  * Clean Architecture:
  * - Infrastructure Layer: Servicio técnico que procesa datos de rutas
- * - Depende de: routesConfig (temporalmente en router/config, se moverá después)
+ * - Depende de: routes/modules (presentation layer)
  */
 
-import { getAllRoutes } from '@navigation-router/routerConfig';
+import { getAllRoutes } from '@routes/modules';
 
 /**
  * Construye la estructura jerárquica del menú desde las rutas
