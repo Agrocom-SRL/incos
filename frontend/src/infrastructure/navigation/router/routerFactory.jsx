@@ -1,4 +1,4 @@
-// src/infrastructure/navigation/router/routerFactory.js
+// src/infrastructure/navigation/router/routerFactory.jsx
 /**
  * Router Factory - Factory Pattern
  * 
