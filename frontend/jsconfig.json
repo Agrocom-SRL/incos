@@ -18,6 +18,9 @@
       "@repositories/*": [
         "src/domain/repositories/*"
       ],
+      "@mappers/*": [
+        "src/domain/mappers/*"
+      ],
       // Application Layer
       "@application/*": [
         "./src/application/*"
@@ -25,11 +28,17 @@
       "@application-estudiantes": [
         "./src/application/modules/estudiantes"
       ],
+      "@application-dashboard": [
+        "./src/application/modules/dashboard"
+      ],
       "@application-navigation": [
         "./src/application/navigation"
       ],
       "@application-navigation/*": [
         "./src/application/navigation/*"
+      ],
+      "@container/*": [
+        "./src/application/container/*"
       ],
       // Infrastructure Layer
       "@infrastructure/*": [
@@ -79,6 +88,9 @@
       ],
       "@estudiantes/*": [
         "./src/presentation/modules/estudiantes/*"
+      ],
+      "@dashboard/*": [
+        "./src/presentation/modules/dashboard/*"
       ],
       // Router Components (Presentation) - Solo se usa con / (ej: @components-router/AppRouter)
       "@components-router/*": [

@@ -19,10 +19,13 @@ export default defineConfig({
       '@entities': path.resolve(__dirname, './src/domain/entities'),
       '@useCases': path.resolve(__dirname, './src/domain/useCases'),
       '@repositories': path.resolve(__dirname, './src/domain/repositories'),
+      '@mappers': path.resolve(__dirname, './src/domain/mappers'),
 
       // Application Layer
       '@application': path.resolve(__dirname, './src/application'),
+      '@container': path.resolve(__dirname, './src/application/container'),
       '@application-estudiantes': path.resolve(__dirname, './src/application/modules/estudiantes'),
+      '@application-dashboard': path.resolve(__dirname, './src/application/modules/dashboard'),
       '@application-navigation': path.resolve(__dirname, './src/application/navigation'),
 
       // Infrastructure Layer
@@ -43,6 +46,7 @@ export default defineConfig({
 
       // Módulos específicos
       '@estudiantes': path.resolve(__dirname, './src/presentation/modules/estudiantes'),
+      '@dashboard': path.resolve(__dirname, './src/presentation/modules/dashboard'),
 
       // Configuración
       '@config': path.resolve(__dirname, './src/infrastructure/config'),

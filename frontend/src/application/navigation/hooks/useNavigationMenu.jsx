@@ -22,7 +22,7 @@
  * un hook puede retornar JSX estructurado para la UI.
  */
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import * as menuGenerator from '@navigation-services/menuGenerator';
 import { getRouteFromMenuKey, getMenuKeyFromRoute } from '@navigation-services/routeMapper';
@@ -40,6 +40,9 @@ export const useNavigationMenu = (defaultSelectedKey = 'DASH', onMenuClick) => {
     const location = useLocation();
     const [selectedKeys, setSelectedKeys] = useState([defaultSelectedKey]);
     const [openKeys, setOpenKeys] = useState([]);
+    
+    // Ref para detectar si es el mount inicial (refresh de página)
+    const isInitialMount = useRef(true);
 
     // Generar el menú desde las rutas (memoizado para evitar regeneraciones innecesarias)
     const navigationMenuItems = useMemo(() => menuGenerator.generateNavigationMenu(), []);
@@ -67,10 +70,77 @@ export const useNavigationMenu = (defaultSelectedKey = 'DASH', onMenuClick) => {
             return mappedItem;
         });
     };
+
+    /**
+     * Expande todos los padres de un item cuando es el mount inicial (refresh de página)
+     * 
+     * @param {string} menuKey - Key del item seleccionado
+     */
+    const expandParentKeysOnInitialMount = (menuKey) => {
+        if (!isInitialMount.current) return;
+        
+        const parentKeys = menuGenerator.findParentKeys(navigationMenuItems, menuKey);
+        if (parentKeys && parentKeys.length > 0) {
+            setOpenKeys(parentKeys);
+        }
+        
+        isInitialMount.current = false;
+    };
+
+    /**
+     * Maneja el click en el Dashboard (caso especial)
+     * 
+     * @param {string} clickedKey - Key del item clickeado
+     * @param {Object} info - Información del click
+     */
+    const handleDashboardClick = (clickedKey, info) => {
+        setOpenKeys([]);
+        const route = getRouteFromMenuKey(clickedKey);
+        if (route) {
+            navigate(route);
+        }
+        setSelectedKeys([clickedKey]);
+        if (onMenuClick) {
+            onMenuClick(info);
+        }
+    };
+
+    /**
+     * Toggle de un submenú (abrir/cerrar)
+     * 
+     * @param {string} clickedKey - Key del item clickeado
+     */
+    const toggleSubmenu = (clickedKey) => {
+        const currentOpenKeys = openKeys.includes(clickedKey)
+            ? openKeys.filter(key => key !== clickedKey)
+            : [...openKeys, clickedKey];
+        setOpenKeys(currentOpenKeys);
+    };
+
+    /**
+     * Navega a un item del menú y actualiza el estado
+     * 
+     * @param {string} clickedKey - Key del item clickeado
+     * @param {Object} info - Información del click
+     */
+    const navigateToMenuItem = (clickedKey, info) => {
+        const route = getRouteFromMenuKey(clickedKey);
+        if (route) {
+            navigate(route);
+        }
+        setSelectedKeys([clickedKey]);
+        if (onMenuClick) {
+            onMenuClick(info);
+        }
+    };
     
     /**
      * Sincroniza el item seleccionado con la ruta actual
      * Cuando el usuario navega directamente (URL, botón atrás, etc.), actualiza el menú
+     * 
+     * Comportamiento especial en refresh de página:
+     * - Si es el mount inicial (refresh), expande todos los padres del item seleccionado
+     * - Esto permite ver la jerarquía completa cuando se refresca con una ruta específica
      */
     useEffect(() => {
         const currentRoute = location.pathname;
@@ -78,14 +148,18 @@ export const useNavigationMenu = (defaultSelectedKey = 'DASH', onMenuClick) => {
         
         if (menuKey && menuKey !== selectedKeys[0]) {
             setSelectedKeys([menuKey]);
+            expandParentKeysOnInitialMount(menuKey);
+        } else if (isInitialMount.current) {
+            // Si no hay menuKey pero es el mount inicial, marcar como completado
+            isInitialMount.current = false;
         }
         // Si no hay key, no hacer nada - el createAppRouter maneja las redirecciones
-    }, [location.pathname, selectedKeys]);
+    }, [location.pathname, selectedKeys, navigationMenuItems]);
 
     /**
      * Maneja el click en un item del menú
      * 
-     * Single Responsibility: Solo maneja la lógica de click en el menú
+     * Single Responsibility: Orquesta la lógica de click delegando a funciones específicas
      * - Si es Dashboard: cierra todos los módulos y navega
      * - Si tiene children: solo toggle del submenú (no navega)
      * - Si no tiene children: navega a la ruta correspondiente
@@ -97,15 +171,7 @@ export const useNavigationMenu = (defaultSelectedKey = 'DASH', onMenuClick) => {
         
         // Caso especial: Dashboard - cerrar todos los módulos
         if (clickedKey === 'DASH') {
-            setOpenKeys([]);
-            const route = getRouteFromMenuKey(clickedKey);
-            if (route) {
-                navigate(route);
-            }
-            setSelectedKeys([clickedKey]);
-            if (onMenuClick) {
-                onMenuClick(info);
-            }
+            handleDashboardClick(clickedKey, info);
             return;
         }
         
@@ -114,30 +180,33 @@ export const useNavigationMenu = (defaultSelectedKey = 'DASH', onMenuClick) => {
         
         // Si tiene children, solo toggle del submenú (no navegar)
         if (menuItem && menuItem.children && menuItem.children.length > 0) {
-            const currentOpenKeys = openKeys.includes(clickedKey)
-                ? openKeys.filter(key => key !== clickedKey)
-                : [...openKeys, clickedKey];
-            setOpenKeys(currentOpenKeys);
+            toggleSubmenu(clickedKey);
             return;
         }
         
         // Si no tiene children, navegar a la ruta correspondiente
-        const route = getRouteFromMenuKey(clickedKey);
-        if (route) {
-            navigate(route);
-        }
-        
-        setSelectedKeys([clickedKey]);
-        
-        if (onMenuClick) {
-            onMenuClick(info);
-        }
+        navigateToMenuItem(clickedKey, info);
+    };
+
+    /**
+     * Filtra las keys manteniendo solo las del módulo raíz especificado
+     * Regla de negocio: Solo un módulo raíz abierto a la vez
+     * 
+     * @param {Array} keys - Array de keys a filtrar
+     * @param {string} rootModuleKey - Key del módulo raíz a mantener
+     * @returns {Array} - Keys filtradas
+     */
+    const filterKeysByRootModule = (keys, rootModuleKey) => {
+        return keys.filter(key => {
+            const keyRoot = menuGenerator.getRootModuleKey(navigationMenuItems, key);
+            return keyRoot === rootModuleKey || key === rootModuleKey;
+        });
     };
 
     /**
      * Maneja el cambio de submenús abiertos
      * 
-     * Single Responsibility: Solo maneja la lógica de expansión/colapso de submenús
+     * Single Responsibility: Orquesta la lógica de expansión/colapso de submenús
      * Regla de negocio: Solo un módulo raíz abierto a la vez
      * 
      * @param {Array} keys - Array de keys de submenús que deben estar abiertos
@@ -148,16 +217,13 @@ export const useNavigationMenu = (defaultSelectedKey = 'DASH', onMenuClick) => {
         
         // Si se está abriendo un módulo raíz nuevo
         if (newKeys.length > 0) {
-            const openedRootModule = newKeys.find(key => menuGenerator.isRootModule(navigationMenuItems, key));
+            const openedRootModule = newKeys.find(key => 
+                menuGenerator.isRootModule(navigationMenuItems, key)
+            );
             
             if (openedRootModule) {
                 // Cerrar todos los demás módulos raíz, mantener solo el nuevo
-                // Regla de negocio: Solo un módulo raíz abierto a la vez
-                const filteredKeys = keys.filter(key => {
-                    const keyRoot = menuGenerator.getRootModuleKey(navigationMenuItems, key);
-                    // Mantener solo keys del nuevo módulo raíz
-                    return keyRoot === openedRootModule || key === openedRootModule;
-                });
+                const filteredKeys = filterKeysByRootModule(keys, openedRootModule);
                 setOpenKeys(filteredKeys);
                 return;
             }

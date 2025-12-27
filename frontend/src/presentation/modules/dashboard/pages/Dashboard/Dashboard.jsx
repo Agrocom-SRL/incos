@@ -1,5 +1,16 @@
-// src/presentation/pages/Dashboard/Dashboard.jsx
-import { Flex } from 'antd';
+// src/presentation/modules/dashboard/pages/Dashboard/Dashboard.jsx
+/**
+ * Dashboard - Página principal del dashboard
+ * 
+ * Single Responsibility: Solo renderizar la UI del dashboard
+ * 
+ * Esta es una página pura de React y Ant Design que:
+ * - No contiene lógica de negocio
+ * - Obtiene datos del DashboardProvider mediante useDashboardContext
+ * - Solo renderiza componentes con los datos recibidos
+ */
+
+import { Flex, Spin } from 'antd';
 import { MainContent, InfoSidebar } from '@organisms';
 import {
     BannerContent,
@@ -9,42 +20,28 @@ import {
     ActivityList,
 } from '@molecules';
 import { allSpacing } from '@theme/tokens';
+import { useDashboardContext } from '@application-dashboard';
 import plant02 from '@assets/plant02.png';
-import plant01 from '@assets/plant01.png';
-import plant03 from '@assets/plant03.png';
 
 const Dashboard = () => {
-    // Carreras del instituto
-    const carreras = [
-        { image: plant01, label: 'Administración de Empresas' },
-        { image: plant02, label: 'Contaduría' },
-        { image: plant03, label: 'Sistemas Informáticos' },
-    ];
+    // Obtener datos del contexto del dashboard
+    const {
+        carreras = [],
+        docentesDestacados = [],
+        docentesPrincipales = [],
+        actividades = [],
+        stats = { todayOrders: 0, monthOrders: 0 },
+        loading,
+    } = useDashboardContext();
 
-    // Docentes destacados
-    const docentesDestacados = [
-        { name: 'Docente 1', description: '15 años de experiencia, 200 estudiantes' },
-        { name: 'Docente 2', description: '' },
-        { name: 'Docente 3', description: '' },
-        { name: 'Docente 4', description: '' },
-        { name: 'Docente 5', description: '' },
-    ];
-
-    const docentesPrincipales = [
-        { name: 'Docente A', description: '10 años de experiencia, 150 estudiantes' },
-        { name: 'Docente B', description: '' },
-        { name: 'Docente C', description: '' },
-    ];
-
-    // Actividades recientes del instituto
-    const actividades = [
-        { name: 'María González', action: 'Completó su registro de estudiante', timeAgo: 'Hace 1 día' },
-        { name: 'Carlos Pérez', action: 'Se inscribió en Administración de Empresas', timeAgo: 'Hace 2 días' },
-        { name: 'Ana Martínez', action: 'Subió documentos académicos', timeAgo: 'Hace 3 días' },
-        { name: 'Luis Rodríguez', action: 'Actualizó su información personal', timeAgo: 'Hace 4 días' },
-        { name: 'Laura Sánchez', action: 'Completó su registro de estudiante', timeAgo: 'Hace 5 días' },
-        { name: 'Pedro López', action: 'Se inscribió en Sistemas Informáticos', timeAgo: 'Hace 6 días' },
-    ];
+    // Mostrar loading mientras se cargan los datos
+    if (loading) {
+        return (
+            <Flex justify="center" align="center" style={{ minHeight: '400px' }}>
+                <Spin size="large" />
+            </Flex>
+        );
+    }
 
     return (
         <Flex 
@@ -83,8 +80,8 @@ const Dashboard = () => {
             {/* Resumen de Información - 30% en lg+ (min-width 300px), col-12 en menores */}
             <InfoSidebar>
                 <OrdersSummaryCard 
-                    todayOrders={5}
-                    monthOrders={240}
+                    todayOrders={stats.todayOrders}
+                    monthOrders={stats.monthOrders}
                     image={plant02}
                 />
                 <ActivityList 
@@ -98,3 +95,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+

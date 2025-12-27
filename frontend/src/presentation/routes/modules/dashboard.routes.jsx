@@ -1,13 +1,13 @@
-// src/router/modules/dashboard.routes.js
+// src/presentation/routes/modules/dashboard.routes.jsx
 import { lazy } from 'react';
 
-// Lazy loading de componentes
-const DashboardPage = lazy(() => import('@pages/Dashboard'));
+// Lazy loading del connector (que incluye el Provider)
+const DashboardConnector = lazy(() => import('@dashboard/connectors'));
 
 export const dashboardRoutes = [
     {
         path: '/dashboard',
-        element: <DashboardPage />,
+        element: <DashboardConnector />,
         key: 'DASH',
         menu: {
             label: 'Dashboard',

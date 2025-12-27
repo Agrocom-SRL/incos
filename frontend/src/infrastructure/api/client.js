@@ -6,7 +6,7 @@
  */
 
 import axios from 'axios';
-import { API_CONFIG } from './config.js';
+import { API_CONFIG } from '@config/api';
 import { requestInterceptor, responseInterceptor } from './interceptors.js';
 
 // Crear instancia de Axios con configuración
