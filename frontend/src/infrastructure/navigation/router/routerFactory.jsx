@@ -25,7 +25,7 @@
  */
 
 import { createBrowserRouter, Navigate } from 'react-router-dom';
-import { getAllRoutes } from '@routes/modules';
+import { getAllRoutes } from '@routes';
 import { normalizeRoutes } from '@navigation-services/routeNormalizer';
 import { filterRoutesWithElements } from '@navigation-services/routeFilter';
 import { MainLayout } from '@templates';

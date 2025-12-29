@@ -21,7 +21,6 @@
 @import './layout/header.css';
 @import './layout/sider.css';
 @import './layout/content.css';
-@import './layout/loading.css';
 
 /* 4. Components - Atoms */
 @import './components/atoms/logo.css';

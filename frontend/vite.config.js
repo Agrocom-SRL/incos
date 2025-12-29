@@ -37,6 +37,7 @@ export default defineConfig({
 
       // Presentation Layer
       '@presentation': path.resolve(__dirname, './src/presentation'),
+      '@components': path.resolve(__dirname, './src/presentation/components'),
       '@atoms': path.resolve(__dirname, './src/presentation/components/atoms'),
       '@molecules': path.resolve(__dirname, './src/presentation/components/molecules'),
       '@organisms': path.resolve(__dirname, './src/presentation/components/organisms'),

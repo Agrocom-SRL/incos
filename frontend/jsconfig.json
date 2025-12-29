@@ -75,9 +75,18 @@
       "@molecules/*": [
         "./src/presentation/components/molecules/*"
       ],
-      // @organisms solo se usa sin / (tiene index.js)
+      // @organisms se usa sin / (tiene index.js)
       "@organisms": [
         "./src/presentation/components/organisms"
+      ],
+      "@organisms/*": [
+        "./src/presentation/components/organisms/*"
+      ],
+      "@components": [
+        "./src/presentation/components"
+      ],
+      "@components/*": [
+        "./src/presentation/components/*"
       ],
       // @templates solo se usa sin / (tiene index.js)
       "@templates": [
@@ -100,6 +109,9 @@
         "./src/presentation/components/router/*"
       ],
       // Rutas
+      "@routes": [
+        "./src/presentation/routes"
+      ],
       "@routes/*": [
         "./src/presentation/routes/*"
       ],

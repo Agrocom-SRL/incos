@@ -27,7 +27,7 @@ import {
   useFieldDependencies,
   useTextCapitalization,
   useDateParsing,
-} from '../../../hooks';
+} from '../../../modules/estudiantes/hooks';
 
 const FormField = ({ field, form, resolveOptions, formValues, onFieldChange, readOnly = false }) => {
   // Estado para controlar si se muestra el input de upload o el documento existente

@@ -1,3 +1,12 @@
 // src/presentation/templates/index.js
-export { default as MainLayout } from './mainlayout';
-export * from './pages';
+/**
+ * Barrel export para todos los templates
+ * 
+ * Single Responsibility: Exportar todos los templates de forma centralizada
+ * 
+ * Clean Architecture:
+ * - Presentation Layer: Barrel export para acceso consistente a templates
+ */
+
+export { default as MainLayout } from './MainLayout';
+export { default as PageTemplate } from './PageTemplate';

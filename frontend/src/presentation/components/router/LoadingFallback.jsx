@@ -18,43 +18,32 @@ import { Skeleton, Space, Flex } from 'antd';
 
 const LoadingFallback = () => {
     return (
-        <Flex 
-            vertical
-            className="loading-fallback"
-        >
-            <Space orientation="vertical" size="large" className="loading-fallback__content">
+        <Flex vertical>
+            <Space orientation="vertical" size="large">
                 {/* Skeleton para el título - usa className para tamaño específico */}
-                <Skeleton.Input 
-                    active 
-                    size="large" 
-                    className="loading-fallback__title"
+                <Skeleton.Input
+                    active
+                    size="large"
                 />
-                
+
                 {/* Skeleton para contenido principal - usa props del componente */}
-                <Skeleton 
-                    active 
-                    paragraph={{ rows: 4 }} 
+                <Skeleton
+                    active
+                    paragraph={{ rows: 4 }}
                     title={{ width: '60%' }}
                 />
-                
+
                 {/* Skeleton para cards/secciones - usa className para tamaño específico */}
                 <Flex gap="large" wrap="wrap">
-                    <Skeleton.Image 
-                        active 
-                        className="loading-fallback__card"
-                    />
-                    <Skeleton.Image 
-                        active 
-                        className="loading-fallback__card"
-                    />
+                    <Skeleton.Image active />
+                    <Skeleton.Image active />
                 </Flex>
-                
+
                 {/* Skeleton para tabla o lista - usa props del componente */}
-                <Skeleton 
-                    active 
+                <Skeleton
+                    active
                     paragraph={{ rows: 6 }}
                     title={false}
-                    className="loading-fallback__list"
                 />
             </Space>
         </Flex>

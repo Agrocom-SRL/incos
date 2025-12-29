@@ -28,7 +28,7 @@
  * Las rutas son la fuente de verdad, y el mapeo se deriva de ellas.
  */
 
-import { getAllRoutes } from '@routes/modules';
+import { getAllRoutes } from '@routes';
 
 /**
  * Genera el mapeo entre keys del menú y rutas automáticamente
@@ -51,14 +51,6 @@ export const generateMenuKeyToRouteMap = () => {
     });
     
     return map;
-};
-
-/**
- * Obtiene el mapeo completo (generado automáticamente)
- * @returns {Object} - Mapeo completo de keys a rutas
- */
-export const getMenuKeyToRouteMap = () => {
-    return generateMenuKeyToRouteMap();
 };
 
 /**
@@ -93,13 +85,4 @@ export const getMenuKeyFromRoute = (route) => {
     // Si no se encuentra, retornar null
     // El createAppRouter maneja las redirecciones (como '/' -> '/dashboard')
     return null;
-};
-
-/**
- * Obtiene el mapeo completo como objeto para inspección/debugging
- * Útil para verificar que todas las keys del menú tienen rutas correspondientes
- * @returns {Object} - Mapeo completo con formato { menuKey: route }
- */
-export const getFullRouteMap = () => {
-    return generateMenuKeyToRouteMap();
 };

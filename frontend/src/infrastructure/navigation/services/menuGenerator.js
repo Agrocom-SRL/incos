@@ -13,7 +13,7 @@
  * - Depende de: routes/modules (presentation layer)
  */
 
-import { getAllRoutes } from '@routes/modules';
+import { getAllRoutes } from '@routes';
 
 /**
  * Construye la estructura jerárquica del menú desde las rutas

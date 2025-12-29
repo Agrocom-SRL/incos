@@ -26,7 +26,7 @@ import { typography } from './typography';
 import { allSpacing } from './spacing';
 
 export const allThemeTokens = {
-  ...allColors, // Ya incluye accentColors
+  ...allColors,
   ...gradients,
   ...shadows,
   ...typography,

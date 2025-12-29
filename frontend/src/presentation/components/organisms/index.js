@@ -5,3 +5,4 @@ export { default as GenericForm } from './GenericForm';
 export { default as WizardForm } from './WizardForm';
 export { default as Header } from './Header';
 export { default as Sidebar } from './Sidebar';
+export { useSidebarState } from './Sidebar/hooks/useSidebarState';
