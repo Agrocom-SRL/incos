@@ -18,9 +18,11 @@ export class RegisterStudentUseCase {
     studentDocumentDeliveryRepository,
     studentDisabilityRepository,
     studentOriginRepository,
+    studentGuardianRepository,
     documentacionRepository,
     configuracionSistemaRepository,
     managementRepository,
+    generateCompromisoActaUseCase,
     logger,
   }) {
     this.studentRepository = studentRepository;
@@ -29,9 +31,11 @@ export class RegisterStudentUseCase {
     this.studentDocumentDeliveryRepository = studentDocumentDeliveryRepository;
     this.studentDisabilityRepository = studentDisabilityRepository;
     this.studentOriginRepository = studentOriginRepository;
+    this.studentGuardianRepository = studentGuardianRepository;
     this.documentacionRepository = documentacionRepository;
     this.configuracionSistemaRepository = configuracionSistemaRepository;
     this.managementRepository = managementRepository;
+    this.generateCompromisoActaUseCase = generateCompromisoActaUseCase;
     this.logger = logger;
   }
 
@@ -172,20 +176,40 @@ export class RegisterStudentUseCase {
       });
     }
 
-    // 11. Crear datos académicos si se proporcionan
-    if (dto.carreraId || dto.gestionIngresoId) {
-      const academicData = {
+    // 11. Crear contactos de emergencia si se proporcionan
+    if (dto.contactosEmergencia && dto.contactosEmergencia.length > 0) {
+      const contactosData = dto.contactosEmergencia.map(contacto => ({
         studentId: savedStudent.id,
-        careerId: dto.carreraId,
-        managementId: dto.gestionIngresoId,
-        academicState: 'REGULAR',
-      };
-      await this.studentAcademicDataRepository.create(academicData, userId);
+        relationshipTypeId: contacto.tipoParentescoId,
+        firstName: contacto.nombres,
+        lastName: contacto.apellidos,
+        ci: contacto.ci,
+        phone: contacto.telefono,
+        mobilePhone: contacto.celular,
+        email: contacto.email,
+        address: contacto.direccion,
+        occupation: contacto.ocupacion,
+        workplace: contacto.lugarTrabajo,
+        isEmergencyContact: contacto.esContactoEmergencia,
+        isLegalGuardian: contacto.esApoderadoLegal,
+        livesWithStudent: contacto.viveConEstudiante,
+        observations: contacto.observaciones,
+      }));
+
+      // Crear cada contacto usando el repositorio
+      for (const contactoData of contactosData) {
+        await this.studentGuardianRepository.create(contactoData, userId);
+      }
       
-      this.logger.info('[Estudiantes] Datos académicos registrados', {
+      this.logger.info('[Estudiantes] Contactos de emergencia registrados', {
         estudianteId: savedStudent.id,
-        carreraId: dto.carreraId,
-        gestionIngresoId: dto.gestionIngresoId,
+        totalContactos: dto.contactosEmergencia.length,
+        contactos: dto.contactosEmergencia.map(c => ({
+          tipoParentescoId: c.tipoParentescoId,
+          nombres: c.nombres,
+          esContactoEmergencia: c.esContactoEmergencia,
+          esApoderadoLegal: c.esApoderadoLegal,
+        })),
       });
     }
 
@@ -239,13 +263,48 @@ export class RegisterStudentUseCase {
       );
 
       if (documentosFaltantes.length > 0) {
-        const nombresFaltantes = documentosRequeridos
-          .filter(doc => documentosFaltantes.includes(doc.id))
-          .map(doc => doc.name)
-          .join(', ');
-        throw new ValidationError(
-          `Los siguientes documentos son requeridos y no fueron marcados como entregados: ${nombresFaltantes}`
-        );
+        // En lugar de lanzar error, generar acta de compromiso
+        this.logger.info('[Estudiantes] Documentos faltantes detectados, generando acta de compromiso', {
+          estudianteId: savedStudent.id,
+          documentosFaltantes,
+          totalFaltantes: documentosFaltantes.length,
+        });
+
+        // Generar acta de compromiso
+        let actaCompromiso = null;
+        try {
+          const actaResult = await this.generateCompromisoActaUseCase.execute(savedStudent.id, {});
+          
+          // Leer el archivo PDF y convertirlo a base64
+          const fs = await import('fs');
+          const pdfBuffer = fs.readFileSync(actaResult.absolutePath);
+          const pdfBase64 = pdfBuffer.toString('base64');
+          
+          actaCompromiso = {
+            fileName: actaResult.fileName,
+            filePath: actaResult.filePath,
+            pdfBase64: pdfBase64,
+            documentosFaltantes: documentosRequeridos
+              .filter(doc => documentosFaltantes.includes(doc.id))
+              .map(doc => doc.name),
+          };
+          
+          this.logger.info('[Estudiantes] Acta de compromiso generada exitosamente', {
+            estudianteId: savedStudent.id,
+            fileName: actaResult.fileName,
+          });
+        } catch (actaError) {
+          this.logger.error('[Estudiantes] Error al generar acta de compromiso', {
+            error: actaError.message,
+            stack: actaError.stack,
+            estudianteId: savedStudent.id,
+          });
+          // Continuar con el registro aunque falle la generación del acta
+        }
+
+        // Guardar información del acta para retornarla junto con el estudiante
+        // No lanzamos error, solo retornamos el estudiante con el acta
+        savedStudent.actaCompromiso = actaCompromiso;
       }
     } else {
       this.logger.info('[Estudiantes] Guardado parcial detectado - saltando validación de documentos requeridos');

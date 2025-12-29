@@ -37,6 +37,9 @@
       "@application-navigation/*": [
         "./src/application/navigation/*"
       ],
+      "@container": [
+        "./src/application/container/index.js"
+      ],
       "@container/*": [
         "./src/application/container/*"
       ],

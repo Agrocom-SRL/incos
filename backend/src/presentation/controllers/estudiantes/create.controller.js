@@ -54,14 +54,22 @@ export class CreateStudentController {
       const student = await this.registerStudentUseCase.execute(dto, userId);
       const responseDTO = StudentResponseDTO.fromEntity(student);
 
-      res.status(201).json({
+      const response = {
         success: true,
         data: responseDTO,
         message: 'Estudiante creado correctamente',
         meta: {
           timestamp: new Date().toISOString(),
         },
-      });
+      };
+
+      // Si hay acta de compromiso adjunta al estudiante, incluirla en la respuesta
+      if (student.actaCompromiso) {
+        response.actaCompromiso = student.actaCompromiso;
+        response.message = 'Estudiante creado correctamente. Se requiere completar documentación faltante.';
+      }
+
+      res.status(201).json(response);
     } catch (error) {
       logger.error('Error en CreateStudentController', {
         error: error.message,

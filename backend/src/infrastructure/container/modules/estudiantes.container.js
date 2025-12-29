@@ -62,9 +62,11 @@ export function registerEstudiantesModule(container) {
                 studentDocumentDeliveryRepository: c.resolve(TOKENS.studentDocumentDeliveryRepository),
                 studentDisabilityRepository: c.resolve(TOKENS.studentDisabilityRepository),
                 studentOriginRepository: c.resolve(TOKENS.studentOriginRepository),
+                studentGuardianRepository: c.resolve(TOKENS.studentGuardianRepository),
                 documentacionRepository: c.resolve(TOKENS.documentacionRepository),
                 configuracionSistemaRepository: c.resolve(TOKENS.configuracionSistemaRepository),
                 managementRepository: c.resolve(TOKENS.managementRepository),
+                generateCompromisoActaUseCase: c.resolve(TOKENS.est_generateActaUseCase),
                 logger: c.resolve(TOKENS.logger),
             }),
         { singleton: true }

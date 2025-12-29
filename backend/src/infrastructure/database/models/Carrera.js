@@ -53,6 +53,24 @@ export const Carrera = sequelize.define(
       allowNull: true,
       comment: 'Color para UI',
     },
+    imagenNombre: {
+      type: DataTypes.STRING(255),
+      field: 'imagen_nombre',
+      allowNull: true,
+      comment: 'Nombre del archivo de imagen',
+    },
+    imagenRuta: {
+      type: DataTypes.STRING(500),
+      field: 'imagen_ruta',
+      allowNull: true,
+      comment: 'Ruta del archivo de imagen en el servidor',
+    },
+    imagenUrl: {
+      type: DataTypes.STRING(500),
+      field: 'imagen_url',
+      allowNull: true,
+      comment: 'URL completa de la imagen (puede ser externa o del servidor)',
+    },
   },
   {
     ...baseModelOptions,

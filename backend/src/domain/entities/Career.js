@@ -16,6 +16,9 @@ export class Career extends BaseEntity {
     this.effectiveDate = data.effectiveDate || null;
     this.totalHours = data.totalHours || null;
     this.colorHex = data.colorHex || null;
+    this.imageName = data.imageName || null;
+    this.imagePath = data.imagePath || null;
+    this.imageUrl = data.imageUrl || null;
   }
 
   /**
@@ -51,6 +54,9 @@ export class Career extends BaseEntity {
       effectiveDate: this.effectiveDate,
       totalHours: this.totalHours,
       colorHex: this.colorHex,
+      imageName: this.imageName,
+      imagePath: this.imagePath,
+      imageUrl: this.imageUrl,
     };
   }
 }

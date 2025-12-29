@@ -10,14 +10,11 @@
  * Solo carreras viene del backend, el resto es estático.
  */
 
-import plant01 from '@assets/plant01.png';
-import plant02 from '@assets/plant02.png';
-import plant03 from '@assets/plant03.png';
-
 /**
  * Datos estáticos de docentes destacados
+ * (Constante privada, solo se expone a través de STATIC_DASHBOARD_DATA)
  */
-export const STATIC_DOCENTES_DESTACADOS = [
+const STATIC_DOCENTES_DESTACADOS = [
   { 
     id: 1,
     name: 'Docente 1', 
@@ -35,8 +32,9 @@ export const STATIC_DOCENTES_DESTACADOS = [
 
 /**
  * Datos estáticos de docentes principales
+ * (Constante privada, solo se expone a través de STATIC_DASHBOARD_DATA)
  */
-export const STATIC_DOCENTES_PRINCIPALES = [
+const STATIC_DOCENTES_PRINCIPALES = [
   { 
     id: 1,
     name: 'Docente A', 
@@ -52,8 +50,9 @@ export const STATIC_DOCENTES_PRINCIPALES = [
 
 /**
  * Datos estáticos de actividades recientes
+ * (Constante privada, solo se expone a través de STATIC_DASHBOARD_DATA)
  */
-export const STATIC_ACTIVIDADES = [
+const STATIC_ACTIVIDADES = [
   { 
     id: 1,
     name: 'María González', 
@@ -112,11 +111,24 @@ export const STATIC_ACTIVIDADES = [
 
 /**
  * Datos estáticos de estadísticas
+ * (Constante privada, solo se expone a través de STATIC_DASHBOARD_DATA)
  */
-export const STATIC_STATS = {
+const STATIC_STATS = {
   todayOrders: 5,
   monthOrders: 240,
   estudiantesHoy: 5,
   estudiantesMes: 240,
 };
 
+/**
+ * Objeto con todos los datos estáticos del dashboard
+ * 
+ * Único punto de exportación para los datos estáticos del dashboard.
+ * Las constantes individuales son privadas y solo se exponen a través de este objeto.
+ */
+export const STATIC_DASHBOARD_DATA = {
+  docentesDestacados: STATIC_DOCENTES_DESTACADOS,
+  docentesPrincipales: STATIC_DOCENTES_PRINCIPALES,
+  actividades: STATIC_ACTIVIDADES,
+  stats: STATIC_STATS,
+};

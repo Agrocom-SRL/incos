@@ -166,6 +166,29 @@ export const useUpdateStudent = () => {
       delete datosEstudiante.segundaNacionalidadMunicipioId;
       delete datosEstudiante.segundaNacionalidadLocalidad;
 
+      // Procesar contactos de emergencia
+      // El campo contactosEmergencia viene como array de objetos del Form.List
+      // Se mantiene en datosEstudiante para que el backend lo procese
+      if (datosEstudiante.contactosEmergencia && Array.isArray(datosEstudiante.contactosEmergencia)) {
+        // Normalizar los contactos: asegurar que los valores booleanos sean correctos
+        datosEstudiante.contactosEmergencia = datosEstudiante.contactosEmergencia.map(contacto => ({
+          tipoParentescoId: contacto.tipoParentescoId,
+          nombres: contacto.nombres,
+          apellidos: contacto.apellidos || null,
+          ci: contacto.ci || null,
+          telefono: contacto.telefono || null,
+          celular: contacto.celular || null,
+          email: contacto.email || null,
+          direccion: contacto.direccion || null,
+          ocupacion: contacto.ocupacion || null,
+          lugarTrabajo: contacto.lugarTrabajo || null,
+          esContactoEmergencia: contacto.esContactoEmergencia !== undefined ? Boolean(contacto.esContactoEmergencia) : true,
+          esApoderadoLegal: contacto.esApoderadoLegal !== undefined ? Boolean(contacto.esApoderadoLegal) : false,
+          viveConEstudiante: contacto.viveConEstudiante !== undefined ? Boolean(contacto.viveConEstudiante) : false,
+          observaciones: contacto.observaciones || null,
+        }));
+      }
+
       // Extraer archivos y documentos entregados
       Object.keys(studentData).forEach((key) => {
         if (key.startsWith('documento') && key.endsWith('_archivo')) {
@@ -268,6 +291,34 @@ export const useUpdateStudent = () => {
         if (response.data?.success) {
           const nuevoEstudianteId = response.data.data.id;
 
+          // Si hay acta de compromiso en la respuesta, descargarla automáticamente
+          if (response.data.actaCompromiso?.pdfBase64) {
+            try {
+              // Convertir base64 a blob
+              const byteCharacters = atob(response.data.actaCompromiso.pdfBase64);
+              const byteNumbers = new Array(byteCharacters.length);
+              for (let i = 0; i < byteCharacters.length; i++) {
+                byteNumbers[i] = byteCharacters.charCodeAt(i);
+              }
+              const byteArray = new Uint8Array(byteNumbers);
+              const blob = new Blob([byteArray], { type: 'application/pdf' });
+              
+              // Crear URL temporal y descargar
+              const url = window.URL.createObjectURL(blob);
+              const link = document.createElement('a');
+              link.href = url;
+              link.download = response.data.actaCompromiso.fileName || 'ACTA_COMPROMISO.pdf';
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+              window.URL.revokeObjectURL(url);
+              
+              console.log('[useUpdateStudent] Acta de compromiso descargada automáticamente');
+            } catch (pdfError) {
+              console.error('[useUpdateStudent] Error al descargar acta de compromiso:', pdfError);
+            }
+          }
+
           // Subir archivos digitales después de crear el estudiante de forma SECUENCIAL
           // IMPORTANTE: Los documentos ya fueron marcados como entregados en el backend (estudiantes_documentos_entrega)
           // Ahora subimos los archivos digitales (documentos_estudiante)
@@ -319,6 +370,7 @@ export const useUpdateStudent = () => {
             data: { ...response.data.data, id: nuevoEstudianteId },
             message: response.data.message,
             studentId: nuevoEstudianteId,
+            actaCompromiso: response.data.actaCompromiso || null,
           };
         }
 
@@ -392,6 +444,34 @@ export const useUpdateStudent = () => {
       try {
         const response = await apiClient.put(`/v1/estudiantes/${studentIdFinal}`, datosEstudiante);
         
+        // Si hay acta de compromiso en la respuesta, descargarla automáticamente
+        if (response.data?.actaCompromiso?.pdfBase64) {
+          try {
+            // Convertir base64 a blob
+            const byteCharacters = atob(response.data.actaCompromiso.pdfBase64);
+            const byteNumbers = new Array(byteCharacters.length);
+            for (let i = 0; i < byteCharacters.length; i++) {
+              byteNumbers[i] = byteCharacters.charCodeAt(i);
+            }
+            const byteArray = new Uint8Array(byteNumbers);
+            const blob = new Blob([byteArray], { type: 'application/pdf' });
+            
+            // Crear URL temporal y descargar
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = response.data.actaCompromiso.fileName || 'ACTA_COMPROMISO.pdf';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+            
+            console.log('[useUpdateStudent] Acta de compromiso descargada automáticamente (PUT)');
+          } catch (pdfError) {
+            console.error('[useUpdateStudent] Error al descargar acta de compromiso:', pdfError);
+          }
+        }
+        
         console.log(`[useUpdateStudent] Respuesta del backend:`, {
           success: response.data?.success,
           message: response.data?.message,
@@ -451,6 +531,7 @@ export const useUpdateStudent = () => {
             data: response.data.data,
             message: response.data.message || 'Estudiante actualizado correctamente',
             studentId: studentIdFinal,
+            actaCompromiso: response.data.actaCompromiso || null,
           };
         }
 

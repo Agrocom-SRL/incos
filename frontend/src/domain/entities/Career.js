@@ -4,17 +4,27 @@
  * Contiene la lógica de negocio pura de la carrera
  * 
  * Single Responsibility: Solo maneja la lógica de negocio de la carrera
+ * Clean Architecture:
+ * - Domain Layer: Extiende BaseEntity para reutilizar métodos comunes
  */
 
-export class Career {
+import { BaseEntity } from './BaseEntity.js';
+
+export class Career extends BaseEntity {
   constructor(data = {}) {
+    super(data); // Llamar al constructor de BaseEntity
+    
     // Datos básicos
-    this.id = data.id || null;
+    // this.id ya viene de BaseEntity
     this.codigo = data.codigo || data.code || null;
     this.nombre = data.nombre || data.name || null;
     this.label = data.label || this.nombre || null; // Para UI
     this.descripcion = data.descripcion || data.description || null;
-    this.activa = data.activa !== undefined ? data.activa : true;
+    // this.active ya viene de BaseEntity, pero también podemos usar activa para compatibilidad
+    if (data.activa !== undefined) {
+      this.active = data.activa;
+      this.activa = data.activa;
+    }
     
     // Datos académicos
     this.duracionAnios = data.duracionAnios || data.durationYears || data.duracion_anios || null;
@@ -25,7 +35,12 @@ export class Career {
     
     // UI
     this.colorHex = data.colorHex || data.color_hex || null;
-    this.image = data.image || data.imagen || null;
+    this.image = data.image || data.imagen || null; // Campo genérico para compatibilidad
+    
+    // Campos de imagen (estructura completa)
+    this.imagenNombre = data.imagenNombre || data.imagen_nombre || data.imageName || null;
+    this.imagenRuta = data.imagenRuta || data.imagen_ruta || data.imagePath || null;
+    this.imagenUrl = data.imagenUrl || data.imagen_url || data.imageUrl || null;
     
     // Foreign keys
     this.gestionId = data.gestionId || null;
@@ -97,21 +112,28 @@ export class Career {
 
   /**
    * Convierte la entidad a objeto plano para enviar al backend
+   * Extiende el método base agregando campos específicos de Career
+   * @param {boolean} includeNulls - Si incluir campos null/undefined
    * @returns {Object}
    */
-  toPlainObject() {
+  toPlainObject(includeNulls = true) {
+    const base = super.toPlainObject(includeNulls);
+    
     return {
-      id: this.id,
+      ...base,
       codigo: this.codigo,
       nombre: this.nombre,
       descripcion: this.descripcion,
-      activa: this.activa,
+      activa: this.active || this.activa,
       duracionAnios: this.duracionAnios,
       tituloOtorgado: this.tituloOtorgado,
       resolucionMinisterial: this.resolucionMinisterial,
       fechaVigencia: this.fechaVigencia,
       cargaHorariaTotal: this.cargaHorariaTotal,
       colorHex: this.colorHex,
+      imagenNombre: this.imagenNombre,
+      imagenRuta: this.imagenRuta,
+      imagenUrl: this.imagenUrl,
       gestionId: this.gestionId,
       turnoId: this.turnoId,
     };
@@ -129,7 +151,10 @@ export class Career {
       label: this.label || this.nombre,
       descripcion: this.descripcion,
       activa: this.activa,
-      image: this.image,
+      image: this.image || this.imagenUrl || this.imagenRuta, // Compatibilidad: usa imagenUrl o imagenRuta si image no existe
+      imagenNombre: this.imagenNombre,
+      imagenRuta: this.imagenRuta,
+      imagenUrl: this.imagenUrl,
       colorHex: this.colorHex,
       duracionAnios: this.duracionAnios,
       tituloOtorgado: this.tituloOtorgado,

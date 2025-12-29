@@ -191,9 +191,32 @@ export class RegisterStudentDTO {
     // Observaciones
     this.observaciones = data.observaciones;
 
-    // Datos académicos (para estudiantes_datos_academicos)
-    this.carreraId = data.carreraId;
-    this.gestionIngresoId = data.gestionIngresoId;
+    // Contactos de emergencia (para estudiantes_apoderados)
+    // Formato: contactosEmergencia = [{ tipoParentescoId, nombres, apellidos, ci, telefono, celular, email, direccion, ocupacion, lugarTrabajo, esContactoEmergencia, esApoderadoLegal, viveConEstudiante, observaciones }]
+    this.contactosEmergencia = [];
+    if (data.contactosEmergencia && Array.isArray(data.contactosEmergencia)) {
+      this.contactosEmergencia = data.contactosEmergencia
+        .filter(c => c && c.tipoParentescoId && c.nombres) // Validar que tenga tipoParentescoId y nombres
+        .map(c => ({
+          tipoParentescoId: typeof c.tipoParentescoId === 'string' 
+            ? parseInt(c.tipoParentescoId, 10) 
+            : c.tipoParentescoId,
+          nombres: c.nombres,
+          apellidos: c.apellidos || null,
+          ci: c.ci || null,
+          telefono: c.telefono || null,
+          celular: c.celular || null,
+          email: c.email || null,
+          direccion: c.direccion || null,
+          ocupacion: c.ocupacion || null,
+          lugarTrabajo: c.lugarTrabajo || null,
+          esContactoEmergencia: c.esContactoEmergencia !== undefined ? Boolean(c.esContactoEmergencia) : true,
+          esApoderadoLegal: c.esApoderadoLegal !== undefined ? Boolean(c.esApoderadoLegal) : false,
+          viveConEstudiante: c.viveConEstudiante !== undefined ? Boolean(c.viveConEstudiante) : false,
+          observaciones: c.observaciones || null,
+        }))
+        .filter(c => !isNaN(c.tipoParentescoId) && c.tipoParentescoId > 0);
+    }
 
     // Flag para indicar si es un guardado parcial (no validar documentos requeridos)
     // Útil cuando el usuario guarda progreso sin completar todos los pasos

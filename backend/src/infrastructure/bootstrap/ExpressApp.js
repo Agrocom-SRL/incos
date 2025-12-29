@@ -28,11 +28,11 @@ export class ExpressApp {
         // 1. Middleware global (seguridad, parsing, logging)
         setupMiddleware(this.app);
 
-        // 2. Rutas de la aplicación
-        setupRoutes(this.app);
-
-        // 3. Archivos estáticos
+        // 2. Archivos estáticos (ANTES de las rutas para que tengan prioridad)
         setupStaticFiles(this.app);
+
+        // 3. Rutas de la aplicación
+        setupRoutes(this.app);
 
         logger.info('Express configurado correctamente');
     }

@@ -40,6 +40,9 @@ export class CareerRepository extends BaseRepository {
       effectiveDate: model.fechaVigencia,
       totalHours: model.cargaHorariaTotal,
       colorHex: model.colorHex,
+      imageName: model.imagenNombre,
+      imagePath: model.imagenRuta,
+      imageUrl: model.imagenUrl,
       activo: model.activo,
       createdAt: model.createdAt,
       updatedAt: model.updatedAt,
@@ -79,6 +82,9 @@ export class CareerRepository extends BaseRepository {
       fechaVigencia: data.effectiveDate || null,
       cargaHorariaTotal: data.totalHours || null,
       colorHex: data.colorHex || null,
+      imagenNombre: data.imageName || null,
+      imagenRuta: data.imagePath || null,
+      imagenUrl: data.imageUrl || null,
     };
   }
 
@@ -117,6 +123,15 @@ export class CareerRepository extends BaseRepository {
     }
     if (data.colorHex !== undefined) {
       updateData.colorHex = data.colorHex || null;
+    }
+    if (data.imageName !== undefined) {
+      updateData.imagenNombre = data.imageName || null;
+    }
+    if (data.imagePath !== undefined) {
+      updateData.imagenRuta = data.imagePath || null;
+    }
+    if (data.imageUrl !== undefined) {
+      updateData.imagenUrl = data.imageUrl || null;
     }
     if (data.activo !== undefined) {
       updateData.activo = data.activo;

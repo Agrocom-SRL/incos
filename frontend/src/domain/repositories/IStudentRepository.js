@@ -4,29 +4,17 @@
  * 
  * Interface Segregation Principle: Interfaz específica para estudiantes
  * Dependency Inversion Principle: Dependemos de abstracción, no de implementación
+ * 
+ * Clean Architecture:
+ * - Domain Layer: Extiende IBaseRepository con métodos específicos de estudiantes
  */
 
-export class IStudentRepository {
-  /**
-   * Crea un nuevo estudiante
-   * @param {Object} studentData - Datos del estudiante
-   * @returns {Promise<{success: boolean, data?: Object, error?: string, validationErrors?: Object}>}
-   */
-  async create(studentData) {
-    throw new Error('Method create() must be implemented');
-  }
+import { IBaseRepository } from './IBaseRepository.js';
 
-  /**
-   * Obtiene un estudiante por ID
-   * @param {string|number} id - ID del estudiante
-   * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
-   */
-  async getById(id) {
-    throw new Error('Method getById() must be implemented');
-  }
-
+export class IStudentRepository extends IBaseRepository {
   /**
    * Lista estudiantes con filtros y paginación
+   * Método específico de estudiantes (puede tener lógica diferente a getAll)
    * @param {Object} params - Parámetros de búsqueda y paginación
    * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
    */
@@ -35,22 +23,13 @@ export class IStudentRepository {
   }
 
   /**
-   * Actualiza un estudiante
-   * @param {string|number} id - ID del estudiante
-   * @param {Object} studentData - Datos a actualizar
-   * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
+   * Crea un nuevo estudiante
+   * Sobrescribe el método base para permitir validationErrors
+   * @param {Object} studentData - Datos del estudiante
+   * @returns {Promise<{success: boolean, data?: Object, error?: string, validationErrors?: Object}>}
    */
-  async update(id, studentData) {
-    throw new Error('Method update() must be implemented');
-  }
-
-  /**
-   * Elimina un estudiante (soft delete)
-   * @param {string|number} id - ID del estudiante
-   * @returns {Promise<{success: boolean, error?: string}>}
-   */
-  async delete(id) {
-    throw new Error('Method delete() must be implemented');
+  async create(studentData) {
+    throw new Error('Method create() must be implemented');
   }
 }
 

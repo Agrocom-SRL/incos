@@ -19,6 +19,7 @@ import '../../infrastructure/database/models/Carrera.js';
 import '../../infrastructure/database/models/Gestion.js';
 import '../../infrastructure/database/models/Departamento.js';
 import '../../infrastructure/database/models/Provincia.js';
+import '../../infrastructure/database/models/TipoParentesco.js';
 
 // Importar repositorios directamente
 import { CareerRepository } from '../../infrastructure/repositories/CareerRepository.js';
@@ -31,6 +32,7 @@ import { LanguageRepository } from '../../infrastructure/repositories/LanguageRe
 import { DisabilityTypeRepository } from '../../infrastructure/repositories/DisabilityTypeRepository.js';
 import { CivilStatusRepository } from '../../infrastructure/repositories/CivilStatusRepository.js';
 import { DocumentacionRepository } from '../../infrastructure/repositories/DocumentacionRepository.js';
+import { RelationshipTypeRepository } from '../../infrastructure/repositories/RelationshipTypeRepository.js';
 
 // Crear instancias de repositorios
 const careerRepository = new CareerRepository();
@@ -43,6 +45,7 @@ const languageRepository = new LanguageRepository();
 const disabilityTypeRepository = new DisabilityTypeRepository();
 const civilStatusRepository = new CivilStatusRepository();
 const documentacionRepository = new DocumentacionRepository();
+const relationshipTypeRepository = new RelationshipTypeRepository();
 
 /**
  * GET /api/v1/catalogs/carreras
@@ -73,6 +76,9 @@ export const getCarreras = async (req, res, next) => {
       id: career.id,
       codigo: career.code,
       nombre: career.name,
+      imagenNombre: career.imageName,
+      imagenRuta: career.imagePath,
+      imagenUrl: career.imageUrl,
     }));
 
     res.status(200).json({
@@ -519,6 +525,57 @@ export const getEstadosCiviles = async (req, res, next) => {
     });
   } catch (error) {
     logger.error('Error al obtener estados civiles', { 
+      error: error.message, 
+      stack: error.stack,
+      name: error.name,
+      code: error.code,
+      original: error.original?.message,
+      sql: error.sql,
+      sqlState: error.original?.sqlState,
+      sqlCode: error.original?.code,
+    });
+    next(error);
+  }
+};
+
+/**
+ * GET /api/v1/catalogs/tipos-parentesco
+ * Obtener lista de tipos de parentesco activos
+ */
+export const getTiposParentesco = async (req, res, next) => {
+  try {
+    logger.debug('[Catalogs] Obteniendo tipos de parentesco...');
+    const result = await relationshipTypeRepository.findAll({}, null, null);
+    logger.debug('[Catalogs] Resultado de findAll:', { 
+      hasResult: !!result, 
+      hasRelationshipTypes: !!(result?.relationshipTypes),
+      relationshipTypesCount: result?.relationshipTypes?.length || 0,
+      resultKeys: result ? Object.keys(result) : [],
+      resultType: typeof result,
+    });
+    
+    if (!result) {
+      logger.warn('[Catalogs] Resultado de findAll es null o undefined');
+      return res.status(200).json({
+        success: true,
+        data: [],
+        message: 'Tipos de parentesco obtenidos correctamente (vacío)',
+      });
+    }
+    
+    const tipos = (result.relationshipTypes || []).map(tipo => ({
+      id: tipo.id,
+      nombre: tipo.name,
+      descripcion: tipo.description || null,
+    }));
+
+    res.status(200).json({
+      success: true,
+      data: tipos,
+      message: 'Tipos de parentesco obtenidos correctamente',
+    });
+  } catch (error) {
+    logger.error('Error al obtener tipos de parentesco', { 
       error: error.message, 
       stack: error.stack,
       name: error.name,

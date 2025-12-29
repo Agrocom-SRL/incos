@@ -43,6 +43,11 @@ CREATE TABLE carreras (
     carga_horaria_total INT COMMENT 'Carga horaria total de la carrera',
     color_hex VARCHAR(7) COMMENT 'Color para UI',
     
+    -- Imagen de la carrera (para dashboard/tarjetas)
+    imagen_nombre VARCHAR(255) COMMENT 'Nombre del archivo de imagen',
+    imagen_ruta VARCHAR(500) COMMENT 'Ruta del archivo de imagen en el servidor',
+    imagen_url VARCHAR(500) COMMENT 'URL completa de la imagen (puede ser externa o del servidor)',
+    
     -- Campos de auditoría y control (ESTÁNDAR)
     activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',

@@ -9,6 +9,7 @@ import {
   getIdiomas,
   getTiposDiscapacidad,
   getEstadosCiviles,
+  getTiposParentesco,
   getDocumentacionInscripcion,
 } from '../controllers/catalogs.controller.js';
 
@@ -70,6 +71,12 @@ router.get('/tipos-discapacidad', getTiposDiscapacidad);
  * Obtener lista de estados civiles activos
  */
 router.get('/estados-civiles', getEstadosCiviles);
+
+/**
+ * GET /api/v1/catalogs/tipos-parentesco
+ * Obtener lista de tipos de parentesco activos
+ */
+router.get('/tipos-parentesco', getTiposParentesco);
 
 /**
  * GET /api/v1/catalogs/documentacion-inscripcion
