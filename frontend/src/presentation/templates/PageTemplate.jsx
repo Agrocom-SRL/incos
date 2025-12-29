@@ -18,15 +18,14 @@ import { MainContent, InfoSidebar } from '@organisms';
  * 
  * @param {ReactNode} children - Contenido principal (se renderiza en MainContent)
  * @param {ReactNode} sidebar - Contenido del sidebar (se renderiza en InfoSidebar)
- * @param {string} className - Clases CSS adicionales
  */
-const PageTemplate = ({ children, sidebar, className = '' }) => {
+const PageTemplate = ({ children, sidebar }) => {
     return (
-        <Flex 
-            gap="large" 
+        <Flex
+            gap="large"
             align="flex-start"
             style={{ width: '100%', height: '100%' }}
-            className={`page-container ${className}`}
+            className="page-container"
         >
             {/* Contenido Principal - 70% en lg+, expandible en menores */}
             {children && (
