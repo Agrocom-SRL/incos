@@ -25,7 +25,9 @@ export default defineConfig({
             '@application': path.resolve(__dirname, './src/application'),
             '@container': path.resolve(__dirname, './src/application/container'),
             '@application-estudiantes': path.resolve(__dirname, './src/application/modules/estudiantes'),
+            '@application-estudiantes/*': path.resolve(__dirname, './src/application/modules/estudiantes/*'),
             '@application-dashboard': path.resolve(__dirname, './src/application/modules/dashboard'),
+            '@application-dashboard/*': path.resolve(__dirname, './src/application/modules/dashboard/*'),
             '@application-navigation': path.resolve(__dirname, './src/application/navigation'),
 
             // Infrastructure Layer
@@ -47,6 +49,8 @@ export default defineConfig({
 
             // Módulos específicos
             '@estudiantes': path.resolve(__dirname, './src/presentation/modules/estudiantes'),
+            '@estudiantes-old': path.resolve(__dirname, './src/presentation/modules/estudiantes-old'),
+            '@estudiantes-old/*': path.resolve(__dirname, './src/presentation/modules/estudiantes-old/*'),
             '@dashboard': path.resolve(__dirname, './src/presentation/modules/dashboard'),
 
             // Configuración

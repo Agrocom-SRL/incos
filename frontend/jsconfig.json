@@ -28,8 +28,14 @@
             "@application-estudiantes": [
                 "./src/application/modules/estudiantes"
             ],
+            "@application-estudiantes/*": [
+                "./src/application/modules/estudiantes/*"
+            ],
             "@application-dashboard": [
                 "./src/application/modules/dashboard"
+            ],
+            "@application-dashboard/*": [
+                "./src/application/modules/dashboard/*"
             ],
             "@application-navigation": [
                 "./src/application/navigation"
@@ -103,6 +109,9 @@
             ],
             "@estudiantes/*": [
                 "./src/presentation/modules/estudiantes/*"
+            ],
+            "@estudiantes-old/*": [
+                "./src/presentation/modules/estudiantes-old/*"
             ],
             "@dashboard/*": [
                 "./src/presentation/modules/dashboard/*"

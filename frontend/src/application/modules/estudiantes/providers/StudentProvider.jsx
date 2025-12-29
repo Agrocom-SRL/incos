@@ -1,39 +1,37 @@
 /**
  * Provider: StudentProvider
  * 
- * Single Responsibility: Solo maneja el estado compartido del módulo de estudiantes
- * Open/Closed: Abierto para extensión, cerrado para modificación
+ * Single Responsibility: Componer hooks y proporcionar estado compartido del módulo
+ * Open/Closed: Abierto para extensión agregando hooks, cerrado para modificación
  * 
- * Por ahora solo maneja el listado de estudiantes.
- * Cuando se implementen otras funcionalidades (registro, actualización), se pueden agregar hooks aquí.
+ * Estrategia de Diseño:
+ * - Este Provider NO contiene lógica, solo COMPONE hooks
+ * - Cada hook maneja su propia feature (useStudentsList, useStudentBecas, etc.)
+ * - Agregar nuevos hooks cuando se implementen nuevas features
+ * 
+ * Features actuales:
+ * - Listado de estudiantes (useStudentsList)
+ * - Estado de registro (useStudentRegistrationStatus)
+ * 
+ * Features futuras (agregar cuando se implementen):
+ * - Becas: useStudentBecas
+ * - Licencias: useStudentLicencias
+ * - Documentos: useStudentDocumentos
  */
 
-import { useStudentsList } from '../hooks';
-import { StudentContext } from '../context/StudentContext';
+import { useStudentsList, useStudentRegistrationStatus } from '@application-estudiantes/hooks';
+import { StudentContext } from '@application-estudiantes/context/StudentContext';
 
 export const StudentProvider = ({ children }) => {
-  // Hook para obtener lista de estudiantes (GET)
-  const {
-    estudiantes: estudiantesList,
-    loading: loadingList,
-    error: listError,
-    refetch: refetchList,
-  } = useStudentsList();
+  // Hook para obtener lista de estudiantes
+  const listData = useStudentsList();
 
+  // Hook para verificar estado de registro (depende de la lista)
+  //const registrationStatus = useStudentRegistrationStatus(listData.estudiantes || []);
+
+  // Componer el valor del contexto: spread de todos los hooks
   const value = {
-    // Datos de listado
-    estudiantesList,
-    
-    // Acciones
-    refetchList,
-    
-    // Estados de carga
-    loading: loadingList,
-    loadingList,
-    
-    // Errores
-    error: listError,
-    listError,
+    ...listData,
   };
 
   return (

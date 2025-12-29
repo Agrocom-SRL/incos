@@ -27,7 +27,6 @@ export const estudiantesRoutes = [
             order: 2, // Módulo más usado, después de Dashboard
         },
     },
-    // Alias para /estudiantes/listar (compatibilidad con navegación existente)
     {
         path: '/estudiantes/listar',
         element: <EstudiantesListConnector />,

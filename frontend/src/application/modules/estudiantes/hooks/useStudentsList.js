@@ -60,9 +60,13 @@ export const useStudentsList = () => {
 
   return {
     estudiantes,
+    estudiantesList: estudiantes, // Alias para compatibilidad
     loading,
+    loadingList: loading, // Alias para compatibilidad
     error,
+    listError: error, // Alias para compatibilidad
     refetch,
+    refetchList: refetch, // Alias para compatibilidad
   };
 };
 

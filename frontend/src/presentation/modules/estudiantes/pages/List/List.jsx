@@ -10,13 +10,13 @@
  * - Solo maneja lógica de presentación (filtrado local, formateo)
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { Table, Typography, Input, Space, Tag, App, Card, Button, Spin, Flex } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Table, Typography, Input, Space, Tag, App, Card, Button, Spin } from 'antd';
 import { SearchOutlined, UserOutlined, PhoneOutlined, MailOutlined, EditOutlined, CheckCircleOutlined, EyeOutlined } from '@ant-design/icons';
 import { useLocation, useNavigate } from 'react-router-dom';
-import apiClient from '@api-client';
 import dayjs from 'dayjs';
-import { useStudentContext } from '@application-estudiantes';
+import { useStudentContext } from '@application-estudiantes/hooks';
+import { PageTemplate } from '@templates';
 
 const { Title } = Typography;
 const { Search } = Input;
@@ -26,87 +26,17 @@ const EstudiantesList = () => {
     const location = useLocation();
     const navigate = useNavigate();
     
-    // Obtener datos del contexto
+    // Obtener datos del contexto (toda la lógica está en el Provider)
     const {
         estudiantesList = [],
+        registrosIncompletos = {},
         loadingList: loading,
         listError: error,
         refetchList,
     } = useStudentContext();
     
-    // Estado local solo para UI
+    // Estado local solo para UI (búsqueda)
     const [searchText, setSearchText] = useState('');
-    const [registrosIncompletos, setRegistrosIncompletos] = useState({}); // { studentId: { tieneDocumentos, tieneDatosAcademicos } }
-
-    // Función para verificar si un estudiante tiene registro incompleto
-    const verificarRegistroIncompleto = useCallback(async (estudianteId) => {
-        try {
-            // Verificar documentos del estudiante
-            let tieneDocumentos = false;
-            try {
-                const documentosResponse = await apiClient.get(`/v1/estudiantes/${estudianteId}/documentos`);
-                tieneDocumentos = (documentosResponse.data?.data?.length > 0) ||
-                    (documentosResponse.data?.length > 0);
-            } catch (err) {
-                // Si el endpoint retorna 404 o error, asumimos que no hay documentos
-                if (err.response?.status === 404) {
-                    tieneDocumentos = false;
-                } else {
-                    console.warn(`Error al verificar documentos del estudiante ${estudianteId}:`, err);
-                    tieneDocumentos = false;
-                }
-            }
-
-            // Verificar datos académicos del estudiante
-            // Nota: Necesitamos un endpoint para obtener datos académicos, por ahora asumimos que no hay
-            // TODO: Crear endpoint GET /v1/estudiantes/:id/datos-academicos
-            let tieneDatosAcademicos = false;
-            try {
-                const academicosResponse = await apiClient.get(`/v1/estudiantes/${estudianteId}/datos-academicos`);
-                tieneDatosAcademicos = !!academicosResponse.data?.data;
-            } catch (err) {
-                // Si el endpoint no existe (404) o hay error, asumimos que no hay datos académicos
-                if (err.response?.status === 404) {
-                    tieneDatosAcademicos = false;
-                } else {
-                    console.warn(`Error al verificar datos académicos del estudiante ${estudianteId}:`, err);
-                    tieneDatosAcademicos = false;
-                }
-            }
-
-            return {
-                tieneDocumentos,
-                tieneDatosAcademicos,
-                incompleto: !tieneDocumentos || !tieneDatosAcademicos
-            };
-        } catch (err) {
-            console.error(`Error al verificar registro del estudiante ${estudianteId}:`, err);
-            // Si hay error, asumimos que está incompleto para mostrar el botón
-            return {
-                tieneDocumentos: false,
-                tieneDatosAcademicos: false,
-                incompleto: true
-            };
-        }
-    }, []);
-
-    // Verificar registros incompletos después de cargar estudiantes
-    useEffect(() => {
-        const verificarTodos = async () => {
-            const incompletos = {};
-            for (const estudiante of estudiantesList) {
-                if (estudiante.id) {
-                    const estado = await verificarRegistroIncompleto(estudiante.id);
-                    incompletos[estudiante.id] = estado;
-                }
-            }
-            setRegistrosIncompletos(incompletos);
-        };
-
-        if (estudiantesList.length > 0) {
-            verificarTodos();
-        }
-    }, [estudiantesList, verificarRegistroIncompleto]);
 
     // Recargar cuando la página recupera el foco (cuando el usuario vuelve a la pestaña)
     useEffect(() => {
@@ -189,9 +119,9 @@ const EstudiantesList = () => {
     // Mostrar loading mientras se cargan los datos
     if (loading && estudiantesList.length === 0) {
         return (
-            <Flex justify="center" align="center" style={{ minHeight: '400px' }}>
-                <Spin size="large" />
-            </Flex>
+            <PageTemplate>
+                <Spin size="large" style={{ display: 'block', textAlign: 'center', padding: '50px' }} />
+            </PageTemplate>
         );
     }
 
@@ -391,10 +321,7 @@ const EstudiantesList = () => {
     ];
 
     return (
-        <div style={{
-            maxWidth: '100%',
-            width: '100%'
-        }}>
+        <PageTemplate>
             <Card>
                 <Space orientation="vertical" size="middle" style={{ width: '100%' }}>
                     <div style={{
@@ -452,7 +379,7 @@ const EstudiantesList = () => {
                     />
                 </Space>
             </Card>
-        </div>
+        </PageTemplate>
     );
 };
 

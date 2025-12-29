@@ -10,8 +10,8 @@
  * - Arquitectura modular: cada módulo gestiona sus propios conectores
  */
 
-import { StudentProvider } from '@application-estudiantes';
-import EstudiantesList from '@estudiantes/pages/List/List';
+import { StudentProvider } from '@application-estudiantes/providers';
+import EstudiantesList from '@estudiantes/pages/List';
 
 const ListConnector = () => {
   return (
