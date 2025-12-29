@@ -1,10 +1,22 @@
-// src/presentation/pages/Estudiantes/List/List.jsx
+// src/presentation/modules/estudiantes/pages/List/List.jsx
+/**
+ * EstudiantesList - Página para listar estudiantes
+ * 
+ * Single Responsibility: Solo renderizar la UI de la lista de estudiantes
+ * 
+ * Esta es una página pura de React y Ant Design que:
+ * - No contiene lógica de negocio
+ * - Obtiene datos del StudentProvider mediante useStudentContext
+ * - Solo maneja lógica de presentación (filtrado local, formateo)
+ */
+
 import React, { useState, useEffect, useCallback } from 'react';
-import { Table, Typography, Input, Space, Tag, App, Card, Button } from 'antd';
+import { Table, Typography, Input, Space, Tag, App, Card, Button, Spin, Flex } from 'antd';
 import { SearchOutlined, UserOutlined, PhoneOutlined, MailOutlined, EditOutlined, CheckCircleOutlined, EyeOutlined } from '@ant-design/icons';
 import { useLocation, useNavigate } from 'react-router-dom';
 import apiClient from '@api-client';
 import dayjs from 'dayjs';
+import { useStudentContext } from '@application-estudiantes';
 
 const { Title } = Typography;
 const { Search } = Input;
@@ -13,32 +25,18 @@ const EstudiantesList = () => {
     const { message } = App.useApp();
     const location = useLocation();
     const navigate = useNavigate();
-    const [estudiantes, setEstudiantes] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
+    
+    // Obtener datos del contexto
+    const {
+        estudiantesList = [],
+        loadingList: loading,
+        listError: error,
+        refetchList,
+    } = useStudentContext();
+    
+    // Estado local solo para UI
     const [searchText, setSearchText] = useState('');
     const [registrosIncompletos, setRegistrosIncompletos] = useState({}); // { studentId: { tieneDocumentos, tieneDatosAcademicos } }
-
-    // Función para cargar estudiantes desde la API
-    const loadEstudiantes = useCallback(async () => {
-        setLoading(true);
-        setError(null);
-        try {
-            const response = await apiClient.get('/v1/estudiantes');
-            // La respuesta puede venir en response.data.data o response.data
-            const data = response.data?.data || response.data || [];
-            setEstudiantes(Array.isArray(data) ? data : []);
-        } catch (err) {
-            const errorMessage = err.response?.data?.error?.message ||
-                err.message ||
-                'Error al cargar los estudiantes';
-            setError(errorMessage);
-            message.error(errorMessage);
-            setEstudiantes([]);
-        } finally {
-            setLoading(false);
-        }
-    }, []);
 
     // Función para verificar si un estudiante tiene registro incompleto
     const verificarRegistroIncompleto = useCallback(async (estudianteId) => {
@@ -96,7 +94,7 @@ const EstudiantesList = () => {
     useEffect(() => {
         const verificarTodos = async () => {
             const incompletos = {};
-            for (const estudiante of estudiantes) {
+            for (const estudiante of estudiantesList) {
                 if (estudiante.id) {
                     const estado = await verificarRegistroIncompleto(estudiante.id);
                     incompletos[estudiante.id] = estado;
@@ -105,21 +103,16 @@ const EstudiantesList = () => {
             setRegistrosIncompletos(incompletos);
         };
 
-        if (estudiantes.length > 0) {
+        if (estudiantesList.length > 0) {
             verificarTodos();
         }
-    }, [estudiantes, verificarRegistroIncompleto]);
-
-    // Cargar estudiantes al montar el componente
-    useEffect(() => {
-        loadEstudiantes();
-    }, [loadEstudiantes]);
+    }, [estudiantesList, verificarRegistroIncompleto]);
 
     // Recargar cuando la página recupera el foco (cuando el usuario vuelve a la pestaña)
     useEffect(() => {
         const handleFocus = () => {
-            if (location.pathname === '/estudiantes/listar' || location.pathname === '/estudiantes') {
-                loadEstudiantes();
+            if (location.pathname === '/estudiantes') {
+                refetchList();
             }
         };
 
@@ -127,10 +120,17 @@ const EstudiantesList = () => {
         return () => {
             window.removeEventListener('focus', handleFocus);
         };
-    }, [location.pathname, loadEstudiantes]);
+    }, [location.pathname, refetchList]);
 
-    // Filtrar estudiantes según el texto de búsqueda
-    const filteredEstudiantes = estudiantes.filter(estudiante => {
+    // Mostrar errores si existen
+    useEffect(() => {
+        if (error) {
+            message.error(error);
+        }
+    }, [error, message]);
+
+    // Filtrar estudiantes según el texto de búsqueda (filtrado local)
+    const filteredEstudiantes = estudiantesList.filter(estudiante => {
         if (!searchText) return true;
         const searchLower = searchText.toLowerCase();
         // Buscar en nombre completo (apellidos, nombres)
@@ -185,6 +185,15 @@ const EstudiantesList = () => {
         if (!fechaNacimiento) return null;
         return dayjs().diff(dayjs(fechaNacimiento), 'year');
     };
+
+    // Mostrar loading mientras se cargan los datos
+    if (loading && estudiantesList.length === 0) {
+        return (
+            <Flex justify="center" align="center" style={{ minHeight: '400px' }}>
+                <Spin size="large" />
+            </Flex>
+        );
+    }
 
     // Columnas de la tabla
     const columns = [

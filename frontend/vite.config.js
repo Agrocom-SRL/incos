@@ -9,84 +9,85 @@ const __dirname = path.dirname(__filename);
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react()],
+    plugins: [react()],
 
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-      // Domain Layer
-      '@domain': path.resolve(__dirname, './src/domain'),
-      '@entities': path.resolve(__dirname, './src/domain/entities'),
-      '@useCases': path.resolve(__dirname, './src/domain/useCases'),
-      '@repositories': path.resolve(__dirname, './src/domain/repositories'),
-      '@mappers': path.resolve(__dirname, './src/domain/mappers'),
+    resolve: {
+        alias: {
+            '@': path.resolve(__dirname, './src'),
+            // Domain Layer
+            '@domain': path.resolve(__dirname, './src/domain'),
+            '@entities': path.resolve(__dirname, './src/domain/entities'),
+            '@useCases': path.resolve(__dirname, './src/domain/useCases'),
+            '@repositories': path.resolve(__dirname, './src/domain/repositories'),
+            '@mappers': path.resolve(__dirname, './src/domain/mappers'),
 
-      // Application Layer
-      '@application': path.resolve(__dirname, './src/application'),
-      '@container': path.resolve(__dirname, './src/application/container'),
-      '@application-estudiantes': path.resolve(__dirname, './src/application/modules/estudiantes'),
-      '@application-dashboard': path.resolve(__dirname, './src/application/modules/dashboard'),
-      '@application-navigation': path.resolve(__dirname, './src/application/navigation'),
+            // Application Layer
+            '@application': path.resolve(__dirname, './src/application'),
+            '@container': path.resolve(__dirname, './src/application/container'),
+            '@application-estudiantes': path.resolve(__dirname, './src/application/modules/estudiantes'),
+            '@application-dashboard': path.resolve(__dirname, './src/application/modules/dashboard'),
+            '@application-navigation': path.resolve(__dirname, './src/application/navigation'),
 
-      // Infrastructure Layer
-      '@infrastructure': path.resolve(__dirname, './src/infrastructure'),
-      '@api': path.resolve(__dirname, './src/infrastructure/api'),
-      '@api-client': path.resolve(__dirname, './src/infrastructure/api/client.js'),
-      '@repo-impl': path.resolve(__dirname, './src/infrastructure/repositories'),
-      '@storage': path.resolve(__dirname, './src/infrastructure/storage'),
+            // Infrastructure Layer
+            '@infrastructure': path.resolve(__dirname, './src/infrastructure'),
+            '@api': path.resolve(__dirname, './src/infrastructure/api'),
+            '@api-client': path.resolve(__dirname, './src/infrastructure/api/client.js'),
+            '@repo-impl': path.resolve(__dirname, './src/infrastructure/repositories'),
+            '@storage': path.resolve(__dirname, './src/infrastructure/storage'),
 
-      // Presentation Layer
-      '@presentation': path.resolve(__dirname, './src/presentation'),
-      '@components': path.resolve(__dirname, './src/presentation/components'),
-      '@atoms': path.resolve(__dirname, './src/presentation/components/atoms'),
-      '@molecules': path.resolve(__dirname, './src/presentation/components/molecules'),
-      '@organisms': path.resolve(__dirname, './src/presentation/components/organisms'),
-      '@templates': path.resolve(__dirname, './src/presentation/templates'),
-      '@pages': path.resolve(__dirname, './src/presentation/pages'),
-      '@modules': path.resolve(__dirname, './src/presentation/modules'),
+            // Presentation Layer
+            '@presentation': path.resolve(__dirname, './src/presentation'),
+            '@components': path.resolve(__dirname, './src/presentation/components'),
+            '@atoms': path.resolve(__dirname, './src/presentation/components/atoms'),
+            '@molecules': path.resolve(__dirname, './src/presentation/components/molecules'),
+            '@organisms': path.resolve(__dirname, './src/presentation/components/organisms'),
+            '@templates': path.resolve(__dirname, './src/presentation/templates'),
+            '@pages': path.resolve(__dirname, './src/presentation/pages'),
+            '@modules': path.resolve(__dirname, './src/presentation/modules'),
 
-      // Módulos específicos
-      '@estudiantes': path.resolve(__dirname, './src/presentation/modules/estudiantes'),
-      '@dashboard': path.resolve(__dirname, './src/presentation/modules/dashboard'),
+            // Módulos específicos
+            '@estudiantes': path.resolve(__dirname, './src/presentation/modules/estudiantes'),
+            '@dashboard': path.resolve(__dirname, './src/presentation/modules/dashboard'),
 
-      // Configuración
-      '@config': path.resolve(__dirname, './src/infrastructure/config'),
+            // Configuración
+            '@config': path.resolve(__dirname, './src/infrastructure/config'),
 
-      // Rutas
-      '@routes': path.resolve(__dirname, './src/presentation/routes'),
-      // Router Components (Presentation)
-      '@components-router': path.resolve(__dirname, './src/presentation/components/router'),
-      
-      // Navegación (Infrastructure)
-      '@navigation': path.resolve(__dirname, './src/infrastructure/navigation'),
-      '@navigation-services': path.resolve(__dirname, './src/infrastructure/navigation/services'),
-      '@navigation-router': path.resolve(__dirname, './src/infrastructure/navigation/router'),
-      
-      // Theme
-      '@theme': path.resolve(__dirname, './src/infrastructure/config/theme'),
-      
-      // Layout Components
-      '@assets': path.resolve(__dirname, './src/presentation/assets'),
-      '@styles': path.resolve(__dirname, './src/presentation/styles'),
+            // Rutas (alias para compatibilidad - ahora apunta a modules/index.js)
+            '@routes': path.resolve(__dirname, './src/presentation/modules'),
+            // Router Components (Presentation)
+            '@components-router': path.resolve(__dirname, './src/presentation/components/router'),
+
+            // Navegación (Infrastructure)
+            '@navigation': path.resolve(__dirname, './src/infrastructure/navigation'),
+            '@navigation-services': path.resolve(__dirname, './src/infrastructure/navigation/services'),
+            '@navigation-router': path.resolve(__dirname, './src/infrastructure/navigation/router'),
+
+            // Theme
+            '@theme': path.resolve(__dirname, './src/infrastructure/config/theme'),
+            '@theme/*': path.resolve(__dirname, './src/infrastructure/config/theme/*'),
+
+            // Layout Components
+            '@assets': path.resolve(__dirname, './src/presentation/assets'),
+            '@styles': path.resolve(__dirname, './src/presentation/styles'),
+        },
     },
-  },
 
-  server: {
-    port: 5173,
-    open: true,
-    proxy: {
-      // Proxy para archivos de uploads (documentos, fotos)
-      '/uploads': {
-        target: 'http://localhost:3000',
-        changeOrigin: true,
-        secure: false,
-      },
-      // Proxy para la API (ya configurado en apiClient, pero por si acaso)
-      '/api': {
-        target: 'http://localhost:3000',
-        changeOrigin: true,
-        secure: false,
-      },
+    server: {
+        port: 5173,
+        open: true,
+        proxy: {
+            // Proxy para archivos de uploads (documentos, fotos)
+            '/uploads': {
+                target: 'http://localhost:3000',
+                changeOrigin: true,
+                secure: false,
+            },
+            // Proxy para la API (ya configurado en apiClient, pero por si acaso)
+            '/api': {
+                target: 'http://localhost:3000',
+                changeOrigin: true,
+                secure: false,
+            },
+        },
     },
-  },
 });

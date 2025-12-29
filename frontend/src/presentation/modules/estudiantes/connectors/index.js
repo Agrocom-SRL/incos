@@ -1,7 +1,8 @@
 // modules/estudiantes/connectors/index.js
 /**
- * Exporta el connector por defecto para uso en rutas
- * Se usa: lazy(() => import('@estudiantes/connectors'))
+ * Exporta los connectors del módulo de estudiantes
+ * 
+ * Para lazy loading, exportamos ListConnector como default
  */
-export { default } from './RegistrarConnector';
-export { default as RegistrarConnector } from './RegistrarConnector';
+export { default } from './ListConnector';
+export { default as ListConnector } from './ListConnector';

@@ -1,164 +1,167 @@
 {
-  "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@/*": [
-        "./src/*"
-      ],
-      // Domain Layer
-      "@domain/*": [
-        "src/domain/*"
-      ],
-      "@entities/*": [
-        "src/domain/entities/*"
-      ],
-      "@useCases/*": [
-        "src/domain/useCases/*"
-      ],
-      "@repositories/*": [
-        "src/domain/repositories/*"
-      ],
-      "@mappers/*": [
-        "src/domain/mappers/*"
-      ],
-      // Application Layer
-      "@application/*": [
-        "./src/application/*"
-      ],
-      "@application-estudiantes": [
-        "./src/application/modules/estudiantes"
-      ],
-      "@application-dashboard": [
-        "./src/application/modules/dashboard"
-      ],
-      "@application-navigation": [
-        "./src/application/navigation"
-      ],
-      "@application-navigation/*": [
-        "./src/application/navigation/*"
-      ],
-      "@container": [
-        "./src/application/container/index.js"
-      ],
-      "@container/*": [
-        "./src/application/container/*"
-      ],
-      // Infrastructure Layer
-      "@infrastructure/*": [
-        "./src/infrastructure/*"
-      ],
-      "@api/*": [
-        "./src/infrastructure/api/*"
-      ],
-      "@api-client": [
-        "./src/infrastructure/api/client.js"
-      ],
-      "@repo-impl/*": [
-        "./src/infrastructure/repositories/*"
-      ],
-      "@storage/*": [
-        "./src/infrastructure/storage/*"
-      ],
-      // Presentation Layer
-      "@presentation/*": [
-        "./src/presentation/*"
-      ],
-      "@atoms": [
-        "./src/presentation/components/atoms"
-      ],
-      "@atoms/*": [
-        "./src/presentation/components/atoms/*"
-      ],
-      "@molecules": [
-        "./src/presentation/components/molecules"
-      ],
-      "@molecules/*": [
-        "./src/presentation/components/molecules/*"
-      ],
-      // @organisms se usa sin / (tiene index.js)
-      "@organisms": [
-        "./src/presentation/components/organisms"
-      ],
-      "@organisms/*": [
-        "./src/presentation/components/organisms/*"
-      ],
-      "@components": [
-        "./src/presentation/components"
-      ],
-      "@components/*": [
-        "./src/presentation/components/*"
-      ],
-      // @templates solo se usa sin / (tiene index.js)
-      "@templates": [
-        "./src/presentation/templates"
-      ],
-      "@pages/*": [
-        "./src/presentation/pages/*"
-      ],
-      "@modules/*": [
-        "./src/presentation/modules/*"
-      ],
-      "@estudiantes/*": [
-        "./src/presentation/modules/estudiantes/*"
-      ],
-      "@dashboard/*": [
-        "./src/presentation/modules/dashboard/*"
-      ],
-      // Router Components (Presentation) - Solo se usa con / (ej: @components-router/AppRouter)
-      "@components-router/*": [
-        "./src/presentation/components/router/*"
-      ],
-      // Rutas
-      "@routes": [
-        "./src/presentation/routes"
-      ],
-      "@routes/*": [
-        "./src/presentation/routes/*"
-      ],
-      // Navegación (Infrastructure) - Solo se usa con / (ej: @navigation-router/routerConfig)
-      "@navigation/*": [
-        "./src/infrastructure/navigation/*"
-      ],
-      "@navigation-services/*": [
-        "./src/infrastructure/navigation/services/*"
-      ],
-      "@navigation-router/*": [
-        "./src/infrastructure/navigation/router/*"
-      ],
-      // Configuración
-      "@config/*": [
-        "./src/infrastructure/config/*"
-      ],
-      "@theme/*": [
-        "./src/infrastructure/config/theme/*"
-      ],
-      "@theme": [
-        "./src/infrastructure/config/theme"
-      ],
-      // Assets y estilos
-      "@assets/*": [
-        "./src/presentation/assets/*"
-      ],
-      "@styles/*": [
-        "./src/presentation/styles/*"
-      ]
+    "compilerOptions": {
+        "baseUrl": ".",
+        "paths": {
+            "@/*": [
+                "./src/*"
+            ],
+            // Domain Layer
+            "@domain/*": [
+                "src/domain/*"
+            ],
+            "@entities/*": [
+                "src/domain/entities/*"
+            ],
+            "@useCases/*": [
+                "src/domain/useCases/*"
+            ],
+            "@repositories/*": [
+                "src/domain/repositories/*"
+            ],
+            "@mappers/*": [
+                "src/domain/mappers/*"
+            ],
+            // Application Layer
+            "@application/*": [
+                "./src/application/*"
+            ],
+            "@application-estudiantes": [
+                "./src/application/modules/estudiantes"
+            ],
+            "@application-dashboard": [
+                "./src/application/modules/dashboard"
+            ],
+            "@application-navigation": [
+                "./src/application/navigation"
+            ],
+            "@application-navigation/*": [
+                "./src/application/navigation/*"
+            ],
+            "@container": [
+                "./src/application/container/index.js"
+            ],
+            "@container/*": [
+                "./src/application/container/*"
+            ],
+            // Infrastructure Layer
+            "@infrastructure/*": [
+                "./src/infrastructure/*"
+            ],
+            "@api/*": [
+                "./src/infrastructure/api/*"
+            ],
+            "@api-client": [
+                "./src/infrastructure/api/client.js"
+            ],
+            "@repo-impl/*": [
+                "./src/infrastructure/repositories/*"
+            ],
+            "@storage/*": [
+                "./src/infrastructure/storage/*"
+            ],
+            // Presentation Layer
+            "@presentation/*": [
+                "./src/presentation/*"
+            ],
+            "@atoms": [
+                "./src/presentation/components/atoms"
+            ],
+            "@atoms/*": [
+                "./src/presentation/components/atoms/*"
+            ],
+            "@molecules": [
+                "./src/presentation/components/molecules"
+            ],
+            "@molecules/*": [
+                "./src/presentation/components/molecules/*"
+            ],
+            // @organisms se usa sin / (tiene index.js)
+            "@organisms": [
+                "./src/presentation/components/organisms"
+            ],
+            "@organisms/*": [
+                "./src/presentation/components/organisms/*"
+            ],
+            "@components": [
+                "./src/presentation/components"
+            ],
+            "@components/*": [
+                "./src/presentation/components/*"
+            ],
+            // @templates solo se usa sin / (tiene index.js)
+            "@templates": [
+                "./src/presentation/templates"
+            ],
+            "@pages/*": [
+                "./src/presentation/pages/*"
+            ],
+            "@modules": [
+                "./src/presentation/modules"
+            ],
+            "@modules/*": [
+                "./src/presentation/modules/*"
+            ],
+            "@estudiantes/*": [
+                "./src/presentation/modules/estudiantes/*"
+            ],
+            "@dashboard/*": [
+                "./src/presentation/modules/dashboard/*"
+            ],
+            // Router Components (Presentation) - Solo se usa con / (ej: @components-router/AppRouter)
+            "@components-router/*": [
+                "./src/presentation/components/router/*"
+            ],
+            // Rutas (alias para compatibilidad - ahora apunta a modules/index.js)
+            "@routes": [
+                "./src/presentation/modules"
+            ],
+            "@routes/*": [
+                "./src/presentation/modules/*"
+            ],
+            // Navegación (Infrastructure) - Solo se usa con / (ej: @navigation-router/routerConfig)
+            "@navigation/*": [
+                "./src/infrastructure/navigation/*"
+            ],
+            "@navigation-services/*": [
+                "./src/infrastructure/navigation/services/*"
+            ],
+            "@navigation-router/*": [
+                "./src/infrastructure/navigation/router/*"
+            ],
+            // Configuración
+            "@config/*": [
+                "./src/infrastructure/config/*"
+            ],
+            "@theme/*": [
+                "./src/infrastructure/config/theme/*"
+            ],
+            "@theme": [
+                "./src/infrastructure/config/theme"
+            ],
+            // Assets y estilos
+            "@assets/*": [
+                "./src/presentation/assets/*"
+            ],
+            "@styles/*": [
+                "./src/presentation/styles/*"
+            ]
+        },
+        "jsx": "react-jsx",
+        "module": "ESNext",
+        "moduleResolution": "node",
+        "target": "ES2020",
+        "allowJs": true,
+        "checkJs": false,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "resolveJsonModule": true
     },
-    "jsx": "react-jsx",
-    "module": "ESNext",
-    "moduleResolution": "node",
-    "target": "ES2020",
-    "allowJs": true,
-    "checkJs": false,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "resolveJsonModule": true
-  },
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "build"
-  ]
+    "include": [
+        "src/**/*"
+    ],
+    "exclude": [
+        "node_modules",
+        "dist",
+        "build"
+    ]
 }

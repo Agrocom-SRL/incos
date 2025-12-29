@@ -12,14 +12,14 @@
 import { lazy } from 'react';
 import { UnderConstruction } from '@components/pages';
 
-// Lazy loading del connector (que incluye el Provider) - Solo Registrar está implementado
-const EstudiantesRegistrarConnector = lazy(() => import('@estudiantes/connectors'));
+// Lazy loading del connector de listado (que incluye el Provider)
+const EstudiantesListConnector = lazy(() => import('@estudiantes/connectors'));
 
 export const estudiantesRoutes = [
-    // Módulo raíz: Estudiantes
+    // Módulo raíz: Estudiantes (muestra la lista directamente)
     {
         path: '/estudiantes',
-        element: <UnderConstruction />,
+        element: <EstudiantesListConnector />,
         key: 'EST',
         menu: {
             label: 'Estudiantes',
@@ -27,28 +27,16 @@ export const estudiantesRoutes = [
             order: 2, // Módulo más usado, después de Dashboard
         },
     },
-    // Listar (alias de la ruta principal)
+    // Alias para /estudiantes/listar (compatibilidad con navegación existente)
     {
         path: '/estudiantes/listar',
-        element: <UnderConstruction />,
+        element: <EstudiantesListConnector />,
         key: 'EST-LIST',
         menu: {
             label: 'Listar Estudiantes',
             module: 'EST',
             parent: 'EST',
             order: 1,
-        },
-    },
-    // Registrar (solo esta página está implementada)
-    {
-        path: '/estudiantes/registrar',
-        element: <EstudiantesRegistrarConnector />,
-        key: 'EST-REGISTRAR',
-        menu: {
-            label: 'Nueva Admisión',
-            module: 'EST',
-            parent: 'EST',
-            order: 2,
         },
     },
     // Becas - Grupo padre
@@ -154,18 +142,6 @@ export const estudiantesRoutes = [
         },
     },
     // Rutas sin menú (acciones que se manejan dentro de la página de documentos)
-    {
-        path: '/estudiantes/documentos/verificar',
-        element: <UnderConstruction />,
-        key: 'EST-DOCUMENTOS-VERIFICAR',
-        // Sin menu - se accede desde la página de documentos
-    },
-    {
-        path: '/estudiantes/documentos/estado',
-        element: <UnderConstruction />,
-        key: 'EST-DOCUMENTOS-ESTADO',
-        // Sin menu - se accede desde la página de documentos
-    },
 ];
 
 export default estudiantesRoutes;
