@@ -20,6 +20,7 @@ import {
   FieldRadio,
   FieldUpload,
   FieldDivider,
+  FieldFormList,
 } from '../../atoms/fields';
 import {
   useGeographicFilter,
@@ -47,8 +48,24 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange, rea
   }
   const formToUse = form || formInstance;
 
+  // Helper para obtener el nombre del campo como string (maneja arrays de Form.List)
+  const getFieldNameString = (fieldName) => {
+    if (Array.isArray(fieldName)) {
+      // Si es un array (de Form.List), devolver el último elemento como string
+      return fieldName[fieldName.length - 1]?.toString() || '';
+    }
+    return fieldName?.toString() || '';
+  };
+
+  // Helper para obtener el nombre completo del campo (para usar con form.getFieldValue, etc.)
+  const getFieldName = () => {
+    return field.name;
+  };
+
+  const fieldNameString = getFieldNameString(field.name);
+
   // Observar el valor de tipoDiscapacidadId para mostrar la descripción
-  const shouldShowDescription = field.name === 'tipoDiscapacidadId';
+  const shouldShowDescription = fieldNameString === 'tipoDiscapacidadId';
   const tipoDiscapacidadValue = shouldShowDescription && form
     ? Form.useWatch('tipoDiscapacidadId', form)
     : undefined;
@@ -88,21 +105,21 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange, rea
 
   // Inicializar el estado cuando el campo cambia
   useEffect(() => {
-    if (field.type === 'upload' && uploadStates[field.name] === undefined) {
+    if (field.type === 'upload' && uploadStates[fieldNameString] === undefined) {
       const mostrarInput = !field.documentoExistente;
       setUploadStates(prev => ({
         ...prev,
-        [field.name]: mostrarInput
+        [fieldNameString]: mostrarInput
       }));
     }
-  }, [field.type, field.name, field.documentoExistente, uploadStates]);
+  }, [field.type, fieldNameString, field.documentoExistente, uploadStates]);
 
-  const mostrarInputUpload = uploadStates[field.name] ?? !field.documentoExistente;
+  const mostrarInputUpload = uploadStates[fieldNameString] ?? !field.documentoExistente;
 
   const setMostrarInputUpload = (value) => {
     setUploadStates(prev => ({
       ...prev,
-      [field.name]: value
+      [fieldNameString]: value
     }));
   };
 
@@ -111,28 +128,28 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange, rea
     return field.type === 'select' &&
       field.dependencies &&
       field.dependencies.length > 0 &&
-      (field.name.includes('departamento') ||
-        field.name.includes('provincia') ||
-        field.name.includes('municipio') ||
-        field.name.includes('pais'));
+      (fieldNameString.includes('departamento') ||
+        fieldNameString.includes('provincia') ||
+        fieldNameString.includes('municipio') ||
+        fieldNameString.includes('pais'));
   }, [field.type, field.dependencies, field.name]);
 
   // Observar tipoNacionalidad específicamente para campos de departamento
-  const needsTipoNacionalidad = (field.name === 'departamentoNacimientoId' || field.name === 'departamentoResidenciaId') &&
+  const needsTipoNacionalidad = (fieldNameString === 'departamentoNacimientoId' || fieldNameString === 'departamentoResidenciaId') &&
     field.dependencies?.includes('tipoNacionalidad');
   const tipoNacionalidadValue = needsTipoNacionalidad && form
     ? Form.useWatch('tipoNacionalidad', form)
     : null;
 
   // Observar primeraNacionalidadTipo para campos de primera nacionalidad
-  const needsPrimeraNacionalidadTipo = field.name === 'primeraNacionalidadDepartamentoId' &&
+  const needsPrimeraNacionalidadTipo = fieldNameString === 'primeraNacionalidadDepartamentoId' &&
     field.dependencies?.includes('primeraNacionalidadTipo');
   const primeraNacionalidadTipoValue = needsPrimeraNacionalidadTipo && form
     ? Form.useWatch('primeraNacionalidadTipo', form)
     : null;
 
   // Observar segundaNacionalidadTipo para campos de segunda nacionalidad
-  const needsSegundaNacionalidadTipo = field.name === 'segundaNacionalidadDepartamentoId' &&
+  const needsSegundaNacionalidadTipo = fieldNameString === 'segundaNacionalidadDepartamentoId' &&
     field.dependencies?.includes('segundaNacionalidadTipo');
   const segundaNacionalidadTipoValue = needsSegundaNacionalidadTipo && form
     ? Form.useWatch('segundaNacionalidadTipo', form)
@@ -162,24 +179,24 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange, rea
 
   // Manejar cambios en campos con dependencias
   const handleChange = (value) => {
-    const isGeographicField = field.name.includes('departamento') ||
-      field.name.includes('provincia') ||
-      field.name.includes('municipio') ||
-      field.name.includes('pais');
+    const isGeographicField = fieldNameString.includes('departamento') ||
+      fieldNameString.includes('provincia') ||
+      fieldNameString.includes('municipio') ||
+      fieldNameString.includes('pais');
 
     // Actualizar el formulario manualmente
     if (form) {
-      form.setFieldValue(field.name, value);
+      form.setFieldValue(getFieldName(), value);
     }
 
     // Llamar a onFieldChange si existe
     if (onFieldChange) {
       if (field.dependencies) {
-        onFieldChange(field.name, value, field.dependencies);
+        onFieldChange(fieldNameString, value, field.dependencies);
       }
 
       if (isGeographicField) {
-        onFieldChange(field.name, value, []);
+        onFieldChange(fieldNameString, value, []);
       }
     }
   };
@@ -209,14 +226,14 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange, rea
       });
       const boliviaId = boliviaOption ? (typeof boliviaOption === 'string' ? null : boliviaOption.value) : null;
 
-      if (field.name === 'paisNacimientoId' && tipoNacionalidad === 'EXTRANJERA') {
+      if (fieldNameString === 'paisNacimientoId' && tipoNacionalidad === 'EXTRANJERA') {
         if (boliviaId !== null) {
           selectOptions = selectOptions.filter(opt => {
             const value = typeof opt === 'string' ? opt : opt.value;
             return value !== boliviaId;
           });
         }
-      } else if (field.name === 'segundaNacionalidadPaisId' && tipoNacionalidad === 'DOBLE_NACIONALIDAD') {
+      } else if (fieldNameString === 'segundaNacionalidadPaisId' && tipoNacionalidad === 'DOBLE_NACIONALIDAD') {
         const paisesAExcluir = [];
         if (primeraNacionalidadPaisId) {
           paisesAExcluir.push(primeraNacionalidadPaisId);
@@ -267,11 +284,11 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange, rea
   });
 
   // Usar hook de capitalización de texto
-  const { shouldCapitalize, handleCapitalizeChange, handleCapitalizeBlur } = useTextCapitalization(field.name, form);
+  const { shouldCapitalize, handleCapitalizeChange, handleCapitalizeBlur } = useTextCapitalization(getFieldName(), form);
 
   // Usar hook de parsing de fechas
   const { handleDateChange, handleBlur, handlePressEnter } = useDateParsing(
-    field.name,
+    getFieldName(),
     field.format || 'DD-MM-YYYY',
     form
   );
@@ -292,15 +309,15 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange, rea
 
   // IMPORTANTE: Cada switch observa SOLO su propio campo, no otros switches
   // Esto asegura que cada switch sea completamente independiente
-  const switchValue = field.type === 'switch' && form && field.name
-    ? Form.useWatch(field.name, form) 
+  const switchValue = field.type === 'switch' && form && getFieldName()
+    ? Form.useWatch(getFieldName(), form) 
     : undefined;
 
   const renderField = () => {
     switch (field.type) {
       case 'input':
         let dynamicPlaceholder = field.placeholder;
-        if (field.name === 'nacionalidad' && form) {
+        if (fieldNameString === 'nacionalidad' && form) {
           const esExtranjero = Form.useWatch('esExtranjero', form);
           if (esExtranjero) {
             dynamicPlaceholder = 'Ej: Argentina, Boliviana, etc.';
@@ -316,7 +333,7 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange, rea
             readOnly={readOnly}
             type={field.inputType || 'text'}
             maxLength={field.maxLength}
-            value={form ? form.getFieldValue(field.name) : undefined}
+            value={form ? form.getFieldValue(getFieldName()) : undefined}
             onChange={shouldCapitalize && !readOnly ? handleCapitalizeChange : (e) => handleChange(e.target.value)}
             onBlur={shouldCapitalize && !readOnly ? handleCapitalizeBlur : undefined}
           />
@@ -330,7 +347,7 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange, rea
             readOnly={readOnly}
             rows={field.rows || 4}
             maxLength={field.maxLength}
-            value={form ? form.getFieldValue(field.name) : undefined}
+            value={form ? form.getFieldValue(getFieldName()) : undefined}
             onChange={(e) => handleChange(e.target.value)}
           />
         );
@@ -342,24 +359,24 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange, rea
         // Para departamentos: manejar caso especial de bolivianos
         // Incluye: departamentoNacimientoId, departamentoResidenciaId, 
         // primeraNacionalidadDepartamentoId, segundaNacionalidadDepartamentoId
-        const isDepartamentoField = field.name === 'departamentoNacimientoId' ||
-          field.name === 'departamentoResidenciaId' ||
-          field.name === 'primeraNacionalidadDepartamentoId' ||
-          field.name === 'segundaNacionalidadDepartamentoId';
+        const isDepartamentoField = fieldNameString === 'departamentoNacimientoId' ||
+          fieldNameString === 'departamentoResidenciaId' ||
+          fieldNameString === 'primeraNacionalidadDepartamentoId' ||
+          fieldNameString === 'segundaNacionalidadDepartamentoId';
 
         if (isDepartamentoField) {
           // Determinar el tipo de nacionalidad según el campo
           let tipoNacionalidad = null;
 
-          if (field.name === 'departamentoNacimientoId' || field.name === 'departamentoResidenciaId') {
+          if (fieldNameString === 'departamentoNacimientoId' || fieldNameString === 'departamentoResidenciaId') {
             tipoNacionalidad = tipoNacionalidadValue !== null && tipoNacionalidadValue !== undefined
               ? tipoNacionalidadValue
               : (form ? form.getFieldValue('tipoNacionalidad') : null);
-          } else if (field.name === 'primeraNacionalidadDepartamentoId') {
+          } else if (fieldNameString === 'primeraNacionalidadDepartamentoId') {
             tipoNacionalidad = primeraNacionalidadTipoValue !== null && primeraNacionalidadTipoValue !== undefined
               ? primeraNacionalidadTipoValue
               : (form ? form.getFieldValue('primeraNacionalidadTipo') : null);
-          } else if (field.name === 'segundaNacionalidadDepartamentoId') {
+          } else if (fieldNameString === 'segundaNacionalidadDepartamentoId') {
             tipoNacionalidad = segundaNacionalidadTipoValue !== null && segundaNacionalidadTipoValue !== undefined
               ? segundaNacionalidadTipoValue
               : (form ? form.getFieldValue('segundaNacionalidadTipo') : null);
@@ -383,7 +400,7 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange, rea
                 return optPaisId === boliviaId;
               });
 
-              const currentFieldValue = form ? form.getFieldValue(field.name) : null;
+              const currentFieldValue = form ? form.getFieldValue(getFieldName()) : null;
               if (currentFieldValue && !finalOptions.find(opt => {
                 const optValue = typeof opt === 'string' ? opt : opt.value;
                 return Number(optValue) === Number(currentFieldValue);
@@ -404,7 +421,7 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange, rea
               return optPaisId === dependencyValue;
             });
 
-            const currentFieldValue = form ? form.getFieldValue(field.name) : null;
+            const currentFieldValue = form ? form.getFieldValue(getFieldName()) : null;
             if (currentFieldValue && !finalOptions.find(opt => {
               const optValue = typeof opt === 'string' ? opt : opt.value;
               return Number(optValue) === Number(currentFieldValue);
@@ -423,7 +440,7 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange, rea
           finalOptions = filteredOptions;
 
           // Si hay un valor seleccionado pero no está en las opciones filtradas, agregarlo
-          const currentFieldValue = form ? form.getFieldValue(field.name) : null;
+          const currentFieldValue = form ? form.getFieldValue(getFieldName()) : null;
           if (currentFieldValue && !finalOptions.find(opt => {
             const optValue = typeof opt === 'string' ? opt : opt.value;
             return Number(optValue) === Number(currentFieldValue);
@@ -440,10 +457,10 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange, rea
 
         // Solo usar key cuando realmente cambia la dependencia numérica para evitar remontar innecesariamente
         // Para campos de departamento que dependen de tipoNacionalidad/primeraNacionalidadTipo/segundaNacionalidadTipo (string), no usar dependencyValue en el key
-        const isDepartamentoWithTipoNacionalidad = (field.name === 'departamentoNacimientoId' ||
-          field.name === 'departamentoResidenciaId' ||
-          field.name === 'primeraNacionalidadDepartamentoId' ||
-          field.name === 'segundaNacionalidadDepartamentoId') &&
+        const isDepartamentoWithTipoNacionalidad = (fieldNameString === 'departamentoNacimientoId' ||
+          fieldNameString === 'departamentoResidenciaId' ||
+          fieldNameString === 'primeraNacionalidadDepartamentoId' ||
+          fieldNameString === 'segundaNacionalidadDepartamentoId') &&
           (field.dependencies?.includes('tipoNacionalidad') ||
             field.dependencies?.includes('primeraNacionalidadTipo') ||
             field.dependencies?.includes('segundaNacionalidadTipo'));
@@ -453,14 +470,14 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange, rea
           field.dependencies.length > 0 &&
           dependencyValue !== null &&
           !isDepartamentoWithTipoNacionalidad
-          ? `${field.name}-${dependencyUpdateKey}-${dependencyValue}`
-          : field.name;
+          ? `${fieldNameString}-${dependencyUpdateKey}-${dependencyValue}`
+          : fieldNameString;
 
         const selectOnChange = (value) => {
           // IMPORTANTE: Ant Design Form.Item maneja el valor automáticamente,
           // pero necesitamos actualizarlo explícitamente para que Form.useWatch lo capture
           if (form) {
-            form.setFieldValue(field.name, value);
+            form.setFieldValue(getFieldName(), value);
           }
           // Llamar a handleChange para notificar cambios y activar cascadas
           handleChange(value);
@@ -502,7 +519,7 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange, rea
             onChange={handleDateChange}
             onBlur={handleBlur}
             onPressEnter={handlePressEnter}
-            value={form ? form.getFieldValue(field.name) : undefined}
+            value={form ? form.getFieldValue(getFieldName()) : undefined}
           />
         );
 
@@ -533,9 +550,9 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange, rea
         
         // IMPORTANTE: Solo mostrar el texto dinámico para switches de documentos
         // Los switches de documentos tienen nombres que siguen el patrón: documento_X_entregado
-        const isDocumentSwitch = field.name && 
-          field.name.startsWith('documento_') && 
-          field.name.endsWith('_entregado');
+        const isDocumentSwitch = fieldNameString && 
+          fieldNameString.startsWith('documento_') && 
+          fieldNameString.endsWith('_entregado');
         
         // Solo generar el texto si es un switch de documento
         const switchText = isDocumentSwitch
@@ -549,9 +566,9 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange, rea
         const handleSwitchChange = (checked) => {
           // IMPORTANTE: Solo actualizar el campo de ESTE switch
           // No tocar otros campos del formulario
-          if (form && field.name) {
+          if (form && getFieldName()) {
             // Usar setFieldValue para actualizar solo este campo específico
-            form.setFieldValue(field.name, checked);
+            form.setFieldValue(getFieldName(), checked);
             // No llamar a handleChange aquí porque puede causar efectos secundarios
             // El Form.Item de Ant Design ya maneja la actualización del valor
           }
@@ -592,7 +609,7 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange, rea
           <FieldRadio
             disabled={getDisabledValue()}
             options={radioOptions}
-            value={form ? form.getFieldValue(field.name) : undefined}
+            value={form ? form.getFieldValue(getFieldName()) : undefined}
             onChange={(e) => handleChange(e.target.value)}
           />
         );
@@ -603,16 +620,16 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange, rea
       case 'checkbox':
         // IMPORTANTE: Cada checkbox es completamente independiente
         // Observa SOLO su propio campo, no otros checkboxes
-        const checkboxObservedValue = field.type === 'checkbox' && form && field.name
-          ? Form.useWatch(field.name, form) 
+        const checkboxObservedValue = field.type === 'checkbox' && form && getFieldName()
+          ? Form.useWatch(getFieldName(), form) 
           : undefined;
         
         // Usar el valor observado o el valor del formulario, con fallback a initialValue
         const checkboxValue = checkboxObservedValue !== undefined 
           ? Boolean(checkboxObservedValue)
-          : (form && field.name
-            ? (form.getFieldValue(field.name) !== undefined 
-              ? Boolean(form.getFieldValue(field.name))
+          : (form && getFieldName()
+            ? (form.getFieldValue(getFieldName()) !== undefined 
+              ? Boolean(form.getFieldValue(getFieldName()))
               : (field.initialValue !== undefined ? Boolean(field.initialValue) : false))
             : (field.initialValue !== undefined ? Boolean(field.initialValue) : false));
         
@@ -622,9 +639,9 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange, rea
           const checked = e.target.checked;
           // IMPORTANTE: Solo actualizar el campo de ESTE checkbox
           // No tocar otros campos del formulario
-          if (form && field.name) {
+          if (form && getFieldName()) {
             // Usar setFieldValue para actualizar solo este campo específico
-            form.setFieldValue(field.name, checked);
+            form.setFieldValue(getFieldName(), checked);
             // No llamar a handleChange aquí porque puede causar efectos secundarios
             // El Form.Item de Ant Design ya maneja la actualización del valor
           }
@@ -660,8 +677,8 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange, rea
         );
 
       case 'upload':
-        const currentFileList = form?.getFieldValue(field.name) || [];
-        const docIdMatch = field.name?.match(/documento_(\d+)_archivo/);
+        const currentFileList = form?.getFieldValue(getFieldName()) || [];
+        const docIdMatch = fieldNameString?.match(/documento_(\d+)_archivo/);
         const docId = docIdMatch ? docIdMatch[1] : null;
         const checkboxFieldName = docId ? `documento_${docId}_entregado` : null;
 
@@ -683,6 +700,25 @@ const FormField = ({ field, form, resolveOptions, formValues, onFieldChange, rea
               }
               handleChange(info.fileList);
             }}
+          />
+        );
+
+      case 'formList':
+        return (
+          <FieldFormList
+            name={field.name}
+            label={field.label}
+            description={field.description}
+            itemFields={field.itemFields || []}
+            minItems={field.minItems || 0}
+            maxItems={field.maxItems || 10}
+            addButtonText={field.addButtonText || 'Agregar'}
+            removeButtonText={field.removeButtonText || 'Eliminar'}
+            form={form}
+            resolveOptions={resolveOptions}
+            formValues={formValues}
+            onFieldChange={onFieldChange}
+            readOnly={readOnly}
           />
         );
 

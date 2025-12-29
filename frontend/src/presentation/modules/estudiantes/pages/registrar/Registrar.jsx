@@ -47,6 +47,7 @@ const Registrar = () => {
     idiomas,
     tiposDiscapacidad,
     estadosCiviles,
+    tiposParentesco,
     documentacionInscripcion,
     loadDepartamentos,
     loadProvincias,
@@ -92,6 +93,7 @@ const Registrar = () => {
         descripcion: t.descripcion || null
       })),
       estadosCiviles: (estadosCiviles || []).map(e => ({ label: e.nombre, value: e.id })),
+      tiposParentesco: (tiposParentesco || []).map(t => ({ label: t.nombre, value: t.id })),
     };
     
     const result = optionsMap[fieldName] || [];

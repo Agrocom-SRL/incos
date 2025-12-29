@@ -25,6 +25,7 @@ export const useStudentFormData = () => {
   const [idiomas, setIdiomas] = useState([]);
   const [tiposDiscapacidad, setTiposDiscapacidad] = useState([]);
   const [estadosCiviles, setEstadosCiviles] = useState([]);
+  const [tiposParentesco, setTiposParentesco] = useState([]);
   const [documentacionInscripcion, setDocumentacionInscripcion] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -41,7 +42,7 @@ export const useStudentFormData = () => {
 
       // Contador para rastrear cuántas peticiones fallaron
       let failedRequests = 0;
-      const totalRequests = 10; // Todos los catálogos
+      const totalRequests = 11; // Todos los catálogos
       const catalogErrors = [];
 
       try {
@@ -56,6 +57,7 @@ export const useStudentFormData = () => {
           'idiomas',
           'tipos-discapacidad',
           'estados-civiles',
+          'tipos-parentesco',
           'documentacion-inscripcion',
         ];
         const catalogUrls = [
@@ -68,6 +70,7 @@ export const useStudentFormData = () => {
           '/v1/catalogs/idiomas',
           '/v1/catalogs/tipos-discapacidad',
           '/v1/catalogs/estados-civiles',
+          '/v1/catalogs/tipos-parentesco',
           '/v1/catalogs/documentacion-inscripcion',
         ];
         
@@ -109,6 +112,7 @@ export const useStudentFormData = () => {
           idiomasRes,
           tiposDiscapacidadRes,
           estadosCivilesRes,
+          tiposParentescoRes,
           documentacionRes,
         ] = catalogResults.map((result) => {
           if (result.status === 'fulfilled') {
@@ -128,6 +132,7 @@ export const useStudentFormData = () => {
         setIdiomas(idiomasRes.data?.data || []);
         setTiposDiscapacidad(tiposDiscapacidadRes.data?.data || []);
         setEstadosCiviles(estadosCivilesRes.data?.data || []);
+        setTiposParentesco(tiposParentescoRes.data?.data || []);
         setDocumentacionInscripcion(documentacionRes.data?.data || []);
 
         // TODO: Implementar llamadas a la API para obtener estadísticas reales
@@ -160,7 +165,7 @@ export const useStudentFormData = () => {
     setError(null);
 
     let failedRequests = 0;
-    const totalRequests = 10; // Todos los catálogos
+    const totalRequests = 11; // Todos los catálogos
       const catalogErrors = [];
 
     try {
@@ -180,6 +185,7 @@ export const useStudentFormData = () => {
         'idiomas',
         'tipos-discapacidad',
         'estados-civiles',
+        'tipos-parentesco',
         'documentacion-inscripcion',
       ];
       const catalogUrls = [
@@ -192,6 +198,7 @@ export const useStudentFormData = () => {
         '/v1/catalogs/idiomas',
         '/v1/catalogs/tipos-discapacidad',
         '/v1/catalogs/estados-civiles',
+        '/v1/catalogs/tipos-parentesco',
         '/v1/catalogs/documentacion-inscripcion',
       ];
       
@@ -232,6 +239,7 @@ export const useStudentFormData = () => {
         idiomasRes,
         tiposDiscapacidadRes,
         estadosCivilesRes,
+        tiposParentescoRes,
         documentacionRes,
       ] = catalogResults.map((result) => {
         if (result.status === 'fulfilled') {
@@ -250,6 +258,7 @@ export const useStudentFormData = () => {
       setIdiomas(idiomasRes.data?.data || []);
       setTiposDiscapacidad(tiposDiscapacidadRes.data?.data || []);
       setEstadosCiviles(estadosCivilesRes.data?.data || []);
+      setTiposParentesco(tiposParentescoRes.data?.data || []);
       setDocumentacionInscripcion(documentacionRes.data?.data || []);
 
       setStats({
@@ -328,6 +337,7 @@ export const useStudentFormData = () => {
     idiomas,
     tiposDiscapacidad,
     estadosCiviles,
+    tiposParentesco,
     documentacionInscripcion,
     
     // Estados

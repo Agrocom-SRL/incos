@@ -25,6 +25,7 @@ export const StudentProvider = ({ children }) => {
     idiomas,
     tiposDiscapacidad,
     estadosCiviles,
+    tiposParentesco,
     documentacionInscripcion,
     loading: loadingFormData,
     error: formDataError,
@@ -132,6 +133,7 @@ export const StudentProvider = ({ children }) => {
     idiomas,
     tiposDiscapacidad,
     estadosCiviles,
+    tiposParentesco,
     documentacionInscripcion,
     
     // Estados

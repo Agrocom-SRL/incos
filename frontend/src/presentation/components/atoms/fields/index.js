@@ -9,4 +9,5 @@ export { default as FieldCheckbox } from './FieldCheckbox';
 export { default as FieldRadio } from './FieldRadio';
 export { default as FieldUpload } from './FieldUpload';
 export { default as FieldDivider } from './FieldDivider';
+export { default as FieldFormList } from './FieldFormList';
 

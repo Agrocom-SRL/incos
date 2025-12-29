@@ -18,8 +18,9 @@ export const wizardStep1 = {
     geographicData: studentFormFields.geographicData,
     contactData: studentFormFields.contactData,
     disabilityData: studentFormFields.disabilityData, // Sección condicional
+    emergencyContacts: studentFormFields.emergencyContacts,
   },
-  sections: ['personalData', 'disabilityData', 'geographicData', 'contactData'],
+  sections: ['personalData', 'disabilityData', 'geographicData', 'contactData', 'emergencyContacts'],
 };
 
 // Paso 2: Documentos (generado dinámicamente)
@@ -41,18 +42,6 @@ export const createWizardStep2 = (documentacionInscripcion = [], documentosExist
   sections: ['documents'], // Removido 'uploadDocuments' temporalmente
 });
 
-// Paso 3: Datos Académicos
-export const wizardStep3 = {
-  title: 'Datos Académicos',
-  description: 'Carrera y gestión de ingreso',
-  formTitle: 'Datos Académicos',
-  config: {
-    academicData: studentFormFields.academicData,
-    observations: studentFormFields.observations,
-  },
-  sections: ['academicData', 'observations'],
-};
-
 /**
  * Genera la configuración completa del wizard con campos de documentos dinámicos
  * @param {Array} documentacionInscripcion - Lista de documentos requeridos
@@ -63,9 +52,8 @@ export const generateStudentWizardSteps = (
   documentacionInscripcion = [],
   documentosExistentes = {}
 ) => [
-    createWizardStep2(documentacionInscripcion, documentosExistentes), // Documentos primero
     wizardStep1,
-    wizardStep3,
+    createWizardStep2(documentacionInscripcion, documentosExistentes), // Documentos primero
   ];
 
 // Configuración por defecto (sin documentos dinámicos)
@@ -80,6 +68,5 @@ export const studentWizardSteps = [
     },
     sections: ['documents'],
   },
-  wizardStep3,
 ];
 

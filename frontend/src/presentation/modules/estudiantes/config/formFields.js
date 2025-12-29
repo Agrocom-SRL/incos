@@ -590,105 +590,6 @@ export const studentFormFields = {
     ],
   },
 
-  // Sección: Datos Académicos
-  academicData: {
-    title: 'Datos Académicos',
-    fields: [
-      {
-        name: 'carreraId',
-        label: 'Carrera',
-        type: 'select',
-        options: 'carreras',
-        rules: [
-          { required: true, message: 'La carrera es requerida' },
-        ],
-        placeholder: 'Seleccione la carrera',
-        span: 8,
-      },
-      {
-        name: 'gestionIngresoId',
-        label: 'Gestión de Ingreso',
-        type: 'select',
-        options: 'gestiones',
-        rules: [
-          { required: true, message: 'La gestión de ingreso es requerida' },
-        ],
-        placeholder: 'Seleccione la gestión de ingreso',
-        span: 8,
-      },
-      {
-        name: 'unidadEducativaProcedencia',
-        label: 'Unidad Educativa de Procedencia',
-        type: 'input',
-        rules: [
-          { max: 200, message: 'No puede exceder 200 caracteres' },
-        ],
-        placeholder: 'Nombre del colegio o unidad educativa',
-        span: 8,
-      },
-      {
-        name: 'anioEgresoSecundaria',
-        label: 'Año de Egreso de Secundaria',
-        type: 'inputNumber',
-        rules: [
-          {
-            validator: (_, value) => {
-              if (value === null || value === undefined || value === '') {
-                return Promise.resolve(); // Permitir valores vacíos (campo opcional)
-              }
-              const currentYear = new Date().getFullYear();
-              const numValue = typeof value === 'number' ? value : Number(value);
-              if (isNaN(numValue) || numValue < 1950 || numValue > currentYear) {
-                return Promise.reject(new Error(`Año inválido. Debe estar entre 1950 y ${currentYear}`));
-              }
-              return Promise.resolve();
-            },
-          },
-        ],
-        placeholder: 'Ej: 2023',
-        min: 1950,
-        max: new Date().getFullYear(),
-        span: 8,
-      },
-      {
-        name: 'promedioAnual',
-        label: 'Promedio Anual',
-        type: 'inputNumber',
-        rules: [
-          {
-            validator: (_, value) => {
-              if (value === null || value === undefined || value === '') {
-                return Promise.resolve(); // Permitir valores vacíos (campo opcional)
-              }
-              const numValue = typeof value === 'number' ? value : Number(value);
-              if (isNaN(numValue) || numValue < 0 || numValue > 100) {
-                return Promise.reject(new Error('El promedio debe estar entre 0 y 100'));
-              }
-              return Promise.resolve();
-            },
-          },
-        ],
-        placeholder: 'Ej: 85.50',
-        min: 0,
-        max: 100,
-        step: 0.01,
-        precision: 2,
-        span: 8,
-      },
-      {
-        name: 'fechaEgreso',
-        label: 'Fecha de Egreso',
-        type: 'datePicker',
-        format: 'DD/MM/YYYY',
-        disabledDate: (current) => {
-          // No permitir fechas futuras
-          return current && current > dayjs().endOf('day');
-        },
-        placeholder: 'Seleccione la fecha de egreso',
-        span: 8,
-      },
-    ],
-  },
 
   // Sección: Documentos
   documents: {
@@ -823,6 +724,164 @@ export const studentFormFields = {
     ],
   },
 
+  // Sección: Contactos de Emergencia
+  emergencyContacts: {
+    title: 'Contactos de Emergencia',
+    fields: [
+      {
+        name: 'contactosEmergencia',
+        label: '', // Sin label porque el título de la sección ya lo muestra
+        type: 'formList',
+        description: 'Puede agregar uno o más contactos de emergencia (opcional).',
+        minItems: 0,
+        span: 24, // Ocupar todo el ancho
+        itemFields: [
+          {
+            name: 'tipoParentescoId',
+            label: 'Tipo de Parentesco',
+            type: 'select',
+            options: 'tiposParentesco',
+            rules: [
+              { required: true, message: 'El tipo de parentesco es requerido' },
+            ],
+            placeholder: 'Seleccione el tipo de parentesco',
+            span: 12,
+          },
+          {
+            name: 'nombres',
+            label: 'Nombres',
+            type: 'input',
+            rules: [
+              { required: true, message: 'Los nombres son requeridos' },
+              { max: 150, message: 'Los nombres no pueden exceder 150 caracteres' },
+            ],
+            placeholder: 'Ingrese los nombres completos',
+            span: 12,
+          },
+          {
+            name: 'apellidos',
+            label: 'Apellidos',
+            type: 'input',
+            rules: [
+              { max: 150, message: 'Los apellidos no pueden exceder 150 caracteres' },
+            ],
+            placeholder: 'Ingrese los apellidos',
+            span: 12,
+          },
+          {
+            name: 'ci',
+            label: 'CI',
+            type: 'input',
+            rules: [
+              { max: 20, message: 'El CI no puede exceder 20 caracteres' },
+            ],
+            placeholder: 'Ej: 12345678',
+            span: 12,
+          },
+          {
+            name: 'telefono',
+            label: 'Teléfono',
+            type: 'input',
+            rules: [
+              { max: 20, message: 'El teléfono no puede exceder 20 caracteres' },
+            ],
+            placeholder: 'Ej: 4-1234567',
+            span: 12,
+          },
+          {
+            name: 'celular',
+            label: 'Celular',
+            type: 'input',
+            rules: [
+              { required: true, message: 'El celular es requerido' },
+              { max: 20, message: 'El celular no puede exceder 20 caracteres' },
+            ],
+            placeholder: 'Ej: 70012345',
+            span: 12,
+          },
+          {
+            name: 'email',
+            label: 'Email',
+            type: 'input',
+            rules: [
+              { type: 'email', message: 'Ingrese un email válido' },
+              { max: 150, message: 'El email no puede exceder 150 caracteres' },
+            ],
+            placeholder: 'Ej: contacto@email.com',
+            span: 12,
+          },
+          {
+            name: 'direccion',
+            label: 'Dirección',
+            type: 'textarea',
+            rules: [
+              { max: 500, message: 'La dirección no puede exceder 500 caracteres' },
+            ],
+            placeholder: 'Ingrese la dirección de domicilio',
+            rows: 2,
+            span: 24,
+          },
+          {
+            name: 'ocupacion',
+            label: 'Ocupación',
+            type: 'input',
+            rules: [
+              { max: 100, message: 'La ocupación no puede exceder 100 caracteres' },
+            ],
+            placeholder: 'Ej: Profesor, Comerciante, etc.',
+            span: 12,
+          },
+          {
+            name: 'lugarTrabajo',
+            label: 'Lugar de Trabajo',
+            type: 'input',
+            rules: [
+              { max: 200, message: 'El lugar de trabajo no puede exceder 200 caracteres' },
+            ],
+            placeholder: 'Ej: Colegio San José',
+            span: 12,
+          },
+          {
+            name: 'esContactoEmergencia',
+            label: 'Es Contacto de Emergencia',
+            type: 'switch',
+            defaultValue: true,
+            span: 6,
+          },
+          {
+            name: 'esApoderadoLegal',
+            label: 'Es Apoderado Legal',
+            type: 'switch',
+            defaultValue: false,
+            span: 6,
+          },
+          {
+            name: 'viveConEstudiante',
+            label: 'Vive con el Estudiante',
+            type: 'switch',
+            defaultValue: false,
+            span: 6,
+          },
+          {
+            name: 'observaciones',
+            label: 'Observaciones',
+            type: 'textarea',
+            rules: [
+              { max: 500, message: 'Las observaciones no pueden exceder 500 caracteres' },
+            ],
+            placeholder: 'Observaciones adicionales sobre este contacto',
+            rows: 2,
+            span: 24,
+          },
+        ],
+        minItems: 1,
+        maxItems: 10,
+        addButtonText: 'Agregar Contacto',
+        removeButtonText: 'Eliminar',
+      },
+    ],
+  },
+
   // Sección: Observaciones
   observations: {
     title: 'Observaciones',
@@ -844,7 +903,7 @@ export const studentFormSections = [
   'personalData',
   'geographicData',
   'contactData',
-  'academicData',
+  'emergencyContacts',
   'documents',
   'observations',
 ];
