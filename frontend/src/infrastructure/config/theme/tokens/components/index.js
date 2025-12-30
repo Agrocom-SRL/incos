@@ -36,6 +36,7 @@ export const componentConfig = {
   // Buttons
   Button: buttons.Button,
   IconButton: buttons.IconButton,
+  SemanticButtons: buttons.SemanticButtons,
 
   // Content
   Card: content.Card,

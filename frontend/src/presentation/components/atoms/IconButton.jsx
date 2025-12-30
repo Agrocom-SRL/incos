@@ -6,6 +6,8 @@
  * 
  * Los estilos de tema vienen automáticamente de Ant Design via ConfigProvider
  * CSS solo para layout y espaciado
+ * 
+ * Soporta variantes semánticas de color mediante el prop 'variant'
  */
 
 import { Button as AntButton } from 'antd';
@@ -13,12 +15,18 @@ import { Button as AntButton } from 'antd';
 const IconButton = ({
     icon,
     onClick,
-    size = 'middle',
+    size = 'large',
     disabled = false,
+    variant = 'default', // 'default' | 'info' | 'success' | 'warning' | 'error'
     className = '',
+    style = {},
     ...props
 }) => {
-    const iconButtonClassName = className ? `icon-button ${className}`.trim() : 'icon-button';
+    const baseClassName = 'icon-button';
+    const variantClassName = variant !== 'default' ? `icon-button--${variant}` : '';
+    const iconButtonClassName = className 
+        ? `${baseClassName} ${variantClassName} ${className}`.trim() 
+        : `${baseClassName} ${variantClassName}`.trim();
 
     return (
         <AntButton
@@ -28,6 +36,7 @@ const IconButton = ({
             onClick={onClick}
             disabled={disabled}
             className={iconButtonClassName}
+            style={style}
             {...props}
         />
     );

@@ -3,6 +3,13 @@
    ============================================================================
    Estilos simples: color base, hover con color más oscuro y texto blanco
    Los colores vienen del tema via variables CSS
+   
+   Variantes semánticas:
+   - default: Color por defecto del tema
+   - info: Azul (para acciones de información/ver)
+   - success: Verde (para acciones de éxito/completar)
+   - warning: Amarillo (para acciones de advertencia)
+   - error: Rojo (para acciones destructivas/eliminar)
    ============================================================================ */
 
 .icon-button {
@@ -11,7 +18,7 @@
     justify-content: center;
 }
 
-/* Color base del icono */
+/* Color base del icono (default) */
 .icon-button.ant-btn-text {
     color: var(--color-icon-button);
 }
@@ -20,27 +27,119 @@
     color: var(--color-icon-button) !important;
 }
 
-/* Hover: fondo verde oscuro con icono blanco */
-.icon-button.ant-btn-text:hover {
+/* Variante Info (azul) - para editar/ver */
+.icon-button--info.ant-btn-text {
+    color: var(--color-info);
+}
+
+.icon-button--info.ant-btn-text .anticon {
+    color: var(--color-info) !important;
+}
+
+.icon-button--info.ant-btn-text:hover {
+    background-color: var(--color-info-hover) !important;
+    color: var(--color-info-text-hover) !important;
+}
+
+.icon-button--info.ant-btn-text:hover .anticon {
+    color: var(--color-info-text-hover) !important;
+}
+
+.icon-button--info.ant-btn-text:active {
+    background-color: var(--color-info-active) !important;
+    color: var(--color-info-text-hover) !important;
+}
+
+/* Variante Success (verde) - para completar */
+.icon-button--success.ant-btn-text {
+    color: var(--color-success);
+}
+
+.icon-button--success.ant-btn-text .anticon {
+    color: var(--color-success) !important;
+}
+
+.icon-button--success.ant-btn-text:hover {
+    background-color: var(--color-success-hover) !important;
+    color: var(--color-success-text-hover) !important;
+}
+
+.icon-button--success.ant-btn-text:hover .anticon {
+    color: var(--color-success-text-hover) !important;
+}
+
+.icon-button--success.ant-btn-text:active {
+    background-color: var(--color-success-active) !important;
+    color: var(--color-success-text-hover) !important;
+}
+
+/* Variante Warning (amarillo) - para advertencias */
+.icon-button--warning.ant-btn-text {
+    color: var(--color-warning);
+}
+
+.icon-button--warning.ant-btn-text .anticon {
+    color: var(--color-warning) !important;
+}
+
+.icon-button--warning.ant-btn-text:hover {
+    background-color: var(--color-warning-hover) !important;
+    color: var(--color-warning-text-hover) !important;
+}
+
+.icon-button--warning.ant-btn-text:hover .anticon {
+    color: var(--color-warning-text-hover) !important;
+}
+
+.icon-button--warning.ant-btn-text:active {
+    background-color: var(--color-warning-active) !important;
+    color: var(--color-warning-text-hover) !important;
+}
+
+/* Variante Error (rojo) - para eliminar */
+.icon-button--error.ant-btn-text {
+    color: var(--color-error);
+}
+
+.icon-button--error.ant-btn-text .anticon {
+    color: var(--color-error) !important;
+}
+
+.icon-button--error.ant-btn-text:hover {
+    background-color: var(--color-error-hover) !important;
+    color: var(--color-error-text-hover) !important;
+}
+
+.icon-button--error.ant-btn-text:hover .anticon {
+    color: var(--color-error-text-hover) !important;
+}
+
+.icon-button--error.ant-btn-text:active {
+    background-color: var(--color-error-active) !important;
+    color: var(--color-error-text-hover) !important;
+}
+
+/* Hover genérico (para default) */
+.icon-button.ant-btn-text:hover:not(.icon-button--info):not(.icon-button--success):not(.icon-button--warning):not(.icon-button--error) {
     background-color: var(--color-icon-button-hover-bg) !important;
     color: var(--color-icon-button-hover-text);
 }
 
-.icon-button.ant-btn-text:hover .anticon {
+.icon-button.ant-btn-text:hover:not(.icon-button--info):not(.icon-button--success):not(.icon-button--warning):not(.icon-button--error) .anticon {
     color: var(--color-icon-button-hover-text) !important;
 }
 
-/* Active: fondo verde oscuro con icono blanco */
-.icon-button.ant-btn-text:active {
+/* Active genérico (para default) */
+.icon-button.ant-btn-text:active:not(.icon-button--info):not(.icon-button--success):not(.icon-button--warning):not(.icon-button--error) {
     background-color: var(--color-icon-button-active-bg) !important;
     color: var(--color-icon-button-active-text);
 }
 
-.icon-button.ant-btn-text:active .anticon {
+.icon-button.ant-btn-text:active:not(.icon-button--info):not(.icon-button--success):not(.icon-button--warning):not(.icon-button--error) .anticon {
     color: var(--color-icon-button-active-text) !important;
 }
 
-/* Disabled: fondo gris claro con icono gris claro */
+/* Disabled: fondo gris claro con icono gris claro (aplica a todas las variantes) */
 .icon-button.ant-btn-text:disabled {
     background-color: var(--color-icon-button-disabled-bg) !important;
     color: var(--color-icon-button-disabled-text);

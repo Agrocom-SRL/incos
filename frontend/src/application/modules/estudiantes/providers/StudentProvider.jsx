@@ -39,21 +39,21 @@ import { useEstudiantesList } from '@application-estudiantes/hooks';
 import { StudentContext } from '@application-estudiantes/context/StudentContext';
 
 export const StudentProvider = ({ children }) => {
-  // Hook para lista de estudiantes (incluye búsqueda y filtrado)
-  const listData = useEstudiantesList();
+    // Hook para lista de estudiantes (incluye búsqueda y filtrado)
+    const listData = useEstudiantesList();
 
-  // Componer el valor del contexto: spread de todos los hooks
-  // Cuando se agreguen nuevas features, simplemente agregar aquí:
-  // const becasData = useEstudiantesBecas();
-  // const value = { ...listData, ...becasData };
-  const value = {
-    ...listData,
-  };
+    // Componer el valor del contexto: spread de todos los hooks
+    // Cuando se agreguen nuevas features, simplemente agregar aquí:
+    // const becasData = useEstudiantesBecas();
+    // const value = { ...listData, ...becasData };
+    const value = {
+        ...listData,
+    };
 
-  return (
-    <StudentContext.Provider value={value}>
-      {children}
-    </StudentContext.Provider>
-  );
+    return (
+        <StudentContext.Provider value={value}>
+            {children}
+        </StudentContext.Provider>
+    );
 };
 

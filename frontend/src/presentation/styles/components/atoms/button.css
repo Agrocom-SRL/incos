@@ -8,6 +8,16 @@
    - colorPrimary (desde theme.components.Button.colorPrimary)
    - borderRadius (desde theme.components.Button.borderRadius)
    - controlHeight (desde theme.components.Button.controlHeight según el prop 'size')
+   
+   Variantes semánticas:
+   - info: Azul (para acciones de información)
+   - success: Verde (para acciones de éxito)
+   - warning: Amarillo (para acciones de advertencia)
+   - error: Rojo (para acciones destructivas)
+   
+   Estilos:
+   - filled: Botón con fondo de color
+   - outlined: Botón con borde de color y fondo transparente
    ============================================================================ */
 
 .button {
@@ -16,6 +26,115 @@
   align-items: center;
   justify-content: center;
   transition: var(--transition-base);
+}
+
+/* Variantes semánticas - Filled (con fondo) */
+.button--info.ant-btn-primary {
+  background-color: var(--color-info-bg);
+  border-color: var(--color-info-border);
+  color: var(--color-info-text);
+}
+
+.button--info.ant-btn-primary:hover {
+  background-color: var(--color-info-bg-hover);
+  border-color: var(--color-info-border-hover);
+  color: var(--color-info-text-hover);
+}
+
+.button--success.ant-btn-primary {
+  background-color: var(--color-success-bg);
+  border-color: var(--color-success-border);
+  color: var(--color-success-text);
+}
+
+.button--success.ant-btn-primary:hover {
+  background-color: var(--color-success-bg-hover);
+  border-color: var(--color-success-border-hover);
+  color: var(--color-success-text-hover);
+}
+
+.button--warning.ant-btn-primary {
+  background-color: var(--color-warning-bg);
+  border-color: var(--color-warning-border);
+  color: var(--color-warning-text);
+}
+
+.button--warning.ant-btn-primary:hover {
+  background-color: var(--color-warning-bg-hover);
+  border-color: var(--color-warning-border-hover);
+  color: var(--color-warning-text-hover);
+}
+
+.button--error.ant-btn-primary {
+  background-color: var(--color-error-bg);
+  border-color: var(--color-error-border);
+  color: var(--color-error-text);
+}
+
+.button--error.ant-btn-primary:hover {
+  background-color: var(--color-error-bg-hover);
+  border-color: var(--color-error-border-hover);
+  color: var(--color-error-text-hover);
+}
+
+/* Variantes semánticas - Outlined (solo borde) */
+.button--info.ant-btn-default {
+  border-color: var(--color-info-border);
+  color: var(--color-info-text);
+  background-color: transparent;
+}
+
+.button--info.ant-btn-default:hover {
+  border-color: var(--color-info-border-hover);
+  color: var(--color-info-text-hover);
+  background-color: var(--color-info-bg);
+}
+
+.button--success.ant-btn-default {
+  border-color: var(--color-success-border);
+  color: var(--color-success-text);
+  background-color: transparent;
+}
+
+.button--success.ant-btn-default:hover {
+  border-color: var(--color-success-border-hover);
+  color: var(--color-success-text-hover);
+  background-color: var(--color-success-bg);
+}
+
+.button--warning.ant-btn-default {
+  border-color: var(--color-warning-border);
+  color: var(--color-warning-text);
+  background-color: transparent;
+}
+
+.button--warning.ant-btn-default:hover {
+  border-color: var(--color-warning-border-hover);
+  color: var(--color-warning-text-hover);
+  background-color: var(--color-warning-bg);
+}
+
+.button--error.ant-btn-default {
+  border-color: var(--color-error-border);
+  color: var(--color-error-text);
+  background-color: transparent;
+}
+
+.button--error.ant-btn-default:hover {
+  border-color: var(--color-error-border-hover);
+  color: var(--color-error-text-hover);
+  background-color: var(--color-error-bg);
+}
+
+/* Disabled para todas las variantes semánticas */
+.button--info.ant-btn:disabled,
+.button--success.ant-btn:disabled,
+.button--warning.ant-btn:disabled,
+.button--error.ant-btn:disabled {
+  background-color: var(--color-info-bg-disabled);
+  border-color: var(--color-info-border);
+  color: var(--color-info-text-disabled);
+  opacity: 0.6;
 }
 
 /* Nota: Las alturas (height) ya las aplica Ant Design automáticamente

@@ -744,4 +744,37 @@ const { token } = useToken();
 
 ---
 
+## 📝 CAMBIOS RECIENTES
+
+### Reorganización de Hooks y Componentes (Enero 2025)
+
+**Reorganización de Hooks del Módulo Estudiantes:**
+- ✅ Separación de hooks de API (`useEstudiantesApi`) y hooks de Feature (`useEstudiantesList`)
+- ✅ Eliminación de hooks deprecated (`useStudentsList`, `useEstudiantesTable`)
+- ✅ Estructura escalable: cada feature tiene su propio hook
+- ✅ Documentación actualizada en `docs/14-frontend.md`
+
+**Co-localización de Hooks con Componentes:**
+- ✅ `useTableData` movido a `DataTable/hooks/` (co-localizado con el componente)
+- ✅ `useSidebarState` exportado desde `Sidebar/index.js` (patrón consistente)
+- ✅ Patrón establecido: hooks genéricos co-localizados con sus componentes
+
+**Componentes y Estructura:**
+- ✅ Nuevos componentes atómicos: `SearchBar`, `Spinner`
+- ✅ Componente genérico `DataTable` (molecule) para tablas reutilizables
+- ✅ Organismo genérico `TableListView` para vistas de lista con tabla
+- ✅ Configuración de columnas separada en `config/tableColumns.jsx`
+
+**Arquitectura:**
+- ✅ Clean Architecture aplicada: separación clara entre API, Feature y Generic hooks
+- ✅ Atomic Design: componentes organizados en atoms, molecules, organisms
+- ✅ Principio YAGNI: solo se crea lo necesario, sin código anticipado
+
+**Documentación:**
+- ✅ Información de hooks integrada en `docs/14-frontend.md`
+- ✅ Convenciones de nombres actualizadas en `docs/09-estandares-codigo.md`
+- ✅ Estructura y patrones documentados para futuras features
+
+---
+
 Esta es la base del dominio del negocio para INCOS. ¿Comenzamos con la implementación completa del módulo de autenticación y estudiantes?

@@ -3,4 +3,5 @@
  * Barrel export para configuración de iconos
  */
 export { menuIconMap } from './menuIcons';
+export { getDataTableAction } from './dataTableIcons';
 

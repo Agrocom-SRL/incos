@@ -7,25 +7,28 @@
  * permitiendo reutilizar y modificar fácilmente las columnas sin tocar el componente.
  */
 
-import { Space, Tag } from 'antd';
-import { UserOutlined, PhoneOutlined, MailOutlined, EditOutlined, CheckCircleOutlined, EyeOutlined } from '@ant-design/icons';
-import { Button, Text } from '@atoms';
+import { Space, Tag, Tooltip } from 'antd';
+import { UserOutlined, PhoneOutlined, MailOutlined } from '@ant-design/icons';
+import { Text, IconButton } from '@atoms';
+import { getDataTableAction } from '@config/icons';
 
 /**
  * Crea las columnas de la tabla de estudiantes
  * 
- * @param {Function} getFullName - Función para obtener el nombre completo
  * @param {Function} navigate - Función de navegación de react-router
- * @param {Object} registrosIncompletos - Objeto con el estado de registros incompletos
  * @returns {Array} Array de configuración de columnas para Ant Design Table
  */
-export const createEstudiantesTableColumns = (getFullName, navigate, registrosIncompletos = {}) => {
+export const createEstudiantesTableColumns = (navigate) => {
+  // Obtener configuraciones de acciones desde la configuración centralizada
+  const editAction = getDataTableAction('edit');
+  const viewAction = getDataTableAction('view');
+  const completeAction = getDataTableAction('complete');
+  const deleteAction = getDataTableAction('delete');
+
   return [
     {
       title: 'Código de Estudiante',
       dataIndex: 'codigoEstudiante',
-      key: 'codigoEstudiante',
-      width: 160,
       fixed: 'left',
       render: (codigo) => (
         <Space size="small">
@@ -43,11 +46,10 @@ export const createEstudiantesTableColumns = (getFullName, navigate, registrosIn
     },
     {
       title: 'Nombre Completo',
-      key: 'nombre',
-      width: 300,
-      render: (_, record) => (
+      dataIndex: 'nombreCompleto',
+      render: (nombreCompleto, record) => (
         <div>
-          <Text strong>{getFullName(record)}</Text>
+          <Text strong>{nombreCompleto || 'Sin nombre'}</Text>
           {record.genero && (
             <Tag color="blue" style={{ marginTop: 4, fontSize: '11px' }}>
               {record.genero}
@@ -56,16 +58,14 @@ export const createEstudiantesTableColumns = (getFullName, navigate, registrosIn
         </div>
       ),
       sorter: (a, b) => {
-        const nombreA = getFullName(a);
-        const nombreB = getFullName(b);
+        const nombreA = a.nombreCompleto || 'Sin nombre';
+        const nombreB = b.nombreCompleto || 'Sin nombre';
         return nombreA.localeCompare(nombreB);
       },
     },
     {
       title: 'CI',
       dataIndex: 'ciCompleto',
-      key: 'ci',
-      width: 140,
       render: (ciCompleto) => (
         <Space size="small">
           <UserOutlined />
@@ -76,8 +76,7 @@ export const createEstudiantesTableColumns = (getFullName, navigate, registrosIn
     },
     {
       title: 'Contacto',
-      key: 'contacto',
-      width: 260,
+      dataIndex: 'contacto',
       render: (_, record) => (
         <Space orientation="vertical" size={4} style={{ width: '100%' }}>
           {record.emailPersonal && (
@@ -96,60 +95,43 @@ export const createEstudiantesTableColumns = (getFullName, navigate, registrosIn
       ),
     },
     {
-      title: 'Estado',
-      key: 'estado',
-      width: 150,
-      fixed: 'right',
-      render: (_, record) => {
-        const estado = registrosIncompletos[record.id];
-        if (!estado) {
-          return <Tag color="default">Verificando...</Tag>;
-        }
-        if (estado.incompleto) {
-          return (
-            <Tag color="warning" icon={<EditOutlined />}>
-              Registro Incompleto
-            </Tag>
-          );
-        }
-        return (
-          <Tag color="success" icon={<CheckCircleOutlined />}>
-            Completo
-          </Tag>
-        );
-      },
-    },
-    {
       title: 'Acciones',
       key: 'acciones',
-      width: 180,
       fixed: 'right',
       render: (_, record) => {
-        const estado = registrosIncompletos[record.id];
-        const tieneRegistroIncompleto = estado?.incompleto;
-        const tieneRegistroCompleto = estado && !estado.incompleto;
-
         return (
           <Space>
-            {tieneRegistroIncompleto && (
-              <Button
-                variant="primary"
-                icon={<EditOutlined />}
+            <Tooltip title={`${editAction.tooltip} estudiante`}>
+              <IconButton
+                icon={<editAction.icon />}
+                variant={editAction.variant}
                 onClick={() => navigate(`/estudiantes/registrar?estudianteId=${record.id}`)}
-                size="small"
-              >
-                Completar Registro
-              </Button>
-            )}
-            {tieneRegistroCompleto && (
-              <Button
-                icon={<EyeOutlined />}
+              />
+            </Tooltip>
+            <Tooltip title={`${viewAction.tooltip} estudiante`}>
+              <IconButton
+                icon={<viewAction.icon />}
+                variant={viewAction.variant}
                 onClick={() => navigate(`/estudiantes/registrar?estudianteId=${record.id}&view=true`)}
-                size="small"
-              >
-                Ver Registro
-              </Button>
-            )}
+              />
+            </Tooltip>
+            <Tooltip title={`${completeAction.tooltip} registro`}>
+              <IconButton
+                icon={<completeAction.icon />}
+                variant={completeAction.variant}
+                onClick={() => navigate(`/estudiantes/registrar?estudianteId=${record.id}&completar=true`)}
+              />
+            </Tooltip>
+            <Tooltip title={`${deleteAction.tooltip} estudiante`}>
+              <IconButton
+                icon={<deleteAction.icon />}
+                variant={deleteAction.variant}
+                onClick={() => {
+                  // TODO: Implementar lógica de eliminación
+                  console.log('Eliminar estudiante:', record.id);
+                }}
+              />
+            </Tooltip>
           </Space>
         );
       },

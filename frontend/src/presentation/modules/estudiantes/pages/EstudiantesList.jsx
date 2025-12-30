@@ -20,7 +20,7 @@ import { createEstudiantesTableColumns } from '@estudiantes/config/tableColumns'
 
 const EstudiantesList = () => {
     const navigate = useNavigate();
-    
+
     // Obtener datos del contexto (toda la lógica está en el Provider)
     const {
         estudiantes = [],
@@ -28,7 +28,6 @@ const EstudiantesList = () => {
         error = null,
         searchText = '',
         setSearchText,
-        getFullName,
     } = useStudentContext();
 
     const handleNuevoEstudiante = () => {
@@ -37,8 +36,8 @@ const EstudiantesList = () => {
 
     // Crear columnas de la tabla (memoizadas para evitar recrearlas en cada render)
     const tableColumns = useMemo(
-        () => createEstudiantesTableColumns(getFullName, navigate, {}),
-        [getFullName, navigate]
+        () => createEstudiantesTableColumns(navigate),
+        [navigate]
     );
 
     return (

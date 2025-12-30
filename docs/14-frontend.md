@@ -593,6 +593,142 @@ frontend/
   - Inscripciones
   - Cualquier dato que se cachea y sincroniza
 
+### 5.3 Organización de Custom Hooks
+
+El frontend sigue una organización clara de hooks para mantener la separación de responsabilidades y facilitar la escalabilidad.
+
+#### Estructura de Hooks
+
+**1. Hooks de Contexto**
+- **Propósito:** Consumir el contexto proporcionado por Providers
+- **Ejemplo:** `useStudentContext` - Acceder al contexto de estudiantes
+- **Uso:** En componentes que necesitan datos del contexto
+
+**2. Hooks de API (Llamadas al Backend)**
+- **Formato:** `use[Entidad]Api`
+- **Ejemplo:** `useEstudiantesApi`, `useBecasApi`
+- **Propósito:** Manejar todas las llamadas a la API relacionadas con una entidad
+- **Responsabilidad:** Solo maneja la comunicación con la API (loading, error, refetch)
+- **No contiene:** Lógica de UI, búsqueda, filtrado, formateo
+- **Flujo:** Hook → Use Case → Repository → API
+
+**3. Hooks de Feature (Lógica de UI por Feature)**
+- **Formato:** `use[Entidad][Feature]`
+- **Ejemplo:** `useEstudiantesList`, `useEstudiantesBecas`
+- **Propósito:** Combinar datos de API + lógica de búsqueda/filtrado + formateo
+- **Usa:** Hooks de API + Hooks genéricos
+- **Específico para:** Una feature/UI específica
+
+**4. Hooks Genéricos (Reutilizables)**
+- **Formato:** `use[Funcionalidad]`
+- **Ejemplo:** `useTableData`, `useFormData`
+- **Propósito:** Lógica reutilizable no específica de una entidad
+- **Ubicación:** Co-localizados con sus componentes (ej: `useTableData` en `@molecules/DataTable`)
+- **Uso:** Puede ser usado por cualquier feature que necesite la funcionalidad
+
+#### Flujo de Datos con Hooks
+
+```
+Componente (Page)
+    ↓
+useStudentContext()  ← Consume el contexto
+    ↓
+StudentProvider
+    ↓
+useEstudiantesList()  ← Feature hook (combina API + UI)
+    ↓
+    ├─→ useEstudiantesApi()  ← API hook (llamadas al backend)
+    │       ↓
+    │   Use Case → Repository → API
+    │
+    └─→ useTableData()  ← Generic hook (búsqueda/filtrado) [desde @molecules/DataTable]
+```
+
+#### Co-localización de Hooks
+
+Los hooks genéricos que pertenecen a componentes específicos se co-localizan con sus componentes:
+
+```
+molecules/
+└── DataTable/
+    ├── DataTable.jsx
+    ├── index.js              # Exporta componente + hook
+    └── hooks/
+        └── useTableData.js   # Hook co-localizado
+
+organisms/
+└── Sidebar/
+    ├── Sidebar.jsx
+    ├── index.js              # Exporta componente + hook
+    └── hooks/
+        └── useSidebarState.js # Hook co-localizado
+```
+
+**Ventajas:**
+- ✅ Código relacionado está junto
+- ✅ Fácil de encontrar y mantener
+- ✅ Patrón consistente entre componentes
+
+#### Cómo Agregar una Nueva Feature
+
+**Ejemplo: Agregar Feature de Becas**
+
+1. **Crear hook de API** (si es necesario):
+```javascript
+// hooks/useBecasApi.js
+export const useBecasApi = () => {
+  // Llamadas a la API de becas
+};
+```
+
+2. **Crear hook de feature**:
+```javascript
+// hooks/useEstudiantesBecas.js
+import { useBecasApi } from './useBecasApi';
+import { useTableData } from '@molecules';
+
+export const useEstudiantesBecas = () => {
+  const { becas, loading, error, refetch } = useBecasApi();
+  const { searchText, setSearchText, filteredData } = useTableData(becas, getSearchFields);
+  
+  return {
+    becas: filteredData,
+    loading,
+    error,
+    refetch,
+    searchText,
+    setSearchText,
+  };
+};
+```
+
+3. **Agregar al Provider**:
+```javascript
+// providers/StudentProvider.jsx
+import { useEstudiantesBecas } from '@application-estudiantes/hooks';
+
+const becasData = useEstudiantesBecas();
+
+const value = {
+  ...listData,
+  ...becasData,  // Agregar aquí
+};
+```
+
+4. **Exportar en index.js**:
+```javascript
+// hooks/index.js
+export { useEstudiantesBecas } from './useEstudiantesBecas';
+```
+
+#### Ventajas de esta Organización
+
+1. **Separación de responsabilidades:** API separado de UI
+2. **Escalabilidad:** Cada feature tiene su propio hook, no crece un solo hook
+3. **Reutilización:** Hooks genéricos pueden ser usados por múltiples features
+4. **Claridad:** Los nombres indican claramente el propósito
+5. **Mantenibilidad:** Fácil de encontrar y modificar código específico
+
 ---
 
 ## 6. INTEGRACIÓN CON BACKEND

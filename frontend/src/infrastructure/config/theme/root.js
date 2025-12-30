@@ -43,6 +43,30 @@ export function injectCSSVariables() {
   root.style.setProperty('--color-icon-button-disabled-text', componentConfig.IconButton.colorDisabledText);
 
   // ========================================
+  // COLORES SEMÁNTICOS - Para variantes de IconButton y Button
+  // Generados automáticamente desde SemanticButtons
+  // ========================================
+  const semanticVariants = ['info', 'success', 'warning', 'error'];
+  
+  semanticVariants.forEach((variant) => {
+    const semantic = componentConfig.SemanticButtons[variant];
+    // Variables para IconButton (solo color e interacciones)
+    root.style.setProperty(`--color-${variant}`, semantic.color);
+    root.style.setProperty(`--color-${variant}-hover`, semantic.colorHover);
+    root.style.setProperty(`--color-${variant}-active`, semantic.colorActive);
+    root.style.setProperty(`--color-${variant}-text-hover`, semantic.colorTextHover);
+    
+    // Variables para Button (filled y outlined)
+    root.style.setProperty(`--color-${variant}-bg`, semantic.colorBg);
+    root.style.setProperty(`--color-${variant}-bg-hover`, semantic.colorBgHover);
+    root.style.setProperty(`--color-${variant}-border`, semantic.colorBorder);
+    root.style.setProperty(`--color-${variant}-border-hover`, semantic.colorBorderHover);
+    root.style.setProperty(`--color-${variant}-text`, semantic.colorText);
+    root.style.setProperty(`--color-${variant}-text-disabled`, semantic.colorTextDisabled);
+    root.style.setProperty(`--color-${variant}-bg-disabled`, semantic.colorBgDisabled);
+  });
+
+  // ========================================
   // AVATAR - Variables CSS
   // ========================================
   root.style.setProperty('--color-avatar-bg', componentConfig.Avatar.colorBgContainer);

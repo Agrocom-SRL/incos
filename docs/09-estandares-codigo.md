@@ -183,6 +183,44 @@ const estudiante = (id) => { ... };  // Falta prefijo 'use'
 const UseCalificaciones = () => { ... }; // PascalCase
 ```
 
+**Convenciones de Nombres por Tipo de Hook:**
+
+**Hooks de API (Llamadas al Backend):**
+```javascript
+// ✅ CORRECTO: Formato use[Entidad]Api
+const useEstudiantesApi = () => { ... };
+const useBecasApi = () => { ... };
+const useCarrerasApi = () => { ... };
+
+// ❌ INCORRECTO
+const useEstudiantes = () => { ... };  // No indica que es para API
+const useFetchEstudiantes = () => { ... }; // No sigue el patrón
+```
+
+**Hooks de Feature (Lógica de UI por Feature):**
+```javascript
+// ✅ CORRECTO: Formato use[Entidad][Feature]
+const useEstudiantesList = () => { ... };
+const useEstudiantesBecas = () => { ... };
+const useEstudiantesLicencias = () => { ... };
+
+// ❌ INCORRECTO
+const useEstudiantesTable = () => { ... };  // Demasiado genérico
+const useList = () => { ... }; // No indica entidad
+```
+
+**Hooks Genéricos (Reutilizables):**
+```javascript
+// ✅ CORRECTO: Formato use[Funcionalidad]
+const useTableData = () => { ... };
+const useFormData = () => { ... };
+const usePagination = () => { ... };
+
+// ❌ INCORRECTO
+const useEstudiantesTableData = () => { ... }; // No es genérico
+const tableData = () => { ... }; // Falta prefijo 'use'
+```
+
 ---
 
 ## 3. ESTRUCTURA DE CÓDIGO
