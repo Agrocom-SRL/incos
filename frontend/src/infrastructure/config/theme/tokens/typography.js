@@ -20,6 +20,8 @@ export const typography = {
   fontSize: 16,
   // Tamaño pequeño (texto secundario, labels pequeños)
   fontSizeSM: 14,
+  // Tamaño extra pequeño (tags, badges, elementos muy pequeños)
+  fontSizeXS: 12,
   // Tamaño grande (texto destacado)
   fontSizeLG: 18,
   // Tamaño extra grande (texto muy destacado)

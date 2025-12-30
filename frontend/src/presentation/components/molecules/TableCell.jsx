@@ -51,8 +51,8 @@ const TableCell = ({
     const hasContent = content !== null && content !== undefined && content !== '';
 
     // Determinar clase de alineación
-    const alignClass = `molecule-table-cell--align-${align}`;
-    const cellClassName = `molecule-table-cell ${alignClass}`;
+    const alignClass = `table-cell--align-${align}`;
+    const cellClassName = `table-cell ${alignClass}`;
 
     // Si es para acciones, renderizar directamente sin Text
     if (actions) {
@@ -93,10 +93,10 @@ const TableCell = ({
                 )}
                 {tag && (
                     <Tag
-                        className={`molecule-table-cell__tag ${orientation === 'vertical' ?
-                            'molecule-table-cell__tag--vertical' :
+                        className={`table-cell__tag ${orientation === 'vertical' ?
+                            'table-cell__tag--vertical' :
                             ''
-                            } molecule-table-cell__tag--${tagColor}`}
+                            } table-cell__tag--${tagColor}`}
                     >
                         {tag}
                     </Tag>

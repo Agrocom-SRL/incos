@@ -178,6 +178,7 @@ export function injectCSSVariables() {
   root.style.setProperty('--font-family-heading', allThemeTokens.fontFamily);
   root.style.setProperty('--font-size-base', `${allThemeTokens.fontSize}px`);
   root.style.setProperty('--font-size-sm', `${allThemeTokens.fontSizeSM}px`);
+  root.style.setProperty('--font-size-xs', `${allThemeTokens.fontSizeXS}px`);
   root.style.setProperty('--font-size-lg', `${allThemeTokens.fontSizeLG}px`);
   root.style.setProperty('--line-height-normal', `${allThemeTokens.lineHeight}`);
 

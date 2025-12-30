@@ -91,7 +91,7 @@ export const createEstudiantesTableColumns = (navigate) => {
           {record.emailPersonal && (
             <TableCell
               icon={<MailOutlined />}
-              textStyle={{ fontSize: '12px' }}
+              textStyle={{ fontSize: 'var(--font-size-sm)' }}
               size="small"
             >
               {record.emailPersonal}
@@ -100,7 +100,7 @@ export const createEstudiantesTableColumns = (navigate) => {
           {record.celular && (
             <TableCell
               icon={<PhoneOutlined />}
-              textStyle={{ fontSize: '12px' }}
+              textStyle={{ fontSize: 'var(--font-size-sm)' }}
               size="small"
             >
               {record.celular}
