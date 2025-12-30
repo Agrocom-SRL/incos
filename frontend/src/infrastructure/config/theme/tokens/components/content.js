@@ -12,12 +12,17 @@ import { allSpacing } from '../spacing';
  * Propiedades reconocidas por Ant Design v5
  */
 export const Card = {
+  // Colores (similar a Button que tiene colorPrimary, etc.)
   colorBgContainer: allColors.colorBgContainer,
   colorBorder: allColors.colorBorder,
+  colorBorderSecondary: allColors.colorBorderSecondary,
+  
+  // Espaciado y forma
   borderRadius: allSpacing.borderRadius,
   borderRadiusLG: allSpacing.borderRadiusLG,
   padding: allSpacing.paddingLG,
   paddingLG: allSpacing.paddingXL,
+  
   // Nota: boxShadow no es una propiedad estándar de Ant Design, se maneja via CSS
 };
 
@@ -45,4 +50,18 @@ export const Avatar = {
   colorText: allColors.colorInfo,
   colorTextHover: allColors.colorInfoHover,
   colorBorder: allColors.colorInfoBorder,
+};
+
+/**
+ * Alert - Alertas y mensajes
+ * Propiedades reconocidas por Ant Design v5
+ */
+export const Alert = {
+  colorError: allColors.colorError,
+  colorSuccess: allColors.colorSuccess,
+  colorWarning: allColors.colorWarning,
+  colorInfo: allColors.colorInfo,
+  borderRadius: allSpacing.borderRadius,
+  padding: allSpacing.padding,
+  paddingContentHorizontal: allSpacing.paddingLG,
 };

@@ -1,0 +1,17 @@
+/* ============================================================================
+   CONTAINER (Componente Atómico)
+   ============================================================================
+   Estilos principalmente para layout y espaciado
+   Los colores y temas vienen automáticamente de Ant Design via ConfigProvider
+   ============================================================================ */
+
+.container {
+  /* Layout y espaciado */
+  width: 100%;
+}
+
+/* Variante para contenedor de página con padding */
+.container--page {
+  padding: var(--spacing-lg);
+}
+

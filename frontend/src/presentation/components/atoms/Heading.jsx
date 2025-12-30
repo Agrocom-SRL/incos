@@ -1,4 +1,4 @@
-// components/atoms/Heading/Heading.jsx
+// components/atoms/Heading.jsx
 /**
  * Heading - Componente atómico para títulos/encabezados
  * 
@@ -20,17 +20,12 @@ const Heading = ({
   className = '',
   ...props
 }) => {
-  // Clase personalizada siguiendo la convención del proyecto (incos-*)
-  // Ant Design ya aplica .ant-typography y todos los estilos del tema automáticamente
-  const baseClassName = `incos-heading incos-heading--h${level}`;
-  const finalClassName = className ? `${baseClassName} ${className}`.trim() : baseClassName;
+  const headingClassName = className ? `heading heading--h${level} ${className}`.trim() : `heading heading--h${level}`;
 
-  // Ant Design aplica automáticamente el tema desde ConfigProvider
-  // No necesitamos estilos inline, solo clases para layout
   return (
     <Title
       level={level}
-      className={finalClassName}
+      className={headingClassName}
       {...props}
     >
       {children}
@@ -39,3 +34,4 @@ const Heading = ({
 };
 
 export default Heading;
+

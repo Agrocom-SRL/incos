@@ -1,2 +1,2 @@
-export { GetEstudiantesUseCase } from './GetEstudiantesUseCase';
+export { GetTodosEstudiantesUseCase } from './GetTodosEstudiantesUseCase';
 

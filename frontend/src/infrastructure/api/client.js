@@ -6,8 +6,8 @@
  */
 
 import axios from 'axios';
-import { API_CONFIG } from '@config/api';
-import { requestInterceptor, responseInterceptor } from './interceptors.js';
+import { API_CONFIG } from '@config/api/config.js';
+import { requestInterceptor, responseInterceptor } from '@api/interceptors.js';
 
 // Crear instancia de Axios con configuración
 const apiClient = axios.create(API_CONFIG);

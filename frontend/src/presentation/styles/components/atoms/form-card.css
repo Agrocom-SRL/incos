@@ -5,10 +5,10 @@
    Los colores y temas vienen automáticamente de Ant Design via ConfigProvider
    ============================================================================ */
 
-   .atom-form-card {
-    /* Layout y espaciado - Aumentado para más respiración */
-    padding: 8px 14px;
-    /* Espaciado adicional entre elementos internos */
-    margin-bottom: 0;
-  }
+.form-card {
+  /* Layout y espaciado - Usando variables CSS del tema */
+  padding: var(--spacing-xs) var(--spacing-sm);
+  /* Espaciado adicional entre elementos internos */
+  margin-bottom: 0;
+}
   

@@ -4,17 +4,21 @@
  * Single Responsibility: Solo maneja la obtención de la lista de estudiantes
  * 
  * Clean Architecture:
- * - Application Layer: Orquesta la obtención de datos
- * - Usa apiClient para comunicarse con el backend
+ * - Application Layer: Orquesta la obtención de datos usando Use Cases
+ * - Usa Use Cases del Domain Layer (nunca llama directamente a Repository o API)
+ * 
+ * Flujo correcto:
+ * Application (hook) → Domain (Use Case) → Infrastructure (Repository) → API
  * 
  * Este hook:
- * - Obtiene la lista de estudiantes desde el backend
+ * - Obtiene la lista de estudiantes usando GetTodosEstudiantesUseCase
  * - Maneja estados de loading y error
  * - Proporciona función para refetch
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import apiClient from '@api-client';
+import { useCasesFactory } from '@container';
+import { mapEstudiantesList } from '../mappers';
 
 export const useStudentsList = () => {
   const [estudiantes, setEstudiantes] = useState([]);
@@ -24,23 +28,35 @@ export const useStudentsList = () => {
   /**
    * Función centralizada para cargar estudiantes
    * Se reutiliza tanto en el efecto inicial como en refetch
+   * 
+   * @param {Object} options - Opciones para obtener estudiantes
+   * @param {Object} options.params - Parámetros de consulta (pagina, limite, busqueda, etc.)
    */
-  const fetchStudents = useCallback(async () => {
+  const fetchStudents = useCallback(async (options = {}) => {
     setLoading(true);
     setError(null);
 
     try {
-      const response = await apiClient.get('/v1/estudiantes');
-      // La respuesta puede venir en response.data.data o response.data
-      const data = response.data?.data || response.data || [];
-      setEstudiantes(Array.isArray(data) ? data : []);
+      // Obtener el Use Case desde el container
+      const obtenerTodosEstudiantesUseCase = useCasesFactory.obtenerTodosEstudiantes();
+      
+      // Ejecutar el Use Case
+      const result = await obtenerTodosEstudiantesUseCase.ejecutar(options);
+      
+      // Si hay error, manejarlo
+      if (!result.success) {
+        setError(result.error || 'Error al cargar los estudiantes');
+        setEstudiantes([]);
+        return;
+      }
+      
+      // Si hay éxito, mapear y actualizar el estado con los estudiantes
+      const estudiantesMapeados = mapEstudiantesList(result.data);
+      setEstudiantes(estudiantesMapeados);
     } catch (err) {
-      const errorMessage = err.response?.data?.error?.message ||
-        err.message ||
-        'Error al cargar los estudiantes';
-      setError(errorMessage);
+      // Error inesperado (no debería llegar aquí si el Use Case maneja bien los errores)
+      setError(err.message || 'Error al cargar los estudiantes');
       setEstudiantes([]);
-      throw err; // Re-lanzar para que el componente pueda manejar el error
     } finally {
       setLoading(false);
     }
@@ -53,20 +69,18 @@ export const useStudentsList = () => {
 
   /**
    * Función para recargar los estudiantes manualmente
+   * 
+   * @param {Object} options - Opciones para obtener estudiantes (filtros, paginación, etc.)
    */
-  const refetch = useCallback(async () => {
-    await fetchStudents();
+  const refetch = useCallback(async (options = {}) => {
+    await fetchStudents(options);
   }, [fetchStudents]);
 
   return {
     estudiantes,
-    estudiantesList: estudiantes, // Alias para compatibilidad
     loading,
-    loadingList: loading, // Alias para compatibilidad
     error,
-    listError: error, // Alias para compatibilidad
     refetch,
-    refetchList: refetch, // Alias para compatibilidad
   };
 };
 

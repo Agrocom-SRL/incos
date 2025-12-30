@@ -80,6 +80,7 @@ export function injectCSSVariables() {
   root.style.setProperty('--spacing-xs', `${allThemeTokens.marginXS}px`);
   root.style.setProperty('--spacing-sm', `${allThemeTokens.marginSM}px`);
   root.style.setProperty('--spacing-base', `${allThemeTokens.margin}px`);
+  root.style.setProperty('--spacing-md', `${allThemeTokens.marginMD}px`);
   root.style.setProperty('--spacing-lg', `${allThemeTokens.marginLG}px`);
   root.style.setProperty('--spacing-xl', `${allThemeTokens.marginXL}px`);
 

@@ -48,6 +48,27 @@ export function buildStudentRouter({ controllers, middlewares }) {
         (req, res, next) => controllers.listStudentsController.handle(req, res, next)
     );
 
+    // Rutas específicas ANTES de /:id (para evitar conflictos)
+    router.get(
+        '/summary',
+        (req, res, next) => controllers.getStudentsSummaryController?.handle(req, res, next) || res.status(501).json({ success: false, error: 'Endpoint en construcción' })
+    );
+
+    router.get(
+        '/becas',
+        (req, res, next) => controllers.listBecasController?.handle(req, res, next) || res.status(501).json({ success: false, error: 'Endpoint en construcción' })
+    );
+
+    router.get(
+        '/licencias',
+        (req, res, next) => controllers.listLicenciasController?.handle(req, res, next) || res.status(501).json({ success: false, error: 'Endpoint en construcción' })
+    );
+
+    router.get(
+        '/documentos',
+        (req, res, next) => controllers.listAllDocumentsController?.handle(req, res, next) || res.status(501).json({ success: false, error: 'Endpoint en construcción' })
+    );
+
     router.get(
         '/:id',
         getStudentByIdValidator,
@@ -102,6 +123,7 @@ export function buildStudentRouter({ controllers, middlewares }) {
     // BECAS Y LICENCIAS
     // ============================================
 
+    // Becas (rutas específicas de estudiante)
     router.post(
         '/:id/becas',
         assignBecaValidator,
@@ -109,11 +131,22 @@ export function buildStudentRouter({ controllers, middlewares }) {
         (req, res, next) => controllers.assignBecaController.handle(req, res, next)
     );
 
+    router.patch(
+        '/:id/becas/:becaId/aprobar',
+        (req, res, next) => controllers.approveBecaController?.handle(req, res, next) || res.status(501).json({ success: false, error: 'Endpoint en construcción' })
+    );
+
+    // Licencias (rutas específicas de estudiante)
     router.post(
         '/:id/licencias',
         requestLicenciaValidator,
         validateRequest,
         (req, res, next) => controllers.requestLicenciaController.handle(req, res, next)
+    );
+
+    router.patch(
+        '/:id/licencias/:licenciaId/aprobar',
+        (req, res, next) => controllers.approveLicenciaController?.handle(req, res, next) || res.status(501).json({ success: false, error: 'Endpoint en construcción' })
     );
 
     // ============================================

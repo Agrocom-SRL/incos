@@ -16,8 +16,46 @@ import {
 const router = express.Router();
 
 /**
- * GET /api/v1/catalogs/carreras
- * Obtener lista de carreras activas
+ * @swagger
+ * /catalogs/carreras:
+ *   get:
+ *     summary: Obtener lista de carreras activas
+ *     description: Retorna todas las carreras disponibles en el sistema
+ *     tags: [Catálogos]
+ *     responses:
+ *       200:
+ *         description: Lista de carreras
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                         example: 1
+ *                       nombre:
+ *                         type: string
+ *                         example: Ingeniería de Sistemas
+ *                       codigo:
+ *                         type: string
+ *                         example: IS
+ *                       activo:
+ *                         type: boolean
+ *                         example: true
+ *       500:
+ *         description: Error del servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.get('/carreras', getCarreras);
 

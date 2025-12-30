@@ -2,6 +2,8 @@ import routes from '../../presentation/routes/index.js';
 import { serverConfig } from '../config/server.config.js';
 import { logger } from '../config/logger.config.js';
 import { setupErrorHandling } from './middleware.config.js';
+import swaggerUi from 'swagger-ui-express';
+import swaggerSpec from '../config/swagger.config.js';
 
 /**
  * Configuración de rutas de Express
@@ -32,19 +34,18 @@ export function setupRoutes(app) {
     app.use('/api/v1', routes);
 
     // ============================================
-    // API DOCUMENTATION
+    // API DOCUMENTATION (Swagger UI)
     // ============================================
-    app.get('/api-docs', (req, res) => {
-        res.json({
-            message: 'Documentación API en construcción',
-            version: '1.0.0',
-            endpoints: {
-                health: '/health',
-                api: '/api/v1',
-                estudiantes: '/api/v1/estudiantes',
-                catalogs: '/api/v1/catalogs',
-            },
-        });
+    app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+        customCss: '.swagger-ui .topbar { display: none }',
+        customSiteTitle: 'API Instituto INCOS - Documentación',
+        customfavIcon: '/favicon.ico',
+    }));
+
+    // Endpoint JSON de la especificación OpenAPI
+    app.get('/api-docs.json', (req, res) => {
+        res.setHeader('Content-Type', 'application/json');
+        res.send(swaggerSpec);
     });
 
     // ============================================

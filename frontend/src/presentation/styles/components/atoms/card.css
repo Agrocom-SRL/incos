@@ -1,0 +1,12 @@
+/* ============================================================================
+   CARD (Componente Atómico)
+   ============================================================================
+   Estilos principalmente para layout y espaciado
+   Los colores y temas vienen automáticamente de Ant Design via ConfigProvider
+   ============================================================================ */
+
+.card {
+  /* Layout y espaciado */
+  margin-bottom: var(--spacing-md);
+}
+

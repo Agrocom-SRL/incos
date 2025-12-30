@@ -8,6 +8,37 @@ const router = express.Router();
 // ============================================
 // RUTA BASE - Información de la API
 // ============================================
+/**
+ * @swagger
+ * /:
+ *   get:
+ *     summary: Información de la API
+ *     description: Retorna información general sobre la API v1
+ *     tags: [Health]
+ *     responses:
+ *       200:
+ *         description: Información de la API
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: API Instituto INCOS v1
+ *                 version:
+ *                   type: string
+ *                   example: 1.0.0
+ *                 endpoints:
+ *                   type: object
+ *                   properties:
+ *                     estudiantes:
+ *                       type: string
+ *                       example: /api/v1/estudiantes
+ *                     catalogs:
+ *                       type: string
+ *                       example: /api/v1/catalogs
+ */
 router.get('/', (req, res) => {
     res.json({
         message: 'API Instituto INCOS v1',

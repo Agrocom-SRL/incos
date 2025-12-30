@@ -29,10 +29,15 @@
 @import './components/atoms/button.css';
 @import './components/atoms/heading.css';
 @import './components/atoms/form-card.css';
+@import './components/atoms/text.css';
+@import './components/atoms/card.css';
+@import './components/atoms/container.css';
+@import './components/atoms/alert.css';
 
 /* 5. Components - Molecules */
 @import './components/molecules/navigation-menu.css';
 @import './components/molecules/form-section.css';
+@import './components/molecules/page-header.css';
 
 /* 6. Components - Organisms */
 @import './components/organisms/sidebar.css';

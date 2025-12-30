@@ -4,21 +4,21 @@
    Estilos principalmente para layout y espaciado
    Los colores y tamaños vienen automáticamente de Ant Design via ConfigProvider
    
-   Nota: Las clases .incos-heading son PERSONALIZADAS (no de Ant Design)
-   Ant Design usa .ant-typography internamente, nuestras clases se agregan adicionalmente
-   
-   Convención: incos-* (consistente con incos-avatar, incos-button, etc.)
+   Ant Design aplica automáticamente:
+   - colorTextHeading (desde theme.components.Typography.colorTextHeading)
+   - fontSize (desde theme.token.fontSizeHeading1-5)
+   - fontWeightStrong (desde theme.token.fontWeightStrong)
    ============================================================================ */
 
-.incos-heading {
+.heading {
   /* Layout y espaciado base */
   margin: 0;
   margin-bottom: var(--spacing-lg);
 }
 
 /* h4 y h5 usan espaciado menor */
-.incos-heading--h4,
-.incos-heading--h5 {
+.heading--h4,
+.heading--h5 {
   margin-bottom: var(--spacing-base);
 }
 

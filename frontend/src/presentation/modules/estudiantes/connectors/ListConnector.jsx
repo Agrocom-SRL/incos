@@ -11,7 +11,7 @@
  */
 
 import { StudentProvider } from '@application-estudiantes/providers';
-import EstudiantesList from '@estudiantes/pages/List';
+import EstudiantesList from '@estudiantes/pages';
 
 const ListConnector = () => {
   return (

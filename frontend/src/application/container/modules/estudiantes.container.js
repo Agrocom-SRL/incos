@@ -6,7 +6,7 @@
  * - Application Layer: Registro de dependencias del módulo de estudiantes
  */
 
-import { GetEstudiantesUseCase } from '@useCases/estudiantes/GetEstudiantesUseCase';
+import { GetTodosEstudiantesUseCase } from '@useCases/estudiantes';
 import EstudianteRepository from '@implementations/EstudianteRepository';
 
 /**
@@ -19,8 +19,8 @@ export function registerEstudiantesModule(factory) {
   const estudianteRepository = EstudianteRepository;
 
   // Registrar Use Cases
-  factory.obtenerEstudiantes = () => {
-    return new GetEstudiantesUseCase(estudianteRepository);
+  factory.obtenerTodosEstudiantes = () => {
+    return new GetTodosEstudiantesUseCase(estudianteRepository);
   };
 
   return factory;

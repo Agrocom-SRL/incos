@@ -7,3 +7,4 @@ export { default as HelpGuideCard } from './Helpguidecard';
 export { default as FormField } from './FormField';
 export { default as FormSection } from './FormSection';
 export { default as FormActions } from './Formactions';
+export { default as PageHeader } from './PageHeader';

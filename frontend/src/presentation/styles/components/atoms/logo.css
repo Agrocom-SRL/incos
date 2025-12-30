@@ -4,13 +4,13 @@
    Estilos simples para el logo en el Header
    ============================================================================ */
 
-.app-logo {
+.logo {
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-.app-logo img {
+.logo img {
     width: 100%;
     height: 100%;
     object-fit: contain;
@@ -20,17 +20,17 @@
    VARIANTE: ICONO (Cuadrado)
    ======================================== */
 
-.app-logo--icon.app-logo--small {
+.logo--icon.logo--small {
     width: var(--logo-icon-small);
     height: var(--logo-icon-small);
 }
 
-.app-logo--icon.app-logo--medium {
+.logo--icon.logo--medium {
     width: var(--logo-icon-medium);
     height: var(--logo-icon-medium);
 }
 
-.app-logo--icon.app-logo--large {
+.logo--icon.logo--large {
     width: var(--logo-icon-large);
     height: var(--logo-icon-large);
 }
@@ -39,17 +39,17 @@
    VARIANTE: HORIZONTAL
    ======================================== */
 
-.app-logo--horizontal.app-logo--small {
+.logo--horizontal.logo--small {
     width: var(--logo-horizontal-small-width);
     height: var(--logo-horizontal-small-height);
 }
 
-.app-logo--horizontal.app-logo--medium {
+.logo--horizontal.logo--medium {
     width: var(--logo-horizontal-medium-width);
     height: var(--logo-horizontal-medium-height);
 }
 
-.app-logo--horizontal.app-logo--large {
+.logo--horizontal.logo--large {
     width: var(--logo-horizontal-large-width);
     height: var(--logo-horizontal-large-height);
 }

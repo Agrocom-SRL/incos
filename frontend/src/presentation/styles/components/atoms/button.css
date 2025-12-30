@@ -4,18 +4,13 @@
    Estilos principalmente para layout y posicionamiento
    Los colores y temas vienen automáticamente de Ant Design via ConfigProvider
    
-   Nota: Las clases .incos-button son PERSONALIZADAS (no de Ant Design)
-   Ant Design usa .ant-btn internamente, nuestras clases se agregan adicionalmente
-   
-   Convención: incos-* (consistente con incos-avatar, etc.)
-   
    Ant Design aplica automáticamente:
    - colorPrimary (desde theme.components.Button.colorPrimary)
    - borderRadius (desde theme.components.Button.borderRadius)
    - controlHeight (desde theme.components.Button.controlHeight según el prop 'size')
    ============================================================================ */
 
-.incos-button {
+.button {
   /* Layout y posicionamiento */
   display: inline-flex;
   align-items: center;

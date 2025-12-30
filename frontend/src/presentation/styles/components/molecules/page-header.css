@@ -1,0 +1,12 @@
+/* ============================================================================
+   PAGE HEADER (Componente Molecular)
+   ============================================================================
+   Estilos principalmente para layout y espaciado
+   Los colores y temas vienen automáticamente de Ant Design via ConfigProvider
+   ============================================================================ */
+
+.molecule-page-header {
+  /* Layout y espaciado */
+  margin-bottom: var(--spacing-md);
+}
+

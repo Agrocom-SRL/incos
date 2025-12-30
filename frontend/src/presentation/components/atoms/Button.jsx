@@ -1,4 +1,4 @@
-// components/atoms/Button/Button.jsx
+// components/atoms/Button.jsx
 /**
  * Button - Componente atómico para botones
  * 
@@ -25,13 +25,8 @@ const Button = ({
   className = '',
   ...props
 }) => {
-  // Clase personalizada siguiendo la convención del proyecto (incos-*)
-  // Ant Design ya aplica .ant-btn y todos los estilos del tema automáticamente
-  const baseClassName = `incos-button`;
-  const finalClassName = className ? `${baseClassName} ${className}`.trim() : baseClassName;
+  const buttonClassName = className ? `button ${className}`.trim() : 'button';
 
-  // Ant Design aplica automáticamente el tema desde ConfigProvider
-  // No necesitamos estilos inline, solo clases para layout
   return (
     <AntButton
       type={variant === 'primary' ? 'primary' : 'default'}
@@ -40,7 +35,7 @@ const Button = ({
       disabled={disabled}
       htmlType={htmlType}
       onClick={onClick}
-      className={finalClassName}
+      className={buttonClassName}
       {...props}
     >
       {children}
@@ -49,3 +44,4 @@ const Button = ({
 };
 
 export default Button;
+

@@ -11,7 +11,6 @@
  * 
  * Features actuales:
  * - Listado de estudiantes (useStudentsList)
- * - Estado de registro (useStudentRegistrationStatus)
  * 
  * Features futuras (agregar cuando se implementen):
  * - Becas: useStudentBecas
@@ -19,15 +18,12 @@
  * - Documentos: useStudentDocumentos
  */
 
-import { useStudentsList, useStudentRegistrationStatus } from '@application-estudiantes/hooks';
+import { useStudentsList } from '@application-estudiantes/hooks';
 import { StudentContext } from '@application-estudiantes/context/StudentContext';
 
 export const StudentProvider = ({ children }) => {
   // Hook para obtener lista de estudiantes
   const listData = useStudentsList();
-
-  // Hook para verificar estado de registro (depende de la lista)
-  //const registrationStatus = useStudentRegistrationStatus(listData.estudiantes || []);
 
   // Componer el valor del contexto: spread de todos los hooks
   const value = {

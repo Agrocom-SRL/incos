@@ -9,7 +9,7 @@
  * Similar al backend, pero adaptado para frontend (React hooks)
  */
 
-import { registerAllModules } from './modules/index.js';
+import { registerAllModules } from '@container/modules';
 
 /**
  * Factory de Use Cases centralizado

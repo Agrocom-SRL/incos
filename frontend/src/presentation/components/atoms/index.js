@@ -6,6 +6,10 @@ export { default as MenuItem } from './MenuItem';
 export { default as Button } from './Button';
 export { default as Heading } from './Heading';
 export { default as FormCard } from './FormCard';
+export { default as Text } from './Text';
+export { default as Card } from './Card';
+export { default as Container } from './Container';
+export { default as Alert } from './Alert';
 
 // Exportar componentes de campos (fields)
 export * from './fields';

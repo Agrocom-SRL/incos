@@ -1,8 +1,8 @@
-// components/atoms/FormCard/FormCard.jsx
 /**
- * FormCard: Átomo para el contenedor Card
+ * Card - Componente atómico para contenedores tipo card
  * 
- * Single Responsibility: Wrapper simple de Card de Ant Design
+ * Single Responsibility: Wrapper de Card de Ant Design
+ * 
  * Los estilos de tema vienen automáticamente de Ant Design via ConfigProvider
  * CSS solo para layout y espaciado
  * 
@@ -12,21 +12,26 @@
  * - colorBorder (desde theme.components.Card.colorBorder)
  */
 
-import { Card } from 'antd';
+import { Card as AntCard } from 'antd';
 
-const FormCard = ({
+const Card = ({
   children,
+  title,
   className = '',
   ...props
 }) => {
+  const cardClassName = className ? `card ${className}`.trim() : 'card';
+
   return (
-    <Card
-      className={`atom-form-card ${className}`.trim()}
+    <AntCard
+      className={cardClassName}
+      title={title}
       {...props}
     >
       {children}
-    </Card>
+    </AntCard>
   );
 };
 
-export default FormCard;
+export default Card;
+

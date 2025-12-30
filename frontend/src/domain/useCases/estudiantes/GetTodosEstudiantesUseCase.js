@@ -1,7 +1,7 @@
 /**
- * Use Case: Obtener Lista de Estudiantes
+ * Use Case: Obtener Todos los Estudiantes
  * 
- * Single Responsibility: Orquestar la obtención de estudiantes (listar, buscar, filtrar, paginar)
+ * Single Responsibility: Orquestar la obtención de todos los estudiantes (listar, buscar, filtrar, paginar)
  * Dependency Inversion: Depende de la abstracción IEstudianteRepository
  * 
  * Clean Architecture:
@@ -19,7 +19,7 @@
 
 import { IEstudianteRepository } from '@repositories/IEstudianteRepository';
 
-export class GetEstudiantesUseCase {
+export class GetTodosEstudiantesUseCase {
   /**
    * @param {IEstudianteRepository} estudianteRepository - Repositorio de estudiantes
    */
@@ -28,7 +28,7 @@ export class GetEstudiantesUseCase {
   }
 
   /**
-   * Ejecuta el caso de uso de obtener estudiantes
+   * Ejecuta el caso de uso de obtener todos los estudiantes
    * 
    * @param {Object} options - Opciones para obtener estudiantes
    * @param {Object} options.params - Parámetros HTTP para el repositorio

@@ -1,4 +1,4 @@
-// components/atoms/FormCard/FormCard.jsx
+// components/atoms/FormCard.jsx
 /**
  * FormCard: Átomo para el contenedor Card
  * 
@@ -19,9 +19,11 @@ const FormCard = ({
   className = '',
   ...props
 }) => {
+  const formCardClassName = className ? `form-card ${className}`.trim() : 'form-card';
+
   return (
     <Card
-      className={`atom-form-card ${className}`.trim()}
+      className={formCardClassName}
       {...props}
     >
       {children}
@@ -30,3 +32,4 @@ const FormCard = ({
 };
 
 export default FormCard;
+

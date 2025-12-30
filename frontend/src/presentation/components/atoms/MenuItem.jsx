@@ -1,7 +1,4 @@
 // src/presentation/components/atoms/MenuItem.jsx
-import React from 'react';
-import { menuIconMap } from '@config/icons';
-
 /**
  * MenuItem - Componente atómico para renderizar iconos del menú
  * 
@@ -10,18 +7,21 @@ import { menuIconMap } from '@config/icons';
  * Clean Architecture:
  * - Presentation Layer: Componente atómico de UI
  * - Usa: Configuración de iconos desde infrastructure/config/icons
- * 
- * @param {string} iconName - Nombre del icono (key del item del menú)
- * @param {object} props - Props adicionales para el icono
  */
-const MenuItem = ({ iconName, ...props }) => {
+
+import React from 'react';
+import { menuIconMap } from '@config/icons';
+
+const MenuItem = ({ iconName, className = '', ...props }) => {
     const IconComponent = menuIconMap[iconName];
 
     if (!IconComponent) {
         return null;
     }
 
-    return <IconComponent {...props} />;
+    const menuItemClassName = className ? `menu-item ${className}`.trim() : 'menu-item';
+
+    return <IconComponent className={menuItemClassName} {...props} />;
 };
 
 export default MenuItem;

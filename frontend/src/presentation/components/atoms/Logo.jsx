@@ -1,25 +1,29 @@
 // src/presentation/components/atoms/Logo.jsx
+/**
+ * Logo - Componente atómico del logo de INCOS
+ * 
+ * Single Responsibility: Renderizar el logo del instituto
+ * 
+ * Los estilos de tema vienen automáticamente de Ant Design via ConfigProvider
+ * CSS solo para layout y espaciado
+ */
+
 import { Image } from 'antd';
 import logoIcon from '@assets/images/branding/logo-icon.webp';
 import logoHorizontal from '@assets/images/branding/logo-horizontal.webp';
 
-/**
- * Logo - Componente atómico del logo de INCOS
- * 
- * @param {string} variant - Variante del logo: 'icon' | 'horizontal'
- * @param {string} size - Tamaño: 'small' | 'medium' | 'large'
- * @param {function} onClick - Función opcional que se ejecuta al hacer click
- */
 const Logo = ({
     variant = 'horizontal',
     size = 'medium',
-    onClick
+    onClick,
+    className = ''
 }) => {
     const logoSrc = variant === 'horizontal' ? logoHorizontal : logoIcon;
+    const logoClassName = className ? `logo logo--${size} logo--${variant} ${className}`.trim() : `logo logo--${size} logo--${variant}`;
 
     return (
         <div
-            className={`app-logo app-logo--${size} app-logo--${variant}`}
+            className={logoClassName}
             onClick={onClick}
         >
             <Image
