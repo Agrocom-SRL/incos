@@ -1,7 +1,7 @@
 /**
- * Hook personalizado: useStudentsList
+ * Hook: useEstudiantesApi
  * 
- * Single Responsibility: Solo maneja la obtención de la lista de estudiantes
+ * Single Responsibility: Manejar todas las llamadas a la API relacionadas con estudiantes
  * 
  * Clean Architecture:
  * - Application Layer: Orquesta la obtención de datos usando Use Cases
@@ -14,19 +14,22 @@
  * - Obtiene la lista de estudiantes usando GetTodosEstudiantesUseCase
  * - Maneja estados de loading y error
  * - Proporciona función para refetch
+ * 
+ * Nota: Este hook es específico para llamadas a la API.
+ * Para lógica de UI (búsqueda, filtrado, formateo), usar useEstudiantesList
  */
 
 import { useState, useEffect, useCallback } from 'react';
 import { useCasesFactory } from '@container';
 import { mapEstudiantesList } from '../mappers';
 
-export const useStudentsList = () => {
+export const useEstudiantesApi = () => {
   const [estudiantes, setEstudiantes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   /**
-   * Función centralizada para cargar estudiantes
+   * Función centralizada para cargar estudiantes desde la API
    * Se reutiliza tanto en el efecto inicial como en refetch
    * 
    * @param {Object} options - Opciones para obtener estudiantes

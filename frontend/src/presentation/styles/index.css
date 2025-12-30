@@ -33,6 +33,7 @@
 @import './components/atoms/card.css';
 @import './components/atoms/container.css';
 @import './components/atoms/alert.css';
+@import './components/atoms/spinner.css';
 
 /* 5. Components - Molecules */
 @import './components/molecules/navigation-menu.css';

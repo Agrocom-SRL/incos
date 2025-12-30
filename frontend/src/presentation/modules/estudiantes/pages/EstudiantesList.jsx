@@ -1,25 +1,22 @@
 /**
  * EstudiantesList - Página para listar estudiantes
  * 
- * Single Responsibility: Solo renderizar la UI de la lista de estudiantes
+ * Single Responsibility: Orquestar la configuración específica de estudiantes para TableListView
  * 
- * Esta es una página pura de React que:
- * - No contiene lógica de negocio
- * - Obtiene datos del StudentProvider mediante useStudentContext
- * - Solo maneja lógica de presentación
- * 
- * NOTA: Este componente se refactorizará usando Atomic Design
- * por partes, creando componentes atómicos reutilizables.
+ * Atomic Design: Page
+ * - Usa PageTemplate para el layout
+ * - Usa el organismo genérico TableListView
+ * - Configura columnas, acciones y datos específicos de estudiantes
  */
 
-import React from 'react';
+import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PlusOutlined } from '@ant-design/icons';
-import { useStudentContext } from '@application-estudiantes/hooks';
 import { PageTemplate } from '@templates';
-import { PageHeader } from '@molecules';
-import { Button, Container, Text, Alert, Card } from '@atoms';
-import { allSpacing } from '@theme/tokens';
+import { TableListView } from '@organisms';
+import { Button } from '@atoms';
+import { useStudentContext } from '@application-estudiantes/hooks';
+import { createEstudiantesTableColumns } from '@estudiantes/config/tableColumns';
 
 const EstudiantesList = () => {
     const navigate = useNavigate();
@@ -29,61 +26,54 @@ const EstudiantesList = () => {
         estudiantes = [],
         loading = false,
         error = null,
-        refetch,
+        searchText = '',
+        setSearchText,
+        getFullName,
     } = useStudentContext();
 
     const handleNuevoEstudiante = () => {
         navigate('/estudiantes/registrar');
     };
 
+    // Crear columnas de la tabla (memoizadas para evitar recrearlas en cada render)
+    const tableColumns = useMemo(
+        () => createEstudiantesTableColumns(getFullName, navigate, {}),
+        [getFullName, navigate]
+    );
+
     return (
         <PageTemplate>
-            <Container vertical gap={allSpacing.paddingLG}>
-                <PageHeader
-                    title="Lista de Estudiantes"
-                    actions={
-                        <Button
-                            variant="primary"
-                            icon={<PlusOutlined />}
-                            onClick={handleNuevoEstudiante}
-                        >
-                            Nuevo Estudiante
-                        </Button>
-                    }
-                />
-                
-                <Container vertical gap={allSpacing.margin}>
-                    <Text type="paragraph" strong>Loading: {loading ? 'Sí' : 'No'}</Text>
-                    <Text type="paragraph" strong>Error: {error || 'No hay error'}</Text>
-                    <Text type="paragraph" strong>Total de estudiantes: {estudiantes.length}</Text>
-                </Container>
-
-                {loading && estudiantes.length === 0 && (
-                    <Text type="paragraph">Cargando estudiantes...</Text>
-                )}
-
-                {error && (
-                    <Alert
-                        type="error"
-                        message="Error"
-                        description={error}
-                    />
-                )}
-
-                {!loading && estudiantes.length > 0 && (
-                    <Card title={`Estudiantes (${estudiantes.length})`}>
-                        <Container vertical gap={allSpacing.paddingSM}>
-                            <Text type="paragraph">
-                                {JSON.stringify(estudiantes, null, 2)}
-                            </Text>
-                        </Container>
-                    </Card>
-                )}
-
-                {!loading && estudiantes.length === 0 && !error && (
-                    <Text type="paragraph">No hay estudiantes disponibles</Text>
-                )}
-            </Container>
+            <TableListView
+                data={estudiantes}
+                loading={loading}
+                error={error}
+                searchText={searchText}
+                onSearchChange={(e) => setSearchText(e.target.value)}
+                searchPlaceholder="Buscar por código, nombre, CI, email o celular..."
+                columns={tableColumns}
+                rowKey={(record) => record.id || record.ciCompleto || Math.random()}
+                pagination={{
+                    pageSize: 10,
+                    showSizeChanger: true,
+                    showTotal: (total) => `Total: ${total} estudiantes`,
+                    pageSizeOptions: ['10', '20', '50', '100'],
+                }}
+                defaultSort={{
+                    field: 'codigoEstudiante',
+                    order: 'ascend',
+                }}
+                title="Lista de Estudiantes"
+                headerActions={
+                    <Button
+                        variant="primary"
+                        icon={<PlusOutlined />}
+                        onClick={handleNuevoEstudiante}
+                    >
+                        Nuevo Estudiante
+                    </Button>
+                }
+                loadingTip="Cargando estudiantes..."
+            />
         </PageTemplate>
     );
 };

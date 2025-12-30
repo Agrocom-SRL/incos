@@ -4,4 +4,5 @@
  * 
  * Para lazy loading, exportamos ListConnector como default
  */
-export { default } from './ListConnector';
+import ListConnector from './ListConnector';
+export default ListConnector;
