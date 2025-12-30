@@ -1,0 +1,77 @@
+/* ============================================================================
+   TABLE CELL (Componente Molecular)
+   ============================================================================
+   Estilos para layout y alineación de celdas de tabla
+   Los colores y temas vienen automáticamente de Ant Design via ConfigProvider
+   ============================================================================ */
+
+.molecule-table-cell {
+  display: flex;
+  width: 100%;
+}
+
+.molecule-table-cell--align-left {
+  justify-content: flex-start;
+}
+
+.molecule-table-cell--align-center {
+  justify-content: center;
+}
+
+.molecule-table-cell--align-right {
+  justify-content: flex-end;
+}
+
+/* ============================================================================
+   TABLE CELL TAG - Estilos para Tags dentro de TableCell
+   Reutiliza las variables CSS ya declaradas para colores semánticos
+   ============================================================================ */
+
+.molecule-table-cell__tag {
+  margin-top: 0;
+  font-size: 11px;
+}
+
+.molecule-table-cell__tag--vertical {
+  margin-top: 4px;
+}
+
+/* Colores semánticos - reutilizan variables existentes (--color-{variant}-bg, --color-{variant}-text) */
+.molecule-table-cell__tag--success {
+  color: var(--color-success-text);
+  background: var(--color-success-bg);
+  border-color: var(--color-success);
+}
+
+.molecule-table-cell__tag--info {
+  color: var(--color-info-text);
+  background: var(--color-info-bg);
+  border-color: var(--color-info);
+}
+
+.molecule-table-cell__tag--warning {
+  color: var(--color-warning-text);
+  background: var(--color-warning-bg);
+  border-color: var(--color-warning);
+}
+
+.molecule-table-cell__tag--error {
+  color: var(--color-error-text);
+  background: var(--color-error-bg);
+  border-color: var(--color-error);
+}
+
+/* Blue mapea a info (usa las mismas variables) */
+.molecule-table-cell__tag--blue {
+  color: var(--color-info-text);
+  background: var(--color-info-bg);
+  border-color: var(--color-info);
+}
+
+/* Primary usa colores primarios del sistema */
+.molecule-table-cell__tag--primary {
+  color: var(--color-primary-text);
+  background: var(--color-primary-bg);
+  border-color: var(--color-verde-main);
+}
+

@@ -1,0 +1,87 @@
+/* ============================================================================
+   DATA TABLE (Componente Molecular)
+   ============================================================================
+   Estilos personalizados para tablas de datos
+   Solo estilos que Ant Design no maneja directamente desde content.js
+   Todos los valores usan variables CSS del tema (sin hardcodeo)
+   ============================================================================ */
+
+.data-table {
+  /* Border radius y overflow - Ant Design maneja borderRadius desde content.js */
+  overflow: hidden;
+}
+
+/* Headers de tabla - solo estilos personalizados */
+.data-table .ant-table-thead > tr > th {
+  /* Font size desde tema */
+  font-size: var(--font-size-sm);
+  /* Padding desde tema */
+  padding: var(--table-header-padding-vertical) var(--table-header-padding-horizontal) !important;
+}
+
+/* Header con ordenamiento activo (sorted) - estilo personalizado */
+.data-table .ant-table-thead > tr > th.ant-table-column-sort {
+  background: var(--color-table-header-sorted-bg);
+  color: var(--color-table-header-sorted-color);
+}
+
+/* Iconos de ordenamiento - color desde tema de Ant Design */
+.data-table .ant-table-thead > tr > th .ant-table-column-sorter {
+  color: var(--color-text-tertiary);
+}
+
+/* Icono de ordenamiento activo */
+.data-table .ant-table-thead > tr > th.ant-table-column-sort .ant-table-column-sorter {
+  color: var(--color-table-header-sorted-color);
+}
+
+/* Hover en header con ordenamiento */
+.data-table .ant-table-thead > tr > th.ant-table-column-sort:hover {
+  background: var(--color-table-header-sorted-hover-bg);
+}
+
+/* Filas de tabla - hover effect sutil */
+.data-table .ant-table-tbody > tr {
+  transition: background-color var(--transition-base);
+}
+
+.data-table .ant-table-tbody > tr:hover > td {
+  background: var(--color-table-row-hover-bg);
+}
+
+/* Celdas de datos - padding desde tema */
+.data-table .ant-table-tbody > tr > td {
+  padding: var(--table-cell-padding-vertical) var(--table-cell-padding-horizontal);
+}
+
+/* Última fila sin borde inferior */
+.data-table .ant-table-tbody > tr:last-child > td {
+  border-bottom: none;
+}
+
+/* Paginación con separador sutil */
+.data-table .ant-pagination {
+  margin-top: var(--spacing-md);
+  padding-top: var(--spacing-md);
+}
+
+/* Scrollbar personalizado para tablas con scroll */
+.data-table .ant-table-body::-webkit-scrollbar {
+  height: var(--spacing-sm);
+  width: var(--spacing-sm);
+}
+
+.data-table .ant-table-body::-webkit-scrollbar-track {
+  background: var(--color-bg-layout);
+  border-radius: var(--border-radius-xs);
+}
+
+.data-table .ant-table-body::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: var(--border-radius-xs);
+}
+
+.data-table .ant-table-body::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-tertiary);
+}
+

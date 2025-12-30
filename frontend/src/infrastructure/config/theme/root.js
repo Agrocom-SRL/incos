@@ -27,9 +27,12 @@ export function injectCSSVariables() {
   // Content - Variables CSS usadas en global.css
   root.style.setProperty('--color-content-bg', componentConfig.Layout.bodyBg);
   root.style.setProperty('--color-content-text', allThemeTokens.colorText);
+  root.style.setProperty('--color-bg-layout', allThemeTokens.colorBgLayout);
   
-  // Color verde institucional (usado en reset.css para focus)
+  // Color verde institucional (usado en reset.css para focus y Tags)
   root.style.setProperty('--color-verde-main', allThemeTokens.colorPrimary);
+  root.style.setProperty('--color-primary-bg', allThemeTokens.colorPrimaryBg);
+  root.style.setProperty('--color-primary-text', allThemeTokens.colorPrimaryText);
 
   // ========================================
   // ICON BUTTON - Variables CSS simples
@@ -93,13 +96,27 @@ export function injectCSSVariables() {
 
 
   // ========================================
+  // TABLE - Variables CSS (para DataTable)
+  // Solo variables para estilos personalizados que Ant Design no maneja directamente
+  // ========================================
+  root.style.setProperty('--color-table-header-sorted-bg', componentConfig.Table.headerSortedBg);
+  root.style.setProperty('--color-table-header-sorted-color', componentConfig.Table.headerSortedColor);
+  root.style.setProperty('--color-table-header-sorted-hover-bg', componentConfig.Table.headerSortedHoverBg);
+  root.style.setProperty('--color-table-row-hover-bg', componentConfig.Table.rowHoverBg);
+  
+  // Variables de borde y texto usadas en múltiples componentes
+  root.style.setProperty('--color-border-secondary', allThemeTokens.colorBorderSecondary);
+  root.style.setProperty('--color-border', allThemeTokens.colorBorder);
+  root.style.setProperty('--color-text-tertiary', allThemeTokens.colorTextTertiary);
+
+  // ========================================
   // SOMBRAS (Desde componentConfig para mantener consistencia)
   // ========================================
   root.style.setProperty('--sombra-sider', componentConfig.Sider.boxShadow);
   root.style.setProperty('--sombra-header', componentConfig.Header.boxShadow);
 
   // ========================================
-  // ESPACIADO (Solo lo necesario para Layout)
+  // ESPACIADO (Solo lo necesario para Layout y componentes)
   // ========================================
   root.style.setProperty('--spacing-xs', `${allThemeTokens.marginXS}px`);
   root.style.setProperty('--spacing-sm', `${allThemeTokens.marginSM}px`);
@@ -107,6 +124,11 @@ export function injectCSSVariables() {
   root.style.setProperty('--spacing-md', `${allThemeTokens.marginMD}px`);
   root.style.setProperty('--spacing-lg', `${allThemeTokens.marginLG}px`);
   root.style.setProperty('--spacing-xl', `${allThemeTokens.marginXL}px`);
+  // Padding específicos para tablas
+  root.style.setProperty('--table-header-padding-vertical', `${allThemeTokens.paddingMD}px`);
+  root.style.setProperty('--table-header-padding-horizontal', `${allThemeTokens.paddingMD}px`);
+  root.style.setProperty('--table-cell-padding-vertical', `${allThemeTokens.padding}px`);
+  root.style.setProperty('--table-cell-padding-horizontal', `${allThemeTokens.paddingMD}px`);
 
   // ========================================
   // ALTURAS Y ANCHOS DE LAYOUT
@@ -143,8 +165,9 @@ export function injectCSSVariables() {
   // BORDER RADIUS (solo las usadas)
   // ========================================
   // Nota: Ant Design aplica automáticamente borderRadius desde componentConfig
-  // Solo definimos variables para casos específicos de layout
+  // Solo definimos variables para casos específicos de layout y componentes
   root.style.setProperty('--border-radius-sm', `${allThemeTokens.borderRadiusSM}px`);
+  root.style.setProperty('--border-radius-xs', `${allThemeTokens.borderRadiusXS}px`);
 
   // ========================================
   // TIPOGRAFÍA (solo las usadas)
@@ -154,6 +177,7 @@ export function injectCSSVariables() {
   root.style.setProperty('--font-family-base', allThemeTokens.fontFamily);
   root.style.setProperty('--font-family-heading', allThemeTokens.fontFamily);
   root.style.setProperty('--font-size-base', `${allThemeTokens.fontSize}px`);
+  root.style.setProperty('--font-size-sm', `${allThemeTokens.fontSizeSM}px`);
   root.style.setProperty('--font-size-lg', `${allThemeTokens.fontSizeLG}px`);
   root.style.setProperty('--line-height-normal', `${allThemeTokens.lineHeight}`);
 

@@ -43,4 +43,5 @@ export const componentConfig = {
   Typography: content.Typography,
   Avatar: content.Avatar,
   Alert: content.Alert,
+  Table: content.Table,
 };

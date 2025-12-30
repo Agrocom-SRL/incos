@@ -9,3 +9,4 @@ export { default as FormSection } from './FormSection';
 export { default as FormActions } from './Formactions';
 export { default as PageHeader } from './PageHeader';
 export { default as DataTable, useTableData } from './DataTable';
+export { default as TableCell } from './TableCell';

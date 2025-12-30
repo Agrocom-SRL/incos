@@ -6,6 +6,7 @@
 
 import { allColors } from '../colors';
 import { allSpacing } from '../spacing';
+import { shadows } from '../shadows';
 
 /**
  * Card - Cards para contenido
@@ -14,16 +15,24 @@ import { allSpacing } from '../spacing';
 export const Card = {
   // Colores (similar a Button que tiene colorPrimary, etc.)
   colorBgContainer: allColors.colorBgContainer,
-  colorBorder: allColors.colorBorder,
-  colorBorderSecondary: allColors.colorBorderSecondary,
-  
+  colorBorder: allColors.colorBorderSecondary,
+  colorBorderSecondary: allColors.colorAccentOliveBg,
+
   // Espaciado y forma
   borderRadius: allSpacing.borderRadius,
   borderRadiusLG: allSpacing.borderRadiusLG,
   padding: allSpacing.paddingLG,
   paddingLG: allSpacing.paddingXL,
-  
-  // Nota: boxShadow no es una propiedad estándar de Ant Design, se maneja via CSS
+
+  // Sombras - usando el sistema de sombras del tema
+  // Nota: boxShadow no es una propiedad estándar de Ant Design, se aplica via styles
+  boxShadow: shadows.shadowElevation2, // Sombra por defecto
+  boxShadowHover: shadows.shadowElevation3, // Sombra en hover
+  boxShadowPrimary: shadows.shadowPrimary,
+  boxShadowSuccess: shadows.shadowSuccess,
+  boxShadowInfo: shadows.shadowInfo,
+  boxShadowWarning: shadows.shadowWarning,
+  boxShadowError: shadows.shadowError,
 };
 
 /**
@@ -64,4 +73,39 @@ export const Alert = {
   borderRadius: allSpacing.borderRadius,
   padding: allSpacing.padding,
   paddingContentHorizontal: allSpacing.paddingLG,
+};
+
+/**
+ * Table - Tablas de datos
+ * Propiedades reconocidas por Ant Design v5
+ * 
+ * NOTA: Ant Design Table NO soporta propiedades de padding en el tema.
+ * Los padding se manejan directamente en CSS usando variables del tema.
+ */
+export const Table = {
+  // Colores base
+  colorBgContainer: allColors.colorBgContainer,
+  colorBorderSecondary: allColors.colorBorderSecondary,
+  colorFillQuaternary: allColors.colorBgSpotlight, // Para filas alternadas
+  colorFillTertiary: allColors.colorAccentOliveBg, // Para hover (usando colorAccentOliveBg)
+  
+  // Espaciado (solo borderRadius - padding se maneja en CSS)
+  borderRadius: allSpacing.borderRadius,
+  
+  // Header
+  headerBg: allColors.colorBgElevated,
+  headerColor: allColors.colorPrimary,
+  headerBorderRadius: allSpacing.borderRadius,
+  
+  // Header sorted (columna ordenada) - casos activos
+  headerSortedBg: allColors.colorPrimaryBg, // Fondo verde claro cuando está ordenado (active)
+  headerSortedColor: allColors.colorPrimary, // Color verde cuando está ordenado
+  headerSortedHoverBg: allColors.colorAccentOliveBg, // Hover en header ordenado (usando colorAccentOliveBg)
+  
+  // Row hover - usando colorAccentOliveBg
+  rowHoverBg: allColors.colorAccentOliveBg,
+  
+  // Border
+  borderColor: allColors.colorBorder,
+  headerSplitColor: allColors.colorBorder,
 };

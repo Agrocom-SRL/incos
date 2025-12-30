@@ -24,7 +24,7 @@ const DataTable = ({
     showTotal: (total) => `Total: ${total} registros`,
     pageSizeOptions: ['10', '20', '50', '100'],
   },
-  scroll = { x: 'max-content' },
+  scroll,
   size = 'middle',
   rowKey = (record) => record.id || Math.random(),
   defaultSort,
@@ -32,6 +32,9 @@ const DataTable = ({
   ...props
 }) => {
   const tableClassName = className ? `data-table ${className}`.trim() : 'data-table';
+
+  // Si no se proporciona scroll, usar configuración por defecto que permite usar todo el ancho
+  const defaultScroll = scroll || { x: 'max-content' };
 
   return (
     <Table
@@ -41,9 +44,10 @@ const DataTable = ({
       rowKey={rowKey}
       loading={loading}
       pagination={pagination}
-      scroll={scroll}
+      scroll={defaultScroll}
       size={size}
       defaultSort={defaultSort}
+      tableLayout="auto"
       {...props}
     />
   );

@@ -39,11 +39,14 @@
 @import './components/molecules/navigation-menu.css';
 @import './components/molecules/form-section.css';
 @import './components/molecules/page-header.css';
+@import './components/molecules/table-cell.css';
+@import './components/molecules/data-table.css';
 
 /* 6. Components - Organisms */
 @import './components/organisms/sidebar.css';
 @import './components/organisms/info-sidebar.css';
 @import './components/organisms/main-content.css';
+@import './components/organisms/table-list-view.css';
 
 /* 8. Pages - Estilos genéricos para todas las páginas */
 @import './pages/page.css';

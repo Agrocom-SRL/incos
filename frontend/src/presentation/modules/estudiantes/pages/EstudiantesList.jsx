@@ -41,7 +41,8 @@ const EstudiantesList = () => {
     );
 
     return (
-        <PageTemplate>
+        <PageTemplate sidebar={null}>
+            {/* Contenido principal - se renderiza en MainContent */}
             <TableListView
                 data={estudiantes}
                 loading={loading}

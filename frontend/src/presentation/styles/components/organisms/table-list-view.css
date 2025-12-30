@@ -1,0 +1,11 @@
+/* ============================================================================
+   TABLE LIST VIEW (Componente Organismo)
+   ============================================================================
+   Estilos para layout y espaciado
+   Los colores y temas vienen automáticamente de Ant Design via ConfigProvider
+   ============================================================================ */
+
+.table-list-view__search-row {
+  margin-bottom: 16px;
+}
+

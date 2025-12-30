@@ -7,9 +7,10 @@
  * permitiendo reutilizar y modificar fácilmente las columnas sin tocar el componente.
  */
 
-import { Space, Tag, Tooltip } from 'antd';
+import { Space, Tooltip } from 'antd';
 import { UserOutlined, PhoneOutlined, MailOutlined } from '@ant-design/icons';
-import { Text, IconButton } from '@atoms';
+import { IconButton } from '@atoms';
+import { TableCell } from '@molecules';
 import { getDataTableAction } from '@config/icons';
 
 /**
@@ -30,12 +31,14 @@ export const createEstudiantesTableColumns = (navigate) => {
       title: 'Código de Estudiante',
       dataIndex: 'codigoEstudiante',
       fixed: 'left',
+      ellipsis: true,
       render: (codigo) => (
-        <Space size="small">
-          <Text strong style={{ fontFamily: 'monospace', fontSize: '13px' }}>
-            {codigo || 'N/A'}
-          </Text>
-        </Space>
+        <TableCell
+          strong
+          textStyle={{ fontFamily: 'monospace', fontSize: '13px' }}
+        >
+          {codigo}
+        </TableCell>
       ),
       sorter: (a, b) => {
         const codigoA = a.codigoEstudiante || '';
@@ -47,15 +50,17 @@ export const createEstudiantesTableColumns = (navigate) => {
     {
       title: 'Nombre Completo',
       dataIndex: 'nombreCompleto',
+      ellipsis: true,
       render: (nombreCompleto, record) => (
-        <div>
-          <Text strong>{nombreCompleto || 'Sin nombre'}</Text>
-          {record.genero && (
-            <Tag color="blue" style={{ marginTop: 4, fontSize: '11px' }}>
-              {record.genero}
-            </Tag>
-          )}
-        </div>
+        <TableCell
+          strong
+          fallback="Sin nombre"
+          tag={record.genero}
+          tagColor="blue"
+          orientation="vertical"
+        >
+          {nombreCompleto}
+        </TableCell>
       ),
       sorter: (a, b) => {
         const nombreA = a.nombreCompleto || 'Sin nombre';
@@ -66,30 +71,40 @@ export const createEstudiantesTableColumns = (navigate) => {
     {
       title: 'CI',
       dataIndex: 'ciCompleto',
+      ellipsis: true,
       render: (ciCompleto) => (
-        <Space size="small">
-          <UserOutlined />
-          <Text strong>{ciCompleto || 'N/A'}</Text>
-        </Space>
+        <TableCell
+          icon={<UserOutlined />}
+          strong
+        >
+          {ciCompleto}
+        </TableCell>
       ),
       sorter: (a, b) => (a.ciCompleto || '').localeCompare(b.ciCompleto || ''),
     },
     {
       title: 'Contacto',
       dataIndex: 'contacto',
+      ellipsis: true,
       render: (_, record) => (
         <Space orientation="vertical" size={4} style={{ width: '100%' }}>
           {record.emailPersonal && (
-            <Space size="small" style={{ fontSize: '12px' }}>
-              <MailOutlined />
-              <Text style={{ fontSize: '12px' }}>{record.emailPersonal}</Text>
-            </Space>
+            <TableCell
+              icon={<MailOutlined />}
+              textStyle={{ fontSize: '12px' }}
+              size="small"
+            >
+              {record.emailPersonal}
+            </TableCell>
           )}
           {record.celular && (
-            <Space size="small" style={{ fontSize: '12px' }}>
-              <PhoneOutlined />
-              <Text style={{ fontSize: '12px' }}>{record.celular}</Text>
-            </Space>
+            <TableCell
+              icon={<PhoneOutlined />}
+              textStyle={{ fontSize: '12px' }}
+              size="small"
+            >
+              {record.celular}
+            </TableCell>
           )}
         </Space>
       ),
@@ -98,9 +113,14 @@ export const createEstudiantesTableColumns = (navigate) => {
       title: 'Acciones',
       key: 'acciones',
       fixed: 'right',
+      width: 180,
+      align: 'right',
       render: (_, record) => {
         return (
-          <Space>
+          <TableCell
+            actions
+            align="right"
+          >
             <Tooltip title={`${editAction.tooltip} estudiante`}>
               <IconButton
                 icon={<editAction.icon />}
@@ -132,7 +152,7 @@ export const createEstudiantesTableColumns = (navigate) => {
                 }}
               />
             </Tooltip>
-          </Space>
+          </TableCell>
         );
       },
     },
