@@ -24,7 +24,7 @@ registerAllModules(useCasesFactory);
 
 /**
  * Obtiene un Use Case por nombre (alternativa más dinámica)
- * @param {string} useCaseName - Nombre del use case (ej: 'getCarreras')
+ * @param {string} useCaseName - Nombre del use case (ej: 'getStudents')
  * @returns {Object|null}
  */
 export const getUseCase = (useCaseName) => {

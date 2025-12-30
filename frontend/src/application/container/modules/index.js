@@ -2,18 +2,13 @@
  * Punto de entrada del registro de módulos
  * 
  * Responsabilidades:
- * - Registrar módulos por dominio/entidad (carreras, estudiantes, etc.)
- * 
- * Orden de registro:
- * 1. Módulos base (carreras, catálogos simples)
- * 2. Módulos complejos (estudiantes, docentes, etc.)
+ * - Registrar módulos por dominio/entidad (estudiantes, docentes, etc.)
  * 
  * Clean Architecture:
  * - Application Layer: Orquesta el registro de todos los módulos
  */
 
-import { registerCarrerasModule } from './carreras.container.js';
-// Futuro: import { registerEstudiantesModule } from './estudiantes.container.js';
+import { registerEstudiantesModule } from '@container/modules/estudiantes.container.js';
 // Futuro: import { registerDocentesModule } from './docentes.container.js';
 
 /**
@@ -23,11 +18,8 @@ import { registerCarrerasModule } from './carreras.container.js';
  * @returns {Object} Factory con todos los módulos registrados
  */
 export function registerAllModules(factory) {
-  // 1. Módulos base (catálogos, simples)
-  registerCarrerasModule(factory);
-
-  // 2. Módulos complejos (con lógica de negocio)
-  // registerEstudiantesModule(factory);
+  // Módulos complejos (con lógica de negocio)
+  registerEstudiantesModule(factory);
   // registerDocentesModule(factory);
   // registerGestionesModule(factory);
   // registerInscripcionesModule(factory);
