@@ -16,25 +16,21 @@ export default defineConfig({
             '@': path.resolve(__dirname, './src'),
             // Domain Layer
             '@domain': path.resolve(__dirname, './src/domain'),
-            '@entities': path.resolve(__dirname, './src/domain/entities'),
             '@useCases': path.resolve(__dirname, './src/domain/useCases'),
             '@repositories': path.resolve(__dirname, './src/domain/repositories'),
-            '@mappers': path.resolve(__dirname, './src/domain/mappers'),
 
             // Application Layer
             '@application': path.resolve(__dirname, './src/application'),
             '@container': path.resolve(__dirname, './src/application/container'),
             '@application-estudiantes': path.resolve(__dirname, './src/application/modules/estudiantes'),
-            '@application-estudiantes/*': path.resolve(__dirname, './src/application/modules/estudiantes/*'),
             '@application-dashboard': path.resolve(__dirname, './src/application/modules/dashboard'),
-            '@application-dashboard/*': path.resolve(__dirname, './src/application/modules/dashboard/*'),
             '@application-navigation': path.resolve(__dirname, './src/application/navigation'),
 
             // Infrastructure Layer
             '@infrastructure': path.resolve(__dirname, './src/infrastructure'),
             '@api': path.resolve(__dirname, './src/infrastructure/api'),
             '@api-client': path.resolve(__dirname, './src/infrastructure/api/client.js'),
-            '@repo-impl': path.resolve(__dirname, './src/infrastructure/repositories'),
+            '@implementations': path.resolve(__dirname, './src/infrastructure/repositories'),
             '@storage': path.resolve(__dirname, './src/infrastructure/storage'),
 
             // Presentation Layer
@@ -50,7 +46,6 @@ export default defineConfig({
             // Módulos específicos
             '@estudiantes': path.resolve(__dirname, './src/presentation/modules/estudiantes'),
             '@estudiantes-old': path.resolve(__dirname, './src/presentation/modules/estudiantes-old'),
-            '@estudiantes-old/*': path.resolve(__dirname, './src/presentation/modules/estudiantes-old/*'),
             '@dashboard': path.resolve(__dirname, './src/presentation/modules/dashboard'),
 
             // Configuración
@@ -68,7 +63,6 @@ export default defineConfig({
 
             // Theme
             '@theme': path.resolve(__dirname, './src/infrastructure/config/theme'),
-            '@theme/*': path.resolve(__dirname, './src/infrastructure/config/theme/*'),
 
             // Layout Components
             '@assets': path.resolve(__dirname, './src/presentation/assets'),

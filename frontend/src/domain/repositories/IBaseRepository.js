@@ -16,25 +16,25 @@ export class IBaseRepository {
    * @param {string|number} id - ID del registro
    * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
    */
-  async getById(id) {
-    throw new Error('Method getById() must be implemented');
+  async obtenerPorId(id) {
+    throw new Error('Method obtenerPorId() must be implemented');
   }
 
   /**
    * Obtiene todos los registros con filtros y paginación
-   * GET /v1/{resource}?page=1&limit=10&filters=...
+   * GET /v1/{resource}?pagina=1&limite=10&filtros=...
    * 
    * @param {Object} options - Opciones de consulta
    * @param {Object} options.params - Parámetros de consulta HTTP (filtros, paginación, búsqueda)
-   * @param {number} options.params.page - Número de página (paginación)
-   * @param {number} options.params.limit - Cantidad por página (paginación)
-   * @param {Object} options.params.filters - Filtros específicos del recurso
-   * @param {string} options.params.search - Término de búsqueda general
-   * @param {boolean} options.params.includeInactive - Incluir registros inactivos (activo = false)
+   * @param {number} options.params.pagina - Número de página (paginación)
+   * @param {number} options.params.limite - Cantidad por página (paginación)
+   * @param {Object} options.params.filtros - Filtros específicos del recurso
+   * @param {string} options.params.busqueda - Término de búsqueda general
+   * @param {boolean} options.params.incluirInactivos - Incluir registros inactivos (activo = false)
    * @returns {Promise<{success: boolean, data?: Array, error?: string}>}
    */
-  async getAll(options = {}) {
-    throw new Error('Method getAll() must be implemented');
+  async obtenerTodos(options = {}) {
+    throw new Error('Method obtenerTodos() must be implemented');
   }
 
   /**
@@ -44,8 +44,8 @@ export class IBaseRepository {
    * @param {Object} data - Datos del registro
    * @returns {Promise<{success: boolean, data?: Object, error?: string, validationErrors?: Object}>}
    */
-  async create(data) {
-    throw new Error('Method create() must be implemented');
+  async crear(data) {
+    throw new Error('Method crear() must be implemented');
   }
 
   /**
@@ -56,8 +56,8 @@ export class IBaseRepository {
    * @param {Object} data - Datos a actualizar
    * @returns {Promise<{success: boolean, data?: Object, error?: string, validationErrors?: Object}>}
    */
-  async update(id, data) {
-    throw new Error('Method update() must be implemented');
+  async actualizar(id, data) {
+    throw new Error('Method actualizar() must be implemented');
   }
 
   /**
@@ -67,34 +67,34 @@ export class IBaseRepository {
    * @param {string|number} id - ID del registro
    * @returns {Promise<{success: boolean, error?: string}>}
    */
-  async delete(id) {
-    throw new Error('Method delete() must be implemented');
+  async eliminar(id) {
+    throw new Error('Method eliminar() must be implemented');
   }
 
   /**
    * Busca registros con término de búsqueda
-   * GET /v1/{resource}?search=term
+   * GET /v1/{resource}?busqueda=termino
    * 
-   * @param {string} searchTerm - Término de búsqueda
+   * @param {string} terminoBusqueda - Término de búsqueda
    * @param {Object} options - Opciones opcionales
    * @param {Object} options.params - Parámetros adicionales de consulta HTTP
-   * @param {boolean} options.params.includeInactive - Incluir registros inactivos
+   * @param {boolean} options.params.incluirInactivos - Incluir registros inactivos
    * @returns {Promise<{success: boolean, data?: Array, error?: string}>}
    */
-  async search(searchTerm, options = {}) {
-    throw new Error('Method search() must be implemented');
+  async buscar(terminoBusqueda, options = {}) {
+    throw new Error('Method buscar() must be implemented');
   }
 
   /**
    * Cuenta registros según filtros
-   * GET /v1/{resource}/count?filters=...
+   * GET /v1/{resource}/contar?filtros=...
    * 
-   * @param {Object} filters - Filtros opcionales
-   * @param {boolean} filters.includeInactive - Incluir registros inactivos en el conteo
+   * @param {Object} filtros - Filtros opcionales
+   * @param {boolean} filtros.incluirInactivos - Incluir registros inactivos en el conteo
    * @returns {Promise<{success: boolean, data?: number, error?: string}>}
    */
-  async count(filters = {}) {
-    throw new Error('Method count() must be implemented');
+  async contar(filtros = {}) {
+    throw new Error('Method contar() must be implemented');
   }
 
   /**
@@ -107,8 +107,8 @@ export class IBaseRepository {
    * @param {boolean} activo - Nuevo estado (true = activo, false = inactivo)
    * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
    */
-  async change(id, activo) {
-    throw new Error('Method change() must be implemented');
+  async cambiarEstado(id, activo) {
+    throw new Error('Method cambiarEstado() must be implemented');
   }
 }
 

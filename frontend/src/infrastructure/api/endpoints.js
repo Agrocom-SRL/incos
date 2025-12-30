@@ -23,17 +23,7 @@ const API_BASE = '/v1';
  * Se agregarán endpoints según se necesiten
  */
 export const ESTUDIANTES_ENDPOINTS = {
-  // Ejemplo de estructura (se implementará cuando se necesite):
-  // BASE: `${API_BASE}/estudiantes`,
-  // BY_ID: (id) => `${API_BASE}/estudiantes/${id}`,
-};
-
-/**
- * Endpoints de Catálogos
- * Se agregarán endpoints según se necesiten
- */
-export const CATALOGS_ENDPOINTS = {
-  // Ejemplo de estructura (se implementará cuando se necesite):
-  // MUNICIPIOS: `${API_BASE}/catalogs/municipios`,
+  BASE: `${API_BASE}/estudiantes`,
+  // Futuro: otros endpoints cuando se necesiten
 };
 

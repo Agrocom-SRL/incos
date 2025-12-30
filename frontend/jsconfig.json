@@ -9,17 +9,11 @@
             "@domain/*": [
                 "src/domain/*"
             ],
-            "@entities/*": [
-                "src/domain/entities/*"
-            ],
             "@useCases/*": [
                 "src/domain/useCases/*"
             ],
             "@repositories/*": [
                 "src/domain/repositories/*"
-            ],
-            "@mappers/*": [
-                "src/domain/mappers/*"
             ],
             // Application Layer
             "@application/*": [
@@ -59,7 +53,7 @@
             "@api-client": [
                 "./src/infrastructure/api/client.js"
             ],
-            "@repo-impl/*": [
+            "@implementations/*": [
                 "./src/infrastructure/repositories/*"
             ],
             "@storage/*": [

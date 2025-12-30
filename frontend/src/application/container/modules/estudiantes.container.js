@@ -4,9 +4,10 @@
  * 
  * Clean Architecture:
  * - Application Layer: Registro de dependencias del módulo de estudiantes
- * 
- * NOTA: Empezamos desde cero. Los Use Cases y Repositorios se crearán según se necesiten.
  */
+
+import { GetEstudiantesUseCase } from '@useCases/estudiantes/GetEstudiantesUseCase';
+import EstudianteRepository from '@implementations/EstudianteRepository';
 
 /**
  * Registra los Use Cases del módulo de estudiantes
@@ -14,12 +15,13 @@
  * @returns {Object} Factory con los Use Cases registrados
  */
 export function registerEstudiantesModule(factory) {
-  // NOTA: Se agregarán nuevos Use Cases según se necesiten (principio YAGNI)
-  // Ejemplo cuando se necesite:
-  // import { GetStudentsUseCase } from '@/domain/useCases/estudiantes/GetStudentsUseCase';
-  // import StudentRepository from '@repo-impl/StudentRepository';
-  // const studentRepository = StudentRepository;
-  // factory.getStudents = () => new GetStudentsUseCase(studentRepository);
+  // Repositorio singleton (stateless)
+  const estudianteRepository = EstudianteRepository;
+
+  // Registrar Use Cases
+  factory.obtenerEstudiantes = () => {
+    return new GetEstudiantesUseCase(estudianteRepository);
+  };
 
   return factory;
 }
