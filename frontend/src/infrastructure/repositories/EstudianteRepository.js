@@ -28,18 +28,18 @@ export class EstudianteRepository extends IEstudianteRepository {
   async obtenerTodos(options = {}) {
     try {
       const { params = {} } = options;
-      
+
       // Llamada HTTP directa al endpoint
       const response = await apiClient.get(ESTUDIANTES_ENDPOINTS.BASE, { params });
-      
+
       // Procesar respuesta exitosa
       const result = handleSuccessResponse(response);
-      
+
       // Asegurar que data sea un array
       if (result.success && result.data) {
         result.data = Array.isArray(result.data) ? result.data : [];
       }
-      
+
       return result;
     } catch (error) {
       return handleErrorResponse(error, 'Error al obtener estudiantes');
@@ -47,8 +47,27 @@ export class EstudianteRepository extends IEstudianteRepository {
   }
 
 
-  // NOTA: Los demás métodos CRUD se implementarán cuando se necesiten
-  // Por ahora solo implementamos obtenerTodos() para la lista
+  /**
+   * Crea un nuevo estudiante
+   * POST /v1/estudiantes
+   * 
+   * @param {Object} data - Datos del estudiante a crear
+   * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
+   */
+  async crear(data) {
+    try {
+      // Llamada HTTP directa al endpoint
+      const response = await apiClient.post(ESTUDIANTES_ENDPOINTS.BASE, data);
+
+      // Procesar respuesta exitosa
+      const result = handleSuccessResponse(response);
+
+      return result;
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al crear estudiante');
+    }
+  }
+
 }
 
 export default new EstudianteRepository();

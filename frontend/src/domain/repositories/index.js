@@ -1,9 +1,16 @@
 /**
  * Exportación centralizada de interfaces de repositorios
  * 
- * Principio YAGNI (You Aren't Gonna Need It):
- * - Solo exportamos repositorios que están en uso actualmente
- * - Se agregarán nuevos repositorios según se necesiten
+ * Organización por módulos/funcionalidad:
+ * - Base: Interfaz base común a todos
+ * - Estudiantes: Repositorios del módulo de estudiantes
+ * - Configuración: Repositorios del módulo de configuración
+ *   - Académico: Carreras, materias
+ *   - Complementario: Discapacidades
+ * - Geográficos: Países, departamentos, provincias, municipios
+ * - Referencia: Idiomas, estados civiles, tipos de parentesco, documentación
+ * 
+ * Principio YAGNI: Solo exportamos repositorios que están en uso
  */
 
 // ============================================
@@ -12,9 +19,31 @@
 export { IBaseRepository } from './IBaseRepository';
 
 // ============================================
-// REPOSITORIOS EN USO
+// MÓDULO: ESTUDIANTES
 // ============================================
 export { IEstudianteRepository } from './IEstudianteRepository';
+
+// ============================================
+// MÓDULO: CONFIGURACIÓN
+// ============================================
+// Académico
 export { ICarreraRepository } from './ICarreraRepository';
 export { IMateriaRepository } from './IMateriaRepository';
+// Complementario
 export { IDiscapacidadRepository } from './IDiscapacidadRepository';
+
+// ============================================
+// MÓDULO: GEOGRÁFICOS
+// ============================================
+export { IPaisRepository } from './IPaisRepository';
+export { IDepartamentoRepository } from './IDepartamentoRepository';
+export { IProvinciaRepository } from './IProvinciaRepository';
+export { IMunicipioRepository } from './IMunicipioRepository';
+
+// ============================================
+// MÓDULO: REFERENCIA
+// ============================================
+export { IIdiomaRepository } from './IIdiomaRepository';
+export { IEstadoCivilRepository } from './IEstadoCivilRepository';
+export { ITipoParentescoRepository } from './ITipoParentescoRepository';
+export { IDocumentacionRepository } from './IDocumentacionRepository';

@@ -9,11 +9,6 @@
  * - Infrastructure Layer: Implementación técnica usando HTTP
  * - NO contiene lógica de negocio (solo HTTP calls)
  * - Retorna datos crudos del backend
- * 
- * Ubicación: infrastructure/repositories
- * - Parte del módulo de Configuración
- * - Submódulo: Académico
- * - Feature: Materias
  */
 
 import apiClient from '@api-client';
@@ -33,27 +28,24 @@ export class MateriaRepository extends IMateriaRepository {
   async obtenerTodos(options = {}) {
     try {
       const { params = {} } = options;
-      
+
       // Llamada HTTP directa al endpoint
       const response = await apiClient.get(MATERIAS_ENDPOINTS.BASE, { params });
-      
+
       // Procesar respuesta exitosa
       const result = handleSuccessResponse(response);
-      
+
       // Asegurar que data sea un array
       if (result.success && result.data) {
         result.data = Array.isArray(result.data) ? result.data : [];
       }
-      
+
       return result;
     } catch (error) {
       return handleErrorResponse(error, 'Error al obtener materias');
     }
   }
 
-
-  // NOTA: Los demás métodos CRUD se implementarán cuando se necesiten
-  // Por ahora solo implementamos obtenerTodos() para la lista
 }
 
 export default new MateriaRepository();

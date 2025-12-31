@@ -7,7 +7,15 @@
  * - Infrastructure Layer: URLs concretas de la API (constantes de configuración)
  * - Estas son implementaciones específicas, no abstracciones
  * 
- * Principio YAGNI: Empezamos desde cero. Solo agregamos endpoints cuando se necesiten.
+ * Organización por módulos/funcionalidad:
+ * - Estudiantes: Endpoints del módulo de estudiantes
+ * - Configuración: Endpoints del módulo de configuración
+ *   - Académico: Carreras, materias
+ *   - Complementario: Discapacidades
+ * - Geográficos: Países, departamentos, provincias, municipios
+ * - Referencia: Idiomas, estados civiles, tipos de parentesco, documentación
+ * 
+ * Principio YAGNI: Solo agregamos endpoints cuando se necesiten
  * 
  * NOTA: CORS se maneja exclusivamente en el backend.
  * El frontend solo consume los endpoints.
@@ -18,19 +26,18 @@
  */
 const API_BASE = '/v1';
 
-/**
- * Endpoints de Estudiantes
- * Se agregarán endpoints según se necesiten
- */
+// ============================================
+// MÓDULO: ESTUDIANTES
+// ============================================
 export const ESTUDIANTES_ENDPOINTS = {
   BASE: `${API_BASE}/estudiantes`,
   // Futuro: otros endpoints cuando se necesiten
 };
 
-/**
- * Endpoints de Configuración - Académico
- * Se agregarán endpoints según se necesiten
- */
+// ============================================
+// MÓDULO: CONFIGURACIÓN
+// ============================================
+// Académico
 export const CARRERAS_ENDPOINTS = {
   BASE: `${API_BASE}/carreras`,
   // Futuro: otros endpoints cuando se necesiten
@@ -41,9 +48,46 @@ export const MATERIAS_ENDPOINTS = {
   // Futuro: otros endpoints cuando se necesiten
 };
 
+// Complementario
 export const DISCAPACIDAD_ENDPOINTS = {
   BASE: `${API_BASE}/discapacidad`,
   // Futuro: otros endpoints cuando se necesiten
 };
 
+// ============================================
+// MÓDULO: GEOGRÁFICOS
+// ============================================
+export const PAISES_ENDPOINTS = {
+  BASE: `${API_BASE}/paises`,
+};
 
+export const DEPARTAMENTOS_ENDPOINTS = {
+  BASE: `${API_BASE}/departamentos`,
+};
+
+export const PROVINCIAS_ENDPOINTS = {
+  BASE: `${API_BASE}/provincias`,
+};
+
+export const MUNICIPIOS_ENDPOINTS = {
+  BASE: `${API_BASE}/municipios`,
+};
+
+// ============================================
+// MÓDULO: REFERENCIA
+// ============================================
+export const IDIOMAS_ENDPOINTS = {
+  BASE: `${API_BASE}/idiomas`,
+};
+
+export const ESTADOS_CIVILES_ENDPOINTS = {
+  BASE: `${API_BASE}/estados-civiles`,
+};
+
+export const TIPOS_PARENTESCO_ENDPOINTS = {
+  BASE: `${API_BASE}/tipos-parentesco`,
+};
+
+export const DOCUMENTACION_ENDPOINTS = {
+  BASE: `${API_BASE}/documentacion`,
+};
