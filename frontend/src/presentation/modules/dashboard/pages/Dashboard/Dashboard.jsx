@@ -14,7 +14,6 @@ import { Flex, Spin, Card, Typography, Button, Avatar } from 'antd';
 import { MainContent, InfoSidebar } from '@organisms';
 import { allSpacing, componentConfig, allColors, typography, gradients, shadows } from '@theme/tokens';
 import { useDashboardContext } from '@application-dashboard';
-import plant02 from '@assets/plant02.png';
 
 const { Title, Text } = Typography;
 
@@ -412,28 +411,6 @@ const Dashboard = () => {
                                 {stats.monthOrders} estudiantes
                             </Title>
                         </Flex>
-                        
-                        {plant02 && (
-                            <div
-                                style={{
-                                    width: '150px',
-                                    height: '150px',
-                                    borderRadius: `${componentConfig.Card.borderRadius}px`,
-                                    overflow: 'hidden',
-                                    flexShrink: 0,
-                                }}
-                            >
-                                <img
-                                    src={plant02}
-                                    alt="Orders summary"
-                                    style={{
-                                        width: '100%',
-                                        height: '100%',
-                                        objectFit: 'cover',
-                                    }}
-                                />
-                            </div>
-                        )}
                     </Flex>
                 </Card>
 

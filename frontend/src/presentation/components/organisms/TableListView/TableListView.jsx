@@ -15,10 +15,10 @@
  */
 
 import React from 'react';
-import { Row, Col } from 'antd';
+import { Row, Col, Spin } from 'antd';
 import { PageHeader } from '@molecules';
 import { DataTable } from '@molecules';
-import { Alert, Card, SearchBar, Spinner } from '@atoms';
+import { Alert, Card, SearchBar } from '@atoms';
 
 const TableListView = ({
     // Datos y estado
@@ -61,7 +61,11 @@ const TableListView = ({
 
             {/* Mostrar Spinner cuando está cargando inicialmente */}
             {isLoading && (
-                <Spinner size="large" tip={loadingTip} />
+                <div style={{ minHeight: '400px', padding: '20px' }}>
+                    <Spin size="large" tip={loadingTip}>
+                        <div style={{ minHeight: '300px', width: '100%' }} />
+                    </Spin>
+                </div>
             )}
 
             {/* Mostrar contenido cuando hay datos o no está en loading inicial */}
@@ -75,7 +79,7 @@ const TableListView = ({
                         />
                     )}
 
-                    <Card bordered>
+                    <Card variant="outlined">
                         {/* SearchBar con span=8 alineado a la derecha */}
                         <Row justify="end" className="table-list-view__search-row">
                             <Col span={8}>

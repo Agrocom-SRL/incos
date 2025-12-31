@@ -13,7 +13,8 @@
  * 
  * @param {boolean} shadow - Si debe mostrar sombra (default: true)
  * @param {string} shadowType - Tipo de sombra: 'elevation2' | 'primary' | 'success' | 'info' | 'warning' | 'error' (default: 'elevation2')
- * @param {boolean} bordered - Si debe mostrar borde (default: false)
+ * @param {boolean} bordered - Si debe mostrar borde (default: false) - DEPRECATED: usar variant en su lugar
+ * @param {string} variant - Variante del card: 'outlined' | 'borderless' (default: 'borderless')
  */
 
 import { Card as AntCard } from 'antd';
@@ -24,11 +25,15 @@ const Card = ({
   title,
   shadow = true,
   shadowType = 'elevation2',
-  bordered = false,
+  bordered = false, // Mantener para compatibilidad, pero usar variant
+  variant,
   className = '',
   ...props
 }) => {
   const cardClassName = className ? `card ${className}`.trim() : 'card';
+  
+  // Determinar variant: si se pasa variant, usarlo; si no, usar bordered para compatibilidad
+  const cardVariant = variant || (bordered ? 'outlined' : 'borderless');
   
   // Obtener sombra según el tipo
   const getShadow = () => {
@@ -50,7 +55,7 @@ const Card = ({
     <AntCard
       className={cardClassName}
       title={title}
-      bordered={bordered}
+      variant={cardVariant}
       style={{
         boxShadow: getShadow(),
         ...props.style,
