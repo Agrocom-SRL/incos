@@ -35,19 +35,36 @@
  * ```
  */
 
-import { useEstudiantesList } from '@application-estudiantes/hooks';
+import { 
+    useEstudiantesList,
+    useStudentFormData,
+    useStudentGeographicData,
+    useStudentReferenceData,
+} from '@application-estudiantes/hooks';
 import { StudentContext } from '@application-estudiantes/context/StudentContext';
 
 export const StudentProvider = ({ children }) => {
     // Hook para lista de estudiantes (incluye búsqueda y filtrado)
     const listData = useEstudiantesList();
 
+    // Hook para datos esenciales del formulario de registro
+    const formData = useStudentFormData();
+
+    // Hook para datos geográficos condicionales (carga bajo demanda)
+    const geographicData = useStudentGeographicData();
+
+    // Hook para datos de referencia condicionales (carga bajo demanda)
+    const referenceData = useStudentReferenceData();
+
     // Componer el valor del contexto: spread de todos los hooks
     // Cuando se agreguen nuevas features, simplemente agregar aquí:
     // const becasData = useEstudiantesBecas();
-    // const value = { ...listData, ...becasData };
+    // const value = { ...listData, ...formData, ...geographicData, ...referenceData, ...becasData };
     const value = {
         ...listData,
+        ...formData,
+        ...geographicData,
+        ...referenceData,
     };
 
     return (
