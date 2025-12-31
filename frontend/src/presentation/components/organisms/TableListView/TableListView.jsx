@@ -1,22 +1,32 @@
 /**
  * TableListView - Componente organismo genérico para vista de lista con tabla
  * 
- * Single Responsibility: Orquestar la visualización de una lista con tabla
- * 
- * Atomic Design: Organism
- * - Combina moléculas (PageHeader, DataTable) y átomos (SearchBar, etc.)
- * - Recibe toda la lógica desde el contexto (sin hooks propios)
+ * Atomic Design: ORGANISM
+ * - Componente funcional complejo con lógica y comportamiento
+ * - Combina moléculas (DataTable) y átomos (SearchBar, Card, Alert, etc.)
+ * - Tiene funcionalidad específica: búsqueda, paginación, loading, manejo de errores
  * - Reutilizable para cualquier módulo que necesite una vista de tabla
+ * 
+ * Diferencia clave con Template:
+ * - Organism: "Qué hacen las cosas" (funcionalidad, lógica, comportamiento)
+ * - Template: "Dónde van las cosas" (estructura, layout, slots)
+ * 
+ * Arquitectura:
+ * - El HEADER viene del Template (pasado desde la Page) - NO está en este organismo
+ * - El LOADING está en el Organism porque es específico de la tabla (loading de datos)
+ * - La Page orquesta: pasa header al Template y datos al Organism
+ * 
+ * Single Responsibility: Orquestar la visualización de una lista con tabla
  * 
  * Los estilos de tema vienen automáticamente de Ant Design via ConfigProvider
  * CSS solo para layout y espaciado
  * 
  * Nota: No usa Container con padding/margin porque PageTemplate ya los proporciona
+ * Nota: El header debe venir del template, no de este organismo
  */
 
 import React from 'react';
 import { Row, Col, Spin } from 'antd';
-import { PageHeader } from '@molecules';
 import { DataTable } from '@molecules';
 import { Alert, Card, SearchBar } from '@atoms';
 
@@ -42,10 +52,6 @@ const TableListView = ({
     },
     defaultSort,
 
-    // Header
-    title = 'Lista',
-    headerActions,
-
     // Loading personalizado
     loadingTip = 'Cargando...',
 }) => {
@@ -53,12 +59,6 @@ const TableListView = ({
 
     return (
         <>
-            {/* PageHeader siempre visible */}
-            <PageHeader
-                title={title}
-                actions={headerActions}
-            />
-
             {/* Mostrar Spinner cuando está cargando inicialmente */}
             {isLoading && (
                 <div style={{ minHeight: '400px', padding: '20px' }}>

@@ -1,12 +1,18 @@
 /**
  * EstudiantesList - Página para listar estudiantes
  * 
- * Single Responsibility: Orquestar la configuración específica de estudiantes para TableListView
+ * Single Responsibility: Orquestar la configuración específica de estudiantes
  * 
  * Atomic Design: Page
- * - Usa PageTemplate para el layout
- * - Usa el organismo genérico TableListView
+ * - Orquesta datos + componentes
+ * - Pasa HEADER al Template (estructura)
+ * - Pasa DATOS al Organism (funcionalidad)
  * - Configura columnas, acciones y datos específicos de estudiantes
+ * 
+ * Arquitectura:
+ * Page → Template (header) + Organism (datos)
+ * - Template maneja: estructura/layout (header, content, sidebar, bottom)
+ * - Organism maneja: funcionalidad (tabla, búsqueda, loading, errores)
  */
 
 import { useMemo } from 'react';
@@ -14,6 +20,7 @@ import { useNavigate } from 'react-router-dom';
 import { PlusOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { TableListView } from '@organisms';
+import { PageHeader } from '@molecules';
 import { Button } from '@atoms';
 import { useStudentContext } from '@application-estudiantes/hooks';
 import { createEstudiantesTableColumns } from '@estudiantes/config/tableColumns';
@@ -41,7 +48,23 @@ const EstudiantesList = () => {
     );
 
     return (
-        <PageTemplate sidebar={null}>
+        <PageTemplate 
+            header={
+                <PageHeader
+                    title="Lista de Estudiantes"
+                    actions={
+                        <Button
+                            variant="primary"
+                            icon={<PlusOutlined />}
+                            onClick={handleNuevoEstudiante}
+                        >
+                            Nuevo Estudiante
+                        </Button>
+                    }
+                />
+            }
+            sidebar={null}
+        >
             {/* Contenido principal - se renderiza en MainContent */}
             <TableListView
                 data={estudiantes}
@@ -62,16 +85,6 @@ const EstudiantesList = () => {
                     field: 'codigoEstudiante',
                     order: 'ascend',
                 }}
-                title="Lista de Estudiantes"
-                headerActions={
-                    <Button
-                        variant="primary"
-                        icon={<PlusOutlined />}
-                        onClick={handleNuevoEstudiante}
-                    >
-                        Nuevo Estudiante
-                    </Button>
-                }
                 loadingTip="Cargando estudiantes..."
             />
         </PageTemplate>

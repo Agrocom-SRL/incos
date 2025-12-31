@@ -17,7 +17,7 @@
 import { Flex } from 'antd';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useMemo, useEffect } from 'react';
-import { MainContent, InfoSidebar } from '@organisms';
+import { MainContent, InfoSidebar } from '@templates';
 import { WizardForm } from '@organisms';
 import { StudentsSummaryCard, HelpGuideCard } from '@molecules';
 import { useStudentContext, useLoadStudent } from '@application-estudiantes-old';

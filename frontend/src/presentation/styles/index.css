@@ -47,6 +47,8 @@
 @import './components/organisms/info-sidebar.css';
 @import './components/organisms/main-content.css';
 @import './components/organisms/table-list-view.css';
+@import './components/organisms/page-header.css';
+@import './components/organisms/page-bottom.css';
 
 /* 8. Pages - Estilos genéricos para todas las páginas */
 @import './pages/page.css';

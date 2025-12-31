@@ -11,7 +11,7 @@
  */
 
 import { Flex, Spin, Card, Typography, Button, Avatar } from 'antd';
-import { MainContent, InfoSidebar } from '@organisms';
+import { MainContent, InfoSidebar } from '@templates';
 import { allSpacing, componentConfig, allColors, typography, gradients, shadows } from '@theme/tokens';
 import { useDashboardContext } from '@application-dashboard';
 

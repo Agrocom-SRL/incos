@@ -1,0 +1,16 @@
+/* ============================================================================
+   PAGE HEADER
+   ============================================================================
+   Header de página que ocupa todo el ancho disponible
+   - Independiente de MainContent y InfoSidebar
+   - Ocupa 100% del ancho del contenedor padre
+   ============================================================================ */
+
+.page-header {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    /* Asegurar que ocupe todo el ancho disponible */
+    flex: 0 0 auto;
+}
+
