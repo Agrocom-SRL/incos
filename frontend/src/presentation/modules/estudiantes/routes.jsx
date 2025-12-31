@@ -9,20 +9,14 @@
  * - Depende de: pages (dentro del mismo módulo), connectors
  */
 
-import { lazy } from 'react';
 import { UnderConstruction } from '@components/pages';
-
-// Lazy loading del connector de listado (que incluye el Provider)
-const EstudiantesListConnector = lazy(() => import('@estudiantes/connectors'));
-
-// Lazy loading del connector de registrar (versión antigua)
-const EstudiantesRegistrarConnector = lazy(() => import('@estudiantes-old/connectors'));
+import { ListConnector, RegisterConnector } from '@estudiantes/connectors';
 
 export const estudiantesRoutes = [
     // Módulo raíz: Estudiantes (muestra la lista directamente)
     {
         path: '/estudiantes',
-        element: <EstudiantesListConnector />,
+        element: <ListConnector />,
         key: 'EST',
         menu: {
             label: 'Estudiantes',
@@ -32,7 +26,7 @@ export const estudiantesRoutes = [
     },
     {
         path: '/estudiantes/listar',
-        element: <EstudiantesListConnector />,
+        element: <ListConnector />,
         key: 'EST-LIST',
         menu: {
             label: 'Listar Estudiantes',
@@ -41,10 +35,10 @@ export const estudiantesRoutes = [
             order: 1,
         },
     },
-    // Registrar (versión antigua)
+    // Registrar (nuevo módulo)
     {
         path: '/estudiantes/registrar',
-        element: <EstudiantesRegistrarConnector />,
+        element: <RegisterConnector />,
         key: 'EST-REGISTRAR',
         menu: {
             label: 'Nueva Admisión',

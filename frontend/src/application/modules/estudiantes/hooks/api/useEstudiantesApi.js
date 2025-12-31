@@ -16,7 +16,7 @@
  * - Proporciona función para refetch
  * 
  * Nota: Este hook es específico para llamadas a la API.
- * Para lógica de UI (búsqueda, filtrado, formateo), usar useEstudiantesList
+ * Para lógica de UI (búsqueda, filtrado, formateo), usar StudentListProvider
  */
 
 import { useState, useEffect, useCallback } from 'react';

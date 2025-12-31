@@ -1,5 +1,5 @@
 /**
- * Hook: useStudentReferenceData
+ * Hook: useStudentReferenceApi
  * 
  * Single Responsibility: Gestionar datos de referencia condicionales (carga bajo demanda)
  * 
@@ -16,7 +16,7 @@
 import { useState, useCallback } from 'react';
 import { useCasesFactory } from '@container';
 
-export const useStudentReferenceData = () => {
+export const useStudentReferenceApi = () => {
   // Estados para datos de referencia (cargados bajo demanda)
   const [discapacidades, setDiscapacidades] = useState([]);
   const [tiposParentesco, setTiposParentesco] = useState([]);

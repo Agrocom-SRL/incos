@@ -1,5 +1,5 @@
 /**
- * Hook: useStudentGeographicData
+ * Hook: useStudentGeographicApi
  * 
  * Single Responsibility: Gestionar datos geográficos condicionales (carga bajo demanda)
  * 
@@ -16,7 +16,7 @@
 import { useState, useCallback } from 'react';
 import { useCasesFactory } from '@container';
 
-export const useStudentGeographicData = () => {
+export const useStudentGeographicApi = () => {
   // Estados para datos geográficos (cargados bajo demanda)
   const [departamentos, setDepartamentos] = useState([]);
   const [provincias, setProvincias] = useState([]);

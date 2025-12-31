@@ -1,27 +1,27 @@
 /**
- * Hook: useStudentFormData
+ * Hook: useStudentCatalogApi
  * 
- * Single Responsibility: Obtener y gestionar datos esenciales iniciales para el formulario de registro
+ * Single Responsibility: Obtener y gestionar catálogos esenciales iniciales para el formulario de registro
  * 
  * Clean Architecture:
- * - Application Layer: Orquesta Use Cases para obtener datos esenciales del formulario
+ * - Application Layer: Orquesta Use Cases para obtener catálogos esenciales del formulario
  * - Usa Use Cases del Domain Layer (nunca llama directamente a Repository o API)
  * 
  * Este hook:
- * - Carga SOLO datos esenciales al inicio usando ObtenerDatosRegistroEstudianteUseCase
+ * - Carga SOLO catálogos esenciales al inicio usando ObtenerDatosRegistroEstudianteUseCase
  * - Proporciona opciones estáticas (expediciones, géneros, tipos de sangre)
  * - Maneja estados de loading y error
  * 
  * NOTA: Los datos condicionales (geográficos, referencia) se manejan en hooks separados:
- * - useStudentGeographicData: departamentos, provincias, municipios
- * - useStudentReferenceData: discapacidades, tipos de parentesco
+ * - useStudentGeographicApi: departamentos, provincias, municipios
+ * - useStudentReferenceApi: discapacidades, tipos de parentesco
  */
 
 import { useState, useEffect, useCallback } from 'react';
 import { useCasesFactory } from '@container';
 import { EXPEDICIONES, GENEROS, TIPOS_SANGRE } from '@infrastructure/config/constants';
 
-export const useStudentFormData = () => {
+export const useStudentCatalogApi = () => {
   // Estados para datos esenciales (siempre necesarios)
   const [paises, setPaises] = useState([]);
   const [idiomas, setIdiomas] = useState([]);

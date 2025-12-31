@@ -22,7 +22,7 @@ import { PageTemplate } from '@templates';
 import { TableListView } from '@organisms';
 import { PageHeader } from '@molecules';
 import { Button } from '@atoms';
-import { useStudentContext } from '@application-estudiantes/hooks';
+import { useStudentListContext } from '@application-estudiantes/hooks';
 import { createEstudiantesTableColumns } from '@estudiantes/config/tableColumns';
 
 const EstudiantesList = () => {
@@ -35,7 +35,7 @@ const EstudiantesList = () => {
         error = null,
         searchText = '',
         setSearchText,
-    } = useStudentContext();
+    } = useStudentListContext();
 
     const handleNuevoEstudiante = () => {
         navigate('/estudiantes/registrar');

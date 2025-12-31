@@ -1,74 +1,31 @@
 /**
  * Provider: StudentProvider
  * 
- * Single Responsibility: Componer hooks y proporcionar estado compartido del módulo
- * Open/Closed: Abierto para extensión agregando hooks, cerrado para modificación
+ * Single Responsibility: Exponer el estado global de estudiantes vía Context
  * 
- * Estrategia de Diseño:
- * - Este Provider NO contiene lógica, solo COMPONE hooks
- * - Cada hook maneja su propia feature (useEstudiantesList, useEstudiantesBecas, etc.)
- * - Agregar nuevos hooks cuando se implementen nuevas features
+ * Clean Architecture:
+ * - Application Layer: Provider que expone estado global usando un hook dedicado
+ * - NO contiene lógica, solo expone el estado vía Context
  * 
- * Organización de Hooks:
- * - Hooks de API: useEstudiantesApi (llamadas al backend)
- * - Hooks de Feature: useEstudiantesList, useEstudiantesBecas, etc. (lógica de UI)
- * - Hooks genéricos: useTableData (reutilizable)
+ * Ventajas:
+ * - Separación de responsabilidades: la lógica está en useStudentData
+ * - Estado global: todos los componentes pueden acceder a los mismos datos
+ * - Actualización optimista: agregar/editar sin recargar desde BD
  * 
- * Features actuales:
- * - Lista de estudiantes (useEstudiantesList) - incluye búsqueda y filtrado
- * 
- * Features futuras (agregar cuando se implementen):
- * - Becas: useEstudiantesBecas
- * - Licencias: useEstudiantesLicencias
- * - Documentos: useEstudiantesDocumentos
- * 
- * Ejemplo de cómo agregar una nueva feature:
- * ```javascript
- * import { useEstudiantesBecas } from '@application-estudiantes/hooks';
- * 
- * const becasData = useEstudiantesBecas();
- * 
- * const value = {
- *   ...listData,
- *   ...becasData,  // Agregar aquí
- * };
- * ```
+ * Estrategia:
+ * - Usa useStudentData para gestionar el estado global
+ * - Expone el estado vía StudentContext
  */
 
-import { 
-    useEstudiantesList,
-    useStudentFormData,
-    useStudentGeographicData,
-    useStudentReferenceData,
-} from '@application-estudiantes/hooks';
+import { useStudentData } from '@application-estudiantes/hooks';
 import { StudentContext } from '@application-estudiantes/context/StudentContext';
 
 export const StudentProvider = ({ children }) => {
-    // Hook para lista de estudiantes (incluye búsqueda y filtrado)
-    const listData = useEstudiantesList();
-
-    // Hook para datos esenciales del formulario de registro
-    const formData = useStudentFormData();
-
-    // Hook para datos geográficos condicionales (carga bajo demanda)
-    const geographicData = useStudentGeographicData();
-
-    // Hook para datos de referencia condicionales (carga bajo demanda)
-    const referenceData = useStudentReferenceData();
-
-    // Componer el valor del contexto: spread de todos los hooks
-    // Cuando se agreguen nuevas features, simplemente agregar aquí:
-    // const becasData = useEstudiantesBecas();
-    // const value = { ...listData, ...formData, ...geographicData, ...referenceData, ...becasData };
-    const value = {
-        ...listData,
-        ...formData,
-        ...geographicData,
-        ...referenceData,
-    };
+    // Hook dedicado para gestionar el estado global de datos
+    const studentData = useStudentData();
 
     return (
-        <StudentContext.Provider value={value}>
+        <StudentContext.Provider value={studentData}>
             {children}
         </StudentContext.Provider>
     );
