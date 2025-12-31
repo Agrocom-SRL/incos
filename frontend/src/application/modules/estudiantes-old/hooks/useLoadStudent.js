@@ -9,7 +9,7 @@
 import { useState, useEffect } from 'react';
 import { App } from 'antd';
 import apiClient from '@api-client';
-import { formatStudentDataForForm, resolveAllGeographicCascades } from '@estudiantes/helpers';
+import { formatStudentDataForForm, resolveAllGeographicCascades } from '@estudiantes-old/helpers';
 
 /**
  * Hook para cargar datos de un estudiante existente

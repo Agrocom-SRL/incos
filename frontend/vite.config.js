@@ -23,6 +23,7 @@ export default defineConfig({
             '@application': path.resolve(__dirname, './src/application'),
             '@container': path.resolve(__dirname, './src/application/container'),
             '@application-estudiantes': path.resolve(__dirname, './src/application/modules/estudiantes'),
+            '@application-estudiantes-old': path.resolve(__dirname, './src/application/modules/estudiantes-old'),
             '@application-dashboard': path.resolve(__dirname, './src/application/modules/dashboard'),
             '@application-navigation': path.resolve(__dirname, './src/application/navigation'),
 

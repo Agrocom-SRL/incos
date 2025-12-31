@@ -1,4 +1,4 @@
-// modules/estudiantes/connectors/RegistrarConnector.jsx
+// modules/estudiantes-old/connectors/RegistrarConnector.jsx
 /**
  * Conector: Nexo entre la Vista (Page) y la Lógica de Negocio (Provider)
  * 
@@ -10,8 +10,8 @@
  * - Arquitectura modular: cada módulo gestiona sus propios conectores
  */
 
-import { StudentProvider } from '@application-estudiantes';
-import Registrar from '@estudiantes/pages/Registrar/Registrar';
+import { StudentProvider } from '@application-estudiantes-old/providers';
+import Registrar from '@estudiantes-old/pages/Registrar/Registrar';
 
 const RegistrarConnector = () => {
   return (

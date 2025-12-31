@@ -20,8 +20,8 @@ import { useMemo, useEffect } from 'react';
 import { MainContent, InfoSidebar } from '@organisms';
 import { WizardForm } from '@organisms';
 import { StudentsSummaryCard, HelpGuideCard } from '@molecules';
-import { useStudentContext, useLoadStudent } from '@application-estudiantes';
-import { generateStudentWizardSteps } from '@estudiantes/config/wizardSteps';
+import { useStudentContext, useLoadStudent } from '@application-estudiantes-old';
+import { generateStudentWizardSteps } from '@estudiantes-old/config/wizardSteps';
 import './Registrar.css';
 
 const Registrar = () => {
@@ -32,23 +32,23 @@ const Registrar = () => {
 
   // Consumir solo el contexto del Provider (sin manejar estados)
   const {
-    stats,
+    stats = { todayStudents: 0, monthStudents: 0, totalStudents: 0 },
     wizardSubmit,
     loading,
-    expediciones,
-    generos,
-    tiposSangre,
-    carreras,
-    gestiones,
-    paises,
-    departamentos,
-    provincias,
-    municipios,
-    idiomas,
-    tiposDiscapacidad,
-    estadosCiviles,
-    tiposParentesco,
-    documentacionInscripcion,
+    expediciones = [],
+    generos = [],
+    tiposSangre = [],
+    carreras = [],
+    gestiones = [],
+    paises = [],
+    departamentos = [],
+    provincias = [],
+    municipios = [],
+    idiomas = [],
+    tiposDiscapacidad = [],
+    estadosCiviles = [],
+    tiposParentesco = [],
+    documentacionInscripcion = [],
     loadDepartamentos,
     loadProvincias,
     loadMunicipios,

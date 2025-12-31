@@ -25,6 +25,12 @@
             "@application-estudiantes/*": [
                 "./src/application/modules/estudiantes/*"
             ],
+            "@application-estudiantes-old": [
+                "./src/application/modules/estudiantes-old"
+            ],
+            "@application-estudiantes-old/*": [
+                "./src/application/modules/estudiantes-old/*"
+            ],
             "@application-dashboard": [
                 "./src/application/modules/dashboard"
             ],

@@ -81,9 +81,9 @@ export class RegisterStudentUseCase {
     }
 
     // 8. Generar código único de estudiante usando año de gestión + correlativo
-    let anioGestion = new Date().getFullYear(); // Fallback: año actual
+    let anioGestion = null;
     
-    // Si hay gestión de ingreso, obtener el año de esa gestión
+    // Prioridad 1: Si hay gestión de ingreso, obtener el año de esa gestión
     if (dto.gestionIngresoId) {
       try {
         const gestion = await this.managementRepository.findById(dto.gestionIngresoId);
@@ -95,11 +95,39 @@ export class RegisterStudentUseCase {
           });
         }
       } catch (error) {
-        this.logger.warn('[Estudiantes] No se pudo obtener la gestión, usando año actual', {
+        this.logger.warn('[Estudiantes] No se pudo obtener la gestión', {
           gestionId: dto.gestionIngresoId,
           error: error.message,
         });
       }
+    }
+    
+    // Prioridad 2: Si no hay gestión de ingreso, usar la gestión activa de configuración
+    if (!anioGestion) {
+      try {
+        const gestionActiva = await this.configuracionSistemaRepository.findByClave(
+          'codigo_estudiante_gestion_activa',
+          { includeInactive: false }
+        );
+        if (gestionActiva && gestionActiva.valor) {
+          anioGestion = parseInt(gestionActiva.valor, 10);
+          this.logger.info('[Estudiantes] Usando gestión activa de configuración', {
+            anio: anioGestion,
+          });
+        }
+      } catch (error) {
+        this.logger.warn('[Estudiantes] No se pudo obtener gestión activa de configuración', {
+          error: error.message,
+        });
+      }
+    }
+    
+    // Prioridad 3: Fallback al año actual
+    if (!anioGestion) {
+      anioGestion = new Date().getFullYear();
+      this.logger.info('[Estudiantes] Usando año actual como fallback', {
+        anio: anioGestion,
+      });
     }
 
     // Obtener o crear configuración de correlativo para esta gestión
