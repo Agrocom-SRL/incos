@@ -11,7 +11,7 @@
  * Application (hook) → Domain (Use Case) → Infrastructure (Repository) → API
  * 
  * Este hook:
- * - Obtiene la lista de estudiantes usando GetTodosEstudiantesUseCase
+ * - Obtiene la lista de estudiantes usando ObtenerTodosEstudiantesUseCase
  * - Maneja estados de loading y error
  * - Proporciona función para refetch
  * 

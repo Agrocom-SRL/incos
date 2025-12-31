@@ -296,6 +296,124 @@ export class AuthRepository extends IAuthRepository {
 }
 ```
 
+#### 3.1.2.1 Estándar de Implementación de Repositorios
+
+Todos los repositorios deben seguir una estructura homogénea para mantener consistencia en el proyecto. Este estándar asegura que todos los repositorios compartan el mismo formato, comentarios y organización.
+
+**Estructura Estándar de Repositorio:**
+
+```javascript
+/**
+ * Implementación del Repositorio de [Nombre]
+ * Implementa I[Nombre]Repository usando API client
+ * 
+ * Single Responsibility: Solo maneja llamadas HTTP para [nombre]
+ * Liskov Substitution Principle: Puede reemplazar I[Nombre]Repository
+ * 
+ * Clean Architecture:
+ * - Infrastructure Layer: Implementación técnica usando HTTP
+ * - NO contiene lógica de negocio (solo HTTP calls)
+ * - Retorna datos crudos del backend
+ */
+
+import apiClient from '@api-client';
+import { I[Nombre]Repository } from '@domain/repositories';
+import { [NOMBRE]_ENDPOINTS } from '@api/endpoints';
+import { handleSuccessResponse, handleErrorResponse } from '@config/api/responseHandler';
+
+export class [Nombre]Repository extends I[Nombre]Repository {
+  /**
+   * Obtiene la lista de [nombre] con filtros y paginación
+   * GET /v1/[nombre]?pagina=1&limite=10&busqueda=...
+   * 
+   * @param {Object} options - Opciones de consulta
+   * @param {Object} options.params - Parámetros de consulta HTTP
+   * @returns {Promise<{success: boolean, data?: Array, error?: string}>}
+   */
+  async obtenerTodos(options = {}) {
+    try {
+      const { params = {} } = options;
+
+      // Llamada HTTP directa al endpoint
+      const response = await apiClient.get([NOMBRE]_ENDPOINTS.BASE, { params });
+
+      // Procesar respuesta exitosa
+      const result = handleSuccessResponse(response);
+
+      // Asegurar que data sea un array
+      if (result.success && result.data) {
+        result.data = Array.isArray(result.data) ? result.data : [];
+      }
+
+      return result;
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al obtener [nombre]');
+    }
+  }
+
+  /**
+   * Crea un nuevo [nombre]
+   * POST /v1/[nombre]
+   * 
+   * @param {Object} data - Datos del [nombre] a crear
+   * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
+   */
+  async crear(data) {
+    try {
+      // Llamada HTTP directa al endpoint
+      const response = await apiClient.post([NOMBRE]_ENDPOINTS.BASE, data);
+
+      // Procesar respuesta exitosa
+      const result = handleSuccessResponse(response);
+
+      return result;
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al crear [nombre]');
+    }
+  }
+
+}
+
+export default new [Nombre]Repository();
+```
+
+**Características del Estándar:**
+
+1. **Comentarios JSDoc consistentes:**
+   - Header del archivo con descripción completa
+   - Cada método documentado con `@param` y `@returns`
+   - Endpoint HTTP documentado en el comentario del método
+
+2. **Estructura de código uniforme:**
+   - Mismo orden de imports (apiClient, interface, endpoints, handlers)
+   - Mismo formato de try-catch
+   - Mismo procesamiento de respuestas
+   - Mismo manejo de errores
+
+3. **Espaciado consistente:**
+   - Línea en blanco entre métodos
+   - Línea en blanco antes del `export default`
+   - Indentación uniforme
+
+4. **Manejo de errores estándar:**
+   - Todos usan `handleErrorResponse()` con mensaje descriptivo
+   - No procesan errores de validación (eso es responsabilidad del Use Case)
+   - Retornan formato estándar: `{success, data?, error?}`
+
+5. **Validación de datos:**
+   - `obtenerTodos()` siempre asegura que `data` sea un array
+   - Otros métodos retornan datos crudos del backend
+
+**Ventajas de este estándar:**
+
+- ✅ **Consistencia:** Todos los repositorios se ven y funcionan igual
+- ✅ **Mantenibilidad:** Fácil de entender y modificar
+- ✅ **Escalabilidad:** Fácil agregar nuevos métodos siguiendo el patrón
+- ✅ **Onboarding:** Nuevos desarrolladores entienden rápidamente la estructura
+- ✅ **Debugging:** Errores se manejan de forma predecible
+
+**Nota:** Cuando se implementen métodos adicionales (actualizar, eliminar, etc.), deben seguir el mismo patrón de documentación y estructura.
+
 #### 3.1.3 Presentation Layer (`presentation/`)
 
 **Responsabilidad:** Componentes React, páginas y hooks que interactúan con el usuario.

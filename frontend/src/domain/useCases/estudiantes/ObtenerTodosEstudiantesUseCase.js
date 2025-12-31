@@ -19,7 +19,7 @@
 
 import { IEstudianteRepository } from '@repositories/IEstudianteRepository';
 
-export class GetTodosEstudiantesUseCase {
+export class ObtenerTodosEstudiantesUseCase {
   /**
    * @param {IEstudianteRepository} estudianteRepository - Repositorio de estudiantes
    */
