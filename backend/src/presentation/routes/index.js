@@ -1,5 +1,8 @@
 import express from 'express';
 import catalogsRoutes from './catalogs.routes.js';
+import carrerasRoutes from './carreras.routes.js';
+import materiasRoutes from './materias.routes.js';
+import discapacidadRoutes from './discapacidad.routes.js';
 import container from '../../infrastructure/container/index.js';
 import { TOKENS } from '../../infrastructure/container/tokens.js';
 
@@ -46,6 +49,9 @@ router.get('/', (req, res) => {
         endpoints: {
             estudiantes: '/api/v1/estudiantes',
             catalogs: '/api/v1/catalogs',
+            carreras: '/api/v1/carreras',
+            materias: '/api/v1/materias',
+            discapacidad: '/api/v1/discapacidad',
         },
     });
 });
@@ -60,6 +66,13 @@ router.use('/estudiantes', container.resolve(TOKENS.est_router));
 
 // Catálogos: Endpoints para obtener datos de catálogos
 router.use('/catalogs', catalogsRoutes);
+
+// Configuración Académica: Carreras y Materias
+router.use('/carreras', carrerasRoutes);
+router.use('/materias', materiasRoutes);
+
+// Configuración: Datos Complementarios
+router.use('/discapacidad', discapacidadRoutes);
 
 // Para agregar un nuevo módulo:
 // 1. Crear archivo: routes/{modulo}.routes.js

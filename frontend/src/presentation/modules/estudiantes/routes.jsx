@@ -15,6 +15,9 @@ import { UnderConstruction } from '@components/pages';
 // Lazy loading del connector de listado (que incluye el Provider)
 const EstudiantesListConnector = lazy(() => import('@estudiantes/connectors'));
 
+// Lazy loading del connector de registrar (versión antigua)
+const EstudiantesRegistrarConnector = lazy(() => import('@estudiantes-old/connectors'));
+
 export const estudiantesRoutes = [
     // Módulo raíz: Estudiantes (muestra la lista directamente)
     {
@@ -36,6 +39,18 @@ export const estudiantesRoutes = [
             module: 'EST',
             parent: 'EST',
             order: 1,
+        },
+    },
+    // Registrar (versión antigua)
+    {
+        path: '/estudiantes/registrar',
+        element: <EstudiantesRegistrarConnector />,
+        key: 'EST-REGISTRAR',
+        menu: {
+            label: 'Nueva Admisión',
+            module: 'EST',
+            parent: 'EST',
+            order: 2,
         },
     },
     // Becas - Grupo padre

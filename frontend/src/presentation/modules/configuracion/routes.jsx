@@ -8,7 +8,13 @@
  * - Presentation Layer: Define rutas y metadata de UI (labels del menú, orden)
  */
 
+import { lazy } from 'react';
 import { UnderConstruction } from '@components/pages';
+
+// Lazy loading de los connectors
+const CarrerasListConnector = lazy(() => import('./academico/carreras/connectors'));
+const MateriasListConnector = lazy(() => import('./academico/materias/connectors'));
+const DiscapacidadesListConnector = lazy(() => import('./complementario/discapacidad/connectors'));
 
 export const configuracionRoutes = [
     // Módulo raíz: Configuración
@@ -36,7 +42,7 @@ export const configuracionRoutes = [
     },
     {
         path: '/configuracion/academico/carreras',
-        element: <UnderConstruction />,
+        element: <CarrerasListConnector />,
         key: 'CFG-CARRERAS',
         menu: {
             label: 'Carreras',
@@ -47,7 +53,7 @@ export const configuracionRoutes = [
     },
     {
         path: '/configuracion/academico/materias',
-        element: <UnderConstruction />,
+        element: <MateriasListConnector />,
         key: 'CFG-MATERIAS',
         menu: {
             label: 'Materias',
@@ -170,7 +176,7 @@ export const configuracionRoutes = [
     },
     {
         path: '/configuracion/datos-complementarios/discapacidad',
-        element: <UnderConstruction />,
+        element: <DiscapacidadesListConnector />,
         key: 'CFG-DISCAPACIDAD',
         menu: {
             label: 'Discapacidad',

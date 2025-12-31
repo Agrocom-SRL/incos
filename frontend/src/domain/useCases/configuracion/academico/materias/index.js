@@ -1,0 +1,2 @@
+export { GetTodasMateriasUseCase } from './GetTodasMateriasUseCase';
+

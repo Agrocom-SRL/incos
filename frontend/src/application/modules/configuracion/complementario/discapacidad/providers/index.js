@@ -1,0 +1,2 @@
+export { DiscapacidadProvider } from './DiscapacidadProvider';
+

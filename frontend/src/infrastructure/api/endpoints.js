@@ -27,3 +27,23 @@ export const ESTUDIANTES_ENDPOINTS = {
   // Futuro: otros endpoints cuando se necesiten
 };
 
+/**
+ * Endpoints de Configuración - Académico
+ * Se agregarán endpoints según se necesiten
+ */
+export const CARRERAS_ENDPOINTS = {
+  BASE: `${API_BASE}/carreras`,
+  // Futuro: otros endpoints cuando se necesiten
+};
+
+export const MATERIAS_ENDPOINTS = {
+  BASE: `${API_BASE}/materias`,
+  // Futuro: otros endpoints cuando se necesiten
+};
+
+export const DISCAPACIDAD_ENDPOINTS = {
+  BASE: `${API_BASE}/discapacidad`,
+  // Futuro: otros endpoints cuando se necesiten
+};
+
+

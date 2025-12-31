@@ -48,7 +48,11 @@ export const useEstudiantesApi = () => {
 
             // Si hay error, manejarlo
             if (!result.success) {
-                setError(result.error || 'Error al cargar los estudiantes');
+                // Extraer el mensaje del error si es un objeto
+                const errorMessage = typeof result.error === 'object' && result.error?.message
+                    ? result.error.message
+                    : result.error || 'Error al cargar los estudiantes';
+                setError(errorMessage);
                 setEstudiantes([]);
                 return;
             }
@@ -58,7 +62,10 @@ export const useEstudiantesApi = () => {
             setEstudiantes(estudiantesMapeados);
         } catch (err) {
             // Error inesperado (no debería llegar aquí si el Use Case maneja bien los errores)
-            setError(err.message || 'Error al cargar los estudiantes');
+            const errorMessage = typeof err === 'object' && err?.message
+                ? err.message
+                : err || 'Error al cargar los estudiantes';
+            setError(errorMessage);
             setEstudiantes([]);
         } finally {
             setLoading(false);

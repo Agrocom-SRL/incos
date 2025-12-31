@@ -1,0 +1,2 @@
+export { GetTodasCarrerasUseCase } from './GetTodasCarrerasUseCase';
+

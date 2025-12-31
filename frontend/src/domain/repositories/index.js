@@ -15,3 +15,6 @@ export { IBaseRepository } from './IBaseRepository';
 // REPOSITORIOS EN USO
 // ============================================
 export { IEstudianteRepository } from './IEstudianteRepository';
+export { ICarreraRepository } from './ICarreraRepository';
+export { IMateriaRepository } from './IMateriaRepository';
+export { IDiscapacidadRepository } from './IDiscapacidadRepository';

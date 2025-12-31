@@ -9,6 +9,7 @@
  */
 
 import { registerEstudiantesModule } from '@container/modules/estudiantes.container.js';
+import { registerConfiguracionModule } from '@container/modules/configuracion.container.js';
 // Futuro: import { registerDocentesModule } from './docentes.container.js';
 
 /**
@@ -20,6 +21,7 @@ import { registerEstudiantesModule } from '@container/modules/estudiantes.contai
 export function registerAllModules(factory) {
   // Módulos complejos (con lógica de negocio)
   registerEstudiantesModule(factory);
+  registerConfiguracionModule(factory);
   // registerDocentesModule(factory);
   // registerGestionesModule(factory);
   // registerInscripcionesModule(factory);

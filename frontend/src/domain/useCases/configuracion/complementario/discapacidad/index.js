@@ -1,0 +1,2 @@
+export { GetTodasDiscapacidadesUseCase } from './GetTodasDiscapacidadesUseCase';
+
