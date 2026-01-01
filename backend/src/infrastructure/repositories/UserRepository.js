@@ -1,11 +1,23 @@
 import { IUsuarioRepository } from '../../domain/interfaces/repositories/IUsuarioRepository.js';
 import { Usuario as UsuarioModel } from '../database/models/usuario.js';
-import { User } from '../../domain/entities/User.js';
 import { BaseRepository } from './BaseRepository.js';
+import { UserMapper } from '../mappers/UserMapper.js';
 
 /**
  * Implementación del repositorio de usuarios usando Sequelize
  * Utiliza el patrón Template Method heredando de BaseRepository
+ * 
+ * Responsabilidades:
+ * - Acceso a datos (consultas, persistencia)
+ * - Delegar conversión ORM ↔ Entidad a UserMapper
+ * 
+ * Principios SOLID:
+ * - Single Responsibility: Solo maneja acceso a datos
+ * - Dependency Inversion: Usa UserMapper para conversiones (depende de abstracción)
+ * 
+ * Clean Architecture:
+ * - Infrastructure Layer: Implementación concreta de IUsuarioRepository
+ * - Usa UserMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
  * 
  * @implements {IUsuarioRepository}
  * 
@@ -24,27 +36,13 @@ export class UserRepository extends BaseRepository {
 
   /**
    * Convierte un modelo Sequelize a entidad de dominio
-   * @param {Object} model
-   * @returns {User|null}
+   * Delega la responsabilidad de mapeo a UserMapper
+   * 
+   * @param {Object} model - Modelo Sequelize
+   * @returns {User|null} Entidad de dominio
    */
   toEntity(model) {
-    if (!model) return null;
-    return new User({
-      id: model.id,
-      username: model.username,
-      email: model.email,
-      passwordHash: model.passwordHash,
-      photoUrl: model.fotoUrl,
-      roleId: model.rolId,
-      referenceId: model.referenciaId,
-      referenceType: model.tipoReferencia,
-      state: model.estado,
-      stateChangeDate: model.fechaCambioEstado,
-      stateChangeReason: model.motivoCambioEstado,
-      activo: model.activo,
-      createdAt: model.createdAt,
-      updatedAt: model.updatedAt,
-    });
+    return UserMapper.toEntity(model);
   }
 
   /**
@@ -85,70 +83,27 @@ export class UserRepository extends BaseRepository {
   }
 
   /**
-   * Mapea datos de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de dominio a formato del modelo Sequelize (para creación)
+   * Delega la responsabilidad de mapeo a UserMapper
+   * 
+   * @param {User|Object} data - Entidad User o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize
    */
   mapDataToModel(data, userId = null) {
-    return {
-      username: data.username,
-      email: data.email,
-      passwordHash: data.passwordHash,
-      fotoUrl: data.photoUrl || null,
-      rolId: data.roleId || null,
-      referenciaId: data.referenceId || null,
-      tipoReferencia: data.referenceType || null,
-      estado: data.state || null,
-      fechaCambioEstado: data.stateChangeDate || null,
-      motivoCambioEstado: data.stateChangeReason || null,
-    };
+    return UserMapper.toModel(data);
   }
 
   /**
-   * Mapea datos de actualización de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de actualización de dominio a formato del modelo Sequelize (para actualización)
+   * Delega la responsabilidad de mapeo a UserMapper
+   * 
+   * @param {User|Object} data - Entidad User o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
   mapDataToUpdate(data, userId = null) {
-    const updateData = {};
-
-    if (data.username !== undefined) {
-      updateData.username = data.username;
-    }
-    if (data.email !== undefined) {
-      updateData.email = data.email;
-    }
-    if (data.passwordHash !== undefined) {
-      updateData.passwordHash = data.passwordHash;
-    }
-    if (data.photoUrl !== undefined) {
-      updateData.fotoUrl = data.photoUrl || null;
-    }
-    if (data.roleId !== undefined) {
-      updateData.rolId = data.roleId || null;
-    }
-    if (data.referenceId !== undefined) {
-      updateData.referenciaId = data.referenceId || null;
-    }
-    if (data.referenceType !== undefined) {
-      updateData.tipoReferencia = data.referenceType || null;
-    }
-    if (data.state !== undefined) {
-      updateData.estado = data.state || null;
-    }
-    if (data.stateChangeDate !== undefined) {
-      updateData.fechaCambioEstado = data.stateChangeDate || null;
-    }
-    if (data.stateChangeReason !== undefined) {
-      updateData.motivoCambioEstado = data.stateChangeReason || null;
-    }
-    if (data.activo !== undefined) {
-      updateData.activo = data.activo;
-    }
-
-    return updateData;
+    return UserMapper.toModelForUpdate(data);
   }
 
   /**
@@ -161,8 +116,9 @@ export class UserRepository extends BaseRepository {
 
   /**
    * Método específico: Buscar usuario por username
-   * @param {string} username
-   * @returns {Promise<User|null>}
+   * 
+   * @param {string} username - Nombre de usuario
+   * @returns {Promise<User|null>} Entidad User o null si no se encuentra
    */
   async findByUsername(username) {
     const model = await this.getModel().findOne({
@@ -177,8 +133,9 @@ export class UserRepository extends BaseRepository {
 
   /**
    * Método específico: Buscar usuario por email
-   * @param {string} email
-   * @returns {Promise<User|null>}
+   * 
+   * @param {string} email - Email del usuario (se normaliza a minúsculas)
+   * @returns {Promise<User|null>} Entidad User o null si no se encuentra
    */
   async findByEmail(email) {
     const model = await this.getModel().findOne({
@@ -193,8 +150,9 @@ export class UserRepository extends BaseRepository {
 
   /**
    * Método específico: Buscar usuarios por rol
-   * @param {number} rolId
-   * @returns {Promise<User[]>}
+   * 
+   * @param {number} rolId - ID del rol
+   * @returns {Promise<User[]>} Array de entidades User
    */
   async findByRolId(rolId) {
     const models = await this.getModel().findAll({
@@ -205,7 +163,7 @@ export class UserRepository extends BaseRepository {
       },
       order: [['username', 'ASC']],
     });
-    return models.map((model) => this.toEntity(model));
+    return UserMapper.toEntityList(models);
   }
 }
 
