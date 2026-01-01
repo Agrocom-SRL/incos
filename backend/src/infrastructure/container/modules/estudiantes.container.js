@@ -17,25 +17,20 @@ import { TOKENS } from '../tokens.js';
 // ============================================
 // USE CASES
 // ============================================
-import { RegisterStudentUseCase } from '../../../application/use-cases/estudiantes/RegisterStudentUseCase.js';
 import { ListStudentsUseCase } from '../../../application/use-cases/estudiantes/ListStudentsUseCase.js';
-import { UploadDocumentUseCase } from '../../../application/use-cases/estudiantes/UploadDocumentUseCase.js';
-import { GenerateCompromisoActaUseCase } from '../../../application/use-cases/estudiantes/GenerateCompromisoActaUseCase.js';
+// TODO: Agregar otros Use Cases cuando se implementen sus endpoints
+// import { RegisterStudentUseCase } from '../../../application/use-cases/estudiantes/RegisterStudentUseCase.js';
+// import { GetStudentByIdUseCase } from '../../../application/use-cases/estudiantes/GetStudentByIdUseCase.js';
+// import { UpdateStudentUseCase } from '../../../application/use-cases/estudiantes/UpdateStudentUseCase.js';
 
 // ============================================
 // CONTROLLERS
 // ============================================
-import {
-    CreateStudentController,
-    ListStudentsController,
-} from '../../../presentation/controllers/estudiantes/index.js';
-
-import { UploadDocumentController } from '../../../presentation/controllers/estudiantes/upload-document.controller.js';
-import { GetStudentDocumentsController } from '../../../presentation/controllers/estudiantes/get-documents.controller.js';
-import { GetStudentDocumentDeliveriesController } from '../../../presentation/controllers/estudiantes/get-document-deliveries.controller.js';
-import { GetStudentAcademicDataController } from '../../../presentation/controllers/estudiantes/get-academic-data.controller.js';
-import { GetStudentByIdController } from '../../../presentation/controllers/estudiantes/get-by-id.controller.js'
-import { GenerateCompromisoActaController } from '../../../presentation/controllers/estudiantes/generate-compromiso-acta.controller.js';
+import { ListStudentsController } from '../../../presentation/controllers/estudiantes/index.js';
+// TODO: Agregar otros Controllers cuando se implementen sus endpoints
+// import { CreateStudentController } from '../../../presentation/controllers/estudiantes/create.controller.js';
+// import { GetStudentByIdController } from '../../../presentation/controllers/estudiantes/get-by-id.controller.js';
+// import { UpdateStudentController } from '../../../presentation/controllers/estudiantes/update.controller.js';
 
 // ============================================
 // ROUTER BUILDER
@@ -53,26 +48,6 @@ export function registerEstudiantesModule(container) {
     // USE CASES
     // ============================================
     container.register(
-        TOKENS.est_registerStudentUseCase,
-        (c) =>
-            new RegisterStudentUseCase({
-                studentRepository: c.resolve(TOKENS.studentRepository),
-                studentAcademicDataRepository: c.resolve(TOKENS.studentAcademicDataRepository),
-                studentDocumentRepository: c.resolve(TOKENS.studentDocumentRepository),
-                studentDocumentDeliveryRepository: c.resolve(TOKENS.studentDocumentDeliveryRepository),
-                studentDisabilityRepository: c.resolve(TOKENS.studentDisabilityRepository),
-                studentOriginRepository: c.resolve(TOKENS.studentOriginRepository),
-                studentGuardianRepository: c.resolve(TOKENS.studentGuardianRepository),
-                documentacionRepository: c.resolve(TOKENS.documentacionRepository),
-                configuracionSistemaRepository: c.resolve(TOKENS.configuracionSistemaRepository),
-                managementRepository: c.resolve(TOKENS.managementRepository),
-                generateCompromisoActaUseCase: c.resolve(TOKENS.est_generateActaUseCase),
-                logger: c.resolve(TOKENS.logger),
-            }),
-        { singleton: true }
-    );
-
-    container.register(
         TOKENS.est_listStudentsUseCase,
         (c) =>
             new ListStudentsUseCase({
@@ -82,45 +57,16 @@ export function registerEstudiantesModule(container) {
         { singleton: true }
     );
 
-    container.register(
-        TOKENS.est_uploadDocumentUseCase,
-        (c) =>
-            new UploadDocumentUseCase({
-                studentRepository: c.resolve(TOKENS.studentRepository),
-                documentacionRepository: c.resolve(TOKENS.documentacionRepository),
-                studentDocumentRepository: c.resolve(TOKENS.studentDocumentRepository),
-                logger: c.resolve(TOKENS.logger),
-            }),
-        { singleton: true }
-    );
-
-    container.register(
-        TOKENS.est_generateActaUseCase,
-        (c) =>
-            new GenerateCompromisoActaUseCase({
-                studentRepository: c.resolve(TOKENS.studentRepository),
-                documentacionRepository: c.resolve(TOKENS.documentacionRepository),
-                studentAcademicDataRepository: c.resolve(TOKENS.studentAcademicDataRepository),
-                studentDocumentRepository: c.resolve(TOKENS.studentDocumentRepository),
-                careerRepository: c.resolve(TOKENS.careerRepository),
-                managementRepository: c.resolve(TOKENS.managementRepository),
-                logger: c.resolve(TOKENS.logger),
-            }),
-        { singleton: true }
-    );
+    // TODO: Agregar otros Use Cases cuando se implementen sus endpoints
+    // container.register(
+    //     TOKENS.est_registerStudentUseCase,
+    //     (c) => new RegisterStudentUseCase({ ... }),
+    //     { singleton: true }
+    // );
 
     // ============================================
     // CONTROLLERS
     // ============================================
-    container.register(
-        TOKENS.est_createStudentController,
-        (c) =>
-            new CreateStudentController({
-                registerStudentUseCase: c.resolve(TOKENS.est_registerStudentUseCase),
-            }),
-        { singleton: true }
-    );
-
     container.register(
         TOKENS.est_listStudentsController,
         (c) =>
@@ -130,51 +76,12 @@ export function registerEstudiantesModule(container) {
         { singleton: true }
     );
 
-    container.register(
-        TOKENS.est_uploadDocumentController,
-        (c) =>
-            new UploadDocumentController({
-                uploadDocumentUseCase: c.resolve(TOKENS.est_uploadDocumentUseCase),
-            }),
-        { singleton: true }
-    );
-
-    container.register(
-        TOKENS.est_getStudentByIdController,
-        () => new GetStudentByIdController({
-            getStudentByIdUseCase: null, // TODO
-        }),
-        { singleton: true }
-    );
-
-
-    // Controllers sin dependencias (pueden necesitar repositorios en el futuro)
-    container.register(
-        TOKENS.est_getDocumentsController,
-        () => new GetStudentDocumentsController(),
-        { singleton: true }
-    );
-
-    container.register(
-        TOKENS.est_getDocumentDeliveriesController,
-        () => new GetStudentDocumentDeliveriesController(),
-        { singleton: true }
-    );
-
-    container.register(
-        TOKENS.est_getAcademicDataController,
-        () => new GetStudentAcademicDataController(),
-        { singleton: true }
-    );
-
-    container.register(
-        TOKENS.est_generateActaController,
-        (c) =>
-            new GenerateCompromisoActaController({
-                generateCompromisoActaUseCase: c.resolve(TOKENS.est_generateActaUseCase),
-            }),
-        { singleton: true }
-    );
+    // TODO: Agregar otros Controllers cuando se implementen sus endpoints
+    // container.register(
+    //     TOKENS.est_createStudentController,
+    //     (c) => new CreateStudentController({ ... }),
+    //     { singleton: true }
+    // );
 
     // ============================================
     // ROUTER
@@ -182,21 +89,18 @@ export function registerEstudiantesModule(container) {
     container.register(
         TOKENS.est_router,
         (c) => {
-            // Resolver todos los controllers
+            // Resolver solo los controllers que se usan en las rutas actuales
             const controllers = {
-                createStudentController: c.resolve(TOKENS.est_createStudentController),
                 listStudentsController: c.resolve(TOKENS.est_listStudentsController),
-                uploadDocumentController: c.resolve(TOKENS.est_uploadDocumentController),
-                getStudentByIdController: c.resolve(TOKENS.est_getStudentByIdController),
-                getStudentDocumentsController: c.resolve(TOKENS.est_getDocumentsController),
-                getStudentDocumentDeliveriesController: c.resolve(TOKENS.est_getDocumentDeliveriesController),
-                getStudentAcademicDataController: c.resolve(TOKENS.est_getAcademicDataController),
-                generateCompromisoActaController: c.resolve(TOKENS.est_generateActaController),
+                // TODO: Agregar otros controllers cuando se implementen sus rutas
+                // createStudentController: c.resolve(TOKENS.est_createStudentController),
+                // getStudentByIdController: c.resolve(TOKENS.est_getStudentByIdController),
+                // updateStudentController: c.resolve(TOKENS.est_updateStudentController),
             };
 
             // Resolver middlewares (servicios de infraestructura)
             const middlewares = {
-                uploadStudentDocument: c.resolve(TOKENS.fileUploadService).uploadStudentDocument(),
+                // uploadStudentDocument: c.resolve(TOKENS.fileUploadService).uploadStudentDocument(),
             };
 
             // Construir router con inyección de dependencias

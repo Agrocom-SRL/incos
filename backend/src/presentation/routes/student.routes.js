@@ -1,13 +1,5 @@
 import express from 'express';
-import {
-    registerStudentValidator,
-    listStudentsValidator,
-    getStudentByIdValidator,
-    updateStudentValidator,
-    changeStudentStatusValidator,
-    assignBecaValidator,
-    requestLicenciaValidator,
-} from '../validators/estudiantes/index.js';
+import { listStudentsValidator } from '../validators/estudiantes/index.js';
 import validateRequest from '../middleware/validation.middleware.js';
 
 /**
@@ -34,13 +26,17 @@ export function buildStudentRouter({ controllers, middlewares }) {
     // CRUD BÁSICO
     // ============================================
 
-    router.post(
-        '/',
-        registerStudentValidator,
-        validateRequest,
-        (req, res, next) => controllers.createStudentController.handle(req, res, next)
-    );
-
+    /**
+     * GET /api/v1/estudiantes
+     * Listar todos los estudiantes con filtros y paginación
+     * 
+     * Query params según IBaseRepository.obtenerTodos:
+     * - pagina: número de página (paginación)
+     * - limite: cantidad por página (paginación)
+     * - busqueda: término de búsqueda general
+     * - filtros: filtros específicos del recurso
+     * - incluirInactivos: incluir registros inactivos (activo = false)
+     */
     router.get(
         '/',
         listStudentsValidator,
@@ -48,115 +44,39 @@ export function buildStudentRouter({ controllers, middlewares }) {
         (req, res, next) => controllers.listStudentsController.handle(req, res, next)
     );
 
-    // Rutas específicas ANTES de /:id (para evitar conflictos)
-    router.get(
-        '/summary',
-        (req, res, next) => controllers.getStudentsSummaryController?.handle(req, res, next) || res.status(501).json({ success: false, error: 'Endpoint en construcción' })
-    );
-
-    router.get(
-        '/becas',
-        (req, res, next) => controllers.listBecasController?.handle(req, res, next) || res.status(501).json({ success: false, error: 'Endpoint en construcción' })
-    );
-
-    router.get(
-        '/licencias',
-        (req, res, next) => controllers.listLicenciasController?.handle(req, res, next) || res.status(501).json({ success: false, error: 'Endpoint en construcción' })
-    );
-
-    router.get(
-        '/documentos',
-        (req, res, next) => controllers.listAllDocumentsController?.handle(req, res, next) || res.status(501).json({ success: false, error: 'Endpoint en construcción' })
-    );
-
-    router.get(
-        '/:id',
-        getStudentByIdValidator,
-        validateRequest,
-        (req, res, next) => controllers.getStudentByIdController.handle(req, res, next)
-    );
-
-    router.put(
-        '/:id',
-        updateStudentValidator,
-        validateRequest,
-        (req, res, next) => controllers.updateStudentController.handle(req, res, next)
-    );
-
     // ============================================
-    // DOCUMENTOS
+    // ENDPOINTS FUTUROS (TODO: Implementar cuando se necesiten)
     // ============================================
 
-    router.get(
-        '/:id/documentos',
-        (req, res, next) => controllers.getStudentDocumentsController.handle(req, res, next)
-    );
+    // POST / - Crear estudiante
+    // router.post(
+    //     '/',
+    //     registerStudentValidator,
+    //     validateRequest,
+    //     (req, res, next) => controllers.createStudentController.handle(req, res, next)
+    // );
 
-    router.post(
-        '/:id/documentos',
-        middlewares.uploadStudentDocument,
-        (req, res, next) => controllers.uploadDocumentController.handle(req, res, next)
-    );
+    // GET /:id - Obtener estudiante por ID
+    // router.get(
+    //     '/:id',
+    //     getStudentByIdValidator,
+    //     validateRequest,
+    //     (req, res, next) => controllers.getStudentByIdController.handle(req, res, next)
+    // );
 
-    router.get(
-        '/:id/entregas-documentos',
-        (req, res, next) => controllers.getStudentDocumentDeliveriesController.handle(req, res, next)
-    );
+    // PUT /:id - Actualizar estudiante
+    // router.put(
+    //     '/:id',
+    //     updateStudentValidator,
+    //     validateRequest,
+    //     (req, res, next) => controllers.updateStudentController.handle(req, res, next)
+    // );
 
-    // ============================================
-    // DATOS ACADÉMICOS
-    // ============================================
-
-    router.get(
-        '/:id/datos-academicos',
-        (req, res, next) => controllers.getStudentAcademicDataController.handle(req, res, next)
-    );
-
-    router.patch(
-        '/:id/estado',
-        changeStudentStatusValidator,
-        validateRequest,
-        (req, res, next) => controllers.changeStudentStatusController.handle(req, res, next)
-    );
-
-    // ============================================
-    // BECAS Y LICENCIAS
-    // ============================================
-
-    // Becas (rutas específicas de estudiante)
-    router.post(
-        '/:id/becas',
-        assignBecaValidator,
-        validateRequest,
-        (req, res, next) => controllers.assignBecaController.handle(req, res, next)
-    );
-
-    router.patch(
-        '/:id/becas/:becaId/aprobar',
-        (req, res, next) => controllers.approveBecaController?.handle(req, res, next) || res.status(501).json({ success: false, error: 'Endpoint en construcción' })
-    );
-
-    // Licencias (rutas específicas de estudiante)
-    router.post(
-        '/:id/licencias',
-        requestLicenciaValidator,
-        validateRequest,
-        (req, res, next) => controllers.requestLicenciaController.handle(req, res, next)
-    );
-
-    router.patch(
-        '/:id/licencias/:licenciaId/aprobar',
-        (req, res, next) => controllers.approveLicenciaController?.handle(req, res, next) || res.status(501).json({ success: false, error: 'Endpoint en construcción' })
-    );
-
-    // ============================================
-    // REPORTES
-    // ============================================
-
-    router.get(
-        '/:id/acta-compromiso',
-        (req, res, next) => controllers.generateCompromisoActaController.handle(req, res, next)
-    );
+    // DELETE /:id - Eliminar estudiante (soft delete)
+    // router.delete(
+    //     '/:id',
+    //     (req, res, next) => controllers.deleteStudentController.handle(req, res, next)
+    // );
 
     return router;
 }

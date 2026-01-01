@@ -15,6 +15,9 @@
 import { registerServicesModule } from './services.container.js';
 import { registerRepositoriesModule } from './repositories.container.js';
 import { registerEstudiantesModule } from './estudiantes.container.js';
+import { registerConfiguracionModule } from './configuracion.container.js';
+import { registerGeograficosModule } from './geograficos.container.js';
+import { registerReferenciaModule } from './referencia.container.js';
 
 /**
  * Registra todos los módulos en el contenedor
@@ -31,6 +34,9 @@ export function registerAllModules(container) {
 
     // 3. Módulos de dominio (use cases + controllers + routers)
     registerEstudiantesModule(container);
+    registerConfiguracionModule(container);
+    registerGeograficosModule(container);
+    registerReferenciaModule(container);
 
     return container;
 }
