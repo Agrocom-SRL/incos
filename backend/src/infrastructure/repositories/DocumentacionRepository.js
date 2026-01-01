@@ -1,4 +1,4 @@
-import { Documentacion as DocumentacionModel } from '../database/models/Documentacion.js';
+import { Documentacion as DocumentacionModel } from '../database/models/documentacion.js';
 import { Documentacion as DocumentacionEntity } from '../../domain/entities/Documentacion.js';
 import { BaseRepository } from './BaseRepository.js';
 import { Op } from 'sequelize';

@@ -1,5 +1,5 @@
 import { ITipoDiscapacidadRepository } from '../../domain/interfaces/repositories/ITipoDiscapacidadRepository.js';
-import { TipoDiscapacidad as TipoDiscapacidadModel } from '../database/models/TipoDiscapacidad.js';
+import { TipoDiscapacidad as TipoDiscapacidadModel } from '../database/models/tipo_discapacidad.js';
 import { DisabilityType } from '../../domain/entities/DisabilityType.js';
 import { BaseRepository } from './BaseRepository.js';
 

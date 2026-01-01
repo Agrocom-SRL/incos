@@ -1,5 +1,5 @@
 import { IMateriaRepository } from '../../domain/interfaces/repositories/IMateriaRepository.js';
-import { Materia as MateriaModel } from '../database/models/Materia.js';
+import { Materia as MateriaModel } from '../database/models/materia.js';
 import { Subject } from '../../domain/entities/Subject.js';
 import { BaseRepository } from './BaseRepository.js';
 

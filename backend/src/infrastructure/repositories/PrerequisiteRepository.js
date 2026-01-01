@@ -1,5 +1,5 @@
 import { IPrerrequisitoRepository } from '../../domain/interfaces/repositories/IPrerrequisitoRepository.js';
-import { Prerrequisito as PrerrequisitoModel } from '../database/models/Prerrequisito.js';
+import { Prerrequisito as PrerrequisitoModel } from '../database/models/prerrequisito.js';
 import { Prerequisite } from '../../domain/entities/Prerequisite.js';
 import { BaseRepository } from './BaseRepository.js';
 

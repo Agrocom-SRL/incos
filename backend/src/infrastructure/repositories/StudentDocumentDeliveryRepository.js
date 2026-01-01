@@ -1,5 +1,5 @@
 import { BaseRepository } from './BaseRepository.js';
-import { EstudianteDocumentoEntrega } from '../database/models/EstudianteDocumentoEntrega.js';
+import { EstudianteDocumentoEntrega } from '../database/models/estudiante_documento_entrega.js';
 import { StudentDocumentDelivery } from '../../domain/entities/StudentDocumentDelivery.js';
 
 /**

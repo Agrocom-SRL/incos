@@ -1,5 +1,5 @@
 import { IBecaDescuentoRepository } from '../../domain/interfaces/repositories/IBecaDescuentoRepository.js';
-import { BecaDescuento as BecaDescuentoModel } from '../database/models/BecaDescuento.js';
+import { BecaDescuento as BecaDescuentoModel } from '../database/models/beca_descuento.js';
 import { Scholarship } from '../../domain/entities/Scholarship.js';
 import { BaseRepository } from './BaseRepository.js';
 

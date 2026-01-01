@@ -1,5 +1,5 @@
 import { IDepartamentoRepository } from '../../domain/interfaces/repositories/IDepartamentoRepository.js';
-import { Departamento as DepartamentoModel } from '../database/models/Departamento.js';
+import { Departamento as DepartamentoModel } from '../database/models/departamento.js';
 import { Department } from '../../domain/entities/Department.js';
 import { BaseRepository } from './BaseRepository.js';
 import { Op } from 'sequelize';

@@ -1,5 +1,5 @@
 import { IStudentApoderadoRepository } from '../../domain/interfaces/repositories/IStudentApoderadoRepository.js';
-import { EstudianteApoderado as EstudianteApoderadoModel } from '../database/models/EstudianteApoderado.js';
+import { EstudianteApoderado as EstudianteApoderadoModel } from '../database/models/estudiante_apoderado.js';
 import { StudentGuardian } from '../../domain/entities/StudentGuardian.js';
 import { BaseRepository } from './BaseRepository.js';
 

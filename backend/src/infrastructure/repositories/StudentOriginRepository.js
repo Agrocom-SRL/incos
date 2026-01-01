@@ -1,4 +1,4 @@
-import { EstudianteOrigen as EstudianteOrigenModel } from '../database/models/EstudianteOrigen.js';
+import { EstudianteOrigen as EstudianteOrigenModel } from '../database/models/estudiante_origen.js';
 import { BaseRepository } from './BaseRepository.js';
 
 /**

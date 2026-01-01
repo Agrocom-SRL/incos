@@ -1,5 +1,5 @@
 import { ITipoParentescoRepository } from '../../domain/interfaces/repositories/ITipoParentescoRepository.js';
-import { TipoParentesco as TipoParentescoModel } from '../database/models/TipoParentesco.js';
+import { TipoParentesco as TipoParentescoModel } from '../database/models/tipo_parentesco.js';
 import { RelationshipType } from '../../domain/entities/RelationshipType.js';
 import { BaseRepository } from './BaseRepository.js';
 

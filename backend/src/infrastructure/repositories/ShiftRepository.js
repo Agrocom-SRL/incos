@@ -1,5 +1,5 @@
 import { ITurnoRepository } from '../../domain/interfaces/repositories/ITurnoRepository.js';
-import { Turno as TurnoModel } from '../database/models/Turno.js';
+import { Turno as TurnoModel } from '../database/models/turno.js';
 import { Shift } from '../../domain/entities/Shift.js';
 import { BaseRepository } from './BaseRepository.js';
 

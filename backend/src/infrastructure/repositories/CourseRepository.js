@@ -1,5 +1,5 @@
 import { ICursoRepository } from '../../domain/interfaces/repositories/ICursoRepository.js';
-import { Curso as CursoModel } from '../database/models/Curso.js';
+import { Curso as CursoModel } from '../database/models/curso.js';
 import { Course } from '../../domain/entities/Course.js';
 import { BaseRepository } from './BaseRepository.js';
 

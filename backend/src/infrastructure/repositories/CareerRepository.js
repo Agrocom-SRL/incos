@@ -1,5 +1,5 @@
 import { ICarreraRepository } from '../../domain/interfaces/repositories/ICarreraRepository.js';
-import { Carrera as CarreraModel } from '../database/models/Carrera.js';
+import { Carrera as CarreraModel } from '../database/models/carrera.js';
 import { Career } from '../../domain/entities/Career.js';
 import { BaseRepository } from './BaseRepository.js';
 

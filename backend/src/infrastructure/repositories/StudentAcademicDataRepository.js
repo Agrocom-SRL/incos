@@ -1,5 +1,5 @@
 import { IStudentAcademicDataRepository } from '../../domain/interfaces/repositories/IStudentAcademicDataRepository.js';
-import { EstudianteDatosAcademicos as EstudianteDatosAcademicosModel } from '../database/models/EstudianteDatosAcademicos.js';
+import { EstudianteDatosAcademicos as EstudianteDatosAcademicosModel } from '../database/models/estudiante_datos_academicos.js';
 import { StudentAcademicData } from '../../domain/entities/StudentAcademicData.js';
 import { BaseRepository } from './BaseRepository.js';
 

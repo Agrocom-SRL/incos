@@ -1,5 +1,5 @@
 import { IStudentBecaRepository } from '../../domain/interfaces/repositories/IStudentBecaRepository.js';
-import { EstudianteBeca as EstudianteBecaModel } from '../database/models/EstudianteBeca.js';
+import { EstudianteBeca as EstudianteBecaModel } from '../database/models/estudiante_beca.js';
 import { StudentScholarship } from '../../domain/entities/StudentScholarship.js';
 import { BaseRepository } from './BaseRepository.js';
 

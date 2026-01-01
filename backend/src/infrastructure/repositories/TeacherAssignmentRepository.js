@@ -1,5 +1,5 @@
 import { IAsignacionDocenteRepository } from '../../domain/interfaces/repositories/IAsignacionDocenteRepository.js';
-import { AsignacionDocente as AsignacionDocenteModel } from '../database/models/AsignacionDocente.js';
+import { AsignacionDocente as AsignacionDocenteModel } from '../database/models/asignacion_docente.js';
 import { TeacherAssignment } from '../../domain/entities/TeacherAssignment.js';
 import { BaseRepository } from './BaseRepository.js';
 

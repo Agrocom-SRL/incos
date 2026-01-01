@@ -31,6 +31,13 @@ export const EstudianteDatosAcademicos = sequelize.define(
       defaultValue: 'REGULAR',
       comment: 'Estado académico',
     },
+    estadoRegistro: {
+      type: DataTypes.ENUM('BORRADOR', 'PENDIENTE', 'ADMITIDO'),
+      field: 'estado_registro',
+      allowNull: false,
+      defaultValue: 'BORRADOR',
+      comment: 'Estado del proceso de registro: BORRADOR (datos completos, documentos pendientes), PENDIENTE (al menos un documento original), ADMITIDO (todos los documentos originales verificados)',
+    },
     unidadEducativaProcedencia: {
       type: DataTypes.STRING(200),
       field: 'unidad_educativa_procedencia',

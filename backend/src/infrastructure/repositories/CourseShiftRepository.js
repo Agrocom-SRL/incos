@@ -1,5 +1,5 @@
 import { ITurnoCursoRepository } from '../../domain/interfaces/repositories/ITurnoCursoRepository.js';
-import { TurnoCurso as TurnoCursoModel } from '../database/models/TurnoCurso.js';
+import { TurnoCurso as TurnoCursoModel } from '../database/models/turno_curso.js';
 import { CourseShift } from '../../domain/entities/CourseShift.js';
 import { BaseRepository } from './BaseRepository.js';
 

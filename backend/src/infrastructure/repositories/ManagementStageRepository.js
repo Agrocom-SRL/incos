@@ -1,5 +1,5 @@
 import { IEtapaGestionRepository } from '../../domain/interfaces/repositories/IEtapaGestionRepository.js';
-import { EtapaGestion as EtapaGestionModel } from '../database/models/EtapaGestion.js';
+import { EtapaGestion as EtapaGestionModel } from '../database/models/etapa_gestion.js';
 import { ManagementStage } from '../../domain/entities/ManagementStage.js';
 import { BaseRepository } from './BaseRepository.js';
 import { Op } from 'sequelize';

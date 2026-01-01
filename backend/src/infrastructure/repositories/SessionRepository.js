@@ -1,5 +1,5 @@
 import { ISesionRepository } from '../../domain/interfaces/repositories/ISesionRepository.js';
-import { Sesion as SesionModel } from '../database/models/Sesion.js';
+import { Sesion as SesionModel } from '../database/models/sesion.js';
 import { Session } from '../../domain/entities/Session.js';
 import { BaseRepository } from './BaseRepository.js';
 

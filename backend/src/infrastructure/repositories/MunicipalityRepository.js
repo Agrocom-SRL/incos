@@ -1,5 +1,5 @@
 import { IMunicipioRepository } from '../../domain/interfaces/repositories/IMunicipioRepository.js';
-import { Municipio as MunicipioModel } from '../database/models/Municipio.js';
+import { Municipio as MunicipioModel } from '../database/models/municipio.js';
 import { Municipality } from '../../domain/entities/Municipality.js';
 import { BaseRepository } from './BaseRepository.js';
 import { Op } from 'sequelize';

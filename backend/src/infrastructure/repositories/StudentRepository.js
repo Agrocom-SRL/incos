@@ -1,5 +1,5 @@
 import { IStudentRepository } from '../../domain/interfaces/repositories/IStudentRepository.js';
-import { Estudiante as EstudianteModel } from '../database/models/Estudiante.js';
+import { Estudiante as EstudianteModel } from '../database/models/estudiante.js';
 import { Student } from '../../domain/entities/Student.js';
 import { BaseRepository } from './BaseRepository.js';
 import { Op } from 'sequelize';

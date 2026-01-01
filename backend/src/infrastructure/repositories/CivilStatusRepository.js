@@ -1,5 +1,5 @@
 import { IEstadoCivilRepository } from '../../domain/interfaces/repositories/IEstadoCivilRepository.js';
-import { EstadoCivil as EstadoCivilModel } from '../database/models/EstadoCivil.js';
+import { EstadoCivil as EstadoCivilModel } from '../database/models/estado_civil.js';
 import { CivilStatus } from '../../domain/entities/CivilStatus.js';
 import { BaseRepository } from './BaseRepository.js';
 import { Op } from 'sequelize';

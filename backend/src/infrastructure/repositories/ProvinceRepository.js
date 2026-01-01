@@ -1,5 +1,5 @@
 import { IProvinciaRepository } from '../../domain/interfaces/repositories/IProvinciaRepository.js';
-import { Provincia as ProvinciaModel } from '../database/models/Provincia.js';
+import { Provincia as ProvinciaModel } from '../database/models/provincia.js';
 import { Province } from '../../domain/entities/Province.js';
 import { BaseRepository } from './BaseRepository.js';
 import { Op } from 'sequelize';

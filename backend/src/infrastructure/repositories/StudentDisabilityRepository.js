@@ -1,4 +1,4 @@
-import { EstudianteDiscapacidad as EstudianteDiscapacidadModel } from '../database/models/EstudianteDiscapacidad.js';
+import { EstudianteDiscapacidad as EstudianteDiscapacidadModel } from '../database/models/estudiante_discapacidad.js';
 import { BaseRepository } from './BaseRepository.js';
 
 /**

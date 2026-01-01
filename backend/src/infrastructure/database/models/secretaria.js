@@ -39,9 +39,8 @@ export const Secretaria = sequelize.define(
     },
   },
   {
+    ...baseModelOptions,
     tableName: 'secretarias',
-    timestamps: false,
-    underscored: true,
   }
 );
 

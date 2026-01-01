@@ -1,5 +1,5 @@
 import { IPeriodoRepository } from '../../domain/interfaces/repositories/IPeriodoRepository.js';
-import { Periodo as PeriodoModel } from '../database/models/Periodo.js';
+import { Periodo as PeriodoModel } from '../database/models/periodo.js';
 import { Period } from '../../domain/entities/Period.js';
 import { BaseRepository } from './BaseRepository.js';
 

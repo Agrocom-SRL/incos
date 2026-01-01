@@ -1,5 +1,5 @@
 import { IPlanEstudiosRepository } from '../../domain/interfaces/repositories/IPlanEstudiosRepository.js';
-import { PlanEstudios as PlanEstudiosModel } from '../database/models/PlanEstudios.js';
+import { PlanEstudios as PlanEstudiosModel } from '../database/models/plan_estudios.js';
 import { StudyPlan } from '../../domain/entities/StudyPlan.js';
 import { BaseRepository } from './BaseRepository.js';
 

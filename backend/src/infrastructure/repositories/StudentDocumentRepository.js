@@ -1,5 +1,5 @@
 import { IDocumentoEstudianteRepository } from '../../domain/interfaces/repositories/IDocumentoEstudianteRepository.js';
-import { DocumentoEstudiante as DocumentoEstudianteModel } from '../database/models/DocumentoEstudiante.js';
+import { DocumentoEstudiante as DocumentoEstudianteModel } from '../database/models/documento_estudiante.js';
 import { StudentDocument } from '../../domain/entities/StudentDocument.js';
 import { BaseRepository } from './BaseRepository.js';
 

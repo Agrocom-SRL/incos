@@ -1,4 +1,4 @@
-import { ConfiguracionSistema as ConfiguracionSistemaModel } from '../database/models/ConfiguracionSistema.js';
+import { ConfiguracionSistema as ConfiguracionSistemaModel } from '../database/models/configuracion_sistema.js';
 import { BaseRepository } from './BaseRepository.js';
 import { Op } from 'sequelize';
 

@@ -1,5 +1,5 @@
 import { IRolRepository } from '../../domain/interfaces/repositories/IRolRepository.js';
-import { Rol as RolModel } from '../database/models/Rol.js';
+import { Rol as RolModel } from '../database/models/rol.js';
 import { Role } from '../../domain/entities/Role.js';
 import { BaseRepository } from './BaseRepository.js';
 

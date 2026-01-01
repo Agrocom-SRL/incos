@@ -1,5 +1,5 @@
 import { IGestionRepository } from '../../domain/interfaces/repositories/IGestionRepository.js';
-import { Gestion as GestionModel } from '../database/models/Gestion.js';
+import { Gestion as GestionModel } from '../database/models/gestion.js';
 import { Management } from '../../domain/entities/Management.js';
 import { BaseRepository } from './BaseRepository.js';
 import { Op } from 'sequelize';

@@ -1,5 +1,5 @@
 import { IPersonalRepository } from '../../domain/interfaces/repositories/IPersonalRepository.js';
-import { Personal as PersonalModel } from '../database/models/Personal.js';
+import { Personal as PersonalModel } from '../database/models/personal.js';
 import { Staff } from '../../domain/entities/Staff.js';
 import { BaseRepository } from './BaseRepository.js';
 

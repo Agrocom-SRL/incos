@@ -1,5 +1,5 @@
 import { ILicenciaSolicitudRepository } from '../../domain/interfaces/repositories/ILicenciaSolicitudRepository.js';
-import { LicenciaSolicitud as LicenciaSolicitudModel } from '../database/models/LicenciaSolicitud.js';
+import { LicenciaSolicitud as LicenciaSolicitudModel } from '../database/models/licencia_solicitud.js';
 import { LicenseRequest } from '../../domain/entities/LicenseRequest.js';
 import { BaseRepository } from './BaseRepository.js';
 

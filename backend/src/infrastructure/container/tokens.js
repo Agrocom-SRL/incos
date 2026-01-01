@@ -48,23 +48,20 @@ export const TOKENS = {
     // ============================================
     // MÓDULO ESTUDIANTES - USE CASES
     // ============================================
-    est_registerStudentUseCase: 'estudiantes.registerStudentUseCase',
     est_listStudentsUseCase: 'estudiantes.listStudentsUseCase',
-    est_uploadDocumentUseCase: 'estudiantes.uploadDocumentUseCase',
-    est_generateActaUseCase: 'estudiantes.generateCompromisoActaUseCase',
+    // TODO: Agregar otros Use Cases cuando se implementen sus endpoints
+    // est_registerStudentUseCase: 'estudiantes.registerStudentUseCase',
+    // est_getStudentByIdUseCase: 'estudiantes.getStudentByIdUseCase',
+    // est_updateStudentUseCase: 'estudiantes.updateStudentUseCase',
 
     // ============================================
     // MÓDULO ESTUDIANTES - CONTROLLERS
     // ============================================
-    est_createStudentController: 'estudiantes.createStudentController',
     est_listStudentsController: 'estudiantes.listStudentsController',
-    est_getStudentByIdController: 'estudiantes.getStudentByIdController',
-    est_updateStudentController: 'estudiantes.updateStudentController',
-    est_uploadDocumentController: 'estudiantes.uploadDocumentController',
-    est_getDocumentsController: 'estudiantes.getStudentDocumentsController',
-    est_getDocumentDeliveriesController: 'estudiantes.getStudentDocumentDeliveriesController',
-    est_getAcademicDataController: 'estudiantes.getStudentAcademicDataController',
-    est_generateActaController: 'estudiantes.generateCompromisoActaController',
+    // TODO: Agregar otros Controllers cuando se implementen sus endpoints
+    // est_createStudentController: 'estudiantes.createStudentController',
+    // est_getStudentByIdController: 'estudiantes.getStudentByIdController',
+    // est_updateStudentController: 'estudiantes.updateStudentController',
 
     // ============================================
     // MÓDULO ESTUDIANTES - ROUTER

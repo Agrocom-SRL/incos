@@ -1,5 +1,5 @@
 import { IPermisoRepository } from '../../domain/interfaces/repositories/IPermisoRepository.js';
-import { Permiso as PermisoModel } from '../database/models/Permiso.js';
+import { Permiso as PermisoModel } from '../database/models/permiso.js';
 import { Permission } from '../../domain/entities/Permission.js';
 import { BaseRepository } from './BaseRepository.js';
 

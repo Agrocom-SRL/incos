@@ -1,5 +1,5 @@
 import { IPaisRepository } from '../../domain/interfaces/repositories/IPaisRepository.js';
-import { Pais as PaisModel } from '../database/models/Pais.js';
+import { Pais as PaisModel } from '../database/models/pais.js';
 import { Country } from '../../domain/entities/Country.js';
 import { BaseRepository } from './BaseRepository.js';
 import { Op } from 'sequelize';

@@ -2,8 +2,8 @@ import { DataTypes } from 'sequelize';
 import { sequelize } from '../sequelize.js';
 import { baseModelFields, baseModelOptions } from './baseModel.js';
 
-export const Director = sequelize.define(
-  'Director',
+export const Rector = sequelize.define(
+  'Rector',
   {
     ...baseModelFields,
     personalId: {
@@ -11,21 +11,6 @@ export const Director = sequelize.define(
       field: 'personal_id',
       allowNull: true,
       comment: 'Referencia a personal.id',
-    },
-    tipo: {
-      type: DataTypes.ENUM('ACADEMICO', 'ADMINISTRATIVO'),
-      allowNull: false,
-      comment: 'Tipo de director',
-    },
-    fechaNombramiento: {
-      type: DataTypes.DATEONLY,
-      field: 'fecha_nombramiento',
-      allowNull: true,
-    },
-    resolucionNombramiento: {
-      type: DataTypes.STRING(100),
-      field: 'resolucion_nombramiento',
-      allowNull: true,
     },
     tituloProfesional: {
       type: DataTypes.STRING(200),
@@ -51,12 +36,31 @@ export const Director = sequelize.define(
       field: 'anio_egreso',
       allowNull: true,
     },
+    fechaNombramiento: {
+      type: DataTypes.DATEONLY,
+      field: 'fecha_nombramiento',
+      allowNull: true,
+    },
+    resolucionNombramiento: {
+      type: DataTypes.STRING(100),
+      field: 'resolucion_nombramiento',
+      allowNull: true,
+    },
+    periodoMandatoInicio: {
+      type: DataTypes.DATEONLY,
+      field: 'periodo_mandato_inicio',
+      allowNull: true,
+    },
+    periodoMandatoFin: {
+      type: DataTypes.DATEONLY,
+      field: 'periodo_mandato_fin',
+      allowNull: true,
+    },
   },
   {
-    tableName: 'directores',
-    timestamps: false,
-    underscored: true,
+    ...baseModelOptions,
+    tableName: 'rectores',
   }
 );
 
-export default Director;
+export default Rector;

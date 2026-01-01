@@ -1,5 +1,5 @@
 import { IUsuarioRepository } from '../../domain/interfaces/repositories/IUsuarioRepository.js';
-import { Usuario as UsuarioModel } from '../database/models/Usuario.js';
+import { Usuario as UsuarioModel } from '../database/models/usuario.js';
 import { User } from '../../domain/entities/User.js';
 import { BaseRepository } from './BaseRepository.js';
 

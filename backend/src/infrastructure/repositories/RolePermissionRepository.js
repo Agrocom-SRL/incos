@@ -1,5 +1,5 @@
 import { IRolPermisoRepository } from '../../domain/interfaces/repositories/IRolPermisoRepository.js';
-import { RolPermiso as RolPermisoModel } from '../database/models/RolPermiso.js';
+import { RolPermiso as RolPermisoModel } from '../database/models/rol_permiso.js';
 import { RolePermission } from '../../domain/entities/RolePermission.js';
 import { BaseRepository } from './BaseRepository.js';
 

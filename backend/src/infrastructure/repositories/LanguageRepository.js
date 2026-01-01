@@ -1,5 +1,5 @@
 import { IIdiomaRepository } from '../../domain/interfaces/repositories/IIdiomaRepository.js';
-import { Idioma as IdiomaModel } from '../database/models/Idioma.js';
+import { Idioma as IdiomaModel } from '../database/models/idioma.js';
 import { Language } from '../../domain/entities/Language.js';
 import { BaseRepository } from './BaseRepository.js';
 import { Op } from 'sequelize';

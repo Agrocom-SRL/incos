@@ -1,5 +1,5 @@
 import { IDocenteRepository } from '../../domain/interfaces/repositories/IDocenteRepository.js';
-import { Docente as DocenteModel } from '../database/models/Docente.js';
+import { Docente as DocenteModel } from '../database/models/docente.js';
 import { Teacher } from '../../domain/entities/Teacher.js';
 import { BaseRepository } from './BaseRepository.js';
 
