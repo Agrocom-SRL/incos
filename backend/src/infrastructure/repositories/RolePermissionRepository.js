@@ -1,11 +1,23 @@
 import { IRolPermisoRepository } from '../../domain/interfaces/repositories/IRolPermisoRepository.js';
 import { RolPermiso as RolPermisoModel } from '../database/models/rol_permiso.js';
-import { RolePermission } from '../../domain/entities/RolePermission.js';
 import { BaseRepository } from './BaseRepository.js';
+import { RolePermissionMapper } from '../mappers/RolePermissionMapper.js';
 
 /**
  * Implementación del repositorio de roles-permisos usando Sequelize
  * Utiliza el patrón Template Method heredando de BaseRepository
+ * 
+ * Responsabilidades:
+ * - Acceso a datos (consultas, persistencia)
+ * - Delegar conversión ORM ↔ Entidad a RolePermissionMapper
+ * 
+ * Principios SOLID:
+ * - Single Responsibility: Solo maneja acceso a datos
+ * - Dependency Inversion: Usa RolePermissionMapper para conversiones (depende de abstracción)
+ * 
+ * Clean Architecture:
+ * - Infrastructure Layer: Implementación concreta de IRolPermisoRepository
+ * - Usa RolePermissionMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
  * 
  * @implements {IRolPermisoRepository}
  * 
@@ -24,20 +36,13 @@ export class RolePermissionRepository extends BaseRepository {
 
   /**
    * Convierte un modelo Sequelize a entidad de dominio
-   * @param {Object} model
-   * @returns {RolePermission|null}
+   * Delega la responsabilidad de mapeo a RolePermissionMapper
+   * 
+   * @param {Object} model - Modelo Sequelize
+   * @returns {RolePermission|null} Entidad de dominio
    */
   toEntity(model) {
-    if (!model) return null;
-    return new RolePermission({
-      id: model.id,
-      roleId: model.rolId,
-      permissionId: model.permisoId,
-      action: model.accion,
-      activo: model.activo,
-      createdAt: model.createdAt,
-      updatedAt: model.updatedAt,
-    });
+    return RolePermissionMapper.toEntity(model);
   }
 
   /**
@@ -78,42 +83,27 @@ export class RolePermissionRepository extends BaseRepository {
   }
 
   /**
-   * Mapea datos de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de dominio a formato del modelo Sequelize (para creación)
+   * Delega la responsabilidad de mapeo a RolePermissionMapper
+   * 
+   * @param {RolePermission|Object} data - Entidad RolePermission o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize
    */
   mapDataToModel(data, userId = null) {
-    return {
-      rolId: data.roleId,
-      permisoId: data.permissionId,
-      accion: data.action,
-    };
+    return RolePermissionMapper.toModel(data);
   }
 
   /**
-   * Mapea datos de actualización de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de actualización de dominio a formato del modelo Sequelize (para actualización)
+   * Delega la responsabilidad de mapeo a RolePermissionMapper
+   * 
+   * @param {RolePermission|Object} data - Entidad RolePermission o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
   mapDataToUpdate(data, userId = null) {
-    const updateData = {};
-
-    if (data.roleId !== undefined) {
-      updateData.rolId = data.roleId;
-    }
-    if (data.permissionId !== undefined) {
-      updateData.permisoId = data.permissionId;
-    }
-    if (data.action !== undefined) {
-      updateData.accion = data.action;
-    }
-    if (data.activo !== undefined) {
-      updateData.activo = data.activo;
-    }
-
-    return updateData;
+    return RolePermissionMapper.toModelForUpdate(data);
   }
 
   /**
@@ -126,8 +116,9 @@ export class RolePermissionRepository extends BaseRepository {
 
   /**
    * Método específico: Buscar permisos por rol
-   * @param {number} rolId
-   * @returns {Promise<RolePermission[]>}
+   * 
+   * @param {number} rolId - ID del rol
+   * @returns {Promise<RolePermission[]>} Array de entidades RolePermission
    */
   async findByRolId(rolId) {
     const models = await this.getModel().findAll({
@@ -138,13 +129,14 @@ export class RolePermissionRepository extends BaseRepository {
       },
       order: [['permisoId', 'ASC']],
     });
-    return models.map((model) => this.toEntity(model));
+    return RolePermissionMapper.toEntityList(models);
   }
 
   /**
    * Método específico: Buscar roles por permiso
-   * @param {number} permisoId
-   * @returns {Promise<RolePermission[]>}
+   * 
+   * @param {number} permisoId - ID del permiso
+   * @returns {Promise<RolePermission[]>} Array de entidades RolePermission
    */
   async findByPermisoId(permisoId) {
     const models = await this.getModel().findAll({
@@ -155,7 +147,7 @@ export class RolePermissionRepository extends BaseRepository {
       },
       order: [['rolId', 'ASC']],
     });
-    return models.map((model) => this.toEntity(model));
+    return RolePermissionMapper.toEntityList(models);
   }
 }
 

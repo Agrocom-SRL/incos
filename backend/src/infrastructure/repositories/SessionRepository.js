@@ -1,11 +1,23 @@
 import { ISesionRepository } from '../../domain/interfaces/repositories/ISesionRepository.js';
 import { Sesion as SesionModel } from '../database/models/sesion.js';
-import { Session } from '../../domain/entities/Session.js';
 import { BaseRepository } from './BaseRepository.js';
+import { SessionMapper } from '../mappers/SessionMapper.js';
 
 /**
  * Implementación del repositorio de sesiones usando Sequelize
  * Utiliza el patrón Template Method heredando de BaseRepository
+ * 
+ * Responsabilidades:
+ * - Acceso a datos (consultas, persistencia)
+ * - Delegar conversión ORM ↔ Entidad a SessionMapper
+ * 
+ * Principios SOLID:
+ * - Single Responsibility: Solo maneja acceso a datos
+ * - Dependency Inversion: Usa SessionMapper para conversiones (depende de abstracción)
+ * 
+ * Clean Architecture:
+ * - Infrastructure Layer: Implementación concreta de ISesionRepository
+ * - Usa SessionMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
  * 
  * @implements {ISesionRepository}
  * 
@@ -24,24 +36,13 @@ export class SessionRepository extends BaseRepository {
 
   /**
    * Convierte un modelo Sequelize a entidad de dominio
-   * @param {Object} model
-   * @returns {Session|null}
+   * Delega la responsabilidad de mapeo a SessionMapper
+   * 
+   * @param {Object} model - Modelo Sequelize
+   * @returns {Session|null} Entidad de dominio
    */
   toEntity(model) {
-    if (!model) return null;
-    return new Session({
-      id: model.id,
-      userId: model.usuarioId,
-      sessionToken: model.tokenSesion,
-      recoveryToken: model.tokenRecuperacion,
-      expirationDate: model.fechaExpiracion,
-      lastLogin: model.ultimoLogin,
-      lastLoginIp: model.ipUltimoLogin,
-      device: model.dispositivo,
-      activo: model.activo,
-      createdAt: model.createdAt,
-      updatedAt: model.updatedAt,
-    });
+    return SessionMapper.toEntity(model);
   }
 
   /**
@@ -79,58 +80,27 @@ export class SessionRepository extends BaseRepository {
   }
 
   /**
-   * Mapea datos de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de dominio a formato del modelo Sequelize (para creación)
+   * Delega la responsabilidad de mapeo a SessionMapper
+   * 
+   * @param {Session|Object} data - Entidad Session o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize
    */
   mapDataToModel(data, userId = null) {
-    return {
-      usuarioId: data.userId || null,
-      tokenSesion: data.sessionToken || null,
-      tokenRecuperacion: data.recoveryToken || null,
-      fechaExpiracion: data.expirationDate || null,
-      ultimoLogin: data.lastLogin || null,
-      ipUltimoLogin: data.lastLoginIp || null,
-      dispositivo: data.device || null,
-    };
+    return SessionMapper.toModel(data);
   }
 
   /**
-   * Mapea datos de actualización de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de actualización de dominio a formato del modelo Sequelize (para actualización)
+   * Delega la responsabilidad de mapeo a SessionMapper
+   * 
+   * @param {Session|Object} data - Entidad Session o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
   mapDataToUpdate(data, userId = null) {
-    const updateData = {};
-
-    if (data.userId !== undefined) {
-      updateData.usuarioId = data.userId || null;
-    }
-    if (data.sessionToken !== undefined) {
-      updateData.tokenSesion = data.sessionToken || null;
-    }
-    if (data.recoveryToken !== undefined) {
-      updateData.tokenRecuperacion = data.recoveryToken || null;
-    }
-    if (data.expirationDate !== undefined) {
-      updateData.fechaExpiracion = data.expirationDate || null;
-    }
-    if (data.lastLogin !== undefined) {
-      updateData.ultimoLogin = data.lastLogin || null;
-    }
-    if (data.lastLoginIp !== undefined) {
-      updateData.ipUltimoLogin = data.lastLoginIp || null;
-    }
-    if (data.device !== undefined) {
-      updateData.dispositivo = data.device || null;
-    }
-    if (data.activo !== undefined) {
-      updateData.activo = data.activo;
-    }
-
-    return updateData;
+    return SessionMapper.toModelForUpdate(data);
   }
 
   /**
@@ -143,8 +113,9 @@ export class SessionRepository extends BaseRepository {
 
   /**
    * Método específico: Buscar sesión por token
-   * @param {string} tokenSesion
-   * @returns {Promise<Session|null>}
+   * 
+   * @param {string} tokenSesion - Token de sesión
+   * @returns {Promise<Session|null>} Entidad Session o null
    */
   async findByToken(tokenSesion) {
     const model = await this.getModel().findOne({
@@ -154,13 +125,14 @@ export class SessionRepository extends BaseRepository {
         // paranoid: true automáticamente excluye deletedAt !== null
       },
     });
-    return this.toEntity(model);
+    return SessionMapper.toEntity(model);
   }
 
   /**
    * Método específico: Buscar sesiones por usuario
-   * @param {number} usuarioId
-   * @returns {Promise<Session[]>}
+   * 
+   * @param {number} usuarioId - ID del usuario
+   * @returns {Promise<Session[]>} Array de entidades Session
    */
   async findByUsuarioId(usuarioId) {
     const models = await this.getModel().findAll({
@@ -171,7 +143,7 @@ export class SessionRepository extends BaseRepository {
       },
       order: [['ultimoLogin', 'DESC']],
     });
-    return models.map((model) => this.toEntity(model));
+    return SessionMapper.toEntityList(models);
   }
 }
 

@@ -1,12 +1,24 @@
 import { IPaisRepository } from '../../domain/interfaces/repositories/IPaisRepository.js';
 import { Pais as PaisModel } from '../database/models/pais.js';
-import { Country } from '../../domain/entities/Country.js';
 import { BaseRepository } from './BaseRepository.js';
+import { CountryMapper } from '../mappers/CountryMapper.js';
 import { Op } from 'sequelize';
 
 /**
  * Implementación del repositorio de países usando Sequelize
  * Utiliza el patrón Template Method heredando de BaseRepository
+ * 
+ * Responsabilidades:
+ * - Acceso a datos (consultas, persistencia)
+ * - Delegar conversión ORM ↔ Entidad a CountryMapper
+ * 
+ * Principios SOLID:
+ * - Single Responsibility: Solo maneja acceso a datos
+ * - Dependency Inversion: Usa CountryMapper para conversiones (depende de abstracción)
+ * 
+ * Clean Architecture:
+ * - Infrastructure Layer: Implementación concreta de IPaisRepository
+ * - Usa CountryMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
  * 
  * @implements {IPaisRepository}
  * 
@@ -25,19 +37,13 @@ export class CountryRepository extends BaseRepository {
 
   /**
    * Convierte un modelo Sequelize a entidad de dominio
-   * @param {Object} model
-   * @returns {Country|null}
+   * Delega la responsabilidad de mapeo a CountryMapper
+   * 
+   * @param {Object} model - Modelo Sequelize
+   * @returns {Country|null} Entidad de dominio
    */
   toEntity(model) {
-    if (!model) return null;
-    return new Country({
-      id: model.id,
-      name: model.nombre,
-      isoCode: model.codigoIso,
-      activo: model.activo,
-      createdAt: model.createdAt,
-      updatedAt: model.updatedAt,
-    });
+    return CountryMapper.toEntity(model);
   }
 
   /**
@@ -57,38 +63,27 @@ export class CountryRepository extends BaseRepository {
   }
 
   /**
-   * Mapea datos de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de dominio a formato del modelo Sequelize (para creación)
+   * Delega la responsabilidad de mapeo a CountryMapper
+   * 
+   * @param {Country|Object} data - Entidad Country o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize
    */
   mapDataToModel(data, userId = null) {
-    return {
-      nombre: data.name,
-      codigoIso: data.isoCode ? data.isoCode.toUpperCase() : null,
-    };
+    return CountryMapper.toModel(data);
   }
 
   /**
-   * Mapea datos de actualización de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de actualización de dominio a formato del modelo Sequelize (para actualización)
+   * Delega la responsabilidad de mapeo a CountryMapper
+   * 
+   * @param {Country|Object} data - Entidad Country o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
   mapDataToUpdate(data, userId = null) {
-    const updateData = {};
-
-    if (data.name !== undefined) {
-      updateData.nombre = data.name;
-    }
-    if (data.isoCode !== undefined) {
-      updateData.codigoIso = data.isoCode.toUpperCase();
-    }
-    if (data.activo !== undefined) {
-      updateData.activo = data.activo;
-    }
-
-    return updateData;
+    return CountryMapper.toModelForUpdate(data);
   }
 
   /**
@@ -101,15 +96,16 @@ export class CountryRepository extends BaseRepository {
 
   /**
    * Método específico: Buscar país por código ISO
-   * Este método no está en la clase base porque es específico de países
-   * @param {string} codigoIso
-   * @returns {Promise<Country|null>}
+   * 
+   * @param {string} codigoIso - Código ISO del país
+   * @returns {Promise<Country|null>} Entidad Country o null si no se encuentra
    */
   async findByCodigoIso(codigoIso) {
     const model = await this.getModel().findOne({
       where: {
         codigoIso: codigoIso.toUpperCase(),
         activo: true,
+        // paranoid: true automáticamente excluye deletedAt !== null
       },
     });
     return this.toEntity(model);
@@ -144,6 +140,6 @@ export class CountryRepository extends BaseRepository {
       limit: 50,
     });
 
-    return models.map((model) => this.toEntity(model));
+    return CountryMapper.toEntityList(models);
   }
 }

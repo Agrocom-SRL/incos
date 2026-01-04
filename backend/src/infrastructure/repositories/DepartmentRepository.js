@@ -1,12 +1,24 @@
 import { IDepartamentoRepository } from '../../domain/interfaces/repositories/IDepartamentoRepository.js';
 import { Departamento as DepartamentoModel } from '../database/models/departamento.js';
-import { Department } from '../../domain/entities/Department.js';
 import { BaseRepository } from './BaseRepository.js';
+import { DepartmentMapper } from '../mappers/DepartmentMapper.js';
 import { Op } from 'sequelize';
 
 /**
  * Implementación del repositorio de departamentos usando Sequelize
  * Utiliza el patrón Template Method heredando de BaseRepository
+ * 
+ * Responsabilidades:
+ * - Acceso a datos (consultas, persistencia)
+ * - Delegar conversión ORM ↔ Entidad a DepartmentMapper
+ * 
+ * Principios SOLID:
+ * - Single Responsibility: Solo maneja acceso a datos
+ * - Dependency Inversion: Usa DepartmentMapper para conversiones (depende de abstracción)
+ * 
+ * Clean Architecture:
+ * - Infrastructure Layer: Implementación concreta de IDepartamentoRepository
+ * - Usa DepartmentMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
  * 
  * @implements {IDepartamentoRepository}
  * 
@@ -25,20 +37,13 @@ export class DepartmentRepository extends BaseRepository {
 
   /**
    * Convierte un modelo Sequelize a entidad de dominio
-   * @param {Object} model
-   * @returns {Department|null}
+   * Delega la responsabilidad de mapeo a DepartmentMapper
+   * 
+   * @param {Object} model - Modelo Sequelize
+   * @returns {Department|null} Entidad de dominio
    */
   toEntity(model) {
-    if (!model) return null;
-    return new Department({
-      id: model.id,
-      countryId: model.paisId,
-      name: model.nombre,
-      code: model.codigo,
-      activo: model.activo,
-      createdAt: model.createdAt,
-      updatedAt: model.updatedAt,
-    });
+    return DepartmentMapper.toEntity(model);
   }
 
   /**
@@ -73,42 +78,27 @@ export class DepartmentRepository extends BaseRepository {
   }
 
   /**
-   * Mapea datos de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de dominio a formato del modelo Sequelize (para creación)
+   * Delega la responsabilidad de mapeo a DepartmentMapper
+   * 
+   * @param {Department|Object} data - Entidad Department o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize
    */
   mapDataToModel(data, userId = null) {
-    return {
-      paisId: data.countryId,
-      nombre: data.name,
-      codigo: data.code ? data.code.toUpperCase() : null,
-    };
+    return DepartmentMapper.toModel(data);
   }
 
   /**
-   * Mapea datos de actualización de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de actualización de dominio a formato del modelo Sequelize (para actualización)
+   * Delega la responsabilidad de mapeo a DepartmentMapper
+   * 
+   * @param {Department|Object} data - Entidad Department o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
   mapDataToUpdate(data, userId = null) {
-    const updateData = {};
-
-    if (data.countryId !== undefined) {
-      updateData.paisId = data.countryId;
-    }
-    if (data.name !== undefined) {
-      updateData.nombre = data.name;
-    }
-    if (data.code !== undefined) {
-      updateData.codigo = data.code ? data.code.toUpperCase() : null;
-    }
-    if (data.activo !== undefined) {
-      updateData.activo = data.activo;
-    }
-
-    return updateData;
+    return DepartmentMapper.toModelForUpdate(data);
   }
 
   /**
@@ -121,8 +111,9 @@ export class DepartmentRepository extends BaseRepository {
 
   /**
    * Método específico: Buscar departamentos por país
-   * @param {number} paisId
-   * @returns {Promise<Department[]>}
+   * 
+   * @param {number} paisId - ID del país
+   * @returns {Promise<Department[]>} Array de entidades Department
    */
   async findByPaisId(paisId) {
     const models = await this.getModel().findAll({
@@ -133,13 +124,14 @@ export class DepartmentRepository extends BaseRepository {
       },
       order: [['nombre', 'ASC']],
     });
-    return models.map((model) => this.toEntity(model));
+    return DepartmentMapper.toEntityList(models);
   }
 
   /**
    * Método específico: Buscar departamento por código
-   * @param {string} codigo
-   * @returns {Promise<Department|null>}
+   * 
+   * @param {string} codigo - Código del departamento
+   * @returns {Promise<Department|null>} Entidad Department o null si no se encuentra
    */
   async findByCodigo(codigo) {
     const model = await this.getModel().findOne({
@@ -181,6 +173,6 @@ export class DepartmentRepository extends BaseRepository {
       limit: 50,
     });
 
-    return models.map((model) => this.toEntity(model));
+    return DepartmentMapper.toEntityList(models);
   }
 }

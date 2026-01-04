@@ -1,12 +1,24 @@
 import { IEstadoCivilRepository } from '../../domain/interfaces/repositories/IEstadoCivilRepository.js';
 import { EstadoCivil as EstadoCivilModel } from '../database/models/estado_civil.js';
-import { CivilStatus } from '../../domain/entities/CivilStatus.js';
 import { BaseRepository } from './BaseRepository.js';
+import { CivilStatusMapper } from '../mappers/CivilStatusMapper.js';
 import { Op } from 'sequelize';
 
 /**
  * Implementación del repositorio de estados civiles usando Sequelize
  * Utiliza el patrón Template Method heredando de BaseRepository
+ * 
+ * Responsabilidades:
+ * - Acceso a datos (consultas, persistencia)
+ * - Delegar conversión ORM ↔ Entidad a CivilStatusMapper
+ * 
+ * Principios SOLID:
+ * - Single Responsibility: Solo maneja acceso a datos
+ * - Dependency Inversion: Usa CivilStatusMapper para conversiones (depende de abstracción)
+ * 
+ * Clean Architecture:
+ * - Infrastructure Layer: Implementación concreta de IEstadoCivilRepository
+ * - Usa CivilStatusMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
  * 
  * @implements {IEstadoCivilRepository}
  * 
@@ -24,19 +36,13 @@ export class CivilStatusRepository extends BaseRepository {
 
   /**
    * Convierte un modelo Sequelize a entidad de dominio
-   * @param {Object} model
-   * @returns {CivilStatus|null}
+   * Delega la responsabilidad de mapeo a CivilStatusMapper
+   * 
+   * @param {Object} model - Modelo Sequelize
+   * @returns {CivilStatus|null} Entidad de dominio
    */
   toEntity(model) {
-    if (!model) return null;
-    return new CivilStatus({
-      id: model.id,
-      name: model.nombre,
-      abbreviation: model.abreviatura,
-      activo: model.activo,
-      createdAt: model.createdAt,
-      updatedAt: model.updatedAt,
-    });
+    return CivilStatusMapper.toEntity(model);
   }
 
   /**
@@ -56,38 +62,27 @@ export class CivilStatusRepository extends BaseRepository {
   }
 
   /**
-   * Mapea datos de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de dominio a formato del modelo Sequelize (para creación)
+   * Delega la responsabilidad de mapeo a CivilStatusMapper
+   * 
+   * @param {CivilStatus|Object} data - Entidad CivilStatus o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize
    */
   mapDataToModel(data, userId = null) {
-    return {
-      nombre: data.name,
-      abreviatura: data.abbreviation ? data.abbreviation.toUpperCase() : null,
-    };
+    return CivilStatusMapper.toModel(data);
   }
 
   /**
-   * Mapea datos de actualización de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de actualización de dominio a formato del modelo Sequelize (para actualización)
+   * Delega la responsabilidad de mapeo a CivilStatusMapper
+   * 
+   * @param {CivilStatus|Object} data - Entidad CivilStatus o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
   mapDataToUpdate(data, userId = null) {
-    const updateData = {};
-
-    if (data.name !== undefined) {
-      updateData.nombre = data.name;
-    }
-    if (data.abbreviation !== undefined) {
-      updateData.abreviatura = data.abbreviation ? data.abbreviation.toUpperCase() : null;
-    }
-    if (data.activo !== undefined) {
-      updateData.activo = data.activo;
-    }
-
-    return updateData;
+    return CivilStatusMapper.toModelForUpdate(data);
   }
 
   /**
@@ -127,7 +122,7 @@ export class CivilStatusRepository extends BaseRepository {
       limit: 50,
     });
 
-    return models.map((model) => this.toEntity(model));
+    return CivilStatusMapper.toEntityList(models);
   }
 }
 

@@ -1,11 +1,23 @@
 import { IPeriodoRepository } from '../../domain/interfaces/repositories/IPeriodoRepository.js';
 import { Periodo as PeriodoModel } from '../database/models/periodo.js';
-import { Period } from '../../domain/entities/Period.js';
 import { BaseRepository } from './BaseRepository.js';
+import { PeriodMapper } from '../mappers/PeriodMapper.js';
 
 /**
  * Implementación del repositorio de periodos académicos usando Sequelize
  * Utiliza el patrón Template Method heredando de BaseRepository
+ * 
+ * Responsabilidades:
+ * - Acceso a datos (consultas, persistencia)
+ * - Delegar conversión ORM ↔ Entidad a PeriodMapper
+ * 
+ * Principios SOLID:
+ * - Single Responsibility: Solo maneja acceso a datos
+ * - Dependency Inversion: Usa PeriodMapper para conversiones (depende de abstracción)
+ * 
+ * Clean Architecture:
+ * - Infrastructure Layer: Implementación concreta de IPeriodoRepository
+ * - Usa PeriodMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
  * 
  * @implements {IPeriodoRepository}
  * 
@@ -24,22 +36,13 @@ export class PeriodRepository extends BaseRepository {
 
   /**
    * Convierte un modelo Sequelize a entidad de dominio
-   * @param {Object} model
-   * @returns {Period|null}
+   * Delega la responsabilidad de mapeo a PeriodMapper
+   * 
+   * @param {Object} model - Modelo Sequelize
+   * @returns {Period|null} Entidad de dominio
    */
   toEntity(model) {
-    if (!model) return null;
-    return new Period({
-      id: model.id,
-      careerId: model.carreraId,
-      name: model.nombre,
-      number: model.numero,
-      displayOrder: model.ordenVisualizacion,
-      description: model.descripcion,
-      activo: model.activo,
-      createdAt: model.createdAt,
-      updatedAt: model.updatedAt,
-    });
+    return PeriodMapper.toEntity(model);
   }
 
   /**
@@ -74,50 +77,27 @@ export class PeriodRepository extends BaseRepository {
   }
 
   /**
-   * Mapea datos de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de dominio a formato del modelo Sequelize (para creación)
+   * Delega la responsabilidad de mapeo a PeriodMapper
+   * 
+   * @param {Period|Object} data - Entidad Period o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize
    */
   mapDataToModel(data, userId = null) {
-    return {
-      carreraId: data.careerId || null,
-      nombre: data.name,
-      numero: data.number,
-      ordenVisualizacion: data.displayOrder !== undefined ? data.displayOrder : 1,
-      descripcion: data.description || null,
-    };
+    return PeriodMapper.toModel(data);
   }
 
   /**
-   * Mapea datos de actualización de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de actualización de dominio a formato del modelo Sequelize (para actualización)
+   * Delega la responsabilidad de mapeo a PeriodMapper
+   * 
+   * @param {Period|Object} data - Entidad Period o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
   mapDataToUpdate(data, userId = null) {
-    const updateData = {};
-
-    if (data.careerId !== undefined) {
-      updateData.carreraId = data.careerId || null;
-    }
-    if (data.name !== undefined) {
-      updateData.nombre = data.name;
-    }
-    if (data.number !== undefined) {
-      updateData.numero = data.number;
-    }
-    if (data.displayOrder !== undefined) {
-      updateData.ordenVisualizacion = data.displayOrder;
-    }
-    if (data.description !== undefined) {
-      updateData.descripcion = data.description || null;
-    }
-    if (data.activo !== undefined) {
-      updateData.activo = data.activo;
-    }
-
-    return updateData;
+    return PeriodMapper.toModelForUpdate(data);
   }
 
   /**
@@ -130,8 +110,9 @@ export class PeriodRepository extends BaseRepository {
 
   /**
    * Método específico: Buscar periodos por carrera
-   * @param {number} carreraId
-   * @returns {Promise<Period[]>}
+   * 
+   * @param {number} carreraId - ID de la carrera
+   * @returns {Promise<Period[]>} Array de entidades Period
    */
   async findByCarreraId(carreraId) {
     const models = await this.getModel().findAll({
@@ -142,7 +123,7 @@ export class PeriodRepository extends BaseRepository {
       },
       order: [['ordenVisualizacion', 'ASC'], ['numero', 'ASC']],
     });
-    return models.map((model) => this.toEntity(model));
+    return PeriodMapper.toEntityList(models);
   }
 }
 

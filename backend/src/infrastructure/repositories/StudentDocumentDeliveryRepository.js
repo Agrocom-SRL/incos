@@ -1,10 +1,22 @@
 import { BaseRepository } from './BaseRepository.js';
 import { EstudianteDocumentoEntrega } from '../database/models/estudiante_documento_entrega.js';
-import { StudentDocumentDelivery } from '../../domain/entities/StudentDocumentDelivery.js';
+import { StudentDocumentDeliveryMapper } from '../mappers/StudentDocumentDeliveryMapper.js';
 
 /**
  * Implementación del repositorio de entregas de documentos de estudiantes usando Sequelize
  * Utiliza el patrón Template Method heredando de BaseRepository
+ * 
+ * Responsabilidades:
+ * - Acceso a datos (consultas, persistencia)
+ * - Delegar conversión ORM ↔ Entidad a StudentDocumentDeliveryMapper
+ * 
+ * Principios SOLID:
+ * - Single Responsibility: Solo maneja acceso a datos
+ * - Dependency Inversion: Usa StudentDocumentDeliveryMapper para conversiones (depende de abstracción)
+ * 
+ * Clean Architecture:
+ * - Infrastructure Layer: Implementación concreta
+ * - Usa StudentDocumentDeliveryMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
  */
 export class StudentDocumentDeliveryRepository extends BaseRepository {
   /**
@@ -17,25 +29,13 @@ export class StudentDocumentDeliveryRepository extends BaseRepository {
 
   /**
    * Convierte un modelo Sequelize a entidad de dominio
-   * @param {Object} model
-   * @returns {StudentDocumentDelivery|null}
+   * Delega la responsabilidad de mapeo a StudentDocumentDeliveryMapper
+   * 
+   * @param {Object} model - Modelo Sequelize
+   * @returns {StudentDocumentDelivery|null} Entidad de dominio
    */
   toEntity(model) {
-    if (!model) return null;
-    return new StudentDocumentDelivery({
-      id: model.id,
-      studentId: model.estudianteId,
-      documentacionId: model.documentacionId,
-      entregado: model.entregado,
-      enTramite: model.enTramite,
-      esOriginal: model.esOriginal,
-      fechaEntrega: model.fechaEntrega,
-      fechaVencimientoTramite: model.fechaVencimientoTramite,
-      observaciones: model.observaciones,
-      activo: model.activo,
-      createdAt: model.createdAt,
-      updatedAt: model.updatedAt,
-    });
+    return StudentDocumentDeliveryMapper.toEntity(model);
   }
 
   /**
@@ -76,22 +76,27 @@ export class StudentDocumentDeliveryRepository extends BaseRepository {
   }
 
   /**
-   * Mapea datos de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de dominio a formato del modelo Sequelize (para creación)
+   * Delega la responsabilidad de mapeo a StudentDocumentDeliveryMapper
+   * 
+   * @param {StudentDocumentDelivery|Object} data - Entidad StudentDocumentDelivery o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize
    */
   mapDataToModel(data, userId = null) {
-    return {
-      estudianteId: data.studentId || null,
-      documentacionId: data.documentacionId || null,
-      entregado: data.entregado !== undefined ? data.entregado : false,
-      enTramite: data.enTramite !== undefined ? data.enTramite : false,
-      esOriginal: data.esOriginal !== undefined ? data.esOriginal : false,
-      fechaEntrega: data.fechaEntrega || null,
-      fechaVencimientoTramite: data.fechaVencimientoTramite || null,
-      observaciones: data.observaciones || null,
-    };
+    return StudentDocumentDeliveryMapper.toModel(data);
+  }
+
+  /**
+   * Mapea datos de actualización de dominio a formato del modelo Sequelize (para actualización)
+   * Delega la responsabilidad de mapeo a StudentDocumentDeliveryMapper
+   * 
+   * @param {StudentDocumentDelivery|Object} data - Entidad StudentDocumentDelivery o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
+   */
+  mapDataToUpdate(data, userId = null) {
+    return StudentDocumentDeliveryMapper.toModelForUpdate(data);
   }
 
   /**
@@ -104,8 +109,9 @@ export class StudentDocumentDeliveryRepository extends BaseRepository {
 
   /**
    * Método específico: Buscar entregas por estudiante
-   * @param {number} estudianteId
-   * @returns {Promise<StudentDocumentDelivery[]>}
+   * 
+   * @param {number} estudianteId - ID del estudiante
+   * @returns {Promise<StudentDocumentDelivery[]>} Array de entidades StudentDocumentDelivery
    */
   async findByEstudianteId(estudianteId) {
     const models = await this.getModel().findAll({
@@ -116,13 +122,14 @@ export class StudentDocumentDeliveryRepository extends BaseRepository {
       order: [['createdAt', 'DESC']],
     });
     
-    return models.map((model) => this.toEntity(model));
+    return StudentDocumentDeliveryMapper.toEntityList(models);
   }
 
   /**
    * Método específico: Buscar entregas por documento
-   * @param {number} documentacionId
-   * @returns {Promise<StudentDocumentDelivery[]>}
+   * 
+   * @param {number} documentacionId - ID del documento
+   * @returns {Promise<StudentDocumentDelivery[]>} Array de entidades StudentDocumentDelivery
    */
   async findByDocumentacionId(documentacionId) {
     const models = await this.getModel().findAll({
@@ -133,14 +140,15 @@ export class StudentDocumentDeliveryRepository extends BaseRepository {
       order: [['createdAt', 'DESC']],
     });
     
-    return models.map((model) => this.toEntity(model));
+    return StudentDocumentDeliveryMapper.toEntityList(models);
   }
 
   /**
    * Método específico: Buscar entrega por estudiante y documento
-   * @param {number} estudianteId
-   * @param {number} documentacionId
-   * @returns {Promise<StudentDocumentDelivery|null>}
+   * 
+   * @param {number} estudianteId - ID del estudiante
+   * @param {number} documentacionId - ID del documento
+   * @returns {Promise<StudentDocumentDelivery|null>} Entidad StudentDocumentDelivery o null
    */
   async findByEstudianteAndDocumentacion(estudianteId, documentacionId) {
     const model = await this.getModel().findOne({
@@ -151,7 +159,7 @@ export class StudentDocumentDeliveryRepository extends BaseRepository {
       },
     });
     
-    return model ? this.toEntity(model) : null;
+    return StudentDocumentDeliveryMapper.toEntity(model);
   }
 }
 

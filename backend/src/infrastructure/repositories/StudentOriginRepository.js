@@ -1,9 +1,22 @@
 import { EstudianteOrigen as EstudianteOrigenModel } from '../database/models/estudiante_origen.js';
 import { BaseRepository } from './BaseRepository.js';
+import { StudentOriginMapper } from '../mappers/StudentOriginMapper.js';
 
 /**
  * Repositorio de orígenes de estudiantes
  * Utiliza el patrón Template Method heredando de BaseRepository
+ * 
+ * Responsabilidades:
+ * - Acceso a datos (consultas, persistencia)
+ * - Delegar conversión ORM ↔ Entidad a StudentOriginMapper
+ * 
+ * Principios SOLID:
+ * - Single Responsibility: Solo maneja acceso a datos
+ * - Dependency Inversion: Usa StudentOriginMapper para conversiones (depende de abstracción)
+ * 
+ * Clean Architecture:
+ * - Infrastructure Layer: Implementación concreta
+ * - Usa StudentOriginMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
  */
 export class StudentOriginRepository extends BaseRepository {
   /**
@@ -15,31 +28,14 @@ export class StudentOriginRepository extends BaseRepository {
   }
 
   /**
-   * Convierte un modelo Sequelize a objeto plano
-   * @param {Object} model
-   * @returns {Object|null}
+   * Convierte un modelo Sequelize a entidad de dominio
+   * Delega la responsabilidad de mapeo a StudentOriginMapper
+   * 
+   * @param {Object} model - Modelo Sequelize
+   * @returns {StudentOrigin|null} Entidad de dominio
    */
   toEntity(model) {
-    if (!model) return null;
-    const entity = {
-      id: model.id,
-      estudianteId: model.estudianteId,
-      paisId: model.paisId,
-      municipioNacimientoId: model.municipioNacimientoId,
-      ciudadNacimiento: model.ciudadNacimiento,
-      idiomaMaternoId: model.idiomaMaternoId,
-      idiomaSecundarioId: model.idiomaSecundarioId,
-      tipoOrigen: model.tipoOrigen,
-      esPrincipal: model.esPrincipal,
-      activo: model.activo,
-      createdAt: model.createdAt,
-      updatedAt: model.updatedAt,
-    };
-    
-    // Agregar tipo de nacionalidad calculado automáticamente
-    entity.tipoNacionalidad = StudentOriginRepository.determinarTipoNacionalidad(entity);
-    
-    return entity;
+    return StudentOriginMapper.toEntity(model);
   }
 
   /**
@@ -59,63 +55,27 @@ export class StudentOriginRepository extends BaseRepository {
   }
 
   /**
-   * Mapea datos a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de dominio a formato del modelo Sequelize (para creación)
+   * Delega la responsabilidad de mapeo a StudentOriginMapper
+   * 
+   * @param {StudentOrigin|Object} data - Entidad StudentOrigin o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize
    */
   mapDataToModel(data, userId = null) {
-    return {
-      estudianteId: data.estudianteId,
-      paisId: data.paisId || null,
-      municipioNacimientoId: data.municipioNacimientoId || null,
-      ciudadNacimiento: data.ciudadNacimiento || null,
-      idiomaMaternoId: data.idiomaMaternoId || null,
-      idiomaSecundarioId: data.idiomaSecundarioId || null,
-      tipoOrigen: data.tipoOrigen || 'NACIONALIDAD_PRINCIPAL',
-      esPrincipal: data.esPrincipal !== undefined ? data.esPrincipal : true,
-      created_by: userId,
-    };
+    return StudentOriginMapper.toModel(data);
   }
 
   /**
-   * Mapea datos de actualización
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de actualización de dominio a formato del modelo Sequelize (para actualización)
+   * Delega la responsabilidad de mapeo a StudentOriginMapper
+   * 
+   * @param {StudentOrigin|Object} data - Entidad StudentOrigin o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
   mapDataToUpdate(data, userId = null) {
-    const updateData = {};
-
-    if (data.paisId !== undefined) {
-      updateData.paisId = data.paisId;
-    }
-    if (data.municipioNacimientoId !== undefined) {
-      updateData.municipioNacimientoId = data.municipioNacimientoId;
-    }
-    if (data.ciudadNacimiento !== undefined) {
-      updateData.ciudadNacimiento = data.ciudadNacimiento;
-    }
-    if (data.idiomaMaternoId !== undefined) {
-      updateData.idiomaMaternoId = data.idiomaMaternoId;
-    }
-    if (data.idiomaSecundarioId !== undefined) {
-      updateData.idiomaSecundarioId = data.idiomaSecundarioId;
-    }
-    if (data.tipoOrigen !== undefined) {
-      updateData.tipoOrigen = data.tipoOrigen;
-    }
-    if (data.esPrincipal !== undefined) {
-      updateData.esPrincipal = data.esPrincipal;
-    }
-    if (data.activo !== undefined) {
-      updateData.activo = data.activo;
-    }
-    if (userId) {
-      updateData.updated_by = userId;
-    }
-
-    return updateData;
+    return StudentOriginMapper.toModelForUpdate(data);
   }
 
   /**
@@ -128,8 +88,9 @@ export class StudentOriginRepository extends BaseRepository {
 
   /**
    * Buscar orígenes por estudiante
-   * @param {number} estudianteId
-   * @returns {Promise<Object[]>}
+   * 
+   * @param {number} estudianteId - ID del estudiante
+   * @returns {Promise<StudentOrigin[]>} Array de entidades StudentOrigin
    */
   async findByEstudianteId(estudianteId) {
     const models = await this.getModel().findAll({
@@ -140,29 +101,30 @@ export class StudentOriginRepository extends BaseRepository {
       order: this.getDefaultSort(),
     });
 
-    return models.map((model) => this.toEntity(model));
+    return StudentOriginMapper.toEntityList(models);
   }
 
   /**
    * Crear múltiples orígenes para un estudiante
-   * @param {number} estudianteId
-   * @param {Array<{paisId?: number, municipioNacimientoId?: number, ciudadNacimiento?: string, idiomaMaternoId?: number, idiomaSecundarioId?: number, tipoOrigen?: string, esPrincipal?: boolean}>} origenes
-   * @param {number} userId
-   * @returns {Promise<Object[]>}
+   * 
+   * @param {number} estudianteId - ID del estudiante
+   * @param {Array<{countryId?: number, birthMunicipalityId?: number, birthCity?: string, motherTongueId?: number, secondaryLanguageId?: number, originType?: string, isPrincipal?: boolean}>} origenes - Array de orígenes
+   * @param {number} userId - ID del usuario que crea
+   * @returns {Promise<StudentOrigin[]>} Array de entidades StudentOrigin creadas
    */
   async createMultiple(estudianteId, origenes, userId = null) {
     const created = [];
     
     for (const origen of origenes) {
       const data = {
-        estudianteId,
-        paisId: origen.paisId || null,
-        municipioNacimientoId: origen.municipioNacimientoId || null,
-        ciudadNacimiento: origen.ciudadNacimiento || null,
-        idiomaMaternoId: origen.idiomaMaternoId || null,
-        idiomaSecundarioId: origen.idiomaSecundarioId || null,
-        tipoOrigen: origen.tipoOrigen || 'NACIONALIDAD_PRINCIPAL',
-        esPrincipal: origen.esPrincipal !== undefined ? origen.esPrincipal : true,
+        studentId: estudianteId,
+        countryId: origen.countryId || origen.paisId || null,
+        birthMunicipalityId: origen.birthMunicipalityId || origen.municipioNacimientoId || null,
+        birthCity: origen.birthCity || origen.ciudadNacimiento || null,
+        motherTongueId: origen.motherTongueId || origen.idiomaMaternoId || null,
+        secondaryLanguageId: origen.secondaryLanguageId || origen.idiomaSecundarioId || null,
+        originType: origen.originType || origen.tipoOrigen || 'NACIONALIDAD_PRINCIPAL',
+        isPrincipal: origen.isPrincipal !== undefined ? origen.isPrincipal : (origen.esPrincipal !== undefined ? origen.esPrincipal : true),
       };
       
       const createdItem = await this.create(data, userId);
@@ -198,23 +160,26 @@ export class StudentOriginRepository extends BaseRepository {
   /**
    * Determina si un origen es boliviano o extranjero
    * Lógica:
-   * - Si tiene municipio_nacimiento_id → Es Bolivia (los municipios son solo de Bolivia)
-   * - Si tiene pais_id y NO tiene municipio_nacimiento_id → Es extranjero
+   * - Si tiene birthMunicipalityId/municipio_nacimiento_id → Es Bolivia (los municipios son solo de Bolivia)
+   * - Si tiene countryId/pais_id y NO tiene birthMunicipalityId/municipio_nacimiento_id → Es extranjero
    * - Si ambos son NULL → No está definido
    * 
-   * @param {Object} origen - Objeto de origen (puede ser entidad o modelo)
+   * @param {StudentOrigin|Object} origen - Entidad StudentOrigin o objeto de origen (puede ser entidad o modelo)
    * @returns {string|null} 'BOLIVIANA', 'EXTRANJERA', o null si no está definido
    */
   static determinarTipoNacionalidad(origen) {
     if (!origen) return null;
     
-    // Si tiene municipio_nacimiento_id, es Bolivia
-    if (origen.municipioNacimientoId || origen.municipio_nacimiento_id) {
+    // Convertir a objeto plano si es entidad
+    const origenData = origen.toPlainObject ? origen.toPlainObject() : origen;
+    
+    // Si tiene birthMunicipalityId/municipio_nacimiento_id, es Bolivia
+    if (origenData.birthMunicipalityId || origenData.municipioNacimientoId || origenData.municipio_nacimiento_id) {
       return 'BOLIVIANA';
     }
     
-    // Si tiene pais_id y NO tiene municipio_nacimiento_id, es extranjero
-    if (origen.paisId || origen.pais_id) {
+    // Si tiene countryId/pais_id y NO tiene birthMunicipalityId/municipio_nacimiento_id, es extranjero
+    if (origenData.countryId || origenData.paisId || origenData.pais_id) {
       return 'EXTRANJERA';
     }
     
@@ -226,8 +191,8 @@ export class StudentOriginRepository extends BaseRepository {
    * Determina el tipo de nacionalidad del estudiante basándose en sus orígenes
    * Retorna: 'BOLIVIANA', 'EXTRANJERA', 'DOBLE_NACIONALIDAD', o null
    * 
-   * @param {number} estudianteId
-   * @returns {Promise<{tipo: string, origenes: Object[]}>}
+   * @param {number} estudianteId - ID del estudiante
+   * @returns {Promise<{tipo: string, origenes: StudentOrigin[]}>} Tipo de nacionalidad y array de entidades StudentOrigin
    */
   async determinarTipoNacionalidadEstudiante(estudianteId) {
     const origenes = await this.findByEstudianteId(estudianteId);
@@ -243,36 +208,38 @@ export class StudentOriginRepository extends BaseRepository {
     
     // Si hay un solo origen, determinar su tipo
     const origen = origenes[0];
-    const tipo = StudentOriginRepository.determinarTipoNacionalidad(origen);
+    const tipo = StudentOriginRepository.determinarTipoNacionalidad(origen.toPlainObject ? origen.toPlainObject() : origen);
     
     return { tipo, origenes };
   }
 
   /**
    * Convierte orígenes a formato de presentación con información de tipo de nacionalidad
-   * @param {Object[]} origenes
-   * @returns {Object[]}
+   * 
+   * @param {StudentOrigin[]|Object[]} origenes - Array de entidades StudentOrigin o objetos planos
+   * @returns {Object[]} Array de objetos con información de presentación
    */
   static origenesToPresentation(origenes) {
     if (!Array.isArray(origenes)) return [];
     
     return origenes.map(origen => {
-      const tipoNacionalidad = StudentOriginRepository.determinarTipoNacionalidad(origen);
+      const origenData = origen.toPlainObject ? origen.toPlainObject() : origen;
+      const tipoNacionalidad = StudentOriginRepository.determinarTipoNacionalidad(origenData);
       
       return {
-        id: origen.id,
-        estudianteId: origen.estudianteId,
-        paisId: origen.paisId,
-        municipioNacimientoId: origen.municipioNacimientoId,
-        ciudadNacimiento: origen.ciudadNacimiento,
-        idiomaMaternoId: origen.idiomaMaternoId,
-        idiomaSecundarioId: origen.idiomaSecundarioId,
-        tipoOrigen: origen.tipoOrigen,
-        esPrincipal: origen.esPrincipal,
+        id: origenData.id,
+        studentId: origenData.studentId,
+        countryId: origenData.countryId,
+        birthMunicipalityId: origenData.birthMunicipalityId,
+        birthCity: origenData.birthCity,
+        motherTongueId: origenData.motherTongueId,
+        secondaryLanguageId: origenData.secondaryLanguageId,
+        originType: origenData.originType,
+        isPrincipal: origenData.isPrincipal,
         tipoNacionalidad, // Agregado: 'BOLIVIANA', 'EXTRANJERA', o null
-        activo: origen.activo,
-        createdAt: origen.createdAt,
-        updatedAt: origen.updatedAt,
+        active: origenData.active,
+        createdAt: origenData.createdAt,
+        updatedAt: origenData.updatedAt,
       };
     });
   }

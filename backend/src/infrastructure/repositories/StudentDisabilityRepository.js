@@ -1,9 +1,22 @@
 import { EstudianteDiscapacidad as EstudianteDiscapacidadModel } from '../database/models/estudiante_discapacidad.js';
 import { BaseRepository } from './BaseRepository.js';
+import { StudentDisabilityMapper } from '../mappers/StudentDisabilityMapper.js';
 
 /**
  * Repositorio de discapacidades de estudiantes
  * Utiliza el patrón Template Method heredando de BaseRepository
+ * 
+ * Responsabilidades:
+ * - Acceso a datos (consultas, persistencia)
+ * - Delegar conversión ORM ↔ Entidad a StudentDisabilityMapper
+ * 
+ * Principios SOLID:
+ * - Single Responsibility: Solo maneja acceso a datos
+ * - Dependency Inversion: Usa StudentDisabilityMapper para conversiones (depende de abstracción)
+ * 
+ * Clean Architecture:
+ * - Infrastructure Layer: Implementación concreta
+ * - Usa StudentDisabilityMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
  */
 export class StudentDisabilityRepository extends BaseRepository {
   /**
@@ -15,23 +28,14 @@ export class StudentDisabilityRepository extends BaseRepository {
   }
 
   /**
-   * Convierte un modelo Sequelize a objeto plano
-   * @param {Object} model
-   * @returns {Object|null}
+   * Convierte un modelo Sequelize a entidad de dominio
+   * Delega la responsabilidad de mapeo a StudentDisabilityMapper
+   * 
+   * @param {Object} model - Modelo Sequelize
+   * @returns {StudentDisability|null} Entidad de dominio
    */
   toEntity(model) {
-    if (!model) return null;
-    return {
-      id: model.id,
-      estudianteId: model.estudianteId,
-      tipoDiscapacidadId: model.tipoDiscapacidadId,
-      descripcion: model.descripcion,
-      gradoDiscapacidad: model.gradoDiscapacidad,
-      causa: model.causa,
-      activo: model.activo,
-      createdAt: model.createdAt,
-      updatedAt: model.updatedAt,
-    };
+    return StudentDisabilityMapper.toEntity(model);
   }
 
   /**
@@ -51,48 +55,27 @@ export class StudentDisabilityRepository extends BaseRepository {
   }
 
   /**
-   * Mapea datos a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de dominio a formato del modelo Sequelize (para creación)
+   * Delega la responsabilidad de mapeo a StudentDisabilityMapper
+   * 
+   * @param {StudentDisability|Object} data - Entidad StudentDisability o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize
    */
   mapDataToModel(data, userId = null) {
-    return {
-      estudianteId: data.estudianteId,
-      tipoDiscapacidadId: data.tipoDiscapacidadId,
-      descripcion: data.descripcion || null,
-      gradoDiscapacidad: data.gradoDiscapacidad || null,
-      causa: data.causa || null,
-      created_by: userId,
-    };
+    return StudentDisabilityMapper.toModel(data);
   }
 
   /**
-   * Mapea datos de actualización
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de actualización de dominio a formato del modelo Sequelize (para actualización)
+   * Delega la responsabilidad de mapeo a StudentDisabilityMapper
+   * 
+   * @param {StudentDisability|Object} data - Entidad StudentDisability o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
   mapDataToUpdate(data, userId = null) {
-    const updateData = {};
-
-    if (data.descripcion !== undefined) {
-      updateData.descripcion = data.descripcion;
-    }
-    if (data.gradoDiscapacidad !== undefined) {
-      updateData.gradoDiscapacidad = data.gradoDiscapacidad;
-    }
-    if (data.causa !== undefined) {
-      updateData.causa = data.causa;
-    }
-    if (data.activo !== undefined) {
-      updateData.activo = data.activo;
-    }
-    if (userId) {
-      updateData.updated_by = userId;
-    }
-
-    return updateData;
+    return StudentDisabilityMapper.toModelForUpdate(data);
   }
 
   /**
@@ -105,8 +88,9 @@ export class StudentDisabilityRepository extends BaseRepository {
 
   /**
    * Buscar discapacidades por estudiante
-   * @param {number} estudianteId
-   * @returns {Promise<Object[]>}
+   * 
+   * @param {number} estudianteId - ID del estudiante
+   * @returns {Promise<StudentDisability[]>} Array de entidades StudentDisability
    */
   async findByEstudianteId(estudianteId) {
     const models = await this.getModel().findAll({
@@ -117,26 +101,27 @@ export class StudentDisabilityRepository extends BaseRepository {
       order: this.getDefaultSort(),
     });
 
-    return models.map((model) => this.toEntity(model));
+    return StudentDisabilityMapper.toEntityList(models);
   }
 
   /**
    * Crear múltiples discapacidades para un estudiante
-   * @param {number} estudianteId
-   * @param {Array<{tipoDiscapacidadId: number, descripcion?: string, gradoDiscapacidad?: string, gradoInvalidez?: string, causa?: string}>} discapacidades
-   * @param {number} userId
-   * @returns {Promise<Object[]>}
+   * 
+   * @param {number} estudianteId - ID del estudiante
+   * @param {Array<{disabilityTypeId: number, description?: string, disabilityDegree?: string, cause?: string}>} discapacidades - Array de discapacidades
+   * @param {number} userId - ID del usuario que crea
+   * @returns {Promise<StudentDisability[]>} Array de entidades StudentDisability creadas
    */
   async createMultiple(estudianteId, discapacidades, userId = null) {
     const created = [];
     
     for (const discapacidad of discapacidades) {
       const data = {
-        estudianteId,
-        tipoDiscapacidadId: discapacidad.tipoDiscapacidadId,
-        descripcion: discapacidad.descripcion || null,
-        gradoDiscapacidad: discapacidad.gradoDiscapacidad || discapacidad.gradoInvalidez || null,
-        causa: discapacidad.causa || null,
+        studentId: estudianteId,
+        disabilityTypeId: discapacidad.disabilityTypeId || discapacidad.tipoDiscapacidadId,
+        description: discapacidad.description || discapacidad.descripcion || null,
+        disabilityDegree: discapacidad.disabilityDegree || discapacidad.gradoDiscapacidad || discapacidad.gradoInvalidez || null,
+        cause: discapacidad.cause || discapacidad.causa || null,
       };
       
       const createdItem = await this.create(data, userId);

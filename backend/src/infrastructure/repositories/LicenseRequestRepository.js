@@ -1,11 +1,23 @@
 import { ILicenciaSolicitudRepository } from '../../domain/interfaces/repositories/ILicenciaSolicitudRepository.js';
 import { LicenciaSolicitud as LicenciaSolicitudModel } from '../database/models/licencia_solicitud.js';
-import { LicenseRequest } from '../../domain/entities/LicenseRequest.js';
 import { BaseRepository } from './BaseRepository.js';
+import { LicenseRequestMapper } from '../mappers/LicenseRequestMapper.js';
 
 /**
  * Implementación del repositorio de solicitudes de licencias usando Sequelize
  * Utiliza el patrón Template Method heredando de BaseRepository
+ * 
+ * Responsabilidades:
+ * - Acceso a datos (consultas, persistencia)
+ * - Delegar conversión ORM ↔ Entidad a LicenseRequestMapper
+ * 
+ * Principios SOLID:
+ * - Single Responsibility: Solo maneja acceso a datos
+ * - Dependency Inversion: Usa LicenseRequestMapper para conversiones (depende de abstracción)
+ * 
+ * Clean Architecture:
+ * - Infrastructure Layer: Implementación concreta de ILicenciaSolicitudRepository
+ * - Usa LicenseRequestMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
  * 
  * @implements {ILicenciaSolicitudRepository}
  * 
@@ -24,36 +36,13 @@ export class LicenseRequestRepository extends BaseRepository {
 
   /**
    * Convierte un modelo Sequelize a entidad de dominio
-   * @param {Object} model
-   * @returns {LicenseRequest|null}
+   * Delega la responsabilidad de mapeo a LicenseRequestMapper
+   * 
+   * @param {Object} model - Modelo Sequelize
+   * @returns {LicenseRequest|null} Entidad de dominio
    */
   toEntity(model) {
-    if (!model) return null;
-    return new LicenseRequest({
-      id: model.id,
-      studentId: model.estudianteId,
-      careerId: model.carreraId,
-      managementId: model.gestionId,
-      courseShiftId: model.turnoCursoId,
-      requestDate: model.fechaSolicitud,
-      startDate: model.fechaDesde,
-      endDate: model.fechaHasta,
-      totalDays: model.totalDias,
-      reason: model.motivo,
-      reasonDetail: model.detalleMotivo,
-      state: model.estado,
-      decisionDate: model.fechaDecision,
-      decidedBy: model.decididoPor,
-      rejectionReason: model.motivoRechazo,
-      documentsComplete: model.documentosCompletos,
-      documentDeliveryStartDate: model.fechaInicioEntregaDocumentos,
-      documentDeliveryEndDate: model.fechaFinEntregaDocumentos,
-      observations: model.observaciones,
-      decisionObservations: model.observacionesDecision,
-      activo: model.activo,
-      createdAt: model.createdAt,
-      updatedAt: model.updatedAt,
-    });
+    return LicenseRequestMapper.toEntity(model);
   }
 
   /**
@@ -100,106 +89,27 @@ export class LicenseRequestRepository extends BaseRepository {
   }
 
   /**
-   * Mapea datos de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de dominio a formato del modelo Sequelize (para creación)
+   * Delega la responsabilidad de mapeo a LicenseRequestMapper
+   * 
+   * @param {LicenseRequest|Object} data - Entidad LicenseRequest o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize
    */
   mapDataToModel(data, userId = null) {
-    return {
-      estudianteId: data.studentId || null,
-      carreraId: data.careerId || null,
-      gestionId: data.managementId || null,
-      turnoCursoId: data.courseShiftId || null,
-      fechaSolicitud: data.requestDate,
-      fechaDesde: data.startDate,
-      fechaHasta: data.endDate,
-      totalDias: data.totalDays,
-      motivo: data.reason,
-      detalleMotivo: data.reasonDetail,
-      estado: data.state || 'PENDIENTE',
-      fechaDecision: data.decisionDate || null,
-      decididoPor: data.decidedBy || null,
-      motivoRechazo: data.rejectionReason || null,
-      documentosCompletos: data.documentsComplete !== undefined ? data.documentsComplete : false,
-      fechaInicioEntregaDocumentos: data.documentDeliveryStartDate || null,
-      fechaFinEntregaDocumentos: data.documentDeliveryEndDate || null,
-      observaciones: data.observations || null,
-      observacionesDecision: data.decisionObservations || null,
-    };
+    return LicenseRequestMapper.toModel(data);
   }
 
   /**
-   * Mapea datos de actualización de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de actualización de dominio a formato del modelo Sequelize (para actualización)
+   * Delega la responsabilidad de mapeo a LicenseRequestMapper
+   * 
+   * @param {LicenseRequest|Object} data - Entidad LicenseRequest o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
   mapDataToUpdate(data, userId = null) {
-    const updateData = {};
-
-    if (data.studentId !== undefined) {
-      updateData.estudianteId = data.studentId || null;
-    }
-    if (data.careerId !== undefined) {
-      updateData.carreraId = data.careerId || null;
-    }
-    if (data.managementId !== undefined) {
-      updateData.gestionId = data.managementId || null;
-    }
-    if (data.courseShiftId !== undefined) {
-      updateData.turnoCursoId = data.courseShiftId || null;
-    }
-    if (data.requestDate !== undefined) {
-      updateData.fechaSolicitud = data.requestDate;
-    }
-    if (data.startDate !== undefined) {
-      updateData.fechaDesde = data.startDate;
-    }
-    if (data.endDate !== undefined) {
-      updateData.fechaHasta = data.endDate;
-    }
-    if (data.totalDays !== undefined) {
-      updateData.totalDias = data.totalDays;
-    }
-    if (data.reason !== undefined) {
-      updateData.motivo = data.reason;
-    }
-    if (data.reasonDetail !== undefined) {
-      updateData.detalleMotivo = data.reasonDetail;
-    }
-    if (data.state !== undefined) {
-      updateData.estado = data.state;
-    }
-    if (data.decisionDate !== undefined) {
-      updateData.fechaDecision = data.decisionDate || null;
-    }
-    if (data.decidedBy !== undefined) {
-      updateData.decididoPor = data.decidedBy || null;
-    }
-    if (data.rejectionReason !== undefined) {
-      updateData.motivoRechazo = data.rejectionReason || null;
-    }
-    if (data.documentsComplete !== undefined) {
-      updateData.documentosCompletos = data.documentsComplete;
-    }
-    if (data.documentDeliveryStartDate !== undefined) {
-      updateData.fechaInicioEntregaDocumentos = data.documentDeliveryStartDate || null;
-    }
-    if (data.documentDeliveryEndDate !== undefined) {
-      updateData.fechaFinEntregaDocumentos = data.documentDeliveryEndDate || null;
-    }
-    if (data.observations !== undefined) {
-      updateData.observaciones = data.observations || null;
-    }
-    if (data.decisionObservations !== undefined) {
-      updateData.observacionesDecision = data.decisionObservations || null;
-    }
-    if (data.activo !== undefined) {
-      updateData.activo = data.activo;
-    }
-
-    return updateData;
+    return LicenseRequestMapper.toModelForUpdate(data);
   }
 
   /**
@@ -212,8 +122,9 @@ export class LicenseRequestRepository extends BaseRepository {
 
   /**
    * Método específico: Buscar licencias por estudiante
-   * @param {number} estudianteId
-   * @returns {Promise<LicenseRequest[]>}
+   * 
+   * @param {number} estudianteId - ID del estudiante
+   * @returns {Promise<LicenseRequest[]>} Array de entidades LicenseRequest
    */
   async findByEstudianteId(estudianteId) {
     const models = await this.getModel().findAll({
@@ -224,13 +135,14 @@ export class LicenseRequestRepository extends BaseRepository {
       },
       order: [['fechaSolicitud', 'DESC']],
     });
-    return models.map((model) => this.toEntity(model));
+    return LicenseRequestMapper.toEntityList(models);
   }
 
   /**
    * Método específico: Buscar licencias por gestión
-   * @param {number} gestionId
-   * @returns {Promise<LicenseRequest[]>}
+   * 
+   * @param {number} gestionId - ID de la gestión
+   * @returns {Promise<LicenseRequest[]>} Array de entidades LicenseRequest
    */
   async findByGestionId(gestionId) {
     const models = await this.getModel().findAll({
@@ -241,7 +153,6 @@ export class LicenseRequestRepository extends BaseRepository {
       },
       order: [['fechaSolicitud', 'DESC']],
     });
-    return models.map((model) => this.toEntity(model));
+    return LicenseRequestMapper.toEntityList(models);
   }
 }
-

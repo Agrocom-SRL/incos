@@ -1,12 +1,24 @@
 import { IGestionRepository } from '../../domain/interfaces/repositories/IGestionRepository.js';
 import { Gestion as GestionModel } from '../database/models/gestion.js';
-import { Management } from '../../domain/entities/Management.js';
 import { BaseRepository } from './BaseRepository.js';
+import { ManagementMapper } from '../mappers/ManagementMapper.js';
 import { Op } from 'sequelize';
 
 /**
  * Implementación del repositorio de gestiones académicas usando Sequelize
  * Utiliza el patrón Template Method heredando de BaseRepository
+ * 
+ * Responsabilidades:
+ * - Acceso a datos (consultas, persistencia)
+ * - Delegar conversión ORM ↔ Entidad a ManagementMapper
+ * 
+ * Principios SOLID:
+ * - Single Responsibility: Solo maneja acceso a datos
+ * - Dependency Inversion: Usa ManagementMapper para conversiones (depende de abstracción)
+ * 
+ * Clean Architecture:
+ * - Infrastructure Layer: Implementación concreta de IGestionRepository
+ * - Usa ManagementMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
  * 
  * @implements {IGestionRepository}
  * 
@@ -25,22 +37,13 @@ export class ManagementRepository extends BaseRepository {
 
   /**
    * Convierte un modelo Sequelize a entidad de dominio
-   * @param {Object} model
-   * @returns {Management|null}
+   * Delega la responsabilidad de mapeo a ManagementMapper
+   * 
+   * @param {Object} model - Modelo Sequelize
+   * @returns {Management|null} Entidad de dominio
    */
   toEntity(model) {
-    if (!model) return null;
-    return new Management({
-      id: model.id,
-      code: model.codigo,
-      year: model.anio,
-      promotionImageUrl: model.imagenPromocionUrl,
-      administrativeStartDate: model.fechaInicioAdministrativa,
-      administrativeEndDate: model.fechaFinAdministrativa,
-      activo: model.activo,
-      createdAt: model.createdAt,
-      updatedAt: model.updatedAt,
-    });
+    return ManagementMapper.toEntity(model);
   }
 
   /**
@@ -75,50 +78,27 @@ export class ManagementRepository extends BaseRepository {
   }
 
   /**
-   * Mapea datos de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de dominio a formato del modelo Sequelize (para creación)
+   * Delega la responsabilidad de mapeo a ManagementMapper
+   * 
+   * @param {Management|Object} data - Entidad Management o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize
    */
   mapDataToModel(data, userId = null) {
-    return {
-      codigo: data.code,
-      anio: data.year,
-      imagenPromocionUrl: data.promotionImageUrl || null,
-      fechaInicioAdministrativa: data.administrativeStartDate,
-      fechaFinAdministrativa: data.administrativeEndDate,
-    };
+    return ManagementMapper.toModel(data);
   }
 
   /**
-   * Mapea datos de actualización de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de actualización de dominio a formato del modelo Sequelize (para actualización)
+   * Delega la responsabilidad de mapeo a ManagementMapper
+   * 
+   * @param {Management|Object} data - Entidad Management o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
   mapDataToUpdate(data, userId = null) {
-    const updateData = {};
-
-    if (data.code !== undefined) {
-      updateData.codigo = data.code;
-    }
-    if (data.year !== undefined) {
-      updateData.anio = data.year;
-    }
-    if (data.promotionImageUrl !== undefined) {
-      updateData.imagenPromocionUrl = data.promotionImageUrl || null;
-    }
-    if (data.administrativeStartDate !== undefined) {
-      updateData.fechaInicioAdministrativa = data.administrativeStartDate;
-    }
-    if (data.administrativeEndDate !== undefined) {
-      updateData.fechaFinAdministrativa = data.administrativeEndDate;
-    }
-    if (data.activo !== undefined) {
-      updateData.activo = data.activo;
-    }
-
-    return updateData;
+    return ManagementMapper.toModelForUpdate(data);
   }
 
   /**
@@ -131,8 +111,9 @@ export class ManagementRepository extends BaseRepository {
 
   /**
    * Método específico: Buscar gestión por código
-   * @param {string} codigo
-   * @returns {Promise<Management|null>}
+   * 
+   * @param {string} codigo - Código de la gestión
+   * @returns {Promise<Management|null>} Entidad Management o null si no se encuentra
    */
   async findByCodigo(codigo) {
     const model = await this.getModel().findOne({
@@ -147,8 +128,9 @@ export class ManagementRepository extends BaseRepository {
 
   /**
    * Método específico: Buscar gestiones por año
-   * @param {number} anio
-   * @returns {Promise<Management[]>}
+   * 
+   * @param {number} anio - Año académico
+   * @returns {Promise<Management[]>} Array de entidades Management
    */
   async findByAnio(anio) {
     const models = await this.getModel().findAll({
@@ -159,12 +141,13 @@ export class ManagementRepository extends BaseRepository {
       },
       order: [['codigo', 'DESC']],
     });
-    return models.map((model) => this.toEntity(model));
+    return ManagementMapper.toEntityList(models);
   }
 
   /**
    * Método específico: Buscar gestión activa actual
-   * @returns {Promise<Management|null>}
+   * 
+   * @returns {Promise<Management|null>} Entidad Management o null si no se encuentra
    */
   async findActive() {
     const today = new Date();

@@ -1,11 +1,23 @@
 import { IAsignacionDocenteRepository } from '../../domain/interfaces/repositories/IAsignacionDocenteRepository.js';
 import { AsignacionDocente as AsignacionDocenteModel } from '../database/models/asignacion_docente.js';
-import { TeacherAssignment } from '../../domain/entities/TeacherAssignment.js';
 import { BaseRepository } from './BaseRepository.js';
+import { TeacherAssignmentMapper } from '../mappers/TeacherAssignmentMapper.js';
 
 /**
  * Implementación del repositorio de asignaciones de docentes usando Sequelize
  * Utiliza el patrón Template Method heredando de BaseRepository
+ * 
+ * Responsabilidades:
+ * - Acceso a datos (consultas, persistencia)
+ * - Delegar conversión ORM ↔ Entidad a TeacherAssignmentMapper
+ * 
+ * Principios SOLID:
+ * - Single Responsibility: Solo maneja acceso a datos
+ * - Dependency Inversion: Usa TeacherAssignmentMapper para conversiones (depende de abstracción)
+ * 
+ * Clean Architecture:
+ * - Infrastructure Layer: Implementación concreta de IAsignacionDocenteRepository
+ * - Usa TeacherAssignmentMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
  * 
  * @implements {IAsignacionDocenteRepository}
  * 
@@ -24,24 +36,13 @@ export class TeacherAssignmentRepository extends BaseRepository {
 
   /**
    * Convierte un modelo Sequelize a entidad de dominio
-   * @param {Object} model
-   * @returns {TeacherAssignment|null}
+   * Delega la responsabilidad de mapeo a TeacherAssignmentMapper
+   * 
+   * @param {Object} model - Modelo Sequelize
+   * @returns {TeacherAssignment|null} Entidad de dominio
    */
   toEntity(model) {
-    if (!model) return null;
-    return new TeacherAssignment({
-      id: model.id,
-      courseId: model.cursoId,
-      managementId: model.gestionId,
-      teacherId: model.docenteId,
-      weeklyHours: model.cargaHorariaSemanal,
-      state: model.estado,
-      cancellationReason: model.motivoCancelacion,
-      observations: model.observaciones,
-      activo: model.activo,
-      createdAt: model.createdAt,
-      updatedAt: model.updatedAt,
-    });
+    return TeacherAssignmentMapper.toEntity(model);
   }
 
   /**
@@ -85,58 +86,27 @@ export class TeacherAssignmentRepository extends BaseRepository {
   }
 
   /**
-   * Mapea datos de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de dominio a formato del modelo Sequelize (para creación)
+   * Delega la responsabilidad de mapeo a TeacherAssignmentMapper
+   * 
+   * @param {TeacherAssignment|Object} data - Entidad TeacherAssignment o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize
    */
   mapDataToModel(data, userId = null) {
-    return {
-      cursoId: data.courseId || null,
-      gestionId: data.managementId || null,
-      docenteId: data.teacherId || null,
-      cargaHorariaSemanal: data.weeklyHours !== undefined ? data.weeklyHours : 0,
-      estado: data.state || 'PROPUESTA',
-      motivoCancelacion: data.cancellationReason || null,
-      observaciones: data.observations || null,
-    };
+    return TeacherAssignmentMapper.toModel(data);
   }
 
   /**
-   * Mapea datos de actualización de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de actualización de dominio a formato del modelo Sequelize (para actualización)
+   * Delega la responsabilidad de mapeo a TeacherAssignmentMapper
+   * 
+   * @param {TeacherAssignment|Object} data - Entidad TeacherAssignment o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
   mapDataToUpdate(data, userId = null) {
-    const updateData = {};
-
-    if (data.courseId !== undefined) {
-      updateData.cursoId = data.courseId || null;
-    }
-    if (data.managementId !== undefined) {
-      updateData.gestionId = data.managementId || null;
-    }
-    if (data.teacherId !== undefined) {
-      updateData.docenteId = data.teacherId || null;
-    }
-    if (data.weeklyHours !== undefined) {
-      updateData.cargaHorariaSemanal = data.weeklyHours;
-    }
-    if (data.state !== undefined) {
-      updateData.estado = data.state;
-    }
-    if (data.cancellationReason !== undefined) {
-      updateData.motivoCancelacion = data.cancellationReason || null;
-    }
-    if (data.observations !== undefined) {
-      updateData.observaciones = data.observations || null;
-    }
-    if (data.activo !== undefined) {
-      updateData.activo = data.activo;
-    }
-
-    return updateData;
+    return TeacherAssignmentMapper.toModelForUpdate(data);
   }
 
   /**
@@ -149,8 +119,9 @@ export class TeacherAssignmentRepository extends BaseRepository {
 
   /**
    * Método específico: Buscar asignaciones por docente
-   * @param {number} docenteId
-   * @returns {Promise<TeacherAssignment[]>}
+   * 
+   * @param {number} docenteId - ID del docente
+   * @returns {Promise<TeacherAssignment[]>} Array de entidades TeacherAssignment
    */
   async findByDocenteId(docenteId) {
     const models = await this.getModel().findAll({
@@ -161,13 +132,14 @@ export class TeacherAssignmentRepository extends BaseRepository {
       },
       order: [['gestionId', 'DESC'], ['cursoId', 'ASC']],
     });
-    return models.map((model) => this.toEntity(model));
+    return TeacherAssignmentMapper.toEntityList(models);
   }
 
   /**
    * Método específico: Buscar asignaciones por gestión
-   * @param {number} gestionId
-   * @returns {Promise<TeacherAssignment[]>}
+   * 
+   * @param {number} gestionId - ID de la gestión
+   * @returns {Promise<TeacherAssignment[]>} Array de entidades TeacherAssignment
    */
   async findByGestionId(gestionId) {
     const models = await this.getModel().findAll({
@@ -178,7 +150,7 @@ export class TeacherAssignmentRepository extends BaseRepository {
       },
       order: [['cursoId', 'ASC']],
     });
-    return models.map((model) => this.toEntity(model));
+    return TeacherAssignmentMapper.toEntityList(models);
   }
 }
 

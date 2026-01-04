@@ -1,11 +1,23 @@
 import { IStudentAcademicDataRepository } from '../../domain/interfaces/repositories/IStudentAcademicDataRepository.js';
 import { EstudianteDatosAcademicos as EstudianteDatosAcademicosModel } from '../database/models/estudiante_datos_academicos.js';
-import { StudentAcademicData } from '../../domain/entities/StudentAcademicData.js';
 import { BaseRepository } from './BaseRepository.js';
+import { StudentAcademicDataMapper } from '../mappers/StudentAcademicDataMapper.js';
 
 /**
  * Implementación del repositorio de datos académicos de estudiantes usando Sequelize
  * Utiliza el patrón Template Method heredando de BaseRepository
+ * 
+ * Responsabilidades:
+ * - Acceso a datos (consultas, persistencia)
+ * - Delegar conversión ORM ↔ Entidad a StudentAcademicDataMapper
+ * 
+ * Principios SOLID:
+ * - Single Responsibility: Solo maneja acceso a datos
+ * - Dependency Inversion: Usa StudentAcademicDataMapper para conversiones (depende de abstracción)
+ * 
+ * Clean Architecture:
+ * - Infrastructure Layer: Implementación concreta de IStudentAcademicDataRepository
+ * - Usa StudentAcademicDataMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
  * 
  * @implements {IStudentAcademicDataRepository}
  * 
@@ -24,28 +36,13 @@ export class StudentAcademicDataRepository extends BaseRepository {
 
   /**
    * Convierte un modelo Sequelize a entidad de dominio
-   * @param {Object} model
-   * @returns {StudentAcademicData|null}
+   * Delega la responsabilidad de mapeo a StudentAcademicDataMapper
+   * 
+   * @param {Object} model - Modelo Sequelize
+   * @returns {StudentAcademicData|null} Entidad de dominio
    */
   toEntity(model) {
-    if (!model) return null;
-    return new StudentAcademicData({
-      id: model.id,
-      studentId: model.estudianteId,
-      careerId: model.carreraId,
-      managementId: model.gestionIngresoId,
-      academicState: model.estadoAcademico,
-      previousSchool: model.unidadEducativaProcedencia,
-      highSchoolGraduationYear: model.anioEgresoSecundaria,
-      annualAverage: model.promedioAnual ? parseFloat(model.promedioAnual) : null,
-      graduationDate: model.fechaEgreso,
-      withdrawalDate: model.fechaRetiro,
-      withdrawalReason: model.motivoRetiro,
-      photoUrl: model.fotoUrl,
-      activo: model.activo,
-      createdAt: model.createdAt,
-      updatedAt: model.updatedAt,
-    });
+    return StudentAcademicDataMapper.toEntity(model);
   }
 
   /**
@@ -86,74 +83,27 @@ export class StudentAcademicDataRepository extends BaseRepository {
   }
 
   /**
-   * Mapea datos de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de dominio a formato del modelo Sequelize (para creación)
+   * Delega la responsabilidad de mapeo a StudentAcademicDataMapper
+   * 
+   * @param {StudentAcademicData|Object} data - Entidad StudentAcademicData o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize
    */
   mapDataToModel(data, userId = null) {
-    return {
-      estudianteId: data.studentId,
-      carreraId: data.careerId,
-      gestionIngresoId: data.managementId,
-      estadoAcademico: data.academicState || 'REGULAR',
-      unidadEducativaProcedencia: data.previousSchool || null,
-      anioEgresoSecundaria: data.highSchoolGraduationYear || null,
-      promedioAnual: data.annualAverage || null,
-      fechaEgreso: data.graduationDate || null,
-      fechaRetiro: data.withdrawalDate || null,
-      motivoRetiro: data.withdrawalReason || null,
-      fotoUrl: data.photoUrl || null,
-    };
+    return StudentAcademicDataMapper.toModel(data);
   }
 
   /**
-   * Mapea datos de actualización de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de actualización de dominio a formato del modelo Sequelize (para actualización)
+   * Delega la responsabilidad de mapeo a StudentAcademicDataMapper
+   * 
+   * @param {StudentAcademicData|Object} data - Entidad StudentAcademicData o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
   mapDataToUpdate(data, userId = null) {
-    const updateData = {};
-
-    if (data.studentId !== undefined) {
-      updateData.estudianteId = data.studentId;
-    }
-    if (data.careerId !== undefined) {
-      updateData.carreraId = data.careerId;
-    }
-    if (data.managementId !== undefined) {
-      updateData.gestionIngresoId = data.managementId;
-    }
-    if (data.academicState !== undefined) {
-      updateData.estadoAcademico = data.academicState;
-    }
-    if (data.previousSchool !== undefined) {
-      updateData.unidadEducativaProcedencia = data.previousSchool || null;
-    }
-    if (data.highSchoolGraduationYear !== undefined) {
-      updateData.anioEgresoSecundaria = data.highSchoolGraduationYear || null;
-    }
-    if (data.annualAverage !== undefined) {
-      updateData.promedioAnual = data.annualAverage || null;
-    }
-    if (data.graduationDate !== undefined) {
-      updateData.fechaEgreso = data.graduationDate || null;
-    }
-    if (data.withdrawalDate !== undefined) {
-      updateData.fechaRetiro = data.withdrawalDate || null;
-    }
-    if (data.withdrawalReason !== undefined) {
-      updateData.motivoRetiro = data.withdrawalReason || null;
-    }
-    if (data.photoUrl !== undefined) {
-      updateData.fotoUrl = data.photoUrl || null;
-    }
-    if (data.activo !== undefined) {
-      updateData.activo = data.activo;
-    }
-
-    return updateData;
+    return StudentAcademicDataMapper.toModelForUpdate(data);
   }
 
   /**
@@ -166,8 +116,9 @@ export class StudentAcademicDataRepository extends BaseRepository {
 
   /**
    * Método específico: Buscar datos académicos por estudiante
-   * @param {number} estudianteId
-   * @returns {Promise<StudentAcademicData|null>}
+   * 
+   * @param {number} estudianteId - ID del estudiante
+   * @returns {Promise<StudentAcademicData|null>} Entidad StudentAcademicData o null si no se encuentra
    */
   async findByEstudianteId(estudianteId) {
     const model = await this.getModel().findOne({
@@ -183,8 +134,9 @@ export class StudentAcademicDataRepository extends BaseRepository {
 
   /**
    * Método específico: Buscar estudiantes por carrera
-   * @param {number} carreraId
-   * @returns {Promise<StudentAcademicData[]>}
+   * 
+   * @param {number} carreraId - ID de la carrera
+   * @returns {Promise<StudentAcademicData[]>} Array de entidades StudentAcademicData
    */
   async findByCarreraId(carreraId) {
     const models = await this.getModel().findAll({
@@ -195,7 +147,7 @@ export class StudentAcademicDataRepository extends BaseRepository {
       },
       order: [['gestionIngresoId', 'DESC']],
     });
-    return models.map((model) => this.toEntity(model));
+    return StudentAcademicDataMapper.toEntityList(models);
   }
 }
 

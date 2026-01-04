@@ -1,12 +1,24 @@
 import { IProvinciaRepository } from '../../domain/interfaces/repositories/IProvinciaRepository.js';
 import { Provincia as ProvinciaModel } from '../database/models/provincia.js';
-import { Province } from '../../domain/entities/Province.js';
 import { BaseRepository } from './BaseRepository.js';
+import { ProvinceMapper } from '../mappers/ProvinceMapper.js';
 import { Op } from 'sequelize';
 
 /**
  * Implementación del repositorio de provincias usando Sequelize
  * Utiliza el patrón Template Method heredando de BaseRepository
+ * 
+ * Responsabilidades:
+ * - Acceso a datos (consultas, persistencia)
+ * - Delegar conversión ORM ↔ Entidad a ProvinceMapper
+ * 
+ * Principios SOLID:
+ * - Single Responsibility: Solo maneja acceso a datos
+ * - Dependency Inversion: Usa ProvinceMapper para conversiones (depende de abstracción)
+ * 
+ * Clean Architecture:
+ * - Infrastructure Layer: Implementación concreta de IProvinciaRepository
+ * - Usa ProvinceMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
  * 
  * @implements {IProvinciaRepository}
  * 
@@ -25,20 +37,13 @@ export class ProvinceRepository extends BaseRepository {
 
   /**
    * Convierte un modelo Sequelize a entidad de dominio
-   * @param {Object} model
-   * @returns {Province|null}
+   * Delega la responsabilidad de mapeo a ProvinceMapper
+   * 
+   * @param {Object} model - Modelo Sequelize
+   * @returns {Province|null} Entidad de dominio
    */
   toEntity(model) {
-    if (!model) return null;
-    return new Province({
-      id: model.id,
-      departmentId: model.departamentoId,
-      name: model.nombre,
-      code: model.codigo,
-      activo: model.activo,
-      createdAt: model.createdAt,
-      updatedAt: model.updatedAt,
-    });
+    return ProvinceMapper.toEntity(model);
   }
 
   /**
@@ -73,42 +78,27 @@ export class ProvinceRepository extends BaseRepository {
   }
 
   /**
-   * Mapea datos de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de dominio a formato del modelo Sequelize (para creación)
+   * Delega la responsabilidad de mapeo a ProvinceMapper
+   * 
+   * @param {Province|Object} data - Entidad Province o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize
    */
   mapDataToModel(data, userId = null) {
-    return {
-      departamentoId: data.departmentId,
-      nombre: data.name,
-      codigo: data.code ? data.code.toUpperCase() : null,
-    };
+    return ProvinceMapper.toModel(data);
   }
 
   /**
-   * Mapea datos de actualización de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de actualización de dominio a formato del modelo Sequelize (para actualización)
+   * Delega la responsabilidad de mapeo a ProvinceMapper
+   * 
+   * @param {Province|Object} data - Entidad Province o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
   mapDataToUpdate(data, userId = null) {
-    const updateData = {};
-
-    if (data.departmentId !== undefined) {
-      updateData.departamentoId = data.departmentId;
-    }
-    if (data.name !== undefined) {
-      updateData.nombre = data.name;
-    }
-    if (data.code !== undefined) {
-      updateData.codigo = data.code ? data.code.toUpperCase() : null;
-    }
-    if (data.activo !== undefined) {
-      updateData.activo = data.activo;
-    }
-
-    return updateData;
+    return ProvinceMapper.toModelForUpdate(data);
   }
 
   /**
@@ -121,8 +111,9 @@ export class ProvinceRepository extends BaseRepository {
 
   /**
    * Método específico: Buscar provincias por departamento
-   * @param {number} departamentoId
-   * @returns {Promise<Province[]>}
+   * 
+   * @param {number} departamentoId - ID del departamento
+   * @returns {Promise<Province[]>} Array de entidades Province
    */
   async findByDepartamentoId(departamentoId) {
     const models = await this.getModel().findAll({
@@ -133,13 +124,14 @@ export class ProvinceRepository extends BaseRepository {
       },
       order: [['nombre', 'ASC']],
     });
-    return models.map((model) => this.toEntity(model));
+    return ProvinceMapper.toEntityList(models);
   }
 
   /**
    * Método específico: Buscar provincia por código
-   * @param {string} codigo
-   * @returns {Promise<Province|null>}
+   * 
+   * @param {string} codigo - Código de la provincia
+   * @returns {Promise<Province|null>} Entidad Province o null si no se encuentra
    */
   async findByCodigo(codigo) {
     const model = await this.getModel().findOne({
@@ -181,6 +173,6 @@ export class ProvinceRepository extends BaseRepository {
       limit: 50,
     });
 
-    return models.map((model) => this.toEntity(model));
+    return ProvinceMapper.toEntityList(models);
   }
 }

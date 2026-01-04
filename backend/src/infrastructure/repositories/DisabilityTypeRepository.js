@@ -1,11 +1,23 @@
 import { ITipoDiscapacidadRepository } from '../../domain/interfaces/repositories/ITipoDiscapacidadRepository.js';
 import { TipoDiscapacidad as TipoDiscapacidadModel } from '../database/models/tipo_discapacidad.js';
-import { DisabilityType } from '../../domain/entities/DisabilityType.js';
 import { BaseRepository } from './BaseRepository.js';
+import { DisabilityTypeMapper } from '../mappers/DisabilityTypeMapper.js';
 
 /**
  * Implementación del repositorio de tipos de discapacidad usando Sequelize
  * Utiliza el patrón Template Method heredando de BaseRepository
+ * 
+ * Responsabilidades:
+ * - Acceso a datos (consultas, persistencia)
+ * - Delegar conversión ORM ↔ Entidad a DisabilityTypeMapper
+ * 
+ * Principios SOLID:
+ * - Single Responsibility: Solo maneja acceso a datos
+ * - Dependency Inversion: Usa DisabilityTypeMapper para conversiones (depende de abstracción)
+ * 
+ * Clean Architecture:
+ * - Infrastructure Layer: Implementación concreta de ITipoDiscapacidadRepository
+ * - Usa DisabilityTypeMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
  * 
  * @implements {ITipoDiscapacidadRepository}
  * 
@@ -23,19 +35,13 @@ export class DisabilityTypeRepository extends BaseRepository {
 
   /**
    * Convierte un modelo Sequelize a entidad de dominio
-   * @param {Object} model
-   * @returns {DisabilityType|null}
+   * Delega la responsabilidad de mapeo a DisabilityTypeMapper
+   * 
+   * @param {Object} model - Modelo Sequelize
+   * @returns {DisabilityType|null} Entidad de dominio
    */
   toEntity(model) {
-    if (!model) return null;
-    return new DisabilityType({
-      id: model.id,
-      name: model.nombre,
-      description: model.descripcion,
-      activo: model.activo,
-      createdAt: model.createdAt,
-      updatedAt: model.updatedAt,
-    });
+    return DisabilityTypeMapper.toEntity(model);
   }
 
   /**
@@ -55,38 +61,27 @@ export class DisabilityTypeRepository extends BaseRepository {
   }
 
   /**
-   * Mapea datos de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de dominio a formato del modelo Sequelize (para creación)
+   * Delega la responsabilidad de mapeo a DisabilityTypeMapper
+   * 
+   * @param {DisabilityType|Object} data - Entidad DisabilityType o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize
    */
   mapDataToModel(data, userId = null) {
-    return {
-      nombre: data.name,
-      descripcion: data.description || null,
-    };
+    return DisabilityTypeMapper.toModel(data);
   }
 
   /**
-   * Mapea datos de actualización de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de actualización de dominio a formato del modelo Sequelize (para actualización)
+   * Delega la responsabilidad de mapeo a DisabilityTypeMapper
+   * 
+   * @param {DisabilityType|Object} data - Entidad DisabilityType o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
   mapDataToUpdate(data, userId = null) {
-    const updateData = {};
-
-    if (data.name !== undefined) {
-      updateData.nombre = data.name;
-    }
-    if (data.description !== undefined) {
-      updateData.descripcion = data.description || null;
-    }
-    if (data.activo !== undefined) {
-      updateData.activo = data.activo;
-    }
-
-    return updateData;
+    return DisabilityTypeMapper.toModelForUpdate(data);
   }
 
   /**

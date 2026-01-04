@@ -1,11 +1,23 @@
 import { IStudentBecaRepository } from '../../domain/interfaces/repositories/IStudentBecaRepository.js';
 import { EstudianteBeca as EstudianteBecaModel } from '../database/models/estudiante_beca.js';
-import { StudentScholarship } from '../../domain/entities/StudentScholarship.js';
 import { BaseRepository } from './BaseRepository.js';
+import { StudentScholarshipMapper } from '../mappers/StudentScholarshipMapper.js';
 
 /**
  * Implementación del repositorio de becas de estudiantes usando Sequelize
  * Utiliza el patrón Template Method heredando de BaseRepository
+ * 
+ * Responsabilidades:
+ * - Acceso a datos (consultas, persistencia)
+ * - Delegar conversión ORM ↔ Entidad a StudentScholarshipMapper
+ * 
+ * Principios SOLID:
+ * - Single Responsibility: Solo maneja acceso a datos
+ * - Dependency Inversion: Usa StudentScholarshipMapper para conversiones (depende de abstracción)
+ * 
+ * Clean Architecture:
+ * - Infrastructure Layer: Implementación concreta de IStudentBecaRepository
+ * - Usa StudentScholarshipMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
  * 
  * @implements {IStudentBecaRepository}
  * 
@@ -24,26 +36,13 @@ export class StudentScholarshipRepository extends BaseRepository {
 
   /**
    * Convierte un modelo Sequelize a entidad de dominio
-   * @param {Object} model
-   * @returns {StudentScholarship|null}
+   * Delega la responsabilidad de mapeo a StudentScholarshipMapper
+   * 
+   * @param {Object} model - Modelo Sequelize
+   * @returns {StudentScholarship|null} Entidad de dominio
    */
   toEntity(model) {
-    if (!model) return null;
-    return new StudentScholarship({
-      id: model.id,
-      studentId: model.estudianteId,
-      scholarshipId: model.becaDescuentoId,
-      managementId: model.gestionId,
-      requestDate: model.fechaSolicitud,
-      state: model.estado,
-      documentsComplete: model.documentosCompletos,
-      documentDeliveryStartDate: model.fechaInicioEntregaDocumentos,
-      documentDeliveryEndDate: model.fechaFinEntregaDocumentos,
-      observations: model.observaciones,
-      activo: model.activo,
-      createdAt: model.createdAt,
-      updatedAt: model.updatedAt,
-    });
+    return StudentScholarshipMapper.toEntity(model);
   }
 
   /**
@@ -87,66 +86,27 @@ export class StudentScholarshipRepository extends BaseRepository {
   }
 
   /**
-   * Mapea datos de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de dominio a formato del modelo Sequelize (para creación)
+   * Delega la responsabilidad de mapeo a StudentScholarshipMapper
+   * 
+   * @param {StudentScholarship|Object} data - Entidad StudentScholarship o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize
    */
   mapDataToModel(data, userId = null) {
-    return {
-      estudianteId: data.studentId || null,
-      becaDescuentoId: data.scholarshipId || null,
-      gestionId: data.managementId || null,
-      fechaSolicitud: data.requestDate,
-      estado: data.state || 'PENDIENTE',
-      documentosCompletos: data.documentsComplete !== undefined ? data.documentsComplete : false,
-      fechaInicioEntregaDocumentos: data.documentDeliveryStartDate || null,
-      fechaFinEntregaDocumentos: data.documentDeliveryEndDate || null,
-      observaciones: data.observations || null,
-    };
+    return StudentScholarshipMapper.toModel(data);
   }
 
   /**
-   * Mapea datos de actualización de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de actualización de dominio a formato del modelo Sequelize (para actualización)
+   * Delega la responsabilidad de mapeo a StudentScholarshipMapper
+   * 
+   * @param {StudentScholarship|Object} data - Entidad StudentScholarship o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
   mapDataToUpdate(data, userId = null) {
-    const updateData = {};
-
-    if (data.studentId !== undefined) {
-      updateData.estudianteId = data.studentId || null;
-    }
-    if (data.scholarshipId !== undefined) {
-      updateData.becaDescuentoId = data.scholarshipId || null;
-    }
-    if (data.managementId !== undefined) {
-      updateData.gestionId = data.managementId || null;
-    }
-    if (data.requestDate !== undefined) {
-      updateData.fechaSolicitud = data.requestDate;
-    }
-    if (data.state !== undefined) {
-      updateData.estado = data.state;
-    }
-    if (data.documentsComplete !== undefined) {
-      updateData.documentosCompletos = data.documentsComplete;
-    }
-    if (data.documentDeliveryStartDate !== undefined) {
-      updateData.fechaInicioEntregaDocumentos = data.documentDeliveryStartDate || null;
-    }
-    if (data.documentDeliveryEndDate !== undefined) {
-      updateData.fechaFinEntregaDocumentos = data.documentDeliveryEndDate || null;
-    }
-    if (data.observations !== undefined) {
-      updateData.observaciones = data.observations || null;
-    }
-    if (data.activo !== undefined) {
-      updateData.activo = data.activo;
-    }
-
-    return updateData;
+    return StudentScholarshipMapper.toModelForUpdate(data);
   }
 
   /**
@@ -159,8 +119,9 @@ export class StudentScholarshipRepository extends BaseRepository {
 
   /**
    * Método específico: Buscar becas por estudiante
-   * @param {number} estudianteId
-   * @returns {Promise<StudentScholarship[]>}
+   * 
+   * @param {number} estudianteId - ID del estudiante
+   * @returns {Promise<StudentScholarship[]>} Array de entidades StudentScholarship
    */
   async findByEstudianteId(estudianteId) {
     const models = await this.getModel().findAll({
@@ -171,13 +132,14 @@ export class StudentScholarshipRepository extends BaseRepository {
       },
       order: [['fechaSolicitud', 'DESC']],
     });
-    return models.map((model) => this.toEntity(model));
+    return StudentScholarshipMapper.toEntityList(models);
   }
 
   /**
    * Método específico: Buscar becas por gestión
-   * @param {number} gestionId
-   * @returns {Promise<StudentScholarship[]>}
+   * 
+   * @param {number} gestionId - ID de la gestión
+   * @returns {Promise<StudentScholarship[]>} Array de entidades StudentScholarship
    */
   async findByGestionId(gestionId) {
     const models = await this.getModel().findAll({
@@ -188,7 +150,7 @@ export class StudentScholarshipRepository extends BaseRepository {
       },
       order: [['fechaSolicitud', 'DESC']],
     });
-    return models.map((model) => this.toEntity(model));
+    return StudentScholarshipMapper.toEntityList(models);
   }
 }
 

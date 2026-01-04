@@ -1,12 +1,24 @@
 import { IMunicipioRepository } from '../../domain/interfaces/repositories/IMunicipioRepository.js';
 import { Municipio as MunicipioModel } from '../database/models/municipio.js';
-import { Municipality } from '../../domain/entities/Municipality.js';
 import { BaseRepository } from './BaseRepository.js';
+import { MunicipalityMapper } from '../mappers/MunicipalityMapper.js';
 import { Op } from 'sequelize';
 
 /**
  * Implementación del repositorio de municipios usando Sequelize
  * Utiliza el patrón Template Method heredando de BaseRepository
+ * 
+ * Responsabilidades:
+ * - Acceso a datos (consultas, persistencia)
+ * - Delegar conversión ORM ↔ Entidad a MunicipalityMapper
+ * 
+ * Principios SOLID:
+ * - Single Responsibility: Solo maneja acceso a datos
+ * - Dependency Inversion: Usa MunicipalityMapper para conversiones (depende de abstracción)
+ * 
+ * Clean Architecture:
+ * - Infrastructure Layer: Implementación concreta de IMunicipioRepository
+ * - Usa MunicipalityMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
  * 
  * @implements {IMunicipioRepository}
  * 
@@ -25,20 +37,13 @@ export class MunicipalityRepository extends BaseRepository {
 
   /**
    * Convierte un modelo Sequelize a entidad de dominio
-   * @param {Object} model
-   * @returns {Municipality|null}
+   * Delega la responsabilidad de mapeo a MunicipalityMapper
+   * 
+   * @param {Object} model - Modelo Sequelize
+   * @returns {Municipality|null} Entidad de dominio
    */
   toEntity(model) {
-    if (!model) return null;
-    return new Municipality({
-      id: model.id,
-      provinceId: model.provinciaId,
-      name: model.nombre,
-      code: model.codigo,
-      activo: model.activo,
-      createdAt: model.createdAt,
-      updatedAt: model.updatedAt,
-    });
+    return MunicipalityMapper.toEntity(model);
   }
 
   /**
@@ -73,42 +78,27 @@ export class MunicipalityRepository extends BaseRepository {
   }
 
   /**
-   * Mapea datos de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de dominio a formato del modelo Sequelize (para creación)
+   * Delega la responsabilidad de mapeo a MunicipalityMapper
+   * 
+   * @param {Municipality|Object} data - Entidad Municipality o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize
    */
   mapDataToModel(data, userId = null) {
-    return {
-      provinciaId: data.provinceId,
-      nombre: data.name,
-      codigo: data.code ? data.code.toUpperCase() : null,
-    };
+    return MunicipalityMapper.toModel(data);
   }
 
   /**
-   * Mapea datos de actualización de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de actualización de dominio a formato del modelo Sequelize (para actualización)
+   * Delega la responsabilidad de mapeo a MunicipalityMapper
+   * 
+   * @param {Municipality|Object} data - Entidad Municipality o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
   mapDataToUpdate(data, userId = null) {
-    const updateData = {};
-
-    if (data.provinceId !== undefined) {
-      updateData.provinciaId = data.provinceId;
-    }
-    if (data.name !== undefined) {
-      updateData.nombre = data.name;
-    }
-    if (data.code !== undefined) {
-      updateData.codigo = data.code ? data.code.toUpperCase() : null;
-    }
-    if (data.activo !== undefined) {
-      updateData.activo = data.activo;
-    }
-
-    return updateData;
+    return MunicipalityMapper.toModelForUpdate(data);
   }
 
   /**
@@ -121,8 +111,9 @@ export class MunicipalityRepository extends BaseRepository {
 
   /**
    * Método específico: Buscar municipios por provincia
-   * @param {number} provinciaId
-   * @returns {Promise<Municipality[]>}
+   * 
+   * @param {number} provinciaId - ID de la provincia
+   * @returns {Promise<Municipality[]>} Array de entidades Municipality
    */
   async findByProvinciaId(provinciaId) {
     const models = await this.getModel().findAll({
@@ -133,13 +124,14 @@ export class MunicipalityRepository extends BaseRepository {
       },
       order: [['nombre', 'ASC']],
     });
-    return models.map((model) => this.toEntity(model));
+    return MunicipalityMapper.toEntityList(models);
   }
 
   /**
    * Método específico: Buscar municipio por código
-   * @param {string} codigo
-   * @returns {Promise<Municipality|null>}
+   * 
+   * @param {string} codigo - Código del municipio
+   * @returns {Promise<Municipality|null>} Entidad Municipality o null si no se encuentra
    */
   async findByCodigo(codigo) {
     const model = await this.getModel().findOne({
@@ -181,6 +173,6 @@ export class MunicipalityRepository extends BaseRepository {
       limit: 50,
     });
 
-    return models.map((model) => this.toEntity(model));
+    return MunicipalityMapper.toEntityList(models);
   }
 }

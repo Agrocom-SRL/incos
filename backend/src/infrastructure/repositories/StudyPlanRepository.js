@@ -1,11 +1,23 @@
 import { IPlanEstudiosRepository } from '../../domain/interfaces/repositories/IPlanEstudiosRepository.js';
 import { PlanEstudios as PlanEstudiosModel } from '../database/models/plan_estudios.js';
-import { StudyPlan } from '../../domain/entities/StudyPlan.js';
 import { BaseRepository } from './BaseRepository.js';
+import { StudyPlanMapper } from '../mappers/StudyPlanMapper.js';
 
 /**
  * Implementación del repositorio de plan de estudios usando Sequelize
  * Utiliza el patrón Template Method heredando de BaseRepository
+ * 
+ * Responsabilidades:
+ * - Acceso a datos (consultas, persistencia)
+ * - Delegar conversión ORM ↔ Entidad a StudyPlanMapper
+ * 
+ * Principios SOLID:
+ * - Single Responsibility: Solo maneja acceso a datos
+ * - Dependency Inversion: Usa StudyPlanMapper para conversiones (depende de abstracción)
+ * 
+ * Clean Architecture:
+ * - Infrastructure Layer: Implementación concreta de IPlanEstudiosRepository
+ * - Usa StudyPlanMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
  * 
  * @implements {IPlanEstudiosRepository}
  * 
@@ -24,21 +36,13 @@ export class StudyPlanRepository extends BaseRepository {
 
   /**
    * Convierte un modelo Sequelize a entidad de dominio
-   * @param {Object} model
-   * @returns {StudyPlan|null}
+   * Delega la responsabilidad de mapeo a StudyPlanMapper
+   * 
+   * @param {Object} model - Modelo Sequelize
+   * @returns {StudyPlan|null} Entidad de dominio
    */
   toEntity(model) {
-    if (!model) return null;
-    return new StudyPlan({
-      id: model.id,
-      careerId: model.carreraId,
-      periodId: model.periodoId,
-      subjectId: model.materiaId,
-      displayOrder: model.ordenVisualizacion,
-      activo: model.activo,
-      createdAt: model.createdAt,
-      updatedAt: model.updatedAt,
-    });
+    return StudyPlanMapper.toEntity(model);
   }
 
   /**
@@ -79,46 +83,27 @@ export class StudyPlanRepository extends BaseRepository {
   }
 
   /**
-   * Mapea datos de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de dominio a formato del modelo Sequelize (para creación)
+   * Delega la responsabilidad de mapeo a StudyPlanMapper
+   * 
+   * @param {StudyPlan|Object} data - Entidad StudyPlan o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize
    */
   mapDataToModel(data, userId = null) {
-    return {
-      carreraId: data.careerId || null,
-      periodoId: data.periodId || null,
-      materiaId: data.subjectId || null,
-      ordenVisualizacion: data.displayOrder !== undefined ? data.displayOrder : 1,
-    };
+    return StudyPlanMapper.toModel(data);
   }
 
   /**
-   * Mapea datos de actualización de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de actualización de dominio a formato del modelo Sequelize (para actualización)
+   * Delega la responsabilidad de mapeo a StudyPlanMapper
+   * 
+   * @param {StudyPlan|Object} data - Entidad StudyPlan o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
   mapDataToUpdate(data, userId = null) {
-    const updateData = {};
-
-    if (data.careerId !== undefined) {
-      updateData.carreraId = data.careerId || null;
-    }
-    if (data.periodId !== undefined) {
-      updateData.periodoId = data.periodId || null;
-    }
-    if (data.subjectId !== undefined) {
-      updateData.materiaId = data.subjectId || null;
-    }
-    if (data.displayOrder !== undefined) {
-      updateData.ordenVisualizacion = data.displayOrder;
-    }
-    if (data.activo !== undefined) {
-      updateData.activo = data.activo;
-    }
-
-    return updateData;
+    return StudyPlanMapper.toModelForUpdate(data);
   }
 
   /**
@@ -131,8 +116,9 @@ export class StudyPlanRepository extends BaseRepository {
 
   /**
    * Método específico: Buscar plan de estudios por carrera
-   * @param {number} carreraId
-   * @returns {Promise<StudyPlan[]>}
+   * 
+   * @param {number} carreraId - ID de la carrera
+   * @returns {Promise<StudyPlan[]>} Array de entidades StudyPlan
    */
   async findByCarreraId(carreraId) {
     const models = await this.getModel().findAll({
@@ -143,13 +129,14 @@ export class StudyPlanRepository extends BaseRepository {
       },
       order: [['ordenVisualizacion', 'ASC']],
     });
-    return models.map((model) => this.toEntity(model));
+    return StudyPlanMapper.toEntityList(models);
   }
 
   /**
    * Método específico: Buscar plan de estudios por periodo
-   * @param {number} periodoId
-   * @returns {Promise<StudyPlan[]>}
+   * 
+   * @param {number} periodoId - ID del periodo
+   * @returns {Promise<StudyPlan[]>} Array de entidades StudyPlan
    */
   async findByPeriodoId(periodoId) {
     const models = await this.getModel().findAll({
@@ -160,7 +147,7 @@ export class StudyPlanRepository extends BaseRepository {
       },
       order: [['ordenVisualizacion', 'ASC']],
     });
-    return models.map((model) => this.toEntity(model));
+    return StudyPlanMapper.toEntityList(models);
   }
 }
 

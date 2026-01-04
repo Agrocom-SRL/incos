@@ -1,11 +1,23 @@
 import { IBecaDescuentoRepository } from '../../domain/interfaces/repositories/IBecaDescuentoRepository.js';
 import { BecaDescuento as BecaDescuentoModel } from '../database/models/beca_descuento.js';
-import { Scholarship } from '../../domain/entities/Scholarship.js';
 import { BaseRepository } from './BaseRepository.js';
+import { ScholarshipMapper } from '../mappers/ScholarshipMapper.js';
 
 /**
  * Implementación del repositorio de becas y descuentos usando Sequelize
  * Utiliza el patrón Template Method heredando de BaseRepository
+ * 
+ * Responsabilidades:
+ * - Acceso a datos (consultas, persistencia)
+ * - Delegar conversión ORM ↔ Entidad a ScholarshipMapper
+ * 
+ * Principios SOLID:
+ * - Single Responsibility: Solo maneja acceso a datos
+ * - Dependency Inversion: Usa ScholarshipMapper para conversiones (depende de abstracción)
+ * 
+ * Clean Architecture:
+ * - Infrastructure Layer: Implementación concreta de IBecaDescuentoRepository
+ * - Usa ScholarshipMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
  * 
  * @implements {IBecaDescuentoRepository}
  * 
@@ -24,26 +36,13 @@ export class ScholarshipRepository extends BaseRepository {
 
   /**
    * Convierte un modelo Sequelize a entidad de dominio
-   * @param {Object} model
-   * @returns {Scholarship|null}
+   * Delega la responsabilidad de mapeo a ScholarshipMapper
+   * 
+   * @param {Object} model - Modelo Sequelize
+   * @returns {Scholarship|null} Entidad de dominio
    */
   toEntity(model) {
-    if (!model) return null;
-    return new Scholarship({
-      id: model.id,
-      name: model.nombre,
-      code: model.codigo,
-      percentage: model.porcentaje ? parseFloat(model.porcentaje) : null,
-      description: model.descripcion,
-      requiresDocumentation: model.requiereDocumentacion,
-      requiresRectorApproval: model.requiereAprobacionRector,
-      isAutomatic: model.esAutomatica,
-      automaticType: model.tipoAutomatica,
-      minimumAverage: model.promedioMinimo ? parseFloat(model.promedioMinimo) : null,
-      activo: model.activo,
-      createdAt: model.createdAt,
-      updatedAt: model.updatedAt,
-    });
+    return ScholarshipMapper.toEntity(model);
   }
 
   /**
@@ -81,66 +80,27 @@ export class ScholarshipRepository extends BaseRepository {
   }
 
   /**
-   * Mapea datos de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de dominio a formato del modelo Sequelize (para creación)
+   * Delega la responsabilidad de mapeo a ScholarshipMapper
+   * 
+   * @param {Scholarship|Object} data - Entidad Scholarship o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize
    */
   mapDataToModel(data, userId = null) {
-    return {
-      nombre: data.name,
-      codigo: data.code || null,
-      porcentaje: data.percentage,
-      descripcion: data.description || null,
-      requiereDocumentacion: data.requiresDocumentation !== undefined ? data.requiresDocumentation : true,
-      requiereAprobacionRector: data.requiresRectorApproval !== undefined ? data.requiresRectorApproval : false,
-      esAutomatica: data.isAutomatic !== undefined ? data.isAutomatic : false,
-      tipoAutomatica: data.automaticType || 'MANUAL',
-      promedioMinimo: data.minimumAverage || null,
-    };
+    return ScholarshipMapper.toModel(data);
   }
 
   /**
-   * Mapea datos de actualización de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de actualización de dominio a formato del modelo Sequelize (para actualización)
+   * Delega la responsabilidad de mapeo a ScholarshipMapper
+   * 
+   * @param {Scholarship|Object} data - Entidad Scholarship o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
   mapDataToUpdate(data, userId = null) {
-    const updateData = {};
-
-    if (data.name !== undefined) {
-      updateData.nombre = data.name;
-    }
-    if (data.code !== undefined) {
-      updateData.codigo = data.code || null;
-    }
-    if (data.percentage !== undefined) {
-      updateData.porcentaje = data.percentage;
-    }
-    if (data.description !== undefined) {
-      updateData.descripcion = data.description || null;
-    }
-    if (data.requiresDocumentation !== undefined) {
-      updateData.requiereDocumentacion = data.requiresDocumentation;
-    }
-    if (data.requiresRectorApproval !== undefined) {
-      updateData.requiereAprobacionRector = data.requiresRectorApproval;
-    }
-    if (data.isAutomatic !== undefined) {
-      updateData.esAutomatica = data.isAutomatic;
-    }
-    if (data.automaticType !== undefined) {
-      updateData.tipoAutomatica = data.automaticType;
-    }
-    if (data.minimumAverage !== undefined) {
-      updateData.promedioMinimo = data.minimumAverage || null;
-    }
-    if (data.activo !== undefined) {
-      updateData.activo = data.activo;
-    }
-
-    return updateData;
+    return ScholarshipMapper.toModelForUpdate(data);
   }
 
   /**
@@ -153,8 +113,9 @@ export class ScholarshipRepository extends BaseRepository {
 
   /**
    * Método específico: Buscar beca por código
-   * @param {string} codigo
-   * @returns {Promise<Scholarship|null>}
+   * 
+   * @param {string} codigo - Código de la beca
+   * @returns {Promise<Scholarship|null>} Entidad Scholarship o null si no se encuentra
    */
   async findByCodigo(codigo) {
     const model = await this.getModel().findOne({
@@ -169,8 +130,9 @@ export class ScholarshipRepository extends BaseRepository {
 
   /**
    * Método específico: Buscar beca por porcentaje
-   * @param {number} porcentaje
-   * @returns {Promise<Scholarship|null>}
+   * 
+   * @param {number} porcentaje - Porcentaje de la beca
+   * @returns {Promise<Scholarship|null>} Entidad Scholarship o null si no se encuentra
    */
   async findByPorcentaje(porcentaje) {
     const model = await this.getModel().findOne({
@@ -185,7 +147,8 @@ export class ScholarshipRepository extends BaseRepository {
 
   /**
    * Método específico: Buscar becas automáticas
-   * @returns {Promise<Scholarship[]>}
+   * 
+   * @returns {Promise<Scholarship[]>} Array de entidades Scholarship
    */
   async findAutomaticas() {
     const models = await this.getModel().findAll({
@@ -196,7 +159,7 @@ export class ScholarshipRepository extends BaseRepository {
       },
       order: [['porcentaje', 'ASC']],
     });
-    return models.map((model) => this.toEntity(model));
+    return ScholarshipMapper.toEntityList(models);
   }
 }
 

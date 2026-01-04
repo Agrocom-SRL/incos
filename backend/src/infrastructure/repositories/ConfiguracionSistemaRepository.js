@@ -1,10 +1,23 @@
 import { ConfiguracionSistema as ConfiguracionSistemaModel } from '../database/models/configuracion_sistema.js';
 import { BaseRepository } from './BaseRepository.js';
+import { SystemConfigurationMapper } from '../mappers/SystemConfigurationMapper.js';
 import { Op } from 'sequelize';
 
 /**
  * Repositorio de configuración del sistema
  * Utiliza el patrón Template Method heredando de BaseRepository
+ * 
+ * Responsabilidades:
+ * - Acceso a datos (consultas, persistencia)
+ * - Delegar conversión ORM ↔ Entidad a SystemConfigurationMapper
+ * 
+ * Principios SOLID:
+ * - Single Responsibility: Solo maneja acceso a datos
+ * - Dependency Inversion: Usa SystemConfigurationMapper para conversiones (depende de abstracción)
+ * 
+ * Clean Architecture:
+ * - Infrastructure Layer: Implementación concreta
+ * - Usa SystemConfigurationMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
  */
 export class ConfiguracionSistemaRepository extends BaseRepository {
   /**
@@ -16,23 +29,14 @@ export class ConfiguracionSistemaRepository extends BaseRepository {
   }
 
   /**
-   * Convierte un modelo Sequelize a objeto plano
-   * @param {Object} model
-   * @returns {Object|null}
+   * Convierte un modelo Sequelize a entidad de dominio
+   * Delega la responsabilidad de mapeo a SystemConfigurationMapper
+   * 
+   * @param {Object} model - Modelo Sequelize
+   * @returns {SystemConfiguration|null} Entidad de dominio
    */
   toEntity(model) {
-    if (!model) return null;
-    return {
-      id: model.id,
-      clave: model.clave,
-      valor: model.valor,
-      tipo: model.tipo,
-      descripcion: model.descripcion,
-      categoria: model.categoria,
-      activo: model.activo,
-      createdAt: model.createdAt,
-      updatedAt: model.updatedAt,
-    };
+    return SystemConfigurationMapper.toEntity(model);
   }
 
   /**
@@ -52,51 +56,27 @@ export class ConfiguracionSistemaRepository extends BaseRepository {
   }
 
   /**
-   * Mapea datos a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de dominio a formato del modelo Sequelize (para creación)
+   * Delega la responsabilidad de mapeo a SystemConfigurationMapper
+   * 
+   * @param {SystemConfiguration|Object} data - Entidad SystemConfiguration o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize
    */
   mapDataToModel(data, userId = null) {
-    return {
-      clave: data.clave,
-      valor: data.valor,
-      tipo: data.tipo || 'STRING',
-      descripcion: data.descripcion,
-      categoria: data.categoria,
-      created_by: userId,
-    };
+    return SystemConfigurationMapper.toModel(data);
   }
 
   /**
-   * Mapea datos de actualización
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de actualización de dominio a formato del modelo Sequelize (para actualización)
+   * Delega la responsabilidad de mapeo a SystemConfigurationMapper
+   * 
+   * @param {SystemConfiguration|Object} data - Entidad SystemConfiguration o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
   mapDataToUpdate(data, userId = null) {
-    const updateData = {};
-
-    if (data.valor !== undefined) {
-      updateData.valor = data.valor;
-    }
-    if (data.tipo !== undefined) {
-      updateData.tipo = data.tipo;
-    }
-    if (data.descripcion !== undefined) {
-      updateData.descripcion = data.descripcion;
-    }
-    if (data.categoria !== undefined) {
-      updateData.categoria = data.categoria;
-    }
-    if (data.activo !== undefined) {
-      updateData.activo = data.activo;
-    }
-    if (userId) {
-      updateData.updated_by = userId;
-    }
-
-    return updateData;
+    return SystemConfigurationMapper.toModelForUpdate(data);
   }
 
   /**
@@ -109,9 +89,10 @@ export class ConfiguracionSistemaRepository extends BaseRepository {
 
   /**
    * Obtiene una configuración por su clave
+   * 
    * @param {string} clave - Clave de la configuración
    * @param {Object} options - Opciones opcionales
-   * @returns {Promise<Object|null>}
+   * @returns {Promise<SystemConfiguration|null>} Entidad SystemConfiguration o null
    */
   async findByClave(clave, options = {}) {
     const Model = this.getModel();
@@ -124,14 +105,15 @@ export class ConfiguracionSistemaRepository extends BaseRepository {
     }
 
     const model = await Model.findOne({ where });
-    return this.toEntity(model);
+    return SystemConfigurationMapper.toEntity(model);
   }
 
   /**
    * Obtiene todas las configuraciones de una categoría
+   * 
    * @param {string} categoria - Categoría de las configuraciones
    * @param {Object} options - Opciones opcionales
-   * @returns {Promise<Object[]>}
+   * @returns {Promise<SystemConfiguration[]>} Array de entidades SystemConfiguration
    */
   async findByCategoria(categoria, options = {}) {
     const Model = this.getModel();
@@ -148,18 +130,19 @@ export class ConfiguracionSistemaRepository extends BaseRepository {
       order: this.getDefaultSort(),
     });
 
-    return models.map((model) => this.toEntity(model));
+    return SystemConfigurationMapper.toEntityList(models);
   }
 
   /**
    * Obtiene o crea una configuración por clave
+   * 
    * @param {string} clave - Clave de la configuración
    * @param {string} valor - Valor por defecto si no existe
    * @param {string} tipo - Tipo de dato
    * @param {string} descripcion - Descripción
    * @param {string} categoria - Categoría
    * @param {number} userId - ID del usuario
-   * @returns {Promise<Object>}
+   * @returns {Promise<SystemConfiguration>} Entidad SystemConfiguration
    */
   async findOrCreate(clave, valor, tipo = 'STRING', descripcion = null, categoria = null, userId = null) {
     const existing = await this.findByClave(clave, { includeInactive: true });
@@ -169,11 +152,11 @@ export class ConfiguracionSistemaRepository extends BaseRepository {
     }
 
     const data = {
-      clave,
-      valor,
-      tipo,
-      descripcion,
-      categoria,
+      key: clave,
+      value: valor,
+      type: tipo,
+      description: descripcion,
+      category: categoria,
     };
 
     return await this.create(data, userId);
@@ -181,14 +164,13 @@ export class ConfiguracionSistemaRepository extends BaseRepository {
 
   /**
    * Incrementa un valor numérico de configuración
+   * 
    * @param {string} clave - Clave de la configuración
    * @param {number} incremento - Cantidad a incrementar (default: 1)
    * @param {number} userId - ID del usuario
-   * @returns {Promise<Object>}
+   * @returns {Promise<SystemConfiguration>} Entidad SystemConfiguration actualizada
    */
   async incrementValue(clave, incremento = 1, userId = null) {
-    const Model = this.getModel();
-    
     // Obtener configuración actual
     const config = await this.findByClave(clave, { includeInactive: true });
     
@@ -196,12 +178,12 @@ export class ConfiguracionSistemaRepository extends BaseRepository {
       throw new Error(`Configuración con clave '${clave}' no encontrada`);
     }
 
-    if (config.tipo !== 'NUMBER') {
+    if (config.type !== 'NUMBER') {
       throw new Error(`La configuración '${clave}' no es de tipo NUMBER`);
     }
 
-    const nuevoValor = (parseInt(config.valor, 10) || 0) + incremento;
+    const nuevoValor = (parseInt(config.value, 10) || 0) + incremento;
     
-    return await this.update(config.id, { valor: nuevoValor.toString() }, userId);
+    return await this.update(config.id, { value: nuevoValor.toString() }, userId);
   }
 }

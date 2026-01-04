@@ -1,0 +1,108 @@
+import { Province } from '../../domain/entities/Province.js';
+import { BaseMapper } from './BaseMapper.js';
+
+/**
+ * Mapper: ProvinceMapper
+ * 
+ * Responsabilidad única: Conversión entre Modelo ORM (Sequelize) ↔ Entidad de Dominio (Province)
+ * 
+ * Patrón: Usa BaseMapper para campos comunes, solo maneja campos específicos de Province
+ * 
+ * Ubicación: Infrastructure Layer (es un detalle de implementación específico de Sequelize)
+ * 
+ * Principios SOLID aplicados:
+ * - Single Responsibility: Solo se encarga de mapear campos específicos de Province
+ * - Open/Closed: Extiende funcionalidad de BaseMapper sin modificarlo
+ * - Dependency Inversion: Depende de la entidad de dominio, no de implementaciones concretas
+ * 
+ * Clean Architecture:
+ * - Domain Layer: Province (entidad pura)
+ * - Infrastructure Layer: BaseMapper (campos comunes) + ProvinceMapper (campos específicos)
+ * - Infrastructure Layer: ProvinceRepository (usa el mapper para conversiones)
+ */
+export class ProvinceMapper {
+  /**
+   * Convierte un modelo Sequelize a entidad de dominio
+   * Usa BaseMapper para campos comunes y solo mapea campos específicos de Province
+   * 
+   * @param {Object|null} model - Modelo Sequelize de Provincia
+   * @returns {Province|null} Entidad de dominio Province
+   */
+  static toEntity(model) {
+    if (!model) return null;
+
+    // Campos específicos de Province (campos del dominio)
+    const specificFields = {
+      departmentId: model.departamentoId,
+      name: model.nombre,
+      code: model.codigo,
+    };
+
+    // Combina campos base (id, active, timestamps, audit) con campos específicos
+    const entityData = BaseMapper.combineBaseAndSpecificFields(model, specificFields);
+    
+    return new Province(entityData);
+  }
+
+  /**
+   * Convierte una entidad de dominio a formato del modelo Sequelize (para creación)
+   * 
+   * @param {Province|Object} entity - Entidad Province o objeto con datos de dominio
+   * @returns {Object} Objeto con formato del modelo Sequelize
+   */
+  static toModel(entity) {
+    // Acepta tanto entidad Province como objeto plano
+    const data = entity instanceof Province ? entity.toPlainObject() : entity;
+
+    // NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
+    // BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
+    return {
+      departamentoId: data.departmentId,
+      nombre: data.name,
+      codigo: data.code ? data.code.toUpperCase() : null,
+    };
+  }
+
+  /**
+   * Convierte una entidad de dominio a formato del modelo Sequelize (para actualización)
+   * Solo incluye los campos que están definidos (no undefined)
+   * Usa BaseMapper para campos comunes y solo mapea campos específicos de Province
+   * 
+   * @param {Province|Object} entity - Entidad Province o objeto con datos de dominio
+   * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
+   */
+  static toModelForUpdate(entity) {
+    // Acepta tanto entidad Province como objeto plano
+    const data = entity instanceof Province ? entity.toPlainObject() : entity;
+    const updateData = {};
+
+    // Campos específicos de Province
+    if (data.departmentId !== undefined) {
+      updateData.departamentoId = data.departmentId;
+    }
+    if (data.name !== undefined) {
+      updateData.nombre = data.name;
+    }
+    if (data.code !== undefined) {
+      updateData.codigo = data.code ? data.code.toUpperCase() : null;
+    }
+
+    // Campos base (active/activo)
+    const baseFields = BaseMapper.baseFieldsToModelForUpdate(entity);
+    Object.assign(updateData, baseFields);
+
+    return updateData;
+  }
+
+  /**
+   * Convierte un array de modelos Sequelize a array de entidades de dominio
+   * 
+   * @param {Array} models - Array de modelos Sequelize
+   * @returns {Province[]} Array de entidades Province
+   */
+  static toEntityList(models) {
+    if (!models || !Array.isArray(models)) return [];
+    return models.map((model) => this.toEntity(model)).filter((entity) => entity !== null);
+  }
+}
+

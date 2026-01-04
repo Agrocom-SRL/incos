@@ -1,12 +1,24 @@
 import { IStudentRepository } from '../../domain/interfaces/repositories/IStudentRepository.js';
 import { Estudiante as EstudianteModel } from '../database/models/estudiante.js';
-import { Student } from '../../domain/entities/Student.js';
 import { BaseRepository } from './BaseRepository.js';
+import { StudentMapper } from '../mappers/StudentMapper.js';
 import { Op } from 'sequelize';
 
 /**
  * Implementación del repositorio de estudiantes usando Sequelize
  * Utiliza el patrón Template Method heredando de BaseRepository
+ * 
+ * Responsabilidades:
+ * - Acceso a datos (consultas, persistencia)
+ * - Delegar conversión ORM ↔ Entidad a StudentMapper
+ * 
+ * Principios SOLID:
+ * - Single Responsibility: Solo maneja acceso a datos
+ * - Dependency Inversion: Usa StudentMapper para conversiones (depende de abstracción)
+ * 
+ * Clean Architecture:
+ * - Infrastructure Layer: Implementación concreta de IStudentRepository
+ * - Usa StudentMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
  * 
  * @implements {IStudentRepository}
  * 
@@ -25,46 +37,13 @@ export class StudentRepository extends BaseRepository {
 
   /**
    * Convierte un modelo Sequelize a entidad de dominio
-   * @param {Object} model
-   * @returns {Student|null}
+   * Delega la responsabilidad de mapeo a StudentMapper
+   * 
+   * @param {Object} model - Modelo Sequelize
+   * @returns {Student|null} Entidad de dominio
    */
   toEntity(model) {
-    if (!model) return null;
-    return new Student({
-      id: model.id,
-      userId: model.usuarioId,
-      studentCode: model.codigoEstudiante,
-      ci: model.ci,
-      expedition: model.expedicion,
-      firstName: model.nombres,
-      lastName: model.apellidoPaterno,
-      motherLastName: model.apellidoMaterno,
-      birthDate: model.fechaNacimiento,
-      gender: model.genero,
-      civilStatusId: model.estadoCivilId,
-      nationality: model.nacionalidad,
-      birthMunicipalityId: model.municipioNacimientoId,
-      birthCity: model.ciudadNacimiento,
-      nativeLanguageId: model.idiomaNatalId,
-      bloodType: model.tipoSangre,
-      hasDisability: model.tieneDiscapacidad,
-      disabilityTypeId: model.tipoDiscapacidadId,
-      // TODO: Descomentar cuando se confirme la estructura de la base de datos
-      // disabilityDegree: model.gradoInvalidez,
-      // disabilityDetails: model.detallesDiscapacidad,
-      disabilityDegree: null, // Temporalmente null hasta confirmar estructura
-      disabilityDetails: null, // Temporalmente null hasta confirmar estructura
-      personalEmail: model.emailPersonal,
-      mobilePhone: model.celular,
-      landlinePhone: model.telefonoFijo,
-      address: model.direccion,
-      residenceMunicipalityId: model.municipioResidenciaId,
-      zone: model.zona,
-      observations: model.observaciones,
-      activo: model.activo,
-      createdAt: model.createdAt,
-      updatedAt: model.updatedAt,
-    });
+    return StudentMapper.toEntity(model);
   }
 
   /**
@@ -106,141 +85,27 @@ export class StudentRepository extends BaseRepository {
   }
 
   /**
-   * Mapea datos de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de dominio a formato del modelo Sequelize (para creación)
+   * Delega la responsabilidad de mapeo a StudentMapper
+   * 
+   * @param {Student|Object} data - Entidad Student o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize
    */
   mapDataToModel(data, userId = null) {
-    return {
-      usuarioId: data.userId || null,
-      codigoEstudiante: data.studentCode,
-      ci: data.ci,
-      expedicion: data.expedition ? data.expedition.toUpperCase() : null,
-      nombres: data.firstName,
-      apellidoPaterno: data.lastName,
-      apellidoMaterno: data.motherLastName || null,
-      fechaNacimiento: data.birthDate,
-      genero: data.gender,
-      estadoCivilId: data.civilStatusId || null,
-      nacionalidad: data.nationality || 'Boliviana',
-      municipioNacimientoId: data.birthMunicipalityId || null,
-      ciudadNacimiento: data.birthCity || null,
-      idiomaNatalId: data.nativeLanguageId || null,
-      tipoSangre: data.bloodType || null,
-      tieneDiscapacidad: data.hasDisability !== undefined ? data.hasDisability : false,
-      tipoDiscapacidadId: data.disabilityTypeId || null,
-      // TODO: Descomentar cuando se confirme la estructura de la base de datos
-      // gradoInvalidez: data.disabilityDegree || null,
-      // detallesDiscapacidad: data.disabilityDetails || null,
-      emailPersonal: data.personalEmail ? data.personalEmail.toLowerCase() : null,
-      celular: data.mobilePhone,
-      telefonoFijo: data.landlinePhone || null,
-      direccion: data.address || null,
-      municipioResidenciaId: data.residenceMunicipalityId || null,
-      zona: data.zone || null,
-      observaciones: data.observations || null,
-    };
+    return StudentMapper.toModel(data);
   }
 
   /**
-   * Mapea datos de actualización de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de actualización de dominio a formato del modelo Sequelize (para actualización)
+   * Delega la responsabilidad de mapeo a StudentMapper
+   * 
+   * @param {Student|Object} data - Entidad Student o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
   mapDataToUpdate(data, userId = null) {
-    const updateData = {};
-
-    // IMPORTANTE: Incluir todos los campos que vienen en data, incluso si son null
-    // Esto permite actualizar campos a null (limpiarlos)
-    if (data.userId !== undefined) {
-      updateData.usuarioId = data.userId || null;
-    }
-    if (data.studentCode !== undefined) {
-      updateData.codigoEstudiante = data.studentCode;
-    }
-    if (data.ci !== undefined) {
-      // Permitir null para limpiar CI (aunque normalmente no debería ser null)
-      updateData.ci = data.ci;
-    }
-    if (data.expedition !== undefined) {
-      updateData.expedicion = data.expedition ? data.expedition.toUpperCase() : null;
-    }
-    if (data.firstName !== undefined) {
-      // Permitir null para limpiar nombre (aunque normalmente no debería ser null)
-      updateData.nombres = data.firstName;
-    }
-    if (data.lastName !== undefined) {
-      // Permitir null para limpiar apellido (aunque normalmente no debería ser null)
-      updateData.apellidoPaterno = data.lastName;
-    }
-    if (data.motherLastName !== undefined) {
-      updateData.apellidoMaterno = data.motherLastName || null;
-    }
-    if (data.birthDate !== undefined) {
-      updateData.fechaNacimiento = data.birthDate;
-    }
-    if (data.gender !== undefined) {
-      updateData.genero = data.gender;
-    }
-    if (data.civilStatusId !== undefined) {
-      updateData.estadoCivilId = data.civilStatusId || null;
-    }
-    if (data.nationality !== undefined) {
-      updateData.nacionalidad = data.nationality;
-    }
-    if (data.birthMunicipalityId !== undefined) {
-      updateData.municipioNacimientoId = data.birthMunicipalityId || null;
-    }
-    if (data.birthCity !== undefined) {
-      updateData.ciudadNacimiento = data.birthCity || null;
-    }
-    if (data.nativeLanguageId !== undefined) {
-      updateData.idiomaNatalId = data.nativeLanguageId || null;
-    }
-    if (data.bloodType !== undefined) {
-      updateData.tipoSangre = data.bloodType || null;
-    }
-    if (data.hasDisability !== undefined) {
-      updateData.tieneDiscapacidad = data.hasDisability;
-    }
-    if (data.disabilityTypeId !== undefined) {
-      updateData.tipoDiscapacidadId = data.disabilityTypeId || null;
-    }
-    // TODO: Descomentar cuando se confirme la estructura de la base de datos
-    // if (data.disabilityDegree !== undefined) {
-    //   updateData.gradoInvalidez = data.disabilityDegree || null;
-    // }
-    // if (data.disabilityDetails !== undefined) {
-    //   updateData.detallesDiscapacidad = data.disabilityDetails || null;
-    // }
-    if (data.personalEmail !== undefined) {
-      updateData.emailPersonal = data.personalEmail ? data.personalEmail.toLowerCase() : null;
-    }
-    if (data.mobilePhone !== undefined) {
-      updateData.celular = data.mobilePhone;
-    }
-    if (data.landlinePhone !== undefined) {
-      updateData.telefonoFijo = data.landlinePhone || null;
-    }
-    if (data.address !== undefined) {
-      updateData.direccion = data.address || null;
-    }
-    if (data.residenceMunicipalityId !== undefined) {
-      updateData.municipioResidenciaId = data.residenceMunicipalityId || null;
-    }
-    if (data.zone !== undefined) {
-      updateData.zona = data.zone || null;
-    }
-    if (data.observations !== undefined) {
-      updateData.observaciones = data.observations || null;
-    }
-    if (data.activo !== undefined) {
-      updateData.activo = data.activo;
-    }
-
-    return updateData;
+    return StudentMapper.toModelForUpdate(data);
   }
 
   /**
@@ -253,9 +118,10 @@ export class StudentRepository extends BaseRepository {
 
   /**
    * Método específico: Buscar estudiante por CI y expedición
-   * @param {string} ci
-   * @param {string} expedicion
-   * @returns {Promise<Student|null>}
+   * 
+   * @param {string} ci - Cédula de identidad
+   * @param {string} expedicion - Expedición del CI
+   * @returns {Promise<Student|null>} Entidad Student o null
    */
   async findByCI(ci, expedicion) {
     const model = await this.getModel().findOne({
@@ -266,13 +132,14 @@ export class StudentRepository extends BaseRepository {
         // paranoid: true automáticamente excluye deletedAt !== null
       },
     });
-    return this.toEntity(model);
+    return StudentMapper.toEntity(model);
   }
 
   /**
    * Método específico: Buscar estudiante por código
-   * @param {string} codigoEstudiante
-   * @returns {Promise<Student|null>}
+   * 
+   * @param {string} codigoEstudiante - Código del estudiante
+   * @returns {Promise<Student|null>} Entidad Student o null
    */
   async findByCodigo(codigoEstudiante) {
     const model = await this.getModel().findOne({
@@ -282,13 +149,14 @@ export class StudentRepository extends BaseRepository {
         // paranoid: true automáticamente excluye deletedAt !== null
       },
     });
-    return this.toEntity(model);
+    return StudentMapper.toEntity(model);
   }
 
   /**
    * Método específico: Buscar estudiante por email
-   * @param {string} email
-   * @returns {Promise<Student|null>}
+   * 
+   * @param {string} email - Email personal del estudiante
+   * @returns {Promise<Student|null>} Entidad Student o null
    */
   async findByEmail(email) {
     const model = await this.getModel().findOne({
@@ -298,7 +166,7 @@ export class StudentRepository extends BaseRepository {
         // paranoid: true automáticamente excluye deletedAt !== null
       },
     });
-    return this.toEntity(model);
+    return StudentMapper.toEntity(model);
   }
 
   /**

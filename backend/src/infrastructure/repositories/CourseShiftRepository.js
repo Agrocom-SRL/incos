@@ -1,11 +1,23 @@
 import { ITurnoCursoRepository } from '../../domain/interfaces/repositories/ITurnoCursoRepository.js';
 import { TurnoCurso as TurnoCursoModel } from '../database/models/turno_curso.js';
-import { CourseShift } from '../../domain/entities/CourseShift.js';
 import { BaseRepository } from './BaseRepository.js';
+import { CourseShiftMapper } from '../mappers/CourseShiftMapper.js';
 
 /**
  * Implementación del repositorio de turnos de cursos usando Sequelize
  * Utiliza el patrón Template Method heredando de BaseRepository
+ * 
+ * Responsabilidades:
+ * - Acceso a datos (consultas, persistencia)
+ * - Delegar conversión ORM ↔ Entidad a CourseShiftMapper
+ * 
+ * Principios SOLID:
+ * - Single Responsibility: Solo maneja acceso a datos
+ * - Dependency Inversion: Usa CourseShiftMapper para conversiones (depende de abstracción)
+ * 
+ * Clean Architecture:
+ * - Infrastructure Layer: Implementación concreta de ITurnoCursoRepository
+ * - Usa CourseShiftMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
  * 
  * @implements {ITurnoCursoRepository}
  * 
@@ -24,23 +36,13 @@ export class CourseShiftRepository extends BaseRepository {
 
   /**
    * Convierte un modelo Sequelize a entidad de dominio
-   * @param {Object} model
-   * @returns {CourseShift|null}
+   * Delega la responsabilidad de mapeo a CourseShiftMapper
+   * 
+   * @param {Object} model - Modelo Sequelize
+   * @returns {CourseShift|null} Entidad de dominio
    */
   toEntity(model) {
-    if (!model) return null;
-    return new CourseShift({
-      id: model.id,
-      assignmentId: model.asignacionId,
-      shiftId: model.turnoId,
-      weekDay: model.diaSemana,
-      startTime: model.horaInicio,
-      endTime: model.horaFin,
-      classroom: model.aula,
-      activo: model.activo,
-      createdAt: model.createdAt,
-      updatedAt: model.updatedAt,
-    });
+    return CourseShiftMapper.toEntity(model);
   }
 
   /**
@@ -81,54 +83,27 @@ export class CourseShiftRepository extends BaseRepository {
   }
 
   /**
-   * Mapea datos de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de dominio a formato del modelo Sequelize (para creación)
+   * Delega la responsabilidad de mapeo a CourseShiftMapper
+   * 
+   * @param {CourseShift|Object} data - Entidad CourseShift o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize
    */
   mapDataToModel(data, userId = null) {
-    return {
-      asignacionId: data.assignmentId || null,
-      turnoId: data.shiftId || null,
-      diaSemana: data.weekDay,
-      horaInicio: data.startTime,
-      horaFin: data.endTime,
-      aula: data.classroom,
-    };
+    return CourseShiftMapper.toModel(data);
   }
 
   /**
-   * Mapea datos de actualización de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de actualización de dominio a formato del modelo Sequelize (para actualización)
+   * Delega la responsabilidad de mapeo a CourseShiftMapper
+   * 
+   * @param {CourseShift|Object} data - Entidad CourseShift o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
   mapDataToUpdate(data, userId = null) {
-    const updateData = {};
-
-    if (data.assignmentId !== undefined) {
-      updateData.asignacionId = data.assignmentId || null;
-    }
-    if (data.shiftId !== undefined) {
-      updateData.turnoId = data.shiftId || null;
-    }
-    if (data.weekDay !== undefined) {
-      updateData.diaSemana = data.weekDay;
-    }
-    if (data.startTime !== undefined) {
-      updateData.horaInicio = data.startTime;
-    }
-    if (data.endTime !== undefined) {
-      updateData.horaFin = data.endTime;
-    }
-    if (data.classroom !== undefined) {
-      updateData.aula = data.classroom;
-    }
-    if (data.activo !== undefined) {
-      updateData.activo = data.activo;
-    }
-
-    return updateData;
+    return CourseShiftMapper.toModelForUpdate(data);
   }
 
   /**
@@ -141,8 +116,9 @@ export class CourseShiftRepository extends BaseRepository {
 
   /**
    * Método específico: Buscar turnos por asignación
-   * @param {number} asignacionId
-   * @returns {Promise<CourseShift[]>}
+   * 
+   * @param {number} asignacionId - ID de la asignación docente
+   * @returns {Promise<CourseShift[]>} Array de entidades CourseShift
    */
   async findByAsignacionId(asignacionId) {
     const models = await this.getModel().findAll({
@@ -153,7 +129,7 @@ export class CourseShiftRepository extends BaseRepository {
       },
       order: [['diaSemana', 'ASC'], ['horaInicio', 'ASC']],
     });
-    return models.map((model) => this.toEntity(model));
+    return CourseShiftMapper.toEntityList(models);
   }
 }
 

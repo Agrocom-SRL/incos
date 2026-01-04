@@ -1,7 +1,7 @@
 -- ============================================
 -- SISTEMA DE SEGURIDAD
 -- Sistema de Gestión Académica - Instituto INCOS
--- Tablas: roles, permisos, usuarios, roles_permisos, sesiones
+-- Tablas: roles, permisos, usuarios, roles_permisos, sesiones, configuracion_sistema
 -- Tablas de usuarios específicos: personal (base), rectores, directores, secretarias
 -- ============================================
 
@@ -19,6 +19,7 @@ DROP TABLE IF EXISTS secretarias;
 DROP TABLE IF EXISTS directores;
 DROP TABLE IF EXISTS rectores;
 DROP TABLE IF EXISTS personal;
+DROP TABLE IF EXISTS configuracion_sistema;
 DROP TABLE IF EXISTS sesiones;
 DROP TABLE IF EXISTS roles_permisos;
 DROP TABLE IF EXISTS usuarios;
@@ -206,6 +207,37 @@ CREATE TABLE sesiones (
     
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Sesiones de usuarios del sistema';
+
+-- ============================================
+-- TABLA: configuracion_sistema
+-- ============================================
+
+CREATE TABLE configuracion_sistema (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    clave VARCHAR(100) NOT NULL COMMENT 'Clave única de configuración (ej: codigo_estudiante_correlativo_2025)',
+    valor TEXT NOT NULL COMMENT 'Valor de la configuración',
+    tipo ENUM('STRING', 'NUMBER', 'BOOLEAN', 'JSON', 'DATE') DEFAULT 'STRING' COMMENT 'Tipo de dato del valor',
+    descripcion TEXT COMMENT 'Descripción de qué representa esta configuración',
+    
+    -- Campos de auditoría y control (ESTÁNDAR)
+    activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
+    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
+    created_by INT COMMENT 'Usuario que creó',
+    updated_by INT COMMENT 'Usuario que modificó',
+    deleted_by INT COMMENT 'Usuario que eliminó',
+    
+    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    
+    INDEX idx_clave (clave) COMMENT 'Búsqueda por clave',
+    INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
+    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete'
+    
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+COMMENT='Configuración del sistema: guarda settings como correlativos de códigos de estudiantes por gestión, etc.';
 
 -- ============================================
 -- TABLAS ESPECÍFICAS POR TIPO DE USUARIO

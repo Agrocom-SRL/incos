@@ -1,11 +1,23 @@
 import { IDocumentoEstudianteRepository } from '../../domain/interfaces/repositories/IDocumentoEstudianteRepository.js';
 import { DocumentoEstudiante as DocumentoEstudianteModel } from '../database/models/documento_estudiante.js';
-import { StudentDocument } from '../../domain/entities/StudentDocument.js';
 import { BaseRepository } from './BaseRepository.js';
+import { StudentDocumentMapper } from '../mappers/StudentDocumentMapper.js';
 
 /**
  * Implementación del repositorio de documentos de estudiantes usando Sequelize
  * Utiliza el patrón Template Method heredando de BaseRepository
+ * 
+ * Responsabilidades:
+ * - Acceso a datos (consultas, persistencia)
+ * - Delegar conversión ORM ↔ Entidad a StudentDocumentMapper
+ * 
+ * Principios SOLID:
+ * - Single Responsibility: Solo maneja acceso a datos
+ * - Dependency Inversion: Usa StudentDocumentMapper para conversiones (depende de abstracción)
+ * 
+ * Clean Architecture:
+ * - Infrastructure Layer: Implementación concreta de IDocumentoEstudianteRepository
+ * - Usa StudentDocumentMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
  * 
  * @implements {IDocumentoEstudianteRepository}
  * 
@@ -24,31 +36,13 @@ export class StudentDocumentRepository extends BaseRepository {
 
   /**
    * Convierte un modelo Sequelize a entidad de dominio
-   * @param {Object} model
-   * @returns {StudentDocument|null}
+   * Delega la responsabilidad de mapeo a StudentDocumentMapper
+   * 
+   * @param {Object} model - Modelo Sequelize
+   * @returns {StudentDocument|null} Entidad de dominio
    */
   toEntity(model) {
-    if (!model) return null;
-    return new StudentDocument({
-      id: model.id,
-      studentId: model.estudianteId,
-      tipoDocumento: model.tipoDocumento,
-      documentacionId: model.documentacionId,
-      fileName: model.nombreArchivo,
-      filePath: model.rutaArchivo,
-      extension: model.extension,
-      tipoMime: model.tipoMime,
-      contieneMultipleDocumentos: model.contieneMultipleDocumentos,
-      verified: model.verificado,
-      verifiedBy: model.verificadoPor,
-      verificationDate: model.fechaVerificacion,
-      verificationObservations: model.observacionesVerificacion,
-      state: model.estado,
-      rejectionReason: model.motivoRechazo,
-      activo: model.activo,
-      createdAt: model.createdAt,
-      updatedAt: model.updatedAt,
-    });
+    return StudentDocumentMapper.toEntity(model);
   }
 
   /**
@@ -89,97 +83,27 @@ export class StudentDocumentRepository extends BaseRepository {
   }
 
   /**
-   * Mapea datos de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de dominio a formato del modelo Sequelize (para creación)
+   * Delega la responsabilidad de mapeo a StudentDocumentMapper
+   * 
+   * @param {StudentDocument|Object} data - Entidad StudentDocument o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize
    */
   mapDataToModel(data, userId = null) {
-    return {
-      estudianteId: data.studentId || null,
-      tipoDocumento: data.tipoDocumento || null,
-      documentacionId: data.documentacionId || null,
-      nombreArchivo: data.fileName,
-      rutaArchivo: data.filePath,
-      extension: data.extension || null,
-      tipoMime: data.tipoMime || null,
-      contieneMultipleDocumentos: data.contieneMultipleDocumentos !== undefined ? data.contieneMultipleDocumentos : false,
-      verificado: data.verified !== undefined ? data.verified : false,
-      verificadoPor: data.verifiedBy || null,
-      fechaVerificacion: data.verificationDate || null,
-      observacionesVerificacion: data.verificationObservations || null,
-      estado: data.state || 'PENDIENTE',
-      motivoRechazo: data.rejectionReason || null,
-    };
+    return StudentDocumentMapper.toModel(data);
   }
 
   /**
-   * Mapea datos de actualización de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de actualización de dominio a formato del modelo Sequelize (para actualización)
+   * Delega la responsabilidad de mapeo a StudentDocumentMapper
+   * 
+   * @param {StudentDocument|Object} data - Entidad StudentDocument o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
   mapDataToUpdate(data, userId = null) {
-    const updateData = {};
-
-    if (data.studentId !== undefined) {
-      updateData.estudianteId = data.studentId || null;
-    }
-    if (data.documentacionId !== undefined) {
-      updateData.documentacionId = data.documentacionId || null;
-    }
-    // documentType no existe en la tabla, se obtiene de documentacion a través de documentacion_id
-    // Si se necesita cambiar el tipo, se debe actualizar documentacion_id
-    if (data.documentReason !== undefined) {
-      updateData.motivoDocumento = data.documentReason || null;
-    }
-    if (data.referenceType !== undefined) {
-      updateData.tipoReferencia = data.referenceType || null;
-    }
-    if (data.referenceId !== undefined) {
-      updateData.referenciaId = data.referenceId || null;
-    }
-    if (data.description !== undefined) {
-      updateData.descripcion = data.description || null;
-    }
-    if (data.fileName !== undefined) {
-      updateData.nombreArchivo = data.fileName;
-    }
-    if (data.filePath !== undefined) {
-      updateData.rutaArchivo = data.filePath;
-    }
-    if (data.extension !== undefined) {
-      updateData.extension = data.extension || null;
-    }
-    if (data.sizeKb !== undefined) {
-      updateData.tamanoKb = data.sizeKb || null;
-    }
-    if (data.verified !== undefined) {
-      updateData.verificado = data.verified;
-    }
-    if (data.verifiedBy !== undefined) {
-      updateData.verificadoPor = data.verifiedBy || null;
-    }
-    if (data.verificationDate !== undefined) {
-      updateData.fechaVerificacion = data.verificationDate || null;
-    }
-    if (data.verificationObservations !== undefined) {
-      updateData.observacionesVerificacion = data.verificationObservations || null;
-    }
-    if (data.state !== undefined) {
-      updateData.estado = data.state;
-    }
-    if (data.rejectionReason !== undefined) {
-      updateData.motivoRechazo = data.rejectionReason || null;
-    }
-    if (data.esOriginal !== undefined) {
-      updateData.esOriginal = data.esOriginal;
-    }
-    if (data.activo !== undefined) {
-      updateData.activo = data.activo;
-    }
-
-    return updateData;
+    return StudentDocumentMapper.toModelForUpdate(data);
   }
 
   /**
@@ -192,13 +116,11 @@ export class StudentDocumentRepository extends BaseRepository {
 
   /**
    * Método específico: Buscar documentos por estudiante
-   * @param {number} estudianteId
-   * @returns {Promise<StudentDocument[]>}
+   * 
+   * @param {number} estudianteId - ID del estudiante
+   * @returns {Promise<StudentDocument[]>} Array de entidades StudentDocument
    */
   async findByEstudianteId(estudianteId) {
-    // Log para debugging
-    console.log('[StudentDocumentRepository] Buscando documentos para estudianteId:', estudianteId, 'tipo:', typeof estudianteId);
-    
     const models = await this.getModel().findAll({
       where: {
         estudianteId: estudianteId,
@@ -207,25 +129,14 @@ export class StudentDocumentRepository extends BaseRepository {
       },
       order: [['createdAt', 'DESC']],
     });
-    
-    console.log('[StudentDocumentRepository] Modelos encontrados:', models.length, 'para estudianteId:', estudianteId);
-    if (models.length > 0) {
-      console.log('[StudentDocumentRepository] Primer modelo:', {
-        id: models[0].id,
-        estudianteId: models[0].estudianteId,
-        documentacionId: models[0].documentacionId,
-        nombreArchivo: models[0].nombreArchivo,
-        activo: models[0].activo,
-      });
-    }
-    
-    return models.map((model) => this.toEntity(model));
+    return StudentDocumentMapper.toEntityList(models);
   }
 
   /**
    * Método específico: Buscar documentos por tipo
-   * @param {string} tipoDocumento
-   * @returns {Promise<StudentDocument[]>}
+   * 
+   * @param {string} tipoDocumento - Tipo de documento
+   * @returns {Promise<StudentDocument[]>} Array de entidades StudentDocument
    */
   async findByTipoDocumento(tipoDocumento) {
     const models = await this.getModel().findAll({
@@ -236,7 +147,7 @@ export class StudentDocumentRepository extends BaseRepository {
       },
       order: [['createdAt', 'DESC']],
     });
-    return models.map((model) => this.toEntity(model));
+    return StudentDocumentMapper.toEntityList(models);
   }
 }
 

@@ -1,6 +1,6 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../sequelize.js';
-import { baseModelFields, baseModelOptions } from './baseModel.js';
+import { baseModelFields, baseModelOptions } from './base_model.js';
 
 export const EstudianteBeca = sequelize.define(
   'EstudianteBeca',

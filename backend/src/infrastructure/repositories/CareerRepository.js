@@ -1,11 +1,23 @@
 import { ICarreraRepository } from '../../domain/interfaces/repositories/ICarreraRepository.js';
 import { Carrera as CarreraModel } from '../database/models/carrera.js';
-import { Career } from '../../domain/entities/Career.js';
 import { BaseRepository } from './BaseRepository.js';
+import { CareerMapper } from '../mappers/CareerMapper.js';
 
 /**
  * Implementación del repositorio de carreras usando Sequelize
  * Utiliza el patrón Template Method heredando de BaseRepository
+ * 
+ * Responsabilidades:
+ * - Acceso a datos (consultas, persistencia)
+ * - Delegar conversión ORM ↔ Entidad a CareerMapper
+ * 
+ * Principios SOLID:
+ * - Single Responsibility: Solo maneja acceso a datos
+ * - Dependency Inversion: Usa CareerMapper para conversiones (depende de abstracción)
+ * 
+ * Clean Architecture:
+ * - Infrastructure Layer: Implementación concreta de ICarreraRepository
+ * - Usa CareerMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
  * 
  * @implements {ICarreraRepository}
  * 
@@ -24,29 +36,13 @@ export class CareerRepository extends BaseRepository {
 
   /**
    * Convierte un modelo Sequelize a entidad de dominio
-   * @param {Object} model
-   * @returns {Career|null}
+   * Delega la responsabilidad de mapeo a CareerMapper
+   * 
+   * @param {Object} model - Modelo Sequelize
+   * @returns {Career|null} Entidad de dominio
    */
   toEntity(model) {
-    if (!model) return null;
-    return new Career({
-      id: model.id,
-      code: model.codigo,
-      name: model.nombre,
-      description: model.descripcion,
-      durationYears: model.duracionAnios,
-      grantedTitle: model.tituloOtorgado,
-      ministerialResolution: model.resolucionMinisterial,
-      effectiveDate: model.fechaVigencia,
-      totalHours: model.cargaHorariaTotal,
-      colorHex: model.colorHex,
-      imageName: model.imagenNombre,
-      imagePath: model.imagenRuta,
-      imageUrl: model.imagenUrl,
-      activo: model.activo,
-      createdAt: model.createdAt,
-      updatedAt: model.updatedAt,
-    });
+    return CareerMapper.toEntity(model);
   }
 
   /**
@@ -66,78 +62,27 @@ export class CareerRepository extends BaseRepository {
   }
 
   /**
-   * Mapea datos de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de dominio a formato del modelo Sequelize (para creación)
+   * Delega la responsabilidad de mapeo a CareerMapper
+   * 
+   * @param {Career|Object} data - Entidad Career o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize
    */
   mapDataToModel(data, userId = null) {
-    return {
-      codigo: data.code,
-      nombre: data.name,
-      descripcion: data.description || null,
-      duracionAnios: data.durationYears !== undefined ? data.durationYears : 4,
-      tituloOtorgado: data.grantedTitle || null,
-      resolucionMinisterial: data.ministerialResolution || null,
-      fechaVigencia: data.effectiveDate || null,
-      cargaHorariaTotal: data.totalHours || null,
-      colorHex: data.colorHex || null,
-      imagenNombre: data.imageName || null,
-      imagenRuta: data.imagePath || null,
-      imagenUrl: data.imageUrl || null,
-    };
+    return CareerMapper.toModel(data);
   }
 
   /**
-   * Mapea datos de actualización de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de actualización de dominio a formato del modelo Sequelize (para actualización)
+   * Delega la responsabilidad de mapeo a CareerMapper
+   * 
+   * @param {Career|Object} data - Entidad Career o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
   mapDataToUpdate(data, userId = null) {
-    const updateData = {};
-
-    if (data.code !== undefined) {
-      updateData.codigo = data.code;
-    }
-    if (data.name !== undefined) {
-      updateData.nombre = data.name;
-    }
-    if (data.description !== undefined) {
-      updateData.descripcion = data.description || null;
-    }
-    if (data.durationYears !== undefined) {
-      updateData.duracionAnios = data.durationYears;
-    }
-    if (data.grantedTitle !== undefined) {
-      updateData.tituloOtorgado = data.grantedTitle || null;
-    }
-    if (data.ministerialResolution !== undefined) {
-      updateData.resolucionMinisterial = data.ministerialResolution || null;
-    }
-    if (data.effectiveDate !== undefined) {
-      updateData.fechaVigencia = data.effectiveDate || null;
-    }
-    if (data.totalHours !== undefined) {
-      updateData.cargaHorariaTotal = data.totalHours || null;
-    }
-    if (data.colorHex !== undefined) {
-      updateData.colorHex = data.colorHex || null;
-    }
-    if (data.imageName !== undefined) {
-      updateData.imagenNombre = data.imageName || null;
-    }
-    if (data.imagePath !== undefined) {
-      updateData.imagenRuta = data.imagePath || null;
-    }
-    if (data.imageUrl !== undefined) {
-      updateData.imagenUrl = data.imageUrl || null;
-    }
-    if (data.activo !== undefined) {
-      updateData.activo = data.activo;
-    }
-
-    return updateData;
+    return CareerMapper.toModelForUpdate(data);
   }
 
   /**
@@ -150,8 +95,9 @@ export class CareerRepository extends BaseRepository {
 
   /**
    * Método específico: Buscar carrera por código
-   * @param {string} codigo
-   * @returns {Promise<Career|null>}
+   * 
+   * @param {string} codigo - Código de la carrera
+   * @returns {Promise<Career|null>} Entidad Career o null si no se encuentra
    */
   async findByCodigo(codigo) {
     const model = await this.getModel().findOne({

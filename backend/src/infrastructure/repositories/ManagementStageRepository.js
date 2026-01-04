@@ -1,12 +1,24 @@
 import { IEtapaGestionRepository } from '../../domain/interfaces/repositories/IEtapaGestionRepository.js';
 import { EtapaGestion as EtapaGestionModel } from '../database/models/etapa_gestion.js';
-import { ManagementStage } from '../../domain/entities/ManagementStage.js';
 import { BaseRepository } from './BaseRepository.js';
+import { ManagementStageMapper } from '../mappers/ManagementStageMapper.js';
 import { Op } from 'sequelize';
 
 /**
  * Implementación del repositorio de etapas de gestión usando Sequelize
  * Utiliza el patrón Template Method heredando de BaseRepository
+ * 
+ * Responsabilidades:
+ * - Acceso a datos (consultas, persistencia)
+ * - Delegar conversión ORM ↔ Entidad a ManagementStageMapper
+ * 
+ * Principios SOLID:
+ * - Single Responsibility: Solo maneja acceso a datos
+ * - Dependency Inversion: Usa ManagementStageMapper para conversiones (depende de abstracción)
+ * 
+ * Clean Architecture:
+ * - Infrastructure Layer: Implementación concreta de IEtapaGestionRepository
+ * - Usa ManagementStageMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
  * 
  * @implements {IEtapaGestionRepository}
  * 
@@ -25,24 +37,13 @@ export class ManagementStageRepository extends BaseRepository {
 
   /**
    * Convierte un modelo Sequelize a entidad de dominio
-   * @param {Object} model
-   * @returns {ManagementStage|null}
+   * Delega la responsabilidad de mapeo a ManagementStageMapper
+   * 
+   * @param {Object} model - Modelo Sequelize
+   * @returns {ManagementStage|null} Entidad de dominio
    */
   toEntity(model) {
-    if (!model) return null;
-    return new ManagementStage({
-      id: model.id,
-      managementId: model.gestionId,
-      name: model.nombre,
-      type: model.tipo,
-      startDate: model.fechaInicio,
-      endDate: model.fechaFin,
-      isActive: model.vigente,
-      description: model.descripcion,
-      activo: model.activo,
-      createdAt: model.createdAt,
-      updatedAt: model.updatedAt,
-    });
+    return ManagementStageMapper.toEntity(model);
   }
 
   /**
@@ -80,58 +81,27 @@ export class ManagementStageRepository extends BaseRepository {
   }
 
   /**
-   * Mapea datos de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de dominio a formato del modelo Sequelize (para creación)
+   * Delega la responsabilidad de mapeo a ManagementStageMapper
+   * 
+   * @param {ManagementStage|Object} data - Entidad ManagementStage o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize
    */
   mapDataToModel(data, userId = null) {
-    return {
-      gestionId: data.managementId || null,
-      nombre: data.name,
-      tipo: data.type,
-      fechaInicio: data.startDate,
-      fechaFin: data.endDate || null,
-      vigente: data.isActive !== undefined ? data.isActive : false,
-      descripcion: data.description || null,
-    };
+    return ManagementStageMapper.toModel(data);
   }
 
   /**
-   * Mapea datos de actualización de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de actualización de dominio a formato del modelo Sequelize (para actualización)
+   * Delega la responsabilidad de mapeo a ManagementStageMapper
+   * 
+   * @param {ManagementStage|Object} data - Entidad ManagementStage o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
   mapDataToUpdate(data, userId = null) {
-    const updateData = {};
-
-    if (data.managementId !== undefined) {
-      updateData.gestionId = data.managementId || null;
-    }
-    if (data.name !== undefined) {
-      updateData.nombre = data.name;
-    }
-    if (data.type !== undefined) {
-      updateData.tipo = data.type;
-    }
-    if (data.startDate !== undefined) {
-      updateData.fechaInicio = data.startDate;
-    }
-    if (data.endDate !== undefined) {
-      updateData.fechaFin = data.endDate || null;
-    }
-    if (data.isActive !== undefined) {
-      updateData.vigente = data.isActive;
-    }
-    if (data.description !== undefined) {
-      updateData.descripcion = data.description || null;
-    }
-    if (data.activo !== undefined) {
-      updateData.activo = data.activo;
-    }
-
-    return updateData;
+    return ManagementStageMapper.toModelForUpdate(data);
   }
 
   /**
@@ -144,8 +114,9 @@ export class ManagementStageRepository extends BaseRepository {
 
   /**
    * Método específico: Buscar etapas por gestión
-   * @param {number} gestionId
-   * @returns {Promise<ManagementStage[]>}
+   * 
+   * @param {number} gestionId - ID de la gestión
+   * @returns {Promise<ManagementStage[]>} Array de entidades ManagementStage
    */
   async findByGestionId(gestionId) {
     const models = await this.getModel().findAll({
@@ -156,12 +127,13 @@ export class ManagementStageRepository extends BaseRepository {
       },
       order: [['fechaInicio', 'ASC']],
     });
-    return models.map((model) => this.toEntity(model));
+    return ManagementStageMapper.toEntityList(models);
   }
 
   /**
    * Método específico: Buscar etapas vigentes
-   * @returns {Promise<ManagementStage[]>}
+   * 
+   * @returns {Promise<ManagementStage[]>} Array de entidades ManagementStage
    */
   async findVigentes() {
     const today = new Date();
@@ -180,7 +152,7 @@ export class ManagementStageRepository extends BaseRepository {
       },
       order: [['fechaInicio', 'ASC']],
     });
-    return models.map((model) => this.toEntity(model));
+    return ManagementStageMapper.toEntityList(models);
   }
 }
 

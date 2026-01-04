@@ -1,11 +1,23 @@
 import { IPersonalRepository } from '../../domain/interfaces/repositories/IPersonalRepository.js';
 import { Personal as PersonalModel } from '../database/models/personal.js';
-import { Staff } from '../../domain/entities/Staff.js';
 import { BaseRepository } from './BaseRepository.js';
+import { StaffMapper } from '../mappers/StaffMapper.js';
 
 /**
  * Implementación del repositorio de personal usando Sequelize
  * Utiliza el patrón Template Method heredando de BaseRepository
+ * 
+ * Responsabilidades:
+ * - Acceso a datos (consultas, persistencia)
+ * - Delegar conversión ORM ↔ Entidad a StaffMapper
+ * 
+ * Principios SOLID:
+ * - Single Responsibility: Solo maneja acceso a datos
+ * - Dependency Inversion: Usa StaffMapper para conversiones (depende de abstracción)
+ * 
+ * Clean Architecture:
+ * - Infrastructure Layer: Implementación concreta de IPersonalRepository
+ * - Usa StaffMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
  * 
  * @implements {IPersonalRepository}
  * 
@@ -24,31 +36,13 @@ export class StaffRepository extends BaseRepository {
 
   /**
    * Convierte un modelo Sequelize a entidad de dominio
-   * @param {Object} model
-   * @returns {Staff|null}
+   * Delega la responsabilidad de mapeo a StaffMapper
+   * 
+   * @param {Object} model - Modelo Sequelize
+   * @returns {Staff|null} Entidad de dominio
    */
   toEntity(model) {
-    if (!model) return null;
-    return new Staff({
-      id: model.id,
-      userId: model.usuarioId,
-      ci: model.ci,
-      expedition: model.expedicion,
-      firstName: model.nombres,
-      lastName: model.apellidoPaterno,
-      motherLastName: model.apellidoMaterno,
-      birthDate: model.fechaNacimiento,
-      gender: model.genero,
-      civilStatusId: model.estadoCivilId,
-      personalEmail: model.emailPersonal,
-      phone: model.telefono,
-      mobilePhone: model.celular,
-      address: model.direccion,
-      municipalityId: model.municipioId,
-      activo: model.activo,
-      createdAt: model.createdAt,
-      updatedAt: model.updatedAt,
-    });
+    return StaffMapper.toEntity(model);
   }
 
   /**
@@ -89,86 +83,27 @@ export class StaffRepository extends BaseRepository {
   }
 
   /**
-   * Mapea datos de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de dominio a formato del modelo Sequelize (para creación)
+   * Delega la responsabilidad de mapeo a StaffMapper
+   * 
+   * @param {Staff|Object} data - Entidad Staff o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize
    */
   mapDataToModel(data, userId = null) {
-    return {
-      usuarioId: data.userId || null,
-      ci: data.ci,
-      expedicion: data.expedition ? data.expedition.toUpperCase() : null,
-      nombres: data.firstName,
-      apellidoPaterno: data.lastName,
-      apellidoMaterno: data.motherLastName || null,
-      fechaNacimiento: data.birthDate || null,
-      genero: data.gender || null,
-      estadoCivilId: data.civilStatusId || null,
-      emailPersonal: data.personalEmail ? data.personalEmail.toLowerCase() : null,
-      telefono: data.phone || null,
-      celular: data.mobilePhone || null,
-      direccion: data.address || null,
-      municipioId: data.municipalityId || null,
-    };
+    return StaffMapper.toModel(data);
   }
 
   /**
-   * Mapea datos de actualización de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de actualización de dominio a formato del modelo Sequelize (para actualización)
+   * Delega la responsabilidad de mapeo a StaffMapper
+   * 
+   * @param {Staff|Object} data - Entidad Staff o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
   mapDataToUpdate(data, userId = null) {
-    const updateData = {};
-
-    if (data.userId !== undefined) {
-      updateData.usuarioId = data.userId || null;
-    }
-    if (data.ci !== undefined) {
-      updateData.ci = data.ci;
-    }
-    if (data.expedition !== undefined) {
-      updateData.expedicion = data.expedition ? data.expedition.toUpperCase() : null;
-    }
-    if (data.firstName !== undefined) {
-      updateData.nombres = data.firstName;
-    }
-    if (data.lastName !== undefined) {
-      updateData.apellidoPaterno = data.lastName;
-    }
-    if (data.motherLastName !== undefined) {
-      updateData.apellidoMaterno = data.motherLastName || null;
-    }
-    if (data.birthDate !== undefined) {
-      updateData.fechaNacimiento = data.birthDate || null;
-    }
-    if (data.gender !== undefined) {
-      updateData.genero = data.gender || null;
-    }
-    if (data.civilStatusId !== undefined) {
-      updateData.estadoCivilId = data.civilStatusId || null;
-    }
-    if (data.personalEmail !== undefined) {
-      updateData.emailPersonal = data.personalEmail ? data.personalEmail.toLowerCase() : null;
-    }
-    if (data.phone !== undefined) {
-      updateData.telefono = data.phone || null;
-    }
-    if (data.mobilePhone !== undefined) {
-      updateData.celular = data.mobilePhone || null;
-    }
-    if (data.address !== undefined) {
-      updateData.direccion = data.address || null;
-    }
-    if (data.municipalityId !== undefined) {
-      updateData.municipioId = data.municipalityId || null;
-    }
-    if (data.activo !== undefined) {
-      updateData.activo = data.activo;
-    }
-
-    return updateData;
+    return StaffMapper.toModelForUpdate(data);
   }
 
   /**
@@ -181,9 +116,10 @@ export class StaffRepository extends BaseRepository {
 
   /**
    * Método específico: Buscar personal por CI y expedición
-   * @param {string} ci
-   * @param {string} expedicion
-   * @returns {Promise<Staff|null>}
+   * 
+   * @param {string} ci - Cédula de identidad
+   * @param {string} expedicion - Expedición del CI
+   * @returns {Promise<Staff|null>} Entidad Staff o null si no se encuentra
    */
   async findByCI(ci, expedicion) {
     const model = await this.getModel().findOne({

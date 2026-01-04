@@ -1,11 +1,23 @@
 import { IRolRepository } from '../../domain/interfaces/repositories/IRolRepository.js';
 import { Rol as RolModel } from '../database/models/rol.js';
-import { Role } from '../../domain/entities/Role.js';
 import { BaseRepository } from './BaseRepository.js';
+import { RoleMapper } from '../mappers/RoleMapper.js';
 
 /**
  * Implementación del repositorio de roles usando Sequelize
  * Utiliza el patrón Template Method heredando de BaseRepository
+ * 
+ * Responsabilidades:
+ * - Acceso a datos (consultas, persistencia)
+ * - Delegar conversión ORM ↔ Entidad a RoleMapper
+ * 
+ * Principios SOLID:
+ * - Single Responsibility: Solo maneja acceso a datos
+ * - Dependency Inversion: Usa RoleMapper para conversiones (depende de abstracción)
+ * 
+ * Clean Architecture:
+ * - Infrastructure Layer: Implementación concreta de IRolRepository
+ * - Usa RoleMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
  * 
  * @implements {IRolRepository}
  * 
@@ -24,20 +36,13 @@ export class RoleRepository extends BaseRepository {
 
   /**
    * Convierte un modelo Sequelize a entidad de dominio
-   * @param {Object} model
-   * @returns {Role|null}
+   * Delega la responsabilidad de mapeo a RoleMapper
+   * 
+   * @param {Object} model - Modelo Sequelize
+   * @returns {Role|null} Entidad de dominio
    */
   toEntity(model) {
-    if (!model) return null;
-    return new Role({
-      id: model.id,
-      code: model.codigo,
-      name: model.nombre,
-      accessLevel: model.nivelAcceso,
-      activo: model.activo,
-      createdAt: model.createdAt,
-      updatedAt: model.updatedAt,
-    });
+    return RoleMapper.toEntity(model);
   }
 
   /**
@@ -57,42 +62,27 @@ export class RoleRepository extends BaseRepository {
   }
 
   /**
-   * Mapea datos de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de dominio a formato del modelo Sequelize (para creación)
+   * Delega la responsabilidad de mapeo a RoleMapper
+   * 
+   * @param {Role|Object} data - Entidad Role o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize
    */
   mapDataToModel(data, userId = null) {
-    return {
-      codigo: data.code,
-      nombre: data.name,
-      nivelAcceso: data.accessLevel !== undefined ? data.accessLevel : 1,
-    };
+    return RoleMapper.toModel(data);
   }
 
   /**
-   * Mapea datos de actualización de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de actualización de dominio a formato del modelo Sequelize (para actualización)
+   * Delega la responsabilidad de mapeo a RoleMapper
+   * 
+   * @param {Role|Object} data - Entidad Role o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
   mapDataToUpdate(data, userId = null) {
-    const updateData = {};
-
-    if (data.code !== undefined) {
-      updateData.codigo = data.code;
-    }
-    if (data.name !== undefined) {
-      updateData.nombre = data.name;
-    }
-    if (data.accessLevel !== undefined) {
-      updateData.nivelAcceso = data.accessLevel;
-    }
-    if (data.activo !== undefined) {
-      updateData.activo = data.activo;
-    }
-
-    return updateData;
+    return RoleMapper.toModelForUpdate(data);
   }
 
   /**
@@ -105,8 +95,9 @@ export class RoleRepository extends BaseRepository {
 
   /**
    * Método específico: Buscar rol por código
-   * @param {string} codigo
-   * @returns {Promise<Role|null>}
+   * 
+   * @param {string} codigo - Código del rol
+   * @returns {Promise<Role|null>} Entidad Role o null si no se encuentra
    */
   async findByCodigo(codigo) {
     const model = await this.getModel().findOne({

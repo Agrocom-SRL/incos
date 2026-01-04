@@ -1,11 +1,23 @@
 import { Documentacion as DocumentacionModel } from '../database/models/documentacion.js';
-import { Documentacion as DocumentacionEntity } from '../../domain/entities/Documentacion.js';
 import { BaseRepository } from './BaseRepository.js';
+import { DocumentacionMapper } from '../mappers/DocumentacionMapper.js';
 import { Op } from 'sequelize';
 
 /**
  * Implementación del repositorio de documentación usando Sequelize
  * Utiliza el patrón Template Method heredando de BaseRepository
+ * 
+ * Responsabilidades:
+ * - Acceso a datos (consultas, persistencia)
+ * - Delegar conversión ORM ↔ Entidad a DocumentacionMapper
+ * 
+ * Principios SOLID:
+ * - Single Responsibility: Solo maneja acceso a datos
+ * - Dependency Inversion: Usa DocumentacionMapper para conversiones (depende de abstracción)
+ * 
+ * Clean Architecture:
+ * - Infrastructure Layer: Implementación concreta del repositorio
+ * - Usa DocumentacionMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
  */
 export class DocumentacionRepository extends BaseRepository {
   /**
@@ -18,29 +30,13 @@ export class DocumentacionRepository extends BaseRepository {
 
   /**
    * Convierte un modelo Sequelize a entidad de dominio
-   * @param {Object} model
-   * @returns {DocumentacionEntity|null}
+   * Delega la responsabilidad de mapeo a DocumentacionMapper
+   * 
+   * @param {Object} model - Modelo Sequelize
+   * @returns {Documentacion|null} Entidad de dominio
    */
   toEntity(model) {
-    if (!model) return null;
-    return new DocumentacionEntity({
-      id: model.id,
-      name: model.nombre,
-      documentType: model.tipoDocumento,
-      acceptsPhotocopy: model.aceptaFotocopia === 1 || model.aceptaFotocopia === true,
-      required: model.requerido === 1 || model.requerido === true,
-      order: model.orden,
-      description: model.descripcion,
-      documentoPadreId: model.documentoPadreId ?? null,
-      esOriginal: model.esOriginal === 1 || model.esOriginal === true,
-      esDocumentoSistema: model.esDocumentoSistema === 1 || model.esDocumentoSistema === true,
-      // MySQL puede retornar 0/1, Sequelize puede retornar true/false
-      // Normalizamos a boolean true/false
-      // BaseEntity espera 'active' (inglés), no 'activo' (español)
-      active: model.activo === 1 || model.activo === true || model.activo === '1',
-      createdAt: model.createdAt,
-      updatedAt: model.updatedAt,
-    });
+    return DocumentacionMapper.toEntity(model);
   }
 
   /**
@@ -60,54 +56,27 @@ export class DocumentacionRepository extends BaseRepository {
   }
 
   /**
-   * Mapea datos de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de dominio a formato del modelo Sequelize (para creación)
+   * Delega la responsabilidad de mapeo a DocumentacionMapper
+   * 
+   * @param {Documentacion|Object} data - Entidad Documentacion o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize
    */
   mapDataToModel(data, userId = null) {
-    return {
-      nombre: data.name,
-      tipoDocumento: data.documentType,
-      aceptaFotocopia: data.acceptsPhotocopy !== undefined ? data.acceptsPhotocopy : false,
-      requerido: data.required !== undefined ? data.required : true,
-      orden: data.order || 0,
-      descripcion: data.description || null,
-    };
+    return DocumentacionMapper.toModel(data);
   }
 
   /**
-   * Mapea datos de actualización de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de actualización de dominio a formato del modelo Sequelize (para actualización)
+   * Delega la responsabilidad de mapeo a DocumentacionMapper
+   * 
+   * @param {Documentacion|Object} data - Entidad Documentacion o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
   mapDataToUpdate(data, userId = null) {
-    const updateData = {};
-
-    if (data.name !== undefined) {
-      updateData.nombre = data.name;
-    }
-    if (data.documentType !== undefined) {
-      updateData.tipoDocumento = data.documentType;
-    }
-    if (data.acceptsPhotocopy !== undefined) {
-      updateData.aceptaFotocopia = data.acceptsPhotocopy;
-    }
-    if (data.required !== undefined) {
-      updateData.requerido = data.required;
-    }
-    if (data.order !== undefined) {
-      updateData.orden = data.order;
-    }
-    if (data.description !== undefined) {
-      updateData.descripcion = data.description;
-    }
-    if (data.activo !== undefined) {
-      updateData.activo = data.activo;
-    }
-
-    return updateData;
+    return DocumentacionMapper.toModelForUpdate(data);
   }
 
   /**
@@ -119,15 +88,17 @@ export class DocumentacionRepository extends BaseRepository {
   }
 
   /**
-   * Buscar documentación por tipo
-   * @param {string} tipoDocumento
-   * @param {Object} options - Opciones opcionales
-   * @returns {Promise<DocumentacionEntity[]>}
+   * Método específico: Buscar documentación por tipo
+   * 
+   * @param {string} tipoDocumento - Tipo de documento
+   * @param {Object} options - Opciones opcionales (includeInactive)
+   * @returns {Promise<Documentacion[]>} Array de entidades Documentacion
    */
   async findByTipoDocumento(tipoDocumento, options = {}) {
     const where = {
       tipoDocumento,
       activo: options.includeInactive ? undefined : true,
+      // paranoid: true automáticamente excluye deletedAt !== null
     };
 
     const models = await this.getModel().findAll({
@@ -135,18 +106,20 @@ export class DocumentacionRepository extends BaseRepository {
       order: this.getDefaultSort(),
     });
 
-    return models.map((model) => this.toEntity(model));
+    return DocumentacionMapper.toEntityList(models);
   }
 
   /**
-   * Buscar documentación requerida
+   * Método específico: Buscar documentación requerida
+   * 
    * @param {Object} options - Opciones opcionales (includeInactive, tipoDocumento)
-   * @returns {Promise<DocumentacionEntity[]>}
+   * @returns {Promise<Documentacion[]>} Array de entidades Documentacion
    */
   async findRequeridos(options = {}) {
     const where = {
       requerido: true,
       activo: options.includeInactive ? undefined : true,
+      // paranoid: true automáticamente excluye deletedAt !== null
     };
 
     if (options.tipoDocumento) {
@@ -158,7 +131,7 @@ export class DocumentacionRepository extends BaseRepository {
       order: this.getDefaultSort(),
     });
 
-    return models.map((model) => this.toEntity(model));
+    return DocumentacionMapper.toEntityList(models);
   }
 
 }

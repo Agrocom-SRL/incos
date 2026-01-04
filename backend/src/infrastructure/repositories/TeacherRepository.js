@@ -1,11 +1,23 @@
 import { IDocenteRepository } from '../../domain/interfaces/repositories/IDocenteRepository.js';
 import { Docente as DocenteModel } from '../database/models/docente.js';
-import { Teacher } from '../../domain/entities/Teacher.js';
 import { BaseRepository } from './BaseRepository.js';
+import { TeacherMapper } from '../mappers/TeacherMapper.js';
 
 /**
  * Implementación del repositorio de docentes usando Sequelize
  * Utiliza el patrón Template Method heredando de BaseRepository
+ * 
+ * Responsabilidades:
+ * - Acceso a datos (consultas, persistencia)
+ * - Delegar conversión ORM ↔ Entidad a TeacherMapper
+ * 
+ * Principios SOLID:
+ * - Single Responsibility: Solo maneja acceso a datos
+ * - Dependency Inversion: Usa TeacherMapper para conversiones (depende de abstracción)
+ * 
+ * Clean Architecture:
+ * - Infrastructure Layer: Implementación concreta de IDocenteRepository
+ * - Usa TeacherMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
  * 
  * @implements {IDocenteRepository}
  * 
@@ -24,47 +36,13 @@ export class TeacherRepository extends BaseRepository {
 
   /**
    * Convierte un modelo Sequelize a entidad de dominio
-   * @param {Object} model
-   * @returns {Teacher|null}
+   * Delega la responsabilidad de mapeo a TeacherMapper
+   * 
+   * @param {Object} model - Modelo Sequelize
+   * @returns {Teacher|null} Entidad de dominio
    */
   toEntity(model) {
-    if (!model) return null;
-    return new Teacher({
-      id: model.id,
-      userId: model.usuarioId,
-      ci: model.ci,
-      expedition: model.expedicion,
-      firstName: model.nombres,
-      lastName: model.apellidoPaterno,
-      motherLastName: model.apellidoMaterno,
-      birthDate: model.fechaNacimiento,
-      gender: model.genero,
-      civilStatusId: model.estadoCivilId,
-      nationality: model.nacionalidad,
-      phone: model.telefono,
-      mobilePhone: model.celular,
-      personalEmail: model.emailPersonal,
-      address: model.direccion,
-      residenceMunicipalityId: model.municipioResidenciaId,
-      zone: model.zona,
-      professionalTitle: model.tituloProfesional,
-      specialty: model.especialidad,
-      academicLevel: model.nivelAcademico,
-      graduationInstitution: model.institucionEgreso,
-      graduationYear: model.anioEgreso,
-      yearsOfExperience: model.aniosExperiencia,
-      hireDate: model.fechaContratacion,
-      retirementDate: model.fechaRetiro,
-      contractType: model.tipoContrato,
-      laborState: model.estadoLaboral,
-      weeklyHours: model.cargaHorariaSemanal,
-      bank: model.banco,
-      accountNumber: model.numeroCuenta,
-      observations: model.observaciones,
-      activo: model.activo,
-      createdAt: model.createdAt,
-      updatedAt: model.updatedAt,
-    });
+    return TeacherMapper.toEntity(model);
   }
 
   /**
@@ -108,150 +86,27 @@ export class TeacherRepository extends BaseRepository {
   }
 
   /**
-   * Mapea datos de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de dominio a formato del modelo Sequelize (para creación)
+   * Delega la responsabilidad de mapeo a TeacherMapper
+   * 
+   * @param {Teacher|Object} data - Entidad Teacher o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize
    */
   mapDataToModel(data, userId = null) {
-    return {
-      usuarioId: data.userId || null,
-      ci: data.ci,
-      expedicion: data.expedition ? data.expedition.toUpperCase() : null,
-      nombres: data.firstName,
-      apellidoPaterno: data.lastName,
-      apellidoMaterno: data.motherLastName || null,
-      fechaNacimiento: data.birthDate,
-      genero: data.gender,
-      estadoCivilId: data.civilStatusId || null,
-      nacionalidad: data.nationality || 'Boliviana',
-      telefono: data.phone || null,
-      celular: data.mobilePhone,
-      emailPersonal: data.personalEmail ? data.personalEmail.toLowerCase() : null,
-      direccion: data.address || null,
-      municipioResidenciaId: data.residenceMunicipalityId || null,
-      zona: data.zone || null,
-      tituloProfesional: data.professionalTitle || null,
-      especialidad: data.specialty || null,
-      nivelAcademico: data.academicLevel || 'LICENCIATURA',
-      institucionEgreso: data.graduationInstitution || null,
-      anioEgreso: data.graduationYear || null,
-      aniosExperiencia: data.yearsOfExperience !== undefined ? data.yearsOfExperience : 0,
-      fechaContratacion: data.hireDate || null,
-      fechaRetiro: data.retirementDate || null,
-      tipoContrato: data.contractType || 'CONTRATO',
-      estadoLaboral: data.laborState || 'ACTIVO',
-      cargaHorariaSemanal: data.weeklyHours !== undefined ? data.weeklyHours : 0,
-      banco: data.bank || null,
-      numeroCuenta: data.accountNumber || null,
-      observaciones: data.observations || null,
-    };
+    return TeacherMapper.toModel(data);
   }
 
   /**
-   * Mapea datos de actualización de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de actualización de dominio a formato del modelo Sequelize (para actualización)
+   * Delega la responsabilidad de mapeo a TeacherMapper
+   * 
+   * @param {Teacher|Object} data - Entidad Teacher o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
   mapDataToUpdate(data, userId = null) {
-    const updateData = {};
-
-    if (data.userId !== undefined) {
-      updateData.usuarioId = data.userId || null;
-    }
-    if (data.ci !== undefined) {
-      updateData.ci = data.ci;
-    }
-    if (data.expedition !== undefined) {
-      updateData.expedicion = data.expedition ? data.expedition.toUpperCase() : null;
-    }
-    if (data.firstName !== undefined) {
-      updateData.nombres = data.firstName;
-    }
-    if (data.lastName !== undefined) {
-      updateData.apellidoPaterno = data.lastName;
-    }
-    if (data.motherLastName !== undefined) {
-      updateData.apellidoMaterno = data.motherLastName || null;
-    }
-    if (data.birthDate !== undefined) {
-      updateData.fechaNacimiento = data.birthDate;
-    }
-    if (data.gender !== undefined) {
-      updateData.genero = data.gender;
-    }
-    if (data.civilStatusId !== undefined) {
-      updateData.estadoCivilId = data.civilStatusId || null;
-    }
-    if (data.nationality !== undefined) {
-      updateData.nacionalidad = data.nationality;
-    }
-    if (data.phone !== undefined) {
-      updateData.telefono = data.phone || null;
-    }
-    if (data.mobilePhone !== undefined) {
-      updateData.celular = data.mobilePhone;
-    }
-    if (data.personalEmail !== undefined) {
-      updateData.emailPersonal = data.personalEmail ? data.personalEmail.toLowerCase() : null;
-    }
-    if (data.address !== undefined) {
-      updateData.direccion = data.address || null;
-    }
-    if (data.residenceMunicipalityId !== undefined) {
-      updateData.municipioResidenciaId = data.residenceMunicipalityId || null;
-    }
-    if (data.zone !== undefined) {
-      updateData.zona = data.zone || null;
-    }
-    if (data.professionalTitle !== undefined) {
-      updateData.tituloProfesional = data.professionalTitle || null;
-    }
-    if (data.specialty !== undefined) {
-      updateData.especialidad = data.specialty || null;
-    }
-    if (data.academicLevel !== undefined) {
-      updateData.nivelAcademico = data.academicLevel;
-    }
-    if (data.graduationInstitution !== undefined) {
-      updateData.institucionEgreso = data.graduationInstitution || null;
-    }
-    if (data.graduationYear !== undefined) {
-      updateData.anioEgreso = data.graduationYear || null;
-    }
-    if (data.yearsOfExperience !== undefined) {
-      updateData.aniosExperiencia = data.yearsOfExperience;
-    }
-    if (data.hireDate !== undefined) {
-      updateData.fechaContratacion = data.hireDate || null;
-    }
-    if (data.retirementDate !== undefined) {
-      updateData.fechaRetiro = data.retirementDate || null;
-    }
-    if (data.contractType !== undefined) {
-      updateData.tipoContrato = data.contractType;
-    }
-    if (data.laborState !== undefined) {
-      updateData.estadoLaboral = data.laborState;
-    }
-    if (data.weeklyHours !== undefined) {
-      updateData.cargaHorariaSemanal = data.weeklyHours;
-    }
-    if (data.bank !== undefined) {
-      updateData.banco = data.bank || null;
-    }
-    if (data.accountNumber !== undefined) {
-      updateData.numeroCuenta = data.accountNumber || null;
-    }
-    if (data.observations !== undefined) {
-      updateData.observaciones = data.observations || null;
-    }
-    if (data.activo !== undefined) {
-      updateData.activo = data.activo;
-    }
-
-    return updateData;
+    return TeacherMapper.toModelForUpdate(data);
   }
 
   /**
@@ -264,9 +119,10 @@ export class TeacherRepository extends BaseRepository {
 
   /**
    * Método específico: Buscar docente por CI y expedición
-   * @param {string} ci
-   * @param {string} expedicion
-   * @returns {Promise<Teacher|null>}
+   * 
+   * @param {string} ci - Cédula de identidad
+   * @param {string} expedicion - Expedición del CI
+   * @returns {Promise<Teacher|null>} Entidad Teacher o null si no se encuentra
    */
   async findByCI(ci, expedicion) {
     const model = await this.getModel().findOne({

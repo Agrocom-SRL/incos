@@ -1,11 +1,23 @@
 import { ICursoRepository } from '../../domain/interfaces/repositories/ICursoRepository.js';
 import { Curso as CursoModel } from '../database/models/curso.js';
-import { Course } from '../../domain/entities/Course.js';
 import { BaseRepository } from './BaseRepository.js';
+import { CourseMapper } from '../mappers/CourseMapper.js';
 
 /**
  * Implementación del repositorio de cursos usando Sequelize
  * Utiliza el patrón Template Method heredando de BaseRepository
+ * 
+ * Responsabilidades:
+ * - Acceso a datos (consultas, persistencia)
+ * - Delegar conversión ORM ↔ Entidad a CourseMapper
+ * 
+ * Principios SOLID:
+ * - Single Responsibility: Solo maneja acceso a datos
+ * - Dependency Inversion: Usa CourseMapper para conversiones (depende de abstracción)
+ * 
+ * Clean Architecture:
+ * - Infrastructure Layer: Implementación concreta de ICursoRepository
+ * - Usa CourseMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
  * 
  * @implements {ICursoRepository}
  * 
@@ -24,24 +36,13 @@ export class CourseRepository extends BaseRepository {
 
   /**
    * Convierte un modelo Sequelize a entidad de dominio
-   * @param {Object} model
-   * @returns {Course|null}
+   * Delega la responsabilidad de mapeo a CourseMapper
+   * 
+   * @param {Object} model - Modelo Sequelize
+   * @returns {Course|null} Entidad de dominio
    */
   toEntity(model) {
-    if (!model) return null;
-    return new Course({
-      id: model.id,
-      subjectId: model.materiaId,
-      name: model.nombre,
-      code: model.codigo,
-      maxCapacity: model.cupoMaximo,
-      minCapacity: model.cupoMinimo,
-      state: model.estado,
-      description: model.descripcion,
-      activo: model.activo,
-      createdAt: model.createdAt,
-      updatedAt: model.updatedAt,
-    });
+    return CourseMapper.toEntity(model);
   }
 
   /**
@@ -79,58 +80,27 @@ export class CourseRepository extends BaseRepository {
   }
 
   /**
-   * Mapea datos de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de dominio a formato del modelo Sequelize (para creación)
+   * Delega la responsabilidad de mapeo a CourseMapper
+   * 
+   * @param {Course|Object} data - Entidad Course o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize
    */
   mapDataToModel(data, userId = null) {
-    return {
-      materiaId: data.subjectId || null,
-      nombre: data.name,
-      codigo: data.code || null,
-      cupoMaximo: data.maxCapacity !== undefined ? data.maxCapacity : 35,
-      cupoMinimo: data.minCapacity !== undefined ? data.minCapacity : 10,
-      estado: data.state || 'PROPUESTO',
-      descripcion: data.description || null,
-    };
+    return CourseMapper.toModel(data);
   }
 
   /**
-   * Mapea datos de actualización de dominio a formato del modelo
-   * @param {Object} data
-   * @param {number} userId
-   * @returns {Object}
+   * Mapea datos de actualización de dominio a formato del modelo Sequelize (para actualización)
+   * Delega la responsabilidad de mapeo a CourseMapper
+   * 
+   * @param {Course|Object} data - Entidad Course o objeto con datos de dominio
+   * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
+   * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
   mapDataToUpdate(data, userId = null) {
-    const updateData = {};
-
-    if (data.subjectId !== undefined) {
-      updateData.materiaId = data.subjectId || null;
-    }
-    if (data.name !== undefined) {
-      updateData.nombre = data.name;
-    }
-    if (data.code !== undefined) {
-      updateData.codigo = data.code || null;
-    }
-    if (data.maxCapacity !== undefined) {
-      updateData.cupoMaximo = data.maxCapacity;
-    }
-    if (data.minCapacity !== undefined) {
-      updateData.cupoMinimo = data.minCapacity;
-    }
-    if (data.state !== undefined) {
-      updateData.estado = data.state;
-    }
-    if (data.description !== undefined) {
-      updateData.descripcion = data.description || null;
-    }
-    if (data.activo !== undefined) {
-      updateData.activo = data.activo;
-    }
-
-    return updateData;
+    return CourseMapper.toModelForUpdate(data);
   }
 
   /**
@@ -143,8 +113,9 @@ export class CourseRepository extends BaseRepository {
 
   /**
    * Método específico: Buscar cursos por materia
-   * @param {number} materiaId
-   * @returns {Promise<Course[]>}
+   * 
+   * @param {number} materiaId - ID de la materia
+   * @returns {Promise<Course[]>} Array de entidades Course
    */
   async findByMateriaId(materiaId) {
     const models = await this.getModel().findAll({
@@ -155,7 +126,7 @@ export class CourseRepository extends BaseRepository {
       },
       order: [['nombre', 'ASC']],
     });
-    return models.map((model) => this.toEntity(model));
+    return CourseMapper.toEntityList(models);
   }
 }
 
