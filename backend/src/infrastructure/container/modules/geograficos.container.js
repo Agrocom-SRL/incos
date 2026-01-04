@@ -181,7 +181,9 @@ export function registerGeograficosModule(container) {
                 // TODO: Agregar otros controllers cuando se implementen sus rutas
             };
 
-            const middlewares = {};
+            const middlewares = {
+                validateRequest: c.resolve(TOKENS.validateRequest),
+            };
 
             return buildPaisesRouter({ controllers, middlewares });
         },
@@ -197,7 +199,9 @@ export function registerGeograficosModule(container) {
                 // TODO: Agregar otros controllers cuando se implementen sus rutas
             };
 
-            const middlewares = {};
+            const middlewares = {
+                validateRequest: c.resolve(TOKENS.validateRequest),
+            };
 
             return buildDepartamentosRouter({ controllers, middlewares });
         },
@@ -213,7 +217,9 @@ export function registerGeograficosModule(container) {
                 // TODO: Agregar otros controllers cuando se implementen sus rutas
             };
 
-            const middlewares = {};
+            const middlewares = {
+                validateRequest: c.resolve(TOKENS.validateRequest),
+            };
 
             return buildProvinciasRouter({ controllers, middlewares });
         },
@@ -229,7 +235,9 @@ export function registerGeograficosModule(container) {
                 // TODO: Agregar otros controllers cuando se implementen sus rutas
             };
 
-            const middlewares = {};
+            const middlewares = {
+                validateRequest: c.resolve(TOKENS.validateRequest),
+            };
 
             return buildMunicipiosRouter({ controllers, middlewares });
         },

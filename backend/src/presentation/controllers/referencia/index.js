@@ -1,13 +1,28 @@
 // ============================================
-// CONTROLLERS IMPLEMENTADOS
+// CONTROLLERS IMPLEMENTADOS - IDIOMAS
 // ============================================
-export { ListIdiomasController, ListEstadosCivilesController, ListTiposParentescoController, ListDocumentacionController } from './list.controller.js';
+export { ListIdiomasController } from './idiomas/list.controller.js';
+// TODO: Agregar otros controllers cuando se implementen sus endpoints
+// export { CreateIdiomaController } from './idiomas/create.controller.js';
+// export { GetIdiomaByIdController } from './idiomas/get-by-id.controller.js';
+// export { UpdateIdiomaController } from './idiomas/update.controller.js';
+// export { DeleteIdiomaController } from './idiomas/delete.controller.js';
 
 // ============================================
-// CONTROLLERS FUTUROS (TODO: Implementar cuando se necesiten)
+// CONTROLLERS IMPLEMENTADOS - ESTADOS CIVILES
 // ============================================
-// export { CreateIdiomaController } from './create.controller.js';
-// export { getIdiomaByIdController } from './get-by-id.controller.js';
-// export { UpdateIdiomaController } from './update.controller.js';
-// export { DeleteIdiomaController } from './delete.controller.js';
+export { ListEstadosCivilesController } from './estados-civiles/list.controller.js';
+// TODO: Agregar otros controllers cuando se implementen sus endpoints
+
+// ============================================
+// CONTROLLERS IMPLEMENTADOS - TIPOS PARENTESCO
+// ============================================
+export { ListTiposParentescoController } from './tipos-parentesco/list.controller.js';
+// TODO: Agregar otros controllers cuando se implementen sus endpoints
+
+// ============================================
+// CONTROLLERS IMPLEMENTADOS - DOCUMENTACIÓN
+// ============================================
+export { ListDocumentacionController } from './documentacion/list.controller.js';
+// TODO: Agregar otros controllers cuando se implementen sus endpoints
 

@@ -45,5 +45,3 @@ export function createValidateRequest(logger) {
     next();
   };
 }
-
-export default createValidateRequest;

@@ -1,12 +1,29 @@
 // ============================================
-// CONTROLLERS IMPLEMENTADOS
+// CONTROLLERS IMPLEMENTADOS - ESTUDIANTES (CRUD básico)
 // ============================================
-export { ListStudentsController } from './list.controller.js';
+export { ListStudentsController } from './estudiantes/list.controller.js';
+// TODO: Agregar otros controllers cuando se implementen sus endpoints
+// export { RegisterStudentController } from './estudiantes/register.controller.js';
+// export { GetStudentByIdController } from './estudiantes/get-by-id.controller.js';
+// export { UpdateStudentController } from './estudiantes/update.controller.js';
+// export { DeleteStudentController } from './estudiantes/delete.controller.js';
 
 // ============================================
-// CONTROLLERS FUTUROS (TODO: Implementar cuando se necesiten)
+// CONTROLLERS FUTUROS - BECAS
 // ============================================
-// export { CreateStudentController } from './create.controller.js';
-// export { GetStudentByIdController } from './get-by-id.controller.js';
-// export { UpdateStudentController } from './update.controller.js';
-// export { DeleteStudentController } from './delete.controller.js';
+// export { ListBecasController } from './becas/list.controller.js';
+// export { AsignarBecaController } from './becas/asignar.controller.js';
+// export { AprobarBecaController } from './becas/aprobar.controller.js';
+
+// ============================================
+// CONTROLLERS FUTUROS - LICENCIAS
+// ============================================
+// export { ListLicenciasController } from './licencias/list.controller.js';
+// export { SolicitarLicenciaController } from './licencias/solicitar.controller.js';
+// export { AprobarLicenciaController } from './licencias/aprobar.controller.js';
+
+// ============================================
+// CONTROLLERS FUTUROS - DOCUMENTOS
+// ============================================
+// export { ListDocumentosController } from './documentos/list.controller.js';
+// export { UploadDocumentoController } from './documentos/upload.controller.js';

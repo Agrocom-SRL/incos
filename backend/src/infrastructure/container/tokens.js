@@ -15,6 +15,7 @@ export const TOKENS = {
     // ============================================
     logger: 'logger',
     errorFormatter: 'errorFormatter',
+    validateRequest: 'validateRequest',
     fileUploadService: 'fileUploadService',
     fileStorageService: 'fileStorageService', // Futuro
 

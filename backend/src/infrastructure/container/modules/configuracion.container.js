@@ -156,7 +156,9 @@ export function registerConfiguracionModule(container) {
                 // updateCarreraController: c.resolve(TOKENS.cfg_updateCarreraController),
             };
 
-            const middlewares = {};
+            const middlewares = {
+                validateRequest: c.resolve(TOKENS.validateRequest),
+            };
 
             return buildCarrerasRouter({ controllers, middlewares });
         },
@@ -172,7 +174,9 @@ export function registerConfiguracionModule(container) {
                 // TODO: Agregar otros controllers cuando se implementen sus rutas
             };
 
-            const middlewares = {};
+            const middlewares = {
+                validateRequest: c.resolve(TOKENS.validateRequest),
+            };
 
             return buildMateriasRouter({ controllers, middlewares });
         },
@@ -188,7 +192,9 @@ export function registerConfiguracionModule(container) {
                 // TODO: Agregar otros controllers cuando se implementen sus rutas
             };
 
-            const middlewares = {};
+            const middlewares = {
+                validateRequest: c.resolve(TOKENS.validateRequest),
+            };
 
             return buildDiscapacidadRouter({ controllers, middlewares });
         },

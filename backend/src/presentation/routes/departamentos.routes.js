@@ -1,6 +1,5 @@
 import express from 'express';
 import { listDepartamentosValidator } from '../validators/geograficos/index.js';
-import validateRequest from '../middleware/validation.middleware.js';
 
 /**
  * Construye el router del módulo Departamentos
@@ -12,7 +11,7 @@ import validateRequest from '../middleware/validation.middleware.js';
  * 
  * @param {Object} params - Dependencias inyectadas
  * @param {Object} params.controllers - Controllers del módulo
- * @param {Object} params.middlewares - Middlewares (upload, auth, etc.)
+ * @param {Object} params.middlewares - Middlewares (validateRequest, upload, auth, etc.)
  * @returns {Router} Router configurado de Express
  * 
  * @example
@@ -21,6 +20,7 @@ import validateRequest from '../middleware/validation.middleware.js';
  */
 export function buildDepartamentosRouter({ controllers, middlewares }) {
     const router = express.Router();
+    const { validateRequest } = middlewares;
 
     // ============================================
     // CRUD BÁSICO

@@ -181,7 +181,9 @@ export function registerReferenciaModule(container) {
                 // TODO: Agregar otros controllers cuando se implementen sus rutas
             };
 
-            const middlewares = {};
+            const middlewares = {
+                validateRequest: c.resolve(TOKENS.validateRequest),
+            };
 
             return buildIdiomasRouter({ controllers, middlewares });
         },
@@ -197,7 +199,9 @@ export function registerReferenciaModule(container) {
                 // TODO: Agregar otros controllers cuando se implementen sus rutas
             };
 
-            const middlewares = {};
+            const middlewares = {
+                validateRequest: c.resolve(TOKENS.validateRequest),
+            };
 
             return buildEstadosCivilesRouter({ controllers, middlewares });
         },
@@ -213,7 +217,9 @@ export function registerReferenciaModule(container) {
                 // TODO: Agregar otros controllers cuando se implementen sus rutas
             };
 
-            const middlewares = {};
+            const middlewares = {
+                validateRequest: c.resolve(TOKENS.validateRequest),
+            };
 
             return buildTiposParentescoRouter({ controllers, middlewares });
         },
@@ -229,7 +235,9 @@ export function registerReferenciaModule(container) {
                 // TODO: Agregar otros controllers cuando se implementen sus rutas
             };
 
-            const middlewares = {};
+            const middlewares = {
+                validateRequest: c.resolve(TOKENS.validateRequest),
+            };
 
             return buildDocumentacionRouter({ controllers, middlewares });
         },

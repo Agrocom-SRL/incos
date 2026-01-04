@@ -14,10 +14,10 @@
 
 import { registerServicesModule } from './services.container.js';
 import { registerRepositoriesModule } from './repositories.container.js';
-import { registerEstudiantesModule } from './estudiantes.container.js';
-import { registerConfiguracionModule } from './configuracion.container.js';
-import { registerGeograficosModule } from './geograficos.container.js';
-import { registerReferenciaModule } from './referencia.container.js';
+import { registerEstudiantesModule } from './estudiantes/index.js';
+import { registerConfiguracionModule } from './configuracion/index.js';
+import { registerGeograficosModule } from './geograficos/index.js';
+import { registerReferenciaModule } from './referencia/index.js';
 
 /**
  * Registra todos los módulos en el contenedor

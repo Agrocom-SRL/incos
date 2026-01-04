@@ -1,13 +1,22 @@
 // ============================================
-// CONTROLLERS IMPLEMENTADOS
+// CONTROLLERS IMPLEMENTADOS - CARRERAS
 // ============================================
-export { ListCarrerasController, ListMateriasController, ListDiscapacidadController } from './list.controller.js';
+export { ListCarrerasController } from './carreras/list.controller.js';
+// TODO: Agregar otros controllers cuando se implementen sus endpoints
+// export { CreateCarreraController } from './carreras/create.controller.js';
+// export { GetCarreraByIdController } from './carreras/get-by-id.controller.js';
+// export { UpdateCarreraController } from './carreras/update.controller.js';
+// export { DeleteCarreraController } from './carreras/delete.controller.js';
 
 // ============================================
-// CONTROLLERS FUTUROS (TODO: Implementar cuando se necesiten)
+// CONTROLLERS IMPLEMENTADOS - MATERIAS
 // ============================================
-// export { CreateCarreraController } from './create.controller.js';
-// export { GetCarreraByIdController } from './get-by-id.controller.js';
-// export { UpdateCarreraController } from './update.controller.js';
-// export { DeleteCarreraController } from './delete.controller.js';
+export { ListMateriasController } from './materias/list.controller.js';
+// TODO: Agregar otros controllers cuando se implementen sus endpoints
+
+// ============================================
+// CONTROLLERS IMPLEMENTADOS - DISCAPACIDAD
+// ============================================
+export { ListDiscapacidadController } from './discapacidad/list.controller.js';
+// TODO: Agregar otros controllers cuando se implementen sus endpoints
 

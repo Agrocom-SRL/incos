@@ -125,6 +125,7 @@ export function registerEstudiantesModule(container) {
 
             // Resolver middlewares (servicios de infraestructura)
             const middlewares = {
+                validateRequest: c.resolve(TOKENS.validateRequest),
                 // uploadStudentDocument: c.resolve(TOKENS.fileUploadService).uploadStudentDocument(),
             };
 
