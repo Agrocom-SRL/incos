@@ -15,10 +15,10 @@ import { listStudentsValidator } from '../validators/estudiantes/index.js';
  * @returns {Router} Router configurado de Express
  * 
  * @example
- * const router = buildStudentRouter({ controllers, middlewares });
+ * const router = buildEstudiantesRouter({ controllers, middlewares });
  * app.use('/api/v1/estudiantes', router);
  */
-export function buildStudentRouter({ controllers, middlewares }) {
+export function buildEstudiantesRouter({ controllers, middlewares }) {
     const router = express.Router();
     const { validateRequest } = middlewares;
 
@@ -80,3 +80,4 @@ export function buildStudentRouter({ controllers, middlewares }) {
 
     return router;
 }
+

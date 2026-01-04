@@ -15,7 +15,7 @@
 import { TOKENS } from '../../tokens.js';
 import { ListStudentsUseCase } from '../../../../application/use-cases/estudiantes/ListStudentsUseCase.js';
 import { ListStudentsController } from '../../../../presentation/controllers/estudiantes/index.js';
-import { buildStudentRouter } from '../../../../presentation/routes/student.routes.js';
+import { buildEstudiantesRouter } from '../../../../presentation/routes/estudiantes.routes.js';
 
 /**
  * Registra el recurso Estudiantes en el contenedor
@@ -100,7 +100,7 @@ export function registerEstudiantesResource(container) {
                 // uploadStudentDocument: c.resolve(TOKENS.fileUploadService).uploadStudentDocument(),
             };
 
-            return buildStudentRouter({ controllers, middlewares });
+            return buildEstudiantesRouter({ controllers, middlewares });
         },
         { singleton: true }
     );
