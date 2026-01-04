@@ -33,8 +33,8 @@ export class ExpressApp {
         // 1. Middleware global (seguridad, parsing, logging) - logger inyectado
         setupMiddleware(this.app, logger);
 
-        // 2. Archivos estáticos (ANTES de las rutas para que tengan prioridad)
-        setupStaticFiles(this.app);
+        // 2. Archivos estáticos (ANTES de las rutas para que tengan prioridad) - logger inyectado
+        setupStaticFiles(this.app, logger);
 
         // 3. Rutas de la aplicación - logger y errorFormatter inyectados
         setupRoutes(this.app, logger, errorFormatter);

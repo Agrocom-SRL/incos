@@ -1,4 +1,5 @@
-import { logger } from '../config/logger.config.js';
+import container from '../container/index.js';
+import { TOKENS } from '../container/tokens.js';
 import { serverConfig } from '../config/server.config.js';
 import { sequelize } from '../database/sequelize.js';
 
@@ -14,6 +15,8 @@ import { sequelize } from '../database/sequelize.js';
 export class Application {
     constructor() {
         this.server = null;
+        // Obtener logger del container (DI)
+        this.logger = container.resolve(TOKENS.logger);
     }
 
     /**
@@ -21,14 +24,14 @@ export class Application {
      */
     async initialize() {
         try {
-            logger.info('Iniciando aplicación Instituto INCOS...');
+            this.logger.info('Iniciando aplicación Instituto INCOS...');
 
             await this.connectDatabase();
             this.setupGracefulShutdown();
 
-            logger.info('Aplicación inicializada correctamente');
+            this.logger.info('Aplicación inicializada correctamente');
         } catch (error) {
-            logger.error('Error al inicializar aplicación:', error);
+            this.logger.error('Error al inicializar aplicación:', error);
             throw error;
         }
     }
@@ -39,16 +42,16 @@ export class Application {
     async connectDatabase() {
         try {
             await sequelize.authenticate();
-            logger.info('Base de datos conectada');
+            this.logger.info('Base de datos conectada');
 
         } catch (error) {
-            logger.error('Error de conexión a la base de datos:', {
+            this.logger.error('Error de conexión a la base de datos:', {
                 message: error.message,
                 code: error.original?.code,
                 sqlState: error.original?.sqlState,
             });
 
-            logger.error('Detalles de conexión:', {
+            this.logger.error('Detalles de conexión:', {
                 host: process.env.DB_HOST,
                 port: process.env.DB_PORT,
                 database: process.env.DB_NAME,
@@ -66,29 +69,29 @@ export class Application {
         const { port } = serverConfig;
 
         this.server = app.listen(port, () => {
-            logger.info('');
-            logger.info('═══════════════════════════════════════════');
-            logger.info('  Instituto INCOS - Sistema Académico');
-            logger.info('═══════════════════════════════════════════');
-            logger.info(`  Servidor: http://localhost:${port}`);
+            this.logger.info('');
+            this.logger.info('═══════════════════════════════════════════');
+            this.logger.info('  Instituto INCOS - Sistema Académico');
+            this.logger.info('═══════════════════════════════════════════');
+            this.logger.info(`  Servidor: http://localhost:${port}`);
 
             if (serverConfig.isDevelopment) {
-                logger.info(`  API:      http://localhost:${port}/api/v1`);
-                logger.info(`  Docs:     http://localhost:${port}/api-docs`);
-                logger.info(`  Health:   http://localhost:${port}/health`);
+                this.logger.info(`  API:      http://localhost:${port}/api/v1`);
+                this.logger.info(`  Docs:     http://localhost:${port}/api-docs`);
+                this.logger.info(`  Health:   http://localhost:${port}/health`);
             }
 
-            logger.info(`  Entorno:  ${serverConfig.nodeEnv}`);
-            logger.info('═══════════════════════════════════════════');
-            logger.info('');
+            this.logger.info(`  Entorno:  ${serverConfig.nodeEnv}`);
+            this.logger.info('═══════════════════════════════════════════');
+            this.logger.info('');
         });
 
         // Manejar errores del servidor
         this.server.on('error', (error) => {
             if (error.code === 'EADDRINUSE') {
-                logger.error(`Puerto ${port} ya está en uso`);
+                this.logger.error(`Puerto ${port} ya está en uso`);
             } else {
-                logger.error('Error del servidor:', error);
+                this.logger.error('Error del servidor:', error);
             }
             process.exit(1);
         });
@@ -101,27 +104,27 @@ export class Application {
      */
     setupGracefulShutdown() {
         const shutdown = async (signal) => {
-            logger.info('');
-            logger.info(`${signal} recibido - Cerrando servidor...`);
+            this.logger.info('');
+            this.logger.info(`${signal} recibido - Cerrando servidor...`);
 
             if (this.server) {
                 this.server.close(async () => {
-                    logger.info('Servidor HTTP cerrado');
+                    this.logger.info('Servidor HTTP cerrado');
 
                     try {
                         await sequelize.close();
-                        logger.info('Base de datos cerrada');
-                        logger.info('Aplicación cerrada correctamente');
+                        this.logger.info('Base de datos cerrada');
+                        this.logger.info('Aplicación cerrada correctamente');
                         process.exit(0);
                     } catch (error) {
-                        logger.error('Error al cerrar:', error);
+                        this.logger.error('Error al cerrar:', error);
                         process.exit(1);
                     }
                 });
 
                 // Timeout de 10 segundos
                 setTimeout(() => {
-                    logger.error('Forzando cierre (timeout)');
+                    this.logger.error('Forzando cierre (timeout)');
                     process.exit(1);
                 }, 10000);
             } else {
@@ -135,12 +138,12 @@ export class Application {
 
         // Errores no capturados
         process.on('unhandledRejection', (reason, promise) => {
-            logger.error('Unhandled Rejection:', { reason, promise });
+            this.logger.error('Unhandled Rejection:', { reason, promise });
             shutdown('UNHANDLED_REJECTION');
         });
 
         process.on('uncaughtException', (error) => {
-            logger.error('Uncaught Exception:', error);
+            this.logger.error('Uncaught Exception:', error);
             shutdown('UNCAUGHT_EXCEPTION');
         });
     }

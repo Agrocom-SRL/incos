@@ -2,7 +2,6 @@ import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { serverConfig } from '../config/server.config.js';
-import { logger } from '../config/logger.config.js';
 
 // Obtener __dirname en ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -14,8 +13,11 @@ const __dirname = path.dirname(__filename);
  * Sirve:
  * - Uploads (documentos de estudiantes, fotos, etc.)
  * - Public (si existe en el futuro)
+ * 
+ * @param {Express} app - Aplicación Express
+ * @param {ILogger} logger - Logger inyectado (DI)
  */
-export function setupStaticFiles(app) {
+export function setupStaticFiles(app, logger) {
     // ============================================
     // UPLOADS
     // ============================================
