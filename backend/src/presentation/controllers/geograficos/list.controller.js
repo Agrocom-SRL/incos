@@ -1,12 +1,11 @@
-import { logger } from '../../../shared/logger.js';
-
 /**
  * GET /api/v1/paises
  * Controller para listar países con filtros y paginación
  */
 export class ListPaisesController {
-  constructor({ listPaisesUseCase }) {
+  constructor({ listPaisesUseCase, logger }) {
     this.listPaisesUseCase = listPaisesUseCase;
+    this.logger = logger;
   }
 
   async handle(req, res, next) {
@@ -14,7 +13,7 @@ export class ListPaisesController {
       const { page = 1, limit = 50, search } = req.query;
       const userId = req.user?.id || req.user?.userId;
 
-      logger.info('Request de listado de países', {
+      this.logger.info('Request de listado de países', {
         page,
         limit,
         filters: { search },
@@ -47,7 +46,7 @@ export class ListPaisesController {
         },
       });
     } catch (error) {
-      logger.error('Error al listar países', { error: error.message, stack: error.stack });
+      this.logger.error('Error al listar países', { error: error.message, stack: error.stack });
       next(error);
     }
   }
@@ -58,8 +57,9 @@ export class ListPaisesController {
  * Controller para listar departamentos con filtros y paginación
  */
 export class ListDepartamentosController {
-  constructor({ listDepartamentosUseCase }) {
+  constructor({ listDepartamentosUseCase, logger }) {
     this.listDepartamentosUseCase = listDepartamentosUseCase;
+    this.logger = logger;
   }
 
   async handle(req, res, next) {
@@ -67,7 +67,7 @@ export class ListDepartamentosController {
       const { page = 1, limit = 50, search } = req.query;
       const userId = req.user?.id || req.user?.userId;
 
-      logger.info('Request de listado de departamentos', {
+      this.logger.info('Request de listado de departamentos', {
         page,
         limit,
         filters: { search },
@@ -100,7 +100,7 @@ export class ListDepartamentosController {
         },
       });
     } catch (error) {
-      logger.error('Error al listar departamentos', { error: error.message, stack: error.stack });
+      this.logger.error('Error al listar departamentos', { error: error.message, stack: error.stack });
       next(error);
     }
   }
@@ -111,8 +111,9 @@ export class ListDepartamentosController {
  * Controller para listar provincias con filtros y paginación
  */
 export class ListProvinciasController {
-  constructor({ listProvinciasUseCase }) {
+  constructor({ listProvinciasUseCase, logger }) {
     this.listProvinciasUseCase = listProvinciasUseCase;
+    this.logger = logger;
   }
 
   async handle(req, res, next) {
@@ -120,7 +121,7 @@ export class ListProvinciasController {
       const { page = 1, limit = 50, search } = req.query;
       const userId = req.user?.id || req.user?.userId;
 
-      logger.info('Request de listado de provincias', {
+      this.logger.info('Request de listado de provincias', {
         page,
         limit,
         filters: { search },
@@ -153,7 +154,7 @@ export class ListProvinciasController {
         },
       });
     } catch (error) {
-      logger.error('Error al listar provincias', { error: error.message, stack: error.stack });
+      this.logger.error('Error al listar provincias', { error: error.message, stack: error.stack });
       next(error);
     }
   }
@@ -164,8 +165,9 @@ export class ListProvinciasController {
  * Controller para listar municipios con filtros y paginación
  */
 export class ListMunicipiosController {
-  constructor({ listMunicipiosUseCase }) {
+  constructor({ listMunicipiosUseCase, logger }) {
     this.listMunicipiosUseCase = listMunicipiosUseCase;
+    this.logger = logger;
   }
 
   async handle(req, res, next) {
@@ -173,7 +175,7 @@ export class ListMunicipiosController {
       const { page = 1, limit = 50, search } = req.query;
       const userId = req.user?.id || req.user?.userId;
 
-      logger.info('Request de listado de municipios', {
+      this.logger.info('Request de listado de municipios', {
         page,
         limit,
         filters: { search },
@@ -206,7 +208,7 @@ export class ListMunicipiosController {
         },
       });
     } catch (error) {
-      logger.error('Error al listar municipios', { error: error.message, stack: error.stack });
+      this.logger.error('Error al listar municipios', { error: error.message, stack: error.stack });
       next(error);
     }
   }

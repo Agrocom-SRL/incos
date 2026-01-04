@@ -1,3 +1,4 @@
+import { IEstudianteOrigenRepository } from '../../domain/interfaces/repositories/IEstudianteOrigenRepository.js';
 import { EstudianteOrigen as EstudianteOrigenModel } from '../database/models/estudiante_origen.js';
 import { BaseRepository } from './BaseRepository.js';
 import { StudentOriginMapper } from '../mappers/StudentOriginMapper.js';
@@ -15,8 +16,14 @@ import { StudentOriginMapper } from '../mappers/StudentOriginMapper.js';
  * - Dependency Inversion: Usa StudentOriginMapper para conversiones (depende de abstracción)
  * 
  * Clean Architecture:
- * - Infrastructure Layer: Implementación concreta
+ * - Infrastructure Layer: Implementación concreta de IEstudianteOrigenRepository
  * - Usa StudentOriginMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
+ * 
+ * @implements {IEstudianteOrigenRepository}
+ * 
+ * Esta clase cumple con el contrato IEstudianteOrigenRepository:
+ * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findAll, create, update, delete, search)
+ * - Implementa findByEstudianteId(), createMultiple(), deleteByEstudianteId() y determinarTipoNacionalidadEstudiante() que son requeridos por IEstudianteOrigenRepository
  */
 export class StudentOriginRepository extends BaseRepository {
   /**

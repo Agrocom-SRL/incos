@@ -9,7 +9,6 @@ export const ConfiguracionSistema = sequelize.define(
     clave: {
       type: DataTypes.STRING(100),
       allowNull: false,
-      unique: true,
       comment: 'Clave única de configuración (ej: codigo_estudiante_correlativo_2025)',
     },
     valor: {
@@ -27,11 +26,6 @@ export const ConfiguracionSistema = sequelize.define(
       type: DataTypes.TEXT,
       allowNull: true,
       comment: 'Descripción de qué representa esta configuración',
-    },
-    categoria: {
-      type: DataTypes.STRING(50),
-      allowNull: true,
-      comment: 'Categoría de la configuración (ej: CODIGOS_ESTUDIANTE, NOTIFICACIONES, etc.)',
     },
   },
   {

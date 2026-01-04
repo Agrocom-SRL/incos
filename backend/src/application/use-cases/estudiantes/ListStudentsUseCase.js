@@ -4,13 +4,12 @@
  * Lista estudiantes con filtros, paginación y ordenamiento
  */
 
-import { logger } from '../../../shared/logger.js';
 import { StudentMapper } from '../../mappers/StudentMapper.js';
 
 export class ListStudentsUseCase {
-  constructor({ studentRepository, logger: loggerInstance }) {
+  constructor({ studentRepository, logger }) {
     this.studentRepository = studentRepository;
-    this.logger = loggerInstance || logger;
+    this.logger = logger;
   }
 
   /**

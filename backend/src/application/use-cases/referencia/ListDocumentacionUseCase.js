@@ -4,12 +4,10 @@
  * Lista tipos de documentación con filtros, paginación y ordenamiento
  */
 
-import { logger } from '../../../shared/logger.js';
-
 export class ListDocumentacionUseCase {
-  constructor({ documentacionRepository, logger: loggerInstance }) {
+  constructor({ documentacionRepository, logger }) {
     this.documentacionRepository = documentacionRepository;
-    this.logger = loggerInstance || logger;
+    this.logger = logger;
   }
 
   /**

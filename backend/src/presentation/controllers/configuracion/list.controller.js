@@ -1,12 +1,11 @@
-import { logger } from '../../../shared/logger.js';
-
 /**
  * GET /api/v1/carreras
  * Controller para listar carreras con filtros y paginación
  */
 export class ListCarrerasController {
-  constructor({ listCarrerasUseCase }) {
+  constructor({ listCarrerasUseCase, logger }) {
     this.listCarrerasUseCase = listCarrerasUseCase;
+    this.logger = logger;
   }
 
   async handle(req, res, next) {
@@ -14,7 +13,7 @@ export class ListCarrerasController {
       const { page = 1, limit = 50, search } = req.query;
       const userId = req.user?.id || req.user?.userId;
 
-      logger.info('Request de listado de carreras', {
+      this.logger.info('Request de listado de carreras', {
         page,
         limit,
         filters: { search },
@@ -47,7 +46,7 @@ export class ListCarrerasController {
         },
       });
     } catch (error) {
-      logger.error('Error al listar carreras', { error: error.message, stack: error.stack });
+      this.logger.error('Error al listar carreras', { error: error.message, stack: error.stack });
       next(error);
     }
   }
@@ -58,8 +57,9 @@ export class ListCarrerasController {
  * Controller para listar materias con filtros y paginación
  */
 export class ListMateriasController {
-  constructor({ listMateriasUseCase }) {
+  constructor({ listMateriasUseCase, logger }) {
     this.listMateriasUseCase = listMateriasUseCase;
+    this.logger = logger;
   }
 
   async handle(req, res, next) {
@@ -67,7 +67,7 @@ export class ListMateriasController {
       const { page = 1, limit = 50, search } = req.query;
       const userId = req.user?.id || req.user?.userId;
 
-      logger.info('Request de listado de materias', {
+      this.logger.info('Request de listado de materias', {
         page,
         limit,
         filters: { search },
@@ -100,7 +100,7 @@ export class ListMateriasController {
         },
       });
     } catch (error) {
-      logger.error('Error al listar materias', { error: error.message, stack: error.stack });
+      this.logger.error('Error al listar materias', { error: error.message, stack: error.stack });
       next(error);
     }
   }
@@ -111,8 +111,9 @@ export class ListMateriasController {
  * Controller para listar tipos de discapacidad con filtros y paginación
  */
 export class ListDiscapacidadController {
-  constructor({ listDiscapacidadUseCase }) {
+  constructor({ listDiscapacidadUseCase, logger }) {
     this.listDiscapacidadUseCase = listDiscapacidadUseCase;
+    this.logger = logger;
   }
 
   async handle(req, res, next) {
@@ -120,7 +121,7 @@ export class ListDiscapacidadController {
       const { page = 1, limit = 50, search } = req.query;
       const userId = req.user?.id || req.user?.userId;
 
-      logger.info('Request de listado de tipos de discapacidad', {
+      this.logger.info('Request de listado de tipos de discapacidad', {
         page,
         limit,
         filters: { search },
@@ -153,7 +154,7 @@ export class ListDiscapacidadController {
         },
       });
     } catch (error) {
-      logger.error('Error al listar tipos de discapacidad', { error: error.message, stack: error.stack });
+      this.logger.error('Error al listar tipos de discapacidad', { error: error.message, stack: error.stack });
       next(error);
     }
   }

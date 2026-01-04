@@ -4,12 +4,10 @@
  * Lista carreras con filtros, paginación y ordenamiento
  */
 
-import { logger } from '../../../shared/logger.js';
-
 export class ListCarrerasUseCase {
-  constructor({ careerRepository, logger: loggerInstance }) {
+  constructor({ careerRepository, logger }) {
     this.careerRepository = careerRepository;
-    this.logger = loggerInstance || logger;
+    this.logger = logger;
   }
 
   /**

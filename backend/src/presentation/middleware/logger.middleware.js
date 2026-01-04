@@ -1,5 +1,5 @@
 import morgan from 'morgan';
-import { logger } from '../../shared/logger.js';
+import { logger } from '../../infrastructure/config/logger.config.js';
 
 // Configurar token personalizado para identificar usuario en logs
 morgan.token('user-id', (req) => req.user?.id || 'anonymous');

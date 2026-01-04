@@ -1,3 +1,4 @@
+import { IEstudianteDocumentoEntregaRepository } from '../../domain/interfaces/repositories/IEstudianteDocumentoEntregaRepository.js';
 import { BaseRepository } from './BaseRepository.js';
 import { EstudianteDocumentoEntrega } from '../database/models/estudiante_documento_entrega.js';
 import { StudentDocumentDeliveryMapper } from '../mappers/StudentDocumentDeliveryMapper.js';
@@ -15,8 +16,14 @@ import { StudentDocumentDeliveryMapper } from '../mappers/StudentDocumentDeliver
  * - Dependency Inversion: Usa StudentDocumentDeliveryMapper para conversiones (depende de abstracción)
  * 
  * Clean Architecture:
- * - Infrastructure Layer: Implementación concreta
+ * - Infrastructure Layer: Implementación concreta de IEstudianteDocumentoEntregaRepository
  * - Usa StudentDocumentDeliveryMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
+ * 
+ * @implements {IEstudianteDocumentoEntregaRepository}
+ * 
+ * Esta clase cumple con el contrato IEstudianteDocumentoEntregaRepository:
+ * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findAll, create, update, delete, search)
+ * - Implementa findByEstudianteId(), findByDocumentacionId() y findByEstudianteAndDocumentacion() que son requeridos por IEstudianteDocumentoEntregaRepository
  */
 export class StudentDocumentDeliveryRepository extends BaseRepository {
   /**

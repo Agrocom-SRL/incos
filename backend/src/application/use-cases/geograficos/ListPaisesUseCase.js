@@ -4,12 +4,10 @@
  * Lista países con filtros, paginación y ordenamiento
  */
 
-import { logger } from '../../../shared/logger.js';
-
 export class ListPaisesUseCase {
-  constructor({ countryRepository, logger: loggerInstance }) {
+  constructor({ countryRepository, logger }) {
     this.countryRepository = countryRepository;
-    this.logger = loggerInstance || logger;
+    this.logger = logger;
   }
 
   /**

@@ -1,4 +1,4 @@
-import { IStudentApoderadoRepository } from '../../domain/interfaces/repositories/IStudentApoderadoRepository.js';
+import { IEstudianteApoderadoRepository } from '../../domain/interfaces/repositories/IEstudianteApoderadoRepository.js';
 import { EstudianteApoderado as EstudianteApoderadoModel } from '../database/models/estudiante_apoderado.js';
 import { BaseRepository } from './BaseRepository.js';
 import { StudentGuardianMapper } from '../mappers/StudentGuardianMapper.js';
@@ -16,14 +16,14 @@ import { StudentGuardianMapper } from '../mappers/StudentGuardianMapper.js';
  * - Dependency Inversion: Usa StudentGuardianMapper para conversiones (depende de abstracción)
  * 
  * Clean Architecture:
- * - Infrastructure Layer: Implementación concreta de IStudentApoderadoRepository
+ * - Infrastructure Layer: Implementación concreta de IEstudianteApoderadoRepository
  * - Usa StudentGuardianMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
  * 
- * @implements {IStudentApoderadoRepository}
+ * @implements {IEstudianteApoderadoRepository}
  * 
- * Esta clase cumple con el contrato IStudentApoderadoRepository:
+ * Esta clase cumple con el contrato IEstudianteApoderadoRepository:
  * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findAll, create, update, delete, search)
- * - Implementa findByEstudianteId() que es requerido por IStudentApoderadoRepository
+ * - Implementa findByEstudianteId() que es requerido por IEstudianteApoderadoRepository
  */
 export class StudentGuardianRepository extends BaseRepository {
   /**

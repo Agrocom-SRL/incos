@@ -1,11 +1,11 @@
 import { IRepository } from './IRepository.js';
 
 /**
- * Interfaz de Repositorio: IStudentRepository
+ * Interfaz de Repositorio: IEstudianteRepository
  * Define el contrato que debe cumplir el repositorio de estudiantes
  * Extiende IRepository para métodos comunes
  */
-export class IStudentRepository extends IRepository {
+export class IEstudianteRepository extends IRepository {
   /**
    * Buscar estudiante por CI y expedición
    * @param {string} ci
@@ -43,3 +43,4 @@ export class IStudentRepository extends IRepository {
     throw new Error('Method getNextStudentNumber must be implemented');
   }
 }
+

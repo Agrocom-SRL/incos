@@ -4,12 +4,10 @@
  * Lista idiomas con filtros, paginación y ordenamiento
  */
 
-import { logger } from '../../../shared/logger.js';
-
 export class ListIdiomasUseCase {
-  constructor({ languageRepository, logger: loggerInstance }) {
+  constructor({ languageRepository, logger }) {
     this.languageRepository = languageRepository;
-    this.logger = loggerInstance || logger;
+    this.logger = logger;
   }
 
   /**

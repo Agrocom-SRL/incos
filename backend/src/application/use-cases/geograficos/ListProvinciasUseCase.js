@@ -4,12 +4,10 @@
  * Lista provincias con filtros, paginación y ordenamiento
  */
 
-import { logger } from '../../../shared/logger.js';
-
 export class ListProvinciasUseCase {
-  constructor({ provinceRepository, logger: loggerInstance }) {
+  constructor({ provinceRepository, logger }) {
     this.provinceRepository = provinceRepository;
-    this.logger = loggerInstance || logger;
+    this.logger = logger;
   }
 
   /**

@@ -1,12 +1,11 @@
-import { logger } from '../../../shared/logger.js';
-
 /**
  * GET /api/v1/idiomas
  * Controller para listar idiomas con filtros y paginación
  */
 export class ListIdiomasController {
-  constructor({ listIdiomasUseCase }) {
+  constructor({ listIdiomasUseCase, logger }) {
     this.listIdiomasUseCase = listIdiomasUseCase;
+    this.logger = logger;
   }
 
   async handle(req, res, next) {
@@ -14,7 +13,7 @@ export class ListIdiomasController {
       const { page = 1, limit = 50, search } = req.query;
       const userId = req.user?.id || req.user?.userId;
 
-      logger.info('Request de listado de idiomas', {
+      this.logger.info('Request de listado de idiomas', {
         page,
         limit,
         filters: { search },
@@ -47,7 +46,7 @@ export class ListIdiomasController {
         },
       });
     } catch (error) {
-      logger.error('Error al listar idiomas', { error: error.message, stack: error.stack });
+      this.logger.error('Error al listar idiomas', { error: error.message, stack: error.stack });
       next(error);
     }
   }
@@ -58,8 +57,9 @@ export class ListIdiomasController {
  * Controller para listar estados civiles con filtros y paginación
  */
 export class ListEstadosCivilesController {
-  constructor({ listEstadosCivilesUseCase }) {
+  constructor({ listEstadosCivilesUseCase, logger }) {
     this.listEstadosCivilesUseCase = listEstadosCivilesUseCase;
+    this.logger = logger;
   }
 
   async handle(req, res, next) {
@@ -67,7 +67,7 @@ export class ListEstadosCivilesController {
       const { page = 1, limit = 50, search } = req.query;
       const userId = req.user?.id || req.user?.userId;
 
-      logger.info('Request de listado de estados civiles', {
+      this.logger.info('Request de listado de estados civiles', {
         page,
         limit,
         filters: { search },
@@ -100,7 +100,7 @@ export class ListEstadosCivilesController {
         },
       });
     } catch (error) {
-      logger.error('Error al listar estados civiles', { error: error.message, stack: error.stack });
+      this.logger.error('Error al listar estados civiles', { error: error.message, stack: error.stack });
       next(error);
     }
   }
@@ -111,8 +111,9 @@ export class ListEstadosCivilesController {
  * Controller para listar tipos de parentesco con filtros y paginación
  */
 export class ListTiposParentescoController {
-  constructor({ listTiposParentescoUseCase }) {
+  constructor({ listTiposParentescoUseCase, logger }) {
     this.listTiposParentescoUseCase = listTiposParentescoUseCase;
+    this.logger = logger;
   }
 
   async handle(req, res, next) {
@@ -120,7 +121,7 @@ export class ListTiposParentescoController {
       const { page = 1, limit = 50, search } = req.query;
       const userId = req.user?.id || req.user?.userId;
 
-      logger.info('Request de listado de tipos de parentesco', {
+      this.logger.info('Request de listado de tipos de parentesco', {
         page,
         limit,
         filters: { search },
@@ -153,7 +154,7 @@ export class ListTiposParentescoController {
         },
       });
     } catch (error) {
-      logger.error('Error al listar tipos de parentesco', { error: error.message, stack: error.stack });
+      this.logger.error('Error al listar tipos de parentesco', { error: error.message, stack: error.stack });
       next(error);
     }
   }
@@ -164,8 +165,9 @@ export class ListTiposParentescoController {
  * Controller para listar tipos de documentación con filtros y paginación
  */
 export class ListDocumentacionController {
-  constructor({ listDocumentacionUseCase }) {
+  constructor({ listDocumentacionUseCase, logger }) {
     this.listDocumentacionUseCase = listDocumentacionUseCase;
+    this.logger = logger;
   }
 
   async handle(req, res, next) {
@@ -173,7 +175,7 @@ export class ListDocumentacionController {
       const { page = 1, limit = 50, search } = req.query;
       const userId = req.user?.id || req.user?.userId;
 
-      logger.info('Request de listado de tipos de documentación', {
+      this.logger.info('Request de listado de tipos de documentación', {
         page,
         limit,
         filters: { search },
@@ -206,7 +208,7 @@ export class ListDocumentacionController {
         },
       });
     } catch (error) {
-      logger.error('Error al listar tipos de documentación', { error: error.message, stack: error.stack });
+      this.logger.error('Error al listar tipos de documentación', { error: error.message, stack: error.stack });
       next(error);
     }
   }

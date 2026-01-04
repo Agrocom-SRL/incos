@@ -1,4 +1,4 @@
-import { IStudentRepository } from '../../domain/interfaces/repositories/IStudentRepository.js';
+import { IEstudianteRepository } from '../../domain/interfaces/repositories/IEstudianteRepository.js';
 import { Estudiante as EstudianteModel } from '../database/models/estudiante.js';
 import { BaseRepository } from './BaseRepository.js';
 import { StudentMapper } from '../mappers/StudentMapper.js';
@@ -17,14 +17,14 @@ import { Op } from 'sequelize';
  * - Dependency Inversion: Usa StudentMapper para conversiones (depende de abstracción)
  * 
  * Clean Architecture:
- * - Infrastructure Layer: Implementación concreta de IStudentRepository
+ * - Infrastructure Layer: Implementación concreta de IEstudianteRepository
  * - Usa StudentMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
  * 
- * @implements {IStudentRepository}
+ * @implements {IEstudianteRepository}
  * 
- * Esta clase cumple con el contrato IStudentRepository:
+ * Esta clase cumple con el contrato IEstudianteRepository:
  * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findAll, create, update, delete, search)
- * - Implementa findByCI(), findByCodigo(), findByEmail() y getNextStudentNumber() que son requeridos por IStudentRepository
+ * - Implementa findByCI(), findByCodigo(), findByEmail() y getNextStudentNumber() que son requeridos por IEstudianteRepository
  */
 export class StudentRepository extends BaseRepository {
   /**

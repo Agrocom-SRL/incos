@@ -4,12 +4,10 @@
  * Lista tipos de discapacidad con filtros, paginación y ordenamiento
  */
 
-import { logger } from '../../../shared/logger.js';
-
 export class ListDiscapacidadUseCase {
-  constructor({ disabilityTypeRepository, logger: loggerInstance }) {
+  constructor({ disabilityTypeRepository, logger }) {
     this.disabilityTypeRepository = disabilityTypeRepository;
-    this.logger = loggerInstance || logger;
+    this.logger = logger;
   }
 
   /**

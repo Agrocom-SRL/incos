@@ -102,6 +102,7 @@ export function registerConfiguracionModule(container) {
         (c) =>
             new ListCarrerasController({
                 listCarrerasUseCase: c.resolve(TOKENS.cfg_listCarrerasUseCase),
+                logger: c.resolve(TOKENS.logger),
             }),
         { singleton: true }
     );
@@ -121,6 +122,7 @@ export function registerConfiguracionModule(container) {
         (c) =>
             new ListMateriasController({
                 listMateriasUseCase: c.resolve(TOKENS.cfg_listMateriasUseCase),
+                logger: c.resolve(TOKENS.logger),
             }),
         { singleton: true }
     );
@@ -133,6 +135,7 @@ export function registerConfiguracionModule(container) {
         (c) =>
             new ListDiscapacidadController({
                 listDiscapacidadUseCase: c.resolve(TOKENS.cfg_listDiscapacidadUseCase),
+                logger: c.resolve(TOKENS.logger),
             }),
         { singleton: true }
     );

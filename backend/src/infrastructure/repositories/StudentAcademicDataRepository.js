@@ -1,4 +1,4 @@
-import { IStudentAcademicDataRepository } from '../../domain/interfaces/repositories/IStudentAcademicDataRepository.js';
+import { IEstudianteDatosAcademicosRepository } from '../../domain/interfaces/repositories/IEstudianteDatosAcademicosRepository.js';
 import { EstudianteDatosAcademicos as EstudianteDatosAcademicosModel } from '../database/models/estudiante_datos_academicos.js';
 import { BaseRepository } from './BaseRepository.js';
 import { StudentAcademicDataMapper } from '../mappers/StudentAcademicDataMapper.js';
@@ -16,14 +16,14 @@ import { StudentAcademicDataMapper } from '../mappers/StudentAcademicDataMapper.
  * - Dependency Inversion: Usa StudentAcademicDataMapper para conversiones (depende de abstracción)
  * 
  * Clean Architecture:
- * - Infrastructure Layer: Implementación concreta de IStudentAcademicDataRepository
+ * - Infrastructure Layer: Implementación concreta de IEstudianteDatosAcademicosRepository
  * - Usa StudentAcademicDataMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
  * 
- * @implements {IStudentAcademicDataRepository}
+ * @implements {IEstudianteDatosAcademicosRepository}
  * 
- * Esta clase cumple con el contrato IStudentAcademicDataRepository:
+ * Esta clase cumple con el contrato IEstudianteDatosAcademicosRepository:
  * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findAll, create, update, delete, search)
- * - Implementa findByEstudianteId() y findByCarreraId() que son requeridos por IStudentAcademicDataRepository
+ * - Implementa findByEstudianteId() y findByCarreraId() que son requeridos por IEstudianteDatosAcademicosRepository
  */
 export class StudentAcademicDataRepository extends BaseRepository {
   /**

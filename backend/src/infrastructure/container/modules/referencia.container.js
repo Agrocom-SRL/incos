@@ -117,6 +117,7 @@ export function registerReferenciaModule(container) {
         (c) =>
             new ListIdiomasController({
                 listIdiomasUseCase: c.resolve(TOKENS.ref_listIdiomasUseCase),
+                logger: c.resolve(TOKENS.logger),
             }),
         { singleton: true }
     );
@@ -136,6 +137,7 @@ export function registerReferenciaModule(container) {
         (c) =>
             new ListEstadosCivilesController({
                 listEstadosCivilesUseCase: c.resolve(TOKENS.ref_listEstadosCivilesUseCase),
+                logger: c.resolve(TOKENS.logger),
             }),
         { singleton: true }
     );
@@ -148,6 +150,7 @@ export function registerReferenciaModule(container) {
         (c) =>
             new ListTiposParentescoController({
                 listTiposParentescoUseCase: c.resolve(TOKENS.ref_listTiposParentescoUseCase),
+                logger: c.resolve(TOKENS.logger),
             }),
         { singleton: true }
     );
@@ -160,6 +163,7 @@ export function registerReferenciaModule(container) {
         (c) =>
             new ListDocumentacionController({
                 listDocumentacionUseCase: c.resolve(TOKENS.ref_listDocumentacionUseCase),
+                logger: c.resolve(TOKENS.logger),
             }),
         { singleton: true }
     );

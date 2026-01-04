@@ -1,10 +1,10 @@
 import { IRepository } from './IRepository.js';
 
 /**
- * Interfaz de Repositorio: IStudentApoderadoRepository
+ * Interfaz de Repositorio: IEstudianteApoderadoRepository
  * Define el contrato que debe cumplir el repositorio de apoderados de estudiantes
  */
-export class IStudentApoderadoRepository extends IRepository {
+export class IEstudianteApoderadoRepository extends IRepository {
   /**
    * Buscar apoderados por estudiante
    * @param {number} estudianteId
@@ -14,3 +14,4 @@ export class IStudentApoderadoRepository extends IRepository {
     throw new Error('Method findByEstudianteId must be implemented');
   }
 }
+

@@ -1,4 +1,4 @@
-import { IStudentBecaRepository } from '../../domain/interfaces/repositories/IStudentBecaRepository.js';
+import { IEstudianteBecaRepository } from '../../domain/interfaces/repositories/IEstudianteBecaRepository.js';
 import { EstudianteBeca as EstudianteBecaModel } from '../database/models/estudiante_beca.js';
 import { BaseRepository } from './BaseRepository.js';
 import { StudentScholarshipMapper } from '../mappers/StudentScholarshipMapper.js';
@@ -16,14 +16,14 @@ import { StudentScholarshipMapper } from '../mappers/StudentScholarshipMapper.js
  * - Dependency Inversion: Usa StudentScholarshipMapper para conversiones (depende de abstracción)
  * 
  * Clean Architecture:
- * - Infrastructure Layer: Implementación concreta de IStudentBecaRepository
+ * - Infrastructure Layer: Implementación concreta de IEstudianteBecaRepository
  * - Usa StudentScholarshipMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
  * 
- * @implements {IStudentBecaRepository}
+ * @implements {IEstudianteBecaRepository}
  * 
- * Esta clase cumple con el contrato IStudentBecaRepository:
+ * Esta clase cumple con el contrato IEstudianteBecaRepository:
  * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findAll, create, update, delete, search)
- * - Implementa findByEstudianteId() y findByGestionId() que son requeridos por IStudentBecaRepository
+ * - Implementa findByEstudianteId() y findByGestionId() que son requeridos por IEstudianteBecaRepository
  */
 export class StudentScholarshipRepository extends BaseRepository {
   /**

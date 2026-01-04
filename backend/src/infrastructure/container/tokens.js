@@ -4,9 +4,9 @@
  * Convenciones:
  * - Servicios base: camelCase (ej: 'logger', 'fileUploadService')
  * - Repositorios: camelCase + 'Repository' (ej: 'studentRepository')
- * - Use Cases: módulo + camelCase + 'UseCase' (ej: 'estudiantes.registerStudentUseCase')
- * - Controllers: módulo + camelCase + 'Controller'
- * - Routers: módulo + 'router'
+ * - Use Cases: {modulo}_list{Entity}UseCase (ej: 'estudiantes.listStudentsUseCase')
+ * - Controllers: {modulo}_list{Entity}Controller (ej: 'estudiantes.listStudentsController')
+ * - Routers: {modulo}_{entity}Router (ej: 'estudiantes.estudiantesRouter', 'configuracion.carrerasRouter')
  */
 
 export const TOKENS = {
@@ -18,6 +18,58 @@ export const TOKENS = {
     fileStorageService: 'fileStorageService', // Futuro
 
     // ============================================
+    // REPOSITORIOS - CATÁLOGOS GEOGRÁFICOS
+    // ============================================
+    countryRepository: 'countryRepository',
+    departmentRepository: 'departmentRepository',
+    provinceRepository: 'provinceRepository',
+    municipalityRepository: 'municipalityRepository',
+
+    // ============================================
+    // REPOSITORIOS - CATÁLOGOS DE REFERENCIA
+    // ============================================
+    languageRepository: 'languageRepository',
+    civilStatusRepository: 'civilStatusRepository',
+    disabilityTypeRepository: 'disabilityTypeRepository',
+    relationshipTypeRepository: 'relationshipTypeRepository',
+    documentacionRepository: 'documentacionRepository',
+
+    // ============================================
+    // REPOSITORIOS - CONFIGURACIÓN DEL SISTEMA
+    // ============================================
+    configuracionSistemaRepository: 'configuracionSistemaRepository',
+
+    // ============================================
+    // REPOSITORIOS - SISTEMA DE SEGURIDAD
+    // ============================================
+    roleRepository: 'roleRepository',
+    permissionRepository: 'permissionRepository',
+    userRepository: 'userRepository',
+    rolePermissionRepository: 'rolePermissionRepository',
+    sessionRepository: 'sessionRepository',
+    staffRepository: 'staffRepository',
+
+    // ============================================
+    // REPOSITORIOS - ESTRUCTURA ACADÉMICA - PARTE 1
+    // ============================================
+    careerRepository: 'careerRepository',
+    managementRepository: 'managementRepository',
+    managementStageRepository: 'managementStageRepository',
+    periodRepository: 'periodRepository',
+    subjectRepository: 'subjectRepository',
+    studyPlanRepository: 'studyPlanRepository',
+    prerequisiteRepository: 'prerequisiteRepository',
+
+    // ============================================
+    // REPOSITORIOS - ESTRUCTURA ACADÉMICA - PARTE 2
+    // ============================================
+    courseRepository: 'courseRepository',
+    teacherRepository: 'teacherRepository',
+    teacherAssignmentRepository: 'teacherAssignmentRepository',
+    shiftRepository: 'shiftRepository',
+    courseShiftRepository: 'courseShiftRepository',
+
+    // ============================================
     // REPOSITORIOS - ESTUDIANTES
     // ============================================
     studentRepository: 'studentRepository',
@@ -27,23 +79,9 @@ export const TOKENS = {
     studentDisabilityRepository: 'studentDisabilityRepository',
     studentOriginRepository: 'studentOriginRepository',
     studentGuardianRepository: 'studentGuardianRepository',
-
-    // ============================================
-    // REPOSITORIOS - CATÁLOGOS
-    // ============================================
-    documentacionRepository: 'documentacionRepository',
-    configuracionSistemaRepository: 'configuracionSistemaRepository',
-    managementRepository: 'managementRepository',
-    careerRepository: 'careerRepository',
-    subjectRepository: 'subjectRepository',
-    disabilityTypeRepository: 'disabilityTypeRepository',
-    countryRepository: 'countryRepository',
-    departmentRepository: 'departmentRepository',
-    provinceRepository: 'provinceRepository',
-    municipalityRepository: 'municipalityRepository',
-    languageRepository: 'languageRepository',
-    civilStatusRepository: 'civilStatusRepository',
-    relationshipTypeRepository: 'relationshipTypeRepository',
+    scholarshipRepository: 'scholarshipRepository',
+    studentScholarshipRepository: 'studentScholarshipRepository',
+    licenseRequestRepository: 'licenseRequestRepository',
 
     // ============================================
     // MÓDULO ESTUDIANTES - USE CASES
@@ -64,9 +102,9 @@ export const TOKENS = {
     // est_updateStudentController: 'estudiantes.updateStudentController',
 
     // ============================================
-    // MÓDULO ESTUDIANTES - ROUTER
+    // MÓDULO ESTUDIANTES - ROUTERS
     // ============================================
-    est_router: 'estudiantes.router',
+    est_estudiantesRouter: 'estudiantes.estudiantesRouter',
 
     // ============================================
     // MÓDULO CONFIGURACIÓN - USE CASES

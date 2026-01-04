@@ -44,7 +44,7 @@ export class ConfiguracionSistemaRepository extends BaseRepository {
    * @returns {string[]}
    */
   getSearchFields() {
-    return ['clave', 'descripcion', 'categoria'];
+    return ['clave', 'descripcion'];
   }
 
   /**
@@ -52,7 +52,7 @@ export class ConfiguracionSistemaRepository extends BaseRepository {
    * @returns {Array}
    */
   getDefaultSort() {
-    return [['categoria', 'ASC'], ['clave', 'ASC']];
+    return [['clave', 'ASC']];
   }
 
   /**
@@ -108,30 +108,6 @@ export class ConfiguracionSistemaRepository extends BaseRepository {
     return SystemConfigurationMapper.toEntity(model);
   }
 
-  /**
-   * Obtiene todas las configuraciones de una categoría
-   * 
-   * @param {string} categoria - Categoría de las configuraciones
-   * @param {Object} options - Opciones opcionales
-   * @returns {Promise<SystemConfiguration[]>} Array de entidades SystemConfiguration
-   */
-  async findByCategoria(categoria, options = {}) {
-    const Model = this.getModel();
-    const where = {
-      categoria,
-    };
-
-    if (!options.includeInactive) {
-      where.activo = true;
-    }
-
-    const models = await Model.findAll({
-      where,
-      order: this.getDefaultSort(),
-    });
-
-    return SystemConfigurationMapper.toEntityList(models);
-  }
 
   /**
    * Obtiene o crea una configuración por clave
@@ -140,11 +116,10 @@ export class ConfiguracionSistemaRepository extends BaseRepository {
    * @param {string} valor - Valor por defecto si no existe
    * @param {string} tipo - Tipo de dato
    * @param {string} descripcion - Descripción
-   * @param {string} categoria - Categoría
    * @param {number} userId - ID del usuario
    * @returns {Promise<SystemConfiguration>} Entidad SystemConfiguration
    */
-  async findOrCreate(clave, valor, tipo = 'STRING', descripcion = null, categoria = null, userId = null) {
+  async findOrCreate(clave, valor, tipo = 'STRING', descripcion = null, userId = null) {
     const existing = await this.findByClave(clave, { includeInactive: true });
     
     if (existing) {
@@ -156,7 +131,6 @@ export class ConfiguracionSistemaRepository extends BaseRepository {
       value: valor,
       type: tipo,
       description: descripcion,
-      category: categoria,
     };
 
     return await this.create(data, userId);

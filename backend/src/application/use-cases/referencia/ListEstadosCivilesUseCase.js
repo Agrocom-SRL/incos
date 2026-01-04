@@ -4,12 +4,10 @@
  * Lista estados civiles con filtros, paginación y ordenamiento
  */
 
-import { logger } from '../../../shared/logger.js';
-
 export class ListEstadosCivilesUseCase {
-  constructor({ civilStatusRepository, logger: loggerInstance }) {
+  constructor({ civilStatusRepository, logger }) {
     this.civilStatusRepository = civilStatusRepository;
-    this.logger = loggerInstance || logger;
+    this.logger = logger;
   }
 
   /**

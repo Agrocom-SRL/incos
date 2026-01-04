@@ -37,7 +37,6 @@ export class SystemConfigurationMapper {
       value: model.valor,
       type: model.tipo,
       description: model.descripcion,
-      category: model.categoria,
     };
 
     // Combina campos base (id, active, timestamps, audit) con campos específicos
@@ -63,7 +62,6 @@ export class SystemConfigurationMapper {
       valor: data.value,
       tipo: data.type || 'STRING',
       descripcion: data.description || null,
-      categoria: data.category || null,
     };
   }
 
@@ -90,9 +88,6 @@ export class SystemConfigurationMapper {
     }
     if (data.description !== undefined) {
       updateData.descripcion = data.description || null;
-    }
-    if (data.category !== undefined) {
-      updateData.categoria = data.category || null;
     }
 
     // Campos base (active/activo)

@@ -2,7 +2,7 @@
  * Registrador de servicios base (infraestructura)
  * 
  * Servicios registrados:
- * - logger: Sistema de logging (Winston)
+ * - logger: Sistema de logging (Winston) - Implementa ILogger
  * - fileUploadService: Servicio de subida de archivos (Multer)
  * - fileStorageService: Gestión de archivos (futuro)
  * - emailService: Envío de emails (futuro)
@@ -12,10 +12,12 @@
  * - No mantienen estado mutable por request
  * - Son compartidos entre módulos
  * - Mejora el rendimiento (una sola instancia)
+ * 
+ * Nota: El logger implementa ILogger del dominio (backend/src/domain/interfaces/services/ILogger.js)
  */
 
 import { TOKENS } from '../tokens.js';
-import { logger } from '../../../infrastructure/config/logger.config.js'; // ✅ Ruta actualizada
+import { logger } from '../../../infrastructure/services/WinstonLoggerAdapter.js';
 import { fileUploadService } from '../../services/FileUploadService.js';
 
 export function registerServicesModule(container) {

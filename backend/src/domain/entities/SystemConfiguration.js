@@ -11,7 +11,6 @@ export class SystemConfiguration extends BaseEntity {
     this.value = data.value || null;
     this.type = data.type || 'STRING'; // STRING, NUMBER, BOOLEAN, JSON, DATE
     this.description = data.description || null;
-    this.category = data.category || null;
   }
 
   /**
@@ -25,7 +24,6 @@ export class SystemConfiguration extends BaseEntity {
       value: this.value,
       type: this.type,
       description: this.description,
-      category: this.category,
     };
   }
 }

@@ -1,10 +1,10 @@
 import { IRepository } from './IRepository.js';
 
 /**
- * Interfaz de Repositorio: IStudentAcademicDataRepository
+ * Interfaz de Repositorio: IEstudianteDatosAcademicosRepository
  * Define el contrato que debe cumplir el repositorio de datos académicos de estudiantes
  */
-export class IStudentAcademicDataRepository extends IRepository {
+export class IEstudianteDatosAcademicosRepository extends IRepository {
   /**
    * Buscar datos académicos por estudiante
    * @param {number} estudianteId
@@ -23,3 +23,4 @@ export class IStudentAcademicDataRepository extends IRepository {
     throw new Error('Method findByCarreraId must be implemented');
   }
 }
+

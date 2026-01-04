@@ -23,6 +23,7 @@ export { IIdiomaRepository } from './IIdiomaRepository.js';
 export { IEstadoCivilRepository } from './IEstadoCivilRepository.js';
 export { ITipoDiscapacidadRepository } from './ITipoDiscapacidadRepository.js';
 export { ITipoParentescoRepository } from './ITipoParentescoRepository.js';
+export { IDocumentacionRepository } from './IDocumentacionRepository.js';
 
 // ============================================
 // SISTEMA DE SEGURIDAD
@@ -33,6 +34,7 @@ export { IUsuarioRepository } from './IUsuarioRepository.js';
 export { IRolPermisoRepository } from './IRolPermisoRepository.js';
 export { ISesionRepository } from './ISesionRepository.js';
 export { IPersonalRepository } from './IPersonalRepository.js';
+export { IConfiguracionSistemaRepository } from './IConfiguracionSistemaRepository.js';
 
 // ============================================
 // ESTRUCTURA ACADÉMICA - PARTE 1
@@ -57,10 +59,13 @@ export { ITurnoCursoRepository } from './ITurnoCursoRepository.js';
 // ============================================
 // ESTUDIANTES
 // ============================================
-export { IStudentRepository } from './IStudentRepository.js';
-export { IStudentAcademicDataRepository } from './IStudentAcademicDataRepository.js';
+export { IEstudianteRepository } from './IEstudianteRepository.js';
+export { IEstudianteDatosAcademicosRepository } from './IEstudianteDatosAcademicosRepository.js';
 export { IDocumentoEstudianteRepository } from './IDocumentoEstudianteRepository.js';
+export { IEstudianteDocumentoEntregaRepository } from './IEstudianteDocumentoEntregaRepository.js';
+export { IEstudianteDiscapacidadRepository } from './IEstudianteDiscapacidadRepository.js';
+export { IEstudianteOrigenRepository } from './IEstudianteOrigenRepository.js';
 export { IBecaDescuentoRepository } from './IBecaDescuentoRepository.js';
-export { IStudentBecaRepository } from './IStudentBecaRepository.js';
+export { IEstudianteBecaRepository } from './IEstudianteBecaRepository.js';
 export { ILicenciaSolicitudRepository } from './ILicenciaSolicitudRepository.js';
-export { IStudentApoderadoRepository } from './IStudentApoderadoRepository.js';
+export { IEstudianteApoderadoRepository } from './IEstudianteApoderadoRepository.js';

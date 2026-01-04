@@ -1,12 +1,11 @@
-import { logger } from '../../../shared/logger.js';
-
 /**
  * GET /api/v1/estudiantes
  * Controller para listar estudiantes con filtros y paginación
  */
 export class ListStudentsController {
-  constructor({ listStudentsUseCase }) {
+  constructor({ listStudentsUseCase, logger }) {
     this.listStudentsUseCase = listStudentsUseCase;
+    this.logger = logger;
   }
 
   async handle(req, res, next) {
@@ -15,7 +14,7 @@ export class ListStudentsController {
         req.query;
       const userId = req.user?.id || req.user?.userId;
 
-      logger.info('Request de listado de estudiantes', {
+      this.logger.info('Request de listado de estudiantes', {
         page,
         limit,
         filters: { search, carrera, estado, gestion },
@@ -54,7 +53,7 @@ export class ListStudentsController {
         },
       });
     } catch (error) {
-      logger.error('Error al listar estudiantes', { error: error.message, stack: error.stack });
+      this.logger.error('Error al listar estudiantes', { error: error.message, stack: error.stack });
       next(error);
     }
   }

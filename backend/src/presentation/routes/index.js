@@ -40,7 +40,7 @@ router.get('/', (req, res) => {
 // ============================================
 // 1. MÓDULO: ESTUDIANTES
 // ============================================
-router.use('/estudiantes', container.resolve(TOKENS.est_router));
+router.use('/estudiantes', container.resolve(TOKENS.est_estudiantesRouter));
 
 // ============================================
 // 2. MÓDULO: CONFIGURACIÓN

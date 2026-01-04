@@ -72,6 +72,7 @@ export function registerEstudiantesModule(container) {
         (c) =>
             new ListStudentsController({
                 listStudentsUseCase: c.resolve(TOKENS.est_listStudentsUseCase),
+                logger: c.resolve(TOKENS.logger),
             }),
         { singleton: true }
     );
@@ -84,10 +85,12 @@ export function registerEstudiantesModule(container) {
     // );
 
     // ============================================
-    // ROUTER
+    // ROUTERS
     // ============================================
+    
+    // Router de Estudiantes
     container.register(
-        TOKENS.est_router,
+        TOKENS.est_estudiantesRouter,
         (c) => {
             // Resolver solo los controllers que se usan en las rutas actuales
             const controllers = {

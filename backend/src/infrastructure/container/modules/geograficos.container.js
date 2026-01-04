@@ -117,6 +117,7 @@ export function registerGeograficosModule(container) {
         (c) =>
             new ListPaisesController({
                 listPaisesUseCase: c.resolve(TOKENS.geo_listPaisesUseCase),
+                logger: c.resolve(TOKENS.logger),
             }),
         { singleton: true }
     );
@@ -136,6 +137,7 @@ export function registerGeograficosModule(container) {
         (c) =>
             new ListDepartamentosController({
                 listDepartamentosUseCase: c.resolve(TOKENS.geo_listDepartamentosUseCase),
+                logger: c.resolve(TOKENS.logger),
             }),
         { singleton: true }
     );
@@ -148,6 +150,7 @@ export function registerGeograficosModule(container) {
         (c) =>
             new ListProvinciasController({
                 listProvinciasUseCase: c.resolve(TOKENS.geo_listProvinciasUseCase),
+                logger: c.resolve(TOKENS.logger),
             }),
         { singleton: true }
     );
@@ -160,6 +163,7 @@ export function registerGeograficosModule(container) {
         (c) =>
             new ListMunicipiosController({
                 listMunicipiosUseCase: c.resolve(TOKENS.geo_listMunicipiosUseCase),
+                logger: c.resolve(TOKENS.logger),
             }),
         { singleton: true }
     );

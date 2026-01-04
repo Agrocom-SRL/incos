@@ -6,7 +6,6 @@
  */
 
 import { PDFGenerator } from '../../../infrastructure/external/pdf/PDFGenerator.js';
-import { logger } from '../../../shared/logger.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -21,7 +20,7 @@ export class GenerateCompromisoActaUseCase {
     studentDocumentRepository,
     careerRepository,
     managementRepository,
-    logger: loggerInstance 
+    logger
   }) {
     this.studentRepository = studentRepository;
     this.documentacionRepository = documentacionRepository;
@@ -29,7 +28,7 @@ export class GenerateCompromisoActaUseCase {
     this.studentDocumentRepository = studentDocumentRepository;
     this.careerRepository = careerRepository;
     this.managementRepository = managementRepository;
-    this.logger = loggerInstance || logger;
+    this.logger = logger;
   }
 
   /**

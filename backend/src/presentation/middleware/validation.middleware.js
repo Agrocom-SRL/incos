@@ -1,5 +1,5 @@
 import { validationResult } from 'express-validator';
-import { logger } from '../../shared/logger.js';
+import { logger } from '../../infrastructure/config/logger.config.js';
 
 /**
  * Middleware genérico para validación de datos

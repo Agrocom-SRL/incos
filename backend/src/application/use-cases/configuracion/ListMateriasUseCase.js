@@ -4,12 +4,10 @@
  * Lista materias con filtros, paginación y ordenamiento
  */
 
-import { logger } from '../../../shared/logger.js';
-
 export class ListMateriasUseCase {
-  constructor({ subjectRepository, logger: loggerInstance }) {
+  constructor({ subjectRepository, logger }) {
     this.subjectRepository = subjectRepository;
-    this.logger = loggerInstance || logger;
+    this.logger = logger;
   }
 
   /**

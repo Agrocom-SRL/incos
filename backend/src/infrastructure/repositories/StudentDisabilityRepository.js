@@ -1,3 +1,4 @@
+import { IEstudianteDiscapacidadRepository } from '../../domain/interfaces/repositories/IEstudianteDiscapacidadRepository.js';
 import { EstudianteDiscapacidad as EstudianteDiscapacidadModel } from '../database/models/estudiante_discapacidad.js';
 import { BaseRepository } from './BaseRepository.js';
 import { StudentDisabilityMapper } from '../mappers/StudentDisabilityMapper.js';
@@ -15,8 +16,14 @@ import { StudentDisabilityMapper } from '../mappers/StudentDisabilityMapper.js';
  * - Dependency Inversion: Usa StudentDisabilityMapper para conversiones (depende de abstracción)
  * 
  * Clean Architecture:
- * - Infrastructure Layer: Implementación concreta
+ * - Infrastructure Layer: Implementación concreta de IEstudianteDiscapacidadRepository
  * - Usa StudentDisabilityMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
+ * 
+ * @implements {IEstudianteDiscapacidadRepository}
+ * 
+ * Esta clase cumple con el contrato IEstudianteDiscapacidadRepository:
+ * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findAll, create, update, delete, search)
+ * - Implementa findByEstudianteId(), createMultiple() y deleteByEstudianteId() que son requeridos por IEstudianteDiscapacidadRepository
  */
 export class StudentDisabilityRepository extends BaseRepository {
   /**

@@ -4,12 +4,10 @@
  * Lista departamentos con filtros, paginación y ordenamiento
  */
 
-import { logger } from '../../../shared/logger.js';
-
 export class ListDepartamentosUseCase {
-  constructor({ departmentRepository, logger: loggerInstance }) {
+  constructor({ departmentRepository, logger }) {
     this.departmentRepository = departmentRepository;
-    this.logger = loggerInstance || logger;
+    this.logger = logger;
   }
 
   /**

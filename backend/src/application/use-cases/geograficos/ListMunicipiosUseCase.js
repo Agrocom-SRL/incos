@@ -4,12 +4,10 @@
  * Lista municipios con filtros, paginación y ordenamiento
  */
 
-import { logger } from '../../../shared/logger.js';
-
 export class ListMunicipiosUseCase {
-  constructor({ municipalityRepository, logger: loggerInstance }) {
+  constructor({ municipalityRepository, logger }) {
     this.municipalityRepository = municipalityRepository;
-    this.logger = loggerInstance || logger;
+    this.logger = logger;
   }
 
   /**

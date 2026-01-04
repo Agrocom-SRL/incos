@@ -4,12 +4,10 @@
  * Lista tipos de parentesco con filtros, paginación y ordenamiento
  */
 
-import { logger } from '../../../shared/logger.js';
-
 export class ListTiposParentescoUseCase {
-  constructor({ relationshipTypeRepository, logger: loggerInstance }) {
+  constructor({ relationshipTypeRepository, logger }) {
     this.relationshipTypeRepository = relationshipTypeRepository;
-    this.logger = loggerInstance || logger;
+    this.logger = logger;
   }
 
   /**

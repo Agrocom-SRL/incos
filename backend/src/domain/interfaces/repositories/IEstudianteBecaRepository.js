@@ -1,10 +1,10 @@
 import { IRepository } from './IRepository.js';
 
 /**
- * Interfaz de Repositorio: IStudentBecaRepository
+ * Interfaz de Repositorio: IEstudianteBecaRepository
  * Define el contrato que debe cumplir el repositorio de becas de estudiantes
  */
-export class IStudentBecaRepository extends IRepository {
+export class IEstudianteBecaRepository extends IRepository {
   /**
    * Buscar becas por estudiante
    * @param {number} estudianteId
@@ -23,3 +23,4 @@ export class IStudentBecaRepository extends IRepository {
     throw new Error('Method findByGestionId must be implemented');
   }
 }
+
