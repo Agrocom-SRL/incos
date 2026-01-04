@@ -1,0 +1,20 @@
+/* components/molecules/wizard-actions.css */
+/**
+ * Estilos para el componente WizardActions
+ * 
+ * Molécula que renderiza botones de navegación de wizard
+ */
+
+.wizard-actions {
+  width: 100%;
+  justify-content: flex-end;
+  margin-top: var(--spacing-lg);
+}
+
+.wizard-actions .ant-space-item {
+  margin-right: var(--spacing-sm);
+}
+
+.wizard-actions .ant-space-item:last-child {
+  margin-right: 0;
+}

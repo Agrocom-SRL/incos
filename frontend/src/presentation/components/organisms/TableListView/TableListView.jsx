@@ -26,9 +26,9 @@
  */
 
 import React from 'react';
-import { Row, Col, Spin } from 'antd';
+import { Row, Col, Flex } from 'antd';
 import { DataTable } from '@molecules';
-import { Alert, Card, SearchBar } from '@atoms';
+import { Alert, Card, SearchBar, Spinner } from '@atoms';
 
 const TableListView = ({
     // Datos y estado
@@ -61,11 +61,14 @@ const TableListView = ({
         <>
             {/* Mostrar Spinner cuando está cargando inicialmente */}
             {isLoading && (
-                <div style={{ minHeight: '400px', padding: '20px' }}>
-                    <Spin size="large" tip={loadingTip}>
-                        <div style={{ minHeight: '300px', width: '100%' }} />
-                    </Spin>
-                </div>
+                <Flex
+                    vertical
+                    align="center"
+                    justify="center"
+                    style={{ minHeight: '400px', padding: '20px' }}
+                >
+                    <Spinner size="large" tip={loadingTip} />
+                </Flex>
             )}
 
             {/* Mostrar contenido cuando hay datos o no está en loading inicial */}

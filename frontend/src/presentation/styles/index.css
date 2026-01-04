@@ -41,6 +41,7 @@
 @import './components/molecules/form-section.css';
 @import './components/molecules/table-cell.css';
 @import './components/molecules/data-table.css';
+@import './components/molecules/wizard-actions.css';
 
 /* 6. Components - Organisms */
 @import './components/organisms/sidebar.css';
