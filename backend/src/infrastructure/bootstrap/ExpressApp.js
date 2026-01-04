@@ -3,7 +3,8 @@ import 'express-async-errors';
 import { setupMiddleware } from './middleware.config.js';
 import { setupRoutes } from './routes.config.js';
 import { setupStaticFiles } from './static.config.js';
-import { logger } from '../config/logger.config.js';
+import container from '../container/index.js';
+import { TOKENS } from '../container/tokens.js';
 
 /**
  * Clase de configuración de Express
@@ -23,16 +24,20 @@ export class ExpressApp {
      * Configurar la aplicación Express
      */
     configure() {
+        // Obtener dependencias del container (únicamente aquí en la raíz)
+        const logger = container.resolve(TOKENS.logger);
+        const errorFormatter = container.resolve(TOKENS.errorFormatter);
+        
         logger.info('Configurando Express...');
 
-        // 1. Middleware global (seguridad, parsing, logging)
-        setupMiddleware(this.app);
+        // 1. Middleware global (seguridad, parsing, logging) - logger inyectado
+        setupMiddleware(this.app, logger);
 
         // 2. Archivos estáticos (ANTES de las rutas para que tengan prioridad)
         setupStaticFiles(this.app);
 
-        // 3. Rutas de la aplicación
-        setupRoutes(this.app);
+        // 3. Rutas de la aplicación - logger y errorFormatter inyectados
+        setupRoutes(this.app, logger, errorFormatter);
 
         logger.info('Express configurado correctamente');
     }

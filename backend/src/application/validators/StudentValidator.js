@@ -1,25 +1,39 @@
-import { ConflictError, ValidationError } from '../../shared/AppError.js';
+import { ConflictError, ValidationError } from '../../domain/errors/index.js';
 
 /**
  * Validador de Estudiantes
  * Contiene validaciones de negocio que requieren acceso a repositorios
+ * 
+ * Ubicación: application/validators (capa de aplicación)
+ * 
+ * Este validador es un servicio de la capa de aplicación que:
+ * - Depende del Domain Layer (errores) ✅ (dependencia hacia adentro)
+ * - Requiere repositorios para validaciones de negocio
+ * - Se inyecta en Use Cases mediante DI Container
  */
 export class StudentValidator {
+  /**
+   * @param {Object} studentRepository - Repositorio de estudiantes inyectado
+   */
+  constructor({ studentRepository }) {
+    this.studentRepository = studentRepository;
+  }
+
   /**
    * Valida que el CI sea único en el sistema
    * @param {string} ci - Número de CI
    * @param {string} expedicion - Expedición del CI (castellano)
-   * @param {Object} studentRepository - Repositorio de estudiantes
    * @throws {ConflictError} Si ya existe un estudiante con ese CI
+   * @throws {ValidationError} Si CI o expedición no están presentes
    */
-  static async validateUniqueCI(ci, expedicion, studentRepository) {
+  async validateUniqueCI(ci, expedicion) {
     if (!ci || !expedicion) {
       throw new ValidationError('CI y expedición son requeridos');
     }
 
     // Convertir expedicion a expedition para la búsqueda en el repositorio
     const expedition = expedicion.toUpperCase();
-    const existingStudent = await studentRepository.findByCI(ci, expedition);
+    const existingStudent = await this.studentRepository.findByCI(ci, expedition);
 
     if (existingStudent) {
       throw new ConflictError(`Ya existe un estudiante con este CI: ${ci}-${expedicion}`);
@@ -29,16 +43,15 @@ export class StudentValidator {
   /**
    * Valida que el email sea único en el sistema (si se proporciona)
    * @param {string} email - Email a validar
-   * @param {Object} studentRepository - Repositorio de estudiantes
    * @throws {ConflictError} Si ya existe un estudiante con ese email
    */
-  static async validateUniqueEmail(email, studentRepository) {
+  async validateUniqueEmail(email) {
     if (!email) {
       return; // Email es opcional, no validar si no se proporciona
     }
 
     const emailLower = email.toLowerCase();
-    const existingByEmail = await studentRepository.findByEmail(emailLower);
+    const existingByEmail = await this.studentRepository.findByEmail(emailLower);
 
     if (existingByEmail) {
       throw new ConflictError(`Ya existe un estudiante con este email: ${email}`);
@@ -48,16 +61,15 @@ export class StudentValidator {
   /**
    * Valida todas las reglas de negocio que requieren repositorio
    * @param {Object} dto - DTO con datos del estudiante
-   * @param {Object} studentRepository - Repositorio de estudiantes
    * @throws {ConflictError|ValidationError} Si alguna validación falla
    */
-  static async validateBusinessRules(dto, studentRepository) {
+  async validateBusinessRules(dto) {
     // Validar CI único
-    await this.validateUniqueCI(dto.ci, dto.expedicion, studentRepository);
+    await this.validateUniqueCI(dto.ci, dto.expedicion);
 
     // Validar email único (si se proporciona)
     if (dto.emailPersonal) {
-      await this.validateUniqueEmail(dto.emailPersonal, studentRepository);
+      await this.validateUniqueEmail(dto.emailPersonal);
     }
   }
 }

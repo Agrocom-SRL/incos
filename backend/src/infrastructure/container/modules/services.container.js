@@ -3,6 +3,7 @@
  * 
  * Servicios registrados:
  * - logger: Sistema de logging (Winston) - Implementa ILogger
+ * - errorFormatter: Formateo de errores para respuestas HTTP
  * - fileUploadService: Servicio de subida de archivos (Multer)
  * - fileStorageService: Gestión de archivos (futuro)
  * - emailService: Envío de emails (futuro)
@@ -18,6 +19,7 @@
 
 import { TOKENS } from '../tokens.js';
 import { logger } from '../../../infrastructure/services/WinstonLoggerAdapter.js';
+import { errorFormatter } from '../../services/ErrorFormatter.js';
 import { fileUploadService } from '../../services/FileUploadService.js';
 
 export function registerServicesModule(container) {
@@ -28,6 +30,17 @@ export function registerServicesModule(container) {
         container.register(
             TOKENS.logger,
             () => logger,
+            { singleton: true }
+        );
+    }
+
+    // ============================================
+    // ERROR FORMATTING
+    // ============================================
+    if (!container.has(TOKENS.errorFormatter)) {
+        container.register(
+            TOKENS.errorFormatter,
+            () => errorFormatter,
             { singleton: true }
         );
     }

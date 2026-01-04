@@ -1,6 +1,5 @@
 import { Student } from '../../../domain/entities/Student.js';
-import { ValidationError } from '../../../shared/AppError.js';
-import { StudentValidator } from '../../validators/StudentValidator.js';
+import { ValidationError } from '../../../domain/errors/index.js';
 import { StudentCodeGenerator } from '../../../domain/services/StudentCodeGenerator.js';
 
 /**
@@ -23,6 +22,7 @@ export class RegisterStudentUseCase {
     configuracionSistemaRepository,
     managementRepository,
     generateCompromisoActaUseCase,
+    studentValidator,
     logger,
   }) {
     this.studentRepository = studentRepository;
@@ -36,6 +36,7 @@ export class RegisterStudentUseCase {
     this.configuracionSistemaRepository = configuracionSistemaRepository;
     this.managementRepository = managementRepository;
     this.generateCompromisoActaUseCase = generateCompromisoActaUseCase;
+    this.studentValidator = studentValidator;
     this.logger = logger;
   }
 
@@ -52,7 +53,7 @@ export class RegisterStudentUseCase {
     });
 
     // 1. Validar reglas de negocio (CI único, email único)
-    await StudentValidator.validateBusinessRules(dto, this.studentRepository);
+    await this.studentValidator.validateBusinessRules(dto);
 
     // 2. Convertir DTO a datos de entidad
     const studentData = dto.toEntityData();

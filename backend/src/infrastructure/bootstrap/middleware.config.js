@@ -6,15 +6,17 @@ import express from 'express';
 
 import { corsConfig, helmetConfig } from '../config/security.config.js';
 import { serverConfig } from '../config/server.config.js';
-import { logger } from '../config/logger.config.js';
 
-// Middleware de presentación
-import httpLogger from '../../presentation/middleware/logger.middleware.js';
-import errorHandler from '../../presentation/middleware/errorHandler.middleware.js';
+// Middleware de presentación (factory functions)
+import { createHttpLogger } from '../../presentation/middleware/logger.middleware.js';
+import { createErrorHandler } from '../../presentation/middleware/errorHandler.middleware.js';
 import notFoundHandler from '../../presentation/middleware/notFound.middleware.js';
 
 /**
  * Configuración de middleware de Express
+ * 
+ * @param {Express} app - Aplicación Express
+ * @param {ILogger} logger - Logger inyectado
  * 
  * Orden de middleware:
  * 1. Seguridad (Helmet, CORS)
@@ -24,7 +26,8 @@ import notFoundHandler from '../../presentation/middleware/notFound.middleware.j
  * 5. Configuraciones especiales (Trust Proxy)
  * 6. Debugging (solo desarrollo)
  */
-export function setupMiddleware(app) {
+export function setupMiddleware(app, logger) {
+
     // ============================================
     // 1. SEGURIDAD
     // ============================================
@@ -50,8 +53,9 @@ export function setupMiddleware(app) {
     app.use(compression());
 
     // ============================================
-    // 4. HTTP LOGGING
+    // 4. HTTP LOGGING (con logger del container)
     // ============================================
+    const httpLogger = createHttpLogger(logger);
     app.use(httpLogger);
 
     // ============================================
@@ -85,12 +89,17 @@ export function setupMiddleware(app) {
 /**
  * Configuración de manejo de errores
  * Debe llamarse DESPUÉS de setupRoutes()
+ * 
+ * @param {Express} app - Aplicación Express
+ * @param {ILogger} logger - Logger inyectado
+ * @param {ErrorFormatter} errorFormatter - ErrorFormatter inyectado
  */
-export function setupErrorHandling(app) {
+export function setupErrorHandling(app, logger, errorFormatter) {
     // 404 handler
     app.use(notFoundHandler);
 
-    // Error handler global
+    // Error handler global (con logger y errorFormatter inyectados)
+    const errorHandler = createErrorHandler(logger, errorFormatter);
     app.use(errorHandler);
 
     logger.info('Manejo de errores configurado');

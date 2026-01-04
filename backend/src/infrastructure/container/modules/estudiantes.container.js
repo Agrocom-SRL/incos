@@ -15,6 +15,11 @@
 import { TOKENS } from '../tokens.js';
 
 // ============================================
+// VALIDATORS
+// ============================================
+import { StudentValidator } from '../../../application/validators/StudentValidator.js';
+
+// ============================================
 // USE CASES
 // ============================================
 import { ListStudentsUseCase } from '../../../application/use-cases/estudiantes/ListStudentsUseCase.js';
@@ -45,6 +50,18 @@ import { buildStudentRouter } from '../../../presentation/routes/student.routes.
  */
 export function registerEstudiantesModule(container) {
     // ============================================
+    // VALIDATORS
+    // ============================================
+    container.register(
+        TOKENS.est_studentValidator,
+        (c) =>
+            new StudentValidator({
+                studentRepository: c.resolve(TOKENS.studentRepository),
+            }),
+        { singleton: true }
+    );
+
+    // ============================================
     // USE CASES
     // ============================================
     container.register(
@@ -60,7 +77,12 @@ export function registerEstudiantesModule(container) {
     // TODO: Agregar otros Use Cases cuando se implementen sus endpoints
     // container.register(
     //     TOKENS.est_registerStudentUseCase,
-    //     (c) => new RegisterStudentUseCase({ ... }),
+    //     (c) => new RegisterStudentUseCase({
+    //         studentRepository: c.resolve(TOKENS.studentRepository),
+    //         studentValidator: c.resolve(TOKENS.est_studentValidator),
+    //         logger: c.resolve(TOKENS.logger),
+    //         // ... otras dependencias
+    //     }),
     //     { singleton: true }
     // );
 

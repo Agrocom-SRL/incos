@@ -14,6 +14,7 @@ export const TOKENS = {
     // SERVICIOS BASE
     // ============================================
     logger: 'logger',
+    errorFormatter: 'errorFormatter',
     fileUploadService: 'fileUploadService',
     fileStorageService: 'fileStorageService', // Futuro
 
@@ -82,6 +83,11 @@ export const TOKENS = {
     scholarshipRepository: 'scholarshipRepository',
     studentScholarshipRepository: 'studentScholarshipRepository',
     licenseRequestRepository: 'licenseRequestRepository',
+
+    // ============================================
+    // MÓDULO ESTUDIANTES - VALIDATORS
+    // ============================================
+    est_studentValidator: 'estudiantes.studentValidator',
 
     // ============================================
     // MÓDULO ESTUDIANTES - USE CASES

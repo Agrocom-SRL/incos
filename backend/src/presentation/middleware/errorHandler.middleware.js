@@ -1,93 +1,46 @@
-import { logger } from '../../infrastructure/config/logger.config.js';
-
 /**
+ * Factory function para crear el middleware de manejo de errores
+ * 
+ * @param {ILogger} logger - Logger inyectado del container
+ * @param {ErrorFormatter} errorFormatter - Formatter de errores inyectado del container
+ * @returns {Function} Middleware de manejo de errores
+ * 
  * Middleware genérico para manejo global de errores
  * Captura todos los errores no manejados y formatea respuestas según el estándar de la API
+ * 
+ * Responsabilidades:
+ * - Coordinar el logging de errores
+ * - Delegar el formateo a ErrorFormatter
+ * - Enviar respuesta HTTP apropiada
  *
  * Uso:
+ * const errorHandler = createErrorHandler(logger, errorFormatter);
  * app.use(errorHandler); // Al final de todas las rutas
  */
-function errorHandler(err, req, res, next) {
-  // Log del error para debugging con más detalles
-  logger.error('Error en errorHandler:', {
-    message: err.message,
-    stack: err.stack,
-    name: err.name,
-    url: req.originalUrl,
-    method: req.method,
-    ip: req.ip,
-    origin: req.headers.origin,
-    'user-agent': req.headers['user-agent'],
-    'content-type': req.headers['content-type'],
-    authorization: req.headers.authorization ? 'Present' : 'Missing',
-    userId: req.user?.id,
-    body: req.body,
-    isOperational: err.isOperational,
-    statusCode: err.statusCode,
-    code: err.code,
-    details: err.details,
-    // Información adicional de Sequelize si existe
-    ...(err.original && {
-      sqlError: err.original.message,
-      sqlCode: err.original.code,
-      sqlState: err.original.sqlState,
-    }),
-  });
+export function createErrorHandler(logger, errorFormatter) {
+  return function errorHandler(err, req, res, next) {
+    // Extraer información del error para logging
+    const errorInfo = errorFormatter.extractErrorInfo(err, req);
+    logger.error('Error en errorHandler:', errorInfo);
 
-  // Error operacional conocido (AppError con isOperational = true)
-  if (err.isOperational && err.statusCode < 500) {
-    return res.status(err.statusCode).json({
-      success: false,
-      error: {
-        code: err.code || 'ERROR',
-        message: err.message,
-        ...(err.details && { details: err.details }),
-      },
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: req.id,
-      },
-    });
-  }
+    // Error operacional conocido (AppError con isOperational = true)
+    if (err.isOperational && err.statusCode < 500) {
+      const response = errorFormatter.formatOperationalError(err, req);
+      return res.status(err.statusCode).json(response);
+    }
 
-  // Error de validación de express-validator (si viene después del middleware de validación)
-  if (err.statusCode === 400 && err.errors) {
-    return res.status(400).json({
-      success: false,
-      error: {
-        code: 'VALIDATION_ERROR',
-        message: err.message || 'Los datos proporcionados son inválidos',
-        details: err.errors,
-      },
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: req.id,
-      },
-    });
-  }
+    // Error de validación de express-validator (si viene después del middleware de validación)
+    if (err.statusCode === 400 && err.errors) {
+      const response = errorFormatter.formatValidationError(err, req);
+      return res.status(400).json(response);
+    }
 
-  // Error inesperado del sistema
-  const statusCode = err.statusCode || 500;
-  const message =
-    process.env.NODE_ENV === 'production'
-      ? 'Error interno del servidor'
-      : err.message;
-
-  res.status(statusCode).json({
-    success: false,
-    error: {
-      code: err.code || 'INTERNAL_SERVER_ERROR',
-      message,
-      ...(process.env.NODE_ENV !== 'production' && { 
-        stack: err.stack,
-        name: err.name,
-      }),
-    },
-    meta: {
-      timestamp: new Date().toISOString(),
-      requestId: req.id,
-    },
-  });
+    // Error inesperado del sistema
+    const statusCode = err.statusCode || 500;
+    const isProduction = process.env.NODE_ENV === 'production';
+    const response = errorFormatter.formatUnexpectedError(err, req, isProduction);
+    return res.status(statusCode).json(response);
+  };
 }
 
-export default errorHandler;
+export default createErrorHandler;

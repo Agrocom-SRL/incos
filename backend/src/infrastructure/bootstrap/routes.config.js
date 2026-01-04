@@ -1,6 +1,5 @@
 import routes from '../../presentation/routes/index.js';
 import { serverConfig } from '../config/server.config.js';
-import { logger } from '../config/logger.config.js';
 import { setupErrorHandling } from './middleware.config.js';
 import swaggerUi from 'swagger-ui-express';
 import swaggerSpec from '../config/swagger.config.js';
@@ -8,13 +7,17 @@ import swaggerSpec from '../config/swagger.config.js';
 /**
  * Configuración de rutas de Express
  * 
+ * @param {Express} app - Aplicación Express
+ * @param {ILogger} logger - Logger inyectado
+ * @param {ErrorFormatter} errorFormatter - ErrorFormatter inyectado
+ * 
  * Incluye:
  * - Health check
  * - API v1 routes
  * - API docs
  * - Manejo de errores (404, 500)
  */
-export function setupRoutes(app) {
+export function setupRoutes(app, logger, errorFormatter) {
     // ============================================
     // HEALTH CHECK
     // ============================================
@@ -51,7 +54,7 @@ export function setupRoutes(app) {
     // ============================================
     // ERROR HANDLING (debe ir al final)
     // ============================================
-    setupErrorHandling(app);
+    setupErrorHandling(app, logger, errorFormatter);
 
     logger.info('Rutas configuradas');
 }

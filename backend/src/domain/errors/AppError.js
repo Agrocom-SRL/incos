@@ -1,5 +1,10 @@
 /**
  * Clase base para errores personalizados de la aplicación
+ * 
+ * Ubicación: domain/errors (capa de dominio)
+ * 
+ * Los errores de dominio son parte del modelo de negocio y pueden ser
+ * lanzados desde cualquier capa (domain, application, infrastructure).
  */
 export class AppError extends Error {
   constructor(message, statusCode = 500, code = 'INTERNAL_ERROR') {
@@ -58,3 +63,4 @@ export class ConflictError extends AppError {
     super(message, 409, 'CONFLICT');
   }
 }
+
