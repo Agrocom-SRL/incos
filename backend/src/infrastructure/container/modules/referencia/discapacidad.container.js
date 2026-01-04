@@ -13,8 +13,8 @@
  */
 
 import { TOKENS } from '../../tokens.js';
-import { ListDiscapacidadUseCase } from '../../../../application/use-cases/configuracion/ListDiscapacidadUseCase.js';
-import { ListDiscapacidadController } from '../../../../presentation/controllers/configuracion/index.js';
+import { ListDiscapacidadUseCase } from '../../../../application/use-cases/referencia/ListDiscapacidadUseCase.js';
+import { ListDiscapacidadController } from '../../../../presentation/controllers/referencia/index.js';
 import { buildDiscapacidadRouter } from '../../../../presentation/routes/discapacidad.routes.js';
 
 /**
@@ -28,7 +28,7 @@ export function registerDiscapacidadResource(container) {
     // USE CASES
     // ============================================
     container.register(
-        TOKENS.cfg_listDiscapacidadUseCase,
+        TOKENS.ref_listDiscapacidadUseCase,
         (c) =>
             new ListDiscapacidadUseCase({
                 disabilityTypeRepository: c.resolve(TOKENS.disabilityTypeRepository),
@@ -43,10 +43,10 @@ export function registerDiscapacidadResource(container) {
     // CONTROLLERS
     // ============================================
     container.register(
-        TOKENS.cfg_listDiscapacidadController,
+        TOKENS.ref_listDiscapacidadController,
         (c) =>
             new ListDiscapacidadController({
-                listDiscapacidadUseCase: c.resolve(TOKENS.cfg_listDiscapacidadUseCase),
+                listDiscapacidadUseCase: c.resolve(TOKENS.ref_listDiscapacidadUseCase),
                 logger: c.resolve(TOKENS.logger),
             }),
         { singleton: true }
@@ -58,10 +58,10 @@ export function registerDiscapacidadResource(container) {
     // ROUTER
     // ============================================
     container.register(
-        TOKENS.cfg_discapacidadRouter,
+        TOKENS.ref_discapacidadRouter,
         (c) => {
             const controllers = {
-                listDiscapacidadController: c.resolve(TOKENS.cfg_listDiscapacidadController),
+                listDiscapacidadController: c.resolve(TOKENS.ref_listDiscapacidadController),
                 // TODO: Agregar otros controllers cuando se implementen sus rutas
             };
 

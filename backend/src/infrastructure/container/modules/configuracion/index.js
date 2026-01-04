@@ -15,7 +15,6 @@
 
 import { registerCarrerasResource } from './carreras.container.js';
 import { registerMateriasResource } from './materias.container.js';
-import { registerDiscapacidadResource } from './discapacidad.container.js';
 
 /**
  * Registra el módulo completo de Configuración en el contenedor
@@ -27,7 +26,6 @@ export function registerConfiguracionModule(container) {
     // Registrar cada recurso individualmente
     registerCarrerasResource(container);
     registerMateriasResource(container);
-    registerDiscapacidadResource(container);
 
     return container;
 }

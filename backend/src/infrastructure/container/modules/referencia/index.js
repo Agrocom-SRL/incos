@@ -17,6 +17,7 @@ import { registerIdiomasResource } from './idiomas.container.js';
 import { registerEstadosCivilesResource } from './estados-civiles.container.js';
 import { registerTiposParentescoResource } from './tipos-parentesco.container.js';
 import { registerDocumentacionResource } from './documentacion.container.js';
+import { registerDiscapacidadResource } from './discapacidad.container.js';
 
 /**
  * Registra el módulo completo de Referencia en el contenedor
@@ -30,6 +31,7 @@ export function registerReferenciaModule(container) {
     registerEstadosCivilesResource(container);
     registerTiposParentescoResource(container);
     registerDocumentacionResource(container);
+    registerDiscapacidadResource(container);
 
     return container;
 }

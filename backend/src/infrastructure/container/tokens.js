@@ -118,21 +118,18 @@ export const TOKENS = {
     // ============================================
     cfg_listCarrerasUseCase: 'configuracion.listCarrerasUseCase',
     cfg_listMateriasUseCase: 'configuracion.listMateriasUseCase',
-    cfg_listDiscapacidadUseCase: 'configuracion.listDiscapacidadUseCase',
 
     // ============================================
     // MÓDULO CONFIGURACIÓN - CONTROLLERS
     // ============================================
     cfg_listCarrerasController: 'configuracion.listCarrerasController',
     cfg_listMateriasController: 'configuracion.listMateriasController',
-    cfg_listDiscapacidadController: 'configuracion.listDiscapacidadController',
 
     // ============================================
     // MÓDULO CONFIGURACIÓN - ROUTERS
     // ============================================
     cfg_carrerasRouter: 'configuracion.carrerasRouter',
     cfg_materiasRouter: 'configuracion.materiasRouter',
-    cfg_discapacidadRouter: 'configuracion.discapacidadRouter',
 
     // ============================================
     // MÓDULO GEOGRÁFICOS - USE CASES
@@ -165,6 +162,7 @@ export const TOKENS = {
     ref_listEstadosCivilesUseCase: 'referencia.listEstadosCivilesUseCase',
     ref_listTiposParentescoUseCase: 'referencia.listTiposParentescoUseCase',
     ref_listDocumentacionUseCase: 'referencia.listDocumentacionUseCase',
+    ref_listDiscapacidadUseCase: 'referencia.listDiscapacidadUseCase',
 
     // ============================================
     // MÓDULO REFERENCIA - CONTROLLERS
@@ -173,6 +171,7 @@ export const TOKENS = {
     ref_listEstadosCivilesController: 'referencia.listEstadosCivilesController',
     ref_listTiposParentescoController: 'referencia.listTiposParentescoController',
     ref_listDocumentacionController: 'referencia.listDocumentacionController',
+    ref_listDiscapacidadController: 'referencia.listDiscapacidadController',
 
     // ============================================
     // MÓDULO REFERENCIA - ROUTERS
@@ -181,4 +180,5 @@ export const TOKENS = {
     ref_estadosCivilesRouter: 'referencia.estadosCivilesRouter',
     ref_tiposParentescoRouter: 'referencia.tiposParentescoRouter',
     ref_documentacionRouter: 'referencia.documentacionRouter',
+    ref_discapacidadRouter: 'referencia.discapacidadRouter',
 };

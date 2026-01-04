@@ -17,7 +17,6 @@ router.get('/', (req, res) => {
             // Módulo: Configuración
             carreras: '/api/v1/carreras',
             materias: '/api/v1/materias',
-            discapacidad: '/api/v1/discapacidad',
             // Módulo: Geográficos
             paises: '/api/v1/paises',
             departamentos: '/api/v1/departamentos',
@@ -28,6 +27,7 @@ router.get('/', (req, res) => {
             estadosCiviles: '/api/v1/estados-civiles',
             tiposParentesco: '/api/v1/tipos-parentesco',
             documentacion: '/api/v1/documentacion',
+            discapacidad: '/api/v1/discapacidad',
         },
     });
 });
@@ -49,9 +49,6 @@ router.use('/estudiantes', container.resolve(TOKENS.est_estudiantesRouter));
 router.use('/carreras', container.resolve(TOKENS.cfg_carrerasRouter));
 router.use('/materias', container.resolve(TOKENS.cfg_materiasRouter));
 
-// 2.2. Complementario
-router.use('/discapacidad', container.resolve(TOKENS.cfg_discapacidadRouter));
-
 // ============================================
 // 3. MÓDULO: GEOGRÁFICOS
 // ============================================
@@ -67,6 +64,7 @@ router.use('/idiomas', container.resolve(TOKENS.ref_idiomasRouter));
 router.use('/estados-civiles', container.resolve(TOKENS.ref_estadosCivilesRouter));
 router.use('/tipos-parentesco', container.resolve(TOKENS.ref_tiposParentescoRouter));
 router.use('/documentacion', container.resolve(TOKENS.ref_documentacionRouter));
+router.use('/discapacidad', container.resolve(TOKENS.ref_discapacidadRouter));
 
 // Para agregar un nuevo módulo:
 // 1. Crear archivo: routes/{modulo}.routes.js

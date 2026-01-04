@@ -14,9 +14,3 @@ export { ListCarrerasController } from './carreras/list.controller.js';
 export { ListMateriasController } from './materias/list.controller.js';
 // TODO: Agregar otros controllers cuando se implementen sus endpoints
 
-// ============================================
-// CONTROLLERS IMPLEMENTADOS - DISCAPACIDAD
-// ============================================
-export { ListDiscapacidadController } from './discapacidad/list.controller.js';
-// TODO: Agregar otros controllers cuando se implementen sus endpoints
-

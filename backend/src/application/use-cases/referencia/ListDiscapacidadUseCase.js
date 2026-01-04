@@ -1,6 +1,6 @@
 /**
  * Use Case: ListDiscapacidadUseCase
- * Módulo: Configuración
+ * Módulo: Referencia
  * Lista tipos de discapacidad con filtros, paginación y ordenamiento
  */
 
@@ -19,7 +19,7 @@ export class ListDiscapacidadUseCase {
    * @returns {Promise<{discapacidades: Array, total: number, page: number, limit: number, totalPages: number}>}
    */
   async execute(filters = {}, page = 1, limit = 50) {
-    this.logger.info('[Configuración] Listando tipos de discapacidad', {
+    this.logger.info('[Referencia] Listando tipos de discapacidad', {
       filters,
       page,
       limit,
