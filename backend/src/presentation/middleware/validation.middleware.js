@@ -1,6 +1,4 @@
 import { validationResult } from 'express-validator';
-import container from '../../infrastructure/container/index.js';
-import { TOKENS } from '../../infrastructure/container/tokens.js';
 
 /**
  * Factory function para crear el middleware de validación
@@ -48,10 +46,4 @@ export function createValidateRequest(logger) {
   };
 }
 
-// Instancia por defecto usando logger del container (para compatibilidad con routes)
-// NOTA: Se recomienda usar createValidateRequest(logger) directamente cuando sea posible
-const logger = container.resolve(TOKENS.logger);
-const defaultValidateRequest = createValidateRequest(logger);
-
-// Export por defecto (para compatibilidad con routes existentes)
-export default defaultValidateRequest;
+export default createValidateRequest;

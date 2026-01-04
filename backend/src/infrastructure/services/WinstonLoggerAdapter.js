@@ -1,4 +1,4 @@
-import { ILogger } from '../../../domain/interfaces/services/ILogger.js';
+import { ILogger } from '../../domain/interfaces/services/ILogger.js';
 import winstonLogger from '../config/logger.config.js';
 
 /**
@@ -88,10 +88,7 @@ export class WinstonLoggerAdapter extends ILogger {
    * @returns {Object} Stream con método write
    */
   get stream() {
-    // Si Winston ya tiene stream, usarlo; si no, crear uno que use http()
-    if (this.winston.stream) {
-      return this.winston.stream;
-    }
+    // Retornar stream que use http() para logging de Morgan
     return {
       write: (message) => this.http(message.trim()),
     };
@@ -102,12 +99,6 @@ export class WinstonLoggerAdapter extends ILogger {
  * Instancia singleton del adaptador
  */
 export const logger = new WinstonLoggerAdapter();
-
-// Mantener compatibilidad con el stream de Winston para Morgan
-// El stream se asigna directamente a la instancia para que funcione con middleware
-logger.stream = {
-  write: (message) => logger.http(message.trim()),
-};
 
 export default logger;
 
