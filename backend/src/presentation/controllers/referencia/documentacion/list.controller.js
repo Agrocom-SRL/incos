@@ -1,54 +1,48 @@
 /**
  * GET /api/v1/documentacion
  * Controller para listar tipos de documentación con filtros y paginación
+ * 
+ * Responsabilidades:
+ * - Recibir peticiones HTTP GET para listar tipos de documentación
+ * - Delegar lógica de negocio a ListDocumentacionUseCase
+ * - Formatear respuesta JSON estandarizada
+ * 
+ * Endpoint:
+ * GET /api/v1/documentacion?page=1&limit=50&search=ci
+ * 
+ * Query Parameters:
+ * - page: Número de página (default: 1)
+ * - limit: Cantidad de resultados por página (default: 50)
+ * - search: Término de búsqueda por nombre o descripción (opcional)
+ * 
+ * Principios SOLID:
+ * - Single Responsibility: Solo maneja la comunicación HTTP para listar tipos de documentación
+ * - Dependency Inversion: Depende de ListDocumentacionUseCase (abstracción), no de implementación concreta
+ * 
+ * Clean Architecture:
+ * - Presentation Layer: Maneja HTTP request/response
+ * - Depende de Application Layer (Use Cases) a través de inyección de dependencias
  */
-export class ListDocumentacionController {
+import { BaseListController } from '../../base/BaseListController.js';
+
+export class ListDocumentacionController extends BaseListController {
+  /**
+   * @param {Object} params - Dependencias inyectadas
+   * @param {ListDocumentacionUseCase} params.listDocumentacionUseCase - Caso de uso para listar tipos de documentación
+   * @param {ILogger} params.logger - Logger para registro de eventos
+   */
   constructor({ listDocumentacionUseCase, logger }) {
-    this.listDocumentacionUseCase = listDocumentacionUseCase;
-    this.logger = logger;
+    super({
+      useCase: listDocumentacionUseCase,
+      logger,
+      resourceName: 'tipos de documentación',
+      dataFieldName: 'documentacion',
+    });
   }
 
-  async handle(req, res, next) {
-    try {
-      const { page = 1, limit = 50, search } = req.query;
-      const userId = req.user?.id || req.user?.userId;
-
-      this.logger.info('Request de listado de tipos de documentación', {
-        page,
-        limit,
-        filters: { search },
-        userId,
-      });
-
-      if (!this.listDocumentacionUseCase) {
-        throw new Error('ListDocumentacionUseCase no está configurado');
-      }
-      
-      const filters = {};
-      if (search) {
-        filters.search = search;
-      }
-
-      const result = await this.listDocumentacionUseCase.execute(filters, page, limit);
-
-      res.status(200).json({
-        success: true,
-        data: result.documentacion,
-        message: 'Listado de tipos de documentación obtenido correctamente',
-        pagination: {
-          page: result.page,
-          limit: result.limit,
-          total: result.total,
-          totalPages: result.totalPages,
-        },
-        meta: {
-          timestamp: new Date().toISOString(),
-        },
-      });
-    } catch (error) {
-      this.logger.error('Error al listar tipos de documentación', { error: error.message, stack: error.stack });
-      next(error);
-    }
-  }
+  // Nota: No es necesario sobrescribir buildFilters() ni handle()
+  // BaseListController maneja la búsqueda básica (search)
+  // Si en el futuro necesitamos filtros específicos,
+  // podemos sobrescribir buildFilters() aquí
 }
 

@@ -1,54 +1,56 @@
 /**
  * GET /api/v1/departamentos
  * Controller para listar departamentos con filtros y paginación
+ * 
+ * Responsabilidades:
+ * - Recibir peticiones HTTP GET para listar departamentos
+ * - Delegar lógica de negocio a ListDepartamentosUseCase
+ * - Formatear respuesta JSON estandarizada
+ * 
+ * Endpoint:
+ * GET /api/v1/departamentos?page=1&limit=50&search=santa
+ * 
+ * Query Parameters:
+ * - page: Número de página (default: 1)
+ * - limit: Cantidad de resultados por página (default: 50)
+ * - search: Término de búsqueda por nombre (opcional)
+ * 
+ * Principios SOLID:
+ * - Single Responsibility: Solo maneja la comunicación HTTP para listar departamentos
+ * - Dependency Inversion: Depende de ListDepartamentosUseCase (abstracción), no de implementación concreta
+ * 
+ * Clean Architecture:
+ * - Presentation Layer: Maneja HTTP request/response
+ * - Depende de Application Layer (Use Cases) a través de inyección de dependencias
  */
-export class ListDepartamentosController {
+import { BaseListController } from '../../base/BaseListController.js';
+
+export class ListDepartamentosController extends BaseListController {
+  /**
+   * @param {Object} params - Dependencias inyectadas
+   * @param {ListDepartamentosUseCase} params.listDepartamentosUseCase - Caso de uso para listar departamentos
+   * @param {ILogger} params.logger - Logger para registro de eventos
+   */
   constructor({ listDepartamentosUseCase, logger }) {
-    this.listDepartamentosUseCase = listDepartamentosUseCase;
-    this.logger = logger;
+    super({
+      useCase: listDepartamentosUseCase,
+      logger,
+      resourceName: 'departamentos',
+      dataFieldName: 'departamentos',
+    });
   }
 
-  async handle(req, res, next) {
-    try {
-      const { page = 1, limit = 50, search } = req.query;
-      const userId = req.user?.id || req.user?.userId;
-
-      this.logger.info('Request de listado de departamentos', {
-        page,
-        limit,
-        filters: { search },
-        userId,
-      });
-
-      if (!this.listDepartamentosUseCase) {
-        throw new Error('ListDepartamentosUseCase no está configurado');
-      }
-      
-      const filters = {};
-      if (search) {
-        filters.search = search;
-      }
-
-      const result = await this.listDepartamentosUseCase.execute(filters, page, limit);
-
-      res.status(200).json({
-        success: true,
-        data: result.departamentos,
-        message: 'Listado de departamentos obtenido correctamente',
-        pagination: {
-          page: result.page,
-          limit: result.limit,
-          total: result.total,
-          totalPages: result.totalPages,
-        },
-        meta: {
-          timestamp: new Date().toISOString(),
-        },
-      });
-    } catch (error) {
-      this.logger.error('Error al listar departamentos', { error: error.message, stack: error.stack });
-      next(error);
-    }
-  }
+  // Nota: No es necesario sobrescribir buildFilters() ni handle()
+  // BaseListController maneja la búsqueda básica (search)
+  // Si en el futuro necesitamos filtros específicos (ej: countryId),
+  // podemos sobrescribir buildFilters() aquí:
+  //
+  // buildFilters(query) {
+  //   const filters = super.buildFilters(query);
+  //   if (query.countryId) {
+  //     filters.countryId = query.countryId;
+  //   }
+  //   return filters;
+  // }
 }
 

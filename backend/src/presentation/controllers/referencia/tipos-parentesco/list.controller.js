@@ -1,54 +1,48 @@
 /**
  * GET /api/v1/tipos-parentesco
  * Controller para listar tipos de parentesco con filtros y paginación
+ * 
+ * Responsabilidades:
+ * - Recibir peticiones HTTP GET para listar tipos de parentesco
+ * - Delegar lógica de negocio a ListTiposParentescoUseCase
+ * - Formatear respuesta JSON estandarizada
+ * 
+ * Endpoint:
+ * GET /api/v1/tipos-parentesco?page=1&limit=50&search=padre
+ * 
+ * Query Parameters:
+ * - page: Número de página (default: 1)
+ * - limit: Cantidad de resultados por página (default: 50)
+ * - search: Término de búsqueda por nombre (opcional)
+ * 
+ * Principios SOLID:
+ * - Single Responsibility: Solo maneja la comunicación HTTP para listar tipos de parentesco
+ * - Dependency Inversion: Depende de ListTiposParentescoUseCase (abstracción), no de implementación concreta
+ * 
+ * Clean Architecture:
+ * - Presentation Layer: Maneja HTTP request/response
+ * - Depende de Application Layer (Use Cases) a través de inyección de dependencias
  */
-export class ListTiposParentescoController {
+import { BaseListController } from '../../base/BaseListController.js';
+
+export class ListTiposParentescoController extends BaseListController {
+  /**
+   * @param {Object} params - Dependencias inyectadas
+   * @param {ListTiposParentescoUseCase} params.listTiposParentescoUseCase - Caso de uso para listar tipos de parentesco
+   * @param {ILogger} params.logger - Logger para registro de eventos
+   */
   constructor({ listTiposParentescoUseCase, logger }) {
-    this.listTiposParentescoUseCase = listTiposParentescoUseCase;
-    this.logger = logger;
+    super({
+      useCase: listTiposParentescoUseCase,
+      logger,
+      resourceName: 'tipos de parentesco',
+      dataFieldName: 'tiposParentesco',
+    });
   }
 
-  async handle(req, res, next) {
-    try {
-      const { page = 1, limit = 50, search } = req.query;
-      const userId = req.user?.id || req.user?.userId;
-
-      this.logger.info('Request de listado de tipos de parentesco', {
-        page,
-        limit,
-        filters: { search },
-        userId,
-      });
-
-      if (!this.listTiposParentescoUseCase) {
-        throw new Error('ListTiposParentescoUseCase no está configurado');
-      }
-      
-      const filters = {};
-      if (search) {
-        filters.search = search;
-      }
-
-      const result = await this.listTiposParentescoUseCase.execute(filters, page, limit);
-
-      res.status(200).json({
-        success: true,
-        data: result.tiposParentesco,
-        message: 'Listado de tipos de parentesco obtenido correctamente',
-        pagination: {
-          page: result.page,
-          limit: result.limit,
-          total: result.total,
-          totalPages: result.totalPages,
-        },
-        meta: {
-          timestamp: new Date().toISOString(),
-        },
-      });
-    } catch (error) {
-      this.logger.error('Error al listar tipos de parentesco', { error: error.message, stack: error.stack });
-      next(error);
-    }
-  }
+  // Nota: No es necesario sobrescribir buildFilters() ni handle()
+  // BaseListController maneja la búsqueda básica (search)
+  // Si en el futuro necesitamos filtros específicos,
+  // podemos sobrescribir buildFilters() aquí
 }
 

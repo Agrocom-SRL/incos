@@ -1,54 +1,56 @@
 /**
  * GET /api/v1/carreras
  * Controller para listar carreras con filtros y paginación
+ * 
+ * Responsabilidades:
+ * - Recibir peticiones HTTP GET para listar carreras
+ * - Delegar lógica de negocio a ListCarrerasUseCase
+ * - Formatear respuesta JSON estandarizada
+ * 
+ * Endpoint:
+ * GET /api/v1/carreras?page=1&limit=50&search=informatica
+ * 
+ * Query Parameters:
+ * - page: Número de página (default: 1)
+ * - limit: Cantidad de resultados por página (default: 50)
+ * - search: Término de búsqueda por código, nombre o descripción (opcional)
+ * 
+ * Principios SOLID:
+ * - Single Responsibility: Solo maneja la comunicación HTTP para listar carreras
+ * - Dependency Inversion: Depende de ListCarrerasUseCase (abstracción), no de implementación concreta
+ * 
+ * Clean Architecture:
+ * - Presentation Layer: Maneja HTTP request/response
+ * - Depende de Application Layer (Use Cases) a través de inyección de dependencias
  */
-export class ListCarrerasController {
+import { BaseListController } from '../../base/BaseListController.js';
+
+export class ListCarrerasController extends BaseListController {
+  /**
+   * @param {Object} params - Dependencias inyectadas
+   * @param {ListCarrerasUseCase} params.listCarrerasUseCase - Caso de uso para listar carreras
+   * @param {ILogger} params.logger - Logger para registro de eventos
+   */
   constructor({ listCarrerasUseCase, logger }) {
-    this.listCarrerasUseCase = listCarrerasUseCase;
-    this.logger = logger;
+    super({
+      useCase: listCarrerasUseCase,
+      logger,
+      resourceName: 'carreras',
+      dataFieldName: 'carreras',
+    });
   }
 
-  async handle(req, res, next) {
-    try {
-      const { page = 1, limit = 50, search } = req.query;
-      const userId = req.user?.id || req.user?.userId;
-
-      this.logger.info('Request de listado de carreras', {
-        page,
-        limit,
-        filters: { search },
-        userId,
-      });
-
-      if (!this.listCarrerasUseCase) {
-        throw new Error('ListCarrerasUseCase no está configurado');
-      }
-      
-      const filters = {};
-      if (search) {
-        filters.search = search;
-      }
-
-      const result = await this.listCarrerasUseCase.execute(filters, page, limit);
-
-      res.status(200).json({
-        success: true,
-        data: result.carreras,
-        message: 'Listado de carreras obtenido correctamente',
-        pagination: {
-          page: result.page,
-          limit: result.limit,
-          total: result.total,
-          totalPages: result.totalPages,
-        },
-        meta: {
-          timestamp: new Date().toISOString(),
-        },
-      });
-    } catch (error) {
-      this.logger.error('Error al listar carreras', { error: error.message, stack: error.stack });
-      next(error);
-    }
-  }
+  // Nota: No es necesario sobrescribir buildFilters() ni handle()
+  // BaseListController maneja la búsqueda básica (search)
+  // Si en el futuro necesitamos filtros específicos (ej: activo, codigo),
+  // podemos sobrescribir buildFilters() aquí:
+  //
+  // buildFilters(query) {
+  //   const filters = super.buildFilters(query);
+  //   if (query.activo !== undefined) {
+  //     filters.activo = query.activo === 'true';
+  //   }
+  //   return filters;
+  // }
 }
 

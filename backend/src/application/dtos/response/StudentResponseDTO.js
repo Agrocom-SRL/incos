@@ -1,4 +1,4 @@
-import { StudentMapper } from '../../mappers/StudentMapper.js';
+import { StudentMapper } from '../../mappers/estudiantes/index.js';
 
 /**
  * DTO: StudentResponseDTO

@@ -1,54 +1,48 @@
 /**
  * GET /api/v1/idiomas
  * Controller para listar idiomas con filtros y paginación
+ * 
+ * Responsabilidades:
+ * - Recibir peticiones HTTP GET para listar idiomas
+ * - Delegar lógica de negocio a ListIdiomasUseCase
+ * - Formatear respuesta JSON estandarizada
+ * 
+ * Endpoint:
+ * GET /api/v1/idiomas?page=1&limit=50&search=espanol
+ * 
+ * Query Parameters:
+ * - page: Número de página (default: 1)
+ * - limit: Cantidad de resultados por página (default: 50)
+ * - search: Término de búsqueda por nombre (opcional)
+ * 
+ * Principios SOLID:
+ * - Single Responsibility: Solo maneja la comunicación HTTP para listar idiomas
+ * - Dependency Inversion: Depende de ListIdiomasUseCase (abstracción), no de implementación concreta
+ * 
+ * Clean Architecture:
+ * - Presentation Layer: Maneja HTTP request/response
+ * - Depende de Application Layer (Use Cases) a través de inyección de dependencias
  */
-export class ListIdiomasController {
+import { BaseListController } from '../../base/BaseListController.js';
+
+export class ListIdiomasController extends BaseListController {
+  /**
+   * @param {Object} params - Dependencias inyectadas
+   * @param {ListIdiomasUseCase} params.listIdiomasUseCase - Caso de uso para listar idiomas
+   * @param {ILogger} params.logger - Logger para registro de eventos
+   */
   constructor({ listIdiomasUseCase, logger }) {
-    this.listIdiomasUseCase = listIdiomasUseCase;
-    this.logger = logger;
+    super({
+      useCase: listIdiomasUseCase,
+      logger,
+      resourceName: 'idiomas',
+      dataFieldName: 'idiomas',
+    });
   }
 
-  async handle(req, res, next) {
-    try {
-      const { page = 1, limit = 50, search } = req.query;
-      const userId = req.user?.id || req.user?.userId;
-
-      this.logger.info('Request de listado de idiomas', {
-        page,
-        limit,
-        filters: { search },
-        userId,
-      });
-
-      if (!this.listIdiomasUseCase) {
-        throw new Error('ListIdiomasUseCase no está configurado');
-      }
-      
-      const filters = {};
-      if (search) {
-        filters.search = search;
-      }
-
-      const result = await this.listIdiomasUseCase.execute(filters, page, limit);
-
-      res.status(200).json({
-        success: true,
-        data: result.idiomas,
-        message: 'Listado de idiomas obtenido correctamente',
-        pagination: {
-          page: result.page,
-          limit: result.limit,
-          total: result.total,
-          totalPages: result.totalPages,
-        },
-        meta: {
-          timestamp: new Date().toISOString(),
-        },
-      });
-    } catch (error) {
-      this.logger.error('Error al listar idiomas', { error: error.message, stack: error.stack });
-      next(error);
-    }
-  }
+  // Nota: No es necesario sobrescribir buildFilters() ni handle()
+  // BaseListController maneja la búsqueda básica (search)
+  // Si en el futuro necesitamos filtros específicos,
+  // podemos sobrescribir buildFilters() aquí
 }
 

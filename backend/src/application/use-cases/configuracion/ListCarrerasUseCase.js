@@ -4,55 +4,32 @@
  * Lista carreras con filtros, paginación y ordenamiento
  */
 
-export class ListCarrerasUseCase {
+import { BaseListUseCase } from '../base/BaseListUseCase.js';
+import { CareerMapper } from '../../mappers/configuracion/index.js';
+
+export class ListCarrerasUseCase extends BaseListUseCase {
+  /**
+   * @param {Object} params - Dependencias inyectadas
+   * @param {Object} params.careerRepository - Repositorio de carreras
+   * @param {ILogger} params.logger - Logger para registro de eventos
+   */
   constructor({ careerRepository, logger }) {
-    this.careerRepository = careerRepository;
-    this.logger = logger;
+    super({
+      repository: careerRepository,
+      logger,
+      moduleName: 'Configuración',
+      resourceName: 'carreras',
+      collectionFieldName: 'careers',
+      dataFieldName: 'carreras',
+    });
   }
 
   /**
-   * Ejecuta el caso de uso
-   * @param {Object} filters - Filtros de búsqueda
-   * @param {string} filters.search - Búsqueda por código, nombre o descripción
-   * @param {number} page - Número de página (default: 1)
-   * @param {number} limit - Límite de resultados por página (default: 50)
-   * @returns {Promise<{carreras: Array, total: number, page: number, limit: number, totalPages: number}>}
+   * Retorna el mapper a usar para convertir entidades Career a presentación
+   * @returns {CareerMapper}
    */
-  async execute(filters = {}, page = 1, limit = 50) {
-    this.logger.info('[Configuración] Listando carreras', {
-      filters,
-      page,
-      limit,
-    });
-
-    const pageNum = parseInt(page) || 1;
-    const limitNum = parseInt(limit) || 50;
-
-    // Obtener carreras con paginación
-    const result = await this.careerRepository.findAll(
-      filters,
-      pageNum,
-      limitNum
-    );
-
-    // Calcular total de páginas
-    const totalPages = Math.ceil(result.total / limitNum);
-
-    this.logger.info('[Configuración] Carreras listadas exitosamente', {
-      total: result.total,
-      page: pageNum,
-      limit: limitNum,
-      totalPages,
-      carrerasCount: result.careers?.length || 0,
-    });
-
-    return {
-      carreras: result.careers || [],
-      total: result.total,
-      page: pageNum,
-      limit: limitNum,
-      totalPages,
-    };
+  getMapper() {
+    return CareerMapper;
   }
 }
 

@@ -4,55 +4,32 @@
  * Lista idiomas con filtros, paginación y ordenamiento
  */
 
-export class ListIdiomasUseCase {
+import { BaseListUseCase } from '../base/BaseListUseCase.js';
+import { LanguageMapper } from '../../mappers/referencia/index.js';
+
+export class ListIdiomasUseCase extends BaseListUseCase {
+  /**
+   * @param {Object} params - Dependencias inyectadas
+   * @param {Object} params.languageRepository - Repositorio de idiomas
+   * @param {ILogger} params.logger - Logger para registro de eventos
+   */
   constructor({ languageRepository, logger }) {
-    this.languageRepository = languageRepository;
-    this.logger = logger;
+    super({
+      repository: languageRepository,
+      logger,
+      moduleName: 'Referencia',
+      resourceName: 'idiomas',
+      collectionFieldName: 'languages',
+      dataFieldName: 'idiomas',
+    });
   }
 
   /**
-   * Ejecuta el caso de uso
-   * @param {Object} filters - Filtros de búsqueda
-   * @param {string} filters.search - Búsqueda por nombre
-   * @param {number} page - Número de página (default: 1)
-   * @param {number} limit - Límite de resultados por página (default: 50)
-   * @returns {Promise<{idiomas: Array, total: number, page: number, limit: number, totalPages: number}>}
+   * Retorna el mapper a usar para convertir entidades Language a presentación
+   * @returns {LanguageMapper}
    */
-  async execute(filters = {}, page = 1, limit = 50) {
-    this.logger.info('[Referencia] Listando idiomas', {
-      filters,
-      page,
-      limit,
-    });
-
-    const pageNum = parseInt(page) || 1;
-    const limitNum = parseInt(limit) || 50;
-
-    // Obtener idiomas con paginación
-    const result = await this.languageRepository.findAll(
-      filters,
-      pageNum,
-      limitNum
-    );
-
-    // Calcular total de páginas
-    const totalPages = Math.ceil(result.total / limitNum);
-
-    this.logger.info('[Referencia] Idiomas listados exitosamente', {
-      total: result.total,
-      page: pageNum,
-      limit: limitNum,
-      totalPages,
-      idiomasCount: result.languages?.length || 0,
-    });
-
-    return {
-      idiomas: result.languages || [],
-      total: result.total,
-      page: pageNum,
-      limit: limitNum,
-      totalPages,
-    };
+  getMapper() {
+    return LanguageMapper;
   }
 }
 

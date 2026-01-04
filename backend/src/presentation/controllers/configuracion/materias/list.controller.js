@@ -1,54 +1,56 @@
 /**
  * GET /api/v1/materias
  * Controller para listar materias con filtros y paginación
+ * 
+ * Responsabilidades:
+ * - Recibir peticiones HTTP GET para listar materias
+ * - Delegar lógica de negocio a ListMateriasUseCase
+ * - Formatear respuesta JSON estandarizada
+ * 
+ * Endpoint:
+ * GET /api/v1/materias?page=1&limit=50&search=matematica
+ * 
+ * Query Parameters:
+ * - page: Número de página (default: 1)
+ * - limit: Cantidad de resultados por página (default: 50)
+ * - search: Término de búsqueda por código, nombre, nombre corto o descripción (opcional)
+ * 
+ * Principios SOLID:
+ * - Single Responsibility: Solo maneja la comunicación HTTP para listar materias
+ * - Dependency Inversion: Depende de ListMateriasUseCase (abstracción), no de implementación concreta
+ * 
+ * Clean Architecture:
+ * - Presentation Layer: Maneja HTTP request/response
+ * - Depende de Application Layer (Use Cases) a través de inyección de dependencias
  */
-export class ListMateriasController {
+import { BaseListController } from '../../base/BaseListController.js';
+
+export class ListMateriasController extends BaseListController {
+  /**
+   * @param {Object} params - Dependencias inyectadas
+   * @param {ListMateriasUseCase} params.listMateriasUseCase - Caso de uso para listar materias
+   * @param {ILogger} params.logger - Logger para registro de eventos
+   */
   constructor({ listMateriasUseCase, logger }) {
-    this.listMateriasUseCase = listMateriasUseCase;
-    this.logger = logger;
+    super({
+      useCase: listMateriasUseCase,
+      logger,
+      resourceName: 'materias',
+      dataFieldName: 'materias',
+    });
   }
 
-  async handle(req, res, next) {
-    try {
-      const { page = 1, limit = 50, search } = req.query;
-      const userId = req.user?.id || req.user?.userId;
-
-      this.logger.info('Request de listado de materias', {
-        page,
-        limit,
-        filters: { search },
-        userId,
-      });
-
-      if (!this.listMateriasUseCase) {
-        throw new Error('ListMateriasUseCase no está configurado');
-      }
-      
-      const filters = {};
-      if (search) {
-        filters.search = search;
-      }
-
-      const result = await this.listMateriasUseCase.execute(filters, page, limit);
-
-      res.status(200).json({
-        success: true,
-        data: result.materias,
-        message: 'Listado de materias obtenido correctamente',
-        pagination: {
-          page: result.page,
-          limit: result.limit,
-          total: result.total,
-          totalPages: result.totalPages,
-        },
-        meta: {
-          timestamp: new Date().toISOString(),
-        },
-      });
-    } catch (error) {
-      this.logger.error('Error al listar materias', { error: error.message, stack: error.stack });
-      next(error);
-    }
-  }
+  // Nota: No es necesario sobrescribir buildFilters() ni handle()
+  // BaseListController maneja la búsqueda básica (search)
+  // Si en el futuro necesitamos filtros específicos (ej: tipo, activo),
+  // podemos sobrescribir buildFilters() aquí:
+  //
+  // buildFilters(query) {
+  //   const filters = super.buildFilters(query);
+  //   if (query.tipo) {
+  //     filters.tipo = query.tipo;
+  //   }
+  //   return filters;
+  // }
 }
 

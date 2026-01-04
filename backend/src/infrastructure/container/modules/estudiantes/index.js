@@ -2,7 +2,6 @@
  * Punto de entrada del módulo Estudiantes
  * 
  * Responsabilidades:
- * - Registrar validators compartidos del módulo
  * - Combinar todos los recursos del módulo Estudiantes
  * - Registrar todos los recursos en el contenedor
  * 
@@ -14,8 +13,6 @@
  * @returns {Container} Contenedor con módulo Estudiantes completo registrado
  */
 
-import { TOKENS } from '../../tokens.js';
-import { StudentValidator } from '../../../../application/validators/StudentValidator.js';
 import { registerEstudiantesResource } from './estudiantes.container.js';
 // TODO: Agregar otros recursos cuando se implementen
 // import { registerBecasResource } from './becas.container.js';
@@ -29,21 +26,6 @@ import { registerEstudiantesResource } from './estudiantes.container.js';
  * @returns {Container} Contenedor actualizado
  */
 export function registerEstudiantesModule(container) {
-    // ============================================
-    // VALIDATORS COMPARTIDOS DEL MÓDULO
-    // ============================================
-    container.register(
-        TOKENS.est_studentValidator,
-        (c) =>
-            new StudentValidator({
-                studentRepository: c.resolve(TOKENS.studentRepository),
-            }),
-        { singleton: true }
-    );
-
-    // ============================================
-    // RECURSOS DEL MÓDULO
-    // ============================================
     // Registrar cada recurso individualmente
     registerEstudiantesResource(container);
     

@@ -4,55 +4,32 @@
  * Lista materias con filtros, paginación y ordenamiento
  */
 
-export class ListMateriasUseCase {
+import { BaseListUseCase } from '../base/BaseListUseCase.js';
+import { SubjectMapper } from '../../mappers/configuracion/index.js';
+
+export class ListMateriasUseCase extends BaseListUseCase {
+  /**
+   * @param {Object} params - Dependencias inyectadas
+   * @param {Object} params.subjectRepository - Repositorio de materias
+   * @param {ILogger} params.logger - Logger para registro de eventos
+   */
   constructor({ subjectRepository, logger }) {
-    this.subjectRepository = subjectRepository;
-    this.logger = logger;
+    super({
+      repository: subjectRepository,
+      logger,
+      moduleName: 'Configuración',
+      resourceName: 'materias',
+      collectionFieldName: 'subjects',
+      dataFieldName: 'materias',
+    });
   }
 
   /**
-   * Ejecuta el caso de uso
-   * @param {Object} filters - Filtros de búsqueda
-   * @param {string} filters.search - Búsqueda por código, nombre, nombre corto o descripción
-   * @param {number} page - Número de página (default: 1)
-   * @param {number} limit - Límite de resultados por página (default: 50)
-   * @returns {Promise<{materias: Array, total: number, page: number, limit: number, totalPages: number}>}
+   * Retorna el mapper a usar para convertir entidades Subject a presentación
+   * @returns {SubjectMapper}
    */
-  async execute(filters = {}, page = 1, limit = 50) {
-    this.logger.info('[Configuración] Listando materias', {
-      filters,
-      page,
-      limit,
-    });
-
-    const pageNum = parseInt(page) || 1;
-    const limitNum = parseInt(limit) || 50;
-
-    // Obtener materias con paginación
-    const result = await this.subjectRepository.findAll(
-      filters,
-      pageNum,
-      limitNum
-    );
-
-    // Calcular total de páginas
-    const totalPages = Math.ceil(result.total / limitNum);
-
-    this.logger.info('[Configuración] Materias listadas exitosamente', {
-      total: result.total,
-      page: pageNum,
-      limit: limitNum,
-      totalPages,
-      materiasCount: result.subjects?.length || 0,
-    });
-
-    return {
-      materias: result.subjects || [],
-      total: result.total,
-      page: pageNum,
-      limit: limitNum,
-      totalPages,
-    };
+  getMapper() {
+    return SubjectMapper;
   }
 }
 
