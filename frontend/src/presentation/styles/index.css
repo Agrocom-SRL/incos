@@ -28,6 +28,7 @@
 @import './components/atoms/avatar.css';
 @import './components/atoms/button.css';
 @import './components/atoms/heading.css';
+@import './components/atoms/breadcrumb.css';
 @import './components/atoms/form-card.css';
 @import './components/atoms/text.css';
 @import './components/atoms/card.css';
@@ -38,7 +39,6 @@
 /* 5. Components - Molecules */
 @import './components/molecules/navigation-menu.css';
 @import './components/molecules/form-section.css';
-@import './components/molecules/page-header.css';
 @import './components/molecules/table-cell.css';
 @import './components/molecules/data-table.css';
 

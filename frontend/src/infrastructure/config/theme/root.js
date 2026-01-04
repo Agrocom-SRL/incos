@@ -31,6 +31,7 @@ export function injectCSSVariables() {
   
   // Color verde institucional (usado en reset.css para focus y Tags)
   root.style.setProperty('--color-verde-main', allThemeTokens.colorPrimary);
+  root.style.setProperty('--color-primary-hover', allThemeTokens.colorPrimaryHover);
   root.style.setProperty('--color-primary-bg', allThemeTokens.colorPrimaryBg);
   root.style.setProperty('--color-primary-text', allThemeTokens.colorPrimaryText);
 
@@ -94,7 +95,6 @@ export function injectCSSVariables() {
   root.style.setProperty('--color-menu-item-parent-selected-border', componentConfig.Menu.itemParentSelectedBorder);
   root.style.setProperty('--color-menu-item-parent-selected-color', componentConfig.Menu.itemParentSelectedColor);
 
-
   // ========================================
   // TABLE - Variables CSS (para DataTable)
   // Solo variables para estilos personalizados que Ant Design no maneja directamente
@@ -108,6 +108,15 @@ export function injectCSSVariables() {
   root.style.setProperty('--color-border-secondary', allThemeTokens.colorBorderSecondary);
   root.style.setProperty('--color-border', allThemeTokens.colorBorder);
   root.style.setProperty('--color-text-tertiary', allThemeTokens.colorTextTertiary);
+
+  // ========================================
+  // BREADCRUMB - Variables CSS (componente personalizado)
+  // ========================================
+  root.style.setProperty('--color-breadcrumb', componentConfig.Breadcrumb.color);
+  root.style.setProperty('--color-breadcrumb-hover', componentConfig.Breadcrumb.colorHover);
+  root.style.setProperty('--color-breadcrumb-text', componentConfig.Breadcrumb.colorText);
+  root.style.setProperty('--color-breadcrumb-text-hover', componentConfig.Breadcrumb.colorTextHover);
+  root.style.setProperty('--color-breadcrumb-separator', componentConfig.Breadcrumb.colorSeparator);
 
   // ========================================
   // SOMBRAS (Desde componentConfig para mantener consistencia)
@@ -181,6 +190,9 @@ export function injectCSSVariables() {
   root.style.setProperty('--font-size-xs', `${allThemeTokens.fontSizeXS}px`);
   root.style.setProperty('--font-size-lg', `${allThemeTokens.fontSizeLG}px`);
   root.style.setProperty('--line-height-normal', `${allThemeTokens.lineHeight}`);
+  root.style.setProperty('--line-height-sm', `${allThemeTokens.lineHeightSM}`);
+  root.style.setProperty('--line-height-lg', `${allThemeTokens.lineHeightLG}`);
+  root.style.setProperty('--font-weight-strong', `${allThemeTokens.fontWeightStrong}`);
 
   // ========================================
   // TRANSICIONES

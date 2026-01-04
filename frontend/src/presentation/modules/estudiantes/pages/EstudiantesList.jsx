@@ -23,7 +23,7 @@ import { TableListView } from '@organisms';
 import { PageHeader } from '@molecules';
 import { Button } from '@atoms';
 import { useStudentListContext } from '@application-estudiantes/hooks';
-import { createEstudiantesTableColumns } from '@estudiantes/config/tableColumns';
+import { createEstudiantesTableColumns, createListBreadcrumbItems } from '@estudiantes/config';
 
 const EstudiantesList = () => {
     const navigate = useNavigate();
@@ -47,11 +47,15 @@ const EstudiantesList = () => {
         [navigate]
     );
 
+    // Configurar breadcrumb items
+    const breadcrumbItems = useMemo(() => createListBreadcrumbItems(), []);
+
     return (
         <PageTemplate 
             header={
                 <PageHeader
                     title="Lista de Estudiantes"
+                    breadcrumbItems={breadcrumbItems}
                     actions={
                         <Button
                             variant="primary"

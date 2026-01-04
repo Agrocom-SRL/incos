@@ -41,3 +41,15 @@ export const Tooltip = {
   paddingBlock: allSpacing.paddingLG,
   paddingInline: allSpacing.paddingLG,
 };
+
+/**
+ * Breadcrumb - Navegación breadcrumb (componente personalizado)
+ * Usa colorAccentBrown para diferenciarse del heading title
+ */
+export const Breadcrumb = {
+  color: allColors.colorAccentBrownActive,
+  colorHover: allColors.colorAccentBrownHover,
+  colorText: allColors.colorPrimaryText,
+  colorTextHover: allColors.colorAccentOliveText,
+  colorSeparator: allColors.colorAccentBrownActive,
+};

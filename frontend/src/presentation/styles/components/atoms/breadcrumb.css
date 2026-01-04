@@ -1,0 +1,40 @@
+/* ============================================================================
+   BREADCRUMB (Componente Atómico)
+   ============================================================================
+   Estilos principalmente para layout y espaciado
+   Variables CSS vienen del sistema de temas (root.js)
+   Usa colorAccentBrown para diferenciarse del heading title
+   ============================================================================ */
+
+.breadcrumb {
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-sm);
+}
+
+/* Links - Color accent brown sólido con weight grueso */
+.breadcrumb .ant-breadcrumb-link {
+  color: var(--color-breadcrumb-text);
+  font-weight: var(--font-weight-strong);
+  transition: color var(--transition-base);
+}
+
+.breadcrumb .ant-breadcrumb-link:hover {
+  color: var(--color-breadcrumb-text-hover);
+}
+
+/* Iconos - Más grandes y color accent brown sólido */
+.breadcrumb .ant-breadcrumb-link .anticon {
+  color: var(--color-breadcrumb);
+  font-size: var(--font-size-lg);
+}
+
+.breadcrumb .ant-breadcrumb-link:hover .anticon {
+  color: var(--color-breadcrumb-hover);
+}
+
+/* Separador - Color sutil */
+.breadcrumb .ant-breadcrumb-separator {
+  color: var(--color-breadcrumb-separator);
+  margin: 0 var(--spacing-xs);
+}
+

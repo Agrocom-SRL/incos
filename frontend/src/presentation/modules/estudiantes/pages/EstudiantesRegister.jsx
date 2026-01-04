@@ -1,19 +1,34 @@
 /**
  * EstudiantesRegister - Página para registrar nuevo estudiante
  * 
- * Single Responsibility: Mostrar datos de referencia iniciales para el formulario de registro
+ * Single Responsibility: Orquestar la configuración específica del registro de estudiantes
  * 
  * Atomic Design: Page
- * - Por ahora solo muestra los datos de referencia disponibles
- * - Futuramente orquestará el formulario completo
+ * - Orquesta datos + componentes
+ * - Pasa HEADER al Template (estructura)
+ * - Pasa WIZARD al Organism (funcionalidad)
+ * - Configura steps, acciones y datos específicos de registro
  * 
  * Arquitectura:
- * Page → Consumer del StudentContext (datos vienen del Provider)
+ * Page → Template (header) + Organism (wizard)
+ * - Template maneja: estructura/layout (header, content, sidebar, bottom)
+ * - Organism maneja: funcionalidad (wizard, pasos, validación, guardado)
  */
 
+import { useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { PageTemplate } from '@templates';
+import { WizardForm } from '@organisms';
+import { PageHeader } from '@molecules';
 import { useStudentRegisterContext } from '@application-estudiantes/hooks';
+import { createEstudianteWizardSteps, createRegisterBreadcrumbItems } from '@estudiantes/config';
 
 const EstudiantesRegister = () => {
+  const [searchParams] = useSearchParams();
+  
+  // Obtener parámetros de la URL
+  const completarMode = searchParams.get('completar') === 'true';
+
   // Obtener datos del contexto (toda la lógica está en el Provider)
   const {
     // Datos esenciales del formulario
@@ -28,56 +43,52 @@ const EstudiantesRegister = () => {
     // Estados
     loading = false,
     error = null,
+    
+    // Handlers (deben venir del hook/provider)
+    onSubmit,
+    onSuccess,
   } = useStudentRegisterContext();
 
-  if (loading) {
-    return <div>Cargando datos de referencia...</div>;
-  }
+  // Determinar el título según los parámetros (memoizado)
+  const pageTitle = useMemo(() => {
+    if (completarMode) return 'Completar Registro de Admisión';
+    return 'Registrar Nueva Admisión';
+  }, [completarMode]);
 
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
+  // Crear configuración de steps (memoizada para evitar recrearlas en cada render)
+  const wizardSteps = useMemo(
+    () => createEstudianteWizardSteps(completarMode),
+    [completarMode]
+  );
+
+  // Configurar breadcrumb items
+  const breadcrumbItems = useMemo(
+    () => createRegisterBreadcrumbItems(pageTitle),
+    [pageTitle]
+  );
 
   return (
-    <div style={{ padding: '20px' }}>
-      <h1>Registro de Estudiante</h1>
-      <p>Datos de referencia cargados:</p>
-      
-      <div style={{ marginTop: '20px' }}>
-        <h2>Países ({paises.length})</h2>
-        <pre>{JSON.stringify(paises, null, 2)}</pre>
-      </div>
-
-      <div style={{ marginTop: '20px' }}>
-        <h2>Idiomas ({idiomas.length})</h2>
-        <pre>{JSON.stringify(idiomas, null, 2)}</pre>
-      </div>
-
-      <div style={{ marginTop: '20px' }}>
-        <h2>Estados Civiles ({estadosCiviles.length})</h2>
-        <pre>{JSON.stringify(estadosCiviles, null, 2)}</pre>
-      </div>
-
-      <div style={{ marginTop: '20px' }}>
-        <h2>Documentación ({documentacion.length})</h2>
-        <pre>{JSON.stringify(documentacion, null, 2)}</pre>
-      </div>
-
-      <div style={{ marginTop: '20px' }}>
-        <h2>Expediciones ({expediciones.length})</h2>
-        <pre>{JSON.stringify(expediciones, null, 2)}</pre>
-      </div>
-
-      <div style={{ marginTop: '20px' }}>
-        <h2>Géneros ({generos.length})</h2>
-        <pre>{JSON.stringify(generos, null, 2)}</pre>
-      </div>
-
-      <div style={{ marginTop: '20px' }}>
-        <h2>Tipos de Sangre ({tiposSangre.length})</h2>
-        <pre>{JSON.stringify(tiposSangre, null, 2)}</pre>
-      </div>
-    </div>
+    <PageTemplate 
+      header={
+        <PageHeader
+          title={pageTitle}
+          breadcrumbItems={breadcrumbItems}
+        />
+      }
+      sidebar={null}
+    >
+      {/* Contenido principal - Wizard de registro */}
+      <WizardForm
+        title={pageTitle}
+        steps={wizardSteps}
+        onSubmit={onSubmit}
+        loading={loading}
+        initialValues={{}}
+        onSuccess={onSuccess}
+        viewMode={false}
+        successMessage="Estudiante registrado correctamente"
+      />
+    </PageTemplate>
   );
 };
 

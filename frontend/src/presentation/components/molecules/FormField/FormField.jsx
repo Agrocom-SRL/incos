@@ -22,12 +22,6 @@ import {
   FieldDivider,
   FieldFormList,
 } from '../../atoms/fields';
-import {
-  useGeographicFilter,
-  useFieldDependencies,
-  useTextCapitalization,
-  useDateParsing,
-} from '@estudiantes-old/hooks';
 
 const FormField = ({ field, form, resolveOptions, formValues, onFieldChange, readOnly = false }) => {
   // Estado para controlar si se muestra el input de upload o el documento existente

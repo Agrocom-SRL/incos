@@ -539,7 +539,7 @@ const FormSection = ({ title, fields = [], form, resolveOptions, onFieldChange, 
   return (
     <Card
       type="inner"
-      className="molecule-form-section"
+      className="form-section"
       title={title}
     >
       <Row gutter={[24, 8]}>

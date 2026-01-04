@@ -12,6 +12,7 @@ export { default as Container } from './Container';
 export { default as Alert } from './Alert';
 export { default as Spinner } from './Spinner';
 export { default as SearchBar } from './SearchBar';
+export { default as Breadcrumb } from './Breadcrumb';
 
 // Exportar componentes de campos (fields)
 export * from './fields';

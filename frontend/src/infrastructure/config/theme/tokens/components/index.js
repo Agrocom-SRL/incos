@@ -32,6 +32,7 @@ export const componentConfig = {
   // Navigation
   Menu: navigation.Menu,
   Tooltip: navigation.Tooltip,
+  Breadcrumb: navigation.Breadcrumb,
 
   // Buttons
   Button: buttons.Button,
