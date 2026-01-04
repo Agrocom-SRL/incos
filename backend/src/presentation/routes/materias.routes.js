@@ -1,5 +1,5 @@
 import express from 'express';
-import { listMateriasValidator } from '../validators/configuracion/index.js';
+import { listValidator } from '../validators/common/index.js';
 
 /**
  * Construye el router del módulo Materias
@@ -39,7 +39,7 @@ export function buildMateriasRouter({ controllers, middlewares }) {
      */
     router.get(
         '/',
-        listMateriasValidator,
+        listValidator,
         validateRequest,
         (req, res, next) => controllers.listMateriasController.handle(req, res, next)
     );

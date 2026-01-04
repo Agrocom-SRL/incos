@@ -1,5 +1,5 @@
 import express from 'express';
-import { listMunicipiosValidator } from '../validators/geograficos/index.js';
+import { listValidator } from '../validators/common/index.js';
 
 /**
  * Construye el router del módulo Municipios
@@ -39,7 +39,7 @@ export function buildMunicipiosRouter({ controllers, middlewares }) {
      */
     router.get(
         '/',
-        listMunicipiosValidator,
+        listValidator,
         validateRequest,
         (req, res, next) => controllers.listMunicipiosController.handle(req, res, next)
     );

@@ -1,5 +1,5 @@
 import express from 'express';
-import { listTiposParentescoValidator } from '../validators/referencia/index.js';
+import { listValidator } from '../validators/common/index.js';
 
 /**
  * Construye el router del módulo Tipos de Parentesco
@@ -39,7 +39,7 @@ export function buildTiposParentescoRouter({ controllers, middlewares }) {
      */
     router.get(
         '/',
-        listTiposParentescoValidator,
+        listValidator,
         validateRequest,
         (req, res, next) => controllers.listTiposParentescoController.handle(req, res, next)
     );

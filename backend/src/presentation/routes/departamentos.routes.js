@@ -1,5 +1,5 @@
 import express from 'express';
-import { listDepartamentosValidator } from '../validators/geograficos/index.js';
+import { listValidator } from '../validators/common/index.js';
 
 /**
  * Construye el router del módulo Departamentos
@@ -39,7 +39,7 @@ export function buildDepartamentosRouter({ controllers, middlewares }) {
      */
     router.get(
         '/',
-        listDepartamentosValidator,
+        listValidator,
         validateRequest,
         (req, res, next) => controllers.listDepartamentosController.handle(req, res, next)
     );

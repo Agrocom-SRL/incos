@@ -1,5 +1,5 @@
 import express from 'express';
-import { listCarrerasValidator } from '../validators/configuracion/index.js';
+import { listValidator } from '../validators/common/index.js';
 
 /**
  * Construye el router del módulo Carreras
@@ -39,7 +39,7 @@ export function buildCarrerasRouter({ controllers, middlewares }) {
      */
     router.get(
         '/',
-        listCarrerasValidator,
+        listValidator,
         validateRequest,
         (req, res, next) => controllers.listCarrerasController.handle(req, res, next)
     );

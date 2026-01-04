@@ -1,5 +1,5 @@
 import express from 'express';
-import { listProvinciasValidator } from '../validators/geograficos/index.js';
+import { listValidator } from '../validators/common/index.js';
 
 /**
  * Construye el router del módulo Provincias
@@ -39,7 +39,7 @@ export function buildProvinciasRouter({ controllers, middlewares }) {
      */
     router.get(
         '/',
-        listProvinciasValidator,
+        listValidator,
         validateRequest,
         (req, res, next) => controllers.listProvinciasController.handle(req, res, next)
     );

@@ -1,5 +1,5 @@
 import express from 'express';
-import { listEstadosCivilesValidator } from '../validators/referencia/index.js';
+import { listValidator } from '../validators/common/index.js';
 
 /**
  * Construye el router del módulo Estados Civiles
@@ -39,7 +39,7 @@ export function buildEstadosCivilesRouter({ controllers, middlewares }) {
      */
     router.get(
         '/',
-        listEstadosCivilesValidator,
+        listValidator,
         validateRequest,
         (req, res, next) => controllers.listEstadosCivilesController.handle(req, res, next)
     );

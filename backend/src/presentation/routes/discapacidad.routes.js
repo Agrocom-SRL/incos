@@ -1,5 +1,5 @@
 import express from 'express';
-import { listDiscapacidadValidator } from '../validators/configuracion/index.js';
+import { listValidator } from '../validators/common/index.js';
 
 /**
  * Construye el router del módulo Discapacidad
@@ -39,7 +39,7 @@ export function buildDiscapacidadRouter({ controllers, middlewares }) {
      */
     router.get(
         '/',
-        listDiscapacidadValidator,
+        listValidator,
         validateRequest,
         (req, res, next) => controllers.listDiscapacidadController.handle(req, res, next)
     );

@@ -1,5 +1,5 @@
 import express from 'express';
-import { listDocumentacionValidator } from '../validators/referencia/index.js';
+import { listValidator } from '../validators/common/index.js';
 
 /**
  * Construye el router del módulo Documentación
@@ -39,7 +39,7 @@ export function buildDocumentacionRouter({ controllers, middlewares }) {
      */
     router.get(
         '/',
-        listDocumentacionValidator,
+        listValidator,
         validateRequest,
         (req, res, next) => controllers.listDocumentacionController.handle(req, res, next)
     );

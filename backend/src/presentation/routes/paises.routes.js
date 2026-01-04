@@ -1,5 +1,5 @@
 import express from 'express';
-import { listPaisesValidator } from '../validators/geograficos/index.js';
+import { listValidator } from '../validators/common/index.js';
 
 /**
  * Construye el router del módulo Países
@@ -39,7 +39,7 @@ export function buildPaisesRouter({ controllers, middlewares }) {
      */
     router.get(
         '/',
-        listPaisesValidator,
+        listValidator,
         validateRequest,
         (req, res, next) => controllers.listPaisesController.handle(req, res, next)
     );

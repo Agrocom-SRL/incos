@@ -1,5 +1,5 @@
 import express from 'express';
-import { listIdiomasValidator } from '../validators/referencia/index.js';
+import { listValidator } from '../validators/common/index.js';
 
 /**
  * Construye el router del módulo Idiomas
@@ -39,7 +39,7 @@ export function buildIdiomasRouter({ controllers, middlewares }) {
      */
     router.get(
         '/',
-        listIdiomasValidator,
+        listValidator,
         validateRequest,
         (req, res, next) => controllers.listIdiomasController.handle(req, res, next)
     );

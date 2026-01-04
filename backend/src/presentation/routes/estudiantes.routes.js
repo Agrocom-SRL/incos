@@ -1,5 +1,5 @@
 import express from 'express';
-import { listStudentsValidator } from '../validators/estudiantes/index.js';
+import { listValidator } from '../validators/common/index.js';
 
 /**
  * Construye el router del módulo Estudiantes
@@ -39,7 +39,7 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
      */
     router.get(
         '/',
-        listStudentsValidator,
+        listValidator,
         validateRequest,
         (req, res, next) => controllers.listStudentsController.handle(req, res, next)
     );
