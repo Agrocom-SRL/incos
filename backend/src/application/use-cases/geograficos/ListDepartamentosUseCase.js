@@ -4,55 +4,58 @@
  * Lista departamentos con filtros, paginación y ordenamiento
  */
 
-export class ListDepartamentosUseCase {
+import { BaseListUseCase } from '../base/BaseListUseCase.js';
+import { DepartmentMapper } from '../../mappers/geograficos/index.js';
+
+export class ListDepartamentosUseCase extends BaseListUseCase {
+  /**
+   * @param {Object} params - Dependencias inyectadas
+   * @param {Object} params.departmentRepository - Repositorio de departamentos
+   * @param {ILogger} params.logger - Logger para registro de eventos
+   */
   constructor({ departmentRepository, logger }) {
-    this.departmentRepository = departmentRepository;
-    this.logger = logger;
+    super({
+      repository: departmentRepository,
+      logger,
+      moduleName: 'Geográficos',
+      resourceName: 'departamentos',
+      collectionFieldName: 'departments',
+      dataFieldName: 'departamentos',
+    });
   }
 
   /**
-   * Ejecuta el caso de uso
-   * @param {Object} filters - Filtros de búsqueda
-   * @param {string} filters.search - Búsqueda por nombre o código
-   * @param {number} page - Número de página (default: 1)
-   * @param {number} limit - Límite de resultados por página (default: 50)
-   * @returns {Promise<{departamentos: Array, total: number, page: number, limit: number, totalPages: number}>}
+   * Retorna el mapper a usar para convertir entidades Department a presentación
+   * @returns {DepartmentMapper}
    */
-  async execute(filters = {}, page = 1, limit = 50) {
-    this.logger.info('[Geográficos] Listando departamentos', {
-      filters,
-      page,
-      limit,
-    });
-
-    const pageNum = parseInt(page) || 1;
-    const limitNum = parseInt(limit) || 50;
-
-    // Obtener departamentos con paginación
-    const result = await this.departmentRepository.findAll(
-      filters,
-      pageNum,
-      limitNum
-    );
-
-    // Calcular total de páginas
-    const totalPages = Math.ceil(result.total / limitNum);
-
-    this.logger.info('[Geográficos] Departamentos listados exitosamente', {
-      total: result.total,
-      page: pageNum,
-      limit: limitNum,
-      totalPages,
-      departamentosCount: result.departments?.length || 0,
-    });
-
-    return {
-      departamentos: result.departments || [],
-      total: result.total,
-      page: pageNum,
-      limit: limitNum,
-      totalPages,
-    };
+  getMapper() {
+    return DepartmentMapper;
   }
+
+  // NOTA: Para agregar campos adicionales en el futuro, sobrescribir enrichData().
+  // El método es completamente flexible y permite agregar CUALQUIER cantidad de campos:
+  //
+  // async enrichData(data, repositoryResult) {
+  //   const enriched = await Promise.all(data.map(async (depto) => {
+  //     // Puedes hacer múltiples consultas y agregar múltiples campos
+  //     const [cantidadProvincias, cantidadMunicipios, cantidadEstudiantes] = await Promise.all([
+  //       this.provinceRepository.count({ departmentId: depto.id }),
+  //       this.municipalityRepository.count({ departmentId: depto.id }),
+  //       this.studentRepository.count({ departmentId: depto.id }),
+  //     ]);
+  //     
+  //     // Agregar todos los campos que necesites
+  //     return {
+  //       ...depto,
+  //       cantidadProvincias,
+  //       cantidadMunicipios,
+  //       cantidadEstudiantes,
+  //       tieneEstudiantes: cantidadEstudiantes > 0,
+  //       resumen: `${cantidadProvincias} provincias`,
+  //       // ... cualquier otro campo que necesites
+  //     };
+  //   }));
+  //   return enriched;
+  // }
 }
 
