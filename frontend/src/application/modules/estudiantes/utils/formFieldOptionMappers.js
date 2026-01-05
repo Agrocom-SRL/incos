@@ -1,104 +1,82 @@
 /**
- * formFieldOptionMappers - Mappers para transformar datos del contexto a opciones de campos de formulario
+ * formFieldOptionMappers - Mappers específicos para estudiantes (wrapper sobre transformers genéricos)
  * 
- * Single Responsibility: Transformar datos del contexto en formato de opciones para campos de formulario (selects/radios)
+ * Single Responsibility: Proporcionar mappers específicos del módulo de estudiantes
  * 
  * Clean Architecture:
- * - Application Layer: Utilidades de transformación de datos específicas para campos de formulario
- * - Separado por responsabilidad (cada mapper tiene su función específica)
+ * - Application Layer: Utilidades específicas del módulo de estudiantes
+ * - Usa transformers genéricos de @application/utils
  * 
  * SOLID Principles:
- * - Single Responsibility: Cada mapper transforma un tipo específico de datos a opciones de formulario
- * - Open/Closed: Fácil de extender agregando nuevos mappers sin modificar existentes
+ * - Single Responsibility: Mappers específicos para tipos de datos de estudiantes
+ * - Dependency Inversion: Depende de transformers genéricos (abstracciones)
  * 
- * Uso exclusivo: Campos de formulario (FormField component)
- */
-
-/**
- * Mapea datos genéricos con estructura { id, nombre } o array de strings a opciones
- * @param {Array} data - Array de datos a mapear
- * @returns {Array} Array de opciones con formato { label, value }
- */
-const mapGenericOptions = (data) => {
-  return data.map(item => ({
-    label: item.nombre || item.label || item,
-    value: item.id || item.value || item,
-  }));
-};
-
-/**
- * Mapea datos con estructura { label, value } a opciones
- * @param {Array} data - Array de objetos { label, value }
- * @returns {Array} Array de opciones con formato { label, value }
- */
-const mapLabelValueOptions = (data) => {
-  return data.map(item => ({
-    label: item.label || item,
-    value: item.value || item,
-  }));
-};
-
-/**
- * Factory de mappers para opciones de campos de formulario
- * Centraliza la lógica de mapeo según el tipo de opción para campos de formulario
+ * Este archivo mantiene compatibilidad con el formato anterior mientras usa
+ * los transformers genéricos compartidos.
  * 
- * SOLID:
- * - Single Responsibility: Cada mapper tiene una responsabilidad específica (transformar a opciones de formulario)
- * - Open/Closed: Fácil de extender agregando nuevos mappers sin modificar existentes
- * - Strategy Pattern: Diferentes estrategias de mapeo según el tipo de datos
+ * Uso: Solo dentro del módulo de estudiantes
+ * Para uso general, usar directamente los transformers de @application/utils
  */
-export const formFieldOptionMappers = {
+
+import { transformToOptions as transformGeneric, excludeByMultipleFields } from '@application/utils';
+
+/**
+ * Factory de mappers predefinidos para tipos de datos de estudiantes
+ * 
+ * Mapea claves específicas a sus transformadores correspondientes
+ */
+const studentMappers = {
   // Mappers genéricos (para datos con estructura { id, nombre })
-  expediciones: mapGenericOptions,
-  generos: mapGenericOptions,
-  paises: mapGenericOptions,
-  idiomas: mapGenericOptions,
-  estadosCiviles: mapGenericOptions,
-  tiposSangre: mapGenericOptions,
-  discapacidades: mapGenericOptions,
-  departamentos: mapGenericOptions,
-  provincias: mapGenericOptions,
-  municipios: mapGenericOptions,
+  expediciones: (data) => transformGeneric('generic', data),
+  generos: (data) => transformGeneric('generic', data),
+  paises: (data) => transformGeneric('generic', data),
+  idiomas: (data) => transformGeneric('generic', data),
+  estadosCiviles: (data) => transformGeneric('generic', data),
+  tiposSangre: (data) => transformGeneric('generic', data),
+  discapacidades: (data) => transformGeneric('generic', data),
+  departamentos: (data) => transformGeneric('generic', data),
+  provincias: (data) => transformGeneric('generic', data),
+  municipios: (data) => transformGeneric('generic', data),
   
   // Mappers para datos con estructura { label, value }
-  gradosDiscapacidad: mapLabelValueOptions,
-  tiposOrigen: mapLabelValueOptions,
+  gradosDiscapacidad: (data) => transformGeneric('labelValue', data),
+  tiposOrigen: (data) => transformGeneric('labelValue', data),
+  
+  // Caso especial: paisesExtranjeros (países sin Bolivia)
+  paisesExtranjeros: (data) => {
+    const filterFn = excludeByMultipleFields([
+      { field: 'codigo_iso', value: 'BOL' },
+      { field: 'codigoIso', value: 'BOL' },
+      { field: 'nombre', value: 'Bolivia' },
+    ]);
+    return transformGeneric('generic', data, filterFn);
+  },
 };
 
 /**
  * Transforma datos del contexto en opciones de campos de formulario
  * 
+ * Wrapper que mantiene compatibilidad con el formato anterior
+ * pero usa los transformers genéricos internamente
+ * 
  * @param {string} key - Clave del tipo de opción (ej: 'idiomas', 'generos', 'paisesExtranjeros')
  * @param {*} data - Datos a transformar
  * @returns {Array} Array de opciones con formato { label, value } para campos de formulario
+ * 
+ * @deprecated Para nuevo código, usar directamente transformToOptions de @application/utils
  */
 export const transformToOptions = (key, data) => {
-  // Caso especial: paisesExtranjeros (países sin Bolivia)
-  // Se necesita pasar todos los países para filtrar
-  if (key === 'paisesExtranjeros') {
-    if (!data || !Array.isArray(data)) {
-      return [];
-    }
-    const paisesSinBolivia = data.filter(pais => {
-      // Filtrar Bolivia por codigo_iso o nombre
-      const codigoIso = pais.codigo_iso || pais.codigoIso || '';
-      const nombre = pais.nombre || '';
-      return codigoIso.toUpperCase() !== 'BOL' && nombre.toUpperCase() !== 'BOLIVIA';
-    });
-    return mapGenericOptions(paisesSinBolivia);
-  }
-
-  const mapper = formFieldOptionMappers[key];
+  const mapper = studentMappers[key];
   
   if (!mapper) {
     console.warn(`[formFieldOptionMappers] No mapper found for key: ${key}`);
     return [];
   }
   
-  if (!data || !Array.isArray(data)) {
-    return [];
-  }
-  
   return mapper(data);
 };
 
+/**
+ * Exportar mappers para uso directo si es necesario
+ */
+export const formFieldOptionMappers = studentMappers;

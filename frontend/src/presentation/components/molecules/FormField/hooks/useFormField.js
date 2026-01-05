@@ -1,18 +1,30 @@
 /**
- * useFormField - Hook personalizado para la lógica de FormField
+ * useFormField - Hook específico para FormField que compone hooks genéricos
  * 
- * Single Responsibility: Manejar la lógica de negocio de FormField
- * - Obtener nombre del campo
- * - Calcular valores disabled/readOnly
- * - Resolver opciones para selects
- * - Calcular reglas de validación
+ * Single Responsibility: Componer hooks genéricos para la lógica específica de FormField
+ * 
+ * Clean Architecture:
+ * - Presentation Layer: Hook específico del componente FormField
+ * - Compone hooks genéricos de Application Layer
+ * 
+ * SOLID Principles:
+ * - Single Responsibility: Solo compone hooks genéricos para FormField
+ * - Dependency Inversion: Depende de hooks genéricos (abstracciones)
+ * - Composition over Inheritance: Compone hooks en lugar de crear uno monolítico
+ * 
+ * Este hook:
+ * - Usa hooks genéricos compartidos (useFormFieldOptions, useFormFieldValidation, useFormFieldState)
+ * - Proporciona una interfaz específica para FormField
  * 
  * Separation of Concerns: Separa la lógica de la presentación
  * El hook solo calcula valores, no renderiza componentes React
  */
 
 import { useMemo } from 'react';
-import { Form } from 'antd';
+import { useFormFieldOptions } from './useFormFieldOptions';
+import { useFormFieldValidation } from './useFormFieldValidation';
+import { useFormFieldState } from './useFormFieldState';
+import { useFieldMinAge } from './useFieldMinAge';
 
 /**
  * Hook para manejar la lógica de FormField
@@ -20,60 +32,55 @@ import { Form } from 'antd';
  * @param {Object} field - Configuración del campo
  * @param {Function} resolveOptions - Función para resolver opciones de select
  * @param {boolean} readOnly - Si el campo está en modo solo lectura
+ * @param {FormInstance} form - Instancia del formulario de Ant Design
+ * @param {number|null} contextMinAge - minAge del contexto (opcional)
  * @returns {Object} Objeto con valores calculados
  */
-export const useFormField = ({ field, resolveOptions, readOnly = false, form }) => {
+export const useFormField = ({ 
+  field, 
+  resolveOptions, 
+  readOnly = false, 
+  form,
+  contextMinAge = null,
+}) => {
   // Helper para obtener el nombre del campo
   const fieldName = useMemo(() => {
     return field.name;
   }, [field.name]);
 
-  // Props comunes - calcular disabled
-  const disabled = useMemo(() => {
-    if (readOnly) return true;
-    return field.disabled || false;
-  }, [readOnly, field.disabled]);
+  // Hook: calcular estado (disabled/readOnly)
+  const { disabled } = useFormFieldState({
+    readOnly,
+    fieldDisabled: field.disabled,
+  });
 
-  // Observar cambios en el campo excluido si existe
-  const excludeFieldValue = field.excludeFrom && form ? Form.useWatch(field.excludeFrom, form) : null;
+  // Hook: resolver opciones con exclusión
+  const selectOptions = useFormFieldOptions({
+    fieldType: field.type,
+    fieldOptions: field.options,
+    excludeFrom: field.excludeFrom,
+    resolveOptions,
+    form,
+  });
 
-  // Obtener opciones para campos select y radio
-  // Si el campo tiene excludeFrom, filtrar las opciones excluyendo el valor del campo especificado
-  const selectOptions = useMemo(() => {
-    if (field.type !== 'select' && field.type !== 'radio') return [];
-    
-    let options = [];
-    if (typeof field.options === 'string') {
-      options = resolveOptions ? resolveOptions(field.options) : [];
-    } else {
-      options = field.options || [];
-    }
+  // Hook: generar reglas de validación
+  const rules = useFormFieldValidation({
+    required: field.required,
+    label: field.label,
+  });
 
-    // Si el campo tiene excludeFrom, filtrar las opciones excluyendo el valor seleccionado
-    if (field.excludeFrom && excludeFieldValue) {
-      options = options.filter(option => {
-        const optionValue = option.value || option.id || option;
-        const excludeValueToCompare = typeof excludeFieldValue === 'object' ? (excludeFieldValue.value || excludeFieldValue.id || excludeFieldValue) : excludeFieldValue;
-        return optionValue !== excludeValueToCompare;
-      });
-    }
-
-    return options;
-  }, [field.type, field.options, field.excludeFrom, resolveOptions, excludeFieldValue]);
-
-  // Reglas de validación
-  const rules = useMemo(() => {
-    if (field.required) {
-      return [{ required: true, message: `Por favor ingrese ${field.label.toLowerCase()}` }];
-    }
-    return [];
-  }, [field.required, field.label]);
+  // Hook: determinar minAge
+  const minAge = useFieldMinAge({
+    fieldMinAge: field.minAge,
+    contextMinAge,
+  });
 
   return {
     fieldName,
     disabled,
     selectOptions,
     rules,
+    minAge,
   };
 };
 

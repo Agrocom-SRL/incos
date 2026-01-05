@@ -1,14 +1,24 @@
-// components/organisms/WizardForm/hooks/useWizard.js
 /**
- * useWizard: Hook para manejar la navegación del wizard
+ * Hook: useWizard (Co-localizado con WizardForm)
  * 
- * Single Responsibility: Gestionar el estado de navegación (paso actual) y handlers de navegación
+ * Single Responsibility: Gestionar el estado de navegación del wizard
+ * 
+ * Clean Architecture:
+ * - Presentation Layer: Hook específico del componente WizardForm
+ * - Co-localizado: Está junto al componente que lo usa (Atomic Design)
+ * 
+ * SOLID Principles:
+ * - Single Responsibility: Solo maneja navegación entre pasos
+ * - Open/Closed: Extensible sin modificar código existente
+ * - Dependency Inversion: No depende de implementaciones concretas
+ * 
+ * Uso: Solo dentro del componente WizardForm
  */
 
 import { useState, useCallback } from 'react';
 
 /**
- * Hook para manejar la navegación de un wizard
+ * Hook para manejar la navegación de un wizard/stepper
  * 
  * @param {number} initialStep - Paso inicial (default: 0)
  * @param {number} totalSteps - Total de pasos del wizard
@@ -59,3 +69,4 @@ export const useWizard = (initialStep = 0, totalSteps = 0) => {
     isLastStep: currentStep === totalSteps - 1,
   };
 };
+

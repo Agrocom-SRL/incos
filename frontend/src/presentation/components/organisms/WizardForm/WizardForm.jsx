@@ -6,6 +6,14 @@
  * 
  * Atomic Design: Usa moléculas (WizardActions, FormSection) y átomos (FormCard)
  * 
+ * Clean Architecture:
+ * - Presentation Layer: Componente que solo maneja UI
+ * - Toda la lógica está en hooks especializados (useWizardForm)
+ * 
+ * SOLID Principles:
+ * - Single Responsibility: Solo renderiza UI, la lógica está en hooks
+ * - Dependency Inversion: Depende de hooks (abstracciones)
+ * 
  * Nota: Este componente solo maneja la UI. La lógica de guardado y valores iniciales
  * debe venir desde la página que lo consume (via props).
  * 
@@ -13,6 +21,7 @@
  * - Cada step tiene un Card/FormCard que contiene un Form de Ant Design
  * - Cada Form contiene FormSections según la configuración del step
  * - La lógica (llamadas API, estado, resolveOptions) está en el hook del provider
+ * - La lógica del wizard (navegación, formulario, cargadores) está en useWizardForm
  * 
  * Props especiales:
  * - minAge: Edad mínima para campos de fecha (se pasa a FormField)
@@ -21,11 +30,11 @@
  *   Cuando un campo cambia a true, se ejecuta su función de carga correspondiente
  */
 
-import React, { useMemo, useEffect } from 'react';
+import React from 'react';
 import { Steps, Form } from 'antd';
 import { FormCard } from '@atoms';
 import { WizardActions, FormSection } from '@molecules';
-import { useWizard } from './hooks/useWizard';
+import { useWizardForm } from './hooks/useWizardForm';
 
 const WizardForm = ({
   steps = [],
@@ -40,32 +49,19 @@ const WizardForm = ({
   className = '',
   form: externalForm,
 }) => {
-  const { currentStep, next, prev } = useWizard(0, steps.length);
-  const [internalForm] = Form.useForm();
-  const form = externalForm || internalForm;
-
-  // Observar todos los campos del formulario para hacer reactivo el componente
-  // cuando cambien los campos condicionales
-  const allFormValues = Form.useWatch([], form);
-
-  // Ejecutar funciones de carga cuando los campos condicionales cambian a true
-  useEffect(() => {
-    if (!allFormValues) return;
-    
-    Object.entries(conditionalLoaders).forEach(([fieldName, loader]) => {
-      if (loader && typeof loader === 'function') {
-        const fieldValue = allFormValues[fieldName];
-        if (fieldValue === true) {
-          loader();
-        }
-      }
-    });
-  }, [allFormValues, conditionalLoaders]);
-
-  // Obtener el step actual
-  const currentStepConfig = useMemo(() => {
-    return steps[currentStep] || null;
-  }, [steps, currentStep]);
+  // Hook que compone toda la lógica del wizard (navegación + formulario + cargadores)
+  const {
+    currentStep,
+    next,
+    prev,
+    form,
+    currentStepConfig,
+    shouldShowSection,
+  } = useWizardForm({
+    steps,
+    externalForm,
+    conditionalLoaders,
+  });
 
   // Si no hay step configurado, no renderizar nada
   if (!currentStepConfig) {
@@ -96,10 +92,9 @@ const WizardForm = ({
           const section = currentStepConfig.config[sectionKey];
           if (!section) return null;
 
-          // Si la sección es condicional, verificar si debe mostrarse
-          if (section.conditional && section.dependsOn) {
-            const dependsOnValue = allFormValues?.[section.dependsOn];
-            if (!dependsOnValue) return null;
+          // Usar función helper del hook para verificar si debe mostrarse
+          if (!shouldShowSection(section)) {
+            return null;
           }
 
           return (

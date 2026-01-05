@@ -1,0 +1,79 @@
+/**
+ * Hook: useFormFieldOptions (Co-localizado con FormField)
+ * 
+ * Single Responsibility: Resolver opciones para campos select/radio con soporte para exclusión
+ * 
+ * Clean Architecture:
+ * - Presentation Layer: Hook específico del componente FormField
+ * - Co-localizado: Está junto al componente que lo usa (Atomic Design)
+ * 
+ * SOLID Principles:
+ * - Single Responsibility: Solo resuelve opciones con exclusión
+ * - Open/Closed: Extensible sin modificar código existente
+ * - Dependency Inversion: Depende de funciones inyectadas (resolveOptions, form)
+ * 
+ * Este hook:
+ * - Resuelve opciones desde string o array
+ * - Filtra opciones excluyendo el valor de otro campo (excludeFrom)
+ * 
+ * Uso: Solo dentro del componente FormField
+ */
+
+import { useMemo } from 'react';
+import { Form } from 'antd';
+
+/**
+ * Hook para resolver opciones de campos select/radio con soporte para exclusión
+ * 
+ * @param {Object} options - Opciones de configuración
+ * @param {string} options.fieldType - Tipo de campo ('select' | 'radio')
+ * @param {string|Array} options.fieldOptions - Opciones del campo (string para resolver, array directo)
+ * @param {string} [options.excludeFrom] - Nombre del campo a excluir
+ * @param {Function} [options.resolveOptions] - Función para resolver opciones desde string
+ * @param {FormInstance} [options.form] - Instancia del formulario de Ant Design
+ * @returns {Array} Array de opciones filtradas
+ */
+export const useFormFieldOptions = ({
+  fieldType,
+  fieldOptions,
+  excludeFrom,
+  resolveOptions,
+  form,
+}) => {
+  // Observar cambios en el campo excluido si existe
+  const excludeFieldValue = excludeFrom && form ? Form.useWatch(excludeFrom, form) : null;
+
+  // Resolver y filtrar opciones
+  const selectOptions = useMemo(() => {
+    // Solo procesar para select y radio
+    if (fieldType !== 'select' && fieldType !== 'radio') {
+      return [];
+    }
+
+    // Resolver opciones
+    let options = [];
+    if (typeof fieldOptions === 'string') {
+      // Si es string, usar resolveOptions para obtenerlas
+      options = resolveOptions ? resolveOptions(fieldOptions) : [];
+    } else {
+      // Si es array, usarlo directamente
+      options = fieldOptions || [];
+    }
+
+    // Si hay exclusión, filtrar las opciones
+    if (excludeFrom && excludeFieldValue) {
+      options = options.filter(option => {
+        const optionValue = option.value || option.id || option;
+        const excludeValueToCompare = typeof excludeFieldValue === 'object' 
+          ? (excludeFieldValue.value || excludeFieldValue.id || excludeFieldValue) 
+          : excludeFieldValue;
+        return optionValue !== excludeValueToCompare;
+      });
+    }
+
+    return options;
+  }, [fieldType, fieldOptions, excludeFrom, resolveOptions, excludeFieldValue]);
+
+  return selectOptions;
+};
+

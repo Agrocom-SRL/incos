@@ -1,134 +1,55 @@
 /**
- * FormField: Molécula para renderizar campos de formulario (versión básica)
+ * FormField: Molécula para renderizar campos de formulario
  * 
  * Single Responsibility: Renderizar un campo de formulario con layout horizontal
  * 
+ * Clean Architecture:
+ * - Presentation Layer: Componente que solo maneja UI
+ * - Toda la lógica está en hooks especializados
+ * 
  * Atomic Design: Molécula
- * - Usa átomos (FieldInput, FieldSelect) y componentes nativos de Ant Design (Form.Item)
- * - Usa hook personalizado (useFormField) para separar lógica de presentación
+ * - Usa átomos (FieldInput, FieldSelect, etc.) y componentes nativos de Ant Design (Form.Item)
+ * - Usa hooks personalizados para separar lógica de presentación
  * - Layout horizontal: label fijo a un lado, input al otro lado
  * 
- * Esta versión básica maneja:
+ * SOLID Principles:
+ * - Single Responsibility: Solo renderiza UI, la lógica está en hooks
+ * - Open/Closed: Extensible agregando nuevos renderers sin modificar código existente (Strategy Pattern)
+ * - Dependency Inversion: Depende de hooks (abstracciones)
+ * 
+ * Esta versión maneja:
  * - input (text, email, tel)
  * - select
  * - date (DatePicker)
  * - switch (Switch)
+ * - textarea
+ * - radio
  */
 
 import { Form } from 'antd';
-import { FieldInput, FieldSelect, FieldDatePicker, FieldSwitch, FieldTextarea, FieldRadio } from '@atoms';
 import { useFormField } from './hooks/useFormField';
+import { useFieldRenderer } from './hooks/useFieldRenderer';
+import { labelCol, wrapperCol } from './utils/formLayout';
 
 const FormField = ({ field, form, resolveOptions, minAge = null, readOnly = false }) => {
-  const { fieldName, disabled, selectOptions, rules } = useFormField({
+  // Hook que compone toda la lógica del campo
+  const { fieldName, disabled, selectOptions, rules, minAge: fieldMinAge } = useFormField({
     field,
     resolveOptions,
     readOnly,
     form,
+    contextMinAge: minAge,
   });
 
-  // Determinar el minAge a usar: si field.minAge es null, usar el del contexto, sino usar el del field
-  const fieldMinAge = field.minAge !== null && field.minAge !== undefined ? field.minAge : minAge;
-
-  // Renderizar el componente de campo apropiado
-  const renderField = () => {
-    switch (field.type) {
-      case 'input':
-        return (
-          <FieldInput
-            placeholder={field.placeholder}
-            disabled={disabled}
-            readOnly={readOnly}
-            type={field.inputType || 'text'}
-            maxLength={field.maxLength}
-            icon={field.icon}
-            iconPosition={field.iconPosition}
-            defaultValue={field.defaultValue}
-          />
-        );
-
-      case 'select':
-        return (
-          <FieldSelect
-            placeholder={field.placeholder}
-            disabled={disabled}
-            readOnly={readOnly}
-            options={selectOptions}
-            icon={field.icon}
-            defaultValue={field.defaultValue}
-          />
-        );
-
-      case 'date':
-        return (
-          <FieldDatePicker
-            placeholder={field.placeholder}
-            disabled={disabled}
-            readOnly={readOnly}
-            picker={field.picker || 'date'}
-            minAge={fieldMinAge}
-            defaultValue={field.defaultValue}
-          />
-        );
-
-      case 'switch':
-        return (
-          <FieldSwitch
-            disabled={disabled}
-            readOnly={readOnly}
-            defaultChecked={field.defaultChecked || false}
-            checkedChildren={field.checkedChildren}
-            unCheckedChildren={field.unCheckedChildren}
-          />
-        );
-
-      case 'textarea':
-        return (
-          <FieldTextarea
-            placeholder={field.placeholder}
-            disabled={disabled}
-            readOnly={readOnly}
-            maxLength={field.maxLength}
-            rows={field.rows || 4}
-            defaultValue={field.defaultValue}
-          />
-        );
-
-      case 'radio':
-        return (
-          <FieldRadio
-            disabled={disabled}
-            readOnly={readOnly}
-            options={selectOptions}
-            defaultValue={field.defaultValue}
-          />
-        );
-
-      default:
-        console.warn(`FormField: Tipo de campo no soportado: ${field.type}`);
-        return null;
-    }
-  };
-
-  // Dimensiones responsive para labelCol y wrapperCol
-  // Aplicando las mismas dimensiones responsive de FormSection
-  const labelCol = {
-    xs: { span: 24 },        // < 576px (Móviles): label ocupa 100% (layout vertical)
-    sm: { span: 24 },        // ≥ 576px (Tablets pequeñas): label ocupa 100% (layout vertical)
-    md: { span: 8 },         // ≥ 768px (Tablets): label ocupa 8 columnas (33%)
-    lg: { span: 8 },         // ≥ 992px (Desktop): label ocupa 8 columnas (33%)
-    xl: { span: 10 },        // ≥ 1200px (Desktop grande): label ocupa 10 columnas (42%)
-    xxl: { span: 10 },       // ≥ 1600px (Desktop extra grande): label ocupa 10 columnas (42%)
-  };
-
-  const wrapperCol = {
-    xs: { span: 24 },        // < 576px (Móviles): input ocupa 100% (layout vertical)
-    sm: { span: 24 },        // ≥ 576px (Tablets pequeñas): input ocupa 100% (layout vertical)
-    md: { span: 16 },        // ≥ 768px (Tablets): input ocupa 16 columnas (67%)
-    lg: { span: 16 },        // ≥ 992px (Desktop): input ocupa 16 columnas (67%)
-    xl: { span: 14 },        // ≥ 1200px (Desktop grande): input ocupa 14 columnas (58%)
-    xxl: { span: 14 },       // ≥ 1600px (Desktop extra grande): input ocupa 14 columnas (58%)
-  };
+  // Hook que proporciona función de renderizado (Strategy Pattern)
+  const renderField = useFieldRenderer({
+    fieldType: field.type,
+    field,
+    disabled,
+    readOnly,
+    selectOptions,
+    minAge: fieldMinAge,
+  });
 
   return (
     <Form.Item

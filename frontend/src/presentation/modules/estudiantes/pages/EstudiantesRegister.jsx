@@ -37,7 +37,7 @@ const EstudiantesRegister = () => {
     loading = false,
     error = null,
     
-    // Lógica del formulario (viene del hook useStudentRegisterLogic)
+    // Lógica del formulario (viene de useStudentFormOptions y useStudentFormHandlers)
     resolveOptions,
     minAge,
     handleFinish,

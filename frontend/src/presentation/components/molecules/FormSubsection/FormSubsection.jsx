@@ -3,10 +3,20 @@
  * 
  * Single Responsibility: Renderizar una sub-sección de formulario con divider/título y campos agrupados
  * 
+ * Clean Architecture:
+ * - Presentation Layer: Componente que solo maneja UI
+ * - Toda la lógica está en hooks especializados
+ * 
  * Atomic Design: Molécula
  * - Usa átomos (Text) y componentes nativos de Ant Design (Row, Col, Divider)
  * - Usa moléculas (FormField) para renderizar campos
- * - Soporta renderizado condicional basado en valores del formulario
+ * - Usa hooks personalizados para separar lógica de presentación
+ * 
+ * SOLID Principles:
+ * - Single Responsibility: Solo renderiza UI, la lógica está en hooks
+ * - Open/Closed: Extensible agregando nuevos tipos de campos sin modificar código existente
+ * - Dependency Inversion: Depende de hooks (abstracciones)
+ * - DRY: Reutiliza utilidades de FormSection para evitar duplicación
  * 
  * Uso:
  * - Agrupar campos relacionados dentro de una sección principal
@@ -14,9 +24,10 @@
  * - Renderizar campos de forma condicional
  */
 
-import { Row, Col, Form, Divider } from 'antd';
+import { Row, Col, Divider } from 'antd';
 import { Text } from '@atoms';
 import { FormField } from '@molecules';
+import { useFormSubsection } from './hooks/useFormSubsection';
 
 const FormSubsection = ({
   subsectionTitle,
@@ -29,33 +40,22 @@ const FormSubsection = ({
   dependsOn = null,
   showIf = null,
 }) => {
-  // Observar todos los campos del formulario para hacer reactivo el componente
-  const allFormValues = Form.useWatch([], form);
+  // Hook que compone toda la lógica de la subsección
+  const {
+    fields: safeFields,
+    shouldShow,
+    getColumns,
+    hasFields,
+  } = useFormSubsection({
+    fields,
+    form,
+    conditional,
+    dependsOn,
+    showIf,
+  });
 
-  // Si la sub-sección es condicional, verificar si debe mostrarse
-  if (conditional) {
-    if (dependsOn) {
-      const dependsOnValue = allFormValues?.[dependsOn];
-
-      // Si tiene showIf, evaluar la condición
-      if (showIf) {
-        const shouldShow = showIf(dependsOnValue);
-        if (!shouldShow) return null;
-      } else {
-        // Por defecto, mostrar si el valor es truthy
-        if (!dependsOnValue) return null;
-      }
-    } else {
-      // Si es condicional pero no tiene dependsOn, no mostrar
-      return null;
-    }
-  }
-
-  // Asegurar que fields siempre sea un array
-  const safeFields = Array.isArray(fields) ? fields : [];
-
-  // Si no hay campos, no renderizar nada
-  if (safeFields.length === 0) {
+  // Si no debe mostrarse o no hay campos, no renderizar nada
+  if (!shouldShow || !hasFields) {
     return null;
   }
 
@@ -66,16 +66,13 @@ const FormSubsection = ({
       </Divider>
       <Row gutter={[24, 16]} className="form-subsection-fields">
         {safeFields.map((field) => {
-          const span = field.span || 24;
+          // Obtener configuración de columnas (usando helper del hook)
+          const columns = getColumns(field);
+
           return (
             <Col
               key={field.name}
-              xs={24}
-              sm={24}
-              md={24}
-              lg={span >= 8 ? 12 : span}
-              xl={span}
-              xxl={span}
+              {...columns}
             >
               <FormField
                 field={field}
