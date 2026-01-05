@@ -20,7 +20,62 @@
  */
 
 import { useMemo } from 'react';
-import { transformToOptions } from '../../utils/formFieldOptionMappers';
+import { transformToOptions as transformGeneric, excludeByMultipleFields } from '@application/utils';
+
+/**
+ * Factory de mappers predefinidos para tipos de datos de estudiantes
+ * 
+ * Mapea claves específicas a sus transformadores correspondientes
+ * Co-localizado con el hook que lo usa
+ */
+const studentMappers = {
+  // Mappers genéricos (para datos con estructura { id, nombre })
+  expediciones: (data) => transformGeneric('generic', data),
+  generos: (data) => transformGeneric('generic', data),
+  paises: (data) => transformGeneric('generic', data),
+  idiomas: (data) => transformGeneric('generic', data),
+  estadosCiviles: (data) => transformGeneric('generic', data),
+  tiposSangre: (data) => transformGeneric('generic', data),
+  discapacidades: (data) => transformGeneric('generic', data),
+  departamentos: (data) => transformGeneric('generic', data),
+  provincias: (data) => transformGeneric('generic', data),
+  municipios: (data) => transformGeneric('generic', data),
+  
+  // Mappers para datos con estructura { label, value }
+  gradosDiscapacidad: (data) => transformGeneric('labelValue', data),
+  tiposOrigen: (data) => transformGeneric('labelValue', data),
+  
+  // Caso especial: paisesExtranjeros (países sin Bolivia)
+  paisesExtranjeros: (data) => {
+    const filterFn = excludeByMultipleFields([
+      { field: 'codigo_iso', value: 'BOL' },
+      { field: 'codigoIso', value: 'BOL' },
+      { field: 'nombre', value: 'Bolivia' },
+    ]);
+    return transformGeneric('generic', data, filterFn);
+  },
+};
+
+/**
+ * Transforma datos del contexto en opciones de campos de formulario
+ * 
+ * Wrapper que mantiene compatibilidad con el formato anterior
+ * pero usa los transformers genéricos internamente
+ * 
+ * @param {string} key - Clave del tipo de opción (ej: 'idiomas', 'generos', 'paisesExtranjeros')
+ * @param {*} data - Datos a transformar
+ * @returns {Array} Array de opciones con formato { label, value } para campos de formulario
+ */
+const transformToOptions = (key, data) => {
+  const mapper = studentMappers[key];
+  
+  if (!mapper) {
+    console.warn(`[useStudentFormOptions] No mapper found for key: ${key}`);
+    return [];
+  }
+  
+  return mapper(data);
+};
 
 /**
  * Hook para transformar datos del contexto en opciones de formulario
@@ -67,6 +122,14 @@ export const useStudentFormOptions = (contextData) => {
       // Caso especial: paisesExtranjeros necesita todos los países para filtrar
       if (key === 'paisesExtranjeros') {
         return transformToOptions(key, paises);
+      }
+
+      // Caso especial: tiposOrigenPrimera filtra solo BOLIVIANA y EXTRANJERA (sin DOBLE_NACIONALIDAD)
+      if (key === 'tiposOrigenPrimera') {
+        const tiposOrigenFiltrados = tiposOrigen.filter(
+          tipo => tipo.value === 'BOLIVIANA' || tipo.value === 'EXTRANJERA'
+        );
+        return transformToOptions('tiposOrigen', tiposOrigenFiltrados);
       }
 
       const data = dataMap[key];

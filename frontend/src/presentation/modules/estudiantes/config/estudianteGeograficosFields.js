@@ -17,12 +17,86 @@
  */
 
 /**
+ * Crea los campos de nacionalidad boliviana
+ * @param {string} prefix - Prefijo para los nombres de campos ('' para primera, 'segunda' para segunda)
+ * @returns {Array} Array de campos de nacionalidad boliviana
+ */
+const createCamposBoliviana = (prefix = '') => {
+  return [
+    {
+      name: prefix ? `${prefix}DepartamentoId` : 'departamentoId',
+      label: 'Departamento',
+      type: 'select',
+      required: true,
+      span: 12,
+      options: 'departamentos',
+      placeholder: 'Seleccione departamento',
+    },
+    {
+      name: prefix ? `${prefix}ProvinciaId` : 'provinciaId',
+      label: 'Provincia',
+      type: 'select',
+      required: true,
+      span: 12,
+      options: 'provincias',
+      placeholder: 'Seleccione provincia',
+    },
+    {
+      name: prefix ? `${prefix}MunicipioId` : 'municipioId',
+      label: 'Municipio',
+      type: 'select',
+      required: true,
+      span: 12,
+      options: 'municipios',
+      placeholder: 'Seleccione municipio',
+    },
+    {
+      name: prefix ? `${prefix}LocalidadComunidad` : 'localidadComunidad',
+      label: 'Localidad/Comunidad',
+      type: 'input',
+      required: false,
+      span: 12,
+      placeholder: 'Ingrese localidad o comunidad',
+    },
+  ];
+};
+
+/**
+ * Crea los campos de nacionalidad extranjera
+ * @param {string} prefix - Prefijo para los nombres de campos ('' para primera, 'segunda' para segunda)
+ * @returns {Array} Array de campos de nacionalidad extranjera
+ */
+const createCamposExtranjera = (prefix = '') => {
+  return [
+    {
+      name: prefix ? `${prefix}PaisId` : 'paisId',
+      label: 'País de Nacimiento',
+      type: 'select',
+      required: true,
+      span: 12,
+      options: 'paisesExtranjeros', // Países sin Bolivia
+      placeholder: 'Seleccione país de nacimiento',
+    },
+    {
+      name: prefix ? `${prefix}CiudadNacimiento` : 'ciudadNacimiento',
+      label: 'Ciudad de Nacimiento',
+      type: 'input',
+      required: true,
+      span: 12,
+      placeholder: 'Ingrese ciudad de nacimiento',
+    },
+  ];
+};
+
+/**
  * Crea la configuración de campos geográficos de origen para el registro de estudiantes
  * 
  * Los campos geográficos incluyen:
  * - Idioma Más Hablado (select) - idioma que más habla
  * - Idioma Secundario (select) - segundo idioma que más habla
- * - Tipo de Origen/Nacionalidad (radio)
+ * - Tipo de Origen/Nacionalidad (radio) - BOLIVIANA, EXTRANJERA, DOBLE_NACIONALIDAD
+ * - Doble Nacionalidad (switch) - indica si tiene doble nacionalidad
+ * - Primera Nacionalidad (radio) - BOLIVIANA o EXTRANJERA (solo si es doble nacionalidad)
  * 
  * Nota: Los idiomas tienen exclusión mutua (el seleccionado en uno no aparece en el otro)
  * 
@@ -62,79 +136,89 @@ export const createEstudianteGeograficosFields = () => {
           type: 'radio',
           required: true,
           span: 12,
-          options: 'tiposOrigen',
+          options: 'tiposOrigen', // Debe incluir: BOLIVIANA, EXTRANJERA, DOBLE_NACIONALIDAD
         },
-        // Sub-sección condicional para Nacionalidad Boliviana
+        // Primera Nacionalidad (solo visible si tipoOrigen es DOBLE_NACIONALIDAD)
+        {
+          name: 'primeraNacionalidad',
+          label: 'Primera Nacionalidad',
+          type: 'radio',
+          required: true,
+          span: 12,
+          options: 'tiposOrigenPrimera', // Debe incluir solo: BOLIVIANA, EXTRANJERA
+          conditional: true,
+          dependsOn: 'tipoOrigen',
+          showIf: (tipoOrigen) => tipoOrigen === 'DOBLE_NACIONALIDAD',
+        },
+        // Sub-sección condicional para Nacionalidad Boliviana (caso simple, no doble)
         {
           type: 'subsection',
           subsectionTitle: 'Datos de Nacionalidad Boliviana',
           conditional: true,
           dependsOn: 'tipoOrigen',
           showIf: (tipoOrigen) => tipoOrigen === 'BOLIVIANA',
-          fields: [
-            {
-              name: 'departamentoId',
-              label: 'Departamento',
-              type: 'select',
-              required: true,
-              span: 12,
-              options: 'departamentos',
-              placeholder: 'Seleccione departamento',
-            },
-            {
-              name: 'provinciaId',
-              label: 'Provincia',
-              type: 'select',
-              required: true,
-              span: 12,
-              options: 'provincias',
-              placeholder: 'Seleccione provincia',
-            },
-            {
-              name: 'municipioId',
-              label: 'Municipio',
-              type: 'select',
-              required: true,
-              span: 12,
-              options: 'municipios',
-              placeholder: 'Seleccione municipio',
-            },
-            {
-              name: 'localidadComunidad',
-              label: 'Localidad/Comunidad',
-              type: 'input',
-              required: false,
-              span: 12,
-              placeholder: 'Ingrese localidad o comunidad',
-            },
-          ],
+          fields: createCamposBoliviana(),
         },
-        // Sub-sección condicional para Nacionalidad Extranjera
+        // Sub-sección condicional para Nacionalidad Extranjera (caso simple, no doble)
         {
           type: 'subsection',
           subsectionTitle: 'Datos de Nacionalidad Extranjera',
           conditional: true,
           dependsOn: 'tipoOrigen',
           showIf: (tipoOrigen) => tipoOrigen === 'EXTRANJERA',
-          fields: [
-            {
-              name: 'paisId',
-              label: 'País de Nacimiento',
-              type: 'select',
-              required: true,
-              span: 12,
-              options: 'paisesExtranjeros', // Países sin Bolivia
-              placeholder: 'Seleccione país de nacimiento',
-            },
-            {
-              name: 'ciudadNacimiento',
-              label: 'Ciudad de Nacimiento',
-              type: 'input',
-              required: true,
-              span: 12,
-              placeholder: 'Ingrese ciudad de nacimiento',
-            },
-          ],
+          fields: createCamposExtranjera(),
+        },
+        // Sub-sección para Primera Nacionalidad - Boliviana (doble nacionalidad)
+        // Si primeraNacionalidad = BOLIVIANA, mostrar campos bolivianos como primera
+        {
+          type: 'subsection',
+          subsectionTitle: 'Datos de la Primera Nacionalidad',
+          conditional: true,
+          dependsOn: ['tipoOrigen', 'primeraNacionalidad'],
+          showIf: (allFormValues) => {
+            return allFormValues?.tipoOrigen === 'DOBLE_NACIONALIDAD' && 
+                   allFormValues?.primeraNacionalidad === 'BOLIVIANA';
+          },
+          fields: createCamposBoliviana(),
+        },
+        // Sub-sección para Primera Nacionalidad - Extranjera (doble nacionalidad)
+        // Si primeraNacionalidad = EXTRANJERA, mostrar campos extranjeros como primera
+        {
+          type: 'subsection',
+          subsectionTitle: 'Datos de la Primera Nacionalidad',
+          conditional: true,
+          dependsOn: ['tipoOrigen', 'primeraNacionalidad'],
+          showIf: (allFormValues) => {
+            return allFormValues?.tipoOrigen === 'DOBLE_NACIONALIDAD' && 
+                   allFormValues?.primeraNacionalidad === 'EXTRANJERA';
+          },
+          fields: createCamposExtranjera(),
+        },
+        // Sub-sección para Segunda Nacionalidad - Extranjera (doble nacionalidad)
+        // Si primeraNacionalidad = BOLIVIANA, la segunda es EXTRANJERA (automáticamente)
+        {
+          type: 'subsection',
+          subsectionTitle: 'Datos de Segunda Nacionalidad',
+          conditional: true,
+          dependsOn: ['tipoOrigen', 'primeraNacionalidad'],
+          showIf: (allFormValues) => {
+            return allFormValues?.tipoOrigen === 'DOBLE_NACIONALIDAD' && 
+                   allFormValues?.primeraNacionalidad === 'BOLIVIANA';
+          },
+          fields: createCamposExtranjera('segunda'),
+        },
+        // Sub-sección para Segunda Nacionalidad - Boliviana (doble nacionalidad)
+        // Si primeraNacionalidad = EXTRANJERA, la segunda es BOLIVIANA (automáticamente)
+        {
+          type: 'subsection',
+          subsectionTitle: 'Datos de Segunda Nacionalidad',
+          conditional: true,
+          dependsOn: ['tipoOrigen', 'primeraNacionalidad'],
+          showIf: (allFormValues) => {
+            return allFormValues?.tipoOrigen === 'DOBLE_NACIONALIDAD' && 
+                   allFormValues?.primeraNacionalidad === 'EXTRANJERA';
+          },
+          fields: createCamposBoliviana('segunda'),
         },
       ],
     },

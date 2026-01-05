@@ -23,8 +23,10 @@
  * 
  * @param {Object} options - Opciones de configuración
  * @param {boolean} options.conditional - Si el campo es condicional
- * @param {string} [options.dependsOn] - Nombre del campo del que depende
+ * @param {string|Array} [options.dependsOn] - Nombre del campo o array de campos de los que depende
  * @param {Function} [options.showIf] - Función personalizada para evaluar condición
+ *   - Si dependsOn es string: recibe (dependsOnValue, allFormValues)
+ *   - Si dependsOn es array: recibe (allFormValues)
  * @param {Object} [options.allFormValues] - Todos los valores del formulario
  * @returns {boolean} true si el campo debe mostrarse, false en caso contrario
  */
@@ -44,15 +46,24 @@ export const shouldShowConditionalField = ({
     return false;
   }
 
-  // Obtener el valor del campo del que depende
-  const dependsOnValue = allFormValues?.[dependsOn];
-
   // Si tiene showIf personalizado, evaluarlo
   if (showIf && typeof showIf === 'function') {
-    return showIf(dependsOnValue);
+    // Si dependsOn es un array, pasar todos los valores del formulario
+    if (Array.isArray(dependsOn)) {
+      return showIf(allFormValues);
+    }
+    // Si dependsOn es string, pasar el valor específico y todos los valores
+    const dependsOnValue = allFormValues?.[dependsOn];
+    return showIf(dependsOnValue, allFormValues);
+  }
+
+  // Por defecto, si dependsOn es array, verificar que todos los campos tengan valores
+  if (Array.isArray(dependsOn)) {
+    return dependsOn.every(field => !!allFormValues?.[field]);
   }
 
   // Por defecto, mostrar si el valor es truthy
+  const dependsOnValue = allFormValues?.[dependsOn];
   return !!dependsOnValue;
 };
 
