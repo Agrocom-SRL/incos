@@ -16,6 +16,7 @@
  * - Genera los indicadores del documento (requerido, original, acepta fotocopia)
  * - Construye el título con indicadores
  * - Determina qué indicadores visuales mostrar
+ * - Determina nombres de campos adicionales (en_tramite, observaciones, es_original)
  */
 
 import { useMemo } from 'react';
@@ -64,17 +65,55 @@ export const useDocumentoItem = (documento) => {
 
   /**
    * Valor por defecto del switch (estado de entrega)
+   * Por defecto es true (entregado) para ocultar inicialmente los campos de en_tramite y observaciones
+   * El componente DocumentoItem usa Form.useWatch para escuchar cambios del switch y mostrar/ocultar campos dinámicamente
    */
   const defaultChecked = useMemo(() => {
-    return documento.entregado || false;
+    // Usar el estado entregado del documento (por defecto true desde useDocumentacionDinamica)
+    // Esto oculta inicialmente los campos de en_tramite y observaciones
+    // Cuando el usuario cambie el switch, Form.useWatch detectará el cambio y mostrará/ocultará los campos
+    return documento.entregado === true;
   }, [documento.entregado]);
+
+  /**
+   * Nombre del campo para en_tramite
+   */
+  const fieldNameEnTramite = useMemo(() => {
+    return `documento_${documento.id}_en_tramite`;
+  }, [documento.id]);
+
+  /**
+   * Nombre del campo para observaciones
+   */
+  const fieldNameObservaciones = useMemo(() => {
+    return `documento_${documento.id}_observaciones`;
+  }, [documento.id]);
+
+  /**
+   * Nombre del campo para es_original
+   */
+  const fieldNameEsOriginal = useMemo(() => {
+    return `documento_${documento.id}_es_original`;
+  }, [documento.id]);
+
+  /**
+   * Determina si debe mostrar el campo es_original
+   * Solo se muestra si acceptsPhotocopy es true (acepta fotocopia)
+   */
+  const mostrarCampoEsOriginal = useMemo(() => {
+    return documento.acceptsPhotocopy === true;
+  }, [documento.acceptsPhotocopy]);
 
   return {
     fieldName,
+    fieldNameEnTramite,
+    fieldNameObservaciones,
+    fieldNameEsOriginal,
     tituloDocumento,
     esRequerido: documento.required === true,
     mostrarIndicadorOriginal,
     mostrarIndicadorFotocopia,
+    mostrarCampoEsOriginal,
     defaultChecked,
   };
 };

@@ -77,7 +77,7 @@ const TableListView = ({
                     {error && (
                         <Alert
                             type="error"
-                            message="Error"
+                            title="Error"
                             description={error}
                         />
                     )}

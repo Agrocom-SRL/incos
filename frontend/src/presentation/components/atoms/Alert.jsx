@@ -13,7 +13,8 @@
 import { Alert as AntAlert } from 'antd';
 
 const Alert = ({
-  message,
+  title,
+  message, // Mantener por compatibilidad hacia atrás, pero usar title es preferido
   description,
   type = 'error', // 'success' | 'info' | 'warning' | 'error'
   showIcon = true,
@@ -22,9 +23,12 @@ const Alert = ({
 }) => {
   const alertClassName = className ? `alert ${className}`.trim() : 'alert';
 
+  // Usar title si está disponible, sino usar message (compatibilidad hacia atrás)
+  const alertTitle = title !== undefined ? title : message;
+
   return (
     <AntAlert
-      message={message}
+      title={alertTitle}
       description={description}
       type={type}
       showIcon={showIcon}

@@ -89,8 +89,27 @@ const EstudiantesRegister = () => {
   // Hook para manejar el estado de contactos de emergencia dinámicos
   const { contactosIndices, agregarContacto, eliminarContacto } = useContactosEmergenciaDinamicos();
 
+  // Obtener solo los IDs de documentos padres directamente desde documentacion sin procesar
+  // para observar solo esos campos y evitar bucles infinitos
+  const documentosPadresIds = useMemo(() => {
+    if (!documentacion || documentacion.length === 0) {
+      return [];
+    }
+    // Filtrar documentos del sistema y obtener solo padres
+    const documentosPadres = documentacion.filter(
+      (doc) => !doc.esDocumentoSistema && (doc.documentoPadreId === null || doc.documentoPadreId === undefined)
+    );
+    return documentosPadres.map((doc) => `documento_${doc.id}`);
+  }, [documentacion]);
+
+  // Observar SOLO los campos de documentos padres usando Form.useWatch
+  // Esto evita bucles infinitos porque solo observamos campos estables (padres)
+  // Los hijos aparecen/desaparecen dinámicamente pero no los observamos
+  const formValuesPadres = Form.useWatch(documentosPadresIds, form) || {};
+
   // Hook para procesar documentación (filtra, ordena, prepara datos)
-  const { documentacion: documentacionProcesada } = useDocumentacionDinamica(documentacion);
+  // Pasa formValuesPadres para que sea reactivo solo a cambios en documentos padres
+  const { documentacion: documentacionProcesada } = useDocumentacionDinamica(documentacion, formValuesPadres);
 
   // Hook para obtener títulos dinámicos según el modo
   const wizardTitles = useEstudianteWizardTitles(completarMode);

@@ -7,7 +7,7 @@
  * - Presentation Layer: Componente que solo maneja UI
  * 
  * Atomic Design: Molécula
- * - Usa átomos (Alert, FieldSwitch, Container, Heading, Text, Badge) del sistema
+ * - Usa átomos (Alert, FieldSwitch, FieldCheckbox, FieldTextarea, Container, Heading, Text, Badge) del sistema
  * - Compone múltiples elementos en un solo componente
  * - NO usa etiquetas HTML directas, solo componentes atómicos
  * 
@@ -17,18 +17,32 @@
  * 
  * Estructura:
  * - Título del documento con indicadores (requerido, original, etc.)
- * - Switch/Checkbox para marcar como entregado
+ * - Switch para marcar como entregado/pendiente
  * - Alert con descripción del documento
  * - Iconos que indican si solo se aceptan originales
+ * - Campos adicionales (condicionales, solo cuando entregado = true):
+ *   - Checkbox para "En trámite" (en_tramite)
+ *   - Textarea para observaciones
+ *   - Checkbox para "Es original" (solo si acceptsPhotocopy = true)
+ * 
+ * Reactividad:
+ * - Usa Form.useWatch para escuchar cambios en el switch de entrega
+ * - Muestra/oculta campos adicionales según el estado de entrega
  */
 
-import { Form } from 'antd';
+import { Form, Row, Col } from 'antd';
 import { FileTextOutlined, CheckCircleOutlined, InfoCircleOutlined } from '@ant-design/icons';
-import { Alert, FieldSwitch, Container, Heading, Text, Badge } from '@atoms';
+import { Alert, FieldSwitch, FieldCheckbox, FieldTextarea, Container, Heading, Text, Badge } from '@atoms';
 import { useDocumentoItem } from './hooks/useDocumentoItem';
 
 /**
  * Componente para mostrar un documento con su estado de entrega
+ * 
+ * Campos del formulario generados:
+ * - documento_{id}: Switch para entregado/pendiente
+ * - documento_{id}_en_tramite: Checkbox para indicar si está en trámite
+ * - documento_{id}_observaciones: Textarea para observaciones
+ * - documento_{id}_es_original: Checkbox para indicar si es original (solo si acceptsPhotocopy = true)
  * 
  * @param {Object} props
  * @param {Object} props.documento - Objeto con datos del documento
@@ -50,12 +64,21 @@ const DocumentoItem = ({
   // Hook que procesa toda la lógica del documento
   const {
     fieldName,
+    fieldNameEnTramite,
+    fieldNameObservaciones,
+    fieldNameEsOriginal,
     tituloDocumento,
     esRequerido,
     mostrarIndicadorOriginal,
     mostrarIndicadorFotocopia,
+    mostrarCampoEsOriginal,
     defaultChecked,
   } = useDocumentoItem(documento);
+
+  // Observar el estado de entrega para mostrar/ocultar campos condicionales
+  // Si no hay valor en el formulario, usar el valor por defecto del documento
+  const entregadoDelForm = Form.useWatch(fieldName, form);
+  const entregado = entregadoDelForm !== undefined ? entregadoDelForm : defaultChecked;
 
   return (
     <Container className="documento-item" vertical gap="md">
@@ -72,13 +95,12 @@ const DocumentoItem = ({
         <Form.Item
           name={fieldName}
           valuePropName="checked"
-          className="documento-item-switch"
+          initialValue={defaultChecked}
         >
           <FieldSwitch
             disabled={readOnly}
             checkedChildren="Entregado"
             unCheckedChildren="Pendiente"
-            defaultChecked={defaultChecked}
           />
         </Form.Item>
       </Container>
@@ -86,7 +108,7 @@ const DocumentoItem = ({
       {/* Alert con descripción */}
       {documento.description && (
         <Alert
-          message={null}
+          title={null}
           description={documento.description}
           type="info"
           showIcon={true}
@@ -94,14 +116,15 @@ const DocumentoItem = ({
         />
       )}
 
-      {/* Indicadores usando Badge */}
-      {(mostrarIndicadorOriginal || mostrarIndicadorFotocopia) && (
-        <Container>
+      {/* Fila horizontal: Badge, Es original, En trámite (cada uno span=8) */}
+      <Row gutter={[16, 16]}>
+        {/* Badge (solo si hay indicador) - span=8 */}
+        <Col span={8}>
           {mostrarIndicadorOriginal && (
             <Badge
               variant="error"
               icon={<CheckCircleOutlined />}
-              text="Solo se acepta original"
+              text="Solo Original"
             />
           )}
           {mostrarIndicadorFotocopia && (
@@ -111,7 +134,48 @@ const DocumentoItem = ({
               text="Se acepta fotocopia"
             />
           )}
-        </Container>
+        </Col>
+
+        {/* Checkbox para es_original (solo si acceptsPhotocopy es true) - span=8, siempre visible si aplica */}
+        {mostrarCampoEsOriginal && (
+          <Col span={8}>
+            <Form.Item
+              name={fieldNameEsOriginal}
+              valuePropName="checked"
+            >
+              <FieldCheckbox disabled={readOnly}>
+                Es original (no fotocopia)
+              </FieldCheckbox>
+            </Form.Item>
+          </Col>
+        )}
+
+        {/* Checkbox para en_tramite - span=8, solo visible cuando switch es FALSE, al final */}
+        <Col span={8}>
+          {!entregado && (
+            <Form.Item
+              name={fieldNameEnTramite}
+              valuePropName="checked"
+            >
+              <FieldCheckbox disabled={readOnly}>
+                En trámite
+              </FieldCheckbox>
+            </Form.Item>
+          )}
+        </Col>
+      </Row>
+
+      {/* Textarea para observaciones - solo visible cuando switch es FALSE */}
+      {!entregado && (
+        <Form.Item
+          name={fieldNameObservaciones}
+        >
+          <FieldTextarea
+            placeholder="Observaciones adicionales sobre la entrega del documento..."
+            disabled={readOnly}
+            rows={3}
+          />
+        </Form.Item>
       )}
     </Container>
   );

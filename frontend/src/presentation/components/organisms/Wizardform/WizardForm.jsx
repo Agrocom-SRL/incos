@@ -30,7 +30,7 @@
  *   Cuando un campo cambia a true, se ejecuta su función de carga correspondiente
  */
 
-import React from 'react';
+import React, { useRef } from 'react';
 import { Steps, Form } from 'antd';
 import { FormCard } from '@atoms';
 import { WizardActions, FormSection } from '@molecules';
@@ -48,6 +48,7 @@ const WizardForm = ({
   initialValues = {},
   className = '',
   form: externalForm,
+  onFormValuesChange, // Callback opcional para notificar cambios en valores del formulario
 }) => {
   // Hook que compone toda la lógica del wizard (navegación + formulario + cargadores)
   const {
@@ -55,6 +56,7 @@ const WizardForm = ({
     next,
     prev,
     form,
+    allFormValues, // Valores actuales del formulario (reactivo)
     currentStepConfig,
     shouldShowSection,
   } = useWizardForm({
@@ -62,6 +64,24 @@ const WizardForm = ({
     externalForm,
     conditionalLoaders,
   });
+
+  // Ref para comparar valores anteriores y evitar llamadas innecesarias al callback
+  const prevFormValuesRef = useRef({});
+
+  // Notificar cambios en valores del formulario al componente padre
+  // Solo si realmente cambió algo (comparación profunda)
+  React.useEffect(() => {
+    if (onFormValuesChange && typeof onFormValuesChange === 'function') {
+      const prevValuesStr = JSON.stringify(prevFormValuesRef.current);
+      const newValuesStr = JSON.stringify(allFormValues || {});
+      
+      // Solo llamar al callback si realmente cambió algo
+      if (prevValuesStr !== newValuesStr) {
+        prevFormValuesRef.current = allFormValues || {};
+        onFormValuesChange(allFormValues);
+      }
+    }
+  }, [allFormValues, onFormValuesChange]);
 
   // Si no hay step configurado, no renderizar nada
   if (!currentStepConfig) {

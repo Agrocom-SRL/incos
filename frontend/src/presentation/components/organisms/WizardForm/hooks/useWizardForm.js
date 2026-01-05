@@ -70,7 +70,7 @@ export const useWizardForm = ({ steps = [], externalForm, conditionalLoaders = {
     
     // Formulario
     form,
-    allFormValues,
+    allFormValues, // Valores actuales del formulario (reactivo)
     
     // Configuración
     currentStepConfig,

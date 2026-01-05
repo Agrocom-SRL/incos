@@ -123,6 +123,7 @@ export function injectCSSVariables() {
   // ========================================
   root.style.setProperty('--sombra-sider', componentConfig.Sider.boxShadow);
   root.style.setProperty('--sombra-header', componentConfig.Header.boxShadow);
+  root.style.setProperty('--sombra-documento', allThemeTokens.shadowElevation3);
 
   // ========================================
   // ESPACIADO (Solo lo necesario para Layout y componentes)
