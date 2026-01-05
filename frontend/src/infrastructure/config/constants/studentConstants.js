@@ -33,5 +33,19 @@ export const EDAD_MINIMA_REGISTRO = 17;
 /**
  * Lista de grados de discapacidad
  */
-export const GRADO_DISCAPACIDAD = ['LEVE', 'MODERADO', 'SEVERO', 'PROFUNDO'];
+export const GRADO_DISCAPACIDAD = [
+  { label: 'Leve', value: 'LEVE' },
+  { label: 'Moderado', value: 'MODERADO' },
+  { label: 'Severo', value: 'SEVERO' },
+  { label: 'Profundo', value: 'PROFUNDO' },
+];
+
+/**
+ * Lista de tipos de origen/nacionalidad
+ */
+export const TIPO_ORIGEN = [
+  { label: 'Boliviana', value: 'BOLIVIANA' },
+  { label: 'Extranjera', value: 'EXTRANJERA' },
+  { label: 'Doble Nacionalidad', value: 'DOBLE_NACIONALIDAD' },
+];
 

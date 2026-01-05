@@ -17,6 +17,7 @@
  */
 
 import { useMemo, useCallback } from 'react';
+import { transformToOptions } from '../../utils/formFieldOptionMappers';
 
 /**
  * Hook para gestionar la lógica del formulario de registro de estudiantes
@@ -39,50 +40,34 @@ export const useStudentRegisterLogic = (contextData, minAge, onSubmit, onSuccess
     tiposSangre = [],
     discapacidades = [],
     gradosDiscapacidad = [],
+    tiposOrigen = [],
   } = contextData || {};
 
   // Función para resolver opciones de campos select
-  // Mapea strings como 'expediciones', 'generos' a los arrays de datos del contexto
+  // Usa mappers centralizados para transformar datos del contexto a opciones de formulario
+  // SOLID: Usa Strategy Pattern para mapear diferentes tipos de datos
   const resolveOptions = useMemo(() => {
     return (key) => {
-      const optionsMap = {
-        expediciones: expediciones.map(exp => ({
-          label: exp.nombre || exp.label || exp,
-          value: exp.id || exp.value || exp,
-        })),
-        generos: generos.map(gen => ({
-          label: gen.nombre || gen.label || gen,
-          value: gen.id || gen.value || gen,
-        })),
-        paises: paises.map(pais => ({
-          label: pais.nombre || pais.label || pais,
-          value: pais.id || pais.value || pais,
-        })),
-        idiomas: idiomas.map(idioma => ({
-          label: idioma.nombre || idioma.label || idioma,
-          value: idioma.id || idioma.value || idioma,
-        })),
-        estadosCiviles: estadosCiviles.map(ec => ({
-          label: ec.nombre || ec.label || ec,
-          value: ec.id || ec.value || ec,
-        })),
-        tiposSangre: tiposSangre.map(ts => ({
-          label: ts.nombre || ts.label || ts,
-          value: ts.id || ts.value || ts,
-        })),
-        discapacidades: discapacidades.map(disc => ({
-          label: disc.nombre || disc.label || disc,
-          value: disc.id || disc.value || disc,
-        })),
-        gradosDiscapacidad: gradosDiscapacidad.map(grado => ({
-          label: grado === 'LEVE' ? 'Leve' : grado === 'MODERADO' ? 'Moderado' : grado === 'SEVERO' ? 'Severo' : grado === 'PROFUNDO' ? 'Profundo' : grado,
-          value: grado,
-        })),
+      const dataMap = {
+        expediciones,
+        generos,
+        paises,
+        idiomas,
+        estadosCiviles,
+        tiposSangre,
+        discapacidades,
+        gradosDiscapacidad,
+        tiposOrigen,
       };
 
-      return optionsMap[key] || [];
+      const data = dataMap[key];
+      if (!data) {
+        return [];
+      }
+
+      return transformToOptions(key, data);
     };
-  }, [expediciones, generos, paises, idiomas, estadosCiviles, tiposSangre, discapacidades, gradosDiscapacidad]);
+  }, [expediciones, generos, paises, idiomas, estadosCiviles, tiposSangre, discapacidades, gradosDiscapacidad, tiposOrigen]);
 
   // Handler para finalizar el registro
   const handleFinish = useCallback(async (step) => {

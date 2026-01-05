@@ -24,6 +24,7 @@ const FormField = ({ field, form, resolveOptions, minAge = null, readOnly = fals
     field,
     resolveOptions,
     readOnly,
+    form,
   });
 
   // Determinar el minAge a usar: si field.minAge es null, usar el del contexto, sino usar el del field

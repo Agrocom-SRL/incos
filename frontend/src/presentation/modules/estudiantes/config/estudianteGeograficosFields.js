@@ -20,8 +20,11 @@
  * Crea la configuración de campos geográficos de origen para el registro de estudiantes
  * 
  * Los campos geográficos incluyen:
- * - País de Origen
- * - Idioma Nativo
+ * - Idioma Más Hablado (select) - idioma que más habla
+ * - Idioma Secundario (select) - segundo idioma que más habla
+ * - Tipo de Origen/Nacionalidad (radio)
+ * 
+ * Nota: Los idiomas tienen exclusión mutua (el seleccionado en uno no aparece en el otro)
  * 
  * @returns {Object} Configuración de campos organizados por sección
  */
@@ -30,25 +33,36 @@ export const createEstudianteGeograficosFields = () => {
     geograficos: {
       title: 'Datos Geográficos de Origen',
       fields: [
-        // País de Origen
+        // Idioma Más Hablado (idioma que más habla)
         {
-          name: 'paisId',
-          label: 'País de Origen',
-          type: 'select',
-          required: false,
-          span: 12,
-          options: 'paises',
-          placeholder: 'Seleccione país',
-        },
-        // Idioma Nativo
-        {
-          name: 'idiomaId',
-          label: 'Idioma Nativo',
+          name: 'idiomaMaternoId',
+          label: 'Idioma Más Hablado',
           type: 'select',
           required: false,
           span: 12,
           options: 'idiomas',
-          placeholder: 'Seleccione idioma',
+          placeholder: 'Seleccione idioma más hablado',
+          excludeFrom: 'idiomaSecundarioId', // Excluir el valor seleccionado de este campo en idiomaSecundarioId
+        },
+        // Idioma Secundario (segundo idioma más hablado)
+        {
+          name: 'idiomaSecundarioId',
+          label: 'Idioma Secundario',
+          type: 'select',
+          required: false,
+          span: 12,
+          options: 'idiomas',
+          placeholder: 'Seleccione idioma secundario',
+          excludeFrom: 'idiomaMaternoId', // Excluir el valor seleccionado de este campo en idiomaMaternoId
+        },
+        // Tipo de Origen/Nacionalidad
+        {
+          name: 'tipoOrigen',
+          label: 'Nacionalidad',
+          type: 'radio',
+          required: true,
+          span: 12,
+          options: 'tiposOrigen',
         },
       ],
     },

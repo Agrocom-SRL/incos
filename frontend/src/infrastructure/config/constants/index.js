@@ -18,6 +18,7 @@ export {
   GENEROS,
   TIPOS_SANGRE,
   GRADO_DISCAPACIDAD,
+  TIPO_ORIGEN,
 } from './studentConstants';
 
 // Futuras constantes:

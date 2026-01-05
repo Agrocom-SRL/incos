@@ -15,6 +15,7 @@
 
 import { useState, useCallback } from 'react';
 import { useCasesFactory } from '@container';
+import { TIPO_ORIGEN } from '@infrastructure/config/constants';
 
 export const useStudentGeographicApi = () => {
   // Estados para datos geográficos (cargados bajo demanda)
@@ -110,6 +111,9 @@ export const useStudentGeographicApi = () => {
     departamentos,
     provincias,
     municipios,
+    
+    // Opciones estáticas
+    tiposOrigen: TIPO_ORIGEN,
     
     // Funciones para cargar datos bajo demanda
     loadDepartamentos,

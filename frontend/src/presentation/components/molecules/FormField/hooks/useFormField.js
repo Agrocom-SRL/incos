@@ -12,6 +12,7 @@
  */
 
 import { useMemo } from 'react';
+import { Form } from 'antd';
 
 /**
  * Hook para manejar la lógica de FormField
@@ -21,7 +22,7 @@ import { useMemo } from 'react';
  * @param {boolean} readOnly - Si el campo está en modo solo lectura
  * @returns {Object} Objeto con valores calculados
  */
-export const useFormField = ({ field, resolveOptions, readOnly = false }) => {
+export const useFormField = ({ field, resolveOptions, readOnly = false, form }) => {
   // Helper para obtener el nombre del campo
   const fieldName = useMemo(() => {
     return field.name;
@@ -33,15 +34,32 @@ export const useFormField = ({ field, resolveOptions, readOnly = false }) => {
     return field.disabled || false;
   }, [readOnly, field.disabled]);
 
+  // Observar cambios en el campo excluido si existe
+  const excludeFieldValue = field.excludeFrom && form ? Form.useWatch(field.excludeFrom, form) : null;
+
   // Obtener opciones para campos select y radio
+  // Si el campo tiene excludeFrom, filtrar las opciones excluyendo el valor del campo especificado
   const selectOptions = useMemo(() => {
     if (field.type !== 'select' && field.type !== 'radio') return [];
     
+    let options = [];
     if (typeof field.options === 'string') {
-      return resolveOptions ? resolveOptions(field.options) : [];
+      options = resolveOptions ? resolveOptions(field.options) : [];
+    } else {
+      options = field.options || [];
     }
-    return field.options || [];
-  }, [field.type, field.options, resolveOptions]);
+
+    // Si el campo tiene excludeFrom, filtrar las opciones excluyendo el valor seleccionado
+    if (field.excludeFrom && excludeFieldValue) {
+      options = options.filter(option => {
+        const optionValue = option.value || option.id || option;
+        const excludeValueToCompare = typeof excludeFieldValue === 'object' ? (excludeFieldValue.value || excludeFieldValue.id || excludeFieldValue) : excludeFieldValue;
+        return optionValue !== excludeValueToCompare;
+      });
+    }
+
+    return options;
+  }, [field.type, field.options, field.excludeFrom, resolveOptions, excludeFieldValue]);
 
   // Reglas de validación
   const rules = useMemo(() => {
