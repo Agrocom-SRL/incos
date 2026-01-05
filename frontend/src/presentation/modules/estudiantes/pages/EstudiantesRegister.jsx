@@ -40,7 +40,15 @@ const EstudiantesRegister = () => {
     minAge,
     handleFinish,
     handleSave,
+    
+    // Funciones de carga bajo demanda
+    loadDiscapacidades,
   } = useStudentRegisterContext();
+
+  // Configurar cargadores condicionales (genérico para cualquier página)
+  const conditionalLoaders = useMemo(() => ({
+    tieneDiscapacidad: loadDiscapacidades,
+  }), [loadDiscapacidades]);
 
   // Determinar el título según los parámetros (memoizado)
   const pageTitle = useMemo(() => {
@@ -77,6 +85,7 @@ const EstudiantesRegister = () => {
         viewMode={false}
         resolveOptions={resolveOptions}
         minAge={minAge}
+        conditionalLoaders={conditionalLoaders}
         initialValues={{}}
         onFinish={handleFinish}
         onSave={handleSave}

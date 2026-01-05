@@ -56,16 +56,6 @@ export const createEstudianteDatosPersonalesFields = () => {
           options: 'expediciones',
           placeholder: 'Seleccione expedición',
         },
-        // Fecha de Nacimiento
-        {
-          name: 'fechaNacimiento',
-          label: 'Fecha de Nacimiento',
-          type: 'date',
-          required: true,
-          span: 12,
-          placeholder: 'DD-MM-YYYY o DD/MM/YYYY',
-          minAge: null, // Se reemplazará desde el contexto (EDAD_MINIMA_REGISTRO)
-        },
         // Nombres
         {
           name: 'nombres',
@@ -128,6 +118,16 @@ export const createEstudianteDatosPersonalesFields = () => {
           span: 12,
           options: 'tiposSangre',
           placeholder: 'Seleccione tipo de sangre',
+        },
+        // Fecha de Nacimiento
+        {
+          name: 'fechaNacimiento',
+          label: 'Fecha de Nacimiento',
+          type: 'date',
+          required: true,
+          span: 12,
+          placeholder: 'DD-MM-YYYY o DD/MM/YYYY',
+          minAge: null, // Se reemplazará desde el contexto (EDAD_MINIMA_REGISTRO)
         },
         // Tiene Discapacidad
         {

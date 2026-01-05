@@ -16,6 +16,7 @@
 import { createEstudianteDatosPersonalesFields } from './estudianteDatosPersonalesFields';
 import { createEstudianteContactoFields } from './estudianteContactoFields';
 import { createEstudianteGeograficosFields } from './estudianteGeograficosFields';
+import { createEstudianteDiscapacidadFields } from './estudianteDiscapacidadFields';
 
 /**
  * Crea la configuración de pasos para el wizard de registro de estudiantes
@@ -47,15 +48,24 @@ export const createEstudianteWizardSteps = (completarMode = false) => {
   const estudianteGeograficosFields = createEstudianteGeograficosFields();
   const geograficosFields = estudianteGeograficosFields.geograficos;
 
+  const estudianteDiscapacidadFields = createEstudianteDiscapacidadFields();
+  const discapacidadFields = estudianteDiscapacidadFields.discapacidad;
+
   return [
     {
       title: step1Title,
       formTitle: step1FormTitle,
-      sections: ['datosPersonales', 'geograficos', 'contacto'],
+      sections: ['datosPersonales', 'discapacidad', 'geograficos', 'contacto'],
       config: {
         datosPersonales: {
           title: step1SectionTitle,
           fields: datosPersonalesFields.fields,
+        },
+        discapacidad: {
+          title: discapacidadFields.title,
+          fields: discapacidadFields.fields,
+          conditional: true, // Sección condicional
+          dependsOn: 'tieneDiscapacidad', // Depende del campo tieneDiscapacidad
         },
         geograficos: {
           title: geograficosFields.title,

@@ -17,6 +17,7 @@ export {
   EXPEDICIONES,
   GENEROS,
   TIPOS_SANGRE,
+  GRADO_DISCAPACIDAD,
 } from './studentConstants';
 
 // Futuras constantes:

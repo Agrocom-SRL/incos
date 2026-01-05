@@ -30,3 +30,20 @@
   width: 100%;
 }
 
+/* Radio buttons: cada item ocupa todo el ancho disponible */
+.form-field .field-radio .ant-radio-wrapper {
+  display: block;
+  width: 100%;
+  margin-bottom: var(--spacing-xs);
+}
+
+.form-field .field-radio .ant-radio-wrapper:last-child {
+  margin-bottom: 0;
+}
+
+/* Textarea: altura mínima para evitar que se reduzca demasiado al redimensionar */
+.form-field .field-textarea textarea.ant-input {
+  min-height: 80px;
+  resize: vertical; /* Permitir redimensionar solo verticalmente */
+}
+

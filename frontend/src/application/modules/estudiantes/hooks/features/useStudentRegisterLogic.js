@@ -37,6 +37,8 @@ export const useStudentRegisterLogic = (contextData, minAge, onSubmit, onSuccess
     idiomas = [],
     estadosCiviles = [],
     tiposSangre = [],
+    discapacidades = [],
+    gradosDiscapacidad = [],
   } = contextData || {};
 
   // Función para resolver opciones de campos select
@@ -68,11 +70,19 @@ export const useStudentRegisterLogic = (contextData, minAge, onSubmit, onSuccess
           label: ts.nombre || ts.label || ts,
           value: ts.id || ts.value || ts,
         })),
+        discapacidades: discapacidades.map(disc => ({
+          label: disc.nombre || disc.label || disc,
+          value: disc.id || disc.value || disc,
+        })),
+        gradosDiscapacidad: gradosDiscapacidad.map(grado => ({
+          label: grado === 'LEVE' ? 'Leve' : grado === 'MODERADO' ? 'Moderado' : grado === 'SEVERO' ? 'Severo' : grado === 'PROFUNDO' ? 'Profundo' : grado,
+          value: grado,
+        })),
       };
 
       return optionsMap[key] || [];
     };
-  }, [expediciones, generos, paises, idiomas, estadosCiviles, tiposSangre]);
+  }, [expediciones, generos, paises, idiomas, estadosCiviles, tiposSangre, discapacidades, gradosDiscapacidad]);
 
   // Handler para finalizar el registro
   const handleFinish = useCallback(async (step) => {

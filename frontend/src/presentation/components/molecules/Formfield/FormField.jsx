@@ -16,7 +16,7 @@
  */
 
 import { Form } from 'antd';
-import { FieldInput, FieldSelect, FieldDatePicker, FieldSwitch } from '@atoms';
+import { FieldInput, FieldSelect, FieldDatePicker, FieldSwitch, FieldTextarea, FieldRadio } from '@atoms';
 import { useFormField } from './hooks/useFormField';
 
 const FormField = ({ field, form, resolveOptions, minAge = null, readOnly = false }) => {
@@ -78,6 +78,28 @@ const FormField = ({ field, form, resolveOptions, minAge = null, readOnly = fals
             defaultChecked={field.defaultChecked || false}
             checkedChildren={field.checkedChildren}
             unCheckedChildren={field.unCheckedChildren}
+          />
+        );
+
+      case 'textarea':
+        return (
+          <FieldTextarea
+            placeholder={field.placeholder}
+            disabled={disabled}
+            readOnly={readOnly}
+            maxLength={field.maxLength}
+            rows={field.rows || 4}
+            defaultValue={field.defaultValue}
+          />
+        );
+
+      case 'radio':
+        return (
+          <FieldRadio
+            disabled={disabled}
+            readOnly={readOnly}
+            options={selectOptions}
+            defaultValue={field.defaultValue}
           />
         );
 

@@ -68,11 +68,14 @@ export const StudentRegisterProvider = ({ children }) => {
     // Hook de lógica para procesar datos y handlers
     const registerLogic = useStudentRegisterLogic(contextData, EDAD_MINIMA_REGISTRO, onSubmit, onSuccess, showMessage);
 
-    // Componer el valor del contexto: datos + lógica
+    // Componer el valor del contexto: datos + lógica + funciones de carga
     const value = useMemo(() => ({
         ...contextData,
         ...registerLogic,
-    }), [contextData, registerLogic]);
+        // Exponer funciones de carga bajo demanda
+        loadDiscapacidades: referenceData.loadDiscapacidades,
+        loadTiposParentesco: referenceData.loadTiposParentesco,
+    }), [contextData, registerLogic, referenceData.loadDiscapacidades, referenceData.loadTiposParentesco]);
 
     return (
         <StudentRegisterContext.Provider value={value}>

@@ -15,6 +15,7 @@
 
 import { useState, useCallback } from 'react';
 import { useCasesFactory } from '@container';
+import { GRADO_DISCAPACIDAD } from '@infrastructure/config/constants';
 
 export const useStudentReferenceApi = () => {
   // Estados para datos de referencia (cargados bajo demanda)
@@ -65,6 +66,9 @@ export const useStudentReferenceApi = () => {
     // Datos de referencia (cargados bajo demanda)
     discapacidades,
     tiposParentesco,
+    
+    // Opciones estáticas
+    gradosDiscapacidad: GRADO_DISCAPACIDAD,
     
     // Funciones para cargar datos bajo demanda
     loadDiscapacidades,

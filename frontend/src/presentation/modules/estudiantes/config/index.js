@@ -9,5 +9,6 @@
 export { createEstudiantesTableColumns } from './tableColumns';
 export { createEstudianteWizardSteps } from './estudianteWizardSteps';
 export { createEstudianteDatosPersonalesFields } from './estudianteDatosPersonalesFields';
+export { createEstudianteDiscapacidadFields } from './estudianteDiscapacidadFields';
 export { createListBreadcrumbItems, createRegisterBreadcrumbItems } from './breadcrumbs.jsx';
 

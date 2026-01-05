@@ -13,9 +13,15 @@
  * - Cada step tiene un Card/FormCard que contiene un Form de Ant Design
  * - Cada Form contiene FormSections según la configuración del step
  * - La lógica (llamadas API, estado, resolveOptions) está en el hook del provider
+ * 
+ * Props especiales:
+ * - minAge: Edad mínima para campos de fecha (se pasa a FormField)
+ * - conditionalLoaders: Objeto con funciones de carga condicionales
+ *   Ejemplo: { tieneDiscapacidad: loadDiscapacidades }
+ *   Cuando un campo cambia a true, se ejecuta su función de carga correspondiente
  */
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { Steps, Form } from 'antd';
 import { FormCard } from '@atoms';
 import { WizardActions, FormSection } from '@molecules';
@@ -29,11 +35,30 @@ const WizardForm = ({
   onSave,
   resolveOptions = () => [],
   minAge = null,
+  conditionalLoaders = {},
   initialValues = {},
   className = '',
 }) => {
-  const { currentStep, next, prev, isFirstStep, isLastStep } = useWizard(0, steps.length);
+  const { currentStep, next, prev } = useWizard(0, steps.length);
   const [form] = Form.useForm();
+
+  // Observar todos los campos del formulario para hacer reactivo el componente
+  // cuando cambien los campos condicionales
+  const allFormValues = Form.useWatch([], form);
+
+  // Ejecutar funciones de carga cuando los campos condicionales cambian a true
+  useEffect(() => {
+    if (!allFormValues) return;
+    
+    Object.entries(conditionalLoaders).forEach(([fieldName, loader]) => {
+      if (loader && typeof loader === 'function') {
+        const fieldValue = allFormValues[fieldName];
+        if (fieldValue === true) {
+          loader();
+        }
+      }
+    });
+  }, [allFormValues, conditionalLoaders]);
 
   // Obtener el step actual
   const currentStepConfig = useMemo(() => {
@@ -53,7 +78,7 @@ const WizardForm = ({
       {/* Steps indicator */}
       <Steps
         current={currentStep}
-        items={steps.map((step, index) => ({
+        items={steps.map((step) => ({
           title: step.title,
         }))}
         style={{ marginBottom: 32 }}
@@ -68,6 +93,12 @@ const WizardForm = ({
         {currentStepConfig.sections.map((sectionKey) => {
           const section = currentStepConfig.config[sectionKey];
           if (!section) return null;
+
+          // Si la sección es condicional, verificar si debe mostrarse
+          if (section.conditional && section.dependsOn) {
+            const dependsOnValue = allFormValues?.[section.dependsOn];
+            if (!dependsOnValue) return null;
+          }
 
           return (
             <FormSection

@@ -30,3 +30,8 @@ export const TIPOS_SANGRE = ['O+', 'A+', 'B+', 'AB+', 'O-', 'A-', 'B-', 'AB-'];
  */
 export const EDAD_MINIMA_REGISTRO = 17;
 
+/**
+ * Lista de grados de discapacidad
+ */
+export const GRADO_DISCAPACIDAD = ['LEVE', 'MODERADO', 'SEVERO', 'PROFUNDO'];
+

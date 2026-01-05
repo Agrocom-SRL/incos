@@ -33,9 +33,9 @@ export const useFormField = ({ field, resolveOptions, readOnly = false }) => {
     return field.disabled || false;
   }, [readOnly, field.disabled]);
 
-  // Obtener opciones para campos select
+  // Obtener opciones para campos select y radio
   const selectOptions = useMemo(() => {
-    if (field.type !== 'select') return [];
+    if (field.type !== 'select' && field.type !== 'radio') return [];
     
     if (typeof field.options === 'string') {
       return resolveOptions ? resolveOptions(field.options) : [];
