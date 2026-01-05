@@ -102,10 +102,25 @@ const EstudiantesRegister = () => {
     return documentosPadres.map((doc) => `documento_${doc.id}`);
   }, [documentacion]);
 
-  // Observar SOLO los campos de documentos padres usando Form.useWatch
-  // Esto evita bucles infinitos porque solo observamos campos estables (padres)
-  // Los hijos aparecen/desaparecen dinámicamente pero no los observamos
-  const formValuesPadres = Form.useWatch(documentosPadresIds, form) || {};
+  // Observar TODOS los campos del formulario y filtrar solo los de documentos padres
+  // Esto es más confiable que usar Form.useWatch con array, que puede no funcionar correctamente
+  const allFormValues = Form.useWatch([], form) || {};
+  
+  // Filtrar solo los campos de documentos padres
+  const formValuesPadres = useMemo(() => {
+    if (!documentosPadresIds || documentosPadresIds.length === 0) {
+      return {};
+    }
+    
+    const result = {};
+    documentosPadresIds.forEach((fieldName) => {
+      if (allFormValues[fieldName] !== undefined) {
+        result[fieldName] = allFormValues[fieldName];
+      }
+    });
+    
+    return result;
+  }, [allFormValues, documentosPadresIds]);
 
   // Hook para procesar documentación (filtra, ordena, prepara datos)
   // Pasa formValuesPadres para que sea reactivo solo a cambios en documentos padres

@@ -36,7 +36,7 @@ const { Sider, Header: AntHeader, Content } = Layout;
 
 const MainLayout = () => {
     // Estado del sidebar (hook del organismo Sidebar)
-    const { collapsed, toggle } = useSidebarState(true);
+    const { collapsed, toggle } = useSidebarState(false);
 
     // Usar valores del tema para el sidebar
     const sidebarWidth = allSpacing.sidebarWidth;

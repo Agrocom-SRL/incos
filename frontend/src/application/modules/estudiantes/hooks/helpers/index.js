@@ -12,4 +12,5 @@
  */
 
 export * from './geographicFieldHelpers';
+export * from './documentacionHelpers';
 

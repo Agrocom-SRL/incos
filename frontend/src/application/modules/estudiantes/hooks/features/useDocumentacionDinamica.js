@@ -13,14 +13,24 @@
  * - Filtra documentos del sistema (esDocumentoSistema = true)
  * - Maneja la lógica de documentos padre-hijo:
  *   - Si el documento padre está entregado (true): muestra solo el padre
- *   - Si el documento padre NO está entregado (false): muestra los documentos hijos en lugar del padre
+ *   - Si el documento padre NO está entregado (false): muestra el padre Y los hijos al lado
+ *   - Los hijos aparecen después del padre y heredan características del padre si no las tienen
  * - Ordena documentos por campo 'orden' y luego por nombre
  * - Prepara datos para la generación de campos en la capa de presentación
+ * - La validación se realiza sobre los documentos hijos cuando el padre no está entregado
  * 
  * NOTA: La generación de campos se hace en la capa de presentación (config)
  */
 
 import { useMemo } from 'react';
+import {
+  filterDocumentosSistema,
+  normalizeDocumentos,
+  separateDocumentosPadresHijos,
+  addEstadoEntregadoMultiple,
+  applyLogicaPadreHijo,
+  ordenarDocumentos,
+} from '../helpers/documentacionHelpers';
 
 /**
  * Hook para procesar documentación dinámica
@@ -39,104 +49,34 @@ export const useDocumentacionDinamica = (documentacion = [], formValues = {}) =>
       return [];
     }
 
-    // Filtrar documentos del sistema (se generan automáticamente)
-    // El backend puede devolver 'esDocumentoSistema' o el frontend puede esperar otro nombre
-    const documentosSinSistema = documentacion.filter(
-      (documento) => !(documento.esDocumentoSistema === true)
-    );
+    // Paso 1: Filtrar documentos del sistema (se generan automáticamente)
+    const documentosSinSistema = filterDocumentosSistema(documentacion);
 
-    // Normalizar datos del backend (español) a formato esperado por el frontend (inglés)
-    const documentosNormalizados = documentosSinSistema.map((doc) => ({
-      id: doc.id,
-      name: doc.nombre || doc.name, // Backend devuelve 'nombre', frontend espera 'name'
-      description: doc.descripcion || doc.description, // Backend devuelve 'descripcion', frontend espera 'description'
-      required: doc.requerido !== undefined ? doc.requerido : (doc.required !== undefined ? doc.required : true),
-      esOriginal: doc.esOriginal !== undefined ? doc.esOriginal : false,
-      acceptsPhotocopy: doc.aceptaFotocopia !== undefined ? doc.aceptaFotocopia : (doc.acceptsPhotocopy !== undefined ? doc.acceptsPhotocopy : false),
-      orden: doc.orden !== undefined ? doc.orden : (doc.order !== undefined ? doc.order : 0),
-      esDocumentoSistema: doc.esDocumentoSistema !== undefined ? doc.esDocumentoSistema : false,
-      documentoPadreId: doc.documentoPadreId !== undefined ? doc.documentoPadreId : null,
-      // Mantener otros campos si existen
-      ...(doc.tipoDocumento && { tipoDocumento: doc.tipoDocumento }),
-    }));
+    // Paso 2: Normalizar datos del backend (español) a formato esperado por el frontend (inglés)
+    const documentosNormalizados = normalizeDocumentos(documentosSinSistema);
 
-    // Separar documentos padres (documentoPadreId === null) e hijos (documentoPadreId !== null)
-    const documentosPadres = documentosNormalizados.filter(
-      (doc) => doc.documentoPadreId === null || doc.documentoPadreId === undefined
-    );
-    const documentosHijos = documentosNormalizados.filter(
-      (doc) => doc.documentoPadreId !== null && doc.documentoPadreId !== undefined
-    );
+    // Paso 3: Separar documentos padres e hijos
+    // IMPORTANTE: Mantener ambas listas separadas para poder buscar hijos cuando el padre no esté entregado
+    const { padres: documentosPadres, hijos: documentosHijos } = separateDocumentosPadresHijos(documentosNormalizados);
 
-    // Agregar estado de entregado a cada documento
+    // Paso 4: Agregar estado de entregado a cada documento
     // Por defecto true (entregado) para ocultar inicialmente los campos de en_tramite y observaciones
     // El componente DocumentoItem escuchará cambios del switch para mostrar/ocultar campos dinámicamente
-    const documentosPadresConEstado = documentosPadres.map((documento) => {
-      const fieldName = `documento_${documento.id}`;
-      const entregadoDelForm = formValues[fieldName];
-      return {
-        ...documento,
-        // Si hay valor en el formulario, usarlo; si no, por defecto true (entregado)
-        // Esto oculta inicialmente los campos de en_tramite y observaciones
-        entregado: entregadoDelForm !== undefined ? entregadoDelForm : true,
-      };
-    });
+    const documentosPadresConEstado = addEstadoEntregadoMultiple(documentosPadres, formValues);
+    
+    // Lista secundaria de hijos: se usa para buscar hijos cuando el padre no está entregado
+    // Esta lista se mantiene separada y no se filtra inicialmente
+    const documentosHijosConEstado = addEstadoEntregadoMultiple(documentosHijos, formValues);
 
-    const documentosHijosConEstado = documentosHijos.map((documento) => {
-      const fieldName = `documento_${documento.id}`;
-      const entregadoDelForm = formValues[fieldName];
-      return {
-        ...documento,
-        // Si hay valor en el formulario, usarlo; si no, por defecto true (entregado)
-        // Esto oculta inicialmente los campos de en_tramite y observaciones
-        entregado: entregadoDelForm !== undefined ? entregadoDelForm : true,
-      };
-    });
-
-    // Lógica de mostrar documentos según estado del padre:
+    // Paso 5: Aplicar lógica de mostrar documentos según estado del padre
     // - Si el padre está entregado (true): mostrar solo el padre
-    // - Si el padre NO está entregado (false): mostrar los hijos en lugar del padre
-    // Los hijos heredan características del padre si no las tienen
-    const documentosFinales = documentosPadresConEstado.flatMap((padre) => {
-      // Si el padre está entregado, mostrar solo el padre
-      if (padre.entregado === true) {
-        return [padre];
-      }
+    // - Si el padre NO está entregado (false): mostrar el padre Y los hijos al lado
+    // Los hijos aparecen después del padre y heredan características del padre si no las tienen
+    // La validación se realiza sobre los documentos hijos cuando el padre no está entregado
+    const documentosFinales = applyLogicaPadreHijo(documentosPadresConEstado, documentosHijosConEstado);
 
-      // Si el padre NO está entregado, buscar y mostrar sus hijos
-      const hijosDelPadre = documentosHijosConEstado.filter(
-        (hijo) => hijo.documentoPadreId === padre.id
-      );
-
-      // Si tiene hijos, retornar los hijos con características heredadas del padre
-      if (hijosDelPadre.length > 0) {
-        return hijosDelPadre.map((hijo) => ({
-          ...hijo,
-          // Heredar características del padre si el hijo no las tiene o están vacías
-          description: hijo.description || padre.description || null,
-          required: hijo.required !== undefined ? hijo.required : (padre.required !== undefined ? padre.required : true),
-          acceptsPhotocopy: hijo.acceptsPhotocopy !== undefined ? hijo.acceptsPhotocopy : (padre.acceptsPhotocopy !== undefined ? padre.acceptsPhotocopy : false),
-          esOriginal: hijo.esOriginal !== undefined ? hijo.esOriginal : (padre.esOriginal !== undefined ? padre.esOriginal : false),
-          // Mantener el orden del hijo si existe, sino usar el del padre
-          orden: hijo.orden !== undefined ? hijo.orden : (padre.orden !== undefined ? padre.orden : 0),
-        }));
-      }
-
-      // Si no tiene hijos, retornar el padre
-      return [padre];
-    });
-
-    // Ordenar documentos por el campo 'orden' (si existe) o por nombre
-    const documentosOrdenados = [...documentosFinales].sort((a, b) => {
-      // Primero por orden (si existe)
-      if (a.orden !== undefined && b.orden !== undefined) {
-        if (a.orden !== b.orden) {
-          return a.orden - b.orden;
-        }
-      }
-      // Luego por nombre
-      return (a.name || '').localeCompare(b.name || '');
-    });
+    // Paso 6: Ordenar documentos por el campo 'orden' (si existe) o por nombre
+    const documentosOrdenados = ordenarDocumentos(documentosFinales);
 
     return documentosOrdenados;
   }, [documentacion, formValues]);

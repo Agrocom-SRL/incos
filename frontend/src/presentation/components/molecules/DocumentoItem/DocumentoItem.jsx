@@ -117,9 +117,10 @@ const DocumentoItem = ({
       )}
 
       {/* Fila horizontal: Badge, Es original, En trámite (cada uno span=8) */}
+      {/* Responsive: En móviles cada elemento ocupa 100% (span=24), en desktop ocupa span=8 */}
       <Row gutter={[16, 16]}>
-        {/* Badge (solo si hay indicador) - span=8 */}
-        <Col span={8}>
+        {/* Badge (solo si hay indicador) - Responsive: 24 en móviles, 8 en desktop */}
+        <Col xs={24} sm={24} md={8} lg={8} xl={8}>
           {mostrarIndicadorOriginal && (
             <Badge
               variant="error"
@@ -131,14 +132,14 @@ const DocumentoItem = ({
             <Badge
               variant="success"
               icon={<CheckCircleOutlined />}
-              text="Se acepta fotocopia"
+              text="Se acepta Fotocopia"
             />
           )}
         </Col>
 
-        {/* Checkbox para es_original (solo si acceptsPhotocopy es true) - span=8, siempre visible si aplica */}
+        {/* Checkbox para es_original (solo si acceptsPhotocopy es true) - Responsive: 24 en móviles, 8 en desktop */}
         {mostrarCampoEsOriginal && (
-          <Col span={8}>
+          <Col xs={24} sm={24} md={8} lg={8} xl={8}>
             <Form.Item
               name={fieldNameEsOriginal}
               valuePropName="checked"
@@ -150,8 +151,8 @@ const DocumentoItem = ({
           </Col>
         )}
 
-        {/* Checkbox para en_tramite - span=8, solo visible cuando switch es FALSE, al final */}
-        <Col span={8}>
+        {/* Checkbox para en_tramite - Responsive: 24 en móviles, 8 en desktop, solo visible cuando switch es FALSE */}
+        <Col xs={24} sm={24} md={8} lg={8} xl={8}>
           {!entregado && (
             <Form.Item
               name={fieldNameEnTramite}
