@@ -1,11 +1,22 @@
-/* ============================================================================
-   FORM SECTION (Componente Molecular)
-   ============================================================================
-   Estilos principalmente para layout y espaciado
-   Los colores y temas vienen automáticamente de Ant Design via ConfigProvider
-   ============================================================================ */
+/* components/molecules/form-section.css */
+/**
+ * Estilos para el componente FormSection
+ * 
+ * Molécula que renderiza secciones de formulario con campos organizados
+ */
 
 .form-section {
-  /* Layout y espaciado */
+  width: 100%;
   margin-bottom: var(--spacing-lg);
+}
+
+.form-section-title {
+  display: block;
+  margin-bottom: var(--spacing-md);
+  font-size: var(--font-size-lg);
+  line-height: var(--line-height-lg);
+}
+
+.form-section-fields {
+  width: 100%;
 }

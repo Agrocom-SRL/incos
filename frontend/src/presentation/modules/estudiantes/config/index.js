@@ -8,5 +8,6 @@
 
 export { createEstudiantesTableColumns } from './tableColumns';
 export { createEstudianteWizardSteps } from './estudianteWizardSteps';
+export { createEstudianteFields } from './estudianteFields';
 export { createListBreadcrumbItems, createRegisterBreadcrumbItems } from './breadcrumbs.jsx';
 

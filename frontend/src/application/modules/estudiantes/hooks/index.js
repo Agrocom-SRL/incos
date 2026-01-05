@@ -26,8 +26,4 @@ export * from './api';
 // ============================================
 // 4. FEATURE LOGIC (Application Layer)
 // ============================================
-// Futuras features (cuando se implementen):
-// export * from './features/registro';
-// export * from './features/becas';
-// export * from './features/licencias';
-// export * from './features/documentos';
+export * from './features';

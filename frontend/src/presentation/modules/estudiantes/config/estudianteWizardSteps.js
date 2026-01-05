@@ -13,6 +13,8 @@
  * - config: Configuración completa del formulario (secciones con campos)
  */
 
+import { createEstudianteFields } from './estudianteFields';
+
 /**
  * Crea la configuración de pasos para el wizard de registro de estudiantes
  * 
@@ -33,6 +35,10 @@ export const createEstudianteWizardSteps = (completarMode = false) => {
     : 'Documentación del Estudiante';
   const step2SectionTitle = completarMode ? 'Completar Documentos Requeridos' : 'Documentos Requeridos';
 
+  // Obtener configuración de campos
+  const estudianteFields = createEstudianteFields();
+  const datosPersonalesFields = estudianteFields.datosPersonales;
+
   return [
     {
       title: step1Title,
@@ -41,16 +47,7 @@ export const createEstudianteWizardSteps = (completarMode = false) => {
       config: {
         datosPersonales: {
           title: step1SectionTitle,
-          fields: [
-            // Por ahora sin campos, se agregarán en la siguiente iteración
-            // Ejemplo de estructura futura:
-            // {
-            //   name: 'nombres',
-            //   label: 'Nombres',
-            //   type: 'text',
-            //   required: true,
-            // }
-          ],
+          fields: datosPersonalesFields.fields,
         },
       },
     },
