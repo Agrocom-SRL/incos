@@ -10,11 +10,29 @@
   margin-bottom: var(--spacing-lg);
 }
 
-.form-section-title {
-  display: block;
-  margin-bottom: var(--spacing-md);
+/* Card sin sombras, con bordes rectos y limpios */
+.form-section .ant-card {
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  border: 1px solid var(--color-border-secondary) !important;
+}
+
+/* Header de la card - estilo simple como divider */
+.form-section .ant-card-head {
+  border-bottom: 1px solid var(--color-border-secondary);
+  border-radius: 0;
+  padding: var(--spacing-md) var(--spacing-lg);
+}
+
+.form-section .ant-card-head-title {
+  font-weight: var(--font-weight-strong);
   font-size: var(--font-size-lg);
-  line-height: var(--line-height-lg);
+  padding: 0;
+}
+
+/* Body de la card */
+.form-section .ant-card-body {
+  padding: var(--spacing-lg);
 }
 
 .form-section-fields {

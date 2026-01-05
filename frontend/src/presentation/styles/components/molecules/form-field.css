@@ -1,0 +1,27 @@
+/* components/molecules/form-field.css */
+/**
+ * Estilos para el componente FormField
+ * 
+ * Molécula que renderiza campos de formulario individuales
+ */
+
+/* Alineación del label: izquierda por defecto */
+.form-field .ant-form-item-label {
+  text-align: left !important;
+  padding-right: var(--spacing-sm) !important; /* Espacio entre label e input */
+}
+
+/* Asegurar que el label esté alineado a la izquierda en breakpoints menores a 1200px */
+@media (min-width: 576px) and (max-width: 1199px) {
+  .form-field .ant-form-item-label {
+    text-align: left !important;
+  }
+}
+
+/* A partir de 1200px (xl, xxl): alineación a la derecha (al lado del input) */
+@media (min-width: 1200px) {
+  .form-field .ant-form-item-label {
+    text-align: right !important;
+  }
+}
+

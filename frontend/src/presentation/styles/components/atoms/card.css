@@ -6,7 +6,31 @@
    ============================================================================ */
 
 .card {
-  /* Layout y espaciado */
-  margin-bottom: var(--spacing-md);
+  /* Layout y espaciado base */
+  width: 100%;
 }
 
+/* Colores del header del Card */
+.card--header-primary .ant-card-head {
+  background-color: var(--color-primary-bg);
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+}
+
+.card--header-success .ant-card-head {
+  background-color: var(--color-success-bg);
+  color: var(--color-success);
+  border-bottom-color: var(--color-success);
+}
+
+.card--header-warning .ant-card-head {
+  background-color: var(--color-warning-bg);
+  color: var(--color-warning);
+  border-bottom-color: var(--color-warning);
+}
+
+.card--header-info .ant-card-head {
+  background-color: var(--color-info-bg);
+  color: var(--color-info);
+  border-bottom-color: var(--color-info);
+}

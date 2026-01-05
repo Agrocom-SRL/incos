@@ -58,7 +58,7 @@ const WizardForm = ({
       {/* Contenido del paso actual */}
       <Form
         form={form}
-        layout="vertical"
+        layout="horizontal"
         initialValues={initialValues}
       >
         {currentStepConfig.sections.map((sectionKey) => {

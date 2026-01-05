@@ -4,7 +4,7 @@
  * 
  * Single Responsibility: Renderizar una sección de formulario con campos organizados
  * 
- * Atomic Design: Usa moléculas (FormField) y componentes nativos de Ant Design (Row, Col, Divider)
+ * Atomic Design: Usa moléculas (FormField) y átomos (Text, Card) y componentes nativos de Ant Design (Row, Col, Divider)
  * 
  * Estructura:
  * - Opcionalmente muestra un título si se proporciona (usando Text)
@@ -12,8 +12,8 @@
  * - Renderiza campos usando FormField
  */
 
-import { Row, Col, Divider } from 'antd';
-import { Text } from '@atoms';
+import { Row, Col } from 'antd';
+import { Text, Card } from '@atoms';
 import { FormField } from '@molecules';
 
 const FormSection = ({
@@ -21,8 +21,7 @@ const FormSection = ({
   fields = [],
   form,
   resolveOptions = () => [],
-  showDivider = false,
-  readOnly = false
+  readOnly = false,
 }) => {
   // Asegurar que fields siempre sea un array
   const safeFields = Array.isArray(fields) ? fields : [];
@@ -33,16 +32,13 @@ const FormSection = ({
   }
 
   return (
-    <section className="form-section">
-      {/* Título opcional */}
-      {title && (
-        <Text strong className="form-section-title">
-          {title}
-        </Text>
-      )}
-
-      {/* Divider opcional */}
-      {showDivider && <Divider />}
+    <Card
+      className="form-section"
+      title={title || null}
+      variant="outlined"
+      shadow={false}
+      headerColor="primary"
+    >
 
       {/* Campos del formulario */}
       <Row gutter={[24, 16]} className="form-section-fields">
@@ -57,12 +53,12 @@ const FormSection = ({
           return (
             <Col
               key={field.name}
-              xs={24}        // < 576px (Móviles): siempre 1 columna (100% ancho)
-              sm={span >= 12 ? 24 : span}  // ≥ 576px (Tablets pequeñas): si span >= 12, usar 24, sino usar el span
-              md={span >= 8 ? 12 : span}   // ≥ 768px (Tablets): si span >= 8, usar 12, sino usar el span
-              lg={span >= 8 ? 12 : span}   // ≥ 992px (Desktop): si span >= 8, usar 12, sino usar el span
-              xl={span}      // ≥ 1200px (Desktop grande): usar el span definido
-              xxl={span}     // ≥ 1600px (Desktop extra grande): usar el span definido
+              xs={24}     // < 576px (Móviles): siempre 24 span (100% ancho)
+              sm={24}     // ≥ 576px (Tablets pequeñas): siempre 24 span (100% ancho)
+              md={24}     // ≥ 768px (Tablets): siempre 24 span (100% ancho)
+              lg={12}     // ≥ 992px (Desktop): siempre 12 span (50% ancho)
+              xl={span}   // ≥ 1200px (Desktop grande): usar el span definido
+              xxl={span}  // ≥ 1600px (Desktop extra grande): usar el span definido
             >
               <FormField
                 field={field}
@@ -74,7 +70,7 @@ const FormSection = ({
           );
         })}
       </Row>
-    </section>
+    </Card>
   );
 };
 

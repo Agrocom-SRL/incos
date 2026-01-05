@@ -33,14 +33,14 @@ export const createEstudianteFields = () => {
     datosPersonales: {
       title: 'Datos Personales',
       fields: [
-        // CI y Expedición (en la misma fila)
+        // CI y Expedición
         {
           name: 'ci',
           label: 'CI (Cédula de Identidad)',
           type: 'input',
           inputType: 'text',
           required: true,
-          span: 16,
+          span: 12,
           placeholder: 'Ej: 1234567',
           maxLength: 15,
         },
@@ -49,7 +49,7 @@ export const createEstudianteFields = () => {
           label: 'Expedición',
           type: 'select',
           required: true,
-          span: 8,
+          span: 12,
           options: 'expediciones',
           placeholder: 'Seleccione expedición',
         },
@@ -60,11 +60,11 @@ export const createEstudianteFields = () => {
           type: 'input',
           inputType: 'text',
           required: true,
-          span: 24,
+          span: 12,
           placeholder: 'Ej: Juan Carlos',
           maxLength: 100,
         },
-        // Apellidos (en la misma fila)
+        // Apellidos
         {
           name: 'apellidoPaterno',
           label: 'Apellido Paterno',

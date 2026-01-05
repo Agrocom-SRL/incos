@@ -47,9 +47,9 @@ export const Tooltip = {
  * Usa colorAccentBrown para diferenciarse del heading title
  */
 export const Breadcrumb = {
-  color: allColors.colorAccentBrownActive,
+  color: allColors.colorAccentPrimaryHover,
   colorHover: allColors.colorAccentBrownHover,
   colorText: allColors.colorPrimaryText,
-  colorTextHover: allColors.colorAccentOliveText,
+  colorTextHover: allColors.colorAccentBrownText,
   colorSeparator: allColors.colorAccentBrownActive,
 };

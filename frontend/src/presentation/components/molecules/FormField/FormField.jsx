@@ -1,9 +1,12 @@
 /**
- * FormField: Molécula genérica para renderizar campos de formulario (versión básica)
+ * FormField: Molécula para renderizar campos de formulario (versión básica)
  * 
- * Single Responsibility: Orquestar la renderización de campos básicos usando componentes atómicos
+ * Single Responsibility: Renderizar un campo de formulario con layout horizontal
  * 
- * Atomic Design: Usa átomos (FieldInput, FieldSelect) y componentes nativos de Ant Design (Form)
+ * Atomic Design: Molécula
+ * - Usa átomos (FieldInput, FieldSelect) y componentes nativos de Ant Design (Form.Item)
+ * - Usa hook personalizado (useFormField) para separar lógica de presentación
+ * - Layout horizontal: label fijo a un lado, input al otro lado
  * 
  * Esta versión básica solo maneja:
  * - input (text, email, tel)
@@ -13,52 +16,42 @@
  */
 
 import { Form } from 'antd';
-import {
-  FieldInput,
-  FieldSelect,
-} from '../../atoms/fields';
+import { FieldInput, FieldSelect } from '@atoms';
+import { useFormField } from './hooks/useFormField';
 
 const FormField = ({ field, form, resolveOptions, readOnly = false }) => {
-  // Helper para obtener el nombre del campo
-  const getFieldName = () => {
-    return field.name;
-  };
+  const { fieldName, disabled, selectOptions, rules } = useFormField({
+    field,
+    resolveOptions,
+    readOnly,
+  });
 
-  // Props comunes
-  const getDisabledValue = () => {
-    if (readOnly) return true;
-    return field.disabled || false;
-  };
-
-  // Obtener opciones para campos select
-  const getSelectOptions = () => {
-    if (typeof field.options === 'string') {
-      return resolveOptions ? resolveOptions(field.options) : [];
-    }
-    return field.options || [];
-  };
-
+  // Renderizar el componente de campo apropiado
   const renderField = () => {
     switch (field.type) {
       case 'input':
         return (
           <FieldInput
             placeholder={field.placeholder}
-            disabled={getDisabledValue()}
+            disabled={disabled}
             readOnly={readOnly}
             type={field.inputType || 'text'}
             maxLength={field.maxLength}
+            icon={field.icon}
+            iconPosition={field.iconPosition}
+            defaultValue={field.defaultValue}
           />
         );
 
       case 'select':
-        const selectOptions = getSelectOptions();
-        
         return (
           <FieldSelect
             placeholder={field.placeholder}
-            disabled={getDisabledValue()}
+            disabled={disabled}
+            readOnly={readOnly}
             options={selectOptions}
+            icon={field.icon}
+            defaultValue={field.defaultValue}
           />
         );
 
@@ -68,11 +61,34 @@ const FormField = ({ field, form, resolveOptions, readOnly = false }) => {
     }
   };
 
+  // Dimensiones responsive para labelCol y wrapperCol
+  // Aplicando las mismas dimensiones responsive de FormSection
+  const labelCol = {
+    xs: { span: 24 },        // < 576px (Móviles): label ocupa 100% (layout vertical)
+    sm: { span: 24 },        // ≥ 576px (Tablets pequeñas): label ocupa 100% (layout vertical)
+    md: { span: 8 },         // ≥ 768px (Tablets): label ocupa 8 columnas (33%)
+    lg: { span: 8 },         // ≥ 992px (Desktop): label ocupa 8 columnas (33%)
+    xl: { span: 10 },        // ≥ 1200px (Desktop grande): label ocupa 10 columnas (42%)
+    xxl: { span: 10 },       // ≥ 1600px (Desktop extra grande): label ocupa 10 columnas (42%)
+  };
+
+  const wrapperCol = {
+    xs: { span: 24 },        // < 576px (Móviles): input ocupa 100% (layout vertical)
+    sm: { span: 24 },        // ≥ 576px (Tablets pequeñas): input ocupa 100% (layout vertical)
+    md: { span: 16 },        // ≥ 768px (Tablets): input ocupa 16 columnas (67%)
+    lg: { span: 16 },        // ≥ 992px (Desktop): input ocupa 16 columnas (67%)
+    xl: { span: 14 },        // ≥ 1200px (Desktop grande): input ocupa 14 columnas (58%)
+    xxl: { span: 14 },       // ≥ 1600px (Desktop extra grande): input ocupa 14 columnas (58%)
+  };
+
   return (
     <Form.Item
-      name={getFieldName()}
+      name={fieldName}
       label={field.label}
-      rules={field.required ? [{ required: true, message: `Por favor ingrese ${field.label.toLowerCase()}` }] : []}
+      labelCol={labelCol}
+      wrapperCol={wrapperCol}
+      rules={rules}
+      className="form-field"
     >
       {renderField()}
     </Form.Item>
