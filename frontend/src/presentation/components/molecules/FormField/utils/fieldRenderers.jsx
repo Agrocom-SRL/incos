@@ -21,7 +21,8 @@ import {
   FieldDatePicker, 
   FieldSwitch, 
   FieldTextarea, 
-  FieldRadio 
+  FieldRadio,
+  Button
 } from '@atoms';
 
 /**
@@ -108,6 +109,23 @@ const renderRadio = (field, disabled, readOnly, selectOptions) => (
 );
 
 /**
+ * Renderer para campo de tipo button (acción)
+ * No se envuelve en Form.Item, se renderiza directamente
+ */
+const renderButton = (field, disabled, readOnly) => (
+  <Button
+    variant={field.variant || 'info'}
+    style={field.style || 'outlined'}
+    size={field.size || 'large'}
+    disabled={disabled || readOnly}
+    onClick={field.onClick}
+    className={field.className}
+  >
+    {field.buttonText || field.label || 'Botón'}
+  </Button>
+);
+
+/**
  * Registry de renderers por tipo de campo
  * 
  * Strategy Pattern: Cada tipo de campo tiene su propia estrategia de renderizado
@@ -120,6 +138,7 @@ export const fieldRenderers = {
   switch: renderSwitch,
   textarea: renderTextarea,
   radio: renderRadio,
+  button: renderButton,
 };
 
 /**
@@ -134,6 +153,7 @@ const fieldRendererParams = {
   select: ['field', 'disabled', 'readOnly', 'selectOptions'],
   radio: ['field', 'disabled', 'readOnly', 'selectOptions'],
   date: ['field', 'disabled', 'readOnly', 'minAge'],
+  button: ['field', 'disabled', 'readOnly'],
 };
 
 /**

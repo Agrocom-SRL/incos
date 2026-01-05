@@ -37,6 +37,7 @@ const studentMappers = {
   estadosCiviles: (data) => transformGeneric('generic', data),
   tiposSangre: (data) => transformGeneric('generic', data),
   discapacidades: (data) => transformGeneric('generic', data),
+  tiposParentesco: (data) => transformGeneric('generic', data),
   departamentos: (data) => transformGeneric('generic', data),
   provincias: (data) => transformGeneric('generic', data),
   provinciasResidencia: (data) => transformGeneric('generic', data),
@@ -98,6 +99,7 @@ export const useStudentFormOptions = (contextData) => {
     discapacidades = [],
     gradosDiscapacidad = [],
     tiposOrigen = [],
+    tiposParentesco = [],
     departamentos = [],
     provincias = [], // Para origen (primera nacionalidad)
     provinciasResidencia = [], // Para residencia
@@ -122,6 +124,7 @@ export const useStudentFormOptions = (contextData) => {
         discapacidades,
         gradosDiscapacidad,
         tiposOrigen,
+        tiposParentesco,
         departamentos,
         provincias, // Para origen (primera nacionalidad)
         provinciasResidencia, // Para residencia
@@ -151,7 +154,7 @@ export const useStudentFormOptions = (contextData) => {
 
       return transformToOptions(key, data);
     };
-  }, [expediciones, generos, paises, idiomas, estadosCiviles, tiposSangre, discapacidades, gradosDiscapacidad, tiposOrigen, departamentos, provincias, provinciasResidencia, segundaProvincias, municipios, municipiosResidencia, segundaMunicipios]);
+  }, [expediciones, generos, paises, idiomas, estadosCiviles, tiposSangre, discapacidades, gradosDiscapacidad, tiposOrigen, tiposParentesco, departamentos, provincias, provinciasResidencia, segundaProvincias, municipios, municipiosResidencia, segundaMunicipios]);
 
   return resolveOptions;
 };

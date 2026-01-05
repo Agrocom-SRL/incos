@@ -34,14 +34,16 @@ const Button = ({
   const semanticVariants = ['info', 'success', 'warning', 'error'];
   const isSemantic = semanticVariants.includes(variant);
   const variantClassName = isSemantic ? `button--${variant}` : '';
+  const styleClassName = isSemantic && style === 'filled' ? 'button--filled' : '';
   const buttonClassName = className 
-    ? `${baseClassName} ${variantClassName} ${className}`.trim() 
-    : `${baseClassName} ${variantClassName}`.trim();
+    ? `${baseClassName} ${variantClassName} ${styleClassName} ${className}`.trim() 
+    : `${baseClassName} ${variantClassName} ${styleClassName}`.trim();
 
-  // Para variantes semánticas, usar 'default' de Ant Design y aplicar estilos via CSS
+  // Para variantes semánticas, SIEMPRE usar 'default' de Ant Design y aplicar estilos via CSS
+  // Esto evita que Ant Design sobrescriba con colorPrimary
   // Para variantes normales, usar 'primary' o 'default' según variant
   const antButtonType = isSemantic 
-    ? (style === 'filled' ? 'primary' : 'default')
+    ? 'default' // Siempre 'default' para semánticos (filled y outlined se controlan via CSS)
     : (variant === 'primary' ? 'primary' : 'default');
 
   return (

@@ -69,7 +69,7 @@ const FormSection = ({
           if (isSubsection(field)) {
             return (
               <FormSubsection
-                key={`subsection-${index}`}
+                key={`subsection-${field.subsectionIndex !== undefined ? field.subsectionIndex : index}`}
                 subsectionTitle={field.subsectionTitle}
                 fields={field.fields || []}
                 form={form}
@@ -79,6 +79,8 @@ const FormSection = ({
                 conditional={field.conditional || false}
                 dependsOn={field.dependsOn}
                 showIf={field.showIf}
+                showDeleteButton={field.showDeleteButton || false}
+                onDelete={field.onDelete || null}
               />
             );
           }

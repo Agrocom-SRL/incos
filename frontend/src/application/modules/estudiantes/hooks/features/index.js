@@ -7,4 +7,6 @@
 export { useStudentFormOptions } from './useStudentFormOptions';
 export { useStudentFormHandlers } from './useStudentFormHandlers';
 export { useEstudianteGeographicFormLogic } from './useEstudianteGeographicFormLogic';
+export { useContactosEmergenciaDinamicos } from './useContactosEmergenciaDinamicos';
+export { useEstudianteWizardTitles } from './useEstudianteWizardTitles';
 

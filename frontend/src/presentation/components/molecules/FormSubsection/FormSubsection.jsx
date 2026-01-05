@@ -24,8 +24,9 @@
  * - Renderizar campos de forma condicional
  */
 
-import { Row, Col, Divider } from 'antd';
-import { Text } from '@atoms';
+import { Row, Col, Divider, Space } from 'antd';
+import { DeleteOutlined } from '@ant-design/icons';
+import { Text, IconButton } from '@atoms';
 import { FormField } from '@molecules';
 import { useFormSubsection } from './hooks/useFormSubsection';
 
@@ -39,6 +40,8 @@ const FormSubsection = ({
   conditional = false,
   dependsOn = null,
   showIf = null,
+  showDeleteButton = false,
+  onDelete = null,
 }) => {
   // Hook que compone toda la lógica de la subsección
   const {
@@ -62,7 +65,17 @@ const FormSubsection = ({
   return (
     <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24} className="form-subsection">
       <Divider titlePlacement="left">
-        <Text strong>{subsectionTitle}</Text>
+        <Space>
+          <Text strong>{subsectionTitle}</Text>
+          {showDeleteButton && onDelete && (
+            <IconButton
+              icon={<DeleteOutlined />}
+              variant="error"
+              onClick={onDelete}
+              disabled={readOnly}
+            />
+          )}
+        </Space>
       </Divider>
       <Row gutter={[24, 16]} className="form-subsection-fields">
         {safeFields.map((field) => {

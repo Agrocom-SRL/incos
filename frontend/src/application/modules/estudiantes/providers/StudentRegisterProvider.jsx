@@ -26,7 +26,7 @@
  * - Expone datos + lógica vía StudentRegisterContext
  */
 
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import { 
     useStudentCatalogApi,
     useStudentGeographicApi,
@@ -50,6 +50,13 @@ export const StudentRegisterProvider = ({ children }) => {
 
     // Hook para datos de referencia condicionales (carga bajo demanda)
     const referenceData = useStudentReferenceApi();
+
+    // Cargar tipos de parentesco al inicializar (siempre se necesitan para contacto de emergencia)
+    useEffect(() => {
+        if (referenceData.loadTiposParentesco && typeof referenceData.loadTiposParentesco === 'function') {
+            referenceData.loadTiposParentesco();
+        }
+    }, [referenceData.loadTiposParentesco]);
 
     // Componer todos los datos del contexto
     const contextData = useMemo(() => ({

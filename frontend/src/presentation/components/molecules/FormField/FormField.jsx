@@ -51,6 +51,11 @@ const FormField = ({ field, form, resolveOptions, minAge = null, readOnly = fals
     minAge: fieldMinAge,
   });
 
+  // Los botones no se envuelven en Form.Item (no son campos de formulario)
+  if (field.type === 'button') {
+    return renderField();
+  }
+
   return (
     <Form.Item
       name={fieldName}

@@ -29,101 +29,152 @@
 }
 
 /* Variantes semánticas - Filled (con fondo) */
-.button--info.ant-btn-primary {
-  background-color: var(--color-info-bg);
-  border-color: var(--color-info-border);
-  color: var(--color-info-text);
+/* Nota: Usamos .ant-btn-default porque los botones semánticos siempre usan type='default' */
+/* Filled: fondo de color semántico con texto del color base semántico */
+.button--info.button--filled.ant-btn-default {
+  background-color: var(--color-info-bg) !important;
+  border-color: var(--color-info-border) !important;
+  color: var(--color-info-text) !important;
+  /* Color base semántico (azul) */
 }
 
-.button--info.ant-btn-primary:hover {
-  background-color: var(--color-info-bg-hover);
-  border-color: var(--color-info-border-hover);
-  color: var(--color-info-text-hover);
+.button--info.button--filled.ant-btn-default:hover {
+  background-color: var(--color-info-bg-hover) !important;
+  border-color: var(--color-info-border-hover) !important;
+  color: var(--color-info-text-hover) !important;
+  /* Blanco en hover */
 }
 
-.button--success.ant-btn-primary {
-  background-color: var(--color-success-bg);
-  border-color: var(--color-success-border);
-  color: var(--color-success-text);
+.button--info.button--filled.ant-btn-default:active,
+.button--info.button--filled.ant-btn-default:focus {
+  background-color: var(--color-info-bg-hover) !important;
+  border-color: var(--color-info-border-hover) !important;
+  color: var(--color-info-text-hover) !important;
+  /* Blanco en active/focus */
 }
 
-.button--success.ant-btn-primary:hover {
-  background-color: var(--color-success-bg-hover);
-  border-color: var(--color-success-border-hover);
-  color: var(--color-success-text-hover);
+.button--success.button--filled.ant-btn-default {
+  background-color: var(--color-success-bg) !important;
+  border-color: var(--color-success-border) !important;
+  color: var(--color-success-text) !important;
+  /* Color base semántico (verde) */
 }
 
-.button--warning.ant-btn-primary {
-  background-color: var(--color-warning-bg);
-  border-color: var(--color-warning-border);
-  color: var(--color-warning-text);
+.button--success.button--filled.ant-btn-default:hover {
+  background-color: var(--color-success-bg-hover) !important;
+  border-color: var(--color-success-border-hover) !important;
+  color: var(--color-success-text-hover) !important;
+  /* Blanco en hover */
 }
 
-.button--warning.ant-btn-primary:hover {
-  background-color: var(--color-warning-bg-hover);
-  border-color: var(--color-warning-border-hover);
-  color: var(--color-warning-text-hover);
+.button--success.button--filled.ant-btn-default:active,
+.button--success.button--filled.ant-btn-default:focus {
+  background-color: var(--color-success-bg-hover) !important;
+  border-color: var(--color-success-border-hover) !important;
+  color: var(--color-success-text-hover) !important;
+  /* Blanco en active/focus */
 }
 
-.button--error.ant-btn-primary {
-  background-color: var(--color-error-bg);
-  border-color: var(--color-error-border);
-  color: var(--color-error-text);
+.button--warning.button--filled.ant-btn-default {
+  background-color: var(--color-warning-bg) !important;
+  border-color: var(--color-warning-border) !important;
+  color: var(--color-warning-text) !important;
+  /* Color base semántico (amarillo/dorado) */
 }
 
-.button--error.ant-btn-primary:hover {
-  background-color: var(--color-error-bg-hover);
-  border-color: var(--color-error-border-hover);
-  color: var(--color-error-text-hover);
+.button--warning.button--filled.ant-btn-default:hover {
+  background-color: var(--color-warning-bg-hover) !important;
+  border-color: var(--color-warning-border-hover) !important;
+  color: var(--color-warning-text-hover) !important;
+  /* Blanco en hover */
+}
+
+.button--warning.button--filled.ant-btn-default:active,
+.button--warning.button--filled.ant-btn-default:focus {
+  background-color: var(--color-warning-bg-hover) !important;
+  border-color: var(--color-warning-border-hover) !important;
+  color: var(--color-warning-text-hover) !important;
+  /* Blanco en active/focus */
+}
+
+.button--error.button--filled.ant-btn-default {
+  background-color: var(--color-error-bg) !important;
+  border-color: var(--color-error-border) !important;
+  color: var(--color-error-text) !important;
+  /* Color base semántico (rojo) */
+}
+
+.button--error.button--filled.ant-btn-default:hover {
+  background-color: var(--color-error-bg-hover) !important;
+  border-color: var(--color-error-border-hover) !important;
+  color: var(--color-error-text-hover) !important;
+  /* Blanco en hover */
+}
+
+.button--error.button--filled.ant-btn-default:active,
+.button--error.button--filled.ant-btn-default:focus {
+  background-color: var(--color-error-bg-hover) !important;
+  border-color: var(--color-error-border-hover) !important;
+  color: var(--color-error-text-hover) !important;
+  /* Blanco en active/focus */
 }
 
 /* Variantes semánticas - Outlined (solo borde) */
-.button--info.ant-btn-default {
-  border-color: var(--color-info-border);
-  color: var(--color-info-text);
-  background-color: transparent;
+/* Nota: Excluimos .button--filled para que no choque con los estilos filled */
+.button--info.ant-btn-default:not(.button--filled) {
+  border-color: var(--color-info-border) !important;
+  color: var(--color-info-text) !important;
+  background-color: transparent !important;
 }
 
-.button--info.ant-btn-default:hover {
-  border-color: var(--color-info-border-hover);
-  color: var(--color-info-text-hover);
-  background-color: var(--color-info-bg);
+.button--info.ant-btn-default:not(.button--filled):hover,
+.button--info.ant-btn-default:not(.button--filled):active,
+.button--info.ant-btn-default:not(.button--filled):focus {
+  border-color: var(--color-info-border-hover) !important;
+  color: var(--color-info-active) !important;
+  background-color: var(--color-info-bg) !important;
 }
 
-.button--success.ant-btn-default {
-  border-color: var(--color-success-border);
-  color: var(--color-success-text);
-  background-color: transparent;
+.button--success.ant-btn-default:not(.button--filled) {
+  border-color: var(--color-success-border) !important;
+  color: var(--color-success-text) !important;
+  background-color: transparent !important;
 }
 
-.button--success.ant-btn-default:hover {
-  border-color: var(--color-success-border-hover);
-  color: var(--color-success-text-hover);
-  background-color: var(--color-success-bg);
+.button--success.ant-btn-default:not(.button--filled):hover,
+.button--success.ant-btn-default:not(.button--filled):active,
+.button--success.ant-btn-default:not(.button--filled):focus {
+  border-color: var(--color-success-border-hover) !important;
+  color: var(--color-success-active) !important;
+  background-color: var(--color-success-bg) !important;
 }
 
-.button--warning.ant-btn-default {
-  border-color: var(--color-warning-border);
-  color: var(--color-warning-text);
-  background-color: transparent;
+.button--warning.ant-btn-default:not(.button--filled) {
+  border-color: var(--color-warning-border) !important;
+  color: var(--color-warning-text) !important;
+  background-color: transparent !important;
 }
 
-.button--warning.ant-btn-default:hover {
-  border-color: var(--color-warning-border-hover);
-  color: var(--color-warning-text-hover);
-  background-color: var(--color-warning-bg);
+.button--warning.ant-btn-default:not(.button--filled):hover,
+.button--warning.ant-btn-default:not(.button--filled):active,
+.button--warning.ant-btn-default:not(.button--filled):focus {
+  border-color: var(--color-warning-border-hover) !important;
+  color: var(--color-warning-active) !important;
+  background-color: var(--color-warning-bg) !important;
 }
 
-.button--error.ant-btn-default {
-  border-color: var(--color-error-border);
-  color: var(--color-error-text);
-  background-color: transparent;
+.button--error.ant-btn-default:not(.button--filled) {
+  border-color: var(--color-error-border) !important;
+  color: var(--color-error-text) !important;
+  background-color: transparent !important;
 }
 
-.button--error.ant-btn-default:hover {
-  border-color: var(--color-error-border-hover);
-  color: var(--color-error-text-hover);
-  background-color: var(--color-error-bg);
+.button--error.ant-btn-default:not(.button--filled):hover,
+.button--error.ant-btn-default:not(.button--filled):active,
+.button--error.ant-btn-default:not(.button--filled):focus {
+  border-color: var(--color-error-border-hover) !important;
+  color: var(--color-error-active) !important;
+  background-color: var(--color-error-bg) !important;
 }
 
 /* Disabled para todas las variantes semánticas */

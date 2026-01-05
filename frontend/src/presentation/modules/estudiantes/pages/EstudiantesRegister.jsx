@@ -15,14 +15,23 @@
  * - Organism maneja: funcionalidad (wizard, pasos, validación, guardado)
  */
 
-import { useMemo, useState, useCallback } from 'react';
+import { useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Form } from 'antd';
 import { PageTemplate } from '@templates';
 import { WizardForm } from '@organisms';
 import { PageHeader } from '@molecules';
-import { useStudentRegisterContext, useEstudianteGeographicFormLogic } from '@application-estudiantes/hooks';
-import { createEstudianteWizardSteps, createRegisterBreadcrumbItems } from '@estudiantes/config';
+import { 
+  useStudentRegisterContext, 
+  useEstudianteGeographicFormLogic,
+  useContactosEmergenciaDinamicos,
+  useEstudianteWizardTitles
+} from '@application-estudiantes/hooks';
+import { 
+  createEstudianteWizardSteps, 
+  createRegisterBreadcrumbItems,
+  createCamposContactosEmergenciaDinamicos
+} from '@estudiantes/config';
 
 const EstudiantesRegister = () => {
   const [searchParams] = useSearchParams();
@@ -50,6 +59,7 @@ const EstudiantesRegister = () => {
     
     // Funciones de carga bajo demanda
     loadDiscapacidades,
+    loadTiposParentesco,
     loadDepartamentos,
     loadProvincias,
     loadMunicipios,
@@ -73,11 +83,34 @@ const EstudiantesRegister = () => {
     return 'Registrar Nueva Admisión';
   }, [completarMode]);
 
+  // Hook para manejar el estado de contactos de emergencia dinámicos
+  const { contactosIndices, agregarContacto, eliminarContacto } = useContactosEmergenciaDinamicos();
+
+  // Hook para obtener títulos dinámicos según el modo
+  const wizardTitles = useEstudianteWizardTitles(completarMode);
+
   // Crear configuración de steps (memoizada para evitar recrearlas en cada render)
-  const wizardSteps = useMemo(
-    () => createEstudianteWizardSteps(completarMode),
-    [completarMode]
-  );
+  const wizardSteps = useMemo(() => {
+    const steps = createEstudianteWizardSteps(wizardTitles);
+    
+    // Generar campos dinámicos de contactos de emergencia desde la capa de configuración
+    const camposDinamicos = createCamposContactosEmergenciaDinamicos(
+      contactosIndices, 
+      eliminarContacto, 
+      agregarContacto
+    );
+    
+    // Reemplazar campos estáticos de contacto de emergencia con campos dinámicos
+    const contactoEmergenciaStep = steps.find((step) => 
+      step.sections.includes('contactoEmergencia')
+    );
+    
+    if (contactoEmergenciaStep && contactoEmergenciaStep.config.contactoEmergencia) {
+      contactoEmergenciaStep.config.contactoEmergencia.fields = camposDinamicos;
+    }
+    
+    return steps;
+  }, [wizardTitles, contactosIndices, agregarContacto, eliminarContacto]);
 
   // Configurar breadcrumb items
   const breadcrumbItems = useMemo(

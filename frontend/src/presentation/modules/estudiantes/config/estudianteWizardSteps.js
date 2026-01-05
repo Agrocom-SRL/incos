@@ -17,27 +17,18 @@ import { createEstudianteDatosPersonalesFields } from './estudianteDatosPersonal
 import { createEstudianteContactoFields } from './estudianteContactoFields';
 import { createEstudianteGeograficosFields } from './estudianteGeograficosFields';
 import { createEstudianteDiscapacidadFields } from './estudianteDiscapacidadFields';
+import { createEstudianteContactoEmergenciaFields } from './estudianteContactoEmergenciaFields';
 
 /**
  * Crea la configuración de pasos para el wizard de registro de estudiantes
  * 
- * @param {boolean} completarMode - Si es true, cambia los títulos para modo "completar"
+ * NOTA: Los títulos dinámicos se manejan en el hook useEstudianteWizardTitles
+ * Esta función solo retorna la estructura base de los pasos con títulos estáticos
+ * 
+ * @param {Object} titles - Objeto con títulos dinámicos (viene del hook useEstudianteWizardTitles)
  * @returns {Array} Array de configuración de pasos para WizardForm
  */
-export const createEstudianteWizardSteps = (completarMode = false) => {
-  // Títulos según el modo
-  const step1Title = completarMode ? 'Completar Datos Generales' : 'Datos Generales';
-  const step1FormTitle = completarMode
-    ? 'Completar Información Personal del Estudiante'
-    : 'Información Personal del Estudiante';
-  const step1SectionTitle = completarMode ? 'Completar Datos Personales' : 'Datos Personales';
-
-  const step2Title = completarMode ? 'Completar Documentación' : 'Documentación';
-  const step2FormTitle = completarMode
-    ? 'Completar Documentación del Estudiante'
-    : 'Documentación del Estudiante';
-  const step2SectionTitle = completarMode ? 'Completar Documentos Requeridos' : 'Documentos Requeridos';
-
+export const createEstudianteWizardSteps = (titles) => {
   // Obtener configuración de campos
   const estudianteDatosPersonalesFields = createEstudianteDatosPersonalesFields();
   const datosPersonalesFields = estudianteDatosPersonalesFields.datosPersonales;
@@ -51,14 +42,17 @@ export const createEstudianteWizardSteps = (completarMode = false) => {
   const estudianteDiscapacidadFields = createEstudianteDiscapacidadFields();
   const discapacidadFields = estudianteDiscapacidadFields.discapacidad;
 
+  const estudianteContactoEmergenciaFields = createEstudianteContactoEmergenciaFields();
+  const contactoEmergenciaFields = estudianteContactoEmergenciaFields.contactoEmergencia;
+
   return [
     {
-      title: step1Title,
-      formTitle: step1FormTitle,
+      title: titles.step1.title,
+      formTitle: titles.step1.formTitle,
       sections: ['datosPersonales', 'discapacidad', 'geograficos', 'contacto'],
       config: {
         datosPersonales: {
-          title: step1SectionTitle,
+          title: titles.step1.sectionTitle,
           fields: datosPersonalesFields.fields,
         },
         discapacidad: {
@@ -78,12 +72,23 @@ export const createEstudianteWizardSteps = (completarMode = false) => {
       },
     },
     {
-      title: step2Title,
-      formTitle: step2FormTitle,
+      title: titles.step2.title,
+      formTitle: titles.step2.formTitle,
+      sections: ['contactoEmergencia'],
+      config: {
+        contactoEmergencia: {
+          title: titles.step2.sectionTitle,
+          fields: contactoEmergenciaFields.fields,
+        },
+      },
+    },
+    {
+      title: titles.step3.title,
+      formTitle: titles.step3.formTitle,
       sections: ['documentacion'],
       config: {
         documentacion: {
-          title: step2SectionTitle,
+          title: titles.step3.sectionTitle,
           fields: [
             // Por ahora sin campos, se agregarán en la siguiente iteración
           ],
