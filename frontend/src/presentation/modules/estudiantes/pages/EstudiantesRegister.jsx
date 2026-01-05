@@ -25,12 +25,14 @@ import {
   useStudentRegisterContext, 
   useEstudianteGeographicFormLogic,
   useContactosEmergenciaDinamicos,
-  useEstudianteWizardTitles
+  useEstudianteWizardTitles,
+  useDocumentacionDinamica
 } from '@application-estudiantes/hooks';
 import { 
   createEstudianteWizardSteps, 
   createRegisterBreadcrumbItems,
-  createCamposContactosEmergenciaDinamicos
+  createCamposContactosEmergenciaDinamicos,
+  createCamposDocumentacionDinamicos
 } from '@estudiantes/config';
 
 const EstudiantesRegister = () => {
@@ -56,6 +58,7 @@ const EstudiantesRegister = () => {
     paises = [],
     departamentos = [],
     provinciasResidencia = [], // Provincias de residencia (Santa Cruz)
+    documentacion = [], // Documentos de tipo INSCRIPCION
     
     // Funciones de carga bajo demanda
     loadDiscapacidades,
@@ -86,6 +89,9 @@ const EstudiantesRegister = () => {
   // Hook para manejar el estado de contactos de emergencia dinámicos
   const { contactosIndices, agregarContacto, eliminarContacto } = useContactosEmergenciaDinamicos();
 
+  // Hook para procesar documentación (filtra, ordena, prepara datos)
+  const { documentacion: documentacionProcesada } = useDocumentacionDinamica(documentacion);
+
   // Hook para obtener títulos dinámicos según el modo
   const wizardTitles = useEstudianteWizardTitles(completarMode);
 
@@ -109,8 +115,21 @@ const EstudiantesRegister = () => {
       contactoEmergenciaStep.config.contactoEmergencia.fields = camposDinamicos;
     }
     
+    // Generar campos dinámicos de documentación desde la capa de configuración
+    // Usar documentación procesada del hook (ya filtrada y ordenada)
+    const camposDocumentacion = createCamposDocumentacionDinamicos(documentacionProcesada);
+    
+    // Reemplazar campos estáticos de documentación con campos dinámicos
+    const documentacionStep = steps.find((step) => 
+      step.sections.includes('documentacion')
+    );
+    
+    if (documentacionStep && documentacionStep.config.documentacion) {
+      documentacionStep.config.documentacion.fields = camposDocumentacion;
+    }
+    
     return steps;
-  }, [wizardTitles, contactosIndices, agregarContacto, eliminarContacto]);
+  }, [wizardTitles, contactosIndices, agregarContacto, eliminarContacto, documentacionProcesada]);
 
   // Configurar breadcrumb items
   const breadcrumbItems = useMemo(

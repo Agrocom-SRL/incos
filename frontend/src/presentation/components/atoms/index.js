@@ -19,3 +19,4 @@ export { default as FieldDatePicker } from './FieldDatePicker';
 export { default as FieldSwitch } from './FieldSwitch';
 export { default as FieldTextarea } from './FieldTextarea';
 export { default as FieldRadio } from './FieldRadio';
+export { default as Badge } from './Badge';

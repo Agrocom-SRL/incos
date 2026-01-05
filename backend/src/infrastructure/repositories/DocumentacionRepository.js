@@ -88,6 +88,25 @@ export class DocumentacionRepository extends BaseRepository {
   }
 
   /**
+   * Construye la cláusula WHERE para filtros específicos
+   * Sobrescribe el método del BaseRepository para agregar filtro por tipoDocumento
+   * 
+   * @param {Object} filters - Filtros opcionales
+   * @param {string} filters.tipoDocumento - Tipo de documento (INSCRIPCION, LICENCIA, PASANTIA, etc.)
+   * @returns {Object} Objeto WHERE para Sequelize
+   */
+  buildWhereClause(filters) {
+    const where = {};
+
+    // Filtrar por tipo de documento si se proporciona
+    if (filters.tipoDocumento) {
+      where.tipoDocumento = filters.tipoDocumento;
+    }
+
+    return where;
+  }
+
+  /**
    * Método específico: Buscar documentación por tipo
    * 
    * @param {string} tipoDocumento - Tipo de documento

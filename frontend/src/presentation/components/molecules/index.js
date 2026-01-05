@@ -9,3 +9,4 @@ export { default as PageHeader } from './PageHeader';
 export { default as DataTable, useTableData } from './DataTable';
 export { default as TableCell } from './TableCell';
 export { default as WizardActions } from './WizardActions';
+export { default as DocumentoItem } from './DocumentoItem';

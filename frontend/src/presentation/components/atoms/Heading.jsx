@@ -8,9 +8,11 @@
  * Ant Design aplica automáticamente:
  * - colorTextHeading (desde theme.components.Typography.colorTextHeading)
  * - fontSize (desde theme.components.Typography.fontSize)
+ * 
+ * Soporta gap para espaciar elementos hijos
  */
 
-import { Typography } from 'antd';
+import { Typography, Flex } from 'antd';
 
 const { Title } = Typography;
 
@@ -18,9 +20,25 @@ const Heading = ({
   level = 3,
   children,
   className = '',
+  gap,
   ...props
 }) => {
   const headingClassName = className ? `heading heading--h${level} ${className}`.trim() : `heading heading--h${level}`;
+
+  // Si se proporciona gap, envolver children en Flex
+  if (gap !== undefined) {
+    return (
+      <Title
+        level={level}
+        className={headingClassName}
+        {...props}
+      >
+        <Flex align="center" gap={gap} wrap="wrap">
+          {children}
+        </Flex>
+      </Title>
+    );
+  }
 
   return (
     <Title

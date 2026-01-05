@@ -47,6 +47,19 @@ export const createEstudianteWizardSteps = (titles) => {
 
   return [
     {
+      title: titles.step3.title,
+      formTitle: titles.step3.formTitle,
+      sections: ['documentacion'],
+      config: {
+        documentacion: {
+          title: titles.step3.sectionTitle,
+          fields: [
+            // Por ahora sin campos, se agregarán en la siguiente iteración
+          ],
+        },
+      },
+    },
+    {
       title: titles.step1.title,
       formTitle: titles.step1.formTitle,
       sections: ['datosPersonales', 'discapacidad', 'geograficos', 'contacto'],
@@ -79,19 +92,6 @@ export const createEstudianteWizardSteps = (titles) => {
         contactoEmergencia: {
           title: titles.step2.sectionTitle,
           fields: contactoEmergenciaFields.fields,
-        },
-      },
-    },
-    {
-      title: titles.step3.title,
-      formTitle: titles.step3.formTitle,
-      sections: ['documentacion'],
-      config: {
-        documentacion: {
-          title: titles.step3.sectionTitle,
-          fields: [
-            // Por ahora sin campos, se agregarán en la siguiente iteración
-          ],
         },
       },
     },

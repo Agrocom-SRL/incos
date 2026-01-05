@@ -35,6 +35,7 @@
 @import './components/atoms/container.css';
 @import './components/atoms/alert.css';
 @import './components/atoms/spinner.css';
+@import './components/atoms/badge.css';
 
 /* 5. Components - Molecules */
 @import './components/molecules/navigation-menu.css';
@@ -44,6 +45,7 @@
 @import './components/molecules/table-cell.css';
 @import './components/molecules/data-table.css';
 @import './components/molecules/wizard-actions.css';
+@import './components/molecules/documento-item.css';
 
 /* 6. Components - Organisms */
 @import './components/organisms/sidebar.css';

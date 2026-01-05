@@ -1,0 +1,66 @@
+/* components/molecules/documento-item.css */
+/**
+ * Estilos para el componente DocumentoItem
+ * 
+ * Diseño minimalista y limpio
+ * Usa variables CSS del tema para mantener consistencia
+ */
+
+.documento-item {
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
+  border: 1px solid var(--color-border-secondary);
+  border-radius: var(--border-radius-sm);
+  transition: all var(--transition-base);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  position: relative;
+  overflow: hidden;
+}
+
+.documento-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--color-primary);
+  transition: background var(--transition-base);
+}
+
+.documento-item:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 4px 12px rgba(25, 107, 69, 0.15);
+  transform: translateY(-2px);
+}
+
+.documento-item:hover::before {
+  background: var(--color-primary-hover);
+}
+
+.documento-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--spacing-xl);
+}
+
+.documento-item-icon {
+  font-size: var(--font-size-lg);
+  color: var(--color-primary);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.documento-required {
+  color: var(--color-error);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.documento-item-switch {
+  margin: 0 !important;
+  flex-shrink: 0;
+}

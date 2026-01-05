@@ -40,9 +40,20 @@ export class ListDocumentacionController extends BaseListController {
     });
   }
 
-  // Nota: No es necesario sobrescribir buildFilters() ni handle()
-  // BaseListController maneja la búsqueda básica (search)
-  // Si en el futuro necesitamos filtros específicos,
-  // podemos sobrescribir buildFilters() aquí
+  /**
+   * Sobrescribe buildFilters para agregar filtro por tipoDocumento
+   * @param {Object} query - Query parameters de Express
+   * @returns {Object} Filtros para el use case
+   */
+  buildFilters(query) {
+    const filters = super.buildFilters(query);
+    
+    // Filtrar documentación por tipo si se proporciona tipoDocumento
+    if (query.tipoDocumento) {
+      filters.tipoDocumento = query.tipoDocumento;
+    }
+    
+    return filters;
+  }
 }
 

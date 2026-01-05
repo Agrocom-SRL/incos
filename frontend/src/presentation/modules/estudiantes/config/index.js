@@ -12,4 +12,5 @@ export { createEstudianteDatosPersonalesFields } from './estudianteDatosPersonal
 export { createEstudianteDiscapacidadFields } from './estudianteDiscapacidadFields';
 export { createListBreadcrumbItems, createRegisterBreadcrumbItems } from './breadcrumbs.jsx';
 export { createCamposContactosEmergenciaDinamicos } from './estudianteContactoEmergenciaFields';
+export { createCamposDocumentacionDinamicos } from './estudianteDocumentacionFields';
 

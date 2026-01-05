@@ -26,7 +26,7 @@
 
 import { Row, Col } from 'antd';
 import { Card } from '@atoms';
-import { FormField, FormSubsection } from '@molecules';
+import { FormField, FormSubsection, DocumentoItem } from '@molecules';
 import { useFormSectionFields } from './hooks/useFormSectionFields';
 import { isSubsection } from './utils/fieldTypes';
 
@@ -93,6 +93,23 @@ const FormSection = ({
           // Obtener configuración de columnas (usando helper del hook)
           const columns = getColumns(field);
 
+          // Si es un campo de tipo documento, renderizar DocumentoItem
+          if (field.type === 'documento' && field.documento) {
+            return (
+              <Col
+                key={field.name}
+                {...columns}
+              >
+                <DocumentoItem
+                  documento={field.documento}
+                  form={form}
+                  readOnly={readOnly}
+                />
+              </Col>
+            );
+          }
+
+          // Para otros tipos de campos, usar FormField
           return (
             <Col
               key={field.name}
