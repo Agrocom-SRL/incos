@@ -15,7 +15,7 @@
  * @param {string} shadowType - Tipo de sombra: 'elevation2' | 'primary' | 'success' | 'info' | 'warning' | 'error' (default: 'elevation2')
  * @param {boolean} bordered - Si debe mostrar borde (default: false) - DEPRECATED: usar variant en su lugar
  * @param {string} variant - Variante del card: 'outlined' | 'borderless' (default: 'borderless')
- * @param {string} headerColor - Color del header: 'default' | 'primary' | 'success' | 'warning' | 'info' (default: 'default')
+ * @param {string} headerColor - Color del header: 'default' | 'primary' | 'success' | 'warning' | 'info' | 'error' (default: 'default')
  */
 
 import { Card as AntCard } from 'antd';
@@ -28,11 +28,11 @@ const Card = ({
   shadowType = 'elevation2',
   bordered = false, // Mantener para compatibilidad, pero usar variant
   variant,
-  headerColor = 'default', // 'default' | 'primary' | 'success' | 'warning' | 'info'
+  headerColor = 'default', // 'default' | 'primary' | 'success' | 'warning' | 'info' | 'error'
   className = '',
   ...props
 }) => {
-  // Construir className con headerColor si hay título
+  // Construir className con headerColor y bodyColor
   let cardClassName = className ? `card ${className}`.trim() : 'card';
   if (title && headerColor !== 'default') {
     cardClassName = `${cardClassName} card--header-${headerColor}`.trim();

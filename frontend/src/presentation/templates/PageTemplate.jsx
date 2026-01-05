@@ -60,7 +60,6 @@ const PageTemplate = ({ header, children, sidebar, bottom }) => {
                     gap="large"
                     align="flex-start"
                     style={{ width: '100%', flex: 1 }}
-                    className="page-container"
                 >
                     {/* Contenido Principal - 70% en lg+, expandible en menores */}
                     {children && (

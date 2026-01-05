@@ -21,6 +21,7 @@ const FormSection = ({
   fields = [],
   form,
   resolveOptions = () => [],
+  minAge = null,
   readOnly = false,
 }) => {
   // Asegurar que fields siempre sea un array
@@ -54,9 +55,9 @@ const FormSection = ({
             <Col
               key={field.name}
               xs={24}     // < 576px (Móviles): siempre 24 span (100% ancho)
-              sm={24}     // ≥ 576px (Tablets pequeñas): siempre 24 span (100% ancho)
-              md={24}     // ≥ 768px (Tablets): siempre 24 span (100% ancho)
-              lg={12}     // ≥ 992px (Desktop): siempre 12 span (50% ancho)
+              sm={24}     // ≥ 576px (Tablets pequeñas): usar 24 columnas (100% ancho)
+              md={24}     // ≥ 768px (Tablets): usar 24 columnas (100% ancho)
+              lg={12}     // ≥ 992px (Desktop): si span >= 8, usar 12, sino usar el span
               xl={span}   // ≥ 1200px (Desktop grande): usar el span definido
               xxl={span}  // ≥ 1600px (Desktop extra grande): usar el span definido
             >
@@ -64,6 +65,7 @@ const FormSection = ({
                 field={field}
                 form={form}
                 resolveOptions={resolveOptions}
+                minAge={minAge}
                 readOnly={readOnly}
               />
             </Col>

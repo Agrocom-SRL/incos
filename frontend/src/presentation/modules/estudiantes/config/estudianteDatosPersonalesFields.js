@@ -1,9 +1,9 @@
 /**
- * estudianteFields - Configuración de campos para el formulario de registro de estudiantes
+ * estudianteDatosPersonalesFields - Configuración de campos de datos personales para el formulario de registro de estudiantes
  * 
- * Single Responsibility: Definir la configuración de campos básicos para el formulario de registro
+ * Single Responsibility: Definir la configuración de campos de datos personales básicos
  * 
- * Este archivo separa la configuración de campos de la lógica del componente,
+ * Este archivo separa la configuración de campos de datos personales de la lógica del componente,
  * permitiendo reutilizar y modificar fácilmente los campos sin tocar el componente.
  * 
  * Estructura de cada campo:
@@ -17,23 +17,25 @@
  */
 
 /**
- * Crea la configuración de campos básicos para el registro de estudiantes
+ * Crea la configuración de campos de datos personales para el registro de estudiantes
  * 
- * Los campos básicos incluyen:
+ * Los campos de datos personales incluyen:
  * - CI (Cédula de Identidad) y Expedición
+ * - Fecha de Nacimiento
  * - Nombres, Apellido Paterno, Apellido Materno
  * - Género
- * - Email Personal
- * - Celular
+ * - Estado Civil
+ * - Tipo de Sangre
+ * - Tiene Discapacidad
  * 
  * @returns {Object} Configuración de campos organizados por sección
  */
-export const createEstudianteFields = () => {
+export const createEstudianteDatosPersonalesFields = () => {
   return {
     datosPersonales: {
       title: 'Datos Personales',
       fields: [
-        // CI y Expedición
+        // CI
         {
           name: 'ci',
           label: 'CI (Cédula de Identidad)',
@@ -44,6 +46,7 @@ export const createEstudianteFields = () => {
           placeholder: 'Ej: 1234567',
           maxLength: 15,
         },
+        // Expedición
         {
           name: 'expedicionId',
           label: 'Expedición',
@@ -52,6 +55,16 @@ export const createEstudianteFields = () => {
           span: 12,
           options: 'expediciones',
           placeholder: 'Seleccione expedición',
+        },
+        // Fecha de Nacimiento
+        {
+          name: 'fechaNacimiento',
+          label: 'Fecha de Nacimiento',
+          type: 'date',
+          required: true,
+          span: 12,
+          placeholder: 'DD-MM-YYYY o DD/MM/YYYY',
+          minAge: null, // Se reemplazará desde el contexto (EDAD_MINIMA_REGISTRO)
         },
         // Nombres
         {
@@ -64,7 +77,7 @@ export const createEstudianteFields = () => {
           placeholder: 'Ej: Juan Carlos',
           maxLength: 100,
         },
-        // Apellidos
+        // Apellido Paterno
         {
           name: 'apellidoPaterno',
           label: 'Apellido Paterno',
@@ -75,6 +88,7 @@ export const createEstudianteFields = () => {
           placeholder: 'Ej: Pérez',
           maxLength: 100,
         },
+        // Apellido Materno
         {
           name: 'apellidoMaterno',
           label: 'Apellido Materno',
@@ -95,27 +109,36 @@ export const createEstudianteFields = () => {
           options: 'generos',
           placeholder: 'Seleccione género',
         },
-        // Email Personal
+        // Estado Civil
         {
-          name: 'emailPersonal',
-          label: 'Email Personal',
-          type: 'input',
-          inputType: 'email',
+          name: 'estadoCivilId',
+          label: 'Estado Civil',
+          type: 'select',
           required: false,
           span: 12,
-          placeholder: 'Ej: juan.perez@email.com',
-          maxLength: 255,
+          options: 'estadosCiviles',
+          placeholder: 'Seleccione estado civil',
         },
-        // Celular
+        // Tipo de Sangre
         {
-          name: 'celular',
-          label: 'Celular',
-          type: 'input',
-          inputType: 'tel',
+          name: 'tipoSangre',
+          label: 'Tipo de Sangre',
+          type: 'select',
           required: false,
           span: 12,
-          placeholder: 'Ej: 70000000',
-          maxLength: 15,
+          options: 'tiposSangre',
+          placeholder: 'Seleccione tipo de sangre',
+        },
+        // Tiene Discapacidad
+        {
+          name: 'tieneDiscapacidad',
+          label: 'Tiene Discapacidad',
+          type: 'switch',
+          required: false,
+          span: 12,
+          defaultChecked: false,
+          checkedChildren: 'Sí',
+          unCheckedChildren: 'No',
         },
       ],
     },

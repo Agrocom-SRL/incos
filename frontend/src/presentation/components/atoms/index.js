@@ -15,3 +15,5 @@ export { default as SearchBar } from './SearchBar';
 export { default as Breadcrumb } from './Breadcrumb';
 export { default as FieldInput } from './FieldInput';
 export { default as FieldSelect } from './FieldSelect';
+export { default as FieldDatePicker } from './FieldDatePicker';
+export { default as FieldSwitch } from './FieldSwitch';

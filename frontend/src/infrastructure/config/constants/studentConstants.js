@@ -19,7 +19,14 @@ export const EXPEDICIONES = ['SC', 'LP', 'CB', 'TJ', 'BN', 'PD', 'OR', 'PT', 'CH
 export const GENEROS = ['MASCULINO', 'FEMENINO', 'OTRO'];
 
 /**
- * Lista de tipos de sangre
+ * Lista de tipos de sangre (ordenados de más común a más raro)
+ * O+ es el más común, AB- es el más raro
  */
-export const TIPOS_SANGRE = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+export const TIPOS_SANGRE = ['O+', 'A+', 'B+', 'AB+', 'O-', 'A-', 'B-', 'AB-'];
+
+/**
+ * Edad mínima requerida para el registro de estudiantes (en años)
+ * Se calcula desde el día de hoy hacia atrás
+ */
+export const EDAD_MINIMA_REGISTRO = 17;
 

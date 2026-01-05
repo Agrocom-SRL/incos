@@ -8,23 +8,26 @@
  * - Usa hook personalizado (useFormField) para separar lógica de presentación
  * - Layout horizontal: label fijo a un lado, input al otro lado
  * 
- * Esta versión básica solo maneja:
+ * Esta versión básica maneja:
  * - input (text, email, tel)
  * - select
- * 
- * Para campos más complejos, usar FormField.complex.jsx
+ * - date (DatePicker)
+ * - switch (Switch)
  */
 
 import { Form } from 'antd';
-import { FieldInput, FieldSelect } from '@atoms';
+import { FieldInput, FieldSelect, FieldDatePicker, FieldSwitch } from '@atoms';
 import { useFormField } from './hooks/useFormField';
 
-const FormField = ({ field, form, resolveOptions, readOnly = false }) => {
+const FormField = ({ field, form, resolveOptions, minAge = null, readOnly = false }) => {
   const { fieldName, disabled, selectOptions, rules } = useFormField({
     field,
     resolveOptions,
     readOnly,
   });
+
+  // Determinar el minAge a usar: si field.minAge es null, usar el del contexto, sino usar el del field
+  const fieldMinAge = field.minAge !== null && field.minAge !== undefined ? field.minAge : minAge;
 
   // Renderizar el componente de campo apropiado
   const renderField = () => {
@@ -52,6 +55,29 @@ const FormField = ({ field, form, resolveOptions, readOnly = false }) => {
             options={selectOptions}
             icon={field.icon}
             defaultValue={field.defaultValue}
+          />
+        );
+
+      case 'date':
+        return (
+          <FieldDatePicker
+            placeholder={field.placeholder}
+            disabled={disabled}
+            readOnly={readOnly}
+            picker={field.picker || 'date'}
+            minAge={fieldMinAge}
+            defaultValue={field.defaultValue}
+          />
+        );
+
+      case 'switch':
+        return (
+          <FieldSwitch
+            disabled={disabled}
+            readOnly={readOnly}
+            defaultChecked={field.defaultChecked || false}
+            checkedChildren={field.checkedChildren}
+            unCheckedChildren={field.unCheckedChildren}
           />
         );
 

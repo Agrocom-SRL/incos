@@ -28,6 +28,7 @@ const WizardForm = ({
   onFinish,
   onSave,
   resolveOptions = () => [],
+  minAge = null,
   initialValues = {},
   className = '',
 }) => {
@@ -45,7 +46,10 @@ const WizardForm = ({
   }
 
   return (
-    <FormCard className={className}>
+    <FormCard 
+      className={className}
+      title={currentStepConfig.formTitle || null}
+    >
       {/* Steps indicator */}
       <Steps
         current={currentStep}
@@ -72,6 +76,7 @@ const WizardForm = ({
               fields={section.fields}
               form={form}
               resolveOptions={resolveOptions}
+              minAge={minAge}
               readOnly={viewMode}
             />
           );

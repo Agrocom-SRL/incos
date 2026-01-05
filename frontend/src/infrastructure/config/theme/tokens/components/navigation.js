@@ -4,7 +4,7 @@
  * Menu, Tooltip
  */
 
-import { allColors } from '../colors';
+import { allColors, backgroundColors } from '../colors';
 import { allSpacing } from '../spacing';
 
 /**
@@ -47,9 +47,9 @@ export const Tooltip = {
  * Usa colorAccentBrown para diferenciarse del heading title
  */
 export const Breadcrumb = {
-  color: allColors.colorAccentPrimaryHover,
-  colorHover: allColors.colorAccentBrownHover,
-  colorText: allColors.colorPrimaryText,
-  colorTextHover: allColors.colorAccentBrownText,
-  colorSeparator: allColors.colorAccentBrownActive,
+  color: allColors.colorTextSecondary,
+  colorHover: allColors.colorPrimaryHover,
+  colorText: allColors.colorTextSecondary,
+  colorTextHover: allColors.colorPrimaryHover,
+  colorSeparator: allColors.colorTextSecondary,
 };

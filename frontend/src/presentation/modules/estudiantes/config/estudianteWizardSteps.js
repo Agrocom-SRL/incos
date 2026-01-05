@@ -13,7 +13,9 @@
  * - config: Configuración completa del formulario (secciones con campos)
  */
 
-import { createEstudianteFields } from './estudianteFields';
+import { createEstudianteDatosPersonalesFields } from './estudianteDatosPersonalesFields';
+import { createEstudianteContactoFields } from './estudianteContactoFields';
+import { createEstudianteGeograficosFields } from './estudianteGeograficosFields';
 
 /**
  * Crea la configuración de pasos para el wizard de registro de estudiantes
@@ -24,11 +26,11 @@ import { createEstudianteFields } from './estudianteFields';
 export const createEstudianteWizardSteps = (completarMode = false) => {
   // Títulos según el modo
   const step1Title = completarMode ? 'Completar Datos Generales' : 'Datos Generales';
-  const step1FormTitle = completarMode 
+  const step1FormTitle = completarMode
     ? 'Completar Información Personal del Estudiante'
     : 'Información Personal del Estudiante';
   const step1SectionTitle = completarMode ? 'Completar Datos Personales' : 'Datos Personales';
-  
+
   const step2Title = completarMode ? 'Completar Documentación' : 'Documentación';
   const step2FormTitle = completarMode
     ? 'Completar Documentación del Estudiante'
@@ -36,18 +38,32 @@ export const createEstudianteWizardSteps = (completarMode = false) => {
   const step2SectionTitle = completarMode ? 'Completar Documentos Requeridos' : 'Documentos Requeridos';
 
   // Obtener configuración de campos
-  const estudianteFields = createEstudianteFields();
-  const datosPersonalesFields = estudianteFields.datosPersonales;
+  const estudianteDatosPersonalesFields = createEstudianteDatosPersonalesFields();
+  const datosPersonalesFields = estudianteDatosPersonalesFields.datosPersonales;
+
+  const estudianteContactoFields = createEstudianteContactoFields();
+  const contactoFields = estudianteContactoFields.contacto;
+
+  const estudianteGeograficosFields = createEstudianteGeograficosFields();
+  const geograficosFields = estudianteGeograficosFields.geograficos;
 
   return [
     {
       title: step1Title,
       formTitle: step1FormTitle,
-      sections: ['datosPersonales'],
+      sections: ['datosPersonales', 'geograficos', 'contacto'],
       config: {
         datosPersonales: {
           title: step1SectionTitle,
           fields: datosPersonalesFields.fields,
+        },
+        geograficos: {
+          title: geograficosFields.title,
+          fields: geograficosFields.fields,
+        },
+        contacto: {
+          title: contactoFields.title,
+          fields: contactoFields.fields,
         },
       },
     },

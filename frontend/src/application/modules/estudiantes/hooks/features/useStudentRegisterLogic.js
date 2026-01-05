@@ -22,12 +22,13 @@ import { useMemo, useCallback } from 'react';
  * Hook para gestionar la lógica del formulario de registro de estudiantes
  * 
  * @param {Object} contextData - Datos del contexto (expediciones, generos, paises, etc.)
+ * @param {number} minAge - Edad mínima requerida para registro (en años)
  * @param {Function} onSubmit - Función para enviar datos (debe venir del provider)
  * @param {Function} onSuccess - Función de callback de éxito (debe venir del provider)
  * @param {Function} showMessage - Función para mostrar mensajes (debe venir del provider o página)
- * @returns {Object} Objeto con resolveOptions, handleFinish, handleSave
+ * @returns {Object} Objeto con resolveOptions, handleFinish, handleSave, minAge
  */
-export const useStudentRegisterLogic = (contextData, onSubmit, onSuccess, showMessage) => {
+export const useStudentRegisterLogic = (contextData, minAge, onSubmit, onSuccess, showMessage) => {
 
   const {
     expediciones = [],
@@ -115,6 +116,7 @@ export const useStudentRegisterLogic = (contextData, onSubmit, onSuccess, showMe
     resolveOptions,
     handleFinish,
     handleSave,
+    minAge,
   };
 };
 

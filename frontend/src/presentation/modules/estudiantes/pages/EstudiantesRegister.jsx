@@ -37,6 +37,7 @@ const EstudiantesRegister = () => {
     
     // Lógica del formulario (viene del hook useStudentRegisterLogic)
     resolveOptions,
+    minAge,
     handleFinish,
     handleSave,
   } = useStudentRegisterContext();
@@ -75,6 +76,7 @@ const EstudiantesRegister = () => {
         loading={loading}
         viewMode={false}
         resolveOptions={resolveOptions}
+        minAge={minAge}
         initialValues={{}}
         onFinish={handleFinish}
         onSave={handleSave}

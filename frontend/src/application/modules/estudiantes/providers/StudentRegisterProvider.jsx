@@ -28,6 +28,7 @@ import {
     useStudentRegisterLogic,
 } from '@application-estudiantes/hooks';
 import { StudentRegisterContext } from '@application-estudiantes/context/StudentRegisterContext';
+import { EDAD_MINIMA_REGISTRO } from '@infrastructure/config/constants/studentConstants';
 
 export const StudentRegisterProvider = ({ children }) => {
     const { message } = App.useApp();
@@ -65,7 +66,7 @@ export const StudentRegisterProvider = ({ children }) => {
     }, [message]);
 
     // Hook de lógica para procesar datos y handlers
-    const registerLogic = useStudentRegisterLogic(contextData, onSubmit, onSuccess, showMessage);
+    const registerLogic = useStudentRegisterLogic(contextData, EDAD_MINIMA_REGISTRO, onSubmit, onSuccess, showMessage);
 
     // Componer el valor del contexto: datos + lógica
     const value = useMemo(() => ({

@@ -25,3 +25,8 @@
   }
 }
 
+/* Asegurar que DatePicker tenga el mismo ancho que Input */
+.form-field .ant-picker {
+  width: 100%;
+}
+

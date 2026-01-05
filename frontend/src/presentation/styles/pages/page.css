@@ -24,6 +24,7 @@
     /* Ocupar el espacio disponible en el contenedor vertical */
     flex: 1;
     min-height: 0;
+    margin-bottom: var(--spacing-xxl);
 }
 
 /* ============================================================================

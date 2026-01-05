@@ -133,6 +133,7 @@ export function injectCSSVariables() {
   root.style.setProperty('--spacing-md', `${allThemeTokens.marginMD}px`);
   root.style.setProperty('--spacing-lg', `${allThemeTokens.marginLG}px`);
   root.style.setProperty('--spacing-xl', `${allThemeTokens.marginXL}px`);
+  root.style.setProperty('--spacing-xxl', `${allThemeTokens.marginXXL}px`);
   // Padding específicos para tablas
   root.style.setProperty('--table-header-padding-vertical', `${allThemeTokens.paddingMD}px`);
   root.style.setProperty('--table-header-padding-horizontal', `${allThemeTokens.paddingMD}px`);
