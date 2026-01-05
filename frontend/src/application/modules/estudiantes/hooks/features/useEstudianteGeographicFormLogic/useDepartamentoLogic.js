@@ -25,6 +25,7 @@ import { clearDependentFields, loadProvinciasForDepartamento } from '@applicatio
  * @param {string} options.prefix - Prefijo para los campos ('segunda' o '')
  * @param {Function} options.loadProvincias - Función para cargar provincias
  * @param {Function} options.loadMunicipios - Función para limpiar municipios
+ * @param {string} options.contexto - Contexto: 'origen' (default), 'residencia', 'segunda'
  * @param {Object} options.allFormValues - Todos los valores del formulario (trigger)
  */
 export const useDepartamentoLogic = ({
@@ -33,6 +34,7 @@ export const useDepartamentoLogic = ({
   prefix = '',
   loadProvincias,
   loadMunicipios,
+  contexto = 'origen',
   allFormValues,
 }) => {
   const prevDepartamentoIdRef = useRef(undefined);
@@ -60,22 +62,23 @@ export const useDepartamentoLogic = ({
     if (!currentDepartamentoId) {
       // Solo limpiar si antes había un departamento seleccionado
       if (prevDepartamentoId !== undefined && prevDepartamentoId !== null) {
-        clearDependentFields(form, prefix, loadProvincias, loadMunicipios);
+        clearDependentFields(form, prefix, loadProvincias, loadMunicipios, contexto);
       }
       prevDepartamentoIdRef.current = currentDepartamentoId;
       return;
     }
     
-    // Cargar provincias cuando cambia el departamento
+    // Cargar provincias cuando cambia el departamento (con contexto para separar estados)
     loadProvinciasForDepartamento(
       form,
       currentDepartamentoId,
       prefix,
       loadProvincias,
-      loadMunicipios
+      loadMunicipios,
+      contexto
     );
     
     prevDepartamentoIdRef.current = currentDepartamentoId;
-  }, [allFormValues, form, departamentoField, prefix, loadProvincias, loadMunicipios]);
+  }, [allFormValues, form, departamentoField, prefix, loadProvincias, loadMunicipios, contexto]);
 };
 

@@ -15,16 +15,36 @@
  */
 
 /**
+ * Obtiene los nombres de campos de provincia y municipio según el prefijo
+ * 
+ * @param {string} prefix - Prefijo para los campos ('segunda', 'residencia' o '')
+ * @returns {Object} Objeto con provinciaField y municipioField
+ */
+const getProvinciaMunicipioFields = (prefix = '') => {
+  if (prefix === 'residencia') {
+    return {
+      provinciaField: 'provinciaResidenciaId',
+      municipioField: 'municipioResidenciaId',
+    };
+  }
+  
+  return {
+    provinciaField: prefix ? `${prefix}ProvinciaId` : 'provinciaId',
+    municipioField: prefix ? `${prefix}MunicipioId` : 'municipioId',
+  };
+};
+
+/**
  * Limpia campos dependientes cuando se remueve un departamento
  * 
  * @param {Object} form - Instancia del formulario
- * @param {string} prefix - Prefijo para los campos ('segunda' o '')
+ * @param {string} prefix - Prefijo para los campos ('segunda', 'residencia' o '')
  * @param {Function} loadProvincias - Función para limpiar provincias
  * @param {Function} loadMunicipios - Función para limpiar municipios
+ * @param {string} contexto - Contexto: 'origen' (default), 'residencia', 'segunda'
  */
-export const clearDependentFields = (form, prefix = '', loadProvincias, loadMunicipios) => {
-  const provinciaField = prefix ? `${prefix}ProvinciaId` : 'provinciaId';
-  const municipioField = prefix ? `${prefix}MunicipioId` : 'municipioId';
+export const clearDependentFields = (form, prefix = '', loadProvincias, loadMunicipios, contexto = 'origen') => {
+  const { provinciaField, municipioField } = getProvinciaMunicipioFields(prefix);
   
   form.setFieldsValue({
     [provinciaField]: undefined,
@@ -32,10 +52,10 @@ export const clearDependentFields = (form, prefix = '', loadProvincias, loadMuni
   });
   
   if (loadProvincias && typeof loadProvincias === 'function') {
-    loadProvincias(null);
+    loadProvincias(null, contexto);
   }
   if (loadMunicipios && typeof loadMunicipios === 'function') {
-    loadMunicipios(null);
+    loadMunicipios(null, contexto);
   }
 };
 
@@ -44,25 +64,27 @@ export const clearDependentFields = (form, prefix = '', loadProvincias, loadMuni
  * 
  * @param {Object} form - Instancia del formulario
  * @param {number} departamentoId - ID del departamento seleccionado
- * @param {string} prefix - Prefijo para los campos ('segunda' o '')
+ * @param {string} prefix - Prefijo para los campos ('segunda', 'residencia' o '')
  * @param {Function} loadProvincias - Función para cargar provincias
  * @param {Function} loadMunicipios - Función para limpiar municipios
+ * @param {string} contexto - Contexto: 'origen' (default), 'residencia', 'segunda'
  */
 export const loadProvinciasForDepartamento = (
   form,
   departamentoId,
   prefix = '',
   loadProvincias,
-  loadMunicipios
+  loadMunicipios,
+  contexto = 'origen'
 ) => {
   if (!loadProvincias || typeof loadProvincias !== 'function') {
     return;
   }
   
-  loadProvincias(departamentoId);
+  // Cargar provincias con el contexto correcto
+  loadProvincias(departamentoId, contexto);
   
-  const provinciaField = prefix ? `${prefix}ProvinciaId` : 'provinciaId';
-  const municipioField = prefix ? `${prefix}MunicipioId` : 'municipioId';
+  const { provinciaField, municipioField } = getProvinciaMunicipioFields(prefix);
   
   form.setFieldsValue({
     [provinciaField]: undefined,
@@ -70,7 +92,7 @@ export const loadProvinciasForDepartamento = (
   });
   
   if (loadMunicipios && typeof loadMunicipios === 'function') {
-    loadMunicipios(null);
+    loadMunicipios(null, contexto);
   }
 };
 

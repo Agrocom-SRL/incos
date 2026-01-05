@@ -18,6 +18,9 @@
  * - Carga departamentos cuando se selecciona BOLIVIANA o primeraNacionalidad en doble nacionalidad
  * - Carga provincias cuando cambia departamentoId (primera o segunda nacionalidad)
  * - Carga municipios cuando cambia provinciaId (primera o segunda nacionalidad)
+ * - Establece departamentoResidenciaId = Santa Cruz por defecto (instituto está en Santa Cruz)
+ * - Carga provincias de Santa Cruz automáticamente al inicializar
+ * - Carga municipios cuando cambia provinciaResidenciaId (residencia)
  * - Limpia campos dependientes cuando cambian campos padre
  * 
  * Usado por: EstudiantesRegister (página específica)
@@ -28,6 +31,7 @@ import { useTipoOrigenLogic } from './useEstudianteGeographicFormLogic/useTipoOr
 import { usePrimeraNacionalidadLogic } from './useEstudianteGeographicFormLogic/usePrimeraNacionalidadLogic';
 import { useDepartamentoLogic } from './useEstudianteGeographicFormLogic/useDepartamentoLogic';
 import { useProvinciaLogic } from './useEstudianteGeographicFormLogic/useProvinciaLogic';
+import { useResidenciaLogic } from './useEstudianteGeographicFormLogic/useResidenciaLogic';
 
 /**
  * Hook para gestionar la lógica del formulario geográfico de estudiantes
@@ -35,9 +39,11 @@ import { useProvinciaLogic } from './useEstudianteGeographicFormLogic/useProvinc
  * @param {Object} form - Instancia del formulario de Ant Design
  * @param {Object} loaders - Objeto con funciones de carga
  * @param {Array} paises - Array de países para buscar Bolivia
+ * @param {Array} departamentos - Array de departamentos para buscar Santa Cruz (residencia)
+ * @param {Array} provinciasResidencia - Array de provincias de residencia cargadas (para seleccionar la primera en residencia)
  * @returns {void}
  */
-export const useEstudianteGeographicFormLogic = (form, loaders, paises = []) => {
+export const useEstudianteGeographicFormLogic = (form, loaders, paises = [], departamentos = [], provinciasResidencia = []) => {
   const { loadDepartamentos, loadProvincias, loadMunicipios } = loaders || {};
   
   // Observar TODOS los campos del formulario para detectar cambios
@@ -58,38 +64,66 @@ export const useEstudianteGeographicFormLogic = (form, loaders, paises = []) => 
     allFormValues,
   });
 
-  // Hook para manejar departamentos de primera nacionalidad
+  // Hook para manejar departamentos de primera nacionalidad (nacionalidad boliviana simple)
+  // Contexto 'origen' (default) para separar provincias de origen de las de residencia
   useDepartamentoLogic({
     form,
     departamentoField: 'departamentoId',
     prefix: '',
     loadProvincias,
     loadMunicipios,
+    contexto: 'origen',
     allFormValues,
   });
 
-  // Hook para manejar departamentos de segunda nacionalidad
+  // Hook para manejar departamentos de segunda nacionalidad (doble nacionalidad)
+  // Contexto 'segunda' para separar provincias de segunda nacionalidad
   useDepartamentoLogic({
     form,
     departamentoField: 'segundaDepartamentoId',
     prefix: 'segunda',
     loadProvincias,
     loadMunicipios,
+    contexto: 'segunda',
     allFormValues,
   });
 
-  // Hook para manejar provincias de primera nacionalidad
+  // Hook para manejar provincias de primera nacionalidad (nacionalidad boliviana simple)
+  // Limpia el municipio cuando cambia la provincia
+  // Contexto 'origen' (default) para separar municipios de origen de los de residencia
   useProvinciaLogic({
     form,
     provinciaField: 'provinciaId',
+    municipioField: 'municipioId',
     loadMunicipios,
+    contexto: 'origen',
+    clearMunicipioOnChange: true,
     allFormValues,
   });
 
-  // Hook para manejar provincias de segunda nacionalidad
+  // Hook para manejar provincias de segunda nacionalidad (doble nacionalidad)
+  // Limpia el municipio cuando cambia la provincia
+  // Contexto 'segunda' para separar municipios de segunda nacionalidad
   useProvinciaLogic({
     form,
     provinciaField: 'segundaProvinciaId',
+    municipioField: 'segundaMunicipioId',
+    loadMunicipios,
+    contexto: 'segunda',
+    clearMunicipioOnChange: true,
+    allFormValues,
+  });
+
+  // Hook para manejar residencia (departamento fijo: Santa Cruz)
+  // El instituto está en Santa Cruz, por lo que todos los estudiantes residen en Santa Cruz
+  // No se muestra selector de departamento, solo provincia y municipio
+  // Selecciona automáticamente la primera provincia para agilizar el proceso
+  useResidenciaLogic({
+    form,
+    departamentos,
+    provinciasResidencia,
+    loadDepartamentos,
+    loadProvincias,
     loadMunicipios,
     allFormValues,
   });

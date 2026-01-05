@@ -39,7 +39,11 @@ const studentMappers = {
   discapacidades: (data) => transformGeneric('generic', data),
   departamentos: (data) => transformGeneric('generic', data),
   provincias: (data) => transformGeneric('generic', data),
+  provinciasResidencia: (data) => transformGeneric('generic', data),
+  segundaProvincias: (data) => transformGeneric('generic', data),
   municipios: (data) => transformGeneric('generic', data),
+  municipiosResidencia: (data) => transformGeneric('generic', data),
+  segundaMunicipios: (data) => transformGeneric('generic', data),
   
   // Mappers para datos con estructura { label, value }
   gradosDiscapacidad: (data) => transformGeneric('labelValue', data),
@@ -95,8 +99,12 @@ export const useStudentFormOptions = (contextData) => {
     gradosDiscapacidad = [],
     tiposOrigen = [],
     departamentos = [],
-    provincias = [],
-    municipios = [],
+    provincias = [], // Para origen (primera nacionalidad)
+    provinciasResidencia = [], // Para residencia
+    segundaProvincias = [], // Para segunda nacionalidad
+    municipios = [], // Para origen (primera nacionalidad)
+    municipiosResidencia = [], // Para residencia
+    segundaMunicipios = [], // Para segunda nacionalidad
   } = contextData || {};
 
   // Función para resolver opciones de campos select
@@ -115,8 +123,12 @@ export const useStudentFormOptions = (contextData) => {
         gradosDiscapacidad,
         tiposOrigen,
         departamentos,
-        provincias,
-        municipios,
+        provincias, // Para origen (primera nacionalidad)
+        provinciasResidencia, // Para residencia
+        segundaProvincias, // Para segunda nacionalidad
+        municipios, // Para origen (primera nacionalidad)
+        municipiosResidencia, // Para residencia
+        segundaMunicipios, // Para segunda nacionalidad
       };
 
       // Caso especial: paisesExtranjeros necesita todos los países para filtrar
@@ -139,7 +151,7 @@ export const useStudentFormOptions = (contextData) => {
 
       return transformToOptions(key, data);
     };
-  }, [expediciones, generos, paises, idiomas, estadosCiviles, tiposSangre, discapacidades, gradosDiscapacidad, tiposOrigen, departamentos, provincias, municipios]);
+  }, [expediciones, generos, paises, idiomas, estadosCiviles, tiposSangre, discapacidades, gradosDiscapacidad, tiposOrigen, departamentos, provincias, provinciasResidencia, segundaProvincias, municipios, municipiosResidencia, segundaMunicipios]);
 
   return resolveOptions;
 };

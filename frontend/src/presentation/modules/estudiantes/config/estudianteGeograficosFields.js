@@ -38,7 +38,7 @@ const createCamposBoliviana = (prefix = '') => {
       type: 'select',
       required: true,
       span: 12,
-      options: 'provincias',
+      options: prefix === 'segunda' ? 'segundaProvincias' : 'provincias',
       placeholder: 'Seleccione provincia',
     },
     {
@@ -47,7 +47,7 @@ const createCamposBoliviana = (prefix = '') => {
       type: 'select',
       required: true,
       span: 12,
-      options: 'municipios',
+      options: prefix === 'segunda' ? 'segundaMunicipios' : 'municipios',
       placeholder: 'Seleccione municipio',
     },
     {

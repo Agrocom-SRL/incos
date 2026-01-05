@@ -45,6 +45,8 @@ const EstudiantesRegister = () => {
     
     // Datos del contexto
     paises = [],
+    departamentos = [],
+    provinciasResidencia = [], // Provincias de residencia (Santa Cruz)
     
     // Funciones de carga bajo demanda
     loadDiscapacidades,
@@ -63,7 +65,7 @@ const EstudiantesRegister = () => {
     loadDepartamentos,
     loadProvincias,
     loadMunicipios,
-  }, paises);
+  }, paises, departamentos, provinciasResidencia);
 
   // Determinar el título según los parámetros (memoizado)
   const pageTitle = useMemo(() => {
