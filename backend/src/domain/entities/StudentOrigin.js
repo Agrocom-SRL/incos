@@ -13,7 +13,7 @@ export class StudentOrigin extends BaseEntity {
     this.birthCity = data.birthCity || null;
     this.motherTongueId = data.motherTongueId || null;
     this.secondaryLanguageId = data.secondaryLanguageId || null;
-    this.originType = data.originType || 'NACIONALIDAD_PRINCIPAL'; // NACIONALIDAD_PRINCIPAL, NACIONALIDAD_SECUNDARIA, ORIGEN_NACIMIENTO
+    this.originType = data.originType || 'BOLIVIANA'; // BOLIVIANA, EXTRANJERA, DOBLE_NACIONALIDAD
     this.isPrincipal = data.isPrincipal !== undefined ? data.isPrincipal : true;
   }
 

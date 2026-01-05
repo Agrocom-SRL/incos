@@ -5,4 +5,5 @@
  */
 
 export { useStudentRegisterLogic } from './useStudentRegisterLogic';
+export { useEstudianteGeographicFormLogic } from './useEstudianteGeographicFormLogic';
 

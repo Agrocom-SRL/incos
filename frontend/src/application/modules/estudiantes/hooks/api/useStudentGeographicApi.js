@@ -24,21 +24,13 @@ export const useStudentGeographicApi = () => {
   const [municipios, setMunicipios] = useState([]);
 
   /**
-   * Carga departamentos filtrados por país (solo si es boliviano)
-   * @param {number} paisId - ID del país (ej: 1 para Bolivia)
+   * Carga todos los departamentos (sin filtros)
    */
-  const loadDepartamentos = useCallback(async (paisId) => {
-    if (!paisId) {
-      setDepartamentos([]);
-      setProvincias([]); // Limpiar provincias también
-      setMunicipios([]); // Limpiar municipios también
-      return;
-    }
-
+  const loadDepartamentos = useCallback(async () => {
     try {
       const obtenerGeograficosUseCase = useCasesFactory.obtenerDatosGeograficosFiltrados();
       const result = await obtenerGeograficosUseCase.ejecutar('departamentos', null, {
-        params: { paisId },
+        params: {},
       });
 
       if (result.success) {

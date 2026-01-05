@@ -64,6 +64,78 @@ export const createEstudianteGeograficosFields = () => {
           span: 12,
           options: 'tiposOrigen',
         },
+        // Sub-sección condicional para Nacionalidad Boliviana
+        {
+          type: 'subsection',
+          subsectionTitle: 'Datos de Nacionalidad Boliviana',
+          conditional: true,
+          dependsOn: 'tipoOrigen',
+          showIf: (tipoOrigen) => tipoOrigen === 'BOLIVIANA',
+          fields: [
+            {
+              name: 'departamentoId',
+              label: 'Departamento',
+              type: 'select',
+              required: true,
+              span: 12,
+              options: 'departamentos',
+              placeholder: 'Seleccione departamento',
+            },
+            {
+              name: 'provinciaId',
+              label: 'Provincia',
+              type: 'select',
+              required: true,
+              span: 12,
+              options: 'provincias',
+              placeholder: 'Seleccione provincia',
+            },
+            {
+              name: 'municipioId',
+              label: 'Municipio',
+              type: 'select',
+              required: true,
+              span: 12,
+              options: 'municipios',
+              placeholder: 'Seleccione municipio',
+            },
+            {
+              name: 'localidadComunidad',
+              label: 'Localidad/Comunidad',
+              type: 'input',
+              required: false,
+              span: 12,
+              placeholder: 'Ingrese localidad o comunidad',
+            },
+          ],
+        },
+        // Sub-sección condicional para Nacionalidad Extranjera
+        {
+          type: 'subsection',
+          subsectionTitle: 'Datos de Nacionalidad Extranjera',
+          conditional: true,
+          dependsOn: 'tipoOrigen',
+          showIf: (tipoOrigen) => tipoOrigen === 'EXTRANJERA',
+          fields: [
+            {
+              name: 'paisId',
+              label: 'País de Nacimiento',
+              type: 'select',
+              required: true,
+              span: 12,
+              options: 'paisesExtranjeros', // Países sin Bolivia
+              placeholder: 'Seleccione país de nacimiento',
+            },
+            {
+              name: 'ciudadNacimiento',
+              label: 'Ciudad de Nacimiento',
+              type: 'input',
+              required: true,
+              span: 12,
+              placeholder: 'Ingrese ciudad de nacimiento',
+            },
+          ],
+        },
       ],
     },
   };

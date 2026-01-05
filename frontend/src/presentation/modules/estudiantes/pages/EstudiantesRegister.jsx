@@ -15,16 +15,18 @@
  * - Organism maneja: funcionalidad (wizard, pasos, validación, guardado)
  */
 
-import { useMemo } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { Form } from 'antd';
 import { PageTemplate } from '@templates';
 import { WizardForm } from '@organisms';
 import { PageHeader } from '@molecules';
-import { useStudentRegisterContext } from '@application-estudiantes/hooks';
+import { useStudentRegisterContext, useEstudianteGeographicFormLogic } from '@application-estudiantes/hooks';
 import { createEstudianteWizardSteps, createRegisterBreadcrumbItems } from '@estudiantes/config';
 
 const EstudiantesRegister = () => {
   const [searchParams] = useSearchParams();
+  const [form] = Form.useForm();
   
   // Obtener parámetros de la URL
   const completarMode = searchParams.get('completar') === 'true';
@@ -41,14 +43,27 @@ const EstudiantesRegister = () => {
     handleFinish,
     handleSave,
     
+    // Datos del contexto
+    paises = [],
+    
     // Funciones de carga bajo demanda
     loadDiscapacidades,
+    loadDepartamentos,
+    loadProvincias,
+    loadMunicipios,
   } = useStudentRegisterContext();
 
   // Configurar cargadores condicionales (genérico para cualquier página)
   const conditionalLoaders = useMemo(() => ({
     tieneDiscapacidad: loadDiscapacidades,
   }), [loadDiscapacidades]);
+
+  // Lógica específica del formulario geográfico de estudiantes
+  useEstudianteGeographicFormLogic(form, {
+    loadDepartamentos,
+    loadProvincias,
+    loadMunicipios,
+  }, paises);
 
   // Determinar el título según los parámetros (memoizado)
   const pageTitle = useMemo(() => {
@@ -87,6 +102,7 @@ const EstudiantesRegister = () => {
         minAge={minAge}
         conditionalLoaders={conditionalLoaders}
         initialValues={{}}
+        form={form}
         onFinish={handleFinish}
         onSave={handleSave}
       />

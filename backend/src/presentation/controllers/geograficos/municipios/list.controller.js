@@ -40,17 +40,20 @@ export class ListMunicipiosController extends BaseListController {
     });
   }
 
-  // Nota: No es necesario sobrescribir buildFilters() ni handle()
-  // BaseListController maneja la búsqueda básica (search)
-  // Si en el futuro necesitamos filtros específicos (ej: provinceId),
-  // podemos sobrescribir buildFilters() aquí:
-  //
-  // buildFilters(query) {
-  //   const filters = super.buildFilters(query);
-  //   if (query.provinceId) {
-  //     filters.provinceId = query.provinceId;
-  //   }
-  //   return filters;
-  // }
+  /**
+   * Sobrescribe buildFilters para agregar filtro por provincia
+   * @param {Object} query - Query parameters de Express
+   * @returns {Object} Filtros para el use case
+   */
+  buildFilters(query) {
+    const filters = super.buildFilters(query);
+    
+    // Filtrar municipios por provincia si se proporciona provinciaId
+    if (query.provinciaId) {
+      filters.provinceId = Number(query.provinciaId);
+    }
+    
+    return filters;
+  }
 }
 

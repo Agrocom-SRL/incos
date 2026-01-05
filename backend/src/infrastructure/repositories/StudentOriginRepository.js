@@ -130,7 +130,7 @@ export class StudentOriginRepository extends BaseRepository {
         birthCity: origen.birthCity || origen.ciudadNacimiento || null,
         motherTongueId: origen.motherTongueId || origen.idiomaMaternoId || null,
         secondaryLanguageId: origen.secondaryLanguageId || origen.idiomaSecundarioId || null,
-        originType: origen.originType || origen.tipoOrigen || 'NACIONALIDAD_PRINCIPAL',
+        originType: origen.originType || origen.tipoOrigen || 'BOLIVIANA',
         isPrincipal: origen.isPrincipal !== undefined ? origen.isPrincipal : (origen.esPrincipal !== undefined ? origen.esPrincipal : true),
       };
       

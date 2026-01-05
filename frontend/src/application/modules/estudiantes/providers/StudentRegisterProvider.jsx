@@ -75,7 +75,10 @@ export const StudentRegisterProvider = ({ children }) => {
         // Exponer funciones de carga bajo demanda
         loadDiscapacidades: referenceData.loadDiscapacidades,
         loadTiposParentesco: referenceData.loadTiposParentesco,
-    }), [contextData, registerLogic, referenceData.loadDiscapacidades, referenceData.loadTiposParentesco]);
+        loadDepartamentos: geographicData.loadDepartamentos,
+        loadProvincias: geographicData.loadProvincias,
+        loadMunicipios: geographicData.loadMunicipios,
+    }), [contextData, registerLogic, referenceData.loadDiscapacidades, referenceData.loadTiposParentesco, geographicData.loadDepartamentos, geographicData.loadProvincias, geographicData.loadMunicipios]);
 
     return (
         <StudentRegisterContext.Provider value={value}>

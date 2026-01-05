@@ -41,6 +41,9 @@ export const useStudentRegisterLogic = (contextData, minAge, onSubmit, onSuccess
     discapacidades = [],
     gradosDiscapacidad = [],
     tiposOrigen = [],
+    departamentos = [],
+    provincias = [],
+    municipios = [],
   } = contextData || {};
 
   // Función para resolver opciones de campos select
@@ -58,7 +61,15 @@ export const useStudentRegisterLogic = (contextData, minAge, onSubmit, onSuccess
         discapacidades,
         gradosDiscapacidad,
         tiposOrigen,
+        departamentos,
+        provincias,
+        municipios,
       };
+
+      // Caso especial: paisesExtranjeros necesita todos los países para filtrar
+      if (key === 'paisesExtranjeros') {
+        return transformToOptions(key, paises);
+      }
 
       const data = dataMap[key];
       if (!data) {
@@ -67,7 +78,7 @@ export const useStudentRegisterLogic = (contextData, minAge, onSubmit, onSuccess
 
       return transformToOptions(key, data);
     };
-  }, [expediciones, generos, paises, idiomas, estadosCiviles, tiposSangre, discapacidades, gradosDiscapacidad, tiposOrigen]);
+  }, [expediciones, generos, paises, idiomas, estadosCiviles, tiposSangre, discapacidades, gradosDiscapacidad, tiposOrigen, departamentos, provincias, municipios]);
 
   // Handler para finalizar el registro
   const handleFinish = useCallback(async (step) => {

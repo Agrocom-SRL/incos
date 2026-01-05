@@ -56,6 +56,9 @@ export const formFieldOptionMappers = {
   estadosCiviles: mapGenericOptions,
   tiposSangre: mapGenericOptions,
   discapacidades: mapGenericOptions,
+  departamentos: mapGenericOptions,
+  provincias: mapGenericOptions,
+  municipios: mapGenericOptions,
   
   // Mappers para datos con estructura { label, value }
   gradosDiscapacidad: mapLabelValueOptions,
@@ -65,11 +68,26 @@ export const formFieldOptionMappers = {
 /**
  * Transforma datos del contexto en opciones de campos de formulario
  * 
- * @param {string} key - Clave del tipo de opción (ej: 'idiomas', 'generos')
+ * @param {string} key - Clave del tipo de opción (ej: 'idiomas', 'generos', 'paisesExtranjeros')
  * @param {*} data - Datos a transformar
  * @returns {Array} Array de opciones con formato { label, value } para campos de formulario
  */
 export const transformToOptions = (key, data) => {
+  // Caso especial: paisesExtranjeros (países sin Bolivia)
+  // Se necesita pasar todos los países para filtrar
+  if (key === 'paisesExtranjeros') {
+    if (!data || !Array.isArray(data)) {
+      return [];
+    }
+    const paisesSinBolivia = data.filter(pais => {
+      // Filtrar Bolivia por codigo_iso o nombre
+      const codigoIso = pais.codigo_iso || pais.codigoIso || '';
+      const nombre = pais.nombre || '';
+      return codigoIso.toUpperCase() !== 'BOL' && nombre.toUpperCase() !== 'BOLIVIA';
+    });
+    return mapGenericOptions(paisesSinBolivia);
+  }
+
   const mapper = formFieldOptionMappers[key];
   
   if (!mapper) {

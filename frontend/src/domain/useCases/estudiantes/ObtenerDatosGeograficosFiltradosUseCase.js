@@ -53,9 +53,16 @@ export class ObtenerDatosGeograficosFiltradosUseCase {
     try {
       const { params = {} } = options;
 
-      // Obtener departamentos filtrados por país
+      // Obtener departamentos (todos, sin filtros)
       if (tipo === 'departamentos') {
-        const result = await this.departamentoRepository.obtenerTodos({ params });
+        const requestParams = {};
+        
+        // Si se proporciona paisId, aplicar filtro opcional como query param
+        if (params.paisId) {
+          requestParams.paisId = Number(params.paisId);
+        }
+        
+        const result = await this.departamentoRepository.obtenerTodos({ params: requestParams });
 
         if (!result.success) {
           return result;
@@ -77,12 +84,11 @@ export class ObtenerDatosGeograficosFiltradosUseCase {
 
       // Obtener provincias filtradas por departamento
       if (tipo === 'provincias') {
-        const result = await this.provinciaRepository.obtenerTodos({
-          params: {
-            departamentoId: Number(parentId),
-            ...params,
-          },
-        });
+        const requestParams = {
+          departamentoId: Number(parentId),
+        };
+        
+        const result = await this.provinciaRepository.obtenerTodos({ params: requestParams });
 
         if (!result.success) {
           return result;
@@ -96,12 +102,11 @@ export class ObtenerDatosGeograficosFiltradosUseCase {
 
       // Obtener municipios filtrados por provincia
       if (tipo === 'municipios') {
-        const result = await this.municipioRepository.obtenerTodos({
-          params: {
-            provinciaId: Number(parentId),
-            ...params,
-          },
-        });
+        const requestParams = {
+          provinciaId: Number(parentId),
+        };
+        
+        const result = await this.municipioRepository.obtenerTodos({ params: requestParams });
 
         if (!result.success) {
           return result;

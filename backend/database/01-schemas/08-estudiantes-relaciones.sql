@@ -90,7 +90,7 @@ CREATE TABLE estudiantes_origenes (
     idioma_secundario_id INT NULL COMMENT 'Idioma secundario que más habla relacionado con este origen (ej: si es de Brasil, puede hablar más portugués que español)',
     
     -- Tipo de origen
-    tipo_origen ENUM('NACIONALIDAD_PRINCIPAL', 'NACIONALIDAD_SECUNDARIA', 'ORIGEN_NACIMIENTO') DEFAULT 'NACIONALIDAD_PRINCIPAL' COMMENT 'Tipo: principal, secundaria (doble nacionalidad), o solo origen de nacimiento. Para doble nacionalidad: un registro con NACIONALIDAD_PRINCIPAL (es_principal=TRUE) y otro con NACIONALIDAD_SECUNDARIA (es_principal=FALSE).',
+    tipo_origen ENUM('BOLIVIANA', 'EXTRANJERA', 'DOBLE_NACIONALIDAD') DEFAULT 'BOLIVIANA' COMMENT 'Tipo de nacionalidad: BOLIVIANA (usa municipio_nacimiento_id), EXTRANJERA (usa pais_id y ciudad_nacimiento), DOBLE_NACIONALIDAD (requiere dos registros con es_principal TRUE y FALSE).',
     es_principal BOOLEAN DEFAULT TRUE COMMENT 'Indica si es la nacionalidad/origen principal. Para doble nacionalidad: TRUE para la principal, FALSE para la secundaria.',
     
     -- Campos de auditoría y control (ESTÁNDAR)

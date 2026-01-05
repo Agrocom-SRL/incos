@@ -43,11 +43,11 @@ export const EstudianteOrigen = sequelize.define(
       comment: 'Idioma secundario que más habla relacionado con este origen',
     },
     tipoOrigen: {
-      type: DataTypes.ENUM('NACIONALIDAD_PRINCIPAL', 'NACIONALIDAD_SECUNDARIA', 'ORIGEN_NACIMIENTO'),
+      type: DataTypes.ENUM('BOLIVIANA', 'EXTRANJERA', 'DOBLE_NACIONALIDAD'),
       field: 'tipo_origen',
       allowNull: true,
-      defaultValue: 'NACIONALIDAD_PRINCIPAL',
-      comment: 'Tipo: principal, secundaria (doble nacionalidad), o solo origen de nacimiento',
+      defaultValue: 'BOLIVIANA',
+      comment: 'Tipo de nacionalidad: BOLIVIANA (usa municipio_nacimiento_id), EXTRANJERA (usa pais_id y ciudad_nacimiento), DOBLE_NACIONALIDAD (requiere dos registros con es_principal TRUE y FALSE)',
     },
     esPrincipal: {
       type: DataTypes.BOOLEAN,

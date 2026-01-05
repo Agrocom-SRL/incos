@@ -40,17 +40,20 @@ export class ListProvinciasController extends BaseListController {
     });
   }
 
-  // Nota: No es necesario sobrescribir buildFilters() ni handle()
-  // BaseListController maneja la búsqueda básica (search)
-  // Si en el futuro necesitamos filtros específicos (ej: departmentId),
-  // podemos sobrescribir buildFilters() aquí:
-  //
-  // buildFilters(query) {
-  //   const filters = super.buildFilters(query);
-  //   if (query.departmentId) {
-  //     filters.departmentId = query.departmentId;
-  //   }
-  //   return filters;
-  // }
+  /**
+   * Sobrescribe buildFilters para agregar filtro por departamento
+   * @param {Object} query - Query parameters de Express
+   * @returns {Object} Filtros para el use case
+   */
+  buildFilters(query) {
+    const filters = super.buildFilters(query);
+    
+    // Filtrar provincias por departamento si se proporciona departamentoId
+    if (query.departamentoId) {
+      filters.departmentId = Number(query.departamentoId);
+    }
+    
+    return filters;
+  }
 }
 

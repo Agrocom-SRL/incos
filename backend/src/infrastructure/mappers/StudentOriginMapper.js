@@ -68,7 +68,7 @@ export class StudentOriginMapper {
       ciudadNacimiento: data.birthCity || null,
       idiomaMaternoId: data.motherTongueId || null,
       idiomaSecundarioId: data.secondaryLanguageId || null,
-      tipoOrigen: data.originType || 'NACIONALIDAD_PRINCIPAL',
+      tipoOrigen: data.originType || 'BOLIVIANA',
       esPrincipal: data.isPrincipal !== undefined ? data.isPrincipal : true,
     };
   }

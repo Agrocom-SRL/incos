@@ -1,0 +1,25 @@
+/**
+ * Estilos para FormSubsection
+ * 
+ * Componente: FormSubsection (Molécula)
+ * Responsabilidad: Estilos para sub-secciones de formulario con divider y campos agrupados
+ */
+
+.form-subsection {
+  width: 100%;
+}
+
+.form-subsection .ant-divider {
+  margin-top: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.form-subsection .ant-divider-horizontal.ant-divider-with-text-left {
+  margin-top: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.form-subsection-fields {
+  width: 100%;
+}
+

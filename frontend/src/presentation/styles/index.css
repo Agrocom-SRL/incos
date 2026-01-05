@@ -40,6 +40,7 @@
 @import './components/molecules/navigation-menu.css';
 @import './components/molecules/form-field.css';
 @import './components/molecules/form-section.css';
+@import './components/molecules/form-subsection.css';
 @import './components/molecules/table-cell.css';
 @import './components/molecules/data-table.css';
 @import './components/molecules/wizard-actions.css';

@@ -38,9 +38,11 @@ const WizardForm = ({
   conditionalLoaders = {},
   initialValues = {},
   className = '',
+  form: externalForm,
 }) => {
   const { currentStep, next, prev } = useWizard(0, steps.length);
-  const [form] = Form.useForm();
+  const [internalForm] = Form.useForm();
+  const form = externalForm || internalForm;
 
   // Observar todos los campos del formulario para hacer reactivo el componente
   // cuando cambien los campos condicionales
