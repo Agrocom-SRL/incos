@@ -3,22 +3,21 @@ import { IRepository } from './IRepository.js';
 /**
  * Interfaz de Repositorio: IEtapaGestionRepository
  * Define el contrato que debe cumplir el repositorio de etapas de gestión
+ * 
+ * NOTA: Solo extiende IRepository sin métodos adicionales.
+ * La especialización está en la implementación (buildWhereClause), no en la interfaz.
+ * La lógica de negocio (findVigentes) debe estar en casos de uso.
+ * 
+ * Métodos heredados de IRepository:
+ * - findById(id)
+ * - findBy(criteria, options)
+ * - findAll(filters, page, limit)
+ * - create(data, userId)
+ * - update(id, data, userId)
+ * - delete(id, userId)
+ * - search(searchTerm, options)
+ * - count(filters)
  */
 export class IEtapaGestionRepository extends IRepository {
-  /**
-   * Buscar etapas por gestión
-   * @param {number} gestionId
-   * @returns {Promise<Object[]>}
-   */
-  async findByGestionId(gestionId) {
-    throw new Error('Method findByGestionId must be implemented');
-  }
-
-  /**
-   * Buscar etapas vigentes
-   * @returns {Promise<Object[]>}
-   */
-  async findVigentes() {
-    throw new Error('Method findVigentes must be implemented');
-  }
+  // Solo hereda métodos de IRepository
 }

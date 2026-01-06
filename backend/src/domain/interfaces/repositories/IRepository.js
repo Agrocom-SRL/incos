@@ -13,6 +13,16 @@ export class IRepository {
   }
 
   /**
+   * Buscar un solo registro según criterios
+   * @param {Object} criteria - Criterios de búsqueda (ej: { studentCode: "2025-001", ci: "1234567", expedicion: "LP" })
+   * @param {Object} options - Opciones opcionales (puede incluir 'includeInactive' para incluir inactivos)
+   * @returns {Promise<Object|null>} Un solo registro o null si no se encuentra
+   */
+  async findBy(criteria, options = {}) {
+    throw new Error('Method findBy must be implemented');
+  }
+
+  /**
    * Buscar todos los registros activos
    * @param {Object} filters - Filtros opcionales (puede incluir 'includeInactive' para incluir inactivos)
    * @param {number} page - Página (opcional, para paginación)

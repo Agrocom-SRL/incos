@@ -3,23 +3,20 @@ import { IRepository } from './IRepository.js';
 /**
  * Interfaz de Repositorio: IRolPermisoRepository
  * Define el contrato que debe cumplir el repositorio de roles-permisos
+ * 
+ * NOTA: Solo extiende IRepository sin métodos adicionales.
+ * La especialización está en la implementación (buildWhereClause), no en la interfaz.
+ * 
+ * Métodos heredados de IRepository:
+ * - findById(id)
+ * - findBy(criteria, options)
+ * - findAll(filters, page, limit)
+ * - create(data, userId)
+ * - update(id, data, userId)
+ * - delete(id, userId)
+ * - search(searchTerm, options)
+ * - count(filters)
  */
 export class IRolPermisoRepository extends IRepository {
-  /**
-   * Buscar permisos por rol
-   * @param {number} rolId
-   * @returns {Promise<Object[]>}
-   */
-  async findByRolId(rolId) {
-    throw new Error('Method findByRolId must be implemented');
-  }
-
-  /**
-   * Buscar roles por permiso
-   * @param {number} permisoId
-   * @returns {Promise<Object[]>}
-   */
-  async findByPermisoId(permisoId) {
-    throw new Error('Method findByPermisoId must be implemented');
-  }
+  // Solo hereda métodos de IRepository
 }

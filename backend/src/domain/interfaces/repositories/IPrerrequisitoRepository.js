@@ -3,14 +3,20 @@ import { IRepository } from './IRepository.js';
 /**
  * Interfaz de Repositorio: IPrerrequisitoRepository
  * Define el contrato que debe cumplir el repositorio de prerrequisitos
+ * 
+ * NOTA: Solo extiende IRepository sin métodos adicionales.
+ * La especialización está en la implementación (buildWhereClause), no en la interfaz.
+ * 
+ * Métodos heredados de IRepository:
+ * - findById(id)
+ * - findBy(criteria, options)
+ * - findAll(filters, page, limit)
+ * - create(data, userId)
+ * - update(id, data, userId)
+ * - delete(id, userId)
+ * - search(searchTerm, options)
+ * - count(filters)
  */
 export class IPrerrequisitoRepository extends IRepository {
-  /**
-   * Buscar prerrequisitos por materia
-   * @param {number} materiaId
-   * @returns {Promise<Object[]>}
-   */
-  async findByMateriaId(materiaId) {
-    throw new Error('Method findByMateriaId must be implemented');
-  }
+  // Solo hereda métodos de IRepository
 }

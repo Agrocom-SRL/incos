@@ -3,23 +3,20 @@ import { IRepository } from './IRepository.js';
 /**
  * Interfaz de Repositorio: IPlanEstudiosRepository
  * Define el contrato que debe cumplir el repositorio de plan de estudios
+ * 
+ * NOTA: Solo extiende IRepository sin métodos adicionales.
+ * La especialización está en la implementación (buildWhereClause), no en la interfaz.
+ * 
+ * Métodos heredados de IRepository:
+ * - findById(id)
+ * - findBy(criteria, options)
+ * - findAll(filters, page, limit)
+ * - create(data, userId)
+ * - update(id, data, userId)
+ * - delete(id, userId)
+ * - search(searchTerm, options)
+ * - count(filters)
  */
 export class IPlanEstudiosRepository extends IRepository {
-  /**
-   * Buscar plan de estudios por carrera
-   * @param {number} carreraId
-   * @returns {Promise<Object[]>}
-   */
-  async findByCarreraId(carreraId) {
-    throw new Error('Method findByCarreraId must be implemented');
-  }
-
-  /**
-   * Buscar plan de estudios por periodo
-   * @param {number} periodoId
-   * @returns {Promise<Object[]>}
-   */
-  async findByPeriodoId(periodoId) {
-    throw new Error('Method findByPeriodoId must be implemented');
-  }
+  // Solo hereda métodos de IRepository
 }

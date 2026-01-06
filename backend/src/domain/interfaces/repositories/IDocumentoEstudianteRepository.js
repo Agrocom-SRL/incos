@@ -3,23 +3,20 @@ import { IRepository } from './IRepository.js';
 /**
  * Interfaz de Repositorio: IDocumentoEstudianteRepository
  * Define el contrato que debe cumplir el repositorio de documentos de estudiantes
+ * 
+ * NOTA: Solo extiende IRepository sin métodos adicionales.
+ * La especialización está en la implementación (buildWhereClause), no en la interfaz.
+ * 
+ * Métodos heredados de IRepository:
+ * - findById(id)
+ * - findBy(criteria, options)
+ * - findAll(filters, page, limit)
+ * - create(data, userId)
+ * - update(id, data, userId)
+ * - delete(id, userId)
+ * - search(searchTerm, options)
+ * - count(filters)
  */
 export class IDocumentoEstudianteRepository extends IRepository {
-  /**
-   * Buscar documentos por estudiante
-   * @param {number} estudianteId
-   * @returns {Promise<Object[]>}
-   */
-  async findByEstudianteId(estudianteId) {
-    throw new Error('Method findByEstudianteId must be implemented');
-  }
-
-  /**
-   * Buscar documentos por tipo
-   * @param {string} tipoDocumento
-   * @returns {Promise<Object[]>}
-   */
-  async findByTipoDocumento(tipoDocumento) {
-    throw new Error('Method findByTipoDocumento must be implemented');
-  }
+  // Solo hereda métodos de IRepository
 }
