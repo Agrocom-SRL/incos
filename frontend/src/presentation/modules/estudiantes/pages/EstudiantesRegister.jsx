@@ -15,14 +15,15 @@
  * - Organism maneja: funcionalidad (wizard, pasos, validación, guardado)
  */
 
-import { useMemo, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useMemo, useEffect, useRef } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Form } from 'antd';
 import { PageTemplate } from '@templates';
 import { WizardForm } from '@organisms';
 import { PageHeader } from '@molecules';
 import { 
-  useStudentRegisterContext, 
+  useStudentRegisterContext,
+  useStudentContext,
   useEstudianteGeographicFormLogic,
   useEstudianteWizardTitles,
 } from '@application-estudiantes/hooks';
@@ -35,16 +36,18 @@ import {
 
 const EstudiantesRegister = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [form] = Form.useForm();
   
   // Obtener parámetros de la URL
   const completarMode = searchParams.get('completar') === 'true';
 
-  // Obtener datos del contexto (toda la lógica está en el Provider)
+  // Obtener datos del contexto de registro (toda la lógica está en el Provider)
   const {
     // Estados
     loading = false,
     error = null,
+    registrationResult = null, // Resultado del registro para reaccionar
     
     // Lógica del formulario (viene de useStudentFormOptions y useStudentFormHandlers)
     resolveOptions,
@@ -74,12 +77,37 @@ const EstudiantesRegister = () => {
     loadMunicipios,
   } = useStudentRegisterContext();
 
+  // Obtener el contexto global de estudiantes para agregar al estado
+  const { addStudent } = useStudentContext();
+
+  // Ref para rastrear si ya se procesó el resultado del registro
+  const processedResultRef = useRef(null);
+
   // Registrar el formulario en el contexto para que los handlers puedan acceder a sus valores
   useEffect(() => {
     if (registerForm && form) {
       registerForm(form);
     }
   }, [registerForm, form]);
+
+  // Reaccionar al resultado exitoso del registro
+  // Solo para handleFinish (registro completo), no para handleSave (guardado parcial)
+  useEffect(() => {
+    if (
+      registrationResult?.success && 
+      registrationResult?.data && 
+      processedResultRef.current !== registrationResult
+    ) {
+      // Marcar como procesado para evitar procesarlo dos veces
+      processedResultRef.current = registrationResult;
+      
+      // Agregar el estudiante al estado global para que aparezca en la lista
+      addStudent(registrationResult.data);
+      
+      // Redirigir a la página de lista
+      navigate('/estudiantes');
+    }
+  }, [registrationResult, addStudent, navigate]);
 
   // Configurar cargadores condicionales (genérico para cualquier página)
   const conditionalLoaders = useMemo(() => ({

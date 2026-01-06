@@ -9,32 +9,36 @@
  * 
  * SOLID Principles:
  * - Single Responsibility: Única responsabilidad de manejar handlers de submit y gestión del formulario
- * - Dependency Inversion: Depende de funciones inyectadas (onSubmit, onSuccess, showMessage)
+ * - Dependency Inversion: Depende de useRegisterStudent (abstracción) y showMessage
  * - Interface Segregation: Expone solo los handlers y funciones necesarios
  * 
  * Este hook:
  * - Gestiona el registro de la instancia del formulario
+ * - Usa useRegisterStudent para realizar el registro
  * - Procesa handlers de submit (handleFinish, handleSave)
  * - Maneja mensajes y notificaciones
  * - Gestiona callbacks de éxito
- * - Imprime datos del formulario para debugging
+ * - Expone estados de registro (loading, error, validationErrors)
  * 
  * Usado por: StudentRegisterProvider (para exponer handlers vía Context)
  */
 
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, useState } from 'react';
+import { useRegisterStudent } from '@application-estudiantes/hooks/api';
 
 /**
  * Hook para gestionar handlers de submit del formulario de registro
  * 
- * @param {Function} onSubmit - Función para enviar datos (debe venir del provider)
- * @param {Function} onSuccess - Función de callback de éxito (debe venir del provider)
  * @param {Function} showMessage - Función para mostrar mensajes (debe venir del provider)
- * @returns {Object} Objeto con handleFinish, handleSave, registerForm y getFormValues
+ * @returns {Object} Objeto con handleFinish, handleSave, registerForm, getFormValues, loading, error, validationErrors, registrationResult
  */
-export const useStudentFormHandlers = (onSubmit, onSuccess, showMessage) => {
+export const useStudentFormHandlers = (showMessage) => {
+  // Hook de API para registro de estudiantes
+  const { registerStudent, loading, error, validationErrors } = useRegisterStudent();
   // Ref para almacenar la instancia del formulario
   const formRef = useRef(null);
+  // Estado para almacenar el resultado del registro (para que la página pueda reaccionar)
+  const [registrationResult, setRegistrationResult] = useState(null);
 
   // Función para registrar el formulario desde la página
   const registerForm = useCallback((formInstance) => {
@@ -56,134 +60,52 @@ export const useStudentFormHandlers = (onSubmit, onSuccess, showMessage) => {
       return {};
     }
   }, []);
-  // Helper function to print form data
-  const imprimirDatosFormulario = useCallback((accion) => {
-    if (!getFormValues) {
-      console.warn('⚠️ No se puede obtener los valores del formulario. getFormValues no está definido.');
-      return;
-    }
-
-    try {
-      const formValues = getFormValues();
-
-      console.log('========================================');
-      console.log(`📋 DATOS DEL FORMULARIO - ${accion}`);
-      console.log('========================================');
-      console.log(JSON.stringify(formValues, null, 2));
-      console.log('========================================');
-      console.log('📊 DATOS DESGLOSADOS POR SECCIÓN:');
-      console.log('========================================');
-
-      const datosDesglosados = {
-        datosPersonales: {},
-        datosGeograficos: {},
-        datosAcademico: {},
-        contactoEmergencia: {},
-        documentacion: {},
-        otros: {}
-      };
-
-      // Procesar arrays multidimensionales primero (contactosEmergencia, documentacion)
-      // Ant Design Form guarda estos como objetos/arrays anidados directamente en formValues
-      if (formValues.contactosEmergencia && Array.isArray(formValues.contactosEmergencia)) {
-        datosDesglosados.contactoEmergencia.contactosEmergencia = formValues.contactosEmergencia;
-      }
-
-      // Procesar documentación (estructura: formValues.documentacion[id][field] como objeto)
-      if (formValues.documentacion && typeof formValues.documentacion === 'object' && !Array.isArray(formValues.documentacion)) {
-        datosDesglosados.documentacion.documentacion = formValues.documentacion;
-      }
-
-      // Procesar datos del formulario (campos simples)
-      Object.keys(formValues).forEach(key => {
-        // Saltar arrays multidimensionales ya procesados
-        if (key === 'contactosEmergencia' || key === 'documentacion') {
-          return;
-        }
-        
-        if (key.startsWith('nombre') || key.startsWith('apellido') || key.startsWith('fechaNacimiento') ||
-          key.startsWith('ci') || key.startsWith('genero') || key.startsWith('estadoCivil') ||
-          key.startsWith('telefono') || key.startsWith('email') || key.startsWith('tieneDiscapacidad') ||
-          key.startsWith('tipoDiscapacidad') || key.startsWith('idioma')) {
-          datosDesglosados.datosPersonales[key] = formValues[key];
-        } else if (key.startsWith('pais') || key.startsWith('departamento') || key.startsWith('provincia') ||
-          key.startsWith('municipio') || key.startsWith('direccion') || key.startsWith('zona') ||
-          key.startsWith('calle') || key.startsWith('numero')) {
-          datosDesglosados.datosGeograficos[key] = formValues[key];
-        } else if (key.startsWith('carrera') || key.startsWith('gestion') || key.startsWith('periodo') ||
-          key.startsWith('materia') || key.startsWith('turno')) {
-          datosDesglosados.datosAcademico[key] = formValues[key];
-        } else {
-          datosDesglosados.otros[key] = formValues[key];
-        }
-      });
-
-      // Imprimir datos desglosados
-      Object.keys(datosDesglosados).forEach(seccion => {
-        if (Object.keys(datosDesglosados[seccion]).length > 0) {
-          console.log(`\n📁 ${seccion.toUpperCase()}:`);
-          console.log(JSON.stringify(datosDesglosados[seccion], null, 2));
-        }
-      });
-
-      console.log('\n========================================');
-      console.log(`✅ Datos listos para ${accion.toLowerCase()}`);
-      console.log('📦 Listo para enviar al backend');
-      console.log('========================================\n');
-    } catch (error) {
-      console.error('❌ Error al obtener/imprimir los datos del formulario:', error);
-    }
-  }, [getFormValues]);
 
   // Handler para finalizar el registro
   const handleFinish = useCallback(async (step) => {
-    console.log('🚀 handleFinish ejecutado - Step:', step);
-    imprimirDatosFormulario('FINALIZAR REGISTRO');
+    const formValues = getFormValues ? getFormValues() : {};
+    const result = await registerStudent(formValues, step, true, false);
     
-    if (onSubmit) {
-      const formValues = getFormValues ? getFormValues() : {};
-      const result = await onSubmit(formValues, step, true, false);
-      if (result?.success) {
-        if (showMessage) {
-          showMessage('success', 'Estudiante registrado correctamente');
-        }
-        if (onSuccess) {
-          onSuccess(result);
-        }
-      } else if (result?.error) {
-        if (showMessage) {
-          showMessage('error', result.error || 'Error al registrar estudiante');
-        }
+    if (result?.success) {
+      if (showMessage) {
+        showMessage('success', 'Estudiante registrado correctamente');
       }
-    } else {
-      console.warn('⚠️ onSubmit no está definido, solo se imprimirán los datos');
+      // Guardar el resultado para que la página pueda reaccionar
+      setRegistrationResult(result);
+    } else if (result?.error) {
+      if (showMessage) {
+        const msg = typeof result.error === 'object'
+          ? (result.error.message || 'Error al registrar estudiante')
+          : (result.error || 'Error al registrar estudiante');
+        showMessage('error', msg);
+      }
+      // Limpiar resultado anterior en caso de error
+      setRegistrationResult(null);
     }
-  }, [onSubmit, onSuccess, showMessage, getFormValues, imprimirDatosFormulario]);
+  }, [registerStudent, showMessage, getFormValues]);
 
   // Handler para guardar parcialmente
   const handleSave = useCallback(async (step) => {
-    console.log('💾 handleSave ejecutado - Step:', step);
-    imprimirDatosFormulario('GUARDAR PARCIAL');
+    const formValues = getFormValues ? getFormValues() : {};
+    const result = await registerStudent(formValues, step, false, true);
     
-    if (onSubmit) {
-      const formValues = getFormValues ? getFormValues() : {};
-      const result = await onSubmit(formValues, step, false, true);
-      if (result?.success) {
-        if (showMessage) {
-          showMessage('success', 'Datos guardados correctamente. Puede continuar después.');
-        }
-        if (onSuccess) {
-          onSuccess(result);
-        }
-      } else if (result?.error) {
-        if (showMessage) {
-          showMessage('error', result.error || 'Error al guardar los datos');
-        }
+    if (result?.success) {
+      if (showMessage) {
+        showMessage('success', 'Datos guardados correctamente. Puede continuar después.');
       }
-    } else {
-      console.warn('⚠️ onSubmit no está definido, solo se imprimirán los datos');
+      // Para guardado parcial, no redirigimos, pero guardamos el resultado por si acaso
+      setRegistrationResult(result);
+    } else if (result?.error) {
+      if (showMessage) {
+        const msg = typeof result.error === 'object'
+          ? (result.error.message || 'Error al guardar los datos')
+          : (result.error || 'Error al guardar los datos');
+        showMessage('error', msg);
+      }
+      // Limpiar resultado anterior en caso de error
+      setRegistrationResult(null);
     }
-  }, [onSubmit, onSuccess, showMessage, getFormValues, imprimirDatosFormulario]);
+  }, [registerStudent, showMessage, getFormValues]);
 
   return {
     handleFinish,
@@ -191,6 +113,12 @@ export const useStudentFormHandlers = (onSubmit, onSuccess, showMessage) => {
     registerForm,
     getFormValues,
     formRef, // Exponer formRef para que useDocumentacionProcesada pueda usar Form.useWatch
+    // Estados del registro (expuestos desde useRegisterStudent)
+    loading,
+    error,
+    validationErrors,
+    // Resultado del registro (para que la página pueda reaccionar)
+    registrationResult,
   };
 };
 

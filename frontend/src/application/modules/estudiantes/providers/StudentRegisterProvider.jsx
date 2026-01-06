@@ -67,16 +67,12 @@ export const StudentRegisterProvider = ({ children }) => {
         ...referenceData,
     }), [catalogData, geographicData, referenceData]);
 
-    // TODO: Implementar onSubmit y onSuccess en hooks de API o use cases
-    // Por ahora se dejan como undefined, se implementarán cuando se cree el use case de registro
-    const onSubmit = undefined;
-    const onSuccess = undefined;
-
     // Hook especializado: transformar datos a opciones de formulario
     const resolveOptions = useStudentFormOptions(contextData);
 
     // Hook especializado: manejar handlers de submit y gestión del formulario
-    const { handleFinish, handleSave, registerForm, getFormValues, formRef } = useStudentFormHandlers(onSubmit, onSuccess, showMessage);
+    // Este hook usa useRegisterStudent internamente para realizar el registro
+    const { handleFinish, handleSave, registerForm, getFormValues, formRef, loading, error, validationErrors, registrationResult } = useStudentFormHandlers(showMessage);
 
     // Hook para manejar el estado de contactos de emergencia dinámicos
     const { contactosIndices, agregarContacto, eliminarContacto } = useContactosEmergenciaDinamicos();
@@ -96,6 +92,11 @@ export const StudentRegisterProvider = ({ children }) => {
         handleSave,
         minAge: EDAD_MINIMA_REGISTRO,
         registerForm, // Expuesto desde useStudentFormHandlers
+        // Estados del registro (expuestos desde useStudentFormHandlers)
+        loading,
+        error,
+        validationErrors,
+        registrationResult, // Resultado del registro para que la página pueda reaccionar
         // Contactos de emergencia dinámicos
         contactosIndices,
         agregarContacto,
@@ -108,7 +109,7 @@ export const StudentRegisterProvider = ({ children }) => {
         loadDepartamentos: geographicData.loadDepartamentos,
         loadProvincias: geographicData.loadProvincias,
         loadMunicipios: geographicData.loadMunicipios,
-    }), [contextData, resolveOptions, handleFinish, handleSave, registerForm, contactosIndices, agregarContacto, eliminarContacto, documentacionProcesada, referenceData.loadDiscapacidades, referenceData.loadTiposParentesco, geographicData.loadDepartamentos, geographicData.loadProvincias, geographicData.loadMunicipios]);
+    }), [contextData, resolveOptions, handleFinish, handleSave, registerForm, loading, error, validationErrors, registrationResult, contactosIndices, agregarContacto, eliminarContacto, documentacionProcesada, referenceData.loadDiscapacidades, referenceData.loadTiposParentesco, geographicData.loadDepartamentos, geographicData.loadProvincias, geographicData.loadMunicipios]);
 
     return (
         <StudentRegisterContext.Provider value={value}>

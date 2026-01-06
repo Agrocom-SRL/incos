@@ -8,4 +8,5 @@ export { useEstudiantesApi } from './useEstudiantesApi';
 export { useStudentCatalogApi } from './useStudentCatalogApi';
 export { useStudentGeographicApi } from './useStudentGeographicApi';
 export { useStudentReferenceApi } from './useStudentReferenceApi';
+export { useRegisterStudent } from './useRegisterStudent';
 

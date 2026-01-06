@@ -48,6 +48,7 @@ export function registerEstudiantesResource(container) {
                 studentDisabilityRepository: c.resolve(TOKENS.studentDisabilityRepository),
                 studentOriginRepository: c.resolve(TOKENS.studentOriginRepository),
                 studentDocumentDeliveryRepository: c.resolve(TOKENS.studentDocumentDeliveryRepository),
+                configuracionSistemaRepository: c.resolve(TOKENS.configuracionSistemaRepository),
                 logger: c.resolve(TOKENS.logger),
             }),
         { singleton: true }

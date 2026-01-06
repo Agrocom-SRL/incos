@@ -43,15 +43,29 @@ export function handleSuccessResponse(response) {
  * 
  * @param {Error} error - Error de axios
  * @param {string} defaultMessage - Mensaje por defecto si no se puede extraer el error
- * @returns {{success: boolean, error: string}}
+ * @returns {{success: boolean, error: string|Object}}
+ * 
+ * El backend puede retornar errores con estructura:
+ * - Simple: { success: false, error: { code: 'ERROR', message: '...' } }
+ * - Validación: { success: false, error: { code: 'VALIDATION_ERROR', message: '...', details: [...] } }
  */
 export function handleErrorResponse(error, defaultMessage = 'Error en la petición') {
   // Si hay error.response, el backend respondió con un error HTTP
-  // El backend devuelve: { status, data, error }
   if (error.response?.data?.error) {
+    const errorData = error.response.data.error;
+    
+    // Si el error tiene estructura completa (code, message, details), retornarlo completo
+    if (typeof errorData === 'object' && errorData.code && errorData.message) {
+      return {
+        success: false,
+        error: errorData, // Objeto completo con code, message, details
+      };
+    }
+    
+    // Si es un string simple, retornarlo como string
     return {
       success: false,
-      error: error.response.data.error,
+      error: typeof errorData === 'string' ? errorData : errorData.message || defaultMessage,
     };
   }
   
