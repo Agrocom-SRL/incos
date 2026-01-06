@@ -1,5 +1,5 @@
 import express from 'express';
-import { listValidator } from '../validators/common/index.js';
+import { listValidator, idValidator } from '../validators/common/index.js';
 import { registerStudentValidator } from '../validators/estudiantes/index.js';
 
 /**
@@ -51,11 +51,11 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
      * 
      * Body:
      * - student: Datos del estudiante principal
-     * - academicData: Datos académicos (opcional)
      * - guardians: Array de apoderados (opcional)
      * - disabilities: Array de discapacidades (opcional)
      * - origins: Array de orígenes (opcional)
      * - documentation: Objeto con entregas de documentos (opcional, keys: doc_1, doc_2, etc.)
+     * 
      * 
      * Orden de middlewares:
      * 1. registerStudentValidator - Valida estructura y tipos de datos del body
@@ -69,17 +69,42 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
         (req, res, next) => controllers.registerStudentController.handle(req, res, next)  // 3. Controller al final
     );
 
+    /**
+     * GET /api/v1/estudiantes/:id
+     * Obtener un estudiante por ID con todos sus datos relacionados
+     * 
+     * Path params:
+     * - id: ID del estudiante (número entero mayor a 0)
+     * 
+     * Response:
+     * {
+     *   success: true,
+     *   data: {
+     *     student: { ... },
+     *     guardians: [ ... ],
+     *     disabilities: [ ... ],
+     *     origins: [ ... ],
+     *     documentDeliveries: [ ... ]
+     *   },
+     *   message: "Estudiante obtenido correctamente"
+     * }
+     * 
+     * 
+     * Orden de middlewares:
+     * 1. idValidator - Valida que el ID sea un número entero mayor a 0
+     * 2. validateRequest - Procesa errores de validación y retorna respuesta si hay errores
+     * 3. controller - Se ejecuta solo si la validación pasó
+     */
+    router.get(
+        '/:id',
+        idValidator,  // 1. Validator primero
+        validateRequest,  // 2. Middleware que procesa errores
+        (req, res, next) => controllers.getStudentByIdController.handle(req, res, next)  // 3. Controller al final
+    );
+
     // ============================================
     // ENDPOINTS FUTUROS (TODO: Implementar cuando se necesiten)
     // ============================================
-
-    // GET /:id - Obtener estudiante por ID
-    // router.get(
-    //     '/:id',
-    //     getStudentByIdValidator,
-    //     validateRequest,
-    //     (req, res, next) => controllers.getStudentByIdController.handle(req, res, next)
-    // );
 
     // PUT /:id - Actualizar estudiante
     // router.put(

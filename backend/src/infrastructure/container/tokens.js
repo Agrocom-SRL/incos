@@ -96,8 +96,8 @@ export const TOKENS = {
     // ============================================
     est_listStudentsUseCase: 'estudiantes.listStudentsUseCase',
     est_registerStudentUseCase: 'estudiantes.registerStudentUseCase',
+    est_getStudentByIdUseCase: 'estudiantes.getStudentByIdUseCase',
     // TODO: Agregar otros Use Cases cuando se implementen sus endpoints
-    // est_getStudentByIdUseCase: 'estudiantes.getStudentByIdUseCase',
     // est_updateStudentUseCase: 'estudiantes.updateStudentUseCase',
 
     // ============================================
@@ -105,8 +105,8 @@ export const TOKENS = {
     // ============================================
     est_listStudentsController: 'estudiantes.listStudentsController',
     est_registerStudentController: 'estudiantes.registerStudentController',
+    est_getStudentByIdController: 'estudiantes.getStudentByIdController',
     // TODO: Agregar otros Controllers cuando se implementen sus endpoints
-    // est_getStudentByIdController: 'estudiantes.getStudentByIdController',
     // est_updateStudentController: 'estudiantes.updateStudentController',
 
     // ============================================

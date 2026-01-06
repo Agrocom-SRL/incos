@@ -15,7 +15,8 @@
 import { TOKENS } from '../../tokens.js';
 import { ListStudentsUseCase } from '../../../../application/use-cases/estudiantes/ListStudentsUseCase.js';
 import { RegisterStudentUseCase } from '../../../../application/use-cases/estudiantes/RegisterStudentUseCase.js';
-import { ListStudentsController, RegisterStudentController } from '../../../../presentation/controllers/estudiantes/index.js';
+import { GetStudentByIdUseCase } from '../../../../application/use-cases/estudiantes/GetStudentByIdUseCase.js';
+import { ListStudentsController, RegisterStudentController, GetStudentByIdController } from '../../../../presentation/controllers/estudiantes/index.js';
 import { buildEstudiantesRouter } from '../../../../presentation/routes/estudiantes.routes.js';
 
 /**
@@ -43,12 +44,25 @@ export function registerEstudiantesResource(container) {
         (c) =>
             new RegisterStudentUseCase({
                 studentRepository: c.resolve(TOKENS.studentRepository),
-                studentAcademicDataRepository: c.resolve(TOKENS.studentAcademicDataRepository),
                 studentGuardianRepository: c.resolve(TOKENS.studentGuardianRepository),
                 studentDisabilityRepository: c.resolve(TOKENS.studentDisabilityRepository),
                 studentOriginRepository: c.resolve(TOKENS.studentOriginRepository),
                 studentDocumentDeliveryRepository: c.resolve(TOKENS.studentDocumentDeliveryRepository),
                 configuracionSistemaRepository: c.resolve(TOKENS.configuracionSistemaRepository),
+                logger: c.resolve(TOKENS.logger),
+            }),
+        { singleton: true }
+    );
+
+    container.register(
+        TOKENS.est_getStudentByIdUseCase,
+        (c) =>
+            new GetStudentByIdUseCase({
+                studentRepository: c.resolve(TOKENS.studentRepository),
+                studentGuardianRepository: c.resolve(TOKENS.studentGuardianRepository),
+                studentDisabilityRepository: c.resolve(TOKENS.studentDisabilityRepository),
+                studentOriginRepository: c.resolve(TOKENS.studentOriginRepository),
+                studentDocumentDeliveryRepository: c.resolve(TOKENS.studentDocumentDeliveryRepository),
                 logger: c.resolve(TOKENS.logger),
             }),
         { singleton: true }
@@ -81,6 +95,17 @@ export function registerEstudiantesResource(container) {
         { singleton: true }
     );
 
+    container.register(
+        TOKENS.est_getStudentByIdController,
+        (c) =>
+            new GetStudentByIdController({
+                getStudentByIdUseCase: c.resolve(TOKENS.est_getStudentByIdUseCase),
+                logger: c.resolve(TOKENS.logger),
+                responseFormatter: c.resolve(TOKENS.responseFormatter),
+            }),
+        { singleton: true }
+    );
+
     // TODO: Agregar otros Controllers cuando se implementen sus endpoints
 
     // ============================================
@@ -92,8 +117,8 @@ export function registerEstudiantesResource(container) {
             const controllers = {
                 listStudentsController: c.resolve(TOKENS.est_listStudentsController),
                 registerStudentController: c.resolve(TOKENS.est_registerStudentController),
+                getStudentByIdController: c.resolve(TOKENS.est_getStudentByIdController),
                 // TODO: Agregar otros controllers cuando se implementen sus rutas
-                // getStudentByIdController: c.resolve(TOKENS.est_getStudentByIdController),
                 // updateStudentController: c.resolve(TOKENS.est_updateStudentController),
             };
 

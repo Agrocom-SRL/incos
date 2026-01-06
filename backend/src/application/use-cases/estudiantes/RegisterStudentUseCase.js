@@ -6,12 +6,13 @@
  * Responsabilidades:
  * - Validar que no exista un estudiante con el mismo CI
  * - Crear el estudiante principal
- * - Crear datos académicos
  * - Crear apoderados (múltiples)
  * - Crear discapacidades (múltiples)
  * - Crear orígenes (múltiples)
  * - Crear entregas de documentos (múltiples)
  * - Retornar el estudiante creado con todos sus datos
+ * 
+ * NOTA: Los datos académicos se manejan en otro módulo, no se incluyen aquí
  * 
  * Principios SOLID:
  * - Single Responsibility: Solo maneja el registro completo de estudiantes
@@ -26,7 +27,6 @@ export class RegisterStudentUseCase {
   /**
    * @param {Object} params - Dependencias inyectadas
    * @param {Object} params.studentRepository - Repositorio de estudiantes
-   * @param {Object} params.studentAcademicDataRepository - Repositorio de datos académicos
    * @param {Object} params.studentGuardianRepository - Repositorio de apoderados
    * @param {Object} params.studentDisabilityRepository - Repositorio de discapacidades
    * @param {Object} params.studentOriginRepository - Repositorio de orígenes
@@ -36,7 +36,6 @@ export class RegisterStudentUseCase {
    */
   constructor({
     studentRepository,
-    studentAcademicDataRepository,
     studentGuardianRepository,
     studentDisabilityRepository,
     studentOriginRepository,
@@ -45,7 +44,6 @@ export class RegisterStudentUseCase {
     logger,
   }) {
     this.studentRepository = studentRepository;
-    this.studentAcademicDataRepository = studentAcademicDataRepository;
     this.studentGuardianRepository = studentGuardianRepository;
     this.studentDisabilityRepository = studentDisabilityRepository;
     this.studentOriginRepository = studentOriginRepository;
@@ -118,13 +116,14 @@ export class RegisterStudentUseCase {
    * 
    * @param {Object} data - Datos del estudiante a registrar
    * @param {Object} data.student - Datos del estudiante principal
-   * @param {Object} data.academicData - Datos académicos
    * @param {Array} data.guardians - Array de apoderados
    * @param {Array} data.disabilities - Array de discapacidades
    * @param {Array} data.origins - Array de orígenes
    * @param {Object} data.documentation - Objeto con entregas de documentos (key: documentacionId)
    * @param {number} userId - ID del usuario que realiza el registro
    * @returns {Promise<Object>} Estudiante creado con todos sus datos relacionados
+   * 
+   * NOTA: Los datos académicos se manejan en otro módulo, no se incluyen aquí
    */
   async execute(data, userId = null) {
     this.logger.info('[Estudiantes] Iniciando registro de estudiante', {
@@ -161,24 +160,7 @@ export class RegisterStudentUseCase {
         studentCode: student.studentCode,
       });
 
-      // 4. Crear datos académicos (si existen)
-      let academicData = null;
-      if (data.academicData) {
-        const academicDataToCreate = {
-          ...data.academicData,
-          studentId: student.id,
-        };
-        academicData = await this.studentAcademicDataRepository.create(
-          academicDataToCreate,
-          userId
-        );
-        this.logger.info('[Estudiantes] Datos académicos creados', {
-          studentId: student.id,
-          academicDataId: academicData.id,
-        });
-      }
-
-      // 5. Crear apoderados (múltiples)
+      // 4. Crear apoderados (múltiples)
       const guardians = [];
       if (data.guardians && Array.isArray(data.guardians)) {
         for (const guardianData of data.guardians) {
@@ -198,7 +180,7 @@ export class RegisterStudentUseCase {
         });
       }
 
-      // 6. Crear discapacidades (múltiples)
+      // 5. Crear discapacidades (múltiples)
       const disabilities = [];
       if (data.disabilities && Array.isArray(data.disabilities)) {
         for (const disabilityData of data.disabilities) {
@@ -218,7 +200,7 @@ export class RegisterStudentUseCase {
         });
       }
 
-      // 7. Crear orígenes (múltiples)
+      // 6. Crear orígenes (múltiples)
       const origins = [];
       if (data.origins && Array.isArray(data.origins)) {
         for (const originData of data.origins) {
@@ -238,7 +220,7 @@ export class RegisterStudentUseCase {
         });
       }
 
-      // 8. Crear entregas de documentos (múltiples)
+      // 7. Crear entregas de documentos (múltiples)
       const documentDeliveries = [];
       if (data.documentation && typeof data.documentation === 'object') {
         // data.documentation es un objeto con keys como 'doc_1', 'doc_2', etc.
@@ -271,14 +253,9 @@ export class RegisterStudentUseCase {
         });
       }
 
-      // 9. Retornar el estudiante creado con todos sus datos relacionados
+      // 8. Retornar el estudiante creado con todos sus datos relacionados
       const result = {
         student: student.toPlainObject ? student.toPlainObject() : student,
-        academicData: academicData
-          ? academicData.toPlainObject
-            ? academicData.toPlainObject()
-            : academicData
-          : null,
         guardians: guardians.map((g) =>
           g.toPlainObject ? g.toPlainObject() : g
         ),
@@ -293,7 +270,6 @@ export class RegisterStudentUseCase {
 
       this.logger.info('[Estudiantes] Estudiante registrado exitosamente', {
         studentId: student.id,
-        hasAcademicData: !!academicData,
         guardiansCount: guardians.length,
         disabilitiesCount: disabilities.length,
         originsCount: origins.length,

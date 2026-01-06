@@ -12,19 +12,18 @@
  *   tipoDiscapacidadId, gradoDiscapacidad, descripcion,
  *   paisId, ciudadNacimiento, idiomaMaternoId, idiomaSecundarioId, tipoOrigen,
  *   contactosEmergencia: [ ... ],
- *   documentacion: { doc_1: { ... }, doc_2: { ... } },
- *   careerId, managementId, academicState, registrationState, ...
+ *   documentacion: { doc_1: { ... }, doc_2: { ... } }
  * }
  * 
  * Use Case espera (estructura anidada):
  * {
  *   student: { ... },
- *   academicData: { ... },
  *   guardians: [ ... ],
  *   disabilities: [ ... ],
  *   origins: [ ... ],
  *   documentation: { ... }
  * }
+ * 
  * 
  * Clean Architecture:
  * - Application Layer: Transforma datos de Presentation → Application
@@ -76,18 +75,7 @@ export class RegisterStudentRequestDTO {
       // Arrays y objetos
       contactosEmergencia,
       documentacion,
-      // Datos académicos
-      careerId,
-      managementId,
-      academicState,
-      registrationState,
-      previousSchool,
-      highSchoolGraduationYear,
-      annualAverage,
-      graduationDate,
-      withdrawalDate,
-      withdrawalReason,
-      photoUrl,
+      // NOTA: Los datos académicos (careerId, managementId, etc.) se manejan en otro módulo
     } = body;
 
     // 1. Datos del estudiante principal
@@ -111,35 +99,7 @@ export class RegisterStudentRequestDTO {
       observations: observaciones,
     };
 
-    // 2. Datos académicos (opcional)
-    const academicData =
-      careerId ||
-      managementId ||
-      academicState ||
-      registrationState ||
-      previousSchool ||
-      highSchoolGraduationYear ||
-      annualAverage ||
-      graduationDate ||
-      withdrawalDate ||
-      withdrawalReason ||
-      photoUrl
-        ? {
-            careerId,
-            managementId,
-            academicState,
-            registrationState,
-            previousSchool,
-            highSchoolGraduationYear,
-            annualAverage,
-            graduationDate,
-            withdrawalDate,
-            withdrawalReason,
-            photoUrl,
-          }
-        : null;
-
-    // 3. Discapacidades (array, opcional)
+    // 2. Discapacidades (array, opcional)
     const disabilities =
       tieneDiscapacidad && tipoDiscapacidadId
         ? [
@@ -151,7 +111,7 @@ export class RegisterStudentRequestDTO {
           ]
         : [];
 
-    // 4. Orígenes (array, opcional)
+    // 3. Orígenes (array, opcional)
     // IMPORTANTE: tipoOrigen puede ser 0 (BOLIVIANA), que es falsy, por lo que debemos verificar explícitamente !== undefined
     const hasOriginData = paisId || ciudadNacimiento || idiomaMaternoId || idiomaSecundarioId || (tipoOrigen !== undefined && tipoOrigen !== null);
     const origins = hasOriginData
@@ -168,7 +128,7 @@ export class RegisterStudentRequestDTO {
           ]
         : [];
 
-    // 5. Apoderados/Contactos de emergencia (array, opcional)
+    // 4. Apoderados/Contactos de emergencia (array, opcional)
     // El frontend ya envía contactosEmergencia como array, pero necesitamos transformar
     // los nombres de campos del frontend a los que espera el use case
     const guardians = Array.isArray(contactosEmergencia)
@@ -190,7 +150,7 @@ export class RegisterStudentRequestDTO {
         }))
       : [];
 
-    // 6. Documentación (objeto, opcional)
+    // 5. Documentación (objeto, opcional)
     // El frontend envía documentacion como objeto con keys doc_1, doc_2, etc.
     // El use case espera las mismas keys (doc_1, doc_2, etc.) pero con campos en camelCase
     const documentation = {};
@@ -213,7 +173,6 @@ export class RegisterStudentRequestDTO {
 
     return {
       student,
-      academicData,
       guardians,
       disabilities,
       origins,

@@ -16,8 +16,9 @@
  *   generoId, estadoCivilId, tipoSangre, tieneDiscapacidad, emailPersonal, celular,
  *   telefonoFijo, direccion, municipioResidenciaId, zona, observaciones,
  *   contactosEmergencia: [ ... ],
- *   documentacion: { doc_1: { ... }, doc_2: { ... } },
- *   careerId, managementId, academicState, registrationState, ...
+ *   documentacion: { doc_1: { ... }, doc_2: { ... } }
+ * 
+ * NOTA: Los datos académicos (careerId, managementId, etc.) se manejan en otro módulo
  * 
  * Principios SOLID:
  * - Single Responsibility: Solo maneja la comunicación HTTP para registrar estudiantes
