@@ -25,28 +25,15 @@ const Heading = ({
 }) => {
   const headingClassName = className ? `heading heading--h${level} ${className}`.trim() : `heading heading--h${level}`;
 
-  // Si se proporciona gap, envolver children en Flex
-  if (gap !== undefined) {
-    return (
-      <Title
-        level={level}
-        className={headingClassName}
-        {...props}
-      >
-        <Flex align="center" gap={gap} wrap="wrap">
-          {children}
-        </Flex>
-      </Title>
-    );
-  }
-
   return (
     <Title
       level={level}
       className={headingClassName}
       {...props}
     >
-      {children}
+      <Flex align="center" gap={gap} wrap="wrap">
+        {children}
+      </Flex>
     </Title>
   );
 };

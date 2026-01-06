@@ -23,11 +23,14 @@
  * @returns {Array} Array de campos de contacto de emergencia
  */
 export const createCamposContactoEmergencia = (index = 0) => {
-    const prefix = index > 0 ? `contactoEmergencia${index}` : '';
+    // Siempre usar prefijo para evitar conflictos con campos de datos personales
+    // Índice 0 -> contactoEmergencia1, índice 1 -> contactoEmergencia2, etc.
+    const numeroContacto = index + 1;
+    const prefix = `contactoEmergencia${numeroContacto}`;
 
     return [
         {
-            name: prefix ? `${prefix}TipoParentescoId` : 'tipoParentescoId',
+            name: `${prefix}TipoParentescoId`,
             label: 'Tipo de Parentesco',
             type: 'select',
             required: true,
@@ -37,7 +40,7 @@ export const createCamposContactoEmergencia = (index = 0) => {
             showDescription: true, // Mostrar descripción del tipo de parentesco en tooltip o texto pequeño
         },
         {
-            name: prefix ? `${prefix}Nombres` : 'nombres',
+            name: `${prefix}Nombres`,
             label: 'Nombres',
             type: 'input',
             required: true,
@@ -46,7 +49,7 @@ export const createCamposContactoEmergencia = (index = 0) => {
             maxLength: 150,
         },
         {
-            name: prefix ? `${prefix}Apellidos` : 'apellidos',
+            name: `${prefix}Apellidos`,
             label: 'Apellidos',
             type: 'input',
             required: false,
@@ -55,7 +58,7 @@ export const createCamposContactoEmergencia = (index = 0) => {
             maxLength: 150,
         },
         {
-            name: prefix ? `${prefix}Ci` : 'ci',
+            name: `${prefix}Ci`,
             label: 'Cédula de Identidad',
             type: 'input',
             required: false,
@@ -64,7 +67,7 @@ export const createCamposContactoEmergencia = (index = 0) => {
             maxLength: 20,
         },
         {
-            name: prefix ? `${prefix}Telefono` : 'telefono',
+            name: `${prefix}Telefono`,
             label: 'Teléfono',
             type: 'input',
             inputType: 'tel',
@@ -74,7 +77,7 @@ export const createCamposContactoEmergencia = (index = 0) => {
             maxLength: 20,
         },
         {
-            name: prefix ? `${prefix}Celular` : 'celular',
+            name: `${prefix}Celular`,
             label: 'Celular',
             type: 'input',
             inputType: 'tel',
@@ -84,7 +87,7 @@ export const createCamposContactoEmergencia = (index = 0) => {
             maxLength: 20,
         },
         {
-            name: prefix ? `${prefix}Email` : 'email',
+            name: `${prefix}Email`,
             label: 'Email',
             type: 'input',
             inputType: 'email',
@@ -94,7 +97,7 @@ export const createCamposContactoEmergencia = (index = 0) => {
             maxLength: 150,
         },
         {
-            name: prefix ? `${prefix}EsContactoEmergencia` : 'esContactoEmergencia',
+            name: `${prefix}EsContactoEmergencia`,
             label: 'Es Contacto de Emergencia',
             type: 'switch',
             required: false,
@@ -102,7 +105,7 @@ export const createCamposContactoEmergencia = (index = 0) => {
             defaultChecked: true,
         },
         {
-            name: prefix ? `${prefix}EsApoderadoLegal` : 'esApoderadoLegal',
+            name: `${prefix}EsApoderadoLegal`,
             label: 'Es Apoderado Legal',
             type: 'switch',
             required: false,
@@ -110,7 +113,7 @@ export const createCamposContactoEmergencia = (index = 0) => {
             defaultChecked: true,
         },
         {
-            name: prefix ? `${prefix}ViveConEstudiante` : 'viveConEstudiante',
+            name: `${prefix}ViveConEstudiante`,
             label: 'Vive con el Estudiante',
             type: 'switch',
             required: false,
@@ -118,7 +121,7 @@ export const createCamposContactoEmergencia = (index = 0) => {
             defaultChecked: false,
         },
         {
-            name: prefix ? `${prefix}Ocupacion` : 'ocupacion',
+            name: `${prefix}Ocupacion`,
             label: 'Ocupación',
             type: 'input',
             required: false,
@@ -127,7 +130,7 @@ export const createCamposContactoEmergencia = (index = 0) => {
             maxLength: 100,
         },
         {
-            name: prefix ? `${prefix}LugarTrabajo` : 'lugarTrabajo',
+            name: `${prefix}LugarTrabajo`,
             label: 'Lugar de Trabajo',
             type: 'input',
             required: false,
@@ -136,7 +139,7 @@ export const createCamposContactoEmergencia = (index = 0) => {
             maxLength: 200,
         },
         {
-            name: prefix ? `${prefix}Direccion` : 'direccion',
+            name: `${prefix}Direccion`,
             label: 'Dirección',
             type: 'textarea',
             required: false,
@@ -145,7 +148,7 @@ export const createCamposContactoEmergencia = (index = 0) => {
             rows: 3,
         },
         {
-            name: prefix ? `${prefix}Observaciones` : 'observaciones',
+            name: `${prefix}Observaciones`,
             label: 'Observaciones',
             type: 'textarea',
             required: false,

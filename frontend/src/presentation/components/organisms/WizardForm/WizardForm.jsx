@@ -30,7 +30,7 @@
  *   Cuando un campo cambia a true, se ejecuta su función de carga correspondiente
  */
 
-import React, { useRef } from 'react';
+import React from 'react';
 import { Steps, Form } from 'antd';
 import { FormCard } from '@atoms';
 import { WizardActions, FormSection } from '@molecules';
@@ -65,21 +65,10 @@ const WizardForm = ({
     conditionalLoaders,
   });
 
-  // Ref para comparar valores anteriores y evitar llamadas innecesarias al callback
-  const prevFormValuesRef = useRef({});
-
   // Notificar cambios en valores del formulario al componente padre
-  // Solo si realmente cambió algo (comparación profunda)
   React.useEffect(() => {
     if (onFormValuesChange && typeof onFormValuesChange === 'function') {
-      const prevValuesStr = JSON.stringify(prevFormValuesRef.current);
-      const newValuesStr = JSON.stringify(allFormValues || {});
-      
-      // Solo llamar al callback si realmente cambió algo
-      if (prevValuesStr !== newValuesStr) {
-        prevFormValuesRef.current = allFormValues || {};
-        onFormValuesChange(allFormValues);
-      }
+      onFormValuesChange(allFormValues);
     }
   }, [allFormValues, onFormValuesChange]);
 

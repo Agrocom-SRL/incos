@@ -67,7 +67,7 @@ const TableListView = ({
                     justify="center"
                     style={{ minHeight: '400px', padding: '20px' }}
                 >
-                    <Spinner size="large" tip={loadingTip} />
+                    <Spinner size="large" text={loadingTip} />
                 </Flex>
             )}
 
