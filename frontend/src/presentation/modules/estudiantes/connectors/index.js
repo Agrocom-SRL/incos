@@ -17,3 +17,4 @@ import { lazy } from 'react';
 
 export const ListConnector = lazy(() => import('@estudiantes/connectors/ListConnector'));
 export const RegisterConnector = lazy(() => import('@estudiantes/connectors/RegisterConnector'));
+export const DetailConnector = lazy(() => import('@estudiantes/connectors/DetailConnector'));

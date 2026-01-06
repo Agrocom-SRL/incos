@@ -8,6 +8,7 @@
 
 import { 
   ObtenerTodosEstudiantesUseCase,
+  ObtenerEstudiantePorIdUseCase,
   ObtenerDatosRegistroEstudianteUseCase,
   ObtenerDatosGeograficosFiltradosUseCase,
   ObtenerDatosReferenciaFiltradosUseCase,
@@ -55,6 +56,10 @@ export function registerEstudiantesModule(factory) {
   // Registrar Use Cases
   factory.obtenerTodosEstudiantes = () => {
     return new ObtenerTodosEstudiantesUseCase(estudianteRepository);
+  };
+
+  factory.obtenerEstudiantePorId = () => {
+    return new ObtenerEstudiantePorIdUseCase(estudianteRepository);
   };
 
   factory.obtenerDatosRegistroEstudiante = () => {

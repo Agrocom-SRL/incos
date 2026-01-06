@@ -10,7 +10,7 @@
  */
 
 import { UnderConstruction } from '@components/pages';
-import { ListConnector, RegisterConnector } from '@estudiantes/connectors';
+import { ListConnector, RegisterConnector, DetailConnector } from '@estudiantes/connectors';
 
 export const estudiantesRoutes = [
     // Módulo raíz: Estudiantes (muestra la lista directamente)
@@ -46,6 +46,13 @@ export const estudiantesRoutes = [
             parent: 'EST',
             order: 2,
         },
+    },
+    // Detalle del estudiante (sin menú, se accede por URL con parámetro de ruta :id)
+    {
+        path: '/estudiantes/:id',
+        element: <DetailConnector />,
+        key: 'EST-DETALLE',
+        menu: null, // No aparece en el menú, se accede por URL con /estudiantes/:id
     },
     // Becas - Grupo padre
     {

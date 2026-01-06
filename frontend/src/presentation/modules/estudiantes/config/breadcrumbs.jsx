@@ -126,3 +126,16 @@ export const createRegisterBreadcrumbItems = (title) => {
   return createBreadcrumbItems('EST-REGISTRAR', title);
 };
 
+/**
+ * Crea breadcrumb para la página de detalle de estudiante
+ * 
+ * @returns {Array} Array de items del breadcrumb
+ */
+export const createDetailBreadcrumbItems = () => {
+  return [
+    { title: 'Inicio', href: '/' },
+    { title: 'Estudiantes', href: '/estudiantes' },
+    { title: 'Detalle del Estudiante' },
+  ];
+};
+

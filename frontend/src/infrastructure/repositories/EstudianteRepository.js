@@ -48,6 +48,35 @@ export class EstudianteRepository extends IEstudianteRepository {
 
 
   /**
+   * Obtiene un estudiante por ID
+   * GET /v1/estudiantes/:id
+   * 
+   * @param {string|number} id - ID del estudiante
+   * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
+   */
+  async obtenerPorId(id) {
+    try {
+      // Validar que el ID sea válido
+      if (!id || (typeof id !== 'string' && typeof id !== 'number')) {
+        return {
+          success: false,
+          error: 'ID del estudiante es requerido',
+        };
+      }
+
+      // Llamada HTTP directa al endpoint usando BY_ID que usa BASE
+      const response = await apiClient.get(ESTUDIANTES_ENDPOINTS.BY_ID(id));
+
+      // Procesar respuesta exitosa
+      const result = handleSuccessResponse(response);
+
+      return result;
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al obtener estudiante');
+    }
+  }
+
+  /**
    * Crea un nuevo estudiante
    * POST /v1/estudiantes
    * 

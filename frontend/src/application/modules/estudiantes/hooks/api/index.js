@@ -5,6 +5,7 @@
  */
 
 export { useEstudiantesApi } from './useEstudiantesApi';
+export { useGetStudentById } from './useGetStudentById';
 export { useStudentCatalogApi } from './useStudentCatalogApi';
 export { useStudentGeographicApi } from './useStudentGeographicApi';
 export { useStudentReferenceApi } from './useStudentReferenceApi';

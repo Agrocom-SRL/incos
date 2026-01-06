@@ -88,8 +88,11 @@ export class BaseGetController {
       const result = await this.useCase.execute(id);
 
       // Formatear respuesta exitosa
-      return this.responseFormatter.success(res, {
-        [this.dataFieldName]: result,
+      // El result ya contiene la estructura completa (student, guardians, etc.)
+      // Lo envuelvemos en un objeto con el nombre del campo si es necesario
+      const responseData = this.dataFieldName ? { [this.dataFieldName]: result } : result;
+      
+      return this.responseFormatter.success(res, responseData, {
         message: `${this.resourceName.charAt(0).toUpperCase() + this.resourceName.slice(1)} obtenido correctamente`,
       });
     } catch (error) {
