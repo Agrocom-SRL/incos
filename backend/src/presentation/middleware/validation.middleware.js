@@ -1,4 +1,5 @@
 import { validationResult } from 'express-validator';
+import { ValidationError } from '../../domain/errors/AppError.js';
 
 /**
  * Factory function para crear el middleware de validación
@@ -7,7 +8,7 @@ import { validationResult } from 'express-validator';
  * @returns {Function} Middleware de validación
  * 
  * Middleware genérico para validación de datos
- * Formatea errores de express-validator según el estándar de la API
+ * Lanza ValidationError (de domain/errors) que será capturado por errorHandler
  *
  * Uso:
  * const validateRequest = createValidateRequest(logger);
@@ -29,17 +30,13 @@ export function createValidateRequest(logger) {
       console.error('Errores de validación:', JSON.stringify(errorDetails, null, 2));
       console.error('Body recibido:', JSON.stringify(req.body, null, 2));
 
-      return res.status(400).json({
-        success: false,
-        error: {
-          code: 'VALIDATION_ERROR',
-          message: 'Los datos proporcionados son inválidos',
-          details: errorDetails,
-        },
-        meta: {
-          timestamp: new Date().toISOString(),
-        },
-      });
+      // Lanzar ValidationError real (de domain/errors)
+      // El errorHandler lo capturará y ErrorFormatter lo formateará
+      const validationError = new ValidationError(
+        'Los datos proporcionados son inválidos',
+        errorDetails
+      );
+      return next(validationError);
     }
 
     next();

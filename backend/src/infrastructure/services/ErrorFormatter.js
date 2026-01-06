@@ -38,7 +38,7 @@ export class ErrorFormatter {
   /**
    * Formatea un error de validación para respuesta HTTP
    * 
-   * @param {Object} error - Error con propiedades statusCode y errors
+   * @param {ValidationError} error - Error de validación (de domain/errors)
    * @param {Object} req - Request de Express
    * @returns {Object} Respuesta formateada
    */
@@ -46,9 +46,9 @@ export class ErrorFormatter {
     return {
       success: false,
       error: {
-        code: 'VALIDATION_ERROR',
+        code: error.code || 'VALIDATION_ERROR',
         message: error.message || 'Los datos proporcionados son inválidos',
-        details: error.errors,
+        details: error.details || [],
       },
       meta: {
         timestamp: new Date().toISOString(),

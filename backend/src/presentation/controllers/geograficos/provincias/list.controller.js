@@ -30,11 +30,13 @@ export class ListProvinciasController extends BaseListController {
    * @param {Object} params - Dependencias inyectadas
    * @param {ListProvinciasUseCase} params.listProvinciasUseCase - Caso de uso para listar provincias
    * @param {ILogger} params.logger - Logger para registro de eventos
+   * @param {ResponseFormatter} params.responseFormatter - Formatter de respuestas exitosas
    */
-  constructor({ listProvinciasUseCase, logger }) {
+  constructor({ listProvinciasUseCase, logger, responseFormatter }) {
     super({
       useCase: listProvinciasUseCase,
       logger,
+      responseFormatter,
       resourceName: 'provincias',
       dataFieldName: 'provincias',
     });

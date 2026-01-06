@@ -30,11 +30,13 @@ export class ListMateriasController extends BaseListController {
    * @param {Object} params - Dependencias inyectadas
    * @param {ListMateriasUseCase} params.listMateriasUseCase - Caso de uso para listar materias
    * @param {ILogger} params.logger - Logger para registro de eventos
+   * @param {ResponseFormatter} params.responseFormatter - Formatter de respuestas exitosas
    */
-  constructor({ listMateriasUseCase, logger }) {
+  constructor({ listMateriasUseCase, logger, responseFormatter }) {
     super({
       useCase: listMateriasUseCase,
       logger,
+      responseFormatter,
       resourceName: 'materias',
       dataFieldName: 'materias',
     });

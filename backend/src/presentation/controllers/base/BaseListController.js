@@ -5,7 +5,7 @@
  * a todos los controladores de listado (países, departamentos, idiomas, etc.)
  * 
  * Responsabilidades:
- * - Extraer y validar parámetros de query (page, limit, search)
+ * - Extraer y normalizar parámetros de query usando ListRequestDTO
  * - Construir filtros básicos de búsqueda
  * - Ejecutar el caso de uso correspondiente
  * - Formatear respuesta JSON estandarizada
@@ -18,6 +18,7 @@
  * 
  * Clean Architecture:
  * - Presentation Layer: Maneja la comunicación HTTP (request/response)
+ * - Usa DTOs de Application Layer para transformar datos
  * - Depende de Use Cases (Application Layer) a través de abstracción
  * 
  * @abstract
@@ -33,24 +34,27 @@
  *   }
  * 
  *   // Opcional: Sobrescribir para agregar filtros específicos
- *   buildFilters(query) {
- *     const filters = super.buildFilters(query);
+ *   buildFilters(query, baseFilters) {
+ *     const specificFilters = {};
  *     if (query.codigoIso) {
- *       filters.codigoIso = query.codigoIso;
+ *       specificFilters.codigoIso = query.codigoIso;
  *     }
- *     return filters;
+ *     return specificFilters; // Solo retorna filtros específicos, los base ya están incluidos
  *   }
  * }
  */
+import { ListRequestDTO } from '../../../application/dtos/common/index.js';
+
 export class BaseListController {
   /**
    * @param {Object} params - Parámetros de configuración
    * @param {Object} params.useCase - Caso de uso a ejecutar (debe tener método execute(filters, page, limit))
    * @param {Object} params.logger - Logger para registro de eventos
+   * @param {Object} params.responseFormatter - Formatter de respuestas exitosas (inyectado)
    * @param {string} params.resourceName - Nombre del recurso en español (para logs y mensajes)
    * @param {string} params.dataFieldName - Nombre del campo en la respuesta del use case (ej: 'paises', 'departamentos')
    */
-  constructor({ useCase, logger, resourceName, dataFieldName }) {
+  constructor({ useCase, logger, responseFormatter, resourceName, dataFieldName }) {
     if (!useCase) {
       throw new Error('useCase es requerido');
     }
@@ -64,29 +68,33 @@ export class BaseListController {
       throw new Error('dataFieldName es requerido');
     }
 
+    if (!responseFormatter) {
+      throw new Error('responseFormatter es requerido');
+    }
+
     this.useCase = useCase;
     this.logger = logger;
+    this.responseFormatter = responseFormatter;
     this.resourceName = resourceName;
     this.dataFieldName = dataFieldName;
   }
 
   /**
-   * Construye los filtros básicos a partir de los query parameters
+   * Construye los filtros específicos adicionales a partir de los query parameters
    * 
    * Método template: Puede ser sobrescrito por subclases para agregar filtros específicos
    * 
+   * NOTA: Los filtros comunes (search) ya fueron extraídos por el DTO en handle().
+   * Este método solo debe agregar filtros específicos del módulo.
+   * 
    * @param {Object} query - Query parameters de Express (req.query)
-   * @returns {Object} Objeto de filtros para el use case
+   * @param {Object} baseFilters - Filtros base ya extraídos por el DTO (search, etc.)
+   * @returns {Object} Objeto con filtros específicos adicionales
    */
-  buildFilters(query) {
-    const filters = {};
-    
-    // Filtro de búsqueda general (común a todos los recursos)
-    if (query.search) {
-      filters.search = query.search;
-    }
-
-    return filters;
+  buildFilters(query, baseFilters = {}) {
+    // Por defecto, no agrega filtros específicos
+    // Las subclases pueden sobrescribir para agregar filtros específicos
+    return {};
   }
 
   /**
@@ -105,42 +113,45 @@ export class BaseListController {
    */
   async handle(req, res, next) {
     try {
-      // 1. Extraer y validar parámetros de query
-      const { page = 1, limit = 50 } = req.query;
+      // 1. Usar el DTO genérico UNA SOLA VEZ para normalizar query parameters
+      const { filters: baseFilters, page, limit } = ListRequestDTO.fromQuery(req.query);
       const userId = req.user?.id || req.user?.userId;
 
-      // 2. Logging de la petición
-      const filters = this.buildFilters(req.query);
+      // 2. Construir filtros específicos adicionales (si buildFilters fue sobrescrito)
+      const specificFilters = this.buildFilters(req.query, baseFilters);
+      
+      // Combinar filtros base con filtros específicos
+      const combinedFilters = { ...baseFilters, ...specificFilters };
+
+      // 3. Logging de la petición
       this.logger.info(`Request de listado de ${this.resourceName}`, {
         page,
         limit,
-        filters,
+        filters: combinedFilters,
         userId,
       });
 
-      // 3. Validar que el use case esté configurado
+      // 4. Validar que el use case esté configurado
       if (!this.useCase) {
-        throw new Error(`${this.useCase.constructor.name} no está configurado`);
+        throw new Error(`${this.useCase?.constructor?.name || 'UseCase'} no está configurado`);
       }
 
-      // 4. Ejecutar el caso de uso
-      const result = await this.useCase.execute(filters, page, limit);
+      // 5. Ejecutar el caso de uso
+      const result = await this.useCase.execute(combinedFilters, page, limit);
 
-      // 5. Formatear y enviar respuesta JSON estandarizada
-      res.status(200).json({
-        success: true,
-        data: result[this.dataFieldName] || [],
-        message: `Listado de ${this.resourceName} obtenido correctamente`,
-        pagination: {
+      // 6. Formatear y enviar respuesta JSON estandarizada usando el servicio inyectado
+      return this.responseFormatter.list(
+        res,
+        result[this.dataFieldName] || [],
+        {
           page: result.page,
           limit: result.limit,
           total: result.total,
           totalPages: result.totalPages,
         },
-        meta: {
-          timestamp: new Date().toISOString(),
-        },
-      });
+        this.resourceName,
+        req
+      );
     } catch (error) {
       // 6. Manejo de errores consistente
       this.logger.error(`Error al listar ${this.resourceName}`, {

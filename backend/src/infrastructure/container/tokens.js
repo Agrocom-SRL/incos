@@ -15,6 +15,7 @@ export const TOKENS = {
     // ============================================
     logger: 'logger',
     errorFormatter: 'errorFormatter',
+    responseFormatter: 'responseFormatter',
     validateRequest: 'validateRequest',
     fileUploadService: 'fileUploadService',
     fileStorageService: 'fileStorageService', // Futuro
@@ -94,8 +95,8 @@ export const TOKENS = {
     // MÓDULO ESTUDIANTES - USE CASES
     // ============================================
     est_listStudentsUseCase: 'estudiantes.listStudentsUseCase',
+    est_registerStudentUseCase: 'estudiantes.registerStudentUseCase',
     // TODO: Agregar otros Use Cases cuando se implementen sus endpoints
-    // est_registerStudentUseCase: 'estudiantes.registerStudentUseCase',
     // est_getStudentByIdUseCase: 'estudiantes.getStudentByIdUseCase',
     // est_updateStudentUseCase: 'estudiantes.updateStudentUseCase',
 
@@ -103,8 +104,8 @@ export const TOKENS = {
     // MÓDULO ESTUDIANTES - CONTROLLERS
     // ============================================
     est_listStudentsController: 'estudiantes.listStudentsController',
+    est_registerStudentController: 'estudiantes.registerStudentController',
     // TODO: Agregar otros Controllers cuando se implementen sus endpoints
-    // est_createStudentController: 'estudiantes.createStudentController',
     // est_getStudentByIdController: 'estudiantes.getStudentByIdController',
     // est_updateStudentController: 'estudiantes.updateStudentController',
 

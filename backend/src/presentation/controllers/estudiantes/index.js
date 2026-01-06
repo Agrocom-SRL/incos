@@ -2,8 +2,8 @@
 // CONTROLLERS IMPLEMENTADOS - ESTUDIANTES (CRUD básico)
 // ============================================
 export { ListStudentsController } from './estudiantes/list.controller.js';
+export { RegisterStudentController } from './estudiantes/register.controller.js';
 // TODO: Agregar otros controllers cuando se implementen sus endpoints
-// export { RegisterStudentController } from './estudiantes/register.controller.js';
 // export { GetStudentByIdController } from './estudiantes/get-by-id.controller.js';
 // export { UpdateStudentController } from './estudiantes/update.controller.js';
 // export { DeleteStudentController } from './estudiantes/delete.controller.js';

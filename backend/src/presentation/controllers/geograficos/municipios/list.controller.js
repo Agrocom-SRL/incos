@@ -30,11 +30,13 @@ export class ListMunicipiosController extends BaseListController {
    * @param {Object} params - Dependencias inyectadas
    * @param {ListMunicipiosUseCase} params.listMunicipiosUseCase - Caso de uso para listar municipios
    * @param {ILogger} params.logger - Logger para registro de eventos
+   * @param {ResponseFormatter} params.responseFormatter - Formatter de respuestas exitosas
    */
-  constructor({ listMunicipiosUseCase, logger }) {
+  constructor({ listMunicipiosUseCase, logger, responseFormatter }) {
     super({
       useCase: listMunicipiosUseCase,
       logger,
+      responseFormatter,
       resourceName: 'municipios',
       dataFieldName: 'municipios',
     });

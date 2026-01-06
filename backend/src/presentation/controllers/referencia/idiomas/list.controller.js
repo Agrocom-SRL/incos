@@ -30,11 +30,13 @@ export class ListIdiomasController extends BaseListController {
    * @param {Object} params - Dependencias inyectadas
    * @param {ListIdiomasUseCase} params.listIdiomasUseCase - Caso de uso para listar idiomas
    * @param {ILogger} params.logger - Logger para registro de eventos
+   * @param {ResponseFormatter} params.responseFormatter - Formatter de respuestas exitosas
    */
-  constructor({ listIdiomasUseCase, logger }) {
+  constructor({ listIdiomasUseCase, logger, responseFormatter }) {
     super({
       useCase: listIdiomasUseCase,
       logger,
+      responseFormatter,
       resourceName: 'idiomas',
       dataFieldName: 'idiomas',
     });

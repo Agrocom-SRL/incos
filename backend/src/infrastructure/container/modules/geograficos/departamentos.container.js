@@ -48,6 +48,7 @@ export function registerDepartamentosResource(container) {
             new ListDepartamentosController({
                 listDepartamentosUseCase: c.resolve(TOKENS.geo_listDepartamentosUseCase),
                 logger: c.resolve(TOKENS.logger),
+                responseFormatter: c.resolve(TOKENS.responseFormatter),
             }),
         { singleton: true }
     );

@@ -46,11 +46,13 @@ export class ListPaisesController extends BaseListController {
    * @param {Object} params - Dependencias inyectadas
    * @param {ListPaisesUseCase} params.listPaisesUseCase - Caso de uso para listar países
    * @param {ILogger} params.logger - Logger para registro de eventos
+   * @param {ResponseFormatter} params.responseFormatter - Formatter de respuestas exitosas
    */
-  constructor({ listPaisesUseCase, logger }) {
+  constructor({ listPaisesUseCase, logger, responseFormatter }) {
     super({
       useCase: listPaisesUseCase,
       logger,
+      responseFormatter,
       resourceName: 'países',
       dataFieldName: 'paises',
     });

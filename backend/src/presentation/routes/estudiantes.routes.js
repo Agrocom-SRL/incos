@@ -1,5 +1,6 @@
 import express from 'express';
 import { listValidator } from '../validators/common/index.js';
+import { registerStudentValidator } from '../validators/estudiantes/index.js';
 
 /**
  * Construye el router del módulo Estudiantes
@@ -39,22 +40,38 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
      */
     router.get(
         '/',
-        listValidator,
-        validateRequest,
-        (req, res, next) => controllers.listStudentsController.handle(req, res, next)
+        listValidator, // 1. Validator primero
+        validateRequest, // 2. Middleware que procesa errores
+        (req, res, next) => controllers.listStudentsController.handle(req, res, next) // 3. Controller al final
+    );
+
+    /**
+     * POST /api/v1/estudiantes
+     * Registrar un nuevo estudiante con todos sus datos relacionados
+     * 
+     * Body:
+     * - student: Datos del estudiante principal
+     * - academicData: Datos académicos (opcional)
+     * - guardians: Array de apoderados (opcional)
+     * - disabilities: Array de discapacidades (opcional)
+     * - origins: Array de orígenes (opcional)
+     * - documentation: Objeto con entregas de documentos (opcional, keys: doc_1, doc_2, etc.)
+     * 
+     * Orden de middlewares:
+     * 1. registerStudentValidator - Valida estructura y tipos de datos del body
+     * 2. validateRequest - Procesa errores de validación y retorna respuesta si hay errores
+     * 3. controller - Se ejecuta solo si la validación pasó
+     */
+    router.post(
+        '/',
+        registerStudentValidator,  // 1. Validator primero
+        validateRequest,            // 2. Middleware que procesa errores
+        (req, res, next) => controllers.registerStudentController.handle(req, res, next)  // 3. Controller al final
     );
 
     // ============================================
     // ENDPOINTS FUTUROS (TODO: Implementar cuando se necesiten)
     // ============================================
-
-    // POST / - Crear estudiante
-    // router.post(
-    //     '/',
-    //     registerStudentValidator,
-    //     validateRequest,
-    //     (req, res, next) => controllers.createStudentController.handle(req, res, next)
-    // );
 
     // GET /:id - Obtener estudiante por ID
     // router.get(

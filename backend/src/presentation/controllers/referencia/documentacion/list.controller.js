@@ -30,11 +30,13 @@ export class ListDocumentacionController extends BaseListController {
    * @param {Object} params - Dependencias inyectadas
    * @param {ListDocumentacionUseCase} params.listDocumentacionUseCase - Caso de uso para listar tipos de documentación
    * @param {ILogger} params.logger - Logger para registro de eventos
+   * @param {ResponseFormatter} params.responseFormatter - Formatter de respuestas exitosas
    */
-  constructor({ listDocumentacionUseCase, logger }) {
+  constructor({ listDocumentacionUseCase, logger, responseFormatter }) {
     super({
       useCase: listDocumentacionUseCase,
       logger,
+      responseFormatter,
       resourceName: 'tipos de documentación',
       dataFieldName: 'documentacion',
     });

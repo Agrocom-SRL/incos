@@ -10,7 +10,7 @@ import { serverConfig } from '../config/server.config.js';
 // Middleware de presentación (factory functions)
 import { createHttpLogger } from '../../presentation/middleware/logger.middleware.js';
 import { createErrorHandler } from '../../presentation/middleware/errorHandler.middleware.js';
-import notFoundHandler from '../../presentation/middleware/notFound.middleware.js';
+import { createNotFoundHandler } from '../../presentation/middleware/notFound.middleware.js';
 
 /**
  * Configuración de middleware de Express
@@ -95,7 +95,8 @@ export function setupMiddleware(app, logger) {
  * @param {ErrorFormatter} errorFormatter - ErrorFormatter inyectado
  */
 export function setupErrorHandling(app, logger, errorFormatter) {
-    // 404 handler
+    // 404 handler (lanza NotFoundError que será capturado por errorHandler)
+    const notFoundHandler = createNotFoundHandler();
     app.use(notFoundHandler);
 
     // Error handler global (con logger y errorFormatter inyectados)

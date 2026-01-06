@@ -56,6 +56,7 @@ export function registerIdiomasResource(container) {
             new ListIdiomasController({
                 listIdiomasUseCase: c.resolve(TOKENS.ref_listIdiomasUseCase),
                 logger: c.resolve(TOKENS.logger),
+                responseFormatter: c.resolve(TOKENS.responseFormatter),
             }),
         { singleton: true }
     );

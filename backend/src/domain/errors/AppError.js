@@ -1,10 +1,18 @@
 /**
  * Clase base para errores personalizados de la aplicación
  * 
- * Ubicación: domain/errors (capa de dominio)
+ * Ubicación: domain/errors (capa de dominio - más interna)
  * 
- * Los errores de dominio son parte del modelo de negocio y pueden ser
- * lanzados desde cualquier capa (domain, application, infrastructure).
+ * En Clean Architecture, los errores están en Domain porque:
+ * - Domain es la capa más interna, sin dependencias externas
+ * - Todas las demás capas (Application, Infrastructure, Presentation) pueden depender de Domain
+ * - Los errores son conceptos del dominio de negocio (NotFoundError, ValidationError, etc.)
+ * 
+ * Estos errores pueden ser lanzados desde cualquier capa:
+ * - Domain: Reglas de negocio
+ * - Application: Casos de uso
+ * - Infrastructure: Repositorios, servicios
+ * - Presentation: Middlewares, controllers
  */
 export class AppError extends Error {
   constructor(message, statusCode = 500, code = 'INTERNAL_ERROR') {

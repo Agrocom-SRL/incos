@@ -30,11 +30,13 @@ export class ListDiscapacidadController extends BaseListController {
    * @param {Object} params - Dependencias inyectadas
    * @param {ListDiscapacidadUseCase} params.listDiscapacidadUseCase - Caso de uso para listar tipos de discapacidad
    * @param {ILogger} params.logger - Logger para registro de eventos
+   * @param {ResponseFormatter} params.responseFormatter - Formatter de respuestas exitosas
    */
-  constructor({ listDiscapacidadUseCase, logger }) {
+  constructor({ listDiscapacidadUseCase, logger, responseFormatter }) {
     super({
       useCase: listDiscapacidadUseCase,
       logger,
+      responseFormatter,
       resourceName: 'tipos de discapacidad',
       dataFieldName: 'discapacidades',
     });

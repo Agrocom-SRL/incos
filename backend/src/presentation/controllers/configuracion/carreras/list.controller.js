@@ -30,11 +30,13 @@ export class ListCarrerasController extends BaseListController {
    * @param {Object} params - Dependencias inyectadas
    * @param {ListCarrerasUseCase} params.listCarrerasUseCase - Caso de uso para listar carreras
    * @param {ILogger} params.logger - Logger para registro de eventos
+   * @param {ResponseFormatter} params.responseFormatter - Formatter de respuestas exitosas
    */
-  constructor({ listCarrerasUseCase, logger }) {
+  constructor({ listCarrerasUseCase, logger, responseFormatter }) {
     super({
       useCase: listCarrerasUseCase,
       logger,
+      responseFormatter,
       resourceName: 'carreras',
       dataFieldName: 'carreras',
     });

@@ -20,6 +20,7 @@
 import { TOKENS } from '../tokens.js';
 import { logger } from '../../../infrastructure/services/WinstonLoggerAdapter.js';
 import { errorFormatter } from '../../services/ErrorFormatter.js';
+import { responseFormatter } from '../../services/ResponseFormatter.js';
 import { createValidateRequest } from '../../../presentation/middleware/validation.middleware.js';
 import { fileUploadService } from '../../services/FileUploadService.js';
 
@@ -42,6 +43,17 @@ export function registerServicesModule(container) {
         container.register(
             TOKENS.errorFormatter,
             () => errorFormatter,
+            { singleton: true }
+        );
+    }
+
+    // ============================================
+    // SUCCESS RESPONSE FORMATTING
+    // ============================================
+    if (!container.has(TOKENS.responseFormatter)) {
+        container.register(
+            TOKENS.responseFormatter,
+            () => responseFormatter,
             { singleton: true }
         );
     }

@@ -48,6 +48,7 @@ export function registerTiposParentescoResource(container) {
             new ListTiposParentescoController({
                 listTiposParentescoUseCase: c.resolve(TOKENS.ref_listTiposParentescoUseCase),
                 logger: c.resolve(TOKENS.logger),
+                responseFormatter: c.resolve(TOKENS.responseFormatter),
             }),
         { singleton: true }
     );

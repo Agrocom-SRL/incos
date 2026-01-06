@@ -48,6 +48,7 @@ export function registerDocumentacionResource(container) {
             new ListDocumentacionController({
                 listDocumentacionUseCase: c.resolve(TOKENS.ref_listDocumentacionUseCase),
                 logger: c.resolve(TOKENS.logger),
+                responseFormatter: c.resolve(TOKENS.responseFormatter),
             }),
         { singleton: true }
     );

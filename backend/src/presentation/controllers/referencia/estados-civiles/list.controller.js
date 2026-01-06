@@ -30,11 +30,13 @@ export class ListEstadosCivilesController extends BaseListController {
    * @param {Object} params - Dependencias inyectadas
    * @param {ListEstadosCivilesUseCase} params.listEstadosCivilesUseCase - Caso de uso para listar estados civiles
    * @param {ILogger} params.logger - Logger para registro de eventos
+   * @param {ResponseFormatter} params.responseFormatter - Formatter de respuestas exitosas
    */
-  constructor({ listEstadosCivilesUseCase, logger }) {
+  constructor({ listEstadosCivilesUseCase, logger, responseFormatter }) {
     super({
       useCase: listEstadosCivilesUseCase,
       logger,
+      responseFormatter,
       resourceName: 'estados civiles',
       dataFieldName: 'estadosCiviles',
     });

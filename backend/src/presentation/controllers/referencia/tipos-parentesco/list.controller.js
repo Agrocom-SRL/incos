@@ -30,11 +30,13 @@ export class ListTiposParentescoController extends BaseListController {
    * @param {Object} params - Dependencias inyectadas
    * @param {ListTiposParentescoUseCase} params.listTiposParentescoUseCase - Caso de uso para listar tipos de parentesco
    * @param {ILogger} params.logger - Logger para registro de eventos
+   * @param {ResponseFormatter} params.responseFormatter - Formatter de respuestas exitosas
    */
-  constructor({ listTiposParentescoUseCase, logger }) {
+  constructor({ listTiposParentescoUseCase, logger, responseFormatter }) {
     super({
       useCase: listTiposParentescoUseCase,
       logger,
+      responseFormatter,
       resourceName: 'tipos de parentesco',
       dataFieldName: 'tiposParentesco',
     });

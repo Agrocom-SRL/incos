@@ -48,6 +48,7 @@ export function registerDiscapacidadResource(container) {
             new ListDiscapacidadController({
                 listDiscapacidadUseCase: c.resolve(TOKENS.ref_listDiscapacidadUseCase),
                 logger: c.resolve(TOKENS.logger),
+                responseFormatter: c.resolve(TOKENS.responseFormatter),
             }),
         { singleton: true }
     );

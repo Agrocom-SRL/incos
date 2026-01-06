@@ -30,11 +30,13 @@ export class ListDepartamentosController extends BaseListController {
    * @param {Object} params - Dependencias inyectadas
    * @param {ListDepartamentosUseCase} params.listDepartamentosUseCase - Caso de uso para listar departamentos
    * @param {ILogger} params.logger - Logger para registro de eventos
+   * @param {ResponseFormatter} params.responseFormatter - Formatter de respuestas exitosas
    */
-  constructor({ listDepartamentosUseCase, logger }) {
+  constructor({ listDepartamentosUseCase, logger, responseFormatter }) {
     super({
       useCase: listDepartamentosUseCase,
       logger,
+      responseFormatter,
       resourceName: 'departamentos',
       dataFieldName: 'departamentos',
     });

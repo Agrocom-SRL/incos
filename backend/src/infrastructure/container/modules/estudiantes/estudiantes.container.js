@@ -14,7 +14,8 @@
 
 import { TOKENS } from '../../tokens.js';
 import { ListStudentsUseCase } from '../../../../application/use-cases/estudiantes/ListStudentsUseCase.js';
-import { ListStudentsController } from '../../../../presentation/controllers/estudiantes/index.js';
+import { RegisterStudentUseCase } from '../../../../application/use-cases/estudiantes/RegisterStudentUseCase.js';
+import { ListStudentsController, RegisterStudentController } from '../../../../presentation/controllers/estudiantes/index.js';
 import { buildEstudiantesRouter } from '../../../../presentation/routes/estudiantes.routes.js';
 
 /**
@@ -37,26 +38,22 @@ export function registerEstudiantesResource(container) {
         { singleton: true }
     );
 
+    container.register(
+        TOKENS.est_registerStudentUseCase,
+        (c) =>
+            new RegisterStudentUseCase({
+                studentRepository: c.resolve(TOKENS.studentRepository),
+                studentAcademicDataRepository: c.resolve(TOKENS.studentAcademicDataRepository),
+                studentGuardianRepository: c.resolve(TOKENS.studentGuardianRepository),
+                studentDisabilityRepository: c.resolve(TOKENS.studentDisabilityRepository),
+                studentOriginRepository: c.resolve(TOKENS.studentOriginRepository),
+                studentDocumentDeliveryRepository: c.resolve(TOKENS.studentDocumentDeliveryRepository),
+                logger: c.resolve(TOKENS.logger),
+            }),
+        { singleton: true }
+    );
+
     // TODO: Agregar otros Use Cases cuando se implementen sus endpoints
-    // container.register(
-    //     TOKENS.est_registerStudentUseCase,
-    //     (c) => new RegisterStudentUseCase({
-    //         studentRepository: c.resolve(TOKENS.studentRepository),
-    //         studentAcademicDataRepository: c.resolve(TOKENS.studentAcademicDataRepository),
-    //         studentDocumentRepository: c.resolve(TOKENS.studentDocumentRepository),
-    //         studentDocumentDeliveryRepository: c.resolve(TOKENS.studentDocumentDeliveryRepository),
-    //         studentDisabilityRepository: c.resolve(TOKENS.studentDisabilityRepository),
-    //         studentOriginRepository: c.resolve(TOKENS.studentOriginRepository),
-    //         studentGuardianRepository: c.resolve(TOKENS.studentGuardianRepository),
-    //         documentacionRepository: c.resolve(TOKENS.documentacionRepository),
-    //         configuracionSistemaRepository: c.resolve(TOKENS.configuracionSistemaRepository),
-    //         managementRepository: c.resolve(TOKENS.managementRepository),
-    //         generateCompromisoActaUseCase: c.resolve(TOKENS.est_generateCompromisoActaUseCase),
-    //         studentValidator: c.resolve(TOKENS.est_studentValidator),
-    //         logger: c.resolve(TOKENS.logger),
-    //     }),
-    //     { singleton: true }
-    // );
 
     // ============================================
     // CONTROLLERS
@@ -67,19 +64,23 @@ export function registerEstudiantesResource(container) {
             new ListStudentsController({
                 listStudentsUseCase: c.resolve(TOKENS.est_listStudentsUseCase),
                 logger: c.resolve(TOKENS.logger),
+                responseFormatter: c.resolve(TOKENS.responseFormatter),
+            }),
+        { singleton: true }
+    );
+
+    container.register(
+        TOKENS.est_registerStudentController,
+        (c) =>
+            new RegisterStudentController({
+                registerStudentUseCase: c.resolve(TOKENS.est_registerStudentUseCase),
+                logger: c.resolve(TOKENS.logger),
+                responseFormatter: c.resolve(TOKENS.responseFormatter),
             }),
         { singleton: true }
     );
 
     // TODO: Agregar otros Controllers cuando se implementen sus endpoints
-    // container.register(
-    //     TOKENS.est_registerStudentController,
-    //     (c) => new RegisterStudentController({
-    //         registerStudentUseCase: c.resolve(TOKENS.est_registerStudentUseCase),
-    //         logger: c.resolve(TOKENS.logger),
-    //     }),
-    //     { singleton: true }
-    // );
 
     // ============================================
     // ROUTER
@@ -89,8 +90,8 @@ export function registerEstudiantesResource(container) {
         (c) => {
             const controllers = {
                 listStudentsController: c.resolve(TOKENS.est_listStudentsController),
+                registerStudentController: c.resolve(TOKENS.est_registerStudentController),
                 // TODO: Agregar otros controllers cuando se implementen sus rutas
-                // registerStudentController: c.resolve(TOKENS.est_registerStudentController),
                 // getStudentByIdController: c.resolve(TOKENS.est_getStudentByIdController),
                 // updateStudentController: c.resolve(TOKENS.est_updateStudentController),
             };

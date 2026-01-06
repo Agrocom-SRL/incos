@@ -17,6 +17,8 @@
  * const errorHandler = createErrorHandler(logger, errorFormatter);
  * app.use(errorHandler); // Al final de todas las rutas
  */
+import { ValidationError } from '../../domain/errors/AppError.js';
+
 export function createErrorHandler(logger, errorFormatter) {
   return function errorHandler(err, req, res, next) {
     // Extraer información del error para logging
@@ -24,13 +26,14 @@ export function createErrorHandler(logger, errorFormatter) {
     logger.error('Error en errorHandler:', errorInfo);
 
     // Error operacional conocido (AppError con isOperational = true)
+    // Esto incluye: NotFoundError, UnauthorizedError, ForbiddenError, ConflictError, etc.
     if (err.isOperational && err.statusCode < 500) {
       const response = errorFormatter.formatOperationalError(err, req);
       return res.status(err.statusCode).json(response);
     }
 
-    // Error de validación de express-validator (si viene después del middleware de validación)
-    if (err.statusCode === 400 && err.errors) {
+    // ValidationError específico (tiene details en lugar de errors)
+    if (err instanceof ValidationError) {
       const response = errorFormatter.formatValidationError(err, req);
       return res.status(400).json(response);
     }

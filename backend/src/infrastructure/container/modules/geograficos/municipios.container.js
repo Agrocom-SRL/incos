@@ -48,6 +48,7 @@ export function registerMunicipiosResource(container) {
             new ListMunicipiosController({
                 listMunicipiosUseCase: c.resolve(TOKENS.geo_listMunicipiosUseCase),
                 logger: c.resolve(TOKENS.logger),
+                responseFormatter: c.resolve(TOKENS.responseFormatter),
             }),
         { singleton: true }
     );
