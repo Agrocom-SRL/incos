@@ -226,8 +226,14 @@ export const registerStudentValidator = [
 
   body('tipoOrigen')
     .optional()
-    .isIn(['BOLIVIANA', 'EXTRANJERA'])
-    .withMessage('Tipo de origen debe ser BOLIVIANA o EXTRANJERA'),
+    .custom((value) => {
+      // Acepta valores numéricos (0, 1, 2) o strings del ENUM
+      const validValues = ['BOLIVIANA', 'EXTRANJERA', 'DOBLE_NACIONALIDAD', 0, 1, 2, '0', '1', '2'];
+      if (!validValues.includes(value)) {
+        throw new Error('Tipo de origen debe ser: 0 o BOLIVIANA, 1 o EXTRANJERA, 2 o DOBLE_NACIONALIDAD');
+      }
+      return true;
+    }),
 
   // ============================================
   // CONTACTOS DE EMERGENCIA (OPCIONAL - Array)

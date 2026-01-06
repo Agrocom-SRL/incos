@@ -31,6 +31,7 @@ export class RegisterStudentUseCase {
    * @param {Object} params.studentDisabilityRepository - Repositorio de discapacidades
    * @param {Object} params.studentOriginRepository - Repositorio de orígenes
    * @param {Object} params.studentDocumentDeliveryRepository - Repositorio de entregas de documentos
+   * @param {Object} params.configuracionSistemaRepository - Repositorio de configuración del sistema
    * @param {ILogger} params.logger - Logger para registro de eventos
    */
   constructor({
@@ -40,6 +41,7 @@ export class RegisterStudentUseCase {
     studentDisabilityRepository,
     studentOriginRepository,
     studentDocumentDeliveryRepository,
+    configuracionSistemaRepository,
     logger,
   }) {
     this.studentRepository = studentRepository;
@@ -48,7 +50,67 @@ export class RegisterStudentUseCase {
     this.studentDisabilityRepository = studentDisabilityRepository;
     this.studentOriginRepository = studentOriginRepository;
     this.studentDocumentDeliveryRepository = studentDocumentDeliveryRepository;
+    this.configuracionSistemaRepository = configuracionSistemaRepository;
     this.logger = logger;
+  }
+
+  /**
+   * Genera el código del estudiante basado en la gestión actual y el correlativo
+   * Formato: YYYYNNNN (ej: 20260001)
+   * 
+   * @param {number} userId - ID del usuario que realiza el registro
+   * @returns {Promise<string>} Código del estudiante generado
+   */
+  async generateStudentCode(userId = null) {
+    // 1. Obtener la gestión actual
+    const gestionActualConfig = await this.configuracionSistemaRepository.findByClave(
+      'gestion_actual'
+    );
+
+    if (!gestionActualConfig) {
+      throw new Error('No se encontró la configuración de gestión actual');
+    }
+
+    const gestionActual = gestionActualConfig.value;
+    this.logger.info('[Estudiantes] Gestión actual obtenida', { gestionActual });
+
+    // 2. Obtener el correlativo de la gestión actual
+    const claveCorrelativo = `admision_gestion_${gestionActual}`;
+    const correlativoConfig = await this.configuracionSistemaRepository.findByClave(
+      claveCorrelativo
+    );
+
+    if (!correlativoConfig) {
+      throw new Error(
+        `No se encontró la configuración de correlativo para la gestión ${gestionActual}`
+      );
+    }
+
+    // 3. Incrementar el correlativo
+    const nuevoCorrelativo = parseInt(correlativoConfig.value, 10) + 1;
+    this.logger.info('[Estudiantes] Nuevo correlativo calculado', {
+      gestion: gestionActual,
+      correlativoAnterior: correlativoConfig.value,
+      nuevoCorrelativo,
+    });
+
+    // 4. Actualizar el correlativo en la base de datos
+    await this.configuracionSistemaRepository.update(
+      correlativoConfig.id,
+      { value: nuevoCorrelativo.toString() },
+      userId
+    );
+
+    // 5. Generar el código del estudiante: YYYYNNNN (rellenar con ceros a la izquierda)
+    const codigoEstudiante = `${gestionActual}${nuevoCorrelativo.toString().padStart(4, '0')}`;
+    
+    this.logger.info('[Estudiantes] Código de estudiante generado', {
+      codigoEstudiante,
+      gestion: gestionActual,
+      correlativo: nuevoCorrelativo,
+    });
+
+    return codigoEstudiante;
   }
 
   /**
@@ -85,11 +147,21 @@ export class RegisterStudentUseCase {
         }
       }
 
-      // 2. Crear el estudiante principal
-      const student = await this.studentRepository.create(data.student, userId);
-      this.logger.info('[Estudiantes] Estudiante creado', { studentId: student.id });
+      // 2. Generar el código del estudiante
+      const studentCode = await this.generateStudentCode(userId);
 
-      // 3. Crear datos académicos (si existen)
+      // 3. Crear el estudiante principal con el código generado
+      const studentData = {
+        ...data.student,
+        studentCode, // Usar studentCode (dominio) en vez de codigoEstudiante (base de datos)
+      };
+      const student = await this.studentRepository.create(studentData, userId);
+      this.logger.info('[Estudiantes] Estudiante creado', { 
+        studentId: student.id,
+        studentCode: student.studentCode,
+      });
+
+      // 4. Crear datos académicos (si existen)
       let academicData = null;
       if (data.academicData) {
         const academicDataToCreate = {
@@ -106,7 +178,7 @@ export class RegisterStudentUseCase {
         });
       }
 
-      // 4. Crear apoderados (múltiples)
+      // 5. Crear apoderados (múltiples)
       const guardians = [];
       if (data.guardians && Array.isArray(data.guardians)) {
         for (const guardianData of data.guardians) {
@@ -126,7 +198,7 @@ export class RegisterStudentUseCase {
         });
       }
 
-      // 5. Crear discapacidades (múltiples)
+      // 6. Crear discapacidades (múltiples)
       const disabilities = [];
       if (data.disabilities && Array.isArray(data.disabilities)) {
         for (const disabilityData of data.disabilities) {
@@ -146,7 +218,7 @@ export class RegisterStudentUseCase {
         });
       }
 
-      // 6. Crear orígenes (múltiples)
+      // 7. Crear orígenes (múltiples)
       const origins = [];
       if (data.origins && Array.isArray(data.origins)) {
         for (const originData of data.origins) {
@@ -166,7 +238,7 @@ export class RegisterStudentUseCase {
         });
       }
 
-      // 7. Crear entregas de documentos (múltiples)
+      // 8. Crear entregas de documentos (múltiples)
       const documentDeliveries = [];
       if (data.documentation && typeof data.documentation === 'object') {
         // data.documentation es un objeto con keys como 'doc_1', 'doc_2', etc.
@@ -199,7 +271,7 @@ export class RegisterStudentUseCase {
         });
       }
 
-      // 8. Retornar el estudiante creado con todos sus datos relacionados
+      // 9. Retornar el estudiante creado con todos sus datos relacionados
       const result = {
         student: student.toPlainObject ? student.toPlainObject() : student,
         academicData: academicData

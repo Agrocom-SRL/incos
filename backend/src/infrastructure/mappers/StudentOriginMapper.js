@@ -22,6 +22,56 @@ import { BaseMapper } from './BaseMapper.js';
  */
 export class StudentOriginMapper {
   /**
+   * Convierte un valor numérico o texto de tipo de origen a su valor ENUM correspondiente
+   * 
+   * @param {number|string} value - Valor numérico (0, 1, 2) o texto del ENUM
+   * @returns {string} Valor del ENUM: 'BOLIVIANA', 'EXTRANJERA', 'DOBLE_NACIONALIDAD'
+   */
+  static normalizeOriginType(value) {
+    // Si es null o undefined, retornar valor por defecto
+    if (value === null || value === undefined) {
+      return 'BOLIVIANA';
+    }
+
+    // Si ya es un valor válido del ENUM, retornarlo directamente
+    const enumValues = ['BOLIVIANA', 'EXTRANJERA', 'DOBLE_NACIONALIDAD'];
+    if (enumValues.includes(String(value).toUpperCase())) {
+      return String(value).toUpperCase();
+    }
+
+    // Convertir a número si es string, manejar espacios y otros casos
+    let numericValue;
+    if (typeof value === 'string') {
+      // Limpiar espacios y convertir
+      const cleaned = value.trim();
+      numericValue = parseInt(cleaned, 10);
+      // Si parseInt falla (devuelve NaN), intentar comparar directamente
+      if (isNaN(numericValue)) {
+        // Si no es un número válido, retornar por defecto
+        return 'BOLIVIANA';
+      }
+    } else {
+      numericValue = Number(value);
+      // Si no es un número válido, retornar por defecto
+      if (isNaN(numericValue)) {
+        return 'BOLIVIANA';
+      }
+    }
+    
+    // Mapear valores numéricos a ENUM
+    switch (numericValue) {
+      case 0:
+        return 'BOLIVIANA';
+      case 1:
+        return 'EXTRANJERA';
+      case 2:
+        return 'DOBLE_NACIONALIDAD';
+      default:
+        return 'BOLIVIANA'; // Valor por defecto si no coincide
+    }
+  }
+
+  /**
    * Convierte un modelo Sequelize a entidad de dominio
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de StudentOrigin
    * 
@@ -68,7 +118,7 @@ export class StudentOriginMapper {
       ciudadNacimiento: data.birthCity || null,
       idiomaMaternoId: data.motherTongueId || null,
       idiomaSecundarioId: data.secondaryLanguageId || null,
-      tipoOrigen: data.originType || 'BOLIVIANA',
+      tipoOrigen: this.normalizeOriginType(data.originType),
       esPrincipal: data.isPrincipal !== undefined ? data.isPrincipal : true,
     };
   }
@@ -106,7 +156,7 @@ export class StudentOriginMapper {
       updateData.idiomaSecundarioId = data.secondaryLanguageId || null;
     }
     if (data.originType !== undefined) {
-      updateData.tipoOrigen = data.originType;
+      updateData.tipoOrigen = this.normalizeOriginType(data.originType);
     }
     if (data.isPrincipal !== undefined) {
       updateData.esPrincipal = data.isPrincipal;

@@ -152,8 +152,9 @@ export class RegisterStudentRequestDTO {
         : [];
 
     // 4. Orígenes (array, opcional)
-    const origins =
-      paisId || ciudadNacimiento || idiomaMaternoId || idiomaSecundarioId || tipoOrigen
+    // IMPORTANTE: tipoOrigen puede ser 0 (BOLIVIANA), que es falsy, por lo que debemos verificar explícitamente !== undefined
+    const hasOriginData = paisId || ciudadNacimiento || idiomaMaternoId || idiomaSecundarioId || (tipoOrigen !== undefined && tipoOrigen !== null);
+    const origins = hasOriginData
         ? [
             {
               countryId: paisId,
@@ -161,7 +162,7 @@ export class RegisterStudentRequestDTO {
               birthCity: ciudadNacimiento,
               motherTongueId: idiomaMaternoId,
               secondaryLanguageId: idiomaSecundarioId,
-              originType: tipoOrigen,
+              originType: tipoOrigen, // Puede ser 0, 1, 2 o string del ENUM
               isPrincipal: true, // Asumimos que el primer origen es principal
             },
           ]
