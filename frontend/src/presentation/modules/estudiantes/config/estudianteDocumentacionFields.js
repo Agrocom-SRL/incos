@@ -10,15 +10,36 @@
  * (Application Layer). Este archivo solo genera la configuración de campos (Presentation Layer).
  * 
  * Estructura de cada campo:
- * - name: Nombre del campo (debe coincidir con el nombre en el backend)
+ * - name: Nombre del campo en formato de array para campos anidados
+ *   Ejemplo: ['documentacion', 1, 'entregado'] para documentacion[1].entregado
+ *   Esto permite que los datos se guarden como un array multidimensional en el formulario
  * - label: Etiqueta visible para el usuario
- * - type: Tipo de campo (checkbox para marcar documentos entregados)
+ * - type: Tipo de campo (documento - componente compuesto)
  * - required: Si el campo es obligatorio (basado en documento.required)
  * - span: Ancho del campo en columnas (12 = 50%, 24 = 100%)
  * - documentacionId: ID del documento de referencia
  * - description: Descripción del documento
  * - acceptsPhotocopy: Si acepta fotocopia
  * - esOriginal: Si debe ser original
+ * 
+ * Estructura de datos resultante:
+ * Los datos se guardarán en el formato:
+ * {
+ *   documentacion: {
+ *     1: {
+ *       entregado: true,
+ *       en_tramite: false,
+ *       observaciones: "...",
+ *       es_original: true
+ *     },
+ *     2: {
+ *       entregado: false,
+ *       en_tramite: true,
+ *       observaciones: "...",
+ *       es_original: false
+ *     }
+ *   }
+ * }
  */
 
 /**
@@ -35,8 +56,13 @@
  * @returns {Object} Configuración del campo de tipo documento
  */
 const createCampoDocumento = (documento) => {
+  // Usar estructura de array para que los datos se guarden como documentacion[id]
+  // Esto permite que el backend reciba un array multidimensional
+  // Formato: ['documentacion', id, 'campo']
+  const basePath = ['documentacion', documento.id];
+
   return {
-    name: `documento_${documento.id}`,
+    name: basePath, // Array notation para Ant Design Form
     type: 'documento', // Tipo especial que se renderiza con DocumentoItem
     required: documento.required || false,
     span: 12, // Ocupa todo el ancho

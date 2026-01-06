@@ -36,11 +36,20 @@ import { useMemo } from 'react';
  */
 export const useDocumentoItem = (documento) => {
   /**
-   * Nombre del campo en el formulario
+   * Base path para los campos del documento usando array notation
+   * Formato: ['documentacion', id] para que los datos se guarden como documentacion[id]
+   */
+  const basePath = useMemo(() => {
+    return ['documentacion', documento.id];
+  }, [documento.id]);
+
+  /**
+   * Nombre del campo principal (entregado) en el formulario
+   * Formato: ['documentacion', id, 'entregado']
    */
   const fieldName = useMemo(() => {
-    return `documento_${documento.id}`;
-  }, [documento.id]);
+    return [...basePath, 'entregado'];
+  }, [basePath]);
 
   /**
    * Título del documento (sin incluir "Requerido" en el texto, se muestra como icono)
@@ -77,24 +86,27 @@ export const useDocumentoItem = (documento) => {
 
   /**
    * Nombre del campo para en_tramite
+   * Formato: ['documentacion', id, 'en_tramite']
    */
   const fieldNameEnTramite = useMemo(() => {
-    return `documento_${documento.id}_en_tramite`;
-  }, [documento.id]);
+    return [...basePath, 'en_tramite'];
+  }, [basePath]);
 
   /**
    * Nombre del campo para observaciones
+   * Formato: ['documentacion', id, 'observaciones']
    */
   const fieldNameObservaciones = useMemo(() => {
-    return `documento_${documento.id}_observaciones`;
-  }, [documento.id]);
+    return [...basePath, 'observaciones'];
+  }, [basePath]);
 
   /**
    * Nombre del campo para es_original
+   * Formato: ['documentacion', id, 'es_original']
    */
   const fieldNameEsOriginal = useMemo(() => {
-    return `documento_${documento.id}_es_original`;
-  }, [documento.id]);
+    return [...basePath, 'es_original'];
+  }, [basePath]);
 
   /**
    * Determina si debe mostrar el campo es_original

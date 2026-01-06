@@ -15,7 +15,7 @@
  * - Organism maneja: funcionalidad (wizard, pasos, validación, guardado)
  */
 
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Form } from 'antd';
 import { PageTemplate } from '@templates';
@@ -24,9 +24,7 @@ import { PageHeader } from '@molecules';
 import { 
   useStudentRegisterContext, 
   useEstudianteGeographicFormLogic,
-  useContactosEmergenciaDinamicos,
   useEstudianteWizardTitles,
-  useDocumentacionDinamica
 } from '@application-estudiantes/hooks';
 import { 
   createEstudianteWizardSteps, 
@@ -53,12 +51,20 @@ const EstudiantesRegister = () => {
     minAge,
     handleFinish,
     handleSave,
+    registerForm, // Función para registrar el formulario en el contexto
     
     // Datos del contexto
     paises = [],
     departamentos = [],
     provinciasResidencia = [], // Provincias de residencia (Santa Cruz)
-    documentacion = [], // Documentos de tipo INSCRIPCION
+    
+    // Contactos de emergencia dinámicos (expuestos desde el provider)
+    contactosIndices = [],
+    agregarContacto,
+    eliminarContacto,
+    
+    // Documentación procesada (expuesta desde el provider)
+    documentacionProcesada = [],
     
     // Funciones de carga bajo demanda
     loadDiscapacidades,
@@ -67,6 +73,13 @@ const EstudiantesRegister = () => {
     loadProvincias,
     loadMunicipios,
   } = useStudentRegisterContext();
+
+  // Registrar el formulario en el contexto para que los handlers puedan acceder a sus valores
+  useEffect(() => {
+    if (registerForm && form) {
+      registerForm(form);
+    }
+  }, [registerForm, form]);
 
   // Configurar cargadores condicionales (genérico para cualquier página)
   const conditionalLoaders = useMemo(() => ({
@@ -86,46 +99,6 @@ const EstudiantesRegister = () => {
     return 'Registrar Nueva Admisión';
   }, [completarMode]);
 
-  // Hook para manejar el estado de contactos de emergencia dinámicos
-  const { contactosIndices, agregarContacto, eliminarContacto } = useContactosEmergenciaDinamicos();
-
-  // Obtener solo los IDs de documentos padres directamente desde documentacion sin procesar
-  // para observar solo esos campos y evitar bucles infinitos
-  const documentosPadresIds = useMemo(() => {
-    if (!documentacion || documentacion.length === 0) {
-      return [];
-    }
-    // Filtrar documentos del sistema y obtener solo padres
-    const documentosPadres = documentacion.filter(
-      (doc) => !doc.esDocumentoSistema && (doc.documentoPadreId === null || doc.documentoPadreId === undefined)
-    );
-    return documentosPadres.map((doc) => `documento_${doc.id}`);
-  }, [documentacion]);
-
-  // Observar TODOS los campos del formulario y filtrar solo los de documentos padres
-  // Esto es más confiable que usar Form.useWatch con array, que puede no funcionar correctamente
-  const allFormValues = Form.useWatch([], form) || {};
-  
-  // Filtrar solo los campos de documentos padres
-  const formValuesPadres = useMemo(() => {
-    if (!documentosPadresIds || documentosPadresIds.length === 0) {
-      return {};
-    }
-    
-    const result = {};
-    documentosPadresIds.forEach((fieldName) => {
-      if (allFormValues[fieldName] !== undefined) {
-        result[fieldName] = allFormValues[fieldName];
-      }
-    });
-    
-    return result;
-  }, [allFormValues, documentosPadresIds]);
-
-  // Hook para procesar documentación (filtra, ordena, prepara datos)
-  // Pasa formValuesPadres para que sea reactivo solo a cambios en documentos padres
-  const { documentacion: documentacionProcesada } = useDocumentacionDinamica(documentacion, formValuesPadres);
-
   // Hook para obtener títulos dinámicos según el modo
   const wizardTitles = useEstudianteWizardTitles(completarMode);
 
@@ -134,6 +107,7 @@ const EstudiantesRegister = () => {
     const steps = createEstudianteWizardSteps(wizardTitles);
     
     // Generar campos dinámicos de contactos de emergencia desde la capa de configuración
+    // Usar datos expuestos desde el provider
     const camposDinamicos = createCamposContactosEmergenciaDinamicos(
       contactosIndices, 
       eliminarContacto, 
@@ -150,7 +124,7 @@ const EstudiantesRegister = () => {
     }
     
     // Generar campos dinámicos de documentación desde la capa de configuración
-    // Usar documentación procesada del hook (ya filtrada y ordenada)
+    // Usar documentación procesada expuesta desde el provider (ya filtrada y ordenada)
     const camposDocumentacion = createCamposDocumentacionDinamicos(documentacionProcesada);
     
     // Reemplazar campos estáticos de documentación con campos dinámicos

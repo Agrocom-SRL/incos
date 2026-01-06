@@ -33,6 +33,8 @@ import {
     useStudentReferenceApi,
     useStudentFormOptions,
     useStudentFormHandlers,
+    useDocumentacionProcesada,
+    useContactosEmergenciaDinamicos,
 } from '@application-estudiantes/hooks';
 import { useMessage } from '@application/utils';
 import { StudentRegisterContext } from '@application-estudiantes/context/StudentRegisterContext';
@@ -73,23 +75,40 @@ export const StudentRegisterProvider = ({ children }) => {
     // Hook especializado: transformar datos a opciones de formulario
     const resolveOptions = useStudentFormOptions(contextData);
 
-    // Hook especializado: manejar handlers de submit
-    const { handleFinish, handleSave } = useStudentFormHandlers(onSubmit, onSuccess, showMessage);
+    // Hook especializado: manejar handlers de submit y gestión del formulario
+    const { handleFinish, handleSave, registerForm, getFormValues } = useStudentFormHandlers(onSubmit, onSuccess, showMessage);
+
+    // Hook para manejar el estado de contactos de emergencia dinámicos
+    const { contactosIndices, agregarContacto, eliminarContacto } = useContactosEmergenciaDinamicos();
+
+    // Obtener documentación del catálogo (no de referenceData)
+    const documentacion = catalogData.documentacion || [];
+
+    // Hook compuesto: observar valores del formulario y procesar documentación
+    const { documentacion: documentacionProcesada } = useDocumentacionProcesada(documentacion, getFormValues);
 
     // Componer el valor del contexto: datos + lógica + funciones de carga
+    // El provider solo orquesta hooks y expone sus resultados
     const value = useMemo(() => ({
         ...contextData,
         resolveOptions,
         handleFinish,
         handleSave,
         minAge: EDAD_MINIMA_REGISTRO,
+        registerForm, // Expuesto desde useStudentFormHandlers
+        // Contactos de emergencia dinámicos
+        contactosIndices,
+        agregarContacto,
+        eliminarContacto,
+        // Documentación procesada
+        documentacionProcesada,
         // Exponer funciones de carga bajo demanda
         loadDiscapacidades: referenceData.loadDiscapacidades,
         loadTiposParentesco: referenceData.loadTiposParentesco,
         loadDepartamentos: geographicData.loadDepartamentos,
         loadProvincias: geographicData.loadProvincias,
         loadMunicipios: geographicData.loadMunicipios,
-    }), [contextData, resolveOptions, handleFinish, handleSave, referenceData.loadDiscapacidades, referenceData.loadTiposParentesco, geographicData.loadDepartamentos, geographicData.loadProvincias, geographicData.loadMunicipios]);
+    }), [contextData, resolveOptions, handleFinish, handleSave, registerForm, contactosIndices, agregarContacto, eliminarContacto, documentacionProcesada, referenceData.loadDiscapacidades, referenceData.loadTiposParentesco, geographicData.loadDepartamentos, geographicData.loadProvincias, geographicData.loadMunicipios]);
 
     return (
         <StudentRegisterContext.Provider value={value}>

@@ -10,4 +10,5 @@ export { useEstudianteGeographicFormLogic } from './useEstudianteGeographicFormL
 export { useContactosEmergenciaDinamicos } from './useContactosEmergenciaDinamicos';
 export { useEstudianteWizardTitles } from './useEstudianteWizardTitles';
 export { useDocumentacionDinamica } from './useDocumentacionDinamica';
+export { useDocumentacionProcesada } from './useDocumentacionProcesada';
 

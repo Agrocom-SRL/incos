@@ -7,7 +7,9 @@
  * permitiendo reutilizar y modificar fácilmente los campos sin tocar el componente.
  * 
  * Estructura de cada campo:
- * - name: Nombre del campo (debe coincidir con el nombre en el backend)
+ * - name: Nombre del campo en formato de array para campos anidados
+ *   Ejemplo: ['contactosEmergencia', 0, 'tipoParentescoId'] para contactosEmergencia[0].tipoParentescoId
+ *   Esto permite que los datos se guarden como un array multidimensional en el formulario
  * - label: Etiqueta visible para el usuario
  * - type: Tipo de campo (input, select, switch, textarea, etc.)
  * - required: Si el campo es obligatorio
@@ -15,6 +17,24 @@
  * - options: Opciones para campos select (string para resolver con resolveOptions, o array)
  * - placeholder: Texto de ayuda en el campo
  * - default: Valor por defecto (para switches)
+ * 
+ * Estructura de datos resultante:
+ * Los datos se guardarán en el formato:
+ * {
+ *   contactosEmergencia: [
+ *     {
+ *       tipoParentescoId: ...,
+ *       nombres: ...,
+ *       apellidos: ...,
+ *       ...
+ *     },
+ *     {
+ *       tipoParentescoId: ...,
+ *       nombres: ...,
+ *       ...
+ *     }
+ *   ]
+ * }
  */
 
 /**
@@ -23,14 +43,14 @@
  * @returns {Array} Array de campos de contacto de emergencia
  */
 export const createCamposContactoEmergencia = (index = 0) => {
-    // Siempre usar prefijo para evitar conflictos con campos de datos personales
-    // Índice 0 -> contactoEmergencia1, índice 1 -> contactoEmergencia2, etc.
-    const numeroContacto = index + 1;
-    const prefix = `contactoEmergencia${numeroContacto}`;
+    // Usar estructura de array para que los datos se guarden como contactosEmergencia[index]
+    // Esto permite que el backend reciba un array multidimensional
+    // Formato: ['contactosEmergencia', index, 'campo']
+    const basePath = ['contactosEmergencia', index];
 
     return [
         {
-            name: `${prefix}TipoParentescoId`,
+            name: [...basePath, 'tipoParentescoId'],
             label: 'Tipo de Parentesco',
             type: 'select',
             required: true,
@@ -40,7 +60,7 @@ export const createCamposContactoEmergencia = (index = 0) => {
             showDescription: true, // Mostrar descripción del tipo de parentesco en tooltip o texto pequeño
         },
         {
-            name: `${prefix}Nombres`,
+            name: [...basePath, 'nombres'],
             label: 'Nombres',
             type: 'input',
             required: true,
@@ -49,7 +69,7 @@ export const createCamposContactoEmergencia = (index = 0) => {
             maxLength: 150,
         },
         {
-            name: `${prefix}Apellidos`,
+            name: [...basePath, 'apellidos'],
             label: 'Apellidos',
             type: 'input',
             required: false,
@@ -58,7 +78,7 @@ export const createCamposContactoEmergencia = (index = 0) => {
             maxLength: 150,
         },
         {
-            name: `${prefix}Ci`,
+            name: [...basePath, 'ci'],
             label: 'Cédula de Identidad',
             type: 'input',
             required: false,
@@ -67,7 +87,7 @@ export const createCamposContactoEmergencia = (index = 0) => {
             maxLength: 20,
         },
         {
-            name: `${prefix}Telefono`,
+            name: [...basePath, 'telefono'],
             label: 'Teléfono',
             type: 'input',
             inputType: 'tel',
@@ -77,7 +97,7 @@ export const createCamposContactoEmergencia = (index = 0) => {
             maxLength: 20,
         },
         {
-            name: `${prefix}Celular`,
+            name: [...basePath, 'celular'],
             label: 'Celular',
             type: 'input',
             inputType: 'tel',
@@ -87,7 +107,7 @@ export const createCamposContactoEmergencia = (index = 0) => {
             maxLength: 20,
         },
         {
-            name: `${prefix}Email`,
+            name: [...basePath, 'email'],
             label: 'Email',
             type: 'input',
             inputType: 'email',
@@ -97,7 +117,7 @@ export const createCamposContactoEmergencia = (index = 0) => {
             maxLength: 150,
         },
         {
-            name: `${prefix}EsContactoEmergencia`,
+            name: [...basePath, 'esContactoEmergencia'],
             label: 'Es Contacto de Emergencia',
             type: 'switch',
             required: false,
@@ -105,7 +125,7 @@ export const createCamposContactoEmergencia = (index = 0) => {
             defaultChecked: true,
         },
         {
-            name: `${prefix}EsApoderadoLegal`,
+            name: [...basePath, 'esApoderadoLegal'],
             label: 'Es Apoderado Legal',
             type: 'switch',
             required: false,
@@ -113,7 +133,7 @@ export const createCamposContactoEmergencia = (index = 0) => {
             defaultChecked: true,
         },
         {
-            name: `${prefix}ViveConEstudiante`,
+            name: [...basePath, 'viveConEstudiante'],
             label: 'Vive con el Estudiante',
             type: 'switch',
             required: false,
@@ -121,7 +141,7 @@ export const createCamposContactoEmergencia = (index = 0) => {
             defaultChecked: false,
         },
         {
-            name: `${prefix}Ocupacion`,
+            name: [...basePath, 'ocupacion'],
             label: 'Ocupación',
             type: 'input',
             required: false,
@@ -130,7 +150,7 @@ export const createCamposContactoEmergencia = (index = 0) => {
             maxLength: 100,
         },
         {
-            name: `${prefix}LugarTrabajo`,
+            name: [...basePath, 'lugarTrabajo'],
             label: 'Lugar de Trabajo',
             type: 'input',
             required: false,
@@ -139,7 +159,7 @@ export const createCamposContactoEmergencia = (index = 0) => {
             maxLength: 200,
         },
         {
-            name: `${prefix}Direccion`,
+            name: [...basePath, 'direccion'],
             label: 'Dirección',
             type: 'textarea',
             required: false,
@@ -148,7 +168,7 @@ export const createCamposContactoEmergencia = (index = 0) => {
             rows: 3,
         },
         {
-            name: `${prefix}Observaciones`,
+            name: [...basePath, 'observaciones'],
             label: 'Observaciones',
             type: 'textarea',
             required: false,
