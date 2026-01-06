@@ -37,6 +37,7 @@ export class StudentAcademicDataMapper {
       careerId: model.carreraId,
       managementId: model.gestionIngresoId,
       academicState: model.estadoAcademico,
+      registrationState: model.estadoRegistro || 'BORRADOR', // BORRADOR, PENDIENTE, ADMITIDO
       previousSchool: model.unidadEducativaProcedencia,
       highSchoolGraduationYear: model.anioEgresoSecundaria,
       annualAverage: model.promedioAnual ? parseFloat(model.promedioAnual) : null,
@@ -69,6 +70,7 @@ export class StudentAcademicDataMapper {
       carreraId: data.careerId,
       gestionIngresoId: data.managementId,
       estadoAcademico: data.academicState || 'REGULAR',
+      estadoRegistro: data.registrationState || 'BORRADOR', // BORRADOR, PENDIENTE, ADMITIDO
       unidadEducativaProcedencia: data.previousSchool || null,
       anioEgresoSecundaria: data.highSchoolGraduationYear || null,
       promedioAnual: data.annualAverage || null,
@@ -104,6 +106,9 @@ export class StudentAcademicDataMapper {
     }
     if (data.academicState !== undefined) {
       updateData.estadoAcademico = data.academicState;
+    }
+    if (data.registrationState !== undefined) {
+      updateData.estadoRegistro = data.registrationState;
     }
     if (data.previousSchool !== undefined) {
       updateData.unidadEducativaProcedencia = data.previousSchool || null;

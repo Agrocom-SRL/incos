@@ -22,8 +22,8 @@ import { StudentAcademicDataMapper } from '../mappers/StudentAcademicDataMapper.
  * @implements {IEstudianteDatosAcademicosRepository}
  * 
  * Esta clase cumple con el contrato IEstudianteDatosAcademicosRepository:
- * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findAll, create, update, delete, search)
- * - Implementa findByEstudianteId() y findByCarreraId() que son requeridos por IEstudianteDatosAcademicosRepository
+ * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findBy, findAll, create, update, delete, search, count)
+ * - La especialización está en buildWhereClause(), no en métodos adicionales
  */
 export class StudentAcademicDataRepository extends BaseRepository {
   /**
@@ -47,12 +47,22 @@ export class StudentAcademicDataRepository extends BaseRepository {
 
   /**
    * Construye la cláusula WHERE para filtros específicos
-   * @param {Object} filters
-   * @returns {Object}
+   * Maneja todos los criterios de búsqueda: studentId, careerId, managementId, academicState, registrationState
+   * 
+   * @param {Object} filters - Filtros de búsqueda
+   *   - studentId: ID del estudiante (estudianteId)
+   *   - careerId: ID de la carrera (carreraId)
+   *   - managementId: ID de la gestión de ingreso (gestionIngresoId)
+   *   - academicState: Estado académico (estadoAcademico)
+   *   - registrationState: Estado de registro (estadoRegistro)
+   * @returns {Object} Objeto WHERE para Sequelize
    */
   buildWhereClause(filters) {
     const where = {};
 
+    if (filters.studentId) {
+      where.estudianteId = filters.studentId;
+    }
     if (filters.careerId) {
       where.carreraId = filters.careerId;
     }
@@ -61,6 +71,9 @@ export class StudentAcademicDataRepository extends BaseRepository {
     }
     if (filters.academicState) {
       where.estadoAcademico = filters.academicState;
+    }
+    if (filters.registrationState) {
+      where.estadoRegistro = filters.registrationState;
     }
 
     return where;
@@ -114,40 +127,10 @@ export class StudentAcademicDataRepository extends BaseRepository {
     return 'studentAcademicData';
   }
 
-  /**
-   * Método específico: Buscar datos académicos por estudiante
-   * 
-   * @param {number} estudianteId - ID del estudiante
-   * @returns {Promise<StudentAcademicData|null>} Entidad StudentAcademicData o null si no se encuentra
-   */
-  async findByEstudianteId(estudianteId) {
-    const model = await this.getModel().findOne({
-      where: {
-        estudianteId: estudianteId,
-        activo: true,
-        // paranoid: true automáticamente excluye deletedAt !== null
-      },
-      order: [['gestionIngresoId', 'DESC']],
-    });
-    return this.toEntity(model);
-  }
-
-  /**
-   * Método específico: Buscar estudiantes por carrera
-   * 
-   * @param {number} carreraId - ID de la carrera
-   * @returns {Promise<StudentAcademicData[]>} Array de entidades StudentAcademicData
-   */
-  async findByCarreraId(carreraId) {
-    const models = await this.getModel().findAll({
-      where: {
-        carreraId: carreraId,
-        activo: true,
-        // paranoid: true automáticamente excluye deletedAt !== null
-      },
-      order: [['gestionIngresoId', 'DESC']],
-    });
-    return StudentAcademicDataMapper.toEntityList(models);
-  }
+  // NOTA: Los métodos específicos (findByEstudianteId, findByCarreraId) han sido eliminados.
+  // Ahora se usan los métodos base de IRepository:
+  // - findBy({ studentId }) para buscar un solo registro por estudiante
+  // - findAll({ studentId }) para buscar todos los registros por estudiante
+  // - findAll({ careerId }) para buscar todos los registros por carrera
 }
 

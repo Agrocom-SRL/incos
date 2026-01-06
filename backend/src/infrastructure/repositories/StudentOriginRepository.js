@@ -22,8 +22,9 @@ import { StudentOriginMapper } from '../mappers/StudentOriginMapper.js';
  * @implements {IEstudianteOrigenRepository}
  * 
  * Esta clase cumple con el contrato IEstudianteOrigenRepository:
- * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findAll, create, update, delete, search)
- * - Implementa findByEstudianteId(), createMultiple(), deleteByEstudianteId() y determinarTipoNacionalidadEstudiante() que son requeridos por IEstudianteOrigenRepository
+ * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findBy, findAll, create, update, delete, search, count)
+ * - La especialización está en buildWhereClause(), no en métodos adicionales
+ * - NOTA: createMultiple, deleteByEstudianteId y determinarTipoNacionalidadEstudiante deben moverse a casos de uso
  */
 export class StudentOriginRepository extends BaseRepository {
   /**
@@ -43,6 +44,36 @@ export class StudentOriginRepository extends BaseRepository {
    */
   toEntity(model) {
     return StudentOriginMapper.toEntity(model);
+  }
+
+  /**
+   * Construye la cláusula WHERE para filtros específicos
+   * Maneja todos los criterios de búsqueda: studentId, countryId, originType, isPrincipal
+   * 
+   * @param {Object} filters - Filtros de búsqueda
+   *   - studentId: ID del estudiante (estudianteId)
+   *   - countryId: ID del país (paisId)
+   *   - originType: Tipo de origen (tipoOrigen)
+   *   - isPrincipal: Si es principal (esPrincipal)
+   * @returns {Object} Objeto WHERE para Sequelize
+   */
+  buildWhereClause(filters) {
+    const where = {};
+
+    if (filters.studentId) {
+      where.estudianteId = filters.studentId;
+    }
+    if (filters.countryId) {
+      where.paisId = filters.countryId;
+    }
+    if (filters.originType) {
+      where.tipoOrigen = filters.originType;
+    }
+    if (filters.isPrincipal !== undefined) {
+      where.esPrincipal = filters.isPrincipal;
+    }
+
+    return where;
   }
 
   /**
@@ -93,162 +124,12 @@ export class StudentOriginRepository extends BaseRepository {
     return 'studentOrigins';
   }
 
-  /**
-   * Buscar orígenes por estudiante
-   * 
-   * @param {number} estudianteId - ID del estudiante
-   * @returns {Promise<StudentOrigin[]>} Array de entidades StudentOrigin
-   */
-  async findByEstudianteId(estudianteId) {
-    const models = await this.getModel().findAll({
-      where: {
-        estudianteId: estudianteId,
-        activo: true,
-      },
-      order: this.getDefaultSort(),
-    });
-
-    return StudentOriginMapper.toEntityList(models);
-  }
-
-  /**
-   * Crear múltiples orígenes para un estudiante
-   * 
-   * @param {number} estudianteId - ID del estudiante
-   * @param {Array<{countryId?: number, birthMunicipalityId?: number, birthCity?: string, motherTongueId?: number, secondaryLanguageId?: number, originType?: string, isPrincipal?: boolean}>} origenes - Array de orígenes
-   * @param {number} userId - ID del usuario que crea
-   * @returns {Promise<StudentOrigin[]>} Array de entidades StudentOrigin creadas
-   */
-  async createMultiple(estudianteId, origenes, userId = null) {
-    const created = [];
-    
-    for (const origen of origenes) {
-      const data = {
-        studentId: estudianteId,
-        countryId: origen.countryId || origen.paisId || null,
-        birthMunicipalityId: origen.birthMunicipalityId || origen.municipioNacimientoId || null,
-        birthCity: origen.birthCity || origen.ciudadNacimiento || null,
-        motherTongueId: origen.motherTongueId || origen.idiomaMaternoId || null,
-        secondaryLanguageId: origen.secondaryLanguageId || origen.idiomaSecundarioId || null,
-        originType: origen.originType || origen.tipoOrigen || 'BOLIVIANA',
-        isPrincipal: origen.isPrincipal !== undefined ? origen.isPrincipal : (origen.esPrincipal !== undefined ? origen.esPrincipal : true),
-      };
-      
-      const createdItem = await this.create(data, userId);
-      created.push(createdItem);
-    }
-    
-    return created;
-  }
-
-  /**
-   * Eliminar todos los orígenes de un estudiante (soft delete)
-   * @param {number} estudianteId
-   * @param {number} userId
-   * @returns {Promise<number>} Número de registros eliminados
-   */
-  async deleteByEstudianteId(estudianteId, userId = null) {
-    const models = await this.getModel().findAll({
-      where: {
-        estudianteId: estudianteId,
-        activo: true,
-      },
-    });
-
-    let deletedCount = 0;
-    for (const model of models) {
-      await this.delete(model.id, userId);
-      deletedCount++;
-    }
-
-    return deletedCount;
-  }
-
-  /**
-   * Determina si un origen es boliviano o extranjero
-   * Lógica:
-   * - Si tiene birthMunicipalityId/municipio_nacimiento_id → Es Bolivia (los municipios son solo de Bolivia)
-   * - Si tiene countryId/pais_id y NO tiene birthMunicipalityId/municipio_nacimiento_id → Es extranjero
-   * - Si ambos son NULL → No está definido
-   * 
-   * @param {StudentOrigin|Object} origen - Entidad StudentOrigin o objeto de origen (puede ser entidad o modelo)
-   * @returns {string|null} 'BOLIVIANA', 'EXTRANJERA', o null si no está definido
-   */
-  static determinarTipoNacionalidad(origen) {
-    if (!origen) return null;
-    
-    // Convertir a objeto plano si es entidad
-    const origenData = origen.toPlainObject ? origen.toPlainObject() : origen;
-    
-    // Si tiene birthMunicipalityId/municipio_nacimiento_id, es Bolivia
-    if (origenData.birthMunicipalityId || origenData.municipioNacimientoId || origenData.municipio_nacimiento_id) {
-      return 'BOLIVIANA';
-    }
-    
-    // Si tiene countryId/pais_id y NO tiene birthMunicipalityId/municipio_nacimiento_id, es extranjero
-    if (origenData.countryId || origenData.paisId || origenData.pais_id) {
-      return 'EXTRANJERA';
-    }
-    
-    // Si ambos son NULL, no está definido
-    return null;
-  }
-
-  /**
-   * Determina el tipo de nacionalidad del estudiante basándose en sus orígenes
-   * Retorna: 'BOLIVIANA', 'EXTRANJERA', 'DOBLE_NACIONALIDAD', o null
-   * 
-   * @param {number} estudianteId - ID del estudiante
-   * @returns {Promise<{tipo: string, origenes: StudentOrigin[]}>} Tipo de nacionalidad y array de entidades StudentOrigin
-   */
-  async determinarTipoNacionalidadEstudiante(estudianteId) {
-    const origenes = await this.findByEstudianteId(estudianteId);
-    
-    if (!origenes || origenes.length === 0) {
-      return { tipo: null, origenes: [] };
-    }
-    
-    // Si hay más de un origen activo, es doble nacionalidad
-    if (origenes.length > 1) {
-      return { tipo: 'DOBLE_NACIONALIDAD', origenes };
-    }
-    
-    // Si hay un solo origen, determinar su tipo
-    const origen = origenes[0];
-    const tipo = StudentOriginRepository.determinarTipoNacionalidad(origen.toPlainObject ? origen.toPlainObject() : origen);
-    
-    return { tipo, origenes };
-  }
-
-  /**
-   * Convierte orígenes a formato de presentación con información de tipo de nacionalidad
-   * 
-   * @param {StudentOrigin[]|Object[]} origenes - Array de entidades StudentOrigin o objetos planos
-   * @returns {Object[]} Array de objetos con información de presentación
-   */
-  static origenesToPresentation(origenes) {
-    if (!Array.isArray(origenes)) return [];
-    
-    return origenes.map(origen => {
-      const origenData = origen.toPlainObject ? origen.toPlainObject() : origen;
-      const tipoNacionalidad = StudentOriginRepository.determinarTipoNacionalidad(origenData);
-      
-      return {
-        id: origenData.id,
-        studentId: origenData.studentId,
-        countryId: origenData.countryId,
-        birthMunicipalityId: origenData.birthMunicipalityId,
-        birthCity: origenData.birthCity,
-        motherTongueId: origenData.motherTongueId,
-        secondaryLanguageId: origenData.secondaryLanguageId,
-        originType: origenData.originType,
-        isPrincipal: origenData.isPrincipal,
-        tipoNacionalidad, // Agregado: 'BOLIVIANA', 'EXTRANJERA', o null
-        active: origenData.active,
-        createdAt: origenData.createdAt,
-        updatedAt: origenData.updatedAt,
-      };
-    });
-  }
+  // NOTA: Los métodos específicos (findByEstudianteId, createMultiple, deleteByEstudianteId, 
+  // determinarTipoNacionalidadEstudiante, determinarTipoNacionalidad, origenesToPresentation) han sido eliminados.
+  // Ahora se usan los métodos base de IRepository:
+  // - findAll({ studentId }) para buscar todos los orígenes por estudiante
+  // - create() múltiples veces en un loop para crear múltiples orígenes (debe hacerse en caso de uso)
+  // - delete() múltiples veces en un loop para eliminar todos los orígenes (debe hacerse en caso de uso)
+  // - determinarTipoNacionalidadEstudiante debe moverse a un caso de uso o servicio
 }
 

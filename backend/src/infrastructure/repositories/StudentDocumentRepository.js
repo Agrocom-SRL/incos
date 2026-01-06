@@ -22,8 +22,8 @@ import { StudentDocumentMapper } from '../mappers/StudentDocumentMapper.js';
  * @implements {IDocumentoEstudianteRepository}
  * 
  * Esta clase cumple con el contrato IDocumentoEstudianteRepository:
- * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findAll, create, update, delete, search)
- * - Implementa findByEstudianteId() y findByTipoDocumento() que son requeridos por IDocumentoEstudianteRepository
+ * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findBy, findAll, create, update, delete, search, count)
+ * - La especialización está en buildWhereClause(), no en métodos adicionales
  */
 export class StudentDocumentRepository extends BaseRepository {
   /**
@@ -47,15 +47,28 @@ export class StudentDocumentRepository extends BaseRepository {
 
   /**
    * Construye la cláusula WHERE para filtros específicos
-   * @param {Object} filters
-   * @returns {Object}
+   * Maneja todos los criterios de búsqueda: studentId, documentacionId, tipoDocumento, state, verified
+   * 
+   * @param {Object} filters - Filtros de búsqueda
+   *   - studentId: ID del estudiante (estudianteId)
+   *   - documentacionId: ID de la documentación (documentacionId)
+   *   - tipoDocumento: Tipo de documento (tipoDocumento)
+   *   - state: Estado del documento (estado)
+   *   - verified: Si está verificado (verificado)
+   * @returns {Object} Objeto WHERE para Sequelize
    */
   buildWhereClause(filters) {
     const where = {};
 
-    // Nota: documentType no existe directamente en documentos_estudiante
-    // Se debe filtrar mediante JOIN con documentacion si es necesario
-    // Por ahora, si se necesita filtrar por tipo, se debe hacer en el método que llama
+    if (filters.studentId) {
+      where.estudianteId = filters.studentId;
+    }
+    if (filters.documentacionId) {
+      where.documentacionId = filters.documentacionId;
+    }
+    if (filters.tipoDocumento) {
+      where.tipoDocumento = filters.tipoDocumento;
+    }
     if (filters.state) {
       where.estado = filters.state;
     }
@@ -114,40 +127,9 @@ export class StudentDocumentRepository extends BaseRepository {
     return 'studentDocuments';
   }
 
-  /**
-   * Método específico: Buscar documentos por estudiante
-   * 
-   * @param {number} estudianteId - ID del estudiante
-   * @returns {Promise<StudentDocument[]>} Array de entidades StudentDocument
-   */
-  async findByEstudianteId(estudianteId) {
-    const models = await this.getModel().findAll({
-      where: {
-        estudianteId: estudianteId,
-        activo: true,
-        // paranoid: true automáticamente excluye deletedAt !== null
-      },
-      order: [['createdAt', 'DESC']],
-    });
-    return StudentDocumentMapper.toEntityList(models);
-  }
-
-  /**
-   * Método específico: Buscar documentos por tipo
-   * 
-   * @param {string} tipoDocumento - Tipo de documento
-   * @returns {Promise<StudentDocument[]>} Array de entidades StudentDocument
-   */
-  async findByTipoDocumento(tipoDocumento) {
-    const models = await this.getModel().findAll({
-      where: {
-        tipoDocumento: tipoDocumento,
-        activo: true,
-        // paranoid: true automáticamente excluye deletedAt !== null
-      },
-      order: [['createdAt', 'DESC']],
-    });
-    return StudentDocumentMapper.toEntityList(models);
-  }
+  // NOTA: Los métodos específicos (findByEstudianteId, findByTipoDocumento) han sido eliminados.
+  // Ahora se usan los métodos base de IRepository:
+  // - findAll({ studentId }) para buscar todos los documentos por estudiante
+  // - findAll({ tipoDocumento }) para buscar todos los documentos por tipo
 }
 

@@ -22,8 +22,8 @@ import { StudentGuardianMapper } from '../mappers/StudentGuardianMapper.js';
  * @implements {IEstudianteApoderadoRepository}
  * 
  * Esta clase cumple con el contrato IEstudianteApoderadoRepository:
- * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findAll, create, update, delete, search)
- * - Implementa findByEstudianteId() que es requerido por IEstudianteApoderadoRepository
+ * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findBy, findAll, create, update, delete, search, count)
+ * - La especialización está en buildWhereClause(), no en métodos adicionales
  */
 export class StudentGuardianRepository extends BaseRepository {
   /**
@@ -47,12 +47,21 @@ export class StudentGuardianRepository extends BaseRepository {
 
   /**
    * Construye la cláusula WHERE para filtros específicos
-   * @param {Object} filters
-   * @returns {Object}
+   * Maneja todos los criterios de búsqueda: studentId, relationshipTypeId, isEmergencyContact, isLegalGuardian
+   * 
+   * @param {Object} filters - Filtros de búsqueda
+   *   - studentId: ID del estudiante (estudianteId)
+   *   - relationshipTypeId: ID del tipo de parentesco (tipoParentescoId)
+   *   - isEmergencyContact: Si es contacto de emergencia (esContactoEmergencia)
+   *   - isLegalGuardian: Si es apoderado legal (esApoderadoLegal)
+   * @returns {Object} Objeto WHERE para Sequelize
    */
   buildWhereClause(filters) {
     const where = {};
 
+    if (filters.studentId) {
+      where.estudianteId = filters.studentId;
+    }
     if (filters.relationshipTypeId) {
       where.tipoParentescoId = filters.relationshipTypeId;
     }
@@ -114,22 +123,8 @@ export class StudentGuardianRepository extends BaseRepository {
     return 'studentGuardians';
   }
 
-  /**
-   * Método específico: Buscar apoderados por estudiante
-   * 
-   * @param {number} estudianteId - ID del estudiante
-   * @returns {Promise<StudentGuardian[]>} Array de entidades StudentGuardian
-   */
-  async findByEstudianteId(estudianteId) {
-    const models = await this.getModel().findAll({
-      where: {
-        estudianteId: estudianteId,
-        activo: true,
-        // paranoid: true automáticamente excluye deletedAt !== null
-      },
-      order: [['esContactoEmergencia', 'DESC'], ['esApoderadoLegal', 'DESC'], ['nombres', 'ASC']],
-    });
-    return StudentGuardianMapper.toEntityList(models);
-  }
+  // NOTA: El método específico findByEstudianteId ha sido eliminado.
+  // Ahora se usa el método base de IRepository:
+  // - findAll({ studentId }) para buscar todos los apoderados por estudiante
 }
 

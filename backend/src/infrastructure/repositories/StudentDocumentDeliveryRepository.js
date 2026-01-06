@@ -22,8 +22,8 @@ import { StudentDocumentDeliveryMapper } from '../mappers/StudentDocumentDeliver
  * @implements {IEstudianteDocumentoEntregaRepository}
  * 
  * Esta clase cumple con el contrato IEstudianteDocumentoEntregaRepository:
- * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findAll, create, update, delete, search)
- * - Implementa findByEstudianteId(), findByDocumentacionId() y findByEstudianteAndDocumentacion() que son requeridos por IEstudianteDocumentoEntregaRepository
+ * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findBy, findAll, create, update, delete, search, count)
+ * - La especialización está en buildWhereClause(), no en métodos adicionales
  */
 export class StudentDocumentDeliveryRepository extends BaseRepository {
   /**
@@ -47,12 +47,25 @@ export class StudentDocumentDeliveryRepository extends BaseRepository {
 
   /**
    * Construye la cláusula WHERE para filtros específicos
-   * @param {Object} filters
-   * @returns {Object}
+   * Maneja todos los criterios de búsqueda: studentId, documentacionId, entregado, enTramite, esOriginal
+   * 
+   * @param {Object} filters - Filtros de búsqueda
+   *   - studentId: ID del estudiante (estudianteId)
+   *   - documentacionId: ID de la documentación (documentacionId)
+   *   - entregado: Si fue entregado (entregado)
+   *   - enTramite: Si está en trámite (enTramite)
+   *   - esOriginal: Si es original (esOriginal)
+   * @returns {Object} Objeto WHERE para Sequelize
    */
   buildWhereClause(filters) {
     const where = {};
 
+    if (filters.studentId) {
+      where.estudianteId = filters.studentId;
+    }
+    if (filters.documentacionId) {
+      where.documentacionId = filters.documentacionId;
+    }
     if (filters.entregado !== undefined) {
       where.entregado = filters.entregado;
     }
@@ -114,59 +127,10 @@ export class StudentDocumentDeliveryRepository extends BaseRepository {
     return 'studentDocumentDeliveries';
   }
 
-  /**
-   * Método específico: Buscar entregas por estudiante
-   * 
-   * @param {number} estudianteId - ID del estudiante
-   * @returns {Promise<StudentDocumentDelivery[]>} Array de entidades StudentDocumentDelivery
-   */
-  async findByEstudianteId(estudianteId) {
-    const models = await this.getModel().findAll({
-      where: {
-        estudianteId: estudianteId,
-        activo: true,
-      },
-      order: [['createdAt', 'DESC']],
-    });
-    
-    return StudentDocumentDeliveryMapper.toEntityList(models);
-  }
-
-  /**
-   * Método específico: Buscar entregas por documento
-   * 
-   * @param {number} documentacionId - ID del documento
-   * @returns {Promise<StudentDocumentDelivery[]>} Array de entidades StudentDocumentDelivery
-   */
-  async findByDocumentacionId(documentacionId) {
-    const models = await this.getModel().findAll({
-      where: {
-        documentacionId: documentacionId,
-        activo: true,
-      },
-      order: [['createdAt', 'DESC']],
-    });
-    
-    return StudentDocumentDeliveryMapper.toEntityList(models);
-  }
-
-  /**
-   * Método específico: Buscar entrega por estudiante y documento
-   * 
-   * @param {number} estudianteId - ID del estudiante
-   * @param {number} documentacionId - ID del documento
-   * @returns {Promise<StudentDocumentDelivery|null>} Entidad StudentDocumentDelivery o null
-   */
-  async findByEstudianteAndDocumentacion(estudianteId, documentacionId) {
-    const model = await this.getModel().findOne({
-      where: {
-        estudianteId: estudianteId,
-        documentacionId: documentacionId,
-        activo: true,
-      },
-    });
-    
-    return StudentDocumentDeliveryMapper.toEntity(model);
-  }
+  // NOTA: Los métodos específicos (findByEstudianteId, findByDocumentacionId, findByEstudianteAndDocumentacion) 
+  // han sido eliminados. Ahora se usan los métodos base de IRepository:
+  // - findAll({ studentId }) para buscar todas las entregas por estudiante
+  // - findAll({ documentacionId }) para buscar todas las entregas por documento
+  // - findBy({ studentId, documentacionId }) para buscar una entrega específica por estudiante y documento
 }
 

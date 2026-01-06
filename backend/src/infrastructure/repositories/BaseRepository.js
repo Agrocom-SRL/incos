@@ -7,7 +7,7 @@ import { IRepository } from '../../domain/interfaces/repositories/IRepository.js
  * Este patrón define el esqueleto de un algoritmo en una clase base,
  * delegando algunos pasos a métodos abstractos que las subclases deben implementar.
  * 
- * Los métodos template (findAll, create, update, delete, search) contienen
+ * Los métodos template (findById, findBy, findAll, create, update, delete, search, count) contienen
  * la lógica común, mientras que los métodos abstractos permiten personalización.
  * 
  * Extiende IRepository para cumplir con el contrato base de repositorios.
@@ -108,6 +108,40 @@ export class BaseRepository extends IRepository {
     const Model = this.getModel();
     // findByPk con paranoid: true automáticamente excluye deletedAt !== null
     const model = await Model.findByPk(id);
+    return this.toEntity(model);
+  }
+
+  /**
+   * TEMPLATE METHOD: Buscar un solo registro según criterios
+   * Define el algoritmo común de búsqueda de un solo registro
+   * 
+   * IMPORTANTE:
+   * - Con paranoid: true, Sequelize automáticamente excluye registros con deletedAt (soft delete)
+   * - Por defecto solo busca en registros activos (activo: true)
+   * - Para incluir inactivos, pasar options.includeInactive = true
+   * 
+   * @param {Object} criteria - Criterios de búsqueda (ej: { studentCode: "2025-001", ci: "1234567", expedicion: "LP" })
+   * @param {Object} options - Opciones opcionales
+   *   - includeInactive: Si incluir registros inactivos (default: false)
+   * @returns {Promise<Object|null>} Un solo registro o null si no se encuentra
+   */
+  async findBy(criteria, options = {}) {
+    const Model = this.getModel();
+    const where = {
+      // paranoid: true automáticamente excluye deletedAt !== null (registros eliminados lógicamente)
+      ...this.buildWhereClause(criteria),
+    };
+
+    // Filtrar por estado activo/inactivo (solo si no se solicita incluir inactivos)
+    if (!options.includeInactive) {
+      where.activo = true; // Solo registros activos por defecto
+    }
+
+    const model = await Model.findOne({
+      where,
+      order: this.getDefaultSort(),
+    });
+
     return this.toEntity(model);
   }
 

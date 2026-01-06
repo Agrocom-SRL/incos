@@ -12,6 +12,7 @@ export class StudentAcademicData extends BaseEntity {
     this.careerId = data.careerId || null;
     this.managementId = data.managementId || null;
     this.academicState = data.academicState || 'REGULAR';
+    this.registrationState = data.registrationState || 'BORRADOR'; // BORRADOR, PENDIENTE, ADMITIDO
     this.previousSchool = data.previousSchool || null;
     this.highSchoolGraduationYear = data.highSchoolGraduationYear || null;
     this.annualAverage = data.annualAverage || null;
@@ -66,6 +67,7 @@ export class StudentAcademicData extends BaseEntity {
       careerId: this.careerId,
       managementId: this.managementId,
       academicState: this.academicState,
+      registrationState: this.registrationState,
       previousSchool: this.previousSchool,
       highSchoolGraduationYear: this.highSchoolGraduationYear,
       annualAverage: this.annualAverage,

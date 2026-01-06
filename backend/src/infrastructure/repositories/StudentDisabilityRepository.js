@@ -22,8 +22,9 @@ import { StudentDisabilityMapper } from '../mappers/StudentDisabilityMapper.js';
  * @implements {IEstudianteDiscapacidadRepository}
  * 
  * Esta clase cumple con el contrato IEstudianteDiscapacidadRepository:
- * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findAll, create, update, delete, search)
- * - Implementa findByEstudianteId(), createMultiple() y deleteByEstudianteId() que son requeridos por IEstudianteDiscapacidadRepository
+ * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findBy, findAll, create, update, delete, search, count)
+ * - La especialización está en buildWhereClause(), no en métodos adicionales
+ * - NOTA: createMultiple y deleteByEstudianteId deben moverse a casos de uso
  */
 export class StudentDisabilityRepository extends BaseRepository {
   /**
@@ -43,6 +44,28 @@ export class StudentDisabilityRepository extends BaseRepository {
    */
   toEntity(model) {
     return StudentDisabilityMapper.toEntity(model);
+  }
+
+  /**
+   * Construye la cláusula WHERE para filtros específicos
+   * Maneja todos los criterios de búsqueda: studentId, disabilityTypeId
+   * 
+   * @param {Object} filters - Filtros de búsqueda
+   *   - studentId: ID del estudiante (estudianteId)
+   *   - disabilityTypeId: ID del tipo de discapacidad (tipoDiscapacidadId)
+   * @returns {Object} Objeto WHERE para Sequelize
+   */
+  buildWhereClause(filters) {
+    const where = {};
+
+    if (filters.studentId) {
+      where.estudianteId = filters.studentId;
+    }
+    if (filters.disabilityTypeId) {
+      where.tipoDiscapacidadId = filters.disabilityTypeId;
+    }
+
+    return where;
   }
 
   /**
@@ -93,72 +116,10 @@ export class StudentDisabilityRepository extends BaseRepository {
     return 'studentDisabilities';
   }
 
-  /**
-   * Buscar discapacidades por estudiante
-   * 
-   * @param {number} estudianteId - ID del estudiante
-   * @returns {Promise<StudentDisability[]>} Array de entidades StudentDisability
-   */
-  async findByEstudianteId(estudianteId) {
-    const models = await this.getModel().findAll({
-      where: {
-        estudianteId: estudianteId,
-        activo: true,
-      },
-      order: this.getDefaultSort(),
-    });
-
-    return StudentDisabilityMapper.toEntityList(models);
-  }
-
-  /**
-   * Crear múltiples discapacidades para un estudiante
-   * 
-   * @param {number} estudianteId - ID del estudiante
-   * @param {Array<{disabilityTypeId: number, description?: string, disabilityDegree?: string, cause?: string}>} discapacidades - Array de discapacidades
-   * @param {number} userId - ID del usuario que crea
-   * @returns {Promise<StudentDisability[]>} Array de entidades StudentDisability creadas
-   */
-  async createMultiple(estudianteId, discapacidades, userId = null) {
-    const created = [];
-    
-    for (const discapacidad of discapacidades) {
-      const data = {
-        studentId: estudianteId,
-        disabilityTypeId: discapacidad.disabilityTypeId || discapacidad.tipoDiscapacidadId,
-        description: discapacidad.description || discapacidad.descripcion || null,
-        disabilityDegree: discapacidad.disabilityDegree || discapacidad.gradoDiscapacidad || discapacidad.gradoInvalidez || null,
-        cause: discapacidad.cause || discapacidad.causa || null,
-      };
-      
-      const createdItem = await this.create(data, userId);
-      created.push(createdItem);
-    }
-    
-    return created;
-  }
-
-  /**
-   * Eliminar todas las discapacidades de un estudiante (soft delete)
-   * @param {number} estudianteId
-   * @param {number} userId
-   * @returns {Promise<number>} Número de registros eliminados
-   */
-  async deleteByEstudianteId(estudianteId, userId = null) {
-    const models = await this.getModel().findAll({
-      where: {
-        estudianteId: estudianteId,
-        activo: true,
-      },
-    });
-
-    let deletedCount = 0;
-    for (const model of models) {
-      await this.delete(model.id, userId);
-      deletedCount++;
-    }
-
-    return deletedCount;
-  }
+  // NOTA: Los métodos específicos (findByEstudianteId, createMultiple, deleteByEstudianteId) han sido eliminados.
+  // Ahora se usan los métodos base de IRepository:
+  // - findAll({ studentId }) para buscar todas las discapacidades por estudiante
+  // - create() múltiples veces en un loop para crear múltiples discapacidades (debe hacerse en caso de uso)
+  // - delete() múltiples veces en un loop para eliminar todas las discapacidades (debe hacerse en caso de uso)
 }
 

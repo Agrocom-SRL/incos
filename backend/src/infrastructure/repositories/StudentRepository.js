@@ -2,7 +2,6 @@ import { IEstudianteRepository } from '../../domain/interfaces/repositories/IEst
 import { Estudiante as EstudianteModel } from '../database/models/estudiante.js';
 import { BaseRepository } from './BaseRepository.js';
 import { StudentMapper } from '../mappers/StudentMapper.js';
-import { Op } from 'sequelize';
 
 /**
  * Implementación del repositorio de estudiantes usando Sequelize
@@ -23,8 +22,8 @@ import { Op } from 'sequelize';
  * @implements {IEstudianteRepository}
  * 
  * Esta clase cumple con el contrato IEstudianteRepository:
- * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findAll, create, update, delete, search)
- * - Implementa findByCI(), findByCodigo(), findByEmail() y getNextStudentNumber() que son requeridos por IEstudianteRepository
+ * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findBy, findAll, create, update, delete, search, count)
+ * - La especialización está en buildWhereClause(), no en métodos adicionales
  */
 export class StudentRepository extends BaseRepository {
   /**
@@ -48,12 +47,34 @@ export class StudentRepository extends BaseRepository {
 
   /**
    * Construye la cláusula WHERE para filtros específicos
-   * @param {Object} filters
-   * @returns {Object}
+   * Maneja todos los criterios de búsqueda: ci, expedicion, studentCode, personalEmail, userId, gender, hasDisability
+   * 
+   * @param {Object} filters - Filtros de búsqueda
+   *   - ci: Cédula de identidad
+   *   - expedicion: Expedición del CI (se convierte a mayúsculas)
+   *   - studentCode: Código del estudiante (codigoEstudiante)
+   *   - personalEmail: Email personal (se convierte a minúsculas)
+   *   - userId: ID del usuario
+   *   - gender: Género
+   *   - hasDisability: Si tiene discapacidad
+   * @returns {Object} Objeto WHERE para Sequelize
    */
   buildWhereClause(filters) {
     const where = {};
 
+    // Criterios de búsqueda únicos (para findBy)
+    if (filters.ci && filters.expedicion) {
+      where.ci = filters.ci;
+      where.expedicion = filters.expedicion.toUpperCase();
+    }
+    if (filters.studentCode) {
+      where.codigoEstudiante = filters.studentCode;
+    }
+    if (filters.personalEmail) {
+      where.emailPersonal = filters.personalEmail.toLowerCase();
+    }
+
+    // Filtros generales (para findAll)
     if (filters.userId) {
       where.usuarioId = filters.userId;
     }
@@ -116,91 +137,11 @@ export class StudentRepository extends BaseRepository {
     return 'students';
   }
 
-  /**
-   * Método específico: Buscar estudiante por CI y expedición
-   * 
-   * @param {string} ci - Cédula de identidad
-   * @param {string} expedicion - Expedición del CI
-   * @returns {Promise<Student|null>} Entidad Student o null
-   */
-  async findByCI(ci, expedicion) {
-    const model = await this.getModel().findOne({
-      where: {
-        ci: ci,
-        expedicion: expedicion.toUpperCase(),
-        activo: true,
-        // paranoid: true automáticamente excluye deletedAt !== null
-      },
-    });
-    return StudentMapper.toEntity(model);
-  }
-
-  /**
-   * Método específico: Buscar estudiante por código
-   * 
-   * @param {string} codigoEstudiante - Código del estudiante
-   * @returns {Promise<Student|null>} Entidad Student o null
-   */
-  async findByCodigo(codigoEstudiante) {
-    const model = await this.getModel().findOne({
-      where: {
-        codigoEstudiante: codigoEstudiante,
-        activo: true,
-        // paranoid: true automáticamente excluye deletedAt !== null
-      },
-    });
-    return StudentMapper.toEntity(model);
-  }
-
-  /**
-   * Método específico: Buscar estudiante por email
-   * 
-   * @param {string} email - Email personal del estudiante
-   * @returns {Promise<Student|null>} Entidad Student o null
-   */
-  async findByEmail(email) {
-    const model = await this.getModel().findOne({
-      where: {
-        emailPersonal: email.toLowerCase(),
-        activo: true,
-        // paranoid: true automáticamente excluye deletedAt !== null
-      },
-    });
-    return StudentMapper.toEntity(model);
-  }
-
-  /**
-   * Método específico: Obtiene el siguiente número para generar código de estudiante
-   * @param {string} gestionCodigo - Código de la gestión (ej: "2025-1")
-   * @returns {Promise<number>}
-   */
-  async getNextStudentNumber(gestionCodigo) {
-    // Buscar el último código que empiece con el código de gestión
-    const prefix = gestionCodigo.replace('-', '');
-    const pattern = `${prefix}%`;
-
-    const lastStudent = await this.getModel().findOne({
-      where: {
-        codigoEstudiante: { [Op.like]: pattern },
-        activo: true,
-        // paranoid: true automáticamente excluye deletedAt !== null
-      },
-      order: [['codigoEstudiante', 'DESC']],
-    });
-
-    if (!lastStudent) {
-      return 1; // Primer estudiante de la gestión
-    }
-
-    // Extraer el número del último código (ej: "20251-001" -> 1)
-    const lastCode = lastStudent.codigoEstudiante;
-    const parts = lastCode.split('-');
-    if (parts.length === 2) {
-      const lastNumber = parseInt(parts[1], 10);
-      return isNaN(lastNumber) ? 1 : lastNumber + 1;
-    }
-
-    return 1;
-  }
+  // NOTA: Los métodos específicos (findByCI, findByCodigo, findByEmail, getNextStudentNumber) 
+  // han sido eliminados. Ahora se usan los métodos base de IRepository:
+  // - findBy({ ci, expedicion }) para buscar por CI
+  // - findBy({ studentCode }) para buscar por código
+  // - findBy({ personalEmail }) para buscar por email
+  // - getNextStudentNumber debe moverse a un caso de uso o servicio de generación de códigos
 }
 
