@@ -37,10 +37,11 @@ import { useMemo } from 'react';
 export const useDocumentoItem = (documento) => {
   /**
    * Base path para los campos del documento usando array notation
-   * Formato: ['documentacion', id] para que los datos se guarden como documentacion[id]
+   * Formato: ['documentacion', 'doc_id'] para que los datos se guarden como documentacion['doc_id'] (objeto, no array)
+   * Usar prefijo 'doc_' garantiza que Ant Design siempre cree un objeto, nunca un array
    */
   const basePath = useMemo(() => {
-    return ['documentacion', documento.id];
+    return ['documentacion', `doc_${documento.id}`];
   }, [documento.id]);
 
   /**
@@ -74,13 +75,12 @@ export const useDocumentoItem = (documento) => {
 
   /**
    * Valor por defecto del switch (estado de entrega)
-   * Por defecto es true (entregado) para ocultar inicialmente los campos de en_tramite y observaciones
+   * Usa el estado entregado del documento (por defecto false para mostrar hijos cuando el padre no está marcado)
    * El componente DocumentoItem usa Form.useWatch para escuchar cambios del switch y mostrar/ocultar campos dinámicamente
    */
   const defaultChecked = useMemo(() => {
-    // Usar el estado entregado del documento (por defecto true desde useDocumentacionDinamica)
-    // Esto oculta inicialmente los campos de en_tramite y observaciones
-    // Cuando el usuario cambie el switch, Form.useWatch detectará el cambio y mostrará/ocultará los campos
+    // Usar el estado entregado del documento
+    // Si es undefined o null, usar false para que los hijos se muestren cuando el padre no está marcado
     return documento.entregado === true;
   }, [documento.entregado]);
 

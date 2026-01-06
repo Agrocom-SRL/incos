@@ -85,13 +85,14 @@ export const separateDocumentosPadresHijos = (documentos = []) => {
  * @returns {Object} Documento con estado de entregado agregado
  */
 export const addEstadoEntregado = (documento, formValues = {}) => {
-  const fieldName = `documento_${documento.id}`;
-  const entregadoDelForm = formValues[fieldName];
+  // Buscar en la estructura: documentacion['doc_id'].entregado (objeto con keys con prefijo 'doc_')
+  const docKey = `doc_${documento.id}`;
+  const entregadoDelForm = formValues.documentacion?.[docKey]?.entregado;
   
   return {
     ...documento,
     // Si hay valor en el formulario, usarlo; si no, por defecto true (entregado)
-    // Esto oculta inicialmente los campos de en_tramite y observaciones
+    // El switch debe iniciar en true, y cuando el usuario lo cambie a false, se mostrarán los hijos
     entregado: entregadoDelForm !== undefined ? entregadoDelForm : true,
   };
 };

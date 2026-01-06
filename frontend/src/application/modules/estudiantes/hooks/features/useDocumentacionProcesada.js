@@ -11,9 +11,9 @@
  * - Dependency Inversion: Depende de funciones inyectadas (getFormValues)
  * 
  * Este hook:
- * - Observa valores del formulario usando getFormValues
- * - Transforma estructura documentacion[id][field] a documento_id_field
- * - Procesa documentación usando useDocumentacionDinamica
+ * - Observa valores del formulario usando getFormValues (polling cada 200ms)
+ * - Pasa los valores del formulario en su estructura original a useDocumentacionDinamica
+ * - useDocumentacionDinamica usa addEstadoEntregado para leer el estado de cada documento
  * - Retorna documentación procesada lista para usar
  * 
  * Usado por: StudentRegisterProvider (para procesar documentación reactiva)
@@ -30,37 +30,30 @@ import { useDocumentacionDinamica } from './useDocumentacionDinamica';
  * @returns {Object} Objeto con documentación procesada y lista para usar
  */
 export const useDocumentacionProcesada = (documentacion = [], getFormValues) => {
-  // Estado para almacenar valores del formulario observados y transformados
-  const [formValuesDocumentacion, setFormValuesDocumentacion] = useState({});
+  // Estado para almacenar valores del formulario observados (estructura original)
+  // Mantener la estructura original documentacion['doc_id'][field] para que addEstadoEntregado pueda leerla
+  const [formValues, setFormValues] = useState({});
 
-  // Observar valores del formulario y transformarlos para useDocumentacionDinamica
+  // Observar valores del formulario y pasarlos directamente a useDocumentacionDinamica
+  // Usar polling con getFormValues para evitar problemas con hooks condicionales
   useEffect(() => {
     if (!getFormValues) return;
 
-    // Función para actualizar valores de documentación
-    const updateDocumentacionValues = () => {
+    // Función para actualizar valores del formulario
+    const updateFormValues = () => {
       try {
         const values = getFormValues();
-        // Extraer solo los valores de documentación
-        const docValues = {};
-        if (values.documentacion) {
-          // Convertir estructura documentacion[id][field] a documento_id_field
-          // Esto es lo que espera useDocumentacionDinamica
-          Object.keys(values.documentacion).forEach(id => {
-            const docData = values.documentacion[id];
-            if (docData && typeof docData === 'object') {
-              Object.keys(docData).forEach(field => {
-                docValues[`documento_${id}_${field}`] = docData[field];
-              });
-            }
-          });
-        }
-        setFormValuesDocumentacion(prev => {
+        // Extraer solo la sección de documentación, manteniendo la estructura original
+        // Estructura: { documentacion: { 'doc_1': { entregado: true, ... }, 'doc_2': { ... } } }
+        const documentacionValues = values.documentacion || {};
+        
+        setFormValues(prev => {
           // Solo actualizar si hay cambios para evitar renders innecesarios
           const prevStr = JSON.stringify(prev);
-          const newStr = JSON.stringify(docValues);
+          const newStr = JSON.stringify(documentacionValues);
           if (prevStr !== newStr) {
-            return docValues;
+            // Pasar la estructura completa del formulario para que addEstadoEntregado pueda leerla
+            return { documentacion: documentacionValues };
           }
           return prev;
         });
@@ -70,17 +63,17 @@ export const useDocumentacionProcesada = (documentacion = [], getFormValues) => 
     };
 
     // Actualizar inicialmente
-    updateDocumentacionValues();
+    updateFormValues();
 
     // Usar un intervalo para observar cambios en los valores del formulario
-    // Intervalo de 300ms para balancear reactividad y performance
-    const interval = setInterval(updateDocumentacionValues, 300);
+    // Intervalo de 200ms para mejor reactividad (más rápido que antes)
+    const interval = setInterval(updateFormValues, 200);
 
     return () => clearInterval(interval);
   }, [getFormValues]);
 
-  // Procesar documentación con los valores observados del formulario
-  const documentacionProcesadaResult = useDocumentacionDinamica(documentacion, formValuesDocumentacion);
+  // Procesar documentación con los valores observados del formulario (estructura original)
+  const documentacionProcesadaResult = useDocumentacionDinamica(documentacion, formValues);
 
   // Retornar solo lo necesario (documentación procesada)
   return useMemo(() => ({

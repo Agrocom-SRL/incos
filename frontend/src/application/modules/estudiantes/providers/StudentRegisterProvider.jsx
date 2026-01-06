@@ -76,7 +76,7 @@ export const StudentRegisterProvider = ({ children }) => {
     const resolveOptions = useStudentFormOptions(contextData);
 
     // Hook especializado: manejar handlers de submit y gestión del formulario
-    const { handleFinish, handleSave, registerForm, getFormValues } = useStudentFormHandlers(onSubmit, onSuccess, showMessage);
+    const { handleFinish, handleSave, registerForm, getFormValues, formRef } = useStudentFormHandlers(onSubmit, onSuccess, showMessage);
 
     // Hook para manejar el estado de contactos de emergencia dinámicos
     const { contactosIndices, agregarContacto, eliminarContacto } = useContactosEmergenciaDinamicos();

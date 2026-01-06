@@ -56,13 +56,13 @@
  * @returns {Object} Configuración del campo de tipo documento
  */
 const createCampoDocumento = (documento) => {
-  // Usar estructura de array para que los datos se guarden como documentacion[id]
-  // Esto permite que el backend reciba un array multidimensional
-  // Formato: ['documentacion', id, 'campo']
-  const basePath = ['documentacion', documento.id];
+  // Usar estructura de array con prefijo no numérico para garantizar que se cree como objeto
+  // Usar 'doc_' + id para evitar que Ant Design interprete keys numéricos como índices de array
+  // Formato: ['documentacion', 'doc_1', 'campo'] crea documentacion['doc_1'].campo (objeto garantizado)
+  const basePath = ['documentacion', `doc_${documento.id}`];
 
   return {
-    name: basePath, // Array notation para Ant Design Form
+    name: basePath, // Array notation para Ant Design Form (con string key para crear objeto)
     type: 'documento', // Tipo especial que se renderiza con DocumentoItem
     required: documento.required || false,
     span: 12, // Ocupa todo el ancho

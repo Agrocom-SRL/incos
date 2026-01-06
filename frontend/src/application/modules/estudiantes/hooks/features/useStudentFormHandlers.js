@@ -83,34 +83,25 @@ export const useStudentFormHandlers = (onSubmit, onSuccess, showMessage) => {
         otros: {}
       };
 
-      // Procesar datos del formulario
+      // Procesar arrays multidimensionales primero (contactosEmergencia, documentacion)
+      // Ant Design Form guarda estos como objetos/arrays anidados directamente en formValues
+      if (formValues.contactosEmergencia && Array.isArray(formValues.contactosEmergencia)) {
+        datosDesglosados.contactoEmergencia.contactosEmergencia = formValues.contactosEmergencia;
+      }
+
+      // Procesar documentación (estructura: formValues.documentacion[id][field] como objeto)
+      if (formValues.documentacion && typeof formValues.documentacion === 'object' && !Array.isArray(formValues.documentacion)) {
+        datosDesglosados.documentacion.documentacion = formValues.documentacion;
+      }
+
+      // Procesar datos del formulario (campos simples)
       Object.keys(formValues).forEach(key => {
-        // Manejar arrays multidimensionales (contactosEmergencia, documentacion)
-        if (Array.isArray(key)) {
-          const [root, index, fieldName] = key;
-          
-          if (root === 'contactosEmergencia') {
-            // Contactos de emergencia: contactosEmergencia[index][fieldName]
-            if (!datosDesglosados.contactoEmergencia[root]) {
-              datosDesglosados.contactoEmergencia[root] = [];
-            }
-            if (!datosDesglosados.contactoEmergencia[root][index]) {
-              datosDesglosados.contactoEmergencia[root][index] = {};
-            }
-            datosDesglosados.contactoEmergencia[root][index][fieldName] = formValues[key];
-          } else if (root === 'documentacion') {
-            // Documentación: documentacion[id][fieldName]
-            if (!datosDesglosados.documentacion[root]) {
-              datosDesglosados.documentacion[root] = {};
-            }
-            if (!datosDesglosados.documentacion[root][index]) {
-              datosDesglosados.documentacion[root][index] = {};
-            }
-            datosDesglosados.documentacion[root][index][fieldName] = formValues[key];
-          } else {
-            datosDesglosados.otros[String(key)] = formValues[key];
-          }
-        } else if (key.startsWith('nombre') || key.startsWith('apellido') || key.startsWith('fechaNacimiento') ||
+        // Saltar arrays multidimensionales ya procesados
+        if (key === 'contactosEmergencia' || key === 'documentacion') {
+          return;
+        }
+        
+        if (key.startsWith('nombre') || key.startsWith('apellido') || key.startsWith('fechaNacimiento') ||
           key.startsWith('ci') || key.startsWith('genero') || key.startsWith('estadoCivil') ||
           key.startsWith('telefono') || key.startsWith('email') || key.startsWith('tieneDiscapacidad') ||
           key.startsWith('tipoDiscapacidad') || key.startsWith('idioma')) {
@@ -199,6 +190,7 @@ export const useStudentFormHandlers = (onSubmit, onSuccess, showMessage) => {
     handleSave,
     registerForm,
     getFormValues,
+    formRef, // Exponer formRef para que useDocumentacionProcesada pueda usar Form.useWatch
   };
 };
 
