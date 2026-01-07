@@ -163,9 +163,9 @@ const Dashboard = () => {
                     </Flex>
                     
                     <Flex gap={allSpacing.marginLG} wrap="wrap">
-                        {carreras.map((product, index) => (
+                        {carreras.map((carrera) => (
                             <Card
-                                key={index}
+                                key={carrera.id}
                                 hoverable
                                 style={{
                                     backgroundColor: componentConfig.Card.colorBgContainer,
@@ -192,7 +192,7 @@ const Dashboard = () => {
                                     }
                                 }}
                             >
-                                {product.image && (
+                                {carrera.image && (
                                     <div
                                         style={{
                                             width: '100%',
@@ -204,18 +204,23 @@ const Dashboard = () => {
                                         }}
                                     >
                                         <img
-                                            src={product.image}
-                                            alt={product.label}
+                                            src={carrera.image}
+                                            alt={carrera.label || 'Carrera'}
                                             style={{
                                                 width: '100%',
                                                 height: '100%',
                                                 objectFit: 'cover',
                                             }}
+                                            onError={(e) => {
+                                                // Si la imagen falla al cargar, ocultar el contenedor
+                                                e.target.style.display = 'none';
+                                                e.target.parentElement.style.display = 'none';
+                                            }}
                                         />
                                     </div>
                                 )}
                                 
-                                {product.label && (
+                                {carrera.label && (
                                     <Text
                                         style={{
                                             color: allColors.colorText,
@@ -223,7 +228,7 @@ const Dashboard = () => {
                                             fontWeight: typography.fontWeightStrong,
                                         }}
                                     >
-                                        {product.label}
+                                        {carrera.label}
                                     </Text>
                                 )}
                             </Card>
