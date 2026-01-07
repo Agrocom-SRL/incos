@@ -34,7 +34,9 @@
 export class ResponseFormatter {
   /**
    * Formatea una respuesta exitosa estándar
+   * Método interno usado por otros métodos específicos
    * 
+   * @private
    * @param {Object} res - Response de Express
    * @param {*} data - Datos a incluir en la respuesta
    * @param {Object} options - Opciones de formateo
@@ -44,7 +46,7 @@ export class ResponseFormatter {
    * @param {Object} req - Request de Express (para requestId)
    * @returns {Object} Response de Express
    */
-  success(res, data, options = {}, req = null) {
+  _success(res, data, options = {}, req = null) {
     const {
       statusCode = 200,
       message = null,
@@ -86,7 +88,7 @@ export class ResponseFormatter {
    * @returns {Object} Response de Express
    */
   list(res, data, pagination, resourceName, req = null) {
-    return this.success(res, data, {
+    return this._success(res, data, {
       statusCode: 200,
       message: `Listado de ${resourceName} obtenido correctamente`,
       pagination: {
@@ -104,14 +106,86 @@ export class ResponseFormatter {
    * @param {Object} res - Response de Express
    * @param {*} data - Datos del recurso creado
    * @param {string} resourceName - Nombre del recurso (para mensaje)
+   * @param {number|string} resourceId - ID del recurso creado
    * @param {Object} req - Request de Express (para requestId)
    * @returns {Object} Response de Express
    */
-  created(res, data, resourceName, req = null) {
+  created(res, data, resourceName, resourceId, req = null) {
     const capitalizedName = resourceName.charAt(0).toUpperCase() + resourceName.slice(1);
-    return this.success(res, data, {
+    return this._success(res, data, {
       statusCode: 201,
-      message: `${capitalizedName} creado correctamente`,
+      message: `${capitalizedName} (ID: ${resourceId}) creado correctamente`,
+    }, req);
+  }
+
+  /**
+   * Formatea una respuesta de obtención por ID (200 OK)
+   * 
+   * @param {Object} res - Response de Express
+   * @param {*} data - Datos del recurso obtenido (debe contener el ID)
+   * @param {string} resourceName - Nombre del recurso (para mensaje)
+   * @param {number|string} resourceId - ID del recurso obtenido
+   * @param {Object} req - Request de Express (para requestId)
+   * @returns {Object} Response de Express
+   */
+  retrieved(res, data, resourceName, resourceId, req = null) {
+    const capitalizedName = resourceName.charAt(0).toUpperCase() + resourceName.slice(1);
+    return this._success(res, data, {
+      statusCode: 200,
+      message: `${capitalizedName} (ID: ${resourceId}) obtenido correctamente`,
+    }, req);
+  }
+
+  /**
+   * Formatea una respuesta de actualización (200 OK)
+   * 
+   * @param {Object} res - Response de Express
+   * @param {*} data - Datos del recurso actualizado (debe contener el ID)
+   * @param {string} resourceName - Nombre del recurso (para mensaje)
+   * @param {number|string} resourceId - ID del recurso actualizado
+   * @param {Object} req - Request de Express (para requestId)
+   * @returns {Object} Response de Express
+   */
+  updated(res, data, resourceName, resourceId, req = null) {
+    const capitalizedName = resourceName.charAt(0).toUpperCase() + resourceName.slice(1);
+    return this._success(res, data, {
+      statusCode: 200,
+      message: `${capitalizedName} (ID: ${resourceId}) actualizado correctamente`,
+    }, req);
+  }
+
+  /**
+   * Formatea una respuesta de generación de documento (200 OK)
+   * 
+   * @param {Object} res - Response de Express
+   * @param {*} data - Datos del documento generado
+   * @param {string} resourceName - Nombre del recurso (para mensaje)
+   * @param {number|string} resourceId - ID del recurso para el cual se generó el documento
+   * @param {Object} req - Request de Express (para requestId)
+   * @returns {Object} Response de Express
+   */
+  generated(res, data, resourceName, resourceId, req = null) {
+    const capitalizedName = resourceName.charAt(0).toUpperCase() + resourceName.slice(1);
+    return this._success(res, data, {
+      statusCode: 200,
+      message: `${capitalizedName} (ID: ${resourceId}) generada correctamente`,
+    }, req);
+  }
+
+  /**
+   * Formatea una respuesta de eliminación (200 OK)
+   * 
+   * @param {Object} res - Response de Express
+   * @param {string} resourceName - Nombre del recurso (para mensaje)
+   * @param {number|string} resourceId - ID del recurso eliminado
+   * @param {Object} req - Request de Express (para requestId)
+   * @returns {Object} Response de Express
+   */
+  deleted(res, resourceName, resourceId, req = null) {
+    const capitalizedName = resourceName.charAt(0).toUpperCase() + resourceName.slice(1);
+    return this._success(res, null, {
+      statusCode: 200,
+      message: `${capitalizedName} (ID: ${resourceId}) eliminado correctamente`,
     }, req);
   }
 }

@@ -62,49 +62,35 @@ export class BaseGetController {
    */
   async handle(req, res, next) {
     try {
+      // 1. Extraer ID del recurso (ya validado por idValidator en la ruta)
       const id = parseInt(req.params.id, 10);
 
-      // Validar que el ID sea un número válido
-      if (isNaN(id) || id <= 0) {
-        return res.status(400).json({
-          success: false,
-          message: `ID inválido: ${req.params.id}. Debe ser un número entero mayor a 0.`,
-          errors: [
-            {
-              field: 'id',
-              message: 'El ID debe ser un número entero mayor a 0',
-            },
-          ],
-        });
-      }
-
+      // 2. Logging de la petición
       this.logger.info(`Request de obtención de ${this.resourceName} por ID`, {
         id,
         method: req.method,
         path: req.path,
       });
 
-      // Ejecutar el caso de uso
+      // 3. Ejecutar el caso de uso
       const result = await this.useCase.execute(id);
 
-      // Formatear respuesta exitosa
+      // 4. Formatear respuesta exitosa
       // El result ya contiene la estructura completa (student, guardians, etc.)
       // Lo envuelvemos en un objeto con el nombre del campo si es necesario
       const responseData = this.dataFieldName ? { [this.dataFieldName]: result } : result;
       
-      return this.responseFormatter.success(res, responseData, {
-        message: `${this.resourceName.charAt(0).toUpperCase() + this.resourceName.slice(1)} obtenido correctamente`,
-      });
+      return this.responseFormatter.retrieved(res, responseData, this.resourceName, id, req);
     } catch (error) {
-      // Si el error es "No se encontró", retornar 404
-      if (error.message && error.message.includes('No se encontró')) {
-        return res.status(404).json({
-          success: false,
-          message: error.message,
-        });
-      }
+      // 5. Manejo de errores consistente
+      this.logger.error(`Error al obtener ${this.resourceName}`, {
+        error: error.message,
+        stack: error.stack,
+        id: req.params?.id,
+      });
 
-      // Para otros errores, pasar al middleware de manejo de errores
+      // Los errores se manejan en el middleware de errores
+      // NotFoundError, ValidationError, etc. serán formateados correctamente
       return next(error);
     }
   }

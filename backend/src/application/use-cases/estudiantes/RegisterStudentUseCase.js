@@ -56,10 +56,9 @@ export class RegisterStudentUseCase {
    * Genera el código del estudiante basado en la gestión actual y el correlativo
    * Formato: YYYYNNNN (ej: 20260001)
    * 
-   * @param {number} userId - ID del usuario que realiza el registro
    * @returns {Promise<string>} Código del estudiante generado
    */
-  async generateStudentCode(userId = null) {
+  async generateStudentCode() {
     // 1. Obtener la gestión actual
     const gestionActualConfig = await this.configuracionSistemaRepository.findByClave(
       'gestion_actual'
@@ -93,10 +92,11 @@ export class RegisterStudentUseCase {
     });
 
     // 4. Actualizar el correlativo en la base de datos
+    // NOTA: userId no se pasa porque actualmente no hay autenticación
+    // El repositorio tiene userId = null como default
     await this.configuracionSistemaRepository.update(
       correlativoConfig.id,
-      { value: nuevoCorrelativo.toString() },
-      userId
+      { value: nuevoCorrelativo.toString() }
     );
 
     // 5. Generar el código del estudiante: YYYYNNNN (rellenar con ceros a la izquierda)
@@ -120,12 +120,13 @@ export class RegisterStudentUseCase {
    * @param {Array} data.disabilities - Array de discapacidades
    * @param {Array} data.origins - Array de orígenes
    * @param {Object} data.documentation - Objeto con entregas de documentos (key: documentacionId)
-   * @param {number} userId - ID del usuario que realiza el registro
    * @returns {Promise<Object>} Estudiante creado con todos sus datos relacionados
    * 
    * NOTA: Los datos académicos se manejan en otro módulo, no se incluyen aquí
+   * NOTA: userId no se pasa porque actualmente no hay autenticación
+   * Los repositorios tienen userId = null como default para los campos de auditoría
    */
-  async execute(data, userId = null) {
+  async execute(data) {
     this.logger.info('[Estudiantes] Iniciando registro de estudiante', {
       ci: data.student?.ci,
       expedicion: data.student?.expedicion,
@@ -147,14 +148,16 @@ export class RegisterStudentUseCase {
       }
 
       // 2. Generar el código del estudiante
-      const studentCode = await this.generateStudentCode(userId);
+      const studentCode = await this.generateStudentCode();
 
       // 3. Crear el estudiante principal con el código generado
       const studentData = {
         ...data.student,
         studentCode, // Usar studentCode (dominio) en vez de codigoEstudiante (base de datos)
       };
-      const student = await this.studentRepository.create(studentData, userId);
+      // NOTA: userId no se pasa porque actualmente no hay autenticación
+      // El repositorio tiene userId = null como default
+      const student = await this.studentRepository.create(studentData);
       this.logger.info('[Estudiantes] Estudiante creado', { 
         studentId: student.id,
         studentCode: student.studentCode,
@@ -168,10 +171,9 @@ export class RegisterStudentUseCase {
             ...guardianData,
             studentId: student.id,
           };
-          const guardian = await this.studentGuardianRepository.create(
-            guardianToCreate,
-            userId
-          );
+          // NOTA: userId no se pasa porque actualmente no hay autenticación
+          // El repositorio tiene userId = null como default
+          const guardian = await this.studentGuardianRepository.create(guardianToCreate);
           guardians.push(guardian);
         }
         this.logger.info('[Estudiantes] Apoderados creados', {
@@ -188,10 +190,9 @@ export class RegisterStudentUseCase {
             ...disabilityData,
             studentId: student.id,
           };
-          const disability = await this.studentDisabilityRepository.create(
-            disabilityToCreate,
-            userId
-          );
+          // NOTA: userId no se pasa porque actualmente no hay autenticación
+          // El repositorio tiene userId = null como default
+          const disability = await this.studentDisabilityRepository.create(disabilityToCreate);
           disabilities.push(disability);
         }
         this.logger.info('[Estudiantes] Discapacidades creadas', {
@@ -208,10 +209,9 @@ export class RegisterStudentUseCase {
             ...originData,
             studentId: student.id,
           };
-          const origin = await this.studentOriginRepository.create(
-            originToCreate,
-            userId
-          );
+          // NOTA: userId no se pasa porque actualmente no hay autenticación
+          // El repositorio tiene userId = null como default
+          const origin = await this.studentOriginRepository.create(originToCreate);
           origins.push(origin);
         }
         this.logger.info('[Estudiantes] Orígenes creados', {
@@ -240,10 +240,9 @@ export class RegisterStudentUseCase {
               observaciones: docData.observaciones || null,
             };
             
-            const delivery = await this.studentDocumentDeliveryRepository.create(
-              deliveryToCreate,
-              userId
-            );
+            // NOTA: userId no se pasa porque actualmente no hay autenticación
+            // El repositorio tiene userId = null como default
+            const delivery = await this.studentDocumentDeliveryRepository.create(deliveryToCreate);
             documentDeliveries.push(delivery);
           }
         }

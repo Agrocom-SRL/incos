@@ -8,9 +8,12 @@
  * - page: Número de página (default: 1)
  * - limit: Cantidad de resultados por página (default: 50, max: 100)
  * - search: Término de búsqueda general (opcional)
+ * - sort: Ordenamiento (opcional, formato: "nombreCampo:ASC" o "nombreCampo:DESC")
+ *   Ejemplos: "codigoEstudiante:ASC", "nombres:DESC"
+ *   Si no se proporciona, se usa el orden por defecto del repositorio
  * 
  * Use Case espera:
- * - filters: { search?, ...filtrosEspecificos }
+ * - filters: { search?, sort?, ...filtrosEspecificos }
  * - page: number
  * - limit: number
  * 
@@ -23,7 +26,7 @@
  * - DRY: Evita duplicación entre módulos
  * - Open/Closed: Extensible para agregar filtros específicos en subclases o métodos adicionales
  * 
- * NOTA: Este DTO es genérico y solo maneja parámetros comunes.
+ * NOTA: Este DTO es genérico y maneja parámetros comunes (page, limit, search, sort).
  * Los filtros específicos de cada módulo se agregan en el controller mediante buildFilters().
  */
 export class ListRequestDTO {
@@ -42,12 +45,18 @@ export class ListRequestDTO {
     const normalizedPage = Math.max(1, page);
     const normalizedLimit = Math.min(Math.max(1, limit), 100); // Máximo 100 por página
 
-    // 2. Construir filtros básicos (solo search, filtros específicos se agregan en buildFilters)
+    // 2. Construir filtros básicos (search, sort, filtros específicos se agregan en buildFilters)
     const filters = {};
 
     // Filtro de búsqueda general
     if (query.search && typeof query.search === 'string') {
       filters.search = query.search.trim();
+    }
+
+    // Ordenamiento: Parámetro opcional para especificar el orden de los resultados
+    // Si no se proporciona, el repositorio usa el orden por defecto (getDefaultSort)
+    if (query.sort && typeof query.sort === 'string') {
+      filters.sort = query.sort.trim();
     }
 
     return {

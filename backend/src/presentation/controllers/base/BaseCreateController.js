@@ -108,39 +108,40 @@ export class BaseCreateController {
     try {
       // 1. Extraer datos del body
       const body = req.body || {};
-      const userId = req.user?.id || req.user?.userId || null;
 
       // 2. Logging de la petición
       this.logger.info(`Request de creación de ${this.resourceName}`, {
         body: this.sanitizeBodyForLogging(body),
-        userId,
       });
 
-      // 3. Validar que el use case esté configurado
-      if (!this.useCase) {
-        throw new Error(`${this.useCase?.constructor?.name || 'UseCase'} no está configurado`);
-      }
-
-      // 4. Preparar datos (puede ser sobrescrito por subclases)
+      // 3. Preparar datos (puede ser sobrescrito por subclases)
       const preparedData = this.prepareData(body);
 
-      // 5. Ejecutar el caso de uso
-      const result = await this.useCase.execute(preparedData, userId);
+      // 4. Ejecutar el caso de uso
+      const result = await this.useCase.execute(preparedData);
+
+      // 5. Extraer datos y ID para la respuesta
+      const responseData = result[this.dataFieldName] || result;
+      const resourceId = responseData?.id || responseData?.resourceId || 'nuevo';
 
       // 6. Formatear y enviar respuesta JSON estandarizada usando el servicio inyectado
       return this.responseFormatter.created(
         res,
-        result[this.dataFieldName] || result,
+        responseData,
         this.resourceName,
+        resourceId,
         req
       );
     } catch (error) {
-      // 7. Manejo de errores consistente
+      // 6. Manejo de errores consistente
       this.logger.error(`Error al crear ${this.resourceName}`, {
         error: error.message,
         stack: error.stack,
       });
-      next(error);
+
+      // Los errores se manejan en el middleware de errores
+      // NotFoundError, ValidationError, etc. serán formateados correctamente
+      return next(error);
     }
   }
 

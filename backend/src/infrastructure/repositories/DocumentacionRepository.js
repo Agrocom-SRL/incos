@@ -1,7 +1,6 @@
 import { Documentacion as DocumentacionModel } from '../database/models/documentacion.js';
 import { BaseRepository } from './BaseRepository.js';
 import { DocumentacionMapper } from '../mappers/DocumentacionMapper.js';
-import { Op } from 'sequelize';
 
 /**
  * Implementación del repositorio de documentación usando Sequelize
@@ -18,6 +17,12 @@ import { Op } from 'sequelize';
  * Clean Architecture:
  * - Infrastructure Layer: Implementación concreta del repositorio
  * - Usa DocumentacionMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
+ * 
+ * @implements {IDocumentacionRepository}
+ * 
+ * Esta clase cumple con el contrato IDocumentacionRepository:
+ * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findBy, findAll, create, update, delete, search, count)
+ * - La especialización está en buildWhereClause(), no en métodos adicionales
  */
 export class DocumentacionRepository extends BaseRepository {
   /**
@@ -89,69 +94,32 @@ export class DocumentacionRepository extends BaseRepository {
 
   /**
    * Construye la cláusula WHERE para filtros específicos
-   * Sobrescribe el método del BaseRepository para agregar filtro por tipoDocumento
+   * Maneja todos los criterios de búsqueda: tipoDocumento, requerido
    * 
-   * @param {Object} filters - Filtros opcionales
-   * @param {string} filters.tipoDocumento - Tipo de documento (INSCRIPCION, LICENCIA, PASANTIA, etc.)
+   * @param {Object} filters - Filtros de búsqueda
+   *   - tipoDocumento: Tipo de documento (INSCRIPCION, LICENCIA, PASANTIA, etc.)
+   *   - requerido: Si es requerido (requerido)
    * @returns {Object} Objeto WHERE para Sequelize
    */
   buildWhereClause(filters) {
     const where = {};
 
     // Filtrar por tipo de documento si se proporciona
-    if (filters.tipoDocumento) {
+    if (filters.tipoDocumento !== undefined) {
       where.tipoDocumento = filters.tipoDocumento;
+    }
+
+    // Filtrar por requerido si se proporciona
+    if (filters.requerido !== undefined) {
+      where.requerido = filters.requerido;
     }
 
     return where;
   }
 
-  /**
-   * Método específico: Buscar documentación por tipo
-   * 
-   * @param {string} tipoDocumento - Tipo de documento
-   * @param {Object} options - Opciones opcionales (includeInactive)
-   * @returns {Promise<Documentacion[]>} Array de entidades Documentacion
-   */
-  async findByTipoDocumento(tipoDocumento, options = {}) {
-    const where = {
-      tipoDocumento,
-      activo: options.includeInactive ? undefined : true,
-      // paranoid: true automáticamente excluye deletedAt !== null
-    };
-
-    const models = await this.getModel().findAll({
-      where,
-      order: this.getDefaultSort(),
-    });
-
-    return DocumentacionMapper.toEntityList(models);
-  }
-
-  /**
-   * Método específico: Buscar documentación requerida
-   * 
-   * @param {Object} options - Opciones opcionales (includeInactive, tipoDocumento)
-   * @returns {Promise<Documentacion[]>} Array de entidades Documentacion
-   */
-  async findRequeridos(options = {}) {
-    const where = {
-      requerido: true,
-      activo: options.includeInactive ? undefined : true,
-      // paranoid: true automáticamente excluye deletedAt !== null
-    };
-
-    if (options.tipoDocumento) {
-      where.tipoDocumento = options.tipoDocumento;
-    }
-
-    const models = await this.getModel().findAll({
-      where,
-      order: this.getDefaultSort(),
-    });
-
-    return DocumentacionMapper.toEntityList(models);
-  }
-
+  // NOTA: Los métodos específicos (findByTipoDocumento, findRequeridos) 
+  // han sido eliminados. Ahora se usan los métodos base de IRepository:
+  // - findAll({ tipoDocumento, requerido }) para buscar documentos por tipo y/o requerido
+  // - findBy({ tipoDocumento }) para buscar un documento por tipo
 }
 

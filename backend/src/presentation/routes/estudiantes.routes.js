@@ -103,6 +103,48 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
     );
 
     // ============================================
+    // GENERACIÓN DE DOCUMENTOS
+    // ============================================
+
+    /**
+     * POST /api/v1/estudiantes/:id/documentos/acta-compromiso
+     * Generar ACTA DE COMPROMISO para un estudiante
+     * 
+     * Path params:
+     * - id: ID del estudiante (número entero mayor a 0)
+     * 
+     * Response:
+     * {
+     *   "success": true,
+     *   "data": {
+     *     "acta": {
+     *       "filePath": "/uploads/documentos/estudiantes/123/ACTA_COMPROMISO_123456_1234567890.pdf",
+     *       "fileName": "ACTA_COMPROMISO_123456_1234567890.pdf",
+     *       "absolutePath": "/path/to/file.pdf"
+     *     }
+     *   },
+     *   "message": "Acta de compromiso generada correctamente"
+     * }
+     * 
+     * NOTA: Este es el primer endpoint de generación de documentos.
+     * Futuros documentos seguirán el mismo patrón:
+     * - POST /api/v1/estudiantes/:id/documentos/licencia
+     * - POST /api/v1/estudiantes/:id/documentos/beca
+     * - POST /api/v1/estudiantes/:id/documentos/recibo-pago
+     * 
+     * Orden de middlewares:
+     * 1. idValidator - Valida que el ID sea un número entero mayor a 0
+     * 2. validateRequest - Procesa errores de validación
+     * 3. controller - Genera el documento
+     */
+    router.post(
+        '/:id/documentos/acta-compromiso',
+        idValidator,  // 1. Validator primero
+        validateRequest,  // 2. Middleware que procesa errores
+        (req, res, next) => controllers.actaCompromisoController.handle(req, res, next)  // 3. Controller al final
+    );
+
+    // ============================================
     // ENDPOINTS FUTUROS (TODO: Implementar cuando se necesiten)
     // ============================================
 

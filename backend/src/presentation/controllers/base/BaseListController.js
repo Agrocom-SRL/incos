@@ -114,8 +114,8 @@ export class BaseListController {
   async handle(req, res, next) {
     try {
       // 1. Usar el DTO genérico UNA SOLA VEZ para normalizar query parameters
+      // Los query params ya fueron validados por listValidator en la ruta
       const { filters: baseFilters, page, limit } = ListRequestDTO.fromQuery(req.query);
-      const userId = req.user?.id || req.user?.userId;
 
       // 2. Construir filtros específicos adicionales (si buildFilters fue sobrescrito)
       const specificFilters = this.buildFilters(req.query, baseFilters);
@@ -128,18 +128,12 @@ export class BaseListController {
         page,
         limit,
         filters: combinedFilters,
-        userId,
       });
 
-      // 4. Validar que el use case esté configurado
-      if (!this.useCase) {
-        throw new Error(`${this.useCase?.constructor?.name || 'UseCase'} no está configurado`);
-      }
-
-      // 5. Ejecutar el caso de uso
+      // 4. Ejecutar el caso de uso
       const result = await this.useCase.execute(combinedFilters, page, limit);
 
-      // 6. Formatear y enviar respuesta JSON estandarizada usando el servicio inyectado
+      // 5. Formatear y enviar respuesta JSON estandarizada usando el servicio inyectado
       return this.responseFormatter.list(
         res,
         result[this.dataFieldName] || [],
@@ -158,7 +152,10 @@ export class BaseListController {
         error: error.message,
         stack: error.stack,
       });
-      next(error);
+
+      // Los errores se manejan en el middleware de errores
+      // NotFoundError, ValidationError, etc. serán formateados correctamente
+      return next(error);
     }
   }
 }
