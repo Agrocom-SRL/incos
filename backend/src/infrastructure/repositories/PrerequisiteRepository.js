@@ -75,9 +75,7 @@ export class PrerequisiteRepository extends BaseRepository {
    * Retorna el orden por defecto
    * @returns {Array}
    */
-  getDefaultSort() {
-    return [['materiaId', 'ASC']];
-  }
+  getDefaultSort() { return []; }
 
   /**
    * Mapea datos de dominio a formato del modelo Sequelize (para creación)

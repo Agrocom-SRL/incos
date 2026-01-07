@@ -34,6 +34,7 @@ const FieldSelect = ({
     value,
     defaultValue,
     onChange,
+    filterSort: null, // Deshabilitar ordenamiento automático de opciones al filtrar
     ...props,
   };
 

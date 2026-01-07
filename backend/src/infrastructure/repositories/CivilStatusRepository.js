@@ -57,9 +57,7 @@ export class CivilStatusRepository extends BaseRepository {
    * Retorna el orden por defecto
    * @returns {Array}
    */
-  getDefaultSort() {
-    return [['nombre', 'ASC']];
-  }
+  getDefaultSort() { return []; }
 
   /**
    * Mapea datos de dominio a formato del modelo Sequelize (para creación)

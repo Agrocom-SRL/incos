@@ -76,9 +76,7 @@ export class ManagementStageRepository extends BaseRepository {
    * Retorna el orden por defecto
    * @returns {Array}
    */
-  getDefaultSort() {
-    return [['fechaInicio', 'ASC']];
-  }
+  getDefaultSort() { return []; }
 
   /**
    * Mapea datos de dominio a formato del modelo Sequelize (para creación)

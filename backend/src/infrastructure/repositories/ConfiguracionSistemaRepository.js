@@ -51,9 +51,7 @@ export class ConfiguracionSistemaRepository extends BaseRepository {
    * Retorna el orden por defecto
    * @returns {Array}
    */
-  getDefaultSort() {
-    return [['clave', 'ASC']];
-  }
+  getDefaultSort() { return []; }
 
   /**
    * Mapea datos de dominio a formato del modelo Sequelize (para creación)

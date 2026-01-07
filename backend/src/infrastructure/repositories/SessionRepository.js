@@ -75,9 +75,7 @@ export class SessionRepository extends BaseRepository {
    * Retorna el orden por defecto
    * @returns {Array}
    */
-  getDefaultSort() {
-    return [['ultimoLogin', 'DESC']];
-  }
+  getDefaultSort() { return []; }
 
   /**
    * Mapea datos de dominio a formato del modelo Sequelize (para creación)

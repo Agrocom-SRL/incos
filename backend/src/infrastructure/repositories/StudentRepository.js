@@ -101,9 +101,7 @@ export class StudentRepository extends BaseRepository {
    * Orden: primero por código de estudiante (año y correlativo), luego por apellidos y nombres
    * @returns {Array}
    */
-  getDefaultSort() {
-    return [['codigoEstudiante', 'ASC'], ['apellidoPaterno', 'ASC'], ['apellidoMaterno', 'ASC'], ['nombres', 'ASC']];
-  }
+  getDefaultSort() { return []; }
 
   /**
    * Mapea datos de dominio a formato del modelo Sequelize (para creación)

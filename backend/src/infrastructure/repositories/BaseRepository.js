@@ -55,11 +55,12 @@ export class BaseRepository extends IRepository {
 
   /**
    * Retorna el orden por defecto para las consultas
-   * @abstract
+   * Ordena por ID para mantener el orden original de inserción en la base de datos
+   * Las subclases pueden sobrescribir este método si necesitan un orden diferente
    * @returns {Array} Array de arrays [campo, dirección] para Sequelize order
    */
   getDefaultSort() {
-    return [['nombre', 'ASC']];
+    return [['id', 'ASC']];
   }
 
   /**

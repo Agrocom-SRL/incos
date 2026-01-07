@@ -14,6 +14,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 
 -- ============================================
 -- INSERTAR DEPARTAMENTOS DE BOLIVIA
+-- Ordenados por población (de mayor a menor)
 -- Usamos variables para evitar subconsultas repetidas
 -- ============================================
 
@@ -21,15 +22,15 @@ SET FOREIGN_KEY_CHECKS = 0;
 SET @pais_bolivia_id = (SELECT id FROM paises WHERE codigo_iso = 'BOL' LIMIT 1);
 
 INSERT INTO departamentos (pais_id, nombre, codigo) VALUES
-(@pais_bolivia_id, 'La Paz', 'LP'),
-(@pais_bolivia_id, 'Cochabamba', 'CB'),
-(@pais_bolivia_id, 'Santa Cruz', 'SC'),
-(@pais_bolivia_id, 'Potosí', 'PT'),
-(@pais_bolivia_id, 'Chuquisaca', 'CH'),
-(@pais_bolivia_id, 'Oruro', 'OR'),
-(@pais_bolivia_id, 'Tarija', 'TJ'),
-(@pais_bolivia_id, 'Beni', 'BN'),
-(@pais_bolivia_id, 'Pando', 'PD');
+(@pais_bolivia_id, 'Santa Cruz', 'SC'),      -- 1. Más poblado
+(@pais_bolivia_id, 'La Paz', 'LP'),          -- 2
+(@pais_bolivia_id, 'Cochabamba', 'CB'),      -- 3
+(@pais_bolivia_id, 'Potosí', 'PT'),          -- 4
+(@pais_bolivia_id, 'Chuquisaca', 'CH'),      -- 5
+(@pais_bolivia_id, 'Oruro', 'OR'),           -- 6
+(@pais_bolivia_id, 'Tarija', 'TJ'),          -- 7
+(@pais_bolivia_id, 'Beni', 'BN'),            -- 8
+(@pais_bolivia_id, 'Pando', 'PD');           -- 9. Menos poblado
 
 -- Rehabilitar foreign key checks
 SET FOREIGN_KEY_CHECKS = 1;

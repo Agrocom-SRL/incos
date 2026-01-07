@@ -17,7 +17,7 @@ import { StudentScholarshipMapper } from '../mappers/StudentScholarshipMapper.js
  * 
  * Clean Architecture:
  * - Infrastructure Layer: Implementación concreta de IEstudianteBecaRepository
- * - Usa StudentScholarshipMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
+ * - Usa StudentScholarshipMapper (Infrastructure Layer) para adaptar Modelo ORM ↔ Entidad (Domain)
  * 
  * @implements {IEstudianteBecaRepository}
  * 
@@ -81,9 +81,7 @@ export class StudentScholarshipRepository extends BaseRepository {
    * Retorna el orden por defecto
    * @returns {Array}
    */
-  getDefaultSort() {
-    return [['fechaSolicitud', 'DESC']];
-  }
+  getDefaultSort() { return []; }
 
   /**
    * Mapea datos de dominio a formato del modelo Sequelize (para creación)

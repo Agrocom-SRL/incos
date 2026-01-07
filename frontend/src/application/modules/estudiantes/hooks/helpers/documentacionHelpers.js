@@ -173,10 +173,10 @@ export const applyLogicaPadreHijo = (documentosPadres = [], documentosHijos = []
 };
 
 /**
- * Ordena documentos por campo 'orden' y luego por nombre
+ * Ordena documentos por campo 'orden' (mantiene el orden original si no tiene orden)
  * 
  * @param {Array} documentos - Array de documentos a ordenar
- * @returns {Array} Array de documentos ordenados
+ * @returns {Array} Array de documentos ordenados por 'orden' (mantiene orden original si no tiene orden)
  */
 export const ordenarDocumentos = (documentos = []) => {
   if (!documentos || documentos.length === 0) {
@@ -184,14 +184,19 @@ export const ordenarDocumentos = (documentos = []) => {
   }
   
   return [...documentos].sort((a, b) => {
-    // Primero por orden (si existe)
+    // Solo ordenar por 'orden' si ambos tienen el campo definido
     if (a.orden !== undefined && b.orden !== undefined) {
-      if (a.orden !== b.orden) {
-        return a.orden - b.orden;
-      }
+      return a.orden - b.orden;
     }
-    // Luego por nombre
-    return (a.name || '').localeCompare(b.name || '');
+    // Si solo uno tiene 'orden', el que tiene orden va primero
+    if (a.orden !== undefined && b.orden === undefined) {
+      return -1;
+    }
+    if (a.orden === undefined && b.orden !== undefined) {
+      return 1;
+    }
+    // Si ninguno tiene 'orden', mantener el orden original (retornar 0)
+    return 0;
   });
 };
 
