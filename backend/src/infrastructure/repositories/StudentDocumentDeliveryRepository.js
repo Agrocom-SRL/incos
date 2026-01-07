@@ -47,23 +47,23 @@ export class StudentDocumentDeliveryRepository extends BaseRepository {
 
   /**
    * Construye la cláusula WHERE para filtros específicos
-   * Maneja todos los criterios de búsqueda: studentId, documentacionId, entregado, enTramite, esOriginal
+   * Maneja todos los criterios de búsqueda: estudianteId, documentacionId, entregado, enTramite, esOriginal
    * 
-   * @param {Object} filters - Filtros de búsqueda
-   *   - studentId: ID del estudiante (estudianteId)
-   *   - documentacionId: ID de la documentación (documentacionId)
-   *   - entregado: Si fue entregado (entregado)
-   *   - enTramite: Si está en trámite (enTramite)
-   *   - esOriginal: Si es original (esOriginal)
+   * @param {Object} filters - Filtros de búsqueda (usando nombres del modelo Sequelize)
+   *   - estudianteId: ID del estudiante
+   *   - documentacionId: ID de la documentación
+   *   - entregado: Si fue entregado
+   *   - enTramite: Si está en trámite
+   *   - esOriginal: Si es original
    * @returns {Object} Objeto WHERE para Sequelize
    */
   buildWhereClause(filters) {
     const where = {};
 
-    if (filters.studentId) {
-      where.estudianteId = filters.studentId;
+    if (filters.estudianteId !== undefined) {
+      where.estudianteId = filters.estudianteId;
     }
-    if (filters.documentacionId) {
+    if (filters.documentacionId !== undefined) {
       where.documentacionId = filters.documentacionId;
     }
     if (filters.entregado !== undefined) {
@@ -129,8 +129,8 @@ export class StudentDocumentDeliveryRepository extends BaseRepository {
 
   // NOTA: Los métodos específicos (findByEstudianteId, findByDocumentacionId, findByEstudianteAndDocumentacion) 
   // han sido eliminados. Ahora se usan los métodos base de IRepository:
-  // - findAll({ studentId }) para buscar todas las entregas por estudiante
+  // - findAll({ estudianteId }) para buscar todas las entregas por estudiante
   // - findAll({ documentacionId }) para buscar todas las entregas por documento
-  // - findBy({ studentId, documentacionId }) para buscar una entrega específica por estudiante y documento
+  // - findBy({ estudianteId, documentacionId }) para buscar una entrega específica por estudiante y documento
 }
 

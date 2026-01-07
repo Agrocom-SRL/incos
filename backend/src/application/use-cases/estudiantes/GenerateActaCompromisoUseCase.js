@@ -1,4 +1,5 @@
 import { NotFoundError, ValidationError } from '../../../domain/errors/AppError.js';
+import { normalizeId, createMap } from '../../../domain/utils/mapUtils.js';
 
 /**
  * Use Case: GenerateActaCompromisoUseCase
@@ -62,34 +63,34 @@ export class GenerateActaCompromisoUseCase {
       // 1. Validar estudiante (solo verifica existencia, no usamos el objeto)
       await this._validateStudent(studentId);
 
-      // 2. Obtener documentos de inscripción (una sola consulta)
+      // 2. Obtener documentos de inscripción (solo campos necesarios: id y nombre)
       const documentosInscripcion = await this._getInscripcionDocuments();
 
-      // 3. Crear mapa de IDs a nombres para búsqueda rápida
-      const documentosMap = this._createDocumentMap(documentosInscripcion);
+      // 3. Crear mapa de IDs a nombres desde los documentos recuperados
+      const documentosMap = createMap(documentosInscripcion, 'id', 'name');
 
       // 4. Obtener entregas de documentos del estudiante
       const entregas = await this._getStudentDocumentDeliveries(studentId);
 
-      // 4.1. Validar que tenga al menos un documento registrado
+      // 5. Validar que tenga al menos un documento registrado
       this._validateHasDeliveryRecords(entregas, studentId);
 
-      // 5. Filtrar solo entregas de documentos de inscripción
+      // 6. Filtrar solo entregas de documentos de inscripción
       const entregasInscripcion = this._filterInscripcionDeliveries(
         entregas,
         documentosInscripcion.map(doc => doc.id)
       );
 
-      // 6. Separar documentos entregados y faltantes
+      // 7. Separar documentos entregados y faltantes
       const { entregados, faltantes } = this._separateDeliveredAndMissing(entregasInscripcion);
 
-      // 7. Identificar documentos sin entrega registrada
+      // 8. Identificar documentos sin entrega registrada
       const documentosSinEntrega = this._findDocumentsWithoutDelivery(
         documentosInscripcion,
         entregasInscripcion
       );
 
-      // 8. Construir estado de documentos
+      // 9. Construir estado de documentos
       const estadoDocumentos = this._buildDocumentStatus(
         documentosInscripcion,
         entregados,
@@ -98,10 +99,10 @@ export class GenerateActaCompromisoUseCase {
         documentosMap
       );
 
-      // 8.1. Validar que tenga documentos faltantes (regla de negocio)
+      // 9.1. Validar que tenga documentos faltantes (regla de negocio)
       this._validateHasMissingDocuments(estadoDocumentos, studentId);
 
-      // 9. Construir y retornar respuesta
+      // 10. Construir y retornar respuesta
       return this._buildResponse(studentId, estadoDocumentos);
 
     } catch (error) {
@@ -130,8 +131,8 @@ export class GenerateActaCompromisoUseCase {
     this.logger.info('[Estudiantes] Estudiante encontrado', {
       studentId,
       studentCode: student.studentCode,
-      ci: student.ci,
       nombres: student.nombres,
+      apellidoPaterno: student.apellidoPaterno,
     });
   }
 
@@ -175,14 +176,15 @@ export class GenerateActaCompromisoUseCase {
   }
 
   /**
-   * Obtiene todos los documentos de tipo INSCRIPCION (solo principales, sin padre)
+   * Obtiene documentos de inscripción con solo campos necesarios (id y nombre)
    * @private
-   * @returns {Promise<Array>} Array de entidades Documentacion
+   * @returns {Promise<Array>} Array de entidades Documentacion con solo id y name
    */
   async _getInscripcionDocuments() {
     const result = await this.documentacionRepository.findAll({
       tipoDocumento: 'INSCRIPCION',
       documentoPadreId: null, // Solo documentos principales (sin padre)
+      attributes: ['id', 'nombre'], // Solo campos necesarios para optimización
     });
 
     const documentos = result.documentaciones || [];
@@ -199,29 +201,6 @@ export class GenerateActaCompromisoUseCase {
   }
 
   /**
-   * Crea un mapa de IDs a nombres para búsqueda rápida
-   * Normaliza IDs a número y string para evitar problemas de tipo
-   * @private
-   * @param {Array} documents - Array de entidades Documentacion
-   * @returns {Object} Mapa { [id]: nombre, [String(id)]: nombre }
-   */
-  _createDocumentMap(documents) {
-    const map = {};
-    documents.forEach(doc => {
-      const docId = this._normalizeId(doc.id);
-      map[docId] = doc.name;
-      map[String(docId)] = doc.name; // También como string para compatibilidad
-    });
-
-    this.logger.info('[Estudiantes] Mapa de documentos creado', {
-      totalDocumentos: Object.keys(map).length / 2, // Dividido por 2 porque cada doc tiene 2 entradas
-      ejemploIds: documents.slice(0, 3).map(doc => doc.id),
-    });
-
-    return map;
-  }
-
-  /**
    * Obtiene las entregas de documentos del estudiante
    * @private
    * @param {number} studentId - ID del estudiante
@@ -229,7 +208,8 @@ export class GenerateActaCompromisoUseCase {
    */
   async _getStudentDocumentDeliveries(studentId) {
     const result = await this.studentDocumentDeliveryRepository.findAll({
-      studentId,
+      estudianteId: studentId,
+      attributes: ['id', 'documentacionId', 'entregado', 'enTramite'],
     });
 
     const entregas = result.studentDocumentDeliveries || [];
@@ -256,8 +236,8 @@ export class GenerateActaCompromisoUseCase {
    */
   _filterInscripcionDeliveries(deliveries, documentIds) {
     const entregasFiltradas = deliveries.filter(entrega => {
-      const entregaId = this._normalizeId(entrega.documentacionId);
-      return documentIds.includes(entregaId);
+      const entregaId = normalizeId(entrega.documentacionId);
+      return entregaId !== null && documentIds.includes(entregaId);
     });
 
     this.logger.info('[Estudiantes] Entregas filtradas', {
@@ -297,9 +277,15 @@ export class GenerateActaCompromisoUseCase {
    * @returns {Array} Array de documentos sin entrega
    */
   _findDocumentsWithoutDelivery(requiredDocuments, deliveries) {
-    const entregasDocumentacionIds = deliveries.map(e => this._normalizeId(e.documentacionId));
+    const entregasDocumentacionIds = deliveries
+      .map(e => normalizeId(e.documentacionId))
+      .filter(id => id !== null);
+    
     return requiredDocuments.filter(
-      doc => !entregasDocumentacionIds.includes(this._normalizeId(doc.id))
+      doc => {
+        const docId = normalizeId(doc.id);
+        return docId !== null && !entregasDocumentacionIds.includes(docId);
+      }
     );
   }
 
@@ -318,18 +304,24 @@ export class GenerateActaCompromisoUseCase {
       totalRequeridos: requiredDocuments.length,
       entregados: deliveredList.length,
       faltantes: missingList.length + noDeliveryDocs.length,
-      documentosEntregados: deliveredList.map(e => ({
-        id: e.documentacionId,
-        nombre: this._getDocumentName(e.documentacionId, documentMap),
-        entregado: true,
-      })),
-      documentosFaltantes: [
-        ...missingList.map(e => ({
+      documentosEntregados: deliveredList.map(e => {
+        const docId = normalizeId(e.documentacionId);
+        return {
           id: e.documentacionId,
-          nombre: this._getDocumentName(e.documentacionId, documentMap),
-          entregado: false,
-          tieneRegistroEntrega: true,
-        })),
+          nombre: docId !== null ? (documentMap[docId] || documentMap[String(docId)] || 'Documento no encontrado') : 'Documento no encontrado',
+          entregado: true,
+        };
+      }),
+      documentosFaltantes: [
+        ...missingList.map(e => {
+          const docId = normalizeId(e.documentacionId);
+          return {
+            id: e.documentacionId,
+            nombre: docId !== null ? (documentMap[docId] || documentMap[String(docId)] || 'Documento no encontrado') : 'Documento no encontrado',
+            entregado: false,
+            tieneRegistroEntrega: true,
+          };
+        }),
         ...noDeliveryDocs.map(doc => ({
           id: doc.id,
           nombre: doc.name,
@@ -340,29 +332,6 @@ export class GenerateActaCompromisoUseCase {
     };
   }
 
-  /**
-   * Obtiene el nombre de un documento desde el mapa
-   * @private
-   * @param {number|string} documentId - ID del documento
-   * @param {Object} documentMap - Mapa de IDs a nombres
-   * @returns {string} Nombre del documento o 'Documento no encontrado'
-   */
-  _getDocumentName(documentId, documentMap) {
-    const normalizedId = this._normalizeId(documentId);
-    return documentMap[normalizedId] 
-      || documentMap[String(normalizedId)]
-      || 'Documento no encontrado';
-  }
-
-  /**
-   * Normaliza un ID a número (para comparaciones consistentes)
-   * @private
-   * @param {number|string} id - ID a normalizar
-   * @returns {number} ID normalizado
-   */
-  _normalizeId(id) {
-    return typeof id === 'string' ? parseInt(id, 10) : id;
-  }
 
   /**
    * Construye la respuesta final del caso de uso

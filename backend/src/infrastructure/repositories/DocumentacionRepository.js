@@ -125,7 +125,6 @@ export class DocumentacionRepository extends BaseRepository {
 
   // NOTA: Los métodos específicos (findByTipoDocumento, findRequeridos) 
   // han sido eliminados. Ahora se usan los métodos base de IRepository:
-  // - findAll({ tipoDocumento, requerido }) para buscar documentos por tipo y/o requerido
+  // - findAll({ tipoDocumento, requerido, documentoPadreId }) para buscar con campos específicos
   // - findBy({ tipoDocumento }) para buscar un documento por tipo
 }
-
