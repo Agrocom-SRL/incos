@@ -12,7 +12,8 @@
  * @returns {Container} Contenedor con recurso Países registrado
  */
 
-import { TOKENS } from '../../tokens.js';
+import { GEOGRAFICOS_TOKENS, REPOSITORIOS_TOKENS, SERVICIOS_TOKENS } from '../../tokens/index.js';
+import { registerComponent } from '../../utils/container.helpers.js';
 import { ListPaisesUseCase } from '../../../../application/use-cases/geograficos/ListPaisesUseCase.js';
 import { ListPaisesController } from '../../../../presentation/controllers/geograficos/index.js';
 import { buildPaisesRouter } from '../../../../presentation/routes/paises.routes.js';
@@ -27,68 +28,66 @@ export function registerPaisesResource(container) {
     // ============================================
     // USE CASES
     // ============================================
-    container.register(
-        TOKENS.geo_listPaisesUseCase,
+    registerComponent(
+        container,
+        GEOGRAFICOS_TOKENS.listPaisesUseCase,
         (c) =>
             new ListPaisesUseCase({
-                countryRepository: c.resolve(TOKENS.countryRepository),
-                logger: c.resolve(TOKENS.logger),
+                countryRepository: c.resolve(REPOSITORIOS_TOKENS.countryRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
             }),
-        { singleton: true }
     );
 
     // TODO: Agregar otros Use Cases cuando se implementen sus endpoints
-    // container.register(
-    //     TOKENS.geo_createPaisUseCase,
+    // registerComponent(
+    //     GEOGRAFICOS_TOKENS.createPaisUseCase,
     //     (c) => new CreatePaisUseCase({
-    //         countryRepository: c.resolve(TOKENS.countryRepository),
-    //         logger: c.resolve(TOKENS.logger),
-    //     }),
-    //     { singleton: true }
+    //         countryRepository: c.resolve(REPOSITORIOS_TOKENS.countryRepository),
+    //         logger: c.resolve(SERVICIOS_TOKENS.logger),
+    //     })
     // );
 
     // ============================================
     // CONTROLLERS
     // ============================================
-    container.register(
-        TOKENS.geo_listPaisesController,
+    registerComponent(
+        container,
+        GEOGRAFICOS_TOKENS.listPaisesController,
         (c) =>
             new ListPaisesController({
-                listPaisesUseCase: c.resolve(TOKENS.geo_listPaisesUseCase),
-                logger: c.resolve(TOKENS.logger),
-                responseFormatter: c.resolve(TOKENS.responseFormatter),
+                listPaisesUseCase: c.resolve(GEOGRAFICOS_TOKENS.listPaisesUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
             }),
-        { singleton: true }
     );
 
     // TODO: Agregar otros Controllers cuando se implementen sus endpoints
-    // container.register(
-    //     TOKENS.geo_createPaisController,
+    // registerComponent(
+    //     GEOGRAFICOS_TOKENS.createPaisController,
     //     (c) => new CreatePaisController({
-    //         createPaisUseCase: c.resolve(TOKENS.geo_createPaisUseCase),
-    //         logger: c.resolve(TOKENS.logger),
-    //     }),
-    //     { singleton: true }
+    //         createPaisUseCase: c.resolve(GEOGRAFICOS_TOKENS.createPaisUseCase),
+    //         logger: c.resolve(SERVICIOS_TOKENS.logger),
+    //     })
     // );
 
     // ============================================
     // ROUTER
     // ============================================
-    container.register(
-        TOKENS.geo_paisesRouter,
+    registerComponent(
+        container,
+        GEOGRAFICOS_TOKENS.paisesRouter,
         (c) => {
             const controllers = {
-                listPaisesController: c.resolve(TOKENS.geo_listPaisesController),
+                listPaisesController: c.resolve(GEOGRAFICOS_TOKENS.listPaisesController),
                 // TODO: Agregar otros controllers cuando se implementen sus rutas
             };
 
             const middlewares = {
-                validateRequest: c.resolve(TOKENS.validateRequest),
+                validateRequest: c.resolve(SERVICIOS_TOKENS.validateRequest),
             };
 
             return buildPaisesRouter({ controllers, middlewares });
         },
-        { singleton: true }
     );
 
     return container;

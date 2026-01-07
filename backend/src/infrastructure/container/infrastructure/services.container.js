@@ -17,8 +17,9 @@
  * Nota: El logger implementa ILogger del dominio (backend/src/domain/interfaces/services/ILogger.js)
  */
 
-import { TOKENS } from '../tokens.js';
-import { logger } from '../../../infrastructure/services/WinstonLoggerAdapter.js';
+import { SERVICIOS_TOKENS } from '../tokens/index.js';
+import { registerService } from '../utils/container.helpers.js';
+import { logger } from '../../services/WinstonLoggerAdapter.js';
 import { errorFormatter } from '../../services/ErrorFormatter.js';
 import { responseFormatter } from '../../services/ResponseFormatter.js';
 import { createValidateRequest } from '../../../presentation/middleware/validation.middleware.js';
@@ -28,68 +29,38 @@ export function registerServicesModule(container) {
     // ============================================
     // LOGGING
     // ============================================
-    if (!container.has(TOKENS.logger)) {
-        container.register(
-            TOKENS.logger,
-            () => logger,
-            { singleton: true }
-        );
-    }
+    registerService(container, SERVICIOS_TOKENS.logger, logger);
 
     // ============================================
     // ERROR FORMATTING
     // ============================================
-    if (!container.has(TOKENS.errorFormatter)) {
-        container.register(
-            TOKENS.errorFormatter,
-            () => errorFormatter,
-            { singleton: true }
-        );
-    }
+    registerService(container, SERVICIOS_TOKENS.errorFormatter, errorFormatter);
 
     // ============================================
     // SUCCESS RESPONSE FORMATTING
     // ============================================
-    if (!container.has(TOKENS.responseFormatter)) {
-        container.register(
-            TOKENS.responseFormatter,
-            () => responseFormatter,
-            { singleton: true }
-        );
-    }
+    registerService(container, SERVICIOS_TOKENS.responseFormatter, responseFormatter);
 
     // ============================================
     // VALIDATION MIDDLEWARE
     // ============================================
-    if (!container.has(TOKENS.validateRequest)) {
-        container.register(
-            TOKENS.validateRequest,
-            (c) => createValidateRequest(c.resolve(TOKENS.logger)),
-            { singleton: true }
-        );
-    }
+    registerService(
+        container,
+        SERVICIOS_TOKENS.validateRequest,
+        (c) => createValidateRequest(c.resolve(SERVICIOS_TOKENS.logger))
+    );
 
     // ============================================
     // FILE UPLOAD
     // ============================================
-    if (!container.has(TOKENS.fileUploadService)) {
-        container.register(
-            TOKENS.fileUploadService,
-            () => fileUploadService,
-            { singleton: true }
-        );
-    }
+    registerService(container, SERVICIOS_TOKENS.fileUploadService, fileUploadService);
 
     // ============================================
     // FILE STORAGE (Futuro)
     // ============================================
-    // if (!container.has(TOKENS.fileStorageService)) {
-    //   container.register(
-    //     TOKENS.fileStorageService,
-    //     () => fileStorageService,
-    //     { singleton: true }
-    //   );
-    // }
+    // registerService(container, SERVICIOS_TOKENS.fileStorageService, fileStorageService);
 
     return container;
 }
+
+

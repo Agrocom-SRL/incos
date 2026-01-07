@@ -12,7 +12,8 @@
  * @returns {Container} Contenedor con recurso Provincias registrado
  */
 
-import { TOKENS } from '../../tokens.js';
+import { GEOGRAFICOS_TOKENS, REPOSITORIOS_TOKENS, SERVICIOS_TOKENS } from '../../tokens/index.js';
+import { registerComponent } from '../../utils/container.helpers.js';
 import { ListProvinciasUseCase } from '../../../../application/use-cases/geograficos/ListProvinciasUseCase.js';
 import { ListProvinciasController } from '../../../../presentation/controllers/geograficos/index.js';
 import { buildProvinciasRouter } from '../../../../presentation/routes/provincias.routes.js';
@@ -27,14 +28,14 @@ export function registerProvinciasResource(container) {
     // ============================================
     // USE CASES
     // ============================================
-    container.register(
-        TOKENS.geo_listProvinciasUseCase,
+    registerComponent(
+        container,
+        GEOGRAFICOS_TOKENS.listProvinciasUseCase,
         (c) =>
             new ListProvinciasUseCase({
-                provinceRepository: c.resolve(TOKENS.provinceRepository),
-                logger: c.resolve(TOKENS.logger),
+                provinceRepository: c.resolve(REPOSITORIOS_TOKENS.provinceRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
             }),
-        { singleton: true }
     );
 
     // TODO: Agregar otros Use Cases cuando se implementen sus endpoints
@@ -42,15 +43,15 @@ export function registerProvinciasResource(container) {
     // ============================================
     // CONTROLLERS
     // ============================================
-    container.register(
-        TOKENS.geo_listProvinciasController,
+    registerComponent(
+        container,
+        GEOGRAFICOS_TOKENS.listProvinciasController,
         (c) =>
             new ListProvinciasController({
-                listProvinciasUseCase: c.resolve(TOKENS.geo_listProvinciasUseCase),
-                logger: c.resolve(TOKENS.logger),
-                responseFormatter: c.resolve(TOKENS.responseFormatter),
+                listProvinciasUseCase: c.resolve(GEOGRAFICOS_TOKENS.listProvinciasUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
             }),
-        { singleton: true }
     );
 
     // TODO: Agregar otros Controllers cuando se implementen sus endpoints
@@ -58,21 +59,21 @@ export function registerProvinciasResource(container) {
     // ============================================
     // ROUTER
     // ============================================
-    container.register(
-        TOKENS.geo_provinciasRouter,
+    registerComponent(
+        container,
+        GEOGRAFICOS_TOKENS.provinciasRouter,
         (c) => {
             const controllers = {
-                listProvinciasController: c.resolve(TOKENS.geo_listProvinciasController),
+                listProvinciasController: c.resolve(GEOGRAFICOS_TOKENS.listProvinciasController),
                 // TODO: Agregar otros controllers cuando se implementen sus rutas
             };
 
             const middlewares = {
-                validateRequest: c.resolve(TOKENS.validateRequest),
+                validateRequest: c.resolve(SERVICIOS_TOKENS.validateRequest),
             };
 
             return buildProvinciasRouter({ controllers, middlewares });
         },
-        { singleton: true }
     );
 
     return container;

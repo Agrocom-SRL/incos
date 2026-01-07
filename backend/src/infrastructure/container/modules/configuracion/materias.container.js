@@ -12,7 +12,8 @@
  * @returns {Container} Contenedor con recurso Materias registrado
  */
 
-import { TOKENS } from '../../tokens.js';
+import { CONFIGURACION_TOKENS, REPOSITORIOS_TOKENS, SERVICIOS_TOKENS } from '../../tokens/index.js';
+import { registerComponent } from '../../utils/container.helpers.js';
 import { ListMateriasUseCase } from '../../../../application/use-cases/configuracion/ListMateriasUseCase.js';
 import { ListMateriasController } from '../../../../presentation/controllers/configuracion/index.js';
 import { buildMateriasRouter } from '../../../../presentation/routes/materias.routes.js';
@@ -23,18 +24,19 @@ import { buildMateriasRouter } from '../../../../presentation/routes/materias.ro
  * @param {Container} container - Contenedor de DI
  * @returns {Container} Contenedor actualizado
  */
+
 export function registerMateriasResource(container) {
     // ============================================
     // USE CASES
     // ============================================
-    container.register(
-        TOKENS.cfg_listMateriasUseCase,
+    registerComponent(
+        container,
+        CONFIGURACION_TOKENS.listMateriasUseCase,
         (c) =>
             new ListMateriasUseCase({
-                subjectRepository: c.resolve(TOKENS.subjectRepository),
-                logger: c.resolve(TOKENS.logger),
-            }),
-        { singleton: true }
+                subjectRepository: c.resolve(REPOSITORIOS_TOKENS.subjectRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
     );
 
     // TODO: Agregar otros Use Cases cuando se implementen sus endpoints
@@ -42,15 +44,15 @@ export function registerMateriasResource(container) {
     // ============================================
     // CONTROLLERS
     // ============================================
-    container.register(
-        TOKENS.cfg_listMateriasController,
+    registerComponent(
+        container,
+        CONFIGURACION_TOKENS.listMateriasController,
         (c) =>
             new ListMateriasController({
-                listMateriasUseCase: c.resolve(TOKENS.cfg_listMateriasUseCase),
-                logger: c.resolve(TOKENS.logger),
-                responseFormatter: c.resolve(TOKENS.responseFormatter),
-            }),
-        { singleton: true }
+                listMateriasUseCase: c.resolve(CONFIGURACION_TOKENS.listMateriasUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
     );
 
     // TODO: Agregar otros Controllers cuando se implementen sus endpoints
@@ -58,21 +60,21 @@ export function registerMateriasResource(container) {
     // ============================================
     // ROUTER
     // ============================================
-    container.register(
-        TOKENS.cfg_materiasRouter,
+    registerComponent(
+        container,
+        CONFIGURACION_TOKENS.materiasRouter,
         (c) => {
             const controllers = {
-                listMateriasController: c.resolve(TOKENS.cfg_listMateriasController),
+                listMateriasController: c.resolve(CONFIGURACION_TOKENS.listMateriasController),
                 // TODO: Agregar otros controllers cuando se implementen sus rutas
             };
 
             const middlewares = {
-                validateRequest: c.resolve(TOKENS.validateRequest),
+                validateRequest: c.resolve(SERVICIOS_TOKENS.validateRequest),
             };
 
             return buildMateriasRouter({ controllers, middlewares });
-        },
-        { singleton: true }
+        }
     );
 
     return container;

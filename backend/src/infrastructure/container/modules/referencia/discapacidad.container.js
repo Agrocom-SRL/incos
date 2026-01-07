@@ -12,7 +12,8 @@
  * @returns {Container} Contenedor con recurso Discapacidad registrado
  */
 
-import { TOKENS } from '../../tokens.js';
+import { REFERENCIA_TOKENS, REPOSITORIOS_TOKENS, SERVICIOS_TOKENS } from '../../tokens/index.js';
+import { registerComponent } from '../../utils/container.helpers.js';
 import { ListDiscapacidadUseCase } from '../../../../application/use-cases/referencia/ListDiscapacidadUseCase.js';
 import { ListDiscapacidadController } from '../../../../presentation/controllers/referencia/index.js';
 import { buildDiscapacidadRouter } from '../../../../presentation/routes/discapacidad.routes.js';
@@ -27,14 +28,14 @@ export function registerDiscapacidadResource(container) {
     // ============================================
     // USE CASES
     // ============================================
-    container.register(
-        TOKENS.ref_listDiscapacidadUseCase,
+    registerComponent(
+        container,
+        REFERENCIA_TOKENS.listDiscapacidadUseCase,
         (c) =>
             new ListDiscapacidadUseCase({
-                disabilityTypeRepository: c.resolve(TOKENS.disabilityTypeRepository),
-                logger: c.resolve(TOKENS.logger),
+                disabilityTypeRepository: c.resolve(REPOSITORIOS_TOKENS.disabilityTypeRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
             }),
-        { singleton: true }
     );
 
     // TODO: Agregar otros Use Cases cuando se implementen sus endpoints
@@ -42,15 +43,15 @@ export function registerDiscapacidadResource(container) {
     // ============================================
     // CONTROLLERS
     // ============================================
-    container.register(
-        TOKENS.ref_listDiscapacidadController,
+    registerComponent(
+        container,
+        REFERENCIA_TOKENS.listDiscapacidadController,
         (c) =>
             new ListDiscapacidadController({
-                listDiscapacidadUseCase: c.resolve(TOKENS.ref_listDiscapacidadUseCase),
-                logger: c.resolve(TOKENS.logger),
-                responseFormatter: c.resolve(TOKENS.responseFormatter),
+                listDiscapacidadUseCase: c.resolve(REFERENCIA_TOKENS.listDiscapacidadUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
             }),
-        { singleton: true }
     );
 
     // TODO: Agregar otros Controllers cuando se implementen sus endpoints
@@ -58,21 +59,21 @@ export function registerDiscapacidadResource(container) {
     // ============================================
     // ROUTER
     // ============================================
-    container.register(
-        TOKENS.ref_discapacidadRouter,
+    registerComponent(
+        container,
+        REFERENCIA_TOKENS.discapacidadRouter,
         (c) => {
             const controllers = {
-                listDiscapacidadController: c.resolve(TOKENS.ref_listDiscapacidadController),
+                listDiscapacidadController: c.resolve(REFERENCIA_TOKENS.listDiscapacidadController),
                 // TODO: Agregar otros controllers cuando se implementen sus rutas
             };
 
             const middlewares = {
-                validateRequest: c.resolve(TOKENS.validateRequest),
+                validateRequest: c.resolve(SERVICIOS_TOKENS.validateRequest),
             };
 
             return buildDiscapacidadRouter({ controllers, middlewares });
         },
-        { singleton: true }
     );
 
     return container;

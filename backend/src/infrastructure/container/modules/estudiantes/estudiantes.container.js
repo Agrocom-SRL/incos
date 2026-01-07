@@ -12,7 +12,8 @@
  * @returns {Container} Contenedor con recurso Estudiantes registrado
  */
 
-import { TOKENS } from '../../tokens.js';
+import { ESTUDIANTES_TOKENS, REPOSITORIOS_TOKENS, SERVICIOS_TOKENS } from '../../tokens/index.js';
+import { registerComponent } from '../../utils/container.helpers.js';
 import { ListStudentsUseCase } from '../../../../application/use-cases/estudiantes/ListStudentsUseCase.js';
 import { RegisterStudentUseCase } from '../../../../application/use-cases/estudiantes/RegisterStudentUseCase.js';
 import { GetStudentByIdUseCase } from '../../../../application/use-cases/estudiantes/GetStudentByIdUseCase.js';
@@ -25,56 +26,57 @@ import { buildEstudiantesRouter } from '../../../../presentation/routes/estudian
  * @param {Container} container - Contenedor de DI
  * @returns {Container} Contenedor actualizado
  */
+
 export function registerEstudiantesResource(container) {
     // ============================================
     // USE CASES
     // ============================================
-    container.register(
-        TOKENS.est_listStudentsUseCase,
+    registerComponent(
+        container,
+        ESTUDIANTES_TOKENS.listStudentsUseCase,
         (c) =>
             new ListStudentsUseCase({
-                studentRepository: c.resolve(TOKENS.studentRepository),
-                logger: c.resolve(TOKENS.logger),
-            }),
-        { singleton: true }
+                studentRepository: c.resolve(REPOSITORIOS_TOKENS.studentRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
     );
 
-    container.register(
-        TOKENS.est_registerStudentUseCase,
+    registerComponent(
+        container,
+        ESTUDIANTES_TOKENS.registerStudentUseCase,
         (c) =>
             new RegisterStudentUseCase({
-                studentRepository: c.resolve(TOKENS.studentRepository),
-                studentGuardianRepository: c.resolve(TOKENS.studentGuardianRepository),
-                studentDisabilityRepository: c.resolve(TOKENS.studentDisabilityRepository),
-                studentOriginRepository: c.resolve(TOKENS.studentOriginRepository),
-                studentDocumentDeliveryRepository: c.resolve(TOKENS.studentDocumentDeliveryRepository),
-                configuracionSistemaRepository: c.resolve(TOKENS.configuracionSistemaRepository),
-                logger: c.resolve(TOKENS.logger),
-            }),
-        { singleton: true }
+                studentRepository: c.resolve(REPOSITORIOS_TOKENS.studentRepository),
+                studentGuardianRepository: c.resolve(REPOSITORIOS_TOKENS.studentGuardianRepository),
+                studentDisabilityRepository: c.resolve(REPOSITORIOS_TOKENS.studentDisabilityRepository),
+                studentOriginRepository: c.resolve(REPOSITORIOS_TOKENS.studentOriginRepository),
+                studentDocumentDeliveryRepository: c.resolve(REPOSITORIOS_TOKENS.studentDocumentDeliveryRepository),
+                configuracionSistemaRepository: c.resolve(REPOSITORIOS_TOKENS.configuracionSistemaRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
     );
 
-    container.register(
-        TOKENS.est_getStudentByIdUseCase,
+    registerComponent(
+        container,
+        ESTUDIANTES_TOKENS.getStudentByIdUseCase,
         (c) =>
             new GetStudentByIdUseCase({
-                studentRepository: c.resolve(TOKENS.studentRepository),
-                studentGuardianRepository: c.resolve(TOKENS.studentGuardianRepository),
-                studentDisabilityRepository: c.resolve(TOKENS.studentDisabilityRepository),
-                studentOriginRepository: c.resolve(TOKENS.studentOriginRepository),
-                studentDocumentDeliveryRepository: c.resolve(TOKENS.studentDocumentDeliveryRepository),
-                countryRepository: c.resolve(TOKENS.countryRepository),
-                departmentRepository: c.resolve(TOKENS.departmentRepository),
-                provinceRepository: c.resolve(TOKENS.provinceRepository),
-                municipalityRepository: c.resolve(TOKENS.municipalityRepository),
-                languageRepository: c.resolve(TOKENS.languageRepository),
-                civilStatusRepository: c.resolve(TOKENS.civilStatusRepository),
-                disabilityTypeRepository: c.resolve(TOKENS.disabilityTypeRepository),
-                relationshipTypeRepository: c.resolve(TOKENS.relationshipTypeRepository),
-                documentacionRepository: c.resolve(TOKENS.documentacionRepository),
-                logger: c.resolve(TOKENS.logger),
-            }),
-        { singleton: true }
+                studentRepository: c.resolve(REPOSITORIOS_TOKENS.studentRepository),
+                studentGuardianRepository: c.resolve(REPOSITORIOS_TOKENS.studentGuardianRepository),
+                studentDisabilityRepository: c.resolve(REPOSITORIOS_TOKENS.studentDisabilityRepository),
+                studentOriginRepository: c.resolve(REPOSITORIOS_TOKENS.studentOriginRepository),
+                studentDocumentDeliveryRepository: c.resolve(REPOSITORIOS_TOKENS.studentDocumentDeliveryRepository),
+                countryRepository: c.resolve(REPOSITORIOS_TOKENS.countryRepository),
+                departmentRepository: c.resolve(REPOSITORIOS_TOKENS.departmentRepository),
+                provinceRepository: c.resolve(REPOSITORIOS_TOKENS.provinceRepository),
+                municipalityRepository: c.resolve(REPOSITORIOS_TOKENS.municipalityRepository),
+                languageRepository: c.resolve(REPOSITORIOS_TOKENS.languageRepository),
+                civilStatusRepository: c.resolve(REPOSITORIOS_TOKENS.civilStatusRepository),
+                disabilityTypeRepository: c.resolve(REPOSITORIOS_TOKENS.disabilityTypeRepository),
+                relationshipTypeRepository: c.resolve(REPOSITORIOS_TOKENS.relationshipTypeRepository),
+                documentacionRepository: c.resolve(REPOSITORIOS_TOKENS.documentacionRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
     );
 
     // TODO: Agregar otros Use Cases cuando se implementen sus endpoints
@@ -82,37 +84,37 @@ export function registerEstudiantesResource(container) {
     // ============================================
     // CONTROLLERS
     // ============================================
-    container.register(
-        TOKENS.est_listStudentsController,
+    registerComponent(
+        container,
+        ESTUDIANTES_TOKENS.listStudentsController,
         (c) =>
             new ListStudentsController({
-                listStudentsUseCase: c.resolve(TOKENS.est_listStudentsUseCase),
-                logger: c.resolve(TOKENS.logger),
-                responseFormatter: c.resolve(TOKENS.responseFormatter),
-            }),
-        { singleton: true }
+                listStudentsUseCase: c.resolve(ESTUDIANTES_TOKENS.listStudentsUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
     );
 
-    container.register(
-        TOKENS.est_registerStudentController,
+    registerComponent(
+        container,
+        ESTUDIANTES_TOKENS.registerStudentController,
         (c) =>
             new RegisterStudentController({
-                registerStudentUseCase: c.resolve(TOKENS.est_registerStudentUseCase),
-                logger: c.resolve(TOKENS.logger),
-                responseFormatter: c.resolve(TOKENS.responseFormatter),
-            }),
-        { singleton: true }
+                registerStudentUseCase: c.resolve(ESTUDIANTES_TOKENS.registerStudentUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
     );
 
-    container.register(
-        TOKENS.est_getStudentByIdController,
+    registerComponent(
+        container,
+        ESTUDIANTES_TOKENS.getStudentByIdController,
         (c) =>
             new GetStudentByIdController({
-                getStudentByIdUseCase: c.resolve(TOKENS.est_getStudentByIdUseCase),
-                logger: c.resolve(TOKENS.logger),
-                responseFormatter: c.resolve(TOKENS.responseFormatter),
-            }),
-        { singleton: true }
+                getStudentByIdUseCase: c.resolve(ESTUDIANTES_TOKENS.getStudentByIdUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
     );
 
     // TODO: Agregar otros Controllers cuando se implementen sus endpoints
@@ -120,25 +122,25 @@ export function registerEstudiantesResource(container) {
     // ============================================
     // ROUTER
     // ============================================
-    container.register(
-        TOKENS.est_estudiantesRouter,
+    registerComponent(
+        container,
+        ESTUDIANTES_TOKENS.estudiantesRouter,
         (c) => {
             const controllers = {
-                listStudentsController: c.resolve(TOKENS.est_listStudentsController),
-                registerStudentController: c.resolve(TOKENS.est_registerStudentController),
-                getStudentByIdController: c.resolve(TOKENS.est_getStudentByIdController),
+                listStudentsController: c.resolve(ESTUDIANTES_TOKENS.listStudentsController),
+                registerStudentController: c.resolve(ESTUDIANTES_TOKENS.registerStudentController),
+                getStudentByIdController: c.resolve(ESTUDIANTES_TOKENS.getStudentByIdController),
                 // TODO: Agregar otros controllers cuando se implementen sus rutas
-                // updateStudentController: c.resolve(TOKENS.est_updateStudentController),
+                // updateStudentController: c.resolve(ESTUDIANTES_TOKENS.updateStudentController),
             };
 
             const middlewares = {
-                validateRequest: c.resolve(TOKENS.validateRequest),
-                // uploadStudentDocument: c.resolve(TOKENS.fileUploadService).uploadStudentDocument(),
+                validateRequest: c.resolve(SERVICIOS_TOKENS.validateRequest),
+                // uploadStudentDocument: c.resolve(SERVICIOS_TOKENS.fileUploadService).uploadStudentDocument(),
             };
 
             return buildEstudiantesRouter({ controllers, middlewares });
-        },
-        { singleton: true }
+        }
     );
 
     return container;

@@ -12,7 +12,8 @@
  * @returns {Container} Contenedor con recurso Municipios registrado
  */
 
-import { TOKENS } from '../../tokens.js';
+import { GEOGRAFICOS_TOKENS, REPOSITORIOS_TOKENS, SERVICIOS_TOKENS } from '../../tokens/index.js';
+import { registerComponent } from '../../utils/container.helpers.js';
 import { ListMunicipiosUseCase } from '../../../../application/use-cases/geograficos/ListMunicipiosUseCase.js';
 import { ListMunicipiosController } from '../../../../presentation/controllers/geograficos/index.js';
 import { buildMunicipiosRouter } from '../../../../presentation/routes/municipios.routes.js';
@@ -27,14 +28,14 @@ export function registerMunicipiosResource(container) {
     // ============================================
     // USE CASES
     // ============================================
-    container.register(
-        TOKENS.geo_listMunicipiosUseCase,
+    registerComponent(
+        container,
+        GEOGRAFICOS_TOKENS.listMunicipiosUseCase,
         (c) =>
             new ListMunicipiosUseCase({
-                municipalityRepository: c.resolve(TOKENS.municipalityRepository),
-                logger: c.resolve(TOKENS.logger),
+                municipalityRepository: c.resolve(REPOSITORIOS_TOKENS.municipalityRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
             }),
-        { singleton: true }
     );
 
     // TODO: Agregar otros Use Cases cuando se implementen sus endpoints
@@ -42,15 +43,15 @@ export function registerMunicipiosResource(container) {
     // ============================================
     // CONTROLLERS
     // ============================================
-    container.register(
-        TOKENS.geo_listMunicipiosController,
+    registerComponent(
+        container,
+        GEOGRAFICOS_TOKENS.listMunicipiosController,
         (c) =>
             new ListMunicipiosController({
-                listMunicipiosUseCase: c.resolve(TOKENS.geo_listMunicipiosUseCase),
-                logger: c.resolve(TOKENS.logger),
-                responseFormatter: c.resolve(TOKENS.responseFormatter),
+                listMunicipiosUseCase: c.resolve(GEOGRAFICOS_TOKENS.listMunicipiosUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
             }),
-        { singleton: true }
     );
 
     // TODO: Agregar otros Controllers cuando se implementen sus endpoints
@@ -58,21 +59,21 @@ export function registerMunicipiosResource(container) {
     // ============================================
     // ROUTER
     // ============================================
-    container.register(
-        TOKENS.geo_municipiosRouter,
+    registerComponent(
+        container,
+        GEOGRAFICOS_TOKENS.municipiosRouter,
         (c) => {
             const controllers = {
-                listMunicipiosController: c.resolve(TOKENS.geo_listMunicipiosController),
+                listMunicipiosController: c.resolve(GEOGRAFICOS_TOKENS.listMunicipiosController),
                 // TODO: Agregar otros controllers cuando se implementen sus rutas
             };
 
             const middlewares = {
-                validateRequest: c.resolve(TOKENS.validateRequest),
+                validateRequest: c.resolve(SERVICIOS_TOKENS.validateRequest),
             };
 
             return buildMunicipiosRouter({ controllers, middlewares });
         },
-        { singleton: true }
     );
 
     return container;

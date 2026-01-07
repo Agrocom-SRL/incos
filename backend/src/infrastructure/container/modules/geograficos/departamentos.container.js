@@ -12,7 +12,8 @@
  * @returns {Container} Contenedor con recurso Departamentos registrado
  */
 
-import { TOKENS } from '../../tokens.js';
+import { GEOGRAFICOS_TOKENS, REPOSITORIOS_TOKENS, SERVICIOS_TOKENS } from '../../tokens/index.js';
+import { registerComponent } from '../../utils/container.helpers.js';
 import { ListDepartamentosUseCase } from '../../../../application/use-cases/geograficos/ListDepartamentosUseCase.js';
 import { ListDepartamentosController } from '../../../../presentation/controllers/geograficos/index.js';
 import { buildDepartamentosRouter } from '../../../../presentation/routes/departamentos.routes.js';
@@ -27,14 +28,14 @@ export function registerDepartamentosResource(container) {
     // ============================================
     // USE CASES
     // ============================================
-    container.register(
-        TOKENS.geo_listDepartamentosUseCase,
+    registerComponent(
+        container,
+        GEOGRAFICOS_TOKENS.listDepartamentosUseCase,
         (c) =>
             new ListDepartamentosUseCase({
-                departmentRepository: c.resolve(TOKENS.departmentRepository),
-                logger: c.resolve(TOKENS.logger),
+                departmentRepository: c.resolve(REPOSITORIOS_TOKENS.departmentRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
             }),
-        { singleton: true }
     );
 
     // TODO: Agregar otros Use Cases cuando se implementen sus endpoints
@@ -42,15 +43,15 @@ export function registerDepartamentosResource(container) {
     // ============================================
     // CONTROLLERS
     // ============================================
-    container.register(
-        TOKENS.geo_listDepartamentosController,
+    registerComponent(
+        container,
+        GEOGRAFICOS_TOKENS.listDepartamentosController,
         (c) =>
             new ListDepartamentosController({
-                listDepartamentosUseCase: c.resolve(TOKENS.geo_listDepartamentosUseCase),
-                logger: c.resolve(TOKENS.logger),
-                responseFormatter: c.resolve(TOKENS.responseFormatter),
+                listDepartamentosUseCase: c.resolve(GEOGRAFICOS_TOKENS.listDepartamentosUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
             }),
-        { singleton: true }
     );
 
     // TODO: Agregar otros Controllers cuando se implementen sus endpoints
@@ -58,21 +59,21 @@ export function registerDepartamentosResource(container) {
     // ============================================
     // ROUTER
     // ============================================
-    container.register(
-        TOKENS.geo_departamentosRouter,
+    registerComponent(
+        container,
+        GEOGRAFICOS_TOKENS.departamentosRouter,
         (c) => {
             const controllers = {
-                listDepartamentosController: c.resolve(TOKENS.geo_listDepartamentosController),
+                listDepartamentosController: c.resolve(GEOGRAFICOS_TOKENS.listDepartamentosController),
                 // TODO: Agregar otros controllers cuando se implementen sus rutas
             };
 
             const middlewares = {
-                validateRequest: c.resolve(TOKENS.validateRequest),
+                validateRequest: c.resolve(SERVICIOS_TOKENS.validateRequest),
             };
 
             return buildDepartamentosRouter({ controllers, middlewares });
         },
-        { singleton: true }
     );
 
     return container;

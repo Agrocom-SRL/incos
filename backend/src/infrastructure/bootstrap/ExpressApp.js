@@ -4,7 +4,7 @@ import { setupMiddleware } from './middleware.config.js';
 import { setupRoutes } from './routes.config.js';
 import { setupStaticFiles } from './static.config.js';
 import container from '../container/index.js';
-import { TOKENS } from '../container/tokens.js';
+import { SERVICIOS_TOKENS } from '../container/tokens/index.js';
 
 /**
  * Clase de configuración de Express
@@ -25,8 +25,8 @@ export class ExpressApp {
      */
     configure() {
         // Obtener dependencias del container (únicamente aquí en la raíz)
-        const logger = container.resolve(TOKENS.logger);
-        const errorFormatter = container.resolve(TOKENS.errorFormatter);
+        const logger = container.resolve(SERVICIOS_TOKENS.logger);
+        const errorFormatter = container.resolve(SERVICIOS_TOKENS.errorFormatter);
         
         logger.info('Configurando Express...');
 

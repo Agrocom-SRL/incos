@@ -12,7 +12,8 @@
  * @returns {Container} Contenedor con recurso Idiomas registrado
  */
 
-import { TOKENS } from '../../tokens.js';
+import { REFERENCIA_TOKENS, REPOSITORIOS_TOKENS, SERVICIOS_TOKENS } from '../../tokens/index.js';
+import { registerComponent } from '../../utils/container.helpers.js';
 import { ListIdiomasUseCase } from '../../../../application/use-cases/referencia/ListIdiomasUseCase.js';
 import { ListIdiomasController } from '../../../../presentation/controllers/referencia/index.js';
 import { buildIdiomasRouter } from '../../../../presentation/routes/idiomas.routes.js';
@@ -27,68 +28,66 @@ export function registerIdiomasResource(container) {
     // ============================================
     // USE CASES
     // ============================================
-    container.register(
-        TOKENS.ref_listIdiomasUseCase,
+    registerComponent(
+        container,
+        REFERENCIA_TOKENS.listIdiomasUseCase,
         (c) =>
             new ListIdiomasUseCase({
-                languageRepository: c.resolve(TOKENS.languageRepository),
-                logger: c.resolve(TOKENS.logger),
+                languageRepository: c.resolve(REPOSITORIOS_TOKENS.languageRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
             }),
-        { singleton: true }
     );
 
     // TODO: Agregar otros Use Cases cuando se implementen sus endpoints
-    // container.register(
-    //     TOKENS.ref_createIdiomaUseCase,
+    // registerComponent(
+    //     REFERENCIA_TOKENS.createIdiomaUseCase,
     //     (c) => new CreateIdiomaUseCase({
-    //         languageRepository: c.resolve(TOKENS.languageRepository),
-    //         logger: c.resolve(TOKENS.logger),
-    //     }),
-    //     { singleton: true }
+    //         languageRepository: c.resolve(REPOSITORIOS_TOKENS.languageRepository),
+    //         logger: c.resolve(SERVICIOS_TOKENS.logger),
+    //     })
     // );
 
     // ============================================
     // CONTROLLERS
     // ============================================
-    container.register(
-        TOKENS.ref_listIdiomasController,
+    registerComponent(
+        container,
+        REFERENCIA_TOKENS.listIdiomasController,
         (c) =>
             new ListIdiomasController({
-                listIdiomasUseCase: c.resolve(TOKENS.ref_listIdiomasUseCase),
-                logger: c.resolve(TOKENS.logger),
-                responseFormatter: c.resolve(TOKENS.responseFormatter),
+                listIdiomasUseCase: c.resolve(REFERENCIA_TOKENS.listIdiomasUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
             }),
-        { singleton: true }
     );
 
     // TODO: Agregar otros Controllers cuando se implementen sus endpoints
-    // container.register(
-    //     TOKENS.ref_createIdiomaController,
+    // registerComponent(
+    //     REFERENCIA_TOKENS.createIdiomaController,
     //     (c) => new CreateIdiomaController({
-    //         createIdiomaUseCase: c.resolve(TOKENS.ref_createIdiomaUseCase),
-    //         logger: c.resolve(TOKENS.logger),
-    //     }),
-    //     { singleton: true }
+    //         createIdiomaUseCase: c.resolve(REFERENCIA_TOKENS.createIdiomaUseCase),
+    //         logger: c.resolve(SERVICIOS_TOKENS.logger),
+    //     })
     // );
 
     // ============================================
     // ROUTER
     // ============================================
-    container.register(
-        TOKENS.ref_idiomasRouter,
+    registerComponent(
+        container,
+        REFERENCIA_TOKENS.idiomasRouter,
         (c) => {
             const controllers = {
-                listIdiomasController: c.resolve(TOKENS.ref_listIdiomasController),
+                listIdiomasController: c.resolve(REFERENCIA_TOKENS.listIdiomasController),
                 // TODO: Agregar otros controllers cuando se implementen sus rutas
             };
 
             const middlewares = {
-                validateRequest: c.resolve(TOKENS.validateRequest),
+                validateRequest: c.resolve(SERVICIOS_TOKENS.validateRequest),
             };
 
             return buildIdiomasRouter({ controllers, middlewares });
         },
-        { singleton: true }
     );
 
     return container;

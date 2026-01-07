@@ -12,7 +12,8 @@
  * @returns {Container} Contenedor con recurso Estados Civiles registrado
  */
 
-import { TOKENS } from '../../tokens.js';
+import { REFERENCIA_TOKENS, REPOSITORIOS_TOKENS, SERVICIOS_TOKENS } from '../../tokens/index.js';
+import { registerComponent } from '../../utils/container.helpers.js';
 import { ListEstadosCivilesUseCase } from '../../../../application/use-cases/referencia/ListEstadosCivilesUseCase.js';
 import { ListEstadosCivilesController } from '../../../../presentation/controllers/referencia/index.js';
 import { buildEstadosCivilesRouter } from '../../../../presentation/routes/estados-civiles.routes.js';
@@ -27,14 +28,14 @@ export function registerEstadosCivilesResource(container) {
     // ============================================
     // USE CASES
     // ============================================
-    container.register(
-        TOKENS.ref_listEstadosCivilesUseCase,
+    registerComponent(
+        container,
+        REFERENCIA_TOKENS.listEstadosCivilesUseCase,
         (c) =>
             new ListEstadosCivilesUseCase({
-                civilStatusRepository: c.resolve(TOKENS.civilStatusRepository),
-                logger: c.resolve(TOKENS.logger),
+                civilStatusRepository: c.resolve(REPOSITORIOS_TOKENS.civilStatusRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
             }),
-        { singleton: true }
     );
 
     // TODO: Agregar otros Use Cases cuando se implementen sus endpoints
@@ -42,15 +43,15 @@ export function registerEstadosCivilesResource(container) {
     // ============================================
     // CONTROLLERS
     // ============================================
-    container.register(
-        TOKENS.ref_listEstadosCivilesController,
+    registerComponent(
+        container,
+        REFERENCIA_TOKENS.listEstadosCivilesController,
         (c) =>
             new ListEstadosCivilesController({
-                listEstadosCivilesUseCase: c.resolve(TOKENS.ref_listEstadosCivilesUseCase),
-                logger: c.resolve(TOKENS.logger),
-                responseFormatter: c.resolve(TOKENS.responseFormatter),
+                listEstadosCivilesUseCase: c.resolve(REFERENCIA_TOKENS.listEstadosCivilesUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
             }),
-        { singleton: true }
     );
 
     // TODO: Agregar otros Controllers cuando se implementen sus endpoints
@@ -58,21 +59,21 @@ export function registerEstadosCivilesResource(container) {
     // ============================================
     // ROUTER
     // ============================================
-    container.register(
-        TOKENS.ref_estadosCivilesRouter,
+    registerComponent(
+        container,
+        REFERENCIA_TOKENS.estadosCivilesRouter,
         (c) => {
             const controllers = {
-                listEstadosCivilesController: c.resolve(TOKENS.ref_listEstadosCivilesController),
+                listEstadosCivilesController: c.resolve(REFERENCIA_TOKENS.listEstadosCivilesController),
                 // TODO: Agregar otros controllers cuando se implementen sus rutas
             };
 
             const middlewares = {
-                validateRequest: c.resolve(TOKENS.validateRequest),
+                validateRequest: c.resolve(SERVICIOS_TOKENS.validateRequest),
             };
 
             return buildEstadosCivilesRouter({ controllers, middlewares });
         },
-        { singleton: true }
     );
 
     return container;

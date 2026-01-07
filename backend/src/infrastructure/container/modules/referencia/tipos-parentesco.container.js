@@ -12,7 +12,8 @@
  * @returns {Container} Contenedor con recurso Tipos Parentesco registrado
  */
 
-import { TOKENS } from '../../tokens.js';
+import { REFERENCIA_TOKENS, REPOSITORIOS_TOKENS, SERVICIOS_TOKENS } from '../../tokens/index.js';
+import { registerComponent } from '../../utils/container.helpers.js';
 import { ListTiposParentescoUseCase } from '../../../../application/use-cases/referencia/ListTiposParentescoUseCase.js';
 import { ListTiposParentescoController } from '../../../../presentation/controllers/referencia/index.js';
 import { buildTiposParentescoRouter } from '../../../../presentation/routes/tipos-parentesco.routes.js';
@@ -27,14 +28,14 @@ export function registerTiposParentescoResource(container) {
     // ============================================
     // USE CASES
     // ============================================
-    container.register(
-        TOKENS.ref_listTiposParentescoUseCase,
+    registerComponent(
+        container,
+        REFERENCIA_TOKENS.listTiposParentescoUseCase,
         (c) =>
             new ListTiposParentescoUseCase({
-                relationshipTypeRepository: c.resolve(TOKENS.relationshipTypeRepository),
-                logger: c.resolve(TOKENS.logger),
+                relationshipTypeRepository: c.resolve(REPOSITORIOS_TOKENS.relationshipTypeRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
             }),
-        { singleton: true }
     );
 
     // TODO: Agregar otros Use Cases cuando se implementen sus endpoints
@@ -42,15 +43,15 @@ export function registerTiposParentescoResource(container) {
     // ============================================
     // CONTROLLERS
     // ============================================
-    container.register(
-        TOKENS.ref_listTiposParentescoController,
+    registerComponent(
+        container,
+        REFERENCIA_TOKENS.listTiposParentescoController,
         (c) =>
             new ListTiposParentescoController({
-                listTiposParentescoUseCase: c.resolve(TOKENS.ref_listTiposParentescoUseCase),
-                logger: c.resolve(TOKENS.logger),
-                responseFormatter: c.resolve(TOKENS.responseFormatter),
+                listTiposParentescoUseCase: c.resolve(REFERENCIA_TOKENS.listTiposParentescoUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
             }),
-        { singleton: true }
     );
 
     // TODO: Agregar otros Controllers cuando se implementen sus endpoints
@@ -58,21 +59,21 @@ export function registerTiposParentescoResource(container) {
     // ============================================
     // ROUTER
     // ============================================
-    container.register(
-        TOKENS.ref_tiposParentescoRouter,
+    registerComponent(
+        container,
+        REFERENCIA_TOKENS.tiposParentescoRouter,
         (c) => {
             const controllers = {
-                listTiposParentescoController: c.resolve(TOKENS.ref_listTiposParentescoController),
+                listTiposParentescoController: c.resolve(REFERENCIA_TOKENS.listTiposParentescoController),
                 // TODO: Agregar otros controllers cuando se implementen sus rutas
             };
 
             const middlewares = {
-                validateRequest: c.resolve(TOKENS.validateRequest),
+                validateRequest: c.resolve(SERVICIOS_TOKENS.validateRequest),
             };
 
             return buildTiposParentescoRouter({ controllers, middlewares });
         },
-        { singleton: true }
     );
 
     return container;

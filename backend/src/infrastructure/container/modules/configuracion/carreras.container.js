@@ -12,7 +12,8 @@
  * @returns {Container} Contenedor con recurso Carreras registrado
  */
 
-import { TOKENS } from '../../tokens.js';
+import { CONFIGURACION_TOKENS, REPOSITORIOS_TOKENS, SERVICIOS_TOKENS } from '../../tokens/index.js';
+import { registerComponent } from '../../utils/container.helpers.js';
 import { ListCarrerasUseCase } from '../../../../application/use-cases/configuracion/ListCarrerasUseCase.js';
 import { ListCarrerasController } from '../../../../presentation/controllers/configuracion/index.js';
 import { buildCarrerasRouter } from '../../../../presentation/routes/carreras.routes.js';
@@ -23,72 +24,73 @@ import { buildCarrerasRouter } from '../../../../presentation/routes/carreras.ro
  * @param {Container} container - Contenedor de DI
  * @returns {Container} Contenedor actualizado
  */
+
 export function registerCarrerasResource(container) {
     // ============================================
     // USE CASES
     // ============================================
-    container.register(
-        TOKENS.cfg_listCarrerasUseCase,
+    registerComponent(
+        container,
+        CONFIGURACION_TOKENS.listCarrerasUseCase,
         (c) =>
             new ListCarrerasUseCase({
-                careerRepository: c.resolve(TOKENS.careerRepository),
-                logger: c.resolve(TOKENS.logger),
-            }),
-        { singleton: true }
+                careerRepository: c.resolve(REPOSITORIOS_TOKENS.careerRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
     );
 
     // TODO: Agregar otros Use Cases cuando se implementen sus endpoints
-    // container.register(
-    //     TOKENS.cfg_createCarreraUseCase,
+    // registerComponent(
+    //     container,
+    //     CONFIGURACION_TOKENS.createCarreraUseCase,
     //     (c) => new CreateCarreraUseCase({
-    //         careerRepository: c.resolve(TOKENS.careerRepository),
-    //         logger: c.resolve(TOKENS.logger),
-    //     }),
-    //     { singleton: true }
+    //         careerRepository: c.resolve(REPOSITORIOS_TOKENS.careerRepository),
+    //         logger: c.resolve(SERVICIOS_TOKENS.logger),
+    //     })
     // );
 
     // ============================================
     // CONTROLLERS
     // ============================================
-    container.register(
-        TOKENS.cfg_listCarrerasController,
+    registerComponent(
+        container,
+        CONFIGURACION_TOKENS.listCarrerasController,
         (c) =>
             new ListCarrerasController({
-                listCarrerasUseCase: c.resolve(TOKENS.cfg_listCarrerasUseCase),
-                logger: c.resolve(TOKENS.logger),
-                responseFormatter: c.resolve(TOKENS.responseFormatter),
-            }),
-        { singleton: true }
+                listCarrerasUseCase: c.resolve(CONFIGURACION_TOKENS.listCarrerasUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
     );
 
     // TODO: Agregar otros Controllers cuando se implementen sus endpoints
-    // container.register(
-    //     TOKENS.cfg_createCarreraController,
+    // registerComponent(
+    //     container,
+    //     CONFIGURACION_TOKENS.createCarreraController,
     //     (c) => new CreateCarreraController({
-    //         createCarreraUseCase: c.resolve(TOKENS.cfg_createCarreraUseCase),
-    //         logger: c.resolve(TOKENS.logger),
-    //     }),
-    //     { singleton: true }
+    //         createCarreraUseCase: c.resolve(CONFIGURACION_TOKENS.createCarreraUseCase),
+    //         logger: c.resolve(SERVICIOS_TOKENS.logger),
+    //     })
     // );
 
     // ============================================
     // ROUTER
     // ============================================
-    container.register(
-        TOKENS.cfg_carrerasRouter,
+    registerComponent(
+        container,
+        CONFIGURACION_TOKENS.carrerasRouter,
         (c) => {
             const controllers = {
-                listCarrerasController: c.resolve(TOKENS.cfg_listCarrerasController),
+                listCarrerasController: c.resolve(CONFIGURACION_TOKENS.listCarrerasController),
                 // TODO: Agregar otros controllers cuando se implementen sus rutas
             };
 
             const middlewares = {
-                validateRequest: c.resolve(TOKENS.validateRequest),
+                validateRequest: c.resolve(SERVICIOS_TOKENS.validateRequest),
             };
 
             return buildCarrerasRouter({ controllers, middlewares });
-        },
-        { singleton: true }
+        }
     );
 
     return container;

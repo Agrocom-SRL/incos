@@ -5,6 +5,7 @@
 
 import { Container } from './Container.js';
 import { registerAllModules } from './modules/index.js';
+import { registerInfrastructure } from './infrastructure/index.js';
 
 /**
  * Construye e inicializa el contenedor con todos los módulos registrados
@@ -12,6 +13,9 @@ import { registerAllModules } from './modules/index.js';
  */
 export function buildContainer() {
   const container = new Container();
+  // 1) Infraestructura base (servicios y repositorios)
+  registerInfrastructure(container);
+  // 2) Módulos de dominio
   registerAllModules(container);
   return container;
 }

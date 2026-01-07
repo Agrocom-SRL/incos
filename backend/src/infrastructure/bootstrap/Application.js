@@ -1,5 +1,5 @@
 import container from '../container/index.js';
-import { TOKENS } from '../container/tokens.js';
+import { SERVICIOS_TOKENS } from '../container/tokens/index.js';
 import { serverConfig } from '../config/server.config.js';
 import { sequelize } from '../database/sequelize.js';
 
@@ -16,7 +16,7 @@ export class Application {
     constructor() {
         this.server = null;
         // Obtener logger del container (DI)
-        this.logger = container.resolve(TOKENS.logger);
+        this.logger = container.resolve(SERVICIOS_TOKENS.logger);
     }
 
     /**

@@ -1,6 +1,11 @@
 import express from 'express';
 import container from '../../infrastructure/container/index.js';
-import { TOKENS } from '../../infrastructure/container/tokens.js';
+import {
+    ESTUDIANTES_TOKENS,
+    CONFIGURACION_TOKENS,
+    GEOGRAFICOS_TOKENS,
+    REFERENCIA_TOKENS,
+} from '../../infrastructure/container/tokens/index.js';
 
 const router = express.Router();
 
@@ -40,31 +45,31 @@ router.get('/', (req, res) => {
 // ============================================
 // 1. MÓDULO: ESTUDIANTES
 // ============================================
-router.use('/estudiantes', container.resolve(TOKENS.est_estudiantesRouter));
+router.use('/estudiantes', container.resolve(ESTUDIANTES_TOKENS.estudiantesRouter));
 
 // ============================================
 // 2. MÓDULO: CONFIGURACIÓN
 // ============================================
 // 2.1. Académico
-router.use('/carreras', container.resolve(TOKENS.cfg_carrerasRouter));
-router.use('/materias', container.resolve(TOKENS.cfg_materiasRouter));
+router.use('/carreras', container.resolve(CONFIGURACION_TOKENS.carrerasRouter));
+router.use('/materias', container.resolve(CONFIGURACION_TOKENS.materiasRouter));
 
 // ============================================
 // 3. MÓDULO: GEOGRÁFICOS
 // ============================================
-router.use('/paises', container.resolve(TOKENS.geo_paisesRouter));
-router.use('/departamentos', container.resolve(TOKENS.geo_departamentosRouter));
-router.use('/provincias', container.resolve(TOKENS.geo_provinciasRouter));
-router.use('/municipios', container.resolve(TOKENS.geo_municipiosRouter));
+router.use('/paises', container.resolve(GEOGRAFICOS_TOKENS.paisesRouter));
+router.use('/departamentos', container.resolve(GEOGRAFICOS_TOKENS.departamentosRouter));
+router.use('/provincias', container.resolve(GEOGRAFICOS_TOKENS.provinciasRouter));
+router.use('/municipios', container.resolve(GEOGRAFICOS_TOKENS.municipiosRouter));
 
 // ============================================
 // 4. MÓDULO: REFERENCIA
 // ============================================
-router.use('/idiomas', container.resolve(TOKENS.ref_idiomasRouter));
-router.use('/estados-civiles', container.resolve(TOKENS.ref_estadosCivilesRouter));
-router.use('/tipos-parentesco', container.resolve(TOKENS.ref_tiposParentescoRouter));
-router.use('/documentacion', container.resolve(TOKENS.ref_documentacionRouter));
-router.use('/discapacidad', container.resolve(TOKENS.ref_discapacidadRouter));
+router.use('/idiomas', container.resolve(REFERENCIA_TOKENS.idiomasRouter));
+router.use('/estados-civiles', container.resolve(REFERENCIA_TOKENS.estadosCivilesRouter));
+router.use('/tipos-parentesco', container.resolve(REFERENCIA_TOKENS.tiposParentescoRouter));
+router.use('/documentacion', container.resolve(REFERENCIA_TOKENS.documentacionRouter));
+router.use('/discapacidad', container.resolve(REFERENCIA_TOKENS.discapacidadRouter));
 
 // Para agregar un nuevo módulo:
 // 1. Crear archivo: routes/{modulo}.routes.js
