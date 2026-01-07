@@ -94,11 +94,12 @@ export class DocumentacionRepository extends BaseRepository {
 
   /**
    * Construye la cláusula WHERE para filtros específicos
-   * Maneja todos los criterios de búsqueda: tipoDocumento, requerido
+   * Maneja todos los criterios de búsqueda: tipoDocumento, requerido, documentoPadreId
    * 
    * @param {Object} filters - Filtros de búsqueda
    *   - tipoDocumento: Tipo de documento (INSCRIPCION, LICENCIA, PASANTIA, etc.)
    *   - requerido: Si es requerido (requerido)
+   *   - documentoPadreId: ID del documento padre (null para documentos principales, número para documentos hijos)
    * @returns {Object} Objeto WHERE para Sequelize
    */
   buildWhereClause(filters) {
@@ -112,6 +113,11 @@ export class DocumentacionRepository extends BaseRepository {
     // Filtrar por requerido si se proporciona
     if (filters.requerido !== undefined) {
       where.requerido = filters.requerido;
+    }
+
+    // Filtrar por documentoPadreId si se proporciona
+    if (filters.documentoPadreId !== undefined) {
+      where.documentoPadreId = filters.documentoPadreId;
     }
 
     return where;

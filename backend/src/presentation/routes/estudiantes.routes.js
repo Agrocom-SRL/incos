@@ -69,39 +69,6 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
         (req, res, next) => controllers.registerStudentController.handle(req, res, next)  // 3. Controller al final
     );
 
-    /**
-     * GET /api/v1/estudiantes/:id
-     * Obtener un estudiante por ID con todos sus datos relacionados
-     * 
-     * Path params:
-     * - id: ID del estudiante (número entero mayor a 0)
-     * 
-     * Response:
-     * {
-     *   success: true,
-     *   data: {
-     *     student: { ... },
-     *     guardians: [ ... ],
-     *     disabilities: [ ... ],
-     *     origins: [ ... ],
-     *     documentDeliveries: [ ... ]
-     *   },
-     *   message: "Estudiante obtenido correctamente"
-     * }
-     * 
-     * 
-     * Orden de middlewares:
-     * 1. idValidator - Valida que el ID sea un número entero mayor a 0
-     * 2. validateRequest - Procesa errores de validación y retorna respuesta si hay errores
-     * 3. controller - Se ejecuta solo si la validación pasó
-     */
-    router.get(
-        '/:id',
-        idValidator,  // 1. Validator primero
-        validateRequest,  // 2. Middleware que procesa errores
-        (req, res, next) => controllers.getStudentByIdController.handle(req, res, next)  // 3. Controller al final
-    );
-
     // ============================================
     // GENERACIÓN DE DOCUMENTOS
     // ============================================
@@ -123,7 +90,7 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
      *       "absolutePath": "/path/to/file.pdf"
      *     }
      *   },
-     *   "message": "Acta de compromiso generada correctamente"
+     *   "message": "Acta de compromiso (ID: 123) generada correctamente"
      * }
      * 
      * NOTA: Este es el primer endpoint de generación de documentos.
@@ -142,6 +109,43 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
         idValidator,  // 1. Validator primero
         validateRequest,  // 2. Middleware que procesa errores
         (req, res, next) => controllers.actaCompromisoController.handle(req, res, next)  // 3. Controller al final
+    );
+
+    // ============================================
+    // OBTENCIÓN DE ESTUDIANTE POR ID
+    // ============================================
+
+    /**
+     * GET /api/v1/estudiantes/:id
+     * Obtener un estudiante por ID con todos sus datos relacionados
+     * 
+     * Path params:
+     * - id: ID del estudiante (número entero mayor a 0)
+     * 
+     * Response:
+     * {
+     *   success: true,
+     *   data: {
+     *     student: { ... },
+     *     guardians: [ ... ],
+     *     disabilities: [ ... ],
+     *     origins: [ ... ],
+     *     documentDeliveries: [ ... ]
+     *   },
+     *   message: "Estudiante (ID: 123) obtenido correctamente"
+     * }
+     * 
+     * 
+     * Orden de middlewares:
+     * 1. idValidator - Valida que el ID sea un número entero mayor a 0
+     * 2. validateRequest - Procesa errores de validación y retorna respuesta si hay errores
+     * 3. controller - Se ejecuta solo si la validación pasó
+     */
+    router.get(
+        '/:id',
+        idValidator,  // 1. Validator primero
+        validateRequest,  // 2. Middleware que procesa errores
+        (req, res, next) => controllers.getStudentByIdController.handle(req, res, next)  // 3. Controller al final
     );
 
     // ============================================
