@@ -19,8 +19,8 @@
  * Ubicación: application/modules/configuracion/complementario/discapacidad/providers
  */
 
-import { useDiscapacidadesList } from '../hooks';
-import { DiscapacidadContext } from '../context/DiscapacidadContext';
+import { useDiscapacidadesList } from '@application-configuracion/complementario/discapacidad/hooks';
+import { DiscapacidadContext } from '@application-configuracion/complementario/discapacidad/context/DiscapacidadContext';
 
 export const DiscapacidadProvider = ({ children }) => {
     // Hook para lista de discapacidades (incluye búsqueda y filtrado)

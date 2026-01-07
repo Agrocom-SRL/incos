@@ -23,7 +23,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useCasesFactory } from '@container';
-import { mapDiscapacidadesList } from '../mappers';
+import { mapDiscapacidadesList } from '@application-configuracion/complementario/discapacidad/mappers';
 
 export const useDiscapacidadesApi = () => {
     const [discapacidades, setDiscapacidades] = useState([]);

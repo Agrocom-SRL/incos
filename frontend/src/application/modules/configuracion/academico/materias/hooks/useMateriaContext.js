@@ -10,7 +10,7 @@
  */
 
 import { useContext } from 'react';
-import { MateriaContext } from '../context/MateriaContext';
+import { MateriaContext } from '@application-configuracion/academico/materias/context/MateriaContext';
 
 /**
  * Hook para consumir el contexto de materias

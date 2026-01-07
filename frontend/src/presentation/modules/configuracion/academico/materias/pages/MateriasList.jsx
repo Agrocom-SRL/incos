@@ -15,8 +15,8 @@ import { PlusOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { TableListView } from '@organisms';
 import { Button } from '@atoms';
-import { useMateriaContext } from '@application/modules/configuracion/academico/materias/hooks';
-import { createMateriasTableColumns } from '../config/tableColumns';
+import { useMateriaContext } from '@application-configuracion/academico/materias/hooks';
+import { createMateriasTableColumns } from '@configuracion/academico/materias/config/tableColumns';
 
 const MateriasList = () => {
     const navigate = useNavigate();

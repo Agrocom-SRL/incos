@@ -10,7 +10,7 @@
  * Ubicación: domain/repositories
  */
 
-import { IBaseRepository } from './IBaseRepository.js';
+import { IBaseRepository } from '@repositories/IBaseRepository';
 
 export class IDiscapacidadRepository extends IBaseRepository {
   // Los métodos base (findById, findAll, create, update, delete, search)

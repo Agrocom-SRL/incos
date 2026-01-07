@@ -35,8 +35,8 @@
  * Ubicación: application/modules/configuracion/academico/carreras/providers
  */
 
-import { useCarrerasList } from '../hooks';
-import { CarreraContext } from '../context/CarreraContext';
+import { useCarrerasList } from '@application-configuracion/academico/carreras/hooks';
+import { CarreraContext } from '@application-configuracion/academico/carreras/context/CarreraContext';
 
 export const CarreraProvider = ({ children }) => {
     // Hook para lista de carreras (incluye búsqueda y filtrado)

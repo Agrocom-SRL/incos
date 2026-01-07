@@ -12,7 +12,7 @@
  */
 
 import { useContext } from 'react';
-import { StudentContext } from '../../context/StudentContext';
+import { StudentContext } from '@application-estudiantes/context/StudentContext';
 
 /**
  * Hook para consumir el contexto principal de estudiantes

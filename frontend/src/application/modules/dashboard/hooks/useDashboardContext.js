@@ -8,7 +8,7 @@
  */
 
 import { useContext } from 'react';
-import { DashboardContext } from '../context/DashboardContext';
+import { DashboardContext } from '@application-dashboard/context/DashboardContext';
 
 /**
  * Hook para consumir el contexto del dashboard

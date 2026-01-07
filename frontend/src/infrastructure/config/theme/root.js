@@ -10,7 +10,7 @@
  * Ubicación: Infrastructure/theme (parte del sistema de tema)
  */
 
-import { allThemeTokens, componentConfig } from './tokens';
+import { allThemeTokens, componentConfig } from '@theme/tokens';
 
 /**
  * Genera TODAS las variables CSS desde el tema JS

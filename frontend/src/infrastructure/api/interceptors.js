@@ -19,7 +19,7 @@
  * La implementación (client, interceptors) está en api/
  */
 
-import { LocalStorageAdapter } from '../storage/LocalStorageAdapter.js';
+import { LocalStorageAdapter } from '@storage/LocalStorageAdapter.js';
 
 /**
  * Interceptor de request: Agrega token de autenticación

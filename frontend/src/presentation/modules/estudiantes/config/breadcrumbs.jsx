@@ -8,7 +8,7 @@
  */
 
 import { HomeOutlined, UserOutlined } from '@ant-design/icons';
-import { estudiantesRoutes } from '../routes';
+import { estudiantesRoutes } from '@estudiantes/routes';
 
 /**
  * Crea los items del breadcrumb basándose en la ruta actual

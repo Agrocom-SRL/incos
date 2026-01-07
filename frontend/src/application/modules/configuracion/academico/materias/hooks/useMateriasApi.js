@@ -23,7 +23,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useCasesFactory } from '@container';
-import { mapMateriasList } from '../mappers';
+import { mapMateriasList } from '@application-configuracion/academico/materias/mappers';
 
 export const useMateriasApi = () => {
     const [materias, setMaterias] = useState([]);

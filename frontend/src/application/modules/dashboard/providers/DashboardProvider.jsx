@@ -9,8 +9,8 @@
  */
 
 import { useMemo } from 'react';
-import { DashboardContext } from '../context/DashboardContext';
-import { useDashboardData } from '../hooks/useDashboardData';
+import { DashboardContext } from '@application-dashboard/context/DashboardContext';
+import { useDashboardData } from '@application-dashboard/hooks/useDashboardData';
 
 export const DashboardProvider = ({ children }) => {
   // Hook para obtener datos del dashboard desde el backend

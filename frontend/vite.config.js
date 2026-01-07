@@ -17,15 +17,20 @@ export default defineConfig({
             // Domain Layer
             '@domain': path.resolve(__dirname, './src/domain'),
             '@useCases': path.resolve(__dirname, './src/domain/useCases'),
+            '@useCases-estudiantes': path.resolve(__dirname, './src/domain/useCases/estudiantes'),
+            '@useCases-configuracion': path.resolve(__dirname, './src/domain/useCases/configuracion'),
             '@repositories': path.resolve(__dirname, './src/domain/repositories'),
 
             // Application Layer
             '@application': path.resolve(__dirname, './src/application'),
             '@container': path.resolve(__dirname, './src/application/container'),
+            '@application-utils': path.resolve(__dirname, './src/application/utils'),
+            '@application-navigation': path.resolve(__dirname, './src/application/navigation'),
+            // Application Modules
             '@application-estudiantes': path.resolve(__dirname, './src/application/modules/estudiantes'),
             '@application-estudiantes-old': path.resolve(__dirname, './src/application/modules/estudiantes-old'),
             '@application-dashboard': path.resolve(__dirname, './src/application/modules/dashboard'),
-            '@application-navigation': path.resolve(__dirname, './src/application/navigation'),
+            '@application-configuracion': path.resolve(__dirname, './src/application/modules/configuracion'),
 
             // Infrastructure Layer
             '@infrastructure': path.resolve(__dirname, './src/infrastructure'),
@@ -44,10 +49,22 @@ export default defineConfig({
             '@pages': path.resolve(__dirname, './src/presentation/pages'),
             '@modules': path.resolve(__dirname, './src/presentation/modules'),
 
-            // Módulos específicos
+            // Módulos específicos de Presentation
             '@estudiantes': path.resolve(__dirname, './src/presentation/modules/estudiantes'),
             '@estudiantes-old': path.resolve(__dirname, './src/presentation/modules/estudiantes-old'),
             '@dashboard': path.resolve(__dirname, './src/presentation/modules/dashboard'),
+            '@configuracion': path.resolve(__dirname, './src/presentation/modules/configuracion'),
+            '@calificaciones': path.resolve(__dirname, './src/presentation/modules/calificaciones'),
+            '@docentes': path.resolve(__dirname, './src/presentation/modules/docentes'),
+            '@gestiones': path.resolve(__dirname, './src/presentation/modules/gestiones'),
+            '@historial': path.resolve(__dirname, './src/presentation/modules/historial'),
+            '@inscripciones': path.resolve(__dirname, './src/presentation/modules/inscripciones'),
+            '@nivelaciones': path.resolve(__dirname, './src/presentation/modules/nivelaciones'),
+            '@pagos': path.resolve(__dirname, './src/presentation/modules/pagos'),
+            '@reportes': path.resolve(__dirname, './src/presentation/modules/reportes'),
+            '@supervision': path.resolve(__dirname, './src/presentation/modules/supervision'),
+            '@trazabilidad': path.resolve(__dirname, './src/presentation/modules/trazabilidad'),
+            '@usuarios': path.resolve(__dirname, './src/presentation/modules/usuarios'),
 
             // Configuración
             '@config': path.resolve(__dirname, './src/infrastructure/config'),

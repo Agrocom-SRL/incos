@@ -10,8 +10,8 @@
  * - Arquitectura modular: cada módulo gestiona sus propios conectores
  */
 
-import { DiscapacidadProvider } from '@application/modules/configuracion/complementario/discapacidad/providers';
-import DiscapacidadesList from '../pages/DiscapacidadesList';
+import { DiscapacidadProvider } from '@application-configuracion/complementario/discapacidad/providers';
+import DiscapacidadesList from '@configuracion/complementario/discapacidad/pages/DiscapacidadesList';
 
 const ListConnector = () => {
   return (

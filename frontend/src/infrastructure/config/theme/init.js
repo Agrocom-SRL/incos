@@ -11,8 +11,8 @@
  * Single Responsibility: Inicializar todo el sistema de tema y estilos
  */
 
-import incosTheme from './light';
-import { injectCSSVariables } from './root';
+import incosTheme from '@theme/light';
+import { injectCSSVariables } from '@theme/root';
 import '@styles/index.css';
 
 /**

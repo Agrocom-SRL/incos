@@ -10,7 +10,7 @@
  */
 
 import { theme } from 'antd';
-import { allThemeTokens, componentConfig } from './tokens';
+import { allThemeTokens, componentConfig } from '@theme/tokens';
 
 const { defaultAlgorithm } = theme;
 

@@ -17,7 +17,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { useEstudiantesApi } from '../api/useEstudiantesApi';
+import { useEstudiantesApi } from '@application-estudiantes/hooks/api/useEstudiantesApi';
 
 export const useStudentData = () => {
     // Hook para cargar datos iniciales desde BD

@@ -35,8 +35,8 @@
  * Ubicación: application/modules/configuracion/academico/materias/providers
  */
 
-import { useMateriasList } from '../hooks';
-import { MateriaContext } from '../context/MateriaContext';
+import { useMateriasList } from '@application-configuracion/academico/materias/hooks';
+import { MateriaContext } from '@application-configuracion/academico/materias/context/MateriaContext';
 
 export const MateriaProvider = ({ children }) => {
     // Hook para lista de materias (incluye búsqueda y filtrado)

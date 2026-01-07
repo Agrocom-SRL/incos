@@ -10,8 +10,8 @@
  * - Arquitectura modular: cada módulo gestiona sus propios conectores
  */
 
-import { MateriaProvider } from '@application/modules/configuracion/academico/materias/providers';
-import MateriasList from '../pages/MateriasList';
+import { MateriaProvider } from '@application-configuracion/academico/materias/providers';
+import MateriasList from '@configuracion/academico/materias/pages/MateriasList';
 
 const ListConnector = () => {
   return (

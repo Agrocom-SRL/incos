@@ -23,7 +23,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useCasesFactory } from '@container';
-import { mapCarrerasList } from '../mappers';
+import { mapCarrerasList } from '@application-configuracion/academico/carreras/mappers';
 
 export const useCarrerasApi = () => {
     const [carreras, setCarreras] = useState([]);

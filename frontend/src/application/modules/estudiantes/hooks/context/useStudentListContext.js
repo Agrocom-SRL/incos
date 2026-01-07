@@ -8,7 +8,7 @@
  */
 
 import { useContext } from 'react';
-import { StudentListContext } from '../../context/StudentListContext';
+import { StudentListContext } from '@application-estudiantes/context/StudentListContext';
 
 /**
  * Hook para consumir el contexto de lista de estudiantes

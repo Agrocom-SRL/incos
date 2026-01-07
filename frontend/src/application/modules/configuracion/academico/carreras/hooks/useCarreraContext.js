@@ -10,7 +10,7 @@
  */
 
 import { useContext } from 'react';
-import { CarreraContext } from '../context/CarreraContext';
+import { CarreraContext } from '@application-configuracion/academico/carreras/context/CarreraContext';
 
 /**
  * Hook para consumir el contexto de carreras

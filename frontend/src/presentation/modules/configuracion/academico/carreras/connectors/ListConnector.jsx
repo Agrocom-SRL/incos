@@ -10,8 +10,8 @@
  * - Arquitectura modular: cada módulo gestiona sus propios conectores
  */
 
-import { CarreraProvider } from '@application/modules/configuracion/academico/carreras/providers';
-import CarrerasList from '../pages/CarrerasList';
+import { CarreraProvider } from '@application-configuracion/academico/carreras/providers';
+import CarrerasList from '@configuracion/academico/carreras/pages/CarrerasList';
 
 const ListConnector = () => {
   return (

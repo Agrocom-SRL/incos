@@ -8,7 +8,7 @@
  */
 
 import { useContext } from 'react';
-import { StudentRegisterContext } from '../../context/StudentRegisterContext';
+import { StudentRegisterContext } from '@application-estudiantes/context/StudentRegisterContext';
 
 /**
  * Hook para consumir el contexto de registro de estudiantes

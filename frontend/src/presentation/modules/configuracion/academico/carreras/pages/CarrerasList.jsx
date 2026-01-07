@@ -15,8 +15,8 @@ import { PlusOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { TableListView } from '@organisms';
 import { Button } from '@atoms';
-import { useCarreraContext } from '@application/modules/configuracion/academico/carreras/hooks';
-import { createCarrerasTableColumns } from '../config/tableColumns';
+import { useCarreraContext } from '@application-configuracion/academico/carreras/hooks';
+import { createCarrerasTableColumns } from '@configuracion/academico/carreras/config/tableColumns';
 
 const CarrerasList = () => {
     const navigate = useNavigate();

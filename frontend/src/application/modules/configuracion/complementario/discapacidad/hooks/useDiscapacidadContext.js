@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { DiscapacidadContext } from '../context/DiscapacidadContext';
+import { DiscapacidadContext } from '@application-configuracion/complementario/discapacidad/context/DiscapacidadContext';
 
 export const useDiscapacidadContext = () => {
   const context = useContext(DiscapacidadContext);

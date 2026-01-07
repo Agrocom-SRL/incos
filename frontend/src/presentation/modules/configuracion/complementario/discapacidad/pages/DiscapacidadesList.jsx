@@ -15,8 +15,8 @@ import { PlusOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { TableListView } from '@organisms';
 import { Button } from '@atoms';
-import { useDiscapacidadContext } from '@application/modules/configuracion/complementario/discapacidad/hooks';
-import { createDiscapacidadesTableColumns } from '../config/tableColumns';
+import { useDiscapacidadContext } from '@application-configuracion/complementario/discapacidad/hooks';
+import { createDiscapacidadesTableColumns } from '@configuracion/complementario/discapacidad/config/tableColumns';
 
 const DiscapacidadesList = () => {
     const navigate = useNavigate();

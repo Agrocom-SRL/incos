@@ -12,6 +12,18 @@
             "@useCases/*": [
                 "src/domain/useCases/*"
             ],
+            "@useCases-estudiantes": [
+                "./src/domain/useCases/estudiantes"
+            ],
+            "@useCases-estudiantes/*": [
+                "./src/domain/useCases/estudiantes/*"
+            ],
+            "@useCases-configuracion": [
+                "./src/domain/useCases/configuracion"
+            ],
+            "@useCases-configuracion/*": [
+                "./src/domain/useCases/configuracion/*"
+            ],
             "@repositories/*": [
                 "src/domain/repositories/*"
             ],
@@ -19,6 +31,19 @@
             "@application/*": [
                 "./src/application/*"
             ],
+            "@application-utils": [
+                "./src/application/utils"
+            ],
+            "@application-utils/*": [
+                "./src/application/utils/*"
+            ],
+            "@application-navigation": [
+                "./src/application/navigation"
+            ],
+            "@application-navigation/*": [
+                "./src/application/navigation/*"
+            ],
+            // Application Modules
             "@application-estudiantes": [
                 "./src/application/modules/estudiantes"
             ],
@@ -37,11 +62,11 @@
             "@application-dashboard/*": [
                 "./src/application/modules/dashboard/*"
             ],
-            "@application-navigation": [
-                "./src/application/navigation"
+            "@application-configuracion": [
+                "./src/application/modules/configuracion"
             ],
-            "@application-navigation/*": [
-                "./src/application/navigation/*"
+            "@application-configuracion/*": [
+                "./src/application/modules/configuracion/*"
             ],
             "@container": [
                 "./src/application/container/index.js"
@@ -107,6 +132,7 @@
             "@modules/*": [
                 "./src/presentation/modules/*"
             ],
+            // Módulos específicos de Presentation
             "@estudiantes/*": [
                 "./src/presentation/modules/estudiantes/*"
             ],
@@ -115,6 +141,78 @@
             ],
             "@dashboard/*": [
                 "./src/presentation/modules/dashboard/*"
+            ],
+            "@configuracion": [
+                "./src/presentation/modules/configuracion"
+            ],
+            "@configuracion/*": [
+                "./src/presentation/modules/configuracion/*"
+            ],
+            "@calificaciones": [
+                "./src/presentation/modules/calificaciones"
+            ],
+            "@calificaciones/*": [
+                "./src/presentation/modules/calificaciones/*"
+            ],
+            "@docentes": [
+                "./src/presentation/modules/docentes"
+            ],
+            "@docentes/*": [
+                "./src/presentation/modules/docentes/*"
+            ],
+            "@gestiones": [
+                "./src/presentation/modules/gestiones"
+            ],
+            "@gestiones/*": [
+                "./src/presentation/modules/gestiones/*"
+            ],
+            "@historial": [
+                "./src/presentation/modules/historial"
+            ],
+            "@historial/*": [
+                "./src/presentation/modules/historial/*"
+            ],
+            "@inscripciones": [
+                "./src/presentation/modules/inscripciones"
+            ],
+            "@inscripciones/*": [
+                "./src/presentation/modules/inscripciones/*"
+            ],
+            "@nivelaciones": [
+                "./src/presentation/modules/nivelaciones"
+            ],
+            "@nivelaciones/*": [
+                "./src/presentation/modules/nivelaciones/*"
+            ],
+            "@pagos": [
+                "./src/presentation/modules/pagos"
+            ],
+            "@pagos/*": [
+                "./src/presentation/modules/pagos/*"
+            ],
+            "@reportes": [
+                "./src/presentation/modules/reportes"
+            ],
+            "@reportes/*": [
+                "./src/presentation/modules/reportes/*"
+            ],
+            "@supervision": [
+                "./src/presentation/modules/supervision"
+            ],
+            "@supervision/*": [
+                "./src/presentation/modules/supervision/*"
+            ],
+            "@trazabilidad": [
+                "./src/presentation/modules/trazabilidad"
+            ],
+            "@trazabilidad/*": [
+                "./src/presentation/modules/trazabilidad/*"
+            ],
+            "@usuarios": [
+                "./src/presentation/modules/usuarios"
+            ],
+            "@usuarios/*": [
+                "./src/presentation/modules/usuarios/*"
             ],
             // Router Components (Presentation) - Solo se usa con / (ej: @components-router/AppRouter)
             "@components-router/*": [

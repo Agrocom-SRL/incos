@@ -12,7 +12,7 @@
  */
 
 import { useContext } from 'react';
-import { StudentDetailContext } from '../../context/StudentDetailContext';
+import { StudentDetailContext } from '@application-estudiantes/context/StudentDetailContext';
 
 /**
  * Hook para consumir el contexto de detalle de estudiante
