@@ -90,25 +90,3 @@ export const loggerConfig = {
     transports,
     exitOnError: false,
 };
-
-/**
- * Instancia de Logger de Winston
- * 
- * NOTA: Esta es la instancia cruda de Winston. Para código del dominio (Use Cases),
- * se debe usar WinstonLoggerAdapter que implementa ILogger (ver infrastructure/services/WinstonLoggerAdapter.js)
- * 
- * Esta instancia se usa:
- * - Por WinstonLoggerAdapter internamente
- * - Por código de infraestructura/bootstrap que necesita acceso directo a Winston
- * - NO debe usarse en Use Cases (usar el logger del container que implementa ILogger)
- */
-export const logger = winston.createLogger(loggerConfig);
-
-/**
- * Stream para Morgan (middleware de HTTP logging)
- */
-logger.stream = {
-    write: (message) => logger.http(message.trim()),
-};
-
-export default logger;

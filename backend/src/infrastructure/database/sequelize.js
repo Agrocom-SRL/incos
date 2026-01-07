@@ -1,13 +1,19 @@
 import { Sequelize } from 'sequelize';
 import { databaseConfig } from '../config/database.config.js';
-import { logger } from '../config/logger.config.js';
+import { serverConfig } from '../config/server.config.js';
+import { getEnvAsBoolean } from '../config/env.validator.js';
+import { logger } from '../services/WinstonLoggerFactory.js';
 
 /**
  * Instancia única de Sequelize
  * 
- * Usa la configuración centralizada de infrastructure/config/database.config.js
+ * Usa configuración centralizada y logger singleton (no puede usar container
+ * aquí por dependencia circular: sequelize se importa antes de que el container esté listo).
  * Esta es la ÚNICA instancia de conexión a la base de datos en toda la aplicación
+ * 
+ * Usa la misma instancia singleton que el container para consistencia.
  */
+
 export const sequelize = new Sequelize(
     databaseConfig.database,
     databaseConfig.username,
@@ -16,7 +22,11 @@ export const sequelize = new Sequelize(
         host: databaseConfig.host,
         port: databaseConfig.port,
         dialect: databaseConfig.dialect,
-        logging: databaseConfig.logging,
+        // Configurar logging usando factory function de logger
+        logging:
+            serverConfig.isDevelopment && getEnvAsBoolean('DB_LOGGING', false)
+                ? (msg) => logger.debug(msg)
+                : false,
         timezone: databaseConfig.timezone,
         pool: databaseConfig.pool,
         define: databaseConfig.define,

@@ -4,10 +4,14 @@
  * Servicios registrados:
  * - logger: Sistema de logging (Winston) - Implementa ILogger
  * - errorFormatter: Formateo de errores para respuestas HTTP
+ * - responseFormatter: Formateo de respuestas exitosas
+ * - validateRequest: Middleware de validación de requests
+ * 
+ * Servicios disponibles pero no registrados hasta que se necesiten:
  * - fileUploadService: Servicio de subida de archivos (Multer)
- * - fileStorageService: Gestión de archivos (futuro)
- * - emailService: Envío de emails (futuro)
- * - pdfService: Generación de PDFs (futuro)
+ * - fileStorageService: Gestión de archivos
+ * - emailService: Envío de emails
+ * - pdfService: Generación de PDFs
  * 
  * Todos los servicios se registran como singleton ya que:
  * - No mantienen estado mutable por request
@@ -19,15 +23,14 @@
 
 import { SERVICIOS_TOKENS } from '../tokens/index.js';
 import { registerService } from '../utils/container.helpers.js';
-import { logger } from '../../services/WinstonLoggerAdapter.js';
+import { logger } from '../../services/WinstonLoggerFactory.js';
 import { errorFormatter } from '../../services/ErrorFormatter.js';
 import { responseFormatter } from '../../services/ResponseFormatter.js';
 import { createValidateRequest } from '../../../presentation/middleware/validation.middleware.js';
-import { fileUploadService } from '../../services/FileUploadService.js';
 
 export function registerServicesModule(container) {
     // ============================================
-    // LOGGING
+    // LOGGING (DI: instancia singleton)
     // ============================================
     registerService(container, SERVICIOS_TOKENS.logger, logger);
 
@@ -51,14 +54,10 @@ export function registerServicesModule(container) {
     );
 
     // ============================================
-    // FILE UPLOAD
+    // FILE STORAGE & FILE UPLOAD
     // ============================================
-    registerService(container, SERVICIOS_TOKENS.fileUploadService, fileUploadService);
-
-    // ============================================
-    // FILE STORAGE (Futuro)
-    // ============================================
-    // registerService(container, SERVICIOS_TOKENS.fileStorageService, fileStorageService);
+    // Estos servicios se registrarán cuando se implementen y se necesiten
+    // Por ahora no están en uso, así que no se registran aquí
 
     return container;
 }

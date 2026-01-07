@@ -27,11 +27,9 @@ export const databaseConfig = {
     // Timezone: Bolivia (UTC-4) - debe coincidir con database-config.sql
     timezone: '-04:00',
 
-    // Logging: solo en development si DB_LOGGING está habilitado
-    logging:
-        nodeEnv === 'development' && getEnvAsBoolean('DB_LOGGING')
-            ? console.log
-            : false,
+    // Logging: configurado donde se use (sequelize.js)
+    // Retorna false por defecto, el logging se configura en sequelize.js usando el logger
+    logging: false,
 
     // Pool de conexiones (no usar en tests)
     pool:

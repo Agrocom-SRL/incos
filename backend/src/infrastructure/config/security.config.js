@@ -2,7 +2,7 @@ import { getEnv, getEnvAsBoolean } from './env.validator.js';
 import { serverConfig } from './server.config.js';
 
 /**
- * Configuración de seguridad (CORS, Helmet, Rate Limiting)
+ * Configuración de seguridad (CORS, Helmet)
  */
 
 // Orígenes permitidos para CORS
@@ -48,32 +48,4 @@ export const corsConfig = {
 export const helmetConfig = {
     crossOriginResourcePolicy: { policy: 'cross-origin' },
     contentSecurityPolicy: getEnvAsBoolean('HELMET_ENABLED', true) ? undefined : false,
-};
-
-/**
- * Configuración de Rate Limiting
- */
-export const rateLimitConfig = {
-    windowMs: parseInt(getEnv('RATE_LIMIT_WINDOW_MS', '900000'), 10), // 15 minutos
-    max: parseInt(getEnv('RATE_LIMIT_MAX_REQUESTS', '100'), 10),
-    message: 'Demasiadas solicitudes desde esta IP, intenta de nuevo más tarde',
-    standardHeaders: true,
-    legacyHeaders: false,
-};
-
-/**
- * Configuración de Rate Limiting para Login
- */
-export const loginRateLimitConfig = {
-    windowMs: 15 * 60 * 1000, // 15 minutos
-    max: parseInt(getEnv('RATE_LIMIT_LOGIN_MAX', '5'), 10),
-    message: 'Demasiados intentos de login, intenta de nuevo más tarde',
-    skipSuccessfulRequests: true,
-};
-
-export default {
-    cors: corsConfig,
-    helmet: helmetConfig,
-    rateLimit: rateLimitConfig,
-    loginRateLimit: loginRateLimitConfig,
 };

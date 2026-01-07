@@ -1,5 +1,4 @@
 import { ILogger } from '../../domain/interfaces/services/ILogger.js';
-import winstonLogger from '../config/logger.config.js';
 
 /**
  * Adaptador de Winston Logger que implementa ILogger
@@ -14,8 +13,14 @@ import winstonLogger from '../config/logger.config.js';
  * @implements {ILogger}
  */
 export class WinstonLoggerAdapter extends ILogger {
-  constructor(winstonInstance = winstonLogger) {
+  /**
+   * @param {winston.Logger} winstonInstance - Instancia de Winston (inyectada por DI)
+   */
+  constructor(winstonInstance) {
     super();
+    if (!winstonInstance) {
+      throw new Error('WinstonLoggerAdapter requiere una instancia de Winston');
+    }
     this.winston = winstonInstance;
   }
 
@@ -94,11 +99,4 @@ export class WinstonLoggerAdapter extends ILogger {
     };
   }
 }
-
-/**
- * Instancia singleton del adaptador
- */
-export const logger = new WinstonLoggerAdapter();
-
-export default logger;
 

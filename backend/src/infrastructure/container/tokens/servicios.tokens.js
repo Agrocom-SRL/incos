@@ -11,6 +11,6 @@ export const SERVICIOS_TOKENS = {
     responseFormatter: 'responseFormatter',
     validateRequest: 'validateRequest',
     fileUploadService: 'fileUploadService',
-    fileStorageService: 'fileStorageService', // Futuro
+    fileStorageService: 'fileStorageService',
 };
 
