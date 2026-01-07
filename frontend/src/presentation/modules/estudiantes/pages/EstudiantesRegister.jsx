@@ -24,9 +24,11 @@ import { PageHeader } from '@molecules';
 import { 
   useStudentRegisterContext,
   useStudentContext,
+  useStudentDetailContext,
   useEstudianteGeographicFormLogic,
   useEstudianteWizardTitles,
 } from '@application-estudiantes/hooks';
+import { mapEstudianteToForm } from '@application-estudiantes/mappers';
 import { 
   createEstudianteWizardSteps, 
   createRegisterBreadcrumbItems,
@@ -34,13 +36,14 @@ import {
   createCamposDocumentacionDinamicos
 } from '@estudiantes/config';
 
-const EstudiantesRegister = () => {
+const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [form] = Form.useForm();
   
   // Obtener parámetros de la URL
   const completarMode = searchParams.get('completar') === 'true';
+  const isEditMode = mode === 'edit';
 
   // Obtener datos del contexto de registro (toda la lógica está en el Provider)
   const {
@@ -80,8 +83,16 @@ const EstudiantesRegister = () => {
   // Obtener el contexto global de estudiantes para agregar al estado
   const { addStudent } = useStudentContext();
 
+  // Obtener datos del estudiante si está en modo edición
+  const studentDetailContext = isEditMode ? useStudentDetailContext() : null;
+  const studentDetail = studentDetailContext?.student || null;
+  const loadingStudentDetail = studentDetailContext?.loading || false;
+
   // Ref para rastrear si ya se procesó el resultado del registro
   const processedResultRef = useRef(null);
+  
+  // Ref para rastrear si ya se cargaron los datos iniciales en el formulario
+  const initialDataLoadedRef = useRef(false);
 
   // Registrar el formulario en el contexto para que los handlers puedan acceder a sus valores
   useEffect(() => {
@@ -90,8 +101,20 @@ const EstudiantesRegister = () => {
     }
   }, [registerForm, form]);
 
-  // Reaccionar al resultado exitoso del registro
-  // Solo para handleFinish (registro completo), no para handleSave (guardado parcial)
+  // Cargar datos iniciales del estudiante en modo edición
+  useEffect(() => {
+    if (isEditMode && studentDetail && !initialDataLoadedRef.current && form) {
+      const formData = mapEstudianteToForm(studentDetail);
+      if (formData) {
+        // Establecer valores iniciales del formulario
+        form.setFieldsValue(formData);
+        initialDataLoadedRef.current = true;
+      }
+    }
+  }, [isEditMode, studentDetail, form]);
+
+  // Reaccionar al resultado exitoso del registro/actualización
+  // Solo para handleFinish (registro/actualización completo), no para handleSave (guardado parcial)
   useEffect(() => {
     if (
       registrationResult?.success && 
@@ -104,10 +127,16 @@ const EstudiantesRegister = () => {
       // Agregar el estudiante al estado global para que aparezca en la lista
       addStudent(registrationResult.data);
       
-      // Redirigir a la página de lista
-      navigate('/estudiantes');
+      // Redirigir según el modo
+      if (isEditMode && studentId) {
+        // En modo edición, redirigir al detalle del estudiante
+        navigate(`/estudiantes/${studentId}`);
+      } else {
+        // En modo creación, redirigir a la lista
+        navigate('/estudiantes');
+      }
     }
-  }, [registrationResult, addStudent, navigate]);
+  }, [registrationResult, addStudent, navigate, isEditMode, studentId]);
 
   // Configurar cargadores condicionales (genérico para cualquier página)
   const conditionalLoaders = useMemo(() => ({
@@ -123,9 +152,10 @@ const EstudiantesRegister = () => {
 
   // Determinar el título según los parámetros (memoizado)
   const pageTitle = useMemo(() => {
+    if (isEditMode) return 'Editar Estudiante';
     if (completarMode) return 'Completar Registro de Admisión';
     return 'Registrar Nueva Admisión';
-  }, [completarMode]);
+  }, [isEditMode, completarMode]);
 
   // Hook para obtener títulos dinámicos según el modo
   const wizardTitles = useEstudianteWizardTitles(completarMode);
@@ -186,7 +216,7 @@ const EstudiantesRegister = () => {
       {/* Contenido principal - Wizard de registro */}
       <WizardForm
         steps={wizardSteps}
-        loading={loading}
+        loading={loading || loadingStudentDetail}
         viewMode={false}
         resolveOptions={resolveOptions}
         minAge={minAge}

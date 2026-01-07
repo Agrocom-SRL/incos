@@ -125,7 +125,7 @@ export const createEstudiantesTableColumns = (navigate) => {
               <IconButton
                 icon={<editAction.icon />}
                 variant={editAction.variant}
-                onClick={() => navigate(`/estudiantes/registrar?estudianteId=${record.id}`)}
+                onClick={() => navigate(`/estudiantes/${record.id}/editar`)}
               />
             </Tooltip>
             <Tooltip title={`${viewAction.tooltip} estudiante`}>

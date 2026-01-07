@@ -24,20 +24,33 @@
  */
 
 import { useCallback, useRef, useState } from 'react';
-import { useRegisterStudent } from '@application-estudiantes/hooks/api';
+import { useRegisterStudent, useUpdateStudent } from '@application-estudiantes/hooks/api';
 
 /**
- * Hook para gestionar handlers de submit del formulario de registro
+ * Hook para gestionar handlers de submit del formulario de registro/edición
  * 
  * @param {Function} showMessage - Función para mostrar mensajes (debe venir del provider)
+ * @param {string} mode - Modo del formulario: 'create' (default) o 'edit'
+ * @param {string|number} studentId - ID del estudiante (requerido si mode === 'edit')
  * @returns {Object} Objeto con handleFinish, handleSave, registerForm, getFormValues, loading, error, validationErrors, registrationResult
  */
-export const useStudentFormHandlers = (showMessage) => {
+export const useStudentFormHandlers = (showMessage, mode = 'create', studentId = null) => {
+  const isEditMode = mode === 'edit';
+  
   // Hook de API para registro de estudiantes
-  const { registerStudent, loading, error, validationErrors } = useRegisterStudent();
+  const { registerStudent, loading: loadingRegister, error: errorRegister, validationErrors: validationErrorsRegister } = useRegisterStudent();
+  
+  // Hook de API para actualización de estudiantes
+  const { updateStudent, loading: loadingUpdate, error: errorUpdate, validationErrors: validationErrorsUpdate } = useUpdateStudent();
+  
+  // Usar el hook apropiado según el modo
+  const loading = isEditMode ? loadingUpdate : loadingRegister;
+  const error = isEditMode ? errorUpdate : errorRegister;
+  const validationErrors = isEditMode ? validationErrorsUpdate : validationErrorsRegister;
+  
   // Ref para almacenar la instancia del formulario
   const formRef = useRef(null);
-  // Estado para almacenar el resultado del registro (para que la página pueda reaccionar)
+  // Estado para almacenar el resultado del registro/actualización (para que la página pueda reaccionar)
   const [registrationResult, setRegistrationResult] = useState(null);
 
   // Función para registrar el formulario desde la página
@@ -61,33 +74,51 @@ export const useStudentFormHandlers = (showMessage) => {
     }
   }, []);
 
-  // Handler para finalizar el registro
+  // Handler para finalizar el registro/actualización
   const handleFinish = useCallback(async (step) => {
     const formValues = getFormValues ? getFormValues() : {};
-    const result = await registerStudent(formValues, step, true, false);
+    
+    let result;
+    if (isEditMode && studentId) {
+      result = await updateStudent(studentId, formValues, step, true, false);
+    } else {
+      result = await registerStudent(formValues, step, true, false);
+    }
     
     if (result?.success) {
       if (showMessage) {
-        showMessage('success', 'Estudiante registrado correctamente');
+        const message = isEditMode 
+          ? 'Estudiante actualizado correctamente'
+          : 'Estudiante registrado correctamente';
+        showMessage('success', message);
       }
       // Guardar el resultado para que la página pueda reaccionar
       setRegistrationResult(result);
     } else if (result?.error) {
       if (showMessage) {
+        const defaultMessage = isEditMode 
+          ? 'Error al actualizar estudiante'
+          : 'Error al registrar estudiante';
         const msg = typeof result.error === 'object'
-          ? (result.error.message || 'Error al registrar estudiante')
-          : (result.error || 'Error al registrar estudiante');
+          ? (result.error.message || defaultMessage)
+          : (result.error || defaultMessage);
         showMessage('error', msg);
       }
       // Limpiar resultado anterior en caso de error
       setRegistrationResult(null);
     }
-  }, [registerStudent, showMessage, getFormValues]);
+  }, [isEditMode, studentId, registerStudent, updateStudent, showMessage, getFormValues]);
 
   // Handler para guardar parcialmente
   const handleSave = useCallback(async (step) => {
     const formValues = getFormValues ? getFormValues() : {};
-    const result = await registerStudent(formValues, step, false, true);
+    
+    let result;
+    if (isEditMode && studentId) {
+      result = await updateStudent(studentId, formValues, step, false, true);
+    } else {
+      result = await registerStudent(formValues, step, false, true);
+    }
     
     if (result?.success) {
       if (showMessage) {
@@ -105,7 +136,7 @@ export const useStudentFormHandlers = (showMessage) => {
       // Limpiar resultado anterior en caso de error
       setRegistrationResult(null);
     }
-  }, [registerStudent, showMessage, getFormValues]);
+  }, [isEditMode, studentId, registerStudent, updateStudent, showMessage, getFormValues]);
 
   return {
     handleFinish,

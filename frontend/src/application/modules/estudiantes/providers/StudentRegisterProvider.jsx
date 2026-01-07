@@ -40,7 +40,7 @@ import { useMessage } from '@application/utils';
 import { StudentRegisterContext } from '@application-estudiantes/context/StudentRegisterContext';
 import { EDAD_MINIMA_REGISTRO } from '@infrastructure/config/constants/studentConstants';
 
-export const StudentRegisterProvider = ({ children }) => {
+export const StudentRegisterProvider = ({ children, mode = 'create', studentId = null }) => {
     // Hook genérico compartido para mostrar mensajes
     const showMessage = useMessage();
 
@@ -71,8 +71,8 @@ export const StudentRegisterProvider = ({ children }) => {
     const resolveOptions = useStudentFormOptions(contextData);
 
     // Hook especializado: manejar handlers de submit y gestión del formulario
-    // Este hook usa useRegisterStudent internamente para realizar el registro
-    const { handleFinish, handleSave, registerForm, getFormValues, formRef, loading, error, validationErrors, registrationResult } = useStudentFormHandlers(showMessage);
+    // Este hook usa useRegisterStudent o useUpdateStudent según el modo
+    const { handleFinish, handleSave, registerForm, getFormValues, formRef, loading, error, validationErrors, registrationResult } = useStudentFormHandlers(showMessage, mode, studentId);
 
     // Hook para manejar el estado de contactos de emergencia dinámicos
     const { contactosIndices, agregarContacto, eliminarContacto } = useContactosEmergenciaDinamicos();
