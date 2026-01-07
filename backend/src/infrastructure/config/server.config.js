@@ -29,5 +29,3 @@ export const serverConfig = {
     appUrl: getEnv('APP_URL', 'http://localhost:3000'),
     frontendUrl: getEnv('FRONTEND_URL', 'http://localhost:5173'),
 };
-
-export default serverConfig;

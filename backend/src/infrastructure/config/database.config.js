@@ -54,5 +54,3 @@ export const databaseConfig = {
         collate: 'utf8mb4_unicode_ci',
     },
 };
-
-export default databaseConfig;

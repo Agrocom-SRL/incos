@@ -40,7 +40,4 @@ export const uploadConfig = {
         fieldNameSize: 100, // Máximo tamaño del nombre del campo
         fieldSize: 1024 * 1024, // Máximo 1MB para campos de texto
     },
-
 };
-
-export default uploadConfig;

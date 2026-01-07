@@ -1,6 +1,7 @@
 import swaggerJsdoc from 'swagger-jsdoc';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { getEnv } from './env.validator.js';
 import { serverConfig } from './server.config.js';
 
 // Obtener el directorio actual del módulo
@@ -13,32 +14,47 @@ const projectRoot = join(__dirname, '../../../../');
 /**
  * Configuración de Swagger/OpenAPI
  * Genera documentación automática desde comentarios JSDoc
+ * 
+ * Usa variables de entorno para configuración dinámica según el entorno
  */
+
+// Configuración desde variables de entorno
+const apiTitle = getEnv('API_TITLE', 'API Instituto INCOS');
+const apiVersion = getEnv('API_VERSION', '1.0.0');
+const apiDescription = getEnv('API_DESCRIPTION', 'Sistema de Gestión Académica - Instituto INCOS Santa Cruz');
+const apiContactName = getEnv('API_CONTACT_NAME', 'Soporte Técnico');
+const apiContactEmail = getEnv('API_CONTACT_EMAIL', 'sistema@incos.edu.bo');
+const apiLicenseName = getEnv('API_LICENSE_NAME', 'Privado');
+const apiProductionUrl = getEnv('API_PRODUCTION_URL', 'https://incos.wiiz.com.bo/api/v1');
 
 const options = {
     definition: {
         openapi: '3.0.0',
         info: {
-            title: 'API Instituto INCOS',
-            version: '1.0.0',
-            description: 'Sistema de Gestión Académica - Instituto INCOS Santa Cruz',
+            title: apiTitle,
+            version: apiVersion,
+            description: apiDescription,
             contact: {
-                name: 'Soporte Técnico',
-                email: 'sistema@incos.edu.bo',
+                name: apiContactName,
+                email: apiContactEmail,
             },
             license: {
-                name: 'Privado',
+                name: apiLicenseName,
             },
         },
         servers: [
             {
                 url: `${serverConfig.appUrl}/api/v1`,
-                description: 'Servidor de Desarrollo',
+                description: serverConfig.isDevelopment
+                    ? 'Servidor de Desarrollo'
+                    : serverConfig.isProduction
+                        ? 'Servidor de Producción'
+                        : 'Servidor',
             },
-            {
-                url: 'https://api.incos.edu.bo/api/v1',
+            ...(serverConfig.isDevelopment ? [{
+                url: apiProductionUrl,
                 description: 'Servidor de Producción',
-            },
+            }] : []),
         ],
         components: {
             securitySchemes: {
@@ -49,75 +65,7 @@ const options = {
                     description: 'Token JWT obtenido del endpoint de autenticación',
                 },
             },
-            schemas: {
-                Error: {
-                    type: 'object',
-                    properties: {
-                        success: {
-                            type: 'boolean',
-                            example: false,
-                        },
-                        error: {
-                            type: 'object',
-                            properties: {
-                                message: {
-                                    type: 'string',
-                                    example: 'Error message',
-                                },
-                                code: {
-                                    type: 'string',
-                                    example: 'ERROR_CODE',
-                                },
-                                details: {
-                                    type: 'array',
-                                    items: {
-                                        type: 'object',
-                                        properties: {
-                                            field: {
-                                                type: 'string',
-                                            },
-                                            message: {
-                                                type: 'string',
-                                            },
-                                        },
-                                    },
-                                },
-                            },
-                        },
-                    },
-                },
-                Success: {
-                    type: 'object',
-                    properties: {
-                        success: {
-                            type: 'boolean',
-                            example: true,
-                        },
-                        data: {
-                            type: 'object',
-                        },
-                        message: {
-                            type: 'string',
-                            example: 'Operación exitosa',
-                        },
-                    },
-                },
-            },
         },
-        tags: [
-            {
-                name: 'Estudiantes',
-                description: 'Gestión de estudiantes',
-            },
-            {
-                name: 'Catálogos',
-                description: 'Endpoints de catálogos y datos de referencia',
-            },
-            {
-                name: 'Health',
-                description: 'Endpoints de salud y estado del sistema',
-            },
-        ],
     },
     apis: [
         join(projectRoot, 'src/presentation/routes/**/*.js'),
