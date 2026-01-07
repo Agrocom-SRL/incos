@@ -158,6 +158,7 @@ export class BaseRepository extends IRepository {
    *   - search: Término de búsqueda
    *   - includeInactive: Si incluir registros inactivos (default: false)
    *   - sort: Ordenamiento (ej: "nombre:ASC" o "nombre:DESC")
+   *   - attributes: Array de campos a seleccionar (opcional, ej: ['id', 'nombre'])
    * @param {number} page - Página (opcional)
    * @param {number} limit - Límite por página (opcional)
    */
@@ -187,6 +188,11 @@ export class BaseRepository extends IRepository {
         ? [[filters.sort.split(':')[0], filters.sort.includes(':') ? filters.sort.split(':')[1] : 'ASC']]
         : this.getDefaultSort(),
     };
+
+    // Agregar attributes si se especifican (optimización para traer solo campos necesarios)
+    if (filters.attributes && Array.isArray(filters.attributes) && filters.attributes.length > 0) {
+      options.attributes = filters.attributes;
+    }
 
     if (page && limit) {
       const offset = (page - 1) * limit;
