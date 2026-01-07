@@ -31,6 +31,15 @@ export class GetStudentByIdUseCase {
    * @param {Object} params.studentDisabilityRepository - Repositorio de discapacidades
    * @param {Object} params.studentOriginRepository - Repositorio de orígenes
    * @param {Object} params.studentDocumentDeliveryRepository - Repositorio de entregas de documentos
+   * @param {Object} params.countryRepository - Repositorio de países
+   * @param {Object} params.departmentRepository - Repositorio de departamentos
+   * @param {Object} params.provinceRepository - Repositorio de provincias
+   * @param {Object} params.municipalityRepository - Repositorio de municipios
+   * @param {Object} params.languageRepository - Repositorio de idiomas
+   * @param {Object} params.civilStatusRepository - Repositorio de estados civiles
+   * @param {Object} params.disabilityTypeRepository - Repositorio de tipos de discapacidad
+   * @param {Object} params.relationshipTypeRepository - Repositorio de tipos de parentesco
+   * @param {Object} params.documentacionRepository - Repositorio de documentación
    * @param {ILogger} params.logger - Logger para registro de eventos
    */
   constructor({
@@ -39,6 +48,15 @@ export class GetStudentByIdUseCase {
     studentDisabilityRepository,
     studentOriginRepository,
     studentDocumentDeliveryRepository,
+    countryRepository,
+    departmentRepository,
+    provinceRepository,
+    municipalityRepository,
+    languageRepository,
+    civilStatusRepository,
+    disabilityTypeRepository,
+    relationshipTypeRepository,
+    documentacionRepository,
     logger,
   }) {
     this.studentRepository = studentRepository;
@@ -46,6 +64,15 @@ export class GetStudentByIdUseCase {
     this.studentDisabilityRepository = studentDisabilityRepository;
     this.studentOriginRepository = studentOriginRepository;
     this.studentDocumentDeliveryRepository = studentDocumentDeliveryRepository;
+    this.countryRepository = countryRepository;
+    this.departmentRepository = departmentRepository;
+    this.provinceRepository = provinceRepository;
+    this.municipalityRepository = municipalityRepository;
+    this.languageRepository = languageRepository;
+    this.civilStatusRepository = civilStatusRepository;
+    this.disabilityTypeRepository = disabilityTypeRepository;
+    this.relationshipTypeRepository = relationshipTypeRepository;
+    this.documentacionRepository = documentacionRepository;
     this.logger = logger;
   }
 
@@ -125,9 +152,202 @@ export class GetStudentByIdUseCase {
         count: documentDeliveries.length,
       });
 
-      // 6. Retornar el estudiante con todos sus datos relacionados
+      // 6. Obtener datos relacionados de catálogos
+      const studentPlain = student.toPlainObject ? student.toPlainObject() : student;
+      
+      // 6.1. Estado civil del estudiante
+      let civilStatus = null;
+      if (studentPlain.civilStatusId) {
+        try {
+          civilStatus = await this.civilStatusRepository.findById(studentPlain.civilStatusId);
+          civilStatus = civilStatus?.toPlainObject ? civilStatus.toPlainObject() : civilStatus;
+        } catch (err) {
+          this.logger.warn('[Estudiantes] Error al obtener estado civil', {
+            studentId: student.id,
+            civilStatusId: studentPlain.civilStatusId,
+            error: err.message,
+          });
+        }
+      }
+
+      // 6.2. Municipio de residencia (y su provincia y departamento)
+      let residenceMunicipality = null;
+      let residenceProvince = null;
+      let residenceDepartment = null;
+      if (studentPlain.residenceMunicipalityId) {
+        try {
+          residenceMunicipality = await this.municipalityRepository.findById(studentPlain.residenceMunicipalityId);
+          residenceMunicipality = residenceMunicipality?.toPlainObject ? residenceMunicipality.toPlainObject() : residenceMunicipality;
+          
+          if (residenceMunicipality?.provinciaId) {
+            residenceProvince = await this.provinceRepository.findById(residenceMunicipality.provinciaId);
+            residenceProvince = residenceProvince?.toPlainObject ? residenceProvince.toPlainObject() : residenceProvince;
+            
+            if (residenceProvince?.departamentoId) {
+              residenceDepartment = await this.departmentRepository.findById(residenceProvince.departamentoId);
+              residenceDepartment = residenceDepartment?.toPlainObject ? residenceDepartment.toPlainObject() : residenceDepartment;
+            }
+          }
+        } catch (err) {
+          this.logger.warn('[Estudiantes] Error al obtener datos geográficos de residencia', {
+            studentId: student.id,
+            residenceMunicipalityId: studentPlain.residenceMunicipalityId,
+            error: err.message,
+          });
+        }
+      }
+
+      // 6.3. Datos relacionados de orígenes (países, idiomas, municipios)
+      const originCountryIds = new Set();
+      const originLanguageIds = new Set();
+      const originMunicipalityIds = new Set();
+      
+      origins.forEach((origin) => {
+        if (origin.countryId) originCountryIds.add(origin.countryId);
+        if (origin.motherTongueId) originLanguageIds.add(origin.motherTongueId);
+        if (origin.secondaryLanguageId) originLanguageIds.add(origin.secondaryLanguageId);
+        if (origin.birthMunicipalityId) originMunicipalityIds.add(origin.birthMunicipalityId);
+      });
+
+      const originCountries = {};
+      const originLanguages = {};
+      const originMunicipalities = {};
+      const originProvinces = {};
+      const originDepartments = {};
+
+      // Obtener países de orígenes
+      for (const countryId of originCountryIds) {
+        try {
+          const country = await this.countryRepository.findById(countryId);
+          if (country) {
+            originCountries[countryId] = country.toPlainObject ? country.toPlainObject() : country;
+          }
+        } catch (err) {
+          this.logger.warn('[Estudiantes] Error al obtener país de origen', {
+            studentId: student.id,
+            countryId,
+            error: err.message,
+          });
+        }
+      }
+
+      // Obtener idiomas de orígenes
+      for (const languageId of originLanguageIds) {
+        try {
+          const language = await this.languageRepository.findById(languageId);
+          if (language) {
+            originLanguages[languageId] = language.toPlainObject ? language.toPlainObject() : language;
+          }
+        } catch (err) {
+          this.logger.warn('[Estudiantes] Error al obtener idioma', {
+            studentId: student.id,
+            languageId,
+            error: err.message,
+          });
+        }
+      }
+
+      // Obtener municipios de orígenes (y sus provincias y departamentos)
+      for (const municipalityId of originMunicipalityIds) {
+        try {
+          const municipality = await this.municipalityRepository.findById(municipalityId);
+          if (municipality) {
+            const municipalityPlain = municipality.toPlainObject ? municipality.toPlainObject() : municipality;
+            originMunicipalities[municipalityId] = municipalityPlain;
+            
+            if (municipalityPlain.provinciaId) {
+              const province = await this.provinceRepository.findById(municipalityPlain.provinciaId);
+              if (province) {
+                const provincePlain = province.toPlainObject ? province.toPlainObject() : province;
+                originProvinces[municipalityPlain.provinciaId] = provincePlain;
+                
+                if (provincePlain.departamentoId) {
+                  const department = await this.departmentRepository.findById(provincePlain.departamentoId);
+                  if (department) {
+                    originDepartments[provincePlain.departamentoId] = department.toPlainObject ? department.toPlainObject() : department;
+                  }
+                }
+              }
+            }
+          }
+        } catch (err) {
+          this.logger.warn('[Estudiantes] Error al obtener municipio de origen', {
+            studentId: student.id,
+            municipalityId,
+            error: err.message,
+          });
+        }
+      }
+
+      // 6.4. Tipos de discapacidad
+      const disabilityTypeIds = new Set();
+      disabilities.forEach((disability) => {
+        if (disability.disabilityTypeId) disabilityTypeIds.add(disability.disabilityTypeId);
+      });
+
+      const disabilityTypes = {};
+      for (const disabilityTypeId of disabilityTypeIds) {
+        try {
+          const disabilityType = await this.disabilityTypeRepository.findById(disabilityTypeId);
+          if (disabilityType) {
+            disabilityTypes[disabilityTypeId] = disabilityType.toPlainObject ? disabilityType.toPlainObject() : disabilityType;
+          }
+        } catch (err) {
+          this.logger.warn('[Estudiantes] Error al obtener tipo de discapacidad', {
+            studentId: student.id,
+            disabilityTypeId,
+            error: err.message,
+          });
+        }
+      }
+
+      // 6.5. Tipos de parentesco de apoderados
+      const relationshipTypeIds = new Set();
+      guardians.forEach((guardian) => {
+        if (guardian.relationshipTypeId) relationshipTypeIds.add(guardian.relationshipTypeId);
+      });
+
+      const relationshipTypes = {};
+      for (const relationshipTypeId of relationshipTypeIds) {
+        try {
+          const relationshipType = await this.relationshipTypeRepository.findById(relationshipTypeId);
+          if (relationshipType) {
+            relationshipTypes[relationshipTypeId] = relationshipType.toPlainObject ? relationshipType.toPlainObject() : relationshipType;
+          }
+        } catch (err) {
+          this.logger.warn('[Estudiantes] Error al obtener tipo de parentesco', {
+            studentId: student.id,
+            relationshipTypeId,
+            error: err.message,
+          });
+        }
+      }
+
+      // 6.6. Documentación de entregas
+      const documentacionIds = new Set();
+      documentDeliveries.forEach((delivery) => {
+        if (delivery.documentacionId) documentacionIds.add(delivery.documentacionId);
+      });
+
+      const documentaciones = {};
+      for (const documentacionId of documentacionIds) {
+        try {
+          const documentacion = await this.documentacionRepository.findById(documentacionId);
+          if (documentacion) {
+            documentaciones[documentacionId] = documentacion.toPlainObject ? documentacion.toPlainObject() : documentacion;
+          }
+        } catch (err) {
+          this.logger.warn('[Estudiantes] Error al obtener documentación', {
+            studentId: student.id,
+            documentacionId,
+            error: err.message,
+          });
+        }
+      }
+
+      // 7. Retornar el estudiante con todos sus datos relacionados
       const result = {
-        student: student.toPlainObject ? student.toPlainObject() : student,
+        student: studentPlain,
         guardians: guardians.map((g) =>
           g.toPlainObject ? g.toPlainObject() : g
         ),
@@ -138,6 +358,21 @@ export class GetStudentByIdUseCase {
         documentDeliveries: documentDeliveries.map((d) =>
           d.toPlainObject ? d.toPlainObject() : d
         ),
+        // Datos relacionados de catálogos
+        catalogs: {
+          civilStatus,
+          residenceMunicipality,
+          residenceProvince,
+          residenceDepartment,
+          originCountries,
+          originLanguages,
+          originMunicipalities,
+          originProvinces,
+          originDepartments,
+          disabilityTypes,
+          relationshipTypes,
+          documentaciones,
+        },
       };
 
       this.logger.info('[Estudiantes] Estudiante obtenido exitosamente', {
@@ -146,6 +381,14 @@ export class GetStudentByIdUseCase {
         disabilitiesCount: disabilities.length,
         originsCount: origins.length,
         documentDeliveriesCount: documentDeliveries.length,
+        catalogsCount: {
+          countries: Object.keys(result.catalogs.originCountries).length,
+          languages: Object.keys(result.catalogs.originLanguages).length,
+          municipalities: Object.keys(result.catalogs.originMunicipalities).length,
+          disabilityTypes: Object.keys(result.catalogs.disabilityTypes).length,
+          relationshipTypes: Object.keys(result.catalogs.relationshipTypes).length,
+          documentaciones: Object.keys(result.catalogs.documentaciones).length,
+        },
       });
 
       return result;
