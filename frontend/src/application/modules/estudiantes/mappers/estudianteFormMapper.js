@@ -69,13 +69,11 @@ export const estudianteFormMapper = (studentDetail) => {
       apellidos: guardian.lastName || '',
       ci: guardian.ci || '',
       telefono: guardian.phone || '',
-      celular: guardian.mobilePhone || '',
       email: guardian.email || '',
       ocupacion: guardian.occupation || '',
       lugarTrabajo: guardian.workplace || '',
       direccion: guardian.address || '',
       esContactoEmergencia: guardian.isEmergencyContact !== undefined ? guardian.isEmergencyContact : true,
-      esApoderadoLegal: guardian.isLegalGuardian !== undefined ? guardian.isLegalGuardian : false,
       viveConEstudiante: guardian.livesWithStudent !== undefined ? guardian.livesWithStudent : false,
       observaciones: guardian.observations || '',
     }));

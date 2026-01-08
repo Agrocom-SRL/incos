@@ -53,10 +53,6 @@ export const EstudianteApoderado = sequelize.define(
       type: DataTypes.STRING(20),
       allowNull: true,
     },
-    celular: {
-      type: DataTypes.STRING(20),
-      allowNull: true,
-    },
     email: {
       type: DataTypes.STRING(150),
       allowNull: true,
@@ -66,12 +62,6 @@ export const EstudianteApoderado = sequelize.define(
       field: 'es_contacto_emergencia',
       defaultValue: true,
       comment: 'Es contacto de emergencia',
-    },
-    esApoderadoLegal: {
-      type: DataTypes.BOOLEAN,
-      field: 'es_apoderado_legal',
-      defaultValue: false,
-      comment: 'Es apoderado legal del estudiante',
     },
     viveConEstudiante: {
       type: DataTypes.BOOLEAN,

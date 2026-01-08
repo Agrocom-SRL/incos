@@ -196,12 +196,10 @@ CREATE TABLE estudiantes_apoderados (
     -- Datos de contacto
     direccion TEXT COMMENT 'Dirección de domicilio',
     telefono VARCHAR(20) COMMENT 'Teléfono',
-    celular VARCHAR(20) COMMENT 'Celular',
     email VARCHAR(150) COMMENT 'Email',
     
     -- Relación con el estudiante
     es_contacto_emergencia BOOLEAN DEFAULT TRUE COMMENT 'Es contacto de emergencia',
-    es_apoderado_legal BOOLEAN DEFAULT FALSE COMMENT 'Es apoderado legal del estudiante',
     vive_con_estudiante BOOLEAN DEFAULT FALSE COMMENT 'Vive con el estudiante',
     
     -- Observaciones
@@ -227,7 +225,6 @@ CREATE TABLE estudiantes_apoderados (
     INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
     INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
     INDEX idx_contacto_emergencia (es_contacto_emergencia, activo) COMMENT 'Búsqueda de contactos de emergencia',
-    INDEX idx_apoderado_legal (es_apoderado_legal, activo) COMMENT 'Búsqueda de apoderados legales',
     INDEX idx_vive_con (vive_con_estudiante, activo) COMMENT 'Búsqueda por quienes viven con el estudiante'
     
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci

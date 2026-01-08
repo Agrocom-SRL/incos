@@ -138,13 +138,11 @@ export class RegisterStudentRequestDTO {
           lastName: contacto.apellidos,
           ci: contacto.ci,
           phone: contacto.telefono,
-          mobilePhone: contacto.celular,
           email: contacto.email,
           occupation: contacto.ocupacion,
           workplace: contacto.lugarTrabajo,
           address: contacto.direccion,
           isEmergencyContact: contacto.esContactoEmergencia ?? true,
-          isLegalGuardian: contacto.esApoderadoLegal ?? false,
           livesWithStudent: contacto.viveConEstudiante ?? false,
           observations: contacto.observaciones,
         }))

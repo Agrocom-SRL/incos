@@ -17,10 +17,8 @@ export class StudentGuardian extends BaseEntity {
     this.workplace = data.workplace || null;
     this.address = data.address || null;
     this.phone = data.phone || null;
-    this.mobilePhone = data.mobilePhone || null;
     this.email = data.email || null;
     this.isEmergencyContact = data.isEmergencyContact !== undefined ? data.isEmergencyContact : true;
-    this.isLegalGuardian = data.isLegalGuardian !== undefined ? data.isLegalGuardian : false;
     this.livesWithStudent = data.livesWithStudent !== undefined ? data.livesWithStudent : false;
     this.observations = data.observations || null;
   }
@@ -69,10 +67,8 @@ export class StudentGuardian extends BaseEntity {
       workplace: this.workplace,
       address: this.address,
       phone: this.phone,
-      mobilePhone: this.mobilePhone,
       email: this.email,
       isEmergencyContact: this.isEmergencyContact,
-      isLegalGuardian: this.isLegalGuardian,
       livesWithStudent: this.livesWithStudent,
       observations: this.observations,
     };

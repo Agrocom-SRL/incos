@@ -90,7 +90,6 @@ export class RegisterStudentController extends BaseCreateController {
         if (sanitizedContact.ci) sanitizedContact.ci = '***';
         if (sanitizedContact.email) sanitizedContact.email = '***';
         if (sanitizedContact.telefono) sanitizedContact.telefono = '***';
-        if (sanitizedContact.celular) sanitizedContact.celular = '***';
         if (sanitizedContact.direccion) sanitizedContact.direccion = '***';
         return sanitizedContact;
       });

@@ -186,9 +186,6 @@ const EstudiantesDetail = () => {
                   <Descriptions.Item label="Teléfono">
                     {guardian.phone || guardian.telefono || 'N/A'}
                   </Descriptions.Item>
-                  <Descriptions.Item label="Celular">
-                    {guardian.mobilePhone || guardian.celular || 'N/A'}
-                  </Descriptions.Item>
                   <Descriptions.Item label="Email">
                     {guardian.email || 'N/A'}
                   </Descriptions.Item>
@@ -203,9 +200,6 @@ const EstudiantesDetail = () => {
                   </Descriptions.Item>
                   <Descriptions.Item label="Contacto de Emergencia">
                     {guardian.isEmergencyContact ? 'Sí' : 'No'}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Apoderado Legal">
-                    {guardian.isLegalGuardian ? 'Sí' : 'No'}
                   </Descriptions.Item>
                   <Descriptions.Item label="Vive con Estudiante">
                     {guardian.livesWithStudent ? 'Sí' : 'No'}

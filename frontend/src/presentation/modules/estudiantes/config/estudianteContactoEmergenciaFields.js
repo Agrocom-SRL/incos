@@ -97,16 +97,6 @@ export const createCamposContactoEmergencia = (index = 0) => {
             maxLength: 20,
         },
         {
-            name: [...basePath, 'celular'],
-            label: 'Celular',
-            type: 'input',
-            inputType: 'tel',
-            required: false,
-            span: 12,
-            placeholder: 'Ej: 70000000',
-            maxLength: 20,
-        },
-        {
             name: [...basePath, 'email'],
             label: 'Email',
             type: 'input',
@@ -119,14 +109,6 @@ export const createCamposContactoEmergencia = (index = 0) => {
         {
             name: [...basePath, 'esContactoEmergencia'],
             label: 'Es Contacto de Emergencia',
-            type: 'switch',
-            required: false,
-            span: 12,
-            defaultChecked: true,
-        },
-        {
-            name: [...basePath, 'esApoderadoLegal'],
-            label: 'Es Apoderado Legal',
             type: 'switch',
             required: false,
             span: 12,

@@ -42,10 +42,8 @@ export class StudentGuardianMapper {
       workplace: model.lugarTrabajo,
       address: model.direccion,
       phone: model.telefono,
-      mobilePhone: model.celular,
       email: model.email,
       isEmergencyContact: model.esContactoEmergencia === 1 || model.esContactoEmergencia === true,
-      isLegalGuardian: model.esApoderadoLegal === 1 || model.esApoderadoLegal === true,
       livesWithStudent: model.viveConEstudiante === 1 || model.viveConEstudiante === true,
       observations: model.observaciones,
     };
@@ -78,10 +76,8 @@ export class StudentGuardianMapper {
       lugarTrabajo: data.workplace || null,
       direccion: data.address || null,
       telefono: data.phone || null,
-      celular: data.mobilePhone || null,
       email: data.email ? data.email.toLowerCase() : null,
       esContactoEmergencia: data.isEmergencyContact !== undefined ? data.isEmergencyContact : true,
-      esApoderadoLegal: data.isLegalGuardian !== undefined ? data.isLegalGuardian : false,
       viveConEstudiante: data.livesWithStudent !== undefined ? data.livesWithStudent : false,
       observaciones: data.observations || null,
     };
@@ -128,17 +124,11 @@ export class StudentGuardianMapper {
     if (data.phone !== undefined) {
       updateData.telefono = data.phone || null;
     }
-    if (data.mobilePhone !== undefined) {
-      updateData.celular = data.mobilePhone || null;
-    }
     if (data.email !== undefined) {
       updateData.email = data.email ? data.email.toLowerCase() : null;
     }
     if (data.isEmergencyContact !== undefined) {
       updateData.esContactoEmergencia = data.isEmergencyContact;
-    }
-    if (data.isLegalGuardian !== undefined) {
-      updateData.esApoderadoLegal = data.isLegalGuardian;
     }
     if (data.livesWithStudent !== undefined) {
       updateData.viveConEstudiante = data.livesWithStudent;

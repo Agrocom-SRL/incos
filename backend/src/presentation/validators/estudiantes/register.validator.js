@@ -288,15 +288,6 @@ export const registerStudentValidator = [
     .isLength({ min: 7, max: 20 })
     .withMessage('Teléfono debe tener entre 7 y 20 caracteres'),
 
-  body('contactosEmergencia.*.celular')
-    .if(body('contactosEmergencia').isArray())
-    .optional()
-    .isString()
-    .withMessage('Celular debe ser una cadena de texto')
-    .trim()
-    .isLength({ min: 7, max: 20 })
-    .withMessage('Celular debe tener entre 7 y 20 caracteres'),
-
   body('contactosEmergencia.*.email')
     .if(body('contactosEmergencia').isArray())
     .optional()
@@ -336,12 +327,6 @@ export const registerStudentValidator = [
     .optional()
     .isBoolean()
     .withMessage('esContactoEmergencia debe ser un booleano'),
-
-  body('contactosEmergencia.*.esApoderadoLegal')
-    .if(body('contactosEmergencia').isArray())
-    .optional()
-    .isBoolean()
-    .withMessage('esApoderadoLegal debe ser un booleano'),
 
   body('contactosEmergencia.*.viveConEstudiante')
     .if(body('contactosEmergencia').isArray())

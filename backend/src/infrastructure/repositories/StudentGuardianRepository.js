@@ -47,13 +47,12 @@ export class StudentGuardianRepository extends BaseRepository {
 
   /**
    * Construye la cláusula WHERE para filtros específicos
-   * Maneja todos los criterios de búsqueda: studentId, relationshipTypeId, isEmergencyContact, isLegalGuardian
+   * Maneja todos los criterios de búsqueda: studentId, relationshipTypeId, isEmergencyContact
    * 
    * @param {Object} filters - Filtros de búsqueda
    *   - studentId: ID del estudiante (estudianteId)
    *   - relationshipTypeId: ID del tipo de parentesco (tipoParentescoId)
    *   - isEmergencyContact: Si es contacto de emergencia (esContactoEmergencia)
-   *   - isLegalGuardian: Si es apoderado legal (esApoderadoLegal)
    * @returns {Object} Objeto WHERE para Sequelize
    */
   buildWhereClause(filters) {
@@ -67,9 +66,6 @@ export class StudentGuardianRepository extends BaseRepository {
     }
     if (filters.isEmergencyContact !== undefined) {
       where.esContactoEmergencia = filters.isEmergencyContact;
-    }
-    if (filters.isLegalGuardian !== undefined) {
-      where.esApoderadoLegal = filters.isLegalGuardian;
     }
 
     return where;
