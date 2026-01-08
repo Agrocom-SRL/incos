@@ -27,7 +27,7 @@
  */
 
 import { useMemo, useEffect } from 'react';
-import { 
+import {
     useStudentCatalogApi,
     useStudentGeographicApi,
     useStudentReferenceApi,

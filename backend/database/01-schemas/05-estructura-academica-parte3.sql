@@ -119,7 +119,7 @@ CREATE TABLE gestiones (
     INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
     INDEX idx_anio_tipo (anio, tipo, activo, deleted_at) COMMENT 'Búsqueda por año y tipo',
     INDEX idx_fechas (fecha_inicio, fecha_fin) COMMENT 'Búsqueda por rango de fechas',
-    INDEX idx_vigente_activo (vigente, activo, deleted_at) COMMENT 'Búsqueda de gestiones vigentes',
+    INDEX idx_vigente_activo (vigente, activo, deleted_at) COMMENT 'Búsqueda de gestiones vigentes'
  
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Gestiones académicas. Permite múltiples gestiones por año (regular, verano, nivelación, extraordinaria)';
@@ -176,7 +176,7 @@ CREATE TABLE periodos_academicos (
     INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
     INDEX idx_gestion_orden (gestion_id, numero_orden, activo, deleted_at) COMMENT 'Periodos ordenados por gestión',
     INDEX idx_gestion_division (gestion_id, division, activo) COMMENT 'Búsqueda por gestión y división',
-    INDEX idx_fechas (fecha_inicio, fecha_fin) COMMENT 'Búsqueda por rango de fechas',
+    INDEX idx_fechas (fecha_inicio, fecha_fin) COMMENT 'Búsqueda por rango de fechas'
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Periodos académicos temporales (contenedores de actividades). Los periodos NO se solapan. Incluye: Planificación, Bimestres, Clausura.';
@@ -226,7 +226,7 @@ CREATE TABLE actividades_calendario (
     INDEX idx_es_todo_el_dia (es_todo_el_dia) COMMENT 'Filtrado por actividades de día completo',
     INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
     INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
-    INDEX idx_periodo_fechas (periodo_academico_id, fecha_inicio, activo) COMMENT 'Búsqueda por periodo y fechas',
+    INDEX idx_periodo_fechas (periodo_academico_id, fecha_inicio, activo) COMMENT 'Búsqueda por periodo y fechas'
  
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Calendario académico: instancias de actividades con fechas específicas por periodo académico';

@@ -149,12 +149,12 @@ export function validateRegisterStudent(datosEstudiante) {
  */
 export function validateRegisterStudentMessage(datosEstudiante) {
   const result = validateRegisterStudent(datosEstudiante);
-  
+
   if (!result.isValid && result.errors) {
     const messages = result.errors.map(err => err.message);
     return messages.join('. ');
   }
-  
+
   return null;
 }
 

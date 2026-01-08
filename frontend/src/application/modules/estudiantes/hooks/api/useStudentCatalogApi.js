@@ -27,7 +27,7 @@ export const useStudentCatalogApi = (initialDelay = 0) => {
   const [idiomas, setIdiomas] = useState([]);
   const [estadosCiviles, setEstadosCiviles] = useState([]);
   const [documentacion, setDocumentacion] = useState([]);
-  
+
   // Estados de carga y error
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -43,7 +43,7 @@ export const useStudentCatalogApi = (initialDelay = 0) => {
       // Obtener datos esenciales usando el Use Case
       // Si hay delay inicial, usar modo secuencial para evitar problemas de concurrencia
       const obtenerDatosRegistroUseCase = useCasesFactory.obtenerDatosRegistroEstudiante();
-      const result = await obtenerDatosRegistroUseCase.ejecutar({ 
+      const result = await obtenerDatosRegistroUseCase.ejecutar({
         sequential: initialDelay > 0 // Usar secuencial si hay delay (modo edición)
       });
 
@@ -89,16 +89,16 @@ export const useStudentCatalogApi = (initialDelay = 0) => {
     idiomas,
     estadosCiviles,
     documentacion,
-    
+
     // Opciones estáticas
     expediciones: EXPEDICIONES,
     generos: GENEROS,
     tiposSangre: TIPOS_SANGRE,
-    
+
     // Estados
     loading,
     error,
-    
+
     // Función para recargar datos esenciales
     refetch,
   };

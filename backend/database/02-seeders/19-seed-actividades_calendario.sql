@@ -76,7 +76,7 @@ SET @act_clausura = (SELECT id FROM actividades WHERE nombre = 'Evaluación Inst
 
 -- ============================================
 -- PERIODO DE INSCRIPCIÓN Y PLANIFICACIÓN
--- (13 enero - 09 febrero 2025)
+-- (13 enero - 21 febrero 2025)
 -- ============================================
 
 INSERT INTO actividades_calendario (periodo_academico_id, actividad_id, codigo, fecha_inicio, fecha_fin) VALUES
@@ -91,7 +91,7 @@ INSERT INTO actividades_calendario (periodo_academico_id, actividad_id, codigo, 
 
 -- ============================================
 -- PRIMER BIMESTRE
--- (10 febrero - 22 abril 2025)
+-- (10 febrero - 28 abril 2025)
 -- ============================================
 
 INSERT INTO actividades_calendario (periodo_academico_id, actividad_id, codigo, fecha_inicio, fecha_fin, nombre_personalizado) VALUES
@@ -101,8 +101,8 @@ INSERT INTO actividades_calendario (periodo_academico_id, actividad_id, codigo, 
 -- 2. Diagnóstico e inducción
 (@periodo_bim1, @act_diagnostico, '2025-BIM1-002', '2025-02-10', '2025-02-15', NULL),
 
--- 3. Desarrollo curricular
-(@periodo_bim1, @act_desarrollo, '2025-BIM1-003', '2025-02-17', '2025-02-28', NULL),
+-- 3. Desarrollo de avance curricular, evaluación permanente
+(@periodo_bim1, @act_desarrollo, '2025-BIM1-003', '2025-02-17', '2025-02-28', 'Desarrollo de avance curricular, evaluación permanente'),
 
 -- 4. Recepción de solicitudes de pasantías (3er año)
 (@periodo_bim1, @act_pasantias, '2025-BIM1-004', '2025-02-10', NULL, 'Recepción de solicitudes de pasantías - 3er año'),
@@ -110,11 +110,11 @@ INSERT INTO actividades_calendario (periodo_academico_id, actividad_id, codigo, 
 -- 5. Feriado por Carnaval
 (@periodo_bim1, @act_feriado_carnaval, '2025-BIM1-005', '2025-03-03', '2025-03-04', NULL),
 
--- 6. Presentación de Planificación Anual
-(@periodo_bim1, @act_presentacion_plan, '2025-BIM1-006', '2025-03-08', NULL, NULL),
+-- 6. Presentación de Planificación Anual de Asignatura, plan quincenal a Dirección Académica en la plataforma y en físico
+(@periodo_bim1, @act_presentacion_plan, '2025-BIM1-006', '2025-03-08', NULL, 'Presentación de Planificación Anual de Asignatura, plan quincenal a Dirección Académica en la plataforma y en físico'),
 
--- 7. Elección de Modalidad de Grado
-(@periodo_bim1, @act_modalidad_grado, '2025-BIM1-007', '2025-03-14', NULL, NULL),
+-- 7. Elección de Modalidad de Grado Formulario FDMG - 1
+(@periodo_bim1, @act_modalidad_grado, '2025-BIM1-007', '2025-03-14', NULL, 'Elección de Modalidad de Grado Formulario FDMG - 1'),
 
 -- 8. Aprobación de perfiles (3er año)
 (@periodo_bim1, @act_aprobacion_perfiles, '2025-BIM1-008', '2025-03-01', '2025-03-15', 'Aprobación de perfiles de proyectos de grado - 3er año'),
@@ -146,15 +146,15 @@ INSERT INTO actividades_calendario (periodo_academico_id, actividad_id, codigo, 
 -- 17. Feria interna 3er año
 (@periodo_bim1, @act_feria_productiva, '2025-BIM1-017', '2025-04-26', NULL, 'Feria Productiva interna - 3er año'),
 
--- 18. Entrega de calificaciones
-(@periodo_bim1, @act_entrega_calif, '2025-BIM1-018', '2025-04-21', '2025-04-28', 'Entrega de calificaciones del Primer Bimestre'),
+-- 18. Entrega de calificaciones del Primer Parcial, estadísticas, informe y presentación de Registro Pedagógico
+(@periodo_bim1, @act_entrega_calif, '2025-BIM1-018', '2025-04-21', '2025-04-28', 'Entrega de calificaciones del Primer Parcial, estadísticas, informe y presentación de Registro Pedagógico'),
 
 -- 19. Entrega de boletines
 (@periodo_bim1, @act_entrega_boletines, '2025-BIM1-019', '2025-04-28', NULL, 'Entrega de boletines del Primer Bimestre');
 
 -- ============================================
 -- SEGUNDO BIMESTRE
--- (02 mayo - 23 julio 2025)
+-- (01 mayo - 31 julio 2025)
 -- ============================================
 
 INSERT INTO actividades_calendario (periodo_academico_id, actividad_id, codigo, fecha_inicio, fecha_fin, nombre_personalizado) VALUES
@@ -197,15 +197,15 @@ INSERT INTO actividades_calendario (periodo_academico_id, actividad_id, codigo, 
 -- 13. Consejo de Docentes
 (@periodo_bim2, @act_consejo_docentes, '2025-BIM2-013', '2025-07-30', NULL, 'Consejo de Docentes del Segundo Bimestre'),
 
--- 14. Entrega de calificaciones
-(@periodo_bim2, @act_entrega_calif, '2025-BIM2-014', '2025-07-20', '2025-07-26', 'Entrega de calificaciones del Segundo Bimestre'),
+-- 14. Entrega de calificaciones del Segundo Bimestre, estadísticas, informe y presentación de Registro Pedagógico
+(@periodo_bim2, @act_entrega_calif, '2025-BIM2-014', '2025-07-20', '2025-07-26', 'Entrega de calificaciones del Segundo Bimestre, estadísticas, informe y presentación de Registro Pedagógico'),
 
 -- 15. Entrega de boletines
 (@periodo_bim2, @act_entrega_boletines, '2025-BIM2-015', '2025-07-31', NULL, 'Entrega de boletines del Segundo Bimestre');
 
 -- ============================================
 -- TERCER BIMESTRE
--- (25 julio - 04 octubre 2025)
+-- (25 julio - 10 octubre 2025)
 -- ============================================
 
 INSERT INTO actividades_calendario (periodo_academico_id, actividad_id, codigo, fecha_inicio, fecha_fin, nombre_personalizado) VALUES
@@ -263,23 +263,20 @@ INSERT INTO actividades_calendario (periodo_academico_id, actividad_id, codigo, 
 -- 18. Consejo de Docentes
 (@periodo_bim3, @act_consejo_docentes, '2025-BIM3-018', '2025-10-07', NULL, 'Consejo de Docentes del Tercer Bimestre'),
 
--- 19. Entrega de calificaciones
-(@periodo_bim3, @act_entrega_calif, '2025-BIM3-019', '2025-10-02', '2025-10-10', 'Entrega de calificaciones del Tercer Bimestre'),
+-- 19. Entrega de calificaciones del Tercer Bimestre, estadísticas, informe y presentación de Registro Pedagógico
+(@periodo_bim3, @act_entrega_calif, '2025-BIM3-019', '2025-10-02', '2025-10-10', 'Entrega de calificaciones del Tercer Bimestre, estadísticas, informe y presentación de Registro Pedagógico'),
 
--- 20. Entrega de boletines
+-- 20. Entrega de boletines Tercer Bimestre
 (@periodo_bim3, @act_entrega_boletines, '2025-BIM3-020', '2025-10-10', NULL, 'Entrega de boletines del Tercer Bimestre');
 
 -- ============================================
 -- CUARTO BIMESTRE
--- (06 octubre - 10 diciembre 2025)
+-- (08 octubre - 10 diciembre 2025)
 -- ============================================
 
 INSERT INTO actividades_calendario (periodo_academico_id, actividad_id, codigo, fecha_inicio, fecha_fin, nombre_personalizado) VALUES
 -- 1. Desarrollo académico octubre
-(@periodo_bim4, @act_desarrollo, '2025-BIM4-001', '2025-10-06', '2025-10-31', NULL),
-
--- 2. Entrega de boletines Tercer Bimestre
-(@periodo_bim4, @act_entrega_boletines, '2025-BIM4-002', '2025-10-07', NULL, 'Entrega de boletines del Tercer Bimestre'),
+(@periodo_bim4, @act_desarrollo, '2025-BIM4-001', '2025-10-08', '2025-10-31', NULL),
 
 -- 3. Desarrollo académico noviembre (1° y 2° año)
 (@periodo_bim4, @act_desarrollo, '2025-BIM4-003', '2025-11-01', '2025-11-30', 'Desarrollo de actividades académicas - 1° y 2° año'),
@@ -299,8 +296,8 @@ INSERT INTO actividades_calendario (periodo_academico_id, actividad_id, codigo, 
 -- 8. Lista recuperatorio (3° año)
 (@periodo_bim4, @act_lista_recuperatorio, '2025-BIM4-008', '2025-11-11', NULL, 'Lista de habilitados a prueba recuperatoria - 3° año'),
 
--- 9. Entrega calificaciones (3° año)
-(@periodo_bim4, @act_entrega_calif, '2025-BIM4-009', '2025-11-11', NULL, 'Entrega de calificaciones y registro pedagógico - 3° año'),
+-- 9. Entrega de calificaciones, estadísticas, informe y presentación de Registro Pedagógico 3° Año
+(@periodo_bim4, @act_entrega_calif, '2025-BIM4-009', '2025-11-11', NULL, 'Entrega de calificaciones, estadísticas, informe y presentación de Registro Pedagógico 3° Año'),
 
 -- 10. Prueba recuperatoria (3° año)
 (@periodo_bim4, @act_recuperatorio, '2025-BIM4-010', '2025-11-12', '2025-11-14', 'Aplicación de prueba recuperatoria - 3° año'),
@@ -341,8 +338,8 @@ INSERT INTO actividades_calendario (periodo_academico_id, actividad_id, codigo, 
 -- ============================================
 
 INSERT INTO actividades_calendario (periodo_academico_id, actividad_id, codigo, fecha_inicio, fecha_fin, nombre_personalizado) VALUES
--- 1. Entrega calificaciones Cuarto Bimestre (1° y 2° año)
-(@periodo_clau, @act_entrega_calif, '2025-CLAU-001', '2025-12-11', NULL, 'Entrega de calificaciones Cuarto Bimestre - 1° y 2° año'),
+-- 1. Entrega de calificaciones del Cuarto Bimestre estadísticas, informe y presentación de Registro Pedagógico (1° y 2° año)
+(@periodo_clau, @act_entrega_calif, '2025-CLAU-001', '2025-12-11', NULL, 'Entrega de calificaciones del Cuarto Bimestre estadísticas, informe y presentación de Registro Pedagógico (1° y 2° año)'),
 
 -- 2. Rendición de Cuentas
 (@periodo_clau, @act_rendicion_cuentas, '2025-CLAU-002', '2025-12-11', NULL, NULL),
