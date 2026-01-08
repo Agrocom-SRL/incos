@@ -104,12 +104,21 @@ export const registerStudentValidator = [
   // DATOS PERSONALES (OPCIONALES)
   // ============================================
   body('apellidoMaterno')
-    .optional()
-    .isString()
-    .withMessage('Apellido materno debe ser una cadena de texto')
+    .customSanitizer((value) => {
+      // Convertir string vacío a null antes de validar
+      return value === '' ? null : value;
+    })
+    .optional({ nullable: true, checkFalsy: true }) // Permitir null, undefined, '' según schema (es opcional)
     .trim()
-    .isLength({ min: 2, max: 100 })
-    .withMessage('Apellido materno debe tener entre 2 y 100 caracteres'),
+    .custom((value) => {
+      // Si está presente después del trim, validar longitud
+      if (value && value.length > 0) {
+        if (value.length < 2 || value.length > 100) {
+          throw new Error('Apellido materno debe tener entre 2 y 100 caracteres');
+        }
+      }
+      return true;
+    }),
 
   body('estadoCivilId')
     .optional()
@@ -122,34 +131,65 @@ export const registerStudentValidator = [
     .withMessage('Tipo de sangre debe ser uno de: A+, A-, B+, B-, AB+, AB-, O+, O-'),
 
   body('emailPersonal')
+    .customSanitizer((value) => {
+      // Convertir string vacío a null antes de validar
+      return value === '' ? null : value;
+    })
     .optional({ nullable: true, checkFalsy: true }) // Permitir null, undefined, '' según schema (es opcional)
     .isEmail()
     .withMessage('Email personal debe ser un email válido')
     .normalizeEmail(),
 
   body('telefonoFijo')
+    .customSanitizer((value) => {
+      // Convertir string vacío a null antes de validar
+      return value === '' ? null : value;
+    })
     .optional({ nullable: true, checkFalsy: true }) // Permitir null, undefined, '' según schema (es opcional)
-    .isString()
-    .withMessage('Teléfono fijo debe ser una cadena de texto')
     .trim()
-    .isLength({ min: 7, max: 20 })
-    .withMessage('Teléfono fijo debe tener entre 7 y 20 caracteres'),
+    .custom((value) => {
+      // Si está presente después del trim, validar longitud
+      if (value && value.length > 0) {
+        if (value.length < 7 || value.length > 20) {
+          throw new Error('Teléfono fijo debe tener entre 7 y 20 caracteres');
+        }
+      }
+      return true;
+    }),
 
   body('direccion')
+    .customSanitizer((value) => {
+      // Convertir string vacío a null antes de validar
+      return value === '' ? null : value;
+    })
     .optional({ nullable: true, checkFalsy: true }) // Permitir null, undefined, '' según schema (es opcional)
-    .isString()
-    .withMessage('Dirección debe ser una cadena de texto')
     .trim()
-    .isLength({ max: 500 })
-    .withMessage('Dirección no puede exceder 500 caracteres'),
+    .custom((value) => {
+      // Si está presente después del trim, validar longitud
+      if (value && value.length > 0) {
+        if (value.length > 500) {
+          throw new Error('Dirección no puede exceder 500 caracteres');
+        }
+      }
+      return true;
+    }),
 
   body('zona')
+    .customSanitizer((value) => {
+      // Convertir string vacío a null antes de validar
+      return value === '' ? null : value;
+    })
     .optional({ nullable: true, checkFalsy: true }) // Permitir null, undefined, '' según schema (es opcional)
-    .isString()
-    .withMessage('Zona debe ser una cadena de texto')
     .trim()
-    .isLength({ max: 100 })
-    .withMessage('Zona no puede exceder 100 caracteres'),
+    .custom((value) => {
+      // Si está presente después del trim, validar longitud
+      if (value && value.length > 0) {
+        if (value.length > 100) {
+          throw new Error('Zona no puede exceder 100 caracteres');
+        }
+      }
+      return true;
+    }),
 
   // ============================================
   // DATOS GEOGRÁFICOS (OPCIONALES)
@@ -183,20 +223,38 @@ export const registerStudentValidator = [
     .withMessage('Tipo de discapacidad ID debe ser un número entero mayor a 0'),
 
   body('gradoDiscapacidad')
-    .optional()
-    .isString()
-    .withMessage('Grado de discapacidad debe ser una cadena de texto')
+    .customSanitizer((value) => {
+      // Convertir string vacío a null antes de validar
+      return value === '' ? null : value;
+    })
+    .optional({ nullable: true, checkFalsy: true }) // Permitir null, undefined, '' según schema (es opcional)
     .trim()
-    .isLength({ max: 50 })
-    .withMessage('Grado de discapacidad no puede exceder 50 caracteres'),
+    .custom((value) => {
+      // Si está presente después del trim, validar longitud
+      if (value && value.length > 0) {
+        if (value.length > 50) {
+          throw new Error('Grado de discapacidad no puede exceder 50 caracteres');
+        }
+      }
+      return true;
+    }),
 
   body('descripcion')
-    .optional()
-    .isString()
-    .withMessage('Descripción debe ser una cadena de texto')
+    .customSanitizer((value) => {
+      // Convertir string vacío a null antes de validar
+      return value === '' ? null : value;
+    })
+    .optional({ nullable: true, checkFalsy: true }) // Permitir null, undefined, '' según schema (es opcional)
     .trim()
-    .isLength({ max: 500 })
-    .withMessage('Descripción no puede exceder 500 caracteres'),
+    .custom((value) => {
+      // Si está presente después del trim, validar longitud
+      if (value && value.length > 0) {
+        if (value.length > 500) {
+          throw new Error('Descripción no puede exceder 500 caracteres');
+        }
+      }
+      return true;
+    }),
 
   // ============================================
   // ORIGEN/NACIONALIDAD (OPCIONAL)
@@ -207,12 +265,21 @@ export const registerStudentValidator = [
     .withMessage('País ID debe ser un número entero mayor a 0'),
 
   body('ciudadNacimiento')
-    .optional()
-    .isString()
-    .withMessage('Ciudad de nacimiento debe ser una cadena de texto')
+    .customSanitizer((value) => {
+      // Convertir string vacío a null antes de validar
+      return value === '' ? null : value;
+    })
+    .optional({ nullable: true, checkFalsy: true }) // Permitir null, undefined, '' según schema (es opcional)
     .trim()
-    .isLength({ max: 100 })
-    .withMessage('Ciudad de nacimiento no puede exceder 100 caracteres'),
+    .custom((value) => {
+      // Si está presente después del trim, validar longitud
+      if (value && value.length > 0) {
+        if (value.length > 100) {
+          throw new Error('Ciudad de nacimiento no puede exceder 100 caracteres');
+        }
+      }
+      return true;
+    }),
 
   body('idiomaMaternoId')
     .optional()
@@ -262,33 +329,64 @@ export const registerStudentValidator = [
 
   body('contactosEmergencia.*.apellidos')
     .if(body('contactosEmergencia').isArray())
+    .customSanitizer((value) => {
+      // Convertir string vacío a null antes de validar
+      return value === '' ? null : value;
+    })
     .optional({ nullable: true, checkFalsy: true }) // Permitir null, undefined, '' según schema (es opcional)
-    .isString()
-    .withMessage('Apellidos debe ser una cadena de texto')
     .trim()
-    .isLength({ min: 2, max: 150 })
-    .withMessage('Apellidos debe tener entre 2 y 150 caracteres'),
+    .custom((value) => {
+      // Si está presente después del trim, validar longitud
+      if (value && value.length > 0) {
+        if (value.length < 2 || value.length > 150) {
+          throw new Error('Apellidos debe tener entre 2 y 150 caracteres');
+        }
+      }
+      return true;
+    }),
 
   body('contactosEmergencia.*.ci')
     .if(body('contactosEmergencia').isArray())
+    .customSanitizer((value) => {
+      // Convertir string vacío a null antes de validar
+      return value === '' ? null : value;
+    })
     .optional({ nullable: true, checkFalsy: true }) // Permitir null, undefined, '' según schema (es opcional)
-    .isString()
-    .withMessage('CI debe ser una cadena de texto')
     .trim()
-    .isLength({ min: 5, max: 20 })
-    .withMessage('CI debe tener entre 5 y 20 caracteres'),
+    .custom((value) => {
+      // Si está presente después del trim, validar longitud
+      if (value && value.length > 0) {
+        if (value.length < 5 || value.length > 20) {
+          throw new Error('CI debe tener entre 5 y 20 caracteres');
+        }
+      }
+      return true;
+    }),
 
   body('contactosEmergencia.*.telefono')
     .if(body('contactosEmergencia').isArray())
+    .customSanitizer((value) => {
+      // Convertir string vacío a null antes de validar
+      return value === '' ? null : value;
+    })
     .optional({ nullable: true, checkFalsy: true }) // Permitir null, undefined, '' según schema (es opcional)
-    .isString()
-    .withMessage('Teléfono debe ser una cadena de texto')
     .trim()
-    .isLength({ min: 7, max: 20 })
-    .withMessage('Teléfono debe tener entre 7 y 20 caracteres'),
+    .custom((value) => {
+      // Si está presente después del trim, validar longitud
+      if (value && value.length > 0) {
+        if (value.length < 7 || value.length > 20) {
+          throw new Error('Teléfono debe tener entre 7 y 20 caracteres');
+        }
+      }
+      return true;
+    }),
 
   body('contactosEmergencia.*.email')
     .if(body('contactosEmergencia').isArray())
+    .customSanitizer((value) => {
+      // Convertir string vacío a null antes de validar
+      return value === '' ? null : value;
+    })
     .optional({ nullable: true, checkFalsy: true }) // Permitir null, undefined, '' según schema (es opcional)
     .isEmail()
     .withMessage('Email debe ser un email válido')
@@ -296,30 +394,57 @@ export const registerStudentValidator = [
 
   body('contactosEmergencia.*.ocupacion')
     .if(body('contactosEmergencia').isArray())
+    .customSanitizer((value) => {
+      // Convertir string vacío a null antes de validar
+      return value === '' ? null : value;
+    })
     .optional({ nullable: true, checkFalsy: true }) // Permitir null, undefined, '' según schema (es opcional)
-    .isString()
-    .withMessage('Ocupación debe ser una cadena de texto')
     .trim()
-    .isLength({ max: 100 })
-    .withMessage('Ocupación no puede exceder 100 caracteres'),
+    .custom((value) => {
+      // Si está presente después del trim, validar longitud
+      if (value && value.length > 0) {
+        if (value.length > 100) {
+          throw new Error('Ocupación no puede exceder 100 caracteres');
+        }
+      }
+      return true;
+    }),
 
   body('contactosEmergencia.*.lugarTrabajo')
     .if(body('contactosEmergencia').isArray())
+    .customSanitizer((value) => {
+      // Convertir string vacío a null antes de validar
+      return value === '' ? null : value;
+    })
     .optional({ nullable: true, checkFalsy: true }) // Permitir null, undefined, '' según schema (es opcional)
-    .isString()
-    .withMessage('Lugar de trabajo debe ser una cadena de texto')
     .trim()
-    .isLength({ max: 200 })
-    .withMessage('Lugar de trabajo no puede exceder 200 caracteres'),
+    .custom((value) => {
+      // Si está presente después del trim, validar longitud
+      if (value && value.length > 0) {
+        if (value.length > 200) {
+          throw new Error('Lugar de trabajo no puede exceder 200 caracteres');
+        }
+      }
+      return true;
+    }),
 
   body('contactosEmergencia.*.direccion')
     .if(body('contactosEmergencia').isArray())
+    .customSanitizer((value) => {
+      // Convertir string vacío a null antes de validar
+      return value === '' ? null : value;
+    })
     .optional({ nullable: true, checkFalsy: true }) // Permitir null, undefined, '' según schema (es opcional)
-    .isString()
-    .withMessage('Dirección debe ser una cadena de texto')
     .trim()
-    .isLength({ max: 500 })
-    .withMessage('Dirección no puede exceder 500 caracteres'),
+    .custom((value) => {
+      // Si está presente después del trim, validar longitud
+      if (value && value.length > 0) {
+        if (value.length > 500) {
+          throw new Error('Dirección no puede exceder 500 caracteres');
+        }
+      }
+      return true;
+    }),
 
   body('contactosEmergencia.*.esContactoEmergencia')
     .if(body('contactosEmergencia').isArray())
@@ -335,12 +460,21 @@ export const registerStudentValidator = [
 
   body('contactosEmergencia.*.observaciones')
     .if(body('contactosEmergencia').isArray())
+    .customSanitizer((value) => {
+      // Convertir string vacío a null antes de validar
+      return value === '' ? null : value;
+    })
     .optional({ nullable: true, checkFalsy: true }) // Permitir null, undefined, '' según schema (es opcional)
-    .isString()
-    .withMessage('Observaciones debe ser una cadena de texto')
     .trim()
-    .isLength({ max: 500 })
-    .withMessage('Observaciones no puede exceder 500 caracteres'),
+    .custom((value) => {
+      // Si está presente después del trim, validar longitud
+      if (value && value.length > 0) {
+        if (value.length > 500) {
+          throw new Error('Observaciones no puede exceder 500 caracteres');
+        }
+      }
+      return true;
+    }),
 
   // ============================================
   // DOCUMENTACIÓN (OPCIONAL - Objeto)
