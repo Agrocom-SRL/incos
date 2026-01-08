@@ -1,7 +1,7 @@
 -- ============================================
 -- ESTRUCTURA ACADÉMICA - PARTE 1
 -- Sistema de Gestión Académica - Instituto INCOS
--- 7 Tablas: carreras, gestiones, etapas_gestion, periodos, materias, plan_estudios, prerrequisitos
+-- 5 Tablas: carreras, periodos, materias, plan_estudios, prerrequisitos
 -- ============================================
 
 USE instituto_incos;
@@ -18,8 +18,6 @@ DROP TABLE IF EXISTS prerrequisitos;
 DROP TABLE IF EXISTS plan_estudios;
 DROP TABLE IF EXISTS materias;
 DROP TABLE IF EXISTS periodos;
-DROP TABLE IF EXISTS etapas_gestion;
-DROP TABLE IF EXISTS gestiones;
 DROP TABLE IF EXISTS carreras;
 
 -- ============================================
@@ -69,109 +67,18 @@ CREATE TABLE carreras (
 COMMENT='Carreras del instituto';
 
 -- ============================================
--- TABLA: gestiones
--- ============================================
-
-CREATE TABLE gestiones (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    codigo VARCHAR(20) NOT NULL COMMENT 'Código de la gestión (ej: 2025-1, 2025-2)',
-    anio INT NOT NULL COMMENT 'Año académico',
-    imagen_promocion_url VARCHAR(500) COMMENT 'URL de la imagen de promoción de la gestión',
-    fecha_inicio_administrativa DATE NOT NULL COMMENT 'Fecha de inicio administrativo de la gestión (inicio del año lectivo)',
-    fecha_fin_administrativa DATE NOT NULL COMMENT 'Fecha de fin administrativo de la gestión (cierre de notas, exámenes, etc.)',
-    
-    -- Campos de auditoría y control (ESTÁNDAR)
-    activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
-    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
-    created_by INT COMMENT 'Usuario que creó',
-    updated_by INT COMMENT 'Usuario que modificó',
-    deleted_by INT COMMENT 'Usuario que eliminó',
-    
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    
-    INDEX idx_codigo (codigo) COMMENT 'Búsqueda por código',
-    INDEX idx_anio (anio) COMMENT 'Búsqueda por año',
-    INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
-    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
-    INDEX idx_anio_activo (anio, activo, deleted_at) COMMENT 'Búsqueda por año y estado activo',
-    INDEX idx_fechas (fecha_inicio_administrativa, fecha_fin_administrativa) COMMENT 'Búsqueda por rango de fechas',
-    
-    CHECK (fecha_fin_administrativa >= fecha_inicio_administrativa)
-    
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Gestiones académicas (años académicos). Las fechas específicas de etapas están en etapas_gestion.';
-
--- ============================================
--- TABLA: etapas_gestion
--- ============================================
--- Etapas/fases temporales dentro de una gestión académica
--- Permite flexibilidad para universidades con múltiples periodos dentro de una gestión
--- Ejemplo: Pre-inscripción, Inscripciones, Clases, Exámenes, Entrega de Notas, Fin de Gestión
-
-CREATE TABLE etapas_gestion (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    gestion_id INT NULL COMMENT 'Gestión académica (NULL permite flexibilidad en migraciones)',
-    nombre VARCHAR(100) NOT NULL COMMENT 'Nombre de la etapa (ej: Pre-inscripción, Clases, Exámenes)',
-    tipo ENUM(
-        'PRE_INSCRIPCION',
-        'INSCRIPCIONES',
-        'CLASES',
-        'EVALUACIONES',
-        'EXAMENES',
-        'ENTREGA_NOTAS',
-        'CIERRE_ADMINISTRATIVO',
-        'OTRO'
-    ) NOT NULL COMMENT 'Tipo de etapa',
-    fecha_inicio DATE NOT NULL COMMENT 'Fecha de inicio de la etapa',
-    fecha_fin DATE COMMENT 'Fecha de fin de la etapa (NULL si aún no termina)',
-    vigente BOOLEAN DEFAULT FALSE COMMENT 'Si la etapa está vigente actualmente (pueden haber múltiples etapas vigentes al mismo tiempo)',
-    descripcion TEXT COMMENT 'Descripción de la etapa',
-    
-    -- Campos de auditoría y control (ESTÁNDAR)
-    activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo (si está FALSE, la etapa ya pasó o fue cancelada)',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
-    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
-    created_by INT COMMENT 'Usuario que creó',
-    updated_by INT COMMENT 'Usuario que modificó',
-    deleted_by INT COMMENT 'Usuario que eliminó',
-    
-    FOREIGN KEY (gestion_id) REFERENCES gestiones(id) ON DELETE SET NULL,
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    
-    INDEX idx_gestion_id (gestion_id) COMMENT 'Búsqueda por gestión',
-    INDEX idx_tipo (tipo) COMMENT 'Búsqueda por tipo',
-    INDEX idx_fecha_inicio (fecha_inicio) COMMENT 'Búsqueda por fecha de inicio',
-    INDEX idx_vigente (vigente) COMMENT 'Búsqueda por etapa vigente',
-    INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
-    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
-    INDEX idx_gestion_vigente (gestion_id, vigente, activo, deleted_at) COMMENT 'Búsqueda de etapas vigentes por gestión',
-    INDEX idx_tipo_vigente (tipo, vigente, activo) COMMENT 'Búsqueda por tipo y vigencia',
-    
-    CHECK (fecha_fin IS NULL OR fecha_fin >= fecha_inicio)
-    
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Etapas/fases temporales dentro de una gestión académica. Si no existe la etapa, no está activa. El campo activo indica si la etapa ya pasó o fue cancelada.';
-
--- ============================================
 -- TABLA: periodos
 -- ============================================
 -- IMPORTANTE: Los "periodos" son SEMESTRES/AÑOS de la CARRERA (1º, 2º, 3º, 4º)
--- NO son etapas temporales de la gestión (eso es etapas_gestion)
+-- NO son periodos académicos temporales de la gestión (eso es periodos_academicos en parte 3)
 -- 
 -- Ejemplo:
 --   - Carrera "Contaduría" tiene 4 periodos: 1º Semestre, 2º Semestre, 3º Semestre, 4º Semestre
 --   - Estos periodos definen qué materias se ven en cada semestre del plan de estudios
 --   - Un estudiante en "1º Semestre" cursa las materias del periodo 1 de su carrera
 --
--- Para etapas temporales de gestión (pre-inscripción, clases, exámenes, etc.)
--- ver tabla: etapas_gestion
+-- Para periodos académicos temporales de gestión (planificación, bimestres, clausura, etc.)
+-- ver tabla: periodos_academicos en 05-estructura-academica-parte3.sql
 
 CREATE TABLE periodos (
     id INT AUTO_INCREMENT PRIMARY KEY,

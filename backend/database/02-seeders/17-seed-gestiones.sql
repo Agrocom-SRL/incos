@@ -1,7 +1,7 @@
 -- ============================================
 -- SEEDER: gestiones
 -- Sistema de Gestión Académica - Instituto INCOS
--- Datos iniciales: Gestiones académicas
+-- Gestión Regular 2025
 -- ============================================
 
 USE instituto_incos;
@@ -13,12 +13,12 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- TRUNCATE TABLE gestiones;
 
 -- ============================================
--- INSERTAR GESTIONES
+-- INSERTAR GESTIÓN 2025
+-- Gestión Regular del año académico 2025
 -- ============================================
 
-INSERT INTO gestiones (codigo, anio, fecha_inicio_administrativa, fecha_fin_administrativa) VALUES
-('2026', 2026, '2026-02-01', '2026-12-31'),
-('2025', 2025, '2025-02-01', '2025-12-31');
+INSERT INTO gestiones (codigo, nombre, anio, tipo, fecha_inicio, fecha_fin, vigente) VALUES
+('2025-REG', 'Gestión Regular 2025', 2025, 'REGULAR', '2025-01-13', '2025-12-12', TRUE);
 
 -- Rehabilitar foreign key checks
 SET FOREIGN_KEY_CHECKS = 1;
@@ -26,4 +26,3 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- ============================================
 -- FIN DEL SEEDER
 -- ============================================
-

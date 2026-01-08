@@ -1,4 +1,30 @@
 -- ============================================
+-- ESTRUCTURA ACADÉMICA - PARTE 3
+-- Sistema de Gestión Académica - Instituto INCOS
+-- 4 Tablas: actividades, gestiones, periodos_academicos, actividades_calendario
+-- ============================================
+
+USE instituto_incos;
+
+-- ============================================
+-- FASE 1: ELIMINACIÓN DE TABLAS
+-- Deshabilitamos foreign key checks para poder eliminar en cualquier orden
+-- ============================================
+
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- Eliminar todas las tablas (orden no importa con foreign key checks deshabilitado)
+DROP TABLE IF EXISTS actividades_calendario;
+DROP TABLE IF EXISTS periodos_academicos;
+DROP TABLE IF EXISTS gestiones;
+DROP TABLE IF EXISTS actividades;
+
+-- ============================================
+-- FASE 2: CREACIÓN DE TABLAS
+-- Las foreign key checks siguen deshabilitadas durante la creación
+-- ============================================
+
+-- ============================================
 -- TABLA: actividades
 -- ============================================
 -- Catálogo maestro de actividades académicas reutilizables entre gestiones
@@ -94,9 +120,7 @@ CREATE TABLE gestiones (
     INDEX idx_anio_tipo (anio, tipo, activo, deleted_at) COMMENT 'Búsqueda por año y tipo',
     INDEX idx_fechas (fecha_inicio, fecha_fin) COMMENT 'Búsqueda por rango de fechas',
     INDEX idx_vigente_activo (vigente, activo, deleted_at) COMMENT 'Búsqueda de gestiones vigentes',
-    
-    CHECK (fecha_fin >= fecha_inicio)
-    
+ 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Gestiones académicas. Permite múltiples gestiones por año (regular, verano, nivelación, extraordinaria)';
 
@@ -153,9 +177,7 @@ CREATE TABLE periodos_academicos (
     INDEX idx_gestion_orden (gestion_id, numero_orden, activo, deleted_at) COMMENT 'Periodos ordenados por gestión',
     INDEX idx_gestion_division (gestion_id, division, activo) COMMENT 'Búsqueda por gestión y división',
     INDEX idx_fechas (fecha_inicio, fecha_fin) COMMENT 'Búsqueda por rango de fechas',
-    
-    CHECK (fecha_fin >= fecha_inicio)
-    
+
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Periodos académicos temporales (contenedores de actividades). Los periodos NO se solapan. Incluye: Planificación, Bimestres, Clausura.';
 
@@ -205,8 +227,17 @@ CREATE TABLE actividades_calendario (
     INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
     INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
     INDEX idx_periodo_fechas (periodo_academico_id, fecha_inicio, activo) COMMENT 'Búsqueda por periodo y fechas',
-    
-    CHECK (fecha_fin IS NULL OR fecha_fin >= fecha_inicio)
-    
+ 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Calendario académico: instancias de actividades con fechas específicas por periodo académico';
+
+-- ============================================
+-- FASE 3: REHABILITAR FOREIGN KEY CHECKS
+-- ============================================
+
+SET FOREIGN_KEY_CHECKS = 1;
+
+-- ============================================
+-- FIN DEL SCRIPT
+-- ============================================
+
