@@ -15,13 +15,27 @@ yarn-error.log*
 logs/
 *.log
 
-# Uploads (excepto estructura)
-uploads/**/*
+# Uploads (excepto estructura e imágenes base de carreras)
+uploads/*
 !uploads/.gitkeep
+!uploads/carreras/
+!uploads/documentos/
+!uploads/fotos/
+!uploads/reportes/
+!uploads/temp/
+
+# Ignorar contenido de carpetas de usuarios (documentos, fotos, reportes, temp)
+uploads/documentos/**/*
 !uploads/documentos/.gitkeep
+uploads/fotos/**/*
 !uploads/fotos/.gitkeep
+uploads/reportes/**/*
 !uploads/reportes/.gitkeep
+uploads/temp/**/*
 !uploads/temp/.gitkeep
+
+# Permitir todas las imágenes base de carreras
+!uploads/carreras/**/*
 
 # IDE
 .vscode/
