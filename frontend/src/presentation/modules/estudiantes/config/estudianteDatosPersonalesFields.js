@@ -89,36 +89,6 @@ export const createEstudianteDatosPersonalesFields = () => {
           placeholder: 'Ej: González',
           maxLength: 100,
         },
-        // Género
-        {
-          name: 'generoId',
-          label: 'Género',
-          type: 'select',
-          required: true,
-          span: 12,
-          options: 'generos',
-          placeholder: 'Seleccione género',
-        },
-        // Estado Civil
-        {
-          name: 'estadoCivilId',
-          label: 'Estado Civil',
-          type: 'select',
-          required: false,
-          span: 12,
-          options: 'estadosCiviles',
-          placeholder: 'Seleccione estado civil',
-        },
-        // Tipo de Sangre
-        {
-          name: 'tipoSangre',
-          label: 'Tipo de Sangre',
-          type: 'select',
-          required: false,
-          span: 12,
-          options: 'tiposSangre',
-          placeholder: 'Seleccione tipo de sangre',
-        },
         // Fecha de Nacimiento
         {
           name: 'fechaNacimiento',
@@ -129,7 +99,37 @@ export const createEstudianteDatosPersonalesFields = () => {
           placeholder: 'DD-MM-YYYY o DD/MM/YYYY',
           minAge: null, // Se reemplazará desde el contexto (EDAD_MINIMA_REGISTRO)
         },
-        // Tiene Discapacidad
+        // Género
+        {
+          name: 'generoId',
+          label: 'Género',
+          type: 'select',
+          required: true,
+          span: 12,
+          options: 'generos',
+          placeholder: 'Seleccione género',
+        },
+        // Estado Civil (OPCIONAL según schema)
+        {
+          name: 'estadoCivilId',
+          label: 'Estado Civil',
+          type: 'select',
+          required: false,
+          span: 12,
+          options: 'estadosCiviles',
+          placeholder: 'Seleccione estado civil',
+        },
+        // Tipo de Sangre (OPCIONAL según schema)
+        {
+          name: 'tipoSangre',
+          label: 'Tipo de Sangre',
+          type: 'select',
+          required: false,
+          span: 12,
+          options: 'tiposSangre',
+          placeholder: 'Seleccione tipo de sangre',
+        },
+        // Tiene Discapacidad (OPCIONAL según schema, tiene DEFAULT FALSE)
         {
           name: 'tieneDiscapacidad',
           label: 'Tiene Discapacidad',

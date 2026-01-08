@@ -40,12 +40,15 @@ export function validateRegisterStudent(datosEstudiante) {
   const errors = [];
 
   // 2. Validar campos mínimos requeridos (basado en SQL schema NOT NULL)
+  // Según schema: ci, expedicion, nombres, apellido_paterno, fecha_nacimiento, genero, celular son NOT NULL
   const camposRequeridos = [
     { field: 'ci', message: 'CI es requerido' },
     { field: 'expedicionId', message: 'Expedición es requerida' },
     { field: 'nombres', message: 'Nombres son requeridos' },
     { field: 'apellidoPaterno', message: 'Apellido paterno es requerido' },
     { field: 'fechaNacimiento', message: 'Fecha de nacimiento es requerida' },
+    { field: 'generoId', message: 'Género es requerido' },
+    { field: 'celular', message: 'Celular es requerido' },
   ];
 
   camposRequeridos.forEach(({ field, message }) => {
@@ -54,33 +57,48 @@ export function validateRegisterStudent(datosEstudiante) {
     }
   });
 
-  // 3. Validar formato básico de campos (si están presentes)
-  if (datosEstudiante.ci && typeof datosEstudiante.ci !== 'string' && typeof datosEstudiante.ci !== 'number') {
-    errors.push({
-      field: 'ci',
-      message: 'CI debe ser un texto o número',
-    });
+  // 3. Validar formato básico de campos (solo si están presentes, permitir nulos/vacíos para opcionales)
+  if (datosEstudiante.ci && datosEstudiante.ci !== null && datosEstudiante.ci !== '') {
+    if (typeof datosEstudiante.ci !== 'string' && typeof datosEstudiante.ci !== 'number') {
+      errors.push({
+        field: 'ci',
+        message: 'CI debe ser un texto o número',
+      });
+    }
   }
 
-  if (datosEstudiante.email && typeof datosEstudiante.email !== 'string') {
-    errors.push({
-      field: 'email',
-      message: 'Email debe ser un texto',
-    });
+  // Validar email personal solo si está presente (es opcional según schema)
+  if (datosEstudiante.emailPersonal && datosEstudiante.emailPersonal !== null && datosEstudiante.emailPersonal !== '') {
+    if (typeof datosEstudiante.emailPersonal !== 'string') {
+      errors.push({
+        field: 'emailPersonal',
+        message: 'Email personal debe ser un texto',
+      });
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(datosEstudiante.emailPersonal)) {
+      errors.push({
+        field: 'emailPersonal',
+        message: 'Email personal debe tener un formato válido',
+      });
+    }
   }
 
-  if (datosEstudiante.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(datosEstudiante.email)) {
-    errors.push({
-      field: 'email',
-      message: 'Email debe tener un formato válido',
-    });
+  // Validar celular solo si está presente (es requerido pero puede venir vacío antes de validar)
+  if (datosEstudiante.celular && datosEstudiante.celular !== null && datosEstudiante.celular !== '') {
+    if (typeof datosEstudiante.celular !== 'string' && typeof datosEstudiante.celular !== 'number') {
+      errors.push({
+        field: 'celular',
+        message: 'Celular debe ser un texto o número',
+      });
+    }
   }
 
-  if (datosEstudiante.fechaNacimiento && !(datosEstudiante.fechaNacimiento instanceof Date) && typeof datosEstudiante.fechaNacimiento !== 'string') {
-    errors.push({
-      field: 'fechaNacimiento',
-      message: 'Fecha de nacimiento debe ser una fecha válida',
-    });
+  if (datosEstudiante.fechaNacimiento && datosEstudiante.fechaNacimiento !== null && datosEstudiante.fechaNacimiento !== '') {
+    if (!(datosEstudiante.fechaNacimiento instanceof Date) && typeof datosEstudiante.fechaNacimiento !== 'string') {
+      errors.push({
+        field: 'fechaNacimiento',
+        message: 'Fecha de nacimiento debe ser una fecha válida',
+      });
+    }
   }
 
   // 4. Validar estructura de contactos de emergencia (si están presentes)
@@ -92,6 +110,7 @@ export function validateRegisterStudent(datosEstudiante) {
       });
     } else {
       // Validar cada contacto
+      // Según schema estudiantes_apoderados: solo nombres es NOT NULL, tipo_parentesco_id también es requerido si se envía contacto
       datosEstudiante.contactosEmergencia.forEach((contacto, index) => {
         if (!contacto.nombres) {
           errors.push({
@@ -99,12 +118,8 @@ export function validateRegisterStudent(datosEstudiante) {
             message: 'Nombres del contacto son requeridos',
           });
         }
-        if (!contacto.telefono) {
-          errors.push({
-            field: `contactosEmergencia[${index}].telefono`,
-            message: 'Teléfono del contacto es requerido',
-          });
-        }
+        // telefono es opcional según schema, no se valida como requerido
+        // tipoParentescoId es requerido según el validador del backend, pero si no se envía contacto no se valida aquí
       });
     }
   }

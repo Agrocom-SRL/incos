@@ -122,13 +122,13 @@ export const registerStudentValidator = [
     .withMessage('Tipo de sangre debe ser uno de: A+, A-, B+, B-, AB+, AB-, O+, O-'),
 
   body('emailPersonal')
-    .optional()
+    .optional({ nullable: true, checkFalsy: true }) // Permitir null, undefined, '' según schema (es opcional)
     .isEmail()
     .withMessage('Email personal debe ser un email válido')
     .normalizeEmail(),
 
   body('telefonoFijo')
-    .optional()
+    .optional({ nullable: true, checkFalsy: true }) // Permitir null, undefined, '' según schema (es opcional)
     .isString()
     .withMessage('Teléfono fijo debe ser una cadena de texto')
     .trim()
@@ -136,7 +136,7 @@ export const registerStudentValidator = [
     .withMessage('Teléfono fijo debe tener entre 7 y 20 caracteres'),
 
   body('direccion')
-    .optional()
+    .optional({ nullable: true, checkFalsy: true }) // Permitir null, undefined, '' según schema (es opcional)
     .isString()
     .withMessage('Dirección debe ser una cadena de texto')
     .trim()
@@ -144,7 +144,7 @@ export const registerStudentValidator = [
     .withMessage('Dirección no puede exceder 500 caracteres'),
 
   body('zona')
-    .optional()
+    .optional({ nullable: true, checkFalsy: true }) // Permitir null, undefined, '' según schema (es opcional)
     .isString()
     .withMessage('Zona debe ser una cadena de texto')
     .trim()
@@ -262,8 +262,7 @@ export const registerStudentValidator = [
 
   body('contactosEmergencia.*.apellidos')
     .if(body('contactosEmergencia').isArray())
-    .notEmpty()
-    .withMessage('Apellidos son requeridos para cada contacto')
+    .optional({ nullable: true, checkFalsy: true }) // Permitir null, undefined, '' según schema (es opcional)
     .isString()
     .withMessage('Apellidos debe ser una cadena de texto')
     .trim()
@@ -272,7 +271,7 @@ export const registerStudentValidator = [
 
   body('contactosEmergencia.*.ci')
     .if(body('contactosEmergencia').isArray())
-    .optional()
+    .optional({ nullable: true, checkFalsy: true }) // Permitir null, undefined, '' según schema (es opcional)
     .isString()
     .withMessage('CI debe ser una cadena de texto')
     .trim()
@@ -281,7 +280,7 @@ export const registerStudentValidator = [
 
   body('contactosEmergencia.*.telefono')
     .if(body('contactosEmergencia').isArray())
-    .optional()
+    .optional({ nullable: true, checkFalsy: true }) // Permitir null, undefined, '' según schema (es opcional)
     .isString()
     .withMessage('Teléfono debe ser una cadena de texto')
     .trim()
@@ -290,14 +289,14 @@ export const registerStudentValidator = [
 
   body('contactosEmergencia.*.email')
     .if(body('contactosEmergencia').isArray())
-    .optional()
+    .optional({ nullable: true, checkFalsy: true }) // Permitir null, undefined, '' según schema (es opcional)
     .isEmail()
     .withMessage('Email debe ser un email válido')
     .normalizeEmail(),
 
   body('contactosEmergencia.*.ocupacion')
     .if(body('contactosEmergencia').isArray())
-    .optional()
+    .optional({ nullable: true, checkFalsy: true }) // Permitir null, undefined, '' según schema (es opcional)
     .isString()
     .withMessage('Ocupación debe ser una cadena de texto')
     .trim()
@@ -306,7 +305,7 @@ export const registerStudentValidator = [
 
   body('contactosEmergencia.*.lugarTrabajo')
     .if(body('contactosEmergencia').isArray())
-    .optional()
+    .optional({ nullable: true, checkFalsy: true }) // Permitir null, undefined, '' según schema (es opcional)
     .isString()
     .withMessage('Lugar de trabajo debe ser una cadena de texto')
     .trim()
@@ -315,7 +314,7 @@ export const registerStudentValidator = [
 
   body('contactosEmergencia.*.direccion')
     .if(body('contactosEmergencia').isArray())
-    .optional()
+    .optional({ nullable: true, checkFalsy: true }) // Permitir null, undefined, '' según schema (es opcional)
     .isString()
     .withMessage('Dirección debe ser una cadena de texto')
     .trim()
@@ -336,7 +335,7 @@ export const registerStudentValidator = [
 
   body('contactosEmergencia.*.observaciones')
     .if(body('contactosEmergencia').isArray())
-    .optional()
+    .optional({ nullable: true, checkFalsy: true }) // Permitir null, undefined, '' según schema (es opcional)
     .isString()
     .withMessage('Observaciones debe ser una cadena de texto')
     .trim()
