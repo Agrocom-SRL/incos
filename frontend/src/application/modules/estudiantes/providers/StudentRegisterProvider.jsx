@@ -45,7 +45,8 @@ export const StudentRegisterProvider = ({ children, mode = 'create', studentId =
     const showMessage = useMessage();
 
     // Hook para catálogos esenciales del formulario de registro
-    const catalogData = useStudentCatalogApi();
+    // Pasar el modo para que pueda ajustar la carga si es necesario
+    const catalogData = useStudentCatalogApi(mode === 'edit' ? 300 : 0); // Delay de 300ms en modo edición
 
     // Hook para datos geográficos condicionales (carga bajo demanda)
     const geographicData = useStudentGeographicApi();
@@ -54,11 +55,22 @@ export const StudentRegisterProvider = ({ children, mode = 'create', studentId =
     const referenceData = useStudentReferenceApi();
 
     // Cargar tipos de parentesco al inicializar (siempre se necesitan para contacto de emergencia)
+    // En modo edición, esperar un poco para evitar llamadas paralelas con StudentDetailProvider
     useEffect(() => {
         if (referenceData.loadTiposParentesco && typeof referenceData.loadTiposParentesco === 'function') {
-            referenceData.loadTiposParentesco();
+            // En modo edición, esperar 200ms para que primero se cargue el estudiante
+            // Esto evita problemas de concurrencia en el servidor con múltiples llamadas simultáneas
+            if (mode === 'edit') {
+                const timeoutId = setTimeout(() => {
+                    referenceData.loadTiposParentesco();
+                }, 200);
+                return () => clearTimeout(timeoutId);
+            } else {
+                // En modo creación, cargar inmediatamente
+                referenceData.loadTiposParentesco();
+            }
         }
-    }, [referenceData.loadTiposParentesco]);
+    }, [referenceData.loadTiposParentesco, mode]);
 
     // Componer todos los datos del contexto
     const contextData = useMemo(() => ({

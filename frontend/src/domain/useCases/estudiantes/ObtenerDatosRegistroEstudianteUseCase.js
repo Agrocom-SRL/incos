@@ -19,6 +19,7 @@
  * - Tipos de parentesco: Solo si hay contacto de emergencia (usar obtenerCatalogo con tipoParentescoRepository)
  * 
  * Las llamadas se realizan en paralelo para optimizar el rendimiento.
+ * NOTA: En modo edición, se usa secuencial para evitar problemas de concurrencia en el servidor.
  * 
  * Retorna un objeto con los catálogos esenciales organizados.
  */
@@ -58,22 +59,33 @@ export class ObtenerDatosRegistroEstudianteUseCase {
    * 
    */
   async ejecutar(options = {}) {
-    const { params = {} } = options;
+    const { params = {}, sequential = false } = options;
 
     try {
-      // Obtener solo los catálogos esenciales (siempre necesarios) en paralelo
-      // Los catálogos condicionales se cargan bajo demanda usando otros Use Cases
-      const [
-        paisesResult,
-        idiomasResult,
-        estadosCivilesResult,
-        documentacionResult,
-      ] = await Promise.all([
-        this.paisRepository.obtenerTodos({ params }),
-        this.idiomaRepository.obtenerTodos({ params }),
-        this.estadoCivilRepository.obtenerTodos({ params }),
-        this.documentacionRepository.obtenerTodos({ params: { tipoDocumento: 'INSCRIPCION', ...params } }),
-      ]);
+      let paisesResult, idiomasResult, estadosCivilesResult, documentacionResult;
+
+      // Si sequential es true, hacer llamadas secuenciales para evitar problemas de concurrencia
+      // Útil en modo edición cuando hay otras llamadas activas al servidor
+      if (sequential) {
+        paisesResult = await this.paisRepository.obtenerTodos({ params });
+        idiomasResult = await this.idiomaRepository.obtenerTodos({ params });
+        estadosCivilesResult = await this.estadoCivilRepository.obtenerTodos({ params });
+        documentacionResult = await this.documentacionRepository.obtenerTodos({ params: { tipoDocumento: 'INSCRIPCION', ...params } });
+      } else {
+        // Obtener solo los catálogos esenciales (siempre necesarios) en paralelo
+        // Los catálogos condicionales se cargan bajo demanda usando otros Use Cases
+        [
+          paisesResult,
+          idiomasResult,
+          estadosCivilesResult,
+          documentacionResult,
+        ] = await Promise.all([
+          this.paisRepository.obtenerTodos({ params }),
+          this.idiomaRepository.obtenerTodos({ params }),
+          this.estadoCivilRepository.obtenerTodos({ params }),
+          this.documentacionRepository.obtenerTodos({ params: { tipoDocumento: 'INSCRIPCION', ...params } }),
+        ]);
+      }
 
       // Verificar si algún catálogo falló
       const resultados = [

@@ -21,7 +21,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useCasesFactory } from '@container';
 import { EXPEDICIONES, GENEROS, TIPOS_SANGRE } from '@infrastructure/config/constants';
 
-export const useStudentCatalogApi = () => {
+export const useStudentCatalogApi = (initialDelay = 0) => {
   // Estados para datos esenciales (siempre necesarios)
   const [paises, setPaises] = useState([]);
   const [idiomas, setIdiomas] = useState([]);
@@ -41,8 +41,11 @@ export const useStudentCatalogApi = () => {
 
     try {
       // Obtener datos esenciales usando el Use Case
+      // Si hay delay inicial, usar modo secuencial para evitar problemas de concurrencia
       const obtenerDatosRegistroUseCase = useCasesFactory.obtenerDatosRegistroEstudiante();
-      const result = await obtenerDatosRegistroUseCase.ejecutar();
+      const result = await obtenerDatosRegistroUseCase.ejecutar({ 
+        sequential: initialDelay > 0 // Usar secuencial si hay delay (modo edición)
+      });
 
       if (!result.success) {
         setError(result.error || 'Error al cargar datos del formulario');
@@ -61,10 +64,17 @@ export const useStudentCatalogApi = () => {
     }
   }, []);
 
-  // Cargar datos esenciales al montar
+  // Cargar datos esenciales al montar (con delay opcional para evitar llamadas paralelas)
   useEffect(() => {
-    loadFormData();
-  }, [loadFormData]);
+    if (initialDelay > 0) {
+      const timeoutId = setTimeout(() => {
+        loadFormData();
+      }, initialDelay);
+      return () => clearTimeout(timeoutId);
+    } else {
+      loadFormData();
+    }
+  }, [loadFormData, initialDelay]);
 
   /**
    * Recarga todos los datos esenciales
