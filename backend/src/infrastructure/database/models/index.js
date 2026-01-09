@@ -37,12 +37,19 @@ export { Secretaria } from './secretaria.js';
 // ESTRUCTURA ACADÉMICA - PARTE 1
 // ============================================
 export { Carrera } from './carrera.js';
-export { Gestion } from './gestion.js';
-export { EtapaGestion } from './etapa_gestion.js';
-export { Periodo } from './periodo.js';
 export { Materia } from './materia.js';
 export { PlanEstudios } from './plan_estudios.js';
+export { Periodo } from './periodo.js';
+export { AsignaturaPlan } from './asignatura_plan.js';
 export { Prerrequisito } from './prerrequisito.js';
+
+// ============================================
+// ESTRUCTURA ACADÉMICA - PARTE 3 (Calendario)
+// ============================================
+export { Actividad } from './actividad.js';
+export { Gestion } from './gestion.js';
+export { PeriodoAcademico } from './periodo_academico.js';
+export { ActividadCalendario } from './actividad_calendario.js';
 
 // ============================================
 // ESTRUCTURA ACADÉMICA - PARTE 2

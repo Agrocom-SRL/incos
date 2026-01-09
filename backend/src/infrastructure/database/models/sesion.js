@@ -43,7 +43,7 @@ export const Sesion = sequelize.define(
       comment: 'IP del último login (IPv4 o IPv6)',
     },
     dispositivo: {
-      type: DataTypes.STRING(50),
+      type: DataTypes.ENUM('MOVIL', 'TABLET', 'DESKTOP'),
       allowNull: true,
       comment: 'Tipo de dispositivo: MOVIL, TABLET, DESKTOP',
     },

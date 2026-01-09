@@ -20,6 +20,7 @@ export const Documentacion = sequelize.define(
         'TITULACION',
         'TRASPASO',
         'TRANSFERENCIA',
+        'BECA',
         'OTRO'
       ),
       field: 'tipo_documento',

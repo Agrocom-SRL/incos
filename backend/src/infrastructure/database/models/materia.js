@@ -6,55 +6,30 @@ export const Materia = sequelize.define(
   'Materia',
   {
     ...baseModelFields,
-    codigo: {
+    sigla: {
       type: DataTypes.STRING(20),
       allowNull: false,
-      comment: 'Código de la materia',
+      comment: 'Sigla de la materia (ej: CON-101, PRG-202, INT-102)',
     },
     nombre: {
-      type: DataTypes.STRING(200),
+      type: DataTypes.STRING(250),
       allowNull: false,
-      comment: 'Nombre de la materia',
+      comment: 'Nombre completo de la materia',
     },
-    nombreCorto: {
-      type: DataTypes.STRING(100),
-      field: 'nombre_corto',
-      allowNull: true,
-      comment: 'Nombre abreviado',
-    },
-    descripcion: {
+    objetivos: {
       type: DataTypes.TEXT,
       allowNull: true,
+      comment: 'Objetivos de aprendizaje de la materia',
     },
-    cargaHorariaTeorica: {
-      type: DataTypes.INTEGER,
-      field: 'carga_horaria_teorica',
-      allowNull: false,
-      defaultValue: 0,
-      comment: 'Horas teóricas totales',
-    },
-    cargaHorariaPractica: {
-      type: DataTypes.INTEGER,
-      field: 'carga_horaria_practica',
-      allowNull: false,
-      defaultValue: 0,
-      comment: 'Horas prácticas totales',
-    },
-    creditos: {
-      type: DataTypes.DECIMAL(4, 2),
+    clasificacion: {
+      type: DataTypes.STRING(150),
       allowNull: true,
-      comment: 'Créditos académicos',
+      comment: 'Clasificación de la materia (ej: CONTABILIDAD, PROGRAMACIÓN, IDIOMAS, FORMACIÓN GENERAL)',
     },
     tipo: {
       type: DataTypes.ENUM('TEORICA', 'PRACTICA', 'TEORICA_PRACTICA'),
       defaultValue: 'TEORICA_PRACTICA',
-      comment: 'Tipo de materia según su naturaleza',
-    },
-    areaConocimiento: {
-      type: DataTypes.STRING(100),
-      field: 'area_conocimiento',
-      allowNull: true,
-      comment: 'Área de conocimiento',
+      comment: 'Naturaleza pedagógica: TEORICA (aula), PRACTICA (lab/taller/campo), TEORICA_PRACTICA (mixta)',
     },
   },
   {

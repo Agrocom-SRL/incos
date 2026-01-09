@@ -6,16 +6,16 @@ export const Periodo = sequelize.define(
   'Periodo',
   {
     ...baseModelFields,
-    carreraId: {
+    planEstudioId: {
       type: DataTypes.INTEGER,
-      field: 'carrera_id',
+      field: 'plan_estudio_id',
       allowNull: true,
-      comment: 'Carrera a la que pertenece',
+      comment: 'Plan de estudios al que pertenece este periodo',
     },
     nombre: {
-      type: DataTypes.STRING(50),
+      type: DataTypes.STRING(100),
       allowNull: false,
-      comment: 'Nombre del periodo (ej: 1º Semestre, 2º Semestre)',
+      comment: 'Nombre del periodo (ej: Primer Año, Segundo Año, Tercer Año)',
     },
     numero: {
       type: DataTypes.INTEGER,

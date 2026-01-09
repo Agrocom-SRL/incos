@@ -9,29 +9,41 @@ export const Gestion = sequelize.define(
     codigo: {
       type: DataTypes.STRING(20),
       allowNull: false,
-      comment: 'Código de la gestión (ej: 2025-1, 2025-2)',
+      comment: 'Código único de la gestión (ej: 2025-REG, 2025-VER, 2025-NIV)',
+    },
+    nombre: {
+      type: DataTypes.STRING(100),
+      allowNull: false,
+      comment: 'Nombre descriptivo de la gestión (ej: Gestión Regular 2025, Curso de Verano 2025)',
     },
     anio: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      comment: 'Año académico',
+      comment: 'Año académico principal',
     },
-    imagenPromocionUrl: {
-      type: DataTypes.STRING(500),
-      field: 'imagen_promocion_url',
-      allowNull: true,
-    },
-    fechaInicioAdministrativa: {
-      type: DataTypes.DATEONLY,
-      field: 'fecha_inicio_administrativa',
+    tipo: {
+      type: DataTypes.ENUM('REGULAR', 'VERANO', 'INVIERNO', 'NIVELACION', 'EXTRAORDINARIA'),
       allowNull: false,
-      comment: 'Fecha de inicio administrativo de la gestión',
+      defaultValue: 'REGULAR',
+      comment: 'Tipo de gestión',
     },
-    fechaFinAdministrativa: {
+    fechaInicio: {
       type: DataTypes.DATEONLY,
-      field: 'fecha_fin_administrativa',
+      field: 'fecha_inicio',
       allowNull: false,
-      comment: 'Fecha de fin administrativo de la gestión',
+      comment: 'Fecha de inicio de la gestión',
+    },
+    fechaFin: {
+      type: DataTypes.DATEONLY,
+      field: 'fecha_fin',
+      allowNull: false,
+      comment: 'Fecha de fin de la gestión',
+    },
+    vigente: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+      comment: 'Si la gestión está actualmente vigente',
     },
   },
   {

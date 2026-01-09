@@ -6,22 +6,23 @@ export const Prerrequisito = sequelize.define(
   'Prerrequisito',
   {
     ...baseModelFields,
-    materiaId: {
+    planEstudioId: {
       type: DataTypes.INTEGER,
-      field: 'materia_id',
+      field: 'plan_estudio_id',
       allowNull: true,
-      comment: 'Materia que tiene el prerrequisito',
+      comment: 'Plan de estudios (redundancia controlada para performance en queries)',
     },
-    materiaPrerrequisitoId: {
+    asignaturaId: {
       type: DataTypes.INTEGER,
-      field: 'materia_prerrequisito_id',
+      field: 'asignatura_id',
       allowNull: true,
-      comment: 'Materia que debe aprobarse antes',
+      comment: 'Asignatura que requiere el prerrequisito (la que quieres cursar)',
     },
-    descripcion: {
-      type: DataTypes.TEXT,
+    prerrequisitoId: {
+      type: DataTypes.INTEGER,
+      field: 'prerrequisito_id',
       allowNull: true,
-      comment: 'Descripción adicional del prerrequisito',
+      comment: 'Asignatura que debe aprobarse antes (el prerrequisito)',
     },
   },
   {

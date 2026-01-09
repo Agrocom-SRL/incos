@@ -7,69 +7,43 @@ export const Carrera = sequelize.define(
   {
     ...baseModelFields,
     codigo: {
-      type: DataTypes.STRING(10),
+      type: DataTypes.STRING(20),
       allowNull: false,
-      comment: 'Código de la carrera',
+      comment: 'Código de la carrera (ej: SIS-INF, ADM-EMP, CON-GEN)',
     },
     nombre: {
-      type: DataTypes.STRING(150),
+      type: DataTypes.STRING(200),
       allowNull: false,
-      comment: 'Nombre de la carrera',
+      comment: 'Nombre completo de la carrera',
     },
     descripcion: {
       type: DataTypes.TEXT,
       allowNull: true,
+      comment: 'Descripción del perfil profesional de la carrera',
     },
-    duracionAnios: {
-      type: DataTypes.INTEGER,
-      field: 'duracion_anios',
-      allowNull: false,
-      defaultValue: 4,
-      comment: 'Duración en años académicos',
+    areaFormacion: {
+      type: DataTypes.STRING(150),
+      field: 'area_formacion',
+      allowNull: true,
+      comment: 'Área de formación (ej: COMERCIAL Y SERVICIOS, TECNOLOGÍA, SALUD)',
     },
     tituloOtorgado: {
-      type: DataTypes.STRING(200),
+      type: DataTypes.STRING(250),
       field: 'titulo_otorgado',
       allowNull: true,
-    },
-    resolucionMinisterial: {
-      type: DataTypes.STRING(100),
-      field: 'resolucion_ministerial',
-      allowNull: true,
-    },
-    fechaVigencia: {
-      type: DataTypes.DATEONLY,
-      field: 'fecha_vigencia',
-      allowNull: true,
-    },
-    cargaHorariaTotal: {
-      type: DataTypes.INTEGER,
-      field: 'carga_horaria_total',
-      allowNull: true,
+      comment: 'Título profesional que otorga (ej: Técnico Superior en Sistemas Informáticos)',
     },
     colorHex: {
       type: DataTypes.STRING(7),
       field: 'color_hex',
       allowNull: true,
-      comment: 'Color para UI',
-    },
-    imagenNombre: {
-      type: DataTypes.STRING(255),
-      field: 'imagen_nombre',
-      allowNull: true,
-      comment: 'Nombre del archivo de imagen',
+      comment: 'Color identificador en formato hexadecimal (ej: #FF5733) para dashboards y tarjetas',
     },
     imagenRuta: {
       type: DataTypes.STRING(500),
       field: 'imagen_ruta',
       allowNull: true,
-      comment: 'Ruta del archivo de imagen en el servidor',
-    },
-    imagenUrl: {
-      type: DataTypes.STRING(500),
-      field: 'imagen_url',
-      allowNull: true,
-      comment: 'URL completa de la imagen (puede ser externa o del servidor)',
+      comment: 'Ruta relativa de la imagen (ej: /uploads/carreras/1_SIS-INF.webp) o URL completa si es externa',
     },
   },
   {

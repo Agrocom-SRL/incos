@@ -9,20 +9,20 @@ export const EstudianteDatosAcademicos = sequelize.define(
     estudianteId: {
       type: DataTypes.INTEGER,
       field: 'estudiante_id',
-      allowNull: false,
-      comment: 'Estudiante',
+      allowNull: true,
+      comment: 'Estudiante (NULL permite flexibilidad en migraciones)',
     },
     carreraId: {
       type: DataTypes.INTEGER,
       field: 'carrera_id',
-      allowNull: false,
-      comment: 'Carrera',
+      allowNull: true,
+      comment: 'Carrera (NULL permite flexibilidad en migraciones)',
     },
     gestionIngresoId: {
       type: DataTypes.INTEGER,
       field: 'gestion_ingreso_id',
-      allowNull: false,
-      comment: 'Gestión de ingreso',
+      allowNull: true,
+      comment: 'Gestión de ingreso (NULL permite flexibilidad en migraciones)',
     },
     estadoAcademico: {
       type: DataTypes.ENUM('REGULAR', 'NIVELACION', 'RETIRADO', 'EGRESADO', 'ABANDONO'),
