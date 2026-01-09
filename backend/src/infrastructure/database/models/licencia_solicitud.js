@@ -1,6 +1,8 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../sequelize.js';
 import { baseModelFields, baseModelOptions } from './base_model.js';
+import { MOTIVOS_LICENCIAS_VALUES } from '../../../domain/constants/licencias.constants.js';
+import { ESTADOS_LICENCIAS_VALUES, ESTADOS_LICENCIAS } from '../../../domain/constants/licencias.constants.js';
 
 export const LicenciaSolicitud = sequelize.define(
   'LicenciaSolicitud',
@@ -56,7 +58,7 @@ export const LicenciaSolicitud = sequelize.define(
       comment: 'Total de días',
     },
     motivo: {
-      type: DataTypes.ENUM('ENFERMEDAD', 'TRABAJO', 'FAMILIAR', 'VIAJE', 'ACADEMICO', 'DEPORTIVO', 'PERSONAL', 'OTRO'),
+      type: DataTypes.ENUM(...MOTIVOS_LICENCIAS_VALUES),
       allowNull: false,
       comment: 'Motivo de la licencia',
     },
@@ -67,8 +69,8 @@ export const LicenciaSolicitud = sequelize.define(
       comment: 'Detalle del motivo (observaciones)',
     },
     estado: {
-      type: DataTypes.ENUM('PENDIENTE', 'APROBADA', 'RECHAZADA', 'CANCELADA'),
-      defaultValue: 'PENDIENTE',
+      type: DataTypes.ENUM(...ESTADOS_LICENCIAS_VALUES),
+      defaultValue: ESTADOS_LICENCIAS.PENDIENTE,
       comment: 'Estado de la solicitud',
     },
     fechaDecision: {

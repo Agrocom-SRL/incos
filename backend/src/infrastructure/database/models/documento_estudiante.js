@@ -1,6 +1,7 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../sequelize.js';
 import { baseModelFields, baseModelOptions } from './base_model.js';
+import { ESTADOS_DOCUMENTO_VALUES } from '../../../domain/constants/student.constants.js';
 
 export const DocumentoEstudiante = sequelize.define(
   'DocumentoEstudiante',
@@ -75,7 +76,7 @@ export const DocumentoEstudiante = sequelize.define(
       allowNull: true,
     },
     estado: {
-      type: DataTypes.ENUM('PENDIENTE', 'APROBADO', 'RECHAZADO'),
+      type: DataTypes.ENUM(...ESTADOS_DOCUMENTO_VALUES),
       defaultValue: 'PENDIENTE',
       comment: 'Estado del documento',
     },

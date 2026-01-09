@@ -1,8 +1,15 @@
 /**
  * Constantes del dominio relacionadas con Estudiantes
  * 
- * Estas constantes son parte del dominio de negocio y pueden ser usadas
- * por entidades, value objects y servicios de dominio relacionados con estudiantes.
+ * Este archivo consolida todas las constantes relacionadas con estudiantes:
+ * - Estados académicos
+ * - Estados de registro
+ * - Datos personales (géneros, tipos de sangre, expediciones CI)
+ * - Documentos de estudiantes
+ * - Orígenes y nacionalidades
+ * - Discapacidades
+ * 
+ * Todas las constantes están organizadas por categorías funcionales para facilitar su uso.
  */
 
 // ============================================
@@ -117,12 +124,17 @@ export const TIPOS_SANGRE_VALUES = Object.values(TIPOS_SANGRE);
 
 /**
  * Tipos de documentos de estudiantes
+ * Nota: Para tipos de documentos requeridos del sistema, ver TIPOS_DOCUMENTO_SISTEMA en sistema.constants.js
  */
 export const TIPOS_DOCUMENTO_ESTUDIANTE = {
   INSCRIPCION: 'INSCRIPCION',
   LICENCIA: 'LICENCIA',
   PASANTIA: 'PASANTIA',
   DESCUENTO: 'DESCUENTO',
+  TITULACION: 'TITULACION',
+  TRASPASO: 'TRASPASO',
+  TRANSFERENCIA: 'TRANSFERENCIA',
+  BECA: 'BECA',
   PAGO_INSCRIPCION: 'PAGO_INSCRIPCION',
   PAGO_TITULACION: 'PAGO_TITULACION',
   PAGO_TRASLADO_INSTITUTO: 'PAGO_TRASLADO_INSTITUTO',
@@ -149,3 +161,57 @@ export const ESTADOS_DOCUMENTO = {
  */
 export const ESTADOS_DOCUMENTO_VALUES = Object.values(ESTADOS_DOCUMENTO);
 
+// ============================================
+// ESTADOS DE REGISTRO
+// ============================================
+
+/**
+ * Estados del proceso de registro de estudiante
+ */
+export const ESTADOS_REGISTRO_ESTUDIANTE = {
+  BORRADOR: 'BORRADOR',
+  PENDIENTE: 'PENDIENTE',
+  ADMITIDO: 'ADMITIDO',
+};
+
+/**
+ * Array de estados de registro válidos (útil para validators)
+ */
+export const ESTADOS_REGISTRO_ESTUDIANTE_VALUES = Object.values(ESTADOS_REGISTRO_ESTUDIANTE);
+
+// ============================================
+// ORIGENES Y NACIONALIDADES
+// ============================================
+
+/**
+ * Tipos de origen/nacionalidad
+ */
+export const TIPOS_ORIGEN = {
+  BOLIVIANA: 'BOLIVIANA',
+  EXTRANJERA: 'EXTRANJERA',
+  DOBLE_NACIONALIDAD: 'DOBLE_NACIONALIDAD',
+};
+
+/**
+ * Array de tipos de origen válidos (útil para validators)
+ */
+export const TIPOS_ORIGEN_VALUES = Object.values(TIPOS_ORIGEN);
+
+// ============================================
+// DISCAPACIDADES
+// ============================================
+
+/**
+ * Grados de discapacidad
+ */
+export const GRADOS_DISCAPACIDAD = {
+  LEVE: 'LEVE',
+  MODERADO: 'MODERADO',
+  SEVERO: 'SEVERO',
+  PROFUNDO: 'PROFUNDO',
+};
+
+/**
+ * Array de grados de discapacidad válidos (útil para validators)
+ */
+export const GRADOS_DISCAPACIDAD_VALUES = Object.values(GRADOS_DISCAPACIDAD);

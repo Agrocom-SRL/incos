@@ -1,6 +1,7 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../sequelize.js';
 import { baseModelFields, baseModelOptions } from './base_model.js';
+import { TIPOS_ACTIVIDAD_VALUES } from '../../../domain/constants/gestion.constants.js';
 
 export const Actividad = sequelize.define(
   'Actividad',
@@ -17,18 +18,7 @@ export const Actividad = sequelize.define(
       comment: 'Descripción detallada de la actividad',
     },
     tipo: {
-      type: DataTypes.ENUM(
-        'INSCRIPCION',
-        'PLANIFICACION',
-        'ACADEMICA',
-        'EVALUACION',
-        'ADMINISTRATIVA',
-        'FERIADO',
-        'EVENTO_INSTITUCIONAL',
-        'FERIA',
-        'MODALIDAD_GRADO',
-        'OTRO'
-      ),
+      type: DataTypes.ENUM(...TIPOS_ACTIVIDAD_VALUES),
       allowNull: true,
       comment: 'Tipo de actividad (opcional, NULL si no aplica clasificación)',
     },

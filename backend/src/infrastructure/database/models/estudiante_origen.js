@@ -1,6 +1,7 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../sequelize.js';
 import { baseModelFields, baseModelOptions } from './base_model.js';
+import { TIPOS_ORIGEN_VALUES, TIPOS_ORIGEN } from '../../../domain/constants/student.constants.js';
 
 export const EstudianteOrigen = sequelize.define(
   'EstudianteOrigen',
@@ -43,10 +44,10 @@ export const EstudianteOrigen = sequelize.define(
       comment: 'Idioma secundario que más habla relacionado con este origen',
     },
     tipoOrigen: {
-      type: DataTypes.ENUM('BOLIVIANA', 'EXTRANJERA', 'DOBLE_NACIONALIDAD'),
+      type: DataTypes.ENUM(...TIPOS_ORIGEN_VALUES),
       field: 'tipo_origen',
       allowNull: true,
-      defaultValue: 'BOLIVIANA',
+      defaultValue: TIPOS_ORIGEN.BOLIVIANA,
       comment: 'Tipo de nacionalidad: BOLIVIANA (usa municipio_nacimiento_id), EXTRANJERA (usa pais_id y ciudad_nacimiento), DOBLE_NACIONALIDAD (requiere dos registros con es_principal TRUE y FALSE)',
     },
     esPrincipal: {

@@ -1,6 +1,8 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../sequelize.js';
 import { baseModelFields, baseModelOptions } from './base_model.js';
+import { GENEROS_VALUES } from '../../../domain/constants/student.constants.js';
+import { TIPOS_SANGRE_VALUES } from '../../../domain/constants/student.constants.js';
 
 export const Estudiante = sequelize.define(
   'Estudiante',
@@ -52,7 +54,7 @@ export const Estudiante = sequelize.define(
       comment: 'Fecha de nacimiento',
     },
     genero: {
-      type: DataTypes.ENUM('MASCULINO', 'FEMENINO', 'OTRO'),
+      type: DataTypes.ENUM(...GENEROS_VALUES),
       allowNull: false,
       comment: 'Género',
     },
@@ -63,7 +65,7 @@ export const Estudiante = sequelize.define(
       comment: 'Estado civil',
     },
     tipoSangre: {
-      type: DataTypes.ENUM('A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'),
+      type: DataTypes.ENUM(...TIPOS_SANGRE_VALUES),
       field: 'tipo_sangre',
       allowNull: true,
       comment: 'Tipo de sangre',

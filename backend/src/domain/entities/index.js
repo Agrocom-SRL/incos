@@ -23,6 +23,7 @@ export { Language } from './Language.js';
 export { CivilStatus } from './CivilStatus.js';
 export { DisabilityType } from './DisabilityType.js';
 export { RelationshipType } from './RelationshipType.js';
+export { Documentation } from './Documentation.js';
 
 // ============================================
 // SISTEMA DE SEGURIDAD
@@ -41,12 +42,19 @@ export { Secretary } from './Secretary.js';
 // ESTRUCTURA ACADÉMICA - PARTE 1
 // ============================================
 export { Career } from './Career.js';
-export { Management } from './Management.js';
-export { ManagementStage } from './ManagementStage.js';
-export { Period } from './Period.js';
 export { Subject } from './Subject.js';
 export { StudyPlan } from './StudyPlan.js';
+export { Period } from './Period.js';
+export { PlanSubject } from './PlanSubject.js';
 export { Prerequisite } from './Prerequisite.js';
+
+// ============================================
+// ESTRUCTURA ACADÉMICA - PARTE 3 (Calendario)
+// ============================================
+export { Activity } from './Activity.js';
+export { Management } from './Management.js';
+export { AcademicPeriod } from './AcademicPeriod.js';
+export { CalendarActivity } from './CalendarActivity.js';
 
 // ============================================
 // ESTRUCTURA ACADÉMICA - PARTE 2

@@ -1,6 +1,7 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../sequelize.js';
 import { baseModelFields, baseModelOptions } from './base_model.js';
+import { DIVISIONES_PERIODO_ACADEMICO_VALUES } from '../../../domain/constants/gestion.constants.js';
 
 export const PeriodoAcademico = sequelize.define(
   'PeriodoAcademico',
@@ -23,16 +24,7 @@ export const PeriodoAcademico = sequelize.define(
       comment: 'Nombre del periodo (ej: Planificación, Primer Bimestre, Clausura)',
     },
     division: {
-      type: DataTypes.ENUM(
-        'PLANIFICACION',
-        'MENSUAL',
-        'BIMESTRE',
-        'TRIMESTRE',
-        'CUATRIMESTRE',
-        'SEMESTRE',
-        'CLAUSURA',
-        'OTRO'
-      ),
+      type: DataTypes.ENUM(...DIVISIONES_PERIODO_ACADEMICO_VALUES),
       allowNull: false,
       comment: 'División/tipo de periodo académico',
     },

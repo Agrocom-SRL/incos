@@ -1,6 +1,7 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../sequelize.js';
 import { baseModelFields, baseModelOptions } from './base_model.js';
+import { DIAS_SEMANA_VALUES } from '../../../domain/constants/cursos.constants.js';
 
 export const TurnoCurso = sequelize.define(
   'TurnoCurso',
@@ -19,7 +20,7 @@ export const TurnoCurso = sequelize.define(
       comment: 'Turno horario (Mañana/Tarde/Noche)',
     },
     diaSemana: {
-      type: DataTypes.ENUM('LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO', 'DOMINGO'),
+      type: DataTypes.ENUM(...DIAS_SEMANA_VALUES),
       field: 'dia_semana',
       allowNull: false,
       comment: 'Día de la semana',

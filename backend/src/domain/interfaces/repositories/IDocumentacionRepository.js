@@ -1,7 +1,7 @@
 import { IRepository } from './IRepository.js';
 
 /**
- * Interfaz de Repositorio: IDocumentacionRepository
+ * Interfaz de Repositorio: IDocumentationRepository
  * Define el contrato que debe cumplir el repositorio de documentación
  * 
  * NOTA: Solo extiende IRepository sin métodos adicionales.
@@ -20,5 +20,7 @@ import { IRepository } from './IRepository.js';
  */
 export class IDocumentacionRepository extends IRepository {
   // Solo hereda métodos de IRepository
+  // NOTA: El nombre de la clase se mantiene en español por compatibilidad con código existente
+  // pero representa la entidad Documentation (en inglés)
 }
 

@@ -1,4 +1,4 @@
-import { Documentacion } from '../../domain/entities/Documentacion.js';
+import { Documentation } from '../../domain/entities/Documentation.js';
 import { BaseMapper } from './BaseMapper.js';
 
 /**
@@ -23,15 +23,15 @@ import { BaseMapper } from './BaseMapper.js';
 export class DocumentacionMapper {
   /**
    * Convierte un modelo Sequelize a entidad de dominio
-   * Usa BaseMapper para campos comunes y solo mapea campos específicos de Documentacion
+   * Usa BaseMapper para campos comunes y solo mapea campos específicos de Documentation
    * 
-   * @param {Object|null} model - Modelo Sequelize de Documentacion
-   * @returns {Documentacion|null} Entidad de dominio Documentacion
+   * @param {Object|null} model - Modelo Sequelize de Documentation
+   * @returns {Documentation|null} Entidad de dominio Documentation
    */
   static toEntity(model) {
     if (!model) return null;
 
-    // Campos específicos de Documentacion (campos del dominio)
+    // Campos específicos de Documentation (campos del dominio)
     const specificFields = {
       name: model.nombre,
       documentType: model.tipoDocumento,
@@ -39,26 +39,26 @@ export class DocumentacionMapper {
       required: model.requerido === 1 || model.requerido === true,
       order: model.orden,
       description: model.descripcion,
-      documentoPadreId: model.documentoPadreId ?? null,
-      esOriginal: model.esOriginal === 1 || model.esOriginal === true,
-      esDocumentoSistema: model.esDocumentoSistema === 1 || model.esDocumentoSistema === true,
+      parentDocumentId: model.documentoPadreId ?? null,
+      isOriginal: model.esOriginal === 1 || model.esOriginal === true,
+      isSystemDocument: model.esDocumentoSistema === 1 || model.esDocumentoSistema === true,
     };
 
     // Combina campos base (id, active, timestamps, audit) con campos específicos
     const entityData = BaseMapper.combineBaseAndSpecificFields(model, specificFields);
     
-    return new Documentacion(entityData);
+    return new Documentation(entityData);
   }
 
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para creación)
    * 
-   * @param {Documentacion|Object} entity - Entidad Documentacion o objeto con datos de dominio
+   * @param {Documentation|Object} entity - Entidad Documentation o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
   static toModel(entity) {
-    // Acepta tanto entidad Documentacion como objeto plano
-    const data = entity instanceof Documentacion ? entity.toPlainObject() : entity;
+    // Acepta tanto entidad Documentation como objeto plano
+    const data = entity instanceof Documentation ? entity.toPlainObject() : entity;
 
     // NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
     // BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
@@ -69,26 +69,26 @@ export class DocumentacionMapper {
       requerido: data.required !== undefined ? data.required : true,
       orden: data.order || 0,
       descripcion: data.description || null,
-      documentoPadreId: data.documentoPadreId ?? null,
-      esOriginal: data.esOriginal !== undefined ? data.esOriginal : false,
-      esDocumentoSistema: data.esDocumentoSistema !== undefined ? data.esDocumentoSistema : false,
+      documentoPadreId: data.parentDocumentId ?? null,
+      esOriginal: data.isOriginal !== undefined ? data.isOriginal : false,
+      esDocumentoSistema: data.isSystemDocument !== undefined ? data.isSystemDocument : false,
     };
   }
 
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para actualización)
    * Solo incluye los campos que están definidos (no undefined)
-   * Usa BaseMapper para campos comunes y solo mapea campos específicos de Documentacion
+   * Usa BaseMapper para campos comunes y solo mapea campos específicos de Documentation
    * 
-   * @param {Documentacion|Object} entity - Entidad Documentacion o objeto con datos de dominio
+   * @param {Documentation|Object} entity - Entidad Documentation o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
   static toModelForUpdate(entity) {
-    // Acepta tanto entidad Documentacion como objeto plano
-    const data = entity instanceof Documentacion ? entity.toPlainObject() : entity;
+    // Acepta tanto entidad Documentation como objeto plano
+    const data = entity instanceof Documentation ? entity.toPlainObject() : entity;
     const updateData = {};
 
-    // Campos específicos de Documentacion
+    // Campos específicos de Documentation
     if (data.name !== undefined) {
       updateData.nombre = data.name;
     }
@@ -107,14 +107,14 @@ export class DocumentacionMapper {
     if (data.description !== undefined) {
       updateData.descripcion = data.description || null;
     }
-    if (data.documentoPadreId !== undefined) {
-      updateData.documentoPadreId = data.documentoPadreId ?? null;
+    if (data.parentDocumentId !== undefined) {
+      updateData.documentoPadreId = data.parentDocumentId ?? null;
     }
-    if (data.esOriginal !== undefined) {
-      updateData.esOriginal = data.esOriginal;
+    if (data.isOriginal !== undefined) {
+      updateData.esOriginal = data.isOriginal;
     }
-    if (data.esDocumentoSistema !== undefined) {
-      updateData.esDocumentoSistema = data.esDocumentoSistema;
+    if (data.isSystemDocument !== undefined) {
+      updateData.esDocumentoSistema = data.isSystemDocument;
     }
 
     // Campos base (active/activo)
@@ -128,7 +128,7 @@ export class DocumentacionMapper {
    * Convierte un array de modelos Sequelize a array de entidades de dominio
    * 
    * @param {Array} models - Array de modelos Sequelize
-   * @returns {Documentacion[]} Array de entidades Documentacion
+   * @returns {Documentation[]} Array de entidades Documentation
    */
   static toEntityList(models) {
     if (!models || !Array.isArray(models)) return [];

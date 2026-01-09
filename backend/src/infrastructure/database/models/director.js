@@ -1,6 +1,8 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../sequelize.js';
 import { baseModelFields, baseModelOptions } from './base_model.js';
+import { TIPOS_DIRECTOR_VALUES } from '../../../domain/constants/docentes.constants.js';
+import { NIVELES_ACADEMICOS_PERSONAL_VALUES } from '../../../domain/constants/docentes.constants.js';
 
 export const Director = sequelize.define(
   'Director',
@@ -13,7 +15,7 @@ export const Director = sequelize.define(
       comment: 'Referencia a personal.id',
     },
     tipo: {
-      type: DataTypes.ENUM('ACADEMICO', 'ADMINISTRATIVO'),
+      type: DataTypes.ENUM(...TIPOS_DIRECTOR_VALUES),
       allowNull: false,
       comment: 'Tipo de director',
     },
@@ -37,7 +39,7 @@ export const Director = sequelize.define(
       allowNull: true,
     },
     nivelAcademico: {
-      type: DataTypes.ENUM('TECNICO', 'LICENCIATURA', 'MAESTRIA', 'DOCTORADO'),
+      type: DataTypes.ENUM(...NIVELES_ACADEMICOS_PERSONAL_VALUES),
       field: 'nivel_academico',
       allowNull: true,
     },

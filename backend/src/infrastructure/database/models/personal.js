@@ -1,6 +1,7 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../sequelize.js';
 import { baseModelFields, baseModelOptions } from './base_model.js';
+import { GENEROS_VALUES } from '../../../domain/constants/student.constants.js';
 
 export const Personal = sequelize.define(
   'Personal',
@@ -45,7 +46,7 @@ export const Personal = sequelize.define(
       allowNull: true,
     },
     genero: {
-      type: DataTypes.ENUM('MASCULINO', 'FEMENINO', 'OTRO'),
+      type: DataTypes.ENUM(...GENEROS_VALUES),
       allowNull: true,
     },
     estadoCivilId: {

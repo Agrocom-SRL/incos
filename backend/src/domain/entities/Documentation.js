@@ -1,10 +1,10 @@
 import { BaseEntity } from './BaseEntity.js';
 
 /**
- * Entidad de Dominio: Documentacion
+ * Entidad de Dominio: Documentation
  * Representa un tipo de documentación requerida para inscripción
  */
-export class Documentacion extends BaseEntity {
+export class Documentation extends BaseEntity {
   constructor(data = {}) {
     super(data);
     this.name = data.name || null;
@@ -13,9 +13,9 @@ export class Documentacion extends BaseEntity {
     this.required = data.required !== undefined ? data.required : true;
     this.order = data.order || 0;
     this.description = data.description || null;
-    this.documentoPadreId = data.documentoPadreId !== undefined ? data.documentoPadreId : null;
-    this.esOriginal = data.esOriginal !== undefined ? data.esOriginal : false;
-    this.esDocumentoSistema = data.esDocumentoSistema !== undefined ? data.esDocumentoSistema : false;
+    this.parentDocumentId = data.parentDocumentId !== undefined ? data.parentDocumentId : null;
+    this.isOriginal = data.isOriginal !== undefined ? data.isOriginal : false;
+    this.isSystemDocument = data.isSystemDocument !== undefined ? data.isSystemDocument : false;
   }
 
   /**
@@ -31,9 +31,9 @@ export class Documentacion extends BaseEntity {
       required: this.required,
       order: this.order,
       description: this.description,
-      documentoPadreId: this.documentoPadreId,
-      esOriginal: this.esOriginal,
-      esDocumentoSistema: this.esDocumentoSistema,
+      parentDocumentId: this.parentDocumentId,
+      isOriginal: this.isOriginal,
+      isSystemDocument: this.isSystemDocument,
     };
   }
 }

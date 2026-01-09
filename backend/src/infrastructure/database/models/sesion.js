@@ -1,6 +1,7 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../sequelize.js';
 import { baseModelFields, baseModelOptions } from './base_model.js';
+import { TIPOS_DISPOSITIVO_VALUES } from '../../../domain/constants/usuarios.constants.js';
 
 export const Sesion = sequelize.define(
   'Sesion',
@@ -43,7 +44,7 @@ export const Sesion = sequelize.define(
       comment: 'IP del último login (IPv4 o IPv6)',
     },
     dispositivo: {
-      type: DataTypes.ENUM('MOVIL', 'TABLET', 'DESKTOP'),
+      type: DataTypes.ENUM(...TIPOS_DISPOSITIVO_VALUES),
       allowNull: true,
       comment: 'Tipo de dispositivo: MOVIL, TABLET, DESKTOP',
     },

@@ -25,7 +25,7 @@ export class ListDocumentacionUseCase extends BaseListUseCase {
   }
 
   /**
-   * Retorna el mapper a usar para convertir entidades Documentacion a presentación
+   * Retorna el mapper a usar para convertir entidades Documentation a presentación
    * @returns {DocumentacionMapper}
    */
   getMapper() {

@@ -10,23 +10,10 @@ export class Career extends BaseEntity {
     this.code = data.code || null;
     this.name = data.name || null;
     this.description = data.description || null;
-    this.durationYears = data.durationYears !== undefined ? data.durationYears : 4;
+    this.trainingArea = data.trainingArea || null;
     this.grantedTitle = data.grantedTitle || null;
-    this.ministerialResolution = data.ministerialResolution || null;
-    this.effectiveDate = data.effectiveDate || null;
-    this.totalHours = data.totalHours || null;
     this.colorHex = data.colorHex || null;
-    this.imageName = data.imageName || null;
     this.imagePath = data.imagePath || null;
-    this.imageUrl = data.imageUrl || null;
-  }
-
-  /**
-   * Valida que la duración sea positiva
-   * @returns {boolean}
-   */
-  isValidDuration() {
-    return this.durationYears > 0;
   }
 
   /**
@@ -48,15 +35,10 @@ export class Career extends BaseEntity {
       code: this.code,
       name: this.name,
       description: this.description,
-      durationYears: this.durationYears,
+      trainingArea: this.trainingArea,
       grantedTitle: this.grantedTitle,
-      ministerialResolution: this.ministerialResolution,
-      effectiveDate: this.effectiveDate,
-      totalHours: this.totalHours,
       colorHex: this.colorHex,
-      imageName: this.imageName,
       imagePath: this.imagePath,
-      imageUrl: this.imageUrl,
     };
   }
 }

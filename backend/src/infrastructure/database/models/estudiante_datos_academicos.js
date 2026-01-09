@@ -1,6 +1,7 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../sequelize.js';
 import { baseModelFields, baseModelOptions } from './base_model.js';
+import { ESTADOS_ACADEMICOS_VALUES, ESTADOS_ACADEMICOS, ESTADOS_REGISTRO_ESTUDIANTE_VALUES, ESTADOS_REGISTRO_ESTUDIANTE } from '../../../domain/constants/student.constants.js';
 
 export const EstudianteDatosAcademicos = sequelize.define(
   'EstudianteDatosAcademicos',
@@ -25,17 +26,17 @@ export const EstudianteDatosAcademicos = sequelize.define(
       comment: 'Gestión de ingreso (NULL permite flexibilidad en migraciones)',
     },
     estadoAcademico: {
-      type: DataTypes.ENUM('REGULAR', 'NIVELACION', 'RETIRADO', 'EGRESADO', 'ABANDONO'),
+      type: DataTypes.ENUM(...ESTADOS_ACADEMICOS_VALUES),
       field: 'estado_academico',
       allowNull: false,
-      defaultValue: 'REGULAR',
+      defaultValue: ESTADOS_ACADEMICOS.REGULAR,
       comment: 'Estado académico',
     },
     estadoRegistro: {
-      type: DataTypes.ENUM('BORRADOR', 'PENDIENTE', 'ADMITIDO'),
+      type: DataTypes.ENUM(...ESTADOS_REGISTRO_ESTUDIANTE_VALUES),
       field: 'estado_registro',
       allowNull: false,
-      defaultValue: 'BORRADOR',
+      defaultValue: ESTADOS_REGISTRO_ESTUDIANTE.BORRADOR,
       comment: 'Estado del proceso de registro: BORRADOR (datos completos, documentos pendientes), PENDIENTE (al menos un documento original), ADMITIDO (todos los documentos originales verificados)',
     },
     unidadEducativaProcedencia: {

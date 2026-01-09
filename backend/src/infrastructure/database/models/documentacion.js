@@ -1,6 +1,7 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../sequelize.js';
 import { baseModelFields, baseModelOptions } from './base_model.js';
+import { TIPOS_DOCUMENTO_SISTEMA_VALUES } from '../../../domain/constants/sistema.constants.js';
 
 export const Documentacion = sequelize.define(
   'Documentacion',
@@ -12,17 +13,7 @@ export const Documentacion = sequelize.define(
       comment: 'Nombre del documento requerido',
     },
     tipoDocumento: {
-      type: DataTypes.ENUM(
-        'INSCRIPCION',
-        'LICENCIA',
-        'PASANTIA',
-        'DESCUENTO',
-        'TITULACION',
-        'TRASPASO',
-        'TRANSFERENCIA',
-        'BECA',
-        'OTRO'
-      ),
+      type: DataTypes.ENUM(...TIPOS_DOCUMENTO_SISTEMA_VALUES),
       field: 'tipo_documento',
       allowNull: false,
       comment: 'Tipo de documento según categoría',

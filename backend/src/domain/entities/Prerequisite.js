@@ -2,23 +2,23 @@ import { BaseEntity } from './BaseEntity.js';
 
 /**
  * Entidad de Dominio: Prerequisite
- * Representa un prerrequisito entre materias
+ * Representa un prerrequisito entre asignaturas de un plan de estudios
  */
 export class Prerequisite extends BaseEntity {
   constructor(data = {}) {
     super(data);
-    this.subjectId = data.subjectId || null;
-    this.prerequisiteSubjectId = data.prerequisiteSubjectId || null;
-    this.description = data.description || null;
+    this.studyPlanId = data.studyPlanId || null;
+    this.planSubjectId = data.planSubjectId || null;
+    this.prerequisitePlanSubjectId = data.prerequisitePlanSubjectId || null;
   }
 
   /**
-   * Valida que una materia no sea prerrequisito de sí misma
+   * Valida que una asignatura no sea prerrequisito de sí misma
    * @returns {boolean}
    */
   isValid() {
-    if (!this.subjectId || !this.prerequisiteSubjectId) return false;
-    return this.subjectId !== this.prerequisiteSubjectId;
+    if (!this.planSubjectId || !this.prerequisitePlanSubjectId) return false;
+    return this.planSubjectId !== this.prerequisitePlanSubjectId;
   }
 
   /**
@@ -28,9 +28,9 @@ export class Prerequisite extends BaseEntity {
   toPlainObject() {
     return {
       ...super.toPlainObject(),
-      subjectId: this.subjectId,
-      prerequisiteSubjectId: this.prerequisiteSubjectId,
-      description: this.description,
+      studyPlanId: this.studyPlanId,
+      planSubjectId: this.planSubjectId,
+      prerequisitePlanSubjectId: this.prerequisitePlanSubjectId,
     };
   }
 }

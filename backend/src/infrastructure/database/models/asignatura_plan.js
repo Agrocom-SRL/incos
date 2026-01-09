@@ -1,6 +1,7 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../sequelize.js';
 import { baseModelFields, baseModelOptions } from './base_model.js';
+import { MODALIDADES_ASIGNATURA_VALUES, MODALIDADES_ASIGNATURA } from '../../../domain/constants/materias.constants.js';
 
 export const AsignaturaPlan = sequelize.define(
   'AsignaturaPlan',
@@ -36,9 +37,9 @@ export const AsignaturaPlan = sequelize.define(
       comment: 'Créditos académicos de la materia en este plan',
     },
     modalidad: {
-      type: DataTypes.ENUM('TRONCAL', 'ELECTIVA', 'REGULAR'),
+      type: DataTypes.ENUM(...MODALIDADES_ASIGNATURA_VALUES),
       allowNull: false,
-      defaultValue: 'REGULAR',
+      defaultValue: MODALIDADES_ASIGNATURA.REGULAR,
       comment: 'TRONCAL: materia fundamental de la carrera, ELECTIVA: a elección del estudiante, REGULAR: materia estándar del plan',
     },
     ordenVisualizacion: {

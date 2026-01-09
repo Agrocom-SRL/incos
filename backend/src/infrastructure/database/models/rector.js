@@ -1,6 +1,7 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../sequelize.js';
 import { baseModelFields, baseModelOptions } from './base_model.js';
+import { NIVELES_ACADEMICOS_PERSONAL_VALUES } from '../../../domain/constants/docentes.constants.js';
 
 export const Rector = sequelize.define(
   'Rector',
@@ -22,7 +23,7 @@ export const Rector = sequelize.define(
       allowNull: true,
     },
     nivelAcademico: {
-      type: DataTypes.ENUM('TECNICO', 'LICENCIATURA', 'MAESTRIA', 'DOCTORADO'),
+      type: DataTypes.ENUM(...NIVELES_ACADEMICOS_PERSONAL_VALUES),
       field: 'nivel_academico',
       allowNull: true,
     },

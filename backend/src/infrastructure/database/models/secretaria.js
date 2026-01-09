@@ -1,6 +1,9 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../sequelize.js';
 import { baseModelFields, baseModelOptions } from './base_model.js';
+import { TIPOS_SECRETARIA_VALUES } from '../../../domain/constants/docentes.constants.js';
+import { NIVELES_ACADEMICOS_VALUES, NIVELES_ACADEMICOS } from '../../../domain/constants/docentes.constants.js';
+import { TIPOS_CONTRATO_SECRETARIA_VALUES } from '../../../domain/constants/docentes.constants.js';
 
 export const Secretaria = sequelize.define(
   'Secretaria',
@@ -13,12 +16,12 @@ export const Secretaria = sequelize.define(
       comment: 'Referencia a personal.id',
     },
     tipo: {
-      type: DataTypes.ENUM('ACADEMICA', 'ADMINISTRATIVA'),
+      type: DataTypes.ENUM(...TIPOS_SECRETARIA_VALUES),
       allowNull: false,
       comment: 'Tipo de secretaria',
     },
     nivelAcademico: {
-      type: DataTypes.ENUM('ESTUDIANTE', 'TECNICO', 'LICENCIATURA', 'MAESTRIA', 'DOCTORADO'),
+      type: DataTypes.ENUM(...NIVELES_ACADEMICOS_VALUES),
       field: 'nivel_academico',
       allowNull: true,
     },
@@ -33,7 +36,7 @@ export const Secretaria = sequelize.define(
       allowNull: true,
     },
     tipoContrato: {
-      type: DataTypes.ENUM('EVENTUAL', 'TEMPORAL', 'INDEFINIDO'),
+      type: DataTypes.ENUM(...TIPOS_CONTRATO_SECRETARIA_VALUES),
       field: 'tipo_contrato',
       allowNull: true,
     },

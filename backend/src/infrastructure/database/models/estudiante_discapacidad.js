@@ -1,6 +1,7 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../sequelize.js';
 import { baseModelFields, baseModelOptions } from './base_model.js';
+import { GRADOS_DISCAPACIDAD_VALUES } from '../../../domain/constants/student.constants.js';
 
 export const EstudianteDiscapacidad = sequelize.define(
   'EstudianteDiscapacidad',
@@ -24,7 +25,7 @@ export const EstudianteDiscapacidad = sequelize.define(
       comment: 'Descripción detallada de la discapacidad específica del estudiante',
     },
     gradoDiscapacidad: {
-      type: DataTypes.ENUM('LEVE', 'MODERADO', 'SEVERO', 'PROFUNDO'),
+      type: DataTypes.ENUM(...GRADOS_DISCAPACIDAD_VALUES),
       field: 'grado_discapacidad',
       allowNull: true,
       comment: 'Grado de discapacidad',

@@ -1,6 +1,7 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../sequelize.js';
 import { baseModelFields, baseModelOptions } from './base_model.js';
+import { ESTADOS_CURSOS_VALUES, ESTADOS_CURSOS } from '../../../domain/constants/cursos.constants.js';
 
 export const Curso = sequelize.define(
   'Curso',
@@ -37,8 +38,8 @@ export const Curso = sequelize.define(
       comment: 'Mínimo de estudiantes para abrir el curso',
     },
     estado: {
-      type: DataTypes.ENUM('PROPUESTO', 'APROBADO', 'CANCELADO'),
-      defaultValue: 'PROPUESTO',
+      type: DataTypes.ENUM(...ESTADOS_CURSOS_VALUES),
+      defaultValue: ESTADOS_CURSOS.PROPUESTO,
       comment: 'Estado del curso',
     },
     descripcion: {

@@ -1,10 +1,10 @@
 /**
- * Mapper de aplicación: Documentacion
- * Convierte entidades de dominio (Documentacion) a formato de presentación (API/Spanish)
+ * Mapper de aplicación: Documentation
+ * Convierte entidades de dominio (Documentation) a formato de presentación (API/Spanish)
  * 
  * Clean Architecture:
  * - Application Layer: Convierte Domain Entities → Presentation Format
- * - Depende de Domain Layer (Documentacion entity)
+ * - Depende de Domain Layer (Documentation entity)
  * 
  * Responsabilidades:
  * - Mapear propiedades de dominio (English/camelCase) a presentación (Spanish/snake_case)
@@ -13,49 +13,49 @@
  */
 
 /**
- * Convierte una entidad Documentacion a formato de presentación
- * @param {Documentacion} documentacion - Entidad de dominio Documentacion
- * @returns {Object|null} Objeto en formato de presentación o null si documentacion es null/undefined
+ * Convierte una entidad Documentation a formato de presentación
+ * @param {Documentation} documentation - Entidad de dominio Documentation
+ * @returns {Object|null} Objeto en formato de presentación o null si documentation es null/undefined
  */
-export function entityToPresentation(documentacion) {
-  if (!documentacion) return null;
+export function entityToPresentation(documentation) {
+  if (!documentation) return null;
 
   return {
-    id: documentacion.id,
-    nombre: documentacion.name,
-    tipoDocumento: documentacion.documentType,
-    aceptaFotocopia: documentacion.acceptsPhotocopy,
-    requerido: documentacion.required,
-    orden: documentacion.order,
-    descripcion: documentacion.description,
-    documentoPadreId: documentacion.documentoPadreId,
-    esOriginal: documentacion.esOriginal,
-    esDocumentoSistema: documentacion.esDocumentoSistema,
-    activo: documentacion.active,
-    createdAt: documentacion.createdAt,
+    id: documentation.id,
+    nombre: documentation.name,
+    tipoDocumento: documentation.documentType,
+    aceptaFotocopia: documentation.acceptsPhotocopy,
+    requerido: documentation.required,
+    orden: documentation.order,
+    descripcion: documentation.description,
+    documentoPadreId: documentation.parentDocumentId,
+    esOriginal: documentation.isOriginal,
+    esDocumentoSistema: documentation.isSystemDocument,
+    activo: documentation.active,
+    createdAt: documentation.createdAt,
   };
 }
 
 /**
- * Convierte un array de entidades Documentacion a formato de presentación
- * @param {Documentacion[]} documentaciones - Array de entidades de dominio Documentacion
+ * Convierte un array de entidades Documentation a formato de presentación
+ * @param {Documentation[]} documentations - Array de entidades de dominio Documentation
  * @returns {Object[]} Array de objetos en formato de presentación
  */
-export function entitiesToPresentation(documentaciones) {
-  if (!Array.isArray(documentaciones)) return [];
-  return documentaciones.map(entityToPresentation);
+export function entitiesToPresentation(documentations) {
+  if (!Array.isArray(documentations)) return [];
+  return documentations.map(entityToPresentation);
 }
 
 /**
- * Clase mapper para Documentacion (exportada por compatibilidad)
+ * Clase mapper para Documentation (exportada por compatibilidad)
  */
 export class DocumentacionMapper {
-  static entityToPresentation(documentacion) {
-    return entityToPresentation(documentacion);
+  static entityToPresentation(documentation) {
+    return entityToPresentation(documentation);
   }
 
-  static entitiesToPresentation(documentaciones) {
-    return entitiesToPresentation(documentaciones);
+  static entitiesToPresentation(documentations) {
+    return entitiesToPresentation(documentations);
   }
 }
 

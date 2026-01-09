@@ -1,6 +1,7 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../sequelize.js';
 import { baseModelFields, baseModelOptions } from './base_model.js';
+import { TIPOS_CONFIGURACION_VALUES, TIPOS_CONFIGURACION } from '../../../domain/constants/sistema.constants.js';
 
 export const ConfiguracionSistema = sequelize.define(
   'ConfiguracionSistema',
@@ -17,9 +18,9 @@ export const ConfiguracionSistema = sequelize.define(
       comment: 'Valor de la configuración',
     },
     tipo: {
-      type: DataTypes.ENUM('STRING', 'NUMBER', 'BOOLEAN', 'JSON', 'DATE'),
+      type: DataTypes.ENUM(...TIPOS_CONFIGURACION_VALUES),
       allowNull: false,
-      defaultValue: 'STRING',
+      defaultValue: TIPOS_CONFIGURACION.STRING,
       comment: 'Tipo de dato del valor',
     },
     descripcion: {

@@ -1,6 +1,8 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../sequelize.js';
 import { baseModelFields, baseModelOptions } from './base_model.js';
+import { TIPOS_REFERENCIA_VALUES } from '../../../domain/constants/usuarios.constants.js';
+import { ESTADOS_USUARIOS_VALUES } from '../../../domain/constants/usuarios.constants.js';
 
 export const Usuario = sequelize.define(
   'Usuario',
@@ -41,13 +43,13 @@ export const Usuario = sequelize.define(
       comment: 'ID de referencia según tipo_referencia',
     },
     tipoReferencia: {
-      type: DataTypes.ENUM('ESTUDIANTE', 'DOCENTE', 'RECTOR', 'DIRECTOR', 'SECRETARIA'),
+      type: DataTypes.ENUM(...TIPOS_REFERENCIA_VALUES),
       field: 'tipo_referencia',
       allowNull: true,
       comment: 'Tipo de referencia polimórfica',
     },
     estado: {
-      type: DataTypes.ENUM('BLOQUEADO', 'SUSPENDIDO', 'RETIRADO'),
+      type: DataTypes.ENUM(...ESTADOS_USUARIOS_VALUES),
       allowNull: true,
       comment: 'Estado del usuario (NULL = activo)',
     },

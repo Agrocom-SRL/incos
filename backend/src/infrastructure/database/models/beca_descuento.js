@@ -1,6 +1,7 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../sequelize.js';
 import { baseModelFields, baseModelOptions } from './base_model.js';
+import { TIPOS_BECA_AUTOMATICA_VALUES, TIPOS_BECA_AUTOMATICA } from '../../../domain/constants/becas.constants.js';
 
 export const BecaDescuento = sequelize.define(
   'BecaDescuento',
@@ -44,9 +45,9 @@ export const BecaDescuento = sequelize.define(
       comment: 'Si la beca se asigna automáticamente',
     },
     tipoAutomatica: {
-      type: DataTypes.ENUM('PROMEDIO_90', 'MANUAL'),
+      type: DataTypes.ENUM(...TIPOS_BECA_AUTOMATICA_VALUES),
       field: 'tipo_automatica',
-      defaultValue: 'MANUAL',
+      defaultValue: TIPOS_BECA_AUTOMATICA.MANUAL,
       comment: 'Tipo de asignación automática',
     },
     promedioMinimo: {

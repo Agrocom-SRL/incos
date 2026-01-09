@@ -3,28 +3,16 @@ import { TIPOS_MATERIA_VALUES } from '../constants/index.js';
 
 /**
  * Entidad de Dominio: Subject
- * Representa una materia/curso
+ * Representa una materia/asignatura
  */
 export class Subject extends BaseEntity {
   constructor(data = {}) {
     super(data);
-    this.code = data.code || null;
+    this.acronym = data.acronym || null;
     this.name = data.name || null;
-    this.shortName = data.shortName || null;
-    this.description = data.description || null;
-    this.theoreticalHours = data.theoreticalHours !== undefined ? data.theoreticalHours : 0;
-    this.practicalHours = data.practicalHours !== undefined ? data.practicalHours : 0;
-    this.credits = data.credits || null;
+    this.objectives = data.objectives || null;
+    this.classification = data.classification || null;
     this.type = data.type || 'TEORICA_PRACTICA'; // TEORICA, PRACTICA, TEORICA_PRACTICA
-    this.knowledgeArea = data.knowledgeArea || null;
-  }
-
-  /**
-   * Calcula el total de horas
-   * @returns {number}
-   */
-  getTotalHours() {
-    return this.theoreticalHours + this.practicalHours;
   }
 
   /**
@@ -37,29 +25,17 @@ export class Subject extends BaseEntity {
   }
 
   /**
-   * Valida que las horas sean no negativas
-   * @returns {boolean}
-   */
-  isValidHours() {
-    return this.theoreticalHours >= 0 && this.practicalHours >= 0;
-  }
-
-  /**
    * Convierte la entidad a objeto plano
    * @returns {Object}
    */
   toPlainObject() {
     return {
       ...super.toPlainObject(),
-      code: this.code,
+      acronym: this.acronym,
       name: this.name,
-      shortName: this.shortName,
-      description: this.description,
-      theoreticalHours: this.theoreticalHours,
-      practicalHours: this.practicalHours,
-      credits: this.credits,
+      objectives: this.objectives,
+      classification: this.classification,
       type: this.type,
-      knowledgeArea: this.knowledgeArea,
     };
   }
 }

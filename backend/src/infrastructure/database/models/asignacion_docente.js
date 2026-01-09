@@ -1,6 +1,7 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../sequelize.js';
 import { baseModelFields, baseModelOptions } from './base_model.js';
+import { ESTADOS_ASIGNACION_DOCENTE_VALUES, ESTADOS_ASIGNACION_DOCENTE } from '../../../domain/constants/docentes.constants.js';
 
 export const AsignacionDocente = sequelize.define(
   'AsignacionDocente',
@@ -32,8 +33,8 @@ export const AsignacionDocente = sequelize.define(
       comment: 'Horas semanales',
     },
     estado: {
-      type: DataTypes.ENUM('PROPUESTA', 'APROBADA', 'ABIERTA', 'CERRADA', 'CANCELADA'),
-      defaultValue: 'PROPUESTA',
+      type: DataTypes.ENUM(...ESTADOS_ASIGNACION_DOCENTE_VALUES),
+      defaultValue: ESTADOS_ASIGNACION_DOCENTE.PROPUESTA,
       comment: 'Estado de la oferta',
     },
     motivoCancelacion: {

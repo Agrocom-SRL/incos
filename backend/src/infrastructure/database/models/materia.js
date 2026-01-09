@@ -1,6 +1,7 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../sequelize.js';
 import { baseModelFields, baseModelOptions } from './base_model.js';
+import { TIPOS_MATERIA_VALUES, TIPOS_MATERIA } from '../../../domain/constants/configuracion.constants.js';
 
 export const Materia = sequelize.define(
   'Materia',
@@ -27,8 +28,8 @@ export const Materia = sequelize.define(
       comment: 'Clasificación de la materia (ej: CONTABILIDAD, PROGRAMACIÓN, IDIOMAS, FORMACIÓN GENERAL)',
     },
     tipo: {
-      type: DataTypes.ENUM('TEORICA', 'PRACTICA', 'TEORICA_PRACTICA'),
-      defaultValue: 'TEORICA_PRACTICA',
+      type: DataTypes.ENUM(...TIPOS_MATERIA_VALUES),
+      defaultValue: TIPOS_MATERIA.TEORICA_PRACTICA,
       comment: 'Naturaleza pedagógica: TEORICA (aula), PRACTICA (lab/taller/campo), TEORICA_PRACTICA (mixta)',
     },
   },

@@ -1,6 +1,10 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../sequelize.js';
 import { baseModelFields, baseModelOptions } from './base_model.js';
+import { GENEROS_VALUES } from '../../../domain/constants/student.constants.js';
+import { NIVELES_ACADEMICOS, NIVELES_ACADEMICOS_PERSONAL_VALUES } from '../../../domain/constants/docentes.constants.js';
+import { TIPOS_CONTRATO_DOCENTE_VALUES, TIPOS_CONTRATO_DOCENTE } from '../../../domain/constants/docentes.constants.js';
+import { ESTADOS_LABORALES_VALUES, ESTADOS_LABORALES } from '../../../domain/constants/docentes.constants.js';
 
 export const Docente = sequelize.define(
   'Docente',
@@ -45,7 +49,7 @@ export const Docente = sequelize.define(
       allowNull: false,
     },
     genero: {
-      type: DataTypes.ENUM('MASCULINO', 'FEMENINO', 'OTRO'),
+      type: DataTypes.ENUM(...GENEROS_VALUES),
       allowNull: false,
     },
     estadoCivilId: {
@@ -93,9 +97,9 @@ export const Docente = sequelize.define(
       allowNull: true,
     },
     nivelAcademico: {
-      type: DataTypes.ENUM('TECNICO', 'LICENCIATURA', 'MAESTRIA', 'DOCTORADO'),
+      type: DataTypes.ENUM(...NIVELES_ACADEMICOS_PERSONAL_VALUES),
       field: 'nivel_academico',
-      defaultValue: 'LICENCIATURA',
+      defaultValue: NIVELES_ACADEMICOS.LICENCIATURA,
     },
     institucionEgreso: {
       type: DataTypes.STRING(200),
@@ -123,14 +127,14 @@ export const Docente = sequelize.define(
       allowNull: true,
     },
     tipoContrato: {
-      type: DataTypes.ENUM('PLANTA', 'CONTRATO', 'HORARIO', 'CONSULTOR'),
+      type: DataTypes.ENUM(...TIPOS_CONTRATO_DOCENTE_VALUES),
       field: 'tipo_contrato',
-      defaultValue: 'CONTRATO',
+      defaultValue: TIPOS_CONTRATO_DOCENTE.CONTRATO,
     },
     estadoLaboral: {
-      type: DataTypes.ENUM('ACTIVO', 'LICENCIA', 'RETIRADO', 'SUSPENDIDO'),
+      type: DataTypes.ENUM(...ESTADOS_LABORALES_VALUES),
       field: 'estado_laboral',
-      defaultValue: 'ACTIVO',
+      defaultValue: ESTADOS_LABORALES.ACTIVO,
     },
     cargaHorariaSemanal: {
       type: DataTypes.INTEGER,

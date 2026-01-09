@@ -1,6 +1,7 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../sequelize.js';
 import { baseModelFields, baseModelOptions } from './base_model.js';
+import { ESTADOS_BECAS_VALUES, ESTADOS_BECAS } from '../../../domain/constants/becas.constants.js';
 
 export const EstudianteBeca = sequelize.define(
   'EstudianteBeca',
@@ -31,8 +32,8 @@ export const EstudianteBeca = sequelize.define(
       comment: 'Fecha en que se solicitó el descuento',
     },
     estado: {
-      type: DataTypes.ENUM('PENDIENTE', 'ACTIVA', 'FINALIZADA', 'RECHAZADA'),
-      defaultValue: 'PENDIENTE',
+      type: DataTypes.ENUM(...ESTADOS_BECAS_VALUES),
+      defaultValue: ESTADOS_BECAS.PENDIENTE,
       comment: 'Estado de la beca',
     },
     documentosCompletos: {

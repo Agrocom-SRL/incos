@@ -3,15 +3,18 @@ import { BaseEntity } from './BaseEntity.js';
 /**
  * Entidad de Dominio: Management
  * Representa una gestión académica (año académico)
+ * Permite múltiples gestiones por año: regular, verano, nivelación, etc.
  */
 export class Management extends BaseEntity {
   constructor(data = {}) {
     super(data);
-    this.code = data.code || null; // Ej: "2025-1", "2025-2"
+    this.code = data.code || null; // Ej: "2025-REG", "2025-VER", "2025-NIV"
+    this.name = data.name || null;
     this.year = data.year || null;
-    this.promotionImageUrl = data.promotionImageUrl || null;
-    this.administrativeStartDate = data.administrativeStartDate || null;
-    this.administrativeEndDate = data.administrativeEndDate || null;
+    this.type = data.type || 'REGULAR'; // REGULAR, VERANO, INVIERNO, NIVELACION, EXTRAORDINARIA
+    this.startDate = data.startDate || null;
+    this.endDate = data.endDate || null;
+    this.isActive = data.isActive !== undefined ? data.isActive : false;
   }
 
   /**
@@ -20,8 +23,8 @@ export class Management extends BaseEntity {
    */
   isValidCode() {
     if (!this.code) return false;
-    // Formato: YYYY-N (ej: 2025-1)
-    return /^\d{4}-\d{1,2}$/.test(this.code);
+    // Formato: YYYY-TIPO (ej: 2025-REG, 2025-VER)
+    return /^\d{4}-[A-Z]{3,}$/.test(this.code);
   }
 
   /**
@@ -29,10 +32,10 @@ export class Management extends BaseEntity {
    * @returns {boolean}
    */
   isCurrentlyActive() {
-    if (!this.administrativeStartDate || !this.administrativeEndDate) return false;
+    if (!this.startDate || !this.endDate) return false;
     const today = new Date();
-    const start = new Date(this.administrativeStartDate);
-    const end = new Date(this.administrativeEndDate);
+    const start = new Date(this.startDate);
+    const end = new Date(this.endDate);
     return today >= start && today <= end;
   }
 
@@ -54,10 +57,12 @@ export class Management extends BaseEntity {
     return {
       ...super.toPlainObject(),
       code: this.code,
+      name: this.name,
       year: this.year,
-      promotionImageUrl: this.promotionImageUrl,
-      administrativeStartDate: this.administrativeStartDate,
-      administrativeEndDate: this.administrativeEndDate,
+      type: this.type,
+      startDate: this.startDate,
+      endDate: this.endDate,
+      isActive: this.isActive,
     };
   }
 }

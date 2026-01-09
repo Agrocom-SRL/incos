@@ -1,6 +1,7 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../sequelize.js';
 import { baseModelFields, baseModelOptions } from './base_model.js';
+import { TIPOS_GESTION_VALUES, TIPOS_GESTION } from '../../../domain/constants/gestion.constants.js';
 
 export const Gestion = sequelize.define(
   'Gestion',
@@ -22,9 +23,9 @@ export const Gestion = sequelize.define(
       comment: 'Año académico principal',
     },
     tipo: {
-      type: DataTypes.ENUM('REGULAR', 'VERANO', 'INVIERNO', 'NIVELACION', 'EXTRAORDINARIA'),
+      type: DataTypes.ENUM(...TIPOS_GESTION_VALUES),
       allowNull: false,
-      defaultValue: 'REGULAR',
+      defaultValue: TIPOS_GESTION.REGULAR,
       comment: 'Tipo de gestión',
     },
     fechaInicio: {

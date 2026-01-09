@@ -38,7 +38,7 @@ export class DocumentacionRepository extends BaseRepository {
    * Delega la responsabilidad de mapeo a DocumentacionMapper
    * 
    * @param {Object} model - Modelo Sequelize
-   * @returns {Documentacion|null} Entidad de dominio
+   * @returns {Documentation|null} Entidad de dominio
    */
   toEntity(model) {
     return DocumentacionMapper.toEntity(model);
@@ -62,7 +62,7 @@ export class DocumentacionRepository extends BaseRepository {
    * Mapea datos de dominio a formato del modelo Sequelize (para creación)
    * Delega la responsabilidad de mapeo a DocumentacionMapper
    * 
-   * @param {Documentacion|Object} data - Entidad Documentacion o objeto con datos de dominio
+   * @param {Documentation|Object} data - Entidad Documentation o objeto con datos de dominio
    * @param {number} userId - ID del usuario que crea (usado por BaseRepository para createdBy)
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
@@ -74,7 +74,7 @@ export class DocumentacionRepository extends BaseRepository {
    * Mapea datos de actualización de dominio a formato del modelo Sequelize (para actualización)
    * Delega la responsabilidad de mapeo a DocumentacionMapper
    * 
-   * @param {Documentacion|Object} data - Entidad Documentacion o objeto con datos de dominio
+   * @param {Documentation|Object} data - Entidad Documentation o objeto con datos de dominio
    * @param {number} userId - ID del usuario que actualiza (usado por BaseRepository para updatedBy)
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */

@@ -1,6 +1,7 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../sequelize.js';
 import { baseModelFields, baseModelOptions } from './base_model.js';
+import { ACCIONES_PERMISOS_VALUES } from '../../../domain/constants/usuarios.constants.js';
 
 export const RolPermiso = sequelize.define(
   'RolPermiso',
@@ -19,7 +20,7 @@ export const RolPermiso = sequelize.define(
       comment: 'ID del permiso',
     },
     accion: {
-      type: DataTypes.ENUM('VER', 'CREAR', 'EDITAR', 'ELIMINAR', 'APROBAR', 'EXPORTAR'),
+      type: DataTypes.ENUM(...ACCIONES_PERMISOS_VALUES),
       allowNull: false,
       comment: 'Acción específica permitida',
     },
