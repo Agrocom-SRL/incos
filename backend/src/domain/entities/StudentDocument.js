@@ -1,5 +1,5 @@
 import { BaseEntity } from './BaseEntity.js';
-import { ESTADOS_DOCUMENTO_VALUES } from '../constants/index.js';
+import { ESTADOS_DOCUMENTO_VALUES, ESTADOS_DOCUMENTO } from '../constants/index.js';
 
 /**
  * Entidad de Dominio: StudentDocument
@@ -20,7 +20,7 @@ export class StudentDocument extends BaseEntity {
     this.verifiedBy = data.verifiedBy || null;
     this.verificationDate = data.verificationDate || null;
     this.verificationObservations = data.verificationObservations || null;
-    this.state = data.state || 'PENDIENTE'; // PENDIENTE, APROBADO, RECHAZADO
+    this.state = data.state || ESTADOS_DOCUMENTO.PENDIENTE;
     this.rejectionReason = data.rejectionReason || null;
   }
 
@@ -38,7 +38,7 @@ export class StudentDocument extends BaseEntity {
    * @returns {boolean}
    */
   isApproved() {
-    return this.state === 'APROBADO';
+    return this.state === ESTADOS_DOCUMENTO.APROBADO;
   }
 
   /**

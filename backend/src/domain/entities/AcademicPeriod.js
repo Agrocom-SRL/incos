@@ -1,4 +1,5 @@
 import { BaseEntity } from './BaseEntity.js';
+import { DIVISIONES_PERIODO_ACADEMICO_VALUES } from '../constants/index.js';
 
 /**
  * Entidad de Dominio: AcademicPeriod
@@ -24,17 +25,7 @@ export class AcademicPeriod extends BaseEntity {
    */
   isValidDivision() {
     if (!this.division) return false;
-    const validDivisions = [
-      'PLANIFICACION',
-      'MENSUAL',
-      'BIMESTRE',
-      'TRIMESTRE',
-      'CUATRIMESTRE',
-      'SEMESTRE',
-      'CLAUSURA',
-      'OTRO',
-    ];
-    return validDivisions.includes(this.division);
+    return DIVISIONES_PERIODO_ACADEMICO_VALUES.includes(this.division);
   }
 
   /**

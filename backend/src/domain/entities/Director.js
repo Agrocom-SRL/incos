@@ -1,5 +1,5 @@
 import { BaseEntity } from './BaseEntity.js';
-import { NIVELES_ACADEMICOS_PERSONAL_VALUES, TIPOS_DIRECTOR_VALUES } from '../constants/index.js';
+import { NIVELES_ACADEMICOS_PERSONAL_VALUES, TIPOS_DIRECTOR_VALUES, TIPOS_DIRECTOR } from '../constants/index.js';
 
 /**
  * Entidad de Dominio: Director
@@ -42,7 +42,7 @@ export class Director extends BaseEntity {
    * @returns {boolean}
    */
   isAcademic() {
-    return this.type === 'ACADEMICO';
+    return this.type === TIPOS_DIRECTOR.ACADEMICO;
   }
 
   /**

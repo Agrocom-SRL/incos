@@ -1,4 +1,5 @@
 import { BaseEntity } from './BaseEntity.js';
+import { TIPOS_ACTIVIDAD_VALUES } from '../constants/index.js';
 
 /**
  * Entidad de Dominio: Activity
@@ -19,20 +20,8 @@ export class Activity extends BaseEntity {
    * @returns {boolean}
    */
   isValidType() {
-    if (!this.tipo) return true; // Opcional
-    const validTypes = [
-      'INSCRIPCION',
-      'PLANIFICACION',
-      'ACADEMICA',
-      'EVALUACION',
-      'ADMINISTRATIVA',
-      'FERIADO',
-      'EVENTO_INSTITUCIONAL',
-      'FERIA',
-      'MODALIDAD_GRADO',
-      'OTRO',
-    ];
-    return validTypes.includes(this.tipo);
+    if (!this.type) return true; // Opcional
+    return TIPOS_ACTIVIDAD_VALUES.includes(this.type);
   }
 
   /**

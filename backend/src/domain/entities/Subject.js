@@ -1,5 +1,5 @@
 import { BaseEntity } from './BaseEntity.js';
-import { TIPOS_MATERIA_VALUES } from '../constants/index.js';
+import { TIPOS_MATERIA_VALUES, TIPOS_MATERIA } from '../constants/index.js';
 
 /**
  * Entidad de Dominio: Subject
@@ -12,7 +12,7 @@ export class Subject extends BaseEntity {
     this.name = data.name || null;
     this.objectives = data.objectives || null;
     this.classification = data.classification || null;
-    this.type = data.type || 'TEORICA_PRACTICA'; // TEORICA, PRACTICA, TEORICA_PRACTICA
+    this.type = data.type || TIPOS_MATERIA.TEORICA_PRACTICA;
   }
 
   /**

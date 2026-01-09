@@ -1,4 +1,5 @@
 import { BaseEntity } from './BaseEntity.js';
+import { TIPOS_ORIGEN_VALUES, TIPOS_ORIGEN } from '../constants/index.js';
 
 /**
  * Entidad de Dominio: StudentOrigin
@@ -13,8 +14,17 @@ export class StudentOrigin extends BaseEntity {
     this.birthCity = data.birthCity || null;
     this.motherTongueId = data.motherTongueId || null;
     this.secondaryLanguageId = data.secondaryLanguageId || null;
-    this.originType = data.originType || 'BOLIVIANA'; // BOLIVIANA, EXTRANJERA, DOBLE_NACIONALIDAD
+    this.originType = data.originType || TIPOS_ORIGEN.BOLIVIANA;
     this.isPrincipal = data.isPrincipal !== undefined ? data.isPrincipal : true;
+  }
+
+  /**
+   * Valida el tipo de origen
+   * @returns {boolean}
+   */
+  isValidOriginType() {
+    if (!this.originType) return false;
+    return TIPOS_ORIGEN_VALUES.includes(this.originType);
   }
 
   /**

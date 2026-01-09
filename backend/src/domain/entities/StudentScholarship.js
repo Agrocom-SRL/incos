@@ -1,5 +1,5 @@
 import { BaseEntity } from './BaseEntity.js';
-import { ESTADOS_BECAS_VALUES } from '../constants/index.js';
+import { ESTADOS_BECAS_VALUES, ESTADOS_BECAS } from '../constants/index.js';
 
 /**
  * Entidad de Dominio: StudentScholarship
@@ -12,7 +12,7 @@ export class StudentScholarship extends BaseEntity {
     this.scholarshipId = data.scholarshipId || null;
     this.managementId = data.managementId || null;
     this.requestDate = data.requestDate || null;
-    this.state = data.state || 'PENDIENTE'; // PENDIENTE, ACTIVA, FINALIZADA, RECHAZADA
+    this.state = data.state || ESTADOS_BECAS.PENDIENTE;
     this.documentsComplete = data.documentsComplete !== undefined ? data.documentsComplete : false;
     this.documentDeliveryStartDate = data.documentDeliveryStartDate || null;
     this.documentDeliveryEndDate = data.documentDeliveryEndDate || null;
@@ -33,7 +33,7 @@ export class StudentScholarship extends BaseEntity {
    * @returns {boolean}
    */
   isActive() {
-    return this.state === 'ACTIVA';
+    return this.state === ESTADOS_BECAS.ACTIVA;
   }
 
   /**

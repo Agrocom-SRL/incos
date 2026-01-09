@@ -1,4 +1,5 @@
 import { BaseEntity } from './BaseEntity.js';
+import { TIPOS_CONFIGURACION_VALUES, TIPOS_CONFIGURACION } from '../constants/index.js';
 
 /**
  * Entidad de Dominio: SystemConfiguration
@@ -9,8 +10,17 @@ export class SystemConfiguration extends BaseEntity {
     super(data);
     this.key = data.key || null;
     this.value = data.value || null;
-    this.type = data.type || 'STRING'; // STRING, NUMBER, BOOLEAN, JSON, DATE
+    this.type = data.type || TIPOS_CONFIGURACION.STRING;
     this.description = data.description || null;
+  }
+
+  /**
+   * Valida el tipo de configuración
+   * @returns {boolean}
+   */
+  isValidType() {
+    if (!this.type) return false;
+    return TIPOS_CONFIGURACION_VALUES.includes(this.type);
   }
 
   /**

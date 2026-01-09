@@ -33,9 +33,9 @@ export class PrerequisiteMapper {
 
     // Campos específicos de Prerequisite (campos del dominio)
     const specificFields = {
-      subjectId: model.materiaId,
-      prerequisiteSubjectId: model.materiaPrerrequisitoId,
-      description: model.descripcion,
+      studyPlanId: model.planEstudioId ?? null,
+      subjectId: model.asignaturaId ?? null,
+      prerequisiteId: model.prerrequisitoId ?? null,
     };
 
     // Combina campos base (id, active, timestamps, audit) con campos específicos
@@ -57,9 +57,9 @@ export class PrerequisiteMapper {
     // NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
     // BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
     return {
-      materiaId: data.subjectId || null,
-      materiaPrerrequisitoId: data.prerequisiteSubjectId || null,
-      descripcion: data.description || null,
+      planEstudioId: data.studyPlanId ?? null,
+      asignaturaId: data.subjectId ?? null,
+      prerrequisitoId: data.prerequisiteId ?? null,
     };
   }
 
@@ -77,14 +77,14 @@ export class PrerequisiteMapper {
     const updateData = {};
 
     // Campos específicos de Prerequisite
+    if (data.studyPlanId !== undefined) {
+      updateData.planEstudioId = data.studyPlanId ?? null;
+    }
     if (data.subjectId !== undefined) {
-      updateData.materiaId = data.subjectId || null;
+      updateData.asignaturaId = data.subjectId ?? null;
     }
-    if (data.prerequisiteSubjectId !== undefined) {
-      updateData.materiaPrerrequisitoId = data.prerequisiteSubjectId || null;
-    }
-    if (data.description !== undefined) {
-      updateData.descripcion = data.description || null;
+    if (data.prerequisiteId !== undefined) {
+      updateData.prerrequisitoId = data.prerequisiteId ?? null;
     }
 
     // Campos base (active/activo)

@@ -1,5 +1,5 @@
 import { BaseEntity } from './BaseEntity.js';
-import { MOTIVOS_LICENCIAS_VALUES, ESTADOS_LICENCIAS_VALUES } from '../constants/index.js';
+import { MOTIVOS_LICENCIAS_VALUES, ESTADOS_LICENCIAS_VALUES, ESTADOS_LICENCIAS } from '../constants/index.js';
 
 /**
  * Entidad de Dominio: LicenseRequest
@@ -18,7 +18,7 @@ export class LicenseRequest extends BaseEntity {
     this.totalDays = data.totalDays !== undefined ? data.totalDays : null;
     this.reason = data.reason || null; // ENFERMEDAD, TRABAJO, FAMILIAR, etc.
     this.reasonDetail = data.reasonDetail || null;
-    this.state = data.state || 'PENDIENTE'; // PENDIENTE, APROBADA, RECHAZADA, CANCELADA
+    this.state = data.state || ESTADOS_LICENCIAS.PENDIENTE;
     this.decisionDate = data.decisionDate || null;
     this.decidedBy = data.decidedBy || null;
     this.rejectionReason = data.rejectionReason || null;
@@ -74,7 +74,7 @@ export class LicenseRequest extends BaseEntity {
    * @returns {boolean}
    */
   isApproved() {
-    return this.state === 'APROBADA';
+    return this.state === ESTADOS_LICENCIAS.APROBADA;
   }
 
   /**

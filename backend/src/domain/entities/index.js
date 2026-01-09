@@ -78,3 +78,8 @@ export { Scholarship } from './Scholarship.js';
 export { StudentScholarship } from './StudentScholarship.js';
 export { LicenseRequest } from './LicenseRequest.js';
 export { StudentGuardian } from './StudentGuardian.js';
+
+// ============================================
+// CONFIGURACIÓN DEL SISTEMA
+// ============================================
+export { SystemConfiguration } from './SystemConfiguration.js';

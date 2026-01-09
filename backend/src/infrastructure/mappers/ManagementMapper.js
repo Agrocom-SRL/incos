@@ -34,10 +34,12 @@ export class ManagementMapper {
     // Campos específicos de Management (campos del dominio)
     const specificFields = {
       code: model.codigo,
+      name: model.nombre,
       year: model.anio,
-      promotionImageUrl: model.imagenPromocionUrl,
-      administrativeStartDate: model.fechaInicioAdministrativa,
-      administrativeEndDate: model.fechaFinAdministrativa,
+      type: model.tipo,
+      startDate: model.fechaInicio,
+      endDate: model.fechaFin,
+      isActive: model.vigente === true || model.vigente === 1,
     };
 
     // Combina campos base (id, active, timestamps, audit) con campos específicos
@@ -60,10 +62,12 @@ export class ManagementMapper {
     // BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
     return {
       codigo: data.code,
+      nombre: data.name,
       anio: data.year,
-      imagenPromocionUrl: data.promotionImageUrl || null,
-      fechaInicioAdministrativa: data.administrativeStartDate,
-      fechaFinAdministrativa: data.administrativeEndDate,
+      tipo: data.type,
+      fechaInicio: data.startDate,
+      fechaFin: data.endDate,
+      vigente: data.isActive !== undefined ? data.isActive : false,
     };
   }
 
@@ -84,17 +88,23 @@ export class ManagementMapper {
     if (data.code !== undefined) {
       updateData.codigo = data.code;
     }
+    if (data.name !== undefined) {
+      updateData.nombre = data.name;
+    }
     if (data.year !== undefined) {
       updateData.anio = data.year;
     }
-    if (data.promotionImageUrl !== undefined) {
-      updateData.imagenPromocionUrl = data.promotionImageUrl || null;
+    if (data.type !== undefined) {
+      updateData.tipo = data.type;
     }
-    if (data.administrativeStartDate !== undefined) {
-      updateData.fechaInicioAdministrativa = data.administrativeStartDate;
+    if (data.startDate !== undefined) {
+      updateData.fechaInicio = data.startDate;
     }
-    if (data.administrativeEndDate !== undefined) {
-      updateData.fechaFinAdministrativa = data.administrativeEndDate;
+    if (data.endDate !== undefined) {
+      updateData.fechaFin = data.endDate;
+    }
+    if (data.isActive !== undefined) {
+      updateData.vigente = data.isActive;
     }
 
     // Campos base (active/activo)

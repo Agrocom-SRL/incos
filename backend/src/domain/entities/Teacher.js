@@ -1,5 +1,6 @@
 import { BaseEntity } from './BaseEntity.js';
-import { EXPEDICIONES_CI_VALUES, NIVELES_ACADEMICOS_PERSONAL_VALUES, TIPOS_CONTRATO_DOCENTE_VALUES, ESTADOS_LABORALES_VALUES } from '../constants/index.js';
+import { EXPEDICIONES_CI_VALUES, GENEROS_VALUES } from '../constants/index.js';
+import { NIVELES_ACADEMICOS_PERSONAL_VALUES, NIVELES_ACADEMICOS, TIPOS_CONTRATO_DOCENTE_VALUES, TIPOS_CONTRATO_DOCENTE, ESTADOS_LABORALES_VALUES, ESTADOS_LABORALES } from '../constants/docentes.constants.js';
 
 /**
  * Entidad de Dominio: Teacher
@@ -26,18 +27,27 @@ export class Teacher extends BaseEntity {
     this.zone = data.zone || null;
     this.professionalTitle = data.professionalTitle || null;
     this.specialty = data.specialty || null;
-    this.academicLevel = data.academicLevel || 'LICENCIATURA';
+    this.academicLevel = data.academicLevel || NIVELES_ACADEMICOS.LICENCIATURA;
     this.graduationInstitution = data.graduationInstitution || null;
     this.graduationYear = data.graduationYear || null;
     this.yearsOfExperience = data.yearsOfExperience !== undefined ? data.yearsOfExperience : 0;
     this.hireDate = data.hireDate || null;
     this.retirementDate = data.retirementDate || null;
-    this.contractType = data.contractType || 'CONTRATO';
-    this.laborState = data.laborState || 'ACTIVO';
+    this.contractType = data.contractType || TIPOS_CONTRATO_DOCENTE.CONTRATO;
+    this.laborState = data.laborState || ESTADOS_LABORALES.ACTIVO;
     this.weeklyHours = data.weeklyHours !== undefined ? data.weeklyHours : 0;
     this.bank = data.bank || null;
     this.accountNumber = data.accountNumber || null;
     this.observations = data.observations || null;
+  }
+
+  /**
+   * Valida el género
+   * @returns {boolean}
+   */
+  isValidGender() {
+    if (!this.gender) return false;
+    return GENEROS_VALUES.includes(this.gender);
   }
 
   /**

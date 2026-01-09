@@ -35,13 +35,13 @@ export class DocumentacionMapper {
     const specificFields = {
       name: model.nombre,
       documentType: model.tipoDocumento,
-      acceptsPhotocopy: model.aceptaFotocopia === 1 || model.aceptaFotocopia === true,
-      required: model.requerido === 1 || model.requerido === true,
+      acceptsPhotocopy: Boolean(model.aceptaFotocopia),
+      required: Boolean(model.requerido),
       order: model.orden,
       description: model.descripcion,
       parentDocumentId: model.documentoPadreId ?? null,
-      isOriginal: model.esOriginal === 1 || model.esOriginal === true,
-      isSystemDocument: model.esDocumentoSistema === 1 || model.esDocumentoSistema === true,
+      isOriginal: Boolean(model.esOriginal),
+      isSystemDocument: Boolean(model.esDocumentoSistema),
     };
 
     // Combina campos base (id, active, timestamps, audit) con campos específicos

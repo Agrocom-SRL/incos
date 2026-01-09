@@ -1,5 +1,5 @@
 import { BaseEntity } from './BaseEntity.js';
-import { ESTADOS_CURSOS_VALUES } from '../constants/index.js';
+import { ESTADOS_CURSOS_VALUES, ESTADOS_CURSOS } from '../constants/index.js';
 
 /**
  * Entidad de Dominio: Course
@@ -13,7 +13,7 @@ export class Course extends BaseEntity {
     this.code = data.code || null;
     this.maxCapacity = data.maxCapacity !== undefined ? data.maxCapacity : 35;
     this.minCapacity = data.minCapacity !== undefined ? data.minCapacity : 10;
-    this.state = data.state || 'PROPUESTO'; // PROPUESTO, APROBADO, CANCELADO
+    this.state = data.state || ESTADOS_CURSOS.PROPUESTO;
     this.description = data.description || null;
   }
 
@@ -39,7 +39,7 @@ export class Course extends BaseEntity {
    * @returns {boolean}
    */
   isApproved() {
-    return this.state === 'APROBADO';
+    return this.state === ESTADOS_CURSOS.APROBADO;
   }
 
   /**

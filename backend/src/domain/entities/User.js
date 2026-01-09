@@ -1,5 +1,5 @@
 import { BaseEntity } from './BaseEntity.js';
-import { ESTADOS_USUARIOS_VALUES, TIPOS_REFERENCIA_VALUES } from '../constants/index.js';
+import { ESTADOS_USUARIOS_VALUES, ESTADOS_USUARIOS, TIPOS_REFERENCIA_VALUES } from '../constants/index.js';
 
 /**
  * Entidad de Dominio: User
@@ -33,7 +33,7 @@ export class User extends BaseEntity {
    * @returns {boolean}
    */
   isBlocked() {
-    return this.state === 'BLOQUEADO';
+    return this.state === ESTADOS_USUARIOS.BLOQUEADO;
   }
 
   /**
@@ -41,7 +41,7 @@ export class User extends BaseEntity {
    * @returns {boolean}
    */
   isSuspended() {
-    return this.state === 'SUSPENDIDO';
+    return this.state === ESTADOS_USUARIOS.SUSPENDIDO;
   }
 
   /**

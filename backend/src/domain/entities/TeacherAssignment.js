@@ -1,5 +1,5 @@
 import { BaseEntity } from './BaseEntity.js';
-import { ESTADOS_ASIGNACION_DOCENTE_VALUES } from '../constants/index.js';
+import { ESTADOS_ASIGNACION_DOCENTE_VALUES, ESTADOS_ASIGNACION_DOCENTE } from '../constants/index.js';
 
 /**
  * Entidad de Dominio: TeacherAssignment
@@ -12,7 +12,7 @@ export class TeacherAssignment extends BaseEntity {
     this.managementId = data.managementId || null;
     this.teacherId = data.teacherId || null;
     this.weeklyHours = data.weeklyHours !== undefined ? data.weeklyHours : 0;
-    this.state = data.state || 'PROPUESTA'; // PROPUESTA, APROBADA, ABIERTA, CERRADA, CANCELADA
+    this.state = data.state || ESTADOS_ASIGNACION_DOCENTE.PROPUESTA;
     this.cancellationReason = data.cancellationReason || null;
     this.observations = data.observations || null;
   }
@@ -31,7 +31,7 @@ export class TeacherAssignment extends BaseEntity {
    * @returns {boolean}
    */
   isOpen() {
-    return this.state === 'ABIERTA';
+    return this.state === ESTADOS_ASIGNACION_DOCENTE.ABIERTA;
   }
 
   /**
@@ -39,7 +39,7 @@ export class TeacherAssignment extends BaseEntity {
    * @returns {boolean}
    */
   isApproved() {
-    return this.state === 'APROBADA';
+    return this.state === ESTADOS_ASIGNACION_DOCENTE.APROBADA;
   }
 
   /**

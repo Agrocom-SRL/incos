@@ -1,4 +1,5 @@
 import { BaseEntity } from './BaseEntity.js';
+import { MODALIDADES_ASIGNATURA_VALUES, MODALIDADES_ASIGNATURA } from '../constants/index.js';
 
 /**
  * Entidad de Dominio: PlanSubject
@@ -12,8 +13,17 @@ export class PlanSubject extends BaseEntity {
     this.subjectId = data.subjectId || null;
     this.weeklyHours = data.weeklyHours || null;
     this.credits = data.credits || null;
-    this.modality = data.modality || 'REGULAR'; // TRONCAL, ELECTIVA, REGULAR
+    this.modality = data.modality || MODALIDADES_ASIGNATURA.REGULAR;
     this.displayOrder = data.displayOrder !== undefined ? data.displayOrder : 1;
+  }
+
+  /**
+   * Valida el tipo de modalidad
+   * @returns {boolean}
+   */
+  isValidModality() {
+    if (!this.modality) return false;
+    return MODALIDADES_ASIGNATURA_VALUES.includes(this.modality);
   }
 
   /**

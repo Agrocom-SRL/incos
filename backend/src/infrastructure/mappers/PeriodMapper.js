@@ -33,11 +33,11 @@ export class PeriodMapper {
 
     // Campos específicos de Period (campos del dominio)
     const specificFields = {
-      careerId: model.carreraId,
+      studyPlanId: model.planEstudioId ?? null,
       name: model.nombre,
       number: model.numero,
       displayOrder: model.ordenVisualizacion,
-      description: model.descripcion,
+      description: model.descripcion ?? null,
     };
 
     // Combina campos base (id, active, timestamps, audit) con campos específicos
@@ -59,11 +59,11 @@ export class PeriodMapper {
     // NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
     // BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
     return {
-      carreraId: data.careerId || null,
+      planEstudioId: data.studyPlanId ?? null,
       nombre: data.name,
       numero: data.number,
       ordenVisualizacion: data.displayOrder !== undefined ? data.displayOrder : 1,
-      descripcion: data.description || null,
+      descripcion: data.description ?? null,
     };
   }
 
@@ -81,8 +81,8 @@ export class PeriodMapper {
     const updateData = {};
 
     // Campos específicos de Period
-    if (data.careerId !== undefined) {
-      updateData.carreraId = data.careerId || null;
+    if (data.studyPlanId !== undefined) {
+      updateData.planEstudioId = data.studyPlanId ?? null;
     }
     if (data.name !== undefined) {
       updateData.nombre = data.name;

@@ -1,5 +1,5 @@
 import { BaseEntity } from './BaseEntity.js';
-import { ESTADOS_ACADEMICOS_VALUES } from '../constants/index.js';
+import { ESTADOS_ACADEMICOS_VALUES, ESTADOS_ACADEMICOS, ESTADOS_REGISTRO_ESTUDIANTE_VALUES, ESTADOS_REGISTRO_ESTUDIANTE } from '../constants/index.js';
 
 /**
  * Entidad de Dominio: StudentAcademicData
@@ -11,8 +11,8 @@ export class StudentAcademicData extends BaseEntity {
     this.studentId = data.studentId || null;
     this.careerId = data.careerId || null;
     this.managementId = data.managementId || null;
-    this.academicState = data.academicState || 'REGULAR';
-    this.registrationState = data.registrationState || 'BORRADOR'; // BORRADOR, PENDIENTE, ADMITIDO
+    this.academicState = data.academicState || ESTADOS_ACADEMICOS.REGULAR;
+    this.registrationState = data.registrationState || ESTADOS_REGISTRO_ESTUDIANTE.BORRADOR;
     this.previousSchool = data.previousSchool || null;
     this.highSchoolGraduationYear = data.highSchoolGraduationYear || null;
     this.annualAverage = data.annualAverage || null;
@@ -20,6 +20,15 @@ export class StudentAcademicData extends BaseEntity {
     this.withdrawalDate = data.withdrawalDate || null;
     this.withdrawalReason = data.withdrawalReason || null;
     this.photoUrl = data.photoUrl || null;
+  }
+
+  /**
+   * Valida el estado de registro
+   * @returns {boolean}
+   */
+  isValidRegistrationState() {
+    if (!this.registrationState) return false;
+    return ESTADOS_REGISTRO_ESTUDIANTE_VALUES.includes(this.registrationState);
   }
 
   /**
@@ -36,7 +45,7 @@ export class StudentAcademicData extends BaseEntity {
    * @returns {boolean}
    */
   isRegular() {
-    return this.academicState === 'REGULAR';
+    return this.academicState === ESTADOS_ACADEMICOS.REGULAR;
   }
 
   /**
@@ -44,7 +53,7 @@ export class StudentAcademicData extends BaseEntity {
    * @returns {boolean}
    */
   isWithdrawn() {
-    return this.academicState === 'RETIRADO' || this.academicState === 'ABANDONO';
+    return this.academicState === ESTADOS_ACADEMICOS.RETIRADO || this.academicState === ESTADOS_ACADEMICOS.ABANDONO;
   }
 
   /**

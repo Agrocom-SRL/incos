@@ -1,5 +1,6 @@
 import { Course } from '../../domain/entities/Course.js';
 import { BaseMapper } from './BaseMapper.js';
+import { ESTADOS_CURSOS } from '../../domain/constants/cursos.constants.js';
 
 /**
  * Mapper: CourseMapper
@@ -66,7 +67,7 @@ export class CourseMapper {
       codigo: data.code || null,
       cupoMaximo: data.maxCapacity !== undefined ? data.maxCapacity : 35,
       cupoMinimo: data.minCapacity !== undefined ? data.minCapacity : 10,
-      estado: data.state || 'PROPUESTO',
+      estado: data.state || ESTADOS_CURSOS.PROPUESTO,
       descripcion: data.description || null,
     };
   }

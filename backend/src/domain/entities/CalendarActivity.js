@@ -11,11 +11,11 @@ export class CalendarActivity extends BaseEntity {
     this.activityId = data.activityId || null;
     this.code = data.code || null; // Ej: "2025-BIM1-001", "2025-PLAN-005"
     this.customName = data.customName || null;
-    this.careerIds = data.careerIds || null; // Array de IDs de carreras (JSON)
+    this.careerIds = data.careerIds || null; // Array de IDs de carreras (JSON o Array)
     this.startDate = data.startDate || null;
     this.endDate = data.endDate || null;
     this.isAllDay = data.isAllDay !== undefined ? data.isAllDay : true;
-    this.schedule = data.schedule || null; // JSON: {"start": "08:00", "end": "12:00"}
+    this.schedule = data.schedule || null; // JSON: {"inicio": "08:00", "fin": "12:00"}
   }
 
   /**
@@ -64,12 +64,16 @@ export class CalendarActivity extends BaseEntity {
    */
   appliesToCareer(careerId) {
     if (!this.careerIds) return true; // NULL = todas las carreras
+    let ids = this.careerIds;
     if (typeof this.careerIds === 'string') {
-      const ids = JSON.parse(this.careerIds);
-      return ids.includes(careerId);
+      try {
+        ids = JSON.parse(this.careerIds);
+      } catch (e) {
+        return false;
+      }
     }
-    if (Array.isArray(this.careerIds)) {
-      return this.careerIds.includes(careerId);
+    if (Array.isArray(ids)) {
+      return ids.includes(careerId);
     }
     return false;
   }

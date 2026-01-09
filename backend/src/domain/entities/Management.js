@@ -1,4 +1,5 @@
 import { BaseEntity } from './BaseEntity.js';
+import { TIPOS_GESTION_VALUES, TIPOS_GESTION } from '../constants/index.js';
 
 /**
  * Entidad de Dominio: Management
@@ -11,10 +12,19 @@ export class Management extends BaseEntity {
     this.code = data.code || null; // Ej: "2025-REG", "2025-VER", "2025-NIV"
     this.name = data.name || null;
     this.year = data.year || null;
-    this.type = data.type || 'REGULAR'; // REGULAR, VERANO, INVIERNO, NIVELACION, EXTRAORDINARIA
+    this.type = data.type || TIPOS_GESTION.REGULAR;
     this.startDate = data.startDate || null;
     this.endDate = data.endDate || null;
     this.isActive = data.isActive !== undefined ? data.isActive : false;
+  }
+
+  /**
+   * Valida el tipo de gestión
+   * @returns {boolean}
+   */
+  isValidType() {
+    if (!this.type) return false;
+    return TIPOS_GESTION_VALUES.includes(this.type);
   }
 
   /**

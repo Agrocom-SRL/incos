@@ -8,8 +8,8 @@ export class Prerequisite extends BaseEntity {
   constructor(data = {}) {
     super(data);
     this.studyPlanId = data.studyPlanId || null;
-    this.planSubjectId = data.planSubjectId || null;
-    this.prerequisitePlanSubjectId = data.prerequisitePlanSubjectId || null;
+    this.subjectId = data.subjectId || null; // Asignatura que requiere el prerrequisito
+    this.prerequisiteId = data.prerequisiteId || null; // Asignatura que debe aprobarse antes
   }
 
   /**
@@ -17,8 +17,8 @@ export class Prerequisite extends BaseEntity {
    * @returns {boolean}
    */
   isValid() {
-    if (!this.planSubjectId || !this.prerequisitePlanSubjectId) return false;
-    return this.planSubjectId !== this.prerequisitePlanSubjectId;
+    if (!this.subjectId || !this.prerequisiteId) return false;
+    return this.subjectId !== this.prerequisiteId;
   }
 
   /**
@@ -29,8 +29,8 @@ export class Prerequisite extends BaseEntity {
     return {
       ...super.toPlainObject(),
       studyPlanId: this.studyPlanId,
-      planSubjectId: this.planSubjectId,
-      prerequisitePlanSubjectId: this.prerequisitePlanSubjectId,
+      subjectId: this.subjectId,
+      prerequisiteId: this.prerequisiteId,
     };
   }
 }

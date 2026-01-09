@@ -33,15 +33,11 @@ export class SubjectMapper {
 
     // Campos específicos de Subject (campos del dominio)
     const specificFields = {
-      code: model.codigo,
+      acronym: model.sigla,
       name: model.nombre,
-      shortName: model.nombreCorto,
-      description: model.descripcion,
-      theoreticalHours: model.cargaHorariaTeorica,
-      practicalHours: model.cargaHorariaPractica,
-      credits: model.creditos,
+      objectives: model.objetivos ?? null,
+      classification: model.clasificacion ?? null,
       type: model.tipo,
-      knowledgeArea: model.areaConocimiento,
     };
 
     // Combina campos base (id, active, timestamps, audit) con campos específicos
@@ -63,15 +59,11 @@ export class SubjectMapper {
     // NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
     // BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
     return {
-      codigo: data.code,
+      sigla: data.acronym,
       nombre: data.name,
-      nombreCorto: data.shortName || null,
-      descripcion: data.description || null,
-      cargaHorariaTeorica: data.theoreticalHours !== undefined ? data.theoreticalHours : 0,
-      cargaHorariaPractica: data.practicalHours !== undefined ? data.practicalHours : 0,
-      creditos: data.credits || null,
-      tipo: data.type || 'TEORICA_PRACTICA',
-      areaConocimiento: data.knowledgeArea || null,
+      objetivos: data.objectives ?? null,
+      clasificacion: data.classification ?? null,
+      tipo: data.type,
     };
   }
 
@@ -89,32 +81,20 @@ export class SubjectMapper {
     const updateData = {};
 
     // Campos específicos de Subject
-    if (data.code !== undefined) {
-      updateData.codigo = data.code;
+    if (data.acronym !== undefined) {
+      updateData.sigla = data.acronym;
     }
     if (data.name !== undefined) {
       updateData.nombre = data.name;
     }
-    if (data.shortName !== undefined) {
-      updateData.nombreCorto = data.shortName || null;
+    if (data.objectives !== undefined) {
+      updateData.objetivos = data.objectives ?? null;
     }
-    if (data.description !== undefined) {
-      updateData.descripcion = data.description || null;
-    }
-    if (data.theoreticalHours !== undefined) {
-      updateData.cargaHorariaTeorica = data.theoreticalHours;
-    }
-    if (data.practicalHours !== undefined) {
-      updateData.cargaHorariaPractica = data.practicalHours;
-    }
-    if (data.credits !== undefined) {
-      updateData.creditos = data.credits || null;
+    if (data.classification !== undefined) {
+      updateData.clasificacion = data.classification ?? null;
     }
     if (data.type !== undefined) {
       updateData.tipo = data.type;
-    }
-    if (data.knowledgeArea !== undefined) {
-      updateData.areaConocimiento = data.knowledgeArea || null;
     }
 
     // Campos base (active/activo)

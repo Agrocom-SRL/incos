@@ -33,10 +33,17 @@ export class StudyPlanMapper {
 
     // Campos específicos de StudyPlan (campos del dominio)
     const specificFields = {
-      careerId: model.carreraId,
-      periodId: model.periodoId,
-      subjectId: model.materiaId,
-      displayOrder: model.ordenVisualizacion,
+      careerId: model.carreraId ?? null,
+      planName: model.nombrePlan,
+      ministerialResolution: model.resolucionMinisterial ?? null,
+      documentPath: model.documentoRuta ?? null,
+      durationYears: model.duracionAnios,
+      totalHours: model.cargaHorariaTotal,
+      hoursPerWeek: model.horasSemana,
+      hoursPerMonth: model.horasMes,
+      hoursPerYear: model.horasAnio,
+      observations: model.observaciones ?? null,
+      isActive: Boolean(model.vigente),
     };
 
     // Combina campos base (id, active, timestamps, audit) con campos específicos
@@ -58,10 +65,17 @@ export class StudyPlanMapper {
     // NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
     // BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
     return {
-      carreraId: data.careerId || null,
-      periodoId: data.periodId || null,
-      materiaId: data.subjectId || null,
-      ordenVisualizacion: data.displayOrder !== undefined ? data.displayOrder : 1,
+      carreraId: data.careerId ?? null,
+      nombrePlan: data.planName,
+      resolucionMinisterial: data.ministerialResolution ?? null,
+      documentoRuta: data.documentPath ?? null,
+      duracionAnios: data.durationYears,
+      cargaHorariaTotal: data.totalHours,
+      horasSemana: data.hoursPerWeek,
+      horasMes: data.hoursPerMonth,
+      horasAnio: data.hoursPerYear,
+      observaciones: data.observations ?? null,
+      vigente: data.isActive !== undefined ? data.isActive : false,
     };
   }
 
@@ -80,16 +94,37 @@ export class StudyPlanMapper {
 
     // Campos específicos de StudyPlan
     if (data.careerId !== undefined) {
-      updateData.carreraId = data.careerId || null;
+      updateData.carreraId = data.careerId ?? null;
     }
-    if (data.periodId !== undefined) {
-      updateData.periodoId = data.periodId || null;
+    if (data.planName !== undefined) {
+      updateData.nombrePlan = data.planName;
     }
-    if (data.subjectId !== undefined) {
-      updateData.materiaId = data.subjectId || null;
+    if (data.ministerialResolution !== undefined) {
+      updateData.resolucionMinisterial = data.ministerialResolution ?? null;
     }
-    if (data.displayOrder !== undefined) {
-      updateData.ordenVisualizacion = data.displayOrder;
+    if (data.documentPath !== undefined) {
+      updateData.documentoRuta = data.documentPath ?? null;
+    }
+    if (data.durationYears !== undefined) {
+      updateData.duracionAnios = data.durationYears;
+    }
+    if (data.totalHours !== undefined) {
+      updateData.cargaHorariaTotal = data.totalHours;
+    }
+    if (data.hoursPerWeek !== undefined) {
+      updateData.horasSemana = data.hoursPerWeek;
+    }
+    if (data.hoursPerMonth !== undefined) {
+      updateData.horasMes = data.hoursPerMonth;
+    }
+    if (data.hoursPerYear !== undefined) {
+      updateData.horasAnio = data.hoursPerYear;
+    }
+    if (data.observations !== undefined) {
+      updateData.observaciones = data.observations ?? null;
+    }
+    if (data.isActive !== undefined) {
+      updateData.vigente = data.isActive;
     }
 
     // Campos base (active/activo)

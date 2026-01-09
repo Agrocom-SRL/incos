@@ -25,29 +25,6 @@ export const TIPOS_GESTION = {
  */
 export const TIPOS_GESTION_VALUES = Object.values(TIPOS_GESTION);
 
-/**
- * Tipos de etapas de gestión académica
- * 
- * NOTA: Esta constante actualmente solo se usa en la entidad de dominio ManagementStage.
- * No existe un modelo Sequelize ni una tabla en la base de datos para etapas de gestión.
- * Si se requiere persistencia, se debería crear el modelo y tabla correspondientes.
- */
-export const TIPOS_ETAPA_GESTION = {
-  PRE_INSCRIPCION: 'PRE_INSCRIPCION',
-  INSCRIPCIONES: 'INSCRIPCIONES',
-  CLASES: 'CLASES',
-  EVALUACIONES: 'EVALUACIONES',
-  EXAMENES: 'EXAMENES',
-  ENTREGA_NOTAS: 'ENTREGA_NOTAS',
-  CIERRE_ADMINISTRATIVO: 'CIERRE_ADMINISTRATIVO',
-  OTRO: 'OTRO',
-};
-
-/**
- * Array de tipos de etapa válidos (útil para validators)
- */
-export const TIPOS_ETAPA_GESTION_VALUES = Object.values(TIPOS_ETAPA_GESTION);
-
 // ============================================
 // ACTIVIDADES ACADÉMICAS
 // ============================================

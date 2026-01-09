@@ -1,4 +1,5 @@
 import { BaseEntity } from './BaseEntity.js';
+import { TIPOS_DOCUMENTO_SISTEMA_VALUES } from '../constants/index.js';
 
 /**
  * Entidad de Dominio: Documentation
@@ -16,6 +17,15 @@ export class Documentation extends BaseEntity {
     this.parentDocumentId = data.parentDocumentId !== undefined ? data.parentDocumentId : null;
     this.isOriginal = data.isOriginal !== undefined ? data.isOriginal : false;
     this.isSystemDocument = data.isSystemDocument !== undefined ? data.isSystemDocument : false;
+  }
+
+  /**
+   * Valida el tipo de documento
+   * @returns {boolean}
+   */
+  isValidDocumentType() {
+    if (!this.documentType) return false;
+    return TIPOS_DOCUMENTO_SISTEMA_VALUES.includes(this.documentType);
   }
 
   /**

@@ -1,5 +1,5 @@
 import { BaseEntity } from './BaseEntity.js';
-import { TIPOS_BECA_AUTOMATICA_VALUES } from '../constants/index.js';
+import { TIPOS_BECA_AUTOMATICA_VALUES, TIPOS_BECA_AUTOMATICA } from '../constants/index.js';
 
 /**
  * Entidad de Dominio: Scholarship
@@ -15,7 +15,7 @@ export class Scholarship extends BaseEntity {
     this.requiresDocumentation = data.requiresDocumentation !== undefined ? data.requiresDocumentation : true;
     this.requiresRectorApproval = data.requiresRectorApproval !== undefined ? data.requiresRectorApproval : false;
     this.isAutomatic = data.isAutomatic !== undefined ? data.isAutomatic : false;
-    this.automaticType = data.automaticType || 'MANUAL'; // PROMEDIO_90, MANUAL
+    this.automaticType = data.automaticType || TIPOS_BECA_AUTOMATICA.MANUAL;
     this.minimumAverage = data.minimumAverage || null;
   }
 

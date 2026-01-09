@@ -1,5 +1,6 @@
 import { Scholarship } from '../../domain/entities/Scholarship.js';
 import { BaseMapper } from './BaseMapper.js';
+import { TIPOS_BECA_AUTOMATICA } from '../../domain/constants/becas.constants.js';
 
 /**
  * Mapper: ScholarshipMapper
@@ -34,14 +35,14 @@ export class ScholarshipMapper {
     // Campos específicos de Scholarship (campos del dominio)
     const specificFields = {
       name: model.nombre,
-      code: model.codigo,
-      percentage: model.porcentaje ? parseFloat(model.porcentaje) : null,
-      description: model.descripcion,
-      requiresDocumentation: model.requiereDocumentacion === 1 || model.requiereDocumentacion === true,
-      requiresRectorApproval: model.requiereAprobacionRector === 1 || model.requiereAprobacionRector === true,
-      isAutomatic: model.esAutomatica === 1 || model.esAutomatica === true,
+      code: model.codigo ?? null,
+      percentage: model.porcentaje !== null && model.porcentaje !== undefined ? parseFloat(model.porcentaje) : null,
+      description: model.descripcion ?? null,
+      requiresDocumentation: Boolean(model.requiereDocumentacion),
+      requiresRectorApproval: Boolean(model.requiereAprobacionRector),
+      isAutomatic: Boolean(model.esAutomatica),
       automaticType: model.tipoAutomatica,
-      minimumAverage: model.promedioMinimo ? parseFloat(model.promedioMinimo) : null,
+      minimumAverage: model.promedioMinimo !== null && model.promedioMinimo !== undefined ? parseFloat(model.promedioMinimo) : null,
     };
 
     // Combina campos base (id, active, timestamps, audit) con campos específicos
@@ -70,7 +71,7 @@ export class ScholarshipMapper {
       requiereDocumentacion: data.requiresDocumentation !== undefined ? data.requiresDocumentation : true,
       requiereAprobacionRector: data.requiresRectorApproval !== undefined ? data.requiresRectorApproval : false,
       esAutomatica: data.isAutomatic !== undefined ? data.isAutomatic : false,
-      tipoAutomatica: data.automaticType || 'MANUAL',
+      tipoAutomatica: data.automaticType || TIPOS_BECA_AUTOMATICA.MANUAL,
       promedioMinimo: data.minimumAverage || null,
     };
   }
