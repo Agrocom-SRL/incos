@@ -33,11 +33,16 @@ export const REPOSITORIOS_TOKENS = {
     // ESTRUCTURA ACADÉMICA - PARTE 1
     careerRepository: 'careerRepository',
     managementRepository: 'managementRepository',
-    managementStageRepository: 'managementStageRepository',
     periodRepository: 'periodRepository',
     subjectRepository: 'subjectRepository',
     studyPlanRepository: 'studyPlanRepository',
     prerequisiteRepository: 'prerequisiteRepository',
+    planSubjectRepository: 'planSubjectRepository',
+
+    // ESTRUCTURA ACADÉMICA - PARTE 3 (Calendario)
+    activityRepository: 'activityRepository',
+    academicPeriodRepository: 'academicPeriodRepository',
+    calendarActivityRepository: 'calendarActivityRepository',
 
     // ESTRUCTURA ACADÉMICA - PARTE 2
     courseRepository: 'courseRepository',

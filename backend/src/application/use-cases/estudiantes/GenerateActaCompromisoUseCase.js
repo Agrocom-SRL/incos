@@ -1,5 +1,6 @@
 import { NotFoundError, ValidationError } from '../../../domain/errors/AppError.js';
 import { normalizeId, createMap } from '../../../domain/utils/mapUtils.js';
+import { TIPOS_DOCUMENTO_SISTEMA } from '../../../domain/constants/index.js';
 
 /**
  * Use Case: GenerateActaCompromisoUseCase
@@ -182,7 +183,7 @@ export class GenerateActaCompromisoUseCase {
    */
   async _getInscripcionDocuments() {
     const result = await this.documentacionRepository.findAll({
-      tipoDocumento: 'INSCRIPCION',
+      tipoDocumento: TIPOS_DOCUMENTO_SISTEMA.INSCRIPCION,
       documentoPadreId: null, // Solo documentos principales (sin padre)
       attributes: ['id', 'nombre'], // Solo campos necesarios para optimización
     });

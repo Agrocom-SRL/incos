@@ -58,11 +58,18 @@ import { StaffRepository } from '../../repositories/StaffRepository.js';
 // ============================================
 import { CareerRepository } from '../../repositories/CareerRepository.js';
 import { ManagementRepository } from '../../repositories/ManagementRepository.js';
-import { ManagementStageRepository } from '../../repositories/ManagementStageRepository.js';
 import { PeriodRepository } from '../../repositories/PeriodRepository.js';
 import { SubjectRepository } from '../../repositories/SubjectRepository.js';
 import { StudyPlanRepository } from '../../repositories/StudyPlanRepository.js';
 import { PrerequisiteRepository } from '../../repositories/PrerequisiteRepository.js';
+import { PlanSubjectRepository } from '../../repositories/PlanSubjectRepository.js';
+
+// ============================================
+// ESTRUCTURA ACADÉMICA - PARTE 3 (Calendario)
+// ============================================
+import { ActivityRepository } from '../../repositories/ActivityRepository.js';
+import { AcademicPeriodRepository } from '../../repositories/AcademicPeriodRepository.js';
+import { CalendarActivityRepository } from '../../repositories/CalendarActivityRepository.js';
 
 // ============================================
 // ESTRUCTURA ACADÉMICA - PARTE 2
@@ -131,11 +138,18 @@ export function registerRepositoriesModule(container) {
     // ============================================
     registerRepository(container, REPOSITORIOS_TOKENS.careerRepository, CareerRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.managementRepository, ManagementRepository);
-    registerRepository(container, REPOSITORIOS_TOKENS.managementStageRepository, ManagementStageRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.periodRepository, PeriodRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.subjectRepository, SubjectRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.studyPlanRepository, StudyPlanRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.prerequisiteRepository, PrerequisiteRepository);
+    registerRepository(container, REPOSITORIOS_TOKENS.planSubjectRepository, PlanSubjectRepository);
+
+    // ============================================
+    // ESTRUCTURA ACADÉMICA - PARTE 3 (Calendario)
+    // ============================================
+    registerRepository(container, REPOSITORIOS_TOKENS.activityRepository, ActivityRepository);
+    registerRepository(container, REPOSITORIOS_TOKENS.academicPeriodRepository, AcademicPeriodRepository);
+    registerRepository(container, REPOSITORIOS_TOKENS.calendarActivityRepository, CalendarActivityRepository);
 
     // ============================================
     // ESTRUCTURA ACADÉMICA - PARTE 2

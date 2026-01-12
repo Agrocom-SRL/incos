@@ -183,9 +183,11 @@ COMMENT='Periodos académicos temporales (contenedores de actividades). Los peri
 
 -- ============================================
 -- TABLA: actividades_calendario
+-- Instancias de actividades del calendario académico
 -- ============================================
--- Instancias específicas de actividades del calendario académico
--- Vincula actividades del catálogo a periodos con fechas concretas
+-- Vincula actividades del catálogo a periodos con fechas concretas.
+-- Usa la tabla horarios para definir horarios de clases, eventos y feriados.
+-- Permite asignar aulas a actividades que requieren espacio físico.
 
 CREATE TABLE actividades_calendario (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -194,42 +196,49 @@ CREATE TABLE actividades_calendario (
     
     -- Código autogenerado y alcance de la actividad
     codigo VARCHAR(50) COMMENT 'Código autogenerado (ej: 2025-BIM1-001, 2025-PLAN-005)',
-    nombre_personalizado VARCHAR(200) COMMENT 'Nombre personalizado para esta instancia (NULL usa el del catálogo). Incluye detalles como año de carrera si aplica.',
+    nombre_personalizado VARCHAR(200) COMMENT 'Nombre personalizado para esta instancia (NULL usa el del catálogo). Incluye detalles como año de carrera si aplica',
     carreras_ids JSON COMMENT 'Array de IDs de carreras específicas a las que aplica esta actividad (NULL = todas las carreras). Ej: [1,2] para Contaduría y Administración',
     
-    -- Fechas y horarios y todo el dia
+    -- Fechas
     fecha_inicio DATE NOT NULL COMMENT 'Fecha de inicio de la actividad',
     fecha_fin DATE COMMENT 'Fecha de fin (NULL si es actividad de un solo día)',
-    es_todo_el_dia BOOLEAN DEFAULT TRUE COMMENT 'Si la actividad dura todo el día o tiene horario específico',
-    horario JSON COMMENT 'Horario específico si no es todo el día. Formato: {"inicio": "08:00", "fin": "12:00"}',
+    
+    -- Horario y aula
+    horario_id INT NULL COMMENT 'Horario de la actividad (clases, evento o feriado) de la tabla horarios (NULL = sin horario específico)',
+    aula_id INT NULL COMMENT 'Aula asignada a la actividad (NULL si no requiere aula o es virtual)',
     
     -- Campos de auditoría y control (ESTÁNDAR)
     activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
     deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
-    created_by INT COMMENT 'Usuario que creó',
-    updated_by INT COMMENT 'Usuario que modificó',
-    deleted_by INT COMMENT 'Usuario que eliminó',
+    created_by INT NULL COMMENT 'Usuario que creó',
+    updated_by INT NULL COMMENT 'Usuario que modificó',
+    deleted_by INT NULL COMMENT 'Usuario que eliminó',
     
+    -- Foreign keys
     FOREIGN KEY (periodo_academico_id) REFERENCES periodos_academicos(id) ON DELETE SET NULL,
     FOREIGN KEY (actividad_id) REFERENCES actividades(id) ON DELETE SET NULL,
+    FOREIGN KEY (horario_id) REFERENCES horarios(id) ON DELETE SET NULL,
+    FOREIGN KEY (aula_id) REFERENCES aulas(id) ON DELETE SET NULL,
     FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    FOREIGN KEY (deleted_by) REFERENCIAS usuarios(id) ON DELETE SET NULL,
     
+    -- Índices para optimización
     INDEX idx_periodo_academico_id (periodo_academico_id) COMMENT 'Búsqueda por periodo académico',
     INDEX idx_actividad_id (actividad_id) COMMENT 'Búsqueda por actividad',
+    INDEX idx_horario_id (horario_id) COMMENT 'Búsqueda por horario',
+    INDEX idx_aula_id (aula_id) COMMENT 'Búsqueda por aula',
     INDEX idx_codigo (codigo) COMMENT 'Búsqueda por código',
     INDEX idx_fecha_inicio (fecha_inicio) COMMENT 'Búsqueda por fecha de inicio',
     INDEX idx_fecha_fin (fecha_fin) COMMENT 'Búsqueda por fecha de fin',
-    INDEX idx_es_todo_el_dia (es_todo_el_dia) COMMENT 'Filtrado por actividades de día completo',
     INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
     INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
     INDEX idx_periodo_fechas (periodo_academico_id, fecha_inicio, activo) COMMENT 'Búsqueda por periodo y fechas'
  
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Calendario académico: instancias de actividades con fechas específicas por periodo académico';
+COMMENT='Calendario académico: instancias de actividades con fechas específicas. Usa tabla horarios para clases, eventos y feriados';
 
 -- ============================================
 -- FASE 3: REHABILITAR FOREIGN KEY CHECKS

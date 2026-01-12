@@ -41,11 +41,18 @@ export { IConfiguracionSistemaRepository } from './IConfiguracionSistemaReposito
 // ============================================
 export { ICarreraRepository } from './ICarreraRepository.js';
 export { IGestionRepository } from './IGestionRepository.js';
-export { IEtapaGestionRepository } from './IEtapaGestionRepository.js';
 export { IPeriodoRepository } from './IPeriodoRepository.js';
 export { IMateriaRepository } from './IMateriaRepository.js';
 export { IPlanEstudiosRepository } from './IPlanEstudiosRepository.js';
 export { IPrerrequisitoRepository } from './IPrerrequisitoRepository.js';
+export { IAsignaturaPlanRepository } from './IAsignaturaPlanRepository.js';
+
+// ============================================
+// ESTRUCTURA ACADÉMICA - PARTE 3 (Calendario)
+// ============================================
+export { IActividadRepository } from './IActividadRepository.js';
+export { IPeriodoAcademicoRepository } from './IPeriodoAcademicoRepository.js';
+export { IActividadCalendarioRepository } from './IActividadCalendarioRepository.js';
 
 // ============================================
 // ESTRUCTURA ACADÉMICA - PARTE 2

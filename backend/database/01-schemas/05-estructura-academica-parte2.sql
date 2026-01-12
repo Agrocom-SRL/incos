@@ -1,7 +1,7 @@
 -- ============================================
 -- ESTRUCTURA ACADÉMICA - PARTE 2
 -- Sistema de Gestión Académica - Instituto INCOS
--- 5 Tablas: cursos, docentes, asignaciones_docentes, turnos_cursos, turnos
+-- 8 Tablas: docentes, paralelos, aulas, horarios, cursos, cursos_horarios, asignaciones_docentes, gestiones_planes
 -- ============================================
 
 USE instituto_incos;
@@ -14,11 +14,14 @@ USE instituto_incos;
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- Eliminar todas las tablas (orden no importa con foreign key checks deshabilitado)
-DROP TABLE IF EXISTS turnos_cursos;
+DROP TABLE IF EXISTS gestiones_planes;
 DROP TABLE IF EXISTS asignaciones_docentes;
-DROP TABLE IF EXISTS turnos;
-DROP TABLE IF EXISTS docentes;
+DROP TABLE IF EXISTS cursos_horarios;
 DROP TABLE IF EXISTS cursos;
+DROP TABLE IF EXISTS horarios;
+DROP TABLE IF EXISTS aulas;
+DROP TABLE IF EXISTS paralelos;
+DROP TABLE IF EXISTS docentes;
 
 -- ============================================
 -- FASE 2: CREACIÓN DE TABLAS
@@ -26,53 +29,12 @@ DROP TABLE IF EXISTS cursos;
 -- ============================================
 
 -- ============================================
--- TABLA: cursos
--- ============================================
-
-CREATE TABLE cursos (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    materia_id INT NULL COMMENT 'Materia del curso (NULL permite flexibilidad en migraciones)',
-    nombre VARCHAR(50) NOT NULL COMMENT 'Nombre del paralelo/grupo (ej: Grupo A, Sección 1)',
-    codigo VARCHAR(20) COMMENT 'Código identificador del curso',
-    cupo_maximo INT NOT NULL DEFAULT 35 COMMENT 'Máximo de estudiantes permitidos',
-    cupo_minimo INT DEFAULT 10 COMMENT 'Mínimo de estudiantes para abrir el curso',
-    estado ENUM('PROPUESTO', 'APROBADO', 'CANCELADO') DEFAULT 'PROPUESTO' COMMENT 'Estado del curso (borrador/propuesta)',
-    descripcion TEXT COMMENT 'Descripción del curso',
-    
-    -- Campos de auditoría y control (ESTÁNDAR)
-    activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
-    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
-    created_by INT COMMENT 'Usuario que creó',
-    updated_by INT COMMENT 'Usuario que modificó',
-    deleted_by INT COMMENT 'Usuario que eliminó',
-    
-    FOREIGN KEY (materia_id) REFERENCES materias(id) ON DELETE SET NULL,
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    
-    INDEX idx_materia_id (materia_id) COMMENT 'Búsqueda por materia',
-    INDEX idx_estado (estado) COMMENT 'Filtrado por estado',
-    INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
-    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
-    INDEX idx_materia_estado (materia_id, estado, activo, deleted_at) COMMENT 'Búsqueda por materia y estado',
-    INDEX idx_cupo (cupo_maximo, cupo_minimo) COMMENT 'Búsqueda por cupos',
-    
-    CHECK (cupo_maximo > 0),
-    CHECK (cupo_minimo >= 0)
-    
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Cursos (paralelos/grupos) - Plantillas de cursos por materia. Se ofertan en gestiones mediante asignaciones_docentes. Los horarios se definen en turnos_cursos.';
-
--- ============================================
 -- TABLA: docentes
 -- ============================================
 
 CREATE TABLE docentes (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    usuario_id INT COMMENT 'Relación con usuario del sistema',
+    usuario_id INT NULL COMMENT 'Relación con usuario del sistema',
     
     -- Datos personales básicos
     ci VARCHAR(25) NOT NULL COMMENT 'Cédula de identidad',
@@ -82,7 +44,7 @@ CREATE TABLE docentes (
     apellido_materno VARCHAR(100) COMMENT 'Apellido materno',
     fecha_nacimiento DATE NOT NULL COMMENT 'Fecha de nacimiento',
     genero ENUM('MASCULINO', 'FEMENINO', 'OTRO') NOT NULL COMMENT 'Género',
-    estado_civil_id INT COMMENT 'Estado civil',
+    estado_civil_id INT NULL COMMENT 'Estado civil',
     nacionalidad VARCHAR(50) DEFAULT 'Boliviana' COMMENT 'Nacionalidad',
     
     -- Contacto
@@ -90,7 +52,7 @@ CREATE TABLE docentes (
     celular VARCHAR(20) NOT NULL COMMENT 'Teléfono celular',
     email_personal VARCHAR(150) COMMENT 'Email personal (para emergencias, el email institucional está en usuarios)',
     direccion TEXT COMMENT 'Dirección completa',
-    municipio_residencia_id INT COMMENT 'Municipio de residencia',
+    municipio_residencia_id INT NULL COMMENT 'Municipio de residencia',
     zona VARCHAR(100) COMMENT 'Zona/barrio',
     
     -- Datos académicos/profesionales
@@ -106,13 +68,6 @@ CREATE TABLE docentes (
     fecha_retiro DATE COMMENT 'Fecha de retiro',
     tipo_contrato ENUM('PLANTA', 'CONTRATO', 'HORARIO', 'CONSULTOR') DEFAULT 'CONTRATO' COMMENT 'Tipo de contrato',
     estado_laboral ENUM('ACTIVO', 'LICENCIA', 'RETIRADO', 'SUSPENDIDO') DEFAULT 'ACTIVO' COMMENT 'Estado laboral',
-    carga_horaria_semanal INT DEFAULT 0 COMMENT 'Horas semanales de contrato',
-    
-    -- Datos financieros
-    banco VARCHAR(100) COMMENT 'Banco',
-    numero_cuenta VARCHAR(50) COMMENT 'Número de cuenta',
-    
-    -- Observaciones
     observaciones TEXT COMMENT 'Observaciones adicionales',
     
     -- Campos de auditoría y control (ESTÁNDAR)
@@ -120,9 +75,9 @@ CREATE TABLE docentes (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
     deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
-    created_by INT COMMENT 'Usuario que creó',
-    updated_by INT COMMENT 'Usuario que modificó',
-    deleted_by INT COMMENT 'Usuario que eliminó',
+    created_by INT NULL COMMENT 'Usuario que creó',
+    updated_by INT NULL COMMENT 'Usuario que modificó',
+    deleted_by INT NULL COMMENT 'Usuario que eliminó',
     
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE SET NULL,
     FOREIGN KEY (estado_civil_id) REFERENCES estados_civiles(id) ON DELETE SET NULL,
@@ -146,123 +101,329 @@ CREATE TABLE docentes (
 COMMENT='Docentes del instituto';
 
 -- ============================================
--- TABLA: asignaciones_docentes
+-- TABLA: paralelos
+-- Grupos multi-materia por carrera y periodo
 -- ============================================
+-- Los paralelos son estructuras conceptuales estables que agrupan estudiantes
+-- por año académico, turno y letra. Vinculados a un periodo específico del plan
+-- de estudios, lo que permite control formal y validación de coherencia.
 
-CREATE TABLE asignaciones_docentes (
+CREATE TABLE paralelos (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    curso_id INT NULL COMMENT 'Curso (paralelo/grupo) que se oferta (NULL permite flexibilidad en migraciones)',
-    gestion_id INT NULL COMMENT 'Gestión académica en la que se oferta (NULL permite flexibilidad en migraciones)',
-    docente_id INT COMMENT 'Docente asignado (NULL si aún no se asigna o es docente suplente)',
-    carga_horaria_semanal INT NOT NULL DEFAULT 0 COMMENT 'Horas semanales',
-    estado ENUM('PROPUESTA', 'APROBADA', 'ABIERTA', 'CERRADA', 'CANCELADA') DEFAULT 'PROPUESTA' COMMENT 'Estado de la oferta (CERRADA = no se llenó cupo mínimo)',
-    motivo_cancelacion TEXT COMMENT 'Motivo de cancelación/cierre',
-    observaciones TEXT COMMENT 'Observaciones',
+    carrera_id INT NULL COMMENT 'Carrera a la que pertenece este paralelo (redundancia útil para performance)',
+    periodo_id INT NULL COMMENT 'Periodo (año académico) del plan de estudios: Primer Año, Segundo Año, Tercer Año',
+    
+    -- Identificación
+    nombre VARCHAR(50) NOT NULL COMMENT 'Nombre del paralelo (ej: PRIMERO A, SEGUNDO B, TERCERO A)',
+    turno ENUM('MAÑANA', 'TARDE', 'NOCHE') NOT NULL COMMENT 'Turno horario del paralelo',
+    descripcion TEXT COMMENT 'Descripción informativa del paralelo',
     
     -- Campos de auditoría y control (ESTÁNDAR)
-    activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
-    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
-    created_by INT COMMENT 'Usuario que creó',
-    updated_by INT COMMENT 'Usuario que modificó',
-    deleted_by INT COMMENT 'Usuario que eliminó',
+    activo BOOLEAN DEFAULT TRUE COMMENT 'Indica si el paralelo está activo',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación del registro',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de última modificación',
+    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Fecha de eliminación lógica (soft delete)',
+    created_by INT NULL COMMENT 'ID del usuario que creó el registro',
+    updated_by INT NULL COMMENT 'ID del usuario que modificó el registro',
+    deleted_by INT NULL COMMENT 'ID del usuario que eliminó el registro',
     
-    FOREIGN KEY (docente_id) REFERENCES docentes(id) ON DELETE SET NULL,
-    FOREIGN KEY (curso_id) REFERENCES cursos(id) ON DELETE SET NULL,
-    FOREIGN KEY (gestion_id) REFERENCES gestiones(id) ON DELETE SET NULL,
+    FOREIGN KEY (carrera_id) REFERENCES carreras(id) ON DELETE SET NULL,
+    FOREIGN KEY (periodo_id) REFERENCES periodos(id) ON DELETE SET NULL,
     FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
-    INDEX idx_docente_id (docente_id) COMMENT 'Búsqueda por docente',
-    INDEX idx_curso_id (curso_id) COMMENT 'Búsqueda por curso',
-    INDEX idx_gestion_id (gestion_id) COMMENT 'Búsqueda por gestión',
-    INDEX idx_estado (estado) COMMENT 'Filtrado por estado',
+    INDEX idx_carrera_id (carrera_id) COMMENT 'Búsqueda por carrera',
+    INDEX idx_periodo_id (periodo_id) COMMENT 'Búsqueda por periodo (año académico)',
+    INDEX idx_turno (turno) COMMENT 'Búsqueda por turno',
+    INDEX idx_nombre (nombre) COMMENT 'Búsqueda por nombre',
     INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
     INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
-    INDEX idx_curso_gestion (curso_id, gestion_id, estado, activo, deleted_at) COMMENT 'Búsqueda de ofertas por curso y gestión',
-    INDEX idx_gestion_estado (gestion_id, estado, activo, deleted_at) COMMENT 'Búsqueda de ofertas por gestión y estado',
-    INDEX idx_docente_gestion (docente_id, gestion_id, estado, activo, deleted_at) COMMENT 'Búsqueda de ofertas por docente y gestión'
+    INDEX idx_carrera_periodo_turno (carrera_id, periodo_id, turno, deleted_at) COMMENT 'Búsqueda combinada por carrera, periodo y turno',
+    INDEX idx_periodo_turno_letra (periodo_id, turno, letra, deleted_at) COMMENT 'Búsqueda por periodo, turno y letra'
     
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Oferta de cursos en gestiones. Vincula curso (paralelo) + gestión. El docente puede ser NULL (aún no asignado o suplente). El estado CERRADA indica que no se llenó el cupo mínimo. Las fechas de inicio/fin de clases están en etapas_gestion (tipo CLASES).';
+COMMENT='Paralelos (maestro conceptual reutilizable). Estructura estable de grupos multi-materia vinculados a un periodo del plan de estudios.';
 
 -- ============================================
--- TABLA: turnos
+-- TABLA: aulas
+-- Espacios físicos del instituto
 -- ============================================
--- IMPORTANTE: Se crea antes de turnos_cursos porque turnos_cursos tiene foreign key a turnos
 
-CREATE TABLE turnos (
+CREATE TABLE aulas (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(20) NOT NULL COMMENT 'MAÑANA, TARDE, NOCHE',
-    hora_inicio TIME NOT NULL COMMENT '07:00, 14:00, 19:00',
-    hora_fin TIME NOT NULL COMMENT '12:00, 18:00, 22:00',
-    descripcion VARCHAR(100),
-    color_hex VARCHAR(7) COMMENT 'Color para UI (#FF5733)',
+    codigo VARCHAR(20) NOT NULL COMMENT 'Código del aula (ej: Lab-1, Lab-2, Aula-8)',
+    nombre VARCHAR(100) NOT NULL COMMENT 'Nombre descriptivo del aula',
+    categoria ENUM('LABORATORIO', 'AULA', 'TALLER', 'AUDITORIO') DEFAULT 'AULA' 
+        COMMENT 'Categoría del espacio según su diseño y construcción',
+    
+    -- Capacidad
+    capacidad INT NOT NULL DEFAULT 35 COMMENT 'Capacidad máxima de estudiantes',
+    observaciones TEXT COMMENT 'Observaciones: ubicación, equipamiento, restricciones, etc.',
     
     -- Campos de auditoría y control (ESTÁNDAR)
-    activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
-    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
-    created_by INT COMMENT 'Usuario que creó',
-    updated_by INT COMMENT 'Usuario que modificó',
-    deleted_by INT COMMENT 'Usuario que eliminó',
+    activo BOOLEAN DEFAULT TRUE COMMENT 'Indica si el aula está activa',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación del registro',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de última modificación',
+    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Fecha de eliminación lógica (soft delete)',
+    created_by INT NULL COMMENT 'ID del usuario que creó el registro',
+    updated_by INT NULL COMMENT 'ID del usuario que modificó el registro',
+    deleted_by INT NULL COMMENT 'ID del usuario que eliminó el registro',
     
-    -- Índices esenciales
-    INDEX idx_nombre (nombre) COMMENT 'Búsqueda por nombre',
+    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    
+    INDEX idx_codigo (codigo) COMMENT 'Búsqueda por código',
+    INDEX idx_categoria (categoria) COMMENT 'Búsqueda por categoría',
+    INDEX idx_capacidad (capacidad) COMMENT 'Búsqueda por capacidad',
     INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
     INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete'
     
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Turnos horarios (mañana, tarde, noche)';
+COMMENT='Aulas, laboratorios y espacios físicos del instituto. Información básica para asignación de horarios';
 
 -- ============================================
--- TABLA: turnos_cursos
+-- TABLA: horarios
+-- Bloques horarios: clases, eventos y feriados
 -- ============================================
+-- Bloques horarios conceptuales que soportan:
+-- - CLASES: Bloques estándar de 45 minutos organizados por turno
+-- - EVENTOS: Horarios personalizados para actividades institucionales
+-- - FERIADOS: Marcadores de día completo sin horario específico
+-- - CAPACITACION: Horarios especiales para cursos de capacitación
 
-CREATE TABLE turnos_cursos (
+CREATE TABLE horarios (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    asignacion_id INT NULL COMMENT 'Oferta del curso en la gestión (asignaciones_docentes) (NULL permite flexibilidad en migraciones)',
-    turno_id INT NULL COMMENT 'Turno horario (Mañana/Tarde/Noche) (NULL permite flexibilidad en migraciones)',
-    dia_semana ENUM('LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO', 'DOMINGO') NOT NULL COMMENT 'Día de la semana',
-    hora_inicio TIME NOT NULL COMMENT 'Hora de inicio',
-    hora_fin TIME NOT NULL COMMENT 'Hora de fin',
-    aula VARCHAR(50) NOT NULL COMMENT 'Aula asignada para este día',
+    nombre VARCHAR(50) COMMENT 'Nombre descriptivo (ej: BLOQUE 1 - NOCHE, Inauguración 2025, Feriado Nacional)',
+    
+    -- Definición del bloque
+    dia ENUM('LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO', 'DOMINGO') NULL
+        COMMENT 'Día de la semana (NULL = cualquier día o no aplica)',
+    hora_inicio TIME NULL COMMENT 'Hora de inicio del bloque (NULL = todo el día o no aplica)',
+    hora_fin TIME NULL COMMENT 'Hora de fin del bloque (NULL = todo el día o no aplica)',
+    
+    -- Organización por turno (solo para CLASES)
+    turno ENUM('MAÑANA', 'TARDE', 'NOCHE') NULL COMMENT 'Turno al que pertenece este bloque (NULL si no aplica)',
+    numero_bloque INT NULL COMMENT 'Número del bloque dentro del turno (1, 2, 3, 4, 5) (NULL si no aplica)',
+    
+    -- Tipo de horario
+    tipo_horario ENUM('CLASES', 'EVENTOS', 'FERIADOS', 'CAPACITACION') DEFAULT 'CLASES'
+        COMMENT 'CLASES: bloques de 45 min | EVENTOS: horarios personalizados | FERIADOS: día completo | CAPACITACION: horarios especiales',
     
     -- Campos de auditoría y control (ESTÁNDAR)
-    activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
-    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
-    created_by INT COMMENT 'Usuario que creó',
-    updated_by INT COMMENT 'Usuario que modificó',
-    deleted_by INT COMMENT 'Usuario que eliminó',
+    activo BOOLEAN DEFAULT TRUE COMMENT 'Indica si el horario está activo',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación del registro',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de última modificación',
+    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Fecha de eliminación lógica (soft delete)',
+    created_by INT NULL COMMENT 'ID del usuario que creó el registro',
+    updated_by INT NULL COMMENT 'ID del usuario que modificó el registro',
+    deleted_by INT NULL COMMENT 'ID del usuario que eliminó el registro',
     
-    FOREIGN KEY (asignacion_id) REFERENCES asignaciones_docentes(id) ON DELETE SET NULL,
-    FOREIGN KEY (turno_id) REFERENCES turnos(id) ON DELETE SET NULL,
     FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
-    INDEX idx_asignacion_id (asignacion_id) COMMENT 'Búsqueda por oferta',
-    INDEX idx_turno_id (turno_id) COMMENT 'Búsqueda por turno',
-    INDEX idx_dia_semana (dia_semana) COMMENT 'Búsqueda por día de la semana',
-    INDEX idx_aula (aula) COMMENT 'Búsqueda por aula',
+    INDEX idx_dia (dia) COMMENT 'Búsqueda por día',
+    INDEX idx_turno (turno) COMMENT 'Búsqueda por turno',
+    INDEX idx_numero_bloque (numero_bloque) COMMENT 'Búsqueda por número de bloque',
+    INDEX idx_tipo_horario (tipo_horario) COMMENT 'Búsqueda por tipo de horario',
+    INDEX idx_turno_numero (turno, numero_bloque) COMMENT 'Búsqueda por turno y número',
+    INDEX idx_dia_hora (dia, hora_inicio, hora_fin) COMMENT 'Búsqueda por día y horario',
     INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
-    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
-    INDEX idx_asignacion_dia (asignacion_id, dia_semana, activo, deleted_at) COMMENT 'Búsqueda por oferta y día',
-    INDEX idx_asignacion_turno (asignacion_id, turno_id, activo, deleted_at) COMMENT 'Búsqueda por oferta y turno',
-    INDEX idx_aula_dia (aula, dia_semana, hora_inicio, hora_fin, activo, deleted_at) COMMENT 'Búsqueda de disponibilidad de aula por día y horario',
-    INDEX idx_dia_hora (dia_semana, hora_inicio, hora_fin) COMMENT 'Búsqueda por día y horario',
-    INDEX idx_turno_activo (turno_id, activo, deleted_at) COMMENT 'Búsqueda de turnos activos por tipo'
-    
-    -- NOTA: La validación de que hora_fin > hora_inicio debe hacerse a nivel de aplicación
-    -- MySQL puede tener problemas con CHECK constraints en ciertas versiones
+    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete'
     
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Horarios de ofertas de cursos (un registro por día). Cada día puede tener su propio horario y aula. Permite que el mismo curso tenga diferentes aulas en diferentes días, incluso con el mismo horario.';
+COMMENT='Bloques horarios conceptuales. Soporta clases (45 min), eventos (personalizados), feriados (día completo) y capacitaciones';
+
+-- ============================================
+-- TABLA: cursos
+-- Cursos (materias) de cada paralelo
+-- ============================================
+-- Los cursos representan las materias específicas que se ofertan en cada paralelo.
+-- Son la intersección entre un paralelo y las asignaturas del plan de estudios.
+-- Constituyen el "maestro de oferta" que luego se activa por gestión.
+
+CREATE TABLE cursos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    codigo VARCHAR(50) NOT NULL COMMENT 'Código identificador del curso (ej: SIS-1A-NOCHE-PRG102)',
+    paralelo_id INT NULL COMMENT 'Paralelo al que pertenece este curso',
+    asignatura_plan_id INT NULL COMMENT 'Asignatura del plan (incluye: materia + periodo + plan + horas_semanales)',
+    
+    -- Control de cupos
+    cupo_maximo INT DEFAULT 35 COMMENT 'Cupo máximo de estudiantes para este curso',
+    cupo_minimo INT DEFAULT 10 COMMENT 'Cupo mínimo requerido para abrir el curso',
+    
+    -- Campos de auditoría y control (ESTÁNDAR)
+    activo BOOLEAN DEFAULT TRUE COMMENT 'Indica si el curso está activo',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación del registro',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de última modificación',
+    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Fecha de eliminación lógica (soft delete)',
+    created_by INT NULL COMMENT 'ID del usuario que creó el registro',
+    updated_by INT NULL COMMENT 'ID del usuario que modificó el registro',
+    deleted_by INT NULL COMMENT 'ID del usuario que eliminó el registro',
+    
+    FOREIGN KEY (paralelo_id) REFERENCES paralelos(id) ON DELETE SET NULL,
+    FOREIGN KEY (asignatura_plan_id) REFERENCES asignaturas_plan(id) ON DELETE SET NULL,
+    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    
+    INDEX idx_codigo (codigo) COMMENT 'Búsqueda por código',
+    INDEX idx_paralelo_id (paralelo_id) COMMENT 'Búsqueda por paralelo',
+    INDEX idx_asignatura_plan_id (asignatura_plan_id) COMMENT 'Búsqueda por asignatura del plan',
+    INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
+    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
+    INDEX idx_paralelo_asignatura (paralelo_id, asignatura_plan_id, deleted_at) COMMENT 'Búsqueda combinada por paralelo y asignatura',
+    INDEX idx_cupo (cupo_maximo, cupo_minimo) COMMENT 'Búsqueda por cupos',
+    
+    CHECK (cupo_maximo > 0),
+    CHECK (cupo_minimo >= 0)
+    
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+COMMENT='Cursos del maestro de oferta. Representa la intersección entre paralelos y asignaturas del plan. Se activan por gestión en asignaciones_docentes';
+
+-- ============================================
+-- TABLA: cursos_horarios
+-- Horarios de cada curso
+-- ============================================
+-- Define qué bloques horarios y aulas utiliza cada curso.
+-- Un curso puede tener múltiples bloques horarios (ej: LUNES y MARTES).
+-- Los bloques se ordenan secuencialmente (1, 2, 3, 4) para indicar
+-- la secuencia en que se dictan durante la semana.
+
+CREATE TABLE cursos_horarios (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    curso_id INT NULL COMMENT 'Curso al que pertenece este horario',
+    horario_id INT NULL COMMENT 'Bloque horario (día + hora) de la tabla horarios',
+    aula_id INT NULL COMMENT 'Aula o laboratorio asignado para este bloque',
+    
+    -- Orden de secuencia
+    orden_secuencia INT NOT NULL DEFAULT 1 COMMENT 'Orden del bloque en la semana (1, 2, 3, 4). Indica qué bloque se dicta primero, segundo, etc.',
+    
+    -- Campos de auditoría y control (ESTÁNDAR)
+    activo BOOLEAN DEFAULT TRUE COMMENT 'Indica si el horario está activo',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación del registro',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de última modificación',
+    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Fecha de eliminación lógica (soft delete)',
+    created_by INT NULL COMMENT 'ID del usuario que creó el registro',
+    updated_by INT NULL COMMENT 'ID del usuario que modificó el registro',
+    deleted_by INT NULL COMMENT 'ID del usuario que eliminó el registro',
+    
+    FOREIGN KEY (curso_id) REFERENCES cursos(id) ON DELETE SET NULL,
+    FOREIGN KEY (horario_id) REFERENCES horarios(id) ON DELETE SET NULL,
+    FOREIGN KEY (aula_id) REFERENCES aulas(id) ON DELETE SET NULL,
+    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    
+    INDEX idx_curso_id (curso_id) COMMENT 'Búsqueda por curso',
+    INDEX idx_horario_id (horario_id) COMMENT 'Búsqueda por horario',
+    INDEX idx_aula_id (aula_id) COMMENT 'Búsqueda por aula',
+    INDEX idx_orden_secuencia (orden_secuencia) COMMENT 'Ordenamiento de bloques',
+    INDEX idx_horario_aula (horario_id, aula_id, deleted_at) COMMENT 'Detección de conflictos de aula',
+    INDEX idx_curso_orden (curso_id, orden_secuencia, deleted_at) COMMENT 'Bloques ordenados por curso',
+    INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
+    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete'
+    
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+COMMENT='Horarios de cursos. Define bloques horarios y aulas. Usa orden_secuencia (1,2,3,4) para indicar el orden cronológico de los bloques durante la semana. Reutilizable entre gestiones.';
+
+-- ============================================
+-- TABLA: gestiones_planes
+-- Habilitación de planes de estudio por gestión
+-- ============================================
+-- Define qué planes de estudio están habilitados en cada gestión académica.
+-- Es la "autorización oficial" para ofertar las materias de un plan.
+-- Tabla pequeña: ~3-10 registros por gestión (uno por carrera/plan activo).
+-- IMPORTANTE: Se crea antes de asignaciones_docentes porque asignaciones_docentes tiene foreign key a gestiones_planes
+
+CREATE TABLE gestiones_planes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    gestion_id INT NULL COMMENT 'Gestión académica donde se habilita el plan',
+    plan_estudio_id INT NULL COMMENT 'Plan de estudios habilitado',
+    nombre VARCHAR(200) NOT NULL COMMENT 'Nombre descriptivo (ej: Oferta Gestión 2025 - Plan 2023 Sistemas Informáticos)',
+    
+    -- Estado de habilitación
+    estado ENUM('PROPUESTO', 'APROBADO', 'VIGENTE', 'CERRADO', 'CANCELADO') DEFAULT 'PROPUESTO'
+        COMMENT 'Estado de habilitación del plan en esta gestión',
+    motivo_cancelacion TEXT COMMENT 'Motivo si fue cancelado',
+    
+    -- Campos de auditoría y control (ESTÁNDAR)
+    activo BOOLEAN DEFAULT TRUE COMMENT 'Indica si la habilitación está activa',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación del registro',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de última modificación',
+    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Fecha de eliminación lógica (soft delete)',
+    created_by INT NULL COMMENT 'ID del usuario que creó el registro',
+    updated_by INT NULL COMMENT 'ID del usuario que modificó el registro',
+    deleted_by INT NULL COMMENT 'ID del usuario que eliminó el registro',
+    
+    FOREIGN KEY (gestion_id) REFERENCES gestiones(id) ON DELETE SET NULL,
+    FOREIGN KEY (plan_estudio_id) REFERENCES planes_estudios(id) ON DELETE SET NULL,
+    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    
+    INDEX idx_gestion_id (gestion_id) COMMENT 'Búsqueda por gestión',
+    INDEX idx_plan_estudio_id (plan_estudio_id) COMMENT 'Búsqueda por plan',
+    INDEX idx_estado (estado) COMMENT 'Filtrado por estado',
+    INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
+    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
+    INDEX idx_gestion_plan (gestion_id, plan_estudio_id, deleted_at) COMMENT 'Búsqueda combinada'
+    
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+COMMENT='Habilitación de planes de estudio por gestión. Define qué planes están autorizados para ofertar en cada año académico. Tabla pequeña: ~3-10 registros por gestión';
+
+-- ============================================
+-- TABLA: asignaciones_docentes
+-- Asignación de docentes a cursos por plan habilitado
+-- ============================================
+-- Vincula QUÉ curso se dicta EN QUÉ plan habilitado CON QUÉ docente.
+-- Preserva historial de asignaciones por gestión para auditoría.
+-- El plan habilitado (gestiones_planes) garantiza coherencia entre curso y plan.
+
+CREATE TABLE asignaciones_docentes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    gestion_plan_id INT NULL COMMENT 'Plan habilitado en la gestión (garantiza que curso pertenece al plan correcto)',
+    curso_id INT NULL COMMENT 'Curso (paralelo + materia) que se dicta',
+    docente_id INT NULL COMMENT 'Docente asignado (NULL = pendiente de asignación)',
+    
+    -- Carga horaria
+    carga_horaria INT NULL COMMENT 'Horas de docencia por semana en este curso (hereda de asignaturas_plan.horas_semanales si NULL)',
+    
+    -- Estado de la asignación
+    vigente BOOLEAN DEFAULT TRUE COMMENT 'Si la asignación está vigente (FALSE = cancelada o rechazada)',
+    motivo TEXT COMMENT 'Motivo de cancelación o rechazo (solo si vigente=FALSE)',
+    fecha_asignacion DATE NULL COMMENT 'Fecha en que se asignó el docente',
+    
+    -- Campos de auditoría y control (ESTÁNDAR)
+    activo BOOLEAN DEFAULT TRUE COMMENT 'Indica si el registro está activo',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación del registro',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de última modificación',
+    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Fecha de eliminación lógica (soft delete)',
+    created_by INT NULL COMMENT 'ID del usuario que creó el registro',
+    updated_by INT NULL COMMENT 'ID del usuario que modificó el registro',
+    deleted_by INT NULL COMMENT 'ID del usuario que eliminó el registro',
+    
+    FOREIGN KEY (gestion_plan_id) REFERENCES gestiones_planes(id) ON DELETE SET NULL,
+    FOREIGN KEY (curso_id) REFERENCES cursos(id) ON DELETE SET NULL,
+    FOREIGN KEY (docente_id) REFERENCES docentes(id) ON DELETE SET NULL,
+    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    
+    INDEX idx_gestion_plan_id (gestion_plan_id) COMMENT 'Búsqueda por plan habilitado',
+    INDEX idx_curso_id (curso_id) COMMENT 'Búsqueda por curso',
+    INDEX idx_docente_id (docente_id) COMMENT 'Búsqueda por docente',
+    INDEX idx_vigente (vigente) COMMENT 'Filtrado por asignaciones vigentes',
+    INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
+    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
+    INDEX idx_gestion_plan_curso (gestion_plan_id, curso_id, deleted_at) COMMENT 'Búsqueda por plan y curso',
+    INDEX idx_gestion_plan_docente (gestion_plan_id, docente_id, vigente, deleted_at) COMMENT 'Carga horaria del docente por gestión',
+    INDEX idx_curso_vigente (curso_id, vigente, deleted_at) COMMENT 'Asignaciones vigentes por curso'
+    
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+COMMENT='Asignación de docentes a cursos por plan habilitado. Vincula curso + plan_habilitado + docente. Preserva historial para auditoría académica. El docente puede ser NULL (pendiente).';
 
 -- ============================================
 -- FASE 3: REHABILITAR FOREIGN KEY CHECKS
@@ -273,4 +434,3 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- ============================================
 -- FIN DEL SCRIPT
 -- ============================================
-
