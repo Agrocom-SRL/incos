@@ -29,32 +29,46 @@
 
 import { useMemo } from 'react';
 import { InscripcionesNuevaContext } from '@application-inscripciones/context/InscripcionesNuevaContext';
-import { useInscripcionNuevaPageData } from '@application-inscripciones/hooks';
+import { useInscripcionNuevaPageData, useInscripcionNuevaFormHandlers } from '@application-inscripciones/hooks';
+import { useMessage } from '@application/utils';
 
 export const InscripcionesNuevaProvider = ({ children, mode = 'nuevo' }) => {
-    // Hook feature: maneja toda la lógica específica de la página (título, breadcrumbs, etc.)
+    // Hook genérico compartido para mostrar mensajes
+    const showMessage = useMessage();
+    
+    // Hook feature: maneja toda la lógica específica de la página (título, breadcrumbs, wizardSteps, etc.)
     const pageData = useInscripcionNuevaPageData({ mode });
     
+    // Hook especializado: manejar handlers de submit y gestión del formulario
+    const formHandlers = useInscripcionNuevaFormHandlers(showMessage, mode);
+    
     // TODO: Aquí se agregarán los hooks de API y lógica en pasos siguientes
-    // Por ahora, solo exponemos un estado básico
+    // Por ahora, solo exponemos handlers básicos
+    
+    // Función para resolver opciones de campos (select, radio, etc.)
+    // TODO: Crear hook especializado useInscripcionFormOptions cuando se necesite
+    const resolveOptions = () => {
+        // TODO: Implementar resolución de opciones según el campo
+        return [];
+    };
     
     // Componer el valor del contexto: datos + lógica + funciones de carga
     // El provider solo orquesta hooks y expone sus resultados
     const value = useMemo(() => ({
-        // Estados básicos
-        loading: false,
-        error: null,
-        
-        // Datos de la página (título y breadcrumbs desde el hook feature)
+        // Datos de la página (título, breadcrumbs, wizardSteps desde el hook feature)
         ...pageData,
         
+        // Handlers y estados del formulario (desde useInscripcionNuevaFormHandlers)
+        ...formHandlers,
+        
+        // Resolver opciones de campos
+        resolveOptions,
+        
         // TODO: Se agregarán en pasos siguientes:
-        // - handleFinish: función para procesar el formulario completo
-        // - handleSave: función para guardado parcial
-        // - resolveOptions: función para resolver opciones de campos
         // - Datos del catálogo (carreras, materias, etc.)
         // - Funciones de carga bajo demanda
-    }), [pageData]);
+        // - Validaciones específicas
+    }), [pageData, formHandlers, resolveOptions]);
 
     return (
         <InscripcionesNuevaContext.Provider value={value}>

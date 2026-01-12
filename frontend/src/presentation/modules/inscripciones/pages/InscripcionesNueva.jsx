@@ -17,23 +17,44 @@
  * Nota: Esta es una versión base que se irá completando por pasos
  */
 
+import { useEffect } from 'react';
+import { Form } from 'antd';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
+import { WizardForm } from '@organisms';
 import { useInscripcionesNuevaContext } from '@application-inscripciones/hooks';
 
 const InscripcionesNueva = () => {
+    const [form] = Form.useForm();
+    
     // Solo consumir datos del contexto (toda la lógica está en el Provider)
     const {
+        // Datos de la página (desde useInscripcionNuevaPageData)
+        pageTitle,
+        breadcrumbItems,
+        wizardSteps,
+        
+        // Handlers y estados del formulario (desde useInscripcionNuevaFormHandlers)
         loading = false,
         error = null,
-        pageTitle, // Título viene del provider
-        breadcrumbItems, // Breadcrumbs vienen del provider
-        // TODO: Se agregarán más datos del contexto en pasos siguientes
-        // handleFinish,
-        // handleSave,
-        // wizardSteps,
-        // etc.
+        handleFinish,
+        handleSave,
+        registerForm,
+        
+        // Funciones del formulario
+        resolveOptions,
+        
+        // TODO: Se agregarán en pasos siguientes:
+        // inscripcionResult, // Para reaccionar al resultado de la inscripción
+        // validationErrors, // Para mostrar errores de validación
     } = useInscripcionesNuevaContext();
+
+    // Registrar el formulario en el contexto para que los handlers puedan acceder a sus valores
+    useEffect(() => {
+        if (registerForm && form) {
+            registerForm(form);
+        }
+    }, [registerForm, form]);
 
     return (
         <PageTemplate
@@ -45,11 +66,17 @@ const InscripcionesNueva = () => {
             }
             sidebar={null}
         >
-            {/* Contenido principal - Se implementará por pasos */}
-            <div>
-                <p>Formulario de inscripción de estudiante nuevo - En construcción</p>
-                {/* Aquí se agregará el wizard/form en pasos siguientes */}
-            </div>
+            {/* Contenido principal - Wizard de inscripción */}
+            <WizardForm
+                steps={wizardSteps}
+                loading={loading}
+                viewMode={false}
+                resolveOptions={resolveOptions}
+                initialValues={{}}
+                form={form}
+                onFinish={handleFinish}
+                onSave={handleSave}
+            />
         </PageTemplate>
     );
 };

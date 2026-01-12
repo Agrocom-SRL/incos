@@ -32,3 +32,4 @@ export { useInscripcionesData } from './state/useInscripcionesData';
 // ============================================
 // Exporta directamente desde los archivos (sin index.js intermedios)
 export { useInscripcionNuevaPageData } from './features/useInscripcionNuevaPageData';
+export { useInscripcionNuevaFormHandlers } from './features/useInscripcionNuevaFormHandlers';

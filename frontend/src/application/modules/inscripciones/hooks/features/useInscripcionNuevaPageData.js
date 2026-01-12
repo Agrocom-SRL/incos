@@ -20,6 +20,7 @@
 import { useMemo } from 'react';
 import { inscripcionesRoutes } from '@inscripciones/routes';
 import { createBreadcrumbItems } from '@presentation-utils/breadcrumbs';
+import { createInscripcionNuevaWizardSteps } from '@inscripciones/config';
 
 /**
  * Hook para obtener todos los datos específicos de la página de inscripción nueva
@@ -52,8 +53,14 @@ export const useInscripcionNuevaPageData = (options = {}) => {
         );
     }, [pageTitle]);
 
+    // Configuración de steps del wizard
+    const wizardSteps = useMemo(() => {
+        return createInscripcionNuevaWizardSteps();
+    }, []);
+
     return {
         pageTitle,
         breadcrumbItems,
+        wizardSteps,
     };
 };
