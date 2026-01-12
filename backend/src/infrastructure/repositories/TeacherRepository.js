@@ -23,7 +23,7 @@ import { TeacherMapper } from '../mappers/TeacherMapper.js';
  * 
  * Esta clase cumple con el contrato IDocenteRepository:
  * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findAll, create, update, delete, search)
- * - Implementa findByCI() que es requerido por IDocenteRepository
+ * - La especialización está en buildWhereClause(), no en métodos adicionales
  */
 export class TeacherRepository extends BaseRepository {
   /**
@@ -115,23 +115,8 @@ export class TeacherRepository extends BaseRepository {
     return 'teachers';
   }
 
-  /**
-   * Método específico: Buscar docente por CI y expedición
-   * 
-   * @param {string} ci - Cédula de identidad
-   * @param {string} expedicion - Expedición del CI
-   * @returns {Promise<Teacher|null>} Entidad Teacher o null si no se encuentra
-   */
-  async findByCI(ci, expedicion) {
-    const model = await this.getModel().findOne({
-      where: {
-        ci: ci,
-        expedicion: expedicion.toUpperCase(),
-        activo: true,
-        // paranoid: true automáticamente excluye deletedAt !== null
-      },
-    });
-    return this.toEntity(model);
-  }
+  // NOTA: Los métodos específicos han sido eliminados. Ahora se usan los métodos base de IRepository:
+  // - findBy({ ci, expedicion }) para buscar por CI y expedición
+  // - findAll({ userId, laborState, contractType, academicLevel }) para búsquedas con filtros
 }
 

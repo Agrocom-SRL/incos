@@ -23,7 +23,7 @@ import { TeacherAssignmentMapper } from '../mappers/TeacherAssignmentMapper.js';
  * 
  * Esta clase cumple con el contrato IAsignacionDocenteRepository:
  * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findAll, create, update, delete, search)
- * - Implementa findByDocenteId() y findByGestionId() que son requeridos por IAsignacionDocenteRepository
+ * - La especialización está en buildWhereClause(), no en métodos adicionales
  */
 export class TeacherAssignmentRepository extends BaseRepository {
   /**
@@ -56,14 +56,14 @@ export class TeacherAssignmentRepository extends BaseRepository {
     if (filters.teacherId) {
       where.docenteId = filters.teacherId;
     }
-    if (filters.managementId) {
-      where.gestionId = filters.managementId;
+    if (filters.managementPlanId) {
+      where.gestionPlanId = filters.managementPlanId;
     }
     if (filters.courseId) {
       where.cursoId = filters.courseId;
     }
-    if (filters.state) {
-      where.estado = filters.state;
+    if (filters.active !== undefined) {
+      where.vigente = filters.active;
     }
 
     return where;
@@ -74,7 +74,7 @@ export class TeacherAssignmentRepository extends BaseRepository {
    * @returns {string[]}
    */
   getSearchFields() {
-    return ['observaciones'];
+    return ['motivo'];
   }
 
   /**
@@ -115,40 +115,9 @@ export class TeacherAssignmentRepository extends BaseRepository {
     return 'teacherAssignments';
   }
 
-  /**
-   * Método específico: Buscar asignaciones por docente
-   * 
-   * @param {number} docenteId - ID del docente
-   * @returns {Promise<TeacherAssignment[]>} Array de entidades TeacherAssignment
-   */
-  async findByDocenteId(docenteId) {
-    const models = await this.getModel().findAll({
-      where: {
-        docenteId: docenteId,
-        activo: true,
-        // paranoid: true automáticamente excluye deletedAt !== null
-      },
-      order: [['gestionId', 'DESC'], ['cursoId', 'ASC']],
-    });
-    return TeacherAssignmentMapper.toEntityList(models);
-  }
-
-  /**
-   * Método específico: Buscar asignaciones por gestión
-   * 
-   * @param {number} gestionId - ID de la gestión
-   * @returns {Promise<TeacherAssignment[]>} Array de entidades TeacherAssignment
-   */
-  async findByGestionId(gestionId) {
-    const models = await this.getModel().findAll({
-      where: {
-        gestionId: gestionId,
-        activo: true,
-        // paranoid: true automáticamente excluye deletedAt !== null
-      },
-      order: [['cursoId', 'ASC']],
-    });
-    return TeacherAssignmentMapper.toEntityList(models);
-  }
+  // NOTA: Los métodos específicos han sido eliminados. Ahora se usan los métodos base de IRepository:
+  // - findBy({ teacherId }) para buscar por docente
+  // - findBy({ managementPlanId }) para buscar por plan habilitado
+  // - findAll({ teacherId, managementPlanId, courseId, active }) para búsquedas con filtros
 }
 

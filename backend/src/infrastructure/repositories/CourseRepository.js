@@ -22,8 +22,8 @@ import { CourseMapper } from '../mappers/CourseMapper.js';
  * @implements {ICursoRepository}
  * 
  * Esta clase cumple con el contrato ICursoRepository:
- * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findAll, create, update, delete, search)
- * - Implementa findByMateriaId() que es requerido por ICursoRepository
+ * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findBy, findAll, create, update, delete, search, count)
+ * - La especialización está en buildWhereClause(), no en métodos adicionales
  */
 export class CourseRepository extends BaseRepository {
   /**
@@ -53,11 +53,11 @@ export class CourseRepository extends BaseRepository {
   buildWhereClause(filters) {
     const where = {};
 
-    if (filters.subjectId) {
-      where.materiaId = filters.subjectId;
+    if (filters.parallelId) {
+      where.paraleloId = filters.parallelId;
     }
-    if (filters.state) {
-      where.estado = filters.state;
+    if (filters.planSubjectId) {
+      where.asignaturaPlanId = filters.planSubjectId;
     }
 
     return where;
@@ -68,7 +68,7 @@ export class CourseRepository extends BaseRepository {
    * @returns {string[]}
    */
   getSearchFields() {
-    return ['nombre', 'codigo', 'descripcion'];
+    return ['codigo'];
   }
 
   /**
@@ -109,22 +109,9 @@ export class CourseRepository extends BaseRepository {
     return 'courses';
   }
 
-  /**
-   * Método específico: Buscar cursos por materia
-   * 
-   * @param {number} materiaId - ID de la materia
-   * @returns {Promise<Course[]>} Array de entidades Course
-   */
-  async findByMateriaId(materiaId) {
-    const models = await this.getModel().findAll({
-      where: {
-        materiaId: materiaId,
-        activo: true,
-        // paranoid: true automáticamente excluye deletedAt !== null
-      },
-      order: [['nombre', 'ASC']],
-    });
-    return CourseMapper.toEntityList(models);
-  }
+  // NOTA: Los métodos específicos han sido eliminados. Ahora se usan los métodos base de IRepository:
+  // - findBy({ parallelId }) para buscar por paralelo
+  // - findBy({ planSubjectId }) para buscar por asignatura del plan
+  // - findAll({ parallelId, planSubjectId }) para búsquedas con filtros
 }
 

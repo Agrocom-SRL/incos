@@ -57,11 +57,14 @@ export { IActividadCalendarioRepository } from './IActividadCalendarioRepository
 // ============================================
 // ESTRUCTURA ACADÉMICA - PARTE 2
 // ============================================
-export { ICursoRepository } from './ICursoRepository.js';
 export { IDocenteRepository } from './IDocenteRepository.js';
+export { IParallelRepository } from './IParallelRepository.js';
+export { IClassroomRepository } from './IClassroomRepository.js';
+export { IScheduleRepository } from './IScheduleRepository.js';
+export { ICursoRepository } from './ICursoRepository.js';
+export { ICourseScheduleRepository } from './ICourseScheduleRepository.js';
+export { IManagementPlanRepository } from './IManagementPlanRepository.js';
 export { IAsignacionDocenteRepository } from './IAsignacionDocenteRepository.js';
-export { ITurnoRepository } from './ITurnoRepository.js';
-export { ITurnoCursoRepository } from './ITurnoCursoRepository.js';
 
 // ============================================
 // ESTUDIANTES

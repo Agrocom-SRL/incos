@@ -45,11 +45,14 @@ export const REPOSITORIOS_TOKENS = {
     calendarActivityRepository: 'calendarActivityRepository',
 
     // ESTRUCTURA ACADÉMICA - PARTE 2
-    courseRepository: 'courseRepository',
     teacherRepository: 'teacherRepository',
+    parallelRepository: 'parallelRepository',
+    classroomRepository: 'classroomRepository',
+    scheduleRepository: 'scheduleRepository',
+    courseRepository: 'courseRepository',
+    courseScheduleRepository: 'courseScheduleRepository',
+    managementPlanRepository: 'managementPlanRepository',
     teacherAssignmentRepository: 'teacherAssignmentRepository',
-    shiftRepository: 'shiftRepository',
-    courseShiftRepository: 'courseShiftRepository',
 
     // ESTUDIANTES
     studentRepository: 'studentRepository',
