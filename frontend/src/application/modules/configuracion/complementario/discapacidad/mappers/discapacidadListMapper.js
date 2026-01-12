@@ -6,12 +6,12 @@
  * Mapea los datos completos del tipo de discapacidad a un formato simplificado
  * para la visualización en la lista de discapacidades.
  * 
- * NOTA: El backend devuelve entidades DisabilityType con propiedades en inglés (camelCase):
- * - name, description
+ * NOTA: El backend devuelve entidades DisabilityType con propiedades en español (camelCase):
+ * - nombre, descripcion, activo
  * 
  * Ubicación: application/modules/configuracion/complementario/discapacidad/mappers
  * 
- * @param {Object} discapacidadBackend - Datos del tipo de discapacidad desde el backend (en inglés)
+ * @param {Object} discapacidadBackend - Datos del tipo de discapacidad desde el backend (en español)
  * @returns {Object} - Datos mapeados para la lista (en español/camelCase)
  */
 export const discapacidadListMapper = (discapacidadBackend) => {
@@ -21,8 +21,9 @@ export const discapacidadListMapper = (discapacidadBackend) => {
 
   return {
     id: discapacidadBackend.id,
-    nombre: discapacidadBackend.name,
-    descripcion: discapacidadBackend.description,
+    nombre: discapacidadBackend.nombre,
+    descripcion: discapacidadBackend.descripcion,
+    activo: discapacidadBackend.activo,
   };
 };
 

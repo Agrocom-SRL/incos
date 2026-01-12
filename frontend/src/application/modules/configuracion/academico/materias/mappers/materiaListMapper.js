@@ -6,12 +6,12 @@
  * Mapea los datos completos de la materia a un formato simplificado
  * para la visualización en la lista de materias.
  * 
- * NOTA: El backend devuelve entidades Subject con propiedades en inglés (camelCase):
- * - code, name, shortName, type, theoreticalHours, practicalHours, credits
+ * NOTA: El backend devuelve entidades Subject con propiedades en español (camelCase):
+ * - sigla, nombre, objetivos, clasificacion, tipo
  * 
  * Ubicación: application/modules/configuracion/academico/materias/mappers
  * 
- * @param {Object} materiaBackend - Datos de la materia desde el backend (en inglés)
+ * @param {Object} materiaBackend - Datos de la materia desde el backend (en español)
  * @returns {Object} - Datos mapeados para la lista (en español/camelCase)
  */
 export const materiaListMapper = (materiaBackend) => {
@@ -19,17 +19,13 @@ export const materiaListMapper = (materiaBackend) => {
     return null;
   }
 
-  // Calcular carga horaria total si no viene directamente
-  const cargaHorariaTotal = materiaBackend.totalHours || 
-    ((materiaBackend.theoreticalHours || 0) + (materiaBackend.practicalHours || 0));
-
   return {
     id: materiaBackend.id,
-    codigo: materiaBackend.code,
-    nombre: materiaBackend.name,
-    nombreCorto: materiaBackend.shortName,
-    cargaHorariaTotal: cargaHorariaTotal,
-    tipo: materiaBackend.type, // 'TEORICA', 'PRACTICA', 'TEORICA_PRACTICA'
+    sigla: materiaBackend.sigla,
+    nombre: materiaBackend.nombre,
+    objetivos: materiaBackend.objetivos,
+    clasificacion: materiaBackend.clasificacion,
+    tipo: materiaBackend.tipo, // 'TEORICA', 'PRACTICA', 'TEORICA_PRACTICA'
   };
 };
 
