@@ -16,6 +16,7 @@ export const ESTUDIANTES_TOKENS = {
     listStudentsUseCase: 'estudiantes.listStudentsUseCase',
     registerStudentUseCase: 'estudiantes.registerStudentUseCase',
     getStudentByIdUseCase: 'estudiantes.getStudentByIdUseCase',
+    searchStudentUseCase: 'estudiantes.searchStudentUseCase',
     generateActaCompromisoUseCase: 'estudiantes.generateActaCompromisoUseCase',
     // TODO: Agregar otros Use Cases cuando se implementen sus endpoints
     // updateStudentUseCase: 'estudiantes.updateStudentUseCase',
@@ -24,6 +25,7 @@ export const ESTUDIANTES_TOKENS = {
     listStudentsController: 'estudiantes.listStudentsController',
     registerStudentController: 'estudiantes.registerStudentController',
     getStudentByIdController: 'estudiantes.getStudentByIdController',
+    searchStudentController: 'estudiantes.searchStudentController',
     actaCompromisoController: 'estudiantes.actaCompromisoController',
     // TODO: Agregar otros Controllers cuando se implementen sus endpoints
     // updateStudentController: 'estudiantes.updateStudentController',

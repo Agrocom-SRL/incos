@@ -4,6 +4,7 @@
 export { ListStudentsController } from './estudiantes/list.controller.js';
 export { RegisterStudentController } from './estudiantes/register.controller.js';
 export { GetStudentByIdController } from './estudiantes/get-by-id.controller.js';
+export { SearchStudentController } from './estudiantes/search.controller.js';
 export { ActaCompromisoController } from './estudiantes/acta-compromiso.controller.js';
 // TODO: Agregar otros controllers cuando se implementen sus endpoints
 // export { UpdateStudentController } from './estudiantes/update.controller.js';

@@ -6,4 +6,5 @@
 
 export { listValidator } from './list.validator.js';
 export { idValidator } from './id.validator.js';
+export { searchValidator } from './search.validator.js';
 

@@ -292,11 +292,13 @@ export class BaseRepository extends IRepository {
    * 
    * @param {string} searchTerm - Término de búsqueda
    * @param {Object} options - Opciones opcionales
+   *   - limit: Límite de resultados (default: 50)
    *   - includeInactive: Si incluir registros inactivos (default: false)
    */
   async search(searchTerm, options = {}) {
     const Model = this.getModel();
     const searchFields = this.getSearchFields();
+    const limit = options.limit || 50;
 
     const where = {
       // paranoid: true automáticamente excluye deletedAt !== null (registros eliminados lógicamente)
@@ -313,7 +315,7 @@ export class BaseRepository extends IRepository {
     const models = await Model.findAll({
       where,
       order: this.getDefaultSort(),
-      limit: 50,
+      limit,
     });
 
     return models.map((model) => this.toEntity(model));

@@ -20,6 +20,8 @@
  * 
  * @abstract
  */
+import { NotFoundError } from '../../../domain/errors/AppError.js';
+
 export class BaseGetController {
   /**
    * @param {Object} params - Parámetros de configuración
@@ -75,14 +77,19 @@ export class BaseGetController {
       // 3. Ejecutar el caso de uso
       const result = await this.useCase.execute(id);
 
-      // 4. Formatear respuesta exitosa
+      // 4. Si no se encontró el recurso, lanzar NotFoundError
+      if (!result) {
+        throw new NotFoundError(this.resourceName);
+      }
+
+      // 5. Formatear respuesta exitosa
       // El result ya contiene la estructura completa (student, guardians, etc.)
       // Lo envuelvemos en un objeto con el nombre del campo si es necesario
       const responseData = this.dataFieldName ? { [this.dataFieldName]: result } : result;
       
       return this.responseFormatter.retrieved(res, responseData, this.resourceName, id, req);
     } catch (error) {
-      // 5. Manejo de errores consistente
+      // 6. Manejo de errores consistente
       this.logger.error(`Error al obtener ${this.resourceName}`, {
         error: error.message,
         stack: error.stack,

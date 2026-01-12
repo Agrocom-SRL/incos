@@ -22,7 +22,9 @@ import {
   FieldSwitch, 
   FieldTextarea, 
   FieldRadio,
-  Button
+  Button,
+  SearchBar,
+  Alert
 } from '@atoms';
 
 /**
@@ -109,6 +111,41 @@ const renderRadio = (field, disabled, readOnly, selectOptions) => (
 );
 
 /**
+ * Renderer para campo de tipo search
+ * 
+ * Nota: value y onChange son manejados automáticamente por Form.Item de Ant Design
+ * onSearch puede ser proporcionado en field.onSearch para manejar la búsqueda
+ */
+const renderSearch = (field, disabled, readOnly) => {
+  // value y onChange serán proporcionados por Form.Item automáticamente
+  // Solo pasamos onSearch si está definido en field para manejar la acción de búsqueda
+  return (
+    <SearchBar
+      placeholder={field.placeholder || 'Buscar...'}
+      disabled={disabled}
+      readOnly={readOnly}
+      allowClear={field.allowClear !== false}
+      onSearch={field.onSearch}
+      className={field.className}
+    />
+  );
+};
+
+/**
+ * Renderer para campo de tipo alert (información/ayuda)
+ * No se envuelve en Form.Item, se renderiza directamente
+ */
+const renderAlert = (field, disabled, readOnly) => (
+  <Alert
+    title={field.message || field.title}
+    description={field.description}
+    type={field.alertType || 'info'}
+    showIcon={field.showIcon !== false}
+    className={field.className}
+  />
+);
+
+/**
  * Renderer para campo de tipo button (acción)
  * No se envuelve en Form.Item, se renderiza directamente
  */
@@ -133,11 +170,13 @@ const renderButton = (field, disabled, readOnly) => (
  */
 export const fieldRenderers = {
   input: renderInput,
+  search: renderSearch,
   select: renderSelect,
   date: renderDate,
   switch: renderSwitch,
   textarea: renderTextarea,
   radio: renderRadio,
+  alert: renderAlert,
   button: renderButton,
 };
 
@@ -148,11 +187,13 @@ export const fieldRenderers = {
  */
 const fieldRendererParams = {
   input: ['field', 'disabled', 'readOnly'],
+  search: ['field', 'disabled', 'readOnly'],
   switch: ['field', 'disabled', 'readOnly'],
   textarea: ['field', 'disabled', 'readOnly'],
   select: ['field', 'disabled', 'readOnly', 'selectOptions'],
   radio: ['field', 'disabled', 'readOnly', 'selectOptions'],
   date: ['field', 'disabled', 'readOnly', 'minAge'],
+  alert: ['field', 'disabled', 'readOnly'],
   button: ['field', 'disabled', 'readOnly'],
 };
 

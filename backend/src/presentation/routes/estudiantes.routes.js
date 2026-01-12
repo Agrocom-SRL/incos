@@ -1,5 +1,5 @@
 import express from 'express';
-import { listValidator, idValidator } from '../validators/common/index.js';
+import { listValidator, idValidator, searchValidator } from '../validators/common/index.js';
 import { registerStudentValidator } from '../validators/estudiantes/index.js';
 
 /**
@@ -29,14 +29,8 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
 
     /**
      * GET /api/v1/estudiantes
-     * Listar todos los estudiantes con filtros y paginación
-     * 
-     * Query params según IBaseRepository.obtenerTodos:
-     * - pagina: número de página (paginación)
-     * - limite: cantidad por página (paginación)
-     * - busqueda: término de búsqueda general
-     * - filtros: filtros específicos del recurso
-     * - incluirInactivos: incluir registros inactivos (activo = false)
+     * Listar estudiantes con filtros y paginación
+     * Query: page, limit, search
      */
     router.get(
         '/',
@@ -47,20 +41,8 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
 
     /**
      * POST /api/v1/estudiantes
-     * Registrar un nuevo estudiante con todos sus datos relacionados
-     * 
-     * Body:
-     * - student: Datos del estudiante principal
-     * - guardians: Array de apoderados (opcional)
-     * - disabilities: Array de discapacidades (opcional)
-     * - origins: Array de orígenes (opcional)
-     * - documentation: Objeto con entregas de documentos (opcional, keys: doc_1, doc_2, etc.)
-     * 
-     * 
-     * Orden de middlewares:
-     * 1. registerStudentValidator - Valida estructura y tipos de datos del body
-     * 2. validateRequest - Procesa errores de validación y retorna respuesta si hay errores
-     * 3. controller - Se ejecuta solo si la validación pasó
+     * Registrar nuevo estudiante con datos relacionados
+     * Body: student, guardians, disabilities, origins, documentation
      */
     router.post(
         '/',
@@ -75,34 +57,8 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
 
     /**
      * POST /api/v1/estudiantes/:id/documentos/acta-compromiso
-     * Generar ACTA DE COMPROMISO para un estudiante
-     * 
-     * Path params:
-     * - id: ID del estudiante (número entero mayor a 0)
-     * 
-     * Response:
-     * {
-     *   "success": true,
-     *   "data": {
-     *     "acta": {
-     *       "filePath": "/uploads/documentos/estudiantes/123/ACTA_COMPROMISO_123456_1234567890.pdf",
-     *       "fileName": "ACTA_COMPROMISO_123456_1234567890.pdf",
-     *       "absolutePath": "/path/to/file.pdf"
-     *     }
-     *   },
-     *   "message": "Acta de compromiso (ID: 123) generada correctamente"
-     * }
-     * 
-     * NOTA: Este es el primer endpoint de generación de documentos.
-     * Futuros documentos seguirán el mismo patrón:
-     * - POST /api/v1/estudiantes/:id/documentos/licencia
-     * - POST /api/v1/estudiantes/:id/documentos/beca
-     * - POST /api/v1/estudiantes/:id/documentos/recibo-pago
-     * 
-     * Orden de middlewares:
-     * 1. idValidator - Valida que el ID sea un número entero mayor a 0
-     * 2. validateRequest - Procesa errores de validación
-     * 3. controller - Genera el documento
+     * Generar acta de compromiso para un estudiante
+     * Path: id
      */
     router.post(
         '/:id/documentos/acta-compromiso',
@@ -112,34 +68,29 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
     );
 
     // ============================================
+    // BÚSQUEDA DE ESTUDIANTE
+    // ============================================
+
+    /**
+     * GET /api/v1/estudiantes/buscar
+     * Buscar estudiante por texto libre
+     * Query: search (busca en codigo, ci, nombres, apellidos)
+     */
+    router.get(
+        '/buscar',
+        searchValidator,  // 1. Validator común de búsqueda
+        validateRequest,  // 2. Middleware que procesa errores
+        (req, res, next) => controllers.searchStudentController.handle(req, res, next)  // 3. Controller al final
+    );
+
+    // ============================================
     // OBTENCIÓN DE ESTUDIANTE POR ID
     // ============================================
 
     /**
      * GET /api/v1/estudiantes/:id
-     * Obtener un estudiante por ID con todos sus datos relacionados
-     * 
-     * Path params:
-     * - id: ID del estudiante (número entero mayor a 0)
-     * 
-     * Response:
-     * {
-     *   success: true,
-     *   data: {
-     *     student: { ... },
-     *     guardians: [ ... ],
-     *     disabilities: [ ... ],
-     *     origins: [ ... ],
-     *     documentDeliveries: [ ... ]
-     *   },
-     *   message: "Estudiante (ID: 123) obtenido correctamente"
-     * }
-     * 
-     * 
-     * Orden de middlewares:
-     * 1. idValidator - Valida que el ID sea un número entero mayor a 0
-     * 2. validateRequest - Procesa errores de validación y retorna respuesta si hay errores
-     * 3. controller - Se ejecuta solo si la validación pasó
+     * Obtener estudiante por ID con datos relacionados
+     * Path: id
      */
     router.get(
         '/:id',

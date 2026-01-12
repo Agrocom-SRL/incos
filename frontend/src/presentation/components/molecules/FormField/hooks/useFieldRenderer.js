@@ -60,7 +60,7 @@ export const useFieldRenderer = ({
       return renderer(field, disabled, readOnly, minAge);
     }
     
-    // Para input, switch, textarea: solo necesitan field, disabled, readOnly
+    // Para input, search, switch, textarea: solo necesitan field, disabled, readOnly
     return renderer(field, disabled, readOnly);
   }, [fieldType, field, disabled, readOnly, selectOptions, minAge]);
 

@@ -4,6 +4,7 @@
 export { ListStudentsUseCase } from './ListStudentsUseCase.js';
 export { RegisterStudentUseCase } from './RegisterStudentUseCase.js';
 export { GetStudentByIdUseCase } from './GetStudentByIdUseCase.js';
+export { SearchStudentUseCase } from './SearchStudentUseCase.js';
 export { GenerateActaCompromisoUseCase } from './GenerateActaCompromisoUseCase.js';
 // TODO: Agregar otros use cases cuando se implementen sus endpoints
 // export { UpdateStudentUseCase } from './UpdateStudentUseCase.js';

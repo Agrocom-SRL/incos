@@ -14,8 +14,8 @@
 
 import { ESTUDIANTES_TOKENS, REPOSITORIOS_TOKENS, SERVICIOS_TOKENS } from '../../tokens/index.js';
 import { registerComponent } from '../../utils/container.helpers.js';
-import { ListStudentsUseCase, RegisterStudentUseCase, GetStudentByIdUseCase, GenerateActaCompromisoUseCase } from '../../../../application/use-cases/estudiantes/index.js';
-import { ListStudentsController, RegisterStudentController, GetStudentByIdController, ActaCompromisoController } from '../../../../presentation/controllers/estudiantes/index.js';
+import { ListStudentsUseCase, RegisterStudentUseCase, GetStudentByIdUseCase, SearchStudentUseCase, GenerateActaCompromisoUseCase } from '../../../../application/use-cases/estudiantes/index.js';
+import { ListStudentsController, RegisterStudentController, GetStudentByIdController, SearchStudentController, ActaCompromisoController } from '../../../../presentation/controllers/estudiantes/index.js';
 import { buildEstudiantesRouter } from '../../../../presentation/routes/estudiantes.routes.js';
 
 /**
@@ -79,6 +79,16 @@ export function registerEstudiantesResource(container) {
 
     registerComponent(
         container,
+        ESTUDIANTES_TOKENS.searchStudentUseCase,
+        (c) =>
+            new SearchStudentUseCase({
+                studentRepository: c.resolve(REPOSITORIOS_TOKENS.studentRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
+    registerComponent(
+        container,
         ESTUDIANTES_TOKENS.generateActaCompromisoUseCase,
         (c) =>
             new GenerateActaCompromisoUseCase({
@@ -129,6 +139,17 @@ export function registerEstudiantesResource(container) {
 
     registerComponent(
         container,
+        ESTUDIANTES_TOKENS.searchStudentController,
+        (c) =>
+            new SearchStudentController({
+                searchStudentUseCase: c.resolve(ESTUDIANTES_TOKENS.searchStudentUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
+    );
+
+    registerComponent(
+        container,
         ESTUDIANTES_TOKENS.actaCompromisoController,
         (c) =>
             new ActaCompromisoController({
@@ -151,6 +172,7 @@ export function registerEstudiantesResource(container) {
                 listStudentsController: c.resolve(ESTUDIANTES_TOKENS.listStudentsController),
                 registerStudentController: c.resolve(ESTUDIANTES_TOKENS.registerStudentController),
                 getStudentByIdController: c.resolve(ESTUDIANTES_TOKENS.getStudentByIdController),
+                searchStudentController: c.resolve(ESTUDIANTES_TOKENS.searchStudentController),
                 actaCompromisoController: c.resolve(ESTUDIANTES_TOKENS.actaCompromisoController),
                 // TODO: Agregar otros controllers cuando se implementen sus rutas
                 // updateStudentController: c.resolve(ESTUDIANTES_TOKENS.updateStudentController),
