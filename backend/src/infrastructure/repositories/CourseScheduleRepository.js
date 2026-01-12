@@ -20,6 +20,10 @@ import { CourseScheduleMapper } from '../mappers/CourseScheduleMapper.js';
  * - Usa CourseScheduleMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
  * 
  * @implements {ICourseScheduleRepository}
+ * 
+ * Esta clase cumple con el contrato ICourseScheduleRepository:
+ * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findBy, findAll, create, update, delete, search, count)
+ * - La especialización está en buildWhereClause(), no en métodos adicionales
  */
 export class CourseScheduleRepository extends BaseRepository {
   getModel() {

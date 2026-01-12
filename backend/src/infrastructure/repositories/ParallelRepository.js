@@ -20,6 +20,10 @@ import { ParallelMapper } from '../mappers/ParallelMapper.js';
  * - Usa ParallelMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
  * 
  * @implements {IParallelRepository}
+ * 
+ * Esta clase cumple con el contrato IParallelRepository:
+ * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findBy, findAll, create, update, delete, search, count)
+ * - La especialización está en buildWhereClause(), no en métodos adicionales
  */
 export class ParallelRepository extends BaseRepository {
   getModel() {

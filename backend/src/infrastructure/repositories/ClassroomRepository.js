@@ -21,6 +21,10 @@ import { ClassroomMapper } from '../mappers/ClassroomMapper.js';
  * - Usa ClassroomMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
  * 
  * @implements {IClassroomRepository}
+ * 
+ * Esta clase cumple con el contrato IClassroomRepository:
+ * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findBy, findAll, create, update, delete, search, count)
+ * - La especialización está en buildWhereClause(), no en métodos adicionales
  */
 export class ClassroomRepository extends BaseRepository {
   getModel() {

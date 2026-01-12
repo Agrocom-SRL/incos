@@ -20,6 +20,10 @@ import { ScheduleMapper } from '../mappers/ScheduleMapper.js';
  * - Usa ScheduleMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
  * 
  * @implements {IScheduleRepository}
+ * 
+ * Esta clase cumple con el contrato IScheduleRepository:
+ * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findBy, findAll, create, update, delete, search, count)
+ * - La especialización está en buildWhereClause(), no en métodos adicionales
  */
 export class ScheduleRepository extends BaseRepository {
   getModel() {
