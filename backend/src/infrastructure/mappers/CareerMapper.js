@@ -36,15 +36,10 @@ export class CareerMapper {
       code: model.codigo,
       name: model.nombre,
       description: model.descripcion,
-      durationYears: model.duracionAnios,
+      trainingArea: model.areaFormacion,
       grantedTitle: model.tituloOtorgado,
-      ministerialResolution: model.resolucionMinisterial,
-      effectiveDate: model.fechaVigencia,
-      totalHours: model.cargaHorariaTotal,
       colorHex: model.colorHex,
-      imageName: model.imagenNombre,
       imagePath: model.imagenRuta,
-      imageUrl: model.imagenUrl,
     };
 
     // Combina campos base (id, active, timestamps, audit) con campos específicos
@@ -69,15 +64,10 @@ export class CareerMapper {
       codigo: data.code,
       nombre: data.name,
       descripcion: data.description || null,
-      duracionAnios: data.durationYears !== undefined ? data.durationYears : 4,
+      areaFormacion: data.trainingArea || null,
       tituloOtorgado: data.grantedTitle || null,
-      resolucionMinisterial: data.ministerialResolution || null,
-      fechaVigencia: data.effectiveDate || null,
-      cargaHorariaTotal: data.totalHours || null,
       colorHex: data.colorHex || null,
-      imagenNombre: data.imageName || null,
       imagenRuta: data.imagePath || null,
-      imagenUrl: data.imageUrl || null,
     };
   }
 
@@ -104,32 +94,17 @@ export class CareerMapper {
     if (data.description !== undefined) {
       updateData.descripcion = data.description || null;
     }
-    if (data.durationYears !== undefined) {
-      updateData.duracionAnios = data.durationYears;
+    if (data.trainingArea !== undefined) {
+      updateData.areaFormacion = data.trainingArea || null;
     }
     if (data.grantedTitle !== undefined) {
       updateData.tituloOtorgado = data.grantedTitle || null;
     }
-    if (data.ministerialResolution !== undefined) {
-      updateData.resolucionMinisterial = data.ministerialResolution || null;
-    }
-    if (data.effectiveDate !== undefined) {
-      updateData.fechaVigencia = data.effectiveDate || null;
-    }
-    if (data.totalHours !== undefined) {
-      updateData.cargaHorariaTotal = data.totalHours || null;
-    }
     if (data.colorHex !== undefined) {
       updateData.colorHex = data.colorHex || null;
     }
-    if (data.imageName !== undefined) {
-      updateData.imagenNombre = data.imageName || null;
-    }
     if (data.imagePath !== undefined) {
       updateData.imagenRuta = data.imagePath || null;
-    }
-    if (data.imageUrl !== undefined) {
-      updateData.imagenUrl = data.imageUrl || null;
     }
 
     // Campos base (active/activo)

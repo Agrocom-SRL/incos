@@ -48,6 +48,7 @@ export { Prerrequisito } from './prerrequisito.js';
 // ============================================
 export { Actividad } from './actividad.js';
 export { Gestion } from './gestion.js';
+export { GestionPlan } from './gestion_plan.js';
 export { PeriodoAcademico } from './periodo_academico.js';
 export { ActividadCalendario } from './actividad_calendario.js';
 
@@ -60,7 +61,6 @@ export { Aula } from './aula.js';
 export { Horario } from './horario.js';
 export { Curso } from './curso.js';
 export { CursoHorario } from './curso_horario.js';
-export { GestionPlan } from './gestion_plan.js';
 export { AsignacionDocente } from './asignacion_docente.js';
 
 // ============================================

@@ -25,17 +25,13 @@ export function entityToPresentation(career) {
     codigo: career.code,
     nombre: career.name,
     descripcion: career.description,
-    duracionAnios: career.durationYears,
+    areaFormacion: career.trainingArea,
     tituloOtorgado: career.grantedTitle,
-    resolucionMinisterial: career.ministerialResolution,
-    fechaVigencia: career.effectiveDate,
-    horasTotales: career.totalHours,
     colorHex: career.colorHex,
-    imagenNombre: career.imageName,
     imagenRuta: career.imagePath,
-    imagenUrl: career.imageUrl,
     activo: career.active,
     createdAt: career.createdAt,
+    updatedAt: career.updatedAt,
   };
 }
 

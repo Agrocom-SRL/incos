@@ -68,6 +68,8 @@ import { PlanSubjectRepository } from '../../repositories/PlanSubjectRepository.
 // ESTRUCTURA ACADÉMICA - PARTE 3 (Calendario)
 // ============================================
 import { ActivityRepository } from '../../repositories/ActivityRepository.js';
+import { ManagementRepository } from '../../repositories/ManagementRepository.js';
+import { ManagementPlanRepository } from '../../repositories/ManagementPlanRepository.js';
 import { AcademicPeriodRepository } from '../../repositories/AcademicPeriodRepository.js';
 import { CalendarActivityRepository } from '../../repositories/CalendarActivityRepository.js';
 
@@ -80,7 +82,6 @@ import { ClassroomRepository } from '../../repositories/ClassroomRepository.js';
 import { ScheduleRepository } from '../../repositories/ScheduleRepository.js';
 import { CourseRepository } from '../../repositories/CourseRepository.js';
 import { CourseScheduleRepository } from '../../repositories/CourseScheduleRepository.js';
-import { ManagementPlanRepository } from '../../repositories/ManagementPlanRepository.js';
 import { TeacherAssignmentRepository } from '../../repositories/TeacherAssignmentRepository.js';
 
 // ============================================
@@ -151,6 +152,8 @@ export function registerRepositoriesModule(container) {
     // ESTRUCTURA ACADÉMICA - PARTE 3 (Calendario)
     // ============================================
     registerRepository(container, REPOSITORIOS_TOKENS.activityRepository, ActivityRepository);
+    registerRepository(container, REPOSITORIOS_TOKENS.managementRepository, ManagementRepository);
+    registerRepository(container, REPOSITORIOS_TOKENS.managementPlanRepository, ManagementPlanRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.academicPeriodRepository, AcademicPeriodRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.calendarActivityRepository, CalendarActivityRepository);
 
@@ -163,7 +166,6 @@ export function registerRepositoriesModule(container) {
     registerRepository(container, REPOSITORIOS_TOKENS.scheduleRepository, ScheduleRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.courseRepository, CourseRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.courseScheduleRepository, CourseScheduleRepository);
-    registerRepository(container, REPOSITORIOS_TOKENS.managementPlanRepository, ManagementPlanRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.teacherAssignmentRepository, TeacherAssignmentRepository);
 
     // ============================================

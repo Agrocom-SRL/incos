@@ -1,7 +1,7 @@
 -- ============================================
 -- ESTRUCTURA ACADÉMICA - PARTE 2
 -- Sistema de Gestión Académica - Instituto INCOS
--- 8 Tablas: docentes, paralelos, aulas, horarios, cursos, cursos_horarios, asignaciones_docentes, gestiones_planes
+-- 7 Tablas: docentes, paralelos, aulas, horarios, cursos, cursos_horarios, asignaciones_docentes
 -- ============================================
 
 USE instituto_incos;
@@ -14,7 +14,6 @@ USE instituto_incos;
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- Eliminar todas las tablas (orden no importa con foreign key checks deshabilitado)
-DROP TABLE IF EXISTS gestiones_planes;
 DROP TABLE IF EXISTS asignaciones_docentes;
 DROP TABLE IF EXISTS cursos_horarios;
 DROP TABLE IF EXISTS cursos;
@@ -328,51 +327,6 @@ CREATE TABLE cursos_horarios (
     
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Horarios de cursos. Define bloques horarios y aulas. Usa orden_secuencia (1,2,3,4) para indicar el orden cronológico de los bloques durante la semana. Reutilizable entre gestiones.';
-
--- ============================================
--- TABLA: gestiones_planes
--- Habilitación de planes de estudio por gestión
--- ============================================
--- Define qué planes de estudio están habilitados en cada gestión académica.
--- Es la "autorización oficial" para ofertar las materias de un plan.
--- Tabla pequeña: ~3-10 registros por gestión (uno por carrera/plan activo).
--- IMPORTANTE: Se crea antes de asignaciones_docentes porque asignaciones_docentes tiene foreign key a gestiones_planes
-
-CREATE TABLE gestiones_planes (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    gestion_id INT NULL COMMENT 'Gestión académica donde se habilita el plan',
-    plan_estudio_id INT NULL COMMENT 'Plan de estudios habilitado',
-    nombre VARCHAR(200) NOT NULL COMMENT 'Nombre descriptivo (ej: Oferta Gestión 2025 - Plan 2023 Sistemas Informáticos)',
-    
-    -- Estado de habilitación
-    estado ENUM('PROPUESTO', 'APROBADO', 'VIGENTE', 'CERRADO', 'CANCELADO') DEFAULT 'PROPUESTO'
-        COMMENT 'Estado de habilitación del plan en esta gestión',
-    motivo_cancelacion TEXT COMMENT 'Motivo si fue cancelado',
-    
-    -- Campos de auditoría y control (ESTÁNDAR)
-    activo BOOLEAN DEFAULT TRUE COMMENT 'Indica si la habilitación está activa',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación del registro',
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de última modificación',
-    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Fecha de eliminación lógica (soft delete)',
-    created_by INT NULL COMMENT 'ID del usuario que creó el registro',
-    updated_by INT NULL COMMENT 'ID del usuario que modificó el registro',
-    deleted_by INT NULL COMMENT 'ID del usuario que eliminó el registro',
-    
-    FOREIGN KEY (gestion_id) REFERENCES gestiones(id) ON DELETE SET NULL,
-    FOREIGN KEY (plan_estudio_id) REFERENCES planes_estudios(id) ON DELETE SET NULL,
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    
-    INDEX idx_gestion_id (gestion_id) COMMENT 'Búsqueda por gestión',
-    INDEX idx_plan_estudio_id (plan_estudio_id) COMMENT 'Búsqueda por plan',
-    INDEX idx_estado (estado) COMMENT 'Filtrado por estado',
-    INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
-    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
-    INDEX idx_gestion_plan (gestion_id, plan_estudio_id, deleted_at) COMMENT 'Búsqueda combinada'
-    
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Habilitación de planes de estudio por gestión. Define qué planes están autorizados para ofertar en cada año académico. Tabla pequeña: ~3-10 registros por gestión';
 
 -- ============================================
 -- TABLA: asignaciones_docentes

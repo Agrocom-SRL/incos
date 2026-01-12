@@ -22,17 +22,14 @@ export function entityToPresentation(subject) {
 
   return {
     id: subject.id,
-    codigo: subject.code,
+    sigla: subject.acronym,
     nombre: subject.name,
-    nombreCorto: subject.shortName,
-    descripcion: subject.description,
-    horasTeoricas: subject.theoreticalHours,
-    horasPracticas: subject.practicalHours,
-    creditos: subject.credits,
+    objetivos: subject.objectives,
+    clasificacion: subject.classification,
     tipo: subject.type,
-    areaConocimiento: subject.knowledgeArea,
     activo: subject.active,
     createdAt: subject.createdAt,
+    updatedAt: subject.updatedAt,
   };
 }
 

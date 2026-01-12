@@ -46,6 +46,7 @@ export { CareerMapper } from './CareerMapper.js';
 export { SubjectMapper } from './SubjectMapper.js';
 export { PeriodMapper } from './PeriodMapper.js';
 export { ManagementMapper } from './ManagementMapper.js';
+export { ManagementPlanMapper } from './ManagementPlanMapper.js';
 export { ActivityMapper } from './ActivityMapper.js';
 export { AcademicPeriodMapper } from './AcademicPeriodMapper.js';
 export { CalendarActivityMapper } from './CalendarActivityMapper.js';
@@ -60,7 +61,6 @@ export { ClassroomMapper } from './ClassroomMapper.js';
 export { ScheduleMapper } from './ScheduleMapper.js';
 export { CourseMapper } from './CourseMapper.js';
 export { CourseScheduleMapper } from './CourseScheduleMapper.js';
-export { ManagementPlanMapper } from './ManagementPlanMapper.js';
 export { TeacherAssignmentMapper } from './TeacherAssignmentMapper.js';
 // TODO: Agregar otros mappers académicos cuando se refactorizen sus repositorios
 

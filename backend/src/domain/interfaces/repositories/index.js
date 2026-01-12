@@ -51,6 +51,8 @@ export { IAsignaturaPlanRepository } from './IAsignaturaPlanRepository.js';
 // ESTRUCTURA ACADÉMICA - PARTE 3 (Calendario)
 // ============================================
 export { IActividadRepository } from './IActividadRepository.js';
+export { IGestionRepository } from './IGestionRepository.js';
+export { IManagementPlanRepository } from './IManagementPlanRepository.js';
 export { IPeriodoAcademicoRepository } from './IPeriodoAcademicoRepository.js';
 export { IActividadCalendarioRepository } from './IActividadCalendarioRepository.js';
 
@@ -63,7 +65,6 @@ export { IClassroomRepository } from './IClassroomRepository.js';
 export { IScheduleRepository } from './IScheduleRepository.js';
 export { ICursoRepository } from './ICursoRepository.js';
 export { ICourseScheduleRepository } from './ICourseScheduleRepository.js';
-export { IManagementPlanRepository } from './IManagementPlanRepository.js';
 export { IAsignacionDocenteRepository } from './IAsignacionDocenteRepository.js';
 
 // ============================================

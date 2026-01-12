@@ -53,6 +53,7 @@ export { Prerequisite } from './Prerequisite.js';
 // ============================================
 export { Activity } from './Activity.js';
 export { Management } from './Management.js';
+export { ManagementPlan } from './ManagementPlan.js';
 export { AcademicPeriod } from './AcademicPeriod.js';
 export { CalendarActivity } from './CalendarActivity.js';
 
@@ -65,7 +66,6 @@ export { Classroom } from './Classroom.js';
 export { Schedule } from './Schedule.js';
 export { Course } from './Course.js';
 export { CourseSchedule } from './CourseSchedule.js';
-export { ManagementPlan } from './ManagementPlan.js';
 export { TeacherAssignment } from './TeacherAssignment.js';
 
 // ============================================
