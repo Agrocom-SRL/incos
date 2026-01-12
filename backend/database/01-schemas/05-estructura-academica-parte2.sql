@@ -1,7 +1,7 @@
 -- ============================================
 -- ESTRUCTURA ACADÉMICA - PARTE 2
 -- Sistema de Gestión Académica - Instituto INCOS
--- 7 Tablas: docentes, paralelos, aulas, horarios, cursos, cursos_horarios, asignaciones_docentes
+-- 6 Tablas: docentes, paralelos, aulas, horarios, cursos, cursos_horarios
 -- ============================================
 
 USE instituto_incos;
@@ -14,7 +14,6 @@ USE instituto_incos;
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- Eliminar todas las tablas (orden no importa con foreign key checks deshabilitado)
-DROP TABLE IF EXISTS asignaciones_docentes;
 DROP TABLE IF EXISTS cursos_horarios;
 DROP TABLE IF EXISTS cursos;
 DROP TABLE IF EXISTS horarios;
@@ -138,8 +137,7 @@ CREATE TABLE paralelos (
     INDEX idx_nombre (nombre) COMMENT 'Búsqueda por nombre',
     INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
     INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
-    INDEX idx_carrera_periodo_turno (carrera_id, periodo_id, turno, deleted_at) COMMENT 'Búsqueda combinada por carrera, periodo y turno',
-    INDEX idx_periodo_turno_letra (periodo_id, turno, letra, deleted_at) COMMENT 'Búsqueda por periodo, turno y letra'
+    INDEX idx_carrera_periodo_turno (carrera_id, periodo_id, turno, deleted_at) COMMENT 'Búsqueda combinada por carrera, periodo y turno'
     
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Paralelos (maestro conceptual reutilizable). Estructura estable de grupos multi-materia vinculados a un periodo del plan de estudios.';
@@ -327,57 +325,6 @@ CREATE TABLE cursos_horarios (
     
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Horarios de cursos. Define bloques horarios y aulas. Usa orden_secuencia (1,2,3,4) para indicar el orden cronológico de los bloques durante la semana. Reutilizable entre gestiones.';
-
--- ============================================
--- TABLA: asignaciones_docentes
--- Asignación de docentes a cursos por plan habilitado
--- ============================================
--- Vincula QUÉ curso se dicta EN QUÉ plan habilitado CON QUÉ docente.
--- Preserva historial de asignaciones por gestión para auditoría.
--- El plan habilitado (gestiones_planes) garantiza coherencia entre curso y plan.
-
-CREATE TABLE asignaciones_docentes (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    gestion_plan_id INT NULL COMMENT 'Plan habilitado en la gestión (garantiza que curso pertenece al plan correcto)',
-    curso_id INT NULL COMMENT 'Curso (paralelo + materia) que se dicta',
-    docente_id INT NULL COMMENT 'Docente asignado (NULL = pendiente de asignación)',
-    
-    -- Carga horaria
-    carga_horaria INT NULL COMMENT 'Horas de docencia por semana en este curso (hereda de asignaturas_plan.horas_semanales si NULL)',
-    
-    -- Estado de la asignación
-    vigente BOOLEAN DEFAULT TRUE COMMENT 'Si la asignación está vigente (FALSE = cancelada o rechazada)',
-    motivo TEXT COMMENT 'Motivo de cancelación o rechazo (solo si vigente=FALSE)',
-    fecha_asignacion DATE NULL COMMENT 'Fecha en que se asignó el docente',
-    
-    -- Campos de auditoría y control (ESTÁNDAR)
-    activo BOOLEAN DEFAULT TRUE COMMENT 'Indica si el registro está activo',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación del registro',
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de última modificación',
-    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Fecha de eliminación lógica (soft delete)',
-    created_by INT NULL COMMENT 'ID del usuario que creó el registro',
-    updated_by INT NULL COMMENT 'ID del usuario que modificó el registro',
-    deleted_by INT NULL COMMENT 'ID del usuario que eliminó el registro',
-    
-    FOREIGN KEY (gestion_plan_id) REFERENCES gestiones_planes(id) ON DELETE SET NULL,
-    FOREIGN KEY (curso_id) REFERENCES cursos(id) ON DELETE SET NULL,
-    FOREIGN KEY (docente_id) REFERENCES docentes(id) ON DELETE SET NULL,
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    
-    INDEX idx_gestion_plan_id (gestion_plan_id) COMMENT 'Búsqueda por plan habilitado',
-    INDEX idx_curso_id (curso_id) COMMENT 'Búsqueda por curso',
-    INDEX idx_docente_id (docente_id) COMMENT 'Búsqueda por docente',
-    INDEX idx_vigente (vigente) COMMENT 'Filtrado por asignaciones vigentes',
-    INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
-    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
-    INDEX idx_gestion_plan_curso (gestion_plan_id, curso_id, deleted_at) COMMENT 'Búsqueda por plan y curso',
-    INDEX idx_gestion_plan_docente (gestion_plan_id, docente_id, vigente, deleted_at) COMMENT 'Carga horaria del docente por gestión',
-    INDEX idx_curso_vigente (curso_id, vigente, deleted_at) COMMENT 'Asignaciones vigentes por curso'
-    
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Asignación de docentes a cursos por plan habilitado. Vincula curso + plan_habilitado + docente. Preserva historial para auditoría académica. El docente puede ser NULL (pendiente).';
 
 -- ============================================
 -- FASE 3: REHABILITAR FOREIGN KEY CHECKS

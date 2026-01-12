@@ -36,22 +36,22 @@ export const createMateriasTableColumns = (navigate) => {
 
   return [
     {
-      title: 'Código',
-      dataIndex: 'codigo',
+      title: 'Sigla',
+      dataIndex: 'sigla',
       fixed: 'left',
       ellipsis: true,
-      render: (codigo) => (
+      render: (sigla) => (
         <TableCell
           strong
           textStyle={{ fontFamily: 'monospace', fontSize: '13px' }}
         >
-          {codigo}
+          {sigla}
         </TableCell>
       ),
       sorter: (a, b) => {
-        const codigoA = a.codigo || '';
-        const codigoB = b.codigo || '';
-        return codigoA.localeCompare(codigoB, undefined, { numeric: true, sensitivity: 'base' });
+        const siglaA = a.sigla || '';
+        const siglaB = b.sigla || '';
+        return siglaA.localeCompare(siglaB, undefined, { numeric: true, sensitivity: 'base' });
       },
       defaultSortOrder: 'ascend',
     },
@@ -77,30 +77,19 @@ export const createMateriasTableColumns = (navigate) => {
       },
     },
     {
-      title: 'Nombre Corto',
-      dataIndex: 'nombreCorto',
+      title: 'Clasificación',
+      dataIndex: 'clasificacion',
       ellipsis: true,
-      render: (nombreCorto) => (
+      render: (clasificacion) => (
         <TableCell>
-          {nombreCorto || '-'}
+          {clasificacion || '-'}
         </TableCell>
       ),
       sorter: (a, b) => {
-        const nombreCortoA = a.nombreCorto || '';
-        const nombreCortoB = b.nombreCorto || '';
-        return nombreCortoA.localeCompare(nombreCortoB);
+        const clasificacionA = a.clasificacion || '';
+        const clasificacionB = b.clasificacion || '';
+        return clasificacionA.localeCompare(clasificacionB);
       },
-    },
-    {
-      title: 'Carga Horaria Total',
-      dataIndex: 'cargaHorariaTotal',
-      ellipsis: true,
-      render: (cargaHorariaTotal) => (
-        <TableCell>
-          {cargaHorariaTotal ? `${cargaHorariaTotal} horas` : '-'}
-        </TableCell>
-      ),
-      sorter: (a, b) => (a.cargaHorariaTotal || 0) - (b.cargaHorariaTotal || 0),
     },
     {
       title: 'Acciones',

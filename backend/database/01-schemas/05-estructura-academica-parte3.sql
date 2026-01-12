@@ -1,7 +1,7 @@
 -- ============================================
 -- ESTRUCTURA ACADÉMICA - PARTE 3
 -- Sistema de Gestión Académica - Instituto INCOS
--- 5 Tablas: actividades, gestiones, gestiones_planes, periodos_academicos, actividades_calendario
+-- 6 Tablas: gestiones, gestiones_planes, actividades, periodos_academicos, actividades_calendario, asignaciones_docentes
 -- ============================================
 
 USE instituto_incos;
@@ -24,55 +24,16 @@ DROP TABLE IF EXISTS actividades;
 -- FASE 2: CREACIÓN DE TABLAS
 -- Las foreign key checks siguen deshabilitadas durante la creación
 -- ============================================
-
--- ============================================
--- TABLA: actividades
--- ============================================
--- Catálogo maestro de actividades académicas reutilizables entre gestiones
--- Ejemplo: "Inscripción de estudiantes", "Feriado Estado Plurinacional", "Inauguración"
-
-CREATE TABLE actividades (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(200) NOT NULL COMMENT 'Nombre de la actividad',
-    descripcion TEXT COMMENT 'Descripción detallada de la actividad',
-    
-    -- Clasificación (OPCIONAL - puede ser NULL)
-    tipo ENUM(
-        'INSCRIPCION',
-        'PLANIFICACION',
-        'ACADEMICA',
-        'EVALUACION',
-        'ADMINISTRATIVA',
-        'FERIADO',
-        'EVENTO_INSTITUCIONAL',
-        'FERIA',
-        'MODALIDAD_GRADO',
-        'OTRO'
-    ) COMMENT 'Tipo de actividad (opcional, NULL si no aplica clasificación)',
-    es_destacada BOOLEAN DEFAULT FALSE COMMENT 'Si es una actividad importante/destacada en el calendario',
-    icono VARCHAR(50) COMMENT 'Nombre del icono para UI (opcional)',
-    
-    -- Campos de auditoría y control (ESTÁNDAR)
-    activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
-    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
-    created_by INT COMMENT 'Usuario que creó',
-    updated_by INT COMMENT 'Usuario que modificó',
-    deleted_by INT COMMENT 'Usuario que eliminó',
-    
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    
-    INDEX idx_tipo (tipo) COMMENT 'Búsqueda por tipo',
-    INDEX idx_destacada (es_destacada) COMMENT 'Filtrado por actividades destacadas',
-    INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
-    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
-    INDEX idx_nombre (nombre) COMMENT 'Búsqueda por nombre'
-    
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Catálogo maestro de actividades académicas reutilizables entre gestiones. El código se genera en actividades_calendario.';
+-- IMPORTANTE: Orden de creación para resolver dependencias:
+-- 1. gestiones (base, no depende de PARTE 2)
+-- 2. gestiones_planes (depende de gestiones, no de PARTE 2)
+-- 3. actividades (no depende de PARTE 2)
+-- 4. periodos_academicos (depende de gestiones, no de PARTE 2)
+-- 5. actividades_calendario (depende de horarios y aulas de PARTE 2)
+-- 6. asignaciones_docentes (depende de gestiones_planes, cursos y docentes de PARTE 2)
+--
+-- EJECUCIÓN: Este archivo debe ejecutarse DESPUÉS de PARTE 2
+-- porque actividades_calendario y asignaciones_docentes dependen de tablas de PARTE 2
 
 -- ============================================
 -- TABLA: gestiones
@@ -168,6 +129,55 @@ CREATE TABLE gestiones_planes (
     
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Habilitación de planes de estudio por gestión. Define qué planes están autorizados para ofertar en cada año académico. Tabla pequeña: ~3-10 registros por gestión';
+
+-- ============================================
+-- TABLA: actividades
+-- ============================================
+-- Catálogo maestro de actividades académicas reutilizables entre gestiones
+-- Ejemplo: "Inscripción de estudiantes", "Feriado Estado Plurinacional", "Inauguración"
+
+CREATE TABLE actividades (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(200) NOT NULL COMMENT 'Nombre de la actividad',
+    descripcion TEXT COMMENT 'Descripción detallada de la actividad',
+    
+    -- Clasificación (OPCIONAL - puede ser NULL)
+    tipo ENUM(
+        'INSCRIPCION',
+        'PLANIFICACION',
+        'ACADEMICA',
+        'EVALUACION',
+        'ADMINISTRATIVA',
+        'FERIADO',
+        'EVENTO_INSTITUCIONAL',
+        'FERIA',
+        'MODALIDAD_GRADO',
+        'OTRO'
+    ) COMMENT 'Tipo de actividad (opcional, NULL si no aplica clasificación)',
+    es_destacada BOOLEAN DEFAULT FALSE COMMENT 'Si es una actividad importante/destacada en el calendario',
+    icono VARCHAR(50) COMMENT 'Nombre del icono para UI (opcional)',
+    
+    -- Campos de auditoría y control (ESTÁNDAR)
+    activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
+    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
+    created_by INT COMMENT 'Usuario que creó',
+    updated_by INT COMMENT 'Usuario que modificó',
+    deleted_by INT COMMENT 'Usuario que eliminó',
+    
+    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    
+    INDEX idx_tipo (tipo) COMMENT 'Búsqueda por tipo',
+    INDEX idx_destacada (es_destacada) COMMENT 'Filtrado por actividades destacadas',
+    INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
+    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
+    INDEX idx_nombre (nombre) COMMENT 'Búsqueda por nombre'
+    
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+COMMENT='Catálogo maestro de actividades académicas reutilizables entre gestiones. El código se genera en actividades_calendario.';
 
 -- ============================================
 -- TABLA: periodos_academicos
@@ -268,7 +278,7 @@ CREATE TABLE actividades_calendario (
     FOREIGN KEY (aula_id) REFERENCES aulas(id) ON DELETE SET NULL,
     FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCIAS usuarios(id) ON DELETE SET NULL,
+    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     -- Índices para optimización
     INDEX idx_periodo_academico_id (periodo_academico_id) COMMENT 'Búsqueda por periodo académico',
@@ -284,6 +294,57 @@ CREATE TABLE actividades_calendario (
  
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Calendario académico: instancias de actividades con fechas específicas. Usa tabla horarios para clases, eventos y feriados';
+
+-- ============================================
+-- TABLA: asignaciones_docentes
+-- Asignación de docentes a cursos por plan habilitado
+-- ============================================
+-- Vincula QUÉ curso se dicta EN QUÉ plan habilitado CON QUÉ docente.
+-- Preserva historial de asignaciones por gestión para auditoría.
+-- El plan habilitado (gestiones_planes) garantiza coherencia entre curso y plan.
+
+CREATE TABLE asignaciones_docentes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    gestion_plan_id INT NULL COMMENT 'Plan habilitado en la gestión (garantiza que curso pertenece al plan correcto)',
+    curso_id INT NULL COMMENT 'Curso (paralelo + materia) que se dicta',
+    docente_id INT NULL COMMENT 'Docente asignado (NULL = pendiente de asignación)',
+    
+    -- Carga horaria
+    carga_horaria INT NULL COMMENT 'Horas de docencia por semana en este curso (hereda de asignaturas_plan.horas_semanales si NULL)',
+    
+    -- Estado de la asignación
+    vigente BOOLEAN DEFAULT TRUE COMMENT 'Si la asignación está vigente (FALSE = cancelada o rechazada)',
+    motivo TEXT COMMENT 'Motivo de cancelación o rechazo (solo si vigente=FALSE)',
+    fecha_asignacion DATE NULL COMMENT 'Fecha en que se asignó el docente',
+    
+    -- Campos de auditoría y control (ESTÁNDAR)
+    activo BOOLEAN DEFAULT TRUE COMMENT 'Indica si el registro está activo',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación del registro',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de última modificación',
+    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Fecha de eliminación lógica (soft delete)',
+    created_by INT NULL COMMENT 'ID del usuario que creó el registro',
+    updated_by INT NULL COMMENT 'ID del usuario que modificó el registro',
+    deleted_by INT NULL COMMENT 'ID del usuario que eliminó el registro',
+    
+    FOREIGN KEY (gestion_plan_id) REFERENCES gestiones_planes(id) ON DELETE SET NULL,
+    FOREIGN KEY (curso_id) REFERENCES cursos(id) ON DELETE SET NULL,
+    FOREIGN KEY (docente_id) REFERENCES docentes(id) ON DELETE SET NULL,
+    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    
+    INDEX idx_gestion_plan_id (gestion_plan_id) COMMENT 'Búsqueda por plan habilitado',
+    INDEX idx_curso_id (curso_id) COMMENT 'Búsqueda por curso',
+    INDEX idx_docente_id (docente_id) COMMENT 'Búsqueda por docente',
+    INDEX idx_vigente (vigente) COMMENT 'Filtrado por asignaciones vigentes',
+    INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
+    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
+    INDEX idx_gestion_plan_curso (gestion_plan_id, curso_id, deleted_at) COMMENT 'Búsqueda por plan y curso',
+    INDEX idx_gestion_plan_docente (gestion_plan_id, docente_id, vigente, deleted_at) COMMENT 'Carga horaria del docente por gestión',
+    INDEX idx_curso_vigente (curso_id, vigente, deleted_at) COMMENT 'Asignaciones vigentes por curso'
+    
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+COMMENT='Asignación de docentes a cursos por plan habilitado. Vincula curso + plan_habilitado + docente. Preserva historial para auditoría académica. El docente puede ser NULL (pendiente).';
 
 -- ============================================
 -- FASE 3: REHABILITAR FOREIGN KEY CHECKS

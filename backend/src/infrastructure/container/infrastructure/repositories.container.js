@@ -68,7 +68,6 @@ import { PlanSubjectRepository } from '../../repositories/PlanSubjectRepository.
 // ESTRUCTURA ACADÉMICA - PARTE 3 (Calendario)
 // ============================================
 import { ActivityRepository } from '../../repositories/ActivityRepository.js';
-import { ManagementRepository } from '../../repositories/ManagementRepository.js';
 import { ManagementPlanRepository } from '../../repositories/ManagementPlanRepository.js';
 import { AcademicPeriodRepository } from '../../repositories/AcademicPeriodRepository.js';
 import { CalendarActivityRepository } from '../../repositories/CalendarActivityRepository.js';
@@ -152,7 +151,6 @@ export function registerRepositoriesModule(container) {
     // ESTRUCTURA ACADÉMICA - PARTE 3 (Calendario)
     // ============================================
     registerRepository(container, REPOSITORIOS_TOKENS.activityRepository, ActivityRepository);
-    registerRepository(container, REPOSITORIOS_TOKENS.managementRepository, ManagementRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.managementPlanRepository, ManagementPlanRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.academicPeriodRepository, AcademicPeriodRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.calendarActivityRepository, CalendarActivityRepository);

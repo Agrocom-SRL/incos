@@ -64,15 +64,19 @@ export const createCarrerasTableColumns = (navigate) => {
       },
     },
     {
-      title: 'Duración (años)',
-      dataIndex: 'duracionAnios',
+      title: 'Área de Formación',
+      dataIndex: 'areaFormacion',
       ellipsis: true,
-      render: (duracionAnios) => (
+      render: (areaFormacion) => (
         <TableCell>
-          {duracionAnios ? `${duracionAnios} año${duracionAnios !== 1 ? 's' : ''}` : '-'}
+          {areaFormacion || '-'}
         </TableCell>
       ),
-      sorter: (a, b) => (a.duracionAnios || 0) - (b.duracionAnios || 0),
+      sorter: (a, b) => {
+        const areaA = a.areaFormacion || '';
+        const areaB = b.areaFormacion || '';
+        return areaA.localeCompare(areaB);
+      },
     },
     {
       title: 'Título Otorgado',
@@ -88,17 +92,6 @@ export const createCarrerasTableColumns = (navigate) => {
         const tituloB = b.tituloOtorgado || '';
         return tituloA.localeCompare(tituloB);
       },
-    },
-    {
-      title: 'Carga Horaria Total',
-      dataIndex: 'cargaHorariaTotal',
-      ellipsis: true,
-      render: (cargaHorariaTotal) => (
-        <TableCell>
-          {cargaHorariaTotal ? `${cargaHorariaTotal} horas` : '-'}
-        </TableCell>
-      ),
-      sorter: (a, b) => (a.cargaHorariaTotal || 0) - (b.cargaHorariaTotal || 0),
     },
     {
       title: 'Acciones',
