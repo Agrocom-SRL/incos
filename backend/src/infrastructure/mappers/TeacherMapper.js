@@ -59,9 +59,6 @@ export class TeacherMapper {
       retirementDate: model.fechaRetiro,
       contractType: model.tipoContrato,
       laborState: model.estadoLaboral,
-      weeklyHours: model.cargaHorariaSemanal,
-      bank: model.banco,
-      accountNumber: model.numeroCuenta,
       observations: model.observaciones,
     };
 
@@ -110,9 +107,6 @@ export class TeacherMapper {
       fechaRetiro: data.retirementDate || null,
       tipoContrato: data.contractType || 'CONTRATO',
       estadoLaboral: data.laborState || 'ACTIVO',
-      cargaHorariaSemanal: data.weeklyHours !== undefined ? data.weeklyHours : 0,
-      banco: data.bank || null,
-      numeroCuenta: data.accountNumber || null,
       observaciones: data.observations || null,
     };
   }
@@ -157,9 +151,6 @@ export class TeacherMapper {
     if (data.retirementDate !== undefined) { updateData.fechaRetiro = data.retirementDate || null; }
     if (data.contractType !== undefined) { updateData.tipoContrato = data.contractType; }
     if (data.laborState !== undefined) { updateData.estadoLaboral = data.laborState; }
-    if (data.weeklyHours !== undefined) { updateData.cargaHorariaSemanal = data.weeklyHours; }
-    if (data.bank !== undefined) { updateData.banco = data.bank || null; }
-    if (data.accountNumber !== undefined) { updateData.numeroCuenta = data.accountNumber || null; }
     if (data.observations !== undefined) { updateData.observaciones = data.observations || null; }
 
     // Campos base (active/activo)

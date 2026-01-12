@@ -33,13 +33,13 @@ export class TeacherAssignmentMapper {
 
     // Campos específicos de TeacherAssignment (campos del dominio)
     const specificFields = {
+      managementPlanId: model.gestionPlanId,
       courseId: model.cursoId,
-      managementId: model.gestionId,
       teacherId: model.docenteId,
-      weeklyHours: model.cargaHorariaSemanal,
-      state: model.estado,
-      cancellationReason: model.motivoCancelacion,
-      observations: model.observaciones,
+      hours: model.cargaHoraria,
+      active: model.vigente,
+      reason: model.motivo,
+      assignmentDate: model.fechaAsignacion,
     };
 
     // Combina campos base (id, active, timestamps, audit) con campos específicos
@@ -61,13 +61,13 @@ export class TeacherAssignmentMapper {
     // NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
     // BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
     return {
+      gestionPlanId: data.managementPlanId || null,
       cursoId: data.courseId || null,
-      gestionId: data.managementId || null,
       docenteId: data.teacherId || null,
-      cargaHorariaSemanal: data.weeklyHours !== undefined ? data.weeklyHours : 0,
-      estado: data.state || 'PROPUESTA',
-      motivoCancelacion: data.cancellationReason || null,
-      observaciones: data.observations || null,
+      cargaHoraria: data.hours || null,
+      vigente: data.active !== undefined ? data.active : true,
+      motivo: data.reason || null,
+      fechaAsignacion: data.assignmentDate || null,
     };
   }
 
@@ -85,26 +85,26 @@ export class TeacherAssignmentMapper {
     const updateData = {};
 
     // Campos específicos de TeacherAssignment
+    if (data.managementPlanId !== undefined) {
+      updateData.gestionPlanId = data.managementPlanId || null;
+    }
     if (data.courseId !== undefined) {
       updateData.cursoId = data.courseId || null;
-    }
-    if (data.managementId !== undefined) {
-      updateData.gestionId = data.managementId || null;
     }
     if (data.teacherId !== undefined) {
       updateData.docenteId = data.teacherId || null;
     }
-    if (data.weeklyHours !== undefined) {
-      updateData.cargaHorariaSemanal = data.weeklyHours;
+    if (data.hours !== undefined) {
+      updateData.cargaHoraria = data.hours || null;
     }
-    if (data.state !== undefined) {
-      updateData.estado = data.state;
+    if (data.active !== undefined) {
+      updateData.vigente = data.active;
     }
-    if (data.cancellationReason !== undefined) {
-      updateData.motivoCancelacion = data.cancellationReason || null;
+    if (data.reason !== undefined) {
+      updateData.motivo = data.reason || null;
     }
-    if (data.observations !== undefined) {
-      updateData.observaciones = data.observations || null;
+    if (data.assignmentDate !== undefined) {
+      updateData.fechaAsignacion = data.assignmentDate || null;
     }
 
     // Campos base (active/activo)

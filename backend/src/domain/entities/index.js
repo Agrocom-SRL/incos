@@ -59,11 +59,14 @@ export { CalendarActivity } from './CalendarActivity.js';
 // ============================================
 // ESTRUCTURA ACADÉMICA - PARTE 2
 // ============================================
-export { Course } from './Course.js';
 export { Teacher } from './Teacher.js';
+export { Parallel } from './Parallel.js';
+export { Classroom } from './Classroom.js';
+export { Schedule } from './Schedule.js';
+export { Course } from './Course.js';
+export { CourseSchedule } from './CourseSchedule.js';
+export { ManagementPlan } from './ManagementPlan.js';
 export { TeacherAssignment } from './TeacherAssignment.js';
-export { Shift } from './Shift.js';
-export { CourseShift } from './CourseShift.js';
 
 // ============================================
 // ESTUDIANTES

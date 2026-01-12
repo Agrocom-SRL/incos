@@ -7,44 +7,36 @@ export const Curso = sequelize.define(
   'Curso',
   {
     ...baseModelFields,
-    materiaId: {
-      type: DataTypes.INTEGER,
-      field: 'materia_id',
-      allowNull: true,
-      comment: 'Materia del curso',
-    },
-    nombre: {
+    codigo: {
       type: DataTypes.STRING(50),
       allowNull: false,
-      comment: 'Nombre del paralelo/grupo (ej: Grupo A, Sección 1)',
+      comment: 'Código identificador del curso (ej: SIS-1A-NOCHE-PRG102)',
     },
-    codigo: {
-      type: DataTypes.STRING(20),
+    paraleloId: {
+      type: DataTypes.INTEGER,
+      field: 'paralelo_id',
       allowNull: true,
-      comment: 'Código identificador del curso',
+      comment: 'Paralelo al que pertenece este curso',
+    },
+    asignaturaPlanId: {
+      type: DataTypes.INTEGER,
+      field: 'asignatura_plan_id',
+      allowNull: true,
+      comment: 'Asignatura del plan (incluye: materia + periodo + plan + horas_semanales)',
     },
     cupoMaximo: {
       type: DataTypes.INTEGER,
       field: 'cupo_maximo',
-      allowNull: false,
+      allowNull: true,
       defaultValue: 35,
-      comment: 'Máximo de estudiantes permitidos',
+      comment: 'Cupo máximo de estudiantes para este curso',
     },
     cupoMinimo: {
       type: DataTypes.INTEGER,
       field: 'cupo_minimo',
       allowNull: true,
       defaultValue: 10,
-      comment: 'Mínimo de estudiantes para abrir el curso',
-    },
-    estado: {
-      type: DataTypes.ENUM(...ESTADOS_CURSOS_VALUES),
-      defaultValue: ESTADOS_CURSOS.PROPUESTO,
-      comment: 'Estado del curso',
-    },
-    descripcion: {
-      type: DataTypes.TEXT,
-      allowNull: true,
+      comment: 'Cupo mínimo requerido para abrir el curso',
     },
   },
   {

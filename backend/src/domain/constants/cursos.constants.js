@@ -45,3 +45,79 @@ export const DIAS_SEMANA = {
  */
 export const DIAS_SEMANA_VALUES = Object.values(DIAS_SEMANA);
 
+// ============================================
+// TURNOS
+// ============================================
+
+/**
+ * Turnos horarios
+ */
+export const TURNOS = {
+  MAÑANA: 'MAÑANA',
+  TARDE: 'TARDE',
+  NOCHE: 'NOCHE',
+};
+
+/**
+ * Array de turnos válidos (útil para validators)
+ */
+export const TURNOS_VALUES = Object.values(TURNOS);
+
+// ============================================
+// CATEGORÍAS DE AULAS
+// ============================================
+
+/**
+ * Categorías de aulas/espacios físicos
+ */
+export const CATEGORIAS_AULA = {
+  LABORATORIO: 'LABORATORIO',
+  AULA: 'AULA',
+  TALLER: 'TALLER',
+  AUDITORIO: 'AUDITORIO',
+};
+
+/**
+ * Array de categorías de aulas válidas (útil para validators)
+ */
+export const CATEGORIAS_AULA_VALUES = Object.values(CATEGORIAS_AULA);
+
+// ============================================
+// TIPOS DE HORARIOS
+// ============================================
+
+/**
+ * Tipos de horarios/bloques horarios
+ */
+export const TIPOS_HORARIO = {
+  CLASES: 'CLASES',
+  EVENTOS: 'EVENTOS',
+  FERIADOS: 'FERIADOS',
+  CAPACITACION: 'CAPACITACION',
+};
+
+/**
+ * Array de tipos de horarios válidos (útil para validators)
+ */
+export const TIPOS_HORARIO_VALUES = Object.values(TIPOS_HORARIO);
+
+// ============================================
+// ESTADOS DE GESTIÓN PLAN
+// ============================================
+
+/**
+ * Estados de habilitación de planes de estudio por gestión
+ */
+export const ESTADOS_GESTION_PLAN = {
+  PROPUESTO: 'PROPUESTO',
+  APROBADO: 'APROBADO',
+  VIGENTE: 'VIGENTE',
+  CERRADO: 'CERRADO',
+  CANCELADO: 'CANCELADO',
+};
+
+/**
+ * Array de estados de gestión plan válidos (útil para validators)
+ */
+export const ESTADOS_GESTION_PLAN_VALUES = Object.values(ESTADOS_GESTION_PLAN);
+

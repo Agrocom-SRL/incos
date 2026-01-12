@@ -54,8 +54,13 @@ export { ScholarshipMapper } from './ScholarshipMapper.js';
 export { StudyPlanMapper } from './StudyPlanMapper.js';
 export { PlanSubjectMapper } from './PlanSubjectMapper.js';
 export { PrerequisiteMapper } from './PrerequisiteMapper.js';
+export { TeacherMapper } from './TeacherMapper.js';
+export { ParallelMapper } from './ParallelMapper.js';
+export { ClassroomMapper } from './ClassroomMapper.js';
+export { ScheduleMapper } from './ScheduleMapper.js';
 export { CourseMapper } from './CourseMapper.js';
-export { CourseShiftMapper } from './CourseShiftMapper.js';
+export { CourseScheduleMapper } from './CourseScheduleMapper.js';
+export { ManagementPlanMapper } from './ManagementPlanMapper.js';
 export { TeacherAssignmentMapper } from './TeacherAssignmentMapper.js';
 // TODO: Agregar otros mappers académicos cuando se refactorizen sus repositorios
 

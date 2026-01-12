@@ -1,45 +1,28 @@
 import { BaseEntity } from './BaseEntity.js';
-import { ESTADOS_ASIGNACION_DOCENTE_VALUES, ESTADOS_ASIGNACION_DOCENTE } from '../constants/index.js';
 
 /**
  * Entidad de Dominio: TeacherAssignment
- * Representa la asignación de un docente a un curso en una gestión
+ * Representa la asignación de un docente a un curso por plan habilitado
+ * Vincula curso + plan_habilitado + docente
  */
 export class TeacherAssignment extends BaseEntity {
   constructor(data = {}) {
     super(data);
+    this.managementPlanId = data.managementPlanId || null;
     this.courseId = data.courseId || null;
-    this.managementId = data.managementId || null;
     this.teacherId = data.teacherId || null;
-    this.weeklyHours = data.weeklyHours !== undefined ? data.weeklyHours : 0;
-    this.state = data.state || ESTADOS_ASIGNACION_DOCENTE.PROPUESTA;
-    this.cancellationReason = data.cancellationReason || null;
-    this.observations = data.observations || null;
+    this.hours = data.hours || null;
+    this.active = data.active !== undefined ? data.active : true;
+    this.reason = data.reason || null;
+    this.assignmentDate = data.assignmentDate || null;
   }
 
   /**
-   * Valida el estado de la asignación
+   * Verifica si la asignación está vigente
    * @returns {boolean}
    */
-  isValidState() {
-    if (!this.state) return false;
-    return ESTADOS_ASIGNACION_DOCENTE_VALUES.includes(this.state);
-  }
-
-  /**
-   * Verifica si la asignación está abierta
-   * @returns {boolean}
-   */
-  isOpen() {
-    return this.state === ESTADOS_ASIGNACION_DOCENTE.ABIERTA;
-  }
-
-  /**
-   * Verifica si la asignación está aprobada
-   * @returns {boolean}
-   */
-  isApproved() {
-    return this.state === ESTADOS_ASIGNACION_DOCENTE.APROBADA;
+  isActive() {
+    return this.active === true;
   }
 
   /**
@@ -49,13 +32,13 @@ export class TeacherAssignment extends BaseEntity {
   toPlainObject() {
     return {
       ...super.toPlainObject(),
+      managementPlanId: this.managementPlanId,
       courseId: this.courseId,
-      managementId: this.managementId,
       teacherId: this.teacherId,
-      weeklyHours: this.weeklyHours,
-      state: this.state,
-      cancellationReason: this.cancellationReason,
-      observations: this.observations,
+      hours: this.hours,
+      active: this.active,
+      reason: this.reason,
+      assignmentDate: this.assignmentDate,
     };
   }
 }

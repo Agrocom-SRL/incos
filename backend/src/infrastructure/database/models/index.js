@@ -54,11 +54,14 @@ export { ActividadCalendario } from './actividad_calendario.js';
 // ============================================
 // ESTRUCTURA ACADÉMICA - PARTE 2
 // ============================================
-export { Curso } from './curso.js';
 export { Docente } from './docente.js';
+export { Paralelo } from './paralelo.js';
+export { Aula } from './aula.js';
+export { Horario } from './horario.js';
+export { Curso } from './curso.js';
+export { CursoHorario } from './curso_horario.js';
+export { GestionPlan } from './gestion_plan.js';
 export { AsignacionDocente } from './asignacion_docente.js';
-export { Turno } from './turno.js';
-export { TurnoCurso } from './turno_curso.js';
 
 // ============================================
 // ESTUDIANTES - PARTE 1

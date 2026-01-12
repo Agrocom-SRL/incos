@@ -35,9 +35,6 @@ export class Teacher extends BaseEntity {
     this.retirementDate = data.retirementDate || null;
     this.contractType = data.contractType || TIPOS_CONTRATO_DOCENTE.CONTRATO;
     this.laborState = data.laborState || ESTADOS_LABORALES.ACTIVO;
-    this.weeklyHours = data.weeklyHours !== undefined ? data.weeklyHours : 0;
-    this.bank = data.bank || null;
-    this.accountNumber = data.accountNumber || null;
     this.observations = data.observations || null;
   }
 
@@ -140,9 +137,6 @@ export class Teacher extends BaseEntity {
       retirementDate: this.retirementDate,
       contractType: this.contractType,
       laborState: this.laborState,
-      weeklyHours: this.weeklyHours,
-      bank: this.bank,
-      accountNumber: this.accountNumber,
       observations: this.observations,
     };
   }

@@ -1,6 +1,5 @@
 import { Course } from '../../domain/entities/Course.js';
 import { BaseMapper } from './BaseMapper.js';
-import { ESTADOS_CURSOS } from '../../domain/constants/cursos.constants.js';
 
 /**
  * Mapper: CourseMapper
@@ -34,13 +33,11 @@ export class CourseMapper {
 
     // Campos específicos de Course (campos del dominio)
     const specificFields = {
-      subjectId: model.materiaId,
-      name: model.nombre,
       code: model.codigo,
+      parallelId: model.paraleloId,
+      planSubjectId: model.asignaturaPlanId,
       maxCapacity: model.cupoMaximo,
       minCapacity: model.cupoMinimo,
-      state: model.estado,
-      description: model.descripcion,
     };
 
     // Combina campos base (id, active, timestamps, audit) con campos específicos
@@ -62,13 +59,11 @@ export class CourseMapper {
     // NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
     // BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
     return {
-      materiaId: data.subjectId || null,
-      nombre: data.name,
-      codigo: data.code || null,
+      codigo: data.code,
+      paraleloId: data.parallelId || null,
+      asignaturaPlanId: data.planSubjectId || null,
       cupoMaximo: data.maxCapacity !== undefined ? data.maxCapacity : 35,
       cupoMinimo: data.minCapacity !== undefined ? data.minCapacity : 10,
-      estado: data.state || ESTADOS_CURSOS.PROPUESTO,
-      descripcion: data.description || null,
     };
   }
 
@@ -86,26 +81,20 @@ export class CourseMapper {
     const updateData = {};
 
     // Campos específicos de Course
-    if (data.subjectId !== undefined) {
-      updateData.materiaId = data.subjectId || null;
-    }
-    if (data.name !== undefined) {
-      updateData.nombre = data.name;
-    }
     if (data.code !== undefined) {
-      updateData.codigo = data.code || null;
+      updateData.codigo = data.code;
+    }
+    if (data.parallelId !== undefined) {
+      updateData.paraleloId = data.parallelId || null;
+    }
+    if (data.planSubjectId !== undefined) {
+      updateData.asignaturaPlanId = data.planSubjectId || null;
     }
     if (data.maxCapacity !== undefined) {
       updateData.cupoMaximo = data.maxCapacity;
     }
     if (data.minCapacity !== undefined) {
       updateData.cupoMinimo = data.minCapacity;
-    }
-    if (data.state !== undefined) {
-      updateData.estado = data.state;
-    }
-    if (data.description !== undefined) {
-      updateData.descripcion = data.description || null;
     }
 
     // Campos base (active/activo)

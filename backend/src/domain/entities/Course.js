@@ -1,29 +1,18 @@
 import { BaseEntity } from './BaseEntity.js';
-import { ESTADOS_CURSOS_VALUES, ESTADOS_CURSOS } from '../constants/index.js';
 
 /**
  * Entidad de Dominio: Course
- * Representa un curso/paralelo/grupo de una materia
+ * Representa un curso (materia) de cada paralelo
+ * Es la intersección entre un paralelo y las asignaturas del plan de estudios
  */
 export class Course extends BaseEntity {
   constructor(data = {}) {
     super(data);
-    this.subjectId = data.subjectId || null;
-    this.name = data.name || null;
     this.code = data.code || null;
+    this.parallelId = data.parallelId || null;
+    this.planSubjectId = data.planSubjectId || null;
     this.maxCapacity = data.maxCapacity !== undefined ? data.maxCapacity : 35;
     this.minCapacity = data.minCapacity !== undefined ? data.minCapacity : 10;
-    this.state = data.state || ESTADOS_CURSOS.PROPUESTO;
-    this.description = data.description || null;
-  }
-
-  /**
-   * Valida el estado del curso
-   * @returns {boolean}
-   */
-  isValidState() {
-    if (!this.state) return false;
-    return ESTADOS_CURSOS_VALUES.includes(this.state);
   }
 
   /**
@@ -31,15 +20,7 @@ export class Course extends BaseEntity {
    * @returns {boolean}
    */
   isValidCapacity() {
-    return this.maxCapacity > 0 && this.minCapacity > 0 && this.maxCapacity >= this.minCapacity;
-  }
-
-  /**
-   * Verifica si el curso está aprobado
-   * @returns {boolean}
-   */
-  isApproved() {
-    return this.state === ESTADOS_CURSOS.APROBADO;
+    return this.maxCapacity > 0 && this.minCapacity >= 0 && this.maxCapacity >= this.minCapacity;
   }
 
   /**
@@ -49,13 +30,11 @@ export class Course extends BaseEntity {
   toPlainObject() {
     return {
       ...super.toPlainObject(),
-      subjectId: this.subjectId,
-      name: this.name,
       code: this.code,
+      parallelId: this.parallelId,
+      planSubjectId: this.planSubjectId,
       maxCapacity: this.maxCapacity,
       minCapacity: this.minCapacity,
-      state: this.state,
-      description: this.description,
     };
   }
 }
