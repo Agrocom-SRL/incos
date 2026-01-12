@@ -8,13 +8,19 @@
  * - Presentation Layer: Define rutas y metadata de UI (labels del menú, orden)
  */
 
+import { lazy } from 'react';
+import { Navigate } from 'react-router-dom';
 import { UnderConstruction } from '@components/pages';
 
+// Lazy loading de connectors
+// El Suspense ya está manejado globalmente por MainLayout con LoadingFallback
+const InscripcionesNuevaConnector = lazy(() => import('./connectors/InscripcionesNuevaConnector'));
+
 export const inscripcionesRoutes = [
-    // Módulo raíz: Inscripciones
+    // Módulo raíz: Inscripciones (redirige a la primera opción disponible)
     {
         path: '/inscripciones',
-        element: null, // No tiene página propia, es solo un grupo
+        element: <UnderConstruction />,
         key: 'INS',
         menu: {
             label: 'Inscripciones',
@@ -24,7 +30,7 @@ export const inscripcionesRoutes = [
     },
     {
         path: '/inscripciones/nueva',
-        element: <UnderConstruction />,
+        element: <InscripcionesNuevaConnector />,
         key: 'INS-CREATE',
         menu: {
             label: 'Estudiante Nuevo',

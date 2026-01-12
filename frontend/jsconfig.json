@@ -68,6 +68,12 @@
             "@application-configuracion/*": [
                 "./src/application/modules/configuracion/*"
             ],
+            "@application-inscripciones": [
+                "./src/application/modules/inscripciones"
+            ],
+            "@application-inscripciones/*": [
+                "./src/application/modules/inscripciones/*"
+            ],
             "@container": [
                 "./src/application/container/index.js"
             ],
@@ -93,6 +99,12 @@
             // Presentation Layer
             "@presentation/*": [
                 "./src/presentation/*"
+            ],
+            "@presentation-utils": [
+                "./src/presentation/utils"
+            ],
+            "@presentation-utils/*": [
+                "./src/presentation/utils/*"
             ],
             "@atoms": [
                 "./src/presentation/components/atoms"

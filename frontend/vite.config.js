@@ -31,6 +31,7 @@ export default defineConfig({
             '@application-estudiantes-old': path.resolve(__dirname, './src/application/modules/estudiantes-old'),
             '@application-dashboard': path.resolve(__dirname, './src/application/modules/dashboard'),
             '@application-configuracion': path.resolve(__dirname, './src/application/modules/configuracion'),
+            '@application-inscripciones': path.resolve(__dirname, './src/application/modules/inscripciones'),
 
             // Infrastructure Layer
             '@infrastructure': path.resolve(__dirname, './src/infrastructure'),
@@ -41,6 +42,7 @@ export default defineConfig({
 
             // Presentation Layer
             '@presentation': path.resolve(__dirname, './src/presentation'),
+            '@presentation-utils': path.resolve(__dirname, './src/presentation/utils'),
             '@components': path.resolve(__dirname, './src/presentation/components'),
             '@atoms': path.resolve(__dirname, './src/presentation/components/atoms'),
             '@molecules': path.resolve(__dirname, './src/presentation/components/molecules'),
