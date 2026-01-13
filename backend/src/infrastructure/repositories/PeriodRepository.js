@@ -57,6 +57,10 @@ export class PeriodRepository extends BaseRepository {
       where.carreraId = filters.careerId;
     }
 
+    if (filters.numero) {
+      where.numero = filters.numero;
+    }
+
     return where;
   }
 

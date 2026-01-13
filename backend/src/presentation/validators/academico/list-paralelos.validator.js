@@ -18,6 +18,12 @@ export const listParalelosValidator = [
   ...listValidator,
 
   // 2. Validaciones específicas de paralelos
+  query('periodo')
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage('periodo debe ser un número entero mayor a 0')
+    .toInt(),
+
   query('periodo_id')
     .optional()
     .isInt({ min: 1 })

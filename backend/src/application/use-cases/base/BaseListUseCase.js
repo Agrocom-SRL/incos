@@ -113,6 +113,38 @@ export class BaseListUseCase {
   }
 
   /**
+   * Prepara y modifica filtros antes de ejecutar la consulta al repositorio
+   * 
+   * Hook method: Opcional, puede ser sobrescrito por subclases para:
+   * - Hacer consultas adicionales a otros repositorios
+   * - Transformar filtros basados en resultados de consultas
+   * - Modificar filtros antes de pasarlos al repositorio
+   * 
+   * Similar a enrichData pero para filtros. Se ejecuta después de buildSpecificFilters
+   * pero antes de llamar al repositorio.
+   * 
+   * @param {Object} filters - Filtros ya construidos por buildSpecificFilters
+   * @param {Object} queryParams - Query parameters originales (para consultas adicionales)
+   * @returns {Promise<Object>|Object} Filtros modificados o los mismos si no hay cambios
+   * 
+   * @example
+   * // ListParalelosUseCase: Si viene periodo (número), buscar IDs de periodos
+   * async prepareFilters(filters, queryParams) {
+   *   if (queryParams.periodo) {
+   *     const periodos = await this.periodRepository.findAll({ numero: queryParams.periodo });
+   *     const periodoIds = periodos.map(p => p.id);
+   *     return { ...filters, periodId: periodoIds };
+   *   }
+   *   return filters;
+   * }
+   */
+  async prepareFilters(filters = {}, queryParams = {}) {
+    // Implementación por defecto: retorna los filtros sin modificar
+    // Las subclases pueden sobrescribir para hacer consultas y modificar filtros
+    return filters;
+  }
+
+  /**
    * Enriquece los datos después de la conversión a presentación
    * 
    * Hook method: Opcional, puede ser sobrescrito por subclases para agregar
@@ -132,13 +164,14 @@ export class BaseListUseCase {
    * 
    * Template Method: Define el algoritmo común de:
    * 1. Construir filtros específicos (si buildSpecificFilters fue sobrescrito)
-   * 2. Parsear y validar parámetros
-   * 3. Logging inicial
-   * 4. Ejecutar consulta al repositorio
-   * 5. Convertir entidades a presentación (delegado a getMapper)
-   * 6. Enriquecer datos (opcional, hook method)
-   * 7. Calcular total de páginas
-   * 8. Retornar respuesta estandarizada
+   * 2. Preparar filtros (si prepareFilters fue sobrescrito - permite consultas adicionales)
+   * 3. Parsear y validar parámetros
+   * 4. Logging inicial
+   * 5. Ejecutar consulta al repositorio
+   * 6. Convertir entidades a presentación (delegado a getMapper)
+   * 7. Enriquecer datos (opcional, hook method)
+   * 8. Calcular total de páginas
+   * 9. Retornar respuesta estandarizada
    * 
    * NOTA: baseFilters, page y limit ya están validados por el validator en las rutas
    * 
@@ -149,10 +182,13 @@ export class BaseListUseCase {
    * @returns {Promise<{dataFieldName: Array, total: number, page: number, limit: number, totalPages: number}>}
    */
   async execute(baseFilters = {}, page = 1, limit = 50, queryParams = {}) {
-    // Construir filtros específicos si se proporcionan queryParams
-    const filters = Object.keys(queryParams).length > 0
+    // 1. Construir filtros específicos si se proporcionan queryParams
+    const initialFilters = Object.keys(queryParams).length > 0
       ? this.buildSpecificFilters(queryParams, baseFilters)
       : baseFilters;
+
+    // 2. Preparar filtros (hook method - permite hacer consultas y modificar filtros)
+    const filters = await this.prepareFilters(initialFilters, queryParams);
 
     // Parsear y validar parámetros
     const pageNum = parseInt(page) || 1;

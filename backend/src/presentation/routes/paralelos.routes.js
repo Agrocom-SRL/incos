@@ -34,7 +34,8 @@ export function buildParalelosRouter({ controllers, middlewares }) {
      * - page: número de página (paginación)
      * - limit: cantidad por página (paginación)
      * - search: término de búsqueda general (nombre, descripción)
-     * - periodo_id: filtro por ID de periodo (opcional, debe ser entero > 0)
+     * - periodo: filtro por número de periodo (1, 2, 3...) - devuelve paralelos de todas las carreras (opcional, debe ser entero > 0)
+     * - periodo_id: filtro por ID único del periodo (opcional, debe ser entero > 0)
      * - carrera_id: filtro por ID de carrera (opcional, debe ser entero > 0)
      */
     router.get(
