@@ -45,5 +45,5 @@ export const componentConfig = {
   Avatar: content.Avatar,
   Alert: content.Alert,
   Table: content.Table,
-  List: content.List,
+  // List removido: componente deprecado en Ant Design, usamos implementación propia con Flex
 };

@@ -69,11 +69,11 @@ export const enrichStudentListField = (field, context = {}) => {
     if (field.name === 'resultadosEstudiantes' && field.type === 'list' && studentSearch) {
         return {
             ...field,
-            // Datos agregados por el enricher (consumidos por renderList)
-            data: studentSearch.students || [], // Array de estudiantes encontrados
+            // Datos agregados por el enricher (consumidos por ListField)
+            items: studentSearch.students || [], // Array de estudiantes encontrados
             loading: studentSearch.loading || false, // Estado de carga de la búsqueda
             emptyMessage: field.emptyMessage || 'No se encontraron estudiantes. Realice una búsqueda para ver resultados.',
-            // El renderItem se determina automáticamente por listType='student' en renderList
+            // renderItem ya está definido en step1BuscarEstudiante.jsx
         };
     }
     

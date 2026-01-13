@@ -7,16 +7,42 @@
    ============================================================================ */
 
 .list-item {
-  /* Padding del item - usando variable del tema */
-  padding: var(--spacing-base);
+  /* Padding del item - usando paddingLG del tema para más espacio */
+  padding: var(--spacing-md) var(--spacing-lg);
+  background-color: var(--color-bg-layout);
   
   /* Border - usando variable del tema */
-  border: 1px solid var(--color-border-secondary);
+  border: 1px solid var(--color-border);
   border-radius: var(--border-radius-sm);
-  margin-bottom: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
   
   /* Transición suave para hover */
   transition: all var(--transition-base);
+}
+
+/* Avatar más grande - aumentar tamaño del icono */
+.list-item .list-item-avatar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.list-item .list-item-avatar .anticon {
+  font-size: 32px; /* Aumentar de tamaño por defecto (24px) a 32px */
+  color: var(--color-primary);
+}
+
+/* Título con color primario - ya se aplica en el componente pero asegurar en CSS */
+.list-item .ant-typography {
+  color: var(--color-primary);
+  font-size: var(--font-size-base);
+  margin-bottom: var(--spacing-xs);
+}
+
+/* Caption con mejor espaciado */
+.list-item .list-item-caption {
+  margin-top: var(--spacing-xs);
 }
 
 /* Hover state - usando variable genérica de hover de items */

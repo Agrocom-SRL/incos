@@ -31,6 +31,7 @@ export function injectCSSVariables() {
   
   // Color verde institucional (usado en reset.css para focus y Tags)
   root.style.setProperty('--color-verde-main', allThemeTokens.colorPrimary);
+  root.style.setProperty('--color-primary', allThemeTokens.colorPrimary); // Para uso en list-item.css y otros componentes
   root.style.setProperty('--color-primary-hover', allThemeTokens.colorPrimaryHover);
   root.style.setProperty('--color-primary-bg', allThemeTokens.colorPrimaryBg);
   root.style.setProperty('--color-primary-text', allThemeTokens.colorPrimaryText);

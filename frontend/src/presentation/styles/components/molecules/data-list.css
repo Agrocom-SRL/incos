@@ -9,7 +9,11 @@
 .data-list {
   /* Contenedor principal de la lista */
   width: 100%;
+  /* Asegurar que tenga espacio para renderizar todos los items */
+  min-height: 0;
 }
+
+/* No hay estilos de Ant Design List que resetear - usamos implementación propia */
 
 /* Contenedor de loading - usando Flex de Ant Design */
 .data-list-loading {

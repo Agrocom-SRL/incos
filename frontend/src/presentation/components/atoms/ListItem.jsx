@@ -5,7 +5,7 @@
  * 
  * Atomic Design: Atom
  * - Componente básico reutilizable
- * - Wrapper de List.Item de Ant Design con estructura estándar usando List.Item.Meta
+ * - Implementación propia usando Flex y Space de Ant Design (no usa List.Item deprecado)
  * 
  * SOLID Principles:
  * - Single Responsibility: Solo renderiza UI de un item de lista con estructura estándar
@@ -15,11 +15,10 @@
  * - avatar: Icono o imagen (opcional)
  * - title: Título principal del item (string o ReactNode, requerido si no hay children)
  * - caption: Descripción o información adicional (ReactNode, opcional)
- * - children: Contenido personalizado (opcional, si se proporciona, se renderiza dentro del List.Item)
+ * - children: Contenido personalizado (opcional, si se proporciona, se renderiza dentro del item)
  * 
- * El componente siempre renderiza List.Item, y dentro:
- * - Si hay avatar, title o caption, renderiza List.Item.Meta
- * - Si hay children, los renderiza (puede ir junto a List.Item.Meta o solo)
+ * NOTA: No usa List.Item de Ant Design porque List está deprecado.
+ * Implementación propia usando Flex y Space de Ant Design.
  * 
  * Props:
  * - avatar: Icono, imagen o componente para el avatar (ReactNode, opcional)
@@ -28,11 +27,10 @@
  * - onClick: Callback cuando se hace click (opcional)
  * - style: Estilos personalizados (opcional)
  * - className: Clase CSS adicional (opcional)
- * - children: Contenido personalizado (opcional, si se proporciona, se renderiza dentro del List.Item)
- * - ...props: Props adicionales para List.Item de Ant Design
+ * - children: Contenido personalizado (opcional, si se proporciona, se renderiza dentro del item)
  */
 
-import { List, Typography } from 'antd';
+import { Flex, Typography } from 'antd';
 
 const { Text } = Typography;
 
@@ -51,31 +49,48 @@ const ListItem = ({
 
     const itemClassName = className ? `list-item ${className}`.trim() : 'list-item';
 
-    // Convertir title a ReactNode si es string
-    const titleContent = typeof title === 'string' ? <Text strong>{title}</Text> : title;
+    // Convertir title a ReactNode si es string y aplicar color primario
+    const titleContent = typeof title === 'string' ? (
+        <Text strong style={{ color: 'var(--color-primary)' }}>{title}</Text>
+    ) : title;
 
-    // Determinar si hay contenido para List.Item.Meta
+    // Determinar si hay contenido para mostrar
     const hasMeta = avatar || title || caption;
 
     return (
-        <List.Item
+        <Flex
+            vertical={!hasMeta && !!children}
+            align={hasMeta ? "flex-start" : undefined}
+            gap={hasMeta ? "middle" : undefined}
             style={itemStyle}
             onClick={onClick}
             className={itemClassName}
             {...props}
         >
-            {/* Renderizar List.Item.Meta si hay avatar, title o caption */}
             {hasMeta && (
-                <List.Item.Meta
-                    avatar={avatar}
-                    title={titleContent || <Text type="secondary">Sin título</Text>}
-                    description={caption}
-                />
+                <Flex align="flex-start" gap="middle" style={{ width: '100%' }}>
+                    {/* Avatar */}
+                    {avatar && (
+                        <Flex className="list-item-avatar" align="center" justify="center">
+                            {avatar}
+                        </Flex>
+                    )}
+                    
+                    {/* Contenido: title y caption */}
+                    <Flex vertical style={{ flex: 1 }}>
+                        {titleContent || <Text type="secondary">Sin título</Text>}
+                        {caption && (
+                            <Flex className="list-item-caption" vertical>
+                                {caption}
+                            </Flex>
+                        )}
+                    </Flex>
+                </Flex>
             )}
             
-            {/* Renderizar children si se proporciona (puede ir junto a List.Item.Meta o solo) */}
+            {/* Renderizar children si se proporciona */}
             {children}
-        </List.Item>
+        </Flex>
     );
 };
 

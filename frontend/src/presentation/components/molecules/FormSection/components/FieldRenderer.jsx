@@ -16,7 +16,7 @@
  */
 
 import { Col } from 'antd';
-import { FormField, FormSubsection, DocumentoItem, ListField } from '@molecules';
+import { FormField, FormSubsection, DocumentoItem, DataList } from '@molecules';
 import { isSubsection, isList, isDocumento } from '../utils/fieldTypes';
 
 /**
@@ -84,11 +84,20 @@ const FieldRenderer = ({
     );
   }
 
-  // Si es un campo de tipo lista, renderizar ListField
+  // Si es un campo de tipo lista, renderizar DataList directamente
+  // El enricher ya agregó items, loading, emptyMessage, renderItem al campo con sus valores por defecto
+  // Solo extraer los datos del field y pasarlos como props individuales a DataList
   if (isList(field)) {
     return (
       <Col key={field.name} {...columns}>
-        <ListField field={field} />
+        <DataList
+          data={field.items}
+          loading={field.loading}
+          emptyMessage={field.emptyMessage}
+          renderItem={field.renderItem}
+          onSelect={field.onSelect}
+          loadingText={field.loadingText}
+        />
       </Col>
     );
   }

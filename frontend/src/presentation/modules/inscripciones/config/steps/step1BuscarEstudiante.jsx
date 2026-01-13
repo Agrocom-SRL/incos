@@ -39,6 +39,16 @@ const BUSCAR_ESTUDIANTE_FIELDS = [
     allowClear: true,
   },
   {
+    name: 'infoBusqueda',
+    type: 'alert',
+    label: '',
+    message: 'Instrucciones de búsqueda',
+    description: 'Puede buscar estudiantes por: Cédula de Identidad (CI), Código de Estudiante, Nombres, Apellido Paterno o Apellido Materno. Una vez encontrado el estudiante, se mostrarán sus datos académicos y podrá continuar al siguiente paso.',
+    alertType: 'info',
+    span: 12,
+    required: false,
+  },
+  {
     name: 'resultadosEstudiantes',
     type: 'list',
     label: '',
@@ -53,34 +63,24 @@ const BUSCAR_ESTUDIANTE_FIELDS = [
     renderItem: (student) => {
       // Los datos ya vienen transformados del mapper (useSearchStudent → mapEstudiantesList → estudianteListMapper)
       // Usar directamente nombreCompleto y ciCompleto que ya están formateados
-      const captionParts = [];
+      const data = [];
 
       if (student.ciCompleto) {
-        captionParts.push(`CI: ${student.ciCompleto}`);
+        data.push(`CI: ${student.ciCompleto}`);
       }
 
       if (student.codigoEstudiante) {
-        captionParts.push(`Código: ${student.codigoEstudiante}`);
+        data.push(`Código: ${student.codigoEstudiante}`);
       }
 
-      const caption = captionParts.length > 0 ? captionParts.join(' | ') : null;
+      const caption = data.length > 0 ? data.join(' | ') : null;
 
       return {
-        avatar: <UserOutlined className="student-list-item-avatar" />,
+        avatar: <UserOutlined />,
         title: student.nombreCompleto || 'Sin nombre',
         caption: caption ? <Text type="secondary">{caption}</Text> : null,
       };
     },
-  },
-  {
-    name: 'infoBusqueda',
-    type: 'alert',
-    label: '',
-    message: 'Instrucciones de búsqueda',
-    description: 'Puede buscar estudiantes por: Cédula de Identidad (CI), Código de Estudiante, Nombres, Apellido Paterno o Apellido Materno. Una vez encontrado el estudiante, se mostrarán sus datos académicos y podrá continuar al siguiente paso.',
-    alertType: 'info',
-    span: 12,
-    required: false,
   },
 ];
 

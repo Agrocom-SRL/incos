@@ -11,4 +11,3 @@ export { default as TableCell } from './TableCell';
 export { default as WizardActions } from './WizardActions';
 export { default as DocumentoItem } from './DocumentoItem';
 export { default as DataList } from './DataList';
-export { default as ListField } from './ListField';
