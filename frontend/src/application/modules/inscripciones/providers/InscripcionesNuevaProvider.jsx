@@ -29,7 +29,12 @@
 
 import { useMemo } from 'react';
 import { InscripcionesNuevaContext } from '@application-inscripciones/context/InscripcionesNuevaContext';
-import { useInscripcionNuevaPageData, useInscripcionNuevaFormHandlers } from '@application-inscripciones/hooks';
+import { 
+    useInscripcionNuevaPageData, 
+    useInscripcionNuevaFormHandlers, 
+    useInscripcionNuevaStudentSearch,
+    useInscripcionNuevaWizardSteps 
+} from '@application-inscripciones/hooks';
 import { useMessage } from '@application/utils';
 
 export const InscripcionesNuevaProvider = ({ children, mode = 'nuevo' }) => {
@@ -42,8 +47,14 @@ export const InscripcionesNuevaProvider = ({ children, mode = 'nuevo' }) => {
     // Hook especializado: manejar handlers de submit y gestión del formulario
     const formHandlers = useInscripcionNuevaFormHandlers(showMessage, mode);
     
-    // TODO: Aquí se agregarán los hooks de API y lógica en pasos siguientes
-    // Por ahora, solo exponemos handlers básicos
+    // Hook de búsqueda de estudiantes: encapsula la dependencia del módulo de estudiantes
+    const studentSearch = useInscripcionNuevaStudentSearch();
+    
+    // Hook de estado: enriquecer wizardSteps con callbacks dinámicos
+    // La lógica de enriquecimiento está en el hook, no en el provider
+    const enrichedWizardSteps = useInscripcionNuevaWizardSteps(pageData.wizardSteps, {
+        onSearchStudent: studentSearch.searchStudent,
+    });
     
     // Función para resolver opciones de campos (select, radio, etc.)
     // TODO: Crear hook especializado useInscripcionFormOptions cuando se necesite
@@ -55,11 +66,21 @@ export const InscripcionesNuevaProvider = ({ children, mode = 'nuevo' }) => {
     // Componer el valor del contexto: datos + lógica + funciones de carga
     // El provider solo orquesta hooks y expone sus resultados
     const value = useMemo(() => ({
-        // Datos de la página (título, breadcrumbs, wizardSteps desde el hook feature)
-        ...pageData,
+        // Datos de la página (título, breadcrumbs desde el hook feature)
+        pageTitle: pageData.pageTitle,
+        breadcrumbItems: pageData.breadcrumbItems,
+        // WizardSteps enriquecidos con callbacks dinámicos
+        wizardSteps: enrichedWizardSteps,
         
         // Handlers y estados del formulario (desde useInscripcionNuevaFormHandlers)
         ...formHandlers,
+        
+        // Búsqueda de estudiantes (desde useInscripcionNuevaStudentSearch)
+        studentSearch: {
+            students: studentSearch.students,
+            loading: studentSearch.loading,
+            error: studentSearch.error,
+        },
         
         // Resolver opciones de campos
         resolveOptions,
@@ -68,7 +89,7 @@ export const InscripcionesNuevaProvider = ({ children, mode = 'nuevo' }) => {
         // - Datos del catálogo (carreras, materias, etc.)
         // - Funciones de carga bajo demanda
         // - Validaciones específicas
-    }), [pageData, formHandlers, resolveOptions]);
+    }), [pageData.pageTitle, pageData.breadcrumbItems, enrichedWizardSteps, formHandlers, studentSearch, resolveOptions]);
 
     return (
         <InscripcionesNuevaContext.Provider value={value}>

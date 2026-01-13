@@ -27,10 +27,10 @@ const BUSCAR_ESTUDIANTE_HEADER = {
 const BUSCAR_ESTUDIANTE_FIELDS = [
 
   {
-    name: 'carnetEstudiante',
+    name: 'buscarEstudiante',
     type: 'search',
     label: 'Buscar Estudiante',
-    placeholder: 'Ej: 1234567 o EST-2025-0001',
+    placeholder: 'Ej: 1234567, EST-2025-0001, Juan Pérez, etc.',
     required: true,
     span: 12,
     allowClear: true,
@@ -40,7 +40,7 @@ const BUSCAR_ESTUDIANTE_FIELDS = [
     type: 'alert',
     label: '',
     message: 'Instrucciones de búsqueda',
-    description: 'Ingrese el CI (Cédula de Identidad) o el código de estudiante para buscar. Una vez encontrado el estudiante, se mostrarán sus datos académicos y podrá continuar al siguiente paso.',
+    description: 'Puede buscar estudiantes por: Cédula de Identidad (CI), Código de Estudiante, Nombres, Apellido Paterno o Apellido Materno. Una vez encontrado el estudiante, se mostrarán sus datos académicos y podrá continuar al siguiente paso.',
     alertType: 'info',
     span: 12,
     required: false,

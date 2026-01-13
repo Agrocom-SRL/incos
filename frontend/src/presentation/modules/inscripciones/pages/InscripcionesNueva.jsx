@@ -41,6 +41,9 @@ const InscripcionesNueva = () => {
         handleSave,
         registerForm,
         
+        // Búsqueda de estudiantes (desde useInscripcionNuevaStudentSearch)
+        studentSearch,
+        
         // Funciones del formulario
         resolveOptions,
         
@@ -77,6 +80,32 @@ const InscripcionesNueva = () => {
                 onFinish={handleFinish}
                 onSave={handleSave}
             />
+            
+            {/* Debug: Mostrar resultados de búsqueda (temporal) */}
+            {studentSearch && (
+                <div style={{ marginTop: '24px', padding: '16px', border: '1px solid #d9d9d9', borderRadius: '4px' }}>
+                    <h3>Resultados de Búsqueda (Debug):</h3>
+                    {studentSearch.loading && <p>Buscando...</p>}
+                    {studentSearch.error && (
+                        <p style={{ color: 'red' }}>Error: {studentSearch.error}</p>
+                    )}
+                    {!studentSearch.loading && !studentSearch.error && (
+                        <>
+                            <p><strong>Total encontrados:</strong> {studentSearch.students?.length || 0}</p>
+                            {studentSearch.students && studentSearch.students.length > 0 ? (
+                                <div>
+                                    <h4>Estudiantes encontrados:</h4>
+                                    <pre style={{ background: '#f5f5f5', padding: '12px', borderRadius: '4px', overflow: 'auto' }}>
+                                        {JSON.stringify(studentSearch.students, null, 2)}
+                                    </pre>
+                                </div>
+                            ) : (
+                                <p>No se encontraron estudiantes</p>
+                            )}
+                        </>
+                    )}
+                </div>
+            )}
         </PageTemplate>
     );
 };
