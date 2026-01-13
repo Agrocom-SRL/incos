@@ -42,20 +42,5 @@ export class ListDocumentacionController extends BaseListController {
     });
   }
 
-  /**
-   * Sobrescribe buildFilters para agregar filtro por tipoDocumento
-   * @param {Object} query - Query parameters de Express
-   * @returns {Object} Filtros para el use case
-   */
-  buildFilters(query) {
-    const filters = super.buildFilters(query);
-    
-    // Filtrar documentación por tipo si se proporciona tipoDocumento
-    if (query.tipoDocumento) {
-      filters.tipoDocumento = query.tipoDocumento;
-    }
-    
-    return filters;
-  }
 }
 

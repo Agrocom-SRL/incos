@@ -35,6 +35,10 @@
  *       resourceName: 'estudiante',
  *     });
  *   }
+ * 
+ *   getMapper() {
+ *     return StudentMapper;
+ *   }
  * }
  */
 export class BaseSearchUseCase {
@@ -66,16 +70,28 @@ export class BaseSearchUseCase {
   }
 
   /**
-   * Formatea un resultado individual a formato plano
+   * Retorna el mapper a usar para convertir entidades a presentación
    * 
-   * Hook method: Puede ser sobrescrito por subclases para usar mappers específicos
-   * Por defecto usa toPlainObject() de la entidad
+   * Método abstracto: Debe ser implementado por subclases
+   * 
+   * @abstract
+   * @returns {Object} Clase mapper con método estático entityToPresentation()
+   */
+  getMapper() {
+    throw new Error('Method getMapper must be implemented by subclass');
+  }
+
+  /**
+   * Formatea un resultado individual usando el mapper
+   * 
+   * Usa getMapper() para convertir la entidad a formato de presentación
    * 
    * @param {Object} result - Resultado a formatear (entidad de dominio)
    * @returns {Object} Resultado formateado
    */
   formatResult(result) {
-    return result.toPlainObject ? result.toPlainObject() : result;
+    const Mapper = this.getMapper();
+    return Mapper.entityToPresentation(result);
   }
 
   /**

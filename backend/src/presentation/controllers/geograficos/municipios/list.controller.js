@@ -42,20 +42,5 @@ export class ListMunicipiosController extends BaseListController {
     });
   }
 
-  /**
-   * Sobrescribe buildFilters para agregar filtro por provincia
-   * @param {Object} query - Query parameters de Express
-   * @returns {Object} Filtros para el use case
-   */
-  buildFilters(query) {
-    const filters = super.buildFilters(query);
-    
-    // Filtrar municipios por provincia si se proporciona provinciaId
-    if (query.provinciaId) {
-      filters.provinceId = Number(query.provinciaId);
-    }
-    
-    return filters;
-  }
 }
 

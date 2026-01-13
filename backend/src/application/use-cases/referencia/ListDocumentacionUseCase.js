@@ -2,8 +2,9 @@
  * Use Case: ListDocumentacionUseCase
  * Módulo: Referencia
  * Lista tipos de documentación con filtros, paginación y ordenamiento
+ * 
+ * Filtros específicos: tipoDocumento
  */
-
 import { BaseListUseCase } from '../base/BaseListUseCase.js';
 import { DocumentacionMapper } from '../../mappers/referencia/index.js';
 
@@ -30,6 +31,22 @@ export class ListDocumentacionUseCase extends BaseListUseCase {
    */
   getMapper() {
     return DocumentacionMapper;
+  }
+
+  /**
+   * Construye filtros específicos adicionales a partir de los query parameters
+   * @param {Object} queryParams - Query parameters de Express (req.query)
+   * @param {Object} baseFilters - Filtros base ya extraídos por ListRequestDTO (search, sort)
+   * @returns {Object} Filtros combinados con filtros específicos normalizados
+   */
+  buildSpecificFilters(queryParams = {}, baseFilters = {}) {
+    const filters = { ...baseFilters };
+
+    if (queryParams.tipoDocumento) {
+      filters.tipoDocumento = queryParams.tipoDocumento;
+    }
+
+    return filters;
   }
 }
 

@@ -1,0 +1,82 @@
+import express from 'express';
+import { listParalelosValidator } from '../validators/academico/index.js';
+
+/**
+ * Construye el router del módulo Paralelos (Académico)
+ * 
+ * Responsabilidades:
+ * - Definir rutas y métodos HTTP
+ * - Vincular validators y middlewares
+ * - Delegar lógica a controllers inyectados
+ * 
+ * @param {Object} params - Dependencias inyectadas
+ * @param {Object} params.controllers - Controllers del módulo
+ * @param {Object} params.middlewares - Middlewares (validateRequest, upload, auth, etc.)
+ * @returns {Router} Router configurado de Express
+ * 
+ * @example
+ * const router = buildParalelosRouter({ controllers, middlewares });
+ * app.use('/api/v1/paralelos', router);
+ */
+export function buildParalelosRouter({ controllers, middlewares }) {
+    const router = express.Router();
+    const { validateRequest } = middlewares;
+
+    // ============================================
+    // CRUD BÁSICO
+    // ============================================
+
+    /**
+     * GET /api/v1/paralelos
+     * Listar paralelos con filtros y paginación
+     * 
+     * Query params:
+     * - page: número de página (paginación)
+     * - limit: cantidad por página (paginación)
+     * - search: término de búsqueda general (nombre, descripción)
+     * - periodo_id: filtro por ID de periodo (opcional, debe ser entero > 0)
+     * - carrera_id: filtro por ID de carrera (opcional, debe ser entero > 0)
+     */
+    router.get(
+        '/',
+        listParalelosValidator,
+        validateRequest,
+        (req, res, next) => controllers.listParalelosController.handle(req, res, next)
+    );
+
+    // ============================================
+    // ENDPOINTS FUTUROS (TODO: Implementar cuando se necesiten)
+    // ============================================
+
+    // POST / - Crear paralelo
+    // router.post(
+    //     '/',
+    //     createParaleloValidator,
+    //     validateRequest,
+    //     (req, res, next) => controllers.createParaleloController.handle(req, res, next)
+    // );
+
+    // GET /:id - Obtener paralelo por ID
+    // router.get(
+    //     '/:id',
+    //     getParaleloByIdValidator,
+    //     validateRequest,
+    //     (req, res, next) => controllers.getParaleloByIdController.handle(req, res, next)
+    // );
+
+    // PUT /:id - Actualizar paralelo
+    // router.put(
+    //     '/:id',
+    //     updateParaleloValidator,
+    //     validateRequest,
+    //     (req, res, next) => controllers.updateParaleloController.handle(req, res, next)
+    // );
+
+    // DELETE /:id - Eliminar paralelo (soft delete)
+    // router.delete(
+    //     '/:id',
+    //     (req, res, next) => controllers.deleteParaleloController.handle(req, res, next)
+    // );
+
+    return router;
+}

@@ -2,8 +2,9 @@
  * Use Case: ListMunicipiosUseCase
  * Módulo: Geográficos
  * Lista municipios con filtros, paginación y ordenamiento
+ * 
+ * Filtros específicos: provinciaId
  */
-
 import { BaseListUseCase } from '../base/BaseListUseCase.js';
 import { MunicipalityMapper } from '../../mappers/geograficos/index.js';
 
@@ -30,6 +31,22 @@ export class ListMunicipiosUseCase extends BaseListUseCase {
    */
   getMapper() {
     return MunicipalityMapper;
+  }
+
+  /**
+   * Construye filtros específicos adicionales a partir de los query parameters
+   * @param {Object} queryParams - Query parameters de Express (req.query)
+   * @param {Object} baseFilters - Filtros base ya extraídos por ListRequestDTO (search, sort)
+   * @returns {Object} Filtros combinados con filtros específicos normalizados
+   */
+  buildSpecificFilters(queryParams = {}, baseFilters = {}) {
+    const filters = { ...baseFilters };
+
+    if (queryParams.provinciaId) {
+      filters.provinceId = Number(queryParams.provinciaId);
+    }
+
+    return filters;
   }
 }
 

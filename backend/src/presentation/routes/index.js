@@ -3,6 +3,7 @@ import container from '../../infrastructure/container/index.js';
 import {
     ESTUDIANTES_TOKENS,
     CONFIGURACION_TOKENS,
+    ACADEMICO_TOKENS,
     GEOGRAFICOS_TOKENS,
     REFERENCIA_TOKENS,
 } from '../../infrastructure/container/tokens/index.js';
@@ -22,6 +23,8 @@ router.get('/', (req, res) => {
             // Módulo: Configuración
             carreras: '/api/v1/carreras',
             materias: '/api/v1/materias',
+            // Módulo: Académico
+            paralelos: '/api/v1/paralelos',
             // Módulo: Geográficos
             paises: '/api/v1/paises',
             departamentos: '/api/v1/departamentos',
@@ -50,12 +53,16 @@ router.use('/estudiantes', container.resolve(ESTUDIANTES_TOKENS.estudiantesRoute
 // ============================================
 // 2. MÓDULO: CONFIGURACIÓN
 // ============================================
-// 2.1. Académico
 router.use('/carreras', container.resolve(CONFIGURACION_TOKENS.carrerasRouter));
 router.use('/materias', container.resolve(CONFIGURACION_TOKENS.materiasRouter));
 
 // ============================================
-// 3. MÓDULO: GEOGRÁFICOS
+// 3. MÓDULO: ACADÉMICO
+// ============================================
+router.use('/paralelos', container.resolve(ACADEMICO_TOKENS.paralelosRouter));
+
+// ============================================
+// 4. MÓDULO: GEOGRÁFICOS
 // ============================================
 router.use('/paises', container.resolve(GEOGRAFICOS_TOKENS.paisesRouter));
 router.use('/departamentos', container.resolve(GEOGRAFICOS_TOKENS.departamentosRouter));
@@ -63,7 +70,7 @@ router.use('/provincias', container.resolve(GEOGRAFICOS_TOKENS.provinciasRouter)
 router.use('/municipios', container.resolve(GEOGRAFICOS_TOKENS.municipiosRouter));
 
 // ============================================
-// 4. MÓDULO: REFERENCIA
+// 5. MÓDULO: REFERENCIA
 // ============================================
 router.use('/idiomas', container.resolve(REFERENCIA_TOKENS.idiomasRouter));
 router.use('/estados-civiles', container.resolve(REFERENCIA_TOKENS.estadosCivilesRouter));

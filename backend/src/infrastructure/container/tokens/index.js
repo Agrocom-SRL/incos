@@ -32,6 +32,7 @@ export { SERVICIOS_TOKENS } from './servicios.tokens.js';
 export { REPOSITORIOS_TOKENS } from './repositorios.tokens.js';
 export { ESTUDIANTES_TOKENS } from './estudiantes.tokens.js';
 export { CONFIGURACION_TOKENS } from './configuracion.tokens.js';
+export { ACADEMICO_TOKENS } from './academico.tokens.js';
 export { GEOGRAFICOS_TOKENS } from './geograficos.tokens.js';
 export { REFERENCIA_TOKENS } from './referencia.tokens.js';
 

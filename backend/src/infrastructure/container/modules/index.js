@@ -10,6 +10,7 @@
 
 import { registerEstudiantesModule } from './estudiantes/index.js';
 import { registerConfiguracionModule } from './configuracion/index.js';
+import { registerAcademicoModule } from './academico/index.js';
 import { registerGeograficosModule } from './geograficos/index.js';
 import { registerReferenciaModule } from './referencia/index.js';
 
@@ -23,6 +24,7 @@ export function registerAllModules(container) {
     // 1. Módulos de dominio (use cases + controllers + routers)
     registerEstudiantesModule(container);
     registerConfiguracionModule(container);
+    registerAcademicoModule(container);
     registerGeograficosModule(container);
     registerReferenciaModule(container);
 

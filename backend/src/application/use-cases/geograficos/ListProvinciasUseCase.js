@@ -2,8 +2,9 @@
  * Use Case: ListProvinciasUseCase
  * Módulo: Geográficos
  * Lista provincias con filtros, paginación y ordenamiento
+ * 
+ * Filtros específicos: departamentoId
  */
-
 import { BaseListUseCase } from '../base/BaseListUseCase.js';
 import { ProvinceMapper } from '../../mappers/geograficos/index.js';
 
@@ -30,6 +31,22 @@ export class ListProvinciasUseCase extends BaseListUseCase {
    */
   getMapper() {
     return ProvinceMapper;
+  }
+
+  /**
+   * Construye filtros específicos adicionales a partir de los query parameters
+   * @param {Object} queryParams - Query parameters de Express (req.query)
+   * @param {Object} baseFilters - Filtros base ya extraídos por ListRequestDTO (search, sort)
+   * @returns {Object} Filtros combinados con filtros específicos normalizados
+   */
+  buildSpecificFilters(queryParams = {}, baseFilters = {}) {
+    const filters = { ...baseFilters };
+
+    if (queryParams.departamentoId) {
+      filters.departmentId = Number(queryParams.departamentoId);
+    }
+
+    return filters;
   }
 }
 

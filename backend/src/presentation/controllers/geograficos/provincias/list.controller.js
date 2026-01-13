@@ -42,20 +42,5 @@ export class ListProvinciasController extends BaseListController {
     });
   }
 
-  /**
-   * Sobrescribe buildFilters para agregar filtro por departamento
-   * @param {Object} query - Query parameters de Express
-   * @returns {Object} Filtros para el use case
-   */
-  buildFilters(query) {
-    const filters = super.buildFilters(query);
-    
-    // Filtrar provincias por departamento si se proporciona departamentoId
-    if (query.departamentoId) {
-      filters.departmentId = Number(query.departamentoId);
-    }
-    
-    return filters;
-  }
 }
 

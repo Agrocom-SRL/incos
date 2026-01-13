@@ -28,13 +28,10 @@ export class SearchStudentUseCase extends BaseSearchUseCase {
   }
 
   /**
-   * Formatea un resultado individual usando StudentMapper
-   * Convierte campos de inglés a español para mantener consistencia con ListStudentsUseCase
-   * 
-   * @param {Student} result - Entidad Student de dominio
-   * @returns {Object} Estudiante en formato de presentación (campos en español)
+   * Retorna el mapper a usar para convertir entidades Student a presentación
+   * @returns {StudentMapper}
    */
-  formatResult(result) {
-    return StudentMapper.entityToPresentation(result);
+  getMapper() {
+    return StudentMapper;
   }
 }

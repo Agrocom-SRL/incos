@@ -5,17 +5,22 @@
  * a todos los casos de uso de listado (países, departamentos, idiomas, etc.)
  * 
  * Responsabilidades:
+ * - Construir filtros específicos a partir de query parameters
  * - Parsea y valida parámetros de paginación (page, limit)
  * - Ejecuta consulta al repositorio con filtros
  * - Convierte entidades a formato de presentación usando mapper
  * - Calcula total de páginas
- * - Registra logs antes y después de la operación
+ * - Registra logs durante la operación
  * - Retorna respuesta estandarizada
+ * 
+ * NOTA: La validación de parámetros (page, limit, search) se realiza en las rutas
+ * mediante el validator común (listValidator), por lo que este use case
+ * asume que los parámetros ya están validados.
  * 
  * Principios SOLID:
  * - Single Responsibility: Maneja solo la lógica común de listado
- * - Template Method: Define el algoritmo común, delega conversión a mapper a subclases
- * - Open/Closed: Abierto para extensión (mappers específicos), cerrado para modificación
+ * - Template Method: Define el algoritmo común
+ * - Open/Closed: Permite personalizar el comportamiento mediante hook methods
  * 
  * Clean Architecture:
  * - Application Layer: Orquesta la lógica de casos de uso
@@ -92,108 +97,33 @@ export class BaseListUseCase {
   }
 
   /**
+   * Construye filtros específicos adicionales a partir de los query parameters
+   * 
+   * Hook method: Puede ser sobrescrito por subclases para construir filtros específicos
+   * Similar a cómo BaseSearchUseCase normaliza searchTerm.trim()
+   * 
+   * @param {Object} queryParams - Query parameters de Express (req.query)
+   * @param {Object} baseFilters - Filtros base ya extraídos por ListRequestDTO (search, sort)
+   * @returns {Object} Filtros combinados con filtros específicos normalizados
+   */
+  buildSpecificFilters(queryParams = {}, baseFilters = {}) {
+    // Implementación por defecto: retorna solo los filtros base
+    // Las subclases pueden sobrescribir para agregar filtros específicos
+    return baseFilters;
+  }
+
+  /**
    * Enriquece los datos después de la conversión a presentación
    * 
    * Hook method: Opcional, puede ser sobrescrito por subclases para agregar
-   * cualquier cantidad de campos adicionales a cada registro (conteos, datos relacionados, etc.)
-   * 
-   * Este método se ejecuta después de la conversión a presentación pero antes
-   * de retornar la respuesta. Permite agregar campos calculados o relacionados
-   * sin modificar el mapper base.
-   * 
-   * IMPORTANTE: Este método es completamente flexible y soporta:
-   * - Agregar campos calculados (conteos, totales, promedios)
-   * - Agregar datos completos de otras tablas/entidades (objetos relacionados)
-   * - Agregar campos específicos extraídos de entidades relacionadas
-   * - Combinar múltiples tipos de datos en un solo objeto
-   * - Cualquier cantidad de campos que necesites
+   * campos adicionales (conteos, datos relacionados, etc.)
    * 
    * @param {Array} data - Array de objetos ya convertidos a formato de presentación
    * @param {Object} repositoryResult - Resultado completo del repository (incluye total, etc.)
-   * @returns {Promise<Array>|Array} Array de datos enriquecidos (puede tener cualquier cantidad de campos adicionales)
-   * 
-   * @example
-   * // Ejemplo 1: Agregar un solo campo calculado (conteo)
-   * async enrichData(data, repositoryResult) {
-   *   const enriched = await Promise.all(data.map(async (item) => {
-   *     const count = await this.relatedRepository.count({ parentId: item.id });
-   *     return { ...item, cantidadRelacionados: count };
-   *   }));
-   *   return enriched;
-   * }
-   * 
-   * @example
-   * // Ejemplo 2: Agregar múltiples campos calculados
-   * async enrichData(data, repositoryResult) {
-   *   const enriched = await Promise.all(data.map(async (depto) => {
-   *     const [cantidadProvincias, cantidadMunicipios] = await Promise.all([
-   *       this.provinceRepository.count({ departmentId: depto.id }),
-   *       this.municipalityRepository.count({ departmentId: depto.id }),
-   *     ]);
-   *     return {
-   *       ...depto,
-   *       cantidadProvincias,
-   *       cantidadMunicipios,
-   *     };
-   *   }));
-   *   return enriched;
-   * }
-   * 
-   * @example
-   * // Ejemplo 3: Agregar datos completos de otras tablas (vistas/join)
-   * // ListProvinciasUseCase: Agregar nombre del departamento y país
-   * async enrichData(data, repositoryResult) {
-   *   const enriched = await Promise.all(data.map(async (provincia) => {
-   *     // Obtener entidades relacionadas
-   *     const departamento = await this.departmentRepository.findById(provincia.departamentoId);
-   *     const pais = departamento ? await this.countryRepository.findById(departamento.countryId) : null;
-   *     
-   *     // Agregar datos completos de otras tablas
-   *     return {
-   *       ...provincia,
-   *       departamento: departamento ? {
-   *         id: departamento.id,
-   *         nombre: departamento.name, // Ya convertido a presentación por el mapper
-   *       } : null,
-   *       pais: pais ? {
-   *         id: pais.id,
-   *         nombre: pais.name,
-   *         codigoIso: pais.isoCode,
-   *       } : null,
-   *     };
-   *   }));
-   *   return enriched;
-   * }
-   * 
-   * @example
-   * // Ejemplo 4: Combinar conteos + datos relacionados (caso más complejo)
-   * async enrichData(data, repositoryResult) {
-   *   const enriched = await Promise.all(data.map(async (provincia) => {
-   *     const [departamento, cantidadMunicipios] = await Promise.all([
-   *       this.departmentRepository.findById(provincia.departamentoId),
-   *       this.municipalityRepository.count({ provinceId: provincia.id }),
-   *     ]);
-   *     
-   *     const pais = departamento ? await this.countryRepository.findById(departamento.countryId) : null;
-   *     
-   *     return {
-   *       ...provincia,
-   *       // Datos relacionados
-   *       departamento: departamento ? { id: departamento.id, nombre: departamento.name } : null,
-   *       pais: pais ? { id: pais.id, nombre: pais.name } : null,
-   *       // Campos calculados
-   *       cantidadMunicipios,
-   *       // Campos derivados
-   *       rutaCompleta: `${pais?.name || ''} > ${departamento?.name || ''} > ${provincia.nombre}`,
-   *     };
-   *   }));
-   *   return enriched;
-   * }
+   * @returns {Promise<Array>|Array} Array de datos enriquecidos
    */
   async enrichData(data, repositoryResult) {
     // Implementación por defecto: retorna los datos sin modificar
-    // Las subclases pueden sobrescribir este método para agregar CUALQUIER
-    // cantidad de campos adicionales que necesiten
     return data;
   }
 
@@ -201,67 +131,88 @@ export class BaseListUseCase {
    * Ejecuta el caso de uso de listado
    * 
    * Template Method: Define el algoritmo común de:
-   * 1. Parsear y validar parámetros
-   * 2. Logging inicial
-   * 3. Ejecutar consulta al repositorio
-   * 4. Convertir entidades a presentación (delegado a getMapper)
-   * 5. Calcular total de páginas
-   * 6. Logging final
-   * 7. Retornar respuesta estandarizada
+   * 1. Construir filtros específicos (si buildSpecificFilters fue sobrescrito)
+   * 2. Parsear y validar parámetros
+   * 3. Logging inicial
+   * 4. Ejecutar consulta al repositorio
+   * 5. Convertir entidades a presentación (delegado a getMapper)
+   * 6. Enriquecer datos (opcional, hook method)
+   * 7. Calcular total de páginas
+   * 8. Retornar respuesta estandarizada
    * 
-   * @param {Object} filters - Filtros de búsqueda
+   * NOTA: baseFilters, page y limit ya están validados por el validator en las rutas
+   * 
+   * @param {Object} baseFilters - Filtros base (search, sort) ya normalizados por ListRequestDTO
    * @param {number} page - Número de página (default: 1)
    * @param {number} limit - Límite de resultados por página (default: 50)
+   * @param {Object} queryParams - Query parameters originales (opcional, para construir filtros específicos)
    * @returns {Promise<{dataFieldName: Array, total: number, page: number, limit: number, totalPages: number}>}
    */
-  async execute(filters = {}, page = 1, limit = 50) {
-    // 1. Parsear y validar parámetros
+  async execute(baseFilters = {}, page = 1, limit = 50, queryParams = {}) {
+    // Construir filtros específicos si se proporcionan queryParams
+    const filters = Object.keys(queryParams).length > 0
+      ? this.buildSpecificFilters(queryParams, baseFilters)
+      : baseFilters;
+
+    // Parsear y validar parámetros
     const pageNum = parseInt(page) || 1;
     const limitNum = parseInt(limit) || 50;
 
-    // 2. Logging inicial
-    this.logger.info(`[${this.moduleName}] Listando ${this.resourceName}`, {
+    // Logging inicial
+    this.logger.info(`[${this.moduleName}] Iniciando listado de ${this.resourceName}`, {
       filters,
       page: pageNum,
       limit: limitNum,
     });
 
-    // 3. Ejecutar consulta al repositorio
-    const result = await this.repository.findAll(
-      filters,
-      pageNum,
-      limitNum
-    );
+    try {
+      // Ejecutar consulta al repositorio
+      const result = await this.repository.findAll(
+        filters,
+        pageNum,
+        limitNum
+      );
 
-    // 4. Convertir entidades a formato de presentación usando mapper
-    const Mapper = this.getMapper();
-    const data = Mapper.entitiesToPresentation(
-      result[this.collectionFieldName] || []
-    );
+      // Convertir entidades a formato de presentación usando mapper
+      const Mapper = this.getMapper();
+      const data = Mapper.entitiesToPresentation(
+        result[this.collectionFieldName] || []
+      );
 
-    // 4.5. Enriquecer datos (hook method - opcional, puede ser sobrescrito por subclases)
-    const enrichedData = await this.enrichData(data, result);
+      // Enriquecer datos (hook method - opcional, puede ser sobrescrito por subclases)
+      const enrichedData = await this.enrichData(data, result);
 
-    // 5. Calcular total de páginas
-    const totalPages = Math.ceil(result.total / limitNum);
+      // Calcular total de páginas
+      const totalPages = Math.ceil(result.total / limitNum);
 
-    // 6. Logging final
-    this.logger.info(`[${this.moduleName}] ${this.resourceName} listados exitosamente`, {
-      total: result.total,
-      page: pageNum,
-      limit: limitNum,
-      totalPages,
-      count: enrichedData.length,
-    });
+      // Logging final
+      this.logger.info(`[${this.moduleName}] ${this.resourceName} listados exitosamente`, {
+        total: result.total,
+        page: pageNum,
+        limit: limitNum,
+        totalPages,
+        count: enrichedData.length,
+      });
 
-    // 7. Retornar respuesta estandarizada
-    return {
-      [this.dataFieldName]: enrichedData,
-      total: result.total,
-      page: pageNum,
-      limit: limitNum,
-      totalPages,
-    };
+      // Retornar respuesta estandarizada
+      return {
+        [this.dataFieldName]: enrichedData,
+        total: result.total,
+        page: pageNum,
+        limit: limitNum,
+        totalPages,
+      };
+    } catch (error) {
+      // Manejo de errores
+      this.logger.error(`[${this.moduleName}] Error al listar ${this.resourceName}`, {
+        error: error.message,
+        stack: error.stack,
+        filters,
+        page: pageNum,
+        limit: limitNum,
+      });
+      throw error;
+    }
   }
 }
 

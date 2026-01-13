@@ -6,15 +6,15 @@
  * 
  * Responsabilidades:
  * - Extraer y normalizar parámetros de query usando ListRequestDTO
- * - Construir filtros básicos de búsqueda
+ * - Pasar queryParams al Use Case para construcción de filtros específicos
  * - Ejecutar el caso de uso correspondiente
  * - Formatear respuesta JSON estandarizada
  * - Manejar errores de manera consistente
  * 
  * Principios SOLID:
  * - Single Responsibility: Maneja solo la lógica común de listado
- * - Template Method: Define el algoritmo común, delega construcción de filtros específicos a subclases
- * - Open/Closed: Abierto para extensión (filtros específicos), cerrado para modificación
+ * - Template Method: Define el algoritmo común
+ * - Dependency Inversion: La transformación de filtros específicos está en el Use Case (Application Layer)
  * 
  * Clean Architecture:
  * - Presentation Layer: Maneja la comunicación HTTP (request/response)
@@ -33,14 +33,9 @@
  *     });
  *   }
  * 
- *   // Opcional: Sobrescribir para agregar filtros específicos
- *   buildFilters(query, baseFilters) {
- *     const specificFilters = {};
- *     if (query.codigoIso) {
- *       specificFilters.codigoIso = query.codigoIso;
- *     }
- *     return specificFilters; // Solo retorna filtros específicos, los base ya están incluidos
- *   }
+ *   // Nota: Los filtros específicos se manejan en el Use Case (buildSpecificFilters)
+ *   // para mantener consistencia con el patrón de Search donde la transformación
+ *   // está en el Use Case (Application Layer)
  * }
  */
 import { ListRequestDTO } from '../../../application/dtos/common/index.js';
@@ -79,33 +74,16 @@ export class BaseListController {
     this.dataFieldName = dataFieldName;
   }
 
-  /**
-   * Construye los filtros específicos adicionales a partir de los query parameters
-   * 
-   * Método template: Puede ser sobrescrito por subclases para agregar filtros específicos
-   * 
-   * NOTA: Los filtros comunes (search) ya fueron extraídos por el DTO en handle().
-   * Este método solo debe agregar filtros específicos del módulo.
-   * 
-   * @param {Object} query - Query parameters de Express (req.query)
-   * @param {Object} baseFilters - Filtros base ya extraídos por el DTO (search, etc.)
-   * @returns {Object} Objeto con filtros específicos adicionales
-   */
-  buildFilters(query, baseFilters = {}) {
-    // Por defecto, no agrega filtros específicos
-    // Las subclases pueden sobrescribir para agregar filtros específicos
-    return {};
-  }
 
   /**
    * Maneja la petición HTTP GET para listar recursos
    * 
-   * Template Method: Define el algoritmo común de:
-   * 1. Extraer y validar parámetros
-   * 2. Construir filtros (delegado a buildFilters)
-   * 3. Ejecutar use case
-   * 4. Formatear respuesta
-   * 5. Manejar errores
+ * Template Method: Define el algoritmo común de:
+ * 1. Extraer y validar parámetros comunes (page, limit, search)
+ * 2. Pasar queryParams al Use Case para construcción de filtros específicos
+ * 3. Ejecutar use case
+ * 4. Formatear respuesta
+ * 5. Manejar errores
    * 
    * @param {Object} req - Request de Express
    * @param {Object} res - Response de Express
@@ -113,25 +91,22 @@ export class BaseListController {
    */
   async handle(req, res, next) {
     try {
-      // 1. Usar el DTO genérico UNA SOLA VEZ para normalizar query parameters
+      // 1. Usar el DTO genérico UNA SOLA VEZ para normalizar query parameters comunes
       // Los query params ya fueron validados por listValidator en la ruta
       const { filters: baseFilters, page, limit } = ListRequestDTO.fromQuery(req.query);
 
-      // 2. Construir filtros específicos adicionales (si buildFilters fue sobrescrito)
-      const specificFilters = this.buildFilters(req.query, baseFilters);
-      
-      // Combinar filtros base con filtros específicos
-      const combinedFilters = { ...baseFilters, ...specificFilters };
-
-      // 3. Logging de la petición
+      // 2. Logging de la petición
       this.logger.info(`Request de listado de ${this.resourceName}`, {
         page,
         limit,
-        filters: combinedFilters,
+        queryParams: req.query,
       });
 
-      // 4. Ejecutar el caso de uso
-      const result = await this.useCase.execute(combinedFilters, page, limit);
+      // 3. Ejecutar el caso de uso
+      // Siempre pasa queryParams para que el Use Case construya los filtros específicos
+      // Esto mantiene consistencia con Search donde la transformación está en el Use Case
+      // El Use Case usa buildSpecificFilters() si existe, o retorna solo baseFilters si no
+      const result = await this.useCase.execute(baseFilters, page, limit, req.query);
 
       // 5. Formatear y enviar respuesta JSON estandarizada usando el servicio inyectado
       return this.responseFormatter.list(
