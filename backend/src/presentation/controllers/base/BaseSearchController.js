@@ -62,7 +62,7 @@ export class BaseSearchController {
    * @returns {Object} Objeto con searchTerm y limit
    */
   extractSearchParams(req) {
-    const searchTerm = req.query.search || null;
+    const searchTerm = req.query.query || null;
     const limit = req.query.limit ? parseInt(req.query.limit, 10) : 50;
     return { searchTerm, limit };
   }
@@ -145,7 +145,7 @@ export class BaseSearchController {
       this.logger.error(`Error al buscar ${this.resourceName}`, {
         error: error.message,
         stack: error.stack,
-        searchTerm: req.query?.search,
+        searchTerm: req.query?.query,
         limit: req.query?.limit,
       });
 

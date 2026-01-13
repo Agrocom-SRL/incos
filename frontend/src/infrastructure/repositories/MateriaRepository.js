@@ -14,7 +14,7 @@
 import apiClient from '@api-client';
 import { IMateriaRepository } from '@domain/repositories';
 import { MATERIAS_ENDPOINTS } from '@api/endpoints';
-import { handleSuccessResponse, handleErrorResponse } from '@config/api/responseHandler';
+import { handleSuccessResponse, handleErrorResponse } from '@api/responseHandler';
 
 export class MateriaRepository extends IMateriaRepository {
   /**

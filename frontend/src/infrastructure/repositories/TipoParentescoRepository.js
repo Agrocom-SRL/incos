@@ -14,7 +14,7 @@
 import apiClient from '@api-client';
 import { ITipoParentescoRepository } from '@domain/repositories';
 import { TIPOS_PARENTESCO_ENDPOINTS } from '@api/endpoints';
-import { handleSuccessResponse, handleErrorResponse } from '@config/api/responseHandler';
+import { handleSuccessResponse, handleErrorResponse } from '@api/responseHandler';
 
 export class TipoParentescoRepository extends ITipoParentescoRepository {
   /**

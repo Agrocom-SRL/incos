@@ -14,7 +14,7 @@
 import apiClient from '@api-client';
 import { IPaisRepository } from '@domain/repositories';
 import { PAISES_ENDPOINTS } from '@api/endpoints';
-import { handleSuccessResponse, handleErrorResponse } from '@config/api/responseHandler';
+import { handleSuccessResponse, handleErrorResponse } from '@api/responseHandler';
 
 export class PaisRepository extends IPaisRepository {
   /**

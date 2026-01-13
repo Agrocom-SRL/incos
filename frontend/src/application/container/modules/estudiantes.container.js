@@ -13,6 +13,7 @@ import {
   ObtenerDatosGeograficosFiltradosUseCase,
   ObtenerDatosReferenciaFiltradosUseCase,
   CrearEstudianteUseCase,
+  BuscarEstudianteUseCase,
 } from '@useCases/estudiantes';
 
 // Repositorio principal
@@ -73,6 +74,10 @@ export function registerEstudiantesModule(factory) {
 
   factory.crearEstudiante = () => {
     return new CrearEstudianteUseCase(estudianteRepository);
+  };
+
+  factory.buscarEstudiante = () => {
+    return new BuscarEstudianteUseCase(estudianteRepository);
   };
 
   // Use Case para datos geográficos filtrados (estructura política: departamentos, provincias, municipios)

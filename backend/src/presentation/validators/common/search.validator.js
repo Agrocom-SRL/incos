@@ -1,7 +1,7 @@
 /**
  * Validator común para búsqueda por texto libre
  * 
- * Valida el query parameter 'search' para búsquedas generales en múltiples campos.
+ * Valida el query parameter 'query' para búsquedas generales en múltiples campos.
  * Este validator es genérico y puede ser usado en cualquier módulo que necesite
  * búsqueda por texto libre.
  * 
@@ -15,18 +15,18 @@ import { query } from 'express-validator';
  * Validator para búsqueda general por texto libre
  * 
  * Reglas:
- * - Debe proporcionar un término de búsqueda (parámetro 'search')
+ * - Debe proporcionar un término de búsqueda (parámetro 'query')
  * - El término debe tener al menos 2 caracteres (para evitar búsquedas muy amplias)
  * - El término puede tener hasta 255 caracteres
- * - El límite de resultados es opcional (parámetro 'limit'), entre 1 y 100 (default: 50)
+ * - El límite de resultados es opcional (parámetro 'limit'), entre 1 y 50 (default: 50)
  * 
  * Ejemplos de uso:
- * - GET /api/v1/{recurso}/buscar?search=termino
- * - GET /api/v1/{recurso}/buscar?search=texto libre&limit=10
+ * - GET /api/v1/{recurso}/search?query=termino
+ * - GET /api/v1/{recurso}/search?query=texto libre&limit=10
  */
 export const searchValidator = [
   // Término de búsqueda: requerido, texto libre
-  query('search')
+  query('query')
     .trim()
     .notEmpty()
     .withMessage('El término de búsqueda es requerido y no puede estar vacío')

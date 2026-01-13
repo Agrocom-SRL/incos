@@ -13,8 +13,7 @@
  * - formatters: Funciones para formatear/transformar datos para presentación
  * - hooks: Hooks genéricos compartidos (useMessage, etc.)
  * - transformers: Transformadores genéricos para convertir datos (optionTransformers, filters)
- * - validators: Funciones de validación (si se necesitan en el futuro)
- * - helpers: Funciones auxiliares generales (si se necesitan en el futuro)
+ * - error: Utilidades para manejo de errores (errorHelpers, etc.)
  * 
  * Ejemplo de uso:
  * import { buildFullName, buildCompleteCI, useMessage, transformToOptions, excludeByField } from '@application/utils';
@@ -27,4 +26,5 @@
 export * from './formatters';
 export * from './hooks';
 export * from './transformers';
+export * from './error';
 

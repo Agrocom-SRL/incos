@@ -14,7 +14,7 @@
 import apiClient from '@api-client';
 import { IEstudianteRepository } from '@domain/repositories';
 import { ESTUDIANTES_ENDPOINTS } from '@api/endpoints';
-import { handleSuccessResponse, handleErrorResponse } from '@config/api/responseHandler';
+import { handleSuccessResponse, handleErrorResponse } from '@api/responseHandler';
 
 export class EstudianteRepository extends IEstudianteRepository {
   /**
@@ -128,6 +128,38 @@ export class EstudianteRepository extends IEstudianteRepository {
       };
     } catch (error) {
       return handleErrorResponse(error, 'Error al actualizar estudiante');
+    }
+  }
+
+  /**
+   * Busca estudiantes por término de búsqueda
+   * GET /v1/estudiantes/search?query=termino&limit=50
+   * 
+   * @param {string} terminoBusqueda - Término de búsqueda (texto libre)
+   * @param {Object} options - Opciones opcionales
+   * @param {Object} options.params - Parámetros adicionales de consulta HTTP
+   * @param {number} options.params.limit - Límite de resultados (opcional)
+   * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
+   */
+  async buscar(terminoBusqueda, options = {}) {
+    try {
+      const { params = {} } = options;
+      
+      // Construir parámetros de consulta
+      const queryParams = {
+        query: terminoBusqueda,
+        ...(params.limit && { limit: params.limit }),
+      };
+
+      // Llamada HTTP directa al endpoint
+      const response = await apiClient.get(ESTUDIANTES_ENDPOINTS.SEARCH, { params: queryParams });
+
+      // Procesar respuesta usando handleSuccessResponse
+      const result = handleSuccessResponse(response);
+
+      return result;
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al buscar estudiantes');
     }
   }
 

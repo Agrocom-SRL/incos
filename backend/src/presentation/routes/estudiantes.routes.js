@@ -72,12 +72,12 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
     // ============================================
 
     /**
-     * GET /api/v1/estudiantes/buscar
+     * GET /api/v1/estudiantes/search
      * Buscar estudiante por texto libre
-     * Query: search (busca en codigo, ci, nombres, apellidos)
+     * Query: query (busca en codigo, ci, nombres, apellidos), limit (opcional)
      */
     router.get(
-        '/buscar',
+        '/search',
         searchValidator,  // 1. Validator común de búsqueda
         validateRequest,  // 2. Middleware que procesa errores
         (req, res, next) => controllers.searchStudentController.handle(req, res, next)  // 3. Controller al final

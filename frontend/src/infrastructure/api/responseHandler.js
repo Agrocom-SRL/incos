@@ -4,7 +4,15 @@
  * Single Responsibility: Centralizar la lógica de manejo de respuestas y errores
  * 
  * Clean Architecture:
- * - Infrastructure Layer: Configuración de cómo se procesan las respuestas HTTP
+ * - Infrastructure Layer: Implementación de procesamiento de respuestas HTTP
+ * 
+ * NOTA: Este archivo está en infrastructure/api/ porque:
+ * 1. Es parte de la implementación del cliente HTTP
+ * 2. Tiene lógica de procesamiento (no solo configuración estática)
+ * 3. Es específico del cliente HTTP (no es configuración general)
+ * 
+ * La configuración estática (API_CONFIG) está en config/api/
+ * La implementación (client, interceptors, responseHandler) está en api/
  * 
  * El backend siempre devuelve: { status, data, error }
  * - Si hay data: data contiene los datos, error es null
@@ -74,16 +82,5 @@ export function handleErrorResponse(error, defaultMessage = 'Error en la petici�
     success: false,
     error: error.message || defaultMessage,
   };
-}
-
-/**
- * Procesa una respuesta del backend (éxito o error)
- * Útil para respuestas que pueden tener error dentro de la respuesta exitosa
- * 
- * @param {Object} response - Respuesta de axios
- * @returns {{success: boolean, data?: Array|Object, error?: string}}
- */
-export function handleResponse(response) {
-  return handleSuccessResponse(response);
 }
 

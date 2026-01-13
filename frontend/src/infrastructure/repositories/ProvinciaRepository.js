@@ -14,7 +14,7 @@
 import apiClient from '@api-client';
 import { IProvinciaRepository } from '@domain/repositories';
 import { PROVINCIAS_ENDPOINTS } from '@api/endpoints';
-import { handleSuccessResponse, handleErrorResponse } from '@config/api/responseHandler';
+import { handleSuccessResponse, handleErrorResponse } from '@api/responseHandler';
 
 export class ProvinciaRepository extends IProvinciaRepository {
   /**

@@ -14,7 +14,7 @@
 import apiClient from '@api-client';
 import { IEstadoCivilRepository } from '@domain/repositories';
 import { ESTADOS_CIVILES_ENDPOINTS } from '@api/endpoints';
-import { handleSuccessResponse, handleErrorResponse } from '@config/api/responseHandler';
+import { handleSuccessResponse, handleErrorResponse } from '@api/responseHandler';
 
 export class EstadoCivilRepository extends IEstadoCivilRepository {
   /**

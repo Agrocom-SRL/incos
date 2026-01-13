@@ -14,7 +14,7 @@
 import apiClient from '@api-client';
 import { IMunicipioRepository } from '@domain/repositories';
 import { MUNICIPIOS_ENDPOINTS } from '@api/endpoints';
-import { handleSuccessResponse, handleErrorResponse } from '@config/api/responseHandler';
+import { handleSuccessResponse, handleErrorResponse } from '@api/responseHandler';
 
 export class MunicipioRepository extends IMunicipioRepository {
   /**

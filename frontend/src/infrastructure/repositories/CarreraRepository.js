@@ -14,7 +14,7 @@
 import apiClient from '@api-client';
 import { ICarreraRepository } from '@domain/repositories';
 import { CARRERAS_ENDPOINTS } from '@api/endpoints';
-import { handleSuccessResponse, handleErrorResponse } from '@config/api/responseHandler';
+import { handleSuccessResponse, handleErrorResponse } from '@api/responseHandler';
 
 export class CarreraRepository extends ICarreraRepository {
   /**

@@ -4,4 +4,5 @@ export { ObtenerDatosRegistroEstudianteUseCase } from './ObtenerDatosRegistroEst
 export { ObtenerDatosGeograficosFiltradosUseCase } from './ObtenerDatosGeograficosFiltradosUseCase';
 export { ObtenerDatosReferenciaFiltradosUseCase } from './ObtenerDatosReferenciaFiltradosUseCase';
 export { CrearEstudianteUseCase } from './CrearEstudianteUseCase';
+export { BuscarEstudianteUseCase } from './BuscarEstudianteUseCase';
 

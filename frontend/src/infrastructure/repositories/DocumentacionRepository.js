@@ -14,7 +14,7 @@
 import apiClient from '@api-client';
 import { IDocumentacionRepository } from '@domain/repositories';
 import { DOCUMENTACION_ENDPOINTS } from '@api/endpoints';
-import { handleSuccessResponse, handleErrorResponse } from '@config/api/responseHandler';
+import { handleSuccessResponse, handleErrorResponse } from '@api/responseHandler';
 
 export class DocumentacionRepository extends IDocumentacionRepository {
   /**
