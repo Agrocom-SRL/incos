@@ -109,3 +109,25 @@ export const Table = {
   borderColor: allColors.colorBorder,
   headerSplitColor: allColors.colorBorder,
 };
+
+/**
+ * List - Listas de datos
+ * Propiedades reconocidas por Ant Design v5
+ * 
+ * NOTA: Algunos estilos personalizados (padding de items, hover) se manejan en CSS
+ * usando variables del tema para mantener consistencia.
+ */
+export const List = {
+  // Colores base
+  colorBgContainer: allColors.colorBgContainer,
+  colorBorder: allColors.colorBorder,
+  colorBorderSecondary: allColors.colorBorderSecondary,
+  
+  // Espaciado
+  borderRadius: allSpacing.borderRadius,
+  padding: allSpacing.padding,
+  paddingLG: allSpacing.paddingLG,
+  
+  // Item hover (se maneja principalmente en CSS)
+  colorFillTertiary: allColors.colorAccentOliveBg, // Hover background
+};

@@ -10,6 +10,9 @@
  * permitiendo modificar los campos sin afectar la estructura del step.
  */
 
+import { UserOutlined } from '@ant-design/icons';
+import { Text } from '@atoms';
+
 /**
  * Configuración de cabecera de la sección buscarEstudiante
  * 
@@ -34,6 +37,40 @@ const BUSCAR_ESTUDIANTE_FIELDS = [
     required: true,
     span: 12,
     allowClear: true,
+  },
+  {
+    name: 'resultadosEstudiantes',
+    type: 'list',
+    label: '',
+    span: 12,
+    required: false,
+    emptyMessage: 'No se encontraron estudiantes. Realice una búsqueda para ver resultados.',
+    // Función para renderizar cada item usando los datos ya transformados por el mapper
+    // Los datos vienen del mapper (estudianteListMapper) que ya tiene:
+    // - nombreCompleto: formateado por buildPersonDisplayData
+    // - ciCompleto: formateado por buildPersonDisplayData
+    // - codigoEstudiante: del backend
+    renderItem: (student) => {
+      // Los datos ya vienen transformados del mapper (useSearchStudent → mapEstudiantesList → estudianteListMapper)
+      // Usar directamente nombreCompleto y ciCompleto que ya están formateados
+      const captionParts = [];
+
+      if (student.ciCompleto) {
+        captionParts.push(`CI: ${student.ciCompleto}`);
+      }
+
+      if (student.codigoEstudiante) {
+        captionParts.push(`Código: ${student.codigoEstudiante}`);
+      }
+
+      const caption = captionParts.length > 0 ? captionParts.join(' | ') : null;
+
+      return {
+        avatar: <UserOutlined className="student-list-item-avatar" />,
+        title: student.nombreCompleto || 'Sin nombre',
+        caption: caption ? <Text type="secondary">{caption}</Text> : null,
+      };
+    },
   },
   {
     name: 'infoBusqueda',

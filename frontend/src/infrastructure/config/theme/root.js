@@ -104,6 +104,12 @@ export function injectCSSVariables() {
   root.style.setProperty('--color-table-header-sorted-hover-bg', componentConfig.Table.headerSortedHoverBg);
   root.style.setProperty('--color-table-row-hover-bg', componentConfig.Table.rowHoverBg);
   
+  // ========================================
+  // ITEM HOVER - Variable genérica para hover de items (tablas, listas, etc.)
+  // Reutiliza colorAccentOliveBg que se usa tanto en Table como en List
+  // ========================================
+  root.style.setProperty('--color-item-hover-bg', allThemeTokens.colorAccentOliveBg);
+  
   // Variables de borde y texto usadas en múltiples componentes
   root.style.setProperty('--color-border-secondary', allThemeTokens.colorBorderSecondary);
   root.style.setProperty('--color-border', allThemeTokens.colorBorder);

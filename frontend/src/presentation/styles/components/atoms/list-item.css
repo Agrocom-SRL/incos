@@ -1,0 +1,31 @@
+/* ============================================================================
+   LIST ITEM (Componente Atómico)
+   ============================================================================
+   Estilos para items de lista personalizados
+   Los colores base vienen del tema de Ant Design (List componentConfig)
+   Variables CSS adicionales para estilos personalizados
+   ============================================================================ */
+
+.list-item {
+  /* Padding del item - usando variable del tema */
+  padding: var(--spacing-base);
+  
+  /* Border - usando variable del tema */
+  border: 1px solid var(--color-border-secondary);
+  border-radius: var(--border-radius-sm);
+  margin-bottom: var(--spacing-sm);
+  
+  /* Transición suave para hover */
+  transition: all var(--transition-base);
+}
+
+/* Hover state - usando variable genérica de hover de items */
+.list-item:hover {
+  background-color: var(--color-item-hover-bg);
+  border-color: var(--color-primary);
+}
+
+/* Cursor pointer cuando es clickeable */
+.list-item[style*="cursor: pointer"] {
+  cursor: pointer;
+}

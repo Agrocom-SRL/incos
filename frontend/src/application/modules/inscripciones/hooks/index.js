@@ -34,4 +34,4 @@ export { useInscripcionesData } from './state/useInscripcionesData';
 export { useInscripcionNuevaPageData } from './features/useInscripcionNuevaPageData';
 export { useInscripcionNuevaFormHandlers } from './features/useInscripcionNuevaFormHandlers';
 export { useInscripcionNuevaStudentSearch } from './features/useInscripcionNuevaStudentSearch';
-export { useInscripcionNuevaWizardSteps } from './features/useInscripcionNuevaWizardSteps';
+// Nota: useEnrichWizardSteps está en @application-utils/hooks (hook genérico reutilizable)

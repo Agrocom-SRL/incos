@@ -21,7 +21,7 @@
  * 3. Armar horario de clases mostrando horarios
  */
 
-import { getStep1Fields } from './steps/step1BuscarEstudiante';
+import { getStep1Fields } from './steps/step1BuscarEstudiante.jsx';
 import { getStep2Fields } from './steps/step2SeleccionarParalelos';
 import { getStep3Fields } from './steps/step3HorarioClases';
 

@@ -47,3 +47,22 @@
   resize: vertical; /* Permitir redimensionar solo verticalmente */
 }
 
+/* Search field wrapper: contenedor para el campo de búsqueda y sus children */
+.search-field-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  width: 100%;
+}
+
+/* Children del campo de búsqueda: se renderizan debajo del input */
+.search-field-children {
+  width: 100%;
+  margin-top: var(--spacing-sm);
+}
+
+/* Asegurar que los children ocupen todo el ancho disponible */
+.search-field-children > * {
+  width: 100%;
+}
+

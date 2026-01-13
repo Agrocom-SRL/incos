@@ -32,64 +32,80 @@ import { InscripcionesNuevaContext } from '@application-inscripciones/context/In
 import { 
     useInscripcionNuevaPageData, 
     useInscripcionNuevaFormHandlers, 
-    useInscripcionNuevaStudentSearch,
-    useInscripcionNuevaWizardSteps 
+    useInscripcionNuevaStudentSearch
 } from '@application-inscripciones/hooks';
-import { useMessage } from '@application/utils';
+import { useEnrichWizardSteps } from '@application-utils/hooks';
+import { studentEnrichers } from '@application-inscripciones/hooks/features/enrichers/studentEnrichers';
 
 export const InscripcionesNuevaProvider = ({ children, mode = 'nuevo' }) => {
-    // Hook genérico compartido para mostrar mensajes
-    const showMessage = useMessage();
-    
     // Hook feature: maneja toda la lógica específica de la página (título, breadcrumbs, wizardSteps, etc.)
     const pageData = useInscripcionNuevaPageData({ mode });
     
     // Hook especializado: manejar handlers de submit y gestión del formulario
-    const formHandlers = useInscripcionNuevaFormHandlers(showMessage, mode);
+    // El hook usa useMessage() internamente, no necesita pasarlo como parámetro
+    const formHandlers = useInscripcionNuevaFormHandlers(mode);
     
     // Hook de búsqueda de estudiantes: encapsula la dependencia del módulo de estudiantes
     const studentSearch = useInscripcionNuevaStudentSearch();
     
-    // Hook de estado: enriquecer wizardSteps con callbacks dinámicos
-    // La lógica de enriquecimiento está en el hook, no en el provider
-    const enrichedWizardSteps = useInscripcionNuevaWizardSteps(pageData.wizardSteps, {
-        onSearchStudent: studentSearch.searchStudent,
-    });
-    
-    // Función para resolver opciones de campos (select, radio, etc.)
-    // TODO: Crear hook especializado useInscripcionFormOptions cuando se necesite
-    const resolveOptions = () => {
-        // TODO: Implementar resolución de opciones según el campo
-        return [];
-    };
+    // Hook genérico: enriquecer wizardSteps de forma genérica y extensible
+    // La lógica de enriquecimiento específica está en los enrichers, no en el hook
+    // El hook solo orquesta la aplicación de los enrichers
+    // 
+    // Ventajas de este enfoque:
+    // - Extensible: Agregar nuevos enrichers sin modificar el hook
+    // - Testeable: Cada enricher se puede testear independientemente
+    // - Mantenible: Lógica específica separada en archivos de enrichers
+    // - Reutilizable: El hook genérico puede ser usado por cualquier módulo
+    const enrichedWizardSteps = useEnrichWizardSteps(
+        pageData.wizardSteps,
+        studentEnrichers, // Array de funciones de enriquecimiento específicas de estudiantes
+        {
+            // Contexto con callbacks y datos disponibles para los enrichers
+            onSearchStudent: studentSearch.searchStudent,
+            studentSearch: studentSearch,
+            // TODO: Agregar más contextos cuando se necesiten:
+            // paralelosData: paralelosData,
+            // horariosData: horariosData,
+            // materiasData: materiasData,
+        }
+    );
     
     // Componer el valor del contexto: datos + lógica + funciones de carga
     // El provider solo orquesta hooks y expone sus resultados
+    // 
+    // Optimización: Usar objetos completos tanto en el cuerpo como en dependencias
+    // - Más escalable: no necesitas actualizar cuando agregas propiedades
+    // - Más mantenible: menos código repetitivo
+    // - React compara por referencia, así que si el objeto cambia, se recalcula automáticamente
     const value = useMemo(() => ({
-        // Datos de la página (título, breadcrumbs desde el hook feature)
-        pageTitle: pageData.pageTitle,
-        breadcrumbItems: pageData.breadcrumbItems,
-        // WizardSteps enriquecidos con callbacks dinámicos
-        wizardSteps: enrichedWizardSteps,
+        // Datos de la página (spread de pageData, pero sobrescribimos wizardSteps con versión enriquecida)
+        ...pageData,
+        wizardSteps: enrichedWizardSteps, // Sobrescribir con versión enriquecida
         
-        // Handlers y estados del formulario (desde useInscripcionNuevaFormHandlers)
+        // Handlers y estados del formulario (spread completo de formHandlers)
+        // Incluye: form, handleFinish, handleSave, getFormValues, loading, error, etc.
         ...formHandlers,
         
-        // Búsqueda de estudiantes (desde useInscripcionNuevaStudentSearch)
+        // Búsqueda de estudiantes (exponer solo lo necesario del hook)
         studentSearch: {
             students: studentSearch.students,
             loading: studentSearch.loading,
             error: studentSearch.error,
         },
         
-        // Resolver opciones de campos
-        resolveOptions,
-        
         // TODO: Se agregarán en pasos siguientes:
+        // - Resolver opciones de campos (si se necesitan, usar enrichers)
         // - Datos del catálogo (carreras, materias, etc.)
         // - Funciones de carga bajo demanda
         // - Validaciones específicas
-    }), [pageData.pageTitle, pageData.breadcrumbItems, enrichedWizardSteps, formHandlers, studentSearch, resolveOptions]);
+    }), [
+        // Usar objetos completos: más escalable y mantenible
+        pageData,           // Incluye pageTitle, breadcrumbItems, wizardSteps
+        enrichedWizardSteps, // WizardSteps enriquecidos (sobrescribe pageData.wizardSteps)
+        formHandlers,       // Incluye handleFinish, handleSave, registerForm, loading, error, etc.
+        studentSearch,      // Incluye students, loading, error, searchStudent, refetch
+    ]);
 
     return (
         <InscripcionesNuevaContext.Provider value={value}>

@@ -1,0 +1,17 @@
+/* ============================================================================
+   DATA LIST (Componente Molécula)
+   ============================================================================
+   Estilos para lista de datos genérica
+   Los colores base vienen del tema de Ant Design (List componentConfig)
+   Variables CSS adicionales para layout y espaciado
+   ============================================================================ */
+
+.data-list {
+  /* Contenedor principal de la lista */
+  width: 100%;
+}
+
+/* Contenedor de loading - usando Flex de Ant Design */
+.data-list-loading {
+  padding: var(--spacing-xl);
+}

@@ -15,12 +15,12 @@
  * Uso: Solo dentro del componente FormField
  */
 
-import { 
-  FieldInput, 
-  FieldSelect, 
-  FieldDatePicker, 
-  FieldSwitch, 
-  FieldTextarea, 
+import {
+  FieldInput,
+  FieldSelect,
+  FieldDatePicker,
+  FieldSwitch,
+  FieldTextarea,
   FieldRadio,
   Button,
   SearchBar,

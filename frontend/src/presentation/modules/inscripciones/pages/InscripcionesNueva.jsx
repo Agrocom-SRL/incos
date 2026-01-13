@@ -17,47 +17,40 @@
  * Nota: Esta es una versión base que se irá completando por pasos
  */
 
-import { useEffect } from 'react';
-import { Form } from 'antd';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { WizardForm } from '@organisms';
 import { useInscripcionesNuevaContext } from '@application-inscripciones/hooks';
 
 const InscripcionesNueva = () => {
-    const [form] = Form.useForm();
-    
     // Solo consumir datos del contexto (toda la lógica está en el Provider)
+    // El provider hace spread de objetos, así que las propiedades están aplanadas en el contexto
+    // Separar por grupos lógicos para mejor organización y claridad
+    const context = useInscripcionesNuevaContext();
+    
+    // Datos de la página (desde useInscripcionNuevaPageData - spread de pageData)
     const {
-        // Datos de la página (desde useInscripcionNuevaPageData)
         pageTitle,
         breadcrumbItems,
         wizardSteps,
-        
-        // Handlers y estados del formulario (desde useInscripcionNuevaFormHandlers)
+    } = context;
+    
+    // Handlers y estados del formulario (desde useInscripcionNuevaFormHandlers - spread de formHandlers)
+    // Incluye: form (creado y registrado automáticamente), handleFinish, handleSave, loading, error, etc.
+    const {
+        form,
         loading = false,
         error = null,
         handleFinish,
         handleSave,
-        registerForm,
-        
-        // Búsqueda de estudiantes (desde useInscripcionNuevaStudentSearch)
-        studentSearch,
-        
-        // Funciones del formulario
-        resolveOptions,
-        
-        // TODO: Se agregarán en pasos siguientes:
-        // inscripcionResult, // Para reaccionar al resultado de la inscripción
-        // validationErrors, // Para mostrar errores de validación
-    } = useInscripcionesNuevaContext();
-
-    // Registrar el formulario en el contexto para que los handlers puedan acceder a sus valores
-    useEffect(() => {
-        if (registerForm && form) {
-            registerForm(form);
-        }
-    }, [registerForm, form]);
+    } = context;
+    
+    // Búsqueda de estudiantes (objeto específico desde useInscripcionNuevaStudentSearch)
+    const { studentSearch } = context;
+    
+    // TODO: Se agregarán en pasos siguientes:
+    // const { inscripcionResult } = context; // Para reaccionar al resultado de la inscripción
+    // const { validationErrors } = context; // Para mostrar errores de validación
 
     return (
         <PageTemplate
@@ -74,38 +67,12 @@ const InscripcionesNueva = () => {
                 steps={wizardSteps}
                 loading={loading}
                 viewMode={false}
-                resolveOptions={resolveOptions}
+                resolveOptions={() => []}
                 initialValues={{}}
                 form={form}
                 onFinish={handleFinish}
                 onSave={handleSave}
             />
-            
-            {/* Debug: Mostrar resultados de búsqueda (temporal) */}
-            {studentSearch && (
-                <div style={{ marginTop: '24px', padding: '16px', border: '1px solid #d9d9d9', borderRadius: '4px' }}>
-                    <h3>Resultados de Búsqueda (Debug):</h3>
-                    {studentSearch.loading && <p>Buscando...</p>}
-                    {studentSearch.error && (
-                        <p style={{ color: 'red' }}>Error: {studentSearch.error}</p>
-                    )}
-                    {!studentSearch.loading && !studentSearch.error && (
-                        <>
-                            <p><strong>Total encontrados:</strong> {studentSearch.students?.length || 0}</p>
-                            {studentSearch.students && studentSearch.students.length > 0 ? (
-                                <div>
-                                    <h4>Estudiantes encontrados:</h4>
-                                    <pre style={{ background: '#f5f5f5', padding: '12px', borderRadius: '4px', overflow: 'auto' }}>
-                                        {JSON.stringify(studentSearch.students, null, 2)}
-                                    </pre>
-                                </div>
-                            ) : (
-                                <p>No se encontraron estudiantes</p>
-                            )}
-                        </>
-                    )}
-                </div>
-            )}
         </PageTemplate>
     );
 };

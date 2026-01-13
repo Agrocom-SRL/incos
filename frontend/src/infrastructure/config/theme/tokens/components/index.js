@@ -45,4 +45,5 @@ export const componentConfig = {
   Avatar: content.Avatar,
   Alert: content.Alert,
   Table: content.Table,
+  List: content.List,
 };

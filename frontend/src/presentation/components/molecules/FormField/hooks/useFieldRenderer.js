@@ -41,6 +41,8 @@ export const useFieldRenderer = ({
   readOnly,
   selectOptions,
   minAge,
+  form,
+  resolveOptions,
 }) => {
   const renderField = useCallback(() => {
     const renderer = getFieldRenderer(fieldType);
@@ -60,9 +62,14 @@ export const useFieldRenderer = ({
       return renderer(field, disabled, readOnly, minAge);
     }
     
-    // Para input, search, switch, textarea: solo necesitan field, disabled, readOnly
+    // Para search: necesita form, resolveOptions, minAge para renderizar children
+    if (fieldType === 'search') {
+      return renderer(field, disabled, readOnly, form, resolveOptions, minAge);
+    }
+    
+    // Para input, switch, textarea: solo necesitan field, disabled, readOnly
     return renderer(field, disabled, readOnly);
-  }, [fieldType, field, disabled, readOnly, selectOptions, minAge]);
+  }, [fieldType, field, disabled, readOnly, selectOptions, minAge, form, resolveOptions]);
 
   return renderField;
 };

@@ -34,3 +34,23 @@ export const isConditional = (field) => {
   return field?.conditional === true;
 };
 
+/**
+ * Verifica si un campo es de tipo lista
+ * 
+ * @param {Object} field - Campo a verificar
+ * @returns {boolean} true si es una lista
+ */
+export const isList = (field) => {
+  return field?.type === 'list';
+};
+
+/**
+ * Verifica si un campo es de tipo documento
+ * 
+ * @param {Object} field - Campo a verificar
+ * @returns {boolean} true si es un documento
+ */
+export const isDocumento = (field) => {
+  return field?.type === 'documento' && field?.documento;
+};
+

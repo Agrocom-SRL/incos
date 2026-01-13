@@ -24,11 +24,10 @@
  * - Soporta subsecciones usando FormSubsection
  */
 
-import { Row, Col } from 'antd';
+import { Row } from 'antd';
 import { Card } from '@atoms';
-import { FormField, FormSubsection, DocumentoItem } from '@molecules';
 import { useFormSectionFields } from './hooks/useFormSectionFields';
-import { isSubsection } from './utils/fieldTypes';
+import FieldRenderer from './components/FieldRenderer';
 
 const FormSection = ({
   title,
@@ -64,67 +63,19 @@ const FormSection = ({
     >
       {/* Campos del formulario */}
       <Row gutter={[24, 16]} className="form-section-fields">
-        {safeFields.map((field, index) => {
-          // Si es una sub-sección, renderizarla usando FormSubsection
-          if (isSubsection(field)) {
-            return (
-              <FormSubsection
-                key={`subsection-${field.subsectionIndex !== undefined ? field.subsectionIndex : index}`}
-                subsectionTitle={field.subsectionTitle}
-                fields={field.fields || []}
-                form={form}
-                resolveOptions={resolveOptions}
-                minAge={minAge}
-                readOnly={readOnly}
-                conditional={field.conditional || false}
-                dependsOn={field.dependsOn}
-                showIf={field.showIf}
-                showDeleteButton={field.showDeleteButton || false}
-                onDelete={field.onDelete || null}
-              />
-            );
-          }
-
-          // Verificar si el campo debe mostrarse (usando helper del hook)
-          if (!shouldShowField(field)) {
-            return null;
-          }
-
-          // Obtener configuración de columnas (usando helper del hook)
-          const columns = getColumns(field);
-
-          // Si es un campo de tipo documento, renderizar DocumentoItem
-          if (field.type === 'documento' && field.documento) {
-            return (
-              <Col
-                key={field.name}
-                {...columns}
-              >
-                <DocumentoItem
-                  documento={field.documento}
-                  form={form}
-                  readOnly={readOnly}
-                />
-              </Col>
-            );
-          }
-
-          // Para otros tipos de campos, usar FormField
-          return (
-            <Col
-              key={field.name}
-              {...columns}
-            >
-              <FormField
-                field={field}
-                form={form}
-                resolveOptions={resolveOptions}
-                minAge={minAge}
-                readOnly={readOnly}
-              />
-            </Col>
-          );
-        })}
+        {safeFields.map((field, index) => (
+          <FieldRenderer
+            key={field.name || `field-${index}`}
+            field={field}
+            index={index}
+            form={form}
+            resolveOptions={resolveOptions}
+            minAge={minAge}
+            readOnly={readOnly}
+            getColumns={getColumns}
+            shouldShowField={shouldShowField}
+          />
+        ))}
       </Row>
     </Card>
   );

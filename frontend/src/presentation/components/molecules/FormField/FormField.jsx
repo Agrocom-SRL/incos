@@ -49,6 +49,8 @@ const FormField = ({ field, form, resolveOptions, minAge = null, readOnly = fals
     readOnly,
     selectOptions,
     minAge: fieldMinAge,
+    form,
+    resolveOptions,
   });
 
   // Los botones y alertas no se envuelven en Form.Item (no son campos de formulario)
