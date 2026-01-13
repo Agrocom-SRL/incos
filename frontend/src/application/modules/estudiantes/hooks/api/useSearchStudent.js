@@ -15,20 +15,24 @@
  * Este hook:
  * - Busca estudiantes por término de búsqueda usando BuscarEstudianteUseCase
  * - NO valida parámetros (las validaciones están en el Use Case)
- * - Transforma la respuesta del backend usando normalizeSearchResponse
+ * - Normaliza la estructura de respuesta usando normalizeFieldToArray (transformador genérico)
+ * - Transforma datos usando mapEstudiantesList (mapper específico del módulo)
  * - Normaliza errores usando helpers genéricos (extractErrorFromResult, normalizeError)
  * - Maneja estados de loading y error
  * - Proporciona función para refetch
  * 
  * Nota: Este hook es específico para llamadas a la API.
- * - La transformación de datos se hace aquí usando mappers de Application Layer
+ * 
+ * Separación de responsabilidades:
+ * - Transformador (normalizeFieldToArray): Normaliza estructura (objeto → array) - genérico, reutilizable en cualquier módulo
+ * - Mapper (mapEstudiantesList): Transforma datos al formato de UI - específico del módulo de estudiantes
  * - El manejo de errores se hace usando helpers genéricos reutilizables
  */
 
 import { useState, useCallback } from 'react';
 import { useCasesFactory } from '@container';
-import { normalizeSearchResponse } from '@application-estudiantes/mappers';
-import { extractErrorFromResult, normalizeError } from '@application/utils';
+import { mapEstudiantesList } from '@application-estudiantes/mappers';
+import { extractErrorFromResult, normalizeError, normalizeFieldToArray } from '@application/utils';
 
 export const useSearchStudent = () => {
   const [students, setStudents] = useState([]);
@@ -63,9 +67,11 @@ export const useSearchStudent = () => {
         return;
       }
 
-      // 4. Si hay éxito, transformar y actualizar el estado con los estudiantes
-      // El Use Case retorna datos crudos del backend, el hook los transforma usando mapper
-      const estudiantes = normalizeSearchResponse(result.data);
+      // 4. Si hay éxito, normalizar estructura y transformar usando mapEstudiantesList
+      // Paso 1: Normalizar estructura (objeto → array) usando transformador genérico reutilizable
+      const estudiantesNormalizados = normalizeFieldToArray(result.data, 'student');
+      // Paso 2: Transformar datos al formato de UI usando mapper específico del módulo
+      const estudiantes = mapEstudiantesList(estudiantesNormalizados);
       setStudents(estudiantes);
     } catch (err) {
       // Error inesperado (no debería llegar aquí si el Use Case maneja bien los errores)

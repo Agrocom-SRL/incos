@@ -68,7 +68,10 @@ export class BaseSearchUseCase {
   /**
    * Formatea un resultado individual a formato plano
    * 
-   * @param {Object} result - Resultado a formatear
+   * Hook method: Puede ser sobrescrito por subclases para usar mappers específicos
+   * Por defecto usa toPlainObject() de la entidad
+   * 
+   * @param {Object} result - Resultado a formatear (entidad de dominio)
    * @returns {Object} Resultado formateado
    */
   formatResult(result) {

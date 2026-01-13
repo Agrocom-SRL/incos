@@ -5,8 +5,12 @@
  * 
  * Busca en: codigo_estudiante, ci, apellido_paterno, apellido_materno, nombres
  * (campos definidos en StudentRepository.getSearchFields())
+ * 
+ * Usa StudentMapper para convertir entidades a formato de presentación (campos en español)
+ * manteniendo consistencia con ListStudentsUseCase
  */
 import { BaseSearchUseCase } from '../base/BaseSearchUseCase.js';
+import { StudentMapper } from '../../mappers/estudiantes/index.js';
 
 export class SearchStudentUseCase extends BaseSearchUseCase {
   /**
@@ -21,5 +25,16 @@ export class SearchStudentUseCase extends BaseSearchUseCase {
       moduleName: 'Estudiantes',
       resourceName: 'estudiante',
     });
+  }
+
+  /**
+   * Formatea un resultado individual usando StudentMapper
+   * Convierte campos de inglés a español para mantener consistencia con ListStudentsUseCase
+   * 
+   * @param {Student} result - Entidad Student de dominio
+   * @returns {Object} Estudiante en formato de presentación (campos en español)
+   */
+  formatResult(result) {
+    return StudentMapper.entityToPresentation(result);
   }
 }
