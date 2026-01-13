@@ -45,17 +45,33 @@ const renderInput = (field, disabled, readOnly) => (
 
 /**
  * Renderer para campo de tipo select
+ * 
+ * Nota: onChange puede venir del campo (agregado por enrichers) para manejar selección
+ * Ant Design Form.Item también maneja onChange automáticamente para actualizar el formulario
+ * Si field.onChange existe, se ejecutará además del onChange del Form.Item
  */
-const renderSelect = (field, disabled, readOnly, selectOptions) => (
-  <FieldSelect
-    placeholder={field.placeholder}
-    disabled={disabled}
-    readOnly={readOnly}
-    options={selectOptions}
-    icon={field.icon}
-    defaultValue={field.defaultValue}
-  />
-);
+const renderSelect = (field, disabled, readOnly, selectOptions, form) => {
+  // Si hay un onChange personalizado del campo (agregado por enrichers),
+  // combinarlo con el onChange del Form.Item
+  const handleChange = field.onChange ? (value) => {
+    // Ejecutar el callback personalizado (guarda selección en estado)
+    field.onChange(value);
+    // El Form.Item manejará automáticamente la actualización del formulario
+  } : undefined;
+
+  return (
+    <FieldSelect
+      placeholder={field.placeholder}
+      disabled={disabled}
+      readOnly={readOnly}
+      options={selectOptions}
+      icon={field.icon}
+      defaultValue={field.defaultValue}
+      onChange={handleChange} // Callback combinado (personalizado + Form.Item)
+      loading={field.loading} // Estado de carga (agregado por enrichers)
+    />
+  );
+};
 
 /**
  * Renderer para campo de tipo date

@@ -11,6 +11,49 @@
  */
 
 /**
+ * Configuración de cabecera de la sección paralelos
+ */
+const PARALELOS_HEADER = {
+  title: 'Seleccionar Carrera y Paralelos',
+};
+
+/**
+ * Configuración de campos para la sección paralelos
+ */
+const PARALELOS_FIELDS = [
+  {
+    name: 'carrera',
+    type: 'select',
+    label: 'Carrera',
+    placeholder: 'Seleccione una carrera',
+    required: true,
+    span: 12,
+    // Las opciones se agregan dinámicamente por el enricher (carreraEnrichers)
+    // El enricher transforma las carreras en opciones para el select
+  },
+  {
+    name: 'infoCarrera',
+    type: 'alert',
+    label: '',
+    message: 'Información',
+    description: 'Seleccione la carrera del estudiante. Una vez seleccionada, se mostrarán los paralelos disponibles para el período actual.',
+    alertType: 'info',
+    span: 12,
+    required: false,
+  },
+  // TODO: Agregar campo de paralelos cuando se implemente
+  // {
+  //   name: 'paralelos',
+  //   type: 'select',
+  //   label: 'Paralelos',
+  //   placeholder: 'Seleccione los paralelos',
+  //   required: true,
+  //   span: 12,
+  //   mode: 'multiple', // Permite selección múltiple
+  // },
+];
+
+/**
  * Retorna la configuración de campos para el paso 2: Seleccionar Paralelos
  * 
  * @returns {Object} Configuración de campos para la sección paralelos
@@ -18,18 +61,8 @@
 export const getStep2Fields = () => {
   return {
     paralelos: {
-      title: 'Paralelos del Período',
-      fields: [
-        // TODO: Se implementarán los campos en pasos siguientes
-        // Por ahora solo texto informativo
-        {
-          name: 'info',
-          type: 'text',
-          label: 'Información',
-          placeholder: 'Se mostrarán los paralelos disponibles según la carrera del estudiante...',
-          // Este campo será reemplazado por un componente de selección en pasos siguientes
-        },
-      ],
+      ...PARALELOS_HEADER,
+      fields: PARALELOS_FIELDS,
     },
   };
 };

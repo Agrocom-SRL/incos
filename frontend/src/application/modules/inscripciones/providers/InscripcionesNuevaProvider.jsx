@@ -32,10 +32,12 @@ import { InscripcionesNuevaContext } from '@application-inscripciones/context/In
 import { 
     useInscripcionNuevaPageData, 
     useInscripcionNuevaFormHandlers, 
-    useInscripcionNuevaStudentSearch
+    useInscripcionNuevaStudentSearch,
+    useInscripcionNuevaCarreras
 } from '@application-inscripciones/hooks';
 import { useEnrichWizardSteps } from '@application-utils/hooks';
 import { studentEnrichers } from '@application-inscripciones/hooks/features/enrichers/studentEnrichers';
+import { carreraEnrichers } from '@application-inscripciones/hooks/features/enrichers/carreraEnrichers';
 
 export const InscripcionesNuevaProvider = ({ children, mode = 'nuevo' }) => {
     // Hook feature: maneja toda la lógica específica de la página (título, breadcrumbs, wizardSteps, etc.)
@@ -48,6 +50,9 @@ export const InscripcionesNuevaProvider = ({ children, mode = 'nuevo' }) => {
     // Hook de búsqueda de estudiantes: encapsula la dependencia del módulo de estudiantes
     const studentSearch = useInscripcionNuevaStudentSearch();
     
+    // Hook de carreras: encapsula la dependencia del módulo de carreras
+    const carrerasData = useInscripcionNuevaCarreras();
+    
     // Hook genérico: enriquecer wizardSteps de forma genérica y extensible
     // La lógica de enriquecimiento específica está en los enrichers, no en el hook
     // El hook solo orquesta la aplicación de los enrichers
@@ -57,13 +62,19 @@ export const InscripcionesNuevaProvider = ({ children, mode = 'nuevo' }) => {
     // - Testeable: Cada enricher se puede testear independientemente
     // - Mantenible: Lógica específica separada en archivos de enrichers
     // - Reutilizable: El hook genérico puede ser usado por cualquier módulo
+    // Combinar todos los enrichers (estudiantes y carreras)
+    const allEnrichers = [...studentEnrichers, ...carreraEnrichers];
+    
     const enrichedWizardSteps = useEnrichWizardSteps(
         pageData.wizardSteps,
-        studentEnrichers, // Array de funciones de enriquecimiento específicas de estudiantes
+        allEnrichers, // Array de funciones de enriquecimiento (estudiantes + carreras)
         {
             // Contexto con callbacks y datos disponibles para los enrichers
             onSearchStudent: studentSearch.searchStudent,
+            onSelectStudent: studentSearch.onSelectStudent, // Callback para seleccionar estudiante
             studentSearch: studentSearch,
+            onSelectCarrera: carrerasData.onSelectCarrera, // Callback para seleccionar carrera
+            carrerasData: carrerasData, // Datos de carreras (carreras, loading, error)
             // TODO: Agregar más contextos cuando se necesiten:
             // paralelosData: paralelosData,
             // horariosData: horariosData,
@@ -87,11 +98,20 @@ export const InscripcionesNuevaProvider = ({ children, mode = 'nuevo' }) => {
         // Incluye: form, handleFinish, handleSave, getFormValues, loading, error, etc.
         ...formHandlers,
         
-        // Búsqueda de estudiantes (exponer solo lo necesario del hook)
+        // Búsqueda de estudiantes (exponer lo necesario del hook)
         studentSearch: {
             students: studentSearch.students,
             loading: studentSearch.loading,
             error: studentSearch.error,
+            selectedStudent: studentSearch.selectedStudent, // Estudiante seleccionado (se usa en step2)
+        },
+        
+        // Carreras (exponer lo necesario del hook)
+        carrerasData: {
+            carreras: carrerasData.carreras,
+            loading: carrerasData.loading,
+            error: carrerasData.error,
+            selectedCarrera: carrerasData.selectedCarrera, // Carrera seleccionada (se usa para crear estudiantes_datos_academicos)
         },
         
         // TODO: Se agregarán en pasos siguientes:
@@ -104,7 +124,8 @@ export const InscripcionesNuevaProvider = ({ children, mode = 'nuevo' }) => {
         pageData,           // Incluye pageTitle, breadcrumbItems, wizardSteps
         enrichedWizardSteps, // WizardSteps enriquecidos (sobrescribe pageData.wizardSteps)
         formHandlers,       // Incluye handleFinish, handleSave, registerForm, loading, error, etc.
-        studentSearch,      // Incluye students, loading, error, searchStudent, refetch
+        studentSearch,      // Incluye students, loading, error, searchStudent, refetch, selectedStudent
+        carrerasData,       // Incluye carreras, loading, error, refetch, selectedCarrera
     ]);
 
     return (

@@ -17,7 +17,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- ============================================
 
 INSERT INTO configuracion_sistema (clave, valor, tipo, descripcion, activo) VALUES
-('gestion_actual', '2026', 'NUMBER', 'Gestión activa actual para generación de códigos de estudiantes', TRUE),
+('gestion_actual', '2025', 'NUMBER', 'Gestión activa actual para generación de códigos de estudiantes', TRUE),
 ('admision_gestion_2025', '0', 'NUMBER', 'Último número correlativo usado para códigos de estudiantes en la gestión 2025', TRUE),
 ('admision_gestion_2026', '0', 'NUMBER', 'Último número correlativo usado para códigos de estudiantes en la gestión 2026', TRUE);
 

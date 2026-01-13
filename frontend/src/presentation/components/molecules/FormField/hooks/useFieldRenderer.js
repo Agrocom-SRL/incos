@@ -55,7 +55,8 @@ export const useFieldRenderer = ({
     // Determinar qué parámetros pasar según el tipo de campo
     // Strategy Pattern: cada renderer recibe exactamente los parámetros que necesita
     if (fieldType === 'select' || fieldType === 'radio') {
-      return renderer(field, disabled, readOnly, selectOptions);
+      // Select necesita form para combinar onChange personalizado con Form.Item
+      return renderer(field, disabled, readOnly, selectOptions, form);
     }
     
     if (fieldType === 'date') {

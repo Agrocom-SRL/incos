@@ -55,9 +55,12 @@ export const useFormFieldOptions = ({
     if (typeof fieldOptions === 'string') {
       // Si es string, usar resolveOptions para obtenerlas
       options = resolveOptions ? resolveOptions(fieldOptions) : [];
-    } else {
+    } else if (Array.isArray(fieldOptions)) {
       // Si es array, usarlo directamente
-      options = fieldOptions || [];
+      options = fieldOptions;
+    } else {
+      // Si no hay opciones definidas, retornar array vacío
+      options = [];
     }
 
     // Si hay exclusión, filtrar las opciones
