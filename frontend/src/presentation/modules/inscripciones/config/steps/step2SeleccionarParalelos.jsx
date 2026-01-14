@@ -10,6 +10,9 @@
  * permitiendo modificar los campos sin afectar la estructura del step.
  */
 
+import { BookOutlined } from '@ant-design/icons';
+import { Text } from '@atoms';
+
 /**
  * Configuración de cabecera de la sección paralelos
  */
@@ -53,16 +56,36 @@ const PARALELOS_FIELDS = [
     span: 12,
     required: false,
   },
-  // TODO: Agregar campo de paralelos cuando se implemente
-  // {
-  //   name: 'paralelos',
-  //   type: 'select',
-  //   label: 'Paralelos',
-  //   placeholder: 'Seleccione los paralelos',
-  //   required: true,
-  //   span: 12,
-  //   mode: 'multiple', // Permite selección múltiple
-  // },
+  {
+    name: 'listaParalelos',
+    type: 'list',
+    label: 'Paralelos Disponibles',
+    span: 24,
+    required: false,
+    emptyMessage: 'Seleccione una carrera para ver los paralelos disponibles.',
+    // Función para renderizar cada item usando los datos ya transformados por el mapper
+    // Los datos vienen del mapper (paraleloListMapper) que ya tiene:
+    // - id, codigo, nombre, descripcion, carreraId, materiaId
+    renderItem: (paralelo) => {
+      const data = [];
+
+      if (paralelo.codigo) {
+        data.push(`Código: ${paralelo.codigo}`);
+      }
+
+      if (paralelo.descripcion) {
+        data.push(paralelo.descripcion);
+      }
+
+      const caption = data.length > 0 ? data.join(' | ') : null;
+
+      return {
+        avatar: <BookOutlined />,
+        title: paralelo.nombre || paralelo.codigo || 'Sin nombre',
+        caption: caption ? <Text type="secondary">{caption}</Text> : null,
+      };
+    },
+  },
 ];
 
 /**

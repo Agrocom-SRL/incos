@@ -37,7 +37,9 @@ export class GetTodosParalelosUseCase {
    * @param {number} options.params.pagina - Número de página (paginación)
    * @param {number} options.params.limite - Cantidad por página (paginación)
    * @param {string} options.params.busqueda - Búsqueda general (nombre, código)
-   * @param {number} options.params.carreraId - Filtro por ID de carrera
+   * @param {number} options.params.periodo - Filtro por número de periodo (1, 2, 3...)
+   * @param {number} options.params.periodo_id - Filtro por ID único del periodo
+   * @param {number} options.params.carrera_id - Filtro por ID de carrera (snake_case, según validador del backend)
    * @param {number} options.params.materiaId - Filtro por ID de materia
    * @param {string} options.params.ordenar - Campo de ordenamiento (ej: "nombre", "-created_at")
    * @returns {Promise<{success: boolean, data?: Array, error?: string}>}
@@ -47,7 +49,7 @@ export class GetTodosParalelosUseCase {
 
     try {
       // El repositorio hace la llamada HTTP con todos los params
-      // GET /v1/paralelos?pagina=1&limite=10&busqueda=...&carreraId=1&materiaId=1&ordenar=nombre
+      // GET /v1/paralelos?pagina=1&limite=10&busqueda=...&carrera_id=1&materiaId=1&ordenar=nombre
       const result = await this.paraleloRepository.obtenerTodos({ params });
       
       // Si hay error en el repositorio, retornarlo

@@ -22,7 +22,7 @@
  */
 
 import { getStep1Fields } from './steps/step1BuscarEstudiante.jsx';
-import { getStep2Fields } from './steps/step2SeleccionarParalelos';
+import { getStep2Fields } from './steps/step2SeleccionarParalelos.jsx';
 import { getStep3Fields } from './steps/step3HorarioClases';
 
 /**

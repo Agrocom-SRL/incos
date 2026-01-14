@@ -28,14 +28,16 @@ import {
     useInscripcionNuevaPageData,
     useInscripcionNuevaFormHandlers,
     useInscripcionNuevaStudentSearch,
-    useInscripcionNuevaCarreras
+    useInscripcionNuevaCarreras,
+    useInscripcionNuevaParalelos
 } from '@application-inscripciones/hooks';
 import { useEnrichWizardSteps } from '@application-utils/hooks';
 import { studentEnrichers } from '@application-inscripciones/hooks/features/enrichers/studentEnrichers';
 import { carreraEnrichers } from '@application-inscripciones/hooks/features/enrichers/carreraEnrichers';
+import { paraleloEnrichers } from '@application-inscripciones/hooks/features/enrichers/paraleloEnrichers';
 
 // Combinar enrichers (referencia estable fuera del componente)
-const allEnrichers = [...studentEnrichers, ...carreraEnrichers];
+const allEnrichers = [...studentEnrichers, ...carreraEnrichers, ...paraleloEnrichers];
 
 /**
  * Hook que gestiona el estado del contexto de inscripción nueva
@@ -49,6 +51,9 @@ export const useInscripcionNuevaData = (mode = 'nuevo') => {
     const formHandlers = useInscripcionNuevaFormHandlers(mode);
     const studentSearch = useInscripcionNuevaStudentSearch();
     const carrerasData = useInscripcionNuevaCarreras();
+    const paralelosData = useInscripcionNuevaParalelos({ 
+        carreraId: carrerasData.selectedCarrera?.id 
+    });
 
     // 2. Callbacks memoizados para los enrichers
     const handleSearchStudent = useCallback((value) => {
@@ -70,11 +75,18 @@ export const useInscripcionNuevaData = (mode = 'nuevo') => {
         }
     }, [carrerasData.carreras, carrerasData.onSelectCarrera]);
 
+    const handleSelectParalelo = useCallback((paralelo) => {
+        if (paralelo && paralelosData.onSelectParalelo) {
+            paralelosData.onSelectParalelo(paralelo);
+        }
+    }, [paralelosData.onSelectParalelo]);
+
     // 3. Context para enrichers (objeto memoizado)
     const enrichContext = useMemo(() => ({
         onSearchStudent: handleSearchStudent,
         onSelectStudent: handleSelectStudent,
         onSelectCarrera: handleSelectCarrera,
+        onSelectParalelo: handleSelectParalelo,
         studentSearch: {
             students: studentSearch.students,
             loading: studentSearch.loading,
@@ -87,10 +99,17 @@ export const useInscripcionNuevaData = (mode = 'nuevo') => {
             error: carrerasData.error,
             selectedCarrera: carrerasData.selectedCarrera,
         },
+        paralelosData: {
+            paralelos: paralelosData.paralelos,
+            loading: paralelosData.loading,
+            error: paralelosData.error,
+            selectedParalelo: paralelosData.selectedParalelo,
+        },
     }), [
         handleSearchStudent,
         handleSelectStudent,
         handleSelectCarrera,
+        handleSelectParalelo,
         studentSearch.students,
         studentSearch.loading,
         studentSearch.error,
@@ -99,6 +118,10 @@ export const useInscripcionNuevaData = (mode = 'nuevo') => {
         carrerasData.loading,
         carrerasData.error,
         carrerasData.selectedCarrera,
+        paralelosData.paralelos,
+        paralelosData.loading,
+        paralelosData.error,
+        paralelosData.selectedParalelo,
     ]);
 
     // 4. Enriquecer wizardSteps
@@ -132,11 +155,20 @@ export const useInscripcionNuevaData = (mode = 'nuevo') => {
             error: carrerasData.error,
             selectedCarrera: carrerasData.selectedCarrera,
         },
+
+        // Paralelos
+        paralelosData: {
+            paralelos: paralelosData.paralelos,
+            loading: paralelosData.loading,
+            error: paralelosData.error,
+            selectedParalelo: paralelosData.selectedParalelo,
+        },
     }), [
         pageData,
         enrichedWizardSteps,
         formHandlers,
         studentSearch,
         carrerasData,
+        paralelosData,
     ]);
 };
