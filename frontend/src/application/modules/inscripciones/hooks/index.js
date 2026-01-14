@@ -25,8 +25,10 @@ export { useInscripcionNuevaData } from './state/useInscripcionNuevaData';
 // ============================================
 // 3. API / DATA FETCHING (Application Layer)
 // ============================================
-// TODO: Se implementará en pasos siguientes
-// export * from './api';
+// Exporta directamente desde los archivos (sin index.js intermedio)
+export { useInscripcionesApi } from './api/useInscripcionesApi';
+export { useGetInscripcionById } from './api/useGetInscripcionById';
+export { useCreateInscripcion } from './api/useCreateInscripcion';
 
 // ============================================
 // 4. FEATURE LOGIC (Application Layer)

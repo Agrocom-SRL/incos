@@ -38,6 +38,11 @@ export { IDiscapacidadRepository } from './IDiscapacidadRepository';
 export { IParaleloRepository } from './IParaleloRepository';
 
 // ============================================
+// MÓDULO: INSCRIPCIONES
+// ============================================
+export { IInscripcionRepository } from './IInscripcionRepository';
+
+// ============================================
 // MÓDULO: GEOGRÁFICOS
 // ============================================
 export { IPaisRepository } from './IPaisRepository';

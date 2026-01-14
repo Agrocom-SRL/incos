@@ -12,6 +12,8 @@
  * - Configuración: Endpoints del módulo de configuración
  *   - Académico: Carreras, materias
  *   - Complementario: Discapacidades
+ * - Académico: Paralelos, horarios
+ * - Inscripciones: Endpoints del módulo de inscripciones
  * - Geográficos: Países, departamentos, provincias, municipios
  * - Referencia: Idiomas, estados civiles, tipos de parentesco, documentación
  * 
@@ -111,3 +113,8 @@ export const IDIOMAS_ENDPOINTS = createCRUDEndpoints('/idiomas');
 export const ESTADOS_CIVILES_ENDPOINTS = createCRUDEndpoints('/estados-civiles');
 export const TIPOS_PARENTESCO_ENDPOINTS = createCRUDEndpoints('/tipos-parentesco');
 export const DOCUMENTACION_ENDPOINTS = createCRUDEndpoints('/documentacion');
+
+// ============================================
+// MÓDULO: INSCRIPCIONES
+// ============================================
+export const INSCRIPCIONES_ENDPOINTS = createCRUDEndpoints('/inscripciones');
