@@ -27,118 +27,29 @@
  * - Transformador (normalizeFieldToArray): Normaliza estructura (objeto → array) - genérico, reutilizable en cualquier módulo
  * - Mapper (mapEstudiantesList): Transforma datos al formato de UI - específico del módulo de estudiantes
  * - El manejo de errores se hace usando helpers genéricos reutilizables
+ * 
+ * Optimización: Usa createApiHook para reducir código repetitivo y mantener
+ * todas las optimizaciones de estado automáticamente.
  */
 
-import { useState, useCallback, useRef } from 'react';
-import { useCasesFactory } from '@container';
+import { createApiHook } from '@application/utils';
 import { mapEstudiantesList } from '@application-estudiantes/mappers';
-import { extractErrorFromResult, normalizeError, normalizeFieldToArray, createOptimizedArraySetter, createOptimizedPrimitiveSetter, useStableApiResult } from '@application/utils';
+import { normalizeFieldToArray } from '@application/utils';
 
-// Flag para activar/desactivar logs de renderizado (solo desarrollo)
-const ENABLE_RENDER_LOGS = import.meta.env.DEV && true; // Cambiar a true para activar logs
-
-export const useSearchStudent = () => {
-  const [students, setStudents] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-
-  // Setters optimizados para evitar actualizaciones innecesarias
-  // Usar useRef para mantener referencias estables (setState de React ya es estable)
-  const optimizedSetStudentsRef = useRef(null);
-  const optimizedSetLoadingRef = useRef(null);
-  const optimizedSetErrorRef = useRef(null);
-
-  // Inicializar los setters optimizados una sola vez
-  if (!optimizedSetStudentsRef.current) {
-    optimizedSetStudentsRef.current = createOptimizedArraySetter(setStudents);
-    optimizedSetLoadingRef.current = createOptimizedPrimitiveSetter(setLoading);
-    optimizedSetErrorRef.current = createOptimizedPrimitiveSetter(setError);
-  }
-
-  /**
-   * Función centralizada para buscar estudiantes desde la API
-   * Se reutiliza tanto en searchStudent como en refetch
-   * 
-   * @param {string} searchTerm - Término de búsqueda
-   * @param {Object} options - Opciones opcionales
-   * @param {number} options.limit - Límite de resultados (opcional, default: 50)
-   */
-  const fetchStudents = useCallback(async (searchTerm, options = {}) => {
-    // OPTIMIZACIÓN: Solo actualizar si el valor realmente cambió
-    optimizedSetLoadingRef.current(true);
-    optimizedSetErrorRef.current(null);
-
-    try {
-      // 1. Obtener el Use Case desde el container
-      const buscarEstudianteUseCase = useCasesFactory.buscarEstudiante();
-
-      // 2. Ejecutar el Use Case (las validaciones están en el Use Case)
-      // El Use Case valida searchTerm y options.limit usando validators comunes
-      const result = await buscarEstudianteUseCase.ejecutar(searchTerm, options);
-
-      // 3. Si hay error, normalizarlo y actualizar el estado
-      if (!result.success) {
-        const errorMessage = extractErrorFromResult(result, 'Error al buscar estudiantes');
-        // OPTIMIZACIÓN: Solo actualizar si el error realmente cambió
-        optimizedSetErrorRef.current(errorMessage);
-        optimizedSetStudentsRef.current([]);
-        return;
-      }
-
-      // 4. Si hay éxito, normalizar estructura y transformar usando mapEstudiantesList
-      // Paso 1: Normalizar estructura (objeto → array) usando transformador genérico reutilizable
-      const estudiantesNormalizados = normalizeFieldToArray(result.data, 'student');
-      // Paso 2: Transformar datos al formato de UI usando mapper específico del módulo
-      const estudiantes = mapEstudiantesList(estudiantesNormalizados);
-      
-      // OPTIMIZACIÓN: Solo actualizar el estado si los datos realmente cambiaron
-      // El helper createOptimizedArraySetter compara por longitud y IDs automáticamente
-      optimizedSetStudentsRef.current(estudiantes);
-    } catch (err) {
-      // Error inesperado (no debería llegar aquí si el Use Case maneja bien los errores)
-      // Normalizar el error usando el helper genérico
-      const errorMessage = normalizeError(err, 'Error al buscar estudiantes');
-      // OPTIMIZACIÓN: Solo actualizar si el error realmente cambió
-      optimizedSetErrorRef.current(errorMessage);
-      optimizedSetStudentsRef.current([]);
-    } finally {
-      // OPTIMIZACIÓN: Solo actualizar si el valor realmente cambió
-      optimizedSetLoadingRef.current(false);
-    }
-  }, []); // Sin dependencias porque los setters están en refs estables
-
-  /**
-   * Busca estudiantes por término de búsqueda
-   * 
-   * @param {string} searchTerm - Término de búsqueda
-   * @param {Object} options - Opciones opcionales
-   * @param {number} options.limit - Límite de resultados (opcional, default: 50)
-   */
-  const searchStudent = useCallback(async (searchTerm, options = {}) => {
-    await fetchStudents(searchTerm, options);
-  }, [fetchStudents]);
-
-  /**
-   * Función para recargar la búsqueda manualmente
-   * 
-   * @param {string} searchTerm - Término de búsqueda
-   * @param {Object} options - Opciones opcionales
-   * @param {number} options.limit - Límite de resultados (opcional, default: 50)
-   */
-  const refetch = useCallback(async (searchTerm, options = {}) => {
-    await fetchStudents(searchTerm, options);
-  }, [fetchStudents]);
-
-  // Usar helper para mantener referencia estable del resultado
-  return useStableApiResult(
-    {
-      students,
-      loading,
-      error,
-      searchStudent,
-      refetch,
-    },
-    ENABLE_RENDER_LOGS,
-    'useSearchStudent'
-  );
-};
+export const useSearchStudent = createApiHook({
+  name: 'useSearchStudent',
+  useCase: 'buscarEstudiante',
+  dataType: 'array', // Retorna un array
+  mapper: (data) => {
+    // Mapper personalizado con múltiples transformaciones
+    // Paso 1: Normalizar estructura (objeto → array) usando transformador genérico reutilizable
+    const estudiantesNormalizados = normalizeFieldToArray(data, 'student');
+    // Paso 2: Transformar datos al formato de UI usando mapper específico del módulo
+    return mapEstudiantesList(estudiantesNormalizados);
+  },
+  initialLoading: false, // No carga automáticamente al montar
+  autoFetch: false, // No carga automáticamente (búsqueda bajo demanda)
+  dataKey: 'students', // Nombre de la propiedad en el resultado
+  fetchName: 'searchStudent', // Nombre de la función fetch
+  errorMessage: 'Error al buscar estudiantes',
+});

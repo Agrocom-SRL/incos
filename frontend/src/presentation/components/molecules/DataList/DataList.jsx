@@ -79,7 +79,7 @@ const DataList = ({
             className={listClassName}
             gap={0}
         >
-            <Space direction="vertical" size={0} style={{ width: '100%' }}>
+            <Space orientation="vertical" size={0} style={{ width: '100%' }}>
                 {data.map((item, index) => {
                     // renderItem del config retorna { avatar, title, caption } que son los props que ListItem espera
                     const itemProps = renderItem ? renderItem(item, index) : { title: JSON.stringify(item) };

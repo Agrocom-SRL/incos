@@ -47,7 +47,11 @@ const EstudiantesDetail = () => {
         }
       >
         <div style={{ textAlign: 'center', padding: '50px' }}>
-          <Spin size="large" tip="Cargando datos del estudiante..." />
+          <Spin size="large">
+            <div style={{ minHeight: '200px' }}>
+              <p>Cargando datos del estudiante...</p>
+            </div>
+          </Spin>
         </div>
       </PageTemplate>
     );
@@ -150,7 +154,7 @@ const EstudiantesDetail = () => {
             <Descriptions.Item label="Dirección" span={2}>
               {studentData.direccion || 'N/A'}
             </Descriptions.Item>
-            <Descriptions.Item label="Zona">
+            <Descriptions.Item label="Zona" span={2}>
               {studentData.zona || 'N/A'}
             </Descriptions.Item>
             <Descriptions.Item label="Residencia Completa" span={2}>

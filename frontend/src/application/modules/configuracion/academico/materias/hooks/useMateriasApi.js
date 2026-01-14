@@ -19,80 +19,23 @@
  * Para lógica de UI (búsqueda, filtrado, formateo), usar useMateriasList
  * 
  * Ubicación: application/modules/configuracion/academico/materias/hooks
+ * 
+ * Optimización: Usa createApiHook para reducir código repetitivo y mantener
+ * todas las optimizaciones de estado automáticamente.
  */
 
-import { useState, useEffect, useCallback } from 'react';
-import { useCasesFactory } from '@container';
+import { createApiHook } from '@application/utils';
 import { mapMateriasList } from '@application-configuracion/academico/materias/mappers';
 
-export const useMateriasApi = () => {
-    const [materias, setMaterias] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
-
-    /**
-     * Función centralizada para cargar materias desde la API
-     * Se reutiliza tanto en el efecto inicial como en refetch
-     * 
-     * @param {Object} options - Opciones para obtener materias
-     * @param {Object} options.params - Parámetros de consulta (pagina, limite, busqueda, etc.)
-     */
-    const fetchMaterias = useCallback(async (options = {}) => {
-        setLoading(true);
-        setError(null);
-
-        try {
-            // Obtener el Use Case desde el container
-            const obtenerTodasMateriasUseCase = useCasesFactory.obtenerTodasMaterias();
-
-            // Ejecutar el Use Case
-            const result = await obtenerTodasMateriasUseCase.ejecutar(options);
-
-            // Si hay error, manejarlo
-            if (!result.success) {
-                // Extraer el mensaje del error si es un objeto
-                const errorMessage = typeof result.error === 'object' && result.error?.message
-                    ? result.error.message
-                    : result.error || 'Error al cargar las materias';
-                setError(errorMessage);
-                setMaterias([]);
-                return;
-            }
-
-            // Si hay éxito, mapear y actualizar el estado con las materias
-            const materiasMapeadas = mapMateriasList(result.data);
-            setMaterias(materiasMapeadas);
-        } catch (err) {
-            // Error inesperado (no debería llegar aquí si el Use Case maneja bien los errores)
-            const errorMessage = typeof err === 'object' && err?.message
-                ? err.message
-                : err || 'Error al cargar las materias';
-            setError(errorMessage);
-            setMaterias([]);
-        } finally {
-            setLoading(false);
-        }
-    }, []);
-
-    // Efecto que se ejecuta solo una vez al montar
-    useEffect(() => {
-        fetchMaterias();
-    }, [fetchMaterias]);
-
-    /**
-     * Función para recargar las materias manualmente
-     * 
-     * @param {Object} options - Opciones para obtener materias (filtros, paginación, etc.)
-     */
-    const refetch = useCallback(async (options = {}) => {
-        await fetchMaterias(options);
-    }, [fetchMaterias]);
-
-    return {
-        materias,
-        loading,
-        error,
-        refetch,
-    };
-};
+export const useMateriasApi = createApiHook({
+  name: 'useMateriasApi',
+  useCase: 'obtenerTodasMaterias',
+  dataType: 'array', // Retorna un array
+  mapper: mapMateriasList, // Mapea los datos antes de guardarlos
+  initialLoading: false, // No carga automáticamente al montar
+  autoFetch: true, // Carga automáticamente al montar
+  autoFetchArgs: {}, // Argumentos para el auto-fetch
+  dataKey: 'materias', // Nombre de la propiedad en el resultado
+  errorMessage: 'Error al cargar las materias',
+});
 

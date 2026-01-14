@@ -19,80 +19,23 @@
  * Para lógica de UI (búsqueda, filtrado, formateo), usar useDiscapacidadesList
  * 
  * Ubicación: application/modules/configuracion/complementario/discapacidad/hooks
+ * 
+ * Optimización: Usa createApiHook para reducir código repetitivo y mantener
+ * todas las optimizaciones de estado automáticamente.
  */
 
-import { useState, useEffect, useCallback } from 'react';
-import { useCasesFactory } from '@container';
+import { createApiHook } from '@application/utils';
 import { mapDiscapacidadesList } from '@application-configuracion/complementario/discapacidad/mappers';
 
-export const useDiscapacidadesApi = () => {
-    const [discapacidades, setDiscapacidades] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
-
-    /**
-     * Función centralizada para cargar discapacidades desde la API
-     * Se reutiliza tanto en el efecto inicial como en refetch
-     * 
-     * @param {Object} options - Opciones para obtener discapacidades
-     * @param {Object} options.params - Parámetros de consulta (pagina, limite, busqueda, etc.)
-     */
-    const fetchDiscapacidades = useCallback(async (options = {}) => {
-        setLoading(true);
-        setError(null);
-
-        try {
-            // Obtener el Use Case desde el container
-            const obtenerTodasDiscapacidadesUseCase = useCasesFactory.obtenerTodasDiscapacidades();
-
-            // Ejecutar el Use Case
-            const result = await obtenerTodasDiscapacidadesUseCase.ejecutar(options);
-
-            // Si hay error, manejarlo
-            if (!result.success) {
-                // Extraer el mensaje del error si es un objeto
-                const errorMessage = typeof result.error === 'object' && result.error?.message
-                    ? result.error.message
-                    : result.error || 'Error al cargar las discapacidades';
-                setError(errorMessage);
-                setDiscapacidades([]);
-                return;
-            }
-
-            // Si hay éxito, mapear y actualizar el estado con las discapacidades
-            const discapacidadesMapeadas = mapDiscapacidadesList(result.data);
-            setDiscapacidades(discapacidadesMapeadas);
-        } catch (err) {
-            // Error inesperado (no debería llegar aquí si el Use Case maneja bien los errores)
-            const errorMessage = typeof err === 'object' && err?.message
-                ? err.message
-                : err || 'Error al cargar las discapacidades';
-            setError(errorMessage);
-            setDiscapacidades([]);
-        } finally {
-            setLoading(false);
-        }
-    }, []);
-
-    // Efecto que se ejecuta solo una vez al montar
-    useEffect(() => {
-        fetchDiscapacidades();
-    }, [fetchDiscapacidades]);
-
-    /**
-     * Función para recargar las discapacidades manualmente
-     * 
-     * @param {Object} options - Opciones para obtener discapacidades (filtros, paginación, etc.)
-     */
-    const refetch = useCallback(async (options = {}) => {
-        await fetchDiscapacidades(options);
-    }, [fetchDiscapacidades]);
-
-    return {
-        discapacidades,
-        loading,
-        error,
-        refetch,
-    };
-};
+export const useDiscapacidadesApi = createApiHook({
+  name: 'useDiscapacidadesApi',
+  useCase: 'obtenerTodasDiscapacidades',
+  dataType: 'array', // Retorna un array
+  mapper: mapDiscapacidadesList, // Mapea los datos antes de guardarlos
+  initialLoading: false, // No carga automáticamente al montar
+  autoFetch: true, // Carga automáticamente al montar
+  autoFetchArgs: {}, // Argumentos para el auto-fetch
+  dataKey: 'discapacidades', // Nombre de la propiedad en el resultado
+  errorMessage: 'Error al cargar las discapacidades',
+});
 
