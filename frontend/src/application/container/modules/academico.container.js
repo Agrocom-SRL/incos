@@ -10,7 +10,7 @@
  * - Features: Paralelos
  */
 
-import { GetTodosParalelosUseCase } from '@useCases/academico/paralelos';
+import { GetTodosParalelosUseCase, GetParaleloHorariosUseCase } from '@useCases/academico/paralelos';
 import ParaleloRepository from '@infrastructure/repositories/ParaleloRepository';
 
 /**
@@ -25,6 +25,10 @@ export function registerAcademicoModule(factory) {
   // Registrar Use Cases de Paralelos
   factory.obtenerTodosParalelos = () => {
     return new GetTodosParalelosUseCase(paraleloRepository);
+  };
+
+  factory.obtenerParaleloHorarios = () => {
+    return new GetParaleloHorariosUseCase(paraleloRepository);
   };
 
   return factory;

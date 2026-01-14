@@ -50,14 +50,18 @@ export const TimetableSchedule = ({
   editable = false,
   loading = false,
 }) => {
+  // Validar que schedule sea un array válido
+  const validSchedule = Array.isArray(schedule) ? schedule : [];
+
   // Hook para procesar y organizar los datos del horario
   const {
     processedSchedule,
     timeSlots,
     days,
     hasConflicts,
-  } = useTimetableData(schedule, config);
+  } = useTimetableData(validSchedule, config);
 
+  // Mostrar loading si está cargando
   if (loading) {
     return (
       <Card className="timetable-schedule">
@@ -68,7 +72,8 @@ export const TimetableSchedule = ({
     );
   }
 
-  if (!schedule || schedule.length === 0) {
+  // Mostrar mensaje vacío si no hay schedule o está vacío
+  if (!validSchedule || validSchedule.length === 0) {
     return (
       <Card className="timetable-schedule">
         <Empty

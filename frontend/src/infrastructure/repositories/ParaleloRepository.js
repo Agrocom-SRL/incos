@@ -46,6 +46,35 @@ export class ParaleloRepository extends IParaleloRepository {
     }
   }
 
+  /**
+   * Obtiene los horarios completos de un paralelo
+   * GET /v1/paralelos/:id/schedule
+   * 
+   * @param {Object} options - Opciones de consulta
+   * @param {number} options.parallelId - ID del paralelo
+   * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
+   */
+  async obtenerHorarios(options = {}) {
+    try {
+      const { parallelId } = options;
+
+      if (!parallelId) {
+        return {
+          success: false,
+          error: 'ID del paralelo es requerido',
+        };
+      }
+
+      // Llamada HTTP directa al endpoint
+      const response = await apiClient.get(PARALELOS_ENDPOINTS.SCHEDULE(parallelId));
+
+      // Procesar respuesta exitosa
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al obtener horarios del paralelo');
+    }
+  }
+
 }
 
 export default new ParaleloRepository();

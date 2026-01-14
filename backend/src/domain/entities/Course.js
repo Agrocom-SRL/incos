@@ -13,6 +13,7 @@ export class Course extends BaseEntity {
     this.planSubjectId = data.planSubjectId || null;
     this.maxCapacity = data.maxCapacity !== undefined ? data.maxCapacity : 35;
     this.minCapacity = data.minCapacity !== undefined ? data.minCapacity : 10;
+    this.colorHex = data.colorHex || null;
   }
 
   /**
@@ -35,6 +36,7 @@ export class Course extends BaseEntity {
       planSubjectId: this.planSubjectId,
       maxCapacity: this.maxCapacity,
       minCapacity: this.minCapacity,
+      colorHex: this.colorHex,
     };
   }
 }

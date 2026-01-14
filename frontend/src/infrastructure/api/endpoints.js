@@ -90,7 +90,11 @@ export const DISCAPACIDAD_ENDPOINTS = createCRUDEndpoints('/discapacidad');
 // ============================================
 // MÓDULO: ACADÉMICO
 // ============================================
-export const PARALELOS_ENDPOINTS = createCRUDEndpoints('/paralelos');
+export const PARALELOS_ENDPOINTS = {
+  ...createCRUDEndpoints('/paralelos'),
+  // Endpoint específico para obtener horarios de un paralelo
+  SCHEDULE: (id) => `${API_BASE}/paralelos/${id}/schedule`,
+};
 
 // ============================================
 // MÓDULO: GEOGRÁFICOS

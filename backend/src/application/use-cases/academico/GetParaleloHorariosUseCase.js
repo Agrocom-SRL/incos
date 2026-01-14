@@ -205,6 +205,7 @@ export class GetParaleloHorariosUseCase {
             return {
               cursoId: curso.id,
               materiaId: materia ? materia.id : null,
+              color: curso.colorHex || null,
               horarios: horariosValidos,
             };
           } catch (error) {

@@ -1,5 +1,5 @@
 -- ============================================
--- SEEDER: cursos - SISTEMAS INFORMÁTICOS COMPLETO
+-- SEEDER: cursos - SISTEMAS INFORMÁTICOS COMPLETO CON COLORES
 -- Sistema de Gestión Académica - Instituto INCOS
 -- Datos iniciales: Cursos de SISTEMAS INFORMÁTICOS - TODOS LOS PARALELOS
 -- ============================================
@@ -140,75 +140,58 @@ SET @asig_bdd_308 = (SELECT ap.id FROM asignaturas_plan ap
 -- ============================================
 
 -- PARALELO A - NOCHE
-INSERT INTO cursos (codigo, paralelo_id, asignatura_plan_id, cupo_maximo, cupo_minimo) VALUES
-('SIS-1A-NOCHE-MPI101', @paralelo_sis_1a_id, @asig_mpi_101, 35, 10),
-('SIS-1A-NOCHE-PRG102', @paralelo_sis_1a_id, @asig_prg_102, 35, 10),
-('SIS-1A-NOCHE-INT103', @paralelo_sis_1a_id, @asig_int_103, 35, 10),
-('SIS-1A-NOCHE-HDC104', @paralelo_sis_1a_id, @asig_hdc_104, 35, 10),
-('SIS-1A-NOCHE-TSO105', @paralelo_sis_1a_id, @asig_tso_105, 35, 10),
-('SIS-1A-NOCHE-OTM106', @paralelo_sis_1a_id, @asig_otm_106, 35, 10),
-('SIS-1A-NOCHE-DPW107', @paralelo_sis_1a_id, @asig_dpw_107, 35, 10);
+INSERT INTO cursos (codigo, paralelo_id, asignatura_plan_id, cupo_maximo, cupo_minimo, color_hex) VALUES
+('SIS-1A-NOCHE-MPI101', @paralelo_sis_1a_id, @asig_mpi_101, 35, 10, '#00FF00'),
+('SIS-1A-NOCHE-PRG102', @paralelo_sis_1a_id, @asig_prg_102, 35, 10, '#E36C09'),
+('SIS-1A-NOCHE-INT103', @paralelo_sis_1a_id, @asig_int_103, 35, 10, '#FFFF00'),
+('SIS-1A-NOCHE-HDC104', @paralelo_sis_1a_id, @asig_hdc_104, 35, 10, '#52EFF6'),
+('SIS-1A-NOCHE-TSO105', @paralelo_sis_1a_id, @asig_tso_105, 35, 10, '#C2D69B'),
+('SIS-1A-NOCHE-OTM106', @paralelo_sis_1a_id, @asig_otm_106, 35, 10, '#52EFF6'),
+('SIS-1A-NOCHE-DPW107', @paralelo_sis_1a_id, @asig_dpw_107, 35, 10, '#76923C');
 
 -- PARALELO B - NOCHE
-INSERT INTO cursos (codigo, paralelo_id, asignatura_plan_id, cupo_maximo, cupo_minimo) VALUES
-('SIS-1B-NOCHE-MPI101', @paralelo_sis_1b_id, @asig_mpi_101, 35, 10),
-('SIS-1B-NOCHE-PRG102', @paralelo_sis_1b_id, @asig_prg_102, 35, 10),
-('SIS-1B-NOCHE-INT103', @paralelo_sis_1b_id, @asig_int_103, 35, 10),
-('SIS-1B-NOCHE-HDC104', @paralelo_sis_1b_id, @asig_hdc_104, 35, 10),
-('SIS-1B-NOCHE-TSO105', @paralelo_sis_1b_id, @asig_tso_105, 35, 10),
-('SIS-1B-NOCHE-OTM106', @paralelo_sis_1b_id, @asig_otm_106, 35, 10),
-('SIS-1B-NOCHE-DPW107', @paralelo_sis_1b_id, @asig_dpw_107, 35, 10);
+INSERT INTO cursos (codigo, paralelo_id, asignatura_plan_id, cupo_maximo, cupo_minimo, color_hex) VALUES
+('SIS-1B-NOCHE-MPI101', @paralelo_sis_1b_id, @asig_mpi_101, 35, 10, '#00FF00'),
+('SIS-1B-NOCHE-PRG102', @paralelo_sis_1b_id, @asig_prg_102, 35, 10, '#E36C09'),
+('SIS-1B-NOCHE-INT103', @paralelo_sis_1b_id, @asig_int_103, 35, 10, '#FFFF00'),
+('SIS-1B-NOCHE-HDC104', @paralelo_sis_1b_id, @asig_hdc_104, 35, 10, '#52EFF6'),
+('SIS-1B-NOCHE-TSO105', @paralelo_sis_1b_id, @asig_tso_105, 35, 10, '#C2D69B'),
+('SIS-1B-NOCHE-OTM106', @paralelo_sis_1b_id, @asig_otm_106, 35, 10, '#52EFF6'),
+('SIS-1B-NOCHE-DPW107', @paralelo_sis_1b_id, @asig_dpw_107, 35, 10, '#76923C');
 
 -- ============================================
 -- INSERTAR CURSOS - SEGUNDO AÑO
 -- ============================================
 
 -- PARALELO A - NOCHE
-INSERT INTO cursos (codigo, paralelo_id, asignatura_plan_id, cupo_maximo, cupo_minimo) VALUES
-('SIS-2A-NOCHE-EST201', @paralelo_sis_2a_id, @asig_est_201, 35, 10),
-('SIS-2A-NOCHE-PRG202', @paralelo_sis_2a_id, @asig_prg_202, 35, 10),
-('SIS-2A-NOCHE-EDD203', @paralelo_sis_2a_id, @asig_edd_203, 35, 10),
-('SIS-2A-NOCHE-RDC204', @paralelo_sis_2a_id, @asig_rdc_204, 35, 10),
-('SIS-2A-NOCHE-PDM205', @paralelo_sis_2a_id, @asig_pdm_205, 35, 10),
-('SIS-2A-NOCHE-ADS206', @paralelo_sis_2a_id, @asig_ads_206, 35, 10),
-('SIS-2A-NOCHE-DPW207', @paralelo_sis_2a_id, @asig_dpw_207, 35, 10),
-('SIS-2A-NOCHE-BDD208', @paralelo_sis_2a_id, @asig_bdd_208, 35, 10);
+INSERT INTO cursos (codigo, paralelo_id, asignatura_plan_id, cupo_maximo, cupo_minimo, color_hex) VALUES
+('SIS-2A-NOCHE-EST201', @paralelo_sis_2a_id, @asig_est_201, 35, 10, '#52EFF6'),
+('SIS-2A-NOCHE-PRG202', @paralelo_sis_2a_id, @asig_prg_202, 35, 10, '#B3A7D6'),
+('SIS-2A-NOCHE-EDD203', @paralelo_sis_2a_id, @asig_edd_203, 35, 10, '#FF3399'),
+('SIS-2A-NOCHE-RDC204', @paralelo_sis_2a_id, @asig_rdc_204, 35, 10, '#FF99FF'),
+('SIS-2A-NOCHE-PDM205', @paralelo_sis_2a_id, @asig_pdm_205, 35, 10, '#69A84F'),
+('SIS-2A-NOCHE-ADS206', @paralelo_sis_2a_id, @asig_ads_206, 35, 10, '#2FEF34'),
+('SIS-2A-NOCHE-DPW207', @paralelo_sis_2a_id, @asig_dpw_207, 35, 10, '#00B0F0'),
+('SIS-2A-NOCHE-BDD208', @paralelo_sis_2a_id, @asig_bdd_208, 35, 10, '#66FFFF');
 
 -- ============================================
 -- INSERTAR CURSOS - TERCER AÑO
 -- ============================================
 
 -- PARALELO A - NOCHE
-INSERT INTO cursos (codigo, paralelo_id, asignatura_plan_id, cupo_maximo, cupo_minimo) VALUES
-('SIS-3A-NOCHE-EMP301', @paralelo_sis_3a_id, @asig_emp_301, 35, 10),
-('SIS-3A-NOCHE-DPW302', @paralelo_sis_3a_id, @asig_dpw_302, 35, 10),
-('SIS-3A-NOCHE-GMC303', @paralelo_sis_3a_id, @asig_gmc_303, 35, 10),
-('SIS-3A-NOCHE-RDC304', @paralelo_sis_3a_id, @asig_rdc_304, 35, 10),
-('SIS-3A-NOCHE-TMG305', @paralelo_sis_3a_id, @asig_tmg_305, 35, 10),
-('SIS-3A-NOCHE-ADS306', @paralelo_sis_3a_id, @asig_ads_306, 35, 10),
-('SIS-3A-NOCHE-PDM307', @paralelo_sis_3a_id, @asig_pdm_307, 35, 10),
-('SIS-3A-NOCHE-BDD308', @paralelo_sis_3a_id, @asig_bdd_308, 35, 10);
+INSERT INTO cursos (codigo, paralelo_id, asignatura_plan_id, cupo_maximo, cupo_minimo, color_hex) VALUES
+('SIS-3A-NOCHE-EMP301', @paralelo_sis_3a_id, @asig_emp_301, 35, 10, '#C2D69B'),
+('SIS-3A-NOCHE-DPW302', @paralelo_sis_3a_id, @asig_dpw_302, 35, 10, '#B3A7D6'),
+('SIS-3A-NOCHE-GMC303', @paralelo_sis_3a_id, @asig_gmc_303, 35, 10, '#FFBF00'),
+('SIS-3A-NOCHE-RDC304', @paralelo_sis_3a_id, @asig_rdc_304, 35, 10, '#FFBF00'),
+('SIS-3A-NOCHE-TMG305', @paralelo_sis_3a_id, @asig_tmg_305, 35, 10, '#FF66CC'),
+('SIS-3A-NOCHE-ADS306', @paralelo_sis_3a_id, @asig_ads_306, 35, 10, '#FFC000'),
+('SIS-3A-NOCHE-PDM307', @paralelo_sis_3a_id, @asig_pdm_307, 35, 10, '#69A84F'),
+('SIS-3A-NOCHE-BDD308', @paralelo_sis_3a_id, @asig_bdd_308, 35, 10, '#66FFFF');
 
 -- Rehabilitar foreign key checks
 SET FOREIGN_KEY_CHECKS = 1;
 
--- ============================================
--- RESUMEN DE CURSOS CREADOS
--- ============================================
--- PRIMER AÑO:
---   Paralelo A (NOCHE): 7 cursos
---   Paralelo B (NOCHE): 7 cursos
---   SUBTOTAL: 14 cursos
---
--- SEGUNDO AÑO:
---   Paralelo A (NOCHE): 8 cursos
---   SUBTOTAL: 8 cursos
---
--- TERCER AÑO:
---   Paralelo A (NOCHE): 8 cursos
---   SUBTOTAL: 8 cursos
---
--- TOTAL GENERAL: 30 cursos de Sistemas Informáticos
 -- ============================================
 -- FIN DEL SEEDER
 -- ============================================

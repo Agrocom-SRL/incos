@@ -38,6 +38,12 @@ export const Curso = sequelize.define(
       defaultValue: 10,
       comment: 'Cupo mínimo requerido para abrir el curso',
     },
+    colorHex: {
+      type: DataTypes.STRING(7),
+      field: 'color_hex',
+      allowNull: true,
+      comment: 'Color identificador en formato hexadecimal (ej: #FF5733) para horarios y calendarios',
+    },
   },
   {
     ...baseModelOptions,

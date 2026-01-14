@@ -251,6 +251,9 @@ CREATE TABLE cursos (
     cupo_maximo INT DEFAULT 35 COMMENT 'Cupo máximo de estudiantes para este curso',
     cupo_minimo INT DEFAULT 10 COMMENT 'Cupo mínimo requerido para abrir el curso',
     
+    -- Visualización
+    color_hex VARCHAR(7) COMMENT 'Color identificador en formato hexadecimal (ej: #FF5733) para horarios y calendarios',
+    
     -- Campos de auditoría y control (ESTÁNDAR)
     activo BOOLEAN DEFAULT TRUE COMMENT 'Indica si el curso está activo',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación del registro',
@@ -260,25 +263,24 @@ CREATE TABLE cursos (
     updated_by INT NULL COMMENT 'ID del usuario que modificó el registro',
     deleted_by INT NULL COMMENT 'ID del usuario que eliminó el registro',
     
+    -- Foreign keys
     FOREIGN KEY (paralelo_id) REFERENCES paralelos(id) ON DELETE SET NULL,
     FOREIGN KEY (asignatura_plan_id) REFERENCES asignaturas_plan(id) ON DELETE SET NULL,
     FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
+    -- Índices para optimización
     INDEX idx_codigo (codigo) COMMENT 'Búsqueda por código',
     INDEX idx_paralelo_id (paralelo_id) COMMENT 'Búsqueda por paralelo',
     INDEX idx_asignatura_plan_id (asignatura_plan_id) COMMENT 'Búsqueda por asignatura del plan',
     INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
     INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
     INDEX idx_paralelo_asignatura (paralelo_id, asignatura_plan_id, deleted_at) COMMENT 'Búsqueda combinada por paralelo y asignatura',
-    INDEX idx_cupo (cupo_maximo, cupo_minimo) COMMENT 'Búsqueda por cupos',
-    
-    CHECK (cupo_maximo > 0),
-    CHECK (cupo_minimo >= 0)
+    INDEX idx_cupo (cupo_maximo, cupo_minimo) COMMENT 'Búsqueda por cupos'
     
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Cursos del maestro de oferta. Representa la intersección entre paralelos y asignaturas del plan. Se activan por gestión en asignaciones_docentes';
+COMMENT='Cursos del maestro de oferta. Representa la intersección entre paralelos y asignaturas del plan. Se activan por gestión en asignaciones_docentes. El color facilita la visualización en horarios.';
 
 -- ============================================
 -- TABLA: cursos_horarios

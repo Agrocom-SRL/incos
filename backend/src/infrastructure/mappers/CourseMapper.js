@@ -38,6 +38,7 @@ export class CourseMapper {
       planSubjectId: model.asignaturaPlanId,
       maxCapacity: model.cupoMaximo,
       minCapacity: model.cupoMinimo,
+      colorHex: model.colorHex,
     };
 
     // Combina campos base (id, active, timestamps, audit) con campos específicos
@@ -95,6 +96,9 @@ export class CourseMapper {
     }
     if (data.minCapacity !== undefined) {
       updateData.cupoMinimo = data.minCapacity;
+    }
+    if (data.colorHex !== undefined) {
+      updateData.colorHex = data.colorHex || null;
     }
 
     // Campos base (active/activo)

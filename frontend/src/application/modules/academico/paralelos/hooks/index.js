@@ -5,3 +5,4 @@
  */
 
 export { useParalelosApi } from './useParalelosApi';
+export { useParaleloScheduleApi } from './useParaleloScheduleApi';

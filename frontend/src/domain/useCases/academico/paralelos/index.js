@@ -5,3 +5,4 @@
  */
 
 export { GetTodosParalelosUseCase } from './GetTodosParalelosUseCase';
+export { GetParaleloHorariosUseCase } from './GetParaleloHorariosUseCase';

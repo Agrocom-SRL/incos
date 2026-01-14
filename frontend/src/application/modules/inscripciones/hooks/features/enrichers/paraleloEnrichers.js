@@ -60,6 +60,16 @@ export const enrichParaleloListField = (field, context = {}) => {
             };
         });
         
+        // Crear wrapper para el callback que recibe (item, index) de DataList
+        // y lo convierte a solo el item para onSelectParalelo
+        const handleSelect = hasCarrera && onSelectParalelo
+            ? (item, index) => {
+                if (item && onSelectParalelo) {
+                    onSelectParalelo(item);
+                }
+            }
+            : null;
+        
         return {
             ...field,
             // Datos agregados por el enricher (consumidos por DataList o DataCards)
@@ -68,9 +78,8 @@ export const enrichParaleloListField = (field, context = {}) => {
             emptyMessage: hasCarrera 
                 ? (field.emptyMessage || 'No hay paralelos disponibles para esta carrera en el período actual.')
                 : 'Seleccione una carrera para ver los paralelos disponibles.',
-            // OPTIMIZACIÓN: Usar directamente el callback memoizado del context
-            // No crear una nueva función wrapper para evitar re-renders
-            onSelect: hasCarrera ? (onSelectParalelo || null) : null,
+            // Wrapper que convierte (item, index) a solo item para onSelectParalelo
+            onSelect: handleSelect,
             // Paralelo seleccionado para aplicar estado activo en DataList o DataCards
             selectedItem: paralelosData.selectedParalelo || null,
             // Ocultar si no hay carrera seleccionada

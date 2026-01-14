@@ -30,6 +30,7 @@ import {
     useInscripcionNuevaStudentSearch,
     useInscripcionNuevaCarreras,
     useInscripcionNuevaParalelos,
+    useInscripcionNuevaParaleloHorarios,
     useInscripcionNuevaMaterias
 } from '@application-inscripciones/hooks';
 import { useEnrichWizardSteps } from '@application-utils/hooks';
@@ -71,6 +72,11 @@ export const useInscripcionNuevaData = (mode = 'nuevo') => {
     
     const materiasData = useInscripcionNuevaMaterias({
         periodoId: periodoIdFromFirstParalelo
+    });
+
+    // Hook para cargar horarios del paralelo seleccionado
+    const horariosData = useInscripcionNuevaParaleloHorarios({
+        parallelId: paralelosData.selectedParalelo?.id
     });
 
     // 2. Callbacks memoizados para los enrichers
@@ -136,6 +142,11 @@ export const useInscripcionNuevaData = (mode = 'nuevo') => {
             error: materiasData.error,
             selectedMateria: materiasData.selectedMateria,
         },
+        horariosData: {
+            schedule: horariosData.schedule,
+            loading: horariosData.loading,
+            error: horariosData.error,
+        },
     }), [
         handleSearchStudent,
         handleSelectStudent,
@@ -158,6 +169,9 @@ export const useInscripcionNuevaData = (mode = 'nuevo') => {
         materiasData.loading,
         materiasData.error,
         materiasData.selectedMateria,
+        horariosData.schedule,
+        horariosData.loading,
+        horariosData.error,
     ]);
 
     // 4. Enriquecer wizardSteps
@@ -207,6 +221,13 @@ export const useInscripcionNuevaData = (mode = 'nuevo') => {
             error: materiasData.error,
             selectedMateria: materiasData.selectedMateria,
         },
+
+        // Horarios
+        horariosData: {
+            schedule: horariosData.schedule,
+            loading: horariosData.loading,
+            error: horariosData.error,
+        },
     }), [
         pageData,
         enrichedWizardSteps,
@@ -215,5 +236,6 @@ export const useInscripcionNuevaData = (mode = 'nuevo') => {
         carrerasData,
         paralelosData,
         materiasData,
+        horariosData,
     ]);
 };

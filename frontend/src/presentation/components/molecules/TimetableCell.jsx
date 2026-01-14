@@ -51,10 +51,28 @@ export const TimetableCell = ({
     );
   }
 
+  // Si es una continuación de otra celda (clase que ocupa múltiples slots)
+  // Solo mostrar el color de fondo, sin contenido
+  if (classData.isContinuation) {
+    const cellClassName = `timetable-cell timetable-cell-continuation ${
+      classData.hasConflict ? 'timetable-cell-conflict' : ''
+    }`;
+    
+    return (
+      <div
+        className={cellClassName}
+        style={{ 
+          backgroundColor: classData.color || 'var(--color-primary)',
+          borderLeftColor: classData.color || 'var(--color-primary)',
+        }}
+      />
+    );
+  }
+
   // Si hay conflicto, resaltar
   const cellClassName = `timetable-cell ${
     classData.hasConflict ? 'timetable-cell-conflict' : ''
-  }`;
+  } ${classData.spanSlots > 1 ? 'timetable-cell-spans' : ''}`;
 
   // Contenido del tooltip
   const tooltipContent = (

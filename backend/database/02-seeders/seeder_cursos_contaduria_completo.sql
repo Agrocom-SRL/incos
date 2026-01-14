@@ -1,5 +1,5 @@
 -- ============================================
--- SEEDER: cursos - CONTADURÍA GENERAL COMPLETO
+-- SEEDER: cursos - CONTADURÍA GENERAL COMPLETO CON COLORES
 -- Sistema de Gestión Académica - Instituto INCOS
 -- Datos iniciales: Cursos de CONTADURÍA GENERAL - TODOS LOS PARALELOS
 -- ============================================
@@ -148,127 +148,106 @@ SET @asig_tmg_308 = (SELECT ap.id FROM asignaturas_plan ap
 -- ============================================
 
 -- PARALELO A - TARDE
-INSERT INTO cursos (codigo, paralelo_id, asignatura_plan_id, cupo_maximo, cupo_minimo) VALUES
-('CON-1A-TARDE-CON101', @paralelo_con_1a_id, @asig_con_101, 35, 10),
-('CON-1A-TARDE-MAF102', @paralelo_con_1a_id, @asig_maf_102, 35, 10),
-('CON-1A-TARDE-ICO103', @paralelo_con_1a_id, @asig_ico_103, 35, 10),
-('CON-1A-TARDE-ADG104', @paralelo_con_1a_id, @asig_adg_104, 35, 10),
-('CON-1A-TARDE-LSA105', @paralelo_con_1a_id, @asig_lsa_105, 35, 10),
-('CON-1A-TARDE-EGA106', @paralelo_con_1a_id, @asig_ega_106, 35, 10),
-('CON-1A-TARDE-DCM107', @paralelo_con_1a_id, @asig_dcm_107, 35, 10),
-('CON-1A-TARDE-ESA108', @paralelo_con_1a_id, @asig_esa_108, 35, 10),
-('CON-1A-TARDE-INT109', @paralelo_con_1a_id, @asig_int_109, 35, 10);
+INSERT INTO cursos (codigo, paralelo_id, asignatura_plan_id, cupo_maximo, cupo_minimo, color_hex) VALUES
+('CON-1A-TARDE-CON101', @paralelo_con_1a_id, @asig_con_101, 35, 10, '#00FF00'),
+('CON-1A-TARDE-MAF102', @paralelo_con_1a_id, @asig_maf_102, 35, 10, '#00B0F0'),
+('CON-1A-TARDE-ICO103', @paralelo_con_1a_id, @asig_ico_103, 35, 10, '#00FFFF'),
+('CON-1A-TARDE-ADG104', @paralelo_con_1a_id, @asig_adg_104, 35, 10, '#B2A1C7'),
+('CON-1A-TARDE-LSA105', @paralelo_con_1a_id, @asig_lsa_105, 35, 10, '#FFFF00'),
+('CON-1A-TARDE-EGA106', @paralelo_con_1a_id, @asig_ega_106, 35, 10, '#FF9900'),
+('CON-1A-TARDE-DCM107', @paralelo_con_1a_id, @asig_dcm_107, 35, 10, '#C6D9F0'),
+('CON-1A-TARDE-ESA108', @paralelo_con_1a_id, @asig_esa_108, 35, 10, '#00B050'),
+('CON-1A-TARDE-INT109', @paralelo_con_1a_id, @asig_int_109, 35, 10, '#FF00FF');
 
 -- PARALELO B - TARDE
-INSERT INTO cursos (codigo, paralelo_id, asignatura_plan_id, cupo_maximo, cupo_minimo) VALUES
-('CON-1B-TARDE-CON101', @paralelo_con_1b_id, @asig_con_101, 35, 10),
-('CON-1B-TARDE-MAF102', @paralelo_con_1b_id, @asig_maf_102, 35, 10),
-('CON-1B-TARDE-ICO103', @paralelo_con_1b_id, @asig_ico_103, 35, 10),
-('CON-1B-TARDE-ADG104', @paralelo_con_1b_id, @asig_adg_104, 35, 10),
-('CON-1B-TARDE-LSA105', @paralelo_con_1b_id, @asig_lsa_105, 35, 10),
-('CON-1B-TARDE-EGA106', @paralelo_con_1b_id, @asig_ega_106, 35, 10),
-('CON-1B-TARDE-DCM107', @paralelo_con_1b_id, @asig_dcm_107, 35, 10),
-('CON-1B-TARDE-ESA108', @paralelo_con_1b_id, @asig_esa_108, 35, 10),
-('CON-1B-TARDE-INT109', @paralelo_con_1b_id, @asig_int_109, 35, 10);
+INSERT INTO cursos (codigo, paralelo_id, asignatura_plan_id, cupo_maximo, cupo_minimo, color_hex) VALUES
+('CON-1B-TARDE-CON101', @paralelo_con_1b_id, @asig_con_101, 35, 10, '#00FF00'),
+('CON-1B-TARDE-MAF102', @paralelo_con_1b_id, @asig_maf_102, 35, 10, '#00B0F0'),
+('CON-1B-TARDE-ICO103', @paralelo_con_1b_id, @asig_ico_103, 35, 10, '#00FFFF'),
+('CON-1B-TARDE-ADG104', @paralelo_con_1b_id, @asig_adg_104, 35, 10, '#B2A1C7'),
+('CON-1B-TARDE-LSA105', @paralelo_con_1b_id, @asig_lsa_105, 35, 10, '#FFFF00'),
+('CON-1B-TARDE-EGA106', @paralelo_con_1b_id, @asig_ega_106, 35, 10, '#FF9900'),
+('CON-1B-TARDE-DCM107', @paralelo_con_1b_id, @asig_dcm_107, 35, 10, '#C6D9F0'),
+('CON-1B-TARDE-ESA108', @paralelo_con_1b_id, @asig_esa_108, 35, 10, '#00B050'),
+('CON-1B-TARDE-INT109', @paralelo_con_1b_id, @asig_int_109, 35, 10, '#FF00FF');
 
 -- PARALELO C - NOCHE
-INSERT INTO cursos (codigo, paralelo_id, asignatura_plan_id, cupo_maximo, cupo_minimo) VALUES
-('CON-1C-NOCHE-CON101', @paralelo_con_1c_id, @asig_con_101, 35, 10),
-('CON-1C-NOCHE-MAF102', @paralelo_con_1c_id, @asig_maf_102, 35, 10),
-('CON-1C-NOCHE-ICO103', @paralelo_con_1c_id, @asig_ico_103, 35, 10),
-('CON-1C-NOCHE-ADG104', @paralelo_con_1c_id, @asig_adg_104, 35, 10),
-('CON-1C-NOCHE-LSA105', @paralelo_con_1c_id, @asig_lsa_105, 35, 10),
-('CON-1C-NOCHE-EGA106', @paralelo_con_1c_id, @asig_ega_106, 35, 10),
-('CON-1C-NOCHE-DCM107', @paralelo_con_1c_id, @asig_dcm_107, 35, 10),
-('CON-1C-NOCHE-ESA108', @paralelo_con_1c_id, @asig_esa_108, 35, 10),
-('CON-1C-NOCHE-INT109', @paralelo_con_1c_id, @asig_int_109, 35, 10);
+INSERT INTO cursos (codigo, paralelo_id, asignatura_plan_id, cupo_maximo, cupo_minimo, color_hex) VALUES
+('CON-1C-NOCHE-CON101', @paralelo_con_1c_id, @asig_con_101, 35, 10, '#00FF00'),
+('CON-1C-NOCHE-MAF102', @paralelo_con_1c_id, @asig_maf_102, 35, 10, '#00B0F0'),
+('CON-1C-NOCHE-ICO103', @paralelo_con_1c_id, @asig_ico_103, 35, 10, '#00FFFF'),
+('CON-1C-NOCHE-ADG104', @paralelo_con_1c_id, @asig_adg_104, 35, 10, '#B2A1C7'),
+('CON-1C-NOCHE-LSA105', @paralelo_con_1c_id, @asig_lsa_105, 35, 10, '#FFFF00'),
+('CON-1C-NOCHE-EGA106', @paralelo_con_1c_id, @asig_ega_106, 35, 10, '#FF9900'),
+('CON-1C-NOCHE-DCM107', @paralelo_con_1c_id, @asig_dcm_107, 35, 10, '#C6D9F0'),
+('CON-1C-NOCHE-ESA108', @paralelo_con_1c_id, @asig_esa_108, 35, 10, '#00B050'),
+('CON-1C-NOCHE-INT109', @paralelo_con_1c_id, @asig_int_109, 35, 10, '#FF00FF');
 
 -- PARALELO D - NOCHE
-INSERT INTO cursos (codigo, paralelo_id, asignatura_plan_id, cupo_maximo, cupo_minimo) VALUES
-('CON-1D-NOCHE-CON101', @paralelo_con_1d_id, @asig_con_101, 35, 10),
-('CON-1D-NOCHE-MAF102', @paralelo_con_1d_id, @asig_maf_102, 35, 10),
-('CON-1D-NOCHE-ICO103', @paralelo_con_1d_id, @asig_ico_103, 35, 10),
-('CON-1D-NOCHE-ADG104', @paralelo_con_1d_id, @asig_adg_104, 35, 10),
-('CON-1D-NOCHE-LSA105', @paralelo_con_1d_id, @asig_lsa_105, 35, 10),
-('CON-1D-NOCHE-EGA106', @paralelo_con_1d_id, @asig_ega_106, 35, 10),
-('CON-1D-NOCHE-DCM107', @paralelo_con_1d_id, @asig_dcm_107, 35, 10),
-('CON-1D-NOCHE-ESA108', @paralelo_con_1d_id, @asig_esa_108, 35, 10),
-('CON-1D-NOCHE-INT109', @paralelo_con_1d_id, @asig_int_109, 35, 10);
+INSERT INTO cursos (codigo, paralelo_id, asignatura_plan_id, cupo_maximo, cupo_minimo, color_hex) VALUES
+('CON-1D-NOCHE-CON101', @paralelo_con_1d_id, @asig_con_101, 35, 10, '#00FF00'),
+('CON-1D-NOCHE-MAF102', @paralelo_con_1d_id, @asig_maf_102, 35, 10, '#00B0F0'),
+('CON-1D-NOCHE-ICO103', @paralelo_con_1d_id, @asig_ico_103, 35, 10, '#00FFFF'),
+('CON-1D-NOCHE-ADG104', @paralelo_con_1d_id, @asig_adg_104, 35, 10, '#B2A1C7'),
+('CON-1D-NOCHE-LSA105', @paralelo_con_1d_id, @asig_lsa_105, 35, 10, '#FFFF00'),
+('CON-1D-NOCHE-EGA106', @paralelo_con_1d_id, @asig_ega_106, 35, 10, '#FF9900'),
+('CON-1D-NOCHE-DCM107', @paralelo_con_1d_id, @asig_dcm_107, 35, 10, '#C6D9F0'),
+('CON-1D-NOCHE-ESA108', @paralelo_con_1d_id, @asig_esa_108, 35, 10, '#00B050'),
+('CON-1D-NOCHE-INT109', @paralelo_con_1d_id, @asig_int_109, 35, 10, '#FF00FF');
 
 -- ============================================
 -- INSERTAR CURSOS - SEGUNDO AÑO
 -- ============================================
 
 -- PARALELO A - TARDE
-INSERT INTO cursos (codigo, paralelo_id, asignatura_plan_id, cupo_maximo, cupo_minimo) VALUES
-('CON-2A-TARDE-CON201', @paralelo_con_2a_id, @asig_con_201, 35, 10),
-('CON-2A-TARDE-COC202', @paralelo_con_2a_id, @asig_coc_202, 35, 10),
-('CON-2A-TARDE-COS203', @paralelo_con_2a_id, @asig_cos_203, 35, 10),
-('CON-2A-TARDE-CDS204', @paralelo_con_2a_id, @asig_cds_204, 35, 10),
-('CON-2A-TARDE-CBC205', @paralelo_con_2a_id, @asig_cbc_205, 35, 10),
-('CON-2A-TARDE-EMP206', @paralelo_con_2a_id, @asig_emp_206, 35, 10),
-('CON-2A-TARDE-SIT207', @paralelo_con_2a_id, @asig_sit_207, 35, 10);
+INSERT INTO cursos (codigo, paralelo_id, asignatura_plan_id, cupo_maximo, cupo_minimo, color_hex) VALUES
+('CON-2A-TARDE-CON201', @paralelo_con_2a_id, @asig_con_201, 35, 10, '#00FF00'),
+('CON-2A-TARDE-COC202', @paralelo_con_2a_id, @asig_coc_202, 35, 10, '#FF99FF'),
+('CON-2A-TARDE-COS203', @paralelo_con_2a_id, @asig_cos_203, 35, 10, '#FDE9D9'),
+('CON-2A-TARDE-CDS204', @paralelo_con_2a_id, @asig_cds_204, 35, 10, '#EFEFEF'),
+('CON-2A-TARDE-CBC205', @paralelo_con_2a_id, @asig_cbc_205, 35, 10, '#93F193'),
+('CON-2A-TARDE-EMP206', @paralelo_con_2a_id, @asig_emp_206, 35, 10, '#C2D69B'),
+('CON-2A-TARDE-SIT207', @paralelo_con_2a_id, @asig_sit_207, 35, 10, '#FFC000');
 
 -- PARALELO B - NOCHE
-INSERT INTO cursos (codigo, paralelo_id, asignatura_plan_id, cupo_maximo, cupo_minimo) VALUES
-('CON-2B-NOCHE-CON201', @paralelo_con_2b_id, @asig_con_201, 35, 10),
-('CON-2B-NOCHE-COC202', @paralelo_con_2b_id, @asig_coc_202, 35, 10),
-('CON-2B-NOCHE-COS203', @paralelo_con_2b_id, @asig_cos_203, 35, 10),
-('CON-2B-NOCHE-CDS204', @paralelo_con_2b_id, @asig_cds_204, 35, 10),
-('CON-2B-NOCHE-CBC205', @paralelo_con_2b_id, @asig_cbc_205, 35, 10),
-('CON-2B-NOCHE-EMP206', @paralelo_con_2b_id, @asig_emp_206, 35, 10),
-('CON-2B-NOCHE-SIT207', @paralelo_con_2b_id, @asig_sit_207, 35, 10);
+INSERT INTO cursos (codigo, paralelo_id, asignatura_plan_id, cupo_maximo, cupo_minimo, color_hex) VALUES
+('CON-2B-NOCHE-CON201', @paralelo_con_2b_id, @asig_con_201, 35, 10, '#00FF00'),
+('CON-2B-NOCHE-COC202', @paralelo_con_2b_id, @asig_coc_202, 35, 10, '#FF99FF'),
+('CON-2B-NOCHE-COS203', @paralelo_con_2b_id, @asig_cos_203, 35, 10, '#FDE9D9'),
+('CON-2B-NOCHE-CDS204', @paralelo_con_2b_id, @asig_cds_204, 35, 10, '#EFEFEF'),
+('CON-2B-NOCHE-CBC205', @paralelo_con_2b_id, @asig_cbc_205, 35, 10, '#93F193'),
+('CON-2B-NOCHE-EMP206', @paralelo_con_2b_id, @asig_emp_206, 35, 10, '#C2D69B'),
+('CON-2B-NOCHE-SIT207', @paralelo_con_2b_id, @asig_sit_207, 35, 10, '#FFC000');
 
 -- ============================================
 -- INSERTAR CURSOS - TERCER AÑO
 -- ============================================
 
 -- PARALELO A - TARDE
-INSERT INTO cursos (codigo, paralelo_id, asignatura_plan_id, cupo_maximo, cupo_minimo) VALUES
-('CON-3A-TARDE-COA301', @paralelo_con_3a_id, @asig_coa_301, 35, 10),
-('CON-3A-TARDE-COC302', @paralelo_con_3a_id, @asig_coc_302, 35, 10),
-('CON-3A-TARDE-COG303', @paralelo_con_3a_id, @asig_cog_303, 35, 10),
-('CON-3A-TARDE-CEP304', @paralelo_con_3a_id, @asig_cep_304, 35, 10),
-('CON-3A-TARDE-CHS305', @paralelo_con_3a_id, @asig_chs_305, 35, 10),
-('CON-3A-TARDE-GCI306', @paralelo_con_3a_id, @asig_gci_306, 35, 10),
-('CON-3A-TARDE-AEF307', @paralelo_con_3a_id, @asig_aef_307, 35, 10),
-('CON-3A-TARDE-TMG308', @paralelo_con_3a_id, @asig_tmg_308, 35, 10);
+INSERT INTO cursos (codigo, paralelo_id, asignatura_plan_id, cupo_maximo, cupo_minimo, color_hex) VALUES
+('CON-3A-TARDE-COA301', @paralelo_con_3a_id, @asig_coa_301, 35, 10, '#93F193'),
+('CON-3A-TARDE-COC302', @paralelo_con_3a_id, @asig_coc_302, 35, 10, '#CCC0D9'),
+('CON-3A-TARDE-COG303', @paralelo_con_3a_id, @asig_cog_303, 35, 10, '#FBD4B4'),
+('CON-3A-TARDE-CEP304', @paralelo_con_3a_id, @asig_cep_304, 35, 10, '#EFEFEF'),
+('CON-3A-TARDE-CHS305', @paralelo_con_3a_id, @asig_chs_305, 35, 10, '#76923C'),
+('CON-3A-TARDE-GCI306', @paralelo_con_3a_id, @asig_gci_306, 35, 10, '#B2F0FC'),
+('CON-3A-TARDE-AEF307', @paralelo_con_3a_id, @asig_aef_307, 35, 10, '#EFEFEF'),
+('CON-3A-TARDE-TMG308', @paralelo_con_3a_id, @asig_tmg_308, 35, 10, '#5EF927');
 
 -- PARALELO B - TARDE
-INSERT INTO cursos (codigo, paralelo_id, asignatura_plan_id, cupo_maximo, cupo_minimo) VALUES
-('CON-3B-TARDE-COA301', @paralelo_con_3b_id, @asig_coa_301, 35, 10),
-('CON-3B-TARDE-COC302', @paralelo_con_3b_id, @asig_coc_302, 35, 10),
-('CON-3B-TARDE-COG303', @paralelo_con_3b_id, @asig_cog_303, 35, 10),
-('CON-3B-TARDE-CEP304', @paralelo_con_3b_id, @asig_cep_304, 35, 10),
-('CON-3B-TARDE-CHS305', @paralelo_con_3b_id, @asig_chs_305, 35, 10),
-('CON-3B-TARDE-GCI306', @paralelo_con_3b_id, @asig_gci_306, 35, 10),
-('CON-3B-TARDE-AEF307', @paralelo_con_3b_id, @asig_aef_307, 35, 10),
-('CON-3B-TARDE-TMG308', @paralelo_con_3b_id, @asig_tmg_308, 35, 10);
+INSERT INTO cursos (codigo, paralelo_id, asignatura_plan_id, cupo_maximo, cupo_minimo, color_hex) VALUES
+('CON-3B-TARDE-COA301', @paralelo_con_3b_id, @asig_coa_301, 35, 10, '#93F193'),
+('CON-3B-TARDE-COC302', @paralelo_con_3b_id, @asig_coc_302, 35, 10, '#CCC0D9'),
+('CON-3B-TARDE-COG303', @paralelo_con_3b_id, @asig_cog_303, 35, 10, '#FBD4B4'),
+('CON-3B-TARDE-CEP304', @paralelo_con_3b_id, @asig_cep_304, 35, 10, '#EFEFEF'),
+('CON-3B-TARDE-CHS305', @paralelo_con_3b_id, @asig_chs_305, 35, 10, '#76923C'),
+('CON-3B-TARDE-GCI306', @paralelo_con_3b_id, @asig_gci_306, 35, 10, '#B2F0FC'),
+('CON-3B-TARDE-AEF307', @paralelo_con_3b_id, @asig_aef_307, 35, 10, '#EFEFEF'),
+('CON-3B-TARDE-TMG308', @paralelo_con_3b_id, @asig_tmg_308, 35, 10, '#5EF927');
 
 -- Rehabilitar foreign key checks
 SET FOREIGN_KEY_CHECKS = 1;
 
--- ============================================
--- RESUMEN DE CURSOS CREADOS
--- ============================================
--- PRIMER AÑO:
---   Paralelo A (TARDE): 9 cursos
---   Paralelo B (TARDE): 9 cursos
---   Paralelo C (NOCHE): 9 cursos
---   Paralelo D (NOCHE): 9 cursos
---   SUBTOTAL: 36 cursos
---
--- SEGUNDO AÑO:
---   Paralelo A (TARDE): 7 cursos
---   Paralelo B (NOCHE): 7 cursos
---   SUBTOTAL: 14 cursos
---
--- TERCER AÑO:
---   Paralelo A (TARDE): 8 cursos
---   Paralelo B (TARDE): 8 cursos
---   SUBTOTAL: 16 cursos
---
--- TOTAL GENERAL: 66 cursos de Contaduría General
 -- ============================================
 -- FIN DEL SEEDER
 -- ============================================

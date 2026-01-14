@@ -71,6 +71,33 @@ const findTimeSlot = (time, timeSlots) => {
 };
 
 /**
+ * Encuentra todos los slots que están dentro de un rango de tiempo
+ * 
+ * @param {string} startTime - Hora de inicio (ej: '18:15')
+ * @param {string} endTime - Hora de fin (ej: '19:00')
+ * @param {Array} timeSlots - Array de bloques horarios
+ * @returns {Array} Array de keys de slots que están en el rango
+ */
+const findTimeSlotsInRange = (startTime, endTime, timeSlots) => {
+  const startMinutes = parseTime(startTime);
+  const endMinutes = parseTime(endTime);
+  
+  return timeSlots
+    .filter(slot => {
+      const slotStart = parseTime(slot.startTime);
+      const slotEnd = parseTime(slot.endTime);
+      // El slot está dentro del rango si:
+      // - El slot empieza después o igual al startTime Y antes del endTime
+      // - O el slot termina después del startTime Y antes o igual al endTime
+      // - O el slot contiene completamente el rango
+      return (slotStart >= startMinutes && slotStart < endMinutes) ||
+             (slotEnd > startMinutes && slotEnd <= endMinutes) ||
+             (slotStart <= startMinutes && slotEnd >= endMinutes);
+    })
+    .map(slot => slot.key);
+};
+
+/**
  * Organiza el schedule en una estructura de grid (día x bloque horario)
  * 
  * @param {Array} schedule - Array de clases
@@ -87,19 +114,61 @@ export const organizeScheduleByGrid = (schedule, days, timeSlots) => {
   });
 
   // Llenar grid con clases
+  // Cada clase ocupa múltiples slots según su duración (startTime a endTime)
   schedule.forEach(classItem => {
     const dayKey = classItem.day?.toLowerCase();
-    const slotKey = findTimeSlot(classItem.startTime, timeSlots);
-
-    if (dayKey && slotKey && grid[dayKey]) {
-      // Si ya existe una clase en este slot, marcar conflicto
-      if (grid[dayKey][slotKey]) {
-        grid[dayKey][slotKey].hasConflict = true;
-        classItem.hasConflict = true;
-      }
-      
-      grid[dayKey][slotKey] = classItem;
+    
+    if (!dayKey || !grid[dayKey] || !classItem.startTime || !classItem.endTime) {
+      return;
     }
+
+    // Encontrar todos los slots que cubre esta clase
+    const slotsInRange = findTimeSlotsInRange(classItem.startTime, classItem.endTime, timeSlots);
+
+    if (slotsInRange.length === 0) {
+      return;
+    }
+
+    // Marcar el primer slot como el principal (contiene toda la info de la clase)
+    const firstSlotKey = slotsInRange[0];
+    
+    // Verificar conflictos en cualquier slot que vaya a ocupar
+    let hasConflict = false;
+    slotsInRange.forEach(slotKey => {
+      if (grid[dayKey][slotKey]) {
+        hasConflict = true;
+        // Marcar el conflicto en el slot existente
+        if (grid[dayKey][slotKey].hasConflict !== undefined) {
+          grid[dayKey][slotKey].hasConflict = true;
+        }
+      }
+    });
+
+    if (hasConflict) {
+      classItem.hasConflict = true;
+    }
+
+    // Colocar la clase en todos los slots que cubre
+    // El primer slot tiene la información completa, los demás solo marcan que están ocupados
+    slotsInRange.forEach((slotKey, index) => {
+      if (index === 0) {
+        // Primer slot: información completa
+        grid[dayKey][slotKey] = {
+          ...classItem,
+          spanSlots: slotsInRange.length, // Número de slots que ocupa
+          isFirstSlot: true,
+        };
+      } else {
+        // Slots siguientes: referencia al primer slot
+        grid[dayKey][slotKey] = {
+          ...classItem,
+          spanSlots: slotsInRange.length,
+          isContinuation: true,
+          firstSlotKey: firstSlotKey,
+          hasConflict: hasConflict,
+        };
+      }
+    });
   });
 
   return grid;
@@ -133,4 +202,32 @@ export const generateColorFromString = (str) => {
   
   const hue = hash % 360;
   return `hsl(${hue}, 70%, 60%)`;
+};
+
+/**
+ * Mapeo de días del backend a keys del frontend
+ */
+export const DAY_MAPPING = {
+  'LUNES': 'monday',
+  'MARTES': 'tuesday',
+  'MIERCOLES': 'wednesday',
+  'MIÉRCOLES': 'wednesday',
+  'JUEVES': 'thursday',
+  'VIERNES': 'friday',
+  'SABADO': 'saturday',
+  'SÁBADO': 'saturday',
+  'DOMINGO': 'sunday',
+};
+
+/**
+ * Mapeo inverso: keys del frontend a labels
+ */
+export const DAY_LABELS = {
+  'monday': { key: 'monday', label: 'Lunes', short: 'Lun' },
+  'tuesday': { key: 'tuesday', label: 'Martes', short: 'Mar' },
+  'wednesday': { key: 'wednesday', label: 'Miércoles', short: 'Mié' },
+  'thursday': { key: 'thursday', label: 'Jueves', short: 'Jue' },
+  'friday': { key: 'friday', label: 'Viernes', short: 'Vie' },
+  'saturday': { key: 'saturday', label: 'Sábado', short: 'Sáb' },
+  'sunday': { key: 'sunday', label: 'Domingo', short: 'Dom' },
 };

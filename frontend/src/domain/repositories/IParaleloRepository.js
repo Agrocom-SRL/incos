@@ -17,9 +17,13 @@ import { IBaseRepository } from '@repositories/IBaseRepository';
 
 export class IParaleloRepository extends IBaseRepository {
 
-  // Métodos específicos de paralelos se agregarán aquí cuando se necesiten
-  // Ejemplo futuro:
-  // async obtenerPorCarrera(carreraId) {
-  //   throw new Error('Method obtenerPorCarrera() must be implemented');
-  // }
+  /**
+   * Obtiene los horarios completos de un paralelo
+   * @param {Object} options - Opciones de consulta
+   * @param {number} options.parallelId - ID del paralelo
+   * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
+   */
+  async obtenerHorarios(options = {}) {
+    throw new Error('Method obtenerHorarios() must be implemented');
+  }
 }
