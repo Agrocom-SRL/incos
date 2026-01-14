@@ -23,9 +23,6 @@
 import { useState, useCallback, useMemo, useRef } from 'react';
 import { useCarrerasApi } from '@application-configuracion/academico/carreras/hooks/useCarrerasApi';
 
-// Flag para activar/desactivar logs de renderizado (solo desarrollo)
-const ENABLE_RENDER_LOGS = import.meta.env.DEV && true; // Cambiar a true para activar logs
-
 /**
  * Hook para cargar y seleccionar carreras en el contexto de inscripción nueva
  * 
@@ -50,20 +47,7 @@ export const useInscripcionNuevaCarreras = () => {
       setSelectedCarrera(prev => {
         // Si ya está seleccionada la misma carrera, mantener referencia
         if (prev?.id === carrera.id) {
-          if (ENABLE_RENDER_LOGS) {
-            console.log('✅ [Hook] onSelectCarrera - MANTENIENDO referencia (misma carrera seleccionada)', {
-              carreraId: carrera.id,
-              prevCarreraId: prev?.id,
-            });
-          }
           return prev;
-        }
-        
-        if (ENABLE_RENDER_LOGS) {
-          console.log('✅ [Hook] onSelectCarrera - CAMBIANDO carrera seleccionada', {
-            prevCarreraId: prev?.id,
-            newCarreraId: carrera.id,
-          });
         }
         
         // Si cambió, crear nuevo objeto
@@ -103,22 +87,9 @@ export const useInscripcionNuevaCarreras = () => {
         prev.carreras === current.carreras &&
         prev.selectedCarrera?.id === current.selectedCarrera?.id &&
         prev.onSelectCarrera === current.onSelectCarrera) {
-      
-      if (ENABLE_RENDER_LOGS) {
-        console.log('✅ [Hook] useInscripcionNuevaCarreras - MANTENIENDO referencia');
-      }
       return prev;
     }
 
-    if (ENABLE_RENDER_LOGS) {
-      console.log('✅ [Hook] useInscripcionNuevaCarreras - RECREANDO objeto retornado', {
-        carrerasCount: carreras?.length || 0,
-        loading,
-        hasSelectedCarrera: !!selectedCarrera,
-        carrerasRef: carreras ? 'exists' : 'null',
-        refetchRef: refetch ? 'exists' : 'null',
-      });
-    }
     prevResultRef.current = current;
     return current;
   }, [carreras, loading, error, refetch, selectedCarrera, onSelectCarrera]);

@@ -20,6 +20,7 @@ export { useInscripcionesNuevaContext } from './context/useInscripcionesNuevaCon
 // ============================================
 // Exporta directamente desde el archivo (el index.js intermedio es opcional)
 export { useInscripcionesData } from './state/useInscripcionesData';
+export { useInscripcionNuevaData } from './state/useInscripcionNuevaData';
 
 // ============================================
 // 3. API / DATA FETCHING (Application Layer)

@@ -36,9 +36,6 @@ import { useMessage } from '@application/utils';
 // TODO: Importar hooks de API cuando se implementen
 // import { useCreateInscripcion } from '@application-inscripciones/hooks/api';
 
-// Flag para activar/desactivar logs de renderizado (solo desarrollo)
-const ENABLE_RENDER_LOGS = import.meta.env.DEV && true; // Cambiar a true para activar logs
-
 /**
  * Hook para gestionar handlers de submit del formulario de inscripción
  * 
@@ -158,9 +155,6 @@ export const useInscripcionNuevaFormHandlers = (mode = 'nuevo') => {
     // Memoizar el objeto retornado para mantener referencia estable
     // Esto permite que el useMemo del Provider sea más efectivo
     return useMemo(() => {
-        if (ENABLE_RENDER_LOGS) {
-            console.log('✅ [Hook] useInscripcionNuevaFormHandlers - RECREANDO objeto retornado');
-        }
         return {
             // Instancia del formulario (creada y registrada automáticamente)
             form,
