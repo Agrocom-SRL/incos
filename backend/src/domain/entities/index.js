@@ -83,6 +83,12 @@ export { LicenseRequest } from './LicenseRequest.js';
 export { StudentGuardian } from './StudentGuardian.js';
 
 // ============================================
+// INSCRIPCIONES
+// ============================================
+export { Enrollment } from './Enrollment.js';
+export { EnrollmentSubject } from './EnrollmentSubject.js';
+
+// ============================================
 // CONFIGURACIÓN DEL SISTEMA
 // ============================================
 export { SystemConfiguration } from './SystemConfiguration.js';

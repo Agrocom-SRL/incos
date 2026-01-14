@@ -24,15 +24,17 @@
 -- - Se inscriben por BLOQUES: todas las materias del PRIMER PERIODO de su carrera
 -- - No pueden elegir materias individuales (deben llevar todo el bloque)
 -- - La carrera viene de estudiantes_datos_academicos (donde se registró inicialmente)
+-- - El periodo viene del plan de estudios vigente de su carrera
 --
 -- ESTUDIANTES CONTINUIDAD/REINGRESO:
 -- - Pueden elegir materias individuales del plan de estudios de su carrera
--- - Cada materia tiene cursos disponibles (paralelos) con docente y horario
--- - El estudiante se inscribe a cursos específicos (paralelos) de las materias elegidas
+-- - Cada materia tiene asignaciones_docentes disponibles (curso + docente + horario) en la gestión
+-- - El estudiante se inscribe a asignaciones_docentes específicas
 -- - El sistema valida:
---    - Que no haya choques de horario entre los cursos elegidos
+--    - Que no haya choques de horario entre las asignaciones elegidas
 --    - Que no tenga nivelaciones pendientes (bloquea inscripción)
 --    - Que cumpla prerrequisitos de las materias
+--    - Que haya cupo disponible en el curso
 -- 5. Si todo es válido, se registra la inscripción
 -- 6. Si hay problemas (choques, nivelaciones, prerrequisitos), NO se registra
 --
@@ -41,29 +43,33 @@
 -- simplemente NO se registra la inscripción. Solo se registra si es válida.
 --
 -- ESTRUCTURA ACADÉMICA:
--- - Cada carrera tiene un plan de estudios dividido en 3 periodos por año
--- - Para terminar la carrera son 3 años (9 periodos totales)
--- - Cada materia en el plan de estudios pertenece a un periodo específico
--- - En cada gestión se ofertan cursos (paralelos) de las materias
--- - Cada curso tiene: materia, docente, horario (turno), cupos
+-- - Cada carrera tiene un plan de estudios dividido en periodos (años académicos)
+-- - Cada periodo tiene asignaturas_plan (materias con configuración específica)
+-- - Los paralelos agrupan estudiantes por carrera, periodo y turno
+-- - Los cursos son la intersección entre paralelos y asignaturas_plan
+-- - Los cursos tienen horarios (cursos_horarios) con aulas asignadas
+-- - Las asignaciones_docentes activan cursos por gestión (curso + docente + gestion_plan)
+-- - El estudiante se inscribe a asignaciones_docentes específicas
 --
 -- TIPOS DE INSCRIPCIÓN:
 -- - NUEVO: Estudiante nuevo (primera vez en el instituto)
 -- - REINGRESO: Estudiante que regresa después de un periodo sin inscribirse
 -- - CONTINUIDAD: Estudiante que continúa de la gestión anterior
--- - TRANSFERENCIA_ENTRADA: Estudiante que viene de otra institución (ver transferencias)
--- - TRASPASO_ENTRADA: Estudiante que viene de otra sede (ver traspasos)
+-- - TRANSFERENCIA_ENTRADA: Estudiante que viene de otra institución (ver parte 3)
+-- - TRASPASO_ENTRADA: Estudiante que viene de otra sede (ver parte 4)
 -- 
 -- RELACIÓN CON OTRAS TABLAS:
--- - inscripciones_materias: Materias específicas (cursos/paralelos) inscritas
--- - estudiantes: Estudiante que se inscribe (ya registrado con documentos y pago)
--- - estudiantes_datos_academicos: Contiene la carrera del estudiante (NO se repite aquí)
--- - gestiones: Gestión académica en curso
--- - plan_estudios: Define qué materias pertenecen a cada periodo de cada carrera
--- - asignaciones_docentes: Cursos disponibles (paralelos) ofertados en la gestión
--- - turnos_cursos: Horarios de los cursos (para validar choques)
--- - transferencias: Si es transferencia entrada, referencia a transferencias
--- - traspasos: Si es traspaso entrada, referencia a traspasos
+-- - inscripciones_materias: Asignaciones específicas inscritas (ver parte 2)
+-- - calificaciones: Notas de evaluaciones (ver parte 2, tabla separada para normalización)
+-- - estudiantes_datos_academicos: Datos académicos del estudiante (carrera, gestion_ingreso) - RELACIÓN PRINCIPAL
+--   → estudiantes_datos_academicos.estudiante_id → estudiantes (para obtener datos personales)
+--   → estudiantes_datos_academicos.carrera_id → carreras (carrera del estudiante)
+--   → estudiantes_datos_academicos.gestion_ingreso_id → gestiones (gestión de ingreso)
+-- - gestiones: Gestión académica en la que se inscribe (diferente de gestion_ingreso_id)
+-- - gestiones_planes: Plan habilitado en la gestión (garantiza coherencia)
+-- - asignaciones_docentes: Cursos disponibles con docente en la gestión
+-- - transferencias: Si tipo_inscripcion = TRANSFERENCIA_ENTRADA, se puede consultar desde transferencias (parte 3)
+-- - traspasos: Si tipo_inscripcion = TRASPASO_ENTRADA, se puede consultar desde traspasos (parte 4)
 -- ============================================
 
 USE instituto_incos;
@@ -98,32 +104,46 @@ DROP TABLE IF EXISTS inscripciones;
 -- - Un estudiante puede tener múltiples inscripciones en diferentes gestiones
 -- - Un estudiante puede tener solo UNA inscripción por gestión
 -- - El estudiante debe estar registrado, con documentos y pago completos
--- - La carrera del estudiante viene de estudiantes_datos_academicos (NO se repite aquí)
+-- - La relación principal es con estudiantes_datos_academicos (NO directamente con estudiantes)
+--   → estudiantes_datos_academicos contiene: carrera_id, gestion_ingreso_id
+--   → De ahí obtenemos la carrera del estudiante y su gestión de ingreso
+-- - gestion_id: Gestión en la que se inscribe (diferente de gestion_ingreso_id en estudiantes_datos_academicos)
+--   Ejemplo: Estudiante ingresó en 2023 (gestion_ingreso_id=2023) pero se inscribe a materias en 2024 (gestion_id=2024)
 -- - REGLA CRÍTICA: Si tiene nivelaciones pendientes, NO puede inscribirse
---   hasta que apruebe todas sus nivelaciones (ver bloqueos_inscripcion)
+--   hasta que apruebe todas sus nivelaciones (ver bloqueos_inscripcion en parte 5)
 -- - Los choques de horario se validan antes de registrar (si hay choque, no se registra)
 -- - Los prerrequisitos se validan antes de registrar (si no cumple, no se registra)
+-- - Los cupos se validan antes de registrar (si no hay cupo, no se registra)
 --
 -- NOTA: El periodo NO se elige directamente. El periodo viene del plan de estudios
 -- de la materia. Cada materia en inscripciones_materias pertenece a un periodo
 -- según el plan de estudios de la carrera del estudiante (en estudiantes_datos_academicos).
+--
+-- RELACIÓN CON ASIGNACIONES_DOCENTES:
+-- - Las inscripciones_materias se relacionan con asignaciones_docentes
+-- - asignaciones_docentes vincula: curso + gestion_plan + docente
+-- - Esto garantiza que el curso esté activo en la gestión y tenga docente asignado
+--
+-- RELACIÓN CON ESTUDIANTES_DATOS_ACADEMICOS:
+-- - La relación principal es con estudiantes_datos_academicos (NO con estudiantes directamente)
+-- - estudiantes_datos_academicos contiene: carrera_id, gestion_ingreso_id
+-- - gestion_ingreso_id es la gestión de ingreso (primera vez que ingresó)
+-- - gestion_id en inscripciones es la gestión en la que se inscribe (puede ser diferente cada año)
 -- ============================================
 
 CREATE TABLE inscripciones (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    estudiante_id INT NOT NULL COMMENT 'Estudiante inscrito (referencia a estudiantes). Debe estar registrado con documentos y pago completos. La carrera viene de estudiantes_datos_academicos.',
-    gestion_id INT NOT NULL COMMENT 'Gestión académica (año lectivo) en la que se inscribe (referencia a gestiones)',
-    tipo_inscripcion ENUM('NUEVO', 'REINGRESO', 'CONTINUIDAD', 'TRANSFERENCIA_ENTRADA', 'TRASPASO_ENTRADA') DEFAULT 'CONTINUIDAD' COMMENT 'Tipo de inscripción: NUEVO (primera vez, se inscribe por bloques - todas las materias del periodo 1), REINGRESO (regresa después de ausencia), CONTINUIDAD (continúa de gestión anterior, puede elegir materias individuales), TRANSFERENCIA_ENTRADA (viene de otra institución), TRASPASO_ENTRADA (viene de otra sede)',
-    fecha_inscripcion DATE NOT NULL DEFAULT (CURDATE()) COMMENT 'Fecha en que se realizó la inscripción',
+    estudiante_datos_academicos_id INT NULL COMMENT 'Datos académicos del estudiante (referencia a estudiantes_datos_academicos). Contiene la carrera del estudiante y su gestión de ingreso. El estudiante debe estar registrado con documentos y pago completos.',
+    gestion_id INT NULL COMMENT 'Gestión académica (año lectivo) en la que se inscribe (referencia a gestiones). Diferente de gestion_ingreso_id en estudiantes_datos_academicos.',
     
-    -- Relaciones con transferencias y traspasos
-    transferencia_id INT COMMENT 'Si tipo_inscripcion = TRANSFERENCIA_ENTRADA, referencia a transferencias',
-    traspaso_id INT COMMENT 'Si tipo_inscripcion = TRASPASO_ENTRADA, referencia a traspasos',
+    -- Tipo de inscripción
+    tipo_inscripcion ENUM('NUEVO', 'REINGRESO', 'CONTINUIDAD', 'TRANSFERENCIA_ENTRADA', 'TRASPASO_ENTRADA') DEFAULT 'CONTINUIDAD' 
+        COMMENT 'Tipo de inscripción: NUEVO (primera vez, se inscribe por bloques - todas las materias del periodo 1), REINGRESO (regresa después de ausencia), CONTINUIDAD (continúa de gestión anterior, puede elegir materias individuales), TRANSFERENCIA_ENTRADA (viene de otra institución), TRASPASO_ENTRADA (viene de otra sede)',
     
-    -- Resumen de la inscripción (se actualiza automáticamente)
-    numero_materias INT DEFAULT 0 COMMENT 'Cantidad de materias inscritas (se actualiza automáticamente al agregar/eliminar materias en inscripciones_materias)',
-    carga_horaria_total INT DEFAULT 0 COMMENT 'Carga horaria total de todas las materias inscritas (se actualiza automáticamente)',
+    -- Fecha de inscripción
+    fecha_inscripcion DATE NULL DEFAULT (CURDATE()) COMMENT 'Fecha en que se realizó la inscripción',
     
+    -- Observaciones
     observaciones TEXT COMMENT 'Observaciones generales sobre la inscripción',
     
     -- Campos de auditoría y control (ESTÁNDAR)
@@ -131,36 +151,30 @@ CREATE TABLE inscripciones (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
     deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
-    created_by INT COMMENT 'Usuario que creó',
-    updated_by INT COMMENT 'Usuario que modificó',
-    deleted_by INT COMMENT 'Usuario que eliminó',
+    created_by INT NULL COMMENT 'Usuario que creó',
+    updated_by INT NULL COMMENT 'Usuario que modificó',
+    deleted_by INT NULL COMMENT 'Usuario que eliminó',
     
-    FOREIGN KEY (estudiante_id) REFERENCES estudiantes(id) ON DELETE SET NULL,
+    -- Foreign keys
+    FOREIGN KEY (estudiante_datos_academicos_id) REFERENCES estudiantes_datos_academicos(id) ON DELETE SET NULL,
     FOREIGN KEY (gestion_id) REFERENCES gestiones(id) ON DELETE SET NULL,
-    -- NOTA: La carrera NO está aquí porque viene de estudiantes_datos_academicos
-    -- NOTA: transferencia_id y traspaso_id NO tienen foreign key porque las tablas se crean después (parte3 y parte4)
-    -- La validación de integridad se hace a nivel de aplicación
     FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
-    INDEX idx_estudiante_id (estudiante_id) COMMENT 'Búsqueda por estudiante',
+    -- Índices para optimización
+    INDEX idx_estudiante_datos_academicos_id (estudiante_datos_academicos_id) COMMENT 'Búsqueda por datos académicos del estudiante',
     INDEX idx_gestion_id (gestion_id) COMMENT 'Búsqueda por gestión',
     INDEX idx_tipo_inscripcion (tipo_inscripcion) COMMENT 'Filtrado por tipo de inscripción',
     INDEX idx_fecha_inscripcion (fecha_inscripcion) COMMENT 'Búsqueda por fecha',
     INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
     INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
-    INDEX idx_estudiante_gestion (estudiante_id, gestion_id, activo, deleted_at) COMMENT 'Búsqueda de inscripciones por estudiante y gestión (único por gestión)',
+    INDEX idx_estudiante_datos_gestion (estudiante_datos_academicos_id, gestion_id, activo, deleted_at) COMMENT 'Búsqueda de inscripciones por estudiante y gestión',
     INDEX idx_gestion_activo (gestion_id, activo, deleted_at) COMMENT 'Búsqueda de inscripciones por gestión',
-    INDEX idx_tipo_activo (tipo_inscripcion, activo, deleted_at) COMMENT 'Búsqueda por tipo de inscripción',
-    INDEX idx_transferencia_id (transferencia_id) COMMENT 'Búsqueda por transferencia',
-    INDEX idx_traspaso_id (traspaso_id) COMMENT 'Búsqueda por traspaso',
-    
-    -- Constraint: Un estudiante solo puede tener UNA inscripción activa por gestión
-    UNIQUE KEY unique_estudiante_gestion_activo (estudiante_id, gestion_id, activo, deleted_at)
+    INDEX idx_tipo_activo (tipo_inscripcion, activo, deleted_at) COMMENT 'Búsqueda por tipo de inscripción'
     
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Inscripciones de estudiantes a una gestión académica. El estudiante ya debe estar registrado con documentos y pago completos. La carrera viene de estudiantes_datos_academicos (NO se repite aquí). Registra qué materias (cursos/paralelos) va a cursar en la gestión. Los estudiantes NUEVOS se inscriben por bloques (todas las materias del periodo 1). Los estudiantes CONTINUIDAD/REINGRESO pueden elegir materias individuales. El periodo de cada materia viene del plan de estudios, no se elige directamente. Si hay choques de horario, nivelaciones pendientes o prerrequisitos no cumplidos, NO se registra la inscripción.';
+COMMENT='Inscripciones de estudiantes a una gestión académica. Se relaciona con estudiantes_datos_academicos (que contiene la carrera del estudiante). El estudiante ya debe estar registrado con documentos y pago completos. Registra qué asignaciones_docentes (cursos con docente) va a cursar en la gestión. Los estudiantes NUEVOS se inscriben por bloques (todas las materias del periodo 1). Los estudiantes CONTINUIDAD/REINGRESO pueden elegir materias individuales. El periodo de cada materia viene del plan de estudios, no se elige directamente. Si hay choques de horario, nivelaciones pendientes o prerrequisitos no cumplidos, NO se registra la inscripción. El número de materias y carga horaria se calculan desde inscripciones_materias. Las transferencias y traspasos se consultan desde sus respectivas tablas (partes 3 y 4).';
 
 -- ============================================
 -- FASE 3: REHABILITAR FOREIGN KEY CHECKS

@@ -80,3 +80,9 @@ export { IBecaDescuentoRepository } from './IBecaDescuentoRepository.js';
 export { IEstudianteBecaRepository } from './IEstudianteBecaRepository.js';
 export { ILicenciaSolicitudRepository } from './ILicenciaSolicitudRepository.js';
 export { IEstudianteApoderadoRepository } from './IEstudianteApoderadoRepository.js';
+
+// ============================================
+// INSCRIPCIONES
+// ============================================
+export { IEnrollmentRepository } from './IEnrollmentRepository.js';
+export { IEnrollmentSubjectRepository } from './IEnrollmentSubjectRepository.js';

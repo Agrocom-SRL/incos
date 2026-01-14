@@ -21,7 +21,7 @@
 -- - inscripciones: Inscripciones bloqueadas
 --
 -- NOTA: La lógica de negocio (triggers, stored procedures, vistas) se encuentra en:
--- 07-inscripciones-logica.sql
+-- 12-inscripciones-logica.sql
 -- ============================================
 
 USE instituto_incos;

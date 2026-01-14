@@ -82,6 +82,12 @@ export { LicenciaSolicitud } from './licencia_solicitud.js';
 export { EstudianteApoderado } from './estudiante_apoderado.js';
 
 // ============================================
+// INSCRIPCIONES
+// ============================================
+export { Inscripcion } from './inscripcion.js';
+export { InscripcionMateria } from './inscripcion_materia.js';
+
+// ============================================
 // CONFIGURACIÓN DEL SISTEMA
 // ============================================
 export { ConfiguracionSistema } from './configuracion_sistema.js';

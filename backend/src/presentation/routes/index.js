@@ -6,6 +6,7 @@ import {
     ACADEMICO_TOKENS,
     GEOGRAFICOS_TOKENS,
     REFERENCIA_TOKENS,
+    INSCRIPCIONES_TOKENS,
 } from '../../infrastructure/container/tokens/index.js';
 
 const router = express.Router();
@@ -36,6 +37,8 @@ router.get('/', (req, res) => {
             tiposParentesco: '/api/v1/tipos-parentesco',
             documentacion: '/api/v1/documentacion',
             discapacidad: '/api/v1/discapacidad',
+            // Módulo: Inscripciones
+            inscripciones: '/api/v1/inscripciones',
         },
     });
 });
@@ -77,6 +80,11 @@ router.use('/estados-civiles', container.resolve(REFERENCIA_TOKENS.estadosCivile
 router.use('/tipos-parentesco', container.resolve(REFERENCIA_TOKENS.tiposParentescoRouter));
 router.use('/documentacion', container.resolve(REFERENCIA_TOKENS.documentacionRouter));
 router.use('/discapacidad', container.resolve(REFERENCIA_TOKENS.discapacidadRouter));
+
+// ============================================
+// 6. MÓDULO: INSCRIPCIONES
+// ============================================
+router.use('/inscripciones', container.resolve(INSCRIPCIONES_TOKENS.inscripcionesRouter));
 
 // Para agregar un nuevo módulo:
 // 1. Crear archivo: routes/{modulo}.routes.js

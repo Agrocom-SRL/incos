@@ -97,6 +97,12 @@ import { StudentScholarshipRepository } from '../../repositories/StudentScholars
 import { LicenseRequestRepository } from '../../repositories/LicenseRequestRepository.js';
 import { StudentGuardianRepository } from '../../repositories/StudentGuardianRepository.js';
 
+// ============================================
+// INSCRIPCIONES
+// ============================================
+import { EnrollmentRepository } from '../../repositories/EnrollmentRepository.js';
+import { EnrollmentSubjectRepository } from '../../repositories/EnrollmentSubjectRepository.js';
+
 /**
  * Registra todas las dependencias de repositorios
  * 
@@ -179,6 +185,12 @@ export function registerRepositoriesModule(container) {
     registerRepository(container, REPOSITORIOS_TOKENS.studentScholarshipRepository, StudentScholarshipRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.licenseRequestRepository, LicenseRequestRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.studentGuardianRepository, StudentGuardianRepository);
+
+    // ============================================
+    // INSCRIPCIONES
+    // ============================================
+    registerRepository(container, REPOSITORIOS_TOKENS.enrollmentRepository, EnrollmentRepository);
+    registerRepository(container, REPOSITORIOS_TOKENS.enrollmentSubjectRepository, EnrollmentSubjectRepository);
 
     return container;
 }

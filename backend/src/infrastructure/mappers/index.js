@@ -77,6 +77,12 @@ export { StudentDisabilityMapper } from './StudentDisabilityMapper.js';
 export { StudentOriginMapper } from './StudentOriginMapper.js';
 
 // ============================================
+// INSCRIPCIONES
+// ============================================
+export { EnrollmentMapper } from './EnrollmentMapper.js';
+export { EnrollmentSubjectMapper } from './EnrollmentSubjectMapper.js';
+
+// ============================================
 // LICENCIAS
 // ============================================
 export { LicenseRequestMapper } from './LicenseRequestMapper.js';

@@ -65,5 +65,9 @@ export const REPOSITORIOS_TOKENS = {
     scholarshipRepository: 'scholarshipRepository',
     studentScholarshipRepository: 'studentScholarshipRepository',
     licenseRequestRepository: 'licenseRequestRepository',
+
+    // INSCRIPCIONES
+    enrollmentRepository: 'enrollmentRepository',
+    enrollmentSubjectRepository: 'enrollmentSubjectRepository',
 };
 

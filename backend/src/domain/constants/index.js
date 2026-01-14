@@ -35,5 +35,8 @@ export * from './gestion.constants.js';
 // Re-exportar constantes de cursos (entidades existentes)
 export * from './cursos.constants.js';
 
+// Re-exportar constantes de inscripciones
+export * from './inscripciones.constants.js';
+
 // Re-exportar constantes del sistema
 export * from './sistema.constants.js';

@@ -35,4 +35,5 @@ export { CONFIGURACION_TOKENS } from './configuracion.tokens.js';
 export { ACADEMICO_TOKENS } from './academico.tokens.js';
 export { GEOGRAFICOS_TOKENS } from './geograficos.tokens.js';
 export { REFERENCIA_TOKENS } from './referencia.tokens.js';
+export { INSCRIPCIONES_TOKENS } from './inscripciones.tokens.js';
 
