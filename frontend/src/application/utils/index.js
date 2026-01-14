@@ -27,4 +27,5 @@ export * from './formatters';
 export * from './hooks';
 export * from './transformers';
 export * from './error';
+export * from './stateOptimization';
 

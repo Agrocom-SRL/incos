@@ -29,10 +29,10 @@
  * - El manejo de errores se hace usando helpers genéricos reutilizables
  */
 
-import { useState, useCallback, useMemo, useRef } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useCasesFactory } from '@container';
 import { mapEstudiantesList } from '@application-estudiantes/mappers';
-import { extractErrorFromResult, normalizeError, normalizeFieldToArray } from '@application/utils';
+import { extractErrorFromResult, normalizeError, normalizeFieldToArray, createOptimizedArraySetter, createOptimizedPrimitiveSetter, useStableApiResult } from '@application/utils';
 
 // Flag para activar/desactivar logs de renderizado (solo desarrollo)
 const ENABLE_RENDER_LOGS = import.meta.env.DEV && true; // Cambiar a true para activar logs
@@ -41,6 +41,19 @@ export const useSearchStudent = () => {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  // Setters optimizados para evitar actualizaciones innecesarias
+  // Usar useRef para mantener referencias estables (setState de React ya es estable)
+  const optimizedSetStudentsRef = useRef(null);
+  const optimizedSetLoadingRef = useRef(null);
+  const optimizedSetErrorRef = useRef(null);
+
+  // Inicializar los setters optimizados una sola vez
+  if (!optimizedSetStudentsRef.current) {
+    optimizedSetStudentsRef.current = createOptimizedArraySetter(setStudents);
+    optimizedSetLoadingRef.current = createOptimizedPrimitiveSetter(setLoading);
+    optimizedSetErrorRef.current = createOptimizedPrimitiveSetter(setError);
+  }
 
   /**
    * Función centralizada para buscar estudiantes desde la API
@@ -52,8 +65,8 @@ export const useSearchStudent = () => {
    */
   const fetchStudents = useCallback(async (searchTerm, options = {}) => {
     // OPTIMIZACIÓN: Solo actualizar si el valor realmente cambió
-    setLoading(prevLoading => prevLoading === true ? prevLoading : true);
-    setError(prevError => prevError === null ? prevError : null);
+    optimizedSetLoadingRef.current(true);
+    optimizedSetErrorRef.current(null);
 
     try {
       // 1. Obtener el Use Case desde el container
@@ -67,8 +80,8 @@ export const useSearchStudent = () => {
       if (!result.success) {
         const errorMessage = extractErrorFromResult(result, 'Error al buscar estudiantes');
         // OPTIMIZACIÓN: Solo actualizar si el error realmente cambió
-        setError(prevError => prevError === errorMessage ? prevError : errorMessage);
-        setStudents([]);
+        optimizedSetErrorRef.current(errorMessage);
+        optimizedSetStudentsRef.current([]);
         return;
       }
 
@@ -79,37 +92,20 @@ export const useSearchStudent = () => {
       const estudiantes = mapEstudiantesList(estudiantesNormalizados);
       
       // OPTIMIZACIÓN: Solo actualizar el estado si los datos realmente cambiaron
-      // Comparar por longitud y IDs para evitar actualizaciones innecesarias
-      setStudents(prevStudents => {
-        // Si la longitud es diferente, definitivamente cambió
-        if (prevStudents.length !== estudiantes.length) {
-          return estudiantes;
-        }
-        
-        // Comparar IDs para verificar si realmente cambió
-        const prevIds = prevStudents.map(s => s.id).sort().join(',');
-        const newIds = estudiantes.map(s => s.id).sort().join(',');
-        
-        // Si los IDs son iguales, mantener la referencia anterior (evita re-renders)
-        if (prevIds === newIds) {
-          return prevStudents;
-        }
-        
-        // Si los IDs cambiaron, actualizar con los nuevos datos
-        return estudiantes;
-      });
+      // El helper createOptimizedArraySetter compara por longitud y IDs automáticamente
+      optimizedSetStudentsRef.current(estudiantes);
     } catch (err) {
       // Error inesperado (no debería llegar aquí si el Use Case maneja bien los errores)
       // Normalizar el error usando el helper genérico
       const errorMessage = normalizeError(err, 'Error al buscar estudiantes');
       // OPTIMIZACIÓN: Solo actualizar si el error realmente cambió
-      setError(prevError => prevError === errorMessage ? prevError : errorMessage);
-      setStudents([]);
+      optimizedSetErrorRef.current(errorMessage);
+      optimizedSetStudentsRef.current([]);
     } finally {
       // OPTIMIZACIÓN: Solo actualizar si el valor realmente cambió
-      setLoading(prevLoading => prevLoading === false ? prevLoading : false);
+      optimizedSetLoadingRef.current(false);
     }
-  }, []);
+  }, []); // Sin dependencias porque los setters están en refs estables
 
   /**
    * Busca estudiantes por término de búsqueda
@@ -133,46 +129,16 @@ export const useSearchStudent = () => {
     await fetchStudents(searchTerm, options);
   }, [fetchStudents]);
 
-  // MANTENER REFERENCIA ESTABLE
-  // Comparar valores, no solo referencias, para evitar recálculos innecesarios
-  const prevResultRef = useRef(null);
-  
-  return useMemo(() => {
-    const current = {
+  // Usar helper para mantener referencia estable del resultado
+  return useStableApiResult(
+    {
       students,
       loading,
       error,
       searchStudent,
       refetch,
-    };
-
-    const prev = prevResultRef.current;
-    
-    // Comparar valores, no referencias
-    // students ya se compara por contenido en setStudents, así que aquí comparamos por referencia
-    if (prev &&
-        prev.loading === current.loading &&
-        prev.error === current.error &&
-        prev.searchStudent === current.searchStudent &&
-        prev.refetch === current.refetch &&
-        prev.students === current.students) {
-      
-      if (ENABLE_RENDER_LOGS) {
-        console.log('✅ [Hook] useSearchStudent - MANTENIENDO referencia');
-      }
-      return prev;
-    }
-
-    if (ENABLE_RENDER_LOGS) {
-      console.log('✅ [Hook] useSearchStudent - RECREANDO objeto retornado', {
-        studentsCount: students?.length || 0,
-        loading,
-        error: error ? 'exists' : 'null',
-        searchStudentRef: searchStudent ? 'exists' : 'null',
-        refetchRef: refetch ? 'exists' : 'null',
-      });
-    }
-    prevResultRef.current = current;
-    return current;
-  }, [students, loading, error, searchStudent, refetch]);
+    },
+    ENABLE_RENDER_LOGS,
+    'useSearchStudent'
+  );
 };

@@ -13,9 +13,13 @@
  * - Proporciona funciones para cargar datos en cascada (departamento → provincia → municipio)
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useCasesFactory } from '@container';
 import { TIPO_ORIGEN } from '@infrastructure/config/constants';
+import { createOptimizedArraySetter, useStableApiResult } from '@application/utils';
+
+// Flag para activar/desactivar logs de renderizado (solo desarrollo)
+const ENABLE_RENDER_LOGS = import.meta.env.DEV && true; // Cambiar a true para activar logs
 
 export const useStudentGeographicApi = () => {
   // Estados para datos geográficos (cargados bajo demanda)
@@ -31,6 +35,27 @@ export const useStudentGeographicApi = () => {
   const [municipiosResidencia, setMunicipiosResidencia] = useState([]); // Para residencia
   const [segundaMunicipios, setSegundaMunicipios] = useState([]); // Para segunda nacionalidad
 
+  // Setters optimizados para evitar actualizaciones innecesarias
+  // Usar useRef para mantener referencias estables (setState de React ya es estable)
+  const optimizedSetDepartamentosRef = useRef(null);
+  const optimizedSetProvinciasRef = useRef(null);
+  const optimizedSetProvinciasResidenciaRef = useRef(null);
+  const optimizedSetSegundaProvinciasRef = useRef(null);
+  const optimizedSetMunicipiosRef = useRef(null);
+  const optimizedSetMunicipiosResidenciaRef = useRef(null);
+  const optimizedSetSegundaMunicipiosRef = useRef(null);
+
+  // Inicializar los setters optimizados una sola vez
+  if (!optimizedSetDepartamentosRef.current) {
+    optimizedSetDepartamentosRef.current = createOptimizedArraySetter(setDepartamentos);
+    optimizedSetProvinciasRef.current = createOptimizedArraySetter(setProvincias);
+    optimizedSetProvinciasResidenciaRef.current = createOptimizedArraySetter(setProvinciasResidencia);
+    optimizedSetSegundaProvinciasRef.current = createOptimizedArraySetter(setSegundaProvincias);
+    optimizedSetMunicipiosRef.current = createOptimizedArraySetter(setMunicipios);
+    optimizedSetMunicipiosResidenciaRef.current = createOptimizedArraySetter(setMunicipiosResidencia);
+    optimizedSetSegundaMunicipiosRef.current = createOptimizedArraySetter(setSegundaMunicipios);
+  }
+
   /**
    * Carga todos los departamentos (sin filtros)
    */
@@ -42,14 +67,17 @@ export const useStudentGeographicApi = () => {
       });
 
       if (result.success) {
-        setDepartamentos(result.data || []);
+        // OPTIMIZACIÓN: Solo actualizar si los datos realmente cambiaron
+        optimizedSetDepartamentosRef.current(result.data || []);
       } else {
         console.error('[useStudentGeographicData] Error al cargar departamentos:', result.error);
-        setDepartamentos([]);
+        // OPTIMIZACIÓN: Solo actualizar si los datos realmente cambiaron
+        optimizedSetDepartamentosRef.current([]);
       }
     } catch (err) {
       console.error('[useStudentGeographicData] Error inesperado al cargar departamentos:', err);
-      setDepartamentos([]);
+      // OPTIMIZACIÓN: Solo actualizar si los datos realmente cambiaron
+      optimizedSetDepartamentosRef.current([]);
     }
   }, []);
 
@@ -59,23 +87,24 @@ export const useStudentGeographicApi = () => {
    * @param {string} contexto - Contexto de la provincia: 'origen' (default), 'residencia', 'segunda'
    */
   const loadProvincias = useCallback(async (departamentoId, contexto = 'origen') => {
-    // Determinar qué estado actualizar según el contexto
-    let setProvinciasState;
+    // Determinar qué setter optimizado usar según el contexto
+    let optimizedSetProvinciasStateRef;
     switch (contexto) {
       case 'residencia':
-        setProvinciasState = setProvinciasResidencia;
+        optimizedSetProvinciasStateRef = optimizedSetProvinciasResidenciaRef;
         break;
       case 'segunda':
-        setProvinciasState = setSegundaProvincias;
+        optimizedSetProvinciasStateRef = optimizedSetSegundaProvinciasRef;
         break;
       case 'origen':
       default:
-        setProvinciasState = setProvincias;
+        optimizedSetProvinciasStateRef = optimizedSetProvinciasRef;
         break;
     }
 
     if (!departamentoId) {
-      setProvinciasState([]);
+      // OPTIMIZACIÓN: Solo actualizar si los datos realmente cambiaron
+      optimizedSetProvinciasStateRef.current([]);
       // No limpiar municipios aquí, se limpian por contexto en loadMunicipios
       return;
     }
@@ -85,14 +114,17 @@ export const useStudentGeographicApi = () => {
       const result = await obtenerGeograficosUseCase.ejecutar('provincias', departamentoId);
 
       if (result.success) {
-        setProvinciasState(result.data || []);
+        // OPTIMIZACIÓN: Solo actualizar si los datos realmente cambiaron
+        optimizedSetProvinciasStateRef.current(result.data || []);
       } else {
         console.error(`[useStudentGeographicData] Error al cargar provincias (${contexto}):`, result.error);
-        setProvinciasState([]);
+        // OPTIMIZACIÓN: Solo actualizar si los datos realmente cambiaron
+        optimizedSetProvinciasStateRef.current([]);
       }
     } catch (err) {
       console.error(`[useStudentGeographicData] Error inesperado al cargar provincias (${contexto}):`, err);
-      setProvinciasState([]);
+      // OPTIMIZACIÓN: Solo actualizar si los datos realmente cambiaron
+      optimizedSetProvinciasStateRef.current([]);
     }
   }, []);
 
@@ -102,23 +134,24 @@ export const useStudentGeographicApi = () => {
    * @param {string} contexto - Contexto del municipio: 'origen' (default), 'residencia', 'segunda'
    */
   const loadMunicipios = useCallback(async (provinciaId, contexto = 'origen') => {
-    // Determinar qué estado actualizar según el contexto
-    let setMunicipiosState;
+    // Determinar qué setter optimizado usar según el contexto
+    let optimizedSetMunicipiosStateRef;
     switch (contexto) {
       case 'residencia':
-        setMunicipiosState = setMunicipiosResidencia;
+        optimizedSetMunicipiosStateRef = optimizedSetMunicipiosResidenciaRef;
         break;
       case 'segunda':
-        setMunicipiosState = setSegundaMunicipios;
+        optimizedSetMunicipiosStateRef = optimizedSetSegundaMunicipiosRef;
         break;
       case 'origen':
       default:
-        setMunicipiosState = setMunicipios;
+        optimizedSetMunicipiosStateRef = optimizedSetMunicipiosRef;
         break;
     }
 
     if (!provinciaId) {
-      setMunicipiosState([]);
+      // OPTIMIZACIÓN: Solo actualizar si los datos realmente cambiaron
+      optimizedSetMunicipiosStateRef.current([]);
       return;
     }
 
@@ -127,34 +160,42 @@ export const useStudentGeographicApi = () => {
       const result = await obtenerGeograficosUseCase.ejecutar('municipios', provinciaId);
 
       if (result.success) {
-        setMunicipiosState(result.data || []);
+        // OPTIMIZACIÓN: Solo actualizar si los datos realmente cambiaron
+        optimizedSetMunicipiosStateRef.current(result.data || []);
       } else {
         console.error(`[useStudentGeographicData] Error al cargar municipios (${contexto}):`, result.error);
-        setMunicipiosState([]);
+        // OPTIMIZACIÓN: Solo actualizar si los datos realmente cambiaron
+        optimizedSetMunicipiosStateRef.current([]);
       }
     } catch (err) {
       console.error(`[useStudentGeographicData] Error inesperado al cargar municipios (${contexto}):`, err);
-      setMunicipiosState([]);
+      // OPTIMIZACIÓN: Solo actualizar si los datos realmente cambiaron
+      optimizedSetMunicipiosStateRef.current([]);
     }
   }, []);
 
-  return {
-    // Datos geográficos (cargados bajo demanda)
-    departamentos,
-    provincias, // Para origen (primera nacionalidad)
-    provinciasResidencia, // Para residencia
-    segundaProvincias, // Para segunda nacionalidad
-    municipios, // Para origen (primera nacionalidad)
-    municipiosResidencia, // Para residencia
-    segundaMunicipios, // Para segunda nacionalidad
-    
-    // Opciones estáticas
-    tiposOrigen: TIPO_ORIGEN,
-    
-    // Funciones para cargar datos bajo demanda
-    loadDepartamentos,
-    loadProvincias, // Acepta contexto: 'origen' (default), 'residencia', 'segunda'
-    loadMunicipios, // Acepta contexto: 'origen' (default), 'residencia', 'segunda'
-  };
+  // Usar helper para mantener referencia estable del resultado
+  return useStableApiResult(
+    {
+      // Datos geográficos (cargados bajo demanda)
+      departamentos,
+      provincias, // Para origen (primera nacionalidad)
+      provinciasResidencia, // Para residencia
+      segundaProvincias, // Para segunda nacionalidad
+      municipios, // Para origen (primera nacionalidad)
+      municipiosResidencia, // Para residencia
+      segundaMunicipios, // Para segunda nacionalidad
+      
+      // Opciones estáticas
+      tiposOrigen: TIPO_ORIGEN,
+      
+      // Funciones para cargar datos bajo demanda
+      loadDepartamentos,
+      loadProvincias, // Acepta contexto: 'origen' (default), 'residencia', 'segunda'
+      loadMunicipios, // Acepta contexto: 'origen' (default), 'residencia', 'segunda'
+    },
+    ENABLE_RENDER_LOGS,
+    'useStudentGeographicApi'
+  );
 };
 

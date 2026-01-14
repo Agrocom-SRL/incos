@@ -21,9 +21,10 @@
  * Ubicación: application/modules/configuracion/academico/carreras/hooks
  */
 
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useCasesFactory } from '@container';
 import { mapCarrerasList } from '@application-configuracion/academico/carreras/mappers';
+import { createOptimizedArraySetter, createOptimizedPrimitiveSetter, useStableApiResult } from '@application/utils';
 
 // Flag para activar/desactivar logs de renderizado (solo desarrollo)
 const ENABLE_RENDER_LOGS = import.meta.env.DEV && true; // Cambiar a true para activar logs
@@ -32,6 +33,19 @@ export const useCarrerasApi = () => {
     const [carreras, setCarreras] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+
+    // Setters optimizados para evitar actualizaciones innecesarias
+    // Usar useRef para mantener referencias estables (setState de React ya es estable)
+    const optimizedSetCarrerasRef = useRef(null);
+    const optimizedSetLoadingRef = useRef(null);
+    const optimizedSetErrorRef = useRef(null);
+
+    // Inicializar los setters optimizados una sola vez
+    if (!optimizedSetCarrerasRef.current) {
+        optimizedSetCarrerasRef.current = createOptimizedArraySetter(setCarreras);
+        optimizedSetLoadingRef.current = createOptimizedPrimitiveSetter(setLoading);
+        optimizedSetErrorRef.current = createOptimizedPrimitiveSetter(setError);
+    }
 
     /**
      * Función centralizada para cargar carreras desde la API
@@ -42,8 +56,8 @@ export const useCarrerasApi = () => {
      */
     const fetchCarreras = useCallback(async (options = {}) => {
         // OPTIMIZACIÓN: Solo actualizar si el valor realmente cambió
-        setLoading(prevLoading => prevLoading === true ? prevLoading : true);
-        setError(prevError => prevError === null ? prevError : null);
+        optimizedSetLoadingRef.current(true);
+        optimizedSetErrorRef.current(null);
 
         try {
             // Obtener el Use Case desde el container
@@ -59,8 +73,8 @@ export const useCarrerasApi = () => {
                     ? result.error.message
                     : result.error || 'Error al cargar las carreras';
                 // OPTIMIZACIÓN: Solo actualizar si el error realmente cambió
-                setError(prevError => prevError === errorMessage ? prevError : errorMessage);
-                setCarreras([]);
+                optimizedSetErrorRef.current(errorMessage);
+                optimizedSetCarrerasRef.current([]);
                 return;
             }
 
@@ -68,38 +82,21 @@ export const useCarrerasApi = () => {
             const carrerasMapeadas = mapCarrerasList(result.data);
             
             // OPTIMIZACIÓN: Solo actualizar el estado si los datos realmente cambiaron
-            // Comparar por longitud y IDs para evitar actualizaciones innecesarias
-            setCarreras(prevCarreras => {
-                // Si la longitud es diferente, definitivamente cambió
-                if (prevCarreras.length !== carrerasMapeadas.length) {
-                    return carrerasMapeadas;
-                }
-                
-                // Comparar IDs para verificar si realmente cambió
-                const prevIds = prevCarreras.map(c => c.id).sort().join(',');
-                const newIds = carrerasMapeadas.map(c => c.id).sort().join(',');
-                
-                // Si los IDs son iguales, mantener la referencia anterior (evita re-renders)
-                if (prevIds === newIds) {
-                    return prevCarreras;
-                }
-                
-                // Si los IDs cambiaron, actualizar con los nuevos datos
-                return carrerasMapeadas;
-            });
+            // El helper createOptimizedArraySetter compara por longitud y IDs automáticamente
+            optimizedSetCarrerasRef.current(carrerasMapeadas);
         } catch (err) {
             // Error inesperado (no debería llegar aquí si el Use Case maneja bien los errores)
             const errorMessage = typeof err === 'object' && err?.message
                 ? err.message
                 : err || 'Error al cargar las carreras';
             // OPTIMIZACIÓN: Solo actualizar si el error realmente cambió
-            setError(prevError => prevError === errorMessage ? prevError : errorMessage);
-            setCarreras([]);
+            optimizedSetErrorRef.current(errorMessage);
+            optimizedSetCarrerasRef.current([]);
         } finally {
             // OPTIMIZACIÓN: Solo actualizar si el valor realmente cambió
-            setLoading(prevLoading => prevLoading === false ? prevLoading : false);
+            optimizedSetLoadingRef.current(false);
         }
-    }, []);
+    }, []); // Sin dependencias porque los setters están en refs estables
 
     // Efecto que se ejecuta solo una vez al montar
     useEffect(() => {
@@ -115,44 +112,16 @@ export const useCarrerasApi = () => {
         await fetchCarreras(options);
     }, [fetchCarreras]);
 
-    // MANTENER REFERENCIA ESTABLE (como en tu Provider)
-    // Comparar valores, no solo referencias, para evitar recálculos innecesarios
-    const prevResultRef = useRef(null);
-    
-    return useMemo(() => {
-        const current = {
+    // Usar helper para mantener referencia estable del resultado
+    return useStableApiResult(
+        {
             carreras,
             loading,
             error,
             refetch,
-        };
-
-        const prev = prevResultRef.current;
-        
-        // Comparar valores, no referencias
-        // carreras ya se compara por contenido en setCarreras, así que aquí comparamos por referencia
-        if (prev &&
-            prev.loading === current.loading &&
-            prev.error === current.error &&
-            prev.refetch === current.refetch &&
-            prev.carreras === current.carreras) {
-            
-            if (ENABLE_RENDER_LOGS) {
-                console.log('✅ [Hook] useCarrerasApi - MANTENIENDO referencia');
-            }
-            return prev;
-        }
-
-        if (ENABLE_RENDER_LOGS) {
-            console.log('✅ [Hook] useCarrerasApi - RECREANDO objeto retornado', {
-                carrerasCount: carreras?.length || 0,
-                loading,
-                error: error ? 'exists' : 'null',
-                refetchRef: refetch ? 'exists' : 'null',
-            });
-        }
-        prevResultRef.current = current;
-        return current;
-    }, [carreras, loading, error, refetch]);
+        },
+        ENABLE_RENDER_LOGS,
+        'useCarrerasApi'
+    );
 };
 

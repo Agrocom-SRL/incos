@@ -17,9 +17,13 @@
  * - useStudentReferenceApi: discapacidades, tipos de parentesco
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useCasesFactory } from '@container';
 import { EXPEDICIONES, GENEROS, TIPOS_SANGRE } from '@infrastructure/config/constants';
+import { createOptimizedArraySetter, createOptimizedPrimitiveSetter, useStableApiResult } from '@application/utils';
+
+// Flag para activar/desactivar logs de renderizado (solo desarrollo)
+const ENABLE_RENDER_LOGS = import.meta.env.DEV && true; // Cambiar a true para activar logs
 
 export const useStudentCatalogApi = (initialDelay = 0) => {
   // Estados para datos esenciales (siempre necesarios)
@@ -32,12 +36,32 @@ export const useStudentCatalogApi = (initialDelay = 0) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Setters optimizados para evitar actualizaciones innecesarias
+  // Usar useRef para mantener referencias estables (setState de React ya es estable)
+  const optimizedSetPaisesRef = useRef(null);
+  const optimizedSetIdiomasRef = useRef(null);
+  const optimizedSetEstadosCivilesRef = useRef(null);
+  const optimizedSetDocumentacionRef = useRef(null);
+  const optimizedSetLoadingRef = useRef(null);
+  const optimizedSetErrorRef = useRef(null);
+
+  // Inicializar los setters optimizados una sola vez
+  if (!optimizedSetPaisesRef.current) {
+    optimizedSetPaisesRef.current = createOptimizedArraySetter(setPaises);
+    optimizedSetIdiomasRef.current = createOptimizedArraySetter(setIdiomas);
+    optimizedSetEstadosCivilesRef.current = createOptimizedArraySetter(setEstadosCiviles);
+    optimizedSetDocumentacionRef.current = createOptimizedArraySetter(setDocumentacion);
+    optimizedSetLoadingRef.current = createOptimizedPrimitiveSetter(setLoading);
+    optimizedSetErrorRef.current = createOptimizedPrimitiveSetter(setError);
+  }
+
   /**
    * Carga datos esenciales del formulario
    */
   const loadFormData = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+    // OPTIMIZACIÓN: Solo actualizar si el valor realmente cambió
+    optimizedSetLoadingRef.current(true);
+    optimizedSetErrorRef.current(null);
 
     try {
       // Obtener datos esenciales usando el Use Case
@@ -48,32 +72,33 @@ export const useStudentCatalogApi = (initialDelay = 0) => {
       });
 
       if (!result.success) {
-        setError(result.error || 'Error al cargar datos del formulario');
+        // OPTIMIZACIÓN: Solo actualizar si el error realmente cambió
+        optimizedSetErrorRef.current(result.error || 'Error al cargar datos del formulario');
         return;
       }
 
       // Actualizar estados con datos esenciales
-      setPaises(result.data.paises || []);
-      setIdiomas(result.data.idiomas || []);
-      setEstadosCiviles(result.data.estadosCiviles || []);
-      setDocumentacion(result.data.documentacion || []);
+      // OPTIMIZACIÓN: Solo actualizar si los datos realmente cambiaron
+      optimizedSetPaisesRef.current(result.data.paises || []);
+      optimizedSetIdiomasRef.current(result.data.idiomas || []);
+      optimizedSetEstadosCivilesRef.current(result.data.estadosCiviles || []);
+      optimizedSetDocumentacionRef.current(result.data.documentacion || []);
     } catch (err) {
-      setError(err.message || 'Error inesperado al cargar datos del formulario');
+      // OPTIMIZACIÓN: Solo actualizar si el error realmente cambió
+      optimizedSetErrorRef.current(err.message || 'Error inesperado al cargar datos del formulario');
     } finally {
-      setLoading(false);
+      // OPTIMIZACIÓN: Solo actualizar si el valor realmente cambió
+      optimizedSetLoadingRef.current(false);
     }
-  }, []);
+  }, []); // Sin dependencias porque los setters están en refs estables
 
   // Cargar datos esenciales al montar (con delay opcional para evitar llamadas paralelas)
   useEffect(() => {
-    if (initialDelay > 0) {
-      const timeoutId = setTimeout(() => {
-        loadFormData();
-      }, initialDelay);
-      return () => clearTimeout(timeoutId);
-    } else {
+    const timeoutId = setTimeout(() => {
       loadFormData();
-    }
+    }, initialDelay);
+    
+    return () => clearTimeout(timeoutId);
   }, [loadFormData, initialDelay]);
 
   /**
@@ -83,24 +108,29 @@ export const useStudentCatalogApi = (initialDelay = 0) => {
     await loadFormData();
   }, [loadFormData]);
 
-  return {
-    // Datos esenciales (siempre disponibles)
-    paises,
-    idiomas,
-    estadosCiviles,
-    documentacion,
+  // Usar helper para mantener referencia estable del resultado
+  return useStableApiResult(
+    {
+      // Datos esenciales (siempre disponibles)
+      paises,
+      idiomas,
+      estadosCiviles,
+      documentacion,
 
-    // Opciones estáticas
-    expediciones: EXPEDICIONES,
-    generos: GENEROS,
-    tiposSangre: TIPOS_SANGRE,
+      // Opciones estáticas
+      expediciones: EXPEDICIONES,
+      generos: GENEROS,
+      tiposSangre: TIPOS_SANGRE,
 
-    // Estados
-    loading,
-    error,
+      // Estados
+      loading,
+      error,
 
-    // Función para recargar datos esenciales
-    refetch,
-  };
+      // Función para recargar datos esenciales
+      refetch,
+    },
+    ENABLE_RENDER_LOGS,
+    'useStudentCatalogApi'
+  );
 };
 
