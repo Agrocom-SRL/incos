@@ -21,13 +21,13 @@
  */
 
 /**
- * Enricher para el campo de lista de paralelos
+ * Enricher para el campo de lista/tarjetas de paralelos
  * Agrega los datos de paralelos (items, loading, error) y el callback onSelect al campo antes del renderizado
  * 
  * Flujo:
  * 1. Este enricher se ejecuta en useEnrichWizardSteps (antes del renderizado)
- * 2. Agrega items, loading, emptyMessage, onSelect al campo 'listaParalelos' (tipo 'list')
- * 3. El campo enriquecido se pasa a FormField → FieldRenderer → DataList
+ * 2. Agrega items, loading, emptyMessage, onSelect al campo 'listaParalelos' (tipo 'list' o 'cards')
+ * 3. El campo enriquecido se pasa a FormField → FieldRenderer → DataList o DataCards
  * 4. Cuando el usuario selecciona un paralelo, se ejecuta onSelectParalelo que guarda el ID
  * 5. Solo muestra paralelos si hay una carrera seleccionada
  * 
@@ -41,15 +41,15 @@
 export const enrichParaleloListField = (field, context = {}) => {
     const { paralelosData, onSelectParalelo, carrerasData } = context;
     
-    // Si es el campo de lista de paralelos, agregar los datos
-    // El campo debe tener name='listaParalelos' y type='list'
-    if (field.name === 'listaParalelos' && field.type === 'list' && paralelosData) {
+    // Si es el campo de lista/tarjetas de paralelos, agregar los datos
+    // El campo debe tener name='listaParalelos' y type='list' o 'cards'
+    if (field.name === 'listaParalelos' && (field.type === 'list' || field.type === 'cards') && paralelosData) {
         // Solo mostrar paralelos si hay una carrera seleccionada
         const hasCarrera = carrerasData?.selectedCarrera?.id;
         
         return {
             ...field,
-            // Datos agregados por el enricher (consumidos por DataList)
+            // Datos agregados por el enricher (consumidos por DataList o DataCards)
             items: hasCarrera ? (paralelosData.paralelos || []) : [], // Array de paralelos encontrados
             loading: paralelosData.loading || false, // Estado de carga
             emptyMessage: hasCarrera 
@@ -58,11 +58,12 @@ export const enrichParaleloListField = (field, context = {}) => {
             // OPTIMIZACIÓN: Usar directamente el callback memoizado del context
             // No crear una nueva función wrapper para evitar re-renders
             onSelect: hasCarrera ? (onSelectParalelo || null) : null,
-            // Paralelo seleccionado para aplicar estado activo en DataList
+            // Paralelo seleccionado para aplicar estado activo en DataList o DataCards
             selectedItem: paralelosData.selectedParalelo || null,
             // Ocultar si no hay carrera seleccionada
             hidden: !hasCarrera,
             // renderItem ya está definido en step2SeleccionarParalelos.jsx
+            // orientation ya está definido en step2SeleccionarParalelos.jsx
         };
     }
     

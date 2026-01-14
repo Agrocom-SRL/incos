@@ -12,6 +12,9 @@
 
 import { BookOutlined } from '@ant-design/icons';
 import { Text } from '@atoms';
+import { Flex, Typography } from 'antd';
+
+const { Title } = Typography;
 
 /**
  * Configuración de cabecera de la sección paralelos
@@ -58,32 +61,55 @@ const PARALELOS_FIELDS = [
   },
   {
     name: 'listaParalelos',
-    type: 'list',
+    type: 'cards',
     label: 'Paralelos Disponibles',
     span: 24,
     required: false,
     emptyMessage: 'Seleccione una carrera para ver los paralelos disponibles.',
-    // Función para renderizar cada item usando los datos ya transformados por el mapper
-    // Los datos vienen del mapper (paraleloListMapper) que ya tiene:
-    // - id, codigo, nombre, descripcion, carreraId, materiaId
+    orientation: 'horizontal',
     renderItem: (paralelo) => {
-      const data = [];
+      // Extraer información del paralelo
+      // Ejemplo de estructura esperada del backend:
+      // - nombre: "PRIMERO A"
+      // - descripcion: "Paralelo A de Primer Año"
+      // - carrera: { nombre: "Administración de Empresas" } (si viene con relación)
+      // - turno: "Tarde" (si viene del backend)
+      
+      const periodoNombre = paralelo.nombre || paralelo.codigo || 'Sin nombre';
+      const descripcion = paralelo.descripcion || '';
+      const carreraNombre = paralelo.carrera?.nombre || paralelo.carreraNombre || '';
+      const turno = paralelo.turno || '';
 
-      if (paralelo.codigo) {
-        data.push(`Código: ${paralelo.codigo}`);
-      }
-
-      if (paralelo.descripcion) {
-        data.push(paralelo.descripcion);
-      }
-
-      const caption = data.length > 0 ? data.join(' | ') : null;
-
-      return {
-        avatar: <BookOutlined />,
-        title: paralelo.nombre || paralelo.codigo || 'Sin nombre',
-        caption: caption ? <Text type="secondary">{caption}</Text> : null,
-      };
+      return (
+        <Flex vertical gap={8}>
+          {/* Título principal: PRIMERO A */}
+          <Title level={4} style={{ margin: 0, color: 'var(--color-primary)' }}>
+            {periodoNombre}
+          </Title>
+          
+          {/* Descripción: Paralelo A de Primer Año */}
+          {descripcion && (
+            <Text type="secondary" style={{ fontSize: '14px' }}>
+              {descripcion}
+            </Text>
+          )}
+          
+          {/* Información adicional en vertical */}
+          <Flex vertical gap={4} style={{ marginTop: '8px' }}>
+            {carreraNombre && (
+              <Text strong style={{ fontSize: '14px' }}>
+                {carreraNombre}
+              </Text>
+            )}
+            
+            {turno && (
+              <Text type="secondary" style={{ fontSize: '13px' }}>
+                Turno {turno}
+              </Text>
+            )}
+          </Flex>
+        </Flex>
+      );
     },
   },
 ];

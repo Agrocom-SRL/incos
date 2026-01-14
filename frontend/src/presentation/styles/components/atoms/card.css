@@ -41,3 +41,74 @@
   background-color: var(--color-error-bg);
   color: var(--color-error-hover);
 }
+
+/* ============================================================================
+   AJUSTES PARA DATA CARDS
+   ============================================================================
+   Bordes y estilos específicos para tarjetas usadas en DataCards
+   La orientación se define aquí para que las tarjetas se ajusten correctamente
+   ============================================================================ */
+
+/* Tarjeta individual en DataCards */
+.data-cards__card {
+  /* Colores y bordes usando variables del tema */
+  background-color: var(--color-bg-container);
+  border: 1px solid var(--color-border-secondary);
+  border-radius: var(--border-radius-lg, 12px); /* Bordes más ovalados */
+  cursor: default;
+  transition: all var(--transition-base);
+  /* Sombra más prominente */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+/* Asegurar que las tarjetas en DataCards tengan bordes consistentes y ovalados */
+.data-cards__card .ant-card {
+  border-radius: var(--border-radius-lg, 12px); /* Bordes más ovalados */
+}
+
+/* Body de la tarjeta */
+.data-cards__card .ant-card-body {
+  padding: var(--spacing-lg);
+}
+
+/* Tarjeta con hover (si tiene onSelect) */
+.data-cards__card[class*="ant-card-hoverable"] {
+  cursor: pointer;
+}
+
+/* Hover en tarjeta (solo si no está activa) */
+.data-cards__card:not(.data-cards__card--active):hover {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18) !important; /* Sombra más prominente en hover */
+  transform: translateY(-4px);
+}
+
+.data-cards__card:not(.data-cards__card--active):hover .ant-card {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18) !important; /* Sombra más prominente en hover */
+}
+
+/* Tarjeta activa/seleccionada */
+.data-cards__card--active {
+  background-color: var(--color-primary-bg);
+  border-color: var(--color-primary);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25) !important; /* Sombra más prominente cuando está activa */
+}
+
+.data-cards__card--active .ant-card {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25) !important; /* Sombra más prominente cuando está activa */
+}
+
+/* ============================================================================
+   ORIENTACIÓN - Composición de tarjetas según orientación del contenedor
+   ============================================================================ */
+
+/* Orientación vertical: tarjetas ocupan todo el ancho */
+.data-cards--vertical .data-cards__card {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Orientación horizontal: tarjetas con ancho fijo y flex */
+.data-cards--horizontal .data-cards__card {
+  max-width: 300px;
+  flex: 1 1 300px;
+}

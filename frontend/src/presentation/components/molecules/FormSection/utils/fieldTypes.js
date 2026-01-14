@@ -54,3 +54,13 @@ export const isDocumento = (field) => {
   return field?.type === 'documento' && field?.documento;
 };
 
+/**
+ * Verifica si un campo es de tipo cards
+ * 
+ * @param {Object} field - Campo a verificar
+ * @returns {boolean} true si es cards
+ */
+export const isCards = (field) => {
+  return field?.type === 'cards';
+};
+

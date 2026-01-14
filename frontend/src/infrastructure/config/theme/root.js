@@ -28,6 +28,7 @@ export function injectCSSVariables() {
   root.style.setProperty('--color-content-bg', componentConfig.Layout.bodyBg);
   root.style.setProperty('--color-content-text', allThemeTokens.colorText);
   root.style.setProperty('--color-bg-layout', allThemeTokens.colorBgLayout);
+  root.style.setProperty('--color-bg-container', allThemeTokens.colorBgContainer); // Para DataCards y otros componentes
   
   // Color verde institucional (usado en reset.css para focus y Tags)
   root.style.setProperty('--color-verde-main', allThemeTokens.colorPrimary);
@@ -187,8 +188,11 @@ export function injectCSSVariables() {
   // ========================================
   // Nota: Ant Design aplica automáticamente borderRadius desde componentConfig
   // Solo definimos variables para casos específicos de layout y componentes
-  root.style.setProperty('--border-radius-sm', `${allThemeTokens.borderRadiusSM}px`);
   root.style.setProperty('--border-radius-xs', `${allThemeTokens.borderRadiusXS}px`);
+  root.style.setProperty('--border-radius-sm', `${allThemeTokens.borderRadiusSM}px`);
+  root.style.setProperty('--border-radius', `${allThemeTokens.borderRadius}px`);
+  root.style.setProperty('--border-radius-md', `${allThemeTokens.borderRadiusMD}px`);
+  root.style.setProperty('--border-radius-lg', `${allThemeTokens.borderRadiusLG}px`);
 
   // ========================================
   // TIPOGRAFÍA (solo las usadas)

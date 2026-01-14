@@ -16,8 +16,8 @@
  */
 
 import { Col } from 'antd';
-import { FormField, FormSubsection, DocumentoItem, DataList } from '@molecules';
-import { isSubsection, isList, isDocumento } from '../utils/fieldTypes';
+import { FormField, FormSubsection, DocumentoItem, DataList, DataCards } from '@molecules';
+import { isSubsection, isList, isDocumento, isCards } from '../utils/fieldTypes';
 
 /**
  * Renderiza un campo según su tipo
@@ -99,6 +99,28 @@ const FieldRenderer = ({
           selectedItem={field.selectedItem}
           isSelected={field.isSelected}
           loadingText={field.loadingText}
+        />
+      </Col>
+    );
+  }
+
+  // Si es un campo de tipo cards, renderizar DataCards directamente
+  // El enricher ya agregó items, loading, emptyMessage, renderItem al campo con sus valores por defecto
+  // Solo extraer los datos del field y pasarlos como props individuales a DataCards
+  if (isCards(field)) {
+    return (
+      <Col key={field.name} {...columns}>
+        <DataCards
+          data={field.items}
+          loading={field.loading}
+          emptyMessage={field.emptyMessage}
+          renderItem={field.renderItem}
+          onSelect={field.onSelect}
+          selectedItem={field.selectedItem}
+          isSelected={field.isSelected}
+          loadingText={field.loadingText}
+          orientation={field.orientation || 'vertical'}
+          cardWidth={field.cardWidth}
         />
       </Col>
     );

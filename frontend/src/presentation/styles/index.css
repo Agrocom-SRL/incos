@@ -48,6 +48,7 @@
 @import './components/molecules/wizard-actions.css';
 @import './components/molecules/documento-item.css';
 @import './components/molecules/data-list.css';
+@import './components/molecules/data-cards.css';
 
 /* 6. Components - Organisms */
 @import './components/organisms/sidebar.css';
