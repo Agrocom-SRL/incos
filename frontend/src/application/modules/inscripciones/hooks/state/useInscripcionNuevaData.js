@@ -56,8 +56,20 @@ export const useInscripcionNuevaData = (mode = 'nuevo') => {
     const paralelosData = useInscripcionNuevaParalelos({ 
         carreraId: carrerasData.selectedCarrera?.id 
     });
+    
+    // Obtener el periodoId del primer paralelo cuando hay paralelos disponibles
+    // Las materias son las mismas para todos los paralelos del periodo 1, 
+    // así que usamos el primer paralelo para obtener el periodoId
+    const periodoIdFromFirstParalelo = useMemo(() => {
+        if (paralelosData.paralelos && paralelosData.paralelos.length > 0) {
+            const firstParalelo = paralelosData.paralelos[0];
+            return firstParalelo?.periodoId || null;
+        }
+        return null;
+    }, [paralelosData.paralelos]);
+    
     const materiasData = useInscripcionNuevaMaterias({
-        periodoId: paralelosData.selectedParalelo?.periodoId
+        periodoId: periodoIdFromFirstParalelo
     });
 
     // 2. Callbacks memoizados para los enrichers

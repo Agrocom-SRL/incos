@@ -30,12 +30,13 @@
  * 3. Agrega activities, loading, emptyMessage al campo 'listaMaterias' (tipo 'activity')
  * 4. El campo enriquecido se pasa a FormField → FieldRenderer → ActivityList
  * 5. Las materias se muestran solo como información visual (NO son clickeables)
- * 6. Solo muestra materias si hay una carrera seleccionada Y un paralelo seleccionado
+ * 6. Las materias se cargan automáticamente cuando hay paralelos disponibles (usando periodoId del primer paralelo)
+ * 7. Solo muestra materias si hay una carrera seleccionada Y hay paralelos disponibles
  * 
  * @param {Object} field - Configuración del campo (desde step2SeleccionarParalelos.jsx)
  * @param {Object} context - Contexto con callbacks y datos disponibles
  * @param {Object} context.materiasData - Objeto con materias, loading, error (desde useInscripcionNuevaMaterias)
- * @param {Object} context.paralelosData - Objeto con selectedParalelo para verificar si hay paralelo seleccionado
+ * @param {Object} context.paralelosData - Objeto con paralelos para verificar si hay paralelos disponibles
  * @param {Object} context.carrerasData - Objeto con selectedCarrera para verificar si hay carrera seleccionada
  * @returns {Object} Campo enriquecido con activities, loading, emptyMessage o el campo original
  */
@@ -45,10 +46,12 @@ export const enrichMateriaListField = (field, context = {}) => {
     // Si es el campo de lista de actividades de materias, agregar los datos
     // El campo debe tener name='listaMaterias' y type='activity'
     if (field.name === 'listaMaterias' && field.type === 'activity' && materiasData) {
-        // Solo mostrar materias si hay una carrera seleccionada Y un paralelo seleccionado
+        // Mostrar materias si hay una carrera seleccionada Y hay paralelos disponibles
+        // Las materias son las mismas para todos los paralelos del periodo 1,
+        // así que se muestran cuando hay paralelos cargados (no es necesario seleccionar uno)
         const hasCarrera = carrerasData?.selectedCarrera?.id;
-        const hasParalelo = paralelosData?.selectedParalelo?.id;
-        const canShowMaterias = hasCarrera && hasParalelo;
+        const hasParalelos = paralelosData?.paralelos && paralelosData.paralelos.length > 0;
+        const canShowMaterias = hasCarrera && hasParalelos;
         
         // Transformar materias al formato que espera ActivityList
         // Formato esperado: { id, name, action, timeAgo, avatarColor, avatarText }
@@ -71,9 +74,9 @@ export const enrichMateriaListField = (field, context = {}) => {
             loading: materiasData.loading || false, // Estado de carga
             emptyMessage: !hasCarrera
                 ? 'Seleccione una carrera para ver las materias disponibles.'
-                : !hasParalelo
-                ? 'Seleccione un paralelo para ver las materias disponibles.'
-                : (field.emptyMessage || 'No hay materias disponibles para este paralelo en el período actual.'),
+                : !hasParalelos
+                ? 'No hay paralelos disponibles para esta carrera en el período actual.'
+                : (field.emptyMessage || 'No hay materias disponibles para este período.'),
             // NO se pasa onItemClick porque las materias NO son clickeables
             // Ocultar si no hay carrera o paralelo seleccionado
             hidden: !canShowMaterias,
