@@ -12,7 +12,7 @@
 
 import { BookOutlined, BookFilled } from '@ant-design/icons';
 import { Text } from '@atoms';
-import { Flex, Typography } from 'antd';
+import { Typography } from 'antd';
 
 const { Title } = Typography;
 
@@ -87,34 +87,34 @@ const PARALELOS_FIELDS = [
       const turno = paralelo.turno || '';
 
       return (
-        <Flex vertical gap={8}>
+        <>
           {/* Título principal: PRIMERO A */}
-          <Title level={4} style={{ margin: 0, color: 'var(--color-primary)' }}>
+          <Title level={4}>
             {periodoNombre}
           </Title>
 
           {/* Información adicional en vertical */}
-          <Flex vertical gap={4} style={{ marginTop: '8px' }}>
+          <div className="paralelo-card-info">
             {carreraNombre && (
-              <Text strong style={{ fontSize: '14px' }}>
+              <Text strong>
                 {carreraNombre}
               </Text>
             )}
 
             {turno && (
-              <Text type="secondary" style={{ fontSize: '13px' }}>
+              <Text type="secondary" className="paralelo-card-turno">
                 Turno {turno}
               </Text>
             )}
 
             {/* Descripción: Solo la parte del paralelo (sin carrera ni turno) */}
             {descripcion && (
-              <Text type="secondary" style={{ fontSize: '14px' }}>
+              <Text type="secondary" className="paralelo-card-descripcion">
                 {descripcion}
               </Text>
             )}
-          </Flex>
-        </Flex>
+          </div>
+        </>
       );
     },
   },

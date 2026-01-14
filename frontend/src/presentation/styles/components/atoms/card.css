@@ -52,30 +52,30 @@
 /* Tarjeta individual en DataCards */
 .data-cards__card {
   /* Colores y bordes usando variables del tema */
-  background-color: var(--color-bg-container);
-  border: 1px solid var(--color-border-secondary);
-  border-radius: var(--border-radius-lg, 12px); /* Bordes más ovalados */
+  border: 4px solid var(--color-border-secondary);
+  border-radius: var(--border-radius-lg, 12px);
+  /* Bordes más ovalados */
   cursor: default;
   transition: all var(--transition-base);
-  /* Tamaño fijo máximo para las tarjetas */
-  max-width: 300px;
-  flex: 1 1 300px;
+  /* Tamaño flexible para las tarjetas - permite que se muestren en fila */
+  flex: 0 1 300px;
   min-width: 250px;
+  max-width: 300px;
 }
 
-/* Asegurar que las tarjetas en DataCards tengan bordes consistentes y ovalados */
+/* Asegurar que el Card interno también respete el flex */
 .data-cards__card .ant-card {
-  border-radius: var(--border-radius-lg, 12px); /* Bordes más ovalados */
-  /* La sombra se aplica desde el componente Card.jsx via inline style */
-  /* No definir sombra aquí para evitar conflictos con el tema */
-  /* El componente Card maneja la sombra usando componentConfig.Card.boxShadow */
+  width: 100%;
+  height: 100%;
 }
 
 /* Body de la tarjeta */
 .data-cards__card .ant-card-body {
   padding: var(--spacing-lg);
-  display: flex;
-  flex-direction: column;
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* Tarjeta con hover (si tiene onSelect) */
@@ -85,21 +85,77 @@
 
 /* Hover en tarjeta (solo si no está activa) */
 .data-cards__card:not(.data-cards__card--active):hover {
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18) !important; /* Sombra más prominente en hover */
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18) !important;
+  /* Sombra más prominente en hover */
   transform: translateY(-4px);
 }
 
-.data-cards__card:not(.data-cards__card--active):hover .ant-card {
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18) !important; /* Sombra más prominente en hover */
+/* Hover en tarjeta activa */
+.data-cards__card--active:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3) !important;
+  /* Sombra aún más prominente cuando está activa y en hover */
+  transform: translateY(-2px);
+}
+
+.data-cards__card--active:hover .ant-card {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3) !important;
+  /* Sombra aún más prominente cuando está activa y en hover */
 }
 
 /* Tarjeta activa/seleccionada */
 .data-cards__card--active {
-  background-color: var(--color-primary-bg);
+  background-color: var(--color-primary);
   border-color: var(--color-primary);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25) !important; /* Sombra más prominente cuando está activa */
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25) !important;
+  /* Sombra más prominente cuando está activa */
 }
 
 .data-cards__card--active .ant-card {
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25) !important; /* Sombra más prominente cuando está activa */
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25) !important;
+  /* Sombra más prominente cuando está activa */
+  background-color: var(--color-primary);
+}
+
+/* Textos en blanco cuando la tarjeta está activa */
+.data-cards__card--active .ant-card-body {
+  color: var(--color-white);
+}
+
+.data-cards__card--active .ant-card-body * {
+  color: var(--color-white) !important;
+}
+
+/* ============================================================================
+   PARALELO CARD CONTENT
+   ============================================================================
+   Estilos para el contenido dentro de las tarjetas de paralelos
+   Usa variables CSS del root para mantener consistencia con el tema
+   ============================================================================ */
+
+/* Título principal del paralelo (ej: "PRIMERO A") */
+.data-cards__card .ant-card-body h4.ant-typography {
+  margin: 0 !important;
+  color: var(--color-primary);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-strong);
+}
+
+/* Contenedor de información adicional */
+.paralelo-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-sm);
+}
+
+/* Turno del paralelo */
+.paralelo-card-turno {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+/* Descripción del paralelo */
+.paralelo-card-descripcion {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
 }

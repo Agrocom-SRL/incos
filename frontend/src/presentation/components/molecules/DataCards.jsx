@@ -35,9 +35,9 @@
 import { Empty, Flex } from 'antd';
 import { Spinner, Card } from '@atoms';
 
-const DataCards = ({ 
-    data = [], 
-    loading = false, 
+const DataCards = ({
+    data = [],
+    loading = false,
     emptyMessage = 'No se encontraron datos',
     renderItem,
     onSelect = null,
@@ -76,7 +76,11 @@ const DataCards = ({
         : 'data-cards';
 
     return (
-        <div className={containerClassName}>
+        <Flex 
+            wrap="wrap"
+            gap="middle"
+            className={containerClassName}
+        >
             {data.map((item, index) => {
                 // Determinar si el item está seleccionado
                 let active = false;
@@ -105,7 +109,7 @@ const DataCards = ({
                     </Card>
                 );
             })}
-        </div>
+        </Flex>
     );
 };
 
