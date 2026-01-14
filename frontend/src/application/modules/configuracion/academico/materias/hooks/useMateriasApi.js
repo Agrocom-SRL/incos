@@ -25,13 +25,20 @@
  */
 
 import { createApiHook } from '@application/utils';
+import { normalizeFieldToArray } from '@application/utils';
 import { mapMateriasList } from '@application-configuracion/academico/materias/mappers';
 
 export const useMateriasApi = createApiHook({
   name: 'useMateriasApi',
   useCase: 'obtenerTodasMaterias',
   dataType: 'array', // Retorna un array
-  mapper: mapMateriasList, // Mapea los datos antes de guardarlos
+  mapper: (data) => {
+    // Mapper personalizado con múltiples transformaciones
+    // Paso 1: Normalizar estructura (objeto → array) usando transformador genérico reutilizable
+    const materiasNormalizadas = normalizeFieldToArray(data, 'materias');
+    // Paso 2: Transformar datos al formato de UI usando mapper específico del módulo
+    return mapMateriasList(materiasNormalizadas);
+  },
   initialLoading: false, // No carga automáticamente al montar
   autoFetch: true, // Carga automáticamente al montar
   autoFetchArgs: {}, // Argumentos para el auto-fetch

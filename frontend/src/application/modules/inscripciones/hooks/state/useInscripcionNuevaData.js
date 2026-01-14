@@ -29,15 +29,17 @@ import {
     useInscripcionNuevaFormHandlers,
     useInscripcionNuevaStudentSearch,
     useInscripcionNuevaCarreras,
-    useInscripcionNuevaParalelos
+    useInscripcionNuevaParalelos,
+    useInscripcionNuevaMaterias
 } from '@application-inscripciones/hooks';
 import { useEnrichWizardSteps } from '@application-utils/hooks';
 import { studentEnrichers } from '@application-inscripciones/hooks/features/enrichers/studentEnrichers';
 import { carreraEnrichers } from '@application-inscripciones/hooks/features/enrichers/carreraEnrichers';
 import { paraleloEnrichers } from '@application-inscripciones/hooks/features/enrichers/paraleloEnrichers';
+import { materiaEnrichers } from '@application-inscripciones/hooks/features/enrichers/materiaEnrichers';
 
 // Combinar enrichers (referencia estable fuera del componente)
-const allEnrichers = [...studentEnrichers, ...carreraEnrichers, ...paraleloEnrichers];
+const allEnrichers = [...studentEnrichers, ...carreraEnrichers, ...paraleloEnrichers, ...materiaEnrichers];
 
 /**
  * Hook que gestiona el estado del contexto de inscripción nueva
@@ -53,6 +55,9 @@ export const useInscripcionNuevaData = (mode = 'nuevo') => {
     const carrerasData = useInscripcionNuevaCarreras();
     const paralelosData = useInscripcionNuevaParalelos({ 
         carreraId: carrerasData.selectedCarrera?.id 
+    });
+    const materiasData = useInscripcionNuevaMaterias({
+        periodoId: paralelosData.selectedParalelo?.periodoId
     });
 
     // 2. Callbacks memoizados para los enrichers
@@ -81,12 +86,19 @@ export const useInscripcionNuevaData = (mode = 'nuevo') => {
         }
     }, [paralelosData.onSelectParalelo]);
 
+    const handleSelectMateria = useCallback((materia) => {
+        if (materia && materiasData.onSelectMateria) {
+            materiasData.onSelectMateria(materia);
+        }
+    }, [materiasData.onSelectMateria]);
+
     // 3. Context para enrichers (objeto memoizado)
     const enrichContext = useMemo(() => ({
         onSearchStudent: handleSearchStudent,
         onSelectStudent: handleSelectStudent,
         onSelectCarrera: handleSelectCarrera,
         onSelectParalelo: handleSelectParalelo,
+        onSelectMateria: handleSelectMateria,
         studentSearch: {
             students: studentSearch.students,
             loading: studentSearch.loading,
@@ -105,11 +117,18 @@ export const useInscripcionNuevaData = (mode = 'nuevo') => {
             error: paralelosData.error,
             selectedParalelo: paralelosData.selectedParalelo,
         },
+        materiasData: {
+            materias: materiasData.materias,
+            loading: materiasData.loading,
+            error: materiasData.error,
+            selectedMateria: materiasData.selectedMateria,
+        },
     }), [
         handleSearchStudent,
         handleSelectStudent,
         handleSelectCarrera,
         handleSelectParalelo,
+        handleSelectMateria,
         studentSearch.students,
         studentSearch.loading,
         studentSearch.error,
@@ -122,6 +141,10 @@ export const useInscripcionNuevaData = (mode = 'nuevo') => {
         paralelosData.loading,
         paralelosData.error,
         paralelosData.selectedParalelo,
+        materiasData.materias,
+        materiasData.loading,
+        materiasData.error,
+        materiasData.selectedMateria,
     ]);
 
     // 4. Enriquecer wizardSteps
@@ -163,6 +186,14 @@ export const useInscripcionNuevaData = (mode = 'nuevo') => {
             error: paralelosData.error,
             selectedParalelo: paralelosData.selectedParalelo,
         },
+
+        // Materias
+        materiasData: {
+            materias: materiasData.materias,
+            loading: materiasData.loading,
+            error: materiasData.error,
+            selectedMateria: materiasData.selectedMateria,
+        },
     }), [
         pageData,
         enrichedWizardSteps,
@@ -170,5 +201,6 @@ export const useInscripcionNuevaData = (mode = 'nuevo') => {
         studentSearch,
         carrerasData,
         paralelosData,
+        materiasData,
     ]);
 };

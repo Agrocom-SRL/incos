@@ -93,6 +93,7 @@ export const useInscripcionNuevaParalelos = (options = {}) => {
           nombre: paralelo.nombre,
           codigo: paralelo.codigo,
           carreraId: paralelo.carreraId,
+          periodoId: paralelo.periodoId,
           materiaId: paralelo.materiaId,
         };
       });

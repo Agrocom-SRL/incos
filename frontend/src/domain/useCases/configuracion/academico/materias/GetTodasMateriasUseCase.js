@@ -37,7 +37,7 @@ export class GetTodasMateriasUseCase {
    * @param {number} options.params.pagina - Número de página (paginación)
    * @param {number} options.params.limite - Cantidad por página (paginación)
    * @param {string} options.params.busqueda - Búsqueda general (nombre, código)
-   * @param {number} options.params.carreraId - Filtro por ID de carrera
+   * @param {number} options.params.periodo_id - Filtro por ID único del periodo
    * @param {string} options.params.ordenar - Campo de ordenamiento (ej: "nombre", "-created_at")
    * @returns {Promise<{success: boolean, data?: Array, error?: string}>}
    */
@@ -46,7 +46,7 @@ export class GetTodasMateriasUseCase {
 
     try {
       // El repositorio hace la llamada HTTP con todos los params
-      // GET /v1/materias?pagina=1&limite=10&busqueda=...&carreraId=1&ordenar=nombre
+      // GET /v1/materias?pagina=1&limite=10&busqueda=...&periodo_id=1&ordenar=nombre
       const result = await this.materiaRepository.obtenerTodos({ params });
       
       // Si hay error en el repositorio, retornarlo
