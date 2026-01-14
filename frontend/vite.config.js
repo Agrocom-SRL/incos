@@ -19,6 +19,7 @@ export default defineConfig({
             '@useCases': path.resolve(__dirname, './src/domain/useCases'),
             '@useCases-estudiantes': path.resolve(__dirname, './src/domain/useCases/estudiantes'),
             '@useCases-configuracion': path.resolve(__dirname, './src/domain/useCases/configuracion'),
+            '@useCases-academico': path.resolve(__dirname, './src/domain/useCases/academico'),
             '@repositories': path.resolve(__dirname, './src/domain/repositories'),
 
             // Application Layer
@@ -32,6 +33,7 @@ export default defineConfig({
             '@application-dashboard': path.resolve(__dirname, './src/application/modules/dashboard'),
             '@application-configuracion': path.resolve(__dirname, './src/application/modules/configuracion'),
             '@application-inscripciones': path.resolve(__dirname, './src/application/modules/inscripciones'),
+            '@application-academico': path.resolve(__dirname, './src/application/modules/academico'),
 
             // Infrastructure Layer
             '@infrastructure': path.resolve(__dirname, './src/infrastructure'),

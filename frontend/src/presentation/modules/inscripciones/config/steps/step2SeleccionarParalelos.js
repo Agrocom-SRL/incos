@@ -22,6 +22,18 @@ const PARALELOS_HEADER = {
  */
 const PARALELOS_FIELDS = [
   {
+    name: 'estudianteSeleccionado',
+    type: 'alert',
+    label: '',
+    message: 'Estudiante Seleccionado',
+    description: '', // Se enriquecerá dinámicamente por el enricher con los datos del estudiante
+    alertType: 'success',
+    span: 24,
+    required: false,
+    // Este campo se enriquecerá por el enricher enrichStudentSelectedField
+    // Si no hay estudiante seleccionado, el campo se ocultará
+  },
+  {
     name: 'carrera',
     type: 'select',
     label: 'Carrera',

@@ -115,6 +115,9 @@ export function injectCSSVariables() {
   root.style.setProperty('--color-border-secondary', allThemeTokens.colorBorderSecondary);
   root.style.setProperty('--color-border', allThemeTokens.colorBorder);
   root.style.setProperty('--color-text-tertiary', allThemeTokens.colorTextTertiary);
+  
+  // Color blanco (para texto sobre fondos primarios, estados activos, etc.)
+  root.style.setProperty('--color-white', allThemeTokens.colorWhite);
 
   // ========================================
   // BREADCRUMB - Variables CSS (componente personalizado)

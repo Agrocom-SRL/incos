@@ -22,13 +22,7 @@ import { PageHeader } from '@molecules';
 import { WizardForm } from '@organisms';
 import { useInscripcionesNuevaContext } from '@application-inscripciones/hooks';
 
-// Flag para activar/desactivar logs de renderizado (solo desarrollo)
-const ENABLE_RENDER_LOGS = import.meta.env.DEV && true; // Cambiar a true para activar logs
-
 const InscripcionesNueva = () => {
-    if (ENABLE_RENDER_LOGS) {
-        console.log('🔄 [Page] InscripcionesNueva - RENDER');
-    }
 
     // Solo consumir datos del contexto (toda la lógica está en el Provider)
     // El provider hace spread de objetos, así que las propiedades están aplanadas en el contexto

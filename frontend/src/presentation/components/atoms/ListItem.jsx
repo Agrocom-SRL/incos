@@ -25,6 +25,7 @@
  * - title: Título principal del item (string o ReactNode, requerido si no hay children)
  * - caption: Descripción o información adicional (ReactNode, opcional)
  * - onClick: Callback cuando se hace click (opcional)
+ * - active: Si el item está activo/seleccionado (boolean, opcional)
  * - style: Estilos personalizados (opcional)
  * - className: Clase CSS adicional (opcional)
  * - children: Contenido personalizado (opcional, si se proporciona, se renderiza dentro del item)
@@ -40,6 +41,7 @@ const ListItem = ({
     caption,
     children,
     onClick = null,
+    active = false,
     style = null,
     className = '',
     ...props
@@ -47,11 +49,16 @@ const ListItem = ({
     // Solo agregar cursor pointer si hay onClick, los demás estilos vienen de CSS
     const itemStyle = onClick ? { cursor: 'pointer', ...style } : style;
 
-    const itemClassName = className ? `list-item ${className}`.trim() : 'list-item';
+    // Agregar clase 'active' si el item está activo
+    const itemClassName = active 
+        ? (className ? `list-item active ${className}`.trim() : 'list-item active')
+        : (className ? `list-item ${className}`.trim() : 'list-item');
 
-    // Convertir title a ReactNode si es string y aplicar color primario
+    // Convertir title a ReactNode si es string
+    // Si está activo, el color se maneja en CSS (blanco)
+    // Si no está activo, usar color primario
     const titleContent = typeof title === 'string' ? (
-        <Text strong style={{ color: 'var(--color-primary)' }}>{title}</Text>
+        <Text strong style={active ? {} : { color: 'var(--color-primary)' }}>{title}</Text>
     ) : title;
 
     // Determinar si hay contenido para mostrar

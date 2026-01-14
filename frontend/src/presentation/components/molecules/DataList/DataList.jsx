@@ -26,6 +26,8 @@
  *   - Estos props coinciden exactamente con los que espera ListItem
  *   - Se define en la configuración del step (ej: step1BuscarEstudiante.jsx)
  * - onSelect: Callback cuando se selecciona un item (opcional)
+ * - selectedItem: Item seleccionado para aplicar estado activo (opcional)
+ * - isSelected: Función para determinar si un item está seleccionado (item, index) => boolean (opcional)
  * - loadingText: Texto a mostrar mientras carga (opcional)
  * - className: Clase CSS adicional para el contenedor de la lista (opcional)
  * 
@@ -43,6 +45,8 @@ const DataList = ({
     emptyMessage = 'No se encontraron datos',
     renderItem,
     onSelect = null,
+    selectedItem = null,
+    isSelected = null,
     loadingText = 'Cargando...',
     listProps = {},
     className = '',
@@ -84,10 +88,20 @@ const DataList = ({
                     // renderItem del config retorna { avatar, title, caption } que son los props que ListItem espera
                     const itemProps = renderItem ? renderItem(item, index) : { title: JSON.stringify(item) };
                     
+                    // Determinar si el item está seleccionado
+                    let active = false;
+                    if (isSelected && typeof isSelected === 'function') {
+                        active = isSelected(item, index);
+                    } else if (selectedItem !== null && selectedItem !== undefined) {
+                        // Comparar por referencia o por ID si existe
+                        active = selectedItem === item || (selectedItem?.id && item?.id && selectedItem.id === item.id);
+                    }
+                    
                     return (
                         <ListItem
                             key={index}
                             {...itemProps}
+                            active={active}
                             onClick={() => onSelect && onSelect(item, index)}
                         />
                     );

@@ -1,0 +1,7 @@
+/**
+ * Exporta todos los hooks del módulo de paralelos
+ * 
+ * Ubicación: application/modules/academico/paralelos/hooks
+ */
+
+export { useParalelosApi } from './useParalelosApi';

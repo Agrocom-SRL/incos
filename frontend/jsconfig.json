@@ -24,6 +24,12 @@
             "@useCases-configuracion/*": [
                 "./src/domain/useCases/configuracion/*"
             ],
+            "@useCases-academico": [
+                "./src/domain/useCases/academico"
+            ],
+            "@useCases-academico/*": [
+                "./src/domain/useCases/academico/*"
+            ],
             "@repositories/*": [
                 "src/domain/repositories/*"
             ],
@@ -73,6 +79,12 @@
             ],
             "@application-inscripciones/*": [
                 "./src/application/modules/inscripciones/*"
+            ],
+            "@application-academico": [
+                "./src/application/modules/academico"
+            ],
+            "@application-academico/*": [
+                "./src/application/modules/academico/*"
             ],
             "@container": [
                 "./src/application/container/index.js"

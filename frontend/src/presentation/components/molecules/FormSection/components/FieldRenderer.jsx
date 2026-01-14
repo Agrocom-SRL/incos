@@ -96,6 +96,8 @@ const FieldRenderer = ({
           emptyMessage={field.emptyMessage}
           renderItem={field.renderItem}
           onSelect={field.onSelect}
+          selectedItem={field.selectedItem}
+          isSelected={field.isSelected}
           loadingText={field.loadingText}
         />
       </Col>

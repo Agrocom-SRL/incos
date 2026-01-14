@@ -55,3 +55,35 @@
 .list-item[style*="cursor: pointer"] {
   cursor: pointer;
 }
+
+/* Estado activo/seleccionado - fondo primario y texto blanco */
+.list-item.active {
+  background-color: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+}
+
+/* Texto blanco cuando está activo */
+.list-item.active .ant-typography,
+.list-item.active .ant-typography strong {
+  color: var(--color-white) !important;
+}
+
+/* Avatar con color blanco cuando está activo */
+.list-item.active .list-item-avatar .anticon {
+  color: var(--color-white) !important;
+}
+
+/* Caption con color blanco cuando está activo */
+.list-item.active .list-item-caption {
+  color: var(--color-white) !important;
+}
+
+.list-item.active .list-item-caption .ant-typography {
+  color: var(--color-white) !important;
+}
+
+/* Hover cuando está activo - mantener fondo primario pero más oscuro */
+.list-item.active:hover {
+  background-color: var(--color-primary-hover) !important;
+  border-color: var(--color-primary-hover) !important;
+}

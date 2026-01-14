@@ -47,6 +47,41 @@ export const enrichStudentSearchField = (field, context = {}) => {
 };
 
 /**
+ * Enricher para el campo de información de búsqueda
+ * Oculta el campo infoBusqueda cuando hay estudiantes en la lista
+ * Lo muestra cuando la lista está vacía o no hay resultados
+ * 
+ * Flujo:
+ * 1. Este enricher se ejecuta en useEnrichWizardSteps (antes del renderizado)
+ * 2. Verifica si hay estudiantes en la lista
+ * 3. Si hay estudiantes, oculta el campo (hidden: true)
+ * 4. Si no hay estudiantes, muestra el campo (hidden: false)
+ * 
+ * @param {Object} field - Configuración del campo (desde step1BuscarEstudiante.jsx)
+ * @param {Object} context - Contexto con callbacks y datos disponibles
+ * @param {Object} context.studentSearch - Objeto con students, loading, error (desde useInscripcionNuevaStudentSearch)
+ * @returns {Object} Campo enriquecido con hidden o el campo original
+ */
+export const enrichStudentInfoField = (field, context = {}) => {
+    const { studentSearch } = context;
+    
+    // Si es el campo de información de búsqueda
+    if (field.name === 'infoBusqueda' && field.type === 'alert') {
+        const hasStudents = studentSearch?.students && studentSearch.students.length > 0;
+        const isLoading = studentSearch?.loading || false;
+        
+        // Ocultar si hay estudiantes o si está cargando (para evitar parpadeo)
+        // Mostrar si no hay estudiantes y no está cargando
+        return {
+            ...field,
+            hidden: hasStudents || isLoading,
+        };
+    }
+    
+    return field;
+};
+
+/**
  * Enricher para el campo de lista de estudiantes
  * Agrega los datos de búsqueda (students, loading, error) y el callback onSelect al campo antes del renderizado
  * 
@@ -78,6 +113,8 @@ export const enrichStudentListField = (field, context = {}) => {
             // OPTIMIZACIÓN: Usar directamente el callback memoizado del context
             // No crear una nueva función wrapper para evitar re-renders
             onSelect: onSelectStudent || null,
+            // Estudiante seleccionado para aplicar estado activo en DataList
+            selectedItem: studentSearch.selectedStudent || null,
             // renderItem ya está definido en step1BuscarEstudiante.jsx
         };
     }
@@ -86,12 +123,72 @@ export const enrichStudentListField = (field, context = {}) => {
 };
 
 /**
+ * Enricher para mostrar el estudiante seleccionado en el step 2
+ * Enriquece el campo 'estudianteSeleccionado' con los datos del estudiante seleccionado
+ * 
+ * Flujo:
+ * 1. Este enricher se ejecuta en useEnrichWizardSteps (antes del renderizado)
+ * 2. Si hay un estudiante seleccionado, enriquece el campo con su información
+ * 3. Si no hay estudiante seleccionado, oculta el campo (hidden: true)
+ * 4. El campo se muestra arriba del select de carreras en el step 2
+ * 
+ * @param {Object} field - Configuración del campo (desde step2SeleccionarParalelos.js)
+ * @param {Object} context - Contexto con callbacks y datos disponibles
+ * @param {Object} context.studentSearch - Objeto con students, loading, error, selectedStudent
+ * @returns {Object} Campo enriquecido con description y hidden o el campo original
+ */
+export const enrichStudentSelectedField = (field, context = {}) => {
+    const { studentSearch } = context;
+    const selectedStudent = studentSearch?.selectedStudent;
+    
+    // Si es el campo de estudiante seleccionado
+    if (field.name === 'estudianteSeleccionado' && field.type === 'alert') {
+        // Si hay un estudiante seleccionado, mostrar su información
+        if (selectedStudent && selectedStudent.id) {
+            const studentInfo = [];
+            
+            if (selectedStudent.nombreCompleto) {
+                studentInfo.push(`Nombre: ${selectedStudent.nombreCompleto}`);
+            }
+            
+            if (selectedStudent.codigoEstudiante) {
+                studentInfo.push(`Código: ${selectedStudent.codigoEstudiante}`);
+            }
+            
+            if (selectedStudent.ciCompleto) {
+                studentInfo.push(`CI: ${selectedStudent.ciCompleto}`);
+            }
+            
+            const description = studentInfo.length > 0 
+                ? studentInfo.join(' | ')
+                : 'Estudiante seleccionado';
+            
+            return {
+                ...field,
+                description,
+                hidden: false, // Mostrar el campo
+            };
+        }
+        
+        // Si no hay estudiante seleccionado, ocultar el campo
+        return {
+            ...field,
+            hidden: true, // Ocultar el campo
+        };
+    }
+    
+    return field;
+};
+
+/**
  * Array de enrichers específicos para estudiantes
- * Se aplican en orden: primero búsqueda, luego lista
+ * Se aplican en orden: búsqueda, información, lista, estudiante seleccionado
  * 
  * @type {Array<Function>}
  */
 export const studentEnrichers = [
     enrichStudentSearchField,
+    enrichStudentInfoField,
     enrichStudentListField,
+    enrichStudentSelectedField,
 ];

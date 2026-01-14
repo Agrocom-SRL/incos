@@ -33,6 +33,11 @@ export { IMateriaRepository } from './IMateriaRepository';
 export { IDiscapacidadRepository } from './IDiscapacidadRepository';
 
 // ============================================
+// MÓDULO: ACADÉMICO
+// ============================================
+export { IParaleloRepository } from './IParaleloRepository';
+
+// ============================================
 // MÓDULO: GEOGRÁFICOS
 // ============================================
 export { IPaisRepository } from './IPaisRepository';

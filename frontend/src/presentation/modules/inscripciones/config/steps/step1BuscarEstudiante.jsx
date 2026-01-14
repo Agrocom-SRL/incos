@@ -52,7 +52,7 @@ const BUSCAR_ESTUDIANTE_FIELDS = [
     name: 'resultadosEstudiantes',
     type: 'list',
     label: '',
-    span: 12,
+    span: 24,
     required: false,
     emptyMessage: 'No se encontraron estudiantes. Realice una búsqueda para ver resultados.',
     // Función para renderizar cada item usando los datos ya transformados por el mapper

@@ -46,6 +46,11 @@ export const useFormSectionFields = ({ fields = [], form }) => {
 
   // Función helper para verificar si un campo debe mostrarse
   const shouldShowField = useCallback((field) => {
+    // Si el campo tiene hidden: true, no mostrarlo
+    if (field.hidden === true) {
+      return false;
+    }
+
     // Si es una subsección, la lógica condicional está en FormSubsection
     if (isSubsection(field)) {
       return true;

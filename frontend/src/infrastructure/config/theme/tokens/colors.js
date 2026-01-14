@@ -109,6 +109,9 @@ export const borderColors = {
 // Se mantienen para el tema claro porque se usan en cards con gradientes oscuros
 // (por ejemplo, OrdersSummaryCard y StudentsSummaryCard con gradientes verdes)
 export const overlayColors = {
+  // Color blanco puro (para texto sobre fondos primarios, estados activos, etc.)
+  colorWhite: '#ffffff',
+  
   // Texto sobre fondo oscuro/gradiente
   colorTextOnDark: 'rgba(255, 255, 255, 1)',
   colorTextSecondaryOnDark: 'rgba(255, 255, 255, 0.85)',

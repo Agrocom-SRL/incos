@@ -88,6 +88,11 @@ export const MATERIAS_ENDPOINTS = createCRUDEndpoints('/materias');
 export const DISCAPACIDAD_ENDPOINTS = createCRUDEndpoints('/discapacidad');
 
 // ============================================
+// MÓDULO: ACADÉMICO
+// ============================================
+export const PARALELOS_ENDPOINTS = createCRUDEndpoints('/paralelos');
+
+// ============================================
 // MÓDULO: GEOGRÁFICOS
 // ============================================
 export const PAISES_ENDPOINTS = createCRUDEndpoints('/paises');
