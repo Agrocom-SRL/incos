@@ -1,0 +1,19 @@
+/* ============================================================================
+   ACTIVITY LIST (Componente Molécula)
+   ============================================================================
+   Estilos para lista de actividades
+   Los colores base vienen del tema de Ant Design
+   Variables CSS para layout y espaciado
+   ============================================================================ */
+
+.activity-list {
+  /* Contenedor principal de la lista */
+  width: 100%;
+  /* Asegurar que tenga espacio para renderizar todos los items */
+  min-height: 0;
+}
+
+/* Contenedor de loading - usando Flex de Ant Design */
+.activity-list-loading {
+  padding: var(--spacing-xl);
+}

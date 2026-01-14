@@ -10,7 +10,7 @@
  * permitiendo modificar los campos sin afectar la estructura del step.
  */
 
-import { BookOutlined } from '@ant-design/icons';
+import { BookOutlined, BookFilled } from '@ant-design/icons';
 import { Text } from '@atoms';
 import { Flex, Typography } from 'antd';
 
@@ -60,10 +60,20 @@ const PARALELOS_FIELDS = [
     required: false,
   },
   {
+    name: 'listaMaterias',
+    type: 'activity',
+    label: 'Materias Disponibles',
+    span: 12,
+    required: false,
+    emptyMessage: 'Seleccione un paralelo para ver las materias disponibles.',
+    // El enricher transformará las materias al formato que espera ActivityList
+    // (name, action, timeAgo, avatarColor, avatarText)
+  },
+  {
     name: 'listaParalelos',
     type: 'cards',
     label: 'Paralelos Disponibles',
-    span: 24,
+    span: 12,
     required: false,
     emptyMessage: 'Seleccione una carrera para ver los paralelos disponibles.',
     renderItem: (paralelo) => {

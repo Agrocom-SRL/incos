@@ -64,3 +64,13 @@ export const isCards = (field) => {
   return field?.type === 'cards';
 };
 
+/**
+ * Verifica si un campo es de tipo activity
+ * 
+ * @param {Object} field - Campo a verificar
+ * @returns {boolean} true si es activity
+ */
+export const isActivity = (field) => {
+  return field?.type === 'activity';
+};
+

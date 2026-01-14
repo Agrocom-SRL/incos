@@ -1,0 +1,44 @@
+/* ============================================================================
+   ACTIVITY ITEM (Componente Atómico)
+   ============================================================================
+   Estilos para items de actividad
+   Los colores base vienen del tema de Ant Design
+   Variables CSS para estilos personalizados
+   ============================================================================ */
+
+.activity-item {
+  /* Padding del item */
+  padding: 0;
+  
+  /* Transición suave para hover */
+  transition: all var(--transition-base);
+  
+  /* Asegurar que el contenido no se desborde */
+  width: 100%;
+}
+
+/* Hover state - fondo sutil */
+.activity-item:hover {
+  /* Opcional: agregar efecto hover si es clickeable */
+}
+
+/* Cursor pointer cuando es clickeable */
+.activity-item[style*="cursor: pointer"] {
+  cursor: pointer;
+}
+
+/* Avatar del activity item */
+.activity-item .ant-avatar {
+  flex-shrink: 0;
+}
+
+/* Contenido del activity item */
+.activity-item .ant-flex-vertical {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Espaciado entre elementos de texto */
+.activity-item .ant-typography {
+  margin: 0;
+}

@@ -12,3 +12,4 @@ export { default as WizardActions } from './WizardActions';
 export { default as DocumentoItem } from './DocumentoItem';
 export { default as DataList } from './DataList';
 export { default as DataCards } from './DataCards';
+export { default as ActivityList } from './ActivityList';

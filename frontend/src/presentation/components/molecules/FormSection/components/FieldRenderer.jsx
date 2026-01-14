@@ -16,8 +16,8 @@
  */
 
 import { Col } from 'antd';
-import { FormField, FormSubsection, DocumentoItem, DataList, DataCards } from '@molecules';
-import { isSubsection, isList, isDocumento, isCards } from '../utils/fieldTypes';
+import { FormField, FormSubsection, DocumentoItem, DataList, DataCards, ActivityList } from '@molecules';
+import { isSubsection, isList, isDocumento, isCards, isActivity } from '../utils/fieldTypes';
 
 /**
  * Renderiza un campo según su tipo
@@ -119,6 +119,25 @@ const FieldRenderer = ({
           selectedItem={field.selectedItem}
           isSelected={field.isSelected}
           loadingText={field.loadingText}
+        />
+      </Col>
+    );
+  }
+
+  // Si es un campo de tipo activity, renderizar ActivityList directamente
+  // El enricher ya agregó activities, loading, emptyMessage al campo con sus valores por defecto
+  // Solo extraer los datos del field y pasarlos como props individuales a ActivityList
+  if (isActivity(field)) {
+    return (
+      <Col key={field.name} {...columns}>
+        <ActivityList
+          activities={field.activities}
+          loading={field.loading}
+          emptyMessage={field.emptyMessage}
+          loadingText={field.loadingText}
+          gap={field.gap}
+          onItemClick={field.onItemClick || null}
+          accentColors={field.accentColors}
         />
       </Col>
     );
