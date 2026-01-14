@@ -1,5 +1,6 @@
 import express from 'express';
 import { listParalelosValidator } from '../validators/academico/index.js';
+import { idValidator } from '../validators/common/index.js';
 
 /**
  * Construye el router del módulo Paralelos (Académico)
@@ -43,6 +44,24 @@ export function buildParalelosRouter({ controllers, middlewares }) {
         listParalelosValidator,
         validateRequest,
         (req, res, next) => controllers.listParalelosController.handle(req, res, next)
+    );
+
+    /**
+     * GET /api/v1/paralelos/:id/schedule
+     * Obtener horarios completos de un paralelo
+     * 
+     * Path params:
+     * - id: ID del paralelo (debe ser entero > 0)
+     * 
+     * Retorna:
+     * - Información del paralelo
+     * - Lista de cursos con sus horarios, aulas y materias
+     */
+    router.get(
+        '/:id/schedule',
+        idValidator,
+        validateRequest,
+        (req, res, next) => controllers.getParaleloScheduleController.handle(req, res, next)
     );
 
     // ============================================

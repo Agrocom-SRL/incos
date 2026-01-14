@@ -15,7 +15,8 @@
 import { ACADEMICO_TOKENS, REPOSITORIOS_TOKENS, SERVICIOS_TOKENS } from '../../tokens/index.js';
 import { registerComponent } from '../../utils/container.helpers.js';
 import { ListParalelosUseCase } from '../../../../application/use-cases/academico/ListParalelosUseCase.js';
-import { ListParalelosController } from '../../../../presentation/controllers/academico/index.js';
+import { GetParaleloHorariosUseCase } from '../../../../application/use-cases/academico/GetParaleloHorariosUseCase.js';
+import { ListParalelosController, GetParaleloScheduleController } from '../../../../presentation/controllers/academico/index.js';
 import { buildParalelosRouter } from '../../../../presentation/routes/paralelos.routes.js';
 
 /**
@@ -40,6 +41,22 @@ export function registerParalelosResource(container) {
             })
     );
 
+    registerComponent(
+        container,
+        ACADEMICO_TOKENS.getParaleloHorariosUseCase,
+        (c) =>
+            new GetParaleloHorariosUseCase({
+                parallelRepository: c.resolve(REPOSITORIOS_TOKENS.parallelRepository),
+                courseRepository: c.resolve(REPOSITORIOS_TOKENS.courseRepository),
+                courseScheduleRepository: c.resolve(REPOSITORIOS_TOKENS.courseScheduleRepository),
+                planSubjectRepository: c.resolve(REPOSITORIOS_TOKENS.planSubjectRepository),
+                subjectRepository: c.resolve(REPOSITORIOS_TOKENS.subjectRepository),
+                scheduleRepository: c.resolve(REPOSITORIOS_TOKENS.scheduleRepository),
+                classroomRepository: c.resolve(REPOSITORIOS_TOKENS.classroomRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
     // TODO: Agregar otros Use Cases cuando se implementen sus endpoints
 
     // ============================================
@@ -56,6 +73,17 @@ export function registerParalelosResource(container) {
             })
     );
 
+    registerComponent(
+        container,
+        ACADEMICO_TOKENS.getParaleloScheduleController,
+        (c) =>
+            new GetParaleloScheduleController({
+                getParaleloHorariosUseCase: c.resolve(ACADEMICO_TOKENS.getParaleloHorariosUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
+    );
+
     // TODO: Agregar otros Controllers cuando se implementen sus endpoints
 
     // ============================================
@@ -67,6 +95,7 @@ export function registerParalelosResource(container) {
         (c) => {
             const controllers = {
                 listParalelosController: c.resolve(ACADEMICO_TOKENS.listParalelosController),
+                getParaleloScheduleController: c.resolve(ACADEMICO_TOKENS.getParaleloScheduleController),
                 // TODO: Agregar otros controllers cuando se implementen sus rutas
             };
 
