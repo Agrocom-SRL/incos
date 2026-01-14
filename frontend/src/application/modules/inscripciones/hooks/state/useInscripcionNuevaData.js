@@ -37,9 +37,10 @@ import { studentEnrichers } from '@application-inscripciones/hooks/features/enri
 import { carreraEnrichers } from '@application-inscripciones/hooks/features/enrichers/carreraEnrichers';
 import { paraleloEnrichers } from '@application-inscripciones/hooks/features/enrichers/paraleloEnrichers';
 import { materiaEnrichers } from '@application-inscripciones/hooks/features/enrichers/materiaEnrichers';
+import { horarioEnrichers } from '@application-inscripciones/hooks/features/enrichers/horarioEnrichers';
 
 // Combinar enrichers (referencia estable fuera del componente)
-const allEnrichers = [...studentEnrichers, ...carreraEnrichers, ...paraleloEnrichers, ...materiaEnrichers];
+const allEnrichers = [...studentEnrichers, ...carreraEnrichers, ...paraleloEnrichers, ...materiaEnrichers, ...horarioEnrichers];
 
 /**
  * Hook que gestiona el estado del contexto de inscripción nueva

@@ -20,14 +20,14 @@ export const getStep3Fields = () => {
     horario: {
       title: 'Horario de Clases',
       fields: [
-        // TODO: Se implementarán los campos en pasos siguientes
-        // Por ahora solo texto informativo
         {
-          name: 'info',
-          type: 'text',
-          label: 'Información',
-          placeholder: 'Se mostrará el horario completo de clases del estudiante...',
-          // Este campo será reemplazado por un componente de horario en pasos siguientes
+          name: 'horarioClases',
+          type: 'timetable',
+          label: '',
+          span: 24,
+          required: false,
+          // El enricher agregará schedule, loading, config, etc.
+          // Por ahora se define como campo vacío que será enriquecido
         },
       ],
     },

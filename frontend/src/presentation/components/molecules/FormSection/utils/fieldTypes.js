@@ -74,3 +74,13 @@ export const isActivity = (field) => {
   return field?.type === 'activity';
 };
 
+/**
+ * Verifica si un campo es de tipo timetable
+ * 
+ * @param {Object} field - Campo a verificar
+ * @returns {boolean} true si es timetable
+ */
+export const isTimetable = (field) => {
+  return field?.type === 'timetable';
+};
+
