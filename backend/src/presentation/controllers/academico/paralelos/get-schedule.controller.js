@@ -47,7 +47,7 @@ export class GetParaleloScheduleController extends BaseGetController {
       logger,
       responseFormatter,
       resourceName: 'horarios del paralelo',
-      dataFieldName: null, // El use case retornará directamente { paralelo, horario }
+      dataFieldName: 'schedule', // El use case retornará { paralelo, horario } que se envuelve en 'schedule'
     });
   }
 }

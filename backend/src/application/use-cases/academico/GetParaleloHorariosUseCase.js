@@ -19,6 +19,7 @@
  * - Application Layer: Orquesta la lógica de negocio
  * - Depende de Repositories (Infrastructure) a través de abstracciones
  */
+import { NotFoundError } from '../../../domain/errors/AppError.js';
 
 export class GetParaleloHorariosUseCase {
   /**
@@ -55,24 +56,181 @@ export class GetParaleloHorariosUseCase {
   /**
    * Ejecuta el caso de uso de obtención de horarios de paralelo por ID
    * 
+   * Template Method: Define el algoritmo común de:
+   * 1. Validar que el paralelo exista
+   * 2. Obtener todos los cursos del paralelo
+   * 3. Para cada curso, obtener asignatura_plan y materia
+   * 4. Para cada curso, obtener cursos_horarios con horarios y aulas
+   * 5. Estructurar y retornar datos
+   * 
    * @param {number} parallelId - ID del paralelo a obtener
    * @returns {Promise<Object>} Paralelo con todos sus horarios estructurados
    */
   async execute(parallelId) {
+    // Logging inicial
     this.logger.info('[Académico] Iniciando obtención de horarios de paralelo por ID', {
       parallelId,
     });
 
     try {
-      // TODO: Implementar lógica de obtención de horarios
       // 1. Obtener paralelo
-      // 2. Obtener cursos del paralelo
-      // 3. Para cada curso, obtener asignatura_plan y materia
-      // 4. Para cada curso, obtener cursos_horarios con horarios y aulas
-      // 5. Estructurar y retornar datos
+      const paralelo = await this.parallelRepository.findById(parallelId);
 
-      throw new Error('GetParaleloHorariosUseCase.execute() no está implementado aún');
+      if (!paralelo) {
+        this.logger.warn('[Académico] Paralelo no encontrado', {
+          parallelId,
+        });
+        throw new NotFoundError('paralelo');
+      }
+
+      this.logger.info('[Académico] Paralelo encontrado', {
+        parallelId: paralelo.id,
+        nombre: paralelo.name,
+      });
+
+      // 2. Obtener todos los cursos del paralelo
+      const cursosResult = await this.courseRepository.findAll(
+        { parallelId: paralelo.id },
+        null, // sin paginación
+        null
+      );
+      const cursos = cursosResult.courses || [];
+
+      this.logger.info('[Académico] Cursos encontrados', {
+        parallelId: paralelo.id,
+        count: cursos.length,
+      });
+
+      // 3. Para cada curso, obtener datos relacionados
+      const horariosCompletos = await Promise.all(
+        cursos.map(async (curso) => {
+          try {
+            // 3a. Obtener asignatura_plan
+            let asignaturaPlan = null;
+            if (curso.planSubjectId) {
+              asignaturaPlan = await this.planSubjectRepository.findById(curso.planSubjectId);
+              if (asignaturaPlan) {
+                this.logger.debug('[Académico] Asignatura plan obtenida', {
+                  cursoId: curso.id,
+                  asignaturaPlanId: asignaturaPlan.id,
+                });
+              }
+            }
+
+            // 3b. Obtener materia desde asignatura_plan
+            let materia = null;
+            if (asignaturaPlan?.subjectId) {
+              materia = await this.subjectRepository.findById(asignaturaPlan.subjectId);
+              if (materia) {
+                this.logger.debug('[Académico] Materia obtenida', {
+                  cursoId: curso.id,
+                  materiaId: materia.id,
+                });
+              }
+            }
+
+            // 3c. Obtener cursos_horarios del curso
+            const cursosHorariosResult = await this.courseScheduleRepository.findAll(
+              { courseId: curso.id },
+              null,
+              null
+            );
+            const cursosHorarios = cursosHorariosResult.courseSchedules || [];
+
+            this.logger.debug('[Académico] Cursos horarios encontrados', {
+              cursoId: curso.id,
+              count: cursosHorarios.length,
+            });
+
+            // 3d. Para cada curso_horario, obtener horario y aula completos
+            const horarios = await Promise.all(
+              cursosHorarios.map(async (cursoHorario) => {
+                try {
+                  let horario = null;
+                  if (cursoHorario.scheduleId) {
+                    horario = await this.scheduleRepository.findById(cursoHorario.scheduleId);
+                  }
+
+                  let aula = null;
+                  if (cursoHorario.classroomId) {
+                    try {
+                      aula = await this.classroomRepository.findById(cursoHorario.classroomId);
+                      if (!aula) {
+                        this.logger.warn('[Académico] Aula no encontrada en base de datos', {
+                          cursoHorarioId: cursoHorario.id,
+                          aulaId: cursoHorario.classroomId,
+                        });
+                      }
+                    } catch (error) {
+                      this.logger.warn('[Académico] Error al obtener aula', {
+                        cursoHorarioId: cursoHorario.id,
+                        aulaId: cursoHorario.classroomId,
+                        error: error.message,
+                      });
+                    }
+                  } else {
+                    this.logger.debug('[Académico] Curso horario sin aula asignada', {
+                      cursoHorarioId: cursoHorario.id,
+                    });
+                  }
+
+                  return {
+                    id: cursoHorario.id,
+                    ordenSecuencia: cursoHorario.sequenceOrder,
+                    horario: horario
+                      ? {
+                          dia: horario.day,
+                          horaInicio: horario.startTime,
+                          horaFin: horario.endTime,
+                        }
+                      : null,
+                    aula: aula ? aula.name : null,
+                  };
+                } catch (error) {
+                  this.logger.warn('[Académico] Error al obtener horario o aula de curso_horario', {
+                    cursoHorarioId: cursoHorario.id,
+                    error: error.message,
+                  });
+                  return null;
+                }
+              })
+            );
+
+            // Filtrar horarios nulos (errores)
+            const horariosValidos = horarios.filter((h) => h !== null);
+
+            // Ordenar por ordenSecuencia
+            horariosValidos.sort((a, b) => a.ordenSecuencia - b.ordenSecuencia);
+
+            return {
+              cursoId: curso.id,
+              materiaId: materia ? materia.id : null,
+              horarios: horariosValidos,
+            };
+          } catch (error) {
+            this.logger.warn('[Académico] Error al procesar curso', {
+              cursoId: curso.id,
+              error: error.message,
+            });
+            return null;
+          }
+        })
+      );
+
+      // Filtrar cursos nulos (errores)
+      const cursosValidos = horariosCompletos.filter((c) => c !== null);
+
+      // Logging final
+      this.logger.info('[Académico] Horarios de paralelo obtenidos exitosamente', {
+        parallelId: paralelo.id,
+        cursosCount: cursosValidos.length,
+        totalCursos: cursos.length,
+      });
+
+      // Retornar estructura (sin paralelo, solo horarios directamente en el array)
+      return cursosValidos;
     } catch (error) {
+      // Manejo de errores
       this.logger.error('[Académico] Error al obtener horarios de paralelo por ID', {
         error: error.message,
         stack: error.stack,
