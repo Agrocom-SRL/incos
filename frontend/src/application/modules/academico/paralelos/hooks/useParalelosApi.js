@@ -25,13 +25,20 @@
  */
 
 import { createApiHook } from '@application/utils';
+import { normalizeFieldToArray } from '@application/utils';
 import { mapParalelosList } from '@application-academico/paralelos/mappers';
 
 export const useParalelosApi = createApiHook({
   name: 'useParalelosApi',
   useCase: 'obtenerTodosParalelos',
   dataType: 'array', // Retorna un array
-  mapper: mapParalelosList, // Mapea los datos antes de guardarlos
+  mapper: (data) => {
+    // Mapper personalizado con múltiples transformaciones
+    // Paso 1: Normalizar estructura (objeto → array) usando transformador genérico reutilizable
+    const paralelosNormalizados = normalizeFieldToArray(data, 'paralelos');
+    // Paso 2: Transformar datos al formato de UI usando mapper específico del módulo
+    return mapParalelosList(paralelosNormalizados);
+  },
   initialLoading: false, // No carga automáticamente al montar
   autoFetch: false, // No carga automáticamente (búsqueda bajo demanda)
   autoFetchArgs: {}, // Argumentos para el auto-fetch

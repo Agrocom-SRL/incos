@@ -27,8 +27,6 @@
  * - isSelected: Función para determinar si un item está seleccionado (item, index) => boolean (opcional)
  * - loadingText: Texto a mostrar mientras carga (opcional)
  * - className: Clase CSS adicional para el contenedor (opcional)
- * - orientation: 'vertical' | 'horizontal' - Orientación del layout (default: 'vertical')
- * - cardWidth: Ancho de cada tarjeta (default: '100%' para vertical, '300px' para horizontal)
  * 
  * Nota: Los estilos se manejan mediante:
  * - Variables CSS del tema (--color-primary, --spacing-*, etc.) definidas en root.js
@@ -47,8 +45,6 @@ const DataCards = ({
     isSelected = null,
     loadingText = 'Cargando...',
     className = '',
-    orientation = 'vertical',
-    cardWidth = null,
 }) => {
     // Si está cargando, mostrar spinner
     if (loading) {
@@ -74,15 +70,10 @@ const DataCards = ({
         );
     }
 
-    // Determinar ancho de tarjeta según orientación
-    const defaultCardWidth = orientation === 'vertical' ? '100%' : '300px';
-    const finalCardWidth = cardWidth || defaultCardWidth;
-    
-    // Clase CSS según orientación
-    const orientationClass = orientation === 'vertical' ? 'data-cards--vertical' : 'data-cards--horizontal';
+    // Construir className del contenedor
     const containerClassName = className 
-        ? `data-cards ${orientationClass} ${className}`.trim() 
-        : `data-cards ${orientationClass}`.trim();
+        ? `data-cards ${className}`.trim() 
+        : 'data-cards';
 
     return (
         <div className={containerClassName}>
@@ -106,13 +97,9 @@ const DataCards = ({
                     <Card
                         key={item?.id || index}
                         hoverable={!!onSelect}
+                        shadow={true}
                         onClick={() => onSelect && onSelect(item, index)}
                         className={cardClassName}
-                        style={{
-                            width: finalCardWidth,
-                            maxWidth: orientation === 'horizontal' ? finalCardWidth : '100%',
-                            flex: orientation === 'horizontal' ? '1 1 300px' : undefined,
-                        }}
                     >
                         {cardContent}
                     </Card>

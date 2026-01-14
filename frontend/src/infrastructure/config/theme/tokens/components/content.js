@@ -26,7 +26,7 @@ export const Card = {
 
   // Sombras - usando el sistema de sombras del tema
   // Nota: boxShadow no es una propiedad estándar de Ant Design, se aplica via styles
-  boxShadow: shadows.shadowElevation2, // Sombra por defecto
+  boxShadow: shadows.shadowElevation4, // Sombra por defecto
   boxShadowHover: shadows.shadowElevation3, // Sombra en hover
   boxShadowPrimary: shadows.shadowPrimary,
   boxShadowSuccess: shadows.shadowSuccess,

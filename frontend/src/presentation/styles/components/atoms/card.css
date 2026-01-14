@@ -57,18 +57,25 @@
   border-radius: var(--border-radius-lg, 12px); /* Bordes más ovalados */
   cursor: default;
   transition: all var(--transition-base);
-  /* Sombra más prominente */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  /* Tamaño fijo máximo para las tarjetas */
+  max-width: 300px;
+  flex: 1 1 300px;
+  min-width: 250px;
 }
 
 /* Asegurar que las tarjetas en DataCards tengan bordes consistentes y ovalados */
 .data-cards__card .ant-card {
   border-radius: var(--border-radius-lg, 12px); /* Bordes más ovalados */
+  /* La sombra se aplica desde el componente Card.jsx via inline style */
+  /* No definir sombra aquí para evitar conflictos con el tema */
+  /* El componente Card maneja la sombra usando componentConfig.Card.boxShadow */
 }
 
 /* Body de la tarjeta */
 .data-cards__card .ant-card-body {
   padding: var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
 }
 
 /* Tarjeta con hover (si tiene onSelect) */
@@ -95,20 +102,4 @@
 
 .data-cards__card--active .ant-card {
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25) !important; /* Sombra más prominente cuando está activa */
-}
-
-/* ============================================================================
-   ORIENTACIÓN - Composición de tarjetas según orientación del contenedor
-   ============================================================================ */
-
-/* Orientación vertical: tarjetas ocupan todo el ancho */
-.data-cards--vertical .data-cards__card {
-  width: 100%;
-  max-width: 100%;
-}
-
-/* Orientación horizontal: tarjetas con ancho fijo y flex */
-.data-cards--horizontal .data-cards__card {
-  max-width: 300px;
-  flex: 1 1 300px;
 }

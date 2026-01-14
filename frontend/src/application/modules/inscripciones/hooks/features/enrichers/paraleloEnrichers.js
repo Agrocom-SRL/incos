@@ -47,10 +47,23 @@ export const enrichParaleloListField = (field, context = {}) => {
         // Solo mostrar paralelos si hay una carrera seleccionada
         const hasCarrera = carrerasData?.selectedCarrera?.id;
         
+        // Enriquecer paralelos con el nombre de la carrera
+        // El backend solo devuelve carreraId, necesitamos buscar el nombre en carrerasData.carreras
+        const paralelosEnriquecidos = (paralelosData.paralelos || []).map(paralelo => {
+            // Buscar la carrera correspondiente usando carreraId
+            const carrera = carrerasData?.carreras?.find(c => c.id === paralelo.carreraId);
+            
+            return {
+                ...paralelo,
+                // Agregar el nombre de la carrera si se encuentra
+                carreraNombre: carrera?.nombre || '',
+            };
+        });
+        
         return {
             ...field,
             // Datos agregados por el enricher (consumidos por DataList o DataCards)
-            items: hasCarrera ? (paralelosData.paralelos || []) : [], // Array de paralelos encontrados
+            items: hasCarrera ? paralelosEnriquecidos : [], // Array de paralelos enriquecidos
             loading: paralelosData.loading || false, // Estado de carga
             emptyMessage: hasCarrera 
                 ? (field.emptyMessage || 'No hay paralelos disponibles para esta carrera en el período actual.')

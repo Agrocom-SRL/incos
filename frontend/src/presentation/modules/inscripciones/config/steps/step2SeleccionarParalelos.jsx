@@ -66,18 +66,14 @@ const PARALELOS_FIELDS = [
     span: 24,
     required: false,
     emptyMessage: 'Seleccione una carrera para ver los paralelos disponibles.',
-    orientation: 'horizontal',
     renderItem: (paralelo) => {
-      // Extraer información del paralelo
-      // Ejemplo de estructura esperada del backend:
-      // - nombre: "PRIMERO A"
-      // - descripcion: "Paralelo A de Primer Año"
-      // - carrera: { nombre: "Administración de Empresas" } (si viene con relación)
-      // - turno: "Tarde" (si viene del backend)
-      
       const periodoNombre = paralelo.nombre || paralelo.codigo || 'Sin nombre';
-      const descripcion = paralelo.descripcion || '';
-      const carreraNombre = paralelo.carrera?.nombre || paralelo.carreraNombre || '';
+      const descripcionCompleta = paralelo.descripcion || '';
+      const descripcion = descripcionCompleta.split(' - ')[0] || ''; // Solo la primera parte antes del guión
+
+      // El nombre de la carrera se agrega en el enricher (enrichParaleloListField)
+      // usando el carreraId para buscar en carrerasData.carreras
+      const carreraNombre = paralelo.carreraNombre || '';
       const turno = paralelo.turno || '';
 
       return (
@@ -86,14 +82,7 @@ const PARALELOS_FIELDS = [
           <Title level={4} style={{ margin: 0, color: 'var(--color-primary)' }}>
             {periodoNombre}
           </Title>
-          
-          {/* Descripción: Paralelo A de Primer Año */}
-          {descripcion && (
-            <Text type="secondary" style={{ fontSize: '14px' }}>
-              {descripcion}
-            </Text>
-          )}
-          
+
           {/* Información adicional en vertical */}
           <Flex vertical gap={4} style={{ marginTop: '8px' }}>
             {carreraNombre && (
@@ -101,10 +90,17 @@ const PARALELOS_FIELDS = [
                 {carreraNombre}
               </Text>
             )}
-            
+
             {turno && (
               <Text type="secondary" style={{ fontSize: '13px' }}>
                 Turno {turno}
+              </Text>
+            )}
+
+            {/* Descripción: Solo la parte del paralelo (sin carrera ni turno) */}
+            {descripcion && (
+              <Text type="secondary" style={{ fontSize: '14px' }}>
+                {descripcion}
               </Text>
             )}
           </Flex>

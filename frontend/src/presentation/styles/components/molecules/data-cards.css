@@ -8,19 +8,9 @@
 .data-cards {
   width: 100%;
   display: flex;
-}
-
-/* Orientación vertical */
-.data-cards--vertical {
-  flex-direction: column;
-  gap: var(--spacing-base);
-}
-
-/* Orientación horizontal */
-.data-cards--horizontal {
   flex-direction: row;
   flex-wrap: wrap;
-  gap: var(--spacing-lg);
+  gap: var(--spacing-base);
 }
 
 /* Estado de carga */

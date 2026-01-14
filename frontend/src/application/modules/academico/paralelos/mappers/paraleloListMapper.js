@@ -24,8 +24,10 @@ export const paraleloListMapper = (paraleloBackend) => {
     codigo: paraleloBackend.codigo,
     nombre: paraleloBackend.nombre,
     descripcion: paraleloBackend.descripcion,
+    turno: paraleloBackend.turno, // Campo importante para el renderItem
     carreraId: paraleloBackend.carreraId,
-    materiaId: paraleloBackend.materiaId,
+    periodoId: paraleloBackend.periodoId,
+    activo: paraleloBackend.activo,
     // Agregar más campos según la estructura del backend
     // carrera: paraleloBackend.carrera, // Si viene con relación
     // materia: paraleloBackend.materia, // Si viene con relación
