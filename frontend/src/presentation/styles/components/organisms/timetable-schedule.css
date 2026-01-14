@@ -23,7 +23,7 @@
   display: grid;
   grid-template-columns: 80px repeat(6, 1fr);
   gap: 1px;
-  background-color: #000000;
+  background-color: #999999;
   margin-bottom: 1px;
 }
 
@@ -49,7 +49,7 @@
   display: flex;
   flex-direction: column;
   gap: 1px;
-  background-color: #000000;
+  background-color: #999999;
 }
 
 .timetable-row {
@@ -57,6 +57,13 @@
   grid-template-columns: 80px repeat(6, 1fr);
   gap: 1px;
   min-height: 60px;
+}
+
+/* ✅ IMPORTANTE: Celdas que abarcan múltiples slots */
+.timetable-cell-spans {
+  /* La celda principal que contiene el contenido */
+  grid-row: span var(--span-slots, 1);
+  min-height: calc(60px * var(--span-slots, 1) + (var(--span-slots, 1) - 1) * 1px);
 }
 
 /* Time Slot */
@@ -86,6 +93,8 @@
   position: relative;
   border-left: 4px solid transparent;
   min-height: 60px;
+  display: flex;
+  flex-direction: column;
 }
 
 .timetable-cell:hover {
@@ -93,17 +102,22 @@
   transform: translateY(-1px);
 }
 
+/* ✅ Celdas de continuación (slots subsecuentes) - Ya no se renderizan */
+.timetable-cell-continuation {
+  display: none;
+}
+
 .timetable-cell-empty {
   display: flex;
   align-items: center;
   justify-content: center;
   background-color: var(--color-white);
-  border: 1px dashed #000000;
+  border: 1px dashed #999999;
 }
 
 .timetable-cell-empty:hover {
   background-color: var(--color-item-hover-bg);
-  border-color: #000000;
+  border-color: #999999;
 }
 
 .timetable-cell-add {
@@ -127,11 +141,12 @@
   font-weight: var(--font-weight-strong);
   font-size: 13px;
   line-height: var(--line-height-sm);
-  color: var(--color-white);
+  color: #000000;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 3; /* Permitir más líneas para celdas grandes */
+  line-clamp: 3;
   -webkit-box-orient: vertical;
 }
 
@@ -143,8 +158,15 @@
 
 .timetable-cell-time {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.8);
+  color: #000000;
   margin-top: auto;
+  font-weight: 500;
+}
+
+.timetable-cell-aula {
+  font-size: 10px;
+  color: rgba(0, 0, 0, 0.7);
+  margin-top: 2px;
 }
 
 /* Conflict indicator */
@@ -164,12 +186,12 @@
 
 /* Tooltip */
 .timetable-tooltip {
-  padding: var(--spacing-xs) 0;
+  padding: var(--spacing-base) var(--spacing-base);
 }
 
 .timetable-tooltip-header {
-  margin-bottom: var(--spacing-sm);
-  padding-bottom: var(--spacing-sm);
+  margin-bottom: var(--spacing-base);
+  padding-bottom: var(--spacing-base);
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
   display: flex;
   align-items: center;
@@ -177,7 +199,7 @@
 }
 
 .timetable-tooltip-row {
-  padding: var(--spacing-xs) 0;
+  padding: var(--spacing-sm) 0;
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
@@ -201,6 +223,10 @@
   .timetable-row {
     grid-template-columns: 60px repeat(6, 1fr);
     min-height: 50px;
+  }
+  
+  .timetable-cell-spans {
+    min-height: calc(50px * var(--span-slots, 1) + (var(--span-slots, 1) - 1) * 1px);
   }
   
   .timetable-time-slot {

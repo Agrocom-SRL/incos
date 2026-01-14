@@ -22,7 +22,7 @@
 
 // Importar helpers del componente TimetableSchedule
 // Usamos el alias @presentation configurado en vite.config.js
-import { 
+import {
   generateColorFromString,
   generateTimeSlots,
   DAY_MAPPING,
@@ -39,8 +39,163 @@ const formatTimeString = (timeString) => {
 };
 
 /**
+ * Calcula el Máximo Común Divisor (MCD) de dos números
+ * @param {number} a - Primer número
+ * @param {number} b - Segundo número
+ * @returns {number} MCD de a y b
+ */
+const calculateGCD = (a, b) => {
+  while (b !== 0) {
+    const temp = b;
+    b = a % b;
+    a = temp;
+  }
+  return a;
+};
+
+/**
+ * Calcula el MCD de un array de números
+ * @param {Array<number>} numbers - Array de números
+ * @returns {number} MCD de todos los números
+ */
+const calculateGCDArray = (numbers) => {
+  if (numbers.length === 0) return 30; // Default si no hay números
+  if (numbers.length === 1) return numbers[0];
+
+  let result = numbers[0];
+  for (let i = 1; i < numbers.length; i++) {
+    result = calculateGCD(result, numbers[i]);
+  }
+  return result;
+};
+
+/**
+ * Calcula la duración óptima de cada celda basándose en las diferencias
+ * entre horarios iniciales y finales
+ * 
+ * Estrategia:
+ * 1. Calcula todas las duraciones de los horarios
+ * 2. Encuentra el MCD para determinar el tamaño base de celda
+ * 3. Si el MCD es muy pequeño, usa el tamaño de celda más común
+ * 4. Asegura que todas las duraciones sean múltiplos del tamaño de celda elegido
+ * 
+ * @param {Array} schedule - Array de clases transformadas
+ * @returns {number} Duración en minutos para cada celda
+ */
+const calculateOptimalSlotDuration = (schedule = []) => {
+  if (!Array.isArray(schedule) || schedule.length === 0) {
+    return 30; // Default: 30 minutos si no hay horarios
+  }
+
+  // Convertir a minutos
+  const parseTimeToMinutes = (time) => {
+    if (!time) return null;
+    const [hours, minutes] = time.split(':').map(Number);
+    return hours * 60 + minutes;
+  };
+
+  // Calcular duraciones de cada horario
+  const durations = [];
+  schedule.forEach(item => {
+    if (item.startTime && item.endTime) {
+      const startMinutes = parseTimeToMinutes(item.startTime);
+      const endMinutes = parseTimeToMinutes(item.endTime);
+
+      if (startMinutes !== null && endMinutes !== null && endMinutes > startMinutes) {
+        const duration = endMinutes - startMinutes;
+        if (duration > 0) {
+          durations.push(duration);
+        }
+      }
+    }
+  });
+
+  if (durations.length === 0) {
+    return 30; // Default: 30 minutos si no se pueden calcular duraciones
+  }
+
+  // Verificar si todas las duraciones son iguales
+  const uniqueDurations = [...new Set(durations)];
+  if (uniqueDurations.length === 1) {
+    // Si todos los horarios tienen la misma duración, usar esa duración directamente
+    const singleDuration = uniqueDurations[0];
+    // Asegurar que esté en un rango razonable y sea un intervalo común
+    if (singleDuration >= 5 && singleDuration <= 60) {
+      const commonIntervals = [5, 10, 15, 30, 45, 60];
+      // Si la duración exacta está en los intervalos comunes, usarla
+      if (commonIntervals.includes(singleDuration)) {
+        return singleDuration;
+      }
+      // Si no, encontrar el intervalo común más cercano
+      let bestMatch = commonIntervals[0];
+      let minDiff = Math.abs(singleDuration - bestMatch);
+      for (const interval of commonIntervals) {
+        const diff = Math.abs(singleDuration - interval);
+        if (diff < minDiff) {
+          minDiff = diff;
+          bestMatch = interval;
+        }
+      }
+      return bestMatch;
+    }
+  }
+
+  // Calcular el MCD de todas las duraciones
+  const gcd = calculateGCDArray(durations);
+
+  // Asegurar que el tamaño esté en un rango razonable (mínimo 5 minutos, máximo 60 minutos)
+  let optimalDuration = Math.max(5, Math.min(60, gcd));
+
+  // Verificar que todas las duraciones sean múltiplos del tamaño elegido
+  // Si no, reducir el tamaño hasta que todas sean múltiplos
+  let finalDuration = optimalDuration;
+  for (let testDuration = optimalDuration; testDuration >= 5; testDuration -= 5) {
+    const allAreMultiples = durations.every(d => d % testDuration === 0);
+    if (allAreMultiples) {
+      finalDuration = testDuration;
+      break;
+    }
+  }
+
+  // Redondear a múltiplos comunes (5, 10, 15, 30, 45, 60) para mejor visualización
+  // Priorizar intervalos que dividan perfectamente todas las duraciones
+  const commonIntervals = [5, 10, 15, 30, 45, 60];
+  let bestMatch = commonIntervals[0];
+  let minDiff = Math.abs(finalDuration - bestMatch);
+  let foundPerfectMatch = false;
+
+  // Primero buscar un intervalo que divida perfectamente todas las duraciones
+  for (const interval of commonIntervals) {
+    const allAreMultiples = durations.every(d => d % interval === 0);
+    if (allAreMultiples) {
+      const diff = Math.abs(finalDuration - interval);
+      if (!foundPerfectMatch || diff < minDiff) {
+        minDiff = diff;
+        bestMatch = interval;
+        foundPerfectMatch = true;
+      }
+    }
+  }
+
+  // Si no se encontró un intervalo perfecto, usar el más cercano al MCD
+  if (!foundPerfectMatch) {
+    for (const interval of commonIntervals) {
+      const diff = Math.abs(finalDuration - interval);
+      if (diff < minDiff) {
+        minDiff = diff;
+        bestMatch = interval;
+      }
+    }
+  }
+
+  return bestMatch;
+};
+
+/**
  * Calcula los timeSlots dinámicos basados en los horarios
  * Usa generateTimeSlots del helper para generar los slots
+ * La duración de cada celda se calcula automáticamente basándose en las diferencias
+ * entre horarios iniciales y finales
  * 
  * @param {Array} schedule - Array de clases transformadas
  * @returns {Array} Array de timeSlots
@@ -73,16 +228,20 @@ const calculateDynamicTimeSlots = (schedule = []) => {
     return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
   };
 
+  // Calcular la duración óptima de cada celda
+  const slotDuration = calculateOptimalSlotDuration(schedule);
+
   const timesInMinutes = allTimes.map(parseTimeToMinutes).sort((a, b) => a - b);
-  const minTimeMinutes = Math.floor(timesInMinutes[0] / 15) * 15; // Redondear hacia abajo a múltiplos de 15
-  const maxTimeMinutes = Math.ceil(timesInMinutes[timesInMinutes.length - 1] / 15) * 15; // Redondear hacia arriba
+  // Redondear hacia abajo/arriba a múltiplos de la duración calculada
+  const minTimeMinutes = Math.floor(timesInMinutes[0] / slotDuration) * slotDuration;
+  const maxTimeMinutes = Math.ceil(timesInMinutes[timesInMinutes.length - 1] / slotDuration) * slotDuration;
 
   // Convertir de vuelta a formato HH:MM
   const startTime = formatMinutesToTime(minTimeMinutes);
   const endTime = formatMinutesToTime(maxTimeMinutes);
 
-  // Usar generateTimeSlots del helper con duración de 15 minutos
-  return generateTimeSlots(startTime, endTime, 15);
+  // Usar generateTimeSlots con la duración calculada dinámicamente
+  return generateTimeSlots(startTime, endTime, slotDuration);
 };
 
 /**
@@ -165,11 +324,11 @@ const transformScheduleData = (scheduleData = [], materias = []) => {
       });
     }
   });
-  
+
   // Calcular timeSlots y days dinámicamente
   const timeSlots = calculateDynamicTimeSlots(transformedSchedule);
   const days = calculateDynamicDays(transformedSchedule);
-  
+
   return {
     schedule: transformedSchedule,
     timeSlots,
@@ -195,53 +354,53 @@ const transformScheduleData = (scheduleData = [], materias = []) => {
  * @returns {Object} Campo enriquecido con schedule, loading, config o el campo original
  */
 export const enrichHorarioField = (field, context = {}) => {
-    // Si es el campo de horario de clases, agregar los datos
-    // El campo debe tener name='horarioClases' y type='timetable'
-    if (field.name === 'horarioClases' && field.type === 'timetable') {
-        const { horariosData, materiasData, paralelosData } = context;
-        
-        // Solo mostrar horarios si hay un paralelo seleccionado
-        const hasParalelo = paralelosData?.selectedParalelo?.id;
-        
-        // Extraer el array de schedule
-        // El hook puede retornar schedule directamente como array o como {schedule: [...]}
-        let scheduleArray = null;
-        if (horariosData?.schedule) {
-            // Si schedule es un array, usarlo directamente
-            if (Array.isArray(horariosData.schedule)) {
-                scheduleArray = horariosData.schedule;
-            }
-            // Si schedule es un objeto con propiedad schedule, extraer el array
-            else if (horariosData.schedule.schedule && Array.isArray(horariosData.schedule.schedule)) {
-                scheduleArray = horariosData.schedule.schedule;
-            }
-        }
-        
-        // Transformar datos del backend al formato esperado por TimetableSchedule
-        const transformedData = hasParalelo && scheduleArray
-            ? transformScheduleData(scheduleArray, materiasData?.materias || [])
-            : { schedule: [], timeSlots: [], days: [] };
-        
-        return {
-            ...field,
-            // Datos agregados por el enricher (consumidos por TimetableSchedule)
-            schedule: transformedData.schedule || [], // Array de clases con horarios transformados
-            loading: horariosData?.loading || false, // Estado de carga
-            config: {
-                // Configuración dinámica del horario basada en los datos reales
-                // Los timeSlots y days se calculan automáticamente desde los horarios
-                timeSlots: transformedData.timeSlots || [], // Slots calculados dinámicamente
-                days: transformedData.days || [], // Días calculados dinámicamente
-            },
-            editable: false, // Por ahora no es editable
-            onClassClick: null, // Callback opcional al hacer click en una clase
-            onCellClick: null, // Callback opcional al hacer click en celda vacía
-            // Ocultar si no hay paralelo seleccionado
-            hidden: !hasParalelo,
-        };
+  // Si es el campo de horario de clases, agregar los datos
+  // El campo debe tener name='horarioClases' y type='timetable'
+  if (field.name === 'horarioClases' && field.type === 'timetable') {
+    const { horariosData, materiasData, paralelosData } = context;
+
+    // Solo mostrar horarios si hay un paralelo seleccionado
+    const hasParalelo = paralelosData?.selectedParalelo?.id;
+
+    // Extraer el array de schedule
+    // El hook puede retornar schedule directamente como array o como {schedule: [...]}
+    let scheduleArray = null;
+    if (horariosData?.schedule) {
+      // Si schedule es un array, usarlo directamente
+      if (Array.isArray(horariosData.schedule)) {
+        scheduleArray = horariosData.schedule;
+      }
+      // Si schedule es un objeto con propiedad schedule, extraer el array
+      else if (horariosData.schedule.schedule && Array.isArray(horariosData.schedule.schedule)) {
+        scheduleArray = horariosData.schedule.schedule;
+      }
     }
-    
-    return field;
+
+    // Transformar datos del backend al formato esperado por TimetableSchedule
+    const transformedData = hasParalelo && scheduleArray
+      ? transformScheduleData(scheduleArray, materiasData?.materias || [])
+      : { schedule: [], timeSlots: [], days: [] };
+
+    return {
+      ...field,
+      // Datos agregados por el enricher (consumidos por TimetableSchedule)
+      schedule: transformedData.schedule || [], // Array de clases con horarios transformados
+      loading: horariosData?.loading || false, // Estado de carga
+      config: {
+        // Configuración dinámica del horario basada en los datos reales
+        // Los timeSlots y days se calculan automáticamente desde los horarios
+        timeSlots: transformedData.timeSlots || [], // Slots calculados dinámicamente
+        days: transformedData.days || [], // Días calculados dinámicamente
+      },
+      editable: false, // Por ahora no es editable
+      onClassClick: null, // Callback opcional al hacer click en una clase
+      onCellClick: null, // Callback opcional al hacer click en celda vacía
+      // Ocultar si no hay paralelo seleccionado
+      hidden: !hasParalelo,
+    };
+  }
+
+  return field;
 };
 
 /**
@@ -250,5 +409,5 @@ export const enrichHorarioField = (field, context = {}) => {
  * @type {Array<Function>}
  */
 export const horarioEnrichers = [
-    enrichHorarioField,
+  enrichHorarioField,
 ];

@@ -20,8 +20,14 @@ import { Text } from '@atoms';
  * @param {Array} props.days - Array de configuración de días
  */
 export const TimetableHeader = ({ days = [] }) => {
+  // ✅ Calcular número de columnas dinámicamente
+  const gridColumns = `80px repeat(${days.length}, 1fr)`;
+  
   return (
-    <div className="timetable-header">
+    <div 
+      className="timetable-header"
+      style={{ gridTemplateColumns: gridColumns }}
+    >
       {/* Celda vacía para alinear con columna de horas */}
       <div className="timetable-header-time"></div>
 

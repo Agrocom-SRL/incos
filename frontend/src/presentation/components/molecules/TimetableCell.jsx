@@ -51,28 +51,24 @@ export const TimetableCell = ({
     );
   }
 
-  // Si es una continuación de otra celda (clase que ocupa múltiples slots)
-  // Solo mostrar el color de fondo, sin contenido
+  // ✅ Si es una continuación, NO renderizar nada (la celda principal ya ocupa este espacio)
   if (classData.isContinuation) {
-    const cellClassName = `timetable-cell timetable-cell-continuation ${
-      classData.hasConflict ? 'timetable-cell-conflict' : ''
-    }`;
-    
-    return (
-      <div
-        className={cellClassName}
-        style={{ 
-          backgroundColor: classData.color || 'var(--color-primary)',
-          borderLeftColor: classData.color || 'var(--color-primary)',
-        }}
-      />
-    );
+    return null; // ✅ CAMBIO CLAVE: No renderizar celdas de continuación
   }
 
   // Si hay conflicto, resaltar
   const cellClassName = `timetable-cell ${
     classData.hasConflict ? 'timetable-cell-conflict' : ''
   } ${classData.spanSlots > 1 ? 'timetable-cell-spans' : ''}`;
+
+  // ✅ Estilos inline para controlar el span
+  const cellStyle = {
+    backgroundColor: classData.color || 'var(--color-primary)',
+    borderLeftColor: classData.color || 'var(--color-primary)',
+    ...(classData.spanSlots > 1 && {
+      '--span-slots': classData.spanSlots, // CSS variable para grid-row span
+    }),
+  };
 
   // Contenido del tooltip
   const tooltipContent = (
@@ -103,10 +99,7 @@ export const TimetableCell = ({
     <Tooltip title={tooltipContent} placement="top">
       <div
         className={cellClassName}
-        style={{ 
-          backgroundColor: classData.color || 'var(--color-primary)',
-          borderLeftColor: classData.color || 'var(--color-primary)',
-        }}
+        style={cellStyle}
         onClick={() => onClassClick?.(classData)}
       >
         <div className="timetable-cell-content">
@@ -114,13 +107,28 @@ export const TimetableCell = ({
             {classData.materia}
           </div>
           <div className="timetable-cell-subtitle">
-            <Tag size="small" style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)', color: 'var(--color-white)', border: 'none' }}>
-              {classData.paralelo}
-            </Tag>
+            {classData.paralelo && (
+              <Tag 
+                size="small" 
+                style={{ 
+                  backgroundColor: 'rgba(0, 0, 0, 0.15)', 
+                  color: '#000000', 
+                  border: 'none',
+                  fontWeight: 500,
+                }}
+              >
+                {classData.paralelo}
+              </Tag>
+            )}
           </div>
           <div className="timetable-cell-time">
-            {classData.startTime}
+            {classData.startTime} - {classData.endTime}
           </div>
+          {classData.aula && (
+            <div className="timetable-cell-aula">
+              📍 {classData.aula}
+            </div>
+          )}
         </div>
       </div>
     </Tooltip>

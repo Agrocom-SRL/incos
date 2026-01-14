@@ -100,31 +100,40 @@ export const TimetableSchedule = ({
         {/* Header con días de la semana */}
         <TimetableHeader days={days} />
 
-        {/* Grid de horarios */}
+        {/* ✅ Grid con columnas dinámicas */}
         <div className="timetable-grid">
-          {timeSlots.map((timeSlot, slotIndex) => (
-            <div key={slotIndex} className="timetable-row">
-              {/* Columna de hora */}
-              <TimetableTimeSlot timeSlot={timeSlot} />
+          {timeSlots.map((timeSlot, slotIndex) => {
+            // ✅ Calcular número de columnas dinámicamente
+            const gridColumns = `80px repeat(${days.length}, 1fr)`;
+            
+            return (
+              <div 
+                key={slotIndex} 
+                className="timetable-row"
+                style={{ gridTemplateColumns: gridColumns }}
+              >
+                {/* Columna de hora */}
+                <TimetableTimeSlot timeSlot={timeSlot} />
 
-              {/* Celdas para cada día */}
-              {days.map((day) => {
-                const classData = processedSchedule[day.key]?.[timeSlot.key];
-                
-                return (
-                  <TimetableCell
-                    key={`${day.key}-${timeSlot.key}`}
-                    classData={classData}
-                    day={day}
-                    timeSlot={timeSlot}
-                    editable={editable}
-                    onClassClick={onClassClick}
-                    onCellClick={onCellClick}
-                  />
-                );
-              })}
-            </div>
-          ))}
+                {/* Celdas para cada día */}
+                {days.map((day) => {
+                  const classData = processedSchedule[day.key]?.[timeSlot.key];
+                  
+                  return (
+                    <TimetableCell
+                      key={`${day.key}-${timeSlot.key}`}
+                      classData={classData}
+                      day={day}
+                      timeSlot={timeSlot}
+                      editable={editable}
+                      onClassClick={onClassClick}
+                      onCellClick={onCellClick}
+                    />
+                  );
+                })}
+              </div>
+            );
+          })}
         </div>
       </div>
     </Card>
