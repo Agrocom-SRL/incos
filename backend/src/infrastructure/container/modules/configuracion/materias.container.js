@@ -35,6 +35,7 @@ export function registerMateriasResource(container) {
         (c) =>
             new ListMateriasUseCase({
                 subjectRepository: c.resolve(REPOSITORIOS_TOKENS.subjectRepository),
+                planSubjectRepository: c.resolve(REPOSITORIOS_TOKENS.planSubjectRepository),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
     );

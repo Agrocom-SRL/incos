@@ -1,5 +1,5 @@
 import express from 'express';
-import { listValidator } from '../validators/common/index.js';
+import { listMateriasValidator } from '../validators/academico/index.js';
 
 /**
  * Construye el router del módulo Materias
@@ -34,12 +34,12 @@ export function buildMateriasRouter({ controllers, middlewares }) {
      * - pagina: número de página (paginación)
      * - limite: cantidad por página (paginación)
      * - busqueda: término de búsqueda general
-     * - filtros: filtros específicos del recurso
+     * - periodo_id: filtro por ID de periodo (opcional)
      * - incluirInactivos: incluir registros inactivos (activo = false)
      */
     router.get(
         '/',
-        listValidator,
+        listMateriasValidator,
         validateRequest,
         (req, res, next) => controllers.listMateriasController.handle(req, res, next)
     );

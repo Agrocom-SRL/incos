@@ -59,6 +59,11 @@ export class SubjectRepository extends BaseRepository {
     if (filters.knowledgeArea) {
       where.areaConocimiento = filters.knowledgeArea;
     }
+    // Filtro por IDs de materias (array) - usado cuando se filtra por periodo_id
+    // Sequelize automáticamente convierte arrays a IN (1, 2, 3)
+    if (filters.id) {
+      where.id = filters.id;
+    }
 
     return where;
   }
