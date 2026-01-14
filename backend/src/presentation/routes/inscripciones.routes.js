@@ -1,4 +1,6 @@
 import express from 'express';
+import { listValidator, idValidator } from '../validators/common/index.js';
+import { createEnrollmentValidator } from '../validators/inscripciones/index.js';
 
 /**
  * Construye el router del módulo Inscripciones
@@ -28,55 +30,57 @@ export function buildInscripcionesRouter({ controllers, middlewares }) {
     /**
      * GET /api/v1/inscripciones
      * Listar inscripciones con filtros y paginación
-     * Query: page, limit, search
-     * TODO: Implementar cuando se cree el Use Case y Controller
+     * Query: page, limit, search, sort
      */
-    // router.get(
-    //     '/',
-    //     listValidator,
-    //     validateRequest,
-    //     (req, res, next) => controllers.listEnrollmentsController.handle(req, res, next)
-    // );
+    router.get(
+        '/',
+        listValidator,
+        validateRequest,
+        (req, res, next) => controllers.listEnrollmentsController.handle(req, res, next)
+    );
 
     /**
      * POST /api/v1/inscripciones
      * Registrar nueva inscripción
-     * Body: enrollment data
-     * TODO: Implementar cuando se cree el Use Case y Controller
+     * Body: studentId, parallelId, enrollmentType (opcional), enrollmentDate (opcional), observations (opcional)
+     * El Use Case recupera todos los datos necesarios desde estos IDs y crea los registros en las tablas correspondientes
      */
-    // router.post(
-    //     '/',
-    //     createEnrollmentValidator,
-    //     validateRequest,
-    //     (req, res, next) => controllers.createEnrollmentController.handle(req, res, next)
-    // );
+    router.post(
+        '/',
+        createEnrollmentValidator, // 1. Validator primero
+        validateRequest,            // 2. Middleware que procesa errores
+        (req, res, next) => controllers.createEnrollmentController.handle(req, res, next)  // 3. Controller al final
+    );
 
     /**
      * GET /api/v1/inscripciones/:id
-     * Obtener inscripción por ID
+     * Obtener inscripción por ID con materias relacionadas
      * Path: id
-     * TODO: Implementar cuando se cree el Use Case y Controller
      */
-    // router.get(
-    //     '/:id',
-    //     idValidator,
-    //     validateRequest,
-    //     (req, res, next) => controllers.getEnrollmentByIdController.handle(req, res, next)
-    // );
+    router.get(
+        '/:id',
+        idValidator,
+        validateRequest,
+        (req, res, next) => controllers.getEnrollmentByIdController.handle(req, res, next)
+    );
 
     // ============================================
-    // RUTA TEMPORAL - Para verificar que funciona
+    // ENDPOINTS FUTUROS (TODO: Implementar cuando se necesiten)
     // ============================================
-    router.get('/', (req, res) => {
-        res.json({
-            message: 'Módulo de Inscripciones - En desarrollo',
-            endpoints: {
-                list: 'GET /api/v1/inscripciones',
-                create: 'POST /api/v1/inscripciones',
-                getById: 'GET /api/v1/inscripciones/:id',
-            },
-        });
-    });
+
+    // PUT /:id - Actualizar inscripción
+    // router.put(
+    //     '/:id',
+    //     updateEnrollmentValidator,
+    //     validateRequest,
+    //     (req, res, next) => controllers.updateEnrollmentController.handle(req, res, next)
+    // );
+
+    // DELETE /:id - Eliminar inscripción (soft delete)
+    // router.delete(
+    //     '/:id',
+    //     (req, res, next) => controllers.deleteEnrollmentController.handle(req, res, next)
+    // );
 
     return router;
 }
