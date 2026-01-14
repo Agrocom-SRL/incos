@@ -1,0 +1,568 @@
+/**
+ * Estilos para TimetableCalendar
+ * 
+ * Personalización de React Big Calendar para integrarse con el tema de Ant Design
+ */
+
+.timetable-calendar {
+  width: 100%;
+}
+
+.timetable-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+/* ============================================
+   PERSONALIZACIÓN BASE DE REACT BIG CALENDAR
+   ============================================ */
+
+.rbc-calendar {
+  font-family: var(--font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif);
+  background-color: var(--color-bg-container, #ffffff);
+}
+
+/* ============================================
+   HEADER (Días de la semana)
+   ============================================ */
+
+.rbc-header {
+  padding: 16px 8px;
+  font-weight: 600;
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.85) !important;
+  background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%) !important; /* ✅ Gradiente gris claro atractivo */
+  border-bottom: 2px solid var(--color-primary, #1677ff);
+  text-transform: capitalize;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.rbc-header + .rbc-header {
+  border-left: 1px solid var(--color-border, #d9d9d9);
+}
+
+/* ============================================
+   TIME VIEW (Vista principal)
+   ============================================ */
+
+.rbc-time-view {
+  border: 1px solid var(--color-border, #d9d9d9);
+  border-radius: var(--border-radius-base, 6px);
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); /* ✅ Sombra más pronunciada para profundidad */
+}
+
+.rbc-time-header-content {
+  border-left: 1px solid var(--color-border, #d9d9d9);
+  background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%) !important; /* ✅ Gradiente consistente */
+}
+
+/* Asegurar que todos los headers tengan el mismo gradiente */
+.rbc-time-header,
+.rbc-time-header > *,
+.rbc-time-header-content > * {
+  background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%) !important;
+  color: rgba(0, 0, 0, 0.85) !important;
+}
+
+.rbc-time-content {
+  border-top: 1px solid var(--color-border, #d9d9d9);
+  background-color: #ffffff; /* ✅ Fondo blanco en lugar de gris */
+}
+
+/* ============================================
+   TIME GUTTER (Columna de horas a la izquierda)
+   ============================================ */
+
+.rbc-time-gutter {
+  background: linear-gradient(180deg, #f8f9fa 0%, #f1f3f5 100%) !important; /* ✅ Gradiente para el gutter */
+  border-right: 2px solid #dee2e6;
+}
+
+.rbc-time-header-gutter {
+  background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%) !important; /* ✅ Gradiente consistente */
+  border-right: 2px solid #dee2e6;
+}
+
+/* ============================================
+   TIME SLOTS (Bloques de tiempo)
+   ============================================ */
+
+.rbc-timeslot-group {
+  min-height: 80px; /* Altura para bloques de 45 min */
+  border-bottom: 1px solid #e8e8e8;
+  background-color: transparent; /* ✅ Transparente para que se vea la alternancia */
+}
+
+/* Líneas divisorias más sutiles para sub-slots */
+.rbc-time-slot {
+  border-top: 1px dashed #e9ecef; /* ✅ Línea más visible */
+  background-color: transparent; /* ✅ Transparente para alternancia */
+}
+
+/* Primera línea de cada hora más visible */
+.rbc-time-slot:first-child {
+  border-top: 1px solid #e8e8e8;
+}
+
+/* Labels de hora en el sidebar */
+.rbc-label {
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 600; /* ✅ Más bold para mejor visibilidad */
+  color: rgba(0, 0, 0, 0.75) !important; /* ✅ Color de texto más oscuro y visible */
+  background-color: transparent !important;
+}
+
+/* Asegurar que el texto de las horas sea visible */
+.rbc-time-gutter .rbc-label {
+  color: rgba(0, 0, 0, 0.75) !important;
+  background-color: transparent !important;
+  font-weight: 600;
+}
+
+/* ============================================
+   CURRENT TIME INDICATOR (Línea de tiempo actual)
+   ============================================ */
+
+.rbc-current-time-indicator {
+  background-color: var(--color-error, #ff4d4f);
+  height: 2px;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.rbc-current-time-indicator::before {
+  content: '';
+  position: absolute;
+  left: -6px;
+  top: -4px;
+  width: 10px;
+  height: 10px;
+  background-color: var(--color-error, #ff4d4f);
+  border-radius: 50%;
+  border: 2px solid var(--color-bg-container, #ffffff);
+}
+
+/* ============================================
+   EVENTOS (Clases)
+   ============================================ */
+
+.rbc-event {
+  padding: 6px 10px !important;
+  margin: 2px 4px !important; /* ✅ Margen entre eventos */
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 4px !important;
+  border: 2px solid rgba(0, 0, 0, 0.1) !important; /* ✅ Borde con color */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  font-weight: 500;
+}
+
+.rbc-event:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+  transform: translateY(-1px) scale(1.01);
+  z-index: 10 !important;
+}
+
+.rbc-event:focus {
+  outline: 2px solid var(--color-primary, #1677ff);
+  outline-offset: 2px;
+}
+
+.rbc-event-label {
+  display: none; /* Ocultar el label de hora por defecto */
+}
+
+.rbc-event-content {
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+/* Eventos seleccionados */
+.rbc-selected {
+  box-shadow: 0 0 0 3px rgba(22, 119, 255, 0.3) !important;
+}
+
+/* ============================================
+   INTEGRACIÓN CON TIMETABLECELL
+   ============================================ */
+
+/* Asegurar que TimetableCell funcione correctamente dentro de React Big Calendar */
+.rbc-event .timetable-cell {
+  padding: 4px 6px !important;
+  min-height: auto !important;
+  height: 100% !important;
+  border-left: none !important; /* React Big Calendar ya maneja los bordes */
+  border-radius: 4px;
+}
+
+.rbc-event .timetable-cell-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 2px;
+}
+
+.rbc-event .timetable-cell-title {
+  font-size: 12px !important;
+  line-height: 1.3 !important;
+  -webkit-line-clamp: 2; /* Máximo 2 líneas en eventos pequeños */
+  line-clamp: 2;
+  margin-bottom: 2px;
+}
+
+.rbc-event .timetable-cell-time {
+  font-size: 10px !important;
+  margin-top: auto;
+}
+
+.rbc-event .timetable-cell-aula {
+  font-size: 9px !important;
+}
+
+.rbc-event .timetable-cell-subtitle {
+  margin: 2px 0;
+}
+
+/* Asegurar que el tooltip funcione correctamente */
+.rbc-event .timetable-cell {
+  cursor: pointer;
+}
+
+/* Ajustar el hover para que funcione dentro de React Big Calendar */
+.rbc-event:hover .timetable-cell {
+  transform: none; /* React Big Calendar ya maneja el hover */
+}
+
+/* ============================================
+   TOOLTIPS (Estilos para tooltips de TimetableCell)
+   ============================================ */
+
+/* Tooltip de Ant Design que contiene el contenido de TimetableCell */
+.ant-tooltip-inner {
+  padding: 16px 20px !important; /* ✅ Más padding en tooltips */
+  border-radius: 8px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Contenedor del tooltip */
+.timetable-tooltip {
+  padding: 4px 0; /* ✅ Padding interno adicional */
+}
+
+/* Header del tooltip */
+.timetable-tooltip-header {
+  padding: 8px 0 12px 0 !important; /* ✅ Más padding arriba y abajo */
+  margin-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.timetable-tooltip-header .anticon {
+  margin-right: 8px;
+}
+
+/* Filas del tooltip */
+.timetable-tooltip-row {
+  padding: 6px 0 !important; /* ✅ Más padding vertical */
+  font-size: 13px;
+  line-height: 1.6;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.timetable-tooltip-row .anticon {
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+/* ============================================
+   DAY COLUMN (Columnas de días)
+   ============================================ */
+
+.rbc-day-slot {
+  position: relative;
+  background-color: transparent; /* ✅ Transparente para alternancia */
+}
+
+.rbc-day-slot .rbc-time-slot {
+  border-top: 1px solid #e9ecef;
+  background-color: transparent; /* ✅ Transparente para alternancia */
+}
+
+/* ✅ ELIMINAR alternancia de colores para evitar cuadros negros */
+/* .rbc-time-slot:nth-child(even) {
+  background-color: #fafafa;
+} */
+
+/* Separadores verticales entre días */
+.rbc-day-slot + .rbc-day-slot {
+  border-left: 1px solid #f0f0f0;
+}
+
+/* ============================================
+   TODAY (Día actual destacado)
+   ============================================ */
+
+.rbc-today {
+  background-color: rgba(22, 119, 255, 0.02); /* ✅ Más sutil */
+}
+
+.rbc-header.rbc-today {
+  background: linear-gradient(180deg, 
+    rgba(22, 119, 255, 0.12) 0%, 
+    rgba(22, 119, 255, 0.06) 100%);
+  color: var(--color-primary, #1677ff);
+  font-weight: 700;
+}
+
+/* ============================================
+   TOOLBAR (Ocultar completamente)
+   ============================================ */
+
+.rbc-toolbar {
+  display: none !important;
+}
+
+/* ============================================
+   ALLDAY CELL (Ocultar si no se usa)
+   ============================================ */
+
+.rbc-allday-cell {
+  display: none; /* ✅ Ocultar si no tienes eventos de todo el día */
+}
+
+.rbc-time-header > .rbc-row:first-child {
+  display: none; /* ✅ Ocultar fila de "all day" */
+}
+
+/* ============================================
+   SCROLLBAR PERSONALIZADO
+   ============================================ */
+
+.rbc-time-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.rbc-time-content::-webkit-scrollbar-track {
+  background: #f5f5f5;
+  border-radius: 4px;
+}
+
+.rbc-time-content::-webkit-scrollbar-thumb {
+  background: #d9d9d9;
+  border-radius: 4px;
+}
+
+.rbc-time-content::-webkit-scrollbar-thumb:hover {
+  background: #bfbfbf;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+  .rbc-header {
+    padding: 12px 4px;
+    font-size: 12px;
+  }
+
+  .rbc-label {
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+
+  .rbc-timeslot-group {
+    min-height: 60px;
+  }
+
+  .rbc-event {
+    font-size: 11px;
+    padding: 4px 6px !important;
+  }
+
+  .rbc-event-content {
+    font-size: 11px;
+  }
+
+  .rbc-calendar {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .rbc-header {
+    padding: 10px 2px;
+    font-size: 11px;
+  }
+
+  .rbc-label {
+    padding: 4px 6px;
+    font-size: 10px;
+  }
+
+  .rbc-event {
+    font-size: 10px;
+    padding: 3px 4px !important;
+  }
+
+  .rbc-timeslot-group {
+    min-height: 50px;
+  }
+}
+
+/* ============================================
+   UTILIDADES ADICIONALES
+   ============================================ */
+
+/* Animación de aparición suave */
+.rbc-event {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Bordes más limpios */
+.rbc-time-content > * + * > * {
+  border-left: 1px solid #f0f0f0;
+}
+
+/* ============================================
+   REGLAS ADICIONALES PARA FONDOS BLANCOS
+   ============================================ */
+
+/* Asegurar que todos los elementos dentro de time-content tengan fondo blanco */
+.rbc-time-content .rbc-day-slot,
+.rbc-time-content .rbc-day-slot > div,
+.rbc-time-content .rbc-timeslot-group,
+.rbc-time-content .rbc-time-slot {
+  background-color: #ffffff !important;
+}
+
+/* Asegurar que las columnas de días tengan fondo blanco */
+.rbc-day-column,
+.rbc-day-column > div {
+  background-color: #ffffff !important;
+}
+
+/* Asegurar que las filas tengan fondo blanco */
+.rbc-time-row,
+.rbc-time-row > div {
+  background-color: #ffffff !important;
+}
+
+/* ============================================
+   REGLAS ESPECÍFICAS PARA HEADERS Y HORAS
+   ============================================ */
+
+/* Forzar fondo blanco en todos los headers */
+.rbc-time-header,
+.rbc-time-header > div,
+.rbc-time-header > div > div,
+.rbc-time-header-content,
+.rbc-time-header-content > div {
+  background-color: #ffffff !important;
+  color: rgba(0, 0, 0, 0.88) !important;
+}
+
+/* Asegurar que el texto de los headers sea visible */
+.rbc-header,
+.rbc-header > * {
+  color: rgba(0, 0, 0, 0.88) !important;
+  background-color: #ffffff !important;
+}
+
+/* Asegurar que las horas en el gutter sean visibles */
+.rbc-time-gutter,
+.rbc-time-gutter > * {
+  background-color: #fafafa !important;
+}
+
+.rbc-time-gutter .rbc-label,
+.rbc-time-gutter .rbc-label > * {
+  color: rgba(0, 0, 0, 0.65) !important;
+  background-color: #fafafa !important;
+}
+
+/* ============================================
+   MODO OSCURO
+   ============================================ */
+
+@media (prefers-color-scheme: dark) {
+  .rbc-calendar {
+    background-color: #141414;
+  }
+
+  .rbc-header {
+    background: linear-gradient(180deg, #1f1f1f 0%, #141414 100%);
+    color: rgba(255, 255, 255, 0.85);
+    border-bottom-color: #434343;
+  }
+
+  .rbc-time-content {
+    background-color: #141414;
+  }
+
+  .rbc-time-gutter {
+    background-color: #1f1f1f;
+  }
+
+  .rbc-day-slot {
+    background-color: #141414;
+  }
+
+  .rbc-timeslot-group {
+    border-bottom-color: #303030;
+  }
+
+  .rbc-time-slot {
+    border-top-color: #262626;
+  }
+
+  .rbc-label {
+    color: rgba(255, 255, 255, 0.65);
+  }
+
+  .rbc-today {
+    background-color: rgba(22, 119, 255, 0.08);
+  }
+
+  .rbc-day-slot + .rbc-day-slot {
+    border-left-color: #303030;
+  }
+}
+
+/* ============================================
+   ESTILOS DE IMPRESIÓN
+   ============================================ */
+
+@media print {
+  .rbc-time-content {
+    overflow: visible !important;
+  }
+
+  .rbc-event {
+    box-shadow: none !important;
+    break-inside: avoid;
+  }
+
+  .rbc-toolbar {
+    display: none !important;
+  }
+}

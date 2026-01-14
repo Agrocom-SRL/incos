@@ -17,7 +17,7 @@
 
 import { Col } from 'antd';
 import { FormField, FormSubsection, DocumentoItem, DataList, DataCards, ActivityList } from '@molecules';
-import { TimetableSchedule } from '@organisms';
+import { TimetableCalendar } from '@organisms';
 import { isSubsection, isList, isDocumento, isCards, isActivity, isTimetable } from '../utils/fieldTypes';
 
 /**
@@ -144,18 +144,16 @@ const FieldRenderer = ({
     );
   }
 
-  // Si es un campo de tipo timetable, renderizar TimetableSchedule directamente
+  // Si es un campo de tipo timetable, renderizar TimetableCalendar directamente
   // El enricher ya agregó schedule, loading, config al campo con sus valores por defecto
-  // Solo extraer los datos del field y pasarlos como props individuales a TimetableSchedule
+  // Solo extraer los datos del field y pasarlos como props individuales a TimetableCalendar
   if (isTimetable(field)) {
     return (
       <Col key={field.name} {...columns}>
-        <TimetableSchedule
+        <TimetableCalendar
           schedule={field.schedule || []}
           config={field.config || {}}
           onClassClick={field.onClassClick || null}
-          onCellClick={field.onCellClick || null}
-          editable={field.editable || false}
           loading={field.loading || false}
         />
       </Col>

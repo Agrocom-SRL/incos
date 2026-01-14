@@ -13,6 +13,4 @@ export { default as DocumentoItem } from './DocumentoItem';
 export { default as DataList } from './DataList';
 export { default as DataCards } from './DataCards';
 export { default as ActivityList } from './ActivityList';
-export { default as TimetableHeader } from './TimetableHeader';
-export { default as TimetableTimeSlot } from './TimetableTimeSlot';
 export { default as TimetableCell } from './TimetableCell';
