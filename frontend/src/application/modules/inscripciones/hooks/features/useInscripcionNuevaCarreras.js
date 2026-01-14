@@ -20,8 +20,11 @@
  * - Separa la lógica del Provider (Provider solo orquesta)
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo, useRef } from 'react';
 import { useCarrerasApi } from '@application-configuracion/academico/carreras/hooks/useCarrerasApi';
+
+// Flag para activar/desactivar logs de renderizado (solo desarrollo)
+const ENABLE_RENDER_LOGS = import.meta.env.DEV && true; // Cambiar a true para activar logs
 
 /**
  * Hook para cargar y seleccionar carreras en el contexto de inscripción nueva
@@ -43,10 +46,32 @@ export const useInscripcionNuevaCarreras = () => {
    */
   const onSelectCarrera = useCallback((carrera) => {
     if (carrera && carrera.id) {
-      setSelectedCarrera({
-        id: carrera.id,
-        nombre: carrera.nombre,
-        codigo: carrera.codigo,
+      // ✅ OPTIMIZACIÓN: Solo actualizar si realmente cambió
+      setSelectedCarrera(prev => {
+        // Si ya está seleccionada la misma carrera, mantener referencia
+        if (prev?.id === carrera.id) {
+          if (ENABLE_RENDER_LOGS) {
+            console.log('✅ [Hook] onSelectCarrera - MANTENIENDO referencia (misma carrera seleccionada)', {
+              carreraId: carrera.id,
+              prevCarreraId: prev?.id,
+            });
+          }
+          return prev;
+        }
+        
+        if (ENABLE_RENDER_LOGS) {
+          console.log('✅ [Hook] onSelectCarrera - CAMBIANDO carrera seleccionada', {
+            prevCarreraId: prev?.id,
+            newCarreraId: carrera.id,
+          });
+        }
+        
+        // Si cambió, crear nuevo objeto
+        return {
+          id: carrera.id,
+          nombre: carrera.nombre,
+          codigo: carrera.codigo,
+        };
       });
     }
   }, []);
@@ -54,12 +79,47 @@ export const useInscripcionNuevaCarreras = () => {
   // TODO: Aquí se puede agregar lógica específica de inscripciones si es necesario
   // Por ejemplo: filtrar carreras según el estudiante seleccionado, validaciones específicas, etc.
 
-  return {
-    carreras,
-    loading,
-    error,
-    refetch,
-    selectedCarrera, // Carrera seleccionada (se usa para crear estudiantes_datos_academicos)
-    onSelectCarrera, // Callback para seleccionar una carrera
-  };
+  // MANTENER REFERENCIA ESTABLE
+  // Comparar valores, no solo referencias, para evitar recálculos innecesarios
+  const prevResultRef = useRef(null);
+  
+  return useMemo(() => {
+    const current = {
+      carreras,
+      loading,
+      error,
+      refetch,
+      selectedCarrera,
+      onSelectCarrera,
+    };
+
+    const prev = prevResultRef.current;
+    
+    // Comparar valores, no referencias
+    if (prev &&
+        prev.loading === current.loading &&
+        prev.error === current.error &&
+        prev.refetch === current.refetch &&
+        prev.carreras === current.carreras &&
+        prev.selectedCarrera?.id === current.selectedCarrera?.id &&
+        prev.onSelectCarrera === current.onSelectCarrera) {
+      
+      if (ENABLE_RENDER_LOGS) {
+        console.log('✅ [Hook] useInscripcionNuevaCarreras - MANTENIENDO referencia');
+      }
+      return prev;
+    }
+
+    if (ENABLE_RENDER_LOGS) {
+      console.log('✅ [Hook] useInscripcionNuevaCarreras - RECREANDO objeto retornado', {
+        carrerasCount: carreras?.length || 0,
+        loading,
+        hasSelectedCarrera: !!selectedCarrera,
+        carrerasRef: carreras ? 'exists' : 'null',
+        refetchRef: refetch ? 'exists' : 'null',
+      });
+    }
+    prevResultRef.current = current;
+    return current;
+  }, [carreras, loading, error, refetch, selectedCarrera, onSelectCarrera]);
 };

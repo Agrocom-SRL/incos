@@ -33,14 +33,13 @@ export const enrichStudentSearchField = (field, context = {}) => {
     const { onSearchStudent } = context;
     
     // Si es el campo de búsqueda de estudiante, agregar el callback
+    // OPTIMIZACIÓN: Usar directamente el callback memoizado del context
+    // No crear una nueva función wrapper para evitar re-renders
     if (field.name === 'buscarEstudiante' && field.type === 'search' && onSearchStudent) {
         return {
             ...field,
-            onSearch: (value) => {
-                if (value && value.trim()) {
-                    onSearchStudent(value.trim());
-                }
-            },
+            // Usar directamente el callback memoizado (ya viene con la lógica de trim)
+            onSearch: onSearchStudent,
         };
     }
     
@@ -76,9 +75,9 @@ export const enrichStudentListField = (field, context = {}) => {
             items: studentSearch.students || [], // Array de estudiantes encontrados
             loading: studentSearch.loading || false, // Estado de carga de la búsqueda
             emptyMessage: field.emptyMessage || 'No se encontraron estudiantes. Realice una búsqueda para ver resultados.',
-            // Callback para manejar la selección de un estudiante
-            // Guarda el ID del estudiante para usarlo en step2
-            onSelect: onSelectStudent ? (student) => onSelectStudent(student) : null,
+            // OPTIMIZACIÓN: Usar directamente el callback memoizado del context
+            // No crear una nueva función wrapper para evitar re-renders
+            onSelect: onSelectStudent || null,
             // renderItem ya está definido en step1BuscarEstudiante.jsx
         };
     }

@@ -41,24 +41,14 @@ export const enrichCarreraSelectField = (field, context = {}) => {
             label: carrera.nombre || carrera.codigo || `Carrera ${carrera.id}`,
         }));
 
-        // Crear función onChange que maneje tanto el Form.Item como la selección
-        const handleChange = onSelectCarrera ? (value) => {
-            // Buscar la carrera seleccionada por su ID
-            const carreraSeleccionada = carrerasData.carreras?.find(c => c.id === value);
-            if (carreraSeleccionada) {
-                onSelectCarrera(carreraSeleccionada);
-            }
-        } : undefined;
-
         return {
             ...field,
             options: options,
             loading: carrerasData.loading || false,
-            // Callback para manejar la selección de una carrera
-            // Guarda el ID de la carrera para crear estudiantes_datos_academicos
-            // Nota: Ant Design Form.Item también maneja onChange, pero este callback
-            // se ejecuta adicionalmente para guardar la selección en el estado
-            onChange: handleChange,
+            // OPTIMIZACIÓN: Usar directamente el callback memoizado del context
+            // El callback ya viene con la lógica de buscar la carrera por ID
+            // No crear una nueva función wrapper para evitar re-renders
+            onChange: onSelectCarrera || undefined,
         };
     }
     

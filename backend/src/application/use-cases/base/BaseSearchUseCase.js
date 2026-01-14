@@ -42,115 +42,115 @@
  * }
  */
 export class BaseSearchUseCase {
-  /**
-   * @param {Object} params - Parámetros de configuración
-   * @param {Object} params.repository - Repositorio a usar (debe tener método search(searchTerm, options))
-   * @param {Object} params.logger - Logger para registro de eventos
-   * @param {string} params.moduleName - Nombre del módulo para logs (ej: 'Estudiantes', 'Configuración')
-   * @param {string} params.resourceName - Nombre del recurso en español (ej: 'estudiante', 'carrera')
-   */
-  constructor({ repository, logger, moduleName, resourceName }) {
-    if (!repository) {
-      throw new Error('repository es requerido');
+    /**
+     * @param {Object} params - Parámetros de configuración
+     * @param {Object} params.repository - Repositorio a usar (debe tener método search(searchTerm, options))
+     * @param {Object} params.logger - Logger para registro de eventos
+     * @param {string} params.moduleName - Nombre del módulo para logs (ej: 'Estudiantes', 'Configuración')
+     * @param {string} params.resourceName - Nombre del recurso en español (ej: 'estudiante', 'carrera')
+     */
+    constructor({ repository, logger, moduleName, resourceName }) {
+        if (!repository) {
+            throw new Error('repository es requerido');
+        }
+        if (!logger) {
+            throw new Error('logger es requerido');
+        }
+        if (!moduleName) {
+            throw new Error('moduleName es requerido');
+        }
+        if (!resourceName) {
+            throw new Error('resourceName es requerido');
+        }
+
+        this.repository = repository;
+        this.logger = logger;
+        this.moduleName = moduleName;
+        this.resourceName = resourceName;
     }
-    if (!logger) {
-      throw new Error('logger es requerido');
+
+    /**
+     * Retorna el mapper a usar para convertir entidades a presentación
+     * 
+     * Método abstracto: Debe ser implementado por subclases
+     * 
+     * @abstract
+     * @returns {Object} Clase mapper con método estático entityToPresentation()
+     */
+    getMapper() {
+        throw new Error('Method getMapper must be implemented by subclass');
     }
-    if (!moduleName) {
-      throw new Error('moduleName es requerido');
+
+    /**
+     * Formatea un resultado individual usando el mapper
+     * 
+     * Usa getMapper() para convertir la entidad a formato de presentación
+     * 
+     * @param {Object} result - Resultado a formatear (entidad de dominio)
+     * @returns {Object} Resultado formateado
+     */
+    formatResult(result) {
+        const Mapper = this.getMapper();
+        return Mapper.entityToPresentation(result);
     }
-    if (!resourceName) {
-      throw new Error('resourceName es requerido');
-    }
 
-    this.repository = repository;
-    this.logger = logger;
-    this.moduleName = moduleName;
-    this.resourceName = resourceName;
-  }
+    /**
+     * Ejecuta el caso de uso de búsqueda
+     * 
+     * Template Method: Define el algoritmo común de:
+     * 1. Normalizar término de búsqueda (trim)
+     * 2. Logging inicial
+     * 3. Ejecutar búsqueda en el repositorio con límite
+     * 4. Procesar y formatear resultados
+     * 5. Retornar resultado
+     * 
+     * NOTA: searchTerm y limit ya están validados por el validator en las rutas
+     * 
+     * @param {string} searchTerm - Término de búsqueda (ya validado por el validator)
+     * @param {number} limit - Límite de resultados (opcional, default: 50)
+     * @returns {Promise<Array>} Array de resultados formateados (vacío si no hay resultados)
+     */
+    async execute(searchTerm, limit = 50) {
+        // Normalizar término de búsqueda (trim)
+        const trimmedSearchTerm = searchTerm.trim();
 
-  /**
-   * Retorna el mapper a usar para convertir entidades a presentación
-   * 
-   * Método abstracto: Debe ser implementado por subclases
-   * 
-   * @abstract
-   * @returns {Object} Clase mapper con método estático entityToPresentation()
-   */
-  getMapper() {
-    throw new Error('Method getMapper must be implemented by subclass');
-  }
-
-  /**
-   * Formatea un resultado individual usando el mapper
-   * 
-   * Usa getMapper() para convertir la entidad a formato de presentación
-   * 
-   * @param {Object} result - Resultado a formatear (entidad de dominio)
-   * @returns {Object} Resultado formateado
-   */
-  formatResult(result) {
-    const Mapper = this.getMapper();
-    return Mapper.entityToPresentation(result);
-  }
-
-  /**
-   * Ejecuta el caso de uso de búsqueda
-   * 
-   * Template Method: Define el algoritmo común de:
-   * 1. Normalizar término de búsqueda (trim)
-   * 2. Logging inicial
-   * 3. Ejecutar búsqueda en el repositorio con límite
-   * 4. Procesar y formatear resultados
-   * 5. Retornar resultado
-   * 
-   * NOTA: searchTerm y limit ya están validados por el validator en las rutas
-   * 
-   * @param {string} searchTerm - Término de búsqueda (ya validado por el validator)
-   * @param {number} limit - Límite de resultados (opcional, default: 50)
-   * @returns {Promise<Array>} Array de resultados formateados (vacío si no hay resultados)
-   */
-  async execute(searchTerm, limit = 50) {
-    // Normalizar término de búsqueda (trim)
-    const trimmedSearchTerm = searchTerm.trim();
-
-    // Logging inicial
-    this.logger.info(`[${this.moduleName}] Iniciando búsqueda de ${this.resourceName}`, {
-      searchTerm: trimmedSearchTerm,
-      limit,
-    });
-
-    try {
-      // Ejecutar búsqueda en el repositorio
-      // El repositorio usa getSearchFields() para definir los campos de búsqueda
-      const results = await this.repository.search(trimmedSearchTerm, { limit });
-
-      // Procesar resultados
-      if (!results || results.length === 0) {
-        this.logger.info(`[${this.moduleName}] No se encontraron ${this.resourceName}s`, {
-          searchTerm: trimmedSearchTerm,
-          limit,
+        // Logging inicial
+        this.logger.info(`[${this.moduleName}] Iniciando búsqueda de ${this.resourceName}`, {
+            searchTerm: trimmedSearchTerm,
+            limit,
         });
-        return [];
-      }
 
-      // Retornar todos los resultados formateados
-      this.logger.info(`[${this.moduleName}] ${this.resourceName}s encontrados`, {
-        count: results.length,
-        searchTerm: trimmedSearchTerm,
-        limit,
-      });
+        try {
+            // Ejecutar búsqueda en el repositorio
+            // El repositorio usa getSearchFields() para definir los campos de búsqueda
+            const results = await this.repository.search(trimmedSearchTerm, { limit });
 
-      return results.map((result) => this.formatResult(result));
-    } catch (error) {
-      // Manejo de errores
-      this.logger.error(`[${this.moduleName}] Error al buscar ${this.resourceName}`, {
-        error: error.message,
-        stack: error.stack,
-        searchTerm: trimmedSearchTerm,
-        limit,
-      });
-      throw error;
+            // Procesar resultados
+            if (!results || results.length === 0) {
+                this.logger.info(`[${this.moduleName}] No se encontraron ${this.resourceName}s`, {
+                    searchTerm: trimmedSearchTerm,
+                    limit,
+                });
+                return [];
+            }
+
+            // Retornar todos los resultados formateados
+            this.logger.info(`[${this.moduleName}] ${this.resourceName}s encontrados`, {
+                count: results.length,
+                searchTerm: trimmedSearchTerm,
+                limit,
+            });
+
+            return results.map((result) => this.formatResult(result));
+        } catch (error) {
+            // Manejo de errores
+            this.logger.error(`[${this.moduleName}] Error al buscar ${this.resourceName}`, {
+                error: error.message,
+                stack: error.stack,
+                searchTerm: trimmedSearchTerm,
+                limit,
+            });
+            throw error;
+        }
     }
-  }
 }

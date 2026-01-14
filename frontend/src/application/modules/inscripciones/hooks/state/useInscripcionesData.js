@@ -18,7 +18,7 @@
  * Nota: Esta es una versión base que se irá completando por pasos
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 // TODO: Importar hook de API cuando se implemente
 // import { useInscripcionesApi } from '@application-inscripciones/hooks/api/useInscripcionesApi';
 
@@ -82,7 +82,9 @@ export const useInscripcionesData = () => {
         // await refetchFromApi(options);
     }, []);
 
-    return {
+    // Memoizar el objeto retornado para mantener referencia estable
+    // Esto evita que InscripcionesProvider cause re-renders innecesarios en sus hijos
+    return useMemo(() => ({
         // Datos
         inscripciones,
         loading,
@@ -95,5 +97,5 @@ export const useInscripcionesData = () => {
 
         // Método para sincronizar con BD
         refetch,
-    };
+    }), [inscripciones, loading, error, addInscripcion, updateInscripcion, removeInscripcion, refetch]);
 };

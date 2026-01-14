@@ -30,11 +30,14 @@
  * Nota: Esta es una versión base que se irá completando por pasos
  */
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import { Form } from 'antd';
 import { useMessage } from '@application/utils';
 // TODO: Importar hooks de API cuando se implementen
 // import { useCreateInscripcion } from '@application-inscripciones/hooks/api';
+
+// Flag para activar/desactivar logs de renderizado (solo desarrollo)
+const ENABLE_RENDER_LOGS = import.meta.env.DEV && true; // Cambiar a true para activar logs
 
 /**
  * Hook para gestionar handlers de submit del formulario de inscripción
@@ -152,21 +155,28 @@ export const useInscripcionNuevaFormHandlers = (mode = 'nuevo') => {
         );
     }, [getFormValues, handleSubmitResult]);
 
-    return {
-        // Instancia del formulario (creada y registrada automáticamente)
-        form,
-        
-        // Handlers de submit
-        handleFinish,
-        handleSave,
-        
-        // Funciones auxiliares
-        getFormValues,
-        
-        // Estados
-        loading,
-        error,
-        validationErrors,
-        inscripcionResult,
-    };
+    // Memoizar el objeto retornado para mantener referencia estable
+    // Esto permite que el useMemo del Provider sea más efectivo
+    return useMemo(() => {
+        if (ENABLE_RENDER_LOGS) {
+            console.log('✅ [Hook] useInscripcionNuevaFormHandlers - RECREANDO objeto retornado');
+        }
+        return {
+            // Instancia del formulario (creada y registrada automáticamente)
+            form,
+            
+            // Handlers de submit
+            handleFinish,
+            handleSave,
+            
+            // Funciones auxiliares
+            getFormValues,
+            
+            // Estados
+            loading,
+            error,
+            validationErrors,
+            inscripcionResult,
+        };
+    }, [form, handleFinish, handleSave, getFormValues, loading, error, validationErrors, inscripcionResult]);
 };

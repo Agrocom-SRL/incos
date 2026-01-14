@@ -22,19 +22,26 @@ import { PageHeader } from '@molecules';
 import { WizardForm } from '@organisms';
 import { useInscripcionesNuevaContext } from '@application-inscripciones/hooks';
 
+// Flag para activar/desactivar logs de renderizado (solo desarrollo)
+const ENABLE_RENDER_LOGS = import.meta.env.DEV && true; // Cambiar a true para activar logs
+
 const InscripcionesNueva = () => {
+    if (ENABLE_RENDER_LOGS) {
+        console.log('🔄 [Page] InscripcionesNueva - RENDER');
+    }
+
     // Solo consumir datos del contexto (toda la lógica está en el Provider)
     // El provider hace spread de objetos, así que las propiedades están aplanadas en el contexto
     // Separar por grupos lógicos para mejor organización y claridad
     const context = useInscripcionesNuevaContext();
-    
+
     // Datos de la página (desde useInscripcionNuevaPageData - spread de pageData)
     const {
         pageTitle,
         breadcrumbItems,
         wizardSteps,
     } = context;
-    
+
     // Handlers y estados del formulario (desde useInscripcionNuevaFormHandlers - spread de formHandlers)
     // Incluye: form (creado y registrado automáticamente), handleFinish, handleSave, loading, error, etc.
     const {
@@ -44,10 +51,10 @@ const InscripcionesNueva = () => {
         handleFinish,
         handleSave,
     } = context;
-    
+
     // Búsqueda de estudiantes (objeto específico desde useInscripcionNuevaStudentSearch)
     const { studentSearch } = context;
-    
+
     // TODO: Se agregarán en pasos siguientes:
     // const { inscripcionResult } = context; // Para reaccionar al resultado de la inscripción
     // const { validationErrors } = context; // Para mostrar errores de validación

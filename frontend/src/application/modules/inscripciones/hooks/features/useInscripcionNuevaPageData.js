@@ -22,6 +22,9 @@ import { inscripcionesRoutes } from '@inscripciones/routes';
 import { createBreadcrumbItems } from '@presentation-utils/breadcrumbs';
 import { createInscripcionNuevaWizardSteps } from '@inscripciones/config';
 
+// Flag para activar/desactivar logs de renderizado (solo desarrollo)
+const ENABLE_RENDER_LOGS = import.meta.env.DEV && true; // Cambiar a true para activar logs
+
 /**
  * Hook para obtener todos los datos específicos de la página de inscripción nueva
  * 
@@ -58,9 +61,16 @@ export const useInscripcionNuevaPageData = (options = {}) => {
         return createInscripcionNuevaWizardSteps();
     }, []);
 
-    return {
-        pageTitle,
-        breadcrumbItems,
-        wizardSteps,
-    };
+    // Memoizar el objeto retornado para mantener referencia estable
+    // Esto permite que el useMemo del Provider sea más efectivo
+    return useMemo(() => {
+        if (ENABLE_RENDER_LOGS) {
+            console.log('✅ [Hook] useInscripcionNuevaPageData - RECREANDO objeto retornado');
+        }
+        return {
+            pageTitle,
+            breadcrumbItems,
+            wizardSteps,
+        };
+    }, [pageTitle, breadcrumbItems, wizardSteps]);
 };

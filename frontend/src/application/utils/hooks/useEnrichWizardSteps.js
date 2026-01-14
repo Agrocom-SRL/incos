@@ -51,7 +51,10 @@
  * ```
  */
 
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
+
+// Flag para activar/desactivar logs de renderizado (solo desarrollo)
+const ENABLE_RENDER_LOGS = import.meta.env.DEV && true; // Cambiar a true para activar logs
 
 /**
  * Aplica todos los enrichers a un campo
@@ -171,15 +174,66 @@ const enrichStep = (step, stepIndex, enrichers = [], context = {}, stepEnrichmen
  * @returns {Array} WizardSteps enriquecidos
  */
 export const useEnrichWizardSteps = (wizardSteps, enrichers = [], context = {}, stepEnrichmentStrategy = null) => {
+    // Refs para rastrear cambios en dependencias y mantener referencia estable del resultado
+    const prevDepsRef = useRef(null);
+    const prevResultRef = useRef(null);
+    
     // Enriquecer wizardSteps aplicando todos los enrichers
     const enrichedWizardSteps = useMemo(() => {
+        const currentDeps = {
+            wizardSteps,
+            enrichers,
+            context,
+            stepEnrichmentStrategy,
+        };
+        
+        const prevDeps = prevDepsRef.current;
+        
+        // Verificar si realmente cambió algo
+        if (prevDeps) {
+            const hasChanges = (
+                prevDeps.wizardSteps !== currentDeps.wizardSteps ||
+                prevDeps.enrichers !== currentDeps.enrichers ||
+                prevDeps.context !== currentDeps.context ||
+                prevDeps.stepEnrichmentStrategy !== currentDeps.stepEnrichmentStrategy
+            );
+
+            if (!hasChanges && prevResultRef.current) {
+                // Mantener la referencia anterior si nada cambió
+                if (ENABLE_RENDER_LOGS) {
+                    console.log('✅ [Hook] useEnrichWizardSteps - MANTENIENDO referencia (sin cambios)');
+                }
+                return prevResultRef.current;
+            }
+
+            // Si hay cambios, loguear qué cambió
+            if (ENABLE_RENDER_LOGS && hasChanges) {
+                const changes = {
+                    wizardStepsChanged: prevDeps.wizardSteps !== currentDeps.wizardSteps,
+                    enrichersChanged: prevDeps.enrichers !== currentDeps.enrichers,
+                    contextChanged: prevDeps.context !== currentDeps.context,
+                    stepEnrichmentStrategyChanged: prevDeps.stepEnrichmentStrategy !== currentDeps.stepEnrichmentStrategy,
+                };
+                console.log('✅ [Hook] useEnrichWizardSteps - RECALCULANDO enrichedWizardSteps', changes);
+            }
+        } else if (ENABLE_RENDER_LOGS) {
+            console.log('✅ [Hook] useEnrichWizardSteps - CREANDO (primera vez)');
+        }
+        
+        prevDepsRef.current = currentDeps;
+        
         if (!wizardSteps || !Array.isArray(wizardSteps)) {
-            return [];
+            const emptyResult = [];
+            prevResultRef.current = emptyResult;
+            return emptyResult;
         }
 
-        return wizardSteps.map((step, stepIndex) => 
+        const result = wizardSteps.map((step, stepIndex) => 
             enrichStep(step, stepIndex, enrichers, context, stepEnrichmentStrategy)
         );
+        
+        prevResultRef.current = result;
+        return result;
     }, [wizardSteps, enrichers, context, stepEnrichmentStrategy]);
 
     return enrichedWizardSteps;
