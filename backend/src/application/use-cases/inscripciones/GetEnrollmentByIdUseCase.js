@@ -22,8 +22,9 @@
 
 import { ValidationError } from '../../../domain/errors/AppError.js';
 import { EnrollmentMapper } from '../../mappers/inscripciones/index.js';
-import { StudentAcademicDataMapper } from '../../mappers/estudiantes/index.js';
+import { StudentAcademicDataMapper, StudentMapper } from '../../mappers/estudiantes/index.js';
 import { ManagementMapper } from '../../mappers/academico/index.js';
+import { CareerMapper } from '../../mappers/configuracion/index.js';
 
 export class GetEnrollmentByIdUseCase {
   /**
@@ -80,10 +81,12 @@ export class GetEnrollmentByIdUseCase {
    * @throws {ValidationError} Si la inscripción no existe
    */
   async _getEnrollmentById(enrollmentId) {
+    // Obtener solo los campos necesarios usando los nombres del modelo Sequelize
     const enrollment = await this.enrollmentRepository.findById(enrollmentId, {
       attributes: ['id', 'estudianteDatosAcademicosId', 'gestionId', 'tipoInscripcion'],
     });
 
+    // Si se proporciona ID pero no se encuentra, lanzar ValidationError (inconsistencia de datos)
     if (!enrollment) {
       throw new ValidationError(
         `No se encontró una inscripción con ID ${enrollmentId}`,
@@ -96,6 +99,7 @@ export class GetEnrollmentByIdUseCase {
   /**
    * Método interno para obtener datos académicos del estudiante por ID
    * Valida que existan si se proporciona un ID, retorna null si no se proporciona ID (opcional)
+   * Solo recupera los campos necesarios: estudianteId, carreraId, estadoRegistro
    * 
    * @private
    * @param {number|null|undefined} studentAcademicDataId - ID de los datos académicos del estudiante
@@ -108,8 +112,12 @@ export class GetEnrollmentByIdUseCase {
       return null;
     }
 
+    // Obtener solo los campos necesarios usando los nombres del modelo Sequelize
     const studentAcademicData = await this.studentAcademicDataRepository.findById(
-      studentAcademicDataId
+      studentAcademicDataId,
+      {
+        attributes: ['id', 'estudianteId', 'carreraId', 'estadoRegistro'],
+      }
     );
 
     // Si se proporciona ID pero no se encuentra, lanzar ValidationError (inconsistencia de datos)
@@ -125,6 +133,7 @@ export class GetEnrollmentByIdUseCase {
   /**
    * Método interno para obtener gestión académica por ID
    * Valida que exista si se proporciona un ID, retorna null si no se proporciona ID (opcional)
+   * Solo recupera los campos necesarios: nombre, anio
    * 
    * @private
    * @param {number|null|undefined} managementId - ID de la gestión académica
@@ -137,7 +146,10 @@ export class GetEnrollmentByIdUseCase {
       return null;
     }
 
-    const management = await this.managementRepository.findById(managementId);
+    // Obtener solo los campos necesarios usando los nombres del modelo Sequelize
+    const management = await this.managementRepository.findById(managementId, {
+      attributes: ['id', 'nombre', 'anio'],
+    });
 
     // Si se proporciona ID pero no se encuentra, lanzar ValidationError (inconsistencia de datos)
     if (!management) {
@@ -147,6 +159,68 @@ export class GetEnrollmentByIdUseCase {
     }
 
     return management;
+  }
+
+  /**
+   * Método interno para obtener estudiante por ID
+   * Valida que exista si se proporciona un ID, retorna null si no se proporciona ID (opcional)
+   * Solo recupera los campos necesarios: codigoEstudiante, nombres, apellidoPaterno, apellidoMaterno, ci, expedicion
+   * 
+   * @private
+   * @param {number|null|undefined} studentId - ID del estudiante
+   * @returns {Promise<Object|null>} Estudiante encontrado o null si no se proporciona ID
+   * @throws {ValidationError} Si se proporciona ID pero no se encuentra el registro
+   */
+  async _getStudentById(studentId) {
+    // Si no se proporciona ID, retornar null (es opcional)
+    if (!studentId) {
+      return null;
+    }
+
+    // Obtener solo los campos necesarios usando los nombres del modelo Sequelize
+    const student = await this.studentRepository.findById(studentId, {
+      attributes: ['id', 'codigoEstudiante', 'nombres', 'apellidoPaterno', 'apellidoMaterno', 'ci', 'expedicion', 'genero', 'celular'],
+    });
+
+    // Si se proporciona ID pero no se encuentra, lanzar ValidationError (inconsistencia de datos)
+    if (!student) {
+      throw new ValidationError(
+        `No se encontró un estudiante con ID ${studentId}`,
+      );
+    }
+
+    return student;
+  }
+
+  /**
+   * Método interno para obtener carrera por ID
+   * Valida que exista si se proporciona un ID, retorna null si no se proporciona ID (opcional)
+   * Solo recupera los campos necesarios: codigo, nombre
+   * 
+   * @private
+   * @param {number|null|undefined} careerId - ID de la carrera
+   * @returns {Promise<Object|null>} Carrera encontrada o null si no se proporciona ID
+   * @throws {ValidationError} Si se proporciona ID pero no se encuentra el registro
+   */
+  async _getCareerById(careerId) {
+    // Si no se proporciona ID, retornar null (es opcional)
+    if (!careerId) {
+      return null;
+    }
+
+    // Obtener solo los campos necesarios usando los nombres del modelo Sequelize
+    const career = await this.careerRepository.findById(careerId, {
+      attributes: ['id', 'codigo', 'nombre', 'tituloOtorgado'],
+    });
+
+    // Si se proporciona ID pero no se encuentra, lanzar ValidationError (inconsistencia de datos)
+    if (!career) {
+      throw new ValidationError(
+        `No se encontró una carrera con ID ${careerId}`,
+      );
+    }
+
+    return career;
   }
 
   /**
@@ -185,17 +259,31 @@ export class GetEnrollmentByIdUseCase {
         enrollment.managementId
       );
 
-      // 4. Convertir entidades de dominio a formato de presentación usando mappers
+      // 4. Obtener estudiante (usando la entidad studentAcademicData)
+      const student = await this._getStudentById(
+        studentAcademicData?.studentId
+      );
+
+      // 5. Obtener carrera (usando la entidad studentAcademicData)
+      const career = await this._getCareerById(
+        studentAcademicData?.careerId
+      );
+
+      // 6. Convertir entidades de dominio a formato de presentación usando mappers
       // Los mappers pueden trabajar directamente con entidades (no necesitan aplanado)
       const enrollmentPresentation = EnrollmentMapper.entityToPresentation(enrollment);
       const studentAcademicDataPresentation = StudentAcademicDataMapper.entityToPresentation(studentAcademicData);
       const managementPresentation = ManagementMapper.entityToPresentation(management);
+      const studentPresentation = StudentMapper.entityToPresentation(student);
+      const careerPresentation = CareerMapper.entityToPresentation(career);
 
       // Logging de éxito
       this.logger.info('[Inscripciones] Inscripción obtenida exitosamente', {
         hasEnrollment: !!enrollment,
         hasStudentAcademicData: !!studentAcademicData,
         hasManagement: !!management,
+        hasStudent: !!student,
+        hasCareer: !!career,
       });
 
       // TODO: Construir el schema por partes
@@ -406,11 +494,13 @@ export class GetEnrollmentByIdUseCase {
       //   throw error;
       // }
 
-      // Retornar las 3 entidades en formato de presentación
+      // Retornar todas las entidades en formato de presentación
       return {
         enrollment: enrollmentPresentation,
         studentAcademicData: studentAcademicDataPresentation,
         management: managementPresentation,
+        student: studentPresentation,
+        career: careerPresentation,
       };
     } catch (error) {
       // Manejo de errores

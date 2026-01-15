@@ -5,6 +5,7 @@
  * Clean Architecture:
  * - Application Layer: Convierte Domain Entities → Presentation Format
  * - Depende de Domain Layer (Career entity)
+ * - Usa BaseMapper para campos comunes
  * 
  * Responsabilidades:
  * - Mapear propiedades de dominio (English/camelCase) a presentación (Spanish/snake_case)
@@ -12,27 +13,35 @@
  * - Ocultar campos internos no necesarios en la API
  */
 
+import { BaseMapper } from '../base/index.js';
+
 /**
  * Convierte una entidad Career a formato de presentación
+ * Solo incluye campos que existen en la entidad (útil cuando se usan attributes limitados)
+ * 
  * @param {Career} career - Entidad de dominio Career
  * @returns {Object|null} Objeto en formato de presentación o null si career es null/undefined
  */
 export function entityToPresentation(career) {
   if (!career) return null;
 
-  return {
-    id: career.id,
-    codigo: career.code,
-    nombre: career.name,
-    descripcion: career.description,
-    areaFormacion: career.trainingArea,
-    tituloOtorgado: career.grantedTitle,
-    colorHex: career.colorHex,
-    imagenRuta: career.imagePath,
-    activo: career.active,
-    createdAt: career.createdAt,
-    updatedAt: career.updatedAt,
-  };
+  const presentation = {};
+  
+  // Mapear campos base comunes (id, active, createdAt, updatedAt)
+  BaseMapper.mapBaseFields(career, presentation);
+  
+  // Mapear campos específicos de Career
+  // Solo incluir campos que existen en la entidad (usando mapFieldIfExists)
+  // Esto es importante cuando se usan attributes limitados en las consultas
+  BaseMapper.mapFieldIfExists(career, 'code', 'codigo', presentation);
+  BaseMapper.mapFieldIfExists(career, 'name', 'nombre', presentation);
+  BaseMapper.mapFieldIfExists(career, 'description', 'descripcion', presentation);
+  BaseMapper.mapFieldIfExists(career, 'trainingArea', 'areaFormacion', presentation);
+  BaseMapper.mapFieldIfExists(career, 'grantedTitle', 'tituloOtorgado', presentation);
+  BaseMapper.mapFieldIfExists(career, 'colorHex', 'colorHex', presentation);
+  BaseMapper.mapFieldIfExists(career, 'imagePath', 'imagenRuta', presentation);
+
+  return presentation;
 }
 
 /**

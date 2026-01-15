@@ -83,9 +83,12 @@ export class BaseGetController {
       }
 
       // 5. Formatear respuesta exitosa
-      // El result ya contiene la estructura completa (student, guardians, etc.)
-      // Lo envuelvemos en un objeto con el nombre del campo si es necesario
-      const responseData = this.dataFieldName ? { [this.dataFieldName]: result } : result;
+      // Si el resultado ya es un objeto con múltiples propiedades (estructura compleja),
+      // no lo envolvemos. Solo envolvemos si es un objeto simple o primitivo.
+      // Esto permite que casos de uso como GetEnrollmentByIdUseCase retornen
+      // múltiples entidades directamente sin anidamiento doble.
+      const isComplexResult = result && typeof result === 'object' && !Array.isArray(result) && Object.keys(result).length > 1;
+      const responseData = (this.dataFieldName && !isComplexResult) ? { [this.dataFieldName]: result } : result;
       
       return this.responseFormatter.retrieved(res, responseData, this.resourceName, id, req);
     } catch (error) {
