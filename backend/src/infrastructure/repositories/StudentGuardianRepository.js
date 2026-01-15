@@ -47,43 +47,98 @@ export class StudentGuardianRepository extends BaseRepository {
 
   /**
    * Construye la cláusula WHERE para filtros específicos
-   * Maneja todos los criterios de búsqueda: studentId, relationshipTypeId, isEmergencyContact
+   * Maneja todos los criterios de búsqueda de la entidad StudentGuardian
+   * 
+   * Este método permite usar findAll(), findBy(), search() y count() con filtros específicos
+   * sin necesidad de crear métodos adicionales en el repositorio.
+   * 
+   * Ejemplos de uso:
+   * - findAll({ studentId: 1 }) → Busca apoderados de un estudiante
+   * - findAll({ isEmergencyContact: true }) → Busca contactos de emergencia
+   * - findBy({ studentId: 1, relationshipTypeId: 2 }) → Busca apoderado específico
    * 
    * @param {Object} filters - Filtros de búsqueda
-   *   - studentId: ID del estudiante (estudianteId)
-   *   - relationshipTypeId: ID del tipo de parentesco (tipoParentescoId)
-   *   - isEmergencyContact: Si es contacto de emergencia (esContactoEmergencia)
+   *   - studentId: ID del estudiante
+   *   - relationshipTypeId: ID del tipo de parentesco
+   *   - firstName: Nombre (búsqueda exacta, para búsqueda de texto usar search())
+   *   - lastName: Apellidos (búsqueda exacta, para búsqueda de texto usar search())
+   *   - ci: Cédula de identidad
+   *   - occupation: Ocupación (búsqueda exacta, para búsqueda de texto usar search())
+   *   - workplace: Lugar de trabajo (búsqueda exacta, para búsqueda de texto usar search())
+   *   - address: Dirección (búsqueda exacta, para búsqueda de texto usar search())
+   *   - phone: Teléfono
+   *   - email: Email (búsqueda exacta)
+   *   - isEmergencyContact: Si es contacto de emergencia (true/false)
+   *   - livesWithStudent: Si vive con el estudiante (true/false)
+   *   - observations: Observaciones (búsqueda exacta, para búsqueda de texto usar search())
    * @returns {Object} Objeto WHERE para Sequelize
    */
   buildWhereClause(filters) {
     const where = {};
 
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
     if (filters.studentId) {
       where.estudianteId = filters.studentId;
     }
     if (filters.relationshipTypeId) {
       where.tipoParentescoId = filters.relationshipTypeId;
     }
+    if (filters.firstName !== undefined) {
+      where.nombres = filters.firstName;
+    }
+    if (filters.lastName !== undefined) {
+      where.apellidos = filters.lastName;
+    }
+    if (filters.ci !== undefined) {
+      where.ci = filters.ci;
+    }
+    if (filters.occupation !== undefined) {
+      where.ocupacion = filters.occupation;
+    }
+    if (filters.workplace !== undefined) {
+      where.lugarTrabajo = filters.workplace;
+    }
+    if (filters.address !== undefined) {
+      where.direccion = filters.address;
+    }
+    if (filters.phone !== undefined) {
+      where.telefono = filters.phone;
+    }
+    if (filters.email !== undefined) {
+      where.email = filters.email;
+    }
     if (filters.isEmergencyContact !== undefined) {
       where.esContactoEmergencia = filters.isEmergencyContact;
+    }
+    if (filters.livesWithStudent !== undefined) {
+      where.viveConEstudiante = filters.livesWithStudent;
+    }
+    if (filters.observations !== undefined) {
+      where.observaciones = filters.observations;
     }
 
     return where;
   }
 
   /**
-   * Retorna los campos que se usarán para búsqueda
-   * @returns {string[]}
+   * Retorna los campos que se usarán para búsqueda de texto
+   * Estos campos se usan en el método search() para búsqueda por término
+   * 
+   * @returns {string[]} Array de nombres de campos del modelo Sequelize
    */
   getSearchFields() {
     return ['nombres', 'apellidos', 'ci', 'email', 'ocupacion', 'lugarTrabajo'];
   }
 
   /**
-   * Retorna el orden por defecto
-   * @returns {Array}
+   * Retorna el orden por defecto para las consultas
+   * Delega el orden al BaseRepository que ordena por ID ASC
+   * 
+   * @returns {Array} Array vacío para usar el orden por defecto del BaseRepository (id ASC)
    */
-  getDefaultSort() { return []; }
+  getDefaultSort() {
+    return []; // Usa el orden por defecto de BaseRepository: [['id', 'ASC']]
+  }
 
   /**
    * Mapea datos de dominio a formato del modelo Sequelize (para creación)
@@ -110,15 +165,12 @@ export class StudentGuardianRepository extends BaseRepository {
   }
 
   /**
-   * Retorna el nombre de la colección en la respuesta
-   * @returns {string}
+   * Retorna el nombre de la colección en la respuesta JSON
+   * 
+   * @returns {string} Nombre de la colección para la respuesta JSON
    */
   getCollectionName() {
     return 'studentGuardians';
   }
-
-  // NOTA: El método específico findByEstudianteId ha sido eliminado.
-  // Ahora se usa el método base de IRepository:
-  // - findAll({ studentId }) para buscar todos los apoderados por estudiante
 }
 

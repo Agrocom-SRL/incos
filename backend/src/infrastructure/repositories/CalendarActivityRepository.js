@@ -22,7 +22,9 @@ import { CalendarActivityMapper } from '../mappers/CalendarActivityMapper.js';
  * @implements {IActividadCalendarioRepository}
  * 
  * Esta clase cumple con el contrato IActividadCalendarioRepository:
- * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findAll, create, update, delete, search)
+ * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findBy, findAll, create, update, delete, search, count)
+ * - La especialización está en buildWhereClause(), no en métodos adicionales
+ * - Usa los métodos base de BaseRepository para todas las operaciones de búsqueda
  */
 export class CalendarActivityRepository extends BaseRepository {
   /**
@@ -46,36 +48,81 @@ export class CalendarActivityRepository extends BaseRepository {
 
   /**
    * Construye la cláusula WHERE para filtros específicos
-   * @param {Object} filters
-   * @returns {Object}
+   * Maneja todos los criterios de búsqueda de la entidad CalendarActivity
+   * 
+   * Este método permite usar findAll(), findBy(), search() y count() con filtros específicos
+   * sin necesidad de crear métodos adicionales en el repositorio.
+   * 
+   * Ejemplos de uso:
+   * - findAll({ academicPeriodId: 1 }) → Busca actividades de un periodo académico
+   * - findAll({ activityId: 2, startDate: '2025-01-01' }) → Busca instancias de una actividad
+   * - findBy({ academicPeriodId: 1, code: '2025-BIM1-001' }) → Busca actividad específica
+   * 
+   * @param {Object} filters - Filtros de búsqueda
+   *   - academicPeriodId: ID del periodo académico
+   *   - activityId: ID de la actividad del catálogo
+   *   - code: Código de la actividad (búsqueda exacta, para búsqueda de texto usar search())
+   *   - customName: Nombre personalizado (búsqueda exacta, para búsqueda de texto usar search())
+   *   - careerIds: IDs de carreras (JSON array, búsqueda exacta)
+   *   - startDate: Fecha de inicio
+   *   - endDate: Fecha de fin
+   *   - isAllDay: Si es todo el día (true/false)
+   *   - schedule: Horario (JSON, búsqueda exacta)
+   * @returns {Object} Objeto WHERE para Sequelize
    */
   buildWhereClause(filters) {
     const where = {};
 
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
     if (filters.academicPeriodId) {
       where.periodoAcademicoId = filters.academicPeriodId;
     }
     if (filters.activityId) {
       where.actividadId = filters.activityId;
     }
+    if (filters.code !== undefined) {
+      where.codigo = filters.code;
+    }
+    if (filters.customName !== undefined) {
+      where.nombrePersonalizado = filters.customName;
+    }
+    if (filters.careerIds !== undefined) {
+      where.carrerasIds = filters.careerIds;
+    }
+    if (filters.startDate !== undefined) {
+      where.fechaInicio = filters.startDate;
+    }
+    if (filters.endDate !== undefined) {
+      where.fechaFin = filters.endDate;
+    }
+    if (filters.isAllDay !== undefined) {
+      where.esTodoElDia = filters.isAllDay;
+    }
+    if (filters.schedule !== undefined) {
+      where.horario = filters.schedule;
+    }
 
     return where;
   }
 
   /**
-   * Retorna los campos que se usarán para búsqueda
-   * @returns {string[]}
+   * Retorna los campos que se usarán para búsqueda de texto
+   * Estos campos se usan en el método search() para búsqueda por término
+   * 
+   * @returns {string[]} Array de nombres de campos del modelo Sequelize
    */
   getSearchFields() {
     return ['nombrePersonalizado', 'codigo'];
   }
 
   /**
-   * Retorna el orden por defecto
-   * @returns {Array}
+   * Retorna el orden por defecto para las consultas
+   * Delega el orden al BaseRepository que ordena por ID ASC
+   * 
+   * @returns {Array} Array vacío para usar el orden por defecto del BaseRepository (id ASC)
    */
-  getDefaultSort() { 
-    return [['fechaInicio', 'ASC']];
+  getDefaultSort() {
+    return []; // Usa el orden por defecto de BaseRepository: [['id', 'ASC']]
   }
 
   /**
@@ -103,8 +150,9 @@ export class CalendarActivityRepository extends BaseRepository {
   }
 
   /**
-   * Retorna el nombre de la colección en la respuesta
-   * @returns {string}
+   * Retorna el nombre de la colección en la respuesta JSON
+   * 
+   * @returns {string} Nombre de la colección para la respuesta JSON
    */
   getCollectionName() {
     return 'calendarActivities';

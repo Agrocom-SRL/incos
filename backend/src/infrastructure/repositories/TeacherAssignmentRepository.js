@@ -22,8 +22,9 @@ import { TeacherAssignmentMapper } from '../mappers/TeacherAssignmentMapper.js';
  * @implements {IAsignacionDocenteRepository}
  * 
  * Esta clase cumple con el contrato IAsignacionDocenteRepository:
- * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findAll, create, update, delete, search)
+ * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findBy, findAll, create, update, delete, search, count)
  * - La especialización está en buildWhereClause(), no en métodos adicionales
+ * - Usa los métodos base de BaseRepository para todas las operaciones de búsqueda
  */
 export class TeacherAssignmentRepository extends BaseRepository {
   /**
@@ -47,41 +48,74 @@ export class TeacherAssignmentRepository extends BaseRepository {
 
   /**
    * Construye la cláusula WHERE para filtros específicos
-   * @param {Object} filters
-   * @returns {Object}
+   * Maneja todos los criterios de búsqueda de la entidad TeacherAssignment
+   * 
+   * Este método permite usar findAll(), findBy(), search() y count() con filtros específicos
+   * sin necesidad de crear métodos adicionales en el repositorio.
+   * 
+   * Ejemplos de uso:
+   * - findAll({ teacherId: 1 }) → Busca asignaciones de un docente
+   * - findAll({ courseId: 2, active: true }) → Busca asignaciones activas de un curso
+   * - findBy({ managementPlanId: 1, courseId: 2, teacherId: 3 }) → Busca asignación específica
+   * 
+   * @param {Object} filters - Filtros de búsqueda
+   *   - managementPlanId: ID del plan habilitado
+   *   - courseId: ID del curso
+   *   - teacherId: ID del docente
+   *   - hours: Carga horaria
+   *   - active: Si la asignación está vigente (true/false)
+   *   - reason: Motivo de la asignación (búsqueda exacta, para búsqueda de texto usar search())
+   *   - assignmentDate: Fecha de asignación
+   * @returns {Object} Objeto WHERE para Sequelize
    */
   buildWhereClause(filters) {
     const where = {};
 
-    if (filters.teacherId) {
-      where.docenteId = filters.teacherId;
-    }
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
     if (filters.managementPlanId) {
       where.gestionPlanId = filters.managementPlanId;
     }
     if (filters.courseId) {
       where.cursoId = filters.courseId;
     }
+    if (filters.teacherId) {
+      where.docenteId = filters.teacherId;
+    }
+    if (filters.hours !== undefined) {
+      where.cargaHoraria = filters.hours;
+    }
     if (filters.active !== undefined) {
       where.vigente = filters.active;
+    }
+    if (filters.reason !== undefined) {
+      where.motivo = filters.reason;
+    }
+    if (filters.assignmentDate !== undefined) {
+      where.fechaAsignacion = filters.assignmentDate;
     }
 
     return where;
   }
 
   /**
-   * Retorna los campos que se usarán para búsqueda
-   * @returns {string[]}
+   * Retorna los campos que se usarán para búsqueda de texto
+   * Estos campos se usan en el método search() para búsqueda por término
+   * 
+   * @returns {string[]} Array de nombres de campos del modelo Sequelize
    */
   getSearchFields() {
     return ['motivo'];
   }
 
   /**
-   * Retorna el orden por defecto
-   * @returns {Array}
+   * Retorna el orden por defecto para las consultas
+   * Delega el orden al BaseRepository que ordena por ID ASC
+   * 
+   * @returns {Array} Array vacío para usar el orden por defecto del BaseRepository (id ASC)
    */
-  getDefaultSort() { return []; }
+  getDefaultSort() {
+    return []; // Usa el orden por defecto de BaseRepository: [['id', 'ASC']]
+  }
 
   /**
    * Mapea datos de dominio a formato del modelo Sequelize (para creación)
@@ -108,16 +142,12 @@ export class TeacherAssignmentRepository extends BaseRepository {
   }
 
   /**
-   * Retorna el nombre de la colección en la respuesta
-   * @returns {string}
+   * Retorna el nombre de la colección en la respuesta JSON
+   * 
+   * @returns {string} Nombre de la colección para la respuesta JSON
    */
   getCollectionName() {
     return 'teacherAssignments';
   }
-
-  // NOTA: Los métodos específicos han sido eliminados. Ahora se usan los métodos base de IRepository:
-  // - findBy({ teacherId }) para buscar por docente
-  // - findBy({ managementPlanId }) para buscar por plan habilitado
-  // - findAll({ teacherId, managementPlanId, courseId, active }) para búsquedas con filtros
 }
 

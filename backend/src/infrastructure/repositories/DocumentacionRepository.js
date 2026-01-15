@@ -92,37 +92,69 @@ export class DocumentacionRepository extends BaseRepository {
 
   /**
    * Construye la cláusula WHERE para filtros específicos
-   * Maneja todos los criterios de búsqueda: tipoDocumento, requerido, documentoPadreId
+   * Maneja todos los criterios de búsqueda de la entidad Documentation
+   * 
+   * Este método permite usar findAll(), findBy(), search() y count() con filtros específicos
+   * sin necesidad de crear métodos adicionales en el repositorio.
+   * 
+   * Ejemplos de uso:
+   * - findAll({ documentType: 'INSCRIPCION' }) → Busca documentos de inscripción
+   * - findAll({ required: true, parentDocumentId: null }) → Busca documentos principales requeridos
+   * - findBy({ documentType: 'LICENCIA', name: 'Certificado médico' }) → Busca documento específico
    * 
    * @param {Object} filters - Filtros de búsqueda
-   *   - tipoDocumento: Tipo de documento (INSCRIPCION, LICENCIA, PASANTIA, etc.)
-   *   - requerido: Si es requerido (requerido)
-   *   - documentoPadreId: ID del documento padre (null para documentos principales, número para documentos hijos)
+   *   - name: Nombre del documento (búsqueda exacta, para búsqueda de texto usar search())
+   *   - documentType: Tipo de documento (INSCRIPCION, LICENCIA, PASANTIA, etc.)
+   *   - acceptsPhotocopy: Si acepta fotocopia (true/false)
+   *   - required: Si es requerido (true/false)
+   *   - order: Orden de visualización
+   *   - description: Descripción (búsqueda exacta, para búsqueda de texto usar search())
+   *   - parentDocumentId: ID del documento padre (null para documentos principales)
+   *   - isOriginal: Si requiere original (true/false)
+   *   - isSystemDocument: Si es documento del sistema (true/false)
    * @returns {Object} Objeto WHERE para Sequelize
    */
   buildWhereClause(filters) {
     const where = {};
 
-    // Filtrar por tipo de documento si se proporciona
-    if (filters.tipoDocumento !== undefined) {
-      where.tipoDocumento = filters.tipoDocumento;
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
+    if (filters.name !== undefined) {
+      where.nombre = filters.name;
     }
-
-    // Filtrar por requerido si se proporciona
-    if (filters.requerido !== undefined) {
-      where.requerido = filters.requerido;
+    if (filters.documentType !== undefined) {
+      where.tipoDocumento = filters.documentType;
     }
-
-    // Filtrar por documentoPadreId si se proporciona
-    if (filters.documentoPadreId !== undefined) {
-      where.documentoPadreId = filters.documentoPadreId;
+    if (filters.acceptsPhotocopy !== undefined) {
+      where.aceptaFotocopia = filters.acceptsPhotocopy;
+    }
+    if (filters.required !== undefined) {
+      where.requerido = filters.required;
+    }
+    if (filters.order !== undefined) {
+      where.orden = filters.order;
+    }
+    if (filters.description !== undefined) {
+      where.descripcion = filters.description;
+    }
+    if (filters.parentDocumentId !== undefined) {
+      where.documentoPadreId = filters.parentDocumentId;
+    }
+    if (filters.isOriginal !== undefined) {
+      where.esOriginal = filters.isOriginal;
+    }
+    if (filters.isSystemDocument !== undefined) {
+      where.esDocumentoSistema = filters.isSystemDocument;
     }
 
     return where;
   }
 
-  // NOTA: Los métodos específicos (findByTipoDocumento, findRequeridos) 
-  // han sido eliminados. Ahora se usan los métodos base de IRepository:
-  // - findAll({ tipoDocumento, requerido, documentoPadreId }) para buscar con campos específicos
-  // - findBy({ tipoDocumento }) para buscar un documento por tipo
+  /**
+   * Retorna el nombre de la colección en la respuesta JSON
+   * 
+   * @returns {string} Nombre de la colección para la respuesta JSON
+   */
+  getCollectionName() {
+    return 'documentaciones';
+  }
 }

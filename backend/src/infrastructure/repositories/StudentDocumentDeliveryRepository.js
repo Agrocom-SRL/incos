@@ -47,21 +47,34 @@ export class StudentDocumentDeliveryRepository extends BaseRepository {
 
   /**
    * Construye la cláusula WHERE para filtros específicos
-   * Maneja todos los criterios de búsqueda: estudianteId, documentacionId, entregado, enTramite, esOriginal
+   * Maneja todos los criterios de búsqueda de la entidad StudentDocumentDelivery
    * 
-   * @param {Object} filters - Filtros de búsqueda (usando nombres del modelo Sequelize)
-   *   - estudianteId: ID del estudiante
+   * Este método permite usar findAll(), findBy(), search() y count() con filtros específicos
+   * sin necesidad de crear métodos adicionales en el repositorio.
+   * 
+   * Ejemplos de uso:
+   * - findAll({ studentId: 1 }) → Busca entregas de documentos de un estudiante
+   * - findAll({ documentacionId: 2, entregado: true }) → Busca documentos entregados
+   * - findBy({ studentId: 1, documentacionId: 2 }) → Busca entrega específica
+   * 
+   * @param {Object} filters - Filtros de búsqueda
+   *   - studentId: ID del estudiante
    *   - documentacionId: ID de la documentación
-   *   - entregado: Si fue entregado
-   *   - enTramite: Si está en trámite
-   *   - esOriginal: Si es original
+   *   - entregado: Si fue entregado (true/false)
+   *   - enTramite: Si está en trámite (true/false)
+   *   - esOriginal: Si es original (true/false)
+   *   - fechaEntrega: Fecha de entrega
+   *   - fechaVencimientoTramite: Fecha de vencimiento del trámite
+   *   - observaciones: Observaciones (búsqueda exacta, para búsqueda de texto usar search())
    * @returns {Object} Objeto WHERE para Sequelize
    */
   buildWhereClause(filters) {
     const where = {};
 
-    if (filters.estudianteId !== undefined) {
-      where.estudianteId = filters.estudianteId;
+    // Mapeo: Dominio (nombres en español según la entidad) → BD (snake_case español)
+    // NOTA: La entidad StudentDocumentDelivery usa nombres en español (entregado, enTramite, etc.)
+    if (filters.studentId !== undefined) {
+      where.estudianteId = filters.studentId;
     }
     if (filters.documentacionId !== undefined) {
       where.documentacionId = filters.documentacionId;
@@ -74,6 +87,15 @@ export class StudentDocumentDeliveryRepository extends BaseRepository {
     }
     if (filters.esOriginal !== undefined) {
       where.esOriginal = filters.esOriginal;
+    }
+    if (filters.fechaEntrega !== undefined) {
+      where.fechaEntrega = filters.fechaEntrega;
+    }
+    if (filters.fechaVencimientoTramite !== undefined) {
+      where.fechaVencimientoTramite = filters.fechaVencimientoTramite;
+    }
+    if (filters.observaciones !== undefined) {
+      where.observaciones = filters.observaciones;
     }
 
     return where;
@@ -118,17 +140,12 @@ export class StudentDocumentDeliveryRepository extends BaseRepository {
   }
 
   /**
-   * Retorna el nombre de la colección para logging
-   * @returns {string}
+   * Retorna el nombre de la colección en la respuesta JSON
+   * 
+   * @returns {string} Nombre de la colección para la respuesta JSON
    */
   getCollectionName() {
     return 'studentDocumentDeliveries';
   }
-
-  // NOTA: Los métodos específicos (findByEstudianteId, findByDocumentacionId, findByEstudianteAndDocumentacion) 
-  // han sido eliminados. Ahora se usan los métodos base de IRepository:
-  // - findAll({ estudianteId }) para buscar todas las entregas por estudiante
-  // - findAll({ documentacionId }) para buscar todas las entregas por documento
-  // - findBy({ estudianteId, documentacionId }) para buscar una entrega específica por estudiante y documento
 }
 

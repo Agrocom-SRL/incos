@@ -22,8 +22,15 @@ import { ScholarshipMapper } from '../mappers/ScholarshipMapper.js';
  * @implements {IBecaDescuentoRepository}
  * 
  * Esta clase cumple con el contrato IBecaDescuentoRepository:
- * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findAll, create, update, delete, search)
- * - Implementa findByCodigo(), findByPorcentaje() y findAutomaticas() que son requeridos por IBecaDescuentoRepository
+ * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findBy, findAll, create, update, delete, search, count)
+ * - La especialización está en buildWhereClause(), no en métodos adicionales
+ * - Usa los métodos base de BaseRepository para todas las operaciones de búsqueda
+ * 
+ * IMPORTANTE: Se eliminaron findByCodigo(), findByPorcentaje() y findAutomaticas() porque son redundantes.
+ * Usar en su lugar:
+ * - findBy({ code: 'BECA_100' }) → Reemplaza findByCodigo()
+ * - findBy({ percentage: 100 }) → Reemplaza findByPorcentaje()
+ * - findAll({ isAutomatic: true }) → Reemplaza findAutomaticas()
  */
 export class ScholarshipRepository extends BaseRepository {
   /**
@@ -47,17 +54,58 @@ export class ScholarshipRepository extends BaseRepository {
 
   /**
    * Construye la cláusula WHERE para filtros específicos
-   * @param {Object} filters
-   * @returns {Object}
+   * Maneja todos los criterios de búsqueda de la entidad Scholarship
+   * 
+   * Este método permite usar findAll(), findBy(), search() y count() con filtros específicos
+   * sin necesidad de crear métodos adicionales en el repositorio.
+   * 
+   * Ejemplos de uso:
+   * - findAll({ isAutomatic: true }) → Busca becas automáticas
+   * - findBy({ code: 'BECA_100' }) → Busca beca por código
+   * - findAll({ percentage: 50, requiresRectorApproval: false }) → Busca becas del 50% sin aprobación
+   * 
+   * @param {Object} filters - Filtros de búsqueda
+   *   - name: Nombre de la beca (búsqueda exacta, para búsqueda de texto usar search())
+   *   - code: Código de la beca (búsqueda exacta, para búsqueda de texto usar search())
+   *   - percentage: Porcentaje de la beca (0-100)
+   *   - description: Descripción (búsqueda exacta, para búsqueda de texto usar search())
+   *   - requiresDocumentation: Si requiere documentación (true/false)
+   *   - requiresRectorApproval: Si requiere aprobación del rector (true/false)
+   *   - isAutomatic: Si es automática (true/false)
+   *   - automaticType: Tipo de beca automática (MANUAL, PROMEDIO, etc.)
+   *   - minimumAverage: Promedio mínimo requerido
+   * @returns {Object} Objeto WHERE para Sequelize
    */
   buildWhereClause(filters) {
     const where = {};
 
-    if (filters.isAutomatic !== undefined) {
-      where.esAutomatica = filters.isAutomatic;
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
+    if (filters.name !== undefined) {
+      where.nombre = filters.name;
+    }
+    if (filters.code !== undefined) {
+      where.codigo = filters.code;
+    }
+    if (filters.percentage !== undefined) {
+      where.porcentaje = filters.percentage;
+    }
+    if (filters.description !== undefined) {
+      where.descripcion = filters.description;
+    }
+    if (filters.requiresDocumentation !== undefined) {
+      where.requiereDocumentacion = filters.requiresDocumentation;
     }
     if (filters.requiresRectorApproval !== undefined) {
       where.requiereAprobacionRector = filters.requiresRectorApproval;
+    }
+    if (filters.isAutomatic !== undefined) {
+      where.esAutomatica = filters.isAutomatic;
+    }
+    if (filters.automaticType) {
+      where.tipoAutomatica = filters.automaticType;
+    }
+    if (filters.minimumAverage !== undefined) {
+      where.promedioMinimo = filters.minimumAverage;
     }
 
     return where;
@@ -102,62 +150,12 @@ export class ScholarshipRepository extends BaseRepository {
   }
 
   /**
-   * Retorna el nombre de la colección en la respuesta
-   * @returns {string}
+   * Retorna el nombre de la colección en la respuesta JSON
+   * 
+   * @returns {string} Nombre de la colección para la respuesta JSON
    */
   getCollectionName() {
     return 'scholarships';
-  }
-
-  /**
-   * Método específico: Buscar beca por código
-   * 
-   * @param {string} codigo - Código de la beca
-   * @returns {Promise<Scholarship|null>} Entidad Scholarship o null si no se encuentra
-   */
-  async findByCodigo(codigo) {
-    const model = await this.getModel().findOne({
-      where: {
-        codigo: codigo,
-        activo: true,
-        // paranoid: true automáticamente excluye deletedAt !== null
-      },
-    });
-    return this.toEntity(model);
-  }
-
-  /**
-   * Método específico: Buscar beca por porcentaje
-   * 
-   * @param {number} porcentaje - Porcentaje de la beca
-   * @returns {Promise<Scholarship|null>} Entidad Scholarship o null si no se encuentra
-   */
-  async findByPorcentaje(porcentaje) {
-    const model = await this.getModel().findOne({
-      where: {
-        porcentaje: porcentaje,
-        activo: true,
-        // paranoid: true automáticamente excluye deletedAt !== null
-      },
-    });
-    return this.toEntity(model);
-  }
-
-  /**
-   * Método específico: Buscar becas automáticas
-   * 
-   * @returns {Promise<Scholarship[]>} Array de entidades Scholarship
-   */
-  async findAutomaticas() {
-    const models = await this.getModel().findAll({
-      where: {
-        esAutomatica: true,
-        activo: true,
-        // paranoid: true automáticamente excluye deletedAt !== null
-      },
-      order: [['porcentaje', 'ASC']],
-    });
-    return ScholarshipMapper.toEntityList(models);
   }
 }
 

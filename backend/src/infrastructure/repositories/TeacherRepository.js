@@ -22,8 +22,9 @@ import { TeacherMapper } from '../mappers/TeacherMapper.js';
  * @implements {IDocenteRepository}
  * 
  * Esta clase cumple con el contrato IDocenteRepository:
- * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findAll, create, update, delete, search)
+ * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findBy, findAll, create, update, delete, search, count)
  * - La especialización está en buildWhereClause(), no en métodos adicionales
+ * - Usa los métodos base de BaseRepository para todas las operaciones de búsqueda
  */
 export class TeacherRepository extends BaseRepository {
   /**
@@ -47,41 +48,154 @@ export class TeacherRepository extends BaseRepository {
 
   /**
    * Construye la cláusula WHERE para filtros específicos
-   * @param {Object} filters
-   * @returns {Object}
+   * Maneja todos los criterios de búsqueda de la entidad Teacher
+   * 
+   * Este método permite usar findAll(), findBy(), search() y count() con filtros específicos
+   * sin necesidad de crear métodos adicionales en el repositorio.
+   * 
+   * Ejemplos de uso:
+   * - findBy({ ci: '1234567', expedition: 'LP' }) → Busca por CI y expedición
+   * - findAll({ userId: 1 }) → Busca docentes de un usuario
+   * - findAll({ laborState: 'ACTIVO' }) → Busca docentes activos
+   * 
+   * @param {Object} filters - Filtros de búsqueda
+   *   - userId: ID del usuario
+   *   - ci: Cédula de identidad
+   *   - expedition: Expedición del CI (se convierte a mayúsculas)
+   *   - firstName: Nombres (búsqueda exacta, para búsqueda de texto usar search())
+   *   - lastName: Apellido paterno (búsqueda exacta, para búsqueda de texto usar search())
+   *   - motherLastName: Apellido materno (búsqueda exacta, para búsqueda de texto usar search())
+   *   - birthDate: Fecha de nacimiento
+   *   - gender: Género
+   *   - civilStatusId: ID del estado civil
+   *   - nationality: Nacionalidad
+   *   - phone: Teléfono
+   *   - mobilePhone: Celular
+   *   - personalEmail: Email personal (se convierte a minúsculas)
+   *   - address: Dirección
+   *   - residenceMunicipalityId: ID del municipio de residencia
+   *   - zone: Zona
+   *   - professionalTitle: Título profesional (búsqueda exacta, para búsqueda de texto usar search())
+   *   - specialty: Especialidad (búsqueda exacta, para búsqueda de texto usar search())
+   *   - academicLevel: Nivel académico
+   *   - graduationInstitution: Institución de egreso
+   *   - graduationYear: Año de egreso
+   *   - yearsOfExperience: Años de experiencia
+   *   - hireDate: Fecha de contratación
+   *   - retirementDate: Fecha de retiro
+   *   - contractType: Tipo de contrato
+   *   - laborState: Estado laboral
+   *   - observations: Observaciones (búsqueda exacta, para búsqueda de texto usar search())
+   * @returns {Object} Objeto WHERE para Sequelize
    */
   buildWhereClause(filters) {
     const where = {};
 
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
     if (filters.userId) {
       where.usuarioId = filters.userId;
     }
-    if (filters.laborState) {
-      where.estadoLaboral = filters.laborState;
+    if (filters.ci) {
+      where.ci = filters.ci;
+    }
+    if (filters.expedition) {
+      where.expedicion = filters.expedition.toUpperCase();
+    }
+    if (filters.firstName !== undefined) {
+      where.nombres = filters.firstName;
+    }
+    if (filters.lastName !== undefined) {
+      where.apellidoPaterno = filters.lastName;
+    }
+    if (filters.motherLastName !== undefined) {
+      where.apellidoMaterno = filters.motherLastName;
+    }
+    if (filters.birthDate !== undefined) {
+      where.fechaNacimiento = filters.birthDate;
+    }
+    if (filters.gender) {
+      where.genero = filters.gender;
+    }
+    if (filters.civilStatusId) {
+      where.estadoCivilId = filters.civilStatusId;
+    }
+    if (filters.nationality !== undefined) {
+      where.nacionalidad = filters.nationality;
+    }
+    if (filters.phone !== undefined) {
+      where.telefono = filters.phone;
+    }
+    if (filters.mobilePhone !== undefined) {
+      where.celular = filters.mobilePhone;
+    }
+    if (filters.personalEmail) {
+      where.emailPersonal = filters.personalEmail.toLowerCase();
+    }
+    if (filters.address !== undefined) {
+      where.direccion = filters.address;
+    }
+    if (filters.residenceMunicipalityId) {
+      where.municipioResidenciaId = filters.residenceMunicipalityId;
+    }
+    if (filters.zone !== undefined) {
+      where.zona = filters.zone;
+    }
+    if (filters.professionalTitle !== undefined) {
+      where.tituloProfesional = filters.professionalTitle;
+    }
+    if (filters.specialty !== undefined) {
+      where.especialidad = filters.specialty;
+    }
+    if (filters.academicLevel) {
+      where.nivelAcademico = filters.academicLevel;
+    }
+    if (filters.graduationInstitution !== undefined) {
+      where.institucionEgreso = filters.graduationInstitution;
+    }
+    if (filters.graduationYear !== undefined) {
+      where.anioEgreso = filters.graduationYear;
+    }
+    if (filters.yearsOfExperience !== undefined) {
+      where.aniosExperiencia = filters.yearsOfExperience;
+    }
+    if (filters.hireDate !== undefined) {
+      where.fechaContratacion = filters.hireDate;
+    }
+    if (filters.retirementDate !== undefined) {
+      where.fechaRetiro = filters.retirementDate;
     }
     if (filters.contractType) {
       where.tipoContrato = filters.contractType;
     }
-    if (filters.academicLevel) {
-      where.nivelAcademico = filters.academicLevel;
+    if (filters.laborState) {
+      where.estadoLaboral = filters.laborState;
+    }
+    if (filters.observations !== undefined) {
+      where.observaciones = filters.observations;
     }
 
     return where;
   }
 
   /**
-   * Retorna los campos que se usarán para búsqueda
-   * @returns {string[]}
+   * Retorna los campos que se usarán para búsqueda de texto
+   * Estos campos se usan en el método search() para búsqueda por término
+   * 
+   * @returns {string[]} Array de nombres de campos del modelo Sequelize
    */
   getSearchFields() {
     return ['nombres', 'apellidoPaterno', 'apellidoMaterno', 'ci', 'emailPersonal', 'tituloProfesional', 'especialidad'];
   }
 
   /**
-   * Retorna el orden por defecto
-   * @returns {Array}
+   * Retorna el orden por defecto para las consultas
+   * Delega el orden al BaseRepository que ordena por ID ASC
+   * 
+   * @returns {Array} Array vacío para usar el orden por defecto del BaseRepository (id ASC)
    */
-  getDefaultSort() { return []; }
+  getDefaultSort() {
+    return []; // Usa el orden por defecto de BaseRepository: [['id', 'ASC']]
+  }
 
   /**
    * Mapea datos de dominio a formato del modelo Sequelize (para creación)
@@ -108,15 +222,12 @@ export class TeacherRepository extends BaseRepository {
   }
 
   /**
-   * Retorna el nombre de la colección en la respuesta
-   * @returns {string}
+   * Retorna el nombre de la colección en la respuesta JSON
+   * 
+   * @returns {string} Nombre de la colección para la respuesta JSON
    */
   getCollectionName() {
     return 'teachers';
   }
-
-  // NOTA: Los métodos específicos han sido eliminados. Ahora se usan los métodos base de IRepository:
-  // - findBy({ ci, expedicion }) para buscar por CI y expedición
-  // - findAll({ userId, laborState, contractType, academicLevel }) para búsquedas con filtros
 }
 

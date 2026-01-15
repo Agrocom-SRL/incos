@@ -2,7 +2,6 @@ import { IEstadoCivilRepository } from '../../domain/interfaces/repositories/IEs
 import { EstadoCivil as EstadoCivilModel } from '../database/models/estado_civil.js';
 import { BaseRepository } from './BaseRepository.js';
 import { CivilStatusMapper } from '../mappers/CivilStatusMapper.js';
-import { Op } from 'sequelize';
 
 /**
  * Implementación del repositorio de estados civiles usando Sequelize
@@ -23,7 +22,9 @@ import { Op } from 'sequelize';
  * @implements {IEstadoCivilRepository}
  * 
  * Esta clase cumple con el contrato IEstadoCivilRepository:
- * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findAll, create, update, delete, search)
+ * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findBy, findAll, create, update, delete, search, count)
+ * - La especialización está en buildWhereClause(), no en métodos adicionales
+ * - Usa los métodos base de BaseRepository para todas las operaciones de búsqueda
  */
 export class CivilStatusRepository extends BaseRepository {
   /**
@@ -46,18 +47,54 @@ export class CivilStatusRepository extends BaseRepository {
   }
 
   /**
-   * Retorna los campos que se usarán para búsqueda
-   * @returns {string[]}
+   * Construye la cláusula WHERE para filtros específicos
+   * Maneja todos los criterios de búsqueda de la entidad CivilStatus
+   * 
+   * Este método permite usar findAll(), findBy(), search() y count() con filtros específicos
+   * sin necesidad de crear métodos adicionales en el repositorio.
+   * 
+   * Ejemplos de uso:
+   * - findBy({ abbreviation: 'S' }) → Busca estado civil por abreviatura
+   * - findAll({ name: 'Soltero' }) → Busca por nombre exacto
+   * 
+   * @param {Object} filters - Filtros de búsqueda
+   *   - name: Nombre del estado civil (búsqueda exacta, para búsqueda de texto usar search())
+   *   - abbreviation: Abreviatura (búsqueda exacta, para búsqueda de texto usar search())
+   * @returns {Object} Objeto WHERE para Sequelize
+   */
+  buildWhereClause(filters) {
+    const where = {};
+
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
+    if (filters.name !== undefined) {
+      where.nombre = filters.name;
+    }
+    if (filters.abbreviation !== undefined) {
+      where.abreviatura = filters.abbreviation;
+    }
+
+    return where;
+  }
+
+  /**
+   * Retorna los campos que se usarán para búsqueda de texto
+   * Estos campos se usan en el método search() para búsqueda por término
+   * 
+   * @returns {string[]} Array de nombres de campos del modelo Sequelize
    */
   getSearchFields() {
     return ['nombre', 'abreviatura'];
   }
 
   /**
-   * Retorna el orden por defecto
-   * @returns {Array}
+   * Retorna el orden por defecto para las consultas
+   * Delega el orden al BaseRepository que ordena por ID ASC
+   * 
+   * @returns {Array} Array vacío para usar el orden por defecto del BaseRepository (id ASC)
    */
-  getDefaultSort() { return []; }
+  getDefaultSort() {
+    return []; // Usa el orden por defecto de BaseRepository: [['id', 'ASC']]
+  }
 
   /**
    * Mapea datos de dominio a formato del modelo Sequelize (para creación)
@@ -84,43 +121,12 @@ export class CivilStatusRepository extends BaseRepository {
   }
 
   /**
-   * Retorna el nombre de la colección en la respuesta
-   * @returns {string}
+   * Retorna el nombre de la colección en la respuesta JSON
+   * 
+   * @returns {string} Nombre de la colección para la respuesta JSON
    */
   getCollectionName() {
     return 'civilStatuses';
-  }
-
-  /**
-   * Sobrescribe el método search para incluir búsqueda case-insensitive en abreviatura
-   * Respeta el filtro de registros eliminados (paranoid: true) y el estado activo
-   * @param {string} searchTerm
-   * @param {Object} options - Opciones opcionales (includeInactive)
-   * @returns {Promise<CivilStatus[]>}
-   */
-  async search(searchTerm, options = {}) {
-    const Model = this.getModel();
-
-    const where = {
-      // paranoid: true automáticamente excluye deletedAt !== null (registros eliminados lógicamente)
-      [Op.or]: [
-        { nombre: { [Op.like]: `%${searchTerm}%` } },
-        { abreviatura: { [Op.like]: `%${searchTerm.toUpperCase()}%` } },
-      ],
-    };
-
-    // Filtrar por estado activo/inactivo (solo si no se solicita incluir inactivos)
-    if (!options.includeInactive) {
-      where.activo = true; // Solo registros activos por defecto
-    }
-
-    const models = await Model.findAll({
-      where,
-      order: this.getDefaultSort(),
-      limit: 50,
-    });
-
-    return CivilStatusMapper.toEntityList(models);
   }
 }
 

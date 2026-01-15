@@ -22,8 +22,13 @@ import { StaffMapper } from '../mappers/StaffMapper.js';
  * @implements {IPersonalRepository}
  * 
  * Esta clase cumple con el contrato IPersonalRepository:
- * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findAll, create, update, delete, search)
- * - Implementa findByCI() que es requerido por IPersonalRepository
+ * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findBy, findAll, create, update, delete, search, count)
+ * - La especialización está en buildWhereClause(), no en métodos adicionales
+ * - Usa los métodos base de BaseRepository para todas las operaciones de búsqueda
+ * 
+ * IMPORTANTE: Se eliminó findByCI() porque es redundante.
+ * Usar en su lugar:
+ * - findBy({ ci: '1234567', expedition: 'LP' }) → Reemplaza findByCI()
  */
 export class StaffRepository extends BaseRepository {
   /**
@@ -105,30 +110,12 @@ export class StaffRepository extends BaseRepository {
   }
 
   /**
-   * Retorna el nombre de la colección en la respuesta
-   * @returns {string}
+   * Retorna el nombre de la colección en la respuesta JSON
+   * 
+   * @returns {string} Nombre de la colección para la respuesta JSON
    */
   getCollectionName() {
     return 'staff';
-  }
-
-  /**
-   * Método específico: Buscar personal por CI y expedición
-   * 
-   * @param {string} ci - Cédula de identidad
-   * @param {string} expedicion - Expedición del CI
-   * @returns {Promise<Staff|null>} Entidad Staff o null si no se encuentra
-   */
-  async findByCI(ci, expedicion) {
-    const model = await this.getModel().findOne({
-      where: {
-        ci: ci,
-        expedicion: expedicion.toUpperCase(),
-        activo: true,
-        // paranoid: true automáticamente excluye deletedAt !== null
-      },
-    });
-    return this.toEntity(model);
   }
 }
 

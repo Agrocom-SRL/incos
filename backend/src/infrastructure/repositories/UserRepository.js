@@ -22,8 +22,15 @@ import { UserMapper } from '../mappers/UserMapper.js';
  * @implements {IUsuarioRepository}
  * 
  * Esta clase cumple con el contrato IUsuarioRepository:
- * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findAll, create, update, delete, search)
- * - Implementa findByUsername(), findByEmail() y findByRolId() que son requeridos por IUsuarioRepository
+ * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findBy, findAll, create, update, delete, search, count)
+ * - La especialización está en buildWhereClause(), no en métodos adicionales
+ * - Usa los métodos base de BaseRepository para todas las operaciones de búsqueda
+ * 
+ * IMPORTANTE: Se eliminaron findByUsername(), findByEmail() y findByRolId() porque son redundantes.
+ * Usar en su lugar:
+ * - findBy({ username: 'usuario' }) → Reemplaza findByUsername()
+ * - findBy({ email: 'email@example.com' }) → Reemplaza findByEmail()
+ * - findAll({ roleId: X }) → Reemplaza findByRolId()
  */
 export class UserRepository extends BaseRepository {
   /**
@@ -47,38 +54,79 @@ export class UserRepository extends BaseRepository {
 
   /**
    * Construye la cláusula WHERE para filtros específicos
-   * @param {Object} filters
-   * @returns {Object}
+   * Maneja todos los criterios de búsqueda de la entidad User
+   * 
+   * Este método permite usar findAll(), findBy(), search() y count() con filtros específicos
+   * sin necesidad de crear métodos adicionales en el repositorio.
+   * 
+   * Ejemplos de uso:
+   * - findBy({ username: 'usuario' }) → Busca por username
+   * - findBy({ email: 'email@example.com' }) → Busca por email
+   * - findAll({ roleId: 1 }) → Busca usuarios por rol
+   * - findAll({ state: 'BLOQUEADO' }) → Busca usuarios bloqueados
+   * 
+   * @param {Object} filters - Filtros de búsqueda
+   *   - username: Nombre de usuario (búsqueda exacta, para búsqueda de texto usar search())
+   *   - email: Email del usuario (búsqueda exacta, para búsqueda de texto usar search())
+   *   - roleId: ID del rol
+   *   - referenceId: ID de referencia
+   *   - referenceType: Tipo de referencia
+   *   - state: Estado del usuario (BLOQUEADO, SUSPENDIDO, RETIRADO, null = activo)
+   *   - stateChangeDate: Fecha de cambio de estado
+   *   - stateChangeReason: Motivo de cambio de estado
+   * @returns {Object} Objeto WHERE para Sequelize
    */
   buildWhereClause(filters) {
     const where = {};
 
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
+    if (filters.username !== undefined) {
+      where.username = filters.username;
+    }
+    if (filters.email !== undefined) {
+      where.email = filters.email.toLowerCase();
+    }
     if (filters.roleId) {
       where.rolId = filters.roleId;
+    }
+    if (filters.referenceId !== undefined) {
+      where.referenciaId = filters.referenceId;
+    }
+    if (filters.referenceType !== undefined) {
+      where.tipoReferencia = filters.referenceType;
     }
     if (filters.state !== undefined) {
       where.estado = filters.state;
     }
-    if (filters.referenceType) {
-      where.tipoReferencia = filters.referenceType;
+    if (filters.stateChangeDate !== undefined) {
+      where.fechaCambioEstado = filters.stateChangeDate;
+    }
+    if (filters.stateChangeReason !== undefined) {
+      where.motivoCambioEstado = filters.stateChangeReason;
     }
 
     return where;
   }
 
   /**
-   * Retorna los campos que se usarán para búsqueda
-   * @returns {string[]}
+   * Retorna los campos que se usarán para búsqueda de texto
+   * Estos campos se usan en el método search() para búsqueda por término
+   * 
+   * @returns {string[]} Array de nombres de campos del modelo Sequelize
    */
   getSearchFields() {
     return ['username', 'email'];
   }
 
   /**
-   * Retorna el orden por defecto
-   * @returns {Array}
+   * Retorna el orden por defecto para las consultas
+   * Delega el orden al BaseRepository que ordena por ID ASC
+   * 
+   * @returns {Array} Array vacío para usar el orden por defecto del BaseRepository (id ASC)
    */
-  getDefaultSort() { return []; }
+  getDefaultSort() {
+    return []; // Usa el orden por defecto de BaseRepository: [['id', 'ASC']]
+  }
 
   /**
    * Mapea datos de dominio a formato del modelo Sequelize (para creación)
@@ -105,63 +153,12 @@ export class UserRepository extends BaseRepository {
   }
 
   /**
-   * Retorna el nombre de la colección en la respuesta
-   * @returns {string}
+   * Retorna el nombre de la colección en la respuesta JSON
+   * 
+   * @returns {string} Nombre de la colección para la respuesta JSON
    */
   getCollectionName() {
     return 'users';
-  }
-
-  /**
-   * Método específico: Buscar usuario por username
-   * 
-   * @param {string} username - Nombre de usuario
-   * @returns {Promise<User|null>} Entidad User o null si no se encuentra
-   */
-  async findByUsername(username) {
-    const model = await this.getModel().findOne({
-      where: {
-        username: username,
-        activo: true,
-        // paranoid: true automáticamente excluye deletedAt !== null
-      },
-    });
-    return this.toEntity(model);
-  }
-
-  /**
-   * Método específico: Buscar usuario por email
-   * 
-   * @param {string} email - Email del usuario (se normaliza a minúsculas)
-   * @returns {Promise<User|null>} Entidad User o null si no se encuentra
-   */
-  async findByEmail(email) {
-    const model = await this.getModel().findOne({
-      where: {
-        email: email.toLowerCase(),
-        activo: true,
-        // paranoid: true automáticamente excluye deletedAt !== null
-      },
-    });
-    return this.toEntity(model);
-  }
-
-  /**
-   * Método específico: Buscar usuarios por rol
-   * 
-   * @param {number} rolId - ID del rol
-   * @returns {Promise<User[]>} Array de entidades User
-   */
-  async findByRolId(rolId) {
-    const models = await this.getModel().findAll({
-      where: {
-        rolId: rolId,
-        activo: true,
-        // paranoid: true automáticamente excluye deletedAt !== null
-      },
-      order: [['username', 'ASC']],
-    });
-    return UserMapper.toEntityList(models);
   }
 }
 

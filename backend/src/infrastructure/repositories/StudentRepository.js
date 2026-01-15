@@ -24,6 +24,7 @@ import { StudentMapper } from '../mappers/StudentMapper.js';
  * Esta clase cumple con el contrato IEstudianteRepository:
  * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findBy, findAll, create, update, delete, search, count)
  * - La especialización está en buildWhereClause(), no en métodos adicionales
+ * - Usa los métodos base de BaseRepository para todas las operaciones de búsqueda
  */
 export class StudentRepository extends BaseRepository {
   /**
@@ -47,16 +48,25 @@ export class StudentRepository extends BaseRepository {
 
   /**
    * Construye la cláusula WHERE para filtros específicos
-   * Maneja todos los criterios de búsqueda: ci, expedicion, studentCode, personalEmail, userId, gender, hasDisability
+   * Maneja todos los criterios de búsqueda de la entidad Student
+   * 
+   * Este método permite usar findAll(), findBy(), search() y count() con filtros específicos
+   * sin necesidad de crear métodos adicionales en el repositorio.
+   * 
+   * Ejemplos de uso:
+   * - findBy({ ci: '1234567', expedition: 'LP' }) → Busca por CI y expedición
+   * - findBy({ studentCode: '2025-001' }) → Busca por código de estudiante
+   * - findAll({ userId: 1 }) → Busca estudiantes de un usuario
+   * - findAll({ gender: 'M' }) → Busca por género
    * 
    * @param {Object} filters - Filtros de búsqueda
    *   - ci: Cédula de identidad
-   *   - expedicion: Expedición del CI (se convierte a mayúsculas)
+   *   - expedition: Expedición del CI (se convierte a mayúsculas)
    *   - studentCode: Código del estudiante (codigoEstudiante)
    *   - personalEmail: Email personal (se convierte a minúsculas)
    *   - userId: ID del usuario
    *   - gender: Género
-   *   - hasDisability: Si tiene discapacidad
+   *   - hasDisability: Si tiene discapacidad (true/false)
    * @returns {Object} Objeto WHERE para Sequelize
    */
   buildWhereClause(filters) {
@@ -89,19 +99,24 @@ export class StudentRepository extends BaseRepository {
   }
 
   /**
-   * Retorna los campos que se usarán para búsqueda
-   * @returns {string[]}
+   * Retorna los campos que se usarán para búsqueda de texto
+   * Estos campos se usan en el método search() para búsqueda por término
+   * 
+   * @returns {string[]} Array de nombres de campos del modelo Sequelize
    */
   getSearchFields() {
     return ['codigoEstudiante', 'nombres', 'apellidoPaterno', 'apellidoMaterno', 'ci', 'emailPersonal'];
   }
 
   /**
-   * Retorna el orden por defecto
-   * Orden: primero por código de estudiante (año y correlativo), luego por apellidos y nombres
-   * @returns {Array}
+   * Retorna el orden por defecto para las consultas
+   * Delega el orden al BaseRepository que ordena por ID ASC
+   * 
+   * @returns {Array} Array vacío para usar el orden por defecto del BaseRepository (id ASC)
    */
-  getDefaultSort() { return []; }
+  getDefaultSort() {
+    return []; // Usa el orden por defecto de BaseRepository: [['id', 'ASC']]
+  }
 
   /**
    * Mapea datos de dominio a formato del modelo Sequelize (para creación)
@@ -128,8 +143,9 @@ export class StudentRepository extends BaseRepository {
   }
 
   /**
-   * Retorna el nombre de la colección en la respuesta
-   * @returns {string}
+   * Retorna el nombre de la colección en la respuesta JSON
+   * 
+   * @returns {string} Nombre de la colección para la respuesta JSON
    */
   getCollectionName() {
     return 'students';

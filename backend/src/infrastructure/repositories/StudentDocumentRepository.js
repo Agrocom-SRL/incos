@@ -47,33 +47,78 @@ export class StudentDocumentRepository extends BaseRepository {
 
   /**
    * Construye la cláusula WHERE para filtros específicos
-   * Maneja todos los criterios de búsqueda: studentId, documentacionId, tipoDocumento, state, verified
+   * Maneja todos los criterios de búsqueda de la entidad StudentDocument
+   * 
+   * Este método permite usar findAll(), findBy(), search() y count() con filtros específicos
+   * sin necesidad de crear métodos adicionales en el repositorio.
+   * 
+   * Ejemplos de uso:
+   * - findAll({ studentId: 1 }) → Busca documentos de un estudiante
+   * - findAll({ tipoDocumento: 'INSCRIPCION', state: 'APROBADO' }) → Busca documentos aprobados de inscripción
+   * - findBy({ studentId: 1, documentacionId: 2 }) → Busca documento específico
    * 
    * @param {Object} filters - Filtros de búsqueda
-   *   - studentId: ID del estudiante (estudianteId)
-   *   - documentacionId: ID de la documentación (documentacionId)
-   *   - tipoDocumento: Tipo de documento (tipoDocumento)
-   *   - state: Estado del documento (estado)
-   *   - verified: Si está verificado (verificado)
+   *   - studentId: ID del estudiante
+   *   - tipoDocumento: Tipo de documento (INSCRIPCION, LICENCIA, PASANTIA, etc.)
+   *   - documentacionId: ID de la documentación
+   *   - fileName: Nombre del archivo (búsqueda exacta, para búsqueda de texto usar search())
+   *   - filePath: Ruta del archivo (búsqueda exacta)
+   *   - extension: Extensión del archivo
+   *   - tipoMime: Tipo MIME del archivo
+   *   - contieneMultipleDocumentos: Si contiene múltiples documentos (true/false)
+   *   - verified: Si está verificado (true/false)
+   *   - verifiedBy: ID del usuario que verificó
+   *   - verificationDate: Fecha de verificación
+   *   - verificationObservations: Observaciones de verificación (búsqueda exacta, para búsqueda de texto usar search())
+   *   - state: Estado del documento (PENDIENTE, APROBADO, RECHAZADO, etc.)
+   *   - rejectionReason: Motivo de rechazo (búsqueda exacta, para búsqueda de texto usar search())
    * @returns {Object} Objeto WHERE para Sequelize
    */
   buildWhereClause(filters) {
     const where = {};
 
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
     if (filters.studentId) {
       where.estudianteId = filters.studentId;
-    }
-    if (filters.documentacionId) {
-      where.documentacionId = filters.documentacionId;
     }
     if (filters.tipoDocumento) {
       where.tipoDocumento = filters.tipoDocumento;
     }
-    if (filters.state) {
-      where.estado = filters.state;
+    if (filters.documentacionId) {
+      where.documentacionId = filters.documentacionId;
+    }
+    if (filters.fileName !== undefined) {
+      where.nombreArchivo = filters.fileName;
+    }
+    if (filters.filePath !== undefined) {
+      where.rutaArchivo = filters.filePath;
+    }
+    if (filters.extension !== undefined) {
+      where.extension = filters.extension;
+    }
+    if (filters.tipoMime !== undefined) {
+      where.tipoMime = filters.tipoMime;
+    }
+    if (filters.contieneMultipleDocumentos !== undefined) {
+      where.contieneMultipleDocumentos = filters.contieneMultipleDocumentos;
     }
     if (filters.verified !== undefined) {
       where.verificado = filters.verified;
+    }
+    if (filters.verifiedBy) {
+      where.verificadoPor = filters.verifiedBy;
+    }
+    if (filters.verificationDate !== undefined) {
+      where.fechaVerificacion = filters.verificationDate;
+    }
+    if (filters.verificationObservations !== undefined) {
+      where.observacionesVerificacion = filters.verificationObservations;
+    }
+    if (filters.state) {
+      where.estado = filters.state;
+    }
+    if (filters.rejectionReason !== undefined) {
+      where.motivoRechazo = filters.rejectionReason;
     }
 
     return where;
@@ -118,16 +163,12 @@ export class StudentDocumentRepository extends BaseRepository {
   }
 
   /**
-   * Retorna el nombre de la colección en la respuesta
-   * @returns {string}
+   * Retorna el nombre de la colección en la respuesta JSON
+   * 
+   * @returns {string} Nombre de la colección para la respuesta JSON
    */
   getCollectionName() {
     return 'studentDocuments';
   }
-
-  // NOTA: Los métodos específicos (findByEstudianteId, findByTipoDocumento) han sido eliminados.
-  // Ahora se usan los métodos base de IRepository:
-  // - findAll({ studentId }) para buscar todos los documentos por estudiante
-  // - findAll({ tipoDocumento }) para buscar todos los documentos por tipo
 }
 

@@ -22,7 +22,9 @@ import { RelationshipTypeMapper } from '../mappers/RelationshipTypeMapper.js';
  * @implements {ITipoParentescoRepository}
  * 
  * Esta clase cumple con el contrato ITipoParentescoRepository:
- * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findAll, create, update, delete, search)
+ * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findBy, findAll, create, update, delete, search, count)
+ * - La especialización está en buildWhereClause(), no en métodos adicionales
+ * - Usa los métodos base de BaseRepository para todas las operaciones de búsqueda
  */
 export class RelationshipTypeRepository extends BaseRepository {
   /**
@@ -45,18 +47,54 @@ export class RelationshipTypeRepository extends BaseRepository {
   }
 
   /**
-   * Retorna los campos que se usarán para búsqueda
-   * @returns {string[]}
+   * Construye la cláusula WHERE para filtros específicos
+   * Maneja todos los criterios de búsqueda de la entidad RelationshipType
+   * 
+   * Este método permite usar findAll(), findBy(), search() y count() con filtros específicos
+   * sin necesidad de crear métodos adicionales en el repositorio.
+   * 
+   * Ejemplos de uso:
+   * - findBy({ name: 'Padre' }) → Busca tipo de parentesco por nombre
+   * - findAll({ description: 'Parentesco directo' }) → Busca por descripción exacta
+   * 
+   * @param {Object} filters - Filtros de búsqueda
+   *   - name: Nombre del tipo de parentesco (búsqueda exacta, para búsqueda de texto usar search())
+   *   - description: Descripción (búsqueda exacta, para búsqueda de texto usar search())
+   * @returns {Object} Objeto WHERE para Sequelize
+   */
+  buildWhereClause(filters) {
+    const where = {};
+
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
+    if (filters.name !== undefined) {
+      where.nombre = filters.name;
+    }
+    if (filters.description !== undefined) {
+      where.descripcion = filters.description;
+    }
+
+    return where;
+  }
+
+  /**
+   * Retorna los campos que se usarán para búsqueda de texto
+   * Estos campos se usan en el método search() para búsqueda por término
+   * 
+   * @returns {string[]} Array de nombres de campos del modelo Sequelize
    */
   getSearchFields() {
     return ['nombre', 'descripcion'];
   }
 
   /**
-   * Retorna el orden por defecto
-   * @returns {Array}
+   * Retorna el orden por defecto para las consultas
+   * Delega el orden al BaseRepository que ordena por ID ASC
+   * 
+   * @returns {Array} Array vacío para usar el orden por defecto del BaseRepository (id ASC)
    */
-  getDefaultSort() { return []; }
+  getDefaultSort() {
+    return []; // Usa el orden por defecto de BaseRepository: [['id', 'ASC']]
+  }
 
   /**
    * Mapea datos de dominio a formato del modelo Sequelize (para creación)
@@ -83,8 +121,9 @@ export class RelationshipTypeRepository extends BaseRepository {
   }
 
   /**
-   * Retorna el nombre de la colección en la respuesta
-   * @returns {string}
+   * Retorna el nombre de la colección en la respuesta JSON
+   * 
+   * @returns {string} Nombre de la colección para la respuesta JSON
    */
   getCollectionName() {
     return 'relationshipTypes';

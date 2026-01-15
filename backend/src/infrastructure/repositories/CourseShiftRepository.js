@@ -22,8 +22,13 @@ import { CourseShiftMapper } from '../mappers/CourseShiftMapper.js';
  * @implements {ITurnoCursoRepository}
  * 
  * Esta clase cumple con el contrato ITurnoCursoRepository:
- * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findAll, create, update, delete, search)
- * - Implementa findByAsignacionId() que es requerido por ITurnoCursoRepository
+ * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findBy, findAll, create, update, delete, search, count)
+ * - La especialización está en buildWhereClause(), no en métodos adicionales
+ * - Usa los métodos base de BaseRepository para todas las operaciones de búsqueda
+ * 
+ * IMPORTANTE: Se eliminó findByAsignacionId() porque es redundante.
+ * Usar en su lugar:
+ * - findAll({ assignmentId: X }) → Reemplaza findByAsignacionId()
  */
 export class CourseShiftRepository extends BaseRepository {
   /**
@@ -47,12 +52,29 @@ export class CourseShiftRepository extends BaseRepository {
 
   /**
    * Construye la cláusula WHERE para filtros específicos
-   * @param {Object} filters
-   * @returns {Object}
+   * Maneja todos los criterios de búsqueda de la entidad CourseShift
+   * 
+   * Este método permite usar findAll(), findBy(), search() y count() con filtros específicos
+   * sin necesidad de crear métodos adicionales en el repositorio.
+   * 
+   * Ejemplos de uso:
+   * - findAll({ assignmentId: 1 }) → Busca turnos de una asignación docente
+   * - findAll({ weekDay: 'LUNES' }) → Busca turnos de lunes
+   * - findBy({ assignmentId: 1, weekDay: 'LUNES', startTime: '08:00:00' }) → Busca turno específico
+   * 
+   * @param {Object} filters - Filtros de búsqueda
+   *   - assignmentId: ID de la asignación docente
+   *   - shiftId: ID del turno
+   *   - weekDay: Día de la semana (LUNES, MARTES, etc.)
+   *   - startTime: Hora de inicio
+   *   - endTime: Hora de fin
+   *   - classroom: Aula (búsqueda exacta, para búsqueda de texto usar search())
+   * @returns {Object} Objeto WHERE para Sequelize
    */
   buildWhereClause(filters) {
     const where = {};
 
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
     if (filters.assignmentId) {
       where.asignacionId = filters.assignmentId;
     }
@@ -62,23 +84,38 @@ export class CourseShiftRepository extends BaseRepository {
     if (filters.weekDay) {
       where.diaSemana = filters.weekDay;
     }
+    if (filters.startTime !== undefined) {
+      where.horaInicio = filters.startTime;
+    }
+    if (filters.endTime !== undefined) {
+      where.horaFin = filters.endTime;
+    }
+    if (filters.classroom !== undefined) {
+      where.aula = filters.classroom;
+    }
 
     return where;
   }
 
   /**
-   * Retorna los campos que se usarán para búsqueda
-   * @returns {string[]}
+   * Retorna los campos que se usarán para búsqueda de texto
+   * Estos campos se usan en el método search() para búsqueda por término
+   * 
+   * @returns {string[]} Array de nombres de campos del modelo Sequelize
    */
   getSearchFields() {
     return ['aula'];
   }
 
   /**
-   * Retorna el orden por defecto
-   * @returns {Array}
+   * Retorna el orden por defecto para las consultas
+   * Delega el orden al BaseRepository que ordena por ID ASC
+   * 
+   * @returns {Array} Array vacío para usar el orden por defecto del BaseRepository (id ASC)
    */
-  getDefaultSort() { return []; }
+  getDefaultSort() {
+    return []; // Usa el orden por defecto de BaseRepository: [['id', 'ASC']]
+  }
 
   /**
    * Mapea datos de dominio a formato del modelo Sequelize (para creación)
@@ -105,29 +142,12 @@ export class CourseShiftRepository extends BaseRepository {
   }
 
   /**
-   * Retorna el nombre de la colección en la respuesta
-   * @returns {string}
+   * Retorna el nombre de la colección en la respuesta JSON
+   * 
+   * @returns {string} Nombre de la colección para la respuesta JSON
    */
   getCollectionName() {
     return 'courseShifts';
-  }
-
-  /**
-   * Método específico: Buscar turnos por asignación
-   * 
-   * @param {number} asignacionId - ID de la asignación docente
-   * @returns {Promise<CourseShift[]>} Array de entidades CourseShift
-   */
-  async findByAsignacionId(asignacionId) {
-    const models = await this.getModel().findAll({
-      where: {
-        asignacionId: asignacionId,
-        activo: true,
-        // paranoid: true automáticamente excluye deletedAt !== null
-      },
-      order: [['diaSemana', 'ASC'], ['horaInicio', 'ASC']],
-    });
-    return CourseShiftMapper.toEntityList(models);
   }
 }
 

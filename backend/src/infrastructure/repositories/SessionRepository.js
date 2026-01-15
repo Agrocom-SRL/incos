@@ -22,8 +22,14 @@ import { SessionMapper } from '../mappers/SessionMapper.js';
  * @implements {ISesionRepository}
  * 
  * Esta clase cumple con el contrato ISesionRepository:
- * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findAll, create, update, delete, search)
- * - Implementa findByToken() y findByUsuarioId() que son requeridos por ISesionRepository
+ * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findBy, findAll, create, update, delete, search, count)
+ * - La especialización está en buildWhereClause(), no en métodos adicionales
+ * - Usa los métodos base de BaseRepository para todas las operaciones de búsqueda
+ * 
+ * IMPORTANTE: Se eliminaron findByToken() y findByUsuarioId() porque son redundantes.
+ * Usar en su lugar:
+ * - findBy({ sessionToken: 'token' }) → Reemplaza findByToken()
+ * - findAll({ userId: X }) → Reemplaza findByUsuarioId()
  */
 export class SessionRepository extends BaseRepository {
   /**
@@ -47,14 +53,47 @@ export class SessionRepository extends BaseRepository {
 
   /**
    * Construye la cláusula WHERE para filtros específicos
-   * @param {Object} filters
-   * @returns {Object}
+   * Maneja todos los criterios de búsqueda de la entidad Session
+   * 
+   * Este método permite usar findAll(), findBy(), search() y count() con filtros específicos
+   * sin necesidad de crear métodos adicionales en el repositorio.
+   * 
+   * Ejemplos de uso:
+   * - findAll({ userId: 1 }) → Busca sesiones de un usuario
+   * - findBy({ sessionToken: 'token123' }) → Busca sesión por token
+   * - findAll({ device: 'MOVIL' }) → Busca sesiones móviles
+   * 
+   * @param {Object} filters - Filtros de búsqueda
+   *   - userId: ID del usuario
+   *   - sessionToken: Token de sesión (búsqueda exacta, para búsqueda de texto usar search())
+   *   - recoveryToken: Token de recuperación (búsqueda exacta, para búsqueda de texto usar search())
+   *   - expirationDate: Fecha de expiración
+   *   - lastLogin: Último login
+   *   - lastLoginIp: IP del último login
+   *   - device: Tipo de dispositivo (MOVIL, TABLET, DESKTOP)
+   * @returns {Object} Objeto WHERE para Sequelize
    */
   buildWhereClause(filters) {
     const where = {};
 
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
     if (filters.userId) {
       where.usuarioId = filters.userId;
+    }
+    if (filters.sessionToken !== undefined) {
+      where.tokenSesion = filters.sessionToken;
+    }
+    if (filters.recoveryToken !== undefined) {
+      where.tokenRecuperacion = filters.recoveryToken;
+    }
+    if (filters.expirationDate !== undefined) {
+      where.fechaExpiracion = filters.expirationDate;
+    }
+    if (filters.lastLogin !== undefined) {
+      where.ultimoLogin = filters.lastLogin;
+    }
+    if (filters.lastLoginIp !== undefined) {
+      where.ipUltimoLogin = filters.lastLoginIp;
     }
     if (filters.device) {
       where.dispositivo = filters.device;
@@ -102,46 +141,12 @@ export class SessionRepository extends BaseRepository {
   }
 
   /**
-   * Retorna el nombre de la colección en la respuesta
-   * @returns {string}
+   * Retorna el nombre de la colección en la respuesta JSON
+   * 
+   * @returns {string} Nombre de la colección para la respuesta JSON
    */
   getCollectionName() {
     return 'sessions';
-  }
-
-  /**
-   * Método específico: Buscar sesión por token
-   * 
-   * @param {string} tokenSesion - Token de sesión
-   * @returns {Promise<Session|null>} Entidad Session o null
-   */
-  async findByToken(tokenSesion) {
-    const model = await this.getModel().findOne({
-      where: {
-        tokenSesion: tokenSesion,
-        activo: true,
-        // paranoid: true automáticamente excluye deletedAt !== null
-      },
-    });
-    return SessionMapper.toEntity(model);
-  }
-
-  /**
-   * Método específico: Buscar sesiones por usuario
-   * 
-   * @param {number} usuarioId - ID del usuario
-   * @returns {Promise<Session[]>} Array de entidades Session
-   */
-  async findByUsuarioId(usuarioId) {
-    const models = await this.getModel().findAll({
-      where: {
-        usuarioId: usuarioId,
-        activo: true,
-        // paranoid: true automáticamente excluye deletedAt !== null
-      },
-      order: [['ultimoLogin', 'DESC']],
-    });
-    return SessionMapper.toEntityList(models);
   }
 }
 

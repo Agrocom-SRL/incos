@@ -24,6 +24,7 @@ import { ManagementPlanMapper } from '../mappers/ManagementPlanMapper.js';
  * Esta clase cumple con el contrato IManagementPlanRepository:
  * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findBy, findAll, create, update, delete, search, count)
  * - La especialización está en buildWhereClause(), no en métodos adicionales
+ * - Usa los métodos base de BaseRepository para todas las operaciones de búsqueda
  */
 export class ManagementPlanRepository extends BaseRepository {
   getModel() {
@@ -34,28 +35,67 @@ export class ManagementPlanRepository extends BaseRepository {
     return ManagementPlanMapper.toEntity(model);
   }
 
+  /**
+   * Construye la cláusula WHERE para filtros específicos
+   * Maneja todos los criterios de búsqueda de la entidad ManagementPlan
+   * 
+   * Este método permite usar findAll(), findBy(), search() y count() con filtros específicos
+   * sin necesidad de crear métodos adicionales en el repositorio.
+   * 
+   * Ejemplos de uso:
+   * - findAll({ managementId: 1 }) → Busca planes habilitados de una gestión
+   * - findAll({ studyPlanId: 2, state: 'VIGENTE' }) → Busca planes vigentes de un plan de estudios
+   * - findBy({ managementId: 1, studyPlanId: 2 }) → Busca plan habilitado específico
+   * 
+   * @param {Object} filters - Filtros de búsqueda
+   *   - managementId: ID de la gestión
+   *   - studyPlanId: ID del plan de estudios
+   *   - name: Nombre del plan habilitado (búsqueda exacta, para búsqueda de texto usar search())
+   *   - state: Estado del plan (PROPUESTO, VIGENTE, CANCELADO, etc.)
+   *   - cancellationReason: Motivo de cancelación (búsqueda exacta, para búsqueda de texto usar search())
+   * @returns {Object} Objeto WHERE para Sequelize
+   */
   buildWhereClause(filters) {
     const where = {};
 
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
     if (filters.managementId) {
       where.gestionId = filters.managementId;
     }
     if (filters.studyPlanId) {
       where.planEstudioId = filters.studyPlanId;
     }
+    if (filters.name !== undefined) {
+      where.nombre = filters.name;
+    }
     if (filters.state) {
       where.estado = filters.state;
+    }
+    if (filters.cancellationReason !== undefined) {
+      where.motivoCancelacion = filters.cancellationReason;
     }
 
     return where;
   }
 
+  /**
+   * Retorna los campos que se usarán para búsqueda de texto
+   * Estos campos se usan en el método search() para búsqueda por término
+   * 
+   * @returns {string[]} Array de nombres de campos del modelo Sequelize
+   */
   getSearchFields() {
     return ['nombre'];
   }
 
+  /**
+   * Retorna el orden por defecto para las consultas
+   * Delega el orden al BaseRepository que ordena por ID ASC
+   * 
+   * @returns {Array} Array vacío para usar el orden por defecto del BaseRepository (id ASC)
+   */
   getDefaultSort() {
-    return [['gestionId', 'DESC'], ['nombre', 'ASC']];
+    return []; // Usa el orden por defecto de BaseRepository: [['id', 'ASC']]
   }
 
   mapDataToModel(data, userId = null) {
@@ -66,6 +106,11 @@ export class ManagementPlanRepository extends BaseRepository {
     return ManagementPlanMapper.toModelForUpdate(data);
   }
 
+  /**
+   * Retorna el nombre de la colección en la respuesta JSON
+   * 
+   * @returns {string} Nombre de la colección para la respuesta JSON
+   */
   getCollectionName() {
     return 'managementPlans';
   }

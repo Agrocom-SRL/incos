@@ -22,8 +22,14 @@ import { RolePermissionMapper } from '../mappers/RolePermissionMapper.js';
  * @implements {IRolPermisoRepository}
  * 
  * Esta clase cumple con el contrato IRolPermisoRepository:
- * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findAll, create, update, delete, search)
- * - Implementa findByRolId() y findByPermisoId() que son requeridos por IRolPermisoRepository
+ * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findBy, findAll, create, update, delete, search, count)
+ * - La especialización está en buildWhereClause(), no en métodos adicionales
+ * - Usa los métodos base de BaseRepository para todas las operaciones de búsqueda
+ * 
+ * IMPORTANTE: Se eliminaron findByRolId() y findByPermisoId() porque son redundantes.
+ * Usar en su lugar:
+ * - findAll({ roleId: X }) → Reemplaza findByRolId()
+ * - findAll({ permissionId: X }) → Reemplaza findByPermisoId()
  */
 export class RolePermissionRepository extends BaseRepository {
   /**
@@ -47,12 +53,26 @@ export class RolePermissionRepository extends BaseRepository {
 
   /**
    * Construye la cláusula WHERE para filtros específicos
-   * @param {Object} filters
-   * @returns {Object}
+   * Maneja todos los criterios de búsqueda de la entidad RolePermission
+   * 
+   * Este método permite usar findAll(), findBy(), search() y count() con filtros específicos
+   * sin necesidad de crear métodos adicionales en el repositorio.
+   * 
+   * Ejemplos de uso:
+   * - findAll({ roleId: 1 }) → Busca permisos de un rol
+   * - findAll({ permissionId: 2 }) → Busca roles con un permiso
+   * - findBy({ roleId: 1, permissionId: 2, action: 'CREAR' }) → Busca permiso específico
+   * 
+   * @param {Object} filters - Filtros de búsqueda
+   *   - roleId: ID del rol
+   *   - permissionId: ID del permiso
+   *   - action: Acción (VER, CREAR, EDITAR, ELIMINAR, APROBAR, EXPORTAR)
+   * @returns {Object} Objeto WHERE para Sequelize
    */
   buildWhereClause(filters) {
     const where = {};
 
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
     if (filters.roleId) {
       where.rolId = filters.roleId;
     }
@@ -105,47 +125,12 @@ export class RolePermissionRepository extends BaseRepository {
   }
 
   /**
-   * Retorna el nombre de la colección en la respuesta
-   * @returns {string}
+   * Retorna el nombre de la colección en la respuesta JSON
+   * 
+   * @returns {string} Nombre de la colección para la respuesta JSON
    */
   getCollectionName() {
     return 'rolePermissions';
-  }
-
-  /**
-   * Método específico: Buscar permisos por rol
-   * 
-   * @param {number} rolId - ID del rol
-   * @returns {Promise<RolePermission[]>} Array de entidades RolePermission
-   */
-  async findByRolId(rolId) {
-    const models = await this.getModel().findAll({
-      where: {
-        rolId: rolId,
-        activo: true,
-        // paranoid: true automáticamente excluye deletedAt !== null
-      },
-      order: [['permisoId', 'ASC']],
-    });
-    return RolePermissionMapper.toEntityList(models);
-  }
-
-  /**
-   * Método específico: Buscar roles por permiso
-   * 
-   * @param {number} permisoId - ID del permiso
-   * @returns {Promise<RolePermission[]>} Array de entidades RolePermission
-   */
-  async findByPermisoId(permisoId) {
-    const models = await this.getModel().findAll({
-      where: {
-        permisoId: permisoId,
-        activo: true,
-        // paranoid: true automáticamente excluye deletedAt !== null
-      },
-      order: [['rolId', 'ASC']],
-    });
-    return RolePermissionMapper.toEntityList(models);
   }
 }
 

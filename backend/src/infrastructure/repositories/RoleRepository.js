@@ -22,8 +22,13 @@ import { RoleMapper } from '../mappers/RoleMapper.js';
  * @implements {IRolRepository}
  * 
  * Esta clase cumple con el contrato IRolRepository:
- * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findAll, create, update, delete, search)
- * - Implementa findByCodigo() que es requerido por IRolRepository
+ * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findBy, findAll, create, update, delete, search, count)
+ * - La especialización está en buildWhereClause(), no en métodos adicionales
+ * - Usa los métodos base de BaseRepository para todas las operaciones de búsqueda
+ * 
+ * IMPORTANTE: Se eliminó findByCodigo() porque es redundante.
+ * Usar en su lugar:
+ * - findBy({ code: 'ADMIN' }) → Reemplaza findByCodigo()
  */
 export class RoleRepository extends BaseRepository {
   /**
@@ -46,18 +51,58 @@ export class RoleRepository extends BaseRepository {
   }
 
   /**
-   * Retorna los campos que se usarán para búsqueda
-   * @returns {string[]}
+   * Construye la cláusula WHERE para filtros específicos
+   * Maneja todos los criterios de búsqueda de la entidad Role
+   * 
+   * Este método permite usar findAll(), findBy(), search() y count() con filtros específicos
+   * sin necesidad de crear métodos adicionales en el repositorio.
+   * 
+   * Ejemplos de uso:
+   * - findBy({ code: 'ADMIN' }) → Busca rol por código
+   * - findAll({ accessLevel: 5 }) → Busca roles con nivel de acceso 5
+   * 
+   * @param {Object} filters - Filtros de búsqueda
+   *   - code: Código del rol (búsqueda exacta, para búsqueda de texto usar search())
+   *   - name: Nombre del rol (búsqueda exacta, para búsqueda de texto usar search())
+   *   - accessLevel: Nivel de acceso (1-5)
+   * @returns {Object} Objeto WHERE para Sequelize
+   */
+  buildWhereClause(filters) {
+    const where = {};
+
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
+    if (filters.code !== undefined) {
+      where.codigo = filters.code;
+    }
+    if (filters.name !== undefined) {
+      where.nombre = filters.name;
+    }
+    if (filters.accessLevel !== undefined) {
+      where.nivelAcceso = filters.accessLevel;
+    }
+
+    return where;
+  }
+
+  /**
+   * Retorna los campos que se usarán para búsqueda de texto
+   * Estos campos se usan en el método search() para búsqueda por término
+   * 
+   * @returns {string[]} Array de nombres de campos del modelo Sequelize
    */
   getSearchFields() {
     return ['codigo', 'nombre'];
   }
 
   /**
-   * Retorna el orden por defecto
-   * @returns {Array}
+   * Retorna el orden por defecto para las consultas
+   * Delega el orden al BaseRepository que ordena por ID ASC
+   * 
+   * @returns {Array} Array vacío para usar el orden por defecto del BaseRepository (id ASC)
    */
-  getDefaultSort() { return []; }
+  getDefaultSort() {
+    return []; // Usa el orden por defecto de BaseRepository: [['id', 'ASC']]
+  }
 
   /**
    * Mapea datos de dominio a formato del modelo Sequelize (para creación)
@@ -84,28 +129,12 @@ export class RoleRepository extends BaseRepository {
   }
 
   /**
-   * Retorna el nombre de la colección en la respuesta
-   * @returns {string}
+   * Retorna el nombre de la colección en la respuesta JSON
+   * 
+   * @returns {string} Nombre de la colección para la respuesta JSON
    */
   getCollectionName() {
     return 'roles';
-  }
-
-  /**
-   * Método específico: Buscar rol por código
-   * 
-   * @param {string} codigo - Código del rol
-   * @returns {Promise<Role|null>} Entidad Role o null si no se encuentra
-   */
-  async findByCodigo(codigo) {
-    const model = await this.getModel().findOne({
-      where: {
-        codigo: codigo,
-        activo: true,
-        // paranoid: true automáticamente excluye deletedAt !== null
-      },
-    });
-    return this.toEntity(model);
   }
 }
 

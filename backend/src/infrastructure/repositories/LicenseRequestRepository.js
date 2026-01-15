@@ -22,8 +22,14 @@ import { LicenseRequestMapper } from '../mappers/LicenseRequestMapper.js';
  * @implements {ILicenciaSolicitudRepository}
  * 
  * Esta clase cumple con el contrato ILicenciaSolicitudRepository:
- * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findAll, create, update, delete, search)
- * - Implementa findByEstudianteId() y findByGestionId() que son requeridos por ILicenciaSolicitudRepository
+ * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findBy, findAll, create, update, delete, search, count)
+ * - La especialización está en buildWhereClause(), no en métodos adicionales
+ * - Usa los métodos base de BaseRepository para todas las operaciones de búsqueda
+ * 
+ * IMPORTANTE: Se eliminaron findByEstudianteId() y findByGestionId() porque son redundantes.
+ * Usar en su lugar:
+ * - findAll({ studentId: X }) → Reemplaza findByEstudianteId()
+ * - findAll({ managementId: X }) → Reemplaza findByGestionId()
  */
 export class LicenseRequestRepository extends BaseRepository {
   /**
@@ -47,26 +53,98 @@ export class LicenseRequestRepository extends BaseRepository {
 
   /**
    * Construye la cláusula WHERE para filtros específicos
-   * @param {Object} filters
-   * @returns {Object}
+   * Maneja todos los criterios de búsqueda de la entidad LicenseRequest
+   * 
+   * Este método permite usar findAll(), findBy(), search() y count() con filtros específicos
+   * sin necesidad de crear métodos adicionales en el repositorio.
+   * 
+   * Ejemplos de uso:
+   * - findAll({ studentId: 1 }) → Busca solicitudes de un estudiante
+   * - findAll({ state: 'APROBADA', managementId: 2 }) → Busca solicitudes aprobadas de una gestión
+   * - findBy({ studentId: 1, requestDate: '2025-01-15' }) → Busca solicitud específica
+   * 
+   * @param {Object} filters - Filtros de búsqueda
+   *   - studentId: ID del estudiante
+   *   - careerId: ID de la carrera
+   *   - managementId: ID de la gestión
+   *   - courseShiftId: ID del turno de curso
+   *   - requestDate: Fecha de solicitud
+   *   - startDate: Fecha de inicio de la licencia
+   *   - endDate: Fecha de fin de la licencia
+   *   - totalDays: Total de días
+   *   - reason: Motivo (ENFERMEDAD, TRABAJO, FAMILIAR, etc.)
+   *   - reasonDetail: Detalle del motivo (búsqueda exacta, para búsqueda de texto usar search())
+   *   - state: Estado (PENDIENTE, APROBADA, RECHAZADA, etc.)
+   *   - decisionDate: Fecha de decisión
+   *   - decidedBy: ID del usuario que decidió
+   *   - rejectionReason: Motivo de rechazo (búsqueda exacta, para búsqueda de texto usar search())
+   *   - documentsComplete: Si los documentos están completos (true/false)
+   *   - documentDeliveryStartDate: Fecha de inicio de entrega de documentos
+   *   - documentDeliveryEndDate: Fecha de fin de entrega de documentos
+   *   - observations: Observaciones (búsqueda exacta, para búsqueda de texto usar search())
+   *   - decisionObservations: Observaciones de decisión (búsqueda exacta, para búsqueda de texto usar search())
+   * @returns {Object} Objeto WHERE para Sequelize
    */
   buildWhereClause(filters) {
     const where = {};
 
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
     if (filters.studentId) {
       where.estudianteId = filters.studentId;
-    }
-    if (filters.managementId) {
-      where.gestionId = filters.managementId;
     }
     if (filters.careerId) {
       where.carreraId = filters.careerId;
     }
-    if (filters.state) {
-      where.estado = filters.state;
+    if (filters.managementId) {
+      where.gestionId = filters.managementId;
+    }
+    if (filters.courseShiftId) {
+      where.turnoCursoId = filters.courseShiftId;
+    }
+    if (filters.requestDate !== undefined) {
+      where.fechaSolicitud = filters.requestDate;
+    }
+    if (filters.startDate !== undefined) {
+      where.fechaDesde = filters.startDate;
+    }
+    if (filters.endDate !== undefined) {
+      where.fechaHasta = filters.endDate;
+    }
+    if (filters.totalDays !== undefined) {
+      where.totalDias = filters.totalDays;
     }
     if (filters.reason) {
       where.motivo = filters.reason;
+    }
+    if (filters.reasonDetail !== undefined) {
+      where.detalleMotivo = filters.reasonDetail;
+    }
+    if (filters.state) {
+      where.estado = filters.state;
+    }
+    if (filters.decisionDate !== undefined) {
+      where.fechaDecision = filters.decisionDate;
+    }
+    if (filters.decidedBy) {
+      where.decididoPor = filters.decidedBy;
+    }
+    if (filters.rejectionReason !== undefined) {
+      where.motivoRechazo = filters.rejectionReason;
+    }
+    if (filters.documentsComplete !== undefined) {
+      where.documentosCompletos = filters.documentsComplete;
+    }
+    if (filters.documentDeliveryStartDate !== undefined) {
+      where.fechaInicioEntregaDocumentos = filters.documentDeliveryStartDate;
+    }
+    if (filters.documentDeliveryEndDate !== undefined) {
+      where.fechaFinEntregaDocumentos = filters.documentDeliveryEndDate;
+    }
+    if (filters.observations !== undefined) {
+      where.observaciones = filters.observations;
+    }
+    if (filters.decisionObservations !== undefined) {
+      where.observacionesDecision = filters.decisionObservations;
     }
 
     return where;
@@ -111,46 +189,11 @@ export class LicenseRequestRepository extends BaseRepository {
   }
 
   /**
-   * Retorna el nombre de la colección en la respuesta
-   * @returns {string}
+   * Retorna el nombre de la colección en la respuesta JSON
+   * 
+   * @returns {string} Nombre de la colección para la respuesta JSON
    */
   getCollectionName() {
     return 'licenseRequests';
-  }
-
-  /**
-   * Método específico: Buscar licencias por estudiante
-   * 
-   * @param {number} estudianteId - ID del estudiante
-   * @returns {Promise<LicenseRequest[]>} Array de entidades LicenseRequest
-   */
-  async findByEstudianteId(estudianteId) {
-    const models = await this.getModel().findAll({
-      where: {
-        estudianteId: estudianteId,
-        activo: true,
-        // paranoid: true automáticamente excluye deletedAt !== null
-      },
-      order: [['fechaSolicitud', 'DESC']],
-    });
-    return LicenseRequestMapper.toEntityList(models);
-  }
-
-  /**
-   * Método específico: Buscar licencias por gestión
-   * 
-   * @param {number} gestionId - ID de la gestión
-   * @returns {Promise<LicenseRequest[]>} Array de entidades LicenseRequest
-   */
-  async findByGestionId(gestionId) {
-    const models = await this.getModel().findAll({
-      where: {
-        gestionId: gestionId,
-        activo: true,
-        // paranoid: true automáticamente excluye deletedAt !== null
-      },
-      order: [['fechaSolicitud', 'DESC']],
-    });
-    return LicenseRequestMapper.toEntityList(models);
   }
 }

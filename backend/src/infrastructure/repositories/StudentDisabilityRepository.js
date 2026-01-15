@@ -48,21 +48,42 @@ export class StudentDisabilityRepository extends BaseRepository {
 
   /**
    * Construye la cláusula WHERE para filtros específicos
-   * Maneja todos los criterios de búsqueda: studentId, disabilityTypeId
+   * Maneja todos los criterios de búsqueda de la entidad StudentDisability
+   * 
+   * Este método permite usar findAll(), findBy(), search() y count() con filtros específicos
+   * sin necesidad de crear métodos adicionales en el repositorio.
+   * 
+   * Ejemplos de uso:
+   * - findAll({ studentId: 1 }) → Busca discapacidades de un estudiante
+   * - findAll({ disabilityTypeId: 2 }) → Busca estudiantes con un tipo de discapacidad
+   * - findBy({ studentId: 1, disabilityTypeId: 2 }) → Busca discapacidad específica
    * 
    * @param {Object} filters - Filtros de búsqueda
-   *   - studentId: ID del estudiante (estudianteId)
-   *   - disabilityTypeId: ID del tipo de discapacidad (tipoDiscapacidadId)
+   *   - studentId: ID del estudiante
+   *   - disabilityTypeId: ID del tipo de discapacidad
+   *   - description: Descripción (búsqueda exacta, para búsqueda de texto usar search())
+   *   - disabilityDegree: Grado de discapacidad (LEVE, MODERADO, SEVERO, PROFUNDO)
+   *   - cause: Causa de la discapacidad (búsqueda exacta, para búsqueda de texto usar search())
    * @returns {Object} Objeto WHERE para Sequelize
    */
   buildWhereClause(filters) {
     const where = {};
 
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
     if (filters.studentId) {
       where.estudianteId = filters.studentId;
     }
     if (filters.disabilityTypeId) {
       where.tipoDiscapacidadId = filters.disabilityTypeId;
+    }
+    if (filters.description !== undefined) {
+      where.descripcion = filters.description;
+    }
+    if (filters.disabilityDegree) {
+      where.gradoDiscapacidad = filters.disabilityDegree;
+    }
+    if (filters.cause !== undefined) {
+      where.causa = filters.cause;
     }
 
     return where;
@@ -107,17 +128,12 @@ export class StudentDisabilityRepository extends BaseRepository {
   }
 
   /**
-   * Retorna el nombre de la colección en la respuesta
-   * @returns {string}
+   * Retorna el nombre de la colección en la respuesta JSON
+   * 
+   * @returns {string} Nombre de la colección para la respuesta JSON
    */
   getCollectionName() {
     return 'studentDisabilities';
   }
-
-  // NOTA: Los métodos específicos (findByEstudianteId, createMultiple, deleteByEstudianteId) han sido eliminados.
-  // Ahora se usan los métodos base de IRepository:
-  // - findAll({ studentId }) para buscar todas las discapacidades por estudiante
-  // - create() múltiples veces en un loop para crear múltiples discapacidades (debe hacerse en caso de uso)
-  // - delete() múltiples veces en un loop para eliminar todas las discapacidades (debe hacerse en caso de uso)
 }
 

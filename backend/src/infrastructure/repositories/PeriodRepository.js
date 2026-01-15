@@ -22,8 +22,13 @@ import { PeriodMapper } from '../mappers/PeriodMapper.js';
  * @implements {IPeriodoRepository}
  * 
  * Esta clase cumple con el contrato IPeriodoRepository:
- * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findAll, create, update, delete, search)
- * - Implementa findByCarreraId() que es requerido por IPeriodoRepository
+ * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findBy, findAll, create, update, delete, search, count)
+ * - La especialización está en buildWhereClause(), no en métodos adicionales
+ * - Usa los métodos base de BaseRepository para todas las operaciones de búsqueda
+ * 
+ * IMPORTANTE: Se eliminó findByCarreraId() porque es redundante.
+ * Usar en su lugar:
+ * - findAll({ studyPlanId: X }) → Busca periodos de un plan de estudios
  */
 export class PeriodRepository extends BaseRepository {
   /**
@@ -47,36 +52,66 @@ export class PeriodRepository extends BaseRepository {
 
   /**
    * Construye la cláusula WHERE para filtros específicos
-   * @param {Object} filters
-   * @returns {Object}
+   * Maneja todos los criterios de búsqueda de la entidad Period
+   * 
+   * Este método permite usar findAll(), findBy(), search() y count() con filtros específicos
+   * sin necesidad de crear métodos adicionales en el repositorio.
+   * 
+   * Ejemplos de uso:
+   * - findAll({ studyPlanId: 1 }) → Busca periodos de un plan de estudios
+   * - findBy({ studyPlanId: 1, number: 1 }) → Busca periodo específico
+   * - findAll({ displayOrder: 1 }) → Busca por orden de visualización
+   * 
+   * @param {Object} filters - Filtros de búsqueda
+   *   - studyPlanId: ID del plan de estudios
+   *   - name: Nombre del periodo (búsqueda exacta, para búsqueda de texto usar search())
+   *   - number: Número del periodo
+   *   - displayOrder: Orden de visualización
+   *   - description: Descripción (búsqueda exacta, para búsqueda de texto usar search())
+   * @returns {Object} Objeto WHERE para Sequelize
    */
   buildWhereClause(filters) {
     const where = {};
 
-    if (filters.careerId) {
-      where.carreraId = filters.careerId;
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
+    if (filters.studyPlanId) {
+      where.planEstudioId = filters.studyPlanId;
     }
-
-    if (filters.numero) {
-      where.numero = filters.numero;
+    if (filters.name !== undefined) {
+      where.nombre = filters.name;
+    }
+    if (filters.number !== undefined) {
+      where.numero = filters.number;
+    }
+    if (filters.displayOrder !== undefined) {
+      where.ordenVisualizacion = filters.displayOrder;
+    }
+    if (filters.description !== undefined) {
+      where.descripcion = filters.description;
     }
 
     return where;
   }
 
   /**
-   * Retorna los campos que se usarán para búsqueda
-   * @returns {string[]}
+   * Retorna los campos que se usarán para búsqueda de texto
+   * Estos campos se usan en el método search() para búsqueda por término
+   * 
+   * @returns {string[]} Array de nombres de campos del modelo Sequelize
    */
   getSearchFields() {
     return ['nombre', 'descripcion'];
   }
 
   /**
-   * Retorna el orden por defecto
-   * @returns {Array}
+   * Retorna el orden por defecto para las consultas
+   * Delega el orden al BaseRepository que ordena por ID ASC
+   * 
+   * @returns {Array} Array vacío para usar el orden por defecto del BaseRepository (id ASC)
    */
-  getDefaultSort() { return []; }
+  getDefaultSort() {
+    return []; // Usa el orden por defecto de BaseRepository: [['id', 'ASC']]
+  }
 
   /**
    * Mapea datos de dominio a formato del modelo Sequelize (para creación)
@@ -103,29 +138,12 @@ export class PeriodRepository extends BaseRepository {
   }
 
   /**
-   * Retorna el nombre de la colección en la respuesta
-   * @returns {string}
+   * Retorna el nombre de la colección en la respuesta JSON
+   * 
+   * @returns {string} Nombre de la colección para la respuesta JSON
    */
   getCollectionName() {
     return 'periods';
-  }
-
-  /**
-   * Método específico: Buscar periodos por carrera
-   * 
-   * @param {number} carreraId - ID de la carrera
-   * @returns {Promise<Period[]>} Array de entidades Period
-   */
-  async findByCarreraId(carreraId) {
-    const models = await this.getModel().findAll({
-      where: {
-        carreraId: carreraId,
-        activo: true,
-        // paranoid: true automáticamente excluye deletedAt !== null
-      },
-      order: [['ordenVisualizacion', 'ASC'], ['numero', 'ASC']],
-    });
-    return PeriodMapper.toEntityList(models);
   }
 }
 

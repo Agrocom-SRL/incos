@@ -22,7 +22,9 @@ import { ActivityMapper } from '../mappers/ActivityMapper.js';
  * @implements {IActividadRepository}
  * 
  * Esta clase cumple con el contrato IActividadRepository:
- * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findAll, create, update, delete, search)
+ * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findBy, findAll, create, update, delete, search, count)
+ * - La especialización está en buildWhereClause(), no en métodos adicionales
+ * - Usa los métodos base de BaseRepository para todas las operaciones de búsqueda
  */
 export class ActivityRepository extends BaseRepository {
   /**
@@ -46,36 +48,65 @@ export class ActivityRepository extends BaseRepository {
 
   /**
    * Construye la cláusula WHERE para filtros específicos
-   * @param {Object} filters
-   * @returns {Object}
+   * Maneja todos los criterios de búsqueda de la entidad Activity
+   * 
+   * Este método permite usar findAll(), findBy(), search() y count() con filtros específicos
+   * sin necesidad de crear métodos adicionales en el repositorio.
+   * 
+   * Ejemplos de uso:
+   * - findAll({ type: 'ACADEMICA' }) → Busca actividades académicas
+   * - findAll({ isHighlighted: true }) → Busca actividades destacadas
+   * - findBy({ name: 'Inscripciones' }) → Busca actividad específica
+   * 
+   * @param {Object} filters - Filtros de búsqueda
+   *   - name: Nombre de la actividad (búsqueda exacta, para búsqueda de texto usar search())
+   *   - description: Descripción (búsqueda exacta, para búsqueda de texto usar search())
+   *   - type: Tipo de actividad (INSCRIPCION, PLANIFICACION, ACADEMICA, etc.)
+   *   - isHighlighted: Si es destacada (true/false)
+   *   - icon: Icono
+   * @returns {Object} Objeto WHERE para Sequelize
    */
   buildWhereClause(filters) {
     const where = {};
 
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
+    if (filters.name !== undefined) {
+      where.nombre = filters.name;
+    }
+    if (filters.description !== undefined) {
+      where.descripcion = filters.description;
+    }
     if (filters.type) {
       where.tipo = filters.type;
     }
     if (filters.isHighlighted !== undefined) {
       where.esDestacada = filters.isHighlighted;
     }
+    if (filters.icon !== undefined) {
+      where.icono = filters.icon;
+    }
 
     return where;
   }
 
   /**
-   * Retorna los campos que se usarán para búsqueda
-   * @returns {string[]}
+   * Retorna los campos que se usarán para búsqueda de texto
+   * Estos campos se usan en el método search() para búsqueda por término
+   * 
+   * @returns {string[]} Array de nombres de campos del modelo Sequelize
    */
   getSearchFields() {
     return ['nombre', 'descripcion'];
   }
 
   /**
-   * Retorna el orden por defecto
-   * @returns {Array}
+   * Retorna el orden por defecto para las consultas
+   * Delega el orden al BaseRepository que ordena por ID ASC
+   * 
+   * @returns {Array} Array vacío para usar el orden por defecto del BaseRepository (id ASC)
    */
-  getDefaultSort() { 
-    return [['nombre', 'ASC']];
+  getDefaultSort() {
+    return []; // Usa el orden por defecto de BaseRepository: [['id', 'ASC']]
   }
 
   /**
@@ -103,8 +134,9 @@ export class ActivityRepository extends BaseRepository {
   }
 
   /**
-   * Retorna el nombre de la colección en la respuesta
-   * @returns {string}
+   * Retorna el nombre de la colección en la respuesta JSON
+   * 
+   * @returns {string} Nombre de la colección para la respuesta JSON
    */
   getCollectionName() {
     return 'activities';

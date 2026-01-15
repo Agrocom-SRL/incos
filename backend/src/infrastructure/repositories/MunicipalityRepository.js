@@ -2,7 +2,6 @@ import { IMunicipioRepository } from '../../domain/interfaces/repositories/IMuni
 import { Municipio as MunicipioModel } from '../database/models/municipio.js';
 import { BaseRepository } from './BaseRepository.js';
 import { MunicipalityMapper } from '../mappers/MunicipalityMapper.js';
-import { Op } from 'sequelize';
 
 /**
  * Implementación del repositorio de municipios usando Sequelize
@@ -23,8 +22,14 @@ import { Op } from 'sequelize';
  * @implements {IMunicipioRepository}
  * 
  * Esta clase cumple con el contrato IMunicipioRepository:
- * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findAll, create, update, delete, search)
- * - Implementa findByProvinciaId() y findByCodigo() que son requeridos por IMunicipioRepository
+ * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findBy, findAll, create, update, delete, search, count)
+ * - La especialización está en buildWhereClause(), no en métodos adicionales
+ * - Usa los métodos base de BaseRepository para todas las operaciones de búsqueda
+ * 
+ * IMPORTANTE: Se eliminaron findByProvinciaId() y findByCodigo() porque son redundantes.
+ * Usar en su lugar:
+ * - findAll({ provinceId: X }) → Reemplaza findByProvinciaId()
+ * - findBy({ code: 'LP' }) → Reemplaza findByCodigo()
  */
 export class MunicipalityRepository extends BaseRepository {
   /**
@@ -48,14 +53,34 @@ export class MunicipalityRepository extends BaseRepository {
 
   /**
    * Construye la cláusula WHERE para filtros específicos
-   * @param {Object} filters
-   * @returns {Object}
+   * Maneja todos los criterios de búsqueda de la entidad Municipality
+   * 
+   * Este método permite usar findAll(), findBy(), search() y count() con filtros específicos
+   * sin necesidad de crear métodos adicionales en el repositorio.
+   * 
+   * Ejemplos de uso:
+   * - findAll({ provinceId: 1 }) → Busca municipios de una provincia
+   * - findBy({ code: 'LP' }) → Busca municipio por código
+   * - findAll({ name: 'La Paz' }) → Busca por nombre exacto
+   * 
+   * @param {Object} filters - Filtros de búsqueda
+   *   - provinceId: ID de la provincia
+   *   - name: Nombre del municipio (búsqueda exacta, para búsqueda de texto usar search())
+   *   - code: Código del municipio (búsqueda exacta, para búsqueda de texto usar search())
+   * @returns {Object} Objeto WHERE para Sequelize
    */
   buildWhereClause(filters) {
     const where = {};
 
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
     if (filters.provinceId) {
       where.provinciaId = filters.provinceId;
+    }
+    if (filters.name !== undefined) {
+      where.nombre = filters.name;
+    }
+    if (filters.code !== undefined) {
+      where.codigo = filters.code;
     }
 
     return where;
@@ -100,77 +125,11 @@ export class MunicipalityRepository extends BaseRepository {
   }
 
   /**
-   * Retorna el nombre de la colección en la respuesta
-   * @returns {string}
+   * Retorna el nombre de la colección en la respuesta JSON
+   * 
+   * @returns {string} Nombre de la colección para la respuesta JSON
    */
   getCollectionName() {
     return 'municipalities';
-  }
-
-  /**
-   * Método específico: Buscar municipios por provincia
-   * 
-   * @param {number} provinciaId - ID de la provincia
-   * @returns {Promise<Municipality[]>} Array de entidades Municipality
-   */
-  async findByProvinciaId(provinciaId) {
-    const models = await this.getModel().findAll({
-      where: {
-        provinciaId,
-        activo: true,
-        // paranoid: true automáticamente excluye deletedAt !== null
-      },
-      order: [['nombre', 'ASC']],
-    });
-    return MunicipalityMapper.toEntityList(models);
-  }
-
-  /**
-   * Método específico: Buscar municipio por código
-   * 
-   * @param {string} codigo - Código del municipio
-   * @returns {Promise<Municipality|null>} Entidad Municipality o null si no se encuentra
-   */
-  async findByCodigo(codigo) {
-    const model = await this.getModel().findOne({
-      where: {
-        codigo: codigo.toUpperCase(),
-        activo: true,
-        // paranoid: true automáticamente excluye deletedAt !== null
-      },
-    });
-    return this.toEntity(model);
-  }
-
-  /**
-   * Sobrescribe el método search para incluir búsqueda case-insensitive en código
-   * Respeta el filtro de registros eliminados (paranoid: true) y el estado activo
-   * @param {string} searchTerm
-   * @param {Object} options - Opciones opcionales (includeInactive)
-   * @returns {Promise<Municipality[]>}
-   */
-  async search(searchTerm, options = {}) {
-    const Model = this.getModel();
-
-    const where = {
-      // paranoid: true automáticamente excluye deletedAt !== null (registros eliminados lógicamente)
-      [Op.or]: [
-        { nombre: { [Op.like]: `%${searchTerm}%` } },
-        { codigo: { [Op.like]: `%${searchTerm.toUpperCase()}%` } },
-      ],
-    };
-
-    // Filtrar por estado activo/inactivo (solo si no se solicita incluir inactivos)
-    if (!options.includeInactive) {
-      where.activo = true; // Solo registros activos por defecto
-    }
-
-    const models = await Model.findAll({
-      where,
-      order: this.getDefaultSort(),
-      limit: 50,
-    });
-
-    return MunicipalityMapper.toEntityList(models);
   }
 }

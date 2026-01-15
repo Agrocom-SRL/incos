@@ -57,6 +57,9 @@ export class BaseRepository extends IRepository {
    * Retorna el orden por defecto para las consultas
    * Ordena por ID para mantener el orden original de inserción en la base de datos
    * Las subclases pueden sobrescribir este método si necesitan un orden diferente
+   * 
+   * IMPORTANTE: Si la subclase retorna un array vacío [], se usa este orden por defecto
+   * 
    * @returns {Array} Array de arrays [campo, dirección] para Sequelize order
    */
   getDefaultSort() {
@@ -64,7 +67,7 @@ export class BaseRepository extends IRepository {
   }
 
   /**
-   * Mapea los datos de dominio a formato del modelo Sequelize
+   * Mapea los datos de dominio a formato del modelo Sequelize (para creación)
    * @abstract
    * @param {Object} data - Datos en formato de dominio
    * @param {number} userId - ID del usuario (opcional)
@@ -98,6 +101,19 @@ export class BaseRepository extends IRepository {
    */
   getCollectionName() {
     throw new Error('Method getCollectionName must be implemented by subclass');
+  }
+
+  /**
+   * Helper interno: Obtiene el orden efectivo para las consultas
+   * Si la subclase retorna un array vacío, usa el orden por defecto de BaseRepository
+   * 
+   * @private
+   * @returns {Array} Orden efectivo para la consulta
+   */
+  _getEffectiveSort() {
+    const subclassSort = this.getDefaultSort();
+    // Si la subclase retorna array vacío, usar orden por defecto [['id', 'ASC']]
+    return subclassSort.length === 0 ? [['id', 'ASC']] : subclassSort;
   }
 
   /**
@@ -136,6 +152,7 @@ export class BaseRepository extends IRepository {
    * @param {Object} criteria - Criterios de búsqueda (ej: { studentCode: "2025-001", ci: "1234567", expedicion: "LP" })
    * @param {Object} options - Opciones opcionales
    *   - includeInactive: Si incluir registros inactivos (default: false)
+   *   - attributes: Array de campos a seleccionar (opcional, ej: ['id', 'nombre'])
    * @returns {Promise<Object|null>} Un solo registro o null si no se encuentra
    */
   async findBy(criteria, options = {}) {
@@ -150,10 +167,17 @@ export class BaseRepository extends IRepository {
       where.activo = true; // Solo registros activos por defecto
     }
 
-    const model = await Model.findOne({
+    const queryOptions = {
       where,
-      order: this.getDefaultSort(),
-    });
+      order: this._getEffectiveSort(),
+    };
+
+    // Agregar attributes si se especifican (optimización para traer solo campos necesarios)
+    if (options.attributes && Array.isArray(options.attributes) && options.attributes.length > 0) {
+      queryOptions.attributes = options.attributes;
+    }
+
+    const model = await Model.findOne(queryOptions);
 
     return this.toEntity(model);
   }
@@ -174,6 +198,7 @@ export class BaseRepository extends IRepository {
    *   - attributes: Array de campos a seleccionar (opcional, ej: ['id', 'nombre'])
    * @param {number} page - Página (opcional)
    * @param {number} limit - Límite por página (opcional)
+   * @returns {Promise<Object>} Objeto con colección, total, page y limit
    */
   async findAll(filters = {}, page = null, limit = null) {
     const Model = this.getModel();
@@ -199,7 +224,7 @@ export class BaseRepository extends IRepository {
       where,
       order: filters.sort
         ? [[filters.sort.split(':')[0], filters.sort.includes(':') ? filters.sort.split(':')[1] : 'ASC']]
-        : this.getDefaultSort(),
+        : this._getEffectiveSort(),
     };
 
     // Agregar attributes si se especifican (optimización para traer solo campos necesarios)
@@ -233,12 +258,16 @@ export class BaseRepository extends IRepository {
   /**
    * TEMPLATE METHOD: Crear un nuevo registro
    * Define el algoritmo común de creación
+   * 
+   * @param {Object} data - Datos para crear el registro
+   * @param {number} userId - ID del usuario que crea (opcional)
+   * @returns {Promise<Object>} Entidad creada
    */
   async create(data, userId = null) {
     const Model = this.getModel();
     const modelData = {
       ...this.mapDataToModel(data, userId),
-      activo: data.activo !== undefined ? data.activo : true,
+      activo: 'active' in data ? data.active : ('activo' in data ? data.activo : true),
       createdBy: userId,
     };
 
@@ -249,6 +278,11 @@ export class BaseRepository extends IRepository {
   /**
    * TEMPLATE METHOD: Actualizar un registro
    * Define el algoritmo común de actualización
+   * 
+   * @param {number} id - ID del registro a actualizar
+   * @param {Object} data - Datos para actualizar
+   * @param {number} userId - ID del usuario que actualiza (opcional)
+   * @returns {Promise<Object>} Entidad actualizada
    */
   async update(id, data, userId = null) {
     const Model = this.getModel();
@@ -268,6 +302,10 @@ export class BaseRepository extends IRepository {
    * TEMPLATE METHOD: Eliminar un registro (soft delete)
    * Usa el método destroy() de Sequelize que respeta paranoid: true
    * Esto automáticamente establece deletedAt y respeta el soft delete
+   * 
+   * @param {number} id - ID del registro a eliminar
+   * @param {number} userId - ID del usuario que elimina (opcional)
+   * @returns {Promise<boolean>} true si se eliminó correctamente, false si no se encontró
    */
   async delete(id, userId = null) {
     const Model = this.getModel();
@@ -306,6 +344,8 @@ export class BaseRepository extends IRepository {
    * @param {Object} options - Opciones opcionales
    *   - limit: Límite de resultados (default: 50)
    *   - includeInactive: Si incluir registros inactivos (default: false)
+   *   - attributes: Array de campos a seleccionar (opcional, ej: ['id', 'nombre'])
+   * @returns {Promise<Object[]>} Array de entidades encontradas
    */
   async search(searchTerm, options = {}) {
     const Model = this.getModel();
@@ -324,11 +364,18 @@ export class BaseRepository extends IRepository {
       where.activo = true; // Solo registros activos por defecto
     }
 
-    const models = await Model.findAll({
+    const queryOptions = {
       where,
-      order: this.getDefaultSort(),
+      order: this._getEffectiveSort(),
       limit,
-    });
+    };
+
+    // Agregar attributes si se especifican (optimización para traer solo campos necesarios)
+    if (options.attributes && Array.isArray(options.attributes) && options.attributes.length > 0) {
+      queryOptions.attributes = options.attributes;
+    }
+
+    const models = await Model.findAll(queryOptions);
 
     return models.map((model) => this.toEntity(model));
   }
@@ -344,7 +391,7 @@ export class BaseRepository extends IRepository {
    * 
    * @param {Object} filters - Filtros opcionales
    *   - includeInactive: Si incluir registros inactivos (default: false)
-   * @returns {Promise<number>}
+   * @returns {Promise<number>} Cantidad de registros
    */
   async count(filters = {}) {
     const Model = this.getModel();

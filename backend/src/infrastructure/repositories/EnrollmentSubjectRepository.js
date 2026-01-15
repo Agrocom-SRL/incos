@@ -24,6 +24,7 @@ import { EnrollmentSubjectMapper } from '../mappers/EnrollmentSubjectMapper.js';
  * Esta clase cumple con el contrato IEnrollmentSubjectRepository:
  * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findBy, findAll, create, update, delete, search, count)
  * - La especialización está en buildWhereClause(), no en métodos adicionales
+ * - Usa los métodos base de BaseRepository para todas las operaciones de búsqueda
  */
 export class EnrollmentSubjectRepository extends BaseRepository {
   /**
@@ -47,37 +48,73 @@ export class EnrollmentSubjectRepository extends BaseRepository {
 
   /**
    * Construye la cláusula WHERE para filtros específicos
-   * Maneja todos los criterios de búsqueda: enrollmentId, teacherAssignmentId, status
+   * Maneja todos los criterios de búsqueda de la entidad EnrollmentSubject
+   * 
+   * Este método permite usar findAll(), findBy(), search() y count() con filtros específicos
+   * sin necesidad de crear métodos adicionales en el repositorio.
+   * 
+   * Ejemplos de uso:
+   * - findAll({ enrollmentId: 1 }) → Busca materias inscritas de una inscripción
+   * - findAll({ status: 'APROBADO' }) → Busca materias aprobadas
+   * - findBy({ enrollmentId: 1, teacherAssignmentId: 2 }) → Busca materia específica
    * 
    * @param {Object} filters - Filtros de búsqueda
    *   - enrollmentId: ID de la inscripción
    *   - teacherAssignmentId: ID de la asignación docente
-   *   - status: Estado de la materia (INSCRITO, CURSANDO, APROBADO, etc.)
+   *   - finalGrade: Nota final (0-100)
+   *   - definitiveGrade: Nota definitiva (0-100)
+   *   - status: Estado de la materia (INSCRITO, CURSANDO, APROBADO, REPROBADO, etc.)
+   *   - observations: Observaciones (búsqueda exacta, para búsqueda de texto usar search())
+   *   - teacherObservations: Observaciones del docente (búsqueda exacta, para búsqueda de texto usar search())
    * @returns {Object} Objeto WHERE para Sequelize
    */
   buildWhereClause(filters) {
     const where = {};
 
-    // Criterios de búsqueda únicos (para findBy)
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
     if (filters.enrollmentId) {
       where.inscripcionId = filters.enrollmentId;
     }
     if (filters.teacherAssignmentId) {
       where.asignacionDocenteId = filters.teacherAssignmentId;
     }
+    if (filters.finalGrade !== undefined) {
+      where.notaFinal = filters.finalGrade;
+    }
+    if (filters.definitiveGrade !== undefined) {
+      where.notaDefinitiva = filters.definitiveGrade;
+    }
     if (filters.status) {
       where.estado = filters.status;
+    }
+    if (filters.observations !== undefined) {
+      where.observaciones = filters.observations;
+    }
+    if (filters.teacherObservations !== undefined) {
+      where.observacionesDocente = filters.teacherObservations;
     }
 
     return where;
   }
 
   /**
-   * Retorna los campos que se usarán para búsqueda
-   * @returns {string[]}
+   * Retorna los campos que se usarán para búsqueda de texto
+   * Estos campos se usan en el método search() para búsqueda por término
+   * 
+   * @returns {string[]} Array de nombres de campos del modelo Sequelize
    */
   getSearchFields() {
     return ['observaciones', 'observacionesDocente'];
+  }
+
+  /**
+   * Retorna el orden por defecto para las consultas
+   * Delega el orden al BaseRepository que ordena por ID ASC
+   * 
+   * @returns {Array} Array vacío para usar el orden por defecto del BaseRepository (id ASC)
+   */
+  getDefaultSort() {
+    return []; // Usa el orden por defecto de BaseRepository: [['id', 'ASC']]
   }
 
   /**
@@ -105,8 +142,9 @@ export class EnrollmentSubjectRepository extends BaseRepository {
   }
 
   /**
-   * Retorna el nombre de la colección en la respuesta
-   * @returns {string}
+   * Retorna el nombre de la colección en la respuesta JSON
+   * 
+   * @returns {string} Nombre de la colección para la respuesta JSON
    */
   getCollectionName() {
     return 'enrollmentSubjects';

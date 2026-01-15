@@ -2,7 +2,6 @@ import { IProvinciaRepository } from '../../domain/interfaces/repositories/IProv
 import { Provincia as ProvinciaModel } from '../database/models/provincia.js';
 import { BaseRepository } from './BaseRepository.js';
 import { ProvinceMapper } from '../mappers/ProvinceMapper.js';
-import { Op } from 'sequelize';
 
 /**
  * Implementación del repositorio de provincias usando Sequelize
@@ -23,8 +22,14 @@ import { Op } from 'sequelize';
  * @implements {IProvinciaRepository}
  * 
  * Esta clase cumple con el contrato IProvinciaRepository:
- * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findAll, create, update, delete, search)
- * - Implementa findByDepartamentoId() y findByCodigo() que son requeridos por IProvinciaRepository
+ * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findBy, findAll, create, update, delete, search, count)
+ * - La especialización está en buildWhereClause(), no en métodos adicionales
+ * - Usa los métodos base de BaseRepository para todas las operaciones de búsqueda
+ * 
+ * IMPORTANTE: Se eliminaron findByDepartamentoId() y findByCodigo() porque son redundantes.
+ * Usar en su lugar:
+ * - findAll({ departmentId: X }) → Reemplaza findByDepartamentoId()
+ * - findBy({ code: 'LP' }) → Reemplaza findByCodigo()
  */
 export class ProvinceRepository extends BaseRepository {
   /**
@@ -48,14 +53,34 @@ export class ProvinceRepository extends BaseRepository {
 
   /**
    * Construye la cláusula WHERE para filtros específicos
-   * @param {Object} filters
-   * @returns {Object}
+   * Maneja todos los criterios de búsqueda de la entidad Province
+   * 
+   * Este método permite usar findAll(), findBy(), search() y count() con filtros específicos
+   * sin necesidad de crear métodos adicionales en el repositorio.
+   * 
+   * Ejemplos de uso:
+   * - findAll({ departmentId: 1 }) → Busca provincias de un departamento
+   * - findBy({ code: 'LP' }) → Busca provincia por código
+   * - findAll({ name: 'La Paz' }) → Busca por nombre exacto
+   * 
+   * @param {Object} filters - Filtros de búsqueda
+   *   - departmentId: ID del departamento
+   *   - name: Nombre de la provincia (búsqueda exacta, para búsqueda de texto usar search())
+   *   - code: Código de la provincia (búsqueda exacta, para búsqueda de texto usar search())
+   * @returns {Object} Objeto WHERE para Sequelize
    */
   buildWhereClause(filters) {
     const where = {};
 
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
     if (filters.departmentId) {
       where.departamentoId = filters.departmentId;
+    }
+    if (filters.name !== undefined) {
+      where.nombre = filters.name;
+    }
+    if (filters.code !== undefined) {
+      where.codigo = filters.code;
     }
 
     return where;
@@ -100,77 +125,11 @@ export class ProvinceRepository extends BaseRepository {
   }
 
   /**
-   * Retorna el nombre de la colección en la respuesta
-   * @returns {string}
+   * Retorna el nombre de la colección en la respuesta JSON
+   * 
+   * @returns {string} Nombre de la colección para la respuesta JSON
    */
   getCollectionName() {
     return 'provinces';
-  }
-
-  /**
-   * Método específico: Buscar provincias por departamento
-   * 
-   * @param {number} departamentoId - ID del departamento
-   * @returns {Promise<Province[]>} Array de entidades Province
-   */
-  async findByDepartamentoId(departamentoId) {
-    const models = await this.getModel().findAll({
-      where: {
-        departamentoId,
-        activo: true,
-        // paranoid: true automáticamente excluye deletedAt !== null
-      },
-      order: [['nombre', 'ASC']],
-    });
-    return ProvinceMapper.toEntityList(models);
-  }
-
-  /**
-   * Método específico: Buscar provincia por código
-   * 
-   * @param {string} codigo - Código de la provincia
-   * @returns {Promise<Province|null>} Entidad Province o null si no se encuentra
-   */
-  async findByCodigo(codigo) {
-    const model = await this.getModel().findOne({
-      where: {
-        codigo: codigo.toUpperCase(),
-        activo: true,
-        // paranoid: true automáticamente excluye deletedAt !== null
-      },
-    });
-    return this.toEntity(model);
-  }
-
-  /**
-   * Sobrescribe el método search para incluir búsqueda case-insensitive en código
-   * Respeta el filtro de registros eliminados (paranoid: true) y el estado activo
-   * @param {string} searchTerm
-   * @param {Object} options - Opciones opcionales (includeInactive)
-   * @returns {Promise<Province[]>}
-   */
-  async search(searchTerm, options = {}) {
-    const Model = this.getModel();
-
-    const where = {
-      // paranoid: true automáticamente excluye deletedAt !== null (registros eliminados lógicamente)
-      [Op.or]: [
-        { nombre: { [Op.like]: `%${searchTerm}%` } },
-        { codigo: { [Op.like]: `%${searchTerm.toUpperCase()}%` } },
-      ],
-    };
-
-    // Filtrar por estado activo/inactivo (solo si no se solicita incluir inactivos)
-    if (!options.includeInactive) {
-      where.activo = true; // Solo registros activos por defecto
-    }
-
-    const models = await Model.findAll({
-      where,
-      order: this.getDefaultSort(),
-      limit: 50,
-    });
-
-    return ProvinceMapper.toEntityList(models);
   }
 }

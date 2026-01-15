@@ -50,7 +50,6 @@ export { ManagementPlanMapper } from './ManagementPlanMapper.js';
 export { ActivityMapper } from './ActivityMapper.js';
 export { AcademicPeriodMapper } from './AcademicPeriodMapper.js';
 export { CalendarActivityMapper } from './CalendarActivityMapper.js';
-export { ShiftMapper } from './ShiftMapper.js';
 export { ScholarshipMapper } from './ScholarshipMapper.js';
 export { StudyPlanMapper } from './StudyPlanMapper.js';
 export { PlanSubjectMapper } from './PlanSubjectMapper.js';

@@ -22,8 +22,14 @@ import { StudentScholarshipMapper } from '../mappers/StudentScholarshipMapper.js
  * @implements {IEstudianteBecaRepository}
  * 
  * Esta clase cumple con el contrato IEstudianteBecaRepository:
- * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findAll, create, update, delete, search)
- * - Implementa findByEstudianteId() y findByGestionId() que son requeridos por IEstudianteBecaRepository
+ * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findBy, findAll, create, update, delete, search, count)
+ * - La especialización está en buildWhereClause(), no en métodos adicionales
+ * - Usa los métodos base de BaseRepository para todas las operaciones de búsqueda
+ * 
+ * IMPORTANTE: Se eliminaron findByEstudianteId() y findByGestionId() porque son redundantes.
+ * Usar en su lugar:
+ * - findAll({ studentId: X }) → Reemplaza findByEstudianteId()
+ * - findAll({ managementId: X }) → Reemplaza findByGestionId()
  */
 export class StudentScholarshipRepository extends BaseRepository {
   /**
@@ -70,18 +76,24 @@ export class StudentScholarshipRepository extends BaseRepository {
   }
 
   /**
-   * Retorna los campos que se usarán para búsqueda
-   * @returns {string[]}
+   * Retorna los campos que se usarán para búsqueda de texto
+   * Estos campos se usan en el método search() para búsqueda por término
+   * 
+   * @returns {string[]} Array de nombres de campos del modelo Sequelize
    */
   getSearchFields() {
     return ['observaciones'];
   }
 
   /**
-   * Retorna el orden por defecto
-   * @returns {Array}
+   * Retorna el orden por defecto para las consultas
+   * Delega el orden al BaseRepository que ordena por ID ASC
+   * 
+   * @returns {Array} Array vacío para usar el orden por defecto del BaseRepository (id ASC)
    */
-  getDefaultSort() { return []; }
+  getDefaultSort() {
+    return []; // Usa el orden por defecto de BaseRepository: [['id', 'ASC']]
+  }
 
   /**
    * Mapea datos de dominio a formato del modelo Sequelize (para creación)
@@ -108,47 +120,12 @@ export class StudentScholarshipRepository extends BaseRepository {
   }
 
   /**
-   * Retorna el nombre de la colección en la respuesta
-   * @returns {string}
+   * Retorna el nombre de la colección en la respuesta JSON
+   * 
+   * @returns {string} Nombre de la colección para la respuesta JSON
    */
   getCollectionName() {
     return 'studentScholarships';
-  }
-
-  /**
-   * Método específico: Buscar becas por estudiante
-   * 
-   * @param {number} estudianteId - ID del estudiante
-   * @returns {Promise<StudentScholarship[]>} Array de entidades StudentScholarship
-   */
-  async findByEstudianteId(estudianteId) {
-    const models = await this.getModel().findAll({
-      where: {
-        estudianteId: estudianteId,
-        activo: true,
-        // paranoid: true automáticamente excluye deletedAt !== null
-      },
-      order: [['fechaSolicitud', 'DESC']],
-    });
-    return StudentScholarshipMapper.toEntityList(models);
-  }
-
-  /**
-   * Método específico: Buscar becas por gestión
-   * 
-   * @param {number} gestionId - ID de la gestión
-   * @returns {Promise<StudentScholarship[]>} Array de entidades StudentScholarship
-   */
-  async findByGestionId(gestionId) {
-    const models = await this.getModel().findAll({
-      where: {
-        gestionId: gestionId,
-        activo: true,
-        // paranoid: true automáticamente excluye deletedAt !== null
-      },
-      order: [['fechaSolicitud', 'DESC']],
-    });
-    return StudentScholarshipMapper.toEntityList(models);
   }
 }
 

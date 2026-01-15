@@ -22,7 +22,9 @@ import { AcademicPeriodMapper } from '../mappers/AcademicPeriodMapper.js';
  * @implements {IPeriodoAcademicoRepository}
  * 
  * Esta clase cumple con el contrato IPeriodoAcademicoRepository:
- * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findAll, create, update, delete, search)
+ * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findBy, findAll, create, update, delete, search, count)
+ * - La especialización está en buildWhereClause(), no en métodos adicionales
+ * - Usa los métodos base de BaseRepository para todas las operaciones de búsqueda
  */
 export class AcademicPeriodRepository extends BaseRepository {
   /**
@@ -46,36 +48,77 @@ export class AcademicPeriodRepository extends BaseRepository {
 
   /**
    * Construye la cláusula WHERE para filtros específicos
-   * @param {Object} filters
-   * @returns {Object}
+   * Maneja todos los criterios de búsqueda de la entidad AcademicPeriod
+   * 
+   * Este método permite usar findAll(), findBy(), search() y count() con filtros específicos
+   * sin necesidad de crear métodos adicionales en el repositorio.
+   * 
+   * Ejemplos de uso:
+   * - findAll({ managementId: 1 }) → Busca periodos de una gestión
+   * - findAll({ division: 'BIMESTRE' }) → Busca periodos bimestrales
+   * - findBy({ managementId: 1, code: '2025-BIM1' }) → Busca periodo específico
+   * 
+   * @param {Object} filters - Filtros de búsqueda
+   *   - managementId: ID de la gestión
+   *   - code: Código del periodo (búsqueda exacta, para búsqueda de texto usar search())
+   *   - name: Nombre del periodo (búsqueda exacta, para búsqueda de texto usar search())
+   *   - division: División (PLANIFICACION, MENSUAL, BIMESTRE, etc.)
+   *   - orderNumber: Número de orden
+   *   - startDate: Fecha de inicio
+   *   - endDate: Fecha de fin
+   *   - colorHex: Color hexadecimal
+   * @returns {Object} Objeto WHERE para Sequelize
    */
   buildWhereClause(filters) {
     const where = {};
 
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
     if (filters.managementId) {
       where.gestionId = filters.managementId;
     }
+    if (filters.code !== undefined) {
+      where.codigo = filters.code;
+    }
+    if (filters.name !== undefined) {
+      where.nombre = filters.name;
+    }
     if (filters.division) {
       where.division = filters.division;
+    }
+    if (filters.orderNumber !== undefined) {
+      where.numeroOrden = filters.orderNumber;
+    }
+    if (filters.startDate !== undefined) {
+      where.fechaInicio = filters.startDate;
+    }
+    if (filters.endDate !== undefined) {
+      where.fechaFin = filters.endDate;
+    }
+    if (filters.colorHex !== undefined) {
+      where.colorHex = filters.colorHex;
     }
 
     return where;
   }
 
   /**
-   * Retorna los campos que se usarán para búsqueda
-   * @returns {string[]}
+   * Retorna los campos que se usarán para búsqueda de texto
+   * Estos campos se usan en el método search() para búsqueda por término
+   * 
+   * @returns {string[]} Array de nombres de campos del modelo Sequelize
    */
   getSearchFields() {
     return ['nombre', 'codigo'];
   }
 
   /**
-   * Retorna el orden por defecto
-   * @returns {Array}
+   * Retorna el orden por defecto para las consultas
+   * Delega el orden al BaseRepository que ordena por ID ASC
+   * 
+   * @returns {Array} Array vacío para usar el orden por defecto del BaseRepository (id ASC)
    */
-  getDefaultSort() { 
-    return [['numeroOrden', 'ASC'], ['fechaInicio', 'ASC']];
+  getDefaultSort() {
+    return []; // Usa el orden por defecto de BaseRepository: [['id', 'ASC']]
   }
 
   /**
@@ -103,8 +146,9 @@ export class AcademicPeriodRepository extends BaseRepository {
   }
 
   /**
-   * Retorna el nombre de la colección en la respuesta
-   * @returns {string}
+   * Retorna el nombre de la colección en la respuesta JSON
+   * 
+   * @returns {string} Nombre de la colección para la respuesta JSON
    */
   getCollectionName() {
     return 'academicPeriods';

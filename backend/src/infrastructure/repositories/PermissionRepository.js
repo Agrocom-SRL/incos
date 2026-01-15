@@ -22,8 +22,14 @@ import { PermissionMapper } from '../mappers/PermissionMapper.js';
  * @implements {IPermisoRepository}
  * 
  * Esta clase cumple con el contrato IPermisoRepository:
- * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findAll, create, update, delete, search)
- * - Implementa findByCodigo() y findByModulo() que son requeridos por IPermisoRepository
+ * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findBy, findAll, create, update, delete, search, count)
+ * - La especialización está en buildWhereClause(), no en métodos adicionales
+ * - Usa los métodos base de BaseRepository para todas las operaciones de búsqueda
+ * 
+ * IMPORTANTE: Se eliminaron findByCodigo() y findByModulo() porque son redundantes.
+ * Usar en su lugar:
+ * - findBy({ code: 'PERMISO_X' }) → Reemplaza findByCodigo()
+ * - findAll({ module: 'MODULO_X' }) → Reemplaza findByModulo()
  */
 export class PermissionRepository extends BaseRepository {
   /**
@@ -47,12 +53,27 @@ export class PermissionRepository extends BaseRepository {
 
   /**
    * Construye la cláusula WHERE para filtros específicos
-   * @param {Object} filters
-   * @returns {Object}
+   * Maneja todos los criterios de búsqueda de la entidad Permission
+   * 
+   * Este método permite usar findAll(), findBy(), search() y count() con filtros específicos
+   * sin necesidad de crear métodos adicionales en el repositorio.
+   * 
+   * Ejemplos de uso:
+   * - findAll({ module: 'ESTUDIANTES' }) → Busca permisos de un módulo
+   * - findBy({ code: 'ESTUDIANTES_CREATE' }) → Busca permiso por código
+   * 
+   * @param {Object} filters - Filtros de búsqueda
+   *   - code: Código del permiso (búsqueda exacta, para búsqueda de texto usar search())
+   *   - module: Módulo del sistema (búsqueda exacta, para búsqueda de texto usar search())
+   * @returns {Object} Objeto WHERE para Sequelize
    */
   buildWhereClause(filters) {
     const where = {};
 
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
+    if (filters.code !== undefined) {
+      where.codigo = filters.code;
+    }
     if (filters.module) {
       where.modulo = filters.module;
     }
@@ -99,46 +120,12 @@ export class PermissionRepository extends BaseRepository {
   }
 
   /**
-   * Retorna el nombre de la colección en la respuesta
-   * @returns {string}
+   * Retorna el nombre de la colección en la respuesta JSON
+   * 
+   * @returns {string} Nombre de la colección para la respuesta JSON
    */
   getCollectionName() {
     return 'permissions';
-  }
-
-  /**
-   * Método específico: Buscar permiso por código
-   * 
-   * @param {string} codigo - Código del permiso
-   * @returns {Promise<Permission|null>} Entidad Permission o null si no se encuentra
-   */
-  async findByCodigo(codigo) {
-    const model = await this.getModel().findOne({
-      where: {
-        codigo: codigo,
-        activo: true,
-        // paranoid: true automáticamente excluye deletedAt !== null
-      },
-    });
-    return this.toEntity(model);
-  }
-
-  /**
-   * Método específico: Buscar permisos por módulo
-   * 
-   * @param {string} modulo - Módulo del sistema
-   * @returns {Promise<Permission[]>} Array de entidades Permission
-   */
-  async findByModulo(modulo) {
-    const models = await this.getModel().findAll({
-      where: {
-        modulo: modulo,
-        activo: true,
-        // paranoid: true automáticamente excluye deletedAt !== null
-      },
-      order: [['codigo', 'ASC']],
-    });
-    return PermissionMapper.toEntityList(models);
   }
 }
 

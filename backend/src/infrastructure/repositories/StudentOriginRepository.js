@@ -48,23 +48,48 @@ export class StudentOriginRepository extends BaseRepository {
 
   /**
    * Construye la cláusula WHERE para filtros específicos
-   * Maneja todos los criterios de búsqueda: studentId, countryId, originType, isPrincipal
+   * Maneja todos los criterios de búsqueda de la entidad StudentOrigin
+   * 
+   * Este método permite usar findAll(), findBy(), search() y count() con filtros específicos
+   * sin necesidad de crear métodos adicionales en el repositorio.
+   * 
+   * Ejemplos de uso:
+   * - findAll({ studentId: 1 }) → Busca orígenes de un estudiante
+   * - findAll({ originType: 'BOLIVIANA', isPrincipal: true }) → Busca origen principal boliviano
+   * - findBy({ studentId: 1, countryId: 1 }) → Busca origen específico
    * 
    * @param {Object} filters - Filtros de búsqueda
-   *   - studentId: ID del estudiante (estudianteId)
-   *   - countryId: ID del país (paisId)
-   *   - originType: Tipo de origen (tipoOrigen)
-   *   - isPrincipal: Si es principal (esPrincipal)
+   *   - studentId: ID del estudiante
+   *   - countryId: ID del país
+   *   - birthMunicipalityId: ID del municipio de nacimiento
+   *   - birthCity: Ciudad de nacimiento (búsqueda exacta, para búsqueda de texto usar search())
+   *   - motherTongueId: ID del idioma materno
+   *   - secondaryLanguageId: ID del idioma secundario
+   *   - originType: Tipo de origen (BOLIVIANA, EXTRANJERA, etc.)
+   *   - isPrincipal: Si es principal (true/false)
    * @returns {Object} Objeto WHERE para Sequelize
    */
   buildWhereClause(filters) {
     const where = {};
 
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
     if (filters.studentId) {
       where.estudianteId = filters.studentId;
     }
     if (filters.countryId) {
       where.paisId = filters.countryId;
+    }
+    if (filters.birthMunicipalityId) {
+      where.municipioNacimientoId = filters.birthMunicipalityId;
+    }
+    if (filters.birthCity !== undefined) {
+      where.ciudadNacimiento = filters.birthCity;
+    }
+    if (filters.motherTongueId) {
+      where.idiomaMaternoId = filters.motherTongueId;
+    }
+    if (filters.secondaryLanguageId) {
+      where.idiomaSecundarioId = filters.secondaryLanguageId;
     }
     if (filters.originType) {
       where.tipoOrigen = filters.originType;
@@ -77,18 +102,24 @@ export class StudentOriginRepository extends BaseRepository {
   }
 
   /**
-   * Retorna los campos que se usarán para búsqueda
-   * @returns {string[]}
+   * Retorna los campos que se usarán para búsqueda de texto
+   * Estos campos se usan en el método search() para búsqueda por término
+   * 
+   * @returns {string[]} Array de nombres de campos del modelo Sequelize
    */
   getSearchFields() {
     return ['ciudadNacimiento'];
   }
 
   /**
-   * Retorna el orden por defecto
-   * @returns {Array}
+   * Retorna el orden por defecto para las consultas
+   * Delega el orden al BaseRepository que ordena por ID ASC
+   * 
+   * @returns {Array} Array vacío para usar el orden por defecto del BaseRepository (id ASC)
    */
-  getDefaultSort() { return []; }
+  getDefaultSort() {
+    return []; // Usa el orden por defecto de BaseRepository: [['id', 'ASC']]
+  }
 
   /**
    * Mapea datos de dominio a formato del modelo Sequelize (para creación)
@@ -115,19 +146,12 @@ export class StudentOriginRepository extends BaseRepository {
   }
 
   /**
-   * Retorna el nombre de la colección en la respuesta
-   * @returns {string}
+   * Retorna el nombre de la colección en la respuesta JSON
+   * 
+   * @returns {string} Nombre de la colección para la respuesta JSON
    */
   getCollectionName() {
     return 'studentOrigins';
   }
-
-  // NOTA: Los métodos específicos (findByEstudianteId, createMultiple, deleteByEstudianteId, 
-  // determinarTipoNacionalidadEstudiante, determinarTipoNacionalidad, origenesToPresentation) han sido eliminados.
-  // Ahora se usan los métodos base de IRepository:
-  // - findAll({ studentId }) para buscar todos los orígenes por estudiante
-  // - create() múltiples veces en un loop para crear múltiples orígenes (debe hacerse en caso de uso)
-  // - delete() múltiples veces en un loop para eliminar todos los orígenes (debe hacerse en caso de uso)
-  // - determinarTipoNacionalidadEstudiante debe moverse a un caso de uso o servicio
 }
 
