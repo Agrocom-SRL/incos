@@ -12,10 +12,10 @@
  * - colorBorder (desde theme.components.Card.colorBorder)
  * 
  * @param {boolean} shadow - Si debe mostrar sombra (default: true)
- * @param {string} shadowType - Tipo de sombra: 'elevation2' | 'primary' | 'success' | 'info' | 'warning' | 'error' (default: 'elevation2')
+ * @param {string} shadowType - Tipo de sombra: 'elevation2' | 'primary' | 'success' | 'info' | 'warning' | 'error' | 'accent' (default: 'elevation2')
  * @param {boolean} bordered - Si debe mostrar borde (default: false) - DEPRECATED: usar variant en su lugar
  * @param {string} variant - Variante del card: 'outlined' | 'borderless' (default: 'borderless')
- * @param {string} headerColor - Color del header: 'default' | 'primary' | 'success' | 'warning' | 'info' | 'error' (default: 'default')
+ * @param {string} headerColor - Color del header: 'default' | 'primary' | 'success' | 'warning' | 'info' | 'error' | 'accent' (default: 'default')
  */
 
 import { Card as AntCard } from 'antd';
@@ -28,7 +28,7 @@ const Card = ({
   shadowType = 'elevation2',
   bordered = false, // Mantener para compatibilidad, pero usar variant
   variant,
-  headerColor = 'default', // 'default' | 'primary' | 'success' | 'warning' | 'info' | 'error'
+  headerColor = 'default', // 'default' | 'primary' | 'success' | 'warning' | 'info' | 'error' | 'accent'
   className = '',
   ...props
 }) => {
@@ -52,6 +52,7 @@ const Card = ({
       info: componentConfig.Card.boxShadowInfo,
       warning: componentConfig.Card.boxShadowWarning,
       error: componentConfig.Card.boxShadowError,
+      accent: componentConfig.Card.boxShadowAccent,
     };
     
     return shadowMap[shadowType] || componentConfig.Card.boxShadow;

@@ -66,6 +66,10 @@ export const shadows = {
   shadowError: createColorShadow(allColors.colorError),
   shadowErrorHover: createColorShadowHover(allColors.colorError),
   
+  // Accent - Púrpura/Violeta
+  shadowAccent: createColorShadow(allColors.colorAccent),
+  shadowAccentHover: createColorShadowHover(allColors.colorAccent),
+  
   // ========================================
   // SOMBRAS DE ACENTO (colores únicos del logo)
   // ========================================

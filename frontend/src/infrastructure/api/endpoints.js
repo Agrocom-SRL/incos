@@ -78,6 +78,7 @@ const createCRUDEndpoints = (basePath) => {
 // MÓDULO: ESTUDIANTES
 // ============================================
 export const ESTUDIANTES_ENDPOINTS = createCRUDEndpoints('/estudiantes');
+export const BECAS_DESCUENTOS_ENDPOINTS = createCRUDEndpoints('/becas-descuentos');
 
 // ============================================
 // MÓDULO: CONFIGURACIÓN

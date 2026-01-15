@@ -12,20 +12,22 @@
  */
 
 import { useLocation } from 'react-router-dom';
-import { StudentProvider, StudentDetailProvider } from '@application-estudiantes/providers';
+import { StudentProvider, StudentDetailProvider, AsignarBecaProvider } from '@application-estudiantes/providers';
 import EstudiantesAsignarBeca from '@estudiantes/pages/EstudiantesAsignarBeca';
 
 const AsignarBecaConnector = () => {
   const location = useLocation();
   const studentId = location.state?.studentId || null;
 
-  // Siempre proporcionar ambos providers
-  // Si no hay studentId, el StudentDetailProvider manejará el caso sin cargar datos
-  // pero el hook siempre estará disponible
+  // Siempre proporcionar todos los providers necesarios
+  // Si no hay studentId, los providers manejarán el caso sin cargar datos
+  // pero los hooks siempre estarán disponibles
   return (
     <StudentProvider>
       <StudentDetailProvider studentId={studentId}>
-        <EstudiantesAsignarBeca />
+        <AsignarBecaProvider studentId={studentId}>
+          <EstudiantesAsignarBeca />
+        </AsignarBecaProvider>
       </StudentDetailProvider>
     </StudentProvider>
   );

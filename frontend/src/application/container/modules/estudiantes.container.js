@@ -14,10 +14,12 @@ import {
   ObtenerDatosReferenciaFiltradosUseCase,
   CrearEstudianteUseCase,
   BuscarEstudianteUseCase,
+  ObtenerTodasBecasDescuentosUseCase,
 } from '@useCases/estudiantes';
 
 // Repositorio principal
 import EstudianteRepository from '@implementations/EstudianteRepository';
+import BecaDescuentoRepository from '@implementations/BecaDescuentoRepository';
 
 // Repositorios geográficos
 import PaisRepository from '@implementations/PaisRepository';
@@ -95,6 +97,11 @@ export function registerEstudiantesModule(factory) {
       discapacidadRepository,
       tipoParentescoRepository,
     });
+  };
+
+  // Use Case para obtener todas las becas y descuentos
+  factory.obtenerTodasBecasDescuentos = () => {
+    return new ObtenerTodasBecasDescuentosUseCase(BecaDescuentoRepository);
   };
 
   return factory;

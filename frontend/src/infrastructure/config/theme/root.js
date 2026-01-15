@@ -73,6 +73,21 @@ export function injectCSSVariables() {
   });
 
   // ========================================
+  // COLOR ACCENT - Variables CSS para el color de acento (púrpura/violeta)
+  // ========================================
+  root.style.setProperty('--color-accent', allThemeTokens.colorAccent);
+  root.style.setProperty('--color-accent-hover', allThemeTokens.colorAccentHover);
+  root.style.setProperty('--color-accent-active', allThemeTokens.colorAccentActive);
+  root.style.setProperty('--color-accent-bg', allThemeTokens.colorAccentBg);
+  root.style.setProperty('--color-accent-bg-hover', allThemeTokens.colorAccentBgHover);
+  root.style.setProperty('--color-accent-border', allThemeTokens.colorAccentBorder);
+  root.style.setProperty('--color-accent-border-hover', allThemeTokens.colorAccentBorderHover);
+  root.style.setProperty('--color-accent-text', allThemeTokens.colorAccentText);
+  root.style.setProperty('--color-accent-text-hover', allThemeTokens.colorAccentTextHover);
+  root.style.setProperty('--color-accent-text-disabled', allThemeTokens.colorAccentTextDisabled);
+  root.style.setProperty('--color-accent-bg-disabled', allThemeTokens.colorAccentBgDisabled);
+
+  // ========================================
   // AVATAR - Variables CSS
   // ========================================
   root.style.setProperty('--color-avatar-bg', componentConfig.Avatar.colorBgContainer);

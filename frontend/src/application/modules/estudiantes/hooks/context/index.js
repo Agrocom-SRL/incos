@@ -8,4 +8,5 @@ export { useStudentContext } from './useStudentContext';
 export { useStudentListContext } from './useStudentListContext';
 export { useStudentRegisterContext } from './useStudentRegisterContext';
 export { useStudentDetailContext } from './useStudentDetailContext';
+export { useAsignarBecaContext } from './useAsignarBecaContext';
 

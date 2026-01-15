@@ -44,6 +44,17 @@ const EstudiantesDetail = () => {
     });
   }, [navigate, studentId]);
 
+  // Acciones del header (botón de asignar beca) - debe estar antes de los returns tempranos
+  const headerActions = useMemo(() => (
+    <Button
+      type="primary"
+      icon={<GiftOutlined />}
+      onClick={handleAsignarBeca}
+    >
+      Asignar Beca
+    </Button>
+  ), [handleAsignarBeca]);
+
   // Si está cargando
   if (loading) {
     return (
@@ -104,17 +115,6 @@ const EstudiantesDetail = () => {
   }
 
   const { student: studentData, guardians, disabilities, origins, documentDeliveries } = student;
-
-  // Acciones del header (botón de asignar beca)
-  const headerActions = useMemo(() => (
-    <Button
-      type="primary"
-      icon={<GiftOutlined />}
-      onClick={handleAsignarBeca}
-    >
-      Asignar Beca
-    </Button>
-  ), [handleAsignarBeca]);
 
   return (
     <PageTemplate

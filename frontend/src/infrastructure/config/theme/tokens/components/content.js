@@ -33,6 +33,7 @@ export const Card = {
   boxShadowInfo: shadows.shadowInfo,
   boxShadowWarning: shadows.shadowWarning,
   boxShadowError: shadows.shadowError,
+  boxShadowAccent: shadows.shadowAccent,
 };
 
 /**

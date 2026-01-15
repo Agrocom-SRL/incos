@@ -14,14 +14,17 @@
  * - Contenido muestra: formulario para asignar beca
  */
 
-import { useMemo, useEffect } from 'react';
+import { useMemo, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Form, Card, Button, Space, Alert, Spin } from 'antd';
-import { ArrowLeftOutlined, SaveOutlined } from '@ant-design/icons';
+import { Form, Descriptions, Space, Alert, Spin, Typography, Row, Col } from 'antd';
+import { ArrowLeftOutlined, SaveOutlined, UserOutlined, IdcardOutlined, BarcodeOutlined, GiftOutlined, PercentageOutlined, FileTextOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
-import { PageHeader } from '@molecules';
-import { useStudentDetailContext } from '@application-estudiantes/hooks';
+import { PageHeader, DataCards } from '@molecules';
+import { Button, Card } from '@atoms';
+import { useStudentDetailContext, useAsignarBecaContext } from '@application-estudiantes/hooks';
 import { createAsignarBecaBreadcrumbItems } from '@estudiantes/config';
+
+const { Title, Text } = Typography;
 
 const EstudiantesAsignarBeca = () => {
   const navigate = useNavigate();
@@ -36,6 +39,13 @@ const EstudiantesAsignarBeca = () => {
   const studentDetailContext = useStudentDetailContext();
   const student = studentDetailContext?.student?.student || null;
   const loadingStudent = studentDetailContext?.loading || false;
+
+  // Obtener datos del contexto de asignar beca
+  const asignarBecaContext = useAsignarBecaContext();
+  const {
+    becasDescuentosData,
+    onSelectBecaDescuento,
+  } = asignarBecaContext;
 
   // Configurar breadcrumb items
   const breadcrumbItems = useMemo(() => createAsignarBecaBreadcrumbItems(), []);
@@ -52,6 +62,7 @@ const EstudiantesAsignarBeca = () => {
               <Button
                 icon={<ArrowLeftOutlined />}
                 onClick={() => navigate('/estudiantes')}
+                variant="primary"
               >
                 Volver
               </Button>
@@ -65,7 +76,11 @@ const EstudiantesAsignarBeca = () => {
           type="error"
           showIcon
           action={
-            <Button size="small" onClick={() => navigate('/estudiantes')}>
+            <Button 
+              size="small" 
+              onClick={() => navigate('/estudiantes')}
+              variant="default"
+            >
               Ir a Lista de Estudiantes
             </Button>
           }
@@ -83,6 +98,13 @@ const EstudiantesAsignarBeca = () => {
     }
   };
 
+  // Handler para seleccionar una beca/descuento
+  const handleSelectBeca = useCallback((beca) => {
+    onSelectBecaDescuento(beca);
+    // Actualizar el formulario con el ID de la beca seleccionada
+    form.setFieldsValue({ becaDescuentoId: beca.id });
+  }, [onSelectBecaDescuento, form]);
+
   // Handler para guardar la asignación de beca
   const handleFinish = async (values) => {
     try {
@@ -99,6 +121,31 @@ const EstudiantesAsignarBeca = () => {
     }
   };
 
+  // Función para renderizar cada card de beca/descuento
+  const renderBecaCard = useCallback((beca) => {
+    return (
+      <>
+        <div style={{ marginBottom: '12px', textAlign: 'center' }}>
+          <Text strong type="primary" style={{ fontSize: '32px', fontWeight: 'bold', display: 'block' }}>
+            {beca.porcentaje}%
+          </Text>
+        </div>
+        <div style={{ marginBottom: '8px' }}>
+          <Title level={5} style={{ margin: 0, textAlign: 'center' }}>
+            {beca.nombre}
+          </Title>
+        </div>
+        {beca.descripcion && (
+          <div style={{ marginTop: '8px' }}>
+            <Text type="secondary" style={{ fontSize: '12px', display: 'block', textAlign: 'center' }}>
+              {beca.descripcion}
+            </Text>
+          </div>
+        )}
+      </>
+    );
+  }, []);
+
   return (
     <PageTemplate
       header={
@@ -106,14 +153,13 @@ const EstudiantesAsignarBeca = () => {
           title={`Asignar Beca${student ? ` - ${student.nombreCompleto || student.codigoEstudiante || ''}` : ''}`}
           breadcrumbItems={breadcrumbItems}
           actions={
-            <Space>
-              <Button
-                icon={<ArrowLeftOutlined />}
-                onClick={handleVolver}
-              >
-                Volver
-              </Button>
-            </Space>
+            <Button
+              icon={<ArrowLeftOutlined />}
+              onClick={handleVolver}
+              variant="default"
+            >
+              Volver
+            </Button>
           }
         />
       }
@@ -128,69 +174,300 @@ const EstudiantesAsignarBeca = () => {
             </Spin>
           </div>
         ) : (
-          <Card title="Formulario de Asignación de Beca">
-            <Alert
-              message="Formulario en construcción"
-              description="Esta funcionalidad está en desarrollo. Próximamente podrá asignar becas a los estudiantes."
-              type="info"
-              showIcon
-              style={{ marginBottom: '24px' }}
-            />
+          <>
+            {/* Sección 1: Información del Estudiante (diseño moderno) */}
+            {student && (
+              <Card
+                title="Información del Estudiante"
+                style={{ marginBottom: '24px' }}
+                headerColor="primary"
+              >
+                <Row gutter={[24, 16]}>
+                  <Col xs={24} sm={12}>
+                    <div style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '12px',
+                      padding: '16px',
+                      backgroundColor: 'var(--color-fill-tertiary, #f5f5f5)',
+                      borderRadius: '8px',
+                      border: '1px solid var(--color-border-secondary, #e8e8e8)'
+                    }}>
+                      <div style={{
+                        width: '48px',
+                        height: '48px',
+                        borderRadius: '50%',
+                        backgroundColor: 'var(--color-primary, #1890ff)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0
+                      }}>
+                        <BarcodeOutlined style={{ fontSize: '24px', color: '#fff' }} />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <Text type="secondary" style={{ fontSize: '12px', display: 'block', marginBottom: '4px' }}>
+                          Código de Estudiante
+                        </Text>
+                        <Text strong style={{ fontSize: '16px', display: 'block' }}>
+                          {student.codigoEstudiante || 'N/A'}
+                        </Text>
+                      </div>
+                    </div>
+                  </Col>
+                  <Col xs={24} sm={12}>
+                    <div style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '12px',
+                      padding: '16px',
+                      backgroundColor: 'var(--color-fill-tertiary, #f5f5f5)',
+                      borderRadius: '8px',
+                      border: '1px solid var(--color-border-secondary, #e8e8e8)'
+                    }}>
+                      <div style={{
+                        width: '48px',
+                        height: '48px',
+                        borderRadius: '50%',
+                        backgroundColor: 'var(--color-primary, #1890ff)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0
+                      }}>
+                        <UserOutlined style={{ fontSize: '24px', color: '#fff' }} />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <Text type="secondary" style={{ fontSize: '12px', display: 'block', marginBottom: '4px' }}>
+                          Nombre Completo
+                        </Text>
+                        <Text strong style={{ fontSize: '16px', display: 'block' }}>
+                          {student.nombreCompleto || 'N/A'}
+                        </Text>
+                      </div>
+                    </div>
+                  </Col>
+                  <Col xs={24} sm={12}>
+                    <div style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '12px',
+                      padding: '16px',
+                      backgroundColor: 'var(--color-fill-tertiary, #f5f5f5)',
+                      borderRadius: '8px',
+                      border: '1px solid var(--color-border-secondary, #e8e8e8)'
+                    }}>
+                      <div style={{
+                        width: '48px',
+                        height: '48px',
+                        borderRadius: '50%',
+                        backgroundColor: 'var(--color-primary, #1890ff)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0
+                      }}>
+                        <IdcardOutlined style={{ fontSize: '24px', color: '#fff' }} />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <Text type="secondary" style={{ fontSize: '12px', display: 'block', marginBottom: '4px' }}>
+                          CI Completo
+                        </Text>
+                        <Text strong style={{ fontSize: '16px', display: 'block' }}>
+                          {student.ciCompleto || 'N/A'}
+                        </Text>
+                      </div>
+                    </div>
+                  </Col>
+                </Row>
+              </Card>
+            )}
 
-            <Form
-              form={form}
-              layout="vertical"
-              onFinish={handleFinish}
-              initialValues={{
-                studentId: studentId,
-              }}
+            {/* Sección 2: Selección de Beca/Descuento */}
+            <Card
+              title="Seleccionar Beca o Descuento"
+              style={{ marginTop: '24px', marginBottom: '24px' }}
+              headerColor="primary"
+              style={{ backgroundColor: 'var(--color-fill-tertiary, #f5f5f5)' }}
             >
-              {/* Información del estudiante (solo lectura) */}
-              {student && (
-                <Card
-                  type="inner"
-                  title="Información del Estudiante"
+              {becasDescuentosData.error && (
+                <Alert
+                  message="Error al cargar becas y descuentos"
+                  description={becasDescuentosData.error}
+                  type="error"
+                  showIcon
                   style={{ marginBottom: '24px' }}
-                >
-                  <Form.Item label="Código de Estudiante">
-                    <span>{student.codigoEstudiante || 'N/A'}</span>
-                  </Form.Item>
-                  <Form.Item label="Nombre Completo">
-                    <span>{student.nombreCompleto || 'N/A'}</span>
-                  </Form.Item>
-                  <Form.Item label="CI">
-                    <span>{student.ciCompleto || 'N/A'}</span>
-                  </Form.Item>
-                </Card>
+                />
               )}
 
-              {/* TODO: Agregar campos del formulario de asignación de beca */}
-              {/* Por ejemplo:
-                - Tipo de beca (select)
-                - Porcentaje de beca (input number)
-                - Fecha de inicio (date picker)
-                - Fecha de fin (date picker)
-                - Observaciones (textarea)
-                - Estado (select)
-              */}
+              <Form
+                form={form}
+                layout="vertical"
+                onFinish={handleFinish}
+                initialValues={{
+                  studentId: studentId,
+                }}
+              >
+                <Form.Item
+                  name="becaDescuentoId"
+                  rules={[
+                    { required: true, message: 'Por favor seleccione una beca o descuento' }
+                  ]}
+                >
+                  <DataCards
+                    data={becasDescuentosData.becasDescuentos || []}
+                    loading={becasDescuentosData.loading}
+                    emptyMessage="No hay becas o descuentos disponibles"
+                    renderItem={renderBecaCard}
+                    onSelect={handleSelectBeca}
+                    selectedItem={becasDescuentosData.selectedBecaDescuento}
+                    isSelected={(item) => {
+                      return becasDescuentosData.selectedBecaDescuento?.id === item.id;
+                    }}
+                    loadingText="Cargando becas y descuentos..."
+                  />
+                </Form.Item>
 
-              <Form.Item>
-                <Space>
-                  <Button
-                    type="primary"
-                    htmlType="submit"
-                    icon={<SaveOutlined />}
-                    disabled={true} // Deshabilitado hasta implementar la funcionalidad
-                  >
-                    Asignar Beca
-                  </Button>
-                  <Button onClick={handleVolver}>
-                    Cancelar
-                  </Button>
-                </Space>
-              </Form.Item>
-            </Form>
-          </Card>
+                {/* TODO: Agregar más campos del formulario de asignación de beca */}
+                {/* Por ejemplo:
+                  - Fecha de inicio (date picker)
+                  - Fecha de fin (date picker)
+                  - Observaciones (textarea)
+                  - Estado (select)
+                */}
+              </Form>
+            </Card>
+
+            {/* Sección 3: Beca/Descuento Seleccionada (diseño moderno) */}
+            {becasDescuentosData.selectedBecaDescuento && (
+              <Card
+                title="Beca/Descuento Seleccionada"
+                style={{ marginTop: '24px', marginBottom: '24px' }}
+                headerColor="primary"
+              >
+                <Row gutter={[24, 16]}>
+                  <Col xs={24} sm={12}>
+                    <div style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '12px',
+                      padding: '16px',
+                      backgroundColor: 'var(--color-fill-tertiary, #f5f5f5)',
+                      borderRadius: '8px',
+                      border: '1px solid var(--color-border-secondary, #e8e8e8)'
+                    }}>
+                      <div style={{
+                        width: '48px',
+                        height: '48px',
+                        borderRadius: '50%',
+                        backgroundColor: 'var(--color-info, #196b45)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0
+                      }}>
+                        <GiftOutlined style={{ fontSize: '24px', color: '#fff' }} />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <Text type="secondary" style={{ fontSize: '12px', display: 'block', marginBottom: '4px' }}>
+                          Nombre
+                        </Text>
+                        <Text strong style={{ fontSize: '16px', display: 'block' }}>
+                          {becasDescuentosData.selectedBecaDescuento.nombre || 'N/A'}
+                        </Text>
+                      </div>
+                    </div>
+                  </Col>
+                  <Col xs={24} sm={12}>
+                    <div style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '12px',
+                      padding: '16px',
+                      backgroundColor: 'var(--color-fill-tertiary, #f5f5f5)',
+                      borderRadius: '8px',
+                      border: '1px solid var(--color-border-secondary, #e8e8e8)'
+                    }}>
+                      <div style={{
+                        width: '48px',
+                        height: '48px',
+                        borderRadius: '50%',
+                        backgroundColor: 'var(--color-info, #196b45)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0
+                      }}>
+                        <PercentageOutlined style={{ fontSize: '24px', color: '#fff' }} />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <Text type="secondary" style={{ fontSize: '12px', display: 'block', marginBottom: '4px' }}>
+                          Porcentaje de Descuento
+                        </Text>
+                        <Text strong style={{ fontSize: '20px', display: 'block', color: 'var(--color-primary-hover, #196b45)' }}>
+                          {becasDescuentosData.selectedBecaDescuento.porcentaje || 'N/A'}%
+                        </Text>
+                      </div>
+                    </div>
+                  </Col>
+                  {becasDescuentosData.selectedBecaDescuento.descripcion && (
+                    <Col xs={24}>
+                      <div style={{ 
+                        display: 'flex', 
+                        alignItems: 'flex-start', 
+                        gap: '12px',
+                        padding: '16px',
+                        backgroundColor: 'var(--color-fill-tertiary, #f5f5f5)',
+                        borderRadius: '8px',
+                        border: '1px solid var(--color-border-secondary, #e8e8e8)'
+                      }}>
+                        <div style={{
+                          width: '48px',
+                          height: '48px',
+                          borderRadius: '50%',
+                          backgroundColor: 'var(--color-info, #196b45)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          flexShrink: 0
+                        }}>
+                          <FileTextOutlined style={{ fontSize: '24px', color: '#fff' }} />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <Text type="secondary" style={{ fontSize: '12px', display: 'block', marginBottom: '4px' }}>
+                            Descripción
+                          </Text>
+                          <Text style={{ fontSize: '14px', display: 'block' }}>
+                            {becasDescuentosData.selectedBecaDescuento.descripcion}
+                          </Text>
+                        </div>
+                      </div>
+                    </Col>
+                  )}
+                </Row>
+
+                {/* Botones de acción - Solo se muestran cuando hay una beca seleccionada */}
+                <div style={{ marginTop: '24px', paddingTop: '24px', borderTop: '1px solid var(--color-border-secondary, #e8e8e8)' }}>
+                  <Space size="large">
+                    <Button
+                      variant="primary"
+                      onClick={() => form.submit()}
+                      icon={<SaveOutlined />}
+                      disabled={!becasDescuentosData.selectedBecaDescuento || loadingStudent}
+                    >
+                      Asignar Beca
+                    </Button>
+                    <Button
+                      variant="default"
+                      onClick={handleVolver}
+                    >
+                      Cancelar
+                    </Button>
+                  </Space>
+                </div>
+              </Card>
+            )}
+          </>
         )}
       </div>
     </PageTemplate>

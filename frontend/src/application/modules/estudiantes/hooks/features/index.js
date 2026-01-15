@@ -11,4 +11,5 @@ export { useContactosEmergenciaDinamicos } from './useContactosEmergenciaDinamic
 export { useEstudianteWizardTitles } from './useEstudianteWizardTitles';
 export { useDocumentacionDinamica } from './useDocumentacionDinamica';
 export { useDocumentacionProcesada } from './useDocumentacionProcesada';
+export { useAsignarBecaBecasDescuentos } from './useAsignarBecaBecasDescuentos';
 

@@ -5,4 +5,5 @@
  */
 
 export { useStudentData } from './useStudentData';
+export { useAsignarBecaData } from './useAsignarBecaData';
 

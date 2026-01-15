@@ -71,6 +71,19 @@ export const semanticColors = {
   colorErrorText: '#e41c24',
   colorErrorTextHover: '#ffffff', // Blanco en hover
   colorErrorTextDisabled: '#cccccc', // Texto gris cuando está deshabilitado
+
+  // Color de acento - Púrpura/Violeta (para destacar secciones importantes)
+  colorAccent: '#8b5cf6',
+  colorAccentHover: '#7c3aed',
+  colorAccentActive: '#6d28d9',
+  colorAccentBg: '#f3e8ff',
+  colorAccentBgHover: '#e9d5ff',
+  colorAccentBgDisabled: '#f5f5f5', // Fondo gris claro cuando está deshabilitado
+  colorAccentBorder: '#a78bfa',
+  colorAccentBorderHover: '#8b5cf6',
+  colorAccentText: '#8b5cf6',
+  colorAccentTextHover: '#ffffff', // Blanco en hover
+  colorAccentTextDisabled: '#cccccc', // Texto gris cuando está deshabilitado
 };
 
 export const linkColors = {

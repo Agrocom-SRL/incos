@@ -5,4 +5,5 @@ export { ObtenerDatosGeograficosFiltradosUseCase } from './ObtenerDatosGeografic
 export { ObtenerDatosReferenciaFiltradosUseCase } from './ObtenerDatosReferenciaFiltradosUseCase';
 export { CrearEstudianteUseCase } from './CrearEstudianteUseCase';
 export { BuscarEstudianteUseCase } from './BuscarEstudianteUseCase';
+export { ObtenerTodasBecasDescuentosUseCase } from './ObtenerTodasBecasDescuentosUseCase';
 
