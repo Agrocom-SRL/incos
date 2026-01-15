@@ -8,13 +8,29 @@ import { BaseEntity } from './BaseEntity.js';
 export class TeacherAssignment extends BaseEntity {
   constructor(data = {}) {
     super(data);
-    this.managementPlanId = data.managementPlanId || null;
-    this.courseId = data.courseId || null;
-    this.teacherId = data.teacherId || null;
-    this.hours = data.hours || null;
-    this.active = data.active !== undefined ? data.active : true;
-    this.reason = data.reason || null;
-    this.assignmentDate = data.assignmentDate || null;
+    // Solo inicializar campos si fueron proporcionados explícitamente
+    // Esto permite usar attributes limitados sin inicializar campos no solicitados
+    if (data.hasOwnProperty('managementPlanId')) {
+      this.managementPlanId = data.managementPlanId;
+    }
+    if (data.hasOwnProperty('courseId')) {
+      this.courseId = data.courseId;
+    }
+    if (data.hasOwnProperty('teacherId')) {
+      this.teacherId = data.teacherId;
+    }
+    if (data.hasOwnProperty('hours')) {
+      this.hours = data.hours;
+    }
+    if (data.hasOwnProperty('active')) {
+      this.active = data.active;
+    }
+    if (data.hasOwnProperty('reason')) {
+      this.reason = data.reason;
+    }
+    if (data.hasOwnProperty('assignmentDate')) {
+      this.assignmentDate = data.assignmentDate;
+    }
   }
 
   /**
@@ -27,18 +43,44 @@ export class TeacherAssignment extends BaseEntity {
 
   /**
    * Convierte la entidad a objeto plano
+   * Solo incluye campos que existen en la instancia (fueron inicializados)
    * @returns {Object}
    */
   toPlainObject() {
-    return {
-      ...super.toPlainObject(),
-      managementPlanId: this.managementPlanId,
-      courseId: this.courseId,
-      teacherId: this.teacherId,
-      hours: this.hours,
-      active: this.active,
-      reason: this.reason,
-      assignmentDate: this.assignmentDate,
-    };
+    const plainObject = super.toPlainObject();
+    
+    // Solo incluir campos que fueron inicializados (existen en this)
+    if (this.hasOwnProperty('managementPlanId')) {
+      plainObject.managementPlanId = this.managementPlanId;
+    }
+    if (this.hasOwnProperty('courseId')) {
+      plainObject.courseId = this.courseId;
+    }
+    if (this.hasOwnProperty('teacherId')) {
+      plainObject.teacherId = this.teacherId;
+    }
+    if (this.hasOwnProperty('hours')) {
+      plainObject.hours = this.hours;
+    }
+    if (this.hasOwnProperty('active')) {
+      plainObject.active = this.active;
+    }
+    if (this.hasOwnProperty('reason')) {
+      plainObject.reason = this.reason;
+    }
+    if (this.hasOwnProperty('assignmentDate')) {
+      plainObject.assignmentDate = this.assignmentDate;
+    }
+
+    return plainObject;
+  }
+
+  /**
+   * Convierte la entidad a JSON
+   * Usa toPlainObject() para serialización
+   * @returns {Object}
+   */
+  toJSON() {
+    return this.toPlainObject();
   }
 }

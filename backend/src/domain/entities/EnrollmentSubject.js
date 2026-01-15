@@ -8,13 +8,32 @@ import { ESTADOS_MATERIA_INSCRITA_VALUES, ESTADOS_MATERIA_INSCRITA } from '../co
 export class EnrollmentSubject extends BaseEntity {
   constructor(data = {}) {
     super(data);
-    this.enrollmentId = data.enrollmentId || null;
-    this.teacherAssignmentId = data.teacherAssignmentId || null;
-    this.finalGrade = data.finalGrade || null;
-    this.definitiveGrade = data.definitiveGrade || null;
-    this.status = data.status || ESTADOS_MATERIA_INSCRITA.INSCRITO;
-    this.observations = data.observations || null;
-    this.teacherObservations = data.teacherObservations || null;
+    // Solo inicializar campos si fueron proporcionados explícitamente
+    // Esto permite usar attributes limitados sin inicializar campos no solicitados
+    if (data.hasOwnProperty('enrollmentId')) {
+      this.enrollmentId = data.enrollmentId;
+    }
+    if (data.hasOwnProperty('teacherAssignmentId')) {
+      this.teacherAssignmentId = data.teacherAssignmentId;
+    }
+    if (data.hasOwnProperty('finalGrade')) {
+      this.finalGrade = data.finalGrade;
+    }
+    if (data.hasOwnProperty('definitiveGrade')) {
+      this.definitiveGrade = data.definitiveGrade;
+    }
+    if (data.hasOwnProperty('status')) {
+      this.status = data.status;
+    } else if (!data.hasOwnProperty('enrollmentId')) {
+      // Solo usar valor por defecto si no se está usando attributes limitados
+      this.status = ESTADOS_MATERIA_INSCRITA.INSCRITO;
+    }
+    if (data.hasOwnProperty('observations')) {
+      this.observations = data.observations;
+    }
+    if (data.hasOwnProperty('teacherObservations')) {
+      this.teacherObservations = data.teacherObservations;
+    }
   }
 
   /**
@@ -103,18 +122,44 @@ export class EnrollmentSubject extends BaseEntity {
 
   /**
    * Convierte la entidad a objeto plano
+   * Solo incluye campos que existen en la instancia (fueron inicializados)
    * @returns {Object}
    */
   toPlainObject() {
-    return {
-      ...super.toPlainObject(),
-      enrollmentId: this.enrollmentId,
-      teacherAssignmentId: this.teacherAssignmentId,
-      finalGrade: this.finalGrade,
-      definitiveGrade: this.definitiveGrade,
-      status: this.status,
-      observations: this.observations,
-      teacherObservations: this.teacherObservations,
-    };
+    const plainObject = super.toPlainObject();
+    
+    // Solo incluir campos que fueron inicializados (existen en this)
+    if (this.hasOwnProperty('enrollmentId')) {
+      plainObject.enrollmentId = this.enrollmentId;
+    }
+    if (this.hasOwnProperty('teacherAssignmentId')) {
+      plainObject.teacherAssignmentId = this.teacherAssignmentId;
+    }
+    if (this.hasOwnProperty('finalGrade')) {
+      plainObject.finalGrade = this.finalGrade;
+    }
+    if (this.hasOwnProperty('definitiveGrade')) {
+      plainObject.definitiveGrade = this.definitiveGrade;
+    }
+    if (this.hasOwnProperty('status')) {
+      plainObject.status = this.status;
+    }
+    if (this.hasOwnProperty('observations')) {
+      plainObject.observations = this.observations;
+    }
+    if (this.hasOwnProperty('teacherObservations')) {
+      plainObject.teacherObservations = this.teacherObservations;
+    }
+
+    return plainObject;
+  }
+
+  /**
+   * Convierte la entidad a JSON
+   * Usa toPlainObject() para serialización
+   * @returns {Object}
+   */
+  toJSON() {
+    return this.toPlainObject();
   }
 }

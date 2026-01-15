@@ -8,11 +8,26 @@ import { TIPOS_MATERIA_VALUES, TIPOS_MATERIA } from '../constants/index.js';
 export class Subject extends BaseEntity {
   constructor(data = {}) {
     super(data);
-    this.acronym = data.acronym || null;
-    this.name = data.name || null;
-    this.objectives = data.objectives || null;
-    this.classification = data.classification || null;
-    this.type = data.type || TIPOS_MATERIA.TEORICA_PRACTICA;
+    // Solo inicializar campos si fueron proporcionados explícitamente
+    // Esto permite usar attributes limitados sin inicializar campos no solicitados
+    if (data.hasOwnProperty('acronym')) {
+      this.acronym = data.acronym;
+    }
+    if (data.hasOwnProperty('name')) {
+      this.name = data.name;
+    }
+    if (data.hasOwnProperty('objectives')) {
+      this.objectives = data.objectives;
+    }
+    if (data.hasOwnProperty('classification')) {
+      this.classification = data.classification;
+    }
+    if (data.hasOwnProperty('type')) {
+      this.type = data.type;
+    } else if (!data.hasOwnProperty('acronym')) {
+      // Solo usar valor por defecto si no se está usando attributes limitados
+      this.type = TIPOS_MATERIA.TEORICA_PRACTICA;
+    }
   }
 
   /**
@@ -26,16 +41,38 @@ export class Subject extends BaseEntity {
 
   /**
    * Convierte la entidad a objeto plano
+   * Solo incluye campos que existen en la instancia (fueron inicializados)
    * @returns {Object}
    */
   toPlainObject() {
-    return {
-      ...super.toPlainObject(),
-      acronym: this.acronym,
-      name: this.name,
-      objectives: this.objectives,
-      classification: this.classification,
-      type: this.type,
-    };
+    const plainObject = super.toPlainObject();
+    
+    // Solo incluir campos que fueron inicializados (existen en this)
+    if (this.hasOwnProperty('acronym')) {
+      plainObject.acronym = this.acronym;
+    }
+    if (this.hasOwnProperty('name')) {
+      plainObject.name = this.name;
+    }
+    if (this.hasOwnProperty('objectives')) {
+      plainObject.objectives = this.objectives;
+    }
+    if (this.hasOwnProperty('classification')) {
+      plainObject.classification = this.classification;
+    }
+    if (this.hasOwnProperty('type')) {
+      plainObject.type = this.type;
+    }
+
+    return plainObject;
+  }
+
+  /**
+   * Convierte la entidad a JSON
+   * Usa toPlainObject() para serialización
+   * @returns {Object}
+   */
+  toJSON() {
+    return this.toPlainObject();
   }
 }

@@ -8,11 +8,26 @@ import { TIPOS_ACTIVIDAD_VALUES } from '../constants/index.js';
 export class Activity extends BaseEntity {
   constructor(data = {}) {
     super(data);
-    this.name = data.name || null;
-    this.description = data.description || null;
-    this.type = data.type || null; // INSCRIPCION, PLANIFICACION, ACADEMICA, EVALUACION, ADMINISTRATIVA, FERIADO, EVENTO_INSTITUCIONAL, FERIA, MODALIDAD_GRADO, OTRO
-    this.isHighlighted = data.isHighlighted !== undefined ? data.isHighlighted : false;
-    this.icon = data.icon || null;
+    // Solo inicializar campos si fueron proporcionados explícitamente
+    // Esto permite usar attributes limitados sin inicializar campos no solicitados
+    if (data.hasOwnProperty('name')) {
+      this.name = data.name;
+    }
+    if (data.hasOwnProperty('description')) {
+      this.description = data.description;
+    }
+    if (data.hasOwnProperty('type')) {
+      this.type = data.type; // INSCRIPCION, PLANIFICACION, ACADEMICA, EVALUACION, ADMINISTRATIVA, FERIADO, EVENTO_INSTITUCIONAL, FERIA, MODALIDAD_GRADO, OTRO
+    }
+    if (data.hasOwnProperty('isHighlighted')) {
+      this.isHighlighted = data.isHighlighted;
+    } else if (!data.hasOwnProperty('name')) {
+      // Solo usar valor por defecto si no se está usando attributes limitados
+      this.isHighlighted = false;
+    }
+    if (data.hasOwnProperty('icon')) {
+      this.icon = data.icon;
+    }
   }
 
   /**
@@ -26,16 +41,38 @@ export class Activity extends BaseEntity {
 
   /**
    * Convierte la entidad a objeto plano
+   * Solo incluye campos que existen en la instancia (fueron inicializados)
    * @returns {Object}
    */
   toPlainObject() {
-    return {
-      ...super.toPlainObject(),
-      name: this.name,
-      description: this.description,
-      type: this.type,
-      isHighlighted: this.isHighlighted,
-      icon: this.icon,
-    };
+    const plainObject = super.toPlainObject();
+    
+    // Solo incluir campos que fueron inicializados (existen en this)
+    if (this.hasOwnProperty('name')) {
+      plainObject.name = this.name;
+    }
+    if (this.hasOwnProperty('description')) {
+      plainObject.description = this.description;
+    }
+    if (this.hasOwnProperty('type')) {
+      plainObject.type = this.type;
+    }
+    if (this.hasOwnProperty('isHighlighted')) {
+      plainObject.isHighlighted = this.isHighlighted;
+    }
+    if (this.hasOwnProperty('icon')) {
+      plainObject.icon = this.icon;
+    }
+
+    return plainObject;
+  }
+
+  /**
+   * Convierte la entidad a JSON
+   * Usa toPlainObject() para serialización
+   * @returns {Object}
+   */
+  toJSON() {
+    return this.toPlainObject();
   }
 }

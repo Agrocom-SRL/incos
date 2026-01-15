@@ -9,13 +9,32 @@ import { DIAS_SEMANA_VALUES, TURNOS_VALUES, TIPOS_HORARIO_VALUES, TIPOS_HORARIO 
 export class Schedule extends BaseEntity {
   constructor(data = {}) {
     super(data);
-    this.name = data.name || null;
-    this.day = data.day || null;
-    this.startTime = data.startTime || null;
-    this.endTime = data.endTime || null;
-    this.shift = data.shift || null;
-    this.blockNumber = data.blockNumber || null;
-    this.scheduleType = data.scheduleType || TIPOS_HORARIO.CLASES;
+    // Solo inicializar campos si fueron proporcionados explícitamente
+    // Esto permite usar attributes limitados sin inicializar campos no solicitados
+    if (data.hasOwnProperty('name')) {
+      this.name = data.name;
+    }
+    if (data.hasOwnProperty('day')) {
+      this.day = data.day;
+    }
+    if (data.hasOwnProperty('startTime')) {
+      this.startTime = data.startTime;
+    }
+    if (data.hasOwnProperty('endTime')) {
+      this.endTime = data.endTime;
+    }
+    if (data.hasOwnProperty('shift')) {
+      this.shift = data.shift;
+    }
+    if (data.hasOwnProperty('blockNumber')) {
+      this.blockNumber = data.blockNumber;
+    }
+    if (data.hasOwnProperty('scheduleType')) {
+      this.scheduleType = data.scheduleType;
+    } else if (!data.hasOwnProperty('name')) {
+      // Solo usar valor por defecto si no se está usando attributes limitados
+      this.scheduleType = TIPOS_HORARIO.CLASES;
+    }
   }
 
   /**
@@ -47,18 +66,44 @@ export class Schedule extends BaseEntity {
 
   /**
    * Convierte la entidad a objeto plano
+   * Solo incluye campos que existen en la instancia (fueron inicializados)
    * @returns {Object}
    */
   toPlainObject() {
-    return {
-      ...super.toPlainObject(),
-      name: this.name,
-      day: this.day,
-      startTime: this.startTime,
-      endTime: this.endTime,
-      shift: this.shift,
-      blockNumber: this.blockNumber,
-      scheduleType: this.scheduleType,
-    };
+    const plainObject = super.toPlainObject();
+    
+    // Solo incluir campos que fueron inicializados (existen en this)
+    if (this.hasOwnProperty('name')) {
+      plainObject.name = this.name;
+    }
+    if (this.hasOwnProperty('day')) {
+      plainObject.day = this.day;
+    }
+    if (this.hasOwnProperty('startTime')) {
+      plainObject.startTime = this.startTime;
+    }
+    if (this.hasOwnProperty('endTime')) {
+      plainObject.endTime = this.endTime;
+    }
+    if (this.hasOwnProperty('shift')) {
+      plainObject.shift = this.shift;
+    }
+    if (this.hasOwnProperty('blockNumber')) {
+      plainObject.blockNumber = this.blockNumber;
+    }
+    if (this.hasOwnProperty('scheduleType')) {
+      plainObject.scheduleType = this.scheduleType;
+    }
+
+    return plainObject;
+  }
+
+  /**
+   * Convierte la entidad a JSON
+   * Usa toPlainObject() para serialización
+   * @returns {Object}
+   */
+  toJSON() {
+    return this.toPlainObject();
   }
 }

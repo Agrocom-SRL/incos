@@ -8,14 +8,38 @@ import { TIPOS_ORIGEN_VALUES, TIPOS_ORIGEN } from '../constants/index.js';
 export class StudentOrigin extends BaseEntity {
   constructor(data = {}) {
     super(data);
-    this.studentId = data.studentId || null;
-    this.countryId = data.countryId || null;
-    this.birthMunicipalityId = data.birthMunicipalityId || null;
-    this.birthCity = data.birthCity || null;
-    this.motherTongueId = data.motherTongueId || null;
-    this.secondaryLanguageId = data.secondaryLanguageId || null;
-    this.originType = data.originType || TIPOS_ORIGEN.BOLIVIANA;
-    this.isPrincipal = data.isPrincipal !== undefined ? data.isPrincipal : true;
+    // Solo inicializar campos si fueron proporcionados explícitamente
+    // Esto permite usar attributes limitados sin inicializar campos no solicitados
+    if (data.hasOwnProperty('studentId')) {
+      this.studentId = data.studentId;
+    }
+    if (data.hasOwnProperty('countryId')) {
+      this.countryId = data.countryId;
+    }
+    if (data.hasOwnProperty('birthMunicipalityId')) {
+      this.birthMunicipalityId = data.birthMunicipalityId;
+    }
+    if (data.hasOwnProperty('birthCity')) {
+      this.birthCity = data.birthCity;
+    }
+    if (data.hasOwnProperty('motherTongueId')) {
+      this.motherTongueId = data.motherTongueId;
+    }
+    if (data.hasOwnProperty('secondaryLanguageId')) {
+      this.secondaryLanguageId = data.secondaryLanguageId;
+    }
+    if (data.hasOwnProperty('originType')) {
+      this.originType = data.originType;
+    } else if (!data.hasOwnProperty('studentId')) {
+      // Solo usar valor por defecto si no se está usando attributes limitados
+      this.originType = TIPOS_ORIGEN.BOLIVIANA;
+    }
+    if (data.hasOwnProperty('isPrincipal')) {
+      this.isPrincipal = data.isPrincipal;
+    } else if (!data.hasOwnProperty('studentId')) {
+      // Solo usar valor por defecto si no se está usando attributes limitados
+      this.isPrincipal = true;
+    }
   }
 
   /**

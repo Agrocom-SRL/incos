@@ -8,13 +8,35 @@ import { MODALIDADES_ASIGNATURA_VALUES, MODALIDADES_ASIGNATURA } from '../consta
 export class PlanSubject extends BaseEntity {
   constructor(data = {}) {
     super(data);
-    this.studyPlanId = data.studyPlanId || null;
-    this.periodId = data.periodId || null;
-    this.subjectId = data.subjectId || null;
-    this.weeklyHours = data.weeklyHours || null;
-    this.credits = data.credits || null;
-    this.modality = data.modality || MODALIDADES_ASIGNATURA.REGULAR;
-    this.displayOrder = data.displayOrder !== undefined ? data.displayOrder : 1;
+    // Solo inicializar campos si fueron proporcionados explícitamente
+    // Esto permite usar attributes limitados sin inicializar campos no solicitados
+    if (data.hasOwnProperty('studyPlanId')) {
+      this.studyPlanId = data.studyPlanId;
+    }
+    if (data.hasOwnProperty('periodId')) {
+      this.periodId = data.periodId;
+    }
+    if (data.hasOwnProperty('subjectId')) {
+      this.subjectId = data.subjectId;
+    }
+    if (data.hasOwnProperty('weeklyHours')) {
+      this.weeklyHours = data.weeklyHours;
+    }
+    if (data.hasOwnProperty('credits')) {
+      this.credits = data.credits;
+    }
+    if (data.hasOwnProperty('modality')) {
+      this.modality = data.modality;
+    } else if (!data.hasOwnProperty('studyPlanId')) {
+      // Solo usar valor por defecto si no se está usando attributes limitados
+      this.modality = MODALIDADES_ASIGNATURA.REGULAR;
+    }
+    if (data.hasOwnProperty('displayOrder')) {
+      this.displayOrder = data.displayOrder;
+    } else if (!data.hasOwnProperty('studyPlanId')) {
+      // Solo usar valor por defecto si no se está usando attributes limitados
+      this.displayOrder = 1;
+    }
   }
 
   /**
@@ -44,18 +66,44 @@ export class PlanSubject extends BaseEntity {
 
   /**
    * Convierte la entidad a objeto plano
+   * Solo incluye campos que existen en la instancia (fueron inicializados)
    * @returns {Object}
    */
   toPlainObject() {
-    return {
-      ...super.toPlainObject(),
-      studyPlanId: this.studyPlanId,
-      periodId: this.periodId,
-      subjectId: this.subjectId,
-      weeklyHours: this.weeklyHours,
-      credits: this.credits,
-      modality: this.modality,
-      displayOrder: this.displayOrder,
-    };
+    const plainObject = super.toPlainObject();
+    
+    // Solo incluir campos que fueron inicializados (existen en this)
+    if (this.hasOwnProperty('studyPlanId')) {
+      plainObject.studyPlanId = this.studyPlanId;
+    }
+    if (this.hasOwnProperty('periodId')) {
+      plainObject.periodId = this.periodId;
+    }
+    if (this.hasOwnProperty('subjectId')) {
+      plainObject.subjectId = this.subjectId;
+    }
+    if (this.hasOwnProperty('weeklyHours')) {
+      plainObject.weeklyHours = this.weeklyHours;
+    }
+    if (this.hasOwnProperty('credits')) {
+      plainObject.credits = this.credits;
+    }
+    if (this.hasOwnProperty('modality')) {
+      plainObject.modality = this.modality;
+    }
+    if (this.hasOwnProperty('displayOrder')) {
+      plainObject.displayOrder = this.displayOrder;
+    }
+
+    return plainObject;
+  }
+
+  /**
+   * Convierte la entidad a JSON
+   * Usa toPlainObject() para serialización
+   * @returns {Object}
+   */
+  toJSON() {
+    return this.toPlainObject();
   }
 }

@@ -9,14 +9,32 @@ import { DIVISIONES_PERIODO_ACADEMICO_VALUES } from '../constants/index.js';
 export class AcademicPeriod extends BaseEntity {
   constructor(data = {}) {
     super(data);
-    this.managementId = data.managementId || null;
-    this.code = data.code || null; // Ej: "2025-PLAN", "2025-BIM1", "2025-CLAU"
-    this.name = data.name || null;
-    this.division = data.division || null; // PLANIFICACION, MENSUAL, BIMESTRE, TRIMESTRE, CUATRIMESTRE, SEMESTRE, CLAUSURA, OTRO
-    this.orderNumber = data.orderNumber || null;
-    this.startDate = data.startDate || null;
-    this.endDate = data.endDate || null;
-    this.colorHex = data.colorHex || null;
+    // Solo inicializar campos si fueron proporcionados explícitamente
+    // Esto permite usar attributes limitados sin inicializar campos no solicitados
+    if (data.hasOwnProperty('managementId')) {
+      this.managementId = data.managementId;
+    }
+    if (data.hasOwnProperty('code')) {
+      this.code = data.code; // Ej: "2025-PLAN", "2025-BIM1", "2025-CLAU"
+    }
+    if (data.hasOwnProperty('name')) {
+      this.name = data.name;
+    }
+    if (data.hasOwnProperty('division')) {
+      this.division = data.division; // PLANIFICACION, MENSUAL, BIMESTRE, TRIMESTRE, CUATRIMESTRE, SEMESTRE, CLAUSURA, OTRO
+    }
+    if (data.hasOwnProperty('orderNumber')) {
+      this.orderNumber = data.orderNumber;
+    }
+    if (data.hasOwnProperty('startDate')) {
+      this.startDate = data.startDate;
+    }
+    if (data.hasOwnProperty('endDate')) {
+      this.endDate = data.endDate;
+    }
+    if (data.hasOwnProperty('colorHex')) {
+      this.colorHex = data.colorHex;
+    }
   }
 
   /**
@@ -51,19 +69,47 @@ export class AcademicPeriod extends BaseEntity {
 
   /**
    * Convierte la entidad a objeto plano
+   * Solo incluye campos que existen en la instancia (fueron inicializados)
    * @returns {Object}
    */
   toPlainObject() {
-    return {
-      ...super.toPlainObject(),
-      managementId: this.managementId,
-      code: this.code,
-      name: this.name,
-      division: this.division,
-      orderNumber: this.orderNumber,
-      startDate: this.startDate,
-      endDate: this.endDate,
-      colorHex: this.colorHex,
-    };
+    const plainObject = super.toPlainObject();
+    
+    // Solo incluir campos que fueron inicializados (existen en this)
+    if (this.hasOwnProperty('managementId')) {
+      plainObject.managementId = this.managementId;
+    }
+    if (this.hasOwnProperty('code')) {
+      plainObject.code = this.code;
+    }
+    if (this.hasOwnProperty('name')) {
+      plainObject.name = this.name;
+    }
+    if (this.hasOwnProperty('division')) {
+      plainObject.division = this.division;
+    }
+    if (this.hasOwnProperty('orderNumber')) {
+      plainObject.orderNumber = this.orderNumber;
+    }
+    if (this.hasOwnProperty('startDate')) {
+      plainObject.startDate = this.startDate;
+    }
+    if (this.hasOwnProperty('endDate')) {
+      plainObject.endDate = this.endDate;
+    }
+    if (this.hasOwnProperty('colorHex')) {
+      plainObject.colorHex = this.colorHex;
+    }
+
+    return plainObject;
+  }
+
+  /**
+   * Convierte la entidad a JSON
+   * Usa toPlainObject() para serialización
+   * @returns {Object}
+   */
+  toJSON() {
+    return this.toPlainObject();
   }
 }

@@ -8,9 +8,17 @@ import { ACCIONES_PERMISOS_VALUES } from '../constants/index.js';
 export class RolePermission extends BaseEntity {
   constructor(data = {}) {
     super(data);
-    this.roleId = data.roleId || null;
-    this.permissionId = data.permissionId || null;
-    this.action = data.action || null; // VER, CREAR, EDITAR, ELIMINAR, APROBAR, EXPORTAR
+    // Solo inicializar campos si fueron proporcionados explícitamente
+    // Esto permite usar attributes limitados sin inicializar campos no solicitados
+    if (data.hasOwnProperty('roleId')) {
+      this.roleId = data.roleId;
+    }
+    if (data.hasOwnProperty('permissionId')) {
+      this.permissionId = data.permissionId;
+    }
+    if (data.hasOwnProperty('action')) {
+      this.action = data.action; // VER, CREAR, EDITAR, ELIMINAR, APROBAR, EXPORTAR
+    }
   }
 
   /**
@@ -24,14 +32,32 @@ export class RolePermission extends BaseEntity {
 
   /**
    * Convierte la entidad a objeto plano
+   * Solo incluye campos que existen en la instancia (fueron inicializados)
    * @returns {Object}
    */
   toPlainObject() {
-    return {
-      ...super.toPlainObject(),
-      roleId: this.roleId,
-      permissionId: this.permissionId,
-      action: this.action,
-    };
+    const plainObject = super.toPlainObject();
+    
+    // Solo incluir campos que fueron inicializados (existen en this)
+    if (this.hasOwnProperty('roleId')) {
+      plainObject.roleId = this.roleId;
+    }
+    if (this.hasOwnProperty('permissionId')) {
+      plainObject.permissionId = this.permissionId;
+    }
+    if (this.hasOwnProperty('action')) {
+      plainObject.action = this.action;
+    }
+
+    return plainObject;
+  }
+
+  /**
+   * Convierte la entidad a JSON
+   * Usa toPlainObject() para serialización
+   * @returns {Object}
+   */
+  toJSON() {
+    return this.toPlainObject();
   }
 }

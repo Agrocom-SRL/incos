@@ -8,16 +8,38 @@ import { NIVELES_ACADEMICOS_PERSONAL_VALUES } from '../constants/index.js';
 export class Rector extends BaseEntity {
   constructor(data = {}) {
     super(data);
-    this.staffId = data.staffId || null;
-    this.professionalTitle = data.professionalTitle || null;
-    this.specialty = data.specialty || null;
-    this.academicLevel = data.academicLevel || null;
-    this.graduationInstitution = data.graduationInstitution || null;
-    this.graduationYear = data.graduationYear || null;
-    this.appointmentDate = data.appointmentDate || null;
-    this.appointmentResolution = data.appointmentResolution || null;
-    this.mandateStartDate = data.mandateStartDate || null;
-    this.mandateEndDate = data.mandateEndDate || null;
+    // Solo inicializar campos si fueron proporcionados explícitamente
+    // Esto permite usar attributes limitados sin inicializar campos no solicitados
+    if (data.hasOwnProperty('staffId')) {
+      this.staffId = data.staffId;
+    }
+    if (data.hasOwnProperty('professionalTitle')) {
+      this.professionalTitle = data.professionalTitle;
+    }
+    if (data.hasOwnProperty('specialty')) {
+      this.specialty = data.specialty;
+    }
+    if (data.hasOwnProperty('academicLevel')) {
+      this.academicLevel = data.academicLevel;
+    }
+    if (data.hasOwnProperty('graduationInstitution')) {
+      this.graduationInstitution = data.graduationInstitution;
+    }
+    if (data.hasOwnProperty('graduationYear')) {
+      this.graduationYear = data.graduationYear;
+    }
+    if (data.hasOwnProperty('appointmentDate')) {
+      this.appointmentDate = data.appointmentDate;
+    }
+    if (data.hasOwnProperty('appointmentResolution')) {
+      this.appointmentResolution = data.appointmentResolution;
+    }
+    if (data.hasOwnProperty('mandateStartDate')) {
+      this.mandateStartDate = data.mandateStartDate;
+    }
+    if (data.hasOwnProperty('mandateEndDate')) {
+      this.mandateEndDate = data.mandateEndDate;
+    }
   }
 
   /**
@@ -47,21 +69,53 @@ export class Rector extends BaseEntity {
 
   /**
    * Convierte la entidad a objeto plano
+   * Solo incluye campos que existen en la instancia (fueron inicializados)
    * @returns {Object}
    */
   toPlainObject() {
-    return {
-      ...super.toPlainObject(),
-      staffId: this.staffId,
-      professionalTitle: this.professionalTitle,
-      specialty: this.specialty,
-      academicLevel: this.academicLevel,
-      graduationInstitution: this.graduationInstitution,
-      graduationYear: this.graduationYear,
-      appointmentDate: this.appointmentDate,
-      appointmentResolution: this.appointmentResolution,
-      mandateStartDate: this.mandateStartDate,
-      mandateEndDate: this.mandateEndDate,
-    };
+    const plainObject = super.toPlainObject();
+    
+    // Solo incluir campos que fueron inicializados (existen en this)
+    if (this.hasOwnProperty('staffId')) {
+      plainObject.staffId = this.staffId;
+    }
+    if (this.hasOwnProperty('professionalTitle')) {
+      plainObject.professionalTitle = this.professionalTitle;
+    }
+    if (this.hasOwnProperty('specialty')) {
+      plainObject.specialty = this.specialty;
+    }
+    if (this.hasOwnProperty('academicLevel')) {
+      plainObject.academicLevel = this.academicLevel;
+    }
+    if (this.hasOwnProperty('graduationInstitution')) {
+      plainObject.graduationInstitution = this.graduationInstitution;
+    }
+    if (this.hasOwnProperty('graduationYear')) {
+      plainObject.graduationYear = this.graduationYear;
+    }
+    if (this.hasOwnProperty('appointmentDate')) {
+      plainObject.appointmentDate = this.appointmentDate;
+    }
+    if (this.hasOwnProperty('appointmentResolution')) {
+      plainObject.appointmentResolution = this.appointmentResolution;
+    }
+    if (this.hasOwnProperty('mandateStartDate')) {
+      plainObject.mandateStartDate = this.mandateStartDate;
+    }
+    if (this.hasOwnProperty('mandateEndDate')) {
+      plainObject.mandateEndDate = this.mandateEndDate;
+    }
+
+    return plainObject;
+  }
+
+  /**
+   * Convierte la entidad a JSON
+   * Usa toPlainObject() para serialización
+   * @returns {Object}
+   */
+  toJSON() {
+    return this.toPlainObject();
   }
 }

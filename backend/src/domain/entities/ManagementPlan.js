@@ -9,11 +9,26 @@ import { ESTADOS_GESTION_PLAN_VALUES, ESTADOS_GESTION_PLAN } from '../constants/
 export class ManagementPlan extends BaseEntity {
   constructor(data = {}) {
     super(data);
-    this.managementId = data.managementId || null;
-    this.studyPlanId = data.studyPlanId || null;
-    this.name = data.name || null;
-    this.state = data.state || ESTADOS_GESTION_PLAN.PROPUESTO;
-    this.cancellationReason = data.cancellationReason || null;
+    // Solo inicializar campos si fueron proporcionados explícitamente
+    // Esto permite usar attributes limitados sin inicializar campos no solicitados
+    if (data.hasOwnProperty('managementId')) {
+      this.managementId = data.managementId;
+    }
+    if (data.hasOwnProperty('studyPlanId')) {
+      this.studyPlanId = data.studyPlanId;
+    }
+    if (data.hasOwnProperty('name')) {
+      this.name = data.name;
+    }
+    if (data.hasOwnProperty('state')) {
+      this.state = data.state;
+    } else if (!data.hasOwnProperty('managementId')) {
+      // Solo usar valor por defecto si no se está usando attributes limitados
+      this.state = ESTADOS_GESTION_PLAN.PROPUESTO;
+    }
+    if (data.hasOwnProperty('cancellationReason')) {
+      this.cancellationReason = data.cancellationReason;
+    }
   }
 
   /**

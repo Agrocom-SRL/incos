@@ -8,18 +8,50 @@ import { ESTADOS_ACADEMICOS_VALUES, ESTADOS_ACADEMICOS, ESTADOS_REGISTRO_ESTUDIA
 export class StudentAcademicData extends BaseEntity {
   constructor(data = {}) {
     super(data);
-    this.studentId = data.studentId || null;
-    this.careerId = data.careerId || null;
-    this.managementId = data.managementId || null;
-    this.academicState = data.academicState || ESTADOS_ACADEMICOS.REGULAR;
-    this.registrationState = data.registrationState || ESTADOS_REGISTRO_ESTUDIANTE.BORRADOR;
-    this.previousSchool = data.previousSchool || null;
-    this.highSchoolGraduationYear = data.highSchoolGraduationYear || null;
-    this.annualAverage = data.annualAverage || null;
-    this.graduationDate = data.graduationDate || null;
-    this.withdrawalDate = data.withdrawalDate || null;
-    this.withdrawalReason = data.withdrawalReason || null;
-    this.photoUrl = data.photoUrl || null;
+    // Solo inicializar campos si fueron proporcionados explícitamente
+    // Esto permite usar attributes limitados sin inicializar campos no solicitados
+    if (data.hasOwnProperty('studentId')) {
+      this.studentId = data.studentId;
+    }
+    if (data.hasOwnProperty('careerId')) {
+      this.careerId = data.careerId;
+    }
+    if (data.hasOwnProperty('managementId')) {
+      this.managementId = data.managementId;
+    }
+    if (data.hasOwnProperty('academicState')) {
+      this.academicState = data.academicState;
+    } else if (!data.hasOwnProperty('studentId')) {
+      // Solo usar valor por defecto si no se está usando attributes limitados
+      this.academicState = ESTADOS_ACADEMICOS.REGULAR;
+    }
+    if (data.hasOwnProperty('registrationState')) {
+      this.registrationState = data.registrationState;
+    } else if (!data.hasOwnProperty('studentId')) {
+      // Solo usar valor por defecto si no se está usando attributes limitados
+      this.registrationState = ESTADOS_REGISTRO_ESTUDIANTE.BORRADOR;
+    }
+    if (data.hasOwnProperty('previousSchool')) {
+      this.previousSchool = data.previousSchool;
+    }
+    if (data.hasOwnProperty('highSchoolGraduationYear')) {
+      this.highSchoolGraduationYear = data.highSchoolGraduationYear;
+    }
+    if (data.hasOwnProperty('annualAverage')) {
+      this.annualAverage = data.annualAverage;
+    }
+    if (data.hasOwnProperty('graduationDate')) {
+      this.graduationDate = data.graduationDate;
+    }
+    if (data.hasOwnProperty('withdrawalDate')) {
+      this.withdrawalDate = data.withdrawalDate;
+    }
+    if (data.hasOwnProperty('withdrawalReason')) {
+      this.withdrawalReason = data.withdrawalReason;
+    }
+    if (data.hasOwnProperty('photoUrl')) {
+      this.photoUrl = data.photoUrl;
+    }
   }
 
   /**
@@ -67,23 +99,59 @@ export class StudentAcademicData extends BaseEntity {
 
   /**
    * Convierte la entidad a objeto plano
+   * Solo incluye campos que existen en la instancia (fueron inicializados)
    * @returns {Object}
    */
   toPlainObject() {
-    return {
-      ...super.toPlainObject(),
-      studentId: this.studentId,
-      careerId: this.careerId,
-      managementId: this.managementId,
-      academicState: this.academicState,
-      registrationState: this.registrationState,
-      previousSchool: this.previousSchool,
-      highSchoolGraduationYear: this.highSchoolGraduationYear,
-      annualAverage: this.annualAverage,
-      graduationDate: this.graduationDate,
-      withdrawalDate: this.withdrawalDate,
-      withdrawalReason: this.withdrawalReason,
-      photoUrl: this.photoUrl,
-    };
+    const plainObject = super.toPlainObject();
+    
+    // Solo incluir campos que fueron inicializados (existen en this)
+    if (this.hasOwnProperty('studentId')) {
+      plainObject.studentId = this.studentId;
+    }
+    if (this.hasOwnProperty('careerId')) {
+      plainObject.careerId = this.careerId;
+    }
+    if (this.hasOwnProperty('managementId')) {
+      plainObject.managementId = this.managementId;
+    }
+    if (this.hasOwnProperty('academicState')) {
+      plainObject.academicState = this.academicState;
+    }
+    if (this.hasOwnProperty('registrationState')) {
+      plainObject.registrationState = this.registrationState;
+    }
+    if (this.hasOwnProperty('previousSchool')) {
+      plainObject.previousSchool = this.previousSchool;
+    }
+    if (this.hasOwnProperty('highSchoolGraduationYear')) {
+      plainObject.highSchoolGraduationYear = this.highSchoolGraduationYear;
+    }
+    if (this.hasOwnProperty('annualAverage')) {
+      plainObject.annualAverage = this.annualAverage;
+    }
+    if (this.hasOwnProperty('graduationDate')) {
+      plainObject.graduationDate = this.graduationDate;
+    }
+    if (this.hasOwnProperty('withdrawalDate')) {
+      plainObject.withdrawalDate = this.withdrawalDate;
+    }
+    if (this.hasOwnProperty('withdrawalReason')) {
+      plainObject.withdrawalReason = this.withdrawalReason;
+    }
+    if (this.hasOwnProperty('photoUrl')) {
+      plainObject.photoUrl = this.photoUrl;
+    }
+
+    return plainObject;
+  }
+
+  /**
+   * Convierte la entidad a JSON
+   * Usa toPlainObject() para serialización
+   * @returns {Object}
+   */
+  toJSON() {
+    return this.toPlainObject();
   }
 }

@@ -8,15 +8,47 @@ import { TIPOS_BECA_AUTOMATICA_VALUES, TIPOS_BECA_AUTOMATICA } from '../constant
 export class Scholarship extends BaseEntity {
   constructor(data = {}) {
     super(data);
-    this.name = data.name || null;
-    this.code = data.code || null;
-    this.percentage = data.percentage !== undefined ? data.percentage : null;
-    this.description = data.description || null;
-    this.requiresDocumentation = data.requiresDocumentation !== undefined ? data.requiresDocumentation : true;
-    this.requiresRectorApproval = data.requiresRectorApproval !== undefined ? data.requiresRectorApproval : false;
-    this.isAutomatic = data.isAutomatic !== undefined ? data.isAutomatic : false;
-    this.automaticType = data.automaticType || TIPOS_BECA_AUTOMATICA.MANUAL;
-    this.minimumAverage = data.minimumAverage || null;
+    // Solo inicializar campos si fueron proporcionados explícitamente
+    // Esto permite usar attributes limitados sin inicializar campos no solicitados
+    if (data.hasOwnProperty('name')) {
+      this.name = data.name;
+    }
+    if (data.hasOwnProperty('code')) {
+      this.code = data.code;
+    }
+    if (data.hasOwnProperty('percentage')) {
+      this.percentage = data.percentage;
+    }
+    if (data.hasOwnProperty('description')) {
+      this.description = data.description;
+    }
+    if (data.hasOwnProperty('requiresDocumentation')) {
+      this.requiresDocumentation = data.requiresDocumentation;
+    } else if (!data.hasOwnProperty('name')) {
+      // Solo usar valor por defecto si no se está usando attributes limitados
+      this.requiresDocumentation = true;
+    }
+    if (data.hasOwnProperty('requiresRectorApproval')) {
+      this.requiresRectorApproval = data.requiresRectorApproval;
+    } else if (!data.hasOwnProperty('name')) {
+      // Solo usar valor por defecto si no se está usando attributes limitados
+      this.requiresRectorApproval = false;
+    }
+    if (data.hasOwnProperty('isAutomatic')) {
+      this.isAutomatic = data.isAutomatic;
+    } else if (!data.hasOwnProperty('name')) {
+      // Solo usar valor por defecto si no se está usando attributes limitados
+      this.isAutomatic = false;
+    }
+    if (data.hasOwnProperty('automaticType')) {
+      this.automaticType = data.automaticType;
+    } else if (!data.hasOwnProperty('name')) {
+      // Solo usar valor por defecto si no se está usando attributes limitados
+      this.automaticType = TIPOS_BECA_AUTOMATICA.MANUAL;
+    }
+    if (data.hasOwnProperty('minimumAverage')) {
+      this.minimumAverage = data.minimumAverage;
+    }
   }
 
   /**
@@ -47,20 +79,50 @@ export class Scholarship extends BaseEntity {
 
   /**
    * Convierte la entidad a objeto plano
+   * Solo incluye campos que existen en la instancia (fueron inicializados)
    * @returns {Object}
    */
   toPlainObject() {
-    return {
-      ...super.toPlainObject(),
-      name: this.name,
-      code: this.code,
-      percentage: this.percentage,
-      description: this.description,
-      requiresDocumentation: this.requiresDocumentation,
-      requiresRectorApproval: this.requiresRectorApproval,
-      isAutomatic: this.isAutomatic,
-      automaticType: this.automaticType,
-      minimumAverage: this.minimumAverage,
-    };
+    const plainObject = super.toPlainObject();
+    
+    // Solo incluir campos que fueron inicializados (existen en this)
+    if (this.hasOwnProperty('name')) {
+      plainObject.name = this.name;
+    }
+    if (this.hasOwnProperty('code')) {
+      plainObject.code = this.code;
+    }
+    if (this.hasOwnProperty('percentage')) {
+      plainObject.percentage = this.percentage;
+    }
+    if (this.hasOwnProperty('description')) {
+      plainObject.description = this.description;
+    }
+    if (this.hasOwnProperty('requiresDocumentation')) {
+      plainObject.requiresDocumentation = this.requiresDocumentation;
+    }
+    if (this.hasOwnProperty('requiresRectorApproval')) {
+      plainObject.requiresRectorApproval = this.requiresRectorApproval;
+    }
+    if (this.hasOwnProperty('isAutomatic')) {
+      plainObject.isAutomatic = this.isAutomatic;
+    }
+    if (this.hasOwnProperty('automaticType')) {
+      plainObject.automaticType = this.automaticType;
+    }
+    if (this.hasOwnProperty('minimumAverage')) {
+      plainObject.minimumAverage = this.minimumAverage;
+    }
+
+    return plainObject;
+  }
+
+  /**
+   * Convierte la entidad a JSON
+   * Usa toPlainObject() para serialización
+   * @returns {Object}
+   */
+  toJSON() {
+    return this.toPlainObject();
   }
 }

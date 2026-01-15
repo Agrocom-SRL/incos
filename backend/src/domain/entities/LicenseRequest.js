@@ -8,25 +8,71 @@ import { MOTIVOS_LICENCIAS_VALUES, ESTADOS_LICENCIAS_VALUES, ESTADOS_LICENCIAS }
 export class LicenseRequest extends BaseEntity {
   constructor(data = {}) {
     super(data);
-    this.studentId = data.studentId || null;
-    this.careerId = data.careerId || null;
-    this.managementId = data.managementId || null;
-    this.courseShiftId = data.courseShiftId || null;
-    this.requestDate = data.requestDate || null;
-    this.startDate = data.startDate || null;
-    this.endDate = data.endDate || null;
-    this.totalDays = data.totalDays !== undefined ? data.totalDays : null;
-    this.reason = data.reason || null; // ENFERMEDAD, TRABAJO, FAMILIAR, etc.
-    this.reasonDetail = data.reasonDetail || null;
-    this.state = data.state || ESTADOS_LICENCIAS.PENDIENTE;
-    this.decisionDate = data.decisionDate || null;
-    this.decidedBy = data.decidedBy || null;
-    this.rejectionReason = data.rejectionReason || null;
-    this.documentsComplete = data.documentsComplete !== undefined ? data.documentsComplete : false;
-    this.documentDeliveryStartDate = data.documentDeliveryStartDate || null;
-    this.documentDeliveryEndDate = data.documentDeliveryEndDate || null;
-    this.observations = data.observations || null;
-    this.decisionObservations = data.decisionObservations || null;
+    // Solo inicializar campos si fueron proporcionados explícitamente
+    // Esto permite usar attributes limitados sin inicializar campos no solicitados
+    if (data.hasOwnProperty('studentId')) {
+      this.studentId = data.studentId;
+    }
+    if (data.hasOwnProperty('careerId')) {
+      this.careerId = data.careerId;
+    }
+    if (data.hasOwnProperty('managementId')) {
+      this.managementId = data.managementId;
+    }
+    if (data.hasOwnProperty('courseShiftId')) {
+      this.courseShiftId = data.courseShiftId;
+    }
+    if (data.hasOwnProperty('requestDate')) {
+      this.requestDate = data.requestDate;
+    }
+    if (data.hasOwnProperty('startDate')) {
+      this.startDate = data.startDate;
+    }
+    if (data.hasOwnProperty('endDate')) {
+      this.endDate = data.endDate;
+    }
+    if (data.hasOwnProperty('totalDays')) {
+      this.totalDays = data.totalDays;
+    }
+    if (data.hasOwnProperty('reason')) {
+      this.reason = data.reason; // ENFERMEDAD, TRABAJO, FAMILIAR, etc.
+    }
+    if (data.hasOwnProperty('reasonDetail')) {
+      this.reasonDetail = data.reasonDetail;
+    }
+    if (data.hasOwnProperty('state')) {
+      this.state = data.state;
+    } else if (!data.hasOwnProperty('studentId')) {
+      // Solo usar valor por defecto si no se está usando attributes limitados
+      this.state = ESTADOS_LICENCIAS.PENDIENTE;
+    }
+    if (data.hasOwnProperty('decisionDate')) {
+      this.decisionDate = data.decisionDate;
+    }
+    if (data.hasOwnProperty('decidedBy')) {
+      this.decidedBy = data.decidedBy;
+    }
+    if (data.hasOwnProperty('rejectionReason')) {
+      this.rejectionReason = data.rejectionReason;
+    }
+    if (data.hasOwnProperty('documentsComplete')) {
+      this.documentsComplete = data.documentsComplete;
+    } else if (!data.hasOwnProperty('studentId')) {
+      // Solo usar valor por defecto si no se está usando attributes limitados
+      this.documentsComplete = false;
+    }
+    if (data.hasOwnProperty('documentDeliveryStartDate')) {
+      this.documentDeliveryStartDate = data.documentDeliveryStartDate;
+    }
+    if (data.hasOwnProperty('documentDeliveryEndDate')) {
+      this.documentDeliveryEndDate = data.documentDeliveryEndDate;
+    }
+    if (data.hasOwnProperty('observations')) {
+      this.observations = data.observations;
+    }
+    if (data.hasOwnProperty('decisionObservations')) {
+      this.decisionObservations = data.decisionObservations;
+    }
   }
 
   /**
@@ -79,30 +125,80 @@ export class LicenseRequest extends BaseEntity {
 
   /**
    * Convierte la entidad a objeto plano
+   * Solo incluye campos que existen en la instancia (fueron inicializados)
    * @returns {Object}
    */
   toPlainObject() {
-    return {
-      ...super.toPlainObject(),
-      studentId: this.studentId,
-      careerId: this.careerId,
-      managementId: this.managementId,
-      courseShiftId: this.courseShiftId,
-      requestDate: this.requestDate,
-      startDate: this.startDate,
-      endDate: this.endDate,
-      totalDays: this.totalDays,
-      reason: this.reason,
-      reasonDetail: this.reasonDetail,
-      state: this.state,
-      decisionDate: this.decisionDate,
-      decidedBy: this.decidedBy,
-      rejectionReason: this.rejectionReason,
-      documentsComplete: this.documentsComplete,
-      documentDeliveryStartDate: this.documentDeliveryStartDate,
-      documentDeliveryEndDate: this.documentDeliveryEndDate,
-      observations: this.observations,
-      decisionObservations: this.decisionObservations,
-    };
+    const plainObject = super.toPlainObject();
+    
+    // Solo incluir campos que fueron inicializados (existen en this)
+    if (this.hasOwnProperty('studentId')) {
+      plainObject.studentId = this.studentId;
+    }
+    if (this.hasOwnProperty('careerId')) {
+      plainObject.careerId = this.careerId;
+    }
+    if (this.hasOwnProperty('managementId')) {
+      plainObject.managementId = this.managementId;
+    }
+    if (this.hasOwnProperty('courseShiftId')) {
+      plainObject.courseShiftId = this.courseShiftId;
+    }
+    if (this.hasOwnProperty('requestDate')) {
+      plainObject.requestDate = this.requestDate;
+    }
+    if (this.hasOwnProperty('startDate')) {
+      plainObject.startDate = this.startDate;
+    }
+    if (this.hasOwnProperty('endDate')) {
+      plainObject.endDate = this.endDate;
+    }
+    if (this.hasOwnProperty('totalDays')) {
+      plainObject.totalDays = this.totalDays;
+    }
+    if (this.hasOwnProperty('reason')) {
+      plainObject.reason = this.reason;
+    }
+    if (this.hasOwnProperty('reasonDetail')) {
+      plainObject.reasonDetail = this.reasonDetail;
+    }
+    if (this.hasOwnProperty('state')) {
+      plainObject.state = this.state;
+    }
+    if (this.hasOwnProperty('decisionDate')) {
+      plainObject.decisionDate = this.decisionDate;
+    }
+    if (this.hasOwnProperty('decidedBy')) {
+      plainObject.decidedBy = this.decidedBy;
+    }
+    if (this.hasOwnProperty('rejectionReason')) {
+      plainObject.rejectionReason = this.rejectionReason;
+    }
+    if (this.hasOwnProperty('documentsComplete')) {
+      plainObject.documentsComplete = this.documentsComplete;
+    }
+    if (this.hasOwnProperty('documentDeliveryStartDate')) {
+      plainObject.documentDeliveryStartDate = this.documentDeliveryStartDate;
+    }
+    if (this.hasOwnProperty('documentDeliveryEndDate')) {
+      plainObject.documentDeliveryEndDate = this.documentDeliveryEndDate;
+    }
+    if (this.hasOwnProperty('observations')) {
+      plainObject.observations = this.observations;
+    }
+    if (this.hasOwnProperty('decisionObservations')) {
+      plainObject.decisionObservations = this.decisionObservations;
+    }
+
+    return plainObject;
+  }
+
+  /**
+   * Convierte la entidad a JSON
+   * Usa toPlainObject() para serialización
+   * @returns {Object}
+   */
+  toJSON() {
+    return this.toPlainObject();
   }
 }

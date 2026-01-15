@@ -8,12 +8,32 @@ import { BaseEntity } from './BaseEntity.js';
 export class Course extends BaseEntity {
   constructor(data = {}) {
     super(data);
-    this.code = data.code || null;
-    this.parallelId = data.parallelId || null;
-    this.planSubjectId = data.planSubjectId || null;
-    this.maxCapacity = data.maxCapacity !== undefined ? data.maxCapacity : 35;
-    this.minCapacity = data.minCapacity !== undefined ? data.minCapacity : 10;
-    this.colorHex = data.colorHex || null;
+    // Solo inicializar campos si fueron proporcionados explícitamente
+    // Esto permite usar attributes limitados sin inicializar campos no solicitados
+    if (data.hasOwnProperty('code')) {
+      this.code = data.code;
+    }
+    if (data.hasOwnProperty('parallelId')) {
+      this.parallelId = data.parallelId;
+    }
+    if (data.hasOwnProperty('planSubjectId')) {
+      this.planSubjectId = data.planSubjectId;
+    }
+    if (data.hasOwnProperty('maxCapacity')) {
+      this.maxCapacity = data.maxCapacity;
+    } else if (!data.hasOwnProperty('code')) {
+      // Solo usar valor por defecto si no se está usando attributes limitados
+      this.maxCapacity = 35;
+    }
+    if (data.hasOwnProperty('minCapacity')) {
+      this.minCapacity = data.minCapacity;
+    } else if (!data.hasOwnProperty('code')) {
+      // Solo usar valor por defecto si no se está usando attributes limitados
+      this.minCapacity = 10;
+    }
+    if (data.hasOwnProperty('colorHex')) {
+      this.colorHex = data.colorHex;
+    }
   }
 
   /**
@@ -26,17 +46,41 @@ export class Course extends BaseEntity {
 
   /**
    * Convierte la entidad a objeto plano
+   * Solo incluye campos que existen en la instancia (fueron inicializados)
    * @returns {Object}
    */
   toPlainObject() {
-    return {
-      ...super.toPlainObject(),
-      code: this.code,
-      parallelId: this.parallelId,
-      planSubjectId: this.planSubjectId,
-      maxCapacity: this.maxCapacity,
-      minCapacity: this.minCapacity,
-      colorHex: this.colorHex,
-    };
+    const plainObject = super.toPlainObject();
+    
+    // Solo incluir campos que fueron inicializados (existen en this)
+    if (this.hasOwnProperty('code')) {
+      plainObject.code = this.code;
+    }
+    if (this.hasOwnProperty('parallelId')) {
+      plainObject.parallelId = this.parallelId;
+    }
+    if (this.hasOwnProperty('planSubjectId')) {
+      plainObject.planSubjectId = this.planSubjectId;
+    }
+    if (this.hasOwnProperty('maxCapacity')) {
+      plainObject.maxCapacity = this.maxCapacity;
+    }
+    if (this.hasOwnProperty('minCapacity')) {
+      plainObject.minCapacity = this.minCapacity;
+    }
+    if (this.hasOwnProperty('colorHex')) {
+      plainObject.colorHex = this.colorHex;
+    }
+
+    return plainObject;
+  }
+
+  /**
+   * Convierte la entidad a JSON
+   * Usa toPlainObject() para serialización
+   * @returns {Object}
+   */
+  toJSON() {
+    return this.toPlainObject();
   }
 }

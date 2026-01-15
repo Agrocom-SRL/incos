@@ -8,12 +8,26 @@ import { NIVELES_ACADEMICOS_VALUES, NIVELES_ACADEMICOS, TIPOS_SECRETARIA_VALUES,
 export class Secretary extends BaseEntity {
   constructor(data = {}) {
     super(data);
-    this.staffId = data.staffId || null;
-    this.type = data.type || null; // ACADEMICA, ADMINISTRATIVA
-    this.academicLevel = data.academicLevel || null;
-    this.hireDate = data.hireDate || null;
-    this.contractEndDate = data.contractEndDate || null;
-    this.contractType = data.contractType || null; // EVENTUAL, TEMPORAL, INDEFINIDO
+    // Solo inicializar campos si fueron proporcionados explícitamente
+    // Esto permite usar attributes limitados sin inicializar campos no solicitados
+    if (data.hasOwnProperty('staffId')) {
+      this.staffId = data.staffId;
+    }
+    if (data.hasOwnProperty('type')) {
+      this.type = data.type; // ACADEMICA, ADMINISTRATIVA
+    }
+    if (data.hasOwnProperty('academicLevel')) {
+      this.academicLevel = data.academicLevel;
+    }
+    if (data.hasOwnProperty('hireDate')) {
+      this.hireDate = data.hireDate;
+    }
+    if (data.hasOwnProperty('contractEndDate')) {
+      this.contractEndDate = data.contractEndDate;
+    }
+    if (data.hasOwnProperty('contractType')) {
+      this.contractType = data.contractType; // EVENTUAL, TEMPORAL, INDEFINIDO
+    }
   }
 
   /**

@@ -8,12 +8,26 @@ import { DIAS_SEMANA_VALUES } from '../constants/index.js';
 export class CourseShift extends BaseEntity {
   constructor(data = {}) {
     super(data);
-    this.assignmentId = data.assignmentId || null;
-    this.shiftId = data.shiftId || null;
-    this.weekDay = data.weekDay || null; // LUNES, MARTES, MIERCOLES, etc.
-    this.startTime = data.startTime || null;
-    this.endTime = data.endTime || null;
-    this.classroom = data.classroom || null;
+    // Solo inicializar campos si fueron proporcionados explícitamente
+    // Esto permite usar attributes limitados sin inicializar campos no solicitados
+    if (data.hasOwnProperty('assignmentId')) {
+      this.assignmentId = data.assignmentId;
+    }
+    if (data.hasOwnProperty('shiftId')) {
+      this.shiftId = data.shiftId;
+    }
+    if (data.hasOwnProperty('weekDay')) {
+      this.weekDay = data.weekDay; // LUNES, MARTES, MIERCOLES, etc.
+    }
+    if (data.hasOwnProperty('startTime')) {
+      this.startTime = data.startTime;
+    }
+    if (data.hasOwnProperty('endTime')) {
+      this.endTime = data.endTime;
+    }
+    if (data.hasOwnProperty('classroom')) {
+      this.classroom = data.classroom;
+    }
   }
 
   /**
@@ -36,17 +50,41 @@ export class CourseShift extends BaseEntity {
 
   /**
    * Convierte la entidad a objeto plano
+   * Solo incluye campos que existen en la instancia (fueron inicializados)
    * @returns {Object}
    */
   toPlainObject() {
-    return {
-      ...super.toPlainObject(),
-      assignmentId: this.assignmentId,
-      shiftId: this.shiftId,
-      weekDay: this.weekDay,
-      startTime: this.startTime,
-      endTime: this.endTime,
-      classroom: this.classroom,
-    };
+    const plainObject = super.toPlainObject();
+    
+    // Solo incluir campos que fueron inicializados (existen en this)
+    if (this.hasOwnProperty('assignmentId')) {
+      plainObject.assignmentId = this.assignmentId;
+    }
+    if (this.hasOwnProperty('shiftId')) {
+      plainObject.shiftId = this.shiftId;
+    }
+    if (this.hasOwnProperty('weekDay')) {
+      plainObject.weekDay = this.weekDay;
+    }
+    if (this.hasOwnProperty('startTime')) {
+      plainObject.startTime = this.startTime;
+    }
+    if (this.hasOwnProperty('endTime')) {
+      plainObject.endTime = this.endTime;
+    }
+    if (this.hasOwnProperty('classroom')) {
+      plainObject.classroom = this.classroom;
+    }
+
+    return plainObject;
+  }
+
+  /**
+   * Convierte la entidad a JSON
+   * Usa toPlainObject() para serialización
+   * @returns {Object}
+   */
+  toJSON() {
+    return this.toPlainObject();
   }
 }

@@ -7,13 +7,29 @@ import { BaseEntity } from './BaseEntity.js';
 export class Career extends BaseEntity {
   constructor(data = {}) {
     super(data);
-    this.code = data.code || null;
-    this.name = data.name || null;
-    this.description = data.description || null;
-    this.trainingArea = data.trainingArea || null;
-    this.grantedTitle = data.grantedTitle || null;
-    this.colorHex = data.colorHex || null;
-    this.imagePath = data.imagePath || null;
+    // Solo inicializar campos si fueron proporcionados explícitamente
+    // Esto permite usar attributes limitados sin inicializar campos no solicitados
+    if (data.hasOwnProperty('code')) {
+      this.code = data.code;
+    }
+    if (data.hasOwnProperty('name')) {
+      this.name = data.name;
+    }
+    if (data.hasOwnProperty('description')) {
+      this.description = data.description;
+    }
+    if (data.hasOwnProperty('trainingArea')) {
+      this.trainingArea = data.trainingArea;
+    }
+    if (data.hasOwnProperty('grantedTitle')) {
+      this.grantedTitle = data.grantedTitle;
+    }
+    if (data.hasOwnProperty('colorHex')) {
+      this.colorHex = data.colorHex;
+    }
+    if (data.hasOwnProperty('imagePath')) {
+      this.imagePath = data.imagePath;
+    }
   }
 
   /**
@@ -27,18 +43,44 @@ export class Career extends BaseEntity {
 
   /**
    * Convierte la entidad a objeto plano
+   * Solo incluye campos que existen en la instancia (fueron inicializados)
    * @returns {Object}
    */
   toPlainObject() {
-    return {
-      ...super.toPlainObject(),
-      code: this.code,
-      name: this.name,
-      description: this.description,
-      trainingArea: this.trainingArea,
-      grantedTitle: this.grantedTitle,
-      colorHex: this.colorHex,
-      imagePath: this.imagePath,
-    };
+    const plainObject = super.toPlainObject();
+    
+    // Solo incluir campos que fueron inicializados (existen en this)
+    if (this.hasOwnProperty('code')) {
+      plainObject.code = this.code;
+    }
+    if (this.hasOwnProperty('name')) {
+      plainObject.name = this.name;
+    }
+    if (this.hasOwnProperty('description')) {
+      plainObject.description = this.description;
+    }
+    if (this.hasOwnProperty('trainingArea')) {
+      plainObject.trainingArea = this.trainingArea;
+    }
+    if (this.hasOwnProperty('grantedTitle')) {
+      plainObject.grantedTitle = this.grantedTitle;
+    }
+    if (this.hasOwnProperty('colorHex')) {
+      plainObject.colorHex = this.colorHex;
+    }
+    if (this.hasOwnProperty('imagePath')) {
+      plainObject.imagePath = this.imagePath;
+    }
+
+    return plainObject;
+  }
+
+  /**
+   * Convierte la entidad a JSON
+   * Usa toPlainObject() para serialización
+   * @returns {Object}
+   */
+  toJSON() {
+    return this.toPlainObject();
   }
 }

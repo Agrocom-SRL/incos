@@ -9,13 +9,32 @@ import { TIPOS_GESTION_VALUES, TIPOS_GESTION } from '../constants/index.js';
 export class Management extends BaseEntity {
   constructor(data = {}) {
     super(data);
-    this.code = data.code || null; // Ej: "2025-REG", "2025-VER", "2025-NIV"
-    this.name = data.name || null;
-    this.year = data.year || null;
-    this.type = data.type || TIPOS_GESTION.REGULAR;
-    this.startDate = data.startDate || null;
-    this.endDate = data.endDate || null;
-    this.isActive = data.isActive !== undefined ? data.isActive : false;
+    // Solo inicializar campos si fueron proporcionados explícitamente
+    // Esto permite usar attributes limitados sin inicializar campos no solicitados
+    if (data.hasOwnProperty('code')) {
+      this.code = data.code;
+    }
+    if (data.hasOwnProperty('name')) {
+      this.name = data.name;
+    }
+    if (data.hasOwnProperty('year')) {
+      this.year = data.year;
+    }
+    if (data.hasOwnProperty('type')) {
+      this.type = data.type;
+    } else if (!data.hasOwnProperty('code')) {
+      // Solo usar valor por defecto si no se está usando attributes limitados
+      this.type = TIPOS_GESTION.REGULAR;
+    }
+    if (data.hasOwnProperty('startDate')) {
+      this.startDate = data.startDate;
+    }
+    if (data.hasOwnProperty('endDate')) {
+      this.endDate = data.endDate;
+    }
+    if (data.hasOwnProperty('isActive')) {
+      this.isActive = data.isActive;
+    }
   }
 
   /**
@@ -61,18 +80,44 @@ export class Management extends BaseEntity {
 
   /**
    * Convierte la entidad a objeto plano
+   * Solo incluye campos que existen en la instancia (fueron inicializados)
    * @returns {Object}
    */
   toPlainObject() {
-    return {
-      ...super.toPlainObject(),
-      code: this.code,
-      name: this.name,
-      year: this.year,
-      type: this.type,
-      startDate: this.startDate,
-      endDate: this.endDate,
-      isActive: this.isActive,
-    };
+    const plainObject = super.toPlainObject();
+    
+    // Solo incluir campos que fueron inicializados (existen en this)
+    if (this.hasOwnProperty('code')) {
+      plainObject.code = this.code;
+    }
+    if (this.hasOwnProperty('name')) {
+      plainObject.name = this.name;
+    }
+    if (this.hasOwnProperty('year')) {
+      plainObject.year = this.year;
+    }
+    if (this.hasOwnProperty('type')) {
+      plainObject.type = this.type;
+    }
+    if (this.hasOwnProperty('startDate')) {
+      plainObject.startDate = this.startDate;
+    }
+    if (this.hasOwnProperty('endDate')) {
+      plainObject.endDate = this.endDate;
+    }
+    if (this.hasOwnProperty('isActive')) {
+      plainObject.isActive = this.isActive;
+    }
+
+    return plainObject;
+  }
+
+  /**
+   * Convierte la entidad a JSON
+   * Usa toPlainObject() para serialización
+   * @returns {Object}
+   */
+  toJSON() {
+    return this.toPlainObject();
   }
 }

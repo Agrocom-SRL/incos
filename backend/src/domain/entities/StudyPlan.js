@@ -7,17 +7,41 @@ import { BaseEntity } from './BaseEntity.js';
 export class StudyPlan extends BaseEntity {
   constructor(data = {}) {
     super(data);
-    this.careerId = data.careerId || null;
-    this.planName = data.planName || null;
-    this.ministerialResolution = data.ministerialResolution || null;
-    this.documentPath = data.documentPath || null;
-    this.durationYears = data.durationYears || null;
-    this.totalHours = data.totalHours || null;
-    this.hoursPerWeek = data.hoursPerWeek || null;
-    this.hoursPerMonth = data.hoursPerMonth || null;
-    this.hoursPerYear = data.hoursPerYear || null;
-    this.observations = data.observations || null;
-    this.isActive = data.isActive !== undefined ? data.isActive : false;
+    // Solo inicializar campos si fueron proporcionados explícitamente
+    // Esto permite usar attributes limitados sin inicializar campos no solicitados
+    if (data.hasOwnProperty('careerId')) {
+      this.careerId = data.careerId;
+    }
+    if (data.hasOwnProperty('planName')) {
+      this.planName = data.planName;
+    }
+    if (data.hasOwnProperty('ministerialResolution')) {
+      this.ministerialResolution = data.ministerialResolution;
+    }
+    if (data.hasOwnProperty('documentPath')) {
+      this.documentPath = data.documentPath;
+    }
+    if (data.hasOwnProperty('durationYears')) {
+      this.durationYears = data.durationYears;
+    }
+    if (data.hasOwnProperty('totalHours')) {
+      this.totalHours = data.totalHours;
+    }
+    if (data.hasOwnProperty('hoursPerWeek')) {
+      this.hoursPerWeek = data.hoursPerWeek;
+    }
+    if (data.hasOwnProperty('hoursPerMonth')) {
+      this.hoursPerMonth = data.hoursPerMonth;
+    }
+    if (data.hasOwnProperty('hoursPerYear')) {
+      this.hoursPerYear = data.hoursPerYear;
+    }
+    if (data.hasOwnProperty('observations')) {
+      this.observations = data.observations;
+    }
+    if (data.hasOwnProperty('isActive')) {
+      this.isActive = data.isActive;
+    }
   }
 
   /**
@@ -43,22 +67,56 @@ export class StudyPlan extends BaseEntity {
 
   /**
    * Convierte la entidad a objeto plano
+   * Solo incluye campos que existen en la instancia (fueron inicializados)
    * @returns {Object}
    */
   toPlainObject() {
-    return {
-      ...super.toPlainObject(),
-      careerId: this.careerId,
-      planName: this.planName,
-      ministerialResolution: this.ministerialResolution,
-      documentPath: this.documentPath,
-      durationYears: this.durationYears,
-      totalHours: this.totalHours,
-      hoursPerWeek: this.hoursPerWeek,
-      hoursPerMonth: this.hoursPerMonth,
-      hoursPerYear: this.hoursPerYear,
-      observations: this.observations,
-      isActive: this.isActive,
-    };
+    const plainObject = super.toPlainObject();
+    
+    // Solo incluir campos que fueron inicializados (existen en this)
+    if (this.hasOwnProperty('careerId')) {
+      plainObject.careerId = this.careerId;
+    }
+    if (this.hasOwnProperty('planName')) {
+      plainObject.planName = this.planName;
+    }
+    if (this.hasOwnProperty('ministerialResolution')) {
+      plainObject.ministerialResolution = this.ministerialResolution;
+    }
+    if (this.hasOwnProperty('documentPath')) {
+      plainObject.documentPath = this.documentPath;
+    }
+    if (this.hasOwnProperty('durationYears')) {
+      plainObject.durationYears = this.durationYears;
+    }
+    if (this.hasOwnProperty('totalHours')) {
+      plainObject.totalHours = this.totalHours;
+    }
+    if (this.hasOwnProperty('hoursPerWeek')) {
+      plainObject.hoursPerWeek = this.hoursPerWeek;
+    }
+    if (this.hasOwnProperty('hoursPerMonth')) {
+      plainObject.hoursPerMonth = this.hoursPerMonth;
+    }
+    if (this.hasOwnProperty('hoursPerYear')) {
+      plainObject.hoursPerYear = this.hoursPerYear;
+    }
+    if (this.hasOwnProperty('observations')) {
+      plainObject.observations = this.observations;
+    }
+    if (this.hasOwnProperty('isActive')) {
+      plainObject.isActive = this.isActive;
+    }
+
+    return plainObject;
+  }
+
+  /**
+   * Convierte la entidad a JSON
+   * Usa toPlainObject() para serialización
+   * @returns {Object}
+   */
+  toJSON() {
+    return this.toPlainObject();
   }
 }

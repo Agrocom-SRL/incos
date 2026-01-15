@@ -8,10 +8,23 @@ import { TIPOS_CONFIGURACION_VALUES, TIPOS_CONFIGURACION } from '../constants/in
 export class SystemConfiguration extends BaseEntity {
   constructor(data = {}) {
     super(data);
-    this.key = data.key || null;
-    this.value = data.value || null;
-    this.type = data.type || TIPOS_CONFIGURACION.STRING;
-    this.description = data.description || null;
+    // Solo inicializar campos si fueron proporcionados explícitamente
+    // Esto permite usar attributes limitados sin inicializar campos no solicitados
+    if (data.hasOwnProperty('key')) {
+      this.key = data.key;
+    }
+    if (data.hasOwnProperty('value')) {
+      this.value = data.value;
+    }
+    if (data.hasOwnProperty('type')) {
+      this.type = data.type;
+    } else if (!data.hasOwnProperty('key')) {
+      // Solo usar valor por defecto si no se está usando attributes limitados
+      this.type = TIPOS_CONFIGURACION.STRING;
+    }
+    if (data.hasOwnProperty('description')) {
+      this.description = data.description;
+    }
   }
 
   /**
@@ -25,16 +38,36 @@ export class SystemConfiguration extends BaseEntity {
 
   /**
    * Convierte la entidad a objeto plano
+   * Solo incluye campos que existen en la instancia (fueron inicializados)
    * @returns {Object}
    */
   toPlainObject() {
-    return {
-      ...super.toPlainObject(),
-      key: this.key,
-      value: this.value,
-      type: this.type,
-      description: this.description,
-    };
+    const plainObject = super.toPlainObject();
+    
+    // Solo incluir campos que fueron inicializados (existen en this)
+    if (this.hasOwnProperty('key')) {
+      plainObject.key = this.key;
+    }
+    if (this.hasOwnProperty('value')) {
+      plainObject.value = this.value;
+    }
+    if (this.hasOwnProperty('type')) {
+      plainObject.type = this.type;
+    }
+    if (this.hasOwnProperty('description')) {
+      plainObject.description = this.description;
+    }
+
+    return plainObject;
+  }
+
+  /**
+   * Convierte la entidad a JSON
+   * Usa toPlainObject() para serialización
+   * @returns {Object}
+   */
+  toJSON() {
+    return this.toPlainObject();
   }
 }
 

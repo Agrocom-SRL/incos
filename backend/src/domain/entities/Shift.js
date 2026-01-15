@@ -7,11 +7,23 @@ import { BaseEntity } from './BaseEntity.js';
 export class Shift extends BaseEntity {
   constructor(data = {}) {
     super(data);
-    this.name = data.name || null;
-    this.startTime = data.startTime || null;
-    this.endTime = data.endTime || null;
-    this.description = data.description || null;
-    this.colorHex = data.colorHex || null;
+    // Solo inicializar campos si fueron proporcionados explícitamente
+    // Esto permite usar attributes limitados sin inicializar campos no solicitados
+    if (data.hasOwnProperty('name')) {
+      this.name = data.name;
+    }
+    if (data.hasOwnProperty('startTime')) {
+      this.startTime = data.startTime;
+    }
+    if (data.hasOwnProperty('endTime')) {
+      this.endTime = data.endTime;
+    }
+    if (data.hasOwnProperty('description')) {
+      this.description = data.description;
+    }
+    if (data.hasOwnProperty('colorHex')) {
+      this.colorHex = data.colorHex;
+    }
   }
 
   /**
@@ -34,16 +46,38 @@ export class Shift extends BaseEntity {
 
   /**
    * Convierte la entidad a objeto plano
+   * Solo incluye campos que existen en la instancia (fueron inicializados)
    * @returns {Object}
    */
   toPlainObject() {
-    return {
-      ...super.toPlainObject(),
-      name: this.name,
-      startTime: this.startTime,
-      endTime: this.endTime,
-      description: this.description,
-      colorHex: this.colorHex,
-    };
+    const plainObject = super.toPlainObject();
+    
+    // Solo incluir campos que fueron inicializados (existen en this)
+    if (this.hasOwnProperty('name')) {
+      plainObject.name = this.name;
+    }
+    if (this.hasOwnProperty('startTime')) {
+      plainObject.startTime = this.startTime;
+    }
+    if (this.hasOwnProperty('endTime')) {
+      plainObject.endTime = this.endTime;
+    }
+    if (this.hasOwnProperty('description')) {
+      plainObject.description = this.description;
+    }
+    if (this.hasOwnProperty('colorHex')) {
+      plainObject.colorHex = this.colorHex;
+    }
+
+    return plainObject;
+  }
+
+  /**
+   * Convierte la entidad a JSON
+   * Usa toPlainObject() para serialización
+   * @returns {Object}
+   */
+  toJSON() {
+    return this.toPlainObject();
   }
 }

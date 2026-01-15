@@ -14,14 +14,34 @@
  */
 export class BaseEntity {
   constructor(data = {}) {
-    this.id = data.id || null;
-    this.active = data.active !== undefined ? data.active : true;
-    this.createdAt = data.createdAt || null;
-    this.updatedAt = data.updatedAt || null;
-    this.deletedAt = data.deletedAt || null;
-    this.createdBy = data.createdBy || null;
-    this.updatedBy = data.updatedBy || null;
-    this.deletedBy = data.deletedBy || null;
+    // Solo inicializar campos si fueron proporcionados explícitamente
+    // Esto permite usar attributes limitados sin inicializar campos no solicitados
+    if (data.hasOwnProperty('id')) {
+      this.id = data.id;
+    }
+    if (data.hasOwnProperty('active')) {
+      this.active = data.active;
+    }
+    // NOTA: No inicializamos active por defecto para permitir attributes limitados
+    // Si se necesita active, debe ser proporcionado explícitamente en los attributes
+    if (data.hasOwnProperty('createdAt')) {
+      this.createdAt = data.createdAt;
+    }
+    if (data.hasOwnProperty('updatedAt')) {
+      this.updatedAt = data.updatedAt;
+    }
+    if (data.hasOwnProperty('deletedAt')) {
+      this.deletedAt = data.deletedAt;
+    }
+    if (data.hasOwnProperty('createdBy')) {
+      this.createdBy = data.createdBy;
+    }
+    if (data.hasOwnProperty('updatedBy')) {
+      this.updatedBy = data.updatedBy;
+    }
+    if (data.hasOwnProperty('deletedBy')) {
+      this.deletedBy = data.deletedBy;
+    }
   }
 
   /**
@@ -78,18 +98,47 @@ export class BaseEntity {
 
   /**
    * Convierte la entidad a objeto plano
+   * Solo incluye campos que existen en la instancia (fueron inicializados)
    * @returns {Object}
    */
   toPlainObject() {
-    return {
-      id: this.id,
-      active: this.active,
-      createdAt: this.createdAt,
-      updatedAt: this.updatedAt,
-      deletedAt: this.deletedAt,
-      createdBy: this.createdBy,
-      updatedBy: this.updatedBy,
-      deletedBy: this.deletedBy,
-    };
+    const plainObject = {};
+    
+    // Solo incluir campos que fueron inicializados (existen en this)
+    if (this.hasOwnProperty('id')) {
+      plainObject.id = this.id;
+    }
+    if (this.hasOwnProperty('active')) {
+      plainObject.active = this.active;
+    }
+    if (this.hasOwnProperty('createdAt')) {
+      plainObject.createdAt = this.createdAt;
+    }
+    if (this.hasOwnProperty('updatedAt')) {
+      plainObject.updatedAt = this.updatedAt;
+    }
+    if (this.hasOwnProperty('deletedAt')) {
+      plainObject.deletedAt = this.deletedAt;
+    }
+    if (this.hasOwnProperty('createdBy')) {
+      plainObject.createdBy = this.createdBy;
+    }
+    if (this.hasOwnProperty('updatedBy')) {
+      plainObject.updatedBy = this.updatedBy;
+    }
+    if (this.hasOwnProperty('deletedBy')) {
+      plainObject.deletedBy = this.deletedBy;
+    }
+
+    return plainObject;
+  }
+
+  /**
+   * Convierte la entidad a JSON
+   * Usa toPlainObject() para serialización
+   * @returns {Object}
+   */
+  toJSON() {
+    return this.toPlainObject();
   }
 }

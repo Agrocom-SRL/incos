@@ -8,13 +8,29 @@ import { TIPOS_DISPOSITIVO_VALUES } from '../constants/index.js';
 export class Session extends BaseEntity {
   constructor(data = {}) {
     super(data);
-    this.userId = data.userId || null;
-    this.sessionToken = data.sessionToken || null;
-    this.recoveryToken = data.recoveryToken || null;
-    this.expirationDate = data.expirationDate || null;
-    this.lastLogin = data.lastLogin || null;
-    this.lastLoginIp = data.lastLoginIp || null;
-    this.device = data.device || null; // MOVIL, TABLET, DESKTOP
+    // Solo inicializar campos si fueron proporcionados explícitamente
+    // Esto permite usar attributes limitados sin inicializar campos no solicitados
+    if (data.hasOwnProperty('userId')) {
+      this.userId = data.userId;
+    }
+    if (data.hasOwnProperty('sessionToken')) {
+      this.sessionToken = data.sessionToken;
+    }
+    if (data.hasOwnProperty('recoveryToken')) {
+      this.recoveryToken = data.recoveryToken;
+    }
+    if (data.hasOwnProperty('expirationDate')) {
+      this.expirationDate = data.expirationDate;
+    }
+    if (data.hasOwnProperty('lastLogin')) {
+      this.lastLogin = data.lastLogin;
+    }
+    if (data.hasOwnProperty('lastLoginIp')) {
+      this.lastLoginIp = data.lastLoginIp;
+    }
+    if (data.hasOwnProperty('device')) {
+      this.device = data.device; // MOVIL, TABLET, DESKTOP
+    }
   }
 
   /**
@@ -37,18 +53,44 @@ export class Session extends BaseEntity {
 
   /**
    * Convierte la entidad a objeto plano
+   * Solo incluye campos que existen en la instancia (fueron inicializados)
    * @returns {Object}
    */
   toPlainObject() {
-    return {
-      ...super.toPlainObject(),
-      userId: this.userId,
-      sessionToken: this.sessionToken,
-      recoveryToken: this.recoveryToken,
-      expirationDate: this.expirationDate,
-      lastLogin: this.lastLogin,
-      lastLoginIp: this.lastLoginIp,
-      device: this.device,
-    };
+    const plainObject = super.toPlainObject();
+    
+    // Solo incluir campos que fueron inicializados (existen en this)
+    if (this.hasOwnProperty('userId')) {
+      plainObject.userId = this.userId;
+    }
+    if (this.hasOwnProperty('sessionToken')) {
+      plainObject.sessionToken = this.sessionToken;
+    }
+    if (this.hasOwnProperty('recoveryToken')) {
+      plainObject.recoveryToken = this.recoveryToken;
+    }
+    if (this.hasOwnProperty('expirationDate')) {
+      plainObject.expirationDate = this.expirationDate;
+    }
+    if (this.hasOwnProperty('lastLogin')) {
+      plainObject.lastLogin = this.lastLogin;
+    }
+    if (this.hasOwnProperty('lastLoginIp')) {
+      plainObject.lastLoginIp = this.lastLoginIp;
+    }
+    if (this.hasOwnProperty('device')) {
+      plainObject.device = this.device;
+    }
+
+    return plainObject;
+  }
+
+  /**
+   * Convierte la entidad a JSON
+   * Usa toPlainObject() para serialización
+   * @returns {Object}
+   */
+  toJSON() {
+    return this.toPlainObject();
   }
 }

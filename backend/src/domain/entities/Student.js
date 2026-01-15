@@ -9,33 +9,76 @@ import { EXPEDICIONES_CI_VALUES, GENEROS_VALUES, TIPOS_SANGRE_VALUES, EDAD_MINIM
 export class Student extends BaseEntity {
   constructor(data = {}) {
     super(data);
+    // Solo inicializar campos si fueron proporcionados explícitamente
+    // Esto permite usar attributes limitados sin inicializar campos no solicitados
     
     // Relaciones
-    this.userId = data.userId || null;
+    if (data.hasOwnProperty('userId')) {
+      this.userId = data.userId;
+    }
     
     // Datos de identificación
-    this.studentCode = data.studentCode || null;
-    this.ci = data.ci || null;
-    this.expedition = data.expedition || null;
+    if (data.hasOwnProperty('studentCode')) {
+      this.studentCode = data.studentCode;
+    }
+    if (data.hasOwnProperty('ci')) {
+      this.ci = data.ci;
+    }
+    if (data.hasOwnProperty('expedition')) {
+      this.expedition = data.expedition;
+    }
     
     // Datos personales
-    this.firstName = data.firstName || null;
-    this.lastName = data.lastName || null;
-    this.motherLastName = data.motherLastName || null;
-    this.birthDate = data.birthDate || null;
-    this.gender = data.gender || null;
-    this.civilStatusId = data.civilStatusId || null;
-    this.bloodType = data.bloodType || null;
-    this.hasDisability = data.hasDisability !== undefined ? data.hasDisability : false;
+    if (data.hasOwnProperty('firstName')) {
+      this.firstName = data.firstName;
+    }
+    if (data.hasOwnProperty('lastName')) {
+      this.lastName = data.lastName;
+    }
+    if (data.hasOwnProperty('motherLastName')) {
+      this.motherLastName = data.motherLastName;
+    }
+    if (data.hasOwnProperty('birthDate')) {
+      this.birthDate = data.birthDate;
+    }
+    if (data.hasOwnProperty('gender')) {
+      this.gender = data.gender;
+    }
+    if (data.hasOwnProperty('civilStatusId')) {
+      this.civilStatusId = data.civilStatusId;
+    }
+    if (data.hasOwnProperty('bloodType')) {
+      this.bloodType = data.bloodType;
+    }
+    if (data.hasOwnProperty('hasDisability')) {
+      this.hasDisability = data.hasDisability;
+    } else if (!data.hasOwnProperty('userId')) {
+      // Solo usar valor por defecto si no se está usando attributes limitados
+      this.hasDisability = false;
+    }
     
     // Contacto
-    this.personalEmail = data.personalEmail || null;
-    this.mobilePhone = data.mobilePhone || null;
-    this.landlinePhone = data.landlinePhone || null;
-    this.address = data.address || null;
-    this.residenceMunicipalityId = data.residenceMunicipalityId || null;
-    this.zone = data.zone || null;
-    this.observations = data.observations || null;
+    if (data.hasOwnProperty('personalEmail')) {
+      this.personalEmail = data.personalEmail;
+    }
+    if (data.hasOwnProperty('mobilePhone')) {
+      this.mobilePhone = data.mobilePhone;
+    }
+    if (data.hasOwnProperty('landlinePhone')) {
+      this.landlinePhone = data.landlinePhone;
+    }
+    if (data.hasOwnProperty('address')) {
+      this.address = data.address;
+    }
+    if (data.hasOwnProperty('residenceMunicipalityId')) {
+      this.residenceMunicipalityId = data.residenceMunicipalityId;
+    }
+    if (data.hasOwnProperty('zone')) {
+      this.zone = data.zone;
+    }
+    if (data.hasOwnProperty('observations')) {
+      this.observations = data.observations;
+    }
   }
 
   /**
@@ -139,30 +182,80 @@ export class Student extends BaseEntity {
 
   /**
    * Convierte la entidad a objeto plano
+   * Solo incluye campos que existen en la instancia (fueron inicializados)
    * @returns {Object}
    */
   toPlainObject() {
-    return {
-      ...super.toPlainObject(),
-      userId: this.userId,
-      studentCode: this.studentCode,
-      ci: this.ci,
-      expedition: this.expedition,
-      firstName: this.firstName,
-      lastName: this.lastName,
-      motherLastName: this.motherLastName,
-      birthDate: this.birthDate,
-      gender: this.gender,
-      civilStatusId: this.civilStatusId,
-      bloodType: this.bloodType,
-      hasDisability: this.hasDisability,
-      personalEmail: this.personalEmail,
-      mobilePhone: this.mobilePhone,
-      landlinePhone: this.landlinePhone,
-      address: this.address,
-      residenceMunicipalityId: this.residenceMunicipalityId,
-      zone: this.zone,
-      observations: this.observations,
-    };
+    const plainObject = super.toPlainObject();
+    
+    // Solo incluir campos que fueron inicializados (existen en this)
+    if (this.hasOwnProperty('userId')) {
+      plainObject.userId = this.userId;
+    }
+    if (this.hasOwnProperty('studentCode')) {
+      plainObject.studentCode = this.studentCode;
+    }
+    if (this.hasOwnProperty('ci')) {
+      plainObject.ci = this.ci;
+    }
+    if (this.hasOwnProperty('expedition')) {
+      plainObject.expedition = this.expedition;
+    }
+    if (this.hasOwnProperty('firstName')) {
+      plainObject.firstName = this.firstName;
+    }
+    if (this.hasOwnProperty('lastName')) {
+      plainObject.lastName = this.lastName;
+    }
+    if (this.hasOwnProperty('motherLastName')) {
+      plainObject.motherLastName = this.motherLastName;
+    }
+    if (this.hasOwnProperty('birthDate')) {
+      plainObject.birthDate = this.birthDate;
+    }
+    if (this.hasOwnProperty('gender')) {
+      plainObject.gender = this.gender;
+    }
+    if (this.hasOwnProperty('civilStatusId')) {
+      plainObject.civilStatusId = this.civilStatusId;
+    }
+    if (this.hasOwnProperty('bloodType')) {
+      plainObject.bloodType = this.bloodType;
+    }
+    if (this.hasOwnProperty('hasDisability')) {
+      plainObject.hasDisability = this.hasDisability;
+    }
+    if (this.hasOwnProperty('personalEmail')) {
+      plainObject.personalEmail = this.personalEmail;
+    }
+    if (this.hasOwnProperty('mobilePhone')) {
+      plainObject.mobilePhone = this.mobilePhone;
+    }
+    if (this.hasOwnProperty('landlinePhone')) {
+      plainObject.landlinePhone = this.landlinePhone;
+    }
+    if (this.hasOwnProperty('address')) {
+      plainObject.address = this.address;
+    }
+    if (this.hasOwnProperty('residenceMunicipalityId')) {
+      plainObject.residenceMunicipalityId = this.residenceMunicipalityId;
+    }
+    if (this.hasOwnProperty('zone')) {
+      plainObject.zone = this.zone;
+    }
+    if (this.hasOwnProperty('observations')) {
+      plainObject.observations = this.observations;
+    }
+
+    return plainObject;
+  }
+
+  /**
+   * Convierte la entidad a JSON
+   * Usa toPlainObject() para serialización
+   * @returns {Object}
+   */
+  toJSON() {
+    return this.toPlainObject();
   }
 }

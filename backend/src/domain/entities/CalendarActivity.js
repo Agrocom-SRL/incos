@@ -7,15 +7,38 @@ import { BaseEntity } from './BaseEntity.js';
 export class CalendarActivity extends BaseEntity {
   constructor(data = {}) {
     super(data);
-    this.academicPeriodId = data.academicPeriodId || null;
-    this.activityId = data.activityId || null;
-    this.code = data.code || null; // Ej: "2025-BIM1-001", "2025-PLAN-005"
-    this.customName = data.customName || null;
-    this.careerIds = data.careerIds || null; // Array de IDs de carreras (JSON o Array)
-    this.startDate = data.startDate || null;
-    this.endDate = data.endDate || null;
-    this.isAllDay = data.isAllDay !== undefined ? data.isAllDay : true;
-    this.schedule = data.schedule || null; // JSON: {"inicio": "08:00", "fin": "12:00"}
+    // Solo inicializar campos si fueron proporcionados explícitamente
+    // Esto permite usar attributes limitados sin inicializar campos no solicitados
+    if (data.hasOwnProperty('academicPeriodId')) {
+      this.academicPeriodId = data.academicPeriodId;
+    }
+    if (data.hasOwnProperty('activityId')) {
+      this.activityId = data.activityId;
+    }
+    if (data.hasOwnProperty('code')) {
+      this.code = data.code; // Ej: "2025-BIM1-001", "2025-PLAN-005"
+    }
+    if (data.hasOwnProperty('customName')) {
+      this.customName = data.customName;
+    }
+    if (data.hasOwnProperty('careerIds')) {
+      this.careerIds = data.careerIds; // Array de IDs de carreras (JSON o Array)
+    }
+    if (data.hasOwnProperty('startDate')) {
+      this.startDate = data.startDate;
+    }
+    if (data.hasOwnProperty('endDate')) {
+      this.endDate = data.endDate;
+    }
+    if (data.hasOwnProperty('isAllDay')) {
+      this.isAllDay = data.isAllDay;
+    } else if (!data.hasOwnProperty('academicPeriodId')) {
+      // Solo usar valor por defecto si no se está usando attributes limitados
+      this.isAllDay = true;
+    }
+    if (data.hasOwnProperty('schedule')) {
+      this.schedule = data.schedule; // JSON: {"inicio": "08:00", "fin": "12:00"}
+    }
   }
 
   /**
@@ -80,20 +103,50 @@ export class CalendarActivity extends BaseEntity {
 
   /**
    * Convierte la entidad a objeto plano
+   * Solo incluye campos que existen en la instancia (fueron inicializados)
    * @returns {Object}
    */
   toPlainObject() {
-    return {
-      ...super.toPlainObject(),
-      academicPeriodId: this.academicPeriodId,
-      activityId: this.activityId,
-      code: this.code,
-      customName: this.customName,
-      careerIds: this.careerIds,
-      startDate: this.startDate,
-      endDate: this.endDate,
-      isAllDay: this.isAllDay,
-      schedule: this.schedule,
-    };
+    const plainObject = super.toPlainObject();
+    
+    // Solo incluir campos que fueron inicializados (existen en this)
+    if (this.hasOwnProperty('academicPeriodId')) {
+      plainObject.academicPeriodId = this.academicPeriodId;
+    }
+    if (this.hasOwnProperty('activityId')) {
+      plainObject.activityId = this.activityId;
+    }
+    if (this.hasOwnProperty('code')) {
+      plainObject.code = this.code;
+    }
+    if (this.hasOwnProperty('customName')) {
+      plainObject.customName = this.customName;
+    }
+    if (this.hasOwnProperty('careerIds')) {
+      plainObject.careerIds = this.careerIds;
+    }
+    if (this.hasOwnProperty('startDate')) {
+      plainObject.startDate = this.startDate;
+    }
+    if (this.hasOwnProperty('endDate')) {
+      plainObject.endDate = this.endDate;
+    }
+    if (this.hasOwnProperty('isAllDay')) {
+      plainObject.isAllDay = this.isAllDay;
+    }
+    if (this.hasOwnProperty('schedule')) {
+      plainObject.schedule = this.schedule;
+    }
+
+    return plainObject;
+  }
+
+  /**
+   * Convierte la entidad a JSON
+   * Usa toPlainObject() para serialización
+   * @returns {Object}
+   */
+  toJSON() {
+    return this.toPlainObject();
   }
 }

@@ -8,15 +8,35 @@ import { NIVELES_ACADEMICOS_PERSONAL_VALUES, TIPOS_DIRECTOR_VALUES, TIPOS_DIRECT
 export class Director extends BaseEntity {
   constructor(data = {}) {
     super(data);
-    this.staffId = data.staffId || null;
-    this.type = data.type || null; // ACADEMICO, ADMINISTRATIVO
-    this.appointmentDate = data.appointmentDate || null;
-    this.appointmentResolution = data.appointmentResolution || null;
-    this.professionalTitle = data.professionalTitle || null;
-    this.specialty = data.specialty || null;
-    this.academicLevel = data.academicLevel || null;
-    this.graduationInstitution = data.graduationInstitution || null;
-    this.graduationYear = data.graduationYear || null;
+    // Solo inicializar campos si fueron proporcionados explícitamente
+    // Esto permite usar attributes limitados sin inicializar campos no solicitados
+    if (data.hasOwnProperty('staffId')) {
+      this.staffId = data.staffId;
+    }
+    if (data.hasOwnProperty('type')) {
+      this.type = data.type; // ACADEMICO, ADMINISTRATIVO
+    }
+    if (data.hasOwnProperty('appointmentDate')) {
+      this.appointmentDate = data.appointmentDate;
+    }
+    if (data.hasOwnProperty('appointmentResolution')) {
+      this.appointmentResolution = data.appointmentResolution;
+    }
+    if (data.hasOwnProperty('professionalTitle')) {
+      this.professionalTitle = data.professionalTitle;
+    }
+    if (data.hasOwnProperty('specialty')) {
+      this.specialty = data.specialty;
+    }
+    if (data.hasOwnProperty('academicLevel')) {
+      this.academicLevel = data.academicLevel;
+    }
+    if (data.hasOwnProperty('graduationInstitution')) {
+      this.graduationInstitution = data.graduationInstitution;
+    }
+    if (data.hasOwnProperty('graduationYear')) {
+      this.graduationYear = data.graduationYear;
+    }
   }
 
   /**
@@ -47,20 +67,50 @@ export class Director extends BaseEntity {
 
   /**
    * Convierte la entidad a objeto plano
+   * Solo incluye campos que existen en la instancia (fueron inicializados)
    * @returns {Object}
    */
   toPlainObject() {
-    return {
-      ...super.toPlainObject(),
-      staffId: this.staffId,
-      type: this.type,
-      appointmentDate: this.appointmentDate,
-      appointmentResolution: this.appointmentResolution,
-      professionalTitle: this.professionalTitle,
-      specialty: this.specialty,
-      academicLevel: this.academicLevel,
-      graduationInstitution: this.graduationInstitution,
-      graduationYear: this.graduationYear,
-    };
+    const plainObject = super.toPlainObject();
+    
+    // Solo incluir campos que fueron inicializados (existen en this)
+    if (this.hasOwnProperty('staffId')) {
+      plainObject.staffId = this.staffId;
+    }
+    if (this.hasOwnProperty('type')) {
+      plainObject.type = this.type;
+    }
+    if (this.hasOwnProperty('appointmentDate')) {
+      plainObject.appointmentDate = this.appointmentDate;
+    }
+    if (this.hasOwnProperty('appointmentResolution')) {
+      plainObject.appointmentResolution = this.appointmentResolution;
+    }
+    if (this.hasOwnProperty('professionalTitle')) {
+      plainObject.professionalTitle = this.professionalTitle;
+    }
+    if (this.hasOwnProperty('specialty')) {
+      plainObject.specialty = this.specialty;
+    }
+    if (this.hasOwnProperty('academicLevel')) {
+      plainObject.academicLevel = this.academicLevel;
+    }
+    if (this.hasOwnProperty('graduationInstitution')) {
+      plainObject.graduationInstitution = this.graduationInstitution;
+    }
+    if (this.hasOwnProperty('graduationYear')) {
+      plainObject.graduationYear = this.graduationYear;
+    }
+
+    return plainObject;
+  }
+
+  /**
+   * Convierte la entidad a JSON
+   * Usa toPlainObject() para serialización
+   * @returns {Object}
+   */
+  toJSON() {
+    return this.toPlainObject();
   }
 }

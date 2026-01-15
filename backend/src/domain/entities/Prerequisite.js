@@ -7,9 +7,17 @@ import { BaseEntity } from './BaseEntity.js';
 export class Prerequisite extends BaseEntity {
   constructor(data = {}) {
     super(data);
-    this.studyPlanId = data.studyPlanId || null;
-    this.subjectId = data.subjectId || null; // Asignatura que requiere el prerrequisito
-    this.prerequisiteId = data.prerequisiteId || null; // Asignatura que debe aprobarse antes
+    // Solo inicializar campos si fueron proporcionados explícitamente
+    // Esto permite usar attributes limitados sin inicializar campos no solicitados
+    if (data.hasOwnProperty('studyPlanId')) {
+      this.studyPlanId = data.studyPlanId;
+    }
+    if (data.hasOwnProperty('subjectId')) {
+      this.subjectId = data.subjectId; // Asignatura que requiere el prerrequisito
+    }
+    if (data.hasOwnProperty('prerequisiteId')) {
+      this.prerequisiteId = data.prerequisiteId; // Asignatura que debe aprobarse antes
+    }
   }
 
   /**
@@ -23,14 +31,32 @@ export class Prerequisite extends BaseEntity {
 
   /**
    * Convierte la entidad a objeto plano
+   * Solo incluye campos que existen en la instancia (fueron inicializados)
    * @returns {Object}
    */
   toPlainObject() {
-    return {
-      ...super.toPlainObject(),
-      studyPlanId: this.studyPlanId,
-      subjectId: this.subjectId,
-      prerequisiteId: this.prerequisiteId,
-    };
+    const plainObject = super.toPlainObject();
+    
+    // Solo incluir campos que fueron inicializados (existen en this)
+    if (this.hasOwnProperty('studyPlanId')) {
+      plainObject.studyPlanId = this.studyPlanId;
+    }
+    if (this.hasOwnProperty('subjectId')) {
+      plainObject.subjectId = this.subjectId;
+    }
+    if (this.hasOwnProperty('prerequisiteId')) {
+      plainObject.prerequisiteId = this.prerequisiteId;
+    }
+
+    return plainObject;
+  }
+
+  /**
+   * Convierte la entidad a JSON
+   * Usa toPlainObject() para serialización
+   * @returns {Object}
+   */
+  toJSON() {
+    return this.toPlainObject();
   }
 }

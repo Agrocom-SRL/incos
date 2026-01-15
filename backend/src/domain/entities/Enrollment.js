@@ -8,11 +8,27 @@ import { TIPOS_INSCRIPCION_VALUES, TIPOS_INSCRIPCION } from '../constants/inscri
 export class Enrollment extends BaseEntity {
   constructor(data = {}) {
     super(data);
-    this.studentAcademicDataId = data.studentAcademicDataId || null;
-    this.managementId = data.managementId || null;
-    this.enrollmentType = data.enrollmentType || TIPOS_INSCRIPCION.CONTINUIDAD;
-    this.enrollmentDate = data.enrollmentDate || null;
-    this.observations = data.observations || null;
+    // Solo inicializar campos si fueron proporcionados explícitamente
+    // Esto permite usar attributes limitados sin inicializar campos no solicitados
+    if (data.hasOwnProperty('studentAcademicDataId')) {
+      this.studentAcademicDataId = data.studentAcademicDataId;
+    }
+    if (data.hasOwnProperty('managementId')) {
+      this.managementId = data.managementId;
+    }
+    if (data.hasOwnProperty('enrollmentType')) {
+      this.enrollmentType = data.enrollmentType;
+    } else if (!data.hasOwnProperty('studentAcademicDataId')) {
+      // Solo usar valor por defecto si no se está usando attributes limitados
+      // (si no tiene studentAcademicDataId, asumimos que es una entidad completa)
+      this.enrollmentType = TIPOS_INSCRIPCION.CONTINUIDAD;
+    }
+    if (data.hasOwnProperty('enrollmentDate')) {
+      this.enrollmentDate = data.enrollmentDate;
+    }
+    if (data.hasOwnProperty('observations')) {
+      this.observations = data.observations;
+    }
   }
 
   /**
@@ -66,16 +82,38 @@ export class Enrollment extends BaseEntity {
 
   /**
    * Convierte la entidad a objeto plano
+   * Solo incluye campos que existen en la instancia (fueron inicializados)
    * @returns {Object}
    */
   toPlainObject() {
-    return {
-      ...super.toPlainObject(),
-      studentAcademicDataId: this.studentAcademicDataId,
-      managementId: this.managementId,
-      enrollmentType: this.enrollmentType,
-      enrollmentDate: this.enrollmentDate,
-      observations: this.observations,
-    };
+    const plainObject = super.toPlainObject();
+    
+    // Solo incluir campos que fueron inicializados (existen en this)
+    if (this.hasOwnProperty('studentAcademicDataId')) {
+      plainObject.studentAcademicDataId = this.studentAcademicDataId;
+    }
+    if (this.hasOwnProperty('managementId')) {
+      plainObject.managementId = this.managementId;
+    }
+    if (this.hasOwnProperty('enrollmentType')) {
+      plainObject.enrollmentType = this.enrollmentType;
+    }
+    if (this.hasOwnProperty('enrollmentDate')) {
+      plainObject.enrollmentDate = this.enrollmentDate;
+    }
+    if (this.hasOwnProperty('observations')) {
+      plainObject.observations = this.observations;
+    }
+
+    return plainObject;
+  }
+
+  /**
+   * Convierte la entidad a JSON
+   * Usa toPlainObject() para serialización
+   * @returns {Object}
+   */
+  toJSON() {
+    return this.toPlainObject();
   }
 }
