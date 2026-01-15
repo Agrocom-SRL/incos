@@ -27,7 +27,8 @@ import {
   GuardiansSection,
   DisabilitiesSection,
   OriginsSection,
-  DocumentDeliveriesSection
+  DocumentDeliveriesSection,
+  ScholarshipsSection
 } from '@estudiantes/components/organisms';
 
 const EstudiantesDetail = () => {
@@ -121,7 +122,7 @@ const EstudiantesDetail = () => {
     );
   }
 
-  const { student: studentData, guardians, disabilities, origins, documentDeliveries } = student;
+  const { student: studentData, guardians, disabilities, origins, documentDeliveries, scholarships } = student;
 
   return (
     <PageTemplate
@@ -148,6 +149,9 @@ const EstudiantesDetail = () => {
 
         {/* Documentos Entregados */}
         <DocumentDeliveriesSection documentDeliveries={documentDeliveries} />
+
+        {/* Becas Asignadas */}
+        <ScholarshipsSection scholarships={scholarships} />
       </div>
     </PageTemplate>
   );

@@ -25,7 +25,7 @@ export const estudianteDetailMapper = (dataBackend) => {
     return null;
   }
 
-  const { student, guardians, disabilities, origins, documentDeliveries, catalogs = {} } = normalizedData;
+  const { student, guardians, disabilities, origins, documentDeliveries, scholarships, catalogs = {} } = normalizedData;
 
   // Construir CI completo y nombre completo usando utilidades compartidas
   // El backend retorna nombres en inglés, los convertimos para el formatter
@@ -136,6 +136,25 @@ export const estudianteDetailMapper = (dataBackend) => {
     };
   });
 
+  // Enriquecer asignaciones de becas con información de tipo de beca y gestión
+  const enrichedScholarships = (Array.isArray(scholarships) ? scholarships : []).map((scholarship) => {
+    const scholarshipType = scholarship.scholarshipId 
+      ? catalogs.scholarships?.[scholarship.scholarshipId] 
+      : null;
+    const management = scholarship.managementId 
+      ? catalogs.managements?.[scholarship.managementId] 
+      : null;
+    
+    return {
+      ...scholarship,
+      scholarshipName: scholarshipType?.name || null,
+      scholarshipCode: scholarshipType?.code || null,
+      scholarshipPercentage: scholarshipType?.percentage || null,
+      managementCode: management?.code || null,
+      managementYear: management?.year || null,
+    };
+  });
+
   return {
     // Datos principales del estudiante
     student: {
@@ -174,6 +193,7 @@ export const estudianteDetailMapper = (dataBackend) => {
     disabilities: enrichedDisabilities,
     origins: enrichedOrigins,
     documentDeliveries: enrichedDocumentDeliveries,
+    scholarships: enrichedScholarships,
   };
 };
 

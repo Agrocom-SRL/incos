@@ -10,6 +10,7 @@
  * - Obtener discapacidades (múltiples)
  * - Obtener orígenes (múltiples)
  * - Obtener entregas de documentos (múltiples)
+ * - Obtener asignaciones de becas (múltiples)
  * - Retornar el estudiante con todos sus datos relacionados
  * 
  * NOTA: Los datos académicos se manejan en otro módulo, no se incluyen aquí
@@ -37,11 +38,14 @@ export class GetStudentByIdUseCase {
    * @param {Object} params.municipalityRepository - Repositorio de municipios
    * @param {Object} params.languageRepository - Repositorio de idiomas
    * @param {Object} params.civilStatusRepository - Repositorio de estados civiles
-   * @param {Object} params.disabilityTypeRepository - Repositorio de tipos de discapacidad
-   * @param {Object} params.relationshipTypeRepository - Repositorio de tipos de parentesco
-   * @param {Object} params.documentacionRepository - Repositorio de documentación
-   * @param {ILogger} params.logger - Logger para registro de eventos
-   */
+ * @param {Object} params.disabilityTypeRepository - Repositorio de tipos de discapacidad
+ * @param {Object} params.relationshipTypeRepository - Repositorio de tipos de parentesco
+ * @param {Object} params.documentacionRepository - Repositorio de documentación
+ * @param {Object} params.studentScholarshipRepository - Repositorio de asignaciones de becas
+ * @param {Object} params.scholarshipRepository - Repositorio de becas/descuentos
+ * @param {Object} params.managementRepository - Repositorio de gestiones
+ * @param {ILogger} params.logger - Logger para registro de eventos
+ */
   constructor({
     studentRepository,
     studentGuardianRepository,
@@ -57,6 +61,9 @@ export class GetStudentByIdUseCase {
     disabilityTypeRepository,
     relationshipTypeRepository,
     documentacionRepository,
+    studentScholarshipRepository,
+    scholarshipRepository,
+    managementRepository,
     logger,
   }) {
     this.studentRepository = studentRepository;
@@ -73,6 +80,9 @@ export class GetStudentByIdUseCase {
     this.disabilityTypeRepository = disabilityTypeRepository;
     this.relationshipTypeRepository = relationshipTypeRepository;
     this.documentacionRepository = documentacionRepository;
+    this.studentScholarshipRepository = studentScholarshipRepository;
+    this.scholarshipRepository = scholarshipRepository;
+    this.managementRepository = managementRepository;
     this.logger = logger;
   }
 
@@ -152,7 +162,20 @@ export class GetStudentByIdUseCase {
         count: documentDeliveries.length,
       });
 
-      // 6. Obtener datos relacionados de catálogos
+      // 6. Obtener asignaciones de becas (múltiples)
+      const scholarshipsResult = await this.studentScholarshipRepository.findAll(
+        { studentId: student.id },
+        null,
+        null
+      );
+      const scholarships = scholarshipsResult.studentScholarships || [];
+
+      this.logger.info('[Estudiantes] Asignaciones de becas encontradas', {
+        studentId: student.id,
+        count: scholarships.length,
+      });
+
+      // 7. Obtener datos relacionados de catálogos
       const studentPlain = student.toPlainObject ? student.toPlainObject() : student;
       
       // 6.1. Estado civil del estudiante
@@ -345,6 +368,46 @@ export class GetStudentByIdUseCase {
         }
       }
 
+      // 6.7. Datos relacionados de becas (tipo de beca y gestión)
+      const scholarshipIds = new Set();
+      const managementIds = new Set();
+      scholarships.forEach((scholarship) => {
+        if (scholarship.scholarshipId) scholarshipIds.add(scholarship.scholarshipId);
+        if (scholarship.managementId) managementIds.add(scholarship.managementId);
+      });
+
+      const scholarshipsCatalog = {};
+      for (const scholarshipId of scholarshipIds) {
+        try {
+          const scholarship = await this.scholarshipRepository.findById(scholarshipId);
+          if (scholarship) {
+            scholarshipsCatalog[scholarshipId] = scholarship.toPlainObject ? scholarship.toPlainObject() : scholarship;
+          }
+        } catch (err) {
+          this.logger.warn('[Estudiantes] Error al obtener tipo de beca', {
+            studentId: student.id,
+            scholarshipId,
+            error: err.message,
+          });
+        }
+      }
+
+      const managements = {};
+      for (const managementId of managementIds) {
+        try {
+          const management = await this.managementRepository.findById(managementId);
+          if (management) {
+            managements[managementId] = management.toPlainObject ? management.toPlainObject() : management;
+          }
+        } catch (err) {
+          this.logger.warn('[Estudiantes] Error al obtener gestión de beca', {
+            studentId: student.id,
+            managementId,
+            error: err.message,
+          });
+        }
+      }
+
       // 7. Retornar el estudiante con todos sus datos relacionados
       const result = {
         student: studentPlain,
@@ -357,6 +420,9 @@ export class GetStudentByIdUseCase {
         origins: origins.map((o) => (o.toPlainObject ? o.toPlainObject() : o)),
         documentDeliveries: documentDeliveries.map((d) =>
           d.toPlainObject ? d.toPlainObject() : d
+        ),
+        scholarships: scholarships.map((s) =>
+          s.toPlainObject ? s.toPlainObject() : s
         ),
         // Datos relacionados de catálogos
         catalogs: {
@@ -372,6 +438,8 @@ export class GetStudentByIdUseCase {
           disabilityTypes,
           relationshipTypes,
           documentaciones,
+          scholarships: scholarshipsCatalog,
+          managements,
         },
       };
 
@@ -381,6 +449,7 @@ export class GetStudentByIdUseCase {
         disabilitiesCount: disabilities.length,
         originsCount: origins.length,
         documentDeliveriesCount: documentDeliveries.length,
+        scholarshipsCount: scholarships.length,
         catalogsCount: {
           countries: Object.keys(result.catalogs.originCountries).length,
           languages: Object.keys(result.catalogs.originLanguages).length,
@@ -388,6 +457,8 @@ export class GetStudentByIdUseCase {
           disabilityTypes: Object.keys(result.catalogs.disabilityTypes).length,
           relationshipTypes: Object.keys(result.catalogs.relationshipTypes).length,
           documentaciones: Object.keys(result.catalogs.documentaciones).length,
+          scholarships: Object.keys(result.catalogs.scholarships).length,
+          managements: Object.keys(result.catalogs.managements).length,
         },
       });
 

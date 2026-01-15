@@ -132,8 +132,14 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
         // En modo edición, redirigir al detalle del estudiante
         navigate(`/estudiantes/${studentId}`);
       } else {
-        // En modo creación, redirigir a la lista
-        navigate('/estudiantes');
+        // En modo creación, redirigir al detalle del estudiante recién creado
+        const newStudentId = registrationResult.data?.student?.id;
+        if (newStudentId) {
+          navigate(`/estudiantes/${newStudentId}`);
+        } else {
+          // Fallback: si no hay ID, redirigir a la lista
+          navigate('/estudiantes');
+        }
       }
     }
   }, [registrationResult, addStudent, navigate, isEditMode, studentId]);
