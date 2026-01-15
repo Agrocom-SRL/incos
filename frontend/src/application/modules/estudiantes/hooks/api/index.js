@@ -13,4 +13,5 @@ export { useRegisterStudent } from './useRegisterStudent';
 export { useUpdateStudent } from './useUpdateStudent';
 export { useSearchStudent } from './useSearchStudent';
 export { useBecasDescuentosApi } from './useBecasDescuentosApi';
+export { useCreateAsignarBeca } from './useCreateAsignarBeca';
 

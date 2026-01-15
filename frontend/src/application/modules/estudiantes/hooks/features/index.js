@@ -12,4 +12,6 @@ export { useEstudianteWizardTitles } from './useEstudianteWizardTitles';
 export { useDocumentacionDinamica } from './useDocumentacionDinamica';
 export { useDocumentacionProcesada } from './useDocumentacionProcesada';
 export { useAsignarBecaBecasDescuentos } from './useAsignarBecaBecasDescuentos';
+export { useAsignarBecaPageData } from './useAsignarBecaPageData';
+export { useAsignarBecaFormHandlers } from './useAsignarBecaFormHandlers';
 

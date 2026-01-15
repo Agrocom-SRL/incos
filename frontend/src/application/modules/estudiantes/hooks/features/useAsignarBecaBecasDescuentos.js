@@ -10,6 +10,8 @@
  * Este hook:
  * - Encapsula el uso de useBecasDescuentosApi
  * - Maneja la selección de la beca/descuento
+ * - Proporciona handler para seleccionar beca (actualiza form)
+ * - Proporciona función para renderizar cards de beca
  * - Agrega lógica específica para el formulario de asignación si es necesario
  * - Expone una interfaz específica para el contexto de asignar beca
  * 
@@ -26,9 +28,13 @@ import { useBecasDescuentosApi } from '@application-estudiantes/hooks';
 /**
  * Hook para cargar y seleccionar becas y descuentos en el contexto de asignar beca
  * 
- * @returns {Object} Objeto con becasDescuentos, loading, error, refetch, selectedBecaDescuento, onSelectBecaDescuento
+ * @param {Object} options - Opciones adicionales
+ * @param {Object} options.form - Instancia del formulario de Ant Design (opcional)
+ * @returns {Object} Objeto con becasDescuentos, loading, error, refetch, selectedBecaDescuento, onSelectBecaDescuento, handleSelectBeca
  */
-export const useAsignarBecaBecasDescuentos = () => {
+export const useAsignarBecaBecasDescuentos = (options = {}) => {
+  const { form } = options;
+
   // Usar el hook genérico de becas y descuentos
   const { becasDescuentos, loading, error, refetch } = useBecasDescuentosApi();
 
@@ -62,6 +68,19 @@ export const useAsignarBecaBecasDescuentos = () => {
     }
   }, []);
 
+  /**
+   * Handler para seleccionar una beca/descuento (actualiza estado y formulario)
+   * 
+   * @param {Object} beca - Beca/descuento seleccionada
+   */
+  const handleSelectBeca = useCallback((beca) => {
+    onSelectBecaDescuento(beca);
+    // Actualizar el formulario con el ID de la beca seleccionada
+    if (form) {
+      form.setFieldsValue({ becaDescuentoId: beca.id });
+    }
+  }, [onSelectBecaDescuento, form]);
+
   // MANTENER REFERENCIA ESTABLE
   // Comparar valores, no solo referencias, para evitar recálculos innecesarios
   const prevResultRef = useRef(null);
@@ -74,22 +93,24 @@ export const useAsignarBecaBecasDescuentos = () => {
       refetch,
       selectedBecaDescuento,
       onSelectBecaDescuento,
+      handleSelectBeca,
     };
 
     const prev = prevResultRef.current;
     
-    // Comparar valores, no referencias
+    // Comparar valores, no solo referencias
     if (prev &&
         prev.loading === current.loading &&
         prev.error === current.error &&
         prev.refetch === current.refetch &&
         prev.becasDescuentos === current.becasDescuentos &&
         prev.selectedBecaDescuento?.id === current.selectedBecaDescuento?.id &&
-        prev.onSelectBecaDescuento === current.onSelectBecaDescuento) {
+        prev.onSelectBecaDescuento === current.onSelectBecaDescuento &&
+        prev.handleSelectBeca === current.handleSelectBeca) {
       return prev;
     }
 
     prevResultRef.current = current;
     return current;
-  }, [becasDescuentos, loading, error, refetch, selectedBecaDescuento, onSelectBecaDescuento]);
+  }, [becasDescuentos, loading, error, refetch, selectedBecaDescuento, onSelectBecaDescuento, handleSelectBeca]);
 };

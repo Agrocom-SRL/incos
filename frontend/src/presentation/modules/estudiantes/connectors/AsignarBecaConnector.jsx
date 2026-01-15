@@ -18,6 +18,8 @@ import EstudiantesAsignarBeca from '@estudiantes/pages/EstudiantesAsignarBeca';
 const AsignarBecaConnector = () => {
   const location = useLocation();
   const studentId = location.state?.studentId || null;
+  // Obtener nombre del estudiante del estado si está disponible (para título dinámico)
+  const studentName = location.state?.studentName || null;
 
   // Siempre proporcionar todos los providers necesarios
   // Si no hay studentId, los providers manejarán el caso sin cargar datos
@@ -25,7 +27,7 @@ const AsignarBecaConnector = () => {
   return (
     <StudentProvider>
       <StudentDetailProvider studentId={studentId}>
-        <AsignarBecaProvider studentId={studentId}>
+        <AsignarBecaProvider studentId={studentId} studentName={studentName}>
           <EstudiantesAsignarBeca />
         </AsignarBecaProvider>
       </StudentDetailProvider>
