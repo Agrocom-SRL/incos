@@ -141,7 +141,7 @@ const EstudiantesAsignarBeca = () => {
             <SelectedBecaSection
               selectedBecaDescuento={becasDescuentosData.selectedBecaDescuento}
               form={form}
-              onSave={() => form?.submit()}
+              onFinish={handleFinish}
               onCancel={handleVolver}
               disabled={!becasDescuentosData.selectedBecaDescuento || loadingStudent || loadingAsignar}
             />

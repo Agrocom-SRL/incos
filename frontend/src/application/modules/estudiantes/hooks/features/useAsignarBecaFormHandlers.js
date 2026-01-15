@@ -144,18 +144,19 @@ export const useAsignarBecaFormHandlers = (studentId, options = {}) => {
             };
         }
 
-        // Obtener valores adicionales del formulario (observations)
-        const formValues = getFormValues ? getFormValues() : {};
+        // Los valores del formulario vienen en el parámetro values (incluye observaciones)
+        // Ant Design pasa los valores validados automáticamente cuando se llama form.submit()
+        const formValues = values || {};
         
         // Preparar datos para la API (snake_case como espera el backend)
-        // fecha_solicitud, estado y management_id se establecen automáticamente en el backend
+        // La gestión, fecha_solicitud y estado se establecen automáticamente en el backend
         const asignarBecaData = {
             student_id: studentId,
-            scholarship_id: becaDescuentoToUse.id,
-            fecha_solicitud: new Date().toISOString().slice(0, 10), // Fecha actual automática
-            estado: 'PENDIENTE', // Estado automático por defecto según schema
-            observations: formValues.observations || null,
+            beca_descuento_id: becaDescuentoToUse.id,
+            observaciones: formValues.observaciones || null,
             // management_id se establece automáticamente en el backend según la gestión activa
+            // fecha_solicitud se establece automáticamente como la fecha actual
+            // estado se establece automáticamente como PENDIENTE
         };
 
         // Llamar al hook de API para crear la asignación de beca

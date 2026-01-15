@@ -11,7 +11,7 @@
  * @param {number} selectedBecaDescuento.porcentaje - Porcentaje de descuento
  * @param {string} selectedBecaDescuento.descripcion - Descripción (opcional)
  * @param {Object} form - Instancia del formulario de Ant Design
- * @param {Function} onSave - Callback cuando se guarda la asignación
+ * @param {Function} onFinish - Callback cuando se envía el formulario (se dispara con form.submit())
  * @param {Function} onCancel - Callback cuando se cancela
  * @param {boolean} disabled - Si los botones están deshabilitados
  */
@@ -61,7 +61,7 @@ const formatEstado = (estado) => {
 const SelectedBecaSection = ({
   selectedBecaDescuento,
   form,
-  onSave,
+  onFinish,
   onCancel,
   disabled = false
 }) => {
@@ -131,20 +131,23 @@ const SelectedBecaSection = ({
         <Form
           form={form}
           layout="vertical"
+          onFinish={onFinish}
         >
           <Form.Item
-            name="observations"
+            name="observaciones"
             label="Motivo / Observaciones"
             tooltip={{
               title: 'Ingrese el motivo de la solicitud de beca (ej: madre soltera, escasos recursos, etc.)',
               placement: 'top',
-              overlayStyle: {
-                maxWidth: '350px',
-              },
-              overlayInnerStyle: {
-                fontSize: '16px',
-                lineHeight: '1.5',
-                padding: '12px 16px',
+              styles: {
+                root: {
+                  maxWidth: '350px',
+                },
+                container: {
+                  fontSize: '16px',
+                  lineHeight: '1.5',
+                  padding: '12px 16px',
+                },
               },
             }}
             rules={[
@@ -166,7 +169,7 @@ const SelectedBecaSection = ({
         <Space size="large">
           <Button
             variant="primary"
-            onClick={onSave}
+            onClick={() => form?.submit()}
             icon={<SaveOutlined />}
             disabled={disabled}
           >
