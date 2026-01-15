@@ -15,6 +15,7 @@ import { UnderConstruction } from '@components/pages';
 // Lazy loading de connectors
 // El Suspense ya está manejado globalmente por MainLayout con LoadingFallback
 const InscripcionesNuevaConnector = lazy(() => import('./connectors/InscripcionesNuevaConnector'));
+const InscripcionesDetailConnector = lazy(() => import('./connectors/DetailConnector'));
 
 export const inscripcionesRoutes = [
     // Módulo raíz: Inscripciones (redirige a la primera opción disponible)
@@ -38,6 +39,13 @@ export const inscripcionesRoutes = [
             parent: 'INS',
             order: 1,
         },
+    },
+    // Detalle de inscripción (sin menú, se accede por URL con parámetro de ruta :id)
+    {
+        path: '/inscripciones/:id',
+        element: <InscripcionesDetailConnector />,
+        key: 'INS-DETALLE',
+        menu: null, // No aparece en el menú, se accede por URL con /inscripciones/:id
     },
     {
         path: '/inscripciones/horario',

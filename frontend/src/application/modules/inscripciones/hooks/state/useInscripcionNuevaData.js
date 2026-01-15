@@ -52,11 +52,16 @@ const allEnrichers = [...studentEnrichers, ...carreraEnrichers, ...paraleloEnric
 export const useInscripcionNuevaData = (mode = 'nuevo') => {
     // 1. Hooks de feature
     const pageData = useInscripcionNuevaPageData({ mode });
-    const formHandlers = useInscripcionNuevaFormHandlers(mode);
     const studentSearch = useInscripcionNuevaStudentSearch();
     const carrerasData = useInscripcionNuevaCarreras();
     const paralelosData = useInscripcionNuevaParalelos({ 
         carreraId: carrerasData.selectedCarrera?.id 
+    });
+    
+    // Form handlers necesita acceso a selectedStudent y selectedParalelo
+    const formHandlers = useInscripcionNuevaFormHandlers(mode, {
+        selectedStudent: studentSearch.selectedStudent,
+        selectedParalelo: paralelosData.selectedParalelo,
     });
     
     // Obtener el periodoId del primer paralelo cuando hay paralelos disponibles

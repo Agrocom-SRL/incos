@@ -51,10 +51,31 @@ export const createEnrollmentValidator = [
     .withMessage('El tipo de inscripción debe ser uno de: NUEVO, REINGRESO, CONTINUIDAD, TRANSFERENCIA_ENTRADA, TRASPASO_ENTRADA'),
 
   body('observations')
-    .optional()
-    .isString()
-    .withMessage('Las observaciones deben ser una cadena de texto')
-    .trim()
-    .isLength({ max: 1000 })
-    .withMessage('Las observaciones no pueden exceder 1000 caracteres'),
+    .optional({ nullable: true, checkFalsy: true })
+    .customSanitizer((value) => {
+      // Convertir cadenas vacías a null para consistencia
+      if (value === '' || value === null || value === undefined) {
+        return null;
+      }
+      // Si es una cadena, hacer trim
+      if (typeof value === 'string') {
+        return value.trim();
+      }
+      return value;
+    })
+    .custom((value) => {
+      // Si es null o undefined, está permitido (campo opcional)
+      if (value === null || value === undefined) {
+        return true;
+      }
+      // Si no es null, debe ser una cadena
+      if (typeof value !== 'string') {
+        throw new Error('Las observaciones deben ser una cadena de texto');
+      }
+      // Validar longitud máxima (después del trim)
+      if (value.length > 1000) {
+        throw new Error('Las observaciones no pueden exceder 1000 caracteres');
+      }
+      return true;
+    }),
 ];

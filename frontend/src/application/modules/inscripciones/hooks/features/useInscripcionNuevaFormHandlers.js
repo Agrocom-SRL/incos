@@ -32,9 +32,9 @@
 
 import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import { Form } from 'antd';
+import { useNavigate } from 'react-router-dom';
 import { useMessage } from '@application/utils';
-// TODO: Importar hooks de API cuando se implementen
-// import { useCreateInscripcion } from '@application-inscripciones/hooks/api';
+import { useCreateInscripcion } from '@application-inscripciones/hooks';
 
 /**
  * Hook para gestionar handlers de submit del formulario de inscripción
@@ -45,19 +45,27 @@ import { useMessage } from '@application/utils';
  * - Procesa handlers de submit (handleFinish, handleSave)
  * 
  * @param {string} mode - Modo del formulario: 'nuevo' (default) o 'editar'
+ * @param {Object} options - Opciones adicionales
+ * @param {Object} options.selectedStudent - Estudiante seleccionado (con id)
+ * @param {Object} options.selectedParalelo - Paralelo seleccionado (con id)
  * @returns {Object} Objeto con form, handleFinish, handleSave, getFormValues, loading, error, validationErrors, inscripcionResult
  */
-export const useInscripcionNuevaFormHandlers = (mode = 'nuevo') => {
+export const useInscripcionNuevaFormHandlers = (mode = 'nuevo', options = {}) => {
+    const { selectedStudent, selectedParalelo } = options;
+    
     // Hook genérico compartido para mostrar mensajes
     const showMessage = useMessage();
-    // TODO: Hook de API para crear inscripción (se implementará en pasos siguientes)
-    // const { createInscripcion, loading: loadingCreate, error: errorCreate, validationErrors: validationErrorsCreate } = useCreateInscripcion();
     
-    // Usar el hook apropiado según el modo (cuando se implemente)
-    // Por ahora, estados básicos temporales
-    const loading = false;
-    const error = null;
-    const validationErrors = null;
+    // Hook de navegación
+    const navigate = useNavigate();
+    
+    // Hook de API para crear inscripción
+    const { createInscripcion, loading: loadingCreate, error: errorCreate, validationErrors: validationErrorsCreate } = useCreateInscripcion();
+    
+    // Usar estados del hook de API
+    const loading = loadingCreate;
+    const error = errorCreate;
+    const validationErrors = validationErrorsCreate;
     
     // Crear la instancia del formulario (el hook maneja todo el ciclo de vida)
     const [form] = Form.useForm();
@@ -112,45 +120,144 @@ export const useInscripcionNuevaFormHandlers = (mode = 'nuevo') => {
 
     // Handler para finalizar la inscripción
     const handleFinish = useCallback(async (step) => {
+        // Validar que se haya seleccionado estudiante y paralelo
+        if (!selectedStudent?.id) {
+            const errorMessage = 'Debe seleccionar un estudiante';
+            if (showMessage) {
+                showMessage('error', errorMessage);
+            }
+            return {
+                success: false,
+                error: errorMessage,
+            };
+        }
+
+        if (!selectedParalelo?.id) {
+            const errorMessage = 'Debe seleccionar un paralelo';
+            if (showMessage) {
+                showMessage('error', errorMessage);
+            }
+            return {
+                success: false,
+                error: errorMessage,
+            };
+        }
+
+        // Obtener valores adicionales del formulario (enrollment_type, observations)
         const formValues = getFormValues ? getFormValues() : {};
         
-        // TODO: Implementar llamada a API cuando se cree el hook
-        // const result = await createInscripcion(formValues, step, true, false);
-        
-        // Por ahora solo log (se implementará en pasos siguientes)
-        console.log('Inscripción completada:', formValues, step);
-        
-        // Simulación temporal (se implementará en pasos siguientes)
-        const result = { success: false, error: { message: 'Funcionalidad en desarrollo' } };
-        
-        // Usar función auxiliar para manejar el resultado
-        handleSubmitResult(
-            result,
-            'Inscripción completada correctamente',
-            'Error al completar la inscripción'
-        );
-    }, [getFormValues, handleSubmitResult]);
+        // Preparar datos para la API (snake_case como espera el backend)
+        const inscripcionData = {
+            student_id: selectedStudent.id,
+            parallel_id: selectedParalelo.id,
+            enrollment_type: formValues.enrollment_type || 'NUEVO',
+            observations: formValues.observations || null,
+        };
+
+        // Llamar al hook de API para crear la inscripción
+        const result = await createInscripcion(inscripcionData);
+
+        // Manejar el resultado
+        if (result?.success) {
+            // Mostrar mensaje de éxito
+            if (showMessage) {
+                showMessage('success', 'Inscripción completada correctamente');
+            }
+            
+            // Guardar resultado para que la página pueda reaccionar
+            setInscripcionResult(result);
+            
+            // Obtener el ID de la inscripción creada
+            const inscripcionId = result.data?.enrollment?.id || result.data?.id;
+            
+            if (inscripcionId) {
+                // Navegar a la página de detalle de la inscripción
+                // TODO: Crear ruta de detalle /inscripciones/:id cuando se implemente la página de detalle
+                // Por ahora navegamos a la ruta (aunque aún no esté implementada)
+                navigate(`/inscripciones/${inscripcionId}`, { replace: true });
+                
+                // Recargar la página después de un breve delay para asegurar que se carguen los datos frescos
+                // Esto es necesario porque la ruta de detalle aún no está implementada
+                setTimeout(() => {
+                    window.location.reload();
+                }, 100);
+            } else {
+                // Si no hay ID, solo mostrar mensaje (no navegar)
+                console.warn('⚠️ Inscripción creada pero no se obtuvo ID para navegar');
+            }
+        } else {
+            // Manejar error
+            handleSubmitResult(
+                result,
+                'Inscripción completada correctamente',
+                'Error al completar la inscripción'
+            );
+        }
+
+        return result;
+    }, [selectedStudent, selectedParalelo, getFormValues, createInscripcion, showMessage, handleSubmitResult, navigate]);
 
     // Handler para guardar parcialmente
+    // NOTA: Por ahora, el guardado parcial también crea la inscripción completa
+    // En el futuro se puede implementar un guardado como borrador
     const handleSave = useCallback(async (step) => {
+        // Validar que se haya seleccionado estudiante y paralelo
+        if (!selectedStudent?.id) {
+            const errorMessage = 'Debe seleccionar un estudiante';
+            if (showMessage) {
+                showMessage('error', errorMessage);
+            }
+            return {
+                success: false,
+                error: errorMessage,
+            };
+        }
+
+        if (!selectedParalelo?.id) {
+            const errorMessage = 'Debe seleccionar un paralelo';
+            if (showMessage) {
+                showMessage('error', errorMessage);
+            }
+            return {
+                success: false,
+                error: errorMessage,
+            };
+        }
+
+        // Obtener valores adicionales del formulario
         const formValues = getFormValues ? getFormValues() : {};
         
-        // TODO: Implementar llamada a API cuando se cree el hook
-        // const result = await createInscripcion(formValues, step, false, true);
-        
-        // Por ahora solo log (se implementará en pasos siguientes)
-        console.log('Guardado parcial:', formValues, step);
-        
-        // Simulación temporal (se implementará en pasos siguientes)
-        const result = { success: false, error: { message: 'Funcionalidad en desarrollo' } };
-        
-        // Usar función auxiliar para manejar el resultado
-        handleSubmitResult(
-            result,
-            'Datos guardados correctamente. Puede continuar después.',
-            'Error al guardar los datos'
-        );
-    }, [getFormValues, handleSubmitResult]);
+        // Preparar datos para la API (snake_case como espera el backend)
+        const inscripcionData = {
+            student_id: selectedStudent.id,
+            parallel_id: selectedParalelo.id,
+            enrollment_type: formValues.enrollment_type || 'NUEVO',
+            observations: formValues.observations || null,
+        };
+
+        // Llamar al hook de API para crear la inscripción
+        const result = await createInscripcion(inscripcionData);
+
+        // Manejar el resultado
+        if (result?.success) {
+            // Mostrar mensaje de éxito
+            if (showMessage) {
+                showMessage('success', 'Datos guardados correctamente. Puede continuar después.');
+            }
+            
+            // Guardar resultado
+            setInscripcionResult(result);
+        } else {
+            // Manejar error
+            handleSubmitResult(
+                result,
+                'Datos guardados correctamente. Puede continuar después.',
+                'Error al guardar los datos'
+            );
+        }
+
+        return result;
+    }, [selectedStudent, selectedParalelo, getFormValues, createInscripcion, showMessage, handleSubmitResult]);
 
     // Memoizar el objeto retornado para mantener referencia estable
     // Esto permite que el useMemo del Provider sea más efectivo

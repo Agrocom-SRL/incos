@@ -211,6 +211,7 @@ export class CreateEnrollmentUseCase {
 
   /**
    * Obtiene la gestión actual desde la configuración del sistema
+   * La configuración almacena el año académico, no el ID de la gestión
    * @private
    * @returns {Promise<Object>} Entidad Management
    * @throws {NotFoundError} Si no se encuentra la configuración o la gestión
@@ -225,15 +226,21 @@ export class CreateEnrollmentUseCase {
       throw new NotFoundError('Configuración de gestión actual');
     }
 
-    const gestionActualId = parseInt(gestionActualConfig.value, 10);
-    if (isNaN(gestionActualId)) {
-      throw new ValidationError('La gestión actual configurada no es un ID válido');
+    // La configuración almacena el año académico, no el ID
+    const gestionAnio = parseInt(gestionActualConfig.value, 10);
+    if (isNaN(gestionAnio)) {
+      throw new ValidationError('La gestión actual configurada no es un año válido');
     }
 
-    const management = await this.managementRepository.findById(gestionActualId);
-    if (!management) {
-      throw new NotFoundError(`Gestión con ID ${gestionActualId}`);
+    // Buscar gestiones por año (puede haber múltiples gestiones en el mismo año)
+    const managements = await this.managementRepository.findByAnio(gestionAnio);
+    if (!managements || managements.length === 0) {
+      throw new NotFoundError(`Gestión para el año ${gestionAnio}`);
     }
+
+    // Obtener la gestión activa o la más reciente (ordenada por código DESC)
+    // findByAnio ya ordena por codigo DESC, así que el primero es el más reciente
+    const management = managements.find((m) => m.isActive) || managements[0];
 
     // Validar que la gestión esté vigente
     if (!management.isActive) {
@@ -243,6 +250,7 @@ export class CreateEnrollmentUseCase {
     this.logger.info('[Inscripciones] Gestión actual obtenida', {
       managementId: management.id,
       code: management.code,
+      year: management.year,
       isActive: management.isActive,
     });
 
@@ -319,15 +327,23 @@ export class CreateEnrollmentUseCase {
    * @throws {NotFoundError} Si no se encuentra el plan de estudios o el plan habilitado
    */
   async _getStudyPlanAndManagementPlan(studentAcademicData, management) {
-    const studyPlans = await this.studyPlanRepository.findByCarreraId(
-      studentAcademicData.careerId
+    // Buscar planes de estudios por carrera, ordenados por vigente DESC para que los activos aparezcan primero
+    const result = await this.studyPlanRepository.findAll(
+      { 
+        careerId: studentAcademicData.careerId,
+        sort: 'vigente:DESC'
+      },
+      null,
+      null
     );
+    const studyPlans = result.studyPlans || [];
 
     if (!studyPlans || studyPlans.length === 0) {
       throw new NotFoundError(`Plan de estudios para la carrera del estudiante`);
     }
 
     // Obtener el plan activo o el primero disponible
+    // Como ya están ordenados por vigente DESC, el primero debería ser el activo
     const studyPlan = studyPlans.find((sp) => sp.isActive) || studyPlans[0];
     this.logger.info('[Inscripciones] Plan de estudios encontrado', {
       studyPlanId: studyPlan.id,

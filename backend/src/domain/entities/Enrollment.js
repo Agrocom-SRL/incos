@@ -21,7 +21,7 @@ export class Enrollment extends BaseEntity {
     } else if (!data.hasOwnProperty('studentAcademicDataId')) {
       // Solo usar valor por defecto si no se está usando attributes limitados
       // (si no tiene studentAcademicDataId, asumimos que es una entidad completa)
-      this.enrollmentType = TIPOS_INSCRIPCION.CONTINUIDAD;
+      this.enrollmentType = TIPOS_INSCRIPCION.NUEVO;
     }
     if (data.hasOwnProperty('enrollmentDate')) {
       this.enrollmentDate = data.enrollmentDate;

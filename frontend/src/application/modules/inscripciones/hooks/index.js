@@ -14,6 +14,7 @@
 // Exporta directamente desde los archivos (los index.js intermedios son opcionales)
 export { useInscripcionesContext } from './context/useInscripcionesContext';
 export { useInscripcionesNuevaContext } from './context/useInscripcionesNuevaContext';
+export { useInscripcionDetailContext } from './context/useInscripcionDetailContext';
 
 // ============================================
 // 2. GLOBAL STATE (Application Layer)

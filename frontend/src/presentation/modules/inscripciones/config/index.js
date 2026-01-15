@@ -14,3 +14,4 @@
  */
 
 export { createInscripcionNuevaWizardSteps } from './inscripcionNuevaWizardSteps';
+export { createDetailBreadcrumbItems } from './breadcrumbs.jsx';
