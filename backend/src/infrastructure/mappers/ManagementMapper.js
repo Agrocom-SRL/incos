@@ -24,6 +24,7 @@ export class ManagementMapper {
   /**
    * Convierte un modelo Sequelize a entidad de dominio
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de Management
+   * Solo incluye campos que existen en el modelo (útil cuando se usan attributes limitados)
    * 
    * @param {Object|null} model - Modelo Sequelize de Gestion
    * @returns {Management|null} Entidad de dominio Management
@@ -32,15 +33,29 @@ export class ManagementMapper {
     if (!model) return null;
 
     // Campos específicos de Management (campos del dominio)
-    const specificFields = {
-      code: model.codigo,
-      name: model.nombre,
-      year: model.anio,
-      type: model.tipo,
-      startDate: model.fechaInicio,
-      endDate: model.fechaFin,
-      isActive: model.vigente === true || model.vigente === 1,
-    };
+    // Solo incluir campos que existen en el modelo (no undefined)
+    const specificFields = {};
+    if (model.codigo !== undefined) {
+      specificFields.code = model.codigo;
+    }
+    if (model.nombre !== undefined) {
+      specificFields.name = model.nombre;
+    }
+    if (model.anio !== undefined) {
+      specificFields.year = model.anio;
+    }
+    if (model.tipo !== undefined) {
+      specificFields.type = model.tipo;
+    }
+    if (model.fechaInicio !== undefined) {
+      specificFields.startDate = model.fechaInicio;
+    }
+    if (model.fechaFin !== undefined) {
+      specificFields.endDate = model.fechaFin;
+    }
+    if (model.vigente !== undefined) {
+      specificFields.isActive = model.vigente === true || model.vigente === 1;
+    }
 
     // Combina campos base (id, active, timestamps, audit) con campos específicos
     const entityData = BaseMapper.combineBaseAndSpecificFields(model, specificFields);

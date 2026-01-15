@@ -24,6 +24,7 @@ export class EnrollmentMapper {
   /**
    * Convierte un modelo Sequelize a entidad de dominio
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de Enrollment
+   * Solo incluye campos que existen en el modelo (útil cuando se usan attributes limitados)
    * 
    * @param {Object|null} model - Modelo Sequelize de Inscripcion
    * @returns {Enrollment|null} Entidad de dominio Enrollment
@@ -32,13 +33,23 @@ export class EnrollmentMapper {
     if (!model) return null;
 
     // Campos específicos de Enrollment (campos del dominio)
-    const specificFields = {
-      studentAcademicDataId: model.estudianteDatosAcademicosId,
-      managementId: model.gestionId,
-      enrollmentType: model.tipoInscripcion,
-      enrollmentDate: model.fechaInscripcion,
-      observations: model.observaciones,
-    };
+    // Solo incluir campos que existen en el modelo (no undefined)
+    const specificFields = {};
+    if (model.estudianteDatosAcademicosId !== undefined) {
+      specificFields.studentAcademicDataId = model.estudianteDatosAcademicosId;
+    }
+    if (model.gestionId !== undefined) {
+      specificFields.managementId = model.gestionId;
+    }
+    if (model.tipoInscripcion !== undefined) {
+      specificFields.enrollmentType = model.tipoInscripcion;
+    }
+    if (model.fechaInscripcion !== undefined) {
+      specificFields.enrollmentDate = model.fechaInscripcion;
+    }
+    if (model.observaciones !== undefined) {
+      specificFields.observations = model.observaciones;
+    }
 
     // Combina campos base (id, active, timestamps, audit) con campos específicos
     const entityData = BaseMapper.combineBaseAndSpecificFields(model, specificFields);

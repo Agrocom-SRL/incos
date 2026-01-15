@@ -5,10 +5,12 @@
 export class IRepository {
   /**
    * Buscar por ID
-   * @param {number} id
-   * @returns {Promise<Object|null>}
+   * @param {number} id - ID del registro a buscar
+   * @param {Object} options - Opciones opcionales
+   *   - attributes: Array de campos a seleccionar (opcional, ej: ['id', 'nombre'])
+   * @returns {Promise<Object|null>} Entidad encontrada o null
    */
-  async findById(id) {
+  async findById(id, options = {}) {
     throw new Error('Method findById must be implemented');
   }
 

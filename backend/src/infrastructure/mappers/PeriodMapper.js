@@ -24,6 +24,7 @@ export class PeriodMapper {
   /**
    * Convierte un modelo Sequelize a entidad de dominio
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de Period
+   * Solo incluye campos que existen en el modelo (útil cuando se usan attributes limitados)
    * 
    * @param {Object|null} model - Modelo Sequelize de Periodo
    * @returns {Period|null} Entidad de dominio Period
@@ -32,13 +33,23 @@ export class PeriodMapper {
     if (!model) return null;
 
     // Campos específicos de Period (campos del dominio)
-    const specificFields = {
-      studyPlanId: model.planEstudioId ?? null,
-      name: model.nombre,
-      number: model.numero,
-      displayOrder: model.ordenVisualizacion,
-      description: model.descripcion ?? null,
-    };
+    // Solo incluir campos que existen en el modelo (no undefined)
+    const specificFields = {};
+    if (model.planEstudioId !== undefined) {
+      specificFields.studyPlanId = model.planEstudioId ?? null;
+    }
+    if (model.nombre !== undefined) {
+      specificFields.name = model.nombre;
+    }
+    if (model.numero !== undefined) {
+      specificFields.number = model.numero;
+    }
+    if (model.ordenVisualizacion !== undefined) {
+      specificFields.displayOrder = model.ordenVisualizacion;
+    }
+    if (model.descripcion !== undefined) {
+      specificFields.description = model.descripcion ?? null;
+    }
 
     // Combina campos base (id, active, timestamps, audit) con campos específicos
     const entityData = BaseMapper.combineBaseAndSpecificFields(model, specificFields);

@@ -104,11 +104,23 @@ export class BaseRepository extends IRepository {
    * TEMPLATE METHOD: Buscar por ID
    * Define el algoritmo común, delega la conversión a toEntity()
    * Con paranoid: true, automáticamente excluye registros eliminados
+   * 
+   * @param {number} id - ID del registro a buscar
+   * @param {Object} options - Opciones opcionales
+   *   - attributes: Array de campos a seleccionar (opcional, ej: ['id', 'nombre'])
+   * @returns {Promise<Object|null>} Entidad encontrada o null
    */
-  async findById(id) {
+  async findById(id, options = {}) {
     const Model = this.getModel();
+    const queryOptions = {};
+    
+    // Agregar attributes si se especifican (optimización para traer solo campos necesarios)
+    if (options.attributes && Array.isArray(options.attributes) && options.attributes.length > 0) {
+      queryOptions.attributes = options.attributes;
+    }
+    
     // findByPk con paranoid: true automáticamente excluye deletedAt !== null
-    const model = await Model.findByPk(id);
+    const model = await Model.findByPk(id, queryOptions);
     return this.toEntity(model);
   }
 

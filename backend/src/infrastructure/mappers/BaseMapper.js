@@ -18,23 +18,28 @@ import { BaseEntity } from '../../domain/entities/BaseEntity.js';
 export class BaseMapper {
   /**
    * Extrae los campos base del modelo ORM para crear una entidad
+   * Solo incluye campos que existen en el modelo (útil cuando se usan attributes limitados)
    * 
    * @param {Object} model - Modelo Sequelize
-   * @returns {Object} Objeto con campos base para la entidad
+   * @returns {Object} Objeto con campos base para la entidad (solo campos presentes)
    */
   static extractBaseFields(model) {
     if (!model) return null;
 
-    return {
-      id: model.id,
-      active: model.activo,
-      createdAt: model.createdAt,
-      updatedAt: model.updatedAt,
-      deletedAt: model.deletedAt,
-      createdBy: model.createdBy,
-      updatedBy: model.updatedBy,
-      deletedBy: model.deletedBy,
-    };
+    const baseFields = {};
+    
+    // Solo incluir campos que existen en el modelo (no undefined)
+    // Esto es importante cuando se usan attributes limitados en las consultas
+    if (model.id !== undefined) baseFields.id = model.id;
+    if (model.activo !== undefined) baseFields.active = model.activo;
+    if (model.createdAt !== undefined) baseFields.createdAt = model.createdAt;
+    if (model.updatedAt !== undefined) baseFields.updatedAt = model.updatedAt;
+    if (model.deletedAt !== undefined) baseFields.deletedAt = model.deletedAt;
+    if (model.createdBy !== undefined) baseFields.createdBy = model.createdBy;
+    if (model.updatedBy !== undefined) baseFields.updatedBy = model.updatedBy;
+    if (model.deletedBy !== undefined) baseFields.deletedBy = model.deletedBy;
+
+    return baseFields;
   }
 
   /**

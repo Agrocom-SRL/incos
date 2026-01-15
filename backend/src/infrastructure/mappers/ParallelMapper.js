@@ -7,16 +7,34 @@ import { BaseMapper } from './BaseMapper.js';
  * Responsabilidad única: Conversión entre Modelo ORM (Sequelize) ↔ Entidad de Dominio (Parallel)
  */
 export class ParallelMapper {
+  /**
+   * Convierte un modelo Sequelize a entidad de dominio
+   * Solo incluye campos que existen en el modelo (útil cuando se usan attributes limitados)
+   * 
+   * @param {Object|null} model - Modelo Sequelize de Paralelo
+   * @returns {Parallel|null} Entidad de dominio Parallel
+   */
   static toEntity(model) {
     if (!model) return null;
 
-    const specificFields = {
-      careerId: model.carreraId,
-      periodId: model.periodoId,
-      name: model.nombre,
-      shift: model.turno,
-      description: model.descripcion,
-    };
+    // Campos específicos de Parallel (campos del dominio)
+    // Solo incluir campos que existen en el modelo (no undefined)
+    const specificFields = {};
+    if (model.carreraId !== undefined) {
+      specificFields.careerId = model.carreraId;
+    }
+    if (model.periodoId !== undefined) {
+      specificFields.periodId = model.periodoId;
+    }
+    if (model.nombre !== undefined) {
+      specificFields.name = model.nombre;
+    }
+    if (model.turno !== undefined) {
+      specificFields.shift = model.turno;
+    }
+    if (model.descripcion !== undefined) {
+      specificFields.description = model.descripcion;
+    }
 
     const entityData = BaseMapper.combineBaseAndSpecificFields(model, specificFields);
     return new Parallel(entityData);
