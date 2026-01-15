@@ -6,3 +6,4 @@
  */
 
 export { ParallelMapper } from './ParallelMapper.js';
+export { ManagementMapper } from './ManagementMapper.js';
