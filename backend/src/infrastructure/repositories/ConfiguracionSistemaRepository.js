@@ -137,6 +137,6 @@ export class ConfiguracionSistemaRepository extends BaseRepository {
    * @returns {string} Nombre de la colección para la respuesta JSON
    */
   getCollectionName() {
-    return 'configuraciones';
+    return 'systemConfigurations';
   }
 }

@@ -40,7 +40,7 @@ export class ListStudentsController extends BaseListController {
       logger,
       responseFormatter,
       resourceName: 'estudiantes',
-      dataFieldName: 'students',
+      dataFieldName: 'estudiantes',
     });
   }
 

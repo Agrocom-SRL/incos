@@ -10,7 +10,7 @@
  */
 
 import { UnderConstruction } from '@components/pages';
-import { ListConnector, RegisterConnector, DetailConnector, EditConnector } from '@estudiantes/connectors';
+import { ListConnector, RegisterConnector, DetailConnector, EditConnector, AsignarBecaConnector } from '@estudiantes/connectors';
 
 export const estudiantesRoutes = [
     // Módulo raíz: Estudiantes (muestra la lista directamente)
@@ -86,7 +86,7 @@ export const estudiantesRoutes = [
     },
     {
         path: '/estudiantes/becas/asignar',
-        element: <UnderConstruction />,
+        element: <AsignarBecaConnector />,
         key: 'EST-BECAS-ASIGNAR',
         menu: {
             label: 'Asignar Beca',

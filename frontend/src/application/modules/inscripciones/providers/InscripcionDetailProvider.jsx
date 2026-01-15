@@ -21,6 +21,8 @@ import { InscripcionDetailContext } from '@application-inscripciones/context/Ins
 
 export const InscripcionDetailProvider = ({ children, inscripcionId }) => {
   // Hook para obtener la inscripción por ID
+  // El hook retorna { inscripcion: data, ... } donde data contiene:
+  // { enrollment, studentAcademicData, management, student, career }
   const { inscripcion: inscripcionRaw, loading, error, getInscripcionById, refetch } = useGetInscripcionById();
 
   // Cargar automáticamente la inscripción cuando se proporciona inscripcionId
@@ -30,11 +32,12 @@ export const InscripcionDetailProvider = ({ children, inscripcionId }) => {
     }
   }, [inscripcionId, getInscripcionById]);
 
-  // Por ahora usamos los datos directamente (sin mapper, se puede agregar después si es necesario)
+  // inscripcionRaw contiene toda la estructura: { enrollment, studentAcademicData, management, student, career }
+  // La pasamos directamente al contexto
   const inscripcion = inscripcionRaw;
 
   const value = {
-    inscripcion,
+    inscripcion, // Contiene: { enrollment, studentAcademicData, management, student, career }
     loading,
     error,
     getInscripcionById,

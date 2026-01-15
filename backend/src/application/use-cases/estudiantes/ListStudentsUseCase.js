@@ -19,8 +19,12 @@ export class ListStudentsUseCase extends BaseListUseCase {
       logger,
       moduleName: 'Estudiantes',
       resourceName: 'estudiantes',
+      // collectionFieldName: Nombre del campo en la respuesta del repositorio (estándar en inglés)
+      // Debe coincidir con el valor retornado por repository.getCollectionName()
       collectionFieldName: 'students',
-      dataFieldName: 'students',
+      // dataFieldName: Nombre del campo en la respuesta final de la API (español para el frontend)
+      // Este es el nombre que verá el cliente en la respuesta JSON
+      dataFieldName: 'estudiantes',
     });
   }
 

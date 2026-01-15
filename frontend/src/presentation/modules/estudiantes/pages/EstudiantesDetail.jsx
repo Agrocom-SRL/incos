@@ -14,16 +14,18 @@
  * - Contenido muestra: datos del estudiante y sus relaciones
  */
 
-import { useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useMemo, useCallback } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { useStudentDetailContext } from '@application-estudiantes/hooks';
-import { Descriptions, Card, Divider, Spin, Alert, Empty } from 'antd';
+import { Descriptions, Card, Divider, Spin, Alert, Empty, Button } from 'antd';
+import { GiftOutlined } from '@ant-design/icons';
 import { createDetailBreadcrumbItems } from '@estudiantes/config';
 
 const EstudiantesDetail = () => {
   const navigate = useNavigate();
+  const { id: studentId } = useParams();
 
   // Obtener datos del contexto
   const {
@@ -34,6 +36,13 @@ const EstudiantesDetail = () => {
 
   // Configurar breadcrumb items
   const breadcrumbItems = useMemo(() => createDetailBreadcrumbItems(), []);
+
+  // Handler para navegar a la asignación de becas
+  const handleAsignarBeca = useCallback(() => {
+    navigate('/estudiantes/becas/asignar', {
+      state: { studentId: studentId }
+    });
+  }, [navigate, studentId]);
 
   // Si está cargando
   if (loading) {
@@ -96,12 +105,24 @@ const EstudiantesDetail = () => {
 
   const { student: studentData, guardians, disabilities, origins, documentDeliveries } = student;
 
+  // Acciones del header (botón de asignar beca)
+  const headerActions = useMemo(() => (
+    <Button
+      type="primary"
+      icon={<GiftOutlined />}
+      onClick={handleAsignarBeca}
+    >
+      Asignar Beca
+    </Button>
+  ), [handleAsignarBeca]);
+
   return (
     <PageTemplate
       header={
         <PageHeader
           title={`Detalle del Estudiante: ${studentData.nombreCompleto || 'N/A'}`}
           breadcrumbItems={breadcrumbItems}
+          actions={headerActions}
         />
       }
     >

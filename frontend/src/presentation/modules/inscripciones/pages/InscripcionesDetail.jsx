@@ -78,7 +78,7 @@ const InscripcionesDetail = () => {
     );
   }
 
-  // Si no hay inscripción
+  // Si no hay inscripción o datos básicos
   if (!inscripcion || !inscripcion.enrollment) {
     return (
       <PageTemplate
@@ -94,7 +94,15 @@ const InscripcionesDetail = () => {
     );
   }
 
-  const { enrollment, enrollmentSubjects } = inscripcion;
+  // Extraer todas las entidades del contexto
+  const { 
+    enrollment, 
+    studentAcademicData, 
+    management, 
+    student, 
+    career,
+    enrollmentSubjects = [] // Por ahora vacío, se implementará después
+  } = inscripcion;
 
   // Función para obtener el color del tag según el estado
   const getStatusColor = (status) => {
@@ -121,53 +129,126 @@ const InscripcionesDetail = () => {
   };
 
   return (
-    <PageTemplate
-      header={
-        <PageHeader
-          title={`Detalle de la Inscripción #${enrollment.id || 'N/A'}`}
-          breadcrumbItems={breadcrumbItems}
-        />
-      }
-    >
+      <PageTemplate
+        header={
+          <PageHeader
+            title={`Detalle de la Inscripción #${enrollment?.id || 'N/A'}`}
+            breadcrumbItems={breadcrumbItems}
+          />
+        }
+      >
       <div style={{ padding: '24px' }}>
         {/* Datos de la Inscripción */}
         <Card title="Datos de la Inscripción" style={{ marginBottom: '24px' }}>
           <Descriptions column={2} bordered>
             <Descriptions.Item label="ID de Inscripción">
-              {enrollment.id || 'N/A'}
+              {enrollment?.id || 'N/A'}
             </Descriptions.Item>
             <Descriptions.Item label="Tipo de Inscripción">
-              {enrollment.enrollmentType ? (
-                <Tag color={getEnrollmentTypeColor(enrollment.enrollmentType)}>
-                  {enrollment.enrollmentType}
+              {enrollment?.tipoInscripcion ? (
+                <Tag color={getEnrollmentTypeColor(enrollment.tipoInscripcion)}>
+                  {enrollment.tipoInscripcion}
                 </Tag>
               ) : 'N/A'}
             </Descriptions.Item>
             <Descriptions.Item label="Fecha de Inscripción">
-              {enrollment.enrollmentDate || 'N/A'}
+              {enrollment?.fechaInscripcion || 'N/A'}
             </Descriptions.Item>
             <Descriptions.Item label="Gestión">
-              {enrollment.management?.code || enrollment.managementId || 'N/A'}
+              {management?.nombre ? (
+                <span>{management.nombre} ({management.anio})</span>
+              ) : enrollment?.gestionId || 'N/A'}
             </Descriptions.Item>
-            <Descriptions.Item label="Estudiante (ID Datos Académicos)">
-              {enrollment.studentAcademicDataId || 'N/A'}
+            <Descriptions.Item label="Estado de Registro">
+              {studentAcademicData?.estadoRegistro ? (
+                <Tag color={studentAcademicData.estadoRegistro === 'ADMITIDO' ? 'success' : 'warning'}>
+                  {studentAcademicData.estadoRegistro}
+                </Tag>
+              ) : 'N/A'}
             </Descriptions.Item>
             <Descriptions.Item label="Estado">
-              {enrollment.activo !== undefined ? (enrollment.activo ? 'Activo' : 'Inactivo') : 'N/A'}
+              {enrollment?.activo !== undefined ? (enrollment.activo ? 'Activo' : 'Inactivo') : 'N/A'}
             </Descriptions.Item>
-            {enrollment.observations && (
+            {enrollment?.observaciones && (
               <Descriptions.Item label="Observaciones" span={2}>
-                {enrollment.observations}
+                {enrollment.observaciones}
               </Descriptions.Item>
             )}
             <Descriptions.Item label="Fecha de Creación">
-              {enrollment.createdAt || 'N/A'}
+              {enrollment?.createdAt || 'N/A'}
             </Descriptions.Item>
             <Descriptions.Item label="Última Actualización">
-              {enrollment.updatedAt || 'N/A'}
+              {enrollment?.updatedAt || 'N/A'}
             </Descriptions.Item>
           </Descriptions>
         </Card>
+
+        {/* Datos del Estudiante */}
+        {student && (
+          <Card title="Datos del Estudiante" style={{ marginBottom: '24px' }}>
+            <Descriptions column={2} bordered>
+              <Descriptions.Item label="Código de Estudiante">
+                {student.codigoEstudiante || 'N/A'}
+              </Descriptions.Item>
+              <Descriptions.Item label="CI">
+                {student.ci ? `${student.ci} ${student.expedicion || ''}` : 'N/A'}
+              </Descriptions.Item>
+              <Descriptions.Item label="Nombres Completos">
+                {student.nombres || 'N/A'} {student.apellidoPaterno || ''} {student.apellidoMaterno || ''}
+              </Descriptions.Item>
+              <Descriptions.Item label="Género">
+                {student.genero || 'N/A'}
+              </Descriptions.Item>
+              <Descriptions.Item label="Celular">
+                {student.celular || 'N/A'}
+              </Descriptions.Item>
+              <Descriptions.Item label="Tiene Discapacidad">
+                {student.tieneDiscapacidad !== undefined ? (student.tieneDiscapacidad ? 'Sí' : 'No') : 'N/A'}
+              </Descriptions.Item>
+            </Descriptions>
+          </Card>
+        )}
+
+        {/* Datos de la Carrera */}
+        {career && (
+          <Card title="Datos de la Carrera" style={{ marginBottom: '24px' }}>
+            <Descriptions column={2} bordered>
+              <Descriptions.Item label="Código">
+                {career.codigo || 'N/A'}
+              </Descriptions.Item>
+              <Descriptions.Item label="Nombre">
+                {career.nombre || 'N/A'}
+              </Descriptions.Item>
+              <Descriptions.Item label="Título Otorgado" span={2}>
+                {career.tituloOtorgado || 'N/A'}
+              </Descriptions.Item>
+            </Descriptions>
+          </Card>
+        )}
+
+        {/* Datos Académicos del Estudiante */}
+        {studentAcademicData && (
+          <Card title="Datos Académicos del Estudiante" style={{ marginBottom: '24px' }}>
+            <Descriptions column={2} bordered>
+              <Descriptions.Item label="ID Datos Académicos">
+                {studentAcademicData.id || 'N/A'}
+              </Descriptions.Item>
+              <Descriptions.Item label="Estado de Registro">
+                {studentAcademicData.estadoRegistro ? (
+                  <Tag color={studentAcademicData.estadoRegistro === 'ADMITIDO' ? 'success' : 'warning'}>
+                    {studentAcademicData.estadoRegistro}
+                  </Tag>
+                ) : 'N/A'}
+              </Descriptions.Item>
+              <Descriptions.Item label="ID Estudiante">
+                {studentAcademicData.estudianteId || 'N/A'}
+              </Descriptions.Item>
+              <Descriptions.Item label="ID Carrera">
+                {studentAcademicData.carreraId || 'N/A'}
+              </Descriptions.Item>
+            </Descriptions>
+          </Card>
+        )}
 
         {/* Materias Inscritas */}
         {enrollmentSubjects && enrollmentSubjects.length > 0 && (

@@ -25,7 +25,11 @@ export class ListMateriasUseCase extends BaseListUseCase {
       logger,
       moduleName: 'Configuración',
       resourceName: 'materias',
+      // collectionFieldName: Nombre del campo en la respuesta del repositorio (estándar en inglés)
+      // Debe coincidir con el valor retornado por repository.getCollectionName()
       collectionFieldName: 'subjects',
+      // dataFieldName: Nombre del campo en la respuesta final de la API (español para el frontend)
+      // Este es el nombre que verá el cliente en la respuesta JSON
       dataFieldName: 'materias',
     });
     this.planSubjectRepository = planSubjectRepository;

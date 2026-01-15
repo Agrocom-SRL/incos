@@ -83,14 +83,6 @@ export class DocumentacionRepository extends BaseRepository {
   }
 
   /**
-   * Retorna el nombre de la colección en la respuesta
-   * @returns {string}
-   */
-  getCollectionName() {
-    return 'documentaciones';
-  }
-
-  /**
    * Construye la cláusula WHERE para filtros específicos
    * Maneja todos los criterios de búsqueda de la entidad Documentation
    * 
@@ -152,9 +144,9 @@ export class DocumentacionRepository extends BaseRepository {
   /**
    * Retorna el nombre de la colección en la respuesta JSON
    * 
-   * @returns {string} Nombre de la colección para la respuesta JSON
+   * @returns {string} Nombre de la colección para la respuesta JSON (estándar en inglés)
    */
   getCollectionName() {
-    return 'documentaciones';
+    return 'documentations';
   }
 }

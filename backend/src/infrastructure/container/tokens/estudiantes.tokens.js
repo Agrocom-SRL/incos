@@ -18,6 +18,7 @@ export const ESTUDIANTES_TOKENS = {
     getStudentByIdUseCase: 'estudiantes.getStudentByIdUseCase',
     searchStudentUseCase: 'estudiantes.searchStudentUseCase',
     generateActaCompromisoUseCase: 'estudiantes.generateActaCompromisoUseCase',
+    listBecasDescuentosUseCase: 'estudiantes.listBecasDescuentosUseCase',
     // TODO: Agregar otros Use Cases cuando se implementen sus endpoints
     // updateStudentUseCase: 'estudiantes.updateStudentUseCase',
 
@@ -27,10 +28,12 @@ export const ESTUDIANTES_TOKENS = {
     getStudentByIdController: 'estudiantes.getStudentByIdController',
     searchStudentController: 'estudiantes.searchStudentController',
     actaCompromisoController: 'estudiantes.actaCompromisoController',
+    listBecasDescuentosController: 'estudiantes.listBecasDescuentosController',
     // TODO: Agregar otros Controllers cuando se implementen sus endpoints
     // updateStudentController: 'estudiantes.updateStudentController',
 
     // ROUTERS
     estudiantesRouter: 'estudiantes.estudiantesRouter',
+    becasDescuentosRouter: 'estudiantes.becasDescuentosRouter',
 };
 

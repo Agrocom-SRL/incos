@@ -30,7 +30,7 @@ DROP TABLE IF EXISTS becas_descuentos;
 
 CREATE TABLE becas_descuentos (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL COMMENT 'Beca 0%, Beca 25%, Beca 50%, Beca 75%, Beca 100%',
+    nombre VARCHAR(100) NOT NULL COMMENT 'Beca 25%, Beca 50%, Beca 75%, Beca 100%',
     codigo VARCHAR(20) COMMENT 'BECA_0, BECA_25, BECA_50, BECA_75, BECA_100',
     porcentaje DECIMAL(5,2) NOT NULL COMMENT 'Porcentaje de descuento (0.00 a 100.00)',
     descripcion TEXT,

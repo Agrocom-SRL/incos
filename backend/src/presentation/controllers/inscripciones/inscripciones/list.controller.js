@@ -40,7 +40,7 @@ export class ListEnrollmentsController extends BaseListController {
       logger,
       responseFormatter,
       resourceName: 'inscripciones',
-      dataFieldName: 'enrollments',
+      dataFieldName: 'inscripciones',
     });
   }
 

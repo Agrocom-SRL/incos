@@ -27,7 +27,7 @@ import { createApiHook } from '@application/utils';
 export const useGetInscripcionById = createApiHook({
   name: 'useGetInscripcionById',
   useCase: 'obtenerInscripcionPorId',
-  dataType: 'object', // Retorna un objeto único
+  dataType: 'object', // Retorna un objeto con múltiples entidades
   initialLoading: false,
   validate: (id) => {
     // Validación personalizada
@@ -37,6 +37,6 @@ export const useGetInscripcionById = createApiHook({
     return null; // null = válido
   },
   errorMessage: 'Error al cargar la inscripción',
-  dataKey: 'inscripcion', // Nombre de la propiedad en el resultado
+  dataKey: 'inscripcion', // Nombre de la propiedad en el resultado del hook
   fetchName: 'getInscripcionById', // Nombre de la función fetch
 });

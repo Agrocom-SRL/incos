@@ -64,3 +64,12 @@ export const createDetailBreadcrumbItems = () => {
   ];
 };
 
+/**
+ * Crea breadcrumb para la página de asignar beca
+ * 
+ * @returns {Array} Array de items del breadcrumb
+ */
+export const createAsignarBecaBreadcrumbItems = () => {
+  return createBreadcrumbItems('EST-BECAS-ASIGNAR', 'Asignar Beca');
+};
+

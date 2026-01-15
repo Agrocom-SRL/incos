@@ -21,6 +21,7 @@ router.get('/', (req, res) => {
         endpoints: {
             // Módulo: Estudiantes
             estudiantes: '/api/v1/estudiantes',
+            becasDescuentos: '/api/v1/becas-descuentos',
             // Módulo: Configuración
             carreras: '/api/v1/carreras',
             materias: '/api/v1/materias',
@@ -52,6 +53,7 @@ router.get('/', (req, res) => {
 // 1. MÓDULO: ESTUDIANTES
 // ============================================
 router.use('/estudiantes', container.resolve(ESTUDIANTES_TOKENS.estudiantesRouter));
+router.use('/becas-descuentos', container.resolve(ESTUDIANTES_TOKENS.becasDescuentosRouter));
 
 // ============================================
 // 2. MÓDULO: CONFIGURACIÓN

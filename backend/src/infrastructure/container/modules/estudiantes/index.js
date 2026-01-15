@@ -14,8 +14,8 @@
  */
 
 import { registerEstudiantesResource } from './estudiantes.container.js';
+import { registerBecasDescuentosResource } from './becas-descuentos.container.js';
 // TODO: Agregar otros recursos cuando se implementen
-// import { registerBecasResource } from './becas.container.js';
 // import { registerLicenciasResource } from './licencias.container.js';
 // import { registerDocumentosResource } from './documentos.container.js';
 
@@ -28,9 +28,9 @@ import { registerEstudiantesResource } from './estudiantes.container.js';
 export function registerEstudiantesModule(container) {
     // Registrar cada recurso individualmente
     registerEstudiantesResource(container);
+    registerBecasDescuentosResource(container);
     
     // TODO: Agregar otros recursos cuando se implementen
-    // registerBecasResource(container);
     // registerLicenciasResource(container);
     // registerDocumentosResource(container);
 

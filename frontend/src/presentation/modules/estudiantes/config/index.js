@@ -10,7 +10,7 @@ export { createEstudiantesTableColumns } from './tableColumns';
 export { createEstudianteWizardSteps } from './estudianteWizardSteps';
 export { createEstudianteDatosPersonalesFields } from './estudianteDatosPersonalesFields';
 export { createEstudianteDiscapacidadFields } from './estudianteDiscapacidadFields';
-export { createListBreadcrumbItems, createRegisterBreadcrumbItems, createDetailBreadcrumbItems } from './breadcrumbs.jsx';
+export { createListBreadcrumbItems, createRegisterBreadcrumbItems, createDetailBreadcrumbItems, createAsignarBecaBreadcrumbItems } from './breadcrumbs.jsx';
 export { createCamposContactosEmergenciaDinamicos } from './estudianteContactoEmergenciaFields';
 export { createCamposDocumentacionDinamicos } from './estudianteDocumentacionFields';
 
