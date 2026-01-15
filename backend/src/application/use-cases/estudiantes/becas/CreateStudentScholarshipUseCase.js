@@ -63,7 +63,7 @@ export class CreateStudentScholarshipUseCase {
 
     if (existingAssignment) {
       throw new ValidationError(
-        `Ya existe una asignación de esta beca para el estudiante en la gestión ${managementId}`
+        `Ya existe una asignación de esta beca para el estudiante en la gestión actual`
       );
     }
   }

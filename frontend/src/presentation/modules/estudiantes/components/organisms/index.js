@@ -8,3 +8,8 @@
 export { default as StudentInfoSection } from './StudentInfoSection';
 export { default as BecaSelectionSection } from './BecaSelectionSection';
 export { default as SelectedBecaSection } from './SelectedBecaSection';
+export { default as DatosPersonalesSection } from './DatosPersonalesSection';
+export { default as GuardiansSection } from './GuardiansSection';
+export { default as DisabilitiesSection } from './DisabilitiesSection';
+export { default as OriginsSection } from './OriginsSection';
+export { default as DocumentDeliveriesSection } from './DocumentDeliveriesSection';
