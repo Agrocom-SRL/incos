@@ -144,15 +144,18 @@ export const useAsignarBecaFormHandlers = (studentId, options = {}) => {
             };
         }
 
-        // Obtener valores adicionales del formulario (observations, management_id, etc.)
+        // Obtener valores adicionales del formulario (observations)
         const formValues = getFormValues ? getFormValues() : {};
         
         // Preparar datos para la API (snake_case como espera el backend)
+        // fecha_solicitud, estado y management_id se establecen automáticamente en el backend
         const asignarBecaData = {
             student_id: studentId,
             scholarship_id: becaDescuentoToUse.id,
-            management_id: formValues.management_id || null,
+            fecha_solicitud: new Date().toISOString().slice(0, 10), // Fecha actual automática
+            estado: 'PENDIENTE', // Estado automático por defecto según schema
             observations: formValues.observations || null,
+            // management_id se establece automáticamente en el backend según la gestión activa
         };
 
         // Llamar al hook de API para crear la asignación de beca

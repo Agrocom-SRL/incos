@@ -79,6 +79,12 @@ const createCRUDEndpoints = (basePath) => {
 // ============================================
 export const ESTUDIANTES_ENDPOINTS = createCRUDEndpoints('/estudiantes');
 export const BECAS_DESCUENTOS_ENDPOINTS = createCRUDEndpoints('/becas-descuentos');
+export const ESTUDIANTES_BECAS_ENDPOINTS = {
+  ...createCRUDEndpoints('/estudiantes'),
+  // Endpoint específico para becas de un estudiante
+  BY_STUDENT_ID: (studentId) => `${API_BASE}/estudiantes/${studentId}/scholarships`,
+  BY_STUDENT_AND_ID: (studentId, becaId) => `${API_BASE}/estudiantes/${studentId}/scholarships/${becaId}`,
+};
 
 // ============================================
 // MÓDULO: CONFIGURACIÓN

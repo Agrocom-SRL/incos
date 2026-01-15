@@ -11,10 +11,11 @@ export { ActaCompromisoController } from './estudiantes/acta-compromiso.controll
 // export { DeleteStudentController } from './estudiantes/delete.controller.js';
 
 // ============================================
-// CONTROLLERS FUTUROS - BECAS
+// CONTROLLERS - BECAS
 // ============================================
+export { AsignarBecaController } from './becas/asignar.controller.js';
+// TODO: Agregar otros Controllers cuando se implementen sus endpoints
 // export { ListBecasController } from './becas/list.controller.js';
-// export { AsignarBecaController } from './becas/asignar.controller.js';
 // export { AprobarBecaController } from './becas/aprobar.controller.js';
 
 // ============================================

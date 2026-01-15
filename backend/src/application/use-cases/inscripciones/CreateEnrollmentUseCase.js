@@ -218,8 +218,8 @@ export class CreateEnrollmentUseCase {
    * @throws {ValidationError} Si la gestión no está vigente
    */
   async _getCurrentManagement() {
-    const gestionActualConfig = await this.configuracionSistemaRepository.findByClave(
-      'gestion_actual'
+    const gestionActualConfig = await this.configuracionSistemaRepository.findBy(
+      { key: 'gestion_actual' }
     );
 
     if (!gestionActualConfig) {
@@ -232,26 +232,22 @@ export class CreateEnrollmentUseCase {
       throw new ValidationError('La gestión actual configurada no es un año válido');
     }
 
-    // Buscar gestiones por año (puede haber múltiples gestiones en el mismo año)
-    const managements = await this.managementRepository.findByAnio(gestionAnio);
-    if (!managements || managements.length === 0) {
-      throw new NotFoundError(`Gestión para el año ${gestionAnio}`);
-    }
+    // Buscar la gestión vigente por año usando findBy
+    // Filtrar directamente por año y vigente: true en la consulta
+    const management = await this.managementRepository.findBy(
+      { year: gestionAnio, vigente: true }
+    );
 
-    // Obtener la gestión activa o la más reciente (ordenada por código DESC)
-    // findByAnio ya ordena por codigo DESC, así que el primero es el más reciente
-    const management = managements.find((m) => m.isActive) || managements[0];
-
-    // Validar que la gestión esté vigente
-    if (!management.isActive) {
-      throw new ValidationError(`La gestión ${management.code} no está vigente`);
+    // Validar que se encontró la gestión vigente
+    if (!management) {
+      throw new NotFoundError(`No se encontró una gestión vigente para el año ${gestionAnio}`);
     }
 
     this.logger.info('[Inscripciones] Gestión actual obtenida', {
       managementId: management.id,
       code: management.code,
       year: management.year,
-      isActive: management.isActive,
+      vigente: management.vigente,
     });
 
     return management;

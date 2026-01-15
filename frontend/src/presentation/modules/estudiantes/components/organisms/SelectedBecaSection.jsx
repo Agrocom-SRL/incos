@@ -10,23 +10,65 @@
  * @param {string} selectedBecaDescuento.nombre - Nombre de la beca
  * @param {number} selectedBecaDescuento.porcentaje - Porcentaje de descuento
  * @param {string} selectedBecaDescuento.descripcion - Descripción (opcional)
+ * @param {Object} form - Instancia del formulario de Ant Design
  * @param {Function} onSave - Callback cuando se guarda la asignación
  * @param {Function} onCancel - Callback cuando se cancela
  * @param {boolean} disabled - Si los botones están deshabilitados
  */
 
-import { Row, Col, Space } from 'antd';
-import { GiftOutlined, PercentageOutlined, FileTextOutlined, SaveOutlined } from '@ant-design/icons';
+import { Row, Col, Space, Form, Input } from 'antd';
+import { 
+  GiftOutlined, 
+  PercentageOutlined, 
+  FileTextOutlined, 
+  SaveOutlined,
+  CalendarOutlined,
+  CheckCircleOutlined,
+  BankOutlined
+} from '@ant-design/icons';
 import { Card, Button } from '@atoms';
 import { SelectedBecaInfoItem } from '../molecules';
 
+const { TextArea } = Input;
+
+// Helper para formatear fecha
+const formatDate = (dateString) => {
+  if (!dateString) return 'N/A';
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('es-BO', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+  } catch {
+    return dateString;
+  }
+};
+
+// Helper para formatear estado
+const formatEstado = (estado) => {
+  if (!estado) return 'N/A';
+  const estados = {
+    'PENDIENTE': 'Pendiente',
+    'ACTIVA': 'Activa',
+    'FINALIZADA': 'Finalizada',
+    'RECHAZADA': 'Rechazada'
+  };
+  return estados[estado] || estado;
+};
+
 const SelectedBecaSection = ({
   selectedBecaDescuento,
+  form,
   onSave,
   onCancel,
   disabled = false
 }) => {
   if (!selectedBecaDescuento) return null;
+
+  // Obtener valores del formulario para mostrar información adicional
+  const formValues = form?.getFieldsValue() || {};
 
   return (
     <Card
@@ -34,6 +76,7 @@ const SelectedBecaSection = ({
       style={{ marginTop: '24px', marginBottom: '24px' }}
       headerColor="primary"
     >
+      {/* Información de la beca seleccionada */}
       <Row gutter={[24, 16]}>
         <Col xs={24} sm={12}>
           <SelectedBecaInfoItem
@@ -62,7 +105,61 @@ const SelectedBecaSection = ({
             />
           </Col>
         )}
+        {/* Información automática de la asignación */}
+        <Col xs={24} sm={12}>
+          <SelectedBecaInfoItem
+            icon={<CalendarOutlined style={{ fontSize: '24px', color: '#fff' }} />}
+            label="Fecha de Solicitud"
+            value={formatDate(new Date().toISOString())}
+          />
+        </Col>
+        <Col xs={24} sm={12}>
+          <SelectedBecaInfoItem
+            icon={<CheckCircleOutlined style={{ fontSize: '24px', color: '#fff' }} />}
+            label="Estado"
+            value={formatEstado('PENDIENTE')}
+          />
+        </Col>
       </Row>
+
+      {/* Formulario para completar la asignación */}
+      <div style={{ 
+        marginTop: '24px', 
+        paddingTop: '24px', 
+        borderTop: '1px solid var(--color-border-secondary, #e8e8e8)' 
+      }}>
+        <Form
+          form={form}
+          layout="vertical"
+        >
+          <Form.Item
+            name="observations"
+            label="Motivo / Observaciones"
+            tooltip={{
+              title: 'Ingrese el motivo de la solicitud de beca (ej: madre soltera, escasos recursos, etc.)',
+              placement: 'top',
+              overlayStyle: {
+                maxWidth: '350px',
+              },
+              overlayInnerStyle: {
+                fontSize: '16px',
+                lineHeight: '1.5',
+                padding: '12px 16px',
+              },
+            }}
+            rules={[
+              { required: true, message: 'Por favor ingrese el motivo de la solicitud' }
+            ]}
+          >
+            <TextArea
+              rows={4}
+              placeholder="Ingrese el motivo de la solicitud de beca..."
+              maxLength={500}
+              showCount
+            />
+          </Form.Item>
+        </Form>
+      </div>
 
       {/* Botones de acción - Solo se muestran cuando hay una beca seleccionada */}
       <div style={{ marginTop: '24px', paddingTop: '24px', borderTop: '1px solid var(--color-border-secondary, #e8e8e8)' }}>

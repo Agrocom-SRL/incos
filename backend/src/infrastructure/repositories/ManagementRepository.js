@@ -63,7 +63,8 @@ export class ManagementRepository extends BaseRepository {
    * - findBy({ code: '2025-REG' }) → Busca por código
    * - findAll({ year: 2025 }) → Busca gestiones de un año
    * - findAll({ type: 'REGULAR' }) → Busca gestiones regulares
-   * - findAll({ isActive: true }) → Busca gestiones activas
+   * - findAll({ isActive: true }) → Busca gestiones activas (soft delete)
+   * - findAll({ vigente: true }) → Busca gestiones vigentes (en curso)
    * 
    * @param {Object} filters - Filtros de búsqueda
    *   - code: Código de la gestión (búsqueda exacta, para búsqueda de texto usar search())
@@ -72,7 +73,8 @@ export class ManagementRepository extends BaseRepository {
    *   - type: Tipo de gestión (REGULAR, VERANO, NIVELACION, etc.)
    *   - startDate: Fecha de inicio
    *   - endDate: Fecha de fin
-   *   - isActive: Si la gestión está activa (true/false)
+   *   - isActive: Si la gestión está activa (true/false) - para soft delete
+   *   - vigente: Si la gestión está vigente (true/false) - para gestiones en curso
    * @returns {Object} Objeto WHERE para Sequelize
    */
   buildWhereClause(filters) {
@@ -99,6 +101,9 @@ export class ManagementRepository extends BaseRepository {
     }
     if (filters.isActive !== undefined) {
       where.activo = filters.isActive;
+    }
+    if (filters.vigente !== undefined) {
+      where.vigente = filters.vigente;
     }
 
     return where;

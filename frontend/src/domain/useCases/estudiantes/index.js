@@ -6,4 +6,5 @@ export { ObtenerDatosReferenciaFiltradosUseCase } from './ObtenerDatosReferencia
 export { CrearEstudianteUseCase } from './CrearEstudianteUseCase';
 export { BuscarEstudianteUseCase } from './BuscarEstudianteUseCase';
 export { ObtenerTodasBecasDescuentosUseCase } from './ObtenerTodasBecasDescuentosUseCase';
+export { CrearAsignarBecaUseCase } from './CrearAsignarBecaUseCase';
 

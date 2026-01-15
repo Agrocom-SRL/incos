@@ -73,14 +73,6 @@ const BecaSelectionSection = ({
             loadingText="Cargando becas y descuentos..."
           />
         </Form.Item>
-
-        {/* TODO: Agregar más campos del formulario de asignación de beca */}
-        {/* Por ejemplo:
-          - Fecha de inicio (date picker)
-          - Fecha de fin (date picker)
-          - Observaciones (textarea)
-          - Estado (select)
-        */}
       </Form>
     </Card>
   );

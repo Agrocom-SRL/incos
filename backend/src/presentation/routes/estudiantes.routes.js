@@ -1,6 +1,6 @@
 import express from 'express';
 import { listValidator, idValidator, searchValidator } from '../validators/common/index.js';
-import { registerStudentValidator } from '../validators/estudiantes/index.js';
+import { registerStudentValidator, assignBecaValidator } from '../validators/estudiantes/index.js';
 
 /**
  * Construye el router del módulo Estudiantes
@@ -65,6 +65,27 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
         idValidator,  // 1. Validator primero
         validateRequest,  // 2. Middleware que procesa errores
         (req, res, next) => controllers.actaCompromisoController.handle(req, res, next)  // 3. Controller al final
+    );
+
+    // ============================================
+    // ASIGNACIÓN DE BECAS
+    // ============================================
+
+    /**
+     * POST /api/v1/estudiantes/:id/scholarships
+     * Asignar una beca/descuento a un estudiante
+     * Path: id (ID del estudiante)
+     * Body: student_id, scholarship_id, observations? (opcional)
+     * 
+     * NOTA: La gestión se obtiene automáticamente de la configuración del sistema.
+     * La fecha de solicitud se establece automáticamente como la fecha actual.
+     * El estado se establece automáticamente como PENDIENTE.
+     */
+    router.post(
+        '/:id/scholarships',
+        assignBecaValidator,  // 1. Validator primero
+        validateRequest,  // 2. Middleware que procesa errores
+        (req, res, next) => controllers.asignarBecaController.handle(req, res, next)  // 3. Controller al final
     );
 
     // ============================================

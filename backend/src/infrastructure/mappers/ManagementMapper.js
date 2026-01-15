@@ -60,7 +60,7 @@ export class ManagementMapper {
       specificFields.endDate = dataValues.fechaFin;
     }
     if ('vigente' in dataValues && dataValues.vigente !== undefined) {
-      specificFields.isActive = dataValues.vigente === true || dataValues.vigente === 1;
+      specificFields.vigente = dataValues.vigente === true || dataValues.vigente === 1;
     }
 
     // Combina campos base (id, active, timestamps, audit) con campos específicos
@@ -92,7 +92,7 @@ export class ManagementMapper {
       tipo: data.type,
       fechaInicio: data.startDate,
       fechaFin: data.endDate,
-      vigente: data.isActive !== undefined ? data.isActive : false,
+      vigente: data.vigente !== undefined ? data.vigente : false,
     };
   }
 
@@ -132,8 +132,8 @@ export class ManagementMapper {
     if ('endDate' in data) {
       updateData.fechaFin = data.endDate;
     }
-    if ('isActive' in data) {
-      updateData.vigente = data.isActive;
+    if ('vigente' in data) {
+      updateData.vigente = data.vigente;
     }
 
     // Campos base (active/activo)

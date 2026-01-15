@@ -15,11 +15,13 @@ import {
   CrearEstudianteUseCase,
   BuscarEstudianteUseCase,
   ObtenerTodasBecasDescuentosUseCase,
+  CrearAsignarBecaUseCase,
 } from '@useCases/estudiantes';
 
 // Repositorio principal
 import EstudianteRepository from '@implementations/EstudianteRepository';
 import BecaDescuentoRepository from '@implementations/BecaDescuentoRepository';
+import EstudianteBecaRepository from '@infrastructure/repositories/EstudianteBecaRepository';
 
 // Repositorios geográficos
 import PaisRepository from '@implementations/PaisRepository';
@@ -102,6 +104,11 @@ export function registerEstudiantesModule(factory) {
   // Use Case para obtener todas las becas y descuentos
   factory.obtenerTodasBecasDescuentos = () => {
     return new ObtenerTodasBecasDescuentosUseCase(BecaDescuentoRepository);
+  };
+
+  // Use Case para crear asignación de beca
+  factory.crearAsignarBeca = () => {
+    return new CrearAsignarBecaUseCase(EstudianteBecaRepository);
   };
 
   return factory;

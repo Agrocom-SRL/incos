@@ -51,6 +51,11 @@ const EstudiantesAsignarBeca = () => {
     becasDescuentosData,
   } = asignarBecaContext;
 
+  // Función para renderizar cada card de beca
+  const renderBecaCard = (beca) => {
+    return <BecaCardContent beca={beca} />;
+  };
+
   // Si no hay studentId, mostrar error
   if (!studentId) {
     return (
@@ -135,6 +140,7 @@ const EstudiantesAsignarBeca = () => {
             {/* Sección 3: Beca/Descuento Seleccionada */}
             <SelectedBecaSection
               selectedBecaDescuento={becasDescuentosData.selectedBecaDescuento}
+              form={form}
               onSave={() => form?.submit()}
               onCancel={handleVolver}
               disabled={!becasDescuentosData.selectedBecaDescuento || loadingStudent || loadingAsignar}

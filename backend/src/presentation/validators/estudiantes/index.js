@@ -5,6 +5,7 @@
  */
 
 export { registerStudentValidator } from './register.validator.js';
+export { assignBecaValidator } from './assign-beca.validator.js';
 
 // TODO: Agregar otros validators cuando se implementen sus endpoints
 // export { getStudentByIdValidator } from './get-by-id.validator.js';

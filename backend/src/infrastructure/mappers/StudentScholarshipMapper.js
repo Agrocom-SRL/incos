@@ -39,7 +39,7 @@ export class StudentScholarshipMapper {
     // Cuando se usan attributes limitados, Sequelize almacena los campos en dataValues
     const dataValues = model.dataValues || model;
     const specificFields = {};
-    
+
     // Mapeo: BD (snake_case español) → Dominio (camelCase inglés)
     if ('estudianteId' in dataValues && dataValues.estudianteId !== undefined) {
       specificFields.studentId = dataValues.estudianteId;
@@ -71,37 +71,71 @@ export class StudentScholarshipMapper {
 
     // Combina campos base (id, active, timestamps, audit) con campos específicos
     const entityData = BaseMapper.combineBaseAndSpecificFields(model, specificFields);
-    
+
     return new StudentScholarship(entityData);
   }
 
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para creación)
+   * Solo incluye los campos que están definidos (que existen en la entidad)
+   * Esto permite que los campos con DEFAULT en el schema se manejen automáticamente por la BD
    * 
    * Flujo: Domain Entity → ORM Model → Base de Datos (INSERT)
    * 
    * NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
    * BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
    * 
+   * NOTA: Solo incluir campos que NO tienen DEFAULT en el schema:
+   * - estado: DEFAULT 'PENDIENTE' → NO incluir si no está en la entidad
+   * - documentos_completos: DEFAULT FALSE → NO incluir si no está en la entidad
+   * - fecha_inicio_entrega_documentos: NULL por defecto → NO incluir si no está en la entidad
+   * - fecha_fin_entrega_documentos: NULL por defecto → NO incluir si no está en la entidad
+   * 
    * @param {StudentScholarship|Object} entity - Entidad StudentScholarship o objeto con datos de dominio
-   * @returns {Object} Objeto con formato del modelo Sequelize
+   * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
   static toModel(entity) {
     // Acepta tanto entidad StudentScholarship como objeto plano
     const data = entity instanceof StudentScholarship ? entity.toPlainObject() : entity;
+    const modelData = {};
 
+    // Campos específicos de StudentScholarship
+    // Solo incluir campos que existen en la entidad (usando operador 'in')
+    // Esto permite que los campos con DEFAULT se manejen automáticamente por la BD
     // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
-    return {
-      estudianteId: data.studentId || null,
-      becaDescuentoId: data.scholarshipId || null,
-      gestionId: data.managementId || null,
-      fechaSolicitud: data.requestDate,
-      estado: data.state || 'PENDIENTE',
-      documentosCompletos: data.documentsComplete !== undefined ? data.documentsComplete : false,
-      fechaInicioEntregaDocumentos: data.documentDeliveryStartDate || null,
-      fechaFinEntregaDocumentos: data.documentDeliveryEndDate || null,
-      observaciones: data.observations || null,
-    };
+    if ('studentId' in data) {
+      modelData.estudianteId = data.studentId || null;
+    }
+    if ('scholarshipId' in data) {
+      modelData.becaDescuentoId = data.scholarshipId || null;
+    }
+    if ('managementId' in data) {
+      modelData.gestionId = data.managementId || null;
+    }
+    if ('requestDate' in data) {
+      modelData.fechaSolicitud = data.requestDate;
+    }
+    // Solo incluir estado si está definido (tiene DEFAULT 'PENDIENTE' en el schema)
+    if ('state' in data) {
+      modelData.estado = data.state;
+    }
+    // Solo incluir documentosCompletos si está definido (tiene DEFAULT FALSE en el schema)
+    if ('documentsComplete' in data) {
+      modelData.documentosCompletos = data.documentsComplete;
+    }
+    // Solo incluir fechas de entrega si están definidas (NULL por defecto)
+    if ('documentDeliveryStartDate' in data) {
+      modelData.fechaInicioEntregaDocumentos = data.documentDeliveryStartDate || null;
+    }
+    if ('documentDeliveryEndDate' in data) {
+      modelData.fechaFinEntregaDocumentos = data.documentDeliveryEndDate || null;
+    }
+    // Solo incluir observaciones si está definido (NULL por defecto)
+    if ('observations' in data) {
+      modelData.observaciones = data.observations || null;
+    }
+
+    return modelData;
   }
 
   /**

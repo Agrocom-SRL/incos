@@ -53,11 +53,14 @@ export const useCreateAsignarBeca = () => {
    * Crea una nueva asignación de beca
    * 
    * @param {Object} formValues - Valores del formulario
-   * @param {number} formValues.student_id - ID del estudiante (requerido)
-   * @param {number} formValues.scholarship_id - ID de la beca/descuento (requerido)
-   * @param {number} [formValues.management_id] - ID de la gestión (opcional)
-   * @param {string} [formValues.observations] - Observaciones (opcional)
+   * @param {number} formValues.student_id - ID del estudiante (requerido para construir la URL)
+   * @param {number} formValues.beca_descuento_id - ID de la beca/descuento (requerido)
+   * @param {string} [formValues.observaciones] - Observaciones (opcional, puede ser null, vacío o string)
    * @returns {Promise<{success: boolean, data?: Object, error?: string, validationErrors?: Array}>}
+   * 
+   * NOTA: La gestión se obtiene automáticamente de la configuración del sistema.
+   * La fecha de solicitud se establece automáticamente como la fecha actual.
+   * El estado se establece automáticamente como PENDIENTE.
    */
   const createAsignarBeca = useCallback(async (formValues) => {
     // OPTIMIZACIÓN: Solo actualizar si el valor realmente cambió
@@ -86,7 +89,7 @@ export const useCreateAsignarBeca = () => {
         };
       }
 
-      if (!formValues.scholarship_id) {
+      if (!formValues.beca_descuento_id) {
         const errorMessage = 'El ID de la beca/descuento es requerido';
         optimizedSetErrorRef.current(errorMessage);
         return {
@@ -96,21 +99,12 @@ export const useCreateAsignarBeca = () => {
       }
 
       // 2. Obtener el Use Case desde el container (inyección de dependencias)
-      // TODO: Crear CrearAsignarBecaUseCase en el backend y registrarlo en el container
-      // Por ahora, usar API directa hasta que se cree el use case
-      // const crearAsignarBecaUseCase = useCasesFactory.crearAsignarBeca();
-      // const result = await crearAsignarBecaUseCase.ejecutar(formValues);
+      const crearAsignarBecaUseCase = useCasesFactory.crearAsignarBeca();
 
-      // TEMPORAL: Llamar directamente a la API hasta que se cree el use case
-      const { apiClient, handleSuccessResponse } = await import('@api-client');
-      const { ESTUDIANTES_ENDPOINTS } = await import('@api/endpoints');
-      
-      const response = await apiClient.post(
-        `${ESTUDIANTES_ENDPOINTS.BY_ID(formValues.student_id)}/becas`,
-        formValues
-      );
-      
-      const result = handleSuccessResponse(response);
+      // 3. Ejecutar el Use Case
+      // El Use Case orquesta el Repository, que envía los datos al backend
+      // El backend valida y ejecuta CreateStudentScholarshipUseCase
+      const result = await crearAsignarBecaUseCase.ejecutar(formValues);
 
       if (!result.success) {
         // Extraer el mensaje del error si es un objeto

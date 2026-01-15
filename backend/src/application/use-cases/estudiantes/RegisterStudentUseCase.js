@@ -60,8 +60,8 @@ export class RegisterStudentUseCase {
    */
   async generateStudentCode() {
     // 1. Obtener la gestión actual
-    const gestionActualConfig = await this.configuracionSistemaRepository.findByClave(
-      'gestion_actual'
+    const gestionActualConfig = await this.configuracionSistemaRepository.findBy(
+      { key: 'gestion_actual' }
     );
 
     if (!gestionActualConfig) {
@@ -73,8 +73,8 @@ export class RegisterStudentUseCase {
 
     // 2. Obtener el correlativo de la gestión actual
     const claveCorrelativo = `admision_gestion_${gestionActual}`;
-    const correlativoConfig = await this.configuracionSistemaRepository.findByClave(
-      claveCorrelativo
+    const correlativoConfig = await this.configuracionSistemaRepository.findBy(
+      { key: claveCorrelativo }
     );
 
     if (!correlativoConfig) {

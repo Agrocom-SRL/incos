@@ -14,8 +14,8 @@
 
 import { ESTUDIANTES_TOKENS, REPOSITORIOS_TOKENS, SERVICIOS_TOKENS } from '../../tokens/index.js';
 import { registerComponent } from '../../utils/container.helpers.js';
-import { ListStudentsUseCase, RegisterStudentUseCase, GetStudentByIdUseCase, SearchStudentUseCase, GenerateActaCompromisoUseCase } from '../../../../application/use-cases/estudiantes/index.js';
-import { ListStudentsController, RegisterStudentController, GetStudentByIdController, SearchStudentController, ActaCompromisoController } from '../../../../presentation/controllers/estudiantes/index.js';
+import { ListStudentsUseCase, RegisterStudentUseCase, GetStudentByIdUseCase, SearchStudentUseCase, GenerateActaCompromisoUseCase, CreateStudentScholarshipUseCase } from '../../../../application/use-cases/estudiantes/index.js';
+import { ListStudentsController, RegisterStudentController, GetStudentByIdController, SearchStudentController, ActaCompromisoController, AsignarBecaController } from '../../../../presentation/controllers/estudiantes/index.js';
 import { buildEstudiantesRouter } from '../../../../presentation/routes/estudiantes.routes.js';
 
 /**
@@ -99,6 +99,18 @@ export function registerEstudiantesResource(container) {
             })
     );
 
+    registerComponent(
+        container,
+        ESTUDIANTES_TOKENS.createStudentScholarshipUseCase,
+        (c) =>
+            new CreateStudentScholarshipUseCase({
+                studentScholarshipRepository: c.resolve(REPOSITORIOS_TOKENS.studentScholarshipRepository),
+                configuracionSistemaRepository: c.resolve(REPOSITORIOS_TOKENS.configuracionSistemaRepository),
+                managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
     // TODO: Agregar otros Use Cases cuando se implementen sus endpoints
 
     // ============================================
@@ -159,6 +171,17 @@ export function registerEstudiantesResource(container) {
             })
     );
 
+    registerComponent(
+        container,
+        ESTUDIANTES_TOKENS.asignarBecaController,
+        (c) =>
+            new AsignarBecaController({
+                createStudentScholarshipUseCase: c.resolve(ESTUDIANTES_TOKENS.createStudentScholarshipUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
+    );
+
     // TODO: Agregar otros Controllers cuando se implementen sus endpoints
 
     // ============================================
@@ -174,6 +197,7 @@ export function registerEstudiantesResource(container) {
                 getStudentByIdController: c.resolve(ESTUDIANTES_TOKENS.getStudentByIdController),
                 searchStudentController: c.resolve(ESTUDIANTES_TOKENS.searchStudentController),
                 actaCompromisoController: c.resolve(ESTUDIANTES_TOKENS.actaCompromisoController),
+                asignarBecaController: c.resolve(ESTUDIANTES_TOKENS.asignarBecaController),
                 // TODO: Agregar otros controllers cuando se implementen sus rutas
                 // updateStudentController: c.resolve(ESTUDIANTES_TOKENS.updateStudentController),
             };

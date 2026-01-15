@@ -32,8 +32,11 @@ export class Management extends BaseEntity {
     if (data.hasOwnProperty('endDate')) {
       this.endDate = data.endDate;
     }
-    if (data.hasOwnProperty('isActive')) {
-      this.isActive = data.isActive;
+    if (data.hasOwnProperty('vigente')) {
+      this.vigente = data.vigente;
+    } else if (!data.hasOwnProperty('code')) {
+      // Solo usar valor por defecto si no se está usando attributes limitados
+      this.vigente = false;
     }
   }
 
@@ -54,6 +57,14 @@ export class Management extends BaseEntity {
     if (!this.code) return false;
     // Formato: YYYY-TIPO (ej: 2025-REG, 2025-VER)
     return /^\d{4}-[A-Z]{3,}$/.test(this.code);
+  }
+
+  /**
+   * Verifica si la gestión está vigente
+   * @returns {boolean}
+   */
+  isVigente() {
+    return this.vigente === true;
   }
 
   /**
@@ -105,8 +116,8 @@ export class Management extends BaseEntity {
     if (this.hasOwnProperty('endDate')) {
       plainObject.endDate = this.endDate;
     }
-    if (this.hasOwnProperty('isActive')) {
-      plainObject.isActive = this.isActive;
+    if (this.hasOwnProperty('vigente')) {
+      plainObject.vigente = this.vigente;
     }
 
     return plainObject;

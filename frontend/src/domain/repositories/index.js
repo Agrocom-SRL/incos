@@ -23,6 +23,7 @@ export { IBaseRepository } from './IBaseRepository';
 // ============================================
 export { IEstudianteRepository } from './IEstudianteRepository';
 export { IBecaDescuentoRepository } from './IBecaDescuentoRepository';
+export { IEstudianteBecaRepository } from './IEstudianteBecaRepository';
 
 // ============================================
 // MÓDULO: CONFIGURACIÓN

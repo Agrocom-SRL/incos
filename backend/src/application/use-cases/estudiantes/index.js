@@ -11,10 +11,11 @@ export { GenerateActaCompromisoUseCase } from './GenerateActaCompromisoUseCase.j
 // export { DeleteStudentUseCase } from './DeleteStudentUseCase.js';
 
 // ============================================
-// USE CASES FUTUROS - BECAS
+// USE CASES - BECAS
 // ============================================
+export { CreateStudentScholarshipUseCase } from './becas/CreateStudentScholarshipUseCase.js';
+// TODO: Agregar otros Use Cases cuando se implementen sus endpoints
 // export { ListBecasUseCase } from './becas/ListBecasUseCase.js';
-// export { AsignarBecaUseCase } from './becas/AsignarBecaUseCase.js';
 // export { AprobarBecaUseCase } from './becas/AprobarBecaUseCase.js';
 
 // ============================================

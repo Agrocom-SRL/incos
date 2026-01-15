@@ -60,7 +60,7 @@
   /* Tamaño flexible para las tarjetas - permite que se muestren en fila */
   flex: 0 1 300px;
   min-width: 250px;
-  max-width: 300px;
+  max-width: 350px;
 }
 
 /* Asegurar que el Card interno también respete el flex */

@@ -8,4 +8,5 @@
 export { StudentMapper } from './StudentMapper.js';
 export { StudentAcademicDataMapper } from './StudentAcademicDataMapper.js';
 export { BecaDescuentoMapper } from './BecaDescuentoMapper.js';
+export { StudentScholarshipMapper } from './StudentScholarshipMapper.js';
 
