@@ -24,6 +24,9 @@ export class PlanSubjectMapper {
   /**
    * Convierte un modelo Sequelize a entidad de dominio
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de PlanSubject
+   * Solo incluye campos que existen en el modelo (útil cuando se usan attributes limitados)
+   * 
+   * Flujo: Base de Datos → ORM Model → Domain Entity
    * 
    * @param {Object|null} model - Modelo Sequelize de AsignaturaPlan
    * @returns {PlanSubject|null} Entidad de dominio PlanSubject
@@ -32,15 +35,33 @@ export class PlanSubjectMapper {
     if (!model) return null;
 
     // Campos específicos de PlanSubject (campos del dominio)
-    const specificFields = {
-      studyPlanId: model.planEstudioId ?? null,
-      periodId: model.periodoId ?? null,
-      subjectId: model.materiaId ?? null,
-      weeklyHours: model.horasSemanales,
-      credits: model.creditos ?? null,
-      modality: model.modalidad,
-      displayOrder: model.ordenVisualizacion,
-    };
+    // Acceder a dataValues para obtener solo los campos solicitados
+    // Cuando se usan attributes limitados, Sequelize almacena los campos en dataValues
+    const dataValues = model.dataValues || model;
+    const specificFields = {};
+    
+    // Mapeo: BD (snake_case español) → Dominio (camelCase inglés)
+    if ('planEstudioId' in dataValues && dataValues.planEstudioId !== undefined) {
+      specificFields.studyPlanId = dataValues.planEstudioId ?? null;
+    }
+    if ('periodoId' in dataValues && dataValues.periodoId !== undefined) {
+      specificFields.periodId = dataValues.periodoId ?? null;
+    }
+    if ('materiaId' in dataValues && dataValues.materiaId !== undefined) {
+      specificFields.subjectId = dataValues.materiaId ?? null;
+    }
+    if ('horasSemanales' in dataValues && dataValues.horasSemanales !== undefined) {
+      specificFields.weeklyHours = dataValues.horasSemanales;
+    }
+    if ('creditos' in dataValues && dataValues.creditos !== undefined) {
+      specificFields.credits = dataValues.creditos ?? null;
+    }
+    if ('modalidad' in dataValues && dataValues.modalidad !== undefined) {
+      specificFields.modality = dataValues.modalidad;
+    }
+    if ('ordenVisualizacion' in dataValues && dataValues.ordenVisualizacion !== undefined) {
+      specificFields.displayOrder = dataValues.ordenVisualizacion;
+    }
 
     // Combina campos base (id, active, timestamps, audit) con campos específicos
     const entityData = BaseMapper.combineBaseAndSpecificFields(model, specificFields);
@@ -51,6 +72,11 @@ export class PlanSubjectMapper {
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para creación)
    * 
+   * Flujo: Domain Entity → ORM Model → Base de Datos (INSERT)
+   * 
+   * NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
+   * BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
+   * 
    * @param {PlanSubject|Object} entity - Entidad PlanSubject o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
@@ -58,8 +84,7 @@ export class PlanSubjectMapper {
     // Acepta tanto entidad PlanSubject como objeto plano
     const data = entity instanceof PlanSubject ? entity.toPlainObject() : entity;
 
-    // NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
-    // BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
     return {
       planEstudioId: data.studyPlanId ?? null,
       periodoId: data.periodId ?? null,
@@ -73,8 +98,10 @@ export class PlanSubjectMapper {
 
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para actualización)
-   * Solo incluye los campos que están definidos (no undefined)
+   * Solo incluye los campos que están definidos (que existen en la entidad)
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de PlanSubject
+   * 
+   * Flujo: Domain Entity → ORM Model → Base de Datos (UPDATE)
    * 
    * @param {PlanSubject|Object} entity - Entidad PlanSubject o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
@@ -85,25 +112,27 @@ export class PlanSubjectMapper {
     const updateData = {};
 
     // Campos específicos de PlanSubject
-    if (data.studyPlanId !== undefined) {
+    // Solo incluir campos que existen en la entidad (usando operador 'in')
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
+    if ('studyPlanId' in data) {
       updateData.planEstudioId = data.studyPlanId ?? null;
     }
-    if (data.periodId !== undefined) {
+    if ('periodId' in data) {
       updateData.periodoId = data.periodId ?? null;
     }
-    if (data.subjectId !== undefined) {
+    if ('subjectId' in data) {
       updateData.materiaId = data.subjectId ?? null;
     }
-    if (data.weeklyHours !== undefined) {
+    if ('weeklyHours' in data) {
       updateData.horasSemanales = data.weeklyHours;
     }
-    if (data.credits !== undefined) {
+    if ('credits' in data) {
       updateData.creditos = data.credits ?? null;
     }
-    if (data.modality !== undefined) {
+    if ('modality' in data) {
       updateData.modalidad = data.modality;
     }
-    if (data.displayOrder !== undefined) {
+    if ('displayOrder' in data) {
       updateData.ordenVisualizacion = data.displayOrder;
     }
 

@@ -24,6 +24,9 @@ export class CareerMapper {
   /**
    * Convierte un modelo Sequelize a entidad de dominio
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de Career
+   * Solo incluye campos que existen en el modelo (útil cuando se usan attributes limitados)
+   * 
+   * Flujo: Base de Datos → ORM Model → Domain Entity
    * 
    * @param {Object|null} model - Modelo Sequelize de Carrera
    * @returns {Career|null} Entidad de dominio Career
@@ -32,15 +35,33 @@ export class CareerMapper {
     if (!model) return null;
 
     // Campos específicos de Career (campos del dominio)
-    const specificFields = {
-      code: model.codigo,
-      name: model.nombre,
-      description: model.descripcion,
-      trainingArea: model.areaFormacion,
-      grantedTitle: model.tituloOtorgado,
-      colorHex: model.colorHex,
-      imagePath: model.imagenRuta,
-    };
+    // Acceder a dataValues para obtener solo los campos solicitados
+    // Cuando se usan attributes limitados, Sequelize almacena los campos en dataValues
+    const dataValues = model.dataValues || model;
+    const specificFields = {};
+    
+    // Mapeo: BD (snake_case español) → Dominio (camelCase inglés)
+    if ('codigo' in dataValues && dataValues.codigo !== undefined) {
+      specificFields.code = dataValues.codigo;
+    }
+    if ('nombre' in dataValues && dataValues.nombre !== undefined) {
+      specificFields.name = dataValues.nombre;
+    }
+    if ('descripcion' in dataValues && dataValues.descripcion !== undefined) {
+      specificFields.description = dataValues.descripcion;
+    }
+    if ('areaFormacion' in dataValues && dataValues.areaFormacion !== undefined) {
+      specificFields.trainingArea = dataValues.areaFormacion;
+    }
+    if ('tituloOtorgado' in dataValues && dataValues.tituloOtorgado !== undefined) {
+      specificFields.grantedTitle = dataValues.tituloOtorgado;
+    }
+    if ('colorHex' in dataValues && dataValues.colorHex !== undefined) {
+      specificFields.colorHex = dataValues.colorHex;
+    }
+    if ('imagenRuta' in dataValues && dataValues.imagenRuta !== undefined) {
+      specificFields.imagePath = dataValues.imagenRuta;
+    }
 
     // Combina campos base (id, active, timestamps, audit) con campos específicos
     const entityData = BaseMapper.combineBaseAndSpecificFields(model, specificFields);
@@ -51,6 +72,11 @@ export class CareerMapper {
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para creación)
    * 
+   * Flujo: Domain Entity → ORM Model → Base de Datos (INSERT)
+   * 
+   * NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
+   * BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
+   * 
    * @param {Career|Object} entity - Entidad Career o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
@@ -58,8 +84,7 @@ export class CareerMapper {
     // Acepta tanto entidad Career como objeto plano
     const data = entity instanceof Career ? entity.toPlainObject() : entity;
 
-    // NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
-    // BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
     return {
       codigo: data.code,
       nombre: data.name,
@@ -73,8 +98,10 @@ export class CareerMapper {
 
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para actualización)
-   * Solo incluye los campos que están definidos (no undefined)
+   * Solo incluye los campos que están definidos (que existen en la entidad)
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de Career
+   * 
+   * Flujo: Domain Entity → ORM Model → Base de Datos (UPDATE)
    * 
    * @param {Career|Object} entity - Entidad Career o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
@@ -85,25 +112,27 @@ export class CareerMapper {
     const updateData = {};
 
     // Campos específicos de Career
-    if (data.code !== undefined) {
+    // Solo incluir campos que existen en la entidad (usando operador 'in')
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
+    if ('code' in data) {
       updateData.codigo = data.code;
     }
-    if (data.name !== undefined) {
+    if ('name' in data) {
       updateData.nombre = data.name;
     }
-    if (data.description !== undefined) {
+    if ('description' in data) {
       updateData.descripcion = data.description || null;
     }
-    if (data.trainingArea !== undefined) {
+    if ('trainingArea' in data) {
       updateData.areaFormacion = data.trainingArea || null;
     }
-    if (data.grantedTitle !== undefined) {
+    if ('grantedTitle' in data) {
       updateData.tituloOtorgado = data.grantedTitle || null;
     }
-    if (data.colorHex !== undefined) {
+    if ('colorHex' in data) {
       updateData.colorHex = data.colorHex || null;
     }
-    if (data.imagePath !== undefined) {
+    if ('imagePath' in data) {
       updateData.imagenRuta = data.imagePath || null;
     }
 

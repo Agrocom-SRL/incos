@@ -24,6 +24,9 @@ export class SubjectMapper {
   /**
    * Convierte un modelo Sequelize a entidad de dominio
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de Subject
+   * Solo incluye campos que existen en el modelo (útil cuando se usan attributes limitados)
+   * 
+   * Flujo: Base de Datos → ORM Model → Domain Entity
    * 
    * @param {Object|null} model - Modelo Sequelize de Materia
    * @returns {Subject|null} Entidad de dominio Subject
@@ -32,13 +35,27 @@ export class SubjectMapper {
     if (!model) return null;
 
     // Campos específicos de Subject (campos del dominio)
-    const specificFields = {
-      acronym: model.sigla,
-      name: model.nombre,
-      objectives: model.objetivos ?? null,
-      classification: model.clasificacion ?? null,
-      type: model.tipo,
-    };
+    // Acceder a dataValues para obtener solo los campos solicitados
+    // Cuando se usan attributes limitados, Sequelize almacena los campos en dataValues
+    const dataValues = model.dataValues || model;
+    const specificFields = {};
+    
+    // Mapeo: BD (snake_case español) → Dominio (camelCase inglés)
+    if ('sigla' in dataValues && dataValues.sigla !== undefined) {
+      specificFields.acronym = dataValues.sigla;
+    }
+    if ('nombre' in dataValues && dataValues.nombre !== undefined) {
+      specificFields.name = dataValues.nombre;
+    }
+    if ('objetivos' in dataValues && dataValues.objetivos !== undefined) {
+      specificFields.objectives = dataValues.objetivos ?? null;
+    }
+    if ('clasificacion' in dataValues && dataValues.clasificacion !== undefined) {
+      specificFields.classification = dataValues.clasificacion ?? null;
+    }
+    if ('tipo' in dataValues && dataValues.tipo !== undefined) {
+      specificFields.type = dataValues.tipo;
+    }
 
     // Combina campos base (id, active, timestamps, audit) con campos específicos
     const entityData = BaseMapper.combineBaseAndSpecificFields(model, specificFields);
@@ -49,6 +66,11 @@ export class SubjectMapper {
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para creación)
    * 
+   * Flujo: Domain Entity → ORM Model → Base de Datos (INSERT)
+   * 
+   * NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
+   * BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
+   * 
    * @param {Subject|Object} entity - Entidad Subject o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
@@ -56,8 +78,7 @@ export class SubjectMapper {
     // Acepta tanto entidad Subject como objeto plano
     const data = entity instanceof Subject ? entity.toPlainObject() : entity;
 
-    // NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
-    // BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
     return {
       sigla: data.acronym,
       nombre: data.name,
@@ -69,8 +90,10 @@ export class SubjectMapper {
 
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para actualización)
-   * Solo incluye los campos que están definidos (no undefined)
+   * Solo incluye los campos que están definidos (que existen en la entidad)
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de Subject
+   * 
+   * Flujo: Domain Entity → ORM Model → Base de Datos (UPDATE)
    * 
    * @param {Subject|Object} entity - Entidad Subject o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
@@ -81,19 +104,21 @@ export class SubjectMapper {
     const updateData = {};
 
     // Campos específicos de Subject
-    if (data.acronym !== undefined) {
+    // Solo incluir campos que existen en la entidad (usando operador 'in')
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
+    if ('acronym' in data) {
       updateData.sigla = data.acronym;
     }
-    if (data.name !== undefined) {
+    if ('name' in data) {
       updateData.nombre = data.name;
     }
-    if (data.objectives !== undefined) {
+    if ('objectives' in data) {
       updateData.objetivos = data.objectives ?? null;
     }
-    if (data.classification !== undefined) {
+    if ('classification' in data) {
       updateData.clasificacion = data.classification ?? null;
     }
-    if (data.type !== undefined) {
+    if ('type' in data) {
       updateData.tipo = data.type;
     }
 

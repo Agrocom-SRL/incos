@@ -26,6 +26,8 @@ export class ManagementMapper {
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de Management
    * Solo incluye campos que existen en el modelo (útil cuando se usan attributes limitados)
    * 
+   * Flujo: Base de Datos → ORM Model → Domain Entity
+   * 
    * @param {Object|null} model - Modelo Sequelize de Gestion
    * @returns {Management|null} Entidad de dominio Management
    */
@@ -33,28 +35,32 @@ export class ManagementMapper {
     if (!model) return null;
 
     // Campos específicos de Management (campos del dominio)
-    // Solo incluir campos que existen en el modelo (no undefined)
+    // Acceder a dataValues para obtener solo los campos solicitados
+    // Cuando se usan attributes limitados, Sequelize almacena los campos en dataValues
+    const dataValues = model.dataValues || model;
     const specificFields = {};
-    if (model.codigo !== undefined) {
-      specificFields.code = model.codigo;
+    
+    // Mapeo: BD (snake_case español) → Dominio (camelCase inglés)
+    if ('codigo' in dataValues && dataValues.codigo !== undefined) {
+      specificFields.code = dataValues.codigo;
     }
-    if (model.nombre !== undefined) {
-      specificFields.name = model.nombre;
+    if ('nombre' in dataValues && dataValues.nombre !== undefined) {
+      specificFields.name = dataValues.nombre;
     }
-    if (model.anio !== undefined) {
-      specificFields.year = model.anio;
+    if ('anio' in dataValues && dataValues.anio !== undefined) {
+      specificFields.year = dataValues.anio;
     }
-    if (model.tipo !== undefined) {
-      specificFields.type = model.tipo;
+    if ('tipo' in dataValues && dataValues.tipo !== undefined) {
+      specificFields.type = dataValues.tipo;
     }
-    if (model.fechaInicio !== undefined) {
-      specificFields.startDate = model.fechaInicio;
+    if ('fechaInicio' in dataValues && dataValues.fechaInicio !== undefined) {
+      specificFields.startDate = dataValues.fechaInicio;
     }
-    if (model.fechaFin !== undefined) {
-      specificFields.endDate = model.fechaFin;
+    if ('fechaFin' in dataValues && dataValues.fechaFin !== undefined) {
+      specificFields.endDate = dataValues.fechaFin;
     }
-    if (model.vigente !== undefined) {
-      specificFields.isActive = model.vigente === true || model.vigente === 1;
+    if ('vigente' in dataValues && dataValues.vigente !== undefined) {
+      specificFields.isActive = dataValues.vigente === true || dataValues.vigente === 1;
     }
 
     // Combina campos base (id, active, timestamps, audit) con campos específicos
@@ -66,6 +72,11 @@ export class ManagementMapper {
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para creación)
    * 
+   * Flujo: Domain Entity → ORM Model → Base de Datos (INSERT)
+   * 
+   * NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
+   * BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
+   * 
    * @param {Management|Object} entity - Entidad Management o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
@@ -73,8 +84,7 @@ export class ManagementMapper {
     // Acepta tanto entidad Management como objeto plano
     const data = entity instanceof Management ? entity.toPlainObject() : entity;
 
-    // NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
-    // BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
     return {
       codigo: data.code,
       nombre: data.name,
@@ -88,8 +98,10 @@ export class ManagementMapper {
 
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para actualización)
-   * Solo incluye los campos que están definidos (no undefined)
+   * Solo incluye los campos que están definidos (que existen en la entidad)
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de Management
+   * 
+   * Flujo: Domain Entity → ORM Model → Base de Datos (UPDATE)
    * 
    * @param {Management|Object} entity - Entidad Management o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
@@ -100,25 +112,27 @@ export class ManagementMapper {
     const updateData = {};
 
     // Campos específicos de Management
-    if (data.code !== undefined) {
+    // Solo incluir campos que existen en la entidad (usando operador 'in')
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
+    if ('code' in data) {
       updateData.codigo = data.code;
     }
-    if (data.name !== undefined) {
+    if ('name' in data) {
       updateData.nombre = data.name;
     }
-    if (data.year !== undefined) {
+    if ('year' in data) {
       updateData.anio = data.year;
     }
-    if (data.type !== undefined) {
+    if ('type' in data) {
       updateData.tipo = data.type;
     }
-    if (data.startDate !== undefined) {
+    if ('startDate' in data) {
       updateData.fechaInicio = data.startDate;
     }
-    if (data.endDate !== undefined) {
+    if ('endDate' in data) {
       updateData.fechaFin = data.endDate;
     }
-    if (data.isActive !== undefined) {
+    if ('isActive' in data) {
       updateData.vigente = data.isActive;
     }
 

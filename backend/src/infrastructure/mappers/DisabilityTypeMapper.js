@@ -24,6 +24,9 @@ export class DisabilityTypeMapper {
   /**
    * Convierte un modelo Sequelize a entidad de dominio
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de DisabilityType
+   * Solo incluye campos que existen en el modelo (útil cuando se usan attributes limitados)
+   * 
+   * Flujo: Base de Datos → ORM Model → Domain Entity
    * 
    * @param {Object|null} model - Modelo Sequelize de TipoDiscapacidad
    * @returns {DisabilityType|null} Entidad de dominio DisabilityType
@@ -32,10 +35,18 @@ export class DisabilityTypeMapper {
     if (!model) return null;
 
     // Campos específicos de DisabilityType (campos del dominio)
-    const specificFields = {
-      name: model.nombre,
-      description: model.descripcion,
-    };
+    // Acceder a dataValues para obtener solo los campos solicitados
+    // Cuando se usan attributes limitados, Sequelize almacena los campos en dataValues
+    const dataValues = model.dataValues || model;
+    const specificFields = {};
+    
+    // Mapeo: BD (snake_case español) → Dominio (camelCase inglés)
+    if ('nombre' in dataValues && dataValues.nombre !== undefined) {
+      specificFields.name = dataValues.nombre;
+    }
+    if ('descripcion' in dataValues && dataValues.descripcion !== undefined) {
+      specificFields.description = dataValues.descripcion;
+    }
 
     // Combina campos base (id, active, timestamps, audit) con campos específicos
     const entityData = BaseMapper.combineBaseAndSpecificFields(model, specificFields);
@@ -46,6 +57,11 @@ export class DisabilityTypeMapper {
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para creación)
    * 
+   * Flujo: Domain Entity → ORM Model → Base de Datos (INSERT)
+   * 
+   * NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
+   * BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
+   * 
    * @param {DisabilityType|Object} entity - Entidad DisabilityType o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
@@ -53,8 +69,7 @@ export class DisabilityTypeMapper {
     // Acepta tanto entidad DisabilityType como objeto plano
     const data = entity instanceof DisabilityType ? entity.toPlainObject() : entity;
 
-    // NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
-    // BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
     return {
       nombre: data.name,
       descripcion: data.description || null,
@@ -63,8 +78,10 @@ export class DisabilityTypeMapper {
 
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para actualización)
-   * Solo incluye los campos que están definidos (no undefined)
+   * Solo incluye los campos que están definidos (que existen en la entidad)
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de DisabilityType
+   * 
+   * Flujo: Domain Entity → ORM Model → Base de Datos (UPDATE)
    * 
    * @param {DisabilityType|Object} entity - Entidad DisabilityType o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
@@ -75,10 +92,12 @@ export class DisabilityTypeMapper {
     const updateData = {};
 
     // Campos específicos de DisabilityType
-    if (data.name !== undefined) {
+    // Solo incluir campos que existen en la entidad (usando operador 'in')
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
+    if ('name' in data) {
       updateData.nombre = data.name;
     }
-    if (data.description !== undefined) {
+    if ('description' in data) {
       updateData.descripcion = data.description || null;
     }
 

@@ -1,4 +1,5 @@
 import { StudentOrigin } from '../../domain/entities/StudentOrigin.js';
+import { normalizeOriginType } from '../../domain/utils/studentOriginUtils.js';
 import { BaseMapper } from './BaseMapper.js';
 
 /**
@@ -22,58 +23,11 @@ import { BaseMapper } from './BaseMapper.js';
  */
 export class StudentOriginMapper {
   /**
-   * Convierte un valor numérico o texto de tipo de origen a su valor ENUM correspondiente
-   * 
-   * @param {number|string} value - Valor numérico (0, 1, 2) o texto del ENUM
-   * @returns {string} Valor del ENUM: 'BOLIVIANA', 'EXTRANJERA', 'DOBLE_NACIONALIDAD'
-   */
-  static normalizeOriginType(value) {
-    // Si es null o undefined, retornar valor por defecto
-    if (value === null || value === undefined) {
-      return 'BOLIVIANA';
-    }
-
-    // Si ya es un valor válido del ENUM, retornarlo directamente
-    const enumValues = ['BOLIVIANA', 'EXTRANJERA', 'DOBLE_NACIONALIDAD'];
-    if (enumValues.includes(String(value).toUpperCase())) {
-      return String(value).toUpperCase();
-    }
-
-    // Convertir a número si es string, manejar espacios y otros casos
-    let numericValue;
-    if (typeof value === 'string') {
-      // Limpiar espacios y convertir
-      const cleaned = value.trim();
-      numericValue = parseInt(cleaned, 10);
-      // Si parseInt falla (devuelve NaN), intentar comparar directamente
-      if (isNaN(numericValue)) {
-        // Si no es un número válido, retornar por defecto
-        return 'BOLIVIANA';
-      }
-    } else {
-      numericValue = Number(value);
-      // Si no es un número válido, retornar por defecto
-      if (isNaN(numericValue)) {
-        return 'BOLIVIANA';
-      }
-    }
-    
-    // Mapear valores numéricos a ENUM
-    switch (numericValue) {
-      case 0:
-        return 'BOLIVIANA';
-      case 1:
-        return 'EXTRANJERA';
-      case 2:
-        return 'DOBLE_NACIONALIDAD';
-      default:
-        return 'BOLIVIANA'; // Valor por defecto si no coincide
-    }
-  }
-
-  /**
    * Convierte un modelo Sequelize a entidad de dominio
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de StudentOrigin
+   * Solo incluye campos que existen en el modelo (útil cuando se usan attributes limitados)
+   * 
+   * Flujo: Base de Datos → ORM Model → Domain Entity
    * 
    * @param {Object|null} model - Modelo Sequelize de EstudianteOrigen
    * @returns {StudentOrigin|null} Entidad de dominio StudentOrigin
@@ -82,16 +36,36 @@ export class StudentOriginMapper {
     if (!model) return null;
 
     // Campos específicos de StudentOrigin (campos del dominio)
-    const specificFields = {
-      studentId: model.estudianteId,
-      countryId: model.paisId,
-      birthMunicipalityId: model.municipioNacimientoId,
-      birthCity: model.ciudadNacimiento,
-      motherTongueId: model.idiomaMaternoId,
-      secondaryLanguageId: model.idiomaSecundarioId,
-      originType: model.tipoOrigen,
-      isPrincipal: model.esPrincipal === 1 || model.esPrincipal === true,
-    };
+    // Acceder a dataValues para obtener solo los campos solicitados
+    // Cuando se usan attributes limitados, Sequelize almacena los campos en dataValues
+    const dataValues = model.dataValues || model;
+    const specificFields = {};
+    
+    // Mapeo: BD (snake_case español) → Dominio (camelCase inglés)
+    if ('estudianteId' in dataValues && dataValues.estudianteId !== undefined) {
+      specificFields.studentId = dataValues.estudianteId;
+    }
+    if ('paisId' in dataValues && dataValues.paisId !== undefined) {
+      specificFields.countryId = dataValues.paisId;
+    }
+    if ('municipioNacimientoId' in dataValues && dataValues.municipioNacimientoId !== undefined) {
+      specificFields.birthMunicipalityId = dataValues.municipioNacimientoId;
+    }
+    if ('ciudadNacimiento' in dataValues && dataValues.ciudadNacimiento !== undefined) {
+      specificFields.birthCity = dataValues.ciudadNacimiento;
+    }
+    if ('idiomaMaternoId' in dataValues && dataValues.idiomaMaternoId !== undefined) {
+      specificFields.motherTongueId = dataValues.idiomaMaternoId;
+    }
+    if ('idiomaSecundarioId' in dataValues && dataValues.idiomaSecundarioId !== undefined) {
+      specificFields.secondaryLanguageId = dataValues.idiomaSecundarioId;
+    }
+    if ('tipoOrigen' in dataValues && dataValues.tipoOrigen !== undefined) {
+      specificFields.originType = dataValues.tipoOrigen;
+    }
+    if ('esPrincipal' in dataValues && dataValues.esPrincipal !== undefined) {
+      specificFields.isPrincipal = dataValues.esPrincipal === 1 || dataValues.esPrincipal === true;
+    }
 
     // Combina campos base (id, active, timestamps, audit) con campos específicos
     const entityData = BaseMapper.combineBaseAndSpecificFields(model, specificFields);
@@ -102,6 +76,11 @@ export class StudentOriginMapper {
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para creación)
    * 
+   * Flujo: Domain Entity → ORM Model → Base de Datos (INSERT)
+   * 
+   * NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
+   * BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
+   * 
    * @param {StudentOrigin|Object} entity - Entidad StudentOrigin o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
@@ -109,8 +88,7 @@ export class StudentOriginMapper {
     // Acepta tanto entidad StudentOrigin como objeto plano
     const data = entity instanceof StudentOrigin ? entity.toPlainObject() : entity;
 
-    // NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
-    // BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
     return {
       estudianteId: data.studentId,
       paisId: data.countryId || null,
@@ -118,15 +96,17 @@ export class StudentOriginMapper {
       ciudadNacimiento: data.birthCity || null,
       idiomaMaternoId: data.motherTongueId || null,
       idiomaSecundarioId: data.secondaryLanguageId || null,
-      tipoOrigen: this.normalizeOriginType(data.originType),
+      tipoOrigen: normalizeOriginType(data.originType),
       esPrincipal: data.isPrincipal !== undefined ? data.isPrincipal : true,
     };
   }
 
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para actualización)
-   * Solo incluye los campos que están definidos (no undefined)
+   * Solo incluye los campos que están definidos (que existen en la entidad)
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de StudentOrigin
+   * 
+   * Flujo: Domain Entity → ORM Model → Base de Datos (UPDATE)
    * 
    * @param {StudentOrigin|Object} entity - Entidad StudentOrigin o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
@@ -137,28 +117,30 @@ export class StudentOriginMapper {
     const updateData = {};
 
     // Campos específicos de StudentOrigin
-    if (data.studentId !== undefined) {
+    // Solo incluir campos que existen en la entidad (usando operador 'in')
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
+    if ('studentId' in data) {
       updateData.estudianteId = data.studentId;
     }
-    if (data.countryId !== undefined) {
+    if ('countryId' in data) {
       updateData.paisId = data.countryId || null;
     }
-    if (data.birthMunicipalityId !== undefined) {
+    if ('birthMunicipalityId' in data) {
       updateData.municipioNacimientoId = data.birthMunicipalityId || null;
     }
-    if (data.birthCity !== undefined) {
+    if ('birthCity' in data) {
       updateData.ciudadNacimiento = data.birthCity || null;
     }
-    if (data.motherTongueId !== undefined) {
+    if ('motherTongueId' in data) {
       updateData.idiomaMaternoId = data.motherTongueId || null;
     }
-    if (data.secondaryLanguageId !== undefined) {
+    if ('secondaryLanguageId' in data) {
       updateData.idiomaSecundarioId = data.secondaryLanguageId || null;
     }
-    if (data.originType !== undefined) {
-      updateData.tipoOrigen = this.normalizeOriginType(data.originType);
+    if ('originType' in data) {
+      updateData.tipoOrigen = normalizeOriginType(data.originType);
     }
-    if (data.isPrincipal !== undefined) {
+    if ('isPrincipal' in data) {
       updateData.esPrincipal = data.isPrincipal;
     }
 

@@ -24,6 +24,9 @@ export class ShiftMapper {
   /**
    * Convierte un modelo Sequelize a entidad de dominio
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de Shift
+   * Solo incluye campos que existen en el modelo (útil cuando se usan attributes limitados)
+   * 
+   * Flujo: Base de Datos → ORM Model → Domain Entity
    * 
    * @param {Object|null} model - Modelo Sequelize de Turno
    * @returns {Shift|null} Entidad de dominio Shift
@@ -32,13 +35,27 @@ export class ShiftMapper {
     if (!model) return null;
 
     // Campos específicos de Shift (campos del dominio)
-    const specificFields = {
-      name: model.nombre,
-      startTime: model.horaInicio,
-      endTime: model.horaFin,
-      description: model.descripcion,
-      colorHex: model.colorHex,
-    };
+    // Acceder a dataValues para obtener solo los campos solicitados
+    // Cuando se usan attributes limitados, Sequelize almacena los campos en dataValues
+    const dataValues = model.dataValues || model;
+    const specificFields = {};
+    
+    // Mapeo: BD (snake_case español) → Dominio (camelCase inglés)
+    if ('nombre' in dataValues && dataValues.nombre !== undefined) {
+      specificFields.name = dataValues.nombre;
+    }
+    if ('horaInicio' in dataValues && dataValues.horaInicio !== undefined) {
+      specificFields.startTime = dataValues.horaInicio;
+    }
+    if ('horaFin' in dataValues && dataValues.horaFin !== undefined) {
+      specificFields.endTime = dataValues.horaFin;
+    }
+    if ('descripcion' in dataValues && dataValues.descripcion !== undefined) {
+      specificFields.description = dataValues.descripcion;
+    }
+    if ('colorHex' in dataValues && dataValues.colorHex !== undefined) {
+      specificFields.colorHex = dataValues.colorHex;
+    }
 
     // Combina campos base (id, active, timestamps, audit) con campos específicos
     const entityData = BaseMapper.combineBaseAndSpecificFields(model, specificFields);
@@ -49,6 +66,11 @@ export class ShiftMapper {
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para creación)
    * 
+   * Flujo: Domain Entity → ORM Model → Base de Datos (INSERT)
+   * 
+   * NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
+   * BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
+   * 
    * @param {Shift|Object} entity - Entidad Shift o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
@@ -56,8 +78,7 @@ export class ShiftMapper {
     // Acepta tanto entidad Shift como objeto plano
     const data = entity instanceof Shift ? entity.toPlainObject() : entity;
 
-    // NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
-    // BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
     return {
       nombre: data.name,
       horaInicio: data.startTime,
@@ -69,8 +90,10 @@ export class ShiftMapper {
 
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para actualización)
-   * Solo incluye los campos que están definidos (no undefined)
+   * Solo incluye los campos que están definidos (que existen en la entidad)
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de Shift
+   * 
+   * Flujo: Domain Entity → ORM Model → Base de Datos (UPDATE)
    * 
    * @param {Shift|Object} entity - Entidad Shift o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
@@ -81,19 +104,21 @@ export class ShiftMapper {
     const updateData = {};
 
     // Campos específicos de Shift
-    if (data.name !== undefined) {
+    // Solo incluir campos que existen en la entidad (usando operador 'in')
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
+    if ('name' in data) {
       updateData.nombre = data.name;
     }
-    if (data.startTime !== undefined) {
+    if ('startTime' in data) {
       updateData.horaInicio = data.startTime;
     }
-    if (data.endTime !== undefined) {
+    if ('endTime' in data) {
       updateData.horaFin = data.endTime;
     }
-    if (data.description !== undefined) {
+    if ('description' in data) {
       updateData.descripcion = data.description || null;
     }
-    if (data.colorHex !== undefined) {
+    if ('colorHex' in data) {
       updateData.colorHex = data.colorHex || null;
     }
 

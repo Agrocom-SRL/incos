@@ -26,6 +26,8 @@ export class EnrollmentMapper {
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de Enrollment
    * Solo incluye campos que existen en el modelo (útil cuando se usan attributes limitados)
    * 
+   * Flujo: Base de Datos → ORM Model → Domain Entity
+   * 
    * @param {Object|null} model - Modelo Sequelize de Inscripcion
    * @returns {Enrollment|null} Entidad de dominio Enrollment
    */
@@ -33,22 +35,26 @@ export class EnrollmentMapper {
     if (!model) return null;
 
     // Campos específicos de Enrollment (campos del dominio)
-    // Solo incluir campos que existen en el modelo (no undefined)
+    // Acceder a dataValues para obtener solo los campos solicitados
+    // Cuando se usan attributes limitados, Sequelize almacena los campos en dataValues
+    const dataValues = model.dataValues || model;
     const specificFields = {};
-    if (model.estudianteDatosAcademicosId !== undefined) {
-      specificFields.studentAcademicDataId = model.estudianteDatosAcademicosId;
+    
+    // Mapeo: BD (snake_case español) → Dominio (camelCase inglés)
+    if ('estudianteDatosAcademicosId' in dataValues && dataValues.estudianteDatosAcademicosId !== undefined) {
+      specificFields.studentAcademicDataId = dataValues.estudianteDatosAcademicosId;
     }
-    if (model.gestionId !== undefined) {
-      specificFields.managementId = model.gestionId;
+    if ('gestionId' in dataValues && dataValues.gestionId !== undefined) {
+      specificFields.managementId = dataValues.gestionId;
     }
-    if (model.tipoInscripcion !== undefined) {
-      specificFields.enrollmentType = model.tipoInscripcion;
+    if ('tipoInscripcion' in dataValues && dataValues.tipoInscripcion !== undefined) {
+      specificFields.enrollmentType = dataValues.tipoInscripcion;
     }
-    if (model.fechaInscripcion !== undefined) {
-      specificFields.enrollmentDate = model.fechaInscripcion;
+    if ('fechaInscripcion' in dataValues && dataValues.fechaInscripcion !== undefined) {
+      specificFields.enrollmentDate = dataValues.fechaInscripcion;
     }
-    if (model.observaciones !== undefined) {
-      specificFields.observations = model.observaciones;
+    if ('observaciones' in dataValues && dataValues.observaciones !== undefined) {
+      specificFields.observations = dataValues.observaciones;
     }
 
     // Combina campos base (id, active, timestamps, audit) con campos específicos
@@ -60,6 +66,11 @@ export class EnrollmentMapper {
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para creación)
    * 
+   * Flujo: Domain Entity → ORM Model → Base de Datos (INSERT)
+   * 
+   * NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
+   * BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
+   * 
    * @param {Enrollment|Object} entity - Entidad Enrollment o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
@@ -67,8 +78,7 @@ export class EnrollmentMapper {
     // Acepta tanto entidad Enrollment como objeto plano
     const data = entity instanceof Enrollment ? entity.toPlainObject() : entity;
 
-    // NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
-    // BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
     return {
       estudianteDatosAcademicosId: data.studentAcademicDataId || null,
       gestionId: data.managementId || null,
@@ -80,8 +90,10 @@ export class EnrollmentMapper {
 
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para actualización)
-   * Solo incluye los campos que están definidos (no undefined)
+   * Solo incluye los campos que están definidos (que existen en la entidad)
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de Enrollment
+   * 
+   * Flujo: Domain Entity → ORM Model → Base de Datos (UPDATE)
    * 
    * @param {Enrollment|Object} entity - Entidad Enrollment o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
@@ -92,19 +104,21 @@ export class EnrollmentMapper {
     const updateData = {};
 
     // Campos específicos de Enrollment
-    if (data.studentAcademicDataId !== undefined) {
+    // Solo incluir campos que existen en la entidad (usando operador 'in')
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
+    if ('studentAcademicDataId' in data) {
       updateData.estudianteDatosAcademicosId = data.studentAcademicDataId || null;
     }
-    if (data.managementId !== undefined) {
+    if ('managementId' in data) {
       updateData.gestionId = data.managementId || null;
     }
-    if (data.enrollmentType !== undefined) {
+    if ('enrollmentType' in data) {
       updateData.tipoInscripcion = data.enrollmentType;
     }
-    if (data.enrollmentDate !== undefined) {
+    if ('enrollmentDate' in data) {
       updateData.fechaInscripcion = data.enrollmentDate || null;
     }
-    if (data.observations !== undefined) {
+    if ('observations' in data) {
       updateData.observaciones = data.observations || null;
     }
 

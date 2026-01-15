@@ -24,6 +24,9 @@ export class CourseMapper {
   /**
    * Convierte un modelo Sequelize a entidad de dominio
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de Course
+   * Solo incluye campos que existen en el modelo (útil cuando se usan attributes limitados)
+   * 
+   * Flujo: Base de Datos → ORM Model → Domain Entity
    * 
    * @param {Object|null} model - Modelo Sequelize de Curso
    * @returns {Course|null} Entidad de dominio Course
@@ -32,14 +35,30 @@ export class CourseMapper {
     if (!model) return null;
 
     // Campos específicos de Course (campos del dominio)
-    const specificFields = {
-      code: model.codigo,
-      parallelId: model.paraleloId,
-      planSubjectId: model.asignaturaPlanId,
-      maxCapacity: model.cupoMaximo,
-      minCapacity: model.cupoMinimo,
-      colorHex: model.colorHex,
-    };
+    // Acceder a dataValues para obtener solo los campos solicitados
+    // Cuando se usan attributes limitados, Sequelize almacena los campos en dataValues
+    const dataValues = model.dataValues || model;
+    const specificFields = {};
+    
+    // Mapeo: BD (snake_case español) → Dominio (camelCase inglés)
+    if ('codigo' in dataValues && dataValues.codigo !== undefined) {
+      specificFields.code = dataValues.codigo;
+    }
+    if ('paraleloId' in dataValues && dataValues.paraleloId !== undefined) {
+      specificFields.parallelId = dataValues.paraleloId;
+    }
+    if ('asignaturaPlanId' in dataValues && dataValues.asignaturaPlanId !== undefined) {
+      specificFields.planSubjectId = dataValues.asignaturaPlanId;
+    }
+    if ('cupoMaximo' in dataValues && dataValues.cupoMaximo !== undefined) {
+      specificFields.maxCapacity = dataValues.cupoMaximo;
+    }
+    if ('cupoMinimo' in dataValues && dataValues.cupoMinimo !== undefined) {
+      specificFields.minCapacity = dataValues.cupoMinimo;
+    }
+    if ('colorHex' in dataValues && dataValues.colorHex !== undefined) {
+      specificFields.colorHex = dataValues.colorHex;
+    }
 
     // Combina campos base (id, active, timestamps, audit) con campos específicos
     const entityData = BaseMapper.combineBaseAndSpecificFields(model, specificFields);
@@ -50,6 +69,11 @@ export class CourseMapper {
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para creación)
    * 
+   * Flujo: Domain Entity → ORM Model → Base de Datos (INSERT)
+   * 
+   * NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
+   * BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
+   * 
    * @param {Course|Object} entity - Entidad Course o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
@@ -57,8 +81,7 @@ export class CourseMapper {
     // Acepta tanto entidad Course como objeto plano
     const data = entity instanceof Course ? entity.toPlainObject() : entity;
 
-    // NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
-    // BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
     return {
       codigo: data.code,
       paraleloId: data.parallelId || null,
@@ -70,8 +93,10 @@ export class CourseMapper {
 
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para actualización)
-   * Solo incluye los campos que están definidos (no undefined)
+   * Solo incluye los campos que están definidos (que existen en la entidad)
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de Course
+   * 
+   * Flujo: Domain Entity → ORM Model → Base de Datos (UPDATE)
    * 
    * @param {Course|Object} entity - Entidad Course o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
@@ -82,22 +107,24 @@ export class CourseMapper {
     const updateData = {};
 
     // Campos específicos de Course
-    if (data.code !== undefined) {
+    // Solo incluir campos que existen en la entidad (usando operador 'in')
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
+    if ('code' in data) {
       updateData.codigo = data.code;
     }
-    if (data.parallelId !== undefined) {
+    if ('parallelId' in data) {
       updateData.paraleloId = data.parallelId || null;
     }
-    if (data.planSubjectId !== undefined) {
+    if ('planSubjectId' in data) {
       updateData.asignaturaPlanId = data.planSubjectId || null;
     }
-    if (data.maxCapacity !== undefined) {
+    if ('maxCapacity' in data) {
       updateData.cupoMaximo = data.maxCapacity;
     }
-    if (data.minCapacity !== undefined) {
+    if ('minCapacity' in data) {
       updateData.cupoMinimo = data.minCapacity;
     }
-    if (data.colorHex !== undefined) {
+    if ('colorHex' in data) {
       updateData.colorHex = data.colorHex || null;
     }
 

@@ -24,6 +24,9 @@ export class SystemConfigurationMapper {
   /**
    * Convierte un modelo Sequelize a entidad de dominio
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de SystemConfiguration
+   * Solo incluye campos que existen en el modelo (útil cuando se usan attributes limitados)
+   * 
+   * Flujo: Base de Datos → ORM Model → Domain Entity
    * 
    * @param {Object|null} model - Modelo Sequelize de ConfiguracionSistema
    * @returns {SystemConfiguration|null} Entidad de dominio SystemConfiguration
@@ -32,12 +35,24 @@ export class SystemConfigurationMapper {
     if (!model) return null;
 
     // Campos específicos de SystemConfiguration (campos del dominio)
-    const specificFields = {
-      key: model.clave,
-      value: model.valor,
-      type: model.tipo,
-      description: model.descripcion,
-    };
+    // Acceder a dataValues para obtener solo los campos solicitados
+    // Cuando se usan attributes limitados, Sequelize almacena los campos en dataValues
+    const dataValues = model.dataValues || model;
+    const specificFields = {};
+    
+    // Mapeo: BD (snake_case español) → Dominio (camelCase inglés)
+    if ('clave' in dataValues && dataValues.clave !== undefined) {
+      specificFields.key = dataValues.clave;
+    }
+    if ('valor' in dataValues && dataValues.valor !== undefined) {
+      specificFields.value = dataValues.valor;
+    }
+    if ('tipo' in dataValues && dataValues.tipo !== undefined) {
+      specificFields.type = dataValues.tipo;
+    }
+    if ('descripcion' in dataValues && dataValues.descripcion !== undefined) {
+      specificFields.description = dataValues.descripcion;
+    }
 
     // Combina campos base (id, active, timestamps, audit) con campos específicos
     const entityData = BaseMapper.combineBaseAndSpecificFields(model, specificFields);
@@ -48,6 +63,11 @@ export class SystemConfigurationMapper {
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para creación)
    * 
+   * Flujo: Domain Entity → ORM Model → Base de Datos (INSERT)
+   * 
+   * NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
+   * BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
+   * 
    * @param {SystemConfiguration|Object} entity - Entidad SystemConfiguration o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
@@ -55,8 +75,7 @@ export class SystemConfigurationMapper {
     // Acepta tanto entidad SystemConfiguration como objeto plano
     const data = entity instanceof SystemConfiguration ? entity.toPlainObject() : entity;
 
-    // NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
-    // BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
     return {
       clave: data.key,
       valor: data.value,
@@ -67,8 +86,10 @@ export class SystemConfigurationMapper {
 
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para actualización)
-   * Solo incluye los campos que están definidos (no undefined)
+   * Solo incluye los campos que están definidos (que existen en la entidad)
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de SystemConfiguration
+   * 
+   * Flujo: Domain Entity → ORM Model → Base de Datos (UPDATE)
    * 
    * @param {SystemConfiguration|Object} entity - Entidad SystemConfiguration o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
@@ -79,14 +100,16 @@ export class SystemConfigurationMapper {
     const updateData = {};
 
     // Campos específicos de SystemConfiguration
+    // Solo incluir campos que existen en la entidad (usando operador 'in')
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
     // NOTA: 'clave' (key) normalmente no se actualiza, es único e inmutable
-    if (data.value !== undefined) {
+    if ('value' in data) {
       updateData.valor = data.value;
     }
-    if (data.type !== undefined) {
+    if ('type' in data) {
       updateData.tipo = data.type;
     }
-    if (data.description !== undefined) {
+    if ('description' in data) {
       updateData.descripcion = data.description || null;
     }
 

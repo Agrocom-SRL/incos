@@ -24,6 +24,9 @@ export class RoleMapper {
   /**
    * Convierte un modelo Sequelize a entidad de dominio
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de Role
+   * Solo incluye campos que existen en el modelo (útil cuando se usan attributes limitados)
+   * 
+   * Flujo: Base de Datos → ORM Model → Domain Entity
    * 
    * @param {Object|null} model - Modelo Sequelize de Rol
    * @returns {Role|null} Entidad de dominio Role
@@ -32,11 +35,21 @@ export class RoleMapper {
     if (!model) return null;
 
     // Campos específicos de Role (campos del dominio)
-    const specificFields = {
-      code: model.codigo,
-      name: model.nombre,
-      accessLevel: model.nivelAcceso,
-    };
+    // Acceder a dataValues para obtener solo los campos solicitados
+    // Cuando se usan attributes limitados, Sequelize almacena los campos en dataValues
+    const dataValues = model.dataValues || model;
+    const specificFields = {};
+    
+    // Mapeo: BD (snake_case español) → Dominio (camelCase inglés)
+    if ('codigo' in dataValues && dataValues.codigo !== undefined) {
+      specificFields.code = dataValues.codigo;
+    }
+    if ('nombre' in dataValues && dataValues.nombre !== undefined) {
+      specificFields.name = dataValues.nombre;
+    }
+    if ('nivelAcceso' in dataValues && dataValues.nivelAcceso !== undefined) {
+      specificFields.accessLevel = dataValues.nivelAcceso;
+    }
 
     // Combina campos base (id, active, timestamps, audit) con campos específicos
     const entityData = BaseMapper.combineBaseAndSpecificFields(model, specificFields);
@@ -47,6 +60,11 @@ export class RoleMapper {
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para creación)
    * 
+   * Flujo: Domain Entity → ORM Model → Base de Datos (INSERT)
+   * 
+   * NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
+   * BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
+   * 
    * @param {Role|Object} entity - Entidad Role o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
@@ -54,8 +72,7 @@ export class RoleMapper {
     // Acepta tanto entidad Role como objeto plano
     const data = entity instanceof Role ? entity.toPlainObject() : entity;
 
-    // NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
-    // BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
     return {
       codigo: data.code,
       nombre: data.name,
@@ -65,8 +82,10 @@ export class RoleMapper {
 
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para actualización)
-   * Solo incluye los campos que están definidos (no undefined)
+   * Solo incluye los campos que están definidos (que existen en la entidad)
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de Role
+   * 
+   * Flujo: Domain Entity → ORM Model → Base de Datos (UPDATE)
    * 
    * @param {Role|Object} entity - Entidad Role o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
@@ -77,13 +96,15 @@ export class RoleMapper {
     const updateData = {};
 
     // Campos específicos de Role
-    if (data.code !== undefined) {
+    // Solo incluir campos que existen en la entidad (usando operador 'in')
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
+    if ('code' in data) {
       updateData.codigo = data.code;
     }
-    if (data.name !== undefined) {
+    if ('name' in data) {
       updateData.nombre = data.name;
     }
-    if (data.accessLevel !== undefined) {
+    if ('accessLevel' in data) {
       updateData.nivelAcceso = data.accessLevel;
     }
 

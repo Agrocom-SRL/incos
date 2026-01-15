@@ -24,6 +24,9 @@ export class AcademicPeriodMapper {
   /**
    * Convierte un modelo Sequelize a entidad de dominio
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de AcademicPeriod
+   * Solo incluye campos que existen en el modelo (útil cuando se usan attributes limitados)
+   * 
+   * Flujo: Base de Datos → ORM Model → Domain Entity
    * 
    * @param {Object|null} model - Modelo Sequelize de PeriodoAcademico
    * @returns {AcademicPeriod|null} Entidad de dominio AcademicPeriod
@@ -32,16 +35,36 @@ export class AcademicPeriodMapper {
     if (!model) return null;
 
     // Campos específicos de AcademicPeriod (campos del dominio)
-    const specificFields = {
-      managementId: model.gestionId ?? null,
-      code: model.codigo ?? null,
-      name: model.nombre,
-      division: model.division,
-      orderNumber: model.numeroOrden ?? null,
-      startDate: model.fechaInicio,
-      endDate: model.fechaFin,
-      colorHex: model.colorHex ?? null,
-    };
+    // Acceder a dataValues para obtener solo los campos solicitados
+    // Cuando se usan attributes limitados, Sequelize almacena los campos en dataValues
+    const dataValues = model.dataValues || model;
+    const specificFields = {};
+    
+    // Mapeo: BD (snake_case español) → Dominio (camelCase inglés)
+    if ('gestionId' in dataValues && dataValues.gestionId !== undefined) {
+      specificFields.managementId = dataValues.gestionId ?? null;
+    }
+    if ('codigo' in dataValues && dataValues.codigo !== undefined) {
+      specificFields.code = dataValues.codigo ?? null;
+    }
+    if ('nombre' in dataValues && dataValues.nombre !== undefined) {
+      specificFields.name = dataValues.nombre;
+    }
+    if ('division' in dataValues && dataValues.division !== undefined) {
+      specificFields.division = dataValues.division;
+    }
+    if ('numeroOrden' in dataValues && dataValues.numeroOrden !== undefined) {
+      specificFields.orderNumber = dataValues.numeroOrden ?? null;
+    }
+    if ('fechaInicio' in dataValues && dataValues.fechaInicio !== undefined) {
+      specificFields.startDate = dataValues.fechaInicio;
+    }
+    if ('fechaFin' in dataValues && dataValues.fechaFin !== undefined) {
+      specificFields.endDate = dataValues.fechaFin;
+    }
+    if ('colorHex' in dataValues && dataValues.colorHex !== undefined) {
+      specificFields.colorHex = dataValues.colorHex ?? null;
+    }
 
     // Combina campos base (id, active, timestamps, audit) con campos específicos
     const entityData = BaseMapper.combineBaseAndSpecificFields(model, specificFields);
@@ -52,6 +75,11 @@ export class AcademicPeriodMapper {
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para creación)
    * 
+   * Flujo: Domain Entity → ORM Model → Base de Datos (INSERT)
+   * 
+   * NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
+   * BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
+   * 
    * @param {AcademicPeriod|Object} entity - Entidad AcademicPeriod o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
@@ -59,8 +87,7 @@ export class AcademicPeriodMapper {
     // Acepta tanto entidad AcademicPeriod como objeto plano
     const data = entity instanceof AcademicPeriod ? entity.toPlainObject() : entity;
 
-    // NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
-    // BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
     return {
       gestionId: data.managementId ?? null,
       codigo: data.code ?? null,
@@ -75,8 +102,10 @@ export class AcademicPeriodMapper {
 
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para actualización)
-   * Solo incluye los campos que están definidos (no undefined)
+   * Solo incluye los campos que están definidos (que existen en la entidad)
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de AcademicPeriod
+   * 
+   * Flujo: Domain Entity → ORM Model → Base de Datos (UPDATE)
    * 
    * @param {AcademicPeriod|Object} entity - Entidad AcademicPeriod o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
@@ -87,28 +116,30 @@ export class AcademicPeriodMapper {
     const updateData = {};
 
     // Campos específicos de AcademicPeriod
-    if (data.managementId !== undefined) {
+    // Solo incluir campos que existen en la entidad (usando operador 'in')
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
+    if ('managementId' in data) {
       updateData.gestionId = data.managementId ?? null;
     }
-    if (data.code !== undefined) {
+    if ('code' in data) {
       updateData.codigo = data.code ?? null;
     }
-    if (data.name !== undefined) {
+    if ('name' in data) {
       updateData.nombre = data.name;
     }
-    if (data.division !== undefined) {
+    if ('division' in data) {
       updateData.division = data.division;
     }
-    if (data.orderNumber !== undefined) {
+    if ('orderNumber' in data) {
       updateData.numeroOrden = data.orderNumber ?? null;
     }
-    if (data.startDate !== undefined) {
+    if ('startDate' in data) {
       updateData.fechaInicio = data.startDate;
     }
-    if (data.endDate !== undefined) {
+    if ('endDate' in data) {
       updateData.fechaFin = data.endDate;
     }
-    if (data.colorHex !== undefined) {
+    if ('colorHex' in data) {
       updateData.colorHex = data.colorHex ?? null;
     }
 

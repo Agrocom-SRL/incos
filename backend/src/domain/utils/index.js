@@ -5,4 +5,5 @@
  */
 
 export * from './mapUtils.js';
+export * from './studentOriginUtils.js';
 

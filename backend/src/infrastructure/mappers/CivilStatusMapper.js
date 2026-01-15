@@ -24,6 +24,9 @@ export class CivilStatusMapper {
   /**
    * Convierte un modelo Sequelize a entidad de dominio
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de CivilStatus
+   * Solo incluye campos que existen en el modelo (útil cuando se usan attributes limitados)
+   * 
+   * Flujo: Base de Datos → ORM Model → Domain Entity
    * 
    * @param {Object|null} model - Modelo Sequelize de EstadoCivil
    * @returns {CivilStatus|null} Entidad de dominio CivilStatus
@@ -32,10 +35,18 @@ export class CivilStatusMapper {
     if (!model) return null;
 
     // Campos específicos de CivilStatus (campos del dominio)
-    const specificFields = {
-      name: model.nombre,
-      abbreviation: model.abreviatura,
-    };
+    // Acceder a dataValues para obtener solo los campos solicitados
+    // Cuando se usan attributes limitados, Sequelize almacena los campos en dataValues
+    const dataValues = model.dataValues || model;
+    const specificFields = {};
+    
+    // Mapeo: BD (snake_case español) → Dominio (camelCase inglés)
+    if ('nombre' in dataValues && dataValues.nombre !== undefined) {
+      specificFields.name = dataValues.nombre;
+    }
+    if ('abreviatura' in dataValues && dataValues.abreviatura !== undefined) {
+      specificFields.abbreviation = dataValues.abreviatura;
+    }
 
     // Combina campos base (id, active, timestamps, audit) con campos específicos
     const entityData = BaseMapper.combineBaseAndSpecificFields(model, specificFields);
@@ -46,6 +57,11 @@ export class CivilStatusMapper {
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para creación)
    * 
+   * Flujo: Domain Entity → ORM Model → Base de Datos (INSERT)
+   * 
+   * NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
+   * BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
+   * 
    * @param {CivilStatus|Object} entity - Entidad CivilStatus o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
@@ -53,8 +69,7 @@ export class CivilStatusMapper {
     // Acepta tanto entidad CivilStatus como objeto plano
     const data = entity instanceof CivilStatus ? entity.toPlainObject() : entity;
 
-    // NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
-    // BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
     return {
       nombre: data.name,
       abreviatura: data.abbreviation ? data.abbreviation.toUpperCase() : null,
@@ -63,8 +78,10 @@ export class CivilStatusMapper {
 
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para actualización)
-   * Solo incluye los campos que están definidos (no undefined)
+   * Solo incluye los campos que están definidos (que existen en la entidad)
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de CivilStatus
+   * 
+   * Flujo: Domain Entity → ORM Model → Base de Datos (UPDATE)
    * 
    * @param {CivilStatus|Object} entity - Entidad CivilStatus o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
@@ -75,10 +92,12 @@ export class CivilStatusMapper {
     const updateData = {};
 
     // Campos específicos de CivilStatus
-    if (data.name !== undefined) {
+    // Solo incluir campos que existen en la entidad (usando operador 'in')
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
+    if ('name' in data) {
       updateData.nombre = data.name;
     }
-    if (data.abbreviation !== undefined) {
+    if ('abbreviation' in data) {
       updateData.abreviatura = data.abbreviation ? data.abbreviation.toUpperCase() : null;
     }
 

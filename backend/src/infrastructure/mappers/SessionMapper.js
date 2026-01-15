@@ -24,6 +24,9 @@ export class SessionMapper {
   /**
    * Convierte un modelo Sequelize a entidad de dominio
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de Session
+   * Solo incluye campos que existen en el modelo (útil cuando se usan attributes limitados)
+   * 
+   * Flujo: Base de Datos → ORM Model → Domain Entity
    * 
    * @param {Object|null} model - Modelo Sequelize de Sesion
    * @returns {Session|null} Entidad de dominio Session
@@ -32,15 +35,33 @@ export class SessionMapper {
     if (!model) return null;
 
     // Campos específicos de Session (campos del dominio)
-    const specificFields = {
-      userId: model.usuarioId,
-      sessionToken: model.tokenSesion,
-      recoveryToken: model.tokenRecuperacion,
-      expirationDate: model.fechaExpiracion,
-      lastLogin: model.ultimoLogin,
-      lastLoginIp: model.ipUltimoLogin,
-      device: model.dispositivo,
-    };
+    // Acceder a dataValues para obtener solo los campos solicitados
+    // Cuando se usan attributes limitados, Sequelize almacena los campos en dataValues
+    const dataValues = model.dataValues || model;
+    const specificFields = {};
+    
+    // Mapeo: BD (snake_case español) → Dominio (camelCase inglés)
+    if ('usuarioId' in dataValues && dataValues.usuarioId !== undefined) {
+      specificFields.userId = dataValues.usuarioId;
+    }
+    if ('tokenSesion' in dataValues && dataValues.tokenSesion !== undefined) {
+      specificFields.sessionToken = dataValues.tokenSesion;
+    }
+    if ('tokenRecuperacion' in dataValues && dataValues.tokenRecuperacion !== undefined) {
+      specificFields.recoveryToken = dataValues.tokenRecuperacion;
+    }
+    if ('fechaExpiracion' in dataValues && dataValues.fechaExpiracion !== undefined) {
+      specificFields.expirationDate = dataValues.fechaExpiracion;
+    }
+    if ('ultimoLogin' in dataValues && dataValues.ultimoLogin !== undefined) {
+      specificFields.lastLogin = dataValues.ultimoLogin;
+    }
+    if ('ipUltimoLogin' in dataValues && dataValues.ipUltimoLogin !== undefined) {
+      specificFields.lastLoginIp = dataValues.ipUltimoLogin;
+    }
+    if ('dispositivo' in dataValues && dataValues.dispositivo !== undefined) {
+      specificFields.device = dataValues.dispositivo;
+    }
 
     // Combina campos base (id, active, timestamps, audit) con campos específicos
     const entityData = BaseMapper.combineBaseAndSpecificFields(model, specificFields);
@@ -51,6 +72,11 @@ export class SessionMapper {
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para creación)
    * 
+   * Flujo: Domain Entity → ORM Model → Base de Datos (INSERT)
+   * 
+   * NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
+   * BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
+   * 
    * @param {Session|Object} entity - Entidad Session o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
@@ -58,8 +84,7 @@ export class SessionMapper {
     // Acepta tanto entidad Session como objeto plano
     const data = entity instanceof Session ? entity.toPlainObject() : entity;
 
-    // NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
-    // BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
     return {
       usuarioId: data.userId || null,
       tokenSesion: data.sessionToken || null,
@@ -73,8 +98,10 @@ export class SessionMapper {
 
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para actualización)
-   * Solo incluye los campos que están definidos (no undefined)
+   * Solo incluye los campos que están definidos (que existen en la entidad)
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de Session
+   * 
+   * Flujo: Domain Entity → ORM Model → Base de Datos (UPDATE)
    * 
    * @param {Session|Object} entity - Entidad Session o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
@@ -85,25 +112,27 @@ export class SessionMapper {
     const updateData = {};
 
     // Campos específicos de Session
-    if (data.userId !== undefined) {
+    // Solo incluir campos que existen en la entidad (usando operador 'in')
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
+    if ('userId' in data) {
       updateData.usuarioId = data.userId || null;
     }
-    if (data.sessionToken !== undefined) {
+    if ('sessionToken' in data) {
       updateData.tokenSesion = data.sessionToken || null;
     }
-    if (data.recoveryToken !== undefined) {
+    if ('recoveryToken' in data) {
       updateData.tokenRecuperacion = data.recoveryToken || null;
     }
-    if (data.expirationDate !== undefined) {
+    if ('expirationDate' in data) {
       updateData.fechaExpiracion = data.expirationDate || null;
     }
-    if (data.lastLogin !== undefined) {
+    if ('lastLogin' in data) {
       updateData.ultimoLogin = data.lastLogin || null;
     }
-    if (data.lastLoginIp !== undefined) {
+    if ('lastLoginIp' in data) {
       updateData.ipUltimoLogin = data.lastLoginIp || null;
     }
-    if (data.device !== undefined) {
+    if ('device' in data) {
       updateData.dispositivo = data.device || null;
     }
 

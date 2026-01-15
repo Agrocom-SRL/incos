@@ -24,6 +24,9 @@ export class CourseShiftMapper {
   /**
    * Convierte un modelo Sequelize a entidad de dominio
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de CourseShift
+   * Solo incluye campos que existen en el modelo (útil cuando se usan attributes limitados)
+   * 
+   * Flujo: Base de Datos → ORM Model → Domain Entity
    * 
    * @param {Object|null} model - Modelo Sequelize de TurnoCurso
    * @returns {CourseShift|null} Entidad de dominio CourseShift
@@ -32,14 +35,30 @@ export class CourseShiftMapper {
     if (!model) return null;
 
     // Campos específicos de CourseShift (campos del dominio)
-    const specificFields = {
-      assignmentId: model.asignacionId,
-      shiftId: model.turnoId,
-      weekDay: model.diaSemana,
-      startTime: model.horaInicio,
-      endTime: model.horaFin,
-      classroom: model.aula,
-    };
+    // Acceder a dataValues para obtener solo los campos solicitados
+    // Cuando se usan attributes limitados, Sequelize almacena los campos en dataValues
+    const dataValues = model.dataValues || model;
+    const specificFields = {};
+    
+    // Mapeo: BD (snake_case español) → Dominio (camelCase inglés)
+    if ('asignacionId' in dataValues && dataValues.asignacionId !== undefined) {
+      specificFields.assignmentId = dataValues.asignacionId;
+    }
+    if ('turnoId' in dataValues && dataValues.turnoId !== undefined) {
+      specificFields.shiftId = dataValues.turnoId;
+    }
+    if ('diaSemana' in dataValues && dataValues.diaSemana !== undefined) {
+      specificFields.weekDay = dataValues.diaSemana;
+    }
+    if ('horaInicio' in dataValues && dataValues.horaInicio !== undefined) {
+      specificFields.startTime = dataValues.horaInicio;
+    }
+    if ('horaFin' in dataValues && dataValues.horaFin !== undefined) {
+      specificFields.endTime = dataValues.horaFin;
+    }
+    if ('aula' in dataValues && dataValues.aula !== undefined) {
+      specificFields.classroom = dataValues.aula;
+    }
 
     // Combina campos base (id, active, timestamps, audit) con campos específicos
     const entityData = BaseMapper.combineBaseAndSpecificFields(model, specificFields);
@@ -50,6 +69,11 @@ export class CourseShiftMapper {
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para creación)
    * 
+   * Flujo: Domain Entity → ORM Model → Base de Datos (INSERT)
+   * 
+   * NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
+   * BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
+   * 
    * @param {CourseShift|Object} entity - Entidad CourseShift o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
@@ -57,8 +81,7 @@ export class CourseShiftMapper {
     // Acepta tanto entidad CourseShift como objeto plano
     const data = entity instanceof CourseShift ? entity.toPlainObject() : entity;
 
-    // NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
-    // BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
     return {
       asignacionId: data.assignmentId || null,
       turnoId: data.shiftId || null,
@@ -71,8 +94,10 @@ export class CourseShiftMapper {
 
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para actualización)
-   * Solo incluye los campos que están definidos (no undefined)
+   * Solo incluye los campos que están definidos (que existen en la entidad)
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de CourseShift
+   * 
+   * Flujo: Domain Entity → ORM Model → Base de Datos (UPDATE)
    * 
    * @param {CourseShift|Object} entity - Entidad CourseShift o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
@@ -83,22 +108,24 @@ export class CourseShiftMapper {
     const updateData = {};
 
     // Campos específicos de CourseShift
-    if (data.assignmentId !== undefined) {
+    // Solo incluir campos que existen en la entidad (usando operador 'in')
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
+    if ('assignmentId' in data) {
       updateData.asignacionId = data.assignmentId || null;
     }
-    if (data.shiftId !== undefined) {
+    if ('shiftId' in data) {
       updateData.turnoId = data.shiftId || null;
     }
-    if (data.weekDay !== undefined) {
+    if ('weekDay' in data) {
       updateData.diaSemana = data.weekDay;
     }
-    if (data.startTime !== undefined) {
+    if ('startTime' in data) {
       updateData.horaInicio = data.startTime;
     }
-    if (data.endTime !== undefined) {
+    if ('endTime' in data) {
       updateData.horaFin = data.endTime;
     }
-    if (data.classroom !== undefined) {
+    if ('classroom' in data) {
       updateData.aula = data.classroom;
     }
 

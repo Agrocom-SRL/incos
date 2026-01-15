@@ -24,6 +24,9 @@ export class StudyPlanMapper {
   /**
    * Convierte un modelo Sequelize a entidad de dominio
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de StudyPlan
+   * Solo incluye campos que existen en el modelo (útil cuando se usan attributes limitados)
+   * 
+   * Flujo: Base de Datos → ORM Model → Domain Entity
    * 
    * @param {Object|null} model - Modelo Sequelize de PlanEstudios
    * @returns {StudyPlan|null} Entidad de dominio StudyPlan
@@ -32,19 +35,45 @@ export class StudyPlanMapper {
     if (!model) return null;
 
     // Campos específicos de StudyPlan (campos del dominio)
-    const specificFields = {
-      careerId: model.carreraId ?? null,
-      planName: model.nombrePlan,
-      ministerialResolution: model.resolucionMinisterial ?? null,
-      documentPath: model.documentoRuta ?? null,
-      durationYears: model.duracionAnios,
-      totalHours: model.cargaHorariaTotal,
-      hoursPerWeek: model.horasSemana,
-      hoursPerMonth: model.horasMes,
-      hoursPerYear: model.horasAnio,
-      observations: model.observaciones ?? null,
-      isActive: Boolean(model.vigente),
-    };
+    // Acceder a dataValues para obtener solo los campos solicitados
+    // Cuando se usan attributes limitados, Sequelize almacena los campos en dataValues
+    const dataValues = model.dataValues || model;
+    const specificFields = {};
+    
+    // Mapeo: BD (snake_case español) → Dominio (camelCase inglés)
+    if ('carreraId' in dataValues && dataValues.carreraId !== undefined) {
+      specificFields.careerId = dataValues.carreraId ?? null;
+    }
+    if ('nombrePlan' in dataValues && dataValues.nombrePlan !== undefined) {
+      specificFields.planName = dataValues.nombrePlan;
+    }
+    if ('resolucionMinisterial' in dataValues && dataValues.resolucionMinisterial !== undefined) {
+      specificFields.ministerialResolution = dataValues.resolucionMinisterial ?? null;
+    }
+    if ('documentoRuta' in dataValues && dataValues.documentoRuta !== undefined) {
+      specificFields.documentPath = dataValues.documentoRuta ?? null;
+    }
+    if ('duracionAnios' in dataValues && dataValues.duracionAnios !== undefined) {
+      specificFields.durationYears = dataValues.duracionAnios;
+    }
+    if ('cargaHorariaTotal' in dataValues && dataValues.cargaHorariaTotal !== undefined) {
+      specificFields.totalHours = dataValues.cargaHorariaTotal;
+    }
+    if ('horasSemana' in dataValues && dataValues.horasSemana !== undefined) {
+      specificFields.hoursPerWeek = dataValues.horasSemana;
+    }
+    if ('horasMes' in dataValues && dataValues.horasMes !== undefined) {
+      specificFields.hoursPerMonth = dataValues.horasMes;
+    }
+    if ('horasAnio' in dataValues && dataValues.horasAnio !== undefined) {
+      specificFields.hoursPerYear = dataValues.horasAnio;
+    }
+    if ('observaciones' in dataValues && dataValues.observaciones !== undefined) {
+      specificFields.observations = dataValues.observaciones ?? null;
+    }
+    if ('vigente' in dataValues && dataValues.vigente !== undefined) {
+      specificFields.isActive = Boolean(dataValues.vigente);
+    }
 
     // Combina campos base (id, active, timestamps, audit) con campos específicos
     const entityData = BaseMapper.combineBaseAndSpecificFields(model, specificFields);
@@ -55,6 +84,11 @@ export class StudyPlanMapper {
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para creación)
    * 
+   * Flujo: Domain Entity → ORM Model → Base de Datos (INSERT)
+   * 
+   * NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
+   * BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
+   * 
    * @param {StudyPlan|Object} entity - Entidad StudyPlan o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
@@ -62,8 +96,7 @@ export class StudyPlanMapper {
     // Acepta tanto entidad StudyPlan como objeto plano
     const data = entity instanceof StudyPlan ? entity.toPlainObject() : entity;
 
-    // NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
-    // BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
     return {
       carreraId: data.careerId ?? null,
       nombrePlan: data.planName,
@@ -81,8 +114,10 @@ export class StudyPlanMapper {
 
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para actualización)
-   * Solo incluye los campos que están definidos (no undefined)
+   * Solo incluye los campos que están definidos (que existen en la entidad)
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de StudyPlan
+   * 
+   * Flujo: Domain Entity → ORM Model → Base de Datos (UPDATE)
    * 
    * @param {StudyPlan|Object} entity - Entidad StudyPlan o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
@@ -93,37 +128,39 @@ export class StudyPlanMapper {
     const updateData = {};
 
     // Campos específicos de StudyPlan
-    if (data.careerId !== undefined) {
+    // Solo incluir campos que existen en la entidad (usando operador 'in')
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
+    if ('careerId' in data) {
       updateData.carreraId = data.careerId ?? null;
     }
-    if (data.planName !== undefined) {
+    if ('planName' in data) {
       updateData.nombrePlan = data.planName;
     }
-    if (data.ministerialResolution !== undefined) {
+    if ('ministerialResolution' in data) {
       updateData.resolucionMinisterial = data.ministerialResolution ?? null;
     }
-    if (data.documentPath !== undefined) {
+    if ('documentPath' in data) {
       updateData.documentoRuta = data.documentPath ?? null;
     }
-    if (data.durationYears !== undefined) {
+    if ('durationYears' in data) {
       updateData.duracionAnios = data.durationYears;
     }
-    if (data.totalHours !== undefined) {
+    if ('totalHours' in data) {
       updateData.cargaHorariaTotal = data.totalHours;
     }
-    if (data.hoursPerWeek !== undefined) {
+    if ('hoursPerWeek' in data) {
       updateData.horasSemana = data.hoursPerWeek;
     }
-    if (data.hoursPerMonth !== undefined) {
+    if ('hoursPerMonth' in data) {
       updateData.horasMes = data.hoursPerMonth;
     }
-    if (data.hoursPerYear !== undefined) {
+    if ('hoursPerYear' in data) {
       updateData.horasAnio = data.hoursPerYear;
     }
-    if (data.observations !== undefined) {
+    if ('observations' in data) {
       updateData.observaciones = data.observations ?? null;
     }
-    if (data.isActive !== undefined) {
+    if ('isActive' in data) {
       updateData.vigente = data.isActive;
     }
 

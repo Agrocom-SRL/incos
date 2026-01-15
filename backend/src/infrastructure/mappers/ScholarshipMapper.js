@@ -25,6 +25,9 @@ export class ScholarshipMapper {
   /**
    * Convierte un modelo Sequelize a entidad de dominio
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de Scholarship
+   * Solo incluye campos que existen en el modelo (útil cuando se usan attributes limitados)
+   * 
+   * Flujo: Base de Datos → ORM Model → Domain Entity
    * 
    * @param {Object|null} model - Modelo Sequelize de BecaDescuento
    * @returns {Scholarship|null} Entidad de dominio Scholarship
@@ -33,17 +36,39 @@ export class ScholarshipMapper {
     if (!model) return null;
 
     // Campos específicos de Scholarship (campos del dominio)
-    const specificFields = {
-      name: model.nombre,
-      code: model.codigo ?? null,
-      percentage: model.porcentaje !== null && model.porcentaje !== undefined ? parseFloat(model.porcentaje) : null,
-      description: model.descripcion ?? null,
-      requiresDocumentation: Boolean(model.requiereDocumentacion),
-      requiresRectorApproval: Boolean(model.requiereAprobacionRector),
-      isAutomatic: Boolean(model.esAutomatica),
-      automaticType: model.tipoAutomatica,
-      minimumAverage: model.promedioMinimo !== null && model.promedioMinimo !== undefined ? parseFloat(model.promedioMinimo) : null,
-    };
+    // Acceder a dataValues para obtener solo los campos solicitados
+    // Cuando se usan attributes limitados, Sequelize almacena los campos en dataValues
+    const dataValues = model.dataValues || model;
+    const specificFields = {};
+    
+    // Mapeo: BD (snake_case español) → Dominio (camelCase inglés)
+    if ('nombre' in dataValues && dataValues.nombre !== undefined) {
+      specificFields.name = dataValues.nombre;
+    }
+    if ('codigo' in dataValues && dataValues.codigo !== undefined) {
+      specificFields.code = dataValues.codigo ?? null;
+    }
+    if ('porcentaje' in dataValues && dataValues.porcentaje !== undefined) {
+      specificFields.percentage = dataValues.porcentaje !== null ? parseFloat(dataValues.porcentaje) : null;
+    }
+    if ('descripcion' in dataValues && dataValues.descripcion !== undefined) {
+      specificFields.description = dataValues.descripcion ?? null;
+    }
+    if ('requiereDocumentacion' in dataValues && dataValues.requiereDocumentacion !== undefined) {
+      specificFields.requiresDocumentation = Boolean(dataValues.requiereDocumentacion);
+    }
+    if ('requiereAprobacionRector' in dataValues && dataValues.requiereAprobacionRector !== undefined) {
+      specificFields.requiresRectorApproval = Boolean(dataValues.requiereAprobacionRector);
+    }
+    if ('esAutomatica' in dataValues && dataValues.esAutomatica !== undefined) {
+      specificFields.isAutomatic = Boolean(dataValues.esAutomatica);
+    }
+    if ('tipoAutomatica' in dataValues && dataValues.tipoAutomatica !== undefined) {
+      specificFields.automaticType = dataValues.tipoAutomatica;
+    }
+    if ('promedioMinimo' in dataValues && dataValues.promedioMinimo !== undefined) {
+      specificFields.minimumAverage = dataValues.promedioMinimo !== null ? parseFloat(dataValues.promedioMinimo) : null;
+    }
 
     // Combina campos base (id, active, timestamps, audit) con campos específicos
     const entityData = BaseMapper.combineBaseAndSpecificFields(model, specificFields);
@@ -54,6 +79,11 @@ export class ScholarshipMapper {
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para creación)
    * 
+   * Flujo: Domain Entity → ORM Model → Base de Datos (INSERT)
+   * 
+   * NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
+   * BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
+   * 
    * @param {Scholarship|Object} entity - Entidad Scholarship o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
@@ -61,8 +91,7 @@ export class ScholarshipMapper {
     // Acepta tanto entidad Scholarship como objeto plano
     const data = entity instanceof Scholarship ? entity.toPlainObject() : entity;
 
-    // NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
-    // BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
     return {
       nombre: data.name,
       codigo: data.code || null,
@@ -78,8 +107,10 @@ export class ScholarshipMapper {
 
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para actualización)
-   * Solo incluye los campos que están definidos (no undefined)
+   * Solo incluye los campos que están definidos (que existen en la entidad)
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de Scholarship
+   * 
+   * Flujo: Domain Entity → ORM Model → Base de Datos (UPDATE)
    * 
    * @param {Scholarship|Object} entity - Entidad Scholarship o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
@@ -90,31 +121,33 @@ export class ScholarshipMapper {
     const updateData = {};
 
     // Campos específicos de Scholarship
-    if (data.name !== undefined) {
+    // Solo incluir campos que existen en la entidad (usando operador 'in')
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
+    if ('name' in data) {
       updateData.nombre = data.name;
     }
-    if (data.code !== undefined) {
+    if ('code' in data) {
       updateData.codigo = data.code || null;
     }
-    if (data.percentage !== undefined) {
+    if ('percentage' in data) {
       updateData.porcentaje = data.percentage;
     }
-    if (data.description !== undefined) {
+    if ('description' in data) {
       updateData.descripcion = data.description || null;
     }
-    if (data.requiresDocumentation !== undefined) {
+    if ('requiresDocumentation' in data) {
       updateData.requiereDocumentacion = data.requiresDocumentation;
     }
-    if (data.requiresRectorApproval !== undefined) {
+    if ('requiresRectorApproval' in data) {
       updateData.requiereAprobacionRector = data.requiresRectorApproval;
     }
-    if (data.isAutomatic !== undefined) {
+    if ('isAutomatic' in data) {
       updateData.esAutomatica = data.isAutomatic;
     }
-    if (data.automaticType !== undefined) {
+    if ('automaticType' in data) {
       updateData.tipoAutomatica = data.automaticType;
     }
-    if (data.minimumAverage !== undefined) {
+    if ('minimumAverage' in data) {
       updateData.promedioMinimo = data.minimumAverage || null;
     }
 

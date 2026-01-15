@@ -24,6 +24,9 @@ export class StudentScholarshipMapper {
   /**
    * Convierte un modelo Sequelize a entidad de dominio
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de StudentScholarship
+   * Solo incluye campos que existen en el modelo (útil cuando se usan attributes limitados)
+   * 
+   * Flujo: Base de Datos → ORM Model → Domain Entity
    * 
    * @param {Object|null} model - Modelo Sequelize de EstudianteBeca
    * @returns {StudentScholarship|null} Entidad de dominio StudentScholarship
@@ -32,17 +35,39 @@ export class StudentScholarshipMapper {
     if (!model) return null;
 
     // Campos específicos de StudentScholarship (campos del dominio)
-    const specificFields = {
-      studentId: model.estudianteId,
-      scholarshipId: model.becaDescuentoId,
-      managementId: model.gestionId,
-      requestDate: model.fechaSolicitud,
-      state: model.estado,
-      documentsComplete: model.documentosCompletos === 1 || model.documentosCompletos === true,
-      documentDeliveryStartDate: model.fechaInicioEntregaDocumentos,
-      documentDeliveryEndDate: model.fechaFinEntregaDocumentos,
-      observations: model.observaciones,
-    };
+    // Acceder a dataValues para obtener solo los campos solicitados
+    // Cuando se usan attributes limitados, Sequelize almacena los campos en dataValues
+    const dataValues = model.dataValues || model;
+    const specificFields = {};
+    
+    // Mapeo: BD (snake_case español) → Dominio (camelCase inglés)
+    if ('estudianteId' in dataValues && dataValues.estudianteId !== undefined) {
+      specificFields.studentId = dataValues.estudianteId;
+    }
+    if ('becaDescuentoId' in dataValues && dataValues.becaDescuentoId !== undefined) {
+      specificFields.scholarshipId = dataValues.becaDescuentoId;
+    }
+    if ('gestionId' in dataValues && dataValues.gestionId !== undefined) {
+      specificFields.managementId = dataValues.gestionId;
+    }
+    if ('fechaSolicitud' in dataValues && dataValues.fechaSolicitud !== undefined) {
+      specificFields.requestDate = dataValues.fechaSolicitud;
+    }
+    if ('estado' in dataValues && dataValues.estado !== undefined) {
+      specificFields.state = dataValues.estado;
+    }
+    if ('documentosCompletos' in dataValues && dataValues.documentosCompletos !== undefined) {
+      specificFields.documentsComplete = dataValues.documentosCompletos === 1 || dataValues.documentosCompletos === true;
+    }
+    if ('fechaInicioEntregaDocumentos' in dataValues && dataValues.fechaInicioEntregaDocumentos !== undefined) {
+      specificFields.documentDeliveryStartDate = dataValues.fechaInicioEntregaDocumentos;
+    }
+    if ('fechaFinEntregaDocumentos' in dataValues && dataValues.fechaFinEntregaDocumentos !== undefined) {
+      specificFields.documentDeliveryEndDate = dataValues.fechaFinEntregaDocumentos;
+    }
+    if ('observaciones' in dataValues && dataValues.observaciones !== undefined) {
+      specificFields.observations = dataValues.observaciones;
+    }
 
     // Combina campos base (id, active, timestamps, audit) con campos específicos
     const entityData = BaseMapper.combineBaseAndSpecificFields(model, specificFields);
@@ -53,6 +78,11 @@ export class StudentScholarshipMapper {
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para creación)
    * 
+   * Flujo: Domain Entity → ORM Model → Base de Datos (INSERT)
+   * 
+   * NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
+   * BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
+   * 
    * @param {StudentScholarship|Object} entity - Entidad StudentScholarship o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
@@ -60,8 +90,7 @@ export class StudentScholarshipMapper {
     // Acepta tanto entidad StudentScholarship como objeto plano
     const data = entity instanceof StudentScholarship ? entity.toPlainObject() : entity;
 
-    // NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
-    // BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
     return {
       estudianteId: data.studentId || null,
       becaDescuentoId: data.scholarshipId || null,
@@ -77,8 +106,10 @@ export class StudentScholarshipMapper {
 
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para actualización)
-   * Solo incluye los campos que están definidos (no undefined)
+   * Solo incluye los campos que están definidos (que existen en la entidad)
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de StudentScholarship
+   * 
+   * Flujo: Domain Entity → ORM Model → Base de Datos (UPDATE)
    * 
    * @param {StudentScholarship|Object} entity - Entidad StudentScholarship o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
@@ -89,31 +120,33 @@ export class StudentScholarshipMapper {
     const updateData = {};
 
     // Campos específicos de StudentScholarship
-    if (data.studentId !== undefined) {
+    // Solo incluir campos que existen en la entidad (usando operador 'in')
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
+    if ('studentId' in data) {
       updateData.estudianteId = data.studentId || null;
     }
-    if (data.scholarshipId !== undefined) {
+    if ('scholarshipId' in data) {
       updateData.becaDescuentoId = data.scholarshipId || null;
     }
-    if (data.managementId !== undefined) {
+    if ('managementId' in data) {
       updateData.gestionId = data.managementId || null;
     }
-    if (data.requestDate !== undefined) {
+    if ('requestDate' in data) {
       updateData.fechaSolicitud = data.requestDate;
     }
-    if (data.state !== undefined) {
+    if ('state' in data) {
       updateData.estado = data.state;
     }
-    if (data.documentsComplete !== undefined) {
+    if ('documentsComplete' in data) {
       updateData.documentosCompletos = data.documentsComplete;
     }
-    if (data.documentDeliveryStartDate !== undefined) {
+    if ('documentDeliveryStartDate' in data) {
       updateData.fechaInicioEntregaDocumentos = data.documentDeliveryStartDate || null;
     }
-    if (data.documentDeliveryEndDate !== undefined) {
+    if ('documentDeliveryEndDate' in data) {
       updateData.fechaFinEntregaDocumentos = data.documentDeliveryEndDate || null;
     }
-    if (data.observations !== undefined) {
+    if ('observations' in data) {
       updateData.observaciones = data.observations || null;
     }
 

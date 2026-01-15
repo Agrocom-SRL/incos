@@ -24,6 +24,9 @@ export class EnrollmentSubjectMapper {
   /**
    * Convierte un modelo Sequelize a entidad de dominio
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de EnrollmentSubject
+   * Solo incluye campos que existen en el modelo (útil cuando se usan attributes limitados)
+   * 
+   * Flujo: Base de Datos → ORM Model → Domain Entity
    * 
    * @param {Object|null} model - Modelo Sequelize de InscripcionMateria
    * @returns {EnrollmentSubject|null} Entidad de dominio EnrollmentSubject
@@ -32,15 +35,33 @@ export class EnrollmentSubjectMapper {
     if (!model) return null;
 
     // Campos específicos de EnrollmentSubject (campos del dominio)
-    const specificFields = {
-      enrollmentId: model.inscripcionId,
-      teacherAssignmentId: model.asignacionDocenteId,
-      finalGrade: model.notaFinal ? parseFloat(model.notaFinal) : null,
-      definitiveGrade: model.notaDefinitiva ? parseFloat(model.notaDefinitiva) : null,
-      status: model.estado,
-      observations: model.observaciones,
-      teacherObservations: model.observacionesDocente,
-    };
+    // Acceder a dataValues para obtener solo los campos solicitados
+    // Cuando se usan attributes limitados, Sequelize almacena los campos en dataValues
+    const dataValues = model.dataValues || model;
+    const specificFields = {};
+    
+    // Mapeo: BD (snake_case español) → Dominio (camelCase inglés)
+    if ('inscripcionId' in dataValues && dataValues.inscripcionId !== undefined) {
+      specificFields.enrollmentId = dataValues.inscripcionId;
+    }
+    if ('asignacionDocenteId' in dataValues && dataValues.asignacionDocenteId !== undefined) {
+      specificFields.teacherAssignmentId = dataValues.asignacionDocenteId;
+    }
+    if ('notaFinal' in dataValues && dataValues.notaFinal !== undefined) {
+      specificFields.finalGrade = dataValues.notaFinal ? parseFloat(dataValues.notaFinal) : null;
+    }
+    if ('notaDefinitiva' in dataValues && dataValues.notaDefinitiva !== undefined) {
+      specificFields.definitiveGrade = dataValues.notaDefinitiva ? parseFloat(dataValues.notaDefinitiva) : null;
+    }
+    if ('estado' in dataValues && dataValues.estado !== undefined) {
+      specificFields.status = dataValues.estado;
+    }
+    if ('observaciones' in dataValues && dataValues.observaciones !== undefined) {
+      specificFields.observations = dataValues.observaciones;
+    }
+    if ('observacionesDocente' in dataValues && dataValues.observacionesDocente !== undefined) {
+      specificFields.teacherObservations = dataValues.observacionesDocente;
+    }
 
     // Combina campos base (id, active, timestamps, audit) con campos específicos
     const entityData = BaseMapper.combineBaseAndSpecificFields(model, specificFields);
@@ -51,6 +72,11 @@ export class EnrollmentSubjectMapper {
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para creación)
    * 
+   * Flujo: Domain Entity → ORM Model → Base de Datos (INSERT)
+   * 
+   * NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
+   * BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
+   * 
    * @param {EnrollmentSubject|Object} entity - Entidad EnrollmentSubject o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
@@ -58,8 +84,7 @@ export class EnrollmentSubjectMapper {
     // Acepta tanto entidad EnrollmentSubject como objeto plano
     const data = entity instanceof EnrollmentSubject ? entity.toPlainObject() : entity;
 
-    // NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
-    // BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
     return {
       inscripcionId: data.enrollmentId || null,
       asignacionDocenteId: data.teacherAssignmentId || null,
@@ -73,8 +98,10 @@ export class EnrollmentSubjectMapper {
 
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para actualización)
-   * Solo incluye los campos que están definidos (no undefined)
+   * Solo incluye los campos que están definidos (que existen en la entidad)
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de EnrollmentSubject
+   * 
+   * Flujo: Domain Entity → ORM Model → Base de Datos (UPDATE)
    * 
    * @param {EnrollmentSubject|Object} entity - Entidad EnrollmentSubject o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
@@ -85,25 +112,27 @@ export class EnrollmentSubjectMapper {
     const updateData = {};
 
     // Campos específicos de EnrollmentSubject
-    if (data.enrollmentId !== undefined) {
+    // Solo incluir campos que existen en la entidad (usando operador 'in')
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
+    if ('enrollmentId' in data) {
       updateData.inscripcionId = data.enrollmentId || null;
     }
-    if (data.teacherAssignmentId !== undefined) {
+    if ('teacherAssignmentId' in data) {
       updateData.asignacionDocenteId = data.teacherAssignmentId || null;
     }
-    if (data.finalGrade !== undefined) {
+    if ('finalGrade' in data) {
       updateData.notaFinal = data.finalGrade || null;
     }
-    if (data.definitiveGrade !== undefined) {
+    if ('definitiveGrade' in data) {
       updateData.notaDefinitiva = data.definitiveGrade || null;
     }
-    if (data.status !== undefined) {
+    if ('status' in data) {
       updateData.estado = data.status;
     }
-    if (data.observations !== undefined) {
+    if ('observations' in data) {
       updateData.observaciones = data.observations || null;
     }
-    if (data.teacherObservations !== undefined) {
+    if ('teacherObservations' in data) {
       updateData.observacionesDocente = data.teacherObservations || null;
     }
 

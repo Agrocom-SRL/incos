@@ -24,6 +24,9 @@ export class CalendarActivityMapper {
   /**
    * Convierte un modelo Sequelize a entidad de dominio
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de CalendarActivity
+   * Solo incluye campos que existen en el modelo (útil cuando se usan attributes limitados)
+   * 
+   * Flujo: Base de Datos → ORM Model → Domain Entity
    * 
    * @param {Object|null} model - Modelo Sequelize de ActividadCalendario
    * @returns {CalendarActivity|null} Entidad de dominio CalendarActivity
@@ -32,17 +35,39 @@ export class CalendarActivityMapper {
     if (!model) return null;
 
     // Campos específicos de CalendarActivity (campos del dominio)
-    const specificFields = {
-      academicPeriodId: model.periodoAcademicoId ?? null,
-      activityId: model.actividadId ?? null,
-      code: model.codigo ?? null,
-      customName: model.nombrePersonalizado ?? null,
-      careerIds: model.carrerasIds ?? null, // JSON puede venir como objeto o string
-      startDate: model.fechaInicio,
-      endDate: model.fechaFin ?? null,
-      isAllDay: Boolean(model.esTodoElDia),
-      schedule: model.horario ?? null, // JSON puede venir como objeto o string
-    };
+    // Acceder a dataValues para obtener solo los campos solicitados
+    // Cuando se usan attributes limitados, Sequelize almacena los campos en dataValues
+    const dataValues = model.dataValues || model;
+    const specificFields = {};
+    
+    // Mapeo: BD (snake_case español) → Dominio (camelCase inglés)
+    if ('periodoAcademicoId' in dataValues && dataValues.periodoAcademicoId !== undefined) {
+      specificFields.academicPeriodId = dataValues.periodoAcademicoId ?? null;
+    }
+    if ('actividadId' in dataValues && dataValues.actividadId !== undefined) {
+      specificFields.activityId = dataValues.actividadId ?? null;
+    }
+    if ('codigo' in dataValues && dataValues.codigo !== undefined) {
+      specificFields.code = dataValues.codigo ?? null;
+    }
+    if ('nombrePersonalizado' in dataValues && dataValues.nombrePersonalizado !== undefined) {
+      specificFields.customName = dataValues.nombrePersonalizado ?? null;
+    }
+    if ('carrerasIds' in dataValues && dataValues.carrerasIds !== undefined) {
+      specificFields.careerIds = dataValues.carrerasIds ?? null; // JSON puede venir como objeto o string
+    }
+    if ('fechaInicio' in dataValues && dataValues.fechaInicio !== undefined) {
+      specificFields.startDate = dataValues.fechaInicio;
+    }
+    if ('fechaFin' in dataValues && dataValues.fechaFin !== undefined) {
+      specificFields.endDate = dataValues.fechaFin ?? null;
+    }
+    if ('esTodoElDia' in dataValues && dataValues.esTodoElDia !== undefined) {
+      specificFields.isAllDay = Boolean(dataValues.esTodoElDia);
+    }
+    if ('horario' in dataValues && dataValues.horario !== undefined) {
+      specificFields.schedule = dataValues.horario ?? null; // JSON puede venir como objeto o string
+    }
 
     // Combina campos base (id, active, timestamps, audit) con campos específicos
     const entityData = BaseMapper.combineBaseAndSpecificFields(model, specificFields);
@@ -53,6 +78,11 @@ export class CalendarActivityMapper {
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para creación)
    * 
+   * Flujo: Domain Entity → ORM Model → Base de Datos (INSERT)
+   * 
+   * NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
+   * BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
+   * 
    * @param {CalendarActivity|Object} entity - Entidad CalendarActivity o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
@@ -60,8 +90,7 @@ export class CalendarActivityMapper {
     // Acepta tanto entidad CalendarActivity como objeto plano
     const data = entity instanceof CalendarActivity ? entity.toPlainObject() : entity;
 
-    // NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
-    // BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
     return {
       periodoAcademicoId: data.academicPeriodId ?? null,
       actividadId: data.activityId ?? null,
@@ -77,8 +106,10 @@ export class CalendarActivityMapper {
 
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para actualización)
-   * Solo incluye los campos que están definidos (no undefined)
+   * Solo incluye los campos que están definidos (que existen en la entidad)
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de CalendarActivity
+   * 
+   * Flujo: Domain Entity → ORM Model → Base de Datos (UPDATE)
    * 
    * @param {CalendarActivity|Object} entity - Entidad CalendarActivity o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
@@ -89,31 +120,33 @@ export class CalendarActivityMapper {
     const updateData = {};
 
     // Campos específicos de CalendarActivity
-    if (data.academicPeriodId !== undefined) {
+    // Solo incluir campos que existen en la entidad (usando operador 'in')
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
+    if ('academicPeriodId' in data) {
       updateData.periodoAcademicoId = data.academicPeriodId ?? null;
     }
-    if (data.activityId !== undefined) {
+    if ('activityId' in data) {
       updateData.actividadId = data.activityId ?? null;
     }
-    if (data.code !== undefined) {
+    if ('code' in data) {
       updateData.codigo = data.code ?? null;
     }
-    if (data.customName !== undefined) {
+    if ('customName' in data) {
       updateData.nombrePersonalizado = data.customName ?? null;
     }
-    if (data.careerIds !== undefined) {
+    if ('careerIds' in data) {
       updateData.carrerasIds = data.careerIds ?? null;
     }
-    if (data.startDate !== undefined) {
+    if ('startDate' in data) {
       updateData.fechaInicio = data.startDate;
     }
-    if (data.endDate !== undefined) {
+    if ('endDate' in data) {
       updateData.fechaFin = data.endDate ?? null;
     }
-    if (data.isAllDay !== undefined) {
+    if ('isAllDay' in data) {
       updateData.esTodoElDia = data.isAllDay;
     }
-    if (data.schedule !== undefined) {
+    if ('schedule' in data) {
       updateData.horario = data.schedule ?? null;
     }
 

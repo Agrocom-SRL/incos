@@ -24,6 +24,9 @@ export class UserMapper {
   /**
    * Convierte un modelo Sequelize a entidad de dominio
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de User
+   * Solo incluye campos que existen en el modelo (útil cuando se usan attributes limitados)
+   * 
+   * Flujo: Base de Datos → ORM Model → Domain Entity
    * 
    * @param {Object|null} model - Modelo Sequelize de Usuario
    * @returns {User|null} Entidad de dominio User
@@ -32,18 +35,42 @@ export class UserMapper {
     if (!model) return null;
 
     // Campos específicos de User (campos del dominio)
-    const specificFields = {
-      username: model.username,
-      email: model.email,
-      passwordHash: model.passwordHash,
-      photoUrl: model.fotoUrl,
-      roleId: model.rolId,
-      referenceId: model.referenciaId,
-      referenceType: model.tipoReferencia,
-      state: model.estado,
-      stateChangeDate: model.fechaCambioEstado,
-      stateChangeReason: model.motivoCambioEstado,
-    };
+    // Acceder a dataValues para obtener solo los campos solicitados
+    // Cuando se usan attributes limitados, Sequelize almacena los campos en dataValues
+    const dataValues = model.dataValues || model;
+    const specificFields = {};
+    
+    // Mapeo: BD (snake_case español) → Dominio (camelCase inglés)
+    if ('username' in dataValues && dataValues.username !== undefined) {
+      specificFields.username = dataValues.username;
+    }
+    if ('email' in dataValues && dataValues.email !== undefined) {
+      specificFields.email = dataValues.email;
+    }
+    if ('passwordHash' in dataValues && dataValues.passwordHash !== undefined) {
+      specificFields.passwordHash = dataValues.passwordHash;
+    }
+    if ('fotoUrl' in dataValues && dataValues.fotoUrl !== undefined) {
+      specificFields.photoUrl = dataValues.fotoUrl;
+    }
+    if ('rolId' in dataValues && dataValues.rolId !== undefined) {
+      specificFields.roleId = dataValues.rolId;
+    }
+    if ('referenciaId' in dataValues && dataValues.referenciaId !== undefined) {
+      specificFields.referenceId = dataValues.referenciaId;
+    }
+    if ('tipoReferencia' in dataValues && dataValues.tipoReferencia !== undefined) {
+      specificFields.referenceType = dataValues.tipoReferencia;
+    }
+    if ('estado' in dataValues && dataValues.estado !== undefined) {
+      specificFields.state = dataValues.estado;
+    }
+    if ('fechaCambioEstado' in dataValues && dataValues.fechaCambioEstado !== undefined) {
+      specificFields.stateChangeDate = dataValues.fechaCambioEstado;
+    }
+    if ('motivoCambioEstado' in dataValues && dataValues.motivoCambioEstado !== undefined) {
+      specificFields.stateChangeReason = dataValues.motivoCambioEstado;
+    }
 
     // Combina campos base (id, active, timestamps, audit) con campos específicos
     const entityData = BaseMapper.combineBaseAndSpecificFields(model, specificFields);
@@ -54,6 +81,11 @@ export class UserMapper {
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para creación)
    * 
+   * Flujo: Domain Entity → ORM Model → Base de Datos (INSERT)
+   * 
+   * NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
+   * BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
+   * 
    * @param {User|Object} entity - Entidad User o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
@@ -61,8 +93,7 @@ export class UserMapper {
     // Acepta tanto entidad User como objeto plano
     const data = entity instanceof User ? entity.toPlainObject() : entity;
 
-    // NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
-    // BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
     return {
       username: data.username,
       email: data.email,
@@ -79,8 +110,10 @@ export class UserMapper {
 
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para actualización)
-   * Solo incluye los campos que están definidos (no undefined)
+   * Solo incluye los campos que están definidos (que existen en la entidad)
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de User
+   * 
+   * Flujo: Domain Entity → ORM Model → Base de Datos (UPDATE)
    * 
    * @param {User|Object} entity - Entidad User o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
@@ -91,34 +124,36 @@ export class UserMapper {
     const updateData = {};
 
     // Campos específicos de User
-    if (data.username !== undefined) {
+    // Solo incluir campos que existen en la entidad (usando operador 'in')
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
+    if ('username' in data) {
       updateData.username = data.username;
     }
-    if (data.email !== undefined) {
+    if ('email' in data) {
       updateData.email = data.email;
     }
-    if (data.passwordHash !== undefined) {
+    if ('passwordHash' in data) {
       updateData.passwordHash = data.passwordHash;
     }
-    if (data.photoUrl !== undefined) {
+    if ('photoUrl' in data) {
       updateData.fotoUrl = data.photoUrl || null;
     }
-    if (data.roleId !== undefined) {
+    if ('roleId' in data) {
       updateData.rolId = data.roleId || null;
     }
-    if (data.referenceId !== undefined) {
+    if ('referenceId' in data) {
       updateData.referenciaId = data.referenceId || null;
     }
-    if (data.referenceType !== undefined) {
+    if ('referenceType' in data) {
       updateData.tipoReferencia = data.referenceType || null;
     }
-    if (data.state !== undefined) {
+    if ('state' in data) {
       updateData.estado = data.state || null;
     }
-    if (data.stateChangeDate !== undefined) {
+    if ('stateChangeDate' in data) {
       updateData.fechaCambioEstado = data.stateChangeDate || null;
     }
-    if (data.stateChangeReason !== undefined) {
+    if ('stateChangeReason' in data) {
       updateData.motivoCambioEstado = data.stateChangeReason || null;
     }
 

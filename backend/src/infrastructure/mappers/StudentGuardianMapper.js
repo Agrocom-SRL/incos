@@ -24,6 +24,9 @@ export class StudentGuardianMapper {
   /**
    * Convierte un modelo Sequelize a entidad de dominio
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de StudentGuardian
+   * Solo incluye campos que existen en el modelo (útil cuando se usan attributes limitados)
+   * 
+   * Flujo: Base de Datos → ORM Model → Domain Entity
    * 
    * @param {Object|null} model - Modelo Sequelize de EstudianteApoderado
    * @returns {StudentGuardian|null} Entidad de dominio StudentGuardian
@@ -32,21 +35,51 @@ export class StudentGuardianMapper {
     if (!model) return null;
 
     // Campos específicos de StudentGuardian (campos del dominio)
-    const specificFields = {
-      studentId: model.estudianteId,
-      relationshipTypeId: model.tipoParentescoId,
-      firstName: model.nombres,
-      lastName: model.apellidos,
-      ci: model.ci,
-      occupation: model.ocupacion,
-      workplace: model.lugarTrabajo,
-      address: model.direccion,
-      phone: model.telefono,
-      email: model.email,
-      isEmergencyContact: model.esContactoEmergencia === 1 || model.esContactoEmergencia === true,
-      livesWithStudent: model.viveConEstudiante === 1 || model.viveConEstudiante === true,
-      observations: model.observaciones,
-    };
+    // Acceder a dataValues para obtener solo los campos solicitados
+    // Cuando se usan attributes limitados, Sequelize almacena los campos en dataValues
+    const dataValues = model.dataValues || model;
+    const specificFields = {};
+    
+    // Mapeo: BD (snake_case español) → Dominio (camelCase inglés)
+    if ('estudianteId' in dataValues && dataValues.estudianteId !== undefined) {
+      specificFields.studentId = dataValues.estudianteId;
+    }
+    if ('tipoParentescoId' in dataValues && dataValues.tipoParentescoId !== undefined) {
+      specificFields.relationshipTypeId = dataValues.tipoParentescoId;
+    }
+    if ('nombres' in dataValues && dataValues.nombres !== undefined) {
+      specificFields.firstName = dataValues.nombres;
+    }
+    if ('apellidos' in dataValues && dataValues.apellidos !== undefined) {
+      specificFields.lastName = dataValues.apellidos;
+    }
+    if ('ci' in dataValues && dataValues.ci !== undefined) {
+      specificFields.ci = dataValues.ci;
+    }
+    if ('ocupacion' in dataValues && dataValues.ocupacion !== undefined) {
+      specificFields.occupation = dataValues.ocupacion;
+    }
+    if ('lugarTrabajo' in dataValues && dataValues.lugarTrabajo !== undefined) {
+      specificFields.workplace = dataValues.lugarTrabajo;
+    }
+    if ('direccion' in dataValues && dataValues.direccion !== undefined) {
+      specificFields.address = dataValues.direccion;
+    }
+    if ('telefono' in dataValues && dataValues.telefono !== undefined) {
+      specificFields.phone = dataValues.telefono;
+    }
+    if ('email' in dataValues && dataValues.email !== undefined) {
+      specificFields.email = dataValues.email;
+    }
+    if ('esContactoEmergencia' in dataValues && dataValues.esContactoEmergencia !== undefined) {
+      specificFields.isEmergencyContact = dataValues.esContactoEmergencia === 1 || dataValues.esContactoEmergencia === true;
+    }
+    if ('viveConEstudiante' in dataValues && dataValues.viveConEstudiante !== undefined) {
+      specificFields.livesWithStudent = dataValues.viveConEstudiante === 1 || dataValues.viveConEstudiante === true;
+    }
+    if ('observaciones' in dataValues && dataValues.observaciones !== undefined) {
+      specificFields.observations = dataValues.observaciones;
+    }
 
     // Combina campos base (id, active, timestamps, audit) con campos específicos
     const entityData = BaseMapper.combineBaseAndSpecificFields(model, specificFields);
@@ -57,6 +90,11 @@ export class StudentGuardianMapper {
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para creación)
    * 
+   * Flujo: Domain Entity → ORM Model → Base de Datos (INSERT)
+   * 
+   * NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
+   * BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
+   * 
    * @param {StudentGuardian|Object} entity - Entidad StudentGuardian o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
@@ -64,8 +102,7 @@ export class StudentGuardianMapper {
     // Acepta tanto entidad StudentGuardian como objeto plano
     const data = entity instanceof StudentGuardian ? entity.toPlainObject() : entity;
 
-    // NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
-    // BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
     return {
       estudianteId: data.studentId || null,
       tipoParentescoId: data.relationshipTypeId || null,
@@ -85,8 +122,10 @@ export class StudentGuardianMapper {
 
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para actualización)
-   * Solo incluye los campos que están definidos (no undefined)
+   * Solo incluye los campos que están definidos (que existen en la entidad)
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de StudentGuardian
+   * 
+   * Flujo: Domain Entity → ORM Model → Base de Datos (UPDATE)
    * 
    * @param {StudentGuardian|Object} entity - Entidad StudentGuardian o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
@@ -97,43 +136,45 @@ export class StudentGuardianMapper {
     const updateData = {};
 
     // Campos específicos de StudentGuardian
-    if (data.studentId !== undefined) {
+    // Solo incluir campos que existen en la entidad (usando operador 'in')
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
+    if ('studentId' in data) {
       updateData.estudianteId = data.studentId || null;
     }
-    if (data.relationshipTypeId !== undefined) {
+    if ('relationshipTypeId' in data) {
       updateData.tipoParentescoId = data.relationshipTypeId || null;
     }
-    if (data.firstName !== undefined) {
+    if ('firstName' in data) {
       updateData.nombres = data.firstName;
     }
-    if (data.lastName !== undefined) {
+    if ('lastName' in data) {
       updateData.apellidos = data.lastName || null;
     }
-    if (data.ci !== undefined) {
+    if ('ci' in data) {
       updateData.ci = data.ci || null;
     }
-    if (data.occupation !== undefined) {
+    if ('occupation' in data) {
       updateData.ocupacion = data.occupation || null;
     }
-    if (data.workplace !== undefined) {
+    if ('workplace' in data) {
       updateData.lugarTrabajo = data.workplace || null;
     }
-    if (data.address !== undefined) {
+    if ('address' in data) {
       updateData.direccion = data.address || null;
     }
-    if (data.phone !== undefined) {
+    if ('phone' in data) {
       updateData.telefono = data.phone || null;
     }
-    if (data.email !== undefined) {
+    if ('email' in data) {
       updateData.email = data.email ? data.email.toLowerCase() : null;
     }
-    if (data.isEmergencyContact !== undefined) {
+    if ('isEmergencyContact' in data) {
       updateData.esContactoEmergencia = data.isEmergencyContact;
     }
-    if (data.livesWithStudent !== undefined) {
+    if ('livesWithStudent' in data) {
       updateData.viveConEstudiante = data.livesWithStudent;
     }
-    if (data.observations !== undefined) {
+    if ('observations' in data) {
       updateData.observaciones = data.observations || null;
     }
 

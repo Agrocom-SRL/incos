@@ -24,6 +24,9 @@ export class MunicipalityMapper {
   /**
    * Convierte un modelo Sequelize a entidad de dominio
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de Municipality
+   * Solo incluye campos que existen en el modelo (útil cuando se usan attributes limitados)
+   * 
+   * Flujo: Base de Datos → ORM Model → Domain Entity
    * 
    * @param {Object|null} model - Modelo Sequelize de Municipio
    * @returns {Municipality|null} Entidad de dominio Municipality
@@ -32,11 +35,21 @@ export class MunicipalityMapper {
     if (!model) return null;
 
     // Campos específicos de Municipality (campos del dominio)
-    const specificFields = {
-      provinceId: model.provinciaId,
-      name: model.nombre,
-      code: model.codigo,
-    };
+    // Acceder a dataValues para obtener solo los campos solicitados
+    // Cuando se usan attributes limitados, Sequelize almacena los campos en dataValues
+    const dataValues = model.dataValues || model;
+    const specificFields = {};
+    
+    // Mapeo: BD (snake_case español) → Dominio (camelCase inglés)
+    if ('provinciaId' in dataValues && dataValues.provinciaId !== undefined) {
+      specificFields.provinceId = dataValues.provinciaId;
+    }
+    if ('nombre' in dataValues && dataValues.nombre !== undefined) {
+      specificFields.name = dataValues.nombre;
+    }
+    if ('codigo' in dataValues && dataValues.codigo !== undefined) {
+      specificFields.code = dataValues.codigo;
+    }
 
     // Combina campos base (id, active, timestamps, audit) con campos específicos
     const entityData = BaseMapper.combineBaseAndSpecificFields(model, specificFields);
@@ -47,6 +60,11 @@ export class MunicipalityMapper {
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para creación)
    * 
+   * Flujo: Domain Entity → ORM Model → Base de Datos (INSERT)
+   * 
+   * NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
+   * BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
+   * 
    * @param {Municipality|Object} entity - Entidad Municipality o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
@@ -54,8 +72,7 @@ export class MunicipalityMapper {
     // Acepta tanto entidad Municipality como objeto plano
     const data = entity instanceof Municipality ? entity.toPlainObject() : entity;
 
-    // NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
-    // BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
     return {
       provinciaId: data.provinceId,
       nombre: data.name,
@@ -65,8 +82,10 @@ export class MunicipalityMapper {
 
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para actualización)
-   * Solo incluye los campos que están definidos (no undefined)
+   * Solo incluye los campos que están definidos (que existen en la entidad)
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de Municipality
+   * 
+   * Flujo: Domain Entity → ORM Model → Base de Datos (UPDATE)
    * 
    * @param {Municipality|Object} entity - Entidad Municipality o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
@@ -77,13 +96,15 @@ export class MunicipalityMapper {
     const updateData = {};
 
     // Campos específicos de Municipality
-    if (data.provinceId !== undefined) {
+    // Solo incluir campos que existen en la entidad (usando operador 'in')
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
+    if ('provinceId' in data) {
       updateData.provinciaId = data.provinceId;
     }
-    if (data.name !== undefined) {
+    if ('name' in data) {
       updateData.nombre = data.name;
     }
-    if (data.code !== undefined) {
+    if ('code' in data) {
       updateData.codigo = data.code ? data.code.toUpperCase() : null;
     }
 

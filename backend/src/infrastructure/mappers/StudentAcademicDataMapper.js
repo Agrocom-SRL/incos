@@ -24,6 +24,9 @@ export class StudentAcademicDataMapper {
   /**
    * Convierte un modelo Sequelize a entidad de dominio
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de StudentAcademicData
+   * Solo incluye campos que existen en el modelo (útil cuando se usan attributes limitados)
+   * 
+   * Flujo: Base de Datos → ORM Model → Domain Entity
    * 
    * @param {Object|null} model - Modelo Sequelize de EstudianteDatosAcademicos
    * @returns {StudentAcademicData|null} Entidad de dominio StudentAcademicData
@@ -32,20 +35,48 @@ export class StudentAcademicDataMapper {
     if (!model) return null;
 
     // Campos específicos de StudentAcademicData (campos del dominio)
-    const specificFields = {
-      studentId: model.estudianteId,
-      careerId: model.carreraId,
-      managementId: model.gestionIngresoId,
-      academicState: model.estadoAcademico,
-      registrationState: model.estadoRegistro || 'BORRADOR', // BORRADOR, PENDIENTE, ADMITIDO
-      previousSchool: model.unidadEducativaProcedencia,
-      highSchoolGraduationYear: model.anioEgresoSecundaria,
-      annualAverage: model.promedioAnual ? parseFloat(model.promedioAnual) : null,
-      graduationDate: model.fechaEgreso,
-      withdrawalDate: model.fechaRetiro,
-      withdrawalReason: model.motivoRetiro,
-      photoUrl: model.fotoUrl,
-    };
+    // Acceder a dataValues para obtener solo los campos solicitados
+    // Cuando se usan attributes limitados, Sequelize almacena los campos en dataValues
+    const dataValues = model.dataValues || model;
+    const specificFields = {};
+    
+    // Mapeo: BD (snake_case español) → Dominio (camelCase inglés)
+    if ('estudianteId' in dataValues && dataValues.estudianteId !== undefined) {
+      specificFields.studentId = dataValues.estudianteId;
+    }
+    if ('carreraId' in dataValues && dataValues.carreraId !== undefined) {
+      specificFields.careerId = dataValues.carreraId;
+    }
+    if ('gestionIngresoId' in dataValues && dataValues.gestionIngresoId !== undefined) {
+      specificFields.managementId = dataValues.gestionIngresoId;
+    }
+    if ('estadoAcademico' in dataValues && dataValues.estadoAcademico !== undefined) {
+      specificFields.academicState = dataValues.estadoAcademico;
+    }
+    if ('estadoRegistro' in dataValues && dataValues.estadoRegistro !== undefined) {
+      specificFields.registrationState = dataValues.estadoRegistro || 'BORRADOR'; // BORRADOR, PENDIENTE, ADMITIDO
+    }
+    if ('unidadEducativaProcedencia' in dataValues && dataValues.unidadEducativaProcedencia !== undefined) {
+      specificFields.previousSchool = dataValues.unidadEducativaProcedencia;
+    }
+    if ('anioEgresoSecundaria' in dataValues && dataValues.anioEgresoSecundaria !== undefined) {
+      specificFields.highSchoolGraduationYear = dataValues.anioEgresoSecundaria;
+    }
+    if ('promedioAnual' in dataValues && dataValues.promedioAnual !== undefined) {
+      specificFields.annualAverage = dataValues.promedioAnual ? parseFloat(dataValues.promedioAnual) : null;
+    }
+    if ('fechaEgreso' in dataValues && dataValues.fechaEgreso !== undefined) {
+      specificFields.graduationDate = dataValues.fechaEgreso;
+    }
+    if ('fechaRetiro' in dataValues && dataValues.fechaRetiro !== undefined) {
+      specificFields.withdrawalDate = dataValues.fechaRetiro;
+    }
+    if ('motivoRetiro' in dataValues && dataValues.motivoRetiro !== undefined) {
+      specificFields.withdrawalReason = dataValues.motivoRetiro;
+    }
+    if ('fotoUrl' in dataValues && dataValues.fotoUrl !== undefined) {
+      specificFields.photoUrl = dataValues.fotoUrl;
+    }
 
     // Combina campos base (id, active, timestamps, audit) con campos específicos
     const entityData = BaseMapper.combineBaseAndSpecificFields(model, specificFields);
@@ -56,6 +87,11 @@ export class StudentAcademicDataMapper {
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para creación)
    * 
+   * Flujo: Domain Entity → ORM Model → Base de Datos (INSERT)
+   * 
+   * NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
+   * BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
+   * 
    * @param {StudentAcademicData|Object} entity - Entidad StudentAcademicData o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
@@ -63,8 +99,7 @@ export class StudentAcademicDataMapper {
     // Acepta tanto entidad StudentAcademicData como objeto plano
     const data = entity instanceof StudentAcademicData ? entity.toPlainObject() : entity;
 
-    // NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
-    // BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
     return {
       estudianteId: data.studentId,
       carreraId: data.careerId,
@@ -83,8 +118,10 @@ export class StudentAcademicDataMapper {
 
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para actualización)
-   * Solo incluye los campos que están definidos (no undefined)
+   * Solo incluye los campos que están definidos (que existen en la entidad)
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de StudentAcademicData
+   * 
+   * Flujo: Domain Entity → ORM Model → Base de Datos (UPDATE)
    * 
    * @param {StudentAcademicData|Object} entity - Entidad StudentAcademicData o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
@@ -95,40 +132,42 @@ export class StudentAcademicDataMapper {
     const updateData = {};
 
     // Campos específicos de StudentAcademicData
-    if (data.studentId !== undefined) {
+    // Solo incluir campos que existen en la entidad (usando operador 'in')
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
+    if ('studentId' in data) {
       updateData.estudianteId = data.studentId;
     }
-    if (data.careerId !== undefined) {
+    if ('careerId' in data) {
       updateData.carreraId = data.careerId;
     }
-    if (data.managementId !== undefined) {
+    if ('managementId' in data) {
       updateData.gestionIngresoId = data.managementId;
     }
-    if (data.academicState !== undefined) {
+    if ('academicState' in data) {
       updateData.estadoAcademico = data.academicState;
     }
-    if (data.registrationState !== undefined) {
+    if ('registrationState' in data) {
       updateData.estadoRegistro = data.registrationState;
     }
-    if (data.previousSchool !== undefined) {
+    if ('previousSchool' in data) {
       updateData.unidadEducativaProcedencia = data.previousSchool || null;
     }
-    if (data.highSchoolGraduationYear !== undefined) {
+    if ('highSchoolGraduationYear' in data) {
       updateData.anioEgresoSecundaria = data.highSchoolGraduationYear || null;
     }
-    if (data.annualAverage !== undefined) {
+    if ('annualAverage' in data) {
       updateData.promedioAnual = data.annualAverage || null;
     }
-    if (data.graduationDate !== undefined) {
+    if ('graduationDate' in data) {
       updateData.fechaEgreso = data.graduationDate || null;
     }
-    if (data.withdrawalDate !== undefined) {
+    if ('withdrawalDate' in data) {
       updateData.fechaRetiro = data.withdrawalDate || null;
     }
-    if (data.withdrawalReason !== undefined) {
+    if ('withdrawalReason' in data) {
       updateData.motivoRetiro = data.withdrawalReason || null;
     }
-    if (data.photoUrl !== undefined) {
+    if ('photoUrl' in data) {
       updateData.fotoUrl = data.photoUrl || null;
     }
 

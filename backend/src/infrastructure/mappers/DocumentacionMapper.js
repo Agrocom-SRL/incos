@@ -24,6 +24,9 @@ export class DocumentacionMapper {
   /**
    * Convierte un modelo Sequelize a entidad de dominio
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de Documentation
+   * Solo incluye campos que existen en el modelo (útil cuando se usan attributes limitados)
+   * 
+   * Flujo: Base de Datos → ORM Model → Domain Entity
    * 
    * @param {Object|null} model - Modelo Sequelize de Documentation
    * @returns {Documentation|null} Entidad de dominio Documentation
@@ -32,17 +35,39 @@ export class DocumentacionMapper {
     if (!model) return null;
 
     // Campos específicos de Documentation (campos del dominio)
-    const specificFields = {
-      name: model.nombre,
-      documentType: model.tipoDocumento,
-      acceptsPhotocopy: Boolean(model.aceptaFotocopia),
-      required: Boolean(model.requerido),
-      order: model.orden,
-      description: model.descripcion,
-      parentDocumentId: model.documentoPadreId ?? null,
-      isOriginal: Boolean(model.esOriginal),
-      isSystemDocument: Boolean(model.esDocumentoSistema),
-    };
+    // Acceder a dataValues para obtener solo los campos solicitados
+    // Cuando se usan attributes limitados, Sequelize almacena los campos en dataValues
+    const dataValues = model.dataValues || model;
+    const specificFields = {};
+    
+    // Mapeo: BD (snake_case español) → Dominio (camelCase inglés)
+    if ('nombre' in dataValues && dataValues.nombre !== undefined) {
+      specificFields.name = dataValues.nombre;
+    }
+    if ('tipoDocumento' in dataValues && dataValues.tipoDocumento !== undefined) {
+      specificFields.documentType = dataValues.tipoDocumento;
+    }
+    if ('aceptaFotocopia' in dataValues && dataValues.aceptaFotocopia !== undefined) {
+      specificFields.acceptsPhotocopy = Boolean(dataValues.aceptaFotocopia);
+    }
+    if ('requerido' in dataValues && dataValues.requerido !== undefined) {
+      specificFields.required = Boolean(dataValues.requerido);
+    }
+    if ('orden' in dataValues && dataValues.orden !== undefined) {
+      specificFields.order = dataValues.orden;
+    }
+    if ('descripcion' in dataValues && dataValues.descripcion !== undefined) {
+      specificFields.description = dataValues.descripcion;
+    }
+    if ('documentoPadreId' in dataValues && dataValues.documentoPadreId !== undefined) {
+      specificFields.parentDocumentId = dataValues.documentoPadreId ?? null;
+    }
+    if ('esOriginal' in dataValues && dataValues.esOriginal !== undefined) {
+      specificFields.isOriginal = Boolean(dataValues.esOriginal);
+    }
+    if ('esDocumentoSistema' in dataValues && dataValues.esDocumentoSistema !== undefined) {
+      specificFields.isSystemDocument = Boolean(dataValues.esDocumentoSistema);
+    }
 
     // Combina campos base (id, active, timestamps, audit) con campos específicos
     const entityData = BaseMapper.combineBaseAndSpecificFields(model, specificFields);
@@ -53,6 +78,11 @@ export class DocumentacionMapper {
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para creación)
    * 
+   * Flujo: Domain Entity → ORM Model → Base de Datos (INSERT)
+   * 
+   * NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
+   * BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
+   * 
    * @param {Documentation|Object} entity - Entidad Documentation o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
@@ -60,8 +90,7 @@ export class DocumentacionMapper {
     // Acepta tanto entidad Documentation como objeto plano
     const data = entity instanceof Documentation ? entity.toPlainObject() : entity;
 
-    // NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
-    // BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
     return {
       nombre: data.name,
       tipoDocumento: data.documentType,
@@ -77,8 +106,10 @@ export class DocumentacionMapper {
 
   /**
    * Convierte una entidad de dominio a formato del modelo Sequelize (para actualización)
-   * Solo incluye los campos que están definidos (no undefined)
+   * Solo incluye los campos que están definidos (que existen en la entidad)
    * Usa BaseMapper para campos comunes y solo mapea campos específicos de Documentation
+   * 
+   * Flujo: Domain Entity → ORM Model → Base de Datos (UPDATE)
    * 
    * @param {Documentation|Object} entity - Entidad Documentation o objeto con datos de dominio
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
@@ -89,31 +120,33 @@ export class DocumentacionMapper {
     const updateData = {};
 
     // Campos específicos de Documentation
-    if (data.name !== undefined) {
+    // Solo incluir campos que existen en la entidad (usando operador 'in')
+    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
+    if ('name' in data) {
       updateData.nombre = data.name;
     }
-    if (data.documentType !== undefined) {
+    if ('documentType' in data) {
       updateData.tipoDocumento = data.documentType;
     }
-    if (data.acceptsPhotocopy !== undefined) {
+    if ('acceptsPhotocopy' in data) {
       updateData.aceptaFotocopia = data.acceptsPhotocopy;
     }
-    if (data.required !== undefined) {
+    if ('required' in data) {
       updateData.requerido = data.required;
     }
-    if (data.order !== undefined) {
+    if ('order' in data) {
       updateData.orden = data.order;
     }
-    if (data.description !== undefined) {
+    if ('description' in data) {
       updateData.descripcion = data.description || null;
     }
-    if (data.parentDocumentId !== undefined) {
+    if ('parentDocumentId' in data) {
       updateData.documentoPadreId = data.parentDocumentId ?? null;
     }
-    if (data.isOriginal !== undefined) {
+    if ('isOriginal' in data) {
       updateData.esOriginal = data.isOriginal;
     }
-    if (data.isSystemDocument !== undefined) {
+    if ('isSystemDocument' in data) {
       updateData.esDocumentoSistema = data.isSystemDocument;
     }
 
