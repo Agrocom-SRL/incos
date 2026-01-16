@@ -19,6 +19,7 @@
  * - Usa Mapper (Application) para conversión Domain → Presentation
  */
 
+import { ESTADOS_BECAS } from '../../../../domain/constants/index.js';
 import { ValidationError, NotFoundError } from '../../../../domain/errors/AppError.js';
 import { StudentScholarship } from '../../../../domain/entities/StudentScholarship.js';
 import { StudentScholarshipMapper } from '../../../mappers/estudiantes/StudentScholarshipMapper.js';
@@ -133,6 +134,7 @@ export class CreateStudentScholarshipUseCase {
       scholarshipId: data.scholarshipId,
       managementId,
       requestDate: new Date().toISOString().split('T')[0], // fecha_solicitud: NOT NULL sin DEFAULT
+      state: ESTADOS_BECAS.ACTIVA,
     };
 
     // Solo agregar observations si se proporciona (es opcional, NULL por defecto)

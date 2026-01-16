@@ -84,8 +84,7 @@ export class ListParalelosUseCase extends BaseListUseCase {
       // Obtener solo los IDs de periodos con ese número (de todas las carreras)
       const periodosResult = await this.periodRepository.findAll(
         {
-          numero: periodoNumero,
-          activo: true,
+          number: periodoNumero,
           attributes: ['id'], // Solo traer IDs, sin mapear
         },
         null, // sin paginación

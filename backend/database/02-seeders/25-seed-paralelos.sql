@@ -5,7 +5,7 @@
 -- ============================================
 -- Orden: SIS-INF (carrera_id=1), ADM-EMP (carrera_id=2), CON-GEN (carrera_id=3)
 -- Periodos: Plan 1 (1-3), Plan 2 (4-6), Plan 3 (7-9)
--- IDs fijos: 1-4 (SIS-INF), 5-9 (ADM-EMP), 10-17 (CON-GEN)
+-- IDs fijos: 1-4 (SIS-INF), 5-10 (ADM-EMP), 11-18 (CON-GEN)
 
 USE instituto_incos;
 
@@ -39,16 +39,17 @@ INSERT INTO paralelos (id, carrera_id, periodo_id, nombre, turno, descripcion) V
 -- PRIMER AÑO (periodo_id = 4)
 INSERT INTO paralelos (id, carrera_id, periodo_id, nombre, turno, descripcion) VALUES
 (5, 2, 4, 'PRIMERO A', 'TARDE', 'Paralelo A de Primer Año - Administración de Empresas - Turno Tarde'),
-(6, 2, 4, 'PRIMERO B', 'NOCHE', 'Paralelo B de Primer Año - Administración de Empresas - Turno Noche');
+(6, 2, 4, 'PRIMERO B', 'NOCHE', 'Paralelo B de Primer Año - Administración de Empresas - Turno Noche'),
+(7, 2, 4, 'PRIMERO C', 'NOCHE', 'Paralelo C de Primer Año - Administración de Empresas - Turno Noche');
 
 -- SEGUNDO AÑO (periodo_id = 5)
 INSERT INTO paralelos (id, carrera_id, periodo_id, nombre, turno, descripcion) VALUES
-(7, 2, 5, 'SEGUNDO A', 'TARDE', 'Paralelo A de Segundo Año - Administración de Empresas - Turno Tarde'),
-(8, 2, 5, 'SEGUNDO B', 'NOCHE', 'Paralelo B de Segundo Año - Administración de Empresas - Turno Noche');
+(8, 2, 5, 'SEGUNDO A', 'TARDE', 'Paralelo A de Segundo Año - Administración de Empresas - Turno Tarde'),
+(9, 2, 5, 'SEGUNDO B', 'NOCHE', 'Paralelo B de Segundo Año - Administración de Empresas - Turno Noche');
 
 -- TERCER AÑO (periodo_id = 6)
 INSERT INTO paralelos (id, carrera_id, periodo_id, nombre, turno, descripcion) VALUES
-(9, 2, 6, 'TERCERO A', 'NOCHE', 'Paralelo A de Tercer Año - Administración de Empresas - Turno Noche');
+(10, 2, 6, 'TERCERO A', 'NOCHE', 'Paralelo A de Tercer Año - Administración de Empresas - Turno Noche');
 
 -- ============================================
 -- INSERTAR PARALELOS - CONTADURÍA GENERAL (Carrera 3)
@@ -56,20 +57,20 @@ INSERT INTO paralelos (id, carrera_id, periodo_id, nombre, turno, descripcion) V
 
 -- PRIMER AÑO (periodo_id = 7)
 INSERT INTO paralelos (id, carrera_id, periodo_id, nombre, turno, descripcion) VALUES
-(10, 3, 7, 'PRIMERO A', 'TARDE', 'Paralelo A de Primer Año - Contaduría General - Turno Tarde'),
-(11, 3, 7, 'PRIMERO B', 'TARDE', 'Paralelo B de Primer Año - Contaduría General - Turno Tarde'),
-(12, 3, 7, 'PRIMERO C', 'NOCHE', 'Paralelo C de Primer Año - Contaduría General - Turno Noche'),
-(13, 3, 7, 'PRIMERO D', 'NOCHE', 'Paralelo D de Primer Año - Contaduría General - Turno Noche');
+(11, 3, 7, 'PRIMERO A', 'TARDE', 'Paralelo A de Primer Año - Contaduría General - Turno Tarde'),
+(12, 3, 7, 'PRIMERO B', 'TARDE', 'Paralelo B de Primer Año - Contaduría General - Turno Tarde'),
+(13, 3, 7, 'PRIMERO C', 'NOCHE', 'Paralelo C de Primer Año - Contaduría General - Turno Noche'),
+(14, 3, 7, 'PRIMERO D', 'NOCHE', 'Paralelo D de Primer Año - Contaduría General - Turno Noche');
 
 -- SEGUNDO AÑO (periodo_id = 8)
 INSERT INTO paralelos (id, carrera_id, periodo_id, nombre, turno, descripcion) VALUES
-(14, 3, 8, 'SEGUNDO A', 'TARDE', 'Paralelo A de Segundo Año - Contaduría General - Turno Tarde'),
-(15, 3, 8, 'SEGUNDO B', 'NOCHE', 'Paralelo B de Segundo Año - Contaduría General - Turno Noche');
+(15, 3, 8, 'SEGUNDO A', 'TARDE', 'Paralelo A de Segundo Año - Contaduría General - Turno Tarde'),
+(16, 3, 8, 'SEGUNDO B', 'NOCHE', 'Paralelo B de Segundo Año - Contaduría General - Turno Noche');
 
 -- TERCER AÑO (periodo_id = 9)
 INSERT INTO paralelos (id, carrera_id, periodo_id, nombre, turno, descripcion) VALUES
-(16, 3, 9, 'TERCERO A', 'TARDE', 'Paralelo A de Tercer Año - Contaduría General - Turno Tarde'),
-(17, 3, 9, 'TERCERO B', 'TARDE', 'Paralelo B de Tercer Año - Contaduría General - Turno Tarde');
+(17, 3, 9, 'TERCERO A', 'TARDE', 'Paralelo A de Tercer Año - Contaduría General - Turno Tarde'),
+(18, 3, 9, 'TERCERO B', 'TARDE', 'Paralelo B de Tercer Año - Contaduría General - Turno Tarde');
 
 -- Rehabilitar foreign key checks
 SET FOREIGN_KEY_CHECKS = 1;
@@ -83,19 +84,19 @@ SET FOREIGN_KEY_CHECKS = 1;
 --   Tercer Año: A (NOCHE) = 1 paralelo
 --   TOTAL: 4 paralelos
 --
--- ADMINISTRACIÓN DE EMPRESAS (IDs 5-9):
---   Primer Año: A (TARDE), B (NOCHE) = 2 paralelos
---   Segundo Año: A (TARDE), B (NOCHE) = 2 paralelos
---   Tercer Año: A (NOCHE) = 1 paralelo
---   TOTAL: 5 paralelos
+-- ADMINISTRACIÓN DE EMPRESAS (IDs 5-10):
+--   Primer Año: A (TARDE), B (NOCHE), C (NOCHE) = 3 paralelos (IDs 5-7)
+--   Segundo Año: A (TARDE), B (NOCHE) = 2 paralelos (IDs 8-9)
+--   Tercer Año: A (NOCHE) = 1 paralelo (ID 10)
+--   TOTAL: 6 paralelos
 --
--- CONTADURÍA GENERAL (IDs 10-17):
+-- CONTADURÍA GENERAL (IDs 11-18):
 --   Primer Año: A (TARDE), B (TARDE), C (NOCHE), D (NOCHE) = 4 paralelos
 --   Segundo Año: A (TARDE), B (NOCHE) = 2 paralelos
 --   Tercer Año: A (TARDE), B (TARDE) = 2 paralelos
 --   TOTAL: 8 paralelos
 --
--- TOTAL GENERAL: 17 paralelos
+-- TOTAL GENERAL: 18 paralelos
 -- ============================================
 -- FIN DEL SEEDER
 -- ============================================
