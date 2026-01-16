@@ -132,13 +132,28 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
         // En modo edición, redirigir al detalle del estudiante
         navigate(`/estudiantes/${studentId}`);
       } else {
-        // En modo creación, redirigir al detalle del estudiante recién creado
-        const newStudentId = registrationResult.data?.student?.id;
+        // En modo creación, obtener el ID del estudiante recién creado
+        // El Backend BaseCreateController extrae solo result['student'], entonces:
+        // Estructura final: { success: true, data: { id: ..., nombres: ..., ... } }
+        // El objeto 'data' YA ES el objeto 'student' con su 'id'
+        // Intentar diferentes formas de acceder al ID por compatibilidad
+        const newStudentId = 
+          registrationResult.data?.id ||           // Forma correcta: data es el student
+          registrationResult.data?.student?.id;    // Por si acaso el backend cambia
+        
         if (newStudentId) {
+          // Redirigir al detalle del estudiante recién creado
           navigate(`/estudiantes/${newStudentId}`);
         } else {
-          // Fallback: si no hay ID, redirigir a la lista
-          navigate('/estudiantes');
+          // Si no se encuentra el ID, loguear para debug
+          console.error('❌ No se pudo obtener el ID del estudiante recién creado', {
+            registrationResult,
+            dataStructure: registrationResult.data,
+            dataId: registrationResult.data?.id,
+            dataStudentId: registrationResult.data?.student?.id,
+          });
+          // No redirigir a la lista - esto es un error que debe investigarse
+          // El usuario debería quedarse en la página o ver un mensaje de error
         }
       }
     }

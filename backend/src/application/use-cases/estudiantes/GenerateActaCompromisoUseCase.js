@@ -81,7 +81,31 @@ export class GenerateActaCompromisoUseCase {
       const documentosInscripcion = await this._getInscripcionDocuments();
 
       // 3. Crear mapa de IDs a nombres desde los documentos recuperados
-      const documentosMap = createMap(documentosInscripcion, 'id', 'name');
+      // Debug: Verificar qué contiene documentosInscripcion antes de crear el mapa
+      this.logger.info(`[Estudiantes] Antes de crear mapa - cantidad documentosInscripcion: ${documentosInscripcion.length}`);
+      if (documentosInscripcion.length > 0) {
+        const primerDoc = documentosInscripcion[0];
+        const primerDocPlain = primerDoc.toPlainObject ? primerDoc.toPlainObject() : primerDoc;
+        this.logger.info(`[Estudiantes] Primer documento - id=${primerDocPlain.id}, name=${primerDocPlain.name || primerDocPlain.nombre}, keys=${Object.keys(primerDocPlain).join(', ')}`);
+      }
+      
+      // Crear mapa de IDs a nombres usando toPlainObject() para acceder a propiedades de la entidad
+      const documentosMap = createMap(
+        documentosInscripcion.map(doc => {
+          const docPlain = doc.toPlainObject ? doc.toPlainObject() : doc;
+          return { id: docPlain.id, name: docPlain.name };
+        }),
+        'id',
+        'name'
+      );
+      
+      // Extraer IDs de documentos de inscripción (la entidad Documentation tiene 'id' en inglés)
+      const idsDocumentosInscripcion = documentosInscripcion.map(doc => {
+        const docPlain = doc.toPlainObject ? doc.toPlainObject() : doc;
+        return docPlain.id;
+      }).filter(id => id !== undefined && id !== null);
+      
+      this.logger.info(`[Estudiantes] IDs documentos inscripcion para filtrar: [${idsDocumentosInscripcion.join(', ')}]`);
 
       // 4. Obtener entregas de documentos del estudiante
       const entregas = await this._getStudentDocumentDeliveries(studentId);
@@ -92,17 +116,37 @@ export class GenerateActaCompromisoUseCase {
       // 6. Filtrar solo entregas de documentos de inscripción
       const entregasInscripcion = this._filterInscripcionDeliveries(
         entregas,
-        documentosInscripcion.map(doc => doc.id)
+        idsDocumentosInscripcion
       );
 
       // 7. Separar documentos entregados y faltantes
       const { entregados, faltantes } = this._separateDeliveredAndMissing(entregasInscripcion);
+
+      // Debug: Log de la separación de entregados y faltantes
+      this.logger.info(`[Estudiantes] Separación - totalEntregasInscripcion: ${entregasInscripcion.length}, entregados: ${entregados.length}, faltantes: ${faltantes.length}`);
+      entregados.forEach((e, index) => {
+        const ePlain = e.toPlainObject ? e.toPlainObject() : e;
+        this.logger.info(`[Estudiantes] Entregado ${index + 1}: id=${ePlain.id}, documentacionId=${ePlain.documentacionId}, entregado=${ePlain.entregado} (tipo: ${typeof ePlain.entregado})`);
+      });
+      faltantes.forEach((e, index) => {
+        const ePlain = e.toPlainObject ? e.toPlainObject() : e;
+        this.logger.info(`[Estudiantes] Faltante ${index + 1}: id=${ePlain.id}, documentacionId=${ePlain.documentacionId}, entregado=${ePlain.entregado} (tipo: ${typeof ePlain.entregado})`);
+      });
 
       // 8. Identificar documentos sin entrega registrada
       const documentosSinEntrega = this._findDocumentsWithoutDelivery(
         documentosInscripcion,
         entregasInscripcion
       );
+
+      // Debug: Log de documentos sin entrega
+      this.logger.info(`[Estudiantes] Documentos sin entrega: ${documentosSinEntrega.length}`);
+      this.logger.info(`[Estudiantes] IDs documentos inscripcion: ${documentosInscripcion.map(doc => doc.id).join(', ')}`);
+      this.logger.info(`[Estudiantes] IDs entregas inscripcion: ${entregasInscripcion.map(e => (e.toPlainObject ? e.toPlainObject() : e).documentacionId).join(', ')}`);
+      documentosSinEntrega.forEach((doc, index) => {
+        const docPlain = doc.toPlainObject ? doc.toPlainObject() : doc;
+        this.logger.info(`[Estudiantes] Sin entrega ${index + 1}: id=${docPlain.id}, name=${docPlain.name || docPlain.nombre || 'N/A'}`);
+      });
 
       // 9. Construir estado de documentos
       const estadoDocumentos = this._buildDocumentStatus(
@@ -112,6 +156,15 @@ export class GenerateActaCompromisoUseCase {
         documentosSinEntrega,
         documentosMap
       );
+
+      // Debug: Log del estado de documentos antes de validar
+      this.logger.info(`[Estudiantes] Estado final - totalRequeridos: ${estadoDocumentos.totalRequeridos}, entregados: ${estadoDocumentos.entregados}, faltantes: ${estadoDocumentos.faltantes}`);
+      estadoDocumentos.documentosEntregados.forEach((d, index) => {
+        this.logger.info(`[Estudiantes] Entregado ${index + 1}: id=${d.id}, nombre=${d.nombre}`);
+      });
+      estadoDocumentos.documentosFaltantes.forEach((d, index) => {
+        this.logger.info(`[Estudiantes] Faltante ${index + 1}: id=${d.id}, nombre=${d.nombre}, tieneRegistroEntrega=${d.tieneRegistroEntrega || false}`);
+      });
 
       // 9.1. Validar que tenga documentos faltantes (regla de negocio)
       this._validateHasMissingDocuments(estadoDocumentos, studentId);
@@ -243,19 +296,21 @@ export class GenerateActaCompromisoUseCase {
    */
   async _getInscripcionDocuments() {
     const result = await this.documentacionRepository.findAll({
-      tipoDocumento: TIPOS_DOCUMENTO_SISTEMA.INSCRIPCION,
-      documentoPadreId: null, // Solo documentos principales (sin padre)
+      documentType: TIPOS_DOCUMENTO_SISTEMA.INSCRIPCION, // Campo en inglés para el repositorio
+      parentDocumentId: null, // Solo documentos principales (sin padre) - campo en inglés para el repositorio
       attributes: ['id', 'nombre'], // Solo campos necesarios para optimización
     });
 
-    const documentos = result.documentaciones || [];
+    // El repositorio devuelve entidades Documentation con la clave 'documentations' (inglés)
+    // Ver DocumentacionRepository.getCollectionName() que retorna 'documentations'
+    const documentos = result.documentations || [];
 
-    this.logger.info('[Estudiantes] Documentos de inscripción obtenidos', {
-      cantidad: documentos.length,
-      documentos: documentos.map(doc => ({
-        id: doc.id,
-        name: doc.name,
-      })),
+    this.logger.info(`[Estudiantes] Documentos de inscripción obtenidos - cantidad: ${documentos.length}`);
+    this.logger.info(`[Estudiantes] Result del repositorio - documentations: ${result.documentations ? result.documentations.length : 'undefined'}, keys: ${Object.keys(result).join(', ')}`);
+    
+    documentos.forEach((doc, index) => {
+      const docPlain = doc.toPlainObject ? doc.toPlainObject() : doc;
+      this.logger.info(`[Estudiantes] Documento ${index + 1}: id=${docPlain.id}, name=${docPlain.name || docPlain.nombre || 'N/A'}, tipo=${typeof docPlain.id}`);
     });
 
     return documentos;
@@ -269,20 +324,17 @@ export class GenerateActaCompromisoUseCase {
    */
   async _getStudentDocumentDeliveries(studentId) {
     const result = await this.studentDocumentDeliveryRepository.findAll({
-      estudianteId: studentId,
+      studentId: studentId, // Campo en inglés para el repositorio (mapea a estudianteId en BD)
       attributes: ['id', 'documentacionId', 'entregado', 'enTramite'],
     });
 
     const entregas = result.studentDocumentDeliveries || [];
 
-    this.logger.info('[Estudiantes] Entregas de documentos obtenidas', {
-      studentId,
-      cantidadEntregas: entregas.length,
-      entregas: entregas.map(entrega => ({
-        documentacionId: entrega.documentacionId,
-        entregado: entrega.entregado,
-        enTramite: entrega.enTramite,
-      })),
+    // Debug: Log detallado de las entregas obtenidas
+    this.logger.info(`[Estudiantes] Entregas de documentos obtenidas - studentId: ${studentId}, cantidad: ${entregas.length}`);
+    entregas.forEach((entrega, index) => {
+      const entregaPlain = entrega.toPlainObject ? entrega.toPlainObject() : entrega;
+      this.logger.info(`[Estudiantes] Entrega ${index + 1}: id=${entregaPlain.id}, documentacionId=${entregaPlain.documentacionId}, entregado=${entregaPlain.entregado}, enTramite=${entregaPlain.enTramite}`);
     });
 
     return entregas;
@@ -296,18 +348,17 @@ export class GenerateActaCompromisoUseCase {
    * @returns {Array} Array filtrado de entregas
    */
   _filterInscripcionDeliveries(deliveries, documentIds) {
+    this.logger.info(`[Estudiantes] Filtrando entregas - totalEntregas: ${deliveries.length}, idsDocumentosInscripcion: [${documentIds.join(', ')}]`);
+    
     const entregasFiltradas = deliveries.filter(entrega => {
-      const entregaId = normalizeId(entrega.documentacionId);
-      return entregaId !== null && documentIds.includes(entregaId);
+      const entregaPlain = entrega.toPlainObject ? entrega.toPlainObject() : entrega;
+      const entregaId = normalizeId(entregaPlain.documentacionId);
+      const estaIncluido = entregaId !== null && documentIds.includes(entregaId);
+      this.logger.info(`[Estudiantes] Entrega id=${entregaPlain.id}, documentacionId=${entregaPlain.documentacionId}, normalized=${entregaId}, incluido=${estaIncluido}`);
+      return estaIncluido;
     });
 
-    this.logger.info('[Estudiantes] Entregas filtradas', {
-      totalEntregas: entregasFiltradas.length,
-      entregas: entregasFiltradas.map(e => ({
-        documentacionId: e.documentacionId,
-        entregado: e.entregado,
-      })),
-    });
+    this.logger.info(`[Estudiantes] Entregas filtradas - total: ${entregasFiltradas.length}`);
 
     return entregasFiltradas;
   }
@@ -319,13 +370,17 @@ export class GenerateActaCompromisoUseCase {
    * @returns {Object} { entregados: Array, faltantes: Array }
    */
   _separateDeliveredAndMissing(deliveries) {
-    const entregados = deliveries.filter(
-      entrega => entrega.entregado === true || entrega.entregado === 1
-    );
+    // Usar toPlainObject() para acceder a propiedades de la entidad StudentDocumentDelivery
+    // La entidad mantiene propiedades en español (entregado, documentacionId, enTramite)
+    const entregados = deliveries.filter(entrega => {
+      const entregaPlain = entrega.toPlainObject ? entrega.toPlainObject() : entrega;
+      return entregaPlain.entregado === true || entregaPlain.entregado === 1;
+    });
 
-    const faltantes = deliveries.filter(
-      entrega => entrega.entregado === false || entrega.entregado === 0 || entrega.entregado === null
-    );
+    const faltantes = deliveries.filter(entrega => {
+      const entregaPlain = entrega.toPlainObject ? entrega.toPlainObject() : entrega;
+      return entregaPlain.entregado === false || entregaPlain.entregado === 0 || entregaPlain.entregado === null;
+    });
 
     return { entregados, faltantes };
   }
@@ -338,13 +393,18 @@ export class GenerateActaCompromisoUseCase {
    * @returns {Array} Array de documentos sin entrega
    */
   _findDocumentsWithoutDelivery(requiredDocuments, deliveries) {
+    // Usar toPlainObject() para acceder a propiedades de las entidades
     const entregasDocumentacionIds = deliveries
-      .map(e => normalizeId(e.documentacionId))
+      .map(e => {
+        const ePlain = e.toPlainObject ? e.toPlainObject() : e;
+        return normalizeId(ePlain.documentacionId);
+      })
       .filter(id => id !== null);
     
     return requiredDocuments.filter(
       doc => {
-        const docId = normalizeId(doc.id);
+        const docPlain = doc.toPlainObject ? doc.toPlainObject() : doc;
+        const docId = normalizeId(docPlain.id);
         return docId !== null && !entregasDocumentacionIds.includes(docId);
       }
     );
@@ -366,18 +426,20 @@ export class GenerateActaCompromisoUseCase {
       entregados: deliveredList.length,
       faltantes: missingList.length + noDeliveryDocs.length,
       documentosEntregados: deliveredList.map(e => {
-        const docId = normalizeId(e.documentacionId);
+        const ePlain = e.toPlainObject ? e.toPlainObject() : e;
+        const docId = normalizeId(ePlain.documentacionId);
         return {
-          id: e.documentacionId,
+          id: ePlain.documentacionId,
           nombre: docId !== null ? (documentMap[docId] || documentMap[String(docId)] || 'Documento no encontrado') : 'Documento no encontrado',
           entregado: true,
         };
       }),
       documentosFaltantes: [
         ...missingList.map(e => {
-          const docId = normalizeId(e.documentacionId);
+          const ePlain = e.toPlainObject ? e.toPlainObject() : e;
+          const docId = normalizeId(ePlain.documentacionId);
           return {
-            id: e.documentacionId,
+            id: ePlain.documentacionId,
             nombre: docId !== null ? (documentMap[docId] || documentMap[String(docId)] || 'Documento no encontrado') : 'Documento no encontrado',
             entregado: false,
             tieneRegistroEntrega: true,
@@ -386,7 +448,7 @@ export class GenerateActaCompromisoUseCase {
         ...noDeliveryDocs.map(doc => {
           const docPlain = doc.toPlainObject ? doc.toPlainObject() : doc;
           return {
-            id: doc.id,
+            id: docPlain.id,
             nombre: docPlain.name || docPlain.nombre || 'Documento no encontrado',
             entregado: false,
             tieneRegistroEntrega: false,
@@ -418,17 +480,21 @@ export class GenerateActaCompromisoUseCase {
     const mes = PDFGenerator.getMonthName(fechaActual.getMonth());
     const anio = fechaActual.getFullYear();
 
-    // Obtener lista de documentos faltantes (nombres)
+    // Obtener listas de documentos entregados y faltantes (nombres)
+    const nombresDocumentosEntregados = estadoDocumentos.documentosEntregados.map(doc => doc.nombre);
     const nombresDocumentosFaltantes = estadoDocumentos.documentosFaltantes.map(doc => doc.nombre);
     
     // Crear mapa de documentos requeridos para el PDF
-    // El PDF necesita saber qué documentos están faltantes (marcados con X)
+    // Las entidades Documentation tienen propiedades en inglés (name)
     const documentosRequeridos = documentosInscripcion.map(doc => {
       const docPlain = doc.toPlainObject ? doc.toPlainObject() : doc;
-      return docPlain.name || docPlain.nombre || 'Documento sin nombre';
+      return docPlain.name || 'Documento sin nombre';
     });
-    const indicesFaltantes = documentosRequeridos
-      .map((nombre, index) => nombresDocumentosFaltantes.includes(nombre) ? index : null)
+    
+    // Calcular índices de documentos ENTREGADOS (para marcar con X)
+    // NOTA: Se marcan los entregados porque la interpretación común es que X = entregado
+    const indicesEntregados = documentosRequeridos
+      .map((nombre, index) => nombresDocumentosEntregados.includes(nombre) ? index : null)
       .filter(index => index !== null);
 
     // 2. Preparar datos para PDFGenerator
@@ -443,7 +509,7 @@ export class GenerateActaCompromisoUseCase {
       anioCarrera: '', // No hay datos académicos aún
       paralelo: '', // No hay datos académicos aún
       carrera: '', // No hay datos académicos aún
-      documentosFaltantes: indicesFaltantes,
+      documentosEntregados: indicesEntregados, // Índices de documentos entregados (se marcan con X)
       documentosRequeridos, // Lista completa de documentos requeridos
       plazoMaximo: 10, // Por defecto 10 días (podría venir de configuración)
       motivos: 'Actualización de carta aval del presente año.',
@@ -458,9 +524,10 @@ export class GenerateActaCompromisoUseCase {
     const filePath = path.join('/', uploadDir, relativePath, fileName).replace(/\\/g, '/');
     
     // Ruta absoluta (para guardar en disco)
+    // Desde backend/src/application/use-cases/estudiantes necesitamos subir 4 niveles para llegar a backend/
     const absoluteUploadPath = path.isAbsolute(uploadDir)
       ? path.join(uploadDir, relativePath, fileName)
-      : path.resolve(__dirname, '../../..', uploadDir, relativePath, fileName);
+      : path.resolve(__dirname, '../../../..', uploadDir, relativePath, fileName);
 
     // 4. Generar PDF
     this.logger.info('[Estudiantes] Generando PDF del acta de compromiso', {

@@ -56,6 +56,7 @@ const createCamposBoliviana = (prefix = '') => {
       type: 'input',
       required: false,
       span: 12,
+      capitalize: true, // Capitaliza automáticamente la primera letra
       placeholder: 'Ingrese localidad o comunidad',
     },
   ];
@@ -83,6 +84,7 @@ const createCamposExtranjera = (prefix = '') => {
       type: 'input',
       required: true,
       span: 12,
+      capitalize: true, // Capitaliza automáticamente la primera letra
       placeholder: 'Ingrese ciudad de nacimiento',
     },
   ];

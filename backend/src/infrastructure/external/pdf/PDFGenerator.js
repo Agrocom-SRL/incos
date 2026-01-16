@@ -107,7 +107,7 @@ export class PDFGenerator {
         const seccionRequisitosNumero = tieneDatosAcademicos ? 'IV' : 'III';
         doc
           .font('Helvetica-Bold')
-          .text(`${seccionRequisitosNumero}. Marcar con una "X" en el recuadro, el requisito que no está presentando.`, {
+          .text(`${seccionRequisitosNumero}. Marcar con una "X" en el recuadro los requisitos que ya fueron presentados.`, {
             continued: false
           })
           .moveDown(0.5);
@@ -125,7 +125,8 @@ export class PDFGenerator {
             ];
 
         requisitos.forEach((requisito, index) => {
-          const tieneX = data.documentosFaltantes?.includes(index);
+          // Marcar con X los documentos ENTREGADOS (interpretación común: X = entregado)
+          const tieneX = data.documentosEntregados?.includes(index);
           const yPos = doc.y;
           
           // Dibujar recuadro (checkbox)
@@ -133,7 +134,7 @@ export class PDFGenerator {
             .rect(70, yPos - 2, 12, 12)
             .stroke();
           
-          // Si tiene X, dibujarla centrada en el recuadro
+          // Si tiene X, dibujarla centrada en el recuadro (documento entregado)
           if (tieneX) {
             doc
               .font('Helvetica-Bold')
