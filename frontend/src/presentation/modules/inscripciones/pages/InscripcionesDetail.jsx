@@ -141,9 +141,6 @@ const InscripcionesDetail = () => {
         {/* Datos de la Inscripción */}
         <Card title="Datos de la Inscripción" style={{ marginBottom: '24px' }}>
           <Descriptions column={2} bordered>
-            <Descriptions.Item label="ID de Inscripción">
-              {enrollment?.id || 'N/A'}
-            </Descriptions.Item>
             <Descriptions.Item label="Tipo de Inscripción">
               {enrollment?.tipoInscripcion ? (
                 <Tag color={getEnrollmentTypeColor(enrollment.tipoInscripcion)}>
@@ -151,13 +148,10 @@ const InscripcionesDetail = () => {
                 </Tag>
               ) : 'N/A'}
             </Descriptions.Item>
-            <Descriptions.Item label="Fecha de Inscripción">
-              {enrollment?.fechaInscripcion || 'N/A'}
-            </Descriptions.Item>
             <Descriptions.Item label="Gestión">
               {management?.nombre ? (
                 <span>{management.nombre} ({management.anio})</span>
-              ) : enrollment?.gestionId || 'N/A'}
+              ) : enrollment?.gestionId ? `ID: ${enrollment.gestionId}` : 'N/A'}
             </Descriptions.Item>
             <Descriptions.Item label="Estado de Registro">
               {studentAcademicData?.estadoRegistro ? (
@@ -166,19 +160,10 @@ const InscripcionesDetail = () => {
                 </Tag>
               ) : 'N/A'}
             </Descriptions.Item>
-            <Descriptions.Item label="Estado">
-              {enrollment?.activo !== undefined ? (enrollment.activo ? 'Activo' : 'Inactivo') : 'N/A'}
-            </Descriptions.Item>
-            {enrollment?.observaciones && (
-              <Descriptions.Item label="Observaciones" span={2}>
-                {enrollment.observaciones}
-              </Descriptions.Item>
-            )}
-            <Descriptions.Item label="Fecha de Creación">
-              {enrollment?.createdAt || 'N/A'}
-            </Descriptions.Item>
-            <Descriptions.Item label="Última Actualización">
-              {enrollment?.updatedAt || 'N/A'}
+            <Descriptions.Item label="Tipo de Gestión" span={2}>
+              {management?.tipo ? (
+                <Tag>{management.tipo}</Tag>
+              ) : 'N/A'}
             </Descriptions.Item>
           </Descriptions>
         </Card>
@@ -202,9 +187,6 @@ const InscripcionesDetail = () => {
               <Descriptions.Item label="Celular">
                 {student.celular || 'N/A'}
               </Descriptions.Item>
-              <Descriptions.Item label="Tiene Discapacidad">
-                {student.tieneDiscapacidad !== undefined ? (student.tieneDiscapacidad ? 'Sí' : 'No') : 'N/A'}
-              </Descriptions.Item>
             </Descriptions>
           </Card>
         )}
@@ -226,72 +208,90 @@ const InscripcionesDetail = () => {
           </Card>
         )}
 
-        {/* Datos Académicos del Estudiante */}
-        {studentAcademicData && (
-          <Card title="Datos Académicos del Estudiante" style={{ marginBottom: '24px' }}>
-            <Descriptions column={2} bordered>
-              <Descriptions.Item label="ID Datos Académicos">
-                {studentAcademicData.id || 'N/A'}
-              </Descriptions.Item>
-              <Descriptions.Item label="Estado de Registro">
-                {studentAcademicData.estadoRegistro ? (
-                  <Tag color={studentAcademicData.estadoRegistro === 'ADMITIDO' ? 'success' : 'warning'}>
-                    {studentAcademicData.estadoRegistro}
-                  </Tag>
-                ) : 'N/A'}
-              </Descriptions.Item>
-              <Descriptions.Item label="ID Estudiante">
-                {studentAcademicData.estudianteId || 'N/A'}
-              </Descriptions.Item>
-              <Descriptions.Item label="ID Carrera">
-                {studentAcademicData.carreraId || 'N/A'}
-              </Descriptions.Item>
-            </Descriptions>
-          </Card>
-        )}
-
         {/* Materias Inscritas */}
         {enrollmentSubjects && enrollmentSubjects.length > 0 && (
           <Card title={`Materias Inscritas (${enrollmentSubjects.length})`}>
-            {enrollmentSubjects.map((subject, index) => (
-              <div key={subject.id || index} style={{ marginBottom: '16px' }}>
-                <Descriptions column={2} bordered size="small">
-                  <Descriptions.Item label="ID Materia Inscrita">
-                    {subject.id || 'N/A'}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Estado">
-                    {subject.status ? (
-                      <Tag color={getStatusColor(subject.status)}>
-                        {subject.status}
-                      </Tag>
-                    ) : 'N/A'}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="ID Asignación Docente">
-                    {subject.teacherAssignmentId || 'N/A'}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="ID Inscripción">
-                    {subject.enrollmentId || 'N/A'}
-                  </Descriptions.Item>
-                  {subject.observations && (
+            {enrollmentSubjects.map((materia, index) => {
+              // Obtener el color del curso (convertir hex a rgba para el fondo)
+              const borderColor = materia.color || '#d9d9d9';
+              // Convertir hex a rgba con opacidad
+              const getBackgroundColor = (hex) => {
+                if (!hex) return 'transparent';
+                // Remover # si existe
+                const hexColor = hex.replace('#', '');
+                // Convertir a RGB
+                const r = parseInt(hexColor.substring(0, 2), 16);
+                const g = parseInt(hexColor.substring(2, 4), 16);
+                const b = parseInt(hexColor.substring(4, 6), 16);
+                // Retornar rgba con 15% de opacidad (0.15)
+                return `rgba(${r}, ${g}, ${b}, 0.15)`;
+              };
+              const backgroundColor = getBackgroundColor(materia.color);
+              
+              return (
+                <div 
+                  key={materia.id || index} 
+                  style={{ 
+                    marginBottom: '24px',
+                    borderLeft: `4px solid ${borderColor}`,
+                    backgroundColor: backgroundColor,
+                    padding: '16px',
+                    borderRadius: '4px',
+                  }}
+                >
+                  <Descriptions column={2} bordered size="small">
+                    <Descriptions.Item label="Materia" span={2}>
+                      {materia.materiaNombre ? (
+                        <span>
+                          {materia.materiaSigla && <strong>{materia.materiaSigla} - </strong>}
+                          {materia.materiaNombre}
+                        </span>
+                      ) : 'N/A'}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Estado" span={2}>
+                      {materia.status ? (
+                        <Tag color={getStatusColor(materia.status)}>
+                          {materia.status}
+                        </Tag>
+                      ) : 'N/A'}
+                    </Descriptions.Item>
+                    {materia.docente && (
+                      <Descriptions.Item label="Docente" span={2}>
+                        {materia.docente.nombreCompleto || 'N/A'}
+                      </Descriptions.Item>
+                    )}
+                  {materia.horarios && materia.horarios.length > 0 && (
+                    <Descriptions.Item label="Horarios" span={2}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {materia.horarios.map((horario, hIndex) => (
+                          <div key={horario.id || hIndex} style={{ padding: '8px' }}>
+                            {horario.horario ? (
+                              <div>
+                                <strong>{horario.horario.dia}:</strong> {horario.horario.horaInicio} - {horario.horario.horaFin}
+                                {horario.aula && <span> | Aula: {horario.aula}</span>}
+                              </div>
+                            ) : (
+                              <div>Sin horario asignado</div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </Descriptions.Item>
+                  )}
+                  {materia.observations && (
                     <Descriptions.Item label="Observaciones" span={2}>
-                      {subject.observations}
+                      {materia.observations}
                     </Descriptions.Item>
                   )}
-                  {subject.teacherObservations && (
+                  {materia.teacherObservations && (
                     <Descriptions.Item label="Observaciones del Docente" span={2}>
-                      {subject.teacherObservations}
+                      {materia.teacherObservations}
                     </Descriptions.Item>
                   )}
-                  <Descriptions.Item label="Fecha de Creación">
-                    {subject.createdAt || 'N/A'}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Última Actualización">
-                    {subject.updatedAt || 'N/A'}
-                  </Descriptions.Item>
-                </Descriptions>
-                {index < enrollmentSubjects.length - 1 && <Divider />}
-              </div>
-            ))}
+                  </Descriptions>
+                </div>
+              );
+            })}
           </Card>
         )}
 

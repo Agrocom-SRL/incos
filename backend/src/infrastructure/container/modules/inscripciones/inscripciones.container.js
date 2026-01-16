@@ -75,6 +75,10 @@ export function registerInscripcionesResource(container) {
                 courseRepository: c.resolve(REPOSITORIOS_TOKENS.courseRepository),
                 planSubjectRepository: c.resolve(REPOSITORIOS_TOKENS.planSubjectRepository),
                 subjectRepository: c.resolve(REPOSITORIOS_TOKENS.subjectRepository),
+                courseScheduleRepository: c.resolve(REPOSITORIOS_TOKENS.courseScheduleRepository),
+                scheduleRepository: c.resolve(REPOSITORIOS_TOKENS.scheduleRepository),
+                classroomRepository: c.resolve(REPOSITORIOS_TOKENS.classroomRepository),
+                teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
     );

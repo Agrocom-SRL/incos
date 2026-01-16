@@ -40,6 +40,10 @@ export class GetEnrollmentByIdUseCase {
    * @param {Object} params.courseRepository - Repositorio de cursos
    * @param {Object} params.planSubjectRepository - Repositorio de asignaturas de plan
    * @param {Object} params.subjectRepository - Repositorio de materias
+   * @param {Object} params.courseScheduleRepository - Repositorio de horarios de cursos
+   * @param {Object} params.scheduleRepository - Repositorio de horarios
+   * @param {Object} params.classroomRepository - Repositorio de aulas
+   * @param {Object} params.teacherRepository - Repositorio de docentes
    * @param {ILogger} params.logger - Logger para registro de eventos
    */
   constructor({
@@ -54,6 +58,10 @@ export class GetEnrollmentByIdUseCase {
     courseRepository,
     planSubjectRepository,
     subjectRepository,
+    courseScheduleRepository,
+    scheduleRepository,
+    classroomRepository,
+    teacherRepository,
     logger,
   }) {
     this.enrollmentRepository = enrollmentRepository;
@@ -67,6 +75,10 @@ export class GetEnrollmentByIdUseCase {
     this.courseRepository = courseRepository;
     this.planSubjectRepository = planSubjectRepository;
     this.subjectRepository = subjectRepository;
+    this.courseScheduleRepository = courseScheduleRepository;
+    this.scheduleRepository = scheduleRepository;
+    this.classroomRepository = classroomRepository;
+    this.teacherRepository = teacherRepository;
     this.logger = logger;
   }
 
@@ -269,7 +281,218 @@ export class GetEnrollmentByIdUseCase {
         studentAcademicData?.careerId
       );
 
-      // 6. Convertir entidades de dominio a formato de presentación usando mappers
+      // 6. Obtener materias inscritas (múltiples)
+      const enrollmentSubjectsResult = await this.enrollmentSubjectRepository.findAll(
+        { enrollmentId: enrollment.id },
+        null,
+        null
+      );
+      const enrollmentSubjects = enrollmentSubjectsResult.enrollmentSubjects || [];
+
+      this.logger.info('[Inscripciones] Materias inscritas encontradas', {
+        enrollmentId: enrollment.id,
+        count: enrollmentSubjects.length,
+      });
+
+      // 7. Para cada materia inscrita, obtener datos relacionados (teacherAssignment, course, planSubject, subject, horarios)
+      const materiasConDetalles = await Promise.all(
+        enrollmentSubjects.map(async (enrollmentSubject) => {
+          try {
+            const enrollmentSubjectPlain = enrollmentSubject?.toPlainObject
+              ? enrollmentSubject.toPlainObject()
+              : enrollmentSubject;
+
+            let teacherAssignment = null;
+            let teacher = null;
+            let course = null;
+            let planSubject = null;
+            let subject = null;
+            let horarios = [];
+
+            // 7a. Obtener asignación docente
+            if (enrollmentSubjectPlain.teacherAssignmentId) {
+              try {
+                teacherAssignment = await this.teacherAssignmentRepository.findById(
+                  enrollmentSubjectPlain.teacherAssignmentId
+                );
+                teacherAssignment = teacherAssignment?.toPlainObject
+                  ? teacherAssignment.toPlainObject()
+                  : teacherAssignment;
+
+                // 7a.1. Obtener docente desde la asignación docente
+                if (teacherAssignment?.teacherId) {
+                  try {
+                    teacher = await this.teacherRepository.findById(teacherAssignment.teacherId, {
+                      attributes: ['id', 'nombres', 'apellidoPaterno', 'apellidoMaterno', 'ci', 'expedicion', 'telefono', 'celular', 'emailPersonal'],
+                    });
+                    teacher = teacher?.toPlainObject ? teacher.toPlainObject() : teacher;
+                  } catch (err) {
+                    this.logger.warn('[Inscripciones] Error al obtener docente', {
+                      enrollmentSubjectId: enrollmentSubjectPlain.id,
+                      teacherId: teacherAssignment.teacherId,
+                      error: err.message,
+                    });
+                  }
+                }
+
+                // 7b. Obtener curso desde la asignación docente
+                if (teacherAssignment?.courseId) {
+                  try {
+                    course = await this.courseRepository.findById(teacherAssignment.courseId);
+                    course = course?.toPlainObject ? course.toPlainObject() : course;
+
+                    // 7c. Obtener asignatura de plan desde el curso
+                    if (course?.planSubjectId) {
+                      try {
+                        planSubject = await this.planSubjectRepository.findById(course.planSubjectId);
+                        planSubject = planSubject?.toPlainObject ? planSubject.toPlainObject() : planSubject;
+
+                        // 7d. Obtener materia desde la asignatura de plan
+                        if (planSubject?.subjectId) {
+                          try {
+                            subject = await this.subjectRepository.findById(planSubject.subjectId);
+                            subject = subject?.toPlainObject ? subject.toPlainObject() : subject;
+                          } catch (err) {
+                            this.logger.warn('[Inscripciones] Error al obtener materia', {
+                              enrollmentSubjectId: enrollmentSubjectPlain.id,
+                              subjectId: planSubject.subjectId,
+                              error: err.message,
+                            });
+                          }
+                        }
+                      } catch (err) {
+                        this.logger.warn('[Inscripciones] Error al obtener asignatura de plan', {
+                          enrollmentSubjectId: enrollmentSubjectPlain.id,
+                          planSubjectId: course.planSubjectId,
+                          error: err.message,
+                        });
+                      }
+                    }
+
+                    // 7e. Obtener horarios del curso
+                    if (course?.id) {
+                      try {
+                        const cursosHorariosResult = await this.courseScheduleRepository.findAll(
+                          { courseId: course.id },
+                          null,
+                          null
+                        );
+                        const cursosHorarios = cursosHorariosResult.courseSchedules || [];
+
+                        // 7f. Para cada curso_horario, obtener horario y aula completos
+                        horarios = await Promise.all(
+                          cursosHorarios.map(async (cursoHorario) => {
+                            try {
+                              let horario = null;
+                              if (cursoHorario.scheduleId) {
+                                horario = await this.scheduleRepository.findById(cursoHorario.scheduleId);
+                                horario = horario?.toPlainObject ? horario.toPlainObject() : horario;
+                              }
+
+                              let aula = null;
+                              if (cursoHorario.classroomId) {
+                                try {
+                                  aula = await this.classroomRepository.findById(cursoHorario.classroomId);
+                                  aula = aula?.toPlainObject ? aula.toPlainObject() : aula;
+                                } catch (error) {
+                                  this.logger.warn('[Inscripciones] Error al obtener aula', {
+                                    cursoHorarioId: cursoHorario.id,
+                                    aulaId: cursoHorario.classroomId,
+                                    error: error.message,
+                                  });
+                                }
+                              }
+
+                              return {
+                                id: cursoHorario.id,
+                                ordenSecuencia: cursoHorario.sequenceOrder,
+                                horario: horario
+                                  ? {
+                                      dia: horario.day,
+                                      horaInicio: horario.startTime,
+                                      horaFin: horario.endTime,
+                                    }
+                                  : null,
+                                aula: aula ? aula.name : null,
+                              };
+                            } catch (error) {
+                              this.logger.warn('[Inscripciones] Error al obtener horario o aula', {
+                                cursoHorarioId: cursoHorario.id,
+                                error: error.message,
+                              });
+                              return null;
+                            }
+                          })
+                        );
+
+                        // Filtrar horarios nulos (errores)
+                        horarios = horarios.filter((h) => h !== null);
+
+                        // Ordenar por ordenSecuencia
+                        horarios.sort((a, b) => a.ordenSecuencia - b.ordenSecuencia);
+                      } catch (err) {
+                        this.logger.warn('[Inscripciones] Error al obtener horarios del curso', {
+                          enrollmentSubjectId: enrollmentSubjectPlain.id,
+                          courseId: course.id,
+                          error: err.message,
+                        });
+                      }
+                    }
+                  } catch (err) {
+                    this.logger.warn('[Inscripciones] Error al obtener curso', {
+                      enrollmentSubjectId: enrollmentSubjectPlain.id,
+                      courseId: teacherAssignment.courseId,
+                      error: err.message,
+                    });
+                  }
+                }
+              } catch (err) {
+                this.logger.warn('[Inscripciones] Error al obtener asignación docente', {
+                  enrollmentSubjectId: enrollmentSubjectPlain.id,
+                  teacherAssignmentId: enrollmentSubjectPlain.teacherAssignmentId,
+                  error: err.message,
+                });
+              }
+            }
+
+            return {
+              ...enrollmentSubjectPlain,
+              materiaId: subject ? subject.id : null,
+              materiaNombre: subject ? subject.name : null,
+              materiaSigla: subject ? subject.acronym : null,
+              color: course ? course.colorHex : null,
+              docente: teacher
+                ? {
+                    id: teacher.id,
+                    nombres: teacher.firstName,
+                    apellidoPaterno: teacher.lastName,
+                    apellidoMaterno: teacher.motherLastName || null,
+                    nombreCompleto: teacher.firstName && teacher.lastName
+                      ? `${teacher.firstName} ${teacher.lastName}${teacher.motherLastName ? ` ${teacher.motherLastName}` : ''}`
+                      : null,
+                    ci: teacher.ci || null,
+                    expedicion: teacher.expedition || null,
+                    telefono: teacher.phone || null,
+                    celular: teacher.mobilePhone || null,
+                    email: teacher.personalEmail || null,
+                  }
+                : null,
+              horarios,
+            };
+          } catch (error) {
+            this.logger.warn('[Inscripciones] Error al procesar materia inscrita', {
+              enrollmentSubjectId: enrollmentSubject?.id,
+              error: error.message,
+            });
+            return null;
+          }
+        })
+      );
+
+      // Filtrar materias nulas (errores)
+      const materiasValidas = materiasConDetalles.filter((m) => m !== null);
+
+      // 8. Convertir entidades de dominio a formato de presentación usando mappers
       // Los mappers pueden trabajar directamente con entidades (no necesitan aplanado)
       const enrollmentPresentation = EnrollmentMapper.entityToPresentation(enrollment);
       const studentAcademicDataPresentation = StudentAcademicDataMapper.entityToPresentation(studentAcademicData);
@@ -284,6 +507,7 @@ export class GetEnrollmentByIdUseCase {
         hasManagement: !!management,
         hasStudent: !!student,
         hasCareer: !!career,
+        enrollmentSubjectsCount: materiasValidas.length,
       });
 
       // TODO: Construir el schema por partes
@@ -501,6 +725,7 @@ export class GetEnrollmentByIdUseCase {
         management: managementPresentation,
         student: studentPresentation,
         career: careerPresentation,
+        enrollmentSubjects: materiasValidas,
       };
     } catch (error) {
       // Manejo de errores
