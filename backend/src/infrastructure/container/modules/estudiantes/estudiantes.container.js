@@ -14,8 +14,8 @@
 
 import { ESTUDIANTES_TOKENS, REPOSITORIOS_TOKENS, SERVICIOS_TOKENS } from '../../tokens/index.js';
 import { registerComponent } from '../../utils/container.helpers.js';
-import { ListStudentsUseCase, RegisterStudentUseCase, GetStudentByIdUseCase, SearchStudentUseCase, GenerateActaCompromisoUseCase, CreateStudentScholarshipUseCase } from '../../../../application/use-cases/estudiantes/index.js';
-import { ListStudentsController, RegisterStudentController, GetStudentByIdController, SearchStudentController, ActaCompromisoController, AsignarBecaController } from '../../../../presentation/controllers/estudiantes/index.js';
+import { ListStudentsUseCase, RegisterStudentUseCase, UpdateStudentUseCase, GetStudentByIdUseCase, SearchStudentUseCase, GenerateActaCompromisoUseCase, CreateStudentScholarshipUseCase } from '../../../../application/use-cases/estudiantes/index.js';
+import { ListStudentsController, RegisterStudentController, UpdateStudentController, GetStudentByIdController, SearchStudentController, ActaCompromisoController, AsignarBecaController } from '../../../../presentation/controllers/estudiantes/index.js';
 import { buildEstudiantesRouter } from '../../../../presentation/routes/estudiantes.routes.js';
 
 /**
@@ -50,6 +50,20 @@ export function registerEstudiantesResource(container) {
                 studentOriginRepository: c.resolve(REPOSITORIOS_TOKENS.studentOriginRepository),
                 studentDocumentDeliveryRepository: c.resolve(REPOSITORIOS_TOKENS.studentDocumentDeliveryRepository),
                 configuracionSistemaRepository: c.resolve(REPOSITORIOS_TOKENS.configuracionSistemaRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
+    registerComponent(
+        container,
+        ESTUDIANTES_TOKENS.updateStudentUseCase,
+        (c) =>
+            new UpdateStudentUseCase({
+                studentRepository: c.resolve(REPOSITORIOS_TOKENS.studentRepository),
+                studentGuardianRepository: c.resolve(REPOSITORIOS_TOKENS.studentGuardianRepository),
+                studentDisabilityRepository: c.resolve(REPOSITORIOS_TOKENS.studentDisabilityRepository),
+                studentOriginRepository: c.resolve(REPOSITORIOS_TOKENS.studentOriginRepository),
+                studentDocumentDeliveryRepository: c.resolve(REPOSITORIOS_TOKENS.studentDocumentDeliveryRepository),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
     );
@@ -98,6 +112,8 @@ export function registerEstudiantesResource(container) {
                 studentRepository: c.resolve(REPOSITORIOS_TOKENS.studentRepository),
                 documentacionRepository: c.resolve(REPOSITORIOS_TOKENS.documentacionRepository),
                 studentDocumentDeliveryRepository: c.resolve(REPOSITORIOS_TOKENS.studentDocumentDeliveryRepository),
+                configuracionSistemaRepository: c.resolve(REPOSITORIOS_TOKENS.configuracionSistemaRepository),
+                managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
     );
@@ -136,6 +152,17 @@ export function registerEstudiantesResource(container) {
         (c) =>
             new RegisterStudentController({
                 registerStudentUseCase: c.resolve(ESTUDIANTES_TOKENS.registerStudentUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
+    );
+
+    registerComponent(
+        container,
+        ESTUDIANTES_TOKENS.updateStudentController,
+        (c) =>
+            new UpdateStudentController({
+                updateStudentUseCase: c.resolve(ESTUDIANTES_TOKENS.updateStudentUseCase),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
                 responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
             })
@@ -197,12 +224,12 @@ export function registerEstudiantesResource(container) {
             const controllers = {
                 listStudentsController: c.resolve(ESTUDIANTES_TOKENS.listStudentsController),
                 registerStudentController: c.resolve(ESTUDIANTES_TOKENS.registerStudentController),
+                updateStudentController: c.resolve(ESTUDIANTES_TOKENS.updateStudentController),
                 getStudentByIdController: c.resolve(ESTUDIANTES_TOKENS.getStudentByIdController),
                 searchStudentController: c.resolve(ESTUDIANTES_TOKENS.searchStudentController),
                 actaCompromisoController: c.resolve(ESTUDIANTES_TOKENS.actaCompromisoController),
                 asignarBecaController: c.resolve(ESTUDIANTES_TOKENS.asignarBecaController),
                 // TODO: Agregar otros controllers cuando se implementen sus rutas
-                // updateStudentController: c.resolve(ESTUDIANTES_TOKENS.updateStudentController),
             };
 
             const middlewares = {

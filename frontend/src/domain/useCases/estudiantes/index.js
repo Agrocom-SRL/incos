@@ -4,6 +4,7 @@ export { ObtenerDatosRegistroEstudianteUseCase } from './ObtenerDatosRegistroEst
 export { ObtenerDatosGeograficosFiltradosUseCase } from './ObtenerDatosGeograficosFiltradosUseCase';
 export { ObtenerDatosReferenciaFiltradosUseCase } from './ObtenerDatosReferenciaFiltradosUseCase';
 export { CrearEstudianteUseCase } from './CrearEstudianteUseCase';
+export { ActualizarEstudianteUseCase } from './ActualizarEstudianteUseCase';
 export { BuscarEstudianteUseCase } from './BuscarEstudianteUseCase';
 export { ObtenerTodasBecasDescuentosUseCase } from './ObtenerTodasBecasDescuentosUseCase';
 export { CrearAsignarBecaUseCase } from './CrearAsignarBecaUseCase';

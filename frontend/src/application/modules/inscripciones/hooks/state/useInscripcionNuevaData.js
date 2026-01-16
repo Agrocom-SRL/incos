@@ -54,8 +54,23 @@ export const useInscripcionNuevaData = (mode = 'nuevo') => {
     const pageData = useInscripcionNuevaPageData({ mode });
     const studentSearch = useInscripcionNuevaStudentSearch();
     const carrerasData = useInscripcionNuevaCarreras();
+    
+    // Determinar carreraId para filtrar paralelos:
+    // 1. Prioridad: carrera del estudiante si tiene datos académicos (carreraId del estudiante)
+    // 2. Segunda opción: carrera seleccionada manualmente (carrerasData.selectedCarrera?.id)
+    // Esto asegura que se muestren solo paralelos de la carrera correcta del estudiante
+    const carreraIdForParalelos = useMemo(() => {
+        // Si el estudiante tiene datos académicos con carrera, usar esa carrera
+        const studentCareerId = studentSearch.selectedStudent?.careerId || studentSearch.selectedStudent?.carreraId;
+        if (studentCareerId) {
+            return studentCareerId;
+        }
+        // Si no, usar la carrera seleccionada manualmente
+        return carrerasData.selectedCarrera?.id;
+    }, [studentSearch.selectedStudent, carrerasData.selectedCarrera]);
+    
     const paralelosData = useInscripcionNuevaParalelos({ 
-        carreraId: carrerasData.selectedCarrera?.id 
+        carreraId: carreraIdForParalelos 
     });
     
     // Form handlers necesita acceso a selectedStudent y selectedParalelo

@@ -13,6 +13,7 @@ import {
   ObtenerDatosGeograficosFiltradosUseCase,
   ObtenerDatosReferenciaFiltradosUseCase,
   CrearEstudianteUseCase,
+  ActualizarEstudianteUseCase,
   BuscarEstudianteUseCase,
   ObtenerTodasBecasDescuentosUseCase,
   CrearAsignarBecaUseCase,
@@ -78,6 +79,10 @@ export function registerEstudiantesModule(factory) {
 
   factory.crearEstudiante = () => {
     return new CrearEstudianteUseCase(estudianteRepository);
+  };
+
+  factory.actualizarEstudiante = () => {
+    return new ActualizarEstudianteUseCase(estudianteRepository);
   };
 
   factory.buscarEstudiante = () => {

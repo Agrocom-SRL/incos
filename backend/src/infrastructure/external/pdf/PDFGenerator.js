@@ -81,30 +81,48 @@ export class PDFGenerator {
           .moveDown(0.8);
 
         // Sección III: AÑO Y CARRERA A LA QUE POSTULA
-        doc
-          .font('Helvetica-Bold')
-          .text('III. AÑO Y CARRERA A LA QUE POSTULA', { continued: false })
-          .font('Helvetica')
-          .text(`Del ${data.anioCarrera || ''} Año`, { indent: 20 })
-          .text(`Paralelo: ${data.paralelo || ''}`, { indent: 20 })
-          .text(`Carrera: ${data.carrera || ''}`, { indent: 20 })
-          .moveDown(0.8);
+        // Solo mostrar esta sección si hay datos académicos (carrera, año, paralelo)
+        const tieneDatosAcademicos = data.carrera || data.anioCarrera || data.paralelo;
+        
+        if (tieneDatosAcademicos) {
+          doc
+            .font('Helvetica-Bold')
+            .text('III. AÑO Y CARRERA A LA QUE POSTULA', { continued: false })
+            .font('Helvetica');
+          
+          if (data.anioCarrera) {
+            doc.text(`Del ${data.anioCarrera} Año`, { indent: 20 });
+          }
+          if (data.paralelo) {
+            doc.text(`Paralelo: ${data.paralelo}`, { indent: 20 });
+          }
+          if (data.carrera) {
+            doc.text(`Carrera: ${data.carrera}`, { indent: 20 });
+          }
+          
+          doc.moveDown(0.8);
+        }
 
-        // Sección IV: REQUISITOS
+        // Sección III o IV: REQUISITOS (el número depende si se mostró la sección de carrera)
+        const seccionRequisitosNumero = tieneDatosAcademicos ? 'IV' : 'III';
         doc
           .font('Helvetica-Bold')
-          .text('IV. Marcar con una "X" en el recuadro, el requisito que no está presentando.', {
+          .text(`${seccionRequisitosNumero}. Marcar con una "X" en el recuadro, el requisito que no está presentando.`, {
             continued: false
           })
           .moveDown(0.5);
 
-        const requisitos = [
-          'Copia de simple del Diploma de Bachiller',
-          'Copia Simple Certificado de nacimiento',
-          'Copia simple del Carnet de identidad',
-          'Una foto 3 x 3 fondo rojo',
-          'Folder con nepaco',
-        ];
+        // Usar documentos reales de la base de datos si están disponibles
+        // Si no, usar lista por defecto
+        const requisitos = data.documentosRequeridos && data.documentosRequeridos.length > 0
+          ? data.documentosRequeridos
+          : [
+              'Copia de simple del Diploma de Bachiller',
+              'Copia Simple Certificado de nacimiento',
+              'Copia simple del Carnet de identidad',
+              'Una foto 3 x 3 fondo rojo',
+              'Folder con nepaco',
+            ];
 
         requisitos.forEach((requisito, index) => {
           const tieneX = data.documentosFaltantes?.includes(index);

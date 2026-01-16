@@ -1,6 +1,13 @@
 import { NotFoundError, ValidationError } from '../../../domain/errors/AppError.js';
 import { normalizeId, createMap } from '../../../domain/utils/mapUtils.js';
 import { TIPOS_DOCUMENTO_SISTEMA } from '../../../domain/constants/index.js';
+import { PDFGenerator } from '../../../infrastructure/external/pdf/PDFGenerator.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { serverConfig } from '../../../infrastructure/config/server.config.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 /**
  * Use Case: GenerateActaCompromisoUseCase
@@ -31,17 +38,23 @@ export class GenerateActaCompromisoUseCase {
    * @param {Object} params.studentRepository - Repositorio de estudiantes
    * @param {Object} params.documentacionRepository - Repositorio de documentación
    * @param {Object} params.studentDocumentDeliveryRepository - Repositorio de entregas de documentos
+   * @param {Object} params.configuracionSistemaRepository - Repositorio de configuración del sistema
+   * @param {Object} params.managementRepository - Repositorio de gestiones
    * @param {ILogger} params.logger - Logger para registro de eventos
    */
   constructor({ 
     studentRepository, 
     documentacionRepository, 
     studentDocumentDeliveryRepository,
+    configuracionSistemaRepository,
+    managementRepository,
     logger 
   }) {
     this.studentRepository = studentRepository;
     this.documentacionRepository = documentacionRepository;
     this.studentDocumentDeliveryRepository = studentDocumentDeliveryRepository;
+    this.configuracionSistemaRepository = configuracionSistemaRepository;
+    this.managementRepository = managementRepository;
     this.logger = logger;
   }
 
@@ -61,8 +74,8 @@ export class GenerateActaCompromisoUseCase {
     });
 
     try {
-      // 1. Validar estudiante (solo verifica existencia, no usamos el objeto)
-      await this._validateStudent(studentId);
+      // 1. Validar y obtener estudiante completo
+      const student = await this._validateStudent(studentId);
 
       // 2. Obtener documentos de inscripción (solo campos necesarios: id y nombre)
       const documentosInscripcion = await this._getInscripcionDocuments();
@@ -103,8 +116,11 @@ export class GenerateActaCompromisoUseCase {
       // 9.1. Validar que tenga documentos faltantes (regla de negocio)
       this._validateHasMissingDocuments(estadoDocumentos, studentId);
 
-      // 10. Construir y retornar respuesta
-      return this._buildResponse(studentId, estadoDocumentos);
+      // 10. Obtener gestión activa
+      const management = await this._getCurrentManagement();
+
+      // 11. Generar PDF y retornar respuesta
+      return await this._buildResponse(studentId, estadoDocumentos, student, documentosInscripcion, management);
 
     } catch (error) {
       this.logger.error('[Estudiantes] Error al generar ACTA DE COMPROMISO', {
@@ -117,10 +133,10 @@ export class GenerateActaCompromisoUseCase {
   }
 
   /**
-   * Valida que el estudiante exista
+   * Valida que el estudiante exista y lo retorna
    * @private
    * @param {number} studentId - ID del estudiante
-   * @returns {Promise<void>}
+   * @returns {Promise<Student>} Estudiante encontrado
    * @throws {NotFoundError} Si el estudiante no existe
    */
   async _validateStudent(studentId) {
@@ -132,9 +148,53 @@ export class GenerateActaCompromisoUseCase {
     this.logger.info('[Estudiantes] Estudiante encontrado', {
       studentId,
       studentCode: student.studentCode,
-      nombres: student.nombres,
-      apellidoPaterno: student.apellidoPaterno,
+      firstName: student.firstName,
+      lastName: student.lastName,
     });
+
+    return student;
+  }
+
+  /**
+   * Obtiene la gestión actual desde la configuración del sistema
+   * @private
+   * @returns {Promise<Object>} Entidad Management
+   * @throws {NotFoundError} Si no se encuentra la configuración o la gestión
+   * @throws {ValidationError} Si la gestión no está vigente
+   */
+  async _getCurrentManagement() {
+    // 1. Obtener la gestión actual desde la configuración del sistema
+    const gestionActualConfig = await this.configuracionSistemaRepository.findBy(
+      { key: 'gestion_actual' }
+    );
+
+    // 2. Validar que se encontró la configuración
+    if (!gestionActualConfig) {
+      throw new NotFoundError('Configuración de gestión actual');
+    }
+
+    // 3. Convertir el año académico a número
+    const gestionAnio = parseInt(gestionActualConfig.value, 10);
+    if (isNaN(gestionAnio)) {
+      throw new ValidationError('La gestión actual configurada no es un año válido');
+    }
+
+    // 4. Buscar la gestión vigente por año usando findBy
+    const management = await this.managementRepository.findBy(
+      { year: gestionAnio, vigente: true }
+    );
+
+    // 5. Validar que se encontró la gestión vigente
+    if (!management) {
+      throw new NotFoundError(`No se encontró una gestión vigente para el año ${gestionAnio}`);
+    }
+
+    this.logger.info('[Estudiantes] Gestión activa obtenida', {
+      year: management.year,
+      vigente: management.vigente,
+    });
+
+    return management;
   }
 
   /**
@@ -323,31 +383,106 @@ export class GenerateActaCompromisoUseCase {
             tieneRegistroEntrega: true,
           };
         }),
-        ...noDeliveryDocs.map(doc => ({
-          id: doc.id,
-          nombre: doc.name,
-          entregado: false,
-          tieneRegistroEntrega: false,
-        })),
+        ...noDeliveryDocs.map(doc => {
+          const docPlain = doc.toPlainObject ? doc.toPlainObject() : doc;
+          return {
+            id: doc.id,
+            nombre: docPlain.name || docPlain.nombre || 'Documento no encontrado',
+            entregado: false,
+            tieneRegistroEntrega: false,
+          };
+        }),
       ],
     };
   }
 
 
   /**
-   * Construye la respuesta final del caso de uso
+   * Construye la respuesta final del caso de uso y genera el PDF
    * @private
    * @param {number} studentId - ID del estudiante
    * @param {Object} estadoDocumentos - Estado de documentos
-   * @returns {Object} Respuesta formateada
+   * @param {Object} student - Entidad Student
+   * @param {Array} documentosInscripcion - Array de documentos de inscripción
+   * @param {Object} management - Entidad Management (gestión activa)
+   * @returns {Promise<Object>} Respuesta formateada con ruta del PDF generado
    */
-  _buildResponse(studentId, estadoDocumentos) {
-    // Por ahora retornamos un placeholder para el PDF
-    // En la siguiente etapa generaremos el PDF real
+  async _buildResponse(studentId, estadoDocumentos, student, documentosInscripcion, management) {
+    // 1. Construir datos para el PDF
+    const studentPlain = student.toPlainObject ? student.toPlainObject() : student;
+    const nombreCompleto = `${studentPlain.firstName || ''} ${studentPlain.lastName || ''} ${studentPlain.motherLastName || ''}`.trim();
+    
+    // Fecha actual
+    const fechaActual = new Date();
+    const dia = fechaActual.getDate();
+    const mes = PDFGenerator.getMonthName(fechaActual.getMonth());
+    const anio = fechaActual.getFullYear();
+
+    // Obtener lista de documentos faltantes (nombres)
+    const nombresDocumentosFaltantes = estadoDocumentos.documentosFaltantes.map(doc => doc.nombre);
+    
+    // Crear mapa de documentos requeridos para el PDF
+    // El PDF necesita saber qué documentos están faltantes (marcados con X)
+    const documentosRequeridos = documentosInscripcion.map(doc => {
+      const docPlain = doc.toPlainObject ? doc.toPlainObject() : doc;
+      return docPlain.name || docPlain.nombre || 'Documento sin nombre';
+    });
+    const indicesFaltantes = documentosRequeridos
+      .map((nombre, index) => nombresDocumentosFaltantes.includes(nombre) ? index : null)
+      .filter(index => index !== null);
+
+    // 2. Preparar datos para PDFGenerator
+    const pdfData = {
+      nombreCompleto,
+      ci: studentPlain.ci || '',
+      expedicion: studentPlain.expedition || 'S.C.',
+      ciudad: 'Santa Cruz de la Sierra',
+      dia,
+      mes,
+      anio,
+      anioCarrera: '', // No hay datos académicos aún
+      paralelo: '', // No hay datos académicos aún
+      carrera: '', // No hay datos académicos aún
+      documentosFaltantes: indicesFaltantes,
+      documentosRequeridos, // Lista completa de documentos requeridos
+      plazoMaximo: 10, // Por defecto 10 días (podría venir de configuración)
+      motivos: 'Actualización de carta aval del presente año.',
+    };
+
+    // 3. Construir rutas del archivo
+    const uploadDir = serverConfig.uploadsPath || 'uploads';
+    const relativePath = path.join('documentos', 'estudiantes', String(studentId));
+    const fileName = `ACTA_COMPROMISO_${studentId}_${Date.now()}.pdf`;
+    
+    // Ruta relativa (para acceso HTTP)
+    const filePath = path.join('/', uploadDir, relativePath, fileName).replace(/\\/g, '/');
+    
+    // Ruta absoluta (para guardar en disco)
+    const absoluteUploadPath = path.isAbsolute(uploadDir)
+      ? path.join(uploadDir, relativePath, fileName)
+      : path.resolve(__dirname, '../../..', uploadDir, relativePath, fileName);
+
+    // 4. Generar PDF
+    this.logger.info('[Estudiantes] Generando PDF del acta de compromiso', {
+      studentId,
+      absolutePath: absoluteUploadPath,
+      documentosFaltantes: nombresDocumentosFaltantes.length,
+    });
+
+    await PDFGenerator.generateCompromisoActa(pdfData, absoluteUploadPath);
+
+    this.logger.info('[Estudiantes] PDF generado exitosamente', {
+      studentId,
+      filePath,
+      fileName,
+      absolutePath: absoluteUploadPath,
+    });
+
+    // 5. Retornar respuesta
     return {
-      filePath: `/uploads/documentos/estudiantes/${studentId}/ACTA_COMPROMISO_placeholder.pdf`,
-      fileName: `ACTA_COMPROMISO_placeholder.pdf`,
-      absolutePath: `/tmp/ACTA_COMPROMISO_placeholder.pdf`,
+      filePath,
+      fileName,
+      absolutePath: absoluteUploadPath,
       estadoDocumentos,
     };
   }

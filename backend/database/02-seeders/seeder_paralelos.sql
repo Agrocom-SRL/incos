@@ -13,34 +13,56 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- TRUNCATE TABLE paralelos;
 
 -- ============================================
+-- LIMPIAR VARIABLES DE USUARIO (para evitar conflictos con otros seeders)
+-- ============================================
+SET @carrera_sis_id = NULL;
+SET @carrera_adm_id = NULL;
+SET @carrera_con_id = NULL;
+SET @plan_sis_id = NULL;
+SET @plan_adm_id = NULL;
+SET @plan_con_id = NULL;
+SET @periodo_sis_1_id = NULL;
+SET @periodo_sis_2_id = NULL;
+SET @periodo_sis_3_id = NULL;
+SET @periodo_adm_1_id = NULL;
+SET @periodo_adm_2_id = NULL;
+SET @periodo_adm_3_id = NULL;
+SET @periodo_con_1_id = NULL;
+SET @periodo_con_2_id = NULL;
+SET @periodo_con_3_id = NULL;
+
+-- ============================================
 -- OBTENER IDs DE REFERENCIA
 -- ============================================
 
--- IDs de carreras
-SET @carrera_sis_id = (SELECT id FROM carreras WHERE codigo = 'SIS-INF' LIMIT 1);
-SET @carrera_adm_id = (SELECT id FROM carreras WHERE codigo = 'ADM-EMP' LIMIT 1);
-SET @carrera_con_id = (SELECT id FROM carreras WHERE codigo = 'CON-GEN' LIMIT 1);
+-- IDs de carreras (usando codigo para evitar dependencia del orden de inserción)
+SET @carrera_sis_id = (SELECT id FROM carreras WHERE codigo = 'SIS-INF' AND deleted_at IS NULL LIMIT 1);
+SET @carrera_adm_id = (SELECT id FROM carreras WHERE codigo = 'ADM-EMP' AND deleted_at IS NULL LIMIT 1);
+SET @carrera_con_id = (SELECT id FROM carreras WHERE codigo = 'CON-GEN' AND deleted_at IS NULL LIMIT 1);
 
--- IDs de planes de estudio
-SET @plan_sis_id = (SELECT id FROM planes_estudios WHERE carrera_id = @carrera_sis_id LIMIT 1);
-SET @plan_adm_id = (SELECT id FROM planes_estudios WHERE carrera_id = @carrera_adm_id LIMIT 1);
-SET @plan_con_id = (SELECT id FROM planes_estudios WHERE carrera_id = @carrera_con_id LIMIT 1);
+-- Validar que se obtuvieron los IDs correctamente
+-- Si alguna variable es NULL, significa que la carrera no existe o no se insertó correctamente
 
--- IDs de periodos por carrera
+-- IDs de planes de estudio (usando carrera_id para obtener el plan correcto)
+SET @plan_sis_id = (SELECT id FROM planes_estudios WHERE carrera_id = @carrera_sis_id AND deleted_at IS NULL AND activo = TRUE LIMIT 1);
+SET @plan_adm_id = (SELECT id FROM planes_estudios WHERE carrera_id = @carrera_adm_id AND deleted_at IS NULL AND activo = TRUE LIMIT 1);
+SET @plan_con_id = (SELECT id FROM planes_estudios WHERE carrera_id = @carrera_con_id AND deleted_at IS NULL AND activo = TRUE LIMIT 1);
+
+-- IDs de periodos por carrera (usando plan_estudio_id y numero para obtener el periodo correcto)
 -- SISTEMAS INFORMÁTICOS
-SET @periodo_sis_1_id = (SELECT id FROM periodos WHERE plan_estudio_id = @plan_sis_id AND numero = 1 LIMIT 1);
-SET @periodo_sis_2_id = (SELECT id FROM periodos WHERE plan_estudio_id = @plan_sis_id AND numero = 2 LIMIT 1);
-SET @periodo_sis_3_id = (SELECT id FROM periodos WHERE plan_estudio_id = @plan_sis_id AND numero = 3 LIMIT 1);
+SET @periodo_sis_1_id = (SELECT id FROM periodos WHERE plan_estudio_id = @plan_sis_id AND numero = 1 AND deleted_at IS NULL AND activo = TRUE LIMIT 1);
+SET @periodo_sis_2_id = (SELECT id FROM periodos WHERE plan_estudio_id = @plan_sis_id AND numero = 2 AND deleted_at IS NULL AND activo = TRUE LIMIT 1);
+SET @periodo_sis_3_id = (SELECT id FROM periodos WHERE plan_estudio_id = @plan_sis_id AND numero = 3 AND deleted_at IS NULL AND activo = TRUE LIMIT 1);
 
 -- ADMINISTRACIÓN DE EMPRESAS
-SET @periodo_adm_1_id = (SELECT id FROM periodos WHERE plan_estudio_id = @plan_adm_id AND numero = 1 LIMIT 1);
-SET @periodo_adm_2_id = (SELECT id FROM periodos WHERE plan_estudio_id = @plan_adm_id AND numero = 2 LIMIT 1);
-SET @periodo_adm_3_id = (SELECT id FROM periodos WHERE plan_estudio_id = @plan_adm_id AND numero = 3 LIMIT 1);
+SET @periodo_adm_1_id = (SELECT id FROM periodos WHERE plan_estudio_id = @plan_adm_id AND numero = 1 AND deleted_at IS NULL AND activo = TRUE LIMIT 1);
+SET @periodo_adm_2_id = (SELECT id FROM periodos WHERE plan_estudio_id = @plan_adm_id AND numero = 2 AND deleted_at IS NULL AND activo = TRUE LIMIT 1);
+SET @periodo_adm_3_id = (SELECT id FROM periodos WHERE plan_estudio_id = @plan_adm_id AND numero = 3 AND deleted_at IS NULL AND activo = TRUE LIMIT 1);
 
 -- CONTADURÍA GENERAL
-SET @periodo_con_1_id = (SELECT id FROM periodos WHERE plan_estudio_id = @plan_con_id AND numero = 1 LIMIT 1);
-SET @periodo_con_2_id = (SELECT id FROM periodos WHERE plan_estudio_id = @plan_con_id AND numero = 2 LIMIT 1);
-SET @periodo_con_3_id = (SELECT id FROM periodos WHERE plan_estudio_id = @plan_con_id AND numero = 3 LIMIT 1);
+SET @periodo_con_1_id = (SELECT id FROM periodos WHERE plan_estudio_id = @plan_con_id AND numero = 1 AND deleted_at IS NULL AND activo = TRUE LIMIT 1);
+SET @periodo_con_2_id = (SELECT id FROM periodos WHERE plan_estudio_id = @plan_con_id AND numero = 2 AND deleted_at IS NULL AND activo = TRUE LIMIT 1);
+SET @periodo_con_3_id = (SELECT id FROM periodos WHERE plan_estudio_id = @plan_con_id AND numero = 3 AND deleted_at IS NULL AND activo = TRUE LIMIT 1);
 
 -- ============================================
 -- INSERTAR PARALELOS - CONTADURÍA GENERAL

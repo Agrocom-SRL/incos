@@ -1,6 +1,6 @@
 import express from 'express';
 import { listValidator, idValidator, searchValidator } from '../validators/common/index.js';
-import { registerStudentValidator, assignBecaValidator } from '../validators/estudiantes/index.js';
+import { registerStudentValidator, updateStudentValidator, assignBecaValidator } from '../validators/estudiantes/index.js';
 
 /**
  * Construye el router del módulo Estudiantes
@@ -49,6 +49,26 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
         registerStudentValidator,  // 1. Validator primero
         validateRequest,            // 2. Middleware que procesa errores
         (req, res, next) => controllers.registerStudentController.handle(req, res, next)  // 3. Controller al final
+    );
+
+    /**
+     * PUT /api/v1/estudiantes/:id
+     * Actualizar estudiante existente con todos sus datos relacionados
+     * Path: id (ID del estudiante)
+     * Body: student (opcional - actualización parcial), guardians (opcional - reemplazo completo),
+     *       disabilities (opcional - reemplazo completo), origins (opcional - reemplazo completo),
+     *       documentation (opcional - reemplazo completo)
+     * 
+     * NOTA: Similar a RegisterStudentUseCase, actualiza estudiante y todas sus relaciones.
+     * - Datos básicos: actualización parcial (solo campos proporcionados)
+     * - Relaciones: reemplazo completo (si se proporcionan, elimina todas las existentes y crea las nuevas)
+     */
+    router.put(
+        '/:id',
+        idValidator,  // 1. Validator primero
+        updateStudentValidator,  // 2. Validator de datos del body
+        validateRequest,  // 3. Middleware que procesa errores
+        (req, res, next) => controllers.updateStudentController.handle(req, res, next)  // 4. Controller al final
     );
 
     // ============================================
@@ -123,14 +143,6 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
     // ============================================
     // ENDPOINTS FUTUROS (TODO: Implementar cuando se necesiten)
     // ============================================
-
-    // PUT /:id - Actualizar estudiante
-    // router.put(
-    //     '/:id',
-    //     updateStudentValidator,
-    //     validateRequest,
-    //     (req, res, next) => controllers.updateStudentController.handle(req, res, next)
-    // );
 
     // DELETE /:id - Eliminar estudiante (soft delete)
     // router.delete(

@@ -100,33 +100,30 @@ export const useUpdateStudent = () => {
       //   };
       // }
 
-      // TODO: 2. Obtener el Use Case desde el container (inyección de dependencias)
-      // const actualizarEstudianteUseCase = useCasesFactory.actualizarEstudiante();
+      // 2. Obtener el Use Case desde el container (inyección de dependencias)
+      const actualizarEstudianteUseCase = useCasesFactory.actualizarEstudiante();
 
-      // TODO: 3. Ejecutar el Use Case (asume que recibe datos válidos)
-      // const result = await actualizarEstudianteUseCase.ejecutar(studentId, normalizedValues);
+      // 3. Ejecutar el Use Case (asume que recibe datos válidos)
+      // El Use Case orquesta el Repository, que envía los datos al backend
+      // El backend tiene el validator y el DTO que transforma la estructura
+      const result = await actualizarEstudianteUseCase.ejecutar(studentId, normalizedValues);
 
-      // Por ahora, retornar error indicando que no está implementado
-      return {
-        success: false,
-        error: 'El endpoint de actualización aún no está implementado en el backend',
-      };
+      if (!result.success) {
+        // Extraer el mensaje del error si es un objeto
+        const errorMessage = typeof result.error === 'object' && result.error?.message
+          ? result.error.message
+          : result.error || 'Error al actualizar estudiante';
+        setError(errorMessage);
+        
+        // Si el backend retorna errores de validación, guardarlos
+        if (result.validationErrors) {
+          setValidationErrors(result.validationErrors);
+        }
+        
+        return result;
+      }
 
-      // TODO: Descomentar cuando se implemente el backend
-      // if (!result.success) {
-      //   const errorMessage = typeof result.error === 'object' && result.error?.message
-      //     ? result.error.message
-      //     : result.error || 'Error al actualizar estudiante';
-      //   setError(errorMessage);
-      //   
-      //   if (result.validationErrors) {
-      //     setValidationErrors(result.validationErrors);
-      //   }
-      //   
-      //   return result;
-      // }
-
-      // return result;
+      return result;
     } catch (err) {
       // Error inesperado (no debería llegar aquí si el Use Case maneja bien los errores)
       const errorMessage = err?.message || 'Error inesperado al actualizar estudiante';

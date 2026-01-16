@@ -101,9 +101,6 @@ export class EstudianteRepository extends IEstudianteRepository {
    * Actualiza un estudiante existente
    * PUT /v1/estudiantes/:id
    * 
-   * TODO: Este endpoint aún no está implementado en el backend
-   * Por ahora retorna un error indicando que no está disponible
-   * 
    * @param {string|number} id - ID del estudiante a actualizar
    * @param {Object} data - Datos del estudiante a actualizar
    * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
@@ -118,14 +115,13 @@ export class EstudianteRepository extends IEstudianteRepository {
         };
       }
 
-      // TODO: Cuando el backend implemente PUT /estudiantes/:id, usar:
-      // const response = await apiClient.put(ESTUDIANTES_ENDPOINTS.BY_ID(id), data);
-      
-      // Por ahora, retornar error indicando que no está disponible
-      return {
-        success: false,
-        error: 'El endpoint de actualización aún no está implementado en el backend',
-      };
+      // Llamada HTTP directa al endpoint PUT
+      const response = await apiClient.put(ESTUDIANTES_ENDPOINTS.BY_ID(id), data);
+
+      // Procesar respuesta exitosa
+      const result = handleSuccessResponse(response);
+
+      return result;
     } catch (error) {
       return handleErrorResponse(error, 'Error al actualizar estudiante');
     }
