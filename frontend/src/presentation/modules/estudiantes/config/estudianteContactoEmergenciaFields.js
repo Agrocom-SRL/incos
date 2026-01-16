@@ -67,6 +67,7 @@ export const createCamposContactoEmergencia = (index = 0) => {
             span: 12,
             placeholder: 'Ingrese nombres completos',
             maxLength: 150,
+            capitalize: true, // Capitaliza automáticamente la primera letra
         },
         {
             name: [...basePath, 'apellidos'],
@@ -76,6 +77,7 @@ export const createCamposContactoEmergencia = (index = 0) => {
             span: 12,
             placeholder: 'Ingrese apellidos',
             maxLength: 150,
+            capitalize: true, // Capitaliza automáticamente la primera letra
         },
         {
             name: [...basePath, 'ci'],

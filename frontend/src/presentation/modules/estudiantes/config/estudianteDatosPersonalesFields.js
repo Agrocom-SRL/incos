@@ -66,6 +66,7 @@ export const createEstudianteDatosPersonalesFields = () => {
           span: 12,
           placeholder: 'Ej: Juan Carlos',
           maxLength: 100,
+          capitalize: true, // Capitaliza automáticamente la primera letra
         },
         // Apellido Paterno
         {
@@ -77,6 +78,7 @@ export const createEstudianteDatosPersonalesFields = () => {
           span: 12,
           placeholder: 'Ej: Pérez',
           maxLength: 100,
+          capitalize: true, // Capitaliza automáticamente la primera letra
         },
         // Apellido Materno
         {
@@ -88,6 +90,7 @@ export const createEstudianteDatosPersonalesFields = () => {
           span: 12,
           placeholder: 'Ej: González',
           maxLength: 100,
+          capitalize: true, // Capitaliza automáticamente la primera letra
         },
         // Fecha de Nacimiento
         {

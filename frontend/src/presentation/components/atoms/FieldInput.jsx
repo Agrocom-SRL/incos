@@ -12,6 +12,22 @@
 
 import { Input } from 'antd';
 
+/**
+ * Capitaliza la primera letra de cada palabra en un texto
+ * Convierte el resto de cada palabra a minúscula
+ * @param {string} text - Texto a capitalizar
+ * @returns {string} Texto con la primera letra de cada palabra en mayúscula
+ */
+const capitalizeFirstLetter = (text) => {
+  if (!text || typeof text !== 'string') return text;
+  // Si el texto está vacío o solo tiene espacios, retornar tal cual
+  if (text.trim().length === 0) return text;
+  
+  // Convertir todo a minúsculas primero y luego capitalizar la primera letra de cada palabra
+  // Usar \b para identificar límites de palabras y \w para caracteres alfanuméricos
+  return text.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
+};
+
 const FieldInput = ({
   placeholder,
   disabled = false,
@@ -24,9 +40,34 @@ const FieldInput = ({
   icon, // Icono a mostrar (puede ser prefix o suffix)
   iconPosition = 'prefix', // 'prefix' | 'suffix' - posición del icono
   className = '',
+  capitalize = false, // Si true, capitaliza automáticamente la primera letra de cada palabra
   ...props
 }) => {
   const inputClassName = className ? `field-input ${className}`.trim() : 'field-input';
+
+  // Manejar onChange con capitalización si está habilitada
+  const handleChange = (e) => {
+    if (capitalize && onChange && e && e.target) {
+      const originalValue = e.target.value;
+      const capitalizedValue = capitalizeFirstLetter(originalValue);
+      
+      // Crear un nuevo evento con el valor capitalizado
+      const syntheticEvent = {
+        ...e,
+        target: {
+          ...e.target,
+          value: capitalizedValue,
+        },
+      };
+      
+      onChange(syntheticEvent);
+    } else if (onChange) {
+      onChange(e);
+    }
+  };
+
+  // Aplicar capitalización al value si está habilitada y hay un value
+  const displayValue = capitalize && value ? capitalizeFirstLetter(value) : value;
 
   // Configurar icono según posición
   const inputProps = {
@@ -35,9 +76,9 @@ const FieldInput = ({
     disabled: disabled || readOnly,
     type,
     maxLength,
-    value,
+    value: displayValue,
     defaultValue,
-    onChange,
+    onChange: handleChange,
     ...props,
   };
 

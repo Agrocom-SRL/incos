@@ -40,6 +40,7 @@ const renderInput = (field, disabled, readOnly) => (
     icon={field.icon}
     iconPosition={field.iconPosition}
     defaultValue={field.defaultValue}
+    capitalize={field.capitalize || false}
   />
 );
 
