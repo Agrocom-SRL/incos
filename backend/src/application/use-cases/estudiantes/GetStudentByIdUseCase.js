@@ -11,6 +11,7 @@
  * - Obtener orígenes (múltiples)
  * - Obtener entregas de documentos (múltiples)
  * - Obtener asignaciones de becas (múltiples)
+ * - Calcular si faltan documentos de inscripción
  * - Retornar el estudiante con todos sus datos relacionados
  * 
  * NOTA: Los datos académicos se manejan en otro módulo, no se incluyen aquí
@@ -23,6 +24,9 @@
  * - Application Layer: Orquesta la lógica de negocio
  * - Depende de Repositories (Infrastructure) a través de abstracciones
  */
+
+import { TIPOS_DOCUMENTO_SISTEMA } from '../../../domain/constants/index.js';
+import { normalizeId } from '../../../domain/utils/mapUtils.js';
 
 export class GetStudentByIdUseCase {
   /**
@@ -408,7 +412,20 @@ export class GetStudentByIdUseCase {
         }
       }
 
-      // 7. Retornar el estudiante con todos sus datos relacionados
+      // 7. Calcular si faltan documentos de inscripción
+      const tieneDocumentosFaltantes = await this._checkMissingDocuments(
+        student.id,
+        documentDeliveries
+      );
+
+      this.logger.info('[Estudiantes] Estado de documentos calculado', {
+        studentId: student.id,
+        tieneDocumentosFaltantes,
+        tipo: typeof tieneDocumentosFaltantes,
+        documentDeliveriesCount: documentDeliveries.length,
+      });
+
+      // 8. Retornar el estudiante con todos sus datos relacionados
       const result = {
         student: studentPlain,
         guardians: guardians.map((g) =>
@@ -441,6 +458,8 @@ export class GetStudentByIdUseCase {
           scholarships: scholarshipsCatalog,
           managements,
         },
+        // Campo para indicar si faltan documentos (para mostrar botón de acta de compromiso)
+        tieneDocumentosFaltantes,
       };
 
       this.logger.info('[Estudiantes] Estudiante obtenido exitosamente', {
@@ -450,6 +469,9 @@ export class GetStudentByIdUseCase {
         originsCount: origins.length,
         documentDeliveriesCount: documentDeliveries.length,
         scholarshipsCount: scholarships.length,
+        tieneDocumentosFaltantes: result.tieneDocumentosFaltantes,
+        tipoTieneDocumentosFaltantes: typeof result.tieneDocumentosFaltantes,
+        resultKeys: Object.keys(result),
         catalogsCount: {
           countries: Object.keys(result.catalogs.originCountries).length,
           languages: Object.keys(result.catalogs.originLanguages).length,
@@ -470,6 +492,177 @@ export class GetStudentByIdUseCase {
         studentId,
       });
       throw error;
+    }
+  }
+
+  /**
+   * Verifica si el estudiante tiene documentos de inscripción faltantes
+   * @private
+   * @param {number} studentId - ID del estudiante
+   * @param {Array} documentDeliveries - Array de entregas de documentos del estudiante
+   * @returns {Promise<boolean>} true si faltan documentos, false si todos están entregados
+   */
+  async _checkMissingDocuments(studentId, documentDeliveries) {
+    try {
+      // 1. Obtener documentos de inscripción (documentos padre requeridos)
+      // Usar la misma lógica que GenerateActaCompromisoUseCase
+      const inscripcionDocsResult = await this.documentacionRepository.findAll({
+        documentType: TIPOS_DOCUMENTO_SISTEMA.INSCRIPCION,
+        parentDocumentId: null,
+        attributes: ['id'],
+      });
+
+      const documentosInscripcion = inscripcionDocsResult.documentations || [];
+
+      this.logger.info('[Estudiantes] _checkMissingDocuments - documentos de inscripción obtenidos', {
+        studentId,
+        cantidad: documentosInscripcion.length,
+      });
+
+      if (documentosInscripcion.length === 0) {
+        // Si no hay documentos de inscripción definidos, no hay faltantes
+        this.logger.info('[Estudiantes] _checkMissingDocuments - no hay documentos de inscripción definidos', { studentId });
+        return false;
+      }
+
+      // 2. Obtener IDs de documentos de inscripción (usando la misma lógica que GenerateActaCompromisoUseCase)
+      const idsDocumentosInscripcion = documentosInscripcion.map(doc => {
+        const docPlain = doc.toPlainObject ? doc.toPlainObject() : doc;
+        return docPlain.id; // No normalizar aquí, solo obtener el ID directamente
+      }).filter(id => id !== undefined && id !== null);
+
+      this.logger.info('[Estudiantes] _checkMissingDocuments - IDs documentos inscripcion', {
+        studentId,
+        ids: idsDocumentosInscripcion.join(', '),
+        idsCount: idsDocumentosInscripcion.length,
+      });
+
+      // Debug: Log de todas las entregas de documentos del estudiante
+      this.logger.info('[Estudiantes] _checkMissingDocuments - todas las entregas del estudiante', {
+        studentId,
+        totalEntregas: documentDeliveries.length,
+        entregas: documentDeliveries.map(e => {
+          const ePlain = e.toPlainObject ? e.toPlainObject() : e;
+          return { id: ePlain.id, documentacionId: ePlain.documentacionId, entregado: ePlain.entregado };
+        }),
+      });
+
+      // 3. Filtrar entregas que correspondan a documentos de inscripción
+      // Usar la misma lógica que GenerateActaCompromisoUseCase._filterInscripcionDeliveries
+      const entregasInscripcion = documentDeliveries.filter(entrega => {
+        const entregaPlain = entrega.toPlainObject ? entrega.toPlainObject() : entrega;
+        const entregaId = normalizeId(entregaPlain.documentacionId);
+        const estaIncluido = entregaId !== null && idsDocumentosInscripcion.includes(entregaId);
+        if (!estaIncluido) {
+          this.logger.info('[Estudiantes] _checkMissingDocuments - entrega filtrada (no es inscripción)', {
+            studentId,
+            entregaId: entregaPlain.id,
+            documentacionId: entregaPlain.documentacionId,
+            entregado: entregaPlain.entregado,
+            normalizedId: entregaId,
+          });
+        }
+        return estaIncluido;
+      });
+
+      this.logger.info('[Estudiantes] _checkMissingDocuments - entregas filtradas de inscripción', {
+        studentId,
+        totalEntregas: documentDeliveries.length,
+        entregasInscripcion: entregasInscripcion.length,
+        entregasInscripcionDetalle: entregasInscripcion.map(e => {
+          const ePlain = e.toPlainObject ? e.toPlainObject() : e;
+          return { id: ePlain.id, documentacionId: ePlain.documentacionId, entregado: ePlain.entregado };
+        }),
+      });
+
+      // 4. Separar entregas en entregados y faltantes (usar la misma lógica que GenerateActaCompromisoUseCase._separateDeliveredAndMissing)
+      const entregados = entregasInscripcion.filter(entrega => {
+        const entregaPlain = entrega.toPlainObject ? entrega.toPlainObject() : entrega;
+        const isDelivered = entregaPlain.entregado === true || entregaPlain.entregado === 1;
+        this.logger.info('[Estudiantes] _checkMissingDocuments - evaluando entrega (entregado)', {
+          studentId,
+          entregaId: entregaPlain.id,
+          documentacionId: entregaPlain.documentacionId,
+          entregado: entregaPlain.entregado,
+          tipo: typeof entregaPlain.entregado,
+          isDelivered,
+        });
+        return isDelivered;
+      });
+
+      const faltantes = entregasInscripcion.filter(entrega => {
+        const entregaPlain = entrega.toPlainObject ? entrega.toPlainObject() : entrega;
+        const isMissing = entregaPlain.entregado === false || entregaPlain.entregado === 0 || entregaPlain.entregado === null;
+        this.logger.info('[Estudiantes] _checkMissingDocuments - evaluando entrega (faltante)', {
+          studentId,
+          entregaId: entregaPlain.id,
+          documentacionId: entregaPlain.documentacionId,
+          entregado: entregaPlain.entregado,
+          tipo: typeof entregaPlain.entregado,
+          isMissing,
+        });
+        return isMissing;
+      });
+
+      // 5. Identificar documentos sin entrega registrada (usar la misma lógica que GenerateActaCompromisoUseCase._findDocumentsWithoutDelivery)
+      const entregasDocumentacionIds = entregasInscripcion.map(e => {
+        const ePlain = e.toPlainObject ? e.toPlainObject() : e;
+        return normalizeId(ePlain.documentacionId);
+      }).filter(id => id !== null);
+
+      this.logger.info('[Estudiantes] _checkMissingDocuments - IDs de entregas registradas', {
+        studentId,
+        idsEntregas: entregasDocumentacionIds.join(', '),
+        idsDocumentosInscripcion: idsDocumentosInscripcion.join(', '),
+      });
+
+      const documentosSinEntrega = documentosInscripcion.filter(doc => {
+        const docPlain = doc.toPlainObject ? doc.toPlainObject() : doc;
+        const docId = normalizeId(docPlain.id);
+        const sinEntrega = docId !== null && !entregasDocumentacionIds.includes(docId);
+        if (sinEntrega) {
+          this.logger.info('[Estudiantes] _checkMissingDocuments - documento sin entrega encontrado', {
+            studentId,
+            documentId: docPlain.id,
+            normalizedId: docId,
+          });
+        }
+        return sinEntrega;
+      });
+
+      // 6. Calcular total de faltantes
+      const totalFaltantes = faltantes.length + documentosSinEntrega.length;
+
+      const resultadoFinal = totalFaltantes > 0;
+      this.logger.info('[Estudiantes] _checkMissingDocuments - resultado final', {
+        studentId,
+        totalDocumentosInscripcion: documentosInscripcion.length,
+        totalEntregasInscripcion: entregasInscripcion.length,
+        entregados: entregados.length,
+        faltantes: faltantes.length,
+        documentosSinEntrega: documentosSinEntrega.length,
+        totalFaltantes,
+        resultado: resultadoFinal,
+        'resultado (boolean)': resultadoFinal,
+        detallesFaltantes: faltantes.map(f => {
+          const fPlain = f.toPlainObject ? f.toPlainObject() : f;
+          return { id: fPlain.id, documentacionId: fPlain.documentacionId, entregado: fPlain.entregado };
+        }),
+        detallesSinEntrega: documentosSinEntrega.map(d => {
+          const dPlain = d.toPlainObject ? d.toPlainObject() : d;
+          return { id: dPlain.id };
+        }),
+      });
+
+      // 7. Retornar true si hay faltantes
+      return totalFaltantes > 0;
+    } catch (err) {
+      // Si hay error al verificar, asumir que no faltan para no bloquear la visualización
+      this.logger.warn('[Estudiantes] Error al verificar documentos faltantes', {
+        studentId,
+        error: err.message,
+      });
+      return false;
     }
   }
 }

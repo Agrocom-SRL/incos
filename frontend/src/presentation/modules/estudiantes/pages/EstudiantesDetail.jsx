@@ -19,8 +19,9 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { useStudentDetailContext } from '@application-estudiantes/hooks';
-import { Spin, Alert, Empty, Button } from 'antd';
-import { GiftOutlined } from '@ant-design/icons';
+import { useGenerateActaCompromiso } from '@application-estudiantes/hooks';
+import { Spin, Alert, Empty, Button, message } from 'antd';
+import { GiftOutlined, FileTextOutlined } from '@ant-design/icons';
 import { createDetailBreadcrumbItems } from '@estudiantes/config';
 import {
   DatosPersonalesSection,
@@ -42,6 +43,9 @@ const EstudiantesDetail = () => {
     error = null,
   } = useStudentDetailContext();
 
+  // Hook para generar acta de compromiso
+  const { generateActaCompromiso, loading: loadingActa } = useGenerateActaCompromiso();
+
   // Configurar breadcrumb items
   const breadcrumbItems = useMemo(() => createDetailBreadcrumbItems(), []);
 
@@ -52,16 +56,51 @@ const EstudiantesDetail = () => {
     });
   }, [navigate, studentId]);
 
-  // Acciones del header (botón de asignar beca) - debe estar antes de los returns tempranos
+  // Handler para generar y descargar acta de compromiso
+  const handleGenerateActaCompromiso = useCallback(async () => {
+    if (!studentId) {
+      message.error('ID de estudiante no disponible');
+      return;
+    }
+
+    const result = await generateActaCompromiso(studentId);
+
+    if (!result.success) {
+      // Mostrar mensaje de error si success: false
+      const errorMessage = result.error || result.message || 'Error al generar el acta de compromiso';
+      message.error(errorMessage);
+    } else {
+      // Mostrar mensaje de éxito si success: true (el archivo ya se descargó automáticamente)
+      message.success('Acta de compromiso generada y descargada correctamente');
+    }
+  }, [studentId, generateActaCompromiso]);
+
+  // Acciones del header (botones) - debe estar antes de los returns tempranos
+  // Solo mostrar botón de acta si faltan documentos
+  // El campo tieneDocumentosFaltantes viene al nivel raíz del objeto student
+  const tieneDocumentosFaltantesFlag = student?.tieneDocumentosFaltantes === true;
   const headerActions = useMemo(() => (
-    <Button
-      type="primary"
-      icon={<GiftOutlined />}
-      onClick={handleAsignarBeca}
-    >
-      Asignar Beca
-    </Button>
-  ), [handleAsignarBeca]);
+    <>
+      {tieneDocumentosFaltantesFlag && (
+        <Button
+          type="default"
+          icon={<FileTextOutlined />}
+          onClick={handleGenerateActaCompromiso}
+          loading={loadingActa}
+          style={{ marginRight: 8 }}
+        >
+          Generar Acta de Compromiso
+        </Button>
+      )}
+      <Button
+        type="primary"
+        icon={<GiftOutlined />}
+        onClick={handleAsignarBeca}
+      >
+        Asignar Beca
+      </Button>
+    </>
+  ), [handleAsignarBeca, handleGenerateActaCompromiso, loadingActa, tieneDocumentosFaltantesFlag]);
 
   // Si está cargando
   if (loading) {
@@ -122,7 +161,15 @@ const EstudiantesDetail = () => {
     );
   }
 
-  const { student: studentData, guardians, disabilities, origins, documentDeliveries, scholarships } = student;
+  const { student: studentData, guardians, disabilities, origins, documentDeliveries, scholarships, tieneDocumentosFaltantes } = student;
+
+  // Debug: Log para verificar la estructura del objeto student
+  console.log('[EstudiantesDetail] Estructura del objeto student:', {
+    tieneStudent: !!student?.student,
+    tieneTieneDocumentosFaltantes: 'tieneDocumentosFaltantes' in (student || {}),
+    tieneDocumentosFaltantesValue: student?.tieneDocumentosFaltantes,
+    studentKeys: student ? Object.keys(student) : [],
+  });
 
   return (
     <PageTemplate

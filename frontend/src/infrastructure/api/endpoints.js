@@ -77,7 +77,11 @@ const createCRUDEndpoints = (basePath) => {
 // ============================================
 // MÓDULO: ESTUDIANTES
 // ============================================
-export const ESTUDIANTES_ENDPOINTS = createCRUDEndpoints('/estudiantes');
+export const ESTUDIANTES_ENDPOINTS = {
+  ...createCRUDEndpoints('/estudiantes'),
+  // Endpoint específico para generar acta de compromiso
+  GENERATE_ACTA_COMPROMISO: (studentId) => `${API_BASE}/estudiantes/${studentId}/documentos/acta-compromiso`,
+};
 export const BECAS_DESCUENTOS_ENDPOINTS = createCRUDEndpoints('/becas-descuentos');
 export const ESTUDIANTES_BECAS_ENDPOINTS = {
   ...createCRUDEndpoints('/estudiantes'),

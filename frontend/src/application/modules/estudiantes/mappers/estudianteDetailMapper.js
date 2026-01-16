@@ -25,7 +25,7 @@ export const estudianteDetailMapper = (dataBackend) => {
     return null;
   }
 
-  const { student, guardians, disabilities, origins, documentDeliveries, scholarships, catalogs = {} } = normalizedData;
+  const { student, guardians, disabilities, origins, documentDeliveries, scholarships, catalogs = {}, tieneDocumentosFaltantes } = normalizedData;
 
   // Construir CI completo y nombre completo usando utilidades compartidas
   // El backend retorna nombres en inglés, los convertimos para el formatter
@@ -194,6 +194,8 @@ export const estudianteDetailMapper = (dataBackend) => {
     origins: enrichedOrigins,
     documentDeliveries: enrichedDocumentDeliveries,
     scholarships: enrichedScholarships,
+    // Campo para indicar si faltan documentos (para mostrar botón de acta de compromiso)
+    tieneDocumentosFaltantes: tieneDocumentosFaltantes === true,
   };
 };
 
