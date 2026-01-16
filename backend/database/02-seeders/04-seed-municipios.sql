@@ -2,6 +2,7 @@
 -- SEEDER: municipios
 -- Sistema de Gestión Académica - Instituto INCOS
 -- Datos iniciales: Municipios de Bolivia
+-- IDs fijos basados en el orden de las provincias (1-112)
 -- ============================================
 
 USE instituto_incos;
@@ -13,899 +14,754 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- TRUNCATE TABLE municipios;
 
 -- ============================================
--- VARIABLES DE PROVINCIAS - LA PAZ
+-- INSERTAR MUNICIPIOS
+-- Ordenados según el orden de las provincias (1-112)
+-- IDs fijos secuenciales por provincia
 -- ============================================
 
-SET @prov_lp_aroma_id = (SELECT id FROM provincias WHERE nombre = 'Aroma' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'LP' LIMIT 1) LIMIT 1);
-SET @prov_lp_bautista_saavedra_id = (SELECT id FROM provincias WHERE nombre = 'Bautista Saavedra' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'LP' LIMIT 1) LIMIT 1);
-SET @prov_lp_caranavi_id = (SELECT id FROM provincias WHERE nombre = 'Caranavi' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'LP' LIMIT 1) LIMIT 1);
-SET @prov_lp_eliodoro_camacho_id = (SELECT id FROM provincias WHERE nombre = 'Eliodoro Camacho' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'LP' LIMIT 1) LIMIT 1);
-SET @prov_lp_franz_tamayo_id = (SELECT id FROM provincias WHERE nombre = 'Franz Tamayo' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'LP' LIMIT 1) LIMIT 1);
-SET @prov_lp_gualberto_villarroel_id = (SELECT id FROM provincias WHERE nombre = 'Gualberto Villarroel' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'LP' LIMIT 1) LIMIT 1);
-SET @prov_lp_ingavi_id = (SELECT id FROM provincias WHERE nombre = 'Ingavi' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'LP' LIMIT 1) LIMIT 1);
-SET @prov_lp_inquisivi_id = (SELECT id FROM provincias WHERE nombre = 'Inquisivi' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'LP' LIMIT 1) LIMIT 1);
-SET @prov_lp_jose_manuel_pando_id = (SELECT id FROM provincias WHERE nombre = 'José Manuel Pando' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'LP' LIMIT 1) LIMIT 1);
-SET @prov_lp_larecaja_id = (SELECT id FROM provincias WHERE nombre = 'Larecaja' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'LP' LIMIT 1) LIMIT 1);
-SET @prov_lp_loayza_id = (SELECT id FROM provincias WHERE nombre = 'Loayza' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'LP' LIMIT 1) LIMIT 1);
-SET @prov_lp_los_andes_id = (SELECT id FROM provincias WHERE nombre = 'Los Andes' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'LP' LIMIT 1) LIMIT 1);
-SET @prov_lp_manco_kapac_id = (SELECT id FROM provincias WHERE nombre = 'Manco Kapac' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'LP' LIMIT 1) LIMIT 1);
-SET @prov_lp_munecas_id = (SELECT id FROM provincias WHERE nombre = 'Muñecas' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'LP' LIMIT 1) LIMIT 1);
-SET @prov_lp_nor_yungas_id = (SELECT id FROM provincias WHERE nombre = 'Nor Yungas' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'LP' LIMIT 1) LIMIT 1);
-SET @prov_lp_omasuyos_id = (SELECT id FROM provincias WHERE nombre = 'Omasuyos' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'LP' LIMIT 1) LIMIT 1);
-SET @prov_lp_pacajes_id = (SELECT id FROM provincias WHERE nombre = 'Pacajes' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'LP' LIMIT 1) LIMIT 1);
-SET @prov_lp_pedro_domingo_murillo_id = (SELECT id FROM provincias WHERE nombre = 'Pedro Domingo Murillo' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'LP' LIMIT 1) LIMIT 1);
-SET @prov_lp_sud_yungas_id = (SELECT id FROM provincias WHERE nombre = 'Sud Yungas' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'LP' LIMIT 1) LIMIT 1);
-SET @prov_lp_abel_iturralde_id = (SELECT id FROM provincias WHERE nombre = 'Abel Iturralde' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'LP' LIMIT 1) LIMIT 1);
-
 -- ============================================
--- VARIABLES DE PROVINCIAS - COCHABAMBA
+-- SANTA CRUZ - Provincias 1-15
 -- ============================================
 
-SET @prov_cb_arani_id = (SELECT id FROM provincias WHERE nombre = 'Arani' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'CB' LIMIT 1) LIMIT 1);
-SET @prov_cb_arque_id = (SELECT id FROM provincias WHERE nombre = 'Arque' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'CB' LIMIT 1) LIMIT 1);
-SET @prov_cb_ayopaya_id = (SELECT id FROM provincias WHERE nombre = 'Ayopaya' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'CB' LIMIT 1) LIMIT 1);
-SET @prov_cb_bolivar_id = (SELECT id FROM provincias WHERE nombre = 'Bolívar' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'CB' LIMIT 1) LIMIT 1);
-SET @prov_cb_campero_id = (SELECT id FROM provincias WHERE nombre = 'Campero' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'CB' LIMIT 1) LIMIT 1);
-SET @prov_cb_capinota_id = (SELECT id FROM provincias WHERE nombre = 'Capinota' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'CB' LIMIT 1) LIMIT 1);
-SET @prov_cb_carrasco_id = (SELECT id FROM provincias WHERE nombre = 'Carrasco' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'CB' LIMIT 1) LIMIT 1);
-SET @prov_cb_cercado_id = (SELECT id FROM provincias WHERE nombre = 'Cercado' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'CB' LIMIT 1) LIMIT 1);
-SET @prov_cb_chapare_id = (SELECT id FROM provincias WHERE nombre = 'Chapare' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'CB' LIMIT 1) LIMIT 1);
-SET @prov_cb_esteban_arce_id = (SELECT id FROM provincias WHERE nombre = 'Esteban Arze' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'CB' LIMIT 1) LIMIT 1);
-SET @prov_cb_german_jordan_id = (SELECT id FROM provincias WHERE nombre = 'Germán Jordán' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'CB' LIMIT 1) LIMIT 1);
-SET @prov_cb_mizque_id = (SELECT id FROM provincias WHERE nombre = 'Mizque' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'CB' LIMIT 1) LIMIT 1);
-SET @prov_cb_punata_id = (SELECT id FROM provincias WHERE nombre = 'Punata' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'CB' LIMIT 1) LIMIT 1);
-SET @prov_cb_quillacollo_id = (SELECT id FROM provincias WHERE nombre = 'Quillacollo' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'CB' LIMIT 1) LIMIT 1);
-SET @prov_cb_tapacari_id = (SELECT id FROM provincias WHERE nombre = 'Tapacarí' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'CB' LIMIT 1) LIMIT 1);
-SET @prov_cb_tiraque_id = (SELECT id FROM provincias WHERE nombre = 'Tiraque' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'CB' LIMIT 1) LIMIT 1);
+-- PROVINCIA 1: Andrés Ibáñez (provincia_id = 1)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(1, 1, 'Santa Cruz de la Sierra', NULL),
+(2, 1, 'Cotoca', NULL),
+(3, 1, 'Porongo', NULL),
+(4, 1, 'La Guardia', NULL),
+(5, 1, 'El Torno', NULL);
+
+-- PROVINCIA 2: Ignacio Warnes (provincia_id = 2)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(6, 2, 'Warnes', NULL),
+(7, 2, 'Okinawa Uno', NULL);
+
+-- PROVINCIA 3: Obispo Santiestevan (provincia_id = 3)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(8, 3, 'Montero', NULL),
+(9, 3, 'General Saavedra', NULL),
+(10, 3, 'Mineros', NULL),
+(11, 3, 'Fernández Alonso', NULL),
+(12, 3, 'San Pedro', NULL);
+
+-- PROVINCIA 4: Sara (provincia_id = 4)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(13, 4, 'Portachuelo', NULL),
+(14, 4, 'Santa Rosa del Sara', NULL),
+(15, 4, 'Colpa Bélgica', NULL);
+
+-- PROVINCIA 5: Cordillera (provincia_id = 5)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(16, 5, 'Lagunillas', NULL),
+(17, 5, 'Charagua', NULL),
+(18, 5, 'Cabezas', NULL),
+(19, 5, 'Cuevo', NULL),
+(20, 5, 'Gutiérrez', NULL),
+(21, 5, 'Camiri', NULL),
+(22, 5, 'Boyuibe', NULL);
+
+-- PROVINCIA 6: Ichilo (provincia_id = 6)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(23, 6, 'Buena Vista', NULL),
+(24, 6, 'San Carlos', NULL),
+(25, 6, 'Yapacaní', NULL),
+(26, 6, 'San Juan de Yapacaní', NULL);
+
+-- PROVINCIA 7: Vallegrande (provincia_id = 7)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(27, 7, 'Vallegrande', NULL),
+(28, 7, 'Trigal', NULL),
+(29, 7, 'Moro Moro', NULL),
+(30, 7, 'Postrer Valle', NULL),
+(31, 7, 'Pucará', NULL);
+
+-- PROVINCIA 8: Manuel María Caballero (provincia_id = 8)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(32, 8, 'Comarapa', NULL),
+(33, 8, 'Saipina', NULL);
+
+-- PROVINCIA 9: Ñuflo de Chávez (provincia_id = 9)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(34, 9, 'Concepción', NULL),
+(35, 9, 'San Javier', NULL),
+(36, 9, 'San Ramón', NULL),
+(37, 9, 'San Julián', NULL),
+(38, 9, 'San Antonio de Lomerío', NULL),
+(39, 9, 'Cuatro Cañadas', NULL);
+
+-- PROVINCIA 10: Guarayos (provincia_id = 10)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(40, 10, 'Ascensión de Guarayos', NULL),
+(41, 10, 'Urubichá', NULL),
+(42, 10, 'El Puente', NULL);
+
+-- PROVINCIA 11: Chiquitos (provincia_id = 11)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(43, 11, 'San José de Chiquitos', NULL),
+(44, 11, 'Pailón', NULL),
+(45, 11, 'Roboré', NULL);
+
+-- PROVINCIA 12: José Miguel de Velasco (provincia_id = 12)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(46, 12, 'San Ignacio de Velasco', NULL),
+(47, 12, 'San Miguel de Velasco', NULL),
+(48, 12, 'San Rafael', NULL);
+
+-- PROVINCIA 13: Germán Busch (provincia_id = 13)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(49, 13, 'Puerto Suárez', NULL),
+(50, 13, 'Puerto Quijarro', NULL),
+(51, 13, 'El Carmen Rivero Tórrez', NULL);
+
+-- PROVINCIA 14: Florida (provincia_id = 14)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(52, 14, 'Samaipata', NULL),
+(53, 14, 'Pampa Grande', NULL),
+(54, 14, 'Mairana', NULL),
+(55, 14, 'Quirusillas', NULL);
+
+-- PROVINCIA 15: Ángel Sandoval (provincia_id = 15)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(56, 15, 'San Matías', NULL);
 
 -- ============================================
--- INSERTAR MUNICIPIOS - LA PAZ
+-- LA PAZ - Provincias 16-35
 -- ============================================
 
--- PROVINCIA: Pedro Domingo Murillo (La Paz - El Alto - Palca - Achocalla - Mecapaca)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_lp_pedro_domingo_murillo_id, 'La Paz', NULL),
-(@prov_lp_pedro_domingo_murillo_id, 'El Alto', NULL),
-(@prov_lp_pedro_domingo_murillo_id, 'Palca', NULL),
-(@prov_lp_pedro_domingo_murillo_id, 'Achocalla', NULL),
-(@prov_lp_pedro_domingo_murillo_id, 'Mecapaca', NULL);
+-- PROVINCIA 16: Pedro Domingo Murillo (provincia_id = 16)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(57, 16, 'La Paz', NULL),
+(58, 16, 'El Alto', NULL),
+(59, 16, 'Palca', NULL),
+(60, 16, 'Achocalla', NULL),
+(61, 16, 'Mecapaca', NULL);
 
--- PROVINCIA: Ingavi (Viacha, Guaqui, Tiahuanacu, Desaguadero, San Andrés de Machaca, Jesús de Machaca, Taraco)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_lp_ingavi_id, 'Viacha', NULL),
-(@prov_lp_ingavi_id, 'Guaqui', NULL),
-(@prov_lp_ingavi_id, 'Tiahuanacu', NULL),
-(@prov_lp_ingavi_id, 'Desaguadero', NULL),
-(@prov_lp_ingavi_id, 'San Andrés de Machaca', NULL),
-(@prov_lp_ingavi_id, 'Jesús de Machaca', NULL),
-(@prov_lp_ingavi_id, 'Taraco', NULL);
+-- PROVINCIA 17: Los Andes (provincia_id = 17)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(62, 17, 'Pucarani', NULL),
+(63, 17, 'Laja', NULL),
+(64, 17, 'Batallas', NULL),
+(65, 17, 'Puerto Pérez', NULL);
 
--- PROVINCIA: Los Andes (Pucarani, Laja, Batallas, Puerto Pérez)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_lp_los_andes_id, 'Pucarani', NULL),
-(@prov_lp_los_andes_id, 'Laja', NULL),
-(@prov_lp_los_andes_id, 'Batallas', NULL),
-(@prov_lp_los_andes_id, 'Puerto Pérez', NULL);
+-- PROVINCIA 18: Ingavi (provincia_id = 18)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(66, 18, 'Viacha', NULL),
+(67, 18, 'Guaqui', NULL),
+(68, 18, 'Tiahuanacu', NULL),
+(69, 18, 'Desaguadero', NULL),
+(70, 18, 'San Andrés de Machaca', NULL),
+(71, 18, 'Jesús de Machaca', NULL),
+(72, 18, 'Taraco', NULL);
 
--- PROVINCIA: Omasuyos (Achacachi, Ancoraimes, Chua Cocani, Huarina, Santiago de Huata, Huatajata)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_lp_omasuyos_id, 'Achacachi', NULL),
-(@prov_lp_omasuyos_id, 'Ancoraimes', NULL),
-(@prov_lp_omasuyos_id, 'Chua Cocani', NULL),
-(@prov_lp_omasuyos_id, 'Huarina', NULL),
-(@prov_lp_omasuyos_id, 'Santiago de Huata', NULL),
-(@prov_lp_omasuyos_id, 'Huatajata', NULL);
+-- PROVINCIA 19: Aroma (provincia_id = 19)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(73, 19, 'Sica Sica', NULL),
+(74, 19, 'Umala', NULL),
+(75, 19, 'Ayo Ayo', NULL),
+(76, 19, 'Calamarca', NULL),
+(77, 19, 'Patacamaya', NULL),
+(78, 19, 'Colquencha', NULL),
+(79, 19, 'Collana', NULL);
 
--- PROVINCIA: Manco Kapac (Copacabana, San Pedro de Tiquina, Tito Yupanki)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_lp_manco_kapac_id, 'Copacabana', NULL),
-(@prov_lp_manco_kapac_id, 'San Pedro de Tiquina', NULL),
-(@prov_lp_manco_kapac_id, 'Tito Yupanki', NULL);
+-- PROVINCIA 20: Omasuyos (provincia_id = 20)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(80, 20, 'Achacachi', NULL),
+(81, 20, 'Ancoraimes', NULL),
+(82, 20, 'Chua Cocani', NULL),
+(83, 20, 'Huarina', NULL),
+(84, 20, 'Santiago de Huata', NULL),
+(85, 20, 'Huatajata', NULL);
 
--- PROVINCIA: Nor Yungas (Coroico, Coripata)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_lp_nor_yungas_id, 'Coroico', NULL),
-(@prov_lp_nor_yungas_id, 'Coripata', NULL);
+-- PROVINCIA 21: Gualberto Villarroel (provincia_id = 21)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(86, 21, 'San Pedro de Curahuara', NULL),
+(87, 21, 'Papel Pampa', NULL),
+(88, 21, 'Chacarilla', NULL),
+(89, 21, 'Turco', NULL),
+(90, 21, 'Nazacara', NULL);
 
--- PROVINCIA: Sud Yungas (Chulumani, Irupana, Yanacachi, Palos Blancos, La Asunta)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_lp_sud_yungas_id, 'Chulumani', NULL),
-(@prov_lp_sud_yungas_id, 'Irupana', NULL),
-(@prov_lp_sud_yungas_id, 'Yanacachi', NULL),
-(@prov_lp_sud_yungas_id, 'Palos Blancos', NULL),
-(@prov_lp_sud_yungas_id, 'La Asunta', NULL);
+-- PROVINCIA 22: Manco Kapac (provincia_id = 22)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(91, 22, 'Copacabana', NULL),
+(92, 22, 'San Pedro de Tiquina', NULL),
+(93, 22, 'Tito Yupanki', NULL);
 
--- PROVINCIA: Caranavi (Caranavi, Alto Beni)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_lp_caranavi_id, 'Caranavi', NULL),
-(@prov_lp_caranavi_id, 'Alto Beni', NULL);
+-- PROVINCIA 23: Pacajes (provincia_id = 23)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(94, 23, 'Coro Coro', NULL),
+(95, 23, 'Caquiaviri', NULL),
+(96, 23, 'Calacoto', NULL),
+(97, 23, 'Comanche', NULL),
+(98, 23, 'Charaña', NULL),
+(99, 23, 'Waldo Ballivián', NULL),
+(100, 23, 'Nazacara de Pacajes', NULL),
+(101, 23, 'Callapa', NULL),
+(102, 23, 'Santiago de Callapa', NULL);
 
--- PROVINCIA: Aroma (Sica Sica, Umala, Ayo Ayo, Calamarca, Patacamaya, Colquencha, Collana)
-SET @prov_lp_aroma_id = (SELECT id FROM provincias WHERE nombre = 'Aroma' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'LP' LIMIT 1) LIMIT 1);
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_lp_aroma_id, 'Sica Sica', NULL),
-(@prov_lp_aroma_id, 'Umala', NULL),
-(@prov_lp_aroma_id, 'Ayo Ayo', NULL),
-(@prov_lp_aroma_id, 'Calamarca', NULL),
-(@prov_lp_aroma_id, 'Patacamaya', NULL),
-(@prov_lp_aroma_id, 'Colquencha', NULL),
-(@prov_lp_aroma_id, 'Collana', NULL);
+-- PROVINCIA 24: Nor Yungas (provincia_id = 24)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(103, 24, 'Coroico', NULL),
+(104, 24, 'Coripata', NULL);
 
--- PROVINCIA: Bautista Saavedra (Charazani, Curva)
-SET @prov_lp_bautista_saavedra_id = (SELECT id FROM provincias WHERE nombre = 'Bautista Saavedra' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'LP' LIMIT 1) LIMIT 1);
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_lp_bautista_saavedra_id, 'Charazani', NULL),
-(@prov_lp_bautista_saavedra_id, 'Curva', NULL);
+-- PROVINCIA 25: Sud Yungas (provincia_id = 25)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(105, 25, 'Chulumani', NULL),
+(106, 25, 'Irupana', NULL),
+(107, 25, 'Yanacachi', NULL),
+(108, 25, 'Palos Blancos', NULL),
+(109, 25, 'La Asunta', NULL);
 
--- PROVINCIA: Eliodoro Camacho (Puerto Acosta, Mocomoco, Puerto Carabuco, Humanata, Escoma)
-SET @prov_lp_eliodoro_camacho_id = (SELECT id FROM provincias WHERE nombre = 'Eliodoro Camacho' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'LP' LIMIT 1) LIMIT 1);
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_lp_eliodoro_camacho_id, 'Puerto Acosta', NULL),
-(@prov_lp_eliodoro_camacho_id, 'Mocomoco', NULL),
-(@prov_lp_eliodoro_camacho_id, 'Puerto Carabuco', NULL),
-(@prov_lp_eliodoro_camacho_id, 'Humanata', NULL),
-(@prov_lp_eliodoro_camacho_id, 'Escoma', NULL);
+-- PROVINCIA 26: Caranavi (provincia_id = 26)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(110, 26, 'Caranavi', NULL),
+(111, 26, 'Alto Beni', NULL);
 
--- PROVINCIA: Franz Tamayo (Apolo, Pelechuco)
-SET @prov_lp_franz_tamayo_id = (SELECT id FROM provincias WHERE nombre = 'Franz Tamayo' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'LP' LIMIT 1) LIMIT 1);
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_lp_franz_tamayo_id, 'Apolo', NULL),
-(@prov_lp_franz_tamayo_id, 'Pelechuco', NULL);
+-- PROVINCIA 27: Larecaja (provincia_id = 27)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(112, 27, 'Sorata', NULL),
+(113, 27, 'Guanay', NULL),
+(114, 27, 'Tacacoma', NULL),
+(115, 27, 'Quiabaya', NULL),
+(116, 27, 'Combaya', NULL),
+(117, 27, 'Tipuani', NULL),
+(118, 27, 'Mapiri', NULL),
+(119, 27, 'Teoponte', NULL);
 
--- PROVINCIA: Gualberto Villarroel (San Pedro de Curahuara, Papel Pampa, Chacarilla, Turco, Nazacara)
-SET @prov_lp_gualberto_villarroel_id = (SELECT id FROM provincias WHERE nombre = 'Gualberto Villarroel' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'LP' LIMIT 1) LIMIT 1);
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_lp_gualberto_villarroel_id, 'San Pedro de Curahuara', NULL),
-(@prov_lp_gualberto_villarroel_id, 'Papel Pampa', NULL),
-(@prov_lp_gualberto_villarroel_id, 'Chacarilla', NULL),
-(@prov_lp_gualberto_villarroel_id, 'Turco', NULL),
-(@prov_lp_gualberto_villarroel_id, 'Nazacara', NULL);
+-- PROVINCIA 28: Inquisivi (provincia_id = 28)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(120, 28, 'Inquisivi', NULL),
+(121, 28, 'Quime', NULL),
+(122, 28, 'Cajuata', NULL),
+(123, 28, 'Colquiri', NULL),
+(124, 28, 'Ichoca', NULL),
+(125, 28, 'Licoma Pampa', NULL),
+(126, 28, 'Viloco', NULL);
 
--- PROVINCIA: Inquisivi (Inquisivi, Quime, Cajuata, Colquiri, Ichoca, Licoma Pampa, Viloco)
-SET @prov_lp_inquisivi_id = (SELECT id FROM provincias WHERE nombre = 'Inquisivi' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'LP' LIMIT 1) LIMIT 1);
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_lp_inquisivi_id, 'Inquisivi', NULL),
-(@prov_lp_inquisivi_id, 'Quime', NULL),
-(@prov_lp_inquisivi_id, 'Cajuata', NULL),
-(@prov_lp_inquisivi_id, 'Colquiri', NULL),
-(@prov_lp_inquisivi_id, 'Ichoca', NULL),
-(@prov_lp_inquisivi_id, 'Licoma Pampa', NULL),
-(@prov_lp_inquisivi_id, 'Viloco', NULL);
+-- PROVINCIA 29: Loayza (provincia_id = 29)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(127, 29, 'Yaco', NULL),
+(128, 29, 'Malla', NULL),
+(129, 29, 'Luribay', NULL),
+(130, 29, 'Sapahaqui', NULL),
+(131, 29, 'Cairoma', NULL),
+(132, 29, 'Caxata', NULL),
+(133, 29, 'Sicasica', NULL),
+(134, 29, 'Salinas', NULL);
 
--- PROVINCIA: José Manuel Pando (Santiago de Machaca, Catacora)
-SET @prov_lp_jose_manuel_pando_id = (SELECT id FROM provincias WHERE nombre = 'José Manuel Pando' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'LP' LIMIT 1) LIMIT 1);
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_lp_jose_manuel_pando_id, 'Santiago de Machaca', NULL),
-(@prov_lp_jose_manuel_pando_id, 'Catacora', NULL);
+-- PROVINCIA 30: José Manuel Pando (provincia_id = 30)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(135, 30, 'Santiago de Machaca', NULL),
+(136, 30, 'Catacora', NULL);
 
--- PROVINCIA: Larecaja (Sorata, Guanay, Tacacoma, Quiabaya, Combaya, Tipuani, Mapiri, Teoponte)
-SET @prov_lp_larecaja_id = (SELECT id FROM provincias WHERE nombre = 'Larecaja' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'LP' LIMIT 1) LIMIT 1);
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_lp_larecaja_id, 'Sorata', NULL),
-(@prov_lp_larecaja_id, 'Guanay', NULL),
-(@prov_lp_larecaja_id, 'Tacacoma', NULL),
-(@prov_lp_larecaja_id, 'Quiabaya', NULL),
-(@prov_lp_larecaja_id, 'Combaya', NULL),
-(@prov_lp_larecaja_id, 'Tipuani', NULL),
-(@prov_lp_larecaja_id, 'Mapiri', NULL),
-(@prov_lp_larecaja_id, 'Teoponte', NULL);
+-- PROVINCIA 31: Muñecas (provincia_id = 31)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(137, 31, 'Chuma', NULL),
+(138, 31, 'Ayata', NULL),
+(139, 31, 'Aucapata', NULL);
 
--- PROVINCIA: Loayza (Yaco, Malla, Luribay, Sapahaqui, Cairoma, Caxata, Sicasica, Salinas)
-SET @prov_lp_loayza_id = (SELECT id FROM provincias WHERE nombre = 'Loayza' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'LP' LIMIT 1) LIMIT 1);
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_lp_loayza_id, 'Yaco', NULL),
-(@prov_lp_loayza_id, 'Malla', NULL),
-(@prov_lp_loayza_id, 'Luribay', NULL),
-(@prov_lp_loayza_id, 'Sapahaqui', NULL),
-(@prov_lp_loayza_id, 'Cairoma', NULL),
-(@prov_lp_loayza_id, 'Caxata', NULL),
-(@prov_lp_loayza_id, 'Sicasica', NULL),
-(@prov_lp_loayza_id, 'Salinas', NULL);
+-- PROVINCIA 32: Eliodoro Camacho (provincia_id = 32)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(140, 32, 'Puerto Acosta', NULL),
+(141, 32, 'Mocomoco', NULL),
+(142, 32, 'Puerto Carabuco', NULL),
+(143, 32, 'Humanata', NULL),
+(144, 32, 'Escoma', NULL);
 
--- PROVINCIA: Muñecas (Chuma, Ayata, Aucapata)
-SET @prov_lp_munecas_id = (SELECT id FROM provincias WHERE nombre = 'Muñecas' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'LP' LIMIT 1) LIMIT 1);
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_lp_munecas_id, 'Chuma', NULL),
-(@prov_lp_munecas_id, 'Ayata', NULL),
-(@prov_lp_munecas_id, 'Aucapata', NULL);
+-- PROVINCIA 33: Bautista Saavedra (provincia_id = 33)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(145, 33, 'Charazani', NULL),
+(146, 33, 'Curva', NULL);
 
--- PROVINCIA: Pacajes (Coro Coro, Caquiaviri, Calacoto, Comanche, Charaña, Waldo Ballivián, Nazacara de Pacajes, Callapa, Santiago de Callapa)
-SET @prov_lp_pacajes_id = (SELECT id FROM provincias WHERE nombre = 'Pacajes' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'LP' LIMIT 1) LIMIT 1);
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_lp_pacajes_id, 'Coro Coro', NULL),
-(@prov_lp_pacajes_id, 'Caquiaviri', NULL),
-(@prov_lp_pacajes_id, 'Calacoto', NULL),
-(@prov_lp_pacajes_id, 'Comanche', NULL),
-(@prov_lp_pacajes_id, 'Charaña', NULL),
-(@prov_lp_pacajes_id, 'Waldo Ballivián', NULL),
-(@prov_lp_pacajes_id, 'Nazacara de Pacajes', NULL),
-(@prov_lp_pacajes_id, 'Callapa', NULL),
-(@prov_lp_pacajes_id, 'Santiago de Callapa', NULL);
+-- PROVINCIA 34: Franz Tamayo (provincia_id = 34)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(147, 34, 'Apolo', NULL),
+(148, 34, 'Pelechuco', NULL);
 
--- PROVINCIA: Abel Iturralde (Ixiamas, San Buenaventura)
-SET @prov_lp_abel_iturralde_id = (SELECT id FROM provincias WHERE nombre = 'Abel Iturralde' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'LP' LIMIT 1) LIMIT 1);
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_lp_abel_iturralde_id, 'Ixiamas', NULL),
-(@prov_lp_abel_iturralde_id, 'San Buenaventura', NULL);
+-- PROVINCIA 35: Abel Iturralde (provincia_id = 35)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(149, 35, 'Ixiamas', NULL),
+(150, 35, 'San Buenaventura', NULL);
 
 -- ============================================
--- INSERTAR MUNICIPIOS - COCHABAMBA
+-- COCHABAMBA - Provincias 36-51
 -- ============================================
 
--- PROVINCIA: Cercado (Cochabamba)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_cb_cercado_id, 'Cochabamba', NULL);
+-- PROVINCIA 36: Cercado (provincia_id = 36)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(151, 36, 'Cochabamba', NULL);
 
--- PROVINCIA: Quillacollo (Quillacollo, Colcapirhua, Tiquipaya, Vinto, Sipe Sipe, Sacaba)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_cb_quillacollo_id, 'Quillacollo', NULL),
-(@prov_cb_quillacollo_id, 'Colcapirhua', NULL),
-(@prov_cb_quillacollo_id, 'Tiquipaya', NULL),
-(@prov_cb_quillacollo_id, 'Vinto', NULL),
-(@prov_cb_quillacollo_id, 'Sipe Sipe', NULL),
-(@prov_cb_quillacollo_id, 'Sacaba', NULL);
+-- PROVINCIA 37: Quillacollo (provincia_id = 37)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(152, 37, 'Quillacollo', NULL),
+(153, 37, 'Colcapirhua', NULL),
+(154, 37, 'Tiquipaya', NULL),
+(155, 37, 'Vinto', NULL),
+(156, 37, 'Sipe Sipe', NULL),
+(157, 37, 'Sacaba', NULL);
 
--- PROVINCIA: Chapare (Villa Tunari, Shinahota, Entre Ríos, Puerto Villarroel)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_cb_chapare_id, 'Villa Tunari', NULL),
-(@prov_cb_chapare_id, 'Shinahota', NULL),
-(@prov_cb_chapare_id, 'Entre Ríos', NULL),
-(@prov_cb_chapare_id, 'Puerto Villarroel', NULL);
+-- PROVINCIA 38: Chapare (provincia_id = 38)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(158, 38, 'Villa Tunari', NULL),
+(159, 38, 'Shinahota', NULL),
+(160, 38, 'Entre Ríos', NULL),
+(161, 38, 'Puerto Villarroel', NULL);
 
--- PROVINCIA: Punata (Punata, Villa Rivero, San Benito, Tacachi, Cuchumuela, Villa Gualberto Villarroel)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_cb_punata_id, 'Punata', NULL),
-(@prov_cb_punata_id, 'Villa Rivero', NULL),
-(@prov_cb_punata_id, 'San Benito', NULL),
-(@prov_cb_punata_id, 'Tacachi', NULL),
-(@prov_cb_punata_id, 'Cuchumuela', NULL),
-(@prov_cb_punata_id, 'Villa Gualberto Villarroel', NULL);
+-- PROVINCIA 39: Punata (provincia_id = 39)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(162, 39, 'Punata', NULL),
+(163, 39, 'Villa Rivero', NULL),
+(164, 39, 'San Benito', NULL),
+(165, 39, 'Tacachi', NULL),
+(166, 39, 'Cuchumuela', NULL),
+(167, 39, 'Villa Gualberto Villarroel', NULL);
 
--- PROVINCIA: Arani (Arani, Vacas)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_cb_arani_id, 'Arani', NULL),
-(@prov_cb_arani_id, 'Vacas', NULL);
+-- PROVINCIA 40: Tapacarí (provincia_id = 40)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(168, 40, 'Tapacari', NULL);
 
--- PROVINCIA: Esteban Arze (Tarata, Anzaldo, Arbieto, Sacabamba)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_cb_esteban_arce_id, 'Tarata', NULL),
-(@prov_cb_esteban_arce_id, 'Anzaldo', NULL),
-(@prov_cb_esteban_arce_id, 'Arbieto', NULL),
-(@prov_cb_esteban_arce_id, 'Sacabamba', NULL);
+-- PROVINCIA 41: Esteban Arze (provincia_id = 41)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(169, 41, 'Tarata', NULL),
+(170, 41, 'Anzaldo', NULL),
+(171, 41, 'Arbieto', NULL),
+(172, 41, 'Sacabamba', NULL);
 
--- PROVINCIA: Tapacari (Tapacari)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_cb_tapacari_id, 'Tapacari', NULL);
+-- PROVINCIA 42: Arani (provincia_id = 42)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(173, 42, 'Arani', NULL),
+(174, 42, 'Vacas', NULL);
 
--- PROVINCIA: Ayopaya (Ayopaya, Independencia, Morochata, Cocapata)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_cb_ayopaya_id, 'Ayopaya', NULL),
-(@prov_cb_ayopaya_id, 'Independencia', NULL),
-(@prov_cb_ayopaya_id, 'Morochata', NULL),
-(@prov_cb_ayopaya_id, 'Cocapata', NULL);
+-- PROVINCIA 43: Ayopaya (provincia_id = 43)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(175, 43, 'Ayopaya', NULL),
+(176, 43, 'Independencia', NULL),
+(177, 43, 'Morochata', NULL),
+(178, 43, 'Cocapata', NULL);
 
--- PROVINCIA: Capinota (Capinota, Santiváñez, Sicaya)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_cb_capinota_id, 'Capinota', NULL),
-(@prov_cb_capinota_id, 'Santiváñez', NULL),
-(@prov_cb_capinota_id, 'Sicaya', NULL);
+-- PROVINCIA 44: Capinota (provincia_id = 44)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(179, 44, 'Capinota', NULL),
+(180, 44, 'Santiváñez', NULL),
+(181, 44, 'Sicaya', NULL);
 
--- PROVINCIA: Mizque (Mizque, Vila Vila, Alalay)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_cb_mizque_id, 'Mizque', NULL),
-(@prov_cb_mizque_id, 'Vila Vila', NULL),
-(@prov_cb_mizque_id, 'Alalay', NULL);
+-- PROVINCIA 45: Carrasco (provincia_id = 45)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(182, 45, 'Totora', NULL),
+(183, 45, 'Pojo', NULL),
+(184, 45, 'Pocona', NULL),
+(185, 45, 'Chimoré', NULL);
 
--- PROVINCIA: Campero (Aiquile, Omereque, Pasorapa)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_cb_campero_id, 'Aiquile', NULL),
-(@prov_cb_campero_id, 'Omereque', NULL),
-(@prov_cb_campero_id, 'Pasorapa', NULL);
+-- PROVINCIA 46: Bolívar (provincia_id = 46)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(186, 46, 'Bolívar', NULL),
+(187, 46, 'San Pedro de Buena Vista', NULL);
 
--- PROVINCIA: Carrasco (Totora, Pojo, Pocona, Chimoré)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_cb_carrasco_id, 'Totora', NULL),
-(@prov_cb_carrasco_id, 'Pojo', NULL),
-(@prov_cb_carrasco_id, 'Pocona', NULL),
-(@prov_cb_carrasco_id, 'Chimoré', NULL);
+-- PROVINCIA 47: Mizque (provincia_id = 47)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(188, 47, 'Mizque', NULL),
+(189, 47, 'Vila Vila', NULL),
+(190, 47, 'Alalay', NULL);
 
--- PROVINCIA: Germán Jordán (Cliza, Toco, Tolata)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_cb_german_jordan_id, 'Cliza', NULL),
-(@prov_cb_german_jordan_id, 'Toco', NULL),
-(@prov_cb_german_jordan_id, 'Tolata', NULL);
+-- PROVINCIA 48: Campero (provincia_id = 48)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(191, 48, 'Aiquile', NULL),
+(192, 48, 'Omereque', NULL),
+(193, 48, 'Pasorapa', NULL);
 
--- PROVINCIA: Bolívar (Bolívar, San Pedro de Buena Vista)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_cb_bolivar_id, 'Bolívar', NULL),
-(@prov_cb_bolivar_id, 'San Pedro de Buena Vista', NULL);
+-- PROVINCIA 49: Tiraque (provincia_id = 49)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(194, 49, 'Tiraque', NULL);
 
--- PROVINCIA: Tiraque (Tiraque)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_cb_tiraque_id, 'Tiraque', NULL);
+-- PROVINCIA 50: Germán Jordán (provincia_id = 50)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(195, 50, 'Cliza', NULL),
+(196, 50, 'Toco', NULL),
+(197, 50, 'Tolata', NULL);
 
--- PROVINCIA: Arque (Arque, Tacopaya)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_cb_arque_id, 'Arque', NULL),
-(@prov_cb_arque_id, 'Tacopaya', NULL);
-
--- ============================================
--- INSERTAR MUNICIPIOS - SANTA CRUZ
--- ============================================
-
--- Variables de provincias de Santa Cruz
-SET @prov_sc_andres_ibanez_id = (SELECT id FROM provincias WHERE nombre = 'Andrés Ibáñez' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'SC' LIMIT 1) LIMIT 1);
-SET @prov_sc_angel_sandoval_id = (SELECT id FROM provincias WHERE nombre = 'Ángel Sandoval' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'SC' LIMIT 1) LIMIT 1);
-SET @prov_sc_chiquitos_id = (SELECT id FROM provincias WHERE nombre = 'Chiquitos' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'SC' LIMIT 1) LIMIT 1);
-SET @prov_sc_cordillera_id = (SELECT id FROM provincias WHERE nombre = 'Cordillera' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'SC' LIMIT 1) LIMIT 1);
-SET @prov_sc_florida_id = (SELECT id FROM provincias WHERE nombre = 'Florida' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'SC' LIMIT 1) LIMIT 1);
-SET @prov_sc_german_busch_id = (SELECT id FROM provincias WHERE nombre = 'Germán Busch' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'SC' LIMIT 1) LIMIT 1);
-SET @prov_sc_guarayos_id = (SELECT id FROM provincias WHERE nombre = 'Guarayos' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'SC' LIMIT 1) LIMIT 1);
-SET @prov_sc_ichilo_id = (SELECT id FROM provincias WHERE nombre = 'Ichilo' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'SC' LIMIT 1) LIMIT 1);
-SET @prov_sc_warnes_id = (SELECT id FROM provincias WHERE nombre = 'Ignacio Warnes' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'SC' LIMIT 1) LIMIT 1);
-SET @prov_sc_velasco_id = (SELECT id FROM provincias WHERE nombre = 'José Miguel de Velasco' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'SC' LIMIT 1) LIMIT 1);
-SET @prov_sc_caballero_id = (SELECT id FROM provincias WHERE nombre = 'Manuel María Caballero' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'SC' LIMIT 1) LIMIT 1);
-SET @prov_sc_nuflo_chavez_id = (SELECT id FROM provincias WHERE nombre = 'Ñuflo de Chávez' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'SC' LIMIT 1) LIMIT 1);
-SET @prov_sc_obispo_santiestevan_id = (SELECT id FROM provincias WHERE nombre = 'Obispo Santiestevan' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'SC' LIMIT 1) LIMIT 1);
-SET @prov_sc_sara_id = (SELECT id FROM provincias WHERE nombre = 'Sara' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'SC' LIMIT 1) LIMIT 1);
-SET @prov_sc_vallegrande_id = (SELECT id FROM provincias WHERE nombre = 'Vallegrande' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'SC' LIMIT 1) LIMIT 1);
-
--- PROVINCIA: Andrés Ibáñez (Santa Cruz de la Sierra, Cotoca, Porongo, La Guardia, El Torno)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_sc_andres_ibanez_id, 'Santa Cruz de la Sierra', NULL),
-(@prov_sc_andres_ibanez_id, 'Cotoca', NULL),
-(@prov_sc_andres_ibanez_id, 'Porongo', NULL),
-(@prov_sc_andres_ibanez_id, 'La Guardia', NULL),
-(@prov_sc_andres_ibanez_id, 'El Torno', NULL);
-
--- PROVINCIA: Ángel Sandoval (San Matías)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_sc_angel_sandoval_id, 'San Matías', NULL);
-
--- PROVINCIA: Manuel María Caballero (Comarapa, Saipina)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_sc_caballero_id, 'Comarapa', NULL),
-(@prov_sc_caballero_id, 'Saipina', NULL);
-
--- PROVINCIA: Chiquitos (San José de Chiquitos, Pailón, Roboré)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_sc_chiquitos_id, 'San José de Chiquitos', NULL),
-(@prov_sc_chiquitos_id, 'Pailón', NULL),
-(@prov_sc_chiquitos_id, 'Roboré', NULL);
-
--- PROVINCIA: Cordillera (Lagunillas, Charagua, Cabezas, Cuevo, Gutiérrez, Camiri, Boyuibe)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_sc_cordillera_id, 'Lagunillas', NULL),
-(@prov_sc_cordillera_id, 'Charagua', NULL),
-(@prov_sc_cordillera_id, 'Cabezas', NULL),
-(@prov_sc_cordillera_id, 'Cuevo', NULL),
-(@prov_sc_cordillera_id, 'Gutiérrez', NULL),
-(@prov_sc_cordillera_id, 'Camiri', NULL),
-(@prov_sc_cordillera_id, 'Boyuibe', NULL);
-
--- PROVINCIA: Florida (Samaipata, Pampa Grande, Mairana, Quirusillas)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_sc_florida_id, 'Samaipata', NULL),
-(@prov_sc_florida_id, 'Pampa Grande', NULL),
-(@prov_sc_florida_id, 'Mairana', NULL),
-(@prov_sc_florida_id, 'Quirusillas', NULL);
-
--- PROVINCIA: Germán Busch (Puerto Suárez, Puerto Quijarro, El Carmen Rivero Tórrez)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_sc_german_busch_id, 'Puerto Suárez', NULL),
-(@prov_sc_german_busch_id, 'Puerto Quijarro', NULL),
-(@prov_sc_german_busch_id, 'El Carmen Rivero Tórrez', NULL);
-
--- PROVINCIA: Guarayos (Ascensión de Guarayos, Urubichá, El Puente)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_sc_guarayos_id, 'Ascensión de Guarayos', NULL),
-(@prov_sc_guarayos_id, 'Urubichá', NULL),
-(@prov_sc_guarayos_id, 'El Puente', NULL);
-
--- PROVINCIA: Ichilo (Buena Vista, San Carlos, Yapacaní, San Juan de Yapacaní)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_sc_ichilo_id, 'Buena Vista', NULL),
-(@prov_sc_ichilo_id, 'San Carlos', NULL),
-(@prov_sc_ichilo_id, 'Yapacaní', NULL),
-(@prov_sc_ichilo_id, 'San Juan de Yapacaní', NULL);
-
--- PROVINCIA: Ignacio Warnes (Warnes, Okinawa Uno)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_sc_warnes_id, 'Warnes', NULL),
-(@prov_sc_warnes_id, 'Okinawa Uno', NULL);
-
--- PROVINCIA: José Miguel de Velasco (San Ignacio de Velasco, San Miguel de Velasco, San Rafael)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_sc_velasco_id, 'San Ignacio de Velasco', NULL),
-(@prov_sc_velasco_id, 'San Miguel de Velasco', NULL),
-(@prov_sc_velasco_id, 'San Rafael', NULL);
-
--- PROVINCIA: Ñuflo de Chávez (Concepción, San Javier, San Ramón, San Julián, San Antonio de Lomerío, Cuatro Cañadas)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_sc_nuflo_chavez_id, 'Concepción', NULL),
-(@prov_sc_nuflo_chavez_id, 'San Javier', NULL),
-(@prov_sc_nuflo_chavez_id, 'San Ramón', NULL),
-(@prov_sc_nuflo_chavez_id, 'San Julián', NULL),
-(@prov_sc_nuflo_chavez_id, 'San Antonio de Lomerío', NULL),
-(@prov_sc_nuflo_chavez_id, 'Cuatro Cañadas', NULL);
-
--- PROVINCIA: Obispo Santiestevan (Montero, General Saavedra, Mineros, Fernández Alonso, San Pedro)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_sc_obispo_santiestevan_id, 'Montero', NULL),
-(@prov_sc_obispo_santiestevan_id, 'General Saavedra', NULL),
-(@prov_sc_obispo_santiestevan_id, 'Mineros', NULL),
-(@prov_sc_obispo_santiestevan_id, 'Fernández Alonso', NULL),
-(@prov_sc_obispo_santiestevan_id, 'San Pedro', NULL);
-
--- PROVINCIA: Sara (Portachuelo, Santa Rosa del Sara, Colpa Bélgica)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_sc_sara_id, 'Portachuelo', NULL),
-(@prov_sc_sara_id, 'Santa Rosa del Sara', NULL),
-(@prov_sc_sara_id, 'Colpa Bélgica', NULL);
-
--- PROVINCIA: Vallegrande (Vallegrande, Trigal, Moro Moro, Postrer Valle, Pucará)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_sc_vallegrande_id, 'Vallegrande', NULL),
-(@prov_sc_vallegrande_id, 'Trigal', NULL),
-(@prov_sc_vallegrande_id, 'Moro Moro', NULL),
-(@prov_sc_vallegrande_id, 'Postrer Valle', NULL),
-(@prov_sc_vallegrande_id, 'Pucará', NULL);
+-- PROVINCIA 51: Arque (provincia_id = 51)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(198, 51, 'Arque', NULL),
+(199, 51, 'Tacopaya', NULL);
 
 -- ============================================
--- INSERTAR MUNICIPIOS - POTOSÍ
+-- POTOSÍ - Provincias 52-67
 -- ============================================
 
--- Variables de provincias de Potosí
-SET @prov_pt_alonso_ibanez_id = (SELECT id FROM provincias WHERE nombre = 'Alonso de Ibáñez' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'PT' LIMIT 1) LIMIT 1);
-SET @prov_pt_antonio_quijarro_id = (SELECT id FROM provincias WHERE nombre = 'Antonio Quijarro' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'PT' LIMIT 1) LIMIT 1);
-SET @prov_pt_bernardino_bilbao_id = (SELECT id FROM provincias WHERE nombre = 'Bernardino Bilbao' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'PT' LIMIT 1) LIMIT 1);
-SET @prov_pt_charcas_id = (SELECT id FROM provincias WHERE nombre = 'Charcas' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'PT' LIMIT 1) LIMIT 1);
-SET @prov_pt_chayanta_id = (SELECT id FROM provincias WHERE nombre = 'Chayanta' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'PT' LIMIT 1) LIMIT 1);
-SET @prov_pt_cornelio_saavedra_id = (SELECT id FROM provincias WHERE nombre = 'Cornelio Saavedra' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'PT' LIMIT 1) LIMIT 1);
-SET @prov_pt_daniel_campos_id = (SELECT id FROM provincias WHERE nombre = 'Daniel Campos' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'PT' LIMIT 1) LIMIT 1);
-SET @prov_pt_enrique_baldivieso_id = (SELECT id FROM provincias WHERE nombre = 'Enrique Baldivieso' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'PT' LIMIT 1) LIMIT 1);
-SET @prov_pt_jose_maria_linares_id = (SELECT id FROM provincias WHERE nombre = 'José María Linares' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'PT' LIMIT 1) LIMIT 1);
-SET @prov_pt_modesto_omiste_id = (SELECT id FROM provincias WHERE nombre = 'Modesto Omiste' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'PT' LIMIT 1) LIMIT 1);
-SET @prov_pt_nor_chichas_id = (SELECT id FROM provincias WHERE nombre = 'Nor Chichas' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'PT' LIMIT 1) LIMIT 1);
-SET @prov_pt_nor_lipez_id = (SELECT id FROM provincias WHERE nombre = 'Nor Lípez' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'PT' LIMIT 1) LIMIT 1);
-SET @prov_pt_rafael_bustillo_id = (SELECT id FROM provincias WHERE nombre = 'Rafael Bustillo' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'PT' LIMIT 1) LIMIT 1);
-SET @prov_pt_sud_chichas_id = (SELECT id FROM provincias WHERE nombre = 'Sud Chichas' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'PT' LIMIT 1) LIMIT 1);
-SET @prov_pt_sud_lipez_id = (SELECT id FROM provincias WHERE nombre = 'Sud Lípez' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'PT' LIMIT 1) LIMIT 1);
-SET @prov_pt_tomas_frias_id = (SELECT id FROM provincias WHERE nombre = 'Tomás Frías' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'PT' LIMIT 1) LIMIT 1);
+-- PROVINCIA 52: Tomás Frías (provincia_id = 52)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(200, 52, 'Potosí', NULL),
+(201, 52, 'Tinguipaya', NULL),
+(202, 52, 'Urmiri', NULL),
+(203, 52, 'Yocalla', NULL);
 
--- PROVINCIA: Tomás Frías (Potosí, Tinguipaya, Urmiri, Yocalla)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_pt_tomas_frias_id, 'Potosí', NULL),
-(@prov_pt_tomas_frias_id, 'Tinguipaya', NULL),
-(@prov_pt_tomas_frias_id, 'Urmiri', NULL),
-(@prov_pt_tomas_frias_id, 'Yocalla', NULL);
+-- PROVINCIA 53: Nor Chichas (provincia_id = 53)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(204, 53, 'Cotagaita', NULL),
+(205, 53, 'Vitichi', NULL),
+(206, 53, 'Sagrario', NULL),
+(207, 53, 'Tacachira', NULL);
 
--- PROVINCIA: Rafael Bustillo (Uncía, Chayanta, Llallagua, Chuquihuta)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_pt_rafael_bustillo_id, 'Uncía', NULL),
-(@prov_pt_rafael_bustillo_id, 'Chayanta', NULL),
-(@prov_pt_rafael_bustillo_id, 'Llallagua', NULL),
-(@prov_pt_rafael_bustillo_id, 'Chuquihuta', NULL);
+-- PROVINCIA 54: Modesto Omiste (provincia_id = 54)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(208, 54, 'Villazón', NULL);
 
--- PROVINCIA: Chayanta (Colquechaca, Pocoata, Ravelo, Ocurí, Surihaya)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_pt_chayanta_id, 'Colquechaca', NULL),
-(@prov_pt_chayanta_id, 'Pocoata', NULL),
-(@prov_pt_chayanta_id, 'Ravelo', NULL),
-(@prov_pt_chayanta_id, 'Ocurí', NULL),
-(@prov_pt_chayanta_id, 'Surihaya', NULL);
+-- PROVINCIA 55: Enrique Baldivieso (provincia_id = 55)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(209, 55, 'San Agustín', NULL);
 
--- PROVINCIA: Cornelio Saavedra (Betanzos, Chaquí, Tacobamba)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_pt_cornelio_saavedra_id, 'Betanzos', NULL),
-(@prov_pt_cornelio_saavedra_id, 'Chaquí', NULL),
-(@prov_pt_cornelio_saavedra_id, 'Tacobamba', NULL);
+-- PROVINCIA 56: Rafael Bustillo (provincia_id = 56)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(210, 56, 'Uncía', NULL),
+(211, 56, 'Chayanta', NULL),
+(212, 56, 'Llallagua', NULL),
+(213, 56, 'Chuquihuta', NULL);
 
--- PROVINCIA: Charcas (San Pedro de Buena Vista, Toro Toro)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_pt_charcas_id, 'San Pedro de Buena Vista', NULL),
-(@prov_pt_charcas_id, 'Toro Toro', NULL);
+-- PROVINCIA 57: Antonio Quijarro (provincia_id = 57)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(214, 57, 'Uyuni', NULL),
+(215, 57, 'Tomave', NULL),
+(216, 57, 'Porco', NULL);
 
--- PROVINCIA: Nor Chichas (Cotagaita, Vitichi, Sagrario, Tacachira)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_pt_nor_chichas_id, 'Cotagaita', NULL),
-(@prov_pt_nor_chichas_id, 'Vitichi', NULL),
-(@prov_pt_nor_chichas_id, 'Sagrario', NULL),
-(@prov_pt_nor_chichas_id, 'Tacachira', NULL);
+-- PROVINCIA 58: Sud Chichas (provincia_id = 58)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(217, 58, 'Tupiza', NULL),
+(218, 58, 'Atocha', NULL),
+(219, 58, 'Esmoraca', NULL),
+(220, 58, 'Mojinete', NULL),
+(221, 58, 'San Pablo de Lípez', NULL);
 
--- PROVINCIA: Sud Chichas (Tupiza, Atocha, Esmoraca, Mojinete, San Pablo de Lípez)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_pt_sud_chichas_id, 'Tupiza', NULL),
-(@prov_pt_sud_chichas_id, 'Atocha', NULL),
-(@prov_pt_sud_chichas_id, 'Esmoraca', NULL),
-(@prov_pt_sud_chichas_id, 'Mojinete', NULL),
-(@prov_pt_sud_chichas_id, 'San Pablo de Lípez', NULL);
+-- PROVINCIA 59: Cornelio Saavedra (provincia_id = 59)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(222, 59, 'Betanzos', NULL),
+(223, 59, 'Chaquí', NULL),
+(224, 59, 'Tacobamba', NULL);
 
--- PROVINCIA: Nor Lípez (Colcha K, San Pedro de Quemes, Llica)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_pt_nor_lipez_id, 'Colcha K', NULL),
-(@prov_pt_nor_lipez_id, 'San Pedro de Quemes', NULL),
-(@prov_pt_nor_lipez_id, 'Llica', NULL);
+-- PROVINCIA 60: José María Linares (provincia_id = 60)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(225, 60, 'Puna', NULL),
+(226, 60, 'Caiza D', NULL),
+(227, 60, 'Ckochas', NULL);
 
--- PROVINCIA: Sud Lípez (San Pablo de Lípez, San Antonio de Esmoruco)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_pt_sud_lipez_id, 'San Pablo de Lípez', NULL),
-(@prov_pt_sud_lipez_id, 'San Antonio de Esmoruco', NULL);
+-- PROVINCIA 61: Charcas (provincia_id = 61)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(228, 61, 'San Pedro de Buena Vista', NULL),
+(229, 61, 'Toro Toro', NULL);
 
--- PROVINCIA: José María Linares (Puna, Caiza D, Ckochas, Yocalla)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_pt_jose_maria_linares_id, 'Puna', NULL),
-(@prov_pt_jose_maria_linares_id, 'Caiza D', NULL),
-(@prov_pt_jose_maria_linares_id, 'Ckochas', NULL);
+-- PROVINCIA 62: Chayanta (provincia_id = 62)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(230, 62, 'Colquechaca', NULL),
+(231, 62, 'Pocoata', NULL),
+(232, 62, 'Ravelo', NULL),
+(233, 62, 'Ocurí', NULL),
+(234, 62, 'Surihaya', NULL);
 
--- PROVINCIA: Antonio Quijarro (Uyuni, Tomave, Porco)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_pt_antonio_quijarro_id, 'Uyuni', NULL),
-(@prov_pt_antonio_quijarro_id, 'Tomave', NULL),
-(@prov_pt_antonio_quijarro_id, 'Porco', NULL);
+-- PROVINCIA 63: Nor Lípez (provincia_id = 63)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(235, 63, 'Colcha K', NULL),
+(236, 63, 'San Pedro de Quemes', NULL),
+(237, 63, 'Llica', NULL);
 
--- PROVINCIA: Modesto Omiste (Villazón, Tarija)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_pt_modesto_omiste_id, 'Villazón', NULL);
+-- PROVINCIA 64: Sud Lípez (provincia_id = 64)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(238, 64, 'San Pablo de Lípez', NULL),
+(239, 64, 'San Antonio de Esmoruco', NULL);
 
--- PROVINCIA: Enrique Baldivieso (San Agustín)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_pt_enrique_baldivieso_id, 'San Agustín', NULL);
+-- PROVINCIA 65: Alonso de Ibáñez (provincia_id = 65)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(240, 65, 'Sacaca', NULL),
+(241, 65, 'Caripuyo', NULL);
 
--- PROVINCIA: Daniel Campos (Llica, Tahua)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_pt_daniel_campos_id, 'Llica', NULL),
-(@prov_pt_daniel_campos_id, 'Tahua', NULL);
+-- PROVINCIA 66: Bernardino Bilbao (provincia_id = 66)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(242, 66, 'Arampampa', NULL),
+(243, 66, 'Acasio', NULL);
 
--- PROVINCIA: Alonso de Ibáñez (Sacaca, Caripuyo)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_pt_alonso_ibanez_id, 'Sacaca', NULL),
-(@prov_pt_alonso_ibanez_id, 'Caripuyo', NULL);
-
--- PROVINCIA: Bernardino Bilbao (Arampampa, Acasio)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_pt_bernardino_bilbao_id, 'Arampampa', NULL),
-(@prov_pt_bernardino_bilbao_id, 'Acasio', NULL);
+-- PROVINCIA 67: Daniel Campos (provincia_id = 67)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(244, 67, 'Llica', NULL),
+(245, 67, 'Tahua', NULL);
 
 -- ============================================
--- INSERTAR MUNICIPIOS - CHUQUISACA
+-- CHUQUISACA - Provincias 68-77
 -- ============================================
 
--- Variables de provincias de Chuquisaca
-SET @prov_ch_azurduy_id = (SELECT id FROM provincias WHERE nombre = 'Azurduy' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'CH' LIMIT 1) LIMIT 1);
-SET @prov_ch_belisario_boeto_id = (SELECT id FROM provincias WHERE nombre = 'Belisario Boeto' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'CH' LIMIT 1) LIMIT 1);
-SET @prov_ch_hernando_siles_id = (SELECT id FROM provincias WHERE nombre = 'Hernando Siles' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'CH' LIMIT 1) LIMIT 1);
-SET @prov_ch_jaime_zudanez_id = (SELECT id FROM provincias WHERE nombre = 'Jaime Zudáñez' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'CH' LIMIT 1) LIMIT 1);
-SET @prov_ch_luis_calvo_id = (SELECT id FROM provincias WHERE nombre = 'Luis Calvo' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'CH' LIMIT 1) LIMIT 1);
-SET @prov_ch_nor_cinti_id = (SELECT id FROM provincias WHERE nombre = 'Nor Cinti' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'CH' LIMIT 1) LIMIT 1);
-SET @prov_ch_oropeza_id = (SELECT id FROM provincias WHERE nombre = 'Oropeza' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'CH' LIMIT 1) LIMIT 1);
-SET @prov_ch_sud_cinti_id = (SELECT id FROM provincias WHERE nombre = 'Sud Cinti' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'CH' LIMIT 1) LIMIT 1);
-SET @prov_ch_tomina_id = (SELECT id FROM provincias WHERE nombre = 'Tomina' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'CH' LIMIT 1) LIMIT 1);
-SET @prov_ch_yamparaez_id = (SELECT id FROM provincias WHERE nombre = 'Yamparáez' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'CH' LIMIT 1) LIMIT 1);
+-- PROVINCIA 68: Oropeza (provincia_id = 68)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(246, 68, 'Sucre', NULL),
+(247, 68, 'Yotala', NULL),
+(248, 68, 'Poroma', NULL);
 
--- PROVINCIA: Oropeza (Sucre, Yotala, Poroma)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_ch_oropeza_id, 'Sucre', NULL),
-(@prov_ch_oropeza_id, 'Yotala', NULL),
-(@prov_ch_oropeza_id, 'Poroma', NULL);
+-- PROVINCIA 69: Tomina (provincia_id = 69)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(249, 69, 'Padilla', NULL),
+(250, 69, 'Tomina', NULL),
+(251, 69, 'Sopachuy', NULL),
+(252, 69, 'Villa Alcalá', NULL),
+(253, 69, 'El Villar', NULL),
+(254, 69, 'Monteagudo', NULL);
 
--- PROVINCIA: Yamparáez (Tarabuco, Yamparáez)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_ch_yamparaez_id, 'Tarabuco', NULL),
-(@prov_ch_yamparaez_id, 'Yamparáez', NULL);
+-- PROVINCIA 70: Azurduy (provincia_id = 70)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(255, 70, 'Azurduy', NULL),
+(256, 70, 'Tarvita', NULL);
 
--- PROVINCIA: Zudáñez (Villa Zudáñez, Presto, Mojocoya, Icla)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_ch_jaime_zudanez_id, 'Villa Zudáñez', NULL),
-(@prov_ch_jaime_zudanez_id, 'Presto', NULL),
-(@prov_ch_jaime_zudanez_id, 'Mojocoya', NULL),
-(@prov_ch_jaime_zudanez_id, 'Icla', NULL);
+-- PROVINCIA 71: Jaime Zudáñez (provincia_id = 71)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(257, 71, 'Villa Zudáñez', NULL),
+(258, 71, 'Presto', NULL),
+(259, 71, 'Mojocoya', NULL),
+(260, 71, 'Icla', NULL);
 
--- PROVINCIA: Tomina (Padilla, Tomina, Sopachuy, Villa Alcalá, El Villar, Monteagudo)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_ch_tomina_id, 'Padilla', NULL),
-(@prov_ch_tomina_id, 'Tomina', NULL),
-(@prov_ch_tomina_id, 'Sopachuy', NULL),
-(@prov_ch_tomina_id, 'Villa Alcalá', NULL),
-(@prov_ch_tomina_id, 'El Villar', NULL),
-(@prov_ch_tomina_id, 'Monteagudo', NULL);
+-- PROVINCIA 72: Yamparáez (provincia_id = 72)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(261, 72, 'Tarabuco', NULL),
+(262, 72, 'Yamparáez', NULL);
 
--- PROVINCIA: Hernando Siles (Monteagudo, Huacareta, Macharetí, Villa Vaca Guzmán)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_ch_hernando_siles_id, 'Monteagudo', NULL),
-(@prov_ch_hernando_siles_id, 'Huacareta', NULL),
-(@prov_ch_hernando_siles_id, 'Macharetí', NULL),
-(@prov_ch_hernando_siles_id, 'Villa Vaca Guzmán', NULL);
+-- PROVINCIA 73: Hernando Siles (provincia_id = 73)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(263, 73, 'Monteagudo', NULL),
+(264, 73, 'Huacareta', NULL),
+(265, 73, 'Macharetí', NULL),
+(266, 73, 'Villa Vaca Guzmán', NULL);
 
--- PROVINCIA: Belisario Boeto (Villa Serrano, Las Carreras)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_ch_belisario_boeto_id, 'Villa Serrano', NULL),
-(@prov_ch_belisario_boeto_id, 'Las Carreras', NULL);
+-- PROVINCIA 74: Nor Cinti (provincia_id = 74)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(267, 74, 'Camargo', NULL),
+(268, 74, 'San Lucas', NULL),
+(269, 74, 'Incahuasi', NULL),
+(270, 74, 'Villa Charcas', NULL);
 
--- PROVINCIA: Nor Cinti (Camargo, San Lucas, Incahuasi, Villa Charcas)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_ch_nor_cinti_id, 'Camargo', NULL),
-(@prov_ch_nor_cinti_id, 'San Lucas', NULL),
-(@prov_ch_nor_cinti_id, 'Incahuasi', NULL),
-(@prov_ch_nor_cinti_id, 'Villa Charcas', NULL);
+-- PROVINCIA 75: Sud Cinti (provincia_id = 75)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(271, 75, 'Villa Abecia', NULL),
+(272, 75, 'Culpina', NULL),
+(273, 75, 'Las Carreras', NULL),
+(274, 75, 'Camataquí', NULL);
 
--- PROVINCIA: Sud Cinti (Villa Abecia, Culpina, Las Carreras, Camataquí)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_ch_sud_cinti_id, 'Villa Abecia', NULL),
-(@prov_ch_sud_cinti_id, 'Culpina', NULL),
-(@prov_ch_sud_cinti_id, 'Las Carreras', NULL),
-(@prov_ch_sud_cinti_id, 'Camataquí', NULL);
+-- PROVINCIA 76: Belisario Boeto (provincia_id = 76)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(275, 76, 'Villa Serrano', NULL),
+(276, 76, 'Las Carreras', NULL);
 
--- PROVINCIA: Azurduy (Azurduy, Tarvita)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_ch_azurduy_id, 'Azurduy', NULL),
-(@prov_ch_azurduy_id, 'Tarvita', NULL);
-
--- PROVINCIA: Luis Calvo (Villa Vaca Guzmán, Huacaya, Macharetí, Boyuibe)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_ch_luis_calvo_id, 'Villa Vaca Guzmán', NULL),
-(@prov_ch_luis_calvo_id, 'Huacaya', NULL),
-(@prov_ch_luis_calvo_id, 'Macharetí', NULL),
-(@prov_ch_luis_calvo_id, 'Boyuibe', NULL);
+-- PROVINCIA 77: Luis Calvo (provincia_id = 77)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(277, 77, 'Villa Vaca Guzmán', NULL),
+(278, 77, 'Huacaya', NULL),
+(279, 77, 'Macharetí', NULL),
+(280, 77, 'Boyuibe', NULL);
 
 -- ============================================
--- INSERTAR MUNICIPIOS - ORURO
+-- ORURO - Provincias 78-93
 -- ============================================
 
--- Variables de provincias de Oruro
-SET @prov_or_atahuallpa_id = (SELECT id FROM provincias WHERE nombre = 'Atahuallpa' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'OR' LIMIT 1) LIMIT 1);
-SET @prov_or_carangas_id = (SELECT id FROM provincias WHERE nombre = 'Carangas' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'OR' LIMIT 1) LIMIT 1);
-SET @prov_or_cercado_id = (SELECT id FROM provincias WHERE nombre = 'Cercado' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'OR' LIMIT 1) LIMIT 1);
-SET @prov_or_eduardo_avaroa_id = (SELECT id FROM provincias WHERE nombre = 'Eduardo Avaroa' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'OR' LIMIT 1) LIMIT 1);
-SET @prov_or_ladislao_cabrera_id = (SELECT id FROM provincias WHERE nombre = 'Ladislao Cabrera' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'OR' LIMIT 1) LIMIT 1);
-SET @prov_or_litoral_id = (SELECT id FROM provincias WHERE nombre = 'Litoral' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'OR' LIMIT 1) LIMIT 1);
-SET @prov_or_mejillones_id = (SELECT id FROM provincias WHERE nombre = 'Mejillones' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'OR' LIMIT 1) LIMIT 1);
-SET @prov_or_nor_carangas_id = (SELECT id FROM provincias WHERE nombre = 'Nor Carangas' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'OR' LIMIT 1) LIMIT 1);
-SET @prov_or_pantaleon_dalence_id = (SELECT id FROM provincias WHERE nombre = 'Pantaleón Dalence' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'OR' LIMIT 1) LIMIT 1);
-SET @prov_or_poopo_id = (SELECT id FROM provincias WHERE nombre = 'Poopó' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'OR' LIMIT 1) LIMIT 1);
-SET @prov_or_sajama_id = (SELECT id FROM provincias WHERE nombre = 'Sajama' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'OR' LIMIT 1) LIMIT 1);
-SET @prov_or_san_pedro_totora_id = (SELECT id FROM provincias WHERE nombre = 'San Pedro de Totora' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'OR' LIMIT 1) LIMIT 1);
-SET @prov_or_saucari_id = (SELECT id FROM provincias WHERE nombre = 'Saucarí' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'OR' LIMIT 1) LIMIT 1);
-SET @prov_or_sebastian_pagador_id = (SELECT id FROM provincias WHERE nombre = 'Sebastián Pagador' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'OR' LIMIT 1) LIMIT 1);
-SET @prov_or_sud_carangas_id = (SELECT id FROM provincias WHERE nombre = 'Sud Carangas' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'OR' LIMIT 1) LIMIT 1);
-SET @prov_or_tomas_barron_id = (SELECT id FROM provincias WHERE nombre = 'Tomas Barrón' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'OR' LIMIT 1) LIMIT 1);
+-- PROVINCIA 78: Cercado (provincia_id = 78)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(281, 78, 'Oruro', NULL),
+(282, 78, 'Caracollo', NULL),
+(283, 78, 'El Choro', NULL),
+(284, 78, 'Soracachi', NULL);
 
--- PROVINCIA: Cercado (Oruro, Caracollo, El Choro, Soracachi)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_or_cercado_id, 'Oruro', NULL),
-(@prov_or_cercado_id, 'Caracollo', NULL),
-(@prov_or_cercado_id, 'El Choro', NULL),
-(@prov_or_cercado_id, 'Soracachi', NULL);
+-- PROVINCIA 79: Poopó (provincia_id = 79)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(285, 79, 'Poopó', NULL),
+(286, 79, 'Pazña', NULL),
+(287, 79, 'Antequera', NULL),
+(288, 79, 'Puna', NULL);
 
--- PROVINCIA: Carangas (Corque, Choque Cota)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_or_carangas_id, 'Corque', NULL),
-(@prov_or_carangas_id, 'Choque Cota', NULL);
+-- PROVINCIA 80: Pantaleón Dalence (provincia_id = 80)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(289, 80, 'Huanuni', NULL),
+(290, 80, 'Machacamarca', NULL);
 
--- PROVINCIA: Pantaleón Dalence (Huanuni, Machacamarca)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_or_pantaleon_dalence_id, 'Huanuni', NULL),
-(@prov_or_pantaleon_dalence_id, 'Machacamarca', NULL);
+-- PROVINCIA 81: Saucarí (provincia_id = 81)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(291, 81, 'Toledo', NULL),
+(292, 81, 'Santiago de Huari', NULL);
 
--- PROVINCIA: Poopó (Poopó, Pazña, Antequera, Puna)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_or_poopo_id, 'Poopó', NULL),
-(@prov_or_poopo_id, 'Pazña', NULL),
-(@prov_or_poopo_id, 'Antequera', NULL),
-(@prov_or_poopo_id, 'Puna', NULL);
+-- PROVINCIA 82: Sebastián Pagador (provincia_id = 82)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(293, 82, 'Santiago de Huari', NULL),
+(294, 82, 'Santuario de Quillacas', NULL);
 
--- PROVINCIA: Saucarí (Toledo, Santiago de Huari)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_or_saucari_id, 'Toledo', NULL),
-(@prov_or_saucari_id, 'Santiago de Huari', NULL);
+-- PROVINCIA 83: Tomas Barrón (provincia_id = 83)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(295, 83, 'Eucaliptus', NULL),
+(296, 83, 'La Rivera', NULL);
 
--- PROVINCIA: Sebastián Pagador (Santiago de Huari, Santuario de Quillacas)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_or_sebastian_pagador_id, 'Santiago de Huari', NULL),
-(@prov_or_sebastian_pagador_id, 'Santuario de Quillacas', NULL);
+-- PROVINCIA 84: Mejillones (provincia_id = 84)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(297, 84, 'La Rivera', NULL),
+(298, 84, 'Todos Santos', NULL),
+(299, 84, 'Esmeralda', NULL);
 
--- PROVINCIA: Nor Carangas (Huachacalla)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_or_nor_carangas_id, 'Huachacalla', NULL);
+-- PROVINCIA 85: San Pedro de Totora (provincia_id = 85)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(300, 85, 'Totora', NULL);
 
--- PROVINCIA: Sud Carangas (Andamarca, Belén de Andamarca)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_or_sud_carangas_id, 'Andamarca', NULL),
-(@prov_or_sud_carangas_id, 'Belén de Andamarca', NULL);
+-- PROVINCIA 86: Litoral (provincia_id = 86)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(301, 86, 'Cruz de Machacamarca', NULL),
+(302, 86, 'Esmeralda', NULL),
+(303, 86, 'Eucaliptus', NULL);
 
--- PROVINCIA: Ladislao Cabrera (Salinas de Garci Mendoza)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_or_ladislao_cabrera_id, 'Salinas de Garci Mendoza', NULL);
+-- PROVINCIA 87: Eduardo Avaroa (provincia_id = 87)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(304, 87, 'Challapata', NULL),
+(305, 87, 'Quillacas', NULL),
+(306, 87, 'Santuario de Quillacas', NULL);
 
--- PROVINCIA: Litoral (Cruz de Machacamarca, Esmeralda, Eucaliptus)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_or_litoral_id, 'Cruz de Machacamarca', NULL),
-(@prov_or_litoral_id, 'Esmeralda', NULL),
-(@prov_or_litoral_id, 'Eucaliptus', NULL);
+-- PROVINCIA 88: Nor Carangas (provincia_id = 88)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(307, 88, 'Huachacalla', NULL);
 
--- PROVINCIA: Sajama (Curahuara de Carangas, Turco)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_or_sajama_id, 'Curahuara de Carangas', NULL),
-(@prov_or_sajama_id, 'Turco', NULL);
+-- PROVINCIA 89: Sud Carangas (provincia_id = 89)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(308, 89, 'Andamarca', NULL),
+(309, 89, 'Belén de Andamarca', NULL);
 
--- PROVINCIA: San Pedro de Totora (Totora)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_or_san_pedro_totora_id, 'Totora', NULL);
+-- PROVINCIA 90: Carangas (provincia_id = 90)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(310, 90, 'Corque', NULL),
+(311, 90, 'Choque Cota', NULL);
 
--- PROVINCIA: Tomas Barrón (Eucaliptus, La Rivera)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_or_tomas_barron_id, 'Eucaliptus', NULL),
-(@prov_or_tomas_barron_id, 'La Rivera', NULL);
+-- PROVINCIA 91: Sajama (provincia_id = 91)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(312, 91, 'Curahuara de Carangas', NULL),
+(313, 91, 'Turco', NULL);
 
--- PROVINCIA: Atahuallpa (Sabaya, Coipasa, Chipaya)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_or_atahuallpa_id, 'Sabaya', NULL),
-(@prov_or_atahuallpa_id, 'Coipasa', NULL),
-(@prov_or_atahuallpa_id, 'Chipaya', NULL);
+-- PROVINCIA 92: Ladislao Cabrera (provincia_id = 92)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(314, 92, 'Salinas de Garci Mendoza', NULL);
 
--- PROVINCIA: Eduardo Avaroa (Challapata, Quillacas, Santuario de Quillacas)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_or_eduardo_avaroa_id, 'Challapata', NULL),
-(@prov_or_eduardo_avaroa_id, 'Quillacas', NULL),
-(@prov_or_eduardo_avaroa_id, 'Santuario de Quillacas', NULL);
-
--- PROVINCIA: Mejillones (La Rivera, Todos Santos, Esmeralda)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_or_mejillones_id, 'La Rivera', NULL),
-(@prov_or_mejillones_id, 'Todos Santos', NULL),
-(@prov_or_mejillones_id, 'Esmeralda', NULL);
+-- PROVINCIA 93: Atahuallpa (provincia_id = 93)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(315, 93, 'Sabaya', NULL),
+(316, 93, 'Coipasa', NULL),
+(317, 93, 'Chipaya', NULL);
 
 -- ============================================
--- INSERTAR MUNICIPIOS - TARIJA
+-- TARIJA - Provincias 94-99
 -- ============================================
 
--- Variables de provincias de Tarija
-SET @prov_tj_aniceto_arce_id = (SELECT id FROM provincias WHERE nombre = 'Aniceto Arce' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'TJ' LIMIT 1) LIMIT 1);
-SET @prov_tj_burnet_oconnor_id = (SELECT id FROM provincias WHERE nombre = 'Burnet O''Connor' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'TJ' LIMIT 1) LIMIT 1);
-SET @prov_tj_cercado_id = (SELECT id FROM provincias WHERE nombre = 'Cercado' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'TJ' LIMIT 1) LIMIT 1);
-SET @prov_tj_eustaquio_mendez_id = (SELECT id FROM provincias WHERE nombre = 'Eustaquio Méndez' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'TJ' LIMIT 1) LIMIT 1);
-SET @prov_tj_gran_chaco_id = (SELECT id FROM provincias WHERE nombre = 'Gran Chaco' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'TJ' LIMIT 1) LIMIT 1);
-SET @prov_tj_jose_maria_aviles_id = (SELECT id FROM provincias WHERE nombre = 'José María Avilés' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'TJ' LIMIT 1) LIMIT 1);
+-- PROVINCIA 94: Cercado (provincia_id = 94)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(318, 94, 'Tarija', NULL),
+(319, 94, 'Uriondo', NULL),
+(320, 94, 'Yunchará', NULL);
 
--- PROVINCIA: Cercado (Tarija, Uriondo, Yunchará)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_tj_cercado_id, 'Tarija', NULL),
-(@prov_tj_cercado_id, 'Uriondo', NULL),
-(@prov_tj_cercado_id, 'Yunchará', NULL);
+-- PROVINCIA 95: Eustaquio Méndez (provincia_id = 95)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(321, 95, 'San Lorenzo', NULL),
+(322, 95, 'El Puente', NULL);
 
--- PROVINCIA: Aniceto Arce (Padcaya, Bermejo)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_tj_aniceto_arce_id, 'Padcaya', NULL),
-(@prov_tj_aniceto_arce_id, 'Bermejo', NULL);
+-- PROVINCIA 96: José María Avilés (provincia_id = 96)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(323, 96, 'Yunchará', NULL),
+(324, 96, 'Iscayachi', NULL);
 
--- PROVINCIA: Gran Chaco (Yacuiba, Caraparí, Villa Montes)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_tj_gran_chaco_id, 'Yacuiba', NULL),
-(@prov_tj_gran_chaco_id, 'Caraparí', NULL),
-(@prov_tj_gran_chaco_id, 'Villa Montes', NULL);
+-- PROVINCIA 97: Aniceto Arce (provincia_id = 97)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(325, 97, 'Padcaya', NULL),
+(326, 97, 'Bermejo', NULL),
+(327, 97, 'Entre Ríos', NULL);
 
--- PROVINCIA: Méndez (San Lorenzo, El Puente)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_tj_eustaquio_mendez_id, 'San Lorenzo', NULL),
-(@prov_tj_eustaquio_mendez_id, 'El Puente', NULL);
+-- PROVINCIA 98: Burnet O''Connor (provincia_id = 98)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(328, 98, 'Villa Montes', NULL);
 
--- PROVINCIA: Arce (Entre Ríos)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_tj_aniceto_arce_id, 'Entre Ríos', NULL);
-
--- PROVINCIA: Burnet O''Connor (Villa Montes)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_tj_burnet_oconnor_id, 'Villa Montes', NULL);
-
--- PROVINCIA: Avilés (Yunchará, Iscayachi)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_tj_jose_maria_aviles_id, 'Yunchará', NULL),
-(@prov_tj_jose_maria_aviles_id, 'Iscayachi', NULL);
+-- PROVINCIA 99: Gran Chaco (provincia_id = 99)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(329, 99, 'Yacuiba', NULL),
+(330, 99, 'Caraparí', NULL),
+(331, 99, 'Villa Montes', NULL);
 
 -- ============================================
--- INSERTAR MUNICIPIOS - BENI
+-- BENI - Provincias 100-107
 -- ============================================
 
--- Variables de provincias de Beni
-SET @prov_bn_cercado_id = (SELECT id FROM provincias WHERE nombre = 'Cercado' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'BN' LIMIT 1) LIMIT 1);
-SET @prov_bn_itenez_id = (SELECT id FROM provincias WHERE nombre = 'Iténez' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'BN' LIMIT 1) LIMIT 1);
-SET @prov_bn_jose_ballivian_id = (SELECT id FROM provincias WHERE nombre = 'José Ballivián' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'BN' LIMIT 1) LIMIT 1);
-SET @prov_bn_mamore_id = (SELECT id FROM provincias WHERE nombre = 'Mamoré' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'BN' LIMIT 1) LIMIT 1);
-SET @prov_bn_marban_id = (SELECT id FROM provincias WHERE nombre = 'Marbán' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'BN' LIMIT 1) LIMIT 1);
-SET @prov_bn_moxos_id = (SELECT id FROM provincias WHERE nombre = 'Moxos' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'BN' LIMIT 1) LIMIT 1);
-SET @prov_bn_vaca_diez_id = (SELECT id FROM provincias WHERE nombre = 'Vaca Díez' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'BN' LIMIT 1) LIMIT 1);
-SET @prov_bn_yacuma_id = (SELECT id FROM provincias WHERE nombre = 'Yacuma' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'BN' LIMIT 1) LIMIT 1);
+-- PROVINCIA 100: Cercado (provincia_id = 100)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(332, 100, 'Trinidad', NULL),
+(333, 100, 'San Javier', NULL);
 
--- PROVINCIA: Cercado (Trinidad, San Javier)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_bn_cercado_id, 'Trinidad', NULL),
-(@prov_bn_cercado_id, 'San Javier', NULL);
+-- PROVINCIA 101: Yacuma (provincia_id = 101)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(334, 101, 'Santa Ana del Yacuma', NULL),
+(335, 101, 'Exaltación', NULL);
 
--- PROVINCIA: Iténez (Magdalena, Baures, Huacaraje)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_bn_itenez_id, 'Magdalena', NULL),
-(@prov_bn_itenez_id, 'Baures', NULL),
-(@prov_bn_itenez_id, 'Huacaraje', NULL);
+-- PROVINCIA 102: Vaca Díez (provincia_id = 102)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(336, 102, 'Riberalta', NULL),
+(337, 102, 'Guayaramerín', NULL);
 
--- PROVINCIA: Mamoré (San Joaquín, San Ramón, Puerto Siles)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_bn_mamore_id, 'San Joaquín', NULL),
-(@prov_bn_mamore_id, 'San Ramón', NULL),
-(@prov_bn_mamore_id, 'Puerto Siles', NULL);
+-- PROVINCIA 103: Mamoré (provincia_id = 103)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(338, 103, 'San Joaquín', NULL),
+(339, 103, 'San Ramón', NULL),
+(340, 103, 'Puerto Siles', NULL);
 
--- PROVINCIA: Marbán (Loreto, San Andrés)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_bn_marban_id, 'Loreto', NULL),
-(@prov_bn_marban_id, 'San Andrés', NULL);
+-- PROVINCIA 104: Moxos (provincia_id = 104)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(341, 104, 'San Ignacio', NULL),
+(342, 104, 'San Javier', NULL);
 
--- PROVINCIA: Moxos (San Ignacio, San Javier)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_bn_moxos_id, 'San Ignacio', NULL),
-(@prov_bn_moxos_id, 'San Javier', NULL);
+-- PROVINCIA 105: Marbán (provincia_id = 105)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(343, 105, 'Loreto', NULL),
+(344, 105, 'San Andrés', NULL);
 
--- PROVINCIA: Ballivián (Rurrenabaque, Reyes, San Borja, Santa Rosa, Rurrenabaque)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_bn_jose_ballivian_id, 'Rurrenabaque', NULL),
-(@prov_bn_jose_ballivian_id, 'Reyes', NULL),
-(@prov_bn_jose_ballivian_id, 'San Borja', NULL),
-(@prov_bn_jose_ballivian_id, 'Santa Rosa', NULL);
+-- PROVINCIA 106: José Ballivián (provincia_id = 106)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(345, 106, 'Rurrenabaque', NULL),
+(346, 106, 'Reyes', NULL),
+(347, 106, 'San Borja', NULL),
+(348, 106, 'Santa Rosa', NULL);
 
--- PROVINCIA: Yacuma (Santa Ana del Yacuma, Exaltación)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_bn_yacuma_id, 'Santa Ana del Yacuma', NULL),
-(@prov_bn_yacuma_id, 'Exaltación', NULL);
-
--- PROVINCIA: Vaca Díez (Riberalta, Guayaramerín)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_bn_vaca_diez_id, 'Riberalta', NULL),
-(@prov_bn_vaca_diez_id, 'Guayaramerín', NULL);
+-- PROVINCIA 107: Iténez (provincia_id = 107)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(349, 107, 'Magdalena', NULL),
+(350, 107, 'Baures', NULL),
+(351, 107, 'Huacaraje', NULL);
 
 -- ============================================
--- INSERTAR MUNICIPIOS - PANDO
+-- PANDO - Provincias 108-112
 -- ============================================
 
--- Variables de provincias de Pando
-SET @prov_pd_abuna_id = (SELECT id FROM provincias WHERE nombre = 'Abuná' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'PD' LIMIT 1) LIMIT 1);
-SET @prov_pd_federico_roman_id = (SELECT id FROM provincias WHERE nombre = 'Federico Román' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'PD' LIMIT 1) LIMIT 1);
-SET @prov_pd_madre_dios_id = (SELECT id FROM provincias WHERE nombre = 'Madre de Dios' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'PD' LIMIT 1) LIMIT 1);
-SET @prov_pd_manuripi_id = (SELECT id FROM provincias WHERE nombre = 'Manuripi' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'PD' LIMIT 1) LIMIT 1);
-SET @prov_pd_nicolas_suarez_id = (SELECT id FROM provincias WHERE nombre = 'Nicolás Suárez' AND departamento_id = (SELECT id FROM departamentos WHERE codigo = 'PD' LIMIT 1) LIMIT 1);
+-- PROVINCIA 108: Nicolás Suárez (provincia_id = 108)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(352, 108, 'Cobija', NULL),
+(353, 108, 'Porvenir', NULL),
+(354, 108, 'Filadelfia', NULL),
+(355, 108, 'Bella Flor', NULL),
+(356, 108, 'Bolpebra', NULL);
 
--- PROVINCIA: Nicolás Suárez (Cobija, Porvenir, Filadelfia, Bella Flor, Bolpebra)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_pd_nicolas_suarez_id, 'Cobija', NULL),
-(@prov_pd_nicolas_suarez_id, 'Porvenir', NULL),
-(@prov_pd_nicolas_suarez_id, 'Filadelfia', NULL),
-(@prov_pd_nicolas_suarez_id, 'Bella Flor', NULL),
-(@prov_pd_nicolas_suarez_id, 'Bolpebra', NULL);
+-- PROVINCIA 109: Manuripi (provincia_id = 109)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(357, 109, 'Puerto Rico', NULL),
+(358, 109, 'San Pedro', NULL);
 
--- PROVINCIA: Manuripi (Puerto Rico, San Pedro)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_pd_manuripi_id, 'Puerto Rico', NULL),
-(@prov_pd_manuripi_id, 'San Pedro', NULL);
+-- PROVINCIA 110: Madre de Dios (provincia_id = 110)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(359, 110, 'Puerto Gonzalo Moreno', NULL),
+(360, 110, 'El Sena', NULL);
 
--- PROVINCIA: Madre de Dios (Puerto Gonzalo Moreno, El Sena)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_pd_madre_dios_id, 'Puerto Gonzalo Moreno', NULL),
-(@prov_pd_madre_dios_id, 'El Sena', NULL);
+-- PROVINCIA 111: Federico Román (provincia_id = 111)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(361, 111, 'Nueva Esperanza', NULL),
+(362, 111, 'Villa Nueva', NULL),
+(363, 111, 'Santos Mercado', NULL);
 
--- PROVINCIA: Federico Román (Nueva Esperanza, Villa Nueva, Santos Mercado)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_pd_federico_roman_id, 'Nueva Esperanza', NULL),
-(@prov_pd_federico_roman_id, 'Villa Nueva', NULL),
-(@prov_pd_federico_roman_id, 'Santos Mercado', NULL);
-
--- PROVINCIA: Abuná (Ingavi, Nueva Esperanza)
-INSERT INTO municipios (provincia_id, nombre, codigo) VALUES
-(@prov_pd_abuna_id, 'Ingavi', NULL),
-(@prov_pd_abuna_id, 'Nueva Esperanza', NULL);
+-- PROVINCIA 112: Abuná (provincia_id = 112)
+INSERT INTO municipios (id, provincia_id, nombre, codigo) VALUES
+(364, 112, 'Ingavi', NULL),
+(365, 112, 'Nueva Esperanza', NULL);
 
 -- Rehabilitar foreign key checks
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- ============================================
 -- FIN DEL SEEDER
--- Este seeder incluye todos los municipios de Bolivia (aproximadamente 340 municipios).
+-- Este seeder incluye todos los municipios de Bolivia (365 municipios).
+-- IDs fijos secuenciales basados en el orden de las provincias (1-112).
 -- Datos estándar geográficos del sistema.
 -- ============================================
-

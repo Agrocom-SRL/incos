@@ -2,7 +2,11 @@
 -- SEEDER: asignaturas_plan
 -- Sistema de Gestión Académica - Instituto INCOS
 -- Datos iniciales: Asignación de materias a periodos según Plan de Estudios RM No. 0210/2023
+-- IDs fijos basados en el orden de planes y periodos
 -- ============================================
+-- Orden: Plan 1 (SIS-INF), Plan 2 (ADM-EMP), Plan 3 (CON-GEN)
+-- Periodos: 1, 2, 3 para cada plan
+-- IDs: Plan 1 (1-23), Plan 2 (24-45), Plan 3 (46-69)
 
 USE instituto_incos;
 
@@ -13,216 +17,112 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- TRUNCATE TABLE asignaturas_plan;
 
 -- ============================================
--- OBTENER IDs DE PLANES DE ESTUDIO
--- ============================================
-SET @plan_sis_id = (SELECT id FROM planes_estudios WHERE carrera_id = (SELECT id FROM carreras WHERE codigo = 'SIS-INF' LIMIT 1) LIMIT 1);
-SET @plan_adm_id = (SELECT id FROM planes_estudios WHERE carrera_id = (SELECT id FROM carreras WHERE codigo = 'ADM-EMP' LIMIT 1) LIMIT 1);
-SET @plan_con_id = (SELECT id FROM planes_estudios WHERE carrera_id = (SELECT id FROM carreras WHERE codigo = 'CON-GEN' LIMIT 1) LIMIT 1);
-
--- ============================================
--- OBTENER IDs DE PERIODOS
--- ============================================
--- Sistemas Informáticos
-SET @periodo_sis_1_id = (SELECT id FROM periodos WHERE plan_estudio_id = @plan_sis_id AND numero = 1 LIMIT 1);
-SET @periodo_sis_2_id = (SELECT id FROM periodos WHERE plan_estudio_id = @plan_sis_id AND numero = 2 LIMIT 1);
-SET @periodo_sis_3_id = (SELECT id FROM periodos WHERE plan_estudio_id = @plan_sis_id AND numero = 3 LIMIT 1);
--- Administración de Empresas
-SET @periodo_adm_1_id = (SELECT id FROM periodos WHERE plan_estudio_id = @plan_adm_id AND numero = 1 LIMIT 1);
-SET @periodo_adm_2_id = (SELECT id FROM periodos WHERE plan_estudio_id = @plan_adm_id AND numero = 2 LIMIT 1);
-SET @periodo_adm_3_id = (SELECT id FROM periodos WHERE plan_estudio_id = @plan_adm_id AND numero = 3 LIMIT 1);
--- Contaduría General
-SET @periodo_con_1_id = (SELECT id FROM periodos WHERE plan_estudio_id = @plan_con_id AND numero = 1 LIMIT 1);
-SET @periodo_con_2_id = (SELECT id FROM periodos WHERE plan_estudio_id = @plan_con_id AND numero = 2 LIMIT 1);
-SET @periodo_con_3_id = (SELECT id FROM periodos WHERE plan_estudio_id = @plan_con_id AND numero = 3 LIMIT 1);
-
--- ============================================
--- OBTENER IDs DE MATERIAS - CONTADURÍA GENERAL
--- ============================================
-SET @materia_con_101_id = (SELECT id FROM materias WHERE sigla = 'CON-101' LIMIT 1);
-SET @materia_maf_102_id = (SELECT id FROM materias WHERE sigla = 'MAF-102' LIMIT 1);
-SET @materia_ico_103_id = (SELECT id FROM materias WHERE sigla = 'ICO-103' LIMIT 1);
-SET @materia_adg_104_id = (SELECT id FROM materias WHERE sigla = 'ADG-104' LIMIT 1);
-SET @materia_lsa_105_id = (SELECT id FROM materias WHERE sigla = 'LSA-105' LIMIT 1);
-SET @materia_ega_106_id = (SELECT id FROM materias WHERE sigla = 'EGA-106' LIMIT 1);
-SET @materia_dcm_107_id = (SELECT id FROM materias WHERE sigla = 'DCM-107' LIMIT 1);
-SET @materia_esa_108_id = (SELECT id FROM materias WHERE sigla = 'ESA-108' LIMIT 1);
-SET @materia_int_109_con_id = (SELECT id FROM materias WHERE sigla = 'INT-109' LIMIT 1);
-SET @materia_con_201_id = (SELECT id FROM materias WHERE sigla = 'CON-201' LIMIT 1);
-SET @materia_coc_202_id = (SELECT id FROM materias WHERE sigla = 'COC-202' LIMIT 1);
-SET @materia_cos_203_id = (SELECT id FROM materias WHERE sigla = 'COS-203' LIMIT 1);
-SET @materia_cds_204_id = (SELECT id FROM materias WHERE sigla = 'CDS-204' LIMIT 1);
-SET @materia_cbc_205_id = (SELECT id FROM materias WHERE sigla = 'CBC-205' LIMIT 1);
-SET @materia_emp_206_id = (SELECT id FROM materias WHERE sigla = 'EMP-206' LIMIT 1);
-SET @materia_sit_207_id = (SELECT id FROM materias WHERE sigla = 'SIT-207' LIMIT 1);
-SET @materia_coa_301_id = (SELECT id FROM materias WHERE sigla = 'COA-301' LIMIT 1);
-SET @materia_coc_302_id = (SELECT id FROM materias WHERE sigla = 'COC-302' LIMIT 1);
-SET @materia_cog_303_id = (SELECT id FROM materias WHERE sigla = 'COG-303' LIMIT 1);
-SET @materia_cep_304_id = (SELECT id FROM materias WHERE sigla = 'CEP-304' LIMIT 1);
-SET @materia_chs_305_id = (SELECT id FROM materias WHERE sigla = 'CHS-305' LIMIT 1);
-SET @materia_gci_306_id = (SELECT id FROM materias WHERE sigla = 'GCI-306' LIMIT 1);
-SET @materia_aef_307_id = (SELECT id FROM materias WHERE sigla = 'AEF-307' LIMIT 1);
-SET @materia_tmg_308_con_id = (SELECT id FROM materias WHERE sigla = 'TMG-308' LIMIT 1);
-
--- ============================================
--- OBTENER IDs DE MATERIAS - SISTEMAS INFORMÁTICOS
--- ============================================
-SET @materia_mpi_101_id = (SELECT id FROM materias WHERE sigla = 'MPI-101' LIMIT 1);
-SET @materia_prg_102_id = (SELECT id FROM materias WHERE sigla = 'PRG-102' LIMIT 1);
-SET @materia_int_103_sis_id = (SELECT id FROM materias WHERE sigla = 'INT-103' LIMIT 1);
-SET @materia_hdc_104_id = (SELECT id FROM materias WHERE sigla = 'HDC-104' LIMIT 1);
-SET @materia_tso_105_id = (SELECT id FROM materias WHERE sigla = 'TSO-105' LIMIT 1);
-SET @materia_otm_106_id = (SELECT id FROM materias WHERE sigla = 'OTM-106' LIMIT 1);
-SET @materia_dpw_107_id = (SELECT id FROM materias WHERE sigla = 'DPW-107' LIMIT 1);
-SET @materia_est_201_id = (SELECT id FROM materias WHERE sigla = 'EST-201' LIMIT 1);
-SET @materia_prg_202_id = (SELECT id FROM materias WHERE sigla = 'PRG-202' LIMIT 1);
-SET @materia_edd_203_id = (SELECT id FROM materias WHERE sigla = 'EDD-203' LIMIT 1);
-SET @materia_rdc_204_id = (SELECT id FROM materias WHERE sigla = 'RDC-204' LIMIT 1);
-SET @materia_pdm_205_id = (SELECT id FROM materias WHERE sigla = 'PDM-205' LIMIT 1);
-SET @materia_ads_206_id = (SELECT id FROM materias WHERE sigla = 'ADS-206' LIMIT 1);
-SET @materia_dpw_207_id = (SELECT id FROM materias WHERE sigla = 'DPW-207' LIMIT 1);
-SET @materia_bdd_208_id = (SELECT id FROM materias WHERE sigla = 'BDD-208' LIMIT 1);
-SET @materia_emp_301_id = (SELECT id FROM materias WHERE sigla = 'EMP-301' LIMIT 1);
-SET @materia_dpw_302_id = (SELECT id FROM materias WHERE sigla = 'DPW-302' LIMIT 1);
-SET @materia_gmc_303_id = (SELECT id FROM materias WHERE sigla = 'GMC-303' LIMIT 1);
-SET @materia_rdc_304_id = (SELECT id FROM materias WHERE sigla = 'RDC-304' LIMIT 1);
-SET @materia_tmg_305_id = (SELECT id FROM materias WHERE sigla = 'TMG-305' LIMIT 1);
-SET @materia_ads_306_id = (SELECT id FROM materias WHERE sigla = 'ADS-306' LIMIT 1);
-SET @materia_pdm_307_id = (SELECT id FROM materias WHERE sigla = 'PDM-307' LIMIT 1);
-SET @materia_bdd_308_id = (SELECT id FROM materias WHERE sigla = 'BDD-308' LIMIT 1);
-
--- ============================================
--- OBTENER IDs DE MATERIAS - ADMINISTRACIÓN DE EMPRESAS
--- ============================================
-SET @materia_fua_101_id = (SELECT id FROM materias WHERE sigla = 'FUA-101' LIMIT 1);
-SET @materia_cga_102_id = (SELECT id FROM materias WHERE sigla = 'CGA-102' LIMIT 1);
-SET @materia_maf_103_id = (SELECT id FROM materias WHERE sigla = 'MAF-103' LIMIT 1);
-SET @materia_esn_104_id = (SELECT id FROM materias WHERE sigla = 'ESN-104' LIMIT 1);
-SET @materia_plt_105_id = (SELECT id FROM materias WHERE sigla = 'PLT-105' LIMIT 1);
-SET @materia_ife_106_id = (SELECT id FROM materias WHERE sigla = 'IFE-106' LIMIT 1);
-SET @materia_int_107_adm_id = (SELECT id FROM materias WHERE sigla = 'INT-107' LIMIT 1);
-SET @materia_ora_201_id = (SELECT id FROM materias WHERE sigla = 'ORA-201' LIMIT 1);
-SET @materia_iem_202_id = (SELECT id FROM materias WHERE sigla = 'IEM-202' LIMIT 1);
-SET @materia_ado_203_id = (SELECT id FROM materias WHERE sigla = 'ADO-203' LIMIT 1);
-SET @materia_gth_204_id = (SELECT id FROM materias WHERE sigla = 'GTH-204' LIMIT 1);
-SET @materia_adf_205_id = (SELECT id FROM materias WHERE sigla = 'ADF-205' LIMIT 1);
-SET @materia_pep_206_id = (SELECT id FROM materias WHERE sigla = 'PEP-206' LIMIT 1);
-SET @materia_acp_207_id = (SELECT id FROM materias WHERE sigla = 'ACP-207' LIMIT 1);
-SET @materia_emp_208_id = (SELECT id FROM materias WHERE sigla = 'EMP-208' LIMIT 1);
-SET @materia_amp_301_id = (SELECT id FROM materias WHERE sigla = 'AMP-301' LIMIT 1);
-SET @materia_imn_302_id = (SELECT id FROM materias WHERE sigla = 'IMN-302' LIMIT 1);
-SET @materia_adf_303_id = (SELECT id FROM materias WHERE sigla = 'ADF-303' LIMIT 1);
-SET @materia_tmg_304_id = (SELECT id FROM materias WHERE sigla = 'TMG-304' LIMIT 1);
-SET @materia_emp_305_id = (SELECT id FROM materias WHERE sigla = 'EMP-305' LIMIT 1);
-SET @materia_cmi_306_id = (SELECT id FROM materias WHERE sigla = 'CMI-306' LIMIT 1);
-SET @materia_gee_307_id = (SELECT id FROM materias WHERE sigla = 'GEE-307' LIMIT 1);
-
--- ============================================
--- INSERTAR ASIGNATURAS PLAN - CONTADURÍA GENERAL
+-- INSERTAR ASIGNATURAS PLAN - SISTEMAS INFORMÁTICOS (Plan 1)
 -- ============================================
 
--- Primer Año
-INSERT INTO asignaturas_plan (plan_estudio_id, periodo_id, materia_id, horas_semanales, orden_visualizacion) VALUES
-(@plan_con_id, @periodo_con_1_id, @materia_con_101_id, 8, 1),
-(@plan_con_id, @periodo_con_1_id, @materia_maf_102_id, 4, 2),
-(@plan_con_id, @periodo_con_1_id, @materia_ico_103_id, 4, 3),
-(@plan_con_id, @periodo_con_1_id, @materia_adg_104_id, 4, 4),
-(@plan_con_id, @periodo_con_1_id, @materia_lsa_105_id, 2, 5),
-(@plan_con_id, @periodo_con_1_id, @materia_ega_106_id, 2, 6),
-(@plan_con_id, @periodo_con_1_id, @materia_dcm_107_id, 2, 7),
-(@plan_con_id, @periodo_con_1_id, @materia_esa_108_id, 2, 8),
-(@plan_con_id, @periodo_con_1_id, @materia_int_109_con_id, 2, 9);
+-- Plan 1, Periodo 1 (periodo_id = 1) - IDs 1-7
+INSERT INTO asignaturas_plan (id, plan_estudio_id, periodo_id, materia_id, horas_semanales, orden_visualizacion) VALUES
+(1, 1, 1, 1, 4, 1),   -- MPI-101: MATEMÁTICA PARA LA INFORMÁTICA
+(2, 1, 1, 2, 8, 2),   -- PRG-102: PROGRAMACIÓN I
+(3, 1, 1, 3, 2, 3),   -- INT-103: INGLÉS TECNICO
+(4, 1, 1, 4, 4, 4),   -- HDC-104: HARDWARE DE COMPUTADORAS
+(5, 1, 1, 5, 4, 5),   -- TSO-105: TALLER DE SISTEMAS OPERATIVOS
+(6, 1, 1, 6, 4, 6),   -- OTM-106: OFIMÁTICA Y TECNOLOGÍA MULTIMEDIA
+(7, 1, 1, 7, 4, 7);   -- DPW-107: DISEÑO Y PROGRAMACIÓN WEB I
 
--- Segundo Año
-INSERT INTO asignaturas_plan (plan_estudio_id, periodo_id, materia_id, horas_semanales, orden_visualizacion) VALUES
-(@plan_con_id, @periodo_con_2_id, @materia_con_201_id, 6, 1),
-(@plan_con_id, @periodo_con_2_id, @materia_coc_202_id, 6, 2),
-(@plan_con_id, @periodo_con_2_id, @materia_cos_203_id, 4, 3),
-(@plan_con_id, @periodo_con_2_id, @materia_cds_204_id, 2, 4),
-(@plan_con_id, @periodo_con_2_id, @materia_cbc_205_id, 4, 5),
-(@plan_con_id, @periodo_con_2_id, @materia_emp_206_id, 4, 6),
-(@plan_con_id, @periodo_con_2_id, @materia_sit_207_id, 4, 7);
+-- Plan 1, Periodo 2 (periodo_id = 2) - IDs 8-15
+INSERT INTO asignaturas_plan (id, plan_estudio_id, periodo_id, materia_id, horas_semanales, orden_visualizacion) VALUES
+(8, 1, 2, 8, 2, 1),   -- EST-201: ESTADÍSTICA
+(9, 1, 2, 9, 6, 2),   -- PRG-202: PROGRAMACIÓN II
+(10, 1, 2, 10, 2, 3),  -- EDD-203: ESTRUCTURA DE DATOS
+(11, 1, 2, 11, 4, 4),  -- RDC-204: REDES DE COMPUTADORAS I
+(12, 1, 2, 12, 4, 5),  -- PDM-205: PROGRAMACIÓN PARA DISPOSITIVOS MÓVILES I
+(13, 1, 2, 13, 4, 6),  -- ADS-206: ANÁLISIS Y DISEÑO DE SISTEMAS I
+(14, 1, 2, 14, 4, 7),  -- DPW-207: DISEÑO Y PROGRAMACIÓN WEB II
+(15, 1, 2, 15, 4, 8);  -- BDD-208: BASE DE DATOS I
 
--- Tercer Año
-INSERT INTO asignaturas_plan (plan_estudio_id, periodo_id, materia_id, horas_semanales, orden_visualizacion) VALUES
-(@plan_con_id, @periodo_con_3_id, @materia_coa_301_id, 4, 1),
-(@plan_con_id, @periodo_con_3_id, @materia_coc_302_id, 4, 2),
-(@plan_con_id, @periodo_con_3_id, @materia_cog_303_id, 4, 3),
-(@plan_con_id, @periodo_con_3_id, @materia_cep_304_id, 4, 4),
-(@plan_con_id, @periodo_con_3_id, @materia_chs_305_id, 2, 5),
-(@plan_con_id, @periodo_con_3_id, @materia_gci_306_id, 4, 6),
-(@plan_con_id, @periodo_con_3_id, @materia_aef_307_id, 4, 7),
-(@plan_con_id, @periodo_con_3_id, @materia_tmg_308_con_id, 4, 8);
-
--- ============================================
--- INSERTAR ASIGNATURAS PLAN - SISTEMAS INFORMÁTICOS
--- ============================================
-
--- Primer Año
-INSERT INTO asignaturas_plan (plan_estudio_id, periodo_id, materia_id, horas_semanales, orden_visualizacion) VALUES
-(@plan_sis_id, @periodo_sis_1_id, @materia_mpi_101_id, 4, 1),
-(@plan_sis_id, @periodo_sis_1_id, @materia_prg_102_id, 8, 2),
-(@plan_sis_id, @periodo_sis_1_id, @materia_int_103_sis_id, 2, 3),
-(@plan_sis_id, @periodo_sis_1_id, @materia_hdc_104_id, 4, 4),
-(@plan_sis_id, @periodo_sis_1_id, @materia_tso_105_id, 4, 5),
-(@plan_sis_id, @periodo_sis_1_id, @materia_otm_106_id, 4, 6),
-(@plan_sis_id, @periodo_sis_1_id, @materia_dpw_107_id, 4, 7);
-
--- Segundo Año
-INSERT INTO asignaturas_plan (plan_estudio_id, periodo_id, materia_id, horas_semanales, orden_visualizacion) VALUES
-(@plan_sis_id, @periodo_sis_2_id, @materia_est_201_id, 2, 1),
-(@plan_sis_id, @periodo_sis_2_id, @materia_prg_202_id, 6, 2),
-(@plan_sis_id, @periodo_sis_2_id, @materia_edd_203_id, 2, 3),
-(@plan_sis_id, @periodo_sis_2_id, @materia_rdc_204_id, 4, 4),
-(@plan_sis_id, @periodo_sis_2_id, @materia_pdm_205_id, 4, 5),
-(@plan_sis_id, @periodo_sis_2_id, @materia_ads_206_id, 4, 6),
-(@plan_sis_id, @periodo_sis_2_id, @materia_dpw_207_id, 4, 7),
-(@plan_sis_id, @periodo_sis_2_id, @materia_bdd_208_id, 4, 8);
-
--- Tercer Año
-INSERT INTO asignaturas_plan (plan_estudio_id, periodo_id, materia_id, horas_semanales, orden_visualizacion) VALUES
-(@plan_sis_id, @periodo_sis_3_id, @materia_emp_301_id, 4, 1),
-(@plan_sis_id, @periodo_sis_3_id, @materia_dpw_302_id, 4, 2),
-(@plan_sis_id, @periodo_sis_3_id, @materia_gmc_303_id, 2, 3),
-(@plan_sis_id, @periodo_sis_3_id, @materia_rdc_304_id, 4, 4),
-(@plan_sis_id, @periodo_sis_3_id, @materia_tmg_305_id, 4, 5),
-(@plan_sis_id, @periodo_sis_3_id, @materia_ads_306_id, 4, 6),
-(@plan_sis_id, @periodo_sis_3_id, @materia_pdm_307_id, 4, 7),
-(@plan_sis_id, @periodo_sis_3_id, @materia_bdd_308_id, 4, 8);
+-- Plan 1, Periodo 3 (periodo_id = 3) - IDs 16-23
+INSERT INTO asignaturas_plan (id, plan_estudio_id, periodo_id, materia_id, horas_semanales, orden_visualizacion) VALUES
+(16, 1, 3, 16, 4, 1),  -- EMP-301: EMPRENDIMIENTO PRODUCTIVO
+(17, 1, 3, 17, 4, 2),  -- DPW-302: DISEÑO Y PROGRAMACIÓN WEB III
+(18, 1, 3, 18, 2, 3),  -- GMC-303: GESTIÓN Y MEJORAMIENTO DE LA CALIDAD DE SOFTWARE
+(19, 1, 3, 19, 4, 4),  -- RDC-304: REDES DE COMPUTADORAS II
+(20, 1, 3, 20, 4, 5),  -- TMG-305: TALLER DE MODALIDAD DE GRADUACIÓN
+(21, 1, 3, 21, 4, 6),  -- ADS-306: ANÁLISIS Y DISEÑO DE SISTEMAS II
+(22, 1, 3, 22, 4, 7),  -- PDM-307: PROGRAMACIÓN PARA DISPOSITIVOS MOVILES II
+(23, 1, 3, 23, 4, 8);  -- BDD-308: BASE DE DATOS II
 
 -- ============================================
--- INSERTAR ASIGNATURAS PLAN - ADMINISTRACIÓN DE EMPRESAS
+-- INSERTAR ASIGNATURAS PLAN - ADMINISTRACIÓN DE EMPRESAS (Plan 2)
 -- ============================================
 
--- Primer Año
-INSERT INTO asignaturas_plan (plan_estudio_id, periodo_id, materia_id, horas_semanales, orden_visualizacion) VALUES
-(@plan_adm_id, @periodo_adm_1_id, @materia_fua_101_id, 6, 1),
-(@plan_adm_id, @periodo_adm_1_id, @materia_cga_102_id, 6, 2),
-(@plan_adm_id, @periodo_adm_1_id, @materia_maf_103_id, 4, 3),
-(@plan_adm_id, @periodo_adm_1_id, @materia_esn_104_id, 4, 4),
-(@plan_adm_id, @periodo_adm_1_id, @materia_plt_105_id, 4, 5),
-(@plan_adm_id, @periodo_adm_1_id, @materia_ife_106_id, 2, 6),
-(@plan_adm_id, @periodo_adm_1_id, @materia_int_107_adm_id, 4, 7);
+-- Plan 2, Periodo 1 (periodo_id = 4) - IDs 24-30
+INSERT INTO asignaturas_plan (id, plan_estudio_id, periodo_id, materia_id, horas_semanales, orden_visualizacion) VALUES
+(24, 2, 4, 24, 6, 1),  -- FUA-101: FUNDAMENTO DE LA ADMINISTRACIÓN
+(25, 2, 4, 25, 6, 2),  -- CGA-102: CONTABILIDAD GENERAL PARA ADMINISTRACIÓNES
+(26, 2, 4, 26, 4, 3),  -- MAF-103: MATEMÁTICA FINANCIERA
+(27, 2, 4, 27, 4, 4),  -- ESN-104: ESTADÍSTICA PARA LOS NEGOCIOS
+(28, 2, 4, 28, 4, 5),  -- PLT-105: PRÁCTICA LABORAL Y TRIBUTARIA
+(29, 2, 4, 29, 2, 6),  -- IFE-106: INFORMÁTICA EMPRESARIAL
+(30, 2, 4, 30, 4, 7);  -- INT-107: INGLÉS TÉCNICO
 
--- Segundo Año
-INSERT INTO asignaturas_plan (plan_estudio_id, periodo_id, materia_id, horas_semanales, orden_visualizacion) VALUES
-(@plan_adm_id, @periodo_adm_2_id, @materia_ora_201_id, 2, 1),
-(@plan_adm_id, @periodo_adm_2_id, @materia_iem_202_id, 4, 2),
-(@plan_adm_id, @periodo_adm_2_id, @materia_ado_203_id, 4, 3),
-(@plan_adm_id, @periodo_adm_2_id, @materia_gth_204_id, 4, 4),
-(@plan_adm_id, @periodo_adm_2_id, @materia_adf_205_id, 4, 5),
-(@plan_adm_id, @periodo_adm_2_id, @materia_pep_206_id, 4, 6),
-(@plan_adm_id, @periodo_adm_2_id, @materia_acp_207_id, 4, 7),
-(@plan_adm_id, @periodo_adm_2_id, @materia_emp_208_id, 4, 8);
+-- Plan 2, Periodo 2 (periodo_id = 5) - IDs 31-38
+INSERT INTO asignaturas_plan (id, plan_estudio_id, periodo_id, materia_id, horas_semanales, orden_visualizacion) VALUES
+(31, 2, 5, 31, 2, 1),  -- ORA-201: ORGANIZACIÓN DE LA ADMINISTRACIÓN
+(32, 2, 5, 32, 4, 2),  -- IEM-202: INVESTIGACIÓN Y ESTRATEGIA DE MERCADO
+(33, 2, 5, 33, 4, 3),  -- ADO-203: ADMINISTRACIÓN DE OPERACIONES
+(34, 2, 5, 34, 4, 4),  -- GTH-204: GESTIÓN DEL TALENTO HUMANO
+(35, 2, 5, 35, 4, 5),  -- ADF-205: ADMINISTRACIÓN FINANCIERA I
+(36, 2, 5, 36, 4, 6),  -- PEP-206: PREPARACIÓN Y EVALUACIÓN DE PROYECTOS
+(37, 2, 5, 37, 4, 7),  -- ACP-207: ADMINISTRACIÓN DE COSTOS Y PRESUPUESTOS
+(38, 2, 5, 38, 4, 8);  -- EMP-208: ECONOMÍA DE LA EMPRESA
 
--- Tercer Año
-INSERT INTO asignaturas_plan (plan_estudio_id, periodo_id, materia_id, horas_semanales, orden_visualizacion) VALUES
-(@plan_adm_id, @periodo_adm_3_id, @materia_amp_301_id, 6, 1),
-(@plan_adm_id, @periodo_adm_3_id, @materia_imn_302_id, 4, 2),
-(@plan_adm_id, @periodo_adm_3_id, @materia_adf_303_id, 4, 3),
-(@plan_adm_id, @periodo_adm_3_id, @materia_tmg_304_id, 4, 4),
-(@plan_adm_id, @periodo_adm_3_id, @materia_emp_305_id, 4, 5),
-(@plan_adm_id, @periodo_adm_3_id, @materia_cmi_306_id, 4, 6),
-(@plan_adm_id, @periodo_adm_3_id, @materia_gee_307_id, 4, 7);
+-- Plan 2, Periodo 3 (periodo_id = 6) - IDs 39-45
+INSERT INTO asignaturas_plan (id, plan_estudio_id, periodo_id, materia_id, horas_semanales, orden_visualizacion) VALUES
+(39, 2, 6, 39, 6, 1),  -- AMP-301: ADMINISTRACIÓN DE LA MICRO Y PEQUEÑA Y MEDIANA EMPRESA
+(40, 2, 6, 40, 4, 2),  -- IMN-302: INCUBACIÓN Y MODELOS DE NEGOCIOS
+(41, 2, 6, 41, 4, 3),  -- ADF-303: ADMINISTRACIÓN FINANCIERA II
+(42, 2, 6, 42, 4, 4),  -- TMG-304: TALLER DE MODALIDAD DE GRADO
+(43, 2, 6, 43, 4, 5),  -- EMP-305: EMPRENDIMIENTO PRODUCTIVO
+(44, 2, 6, 44, 4, 6),  -- CMI-306: COMERCIO INTERNACIONAL
+(45, 2, 6, 45, 4, 7);  -- GEE-307: GESTIÓN ESTRATÉGICA
+
+-- ============================================
+-- INSERTAR ASIGNATURAS PLAN - CONTADURÍA GENERAL (Plan 3)
+-- ============================================
+
+-- Plan 3, Periodo 1 (periodo_id = 7) - IDs 46-54
+INSERT INTO asignaturas_plan (id, plan_estudio_id, periodo_id, materia_id, horas_semanales, orden_visualizacion) VALUES
+(46, 3, 7, 46, 8, 1),  -- CON-101: CONTABILIDAD I
+(47, 3, 7, 47, 4, 2),  -- MAF-102: MATEMÁTICA FINANCIERA
+(48, 3, 7, 48, 4, 3),  -- ICO-103: INFORMÁTICA CONTABLE
+(49, 3, 7, 49, 4, 4),  -- ADG-104: ADMINISTRACIÓN GENERAL
+(50, 3, 7, 50, 2, 5),  -- LSA-105: LEGISLACIÓN LABORAL Y SEGURIDAD SOCIAL APLICADA
+(51, 3, 7, 51, 2, 6),  -- EGA-106: ECONOMÍA GENERAL APLICADA
+(52, 3, 7, 52, 2, 7),  -- DCM-107: DOCUMENTOS COMERCIALES Y MERCANTILES
+(53, 3, 7, 53, 2, 8),  -- ESA-108: ESTADÍSTICA APLICADA
+(54, 3, 7, 54, 2, 9);  -- INT-109: INGLÉS TÉCNICO
+
+-- Plan 3, Periodo 2 (periodo_id = 8) - IDs 55-61
+INSERT INTO asignaturas_plan (id, plan_estudio_id, periodo_id, materia_id, horas_semanales, orden_visualizacion) VALUES
+(55, 3, 8, 55, 6, 1),  -- CON-201: CONTABILIDAD II
+(56, 3, 8, 56, 6, 2),  -- COC-202: CONTABILIDAD DE COSTOS I
+(57, 3, 8, 57, 4, 3),  -- COS-203: CONTABILIDAD DE SOCIEDADES
+(58, 3, 8, 58, 2, 4),  -- CDS-204: CONTABILIDAD DE SEGUROS
+(59, 3, 8, 59, 4, 5),  -- CBC-205: CONTABILIDAD BANCARIA Y COOPERATIVAS
+(60, 3, 8, 60, 4, 6),  -- EMP-206: EMPRENDIMIENTO PRODUCTIVO
+(61, 3, 8, 61, 4, 7);  -- SIT-207: SISTEMA TRIBUTARIO
+
+-- Plan 3, Periodo 3 (periodo_id = 9) - IDs 62-69
+INSERT INTO asignaturas_plan (id, plan_estudio_id, periodo_id, materia_id, horas_semanales, orden_visualizacion) VALUES
+(62, 3, 9, 62, 4, 1),  -- COA-301: CONTABILIDAD AGROPECUARIA
+(63, 3, 9, 63, 4, 2),  -- COC-302: CONTABILIDAD DE COSTOS II
+(64, 3, 9, 64, 4, 3),  -- COG-303: CONTABILIDAD GUBERNAMENTAL
+(65, 3, 9, 65, 4, 4),  -- CEP-304: CONTABILIDAD EXTRACTIVA (MINERA, PETROLERA Y FORESTAL)
+(66, 3, 9, 66, 2, 5),  -- CHS-305: CONTABILIDAD DE SERVICIOS (CONSTRUCCIÓN, HOTELERÍA Y TRANSPORTE)
+(67, 3, 9, 67, 4, 6),  -- GCI-306: GABINETE CONTABLE INFORMÁTICO
+(68, 3, 9, 68, 4, 7),  -- AEF-307: ANÁLISIS E INTERPRETACIONES DE ESTADOS FINANCIEROS
+(69, 3, 9, 69, 4, 8);  -- TMG-308: TALLER DE MODALIDAD DE GRADUACIÓN
 
 -- Rehabilitar foreign key checks
 SET FOREIGN_KEY_CHECKS = 1;

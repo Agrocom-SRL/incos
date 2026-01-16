@@ -14,15 +14,16 @@ SET FOREIGN_KEY_CHECKS = 0;
 
 -- ============================================
 -- INSERTAR ESTADOS CIVILES
+-- IDs fijos para facilitar migraciones y referencias consistentes
 -- ============================================
 
-INSERT INTO estados_civiles (nombre, abreviatura) VALUES
-('Soltero(a)', 'S'),
-('Casado(a)', 'C'),
-('Divorciado(a)', 'D'),
-('Viudo(a)', 'V'),
-('Conviviente', 'CV'),
-('Separado(a)', 'SE');
+INSERT INTO estados_civiles (id, nombre, abreviatura) VALUES
+(1, 'Soltero(a)', 'S'),
+(2, 'Casado(a)', 'C'),
+(3, 'Divorciado(a)', 'D'),
+(4, 'Viudo(a)', 'V'),
+(5, 'Conviviente', 'CV'),
+(6, 'Separado(a)', 'SE');
 
 -- Rehabilitar foreign key checks
 SET FOREIGN_KEY_CHECKS = 1;

@@ -14,28 +14,29 @@ SET FOREIGN_KEY_CHECKS = 0;
 
 -- ============================================
 -- INSERTAR IDIOMAS
+-- IDs fijos para facilitar migraciones y referencias consistentes
 -- ============================================
 
-INSERT INTO idiomas (nombre, codigo_iso) VALUES
+INSERT INTO idiomas (id, nombre, codigo_iso) VALUES
 -- 1. PRIMER BLOQUE: Idiomas oficiales más hablados en Bolivia (por orden de hablantes)
-('Español', 'SPA'),           -- 1. Idioma más hablado (lengua franca)
-('Quechua', 'QUE'),           -- 2. Segundo idioma indígena más hablado
-('Aymara', 'AYM'),            -- 3. Tercer idioma indígena más hablado
-('Guaraní', 'GRN'),           -- 4. Cuarto idioma indígena más hablado
+(1, 'Español', 'SPA'),           -- 1. Idioma más hablado (lengua franca)
+(2, 'Quechua', 'QUE'),           -- 2. Segundo idioma indígena más hablado
+(3, 'Aymara', 'AYM'),            -- 3. Tercer idioma indígena más hablado
+(4, 'Guaraní', 'GRN'),           -- 4. Cuarto idioma indígena más hablado
 -- 2. SEGUNDO BLOQUE: Idiomas internacionales
-('Inglés', 'ENG'),            -- Idioma internacional
-('Portugués', 'POR'),         -- Idioma internacional (común en frontera con Brasil)
-('Francés', 'FRA'),           -- Idioma internacional
-('Alemán', 'DEU'),            -- Idioma internacional
+(5, 'Inglés', 'ENG'),            -- Idioma internacional
+(6, 'Portugués', 'POR'),         -- Idioma internacional (común en frontera con Brasil)
+(7, 'Francés', 'FRA'),           -- Idioma internacional
+(8, 'Alemán', 'DEU'),            -- Idioma internacional
 -- 3. TERCER BLOQUE: Otros idiomas indígenas oficiales de Bolivia (selección de los más importantes)
-('Chiquitano', NULL),         -- Departamento de Santa Cruz
-('Mojeño', NULL),             -- Departamento del Beni
-('Movima', NULL),             -- Departamento del Beni
-('Cavineño', NULL),           -- Norte de La Paz
-('Tacana', NULL),             -- Norte de La Paz
-('Tsimane', NULL),            -- Norte de La Paz (también conocido como Chimane)
-('Yuracaré', NULL),           -- Región del Chapare
-('Uru-Chipaya', NULL);        -- Departamento de Oruro (también conocido como Chipaya)
+(9, 'Chiquitano', NULL),         -- Departamento de Santa Cruz
+(10, 'Mojeño', NULL),             -- Departamento del Beni
+(11, 'Movima', NULL),             -- Departamento del Beni
+(12, 'Cavineño', NULL),           -- Norte de La Paz
+(13, 'Tacana', NULL),             -- Norte de La Paz
+(14, 'Tsimane', NULL),            -- Norte de La Paz (también conocido como Chimane)
+(15, 'Yuracaré', NULL),           -- Región del Chapare
+(16, 'Uru-Chipaya', NULL);        -- Departamento de Oruro (también conocido como Chipaya)
 
 -- Rehabilitar foreign key checks
 SET FOREIGN_KEY_CHECKS = 1;

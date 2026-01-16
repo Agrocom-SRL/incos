@@ -14,31 +14,48 @@ SET FOREIGN_KEY_CHECKS = 0;
 
 -- ============================================
 -- INSERTAR PERIODOS POR PLAN DE ESTUDIOS
--- ============================================
+-- IDs fijos basados en el orden de los planes (1-3)
 -- Cada plan tiene 3 periodos (años académicos)
+-- ============================================
+-- Plan 1 (SIS-INF): Periodos 1-3
+-- Plan 2 (ADM-EMP): Periodos 4-6
+-- Plan 3 (CON-GEN): Periodos 7-9
 
--- Obtener IDs de los planes de estudio
-SET @plan_sis_id = (SELECT id FROM planes_estudios WHERE carrera_id = (SELECT id FROM carreras WHERE codigo = 'SIS-INF' LIMIT 1) LIMIT 1);
-SET @plan_adm_id = (SELECT id FROM planes_estudios WHERE carrera_id = (SELECT id FROM carreras WHERE codigo = 'ADM-EMP' LIMIT 1) LIMIT 1);
-SET @plan_con_id = (SELECT id FROM planes_estudios WHERE carrera_id = (SELECT id FROM carreras WHERE codigo = 'CON-GEN' LIMIT 1) LIMIT 1);
+-- Plan 1 - Sistemas Informáticos: Primer Año (Periodo 1)
+INSERT INTO periodos (id, plan_estudio_id, nombre, numero, orden_visualizacion) VALUES
+(1, 1, 'Primer Año', 1, 1);
 
--- Primer Año (Periodo 1)
-INSERT INTO periodos (plan_estudio_id, nombre, numero, orden_visualizacion) VALUES
-(@plan_sis_id, 'Primer Año', 1, 1),
-(@plan_adm_id, 'Primer Año', 1, 1),
-(@plan_con_id, 'Primer Año', 1, 1);
+-- Plan 1 - Sistemas Informáticos: Segundo Año (Periodo 2)
+INSERT INTO periodos (id, plan_estudio_id, nombre, numero, orden_visualizacion) VALUES
+(2, 1, 'Segundo Año', 2, 2);
 
--- Segundo Año (Periodo 2)
-INSERT INTO periodos (plan_estudio_id, nombre, numero, orden_visualizacion) VALUES
-(@plan_sis_id, 'Segundo Año', 2, 2),
-(@plan_adm_id, 'Segundo Año', 2, 2),
-(@plan_con_id, 'Segundo Año', 2, 2);
+-- Plan 1 - Sistemas Informáticos: Tercer Año (Periodo 3)
+INSERT INTO periodos (id, plan_estudio_id, nombre, numero, orden_visualizacion) VALUES
+(3, 1, 'Tercer Año', 3, 3);
 
--- Tercer Año (Periodo 3)
-INSERT INTO periodos (plan_estudio_id, nombre, numero, orden_visualizacion) VALUES
-(@plan_sis_id, 'Tercer Año', 3, 3),
-(@plan_adm_id, 'Tercer Año', 3, 3),
-(@plan_con_id, 'Tercer Año', 3, 3);
+-- Plan 2 - Administración de Empresas: Primer Año (Periodo 1)
+INSERT INTO periodos (id, plan_estudio_id, nombre, numero, orden_visualizacion) VALUES
+(4, 2, 'Primer Año', 1, 1);
+
+-- Plan 2 - Administración de Empresas: Segundo Año (Periodo 2)
+INSERT INTO periodos (id, plan_estudio_id, nombre, numero, orden_visualizacion) VALUES
+(5, 2, 'Segundo Año', 2, 2);
+
+-- Plan 2 - Administración de Empresas: Tercer Año (Periodo 3)
+INSERT INTO periodos (id, plan_estudio_id, nombre, numero, orden_visualizacion) VALUES
+(6, 2, 'Tercer Año', 3, 3);
+
+-- Plan 3 - Contaduría General: Primer Año (Periodo 1)
+INSERT INTO periodos (id, plan_estudio_id, nombre, numero, orden_visualizacion) VALUES
+(7, 3, 'Primer Año', 1, 1);
+
+-- Plan 3 - Contaduría General: Segundo Año (Periodo 2)
+INSERT INTO periodos (id, plan_estudio_id, nombre, numero, orden_visualizacion) VALUES
+(8, 3, 'Segundo Año', 2, 2);
+
+-- Plan 3 - Contaduría General: Tercer Año (Periodo 3)
+INSERT INTO periodos (id, plan_estudio_id, nombre, numero, orden_visualizacion) VALUES
+(9, 3, 'Tercer Año', 3, 3);
 
 -- Rehabilitar foreign key checks
 SET FOREIGN_KEY_CHECKS = 1;

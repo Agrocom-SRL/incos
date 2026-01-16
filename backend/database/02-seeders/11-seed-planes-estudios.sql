@@ -14,17 +14,15 @@ SET FOREIGN_KEY_CHECKS = 0;
 
 -- ============================================
 -- INSERTAR PLANES DE ESTUDIO
+-- IDs fijos basados en el orden de las carreras (1-3)
 -- ============================================
 -- Todos los planes están bajo la Resolución Ministerial No. 0210/2023
 -- Todos tienen: 3600 hrs total, 30 hrs/semana, 120 hrs/mes, 1200 hrs/año, 3 años de duración
+-- Orden: Plan 1 (SIS-INF), Plan 2 (ADM-EMP), Plan 3 (CON-GEN)
 
--- Obtener IDs de las carreras
-SET @carrera_sis_id = (SELECT id FROM carreras WHERE codigo = 'SIS-INF' LIMIT 1);
-SET @carrera_adm_id = (SELECT id FROM carreras WHERE codigo = 'ADM-EMP' LIMIT 1);
-SET @carrera_con_id = (SELECT id FROM carreras WHERE codigo = 'CON-GEN' LIMIT 1);
-
--- Plan de Estudios - Sistemas Informáticos
+-- Plan de Estudios - Sistemas Informáticos (carrera_id = 1)
 INSERT INTO planes_estudios (
+    id,
     carrera_id,
     nombre_plan,
     resolucion_ministerial,
@@ -35,7 +33,8 @@ INSERT INTO planes_estudios (
     horas_anio,
     vigente
 ) VALUES (
-    @carrera_sis_id,
+    1,
+    1,
     'Plan de Estudios 2025',
     'No.0210/2023',
     3,
@@ -46,8 +45,9 @@ INSERT INTO planes_estudios (
     TRUE
 );
 
--- Plan de Estudios - Administración de Empresas
+-- Plan de Estudios - Administración de Empresas (carrera_id = 2)
 INSERT INTO planes_estudios (
+    id,
     carrera_id,
     nombre_plan,
     resolucion_ministerial,
@@ -58,7 +58,8 @@ INSERT INTO planes_estudios (
     horas_anio,
     vigente
 ) VALUES (
-    @carrera_adm_id,
+    2,
+    2,
     'Plan de Estudios 2025',
     'No.0210/2023',
     3,
@@ -69,8 +70,9 @@ INSERT INTO planes_estudios (
     TRUE
 );
 
--- Plan de Estudios - Contaduría General
+-- Plan de Estudios - Contaduría General (carrera_id = 3)
 INSERT INTO planes_estudios (
+    id,
     carrera_id,
     nombre_plan,
     resolucion_ministerial,
@@ -81,7 +83,8 @@ INSERT INTO planes_estudios (
     horas_anio,
     vigente
 ) VALUES (
-    @carrera_con_id,
+    3,
+    3,
     'Plan de Estudios 2025',
     'No.0210/2023',
     3,
