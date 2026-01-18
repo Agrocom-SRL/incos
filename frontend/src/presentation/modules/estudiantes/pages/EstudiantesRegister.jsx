@@ -31,7 +31,6 @@ import {
 import { mapEstudianteToForm } from '@application-estudiantes/mappers';
 import { 
   createEstudianteWizardSteps, 
-  createRegisterBreadcrumbItems,
   createCamposContactosEmergenciaDinamicos,
   createCamposDocumentacionDinamicos
 } from '@estudiantes/config';
@@ -219,10 +218,11 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
   }, [wizardTitles, contactosIndices, agregarContacto, eliminarContacto, documentacionProcesada]);
 
   // Configurar breadcrumb items
-  const breadcrumbItems = useMemo(
-    () => createRegisterBreadcrumbItems(pageTitle),
-    [pageTitle]
-  );
+  const breadcrumbItems = useMemo(() => [
+    { title: 'Inicio', href: '/' },
+    { title: 'Estudiantes', href: '/estudiantes' },
+    { title: pageTitle },
+  ], [pageTitle]);
 
   return (
     <PageTemplate 

@@ -20,7 +20,6 @@ import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { useInscripcionDetailContext } from '@application-inscripciones/hooks';
 import { Descriptions, Card, Divider, Spin, Alert, Empty, Tag } from 'antd';
-import { createDetailBreadcrumbItems } from '@inscripciones/config';
 
 const InscripcionesDetail = () => {
   const navigate = useNavigate();
@@ -33,7 +32,11 @@ const InscripcionesDetail = () => {
   } = useInscripcionDetailContext();
 
   // Configurar breadcrumb items
-  const breadcrumbItems = useMemo(() => createDetailBreadcrumbItems(), []);
+  const breadcrumbItems = useMemo(() => [
+    { title: 'Inicio', href: '/' },
+    { title: 'Inscripciones', href: '/inscripciones' },
+    { title: 'Detalle de la Inscripción' },
+  ], []);
 
   // Si está cargando
   if (loading) {

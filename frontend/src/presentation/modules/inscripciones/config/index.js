@@ -14,4 +14,4 @@
  */
 
 export { createInscripcionNuevaWizardSteps } from './inscripcionNuevaWizardSteps';
-export { createDetailBreadcrumbItems } from './breadcrumbs.jsx';
+// Breadcrumbs se definen directamente en cada página

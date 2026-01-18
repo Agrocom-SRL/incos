@@ -57,11 +57,7 @@ export const createRegisterBreadcrumbItems = (title) => {
  * @returns {Array} Array de items del breadcrumb
  */
 export const createDetailBreadcrumbItems = () => {
-  return [
-    { title: 'Inicio', href: '/' },
-    { title: 'Estudiantes', href: '/estudiantes' },
-    { title: 'Detalle del Estudiante' },
-  ];
+  return createBreadcrumbItems('EST-DETALLE', 'Detalle del Estudiante');
 };
 
 /**

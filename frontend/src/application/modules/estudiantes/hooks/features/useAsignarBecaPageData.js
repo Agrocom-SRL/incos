@@ -20,7 +20,6 @@
 
 import { useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createAsignarBecaBreadcrumbItems } from '@estudiantes/config';
 
 /**
  * Hook para obtener todos los datos específicos de la página de asignar beca
@@ -42,10 +41,12 @@ export const useAsignarBecaPageData = (options = {}) => {
         return 'Asignar Beca';
     }, [studentName]);
 
-    // Breadcrumb items (generados basándose en el título)
-    const breadcrumbItems = useMemo(() => {
-        return createAsignarBecaBreadcrumbItems();
-    }, []);
+    // Breadcrumb items
+    const breadcrumbItems = useMemo(() => [
+        { title: 'Inicio', href: '/' },
+        { title: 'Estudiantes', href: '/estudiantes' },
+        { title: 'Asignar Beca' },
+    ], []);
 
     // Handler para volver
     const handleVolver = useCallback(() => {

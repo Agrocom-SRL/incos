@@ -95,8 +95,8 @@ const PagosRegistrar = () => {
 
   // Configurar breadcrumb items
   const breadcrumbItems = useMemo(() => [
-    { title: 'Inicio' },
-    { title: 'Pagos' },
+    { title: 'Inicio', href: '/' },
+    { title: 'Pagos', href: '/pagos' },
     { title: 'Registrar Pago' },
   ], []);
 

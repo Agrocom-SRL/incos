@@ -18,8 +18,6 @@
  */
 
 import { useMemo } from 'react';
-import { inscripcionesRoutes } from '@inscripciones/routes';
-import { createBreadcrumbItems } from '@presentation-utils/breadcrumbs';
 import { createInscripcionNuevaWizardSteps } from '@inscripciones/config';
 
 /**
@@ -41,17 +39,12 @@ export const useInscripcionNuevaPageData = (options = {}) => {
         return 'Inscribir Estudiantes Nuevos';
     }, [mode]);
 
-    // Breadcrumb items (generados basándose en el título)
-    const breadcrumbItems = useMemo(() => {
-        return createBreadcrumbItems(
-            inscripcionesRoutes,
-            'INS-CREATE', // routeKey
-            'INS', // rootKey
-            pageTitle, // currentTitle
-            null, // fallbackIcon (usa el del módulo)
-            'Inscripciones' // fallbackLabel
-        );
-    }, [pageTitle]);
+    // Breadcrumb items
+    const breadcrumbItems = useMemo(() => [
+        { title: 'Inicio', href: '/' },
+        { title: 'Inscripciones', href: '/inscripciones' },
+        { title: pageTitle },
+    ], [pageTitle]);
 
     // Configuración de steps del wizard
     const wizardSteps = useMemo(() => {

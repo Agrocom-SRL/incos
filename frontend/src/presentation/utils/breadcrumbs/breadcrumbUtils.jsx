@@ -14,8 +14,7 @@
  * Estas funciones son genéricas y pueden ser usadas por cualquier módulo
  */
 
-import { HomeOutlined } from '@ant-design/icons';
-import { getModuleIcon } from './moduleIcons';
+// Iconos removidos - breadcrumbs solo usan texto
 
 /**
  * Construye recursivamente la cadena de breadcrumbs
@@ -38,17 +37,9 @@ const buildBreadcrumbChain = (routes, key, routeKey, rootKey, breadcrumbItems, c
 
   // Agregar la ruta actual (solo si no es la última)
   if (key !== routeKey || currentTitle === null) {
-    const isRoot = key === rootKey;
-    const ModuleIcon = getModuleIcon(rootKey);
-    
     breadcrumbItems.push({
       href: route.path,
-      title: isRoot ? (
-        <>
-          <ModuleIcon />
-          <span>{route.menu?.label || route.path}</span>
-        </>
-      ) : route.menu?.label || route.path,
+      title: route.menu?.label || route.path,
     });
   }
 };
@@ -77,19 +68,13 @@ export const createBreadcrumbItems = (
   
   if (!currentRoute) {
     // Si no se encuentra la ruta, retornar breadcrumb básico
-    const FallbackIcon = fallbackIcon || getModuleIcon(rootKey);
     return [
       {
         href: '/',
-        title: <HomeOutlined />,
+        title: 'Inicio',
       },
       {
-        title: (
-          <>
-            <FallbackIcon />
-            <span>{fallbackLabel}</span>
-          </>
-        ),
+        title: fallbackLabel,
       },
     ];
   }
@@ -100,7 +85,7 @@ export const createBreadcrumbItems = (
   // Siempre agregar Home como primer item
   breadcrumbItems.push({
     href: '/',
-    title: <HomeOutlined />,
+    title: 'Inicio',
   });
 
   // Construir la cadena de padres usando función recursiva
@@ -115,15 +100,9 @@ export const createBreadcrumbItems = (
     // Si no tiene parent pero no es la raíz, agregar la raíz
     const rootRoute = routes.find(r => r.key === rootKey);
     if (rootRoute) {
-      const RootIcon = getModuleIcon(rootKey);
       breadcrumbItems.push({
         href: rootRoute.path,
-        title: (
-          <>
-            <RootIcon />
-            <span>{rootRoute.menu?.label || rootRoute.path}</span>
-          </>
-        ),
+        title: rootRoute.menu?.label || rootRoute.path,
       });
     }
   }

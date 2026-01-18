@@ -23,7 +23,6 @@ import { useGenerateActaCompromiso } from '@application-estudiantes/hooks';
 import { Spin, Alert, Empty, message } from 'antd';
 import { GiftOutlined, FileTextOutlined, DollarOutlined } from '@ant-design/icons';
 import { Button } from '@atoms';
-import { createDetailBreadcrumbItems } from '@estudiantes/config';
 import {
   DatosPersonalesSection,
   GuardiansSection,
@@ -48,7 +47,11 @@ const EstudiantesDetail = () => {
   const { generateActaCompromiso, loading: loadingActa } = useGenerateActaCompromiso();
 
   // Configurar breadcrumb items
-  const breadcrumbItems = useMemo(() => createDetailBreadcrumbItems(), []);
+  const breadcrumbItems = useMemo(() => [
+    { title: 'Inicio', href: '/' },
+    { title: 'Estudiantes', href: '/estudiantes' },
+    { title: 'Detalle del Estudiante' },
+  ], []);
 
   // Handler para navegar a la asignación de becas
   const handleAsignarBeca = useCallback(() => {
