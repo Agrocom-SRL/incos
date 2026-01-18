@@ -110,7 +110,7 @@ const ContributionDetailSummary = ({
         marginBottom: '24px',
         padding: '0'
       }}
-      bodyStyle={{ padding: '24px' }}
+      styles={{ body: { padding: '24px' } }}
     >
       {/* Título */}
       <div style={{ 
