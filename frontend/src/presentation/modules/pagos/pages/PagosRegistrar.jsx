@@ -15,8 +15,8 @@
  */
 
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useMemo } from 'react';
-import { Alert, Spin, Form } from 'antd';
+import { useMemo, useEffect } from 'react';
+import { Spin, Form } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
@@ -97,43 +97,16 @@ const PagosRegistrar = () => {
     { title: 'Registrar Pago' },
   ], []);
 
-  // Si no hay studentId, mostrar error
+  // Redirigir a lista de pagos si no hay studentId
+  useEffect(() => {
+    if (!studentId) {
+      navigate('/pagos/listar', { replace: true });
+    }
+  }, [studentId, navigate]);
+
+  // Si no hay studentId, no renderizar nada (se redirige automáticamente)
   if (!studentId) {
-    return (
-      <PageTemplate
-        header={
-          <PageHeader
-            title="Registrar Pago"
-            breadcrumbItems={breadcrumbItems}
-            actions={
-              <Button
-                icon={<ArrowLeftOutlined />}
-                onClick={handleVolver || (() => { window.location.href = '/estudiantes'; })}
-                variant="primary"
-              >
-                Volver
-              </Button>
-            }
-          />
-        }
-      >
-        <Alert
-          message="Error"
-          description="No se proporcionó el ID del estudiante. Por favor, seleccione un estudiante desde la lista."
-          type="error"
-          showIcon
-          action={
-            <Button 
-              size="small" 
-              onClick={() => window.location.href = '/estudiantes'}
-              variant="default"
-            >
-              Ir a Lista de Estudiantes
-            </Button>
-          }
-        />
-      </PageTemplate>
-    );
+    return null;
   }
 
   return (

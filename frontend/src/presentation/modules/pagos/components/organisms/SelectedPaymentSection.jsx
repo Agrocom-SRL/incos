@@ -19,7 +19,7 @@
  */
 
 import { useEffect } from 'react';
-import { Row, Col, Space, Form, Divider, Typography, Input } from 'antd';
+import { Row, Col, Space, Form, Divider, Typography, Input, Tag } from 'antd';
 import { SaveOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { Card, Button } from '@atoms';
@@ -146,17 +146,30 @@ const SelectedPaymentSection = ({
       }}
       headerColor="primary"
     >
-      {/* Si el monto es 0 (gratis), solo mostrar el concepto */}
+      {/* Si el monto es 0 (gratis), mostrar label de pago gratuito y concepto */}
       {montoPagado === 0 ? (
         <div>
-          <Title level={5} style={{ 
-            marginBottom: '20px',
-            fontSize: '16px',
-            fontWeight: 600,
-            color: '#262626'
+          {/* Label de Pago Gratuito */}
+          <div style={{ 
+            marginBottom: '24px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
           }}>
-            Concepto del Pago
-          </Title>
+            <Tag 
+              color="success" 
+              style={{ 
+                fontSize: '20px', 
+                padding: '4px 12px',
+                fontWeight: 600,
+                borderRadius: '6px'
+              }}
+            >
+              Pago Gratuito
+            </Tag>
+          </div>
+
+          {/* Formulario para el concepto */}
           <Form
             form={form}
             layout="vertical"
