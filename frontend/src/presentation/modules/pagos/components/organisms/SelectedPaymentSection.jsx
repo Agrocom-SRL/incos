@@ -18,20 +18,22 @@
  */
 
 import { useEffect } from 'react';
-import { Row, Col, Space, Form, Input, DatePicker, Select } from 'antd';
+import { Row, Col, Space, Form, Input, DatePicker, Select, Divider, Typography } from 'antd';
 import { 
   DollarOutlined, 
   CalendarOutlined, 
   CreditCardOutlined,
   FileTextOutlined,
   BankOutlined,
-  SaveOutlined
+  SaveOutlined,
+  CheckCircleOutlined
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { Card, Button } from '@atoms';
 import { SelectedPaymentInfoItem } from '../molecules';
 
 const { TextArea } = Input;
+const { Title, Text } = Typography;
 
 // Helper para formatear monto
 const formatMonto = (monto) => {
@@ -75,69 +77,222 @@ const SelectedPaymentSection = ({
   }, [descuentoBeca, form]);
 
   // Determinar si el método de pago requiere cuenta (TRANSFERENCIA, DEPOSITO, QR, TIGO_MONEY)
-  const requiereCuenta = ['TRANSFERENCIA', 'DEPOSITO', 'QR', 'TIGO_MONEY'].includes(selectedMetodoPago.codigo);
+  // EFECTIVO NO requiere cuenta bancaria
+  const codigoMetodo = selectedMetodoPago?.codigo?.toUpperCase() || '';
+  const requiereCuenta = codigoMetodo && ['TRANSFERENCIA', 'DEPOSITO', 'QR', 'TIGO_MONEY'].includes(codigoMetodo);
 
   return (
     <Card
-      title="Detalles del Pago"
-      style={{ marginTop: '24px', marginBottom: '24px' }}
+      title={
+        <Space>
+          <CheckCircleOutlined style={{ color: '#52c41a', fontSize: '20px' }} />
+          <span style={{ fontSize: '18px', fontWeight: 600 }}>Detalles del Pago</span>
+        </Space>
+      }
+      style={{ 
+        marginTop: '24px', 
+        marginBottom: '24px',
+        borderRadius: '12px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
+      }}
       headerColor="primary"
     >
-      {/* Información del pago configurado */}
-      <Row gutter={[24, 16]}>
-        <Col xs={24} sm={12}>
-          <SelectedPaymentInfoItem
-            icon={<DollarOutlined style={{ fontSize: '24px', color: '#fff' }} />}
-            label="Monto Base"
-            value={formatMonto(selectedConfiguracion.montoBase)}
-            valueColor="var(--color-primary-hover, #196b45)"
-            valueFontSize="20px"
-          />
-        </Col>
-        {descuentoBeca > 0 && (
-          <Col xs={24} sm={12}>
-            <SelectedPaymentInfoItem
-              icon={<DollarOutlined style={{ fontSize: '24px', color: '#fff' }} />}
-              label="Descuento por Beca"
-              value={formatMonto(descuentoBeca)}
-              valueColor="var(--color-success, #399f53)"
-              valueFontSize="20px"
-            />
+      {/* Información del pago configurado - Diseño moderno */}
+      <div style={{
+        background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+        borderRadius: '12px',
+        padding: '24px',
+        marginBottom: '24px',
+      }}>
+        <Row gutter={[24, 16]}>
+          <Col xs={24} sm={12} md={8}>
+            <div style={{
+              background: '#fff',
+              borderRadius: '12px',
+              padding: '20px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+              borderLeft: '4px solid #1890ff',
+              transition: 'all 0.3s ease',
+            }}>
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                marginBottom: '12px',
+                gap: '10px'
+              }}>
+                <DollarOutlined style={{ fontSize: '20px', color: '#1890ff' }} />
+                <Text type="secondary" style={{ fontSize: '14px', fontWeight: 500 }}>
+                  Monto Base
+                </Text>
+              </div>
+              <Title level={4} style={{ 
+                margin: 0, 
+                color: '#1890ff',
+                fontSize: '24px',
+                fontWeight: 600
+              }}>
+                {formatMonto(selectedConfiguracion.montoBase)}
+              </Title>
+            </div>
           </Col>
-        )}
-        <Col xs={24} sm={12}>
-          <SelectedPaymentInfoItem
-            icon={<DollarOutlined style={{ fontSize: '24px', color: '#fff' }} />}
-            label="Monto a Pagar"
-            value={formatMonto(montoPagado)}
-            valueColor="var(--color-warning, #f59e0b)"
-            valueFontSize="24px"
-          />
-        </Col>
-        <Col xs={24} sm={12}>
-          <SelectedPaymentInfoItem
-            icon={<CreditCardOutlined style={{ fontSize: '24px', color: '#fff' }} />}
-            label="Método de Pago"
-            value={selectedMetodoPago.nombre}
-          />
-        </Col>
+          
+          {descuentoBeca > 0 && (
+            <Col xs={24} sm={12} md={8}>
+              <div style={{
+                background: '#fff',
+                borderRadius: '12px',
+                padding: '20px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                borderLeft: '4px solid #52c41a',
+                transition: 'all 0.3s ease',
+              }}>
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  marginBottom: '12px',
+                  gap: '10px'
+                }}>
+                  <DollarOutlined style={{ fontSize: '20px', color: '#52c41a' }} />
+                  <Text type="secondary" style={{ fontSize: '14px', fontWeight: 500 }}>
+                    Descuento por Beca
+                  </Text>
+                </div>
+                <Title level={4} style={{ 
+                  margin: 0, 
+                  color: '#52c41a',
+                  fontSize: '24px',
+                  fontWeight: 600
+                }}>
+                  {formatMonto(descuentoBeca)}
+                </Title>
+              </div>
+            </Col>
+          )}
+          
+          <Col xs={24} sm={12} md={descuentoBeca > 0 ? 8 : 16}>
+            <div style={{
+              background: 'linear-gradient(135deg, #fa8c16 0%, #ffa940 100%)',
+              borderRadius: '12px',
+              padding: '24px',
+              boxShadow: '0 4px 12px rgba(250, 140, 22, 0.3)',
+              border: 'none',
+              transition: 'all 0.3s ease',
+            }}>
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                marginBottom: '12px',
+                gap: '10px'
+              }}>
+                <DollarOutlined style={{ fontSize: '24px', color: '#fff' }} />
+                <Text style={{ 
+                  fontSize: '14px', 
+                  fontWeight: 600,
+                  color: '#fff',
+                  opacity: 0.95
+                }}>
+                  Monto a Pagar
+                </Text>
+              </div>
+              <Title level={3} style={{ 
+                margin: 0, 
+                color: '#fff',
+                fontSize: '32px',
+                fontWeight: 700
+              }}>
+                {formatMonto(montoPagado)}
+              </Title>
+            </div>
+          </Col>
+        </Row>
+      </div>
+
+      {/* Información del método de pago */}
+      <div style={{
+        display: 'flex',
+        gap: '16px',
+        flexWrap: 'wrap',
+        marginBottom: '24px',
+      }}>
+        <div style={{
+          background: '#fff',
+          border: '1px solid #e8e8e8',
+          borderRadius: '10px',
+          padding: '16px 20px',
+          flex: 1,
+          minWidth: '200px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+        }}>
+          <div style={{
+            width: '48px',
+            height: '48px',
+            borderRadius: '10px',
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+            <CreditCardOutlined style={{ fontSize: '22px', color: '#fff' }} />
+          </div>
+          <div>
+            <Text type="secondary" style={{ fontSize: '12px', display: 'block', marginBottom: '4px' }}>
+              Método de Pago
+            </Text>
+            <Text strong style={{ fontSize: '16px' }}>
+              {selectedMetodoPago.nombre}
+            </Text>
+          </div>
+        </div>
+        
         {requiereCuenta && selectedCuentaPago && (
-          <Col xs={24} sm={12}>
-            <SelectedPaymentInfoItem
-              icon={<BankOutlined style={{ fontSize: '24px', color: '#fff' }} />}
-              label="Cuenta de Pago"
-              value={selectedCuentaPago.nombre || selectedCuentaPago.numeroCuenta || 'N/A'}
-            />
-          </Col>
+          <div style={{
+            background: '#fff',
+            border: '1px solid #e8e8e8',
+            borderRadius: '10px',
+            padding: '16px 20px',
+            flex: 1,
+            minWidth: '200px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+          }}>
+            <div style={{
+              width: '48px',
+              height: '48px',
+              borderRadius: '10px',
+              background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              <BankOutlined style={{ fontSize: '22px', color: '#fff' }} />
+            </div>
+            <div>
+              <Text type="secondary" style={{ fontSize: '12px', display: 'block', marginBottom: '4px' }}>
+                Cuenta de Pago
+              </Text>
+              <Text strong style={{ fontSize: '16px' }}>
+                {selectedCuentaPago.nombre || selectedCuentaPago.numeroCuenta || 'N/A'}
+              </Text>
+            </div>
+          </div>
         )}
-      </Row>
+      </div>
+
+      <Divider style={{ margin: '24px 0' }} />
 
       {/* Formulario para completar el pago */}
-      <div style={{ 
-        marginTop: '24px', 
-        paddingTop: '24px', 
-        borderTop: '1px solid var(--color-border-secondary, #e8e8e8)' 
-      }}>
+      <div>
+        <Title level={5} style={{ 
+          marginBottom: '20px',
+          fontSize: '16px',
+          fontWeight: 600,
+          color: '#262626'
+        }}>
+          Completar Información del Pago
+        </Title>
         <Form
           form={form}
           layout="vertical"
@@ -147,20 +302,30 @@ const SelectedPaymentSection = ({
             descuentoBeca: 0,
           }}
         >
-          <Row gutter={[16, 0]}>
+          <Row gutter={[16, 16]}>
             <Col xs={24} sm={12}>
               <Form.Item
                 name="fechaPago"
-                label="Fecha de Pago"
+                label={
+                  <span style={{ fontWeight: 500, fontSize: '14px' }}>
+                    <CalendarOutlined style={{ marginRight: '6px', color: '#1890ff' }} />
+                    Fecha de Pago
+                  </span>
+                }
                 rules={[
                   { required: true, message: 'Por favor seleccione la fecha de pago' }
                 ]}
               >
                 <DatePicker
-                  style={{ width: '100%' }}
+                  style={{ 
+                    width: '100%',
+                    borderRadius: '8px',
+                    height: '42px',
+                  }}
                   format="DD/MM/YYYY"
                   placeholder="Seleccione la fecha"
                   disabledDate={(current) => current && current > dayjs().endOf('day')}
+                  size="large"
                 />
               </Form.Item>
             </Col>
@@ -168,7 +333,12 @@ const SelectedPaymentSection = ({
               <Col xs={24} sm={12}>
                 <Form.Item
                   name="cuentaPagoId"
-                  label="Cuenta de Pago"
+                  label={
+                    <span style={{ fontWeight: 500, fontSize: '14px' }}>
+                      <BankOutlined style={{ marginRight: '6px', color: '#1890ff' }} />
+                      Cuenta de Pago
+                    </span>
+                  }
                   rules={[
                     { required: requiereCuenta, message: 'Por favor seleccione una cuenta de pago' }
                   ]}
@@ -176,6 +346,10 @@ const SelectedPaymentSection = ({
                   <Select
                     placeholder="Seleccione una cuenta de pago"
                     loading={cuentasPagoData.loading}
+                    size="large"
+                    style={{
+                      borderRadius: '8px',
+                    }}
                     options={
                       (cuentasPagoData.cuentasPago || []).map(cuenta => ({
                         label: `${cuenta.nombre}${cuenta.numeroCuenta ? ` - ${cuenta.numeroCuenta}` : ''}`,
@@ -191,7 +365,12 @@ const SelectedPaymentSection = ({
               <Col xs={24} sm={12}>
                 <Form.Item
                   name="descuentoBeca"
-                  label="Descuento por Beca (Bs.)"
+                  label={
+                    <span style={{ fontWeight: 500, fontSize: '14px' }}>
+                      <DollarOutlined style={{ marginRight: '6px', color: '#52c41a' }} />
+                      Descuento por Beca (Bs.)
+                    </span>
+                  }
                   tooltip={`Beca activa: ${becaActiva.scholarshipName || `Beca ${porcentajeDescuento}%`}. El descuento se calcula automáticamente.`}
                 >
                   <Input
@@ -199,9 +378,14 @@ const SelectedPaymentSection = ({
                     min={0}
                     step={0.01}
                     placeholder="0.00"
-                    prefix={<DollarOutlined />}
+                    prefix={<DollarOutlined style={{ color: '#52c41a' }} />}
                     disabled={true}
-                    style={{ backgroundColor: 'var(--color-bg-container-disabled, #f5f5f5)' }}
+                    size="large"
+                    style={{ 
+                      backgroundColor: '#f6ffed',
+                      borderRadius: '8px',
+                      borderColor: '#b7eb8f',
+                    }}
                   />
                 </Form.Item>
               </Col>
@@ -209,22 +393,37 @@ const SelectedPaymentSection = ({
             <Col xs={24} sm={12}>
               <Form.Item
                 name="numeroTransaccion"
-                label="Número de Transacción/Código"
-                tooltip="Ingrese el número de transacción, código de transferencia, o código QR"
+                label={
+                  <span style={{ fontWeight: 500, fontSize: '14px' }}>
+                    <FileTextOutlined style={{ marginRight: '6px', color: '#1890ff' }} />
+                    Número de Transacción/Código
+                  </span>
+                }
+                tooltip={
+                  requiereCuenta 
+                    ? "Ingrese el número de transacción, código de transferencia, o código QR" 
+                    : "Opcional: Ingrese un número de referencia o comprobante (ej: recibo de caja)"
+                }
                 rules={[
                   { required: requiereCuenta, message: 'Por favor ingrese el número de transacción' }
                 ]}
               >
                 <Input
-                  placeholder="Número de transacción o código"
-                  prefix={<FileTextOutlined />}
+                  placeholder={requiereCuenta ? "Número de transacción o código" : "Número de referencia (opcional)"}
+                  prefix={<FileTextOutlined style={{ color: '#8c8c8c' }} />}
+                  size="large"
+                  style={{ borderRadius: '8px' }}
                 />
               </Form.Item>
             </Col>
             <Col xs={24}>
               <Form.Item
                 name="concepto"
-                label="Concepto"
+                label={
+                  <span style={{ fontWeight: 500, fontSize: '14px' }}>
+                    Concepto
+                  </span>
+                }
                 tooltip="Descripción del concepto del pago"
                 rules={[
                   { required: true, message: 'Por favor ingrese el concepto del pago' }
@@ -235,13 +434,21 @@ const SelectedPaymentSection = ({
                   placeholder="Ej: Pago de aporte académico gestión 2025..."
                   maxLength={500}
                   showCount
+                  style={{ 
+                    borderRadius: '8px',
+                    fontSize: '14px'
+                  }}
                 />
               </Form.Item>
             </Col>
             <Col xs={24}>
               <Form.Item
                 name="observaciones"
-                label="Observaciones"
+                label={
+                  <span style={{ fontWeight: 500, fontSize: '14px' }}>
+                    Observaciones
+                  </span>
+                }
                 tooltip="Observaciones adicionales sobre el pago (opcional)"
               >
                 <TextArea
@@ -249,6 +456,10 @@ const SelectedPaymentSection = ({
                   placeholder="Observaciones adicionales..."
                   maxLength={500}
                   showCount
+                  style={{ 
+                    borderRadius: '8px',
+                    fontSize: '14px'
+                  }}
                 />
               </Form.Item>
             </Col>
@@ -257,23 +468,44 @@ const SelectedPaymentSection = ({
       </div>
 
       {/* Botones de acción */}
-      <div style={{ marginTop: '24px', paddingTop: '24px', borderTop: '1px solid var(--color-border-secondary, #e8e8e8)' }}>
-        <Space size="large">
-          <Button
-            variant="primary"
-            onClick={() => form?.submit()}
-            icon={<SaveOutlined />}
-            disabled={disabled}
-          >
-            Registrar Pago
-          </Button>
-          <Button
-            variant="default"
-            onClick={onCancel}
-          >
-            Cancelar
-          </Button>
-        </Space>
+      <Divider style={{ margin: '32px 0 24px 0' }} />
+      <div style={{
+        display: 'flex',
+        justifyContent: 'flex-end',
+        gap: '12px',
+        paddingTop: '8px',
+      }}>
+        <Button
+          variant="default"
+          onClick={onCancel}
+          size="large"
+          style={{
+            borderRadius: '8px',
+            paddingLeft: '24px',
+            paddingRight: '24px',
+            height: '42px',
+            fontWeight: 500,
+          }}
+        >
+          Cancelar
+        </Button>
+        <Button
+          variant="primary"
+          onClick={() => form?.submit()}
+          icon={<SaveOutlined />}
+          disabled={disabled}
+          size="large"
+          style={{
+            borderRadius: '8px',
+            paddingLeft: '32px',
+            paddingRight: '32px',
+            height: '42px',
+            fontWeight: 600,
+            boxShadow: '0 2px 8px rgba(24, 144, 255, 0.3)',
+          }}
+        >
+          Registrar Pago
+        </Button>
       </div>
     </Card>
   );

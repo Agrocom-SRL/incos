@@ -30,7 +30,6 @@ import {
   ContributionDetailSummary,
   SelectedPaymentSection,
 } from '../components/organisms';
-import { PaymentMethodCardContent } from '../components/molecules';
 
 const PagosRegistrar = () => {
   const location = useLocation();
@@ -62,8 +61,9 @@ const PagosRegistrar = () => {
   } = pagosRegistrarContext || {};
 
   // Formulario para registro de pago
+  // Si el contexto no proporciona un form, crear uno nuevo
   const [formPago] = Form.useForm();
-  const formInstance = formPago || form;
+  const formInstance = form || formPago;
 
   // Obtener configuración de aporte activa (la primera activa/vigente)
   const configuracionAporteActiva = useMemo(() => {
@@ -76,10 +76,6 @@ const PagosRegistrar = () => {
     ) || configuracionAportes.configuracionAportes[0] || null; // Si no hay activa, usar la primera
   }, [configuracionAportes]);
 
-  // Función para renderizar cada card de método de pago
-  const renderMetodoPagoCard = (metodoPago) => {
-    return <PaymentMethodCardContent metodoPago={metodoPago} />;
-  };
 
   // Handler para volver
   const handleVolver = () => {
@@ -183,7 +179,6 @@ const PagosRegistrar = () => {
             <PaymentMethodSelectionSection
               metodosPagoData={metodosPago}
               onSelectMetodoPago={metodosPago.onSelectMetodoPago}
-              renderMetodoPagoCard={renderMetodoPagoCard}
               form={formInstance}
               onFinish={handleFinish}
             />
