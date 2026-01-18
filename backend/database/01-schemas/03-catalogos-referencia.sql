@@ -43,6 +43,11 @@ CREATE TABLE idiomas (
     updated_by INT COMMENT 'Usuario que modificó',
     deleted_by INT COMMENT 'Usuario que eliminó',
     
+    -- Foreign Keys
+    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    
     -- Índices esenciales
     INDEX idx_nombre (nombre) COMMENT 'Búsqueda por nombre',
     INDEX idx_codigo_iso (codigo_iso) COMMENT 'Búsqueda por código ISO',
@@ -70,8 +75,14 @@ CREATE TABLE estados_civiles (
     updated_by INT COMMENT 'Usuario que modificó',
     deleted_by INT COMMENT 'Usuario que eliminó',
     
+    -- Foreign Keys
+    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    
     -- Índices esenciales
     INDEX idx_nombre (nombre) COMMENT 'Búsqueda por nombre',
+    INDEX idx_abreviatura (abreviatura) COMMENT 'Búsqueda por abreviatura',
     INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
     INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete'
     
@@ -95,6 +106,11 @@ CREATE TABLE tipos_discapacidad (
     created_by INT COMMENT 'Usuario que creó',
     updated_by INT COMMENT 'Usuario que modificó',
     deleted_by INT COMMENT 'Usuario que eliminó',
+    
+    -- Foreign Keys
+    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     -- Índices esenciales
     INDEX idx_nombre (nombre) COMMENT 'Búsqueda por nombre',
@@ -121,6 +137,11 @@ CREATE TABLE tipos_parentesco (
     created_by INT COMMENT 'Usuario que creó',
     updated_by INT COMMENT 'Usuario que modificó',
     deleted_by INT COMMENT 'Usuario que eliminó',
+    
+    -- Foreign Keys
+    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     -- Índices esenciales
     INDEX idx_nombre (nombre) COMMENT 'Búsqueda por nombre',
@@ -165,7 +186,11 @@ CREATE TABLE documentacion (
     updated_by INT COMMENT 'Usuario que modificó',
     deleted_by INT COMMENT 'Usuario que eliminó',
     
+    -- Foreign Keys
     FOREIGN KEY (documento_padre_id) REFERENCES documentacion(id) ON DELETE SET NULL,
+    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     -- Índices esenciales
     INDEX idx_nombre (nombre) COMMENT 'Búsqueda por nombre',

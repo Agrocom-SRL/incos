@@ -41,6 +41,7 @@ CREATE TABLE roles (
     nombre VARCHAR(100) NOT NULL COMMENT 'Nombre descriptivo del rol',
     nivel_acceso INT DEFAULT 1 COMMENT 'Nivel jerárquico (1=bajo, 5=alto) - define qué permisos puede tener',
     
+    -- Campos de auditoría y control (ESTÁNDAR)
     activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
@@ -48,6 +49,11 @@ CREATE TABLE roles (
     created_by INT COMMENT 'Usuario que creó',
     updated_by INT COMMENT 'Usuario que modificó',
     deleted_by INT COMMENT 'Usuario que eliminó',
+    
+    -- Foreign Keys
+    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     INDEX idx_codigo (codigo) COMMENT 'Búsqueda por código',
     INDEX idx_nombre (nombre) COMMENT 'Búsqueda por nombre',
@@ -67,6 +73,7 @@ CREATE TABLE permisos (
     codigo VARCHAR(250) NOT NULL COMMENT 'estudiantes.ver, calificaciones.registrar (endpoint interno)',
     modulo VARCHAR(50) NOT NULL COMMENT 'ESTUDIANTES, INSCRIPCIONES, CALIFICACIONES, etc.',
     
+    -- Campos de auditoría y control (ESTÁNDAR)
     activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
@@ -74,6 +81,11 @@ CREATE TABLE permisos (
     created_by INT COMMENT 'Usuario que creó',
     updated_by INT COMMENT 'Usuario que modificó',
     deleted_by INT COMMENT 'Usuario que eliminó',
+    
+    -- Foreign Keys
+    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     INDEX idx_codigo (codigo) COMMENT 'Búsqueda por código',
     INDEX idx_modulo (modulo) COMMENT 'Búsqueda por módulo',
@@ -110,6 +122,7 @@ CREATE TABLE usuarios (
     updated_by INT COMMENT 'Usuario que modificó',
     deleted_by INT COMMENT 'Usuario que eliminó',
     
+    -- Foreign Keys
     FOREIGN KEY (rol_id) REFERENCES roles(id) ON DELETE SET NULL,
     FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
@@ -148,6 +161,7 @@ CREATE TABLE roles_permisos (
     updated_by INT COMMENT 'Usuario que modificó',
     deleted_by INT COMMENT 'Usuario que eliminó',
     
+    -- Foreign Keys
     FOREIGN KEY (rol_id) REFERENCES roles(id) ON DELETE SET NULL,
     FOREIGN KEY (permiso_id) REFERENCES permisos(id) ON DELETE SET NULL,
     FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
@@ -193,6 +207,7 @@ CREATE TABLE sesiones (
     updated_by INT COMMENT 'Usuario que modificó',
     deleted_by INT COMMENT 'Usuario que eliminó',
     
+    -- Foreign Keys
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE SET NULL,
     FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
@@ -228,6 +243,7 @@ CREATE TABLE configuracion_sistema (
     updated_by INT COMMENT 'Usuario que modificó',
     deleted_by INT COMMENT 'Usuario que eliminó',
     
+    -- Foreign Keys
     FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
@@ -279,6 +295,7 @@ CREATE TABLE personal (
     updated_by INT COMMENT 'Usuario que modificó',
     deleted_by INT COMMENT 'Usuario que eliminó',
     
+    -- Foreign Keys
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE SET NULL,
     FOREIGN KEY (estado_civil_id) REFERENCES estados_civiles(id) ON DELETE SET NULL,
     FOREIGN KEY (municipio_id) REFERENCES municipios(id) ON DELETE SET NULL,
@@ -319,7 +336,9 @@ CREATE TABLE rectores (
     periodo_mandato_inicio DATE COMMENT 'Inicio del período de mandato',
     periodo_mandato_fin DATE NULL COMMENT 'Fin del período de mandato (NULL = mandato indefinido)',
     
+    -- Foreign Keys
     FOREIGN KEY (personal_id) REFERENCES personal(id) ON DELETE SET NULL,
+    
     INDEX idx_personal_id (personal_id) COMMENT 'Búsqueda por personal',
     INDEX idx_periodo_mandato (periodo_mandato_inicio, periodo_mandato_fin) COMMENT 'Búsqueda por período de mandato'
     
@@ -347,7 +366,9 @@ CREATE TABLE directores (
     institucion_egreso VARCHAR(200) COMMENT 'Institución de egreso (universidad o instituto técnico)',
     anio_egreso INT COMMENT 'Año de egreso',
     
+    -- Foreign Keys
     FOREIGN KEY (personal_id) REFERENCES personal(id) ON DELETE SET NULL,
+
     INDEX idx_personal_id (personal_id) COMMENT 'Búsqueda por personal',
     INDEX idx_tipo (tipo) COMMENT 'Filtrado por tipo de director',
     INDEX idx_fecha_nombramiento (fecha_nombramiento) COMMENT 'Búsqueda por fecha de nombramiento'
@@ -373,7 +394,9 @@ CREATE TABLE secretarias (
     fecha_fin_contrato DATE NULL COMMENT 'Fecha de fin de contrato (NULL = contrato indefinido)',
     tipo_contrato ENUM('EVENTUAL', 'TEMPORAL', 'INDEFINIDO') COMMENT 'Tipo de contrato',
     
+    -- Foreign Keys
     FOREIGN KEY (personal_id) REFERENCES personal(id) ON DELETE SET NULL,
+
     INDEX idx_personal_id (personal_id) COMMENT 'Búsqueda por personal',
     INDEX idx_tipo (tipo) COMMENT 'Filtrado por tipo de secretaria',
     INDEX idx_nivel_academico (nivel_academico) COMMENT 'Filtrado por nivel académico',

@@ -86,3 +86,12 @@ export { IEstudianteApoderadoRepository } from './IEstudianteApoderadoRepository
 // ============================================
 export { IEnrollmentRepository } from './IEnrollmentRepository.js';
 export { IEnrollmentSubjectRepository } from './IEnrollmentSubjectRepository.js';
+
+// ============================================
+// PAGOS ACADÉMICOS
+// ============================================
+export { IContributionConfigurationRepository } from './IContributionConfigurationRepository.js';
+export { IPaymentMethodRepository } from './IPaymentMethodRepository.js';
+export { IAuthorizedBankRepository } from './IAuthorizedBankRepository.js';
+export { IPaymentAccountRepository } from './IPaymentAccountRepository.js';
+export { IContributionPaymentRepository } from './IContributionPaymentRepository.js';

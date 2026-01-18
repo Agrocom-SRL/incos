@@ -92,3 +92,12 @@ export { EnrollmentSubject } from './EnrollmentSubject.js';
 // CONFIGURACIÓN DEL SISTEMA
 // ============================================
 export { SystemConfiguration } from './SystemConfiguration.js';
+
+// ============================================
+// PAGOS ACADÉMICOS
+// ============================================
+export { ContributionConfiguration } from './ContributionConfiguration.js';
+export { PaymentMethod } from './PaymentMethod.js';
+export { AuthorizedBank } from './AuthorizedBank.js';
+export { PaymentAccount } from './PaymentAccount.js';
+export { ContributionPayment } from './ContributionPayment.js';
