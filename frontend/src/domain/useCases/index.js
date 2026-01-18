@@ -4,3 +4,4 @@ export * from './configuracion/academico/materias';
 export * from './configuracion/complementario/discapacidad';
 export * from './academico/paralelos';
 export * from './inscripciones';
+export * from './pagos';

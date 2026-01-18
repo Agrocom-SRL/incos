@@ -12,6 +12,7 @@ import { registerEstudiantesModule } from '@container/modules/estudiantes.contai
 import { registerConfiguracionModule } from '@container/modules/configuracion.container.js';
 import { registerAcademicoModule } from '@container/modules/academico.container.js';
 import { registerInscripcionesModule } from '@container/modules/inscripciones.container.js';
+import { registerPagosModule } from '@container/modules/pagos.container.js';
 // Futuro: import { registerDocentesModule } from './docentes.container.js';
 
 /**
@@ -26,6 +27,7 @@ export function registerAllModules(factory) {
   registerConfiguracionModule(factory);
   registerAcademicoModule(factory);
   registerInscripcionesModule(factory);
+  registerPagosModule(factory);
   // registerDocentesModule(factory);
   // registerGestionesModule(factory);
   // etc.

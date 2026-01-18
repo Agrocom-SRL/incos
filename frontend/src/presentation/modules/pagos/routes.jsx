@@ -8,7 +8,12 @@
  * - Presentation Layer: Define rutas y metadata de UI (labels del menú, orden)
  */
 
+import { lazy } from 'react';
 import { UnderConstruction } from '@components/pages';
+
+// Lazy loading de connectors
+// El Suspense ya está manejado globalmente por MainLayout con LoadingFallback
+const PagosRegistrarConnector = lazy(() => import('./connectors/PagosRegistrarConnector'));
 
 export const pagosRoutes = [
     // Módulo raíz: Pagos
@@ -35,7 +40,7 @@ export const pagosRoutes = [
     },
     {
         path: '/pagos/registrar',
-        element: <UnderConstruction />,
+        element: <PagosRegistrarConnector />,
         key: 'PAG-REGISTRAR',
         menu: {
             label: 'Registrar Pago',

@@ -218,6 +218,229 @@ export class PDFGenerator {
   }
 
   /**
+   * Genera el RECIBO DE PAGO del aporte voluntario
+   * @param {Object} data - Datos del pago y del estudiante
+   * @param {string} outputPath - Ruta donde guardar el PDF
+   * @returns {Promise<string>} Ruta del archivo generado
+   */
+  static async generateReciboPago(data, outputPath) {
+    return new Promise((resolve, reject) => {
+      try {
+        // Crear directorio si no existe
+        const dir = path.dirname(outputPath);
+        if (!fs.existsSync(dir)) {
+          fs.mkdirSync(dir, { recursive: true });
+        }
+
+        // Crear documento PDF
+        const doc = new PDFDocument({
+          size: 'LETTER',
+          margins: { top: 50, bottom: 50, left: 50, right: 50 },
+        });
+
+        // Pipe al archivo
+        const stream = fs.createWriteStream(outputPath);
+        doc.pipe(stream);
+
+        // Encabezado - Nombre del instituto (centrado)
+        doc
+          .fontSize(12)
+          .font('Helvetica-Bold')
+          .text('INSTITUTO COMERCIAL DE LA NACION INCOS SANTA CRUZ', {
+            align: 'center',
+          })
+          .font('Helvetica')
+          .text('PIONEROS EN EDUCACION SUPERIOR', {
+            align: 'center',
+          })
+          .moveDown(1.5);
+
+        // Título principal (centrado, más grande)
+        doc
+          .fontSize(16)
+          .font('Helvetica-Bold')
+          .text('RECIBO DE PAGO - APORTE VOLUNTARIO', {
+            align: 'center',
+          })
+          .moveDown(1);
+
+        // Número de recibo y fecha
+        doc
+          .fontSize(11)
+          .font('Helvetica')
+          .text(`Recibo Nº: ${data.numeroRecibo || 'N/A'}`, { align: 'left' })
+          .text(`Fecha: ${data.fechaPago || new Date().toLocaleDateString('es-BO')}`, {
+            align: 'left',
+          })
+          .moveDown(1);
+
+        // Línea separadora
+        doc
+          .moveTo(50, doc.y)
+          .lineTo(550, doc.y)
+          .stroke()
+          .moveDown(1);
+
+        // Datos del estudiante
+        doc
+          .fontSize(12)
+          .font('Helvetica-Bold')
+          .text('DATOS DEL ESTUDIANTE', { continued: false })
+          .moveDown(0.5)
+          .font('Helvetica')
+          .fontSize(11)
+          .text(`Nombre: ${data.nombreCompleto || 'N/A'}`, { indent: 20 })
+          .text(`C.I.: ${data.ci || 'N/A'}`, { indent: 20 });
+
+        if (data.carrera) {
+          doc.text(`Carrera: ${data.carrera}`, { indent: 20 });
+        }
+        if (data.gestion) {
+          doc.text(`Gestión: ${data.gestion}`, { indent: 20 });
+        }
+
+        doc.moveDown(1);
+
+        // Línea separadora
+        doc
+          .moveTo(50, doc.y)
+          .lineTo(550, doc.y)
+          .stroke()
+          .moveDown(1);
+
+        // Detalle del pago
+        doc
+          .fontSize(12)
+          .font('Helvetica-Bold')
+          .text('DETALLE DEL PAGO', { continued: false })
+          .moveDown(0.5)
+          .font('Helvetica')
+          .fontSize(11);
+
+        // Tabla de detalles
+        const tableTop = doc.y;
+        const tableLeft = 70;
+        const tableWidth = 480;
+
+        // Fila: Concepto
+        doc
+          .font('Helvetica-Bold')
+          .text('Concepto:', tableLeft, tableTop, { width: 150 })
+          .font('Helvetica')
+          .text(data.concepto || 'Aporte Voluntario Anual', tableLeft + 150, tableTop, {
+            width: 330,
+          });
+
+        const row2Y = tableTop + 25;
+        // Fila: Monto Total
+        doc
+          .font('Helvetica-Bold')
+          .text('Monto Total:', tableLeft, row2Y, { width: 150 })
+          .font('Helvetica')
+          .text(`Bs. ${(data.montoTotal || 0).toFixed(2)}`, tableLeft + 150, row2Y, {
+            width: 330,
+          });
+
+        const row3Y = row2Y + 25;
+        // Fila: Descuento por Beca
+        if (data.descuentoBeca > 0) {
+          doc
+            .font('Helvetica-Bold')
+            .text('Descuento por Beca:', tableLeft, row3Y, { width: 150 })
+            .font('Helvetica')
+            .text(`Bs. ${data.descuentoBeca.toFixed(2)}`, tableLeft + 150, row3Y, {
+              width: 330,
+            });
+        }
+
+        const row4Y = row3Y + (data.descuentoBeca > 0 ? 25 : 0);
+        // Fila: Monto a Pagar
+        const montoAPagar = (data.montoTotal || 0) - (data.descuentoBeca || 0);
+        doc
+          .font('Helvetica-Bold')
+          .fontSize(12)
+          .text('MONTO A PAGAR:', tableLeft, row4Y, { width: 150 })
+          .font('Helvetica')
+          .fontSize(12)
+          .text(`Bs. ${montoAPagar.toFixed(2)}`, tableLeft + 150, row4Y, {
+            width: 330,
+          });
+
+        const row5Y = row4Y + 30;
+        // Fila: Método de Pago
+        doc
+          .font('Helvetica-Bold')
+          .fontSize(11)
+          .text('Método de Pago:', tableLeft, row5Y, { width: 150 })
+          .font('Helvetica')
+          .fontSize(11)
+          .text(data.metodoPago || 'N/A', tableLeft + 150, row5Y, { width: 330 });
+
+        if (data.numeroTransaccion) {
+          const row6Y = row5Y + 25;
+          doc
+            .font('Helvetica-Bold')
+            .text('Número de Transacción:', tableLeft, row6Y, { width: 150 })
+            .font('Helvetica')
+            .text(data.numeroTransaccion, tableLeft + 150, row6Y, { width: 330 });
+        }
+
+        if (data.banco) {
+          const row7Y = (data.numeroTransaccion ? row5Y + 50 : row5Y + 25);
+          doc
+            .font('Helvetica-Bold')
+            .text('Banco:', tableLeft, row7Y, { width: 150 })
+            .font('Helvetica')
+            .text(data.banco, tableLeft + 150, row7Y, { width: 330 });
+        }
+
+        // Estado del pago
+        doc.moveDown(1.5);
+        doc
+          .fontSize(11)
+          .font('Helvetica-Bold')
+          .text(`Estado: ${data.estado || 'PENDIENTE'}`, { align: 'left' });
+
+        doc.moveDown(2);
+
+        // Línea separadora
+        doc
+          .moveTo(50, doc.y)
+          .lineTo(550, doc.y)
+          .stroke()
+          .moveDown(1.5);
+
+        // Firmas
+        doc
+          .fontSize(11)
+          .font('Helvetica')
+          .text('_________________________', { indent: 20 })
+          .moveDown(0.3)
+          .text('Firma del Estudiante', { indent: 20 })
+          .moveDown(1.5);
+
+        doc
+          .text('_________________________', { indent: 350 })
+          .moveDown(0.3)
+          .text('Firma del Cajero', { indent: 350 });
+
+        // Finalizar documento
+        doc.end();
+
+        stream.on('finish', () => {
+          resolve(outputPath);
+        });
+
+        stream.on('error', (error) => {
+          reject(error);
+        });
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+
+  /**
    * Obtiene el nombre del mes en español
    * @param {number} monthIndex - Índice del mes (0-11)
    * @returns {string} Nombre del mes

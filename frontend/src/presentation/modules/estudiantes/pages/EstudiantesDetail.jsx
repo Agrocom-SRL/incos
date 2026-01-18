@@ -20,8 +20,9 @@ import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { useStudentDetailContext } from '@application-estudiantes/hooks';
 import { useGenerateActaCompromiso } from '@application-estudiantes/hooks';
-import { Spin, Alert, Empty, Button, message } from 'antd';
-import { GiftOutlined, FileTextOutlined } from '@ant-design/icons';
+import { Spin, Alert, Empty, message } from 'antd';
+import { GiftOutlined, FileTextOutlined, DollarOutlined } from '@ant-design/icons';
+import { Button } from '@atoms';
 import { createDetailBreadcrumbItems } from '@estudiantes/config';
 import {
   DatosPersonalesSection,
@@ -56,6 +57,13 @@ const EstudiantesDetail = () => {
     });
   }, [navigate, studentId]);
 
+  // Handler para navegar al registro de pagos
+  const handleRegistrarPago = useCallback(() => {
+    navigate('/pagos/registrar', {
+      state: { studentId: studentId }
+    });
+  }, [navigate, studentId]);
+
   // Handler para generar y descargar acta de compromiso
   const handleGenerateActaCompromiso = useCallback(async () => {
     if (!studentId) {
@@ -83,7 +91,7 @@ const EstudiantesDetail = () => {
     <>
       {tieneDocumentosFaltantesFlag && (
         <Button
-          type="default"
+          variant="default"
           icon={<FileTextOutlined />}
           onClick={handleGenerateActaCompromiso}
           loading={loadingActa}
@@ -92,15 +100,25 @@ const EstudiantesDetail = () => {
           Generar Acta de Compromiso
         </Button>
       )}
+      <div style={{ marginRight: 8, display: 'inline-block' }}>
+        <Button
+          variant="warning"
+          style="outlined"
+          icon={<DollarOutlined />}
+          onClick={handleRegistrarPago}
+        >
+          Registrar Pago
+        </Button>
+      </div>
       <Button
-        type="primary"
+        variant="primary"
         icon={<GiftOutlined />}
         onClick={handleAsignarBeca}
       >
         Asignar Beca
       </Button>
     </>
-  ), [handleAsignarBeca, handleGenerateActaCompromiso, loadingActa, tieneDocumentosFaltantesFlag]);
+  ), [handleAsignarBeca, handleGenerateActaCompromiso, handleRegistrarPago, loadingActa, tieneDocumentosFaltantesFlag]);
 
   // Si está cargando
   if (loading) {

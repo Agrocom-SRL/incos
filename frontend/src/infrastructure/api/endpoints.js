@@ -129,3 +129,11 @@ export const DOCUMENTACION_ENDPOINTS = createCRUDEndpoints('/documentacion');
 // MÓDULO: INSCRIPCIONES
 // ============================================
 export const INSCRIPCIONES_ENDPOINTS = createCRUDEndpoints('/inscripciones');
+
+// ============================================
+// MÓDULO: PAGOS
+// ============================================
+export const METODOS_PAGO_ENDPOINTS = createCRUDEndpoints('/metodos-pago');
+export const BANCOS_AUTORIZADOS_ENDPOINTS = createCRUDEndpoints('/bancos-autorizados');
+export const CUENTAS_PAGO_ENDPOINTS = createCRUDEndpoints('/cuentas-pago');
+export const CONFIGURACION_APORTES_ENDPOINTS = createCRUDEndpoints('/configuracion-aportes');

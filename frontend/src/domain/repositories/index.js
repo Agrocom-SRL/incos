@@ -59,3 +59,11 @@ export { IIdiomaRepository } from './IIdiomaRepository';
 export { IEstadoCivilRepository } from './IEstadoCivilRepository';
 export { ITipoParentescoRepository } from './ITipoParentescoRepository';
 export { IDocumentacionRepository } from './IDocumentacionRepository';
+
+// ============================================
+// MÓDULO: PAGOS
+// ============================================
+export { IPaymentAccountRepository } from './IPaymentAccountRepository';
+export { IAuthorizedBankRepository } from './IAuthorizedBankRepository';
+export { IPaymentMethodRepository } from './IPaymentMethodRepository';
+export { IContributionConfigurationRepository } from './IContributionConfigurationRepository';
