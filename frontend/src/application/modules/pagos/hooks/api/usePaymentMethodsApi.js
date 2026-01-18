@@ -28,8 +28,8 @@ export const usePaymentMethodsApi = createApiHook({
   name: 'usePaymentMethodsApi',
   useCase: 'listarMetodosPago',
   dataType: 'array', // Retorna un array
-  initialLoading: false, // No carga automáticamente al montar
-  autoFetch: false, // No carga automáticamente (búsqueda bajo demanda)
+  initialLoading: true, // Carga automáticamente al montar
+  autoFetch: true, // Carga automáticamente al montar
   autoFetchArgs: {}, // Argumentos para el auto-fetch
   dataKey: 'metodosPago', // Nombre de la propiedad en el resultado
   errorMessage: 'Error al cargar los métodos de pago',

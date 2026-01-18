@@ -96,11 +96,10 @@ export class EstudianteBecaRepository extends IEstudianteBecaRepository {
       // Procesar respuesta exitosa
       const result = handleSuccessResponse(response);
 
-      // Asegurar que data sea un array
-      if (result.success && result.data) {
-        result.data = Array.isArray(result.data) ? result.data : [];
-      }
-
+      // El endpoint GET /estudiantes/:id/scholarships retorna un objeto con scholarships y catalogs
+      // No forzar array aquí, dejar que el hook lo maneje según el formato de respuesta
+      // Si result.data existe y es un objeto, mantenerlo; si es un array (para otros endpoints), mantenerlo también
+      
       return result;
     } catch (error) {
       return handleErrorResponse(error, 'Error al obtener becas del estudiante');

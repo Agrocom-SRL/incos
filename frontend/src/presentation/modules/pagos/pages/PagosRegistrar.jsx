@@ -26,10 +26,11 @@ import { usePagosRegistrarContext } from '../../../../application/modules/pagos/
 import { StudentInfoSection } from '@estudiantes/components/organisms';
 import {
   PaymentMethodSelectionSection,
-  ConfigurationSelectionSection,
+  ConfigurationDetailSection,
+  ContributionDetailSummary,
   SelectedPaymentSection,
 } from '../components/organisms';
-import { PaymentMethodCardContent, ConfigurationCardContent } from '../components/molecules';
+import { PaymentMethodCardContent } from '../components/molecules';
 
 const PagosRegistrar = () => {
   const location = useLocation();
@@ -38,13 +39,19 @@ const PagosRegistrar = () => {
   // Obtener studentId del estado de navegación
   const studentId = location.state?.studentId || null;
 
-  // Obtener datos del estudiante
+  // Obtener datos del estudiante desde el contexto de detalle (para StudentInfoSection)
   const studentDetailContext = useStudentDetailContext();
   const student = studentDetailContext?.student?.student || null;
   const loadingStudent = studentDetailContext?.loading || false;
+  
+  // Obtener datos de becas desde el contexto de registro de pagos
+  const pagosRegistrarContext = usePagosRegistrarContext();
+  const {
+    becaActiva,
+    loadingScholarships,
+  } = pagosRegistrarContext || {};
 
   // Obtener TODO del contexto de registro de pagos
-  const pagosRegistrarContext = usePagosRegistrarContext();
   const {
     loading = false,
     error = null,
@@ -52,20 +59,26 @@ const PagosRegistrar = () => {
     configuracionAportes,
     cuentasPago,
     form,
-  } = pagosRegistrarContext;
+  } = pagosRegistrarContext || {};
 
   // Formulario para registro de pago
   const [formPago] = Form.useForm();
   const formInstance = formPago || form;
 
+  // Obtener configuración de aporte activa (la primera activa/vigente)
+  const configuracionAporteActiva = useMemo(() => {
+    if (!configuracionAportes?.configuracionAportes || !Array.isArray(configuracionAportes.configuracionAportes)) {
+      return null;
+    }
+    // Buscar configuración activa (aporte_activo === true)
+    return configuracionAportes.configuracionAportes.find(
+      (config) => config.aporteActivo === true || config.aporte_activo === true
+    ) || configuracionAportes.configuracionAportes[0] || null; // Si no hay activa, usar la primera
+  }, [configuracionAportes]);
+
   // Función para renderizar cada card de método de pago
   const renderMetodoPagoCard = (metodoPago) => {
     return <PaymentMethodCardContent metodoPago={metodoPago} />;
-  };
-
-  // Función para renderizar cada card de configuración
-  const renderConfiguracionCard = (configuracion) => {
-    return <ConfigurationCardContent configuracion={configuracion} />;
   };
 
   // Handler para volver
@@ -145,7 +158,7 @@ const PagosRegistrar = () => {
       }
     >
       <div style={{ padding: '24px' }}>
-        {loadingStudent ? (
+        {loadingStudent || loadingScholarships ? (
           <div style={{ textAlign: 'center', padding: '50px' }}>
             <Spin size="large">
               <div style={{ minHeight: '200px' }}>
@@ -158,13 +171,12 @@ const PagosRegistrar = () => {
             {/* Sección 1: Información del Estudiante */}
             {student && <StudentInfoSection student={student} />}
 
-            {/* Sección 2: Selección de Configuración de Aporte */}
-            <ConfigurationSelectionSection
-              configuracionAportesData={configuracionAportes}
-              onSelectConfiguracion={configuracionAportes.onSelectConfiguracion}
-              renderConfiguracionCard={renderConfiguracionCard}
-              form={formInstance}
-              onFinish={handleFinish}
+            {/* Sección 2: Detalle del Aporte (Resumen tipo recibo) */}
+            <ContributionDetailSummary
+              configuracionAporte={configuracionAporteActiva}
+              becaActiva={becaActiva}
+              loading={configuracionAportes.loading || loadingScholarships}
+              error={configuracionAportes.error}
             />
 
             {/* Sección 3: Selección de Método de Pago */}
@@ -178,14 +190,15 @@ const PagosRegistrar = () => {
 
             {/* Sección 4: Detalles del Pago y Formulario Completo */}
             <SelectedPaymentSection
-              selectedConfiguracion={configuracionAportes.selectedConfiguracion}
+              selectedConfiguracion={configuracionAporteActiva}
               selectedMetodoPago={metodosPago.selectedMetodoPago}
               selectedCuentaPago={cuentasPago.selectedCuentaPago}
               cuentasPagoData={cuentasPago}
+              becaActiva={becaActiva}
               form={formInstance}
               onFinish={handleFinish}
               onCancel={handleVolver}
-              disabled={!configuracionAportes.selectedConfiguracion || !metodosPago.selectedMetodoPago || loadingStudent || loading}
+              disabled={!configuracionAporteActiva || !metodosPago.selectedMetodoPago || loadingStudent || loading}
             />
           </>
         )}

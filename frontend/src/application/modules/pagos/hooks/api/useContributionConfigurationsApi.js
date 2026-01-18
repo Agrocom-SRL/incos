@@ -28,8 +28,8 @@ export const useContributionConfigurationsApi = createApiHook({
   name: 'useContributionConfigurationsApi',
   useCase: 'listarConfiguracionAportes',
   dataType: 'array', // Retorna un array
-  initialLoading: false, // No carga automáticamente al montar
-  autoFetch: false, // No carga automáticamente (búsqueda bajo demanda)
+  initialLoading: true, // Carga automáticamente al montar
+  autoFetch: true, // Carga automáticamente al montar
   autoFetchArgs: {}, // Argumentos para el auto-fetch
   dataKey: 'configuracionAportes', // Nombre de la propiedad en el resultado
   errorMessage: 'Error al cargar las configuraciones de aportes',

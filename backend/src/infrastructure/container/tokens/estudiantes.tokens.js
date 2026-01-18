@@ -21,6 +21,7 @@ export const ESTUDIANTES_TOKENS = {
     generateActaCompromisoUseCase: 'estudiantes.generateActaCompromisoUseCase',
     listBecasDescuentosUseCase: 'estudiantes.listBecasDescuentosUseCase',
     createStudentScholarshipUseCase: 'estudiantes.createStudentScholarshipUseCase',
+    getStudentScholarshipsByStudentIdUseCase: 'estudiantes.getStudentScholarshipsByStudentIdUseCase',
     // TODO: Agregar otros Use Cases cuando se implementen sus endpoints
     // deleteStudentUseCase: 'estudiantes.deleteStudentUseCase',
 
@@ -33,6 +34,7 @@ export const ESTUDIANTES_TOKENS = {
     actaCompromisoController: 'estudiantes.actaCompromisoController',
     listBecasDescuentosController: 'estudiantes.listBecasDescuentosController',
     asignarBecaController: 'estudiantes.asignarBecaController',
+    getStudentScholarshipsController: 'estudiantes.getStudentScholarshipsController',
     // TODO: Agregar otros Controllers cuando se implementen sus endpoints
     // deleteStudentController: 'estudiantes.deleteStudentController',
 

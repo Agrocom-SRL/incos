@@ -88,8 +88,43 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
     );
 
     // ============================================
+    // BÚSQUEDA DE ESTUDIANTE
+    // ============================================
+
+    /**
+     * GET /api/v1/estudiantes/search
+     * Buscar estudiante por texto libre
+     * Query: query (busca en codigo, ci, nombres, apellidos), limit (opcional)
+     * 
+     * IMPORTANTE: Esta ruta debe estar ANTES de /:id para evitar conflictos
+     */
+    router.get(
+        '/search',
+        searchValidator,  // 1. Validator común de búsqueda
+        validateRequest,  // 2. Middleware que procesa errores
+        (req, res, next) => controllers.searchStudentController.handle(req, res, next)  // 3. Controller al final
+    );
+
+    // ============================================
     // ASIGNACIÓN DE BECAS
     // ============================================
+
+    /**
+     * GET /api/v1/estudiantes/:id/scholarships
+     * Obtener todas las becas de un estudiante con datos enriquecidos
+     * Path: id (ID del estudiante)
+     * 
+     * Retorna las becas del estudiante con información de tipo de beca y gestión.
+     * Útil para el módulo de pagos para calcular descuentos.
+     * 
+     * IMPORTANTE: Esta ruta debe estar ANTES de /:id para evitar conflictos
+     */
+    router.get(
+        '/:id/scholarships',
+        idValidator,  // 1. Validator primero
+        validateRequest,  // 2. Middleware que procesa errores
+        (req, res, next) => controllers.getStudentScholarshipsController.handle(req, res, next)  // 3. Controller al final
+    );
 
     /**
      * POST /api/v1/estudiantes/:id/scholarships
@@ -109,22 +144,6 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
     );
 
     // ============================================
-    // BÚSQUEDA DE ESTUDIANTE
-    // ============================================
-
-    /**
-     * GET /api/v1/estudiantes/search
-     * Buscar estudiante por texto libre
-     * Query: query (busca en codigo, ci, nombres, apellidos), limit (opcional)
-     */
-    router.get(
-        '/search',
-        searchValidator,  // 1. Validator común de búsqueda
-        validateRequest,  // 2. Middleware que procesa errores
-        (req, res, next) => controllers.searchStudentController.handle(req, res, next)  // 3. Controller al final
-    );
-
-    // ============================================
     // OBTENCIÓN DE ESTUDIANTE POR ID
     // ============================================
 
@@ -132,6 +151,9 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
      * GET /api/v1/estudiantes/:id
      * Obtener estudiante por ID con datos relacionados
      * Path: id
+     * 
+     * IMPORTANTE: Esta ruta genérica debe estar AL FINAL para evitar conflictos
+     * con rutas más específicas como /search o /:id/scholarships
      */
     router.get(
         '/:id',

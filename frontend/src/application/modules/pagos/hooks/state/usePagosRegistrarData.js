@@ -31,23 +31,78 @@ import {
     usePagosRegistrarPaymentMethods,
     usePagosRegistrarContributionConfigurations,
 } from '../features';
+import { useGetStudentScholarships } from '@application-estudiantes/hooks/api';
 
 /**
  * Hook que gestiona el estado del contexto de registro de pagos
  * 
+ * @param {string|number|null} studentId - ID del estudiante para obtener sus becas
  * @returns {Object} Objeto con todo el contexto de registro de pagos
  */
-export const usePagosRegistrarData = () => {
+export const usePagosRegistrarData = (studentId = null) => {
     // 1. Hooks de feature
     const paymentAccountsData = usePagosRegistrarPaymentAccounts();
     const authorizedBanksData = usePagosRegistrarAuthorizedBanks();
     const paymentMethodsData = usePagosRegistrarPaymentMethods();
     const contributionConfigurationsData = usePagosRegistrarContributionConfigurations();
 
+    // 1.1. Hook para obtener becas del estudiante usando el endpoint específico
+    const { 
+        scholarships, 
+        catalogs, 
+        loading: loadingScholarships, 
+        error: errorScholarships 
+    } = useGetStudentScholarships(studentId);
+
+    // 1.2. Obtener beca activa del estudiante
+    const becaActiva = useMemo(() => {
+        if (!scholarships || !Array.isArray(scholarships) || scholarships.length === 0) {
+            return null;
+        }
+        
+        // Buscar beca aplicable para descuento (ACTIVA o PENDIENTE que tenga porcentaje)
+        // Para el cálculo del pago, consideramos becas ACTIVA o PENDIENTE que tengan porcentaje
+        const activa = scholarships.find(
+            (beca) => {
+                const stateValue = beca.state || beca.estado;
+                if (!stateValue) return false;
+                
+                // Normalizar a mayúsculas para comparar
+                const normalizedState = String(stateValue).toUpperCase();
+                
+                // Aceptar becas ACTIVA o PENDIENTE (las PENDIENTE también pueden aplicar descuento)
+                const tieneEstadoValido = normalizedState === 'ACTIVA' || normalizedState === 'ACTIVE' || normalizedState === 'PENDIENTE';
+                
+                // Verificar que tenga porcentaje de descuento
+                const tienePorcentaje = beca.scholarshipPercentage || beca.porcentaje;
+                
+                return tieneEstadoValido && tienePorcentaje;
+            }
+        ) || null;
+        
+        return activa;
+    }, [scholarships]);
+
     // 2. Estado del formulario
     const [formData, setFormData] = useState({});
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+
+    // 2.1 Combinar loading de todos los hooks de API
+    const combinedLoading = paymentAccountsData.loading || 
+                           authorizedBanksData.loading || 
+                           paymentMethodsData.loading || 
+                           contributionConfigurationsData.loading || 
+                           loadingScholarships ||
+                           loading;
+    
+    // 2.2 Combinar errores de todos los hooks de API (priorizar el primero encontrado)
+    const combinedError = error || 
+                         errorScholarships ||
+                         paymentAccountsData.error || 
+                         authorizedBanksData.error || 
+                         paymentMethodsData.error || 
+                         contributionConfigurationsData.error;
 
     /**
      * Actualiza un campo del formulario
@@ -103,8 +158,14 @@ export const usePagosRegistrarData = () => {
     return useMemo(() => ({
         // Estado del formulario
         formData,
-        loading,
-        error,
+        loading: combinedLoading,
+        error: combinedError,
+
+        // Datos de becas del estudiante
+        becaActiva,
+        scholarships,
+        catalogs,
+        loadingScholarships,
 
         // Métodos del formulario
         updateFormData,
@@ -153,8 +214,12 @@ export const usePagosRegistrarData = () => {
         },
     }), [
         formData,
-        loading,
-        error,
+        combinedLoading,
+        combinedError,
+        becaActiva,
+        scholarships,
+        catalogs,
+        loadingScholarships,
         updateFormData,
         resetForm,
         setFormError,

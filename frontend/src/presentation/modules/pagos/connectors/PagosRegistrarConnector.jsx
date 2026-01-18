@@ -33,7 +33,7 @@ const PagosRegistrarConnector = () => {
     <StudentProvider>
       <StudentDetailProvider studentId={studentId}>
         <PagosProvider>
-          <PagosRegistrarProvider>
+          <PagosRegistrarProvider studentId={studentId}>
             <PagosRegistrar />
           </PagosRegistrarProvider>
         </PagosProvider>

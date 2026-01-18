@@ -10,12 +10,14 @@
  * @param {Object} selectedMetodoPago - Método de pago seleccionado
  * @param {Object} selectedCuentaPago - Cuenta de pago seleccionada (opcional, según método)
  * @param {Object} cuentasPagoData - Datos de cuentas de pago para el select
+ * @param {Object} becaActiva - Beca activa del estudiante (opcional)
  * @param {Object} form - Instancia del formulario de Ant Design
  * @param {Function} onFinish - Callback cuando se envía el formulario
  * @param {Function} onCancel - Callback cuando se cancela
  * @param {boolean} disabled - Si los botones están deshabilitados
  */
 
+import { useEffect } from 'react';
 import { Row, Col, Space, Form, Input, DatePicker, Select } from 'antd';
 import { 
   DollarOutlined, 
@@ -49,6 +51,7 @@ const SelectedPaymentSection = ({
   selectedMetodoPago,
   selectedCuentaPago,
   cuentasPagoData,
+  becaActiva,
   form,
   onFinish,
   onCancel,
@@ -57,11 +60,19 @@ const SelectedPaymentSection = ({
   // Si no hay configuración o método de pago seleccionado, no mostrar
   if (!selectedConfiguracion || !selectedMetodoPago) return null;
 
-  // Obtener valores del formulario para cálculos
-  const formValues = form?.getFieldsValue() || {};
-  const descuentoBeca = Number(formValues.descuentoBeca) || 0;
+  // Calcular descuento automáticamente basado en beca activa
   const montoTotal = Number(selectedConfiguracion.montoBase) || 0;
+  const tieneBeca = becaActiva && (becaActiva.estado === 'ACTIVA' || becaActiva.state === 'ACTIVA');
+  const porcentajeDescuento = tieneBeca ? (becaActiva.scholarshipPercentage || becaActiva.porcentaje || 0) : 0;
+  const descuentoBeca = tieneBeca ? (montoTotal * porcentajeDescuento / 100) : 0;
   const montoPagado = calcularMontoPagado(montoTotal, descuentoBeca);
+
+  // Sincronizar descuento en el formulario cuando cambie la beca o configuración
+  useEffect(() => {
+    if (form) {
+      form.setFieldsValue({ descuentoBeca: descuentoBeca });
+    }
+  }, [descuentoBeca, form]);
 
   // Determinar si el método de pago requiere cuenta (TRANSFERENCIA, DEPOSITO, QR, TIGO_MONEY)
   const requiereCuenta = ['TRANSFERENCIA', 'DEPOSITO', 'QR', 'TIGO_MONEY'].includes(selectedMetodoPago.codigo);
@@ -175,28 +186,26 @@ const SelectedPaymentSection = ({
                 </Form.Item>
               </Col>
             )}
-            <Col xs={24} sm={12}>
-              <Form.Item
-                name="descuentoBeca"
-                label="Descuento por Beca (Bs.)"
-                tooltip="Si el estudiante tiene beca, ingrese el monto del descuento"
-              >
-                <Input
-                  type="number"
-                  min={0}
-                  step={0.01}
-                  placeholder="0.00"
-                  prefix={<DollarOutlined />}
-                  onChange={(e) => {
-                    const valor = e.target.value;
-                    if (valor !== '') {
-                      form.setFieldsValue({ descuentoBeca: parseFloat(valor) || 0 });
-                      form.validateFields(['descuentoBeca']);
-                    }
-                  }}
-                />
-              </Form.Item>
-            </Col>
+            {/* Descuento por beca (solo mostrar si hay beca activa) */}
+            {tieneBeca && (
+              <Col xs={24} sm={12}>
+                <Form.Item
+                  name="descuentoBeca"
+                  label="Descuento por Beca (Bs.)"
+                  tooltip={`Beca activa: ${becaActiva.scholarshipName || `Beca ${porcentajeDescuento}%`}. El descuento se calcula automáticamente.`}
+                >
+                  <Input
+                    type="number"
+                    min={0}
+                    step={0.01}
+                    placeholder="0.00"
+                    prefix={<DollarOutlined />}
+                    disabled={true}
+                    style={{ backgroundColor: 'var(--color-bg-container-disabled, #f5f5f5)' }}
+                  />
+                </Form.Item>
+              </Col>
+            )}
             <Col xs={24} sm={12}>
               <Form.Item
                 name="numeroTransaccion"

@@ -20,8 +20,8 @@
 import { PagosRegistrarContext } from '../context/PagosRegistrarContext';
 import { usePagosRegistrarData } from '../hooks';
 
-export const PagosRegistrarProvider = ({ children }) => {
-    const value = usePagosRegistrarData();
+export const PagosRegistrarProvider = ({ children, studentId }) => {
+    const value = usePagosRegistrarData(studentId);
 
     return (
         <PagosRegistrarContext.Provider value={value}>

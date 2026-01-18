@@ -28,8 +28,8 @@ export const useAuthorizedBanksApi = createApiHook({
   name: 'useAuthorizedBanksApi',
   useCase: 'listarBancosAutorizados',
   dataType: 'array', // Retorna un array
-  initialLoading: false, // No carga automáticamente al montar
-  autoFetch: false, // No carga automáticamente (búsqueda bajo demanda)
+  initialLoading: true, // Carga automáticamente al montar
+  autoFetch: true, // Carga automáticamente al montar
   autoFetchArgs: {}, // Argumentos para el auto-fetch
   dataKey: 'bancosAutorizados', // Nombre de la propiedad en el resultado
   errorMessage: 'Error al cargar los bancos autorizados',
