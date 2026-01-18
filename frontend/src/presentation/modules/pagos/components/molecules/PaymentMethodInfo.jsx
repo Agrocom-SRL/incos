@@ -9,6 +9,7 @@
  * @param {Object} selectedMetodoPago - Método de pago seleccionado
  * @param {Object} selectedCuentaPago - Cuenta de pago seleccionada (opcional)
  * @param {boolean} requiereCuenta - Si el método requiere cuenta bancaria
+ * @param {boolean} esTransferencia - Si es método de transferencia bancaria
  */
 
 import { Typography } from 'antd';
@@ -19,8 +20,15 @@ const { Text } = Typography;
 const PaymentMethodInfo = ({
   selectedMetodoPago,
   selectedCuentaPago,
-  requiereCuenta = false
+  requiereCuenta = false,
+  esTransferencia = false
 }) => {
+  // Obtener información del banco para transferencia
+  const bancoNombre = selectedCuentaPago?.banco?.nombre || selectedCuentaPago?.bancoNombre || '';
+  const bancoCodigo = selectedCuentaPago?.banco?.codigo || selectedCuentaPago?.bancoCodigo || '';
+  const nombreTitular = selectedCuentaPago?.accountHolderName || selectedCuentaPago?.nombreTitular || selectedCuentaPago?.nombre || '';
+  const numeroCuenta = selectedCuentaPago?.accountNumber || selectedCuentaPago?.numeroCuenta || '';
+
   return (
     <div style={{
       display: 'flex',
@@ -67,28 +75,57 @@ const PaymentMethodInfo = ({
           borderRadius: '10px',
           padding: '16px 20px',
           display: 'flex',
-          alignItems: 'center',
+          flexDirection: 'column',
           gap: '12px',
         }}>
           <div style={{
-            width: '48px',
-            height: '48px',
-            borderRadius: '10px',
-            background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
+            gap: '12px',
           }}>
-            <BankOutlined style={{ fontSize: '22px', color: '#fff' }} />
+            <div style={{
+              width: '48px',
+              height: '48px',
+              borderRadius: '10px',
+              background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+            }}>
+              <BankOutlined style={{ fontSize: '22px', color: '#fff' }} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <Text type="secondary" style={{ fontSize: '12px', display: 'block', marginBottom: '4px' }}>
+                Cuenta de Pago
+              </Text>
+              <Text strong style={{ fontSize: '16px', display: 'block' }}>
+                {nombreTitular || 'N/A'}
+              </Text>
+              {numeroCuenta && (
+                <Text type="secondary" style={{ fontSize: '14px', display: 'block', marginTop: '4px' }}>
+                  Cuenta: {numeroCuenta}
+                </Text>
+              )}
+            </div>
           </div>
-          <div>
-            <Text type="secondary" style={{ fontSize: '12px', display: 'block', marginBottom: '4px' }}>
-              Cuenta de Pago
-            </Text>
-            <Text strong style={{ fontSize: '16px' }}>
-              {selectedCuentaPago.nombre || selectedCuentaPago.numeroCuenta || 'N/A'}
-            </Text>
-          </div>
+          
+          {/* Detalles del banco - Solo para TRANSFERENCIA */}
+          {esTransferencia && bancoNombre && (
+            <div style={{
+              paddingTop: '12px',
+              borderTop: '1px solid #f0f0f0',
+              marginTop: '4px',
+            }}>
+              <Text type="secondary" style={{ fontSize: '12px', display: 'block', marginBottom: '4px' }}>
+                Banco
+              </Text>
+              <Text strong style={{ fontSize: '14px', display: 'block' }}>
+                {bancoNombre}
+                {bancoCodigo && ` (${bancoCodigo})`}
+              </Text>
+            </div>
+          )}
         </div>
       )}
     </div>

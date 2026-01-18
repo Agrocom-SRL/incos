@@ -8,6 +8,7 @@
  * 
  * @param {Object} form - Instancia del formulario de Ant Design
  * @param {Object} cuentasPagoData - Datos de cuentas de pago
+ * @param {Object} bancosAutorizadosData - Datos de bancos autorizados (opcional)
  * @param {boolean} requiereFechaPago - Si requiere fecha de pago
  * @param {boolean} requiereCuenta - Si requiere cuenta de pago
  * @param {boolean} requiereNumeroTransaccion - Si requiere número de transacción
@@ -16,8 +17,11 @@
  * @param {boolean} esQR - Si es método QR
  */
 
+import { useMemo } from 'react';
 import { Row, Col, Form, Input, DatePicker, Select, Upload } from 'antd';
-import { 
+
+const { Dragger } = Upload;
+import {
   CalendarOutlined,
   FileTextOutlined,
   BankOutlined,
@@ -32,6 +36,7 @@ const { TextArea } = Input;
 const PaymentFormFields = ({
   form,
   cuentasPagoData,
+  bancosAutorizadosData,
   requiereFechaPago = false,
   requiereCuenta = false,
   requiereNumeroTransaccion = false,
@@ -39,6 +44,42 @@ const PaymentFormFields = ({
   requiereDocumentoRespaldo = false,
   esQR = false
 }) => {
+  // Crear mapa de bancos por ID para búsqueda rápida
+  const bancosMap = useMemo(() => {
+    if (!bancosAutorizadosData?.bancosAutorizados || !Array.isArray(bancosAutorizadosData.bancosAutorizados)) {
+      return {};
+    }
+    return bancosAutorizadosData.bancosAutorizados.reduce((map, banco) => {
+      map[banco.id] = banco;
+      return map;
+    }, {});
+  }, [bancosAutorizadosData?.bancosAutorizados]);
+
+  // Helper para obtener nombre del banco
+  const obtenerNombreBanco = (cuenta) => {
+    // Primero verificar si la cuenta tiene información del banco directamente
+    if (cuenta.banco?.nombre) return cuenta.banco.nombre;
+    if (cuenta.bancoNombre) return cuenta.bancoNombre;
+    
+    // Si no, buscar en el mapa de bancos usando bancoId
+    if (cuenta.bancoId && bancosMap[cuenta.bancoId]) {
+      return bancosMap[cuenta.bancoId].nombre;
+    }
+    
+    return null;
+  };
+
+  // Helper para obtener código del banco
+  const obtenerCodigoBanco = (cuenta) => {
+    if (cuenta.banco?.codigo) return cuenta.banco.codigo;
+    if (cuenta.bancoCodigo) return cuenta.bancoCodigo;
+    
+    if (cuenta.bancoId && bancosMap[cuenta.bancoId]) {
+      return bancosMap[cuenta.bancoId].codigo;
+    }
+    
+    return null;
+  };
   return (
     <Row gutter={[16, 16]}>
       {/* Fecha de Pago - Solo para métodos que no sean EFECTIVO */}
@@ -57,7 +98,7 @@ const PaymentFormFields = ({
             ]}
           >
             <DatePicker
-              style={{ 
+              style={{
                 width: '100%',
                 borderRadius: '8px',
                 height: '42px',
@@ -94,10 +135,27 @@ const PaymentFormFields = ({
                 borderRadius: '8px',
               }}
               options={
-                (cuentasPagoData?.cuentasPago || []).map(cuenta => ({
-                  label: `${cuenta.nombre}${cuenta.numeroCuenta ? ` - ${cuenta.numeroCuenta}` : ''}`,
-                  value: cuenta.id,
-                }))
+                (cuentasPagoData?.cuentasPago || []).map(cuenta => {
+                  const nombreCuenta = cuenta.accountHolderName || cuenta.nombreTitular || cuenta.nombre || '';
+                  const numeroCuenta = cuenta.accountNumber || cuenta.numeroCuenta || '';
+                  const bancoNombre = obtenerNombreBanco(cuenta);
+                  const bancoCodigo = obtenerCodigoBanco(cuenta);
+                  
+                  // Construir label con información del banco si está disponible
+                  let label = nombreCuenta;
+                  if (numeroCuenta) {
+                    label += ` - ${numeroCuenta}`;
+                  }
+                  if (bancoNombre) {
+                    const bancoInfo = bancoCodigo ? `${bancoNombre} (${bancoCodigo})` : bancoNombre;
+                    label += ` - ${bancoInfo}`;
+                  }
+                  
+                  return {
+                    label,
+                    value: cuenta.id,
+                  };
+                })
               }
             />
           </Form.Item>
@@ -129,7 +187,7 @@ const PaymentFormFields = ({
           </Form.Item>
         </Col>
       )}
-      
+
       {/* Código del Comprobante - Para QR y TRANSFERENCIA */}
       {requiereCodigoComprobante && (
         <Col xs={24} sm={12}>
@@ -155,7 +213,7 @@ const PaymentFormFields = ({
           </Form.Item>
         </Col>
       )}
-      
+
       {/* Documento de Respaldo - Para todos los métodos excepto EFECTIVO */}
       {requiereDocumentoRespaldo && (
         <Col xs={24} sm={12}>
@@ -174,30 +232,42 @@ const PaymentFormFields = ({
                 Documento de Respaldo
               </span>
             }
-            tooltip="Suba un archivo como comprobante del pago (imagen, PDF, etc.)"
+            tooltip="Arrastre y suelte un archivo o haga clic para seleccionar (imagen, PDF, etc.)"
             rules={[
               { required: requiereDocumentoRespaldo, message: 'Por favor suba un documento de respaldo' }
             ]}
           >
-            <Upload
+            <Dragger
               maxCount={1}
               beforeUpload={() => false} // Prevenir subida automática
               accept="image/*,.pdf,.doc,.docx"
+              style={{
+                borderRadius: '8px',
+                padding: '20px',
+                backgroundColor: '#fafafa',
+                border: '2px dashed #d9d9d9',
+                transition: 'all 0.3s ease',
+              }}
             >
-              <Button
-                icon={<UploadOutlined />}
-                size="large"
-                style={{ borderRadius: '8px', width: '100%' }}
-              >
-                Seleccionar Archivo
-              </Button>
-            </Upload>
+              <p style={{ margin: 0, fontSize: '16px', color: '#595959' }}>
+                <UploadOutlined style={{ fontSize: '48px', color: '#1890ff', display: 'block', marginBottom: '8px' }} />
+              </p>
+              <p style={{ margin: '8px 0 4px 0', fontSize: '14px', color: '#262626', fontWeight: 500 }}>
+                Arrastre y suelte el archivo aquí
+              </p>
+              <p style={{ margin: 0, fontSize: '12px', color: '#8c8c8c' }}>
+                o <span style={{ color: '#1890ff', cursor: 'pointer' }}>haga clic para seleccionar</span>
+              </p>
+              <p style={{ margin: '8px 0 0 0', fontSize: '12px', color: '#8c8c8c' }}>
+                Formatos: JPG, PNG, PDF, DOC, DOCX
+              </p>
+            </Dragger>
           </Form.Item>
         </Col>
       )}
 
       {/* Concepto */}
-      <Col xs={24}>
+      <Col xs={12}>
         <Form.Item
           name="concepto"
           label={
@@ -215,7 +285,7 @@ const PaymentFormFields = ({
             placeholder="Ej: Pago de aporte académico gestión 2025..."
             maxLength={500}
             showCount
-            style={{ 
+            style={{
               borderRadius: '8px',
               fontSize: '14px'
             }}

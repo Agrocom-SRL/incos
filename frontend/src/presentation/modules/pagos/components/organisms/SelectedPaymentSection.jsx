@@ -10,6 +10,7 @@
  * @param {Object} selectedMetodoPago - Método de pago seleccionado
  * @param {Object} selectedCuentaPago - Cuenta de pago seleccionada (opcional, según método)
  * @param {Object} cuentasPagoData - Datos de cuentas de pago para el select
+ * @param {Object} bancosAutorizadosData - Datos de bancos autorizados (opcional)
  * @param {Object} becaActiva - Beca activa del estudiante (opcional)
  * @param {Object} form - Instancia del formulario de Ant Design
  * @param {Function} onFinish - Callback cuando se envía el formulario
@@ -42,6 +43,7 @@ const SelectedPaymentSection = ({
   selectedMetodoPago,
   selectedCuentaPago,
   cuentasPagoData,
+  bancosAutorizadosData,
   becaActiva,
   form,
   onFinish,
@@ -86,8 +88,8 @@ const SelectedPaymentSection = ({
   const esDeposito = codigoMetodo === 'DEPOSITO';
   const esTigoMoney = codigoMetodo === 'TIGO_MONEY';
   
-  // Métodos que requieren cuenta bancaria
-  const requiereCuenta = codigoMetodo && ['TRANSFERENCIA', 'DEPOSITO', 'QR', 'TIGO_MONEY'].includes(codigoMetodo);
+  // Métodos que requieren cuenta bancaria (QR NO requiere cuenta bancaria)
+  const requiereCuenta = codigoMetodo && ['TRANSFERENCIA', 'DEPOSITO', 'TIGO_MONEY'].includes(codigoMetodo);
   
   // Métodos que requieren fecha de pago (todos excepto EFECTIVO)
   const requiereFechaPago = !esEfectivo;
@@ -246,6 +248,7 @@ const SelectedPaymentSection = ({
                 selectedMetodoPago={selectedMetodoPago}
                 selectedCuentaPago={selectedCuentaPago}
                 requiereCuenta={requiereCuenta}
+                esTransferencia={esTransferencia}
               />
             </Col>
           </Row>
@@ -274,6 +277,7 @@ const SelectedPaymentSection = ({
               <PaymentFormFields
                 form={form}
                 cuentasPagoData={cuentasPagoData}
+                bancosAutorizadosData={bancosAutorizadosData}
                 requiereFechaPago={requiereFechaPago}
                 requiereCuenta={requiereCuenta}
                 requiereNumeroTransaccion={requiereNumeroTransaccion}

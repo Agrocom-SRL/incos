@@ -57,6 +57,7 @@ const PagosRegistrar = () => {
     metodosPago,
     configuracionAportes,
     cuentasPago,
+    bancosAutorizados,
     form,
   } = pagosRegistrarContext || {};
 
@@ -189,6 +190,7 @@ const PagosRegistrar = () => {
               selectedMetodoPago={metodosPago.selectedMetodoPago}
               selectedCuentaPago={cuentasPago.selectedCuentaPago}
               cuentasPagoData={cuentasPago}
+              bancosAutorizadosData={bancosAutorizados}
               becaActiva={becaActiva}
               form={formInstance}
               onFinish={handleFinish}
