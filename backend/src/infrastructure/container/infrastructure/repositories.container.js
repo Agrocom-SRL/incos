@@ -103,6 +103,15 @@ import { StudentGuardianRepository } from '../../repositories/StudentGuardianRep
 import { EnrollmentRepository } from '../../repositories/EnrollmentRepository.js';
 import { EnrollmentSubjectRepository } from '../../repositories/EnrollmentSubjectRepository.js';
 
+// ============================================
+// PAGOS ACADÉMICOS
+// ============================================
+import { ContributionConfigurationRepository } from '../../repositories/ContributionConfigurationRepository.js';
+import { PaymentMethodRepository } from '../../repositories/PaymentMethodRepository.js';
+import { AuthorizedBankRepository } from '../../repositories/AuthorizedBankRepository.js';
+import { PaymentAccountRepository } from '../../repositories/PaymentAccountRepository.js';
+import { ContributionPaymentRepository } from '../../repositories/ContributionPaymentRepository.js';
+
 /**
  * Registra todas las dependencias de repositorios
  * 
@@ -191,6 +200,15 @@ export function registerRepositoriesModule(container) {
     // ============================================
     registerRepository(container, REPOSITORIOS_TOKENS.enrollmentRepository, EnrollmentRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.enrollmentSubjectRepository, EnrollmentSubjectRepository);
+
+    // ============================================
+    // PAGOS ACADÉMICOS
+    // ============================================
+    registerRepository(container, REPOSITORIOS_TOKENS.contributionConfigurationRepository, ContributionConfigurationRepository);
+    registerRepository(container, REPOSITORIOS_TOKENS.paymentMethodRepository, PaymentMethodRepository);
+    registerRepository(container, REPOSITORIOS_TOKENS.authorizedBankRepository, AuthorizedBankRepository);
+    registerRepository(container, REPOSITORIOS_TOKENS.paymentAccountRepository, PaymentAccountRepository);
+    registerRepository(container, REPOSITORIOS_TOKENS.contributionPaymentRepository, ContributionPaymentRepository);
 
     return container;
 }

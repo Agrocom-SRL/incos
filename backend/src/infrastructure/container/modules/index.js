@@ -14,6 +14,7 @@ import { registerAcademicoModule } from './academico/index.js';
 import { registerGeograficosModule } from './geograficos/index.js';
 import { registerReferenciaModule } from './referencia/index.js';
 import { registerInscripcionesModule } from './inscripciones/index.js';
+import { registerPagosModule } from './pagos/index.js';
 
 /**
  * Registra todos los módulos de dominio en el contenedor
@@ -29,6 +30,7 @@ export function registerAllModules(container) {
     registerGeograficosModule(container);
     registerReferenciaModule(container);
     registerInscripcionesModule(container);
+    registerPagosModule(container);
 
     return container;
 }

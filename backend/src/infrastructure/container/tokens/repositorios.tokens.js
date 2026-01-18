@@ -69,5 +69,12 @@ export const REPOSITORIOS_TOKENS = {
     // INSCRIPCIONES
     enrollmentRepository: 'enrollmentRepository',
     enrollmentSubjectRepository: 'enrollmentSubjectRepository',
+
+    // PAGOS ACADÉMICOS
+    contributionConfigurationRepository: 'contributionConfigurationRepository',
+    paymentMethodRepository: 'paymentMethodRepository',
+    authorizedBankRepository: 'authorizedBankRepository',
+    paymentAccountRepository: 'paymentAccountRepository',
+    contributionPaymentRepository: 'contributionPaymentRepository',
 };
 

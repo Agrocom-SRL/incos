@@ -7,6 +7,7 @@ import {
     GEOGRAFICOS_TOKENS,
     REFERENCIA_TOKENS,
     INSCRIPCIONES_TOKENS,
+    PAGOS_TOKENS,
 } from '../../infrastructure/container/tokens/index.js';
 
 const router = express.Router();
@@ -40,6 +41,11 @@ router.get('/', (req, res) => {
             discapacidad: '/api/v1/discapacidad',
             // Módulo: Inscripciones
             inscripciones: '/api/v1/inscripciones',
+            // Módulo: Pagos
+            metodosPago: '/api/v1/metodos-pago',
+            bancosAutorizados: '/api/v1/bancos-autorizados',
+            cuentasPago: '/api/v1/cuentas-pago',
+            configuracionAportes: '/api/v1/configuracion-aportes',
         },
     });
 });
@@ -87,6 +93,14 @@ router.use('/discapacidad', container.resolve(REFERENCIA_TOKENS.discapacidadRout
 // 6. MÓDULO: INSCRIPCIONES
 // ============================================
 router.use('/inscripciones', container.resolve(INSCRIPCIONES_TOKENS.inscripcionesRouter));
+
+// ============================================
+// 7. MÓDULO: PAGOS
+// ============================================
+router.use('/metodos-pago', container.resolve(PAGOS_TOKENS.metodosPagoRouter));
+router.use('/bancos-autorizados', container.resolve(PAGOS_TOKENS.bancosAutorizadosRouter));
+router.use('/cuentas-pago', container.resolve(PAGOS_TOKENS.cuentasPagoRouter));
+router.use('/configuracion-aportes', container.resolve(PAGOS_TOKENS.configuracionAportesRouter));
 
 // Para agregar un nuevo módulo:
 // 1. Crear archivo: routes/{modulo}.routes.js
