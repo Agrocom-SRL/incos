@@ -67,3 +67,4 @@ export { IPaymentAccountRepository } from './IPaymentAccountRepository';
 export { IAuthorizedBankRepository } from './IAuthorizedBankRepository';
 export { IPaymentMethodRepository } from './IPaymentMethodRepository';
 export { IContributionConfigurationRepository } from './IContributionConfigurationRepository';
+export { IPagoAporteRepository } from './IPagoAporteRepository';

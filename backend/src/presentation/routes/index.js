@@ -46,6 +46,7 @@ router.get('/', (req, res) => {
             bancosAutorizados: '/api/v1/bancos-autorizados',
             cuentasPago: '/api/v1/cuentas-pago',
             configuracionAportes: '/api/v1/configuracion-aportes',
+            pagosAportes: '/api/v1/pagos-aportes',
         },
     });
 });
@@ -101,6 +102,7 @@ router.use('/metodos-pago', container.resolve(PAGOS_TOKENS.metodosPagoRouter));
 router.use('/bancos-autorizados', container.resolve(PAGOS_TOKENS.bancosAutorizadosRouter));
 router.use('/cuentas-pago', container.resolve(PAGOS_TOKENS.cuentasPagoRouter));
 router.use('/configuracion-aportes', container.resolve(PAGOS_TOKENS.configuracionAportesRouter));
+router.use('/pagos-aportes', container.resolve(PAGOS_TOKENS.pagosAportesRouter));
 
 // Para agregar un nuevo módulo:
 // 1. Crear archivo: routes/{modulo}.routes.js

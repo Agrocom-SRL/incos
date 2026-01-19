@@ -24,10 +24,18 @@
  * Procesa una respuesta exitosa del backend
  * 
  * @param {Object} response - Respuesta de axios
- * @returns {{success: boolean, data?: Array|Object, error?: string}}
+ * @returns {{success: boolean, data?: Array|Object, error?: string|Object}}
  */
 export function handleSuccessResponse(response) {
   const responseData = response.data;
+  
+  // Si el backend devuelve success: false, tratarlo como error
+  if (responseData.success === false) {
+    return {
+      success: false,
+      error: responseData.error || 'Error en la respuesta del servidor',
+    };
+  }
   
   // Si hay error en la respuesta, retornar error
   if (responseData.error) {

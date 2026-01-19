@@ -32,6 +32,7 @@ import {
     usePagosRegistrarContributionConfigurations,
 } from '../features';
 import { useGetStudentScholarships } from '@application-estudiantes/hooks/api';
+import { useCasesFactory } from '@container';
 
 /**
  * Hook que gestiona el estado del contexto de registro de pagos
@@ -54,7 +55,12 @@ export const usePagosRegistrarData = (studentId = null) => {
         error: errorScholarships 
     } = useGetStudentScholarships(studentId);
 
-    // 1.2. Obtener beca activa del estudiante
+    // 1.2. Estado para registro de pago (no usamos el hook porque necesitamos preservar el error completo)
+    const [aporteVoluntario, setAporteVoluntario] = useState(null);
+    const [loadingRegister, setLoadingRegister] = useState(false);
+    const [errorRegister, setErrorRegister] = useState(null);
+
+    // 1.3. Obtener beca activa del estudiante
     const becaActiva = useMemo(() => {
         if (!scholarships || !Array.isArray(scholarships) || scholarships.length === 0) {
             return null;
@@ -94,10 +100,12 @@ export const usePagosRegistrarData = (studentId = null) => {
                            paymentMethodsData.loading || 
                            contributionConfigurationsData.loading || 
                            loadingScholarships ||
+                           loadingRegister ||
                            loading;
     
     // 2.2 Combinar errores de todos los hooks de API (priorizar el primero encontrado)
     const combinedError = error || 
+                         errorRegister ||
                          errorScholarships ||
                          paymentAccountsData.error || 
                          authorizedBanksData.error || 
@@ -154,7 +162,70 @@ export const usePagosRegistrarData = (studentId = null) => {
         }
     }, [contributionConfigurationsData.onSelectConfiguracion]);
 
-    // 4. Componer value final del contexto (similar a useInscripcionNuevaData)
+    // 4. Función para registrar el pago (llama directamente al use case para preservar el error completo)
+    const handleRegistrarPago = useCallback(async (pagoData) => {
+        try {
+            setLoading(true);
+            setError(null);
+            setLoadingRegister(true);
+            setErrorRegister(null);
+            
+            // Preparar datos para el backend (snake_case)
+            const dataToSend = {
+                student_id: pagoData.studentId || studentId,
+                payment_method_id: pagoData.paymentMethodId,
+                payment_account_id: pagoData.paymentAccountId || null,
+                payment_date: pagoData.paymentDate,
+                transaction_number: pagoData.transactionNumber || null,
+                concept: pagoData.concept || 'Aporte Académico',
+                documentoRespaldo: pagoData.documentoRespaldo || null, // Archivo de documento de respaldo
+            };
+
+            // Llamar directamente al use case para preservar la estructura completa del error
+            const useCaseInstance = useCasesFactory.registrarAporteVoluntario();
+            if (!useCaseInstance) {
+                throw new Error('Use Case registrarAporteVoluntario no encontrado');
+            }
+
+            const result = await useCaseInstance.ejecutar(dataToSend);
+            
+            // Debug: Log del resultado para ver qué está llegando
+            console.log('[usePagosRegistrarData] Resultado del registro:', result);
+            
+            if (!result || !result.success) {
+                // Preservar la estructura completa del error para que el componente pueda extraer el mensaje
+                // El error puede ser un objeto { code, message, details } o un string
+                const errorToReturn = result && result.error ? result.error : 'Error al registrar el pago';
+                
+                // Para setError, extraer el mensaje si es un objeto
+                let errorMessage = 'Error al registrar el pago';
+                if (errorToReturn && typeof errorToReturn === 'object' && errorToReturn.message) {
+                    errorMessage = errorToReturn.message;
+                } else if (typeof errorToReturn === 'string') {
+                    errorMessage = errorToReturn;
+                }
+                
+                setError(errorMessage);
+                setErrorRegister(errorMessage);
+                // Retornar el error completo (objeto o string) para que el componente pueda manejarlo
+                return { success: false, error: errorToReturn };
+            }
+
+            // Si hay éxito, actualizar el estado
+            setAporteVoluntario(result.data);
+            return { success: true, data: result.data };
+        } catch (err) {
+            const errorMsg = err.message || 'Error al registrar el pago';
+            setError(errorMsg);
+            setErrorRegister(errorMsg);
+            return { success: false, error: errorMsg };
+        } finally {
+            setLoading(false);
+            setLoadingRegister(false);
+        }
+    }, [studentId, setLoading, setError]);
+
+    // 5. Componer value final del contexto (similar a useInscripcionNuevaData)
     return useMemo(() => ({
         // Estado del formulario
         formData,
@@ -172,6 +243,10 @@ export const usePagosRegistrarData = (studentId = null) => {
         resetForm,
         setLoading,
         setFormError,
+        registrarPago: handleRegistrarPago,
+
+        // Datos del pago registrado
+        pagoRegistrado: aporteVoluntario,
 
         // Cuentas de pago
         cuentasPago: {
@@ -223,6 +298,8 @@ export const usePagosRegistrarData = (studentId = null) => {
         updateFormData,
         resetForm,
         setFormError,
+        handleRegistrarPago,
+        aporteVoluntario,
         paymentAccountsData.cuentasPago,
         paymentAccountsData.loading,
         paymentAccountsData.error,

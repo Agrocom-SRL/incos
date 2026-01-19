@@ -137,3 +137,4 @@ export const METODOS_PAGO_ENDPOINTS = createCRUDEndpoints('/metodos-pago');
 export const BANCOS_AUTORIZADOS_ENDPOINTS = createCRUDEndpoints('/bancos-autorizados');
 export const CUENTAS_PAGO_ENDPOINTS = createCRUDEndpoints('/cuentas-pago');
 export const CONFIGURACION_APORTES_ENDPOINTS = createCRUDEndpoints('/configuracion-aportes');
+export const PAGOS_APORTES_ENDPOINTS = createCRUDEndpoints('/pagos-aportes');

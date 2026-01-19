@@ -16,8 +16,9 @@
 
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useMemo, useEffect } from 'react';
-import { Spin, Form } from 'antd';
+import { Spin, Form, App } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
+import dayjs from 'dayjs';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { Button } from '@atoms';
@@ -34,6 +35,7 @@ import {
 const PagosRegistrar = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { message } = App.useApp(); // Usar message del contexto de App
 
   // Obtener studentId del estado de navegación
   const studentId = location.state?.studentId || null;
@@ -59,6 +61,7 @@ const PagosRegistrar = () => {
     cuentasPago,
     bancosAutorizados,
     form,
+    registrarPago,
   } = pagosRegistrarContext || {};
 
   // Formulario para registro de pago
@@ -83,11 +86,162 @@ const PagosRegistrar = () => {
     navigate(`/estudiantes/${studentId}`);
   };
 
-  // Handler para finalizar (por ahora solo muestra mensaje)
-  const handleFinish = (values) => {
-    console.log('Valores del formulario de pago:', values);
-    // TODO: Implementar lógica de registro de pago
-    // Aquí se llamará al hook useRegisterAporteVoluntario o similar
+  // Handler para finalizar el registro de pago
+  const handleFinish = async (values) => {
+    try {
+      // ============================================
+      // VALIDACIONES SEGÚN EL VALIDADOR DEL BACKEND
+      // ============================================
+      
+      // 1. Validar student_id (requerido, número entero > 0)
+      if (!studentId || !Number.isInteger(Number(studentId)) || Number(studentId) < 1) {
+        message.error('El ID del estudiante es requerido y debe ser un número válido');
+        return;
+      }
+
+      // 2. Validar payment_method_id (requerido, debe ser 1, 2 o 3)
+      if (!metodosPago?.selectedMetodoPago) {
+        message.error('Por favor seleccione un método de pago');
+        return;
+      }
+
+      const metodoPagoId = Number(metodosPago.selectedMetodoPago.id);
+      if (![1, 2, 3].includes(metodoPagoId)) {
+        message.error('El método de pago debe ser: EFECTIVO (1), QR (2) o TRANSFERENCIA (3)');
+        return;
+      }
+
+      // 3. Validar payment_date (requerido, formato YYYY-MM-DD)
+      let paymentDate;
+      if (values.fechaPago) {
+        paymentDate = dayjs(values.fechaPago).format('YYYY-MM-DD');
+      } else {
+        // Si no hay fecha, usar hoy (EFECTIVO no requiere fecha en el formulario)
+        paymentDate = dayjs().format('YYYY-MM-DD');
+      }
+
+      // Validar formato de fecha
+      if (!dayjs(paymentDate).isValid()) {
+        message.error('La fecha de pago debe estar en formato válido (YYYY-MM-DD)');
+        return;
+      }
+
+      // 4. Validar concept (requerido, string 3-500 caracteres)
+      const concept = (values.concepto || '').trim();
+      if (!concept || concept.length < 3) {
+        message.error('El concepto del pago es requerido y debe tener al menos 3 caracteres');
+        return;
+      }
+      if (concept.length > 500) {
+        message.error('El concepto del pago no puede exceder 500 caracteres');
+        return;
+      }
+
+      // 5. Validar payment_account_id (condicional según método de pago)
+      const esEfectivo = metodoPagoId === 1;
+      const esQR = metodoPagoId === 2;
+      const esTransferencia = metodoPagoId === 3;
+
+      let paymentAccountId = null;
+      if (esTransferencia) {
+        // Para TRANSFERENCIA, la cuenta es REQUERIDA
+        paymentAccountId = values.cuentaPagoId || cuentasPago?.selectedCuentaPago?.id;
+        if (!paymentAccountId || !Number.isInteger(Number(paymentAccountId)) || Number(paymentAccountId) < 1) {
+          message.error('La cuenta de pago es requerida para método TRANSFERENCIA');
+          return;
+        }
+        paymentAccountId = Number(paymentAccountId);
+      } else if (esQR) {
+        // Para QR, la cuenta es OPCIONAL (la cuenta está en la imagen del QR)
+        paymentAccountId = values.cuentaPagoId || cuentasPago?.selectedCuentaPago?.id || null;
+        if (paymentAccountId) {
+          paymentAccountId = Number(paymentAccountId);
+        }
+      } else if (esEfectivo) {
+        // Para EFECTIVO, la cuenta debe ser NULL
+        paymentAccountId = null;
+      }
+
+      // 6. Validar transaction_number (condicional según método de pago)
+      let transactionNumber = null;
+      if (esQR || esTransferencia) {
+        // Para QR y TRANSFERENCIA, el número de transacción es REQUERIDO
+        transactionNumber = (values.numeroTransaccion || values.codigoComprobante || '').trim();
+        if (!transactionNumber || transactionNumber.length === 0) {
+          message.error('El número de transacción es requerido para método QR o TRANSFERENCIA');
+          return;
+        }
+      } else if (esEfectivo) {
+        // Para EFECTIVO, el número de transacción es opcional
+        transactionNumber = (values.numeroTransaccion || values.codigoComprobante || '').trim() || null;
+      }
+
+      // 7. Obtener archivo de documento de respaldo (si existe)
+      let documentoRespaldo = null;
+      if (values.documentoRespaldo && values.documentoRespaldo.length > 0) {
+        // Ant Design Upload devuelve un array, obtener el primer archivo
+        const file = values.documentoRespaldo[0];
+        // Si es un objeto de Ant Design Upload, obtener el archivo original
+        documentoRespaldo = file.originFileObj || file;
+      }
+
+      // ============================================
+      // PREPARAR DATOS PARA EL BACKEND (snake_case)
+      // ============================================
+      const pagoData = {
+        studentId: Number(studentId),
+        paymentMethodId: metodoPagoId,
+        paymentAccountId: paymentAccountId,
+        paymentDate: paymentDate,
+        transactionNumber: transactionNumber,
+        concept: concept,
+        documentoRespaldo: documentoRespaldo, // Archivo de documento de respaldo
+      };
+
+      // Llamar a la función de registro del contexto
+      if (!registrarPago) {
+        message.error('Error: Función de registro no disponible');
+        return;
+      }
+
+      const result = await registrarPago(pagoData);
+
+      // Debug: Log del resultado para ver qué está llegando
+      console.log('[PagosRegistrar] Resultado del registro:', result);
+
+      if (result && result.success) {
+        message.success('Pago registrado exitosamente');
+        // Redirigir al detalle del estudiante después de un breve delay
+        setTimeout(() => {
+          navigate(`/estudiantes/${studentId}`);
+        }, 1500);
+      } else {
+        // Extraer el mensaje de error correctamente
+        let errorMessage = 'Error al registrar el pago';
+        if (result && result.error) {
+          // Debug: Log del error para ver su estructura
+          console.log('[PagosRegistrar] Error recibido:', result.error, 'Tipo:', typeof result.error);
+          
+          if (typeof result.error === 'object' && result.error !== null) {
+            // Si el error es un objeto con estructura { code, message, details }
+            if (result.error.message && typeof result.error.message === 'string') {
+              errorMessage = result.error.message;
+            } else {
+              // Si no tiene message, intentar convertir el objeto a string
+              errorMessage = JSON.stringify(result.error);
+            }
+          } else if (typeof result.error === 'string') {
+            // Si el error es un string simple
+            errorMessage = result.error;
+          }
+        }
+        console.log('[PagosRegistrar] Mensaje de error final:', errorMessage);
+        message.error(errorMessage);
+      }
+    } catch (error) {
+      console.error('Error al registrar pago:', error);
+      message.error('Error inesperado al registrar el pago');
+    }
   };
 
   // Configurar breadcrumb items

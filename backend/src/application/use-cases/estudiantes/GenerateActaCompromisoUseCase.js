@@ -38,6 +38,7 @@ export class GenerateActaCompromisoUseCase {
    * @param {Object} params.studentRepository - Repositorio de estudiantes
    * @param {Object} params.documentacionRepository - Repositorio de documentación
    * @param {Object} params.studentDocumentDeliveryRepository - Repositorio de entregas de documentos
+   * @param {Object} params.studentDocumentRepository - Repositorio de documentos de estudiantes
    * @param {Object} params.configuracionSistemaRepository - Repositorio de configuración del sistema
    * @param {Object} params.managementRepository - Repositorio de gestiones
    * @param {ILogger} params.logger - Logger para registro de eventos
@@ -46,6 +47,7 @@ export class GenerateActaCompromisoUseCase {
     studentRepository, 
     documentacionRepository, 
     studentDocumentDeliveryRepository,
+    studentDocumentRepository,
     configuracionSistemaRepository,
     managementRepository,
     logger 
@@ -53,6 +55,7 @@ export class GenerateActaCompromisoUseCase {
     this.studentRepository = studentRepository;
     this.documentacionRepository = documentacionRepository;
     this.studentDocumentDeliveryRepository = studentDocumentDeliveryRepository;
+    this.studentDocumentRepository = studentDocumentRepository;
     this.configuracionSistemaRepository = configuracionSistemaRepository;
     this.managementRepository = managementRepository;
     this.logger = logger;
@@ -545,12 +548,151 @@ export class GenerateActaCompromisoUseCase {
       absolutePath: absoluteUploadPath,
     });
 
-    // 5. Retornar respuesta
-    return {
+    // 5. Guardar el PDF como documento en documentos_estudiante
+    let savedDocument = null;
+    let savedDocumentDelivery = null;
+    try {
+      // Construir ruta relativa completa desde uploads/ (documentos/estudiantes/{studentId}/{fileName})
+      const relativeFilePath = path.join(relativePath, fileName).replace(/\\/g, '/');
+      
+      savedDocument = await this._saveActaDocument(
+        studentId,
+        fileName,
+        absoluteUploadPath,
+        relativeFilePath
+      );
+
+      // 6. Crear registro en estudiantes_documentos_entrega
+      if (savedDocument) {
+        savedDocumentDelivery = await this._saveActaDocumentDelivery(
+          studentId,
+          savedDocument.id,
+          fechaActual
+        );
+      }
+    } catch (error) {
+      // No fallar la generación del acta si falla el guardado del documento
+      this.logger.error('[Estudiantes] Error al guardar acta como documento', {
+        error: error.message,
+        stack: error.stack,
+        studentId,
+        fileName,
+      });
+    }
+
+    // 7. Retornar respuesta
+    const response = {
       filePath,
       fileName,
       absolutePath: absoluteUploadPath,
       estadoDocumentos,
     };
+
+    if (savedDocument) {
+      response.document = savedDocument.toPlainObject ? savedDocument.toPlainObject() : savedDocument;
+    }
+
+    if (savedDocumentDelivery) {
+      response.documentDelivery = savedDocumentDelivery.toPlainObject ? savedDocumentDelivery.toPlainObject() : savedDocumentDelivery;
+    }
+
+    return response;
+  }
+
+  /**
+   * Guarda el PDF del acta de compromiso en documentos_estudiante
+   * @private
+   * @param {number} studentId - ID del estudiante
+   * @param {string} fileName - Nombre del archivo PDF
+   * @param {string} absolutePath - Ruta absoluta del archivo
+   * @param {string} relativeFilePath - Ruta relativa completa desde uploads/ (incluye nombre del archivo)
+   * @returns {Promise<Object>} Documento guardado
+   */
+  async _saveActaDocument(studentId, fileName, absolutePath, relativeFilePath) {
+    try {
+
+      // Preparar datos del documento
+      const documentData = {
+        studentId,
+        tipoDocumento: 'INSCRIPCION', // El acta es parte del proceso de inscripción
+        documentacionId: null, // No hay documento específico en catálogo para "Acta de Compromiso"
+        fileName: fileName,
+        filePath: relativeFilePath,
+        extension: 'pdf',
+        tipoMime: 'application/pdf',
+        contieneMultipleDocumentos: false,
+        verified: true, // El acta es generada por el sistema, se considera verificada
+        state: 'APROBADO', // El acta generada por el sistema está aprobada automáticamente
+      };
+
+      // Crear el documento
+      const document = await this.studentDocumentRepository.create(documentData);
+
+      this.logger.info('[Estudiantes] Acta de compromiso guardada como documento', {
+        studentId,
+        documentId: document.id,
+        fileName: fileName,
+      });
+
+      return document;
+    } catch (error) {
+      this.logger.error('[Estudiantes] Error al guardar acta como documento', {
+        error: error.message,
+        stack: error.stack,
+        studentId,
+        fileName,
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Crea un registro en estudiantes_documentos_entrega para el acta de compromiso
+   * Indica que el acta fue generada y entregada
+   * 
+   * @private
+   * @param {number} studentId - ID del estudiante
+   * @param {number} documentId - ID del documento guardado en documentos_estudiante
+   * @param {Date} fechaGeneracion - Fecha de generación del acta
+   * @returns {Promise<Object>} Registro de entrega de documento creado
+   */
+  async _saveActaDocumentDelivery(studentId, documentId, fechaGeneracion) {
+    try {
+      // Formatear fecha como YYYY-MM-DD
+      const fechaEntrega = fechaGeneracion.toISOString().split('T')[0];
+
+      // Preparar datos para estudiantes_documentos_entrega
+      // NOTA: documentacionId es NULL porque no hay un documento específico en el catálogo para "Acta de Compromiso"
+      const deliveryData = {
+        studentId,
+        documentacionId: null, // NULL porque no hay documento específico en catálogo para acta de compromiso
+        entregado: true, // El acta fue generada y entregada
+        enTramite: false, // No está en trámite, ya fue generada
+        esOriginal: true, // El acta generada por el sistema es el documento original
+        fechaEntrega: fechaEntrega,
+        fechaVencimientoTramite: null, // No aplica porque no está en trámite
+        observaciones: `Acta de compromiso generada automáticamente por el sistema para la entrega de documentos faltantes.`,
+      };
+
+      // Crear el registro de entrega
+      const delivery = await this.studentDocumentDeliveryRepository.create(deliveryData);
+
+      this.logger.info('[Estudiantes] Registro de entrega de acta creado', {
+        studentId,
+        documentId,
+        deliveryId: delivery.id,
+      });
+
+      return delivery;
+    } catch (error) {
+      this.logger.error('[Estudiantes] Error al crear registro de entrega de acta', {
+        error: error.message,
+        stack: error.stack,
+        studentId,
+        documentId,
+      });
+      // No lanzar error para no fallar la generación del acta
+      return null;
+    }
   }
 }

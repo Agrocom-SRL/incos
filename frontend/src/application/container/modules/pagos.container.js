@@ -15,12 +15,14 @@ import {
   GetTodosAuthorizedBanksUseCase,
   GetTodosPaymentMethodsUseCase,
   GetTodasContributionConfigurationsUseCase,
+  RegisterPagoAporteUseCase,
 } from '@useCases/pagos';
 
 import PaymentAccountRepository from '@infrastructure/repositories/PaymentAccountRepository';
 import AuthorizedBankRepository from '@infrastructure/repositories/AuthorizedBankRepository';
 import PaymentMethodRepository from '@infrastructure/repositories/PaymentMethodRepository';
 import ContributionConfigurationRepository from '@infrastructure/repositories/ContributionConfigurationRepository';
+import PagoAporteRepository from '@infrastructure/repositories/PagoAporteRepository';
 
 /**
  * Registra los Use Cases del módulo de pagos
@@ -33,6 +35,7 @@ export function registerPagosModule(factory) {
   const authorizedBankRepository = AuthorizedBankRepository;
   const paymentMethodRepository = PaymentMethodRepository;
   const contributionConfigurationRepository = ContributionConfigurationRepository;
+  const pagoAporteRepository = PagoAporteRepository;
 
   // Registrar Use Cases de Cuentas de Pago
   factory.listarCuentasPago = () => {
@@ -52,6 +55,11 @@ export function registerPagosModule(factory) {
   // Registrar Use Cases de Configuraciones de Aportes
   factory.listarConfiguracionAportes = () => {
     return new GetTodasContributionConfigurationsUseCase(contributionConfigurationRepository);
+  };
+
+  // Registrar Use Cases de Registro de Pagos de Aporte
+  factory.registrarAporteVoluntario = () => {
+    return new RegisterPagoAporteUseCase(pagoAporteRepository);
   };
 
   return factory;

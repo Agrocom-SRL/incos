@@ -6,6 +6,7 @@ import { registerMetodosPagoResource } from './metodos-pago.container.js';
 import { registerBancosAutorizadosResource } from './bancos-autorizados.container.js';
 import { registerCuentasPagoResource } from './cuentas-pago.container.js';
 import { registerConfiguracionAportesResource } from './configuracion-aportes.container.js';
+import { registerPagosAportesResource } from './pagos-aportes.container.js';
 
 /**
  * Registra el módulo completo de Pagos en el contenedor
@@ -18,6 +19,7 @@ export function registerPagosModule(container) {
     registerBancosAutorizadosResource(container);
     registerCuentasPagoResource(container);
     registerConfiguracionAportesResource(container);
+    registerPagosAportesResource(container);
 
     return container;
 }

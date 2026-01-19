@@ -1,0 +1,83 @@
+/**
+ * Registro de dependencias del recurso Pagos de Aportes Académicos
+ * 
+ * Responsabilidades:
+ * - Registrar Use Cases del recurso Pagos de Aportes
+ * - Registrar Controllers del recurso Pagos de Aportes
+ * - Construir y registrar el router del recurso Pagos de Aportes
+ * 
+ * Principio SRP: Cada container maneja solo UN recurso/entidad
+ * 
+ * @param {Container} container - Contenedor de DI
+ * @returns {Container} Contenedor con recurso Pagos de Aportes registrado
+ */
+
+import { PAGOS_TOKENS, REPOSITORIOS_TOKENS, SERVICIOS_TOKENS } from '../../tokens/index.js';
+import { registerComponent } from '../../utils/container.helpers.js';
+import { RegisterAporteVoluntarioUseCase } from '../../../../application/use-cases/pagos/RegisterAporteVoluntarioUseCase.js';
+import { RegisterPagoAporteController } from '../../../../presentation/controllers/pagos/index.js';
+import { buildPagosAportesRouter } from '../../../../presentation/routes/pagos-aportes.routes.js';
+
+/**
+ * Registra el recurso Pagos de Aportes en el contenedor
+ * 
+ * @param {Container} container - Contenedor de DI
+ * @returns {Container} Contenedor actualizado
+ */
+export function registerPagosAportesResource(container) {
+    // ============================================
+    // USE CASES
+    // ============================================
+    registerComponent(
+        container,
+        PAGOS_TOKENS.registerPagoAporteUseCase,
+        (c) =>
+            new RegisterAporteVoluntarioUseCase({
+                contributionPaymentRepository: c.resolve(REPOSITORIOS_TOKENS.contributionPaymentRepository),
+                paymentMethodRepository: c.resolve(REPOSITORIOS_TOKENS.paymentMethodRepository),
+                studentRepository: c.resolve(REPOSITORIOS_TOKENS.studentRepository),
+                enrollmentRepository: c.resolve(REPOSITORIOS_TOKENS.enrollmentRepository),
+                studentScholarshipRepository: c.resolve(REPOSITORIOS_TOKENS.studentScholarshipRepository),
+                scholarshipRepository: c.resolve(REPOSITORIOS_TOKENS.scholarshipRepository),
+                managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
+                studentDocumentRepository: c.resolve(REPOSITORIOS_TOKENS.studentDocumentRepository),
+                studentDocumentDeliveryRepository: c.resolve(REPOSITORIOS_TOKENS.studentDocumentDeliveryRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
+    // ============================================
+    // CONTROLLERS
+    // ============================================
+    registerComponent(
+        container,
+        PAGOS_TOKENS.registerPagoAporteController,
+        (c) =>
+            new RegisterPagoAporteController({
+                registerPagoAporteUseCase: c.resolve(PAGOS_TOKENS.registerPagoAporteUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
+    );
+
+    // ============================================
+    // ROUTER
+    // ============================================
+    registerComponent(
+        container,
+        PAGOS_TOKENS.pagosAportesRouter,
+        (c) => {
+            const controllers = {
+                registerPagoAporteController: c.resolve(PAGOS_TOKENS.registerPagoAporteController),
+            };
+
+            const middlewares = {
+                validateRequest: c.resolve(SERVICIOS_TOKENS.validateRequest),
+            };
+
+            return buildPagosAportesRouter({ controllers, middlewares });
+        }
+    );
+
+    return container;
+}
