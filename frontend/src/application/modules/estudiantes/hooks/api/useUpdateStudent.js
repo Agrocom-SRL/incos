@@ -40,6 +40,10 @@ export const useUpdateStudent = () => {
   const normalizeUpdateStudentPayload = (values) => {
     if (!values || typeof values !== 'object') return values;
     const payload = { ...values };
+    
+    // Excluir campos calculados que no se envían al backend
+    delete payload.edad;
+    
     const value = payload.fechaNacimiento;
     if (value) {
       try {

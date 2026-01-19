@@ -34,10 +34,15 @@ export const useRegisterStudent = () => {
    * - Acepta Date nativo
    * - Acepta string 'DD-MM-YYYY' y lo convierte a 'YYYY-MM-DD'
    * - Deja pasar strings ya en 'YYYY-MM-DD'
+   * - Excluye campos calculados que no se envían al backend (ej: edad)
    */
   const normalizeRegisterStudentPayload = (values) => {
     if (!values || typeof values !== 'object') return values;
     const payload = { ...values };
+    
+    // Excluir campos calculados que no se envían al backend
+    delete payload.edad;
+    
     const value = payload.fechaNacimiento;
     if (value) {
       try {

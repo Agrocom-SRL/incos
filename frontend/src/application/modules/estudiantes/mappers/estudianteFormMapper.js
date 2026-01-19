@@ -41,6 +41,30 @@ export const estudianteFormMapper = (studentDetail) => {
     zona: student.zona || '',
     observaciones: student.observaciones || '',
   };
+  
+  // Extraer IDs geográficos de residencia desde los catálogos
+  // Esto es necesario para cargar las provincias y municipios correctamente
+  if (studentDetail.catalogs) {
+    const { residenceMunicipality, residenceProvince, residenceDepartment } = studentDetail.catalogs;
+    
+    if (residenceMunicipality) {
+      formData.municipioResidenciaId = residenceMunicipality.id || student.municipioResidenciaId || null;
+      
+      // Obtener provinciaId desde el municipio o desde residenceProvince
+      if (residenceProvince) {
+        formData.provinciaResidenciaId = residenceProvince.id || residenceMunicipality.provinciaId || null;
+      } else if (residenceMunicipality.provinciaId) {
+        formData.provinciaResidenciaId = residenceMunicipality.provinciaId;
+      }
+      
+      // Obtener departamentoId desde la provincia o desde residenceDepartment
+      if (residenceDepartment) {
+        formData.departamentoResidenciaId = residenceDepartment.id || residenceProvince?.departamentoId || null;
+      } else if (residenceProvince?.departamentoId) {
+        formData.departamentoResidenciaId = residenceProvince.departamentoId;
+      }
+    }
+  }
 
   // Mapear discapacidades
   if (disabilities && disabilities.length > 0) {
@@ -50,15 +74,133 @@ export const estudianteFormMapper = (studentDetail) => {
     formData.descripcion = primeraDiscapacidad.description || '';
   }
 
-  // Mapear orígenes (tomar el primero si hay múltiples)
-  if (origins && origins.length > 0) {
-    const primerOrigen = origins[0];
-    formData.paisId = primerOrigen.countryId || null;
-    formData.ciudadNacimiento = primerOrigen.birthCity || '';
-    formData.municipioNacimientoId = primerOrigen.birthMunicipalityId || null;
-    formData.idiomaMaternoId = primerOrigen.motherTongueId || null;
-    formData.idiomaSecundarioId = primerOrigen.secondaryLanguageId || null;
-    formData.tipoOrigen = primerOrigen.originType || null;
+  // ============================================
+  // PROCESAR ORÍGENES (DATOS GEOGRÁFICOS)
+  // ============================================
+  
+  // Determinar tipo de origen basado en los registros
+  let tipoOrigen = 'BOLIVIANA'; // Default
+  let primeraNacionalidad = null;
+  
+  if (!origins || origins.length === 0) {
+    tipoOrigen = 'BOLIVIANA'; // Asumir boliviana si no hay datos
+  } else if (origins.length === 1) {
+    const origen = origins[0];
+    tipoOrigen = origen.originType || origen.tipoOrigen || 'BOLIVIANA';
+  } else if (origins.length >= 2) {
+    // Doble nacionalidad
+    tipoOrigen = 'DOBLE_NACIONALIDAD';
+  }
+
+  // Separar orígenes según sean principales o secundarios
+  // Buscar por esPrincipal o isPrincipal (puede venir en diferentes formatos)
+  const origenPrincipal = origins.find(o => 
+    o.esPrincipal === true || 
+    o.esPrincipal === 1 || 
+    o.isPrincipal === true || 
+    o.isPrincipal === 1
+  ) || origins[0]; // Si no hay marcado como principal, usar el primero
+  
+  const origenSecundario = origins.find(o => 
+    (o.esPrincipal === false || o.esPrincipal === 0 || o.isPrincipal === false || o.isPrincipal === 0) &&
+    o !== origenPrincipal
+  );
+
+  // Determinar primera nacionalidad para doble nacionalidad
+  if (tipoOrigen === 'DOBLE_NACIONALIDAD' && origenPrincipal) {
+    // Si tiene municipioNacimientoId, es boliviana; si no, es extranjera
+    primeraNacionalidad = origenPrincipal.birthMunicipalityId || origenPrincipal.municipioNacimientoId
+      ? 'BOLIVIANA'
+      : 'EXTRANJERA';
+    formData.primeraNacionalidad = primeraNacionalidad;
+  }
+
+  formData.tipoOrigen = tipoOrigen;
+
+  // ============================================
+  // MAPEAR CAMPOS DE ORIGEN PRINCIPAL
+  // ============================================
+  
+  if (origenPrincipal) {
+    // Idiomas (del origen principal)
+    formData.idiomaMaternoId = origenPrincipal.motherTongueId || origenPrincipal.idiomaMaternoId || null;
+    formData.idiomaSecundarioId = origenPrincipal.secondaryLanguageId || origenPrincipal.idiomaSecundarioId || null;
+    
+    // Si es boliviana (tiene municipioNacimientoId)
+    if (origenPrincipal.birthMunicipalityId || origenPrincipal.municipioNacimientoId) {
+      const municipioNacimientoId = origenPrincipal.birthMunicipalityId || origenPrincipal.municipioNacimientoId;
+      
+      // Extraer jerarquía geográfica desde catálogos
+      if (studentDetail.catalogs) {
+        const { originMunicipalities, originProvinces, originDepartments } = studentDetail.catalogs;
+        
+        if (municipioNacimientoId && originMunicipalities) {
+          const municipio = originMunicipalities[municipioNacimientoId];
+          if (municipio) {
+            formData.municipioId = municipioNacimientoId;
+            formData.localidadComunidad = origenPrincipal.birthCity || origenPrincipal.ciudadNacimiento || '';
+            
+            if (municipio.provinciaId) {
+              formData.provinciaId = municipio.provinciaId;
+              
+              // Obtener departamentoId desde la provincia
+              if (originProvinces && originProvinces[municipio.provinciaId]) {
+                const provincia = originProvinces[municipio.provinciaId];
+                if (provincia && provincia.departamentoId) {
+                  formData.departamentoId = provincia.departamentoId;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    // Si es extranjera (tiene paisId)
+    else if (origenPrincipal.countryId || origenPrincipal.paisId) {
+      formData.paisId = origenPrincipal.countryId || origenPrincipal.paisId;
+      formData.ciudadNacimiento = origenPrincipal.birthCity || origenPrincipal.ciudadNacimiento || '';
+    }
+  }
+
+  // ============================================
+  // MAPEAR CAMPOS DE ORIGEN SECUNDARIO (DOBLE NACIONALIDAD)
+  // ============================================
+  
+  if (origenSecundario && tipoOrigen === 'DOBLE_NACIONALIDAD') {
+    // Si la segunda nacionalidad es boliviana (tiene municipioNacimientoId)
+    if (origenSecundario.birthMunicipalityId || origenSecundario.municipioNacimientoId) {
+      const municipioNacimientoId = origenSecundario.birthMunicipalityId || origenSecundario.municipioNacimientoId;
+      
+      // Extraer jerarquía geográfica desde catálogos
+      if (studentDetail.catalogs) {
+        const { originMunicipalities, originProvinces } = studentDetail.catalogs;
+        
+        if (municipioNacimientoId && originMunicipalities) {
+          const municipio = originMunicipalities[municipioNacimientoId];
+          if (municipio) {
+            formData.segundaMunicipioId = municipioNacimientoId;
+            formData.segundaLocalidadComunidad = origenSecundario.birthCity || origenSecundario.ciudadNacimiento || '';
+            
+            if (municipio.provinciaId) {
+              formData.segundaProvinciaId = municipio.provinciaId;
+              
+              // Obtener departamentoId desde la provincia
+              if (originProvinces && originProvinces[municipio.provinciaId]) {
+                const provincia = originProvinces[municipio.provinciaId];
+                if (provincia && provincia.departamentoId) {
+                  formData.segundaDepartamentoId = provincia.departamentoId;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    // Si la segunda nacionalidad es extranjera (tiene paisId)
+    else if (origenSecundario.countryId || origenSecundario.paisId) {
+      formData.segundaPaisId = origenSecundario.countryId || origenSecundario.paisId;
+      formData.segundaCiudadNacimiento = origenSecundario.birthCity || origenSecundario.ciudadNacimiento || '';
+    }
   }
 
   // Mapear contactos de emergencia/apoderados

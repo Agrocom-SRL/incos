@@ -30,6 +30,7 @@ import { Form } from 'antd';
 import { useFormField } from './hooks/useFormField';
 import { useFieldRenderer } from './hooks/useFieldRenderer';
 import { labelCol, wrapperCol } from './utils/formLayout';
+import { FieldInput } from '@atoms';
 
 const FormField = ({ field, form, resolveOptions, minAge = null, readOnly = false }) => {
   // Hook que compone toda la lógica del campo
@@ -56,6 +57,47 @@ const FormField = ({ field, form, resolveOptions, minAge = null, readOnly = fals
   // Los botones y alertas no se envuelven en Form.Item (no son campos de formulario)
   if (field.type === 'button' || field.type === 'alert') {
     return renderField();
+  }
+
+  // Campos de tipo display: calculados automáticamente, no se guardan en el formulario
+  if (field.type === 'display') {
+    return (
+      <Form.Item
+        label={field.label}
+        labelCol={labelCol}
+        wrapperCol={wrapperCol}
+        className="form-field"
+        shouldUpdate={(prevValues, currentValues) => {
+          // Actualizar cuando cambien los campos dependencies
+          if (!field.dependencies || field.dependencies.length === 0) return false;
+          return field.dependencies.some(dep => 
+            prevValues[dep] !== currentValues[dep]
+          );
+        }}
+      >
+        {(formInstance) => {
+          // Obtener el valor de la dependencia
+          const watchedValue = field.dependencies?.[0] 
+            ? formInstance.getFieldValue(field.dependencies[0])
+            : null;
+          
+          // Calcular el valor directamente aquí
+          const computedValue = field.computeValue 
+            ? field.computeValue(formInstance, watchedValue)
+            : '';
+
+          return (
+            <FieldInput
+              value={computedValue}
+              placeholder={field.placeholder}
+              disabled={false} // Editable pero se recalcula automáticamente
+              readOnly={false}
+              type="text"
+            />
+          );
+        }}
+      </Form.Item>
+    );
   }
 
   return (

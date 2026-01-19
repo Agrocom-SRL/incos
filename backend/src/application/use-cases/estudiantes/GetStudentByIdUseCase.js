@@ -764,7 +764,11 @@ export class GetStudentByIdUseCase {
       // 6. Calcular total de faltantes
       const totalFaltantes = faltantes.length + documentosSinEntrega.length;
 
-      const resultadoFinal = totalFaltantes > 0;
+      // 7. IMPORTANTE: Solo retornar true si hay faltantes Y al menos un documento entregado
+      // Esto evita mostrar el botón de acta de compromiso cuando el estudiante no ha guardado ningún documento
+      const tieneAlMenosUnDocumentoEntregado = entregados.length > 0;
+      const resultadoFinal = totalFaltantes > 0 && tieneAlMenosUnDocumentoEntregado;
+      
       this.logger.info('[Estudiantes] _checkMissingDocuments - resultado final', {
         studentId,
         totalDocumentosInscripcion: documentosInscripcion.length,
@@ -773,6 +777,7 @@ export class GetStudentByIdUseCase {
         faltantes: faltantes.length,
         documentosSinEntrega: documentosSinEntrega.length,
         totalFaltantes,
+        tieneAlMenosUnDocumentoEntregado,
         resultado: resultadoFinal,
         'resultado (boolean)': resultadoFinal,
         detallesFaltantes: faltantes.map(f => {
@@ -783,10 +788,14 @@ export class GetStudentByIdUseCase {
           const dPlain = d.toPlainObject ? d.toPlainObject() : d;
           return { id: dPlain.id };
         }),
+        detallesEntregados: entregados.map(e => {
+          const ePlain = e.toPlainObject ? e.toPlainObject() : e;
+          return { id: ePlain.id, documentacionId: ePlain.documentacionId, entregado: ePlain.entregado };
+        }),
       });
 
-      // 7. Retornar true si hay faltantes
-      return totalFaltantes > 0;
+      // 8. Retornar true solo si hay faltantes Y al menos un documento entregado
+      return resultadoFinal;
     } catch (err) {
       // Si hay error al verificar, asumir que no faltan para no bloquear la visualización
       this.logger.warn('[Estudiantes] Error al verificar documentos faltantes', {

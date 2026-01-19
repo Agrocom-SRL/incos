@@ -102,6 +102,78 @@ export const createEstudianteDatosPersonalesFields = () => {
           placeholder: 'DD-MM-YYYY o DD/MM/YYYY',
           minAge: null, // Se reemplazará desde el contexto (EDAD_MINIMA_REGISTRO)
         },
+        // Edad (calculada automáticamente)
+        {
+          name: 'edad', // No se envía al backend, solo para mostrar
+          label: 'Edad',
+          type: 'display',
+          required: false,
+          span: 12,
+          placeholder: 'Se calculará automáticamente',
+          dependencies: ['fechaNacimiento'], // Se actualiza cuando cambia fechaNacimiento
+          computeValue: (form, watchedValue) => {
+            // Si hay watchedValue, usarlo directamente
+            // Si no, obtener directamente del form
+            const fechaNacimiento = watchedValue !== undefined && watchedValue !== null
+              ? watchedValue
+              : form?.getFieldValue('fechaNacimiento');
+            
+            if (!fechaNacimiento) return '';
+            
+            // Convertir a Date si es string o dayjs
+            let fechaNac;
+            try {
+              if (fechaNacimiento instanceof Date) {
+                fechaNac = fechaNacimiento;
+              } else if (fechaNacimiento && typeof fechaNacimiento.format === 'function') {
+                // Es un objeto dayjs
+                fechaNac = fechaNacimiento.toDate();
+              } else if (typeof fechaNacimiento === 'string') {
+                // Intentar parsear diferentes formatos de fecha
+                // Formato DD-MM-YYYY
+                if (/^\d{2}-\d{2}-\d{4}$/.test(fechaNacimiento)) {
+                  const [dd, mm, yyyy] = fechaNacimiento.split('-');
+                  fechaNac = new Date(parseInt(yyyy), parseInt(mm) - 1, parseInt(dd));
+                }
+                // Formato DD/MM/YYYY
+                else if (/^\d{2}\/\d{2}\/\d{4}$/.test(fechaNacimiento)) {
+                  const [dd, mm, yyyy] = fechaNacimiento.split('/');
+                  fechaNac = new Date(parseInt(yyyy), parseInt(mm) - 1, parseInt(dd));
+                }
+                // Formato YYYY-MM-DD (ISO)
+                else if (/^\d{4}-\d{2}-\d{2}$/.test(fechaNacimiento)) {
+                  fechaNac = new Date(fechaNacimiento);
+                }
+                // Intentar parseo genérico
+                else {
+                  fechaNac = new Date(fechaNacimiento);
+                }
+              } else {
+                fechaNac = new Date(fechaNacimiento);
+              }
+            } catch (error) {
+              console.error('Error parseando fecha:', error, fechaNacimiento);
+              return '';
+            }
+            
+            // Validar que sea una fecha válida
+            if (!fechaNac || isNaN(fechaNac.getTime())) {
+              return '';
+            }
+            
+            // Calcular edad
+            const hoy = new Date();
+            let edad = hoy.getFullYear() - fechaNac.getFullYear();
+            const mes = hoy.getMonth() - fechaNac.getMonth();
+            
+            // Ajustar si aún no ha cumplido años este año
+            if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNac.getDate())) {
+              edad--;
+            }
+            
+            return edad >= 0 ? `${edad} años` : '';
+          },
+        },
         // Género
         {
           name: 'generoId',
@@ -142,18 +214,6 @@ export const createEstudianteDatosPersonalesFields = () => {
           defaultChecked: false,
           checkedChildren: 'Sí',
           unCheckedChildren: 'No',
-        },
-        // Es Traspaso (OPCIONAL - para marcar si es estudiante por traspaso)
-        {
-          name: 'esTraspaso',
-          label: 'Es Traspaso',
-          type: 'switch',
-          required: false,
-          span: 12,
-          defaultChecked: false,
-          checkedChildren: 'Sí',
-          unCheckedChildren: 'No',
-          tooltip: 'Marcar si el estudiante viene por traspaso de otra sede',
         },
       ],
     },

@@ -62,6 +62,11 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
     paises = [],
     departamentos = [],
     provinciasResidencia = [], // Provincias de residencia (Santa Cruz)
+    municipiosResidencia = [], // Municipios de residencia (necesarios para mostrar nombres)
+    provincias = [], // Provincias de origen (necesarias para mostrar nombres)
+    municipios = [], // Municipios de origen (necesarios para mostrar nombres)
+    segundaProvincias = [], // Provincias de segunda nacionalidad (necesarias para mostrar nombres)
+    segundaMunicipios = [], // Municipios de segunda nacionalidad (necesarios para mostrar nombres)
     
     // Contactos de emergencia dinámicos (expuestos desde el provider)
     contactosIndices = [],
@@ -100,17 +105,187 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
     }
   }, [registerForm, form]);
 
+  // Ref para almacenar los datos del formulario mientras se cargan las opciones
+  const pendingFormDataRef = useRef(null);
+  
   // Cargar datos iniciales del estudiante en modo edición
   useEffect(() => {
     if (isEditMode && studentDetail && !initialDataLoadedRef.current && form) {
       const formData = mapEstudianteToForm(studentDetail);
       if (formData) {
-        // Establecer valores iniciales del formulario
-        form.setFieldsValue(formData);
+        // Guardar los datos del formulario para establecerlos después
+        pendingFormDataRef.current = formData;
+        
+        // ============================================
+        // CARGAR JERARQUÍA DE ORIGEN PRINCIPAL
+        // ============================================
+        if (formData.departamentoId && loadProvincias) {
+          loadProvincias(formData.departamentoId, 'origen').then(() => {
+            // Después de cargar provincias, cargar municipios si hay provinciaId
+            if (formData.provinciaId && loadMunicipios) {
+              loadMunicipios(formData.provinciaId, 'origen');
+            }
+          }).catch(err => {
+            console.warn('Error al cargar provincias de origen principal:', err);
+          });
+        }
+        
+        // ============================================
+        // CARGAR JERARQUÍA DE ORIGEN SECUNDARIO (DOBLE NACIONALIDAD)
+        // ============================================
+        if (formData.tipoOrigen === 'DOBLE_NACIONALIDAD' && formData.segundaDepartamentoId && loadProvincias) {
+          loadProvincias(formData.segundaDepartamentoId, 'segunda').then(() => {
+            // Después de cargar provincias de segunda nacionalidad, cargar municipios si hay segundaProvinciaId
+            if (formData.segundaProvinciaId && loadMunicipios) {
+              loadMunicipios(formData.segundaProvinciaId, 'segunda');
+            }
+          }).catch(err => {
+            console.warn('Error al cargar provincias de origen secundario:', err);
+          });
+        }
+        
+        // ============================================
+        // CARGAR JERARQUÍA DE RESIDENCIA
+        // ============================================
+        // El departamento de residencia siempre es Santa Cruz, pero necesitamos cargar provincias y municipios
+        // Si no hay departamentoResidenciaId en formData, usar el ID de Santa Cruz desde departamentos
+        const departamentoResidenciaId = formData.departamentoResidenciaId || 
+          (departamentos.find(d => d.nombre?.toUpperCase().includes('SANTA CRUZ'))?.id);
+        
+        if (departamentoResidenciaId && loadProvincias) {
+          loadProvincias(departamentoResidenciaId, 'residencia').then(() => {
+            // Después de cargar provincias de residencia, cargar municipios si hay provinciaResidenciaId
+            if (formData.provinciaResidenciaId && loadMunicipios) {
+              loadMunicipios(formData.provinciaResidenciaId, 'residencia');
+            }
+          }).catch(err => {
+            console.warn('Error al cargar provincias de residencia en modo edición:', err);
+          });
+        }
+        
+        // Establecer todos los valores excepto los geográficos primero
+        const { 
+          departamentoId, provinciaId, municipioId,
+          segundaDepartamentoId, segundaProvinciaId, segundaMunicipioId,
+          departamentoResidenciaId: _departamentoResidenciaId, 
+          provinciaResidenciaId, 
+          municipioResidenciaId,
+          ...otrosValores 
+        } = formData;
+        form.setFieldsValue(otrosValores);
+        
+        // Los valores geográficos se establecerán cuando las opciones estén disponibles
         initialDataLoadedRef.current = true;
       }
     }
-  }, [isEditMode, studentDetail, form]);
+  }, [isEditMode, studentDetail, form, loadProvincias, loadMunicipios, departamentos]);
+  
+  // Efecto para establecer valores geográficos cuando las opciones estén disponibles
+  useEffect(() => {
+    if (isEditMode && pendingFormDataRef.current && form && initialDataLoadedRef.current) {
+      const formData = pendingFormDataRef.current;
+      const valoresGeograficos = {};
+      let necesitaEstablecer = false;
+      
+      // ===== VALORES GEOGRÁFICOS DE ORIGEN =====
+      // Verificar si hay departamentoId y establecerlo (no necesita opciones)
+      if (formData.departamentoId) {
+        valoresGeograficos.departamentoId = formData.departamentoId;
+        necesitaEstablecer = true;
+      }
+      
+      // Verificar si hay provinciaId y las provincias están disponibles
+      if (formData.provinciaId && provincias.length > 0) {
+        // Verificar que la provinciaId existe en las opciones disponibles
+        const provinciaExiste = provincias.some(p => 
+          (p.value === formData.provinciaId) || (p.id === formData.provinciaId)
+        );
+        if (provinciaExiste) {
+          valoresGeograficos.provinciaId = formData.provinciaId;
+          necesitaEstablecer = true;
+        }
+      }
+      
+      // Verificar si hay municipioId y los municipios están disponibles
+      if (formData.municipioId && municipios.length > 0) {
+        // Verificar que el municipioId existe en las opciones disponibles
+        const municipioExiste = municipios.some(m => 
+          (m.value === formData.municipioId) || (m.id === formData.municipioId)
+        );
+        if (municipioExiste) {
+          valoresGeograficos.municipioId = formData.municipioId;
+          necesitaEstablecer = true;
+        }
+      }
+      
+      // ===== VALORES GEOGRÁFICOS DE SEGUNDA NACIONALIDAD (DOBLE NACIONALIDAD) =====
+      // Verificar si hay segundaDepartamentoId y establecerlo (no necesita opciones)
+      if (formData.segundaDepartamentoId) {
+        valoresGeograficos.segundaDepartamentoId = formData.segundaDepartamentoId;
+        necesitaEstablecer = true;
+      }
+      
+      // Verificar si hay segundaProvinciaId y las provincias de segunda nacionalidad están disponibles
+      if (formData.segundaProvinciaId && segundaProvincias.length > 0) {
+        // Verificar que la segundaProvinciaId existe en las opciones disponibles
+        const provinciaExiste = segundaProvincias.some(p => 
+          (p.value === formData.segundaProvinciaId) || (p.id === formData.segundaProvinciaId)
+        );
+        if (provinciaExiste) {
+          valoresGeograficos.segundaProvinciaId = formData.segundaProvinciaId;
+          necesitaEstablecer = true;
+        }
+      }
+      
+      // Verificar si hay segundaMunicipioId y los municipios de segunda nacionalidad están disponibles
+      if (formData.segundaMunicipioId && segundaMunicipios.length > 0) {
+        // Verificar que el segundaMunicipioId existe en las opciones disponibles
+        const municipioExiste = segundaMunicipios.some(m => 
+          (m.value === formData.segundaMunicipioId) || (m.id === formData.segundaMunicipioId)
+        );
+        if (municipioExiste) {
+          valoresGeograficos.segundaMunicipioId = formData.segundaMunicipioId;
+          necesitaEstablecer = true;
+        }
+      }
+      
+      // ===== VALORES GEOGRÁFICOS DE RESIDENCIA =====
+      // Verificar si hay departamentoResidenciaId y establecerlo (no necesita opciones)
+      if (formData.departamentoResidenciaId) {
+        valoresGeograficos.departamentoResidenciaId = formData.departamentoResidenciaId;
+        necesitaEstablecer = true;
+      }
+      
+      // Verificar si hay provinciaResidenciaId y las provincias de residencia están disponibles
+      if (formData.provinciaResidenciaId && provinciasResidencia.length > 0) {
+        // Verificar que la provinciaResidenciaId existe en las opciones disponibles
+        const provinciaExiste = provinciasResidencia.some(p => 
+          (p.value === formData.provinciaResidenciaId) || (p.id === formData.provinciaResidenciaId)
+        );
+        if (provinciaExiste) {
+          valoresGeograficos.provinciaResidenciaId = formData.provinciaResidenciaId;
+          necesitaEstablecer = true;
+        }
+      }
+      
+      // Verificar si hay municipioResidenciaId y los municipios de residencia están disponibles
+      if (formData.municipioResidenciaId && municipiosResidencia.length > 0) {
+        // Verificar que el municipioResidenciaId existe en las opciones disponibles
+        const municipioExiste = municipiosResidencia.some(m => 
+          (m.value === formData.municipioResidenciaId) || (m.id === formData.municipioResidenciaId)
+        );
+        if (municipioExiste) {
+          valoresGeograficos.municipioResidenciaId = formData.municipioResidenciaId;
+          necesitaEstablecer = true;
+        }
+      }
+      
+      // Establecer valores geográficos si están listos
+      if (necesitaEstablecer) {
+        form.setFieldsValue(valoresGeograficos);
+      }
+    }
+  }, [isEditMode, form, provincias, municipios, segundaProvincias, segundaMunicipios, provinciasResidencia, municipiosResidencia]);
 
   // Reaccionar al resultado exitoso del registro/actualización
   // Solo para handleFinish (registro/actualización completo), no para handleSave (guardado parcial)

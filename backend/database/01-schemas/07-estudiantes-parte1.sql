@@ -35,9 +35,9 @@ CREATE TABLE estudiantes (
     
     -- Datos personales básicos
     ci VARCHAR(20) NOT NULL COMMENT 'Cédula de identidad',
-    expedicion VARCHAR(5) NOT NULL COMMENT 'Expedición del CI (SC, LP, CB, etc.)',
+    expedicion VARCHAR(5) COMMENT 'Expedición del CI (SC, LP, CB, etc.)',
     nombres VARCHAR(150) NOT NULL COMMENT 'Nombres completos',
-    apellido_paterno VARCHAR(100) NOT NULL COMMENT 'Apellido paterno',
+    apellido_paterno VARCHAR(100) COMMENT 'Apellido paterno',
     apellido_materno VARCHAR(100) COMMENT 'Apellido materno',
     fecha_nacimiento DATE NOT NULL COMMENT 'Fecha de nacimiento',
     genero ENUM('MASCULINO', 'FEMENINO', 'OTRO') NOT NULL COMMENT 'Género',

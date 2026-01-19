@@ -15,6 +15,8 @@
  * Uso: Solo dentro del componente FormField
  */
 
+import { Form } from 'antd';
+import { useEffect } from 'react';
 import {
   FieldInput,
   FieldSelect,
@@ -149,6 +151,56 @@ const renderSearch = (field, disabled, readOnly) => {
 };
 
 /**
+ * Renderer para campo de tipo display (solo lectura, calculado)
+ * Muestra un valor calculado que no se envía al backend
+ * 
+ * Nota: Este renderer debe ser un componente funcional para poder usar hooks
+ */
+const RenderDisplay = ({ field, form }) => {
+  // Observar cambios en las dependencias usando Form.useWatch
+  const watchedValue = field.dependencies && field.dependencies.length > 0 && form
+    ? Form.useWatch(field.dependencies[0], form)
+    : null;
+  
+  // Recalcular el valor cuando cambie la dependencia
+  useEffect(() => {
+    if (!form || !field.computeValue || !field.name) {
+      return;
+    }
+    
+    if (watchedValue !== undefined && watchedValue !== null) {
+      try {
+        const computedValue = field.computeValue(form, watchedValue) || '';
+        const currentValue = form.getFieldValue(field.name);
+        
+        if (computedValue && currentValue !== computedValue) {
+          form.setFieldValue(field.name, computedValue);
+        }
+      } catch (error) {
+        console.error('Error calculando valor display:', error);
+      }
+    }
+  }, [watchedValue, field, form]);
+  
+  // El valor viene del Form.Item (se actualiza automáticamente)
+  return (
+    <FieldInput
+      placeholder={field.placeholder}
+      disabled={false} // Hacer editable
+      readOnly={false} // Hacer editable
+      type="text"
+    />
+  );
+};
+
+/**
+ * Wrapper para renderDisplay que retorna el componente
+ */
+const renderDisplay = (field, disabled, readOnly, form) => {
+  return <RenderDisplay field={field} form={form} />;
+};
+
+/**
  * Renderer para campo de tipo alert (información/ayuda)
  * No se envuelve en Form.Item, se renderiza directamente
  */
@@ -193,6 +245,7 @@ export const fieldRenderers = {
   switch: renderSwitch,
   textarea: renderTextarea,
   radio: renderRadio,
+  display: renderDisplay,
   alert: renderAlert,
   button: renderButton,
 };
@@ -210,6 +263,7 @@ const fieldRendererParams = {
   select: ['field', 'disabled', 'readOnly', 'selectOptions'],
   radio: ['field', 'disabled', 'readOnly', 'selectOptions'],
   date: ['field', 'disabled', 'readOnly', 'minAge'],
+  display: ['field', 'disabled', 'readOnly', 'form'],
   alert: ['field', 'disabled', 'readOnly'],
   button: ['field', 'disabled', 'readOnly'],
 };

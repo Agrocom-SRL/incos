@@ -12,7 +12,7 @@ import { body } from 'express-validator';
  * El controller transformará estos datos a la estructura que espera el use case.
  * 
  * Campos requeridos basados en schema SQL (NOT NULL):
- * - estudiantes: ci, expedicion, nombres, apellidoPaterno, fechaNacimiento, genero, celular
+ * - estudiantes: ci, nombres, fechaNacimiento, genero, celular
  * - estudiantes_apoderados: tipoParentescoId, nombres, apellidos (si se envía el array)
  * 
  * Ubicación: presentation/validators/estudiantes (validators específicos del módulo)

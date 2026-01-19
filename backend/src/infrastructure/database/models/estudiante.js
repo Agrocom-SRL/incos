@@ -27,7 +27,7 @@ export const Estudiante = sequelize.define(
     },
     expedicion: {
       type: DataTypes.STRING(5),
-      allowNull: true, // Expedición NO es requerida
+      allowNull: true, // Expedición es opcional
       comment: 'Expedición del CI (SC, LP, CB, etc.)',
     },
     nombres: {
@@ -38,7 +38,7 @@ export const Estudiante = sequelize.define(
     apellidoPaterno: {
       type: DataTypes.STRING(100),
       field: 'apellido_paterno',
-      allowNull: true, // Apellido paterno NO es requerido
+      allowNull: true, // Apellido paterno es opcional
       comment: 'Apellido paterno',
     },
     apellidoMaterno: {

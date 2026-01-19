@@ -40,12 +40,11 @@ export function validateRegisterStudent(datosEstudiante) {
   const errors = [];
 
   // 2. Validar campos mínimos requeridos (basado en SQL schema NOT NULL)
-  // Según schema: ci, expedicion, nombres, apellido_paterno, fecha_nacimiento, genero, celular son NOT NULL
+  // Según schema: ci, nombres, fecha_nacimiento, genero, celular son NOT NULL
+  // Expedición y apellido_paterno son opcionales (NULL permitido)
   const camposRequeridos = [
     { field: 'ci', message: 'CI es requerido' },
-    { field: 'expedicionId', message: 'Expedición es requerida' },
     { field: 'nombres', message: 'Nombres son requeridos' },
-    { field: 'apellidoPaterno', message: 'Apellido paterno es requerido' },
     { field: 'fechaNacimiento', message: 'Fecha de nacimiento es requerida' },
     { field: 'generoId', message: 'Género es requerido' },
     { field: 'celular', message: 'Celular es requerido' },
@@ -110,7 +109,8 @@ export function validateRegisterStudent(datosEstudiante) {
       });
     } else {
       // Validar cada contacto
-      // Según schema estudiantes_apoderados: solo nombres es NOT NULL, tipo_parentesco_id también es requerido si se envía contacto
+      // Según schema estudiantes_apoderados: nombres es NOT NULL si se envía el contacto
+      // tipo_parentesco_id es opcional según schema (NULL permitido)
       datosEstudiante.contactosEmergencia.forEach((contacto, index) => {
         if (!contacto.nombres) {
           errors.push({
@@ -119,7 +119,7 @@ export function validateRegisterStudent(datosEstudiante) {
           });
         }
         // telefono es opcional según schema, no se valida como requerido
-        // tipoParentescoId es requerido según el validador del backend, pero si no se envía contacto no se valida aquí
+        // tipoParentescoId es opcional según schema, no se valida como requerido
       });
     }
   }
