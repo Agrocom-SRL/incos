@@ -172,15 +172,8 @@ export const useInscripcionNuevaFormHandlers = (mode = 'nuevo', options = {}) =>
             
             if (inscripcionId) {
                 // Navegar a la página de detalle de la inscripción
-                // TODO: Crear ruta de detalle /inscripciones/:id cuando se implemente la página de detalle
-                // Por ahora navegamos a la ruta (aunque aún no esté implementada)
+                // El InscripcionDetailProvider cargará automáticamente los datos cuando se monte
                 navigate(`/inscripciones/${inscripcionId}`, { replace: true });
-                
-                // Recargar la página después de un breve delay para asegurar que se carguen los datos frescos
-                // Esto es necesario porque la ruta de detalle aún no está implementada
-                setTimeout(() => {
-                    window.location.reload();
-                }, 100);
             } else {
                 // Si no hay ID, solo mostrar mensaje (no navegar)
                 console.warn('⚠️ Inscripción creada pero no se obtuvo ID para navegar');

@@ -458,35 +458,56 @@ export class PDFGenerator {
         // Crear documento PDF
         const doc = new PDFDocument({
           size: 'LETTER',
-          margins: { top: 40, bottom: 40, left: 40, right: 40 },
+          margins: { top: 30, bottom: 30, left: 40, right: 40 },
         });
 
         // Pipe al archivo
         const stream = fs.createWriteStream(outputPath);
         doc.pipe(stream);
 
+        // Variables de posición
+        const leftMargin = 50;
+        const fieldWidth = 200;
+        const checkboxSize = 10;
+        const lineHeight = 15;
+        let currentY = 30;
+
         // ============================================
         // ENCABEZADO
         // ============================================
         doc
-          .fontSize(14)
+          .fontSize(12)
           .font('Helvetica-Bold')
-          .text('INSTITUTO TÉCNICO SUPERIOR DE EDUCACIÓN COMERCIAL', {
+          .text('INSTITUTO COMERCIAL DE LA NACION INCOS SANTA CRUZ', leftMargin, currentY, {
             align: 'center',
-          })
-          .fontSize(12)
-          .text('"ISEC MONTERO"', {
+            width: 500,
+          });
+        currentY += 18;
+        
+        doc
+          .fontSize(10)
+          .font('Helvetica')
+          .text('PIONEROS EN EDUCACION SUPERIOR', leftMargin, currentY, {
             align: 'center',
-          })
+            width: 500,
+          });
+        currentY += 20;
+        
+        doc
           .fontSize(16)
-          .text('FORMULARIO DE INSCRIPCIÓN', {
+          .text('FORMULARIO DE INSCRIPCIÓN', leftMargin, currentY, {
             align: 'center',
-          })
+            width: 500,
+          });
+        currentY += 18;
+        
+        doc
           .fontSize(12)
-          .text(`GESTIÓN ${data.gestionYear || new Date().getFullYear()}`, {
+          .text(`GESTIÓN ${data.gestionYear || new Date().getFullYear()}`, leftMargin, currentY, {
             align: 'center',
-          })
-          .moveDown(1.5);
+            width: 500,
+          });
+        currentY += 25;
 
         // ============================================
         // SECCIÓN 1: DATOS PERSONALES
@@ -494,59 +515,152 @@ export class PDFGenerator {
         doc
           .fontSize(12)
           .font('Helvetica-Bold')
-          .text('1. DATOS PERSONALES', { underline: true })
-          .moveDown(0.5)
-          .font('Helvetica')
-          .fontSize(10);
+          .text('1. DATOS PERSONALES', leftMargin, currentY);
+        currentY += 20;
 
         // Nombres y Apellidos
         doc
+          .fontSize(10)
           .font('Helvetica-Bold')
-          .text('Nombres y Apellidos:')
+          .text('Nombres y Apellidos:', leftMargin, currentY);
+        currentY += lineHeight;
+        
+        doc
           .font('Helvetica')
-          .text(`Apellido Paterno: ${data.apellidoPaterno || ''}`)
-          .text(`Apellido Materno: ${data.apellidoMaterno || ''}`)
-          .text(`Nombres: ${data.nombres || ''}`)
-          .moveDown(0.3);
+          .text(`Apellido Paterno: ${data.apellidoPaterno || ''}`, leftMargin, currentY);
+        currentY += lineHeight;
+        
+        doc
+          .text(`Apellido Materno: ${data.apellidoMaterno || ''}`, leftMargin, currentY);
+        currentY += lineHeight;
+        
+        doc
+          .text(`Nombres: ${data.nombres || ''}`, leftMargin, currentY);
+        currentY += lineHeight + 5;
 
-        // C.I. y Género
+        // C.I. Nº
         doc
           .font('Helvetica-Bold')
-          .text(`C.I. Nº: ${data.ci || ''} ${data.expedicion || ''}`)
-          .font('Helvetica')
-          .text(`Género: ${data.genero === 'M' ? 'Masculino' : data.genero === 'F' ? 'Femenino' : ''}`)
-          .text(`Grupo Sanguíneo: ${data.tipoSangre || ''}`)
-          .text(`Correo Electrónico: ${data.emailPersonal || ''}`)
-          .text(`Estado Civil: ${data.estadoCivil || ''}`)
-          .moveDown(0.3);
+          .text(`C.I. Nº: ${data.ci || ''} ${data.expedicion || ''}`, leftMargin, currentY);
+        currentY += lineHeight;
 
-        // Discapacidad
+        // Género con checkboxes circulares
         doc
-          .text(`Discapacidad: ${data.tieneDiscapacidad ? 'Sí' : 'No'}`)
-          .moveDown(0.3);
+          .font('Helvetica')
+          .text('Género:', leftMargin, currentY);
+        const generoX = leftMargin + 60;
+        const generoY = currentY - 2;
+        // Checkbox Masculino
+        doc.circle(generoX, generoY + 5, checkboxSize / 2).stroke();
+        if (data.genero === 'Masculino' || data.genero === 'M') {
+          doc.circle(generoX, generoY + 5, checkboxSize / 2 - 2).fill();
+        }
+        doc.text('Masculino O', generoX + 10, generoY);
+        // Checkbox Femenino
+        const femeninoX = generoX + 100;
+        doc.circle(femeninoX, generoY + 5, checkboxSize / 2).stroke();
+        if (data.genero === 'Femenino' || data.genero === 'F') {
+          doc.circle(femeninoX, generoY + 5, checkboxSize / 2 - 2).fill();
+        }
+        doc.text('Femenino O', femeninoX + 10, generoY);
+        currentY += lineHeight;
+
+        // Grupo Sanguíneo
+        doc
+          .text(`Grupo Sanguíneo: ${data.tipoSangre || ''}`, leftMargin, currentY);
+        currentY += lineHeight;
+
+        // Correo Electrónico
+        doc
+          .text(`Correo Electrónico: ${data.emailPersonal || ''}`, leftMargin, currentY);
+        currentY += lineHeight;
+
+        // Estado Civil con checkboxes
+        doc
+          .text('Estado Civil:', leftMargin, currentY);
+        const estadoCivilX = leftMargin + 80;
+        const estadoCivilY = currentY - 2;
+        const estados = ['Soltero(a)', 'Casado(a)', 'Concubinato'];
+        estados.forEach((estado, index) => {
+          const x = estadoCivilX + (index * 100);
+          doc.circle(x, estadoCivilY + 5, checkboxSize / 2).stroke();
+          if (data.estadoCivil && data.estadoCivil.toLowerCase().includes(estado.toLowerCase().replace('(a)', '').replace('(', '').replace(')', ''))) {
+            doc.circle(x, estadoCivilY + 5, checkboxSize / 2 - 2).fill();
+          }
+          doc.text(`${estado} O`, x + 10, estadoCivilY);
+        });
+        currentY += lineHeight;
+
+        // Discapacidad con checkboxes
+        doc
+          .text('Discapacidad:', leftMargin, currentY);
+        const discapacidadX = leftMargin + 80;
+        const discapacidadY = currentY - 2;
+        // Sí
+        doc.circle(discapacidadX, discapacidadY + 5, checkboxSize / 2).stroke();
+        if (data.tieneDiscapacidad) {
+          doc.circle(discapacidadX, discapacidadY + 5, checkboxSize / 2 - 2).fill();
+        }
+        doc.text('Si) O', discapacidadX + 10, discapacidadY);
+        // No
+        const noX = discapacidadX + 60;
+        doc.circle(noX, discapacidadY + 5, checkboxSize / 2).stroke();
+        if (!data.tieneDiscapacidad) {
+          doc.circle(noX, discapacidadY + 5, checkboxSize / 2 - 2).fill();
+        }
+        doc.text('No) O', noX + 10, discapacidadY);
+        currentY += lineHeight + 5;
 
         // Lugar y Fecha de Nacimiento
         doc
           .font('Helvetica-Bold')
-          .text('Lugar y Fecha de Nacimiento:')
+          .text('Lugar y Fecha de Nacimiento:', leftMargin, currentY);
+        currentY += lineHeight;
+        
+        doc
           .font('Helvetica')
-          .text(`Localidad: ${data.ciudadNacimiento || ''}`)
-          .text(`Provincia: ${data.provincia || ''}`)
-          .text(`Departamento: ${data.departamento || ''}`)
-          .text(`Fecha: ${data.fechaNacimiento ? new Date(data.fechaNacimiento).toLocaleDateString('es-BO') : ''}`)
-          .text(`Nacionalidad: ${data.nacionalidad || 'Boliviana'}`)
-          .text(`Edad: ${data.edad || ''}`)
-          .moveDown(0.3);
+          .text(`Localidad: ${data.ciudadNacimiento || ''}`, leftMargin, currentY);
+        currentY += lineHeight;
+        
+        doc
+          .text(`Provincia: ${data.provincia || ''}`, leftMargin, currentY);
+        currentY += lineHeight;
+        
+        doc
+          .text(`Departamento: ${data.departamento || ''}`, leftMargin, currentY);
+        currentY += lineHeight;
+        
+        // Fecha (Día, Mes, Año)
+        doc
+          .text(`Día: ${data.fechaNacimiento ? data.fechaNacimiento.split('/')[0] : ''}`, leftMargin, currentY);
+        doc
+          .text(`Mes: ${data.fechaNacimiento ? data.fechaNacimiento.split('/')[1] : ''}`, leftMargin + 80, currentY);
+        doc
+          .text(`Año: ${data.fechaNacimiento ? data.fechaNacimiento.split('/')[2] : ''}`, leftMargin + 160, currentY);
+        currentY += lineHeight;
+        
+        doc
+          .text(`Nacionalidad: ${data.nacionalidad || 'Boliviana'}`, leftMargin, currentY);
+        currentY += lineHeight;
+        
+        doc
+          .text(`Edad: ${data.edad || ''}`, leftMargin, currentY);
+        currentY += lineHeight + 5;
 
         // Domicilio
         doc
-          .text(`Domicilio: ${data.direccion || ''}`)
-          .text(`Idioma de origen: ${data.idiomaMaterno || ''}`)
-          .text(`Celular: ${data.celular || ''}`)
-          .text(`Trabaja: ${data.trabaja ? 'Sí' : 'No'}`)
-          .text(`Cargo: ${data.cargo || ''}`)
-          .text(`Empresa/Institución: ${data.empresa || ''}`)
-          .moveDown(1);
+          .text(`Domicilio: ${data.direccion || ''}`, leftMargin, currentY);
+        currentY += lineHeight;
+
+        // Idioma de origen
+        doc
+          .text(`Idioma de origen: ${data.idiomaMaterno || ''}`, leftMargin, currentY);
+        currentY += lineHeight;
+
+        // Celular
+        doc
+          .text(`Celular: ${data.celular || ''}`, leftMargin, currentY);
+        currentY += 20;
 
         // ============================================
         // SECCIÓN 2: DATOS ACADÉMICOS
@@ -554,13 +668,41 @@ export class PDFGenerator {
         doc
           .fontSize(12)
           .font('Helvetica-Bold')
-          .text('2. DATOS ACADÉMICOS', { underline: true })
-          .moveDown(0.5)
-          .font('Helvetica')
+          .text('2. DATOS ACADÉMICOS', leftMargin, currentY);
+        currentY += 20;
+
+        // Carrera con checkboxes (solo las 3 carreras del seeder)
+        doc
           .fontSize(10)
-          .text(`Carrera: ${data.carrera || ''}`)
-          .text(`Año: ${data.anio || ''}`)
-          .moveDown(1);
+          .font('Helvetica')
+          .text('Carrera:', leftMargin, currentY);
+        const carreraY = currentY - 2;
+        const carreras = ['Sistemas Informáticos', 'Administración de Empresas', 'Contaduría General'];
+        carreras.forEach((carrera, index) => {
+          const x = leftMargin + (index % 2) * 250;
+          const y = carreraY + (Math.floor(index / 2) * lineHeight);
+          doc.circle(x + 60, y + 5, checkboxSize / 2).stroke();
+          if (data.carrera && data.carrera.toLowerCase().includes(carrera.toLowerCase().split(' ')[0])) {
+            doc.circle(x + 60, y + 5, checkboxSize / 2 - 2).fill();
+          }
+          doc.text(`${carrera} O`, x + 70, y);
+        });
+        currentY += lineHeight * 2 + 5;
+
+        // Año con checkboxes
+        doc
+          .text('Año:', leftMargin, currentY);
+        const anioY = currentY - 2;
+        const anios = ['Primer Año', 'Segundo Año', 'Tercer Año'];
+        anios.forEach((anio, index) => {
+          const x = leftMargin + (index * 150);
+          doc.circle(x + 40, anioY + 5, checkboxSize / 2).stroke();
+          if (data.anio && data.anio.toLowerCase().includes(anio.toLowerCase().split(' ')[0])) {
+            doc.circle(x + 40, anioY + 5, checkboxSize / 2 - 2).fill();
+          }
+          doc.text(`${anio} O`, x + 50, anioY);
+        });
+        currentY += lineHeight + 15;
 
         // ============================================
         // SECCIÓN 3: DOCUMENTOS RECEPCIONADOS
@@ -568,10 +710,8 @@ export class PDFGenerator {
         doc
           .fontSize(12)
           .font('Helvetica-Bold')
-          .text('3. DOCUMENTOS RECEPCIONADOS', { underline: true })
-          .moveDown(0.5)
-          .font('Helvetica')
-          .fontSize(10);
+          .text('3. DOCUMENTOS RECEPCIONADOS', leftMargin, currentY);
+        currentY += 20;
 
         const documentos = [
           { nombre: 'Fotocopia Carnet de Identidad', entregado: data.documentos?.ci || false },
@@ -581,40 +721,48 @@ export class PDFGenerator {
         ];
 
         documentos.forEach((docItem) => {
-          const yPos = doc.y;
-          // Dibujar checkbox
-          doc
-            .rect(50, yPos - 2, 12, 12)
-            .stroke();
+          const checkboxX = leftMargin;
+          const checkboxY = currentY - 2;
+          // Dibujar checkbox circular
+          doc.circle(checkboxX + 5, checkboxY + 5, checkboxSize / 2).stroke();
           
-          // Si está entregado, marcar con X
+          // Si está entregado, marcar con círculo relleno
           if (docItem.entregado) {
-            doc
-              .font('Helvetica-Bold')
-              .fontSize(12)
-              .text('X', 52, yPos - 1, { width: 10, align: 'center' });
+            doc.circle(checkboxX + 5, checkboxY + 5, checkboxSize / 2 - 2).fill();
           }
           
           // Texto del documento
           doc
             .font('Helvetica')
             .fontSize(10)
-            .text(docItem.nombre, 70, yPos, { width: 450 });
+            .text(`${docItem.nombre} O`, checkboxX + 15, checkboxY);
+          
+          currentY += lineHeight;
         });
 
-        doc.moveDown(1.5);
+        currentY += 20;
 
         // ============================================
         // FIRMAS
         // ============================================
         doc
           .fontSize(10)
-          .text('Firma Estudiante', 50, doc.y)
-          .text('_________________________', 50, doc.y + 15)
-          .moveDown(0.8)
-          .text('Responsable Inscripción', 50, doc.y)
-          .text('_________________________', 50, doc.y + 15)
-          .moveDown(1);
+          .text('Firma Estudiante', leftMargin, currentY);
+        currentY += 15;
+        doc
+          .moveTo(leftMargin, currentY)
+          .lineTo(leftMargin + 200, currentY)
+          .stroke();
+        currentY += 20;
+        
+        doc
+          .text('Responsable Inscripción', leftMargin, currentY);
+        currentY += 15;
+        doc
+          .moveTo(leftMargin, currentY)
+          .lineTo(leftMargin + 200, currentY)
+          .stroke();
+        currentY += 20;
 
         // ============================================
         // FOOTER - DISCLAIMER
@@ -624,6 +772,8 @@ export class PDFGenerator {
           .font('Helvetica-Oblique')
           .text(
             'El llenado del presente formulario es responsabilidad plena del postulante (estudiante) y los documentos adjuntos respaldan los requisitos establecidos por la R.M. 0001/2026',
+            leftMargin,
+            currentY,
             {
               align: 'center',
               width: 500,

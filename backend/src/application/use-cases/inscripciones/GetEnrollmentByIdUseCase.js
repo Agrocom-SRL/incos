@@ -510,23 +510,37 @@ export class GetEnrollmentByIdUseCase {
 
           const documentos = documentosResult.studentDocuments || [];
           
-          // Buscar el más reciente que contenga FORMULARIO_INSCRIPCION en el nombre
-          const formularioDoc = documentos.find(doc => {
-            const docPlain = doc.toPlainObject ? doc.toPlainObject() : doc;
-            return docPlain.fileName?.includes('FORMULARIO_INSCRIPCION') || 
-                   docPlain.tipoDocumento === 'INSCRIPCION';
-          });
+          // Filtrar solo documentos que sean formularios de inscripción (deben tener FORMULARIO_INSCRIPCION en el nombre)
+          // y ordenar por fecha de creación descendente para obtener el más reciente
+          const formulariosDocs = documentos
+            .map(doc => {
+              const docPlain = doc.toPlainObject ? doc.toPlainObject() : doc;
+              return docPlain;
+            })
+            .filter(doc => {
+              // Debe tener tipoDocumento === 'INSCRIPCION' Y el nombre debe incluir 'FORMULARIO_INSCRIPCION'
+              return doc.tipoDocumento === 'INSCRIPCION' && 
+                     doc.fileName?.includes('FORMULARIO_INSCRIPCION');
+            })
+            .sort((a, b) => {
+              // Ordenar por fecha de creación descendente (más reciente primero)
+              const dateA = a.createdAt ? new Date(a.createdAt) : new Date(0);
+              const dateB = b.createdAt ? new Date(b.createdAt) : new Date(0);
+              return dateB - dateA;
+            });
+
+          // Tomar el más reciente
+          const formularioDoc = formulariosDocs[0];
 
           if (formularioDoc) {
-            const docPlain = formularioDoc.toPlainObject ? formularioDoc.toPlainObject() : formularioDoc;
             const uploadDir = serverConfig.uploadsPath || 'uploads';
             // El filePath ya incluye la ruta relativa desde uploads/, solo necesitamos agregar el prefijo
-            const filePath = docPlain.filePath?.startsWith('/') 
-              ? docPlain.filePath 
-              : `/${uploadDir}/${docPlain.filePath}`.replace(/\\/g, '/');
+            const filePath = formularioDoc.filePath?.startsWith('/') 
+              ? formularioDoc.filePath 
+              : `/${uploadDir}/${formularioDoc.filePath}`.replace(/\\/g, '/');
             formularioInscripcion = {
               filePath: filePath,
-              fileName: docPlain.fileName || 'formulario_inscripcion.pdf',
+              fileName: formularioDoc.fileName || 'formulario_inscripcion.pdf',
             };
           }
         } catch (err) {

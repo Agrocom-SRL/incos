@@ -43,6 +43,14 @@ export class CreateEnrollmentUseCase {
    * @param {Object} params.managementPlanRepository - Repositorio de planes habilitados
    * @param {Object} params.studyPlanRepository - Repositorio de planes de estudios
    * @param {Object} params.configuracionSistemaRepository - Repositorio de configuración del sistema
+   * @param {Object} params.careerRepository - Repositorio de carreras
+   * @param {Object} params.studentDocumentRepository - Repositorio de documentos de estudiantes
+   * @param {Object} params.studentDocumentDeliveryRepository - Repositorio de entregas de documentos
+   * @param {Object} params.civilStatusRepository - Repositorio de estados civiles
+   * @param {Object} params.municipalityRepository - Repositorio de municipios
+   * @param {Object} params.provinceRepository - Repositorio de provincias
+   * @param {Object} params.departmentRepository - Repositorio de departamentos
+   * @param {Object} params.languageRepository - Repositorio de idiomas
    * @param {ILogger} params.logger - Logger para registro de eventos
    */
   constructor({
@@ -60,6 +68,11 @@ export class CreateEnrollmentUseCase {
     careerRepository,
     studentDocumentRepository,
     studentDocumentDeliveryRepository,
+    civilStatusRepository,
+    municipalityRepository,
+    provinceRepository,
+    departmentRepository,
+    languageRepository,
     logger,
   }) {
     this.enrollmentRepository = enrollmentRepository;
@@ -76,6 +89,11 @@ export class CreateEnrollmentUseCase {
     this.careerRepository = careerRepository;
     this.studentDocumentRepository = studentDocumentRepository;
     this.studentDocumentDeliveryRepository = studentDocumentDeliveryRepository;
+    this.civilStatusRepository = civilStatusRepository;
+    this.municipalityRepository = municipalityRepository;
+    this.provinceRepository = provinceRepository;
+    this.departmentRepository = departmentRepository;
+    this.languageRepository = languageRepository;
     this.logger = logger;
   }
 
@@ -288,12 +306,14 @@ export class CreateEnrollmentUseCase {
 
   /**
    * Obtiene o crea los datos académicos del estudiante
+   * Si el estudiante ya tiene datos académicos pero la carrera no coincide con el paralelo,
+   * verifica si tiene inscripciones previas. Si no tiene inscripciones, actualiza la carrera.
    * @private
    * @param {number} studentId - ID del estudiante
    * @param {Object} parallel - Entidad Parallel
    * @param {Object} management - Entidad Management
    * @returns {Promise<Object>} Entidad StudentAcademicData
-   * @throws {ValidationError} Si el paralelo no pertenece a la carrera del estudiante
+   * @throws {ValidationError} Si el paralelo no pertenece a la carrera del estudiante y tiene inscripciones previas
    */
   async _getOrCreateStudentAcademicData(studentId, parallel, management) {
     const studentAcademicDataResult = await this.studentAcademicDataRepository.findAll(
@@ -330,18 +350,57 @@ export class CreateEnrollmentUseCase {
       // Ya existen datos académicos
       studentAcademicData = studentAcademicDataResult.studentAcademicData[0];
       
-      // Validar que el paralelo pertenezca a la misma carrera del estudiante
+      // Si la carrera no coincide con el paralelo, verificar si tiene inscripciones previas
       if (parallel.careerId !== studentAcademicData.careerId) {
-        throw new ValidationError(
-          `El paralelo no pertenece a la carrera del estudiante. Paralelo: carrera ${parallel.careerId}, Estudiante: carrera ${studentAcademicData.careerId}`
+        // Verificar si tiene inscripciones previas en esta gestión
+        const existingEnrollmentsResult = await this.enrollmentRepository.findAll(
+          { studentAcademicDataId: studentAcademicData.id },
+          null,
+          null
         );
-      }
+        
+        const existingEnrollments = existingEnrollmentsResult.enrollments || [];
+        const hasEnrollmentsInCurrentManagement = existingEnrollments.some(enrollment => {
+          const enrollmentPlain = enrollment.toPlainObject ? enrollment.toPlainObject() : enrollment;
+          return enrollmentPlain.managementId === management.id;
+        });
 
-      this.logger.info('[Inscripciones] Datos académicos obtenidos', {
-        studentAcademicDataId: studentAcademicData.id,
-        careerId: studentAcademicData.careerId,
-        studentId: studentAcademicData.studentId,
-      });
+        if (hasEnrollmentsInCurrentManagement) {
+          // Tiene inscripciones previas, no se puede cambiar la carrera
+          throw new ValidationError(
+            `El paralelo no pertenece a la carrera del estudiante. Paralelo: carrera ${parallel.careerId}, Estudiante: carrera ${studentAcademicData.careerId}. El estudiante ya tiene inscripciones en esta gestión.`
+          );
+        } else {
+          // No tiene inscripciones previas en esta gestión, actualizar la carrera
+          this.logger.info('[Inscripciones] Actualizando carrera del estudiante', {
+            studentId,
+            oldCareerId: studentAcademicData.careerId,
+            newCareerId: parallel.careerId,
+            managementId: management.id,
+          });
+
+          const updatedData = {
+            careerId: parallel.careerId,
+            managementId: management.id, // Actualizar gestión de ingreso si es necesario
+          };
+
+          studentAcademicData = await this.studentAcademicDataRepository.update(
+            studentAcademicData.id,
+            updatedData
+          );
+
+          this.logger.info('[Inscripciones] Carrera del estudiante actualizada', {
+            studentAcademicDataId: studentAcademicData.id,
+            newCareerId: studentAcademicData.careerId,
+          });
+        }
+      } else {
+        this.logger.info('[Inscripciones] Datos académicos obtenidos', {
+          studentAcademicDataId: studentAcademicData.id,
+          careerId: studentAcademicData.careerId,
+          studentId: studentAcademicData.studentId,
+        });
+      }
     }
 
     return studentAcademicData;
@@ -583,15 +642,140 @@ export class CreateEnrollmentUseCase {
         throw new NotFoundError(`Carrera con ID ${studentAcademicData.careerId}`);
       }
 
-      // 2. Preparar datos del estudiante
-      const studentPlain = student.toPlainObject ? student.toPlainObject() : student;
+      // 2. Obtener estudiante completo con todos los campos necesarios
+      const studentComplete = await this.studentRepository.findById(student.id);
+      const studentPlain = studentComplete.toPlainObject ? studentComplete.toPlainObject() : studentComplete;
       const careerPlain = career.toPlainObject ? career.toPlainObject() : career;
       const managementPlain = management.toPlainObject ? management.toPlainObject() : management;
 
-      // Calcular edad
+      // 3. Obtener datos de catálogos para nombres descriptivos
+      // 3.1. Estado civil
+      let estadoCivilNombre = '';
+      if (studentPlain.estadoCivilId) {
+        try {
+          const estadoCivil = await this.civilStatusRepository.findById(studentPlain.estadoCivilId);
+          estadoCivilNombre = estadoCivil?.toPlainObject ? estadoCivil.toPlainObject().nombre : (estadoCivil?.nombre || '');
+        } catch (err) {
+          this.logger.warn('[Inscripciones] Error al obtener estado civil', {
+            studentId: student.id,
+            estadoCivilId: studentPlain.estadoCivilId,
+            error: err.message,
+          });
+        }
+      }
+
+      // 3.2. Municipio de residencia (y su provincia y departamento)
+      let municipioNombre = '';
+      let provinciaNombre = '';
+      let departamentoNombre = '';
+      if (studentPlain.municipioResidenciaId) {
+        try {
+          const municipio = await this.municipalityRepository.findById(studentPlain.municipioResidenciaId);
+          if (municipio) {
+            const municipioPlain = municipio.toPlainObject ? municipio.toPlainObject() : municipio;
+            municipioNombre = municipioPlain.nombre || '';
+            
+            if (municipioPlain.provinciaId) {
+              const provincia = await this.provinceRepository.findById(municipioPlain.provinciaId);
+              if (provincia) {
+                const provinciaPlain = provincia.toPlainObject ? provincia.toPlainObject() : provincia;
+                provinciaNombre = provinciaPlain.nombre || '';
+                
+                if (provinciaPlain.departamentoId) {
+                  const departamento = await this.departmentRepository.findById(provinciaPlain.departamentoId);
+                  if (departamento) {
+                    const departamentoPlain = departamento.toPlainObject ? departamento.toPlainObject() : departamento;
+                    departamentoNombre = departamentoPlain.nombre || '';
+                  }
+                }
+              }
+            }
+          }
+        } catch (err) {
+          this.logger.warn('[Inscripciones] Error al obtener datos geográficos de residencia', {
+            studentId: student.id,
+            municipioResidenciaId: studentPlain.municipioResidenciaId,
+            error: err.message,
+          });
+        }
+      }
+
+      // 3.3. Idioma materno
+      // NOTA: El idioma materno no está directamente en la tabla estudiantes,
+      // está en estudiantes_origenes. Por ahora, dejamos vacío o intentamos obtenerlo de otra forma
+      // TODO: Si se necesita el idioma materno, se debe obtener de estudiantes_origenes
+      let idiomaMaternoNombre = '';
+      // Por ahora, si hay un campo directo, lo usamos
+      const idiomaMaterno = studentPlain.nativeLanguageId || studentPlain.idiomaMaterno;
+      if (idiomaMaterno) {
+        // Si es un número, es un ID de idioma
+        const idiomaId = parseInt(idiomaMaterno, 10);
+        if (!isNaN(idiomaId)) {
+          try {
+            const idioma = await this.languageRepository.findById(idiomaId);
+            if (idioma) {
+              const idiomaPlain = idioma.toPlainObject ? idioma.toPlainObject() : idioma;
+              idiomaMaternoNombre = idiomaPlain.nombre || '';
+            }
+          } catch (err) {
+            this.logger.warn('[Inscripciones] Error al obtener idioma materno', {
+              studentId: student.id,
+              idiomaMaterno,
+              error: err.message,
+            });
+          }
+        } else {
+          // Si no es un número, es un string directo
+          idiomaMaternoNombre = idiomaMaterno;
+        }
+      }
+
+      // 4. Obtener documentos entregados del estudiante
+      const documentDeliveriesResult = await this.studentDocumentDeliveryRepository.findAll(
+        { studentId: student.id },
+        null,
+        null
+      );
+      const documentDeliveries = documentDeliveriesResult.studentDocumentDeliveries || [];
+
+      // 4.1. Verificar aporte voluntario desde documentos_estudiante
+      // El aporte voluntario se registra como un documento con tipoDocumento: 'PAGO'
+      const studentDocumentsResult = await this.studentDocumentRepository.findAll(
+        { 
+          studentId: student.id,
+          tipoDocumento: 'PAGO' // Solo documentos de pago
+        },
+        null,
+        null
+      );
+      const paymentDocuments = studentDocumentsResult.studentDocuments || [];
+      const tieneAporteVoluntario = paymentDocuments.length > 0;
+
+      // Mapear documentos entregados por documentacionId
+      // Los IDs comunes son: 1=Diploma Bachiller, 2=Cert.Nacimiento, 3=CI, 4=Foto 3x3, 5=Folder nepaco
+      const documentosEntregados = {
+        ci: false,
+        certificadoNacimiento: false,
+        diplomaBachiller: false,
+        aporteVoluntario: tieneAporteVoluntario, // Verificado desde documentos_estudiante
+      };
+
+      documentDeliveries.forEach((delivery) => {
+        const deliveryPlain = delivery.toPlainObject ? delivery.toPlainObject() : delivery;
+        if (deliveryPlain.entregado) {
+          const docId = deliveryPlain.documentacionId;
+          // Mapear según los IDs conocidos
+          if (docId === 3) documentosEntregados.ci = true;
+          if (docId === 2) documentosEntregados.certificadoNacimiento = true;
+          if (docId === 1) documentosEntregados.diplomaBachiller = true;
+        }
+      });
+
+      // 5. Calcular edad
       let edad = '';
-      if (studentPlain.fechaNacimiento) {
-        const fechaNac = new Date(studentPlain.fechaNacimiento);
+      const fechaNacimiento = studentPlain.birthDate || studentPlain.fechaNacimiento;
+      if (fechaNacimiento) {
+        const fechaNac = new Date(fechaNacimiento);
         const hoy = new Date();
         edad = hoy.getFullYear() - fechaNac.getFullYear();
         const mes = hoy.getMonth() - fechaNac.getMonth();
@@ -600,39 +784,49 @@ export class CreateEnrollmentUseCase {
         }
       }
 
-      // 3. Preparar datos para PDF
+      // 6. Formatear fecha de nacimiento
+      let fechaNacFormateada = '';
+      if (fechaNacimiento) {
+        const fechaNac = new Date(fechaNacimiento);
+        const dia = String(fechaNac.getDate()).padStart(2, '0');
+        const mes = String(fechaNac.getMonth() + 1).padStart(2, '0');
+        const anio = fechaNac.getFullYear();
+        fechaNacFormateada = `${dia}/${mes}/${anio}`;
+      }
+
+      // 7. Formatear género
+      let generoTexto = '';
+      const genero = studentPlain.gender || studentPlain.genero;
+      if (genero === 'M' || genero === 'MASCULINO') generoTexto = 'Masculino';
+      else if (genero === 'F' || genero === 'FEMENINO') generoTexto = 'Femenino';
+
+      // 8. Preparar datos para PDF
+      // NOTA: El mapper convierte los nombres de BD (snake_case español) a dominio (camelCase inglés)
+      // Por lo tanto, usamos los nombres del dominio (firstName, lastName, etc.)
       const pdfData = {
         gestionYear: managementPlain.year || managementPlain.anio,
-        apellidoPaterno: studentPlain.apellidoPaterno || '',
-        apellidoMaterno: studentPlain.apellidoMaterno || '',
-        nombres: studentPlain.nombres || '',
+        apellidoPaterno: studentPlain.lastName || studentPlain.apellidoPaterno || '',
+        apellidoMaterno: studentPlain.motherLastName || studentPlain.apellidoMaterno || '',
+        nombres: studentPlain.firstName || studentPlain.nombres || '',
         ci: studentPlain.ci || '',
-        expedicion: studentPlain.expedicion || 'S.C.',
-        genero: studentPlain.genero || '',
-        tipoSangre: studentPlain.tipoSangre || '',
-        emailPersonal: studentPlain.emailPersonal || '',
-        estadoCivil: studentPlain.estadoCivil || '',
-        tieneDiscapacidad: studentPlain.tieneDiscapacidad || false,
-        ciudadNacimiento: studentPlain.ciudadNacimiento || '',
-        provincia: studentPlain.provincia || '',
-        departamento: studentPlain.departamento || '',
-        fechaNacimiento: studentPlain.fechaNacimiento || '',
+        expedicion: studentPlain.expedition || studentPlain.expedicion || 'S.C.',
+        genero: generoTexto,
+        tipoSangre: studentPlain.bloodType || studentPlain.tipoSangre || '',
+        emailPersonal: studentPlain.personalEmail || studentPlain.emailPersonal || '',
+        estadoCivil: estadoCivilNombre,
+        tieneDiscapacidad: studentPlain.hasDisability !== undefined ? studentPlain.hasDisability : (studentPlain.tieneDiscapacidad || false),
+        ciudadNacimiento: municipioNombre, // Usar el nombre del municipio de residencia como ciudad de nacimiento
+        provincia: provinciaNombre,
+        departamento: departamentoNombre,
+        fechaNacimiento: fechaNacFormateada,
         nacionalidad: 'Boliviana',
         edad: String(edad),
-        direccion: studentPlain.direccion || '',
-        idiomaMaterno: studentPlain.idiomaMaterno || '',
-        celular: studentPlain.celular || '',
-        trabaja: false, // TODO: Obtener de datos del estudiante si existe
-        cargo: '',
-        empresa: '',
+        direccion: studentPlain.address || studentPlain.direccion || '',
+        idiomaMaterno: idiomaMaternoNombre,
+        celular: studentPlain.mobilePhone || studentPlain.celular || '',
         carrera: careerPlain.name || careerPlain.nombre || '',
         anio: parallel.name || '', // Nombre del paralelo (ej: "Primer Año")
-        documentos: {
-          ci: false, // TODO: Verificar si está entregado
-          certificadoNacimiento: false,
-          diplomaBachiller: false,
-          aporteVoluntario: false,
-        },
+        documentos: documentosEntregados,
       };
 
       // 4. Construir rutas del archivo

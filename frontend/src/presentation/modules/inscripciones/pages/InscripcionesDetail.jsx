@@ -14,7 +14,7 @@
  * - Contenido muestra: datos de la inscripción y sus relaciones
  */
 
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
@@ -32,6 +32,18 @@ const InscripcionesDetail = () => {
     loading = false,
     error = null,
   } = useInscripcionDetailContext();
+
+  // Redirigir a la lista solo si hay un error definitivo (no mientras carga)
+  // No redirigir automáticamente si no hay inscripción, dejar que el componente muestre el estado Empty
+  useEffect(() => {
+    // Solo redirigir si ya terminó de cargar Y hay un error específico (no solo falta de datos)
+    // No redirigir si está cargando o si simplemente no hay datos (el componente mostrará Empty)
+    if (!loading && error) {
+      // Solo redirigir si es un error real (no solo falta de datos)
+      // Por ejemplo, un error 404 o de servidor
+      navigate('/inscripciones', { replace: true });
+    }
+  }, [loading, error, navigate]);
 
   // Obtener el formulario de inscripción desde los datos de la inscripción
   const formularioInscripcion = inscripcion?.formularioInscripcion || null;

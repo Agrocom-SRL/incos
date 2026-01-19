@@ -49,6 +49,9 @@ export class GetStudentByIdUseCase {
  * @param {Object} params.studentScholarshipRepository - Repositorio de asignaciones de becas
  * @param {Object} params.scholarshipRepository - Repositorio de becas/descuentos
  * @param {Object} params.managementRepository - Repositorio de gestiones
+ * @param {Object} params.studentAcademicDataRepository - Repositorio de datos académicos del estudiante
+ * @param {Object} params.enrollmentRepository - Repositorio de inscripciones
+ * @param {Object} params.getEnrollmentByIdUseCase - Use case para obtener detalle de inscripción
  * @param {ILogger} params.logger - Logger para registro de eventos
  */
   constructor({
@@ -70,6 +73,9 @@ export class GetStudentByIdUseCase {
     scholarshipRepository,
     managementRepository,
     studentDocumentRepository,
+    studentAcademicDataRepository,
+    enrollmentRepository,
+    getEnrollmentByIdUseCase,
     logger,
   }) {
     this.studentRepository = studentRepository;
@@ -90,6 +96,9 @@ export class GetStudentByIdUseCase {
     this.scholarshipRepository = scholarshipRepository;
     this.managementRepository = managementRepository;
     this.studentDocumentRepository = studentDocumentRepository;
+    this.studentAcademicDataRepository = studentAcademicDataRepository;
+    this.enrollmentRepository = enrollmentRepository;
+    this.getEnrollmentByIdUseCase = getEnrollmentByIdUseCase;
     this.logger = logger;
   }
 
@@ -469,6 +478,80 @@ export class GetStudentByIdUseCase {
         }
       }
 
+      // 7.2. Buscar inscripción más reciente del estudiante (solo si está inscrito)
+      let inscripcion = null;
+      if (this.studentAcademicDataRepository && this.enrollmentRepository && this.getEnrollmentByIdUseCase) {
+        try {
+          // Obtener datos académicos del estudiante
+          const academicDataResult = await this.studentAcademicDataRepository.findAll(
+            { studentId: student.id },
+            null,
+            null
+          );
+          const academicDataList = academicDataResult.studentAcademicData || [];
+
+          if (academicDataList.length > 0) {
+            // Buscar inscripciones para cada dato académico
+            let latestEnrollment = null;
+            let latestEnrollmentDate = null;
+
+            for (const academicData of academicDataList) {
+              const academicDataPlain = academicData.toPlainObject ? academicData.toPlainObject() : academicData;
+              
+              if (academicDataPlain.id) {
+                try {
+                  const enrollmentsResult = await this.enrollmentRepository.findAll(
+                    { studentAcademicDataId: academicDataPlain.id },
+                    null,
+                    null
+                  );
+                  const enrollments = enrollmentsResult.enrollments || [];
+
+                  // Buscar la inscripción más reciente
+                  for (const enrollment of enrollments) {
+                    const enrollmentPlain = enrollment.toPlainObject ? enrollment.toPlainObject() : enrollment;
+                    const enrollmentDate = enrollmentPlain.createdAt || enrollmentPlain.fechaInscripcion;
+                    
+                    if (enrollmentDate && (!latestEnrollmentDate || new Date(enrollmentDate) > new Date(latestEnrollmentDate))) {
+                      latestEnrollment = enrollmentPlain;
+                      latestEnrollmentDate = enrollmentDate;
+                    }
+                  }
+                } catch (err) {
+                  this.logger.warn('[Estudiantes] Error al buscar inscripciones para datos académicos', {
+                    studentId: student.id,
+                    academicDataId: academicDataPlain.id,
+                    error: err.message,
+                  });
+                }
+              }
+            }
+
+            // Si se encontró una inscripción, obtener su detalle completo
+            if (latestEnrollment && latestEnrollment.id) {
+              try {
+                inscripcion = await this.getEnrollmentByIdUseCase.execute(latestEnrollment.id);
+                this.logger.info('[Estudiantes] Inscripción más reciente obtenida', {
+                  studentId: student.id,
+                  enrollmentId: latestEnrollment.id,
+                });
+              } catch (err) {
+                this.logger.warn('[Estudiantes] Error al obtener detalle de inscripción', {
+                  studentId: student.id,
+                  enrollmentId: latestEnrollment.id,
+                  error: err.message,
+                });
+              }
+            }
+          }
+        } catch (err) {
+          this.logger.warn('[Estudiantes] Error al buscar inscripción del estudiante', {
+            studentId: student.id,
+            error: err.message,
+          });
+        }
+      }
+
       // 8. Retornar el estudiante con todos sus datos relacionados
       const result = {
         student: studentPlain,
@@ -506,6 +589,8 @@ export class GetStudentByIdUseCase {
         tieneDocumentosFaltantes,
         // Acta de compromiso si existe
         actaCompromiso,
+        // Inscripción más reciente si existe
+        inscripcion,
       };
 
       this.logger.info('[Estudiantes] Estudiante obtenido exitosamente', {

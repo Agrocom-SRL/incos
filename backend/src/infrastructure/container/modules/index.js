@@ -24,12 +24,14 @@ import { registerPagosModule } from './pagos/index.js';
  */
 export function registerAllModules(container) {
     // 1. Módulos de dominio (use cases + controllers + routers)
+    // IMPORTANTE: Inscripciones debe registrarse antes de Estudiantes
+    // porque GetStudentByIdUseCase depende de GetEnrollmentByIdUseCase
+    registerInscripcionesModule(container);
     registerEstudiantesModule(container);
     registerConfiguracionModule(container);
     registerAcademicoModule(container);
     registerGeograficosModule(container);
     registerReferenciaModule(container);
-    registerInscripcionesModule(container);
     registerPagosModule(container);
 
     return container;

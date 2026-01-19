@@ -21,9 +21,8 @@ import { PageHeader } from '@molecules';
 import { useStudentDetailContext } from '@application-estudiantes/hooks';
 import { useGenerateActaCompromiso } from '@application-estudiantes/hooks';
 import { downloadFile } from '@application/utils';
-import { Spin, Alert, Empty, message } from 'antd';
-import { GiftOutlined, FileTextOutlined, DollarOutlined, DownloadOutlined } from '@ant-design/icons';
-import { Button } from '@atoms';
+import { Spin, Alert, Empty, message, Card, Descriptions, Tag, Button } from 'antd';
+import { GiftOutlined, FileTextOutlined, DollarOutlined, DownloadOutlined, BookOutlined, EyeOutlined } from '@ant-design/icons';
 import {
   DatosPersonalesSection,
   GuardiansSection,
@@ -100,6 +99,13 @@ const EstudiantesDetail = () => {
     }
   }, [student]);
 
+  // Handler para ver detalle de inscripción
+  const handleVerInscripcion = useCallback(() => {
+    if (student?.inscripcion?.enrollment?.id) {
+      navigate(`/inscripciones/${student.inscripcion.enrollment.id}`);
+    }
+  }, [navigate, student]);
+
   // Acciones del header (botones) - debe estar antes de los returns tempranos
   // Solo mostrar botón de acta si faltan documentos
   // El campo tieneDocumentosFaltantes viene al nivel raíz del objeto student
@@ -109,7 +115,7 @@ const EstudiantesDetail = () => {
     <>
       {actaCompromisoData ? (
         <Button
-          variant="default"
+          type="default"
           icon={<DownloadOutlined />}
           onClick={handleDownloadActaCompromiso}
           style={{ marginRight: 8 }}
@@ -118,7 +124,7 @@ const EstudiantesDetail = () => {
         </Button>
       ) : tieneDocumentosFaltantesFlag ? (
         <Button
-          variant="default"
+          type="default"
           icon={<FileTextOutlined />}
           onClick={handleGenerateActaCompromiso}
           loading={loadingActa}
@@ -129,8 +135,7 @@ const EstudiantesDetail = () => {
       ) : null}
       <div style={{ marginRight: 8, display: 'inline-block' }}>
         <Button
-          variant="warning"
-          style="outlined"
+          type="default"
           icon={<DollarOutlined />}
           onClick={handleRegistrarPago}
         >
@@ -138,7 +143,7 @@ const EstudiantesDetail = () => {
         </Button>
       </div>
       <Button
-        variant="primary"
+        type="primary"
         icon={<GiftOutlined />}
         onClick={handleAsignarBeca}
       >
@@ -206,7 +211,7 @@ const EstudiantesDetail = () => {
     );
   }
 
-  const { student: studentData, guardians, disabilities, origins, documentDeliveries, scholarships, tieneDocumentosFaltantes, actaCompromiso } = student;
+  const { student: studentData, guardians, disabilities, origins, documentDeliveries, scholarships, tieneDocumentosFaltantes, actaCompromiso, inscripcion } = student;
 
   // Debug: Log para verificar la estructura del objeto student
   console.log('[EstudiantesDetail] Estructura del objeto student:', {
@@ -244,6 +249,61 @@ const EstudiantesDetail = () => {
 
         {/* Becas Asignadas */}
         <ScholarshipsSection scholarships={scholarships} />
+
+        {/* Inscripción Actual */}
+        {inscripcion && inscripcion.enrollment && (
+          <Card 
+            title={
+              <span>
+                <BookOutlined style={{ marginRight: 8 }} />
+                Inscripción Actual
+              </span>
+            }
+            style={{ marginTop: '24px' }}
+            extra={
+              <Button
+                type="primary"
+                icon={<EyeOutlined />}
+                onClick={handleVerInscripcion}
+              >
+                Ver Detalle
+              </Button>
+            }
+          >
+            <Descriptions column={2} bordered>
+              <Descriptions.Item label="ID de Inscripción">
+                {inscripcion.enrollment.id || 'N/A'}
+              </Descriptions.Item>
+              <Descriptions.Item label="Tipo de Inscripción">
+                {inscripcion.enrollment.enrollmentType ? (
+                  <Tag color="blue">{inscripcion.enrollment.enrollmentType}</Tag>
+                ) : 'N/A'}
+              </Descriptions.Item>
+              <Descriptions.Item label="Gestión">
+                {inscripcion.management?.name ? (
+                  <span>{inscripcion.management.name} ({inscripcion.management.year})</span>
+                ) : inscripcion.enrollment.managementId ? `ID: ${inscripcion.enrollment.managementId}` : 'N/A'}
+              </Descriptions.Item>
+              <Descriptions.Item label="Carrera">
+                {inscripcion.career?.name ? (
+                  <span>{inscripcion.career.code} - {inscripcion.career.name}</span>
+                ) : inscripcion.studentAcademicData?.careerId ? `ID: ${inscripcion.studentAcademicData.careerId}` : 'N/A'}
+              </Descriptions.Item>
+              <Descriptions.Item label="Estado de Registro">
+                {inscripcion.studentAcademicData?.registrationStatus ? (
+                  <Tag color={inscripcion.studentAcademicData.registrationStatus === 'ADMITIDO' ? 'success' : 'warning'}>
+                    {inscripcion.studentAcademicData.registrationStatus}
+                  </Tag>
+                ) : 'N/A'}
+              </Descriptions.Item>
+              <Descriptions.Item label="Materias Inscritas">
+                {inscripcion.enrollmentSubjects && inscripcion.enrollmentSubjects.length > 0 ? (
+                  <Tag color="blue">{inscripcion.enrollmentSubjects.length} materia(s)</Tag>
+                ) : 'N/A'}
+              </Descriptions.Item>
+            </Descriptions>
+          </Card>
+        )}
       </div>
     </PageTemplate>
   );
