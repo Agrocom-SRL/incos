@@ -110,6 +110,23 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
     // ============================================
 
     /**
+     * GET /api/v1/estudiantes/becas
+     * Listar todas las becas asignadas a estudiantes con datos enriquecidos
+     * Query: page, limit, search, studentId, managementId, state, scholarshipId
+     * 
+     * Retorna todas las becas asignadas con información del estudiante, tipo de beca y gestión.
+     * Útil para el listado general de becas asignadas.
+     * 
+     * IMPORTANTE: Esta ruta debe estar ANTES de /:id/scholarships para evitar conflictos
+     */
+    router.get(
+        '/becas',
+        listValidator,  // 1. Validator primero
+        validateRequest,  // 2. Middleware que procesa errores
+        (req, res, next) => controllers.listStudentScholarshipsController.handle(req, res, next)  // 3. Controller al final
+    );
+
+    /**
      * GET /api/v1/estudiantes/:id/scholarships
      * Obtener todas las becas de un estudiante con datos enriquecidos
      * Path: id (ID del estudiante)

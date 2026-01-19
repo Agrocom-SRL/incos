@@ -139,6 +139,7 @@ export const menuIconMap = {
 
     // Inscripciones - Nivel 1
     'INS': FileAddOutlined,
+    'INS-LIST': UnorderedListOutlined,
     'INS-CREATE': FileAddOutlined,
     'INS-HORARIO': SyncOutlined,
     'INS-MATERIAS-INSCRIBIR': BookOutlined,

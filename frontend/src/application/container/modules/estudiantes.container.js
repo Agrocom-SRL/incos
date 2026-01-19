@@ -16,6 +16,7 @@ import {
   ActualizarEstudianteUseCase,
   BuscarEstudianteUseCase,
   ObtenerTodasBecasDescuentosUseCase,
+  ObtenerTodasBecasAsignadasUseCase,
   CrearAsignarBecaUseCase,
 } from '@useCases/estudiantes';
 
@@ -109,6 +110,11 @@ export function registerEstudiantesModule(factory) {
   // Use Case para obtener todas las becas y descuentos
   factory.obtenerTodasBecasDescuentos = () => {
     return new ObtenerTodasBecasDescuentosUseCase(BecaDescuentoRepository);
+  };
+
+  // Use Case para obtener todas las becas asignadas a estudiantes
+  factory.obtenerTodasBecasAsignadas = () => {
+    return new ObtenerTodasBecasAsignadasUseCase(EstudianteBecaRepository);
   };
 
   // Use Case para crear asignación de beca

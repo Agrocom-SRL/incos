@@ -23,14 +23,17 @@ export const BecasListProvider = ({ children }) => {
     // Obtener datos compartidos del estado en memoria
     const { becas: becasData, loading, error, refetch } = useBecasContext();
 
-    // Función para obtener los campos de búsqueda de una beca
+    // Función para obtener los campos de búsqueda de una beca asignada
     const getSearchFields = useMemo(
         () => (beca) => [
-            beca.nombre || '',
-            beca.descripcion || '',
-            beca.tipo || '',
-            beca.porcentajeDescuento?.toString() || '',
-            beca.montoDescuento?.toString() || '',
+            beca.student?.nombreCompleto || '',
+            beca.student?.ci || '',
+            beca.student?.codigoEstudiante || '',
+            beca.scholarship?.nombre || '',
+            beca.scholarship?.codigo || '',
+            beca.management?.codigo || '',
+            beca.management?.nombre || '',
+            beca.state || '',
         ],
         []
     );

@@ -22,6 +22,7 @@ export const ESTUDIANTES_TOKENS = {
     listBecasDescuentosUseCase: 'estudiantes.listBecasDescuentosUseCase',
     createStudentScholarshipUseCase: 'estudiantes.createStudentScholarshipUseCase',
     getStudentScholarshipsByStudentIdUseCase: 'estudiantes.getStudentScholarshipsByStudentIdUseCase',
+    listStudentScholarshipsUseCase: 'estudiantes.listStudentScholarshipsUseCase',
     // TODO: Agregar otros Use Cases cuando se implementen sus endpoints
     // deleteStudentUseCase: 'estudiantes.deleteStudentUseCase',
 
@@ -35,6 +36,7 @@ export const ESTUDIANTES_TOKENS = {
     listBecasDescuentosController: 'estudiantes.listBecasDescuentosController',
     asignarBecaController: 'estudiantes.asignarBecaController',
     getStudentScholarshipsController: 'estudiantes.getStudentScholarshipsController',
+    listStudentScholarshipsController: 'estudiantes.listStudentScholarshipsController',
     // TODO: Agregar otros Controllers cuando se implementen sus endpoints
     // deleteStudentController: 'estudiantes.deleteStudentController',
 

@@ -46,41 +46,29 @@ export const createEstudianteDatosPersonalesFields = () => {
           placeholder: 'Ej: 1234567',
           maxLength: 15,
         },
-        // Expedición
+        // Expedición (NO REQUERIDO)
         {
           name: 'expedicionId',
           label: 'Expedición',
           type: 'select',
-          required: true,
+          required: false,
           span: 12,
           options: 'expediciones',
           placeholder: 'Seleccione expedición',
         },
-        // Nombres
-        {
-          name: 'nombres',
-          label: 'Nombres',
-          type: 'input',
-          inputType: 'text',
-          required: true,
-          span: 12,
-          placeholder: 'Ej: Juan Carlos',
-          maxLength: 100,
-          capitalize: true, // Capitaliza automáticamente la primera letra
-        },
-        // Apellido Paterno
+        // Apellido Paterno (PRIMERO)
         {
           name: 'apellidoPaterno',
           label: 'Apellido Paterno',
           type: 'input',
           inputType: 'text',
-          required: true,
+          required: false,
           span: 12,
           placeholder: 'Ej: Pérez',
           maxLength: 100,
           capitalize: true, // Capitaliza automáticamente la primera letra
         },
-        // Apellido Materno
+        // Apellido Materno (NO REQUERIDO)
         {
           name: 'apellidoMaterno',
           label: 'Apellido Materno',
@@ -89,6 +77,18 @@ export const createEstudianteDatosPersonalesFields = () => {
           required: false,
           span: 12,
           placeholder: 'Ej: González',
+          maxLength: 100,
+          capitalize: true, // Capitaliza automáticamente la primera letra
+        },
+        // Nombres (DESPUÉS DE APELLIDOS)
+        {
+          name: 'nombres',
+          label: 'Nombres',
+          type: 'input',
+          inputType: 'text',
+          required: true,
+          span: 12,
+          placeholder: 'Ej: Juan Carlos',
           maxLength: 100,
           capitalize: true, // Capitaliza automáticamente la primera letra
         },
@@ -142,6 +142,18 @@ export const createEstudianteDatosPersonalesFields = () => {
           defaultChecked: false,
           checkedChildren: 'Sí',
           unCheckedChildren: 'No',
+        },
+        // Es Traspaso (OPCIONAL - para marcar si es estudiante por traspaso)
+        {
+          name: 'esTraspaso',
+          label: 'Es Traspaso',
+          type: 'switch',
+          required: false,
+          span: 12,
+          defaultChecked: false,
+          checkedChildren: 'Sí',
+          unCheckedChildren: 'No',
+          tooltip: 'Marcar si el estudiante viene por traspaso de otra sede',
         },
       ],
     },

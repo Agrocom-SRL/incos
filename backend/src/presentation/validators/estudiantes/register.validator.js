@@ -39,13 +39,23 @@ export const registerStudentValidator = [
     .withMessage('CI debe tener entre 5 y 20 caracteres'),
 
   body('expedicionId')
-    .notEmpty()
-    .withMessage('Expedición es requerida')
+    .customSanitizer((value) => {
+      // Convertir string vacío a null antes de validar
+      return value === '' ? null : value;
+    })
+    .optional({ nullable: true, checkFalsy: true }) // Expedición NO es requerida
     .isString()
     .withMessage('Expedición debe ser una cadena de texto')
     .trim()
-    .isLength({ min: 2, max: 5 })
-    .withMessage('Expedición debe tener entre 2 y 5 caracteres'),
+    .custom((value) => {
+      // Si está presente después del trim, validar longitud
+      if (value && value.length > 0) {
+        if (value.length < 2 || value.length > 5) {
+          throw new Error('Expedición debe tener entre 2 y 5 caracteres');
+        }
+      }
+      return true;
+    }),
 
   body('nombres')
     .notEmpty()
@@ -57,13 +67,23 @@ export const registerStudentValidator = [
     .withMessage('Nombres debe tener entre 2 y 150 caracteres'),
 
   body('apellidoPaterno')
-    .notEmpty()
-    .withMessage('Apellido paterno es requerido')
+    .customSanitizer((value) => {
+      // Convertir string vacío a null antes de validar
+      return value === '' ? null : value;
+    })
+    .optional({ nullable: true, checkFalsy: true }) // Apellido paterno NO es requerido
     .isString()
     .withMessage('Apellido paterno debe ser una cadena de texto')
     .trim()
-    .isLength({ min: 2, max: 100 })
-    .withMessage('Apellido paterno debe tener entre 2 y 100 caracteres'),
+    .custom((value) => {
+      // Si está presente después del trim, validar longitud
+      if (value && value.length > 0) {
+        if (value.length < 2 || value.length > 100) {
+          throw new Error('Apellido paterno debe tener entre 2 y 100 caracteres');
+        }
+      }
+      return true;
+    }),
 
   body('fechaNacimiento')
     .notEmpty()
@@ -73,9 +93,13 @@ export const registerStudentValidator = [
     .custom((value) => {
       const fecha = new Date(value);
       const hoy = new Date();
+      // Ajustar a medianoche para comparación correcta
+      hoy.setHours(0, 0, 0, 0);
+      fecha.setHours(0, 0, 0, 0);
       const edadMinima = new Date();
       edadMinima.setFullYear(hoy.getFullYear() - 100); // Máximo 100 años
       
+      // Aceptar edad cumplida hasta la fecha (puede ser hoy)
       if (fecha > hoy) {
         throw new Error('La fecha de nacimiento no puede ser futura');
       }
@@ -216,6 +240,11 @@ export const registerStudentValidator = [
     .optional()
     .isBoolean()
     .withMessage('tieneDiscapacidad debe ser un booleano'),
+
+  body('esTraspaso')
+    .optional()
+    .isBoolean()
+    .withMessage('esTraspaso debe ser un booleano'),
 
   body('tipoDiscapacidadId')
     .optional()

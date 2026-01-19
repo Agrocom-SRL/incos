@@ -1,176 +1,157 @@
 -- ============================================
--- SEEDER: becas_descuentos
+-- SEEDER: becas_descuentos (VERSIÓN OFICIAL)
 -- Sistema de Gestión Académica - Instituto INCOS
 -- Datos iniciales: Catálogo de Becas y Descuentos
+-- Basado en: Resolución Ministerial Nº 434/2019
+-- D.D.E. SANTA CRUZ - Exclusión de Aportes Voluntarios Anuales
 -- ============================================
--- NOTA: Estos descuentos se aplican sobre el aporte anual de matrícula (400 Bs)
--- Ordenados de menor a mayor porcentaje
--- IDs fijos para facilitar referencias consistentes
+-- NOTA IMPORTANTE: 
+-- - Estos descuentos se aplican sobre el aporte VOLUNTARIO anual de 400 Bs
+-- - Solo se benefician estudiantes que NO hayan reprobado ninguna asignatura
+-- - Algunos descuentos requieren aprobación del Rector
+-- - El aporte anual es para mantenimiento de infraestructura, mobiliario y equipamiento
+-- ============================================
 
 USE instituto_incos;
 
 -- Deshabilitar foreign key checks temporalmente
 SET FOREIGN_KEY_CHECKS = 0;
 
--- Limpiar datos existentes (opcional, comentar si no se desea)
--- TRUNCATE TABLE becas_descuentos;
-
 -- ============================================
--- INSERTAR BECAS Y DESCUENTOS
--- Ordenados de menor a mayor porcentaje
+-- SECCIÓN A: EXCLUSIÓN POR RAZÓN SOCIAL
+-- Dirigido a sectores vulnerables y organizaciones sociales
 -- ============================================
 
--- BECA 25% - Escasos recursos económicos
 INSERT INTO becas_descuentos (
     id,
-    nombre, 
-    codigo, 
-    porcentaje, 
-    descripcion, 
-    requiere_documentacion, 
-    requiere_aprobacion_rector
-) VALUES (
-    1,
-    'Beca 25% - Escasos Recursos',
-    'BECA_25_RECURSOS',
-    25.00,
-    'Descuento del 25% por escasos recursos económicos. Requiere documentación que acredite la situación económica del estudiante o su familia (certificado de ingresos, declaración jurada, etc.).',
-    TRUE,
-    FALSE
-);
-
--- BECA 50% - Estudiante con discapacidad
-INSERT INTO becas_descuentos (
-    id,
-    nombre, 
-    codigo, 
-    porcentaje, 
-    descripcion, 
-    requiere_documentacion, 
-    requiere_aprobacion_rector
-) VALUES (
-    2,
-    'Beca 50% - Estudiante con Discapacidad',
-    'BECA_50_DISCAPACIDAD',
-    50.00,
-    'Descuento del 50% para estudiantes con discapacidad. Requiere carnet de discapacidad vigente emitido por el SENADIS (Servicio Nacional de Discapacidad) o certificado médico oficial.',
-    TRUE,
-    FALSE
-);
-
--- BECA 50% - Pueblos indígenas y originarios
-INSERT INTO becas_descuentos (
-    id,
-    nombre, 
-    codigo, 
-    porcentaje, 
-    descripcion, 
-    requiere_documentacion, 
-    requiere_aprobacion_rector
-) VALUES (
-    3,
-    'Beca 50% - Pueblos Indígenas',
-    'BECA_50_INDIGENA',
-    50.00,
-    'Descuento del 50% para estudiantes pertenecientes a pueblos indígenas u originarios. Requiere certificado de pertenencia a comunidad indígena u originaria.',
-    TRUE,
-    FALSE
-);
-
--- BECA 75% - Situación socioeconómica crítica
-INSERT INTO becas_descuentos (
-    id,
-    nombre, 
-    codigo, 
-    porcentaje, 
-    descripcion, 
-    requiere_documentacion, 
-    requiere_aprobacion_rector
-) VALUES (
-    4,
-    'Beca 75% - Situación Crítica',
-    'BECA_75_CRITICA',
-    75.00,
-    'Descuento del 75% para estudiantes en situación socioeconómica crítica. Requiere informe social, visita domiciliaria y aprobación del Rector.',
-    TRUE,
-    TRUE
-);
-
--- BECA 80% - Deportista destacado
-INSERT INTO becas_descuentos (
-    id,
-    nombre, 
-    codigo, 
-    porcentaje, 
-    descripcion, 
-    requiere_documentacion, 
-    requiere_aprobacion_rector
-) VALUES (
-    5,
-    'Beca 80% - Deportista Destacado',
-    'BECA_80_DEPORTISTA',
-    80.00,
-    'Descuento del 80% para deportistas que representan al instituto o al departamento en competencias nacionales o internacionales. Requiere certificación de la Federación Deportiva correspondiente y mantener rendimiento académico mínimo de 70 puntos. Requiere aprobación del Rector.',
-    TRUE,
-    TRUE
-);
-
--- BECA 80% - Convenio institucional
-INSERT INTO becas_descuentos (
-    id,
-    nombre, 
-    codigo, 
-    porcentaje, 
-    descripcion, 
-    requiere_documentacion, 
-    requiere_aprobacion_rector
-) VALUES (
-    6,
-    'Beca 80% - Convenio Institucional',
-    'BECA_80_CONVENIO',
-    80.00,
-    'Descuento del 80% por convenio con instituciones públicas o privadas (Alcaldía, Gobernación, empresas, ONGs, etc.). Requiere carta de compromiso de la institución auspiciadora. Requiere aprobación del Rector.',
-    TRUE,
-    TRUE
-);
-
--- BECA 90% - Víctima de violencia o conflicto social
-INSERT INTO becas_descuentos (
-    id,
-    nombre, 
-    codigo, 
-    porcentaje, 
-    descripcion, 
-    requiere_documentacion, 
-    requiere_aprobacion_rector
-) VALUES (
-    7,
-    'Beca 90% - Víctima de Violencia',
-    'BECA_90_VIOLENCIA',
-    90.00,
-    'Descuento del 90% para estudiantes víctimas de violencia intrafamiliar, violencia de género o desplazamiento por conflictos sociales. Requiere denuncia formal ante autoridades competentes (FELCV, DNA, SLIM) o informe de trabajo social. Requiere aprobación del Rector.',
-    TRUE,
-    TRUE
-);
-
--- BECA 100% - Excelencia académica (Promedio >= 90)
-INSERT INTO becas_descuentos (
-    id,
-    nombre, 
-    codigo, 
-    porcentaje, 
-    descripcion, 
-    requiere_documentacion, 
-    requiere_aprobacion_rector, 
-    es_automatica, 
+    nombre,
+    codigo,
+    porcentaje,
+    descripcion,
+    requiere_documentacion,
+    requiere_aprobacion_rector,
+    es_automatica,
     tipo_automatica,
     promedio_minimo
 ) VALUES (
-    8,
-    'Beca 100% - Excelencia Académica',
-    'BECA_100_EXCELENCIA',
+    1,
+    'Exclusión 100% - Razón Social',
+    'EXCL_100_SOCIAL',
     100.00,
-    'Descuento del 100% por excelencia académica. Se otorga automáticamente a estudiantes con promedio anual igual o mayor a 90 puntos en la gestión anterior.',
+    'Beneficio destinado a sectores vulnerables de la sociedad cruceña y/u organizaciones sociales. El estudiante o la organización social debe presentar carta dirigida al Rector justificando la razón para la exclusión. Incluye datos del estudiante o estudiantes beneficiarios. Para mantenimiento en cursos superiores requiere aprovechamiento mínimo de 90 puntos como promedio anual. Condición: No haber reprobado ninguna asignatura.',
+    TRUE,
+    TRUE,
+    FALSE,
+    'MANUAL',
+    90.00
+);
+
+-- ============================================
+-- SECCIÓN B: EXCLUSIÓN POR PROMOCIÓN INSTITUCIONAL
+-- Para promover el acceso a la formación superior
+-- ============================================
+
+INSERT INTO becas_descuentos (
+    id,
+    nombre,
+    codigo,
+    porcentaje,
+    descripcion,
+    requiere_documentacion,
+    requiere_aprobacion_rector,
+    es_automatica,
+    tipo_automatica,
+    promedio_minimo
+) VALUES (
+    2,
+    'Exclusión 100% - Promoción Institucional',
+    'EXCL_100_PROMOCION',
+    100.00,
+    'Beneficio para promocionar el acceso a la formación superior. Se materializa a través de inscripción gratuita o descuentos para estudiantes de primer año en todas las carreras, previa autorización del Rector. Conforme a campañas de difusión mediante medios de comunicación y redes sociales para completar cupos restantes. Para mantenimiento en cursos superiores requiere aprovechamiento mínimo de 90 puntos como promedio anual. Condición: No haber reprobado ninguna asignatura.',
+    TRUE,
+    TRUE,
+    FALSE,
+    'MANUAL',
+    90.00
+);
+
+-- ============================================
+-- SECCIÓN C: EXCLUSIÓN POR RENDIMIENTO ESTUDIANTIL
+-- Para nuevos estudiantes con excelencia académica en secundaria
+-- ============================================
+
+INSERT INTO becas_descuentos (
+    id,
+    nombre,
+    codigo,
+    porcentaje,
+    descripcion,
+    requiere_documentacion,
+    requiere_aprobacion_rector,
+    es_automatica,
+    tipo_automatica,
+    promedio_minimo
+) VALUES (
+    3,
+    'Exclusión 100% - Rendimiento Estudiantil (Nuevos)',
+    'EXCL_100_REND_NUEVOS',
+    100.00,
+    'Beneficio para promover educación gratuita de acuerdo a leyes vigentes. Exclusión de aporte a nuevos estudiantes con promedio igual o superior a 90 puntos en el último curso del nivel secundario o Centro de Educación Alternativa. Para mantenimiento en cursos superiores requiere aprovechamiento mínimo de 90 puntos como promedio anual. Condición: No haber reprobado ninguna asignatura.',
+    TRUE,
+    FALSE,
+    FALSE,
+    'MANUAL',
+    90.00
+);
+
+-- ============================================
+-- SECCIÓN D: EXCLUSIÓN A ESTUDIANTES DEL INSTITUTO
+-- Por rendimiento académico y participación en ferias
+-- ============================================
+
+-- D.1: Ganadores de Feria Interna - Primer Lugar
+INSERT INTO becas_descuentos (
+    id,
+    nombre,
+    codigo,
+    porcentaje,
+    descripcion,
+    requiere_documentacion,
+    requiere_aprobacion_rector,
+    es_automatica,
+    tipo_automatica,
+    promedio_minimo
+) VALUES (
+    4,
+    'Exclusión 100% - Feria Interna 1er Lugar',
+    'EXCL_100_FERIA_1ER',
+    100.00,
+    'Exclusión de aporte anual a estudiantes del instituto que hayan logrado el 1er lugar en la Feria Interna del Instituto. Requiere certificado o reconocimiento oficial. Condición: No haber reprobado ninguna asignatura.',
+    TRUE,
+    FALSE,
+    FALSE,
+    'MANUAL',
+    NULL
+);
+
+-- D.2: Excelencia Académica - Promedio >= 90 (Automática)
+INSERT INTO becas_descuentos (
+    id,
+    nombre,
+    codigo,
+    porcentaje,
+    descripcion,
+    requiere_documentacion,
+    requiere_aprobacion_rector,
+    es_automatica,
+    tipo_automatica,
+    promedio_minimo
+) VALUES (
+    5,
+    'Exclusión 100% - Excelencia Académica',
+    'EXCL_100_PROMEDIO_90',
+    100.00,
+    'Exclusión de aporte anual a estudiantes con promedio igual o superior a 90 puntos en su Historial Académico. Se otorga automáticamente. Condición: No haber reprobado ninguna asignatura.',
     TRUE,
     FALSE,
     TRUE,
@@ -178,42 +159,189 @@ INSERT INTO becas_descuentos (
     90.00
 );
 
--- BECA 100% - Madre/Padre soltero(a) en situación de vulnerabilidad
+-- D.3: Buen Rendimiento - Promedio >= 80 y < 90
 INSERT INTO becas_descuentos (
     id,
-    nombre, 
-    codigo, 
-    porcentaje, 
-    descripcion, 
-    requiere_documentacion, 
-    requiere_aprobacion_rector
+    nombre,
+    codigo,
+    porcentaje,
+    descripcion,
+    requiere_documentacion,
+    requiere_aprobacion_rector,
+    es_automatica,
+    tipo_automatica,
+    promedio_minimo
 ) VALUES (
-    9,
-    'Beca 100% - Madre/Padre Soltero(a)',
-    'BECA_100_MADRE_SOLTERA',
-    100.00,
-    'Descuento del 100% para madres o padres solteros en situación de vulnerabilidad económica. Requiere certificado de nacimiento del hijo(a), declaración jurada de maternidad/paternidad única y documentación de situación económica. Requiere aprobación del Rector.',
+    6,
+    'Descuento 25% - Buen Rendimiento Académico',
+    'DESC_25_PROMEDIO_80',
+    25.00,
+    'Descuento del 25% a estudiantes que tienen un promedio igual o superior a 80 puntos en su Historial Académico. Se otorga automáticamente. Condición: No haber reprobado ninguna asignatura.',
     TRUE,
-    TRUE
+    FALSE,
+    TRUE,
+    'PROMEDIO_80',
+    80.00
 );
 
--- BECA 100% - Orfandad
+-- ============================================
+-- SECCIÓN E: DESCUENTOS POR INSCRIPCIÓN MÚLTIPLE
+-- Estudiantes antiguos que inscriben nuevos estudiantes
+-- ============================================
+
+-- E.1: Un nuevo estudiante inscrito (25%)
 INSERT INTO becas_descuentos (
     id,
-    nombre, 
-    codigo, 
-    porcentaje, 
-    descripcion, 
-    requiere_documentacion, 
-    requiere_aprobacion_rector
+    nombre,
+    codigo,
+    porcentaje,
+    descripcion,
+    requiere_documentacion,
+    requiere_aprobacion_rector,
+    es_automatica,
+    tipo_automatica,
+    promedio_minimo
+) VALUES (
+    7,
+    'Descuento 25% - Inscripción de 1 Nuevo Estudiante',
+    'DESC_25_INSCRIBE_1',
+    25.00,
+    'Descuento del 25% a estudiantes antiguos que inscriban a 1 nuevo estudiante. Beneficia al estudiante antiguo que refiere. Requiere verificación de inscripción del nuevo estudiante. Condición: No haber reprobado ninguna asignatura.',
+    TRUE,
+    FALSE,
+    FALSE,
+    'MANUAL',
+    NULL
+);
+
+-- E.2: Dos nuevos estudiantes inscritos (50%)
+INSERT INTO becas_descuentos (
+    id,
+    nombre,
+    codigo,
+    porcentaje,
+    descripcion,
+    requiere_documentacion,
+    requiere_aprobacion_rector,
+    es_automatica,
+    tipo_automatica,
+    promedio_minimo
+) VALUES (
+    8,
+    'Descuento 50% - Inscripción de 2 Nuevos Estudiantes',
+    'DESC_50_INSCRIBE_2',
+    50.00,
+    'Descuento del 50% a estudiantes antiguos que inscriban a 2 nuevos estudiantes. Beneficia al estudiante antiguo que refiere. Requiere verificación de inscripción de los nuevos estudiantes. Condición: No haber reprobado ninguna asignatura.',
+    TRUE,
+    FALSE,
+    FALSE,
+    'MANUAL',
+    NULL
+);
+
+-- E.3: Tres nuevos estudiantes inscritos (75%)
+INSERT INTO becas_descuentos (
+    id,
+    nombre,
+    codigo,
+    porcentaje,
+    descripcion,
+    requiere_documentacion,
+    requiere_aprobacion_rector,
+    es_automatica,
+    tipo_automatica,
+    promedio_minimo
+) VALUES (
+    9,
+    'Descuento 75% - Inscripción de 3 Nuevos Estudiantes',
+    'DESC_75_INSCRIBE_3',
+    75.00,
+    'Descuento del 75% a estudiantes antiguos que inscriban a 3 nuevos estudiantes. Beneficia al estudiante antiguo que refiere. Requiere verificación de inscripción de los nuevos estudiantes. Condición: No haber reprobado ninguna asignatura.',
+    TRUE,
+    FALSE,
+    FALSE,
+    'MANUAL',
+    NULL
+);
+
+-- E.4: Cuatro o más nuevos estudiantes inscritos (100%)
+INSERT INTO becas_descuentos (
+    id,
+    nombre,
+    codigo,
+    porcentaje,
+    descripcion,
+    requiere_documentacion,
+    requiere_aprobacion_rector,
+    es_automatica,
+    tipo_automatica,
+    promedio_minimo
 ) VALUES (
     10,
-    'Beca 100% - Orfandad',
-    'BECA_100_ORFANDAD',
+    'Descuento 100% - Inscripción de 4+ Nuevos Estudiantes',
+    'DESC_100_INSCRIBE_4',
     100.00,
-    'Descuento del 100% para estudiantes huérfanos de padre y madre. Requiere certificado de defunción de ambos progenitores y documentación del tutor legal. Requiere aprobación del Rector.',
+    'Descuento del 100% (exclusión total) a estudiantes antiguos que inscriban a 4 o más nuevos estudiantes. Beneficia al estudiante antiguo que refiere. Requiere verificación de inscripción de los nuevos estudiantes. Condición: No haber reprobado ninguna asignatura.',
     TRUE,
-    TRUE
+    FALSE,
+    FALSE,
+    'MANUAL',
+    NULL
+);
+
+-- ============================================
+-- SECCIÓN F: DESCUENTOS POR HERMANOS
+-- Cuando existen 2 o más hermanos inscritos en el instituto
+-- ============================================
+
+-- F.1: Dos hermanos inscritos (50%)
+INSERT INTO becas_descuentos (
+    id,
+    nombre,
+    codigo,
+    porcentaje,
+    descripcion,
+    requiere_documentacion,
+    requiere_aprobacion_rector,
+    es_automatica,
+    tipo_automatica,
+    promedio_minimo
+) VALUES (
+    11,
+    'Descuento 50% - Dos Hermanos Inscritos',
+    'DESC_50_HERMANOS_2',
+    50.00,
+    'En caso de existir dos hermanos inscritos en el instituto, se otorgará descuento del 50% a uno de ellos. Requiere documentación que acredite parentesco (certificado de nacimiento). Condición: No haber reprobado ninguna asignatura.',
+    TRUE,
+    TRUE,
+    FALSE,
+    'MANUAL',
+    NULL
+);
+
+-- F.2: Tres hermanos inscritos (100% a uno)
+INSERT INTO becas_descuentos (
+    id,
+    nombre,
+    codigo,
+    porcentaje,
+    descripcion,
+    requiere_documentacion,
+    requiere_aprobacion_rector,
+    es_automatica,
+    tipo_automatica,
+    promedio_minimo
+) VALUES (
+    12,
+    'Descuento 100% - Tres Hermanos Inscritos',
+    'DESC_100_HERMANOS_3',
+    100.00,
+    'En caso de existir tres hermanos inscritos en el instituto, uno será beneficiado con el 100% del descuento del aporte voluntario anual. Requiere documentación que acredite parentesco (certificado de nacimiento). Condición: No haber reprobado ninguna asignatura.',
+    TRUE,
+    TRUE,
+    FALSE,
+    'MANUAL',
+    NULL
 );
 
 -- Rehabilitar foreign key checks
@@ -221,6 +349,57 @@ SET FOREIGN_KEY_CHECKS = 1;
 
 -- ============================================
 -- FIN DEL SEEDER
--- Este seeder incluye todos los becas y descuentos del sistema.
--- Ordenados de menor a mayor porcentaje: 25%, 50%, 50%, 75%, 80%, 80%, 90%, 100%, 100%, 100%
+-- ============================================
+
+/*
+REGLAS DE NEGOCIO IMPORTANTES:
+
+1. CONDICIÓN GENERAL:
+   - Solo se benefician estudiantes que NO hayan reprobado ninguna asignatura
+   - Requiere solicitud autorizada por la máxima autoridad del instituto
+
+2. BECAS AUTOMÁTICAS:
+   - 100%: Promedio >= 90 puntos (PROMEDIO_90)
+   - 25%: Promedio >= 80 y < 90 puntos (PROMEDIO_80)
+   - Se verifican en el Historial Académico de la gestión anterior
+
+3. BECAS POR INSCRIPCIÓN MÚLTIPLE:
+   - Benefician al estudiante ANTIGUO que inscribe nuevos estudiantes
+   - 25%: 1 nuevo inscrito
+   - 50%: 2 nuevos inscritos
+   - 75%: 3 nuevos inscritos
+   - 100%: 4 o más nuevos inscritos
+
+4. BECAS POR HERMANOS:
+   - Requieren documentación (certificado de nacimiento)
+   - 50%: 2 hermanos (se beneficia 1)
+   - 100%: 3 hermanos (se beneficia 1)
+   - Requieren aprobación del Rector
+
+5. EXCLUSIONES ESPECIALES:
+   - Razón Social: Sectores vulnerables (requiere carta al Rector)
+   - Promoción Institucional: Campañas de difusión
+   - Rendimiento Nuevos: Promedio >= 90 en secundaria
+   - Feria Interna: 1er lugar en feria del instituto
+
+6. MANTENIMIENTO DEL BENEFICIO:
+   - Para cursos superiores: mantener aprovechamiento mínimo de 90 puntos
+   - Aplicable a: Razón Social, Promoción, Rendimiento Nuevos
+
+7. APORTE VOLUNTARIO:
+   - Monto: 400 Bs anuales
+   - Destino: Infraestructura, mobiliario y equipamiento
+   - Es VOLUNTARIO según resolución ministerial
+
+8. DOCUMENTACIÓN:
+   - Todas las becas requieren documentación de respaldo
+   - Gestionar en tabla: documentos_estudiante
+   - tipo_referencia = 'estudiantes_becas'
+*/
+
+-- ============================================
+-- FIN DEL SEEDER OFICIAL
+-- Basado en Resolución Ministerial Nº 434/2019
+-- Instituto Técnico INCOS Santa Cruz
+-- Total de becas/descuentos: 12
 -- ============================================

@@ -15,8 +15,8 @@ export { ActaCompromisoController } from './estudiantes/acta-compromiso.controll
 // ============================================
 export { AsignarBecaController } from './becas/asignar.controller.js';
 export { GetStudentScholarshipsController } from './becas/get-scholarships.controller.js';
+export { ListStudentScholarshipsController } from './becas/list-student-scholarships.controller.js';
 // TODO: Agregar otros Controllers cuando se implementen sus endpoints
-// export { ListBecasController } from './becas/list.controller.js';
 // export { AprobarBecaController } from './becas/aprobar.controller.js';
 
 // ============================================

@@ -87,19 +87,34 @@ export class EstudianteBecaRepository extends IEstudianteBecaRepository {
       const { params = {} } = options;
       const studentId = params.studentId;
 
-      // Llamada HTTP directa al endpoint
+      // Si hay studentId, usar el endpoint específico del estudiante
+      if (studentId) {
+        // Llamada HTTP directa al endpoint
+        const response = await apiClient.get(
+          ESTUDIANTES_BECAS_ENDPOINTS.BY_STUDENT_ID(studentId),
+          { params }
+        );
+
+        // Procesar respuesta exitosa
+        const result = handleSuccessResponse(response);
+
+        // El endpoint GET /estudiantes/:id/scholarships retorna un objeto con scholarships y catalogs
+        // No forzar array aquí, dejar que el hook lo maneje según el formato de respuesta
+        // Si result.data existe y es un objeto, mantenerlo; si es un array (para otros endpoints), mantenerlo también
+        
+        return result;
+      }
+
+      // Si no hay studentId, usar el endpoint para listar todas las becas asignadas
+      // GET /v1/estudiantes/becas?page=1&limit=50&search=...
       const response = await apiClient.get(
-        ESTUDIANTES_BECAS_ENDPOINTS.BY_STUDENT_ID(studentId),
+        ESTUDIANTES_BECAS_ENDPOINTS.LIST_ALL,
         { params }
       );
 
       // Procesar respuesta exitosa
       const result = handleSuccessResponse(response);
 
-      // El endpoint GET /estudiantes/:id/scholarships retorna un objeto con scholarships y catalogs
-      // No forzar array aquí, dejar que el hook lo maneje según el formato de respuesta
-      // Si result.data existe y es un objeto, mantenerlo; si es un array (para otros endpoints), mantenerlo también
-      
       return result;
     } catch (error) {
       return handleErrorResponse(error, 'Error al obtener becas del estudiante');

@@ -7,5 +7,6 @@ export { CrearEstudianteUseCase } from './CrearEstudianteUseCase';
 export { ActualizarEstudianteUseCase } from './ActualizarEstudianteUseCase';
 export { BuscarEstudianteUseCase } from './BuscarEstudianteUseCase';
 export { ObtenerTodasBecasDescuentosUseCase } from './ObtenerTodasBecasDescuentosUseCase';
+export { ObtenerTodasBecasAsignadasUseCase } from './ObtenerTodasBecasAsignadasUseCase';
 export { CrearAsignarBecaUseCase } from './CrearAsignarBecaUseCase';
 

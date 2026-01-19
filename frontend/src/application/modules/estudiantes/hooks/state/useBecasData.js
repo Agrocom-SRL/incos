@@ -17,22 +17,36 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useBecasDescuentosApi } from '@application-estudiantes/hooks/api/useBecasDescuentosApi';
+import { useBecasAsignadasApi } from '@application-estudiantes/hooks/api/useBecasAsignadasApi';
 
 export const useBecasData = () => {
-    // Hook para cargar datos iniciales desde BD
-    const { becasDescuentos: becasFromApi, loading, error, refetch: refetchFromApi } = useBecasDescuentosApi();
+    // Hook para cargar datos iniciales desde BD (becas asignadas, no catálogo)
+    const { becasAsignadas: becasDataFromApi, loading, error, refetch: refetchFromApi } = useBecasAsignadasApi();
     
     // Estado local en memoria (puede ser actualizado sin recargar desde BD)
+    // becasDataFromApi tiene estructura: { becas: [...], total, page, limit, totalPages }
     const [becas, setBecas] = useState([]);
+    const [pagination, setPagination] = useState({ total: 0, page: 1, limit: 50, totalPages: 0 });
 
     // Sincronizar estado local con datos de API cuando cambien
     useEffect(() => {
         // Actualizar cuando hay datos de la API (carga inicial o refetch)
-        if (becasFromApi.length >= 0) {
-            setBecas(becasFromApi);
+        // becasDataFromApi es un objeto con { becas: [...], total, page, limit, totalPages }
+        if (becasDataFromApi) {
+            if (Array.isArray(becasDataFromApi.becas)) {
+                setBecas(becasDataFromApi.becas);
+                setPagination({
+                    total: becasDataFromApi.total || 0,
+                    page: becasDataFromApi.page || 1,
+                    limit: becasDataFromApi.limit || 50,
+                    totalPages: becasDataFromApi.totalPages || 0,
+                });
+            } else if (Array.isArray(becasDataFromApi)) {
+                // Por compatibilidad, si viene como array directo
+                setBecas(becasDataFromApi);
+            }
         }
-    }, [becasFromApi]);
+    }, [becasDataFromApi]);
 
     /**
      * Agrega una nueva beca al estado en memoria
@@ -80,6 +94,7 @@ export const useBecasData = () => {
     return useMemo(() => ({
         // Datos
         becas,
+        pagination, // Información de paginación
         loading,
         error,
         
@@ -90,5 +105,5 @@ export const useBecasData = () => {
         
         // Método para sincronizar con BD
         refetch,
-    }), [becas, loading, error, addBeca, updateBeca, removeBeca, refetch]);
+    }), [becas, pagination, loading, error, addBeca, updateBeca, removeBeca, refetch]);
 };
