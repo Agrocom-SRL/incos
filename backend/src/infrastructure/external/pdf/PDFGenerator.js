@@ -7,17 +7,17 @@
  * 
  * Generadores disponibles:
  * - FormularioInscripcionGenerator: Formularios de inscripción
- * - ActaCompromisoGenerator: Actas de compromiso para documentos
  * - ReciboPagoGenerator: Recibos de pago y aranceles
+ * 
+ * NOTA: Las Actas de Compromiso ahora se generan usando ActaCompromisoWordGenerator
+ * que genera DOCX desde plantilla Word y luego lo convierte a PDF.
  * 
  * Uso:
  * await PDFGenerator.generateFormularioInscripcion(data, outputPath);
- * await PDFGenerator.generateCompromisoActa(data, outputPath);
  * await PDFGenerator.generateReciboPago(data, outputPath);
  */
 
 import { FormularioInscripcionGenerator } from './FormularioInscripcionGenerator.js';
-import { ActaCompromisoGenerator } from './ActaCompromisoGenerator.js';
 import { ReciboPagoGenerator } from './ReciboPagoGenerator.js';
 
 export class PDFGenerator {
@@ -82,57 +82,6 @@ export class PDFGenerator {
    */
   static async generateFormularioInscripcion(data, outputPath) {
     return await FormularioInscripcionGenerator.generate(data, outputPath);
-  }
-
-  /**
-   * Genera el Acta de Compromiso para la Entrega de Documentos
-   * 
-   * @param {Object} data - Datos del estudiante y del compromiso
-   * @param {string} data.nombreCompleto - Nombre completo del estudiante
-   * @param {string} data.ci - Cédula de identidad
-   * @param {string} data.expedicion - Lugar de expedición del CI (default: 'S.C.')
-   * @param {string} data.ciudad - Ciudad donde se firma el acta
-   * @param {Date|string} data.fecha - Fecha del acta (default: fecha actual)
-   * @param {number} data.dia - Día del mes
-   * @param {string} data.mes - Nombre del mes
-   * @param {number} data.anio - Año
-   * @param {string} data.anioCarrera - Año de la carrera (opcional)
-   * @param {string} data.paralelo - Paralelo (opcional)
-   * @param {string} data.carrera - Nombre de la carrera (opcional)
-   * @param {Array<string>} data.documentosRequeridos - Lista de documentos requeridos
-   * @param {Array<number>} data.documentosEntregados - Índices de documentos ya entregados
-   * @param {number} data.plazoMaximo - Plazo en días para completar documentos (default: 10)
-   * @param {string} data.motivos - Motivos por los que no se presentaron documentos
-   * 
-   * @param {string} outputPath - Ruta donde guardar el PDF
-   * @returns {Promise<string>} Ruta del archivo generado
-   * 
-   * @example
-   * const data = {
-   *   nombreCompleto: 'Juan Carlos Pérez García',
-   *   ci: '12345678',
-   *   expedicion: 'S.C.',
-   *   ciudad: 'Santa Cruz de la Sierra',
-   *   fecha: new Date(),
-   *   anioCarrera: 'Segundo',
-   *   paralelo: 'A',
-   *   carrera: 'Contaduría General',
-   *   documentosRequeridos: [
-   *     'Diploma de Bachiller',
-   *     'Certificado de Nacimiento',
-   *     'Carnet de Identidad',
-   *     'Foto 3x3 fondo rojo',
-   *     'Folder con nepaco',
-   *   ],
-   *   documentosEntregados: [2, 4], // Índices de documentos entregados (CI y Folder)
-   *   plazoMaximo: 10,
-   *   motivos: 'Actualización de carta aval del presente año.',
-   * };
-   * 
-   * await PDFGenerator.generateCompromisoActa(data, '/path/to/output.pdf');
-   */
-  static async generateCompromisoActa(data, outputPath) {
-    return await ActaCompromisoGenerator.generate(data, outputPath);
   }
 
   /**

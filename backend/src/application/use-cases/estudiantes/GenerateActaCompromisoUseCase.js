@@ -2,6 +2,9 @@ import { NotFoundError, ValidationError } from '../../../domain/errors/AppError.
 import { normalizeId, createMap } from '../../../domain/utils/mapUtils.js';
 import { TIPOS_DOCUMENTO_SISTEMA } from '../../../domain/constants/index.js';
 import { PDFGenerator } from '../../../infrastructure/external/pdf/PDFGenerator.js';
+import { ActaCompromisoWordGenerator } from '../../../infrastructure/external/word/ActaCompromisoWordGenerator.js';
+import { WordToPdfConverter } from '../../../infrastructure/external/word/WordToPdfConverter.js';
+import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { serverConfig } from '../../../infrastructure/config/server.config.js';
@@ -473,7 +476,7 @@ export class GenerateActaCompromisoUseCase {
    * @returns {Promise<Object>} Respuesta formateada con ruta del PDF generado
    */
   async _buildResponse(studentId, estadoDocumentos, student, documentosInscripcion, management) {
-    // 1. Construir datos para el PDF
+    // 1. Construir datos para el documento
     const studentPlain = student.toPlainObject ? student.toPlainObject() : student;
     const nombreCompleto = `${studentPlain.firstName || ''} ${studentPlain.lastName || ''} ${studentPlain.motherLastName || ''}`.trim();
     
@@ -487,21 +490,19 @@ export class GenerateActaCompromisoUseCase {
     const nombresDocumentosEntregados = estadoDocumentos.documentosEntregados.map(doc => doc.nombre);
     const nombresDocumentosFaltantes = estadoDocumentos.documentosFaltantes.map(doc => doc.nombre);
     
-    // Crear mapa de documentos requeridos para el PDF
-    // Las entidades Documentation tienen propiedades en inglés (name)
+    // Crear mapa de documentos requeridos
     const documentosRequeridos = documentosInscripcion.map(doc => {
       const docPlain = doc.toPlainObject ? doc.toPlainObject() : doc;
       return docPlain.name || 'Documento sin nombre';
     });
     
-    // Calcular índices de documentos ENTREGADOS (para marcar con X)
-    // NOTA: Se marcan los entregados porque la interpretación común es que X = entregado
+    // Calcular índices de documentos ENTREGADOS (para marcar con ☒)
     const indicesEntregados = documentosRequeridos
       .map((nombre, index) => nombresDocumentosEntregados.includes(nombre) ? index : null)
       .filter(index => index !== null);
 
-    // 2. Preparar datos para PDFGenerator
-    const pdfData = {
+    // 2. Preparar datos para el generador
+    const actaData = {
       nombreCompleto,
       ci: studentPlain.ci || '',
       expedicion: studentPlain.expedition || 'S.C.',
@@ -509,108 +510,250 @@ export class GenerateActaCompromisoUseCase {
       dia,
       mes,
       anio,
-      anioCarrera: '', // No hay datos académicos aún
-      paralelo: '', // No hay datos académicos aún
-      carrera: '', // No hay datos académicos aún
-      documentosEntregados: indicesEntregados, // Índices de documentos entregados (se marcan con X)
-      documentosRequeridos, // Lista completa de documentos requeridos
-      plazoMaximo: 10, // Por defecto 10 días (podría venir de configuración)
+      anioCarrera: '', // Agregar lógica para obtener datos académicos si existen
+      paralelo: '',
+      carrera: '',
+      documentosEntregados: indicesEntregados,
+      documentosRequeridos,
+      plazoMaximo: 10,
       motivos: 'Actualización de carta aval del presente año.',
     };
 
-    // 3. Construir rutas del archivo
+    // 3. Construir rutas de archivos para DOCX y PDF
     const uploadDir = serverConfig.uploadsPath || 'uploads';
     const relativePath = path.join('documentos', 'estudiantes', String(studentId));
-    const fileName = `ACTA_COMPROMISO_${studentId}_${Date.now()}.pdf`;
+    const timestamp = Date.now();
+    const baseFileName = `ACTA_COMPROMISO_${studentId}_${timestamp}`;
     
-    // Ruta relativa (para acceso HTTP)
-    const filePath = path.join('/', uploadDir, relativePath, fileName).replace(/\\/g, '/');
+    const docxFileName = `${baseFileName}.docx`;
+    const pdfFileName = `${baseFileName}.pdf`;
     
-    // Ruta absoluta (para guardar en disco)
-    // Desde backend/src/application/use-cases/estudiantes necesitamos subir 4 niveles para llegar a backend/
-    const absoluteUploadPath = path.isAbsolute(uploadDir)
-      ? path.join(uploadDir, relativePath, fileName)
-      : path.resolve(__dirname, '../../../..', uploadDir, relativePath, fileName);
+    // Rutas absolutas (para guardar en disco)
+    const absoluteDocxPath = path.isAbsolute(uploadDir)
+      ? path.join(uploadDir, relativePath, docxFileName)
+      : path.resolve(__dirname, '../../../..', uploadDir, relativePath, docxFileName);
+      
+    const absolutePdfPath = path.isAbsolute(uploadDir)
+      ? path.join(uploadDir, relativePath, pdfFileName)
+      : path.resolve(__dirname, '../../../..', uploadDir, relativePath, pdfFileName);
+    
+    // Rutas relativas (para acceso HTTP)
+    const docxFilePath = path.join('/', uploadDir, relativePath, docxFileName).replace(/\\/g, '/');
+    const pdfFilePath = path.join('/', uploadDir, relativePath, pdfFileName).replace(/\\/g, '/');
 
-    // 4. Generar PDF
-    this.logger.info('[Estudiantes] Generando PDF del acta de compromiso', {
+    // 4. Generar DOCX usando la plantilla Word
+    this.logger.info('[Estudiantes] Generando DOCX del acta de compromiso', {
       studentId,
-      absolutePath: absoluteUploadPath,
+      absolutePath: absoluteDocxPath,
       documentosFaltantes: nombresDocumentosFaltantes.length,
     });
 
-    await PDFGenerator.generateCompromisoActa(pdfData, absoluteUploadPath);
+    try {
+      await ActaCompromisoWordGenerator.generate(actaData, absoluteDocxPath);
 
-    this.logger.info('[Estudiantes] PDF generado exitosamente', {
+      this.logger.info('[Estudiantes] DOCX generado exitosamente', {
+        studentId,
+        filePath: docxFilePath,
+        fileName: docxFileName,
+        absolutePath: absoluteDocxPath,
+      });
+
+    } catch (error) {
+      this.logger.error('[Estudiantes] Error al generar DOCX', {
+        studentId,
+        error: error.message,
+        stack: error.stack,
+      });
+      throw new Error(`No se pudo generar el acta en formato Word: ${error.message}`);
+    }
+
+    // 5. Convertir DOCX a PDF usando WordToPdfConverter
+    // IMPORTANTE: El PDF es el formato de salida principal para distribución
+    this.logger.info('[Estudiantes] Convirtiendo DOCX a PDF', {
       studentId,
-      filePath,
-      fileName,
-      absolutePath: absoluteUploadPath,
+      docxPath: absoluteDocxPath,
+      pdfPath: absolutePdfPath,
     });
 
-    // 5. Guardar el PDF como documento en documentos_estudiante
-    let savedDocument = null;
-    let savedDocumentDelivery = null;
+    let pdfGenerated = false;
+    let actualPdfPath = absolutePdfPath; // Ruta real del PDF generado
+    
     try {
-      // Construir ruta relativa completa desde uploads/ (documentos/estudiantes/{studentId}/{fileName})
-      const relativeFilePath = path.join(relativePath, fileName).replace(/\\/g, '/');
+      // WordToPdfConverter.convert() retorna la ruta del PDF generado
+      // Si falla, lanzará un error que será capturado
+      const generatedPdfPath = await WordToPdfConverter.convert(absoluteDocxPath, absolutePdfPath);
       
-      savedDocument = await this._saveActaDocument(
+      // Usar la ruta que retorna el convertidor (puede ser diferente si se movió)
+      actualPdfPath = generatedPdfPath;
+      
+      // Verificar que el PDF existe (el convertidor ya lo verifica, pero doble verificación)
+      pdfGenerated = fs.existsSync(actualPdfPath);
+
+      if (!pdfGenerated) {
+        // Si el convertidor no lanzó error pero el archivo no existe, hay un problema
+        throw new Error(`El PDF fue generado pero no se encuentra en: ${actualPdfPath}`);
+      }
+
+      this.logger.info('[Estudiantes] ✅ PDF generado exitosamente desde DOCX', {
         studentId,
-        fileName,
-        absoluteUploadPath,
-        relativeFilePath
+        filePath: pdfFilePath,
+        fileName: pdfFileName,
+        absolutePath: actualPdfPath,
+        generatedPath: generatedPdfPath,
+        fileSize: fs.statSync(actualPdfPath).size,
+      });
+
+    } catch (error) {
+      this.logger.error('[Estudiantes] ❌ Error al convertir DOCX a PDF', {
+        studentId,
+        error: error.message,
+        stack: error.stack,
+        docxPath: absoluteDocxPath,
+        pdfPath: absolutePdfPath,
+      });
+      
+      // IMPORTANTE: Si falla la conversión a PDF, lanzar error
+      // El PDF es el formato requerido para distribución al estudiante
+      // El DOCX se guarda como respaldo interno, pero la respuesta debe ser PDF
+      throw new Error(
+        `No se pudo convertir el acta a PDF: ${error.message}. ` +
+        `Verifica que LibreOffice esté instalado y disponible. ` +
+        `El documento DOCX fue generado pero no se puede distribuir sin PDF.`
+      );
+    }
+
+    // 6. Guardar ambos documentos en la base de datos
+    let savedDocxDocument = null;
+    let savedPdfDocument = null;
+    let savedDocumentDelivery = null;
+
+    try {
+      // 6.1. Guardar DOCX (editable, para uso interno)
+      const relativeDocxFilePath = path.join(relativePath, docxFileName).replace(/\\/g, '/');
+      
+      savedDocxDocument = await this._saveActaDocument(
+        studentId,
+        docxFileName,
+        absoluteDocxPath,
+        relativeDocxFilePath,
+        'docx',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
       );
 
-      // 6. Crear registro en estudiantes_documentos_entrega
-      if (savedDocument) {
+      this.logger.info('[Estudiantes] Documento DOCX guardado en BD', {
+        studentId,
+        documentId: savedDocxDocument.id,
+        fileName: docxFileName,
+      });
+
+      // 6.2. Guardar PDF (inmutable, para distribución)
+      // IMPORTANTE: El PDF es obligatorio, si llegamos aquí debe existir
+      if (!pdfGenerated || !actualPdfPath) {
+        throw new Error('El PDF no fue generado correctamente antes de guardar en BD');
+      }
+
+      const relativePdfFilePath = path.join(relativePath, pdfFileName).replace(/\\/g, '/');
+      
+      savedPdfDocument = await this._saveActaDocument(
+        studentId,
+        pdfFileName,
+        actualPdfPath, // Usar la ruta real del PDF generado
+        relativePdfFilePath,
+        'pdf',
+        'application/pdf'
+      );
+
+      this.logger.info('[Estudiantes] Documento PDF guardado en BD', {
+        studentId,
+        documentId: savedPdfDocument.id,
+        fileName: pdfFileName,
+        absolutePath: actualPdfPath,
+      });
+
+      // 6.3. Crear registro de entrega (vinculado al DOCX)
+      if (savedDocxDocument) {
         savedDocumentDelivery = await this._saveActaDocumentDelivery(
           studentId,
-          savedDocument.id,
+          savedDocxDocument.id,
           fechaActual
         );
       }
+
     } catch (error) {
-      // No fallar la generación del acta si falla el guardado del documento
-      this.logger.error('[Estudiantes] Error al guardar acta como documento', {
+      // No fallar la generación del acta si falla el guardado en BD
+      this.logger.error('[Estudiantes] Error al guardar documentos en BD', {
         error: error.message,
         stack: error.stack,
         studentId,
-        fileName,
       });
     }
 
     // 7. Retornar respuesta
+    // IMPORTANTE: El PDF es OBLIGATORIO para distribución al estudiante
+    // Si llegamos aquí, el PDF fue generado exitosamente (si no, se lanzó error arriba)
     const response = {
-      filePath,
-      fileName,
-      absolutePath: absoluteUploadPath,
+      // SIEMPRE devolver PDF como respuesta principal (formato de distribución)
+      filePath: pdfFilePath,           // Ruta relativa del PDF
+      fileName: pdfFileName,           // Nombre del PDF
+      absolutePath: actualPdfPath,    // Ruta absoluta del PDF generado
+      
+      // Incluir ambas rutas para uso interno (DOCX para edición, PDF para distribución)
+      docxPath: docxFilePath,         // Ruta relativa del DOCX (uso interno)
+      pdfPath: pdfFilePath,            // Ruta relativa del PDF (distribución)
+      
+      // Indicador de formato (siempre 'pdf' si llegamos aquí)
+      format: 'pdf',
+      
+      // Estado de documentos
       estadoDocumentos,
+      
+      // Documentos guardados en BD
+      documents: {},
     };
 
-    if (savedDocument) {
-      response.document = savedDocument.toPlainObject ? savedDocument.toPlainObject() : savedDocument;
+    if (savedDocxDocument) {
+      response.documents.docx = savedDocxDocument.toPlainObject 
+        ? savedDocxDocument.toPlainObject() 
+        : savedDocxDocument;
+    }
+
+    if (savedPdfDocument) {
+      response.documents.pdf = savedPdfDocument.toPlainObject 
+        ? savedPdfDocument.toPlainObject() 
+        : savedPdfDocument;
     }
 
     if (savedDocumentDelivery) {
-      response.documentDelivery = savedDocumentDelivery.toPlainObject ? savedDocumentDelivery.toPlainObject() : savedDocumentDelivery;
+      response.documentDelivery = savedDocumentDelivery.toPlainObject 
+        ? savedDocumentDelivery.toPlainObject() 
+        : savedDocumentDelivery;
     }
 
     return response;
   }
 
   /**
-   * Guarda el PDF del acta de compromiso en documentos_estudiante
+   * Guarda el documento del acta de compromiso en documentos_estudiante
+   * Ahora acepta extensión y tipo MIME como parámetros para soportar DOCX y PDF
+   * 
    * @private
    * @param {number} studentId - ID del estudiante
-   * @param {string} fileName - Nombre del archivo PDF
+   * @param {string} fileName - Nombre del archivo
    * @param {string} absolutePath - Ruta absoluta del archivo
-   * @param {string} relativeFilePath - Ruta relativa completa desde uploads/ (incluye nombre del archivo)
+   * @param {string} relativeFilePath - Ruta relativa desde uploads/
+   * @param {string} extension - Extensión del archivo ('docx' o 'pdf')
+   * @param {string} tipoMime - Tipo MIME del archivo
    * @returns {Promise<Object>} Documento guardado
    */
-  async _saveActaDocument(studentId, fileName, absolutePath, relativeFilePath) {
+  async _saveActaDocument(
+    studentId, 
+    fileName, 
+    absolutePath, 
+    relativeFilePath,
+    extension = 'docx',
+    tipoMime = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+  ) {
     try {
-
       // Preparar datos del documento
       const documentData = {
         studentId,
@@ -618,8 +761,8 @@ export class GenerateActaCompromisoUseCase {
         documentacionId: null, // No hay documento específico en catálogo para "Acta de Compromiso"
         fileName: fileName,
         filePath: relativeFilePath,
-        extension: 'pdf',
-        tipoMime: 'application/pdf',
+        extension: extension,
+        tipoMime: tipoMime,
         contieneMultipleDocumentos: false,
         verified: true, // El acta es generada por el sistema, se considera verificada
         state: 'APROBADO', // El acta generada por el sistema está aprobada automáticamente
@@ -632,6 +775,7 @@ export class GenerateActaCompromisoUseCase {
         studentId,
         documentId: document.id,
         fileName: fileName,
+        extension: extension,
       });
 
       return document;

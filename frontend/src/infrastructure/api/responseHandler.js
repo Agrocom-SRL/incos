@@ -70,18 +70,31 @@ export function handleErrorResponse(error, defaultMessage = 'Error en la petici√
   if (error.response?.data?.error) {
     const errorData = error.response.data.error;
     
-    // Si el error tiene estructura completa (code, message, details), retornarlo completo
-    if (typeof errorData === 'object' && errorData.code && errorData.message) {
-      return {
-        success: false,
-        error: errorData, // Objeto completo con code, message, details
-      };
+    // Extraer el mensaje de error (priorizar message si es objeto)
+    let errorMessage = defaultMessage;
+    
+    if (typeof errorData === 'string') {
+      errorMessage = errorData;
+    } else if (errorData && typeof errorData === 'object') {
+      // Si tiene message, usarlo
+      if (errorData.message) {
+        errorMessage = errorData.message;
+      } 
+      // Si tiene code pero no message, construir mensaje con code
+      else if (errorData.code) {
+        errorMessage = errorData.code;
+      }
+      // Si es un objeto sin estructura conocida, intentar stringify
+      else {
+        errorMessage = JSON.stringify(errorData);
+      }
     }
     
-    // Si es un string simple, retornarlo como string
+    // Retornar objeto con error como string y opcionalmente el objeto completo para casos especiales
     return {
       success: false,
-      error: typeof errorData === 'string' ? errorData : errorData.message || defaultMessage,
+      error: errorMessage, // Siempre string para evitar problemas de renderizado
+      errorDetails: typeof errorData === 'object' ? errorData : null, // Objeto completo opcional
     };
   }
   

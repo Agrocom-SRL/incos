@@ -21,7 +21,7 @@ import { PageHeader } from '@molecules';
 import { useStudentDetailContext } from '@application-estudiantes/hooks';
 import { useGenerateActaCompromiso } from '@application-estudiantes/hooks';
 import { downloadFile } from '@application/utils';
-import { Spin, Alert, Empty, message, Card, Descriptions, Tag, Button } from 'antd';
+import { Spin, Alert, Empty, Card, Descriptions, Tag, Button, App } from 'antd';
 import { GiftOutlined, FileTextOutlined, DollarOutlined, DownloadOutlined, BookOutlined, EyeOutlined } from '@ant-design/icons';
 import {
   DatosPersonalesSection,
@@ -35,6 +35,7 @@ import {
 const EstudiantesDetail = () => {
   const navigate = useNavigate();
   const { id: studentId } = useParams();
+  const { message } = App.useApp(); // Hook de message para consumir el contexto del tema
 
   // Obtener datos del contexto
   const {
@@ -77,8 +78,21 @@ const EstudiantesDetail = () => {
     const result = await generateActaCompromiso(studentId);
 
     if (!result.success) {
-      // Mostrar mensaje de error si success: false
-      const errorMessage = result.error || result.message || 'Error al generar el acta de compromiso';
+      // Extraer el mensaje de error (puede ser string u objeto con code/message)
+      let errorMessage = 'Error al generar el acta de compromiso';
+      
+      if (result.error) {
+        if (typeof result.error === 'string') {
+          errorMessage = result.error;
+        } else if (result.error.message) {
+          errorMessage = result.error.message;
+        } else if (result.error.code) {
+          errorMessage = `${result.error.code}: ${result.error.message || 'Error desconocido'}`;
+        }
+      } else if (result.message) {
+        errorMessage = result.message;
+      }
+      
       message.error(errorMessage);
     } else {
       // Mostrar mensaje de éxito si success: true (el archivo ya se descargó automáticamente)
