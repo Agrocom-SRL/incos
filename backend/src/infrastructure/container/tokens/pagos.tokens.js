@@ -11,6 +11,7 @@ export const PAGOS_TOKENS = {
 
     // Use Cases - Registro de Pago
     registerPagoAporteUseCase: 'pagos.registerPagoAporteUseCase',
+    listPagosAportesUseCase: 'pagos.listPagosAportesUseCase',
 
     // Controllers - Lista
     listMetodosPagoController: 'pagos.listMetodosPagoController',
@@ -20,6 +21,7 @@ export const PAGOS_TOKENS = {
 
     // Controllers - Registro de Pago
     registerPagoAporteController: 'pagos.registerPagoAporteController',
+    listPagosAportesController: 'pagos.listPagosAportesController',
 
     // Routers
     metodosPagoRouter: 'pagos.metodosPagoRouter',

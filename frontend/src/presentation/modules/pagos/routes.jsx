@@ -14,12 +14,13 @@ import { UnderConstruction } from '@components/pages';
 // Lazy loading de connectors
 // El Suspense ya está manejado globalmente por MainLayout con LoadingFallback
 const PagosRegistrarConnector = lazy(() => import('./connectors/PagosRegistrarConnector'));
+const PagosListConnector = lazy(() => import('./connectors/ListConnector'));
 
 export const pagosRoutes = [
-    // Módulo raíz: Pagos
+    // Módulo raíz: Pagos (muestra la lista directamente)
     {
         path: '/pagos',
-        element: null, // No tiene página propia, es solo un grupo
+        element: <PagosListConnector />,
         key: 'PAG',
         menu: {
             label: 'Pagos',
@@ -29,7 +30,7 @@ export const pagosRoutes = [
     },
     {
         path: '/pagos/listar',
-        element: <UnderConstruction />,
+        element: <PagosListConnector />,
         key: 'PAG-LIST',
         menu: {
             label: 'Listar Pagos',

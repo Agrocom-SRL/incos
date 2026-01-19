@@ -18,25 +18,23 @@
  * Nota: Esta es una versión base que se irá completando por pasos
  */
 
-import { useState, useCallback, useMemo } from 'react';
-// TODO: Importar hook de API cuando se implemente
-// import { usePagosApi } from '@application-pagos/hooks/api/usePagosApi';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { usePagosApi } from '@application-pagos/hooks/api/usePagosApi';
 
 export const usePagosData = () => {
-    // TODO: Hook para cargar datos iniciales desde BD
-    // const { pagos: pagosFromApi, loading, error, refetch: refetchFromApi } = usePagosApi();
+    // Hook para cargar datos iniciales desde BD
+    const { pagos: pagosFromApi, loading, error, refetch: refetchFromApi } = usePagosApi();
 
     // Estado local en memoria (puede ser actualizado sin recargar desde BD)
     const [pagos, setPagos] = useState([]);
-    const [loading] = useState(false); // TODO: Usar loading del API
-    const [error] = useState(null); // TODO: Usar error del API
 
-    // TODO: Sincronizar estado local con datos de API cuando cambien
-    // useEffect(() => {
-    //     if (pagosFromApi.length >= 0) {
-    //         setPagos(pagosFromApi);
-    //     }
-    // }, [pagosFromApi]);
+    // Sincronizar estado local con datos de API cuando cambien
+    useEffect(() => {
+        // Actualizar cuando hay datos de la API (carga inicial o refetch)
+        if (pagosFromApi.length >= 0) {
+            setPagos(pagosFromApi);
+        }
+    }, [pagosFromApi]);
 
     /**
      * Agrega un nuevo pago al estado en memoria
@@ -78,9 +76,8 @@ export const usePagosData = () => {
      * Útil cuando se necesita asegurar que los datos están actualizados
      */
     const refetch = useCallback(async (options = {}) => {
-        // TODO: Implementar refetch cuando se tenga el hook de API
-        // await refetchFromApi(options);
-    }, []);
+        await refetchFromApi(options);
+    }, [refetchFromApi]);
 
     // Memoizar el objeto retornado para mantener referencia estable
     // Esto evita que PagosProvider cause re-renders innecesarios en sus hijos

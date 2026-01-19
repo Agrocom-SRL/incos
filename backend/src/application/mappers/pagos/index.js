@@ -10,3 +10,4 @@ export { PaymentMethodMapper } from './PaymentMethodMapper.js';
 export { AuthorizedBankMapper } from './AuthorizedBankMapper.js';
 export { PaymentAccountMapper } from './PaymentAccountMapper.js';
 export { ContributionConfigurationMapper } from './ContributionConfigurationMapper.js';
+export { ContributionPaymentMapper } from './ContributionPaymentMapper.js';

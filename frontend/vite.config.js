@@ -33,6 +33,7 @@ export default defineConfig({
             '@application-dashboard': path.resolve(__dirname, './src/application/modules/dashboard'),
             '@application-configuracion': path.resolve(__dirname, './src/application/modules/configuracion'),
             '@application-inscripciones': path.resolve(__dirname, './src/application/modules/inscripciones'),
+            '@application-pagos': path.resolve(__dirname, './src/application/modules/pagos'),
             '@application-academico': path.resolve(__dirname, './src/application/modules/academico'),
             '@application-auth': path.resolve(__dirname, './src/application/modules/auth'),
 

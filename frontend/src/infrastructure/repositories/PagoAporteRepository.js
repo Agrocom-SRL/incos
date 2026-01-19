@@ -130,6 +130,35 @@ export class PagoAporteRepository extends IPagoAporteRepository {
       return handleErrorResponse(error, 'Error al registrar pago de aporte');
     }
   }
+
+  /**
+   * Obtiene la lista de pagos de aportes con filtros y paginación
+   * GET /v1/pagos-aportes?pagina=1&limite=10&busqueda=...
+   * 
+   * @param {Object} options - Opciones de consulta
+   * @param {Object} options.params - Parámetros de consulta HTTP
+   * @returns {Promise<{success: boolean, data?: Array, error?: string}>}
+   */
+  async obtenerTodos(options = {}) {
+    try {
+      const { params = {} } = options;
+
+      // Llamada HTTP directa al endpoint
+      const response = await apiClient.get(PAGOS_APORTES_ENDPOINTS.BASE, { params });
+
+      // Procesar respuesta exitosa
+      const result = handleSuccessResponse(response);
+
+      // Asegurar que data sea un array
+      if (result.success && result.data) {
+        result.data = Array.isArray(result.data) ? result.data : [];
+      }
+
+      return result;
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al obtener pagos de aportes');
+    }
+  }
 }
 
 export default new PagoAporteRepository();

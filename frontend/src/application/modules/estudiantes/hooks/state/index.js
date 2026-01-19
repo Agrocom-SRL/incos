@@ -6,4 +6,5 @@
 
 export { useStudentData } from './useStudentData';
 export { useAsignarBecaData } from './useAsignarBecaData';
+export { useBecasData } from './useBecasData';
 

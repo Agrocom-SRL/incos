@@ -15,6 +15,7 @@
 export { useInscripcionesContext } from './context/useInscripcionesContext';
 export { useInscripcionesNuevaContext } from './context/useInscripcionesNuevaContext';
 export { useInscripcionDetailContext } from './context/useInscripcionDetailContext';
+export { useInscripcionesListContext } from './context/useInscripcionesListContext';
 
 // ============================================
 // 2. GLOBAL STATE (Application Layer)

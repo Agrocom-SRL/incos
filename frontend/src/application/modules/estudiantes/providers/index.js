@@ -6,4 +6,6 @@ export { StudentListProvider } from './StudentListProvider';
 export { StudentRegisterProvider } from './StudentRegisterProvider';
 export { StudentDetailProvider } from './StudentDetailProvider';
 export { AsignarBecaProvider } from './AsignarBecaProvider';
+export { BecasProvider } from './BecasProvider';
+export { BecasListProvider } from './BecasListProvider';
 

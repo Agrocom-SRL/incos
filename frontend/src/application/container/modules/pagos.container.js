@@ -16,6 +16,7 @@ import {
   GetTodosPaymentMethodsUseCase,
   GetTodasContributionConfigurationsUseCase,
   RegisterPagoAporteUseCase,
+  ObtenerTodosPagosAportesUseCase,
 } from '@useCases/pagos';
 
 import PaymentAccountRepository from '@infrastructure/repositories/PaymentAccountRepository';
@@ -60,6 +61,11 @@ export function registerPagosModule(factory) {
   // Registrar Use Cases de Registro de Pagos de Aporte
   factory.registrarAporteVoluntario = () => {
     return new RegisterPagoAporteUseCase(pagoAporteRepository);
+  };
+
+  // Registrar Use Cases de Listado de Pagos de Aporte
+  factory.obtenerTodosPagosAportes = () => {
+    return new ObtenerTodosPagosAportesUseCase(pagoAporteRepository);
   };
 
   return factory;

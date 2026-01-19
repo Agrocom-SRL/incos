@@ -9,3 +9,4 @@ export { GetTodosAuthorizedBanksUseCase } from './GetTodosAuthorizedBanksUseCase
 export { GetTodosPaymentMethodsUseCase } from './GetTodosPaymentMethodsUseCase';
 export { GetTodasContributionConfigurationsUseCase } from './GetTodasContributionConfigurationsUseCase';
 export { RegisterPagoAporteUseCase } from './RegisterPagoAporteUseCase';
+export { ObtenerTodosPagosAportesUseCase } from './ObtenerTodosPagosAportesUseCase';

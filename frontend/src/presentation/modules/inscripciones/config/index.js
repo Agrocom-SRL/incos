@@ -1,17 +1,6 @@
 /**
- * Config - Configuración del módulo de inscripciones
- * 
- * Centraliza todas las configuraciones del módulo de inscripciones
- * 
- * Single Responsibility: Exportar todas las configuraciones del módulo
- * 
- * Clean Architecture:
- * - Presentation Layer: Configuración de UI (columnas, steps, etc.)
- * - No contiene lógica de negocio, solo metadata de presentación
- * 
- * Nota: Los breadcrumbs ahora se manejan en el Provider (InscripcionesNuevaProvider)
- * para mantener la lógica centralizada junto con el título de la página
+ * Barrel export para configuración del módulo de inscripciones
  */
 
+export { createInscripcionesTableColumns } from './tableColumns';
 export { createInscripcionNuevaWizardSteps } from './inscripcionNuevaWizardSteps';
-// Breadcrumbs se definen directamente en cada página

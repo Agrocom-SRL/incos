@@ -1,6 +1,7 @@
 import express from 'express';
 import { registerPagoAporteValidator } from '../validators/pagos/index.js';
 import { uploadPaymentDocument } from '../middleware/upload.middleware.js';
+import { listValidator } from '../validators/common/index.js';
 
 /**
  * Construye el router del recurso Pagos de Aportes Académicos
@@ -18,6 +19,22 @@ import { uploadPaymentDocument } from '../middleware/upload.middleware.js';
 export function buildPagosAportesRouter({ controllers, middlewares }) {
     const router = express.Router();
     const { validateRequest } = middlewares;
+
+    // ============================================
+    // LISTADO DE PAGOS
+    // ============================================
+
+    /**
+     * GET /api/v1/pagos-aportes
+     * Listar pagos de aportes con filtros y paginación
+     * Query: page, limit, search, sort
+     */
+    router.get(
+        '/',
+        listValidator,
+        validateRequest,
+        (req, res, next) => controllers.listPagosAportesController.handle(req, res, next)
+    );
 
     // ============================================
     // REGISTRO DE PAGO
@@ -49,7 +66,6 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
     // ============================================
     // ENDPOINTS FUTUROS (TODO)
     // ============================================
-    // GET / - Listar pagos de aportes con filtros
     // GET /:id - Obtener pago por ID
     // GET /estudiante/:studentId - Obtener pagos de un estudiante
 

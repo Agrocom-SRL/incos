@@ -80,6 +80,12 @@
             "@application-inscripciones/*": [
                 "./src/application/modules/inscripciones/*"
             ],
+            "@application-pagos": [
+                "./src/application/modules/pagos"
+            ],
+            "@application-pagos/*": [
+                "./src/application/modules/pagos/*"
+            ],
             "@application-academico": [
                 "./src/application/modules/academico"
             ],

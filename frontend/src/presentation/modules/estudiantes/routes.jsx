@@ -10,7 +10,7 @@
  */
 
 import { UnderConstruction } from '@components/pages';
-import { ListConnector, RegisterConnector, DetailConnector, EditConnector, AsignarBecaConnector } from '@estudiantes/connectors';
+import { ListConnector, RegisterConnector, DetailConnector, EditConnector, AsignarBecaConnector, BecasListConnector } from '@estudiantes/connectors';
 
 export const estudiantesRoutes = [
     // Módulo raíz: Estudiantes (muestra la lista directamente)
@@ -61,10 +61,10 @@ export const estudiantesRoutes = [
         key: 'EST-EDITAR',
         menu: null, // No aparece en el menú, se accede por URL con /estudiantes/:id/editar
     },
-    // Becas - Grupo padre
+    // Becas - Grupo padre (muestra la lista directamente)
     {
         path: '/estudiantes/becas',
-        element: null, // No tiene página propia, es solo un grupo
+        element: <BecasListConnector />,
         key: 'EST-BECAS',
         menu: {
             label: 'Becas',
@@ -75,7 +75,7 @@ export const estudiantesRoutes = [
     },
     {
         path: '/estudiantes/becas/listar',
-        element: <UnderConstruction />,
+        element: <BecasListConnector />,
         key: 'EST-BECAS-LIST',
         menu: {
             label: 'Listar Becas',

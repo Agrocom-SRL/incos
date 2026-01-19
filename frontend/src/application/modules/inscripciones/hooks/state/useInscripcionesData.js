@@ -18,25 +18,23 @@
  * Nota: Esta es una versión base que se irá completando por pasos
  */
 
-import { useState, useCallback, useMemo } from 'react';
-// TODO: Importar hook de API cuando se implemente
-// import { useInscripcionesApi } from '@application-inscripciones/hooks/api/useInscripcionesApi';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useInscripcionesApi } from '@application-inscripciones/hooks/api/useInscripcionesApi';
 
 export const useInscripcionesData = () => {
-    // TODO: Hook para cargar datos iniciales desde BD
-    // const { inscripciones: inscripcionesFromApi, loading, error, refetch: refetchFromApi } = useInscripcionesApi();
+    // Hook para cargar datos iniciales desde BD
+    const { inscripciones: inscripcionesFromApi, loading, error, refetch: refetchFromApi } = useInscripcionesApi();
 
     // Estado local en memoria (puede ser actualizado sin recargar desde BD)
     const [inscripciones, setInscripciones] = useState([]);
-    const [loading] = useState(false); // TODO: Usar loading del API
-    const [error] = useState(null); // TODO: Usar error del API
 
-    // TODO: Sincronizar estado local con datos de API cuando cambien
-    // useEffect(() => {
-    //     if (inscripcionesFromApi.length >= 0) {
-    //         setInscripciones(inscripcionesFromApi);
-    //     }
-    // }, [inscripcionesFromApi]);
+    // Sincronizar estado local con datos de API cuando cambien
+    useEffect(() => {
+        // Actualizar cuando hay datos de la API (carga inicial o refetch)
+        if (inscripcionesFromApi.length >= 0) {
+            setInscripciones(inscripcionesFromApi);
+        }
+    }, [inscripcionesFromApi]);
 
     /**
      * Agrega una nueva inscripción al estado en memoria
@@ -78,9 +76,8 @@ export const useInscripcionesData = () => {
      * Útil cuando se necesita asegurar que los datos están actualizados
      */
     const refetch = useCallback(async (options = {}) => {
-        // TODO: Implementar refetch cuando se tenga el hook de API
-        // await refetchFromApi(options);
-    }, []);
+        await refetchFromApi(options);
+    }, [refetchFromApi]);
 
     // Memoizar el objeto retornado para mantener referencia estable
     // Esto evita que InscripcionesProvider cause re-renders innecesarios en sus hijos

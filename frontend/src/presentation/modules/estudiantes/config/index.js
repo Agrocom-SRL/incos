@@ -7,6 +7,7 @@
  */
 
 export { createEstudiantesTableColumns } from './tableColumns';
+export { createBecasTableColumns } from './becasTableColumns';
 export { createEstudianteWizardSteps } from './estudianteWizardSteps';
 export { createEstudianteDatosPersonalesFields } from './estudianteDatosPersonalesFields';
 export { createEstudianteDiscapacidadFields } from './estudianteDiscapacidadFields';
