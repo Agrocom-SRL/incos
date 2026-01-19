@@ -34,6 +34,7 @@ export default defineConfig({
             '@application-configuracion': path.resolve(__dirname, './src/application/modules/configuracion'),
             '@application-inscripciones': path.resolve(__dirname, './src/application/modules/inscripciones'),
             '@application-academico': path.resolve(__dirname, './src/application/modules/academico'),
+            '@application-auth': path.resolve(__dirname, './src/application/modules/auth'),
 
             // Infrastructure Layer
             '@infrastructure': path.resolve(__dirname, './src/infrastructure'),
@@ -82,6 +83,7 @@ export default defineConfig({
             '@navigation': path.resolve(__dirname, './src/infrastructure/navigation'),
             '@navigation-services': path.resolve(__dirname, './src/infrastructure/navigation/services'),
             '@navigation-router': path.resolve(__dirname, './src/infrastructure/navigation/router'),
+            '@navigation-guards': path.resolve(__dirname, './src/infrastructure/navigation/guards'),
 
             // Theme
             '@theme': path.resolve(__dirname, './src/infrastructure/config/theme'),

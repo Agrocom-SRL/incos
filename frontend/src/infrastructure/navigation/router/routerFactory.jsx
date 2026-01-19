@@ -29,6 +29,8 @@ import { getAllRoutes } from '@routes';
 import { normalizeRoutes } from '@navigation-services/routeNormalizer';
 import { filterRoutesWithElements } from '@navigation-services/routeFilter';
 import { MainLayout } from '@templates';
+import { AuthGuard, PublicRoute } from '@navigation-guards';
+import Login from '@modules/auth/pages/Login';
 
 /**
  * Factory function que crea y configura el router de la aplicación
@@ -55,30 +57,39 @@ export const createAppRouter = () => {
     // Normalizar las rutas
     const normalizedRoutes = normalizeRoutes(routesWithElements);
     
-    // TODO: Verificación de autenticación
-    // const isAuthenticated = checkAuth(); // Implementar cuando haya módulo de auth
+    // Separar rutas públicas (login) de rutas protegidas
+    const publicRoutes = normalizedRoutes.filter(route => route.path === '/login');
+    const protectedRoutes = normalizedRoutes.filter(route => route.path !== '/login');
     
-    // Crear el router con el template principal
+    // Crear el router con autenticación
     return createBrowserRouter([
+        // Ruta pública: Login (solo accesible si NO está autenticado)
+        {
+            path: '/login',
+            element: (
+                <PublicRoute>
+                    <Login />
+                </PublicRoute>
+            ),
+        },
+        // Rutas protegidas: Requieren autenticación
         {
             path: '/',
-            element: <MainLayout />,
+            element: (
+                <AuthGuard>
+                    <MainLayout />
+                </AuthGuard>
+            ),
             children: [
-                // Ruta raíz: verificación de autenticación y redirección
-                // Por ahora simula usuario logueado (siempre redirige a dashboard)
-                // TODO: Implementar verificación real de autenticación
+                // Ruta raíz: redirigir a dashboard si está autenticado
                 {
                     index: true,
                     element: <Navigate to="/dashboard" replace />,
-                    // Futuro: element: isAuthenticated 
-                    //     ? <Navigate to="/dashboard" replace />
-                    //     : <Navigate to="/login" replace />
                 },
                 // Todas las demás rutas protegidas (requieren autenticación)
-                ...normalizedRoutes.map(route => ({
+                ...protectedRoutes.map(route => ({
                     path: route.path,
                     element: route.element,
-                    // TODO: Agregar loader/guard para verificar autenticación en cada ruta
                 })),
             ],
         },

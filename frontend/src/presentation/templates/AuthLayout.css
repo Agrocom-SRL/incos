@@ -1,0 +1,83 @@
+.auth-layout {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #196b45 0%, #8b5cf6 100%);
+  position: relative;
+  overflow: hidden;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+}
+
+/* Eliminar cualquier borde del Layout de Ant Design */
+.auth-layout .ant-layout {
+  background: transparent !important;
+  border: none !important;
+}
+
+/* Asegurar que no haya bordes en el body cuando está en login */
+body:has(.auth-layout) {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  overflow-x: hidden;
+}
+
+/* Asegurar que el root no tenga bordes */
+#root:has(.auth-layout) {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+}
+
+/* Efecto de ondas decorativas en el fondo */
+.auth-layout::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+  animation: pulse 20s ease-in-out infinite;
+}
+
+.auth-layout::after {
+  content: '';
+  position: absolute;
+  bottom: -30%;
+  left: -30%;
+  width: 150%;
+  height: 150%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, transparent 70%);
+  animation: pulse 15s ease-in-out infinite reverse;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+.auth-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 24px;
+  position: relative;
+  z-index: 1;
+  margin: 0 !important;
+  border: none !important;
+  background: transparent !important;
+}
+
+.auth-container {
+  width: 100%;
+  max-width: 440px;
+  position: relative;
+}

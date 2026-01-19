@@ -10,6 +10,7 @@
 
 export { default as MainLayout } from './MainLayout';
 export { default as PageTemplate } from './PageTemplate';
+export { default as AuthLayout } from './AuthLayout';
 
 // Exportar componentes compartidos entre templates
 // NOTA: Estos componentes son parte de los templates, no son organismos independientes

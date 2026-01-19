@@ -1,0 +1,181 @@
+/* Login.css - Estilos para la página de login */
+
+.login-card {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
+  border: none !important;
+  background: #ffffff;
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+  padding: 32px 24px;
+}
+
+/* Eliminar bordes de Ant Design Card */
+.login-card .ant-card-body {
+  padding: 0 !important;
+  border: none !important;
+}
+
+/* Header del login */
+.login-header {
+  text-align: center;
+  padding: 8px 0 20px 0;
+}
+
+.login-logo-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.login-logo-wrapper .logo {
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.1));
+  transition: transform 0.3s ease;
+}
+
+.login-logo-wrapper .logo:hover {
+  transform: scale(1.02);
+}
+
+.login-logo-wrapper .logo img {
+  max-width: 100%;
+  height: auto;
+}
+
+.login-institute-name {
+  color: #196b45;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.login-tagline {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  margin-top: 8px;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, rgba(25, 107, 69, 0.08) 0%, rgba(139, 92, 246, 0.08) 100%);
+  border-radius: 20px;
+  display: inline-block;
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.login-tagline::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* Formulario */
+.login-form {
+  padding: 0 4px;
+}
+
+.login-label {
+  color: #333333;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.login-input {
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.login-input:hover {
+  border-color: #196b45;
+}
+
+.login-input:focus,
+.login-input-focused {
+  border-color: #196b45;
+  box-shadow: 0 0 0 2px rgba(25, 107, 69, 0.1);
+}
+
+.login-input-icon {
+  color: #666666;
+}
+
+.login-button {
+  height: 48px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 16px;
+  background: linear-gradient(135deg, #196b45 0%, #134d32 100%);
+  border: none;
+  box-shadow: 0 4px 12px rgba(25, 107, 69, 0.3);
+  transition: all 0.3s ease;
+}
+
+.login-button:hover {
+  background: linear-gradient(135deg, #134d32 0%, #0f3a25 100%);
+  box-shadow: 0 6px 16px rgba(25, 107, 69, 0.4);
+  transform: translateY(-1px);
+}
+
+.login-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(25, 107, 69, 0.3);
+}
+
+/* Footer */
+.login-footer {
+  text-align: center;
+  padding-top: 8px;
+}
+
+.login-footer-text {
+  color: #999999;
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.2px;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .login-card {
+    margin: 16px;
+    border-radius: 12px;
+    padding: 24px 20px;
+  }
+
+  .login-logo-wrapper {
+    margin-bottom: 16px;
+  }
+
+  .login-logo-wrapper .logo {
+    max-width: 180px;
+  }
+
+  .login-institute-name {
+    font-size: 12px;
+    margin-bottom: 10px;
+  }
+
+  .login-tagline {
+    font-size: 10px;
+    letter-spacing: 0.8px;
+    padding: 6px 12px;
+  }
+}
