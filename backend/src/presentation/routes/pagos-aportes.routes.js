@@ -30,7 +30,17 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
      */
     router.post(
         '/',
-        uploadPaymentDocument,         // 0. Middleware de upload (antes del validator para tener el archivo)
+        // Wrapper para manejar errores de multer
+        (req, res, next) => {
+            uploadPaymentDocument(req, res, (err) => {
+                if (err) {
+                    // Error de multer (tipo de archivo, tamaño, etc.)
+                    return next(err);
+                }
+                // Si no hay error, continuar al siguiente middleware
+                next();
+            });
+        },
         registerPagoAporteValidator,   // 1. Validator
         validateRequest,               // 2. Middleware que procesa errores
         (req, res, next) => controllers.registerPagoAporteController.handle(req, res, next)  // 3. Controller

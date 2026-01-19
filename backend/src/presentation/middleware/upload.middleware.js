@@ -24,10 +24,12 @@ export function createUploadMiddleware(fieldName = 'documentoRespaldo') {
             // Obtener student_id del body o params
             const studentId = req.body.student_id || req.params.studentId || 'temp';
             
-            // Crear ruta: uploads/documentos/estudiantes/{studentId}/pagos/
+            // Crear ruta: backend/uploads/documentos/estudiantes/{studentId}/pagos/
+            // __dirname es: backend/src/presentation/middleware/
+            // Necesitamos subir 3 niveles para llegar a backend/
             const uploadPath = path.resolve(
                 __dirname,
-                '../../../..',
+                '../../../',  // Subir 3 niveles: middleware -> presentation -> src -> backend
                 uploadConfig.uploadDir,
                 'documentos',
                 'estudiantes',
@@ -96,4 +98,39 @@ export function createUploadMiddleware(fieldName = 'documentoRespaldo') {
  * Middleware de upload para documentos de pago (factory)
  * Usa el campo 'documentoRespaldo' por defecto
  */
-export const uploadPaymentDocument = createUploadMiddleware('documentoRespaldo');
+const baseUploadMiddleware = createUploadMiddleware('documentoRespaldo');
+
+/**
+ * Wrapper del middleware de upload con logging
+ */
+export const uploadPaymentDocument = (req, res, next) => {
+    // Log antes de procesar el upload
+    console.log('[Upload] Iniciando procesamiento de archivo', {
+        fieldName: 'documentoRespaldo',
+        hasBody: !!req.body,
+        bodyKeys: req.body ? Object.keys(req.body) : [],
+        contentType: req.headers['content-type'],
+    });
+
+    baseUploadMiddleware(req, res, (err) => {
+        if (err) {
+            console.error('[Upload] Error en multer:', err.message, err.code);
+            return next(err);
+        }
+
+        // Log después de procesar el upload
+        console.log('[Upload] Archivo procesado', {
+            hasFile: !!req.file,
+            fileInfo: req.file ? {
+                fieldname: req.file.fieldname,
+                originalname: req.file.originalname,
+                filename: req.file.filename,
+                path: req.file.path,
+                mimetype: req.file.mimetype,
+                size: req.file.size,
+            } : null,
+        });
+
+        next();
+    });
+};

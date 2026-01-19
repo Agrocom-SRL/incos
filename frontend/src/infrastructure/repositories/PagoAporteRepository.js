@@ -66,6 +66,19 @@ export class PagoAporteRepository extends IPagoAporteRepository {
       let requestData;
       let headers = {};
 
+      // Debug: Log del archivo recibido
+      console.log('[PagoAporteRepository] Verificando archivo', {
+        hasDocumentoRespaldo: !!data.documentoRespaldo,
+        isFile: data.documentoRespaldo instanceof File,
+        tipo: typeof data.documentoRespaldo,
+        constructor: data.documentoRespaldo?.constructor?.name,
+        fileInfo: data.documentoRespaldo ? {
+          name: data.documentoRespaldo.name,
+          size: data.documentoRespaldo.size,
+          type: data.documentoRespaldo.type,
+        } : null,
+      });
+
       if (data.documentoRespaldo && data.documentoRespaldo instanceof File) {
         // Usar FormData para enviar archivo
         const formData = new FormData();
@@ -80,6 +93,11 @@ export class PagoAporteRepository extends IPagoAporteRepository {
         }
         formData.append('concept', data.concept);
         formData.append('documentoRespaldo', data.documentoRespaldo);
+
+        console.log('[PagoAporteRepository] Enviando FormData con archivo', {
+          fileName: data.documentoRespaldo.name,
+          fileSize: data.documentoRespaldo.size,
+        });
 
         requestData = formData;
         // No establecer Content-Type, el navegador lo hará automáticamente con el boundary

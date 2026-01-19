@@ -57,6 +57,19 @@ export class RegisterPagoAporteController extends BaseCreateController {
     prepareData(body, req) {
         const data = { ...body };
 
+        // Debug: Log del archivo recibido
+        this.logger.info('[Pagos] Preparando datos del pago', {
+            hasFile: !!req.file,
+            fileInfo: req.file ? {
+                filename: req.file.filename,
+                originalname: req.file.originalname,
+                path: req.file.path,
+                mimetype: req.file.mimetype,
+                size: req.file.size,
+            } : null,
+            bodyKeys: Object.keys(body),
+        });
+
         // Si hay un archivo subido, agregar información del archivo
         if (req.file) {
             data.documentFile = {

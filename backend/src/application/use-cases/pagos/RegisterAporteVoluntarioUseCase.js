@@ -150,7 +150,23 @@ export class RegisterAporteVoluntarioUseCase {
             // 9. Guardar documento de respaldo si existe
             let savedDocument = null;
             let savedDocumentDelivery = null;
+            
+            // Debug: Log para verificar si hay archivo
+            this.logger.info('[Pagos] Verificando documento de respaldo', {
+                hasDocumentFile: !!data.documentFile,
+                documentFileInfo: data.documentFile ? {
+                    filename: data.documentFile.filename,
+                    path: data.documentFile.path,
+                } : null,
+            });
+            
             if (data.documentFile) {
+                this.logger.info('[Pagos] Guardando documento de respaldo', {
+                    studentId,
+                    paymentId: payment.id,
+                    fileInfo: data.documentFile,
+                });
+                
                 savedDocument = await this._savePaymentDocument(
                     studentId,
                     payment.id,
@@ -159,12 +175,30 @@ export class RegisterAporteVoluntarioUseCase {
                 
                 // 10. Crear registro en estudiantes_documentos_entrega
                 if (savedDocument) {
+                    this.logger.info('[Pagos] Creando registro de entrega de documento', {
+                        studentId,
+                        documentId: savedDocument.id,
+                        paymentDate,
+                        concept,
+                    });
+                    
                     savedDocumentDelivery = await this._savePaymentDocumentDelivery(
                         studentId,
                         savedDocument.id,
-                        paymentDate
+                        paymentDate,
+                        concept
                     );
+                } else {
+                    this.logger.warn('[Pagos] No se pudo guardar el documento de respaldo', {
+                        studentId,
+                        paymentId: payment.id,
+                    });
                 }
+            } else {
+                this.logger.info('[Pagos] No hay documento de respaldo para guardar', {
+                    studentId,
+                    paymentId: payment.id,
+                });
             }
 
             this.logger.info('[Pagos] Pago registrado exitosamente', {
@@ -475,9 +509,10 @@ export class RegisterAporteVoluntarioUseCase {
      * @param {number} studentId - ID del estudiante
      * @param {number} documentId - ID del documento guardado en documentos_estudiante
      * @param {string} paymentDate - Fecha del pago (YYYY-MM-DD)
+     * @param {string} concept - Concepto del pago (para observaciones)
      * @returns {Promise<Object>} Registro de entrega de documento creado
      */
-    async _savePaymentDocumentDelivery(studentId, documentId, paymentDate) {
+    async _savePaymentDocumentDelivery(studentId, documentId, paymentDate, concept) {
         try {
             // Preparar datos para estudiantes_documentos_entrega
             // NOTA: documentacionId es NULL porque no hay un documento específico en el catálogo para "comprobante de pago"
@@ -490,7 +525,7 @@ export class RegisterAporteVoluntarioUseCase {
                 esOriginal: false, // Es una copia digital, no el original físico
                 fechaEntrega: paymentDate, // Fecha de entrega = fecha del pago
                 fechaVencimientoTramite: null, // No aplica porque no está en trámite
-                observaciones: `Comprobante de pago de aporte académico. Documento digital subido al registrar el pago.`,
+                observaciones: `Comprobante de pago de aporte académico: ${concept || 'Aporte Académico'}.`,
             };
 
             // Crear el registro de entrega

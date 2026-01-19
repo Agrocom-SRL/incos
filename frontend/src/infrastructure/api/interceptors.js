@@ -27,6 +27,7 @@ import { LocalStorageAdapter } from '@storage/LocalStorageAdapter.js';
  * Se ejecuta antes de cada request HTTP
  * - Obtiene el token del localStorage
  * - Lo agrega al header Authorization si existe
+ * - Si el data es FormData, elimina Content-Type para que el navegador lo establezca automáticamente
  */
 export const requestInterceptor = (config) => {
   // Usar adapter en lugar de localStorage directo
@@ -34,6 +35,12 @@ export const requestInterceptor = (config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+
+  // Si el data es FormData, eliminar Content-Type para que el navegador lo establezca con el boundary
+  if (config.data instanceof FormData) {
+    delete config.headers['Content-Type'];
+  }
+
   return config;
 };
 

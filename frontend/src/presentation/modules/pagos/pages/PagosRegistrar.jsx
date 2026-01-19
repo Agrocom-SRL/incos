@@ -181,8 +181,26 @@ const PagosRegistrar = () => {
       if (values.documentoRespaldo && values.documentoRespaldo.length > 0) {
         // Ant Design Upload devuelve un array, obtener el primer archivo
         const file = values.documentoRespaldo[0];
+        console.log('[PagosRegistrar] Archivo del formulario:', {
+          file,
+          hasOriginFileObj: !!file.originFileObj,
+          isFile: file instanceof File,
+          tipo: typeof file,
+          constructor: file?.constructor?.name,
+        });
         // Si es un objeto de Ant Design Upload, obtener el archivo original
         documentoRespaldo = file.originFileObj || file;
+        console.log('[PagosRegistrar] Archivo final extraído:', {
+          documentoRespaldo,
+          isFile: documentoRespaldo instanceof File,
+          tipo: typeof documentoRespaldo,
+          constructor: documentoRespaldo?.constructor?.name,
+        });
+      } else {
+        console.log('[PagosRegistrar] No hay archivo en el formulario', {
+          hasDocumentoRespaldo: !!values.documentoRespaldo,
+          length: values.documentoRespaldo?.length,
+        });
       }
 
       // ============================================

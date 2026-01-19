@@ -25,6 +25,15 @@ export function createErrorHandler(logger, errorFormatter) {
     const errorInfo = errorFormatter.extractErrorInfo(err, req);
     logger.error('Error en errorHandler:', errorInfo);
 
+    // Error de Multer (upload de archivos)
+    if (err.code === 'LIMIT_FILE_SIZE' || err.code === 'LIMIT_FILE_COUNT' || err.code === 'LIMIT_UNEXPECTED_FILE') {
+      const response = errorFormatter.formatValidationError(
+        new ValidationError(err.message || 'Error al subir el archivo', []),
+        req
+      );
+      return res.status(400).json(response);
+    }
+
     // Error operacional conocido (AppError con isOperational = true)
     // Esto incluye: NotFoundError, UnauthorizedError, ForbiddenError, ConflictError, etc.
     if (err.isOperational && err.statusCode < 500) {
