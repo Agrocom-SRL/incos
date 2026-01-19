@@ -7,8 +7,8 @@ import { serverConfig } from './server.config.js';
 
 // Orígenes permitidos para CORS
 const allowedOrigins = [
-    getEnv('CORS_ORIGIN', 'https://incos.wiiz.com.bo'),
-    'https://incos.wiiz.com.bo',
+    getEnv('CORS_ORIGIN', 'https://sistema.incos-santacruz.edu.bo'),
+    'https://sistema.incos-santacruz.edu.bo',
     'http://localhost:5173',
     'http://localhost:3000',
 ];

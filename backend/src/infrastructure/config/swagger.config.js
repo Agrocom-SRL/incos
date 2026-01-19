@@ -25,7 +25,7 @@ const apiDescription = getEnv('API_DESCRIPTION', 'Sistema de Gestión Académica
 const apiContactName = getEnv('API_CONTACT_NAME', 'Soporte Técnico');
 const apiContactEmail = getEnv('API_CONTACT_EMAIL', 'sistema@incos.edu.bo');
 const apiLicenseName = getEnv('API_LICENSE_NAME', 'Privado');
-const apiProductionUrl = getEnv('API_PRODUCTION_URL', 'https://incos.wiiz.com.bo/api/v1');
+const apiProductionUrl = getEnv('API_PRODUCTION_URL', 'https://sistema.incos-santacruz.edu.bo/api/v1');
 
 const options = {
     definition: {
