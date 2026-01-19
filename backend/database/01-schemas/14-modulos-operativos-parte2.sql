@@ -67,10 +67,6 @@ CREATE TABLE supervisiones_programadas (
     FOREIGN KEY (docente_id) REFERENCES docentes(id) ON DELETE SET NULL,
     FOREIGN KEY (materia_id) REFERENCES materias(id) ON DELETE SET NULL,
     FOREIGN KEY (curso_id) REFERENCES cursos(id) ON DELETE SET NULL,
-    FOREIGN KEY (supervisor_id) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     -- Índices
     INDEX idx_activo (activo),
@@ -158,9 +154,6 @@ CREATE TABLE fichas_supervision (
     
     -- Foreign Keys
     FOREIGN KEY (supervision_id) REFERENCES supervisiones_programadas(id) ON DELETE SET NULL,
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     -- Índices
     INDEX idx_activo (activo),
@@ -211,9 +204,6 @@ CREATE TABLE libros_registro (
     
     -- Foreign Keys
     FOREIGN KEY (carrera_id) REFERENCES carreras(id) ON DELETE SET NULL,
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     -- Índices
     INDEX idx_activo (activo),
@@ -270,9 +260,6 @@ CREATE TABLE folios_estudiantes (
     -- Foreign Keys
     FOREIGN KEY (estudiante_id) REFERENCES estudiantes(id) ON DELETE SET NULL,
     FOREIGN KEY (libro_id) REFERENCES libros_registro(id) ON DELETE SET NULL,
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     -- Índices
     INDEX idx_activo (activo),

@@ -91,9 +91,6 @@ CREATE TABLE estudiantes_becas (
     FOREIGN KEY (estudiante_id) REFERENCES estudiantes(id) ON DELETE SET NULL,
     FOREIGN KEY (beca_descuento_id) REFERENCES becas_descuentos(id) ON DELETE SET NULL,
     FOREIGN KEY (gestion_id) REFERENCES gestiones(id) ON DELETE SET NULL,
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     INDEX idx_estudiante_id (estudiante_id) COMMENT 'Búsqueda por estudiante',
     INDEX idx_estado (estado) COMMENT 'Filtrado por estado',
@@ -149,10 +146,6 @@ CREATE TABLE licencias_solicitudes (
     FOREIGN KEY (carrera_id) REFERENCES carreras(id) ON DELETE SET NULL,
     FOREIGN KEY (gestion_id) REFERENCES gestiones(id) ON DELETE SET NULL,
     FOREIGN KEY (curso_id) REFERENCES cursos(id) ON DELETE SET NULL,
-    FOREIGN KEY (decidido_por) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     INDEX idx_estudiante_id (estudiante_id) COMMENT 'Búsqueda por estudiante',
     INDEX idx_estado (estado) COMMENT 'Filtrado por estado',
@@ -216,9 +209,6 @@ CREATE TABLE estudiantes_apoderados (
     
     FOREIGN KEY (estudiante_id) REFERENCES estudiantes(id) ON DELETE SET NULL,
     FOREIGN KEY (tipo_parentesco_id) REFERENCES tipos_parentesco(id) ON DELETE SET NULL,
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     INDEX idx_estudiante_id (estudiante_id) COMMENT 'Búsqueda por estudiante',
     INDEX idx_tipo_parentesco_id (tipo_parentesco_id) COMMENT 'Búsqueda por tipo de parentesco',

@@ -78,9 +78,6 @@ CREATE TABLE estados_especiales_estudiante (
     
     FOREIGN KEY (estudiante_id) REFERENCES estudiantes(id) ON DELETE SET NULL,
     FOREIGN KEY (gestion_id) REFERENCES gestiones(id) ON DELETE SET NULL,
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     INDEX idx_estudiante_id (estudiante_id) COMMENT 'Búsqueda por estudiante',
     INDEX idx_gestion_id (gestion_id) COMMENT 'Búsqueda por gestión',

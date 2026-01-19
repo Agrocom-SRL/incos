@@ -27,6 +27,7 @@
 
 import { TIPOS_DOCUMENTO_SISTEMA } from '../../../domain/constants/index.js';
 import { normalizeId } from '../../../domain/utils/mapUtils.js';
+import { serverConfig } from '../../../infrastructure/config/server.config.js';
 
 export class GetStudentByIdUseCase {
   /**
@@ -68,6 +69,7 @@ export class GetStudentByIdUseCase {
     studentScholarshipRepository,
     scholarshipRepository,
     managementRepository,
+    studentDocumentRepository,
     logger,
   }) {
     this.studentRepository = studentRepository;
@@ -87,6 +89,7 @@ export class GetStudentByIdUseCase {
     this.studentScholarshipRepository = studentScholarshipRepository;
     this.scholarshipRepository = scholarshipRepository;
     this.managementRepository = managementRepository;
+    this.studentDocumentRepository = studentDocumentRepository;
     this.logger = logger;
   }
 
@@ -425,6 +428,47 @@ export class GetStudentByIdUseCase {
         documentDeliveriesCount: documentDeliveries.length,
       });
 
+      // 7.1. Buscar acta de compromiso existente
+      let actaCompromiso = null;
+      if (this.studentDocumentRepository) {
+        try {
+          const documentosResult = await this.studentDocumentRepository.findAll(
+            {
+              studentId: student.id,
+              tipoDocumento: 'ACTA_COMPROMISO',
+            },
+            null,
+            null
+          );
+
+          const documentos = documentosResult.studentDocuments || [];
+          
+          // Buscar el más reciente que contenga ACTA_COMPROMISO en el nombre
+          const actaDoc = documentos.find(doc => {
+            const docPlain = doc.toPlainObject ? doc.toPlainObject() : doc;
+            return docPlain.fileName?.includes('ACTA_COMPROMISO') || 
+                   docPlain.tipoDocumento === 'ACTA_COMPROMISO';
+          });
+
+          if (actaDoc) {
+            const docPlain = actaDoc.toPlainObject ? actaDoc.toPlainObject() : actaDoc;
+            const uploadDir = serverConfig.uploadsPath || 'uploads';
+            const filePath = docPlain.filePath?.startsWith('/') 
+              ? docPlain.filePath 
+              : `/${uploadDir}/${docPlain.filePath}`.replace(/\\/g, '/');
+            actaCompromiso = {
+              filePath: filePath,
+              fileName: docPlain.fileName || 'acta_compromiso.pdf',
+            };
+          }
+        } catch (err) {
+          this.logger.warn('[Estudiantes] Error al buscar acta de compromiso', {
+            studentId: student.id,
+            error: err.message,
+          });
+        }
+      }
+
       // 8. Retornar el estudiante con todos sus datos relacionados
       const result = {
         student: studentPlain,
@@ -460,6 +504,8 @@ export class GetStudentByIdUseCase {
         },
         // Campo para indicar si faltan documentos (para mostrar botón de acta de compromiso)
         tieneDocumentosFaltantes,
+        // Acta de compromiso si existe
+        actaCompromiso,
       };
 
       this.logger.info('[Estudiantes] Estudiante obtenido exitosamente', {

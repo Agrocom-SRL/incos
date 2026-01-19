@@ -116,10 +116,10 @@ INSERT INTO cursos_horarios (id, curso_id, horario_id, aula_id, orden_secuencia)
 -- INFORMÁTICA CONTABLE (curso_id = 86) - 4 horas/semana LAB 1
 -- MIÉRCOLES (4 bloques)
 INSERT INTO cursos_horarios (id, curso_id, horario_id, aula_id, orden_secuencia) VALUES
-(344, 86, 13, 1, 1),      -- MIERCOLES 13:45 (horario_id=13) - LAB 1
-(345, 86, 14, 1, 2),      -- MIERCOLES 14:30 (horario_id=14) - LAB 1
-(346, 86, 15, 1, 3),      -- MIERCOLES 15:15 (horario_id=15) - LAB 1
-(347, 86, 16, 1, 4);      -- MIERCOLES 16:00 (horario_id=16) - LAB 1
+(342, 86, 13, 1, 1),      -- MIERCOLES 13:45 (horario_id=13) - LAB 1
+(343, 86, 14, 1, 2),      -- MIERCOLES 14:30 (horario_id=14) - LAB 1
+(344, 86, 15, 1, 3),      -- MIERCOLES 15:15 (horario_id=15) - LAB 1
+(345, 86, 16, 1, 4);      -- MIERCOLES 16:00 (horario_id=16) - LAB 1
 
 -- ADMINISTRACIÓN GENERAL (curso_id = 87) - 4 horas/semana
 -- LUNES (2 bloques) + MIÉRCOLES (2 bloques)
@@ -298,9 +298,6 @@ INSERT INTO cursos_horarios (id, curso_id, horario_id, aula_id, orden_secuencia)
 INSERT INTO cursos_horarios (id, curso_id, horario_id, aula_id, orden_secuencia) VALUES
 (418, 110, 31, NULL, 1),  -- LUNES 18:15 (horario_id=31)
 (419, 110, 32, NULL, 2);  -- LUNES 19:00 (horario_id=32)
-
--- Rehabilitar foreign key checks
-SET FOREIGN_KEY_CHECKS = 1;
 
 -- Rehabilitar foreign key checks
 SET FOREIGN_KEY_CHECKS = 1;

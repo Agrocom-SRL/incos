@@ -76,9 +76,6 @@ CREATE TABLE pasantias_empresas (
     deleted_by INT COMMENT 'Usuario que eliminó',
     
     -- Foreign Keys de auditoría
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     -- Índices
     INDEX idx_activo (activo),
@@ -147,9 +144,6 @@ CREATE TABLE pasantias_asignaciones (
     FOREIGN KEY (carrera_id) REFERENCES carreras(id) ON DELETE SET NULL,
     FOREIGN KEY (gestion_id) REFERENCES gestiones(id) ON DELETE SET NULL,
     FOREIGN KEY (docente_supervisor_id) REFERENCES docentes(id) ON DELETE SET NULL,
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     -- Índices
     INDEX idx_activo (activo),
@@ -214,9 +208,6 @@ CREATE TABLE pasantias_evaluaciones (
     
     -- Foreign Keys
     FOREIGN KEY (asignacion_id) REFERENCES pasantias_asignaciones(id) ON DELETE SET NULL,
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     -- Índices
     INDEX idx_activo (activo),

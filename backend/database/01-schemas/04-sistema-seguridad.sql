@@ -51,9 +51,6 @@ CREATE TABLE roles (
     deleted_by INT COMMENT 'Usuario que eliminó',
     
     -- Foreign Keys
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     INDEX idx_codigo (codigo) COMMENT 'Búsqueda por código',
     INDEX idx_nombre (nombre) COMMENT 'Búsqueda por nombre',
@@ -83,9 +80,6 @@ CREATE TABLE permisos (
     deleted_by INT COMMENT 'Usuario que eliminó',
     
     -- Foreign Keys
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     INDEX idx_codigo (codigo) COMMENT 'Búsqueda por código',
     INDEX idx_modulo (modulo) COMMENT 'Búsqueda por módulo',
@@ -124,9 +118,6 @@ CREATE TABLE usuarios (
     
     -- Foreign Keys
     FOREIGN KEY (rol_id) REFERENCES roles(id) ON DELETE SET NULL,
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     INDEX idx_rol_id (rol_id) COMMENT 'Búsqueda por rol',
     INDEX idx_email (email) COMMENT 'Búsqueda por email',
@@ -164,9 +155,6 @@ CREATE TABLE roles_permisos (
     -- Foreign Keys
     FOREIGN KEY (rol_id) REFERENCES roles(id) ON DELETE SET NULL,
     FOREIGN KEY (permiso_id) REFERENCES permisos(id) ON DELETE SET NULL,
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     INDEX idx_rol_permiso_accion (rol_id, permiso_id, accion) COMMENT 'Búsqueda por rol, permiso y acción',
     INDEX idx_rol_id (rol_id) COMMENT 'Búsqueda por rol',
@@ -208,10 +196,6 @@ CREATE TABLE sesiones (
     deleted_by INT COMMENT 'Usuario que eliminó',
     
     -- Foreign Keys
-    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     INDEX idx_usuario_id (usuario_id) COMMENT 'Búsqueda por usuario',
     INDEX idx_token_sesion (token_sesion(255)) COMMENT 'Búsqueda por token de sesión',
@@ -244,9 +228,6 @@ CREATE TABLE configuracion_sistema (
     deleted_by INT COMMENT 'Usuario que eliminó',
     
     -- Foreign Keys
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     INDEX idx_clave (clave) COMMENT 'Búsqueda por clave',
     INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
@@ -296,12 +277,8 @@ CREATE TABLE personal (
     deleted_by INT COMMENT 'Usuario que eliminó',
     
     -- Foreign Keys
-    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE SET NULL,
     FOREIGN KEY (estado_civil_id) REFERENCES estados_civiles(id) ON DELETE SET NULL,
     FOREIGN KEY (municipio_id) REFERENCES municipios(id) ON DELETE SET NULL,
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     INDEX idx_ci_expedicion (ci, expedicion) COMMENT 'Búsqueda por CI y expedición',
     INDEX idx_usuario_id (usuario_id) COMMENT 'JOIN con usuarios',

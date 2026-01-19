@@ -42,10 +42,8 @@ CREATE TABLE paises (
     updated_by INT COMMENT 'Usuario que modificó',
     deleted_by INT COMMENT 'Usuario que eliminó',
     
-    -- Foreign Keys
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
+    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
     
     -- Índices esenciales
     INDEX idx_nombre (nombre) COMMENT 'Búsqueda frecuente por nombre',
@@ -77,9 +75,7 @@ CREATE TABLE departamentos (
     
     -- Foreign Keys
     FOREIGN KEY (pais_id) REFERENCES paises(id) ON DELETE SET NULL,
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    -- NOTA: Foreign Keys a usuarios omitidas para evitar dependencias circulares
     
     -- Índices esenciales
     INDEX idx_pais_id (pais_id) COMMENT 'Búsqueda por país (JOIN frecuente)',
@@ -113,9 +109,7 @@ CREATE TABLE provincias (
     
     -- Foreign Keys
     FOREIGN KEY (departamento_id) REFERENCES departamentos(id) ON DELETE SET NULL,
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    -- NOTA: Foreign Keys a usuarios omitidas para evitar dependencias circulares
     
     -- Índices esenciales
     INDEX idx_departamento_id (departamento_id) COMMENT 'Búsqueda por departamento (JOIN frecuente)',
@@ -149,9 +143,7 @@ CREATE TABLE municipios (
     
     -- Foreign Keys
     FOREIGN KEY (provincia_id) REFERENCES provincias(id) ON DELETE SET NULL,
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
+    -- NOTA: Foreign Keys a usuarios omitidas para evitar dependencias circulares
     
     -- Índices esenciales
     INDEX idx_provincia_id (provincia_id) COMMENT 'Búsqueda por provincia (JOIN frecuente)',

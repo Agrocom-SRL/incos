@@ -53,9 +53,6 @@ CREATE TABLE estudiantes_discapacidades (
     -- Foreign Keys
     FOREIGN KEY (estudiante_id) REFERENCES estudiantes(id) ON DELETE SET NULL,
     FOREIGN KEY (tipo_discapacidad_id) REFERENCES tipos_discapacidad(id) ON DELETE SET NULL,
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     -- Índices
     INDEX idx_estudiante (estudiante_id) COMMENT 'Búsqueda por estudiante',
@@ -108,9 +105,6 @@ CREATE TABLE estudiantes_origenes (
     FOREIGN KEY (municipio_nacimiento_id) REFERENCES municipios(id) ON DELETE SET NULL,
     FOREIGN KEY (idioma_materno_id) REFERENCES idiomas(id) ON DELETE SET NULL,
     FOREIGN KEY (idioma_secundario_id) REFERENCES idiomas(id) ON DELETE SET NULL,
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     -- Índices
     INDEX idx_estudiante (estudiante_id) COMMENT 'Búsqueda por estudiante',

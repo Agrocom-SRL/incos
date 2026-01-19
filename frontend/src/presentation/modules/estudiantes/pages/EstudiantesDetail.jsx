@@ -20,8 +20,9 @@ import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { useStudentDetailContext } from '@application-estudiantes/hooks';
 import { useGenerateActaCompromiso } from '@application-estudiantes/hooks';
+import { downloadFile } from '@application/utils';
 import { Spin, Alert, Empty, message } from 'antd';
-import { GiftOutlined, FileTextOutlined, DollarOutlined } from '@ant-design/icons';
+import { GiftOutlined, FileTextOutlined, DollarOutlined, DownloadOutlined } from '@ant-design/icons';
 import { Button } from '@atoms';
 import {
   DatosPersonalesSection,
@@ -86,13 +87,36 @@ const EstudiantesDetail = () => {
     }
   }, [studentId, generateActaCompromiso]);
 
+  // Handler para descargar acta de compromiso existente
+  const handleDownloadActaCompromiso = useCallback(() => {
+    const actaCompromisoData = student?.actaCompromiso;
+    if (actaCompromisoData) {
+      try {
+        downloadFile(actaCompromisoData.filePath, actaCompromisoData.fileName);
+      } catch (err) {
+        console.error('Error al descargar el acta de compromiso:', err);
+        message.error('Error al descargar el acta de compromiso');
+      }
+    }
+  }, [student]);
+
   // Acciones del header (botones) - debe estar antes de los returns tempranos
   // Solo mostrar botón de acta si faltan documentos
   // El campo tieneDocumentosFaltantes viene al nivel raíz del objeto student
   const tieneDocumentosFaltantesFlag = student?.tieneDocumentosFaltantes === true;
+  const actaCompromisoData = student?.actaCompromiso;
   const headerActions = useMemo(() => (
     <>
-      {tieneDocumentosFaltantesFlag && (
+      {actaCompromisoData ? (
+        <Button
+          variant="default"
+          icon={<DownloadOutlined />}
+          onClick={handleDownloadActaCompromiso}
+          style={{ marginRight: 8 }}
+        >
+          Descargar Acta de Compromiso
+        </Button>
+      ) : tieneDocumentosFaltantesFlag ? (
         <Button
           variant="default"
           icon={<FileTextOutlined />}
@@ -102,7 +126,7 @@ const EstudiantesDetail = () => {
         >
           Generar Acta de Compromiso
         </Button>
-      )}
+      ) : null}
       <div style={{ marginRight: 8, display: 'inline-block' }}>
         <Button
           variant="warning"
@@ -121,7 +145,7 @@ const EstudiantesDetail = () => {
         Asignar Beca
       </Button>
     </>
-  ), [handleAsignarBeca, handleGenerateActaCompromiso, handleRegistrarPago, loadingActa, tieneDocumentosFaltantesFlag]);
+  ), [handleAsignarBeca, handleGenerateActaCompromiso, handleRegistrarPago, handleDownloadActaCompromiso, loadingActa, tieneDocumentosFaltantesFlag, actaCompromisoData]);
 
   // Si está cargando
   if (loading) {
@@ -182,7 +206,7 @@ const EstudiantesDetail = () => {
     );
   }
 
-  const { student: studentData, guardians, disabilities, origins, documentDeliveries, scholarships, tieneDocumentosFaltantes } = student;
+  const { student: studentData, guardians, disabilities, origins, documentDeliveries, scholarships, tieneDocumentosFaltantes, actaCompromiso } = student;
 
   // Debug: Log para verificar la estructura del objeto student
   console.log('[EstudiantesDetail] Estructura del objeto student:', {

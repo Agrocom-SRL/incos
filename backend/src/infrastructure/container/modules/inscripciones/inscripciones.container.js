@@ -55,6 +55,9 @@ export function registerInscripcionesResource(container) {
                 managementPlanRepository: c.resolve(REPOSITORIOS_TOKENS.managementPlanRepository),
                 studyPlanRepository: c.resolve(REPOSITORIOS_TOKENS.studyPlanRepository),
                 configuracionSistemaRepository: c.resolve(REPOSITORIOS_TOKENS.configuracionSistemaRepository),
+                careerRepository: c.resolve(REPOSITORIOS_TOKENS.careerRepository),
+                studentDocumentRepository: c.resolve(REPOSITORIOS_TOKENS.studentDocumentRepository),
+                studentDocumentDeliveryRepository: c.resolve(REPOSITORIOS_TOKENS.studentDocumentDeliveryRepository),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
     );
@@ -79,6 +82,7 @@ export function registerInscripcionesResource(container) {
                 scheduleRepository: c.resolve(REPOSITORIOS_TOKENS.scheduleRepository),
                 classroomRepository: c.resolve(REPOSITORIOS_TOKENS.classroomRepository),
                 teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
+                studentDocumentRepository: c.resolve(REPOSITORIOS_TOKENS.studentDocumentRepository),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
     );

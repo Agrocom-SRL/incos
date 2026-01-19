@@ -87,7 +87,6 @@ CREATE TABLE sincronizacion_logs (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación del log',
     
     -- Foreign Keys
-    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     -- Índices
     INDEX idx_tipo_sincronizacion (tipo_sincronizacion),

@@ -69,9 +69,6 @@ CREATE TABLE gestiones (
     updated_by INT COMMENT 'Usuario que modificó',
     deleted_by INT COMMENT 'Usuario que eliminó',
     
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     INDEX idx_codigo (codigo) COMMENT 'Búsqueda por código',
     INDEX idx_anio (anio) COMMENT 'Búsqueda por año',
@@ -116,9 +113,6 @@ CREATE TABLE gestiones_planes (
     
     FOREIGN KEY (gestion_id) REFERENCES gestiones(id) ON DELETE SET NULL,
     FOREIGN KEY (plan_estudio_id) REFERENCES planes_estudios(id) ON DELETE SET NULL,
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     INDEX idx_gestion_id (gestion_id) COMMENT 'Búsqueda por gestión',
     INDEX idx_plan_estudio_id (plan_estudio_id) COMMENT 'Búsqueda por plan',
@@ -166,9 +160,6 @@ CREATE TABLE actividades (
     updated_by INT COMMENT 'Usuario que modificó',
     deleted_by INT COMMENT 'Usuario que eliminó',
     
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     INDEX idx_tipo (tipo) COMMENT 'Búsqueda por tipo',
     INDEX idx_destacada (es_destacada) COMMENT 'Filtrado por actividades destacadas',
@@ -218,9 +209,6 @@ CREATE TABLE periodos_academicos (
     deleted_by INT COMMENT 'Usuario que eliminó',
     
     FOREIGN KEY (gestion_id) REFERENCES gestiones(id) ON DELETE SET NULL,
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     INDEX idx_gestion_id (gestion_id) COMMENT 'Búsqueda por gestión',
     INDEX idx_codigo (codigo) COMMENT 'Búsqueda por código',
@@ -276,9 +264,6 @@ CREATE TABLE actividades_calendario (
     FOREIGN KEY (actividad_id) REFERENCES actividades(id) ON DELETE SET NULL,
     FOREIGN KEY (horario_id) REFERENCES horarios(id) ON DELETE SET NULL,
     FOREIGN KEY (aula_id) REFERENCES aulas(id) ON DELETE SET NULL,
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     -- Índices para optimización
     INDEX idx_periodo_academico_id (periodo_academico_id) COMMENT 'Búsqueda por periodo académico',
@@ -329,9 +314,6 @@ CREATE TABLE asignaciones_docentes (
     FOREIGN KEY (gestion_plan_id) REFERENCES gestiones_planes(id) ON DELETE SET NULL,
     FOREIGN KEY (curso_id) REFERENCES cursos(id) ON DELETE SET NULL,
     FOREIGN KEY (docente_id) REFERENCES docentes(id) ON DELETE SET NULL,
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     INDEX idx_gestion_plan_id (gestion_plan_id) COMMENT 'Búsqueda por plan habilitado',
     INDEX idx_curso_id (curso_id) COMMENT 'Búsqueda por curso',

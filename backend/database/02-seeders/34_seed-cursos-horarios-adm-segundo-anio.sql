@@ -148,10 +148,7 @@ INSERT INTO cursos_horarios (id, curso_id, horario_id, aula_id, orden_secuencia)
 (267, 67, 33, NULL, 1),   -- LUNES 19:45 (horario_id=33)
 (268, 67, 34, NULL, 2),   -- LUNES 20:30 (horario_id=34)
 (269, 67, 35, NULL, 3),   -- LUNES 21:15 (horario_id=35)
-(270, 67, 41, NULL, 4),   -- MIERCOLES 18:15 (horario_id=41)
-
--- Rehabilitar foreign key checks
-SET FOREIGN_KEY_CHECKS = 1;
+(270, 67, 41, NULL, 4);   -- MIERCOLES 18:15 (horario_id=41)
 
 -- Rehabilitar foreign key checks
 SET FOREIGN_KEY_CHECKS = 1;

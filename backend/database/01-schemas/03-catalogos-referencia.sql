@@ -44,9 +44,6 @@ CREATE TABLE idiomas (
     deleted_by INT COMMENT 'Usuario que eliminó',
     
     -- Foreign Keys
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     -- Índices esenciales
     INDEX idx_nombre (nombre) COMMENT 'Búsqueda por nombre',
@@ -76,9 +73,6 @@ CREATE TABLE estados_civiles (
     deleted_by INT COMMENT 'Usuario que eliminó',
     
     -- Foreign Keys
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     -- Índices esenciales
     INDEX idx_nombre (nombre) COMMENT 'Búsqueda por nombre',
@@ -108,9 +102,6 @@ CREATE TABLE tipos_discapacidad (
     deleted_by INT COMMENT 'Usuario que eliminó',
     
     -- Foreign Keys
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     -- Índices esenciales
     INDEX idx_nombre (nombre) COMMENT 'Búsqueda por nombre',
@@ -139,9 +130,6 @@ CREATE TABLE tipos_parentesco (
     deleted_by INT COMMENT 'Usuario que eliminó',
     
     -- Foreign Keys
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     -- Índices esenciales
     INDEX idx_nombre (nombre) COMMENT 'Búsqueda por nombre',
@@ -188,9 +176,6 @@ CREATE TABLE documentacion (
     
     -- Foreign Keys
     FOREIGN KEY (documento_padre_id) REFERENCES documentacion(id) ON DELETE SET NULL,
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     -- Índices esenciales
     INDEX idx_nombre (nombre) COMMENT 'Búsqueda por nombre',

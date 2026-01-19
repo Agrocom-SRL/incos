@@ -55,9 +55,6 @@ CREATE TABLE carreras (
     deleted_by INT COMMENT 'ID del usuario que eliminó el registro',
     
     -- Foreign keys de auditoría
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     -- Índices para optimización
     INDEX idx_codigo (codigo) COMMENT 'Búsqueda rápida por código de carrera',
@@ -96,9 +93,6 @@ CREATE TABLE materias (
     deleted_by INT COMMENT 'ID del usuario que eliminó el registro',
     
     -- Foreign keys de auditoría
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     -- Índices para optimización
     INDEX idx_sigla (sigla) COMMENT 'Búsqueda rápida por sigla',
@@ -151,9 +145,6 @@ CREATE TABLE planes_estudios (
     
     -- Foreign keys (todas con NULL y ON DELETE SET NULL)
     FOREIGN KEY (carrera_id) REFERENCES carreras(id) ON DELETE SET NULL,
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     -- Índices para optimización
     INDEX idx_carrera_id (carrera_id) COMMENT 'Búsqueda de planes por carrera',
@@ -202,9 +193,6 @@ CREATE TABLE periodos (
     
     -- Foreign keys (todas con NULL y ON DELETE SET NULL)
     FOREIGN KEY (plan_estudio_id) REFERENCES planes_estudios(id) ON DELETE SET NULL,
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     -- Índices para optimización
     INDEX idx_plan_estudio_id (plan_estudio_id) COMMENT 'Búsqueda de periodos por plan de estudios',
@@ -250,9 +238,6 @@ CREATE TABLE asignaturas_plan (
     FOREIGN KEY (plan_estudio_id) REFERENCES planes_estudios(id) ON DELETE SET NULL,
     FOREIGN KEY (periodo_id) REFERENCES periodos(id) ON DELETE SET NULL,
     FOREIGN KEY (materia_id) REFERENCES materias(id) ON DELETE SET NULL,
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     -- Índices para optimización
     INDEX idx_plan_estudio_id (plan_estudio_id) COMMENT 'Búsqueda por plan (redundancia para performance)',
@@ -295,9 +280,6 @@ CREATE TABLE prerrequisitos (
     FOREIGN KEY (plan_estudio_id) REFERENCES planes_estudios(id) ON DELETE SET NULL,
     FOREIGN KEY (asignatura_id) REFERENCES asignaturas_plan(id) ON DELETE SET NULL,
     FOREIGN KEY (prerrequisito_id) REFERENCES asignaturas_plan(id) ON DELETE SET NULL,
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     -- Índices para optimización
     INDEX idx_plan_estudio_id (plan_estudio_id) COMMENT 'Búsqueda por plan (redundancia para performance)',

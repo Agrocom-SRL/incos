@@ -53,9 +53,6 @@ CREATE TABLE configuracion_aportes (
     
     -- Foreign Keys
     FOREIGN KEY (gestion_id) REFERENCES gestiones(id) ON DELETE RESTRICT,
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     INDEX idx_gestion_id (gestion_id) COMMENT 'Búsqueda por gestión',
     INDEX idx_aporte_activo (aporte_activo) COMMENT 'Búsqueda de aportes activos',
@@ -89,9 +86,6 @@ CREATE TABLE metodos_pago (
     deleted_by INT COMMENT 'Usuario que eliminó',
     
     -- Foreign Keys
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     INDEX idx_codigo (codigo) COMMENT 'Búsqueda por código',
     INDEX idx_nombre (nombre) COMMENT 'Búsqueda por nombre',
@@ -124,9 +118,6 @@ CREATE TABLE bancos_autorizados (
     deleted_by INT COMMENT 'Usuario que eliminó',
     
     FOREIGN KEY (metodo_pago_id) REFERENCES metodos_pago(id) ON DELETE RESTRICT,
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     INDEX idx_metodo_pago_id (metodo_pago_id) COMMENT 'Búsqueda por método de pago',
     INDEX idx_codigo (codigo) COMMENT 'Búsqueda por código de banco',
@@ -163,9 +154,6 @@ CREATE TABLE cuentas_pago (
     
     FOREIGN KEY (metodo_pago_id) REFERENCES metodos_pago(id) ON DELETE RESTRICT,
     FOREIGN KEY (banco_id) REFERENCES bancos_autorizados(id) ON DELETE SET NULL,
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     INDEX idx_metodo_pago_id (metodo_pago_id) COMMENT 'Búsqueda por método de pago',
     INDEX idx_banco_id (banco_id) COMMENT 'Búsqueda por banco',
@@ -219,9 +207,6 @@ CREATE TABLE pago_aporte (
     FOREIGN KEY (estudiante_beca_id) REFERENCES estudiantes_becas(id) ON DELETE SET NULL,
     FOREIGN KEY (metodo_pago_id) REFERENCES metodos_pago(id) ON DELETE RESTRICT,
     FOREIGN KEY (cuenta_pago_id) REFERENCES cuentas_pago(id) ON DELETE SET NULL,
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     INDEX idx_estudiante_id (estudiante_id) COMMENT 'Búsqueda por estudiante',
     INDEX idx_gestion_id (gestion_id) COMMENT 'Búsqueda por gestión',

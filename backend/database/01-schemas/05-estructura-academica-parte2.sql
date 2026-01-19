@@ -77,12 +77,8 @@ CREATE TABLE docentes (
     updated_by INT NULL COMMENT 'Usuario que modificó',
     deleted_by INT NULL COMMENT 'Usuario que eliminó',
     
-    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE SET NULL,
     FOREIGN KEY (estado_civil_id) REFERENCES estados_civiles(id) ON DELETE SET NULL,
     FOREIGN KEY (municipio_residencia_id) REFERENCES municipios(id) ON DELETE SET NULL,
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     INDEX idx_ci_expedicion (ci, expedicion) COMMENT 'Búsqueda por CI y expedición',
     INDEX idx_usuario_id (usuario_id) COMMENT 'Búsqueda por usuario',
@@ -127,9 +123,6 @@ CREATE TABLE paralelos (
     
     FOREIGN KEY (carrera_id) REFERENCES carreras(id) ON DELETE SET NULL,
     FOREIGN KEY (periodo_id) REFERENCES periodos(id) ON DELETE SET NULL,
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     INDEX idx_carrera_id (carrera_id) COMMENT 'Búsqueda por carrera',
     INDEX idx_periodo_id (periodo_id) COMMENT 'Búsqueda por periodo (año académico)',
@@ -167,9 +160,6 @@ CREATE TABLE aulas (
     updated_by INT NULL COMMENT 'ID del usuario que modificó el registro',
     deleted_by INT NULL COMMENT 'ID del usuario que eliminó el registro',
     
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     INDEX idx_codigo (codigo) COMMENT 'Búsqueda por código',
     INDEX idx_categoria (categoria) COMMENT 'Búsqueda por categoría',
@@ -217,9 +207,6 @@ CREATE TABLE horarios (
     updated_by INT NULL COMMENT 'ID del usuario que modificó el registro',
     deleted_by INT NULL COMMENT 'ID del usuario que eliminó el registro',
     
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     INDEX idx_dia (dia) COMMENT 'Búsqueda por día',
     INDEX idx_turno (turno) COMMENT 'Búsqueda por turno',
@@ -266,9 +253,6 @@ CREATE TABLE cursos (
     -- Foreign keys
     FOREIGN KEY (paralelo_id) REFERENCES paralelos(id) ON DELETE SET NULL,
     FOREIGN KEY (asignatura_plan_id) REFERENCES asignaturas_plan(id) ON DELETE SET NULL,
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     -- Índices para optimización
     INDEX idx_codigo (codigo) COMMENT 'Búsqueda por código',
@@ -312,9 +296,6 @@ CREATE TABLE cursos_horarios (
     FOREIGN KEY (curso_id) REFERENCES cursos(id) ON DELETE SET NULL,
     FOREIGN KEY (horario_id) REFERENCES horarios(id) ON DELETE SET NULL,
     FOREIGN KEY (aula_id) REFERENCES aulas(id) ON DELETE SET NULL,
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     INDEX idx_curso_id (curso_id) COMMENT 'Búsqueda por curso',
     INDEX idx_horario_id (horario_id) COMMENT 'Búsqueda por horario',

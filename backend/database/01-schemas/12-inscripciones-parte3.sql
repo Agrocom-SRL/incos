@@ -142,10 +142,6 @@ CREATE TABLE transferencias (
     FOREIGN KEY (gestion_incos_id) REFERENCES gestiones(id) ON DELETE SET NULL,
     FOREIGN KEY (periodo_incos_id) REFERENCES periodos(id) ON DELETE SET NULL,
     FOREIGN KEY (inscripcion_id) REFERENCES inscripciones(id) ON DELETE SET NULL,
-    FOREIGN KEY (aprobada_por) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     INDEX idx_estudiante_id (estudiante_id) COMMENT 'Búsqueda por estudiante',
     INDEX idx_tipo (tipo) COMMENT 'Filtrado por tipo',
@@ -230,11 +226,7 @@ CREATE TABLE transferencias_materias (
     
     FOREIGN KEY (transferencia_id) REFERENCES transferencias(id) ON DELETE SET NULL,
     FOREIGN KEY (materia_incos_id) REFERENCES materias(id) ON DELETE SET NULL,
-    FOREIGN KEY (convalidada_por) REFERENCES usuarios(id) ON DELETE SET NULL,
     FOREIGN KEY (inscripcion_materia_id) REFERENCES inscripciones_materias(id) ON DELETE SET NULL,
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     INDEX idx_transferencia_id (transferencia_id) COMMENT 'Búsqueda por transferencia',
     INDEX idx_materia_incos_id (materia_incos_id) COMMENT 'Búsqueda por materia INCOS',

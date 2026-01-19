@@ -25,6 +25,7 @@ import { EnrollmentMapper } from '../../mappers/inscripciones/index.js';
 import { StudentAcademicDataMapper, StudentMapper } from '../../mappers/estudiantes/index.js';
 import { ManagementMapper } from '../../mappers/academico/index.js';
 import { CareerMapper } from '../../mappers/configuracion/index.js';
+import { serverConfig } from '../../../infrastructure/config/server.config.js';
 
 export class GetEnrollmentByIdUseCase {
   /**
@@ -62,6 +63,7 @@ export class GetEnrollmentByIdUseCase {
     scheduleRepository,
     classroomRepository,
     teacherRepository,
+    studentDocumentRepository,
     logger,
   }) {
     this.enrollmentRepository = enrollmentRepository;
@@ -79,6 +81,7 @@ export class GetEnrollmentByIdUseCase {
     this.scheduleRepository = scheduleRepository;
     this.classroomRepository = classroomRepository;
     this.teacherRepository = teacherRepository;
+    this.studentDocumentRepository = studentDocumentRepository;
     this.logger = logger;
   }
 
@@ -492,7 +495,50 @@ export class GetEnrollmentByIdUseCase {
       // Filtrar materias nulas (errores)
       const materiasValidas = materiasConDetalles.filter((m) => m !== null);
 
-      // 8. Convertir entidades de dominio a formato de presentación usando mappers
+      // 8. Buscar formulario de inscripción del estudiante
+      let formularioInscripcion = null;
+      if (student?.id) {
+        try {
+          const documentosResult = await this.studentDocumentRepository.findAll(
+            {
+              studentId: student.id,
+              tipoDocumento: 'INSCRIPCION',
+            },
+            null,
+            null
+          );
+
+          const documentos = documentosResult.studentDocuments || [];
+          
+          // Buscar el más reciente que contenga FORMULARIO_INSCRIPCION en el nombre
+          const formularioDoc = documentos.find(doc => {
+            const docPlain = doc.toPlainObject ? doc.toPlainObject() : doc;
+            return docPlain.fileName?.includes('FORMULARIO_INSCRIPCION') || 
+                   docPlain.tipoDocumento === 'INSCRIPCION';
+          });
+
+          if (formularioDoc) {
+            const docPlain = formularioDoc.toPlainObject ? formularioDoc.toPlainObject() : formularioDoc;
+            const uploadDir = serverConfig.uploadsPath || 'uploads';
+            // El filePath ya incluye la ruta relativa desde uploads/, solo necesitamos agregar el prefijo
+            const filePath = docPlain.filePath?.startsWith('/') 
+              ? docPlain.filePath 
+              : `/${uploadDir}/${docPlain.filePath}`.replace(/\\/g, '/');
+            formularioInscripcion = {
+              filePath: filePath,
+              fileName: docPlain.fileName || 'formulario_inscripcion.pdf',
+            };
+          }
+        } catch (err) {
+          this.logger.warn('[Inscripciones] Error al buscar formulario de inscripción', {
+            enrollmentId: enrollment.id,
+            studentId: student.id,
+            error: err.message,
+          });
+        }
+      }
+
+      // 9. Convertir entidades de dominio a formato de presentación usando mappers
       // Los mappers pueden trabajar directamente con entidades (no necesitan aplanado)
       const enrollmentPresentation = EnrollmentMapper.entityToPresentation(enrollment);
       const studentAcademicDataPresentation = StudentAcademicDataMapper.entityToPresentation(studentAcademicData);
@@ -719,7 +765,7 @@ export class GetEnrollmentByIdUseCase {
       // }
 
       // Retornar todas las entidades en formato de presentación
-      return {
+      const result = {
         enrollment: enrollmentPresentation,
         studentAcademicData: studentAcademicDataPresentation,
         management: managementPresentation,
@@ -727,6 +773,13 @@ export class GetEnrollmentByIdUseCase {
         career: careerPresentation,
         enrollmentSubjects: materiasValidas,
       };
+
+      // Agregar formulario de inscripción si existe
+      if (formularioInscripcion) {
+        result.formularioInscripcion = formularioInscripcion;
+      }
+
+      return result;
     } catch (error) {
       // Manejo de errores
       this.logger.error('[Inscripciones] Error al obtener inscripción por ID', {

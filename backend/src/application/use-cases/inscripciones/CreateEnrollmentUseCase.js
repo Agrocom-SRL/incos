@@ -1,4 +1,11 @@
 import { NotFoundError, ValidationError } from '../../../domain/errors/AppError.js';
+import { PDFGenerator } from '../../../infrastructure/external/pdf/PDFGenerator.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { serverConfig } from '../../../infrastructure/config/server.config.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 /**
  * Use Case: CreateEnrollmentUseCase
@@ -50,6 +57,9 @@ export class CreateEnrollmentUseCase {
     managementPlanRepository,
     studyPlanRepository,
     configuracionSistemaRepository,
+    careerRepository,
+    studentDocumentRepository,
+    studentDocumentDeliveryRepository,
     logger,
   }) {
     this.enrollmentRepository = enrollmentRepository;
@@ -63,6 +73,9 @@ export class CreateEnrollmentUseCase {
     this.managementPlanRepository = managementPlanRepository;
     this.studyPlanRepository = studyPlanRepository;
     this.configuracionSistemaRepository = configuracionSistemaRepository;
+    this.careerRepository = careerRepository;
+    this.studentDocumentRepository = studentDocumentRepository;
+    this.studentDocumentDeliveryRepository = studentDocumentDeliveryRepository;
     this.logger = logger;
   }
 
@@ -143,8 +156,28 @@ export class CreateEnrollmentUseCase {
         teacherAssignments
       );
 
-      // 9. Construir y retornar respuesta
-      return this._buildResponse(enrollment, enrollmentSubjects, studentId, parallelId, management);
+      // 9. Generar formulario de inscripción (PDF)
+      let formularioDocument = null;
+      try {
+        formularioDocument = await this._generateFormularioInscripcion(
+          student,
+          studentAcademicData,
+          parallel,
+          management,
+          studyPlan
+        );
+      } catch (error) {
+        // No fallar la inscripción si falla la generación del formulario
+        this.logger.error('[Inscripciones] Error al generar formulario de inscripción', {
+          error: error.message,
+          stack: error.stack,
+          studentId,
+          enrollmentId: enrollment.id,
+        });
+      }
+
+      // 10. Construir y retornar respuesta
+      return this._buildResponse(enrollment, enrollmentSubjects, studentId, parallelId, management, formularioDocument);
 
     } catch (error) {
       this.logger.error('[Inscripciones] Error al crear inscripción', {
@@ -533,6 +566,161 @@ export class CreateEnrollmentUseCase {
   }
 
   /**
+   * Genera el formulario de inscripción en PDF
+   * @private
+   * @param {Object} student - Entidad Student
+   * @param {Object} studentAcademicData - Entidad StudentAcademicData
+   * @param {Object} parallel - Entidad Parallel
+   * @param {Object} management - Entidad Management
+   * @param {Object} studyPlan - Entidad StudyPlan
+   * @returns {Promise<Object|null>} Documento guardado o null si falla
+   */
+  async _generateFormularioInscripcion(student, studentAcademicData, parallel, management, studyPlan) {
+    try {
+      // 1. Obtener carrera
+      const career = await this.careerRepository.findById(studentAcademicData.careerId);
+      if (!career) {
+        throw new NotFoundError(`Carrera con ID ${studentAcademicData.careerId}`);
+      }
+
+      // 2. Preparar datos del estudiante
+      const studentPlain = student.toPlainObject ? student.toPlainObject() : student;
+      const careerPlain = career.toPlainObject ? career.toPlainObject() : career;
+      const managementPlain = management.toPlainObject ? management.toPlainObject() : management;
+
+      // Calcular edad
+      let edad = '';
+      if (studentPlain.fechaNacimiento) {
+        const fechaNac = new Date(studentPlain.fechaNacimiento);
+        const hoy = new Date();
+        edad = hoy.getFullYear() - fechaNac.getFullYear();
+        const mes = hoy.getMonth() - fechaNac.getMonth();
+        if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNac.getDate())) {
+          edad--;
+        }
+      }
+
+      // 3. Preparar datos para PDF
+      const pdfData = {
+        gestionYear: managementPlain.year || managementPlain.anio,
+        apellidoPaterno: studentPlain.apellidoPaterno || '',
+        apellidoMaterno: studentPlain.apellidoMaterno || '',
+        nombres: studentPlain.nombres || '',
+        ci: studentPlain.ci || '',
+        expedicion: studentPlain.expedicion || 'S.C.',
+        genero: studentPlain.genero || '',
+        tipoSangre: studentPlain.tipoSangre || '',
+        emailPersonal: studentPlain.emailPersonal || '',
+        estadoCivil: studentPlain.estadoCivil || '',
+        tieneDiscapacidad: studentPlain.tieneDiscapacidad || false,
+        ciudadNacimiento: studentPlain.ciudadNacimiento || '',
+        provincia: studentPlain.provincia || '',
+        departamento: studentPlain.departamento || '',
+        fechaNacimiento: studentPlain.fechaNacimiento || '',
+        nacionalidad: 'Boliviana',
+        edad: String(edad),
+        direccion: studentPlain.direccion || '',
+        idiomaMaterno: studentPlain.idiomaMaterno || '',
+        celular: studentPlain.celular || '',
+        trabaja: false, // TODO: Obtener de datos del estudiante si existe
+        cargo: '',
+        empresa: '',
+        carrera: careerPlain.name || careerPlain.nombre || '',
+        anio: parallel.name || '', // Nombre del paralelo (ej: "Primer Año")
+        documentos: {
+          ci: false, // TODO: Verificar si está entregado
+          certificadoNacimiento: false,
+          diplomaBachiller: false,
+          aporteVoluntario: false,
+        },
+      };
+
+      // 4. Construir rutas del archivo
+      const uploadDir = serverConfig.uploadsPath || 'uploads';
+      const relativePath = path.join('documentos', 'estudiantes', String(student.id));
+      const fileName = `FORMULARIO_INSCRIPCION_${student.id}_${Date.now()}.pdf`;
+      
+      // Ruta absoluta (para guardar en disco)
+      const absoluteUploadPath = path.isAbsolute(uploadDir)
+        ? path.join(uploadDir, relativePath, fileName)
+        : path.resolve(__dirname, '../../../..', uploadDir, relativePath, fileName);
+
+      // 5. Generar PDF
+      this.logger.info('[Inscripciones] Generando PDF del formulario de inscripción', {
+        studentId: student.id,
+        absolutePath: absoluteUploadPath,
+      });
+
+      await PDFGenerator.generateFormularioInscripcion(pdfData, absoluteUploadPath);
+
+      this.logger.info('[Inscripciones] PDF del formulario generado exitosamente', {
+        studentId: student.id,
+        fileName,
+        absolutePath: absoluteUploadPath,
+      });
+
+      // 6. Guardar el PDF como documento en documentos_estudiante
+      const relativeFilePath = path.join(relativePath, fileName).replace(/\\/g, '/');
+      const ext = path.extname(fileName).replace('.', '');
+      
+      const documentData = {
+        studentId: student.id,
+        tipoDocumento: 'INSCRIPCION',
+        documentacionId: null,
+        fileName: fileName,
+        filePath: relativeFilePath,
+        extension: ext,
+        tipoMime: 'application/pdf',
+        contieneMultipleDocumentos: false,
+        verified: false,
+        state: 'PENDIENTE',
+      };
+
+      const savedDocument = await this.studentDocumentRepository.create(documentData);
+      this.logger.info('[Inscripciones] Documento de formulario guardado', {
+        studentId: student.id,
+        documentId: savedDocument.id,
+        fileName,
+      });
+
+      // 7. Crear registro en estudiantes_documentos_entrega
+      const fechaActual = new Date().toISOString().split('T')[0];
+      const deliveryData = {
+        studentId: student.id,
+        documentacionId: null,
+        entregado: true,
+        enTramite: false,
+        esOriginal: false,
+        fechaEntrega: fechaActual,
+        fechaVencimientoTramite: null,
+        observaciones: `Formulario de inscripción generado automáticamente para la gestión ${managementPlain.year || managementPlain.anio}.`,
+      };
+
+      const savedDocumentDelivery = await this.studentDocumentDeliveryRepository.create(deliveryData);
+      this.logger.info('[Inscripciones] Registro de entrega de formulario creado', {
+        studentId: student.id,
+        documentId: savedDocument.id,
+        deliveryId: savedDocumentDelivery.id,
+      });
+
+      return {
+        document: savedDocument.toPlainObject ? savedDocument.toPlainObject() : savedDocument,
+        documentDelivery: savedDocumentDelivery.toPlainObject ? savedDocumentDelivery.toPlainObject() : savedDocumentDelivery,
+        filePath: `/${uploadDir}/${relativeFilePath}`.replace(/\\/g, '/'),
+        fileName,
+        absolutePath: absoluteUploadPath,
+      };
+    } catch (error) {
+      this.logger.error('[Inscripciones] Error al generar formulario de inscripción', {
+        error: error.message,
+        stack: error.stack,
+        studentId: student.id,
+      });
+      return null;
+    }
+  }
+
+  /**
    * Construye la respuesta final del caso de uso
    * @private
    * @param {Object} enrollment - Entidad Enrollment
@@ -540,9 +728,10 @@ export class CreateEnrollmentUseCase {
    * @param {number} studentId - ID del estudiante
    * @param {number} parallelId - ID del paralelo
    * @param {Object} management - Entidad Management
+   * @param {Object|null} formularioDocument - Documento del formulario generado
    * @returns {Object} Respuesta formateada
    */
-  _buildResponse(enrollment, enrollmentSubjects, studentId, parallelId, management) {
+  _buildResponse(enrollment, enrollmentSubjects, studentId, parallelId, management, formularioDocument) {
     const result = {
       enrollment: enrollment.toPlainObject ? enrollment.toPlainObject() : enrollment,
       enrollmentSubjects: enrollmentSubjects.map((es) =>
@@ -550,12 +739,17 @@ export class CreateEnrollmentUseCase {
       ),
     };
 
+    if (formularioDocument) {
+      result.formularioInscripcion = formularioDocument;
+    }
+
     this.logger.info('[Inscripciones] Inscripción creada exitosamente', {
       enrollmentId: enrollment.id,
       enrollmentSubjectsCount: enrollmentSubjects.length,
       studentId,
       parallelId,
       managementId: management.id,
+      hasFormulario: !!formularioDocument,
     });
 
     return result;

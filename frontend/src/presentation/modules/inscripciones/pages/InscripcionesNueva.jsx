@@ -17,10 +17,12 @@
  * Nota: Esta es una versión base que se irá completando por pasos
  */
 
+import { useEffect } from 'react';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { WizardForm } from '@organisms';
 import { useInscripcionesNuevaContext } from '@application-inscripciones/hooks';
+import { downloadFile } from '@application/utils/fileDownload';
 
 const InscripcionesNueva = () => {
 
@@ -44,7 +46,25 @@ const InscripcionesNueva = () => {
         error = null,
         handleFinish,
         handleSave,
+        inscripcionResult,
     } = context;
+
+    // Descargar automáticamente el formulario cuando la inscripción se complete exitosamente
+    useEffect(() => {
+        if (inscripcionResult?.success && inscripcionResult?.data?.formularioInscripcion) {
+            const { filePath, fileName } = inscripcionResult.data.formularioInscripcion;
+            if (filePath && fileName) {
+                // Pequeño delay para asegurar que el archivo esté disponible
+                setTimeout(() => {
+                    try {
+                        downloadFile(filePath, fileName);
+                    } catch (err) {
+                        console.error('Error al descargar el formulario de inscripción:', err);
+                    }
+                }, 500);
+            }
+        }
+    }, [inscripcionResult]);
 
     // Búsqueda de estudiantes (objeto específico desde useInscripcionNuevaStudentSearch)
     const { studentSearch } = context;

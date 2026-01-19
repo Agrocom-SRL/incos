@@ -148,10 +148,6 @@ CREATE TABLE traspasos (
     FOREIGN KEY (gestion_actual_id) REFERENCES gestiones(id) ON DELETE SET NULL,
     FOREIGN KEY (periodo_actual_id) REFERENCES periodos(id) ON DELETE SET NULL,
     FOREIGN KEY (inscripcion_id) REFERENCES inscripciones(id) ON DELETE SET NULL,
-    FOREIGN KEY (aprobada_por) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     INDEX idx_estudiante_id (estudiante_id) COMMENT 'Búsqueda por estudiante',
     INDEX idx_tipo (tipo) COMMENT 'Filtrado por tipo',
@@ -241,11 +237,7 @@ CREATE TABLE traspasos_materias (
     
     FOREIGN KEY (traspaso_id) REFERENCES traspasos(id) ON DELETE SET NULL,
     FOREIGN KEY (materia_destino_id) REFERENCES materias(id) ON DELETE SET NULL,
-    FOREIGN KEY (convalidada_por) REFERENCES usuarios(id) ON DELETE SET NULL,
     FOREIGN KEY (inscripcion_materia_id) REFERENCES inscripciones_materias(id) ON DELETE SET NULL,
-    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    FOREIGN KEY (deleted_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     
     INDEX idx_traspaso_id (traspaso_id) COMMENT 'Búsqueda por traspaso',
     INDEX idx_materia_destino_id (materia_destino_id) COMMENT 'Búsqueda por materia destino',

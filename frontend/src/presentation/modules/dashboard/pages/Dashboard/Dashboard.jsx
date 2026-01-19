@@ -11,6 +11,7 @@
  */
 
 import { Flex, Spin, Card, Typography, Button, Avatar } from 'antd';
+import { useNavigate } from 'react-router-dom';
 import { MainContent, InfoSidebar } from '@templates';
 import { allSpacing, componentConfig, allColors, typography, gradients, shadows } from '@theme/tokens';
 import { useDashboardContext } from '@application-dashboard';
@@ -18,6 +19,8 @@ import { useDashboardContext } from '@application-dashboard';
 const { Title, Text } = Typography;
 
 const Dashboard = () => {
+    const navigate = useNavigate();
+    
     // Obtener datos del contexto del dashboard
     const {
         carreras = [],
@@ -101,6 +104,7 @@ const Dashboard = () => {
                                     paddingInline: `${componentConfig.Button.paddingInline}px`,
                                     fontWeight: typography.fontWeightStrong,
                                 }}
+                                onClick={() => navigate('/configuracion/academico/carreras')}
                                 onMouseEnter={(e) => {
                                     e.currentTarget.style.backgroundColor = componentConfig.Button.colorPrimaryHover;
                                 }}
@@ -121,6 +125,7 @@ const Dashboard = () => {
                                     height: `${componentConfig.Button.controlHeightLG}px`,
                                     paddingInline: `${componentConfig.Button.paddingInline}px`,
                                 }}
+                                onClick={() => navigate('/estudiantes/registrar')}
                                 onMouseEnter={(e) => {
                                     e.currentTarget.style.backgroundColor = allColors.colorBgElevated;
                                     e.currentTarget.style.borderColor = allColors.colorPrimary;

@@ -441,6 +441,212 @@ export class PDFGenerator {
   }
 
   /**
+   * Genera el FORMULARIO DE INSCRIPCIÓN
+   * @param {Object} data - Datos del estudiante y de la inscripción
+   * @param {string} outputPath - Ruta donde guardar el PDF
+   * @returns {Promise<string>} Ruta del archivo generado
+   */
+  static async generateFormularioInscripcion(data, outputPath) {
+    return new Promise((resolve, reject) => {
+      try {
+        // Crear directorio si no existe
+        const dir = path.dirname(outputPath);
+        if (!fs.existsSync(dir)) {
+          fs.mkdirSync(dir, { recursive: true });
+        }
+
+        // Crear documento PDF
+        const doc = new PDFDocument({
+          size: 'LETTER',
+          margins: { top: 40, bottom: 40, left: 40, right: 40 },
+        });
+
+        // Pipe al archivo
+        const stream = fs.createWriteStream(outputPath);
+        doc.pipe(stream);
+
+        // ============================================
+        // ENCABEZADO
+        // ============================================
+        doc
+          .fontSize(14)
+          .font('Helvetica-Bold')
+          .text('INSTITUTO TÉCNICO SUPERIOR DE EDUCACIÓN COMERCIAL', {
+            align: 'center',
+          })
+          .fontSize(12)
+          .text('"ISEC MONTERO"', {
+            align: 'center',
+          })
+          .fontSize(16)
+          .text('FORMULARIO DE INSCRIPCIÓN', {
+            align: 'center',
+          })
+          .fontSize(12)
+          .text(`GESTIÓN ${data.gestionYear || new Date().getFullYear()}`, {
+            align: 'center',
+          })
+          .moveDown(1.5);
+
+        // ============================================
+        // SECCIÓN 1: DATOS PERSONALES
+        // ============================================
+        doc
+          .fontSize(12)
+          .font('Helvetica-Bold')
+          .text('1. DATOS PERSONALES', { underline: true })
+          .moveDown(0.5)
+          .font('Helvetica')
+          .fontSize(10);
+
+        // Nombres y Apellidos
+        doc
+          .font('Helvetica-Bold')
+          .text('Nombres y Apellidos:')
+          .font('Helvetica')
+          .text(`Apellido Paterno: ${data.apellidoPaterno || ''}`)
+          .text(`Apellido Materno: ${data.apellidoMaterno || ''}`)
+          .text(`Nombres: ${data.nombres || ''}`)
+          .moveDown(0.3);
+
+        // C.I. y Género
+        doc
+          .font('Helvetica-Bold')
+          .text(`C.I. Nº: ${data.ci || ''} ${data.expedicion || ''}`)
+          .font('Helvetica')
+          .text(`Género: ${data.genero === 'M' ? 'Masculino' : data.genero === 'F' ? 'Femenino' : ''}`)
+          .text(`Grupo Sanguíneo: ${data.tipoSangre || ''}`)
+          .text(`Correo Electrónico: ${data.emailPersonal || ''}`)
+          .text(`Estado Civil: ${data.estadoCivil || ''}`)
+          .moveDown(0.3);
+
+        // Discapacidad
+        doc
+          .text(`Discapacidad: ${data.tieneDiscapacidad ? 'Sí' : 'No'}`)
+          .moveDown(0.3);
+
+        // Lugar y Fecha de Nacimiento
+        doc
+          .font('Helvetica-Bold')
+          .text('Lugar y Fecha de Nacimiento:')
+          .font('Helvetica')
+          .text(`Localidad: ${data.ciudadNacimiento || ''}`)
+          .text(`Provincia: ${data.provincia || ''}`)
+          .text(`Departamento: ${data.departamento || ''}`)
+          .text(`Fecha: ${data.fechaNacimiento ? new Date(data.fechaNacimiento).toLocaleDateString('es-BO') : ''}`)
+          .text(`Nacionalidad: ${data.nacionalidad || 'Boliviana'}`)
+          .text(`Edad: ${data.edad || ''}`)
+          .moveDown(0.3);
+
+        // Domicilio
+        doc
+          .text(`Domicilio: ${data.direccion || ''}`)
+          .text(`Idioma de origen: ${data.idiomaMaterno || ''}`)
+          .text(`Celular: ${data.celular || ''}`)
+          .text(`Trabaja: ${data.trabaja ? 'Sí' : 'No'}`)
+          .text(`Cargo: ${data.cargo || ''}`)
+          .text(`Empresa/Institución: ${data.empresa || ''}`)
+          .moveDown(1);
+
+        // ============================================
+        // SECCIÓN 2: DATOS ACADÉMICOS
+        // ============================================
+        doc
+          .fontSize(12)
+          .font('Helvetica-Bold')
+          .text('2. DATOS ACADÉMICOS', { underline: true })
+          .moveDown(0.5)
+          .font('Helvetica')
+          .fontSize(10)
+          .text(`Carrera: ${data.carrera || ''}`)
+          .text(`Año: ${data.anio || ''}`)
+          .moveDown(1);
+
+        // ============================================
+        // SECCIÓN 3: DOCUMENTOS RECEPCIONADOS
+        // ============================================
+        doc
+          .fontSize(12)
+          .font('Helvetica-Bold')
+          .text('3. DOCUMENTOS RECEPCIONADOS', { underline: true })
+          .moveDown(0.5)
+          .font('Helvetica')
+          .fontSize(10);
+
+        const documentos = [
+          { nombre: 'Fotocopia Carnet de Identidad', entregado: data.documentos?.ci || false },
+          { nombre: 'Fotocopia Certificado de Nacimiento', entregado: data.documentos?.certificadoNacimiento || false },
+          { nombre: 'Fotocopia de Título de Bachiller', entregado: data.documentos?.diplomaBachiller || false },
+          { nombre: 'Aporte Voluntario', entregado: data.documentos?.aporteVoluntario || false },
+        ];
+
+        documentos.forEach((docItem) => {
+          const yPos = doc.y;
+          // Dibujar checkbox
+          doc
+            .rect(50, yPos - 2, 12, 12)
+            .stroke();
+          
+          // Si está entregado, marcar con X
+          if (docItem.entregado) {
+            doc
+              .font('Helvetica-Bold')
+              .fontSize(12)
+              .text('X', 52, yPos - 1, { width: 10, align: 'center' });
+          }
+          
+          // Texto del documento
+          doc
+            .font('Helvetica')
+            .fontSize(10)
+            .text(docItem.nombre, 70, yPos, { width: 450 });
+        });
+
+        doc.moveDown(1.5);
+
+        // ============================================
+        // FIRMAS
+        // ============================================
+        doc
+          .fontSize(10)
+          .text('Firma Estudiante', 50, doc.y)
+          .text('_________________________', 50, doc.y + 15)
+          .moveDown(0.8)
+          .text('Responsable Inscripción', 50, doc.y)
+          .text('_________________________', 50, doc.y + 15)
+          .moveDown(1);
+
+        // ============================================
+        // FOOTER - DISCLAIMER
+        // ============================================
+        doc
+          .fontSize(8)
+          .font('Helvetica-Oblique')
+          .text(
+            'El llenado del presente formulario es responsabilidad plena del postulante (estudiante) y los documentos adjuntos respaldan los requisitos establecidos por la R.M. 0001/2026',
+            {
+              align: 'center',
+              width: 500,
+            }
+          );
+
+        // Finalizar documento
+        doc.end();
+
+        stream.on('finish', () => {
+          resolve(outputPath);
+        });
+
+        stream.on('error', (error) => {
+          reject(error);
+        });
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+
+  /**
    * Obtiene el nombre del mes en español
    * @param {number} monthIndex - Índice del mes (0-11)
    * @returns {string} Nombre del mes

@@ -19,7 +19,9 @@ import { useNavigate } from 'react-router-dom';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { useInscripcionDetailContext } from '@application-inscripciones/hooks';
-import { Descriptions, Card, Divider, Spin, Alert, Empty, Tag } from 'antd';
+import { Descriptions, Card, Divider, Spin, Alert, Empty, Tag, Button } from 'antd';
+import { DownloadOutlined } from '@ant-design/icons';
+import { downloadFile } from '@application/utils';
 
 const InscripcionesDetail = () => {
   const navigate = useNavigate();
@@ -30,6 +32,20 @@ const InscripcionesDetail = () => {
     loading = false,
     error = null,
   } = useInscripcionDetailContext();
+
+  // Obtener el formulario de inscripción desde los datos de la inscripción
+  const formularioInscripcion = inscripcion?.formularioInscripcion || null;
+
+  // Función para descargar el formulario
+  const handleDownloadFormulario = () => {
+    if (formularioInscripcion) {
+      try {
+        downloadFile(formularioInscripcion.filePath, formularioInscripcion.fileName);
+      } catch (err) {
+        console.error('Error al descargar el formulario:', err);
+      }
+    }
+  };
 
   // Configurar breadcrumb items
   const breadcrumbItems = useMemo(() => [
@@ -141,6 +157,25 @@ const InscripcionesDetail = () => {
         }
       >
       <div style={{ padding: '24px' }}>
+        {/* Botón de descarga del formulario */}
+        {formularioInscripcion && (
+          <div style={{ marginBottom: '24px', textAlign: 'right' }}>
+            <Button
+              type="primary"
+              icon={<DownloadOutlined />}
+              onClick={() => {
+                try {
+                  downloadFile(formularioInscripcion.filePath, formularioInscripcion.fileName);
+                } catch (err) {
+                  console.error('Error al descargar el formulario:', err);
+                }
+              }}
+            >
+              Descargar Formulario de Inscripción
+            </Button>
+          </div>
+        )}
+
         {/* Datos de la Inscripción */}
         <Card title="Datos de la Inscripción" style={{ marginBottom: '24px' }}>
           <Descriptions column={2} bordered>
