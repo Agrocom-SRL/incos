@@ -8,7 +8,7 @@
  */
 
 import { Space, Tooltip } from 'antd';
-import { UserOutlined, PhoneOutlined, MailOutlined } from '@ant-design/icons';
+import { UserOutlined, PhoneOutlined, MailOutlined, DollarOutlined } from '@ant-design/icons';
 import { IconButton } from '@atoms';
 import { TableCell } from '@molecules';
 import { getDataTableAction } from '@config/icons';
@@ -135,11 +135,13 @@ export const createEstudiantesTableColumns = (navigate) => {
                 onClick={() => navigate(`/estudiantes/${record.id}`)}
               />
             </Tooltip>
-            <Tooltip title={`${completeAction.tooltip} registro`}>
+            <Tooltip title="Registrar pago">
               <IconButton
-                icon={<completeAction.icon />}
-                variant={completeAction.variant}
-                onClick={() => navigate(`/estudiantes/registrar?estudianteId=${record.id}&completar=true`)}
+                icon={<DollarOutlined />}
+                variant="primary"
+                onClick={() => navigate('/pagos/registrar', {
+                  state: { studentId: record.id }
+                })}
               />
             </Tooltip>
             <Tooltip title={`${deleteAction.tooltip} estudiante`}>

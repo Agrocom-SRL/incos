@@ -15,12 +15,14 @@
  * - Organism maneja: funcionalidad (wizard, pasos, validación, guardado)
  */
 
-import { useMemo, useEffect, useRef } from 'react';
+import { useMemo, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Form } from 'antd';
+import { ArrowLeftOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { WizardForm } from '@organisms';
 import { PageHeader } from '@molecules';
+import { Button } from '@atoms';
 import { 
   useStudentRegisterContext,
   useStudentContext,
@@ -392,6 +394,11 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
     return steps;
   }, [wizardTitles, contactosIndices, agregarContacto, eliminarContacto, documentacionProcesada]);
 
+  // Handler para volver a la lista de estudiantes
+  const handleVolverALista = useCallback(() => {
+    navigate('/estudiantes');
+  }, [navigate]);
+
   // Configurar breadcrumb items
   const breadcrumbItems = useMemo(() => [
     { title: 'Inicio', href: '/' },
@@ -399,12 +406,24 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
     { title: pageTitle },
   ], [pageTitle]);
 
+  // Acciones del header
+  const headerActions = useMemo(() => (
+    <Button
+      variant="default"
+      icon={<ArrowLeftOutlined />}
+      onClick={handleVolverALista}
+    >
+      Volver a la Lista
+    </Button>
+  ), [handleVolverALista]);
+
   return (
     <PageTemplate 
       header={
         <PageHeader
           title={pageTitle}
           breadcrumbItems={breadcrumbItems}
+          actions={headerActions}
         />
       }
       sidebar={null}

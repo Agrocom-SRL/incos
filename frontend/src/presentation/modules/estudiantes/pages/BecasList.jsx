@@ -33,7 +33,7 @@ const BecasList = () => {
     } = useBecasListContext();
 
     const handleNuevaBeca = () => {
-        navigate('/estudiantes/becas/registrar');
+        navigate('/estudiantes/becas/asignar');
     };
 
     // Crear columnas de la tabla (memoizadas para evitar recrearlas en cada render)

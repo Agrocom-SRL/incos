@@ -14,18 +14,19 @@
  * - Contenido muestra: datos de la inscripción y sus relaciones
  */
 
-import { useMemo, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useMemo, useEffect, useState, useCallback } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { App } from 'antd';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { useInscripcionDetailContext, useGenerateBoletaInscripcion } from '@application-inscripciones/hooks';
 import { Descriptions, Card, Divider, Spin, Alert, Empty, Tag, Button } from 'antd';
-import { DownloadOutlined, FileTextOutlined } from '@ant-design/icons';
+import { DownloadOutlined, FileTextOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import { downloadFile } from '@application/utils';
 
 const InscripcionesDetail = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { message } = App.useApp();
 
   // Obtener datos del contexto
@@ -94,12 +95,40 @@ const InscripcionesDetail = () => {
     }
   };
 
+  // Handler para volver atrás
+  // Si viene del detalle de estudiante, volver allí; si no, a la lista de inscripciones
+  const handleVolverAtras = useCallback(() => {
+    // Intentar obtener studentId del state de navegación o de los datos de la inscripción
+    const studentIdFromState = location.state?.studentId;
+    const studentIdFromData = inscripcion?.student?.id || inscripcion?.enrollment?.studentId;
+    const studentId = studentIdFromState || studentIdFromData;
+    
+    if (studentId) {
+      // Si hay studentId, significa que viene del detalle de estudiante o podemos navegar allí
+      navigate(`/estudiantes/${studentId}`);
+    } else {
+      // Si no, volver a la lista de inscripciones
+      navigate('/inscripciones');
+    }
+  }, [navigate, location.state, inscripcion]);
+
   // Configurar breadcrumb items
   const breadcrumbItems = useMemo(() => [
     { title: 'Inicio', href: '/' },
     { title: 'Inscripciones', href: '/inscripciones' },
     { title: 'Detalle de la Inscripción' },
   ], []);
+
+  // Acciones del header
+  const headerActions = useMemo(() => (
+    <Button
+      variant="default"
+      icon={<ArrowLeftOutlined />}
+      onClick={handleVolverAtras}
+    >
+      Volver
+    </Button>
+  ), [handleVolverAtras]);
 
   // Si está cargando
   if (loading) {
@@ -109,6 +138,7 @@ const InscripcionesDetail = () => {
           <PageHeader
             title="Detalle de la Inscripción"
             breadcrumbItems={breadcrumbItems}
+            actions={headerActions}
           />
         }
       >
@@ -131,6 +161,7 @@ const InscripcionesDetail = () => {
           <PageHeader
             title="Detalle de la Inscripción"
             breadcrumbItems={breadcrumbItems}
+            actions={headerActions}
           />
         }
       >
@@ -152,6 +183,7 @@ const InscripcionesDetail = () => {
           <PageHeader
             title="Detalle de la Inscripción"
             breadcrumbItems={breadcrumbItems}
+            actions={headerActions}
           />
         }
       >
@@ -200,6 +232,7 @@ const InscripcionesDetail = () => {
           <PageHeader
             title={`Detalle de la Inscripción #${enrollment?.id || 'N/A'}`}
             breadcrumbItems={breadcrumbItems}
+            actions={headerActions}
           />
         }
       >

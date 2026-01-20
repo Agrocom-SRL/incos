@@ -22,7 +22,7 @@ import { useStudentDetailContext } from '@application-estudiantes/hooks';
 import { useGenerateActaCompromiso } from '@application-estudiantes/hooks';
 import { downloadFile } from '@application/utils';
 import { Spin, Alert, Empty, Card, Descriptions, Tag, App } from 'antd';
-import { GiftOutlined, FileTextOutlined, DollarOutlined, DownloadOutlined, BookOutlined, EyeOutlined } from '@ant-design/icons';
+import { GiftOutlined, FileTextOutlined, DollarOutlined, DownloadOutlined, BookOutlined, EyeOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import { Button } from '@atoms';
 import {
   DatosPersonalesSection,
@@ -117,9 +117,16 @@ const EstudiantesDetail = () => {
   // Handler para ver detalle de inscripción
   const handleVerInscripcion = useCallback(() => {
     if (student?.inscripcion?.enrollment?.id) {
-      navigate(`/inscripciones/${student.inscripcion.enrollment.id}`);
+      navigate(`/inscripciones/${student.inscripcion.enrollment.id}`, {
+        state: { studentId: studentId }
+      });
     }
-  }, [navigate, student]);
+  }, [navigate, student, studentId]);
+
+  // Handler para volver a la lista de estudiantes
+  const handleVolverALista = useCallback(() => {
+    navigate('/estudiantes');
+  }, [navigate]);
 
   // Acciones del header (botones) - debe estar antes de los returns tempranos
   // Solo mostrar botón de acta si faltan documentos
@@ -128,6 +135,14 @@ const EstudiantesDetail = () => {
   const actaCompromisoData = student?.actaCompromiso;
   const headerActions = useMemo(() => (
     <>
+      <Button
+        variant="default"
+        icon={<ArrowLeftOutlined />}
+        onClick={handleVolverALista}
+        style={{ marginRight: 8 }}
+      >
+        Volver a la Lista
+      </Button>
       {actaCompromisoData ? (
         <Button
           variant="default"
@@ -165,7 +180,7 @@ const EstudiantesDetail = () => {
         Asignar Beca
       </Button>
     </>
-  ), [handleAsignarBeca, handleGenerateActaCompromiso, handleRegistrarPago, handleDownloadActaCompromiso, loadingActa, tieneDocumentosFaltantesFlag, actaCompromisoData]);
+  ), [handleAsignarBeca, handleGenerateActaCompromiso, handleRegistrarPago, handleDownloadActaCompromiso, handleVolverALista, loadingActa, tieneDocumentosFaltantesFlag, actaCompromisoData]);
 
   // Si está cargando
   if (loading) {
