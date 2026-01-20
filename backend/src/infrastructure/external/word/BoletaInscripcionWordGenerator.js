@@ -1,62 +1,16 @@
 /**
- * BoletaInscripcionWordGenerator - VERSIÓN CORREGIDA
+ * BoletaInscripcionWordGenerator - VERSIÓN CON PLANTILLA
  * 
  * Genera la BOLETA DE INSCRIPCIÓN para:
- * INSTITUTO TÉCNICO SUPERIOR DE EDUCACIÓN COMERCIAL "ISEC MONTERO"
+ * INSTITUTO COMERCIAL DE LA NACION INCOS SANTA CRUZ
  * 
- * Este generador coincide EXACTAMENTE con el formato del formulario físico usado por el instituto.
+ * Usa la plantilla Word (Plantilla.docx) y la modifica con PizZip.
+ * Usa la información institucional de IncosPDFBase para mantener consistencia.
  * 
- * Estructura (basada en la imagen de referencia):
- * ┌─────────────────────────────────────────────────────────────┐
- * │ INSTITUTO TÉCNICO SUPERIOR DE EDUCACIÓN COMERCIAL          │
- * │ "ISEC MONTERO"                                             │
- * │ FORMULARIO DE INSCRIPCIÓN                                   │
- * │ GESTIÓN 2026                                                │
- * ├─────────────────────────────────────────────────────────────┤
- * │ 1.- DATOS PERSONALES                                        │
- * │   Nombres y Apellidos:                                      │
- * │   [Apellido Paterno] [Apellido Materno] [Nombres]          │
- * │                                                             │
- * │   C.I. Nº [____] [__]  Género: Masculino O Femenino O      │
- * │   Grupo Sanguíneo: [____]                                   │
- * │   Correo Electrónico: [_____________________]              │
- * │   Estado Civil: Soltero(a) O Casado(a) O Concubinato O    │
- * │                 Discapacidad: Si) O No) O                  │
- * │                                                             │
- * │   Lugar y Fecha de Nacimiento                               │
- * │   [Localidad] [Provincia] [Departamento]                   │
- * │   Día [__] - Mes [__] Año [____]  Nacionalidad [____]     │
- * │   Edad [__]                                                 │
- * │   Domicilio: [____________________]                        │
- * │   Idioma de origen [____]  Celular [______]                │
- * │                                                             │
- * │   Trabaja: Si) O No) O  Cargo: [____]                      │
- * │   Empresa/Institución: [______________]                    │
- * ├─────────────────────────────────────────────────────────────┤
- * │ 2.- DATOS ACADÉMICOS                                        │
- * │   Carrera:              Año:                                │
- * │   Contaduría General  O    Primer Año    O                 │
- * │   Secretariado Ejecutivo O  Segundo Año   O                │
- * │   Sistemas Informáticos  O  Tercer Año   O                 │
- * │   Mercadotecnia         O                                  │
- * ├─────────────────────────────────────────────────────────────┤
- * │ 3.- DOCUMENTOS RECEPCIONADOS                                │
- * │   • Fotocopia Carnet de Identidad           O              │
- * │   • Fotocopia Certificado de Nacimiento     O              │
- * │   • Fotocopia de Título de Bachiller        O              │
- * │   • Aporte Voluntario                       O              │
- * ├─────────────────────────────────────────────────────────────┤
- * │              ___________________                            │
- * │              Firma Estudiante                               │
- * │                                                             │
- * │                              ___________________           │
- * │                              Responsable Inscripción       │
- * │                                                             │
- * │ El llenado del presente formulario es responsabilidad      │
- * │ plena del postulante (estudiante) y los documentos         │
- * │ adjuntos respaldan los requisitos establecidos por la      │
- * │ R.M. 0001/2026                                              │
- * └─────────────────────────────────────────────────────────────┘
+ * Características:
+ * - Layout de 2 columnas para todo excepto nombre completo
+ * - Fuente y tamaño uniforme para todo el contenido
+ * - Colores desde IncosPDFBase
  * 
  * @module BoletaInscripcionWordGenerator
  */
@@ -65,813 +19,384 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import PizZip from 'pizzip';
+import { IncosPDFBase } from '../pdf/IncosPDFBase.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export class BoletaInscripcionWordGenerator {
-  static TEMPLATE_PATH = path.join(__dirname, '../templates/Plantilla.docx');
+    static TEMPLATE_PATH = path.join(__dirname, '../templates/Plantilla.docx');
 
-  /**
-   * Genera el formulario de inscripción (Boleta) usando la plantilla Word
-   * 
-   * @param {Object} data - Datos del estudiante y formulario
-   * @param {number} data.gestionYear - Año de gestión
-   * @param {string} data.apellidoPaterno - Apellido paterno
-   * @param {string} data.apellidoMaterno - Apellido materno
-   * @param {string} data.nombres - Nombres
-   * @param {string} data.ci - Cédula de identidad
-   * @param {string} data.expedicion - Lugar de expedición del CI (default: 'S.C.')
-   * @param {string} data.genero - Género (Masculino/Femenino)
-   * @param {string} data.tipoSangre - Tipo sanguíneo
-   * @param {string} data.emailPersonal - Email personal
-   * @param {string} data.estadoCivil - Estado civil
-   * @param {boolean} data.tieneDiscapacidad - Si tiene discapacidad
-   * @param {string} data.ciudadNacimiento - Ciudad de nacimiento (Localidad)
-   * @param {string} data.provincia - Provincia
-   * @param {string} data.departamento - Departamento
-   * @param {string} data.fechaNacimiento - Fecha de nacimiento (formato DD/MM/YYYY)
-   * @param {string} data.nacionalidad - Nacionalidad
-   * @param {string} data.edad - Edad
-   * @param {string} data.direccion - Dirección (Domicilio)
-   * @param {string} data.idiomaMaterno - Idioma materno (Idioma de origen)
-   * @param {string} data.celular - Número de celular
-   * @param {boolean} data.trabaja - Si trabaja
-   * @param {string} data.cargo - Cargo (si trabaja)
-   * @param {string} data.empresa - Empresa/Institución (si trabaja)
-   * @param {string} data.carrera - Nombre de la carrera
-   * @param {string} data.anio - Año académico (Primer Año, Segundo Año, Tercer Año)
-   * @param {Object} data.documentos - Estado de documentos entregados
-   * @param {boolean} data.documentos.ci - CI entregado
-   * @param {boolean} data.documentos.certificadoNacimiento - Certificado entregado
-   * @param {boolean} data.documentos.diplomaBachiller - Diploma entregado
-   * @param {boolean} data.documentos.aporteVoluntario - Aporte realizado
-   * @param {Array} data.materias - Array de materias del primer periodo
-   * @param {string} data.materias[].sigla - Sigla de la materia
-   * @param {string} data.materias[].nombre - Nombre de la materia
-   * @param {string} outputPath - Ruta donde guardar el DOCX generado
-   * 
-   * @returns {Promise<string>} Ruta del archivo generado
-   */
-  static async generate(data, outputPath) {
-    try {
-      // 1. Verificar que existe la plantilla
-      if (!fs.existsSync(this.TEMPLATE_PATH)) {
-        throw new Error(
-          `No se encontró la plantilla en: ${this.TEMPLATE_PATH}\n` +
-          `Por favor, coloca tu plantilla Word (Plantilla.docx) en la carpeta templates/`
+    // Estilos de fuente (tamaños en half-points: 1 punto = 2 half-points)
+    static DEFAULT_FONT = 'Times New Roman';
+    static DEFAULT_FONT_SIZE = 24; // 13 puntos = 26 half-points (tamaño normal)
+    static SECTION_FONT_SIZE = 30; // 16 puntos = 32 half-points (títulos de sección)
+    // Colores desde IncosPDFBase (sin el símbolo # para XML Word)
+    static DATA_COLOR = IncosPDFBase.COLORS.primary.replace('#', ''); // Verde primario para datos
+
+    /**
+     * Genera el formulario de inscripción (Boleta) usando la plantilla Word
+     * 
+     * @param {Object} data - Datos del estudiante y formulario
+     * @param {number} data.gestionYear - Año de gestión
+     * @param {string} data.apellidoPaterno - Apellido paterno
+     * @param {string} data.apellidoMaterno - Apellido materno
+     * @param {string} data.nombres - Nombres
+     * @param {string} data.ci - Cédula de identidad
+     * @param {string} data.expedicion - Lugar de expedición del CI (default: 'S.C.')
+     * @param {string} data.genero - Género (Masculino/Femenino)
+     * @param {string} data.tipoSangre - Tipo sanguíneo
+     * @param {string} data.emailPersonal - Email personal
+     * @param {string} data.estadoCivil - Estado civil
+     * @param {boolean} data.tieneDiscapacidad - Si tiene discapacidad
+     * @param {string} data.ciudadNacimiento - Ciudad de nacimiento (Localidad)
+     * @param {string} data.provincia - Provincia
+     * @param {string} data.departamento - Departamento
+     * @param {string} data.fechaNacimiento - Fecha de nacimiento (formato DD/MM/YYYY)
+     * @param {string} data.nacionalidad - Nacionalidad
+     * @param {string} data.edad - Edad
+     * @param {string} data.direccion - Dirección (Domicilio)
+     * @param {string} data.idiomaMaterno - Idioma materno (Idioma de origen)
+     * @param {string} data.celular - Número de celular
+     * @param {boolean} data.trabaja - Si trabaja
+     * @param {string} data.cargo - Cargo (si trabaja)
+     * @param {string} data.empresa - Empresa/Institución (si trabaja)
+     * @param {string} data.carrera - Nombre de la carrera
+     * @param {string} data.anio - Año académico (Primer Año, Segundo Año, Tercer Año)
+     * @param {Object} data.documentos - Estado de documentos entregados
+     * @param {boolean} data.documentos.ci - CI entregado
+     * @param {boolean} data.documentos.certificadoNacimiento - Certificado entregado
+     * @param {boolean} data.documentos.diplomaBachiller - Diploma entregado
+     * @param {boolean} data.documentos.aporteVoluntario - Aporte realizado
+     * @param {Array} data.materias - Array de materias del primer periodo
+     * @param {string} data.materias[].sigla - Sigla de la materia
+     * @param {string} data.materias[].nombre - Nombre de la materia
+     * @param {string} outputPath - Ruta donde guardar el DOCX generado
+     * 
+     * @returns {Promise<string>} Ruta del archivo generado
+     */
+    static async generate(data, outputPath) {
+        try {
+            // 1. Verificar que existe la plantilla
+            if (!fs.existsSync(this.TEMPLATE_PATH)) {
+                throw new Error(
+                    `No se encontró la plantilla en: ${this.TEMPLATE_PATH}\n` +
+                    `Por favor, coloca tu plantilla Word (Plantilla.docx) en la carpeta templates/`
+                );
+            }
+
+            // 2. Leer la plantilla como buffer
+            const templateBuffer = fs.readFileSync(this.TEMPLATE_PATH);
+
+            // 3. Cargar el DOCX con PizZip (DOCX es un archivo ZIP)
+            const zip = new PizZip(templateBuffer);
+
+            // 4. Obtener el XML del documento
+            const documentXml = zip.files['word/document.xml'];
+            if (!documentXml) {
+                throw new Error('No se encontró word/document.xml en la plantilla');
+            }
+
+            // 5. Modificar el XML con los datos de la boleta
+            let xmlContent = documentXml.asText();
+            xmlContent = this._modifyDocumentXml(xmlContent, data);
+
+            // 6. Actualizar el XML en el ZIP
+            zip.file('word/document.xml', xmlContent);
+
+            // 7. Generar el buffer del documento modificado
+            const outputBuffer = zip.generate({
+                type: 'nodebuffer',
+                compression: 'DEFLATE',
+                compressionOptions: { level: 9 },
+            });
+
+            // 8. Crear directorio de salida si no existe
+            const outputDir = path.dirname(outputPath);
+            if (!fs.existsSync(outputDir)) {
+                fs.mkdirSync(outputDir, { recursive: true });
+            }
+
+            // 9. Guardar el documento
+            fs.writeFileSync(outputPath, outputBuffer);
+
+            console.log(`[BoletaInscripcionWordGenerator] ✅ Documento generado: ${outputPath}`);
+            return outputPath;
+
+        } catch (error) {
+            console.error('[BoletaInscripcionWordGenerator] ❌ Error:', error.message);
+            console.error('[BoletaInscripcionWordGenerator] Stack:', error.stack);
+            throw error;
+        }
+    }
+
+    /**
+     * Modifica el XML del documento con los datos de la boleta
+     * @private
+     */
+    static _modifyDocumentXml(xmlContent, data) {
+        // Reemplazar el título si existe "FORMULARIO DE INSCRIPCIÓN"
+        xmlContent = xmlContent.replace(
+            /FORMULARIO DE INSCRIPCIÓN/g,
+            'BOLETA DE INSCRIPCIÓN'
         );
-      }
 
-      // 2. Leer la plantilla como buffer
-      const templateBuffer = fs.readFileSync(this.TEMPLATE_PATH);
+        // Reemplazar nombre del instituto si existe
+        xmlContent = xmlContent.replace(
+            /INSTITUTO[^<]*INCOS[^<]*/g,
+            IncosPDFBase.INSTITUTE.name
+        );
 
-      // 3. Cargar el DOCX con PizZip (DOCX es un archivo ZIP)
-      const zip = new PizZip(templateBuffer);
+        // Reemplazar "GESTIÓN 2026" o cualquier año con la gestión actual
+        const anio = data.gestionYear || new Date().getFullYear();
+        xmlContent = xmlContent.replace(
+            /GESTIÓN \d{4}/g,
+            `GESTIÓN ${anio}`
+        );
 
-      // 4. Obtener el XML del documento
-      const documentXml = zip.files['word/document.xml'];
-      if (!documentXml) {
-        throw new Error('No se encontró word/document.xml en la plantilla');
-      }
+        // Construir el contenido de la boleta
+        const contenidoBoleta = this._buildBoletaContent(data);
 
-      // 5. Modificar el XML con los datos de la boleta
-      let xmlContent = documentXml.asText();
-      xmlContent = this._modifyDocumentXml(xmlContent, data);
+        // Insertar el contenido después del título y gestión
+        // Buscar el punto de inserción después de "GESTIÓN XXXX"
+        const gestionPattern = `GESTIÓN ${anio}`;
+        const gestionIndex = xmlContent.indexOf(gestionPattern);
 
-      // 6. Actualizar el XML en el ZIP
-      zip.file('word/document.xml', xmlContent);
+        if (gestionIndex === -1) {
+            // Si no encontramos GESTIÓN, buscar el título
+            const tituloIndex = xmlContent.indexOf('BOLETA DE INSCRIPCIÓN');
+            if (tituloIndex === -1) {
+                throw new Error('No se encontró el título en la plantilla. Asegúrate de que tenga "FORMULARIO DE INSCRIPCIÓN" o "BOLETA DE INSCRIPCIÓN"');
+            }
 
-      // 7. Generar el buffer del documento modificado
-      const outputBuffer = zip.generate({
-        type: 'nodebuffer',
-        compression: 'DEFLATE',
-        compressionOptions: { level: 9 },
-      });
+            const tituloEnd = xmlContent.indexOf('</w:p>', tituloIndex);
+            if (tituloEnd === -1) {
+                throw new Error('No se encontró el cierre de párrafo después del título');
+            }
 
-      // 8. Crear directorio de salida si no existe
-      const outputDir = path.dirname(outputPath);
-      if (!fs.existsSync(outputDir)) {
-        fs.mkdirSync(outputDir, { recursive: true });
-      }
+            const before = xmlContent.substring(0, tituloEnd + 6);
+            const after = xmlContent.substring(tituloEnd + 6);
+            xmlContent = before + contenidoBoleta + after;
+        } else {
+            const tituloEnd = xmlContent.indexOf('</w:p>', gestionIndex);
+            if (tituloEnd === -1) {
+                throw new Error('No se encontró el cierre de párrafo después de GESTIÓN');
+            }
 
-      // 9. Guardar el documento
-      fs.writeFileSync(outputPath, outputBuffer);
+            const before = xmlContent.substring(0, tituloEnd + 6);
+            const after = xmlContent.substring(tituloEnd + 6);
+            xmlContent = before + contenidoBoleta + after;
+        }
 
-      console.log(`[BoletaInscripcionWordGenerator] ✅ Documento generado: ${outputPath}`);
-      return outputPath;
-
-    } catch (error) {
-      console.error('[BoletaInscripcionWordGenerator] ❌ Error:', error.message);
-      console.error('[BoletaInscripcionWordGenerator] Stack:', error.stack);
-      throw error;
-    }
-  }
-
-  /**
-   * Modifica el XML del documento con los datos de la boleta
-   * @private
-   */
-  static _modifyDocumentXml(xmlContent, data) {
-    // Reemplazar el título si existe "FORMULARIO DE INSCRIPCIÓN"
-    xmlContent = xmlContent.replace(
-      /FORMULARIO DE INSCRIPCIÓN/g,
-      'BOLETA DE INSCRIPCIÓN'
-    );
-
-    // Reemplazar "GESTIÓN 2026" o cualquier año con la gestión actual
-    const anio = data.gestionYear || new Date().getFullYear();
-    xmlContent = xmlContent.replace(
-      /GESTIÓN \d{4}/g,
-      `GESTIÓN ${anio}`
-    );
-
-    // Construir el contenido de la boleta
-    const contenidoBoleta = this._buildBoletaContent(data);
-
-    // Insertar el contenido después del título y gestión
-    // Buscar el punto de inserción después de "GESTIÓN XXXX"
-    const gestionPattern = `GESTIÓN ${anio}`;
-    const gestionIndex = xmlContent.indexOf(gestionPattern);
-    
-    if (gestionIndex === -1) {
-      // Si no encontramos GESTIÓN, buscar el título
-      const tituloIndex = xmlContent.indexOf('BOLETA DE INSCRIPCIÓN');
-      if (tituloIndex === -1) {
-        throw new Error('No se encontró el título en la plantilla. Asegúrate de que tenga "FORMULARIO DE INSCRIPCIÓN" o "BOLETA DE INSCRIPCIÓN"');
-      }
-      
-      const tituloEnd = xmlContent.indexOf('</w:p>', tituloIndex);
-      if (tituloEnd === -1) {
-        throw new Error('No se encontró el cierre de párrafo después del título');
-      }
-      
-      const before = xmlContent.substring(0, tituloEnd + 6);
-      const after = xmlContent.substring(tituloEnd + 6);
-      xmlContent = before + contenidoBoleta + after;
-    } else {
-      const tituloEnd = xmlContent.indexOf('</w:p>', gestionIndex);
-      if (tituloEnd === -1) {
-        throw new Error('No se encontró el cierre de párrafo después de GESTIÓN');
-      }
-
-      const before = xmlContent.substring(0, tituloEnd + 6);
-      const after = xmlContent.substring(tituloEnd + 6);
-      xmlContent = before + contenidoBoleta + after;
+        return xmlContent;
     }
 
-    return xmlContent;
-  }
+    /**
+     * Construye el contenido XML del formulario de inscripción
+     * COINCIDIENDO con la imagen final del usuario
+     * @private
+     */
+    static _buildBoletaContent(data) {
+        const {
+            gestionYear = new Date().getFullYear(),
+            apellidoPaterno = '',
+            apellidoMaterno = '',
+            nombres = '',
+            ci = '',
+            expedicion = 'S.C.',
+            genero = '',
+            tipoSangre = '',
+            emailPersonal = '',
+            estadoCivil = '',
+            tieneDiscapacidad = false,
+            ciudadNacimiento = '',
+            provincia = '',
+            departamento = '',
+            fechaNacimiento = '',
+            nacionalidad = 'Boliviana',
+            edad = '',
+            direccion = '',
+            idiomaMaterno = '',
+            celular = '',
+            trabaja = false,
+            cargo = '',
+            empresa = '',
+            carrera = '',
+            anio = '',
+            documentos = {},
+            materias = [],
+        } = data;
 
-  /**
-   * Construye el contenido XML del formulario de inscripción
-   * COINCIDIENDO EXACTAMENTE con la plantilla física
-   * @private
-   */
-  static _buildBoletaContent(data) {
-    const {
-      gestionYear = new Date().getFullYear(),
-      apellidoPaterno = '',
-      apellidoMaterno = '',
-      nombres = '',
-      ci = '',
-      expedicion = 'S.C.',
-      genero = '',
-      tipoSangre = '',
-      emailPersonal = '',
-      estadoCivil = '',
-      tieneDiscapacidad = false,
-      ciudadNacimiento = '',
-      provincia = '',
-      departamento = '',
-      fechaNacimiento = '',
-      nacionalidad = 'Boliviana',
-      edad = '',
-      direccion = '',
-      idiomaMaterno = '',
-      celular = '',
-      trabaja = false,
-      cargo = '',
-      empresa = '',
-      carrera = '',
-      anio = '',
-      documentos = {},
-      materias = [],
-    } = data;
+        // Parsear fecha de nacimiento
+        const fechaParts = fechaNacimiento ? fechaNacimiento.split('/') : ['', '', ''];
+        const dia = fechaParts[0] || '';
+        const mes = fechaParts[1] || '';
+        const año = fechaParts[2] || '';
 
-    // Parsear fecha de nacimiento
-    const fechaParts = fechaNacimiento ? fechaNacimiento.split('/') : ['', '', ''];
-    const dia = fechaParts[0] || '';
-    const mes = fechaParts[1] || '';
-    const año = fechaParts[2] || '';
+        let contenido = '';
 
-    let contenido = '';
+        // ============================================
+        // SECCIÓN 1: DATOS PERSONALES
+        // ============================================
+        contenido += this._createSection('1.- DATOS PERSONALES', this.DEFAULT_FONT, this.SECTION_FONT_SIZE);
 
-    // ============================================
-    // SECCIÓN 1: DATOS PERSONALES
-    // ============================================
-    contenido += this._createSection('1.- DATOS PERSONALES');
+        // Nombre completo (una sola línea, sin columnas, con espacio como párrafo separado)
+        contenido += this._createFullName(apellidoPaterno, apellidoMaterno, nombres);
 
-    // Subsección: Nombres y Apellidos
-    contenido += this._createSubsection('Nombres y Apellidos:');
-    
-    // Campos de nombres en una sola línea SIN separadores (solo espacios)
-    contenido += this._createFieldRowWithoutSeparators([
-      { value: apellidoPaterno },
-      { value: apellidoMaterno },
-      { value: nombres },
-    ]);
+        // Campos en 2 columnas usando tabla
+        contenido += this._createDualColumnTable([
+            { left: `C.I. Nº ${ci || '________'} ${expedicion || '____'}`, right: this._createGenderField(genero) },
+            { left: `Grupo Sanguíneo: ${tipoSangre || '____'}`, right: `Correo Electrónico: ${emailPersonal || '____________'}` },
+            { left: this._createCivilStatusField(estadoCivil), right: this._createDisabilityField(tieneDiscapacidad) },
+        ]);
 
-    contenido += this._createSpacing(50);
+        // Lugar y Fecha de Nacimiento (segundo sector del bloque 1)
+        contenido += this._createSubsection('Lugar y Fecha de Nacimiento', this.DEFAULT_FONT, this.DEFAULT_FONT_SIZE);
+        contenido += this._createDualColumnTable([
+            { left: `Localidad: ${ciudadNacimiento || '____'}`, right: `Provincia: ${provincia || '____'}` },
+            { left: `Departamento: ${departamento || '____'}`, right: this._createBirthDateField(fechaNacimiento, nacionalidad, edad) },
+        ]);
 
-    // C.I. y Género en la misma línea
-    contenido += this._createFieldWithInlineCheckboxes(
-      `C.I. Nº ${ci || '________'} ${expedicion || '____'}`,
-      'Género:',
-      [
-        { label: 'Masculino', checked: genero === 'Masculino' || genero === 'M' },
-        { label: 'Femenino', checked: genero === 'Femenino' || genero === 'F' },
-      ]
-    );
+        contenido += this._createDualColumnTable([
+            { left: `Domicilio: ${direccion || '____________'}`, right: `Idioma de origen: ${idiomaMaterno || '____'}` },
+            { left: `Celular: ${celular || '____'}`, right: this._createWorkField(trabaja, cargo, empresa) },
+        ]);
 
-    // Grupo Sanguíneo
-    contenido += this._createField('Grupo Sanguíneo', tipoSangre);
+        // ============================================
+        // SECCIÓN 2: DATOS ACADÉMICOS
+        // ============================================
+        contenido += this._createSection('2.- DATOS ACADÉMICOS', this.DEFAULT_FONT, this.SECTION_FONT_SIZE, IncosPDFBase.COLORS.primary.replace('#', ''));
+        contenido += this._createCareerAndYearTable(carrera, anio);
 
-    // Correo Electrónico
-    contenido += this._createField('Correo Electrónico', emailPersonal);
+        // Segundo sector del bloque 2: Materias (en 2 columnas)
+        contenido += this._createSubsection('Materias del Primer Año', this.DEFAULT_FONT, this.DEFAULT_FONT_SIZE);
+        contenido += this._createSubjectsTable(materias);
 
-    contenido += this._createSpacing(30);
+        // ============================================
+        // SECCIÓN 3: DOCUMENTOS RECEPCIONADOS
+        // ============================================
+        contenido += this._createSection('3.- DOCUMENTOS RECEPCIONADOS', this.DEFAULT_FONT, this.SECTION_FONT_SIZE, IncosPDFBase.COLORS.primary.replace('#', ''));
+        contenido += this._createDocumentsTable(documentos);
 
-    // Estado Civil con checkboxes en línea horizontal
-    const esEstadoCivilSoltero = estadoCivil?.toLowerCase().includes('solter');
-    const esEstadoCivilCasado = estadoCivil?.toLowerCase().includes('casad');
-    const esEstadoCivilConcubinato = estadoCivil?.toLowerCase().includes('concubinat');
+        // ============================================
+        // FIRMAS
+        // ============================================
+        contenido += this._createSignaturesSection();
 
-    contenido += this._createFieldWithInlineCheckboxes(
-      'Estado Civil:',
-      null,
-      [
-        { label: 'Soltero(a)', checked: esEstadoCivilSoltero },
-        { label: 'Casado(a)', checked: esEstadoCivilCasado },
-        { label: 'Concubinato', checked: esEstadoCivilConcubinato },
-      ],
-      { rightLabel: 'Discapacidad:', rightOptions: [
-        { label: 'Si)', checked: tieneDiscapacidad === true },
-        { label: 'No)', checked: tieneDiscapacidad === false },
-      ]}
-    );
+        // ============================================
+        // NOTA LEGAL
+        // ============================================
+        contenido += this._createLegalNote();
 
-    contenido += this._createSpacing(50);
-
-    // Subsección: Lugar y Fecha de Nacimiento
-    contenido += this._createSubsection('Lugar y Fecha de Nacimiento');
-    
-    // Localidad, Provincia, Departamento en una fila
-    contenido += this._createFieldRow([
-      { label: '', value: ciudadNacimiento, placeholder: 'Localidad' },
-      { label: '', value: provincia, placeholder: 'Provincia' },
-      { label: '', value: departamento, placeholder: 'Departamento' },
-    ]);
-
-    // Día, Mes, Año, Nacionalidad, Edad
-    contenido += this._createMultiFieldLine([
-      { label: 'Día', value: dia },
-      { label: '-', value: '' },
-      { label: 'Mes', value: mes },
-      { label: 'Año', value: año },
-      { label: 'Nacionalidad', value: nacionalidad },
-      { label: 'Edad', value: edad },
-    ]);
-
-    // Domicilio
-    contenido += this._createField('Domicilio', direccion);
-
-    // Idioma de origen y Celular en la misma línea
-    contenido += this._createFieldsInLine([
-      { label: 'Idioma de origen', value: idiomaMaterno },
-      { label: 'Celular', value: celular },
-    ]);
-
-    contenido += this._createSpacing(50);
-
-    // Trabaja: Si/No, Cargo, Empresa
-    contenido += this._createFieldWithInlineCheckboxes(
-      'Trabaja:',
-      null,
-      [
-        { label: 'Si)', checked: trabaja === true },
-        { label: 'No)', checked: trabaja === false },
-      ]
-    );
-
-    if (trabaja) {
-      contenido += this._createField('Cargo', cargo);
-      contenido += this._createField('Empresa/Institución', empresa);
+        return contenido;
     }
 
-    contenido += this._createSpacing(150);
-
     // ============================================
-    // SECCIÓN 2: DATOS ACADÉMICOS
+    // MÉTODOS AUXILIARES PARA GENERAR XML
     // ============================================
-    contenido += this._createSection('2.- DATOS ACADÉMICOS');
 
-    // Carrera y Año en tabla de dos columnas (LADO A LADO)
-    contenido += this._createCarreraYAnoTable(carrera, anio);
-
-    contenido += this._createSpacing(100);
-
-    // ============================================
-    // SECCIÓN 3: DOCUMENTOS RECEPCIONADOS Y MATERIAS
-    // ============================================
-    contenido += this._createSection('3.- DOCUMENTOS RECEPCIONADOS');
-    contenido += this._createDocumentsAndSubjectsTable(documentos, materias || []);
-
-    contenido += this._createSpacing(100);
-
-    // ============================================
-    // FIRMAS
-    // ============================================
-    contenido += this._createTwoColumnSignatures(
-      { label: 'Firma Estudiante', ci: '', expedicion: '' },
-      { label: 'Responsable Inscripción', ci: '', expedicion: '' }
-    );
-
-    contenido += this._createSpacing(100);
-
-    // ============================================
-    // NOTA LEGAL
-    // ============================================
-    contenido += this._createParagraph(
-      'El llenado del presente formulario es responsabilidad plena del postulante (estudiante) y los documentos ' +
-      'adjuntos respaldan los requisitos establecidos por la R.M. 0001/2026',
-      { fontSize: 16, align: 'justify' }
-    );
-
-    return contenido;
-  }
-
-  // ============================================
-  // MÉTODOS AUXILIARES PARA GENERAR XML
-  // ============================================
-
-  /**
-   * Crea una sección con título principal
-   * @private
-   */
-  static _createSection(title) {
-    return `
+    /**
+     * Crea una sección con título principal (solo títulos numerados tienen color)
+     * @private
+     */
+    static _createSection(title, font = this.DEFAULT_FONT, fontSize = this.DEFAULT_FONT_SIZE, color = null) {
+        // Solo aplicar color si se especifica (para títulos numerados)
+        const colorAttr = color ? ` w:color="${color}"` : '';
+        return `
     <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}" w:rsidR="00DD08A8" w:rsidRDefault="00DD08A8">
       <w:pPr>
-        <w:spacing w:before="150" w:after="50"/>
-        <w:jc w:val="left"/>
+        <w:spacing w:before="200" w:after="150"/>
         <w:rPr>
-          <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
+          <w:rFonts w:ascii="${font}" w:hAnsi="${font}"/>
           <w:b/>
-          <w:sz w:val="26"/>
-          <w:szCs w:val="26"/>
+          <w:sz w:val="${fontSize}"/>
+          <w:szCs w:val="${fontSize}"/>
+          ${colorAttr}
         </w:rPr>
       </w:pPr>
       <w:r>
         <w:rPr>
-          <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
+          <w:rFonts w:ascii="${font}" w:hAnsi="${font}"/>
           <w:b/>
-          <w:sz w:val="26"/>
-          <w:szCs w:val="26"/>
+          <w:sz w:val="${fontSize}"/>
+          <w:szCs w:val="${fontSize}"/>
+          ${colorAttr}
         </w:rPr>
         <w:t>${this._escapeXml(title)}</w:t>
       </w:r>
     </w:p>`;
-  }
+    }
 
-  /**
-   * Crea una subsección con título
-   * @private
-   */
-  static _createSubsection(title) {
-    return `
+    /**
+     * Crea un subtítulo (sin color, solo títulos numerados tienen color)
+     * @private
+     */
+    static _createSubsection(title, font = this.DEFAULT_FONT, fontSize = this.DEFAULT_FONT_SIZE, color = null) {
+        // Los subtítulos NO tienen color, solo los títulos numerados
+        return `
     <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}" w:rsidR="00DD08A8" w:rsidRDefault="00DD08A8">
       <w:pPr>
-        <w:spacing w:before="50" w:after="0"/>
+        <w:spacing w:before="100" w:after="30"/>
         <w:rPr>
-          <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
+          <w:rFonts w:ascii="${font}" w:hAnsi="${font}"/>
           <w:b/>
-          <w:sz w:val="24"/>
-          <w:szCs w:val="24"/>
+          <w:sz w:val="${fontSize}"/>
+          <w:szCs w:val="${fontSize}"/>
         </w:rPr>
       </w:pPr>
       <w:r>
         <w:rPr>
-          <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
+          <w:rFonts w:ascii="${font}" w:hAnsi="${font}"/>
           <w:b/>
-          <w:sz w:val="24"/>
-          <w:szCs w:val="24"/>
+          <w:sz w:val="${fontSize}"/>
+          <w:szCs w:val="${fontSize}"/>
         </w:rPr>
         <w:t>${this._escapeXml(title)}</w:t>
       </w:r>
     </w:p>`;
-  }
-
-  /**
-   * Crea una fila de campos SIN separadores (solo espacios)
-   * Usado para: Apellido Paterno Apellido Materno Nombres
-   * @private
-   */
-  static _createFieldRowWithoutSeparators(fields) {
-    let xml = `
-    <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}" w:rsidR="00DD08A8" w:rsidRDefault="00DD08A8">
-      <w:pPr>
-          <w:spacing w:after="0"/>
-        <w:rPr>
-          <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-          <w:sz w:val="24"/>
-          <w:szCs w:val="24"/>
-        </w:rPr>
-      </w:pPr>`;
-
-    fields.forEach((field, index) => {
-      if (index > 0) {
-        // Solo espacios, sin barras
-        xml += `
-      <w:r>
-        <w:rPr>
-          <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-          <w:sz w:val="24"/>
-          <w:szCs w:val="24"/>
-        </w:rPr>
-        <w:t xml:space="preserve"> </w:t>
-      </w:r>`;
-      }
-
-      const displayValue = field.value || field.placeholder || '';
-      
-      xml += `
-      <w:r>
-        <w:rPr>
-          <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-          <w:sz w:val="24"/>
-          <w:szCs w:val="24"/>
-        </w:rPr>
-        <w:t>${this._escapeXml(displayValue)}</w:t>
-      </w:r>`;
-    });
-
-    xml += `
-    </w:p>`;
-
-    return xml;
-  }
-
-  /**
-   * Crea una fila de campos (como Apellido Paterno | Apellido Materno | Nombres)
-   * @private
-   */
-  static _createFieldRow(fields) {
-    let xml = `
-    <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}" w:rsidR="00DD08A8" w:rsidRDefault="00DD08A8">
-      <w:pPr>
-          <w:spacing w:after="0"/>
-        <w:rPr>
-          <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-          <w:sz w:val="24"/>
-          <w:szCs w:val="24"/>
-        </w:rPr>
-      </w:pPr>`;
-
-    fields.forEach((field, index) => {
-      if (index > 0) {
-        xml += `
-      <w:r>
-        <w:rPr>
-          <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-          <w:sz w:val="24"/>
-          <w:szCs w:val="24"/>
-        </w:rPr>
-        <w:t xml:space="preserve"> | </w:t>
-      </w:r>`;
-      }
-
-      const displayValue = field.value || field.placeholder || '_'.repeat(20);
-      
-      xml += `
-      <w:r>
-        <w:rPr>
-          <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-          <w:sz w:val="24"/>
-          <w:szCs w:val="24"/>
-        </w:rPr>
-        <w:t>${this._escapeXml(displayValue)}</w:t>
-      </w:r>`;
-    });
-
-    xml += `
-    </w:p>`;
-
-    return xml;
-  }
-
-  /**
-   * Crea un campo con label y valor
-   * @private
-   */
-  static _createField(label, value, options = {}) {
-    const { indent = 0, bold = false } = options;
-    const displayValue = value || '_'.repeat(20);
-    
-    return `
-    <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}" w:rsidR="00DD08A8" w:rsidRDefault="00DD08A8">
-      <w:pPr>
-        <w:spacing w:after="0"/>
-        ${indent > 0 ? `<w:ind w:left="${indent}"/>` : ''}
-        <w:rPr>
-          <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-          ${bold ? '<w:b/>' : ''}
-          <w:sz w:val="24"/>
-          <w:szCs w:val="24"/>
-        </w:rPr>
-      </w:pPr>
-      <w:r>
-        <w:rPr>
-          <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-          ${bold ? '<w:b/>' : ''}
-          <w:sz w:val="24"/>
-          <w:szCs w:val="24"/>
-        </w:rPr>
-        <w:t>${this._escapeXml(label)}: ${this._escapeXml(displayValue)}</w:t>
-      </w:r>
-    </w:p>`;
-  }
-
-  /**
-   * Crea un campo con checkboxes en línea
-   * Ejemplo: "C.I. Nº 12345678 S.C.    Género: ☒ Masculino ☐ Femenino"
-   * @private
-   */
-  static _createFieldWithInlineCheckboxes(leftText, checkboxLabel, checkboxes, options = {}) {
-    const { rightLabel = null, rightOptions = null } = options;
-    
-    let xml = `
-    <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}" w:rsidR="00DD08A8" w:rsidRDefault="00DD08A8">
-      <w:pPr>
-        <w:spacing w:after="0"/>
-        <w:rPr>
-          <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-          <w:sz w:val="24"/>
-          <w:szCs w:val="24"/>
-        </w:rPr>
-      </w:pPr>`;
-
-    // Texto izquierdo
-    xml += `
-      <w:r>
-        <w:rPr>
-          <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-          <w:sz w:val="24"/>
-          <w:szCs w:val="24"/>
-        </w:rPr>
-        <w:t xml:space="preserve">${this._escapeXml(leftText)}</w:t>
-      </w:r>`;
-
-    // Espaciado
-    xml += `
-      <w:r>
-        <w:rPr>
-          <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-          <w:sz w:val="24"/>
-          <w:szCs w:val="24"/>
-        </w:rPr>
-        <w:t xml:space="preserve">    </w:t>
-      </w:r>`;
-
-    // Label de checkboxes (si existe)
-    if (checkboxLabel) {
-      xml += `
-      <w:r>
-        <w:rPr>
-          <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-          <w:sz w:val="24"/>
-          <w:szCs w:val="24"/>
-        </w:rPr>
-        <w:t>${this._escapeXml(checkboxLabel)}</w:t>
-      </w:r>`;
     }
 
-    // Checkboxes
-    checkboxes.forEach((checkbox) => {
-      const checkSymbol = checkbox.checked ? '☒' : '☐';
-      xml += `
+    /**
+     * Crea el nombre completo en una sola línea (sin columnas, con espacio como párrafo separado)
+     * @private
+     */
+    static _createFullName(apellidoPaterno, apellidoMaterno, nombres) {
+        return `
+    <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}" w:rsidR="00DD08A8" w:rsidRDefault="00DD08A8">
+      <w:pPr>
+        <w:spacing w:before="100" w:after="150"/>
+        <w:rPr>
+          <w:rFonts w:ascii="${this.DEFAULT_FONT}" w:hAnsi="${this.DEFAULT_FONT}"/>
+          <w:sz w:val="${this.DEFAULT_FONT_SIZE}"/>
+          <w:szCs w:val="${this.DEFAULT_FONT_SIZE}"/>
+        </w:rPr>
+      </w:pPr>
       <w:r>
         <w:rPr>
-          <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-          <w:sz w:val="24"/>
-          <w:szCs w:val="24"/>
+          <w:rFonts w:ascii="${this.DEFAULT_FONT}" w:hAnsi="${this.DEFAULT_FONT}"/>
+          <w:b/>
+          <w:sz w:val="${this.DEFAULT_FONT_SIZE}"/>
+          <w:szCs w:val="${this.DEFAULT_FONT_SIZE}"/>
         </w:rPr>
-        <w:t xml:space="preserve"> ${checkSymbol} ${this._escapeXml(checkbox.label)}</w:t>
-      </w:r>`;
-    });
-
-    // Opciones a la derecha (si existen)
-    if (rightLabel && rightOptions) {
-      xml += `
+        <w:t>Nombres y Apellidos : </w:t>
+      </w:r>
       <w:r>
         <w:rPr>
-          <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-          <w:sz w:val="24"/>
-          <w:szCs w:val="24"/>
+          <w:rFonts w:ascii="${this.DEFAULT_FONT}" w:hAnsi="${this.DEFAULT_FONT}"/>
+          <w:sz w:val="${this.DEFAULT_FONT_SIZE}"/>
+          <w:szCs w:val="${this.DEFAULT_FONT_SIZE}"/>
         </w:rPr>
-        <w:t xml:space="preserve">    ${this._escapeXml(rightLabel)}</w:t>
-      </w:r>`;
-
-      rightOptions.forEach((opt) => {
-        const checkSymbol = opt.checked ? '☒' : '☐';
-        xml += `
-      <w:r>
-        <w:rPr>
-          <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-          <w:sz w:val="24"/>
-          <w:szCs w:val="24"/>
-        </w:rPr>
-        <w:t xml:space="preserve"> ${checkSymbol} ${this._escapeXml(opt.label)}</w:t>
-      </w:r>`;
-      });
+        <w:t xml:space="preserve">${this._escapeXml(`${apellidoPaterno} ${apellidoMaterno} ${nombres}`)}</w:t>
+      </w:r>
+    </w:p>`;
     }
 
-    xml += `
-    </w:p>`;
-
-    return xml;
-  }
-
-  /**
-   * Crea múltiples campos en una línea (como Día - Mes Año Nacionalidad Edad)
-   * @private
-   */
-  static _createMultiFieldLine(fields) {
-    let xml = `
-    <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}" w:rsidR="00DD08A8" w:rsidRDefault="00DD08A8">
-      <w:pPr>
-        <w:spacing w:after="60"/>
-        <w:rPr>
-          <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-          <w:sz w:val="24"/>
-          <w:szCs w:val="24"/>
-        </w:rPr>
-      </w:pPr>`;
-
-    fields.forEach((field, index) => {
-      if (index > 0) {
-        xml += `
-      <w:r>
-        <w:rPr>
-          <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-          <w:sz w:val="24"/>
-          <w:szCs w:val="24"/>
-        </w:rPr>
-        <w:t xml:space="preserve"> </w:t>
-      </w:r>`;
-      }
-
-      const text = field.label ? `${field.label} ${field.value || '____'}` : field.value || '____';
-      
-      xml += `
-      <w:r>
-        <w:rPr>
-          <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-          <w:sz w:val="24"/>
-          <w:szCs w:val="24"/>
-        </w:rPr>
-        <w:t>${this._escapeXml(text)}</w:t>
-      </w:r>`;
-    });
-
-    xml += `
-    </w:p>`;
-
-    return xml;
-  }
-
-  /**
-   * Crea campos en línea (como "Idioma de origen: [___]  Celular: [___]")
-   * @private
-   */
-  static _createFieldsInLine(fields) {
-    let xml = `
-    <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}" w:rsidR="00DD08A8" w:rsidRDefault="00DD08A8">
-      <w:pPr>
-        <w:spacing w:after="60"/>
-        <w:rPr>
-          <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-          <w:sz w:val="24"/>
-          <w:szCs w:val="24"/>
-        </w:rPr>
-      </w:pPr>`;
-
-    fields.forEach((field, index) => {
-      if (index > 0) {
-        xml += `
-      <w:r>
-        <w:rPr>
-          <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-          <w:sz w:val="24"/>
-          <w:szCs w:val="24"/>
-        </w:rPr>
-        <w:t xml:space="preserve">  </w:t>
-      </w:r>`;
-      }
-
-      const displayValue = field.value || '_'.repeat(15);
-      
-      xml += `
-      <w:r>
-        <w:rPr>
-          <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-          <w:sz w:val="24"/>
-          <w:szCs w:val="24"/>
-        </w:rPr>
-        <w:t>${this._escapeXml(field.label)}: ${this._escapeXml(displayValue)}</w:t>
-      </w:r>`;
-    });
-
-    xml += `
-    </w:p>`;
-
-    return xml;
-  }
-
-  /**
-   * Crea un checkbox simple (sin bullet)
-   * @private
-   */
-  static _createCheckboxItem(label, checked) {
-    const checkSymbol = checked ? '☒' : '☐';
-    
-    return `
-    <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}" w:rsidR="00DD08A8" w:rsidRDefault="00DD08A8">
-      <w:pPr>
-          <w:spacing w:after="0"/>
-        <w:ind w:left="400"/>
-        <w:rPr>
-          <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-          <w:sz w:val="24"/>
-          <w:szCs w:val="24"/>
-        </w:rPr>
-      </w:pPr>
-      <w:r>
-        <w:rPr>
-          <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-          <w:sz w:val="24"/>
-          <w:szCs w:val="24"/>
-        </w:rPr>
-        <w:t xml:space="preserve">${checkSymbol} ${this._escapeXml(label)}</w:t>
-      </w:r>
-    </w:p>`;
-  }
-
-  /**
-   * Crea un checkbox con bullet (para documentos)
-   * @private
-   */
-  static _createBulletCheckboxItem(label, checked) {
-    const checkSymbol = checked ? '☒' : '☐';
-    
-    return `
-    <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}" w:rsidR="00DD08A8" w:rsidRDefault="00DD08A8">
-      <w:pPr>
-        <w:spacing w:after="60"/>
-        <w:ind w:left="400"/>
-        <w:rPr>
-          <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-          <w:sz w:val="24"/>
-          <w:szCs w:val="24"/>
-        </w:rPr>
-      </w:pPr>
-      <w:r>
-        <w:rPr>
-          <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-          <w:sz w:val="24"/>
-          <w:szCs w:val="24"/>
-        </w:rPr>
-        <w:t xml:space="preserve">• ${this._escapeXml(label)}    ${checkSymbol}</w:t>
-      </w:r>
-    </w:p>`;
-  }
-
-  /**
-   * Crea una tabla de dos columnas para Documentos y Materias
-   * @private
-   */
-  static _createDocumentsAndSubjectsTable(documentos, materias) {
-    const documentosItems = [
-      { label: 'Fotocopia Carnet de Identidad', checked: documentos.ci || false },
-      { label: 'Fotocopia Certificado de Nacimiento', checked: documentos.certificadoNacimiento || false },
-      { label: 'Fotocopia de Título de Bachiller', checked: documentos.diplomaBachiller || false },
-      { label: 'Aporte Voluntario', checked: documentos.aporteVoluntario || false },
-    ];
-
-    // Determinar el número máximo de filas
-    const maxRows = Math.max(documentosItems.length, materias.length);
-
-    let xml = `
+    /**
+     * Crea una tabla de 2 columnas para campos en formato lado a lado
+     * @private
+     */
+    static _createDualColumnTable(fields) {
+        let xml = `
     <w:tbl>
       <w:tblPr>
         <w:tblW w:w="5000" w:type="pct"/>
@@ -889,127 +414,134 @@ export class BoletaInscripcionWordGenerator {
         <w:gridCol w:w="4500"/>
       </w:tblGrid>`;
 
-    // Crear filas
-    for (let i = 0; i < maxRows; i++) {
-      xml += `
+        fields.forEach((field) => {
+            xml += `
       <w:tr>
-        <!-- Columna 1: Documentos -->
         <w:tc>
           <w:tcPr>
             <w:tcW w:w="4500" w:type="dxa"/>
             <w:vAlign w:val="top"/>
-          </w:tcPr>`;
-
-      if (i < documentosItems.length) {
-        const item = documentosItems[i];
-        const checkSymbol = item.checked ? '☒' : '☐';
-        xml += `
+          </w:tcPr>
           <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}">
             <w:pPr>
               <w:spacing w:after="0"/>
-              <w:ind w:left="200"/>
               <w:rPr>
-                <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-                <w:sz w:val="24"/>
-                <w:szCs w:val="24"/>
+                <w:rFonts w:ascii="${this.DEFAULT_FONT}" w:hAnsi="${this.DEFAULT_FONT}"/>
+                <w:sz w:val="${this.DEFAULT_FONT_SIZE}"/>
+                <w:szCs w:val="${this.DEFAULT_FONT_SIZE}"/>
+                <w:color w:val="${this.DATA_COLOR}"/>
               </w:rPr>
             </w:pPr>
             <w:r>
               <w:rPr>
-                <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-                <w:sz w:val="24"/>
-                <w:szCs w:val="24"/>
+                <w:rFonts w:ascii="${this.DEFAULT_FONT}" w:hAnsi="${this.DEFAULT_FONT}"/>
+                <w:sz w:val="${this.DEFAULT_FONT_SIZE}"/>
+                <w:szCs w:val="${this.DEFAULT_FONT_SIZE}"/>
               </w:rPr>
-              <w:t xml:space="preserve">• ${this._escapeXml(item.label)}    ${checkSymbol}</w:t>
+              <w:t>${this._escapeXml(field.left)}</w:t>
             </w:r>
-          </w:p>`;
-      } else {
-        xml += `
-          <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}">
-            <w:pPr>
-              <w:spacing w:after="0"/>
-            </w:pPr>
-          </w:p>`;
-      }
-
-      xml += `
+          </w:p>
         </w:tc>
-        <!-- Columna 2: Materias -->
         <w:tc>
           <w:tcPr>
             <w:tcW w:w="4500" w:type="dxa"/>
             <w:vAlign w:val="top"/>
-          </w:tcPr>`;
-
-      if (i < materias.length) {
-        const materia = materias[i];
-        xml += `
+          </w:tcPr>
           <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}">
             <w:pPr>
               <w:spacing w:after="0"/>
-              <w:ind w:left="200"/>
               <w:rPr>
-                <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-                <w:sz w:val="24"/>
-                <w:szCs w:val="24"/>
+                <w:rFonts w:ascii="${this.DEFAULT_FONT}" w:hAnsi="${this.DEFAULT_FONT}"/>
+                <w:sz w:val="${this.DEFAULT_FONT_SIZE}"/>
+                <w:szCs w:val="${this.DEFAULT_FONT_SIZE}"/>
+                <w:color w:val="${this.DATA_COLOR}"/>
               </w:rPr>
             </w:pPr>
             <w:r>
               <w:rPr>
-                <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-                <w:b/>
-                <w:sz w:val="24"/>
-                <w:szCs w:val="24"/>
+                <w:rFonts w:ascii="${this.DEFAULT_FONT}" w:hAnsi="${this.DEFAULT_FONT}"/>
+                <w:sz w:val="${this.DEFAULT_FONT_SIZE}"/>
+                <w:szCs w:val="${this.DEFAULT_FONT_SIZE}"/>
               </w:rPr>
-              <w:t>${this._escapeXml(materia.sigla || '')}</w:t>
+              <w:t>${this._escapeXml(field.right || '')}</w:t>
             </w:r>
-            <w:r>
-              <w:rPr>
-                <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-                <w:sz w:val="24"/>
-                <w:szCs w:val="24"/>
-              </w:rPr>
-              <w:t xml:space="preserve"> - ${this._escapeXml(materia.nombre || '')}</w:t>
-            </w:r>
-          </w:p>`;
-      } else {
-        xml += `
-          <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}">
-            <w:pPr>
-              <w:spacing w:after="0"/>
-            </w:pPr>
-          </w:p>`;
-      }
-
-      xml += `
+          </w:p>
         </w:tc>
       </w:tr>`;
-    }
+        });
 
-    xml += `
+        xml += `
     </w:tbl>`;
 
-    return xml;
-  }
+        return xml;
+    }
 
-  /**
-   * Crea una tabla de dos columnas para Carrera y Año
-   * Las columnas están LADO A LADO (no secuenciales)
-   * @private
-   */
-  static _createCarreraYAnoTable(carrera, anio) {
-    // Determinar qué carrera está marcada según las carreras del seeder
-    const carreraLower = carrera?.toLowerCase() || '';
-    const isSistemas = carreraLower.includes('sistem') || carreraLower.includes('informát');
-    const isAdministracion = carreraLower.includes('administración') || carreraLower.includes('administracion') || carreraLower.includes('empresas');
-    const isContaduria = carreraLower.includes('contad');
+    /**
+     * Crea el campo de género con checkboxes
+     * @private
+     */
+    static _createGenderField(genero) {
+        const isMasculino = genero === 'Masculino' || genero === 'M';
+        const isFemenino = genero === 'Femenino' || genero === 'F';
+        return `Género: ${isMasculino ? '[X]' : '[  ]'} Masculino ${isFemenino ? '[X]' : '[  ]'} Femenino`;
+    }
 
-    // Determinar qué año está marcado (default: Primer Año si no hay anio)
-    const isPrimerAnio = !anio || anio?.toLowerCase().includes('primer');
-    const isSegundoAnio = anio?.toLowerCase().includes('segund');
-    const isTercerAnio = anio?.toLowerCase().includes('tercer');
+    /**
+     * Crea el campo de estado civil con checkboxes
+     * @private
+     */
+    static _createCivilStatusField(estadoCivil) {
+        const estadoLower = estadoCivil?.toLowerCase() || '';
+        const isSoltero = estadoLower.includes('solter');
+        const isCasado = estadoLower.includes('casad');
+        const isConcubinato = estadoLower.includes('concubinat');
+        return `Estado Civil: ${isSoltero ? '[X]' : '[  ]'} Soltero(a) ${isCasado ? '[X]' : '[  ]'} Casado(a) ${isConcubinato ? '[X]' : '[  ]'} Concubinato`;
+    }
 
-    return `
+    /**
+     * Crea el campo de discapacidad con checkboxes
+     * @private
+     */
+    static _createDisabilityField(tieneDiscapacidad) {
+        return `Discapacidad: ${tieneDiscapacidad === true ? '[X]' : '[  ]'} Si) ${tieneDiscapacidad === false ? '[X]' : '[  ]'} No)`;
+    }
+
+    /**
+     * Crea el campo de fecha de nacimiento
+     * @private
+     */
+    static _createBirthDateField(fechaNacimiento, nacionalidad, edad) {
+        const fechaParts = fechaNacimiento ? fechaNacimiento.split('/') : ['', '', ''];
+        return `Día ${fechaParts[0] || '____'} - Mes ${fechaParts[1] || '____'} Año ${fechaParts[2] || '____'} Nacionalidad ${nacionalidad || '____'} Edad ${edad || '____'}`;
+    }
+
+    /**
+     * Crea el campo de trabajo
+     * @private
+     */
+    static _createWorkField(trabaja, cargo, empresa) {
+        const workText = `Trabaja: ${trabaja === true ? '[X]' : '[  ]'} Si) ${trabaja === false ? '[X]' : '[  ]'} No)`;
+        if (trabaja) {
+            return `${workText} Cargo: ${cargo || '____'} Empresa: ${empresa || '____'}`;
+        }
+        return workText;
+    }
+
+    /**
+     * Crea la tabla de Carrera y Año
+     * @private
+     */
+    static _createCareerAndYearTable(carrera, anio) {
+        const carreraLower = carrera?.toLowerCase() || '';
+        const isSistemas = carreraLower.includes('sistem') || carreraLower.includes('informát');
+        const isAdministracion = carreraLower.includes('administración') || carreraLower.includes('administracion') || carreraLower.includes('empresas');
+        const isContaduria = carreraLower.includes('contad');
+
+        const isPrimerAnio = !anio || anio?.toLowerCase().includes('primer');
+        const isSegundoAnio = anio?.toLowerCase().includes('segund');
+        const isTercerAnio = anio?.toLowerCase().includes('tercer');
+
+        return `
     <w:tbl>
       <w:tblPr>
         <w:tblW w:w="5000" w:type="pct"/>
@@ -1026,8 +558,6 @@ export class BoletaInscripcionWordGenerator {
         <w:gridCol w:w="4500"/>
         <w:gridCol w:w="4500"/>
       </w:tblGrid>
-      
-      <!-- Fila de encabezados: Carrera: | Año: -->
       <w:tr>
         <w:tc>
           <w:tcPr>
@@ -1037,18 +567,18 @@ export class BoletaInscripcionWordGenerator {
             <w:pPr>
               <w:spacing w:after="0"/>
               <w:rPr>
-                <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
+                <w:rFonts w:ascii="${this.DEFAULT_FONT}" w:hAnsi="${this.DEFAULT_FONT}"/>
                 <w:b/>
-                <w:sz w:val="20"/>
-                <w:szCs w:val="20"/>
+                <w:sz w:val="${this.DEFAULT_FONT_SIZE}"/>
+                <w:szCs w:val="${this.DEFAULT_FONT_SIZE}"/>
               </w:rPr>
             </w:pPr>
             <w:r>
               <w:rPr>
-                <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
+                <w:rFonts w:ascii="${this.DEFAULT_FONT}" w:hAnsi="${this.DEFAULT_FONT}"/>
                 <w:b/>
-                <w:sz w:val="20"/>
-                <w:szCs w:val="20"/>
+                <w:sz w:val="${this.DEFAULT_FONT_SIZE}"/>
+                <w:szCs w:val="${this.DEFAULT_FONT_SIZE}"/>
               </w:rPr>
               <w:t>Carrera:</w:t>
             </w:r>
@@ -1062,26 +592,24 @@ export class BoletaInscripcionWordGenerator {
             <w:pPr>
               <w:spacing w:after="0"/>
               <w:rPr>
-                <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
+                <w:rFonts w:ascii="${this.DEFAULT_FONT}" w:hAnsi="${this.DEFAULT_FONT}"/>
                 <w:b/>
-                <w:sz w:val="20"/>
-                <w:szCs w:val="20"/>
+                <w:sz w:val="${this.DEFAULT_FONT_SIZE}"/>
+                <w:szCs w:val="${this.DEFAULT_FONT_SIZE}"/>
               </w:rPr>
             </w:pPr>
             <w:r>
               <w:rPr>
-                <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
+                <w:rFonts w:ascii="${this.DEFAULT_FONT}" w:hAnsi="${this.DEFAULT_FONT}"/>
                 <w:b/>
-                <w:sz w:val="20"/>
-                <w:szCs w:val="20"/>
+                <w:sz w:val="${this.DEFAULT_FONT_SIZE}"/>
+                <w:szCs w:val="${this.DEFAULT_FONT_SIZE}"/>
               </w:rPr>
               <w:t>Año:</w:t>
             </w:r>
           </w:p>
         </w:tc>
       </w:tr>
-      
-      <!-- Fila 1: Sistemas Informáticos | Primer Año -->
       <w:tr>
         <w:tc>
           <w:tcPr>
@@ -1092,18 +620,18 @@ export class BoletaInscripcionWordGenerator {
               <w:spacing w:after="0"/>
               <w:ind w:left="200"/>
               <w:rPr>
-                <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-                <w:sz w:val="20"/>
-                <w:szCs w:val="20"/>
+                <w:rFonts w:ascii="${this.DEFAULT_FONT}" w:hAnsi="${this.DEFAULT_FONT}"/>
+                <w:sz w:val="${this.DEFAULT_FONT_SIZE}"/>
+                <w:szCs w:val="${this.DEFAULT_FONT_SIZE}"/>
               </w:rPr>
             </w:pPr>
             <w:r>
               <w:rPr>
-                <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-                <w:sz w:val="20"/>
-                <w:szCs w:val="20"/>
+                <w:rFonts w:ascii="${this.DEFAULT_FONT}" w:hAnsi="${this.DEFAULT_FONT}"/>
+                <w:sz w:val="${this.DEFAULT_FONT_SIZE}"/>
+                <w:szCs w:val="${this.DEFAULT_FONT_SIZE}"/>
               </w:rPr>
-              <w:t xml:space="preserve">${isSistemas ? '☒' : '☐'} Sistemas Informáticos</w:t>
+              <w:t xml:space="preserve">${isSistemas ? '[X]' : '[  ]'} Sistemas Informáticos</w:t>
             </w:r>
           </w:p>
         </w:tc>
@@ -1116,24 +644,22 @@ export class BoletaInscripcionWordGenerator {
               <w:spacing w:after="0"/>
               <w:ind w:left="200"/>
               <w:rPr>
-                <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-                <w:sz w:val="20"/>
-                <w:szCs w:val="20"/>
+                <w:rFonts w:ascii="${this.DEFAULT_FONT}" w:hAnsi="${this.DEFAULT_FONT}"/>
+                <w:sz w:val="${this.DEFAULT_FONT_SIZE}"/>
+                <w:szCs w:val="${this.DEFAULT_FONT_SIZE}"/>
               </w:rPr>
             </w:pPr>
             <w:r>
               <w:rPr>
-                <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-                <w:sz w:val="20"/>
-                <w:szCs w:val="20"/>
+                <w:rFonts w:ascii="${this.DEFAULT_FONT}" w:hAnsi="${this.DEFAULT_FONT}"/>
+                <w:sz w:val="${this.DEFAULT_FONT_SIZE}"/>
+                <w:szCs w:val="${this.DEFAULT_FONT_SIZE}"/>
               </w:rPr>
-              <w:t xml:space="preserve">${isPrimerAnio ? '☒' : '☐'} Primer Año</w:t>
+              <w:t xml:space="preserve">${isPrimerAnio ? '[X]' : '[  ]'} Primer Año</w:t>
             </w:r>
           </w:p>
         </w:tc>
       </w:tr>
-      
-      <!-- Fila 2: Administración de Empresas | Segundo Año -->
       <w:tr>
         <w:tc>
           <w:tcPr>
@@ -1144,18 +670,18 @@ export class BoletaInscripcionWordGenerator {
               <w:spacing w:after="0"/>
               <w:ind w:left="200"/>
               <w:rPr>
-                <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-                <w:sz w:val="20"/>
-                <w:szCs w:val="20"/>
+                <w:rFonts w:ascii="${this.DEFAULT_FONT}" w:hAnsi="${this.DEFAULT_FONT}"/>
+                <w:sz w:val="${this.DEFAULT_FONT_SIZE}"/>
+                <w:szCs w:val="${this.DEFAULT_FONT_SIZE}"/>
               </w:rPr>
             </w:pPr>
             <w:r>
               <w:rPr>
-                <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-                <w:sz w:val="20"/>
-                <w:szCs w:val="20"/>
+                <w:rFonts w:ascii="${this.DEFAULT_FONT}" w:hAnsi="${this.DEFAULT_FONT}"/>
+                <w:sz w:val="${this.DEFAULT_FONT_SIZE}"/>
+                <w:szCs w:val="${this.DEFAULT_FONT_SIZE}"/>
               </w:rPr>
-              <w:t xml:space="preserve">${isAdministracion ? '☒' : '☐'} Administración de Empresas</w:t>
+              <w:t xml:space="preserve">${isAdministracion ? '[X]' : '[  ]'} Administración de Empresas</w:t>
             </w:r>
           </w:p>
         </w:tc>
@@ -1168,24 +694,22 @@ export class BoletaInscripcionWordGenerator {
               <w:spacing w:after="0"/>
               <w:ind w:left="200"/>
               <w:rPr>
-                <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-                <w:sz w:val="20"/>
-                <w:szCs w:val="20"/>
+                <w:rFonts w:ascii="${this.DEFAULT_FONT}" w:hAnsi="${this.DEFAULT_FONT}"/>
+                <w:sz w:val="${this.DEFAULT_FONT_SIZE}"/>
+                <w:szCs w:val="${this.DEFAULT_FONT_SIZE}"/>
               </w:rPr>
             </w:pPr>
             <w:r>
               <w:rPr>
-                <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-                <w:sz w:val="20"/>
-                <w:szCs w:val="20"/>
+                <w:rFonts w:ascii="${this.DEFAULT_FONT}" w:hAnsi="${this.DEFAULT_FONT}"/>
+                <w:sz w:val="${this.DEFAULT_FONT_SIZE}"/>
+                <w:szCs w:val="${this.DEFAULT_FONT_SIZE}"/>
               </w:rPr>
-              <w:t xml:space="preserve">${isSegundoAnio ? '☒' : '☐'} Segundo Año</w:t>
+              <w:t xml:space="preserve">${isSegundoAnio ? '[X]' : '[  ]'} Segundo Año</w:t>
             </w:r>
           </w:p>
         </w:tc>
       </w:tr>
-      
-      <!-- Fila 3: Contaduría General | Tercer Año -->
       <w:tr>
         <w:tc>
           <w:tcPr>
@@ -1196,18 +720,18 @@ export class BoletaInscripcionWordGenerator {
               <w:spacing w:after="0"/>
               <w:ind w:left="200"/>
               <w:rPr>
-                <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-                <w:sz w:val="20"/>
-                <w:szCs w:val="20"/>
+                <w:rFonts w:ascii="${this.DEFAULT_FONT}" w:hAnsi="${this.DEFAULT_FONT}"/>
+                <w:sz w:val="${this.DEFAULT_FONT_SIZE}"/>
+                <w:szCs w:val="${this.DEFAULT_FONT_SIZE}"/>
               </w:rPr>
             </w:pPr>
             <w:r>
               <w:rPr>
-                <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-                <w:sz w:val="20"/>
-                <w:szCs w:val="20"/>
+                <w:rFonts w:ascii="${this.DEFAULT_FONT}" w:hAnsi="${this.DEFAULT_FONT}"/>
+                <w:sz w:val="${this.DEFAULT_FONT_SIZE}"/>
+                <w:szCs w:val="${this.DEFAULT_FONT_SIZE}"/>
               </w:rPr>
-              <w:t xml:space="preserve">${isContaduria ? '☒' : '☐'} Contaduría General</w:t>
+              <w:t xml:space="preserve">${isContaduria ? '[X]' : '[  ]'} Contaduría General</w:t>
             </w:r>
           </w:p>
         </w:tc>
@@ -1220,47 +744,219 @@ export class BoletaInscripcionWordGenerator {
               <w:spacing w:after="0"/>
               <w:ind w:left="200"/>
               <w:rPr>
-                <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-                <w:sz w:val="20"/>
-                <w:szCs w:val="20"/>
+                <w:rFonts w:ascii="${this.DEFAULT_FONT}" w:hAnsi="${this.DEFAULT_FONT}"/>
+                <w:sz w:val="${this.DEFAULT_FONT_SIZE}"/>
+                <w:szCs w:val="${this.DEFAULT_FONT_SIZE}"/>
               </w:rPr>
             </w:pPr>
             <w:r>
               <w:rPr>
-                <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-                <w:sz w:val="20"/>
-                <w:szCs w:val="20"/>
+                <w:rFonts w:ascii="${this.DEFAULT_FONT}" w:hAnsi="${this.DEFAULT_FONT}"/>
+                <w:sz w:val="${this.DEFAULT_FONT_SIZE}"/>
+                <w:szCs w:val="${this.DEFAULT_FONT_SIZE}"/>
               </w:rPr>
-              <w:t xml:space="preserve">${isTercerAnio ? '☒' : '☐'} Tercer Año</w:t>
+              <w:t xml:space="preserve">${isTercerAnio ? '[X]' : '[  ]'} Tercer Año</w:t>
             </w:r>
           </w:p>
         </w:tc>
       </w:tr>
-    </w:tbl>`;
-  }
+    </w:tbl>
+    <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}" w:rsidR="00DD08A8" w:rsidRDefault="00DD08A8">
+      <w:pPr>
+        <w:spacing w:before="100" w:after="100"/>
+      </w:pPr>
+    </w:p>`;
+    }
 
-  /**
-   * Crea una sección de dos columnas
-   * @private
-   */
-  static _createTwoColumnSection(leftColumnFn, rightColumnFn) {
-    // Por simplicidad, generamos las columnas secuencialmente
-    // En un sistema más avanzado, usaríamos tablas de Word
-    let xml = '';
-    
-    xml += leftColumnFn();
-    xml += this._createSpacing(100);
-    xml += rightColumnFn();
-    
-    return xml;
-  }
+    /**
+     * Crea la tabla de Materias (en 2 columnas)
+     * @private
+     */
+    static _createSubjectsTable(materias) {
+        if (!materias || materias.length === 0) {
+            return '';
+        }
 
-  /**
-   * Crea dos columnas de firmas
-   * @private
-   */
-  static _createTwoColumnSignatures(leftSig, rightSig) {
-    let xml = `
+        let xml = `
+    <w:tbl>
+      <w:tblPr>
+        <w:tblW w:w="5000" w:type="pct"/>
+        <w:tblBorders>
+          <w:top w:val="none"/>
+          <w:left w:val="none"/>
+          <w:bottom w:val="none"/>
+          <w:right w:val="none"/>
+          <w:insideH w:val="none"/>
+          <w:insideV w:val="none"/>
+        </w:tblBorders>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="4500"/>
+        <w:gridCol w:w="4500"/>
+      </w:tblGrid>`;
+
+        // Organizar materias en 2 columnas
+        const halfLength = Math.ceil(materias.length / 2);
+        for (let i = 0; i < halfLength; i++) {
+            const materia1 = materias[i] || null;
+            const materia2 = materias[i + halfLength] || null;
+
+            xml += `
+      <w:tr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4500" w:type="dxa"/>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>`;
+
+            if (materia1) {
+                xml += `
+          <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}">
+            <w:pPr>
+              <w:spacing w:after="0"/>
+              <w:ind w:left="200"/>
+              <w:rPr>
+                <w:rFonts w:ascii="${this.DEFAULT_FONT}" w:hAnsi="${this.DEFAULT_FONT}"/>
+                <w:sz w:val="${this.DEFAULT_FONT_SIZE}"/>
+                <w:szCs w:val="${this.DEFAULT_FONT_SIZE}"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="${this.DEFAULT_FONT}" w:hAnsi="${this.DEFAULT_FONT}"/>
+                <w:b/>
+                <w:sz w:val="${this.DEFAULT_FONT_SIZE}"/>
+                <w:szCs w:val="${this.DEFAULT_FONT_SIZE}"/>
+              </w:rPr>
+              <w:t>${this._escapeXml(materia1.sigla || '')}</w:t>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="${this.DEFAULT_FONT}" w:hAnsi="${this.DEFAULT_FONT}"/>
+                <w:sz w:val="${this.DEFAULT_FONT_SIZE}"/>
+                  <w:szCs w:val="${this.DEFAULT_FONT_SIZE}"/>
+              </w:rPr>
+              <w:t xml:space="preserve"> - ${this._escapeXml(materia1.nombre || '')}</w:t>
+            </w:r>
+          </w:p>`;
+            } else {
+                xml += `
+          <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}">
+            <w:pPr>
+              <w:spacing w:after="0"/>
+            </w:pPr>
+          </w:p>`;
+            }
+
+            xml += `
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4500" w:type="dxa"/>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>`;
+
+            if (materia2) {
+                xml += `
+          <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}">
+            <w:pPr>
+              <w:spacing w:after="0"/>
+              <w:ind w:left="200"/>
+              <w:rPr>
+                <w:rFonts w:ascii="${this.DEFAULT_FONT}" w:hAnsi="${this.DEFAULT_FONT}"/>
+                <w:sz w:val="${this.DEFAULT_FONT_SIZE}"/>
+                <w:szCs w:val="${this.DEFAULT_FONT_SIZE}"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="${this.DEFAULT_FONT}" w:hAnsi="${this.DEFAULT_FONT}"/>
+                <w:b/>
+                <w:sz w:val="${this.DEFAULT_FONT_SIZE}"/>
+                <w:szCs w:val="${this.DEFAULT_FONT_SIZE}"/>
+              </w:rPr>
+              <w:t>${this._escapeXml(materia2.sigla || '')}</w:t>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="${this.DEFAULT_FONT}" w:hAnsi="${this.DEFAULT_FONT}"/>
+                <w:sz w:val="${this.DEFAULT_FONT_SIZE}"/>
+                <w:szCs w:val="${this.DEFAULT_FONT_SIZE}"/>
+              </w:rPr>
+              <w:t xml:space="preserve"> - ${this._escapeXml(materia2.nombre || '')}</w:t>
+            </w:r>
+          </w:p>`;
+            } else {
+                xml += `
+          <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}">
+            <w:pPr>
+              <w:spacing w:after="0"/>
+            </w:pPr>
+          </w:p>`;
+            }
+
+            xml += `
+        </w:tc>
+      </w:tr>`;
+        }
+
+        xml += `
+    </w:tbl>
+    <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}" w:rsidR="00DD08A8" w:rsidRDefault="00DD08A8">
+      <w:pPr>
+        <w:spacing w:before="100" w:after="100"/>
+      </w:pPr>
+    </w:p>`;
+
+        return xml;
+    }
+
+    /**
+     * Crea la tabla de Documentos (sin materias, solo lista simple)
+     * @private
+     */
+    static _createDocumentsTable(documentos) {
+        const documentosItems = [
+            { label: 'Fotocopia Carnet de Identidad', checked: documentos.ci || false },
+            { label: 'Fotocopia Certificado de Nacimiento', checked: documentos.certificadoNacimiento || false },
+            { label: 'Fotocopia de Título de Bachiller', checked: documentos.diplomaBachiller || false },
+            { label: 'Aporte Voluntario', checked: documentos.aporteVoluntario || false },
+        ];
+
+        let xml = '';
+        documentosItems.forEach((item, index) => {
+            const isLast = index === documentosItems.length - 1;
+            xml += `
+    <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}" w:rsidR="00DD08A8" w:rsidRDefault="00DD08A8">
+      <w:pPr>
+        <w:spacing w:after="${isLast ? '150' : '0'}"/>
+        <w:ind w:left="200"/>
+        <w:rPr>
+          <w:rFonts w:ascii="${this.DEFAULT_FONT}" w:hAnsi="${this.DEFAULT_FONT}"/>
+          <w:sz w:val="${this.DEFAULT_FONT_SIZE}"/>
+          <w:szCs w:val="${this.DEFAULT_FONT_SIZE}"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="${this.DEFAULT_FONT}" w:hAnsi="${this.DEFAULT_FONT}"/>
+          <w:sz w:val="${this.DEFAULT_FONT_SIZE}"/>
+          <w:szCs w:val="${this.DEFAULT_FONT_SIZE}"/>
+        </w:rPr>
+        <w:t xml:space="preserve">• ${this._escapeXml(item.label)}    ${item.checked ? '[X]' : '[  ]'}</w:t>
+      </w:r>
+    </w:p>`;
+        });
+
+        return xml;
+    }
+
+    /**
+     * Crea la sección de firmas
+     * @private
+     */
+    static _createSignaturesSection() {
+        return `
     <w:tbl>
       <w:tblPr>
         <w:tblW w:w="5000" w:type="pct"/>
@@ -1284,13 +980,13 @@ export class BoletaInscripcionWordGenerator {
           </w:tcPr>
           <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}">
             <w:pPr>
-              <w:spacing w:before="400" w:after="100"/>
+              <w:spacing w:before="450" w:after="50"/>
               <w:jc w:val="center"/>
             </w:pPr>
             <w:r>
               <w:rPr>
-                <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-                <w:sz w:val="20"/>
+                <w:rFonts w:ascii="${this.DEFAULT_FONT}" w:hAnsi="${this.DEFAULT_FONT}"/>
+                <w:sz w:val="${this.DEFAULT_FONT_SIZE}"/>
               </w:rPr>
               <w:t>_____________________</w:t>
             </w:r>
@@ -1298,13 +994,14 @@ export class BoletaInscripcionWordGenerator {
           <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}">
             <w:pPr>
               <w:jc w:val="center"/>
+              <w:spacing w:after="0"/>
             </w:pPr>
             <w:r>
               <w:rPr>
-                <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-                <w:sz w:val="20"/>
+                <w:rFonts w:ascii="${this.DEFAULT_FONT}" w:hAnsi="${this.DEFAULT_FONT}"/>
+                <w:sz w:val="${this.DEFAULT_FONT_SIZE}"/>
               </w:rPr>
-              <w:t>${this._escapeXml(leftSig.label)}</w:t>
+              <w:t>Firma Estudiante</w:t>
             </w:r>
           </w:p>
         </w:tc>
@@ -1314,13 +1011,13 @@ export class BoletaInscripcionWordGenerator {
           </w:tcPr>
           <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}">
             <w:pPr>
-              <w:spacing w:before="400" w:after="100"/>
+              <w:spacing w:before="500" w:after="50"/>
               <w:jc w:val="center"/>
             </w:pPr>
             <w:r>
               <w:rPr>
-                <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-                <w:sz w:val="20"/>
+                <w:rFonts w:ascii="${this.DEFAULT_FONT}" w:hAnsi="${this.DEFAULT_FONT}"/>
+                <w:sz w:val="${this.DEFAULT_FONT_SIZE}"/>
               </w:rPr>
               <w:t>_____________________</w:t>
             </w:r>
@@ -1328,89 +1025,67 @@ export class BoletaInscripcionWordGenerator {
           <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}">
             <w:pPr>
               <w:jc w:val="center"/>
+              <w:spacing w:after="0"/>
             </w:pPr>
             <w:r>
               <w:rPr>
-                <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-                <w:sz w:val="20"/>
+                <w:rFonts w:ascii="${this.DEFAULT_FONT}" w:hAnsi="${this.DEFAULT_FONT}"/>
+                <w:sz w:val="${this.DEFAULT_FONT_SIZE}"/>
               </w:rPr>
-              <w:t>${this._escapeXml(rightSig.label)}</w:t>
+              <w:t>Responsable Inscripción</w:t>
             </w:r>
           </w:p>
         </w:tc>
       </w:tr>
     </w:tbl>`;
+    }
 
-    return xml;
-  }
-
-  /**
-   * Crea un párrafo de texto
-   * @private
-   */
-  static _createParagraph(text, options = {}) {
-    const {
-      bold = false,
-      fontSize = 20,
-      align = 'left',
-    } = options;
-
-    return `
+    /**
+     * Crea la nota legal
+     * @private
+     */
+    static _createLegalNote() {
+        return `
     <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}" w:rsidR="00DD08A8" w:rsidRDefault="00DD08A8">
       <w:pPr>
-        <w:spacing w:after="0"/>
-        <w:jc w:val="${align}"/>
+        <w:spacing w:before="300" w:after="200"/>
+        <w:jc w:val="both"/>
         <w:rPr>
-          <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-          ${bold ? '<w:b/>' : ''}
-          <w:sz w:val="${fontSize}"/>
-          <w:szCs w:val="${fontSize}"/>
+          <w:rFonts w:ascii="${this.DEFAULT_FONT}" w:hAnsi="${this.DEFAULT_FONT}"/>
+          <w:sz w:val="${this.DEFAULT_FONT_SIZE}"/>
+          <w:szCs w:val="${this.DEFAULT_FONT_SIZE}"/>
         </w:rPr>
       </w:pPr>
       <w:r>
         <w:rPr>
-          <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-          ${bold ? '<w:b/>' : ''}
-          <w:sz w:val="${fontSize}"/>
-          <w:szCs w:val="${fontSize}"/>
+          <w:rFonts w:ascii="${this.DEFAULT_FONT}" w:hAnsi="${this.DEFAULT_FONT}"/>
+          <w:sz w:val="${this.DEFAULT_FONT_SIZE}"/>
+          <w:szCs w:val="${this.DEFAULT_FONT_SIZE}"/>
         </w:rPr>
-        <w:t>${this._escapeXml(text)}</w:t>
+        <w:t>El llenado del presente formulario es responsabilidad plena del postulante (estudiante) y los documentos adjuntos respaldan los requisitos establecidos por la R.M. 0001/2026</w:t>
       </w:r>
     </w:p>`;
-  }
+    }
 
-  /**
-   * Crea espacio vertical
-   * @private
-   */
-  static _createSpacing(height) {
-    return `
-    <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}" w:rsidR="00DD08A8" w:rsidRDefault="00DD08A8">
-      <w:pPr>
-        <w:spacing w:after="${height}"/>
-      </w:pPr>
-    </w:p>`;
-  }
+    /**
+     * Escapa caracteres especiales XML
+     * @private
+     */
+    static _escapeXml(text) {
+        if (!text) return '';
+        return String(text)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#x2019;');
+    }
 
-  /**
-   * Escapa caracteres especiales XML
-   * @private
-   */
-  static _escapeXml(text) {
-    if (!text) return '';
-    return String(text)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#x2019;');
-  }
-
-  /**
-   * Genera un ID único para elementos XML
-   * @private
-   */
-  static _generateId() {
-    return Math.floor(Math.random() * 0x7FFFFFFF).toString(16).toUpperCase().padStart(8, '0');
-  }
+    /**
+     * Genera un ID único para elementos XML
+     * @private
+     */
+    static _generateId() {
+        return Math.floor(Math.random() * 0x7FFFFFFF).toString(16).toUpperCase().padStart(8, '0');
+    }
 }
