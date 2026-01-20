@@ -42,6 +42,7 @@ export class GenerateBoletaInscripcionUseCase {
    * @param {Object} params.periodRepository - Repositorio de periodos
    * @param {Object} params.planSubjectRepository - Repositorio de asignaturas de plan
    * @param {Object} params.subjectRepository - Repositorio de materias
+   * @param {Object} params.contributionPaymentRepository - Repositorio de pagos de aporte
    * @param {Object} params.studentDocumentRepository - Repositorio de documentos de estudiantes
    * @param {Object} params.studentDocumentDeliveryRepository - Repositorio de entregas de documentos
    * @param {Object} params.civilStatusRepository - Repositorio de estados civiles
@@ -62,6 +63,7 @@ export class GenerateBoletaInscripcionUseCase {
     periodRepository,
     planSubjectRepository,
     subjectRepository,
+    contributionPaymentRepository,
     studentDocumentRepository,
     studentDocumentDeliveryRepository,
     civilStatusRepository,
@@ -81,6 +83,7 @@ export class GenerateBoletaInscripcionUseCase {
     this.periodRepository = periodRepository;
     this.planSubjectRepository = planSubjectRepository;
     this.subjectRepository = subjectRepository;
+    this.contributionPaymentRepository = contributionPaymentRepository;
     this.studentDocumentRepository = studentDocumentRepository;
     this.studentDocumentDeliveryRepository = studentDocumentDeliveryRepository;
     this.civilStatusRepository = civilStatusRepository;
@@ -340,7 +343,8 @@ export class GenerateBoletaInscripcionUseCase {
         career,
         management,
         careerId,
-        studentId
+        studentId,
+        student
       );
 
       // 3. Generar archivos DOCX y PDF
@@ -397,13 +401,13 @@ export class GenerateBoletaInscripcionUseCase {
    * @private
    * @returns {Promise<Object>} Datos para la boleta
    */
-  async _prepareBoletaData(studentPlain, career, management, careerId, studentId) {
+  async _prepareBoletaData(studentPlain, career, management, careerId, studentId, student) {
     // Convertir objetos a planos
     const careerPlain = career.toPlainObject ? career.toPlainObject() : career;
     const managementPlain = management.toPlainObject ? management.toPlainObject() : management;
 
-    // Obtener documentos entregados
-    const documentosEntregados = await this._getDocumentStatus(studentId);
+    // Obtener documentos entregados (usa la misma lógica que CreateEnrollmentUseCase)
+    const documentosEntregados = await this._getDocumentStatus(studentId, student, management);
 
     // Obtener datos de catálogos para nombres descriptivos
     const estadoCivilNombre = await this._getCivilStatusName(
@@ -737,9 +741,15 @@ export class GenerateBoletaInscripcionUseCase {
 
   /**
    * Obtiene el estado de los documentos entregados
+   * Verifica los documentos físicos entregados y el pago de la cuota anual
+   * Usa la misma lógica que CreateEnrollmentUseCase._validatePaymentExists
    * @private
+   * @param {number} studentId - ID del estudiante (para documentos)
+   * @param {Object} student - Entidad Student (para verificación de pago)
+   * @param {Object} management - Entidad Management (para verificación de pago)
+   * @returns {Promise<Object>} Estado de los documentos entregados
    */
-  async _getDocumentStatus(studentId) {
+  async _getDocumentStatus(studentId, student, management) {
     const documentosEntregados = {
       ci: false,
       certificadoNacimiento: false,
@@ -766,20 +776,41 @@ export class GenerateBoletaInscripcionUseCase {
         }
       });
 
-      // Verificar aporte voluntario desde documentos_estudiante
-      const studentDocumentsResult = await this.studentDocumentRepository.findAll(
+      // Verificar pago de la cuota anual desde pago_aporte
+      // Usa la misma lógica que CreateEnrollmentUseCase._validatePaymentExists
+      const paymentResult = await this.contributionPaymentRepository.findAll(
         {
-          studentId,
-          tipoDocumento: 'PAGO',
+          studentId: student.id,
+          managementId: management.id,
         },
-        null,
+        1,
         null
       );
-      const paymentDocuments = studentDocumentsResult.studentDocuments || [];
-      documentosEntregados.aporteVoluntario = paymentDocuments.length > 0;
+
+      // Si existe un pago para esta gestión, marcar como pagado
+      if (paymentResult.contributionPayments && paymentResult.contributionPayments.length > 0) {
+        documentosEntregados.aporteVoluntario = true;
+
+        const payment = paymentResult.contributionPayments[0];
+        this.logger.info('[Inscripciones] Pago de aporte anual encontrado', {
+          studentId: student.id,
+          managementId: management.id,
+          paymentId: payment.id,
+          amountPaid: payment.amountPaid,
+          scholarshipDiscount: payment.scholarshipDiscount,
+        });
+      } else {
+        this.logger.warn('[Inscripciones] No se encontró pago de aporte anual para la gestión', {
+          studentId: student.id,
+          managementId: management.id,
+          managementYear: management.year,
+        });
+      }
     } catch (err) {
       this.logger.warn('[Inscripciones] Error al obtener estado de documentos', {
         studentId,
+        studentIdFromEntity: student?.id,
+        managementId: management?.id,
         error: err.message,
       });
     }

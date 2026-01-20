@@ -106,6 +106,9 @@ export class BoletaInscripcionWordGenerator {
    * @param {boolean} data.documentos.certificadoNacimiento - Certificado entregado
    * @param {boolean} data.documentos.diplomaBachiller - Diploma entregado
    * @param {boolean} data.documentos.aporteVoluntario - Aporte realizado
+   * @param {Array} data.materias - Array de materias del primer periodo
+   * @param {string} data.materias[].sigla - Sigla de la materia
+   * @param {string} data.materias[].nombre - Nombre de la materia
    * @param {string} outputPath - Ruta donde guardar el DOCX generado
    * 
    * @returns {Promise<string>} Ruta del archivo generado
@@ -253,6 +256,7 @@ export class BoletaInscripcionWordGenerator {
       carrera = '',
       anio = '',
       documentos = {},
+      materias = [],
     } = data;
 
     // Parsear fecha de nacimiento
@@ -278,7 +282,7 @@ export class BoletaInscripcionWordGenerator {
       { value: nombres },
     ]);
 
-    contenido += this._createSpacing(100);
+    contenido += this._createSpacing(50);
 
     // C.I. y Género en la misma línea
     contenido += this._createFieldWithInlineCheckboxes(
@@ -296,7 +300,7 @@ export class BoletaInscripcionWordGenerator {
     // Correo Electrónico
     contenido += this._createField('Correo Electrónico', emailPersonal);
 
-    contenido += this._createSpacing(60);
+    contenido += this._createSpacing(30);
 
     // Estado Civil con checkboxes en línea horizontal
     const esEstadoCivilSoltero = estadoCivil?.toLowerCase().includes('solter');
@@ -317,7 +321,7 @@ export class BoletaInscripcionWordGenerator {
       ]}
     );
 
-    contenido += this._createSpacing(100);
+    contenido += this._createSpacing(50);
 
     // Subsección: Lugar y Fecha de Nacimiento
     contenido += this._createSubsection('Lugar y Fecha de Nacimiento');
@@ -348,7 +352,7 @@ export class BoletaInscripcionWordGenerator {
       { label: 'Celular', value: celular },
     ]);
 
-    contenido += this._createSpacing(100);
+    contenido += this._createSpacing(50);
 
     // Trabaja: Si/No, Cargo, Empresa
     contenido += this._createFieldWithInlineCheckboxes(
@@ -375,25 +379,15 @@ export class BoletaInscripcionWordGenerator {
     // Carrera y Año en tabla de dos columnas (LADO A LADO)
     contenido += this._createCarreraYAnoTable(carrera, anio);
 
-    contenido += this._createSpacing(150);
+    contenido += this._createSpacing(100);
 
     // ============================================
-    // SECCIÓN 3: DOCUMENTOS RECEPCIONADOS
+    // SECCIÓN 3: DOCUMENTOS RECEPCIONADOS Y MATERIAS
     // ============================================
     contenido += this._createSection('3.- DOCUMENTOS RECEPCIONADOS');
+    contenido += this._createDocumentsAndSubjectsTable(documentos, materias || []);
 
-    const documentosItems = [
-      { label: 'Fotocopia Carnet de Identidad', checked: documentos.ci || false },
-      { label: 'Fotocopia Certificado de Nacimiento', checked: documentos.certificadoNacimiento || false },
-      { label: 'Fotocopia de Título de Bachiller', checked: documentos.diplomaBachiller || false },
-      { label: 'Aporte Voluntario', checked: documentos.aporteVoluntario || false },
-    ];
-
-    documentosItems.forEach((item) => {
-      contenido += this._createBulletCheckboxItem(item.label, item.checked);
-    });
-
-    contenido += this._createSpacing(200);
+    contenido += this._createSpacing(100);
 
     // ============================================
     // FIRMAS
@@ -403,7 +397,7 @@ export class BoletaInscripcionWordGenerator {
       { label: 'Responsable Inscripción', ci: '', expedicion: '' }
     );
 
-    contenido += this._createSpacing(150);
+    contenido += this._createSpacing(100);
 
     // ============================================
     // NOTA LEGAL
@@ -429,21 +423,21 @@ export class BoletaInscripcionWordGenerator {
     return `
     <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}" w:rsidR="00DD08A8" w:rsidRDefault="00DD08A8">
       <w:pPr>
-        <w:spacing w:before="200" w:after="100"/>
+        <w:spacing w:before="150" w:after="50"/>
         <w:jc w:val="left"/>
         <w:rPr>
           <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
           <w:b/>
-          <w:sz w:val="22"/>
-          <w:szCs w:val="22"/>
+          <w:sz w:val="26"/>
+          <w:szCs w:val="26"/>
         </w:rPr>
       </w:pPr>
       <w:r>
         <w:rPr>
           <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
           <w:b/>
-          <w:sz w:val="22"/>
-          <w:szCs w:val="22"/>
+          <w:sz w:val="26"/>
+          <w:szCs w:val="26"/>
         </w:rPr>
         <w:t>${this._escapeXml(title)}</w:t>
       </w:r>
@@ -458,20 +452,20 @@ export class BoletaInscripcionWordGenerator {
     return `
     <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}" w:rsidR="00DD08A8" w:rsidRDefault="00DD08A8">
       <w:pPr>
-        <w:spacing w:before="100" w:after="60"/>
+        <w:spacing w:before="50" w:after="0"/>
         <w:rPr>
           <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
           <w:b/>
-          <w:sz w:val="20"/>
-          <w:szCs w:val="20"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
         </w:rPr>
       </w:pPr>
       <w:r>
         <w:rPr>
           <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
           <w:b/>
-          <w:sz w:val="20"/>
-          <w:szCs w:val="20"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
         </w:rPr>
         <w:t>${this._escapeXml(title)}</w:t>
       </w:r>
@@ -487,11 +481,11 @@ export class BoletaInscripcionWordGenerator {
     let xml = `
     <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}" w:rsidR="00DD08A8" w:rsidRDefault="00DD08A8">
       <w:pPr>
-        <w:spacing w:after="80"/>
+          <w:spacing w:after="0"/>
         <w:rPr>
           <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-          <w:sz w:val="20"/>
-          <w:szCs w:val="20"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
         </w:rPr>
       </w:pPr>`;
 
@@ -502,8 +496,8 @@ export class BoletaInscripcionWordGenerator {
       <w:r>
         <w:rPr>
           <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-          <w:sz w:val="20"/>
-          <w:szCs w:val="20"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
         </w:rPr>
         <w:t xml:space="preserve"> </w:t>
       </w:r>`;
@@ -515,8 +509,8 @@ export class BoletaInscripcionWordGenerator {
       <w:r>
         <w:rPr>
           <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-          <w:sz w:val="20"/>
-          <w:szCs w:val="20"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
         </w:rPr>
         <w:t>${this._escapeXml(displayValue)}</w:t>
       </w:r>`;
@@ -536,11 +530,11 @@ export class BoletaInscripcionWordGenerator {
     let xml = `
     <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}" w:rsidR="00DD08A8" w:rsidRDefault="00DD08A8">
       <w:pPr>
-        <w:spacing w:after="100"/>
+          <w:spacing w:after="0"/>
         <w:rPr>
           <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-          <w:sz w:val="20"/>
-          <w:szCs w:val="20"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
         </w:rPr>
       </w:pPr>`;
 
@@ -550,8 +544,8 @@ export class BoletaInscripcionWordGenerator {
       <w:r>
         <w:rPr>
           <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-          <w:sz w:val="20"/>
-          <w:szCs w:val="20"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
         </w:rPr>
         <w:t xml:space="preserve"> | </w:t>
       </w:r>`;
@@ -563,8 +557,8 @@ export class BoletaInscripcionWordGenerator {
       <w:r>
         <w:rPr>
           <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-          <w:sz w:val="20"/>
-          <w:szCs w:val="20"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
         </w:rPr>
         <w:t>${this._escapeXml(displayValue)}</w:t>
       </w:r>`;
@@ -587,21 +581,21 @@ export class BoletaInscripcionWordGenerator {
     return `
     <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}" w:rsidR="00DD08A8" w:rsidRDefault="00DD08A8">
       <w:pPr>
-        <w:spacing w:after="60"/>
+        <w:spacing w:after="0"/>
         ${indent > 0 ? `<w:ind w:left="${indent}"/>` : ''}
         <w:rPr>
           <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
           ${bold ? '<w:b/>' : ''}
-          <w:sz w:val="20"/>
-          <w:szCs w:val="20"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
         </w:rPr>
       </w:pPr>
       <w:r>
         <w:rPr>
           <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
           ${bold ? '<w:b/>' : ''}
-          <w:sz w:val="20"/>
-          <w:szCs w:val="20"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
         </w:rPr>
         <w:t>${this._escapeXml(label)}: ${this._escapeXml(displayValue)}</w:t>
       </w:r>
@@ -619,11 +613,11 @@ export class BoletaInscripcionWordGenerator {
     let xml = `
     <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}" w:rsidR="00DD08A8" w:rsidRDefault="00DD08A8">
       <w:pPr>
-        <w:spacing w:after="60"/>
+        <w:spacing w:after="0"/>
         <w:rPr>
           <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-          <w:sz w:val="20"/>
-          <w:szCs w:val="20"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
         </w:rPr>
       </w:pPr>`;
 
@@ -632,8 +626,8 @@ export class BoletaInscripcionWordGenerator {
       <w:r>
         <w:rPr>
           <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-          <w:sz w:val="20"/>
-          <w:szCs w:val="20"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
         </w:rPr>
         <w:t xml:space="preserve">${this._escapeXml(leftText)}</w:t>
       </w:r>`;
@@ -643,8 +637,8 @@ export class BoletaInscripcionWordGenerator {
       <w:r>
         <w:rPr>
           <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-          <w:sz w:val="20"/>
-          <w:szCs w:val="20"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
         </w:rPr>
         <w:t xml:space="preserve">    </w:t>
       </w:r>`;
@@ -655,8 +649,8 @@ export class BoletaInscripcionWordGenerator {
       <w:r>
         <w:rPr>
           <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-          <w:sz w:val="20"/>
-          <w:szCs w:val="20"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
         </w:rPr>
         <w:t>${this._escapeXml(checkboxLabel)}</w:t>
       </w:r>`;
@@ -669,8 +663,8 @@ export class BoletaInscripcionWordGenerator {
       <w:r>
         <w:rPr>
           <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-          <w:sz w:val="20"/>
-          <w:szCs w:val="20"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
         </w:rPr>
         <w:t xml:space="preserve"> ${checkSymbol} ${this._escapeXml(checkbox.label)}</w:t>
       </w:r>`;
@@ -682,8 +676,8 @@ export class BoletaInscripcionWordGenerator {
       <w:r>
         <w:rPr>
           <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-          <w:sz w:val="20"/>
-          <w:szCs w:val="20"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
         </w:rPr>
         <w:t xml:space="preserve">    ${this._escapeXml(rightLabel)}</w:t>
       </w:r>`;
@@ -694,8 +688,8 @@ export class BoletaInscripcionWordGenerator {
       <w:r>
         <w:rPr>
           <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-          <w:sz w:val="20"/>
-          <w:szCs w:val="20"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
         </w:rPr>
         <w:t xml:space="preserve"> ${checkSymbol} ${this._escapeXml(opt.label)}</w:t>
       </w:r>`;
@@ -719,8 +713,8 @@ export class BoletaInscripcionWordGenerator {
         <w:spacing w:after="60"/>
         <w:rPr>
           <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-          <w:sz w:val="20"/>
-          <w:szCs w:val="20"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
         </w:rPr>
       </w:pPr>`;
 
@@ -730,8 +724,8 @@ export class BoletaInscripcionWordGenerator {
       <w:r>
         <w:rPr>
           <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-          <w:sz w:val="20"/>
-          <w:szCs w:val="20"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
         </w:rPr>
         <w:t xml:space="preserve"> </w:t>
       </w:r>`;
@@ -743,8 +737,8 @@ export class BoletaInscripcionWordGenerator {
       <w:r>
         <w:rPr>
           <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-          <w:sz w:val="20"/>
-          <w:szCs w:val="20"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
         </w:rPr>
         <w:t>${this._escapeXml(text)}</w:t>
       </w:r>`;
@@ -767,8 +761,8 @@ export class BoletaInscripcionWordGenerator {
         <w:spacing w:after="60"/>
         <w:rPr>
           <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-          <w:sz w:val="20"/>
-          <w:szCs w:val="20"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
         </w:rPr>
       </w:pPr>`;
 
@@ -778,8 +772,8 @@ export class BoletaInscripcionWordGenerator {
       <w:r>
         <w:rPr>
           <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-          <w:sz w:val="20"/>
-          <w:szCs w:val="20"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
         </w:rPr>
         <w:t xml:space="preserve">  </w:t>
       </w:r>`;
@@ -791,8 +785,8 @@ export class BoletaInscripcionWordGenerator {
       <w:r>
         <w:rPr>
           <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-          <w:sz w:val="20"/>
-          <w:szCs w:val="20"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
         </w:rPr>
         <w:t>${this._escapeXml(field.label)}: ${this._escapeXml(displayValue)}</w:t>
       </w:r>`;
@@ -814,19 +808,19 @@ export class BoletaInscripcionWordGenerator {
     return `
     <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}" w:rsidR="00DD08A8" w:rsidRDefault="00DD08A8">
       <w:pPr>
-        <w:spacing w:after="80"/>
+          <w:spacing w:after="0"/>
         <w:ind w:left="400"/>
         <w:rPr>
           <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-          <w:sz w:val="20"/>
-          <w:szCs w:val="20"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
         </w:rPr>
       </w:pPr>
       <w:r>
         <w:rPr>
           <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-          <w:sz w:val="20"/>
-          <w:szCs w:val="20"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
         </w:rPr>
         <w:t xml:space="preserve">${checkSymbol} ${this._escapeXml(label)}</w:t>
       </w:r>
@@ -847,19 +841,155 @@ export class BoletaInscripcionWordGenerator {
         <w:ind w:left="400"/>
         <w:rPr>
           <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-          <w:sz w:val="20"/>
-          <w:szCs w:val="20"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
         </w:rPr>
       </w:pPr>
       <w:r>
         <w:rPr>
           <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
-          <w:sz w:val="20"/>
-          <w:szCs w:val="20"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
         </w:rPr>
         <w:t xml:space="preserve">• ${this._escapeXml(label)}    ${checkSymbol}</w:t>
       </w:r>
     </w:p>`;
+  }
+
+  /**
+   * Crea una tabla de dos columnas para Documentos y Materias
+   * @private
+   */
+  static _createDocumentsAndSubjectsTable(documentos, materias) {
+    const documentosItems = [
+      { label: 'Fotocopia Carnet de Identidad', checked: documentos.ci || false },
+      { label: 'Fotocopia Certificado de Nacimiento', checked: documentos.certificadoNacimiento || false },
+      { label: 'Fotocopia de Título de Bachiller', checked: documentos.diplomaBachiller || false },
+      { label: 'Aporte Voluntario', checked: documentos.aporteVoluntario || false },
+    ];
+
+    // Determinar el número máximo de filas
+    const maxRows = Math.max(documentosItems.length, materias.length);
+
+    let xml = `
+    <w:tbl>
+      <w:tblPr>
+        <w:tblW w:w="5000" w:type="pct"/>
+        <w:tblBorders>
+          <w:top w:val="none"/>
+          <w:left w:val="none"/>
+          <w:bottom w:val="none"/>
+          <w:right w:val="none"/>
+          <w:insideH w:val="none"/>
+          <w:insideV w:val="none"/>
+        </w:tblBorders>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="4500"/>
+        <w:gridCol w:w="4500"/>
+      </w:tblGrid>`;
+
+    // Crear filas
+    for (let i = 0; i < maxRows; i++) {
+      xml += `
+      <w:tr>
+        <!-- Columna 1: Documentos -->
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4500" w:type="dxa"/>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>`;
+
+      if (i < documentosItems.length) {
+        const item = documentosItems[i];
+        const checkSymbol = item.checked ? '☒' : '☐';
+        xml += `
+          <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}">
+            <w:pPr>
+              <w:spacing w:after="0"/>
+              <w:ind w:left="200"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
+                <w:sz w:val="24"/>
+                <w:szCs w:val="24"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
+                <w:sz w:val="24"/>
+                <w:szCs w:val="24"/>
+              </w:rPr>
+              <w:t xml:space="preserve">• ${this._escapeXml(item.label)}    ${checkSymbol}</w:t>
+            </w:r>
+          </w:p>`;
+      } else {
+        xml += `
+          <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}">
+            <w:pPr>
+              <w:spacing w:after="0"/>
+            </w:pPr>
+          </w:p>`;
+      }
+
+      xml += `
+        </w:tc>
+        <!-- Columna 2: Materias -->
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4500" w:type="dxa"/>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>`;
+
+      if (i < materias.length) {
+        const materia = materias[i];
+        xml += `
+          <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}">
+            <w:pPr>
+              <w:spacing w:after="0"/>
+              <w:ind w:left="200"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
+                <w:sz w:val="24"/>
+                <w:szCs w:val="24"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
+                <w:b/>
+                <w:sz w:val="24"/>
+                <w:szCs w:val="24"/>
+              </w:rPr>
+              <w:t>${this._escapeXml(materia.sigla || '')}</w:t>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
+                <w:sz w:val="24"/>
+                <w:szCs w:val="24"/>
+              </w:rPr>
+              <w:t xml:space="preserve"> - ${this._escapeXml(materia.nombre || '')}</w:t>
+            </w:r>
+          </w:p>`;
+      } else {
+        xml += `
+          <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}">
+            <w:pPr>
+              <w:spacing w:after="0"/>
+            </w:pPr>
+          </w:p>`;
+      }
+
+      xml += `
+        </w:tc>
+      </w:tr>`;
+    }
+
+    xml += `
+    </w:tbl>`;
+
+    return xml;
   }
 
   /**
@@ -905,7 +1035,7 @@ export class BoletaInscripcionWordGenerator {
           </w:tcPr>
           <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}">
             <w:pPr>
-              <w:spacing w:after="60"/>
+              <w:spacing w:after="0"/>
               <w:rPr>
                 <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
                 <w:b/>
@@ -930,7 +1060,7 @@ export class BoletaInscripcionWordGenerator {
           </w:tcPr>
           <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}">
             <w:pPr>
-              <w:spacing w:after="60"/>
+              <w:spacing w:after="0"/>
               <w:rPr>
                 <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
                 <w:b/>
@@ -959,7 +1089,7 @@ export class BoletaInscripcionWordGenerator {
           </w:tcPr>
           <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}">
             <w:pPr>
-              <w:spacing w:after="60"/>
+              <w:spacing w:after="0"/>
               <w:ind w:left="200"/>
               <w:rPr>
                 <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
@@ -983,7 +1113,7 @@ export class BoletaInscripcionWordGenerator {
           </w:tcPr>
           <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}">
             <w:pPr>
-              <w:spacing w:after="60"/>
+              <w:spacing w:after="0"/>
               <w:ind w:left="200"/>
               <w:rPr>
                 <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
@@ -1011,7 +1141,7 @@ export class BoletaInscripcionWordGenerator {
           </w:tcPr>
           <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}">
             <w:pPr>
-              <w:spacing w:after="60"/>
+              <w:spacing w:after="0"/>
               <w:ind w:left="200"/>
               <w:rPr>
                 <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
@@ -1035,7 +1165,7 @@ export class BoletaInscripcionWordGenerator {
           </w:tcPr>
           <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}">
             <w:pPr>
-              <w:spacing w:after="60"/>
+              <w:spacing w:after="0"/>
               <w:ind w:left="200"/>
               <w:rPr>
                 <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
@@ -1063,7 +1193,7 @@ export class BoletaInscripcionWordGenerator {
           </w:tcPr>
           <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}">
             <w:pPr>
-              <w:spacing w:after="60"/>
+              <w:spacing w:after="0"/>
               <w:ind w:left="200"/>
               <w:rPr>
                 <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
@@ -1087,7 +1217,7 @@ export class BoletaInscripcionWordGenerator {
           </w:tcPr>
           <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}">
             <w:pPr>
-              <w:spacing w:after="60"/>
+              <w:spacing w:after="0"/>
               <w:ind w:left="200"/>
               <w:rPr>
                 <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
@@ -1228,7 +1358,7 @@ export class BoletaInscripcionWordGenerator {
     return `
     <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}" w:rsidR="00DD08A8" w:rsidRDefault="00DD08A8">
       <w:pPr>
-        <w:spacing w:after="60"/>
+        <w:spacing w:after="0"/>
         <w:jc w:val="${align}"/>
         <w:rPr>
           <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
