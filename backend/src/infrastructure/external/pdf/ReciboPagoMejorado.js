@@ -1,13 +1,13 @@
-/**
- * ReciboPagoMejorado
- * 
- * Genera recibos de pago con el diseño institucional estándar
- * Basado en el formato oficial del instituto con:
- * - Encabezado con logo y título
- * - Tabla de datos personales
- * - Declaración jurada
- * - Área de firma
- */
+  /**
+   * ReciboPagoMejorado
+   * 
+   * Genera recibos de pago con el diseño institucional estándar
+   * Basado en el formato oficial del instituto con:
+   * - Encabezado con título
+   * - Tabla de datos personales
+   * - Declaración jurada
+   * - Área de firma
+   */
 
 import { IncosPDFBase } from './IncosPDFBase.js';
 import fs from 'fs';
@@ -81,28 +81,13 @@ export class ReciboPagoMejorado extends IncosPDFBase {
    * Usa los datos institucionales estándar del sistema
    */
   getInstituteData(data) {
-    // Ruta absoluta del logo del sistema (PNG)
-    const defaultLogoPath = path.resolve(
-      __dirname,
-      '../templates/logo-icon.png'
-    );
-
-    // Verificar que el logo existe y loggear la ruta
-    if (!fs.existsSync(defaultLogoPath)) {
-      console.warn(`[ReciboPagoMejorado] Logo no encontrado en: ${defaultLogoPath}`);
-    } else {
-      console.log(`[ReciboPagoMejorado] Logo encontrado en: ${defaultLogoPath}`);
-    }
-
     // Usar datos del instituto desde IncosPDFBase
     // Si se proporciona información personalizada, usarla, pero con valores por defecto del sistema
     if (data.institutoInfo) {
-      const logoPath = data.institutoInfo.logoPath || defaultLogoPath;
       return {
         nombre: data.institutoInfo.nombre || IncosPDFBase.INSTITUTE.name,
         titulo: data.institutoInfo.titulo || 'BOLETA DE RECIBO',
         subtitulo: data.institutoInfo.subtitulo || 'RECIBO DE PAGO',
-        logoPath: path.isAbsolute(logoPath) ? logoPath : path.resolve(__dirname, logoPath),
       };
     }
 
@@ -111,7 +96,6 @@ export class ReciboPagoMejorado extends IncosPDFBase {
       nombre: IncosPDFBase.INSTITUTE.name, // 'INSTITUTO COMERCIAL DE LA NACION INCOS SANTA CRUZ'
       titulo: 'BOLETA DE RECIBO',
       subtitulo: 'RECIBO DE PAGO', // Cambiado de 'FORMULARIO DE APORTE VOLUNTARIO'
-      logoPath: defaultLogoPath, // Logo del sistema por defecto (logo-icon.png) - ruta absoluta
     };
   }
 
@@ -120,85 +104,12 @@ export class ReciboPagoMejorado extends IncosPDFBase {
    */
   addCustomHeader(instituteData, data) {
     const startY = this.currentY;
-    const logoSize = 70; // Logo más grande para mejor presencia
     const pageWidth = this.pageWidth;
     const leftMargin = this.options.margins.left;
 
-    // Logo a la izquierda (mejorado)
-    const logoPath = instituteData.logoPath;
-
-    if (logoPath && fs.existsSync(logoPath)) {
-      try {
-        // Asegurar ruta absoluta
-        const absoluteLogoPath = path.isAbsolute(logoPath)
-          ? logoPath
-          : path.resolve(__dirname, logoPath);
-
-        // Verificar nuevamente con ruta absoluta
-        if (!fs.existsSync(absoluteLogoPath)) {
-          throw new Error(`Logo no encontrado en ruta absoluta: ${absoluteLogoPath}`);
-        }
-
-        // Cargar imagen con PDFKit usando width y height
-        // PDFKit carga PNG directamente, pero necesitamos especificar dimensiones
-        this.doc.image(
-          absoluteLogoPath,
-          leftMargin,
-          startY,
-          {
-            width: logoSize,
-            height: logoSize,
-          }
-        );
-
-      } catch (err) {
-        console.error('[ReciboPagoMejorado] ❌ Error al cargar el logo:', err.message);
-        console.error('[ReciboPagoMejorado] Ruta intentada:', logoPath);
-        console.error('[ReciboPagoMejorado] Stack:', err.stack);
-
-        // Placeholder si falla
-        this.doc
-          .circle(leftMargin + logoSize / 2, startY + logoSize / 2, logoSize / 2)
-          .stroke(IncosPDFBase.COLORS.border);
-
-        this.doc
-          .font(IncosPDFBase.FONTS.bold.font)
-          .fontSize(8)
-          .fillColor(IncosPDFBase.COLORS.textLight)
-          .text(
-            'LOGO',
-            leftMargin,
-            startY + logoSize / 2 - 5,
-            {
-              width: logoSize,
-              align: 'center',
-            }
-          );
-      }
-    } else {
-      // Círculo placeholder si no hay logo
-      this.doc
-        .circle(leftMargin + logoSize / 2, startY + logoSize / 2, logoSize / 2)
-        .stroke(IncosPDFBase.COLORS.border);
-
-      this.doc
-        .font(IncosPDFBase.FONTS.bold.font)
-        .fontSize(8)
-        .fillColor(IncosPDFBase.COLORS.textLight)
-        .text(
-          'LOGO',
-          leftMargin,
-          startY + logoSize / 2 - 5,
-          {
-            width: logoSize,
-            align: 'center',
-          }
-        );
-    }
-
     // Área de texto central (nombre, título, subtítulo) - mejorado
-    const textStartX = leftMargin + logoSize + 20; // Más espacio del logo
-    const textWidth = pageWidth - logoSize - 130; // Espacio para FAV
+    const textStartX = leftMargin;
+    const textWidth = pageWidth - 130; // Espacio para FAV
 
     // Nombre del instituto (más grande y con color primario)
     this.doc
@@ -315,7 +226,7 @@ export class ReciboPagoMejorado extends IncosPDFBase {
       );
 
     // Línea decorativa debajo del encabezado
-    this.currentY = startY + logoSize + 15;
+    this.currentY = startY + 55;
     this.addLine(IncosPDFBase.COLORS.primary, 2);
     this.currentY += 5;
   }
