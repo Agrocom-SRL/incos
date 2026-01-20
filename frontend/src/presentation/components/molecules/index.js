@@ -14,3 +14,5 @@ export { default as DataList } from './DataList';
 export { default as DataCards } from './DataCards';
 export { default as ActivityList } from './ActivityList';
 export { default as TimetableCell } from './TimetableCell';
+export { default as showDeleteConfirm } from './DeleteConfirmModal';
+export { default as TableActions } from './TableActions';

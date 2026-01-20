@@ -1,29 +1,26 @@
 /**
- * becasTableColumns - Configuración de columnas para la tabla de becas asignadas
+ * becasTableColumns - Configuraci?n de columnas para la tabla de becas asignadas
  * 
- * Single Responsibility: Definir las columnas y su configuración para BecasTable
+ * Single Responsibility: Definir las columnas y su configuraci?n para BecasTable
  * 
  * NOTA: Esta tabla muestra BECAS ASIGNADAS A ESTUDIANTES (estudiantes_becas),
- * no el catálogo de becas/descuentos (becas_descuentos).
+ * no el cat?logo de becas/descuentos (becas_descuentos).
  * Cada fila representa una beca asignada a un estudiante con datos enriquecidos.
  */
 
 import { Tag } from 'antd';
 import { DollarOutlined, PercentageOutlined, UserOutlined, CalendarOutlined } from '@ant-design/icons';
-import { IconButton } from '@atoms';
 import { TableCell } from '@molecules';
-import { getDataTableAction } from '@config/icons';
+import TableActions from '@molecules/TableActions';
 
 /**
  * Crea las columnas de la tabla de becas asignadas
  * 
- * @param {Function} navigate - Función de navegación de react-router
- * @returns {Array} Array de configuración de columnas para Ant Design Table
+ * @param {Function} navigate - Funci?n de navegaci?n de react-router
+ * @param {Function} refetch - Funci?n para recargar los datos despu?s de eliminar
+ * @returns {Array} Array de configuraci?n de columnas para Ant Design Table
  */
-export const createBecasTableColumns = (navigate) => {
-  const viewAction = getDataTableAction('view');
-  const editAction = getDataTableAction('edit');
-  const deleteAction = getDataTableAction('delete');
+export const createBecasTableColumns = (navigate, refetch = null) => {
 
   return [
     {
@@ -43,7 +40,7 @@ export const createBecasTableColumns = (navigate) => {
               </div>
               {student?.codigoEstudiante && (
                 <div style={{ fontSize: '11px', color: '#999' }}>
-                  Código: {student.codigoEstudiante}
+                  C?digo: {student.codigoEstudiante}
                 </div>
               )}
             </div>
@@ -105,7 +102,7 @@ export const createBecasTableColumns = (navigate) => {
       },
     },
     {
-      title: 'Gestión',
+      title: 'Gesti?n',
       dataIndex: ['management', 'codigo'],
       ellipsis: true,
       render: (_, record) => {
@@ -176,38 +173,27 @@ export const createBecasTableColumns = (navigate) => {
       fixed: 'right',
       width: 150,
       align: 'right',
-      render: (_, record) => {
-        return (
-          <TableCell actions align="right">
-            <IconButton
-              icon={<viewAction.icon />}
-              variant={viewAction.variant}
-              onClick={() => {
-                // Ver detalle de la beca asignada o del estudiante
-                if (record.studentId) {
-                  navigate(`/estudiantes/${record.studentId}`);
-                }
-              }}
-            />
-            <IconButton
-              icon={<editAction.icon />}
-              variant={editAction.variant}
-              onClick={() => {
-                // TODO: Implementar edición de beca asignada
-                console.log('Editar beca asignada:', record.id);
-              }}
-            />
-            <IconButton
-              icon={<deleteAction.icon />}
-              variant={deleteAction.variant}
-              onClick={() => {
-                // TODO: Implementar lógica de eliminación
-                console.log('Eliminar beca asignada:', record.id);
-              }}
-            />
-          </TableCell>
-        );
-      },
+      render: (_, record) => (
+        <TableActions
+          record={record}
+          navigate={navigate}
+          refetch={refetch}
+          useCaseKey="eliminarBecaDescuento"
+          itemName={`la beca ${record.scholarship?.nombre || record.id}`}
+          viewPath={record.studentId ? `/estudiantes/:id` : null}
+          editPath={null}
+          onEdit={() => {
+            // TODO: Implementar edici?n de beca asignada
+            console.log('Editar beca asignada:', record.id);
+          }}
+          onView={() => {
+            // Ver detalle del estudiante si hay studentId
+            if (record.studentId) {
+              navigate(`/estudiantes/${record.studentId}`);
+            }
+          }}
+        />
+      ),
     },
   ];
 };

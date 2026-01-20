@@ -1,34 +1,29 @@
 /**
- * tableColumns - Configuración de columnas para la tabla de estudiantes
+ * tableColumns - Configuraci?n de columnas para la tabla de estudiantes
  * 
- * Single Responsibility: Definir las columnas y su configuración para EstudiantesTable
+ * Single Responsibility: Definir las columnas y su configuraci?n para EstudiantesTable
  * 
- * Este archivo separa la configuración de las columnas de la lógica del componente,
- * permitiendo reutilizar y modificar fácilmente las columnas sin tocar el componente.
+ * Este archivo separa la configuraci?n de las columnas de la l?gica del componente,
+ * permitiendo reutilizar y modificar f?cilmente las columnas sin tocar el componente.
  */
 
-import { Space, Tooltip } from 'antd';
+import { Space } from 'antd';
 import { UserOutlined, PhoneOutlined, MailOutlined, DollarOutlined } from '@ant-design/icons';
-import { IconButton } from '@atoms';
 import { TableCell } from '@molecules';
-import { getDataTableAction } from '@config/icons';
+import TableActions from '@molecules/TableActions';
 
 /**
  * Crea las columnas de la tabla de estudiantes
  * 
- * @param {Function} navigate - Función de navegación de react-router
- * @returns {Array} Array de configuración de columnas para Ant Design Table
+ * @param {Function} navigate - Funci?n de navegaci?n de react-router
+ * @param {Function} refetch - Funci?n para recargar los datos despu?s de eliminar
+ * @returns {Array} Array de configuraci?n de columnas para Ant Design Table
  */
-export const createEstudiantesTableColumns = (navigate) => {
-  // Obtener configuraciones de acciones desde la configuración centralizada
-  const editAction = getDataTableAction('edit');
-  const viewAction = getDataTableAction('view');
-  const completeAction = getDataTableAction('complete');
-  const deleteAction = getDataTableAction('delete');
+export const createEstudiantesTableColumns = (navigate, refetch = null) => {
 
   return [
     {
-      title: 'Código de Estudiante',
+      title: 'C?digo de Estudiante',
       dataIndex: 'codigoEstudiante',
       fixed: 'left',
       ellipsis: true,
@@ -115,48 +110,27 @@ export const createEstudiantesTableColumns = (navigate) => {
       fixed: 'right',
       width: 180,
       align: 'right',
-      render: (_, record) => {
-        return (
-          <TableCell
-            actions
-            align="right"
-          >
-            <Tooltip title={`${editAction.tooltip} estudiante`}>
-              <IconButton
-                icon={<editAction.icon />}
-                variant={editAction.variant}
-                onClick={() => navigate(`/estudiantes/${record.id}/editar`)}
-              />
-            </Tooltip>
-            <Tooltip title={`${viewAction.tooltip} estudiante`}>
-              <IconButton
-                icon={<viewAction.icon />}
-                variant={viewAction.variant}
-                onClick={() => navigate(`/estudiantes/${record.id}`)}
-              />
-            </Tooltip>
-            <Tooltip title="Registrar pago">
-              <IconButton
-                icon={<DollarOutlined />}
-                variant="primary"
-                onClick={() => navigate('/pagos/registrar', {
-                  state: { studentId: record.id }
-                })}
-              />
-            </Tooltip>
-            <Tooltip title={`${deleteAction.tooltip} estudiante`}>
-              <IconButton
-                icon={<deleteAction.icon />}
-                variant={deleteAction.variant}
-                onClick={() => {
-                  // TODO: Implementar lógica de eliminación
-                  console.log('Eliminar estudiante:', record.id);
-                }}
-              />
-            </Tooltip>
-          </TableCell>
-        );
-      },
+      render: (_, record) => (
+        <TableActions
+          record={record}
+          navigate={navigate}
+          refetch={refetch}
+          useCaseKey="eliminarEstudiante"
+          itemName={`el estudiante ${record.nombreCompleto || record.codigoEstudiante || ''}`}
+          viewPath="/estudiantes/:id"
+          editPath="/estudiantes/:id/editar"
+          extraActions={[
+            {
+              icon: <DollarOutlined />,
+              variant: 'primary',
+              tooltip: 'Registrar pago',
+              onClick: (record) => navigate('/pagos/registrar', {
+                state: { studentId: record.id }
+              }),
+            },
+          ]}
+        />
+      ),
     },
   ];
 };

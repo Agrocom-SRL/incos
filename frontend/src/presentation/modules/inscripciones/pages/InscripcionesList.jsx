@@ -30,6 +30,7 @@ const InscripcionesList = () => {
         error = null,
         searchText = '',
         setSearchText,
+        refetch,
     } = useInscripcionesListContext();
 
     const handleNuevaInscripcion = () => {
@@ -38,8 +39,8 @@ const InscripcionesList = () => {
 
     // Crear columnas de la tabla (memoizadas para evitar recrearlas en cada render)
     const tableColumns = useMemo(
-        () => createInscripcionesTableColumns(navigate),
-        [navigate]
+        () => createInscripcionesTableColumns(navigate, refetch),
+        [navigate, refetch]
     );
 
     // Configurar breadcrumb items

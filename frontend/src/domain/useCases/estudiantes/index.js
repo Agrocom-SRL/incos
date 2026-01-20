@@ -9,4 +9,6 @@ export { BuscarEstudianteUseCase } from './BuscarEstudianteUseCase';
 export { ObtenerTodasBecasDescuentosUseCase } from './ObtenerTodasBecasDescuentosUseCase';
 export { ObtenerTodasBecasAsignadasUseCase } from './ObtenerTodasBecasAsignadasUseCase';
 export { CrearAsignarBecaUseCase } from './CrearAsignarBecaUseCase';
+export { EliminarEstudianteUseCase } from './EliminarEstudianteUseCase';
+export { EliminarBecaDescuentoUseCase } from './EliminarBecaDescuentoUseCase';
 

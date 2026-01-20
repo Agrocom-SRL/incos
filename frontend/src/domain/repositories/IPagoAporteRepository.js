@@ -39,4 +39,15 @@ export class IPagoAporteRepository extends IBaseRepository {
   async obtenerPorId(id) {
     throw new Error('Method obtenerPorId must be implemented');
   }
+
+  /**
+   * Elimina un pago de aporte por ID (soft delete)
+   * DELETE /v1/pagos-aportes/:id
+   * 
+   * @param {string|number} id - ID del pago a eliminar
+   * @returns {Promise<{success: boolean, error?: string}>}
+   */
+  async eliminar(id) {
+    throw new Error('Method eliminar must be implemented');
+  }
 }

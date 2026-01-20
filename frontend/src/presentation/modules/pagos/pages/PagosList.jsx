@@ -30,6 +30,7 @@ const PagosList = () => {
         error = null,
         searchText = '',
         setSearchText,
+        refetch,
     } = usePagosListContext();
 
     const handleNuevoPago = () => {
@@ -38,8 +39,8 @@ const PagosList = () => {
 
     // Crear columnas de la tabla (memoizadas para evitar recrearlas en cada render)
     const tableColumns = useMemo(
-        () => createPagosTableColumns(navigate),
-        [navigate]
+        () => createPagosTableColumns(navigate, refetch),
+        [navigate, refetch]
     );
 
     // Configurar breadcrumb items

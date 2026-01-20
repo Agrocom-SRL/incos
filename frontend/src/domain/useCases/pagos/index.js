@@ -11,3 +11,4 @@ export { GetTodasContributionConfigurationsUseCase } from './GetTodasContributio
 export { RegisterPagoAporteUseCase } from './RegisterPagoAporteUseCase';
 export { ObtenerTodosPagosAportesUseCase } from './ObtenerTodosPagosAportesUseCase';
 export { ObtenerPagoAportePorIdUseCase } from './ObtenerPagoAportePorIdUseCase';
+export { EliminarPagoAporteUseCase } from './EliminarPagoAporteUseCase';

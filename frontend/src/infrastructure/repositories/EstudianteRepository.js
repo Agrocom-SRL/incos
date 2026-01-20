@@ -159,6 +159,29 @@ export class EstudianteRepository extends IEstudianteRepository {
     }
   }
 
+  /**
+   * Elimina un estudiante por ID (soft delete)
+   * DELETE /v1/estudiantes/:id
+   * 
+   * @param {string|number} id - ID del estudiante a eliminar
+   * @returns {Promise<{success: boolean, error?: string}>}
+   */
+  async eliminar(id) {
+    try {
+      if (!id || (typeof id !== 'string' && typeof id !== 'number')) {
+        return {
+          success: false,
+          error: 'ID del estudiante es requerido',
+        };
+      }
+      const response = await apiClient.delete(ESTUDIANTES_ENDPOINTS.BY_ID(id));
+      const result = handleSuccessResponse(response);
+      return result;
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al eliminar estudiante');
+    }
+  }
+
 }
 
 export default new EstudianteRepository();

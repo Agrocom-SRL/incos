@@ -18,6 +18,8 @@ import {
   ObtenerTodasBecasDescuentosUseCase,
   ObtenerTodasBecasAsignadasUseCase,
   CrearAsignarBecaUseCase,
+  EliminarEstudianteUseCase,
+  EliminarBecaDescuentoUseCase,
 } from '@useCases/estudiantes';
 
 // Repositorio principal
@@ -120,6 +122,16 @@ export function registerEstudiantesModule(factory) {
   // Use Case para crear asignación de beca
   factory.crearAsignarBeca = () => {
     return new CrearAsignarBecaUseCase(EstudianteBecaRepository);
+  };
+
+  // Use Case para eliminar estudiante
+  factory.eliminarEstudiante = () => {
+    return new EliminarEstudianteUseCase({ estudianteRepository });
+  };
+
+  // Use Case para eliminar beca/descuento
+  factory.eliminarBecaDescuento = () => {
+    return new EliminarBecaDescuentoUseCase({ becaDescuentoRepository: BecaDescuentoRepository });
   };
 
   return factory;

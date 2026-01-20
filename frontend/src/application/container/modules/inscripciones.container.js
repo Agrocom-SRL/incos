@@ -10,6 +10,7 @@ import {
   CrearInscripcionUseCase,
   ObtenerInscripcionPorIdUseCase,
   ObtenerTodasInscripcionesUseCase,
+  EliminarInscripcionUseCase,
 } from '@useCases/inscripciones';
 
 // Repositorio principal

@@ -4,22 +4,19 @@
  * Single Responsibility: Definir las columnas y su configuración para InscripcionesTable
  */
 
-import { Tag, message } from 'antd';
+import { Tag } from 'antd';
 import { UserOutlined, BookOutlined, CalendarOutlined } from '@ant-design/icons';
-import { IconButton } from '@atoms';
 import { TableCell } from '@molecules';
-import { getDataTableAction } from '@config/icons';
+import TableActions from '@molecules/TableActions';
 
 /**
  * Crea las columnas de la tabla de inscripciones
  * 
  * @param {Function} navigate - Función de navegación de react-router
+ * @param {Function} refetch - Función para recargar los datos después de eliminar
  * @returns {Array} Array de configuración de columnas para Ant Design Table
  */
-export const createInscripcionesTableColumns = (navigate) => {
-  const viewAction = getDataTableAction('view');
-  const editAction = getDataTableAction('edit');
-  const deleteAction = getDataTableAction('delete');
+export const createInscripcionesTableColumns = (navigate, refetch = null) => {
 
   return [
     {
@@ -150,30 +147,19 @@ export const createInscripcionesTableColumns = (navigate) => {
       render: (_, record) => {
         const inscripcionId = record.id || record.enrollment?.id;
         return (
-          <TableCell actions align="right">
-            <IconButton
-              icon={<viewAction.icon />}
-              variant={viewAction.variant}
-              onClick={() => navigate(`/inscripciones/${inscripcionId}`)}
-            />
-            <IconButton
-              icon={<editAction.icon />}
-              variant={editAction.variant}
-              onClick={() => {
-                message.info('La funcionalidad de edición está en construcción');
-                // TODO: Implementar edición de inscripción
-                console.log('Editar inscripción:', inscripcionId);
-              }}
-            />
-            <IconButton
-              icon={<deleteAction.icon />}
-              variant={deleteAction.variant}
-              onClick={() => {
-                // TODO: Implementar lógica de eliminación
-                console.log('Eliminar inscripción:', inscripcionId);
-              }}
-            />
-          </TableCell>
+          <TableActions
+            record={{ ...record, id: inscripcionId }}
+            navigate={navigate}
+            refetch={refetch}
+            useCaseKey="eliminarInscripcion"
+            itemName={`la inscripción #${inscripcionId}`}
+            viewPath="/inscripciones/:id"
+            editPath={null}
+            onEdit={() => {
+              // TODO: Implementar edición de inscripción
+              console.log('Editar inscripción:', inscripcionId);
+            }}
+          />
         );
       },
     },

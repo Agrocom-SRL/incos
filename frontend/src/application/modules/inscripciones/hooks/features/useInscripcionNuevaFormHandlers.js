@@ -83,6 +83,30 @@ export const useInscripcionNuevaFormHandlers = (mode = 'nuevo', options = {}) =>
         }
     }, [form]);
 
+    // Sincronizar selectedStudent y selectedParalelo con campos hidden del formulario
+    // Esto asegura que los valores estén disponibles incluso si el contexto no está actualizado
+    useEffect(() => {
+        if (form) {
+            // Actualizar student_id en el formulario cuando se seleccione un estudiante
+            if (selectedStudent?.id) {
+                form.setFieldsValue({
+                    student_id: selectedStudent.id,
+                });
+            }
+        }
+    }, [form, selectedStudent]);
+
+    useEffect(() => {
+        if (form) {
+            // Actualizar parallel_id en el formulario cuando se seleccione un paralelo
+            if (selectedParalelo?.id) {
+                form.setFieldsValue({
+                    parallel_id: selectedParalelo.id,
+                });
+            }
+        }
+    }, [form, selectedParalelo]);
+
     // Función para obtener los valores del formulario
     const getFormValues = useCallback(() => {
         if (!form) {
@@ -120,8 +144,17 @@ export const useInscripcionNuevaFormHandlers = (mode = 'nuevo', options = {}) =>
 
     // Handler para finalizar la inscripción
     const handleFinish = useCallback(async (step) => {
+        // Obtener valores del formulario primero (incluye campos hidden sincronizados)
+        const formValues = getFormValues ? getFormValues() : {};
+        
+        // Obtener student_id: prioridad 1) del contexto, 2) del formulario
+        const studentId = selectedStudent?.id || formValues.student_id;
+        
+        // Obtener parallel_id: prioridad 1) del contexto, 2) del formulario
+        const parallelId = selectedParalelo?.id || formValues.parallel_id;
+        
         // Validar que se haya seleccionado estudiante y paralelo
-        if (!selectedStudent?.id) {
+        if (!studentId) {
             const errorMessage = 'Debe seleccionar un estudiante';
             if (showMessage) {
                 showMessage('error', errorMessage);
@@ -132,7 +165,7 @@ export const useInscripcionNuevaFormHandlers = (mode = 'nuevo', options = {}) =>
             };
         }
 
-        if (!selectedParalelo?.id) {
+        if (!parallelId) {
             const errorMessage = 'Debe seleccionar un paralelo';
             if (showMessage) {
                 showMessage('error', errorMessage);
@@ -143,13 +176,10 @@ export const useInscripcionNuevaFormHandlers = (mode = 'nuevo', options = {}) =>
             };
         }
 
-        // Obtener valores adicionales del formulario (enrollment_type, observations)
-        const formValues = getFormValues ? getFormValues() : {};
-        
         // Preparar datos para la API (snake_case como espera el backend)
         const inscripcionData = {
-            student_id: selectedStudent.id,
-            parallel_id: selectedParalelo.id,
+            student_id: studentId,
+            parallel_id: parallelId,
             enrollment_type: formValues.enrollment_type || 'NUEVO',
             observations: formValues.observations || null,
         };
@@ -194,8 +224,17 @@ export const useInscripcionNuevaFormHandlers = (mode = 'nuevo', options = {}) =>
     // NOTA: Por ahora, el guardado parcial también crea la inscripción completa
     // En el futuro se puede implementar un guardado como borrador
     const handleSave = useCallback(async (step) => {
+        // Obtener valores del formulario primero (incluye campos hidden sincronizados)
+        const formValues = getFormValues ? getFormValues() : {};
+        
+        // Obtener student_id: prioridad 1) del contexto, 2) del formulario
+        const studentId = selectedStudent?.id || formValues.student_id;
+        
+        // Obtener parallel_id: prioridad 1) del contexto, 2) del formulario
+        const parallelId = selectedParalelo?.id || formValues.parallel_id;
+        
         // Validar que se haya seleccionado estudiante y paralelo
-        if (!selectedStudent?.id) {
+        if (!studentId) {
             const errorMessage = 'Debe seleccionar un estudiante';
             if (showMessage) {
                 showMessage('error', errorMessage);
@@ -206,7 +245,7 @@ export const useInscripcionNuevaFormHandlers = (mode = 'nuevo', options = {}) =>
             };
         }
 
-        if (!selectedParalelo?.id) {
+        if (!parallelId) {
             const errorMessage = 'Debe seleccionar un paralelo';
             if (showMessage) {
                 showMessage('error', errorMessage);
@@ -216,14 +255,11 @@ export const useInscripcionNuevaFormHandlers = (mode = 'nuevo', options = {}) =>
                 error: errorMessage,
             };
         }
-
-        // Obtener valores adicionales del formulario
-        const formValues = getFormValues ? getFormValues() : {};
         
         // Preparar datos para la API (snake_case como espera el backend)
         const inscripcionData = {
-            student_id: selectedStudent.id,
-            parallel_id: selectedParalelo.id,
+            student_id: studentId,
+            parallel_id: parallelId,
             enrollment_type: formValues.enrollment_type || 'NUEVO',
             observations: formValues.observations || null,
         };

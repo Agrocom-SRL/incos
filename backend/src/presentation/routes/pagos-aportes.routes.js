@@ -76,6 +76,15 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
         (req, res, next) => controllers.getPaymentAporteByIdController.handle(req, res, next)
     );
 
+    /**
+     * DELETE /api/v1/pagos-aportes/:id
+     * Eliminar pago de aporte por ID (soft delete)
+     */
+    router.delete(
+        '/:id',
+        (req, res, next) => controllers.deletePaymentAporteController.handle(req, res, next)
+    );
+
     // ============================================
     // ENDPOINTS FUTUROS (TODO)
     // ============================================

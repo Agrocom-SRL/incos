@@ -188,6 +188,29 @@ export class PagoAporteRepository extends IPagoAporteRepository {
       return handleErrorResponse(error, 'Error al obtener pago de aporte');
     }
   }
+
+  /**
+   * Elimina un pago de aporte por ID (soft delete)
+   * DELETE /v1/pagos-aportes/:id
+   * 
+   * @param {string|number} id - ID del pago a eliminar
+   * @returns {Promise<{success: boolean, error?: string}>}
+   */
+  async eliminar(id) {
+    try {
+      if (!id || (typeof id !== 'string' && typeof id !== 'number')) {
+        return {
+          success: false,
+          error: 'ID del pago es requerido',
+        };
+      }
+      const response = await apiClient.delete(PAGOS_APORTES_ENDPOINTS.BY_ID(id));
+      const result = handleSuccessResponse(response);
+      return result;
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al eliminar pago de aporte');
+    }
+  }
 }
 
 export default new PagoAporteRepository();

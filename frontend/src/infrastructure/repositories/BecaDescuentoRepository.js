@@ -46,6 +46,29 @@ export class BecaDescuentoRepository extends IBecaDescuentoRepository {
     }
   }
 
+  /**
+   * Elimina una beca por ID (soft delete)
+   * DELETE /v1/becas-descuentos/:id
+   * 
+   * @param {string|number} id - ID de la beca a eliminar
+   * @returns {Promise<{success: boolean, error?: string}>}
+   */
+  async eliminar(id) {
+    try {
+      if (!id || (typeof id !== 'string' && typeof id !== 'number')) {
+        return {
+          success: false,
+          error: 'ID de la beca es requerido',
+        };
+      }
+      const response = await apiClient.delete(BECAS_DESCUENTOS_ENDPOINTS.BY_ID(id));
+      const result = handleSuccessResponse(response);
+      return result;
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al eliminar beca');
+    }
+  }
+
 }
 
 export default new BecaDescuentoRepository();

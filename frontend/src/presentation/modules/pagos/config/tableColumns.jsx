@@ -4,11 +4,10 @@
  * Single Responsibility: Definir las columnas y su configuración para PagosTable
  */
 
-import { Tag, message } from 'antd';
+import { Tag } from 'antd';
 import { DollarOutlined, UserOutlined, CalendarOutlined, CreditCardOutlined } from '@ant-design/icons';
-import { IconButton } from '@atoms';
 import { TableCell } from '@molecules';
-import { getDataTableAction } from '@config/icons';
+import PagoTableActions from './PagoTableActions';
 
 /**
  * Helper para asegurar que un valor sea primitivo (string, number, etc.)
@@ -37,12 +36,10 @@ const ensurePrimitive = (value, fallback = 'N/A') => {
  * Crea las columnas de la tabla de pagos
  * 
  * @param {Function} navigate - Función de navegación de react-router
+ * @param {Function} refetch - Función para recargar los datos después de eliminar
  * @returns {Array} Array de configuración de columnas para Ant Design Table
  */
-export const createPagosTableColumns = (navigate) => {
-  const viewAction = getDataTableAction('view');
-  const editAction = getDataTableAction('edit');
-  const deleteAction = getDataTableAction('delete');
+export const createPagosTableColumns = (navigate, refetch = null) => {
 
   return [
     {
@@ -205,34 +202,9 @@ export const createPagosTableColumns = (navigate) => {
       fixed: 'right',
       width: 150,
       align: 'right',
-      render: (_, record) => {
-        return (
-          <TableCell actions align="right">
-            <IconButton
-              icon={<viewAction.icon />}
-              variant={viewAction.variant}
-              onClick={() => navigate(`/pagos/${record.id}`)}
-            />
-            <IconButton
-              icon={<editAction.icon />}
-              variant={editAction.variant}
-              onClick={() => {
-                message.info('La funcionalidad de edición está en construcción');
-                // TODO: Implementar edición de pago
-                console.log('Editar pago:', record.id);
-              }}
-            />
-            <IconButton
-              icon={<deleteAction.icon />}
-              variant={deleteAction.variant}
-              onClick={() => {
-                // TODO: Implementar lógica de eliminación
-                console.log('Eliminar pago:', record.id);
-              }}
-            />
-          </TableCell>
-        );
-      },
+      render: (_, record) => (
+        <PagoTableActions record={record} navigate={navigate} refetch={refetch} />
+      ),
     },
   ];
 };
