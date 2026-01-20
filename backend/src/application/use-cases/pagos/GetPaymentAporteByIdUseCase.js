@@ -434,14 +434,28 @@ export class GetPaymentAporteByIdUseCase {
 
   /**
    * Mapea documento del recibo a formato de presentación
+   * Asegura que el filePath incluya el prefijo /uploads/ si no lo tiene
    * @private
    */
   _mapReciboDocument(document) {
     const plain = document.toPlainObject ? document.toPlainObject() : document;
+    let filePath = plain.filePath || '';
+    
+    // Si el filePath no comienza con /uploads/, agregarlo
+    if (filePath && !filePath.startsWith('/uploads/')) {
+      // Si no comienza con /, agregar /uploads/
+      if (!filePath.startsWith('/')) {
+        filePath = `/uploads/${filePath}`;
+      } else {
+        // Si comienza con / pero no con /uploads/, agregar uploads después del /
+        filePath = `/uploads${filePath}`;
+      }
+    }
+    
     return {
       id: plain.id,
       fileName: plain.fileName,
-      filePath: plain.filePath,
+      filePath: filePath,
       extension: plain.extension,
       tipoMime: plain.tipoMime,
     };
