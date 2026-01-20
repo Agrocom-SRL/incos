@@ -4,6 +4,7 @@
 export { ListEnrollmentsUseCase } from './ListEnrollmentsUseCase.js';
 export { CreateEnrollmentUseCase } from './CreateEnrollmentUseCase.js';
 export { GetEnrollmentByIdUseCase } from './GetEnrollmentByIdUseCase.js';
+export { GenerateBoletaInscripcionUseCase } from './GenerateBoletaInscripcionUseCase.js';
 // TODO: Agregar otros use cases cuando se implementen sus endpoints
 // export { UpdateEnrollmentUseCase } from './UpdateEnrollmentUseCase.js';
 // export { DeleteEnrollmentUseCase } from './DeleteEnrollmentUseCase.js';

@@ -53,6 +53,20 @@ export function buildInscripcionesRouter({ controllers, middlewares }) {
     );
 
     /**
+     * POST /api/v1/inscripciones/:id/generar-boleta
+     * Generar boleta de inscripción para una inscripción existente
+     * Path: id (ID de la inscripción)
+     * 
+     * IMPORTANTE: Esta ruta debe ir ANTES de /:id para que Express la evalúe primero
+     */
+    router.post(
+        '/:id/generar-boleta',
+        idValidator,
+        validateRequest,
+        (req, res, next) => controllers.generateBoletaInscripcionController.handle(req, res, next)
+    );
+
+    /**
      * GET /api/v1/inscripciones/:id
      * Obtener inscripción por ID con materias relacionadas
      * Path: id

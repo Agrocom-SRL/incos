@@ -14,8 +14,8 @@
 
 import { INSCRIPCIONES_TOKENS, REPOSITORIOS_TOKENS, SERVICIOS_TOKENS } from '../../tokens/index.js';
 import { registerComponent } from '../../utils/container.helpers.js';
-import { ListEnrollmentsUseCase, CreateEnrollmentUseCase, GetEnrollmentByIdUseCase } from '../../../../application/use-cases/inscripciones/index.js';
-import { ListEnrollmentsController, CreateEnrollmentController, GetEnrollmentByIdController } from '../../../../presentation/controllers/inscripciones/index.js';
+import { ListEnrollmentsUseCase, CreateEnrollmentUseCase, GetEnrollmentByIdUseCase, GenerateBoletaInscripcionUseCase } from '../../../../application/use-cases/inscripciones/index.js';
+import { ListEnrollmentsController, CreateEnrollmentController, GetEnrollmentByIdController, GenerateBoletaInscripcionController } from '../../../../presentation/controllers/inscripciones/index.js';
 import { buildInscripcionesRouter } from '../../../../presentation/routes/inscripciones.routes.js';
 
 /**
@@ -92,6 +92,33 @@ export function registerInscripcionesResource(container) {
             })
     );
 
+    registerComponent(
+        container,
+        INSCRIPCIONES_TOKENS.generateBoletaInscripcionUseCase,
+        (c) =>
+            new GenerateBoletaInscripcionUseCase({
+                enrollmentRepository: c.resolve(REPOSITORIOS_TOKENS.enrollmentRepository),
+                enrollmentSubjectRepository: c.resolve(REPOSITORIOS_TOKENS.enrollmentSubjectRepository),
+                studentRepository: c.resolve(REPOSITORIOS_TOKENS.studentRepository),
+                studentAcademicDataRepository: c.resolve(REPOSITORIOS_TOKENS.studentAcademicDataRepository),
+                parallelRepository: c.resolve(REPOSITORIOS_TOKENS.parallelRepository),
+                courseRepository: c.resolve(REPOSITORIOS_TOKENS.courseRepository),
+                teacherAssignmentRepository: c.resolve(REPOSITORIOS_TOKENS.teacherAssignmentRepository),
+                managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
+                careerRepository: c.resolve(REPOSITORIOS_TOKENS.careerRepository),
+                studentDocumentRepository: c.resolve(REPOSITORIOS_TOKENS.studentDocumentRepository),
+                studentDocumentDeliveryRepository: c.resolve(REPOSITORIOS_TOKENS.studentDocumentDeliveryRepository),
+                civilStatusRepository: c.resolve(REPOSITORIOS_TOKENS.civilStatusRepository),
+                municipalityRepository: c.resolve(REPOSITORIOS_TOKENS.municipalityRepository),
+                provinceRepository: c.resolve(REPOSITORIOS_TOKENS.provinceRepository),
+                departmentRepository: c.resolve(REPOSITORIOS_TOKENS.departmentRepository),
+                languageRepository: c.resolve(REPOSITORIOS_TOKENS.languageRepository),
+                teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
+                configuracionSistemaRepository: c.resolve(REPOSITORIOS_TOKENS.configuracionSistemaRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
     // TODO: Agregar otros Use Cases cuando se implementen sus endpoints
 
     // ============================================
@@ -130,6 +157,17 @@ export function registerInscripcionesResource(container) {
             })
     );
 
+    registerComponent(
+        container,
+        INSCRIPCIONES_TOKENS.generateBoletaInscripcionController,
+        (c) =>
+            new GenerateBoletaInscripcionController({
+                generateBoletaInscripcionUseCase: c.resolve(INSCRIPCIONES_TOKENS.generateBoletaInscripcionUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
+    );
+
     // TODO: Agregar otros Controllers cuando se implementen sus endpoints
 
     // ============================================
@@ -143,6 +181,7 @@ export function registerInscripcionesResource(container) {
                 listEnrollmentsController: c.resolve(INSCRIPCIONES_TOKENS.listEnrollmentsController),
                 createEnrollmentController: c.resolve(INSCRIPCIONES_TOKENS.createEnrollmentController),
                 getEnrollmentByIdController: c.resolve(INSCRIPCIONES_TOKENS.getEnrollmentByIdController),
+                generateBoletaInscripcionController: c.resolve(INSCRIPCIONES_TOKENS.generateBoletaInscripcionController),
                 // TODO: Agregar otros controllers cuando se implementen sus rutas
             };
 

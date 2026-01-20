@@ -21,6 +21,8 @@
     "db:reset": "node scripts/reset-database.js",
     "db:backup": "bash scripts/backup.sh",
     "db:restore": "bash scripts/restore.sh",
+    "setup:libreoffice": "node scripts/install-libreoffice.js",
+    "check:libreoffice": "node -e \"import('./src/infrastructure/external/word/WordToPdfConverter.js').then(m => { const available = m.WordToPdfConverter.isLibreOfficeAvailable(); const version = m.WordToPdfConverter.getLibreOfficeVersion(); console.log(available ? '✅ LibreOffice disponible: ' + version : '❌ LibreOffice no está instalado'); process.exit(available ? 0 : 1); })\"",
     "build": "echo 'No build step required for Node.js'",
     "pm2:start": "pm2 start ecosystem.config.js --env production",
     "pm2:stop": "pm2 stop ecosystem.config.js",

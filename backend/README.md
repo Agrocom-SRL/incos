@@ -66,6 +66,44 @@ src/
 - npm >= 10.0.0
 - MySQL >= 8.0
 - Git
+- **LibreOffice** (requerido para conversión de documentos Word a PDF)
+
+#### Instalación de LibreOffice
+
+El sistema requiere LibreOffice para convertir documentos Word (.docx) a PDF. Puedes instalarlo de las siguientes formas:
+
+**Opción 1: Script automático (recomendado)**
+```bash
+npm run setup:libreoffice
+```
+
+**Opción 2: Instalación manual**
+
+- **macOS** (con Homebrew):
+  ```bash
+  brew install --cask libreoffice
+  ```
+
+- **Ubuntu/Debian**:
+  ```bash
+  sudo apt-get update
+  sudo apt-get install libreoffice
+  ```
+
+- **CentOS/RHEL**:
+  ```bash
+  sudo yum install libreoffice
+  ```
+
+**Verificar instalación:**
+```bash
+npm run check:libreoffice
+```
+
+O manualmente:
+```bash
+soffice --version
+```
 
 ### Instalación
 
@@ -110,6 +148,8 @@ npm run db:seed        # Poblar datos iniciales
 npm run db:reset       # Resetear base de datos completa
 npm run db:backup      # Crear backup de BD
 npm run db:restore     # Restaurar desde backup
+npm run setup:libreoffice  # Instalar LibreOffice (requiere permisos admin)
+npm run check:libreoffice  # Verificar si LibreOffice está instalado
 ```
 
 ## 🗄️ Base de Datos

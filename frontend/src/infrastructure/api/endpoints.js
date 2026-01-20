@@ -130,7 +130,11 @@ export const DOCUMENTACION_ENDPOINTS = createCRUDEndpoints('/documentacion');
 // ============================================
 // MÓDULO: INSCRIPCIONES
 // ============================================
-export const INSCRIPCIONES_ENDPOINTS = createCRUDEndpoints('/inscripciones');
+export const INSCRIPCIONES_ENDPOINTS = {
+  ...createCRUDEndpoints('/inscripciones'),
+  // Endpoint específico para generar boleta de inscripción
+  GENERATE_BOLETA: (enrollmentId) => `${API_BASE}/inscripciones/${enrollmentId}/generar-boleta`,
+};
 
 // ============================================
 // MÓDULO: PAGOS

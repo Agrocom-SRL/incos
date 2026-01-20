@@ -510,17 +510,45 @@ export class GetEnrollmentByIdUseCase {
 
           const documentos = documentosResult.studentDocuments || [];
           
-          // Filtrar solo documentos que sean formularios de inscripción (deben tener FORMULARIO_INSCRIPCION en el nombre)
-          // y ordenar por fecha de creación descendente para obtener el más reciente
+          this.logger.info('[Inscripciones] Documentos encontrados para estudiante', {
+            studentId: student.id,
+            totalDocumentos: documentos.length,
+            documentosConTipoInscripcion: documentos.filter(d => {
+              const docPlain = d.toPlainObject ? d.toPlainObject() : d;
+              return docPlain.tipoDocumento === 'INSCRIPCION';
+            }).length,
+          });
+          
+          // Filtrar solo documentos que sean boletas de inscripción (deben tener BOLETA_INSCRIPCION en el nombre)
+          // y que sean PDF (la boleta se genera como PDF)
+          // Ordenar por fecha de creación descendente para obtener el más reciente
           const formulariosDocs = documentos
             .map(doc => {
               const docPlain = doc.toPlainObject ? doc.toPlainObject() : doc;
               return docPlain;
             })
             .filter(doc => {
-              // Debe tener tipoDocumento === 'INSCRIPCION' Y el nombre debe incluir 'FORMULARIO_INSCRIPCION'
-              return doc.tipoDocumento === 'INSCRIPCION' && 
-                     doc.fileName?.includes('FORMULARIO_INSCRIPCION');
+              // El documento puede tener fileName (desde entidad) o nombreArchivo (desde modelo Sequelize directo)
+              const fileName = doc.fileName || doc.nombreArchivo || '';
+              const extension = doc.extension || '';
+              
+              // Debe tener tipoDocumento === 'INSCRIPCION' 
+              // Y el nombre debe incluir 'BOLETA_INSCRIPCION' (nombre generado por CreateEnrollmentUseCase)
+              // Y debe ser PDF (extension === 'pdf')
+              const matches = doc.tipoDocumento === 'INSCRIPCION' && 
+                     (fileName.includes('BOLETA_INSCRIPCION') || fileName.includes('FORMULARIO_INSCRIPCION')) &&
+                     (extension === 'pdf' || fileName.toLowerCase().endsWith('.pdf'));
+              
+              if (doc.tipoDocumento === 'INSCRIPCION') {
+                this.logger.debug('[Inscripciones] Documento INSCRIPCION encontrado', {
+                  fileName: fileName,
+                  extension: extension,
+                  docKeys: Object.keys(doc),
+                  matches: matches,
+                });
+              }
+              
+              return matches;
             })
             .sort((a, b) => {
               // Ordenar por fecha de creación descendente (más reciente primero)
@@ -534,14 +562,29 @@ export class GetEnrollmentByIdUseCase {
 
           if (formularioDoc) {
             const uploadDir = serverConfig.uploadsPath || 'uploads';
+            // El documento puede tener filePath (desde entidad) o rutaArchivo (desde modelo Sequelize directo)
+            const filePathRaw = formularioDoc.filePath || formularioDoc.rutaArchivo || '';
+            const fileNameRaw = formularioDoc.fileName || formularioDoc.nombreArchivo || 'formulario_inscripcion.pdf';
+            
             // El filePath ya incluye la ruta relativa desde uploads/, solo necesitamos agregar el prefijo
-            const filePath = formularioDoc.filePath?.startsWith('/') 
-              ? formularioDoc.filePath 
-              : `/${uploadDir}/${formularioDoc.filePath}`.replace(/\\/g, '/');
+            const filePath = filePathRaw.startsWith('/') 
+              ? filePathRaw 
+              : `/${uploadDir}/${filePathRaw}`.replace(/\\/g, '/');
+            
             formularioInscripcion = {
               filePath: filePath,
-              fileName: formularioDoc.fileName || 'formulario_inscripcion.pdf',
+              fileName: fileNameRaw,
             };
+            
+            this.logger.info('[Inscripciones] Formulario de inscripción encontrado', {
+              fileName: formularioDoc.fileName,
+              filePath: filePath,
+            });
+          } else {
+            this.logger.warn('[Inscripciones] No se encontró boleta de inscripción', {
+              studentId: student.id,
+              totalDocumentos: documentos.length,
+            });
           }
         } catch (err) {
           this.logger.warn('[Inscripciones] Error al buscar formulario de inscripción', {

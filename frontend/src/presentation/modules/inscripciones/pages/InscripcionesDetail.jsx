@@ -14,17 +14,19 @@
  * - Contenido muestra: datos de la inscripción y sus relaciones
  */
 
-import { useMemo, useEffect } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { App } from 'antd';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
-import { useInscripcionDetailContext } from '@application-inscripciones/hooks';
+import { useInscripcionDetailContext, useGenerateBoletaInscripcion } from '@application-inscripciones/hooks';
 import { Descriptions, Card, Divider, Spin, Alert, Empty, Tag, Button } from 'antd';
-import { DownloadOutlined } from '@ant-design/icons';
+import { DownloadOutlined, FileTextOutlined } from '@ant-design/icons';
 import { downloadFile } from '@application/utils';
 
 const InscripcionesDetail = () => {
   const navigate = useNavigate();
+  const { message } = App.useApp();
 
   // Obtener datos del contexto
   const {
@@ -32,6 +34,9 @@ const InscripcionesDetail = () => {
     loading = false,
     error = null,
   } = useInscripcionDetailContext();
+
+  // Hook para generar boleta de inscripción
+  const { generateBoletaInscripcion, loading: generatingBoleta, error: errorGeneratingBoleta } = useGenerateBoletaInscripcion();
 
   // Redirigir a la lista solo si hay un error definitivo (no mientras carga)
   // No redirigir automáticamente si no hay inscripción, dejar que el componente muestre el estado Empty
@@ -45,17 +50,47 @@ const InscripcionesDetail = () => {
     }
   }, [loading, error, navigate]);
 
-  // Obtener el formulario de inscripción desde los datos de la inscripción
-  const formularioInscripcion = inscripcion?.formularioInscripcion || null;
+  // Obtener el formulario de inscripción (boleta PDF) desde los datos de la inscripción
+  const boletaInscripcion = inscripcion?.formularioInscripcion || null;
 
-  // Función para descargar el formulario
-  const handleDownloadFormulario = () => {
-    if (formularioInscripcion) {
+  // Función para descargar la boleta de inscripción
+  const handleDownloadBoleta = () => {
+    if (boletaInscripcion) {
       try {
-        downloadFile(formularioInscripcion.filePath, formularioInscripcion.fileName);
+        downloadFile(boletaInscripcion.filePath, boletaInscripcion.fileName);
       } catch (err) {
-        console.error('Error al descargar el formulario:', err);
+        console.error('Error al descargar la boleta de inscripción:', err);
+        message.error('Error al descargar la boleta de inscripción');
       }
+    }
+  };
+
+  // Función para generar la boleta de inscripción
+  const handleGenerateBoleta = async () => {
+    const enrollmentId = inscripcion?.enrollment?.id;
+    
+    if (!enrollmentId) {
+      message.error('No se puede generar la boleta: ID de inscripción no disponible');
+      return;
+    }
+
+    try {
+      const result = await generateBoletaInscripcion(enrollmentId);
+      
+      if (result.success) {
+        message.success('Boleta de inscripción generada y descargada exitosamente');
+        // Recargar los datos de la inscripción para actualizar el estado
+        // Nota: En el futuro se puede agregar una función refetch si está disponible
+        // Pequeño delay para que el usuario vea el mensaje de éxito antes de recargar
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+      } else {
+        message.error(result.error || 'Error al generar la boleta de inscripción');
+      }
+    } catch (err) {
+      console.error('Error al generar la boleta de inscripción:', err);
+      message.error('Error al generar la boleta de inscripción. La operación puede estar tardando más de lo esperado.');
     }
   };
 
@@ -169,27 +204,64 @@ const InscripcionesDetail = () => {
         }
       >
       <div style={{ padding: '24px' }}>
-        {/* Botón de descarga del formulario */}
-        {formularioInscripcion && (
-          <div style={{ marginBottom: '24px', textAlign: 'right' }}>
-            <Button
-              type="primary"
-              icon={<DownloadOutlined />}
-              onClick={() => {
-                try {
-                  downloadFile(formularioInscripcion.filePath, formularioInscripcion.fileName);
-                } catch (err) {
-                  console.error('Error al descargar el formulario:', err);
-                }
-              }}
-            >
-              Descargar Formulario de Inscripción
-            </Button>
-          </div>
+        {/* Botones de descarga/generación de documentos */}
+        {boletaInscripcion ? (
+          <Card 
+            style={{ marginBottom: '24px', backgroundColor: '#f0f9ff', border: '1px solid #1890ff' }}
+            styles={{ body: { padding: '16px' } }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <h3 style={{ margin: 0, color: '#1890ff', fontSize: '16px' }}>
+                  📄 Documento de Inscripción Disponible
+                </h3>
+                <p style={{ margin: '4px 0 0 0', color: '#666', fontSize: '14px' }}>
+                  Puede descargar la Boleta de Inscripción en formato PDF
+                </p>
+              </div>
+              <Button
+                type="primary"
+                size="large"
+                icon={<DownloadOutlined />}
+                onClick={handleDownloadBoleta}
+              >
+                Descargar Boleta de Inscripción
+              </Button>
+            </div>
+          </Card>
+        ) : (
+          <Card 
+            style={{ marginBottom: '24px', backgroundColor: '#fff7e6', border: '1px solid #faad14' }}
+            styles={{ body: { padding: '16px' } }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <h3 style={{ margin: 0, color: '#faad14', fontSize: '16px' }}>
+                  📋 Documento de Inscripción No Generado
+                </h3>
+                <p style={{ margin: '4px 0 0 0', color: '#666', fontSize: '14px' }}>
+                  Puede generar y descargar la Boleta de Inscripción en formato PDF. Este proceso puede tardar unos momentos.
+                </p>
+              </div>
+              <Button
+                type="primary"
+                size="large"
+                icon={<FileTextOutlined />}
+                onClick={handleGenerateBoleta}
+                loading={generatingBoleta}
+                disabled={generatingBoleta || !inscripcion?.enrollment?.id}
+              >
+                {generatingBoleta ? 'Generando...' : 'Generar Boleta de Inscripción'}
+              </Button>
+            </div>
+          </Card>
         )}
 
         {/* Datos de la Inscripción */}
-        <Card title="Datos de la Inscripción" style={{ marginBottom: '24px' }}>
+        <Card 
+          title="Datos de la Inscripción"
+          style={{ marginBottom: '24px' }}
+        >
           <Descriptions column={2} bordered>
             <Descriptions.Item label="Tipo de Inscripción">
               {enrollment?.tipoInscripcion ? (
@@ -210,7 +282,7 @@ const InscripcionesDetail = () => {
                 </Tag>
               ) : 'N/A'}
             </Descriptions.Item>
-            <Descriptions.Item label="Tipo de Gestión" span={2}>
+            <Descriptions.Item label="Tipo de Gestión">
               {management?.tipo ? (
                 <Tag>{management.tipo}</Tag>
               ) : 'N/A'}

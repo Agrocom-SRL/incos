@@ -54,14 +54,15 @@ const InscripcionesNueva = () => {
         if (inscripcionResult?.success && inscripcionResult?.data?.formularioInscripcion) {
             const { filePath, fileName } = inscripcionResult.data.formularioInscripcion;
             if (filePath && fileName) {
-                // Pequeño delay para asegurar que el archivo esté disponible
+                // Delay más largo para asegurar que el archivo esté disponible
+                // La generación puede tomar tiempo (Word + conversión a PDF)
                 setTimeout(() => {
                     try {
                         downloadFile(filePath, fileName);
                     } catch (err) {
                         console.error('Error al descargar el formulario de inscripción:', err);
                     }
-                }, 500);
+                }, 3000); // 3 segundos para dar tiempo a la generación completa
             }
         }
     }, [inscripcionResult]);
