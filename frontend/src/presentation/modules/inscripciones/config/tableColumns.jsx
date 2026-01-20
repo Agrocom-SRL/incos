@@ -24,17 +24,33 @@ export const createInscripcionesTableColumns = (navigate, refetch = null) => {
       dataIndex: 'codigo',
       fixed: 'left',
       ellipsis: true,
-      render: (codigo, record) => (
-        <TableCell
-          strong
-          textStyle={{ fontFamily: 'monospace', fontSize: '13px' }}
-        >
-          {codigo || record.enrollment?.codigo || 'N/A'}
-        </TableCell>
-      ),
+      render: (codigo, record) => {
+        // Priorizar código del estudiante o ID de inscripción como fallback
+        const codigoValue = codigo 
+          || record.estudiante?.codigoEstudiante 
+          || record.enrollment?.codigo 
+          || `INS-${record.id}` 
+          || 'N/A';
+        return (
+          <TableCell
+            strong
+            textStyle={{ fontFamily: 'monospace', fontSize: '13px' }}
+          >
+            {codigoValue}
+          </TableCell>
+        );
+      },
       sorter: (a, b) => {
-        const codigoA = a.codigo || a.enrollment?.codigo || '';
-        const codigoB = b.codigo || b.enrollment?.codigo || '';
+        const codigoA = a.codigo 
+          || a.estudiante?.codigoEstudiante 
+          || a.enrollment?.codigo 
+          || `INS-${a.id}` 
+          || '';
+        const codigoB = b.codigo 
+          || b.estudiante?.codigoEstudiante 
+          || b.enrollment?.codigo 
+          || `INS-${b.id}` 
+          || '';
         return codigoA.localeCompare(codigoB, undefined, { numeric: true, sensitivity: 'base' });
       },
     },
@@ -43,6 +59,7 @@ export const createInscripcionesTableColumns = (navigate, refetch = null) => {
       dataIndex: 'estudiante',
       ellipsis: true,
       render: (estudiante, record) => {
+        // Priorizar el campo enriquecido del backend (estudiante con nombreCompleto)
         const student = estudiante || record.student || record.enrollment?.student;
         const nombre = student?.nombreCompleto || student?.nombre || 'Sin nombre';
         return (
@@ -68,7 +85,9 @@ export const createInscripcionesTableColumns = (navigate, refetch = null) => {
       dataIndex: 'carrera',
       ellipsis: true,
       render: (carrera, record) => {
-        const carreraNombre = carrera || record.carrera?.nombre || record.enrollment?.carrera?.nombre || 'N/A';
+        // Priorizar el campo enriquecido del backend (carrera con nombre)
+        const carreraObj = carrera || record.carrera || record.enrollment?.carrera;
+        const carreraNombre = carreraObj?.nombre || 'N/A';
         return (
           <TableCell icon={<BookOutlined />}>
             {carreraNombre}
@@ -76,8 +95,8 @@ export const createInscripcionesTableColumns = (navigate, refetch = null) => {
         );
       },
       sorter: (a, b) => {
-        const carreraA = a.carrera?.nombre || a.enrollment?.carrera?.nombre || '';
-        const carreraB = b.carrera?.nombre || b.enrollment?.carrera?.nombre || '';
+        const carreraA = (a.carrera || a.enrollment?.carrera)?.nombre || '';
+        const carreraB = (b.carrera || b.enrollment?.carrera)?.nombre || '';
         return carreraA.localeCompare(carreraB);
       },
     },
@@ -86,23 +105,15 @@ export const createInscripcionesTableColumns = (navigate, refetch = null) => {
       dataIndex: 'anio',
       width: 100,
       render: (anio, record) => {
-        const anioValue = anio || record.anioCarrera || record.enrollment?.anioCarrera || 'N/A';
+        // Priorizar año de la gestión o año de carrera
+        const anioValue = anio 
+          || record.gestion?.anio 
+          || record.anioCarrera 
+          || record.enrollment?.anioCarrera 
+          || 'N/A';
         return (
           <Tag color="blue">
             {anioValue}
-          </Tag>
-        );
-      },
-    },
-    {
-      title: 'Paralelo',
-      dataIndex: 'paralelo',
-      width: 100,
-      render: (paralelo, record) => {
-        const paraleloValue = paralelo || record.paralelo?.nombre || record.enrollment?.paralelo?.nombre || 'N/A';
-        return (
-          <Tag color="green">
-            {paraleloValue}
           </Tag>
         );
       },
@@ -113,9 +124,25 @@ export const createInscripcionesTableColumns = (navigate, refetch = null) => {
       width: 120,
       render: (fecha, record) => {
         const fechaValue = fecha || record.fechaInscripcion || record.enrollment?.fechaInscripcion || 'N/A';
+        // Formatear fecha si es válida
+        let fechaFormateada = fechaValue;
+        if (fechaValue && fechaValue !== 'N/A') {
+          try {
+            const fechaObj = new Date(fechaValue);
+            if (!isNaN(fechaObj.getTime())) {
+              fechaFormateada = fechaObj.toLocaleDateString('es-BO', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+              });
+            }
+          } catch (e) {
+            // Si falla el formato, usar el valor original
+          }
+        }
         return (
           <TableCell icon={<CalendarOutlined />} textStyle={{ fontSize: 'var(--font-size-sm)' }}>
-            {fechaValue}
+            {fechaFormateada}
           </TableCell>
         );
       },
@@ -130,9 +157,24 @@ export const createInscripcionesTableColumns = (navigate, refetch = null) => {
       dataIndex: 'estado',
       width: 100,
       render: (estado, record) => {
-        const estadoValue = estado || record.estado || record.enrollment?.estado || 'N/A';
+        // Priorizar tipoInscripcion como estado, o derivar de activo
+        const estadoValue = estado 
+          || record.tipoInscripcion 
+          || record.enrollment?.tipoInscripcion
+          || (record.activo ? 'ACTIVA' : 'INACTIVA')
+          || record.enrollment?.estado 
+          || 'N/A';
+        
+        // Mapear tipos de inscripción a colores
+        const getEstadoColor = (estado) => {
+          if (estado === 'ACTIVA' || estado === 'NUEVO') return 'success';
+          if (estado === 'INACTIVA' || estado === 'RETIRADO') return 'default';
+          if (estado === 'CONTINUIDAD' || estado === 'REINGRESO') return 'blue';
+          return 'default';
+        };
+        
         return (
-          <Tag color={estadoValue === 'ACTIVA' ? 'success' : 'default'}>
+          <Tag color={getEstadoColor(estadoValue)}>
             {estadoValue}
           </Tag>
         );

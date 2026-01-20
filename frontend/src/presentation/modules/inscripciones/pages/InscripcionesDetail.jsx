@@ -15,7 +15,7 @@
  */
 
 import { useMemo, useEffect, useState, useCallback } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { App } from 'antd';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
@@ -27,6 +27,7 @@ import { downloadFile } from '@application/utils';
 const InscripcionesDetail = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { id } = useParams(); // Obtener ID directamente de la URL (fuente de verdad)
   const { message } = App.useApp();
 
   // Obtener datos del contexto
@@ -67,8 +68,10 @@ const InscripcionesDetail = () => {
   };
 
   // Función para generar la boleta de inscripción
+  // Usar el ID de la URL como fuente de verdad (siempre correcto, independiente del contexto)
   const handleGenerateBoleta = async () => {
-    const enrollmentId = inscripcion?.enrollment?.id;
+    // Priorizar el ID de la URL sobre el del contexto para evitar problemas de sincronización
+    const enrollmentId = id || inscripcion?.enrollment?.id;
     
     if (!enrollmentId) {
       message.error('No se puede generar la boleta: ID de inscripción no disponible');
@@ -282,7 +285,7 @@ const InscripcionesDetail = () => {
                 icon={<FileTextOutlined />}
                 onClick={handleGenerateBoleta}
                 loading={generatingBoleta}
-                disabled={generatingBoleta || !inscripcion?.enrollment?.id}
+                disabled={generatingBoleta || !id}
               >
                 {generatingBoleta ? 'Generando...' : 'Generar Boleta de Inscripción'}
               </Button>

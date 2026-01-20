@@ -26,12 +26,17 @@ export const InscripcionesListProvider = ({ children }) => {
     // Función para obtener los campos de búsqueda de una inscripción
     const getSearchFields = useMemo(
         () => (inscripcion) => {
+            // Priorizar campos enriquecidos del backend (estudiante, carrera)
             const student = inscripcion.estudiante || inscripcion.student || inscripcion.enrollment?.student;
             const carrera = inscripcion.carrera || inscripcion.enrollment?.carrera;
+            const gestion = inscripcion.gestion || inscripcion.enrollment?.gestion;
             return [
                 student?.nombreCompleto || student?.nombre || '',
+                student?.codigoEstudiante || '',
+                student?.ci || '',
                 inscripcion.codigo || inscripcion.enrollment?.codigo || '',
-                carrera?.nombre || '',
+                carrera?.nombre || carrera?.codigo || '',
+                gestion?.nombre || gestion?.anio || '',
                 inscripcion.anioCarrera || inscripcion.enrollment?.anioCarrera || '',
                 inscripcion.paralelo?.nombre || inscripcion.enrollment?.paralelo?.nombre || '',
             ];
