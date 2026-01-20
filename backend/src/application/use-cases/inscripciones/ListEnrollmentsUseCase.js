@@ -79,15 +79,20 @@ export class ListEnrollmentsUseCase extends BaseListUseCase {
 
     try {
       // Recopilar todos los IDs únicos para hacer consultas en batch
+      // NOTA: Los datos vienen en snake_case después del mapper (estudianteDatosAcademicosId, gestionId)
       const studentAcademicDataIds = new Set();
       const managementIds = new Set();
 
       data.forEach((enrollment) => {
-        if (enrollment.studentAcademicDataId) {
-          studentAcademicDataIds.add(enrollment.studentAcademicDataId);
+        // Usar snake_case que viene del mapper
+        const academicDataId = enrollment.estudianteDatosAcademicosId || enrollment.studentAcademicDataId;
+        const managementId = enrollment.gestionId || enrollment.managementId;
+        
+        if (academicDataId) {
+          studentAcademicDataIds.add(academicDataId);
         }
-        if (enrollment.managementId) {
-          managementIds.add(enrollment.managementId);
+        if (managementId) {
+          managementIds.add(managementId);
         }
       });
 
@@ -98,15 +103,20 @@ export class ListEnrollmentsUseCase extends BaseListUseCase {
       ]);
 
       // Extraer IDs de estudiantes y carreras de los datos académicos
+      // Las entidades de dominio usan camelCase (studentId, careerId)
       const studentIds = new Set();
       const careerIds = new Set();
 
       Object.values(academicDataMap).forEach((academicData) => {
-        if (academicData.studentId) {
-          studentIds.add(academicData.studentId);
+        // Las entidades usan camelCase
+        const studentId = academicData.studentId || academicData.estudianteId;
+        const careerId = academicData.careerId || academicData.carreraId;
+        
+        if (studentId) {
+          studentIds.add(studentId);
         }
-        if (academicData.careerId) {
-          careerIds.add(academicData.careerId);
+        if (careerId) {
+          careerIds.add(careerId);
         }
       });
 
@@ -120,24 +130,26 @@ export class ListEnrollmentsUseCase extends BaseListUseCase {
       const enrichedData = data.map((enrollment) => {
         const enriched = { ...enrollment };
 
-        // Obtener datos académicos
-        const academicData = enrollment.studentAcademicDataId 
-          ? academicDataMap[enrollment.studentAcademicDataId] 
-          : null;
+        // Obtener datos académicos usando snake_case del mapper
+        const academicDataId = enrollment.estudianteDatosAcademicosId || enrollment.studentAcademicDataId;
+        const academicData = academicDataId ? academicDataMap[academicDataId] : null;
 
-        // Estudiante
-        if (academicData?.studentId && students[academicData.studentId]) {
-          enriched.estudiante = this._mapStudent(students[academicData.studentId]);
+        // Estudiante - las entidades usan camelCase (studentId)
+        const studentId = academicData?.studentId || academicData?.estudianteId;
+        if (studentId && students[studentId]) {
+          enriched.estudiante = this._mapStudent(students[studentId]);
         }
 
-        // Carrera
-        if (academicData?.careerId && careers[academicData.careerId]) {
-          enriched.carrera = this._mapCareer(careers[academicData.careerId]);
+        // Carrera - las entidades usan camelCase (careerId)
+        const careerId = academicData?.careerId || academicData?.carreraId;
+        if (careerId && careers[careerId]) {
+          enriched.carrera = this._mapCareer(careers[careerId]);
         }
 
-        // Gestión
-        if (enrollment.managementId && managements[enrollment.managementId]) {
-          enriched.gestion = this._mapManagement(managements[enrollment.managementId]);
+        // Gestión - usar snake_case del mapper (gestionId)
+        const managementId = enrollment.gestionId || enrollment.managementId;
+        if (managementId && managements[managementId]) {
+          enriched.gestion = this._mapManagement(managements[managementId]);
         }
 
         return enriched;
