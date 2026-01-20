@@ -49,9 +49,9 @@ const Login = () => {
     <AuthLayout>
       <Card
         className="login-card"
-        bordered={false}
+        variant="borderless"
       >
-        <Space direction="vertical" size="large" style={{ width: '100%' }}>
+        <Space orientation="vertical" size="large" style={{ width: '100%' }}>
           {/* Header con logo */}
           <div className="login-header">
             <div className="login-logo-wrapper">

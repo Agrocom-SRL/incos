@@ -13,19 +13,17 @@
 import { Input } from 'antd';
 
 /**
- * Capitaliza la primera letra de cada palabra en un texto
- * Convierte el resto de cada palabra a minúscula
- * @param {string} text - Texto a capitalizar
- * @returns {string} Texto con la primera letra de cada palabra en mayúscula
+ * Convierte todo el texto a mayúsculas
+ * @param {string} text - Texto a convertir
+ * @returns {string} Texto en mayúsculas
  */
 const capitalizeFirstLetter = (text) => {
   if (!text || typeof text !== 'string') return text;
   // Si el texto está vacío o solo tiene espacios, retornar tal cual
   if (text.trim().length === 0) return text;
   
-  // Convertir todo a minúsculas primero y luego capitalizar la primera letra de cada palabra
-  // Usar \b para identificar límites de palabras y \w para caracteres alfanuméricos
-  return text.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
+  // Convertir todo el texto a mayúsculas
+  return text.toUpperCase();
 };
 
 const FieldInput = ({
@@ -40,7 +38,7 @@ const FieldInput = ({
   icon, // Icono a mostrar (puede ser prefix o suffix)
   iconPosition = 'prefix', // 'prefix' | 'suffix' - posición del icono
   className = '',
-  capitalize = false, // Si true, capitaliza automáticamente la primera letra de cada palabra
+  capitalize = false, // Si true, convierte automáticamente todo el texto a mayúsculas
   ...props
 }) => {
   const inputClassName = className ? `field-input ${className}`.trim() : 'field-input';
