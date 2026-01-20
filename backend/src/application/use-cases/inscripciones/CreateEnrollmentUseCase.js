@@ -228,7 +228,13 @@ export class CreateEnrollmentUseCase {
    */
   async _getCurrentManagement() {
     // Obtener año de la gestión actual desde configuración
-    const config = await this.configuracionSistemaRepository.findByKey('gestion_actual');
+    const configResult = await this.configuracionSistemaRepository.findBy(
+      { key: 'gestion_actual' }
+    );
+    
+    // findBy puede retornar un array o un objeto único
+    const config = Array.isArray(configResult) ? configResult[0] : configResult;
+    
     if (!config || !config.valor) {
       throw new ValidationError(
         'No se encontró la configuración de gestión actual. Por favor, configure el sistema.'
