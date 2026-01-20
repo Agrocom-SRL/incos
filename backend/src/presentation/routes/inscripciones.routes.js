@@ -54,8 +54,9 @@ export function buildInscripcionesRouter({ controllers, middlewares }) {
 
     /**
      * POST /api/v1/inscripciones/:id/generar-boleta
-     * Generar boleta de inscripción para una inscripción existente
-     * Path: id (ID de la inscripción)
+     * Generar boleta de inscripción para un estudiante
+     * Path: id (ID del estudiante)
+     * El caso de uso busca automáticamente la inscripción activa más reciente del estudiante
      * 
      * IMPORTANTE: Esta ruta debe ir ANTES de /:id para que Express la evalúe primero
      */

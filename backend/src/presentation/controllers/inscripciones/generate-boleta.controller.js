@@ -1,6 +1,6 @@
 /**
  * POST /api/v1/inscripciones/:id/generar-boleta
- * Controller para generar la Boleta de Inscripción de una inscripción
+ * Controller para generar la Boleta de Inscripción de un estudiante
  * 
  * Responsabilidades:
  * - Recibir peticiones HTTP POST para generar boletas de inscripción
@@ -11,7 +11,8 @@
  * POST /api/v1/inscripciones/:id/generar-boleta
  * 
  * Path Parameters:
- * - id: ID de la inscripción (número entero mayor a 0)
+ * - id: ID del estudiante (número entero mayor a 0)
+ *   El caso de uso busca automáticamente la inscripción activa más reciente del estudiante
  * 
  * Response:
  * {

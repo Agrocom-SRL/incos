@@ -97,20 +97,29 @@ export class GenerateBoletaInscripcionUseCase {
 
   /**
    * Ejecuta el caso de uso
-   * @param {number} enrollmentId - ID de la inscripción
+   * @param {number} studentId - ID del estudiante
    * @param {Object} options - Opciones adicionales (por defecto vacío)
    * @returns {Promise<{filePath: string, fileName: string, absolutePath: string}>}
    */
-  async execute(enrollmentId, options = {}) {
+  async execute(studentId, options = {}) {
     this.logger.info('[Inscripciones] Iniciando generación de boleta de inscripción', {
-      enrollmentId,
+      studentId,
     });
 
     try {
-      // 1. Validar y obtener inscripción
-      const enrollment = await this._getEnrollment(enrollmentId);
+      // 1. Validar y obtener estudiante
+      const student = await this._getStudent(studentId);
 
-      // 2. Obtener gestión (la necesitamos para buscar datos académicos si no están en la inscripción)
+      // 2. Buscar inscripción activa del estudiante
+      const enrollment = await this._getEnrollmentByStudentId(studentId);
+      
+      if (!enrollment) {
+        throw new NotFoundError(`No se encontró una inscripción activa para el estudiante con ID ${studentId}`);
+      }
+
+      const enrollmentId = enrollment.id;
+
+      // 3. Obtener gestión (la necesitamos para buscar datos académicos si no están en la inscripción)
       // Si la inscripción no tiene gestionId, obtenemos la gestión vigente actual
       const enrollmentManagementId = enrollment.gestionId || enrollment.gestion_id;
       const management = enrollmentManagementId 
@@ -121,7 +130,7 @@ export class GenerateBoletaInscripcionUseCase {
       const managementPlain = management.toPlainObject ? management.toPlainObject() : management;
       const managementId = managementPlain.id || management.id;
 
-      // 3. Obtener datos académicos del estudiante
+      // 4. Obtener datos académicos del estudiante
       // El enrollment ya está convertido a objeto plano, así que accedemos directamente
       const studentAcademicDataId = enrollment.estudianteDatosAcademicosId || enrollment.estudiante_datos_academicos_id;
       
@@ -151,20 +160,8 @@ export class GenerateBoletaInscripcionUseCase {
         }
       }
 
-      // 4. Obtener estudiante
-      const studentAcademicDataPlain = studentAcademicData.toPlainObject ? studentAcademicData.toPlainObject() : studentAcademicData;
-      const studentId = studentAcademicDataPlain.estudianteId || studentAcademicDataPlain.studentId;
-      
-      if (!studentId) {
-        throw new ValidationError(
-          'Los datos académicos no tienen un estudiante asociado. No se puede generar la boleta.'
-        );
-      }
-      
-      const student = await this._getStudent(studentId);
-
-      // 5. Obtener materias inscritas (si no las obtuvimos antes en el bloque else)
-      let enrollmentSubjects = await this._getEnrollmentSubjects(enrollmentId);
+      // 5. Obtener materias inscritas
+      const enrollmentSubjects = await this._getEnrollmentSubjects(enrollmentId);
       
       if (!enrollmentSubjects || enrollmentSubjects.length === 0) {
         throw new ValidationError(
@@ -210,6 +207,7 @@ export class GenerateBoletaInscripcionUseCase {
       );
 
       this.logger.info('[Inscripciones] Boleta de inscripción generada exitosamente', {
+        studentId,
         enrollmentId,
         filePath: result.filePath,
       });
@@ -221,7 +219,7 @@ export class GenerateBoletaInscripcionUseCase {
       };
     } catch (error) {
       this.logger.error('[Inscripciones] Error al generar boleta de inscripción', {
-        enrollmentId,
+        studentId,
         error: error.message,
         stack: error.stack,
       });
@@ -230,23 +228,61 @@ export class GenerateBoletaInscripcionUseCase {
   }
 
   /**
-   * Obtiene la inscripción por ID
+   * Obtiene la inscripción activa por ID de estudiante
+   * Busca primero los datos académicos del estudiante y luego la inscripción asociada
    * @private
+   * @param {number} studentId - ID del estudiante
+   * @returns {Promise<Object|null>} Inscripción activa o null si no se encuentra
    */
-  async _getEnrollment(enrollmentId) {
-    // Obtener solo los campos necesarios usando los nombres del modelo Sequelize
-    const enrollment = await this.enrollmentRepository.findById(enrollmentId, {
-      attributes: ['id', 'estudianteDatosAcademicosId', 'gestionId', 'tipoInscripcion'],
-    });
-    
-    if (!enrollment) {
-      throw new NotFoundError(`Inscripción con ID ${enrollmentId} no encontrada`);
+  async _getEnrollmentByStudentId(studentId) {
+    // 1. Buscar datos académicos activos del estudiante
+    const academicDataResult = await this.studentAcademicDataRepository.findAll(
+      {
+        studentId: studentId,
+        active: true,
+      },
+      null,
+      null
+    );
+
+    if (!academicDataResult.studentAcademicData || academicDataResult.studentAcademicData.length === 0) {
+      this.logger.warn('[Inscripciones] No se encontraron datos académicos activos para el estudiante', {
+        studentId,
+      });
+      return null;
     }
-    
-    // Convertir a objeto plano si tiene el método toPlainObject
-    const enrollmentPlain = enrollment.toPlainObject ? enrollment.toPlainObject() : enrollment;
-    
-    return enrollmentPlain;
+
+    // 2. Para cada dato académico, buscar inscripciones activas (ordenadas por fecha más reciente)
+    for (const academicData of academicDataResult.studentAcademicData) {
+      const academicDataPlain = academicData.toPlainObject ? academicData.toPlainObject() : academicData;
+      const academicDataId = academicDataPlain.id;
+
+      // Buscar inscripciones activas con estos datos académicos
+      const enrollmentsResult = await this.enrollmentRepository.findAll(
+        {
+          studentAcademicDataId: academicDataId,
+          active: true,
+        },
+        null,
+        { order: [['createdAt', 'DESC']] } // Ordenar por fecha de creación descendente para obtener la más reciente
+      );
+
+      if (enrollmentsResult.enrollments && enrollmentsResult.enrollments.length > 0) {
+        // Retornar la primera inscripción activa encontrada (la más reciente)
+        const enrollment = enrollmentsResult.enrollments[0];
+        const enrollmentPlain = enrollment.toPlainObject ? enrollment.toPlainObject() : enrollment;
+        
+        this.logger.info('[Inscripciones] Inscripción encontrada para el estudiante', {
+          studentId,
+          enrollmentId: enrollmentPlain.id,
+          academicDataId,
+        });
+        
+        return enrollmentPlain;
+      }
+    }
+
+    return null;
   }
 
   /**
