@@ -25,7 +25,28 @@ export class WordToPdfConverter {
    */
   static _getLibreOfficeCommand() {
     const platform = os.platform();
-    
+
+    // Intentar primero el wrapper personalizado (para producción con www-data)
+    const productionPaths = [
+      '/usr/local/bin/soffice-wrapper',
+      '/usr/lib/libreoffice/program/soffice.bin',
+    ];
+
+    for (const sofficePath of productionPaths) {
+      if (fs.existsSync(sofficePath)) {
+        try {
+          execSync(`"${sofficePath}" --version`, {
+            encoding: 'utf-8',
+            stdio: 'pipe',
+            env: { ...process.env, HOME: process.env.HOME || '/var/www', TMPDIR: '/tmp' }
+          });
+          return sofficePath;
+        } catch (error) {
+          continue;
+        }
+      }
+    }
+
     if (platform === 'darwin') {
       // macOS - ruta típica de LibreOffice instalado con Homebrew
       const macPaths = [
@@ -33,7 +54,7 @@ export class WordToPdfConverter {
         '/usr/local/bin/soffice',
         'soffice'
       ];
-      
+
       for (const sofficePath of macPaths) {
         try {
           execSync(`"${sofficePath}" --version`, { encoding: 'utf-8', stdio: 'pipe' });
@@ -43,7 +64,7 @@ export class WordToPdfConverter {
         }
       }
     }
-    
+
     // Linux, Windows y otros - usar comando estándar
     return 'soffice';
   }
@@ -68,7 +89,7 @@ export class WordToPdfConverter {
 
       // 3. Detectar el comando de LibreOffice
       const sofficeCommand = this._getLibreOfficeCommand();
-      
+
       // 4. Verificar que LibreOffice está instalado
       try {
         execSync(`"${sofficeCommand}" --version`, { encoding: 'utf-8', stdio: 'pipe' });
@@ -89,11 +110,17 @@ export class WordToPdfConverter {
       console.log(`[WordToPdfConverter] Output: ${outputPdfPath}`);
 
       const command = `"${sofficeCommand}" --headless --convert-to pdf --outdir "${outputDir}" "${docxPath}"`;
-      
+
       execSync(command, {
         encoding: 'utf-8',
         timeout: 60000, // 60 segundos timeout
         stdio: 'pipe',
+        env: { 
+          ...process.env, 
+          HOME: process.env.HOME || '/var/www', 
+          TMPDIR: '/tmp',
+          PATH: process.env.PATH || '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+        }
       });
 
       // 6. LibreOffice genera el PDF con el mismo nombre que el DOCX
@@ -110,7 +137,7 @@ export class WordToPdfConverter {
           generatedPdfPath,
           path.join(outputDir, path.basename(outputPdfPath)),
         ];
-        
+
         let foundPdfPath = null;
         for (const possiblePath of possiblePaths) {
           if (fs.existsSync(possiblePath)) {
@@ -118,21 +145,21 @@ export class WordToPdfConverter {
             break;
           }
         }
-        
+
         if (!foundPdfPath) {
           throw new Error(
             `El PDF no fue generado por LibreOffice.\n` +
             `Buscado en: ${generatedPdfPath}, ${outputPdfPath}`
           );
         }
-        
+
         // Mover a la ubicación deseada si es diferente
         if (foundPdfPath !== outputPdfPath) {
           const targetDir = path.dirname(outputPdfPath);
           if (!fs.existsSync(targetDir)) {
             fs.mkdirSync(targetDir, { recursive: true });
           }
-          
+
           if (path.dirname(foundPdfPath) === targetDir) {
             fs.renameSync(foundPdfPath, outputPdfPath);
           } else {
@@ -147,7 +174,7 @@ export class WordToPdfConverter {
           if (!fs.existsSync(targetDir)) {
             fs.mkdirSync(targetDir, { recursive: true });
           }
-          
+
           if (path.dirname(generatedPdfPath) === targetDir) {
             fs.renameSync(generatedPdfPath, outputPdfPath);
           } else {
@@ -178,12 +205,12 @@ export class WordToPdfConverter {
    */
   static async convertAndDelete(docxPath, pdfPath = null) {
     const pdfResult = await this.convert(docxPath, pdfPath);
-    
+
     if (fs.existsSync(docxPath)) {
       fs.unlinkSync(docxPath);
       console.log(`[WordToPdfConverter] DOCX eliminado: ${docxPath}`);
     }
-    
+
     return pdfResult;
   }
 
