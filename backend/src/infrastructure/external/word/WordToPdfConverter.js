@@ -84,15 +84,18 @@ export class WordToPdfConverter {
       }
 
       // 2. Determinar ruta de salida del PDF
-      const outputDir = path.dirname(docxPath);
       const outputPdfPath = pdfPath || docxPath.replace('.docx', '.pdf');
 
       // 3. Detectar el comando de LibreOffice
       const sofficeCommand = this._getLibreOfficeCommand();
-
+      
       // 4. Verificar que LibreOffice está instalado
       try {
-        execSync(`"${sofficeCommand}" --version`, { encoding: 'utf-8', stdio: 'pipe' });
+        execSync(`"${sofficeCommand}" --version`, { 
+          encoding: 'utf-8', 
+          stdio: 'pipe',
+          env: { ...process.env, HOME: process.env.HOME || '/var/www', TMPDIR: '/tmp' }
+        });
       } catch (error) {
         throw new Error(
           'LibreOffice no está instalado.\n' +
@@ -103,88 +106,87 @@ export class WordToPdfConverter {
         );
       }
 
-      // 5. Convertir DOCX a PDF usando LibreOffice
+      // 5. Copiar DOCX a /tmp para evitar problemas de permisos
+      const tempDir = '/tmp';
+      const docxBaseName = path.basename(docxPath);
+      const tempDocxPath = path.join(tempDir, docxBaseName);
+      
+      console.log('[WordToPdfConverter] Copiando DOCX a /tmp...');
+      fs.copyFileSync(docxPath, tempDocxPath);
+
+      // 6. Convertir DOCX a PDF usando LibreOffice en /tmp
       console.log('[WordToPdfConverter] Convirtiendo DOCX a PDF...');
       console.log(`[WordToPdfConverter] LibreOffice: ${sofficeCommand}`);
-      console.log(`[WordToPdfConverter] Input: ${docxPath}`);
+      console.log(`[WordToPdfConverter] Input: ${tempDocxPath}`);
       console.log(`[WordToPdfConverter] Output: ${outputPdfPath}`);
 
-      const command = `"${sofficeCommand}" --headless --convert-to pdf --outdir "${outputDir}" "${docxPath}"`;
-
-      execSync(command, {
-        encoding: 'utf-8',
-        timeout: 60000, // 60 segundos timeout
-        stdio: 'pipe',
-        env: { 
-          ...process.env, 
-          HOME: process.env.HOME || '/var/www', 
-          TMPDIR: '/tmp',
-          PATH: process.env.PATH || '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
-        }
-      });
-
-      // 6. LibreOffice genera el PDF con el mismo nombre que el DOCX
-      const docxBaseName = path.basename(docxPath, '.docx');
-      const generatedPdfPath = path.join(outputDir, `${docxBaseName}.pdf`);
-
-      // 7. Esperar a que el archivo se escriba completamente
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      // 8. Verificar que el PDF fue generado
-      if (!fs.existsSync(generatedPdfPath)) {
-        const possiblePaths = [
-          outputPdfPath,
-          generatedPdfPath,
-          path.join(outputDir, path.basename(outputPdfPath)),
-        ];
-
-        let foundPdfPath = null;
-        for (const possiblePath of possiblePaths) {
-          if (fs.existsSync(possiblePath)) {
-            foundPdfPath = possiblePath;
-            break;
+      const command = `"${sofficeCommand}" --headless --convert-to pdf --outdir "${tempDir}" "${tempDocxPath}"`;
+      
+      try {
+        const result = execSync(command, {
+          encoding: 'utf-8',
+          timeout: 60000,
+          stdio: 'pipe',
+          cwd: tempDir,
+          env: { 
+            ...process.env, 
+            HOME: process.env.HOME || '/var/www', 
+            TMPDIR: '/tmp',
+            SAL_USE_VCLPLUGIN: 'svp',
+            PATH: process.env.PATH || '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
           }
+        });
+        console.log('[WordToPdfConverter] Salida:', result.trim());
+      } catch (conversionError) {
+        console.error('[WordToPdfConverter] Error completo:', conversionError.message);
+        console.error('[WordToPdfConverter] Stderr:', conversionError.stderr?.toString());
+        console.error('[WordToPdfConverter] Stdout:', conversionError.stdout?.toString());
+        
+        // Limpiar archivo temporal
+        if (fs.existsSync(tempDocxPath)) {
+          fs.unlinkSync(tempDocxPath);
         }
-
-        if (!foundPdfPath) {
-          throw new Error(
-            `El PDF no fue generado por LibreOffice.\n` +
-            `Buscado en: ${generatedPdfPath}, ${outputPdfPath}`
-          );
-        }
-
-        // Mover a la ubicación deseada si es diferente
-        if (foundPdfPath !== outputPdfPath) {
-          const targetDir = path.dirname(outputPdfPath);
-          if (!fs.existsSync(targetDir)) {
-            fs.mkdirSync(targetDir, { recursive: true });
-          }
-
-          if (path.dirname(foundPdfPath) === targetDir) {
-            fs.renameSync(foundPdfPath, outputPdfPath);
-          } else {
-            fs.copyFileSync(foundPdfPath, outputPdfPath);
-            fs.unlinkSync(foundPdfPath);
-          }
-        }
-      } else {
-        // Mover si es necesario
-        if (generatedPdfPath !== outputPdfPath) {
-          const targetDir = path.dirname(outputPdfPath);
-          if (!fs.existsSync(targetDir)) {
-            fs.mkdirSync(targetDir, { recursive: true });
-          }
-
-          if (path.dirname(generatedPdfPath) === targetDir) {
-            fs.renameSync(generatedPdfPath, outputPdfPath);
-          } else {
-            fs.copyFileSync(generatedPdfPath, outputPdfPath);
-            fs.unlinkSync(generatedPdfPath);
-          }
-        }
+        
+        throw conversionError;
       }
 
-      // 9. Verificación final
+      // 7. Verificar que el PDF fue generado en /tmp
+      const pdfBaseName = docxBaseName.replace('.docx', '.pdf');
+      const tempPdfPath = path.join(tempDir, pdfBaseName);
+      
+      // Esperar a que el archivo se escriba completamente
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      if (!fs.existsSync(tempPdfPath)) {
+        // Limpiar archivo temporal
+        if (fs.existsSync(tempDocxPath)) {
+          fs.unlinkSync(tempDocxPath);
+        }
+        
+        throw new Error(
+          `El PDF no fue generado por LibreOffice.\n` +
+          `Buscado en: ${tempPdfPath}`
+        );
+      }
+
+      // 8. Mover el PDF a su ubicación final
+      const targetDir = path.dirname(outputPdfPath);
+      if (!fs.existsSync(targetDir)) {
+        fs.mkdirSync(targetDir, { recursive: true });
+      }
+      
+      console.log(`[WordToPdfConverter] Moviendo PDF de ${tempPdfPath} a ${outputPdfPath}`);
+      fs.copyFileSync(tempPdfPath, outputPdfPath);
+
+      // 9. Limpiar archivos temporales
+      if (fs.existsSync(tempDocxPath)) {
+        fs.unlinkSync(tempDocxPath);
+      }
+      if (fs.existsSync(tempPdfPath)) {
+        fs.unlinkSync(tempPdfPath);
+      }
+
+      // 10. Verificación final
       if (!fs.existsSync(outputPdfPath)) {
         throw new Error(`El PDF no se encuentra en: ${outputPdfPath}`);
       }
@@ -220,7 +222,11 @@ export class WordToPdfConverter {
   static isLibreOfficeAvailable() {
     try {
       const command = this._getLibreOfficeCommand();
-      execSync(`"${command}" --version`, { encoding: 'utf-8', stdio: 'pipe' });
+      execSync(`"${command}" --version`, { 
+        encoding: 'utf-8', 
+        stdio: 'pipe',
+        env: { ...process.env, HOME: process.env.HOME || '/var/www', TMPDIR: '/tmp' }
+      });
       return true;
     } catch (error) {
       return false;
@@ -233,7 +239,11 @@ export class WordToPdfConverter {
   static getLibreOfficeVersion() {
     try {
       const command = this._getLibreOfficeCommand();
-      const output = execSync(`"${command}" --version`, { encoding: 'utf-8', stdio: 'pipe' });
+      const output = execSync(`"${command}" --version`, { 
+        encoding: 'utf-8', 
+        stdio: 'pipe',
+        env: { ...process.env, HOME: process.env.HOME || '/var/www', TMPDIR: '/tmp' }
+      });
       return output.trim();
     } catch (error) {
       return null;
