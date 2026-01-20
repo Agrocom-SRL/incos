@@ -36,7 +36,7 @@ const ConfigurationSelectionSection = ({
     >
       {configuracionAportesData.error && (
         <Alert
-          message="Error al cargar configuraciones de aportes"
+          title="Error al cargar configuraciones de aportes"
           description={configuracionAportesData.error}
           type="error"
           showIcon

@@ -1,5 +1,6 @@
 import { NotFoundError, ValidationError } from '../../../domain/errors/AppError.js';
 import path from 'path';
+import fs from 'fs';
 
 /**
  * Use Case: RegisterAporteVoluntarioUseCase
@@ -40,8 +41,10 @@ export class RegisterAporteVoluntarioUseCase {
      * @param {Object} params.studentScholarshipRepository - Repositorio de becas de estudiantes
      * @param {Object} params.scholarshipRepository - Repositorio de tipos de beca/descuento
      * @param {Object} params.managementRepository - Repositorio de gestiones académicas
+     * @param {Object} params.contributionConfigurationRepository - Repositorio de configuraciones de aportes
      * @param {Object} params.studentDocumentRepository - Repositorio de documentos de estudiantes
      * @param {Object} params.studentDocumentDeliveryRepository - Repositorio de entregas de documentos
+     * @param {Object} params.pdfGenerator - Generador de PDFs (PDFGenerator)
      * @param {ILogger} params.logger - Logger para registro de eventos
      */
     constructor({
@@ -51,8 +54,10 @@ export class RegisterAporteVoluntarioUseCase {
         studentScholarshipRepository,
         scholarshipRepository,
         managementRepository,
+        contributionConfigurationRepository,
         studentDocumentRepository,
         studentDocumentDeliveryRepository,
+        pdfGenerator,
         logger,
     }) {
         this.contributionPaymentRepository = contributionPaymentRepository;
@@ -61,8 +66,10 @@ export class RegisterAporteVoluntarioUseCase {
         this.studentScholarshipRepository = studentScholarshipRepository;
         this.scholarshipRepository = scholarshipRepository;
         this.managementRepository = managementRepository;
+        this.contributionConfigurationRepository = contributionConfigurationRepository;
         this.studentDocumentRepository = studentDocumentRepository;
         this.studentDocumentDeliveryRepository = studentDocumentDeliveryRepository;
+        this.pdfGenerator = pdfGenerator;
         this.logger = logger;
     }
 
@@ -95,13 +102,9 @@ export class RegisterAporteVoluntarioUseCase {
         const transactionNumber = data.transaction_number || data.transactionNumber || null;
         const concept = data.concept;
 
-        // Monto total siempre es 400.00 (de configuracion_aportes)
-        const totalAmount = 400.00;
-
         this.logger.info('[Pagos] Iniciando registro de aporte académico', {
             studentId,
             paymentMethodId,
-            totalAmount,
             concept,
         });
 
@@ -112,14 +115,15 @@ export class RegisterAporteVoluntarioUseCase {
             // 2. Obtener gestión vigente (2026, id=2)
             const currentManagement = await this._getCurrentManagement();
 
-            // 3. Validar que no exista un pago previo para esta gestión (NUEVO)
+            // 3. Obtener configuración de aporte activa para obtener el monto base
+            const configuracionAporte = await this._getActiveContributionConfiguration(currentManagement.id);
+            const totalAmount = configuracionAporte?.montoBase || configuracionAporte?.baseAmount || 400.00;
+
+            // 4. Validar que no exista un pago previo para esta gestión (NUEVO)
             await this._validateNoDuplicatePayment(studentId, currentManagement.id);
 
-            // 4. Validar método de pago y cuenta
-            await this._validatePaymentMethod(paymentMethodId, paymentAccountId, transactionNumber);
-
-            // 5. Calcular descuento por beca
-            const { scholarshipDiscount, studentScholarshipId } = await this._calculateScholarshipDiscount(
+            // 5. Calcular descuento por beca (necesario para determinar si es pago gratuito)
+            const { scholarshipDiscount, studentScholarshipId, scholarshipInfo } = await this._calculateScholarshipDiscount(
                 studentId,
                 currentManagement.id,
                 totalAmount
@@ -128,26 +132,122 @@ export class RegisterAporteVoluntarioUseCase {
             // 6. Calcular monto a pagar
             const amountToPay = totalAmount - scholarshipDiscount;
 
-            // 7. Preparar datos del pago
+            this.logger.info('[Pagos] Monto calculado', {
+                studentId,
+                totalAmount,
+                scholarshipDiscount,
+                amountToPay,
+                configuracionAporteId: configuracionAporte?.id,
+            });
+
+            // 7. Validar método de pago y cuenta (solo si NO es pago gratuito)
+            // Si es pago gratuito (amountToPay === 0), usar EFECTIVO (1) por defecto sin validaciones estrictas
+            let paymentMethod = null;
+            if (amountToPay === 0) {
+                // Para pagos gratuitos, usar EFECTIVO por defecto sin validar cuenta ni transacción
+                this.logger.info('[Pagos] Pago gratuito detectado, usando método EFECTIVO por defecto', {
+                    studentId,
+                    amountToPay,
+                });
+                
+                // Obtener método EFECTIVO para incluir en el recibo
+                paymentMethod = await this.paymentMethodRepository.findById(1); // EFECTIVO
+                if (!paymentMethod) {
+                    // Si no existe EFECTIVO, crear uno temporal o usar null
+                    this.logger.warn('[Pagos] Método EFECTIVO no encontrado, usando null para pago gratuito');
+                }
+            } else {
+                // Para pagos con monto, validar método de pago normalmente
+                paymentMethod = await this._validatePaymentMethod(paymentMethodId, paymentAccountId, transactionNumber);
+            }
+
+            // 8. Preparar datos del pago
+            // Para pagos gratuitos, usar método EFECTIVO (1) por defecto
+            const finalPaymentMethodId = amountToPay === 0 ? 1 : paymentMethodId;
+            const finalPaymentAccountId = amountToPay === 0 ? null : paymentAccountId;
+            const finalTransactionNumber = amountToPay === 0 ? null : transactionNumber;
+
             const paymentData = this._preparePaymentData({
                 studentId,
                 managementId: currentManagement.id,
                 enrollmentId: null, // NULL porque el pago es ANTES de inscripción
                 studentScholarshipId,
-                paymentMethodId,
-                paymentAccountId,
+                paymentMethodId: finalPaymentMethodId,
+                paymentAccountId: finalPaymentAccountId,
                 totalAmount,
                 scholarshipDiscount,
                 amountToPay,
                 paymentDate,
-                transactionNumber,
+                transactionNumber: finalTransactionNumber,
                 concept,
             });
 
-            // 8. Crear registro de pago
+            // 9. Crear registro de pago
             const payment = await this.contributionPaymentRepository.create(paymentData);
 
-            // 9. Guardar documento de respaldo si existe
+            // 10. NUEVO: Generar recibo en PDF
+            let reciboPDF = null;
+            let savedReciboDocument = null;
+            if (this.pdfGenerator) {
+                try {
+                    const reciboResult = await this._generateReciboPDF(
+                        payment, 
+                        student, 
+                        currentManagement, 
+                        paymentMethod, 
+                        scholarshipInfo,
+                        totalAmount,
+                        scholarshipDiscount,
+                        amountToPay
+                    );
+                    reciboPDF = reciboResult.relativePath;
+                    
+                    this.logger.info('[Pagos] Recibo PDF generado exitosamente', {
+                        paymentId: payment.id,
+                        reciboPDFPath: reciboPDF,
+                        absolutePath: reciboResult.absolutePath,
+                        fileName: reciboResult.fileName,
+                    });
+
+                    // 10.1. Guardar recibo PDF en documentos_estudiante
+                    if (reciboResult.absolutePath && reciboResult.fileName) {
+                        try {
+                            savedReciboDocument = await this._saveReciboDocument(
+                                studentId,
+                                reciboResult.fileName,
+                                reciboResult.absolutePath,
+                                reciboResult.relativePath
+                            );
+
+                            this.logger.info('[Pagos] Recibo PDF guardado en documentos_estudiante', {
+                                studentId,
+                                paymentId: payment.id,
+                                documentId: savedReciboDocument.id,
+                                fileName: reciboResult.fileName,
+                            });
+                        } catch (saveError) {
+                            this.logger.error('[Pagos] Error al guardar recibo PDF en BD', {
+                                error: saveError.message,
+                                stack: saveError.stack,
+                                studentId,
+                                paymentId: payment.id,
+                            });
+                            // No fallar el proceso si falla el guardado en BD
+                        }
+                    }
+                } catch (pdfError) {
+                    this.logger.error('[Pagos] Error al generar recibo PDF', {
+                        error: pdfError.message,
+                        stack: pdfError.stack,
+                        paymentId: payment.id,
+                    });
+                    // No fallar el proceso si el PDF falla
+                }
+            } else {
+                this.logger.warn('[Pagos] PDFGenerator no está disponible, no se generará el recibo PDF');
+            }
+
+            // 10. Guardar documento de respaldo si existe
             let savedDocument = null;
             let savedDocumentDelivery = null;
             
@@ -173,7 +273,7 @@ export class RegisterAporteVoluntarioUseCase {
                     data.documentFile
                 );
                 
-                // 10. Crear registro en estudiantes_documentos_entrega
+                // 11.1. Crear registro en estudiantes_documentos_entrega
                 if (savedDocument) {
                     this.logger.info('[Pagos] Creando registro de entrega de documento', {
                         studentId,
@@ -207,18 +307,37 @@ export class RegisterAporteVoluntarioUseCase {
                 amountPaid: payment.amountPaid,
                 concept: payment.concept,
                 hasDocument: !!savedDocument,
+                hasReciboPDF: !!reciboPDF,
+                hasReciboDocument: !!savedReciboDocument,
             });
 
             const result = {
                 payment: payment.toPlainObject ? payment.toPlainObject() : payment,
             };
 
+            // Incluir recibo PDF generado
+            if (reciboPDF) {
+                result.reciboPDF = reciboPDF;
+            }
+
+            // Incluir documento del recibo generado guardado en BD
+            if (savedReciboDocument) {
+                result.reciboDocument = savedReciboDocument.toPlainObject 
+                    ? savedReciboDocument.toPlainObject() 
+                    : savedReciboDocument;
+            }
+
+            // Incluir documento de respaldo subido manualmente (si existe)
             if (savedDocument) {
                 result.document = savedDocument.toPlainObject ? savedDocument.toPlainObject() : savedDocument;
             }
 
             if (savedDocumentDelivery) {
                 result.documentDelivery = savedDocumentDelivery.toPlainObject ? savedDocumentDelivery.toPlainObject() : savedDocumentDelivery;
+            }
+
+            if (reciboPDF) {
+                result.reciboPDF = reciboPDF;
             }
 
             return result;
@@ -272,6 +391,51 @@ export class RegisterAporteVoluntarioUseCase {
     }
 
     /**
+     * Obtiene la configuración de aporte activa para la gestión
+     * @private
+     * @param {number} managementId - ID de la gestión
+     * @returns {Promise<Object|null>} Configuración de aporte activa o null
+     */
+    async _getActiveContributionConfiguration(managementId) {
+        try {
+            // Buscar configuración activa (aporte_activo = true) para esta gestión
+            const result = await this.contributionConfigurationRepository.findAll(
+                {
+                    managementId,
+                    contributionActive: true,
+                    active: true,
+                },
+                null,
+                { limit: 1 }
+            );
+
+            const configuracionAporte = result?.configuracionesAportes?.[0] || null;
+
+            if (!configuracionAporte) {
+                this.logger.warn('[Pagos] No se encontró configuración de aporte activa', {
+                    managementId,
+                });
+                return null;
+            }
+
+            this.logger.info('[Pagos] Configuración de aporte obtenida', {
+                configuracionAporteId: configuracionAporte.id,
+                montoBase: configuracionAporte.montoBase || configuracionAporte.baseAmount,
+                managementId,
+            });
+
+            return configuracionAporte;
+        } catch (error) {
+            this.logger.error('[Pagos] Error al obtener configuración de aporte', {
+                error: error.message,
+                managementId,
+            });
+            // No fallar si no se puede obtener, usar valor por defecto
+            return null;
+        }
+    }
+
+    /**
      * Valida que no exista un pago previo del estudiante para la gestión actual
      * REGLA DE NEGOCIO: Un estudiante solo puede pagar UNA VEZ por gestión académica
      * 
@@ -308,6 +472,7 @@ export class RegisterAporteVoluntarioUseCase {
      * @param {number} paymentMethodId - ID del método de pago
      * @param {number|null} paymentAccountId - ID de la cuenta de pago
      * @param {string|null} transactionNumber - Número de transacción
+     * @returns {Promise<Object>} Método de pago validado
      * @throws {ValidationError} Si el método no es válido o faltan datos requeridos
      */
     async _validatePaymentMethod(paymentMethodId, paymentAccountId, transactionNumber) {
@@ -339,6 +504,8 @@ export class RegisterAporteVoluntarioUseCase {
                 throw new ValidationError(`El método ${paymentMethod.nombre} requiere un número de transacción`);
             }
         }
+
+        return paymentMethod;
     }
 
     /**
@@ -347,7 +514,7 @@ export class RegisterAporteVoluntarioUseCase {
      * @param {number} studentId - ID del estudiante
      * @param {number} managementId - ID de la gestión
      * @param {number} totalAmount - Monto total del aporte
-     * @returns {Promise<Object>} Objeto con { scholarshipDiscount, studentScholarshipId }
+     * @returns {Promise<Object>} Objeto con { scholarshipDiscount, studentScholarshipId, scholarshipInfo }
      */
     async _calculateScholarshipDiscount(studentId, managementId, totalAmount) {
         // Buscar beca activa del estudiante en la gestión
@@ -358,42 +525,86 @@ export class RegisterAporteVoluntarioUseCase {
         });
 
         if (!activeScholarship) {
+            this.logger.info('[Pagos] No se encontró beca activa para el estudiante', {
+                studentId,
+                managementId,
+            });
             return {
                 scholarshipDiscount: 0.00,
                 studentScholarshipId: null,
+                scholarshipInfo: null,
             };
         }
 
-        // Obtener el tipo de beca para obtener el porcentaje
-        const scholarship = await this.scholarshipRepository.findById(
-            activeScholarship.becaDescuentoId // Campo correcto según schema
-        );
+        // Obtener el ID de la beca según el mapper, el campo en la entidad es scholarshipId (no becaDescuentoId)
+        const scholarshipId = activeScholarship.scholarshipId 
+            || activeScholarship.becaDescuentoId 
+            || activeScholarship.beca_descuento_id;
 
-        if (!scholarship || !scholarship.porcentaje) {
-            this.logger.warn('[Pagos] Beca activa sin porcentaje definido', {
+        if (!scholarshipId) {
+            this.logger.warn('[Pagos] Beca activa sin ID de tipo de beca', {
                 studentId,
-                scholarshipId: activeScholarship.becaDescuentoId,
+                activeScholarshipId: activeScholarship.id,
+                activeScholarship: activeScholarship.toPlainObject ? activeScholarship.toPlainObject() : activeScholarship,
             });
             return {
                 scholarshipDiscount: 0.00,
                 studentScholarshipId: activeScholarship.id,
+                scholarshipInfo: null,
+            };
+        }
+
+        // Obtener el tipo de beca para obtener el porcentaje
+        const scholarship = await this.scholarshipRepository.findById(scholarshipId);
+
+        if (!scholarship) {
+            this.logger.warn('[Pagos] Tipo de beca no encontrado', {
+                studentId,
+                scholarshipId,
+                activeScholarshipId: activeScholarship.id,
+            });
+            return {
+                scholarshipDiscount: 0.00,
+                studentScholarshipId: activeScholarship.id,
+                scholarshipInfo: null,
+            };
+        }
+
+        // Obtener el porcentaje según el mapper, el campo en la entidad es percentage (no porcentaje)
+        const percentage = scholarship.percentage 
+            || scholarship.porcentaje 
+            || 0;
+
+        if (!percentage || percentage === 0) {
+            this.logger.warn('[Pagos] Beca activa sin porcentaje definido o porcentaje es 0', {
+                studentId,
+                scholarshipId,
+                scholarship: scholarship.toPlainObject ? scholarship.toPlainObject() : scholarship,
+            });
+            return {
+                scholarshipDiscount: 0.00,
+                studentScholarshipId: activeScholarship.id,
+                scholarshipInfo: scholarship,
             };
         }
 
         // Calcular descuento: monto_total * (porcentaje / 100)
-        const discountAmount = totalAmount * (scholarship.porcentaje / 100);
+        // El porcentaje viene de la BD como número (ej: 50 para 50%)
+        const discountAmount = totalAmount * (Number(percentage) / 100);
 
         this.logger.info('[Pagos] Descuento por beca calculado', {
             studentId,
             studentScholarshipId: activeScholarship.id,
-            scholarshipPercentage: scholarship.porcentaje,
+            scholarshipId,
+            scholarshipPercentage: percentage,
             totalAmount,
-            discountAmount,
+            discountAmount: parseFloat(discountAmount.toFixed(2)),
         });
 
         return {
             scholarshipDiscount: parseFloat(discountAmount.toFixed(2)),
             studentScholarshipId: activeScholarship.id,
+            scholarshipInfo: scholarship,
         };
     }
 
@@ -440,7 +651,156 @@ export class RegisterAporteVoluntarioUseCase {
     }
 
     /**
+     * NUEVO: Genera el recibo de pago en PDF
+     * @private
+     * @param {Object} payment - Registro del pago
+     * @param {Object} student - Datos del estudiante
+     * @param {Object} management - Gestión académica
+     * @param {Object} paymentMethod - Método de pago
+     * @param {Object} scholarshipInfo - Información de la beca (si existe)
+     * @param {number} totalAmount - Monto total del aporte
+     * @param {number} scholarshipDiscount - Descuento por beca
+     * @param {number} amountToPay - Monto a pagar (total - descuento)
+     * @returns {Promise<Object>} Información del PDF generado {relativePath, absolutePath, fileName}
+     */
+    async _generateReciboPDF(payment, student, management, paymentMethod, scholarshipInfo, totalAmount, scholarshipDiscount, amountToPay) {
+        try {
+            // Convertir estudiante a objeto plano
+            const studentPlain = student.toPlainObject ? student.toPlainObject() : student;
+            const paymentPlain = payment.toPlainObject ? payment.toPlainObject() : payment;
+            const managementPlain = management.toPlainObject ? management.toPlainObject() : management;
+            
+            // Preparar datos para el PDF
+            // NOTA: Los datos del instituto se toman de IncosPDFBase por defecto
+            // Solo especificar si se necesita personalizar
+            const reciboData = {
+                // Información del instituto (opcional)
+                // Si no se especifica, se usan los valores por defecto de IncosPDFBase
+                // institutoInfo: null, // Se usará IncosPDFBase.INSTITUTE.name y logo por defecto
+
+                // Datos del recibo
+                numeroRecibo: paymentPlain.numeroRecibo || paymentPlain.numero_recibo || String(paymentPlain.id).padStart(3, '0'),
+                fechaPago: paymentPlain.fechaPago || paymentPlain.fecha_pago || paymentPlain.paymentDate || paymentPlain.payment_date,
+
+                // Datos del estudiante (usando campos en inglés de la entidad)
+                nombreCompleto: `${studentPlain.lastName || studentPlain.apellido_paterno || ''} ${studentPlain.motherLastName || studentPlain.apellido_materno || ''} ${studentPlain.firstName || studentPlain.nombres || ''}`.trim().toUpperCase(),
+                ci: studentPlain.ci || 'N/A',
+                carrera: null, // No mostrar si no existe
+                cursoParalelo: null, // No mostrar si no existe
+                anio: null, // No mostrar si no existe
+
+                // Datos del pago - USAR VALORES CALCULADOS DIRECTAMENTE
+                montoTotal: totalAmount || 400.00,
+                descuentoBeca: scholarshipDiscount || 0,
+                montoPagado: amountToPay || totalAmount || 400.00,
+                concepto: paymentPlain.concepto || paymentPlain.concept || 'Aporte Voluntario Anual',
+                metodoPago: paymentMethod?.nombre || paymentMethod?.name || 'N/A',
+                numeroTransaccion: paymentPlain.numeroTransaccion || paymentPlain.numero_transaccion || paymentPlain.transactionNumber || paymentPlain.transaction_number || null,
+                
+                // Información de beca (si existe)
+                becaInfo: scholarshipInfo ? {
+                    nombre: scholarshipInfo.nombre || scholarshipInfo.name,
+                    porcentaje: scholarshipInfo.porcentaje || scholarshipInfo.percentage,
+                } : null,
+            };
+
+            // Generar nombre del archivo
+            const numeroRecibo = paymentPlain.numeroRecibo || String(paymentPlain.id).padStart(3, '0');
+            const fileName = `RECIBO_PAGO_${studentPlain.ci || studentPlain.id}_${numeroRecibo}_${Date.now()}.pdf`;
+            const year = managementPlain.anio || managementPlain.year || new Date().getFullYear();
+            const outputDir = path.join(process.cwd(), 'uploads', 'recibos', String(year));
+            
+            // Crear directorio si no existe
+            if (!fs.existsSync(outputDir)) {
+                fs.mkdirSync(outputDir, { recursive: true });
+            }
+
+            const absolutePath = path.join(outputDir, fileName);
+
+            // Generar PDF usando el nuevo generador
+            await this.pdfGenerator.generateReciboPagoMejorado(reciboData, absolutePath);
+
+            // Verificar que el PDF fue generado
+            if (!fs.existsSync(absolutePath)) {
+                throw new Error(`El PDF fue generado pero no se encuentra en: ${absolutePath}`);
+            }
+
+            // Ruta relativa para el frontend (desde uploads/)
+            const relativePath = path.join('recibos', String(year), fileName).replace(/\\/g, '/');
+            
+            this.logger.info('[Pagos] Recibo PDF generado exitosamente', {
+                absolutePath: absolutePath,
+                relativePath: relativePath,
+                fileName: fileName,
+                fileSize: fs.statSync(absolutePath).size,
+            });
+
+            return {
+                relativePath,
+                absolutePath,
+                fileName,
+            };
+        } catch (error) {
+            this.logger.error('[Pagos] Error al generar recibo PDF', {
+                error: error.message,
+                stack: error.stack,
+                paymentId: payment.id,
+            });
+            throw error;
+        }
+    }
+
+    /**
+     * Guarda el recibo PDF generado en documentos_estudiante
+     * Similar a _saveActaDocument en GenerateActaCompromisoUseCase
+     * @private
+     * @param {number} studentId - ID del estudiante
+     * @param {string} fileName - Nombre del archivo PDF
+     * @param {string} absolutePath - Ruta absoluta del archivo
+     * @param {string} relativePath - Ruta relativa desde uploads/
+     * @returns {Promise<Object>} Documento guardado
+     */
+    async _saveReciboDocument(studentId, fileName, absolutePath, relativePath) {
+        try {
+            // Preparar datos del documento
+            const documentData = {
+                studentId,
+                tipoDocumento: 'PAGO', // El recibo es parte del proceso de pago
+                documentacionId: null, // No hay documento específico en catálogo para "Recibo de Pago"
+                fileName: fileName,
+                filePath: relativePath,
+                extension: 'pdf',
+                tipoMime: 'application/pdf',
+                contieneMultipleDocumentos: false,
+                verified: true, // El recibo es generado por el sistema, se considera verificado
+                state: 'APROBADO', // El recibo generado por el sistema está aprobado automáticamente
+            };
+
+            // Crear el documento
+            const document = await this.studentDocumentRepository.create(documentData);
+
+            this.logger.info('[Pagos] Recibo PDF guardado como documento', {
+                studentId,
+                documentId: document.id,
+                fileName: fileName,
+                filePath: relativePath,
+            });
+
+            return document;
+        } catch (error) {
+            this.logger.error('[Pagos] Error al guardar recibo PDF como documento', {
+                error: error.message,
+                stack: error.stack,
+                studentId,
+                fileName,
+            });
+            throw error;
+        }
+    }
+
+    /**
      * Guarda el documento de respaldo del pago en documentos_estudiante
+     * (Para documentos subidos manualmente por el usuario)
      * @private
      * @param {number} studentId - ID del estudiante
      * @param {number} paymentId - ID del pago registrado

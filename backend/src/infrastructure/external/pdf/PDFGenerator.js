@@ -6,19 +6,18 @@
  * de IncosPDFBase para mantener consistencia visual y funcional.
  * 
  * Generadores disponibles:
- * - FormularioInscripcionGenerator: Formularios de inscripción
- * - ReciboPagoGenerator: Recibos de pago y aranceles
+ * - ReciboPagoMejorado: Recibos de pago con diseño institucional mejorado (NUEVO)
  * 
  * NOTA: Las Actas de Compromiso ahora se generan usando ActaCompromisoWordGenerator
  * que genera DOCX desde plantilla Word y luego lo convierte a PDF.
  * 
+ * NOTA: FormularioInscripcionGenerator y ReciboPagoGenerator están comentados hasta que se implementen.
+ * 
  * Uso:
- * await PDFGenerator.generateFormularioInscripcion(data, outputPath);
- * await PDFGenerator.generateReciboPago(data, outputPath);
+ * await PDFGenerator.generateReciboPagoMejorado(data, outputPath); // Versión mejorada (RECOMENDADA)
  */
 
-import { FormularioInscripcionGenerator } from './FormularioInscripcionGenerator.js';
-import { ReciboPagoGenerator } from './ReciboPagoGenerator.js';
+import { ReciboPagoMejorado } from './ReciboPagoMejorado.js';
 
 export class PDFGenerator {
   // ============================================
@@ -28,105 +27,40 @@ export class PDFGenerator {
   /**
    * Genera el Formulario de Inscripción
    * 
-   * @param {Object} data - Datos del estudiante y de la inscripción
-   * @param {string} data.gestionYear - Año de la gestión
-   * @param {string} data.apellidoPaterno - Apellido paterno
-   * @param {string} data.apellidoMaterno - Apellido materno
-   * @param {string} data.nombres - Nombres
-   * @param {string} data.ci - Cédula de identidad
-   * @param {string} data.expedicion - Lugar de expedición del CI
-   * @param {string} data.genero - Género (Masculino/Femenino)
-   * @param {string} data.tipoSangre - Tipo sanguíneo
-   * @param {string} data.emailPersonal - Email personal
-   * @param {string} data.estadoCivil - Estado civil
-   * @param {boolean} data.tieneDiscapacidad - Si tiene discapacidad
-   * @param {string} data.ciudadNacimiento - Ciudad de nacimiento
-   * @param {string} data.provincia - Provincia
-   * @param {string} data.departamento - Departamento
-   * @param {string} data.fechaNacimiento - Fecha de nacimiento (formato DD/MM/YYYY)
-   * @param {string} data.nacionalidad - Nacionalidad
-   * @param {string} data.edad - Edad
-   * @param {string} data.direccion - Dirección
-   * @param {string} data.idiomaMaterno - Idioma materno
-   * @param {string} data.celular - Número de celular
-   * @param {string} data.carrera - Nombre de la carrera
-   * @param {string} data.anio - Año académico (Primer Año, Segundo Año, etc.)
-   * @param {Object} data.documentos - Estado de documentos entregados
-   * @param {boolean} data.documentos.ci - CI entregado
-   * @param {boolean} data.documentos.certificadoNacimiento - Certificado entregado
-   * @param {boolean} data.documentos.diplomaBachiller - Diploma entregado
-   * @param {boolean} data.documentos.aporteVoluntario - Aporte realizado
+   * TODO: Este método está comentado hasta que se implemente FormularioInscripcionGenerator
    * 
+   * @param {Object} data - Datos del estudiante y de la inscripción
    * @param {string} outputPath - Ruta donde guardar el PDF
    * @returns {Promise<string>} Ruta del archivo generado
-   * 
-   * @example
-   * const data = {
-   *   gestionYear: 2026,
-   *   apellidoPaterno: 'Pérez',
-   *   apellidoMaterno: 'García',
-   *   nombres: 'Juan Carlos',
-   *   ci: '12345678',
-   *   expedicion: 'S.C.',
-   *   genero: 'Masculino',
-   *   // ... más datos
-   *   documentos: {
-   *     ci: true,
-   *     certificadoNacimiento: true,
-   *     diplomaBachiller: false,
-   *     aporteVoluntario: true,
-   *   },
-   * };
-   * 
-   * await PDFGenerator.generateFormularioInscripcion(data, '/path/to/output.pdf');
    */
-  static async generateFormularioInscripcion(data, outputPath) {
-    return await FormularioInscripcionGenerator.generate(data, outputPath);
-  }
+  // static async generateFormularioInscripcion(data, outputPath) {
+  //   return await FormularioInscripcionGenerator.generate(data, outputPath);
+  // }
 
   /**
-   * Genera un Recibo de Pago
+   * Genera un Recibo de Pago con diseño institucional mejorado (RECOMENDADA)
+   * 
+   * Este es el nuevo generador de recibos que sigue el diseño institucional
+   * estándar con tabla de datos personales, declaración jurada y formato
+   * profesional.
    * 
    * @param {Object} data - Datos del pago
-   * @param {string} data.numeroRecibo - Número del recibo
-   * @param {string} data.fechaPago - Fecha del pago (formato DD/MM/YYYY o ISO)
+   * @param {Object} [data.institutoInfo] - Información personalizada del instituto
+   * @param {string} data.numeroRecibo - Número del recibo (FAV)
+   * @param {string} data.fechaPago - Fecha del pago (formato YYYY-MM-DD o DD/MM/YYYY)
    * @param {string} data.nombreCompleto - Nombre completo del estudiante
    * @param {string} data.ci - Cédula de identidad
-   * @param {string} data.carrera - Nombre de la carrera (opcional)
-   * @param {string} data.gestion - Gestión (opcional)
-   * @param {string} data.concepto - Concepto del pago
+   * @param {string} data.carrera - Nombre de la carrera
    * @param {number} data.montoTotal - Monto total del aporte
-   * @param {number} data.descuentoBeca - Descuento por beca (opcional)
-   * @param {string} data.metodoPago - Método de pago
-   * @param {string} data.numeroTransaccion - Número de transacción (opcional)
-   * @param {string} data.banco - Nombre del banco (opcional)
-   * @param {string} data.estado - Estado del pago
-   * 
+   * @param {number} data.montoPagado - Monto pagado (totalAmount - descuentoBeca)
    * @param {string} outputPath - Ruta donde guardar el PDF
    * @returns {Promise<string>} Ruta del archivo generado
    * 
    * @example
-   * const data = {
-   *   numeroRecibo: 'REC-2026-001',
-   *   fechaPago: '19/01/2026',
-   *   nombreCompleto: 'Juan Carlos Pérez García',
-   *   ci: '12345678',
-   *   carrera: 'Sistemas Informáticos',
-   *   gestion: '2026',
-   *   concepto: 'Aporte Voluntario Anual',
-   *   montoTotal: 500.00,
-   *   descuentoBeca: 100.00,
-   *   metodoPago: 'Transferencia Bancaria',
-   *   numeroTransaccion: 'TRX123456',
-   *   banco: 'Banco Nacional de Bolivia',
-   *   estado: 'APROBADO',
-   * };
-   * 
-   * await PDFGenerator.generateReciboPago(data, '/path/to/output.pdf');
+   * await PDFGenerator.generateReciboPagoMejorado(data, '/path/to/output.pdf');
    */
-  static async generateReciboPago(data, outputPath) {
-    // ✅ Usar el generador mejorado basado en IncosPDFBase
-    return await ReciboPagoGenerator.generate(data, outputPath);
+  static async generateReciboPagoMejorado(data, outputPath) {
+    return await ReciboPagoMejorado.generate(data, outputPath);
   }
 
   // ============================================

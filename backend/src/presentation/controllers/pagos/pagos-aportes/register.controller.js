@@ -103,6 +103,22 @@ export class RegisterPagoAporteController extends BaseCreateController {
             const responseData = result[this.dataFieldName] || result.payment || result;
             const resourceId = responseData?.id || 'nuevo';
 
+            // Incluir reciboPDF en la respuesta si está disponible
+            // El responseFormatter solo incluye responseData, pero necesitamos agregar reciboPDF
+            if (result.reciboPDF) {
+                // Si responseData es un objeto, agregar reciboPDF directamente
+                if (responseData && typeof responseData === 'object') {
+                    // El use case retorna la ruta relativa (ej: recibos/2026/recibo_001_1234567.pdf)
+                    // Convertirla a ruta accesible desde el frontend (ej: /uploads/recibos/2026/recibo_001_1234567.pdf)
+                    const reciboPath = result.reciboPDF;
+                    const fullPath = reciboPath.startsWith('/uploads/') 
+                        ? reciboPath 
+                        : '/uploads/' + reciboPath;
+                    
+                    responseData.reciboPDF = fullPath;
+                }
+            }
+
             // Usar el método created() del responseFormatter (igual que BaseCreateController)
             return this.responseFormatter.created(
                 res,

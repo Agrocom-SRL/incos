@@ -15,7 +15,7 @@
  */
 
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useMemo, useEffect } from 'react';
+import { useMemo, useEffect, useState, useRef } from 'react';
 import { Spin, Form, App } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
@@ -24,6 +24,7 @@ import { PageHeader } from '@molecules';
 import { Button } from '@atoms';
 import { useStudentDetailContext } from '@application-estudiantes/hooks';
 import { usePagosRegistrarContext } from '../../../../application/modules/pagos/hooks';
+import { downloadFile } from '@application/utils';
 import { StudentInfoSection } from '@estudiantes/components/organisms';
 import {
   PaymentMethodSelectionSection,
@@ -64,6 +65,10 @@ const PagosRegistrar = () => {
     registrarPago,
   } = pagosRegistrarContext || {};
 
+  // Estado local para idempotencia: prevenir múltiples clics
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const isSubmittingRef = useRef(false); // Ref para evitar race conditions
+
   // Formulario para registro de pago
   // Si el contexto no proporciona un form, crear uno nuevo
   const [formPago] = Form.useForm();
@@ -80,6 +85,38 @@ const PagosRegistrar = () => {
     ) || configuracionAportes.configuracionAportes[0] || null; // Si no hay activa, usar la primera
   }, [configuracionAportes]);
 
+  // Calcular monto pagado para determinar si es pago gratuito
+  const montoPagado = useMemo(() => {
+    if (!configuracionAporteActiva) return 0;
+    
+    const montoBase = Number(configuracionAporteActiva.montoBase) || 0;
+    
+    // Calcular descuento por beca
+    const tieneBeca = becaActiva && (() => {
+      const stateValue = becaActiva.state || becaActiva.estado;
+      if (!stateValue) return false;
+      
+      const normalizedState = String(stateValue).toUpperCase();
+      const tieneEstadoValido = normalizedState === 'ACTIVA' || normalizedState === 'ACTIVE' || normalizedState === 'PENDIENTE';
+      const tienePorcentaje = becaActiva.scholarshipPercentage || becaActiva.porcentaje;
+      
+      return tieneEstadoValido && tienePorcentaje;
+    })();
+    
+    const porcentajeDescuento = tieneBeca ? (
+      becaActiva.scholarshipPercentage || 
+      becaActiva.porcentaje || 
+      (becaActiva.scholarshipType?.percentage) ||
+      0
+    ) : 0;
+    
+    const descuentoBeca = tieneBeca ? (montoBase * porcentajeDescuento / 100) : 0;
+    return Math.max(0, montoBase - descuentoBeca);
+  }, [configuracionAporteActiva, becaActiva]);
+
+  // Determinar si es pago gratuito (monto = 0)
+  const esPagoGratuito = montoPagado === 0;
+
 
   // Handler para volver
   const handleVolver = () => {
@@ -88,6 +125,17 @@ const PagosRegistrar = () => {
 
   // Handler para finalizar el registro de pago
   const handleFinish = async (values) => {
+    // IDEMPOTENCIA: Prevenir múltiples clics simultáneos
+    if (isSubmittingRef.current || isSubmitting) {
+      console.warn('[PagosRegistrar] Intento de pago duplicado bloqueado (idempotencia)');
+      message.warning('El pago ya está siendo procesado. Por favor espere...');
+      return;
+    }
+
+    // Marcar como procesando antes de cualquier validación
+    setIsSubmitting(true);
+    isSubmittingRef.current = true;
+
     try {
       // ============================================
       // VALIDACIONES SEGÚN EL VALIDADOR DEL BACKEND
@@ -96,84 +144,121 @@ const PagosRegistrar = () => {
       // 1. Validar student_id (requerido, número entero > 0)
       if (!studentId || !Number.isInteger(Number(studentId)) || Number(studentId) < 1) {
         message.error('El ID del estudiante es requerido y debe ser un número válido');
+        // Resetear estado si falla validación temprana
+        setIsSubmitting(false);
+        isSubmittingRef.current = false;
         return;
       }
 
-      // 2. Validar payment_method_id (requerido, debe ser 1, 2 o 3)
-      if (!metodosPago?.selectedMetodoPago) {
-        message.error('Por favor seleccione un método de pago');
-        return;
+      // 2. Validar payment_method_id (solo si NO es pago gratuito)
+      // Si es pago gratuito (monto = 0), no se requiere método de pago
+      let metodoPagoId = null;
+      if (!esPagoGratuito) {
+        // Solo validar método de pago si hay monto a pagar
+        if (!metodosPago?.selectedMetodoPago) {
+          message.error('Por favor seleccione un método de pago');
+          setIsSubmitting(false);
+          isSubmittingRef.current = false;
+          return;
+        }
+
+        metodoPagoId = Number(metodosPago.selectedMetodoPago.id);
+        if (![1, 2, 3].includes(metodoPagoId)) {
+          message.error('El método de pago debe ser: EFECTIVO (1), QR (2) o TRANSFERENCIA (3)');
+          setIsSubmitting(false);
+          isSubmittingRef.current = false;
+          return;
+        }
       }
 
-      const metodoPagoId = Number(metodosPago.selectedMetodoPago.id);
-      if (![1, 2, 3].includes(metodoPagoId)) {
-        message.error('El método de pago debe ser: EFECTIVO (1), QR (2) o TRANSFERENCIA (3)');
-        return;
-      }
-
-      // 3. Validar payment_date (requerido, formato YYYY-MM-DD)
+      // 3. Validar payment_date (requerido solo si NO es pago gratuito)
+      // Si es pago gratuito, usar fecha actual por defecto
       let paymentDate;
-      if (values.fechaPago) {
-        paymentDate = dayjs(values.fechaPago).format('YYYY-MM-DD');
-      } else {
-        // Si no hay fecha, usar hoy (EFECTIVO no requiere fecha en el formulario)
+      if (esPagoGratuito) {
+        // Para pagos gratuitos, usar fecha actual
         paymentDate = dayjs().format('YYYY-MM-DD');
-      }
+      } else {
+        // Para pagos con monto, validar fecha
+        if (values.fechaPago) {
+          paymentDate = dayjs(values.fechaPago).format('YYYY-MM-DD');
+        } else {
+          // Si no hay fecha, usar hoy (EFECTIVO no requiere fecha en el formulario)
+          paymentDate = dayjs().format('YYYY-MM-DD');
+        }
 
-      // Validar formato de fecha
-      if (!dayjs(paymentDate).isValid()) {
-        message.error('La fecha de pago debe estar en formato válido (YYYY-MM-DD)');
-        return;
+        // Validar formato de fecha
+        if (!dayjs(paymentDate).isValid()) {
+          message.error('La fecha de pago debe estar en formato válido (YYYY-MM-DD)');
+          setIsSubmitting(false);
+          isSubmittingRef.current = false;
+          return;
+        }
       }
 
       // 4. Validar concept (requerido, string 3-500 caracteres)
       const concept = (values.concepto || '').trim();
       if (!concept || concept.length < 3) {
         message.error('El concepto del pago es requerido y debe tener al menos 3 caracteres');
+        setIsSubmitting(false);
+        isSubmittingRef.current = false;
         return;
       }
       if (concept.length > 500) {
         message.error('El concepto del pago no puede exceder 500 caracteres');
+        setIsSubmitting(false);
+        isSubmittingRef.current = false;
         return;
       }
 
-      // 5. Validar payment_account_id (condicional según método de pago)
-      const esEfectivo = metodoPagoId === 1;
-      const esQR = metodoPagoId === 2;
-      const esTransferencia = metodoPagoId === 3;
-
+      // 5. Validar payment_account_id (solo si NO es pago gratuito)
       let paymentAccountId = null;
-      if (esTransferencia) {
-        // Para TRANSFERENCIA, la cuenta es REQUERIDA
-        paymentAccountId = values.cuentaPagoId || cuentasPago?.selectedCuentaPago?.id;
-        if (!paymentAccountId || !Number.isInteger(Number(paymentAccountId)) || Number(paymentAccountId) < 1) {
-          message.error('La cuenta de pago es requerida para método TRANSFERENCIA');
-          return;
-        }
-        paymentAccountId = Number(paymentAccountId);
-      } else if (esQR) {
-        // Para QR, la cuenta es OPCIONAL (la cuenta está en la imagen del QR)
-        paymentAccountId = values.cuentaPagoId || cuentasPago?.selectedCuentaPago?.id || null;
-        if (paymentAccountId) {
+      if (!esPagoGratuito && metodoPagoId) {
+        const esEfectivo = metodoPagoId === 1;
+        const esQR = metodoPagoId === 2;
+        const esTransferencia = metodoPagoId === 3;
+
+        if (esTransferencia) {
+          // Para TRANSFERENCIA, la cuenta es REQUERIDA
+          paymentAccountId = values.cuentaPagoId || cuentasPago?.selectedCuentaPago?.id;
+          if (!paymentAccountId || !Number.isInteger(Number(paymentAccountId)) || Number(paymentAccountId) < 1) {
+            message.error('La cuenta de pago es requerida para método TRANSFERENCIA');
+            setIsSubmitting(false);
+            isSubmittingRef.current = false;
+            return;
+          }
           paymentAccountId = Number(paymentAccountId);
+        } else if (esQR) {
+          // Para QR, la cuenta es OPCIONAL (la cuenta está en la imagen del QR)
+          paymentAccountId = values.cuentaPagoId || cuentasPago?.selectedCuentaPago?.id || null;
+          if (paymentAccountId) {
+            paymentAccountId = Number(paymentAccountId);
+          }
+        } else if (esEfectivo) {
+          // Para EFECTIVO, la cuenta debe ser NULL
+          paymentAccountId = null;
         }
-      } else if (esEfectivo) {
-        // Para EFECTIVO, la cuenta debe ser NULL
-        paymentAccountId = null;
       }
 
-      // 6. Validar transaction_number (condicional según método de pago)
+      // 6. Validar transaction_number (solo si NO es pago gratuito)
       let transactionNumber = null;
-      if (esQR || esTransferencia) {
-        // Para QR y TRANSFERENCIA, el número de transacción es REQUERIDO
-        transactionNumber = (values.numeroTransaccion || values.codigoComprobante || '').trim();
-        if (!transactionNumber || transactionNumber.length === 0) {
-          message.error('El número de transacción es requerido para método QR o TRANSFERENCIA');
-          return;
+      if (!esPagoGratuito && metodoPagoId) {
+        const esEfectivo = metodoPagoId === 1;
+        const esQR = metodoPagoId === 2;
+        const esTransferencia = metodoPagoId === 3;
+
+        if (esQR || esTransferencia) {
+          // Para QR y TRANSFERENCIA, el número de transacción es REQUERIDO
+          transactionNumber = (values.numeroTransaccion || values.codigoComprobante || '').trim();
+          if (!transactionNumber || transactionNumber.length === 0) {
+            message.error('El número de transacción es requerido para método QR o TRANSFERENCIA');
+            setIsSubmitting(false);
+            isSubmittingRef.current = false;
+            return;
+          }
+        } else if (esEfectivo) {
+          // Para EFECTIVO, el número de transacción es opcional
+          transactionNumber = (values.numeroTransaccion || values.codigoComprobante || '').trim() || null;
         }
-      } else if (esEfectivo) {
-        // Para EFECTIVO, el número de transacción es opcional
-        transactionNumber = (values.numeroTransaccion || values.codigoComprobante || '').trim() || null;
       }
 
       // 7. Obtener archivo de documento de respaldo (si existe)
@@ -208,7 +293,7 @@ const PagosRegistrar = () => {
       // ============================================
       const pagoData = {
         studentId: Number(studentId),
-        paymentMethodId: metodoPagoId,
+        paymentMethodId: metodoPagoId || 1, // Si es gratuito, usar EFECTIVO (1) por defecto
         paymentAccountId: paymentAccountId,
         paymentDate: paymentDate,
         transactionNumber: transactionNumber,
@@ -219,9 +304,12 @@ const PagosRegistrar = () => {
       // Llamar a la función de registro del contexto
       if (!registrarPago) {
         message.error('Error: Función de registro no disponible');
+        setIsSubmitting(false);
+        isSubmittingRef.current = false;
         return;
       }
 
+      // Realizar la petición de registro (ya estamos protegidos contra múltiples clics)
       const result = await registrarPago(pagoData);
 
       // Debug: Log del resultado para ver qué está llegando
@@ -229,7 +317,35 @@ const PagosRegistrar = () => {
 
       if (result && result.success) {
         message.success('Pago registrado exitosamente');
+        
+        // NUEVO: Descargar automáticamente el recibo PDF si está disponible
+        if (result.data && result.data.reciboPDF) {
+          try {
+            // El backend ya retorna la ruta relativa lista para descargar
+            const reciboPath = result.data.reciboPDF;
+            
+            // Asegurar que la ruta empiece con /
+            const relativePath = reciboPath.startsWith('/') 
+              ? reciboPath 
+              : '/' + reciboPath;
+            
+            // Obtener el nombre del archivo del path
+            const fileName = relativePath.split('/').pop() || 'recibo_pago.pdf';
+            
+            // Descargar el recibo PDF
+            downloadFile(relativePath, fileName);
+            
+            message.success('Recibo de pago generado y descargado correctamente', 3);
+          } catch (pdfError) {
+            console.error('Error al descargar el recibo PDF:', pdfError);
+            // No mostrar error al usuario si solo falla la descarga
+            // El pago ya fue registrado exitosamente
+            message.warning('Pago registrado exitosamente. El recibo PDF se generó pero no se pudo descargar automáticamente.');
+          }
+        }
+        
         // Redirigir al detalle del estudiante después de un breve delay
+        // NOTA: No reseteamos isSubmitting aquí porque vamos a navegar fuera
         setTimeout(() => {
           navigate(`/estudiantes/${studentId}`);
         }, 1500);
@@ -255,10 +371,18 @@ const PagosRegistrar = () => {
         }
         console.log('[PagosRegistrar] Mensaje de error final:', errorMessage);
         message.error(errorMessage);
+        
+        // Resetear estado en caso de error para permitir reintento
+        setIsSubmitting(false);
+        isSubmittingRef.current = false;
       }
     } catch (error) {
       console.error('Error al registrar pago:', error);
       message.error('Error inesperado al registrar el pago');
+      
+      // Resetear estado en caso de error para permitir reintento
+      setIsSubmitting(false);
+      isSubmittingRef.current = false;
     }
   };
 
@@ -321,18 +445,20 @@ const PagosRegistrar = () => {
               error={configuracionAportes.error}
             />
 
-            {/* Sección 3: Selección de Método de Pago */}
-            <PaymentMethodSelectionSection
-              metodosPagoData={metodosPago}
-              onSelectMetodoPago={metodosPago.onSelectMetodoPago}
-              form={formInstance}
-              onFinish={handleFinish}
-            />
+            {/* Sección 3: Selección de Método de Pago (solo si NO es pago gratuito) */}
+            {!esPagoGratuito && (
+              <PaymentMethodSelectionSection
+                metodosPagoData={metodosPago}
+                onSelectMetodoPago={metodosPago.onSelectMetodoPago}
+                form={formInstance}
+                onFinish={handleFinish}
+              />
+            )}
 
             {/* Sección 4: Detalles del Pago y Formulario Completo */}
             <SelectedPaymentSection
               selectedConfiguracion={configuracionAporteActiva}
-              selectedMetodoPago={metodosPago.selectedMetodoPago}
+              selectedMetodoPago={esPagoGratuito ? null : metodosPago.selectedMetodoPago}
               selectedCuentaPago={cuentasPago.selectedCuentaPago}
               cuentasPagoData={cuentasPago}
               bancosAutorizadosData={bancosAutorizados}
@@ -340,7 +466,13 @@ const PagosRegistrar = () => {
               form={formInstance}
               onFinish={handleFinish}
               onCancel={handleVolver}
-              disabled={!configuracionAporteActiva || !metodosPago.selectedMetodoPago || loadingStudent || loading}
+              disabled={
+                !configuracionAporteActiva || 
+                (!esPagoGratuito && !metodosPago.selectedMetodoPago) || 
+                loadingStudent || 
+                loading || 
+                isSubmitting
+              }
             />
           </>
         )}

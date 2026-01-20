@@ -53,7 +53,7 @@ const ContributionDetailSummary = ({
         style={{ marginTop: '24px', marginBottom: '24px' }}
       >
         <Alert
-          message="Error al cargar configuración de aporte"
+          title="Error al cargar configuración de aporte"
           description={error}
           type="error"
           showIcon

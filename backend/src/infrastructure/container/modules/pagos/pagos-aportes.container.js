@@ -18,6 +18,7 @@ import { RegisterAporteVoluntarioUseCase } from '../../../../application/use-cas
 import { ListPagosAportesUseCase } from '../../../../application/use-cases/pagos/ListPagosAportesUseCase.js';
 import { RegisterPagoAporteController, ListPagosAportesController } from '../../../../presentation/controllers/pagos/index.js';
 import { buildPagosAportesRouter } from '../../../../presentation/routes/pagos-aportes.routes.js';
+import { PDFGenerator } from '../../../../infrastructure/external/pdf/PDFGenerator.js';
 
 /**
  * Registra el recurso Pagos de Aportes en el contenedor
@@ -41,8 +42,10 @@ export function registerPagosAportesResource(container) {
                 studentScholarshipRepository: c.resolve(REPOSITORIOS_TOKENS.studentScholarshipRepository),
                 scholarshipRepository: c.resolve(REPOSITORIOS_TOKENS.scholarshipRepository),
                 managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
+                contributionConfigurationRepository: c.resolve(REPOSITORIOS_TOKENS.contributionConfigurationRepository),
                 studentDocumentRepository: c.resolve(REPOSITORIOS_TOKENS.studentDocumentRepository),
                 studentDocumentDeliveryRepository: c.resolve(REPOSITORIOS_TOKENS.studentDocumentDeliveryRepository),
+                pdfGenerator: PDFGenerator,
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
     );

@@ -50,8 +50,8 @@ const SelectedPaymentSection = ({
   onCancel,
   disabled = false
 }) => {
-  // Si no hay configuración o método de pago seleccionado, no mostrar
-  if (!selectedConfiguracion || !selectedMetodoPago) return null;
+  // Si no hay configuración, no mostrar
+  if (!selectedConfiguracion) return null;
 
   // Calcular descuento automáticamente basado en beca activa
   const montoTotal = Number(selectedConfiguracion.montoBase) || 0;
@@ -80,7 +80,14 @@ const SelectedPaymentSection = ({
   const descuentoBeca = tieneBeca ? (montoTotal * porcentajeDescuento / 100) : 0;
   const montoPagado = calcularMontoPagado(montoTotal, descuentoBeca);
 
-  // Determinar características del método de pago
+  // Determinar si es pago gratuito (monto = 0)
+  const esPagoGratuito = montoPagado === 0;
+
+  // Para pagos gratuitos, no requerir método de pago
+  // Para pagos con monto, requerir método de pago
+  if (!esPagoGratuito && !selectedMetodoPago) return null;
+
+  // Determinar características del método de pago (solo si hay método seleccionado)
   const codigoMetodo = selectedMetodoPago?.codigo?.toUpperCase() || '';
   const esEfectivo = codigoMetodo === 'EFECTIVO';
   const esTransferencia = codigoMetodo === 'TRANSFERENCIA';
@@ -89,19 +96,24 @@ const SelectedPaymentSection = ({
   const esTigoMoney = codigoMetodo === 'TIGO_MONEY';
   
   // Métodos que requieren cuenta bancaria (QR NO requiere cuenta bancaria)
-  const requiereCuenta = codigoMetodo && ['TRANSFERENCIA', 'DEPOSITO', 'TIGO_MONEY'].includes(codigoMetodo);
+  // Solo si NO es pago gratuito
+  const requiereCuenta = !esPagoGratuito && codigoMetodo && ['TRANSFERENCIA', 'DEPOSITO', 'TIGO_MONEY'].includes(codigoMetodo);
   
   // Métodos que requieren fecha de pago (todos excepto EFECTIVO)
-  const requiereFechaPago = !esEfectivo;
+  // Solo si NO es pago gratuito
+  const requiereFechaPago = !esPagoGratuito && !esEfectivo;
   
   // Métodos que requieren documento de respaldo (todos excepto EFECTIVO)
-  const requiereDocumentoRespaldo = !esEfectivo;
+  // Solo si NO es pago gratuito
+  const requiereDocumentoRespaldo = !esPagoGratuito && !esEfectivo;
   
   // Métodos que requieren número de transacción (solo TRANSFERENCIA)
-  const requiereNumeroTransaccion = esTransferencia;
+  // Solo si NO es pago gratuito
+  const requiereNumeroTransaccion = !esPagoGratuito && esTransferencia;
   
   // Métodos que requieren código de comprobante (QR, TRANSFERENCIA)
-  const requiereCodigoComprobante = esQR || esTransferencia;
+  // Solo si NO es pago gratuito
+  const requiereCodigoComprobante = !esPagoGratuito && (esQR || esTransferencia);
 
   // Sincronizar descuento en el formulario cuando cambie la beca o configuración
   useEffect(() => {
@@ -110,9 +122,9 @@ const SelectedPaymentSection = ({
     }
   }, [descuentoBeca, form]);
 
-  // Limpiar campos cuando cambie el método de pago
+  // Limpiar campos cuando cambie el método de pago (solo si NO es pago gratuito)
   useEffect(() => {
-    if (form) {
+    if (form && !esPagoGratuito && selectedMetodoPago) {
       // Limpiar campos específicos según el método
       if (esEfectivo) {
         form.setFieldsValue({ 
@@ -128,7 +140,7 @@ const SelectedPaymentSection = ({
         }
       }
     }
-  }, [codigoMetodo, form, esEfectivo]);
+  }, [codigoMetodo, form, esEfectivo, esPagoGratuito, selectedMetodoPago]);
 
   return (
     <Card
@@ -230,6 +242,7 @@ const SelectedPaymentSection = ({
               onClick={() => form?.submit()}
               icon={<SaveOutlined />}
               disabled={disabled}
+              loading={disabled}
               size="large"
               style={{
                 borderRadius: '8px',
@@ -240,7 +253,7 @@ const SelectedPaymentSection = ({
                 boxShadow: '0 2px 8px rgba(24, 144, 255, 0.3)',
               }}
             >
-              Registrar Pago
+              {disabled ? 'Registrando...' : 'Registrar Pago'}
             </Button>
           </div>
         </div>
@@ -328,6 +341,7 @@ const SelectedPaymentSection = ({
               onClick={() => form?.submit()}
               icon={<SaveOutlined />}
               disabled={disabled}
+              loading={disabled}
               size="large"
               style={{
                 borderRadius: '8px',
@@ -338,7 +352,7 @@ const SelectedPaymentSection = ({
                 boxShadow: '0 2px 8px rgba(24, 144, 255, 0.3)',
               }}
             >
-              Registrar Pago
+              {disabled ? 'Registrando...' : 'Registrar Pago'}
             </Button>
           </div>
         </>

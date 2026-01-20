@@ -58,7 +58,7 @@ const ConfigurationDetailSection = ({
         headerColor="primary"
       >
         <Alert
-          message="Error al cargar configuración de aporte"
+          title="Error al cargar configuración de aporte"
           description={error}
           type="error"
           showIcon

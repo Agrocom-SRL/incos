@@ -110,7 +110,7 @@ const PaymentMethodSelectionSection = ({
     >
       {metodosPagoData.error && (
         <Alert
-          message="Error al cargar métodos de pago"
+          title="Error al cargar métodos de pago"
           description={metodosPagoData.error}
           type="error"
           showIcon

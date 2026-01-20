@@ -21,8 +21,9 @@ import { PageHeader } from '@molecules';
 import { useStudentDetailContext } from '@application-estudiantes/hooks';
 import { useGenerateActaCompromiso } from '@application-estudiantes/hooks';
 import { downloadFile } from '@application/utils';
-import { Spin, Alert, Empty, Card, Descriptions, Tag, Button, App } from 'antd';
+import { Spin, Alert, Empty, Card, Descriptions, Tag, App } from 'antd';
 import { GiftOutlined, FileTextOutlined, DollarOutlined, DownloadOutlined, BookOutlined, EyeOutlined } from '@ant-design/icons';
+import { Button } from '@atoms';
 import {
   DatosPersonalesSection,
   GuardiansSection,
@@ -80,7 +81,7 @@ const EstudiantesDetail = () => {
     if (!result.success) {
       // Extraer el mensaje de error (puede ser string u objeto con code/message)
       let errorMessage = 'Error al generar el acta de compromiso';
-      
+
       if (result.error) {
         if (typeof result.error === 'string') {
           errorMessage = result.error;
@@ -92,7 +93,7 @@ const EstudiantesDetail = () => {
       } else if (result.message) {
         errorMessage = result.message;
       }
-      
+
       message.error(errorMessage);
     } else {
       // Mostrar mensaje de éxito si success: true (el archivo ya se descargó automáticamente)
@@ -129,7 +130,7 @@ const EstudiantesDetail = () => {
     <>
       {actaCompromisoData ? (
         <Button
-          type="default"
+          variant="default"
           icon={<DownloadOutlined />}
           onClick={handleDownloadActaCompromiso}
           style={{ marginRight: 8 }}
@@ -138,7 +139,7 @@ const EstudiantesDetail = () => {
         </Button>
       ) : tieneDocumentosFaltantesFlag ? (
         <Button
-          type="default"
+          variant="default"
           icon={<FileTextOutlined />}
           onClick={handleGenerateActaCompromiso}
           loading={loadingActa}
@@ -149,7 +150,7 @@ const EstudiantesDetail = () => {
       ) : null}
       <div style={{ marginRight: 8, display: 'inline-block' }}>
         <Button
-          type="default"
+          variant="error"
           icon={<DollarOutlined />}
           onClick={handleRegistrarPago}
         >
@@ -157,7 +158,7 @@ const EstudiantesDetail = () => {
         </Button>
       </div>
       <Button
-        type="primary"
+        variant="primary"
         icon={<GiftOutlined />}
         onClick={handleAsignarBeca}
       >
@@ -266,7 +267,7 @@ const EstudiantesDetail = () => {
 
         {/* Inscripción Actual */}
         {inscripcion && inscripcion.enrollment && (
-          <Card 
+          <Card
             title={
               <span>
                 <BookOutlined style={{ marginRight: 8 }} />
@@ -276,7 +277,7 @@ const EstudiantesDetail = () => {
             style={{ marginTop: '24px' }}
             extra={
               <Button
-                type="primary"
+                variant="primary"
                 icon={<EyeOutlined />}
                 onClick={handleVerInscripcion}
               >
