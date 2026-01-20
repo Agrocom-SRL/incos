@@ -12,25 +12,58 @@
  * @param {string} filePath - Ruta relativa del archivo (ej: /uploads/documentos/estudiantes/3/FORMULARIO_INSCRIPCION_3_xxx.pdf)
  * @param {string} fileName - Nombre del archivo para la descarga
  */
-export const downloadFile = (filePath, fileName) => {
+export const downloadFile = async (filePath, fileName) => {
   try {
     // Los archivos estáticos se sirven directamente en /uploads (sin /api)
     // Usar window.location.origin para obtener la base URL del servidor
     const baseUrl = window.location.origin;
-    const fileUrl = `${baseUrl}${filePath}`;
-
-    // Crear un elemento <a> temporal para descargar el archivo
-    const link = document.createElement('a');
-    link.href = fileUrl;
-    link.download = fileName || 'documento.pdf';
-    link.target = '_blank';
     
-    // Agregar al DOM, hacer click, y remover
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // Asegurar que filePath empiece con /
+    const normalizedPath = filePath.startsWith('/') ? filePath : `/${filePath}`;
+    const fileUrl = `${baseUrl}${normalizedPath}`;
+
+    console.log('[downloadFile] Intentando descargar:', { fileUrl, fileName });
+
+    // Intentar descargar usando fetch y blob (más confiable)
+    try {
+      const response = await fetch(fileUrl);
+      
+      if (!response.ok) {
+        throw new Error(`Error al obtener el archivo: ${response.status} ${response.statusText}`);
+      }
+
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      
+      // Crear un elemento <a> temporal para descargar el archivo
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = fileName || 'documento.pdf';
+      
+      // Agregar al DOM, hacer click, y remover
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Liberar el objeto URL después de un breve delay
+      setTimeout(() => {
+        window.URL.revokeObjectURL(blobUrl);
+      }, 100);
+    } catch (fetchError) {
+      console.warn('[downloadFile] Error con fetch, intentando método alternativo:', fetchError);
+      
+      // Fallback: usar método directo (puede funcionar si el archivo está en el mismo origen)
+      const link = document.createElement('a');
+      link.href = fileUrl;
+      link.download = fileName || 'documento.pdf';
+      link.target = '_blank';
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
   } catch (err) {
     console.error('Error al descargar el archivo:', err);
-    throw new Error('No se pudo descargar el archivo');
+    throw new Error('No se pudo descargar el archivo: ' + (err.message || 'Error desconocido'));
   }
 };

@@ -9,3 +9,4 @@ export { ListCuentasPagoController } from './cuentas-pago/list.controller.js';
 export { ListConfiguracionAportesController } from './configuracion-aportes/list.controller.js';
 export { RegisterPagoAporteController } from './pagos-aportes/register.controller.js';
 export { ListPagosAportesController } from './pagos-aportes/list.controller.js';
+export { GetPaymentAporteByIdController } from './pagos-aportes/detail.controller.js';

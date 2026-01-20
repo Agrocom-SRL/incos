@@ -4,3 +4,4 @@
 
 export { default as ListConnector } from './ListConnector';
 export { default as PagosRegistrarConnector } from './PagosRegistrarConnector';
+export { default as DetailConnector } from './DetailConnector';

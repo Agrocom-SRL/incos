@@ -16,7 +16,8 @@ import { PAGOS_TOKENS, REPOSITORIOS_TOKENS, SERVICIOS_TOKENS } from '../../token
 import { registerComponent } from '../../utils/container.helpers.js';
 import { RegisterAporteVoluntarioUseCase } from '../../../../application/use-cases/pagos/RegisterAporteVoluntarioUseCase.js';
 import { ListPagosAportesUseCase } from '../../../../application/use-cases/pagos/ListPagosAportesUseCase.js';
-import { RegisterPagoAporteController, ListPagosAportesController } from '../../../../presentation/controllers/pagos/index.js';
+import { GetPaymentAporteByIdUseCase } from '../../../../application/use-cases/pagos/GetPaymentAporteByIdUseCase.js';
+import { RegisterPagoAporteController, ListPagosAportesController, GetPaymentAporteByIdController } from '../../../../presentation/controllers/pagos/index.js';
 import { buildPagosAportesRouter } from '../../../../presentation/routes/pagos-aportes.routes.js';
 import { PDFGenerator } from '../../../../infrastructure/external/pdf/PDFGenerator.js';
 
@@ -66,6 +67,23 @@ export function registerPagosAportesResource(container) {
             })
     );
 
+    registerComponent(
+        container,
+        PAGOS_TOKENS.getPaymentAporteByIdUseCase,
+        (c) =>
+            new GetPaymentAporteByIdUseCase({
+                contributionPaymentRepository: c.resolve(REPOSITORIOS_TOKENS.contributionPaymentRepository),
+                studentRepository: c.resolve(REPOSITORIOS_TOKENS.studentRepository),
+                managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
+                paymentMethodRepository: c.resolve(REPOSITORIOS_TOKENS.paymentMethodRepository),
+                studentScholarshipRepository: c.resolve(REPOSITORIOS_TOKENS.studentScholarshipRepository),
+                scholarshipRepository: c.resolve(REPOSITORIOS_TOKENS.scholarshipRepository),
+                enrollmentRepository: c.resolve(REPOSITORIOS_TOKENS.enrollmentRepository),
+                studentDocumentRepository: c.resolve(REPOSITORIOS_TOKENS.studentDocumentRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
     // ============================================
     // CONTROLLERS
     // ============================================
@@ -91,6 +109,17 @@ export function registerPagosAportesResource(container) {
             })
     );
 
+    registerComponent(
+        container,
+        PAGOS_TOKENS.getPaymentAporteByIdController,
+        (c) =>
+            new GetPaymentAporteByIdController({
+                getPaymentAporteByIdUseCase: c.resolve(PAGOS_TOKENS.getPaymentAporteByIdUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
+    );
+
     // ============================================
     // ROUTER
     // ============================================
@@ -101,6 +130,7 @@ export function registerPagosAportesResource(container) {
             const controllers = {
                 registerPagoAporteController: c.resolve(PAGOS_TOKENS.registerPagoAporteController),
                 listPagosAportesController: c.resolve(PAGOS_TOKENS.listPagosAportesController),
+                getPaymentAporteByIdController: c.resolve(PAGOS_TOKENS.getPaymentAporteByIdController),
             };
 
             const middlewares = {

@@ -28,4 +28,15 @@ export class IPagoAporteRepository extends IBaseRepository {
   async registrarPago(data) {
     throw new Error('Method registrarPago must be implemented');
   }
+
+  /**
+   * Obtiene un pago de aporte por ID con todos sus datos relacionados
+   * GET /v1/pagos-aportes/:id
+   * 
+   * @param {string|number} id - ID del pago
+   * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
+   */
+  async obtenerPorId(id) {
+    throw new Error('Method obtenerPorId must be implemented');
+  }
 }

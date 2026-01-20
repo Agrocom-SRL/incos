@@ -15,6 +15,7 @@ import { UnderConstruction } from '@components/pages';
 // El Suspense ya está manejado globalmente por MainLayout con LoadingFallback
 const PagosRegistrarConnector = lazy(() => import('./connectors/PagosRegistrarConnector'));
 const PagosListConnector = lazy(() => import('./connectors/ListConnector'));
+const PagosDetailConnector = lazy(() => import('./connectors/DetailConnector'));
 
 export const pagosRoutes = [
     // Módulo raíz: Pagos (muestra la lista directamente)
@@ -53,7 +54,7 @@ export const pagosRoutes = [
     // Detalle de pago (sin menú, se accede por URL con parámetro de ruta :id)
     {
         path: '/pagos/:id',
-        element: <UnderConstruction />,
+        element: <PagosDetailConnector />,
         key: 'PAG-DETALLE',
         menu: null, // No aparece en el menú, se accede por URL con /pagos/:id
     },

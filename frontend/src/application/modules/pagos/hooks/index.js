@@ -15,6 +15,7 @@
 export { usePagosContext } from './context/usePagosContext';
 export { usePagosRegistrarContext } from './context/usePagosRegistrarContext';
 export { usePagosListContext } from './context/usePagosListContext';
+export { usePagosDetailContext } from './context/usePagosDetailContext';
 
 // ============================================
 // 2. GLOBAL STATE (Application Layer)
@@ -28,6 +29,7 @@ export { usePagosRegistrarData } from './state/usePagosRegistrarData';
 // ============================================
 // Exporta directamente desde los archivos (sin index.js intermedio)
 export { usePagosApi } from './api/usePagosApi';
+export { useGetPagoById } from './api/useGetPagoById';
 export { usePaymentAccountsApi } from './api/usePaymentAccountsApi';
 export { useAuthorizedBanksApi } from './api/useAuthorizedBanksApi';
 export { usePaymentMethodsApi } from './api/usePaymentMethodsApi';

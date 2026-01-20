@@ -159,6 +159,35 @@ export class PagoAporteRepository extends IPagoAporteRepository {
       return handleErrorResponse(error, 'Error al obtener pagos de aportes');
     }
   }
+
+  /**
+   * Obtiene un pago de aporte por ID con todos sus datos relacionados
+   * GET /v1/pagos-aportes/:id
+   * 
+   * @param {string|number} id - ID del pago
+   * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
+   */
+  async obtenerPorId(id) {
+    try {
+      // Validar que el ID sea válido
+      if (!id || (typeof id !== 'string' && typeof id !== 'number')) {
+        return {
+          success: false,
+          error: 'ID del pago es requerido',
+        };
+      }
+
+      // Llamada HTTP directa al endpoint
+      const response = await apiClient.get(PAGOS_APORTES_ENDPOINTS.BY_ID(id));
+
+      // Procesar respuesta exitosa
+      const result = handleSuccessResponse(response);
+
+      return result;
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al obtener pago de aporte');
+    }
+  }
 }
 
 export default new PagoAporteRepository();

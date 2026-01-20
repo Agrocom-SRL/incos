@@ -10,3 +10,4 @@ export { GetTodosPaymentMethodsUseCase } from './GetTodosPaymentMethodsUseCase';
 export { GetTodasContributionConfigurationsUseCase } from './GetTodasContributionConfigurationsUseCase';
 export { RegisterPagoAporteUseCase } from './RegisterPagoAporteUseCase';
 export { ObtenerTodosPagosAportesUseCase } from './ObtenerTodosPagosAportesUseCase';
+export { ObtenerPagoAportePorIdUseCase } from './ObtenerPagoAportePorIdUseCase';

@@ -31,21 +31,49 @@ export function entityToPresentation(payment) {
   BaseMapper.mapBaseFields(payment, presentation);
   
   // Mapear campos específicos de ContributionPayment
-  // Solo incluir campos que existen en la entidad (usando mapFieldIfExists)
-  BaseMapper.mapFieldIfExists(payment, 'studentId', 'student_id', presentation);
-  BaseMapper.mapFieldIfExists(payment, 'managementId', 'management_id', presentation);
-  BaseMapper.mapFieldIfExists(payment, 'enrollmentId', 'enrollment_id', presentation);
-  BaseMapper.mapFieldIfExists(payment, 'studentScholarshipId', 'student_scholarship_id', presentation);
-  BaseMapper.mapFieldIfExists(payment, 'paymentMethodId', 'payment_method_id', presentation);
-  BaseMapper.mapFieldIfExists(payment, 'paymentAccountId', 'payment_account_id', presentation);
-  BaseMapper.mapFieldIfExists(payment, 'receiptNumber', 'receipt_number', presentation);
-  BaseMapper.mapFieldIfExists(payment, 'paymentDate', 'payment_date', presentation);
-  BaseMapper.mapFieldIfExists(payment, 'totalAmount', 'total_amount', presentation);
-  BaseMapper.mapFieldIfExists(payment, 'scholarshipDiscount', 'scholarship_discount', presentation);
-  BaseMapper.mapFieldIfExists(payment, 'amountPaid', 'amount_paid', presentation);
-  BaseMapper.mapFieldIfExists(payment, 'transactionNumber', 'transaction_number', presentation);
-  BaseMapper.mapFieldIfExists(payment, 'concept', 'concept', presentation);
-  BaseMapper.mapFieldIfExists(payment, 'observations', 'observations', presentation);
+  // Usar verificación más robusta que funcione con objetos planos y entidades
+  if (payment.studentId !== undefined) {
+    presentation.student_id = payment.studentId;
+  }
+  if (payment.managementId !== undefined) {
+    presentation.management_id = payment.managementId;
+  }
+  if (payment.enrollmentId !== undefined) {
+    presentation.enrollment_id = payment.enrollmentId;
+  }
+  if (payment.studentScholarshipId !== undefined) {
+    presentation.student_scholarship_id = payment.studentScholarshipId;
+  }
+  if (payment.paymentMethodId !== undefined) {
+    presentation.payment_method_id = payment.paymentMethodId;
+  }
+  if (payment.paymentAccountId !== undefined) {
+    presentation.payment_account_id = payment.paymentAccountId;
+  }
+  if (payment.receiptNumber !== undefined) {
+    presentation.receipt_number = payment.receiptNumber;
+  }
+  if (payment.paymentDate !== undefined) {
+    presentation.payment_date = payment.paymentDate;
+  }
+  if (payment.totalAmount !== undefined) {
+    presentation.total_amount = payment.totalAmount;
+  }
+  if (payment.scholarshipDiscount !== undefined) {
+    presentation.scholarship_discount = payment.scholarshipDiscount;
+  }
+  if (payment.amountPaid !== undefined) {
+    presentation.amount_paid = payment.amountPaid;
+  }
+  if (payment.transactionNumber !== undefined) {
+    presentation.transaction_number = payment.transactionNumber;
+  }
+  if (payment.concept !== undefined) {
+    presentation.concept = payment.concept;
+  }
+  if (payment.observations !== undefined) {
+    presentation.observations = payment.observations;
+  }
 
   return presentation;
 }

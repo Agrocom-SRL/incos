@@ -64,9 +64,21 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
     );
 
     // ============================================
+    // DETALLE DE PAGO
+    // ============================================
+
+    /**
+     * GET /api/v1/pagos-aportes/:id
+     * Obtener pago de aporte por ID con todos sus datos relacionados
+     */
+    router.get(
+        '/:id',
+        (req, res, next) => controllers.getPaymentAporteByIdController.handle(req, res, next)
+    );
+
+    // ============================================
     // ENDPOINTS FUTUROS (TODO)
     // ============================================
-    // GET /:id - Obtener pago por ID
     // GET /estudiante/:studentId - Obtener pagos de un estudiante
 
     return router;
