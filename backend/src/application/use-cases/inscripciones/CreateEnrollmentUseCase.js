@@ -228,28 +228,29 @@ export class CreateEnrollmentUseCase {
    */
   async _getCurrentManagement() {
     // Obtener año de la gestión actual desde configuración
-    const configResult = await this.configuracionSistemaRepository.findBy(
+    const config = await this.configuracionSistemaRepository.findBy(
       { key: 'gestion_actual' }
     );
     
-    // findBy puede retornar un array o un objeto único
-    const config = Array.isArray(configResult) ? configResult[0] : configResult;
-    
-    if (!config || !config.valor) {
+    if (!config || !config.value) {
       throw new ValidationError(
         'No se encontró la configuración de gestión actual. Por favor, configure el sistema.'
       );
     }
 
-    const gestionYear = parseInt(config.valor, 10);
+    const gestionYear = parseInt(config.value, 10);
     if (isNaN(gestionYear)) {
       throw new ValidationError(
-        `El valor de gestión actual (${config.valor}) no es un año válido`
+        `El valor de gestión actual (${config.value}) no es un año válido`
       );
     }
 
-    // Buscar la gestión por año y vigente
-    const management = await this.managementRepository.findByYearAndActive(gestionYear, true);
+    // Buscar la gestión por año y vigente usando findBy con filtros
+    const management = await this.managementRepository.findBy({
+      year: gestionYear,
+      vigente: true,
+    });
+    
     if (!management) {
       throw new ValidationError(
         `No se encontró una gestión vigente para el año ${gestionYear}. Por favor, configure el sistema.`
