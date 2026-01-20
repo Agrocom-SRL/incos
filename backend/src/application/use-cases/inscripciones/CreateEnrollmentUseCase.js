@@ -44,6 +44,7 @@ export class CreateEnrollmentUseCase {
    * @param {Object} params.provinceRepository - Repositorio de provincias
    * @param {Object} params.departmentRepository - Repositorio de departamentos
    * @param {Object} params.languageRepository - Repositorio de idiomas
+   * @param {Object} params.contributionPaymentRepository - Repositorio de pagos de aporte
    * @param {ILogger} params.logger - Logger para registro de eventos
    */
   constructor({
@@ -66,6 +67,7 @@ export class CreateEnrollmentUseCase {
     provinceRepository,
     departmentRepository,
     languageRepository,
+    contributionPaymentRepository,
     logger,
   }) {
     this.enrollmentRepository = enrollmentRepository;
@@ -87,6 +89,7 @@ export class CreateEnrollmentUseCase {
     this.provinceRepository = provinceRepository;
     this.departmentRepository = departmentRepository;
     this.languageRepository = languageRepository;
+    this.contributionPaymentRepository = contributionPaymentRepository;
     this.logger = logger;
   }
 
@@ -133,13 +136,16 @@ export class CreateEnrollmentUseCase {
       // 5. Validar que no exista inscripción previa
       await this._validateNoExistingEnrollment(studentAcademicData, management);
 
-      // 6. Obtener todas las asignaciones docentes del paralelo
+      // 6. Validar que el estudiante haya realizado el pago del aporte anual
+      await this._validatePaymentExists(student, management);
+
+      // 7. Obtener todas las asignaciones docentes del paralelo
       const teacherAssignments = await this._getTeacherAssignmentsFromParallel(
         parallel,
         managementPlan
       );
 
-      // 7. Crear la inscripción principal
+      // 8. Crear la inscripción principal
       const enrollment = await this._createEnrollment(
         studentAcademicData,
         management,
@@ -147,13 +153,13 @@ export class CreateEnrollmentUseCase {
         observations
       );
 
-      // 8. Crear las inscripciones de materias para todas las asignaciones docentes
+      // 9. Crear las inscripciones de materias para todas las asignaciones docentes
       const enrollmentSubjects = await this._createEnrollmentSubjects(
         enrollment,
         teacherAssignments
       );
 
-      // 9. Construir y retornar respuesta
+      // 10. Construir y retornar respuesta
       // NOTA: La generación de boleta de inscripción ahora se hace mediante un endpoint separado
       // POST /api/v1/inscripciones/:id/generar-boleta
       return this._buildResponse(enrollment, enrollmentSubjects, studentId, parallelId, management);
@@ -415,6 +421,44 @@ export class CreateEnrollmentUseCase {
     this.logger.info('[Inscripciones] Validación de inscripción previa exitosa', {
       studentAcademicDataId: studentAcademicData.id,
       managementId: management.id,
+    });
+  }
+
+  /**
+   * Valida que el estudiante haya realizado el pago del aporte anual para la gestión vigente
+   * @private
+   * @param {Object} student - Entidad Student
+   * @param {Object} management - Entidad Management
+   * @throws {ValidationError} Si no existe un pago válido
+   */
+  async _validatePaymentExists(student, management) {
+    const result = await this.contributionPaymentRepository.findAll(
+      {
+        studentId: student.id,
+        managementId: management.id,
+      },
+      1,
+      null
+    );
+
+    if (!result.contributionPayments || result.contributionPayments.length === 0) {
+      throw new ValidationError(
+        `El estudiante no ha realizado el pago del aporte académico para la gestión ${management.year}. ` +
+        `Debe realizar el pago antes de inscribirse.`
+      );
+    }
+
+    const payment = result.contributionPayments[0];
+    
+    // NOTA: No validamos que amountPaid > 0 porque los estudiantes con beca 100%
+    // pueden tener monto_pagado = 0 (monto_total - descuento_beca = 0)
+
+    this.logger.info('[Inscripciones] Validación de pago de aporte exitosa', {
+      studentId: student.id,
+      managementId: management.id,
+      paymentId: payment.id,
+      amountPaid: payment.amountPaid,
+      scholarshipDiscount: payment.scholarshipDiscount,
     });
   }
 
