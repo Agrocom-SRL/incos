@@ -271,14 +271,14 @@ export class BoletaInscripcionWordGenerator {
     // Subsección: Nombres y Apellidos
     contenido += this._createSubsection('Nombres y Apellidos:');
     
-    // Campos de nombres en una sola línea con separadores visuales
-    contenido += this._createFieldRow([
-      { label: 'Apellido Paterno', value: apellidoPaterno },
-      { label: 'Apellido Materno', value: apellidoMaterno },
-      { label: 'Nombres', value: nombres },
+    // Campos de nombres en una sola línea SIN separadores (solo espacios)
+    contenido += this._createFieldRowWithoutSeparators([
+      { value: apellidoPaterno },
+      { value: apellidoMaterno },
+      { value: nombres },
     ]);
 
-    contenido += this._createSpacing(200);
+    contenido += this._createSpacing(100);
 
     // C.I. y Género en la misma línea
     contenido += this._createFieldWithInlineCheckboxes(
@@ -296,7 +296,7 @@ export class BoletaInscripcionWordGenerator {
     // Correo Electrónico
     contenido += this._createField('Correo Electrónico', emailPersonal);
 
-    contenido += this._createSpacing(100);
+    contenido += this._createSpacing(60);
 
     // Estado Civil con checkboxes en línea horizontal
     const esEstadoCivilSoltero = estadoCivil?.toLowerCase().includes('solter');
@@ -317,7 +317,7 @@ export class BoletaInscripcionWordGenerator {
       ]}
     );
 
-    contenido += this._createSpacing(200);
+    contenido += this._createSpacing(100);
 
     // Subsección: Lugar y Fecha de Nacimiento
     contenido += this._createSubsection('Lugar y Fecha de Nacimiento');
@@ -348,7 +348,7 @@ export class BoletaInscripcionWordGenerator {
       { label: 'Celular', value: celular },
     ]);
 
-    contenido += this._createSpacing(200);
+    contenido += this._createSpacing(100);
 
     // Trabaja: Si/No, Cargo, Empresa
     contenido += this._createFieldWithInlineCheckboxes(
@@ -365,35 +365,17 @@ export class BoletaInscripcionWordGenerator {
       contenido += this._createField('Empresa/Institución', empresa);
     }
 
-    contenido += this._createSpacing(300);
+    contenido += this._createSpacing(150);
 
     // ============================================
     // SECCIÓN 2: DATOS ACADÉMICOS
     // ============================================
     contenido += this._createSection('2.- DATOS ACADÉMICOS');
 
-    // Carrera y Año en dos columnas
-    contenido += this._createTwoColumnSection(
-      // Columna izquierda: Carrera
-      () => {
-        let col1 = this._createParagraph('Carrera:', { bold: true, fontSize: 20 });
-        col1 += this._createCheckboxItem('Contaduría General', carrera?.toLowerCase().includes('contad'));
-        col1 += this._createCheckboxItem('Secretariado Ejecutivo', carrera?.toLowerCase().includes('secretariad'));
-        col1 += this._createCheckboxItem('Sistemas Informáticos', carrera?.toLowerCase().includes('sistem') || carrera?.toLowerCase().includes('informát'));
-        col1 += this._createCheckboxItem('Mercadotecnia', carrera?.toLowerCase().includes('mercadotecnia'));
-        return col1;
-      },
-      // Columna derecha: Año
-      () => {
-        let col2 = this._createParagraph('Año:', { bold: true, fontSize: 20 });
-        col2 += this._createCheckboxItem('Primer Año', anio?.toLowerCase().includes('primer'));
-        col2 += this._createCheckboxItem('Segundo Año', anio?.toLowerCase().includes('segund'));
-        col2 += this._createCheckboxItem('Tercer Año', anio?.toLowerCase().includes('tercer'));
-        return col2;
-      }
-    );
+    // Carrera y Año en tabla de dos columnas (LADO A LADO)
+    contenido += this._createCarreraYAnoTable(carrera, anio);
 
-    contenido += this._createSpacing(300);
+    contenido += this._createSpacing(150);
 
     // ============================================
     // SECCIÓN 3: DOCUMENTOS RECEPCIONADOS
@@ -411,7 +393,7 @@ export class BoletaInscripcionWordGenerator {
       contenido += this._createBulletCheckboxItem(item.label, item.checked);
     });
 
-    contenido += this._createSpacing(400);
+    contenido += this._createSpacing(200);
 
     // ============================================
     // FIRMAS
@@ -421,7 +403,7 @@ export class BoletaInscripcionWordGenerator {
       { label: 'Responsable Inscripción', ci: '', expedicion: '' }
     );
 
-    contenido += this._createSpacing(300);
+    contenido += this._createSpacing(150);
 
     // ============================================
     // NOTA LEGAL
@@ -447,7 +429,7 @@ export class BoletaInscripcionWordGenerator {
     return `
     <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}" w:rsidR="00DD08A8" w:rsidRDefault="00DD08A8">
       <w:pPr>
-        <w:spacing w:before="300" w:after="150"/>
+        <w:spacing w:before="200" w:after="100"/>
         <w:jc w:val="left"/>
         <w:rPr>
           <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
@@ -476,7 +458,7 @@ export class BoletaInscripcionWordGenerator {
     return `
     <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}" w:rsidR="00DD08A8" w:rsidRDefault="00DD08A8">
       <w:pPr>
-        <w:spacing w:before="150" w:after="100"/>
+        <w:spacing w:before="100" w:after="60"/>
         <w:rPr>
           <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
           <w:b/>
@@ -494,6 +476,56 @@ export class BoletaInscripcionWordGenerator {
         <w:t>${this._escapeXml(title)}</w:t>
       </w:r>
     </w:p>`;
+  }
+
+  /**
+   * Crea una fila de campos SIN separadores (solo espacios)
+   * Usado para: Apellido Paterno Apellido Materno Nombres
+   * @private
+   */
+  static _createFieldRowWithoutSeparators(fields) {
+    let xml = `
+    <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}" w:rsidR="00DD08A8" w:rsidRDefault="00DD08A8">
+      <w:pPr>
+        <w:spacing w:after="80"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>`;
+
+    fields.forEach((field, index) => {
+      if (index > 0) {
+        // Solo espacios, sin barras
+        xml += `
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> </w:t>
+      </w:r>`;
+      }
+
+      const displayValue = field.value || field.placeholder || '';
+      
+      xml += `
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+        <w:t>${this._escapeXml(displayValue)}</w:t>
+      </w:r>`;
+    });
+
+    xml += `
+    </w:p>`;
+
+    return xml;
   }
 
   /**
@@ -555,7 +587,7 @@ export class BoletaInscripcionWordGenerator {
     return `
     <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}" w:rsidR="00DD08A8" w:rsidRDefault="00DD08A8">
       <w:pPr>
-        <w:spacing w:after="100"/>
+        <w:spacing w:after="60"/>
         ${indent > 0 ? `<w:ind w:left="${indent}"/>` : ''}
         <w:rPr>
           <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
@@ -587,7 +619,7 @@ export class BoletaInscripcionWordGenerator {
     let xml = `
     <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}" w:rsidR="00DD08A8" w:rsidRDefault="00DD08A8">
       <w:pPr>
-        <w:spacing w:after="100"/>
+        <w:spacing w:after="60"/>
         <w:rPr>
           <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
           <w:sz w:val="20"/>
@@ -684,7 +716,7 @@ export class BoletaInscripcionWordGenerator {
     let xml = `
     <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}" w:rsidR="00DD08A8" w:rsidRDefault="00DD08A8">
       <w:pPr>
-        <w:spacing w:after="100"/>
+        <w:spacing w:after="60"/>
         <w:rPr>
           <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
           <w:sz w:val="20"/>
@@ -732,7 +764,7 @@ export class BoletaInscripcionWordGenerator {
     let xml = `
     <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}" w:rsidR="00DD08A8" w:rsidRDefault="00DD08A8">
       <w:pPr>
-        <w:spacing w:after="100"/>
+        <w:spacing w:after="60"/>
         <w:rPr>
           <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
           <w:sz w:val="20"/>
@@ -811,7 +843,7 @@ export class BoletaInscripcionWordGenerator {
     return `
     <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}" w:rsidR="00DD08A8" w:rsidRDefault="00DD08A8">
       <w:pPr>
-        <w:spacing w:after="100"/>
+        <w:spacing w:after="60"/>
         <w:ind w:left="400"/>
         <w:rPr>
           <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
@@ -828,6 +860,291 @@ export class BoletaInscripcionWordGenerator {
         <w:t xml:space="preserve">• ${this._escapeXml(label)}    ${checkSymbol}</w:t>
       </w:r>
     </w:p>`;
+  }
+
+  /**
+   * Crea una tabla de dos columnas para Carrera y Año
+   * Las columnas están LADO A LADO (no secuenciales)
+   * @private
+   */
+  static _createCarreraYAnoTable(carrera, anio) {
+    // Determinar qué carrera está marcada
+    const isContaduria = carrera?.toLowerCase().includes('contad');
+    const isSecretariado = carrera?.toLowerCase().includes('secretariad');
+    const isSistemas = carrera?.toLowerCase().includes('sistem') || carrera?.toLowerCase().includes('informát');
+    const isMercadotecnia = carrera?.toLowerCase().includes('mercadotecnia');
+
+    // Determinar qué año está marcado (default: Primer Año si no hay anio)
+    const isPrimerAnio = !anio || anio?.toLowerCase().includes('primer');
+    const isSegundoAnio = anio?.toLowerCase().includes('segund');
+    const isTercerAnio = anio?.toLowerCase().includes('tercer');
+
+    return `
+    <w:tbl>
+      <w:tblPr>
+        <w:tblW w:w="5000" w:type="pct"/>
+        <w:tblBorders>
+          <w:top w:val="none"/>
+          <w:left w:val="none"/>
+          <w:bottom w:val="none"/>
+          <w:right w:val="none"/>
+          <w:insideH w:val="none"/>
+          <w:insideV w:val="none"/>
+        </w:tblBorders>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="4500"/>
+        <w:gridCol w:w="4500"/>
+      </w:tblGrid>
+      
+      <!-- Fila de encabezados: Carrera: | Año: -->
+      <w:tr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4500" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}">
+            <w:pPr>
+              <w:spacing w:after="60"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
+                <w:b/>
+                <w:sz w:val="20"/>
+                <w:szCs w:val="20"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
+                <w:b/>
+                <w:sz w:val="20"/>
+                <w:szCs w:val="20"/>
+              </w:rPr>
+              <w:t>Carrera:</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4500" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}">
+            <w:pPr>
+              <w:spacing w:after="60"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
+                <w:b/>
+                <w:sz w:val="20"/>
+                <w:szCs w:val="20"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
+                <w:b/>
+                <w:sz w:val="20"/>
+                <w:szCs w:val="20"/>
+              </w:rPr>
+              <w:t>Año:</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      
+      <!-- Fila 1: Contaduría General | Primer Año -->
+      <w:tr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4500" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}">
+            <w:pPr>
+              <w:spacing w:after="60"/>
+              <w:ind w:left="200"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
+                <w:sz w:val="20"/>
+                <w:szCs w:val="20"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
+                <w:sz w:val="20"/>
+                <w:szCs w:val="20"/>
+              </w:rPr>
+              <w:t xml:space="preserve">${isContaduria ? '☒' : '☐'} Contaduría General</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4500" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}">
+            <w:pPr>
+              <w:spacing w:after="60"/>
+              <w:ind w:left="200"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
+                <w:sz w:val="20"/>
+                <w:szCs w:val="20"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
+                <w:sz w:val="20"/>
+                <w:szCs w:val="20"/>
+              </w:rPr>
+              <w:t xml:space="preserve">${isPrimerAnio ? '☒' : '☐'} Primer Año</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      
+      <!-- Fila 2: Secretariado Ejecutivo | Segundo Año -->
+      <w:tr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4500" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}">
+            <w:pPr>
+              <w:spacing w:after="60"/>
+              <w:ind w:left="200"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
+                <w:sz w:val="20"/>
+                <w:szCs w:val="20"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
+                <w:sz w:val="20"/>
+                <w:szCs w:val="20"/>
+              </w:rPr>
+              <w:t xml:space="preserve">${isSecretariado ? '☒' : '☐'} Secretariado Ejecutivo</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4500" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}">
+            <w:pPr>
+              <w:spacing w:after="60"/>
+              <w:ind w:left="200"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
+                <w:sz w:val="20"/>
+                <w:szCs w:val="20"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
+                <w:sz w:val="20"/>
+                <w:szCs w:val="20"/>
+              </w:rPr>
+              <w:t xml:space="preserve">${isSegundoAnio ? '☒' : '☐'} Segundo Año</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      
+      <!-- Fila 3: Sistemas Informáticos | Tercer Año -->
+      <w:tr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4500" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}">
+            <w:pPr>
+              <w:spacing w:after="60"/>
+              <w:ind w:left="200"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
+                <w:sz w:val="20"/>
+                <w:szCs w:val="20"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
+                <w:sz w:val="20"/>
+                <w:szCs w:val="20"/>
+              </w:rPr>
+              <w:t xml:space="preserve">${isSistemas ? '☒' : '☐'} Sistemas Informáticos</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4500" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}">
+            <w:pPr>
+              <w:spacing w:after="60"/>
+              <w:ind w:left="200"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
+                <w:sz w:val="20"/>
+                <w:szCs w:val="20"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
+                <w:sz w:val="20"/>
+                <w:szCs w:val="20"/>
+              </w:rPr>
+              <w:t xml:space="preserve">${isTercerAnio ? '☒' : '☐'} Tercer Año</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      
+      <!-- Fila 4: Mercadotecnia | (vacío) -->
+      <w:tr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4500" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}">
+            <w:pPr>
+              <w:spacing w:after="60"/>
+              <w:ind w:left="200"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
+                <w:sz w:val="20"/>
+                <w:szCs w:val="20"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
+                <w:sz w:val="20"/>
+                <w:szCs w:val="20"/>
+              </w:rPr>
+              <w:t xml:space="preserve">${isMercadotecnia ? '☒' : '☐'} Mercadotecnia</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4500" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}">
+            <w:pPr>
+              <w:spacing w:after="60"/>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>`;
   }
 
   /**
@@ -949,7 +1266,7 @@ export class BoletaInscripcionWordGenerator {
     return `
     <w:p w14:paraId="${this._generateId()}" w14:textId="${this._generateId()}" w:rsidR="00DD08A8" w:rsidRDefault="00DD08A8">
       <w:pPr>
-        <w:spacing w:after="100"/>
+        <w:spacing w:after="60"/>
         <w:jc w:val="${align}"/>
         <w:rPr>
           <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
