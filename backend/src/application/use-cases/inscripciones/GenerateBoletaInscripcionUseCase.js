@@ -5,7 +5,7 @@
  * 
  * Responsabilidades:
  * - Validar que la inscripción exista
- * - Obtener todos los datos necesarios (estudiante, carrera, paralelo, gestión, materias, etc.)
+ * - Obtener todos los datos necesarios (estudiante, carrera, paralelo, gestión, etc.)
  * - Generar el documento PDF
  * - Guardar el documento en BD
  * - Retornar la ruta del archivo generado
@@ -34,12 +34,8 @@ export class GenerateBoletaInscripcionUseCase {
   /**
    * @param {Object} params - Dependencias inyectadas
    * @param {Object} params.enrollmentRepository - Repositorio de inscripciones
-   * @param {Object} params.enrollmentSubjectRepository - Repositorio de materias inscritas
    * @param {Object} params.studentRepository - Repositorio de estudiantes
    * @param {Object} params.studentAcademicDataRepository - Repositorio de datos académicos
-   * @param {Object} params.parallelRepository - Repositorio de paralelos
-   * @param {Object} params.courseRepository - Repositorio de cursos
-   * @param {Object} params.teacherAssignmentRepository - Repositorio de asignaciones docentes
    * @param {Object} params.managementRepository - Repositorio de gestiones
    * @param {Object} params.careerRepository - Repositorio de carreras
    * @param {Object} params.studentDocumentRepository - Repositorio de documentos de estudiantes
@@ -49,18 +45,13 @@ export class GenerateBoletaInscripcionUseCase {
    * @param {Object} params.provinceRepository - Repositorio de provincias
    * @param {Object} params.departmentRepository - Repositorio de departamentos
    * @param {Object} params.languageRepository - Repositorio de idiomas
-   * @param {Object} params.teacherRepository - Repositorio de docentes
    * @param {Object} params.configuracionSistemaRepository - Repositorio de configuración del sistema
    * @param {ILogger} params.logger - Logger para registro de eventos
    */
   constructor({
     enrollmentRepository,
-    enrollmentSubjectRepository,
     studentRepository,
     studentAcademicDataRepository,
-    parallelRepository,
-    courseRepository,
-    teacherAssignmentRepository,
     managementRepository,
     careerRepository,
     studentDocumentRepository,
@@ -70,17 +61,12 @@ export class GenerateBoletaInscripcionUseCase {
     provinceRepository,
     departmentRepository,
     languageRepository,
-    teacherRepository,
     configuracionSistemaRepository,
     logger,
   }) {
     this.enrollmentRepository = enrollmentRepository;
-    this.enrollmentSubjectRepository = enrollmentSubjectRepository;
     this.studentRepository = studentRepository;
     this.studentAcademicDataRepository = studentAcademicDataRepository;
-    this.parallelRepository = parallelRepository;
-    this.courseRepository = courseRepository;
-    this.teacherAssignmentRepository = teacherAssignmentRepository;
     this.managementRepository = managementRepository;
     this.careerRepository = careerRepository;
     this.studentDocumentRepository = studentDocumentRepository;
@@ -90,7 +76,6 @@ export class GenerateBoletaInscripcionUseCase {
     this.provinceRepository = provinceRepository;
     this.departmentRepository = departmentRepository;
     this.languageRepository = languageRepository;
-    this.teacherRepository = teacherRepository;
     this.configuracionSistemaRepository = configuracionSistemaRepository;
     this.logger = logger;
   }
@@ -112,103 +97,36 @@ export class GenerateBoletaInscripcionUseCase {
 
       // 2. Buscar inscripción activa del estudiante
       const enrollment = await this._getEnrollmentByStudentId(studentId);
-      
+
       if (!enrollment) {
         throw new NotFoundError(`No se encontró una inscripción activa para el estudiante con ID ${studentId}`);
       }
 
-      const enrollmentId = enrollment.id;
-
-      // 3. Obtener gestión (la necesitamos para buscar datos académicos si no están en la inscripción)
-      // Si la inscripción no tiene gestionId, obtenemos la gestión vigente actual
+      // 3. Obtener gestión desde la inscripción o la gestión vigente actual
       const enrollmentManagementId = enrollment.gestionId || enrollment.gestion_id;
-      const management = enrollmentManagementId 
+      const management = enrollmentManagementId
         ? await this._getManagement(enrollmentManagementId)
         : await this._getCurrentManagement();
-      
-      // Obtener el ID de la gestión (puede venir de la inscripción o de la gestión vigente)
-      const managementPlain = management.toPlainObject ? management.toPlainObject() : management;
-      const managementId = managementPlain.id || management.id;
 
-      // 4. Obtener datos académicos del estudiante
-      // El enrollment ya está convertido a objeto plano, así que accedemos directamente
-      const studentAcademicDataId = enrollment.estudianteDatosAcademicosId || enrollment.estudiante_datos_academicos_id;
-      
-      let studentAcademicData;
-      
-      if (studentAcademicDataId) {
-        // Si la inscripción tiene datos académicos asociados, usarlos
-        studentAcademicData = await this._getStudentAcademicData(studentAcademicDataId);
-      } else {
-        // Si no tiene estudianteDatosAcademicosId, necesitamos obtenerlo desde el estudiante
-        // Primero obtenemos las materias inscritas para ver si podemos obtener información
-        const enrollmentSubjects = await this._getEnrollmentSubjects(enrollmentId);
-        
-        if (!enrollmentSubjects || enrollmentSubjects.length === 0) {
-          throw new ValidationError(
-            'La inscripción no tiene materias inscritas ni datos académicos asociados. No se puede generar la boleta.'
-          );
-        }
+      // 4. Obtener datos académicos del estudiante directamente por studentId
+      // La relación es 1:1 entre estudiantes y estudiantes_datos_academicos
+      const studentAcademicData = await this._getStudentAcademicDataByStudentId(studentId);
 
-        // Buscar datos académicos que tengan una inscripción activa en esta gestión con este ID
-        studentAcademicData = await this._findStudentAcademicDataByEnrollmentId(enrollmentId, managementId);
-        
-        if (!studentAcademicData) {
-          throw new ValidationError(
-            'No se pudieron encontrar los datos académicos del estudiante asociados a esta inscripción. Por favor, asegúrese de que la inscripción tenga datos académicos asociados.'
-          );
-        }
-      }
-
-      // 5. Obtener materias inscritas
-      const enrollmentSubjects = await this._getEnrollmentSubjects(enrollmentId);
-      
-      if (!enrollmentSubjects || enrollmentSubjects.length === 0) {
-        throw new ValidationError(
-          'La inscripción no tiene materias inscritas. No se puede generar la boleta.'
+      if (!studentAcademicData) {
+        throw new NotFoundError(
+          `No se encontraron datos académicos para el estudiante con ID ${studentId}. Por favor, asegúrese de que el estudiante tenga datos académicos registrados.`
         );
       }
 
-      // 6. Obtener paralelo opcionalmente desde la primera asignación docente
-      // Si no se puede obtener, se usará un valor por defecto en la generación
-      let parallel = null;
-      try {
-        const firstEnrollmentSubject = enrollmentSubjects[0];
-        const firstEnrollmentSubjectPlain = firstEnrollmentSubject.toPlainObject 
-          ? firstEnrollmentSubject.toPlainObject() 
-          : firstEnrollmentSubject;
-        const teacherAssignmentId = firstEnrollmentSubjectPlain.asignacionDocenteId || firstEnrollmentSubjectPlain.teacherAssignmentId;
-        
-        if (teacherAssignmentId) {
-          const firstAssignment = await this._getTeacherAssignment(teacherAssignmentId);
-          const assignmentPlain = firstAssignment.toPlainObject ? firstAssignment.toPlainObject() : firstAssignment;
-          const courseId = assignmentPlain.cursoId || assignmentPlain.courseId;
-          
-          if (courseId) {
-            parallel = await this._getParallelFromCourse(courseId);
-          }
-        }
-      } catch (error) {
-        // Si no se puede obtener el paralelo, continuamos sin él
-        // Se usará un valor por defecto en la generación de la boleta
-        this.logger.warn('[Inscripciones] No se pudo obtener el paralelo, se usará valor por defecto', {
-          enrollmentId,
-          error: error.message,
-        });
-      }
-
-      // 7. Generar la boleta
+      // 5. Generar la boleta
       const result = await this._generateBoleta(
         student,
         studentAcademicData,
-        parallel,
-        management,
-        enrollmentSubjects
+        management
       );
 
       this.logger.info('[Inscripciones] Boleta de inscripción generada exitosamente', {
         studentId,
-        enrollmentId,
         filePath: result.filePath,
       });
 
@@ -271,13 +189,13 @@ export class GenerateBoletaInscripcionUseCase {
         // Retornar la primera inscripción activa encontrada (la más reciente)
         const enrollment = enrollmentsResult.enrollments[0];
         const enrollmentPlain = enrollment.toPlainObject ? enrollment.toPlainObject() : enrollment;
-        
+
         this.logger.info('[Inscripciones] Inscripción encontrada para el estudiante', {
           studentId,
           enrollmentId: enrollmentPlain.id,
           academicDataId,
         });
-        
+
         return enrollmentPlain;
       }
     }
@@ -286,23 +204,32 @@ export class GenerateBoletaInscripcionUseCase {
   }
 
   /**
-   * Obtiene los datos académicos del estudiante
+   * Obtiene los datos académicos del estudiante por ID de estudiante
+   * La relación es 1:1, así que obtenemos el primer registro activo del estudiante
    * @private
+   * @param {number} studentId - ID del estudiante
+   * @returns {Promise<Object|null>} Datos académicos del estudiante o null si no se encuentra
    */
-  async _getStudentAcademicData(studentAcademicDataId) {
-    if (!studentAcademicDataId) {
-      throw new ValidationError('ID de datos académicos del estudiante no disponible');
+  async _getStudentAcademicDataByStudentId(studentId) {
+    if (!studentId) {
+      throw new ValidationError('ID de estudiante no disponible');
     }
-    
-    const studentAcademicData = await this.studentAcademicDataRepository.findById(
-      studentAcademicDataId
+
+    const result = await this.studentAcademicDataRepository.findAll(
+      {
+        studentId: studentId,
+        active: true,
+      },
+      null,
+      null
     );
-    if (!studentAcademicData) {
-      throw new NotFoundError(
-        `Datos académicos con ID ${studentAcademicDataId} no encontrados`
-      );
+
+    if (!result.studentAcademicData || result.studentAcademicData.length === 0) {
+      return null;
     }
-    return studentAcademicData;
+
+    // Retornar el primer registro activo (debería ser único por la relación 1:1)
+    return result.studentAcademicData[0];
   }
 
   /**
@@ -313,7 +240,7 @@ export class GenerateBoletaInscripcionUseCase {
     if (!studentId) {
       throw new ValidationError('ID de estudiante no disponible');
     }
-    
+
     const student = await this.studentRepository.findById(studentId);
     if (!student) {
       throw new NotFoundError(`Estudiante con ID ${studentId} no encontrado`);
@@ -329,7 +256,7 @@ export class GenerateBoletaInscripcionUseCase {
     if (!managementId) {
       throw new ValidationError('ID de gestión no disponible');
     }
-    
+
     const management = await this.managementRepository.findById(managementId);
     if (!management) {
       throw new NotFoundError(`Gestión con ID ${managementId} no encontrada`);
@@ -384,129 +311,22 @@ export class GenerateBoletaInscripcionUseCase {
   }
 
   /**
-   * Obtiene las materias inscritas
-   * @private
-   */
-  async _getEnrollmentSubjects(enrollmentId) {
-    const result = await this.enrollmentSubjectRepository.findAll(
-      { enrollmentId },
-      null,
-      null
-    );
-    return result.enrollmentSubjects || [];
-  }
-
-  /**
-   * Busca datos académicos del estudiante por ID de inscripción
-   * Esto se usa cuando la inscripción no tiene estudianteDatosAcademicosId
-   * Busca datos académicos que tengan una inscripción activa con este ID en esta gestión
-   * @private
-   */
-  async _findStudentAcademicDataByEnrollmentId(enrollmentId, managementId) {
-    // Buscar todos los datos académicos activos
-    // Luego verificar cuál tiene una inscripción activa con este enrollmentId en esta gestión
-    const allAcademicDataResult = await this.studentAcademicDataRepository.findAll(
-      {
-        active: true,
-      },
-      null,
-      null
-    );
-
-    if (!allAcademicDataResult.studentAcademicData || allAcademicDataResult.studentAcademicData.length === 0) {
-      return null;
-    }
-
-    // Para cada dato académico, verificar si tiene una inscripción activa con este ID en esta gestión
-    for (const academicData of allAcademicDataResult.studentAcademicData) {
-      const academicDataPlain = academicData.toPlainObject ? academicData.toPlainObject() : academicData;
-      const academicDataId = academicDataPlain.id;
-      
-      // Buscar inscripciones de este estudiante en esta gestión
-      const studentEnrollmentsResult = await this.enrollmentRepository.findAll(
-        {
-          estudianteDatosAcademicosId: academicDataId,
-          gestionId: managementId,
-          active: true,
-        },
-        null,
-        null
-      );
-
-      // Verificar si alguna de estas inscripciones tiene el enrollmentId que buscamos
-      if (studentEnrollmentsResult.enrollments && studentEnrollmentsResult.enrollments.length > 0) {
-        const foundEnrollment = studentEnrollmentsResult.enrollments.find(e => {
-          const ePlain = e.toPlainObject ? e.toPlainObject() : e;
-          return ePlain.id === enrollmentId;
-        });
-
-        if (foundEnrollment) {
-          // Encontramos los datos académicos del estudiante que tiene esta inscripción
-          return academicData;
-        }
-      }
-    }
-
-    return null;
-  }
-
-  /**
-   * Obtiene la asignación docente
-   * @private
-   */
-  async _getTeacherAssignment(teacherAssignmentId) {
-    const assignment = await this.teacherAssignmentRepository.findById(teacherAssignmentId);
-    if (!assignment) {
-      throw new NotFoundError(
-        `Asignación docente con ID ${teacherAssignmentId} no encontrada`
-      );
-    }
-    return assignment;
-  }
-
-  /**
-   * Obtiene el paralelo desde el curso
-   * @private
-   * @returns {Promise<Object|null>} Paralelo encontrado o null si no se encuentra
-   */
-  async _getParallelFromCourse(courseId) {
-    if (!courseId) {
-      return null;
-    }
-
-    const course = await this.courseRepository.findById(courseId);
-    if (!course) {
-      return null;
-    }
-
-    const coursePlain = course.toPlainObject ? course.toPlainObject() : course;
-    const parallelId = coursePlain.paraleloId;
-
-    if (!parallelId) {
-      return null;
-    }
-
-    const parallel = await this.parallelRepository.findById(parallelId);
-    return parallel;
-  }
-
-  /**
    * Genera la boleta de inscripción
    * @private
    */
-  async _generateBoleta(student, studentAcademicData, parallel, management, enrollmentSubjects) {
+  async _generateBoleta(student, studentAcademicData, management) {
     try {
       // 1. Convertir a objetos planos
-      const studentAcademicDataPlain = studentAcademicData.toPlainObject 
-        ? studentAcademicData.toPlainObject() 
+      const studentAcademicDataPlain = studentAcademicData.toPlainObject
+        ? studentAcademicData.toPlainObject()
         : studentAcademicData;
-      
+
       // 2. Obtener carrera
       const careerId = studentAcademicDataPlain.careerId || studentAcademicDataPlain.carreraId;
       if (!careerId) {
         throw new ValidationError('Los datos académicos del estudiante no tienen carrera asociada');
       }
-      
+
       const career = await this.careerRepository.findById(careerId);
       if (!career) {
         throw new NotFoundError(`Carrera con ID ${careerId}`);
@@ -517,59 +337,7 @@ export class GenerateBoletaInscripcionUseCase {
       const careerPlain = career.toPlainObject ? career.toPlainObject() : career;
       const managementPlain = management.toPlainObject ? management.toPlainObject() : management;
 
-      // 4. Obtener materias desde las materias inscritas
-      const materias = [];
-      
-      for (const enrollmentSubject of enrollmentSubjects) {
-        const enrollmentSubjectPlain = enrollmentSubject.toPlainObject 
-          ? enrollmentSubject.toPlainObject() 
-          : enrollmentSubject;
-        const teacherAssignmentId = enrollmentSubjectPlain.asignacionDocenteId || enrollmentSubjectPlain.teacherAssignmentId;
-        
-        if (!teacherAssignmentId) continue;
-        
-        const assignment = await this._getTeacherAssignment(teacherAssignmentId);
-        const assignmentPlain = assignment.toPlainObject
-          ? assignment.toPlainObject()
-          : assignment;
-
-        const courseId = assignmentPlain.cursoId || assignmentPlain.courseId;
-        if (!courseId) continue;
-        
-        const course = await this.courseRepository.findById(courseId);
-        if (!course) continue;
-
-        const coursePlain = course.toPlainObject ? course.toPlainObject() : course;
-
-        // Obtener docente
-        let docenteNombre = 'Por asignar';
-        if (assignmentPlain.docenteId && this.teacherRepository) {
-          try {
-            const teacher = await this.teacherRepository.findById(assignmentPlain.docenteId);
-            if (teacher) {
-              const teacherPlain = teacher.toPlainObject ? teacher.toPlainObject() : teacher;
-              docenteNombre = `${teacherPlain.nombres || ''} ${teacherPlain.apellidoPaterno || ''} ${teacherPlain.apellidoMaterno || ''}`.trim() || 'Por asignar';
-            }
-          } catch (err) {
-            this.logger.warn('[Inscripciones] Error al obtener docente', {
-              teacherId: assignmentPlain.docenteId,
-              error: err.message,
-            });
-          }
-        }
-
-        // Obtener horario (simplificado por ahora)
-        const horario = 'Por definir';
-
-        materias.push({
-          codigo: coursePlain.codigo || 'N/A',
-          nombre: coursePlain.nombre || 'N/A',
-          docente: docenteNombre,
-          horario: horario,
-        });
-      }
-
-      // 5. Obtener documentos entregados (necesitamos studentId antes de obtener catálogos)
+      // 4. Obtener documentos entregados (necesitamos studentId antes de obtener catálogos)
       const studentId = studentPlain.id || student.id;
       const documentosEntregados = await this._getDocumentStatus(studentId);
 
@@ -590,14 +358,12 @@ export class GenerateBoletaInscripcionUseCase {
         studentPlain.fechaNacimiento || studentPlain.birthDate
       );
 
-      // 8. Formatear género
+      // 7. Formatear género
       const generoTexto = this._formatGender(studentPlain.genero || studentPlain.gender);
 
-      // 9. Preparar datos para la boleta
-      // El paralelo es opcional, si no está disponible se usa un valor vacío
-      const parallelPlain = parallel ? (parallel.toPlainObject ? parallel.toPlainObject() : parallel) : null;
-      const anioNombre = parallelPlain ? (parallelPlain.nombre || parallelPlain.name || '') : '';
-
+      // 8. Preparar datos para la boleta
+      // NOTA: El año académico (anio) se deja vacío porque la boleta solo muestra checkboxes
+      // El año se determina automáticamente en el generador según la lógica del formulario
       const boletaData = {
         gestionYear: managementPlain.anio || managementPlain.year,
         apellidoPaterno: studentPlain.apellidoPaterno || studentPlain.lastName || '',
@@ -626,13 +392,12 @@ export class GenerateBoletaInscripcionUseCase {
         cargo: '',
         empresa: '',
         carrera: careerPlain.nombre || careerPlain.name || '',
-        anio: anioNombre,
+        anio: '', // Año académico: se deja vacío, el generador manejará la lógica por defecto
         documentos: documentosEntregados,
         ciudad: 'Santa Cruz de la Sierra',
-        materias: materias,
       };
 
-      // 10. Generar archivos
+      // 9. Generar archivos
       const uploadDir = serverConfig.uploadsPath || 'uploads';
       const relativePath = path.join('documentos', 'estudiantes', String(studentId));
       const timestamp = Date.now();
@@ -654,11 +419,10 @@ export class GenerateBoletaInscripcionUseCase {
       const docxFilePath = path.join('/', uploadDir, relativePath, docxFileName).replace(/\\/g, '/');
       const pdfFilePath = path.join('/', uploadDir, relativePath, pdfFileName).replace(/\\/g, '/');
 
-      // 11. Generar DOCX
+      // 10. Generar DOCX
       this.logger.info('[Inscripciones] Generando DOCX de la boleta de inscripción', {
         studentId: studentId,
         absolutePath: absoluteDocxPath,
-        materiasCount: materias.length,
       });
 
       await BoletaInscripcionWordGenerator.generate(boletaData, absoluteDocxPath);
@@ -668,7 +432,7 @@ export class GenerateBoletaInscripcionUseCase {
         filePath: docxFilePath,
       });
 
-      // 12. Convertir DOCX a PDF
+      // 11. Convertir DOCX a PDF
       this.logger.info('[Inscripciones] Convirtiendo DOCX a PDF', {
         studentId: studentId,
         docxPath: absoluteDocxPath,
@@ -676,7 +440,7 @@ export class GenerateBoletaInscripcionUseCase {
       });
 
       const generatedPdfPath = await WordToPdfConverter.convert(absoluteDocxPath, absolutePdfPath);
-      
+
       if (!fs.existsSync(generatedPdfPath)) {
         throw new Error(`El PDF fue generado pero no se encuentra en: ${generatedPdfPath}`);
       }
@@ -689,7 +453,7 @@ export class GenerateBoletaInscripcionUseCase {
         fileSize: fs.statSync(generatedPdfPath).size,
       });
 
-      // 13. Guardar documentos en BD
+      // 12. Guardar documentos en BD
       await this._saveDocuments(studentId, relativePath, docxFileName, pdfFileName);
 
       return {
@@ -779,7 +543,7 @@ export class GenerateBoletaInscripcionUseCase {
    */
   async _getLanguageName(idiomaId) {
     if (!idiomaId) return '';
-    
+
     const idiomaIdNum = parseInt(idiomaId, 10);
     if (isNaN(idiomaIdNum)) {
       return idiomaId; // Si no es número, es un string directo
@@ -862,7 +626,7 @@ export class GenerateBoletaInscripcionUseCase {
     }
 
     const fechaNac = new Date(fechaNacimiento);
-    
+
     // Calcular edad
     const hoy = new Date();
     edad = hoy.getFullYear() - fechaNac.getFullYear();

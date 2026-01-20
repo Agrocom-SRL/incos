@@ -103,12 +103,8 @@ export function registerInscripcionesResource(container) {
         (c) =>
             new GenerateBoletaInscripcionUseCase({
                 enrollmentRepository: c.resolve(REPOSITORIOS_TOKENS.enrollmentRepository),
-                enrollmentSubjectRepository: c.resolve(REPOSITORIOS_TOKENS.enrollmentSubjectRepository),
                 studentRepository: c.resolve(REPOSITORIOS_TOKENS.studentRepository),
                 studentAcademicDataRepository: c.resolve(REPOSITORIOS_TOKENS.studentAcademicDataRepository),
-                parallelRepository: c.resolve(REPOSITORIOS_TOKENS.parallelRepository),
-                courseRepository: c.resolve(REPOSITORIOS_TOKENS.courseRepository),
-                teacherAssignmentRepository: c.resolve(REPOSITORIOS_TOKENS.teacherAssignmentRepository),
                 managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
                 careerRepository: c.resolve(REPOSITORIOS_TOKENS.careerRepository),
                 studentDocumentRepository: c.resolve(REPOSITORIOS_TOKENS.studentDocumentRepository),
@@ -118,7 +114,6 @@ export function registerInscripcionesResource(container) {
                 provinceRepository: c.resolve(REPOSITORIOS_TOKENS.provinceRepository),
                 departmentRepository: c.resolve(REPOSITORIOS_TOKENS.departmentRepository),
                 languageRepository: c.resolve(REPOSITORIOS_TOKENS.languageRepository),
-                teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
                 configuracionSistemaRepository: c.resolve(REPOSITORIOS_TOKENS.configuracionSistemaRepository),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
