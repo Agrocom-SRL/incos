@@ -48,15 +48,19 @@ export class CreateEnrollmentController extends BaseCreateController {
 
   /**
    * Prepara los datos del body antes de enviarlos al use case
-   * Por ahora retorna los datos sin modificar, pero puede ser extendido
-   * para agregar transformaciones específicas si es necesario
+   * Transforma campos snake_case del frontend a camelCase esperado por el use case
    * 
    * @param {Object} body - Body de la petición HTTP
-   * @returns {Object} Datos preparados para el use case
+   * @returns {Object} Datos preparados para el use case (camelCase)
    */
   prepareData(body) {
-    // Por ahora, retornamos los datos sin modificar
-    // Si en el futuro necesitamos transformaciones específicas, las agregamos aquí
-    return body;
+    // Transformar campos snake_case a camelCase
+    return {
+      studentId: body.student_id || body.studentId,
+      parallelId: body.parallel_id || body.parallelId,
+      enrollmentType: body.enrollment_type || body.enrollmentType,
+      enrollmentDate: body.enrollment_date || body.enrollmentDate,
+      observations: body.observations,
+    };
   }
 }
