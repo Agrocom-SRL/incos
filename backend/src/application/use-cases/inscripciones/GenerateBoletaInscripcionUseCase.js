@@ -38,6 +38,10 @@ export class GenerateBoletaInscripcionUseCase {
    * @param {Object} params.studentAcademicDataRepository - Repositorio de datos académicos
    * @param {Object} params.managementRepository - Repositorio de gestiones
    * @param {Object} params.careerRepository - Repositorio de carreras
+   * @param {Object} params.studyPlanRepository - Repositorio de planes de estudio
+   * @param {Object} params.periodRepository - Repositorio de periodos
+   * @param {Object} params.planSubjectRepository - Repositorio de asignaturas de plan
+   * @param {Object} params.subjectRepository - Repositorio de materias
    * @param {Object} params.studentDocumentRepository - Repositorio de documentos de estudiantes
    * @param {Object} params.studentDocumentDeliveryRepository - Repositorio de entregas de documentos
    * @param {Object} params.civilStatusRepository - Repositorio de estados civiles
@@ -54,6 +58,10 @@ export class GenerateBoletaInscripcionUseCase {
     studentAcademicDataRepository,
     managementRepository,
     careerRepository,
+    studyPlanRepository,
+    periodRepository,
+    planSubjectRepository,
+    subjectRepository,
     studentDocumentRepository,
     studentDocumentDeliveryRepository,
     civilStatusRepository,
@@ -69,6 +77,10 @@ export class GenerateBoletaInscripcionUseCase {
     this.studentAcademicDataRepository = studentAcademicDataRepository;
     this.managementRepository = managementRepository;
     this.careerRepository = careerRepository;
+    this.studyPlanRepository = studyPlanRepository;
+    this.periodRepository = periodRepository;
+    this.planSubjectRepository = planSubjectRepository;
+    this.subjectRepository = subjectRepository;
     this.studentDocumentRepository = studentDocumentRepository;
     this.studentDocumentDeliveryRepository = studentDocumentDeliveryRepository;
     this.civilStatusRepository = civilStatusRepository;
@@ -316,150 +328,31 @@ export class GenerateBoletaInscripcionUseCase {
    */
   async _generateBoleta(student, studentAcademicData, management) {
     try {
-      // 1. Convertir a objetos planos
-      const studentAcademicDataPlain = studentAcademicData.toPlainObject
-        ? studentAcademicData.toPlainObject()
-        : studentAcademicData;
-
-      // 2. Obtener carrera
-      const careerId = studentAcademicDataPlain.careerId || studentAcademicDataPlain.carreraId;
-      if (!careerId) {
-        throw new ValidationError('Los datos académicos del estudiante no tienen carrera asociada');
-      }
-
-      const career = await this.careerRepository.findById(careerId);
-      if (!career) {
-        throw new NotFoundError(`Carrera con ID ${careerId}`);
-      }
-
-      // 3. Obtener estudiante completo
-      const studentPlain = student.toPlainObject ? student.toPlainObject() : student;
-      const careerPlain = career.toPlainObject ? career.toPlainObject() : career;
-      const managementPlain = management.toPlainObject ? management.toPlainObject() : management;
-
-      // 4. Obtener documentos entregados (necesitamos studentId antes de obtener catálogos)
-      const studentId = studentPlain.id || student.id;
-      const documentosEntregados = await this._getDocumentStatus(studentId);
-
-      // 6. Obtener datos de catálogos para nombres descriptivos
-      const estadoCivilNombre = await this._getCivilStatusName(
-        studentPlain.estadoCivilId || studentPlain.civilStatusId
-      );
-      const { municipioNombre, provinciaNombre, departamentoNombre } =
-        await this._getLocationNames(
-          studentPlain.municipioResidenciaId || studentPlain.municipalityResidenceId
-        );
-      const idiomaMaternoNombre = await this._getLanguageName(
-        studentPlain.idiomaMaterno || studentPlain.nativeLanguageId
+      // 1. Preparar datos del estudiante y carrera
+      const { studentPlain, career, careerId, studentId } = await this._prepareStudentAndCareerData(
+        student,
+        studentAcademicData
       );
 
-      // 7. Calcular edad y formatear fecha
-      const { edad, fechaNacFormateada } = this._formatStudentAge(
-        studentPlain.fechaNacimiento || studentPlain.birthDate
+      // 2. Preparar datos para la boleta
+      const boletaData = await this._prepareBoletaData(
+        studentPlain,
+        career,
+        management,
+        careerId,
+        studentId
       );
 
-      // 7. Formatear género
-      const generoTexto = this._formatGender(studentPlain.genero || studentPlain.gender);
+      // 3. Generar archivos DOCX y PDF
+      const filePaths = await this._generateDocumentFiles(boletaData, studentId);
 
-      // 8. Preparar datos para la boleta
-      // NOTA: El año académico (anio) se deja vacío porque la boleta solo muestra checkboxes
-      // El año se determina automáticamente en el generador según la lógica del formulario
-      const boletaData = {
-        gestionYear: managementPlain.anio || managementPlain.year,
-        apellidoPaterno: studentPlain.apellidoPaterno || studentPlain.lastName || '',
-        apellidoMaterno: studentPlain.apellidoMaterno || studentPlain.motherLastName || '',
-        nombres: studentPlain.nombres || studentPlain.firstName || '',
-        ci: studentPlain.ci || '',
-        expedicion: studentPlain.expedicion || studentPlain.expedition || 'S.C.',
-        genero: generoTexto,
-        tipoSangre: studentPlain.tipoSangre || studentPlain.bloodType || '',
-        emailPersonal: studentPlain.emailPersonal || studentPlain.personalEmail || '',
-        estadoCivil: estadoCivilNombre,
-        tieneDiscapacidad:
-          studentPlain.tieneDiscapacidad !== undefined
-            ? studentPlain.tieneDiscapacidad
-            : studentPlain.hasDisability || false,
-        ciudadNacimiento: municipioNombre,
-        provincia: provinciaNombre,
-        departamento: departamentoNombre,
-        fechaNacimiento: fechaNacFormateada,
-        nacionalidad: 'Boliviana',
-        edad: String(edad),
-        direccion: studentPlain.direccion || studentPlain.address || '',
-        idiomaMaterno: idiomaMaternoNombre,
-        celular: studentPlain.celular || studentPlain.mobilePhone || '',
-        trabaja: false,
-        cargo: '',
-        empresa: '',
-        carrera: careerPlain.nombre || careerPlain.name || '',
-        anio: '', // Año académico: se deja vacío, el generador manejará la lógica por defecto
-        documentos: documentosEntregados,
-        ciudad: 'Santa Cruz de la Sierra',
-      };
-
-      // 9. Generar archivos
-      const uploadDir = serverConfig.uploadsPath || 'uploads';
-      const relativePath = path.join('documentos', 'estudiantes', String(studentId));
-      const timestamp = Date.now();
-      const baseFileName = `BOLETA_INSCRIPCION_${studentId}_${timestamp}`;
-
-      const docxFileName = `${baseFileName}.docx`;
-      const pdfFileName = `${baseFileName}.pdf`;
-
-      // Rutas absolutas
-      const absoluteDocxPath = path.isAbsolute(uploadDir)
-        ? path.join(uploadDir, relativePath, docxFileName)
-        : path.resolve(__dirname, '../../../..', uploadDir, relativePath, docxFileName);
-
-      const absolutePdfPath = path.isAbsolute(uploadDir)
-        ? path.join(uploadDir, relativePath, pdfFileName)
-        : path.resolve(__dirname, '../../../..', uploadDir, relativePath, pdfFileName);
-
-      // Rutas relativas
-      const docxFilePath = path.join('/', uploadDir, relativePath, docxFileName).replace(/\\/g, '/');
-      const pdfFilePath = path.join('/', uploadDir, relativePath, pdfFileName).replace(/\\/g, '/');
-
-      // 10. Generar DOCX
-      this.logger.info('[Inscripciones] Generando DOCX de la boleta de inscripción', {
-        studentId: studentId,
-        absolutePath: absoluteDocxPath,
-      });
-
-      await BoletaInscripcionWordGenerator.generate(boletaData, absoluteDocxPath);
-
-      this.logger.info('[Inscripciones] DOCX generado exitosamente', {
-        studentId: studentId,
-        filePath: docxFilePath,
-      });
-
-      // 11. Convertir DOCX a PDF
-      this.logger.info('[Inscripciones] Convirtiendo DOCX a PDF', {
-        studentId: studentId,
-        docxPath: absoluteDocxPath,
-        pdfPath: absolutePdfPath,
-      });
-
-      const generatedPdfPath = await WordToPdfConverter.convert(absoluteDocxPath, absolutePdfPath);
-
-      if (!fs.existsSync(generatedPdfPath)) {
-        throw new Error(`El PDF fue generado pero no se encuentra en: ${generatedPdfPath}`);
-      }
-
-      this.logger.info('[Inscripciones] ✅ PDF generado exitosamente', {
-        studentId: studentId,
-        filePath: pdfFilePath,
-        fileName: pdfFileName,
-        absolutePath: generatedPdfPath,
-        fileSize: fs.statSync(generatedPdfPath).size,
-      });
-
-      // 12. Guardar documentos en BD
-      await this._saveDocuments(studentId, relativePath, docxFileName, pdfFileName);
+      // 4. Guardar documentos en BD
+      await this._saveDocuments(studentId, filePaths.relativePath, filePaths.docxFileName, filePaths.pdfFileName);
 
       return {
-        filePath: pdfFilePath,
-        fileName: pdfFileName,
-        absolutePath: generatedPdfPath,
+        filePath: filePaths.pdfFilePath,
+        fileName: filePaths.pdfFileName,
+        absolutePath: filePaths.absolutePdfPath,
       };
     } catch (error) {
       this.logger.error('[Inscripciones] Error al generar boleta de inscripción', {
@@ -467,6 +360,287 @@ export class GenerateBoletaInscripcionUseCase {
         stack: error.stack,
       });
       throw new Error(`No se pudo generar la boleta: ${error.message}`);
+    }
+  }
+
+  /**
+   * Prepara los datos del estudiante y carrera
+   * @private
+   * @returns {Promise<{studentPlain: Object, career: Object, careerId: number, studentId: number}>}
+   */
+  async _prepareStudentAndCareerData(student, studentAcademicData) {
+    // Convertir a objetos planos
+    const studentAcademicDataPlain = studentAcademicData.toPlainObject
+      ? studentAcademicData.toPlainObject()
+      : studentAcademicData;
+
+    // Obtener carrera
+    const careerId = studentAcademicDataPlain.careerId || studentAcademicDataPlain.carreraId;
+    if (!careerId) {
+      throw new ValidationError('Los datos académicos del estudiante no tienen carrera asociada');
+    }
+
+    const career = await this.careerRepository.findById(careerId);
+    if (!career) {
+      throw new NotFoundError(`Carrera con ID ${careerId}`);
+    }
+
+    // Convertir a objetos planos
+    const studentPlain = student.toPlainObject ? student.toPlainObject() : student;
+    const studentId = studentPlain.id || student.id;
+
+    return { studentPlain, career, careerId, studentId };
+  }
+
+  /**
+   * Prepara los datos para la boleta
+   * @private
+   * @returns {Promise<Object>} Datos para la boleta
+   */
+  async _prepareBoletaData(studentPlain, career, management, careerId, studentId) {
+    // Convertir objetos a planos
+    const careerPlain = career.toPlainObject ? career.toPlainObject() : career;
+    const managementPlain = management.toPlainObject ? management.toPlainObject() : management;
+
+    // Obtener documentos entregados
+    const documentosEntregados = await this._getDocumentStatus(studentId);
+
+    // Obtener datos de catálogos para nombres descriptivos
+    const estadoCivilNombre = await this._getCivilStatusName(
+      studentPlain.estadoCivilId || studentPlain.civilStatusId
+    );
+    const { municipioNombre, provinciaNombre, departamentoNombre } = await this._getLocationNames(
+      studentPlain.municipioResidenciaId || studentPlain.municipalityResidenceId
+    );
+    const idiomaMaternoNombre = await this._getLanguageName(
+      studentPlain.idiomaMaterno || studentPlain.nativeLanguageId
+    );
+
+    // Calcular edad y formatear fecha
+    const { edad, fechaNacFormateada } = this._formatStudentAge(
+      studentPlain.fechaNacimiento || studentPlain.birthDate
+    );
+
+    // Formatear género
+    const generoTexto = this._formatGender(studentPlain.genero || studentPlain.gender);
+
+    // Obtener materias del primer periodo
+    const materiasPrimerPeriodo = await this._getFirstPeriodSubjects(careerId);
+
+    // Preparar datos para la boleta
+    // NOTA: El año académico (anio) se deja vacío porque la boleta solo muestra checkboxes
+    // El año se determina automáticamente en el generador según la lógica del formulario
+    return {
+      gestionYear: managementPlain.anio || managementPlain.year,
+      apellidoPaterno: studentPlain.apellidoPaterno || studentPlain.lastName || '',
+      apellidoMaterno: studentPlain.apellidoMaterno || studentPlain.motherLastName || '',
+      nombres: studentPlain.nombres || studentPlain.firstName || '',
+      ci: studentPlain.ci || '',
+      expedicion: studentPlain.expedicion || studentPlain.expedition || 'S.C.',
+      genero: generoTexto,
+      tipoSangre: studentPlain.tipoSangre || studentPlain.bloodType || '',
+      emailPersonal: studentPlain.emailPersonal || studentPlain.personalEmail || '',
+      estadoCivil: estadoCivilNombre,
+      tieneDiscapacidad:
+        studentPlain.tieneDiscapacidad !== undefined
+          ? studentPlain.tieneDiscapacidad
+          : studentPlain.hasDisability || false,
+      ciudadNacimiento: municipioNombre,
+      provincia: provinciaNombre,
+      departamento: departamentoNombre,
+      fechaNacimiento: fechaNacFormateada,
+      nacionalidad: 'Boliviana',
+      edad: String(edad),
+      direccion: studentPlain.direccion || studentPlain.address || '',
+      idiomaMaterno: idiomaMaternoNombre,
+      celular: studentPlain.celular || studentPlain.mobilePhone || '',
+      trabaja: false,
+      cargo: '',
+      empresa: '',
+      carrera: careerPlain.nombre || careerPlain.name || '',
+      anio: '', // Año académico: se deja vacío, el generador manejará la lógica por defecto
+      materias: materiasPrimerPeriodo, // Materias del primer periodo (solo siglas y nombres)
+      documentos: documentosEntregados,
+      ciudad: 'Santa Cruz de la Sierra',
+    };
+  }
+
+  /**
+   * Genera los archivos DOCX y PDF de la boleta
+   * @private
+   * @returns {Promise<{relativePath: string, docxFileName: string, pdfFileName: string, absoluteDocxPath: string, absolutePdfPath: string, docxFilePath: string, pdfFilePath: string}>}
+   */
+  async _generateDocumentFiles(boletaData, studentId) {
+    // Preparar rutas y nombres de archivos
+    const uploadDir = serverConfig.uploadsPath || 'uploads';
+    const relativePath = path.join('documentos', 'estudiantes', String(studentId));
+    const timestamp = Date.now();
+    const baseFileName = `BOLETA_INSCRIPCION_${studentId}_${timestamp}`;
+
+    const docxFileName = `${baseFileName}.docx`;
+    const pdfFileName = `${baseFileName}.pdf`;
+
+    // Rutas absolutas
+    const absoluteDocxPath = path.isAbsolute(uploadDir)
+      ? path.join(uploadDir, relativePath, docxFileName)
+      : path.resolve(__dirname, '../../../..', uploadDir, relativePath, docxFileName);
+
+    const absolutePdfPath = path.isAbsolute(uploadDir)
+      ? path.join(uploadDir, relativePath, pdfFileName)
+      : path.resolve(__dirname, '../../../..', uploadDir, relativePath, pdfFileName);
+
+    // Rutas relativas
+    const docxFilePath = path.join('/', uploadDir, relativePath, docxFileName).replace(/\\/g, '/');
+    const pdfFilePath = path.join('/', uploadDir, relativePath, pdfFileName).replace(/\\/g, '/');
+
+    // Generar DOCX
+    this.logger.info('[Inscripciones] Generando DOCX de la boleta de inscripción', {
+      studentId: studentId,
+      absolutePath: absoluteDocxPath,
+    });
+
+    await BoletaInscripcionWordGenerator.generate(boletaData, absoluteDocxPath);
+
+    this.logger.info('[Inscripciones] DOCX generado exitosamente', {
+      studentId: studentId,
+      filePath: docxFilePath,
+    });
+
+    // Convertir DOCX a PDF
+    this.logger.info('[Inscripciones] Convirtiendo DOCX a PDF', {
+      studentId: studentId,
+      docxPath: absoluteDocxPath,
+      pdfPath: absolutePdfPath,
+    });
+
+    const generatedPdfPath = await WordToPdfConverter.convert(absoluteDocxPath, absolutePdfPath);
+
+    if (!fs.existsSync(generatedPdfPath)) {
+      throw new Error(`El PDF fue generado pero no se encuentra en: ${generatedPdfPath}`);
+    }
+
+    this.logger.info('[Inscripciones] ✅ PDF generado exitosamente', {
+      studentId: studentId,
+      filePath: pdfFilePath,
+      fileName: pdfFileName,
+      absolutePath: generatedPdfPath,
+      fileSize: fs.statSync(generatedPdfPath).size,
+    });
+
+    return {
+      relativePath,
+      docxFileName,
+      pdfFileName,
+      absoluteDocxPath,
+      absolutePdfPath: generatedPdfPath,
+      docxFilePath,
+      pdfFilePath,
+    };
+  }
+
+  /**
+   * Obtiene las materias del primer periodo de la carrera
+   * Retorna solo las siglas y nombres de las materias
+   * @private
+   * @param {number} careerId - ID de la carrera
+   * @returns {Promise<Array<{sigla: string, nombre: string}>>} Array de materias con sigla y nombre
+   */
+  async _getFirstPeriodSubjects(careerId) {
+    try {
+      // 1. Obtener el plan de estudios vigente de la carrera
+      const studyPlansResult = await this.studyPlanRepository.findAll(
+        {
+          careerId: careerId,
+          isActive: true,
+        },
+        null,
+        null
+      );
+
+      if (!studyPlansResult.studyPlans || studyPlansResult.studyPlans.length === 0) {
+        this.logger.warn('[Inscripciones] No se encontró plan de estudios vigente para la carrera', {
+          careerId,
+        });
+        return [];
+      }
+
+      const studyPlan = studyPlansResult.studyPlans[0];
+      const studyPlanId = studyPlan.id || studyPlan.toPlainObject?.().id;
+
+      // 2. Obtener el periodo del primer año (numero = 1)
+      const periodsResult = await this.periodRepository.findAll(
+        {
+          studyPlanId: studyPlanId,
+          number: 1,
+        },
+        null,
+        null
+      );
+
+      if (!periodsResult.periods || periodsResult.periods.length === 0) {
+        this.logger.warn('[Inscripciones] No se encontró el primer periodo del plan de estudios', {
+          careerId,
+          studyPlanId,
+        });
+        return [];
+      }
+
+      const firstPeriod = periodsResult.periods[0];
+      const periodId = firstPeriod.id || firstPeriod.toPlainObject?.().id;
+
+      // 3. Obtener las asignaturas del plan del primer periodo
+      const planSubjectsResult = await this.planSubjectRepository.findAll(
+        {
+          periodId: periodId,
+          active: true,
+        },
+        null,
+        { order: [['ordenVisualizacion', 'ASC']] }
+      );
+
+      if (!planSubjectsResult.planSubjects || planSubjectsResult.planSubjects.length === 0) {
+        this.logger.warn('[Inscripciones] No se encontraron asignaturas para el primer periodo', {
+          careerId,
+          studyPlanId,
+          periodId,
+        });
+        return [];
+      }
+
+      // 4. Obtener las materias y extraer solo sigla y nombre
+      const materias = [];
+      for (const planSubject of planSubjectsResult.planSubjects) {
+        const planSubjectPlain = planSubject.toPlainObject ? planSubject.toPlainObject() : planSubject;
+        const subjectId = planSubjectPlain.subjectId || planSubjectPlain.materiaId;
+
+        if (subjectId) {
+          const subject = await this.subjectRepository.findById(subjectId);
+          if (subject) {
+            const subjectPlain = subject.toPlainObject ? subject.toPlainObject() : subject;
+            materias.push({
+              sigla: subjectPlain.acronym || subjectPlain.sigla || '',
+              nombre: subjectPlain.name || subjectPlain.nombre || '',
+            });
+          }
+        }
+      }
+
+      this.logger.info('[Inscripciones] Materias del primer periodo obtenidas', {
+        careerId,
+        studyPlanId,
+        periodId,
+        materiasCount: materias.length,
+      });
+
+      return materias;
+    } catch (error) {
+      this.logger.error('[Inscripciones] Error al obtener materias del primer periodo', {
+        careerId,
+        error: error.message,
+        stack: error.stack,
+      });
+      // Retornar array vacío en caso de error para no interrumpir la generación
+      return [];
     }
   }
 
