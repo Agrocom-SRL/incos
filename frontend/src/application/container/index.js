@@ -37,6 +37,31 @@ export const getUseCase = (useCaseName) => {
 };
 
 /**
+ * Hook de React para acceder al contenedor en componentes
+ * Proporciona un objeto con método resolve() para obtener use cases
+ * 
+ * Uso:
+ * ```jsx
+ * const container = useContainer();
+ * const eliminarUseCase = container.resolve('eliminarPagoAporte');
+ * ```
+ * 
+ * @returns {Object} Objeto con método resolve para obtener use cases
+ */
+export const useContainer = () => {
+  return {
+    /**
+     * Resuelve un use case por su nombre
+     * @param {string} useCaseName - Nombre del use case (ej: 'eliminarPagoAporte')
+     * @returns {Object|null} Instancia del use case o null si no se encuentra
+     */
+    resolve: (useCaseName) => {
+      return getUseCase(useCaseName);
+    },
+  };
+};
+
+/**
  * Exporta el factory completo para acceso directo
  * Uso: import { useCasesFactory } from '@container';
  */
