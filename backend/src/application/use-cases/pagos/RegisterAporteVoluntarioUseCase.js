@@ -185,13 +185,28 @@ export class RegisterAporteVoluntarioUseCase {
             // 9. Crear registro de pago
             const payment = await this.contributionPaymentRepository.create(paymentData);
 
-            // 10. NUEVO: Generar recibo en PDF
+            // 10. Usar el ID del pago como número de recibo y actualizar el registro
+            // Formato: 000001, 000002, etc. (6 dígitos con ceros a la izquierda)
+            const receiptNumber = String(payment.id).padStart(6, '0');
+            const updatedPayment = await this.contributionPaymentRepository.update(payment.id, {
+                receiptNumber: receiptNumber,
+            });
+            
+            // Usar el pago actualizado (update retorna el objeto actualizado)
+            const finalPayment = updatedPayment || payment;
+            
+            this.logger.info('[Pagos] Número de recibo asignado', {
+                paymentId: finalPayment.id,
+                receiptNumber,
+            });
+
+            // 11. Generar recibo en PDF
             let reciboPDF = null;
             let savedReciboDocument = null;
             if (this.pdfGenerator) {
                 try {
                     const reciboResult = await this._generateReciboPDF(
-                        payment, 
+                        finalPayment, // Usar el pago actualizado con número de recibo
                         student, 
                         currentManagement, 
                         paymentMethod, 
@@ -203,13 +218,13 @@ export class RegisterAporteVoluntarioUseCase {
                     reciboPDF = reciboResult.relativePath;
                     
                     this.logger.info('[Pagos] Recibo PDF generado exitosamente', {
-                        paymentId: payment.id,
+                        paymentId: finalPayment.id,
                         reciboPDFPath: reciboPDF,
                         absolutePath: reciboResult.absolutePath,
                         fileName: reciboResult.fileName,
                     });
 
-                    // 10.1. Guardar recibo PDF en documentos_estudiante
+                    // 11.1. Guardar recibo PDF en documentos_estudiante
                     if (reciboResult.absolutePath && reciboResult.fileName) {
                         try {
                             savedReciboDocument = await this._saveReciboDocument(
@@ -221,7 +236,7 @@ export class RegisterAporteVoluntarioUseCase {
 
                             this.logger.info('[Pagos] Recibo PDF guardado en documentos_estudiante', {
                                 studentId,
-                                paymentId: payment.id,
+                                paymentId: finalPayment.id,
                                 documentId: savedReciboDocument.id,
                                 fileName: reciboResult.fileName,
                             });
@@ -230,7 +245,7 @@ export class RegisterAporteVoluntarioUseCase {
                                 error: saveError.message,
                                 stack: saveError.stack,
                                 studentId,
-                                paymentId: payment.id,
+                                paymentId: finalPayment.id,
                             });
                             // No fallar el proceso si falla el guardado en BD
                         }
@@ -239,7 +254,7 @@ export class RegisterAporteVoluntarioUseCase {
                     this.logger.error('[Pagos] Error al generar recibo PDF', {
                         error: pdfError.message,
                         stack: pdfError.stack,
-                        paymentId: payment.id,
+                        paymentId: finalPayment.id,
                     });
                     // No fallar el proceso si el PDF falla
                 }
@@ -247,7 +262,7 @@ export class RegisterAporteVoluntarioUseCase {
                 this.logger.warn('[Pagos] PDFGenerator no está disponible, no se generará el recibo PDF');
             }
 
-            // 10. Guardar documento de respaldo si existe
+            // 12. Guardar documento de respaldo si existe
             let savedDocument = null;
             let savedDocumentDelivery = null;
             
@@ -263,13 +278,13 @@ export class RegisterAporteVoluntarioUseCase {
             if (data.documentFile) {
                 this.logger.info('[Pagos] Guardando documento de respaldo', {
                     studentId,
-                    paymentId: payment.id,
+                    paymentId: finalPayment.id,
                     fileInfo: data.documentFile,
                 });
                 
                 savedDocument = await this._savePaymentDocument(
                     studentId,
-                    payment.id,
+                    finalPayment.id,
                     data.documentFile
                 );
                 
@@ -291,28 +306,28 @@ export class RegisterAporteVoluntarioUseCase {
                 } else {
                     this.logger.warn('[Pagos] No se pudo guardar el documento de respaldo', {
                         studentId,
-                        paymentId: payment.id,
+                        paymentId: finalPayment.id,
                     });
                 }
             } else {
                 this.logger.info('[Pagos] No hay documento de respaldo para guardar', {
                     studentId,
-                    paymentId: payment.id,
+                    paymentId: finalPayment.id,
                 });
             }
 
             this.logger.info('[Pagos] Pago registrado exitosamente', {
-                paymentId: payment.id,
-                receiptNumber: payment.receiptNumber,
-                amountPaid: payment.amountPaid,
-                concept: payment.concept,
+                paymentId: finalPayment.id,
+                receiptNumber: finalPayment.receiptNumber || receiptNumber,
+                amountPaid: finalPayment.amountPaid,
+                concept: finalPayment.concept,
                 hasDocument: !!savedDocument,
                 hasReciboPDF: !!reciboPDF,
                 hasReciboDocument: !!savedReciboDocument,
             });
 
             const result = {
-                payment: payment.toPlainObject ? payment.toPlainObject() : payment,
+                payment: finalPayment.toPlainObject ? finalPayment.toPlainObject() : finalPayment,
             };
 
             // Incluir recibo PDF generado
@@ -459,9 +474,12 @@ export class RegisterAporteVoluntarioUseCase {
                 existingReceiptNumber: existingPayment.numeroRecibo,
             });
 
+            const existingPaymentPlain = existingPayment.toPlainObject ? existingPayment.toPlainObject() : existingPayment;
+            const existingReceiptNumber = existingPaymentPlain.receiptNumber || existingPaymentPlain.numeroRecibo || existingPaymentPlain.numero_recibo || existingPayment.id;
+            
             throw new ValidationError(
                 `El estudiante ya realizó el pago del aporte académico para la gestión actual. ` +
-                `Número de recibo: ${existingPayment.numeroRecibo || 'N/A'}`
+                `Número de recibo: ${existingReceiptNumber || 'N/A'}`
             );
         }
     }
@@ -647,6 +665,8 @@ export class RegisterAporteVoluntarioUseCase {
             paymentData.transactionNumber = data.transactionNumber;
         }
 
+        // NOTA: El número de recibo se asigna después de crear el registro (usando el ID)
+
         return paymentData;
     }
 
@@ -679,7 +699,8 @@ export class RegisterAporteVoluntarioUseCase {
                 // institutoInfo: null, // Se usará IncosPDFBase.INSTITUTE.name y logo por defecto
 
                 // Datos del recibo
-                numeroRecibo: paymentPlain.numeroRecibo || paymentPlain.numero_recibo || String(paymentPlain.id).padStart(3, '0'),
+                // Usar el ID del pago como número de recibo (formato: 000001, 000002, etc.)
+                numeroRecibo: paymentPlain.receiptNumber || paymentPlain.numeroRecibo || paymentPlain.numero_recibo || String(paymentPlain.id).padStart(6, '0'),
                 fechaPago: paymentPlain.fechaPago || paymentPlain.fecha_pago || paymentPlain.paymentDate || paymentPlain.payment_date,
 
                 // Datos del estudiante (usando campos en inglés de la entidad)
@@ -705,7 +726,8 @@ export class RegisterAporteVoluntarioUseCase {
             };
 
             // Generar nombre del archivo
-            const numeroRecibo = paymentPlain.numeroRecibo || String(paymentPlain.id).padStart(3, '0');
+            // Usar el ID del pago como número de recibo (formato: 000001, 000002, etc.)
+            const numeroRecibo = paymentPlain.receiptNumber || paymentPlain.numeroRecibo || paymentPlain.numero_recibo || String(paymentPlain.id).padStart(6, '0');
             const fileName = `RECIBO_PAGO_${studentPlain.ci || studentPlain.id}_${numeroRecibo}_${Date.now()}.pdf`;
             const year = managementPlain.anio || managementPlain.year || new Date().getFullYear();
             const outputDir = path.join(process.cwd(), 'uploads', 'recibos', String(year));

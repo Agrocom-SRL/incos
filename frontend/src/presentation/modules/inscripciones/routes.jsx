@@ -59,6 +59,13 @@ export const inscripcionesRoutes = [
         key: 'INS-DETALLE',
         menu: null, // No aparece en el menú, se accede por URL con /inscripciones/:id
     },
+    // Editar inscripción (sin menú, se accede por URL con parámetro de ruta :id)
+    {
+        path: '/inscripciones/:id/editar',
+        element: <UnderConstruction />,
+        key: 'INS-EDITAR',
+        menu: null, // No aparece en el menú, se accede por URL con /inscripciones/:id/editar
+    },
     {
         path: '/inscripciones/horario',
         element: <UnderConstruction />,

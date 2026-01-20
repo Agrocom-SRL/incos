@@ -126,19 +126,19 @@ export class ReciboPagoMejorado extends IncosPDFBase {
 
     // Logo a la izquierda (mejorado)
     const logoPath = instituteData.logoPath;
-    
+
     if (logoPath && fs.existsSync(logoPath)) {
       try {
         // Asegurar ruta absoluta
-        const absoluteLogoPath = path.isAbsolute(logoPath) 
-          ? logoPath 
+        const absoluteLogoPath = path.isAbsolute(logoPath)
+          ? logoPath
           : path.resolve(__dirname, logoPath);
-        
+
         // Verificar nuevamente con ruta absoluta
         if (!fs.existsSync(absoluteLogoPath)) {
           throw new Error(`Logo no encontrado en ruta absoluta: ${absoluteLogoPath}`);
         }
-        
+
         // Cargar imagen con PDFKit usando width y height
         // PDFKit carga PNG directamente, pero necesitamos especificar dimensiones
         this.doc.image(
@@ -150,17 +150,17 @@ export class ReciboPagoMejorado extends IncosPDFBase {
             height: logoSize,
           }
         );
-        
+
       } catch (err) {
         console.error('[ReciboPagoMejorado] ❌ Error al cargar el logo:', err.message);
         console.error('[ReciboPagoMejorado] Ruta intentada:', logoPath);
         console.error('[ReciboPagoMejorado] Stack:', err.stack);
-        
+
         // Placeholder si falla
         this.doc
           .circle(leftMargin + logoSize / 2, startY + logoSize / 2, logoSize / 2)
           .stroke(IncosPDFBase.COLORS.border);
-        
+
         this.doc
           .font(IncosPDFBase.FONTS.bold.font)
           .fontSize(8)
@@ -419,10 +419,8 @@ export class ReciboPagoMejorado extends IncosPDFBase {
     const montoTotal = Number(data.montoTotal) ?? 400.00;
     const descuentoBeca = Number(data.descuentoBeca) ?? 0;
     // Si montoPagado no está definido o es null, calcularlo (montoTotal - descuentoBeca)
-    const montoPagado = data.montoPagado !== undefined && data.montoPagado !== null 
-      ? Number(data.montoPagado) 
-      : (montoTotal - descuentoBeca);
-    
+    const montoPagado = (montoTotal - descuentoBeca);
+
     // Mostrar desglose si hay descuento: MONTO TOTAL → DESCUENTO → APORTE FINAL
     if (descuentoBeca > 0) {
       // Si hay descuento, mostrar desglose completo
@@ -447,7 +445,7 @@ export class ReciboPagoMejorado extends IncosPDFBase {
       ...data,
       montoPagado: montoPagado, // Puede ser 0, no usar || que lo convierte a otro valor
     };
-    
+
     this.addTableRow(
       'APORTE',
       this.formatAporte(dataWithCorrectMonto),
@@ -727,12 +725,9 @@ En conformidad, firmo la presente para los fines que correspondan.`;
    */
   formatAporte(data) {
     // Usar nullish coalescing (??) en lugar de || para manejar correctamente cuando el valor es 0
-    const monto = data.montoPagado !== undefined && data.montoPagado !== null
-      ? Number(data.montoPagado)
-      : (data.montoTotal !== undefined && data.montoTotal !== null
-        ? Number(data.montoTotal)
-        : 0);
-    
+    // POR ESTO:
+    const monto = data.montoPagado ?? data.montoTotal ?? 0;
+
     // Si el monto es 0 o menor, mostrar como "GRATIS"
     if (monto === 0 || monto < 0) {
       return 'GRATIS';
@@ -785,8 +780,8 @@ En conformidad, firmo la presente para los fines que correspondan.`;
    */
   fileExists(filePath) {
     try {
-      const absolutePath = path.isAbsolute(filePath) 
-        ? filePath 
+      const absolutePath = path.isAbsolute(filePath)
+        ? filePath
         : path.resolve(__dirname, filePath);
       return fs.existsSync(absolutePath);
     } catch {

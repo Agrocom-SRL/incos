@@ -4,7 +4,7 @@
  * Single Responsibility: Definir las columnas y su configuración para InscripcionesTable
  */
 
-import { Tag } from 'antd';
+import { Tag, message } from 'antd';
 import { UserOutlined, BookOutlined, CalendarOutlined } from '@ant-design/icons';
 import { IconButton } from '@atoms';
 import { TableCell } from '@molecules';
@@ -159,7 +159,11 @@ export const createInscripcionesTableColumns = (navigate) => {
             <IconButton
               icon={<editAction.icon />}
               variant={editAction.variant}
-              onClick={() => navigate(`/inscripciones/${inscripcionId}/editar`)}
+              onClick={() => {
+                message.info('La funcionalidad de edición está en construcción');
+                // TODO: Implementar edición de inscripción
+                console.log('Editar inscripción:', inscripcionId);
+              }}
             />
             <IconButton
               icon={<deleteAction.icon />}
