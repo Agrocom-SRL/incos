@@ -1,13 +1,13 @@
-  /**
-   * ReciboPagoMejorado
-   * 
-   * Genera recibos de pago con el diseño institucional estándar
-   * Basado en el formato oficial del instituto con:
-   * - Encabezado con título
-   * - Tabla de datos personales
-   * - Declaración jurada
-   * - Área de firma
-   */
+/**
+ * ReciboPagoMejorado
+ * 
+ * Genera recibos de pago con el diseño institucional estándar
+ * Basado en el formato oficial del instituto con:
+ * - Encabezado con título
+ * - Tabla de datos personales
+ * - Declaración jurada
+ * - Área de firma
+ */
 
 import { IncosPDFBase } from './IncosPDFBase.js';
 import fs from 'fs';
@@ -25,12 +25,26 @@ export class ReciboPagoMejorado extends IncosPDFBase {
    * @returns {Promise<string>} Ruta del archivo generado
    */
   static async generate(data, outputPath) {
-    // Usar orientación landscape (horizontal) - PDFKit acepta pageSize como array [width, height]
-    // Landscape LETTER: 11" x 8.5" = 792 x 612 puntos (1 pulgada = 72 puntos)
-    const generator = new ReciboPagoMejorado(outputPath, {
-      pageSize: [792, 612], // [ancho, alto] en puntos para landscape - PDFKit acepta array
-    });
-    return await generator.build(data);
+    try {
+      // Validar parámetros
+      if (!data) {
+        throw new Error('Los datos del recibo son requeridos');
+      }
+      if (!outputPath) {
+        throw new Error('La ruta de salida es requerida');
+      }
+
+      // Usar orientación landscape (horizontal) - PDFKit acepta pageSize como array [width, height]
+      // Landscape LETTER: 11" x 8.5" = 792 x 612 puntos (1 pulgada = 72 puntos)
+      const generator = new ReciboPagoMejorado(outputPath, {
+        pageSize: [792, 612], // [ancho, alto] en puntos para landscape - PDFKit acepta array
+      });
+      return await generator.build(data);
+    } catch (error) {
+      console.error('[ReciboPagoMejorado] Error en generate:', error.message);
+      console.error('[ReciboPagoMejorado] Stack:', error.stack);
+      throw error;
+    }
   }
 
   /**
@@ -57,23 +71,35 @@ export class ReciboPagoMejorado extends IncosPDFBase {
    * @param {Object} data - Datos del recibo
    */
   async build(data) {
-    // Configuración del documento
-    const instituteData = this.getInstituteData(data);
+    try {
+      // Validar datos requeridos
+      if (!data) {
+        throw new Error('Los datos del recibo son requeridos');
+      }
 
-    // Encabezado institucional personalizado
-    this.addCustomHeader(instituteData, data);
+      // Configuración del documento
+      const instituteData = this.getInstituteData(data);
 
-    // Tabla de datos personales
-    this.addDatosPersonalesTable(data);
+      // Encabezado institucional personalizado
+      this.addCustomHeader(instituteData, data);
 
-    // Declaración jurada
-    this.addDeclaracionJurada(data);
+      // Tabla de datos personales
+      this.addDatosPersonalesTable(data);
 
-    // Área de firma
-    this.addFirmaArea();
+      // Declaración jurada
+      this.addDeclaracionJurada(data);
 
-    // Guardar documento
-    return await this.save();
+      // Área de firma
+      this.addFirmaArea();
+
+      // Guardar documento
+      return await this.save();
+    } catch (error) {
+      console.error('[ReciboPagoMejorado] Error en build:', error.message);
+      console.error('[ReciboPagoMejorado] Stack:', error.stack);
+      console.error('[ReciboPagoMejorado] Data recibida:', JSON.stringify(data, null, 2));
+      throw error;
+    }
   }
 
   /**
@@ -100,135 +126,184 @@ export class ReciboPagoMejorado extends IncosPDFBase {
   }
 
   /**
-   * Agrega el encabezado personalizado con formato institucional mejorado
-   */
+ * Agrega el encabezado personalizado con formato institucional mejorado
+ */
   addCustomHeader(instituteData, data) {
-    const startY = this.currentY;
-    const pageWidth = this.pageWidth;
-    const leftMargin = this.options.margins.left;
+    try {
+      const startY = this.currentY;
+      const pageWidth = this.pageWidth;
+      const leftMargin = this.options.margins.left;
 
-    // Área de texto central (nombre, título, subtítulo) - mejorado
-    const textStartX = leftMargin;
-    const textWidth = pageWidth - 130; // Espacio para FAV
+      // =========================
+      // LOGO (esquina superior izquierda, horizontal)
+      // =========================
+      const logoPath = path.resolve(__dirname, '../templates/logo.png');
 
-    // Nombre del instituto (más grande y con color primario)
-    this.doc
-      .font(IncosPDFBase.FONTS.title.font)
-      .fontSize(14)
-      .fillColor(IncosPDFBase.COLORS.primary) // Color primario del sistema
-      .text(
-        instituteData.nombre,
-        textStartX,
-        startY + 5,
-        {
-          width: textWidth,
-          align: 'center',
+      // Medidas del logo - altura fija 64, ancho automático
+      const logoH = 64; // Altura fija
+      // Calcular ancho disponible para el logo (dejar espacio para FAV a la derecha)
+      const logoMaxWidth = 120; // Espacio total menos área FAV
+
+      // Dibujar el logo si existe y es válido
+      let logoLoaded = false;
+      let logoY = startY; // Posición Y inicial del logo
+      let actualLogoWidth = 0;
+
+      if (fs.existsSync(logoPath)) {
+        try {
+          // Logo en esquina superior izquierda
+          // Usar fit para que el ancho se calcule automáticamente manteniendo la proporción
+          // fit: [maxWidth, maxHeight] - se ajusta al espacio disponible
+          this.doc.image(logoPath, leftMargin, logoY, {
+            fit: [logoMaxWidth, logoH], // Ancho máximo disponible, altura máxima 64
+            align: 'left',
+          });
+          logoLoaded = true;
+          // El ancho real se calculará automáticamente, estimamos que usará el máximo disponible
+          actualLogoWidth = logoMaxWidth;
+        } catch (imageError) {
+          // Si hay error al cargar la imagen (formato no compatible, archivo corrupto, etc.)
+          console.warn('[ReciboPagoMejorado] No se pudo cargar el logo:', imageError.message);
+          console.warn('[ReciboPagoMejorado] Ruta del logo:', logoPath);
+          logoLoaded = false;
         }
-      );
+      } else {
+        console.warn('[ReciboPagoMejorado] Logo no encontrado en:', logoPath);
+      }
 
-    // Título (BOLETA DE RECIBO) - más prominente
-    this.doc
-      .font(IncosPDFBase.FONTS.subtitle.font)
-      .fontSize(12)
-      .fillColor(IncosPDFBase.COLORS.text)
-      .text(
-        instituteData.titulo,
-        textStartX,
-        startY + 25,
-        {
-          width: textWidth,
-          align: 'center',
-        }
-      );
+      // =========================
+      // Área de texto central (al lado del logo o debajo si no hay logo)
+      // =========================
+      // Calcular espacio para FAV (ancho del cuadro + margen derecho)
+      const favBoxWidth = 75;
+      const rightMargin = 10;
+      const favAreaWidth = favBoxWidth + rightMargin;
+      
+      // Si hay logo, el texto va al lado derecho del logo; si no, desde el inicio
+      const textStartX = logoLoaded ? leftMargin + actualLogoWidth + 10 : leftMargin;
+      const textStartY = logoLoaded ? logoY : startY + 5;
+      const textWidth = logoLoaded 
+        ? pageWidth - favAreaWidth - actualLogoWidth - 10 
+        : pageWidth - favAreaWidth; // espacio para FAV y logo
 
-    // Subtítulo (RECIBO DE PAGO) - más pequeño pero legible
-    this.doc
-      .font(IncosPDFBase.FONTS.normal.font)
-      .fontSize(10)
-      .fillColor(IncosPDFBase.COLORS.textLight)
-      .text(
-        instituteData.subtitulo,
-        textStartX,
-        startY + 40,
-        {
-          width: textWidth,
-          align: 'center',
-        }
-      );
+      // Nombre del instituto (más grande y con color primario)
+      this.doc
+        .font(IncosPDFBase.FONTS.title.font)
+        .fontSize(14)
+        .fillColor(IncosPDFBase.COLORS.primary)
+        .text(
+          instituteData.nombre,
+          textStartX,
+          textStartY,
+          {
+            width: textWidth,
+            align: 'center',
+          }
+        );
 
-    // Información de fecha y FAV (esquina superior derecha) - mejorado
-    const rightInfoX = leftMargin + pageWidth - 110;
+      // Subtítulo (RECIBO DE PAGO) - eliminado "BOLETA DE RECIBO"
+      this.doc
+        .font(IncosPDFBase.FONTS.title.font)
+        .fontSize(10)
+        .fillColor(IncosPDFBase.COLORS.textLight)
+        .text(
+          instituteData.subtitulo,
+          textStartX,
+          textStartY + 20,
+          {
+            width: textWidth,
+            align: 'center',
+          }
+        );
 
-    // Fecha con mejor formato
-    this.doc
-      .font(IncosPDFBase.FONTS.small.font)
-      .fontSize(8)
-      .fillColor(IncosPDFBase.COLORS.textLight)
-      .text('FECHA:', rightInfoX, startY, {
-        width: 105,
-        align: 'right'
-      });
+      // =========================
+      // Información de fecha y FAV (esquina superior derecha)
+      // =========================
+      // Ajustar posición X para acercar más al borde derecho (usando favBoxWidth y rightMargin ya definidos)
+      const favBoxHeight = 30;
+      const rightInfoX = leftMargin + pageWidth - favBoxWidth - rightMargin;
+      
+      // Ajustar posición Y según si hay logo o no (alinear con el logo)
+      const rightInfoY = logoLoaded ? logoY : startY;
 
-    this.doc
-      .font(IncosPDFBase.FONTS.normal.font)
-      .fontSize(9)
-      .fillColor(IncosPDFBase.COLORS.text)
-      .text(
-        this.formatFecha(data.fechaPago),
-        rightInfoX,
-        startY + 10,
-        {
-          width: 105,
+      // Fecha - alineada a la derecha del cuadro FAV
+      const fechaWidth = favBoxWidth;
+      this.doc
+        .font(IncosPDFBase.FONTS.small.font)
+        .fontSize(8)
+        .fillColor(IncosPDFBase.COLORS.textLight)
+        .text('FECHA:', rightInfoX, rightInfoY, {
+          width: fechaWidth,
           align: 'right',
-        }
-      );
+        });
 
-    // Cuadro de FAV (Folio de Aporte Voluntario) - mejorado
-    const favBoxY = startY + 25;
-    const favBoxWidth = 75;
-    const favBoxHeight = 30;
+      const fechaFormateada = this.formatFecha(data?.fechaPago || data?.fecha_pago || new Date());
+      this.doc
+        .font(IncosPDFBase.FONTS.normal.font)
+        .fontSize(9)
+        .fillColor(IncosPDFBase.COLORS.text)
+        .text(
+          fechaFormateada,
+          rightInfoX,
+          rightInfoY + 10,
+          {
+            width: fechaWidth,
+            align: 'right',
+          }
+        );
 
-    // Fondo del cuadro FAV con color primario
-    this.doc
-      .rect(rightInfoX, favBoxY, favBoxWidth, favBoxHeight)
-      .fill(IncosPDFBase.COLORS.primary);
+      // Cuadro FAV
+      const favBoxY = rightInfoY + 25;
 
-    // Borde del cuadro FAV (más grueso)
-    this.doc
-      .rect(rightInfoX, favBoxY, favBoxWidth, favBoxHeight)
-      .lineWidth(1.5)
-      .stroke(IncosPDFBase.COLORS.border);
+      // Fondo del cuadro FAV
+      this.doc
+        .rect(rightInfoX, favBoxY, favBoxWidth, favBoxHeight)
+        .fill(IncosPDFBase.COLORS.primary);
 
-    // Texto FAV: (blanco sobre fondo primario)
-    this.doc
-      .font(IncosPDFBase.FONTS.bold.font)
-      .fontSize(8)
-      .fillColor('#ffffff') // Texto blanco sobre fondo primario
-      .text('FAV:', rightInfoX + 5, favBoxY + 3, {
-        width: favBoxWidth - 10,
-        align: 'center'
-      });
+      // Borde del cuadro FAV
+      this.doc
+        .rect(rightInfoX, favBoxY, favBoxWidth, favBoxHeight)
+        .lineWidth(1.5)
+        .stroke(IncosPDFBase.COLORS.border);
 
-    // Número de FAV (recibo) - más grande y destacado
-    const numeroRecibo = data.numeroRecibo || '001';
-    this.doc
-      .font(IncosPDFBase.FONTS.bold.font)
-      .fontSize(16)
-      .fillColor('#ffffff') // Texto blanco sobre fondo primario
-      .text(
-        numeroRecibo,
-        rightInfoX + 5,
-        favBoxY + 12,
-        {
+      // Texto FAV:
+      this.doc
+        .font(IncosPDFBase.FONTS.bold.font)
+        .fontSize(8)
+        .fillColor('#ffffff')
+        .text('FAV:', rightInfoX + 5, favBoxY + 3, {
           width: favBoxWidth - 10,
           align: 'center',
-        }
-      );
+        });
 
-    // Línea decorativa debajo del encabezado
-    this.currentY = startY + 55;
-    this.addLine(IncosPDFBase.COLORS.primary, 2);
-    this.currentY += 5;
+      // Número de FAV (recibo)
+      const numeroRecibo = data?.numeroRecibo || data?.numero_recibo || data?.receiptNumber || '001';
+      this.doc
+        .font(IncosPDFBase.FONTS.bold.font)
+        .fontSize(16)
+        .fillColor('#ffffff')
+        .text(
+          String(numeroRecibo),
+          rightInfoX + 5,
+          favBoxY + 12,
+          {
+            width: favBoxWidth - 10,
+            align: 'center',
+          }
+        );
+
+      // Línea decorativa - ajustar según si hay logo o no
+      // La línea debe estar debajo del logo o del texto, el que sea más bajo
+      // Ajustado después de eliminar "BOLETA DE RECIBO" - ahora solo hay nombre y subtítulo
+      const maxElementHeight = logoLoaded ? Math.max(logoY + logoH, textStartY + 35) : textStartY + 35;
+      const lineY = maxElementHeight + 5;
+      this.currentY = lineY;
+      this.addLine(IncosPDFBase.COLORS.primary, 2);
+      this.currentY += 5;
+    } catch (error) {
+      console.error('[ReciboPagoMejorado] Error en addCustomHeader:', error.message);
+      throw error;
+    }
   }
 
   /**
@@ -612,47 +687,76 @@ En conformidad, firmo la presente para los fines que correspondan.`;
    * Formatea la fecha en formato DD/MM/YYYY
    */
   formatFecha(fecha) {
-    if (!fecha) {
+    try {
+      if (!fecha) {
+        const hoy = new Date();
+        return `${String(hoy.getDate()).padStart(2, '0')}/${String(hoy.getMonth() + 1).padStart(2, '0')}/${hoy.getFullYear()}`;
+      }
+
+      // Si es string en formato YYYY-MM-DD
+      if (typeof fecha === 'string' && fecha.includes('-')) {
+        const partes = fecha.split('-');
+        if (partes.length === 3) {
+          return `${partes[2]}/${partes[1]}/${partes[0]}`;
+        }
+      }
+
+      // Si es string en formato DD/MM/YYYY, devolverlo tal cual
+      if (typeof fecha === 'string' && fecha.includes('/')) {
+        return fecha;
+      }
+
+      // Si es Date object
+      if (fecha instanceof Date) {
+        // Verificar que sea una fecha válida
+        if (isNaN(fecha.getTime())) {
+          const hoy = new Date();
+          return `${String(hoy.getDate()).padStart(2, '0')}/${String(hoy.getMonth() + 1).padStart(2, '0')}/${hoy.getFullYear()}`;
+        }
+        return `${String(fecha.getDate()).padStart(2, '0')}/${String(fecha.getMonth() + 1).padStart(2, '0')}/${fecha.getFullYear()}`;
+      }
+
+      // Si no se puede formatear, usar fecha actual
+      const hoy = new Date();
+      return `${String(hoy.getDate()).padStart(2, '0')}/${String(hoy.getMonth() + 1).padStart(2, '0')}/${hoy.getFullYear()}`;
+    } catch (error) {
+      console.error('[ReciboPagoMejorado] Error en formatFecha:', error.message);
       const hoy = new Date();
       return `${String(hoy.getDate()).padStart(2, '0')}/${String(hoy.getMonth() + 1).padStart(2, '0')}/${hoy.getFullYear()}`;
     }
-
-    // Si es string en formato YYYY-MM-DD
-    if (typeof fecha === 'string' && fecha.includes('-')) {
-      const partes = fecha.split('-');
-      return `${partes[2]}/${partes[1]}/${partes[0]}`;
-    }
-
-    // Si es Date object
-    if (fecha instanceof Date) {
-      return `${String(fecha.getDate()).padStart(2, '0')}/${String(fecha.getMonth() + 1).padStart(2, '0')}/${fecha.getFullYear()}`;
-    }
-
-    return fecha;
   }
 
   /**
    * Formatea la información del aporte
    */
   formatAporte(data) {
-    // Usar nullish coalescing (??) en lugar de || para manejar correctamente cuando el valor es 0
-    // POR ESTO:
-    const monto = data.montoPagado ?? data.montoTotal ?? 0;
+    try {
+      // Usar nullish coalescing (??) en lugar de || para manejar correctamente cuando el valor es 0
+      // Validar que data sea un objeto
+      if (!data || typeof data !== 'object') {
+        return '0.00 Bs';
+      }
 
-    // Si el monto es 0 o menor, mostrar como "GRATIS"
-    if (monto === 0 || monto < 0) {
-      return 'GRATIS';
+      const monto = Number(data.montoPagado ?? data.montoTotal ?? data.monto_pagado ?? data.monto_total ?? 0);
+
+      // Si el monto es 0 o menor, mostrar como "GRATIS"
+      if (monto === 0 || monto < 0 || isNaN(monto)) {
+        return 'GRATIS';
+      }
+
+      const bolivianos = Math.floor(monto);
+      const centavos = Math.round((monto - bolivianos) * 100);
+
+      // Convertir número a letras (versión simplificada)
+      const montoEnLetras = this.numberToWords(bolivianos);
+
+      let texto = `${bolivianos} Bs (${montoEnLetras} con ${String(centavos).padStart(2, '0')}/100 bolivianos)`;
+
+      return texto;
+    } catch (error) {
+      console.error('[ReciboPagoMejorado] Error en formatAporte:', error.message);
+      return '0.00 Bs';
     }
-
-    const bolivianos = Math.floor(monto);
-    const centavos = Math.round((monto - bolivianos) * 100);
-
-    // Convertir número a letras (versión simplificada)
-    const montoEnLetras = this.numberToWords(bolivianos);
-
-    let texto = `${bolivianos} Bs (${montoEnLetras} con ${String(centavos).padStart(2, '0')}/100 bolivianos)`;
-
-    return texto;
   }
 
   /**
