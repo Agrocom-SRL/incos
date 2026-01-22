@@ -46,6 +46,7 @@ export const createPagosTableColumns = (navigate, refetch = null, deletePago = n
       title: 'Número de Recibo',
       dataIndex: 'numeroRecibo',
       fixed: 'left',
+      width: 200,
       ellipsis: true,
       render: (numeroRecibo, record) => {
         // Manejar tanto numeroRecibo como receipt_number (del backend)
@@ -72,6 +73,7 @@ export const createPagosTableColumns = (navigate, refetch = null, deletePago = n
     {
       title: 'Estudiante',
       dataIndex: 'estudiante',
+      width: 200,
       ellipsis: true,
       render: (estudiante, record) => {
         // Manejar tanto objeto enriquecido como objeto anidado o ID
@@ -99,20 +101,6 @@ export const createPagosTableColumns = (navigate, refetch = null, deletePago = n
           ? (studentB.nombreCompleto || `${studentB.nombre || ''} ${studentB.apellidoPaterno || ''} ${studentB.apellidoMaterno || ''}`.trim())
           : '';
         return nombreA.localeCompare(nombreB);
-      },
-    },
-    {
-      title: 'Concepto',
-      dataIndex: 'concepto',
-      ellipsis: true,
-      render: (concepto, record) => {
-        // Asegurar que concepto sea un valor primitivo
-        const conceptoValue = ensurePrimitive(concepto || record.concepto || record.concept, 'N/A');
-        return (
-          <TableCell>
-            {conceptoValue}
-          </TableCell>
-        );
       },
     },
     {
