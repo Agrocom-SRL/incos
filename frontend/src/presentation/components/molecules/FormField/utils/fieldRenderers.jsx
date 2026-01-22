@@ -15,7 +15,7 @@
  * Uso: Solo dentro del componente FormField
  */
 
-import { Form } from 'antd';
+import { Form, Typography } from 'antd';
 import { useEffect } from 'react';
 import {
   FieldInput,
@@ -28,6 +28,8 @@ import {
   SearchBar,
   Alert
 } from '@atoms';
+
+const { Paragraph } = Typography;
 
 /**
  * Renderer para campo de tipo input
@@ -203,16 +205,31 @@ const renderDisplay = (field, disabled, readOnly, form) => {
 /**
  * Renderer para campo de tipo alert (información/ayuda)
  * No se envuelve en Form.Item, se renderiza directamente
+ * Soporta HTML en la descripción usando Typography
  */
-const renderAlert = (field, disabled, readOnly) => (
-  <Alert
-    title={field.message || field.title}
-    description={field.description}
-    type={field.alertType || 'info'}
-    showIcon={field.showIcon !== false}
-    className={field.className}
-  />
-);
+const renderAlert = (field, disabled, readOnly) => {
+  // Si la descripción contiene HTML, renderizarla con Typography
+  const description = field.description;
+  const hasHTML = description && (description.includes('<') || description.includes('&lt;'));
+  
+  return (
+    <Alert
+      title={field.message || field.title}
+      description={
+        hasHTML ? (
+          <Paragraph style={{ marginBottom: 0 }}>
+            <span dangerouslySetInnerHTML={{ __html: description }} />
+          </Paragraph>
+        ) : (
+          description
+        )
+      }
+      type={field.alertType || 'info'}
+      showIcon={field.showIcon !== false}
+      className={field.className}
+    />
+  );
+};
 
 /**
  * Renderer para campo de tipo button (acción)

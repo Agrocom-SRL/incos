@@ -21,6 +21,18 @@ export const getStep3Fields = () => {
       title: 'Horario de Clases',
       fields: [
         {
+          name: 'resumenInscripcion',
+          type: 'alert',
+          label: '',
+          message: 'Resumen de Inscripción',
+          description: '', // Se enriquecerá dinámicamente por el enricher con los datos seleccionados
+          alertType: 'info',
+          span: 24,
+          required: false,
+          // Este campo se enriquecerá por el enricher enrichResumenInscripcionField
+          // Mostrará: Estudiante, Carrera, Paralelo (con turno y periodo)
+        },
+        {
           name: 'horarioClases',
           type: 'timetable',
           label: '',

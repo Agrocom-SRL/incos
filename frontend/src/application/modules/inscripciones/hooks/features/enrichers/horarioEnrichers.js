@@ -242,10 +242,114 @@ export const enrichHorarioField = (field, context = {}) => {
 };
 
 /**
+ * Enricher para el campo de resumen de inscripción
+ * Muestra un resumen de la información seleccionada: Estudiante, Carrera, Paralelo (con turno y periodo)
+ * 
+ * @param {Object} field - Configuración del campo (desde step3HorarioClases.js)
+ * @param {Object} context - Contexto con datos disponibles
+ * @param {Object} context.studentSearch - Objeto con selectedStudent
+ * @param {Object} context.carrerasData - Objeto con selectedCarrera y carreras
+ * @param {Object} context.paralelosData - Objeto con selectedParalelo y paralelos
+ * @returns {Object} Campo enriquecido con description o el campo original
+ */
+export const enrichResumenInscripcionField = (field, context = {}) => {
+  const { studentSearch, carrerasData, paralelosData } = context;
+  
+  // Si es el campo de resumen de inscripción, agregar la descripción
+  if (field.name === 'resumenInscripcion' && field.type === 'alert') {
+    const estudiante = studentSearch?.selectedStudent;
+    const carrera = carrerasData?.selectedCarrera;
+    const paralelo = paralelosData?.selectedParalelo;
+    
+    // Construir el resumen solo si hay datos seleccionados
+    if (estudiante || carrera || paralelo) {
+      const partes = [];
+      
+      // Información del estudiante
+      if (estudiante) {
+        // Construir nombre completo - verificar si ya existe nombreCompleto o construir desde partes
+        let nombreCompleto = estudiante.nombreCompleto;
+        if (!nombreCompleto) {
+          const partesNombre = [
+            estudiante.nombres,
+            estudiante.apellidoPaterno,
+            estudiante.apellidoMaterno
+          ].filter(Boolean);
+          nombreCompleto = partesNombre.length > 0 ? partesNombre.join(' ') : '';
+        }
+        
+        const codigoEstudiante = estudiante.codigoEstudiante || estudiante.codigo || '';
+        
+        if (nombreCompleto) {
+          partes.push(`<div style="margin-bottom: 8px;"><strong>Estudiante:</strong> ${nombreCompleto}${codigoEstudiante ? ` <span style="color: #666;">(${codigoEstudiante})</span>` : ''}</div>`);
+        } else if (codigoEstudiante) {
+          // Si solo hay código, mostrar al menos eso
+          partes.push(`<div style="margin-bottom: 8px;"><strong>Estudiante:</strong> <span style="color: #666;">(${codigoEstudiante})</span></div>`);
+        }
+      }
+      
+      // Información de la carrera
+      if (carrera) {
+        partes.push(`<div style="margin-bottom: 8px;"><strong>Carrera:</strong> ${carrera.nombre || ''}</div>`);
+      }
+      
+      // Información del paralelo
+      if (paralelo) {
+        // Buscar el paralelo completo en la lista para obtener toda la información
+        const paraleloCompleto = paralelosData?.paralelos?.find(p => p.id === paralelo.id) || paralelo;
+        
+        const paraleloInfo = [];
+        
+        // Nombre del paralelo (ej: "PRIMERO A")
+        if (paraleloCompleto.nombre) {
+          paraleloInfo.push(`<strong>${paraleloCompleto.nombre}</strong>`);
+        }
+        
+        // Turno (ej: "TARDE", "NOCHE") - resaltado
+        if (paraleloCompleto.turno) {
+          paraleloInfo.push(`Turno: <span style="color: #1890ff; font-weight: 600;">${paraleloCompleto.turno}</span>`);
+        }
+        
+        // Periodo - mostrar el número del periodo (1, 2, 3, 4...)
+        if (paraleloCompleto.periodoNumero) {
+          paraleloInfo.push(`Periodo: <strong>${paraleloCompleto.periodoNumero}</strong>`);
+        } else if (paraleloCompleto.periodoId) {
+          // Fallback: si no hay número, mostrar el ID (aunque no es ideal)
+          paraleloInfo.push(`Periodo ID: <strong>${paraleloCompleto.periodoId}</strong>`);
+        }
+        
+        if (paraleloInfo.length > 0) {
+          partes.push(`<div style="margin-bottom: 0;"><strong>Paralelo:</strong> ${paraleloInfo.join(' - ')}</div>`);
+        }
+      }
+      
+      // Si hay información, mostrar el resumen
+      if (partes.length > 0) {
+        return {
+          ...field,
+          description: partes.join(''),
+          // Ocultar si no hay información suficiente
+          hidden: false,
+        };
+      }
+    }
+    
+    // Si no hay información, ocultar el campo
+    return {
+      ...field,
+      hidden: true,
+    };
+  }
+  
+  return field;
+};
+
+/**
  * Array de enrichers específicos para horarios
  * 
  * @type {Array<Function>}
  */
 export const horarioEnrichers = [
+  enrichResumenInscripcionField,
   enrichHorarioField,
 ];

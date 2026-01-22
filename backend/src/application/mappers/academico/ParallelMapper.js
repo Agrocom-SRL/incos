@@ -16,6 +16,10 @@
  * Convierte una entidad Parallel a formato de presentación
  * @param {Parallel} parallel - Entidad de dominio Parallel
  * @returns {Object|null} Objeto en formato de presentación o null si parallel es null/undefined
+ * 
+ * NOTA: Este mapper solo mapea campos básicos de la entidad.
+ * Campos adicionales como 'estadisticas' se agregan después del mapeo
+ * en el método enrichData() de ListParalelosUseCase.
  */
 export function entityToPresentation(parallel) {
   if (!parallel) return null;

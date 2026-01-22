@@ -159,3 +159,60 @@
   font-size: var(--font-size-sm);
   color: var(--color-text-tertiary);
 }
+
+/* ============================================================================
+   ESTADÍSTICAS DE INSCRIPCIONES
+   ============================================================================
+   Estilos para las estadísticas dentro de las tarjetas de paralelos
+   Mantiene colores específicos incluso cuando la tarjeta está activa
+   ============================================================================ */
+
+/* Contenedor de estadísticas */
+.paralelo-card-estadisticas {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Cuando la tarjeta está activa, el contenedor de estadísticas mantiene fondo claro */
+.data-cards__card--active .paralelo-card-estadisticas {
+  background-color: rgba(255, 255, 255, 0.15) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+/* Valores de estadísticas - tamaño más grande y destacado */
+.estadistica-valor {
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  margin-left: 4px;
+}
+
+/* Estadísticas específicas - mantener colores incluso cuando la tarjeta está activa */
+.estadistica-total {
+  color: var(--color-text) !important;
+}
+
+.data-cards__card--active .estadistica-total {
+  color: var(--color-white) !important;
+}
+
+.estadistica-hombres {
+  color: #1890ff !important;
+}
+
+.data-cards__card--active .estadistica-hombres {
+  color: #87ceeb !important; /* Azul claro para mejor contraste en fondo oscuro */
+}
+
+.estadistica-mujeres {
+  color: #eb2f96 !important;
+}
+
+.data-cards__card--active .estadistica-mujeres {
+  color: #ffb6c1 !important; /* Rosa claro para mejor contraste en fondo oscuro */
+}
+
+/* Valores de estadísticas - destacar más cuando la tarjeta está activa */
+.data-cards__card--active .estadistica-valor {
+  color: var(--color-white) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}

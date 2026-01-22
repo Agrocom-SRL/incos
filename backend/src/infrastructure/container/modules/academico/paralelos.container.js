@@ -37,7 +37,8 @@ export function registerParalelosResource(container) {
             new ListParalelosUseCase({
                 parallelRepository: c.resolve(REPOSITORIOS_TOKENS.parallelRepository),
                 periodRepository: c.resolve(REPOSITORIOS_TOKENS.periodRepository),
-                studyPlanRepository: c.resolve(REPOSITORIOS_TOKENS.studyPlanRepository),
+                configuracionSistemaRepository: c.resolve(REPOSITORIOS_TOKENS.configuracionSistemaRepository),
+                managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
     );

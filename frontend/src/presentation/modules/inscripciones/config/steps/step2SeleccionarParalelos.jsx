@@ -86,6 +86,13 @@ const PARALELOS_FIELDS = [
       const carreraNombre = paralelo.carreraNombre || '';
       const turno = paralelo.turno || '';
 
+      // Estadísticas de inscripciones
+      // Asegurar que los valores sean números (pueden venir como strings desde el backend)
+      const estadisticas = paralelo.estadisticas || {};
+      const totalInscritos = Number(estadisticas.totalInscritos) || 0;
+      const totalHombres = Number(estadisticas.totalHombres) || 0;
+      const totalMujeres = Number(estadisticas.totalMujeres) || 0;
+
       return (
         <>
           {/* Título principal: PRIMERO A */}
@@ -101,9 +108,20 @@ const PARALELOS_FIELDS = [
               </Text>
             )}
 
+            {/* Turno resaltado */}
             {turno && (
-              <Text type="secondary" className="paralelo-card-turno">
-                Turno {turno}
+              <Text 
+                strong 
+                style={{ 
+                  fontSize: '16px',
+                  color: '#1890ff',
+                  fontWeight: 600,
+                  marginTop: '8px',
+                  marginBottom: '8px',
+                  display: 'block'
+                }}
+              >
+                Turno: {turno}
               </Text>
             )}
 
@@ -113,6 +131,27 @@ const PARALELOS_FIELDS = [
                 {descripcion}
               </Text>
             )}
+
+            {/* Estadísticas de inscripciones */}
+            <div className="paralelo-card-estadisticas" style={{ 
+              marginTop: '12px', 
+              padding: '16px', 
+              backgroundColor: '#f5f5f5', 
+              borderRadius: '8px',
+              border: '1px solid #d9d9d9'
+            }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <Text className="estadistica-total" style={{ fontSize: '16px', fontWeight: 600 }}>
+                  <Text strong>Total:</Text> <span className="estadistica-valor">{totalInscritos}</span> estudiante{totalInscritos !== 1 ? 's' : ''}
+                </Text>
+                <Text className="estadistica-hombres" style={{ fontSize: '16px', fontWeight: 600, color: '#1890ff' }}>
+                  <Text strong>Hombres:</Text> <span className="estadistica-valor">{totalHombres}</span>
+                </Text>
+                <Text className="estadistica-mujeres" style={{ fontSize: '16px', fontWeight: 600, color: '#eb2f96' }}>
+                  <Text strong>Mujeres:</Text> <span className="estadistica-valor">{totalMujeres}</span>
+                </Text>
+              </div>
+            </div>
           </div>
         </>
       );

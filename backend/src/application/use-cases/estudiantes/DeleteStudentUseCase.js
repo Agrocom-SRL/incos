@@ -23,6 +23,7 @@
  *
  * Tablas afectadas (según RegisterStudentUseCase y GenerateActaCompromisoUseCase):
  * - estudiantes: Registro principal del estudiante
+ * - estudiantes_datos_academicos: Datos académicos del estudiante
  * - estudiantes_apoderados: Apoderados del estudiante
  * - estudiantes_discapacidades: Discapacidades del estudiante
  * - estudiantes_origenes: Orígenes del estudiante
@@ -33,7 +34,8 @@
  * - Application Layer: Orquesta la eliminación de un estudiante
  * - Depende de: StudentRepository, StudentGuardianRepository, StudentDisabilityRepository,
  *   StudentOriginRepository, StudentDocumentDeliveryRepository, StudentDocumentRepository,
- *   EnrollmentRepository, ContributionPaymentRepository, StudentScholarshipRepository
+ *   StudentAcademicDataRepository, EnrollmentRepository, ContributionPaymentRepository,
+ *   StudentScholarshipRepository
  */
 
 import { NotFoundError, ValidationError } from '../../../domain/errors/AppError.js';
@@ -54,6 +56,7 @@ export class DeleteStudentUseCase {
    * @param {Object} dependencies.studentOriginRepository - Repositorio de orígenes
    * @param {Object} dependencies.studentDocumentDeliveryRepository - Repositorio de entregas de documentos
    * @param {Object} dependencies.studentDocumentRepository - Repositorio de documentos de estudiantes
+   * @param {Object} dependencies.studentAcademicDataRepository - Repositorio de datos académicos
    * @param {Object} dependencies.enrollmentRepository - Repositorio de inscripciones
    * @param {Object} dependencies.contributionPaymentRepository - Repositorio de pagos
    * @param {Object} dependencies.studentScholarshipRepository - Repositorio de becas asignadas
@@ -66,6 +69,7 @@ export class DeleteStudentUseCase {
     studentOriginRepository,
     studentDocumentDeliveryRepository,
     studentDocumentRepository,
+    studentAcademicDataRepository,
     enrollmentRepository,
     contributionPaymentRepository,
     studentScholarshipRepository,
@@ -77,6 +81,7 @@ export class DeleteStudentUseCase {
     this.studentOriginRepository = studentOriginRepository;
     this.studentDocumentDeliveryRepository = studentDocumentDeliveryRepository;
     this.studentDocumentRepository = studentDocumentRepository;
+    this.studentAcademicDataRepository = studentAcademicDataRepository;
     this.enrollmentRepository = enrollmentRepository;
     this.contributionPaymentRepository = contributionPaymentRepository;
     this.studentScholarshipRepository = studentScholarshipRepository;
@@ -110,7 +115,7 @@ export class DeleteStudentUseCase {
         ? student.toPlainObject()
         : student;
 
-      // 2. Validar que NO tenga inscripciones activas
+      // 2. Validar que NO tenga inscripciones activas, vigentes o admitidas
       await this._validateNoActiveEnrollments(studentId);
 
       // 3. Validar que NO tenga pagos activos vinculados
@@ -134,7 +139,10 @@ export class DeleteStudentUseCase {
       // 9. Eliminar apoderados
       await this._deleteGuardians(studentId);
 
-      // 10. Eliminar el estudiante principal (soft delete)
+      // 10. Eliminar datos académicos del estudiante (si existen)
+      await this._deleteAcademicData(studentId);
+
+      // 11. Eliminar el estudiante principal (soft delete)
       const deleted = await this.studentRepository.delete(studentId);
 
       if (!deleted) {
@@ -160,49 +168,78 @@ export class DeleteStudentUseCase {
   }
 
   /**
-   * Valida que el estudiante NO tenga inscripciones activas
+   * Valida que el estudiante NO tenga inscripciones activas, vigentes o admitidas
+   * Las inscripciones se relacionan con estudiantes_datos_academicos, no directamente con estudiantes
    * @private
    * @param {number} studentId - ID del estudiante
    * @throws {ValidationError} Si tiene inscripciones activas
    */
   async _validateNoActiveEnrollments(studentId) {
     try {
-      const enrollmentsResult = await this.enrollmentRepository.findAll(
+      // 1. Buscar datos académicos del estudiante
+      const academicDataResult = await this.studentAcademicDataRepository.findAll(
         { studentId: studentId, active: true },
         null,
         null
       );
 
-      const enrollments =
-        enrollmentsResult.enrollments ||
-        enrollmentsResult.inscripciones ||
-        enrollmentsResult.data ||
+      const academicDataList =
+        academicDataResult.studentAcademicData ||
+        academicDataResult.datosAcademicos ||
+        academicDataResult.data ||
         [];
 
-      if (enrollments.length > 0) {
-        const firstEnrollment = enrollments[0];
-        const enrollmentPlain = firstEnrollment.toPlainObject
-          ? firstEnrollment.toPlainObject()
-          : firstEnrollment;
-        const enrollmentId =
-          enrollmentPlain.id ||
-          enrollmentPlain.enrollmentId ||
-          enrollmentPlain.inscripcionId;
+      // 2. Para cada dato académico, buscar inscripciones
+      for (const academicData of academicDataList) {
+        const academicDataPlain = academicData.toPlainObject
+          ? academicData.toPlainObject()
+          : academicData;
+        const academicDataId =
+          academicDataPlain.id ||
+          academicDataPlain.studentAcademicDataId ||
+          academicDataPlain.estudianteDatosAcademicosId;
 
-        this.logger.warn(
-          '[Estudiantes] Intento de eliminar estudiante con inscripciones activas',
-          {
-            studentId,
-            enrollmentsCount: enrollments.length,
-            firstEnrollmentId: enrollmentId,
-          }
+        if (!academicDataId) continue;
+
+        // Buscar inscripciones por studentAcademicDataId
+        const enrollmentsResult = await this.enrollmentRepository.findAll(
+          { studentAcademicDataId: academicDataId, active: true },
+          null,
+          null
         );
 
-        throw new ValidationError(
-          `No se puede eliminar el estudiante porque tiene ${enrollments.length} inscripción(es) activa(s). ` +
-            `ID de inscripción: ${enrollmentId || 'N/A'}. ` +
-            `Solo se pueden eliminar estudiantes que no tengan inscripciones asociadas.`
-        );
+        const enrollments =
+          enrollmentsResult.enrollments ||
+          enrollmentsResult.inscripciones ||
+          enrollmentsResult.data ||
+          [];
+
+        if (enrollments.length > 0) {
+          const firstEnrollment = enrollments[0];
+          const enrollmentPlain = firstEnrollment.toPlainObject
+            ? firstEnrollment.toPlainObject()
+            : firstEnrollment;
+          const enrollmentId =
+            enrollmentPlain.id ||
+            enrollmentPlain.enrollmentId ||
+            enrollmentPlain.inscripcionId;
+
+          this.logger.warn(
+            '[Estudiantes] Intento de eliminar estudiante con inscripciones activas',
+            {
+              studentId,
+              academicDataId,
+              enrollmentsCount: enrollments.length,
+              firstEnrollmentId: enrollmentId,
+            }
+          );
+
+          throw new ValidationError(
+            `No se puede eliminar el estudiante porque tiene ${enrollments.length} inscripción(es) activa(s), vigente(s) o admitida(s). ` +
+              `ID de inscripción: ${enrollmentId || 'N/A'}. ` +
+              `Solo se pueden eliminar estudiantes que no tengan inscripciones asociadas.`
+          );
+        }
       }
 
       this.logger.info(
@@ -661,6 +698,99 @@ export class DeleteStudentUseCase {
         stack: error.stack,
       });
       throw error;
+    }
+  }
+
+  /**
+   * Elimina los datos académicos del estudiante (soft delete)
+   * NOTA: Este método no falla si no puede eliminar los datos académicos.
+   * Solo registra un warning y continúa, ya que los datos académicos pueden
+   * no existir o tener restricciones que impidan su eliminación.
+   * @private
+   * @param {number} studentId - ID del estudiante
+   */
+  async _deleteAcademicData(studentId) {
+    try {
+      const academicDataResult = await this.studentAcademicDataRepository.findAll(
+        { studentId: studentId, active: true },
+        null,
+        null
+      );
+
+      const academicDataList =
+        academicDataResult.studentAcademicData ||
+        academicDataResult.datosAcademicos ||
+        academicDataResult.data ||
+        [];
+
+      // Si no hay datos académicos, simplemente continuar
+      if (academicDataList.length === 0) {
+        this.logger.info('[Estudiantes] No hay datos académicos para eliminar', {
+          studentId,
+        });
+        return;
+      }
+
+      this.logger.info('[Estudiantes] Eliminando datos académicos del estudiante', {
+        studentId,
+        academicDataCount: academicDataList.length,
+      });
+
+      let deletedCount = 0;
+      let errorCount = 0;
+
+      for (const academicData of academicDataList) {
+        try {
+          const academicDataPlain = academicData.toPlainObject
+            ? academicData.toPlainObject()
+            : academicData;
+          await this.studentAcademicDataRepository.delete(academicDataPlain.id);
+          deletedCount++;
+        } catch (deleteError) {
+          errorCount++;
+          this.logger.warn(
+            '[Estudiantes] No se pudo eliminar un registro de datos académicos (continuando)',
+            {
+              studentId,
+              academicDataId: academicData.id || 'N/A',
+              error: deleteError.message,
+            }
+          );
+        }
+      }
+
+      if (deletedCount > 0) {
+        this.logger.info(
+          '[Estudiantes] Datos académicos eliminados exitosamente',
+          {
+            studentId,
+            deletedCount,
+            totalCount: academicDataList.length,
+          }
+        );
+      }
+
+      if (errorCount > 0) {
+        this.logger.warn(
+          '[Estudiantes] Algunos datos académicos no pudieron ser eliminados (continuando con eliminación del estudiante)',
+          {
+            studentId,
+            errorCount,
+            totalCount: academicDataList.length,
+          }
+        );
+      }
+    } catch (error) {
+      // No lanzar error, solo registrar warning y continuar
+      this.logger.warn(
+        '[Estudiantes] Error al intentar eliminar datos académicos (continuando con eliminación del estudiante)',
+        {
+          studentId,
+          error: error.message,
+          stack: error.stack,
+        }
+      );
+      // No lanzar el error, permitir que continúe la eliminación del estudiante
     }
   }
 }
