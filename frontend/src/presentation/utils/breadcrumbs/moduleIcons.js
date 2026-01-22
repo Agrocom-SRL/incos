@@ -48,7 +48,7 @@ export const MODULE_ICONS = {
   PAG: DollarOutlined,          // Pagos
   HIS: HistoryOutlined,         // Historial
   REP: BarChartOutlined,        // Reportes
-  TRA: ClockCircleOutlined,     // Trazabilidad
+  TRA: ClockCircleOutlined,     // Transitabilidad
   USU: UserSwitchOutlined,      // Usuarios
   CONFIG: SettingOutlined,      // Configuración
   DASH: HomeOutlined,           // Dashboard

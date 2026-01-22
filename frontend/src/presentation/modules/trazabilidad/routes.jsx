@@ -1,8 +1,8 @@
 // src/presentation/modules/trazabilidad/routes.jsx
 /**
- * Rutas del módulo de Trazabilidad
+ * Rutas del módulo de Transitabilidad
  * 
- * Single Responsibility: Define todas las rutas del módulo de trazabilidad
+ * Single Responsibility: Define todas las rutas del módulo de transitabilidad
  * 
  * Clean Architecture:
  * - Presentation Layer: Define rutas y metadata de UI (labels del menú, orden)
@@ -11,20 +11,20 @@
 import { UnderConstruction } from '@components/pages';
 
 export const trazabilidad = [
-    // Módulo raíz: Traspasos y Transferencias
+    // Módulo raíz: Transitabilidad
     {
-        path: '/trazabilidad',
+        path: '/transitabilidad',
         element: null, // No tiene página propia, es solo un grupo
         key: 'TRA',
         menu: {
-            label: 'Trazabilidad',
+            label: 'Transitabilidad',
             module: 'TRA',
             order: 5, // Después de Inscripciones, antes de Calificaciones
         },
     },
     // Submenu: Traspasos (misma ciudad/región)
     {
-        path: '/trazabilidad/traspasos',
+        path: '/transitabilidad/traspasos',
         element: null, // No tiene página propia, es solo un grupo
         key: 'TRA-TRASPASOS',
         menu: {
@@ -35,7 +35,7 @@ export const trazabilidad = [
         },
     },
     {
-        path: '/trazabilidad/traspasos/listar',
+        path: '/transitabilidad/traspasos/listar',
         element: <UnderConstruction />,
         key: 'TRA-TRASPASOS-LIST',
         menu: {
@@ -46,7 +46,7 @@ export const trazabilidad = [
         },
     },
     {
-        path: '/trazabilidad/traspasos/solicitar',
+        path: '/transitabilidad/traspasos/solicitar',
         element: <UnderConstruction />,
         key: 'TRA-TRASPASOS-SOLICITAR',
         menu: {
@@ -57,7 +57,7 @@ export const trazabilidad = [
         },
     },
     {
-        path: '/trazabilidad/traspasos/recibir',
+        path: '/transitabilidad/traspasos/recibir',
         element: <UnderConstruction />,
         key: 'TRA-TRASPASOS-RECIBIR',
         menu: {
@@ -68,7 +68,7 @@ export const trazabilidad = [
         },
     },
     {
-        path: '/trazabilidad/traspasos/convalidar-notas',
+        path: '/transitabilidad/traspasos/convalidar-notas',
         element: <UnderConstruction />,
         key: 'TRA-TRASPASOS-CONVALIDAR-NOTAS',
         menu: {
@@ -79,7 +79,7 @@ export const trazabilidad = [
         },
     },
     {
-        path: '/trazabilidad/traspasos/aprobar',
+        path: '/transitabilidad/traspasos/aprobar',
         element: <UnderConstruction />,
         key: 'TRA-TRASPASOS-APROBAR',
         menu: {
@@ -89,53 +89,53 @@ export const trazabilidad = [
             order: 5,
         },
     },
-    // Submenu: Transferencias (otra ciudad/región)
+    // Submenu: Transitabilidad (otra ciudad/región)
     {
-        path: '/trazabilidad/transferencias',
+        path: '/transitabilidad/transitabilidad',
         element: null, // No tiene página propia, es solo un grupo
         key: 'TRA-TRANSFERENCIAS',
         menu: {
-            label: 'Transferencias',
+            label: 'Transitabilidad',
             module: 'TRA',
             parent: 'TRA',
             order: 2,
         },
     },
     {
-        path: '/trazabilidad/transferencias/listar',
+        path: '/transitabilidad/transitabilidad/listar',
         element: <UnderConstruction />,
         key: 'TRA-TRANSFERENCIAS-LIST',
         menu: {
-            label: 'Listar Transferencias',
+            label: 'Listar Transitabilidad',
             module: 'TRA',
             parent: 'TRA-TRANSFERENCIAS',
             order: 1,
         },
     },
     {
-        path: '/trazabilidad/transferencias/solicitar',
+        path: '/transitabilidad/transitabilidad/solicitar',
         element: <UnderConstruction />,
         key: 'TRA-TRANSFERENCIAS-SOLICITAR',
         menu: {
-            label: 'Solicitar Transferencia (Salida)',
+            label: 'Solicitar Transitabilidad (Salida)',
             module: 'TRA',
             parent: 'TRA-TRANSFERENCIAS',
             order: 2,
         },
     },
     {
-        path: '/trazabilidad/transferencias/recibir',
+        path: '/transitabilidad/transitabilidad/recibir',
         element: <UnderConstruction />,
         key: 'TRA-TRANSFERENCIAS-RECIBIR',
         menu: {
-            label: 'Recibir Transferencia (Entrada)',
+            label: 'Recibir Transitabilidad (Entrada)',
             module: 'TRA',
             parent: 'TRA-TRANSFERENCIAS',
             order: 3,
         },
     },
     {
-        path: '/trazabilidad/transferencias/convalidar-notas',
+        path: '/transitabilidad/transitabilidad/convalidar-notas',
         element: <UnderConstruction />,
         key: 'TRA-TRANSFERENCIAS-CONVALIDAR-NOTAS',
         menu: {
@@ -146,11 +146,11 @@ export const trazabilidad = [
         },
     },
     {
-        path: '/trazabilidad/transferencias/aprobar',
+        path: '/transitabilidad/transitabilidad/aprobar',
         element: <UnderConstruction />,
         key: 'TRA-TRANSFERENCIAS-APROBAR',
         menu: {
-            label: 'Aprobar Transferencia',
+            label: 'Aprobar Transitabilidad',
             module: 'TRA',
             parent: 'TRA-TRANSFERENCIAS',
             order: 5,

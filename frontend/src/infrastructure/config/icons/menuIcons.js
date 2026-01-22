@@ -76,7 +76,7 @@ import {
     GlobalOutlined,
     TransactionOutlined,
     ReloadOutlined,
-    // Traspasos y Transferencias
+    // Transitabilidad
     SwapOutlined,
     ExportOutlined,
     ImportOutlined,
@@ -146,7 +146,7 @@ export const menuIconMap = {
     'INS-MATERIAS-CURSO': TableOutlined,
     'INS-ANULAR': CloseCircleOutlined,
 
-    // Traspasos y Transferencias - Nivel 1
+    // Transitabilidad - Nivel 1
     'TRA': SwapOutlined,
     // Submenu Traspasos
     'TRA-TRASPASOS': TransactionOutlined,
@@ -155,7 +155,7 @@ export const menuIconMap = {
     'TRA-TRASPASOS-RECIBIR': ImportOutlined,
     'TRA-TRASPASOS-CONVALIDAR-NOTAS': FileDoneOutlined,
     'TRA-TRASPASOS-APROBAR': CheckCircleOutlined,
-    // Submenu Transferencias
+    // Submenu Transitabilidad
     'TRA-TRANSFERENCIAS': ReloadOutlined,
     'TRA-TRANSFERENCIAS-LIST': UnorderedListOutlined,
     'TRA-TRANSFERENCIAS-SOLICITAR': ExportOutlined,

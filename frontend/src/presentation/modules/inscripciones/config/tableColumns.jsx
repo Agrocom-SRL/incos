@@ -216,8 +216,8 @@ export const createInscripcionesTableColumns = (navigate, refetch = null, delete
             record={{ ...record, id: inscripcionId }}
             navigate={navigate}
             refetch={refetch}
-            useCaseKey={deleteInscripcion ? null : "eliminarInscripcion"}
-            deleteFn={deleteInscripcion}
+            useCaseKey={null} // No permitir eliminar desde la lista general
+            deleteFn={null} // No permitir eliminar desde la lista general
             itemName={itemName}
             itemDetails={itemDetails}
             viewPath="/inscripciones/:id"
@@ -231,4 +231,71 @@ export const createInscripcionesTableColumns = (navigate, refetch = null, delete
       },
     },
   ];
+};
+
+/**
+ * Crea las columnas de la tabla de inscripciones para anular
+ * Similar a createInscripcionesTableColumns pero enfocada solo en anular
+ * 
+ * @param {Function} navigate - Función de navegación de react-router
+ * @param {Function} refetch - Función para recargar los datos después de anular
+ * @param {Function} deleteInscripcion - Función personalizada para eliminar/anular (opcional, viene del contexto)
+ * @returns {Array} Array de configuración de columnas para Ant Design Table
+ */
+export const createInscripcionesAnularTableColumns = (navigate, refetch = null, deleteInscripcion = null) => {
+  // Reutilizar las mismas columnas de visualización
+  const baseColumns = createInscripcionesTableColumns(navigate, refetch, deleteInscripcion);
+  
+  // Reemplazar la columna de acciones con una versión específica para anular
+  const accionesIndex = baseColumns.findIndex(col => col.key === 'acciones');
+  
+  if (accionesIndex !== -1) {
+    baseColumns[accionesIndex] = {
+      title: 'Acción',
+      key: 'acciones',
+      fixed: 'right',
+      width: 120,
+      align: 'right',
+      render: (_, record) => {
+        const inscripcionId = record.id || record.enrollment?.id;
+        
+        // Extraer información descriptiva de la inscripción para el diálogo
+        const student = record.estudiante || record.student || record.enrollment?.student;
+        const carrera = record.carrera || record.enrollment?.carrera;
+        const gestion = record.gestion || record.enrollment?.gestion;
+        
+        const estudianteNombre = student?.nombreCompleto || student?.nombre || 'Sin nombre';
+        const codigoEstudiante = student?.codigoEstudiante || student?.codigo || 'N/A';
+        const carreraNombre = carrera?.nombre || 'N/A';
+        const gestionAnio = gestion?.anio || gestion?.year || 'N/A';
+        
+        // Construir nombre descriptivo para el diálogo de anulación
+        const itemName = `la inscripción del estudiante ${estudianteNombre}`;
+        
+        // Detalles para mostrar en el diálogo
+        const itemDetails = [
+          { label: 'Estudiante', value: estudianteNombre },
+          { label: 'Código', value: codigoEstudiante },
+          { label: 'Carrera', value: carreraNombre },
+          { label: 'Gestión', value: gestionAnio },
+        ].filter(detail => detail.value && detail.value !== 'N/A' && detail.value !== 'Sin nombre');
+        
+        return (
+          <TableActions
+            record={{ ...record, id: inscripcionId }}
+            navigate={navigate}
+            refetch={refetch}
+            useCaseKey={deleteInscripcion ? null : "eliminarInscripcion"}
+            deleteFn={deleteInscripcion}
+            itemName={`anular ${itemName}`} // Personalizar el mensaje para indicar que es anulación
+            itemDetails={itemDetails}
+            viewPath={null} // No permitir ver en modo anular
+            editPath={null} // No permitir editar en modo anular
+          />
+        );
+      },
+    };
+  }
+  
+  return baseColumns;
 };
