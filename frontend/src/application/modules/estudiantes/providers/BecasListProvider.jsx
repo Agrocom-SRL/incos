@@ -21,7 +21,7 @@ import { BecasListContext } from '@application-estudiantes/context/BecasListCont
 
 export const BecasListProvider = ({ children }) => {
     // Obtener datos compartidos del estado en memoria
-    const { becas: becasData, loading, error, refetch } = useBecasContext();
+    const { becas: becasData, loading, error, refetch, deleteBeca } = useBecasContext();
 
     // Función para obtener los campos de búsqueda de una beca asignada
     const getSearchFields = useMemo(
@@ -49,6 +49,7 @@ export const BecasListProvider = ({ children }) => {
         loading,
         error,
         refetch,
+        deleteBeca,
         searchText,
         setSearchText,
     };

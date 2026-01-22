@@ -15,11 +15,12 @@ import TableActions from '@molecules/TableActions';
 /**
  * Crea las columnas de la tabla de estudiantes
  * 
- * @param {Function} navigate - Funci?n de navegaci?n de react-router
- * @param {Function} refetch - Funci?n para recargar los datos despu?s de eliminar
- * @returns {Array} Array de configuraci?n de columnas para Ant Design Table
+ * @param {Function} navigate - Función de navegación de react-router
+ * @param {Function} refetch - Función para recargar los datos después de eliminar
+ * @param {Function} deleteStudent - Función para eliminar un estudiante
+ * @returns {Array} Array de configuración de columnas para Ant Design Table
  */
-export const createEstudiantesTableColumns = (navigate, refetch = null) => {
+export const createEstudiantesTableColumns = (navigate, refetch = null, deleteStudent = null) => {
 
   return [
     {
@@ -110,27 +111,46 @@ export const createEstudiantesTableColumns = (navigate, refetch = null) => {
       fixed: 'right',
       width: 180,
       align: 'right',
-      render: (_, record) => (
-        <TableActions
-          record={record}
-          navigate={navigate}
-          refetch={refetch}
-          useCaseKey="eliminarEstudiante"
-          itemName={`el estudiante ${record.nombreCompleto || record.codigoEstudiante || ''}`}
-          viewPath="/estudiantes/:id"
-          editPath="/estudiantes/:id/editar"
-          extraActions={[
-            {
-              icon: <DollarOutlined />,
-              variant: 'primary',
-              tooltip: 'Registrar pago',
-              onClick: (record) => navigate('/pagos/registrar', {
-                state: { studentId: record.id }
-              }),
-            },
-          ]}
-        />
-      ),
+      render: (_, record) => {
+        // Extraer información para el diálogo de confirmación
+        const nombreCompleto = record.nombreCompleto || 'N/A';
+        const codigoEstudiante = record.codigoEstudiante || 'N/A';
+        const ciCompleto = record.ciCompleto || 'N/A';
+        const emailPersonal = record.emailPersonal || 'N/A';
+        const celular = record.celular || 'N/A';
+
+        const itemName = `el estudiante ${nombreCompleto}`;
+        const itemDetails = [
+          { label: 'Nombre', value: nombreCompleto },
+          { label: 'Código', value: codigoEstudiante },
+          { label: 'CI', value: ciCompleto },
+          { label: 'Email', value: emailPersonal },
+          { label: 'Celular', value: celular },
+        ].filter((d) => d.value && d.value !== 'N/A');
+
+        return (
+          <TableActions
+            record={record}
+            navigate={navigate}
+            refetch={refetch}
+            deleteFn={deleteStudent}
+            itemName={itemName}
+            itemDetails={itemDetails}
+            viewPath="/estudiantes/:id"
+            editPath="/estudiantes/:id/editar"
+            extraActions={[
+              {
+                icon: <DollarOutlined />,
+                variant: 'primary',
+                tooltip: 'Registrar pago',
+                onClick: (record) => navigate('/pagos/registrar', {
+                  state: { studentId: record.id }
+                }),
+              },
+            ]}
+          />
+        );
+      },
     },
   ];
 };

@@ -21,7 +21,7 @@ import { StudentListContext } from '@application-estudiantes/context/StudentList
 
 export const StudentListProvider = ({ children }) => {
     // Obtener datos compartidos del estado en memoria
-    const { estudiantes: estudiantesData, loading, error, refetch } = useStudentContext();
+    const { estudiantes: estudiantesData, loading, error, refetch, deleteStudent } = useStudentContext();
 
     // Función para obtener los campos de búsqueda de un estudiante
     const getSearchFields = useMemo(
@@ -46,6 +46,7 @@ export const StudentListProvider = ({ children }) => {
         loading,
         error,
         refetch,
+        deleteStudent,
         searchText,
         setSearchText,
     };

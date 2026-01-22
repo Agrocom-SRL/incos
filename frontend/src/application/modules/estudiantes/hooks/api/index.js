@@ -15,5 +15,7 @@ export { useSearchStudent } from './useSearchStudent';
 export { useBecasDescuentosApi } from './useBecasDescuentosApi';
 export { useBecasAsignadasApi } from './useBecasAsignadasApi';
 export { useCreateAsignarBeca } from './useCreateAsignarBeca';
+export { useDeleteBecaAsignada } from './useDeleteBecaAsignada';
 export { useGetStudentScholarships } from './useGetStudentScholarships';
+export { useDeleteStudent } from './useDeleteStudent';
 

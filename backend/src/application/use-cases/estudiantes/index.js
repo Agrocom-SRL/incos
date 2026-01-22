@@ -7,13 +7,13 @@ export { UpdateStudentUseCase } from './UpdateStudentUseCase.js';
 export { GetStudentByIdUseCase } from './GetStudentByIdUseCase.js';
 export { SearchStudentUseCase } from './SearchStudentUseCase.js';
 export { GenerateActaCompromisoUseCase } from './GenerateActaCompromisoUseCase.js';
-// TODO: Agregar otros use cases cuando se implementen sus endpoints
-// export { DeleteStudentUseCase } from './DeleteStudentUseCase.js';
+export { DeleteStudentUseCase } from './DeleteStudentUseCase.js';
 
 // ============================================
 // USE CASES - BECAS
 // ============================================
 export { CreateStudentScholarshipUseCase } from './becas/CreateStudentScholarshipUseCase.js';
+export { DeleteStudentScholarshipUseCase } from './becas/DeleteStudentScholarshipUseCase.js';
 // TODO: Agregar otros Use Cases cuando se implementen sus endpoints
 // export { ListBecasUseCase } from './becas/ListBecasUseCase.js';
 // export { AprobarBecaUseCase } from './becas/AprobarBecaUseCase.js';

@@ -36,6 +36,7 @@ const EstudiantesList = () => {
         searchText = '',
         setSearchText,
         refetch,
+        deleteStudent,
     } = useStudentListContext();
 
     const handleNuevoEstudiante = () => {
@@ -44,8 +45,8 @@ const EstudiantesList = () => {
 
     // Crear columnas de la tabla (memoizadas para evitar recrearlas en cada render)
     const tableColumns = useMemo(
-        () => createEstudiantesTableColumns(navigate, refetch),
-        [navigate, refetch]
+        () => createEstudiantesTableColumns(navigate, refetch, deleteStudent),
+        [navigate, refetch, deleteStudent]
     );
 
     // Configurar breadcrumb items

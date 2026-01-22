@@ -31,6 +31,7 @@ const BecasList = () => {
         searchText = '',
         setSearchText,
         refetch,
+        deleteBeca,
     } = useBecasListContext();
 
     const handleNuevaBeca = () => {
@@ -39,8 +40,8 @@ const BecasList = () => {
 
     // Crear columnas de la tabla (memoizadas para evitar recrearlas en cada render)
     const tableColumns = useMemo(
-        () => createBecasTableColumns(navigate, refetch),
-        [navigate, refetch]
+        () => createBecasTableColumns(navigate, refetch, deleteBeca),
+        [navigate, refetch, deleteBeca]
     );
 
     // Configurar breadcrumb items

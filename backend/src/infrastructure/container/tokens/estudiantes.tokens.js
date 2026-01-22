@@ -21,10 +21,10 @@ export const ESTUDIANTES_TOKENS = {
     generateActaCompromisoUseCase: 'estudiantes.generateActaCompromisoUseCase',
     listBecasDescuentosUseCase: 'estudiantes.listBecasDescuentosUseCase',
     createStudentScholarshipUseCase: 'estudiantes.createStudentScholarshipUseCase',
+    deleteStudentScholarshipUseCase: 'estudiantes.deleteStudentScholarshipUseCase',
     getStudentScholarshipsByStudentIdUseCase: 'estudiantes.getStudentScholarshipsByStudentIdUseCase',
     listStudentScholarshipsUseCase: 'estudiantes.listStudentScholarshipsUseCase',
-    // TODO: Agregar otros Use Cases cuando se implementen sus endpoints
-    // deleteStudentUseCase: 'estudiantes.deleteStudentUseCase',
+    deleteStudentUseCase: 'estudiantes.deleteStudentUseCase',
 
     // CONTROLLERS
     listStudentsController: 'estudiantes.listStudentsController',
@@ -35,10 +35,10 @@ export const ESTUDIANTES_TOKENS = {
     actaCompromisoController: 'estudiantes.actaCompromisoController',
     listBecasDescuentosController: 'estudiantes.listBecasDescuentosController',
     asignarBecaController: 'estudiantes.asignarBecaController',
+    deleteStudentScholarshipController: 'estudiantes.deleteStudentScholarshipController',
     getStudentScholarshipsController: 'estudiantes.getStudentScholarshipsController',
     listStudentScholarshipsController: 'estudiantes.listStudentScholarshipsController',
-    // TODO: Agregar otros Controllers cuando se implementen sus endpoints
-    // deleteStudentController: 'estudiantes.deleteStudentController',
+    deleteStudentController: 'estudiantes.deleteStudentController',
 
     // ROUTERS
     estudiantesRouter: 'estudiantes.estudiantesRouter',

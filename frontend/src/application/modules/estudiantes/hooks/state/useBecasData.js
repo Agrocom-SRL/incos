@@ -18,10 +18,12 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useBecasAsignadasApi } from '@application-estudiantes/hooks/api/useBecasAsignadasApi';
+import { useDeleteBecaAsignada } from '@application-estudiantes/hooks/api/useDeleteBecaAsignada';
 
 export const useBecasData = () => {
     // Hook para cargar datos iniciales desde BD (becas asignadas, no catálogo)
     const { becasAsignadas: becasDataFromApi, loading, error, refetch: refetchFromApi } = useBecasAsignadasApi();
+    const { deleteBecaAsignada: deleteBecaAsignadaApi, loading: deleting } = useDeleteBecaAsignada();
     
     // Estado local en memoria (puede ser actualizado sin recargar desde BD)
     // becasDataFromApi tiene estructura: { becas: [...], total, page, limit, totalPages }
@@ -84,6 +86,17 @@ export const useBecasData = () => {
     }, []);
 
     /**
+     * Elimina una beca asignada (llama a la API y actualiza el estado en memoria)
+     */
+    const deleteBeca = useCallback(async (becaId) => {
+        const result = await deleteBecaAsignadaApi(becaId);
+        if (result.success) {
+            removeBeca(becaId);
+        }
+        return result;
+    }, [deleteBecaAsignadaApi, removeBeca]);
+
+    /**
      * Sincroniza el estado local con la BD (recarga desde BD)
      * Útil cuando se necesita asegurar que los datos están actualizados
      */
@@ -95,15 +108,16 @@ export const useBecasData = () => {
         // Datos
         becas,
         pagination, // Información de paginación
-        loading,
+        loading: loading || deleting, // Combinar loading de fetch y delete
         error,
         
         // Métodos para CRUD en memoria
         addBeca,
         updateBeca,
         removeBeca,
+        deleteBeca, // Exponer método de eliminación
         
         // Método para sincronizar con BD
         refetch,
-    }), [becas, pagination, loading, error, addBeca, updateBeca, removeBeca, refetch]);
+    }), [becas, pagination, loading, deleting, error, addBeca, updateBeca, removeBeca, deleteBeca, refetch]);
 };

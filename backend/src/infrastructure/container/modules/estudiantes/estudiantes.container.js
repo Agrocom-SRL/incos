@@ -14,10 +14,10 @@
 
 import { ESTUDIANTES_TOKENS, REPOSITORIOS_TOKENS, SERVICIOS_TOKENS, INSCRIPCIONES_TOKENS } from '../../tokens/index.js';
 import { registerComponent } from '../../utils/container.helpers.js';
-import { ListStudentsUseCase, RegisterStudentUseCase, UpdateStudentUseCase, GetStudentByIdUseCase, SearchStudentUseCase, GenerateActaCompromisoUseCase, CreateStudentScholarshipUseCase } from '../../../../application/use-cases/estudiantes/index.js';
+import { ListStudentsUseCase, RegisterStudentUseCase, UpdateStudentUseCase, GetStudentByIdUseCase, SearchStudentUseCase, GenerateActaCompromisoUseCase, CreateStudentScholarshipUseCase, DeleteStudentScholarshipUseCase, DeleteStudentUseCase } from '../../../../application/use-cases/estudiantes/index.js';
 import { GetStudentScholarshipsByStudentIdUseCase } from '../../../../application/use-cases/estudiantes/becas/GetStudentScholarshipsByStudentIdUseCase.js';
 import { ListStudentScholarshipsUseCase } from '../../../../application/use-cases/estudiantes/becas/ListStudentScholarshipsUseCase.js';
-import { ListStudentsController, RegisterStudentController, UpdateStudentController, GetStudentByIdController, SearchStudentController, ActaCompromisoController, AsignarBecaController } from '../../../../presentation/controllers/estudiantes/index.js';
+import { ListStudentsController, RegisterStudentController, UpdateStudentController, GetStudentByIdController, SearchStudentController, ActaCompromisoController, AsignarBecaController, DeleteStudentScholarshipController, DeleteStudentController } from '../../../../presentation/controllers/estudiantes/index.js';
 import { GetStudentScholarshipsController } from '../../../../presentation/controllers/estudiantes/becas/get-scholarships.controller.js';
 import { ListStudentScholarshipsController } from '../../../../presentation/controllers/estudiantes/becas/list-student-scholarships.controller.js';
 import { buildEstudiantesRouter } from '../../../../presentation/routes/estudiantes.routes.js';
@@ -141,6 +141,17 @@ export function registerEstudiantesResource(container) {
 
     registerComponent(
         container,
+        ESTUDIANTES_TOKENS.deleteStudentScholarshipUseCase,
+        (c) =>
+            new DeleteStudentScholarshipUseCase({
+                studentScholarshipRepository: c.resolve(REPOSITORIOS_TOKENS.studentScholarshipRepository),
+                contributionPaymentRepository: c.resolve(REPOSITORIOS_TOKENS.contributionPaymentRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
+    registerComponent(
+        container,
         ESTUDIANTES_TOKENS.getStudentScholarshipsByStudentIdUseCase,
         (c) =>
             new GetStudentScholarshipsByStudentIdUseCase({
@@ -165,7 +176,23 @@ export function registerEstudiantesResource(container) {
             })
     );
 
-    // TODO: Agregar otros Use Cases cuando se implementen sus endpoints
+    registerComponent(
+        container,
+        ESTUDIANTES_TOKENS.deleteStudentUseCase,
+        (c) =>
+            new DeleteStudentUseCase({
+                studentRepository: c.resolve(REPOSITORIOS_TOKENS.studentRepository),
+                studentGuardianRepository: c.resolve(REPOSITORIOS_TOKENS.studentGuardianRepository),
+                studentDisabilityRepository: c.resolve(REPOSITORIOS_TOKENS.studentDisabilityRepository),
+                studentOriginRepository: c.resolve(REPOSITORIOS_TOKENS.studentOriginRepository),
+                studentDocumentDeliveryRepository: c.resolve(REPOSITORIOS_TOKENS.studentDocumentDeliveryRepository),
+                studentDocumentRepository: c.resolve(REPOSITORIOS_TOKENS.studentDocumentRepository),
+                enrollmentRepository: c.resolve(REPOSITORIOS_TOKENS.enrollmentRepository),
+                contributionPaymentRepository: c.resolve(REPOSITORIOS_TOKENS.contributionPaymentRepository),
+                studentScholarshipRepository: c.resolve(REPOSITORIOS_TOKENS.studentScholarshipRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
 
     // ============================================
     // CONTROLLERS
@@ -249,6 +276,17 @@ export function registerEstudiantesResource(container) {
 
     registerComponent(
         container,
+        ESTUDIANTES_TOKENS.deleteStudentScholarshipController,
+        (c) =>
+            new DeleteStudentScholarshipController({
+                deleteStudentScholarshipUseCase: c.resolve(ESTUDIANTES_TOKENS.deleteStudentScholarshipUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
+    );
+
+    registerComponent(
+        container,
         ESTUDIANTES_TOKENS.getStudentScholarshipsController,
         (c) =>
             new GetStudentScholarshipsController({
@@ -269,7 +307,16 @@ export function registerEstudiantesResource(container) {
             })
     );
 
-    // TODO: Agregar otros Controllers cuando se implementen sus endpoints
+    registerComponent(
+        container,
+        ESTUDIANTES_TOKENS.deleteStudentController,
+        (c) =>
+            new DeleteStudentController({
+                deleteStudentUseCase: c.resolve(ESTUDIANTES_TOKENS.deleteStudentUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
+    );
 
     // ============================================
     // ROUTER
@@ -286,8 +333,10 @@ export function registerEstudiantesResource(container) {
                 searchStudentController: c.resolve(ESTUDIANTES_TOKENS.searchStudentController),
                 actaCompromisoController: c.resolve(ESTUDIANTES_TOKENS.actaCompromisoController),
                 asignarBecaController: c.resolve(ESTUDIANTES_TOKENS.asignarBecaController),
+                deleteStudentScholarshipController: c.resolve(ESTUDIANTES_TOKENS.deleteStudentScholarshipController),
                 getStudentScholarshipsController: c.resolve(ESTUDIANTES_TOKENS.getStudentScholarshipsController),
                 listStudentScholarshipsController: c.resolve(ESTUDIANTES_TOKENS.listStudentScholarshipsController),
+                deleteStudentController: c.resolve(ESTUDIANTES_TOKENS.deleteStudentController),
                 // TODO: Agregar otros controllers cuando se implementen sus rutas
             };
 

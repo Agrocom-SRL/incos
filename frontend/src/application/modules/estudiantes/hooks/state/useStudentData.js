@@ -18,10 +18,14 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useEstudiantesApi } from '@application-estudiantes/hooks/api/useEstudiantesApi';
+import { useDeleteStudent } from '@application-estudiantes/hooks/api/useDeleteStudent';
 
 export const useStudentData = () => {
     // Hook para cargar datos iniciales desde BD
     const { estudiantes: estudiantesFromApi, loading, error, refetch: refetchFromApi } = useEstudiantesApi();
+    
+    // Hook para eliminar estudiantes
+    const { deleteStudent: deleteStudentApi, loading: deleting } = useDeleteStudent();
     
     // Estado local en memoria (puede ser actualizado sin recargar desde BD)
     const [estudiantes, setEstudiantes] = useState([]);
@@ -71,6 +75,17 @@ export const useStudentData = () => {
     }, []);
 
     /**
+     * Elimina un estudiante (llama a la API y actualiza el estado en memoria)
+     */
+    const deleteStudent = useCallback(async (studentId) => {
+        const result = await deleteStudentApi(studentId);
+        if (result.success) {
+            removeStudent(studentId);
+        }
+        return result;
+    }, [deleteStudentApi, removeStudent]);
+
+    /**
      * Sincroniza el estado local con la BD (recarga desde BD)
      * Útil cuando se necesita asegurar que los datos están actualizados
      */
@@ -81,13 +96,14 @@ export const useStudentData = () => {
     return {
         // Datos
         estudiantes,
-        loading,
+        loading: loading || deleting, // Combinar loading de fetch y delete
         error,
         
         // Métodos para CRUD en memoria
         addStudent,
         updateStudent,
         removeStudent,
+        deleteStudent, // Exponer método de eliminación
         
         // Método para sincronizar con BD
         refetch,

@@ -7,13 +7,13 @@ export { UpdateStudentController } from './estudiantes/update.controller.js';
 export { GetStudentByIdController } from './estudiantes/get-by-id.controller.js';
 export { SearchStudentController } from './estudiantes/search.controller.js';
 export { ActaCompromisoController } from './estudiantes/acta-compromiso.controller.js';
-// TODO: Agregar otros controllers cuando se implementen sus endpoints
-// export { DeleteStudentController } from './estudiantes/delete.controller.js';
+export { DeleteStudentController } from './estudiantes/delete-student.controller.js';
 
 // ============================================
 // CONTROLLERS - BECAS
 // ============================================
 export { AsignarBecaController } from './becas/asignar.controller.js';
+export { DeleteStudentScholarshipController } from './becas/delete-student-scholarship.controller.js';
 export { GetStudentScholarshipsController } from './becas/get-scholarships.controller.js';
 export { ListStudentScholarshipsController } from './becas/list-student-scholarships.controller.js';
 // TODO: Agregar otros Controllers cuando se implementen sus endpoints

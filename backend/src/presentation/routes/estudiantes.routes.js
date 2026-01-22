@@ -160,6 +160,54 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
         (req, res, next) => controllers.asignarBecaController.handle(req, res, next)  // 3. Controller al final
     );
 
+    /**
+     * DELETE /api/v1/estudiantes/becas/:id
+     * Eliminar una beca asignada a un estudiante (soft delete)
+     * Path: id (ID de la beca asignada - estudiantes_becas.id)
+     * 
+     * Regla de negocio: Solo se pueden eliminar becas que NO tengan pagos vigentes asociados.
+     * Las becas vinculadas a pagos no se eliminan (RegisterAporteVoluntarioUseCase las usa).
+     * 
+     * IMPORTANTE: Esta ruta debe estar ANTES de /:id para evitar conflictos
+     */
+    router.delete(
+        '/becas/:id',
+        idValidator,  // 1. Validator primero
+        validateRequest,  // 2. Middleware que procesa errores
+        (req, res, next) => controllers.deleteStudentScholarshipController.handle(req, res, next)  // 3. Controller al final
+    );
+
+    // ============================================
+    // ELIMINACIÓN DE ESTUDIANTE
+    // ============================================
+
+    /**
+     * DELETE /api/v1/estudiantes/:id
+     * Eliminar un estudiante y todas sus relaciones (soft delete)
+     * Path: id (ID del estudiante)
+     * 
+     * Regla de negocio: Solo se pueden eliminar estudiantes que NO tengan:
+     * - Inscripciones activas
+     * - Pagos activos vinculados
+     * - Becas activas asignadas
+     * 
+     * Elimina (soft delete):
+     * - Apoderados (estudiantes_apoderados)
+     * - Discapacidades (estudiantes_discapacidades)
+     * - Orígenes (estudiantes_origenes)
+     * - Entregas de documentos (estudiantes_documentos_entrega)
+     * - Documentos del estudiante (documentos_estudiante) - incluyendo actas de compromiso
+     * - Estudiante principal (estudiantes)
+     * 
+     * IMPORTANTE: Esta ruta debe estar ANTES de GET /:id para evitar conflictos
+     */
+    router.delete(
+        '/:id',
+        idValidator,  // 1. Validator primero
+        validateRequest,  // 2. Middleware que procesa errores
+        (req, res, next) => controllers.deleteStudentController.handle(req, res, next)  // 3. Controller al final
+    );
+
     // ============================================
     // OBTENCIÓN DE ESTUDIANTE POR ID
     // ============================================
@@ -178,16 +226,6 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
         validateRequest,  // 2. Middleware que procesa errores
         (req, res, next) => controllers.getStudentByIdController.handle(req, res, next)  // 3. Controller al final
     );
-
-    // ============================================
-    // ENDPOINTS FUTUROS (TODO: Implementar cuando se necesiten)
-    // ============================================
-
-    // DELETE /:id - Eliminar estudiante (soft delete)
-    // router.delete(
-    //     '/:id',
-    //     (req, res, next) => controllers.deleteStudentController.handle(req, res, next)
-    // );
 
     return router;
 }

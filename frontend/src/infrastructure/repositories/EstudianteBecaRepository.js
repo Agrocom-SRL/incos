@@ -183,30 +183,27 @@ export class EstudianteBecaRepository extends IEstudianteBecaRepository {
 
   /**
    * Elimina una asignación de beca (soft delete)
-   * DELETE /v1/estudiantes/:studentId/scholarships/:id
+   * DELETE /v1/estudiantes/becas/:id
    * 
-   * TODO: Este endpoint aún no está implementado en el backend
-   * Por ahora retorna un error indicando que no está disponible
-   * 
-   * @param {string|number} id - ID de la asignación de beca a eliminar
-   * @param {Object} options - Opciones opcionales
-   * @param {number} options.studentId - ID del estudiante (requerido para construir la URL)
+   * @param {string|number} id - ID de la asignación de beca a eliminar (estudiantes_becas.id)
+   * @param {Object} options - Opciones opcionales (no se usa studentId, el endpoint es directo)
    * @returns {Promise<{success: boolean, error?: string}>}
    */
   async eliminar(id, options = {}) {
     try {
-      const { studentId } = options;
+      if (!id || (typeof id !== 'string' && typeof id !== 'number')) {
+        return {
+          success: false,
+          error: 'El ID de la beca asignada es requerido',
+        };
+      }
 
-      // TODO: Cuando el backend implemente DELETE /estudiantes/:studentId/scholarships/:id, usar:
-      // const response = await apiClient.delete(
-      //   ESTUDIANTES_BECAS_ENDPOINTS.BY_STUDENT_AND_ID(studentId, id)
-      // );
-      
-      // Por ahora, retornar error indicando que no está disponible
-      return {
-        success: false,
-        error: 'El endpoint de eliminación aún no está implementado en el backend',
-      };
+      // Endpoint: DELETE /v1/estudiantes/becas/:id
+      const response = await apiClient.delete(
+        ESTUDIANTES_BECAS_ENDPOINTS.DELETE(id)
+      );
+
+      return handleSuccessResponse(response, 'Beca asignada eliminada exitosamente');
     } catch (error) {
       return handleErrorResponse(error, 'Error al eliminar asignación de beca');
     }
