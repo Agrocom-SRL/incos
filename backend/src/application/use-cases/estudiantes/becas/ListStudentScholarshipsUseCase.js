@@ -20,6 +20,10 @@
  * - Depende de Repositories (Infrastructure) a través de abstracciones
  */
 
+import { StudentMapper } from '../../../mappers/estudiantes/index.js';
+import { BecaDescuentoMapper } from '../../../mappers/estudiantes/index.js';
+import { ManagementMapper } from '../../../mappers/academico/index.js';
+
 export class ListStudentScholarshipsUseCase {
   /**
    * @param {Object} params - Dependencias inyectadas
@@ -95,15 +99,15 @@ export class ListStudentScholarshipsUseCase {
         if (scholarshipPlain.managementId) managementIds.add(scholarshipPlain.managementId);
       });
 
-      // 4. Obtener datos de estudiantes
+      // 4. Obtener datos de estudiantes y convertir a formato de presentación
       const students = {};
       for (const studentId of studentIds) {
         try {
-          const student = await this.studentRepository.findById(studentId, {
-            attributes: ['id', 'codigoEstudiante', 'nombres', 'apellidoPaterno', 'apellidoMaterno', 'ci', 'expedicion'],
-          });
+          const student = await this.studentRepository.findById(studentId);
           if (student) {
-            students[studentId] = student.toPlainObject ? student.toPlainObject() : student;
+            // Convertir entidad a formato de presentación usando el mapper
+            const studentPresentation = StudentMapper.entityToPresentation(student);
+            students[studentId] = studentPresentation;
           }
         } catch (err) {
           this.logger.warn('[Estudiantes] Error al obtener estudiante', {
@@ -113,13 +117,15 @@ export class ListStudentScholarshipsUseCase {
         }
       }
 
-      // 5. Obtener tipos de beca
+      // 5. Obtener tipos de beca y convertir a formato de presentación
       const scholarshipsCatalog = {};
       for (const scholarshipId of scholarshipIds) {
         try {
           const scholarship = await this.scholarshipRepository.findById(scholarshipId);
           if (scholarship) {
-            scholarshipsCatalog[scholarshipId] = scholarship.toPlainObject ? scholarship.toPlainObject() : scholarship;
+            // Convertir entidad a formato de presentación usando el mapper
+            const scholarshipPresentation = BecaDescuentoMapper.entityToPresentation(scholarship);
+            scholarshipsCatalog[scholarshipId] = scholarshipPresentation;
           }
         } catch (err) {
           this.logger.warn('[Estudiantes] Error al obtener tipo de beca', {
@@ -129,13 +135,15 @@ export class ListStudentScholarshipsUseCase {
         }
       }
 
-      // 6. Obtener gestiones
+      // 6. Obtener gestiones y convertir a formato de presentación
       const managements = {};
       for (const managementId of managementIds) {
         try {
           const management = await this.managementRepository.findById(managementId);
           if (management) {
-            managements[managementId] = management.toPlainObject ? management.toPlainObject() : management;
+            // Convertir entidad a formato de presentación usando el mapper
+            const managementPresentation = ManagementMapper.entityToPresentation(management);
+            managements[managementId] = managementPresentation;
           }
         } catch (err) {
           this.logger.warn('[Estudiantes] Error al obtener gestión', {
@@ -157,8 +165,12 @@ export class ListStudentScholarshipsUseCase {
           : null;
         
         // Construir nombre completo del estudiante
+        // Los datos ya están en formato de presentación (español) gracias a los mappers
+        const nombres = student?.nombres || '';
+        const apellidoPaterno = student?.apellidoPaterno || '';
+        const apellidoMaterno = student?.apellidoMaterno || '';
         const nombreCompleto = student 
-          ? `${student.nombres || ''} ${student.apellidoPaterno || ''} ${student.apellidoMaterno || ''}`.trim()
+          ? `${nombres} ${apellidoPaterno} ${apellidoMaterno}`.trim()
           : null;
 
         return {
@@ -176,16 +188,16 @@ export class ListStudentScholarshipsUseCase {
           createdAt: scholarshipPlain.createdAt,
           updatedAt: scholarshipPlain.updatedAt,
           
-          // Datos del estudiante
+          // Datos del estudiante (ya en formato de presentación gracias al mapper)
           student: student ? {
             id: student.id,
-            codigoEstudiante: student.codigoEstudiante || student.studentCode,
+            codigoEstudiante: student.codigoEstudiante,
             nombreCompleto,
             ci: student.ci,
             expedicion: student.expedicion,
           } : null,
           
-          // Datos del tipo de beca
+          // Datos del tipo de beca (ya en formato de presentación gracias al mapper)
           scholarship: scholarshipType ? {
             id: scholarshipType.id,
             nombre: scholarshipType.nombre,
@@ -199,12 +211,12 @@ export class ListStudentScholarshipsUseCase {
             promedioMinimo: scholarshipType.promedioMinimo,
           } : null,
           
-          // Datos de la gestión
+          // Datos de la gestión (ya en formato de presentación gracias al mapper)
           management: management ? {
             id: management.id,
-            codigo: management.code || management.codigo,
-            nombre: management.name || management.nombre,
-            anio: management.year || management.anio,
+            codigo: management.codigo,
+            nombre: management.nombre,
+            anio: management.anio,
           } : null,
         };
       });

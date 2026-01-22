@@ -1,10 +1,10 @@
 /**
- * becasTableColumns - Configuraci?n de columnas para la tabla de becas asignadas
+ * becasTableColumns - Configuración de columnas para la tabla de becas asignadas
  * 
- * Single Responsibility: Definir las columnas y su configuraci?n para BecasTable
+ * Single Responsibility: Definir las columnas y su configuración para BecasTable
  * 
  * NOTA: Esta tabla muestra BECAS ASIGNADAS A ESTUDIANTES (estudiantes_becas),
- * no el cat?logo de becas/descuentos (becas_descuentos).
+ * no el catálogo de becas/descuentos (becas_descuentos).
  * Cada fila representa una beca asignada a un estudiante con datos enriquecidos.
  */
 
@@ -16,11 +16,12 @@ import TableActions from '@molecules/TableActions';
 /**
  * Crea las columnas de la tabla de becas asignadas
  * 
- * @param {Function} navigate - Funci?n de navegaci?n de react-router
- * @param {Function} refetch - Funci?n para recargar los datos despu?s de eliminar
- * @returns {Array} Array de configuraci?n de columnas para Ant Design Table
+ * @param {Function} navigate - Función de navegación de react-router
+ * @param {Function} refetch - Función para recargar los datos después de eliminar
+ * @param {Function} deleteBeca - Función para eliminar una beca asignada
+ * @returns {Array} Array de configuración de columnas para Ant Design Table
  */
-export const createBecasTableColumns = (navigate, refetch = null) => {
+export const createBecasTableColumns = (navigate, refetch = null, deleteBeca = null) => {
 
   return [
     {
@@ -29,18 +30,24 @@ export const createBecasTableColumns = (navigate, refetch = null) => {
       ellipsis: true,
       render: (_, record) => {
         const student = record.student;
+        // Los datos vienen del backend en formato de presentación (español)
+        const nombreCompleto = student?.nombreCompleto || 'N/A';
+        const ci = student?.ci || 'N/A';
+        const expedicion = student?.expedicion || '';
+        const codigoEstudiante = student?.codigoEstudiante || null;
+        
         return (
           <TableCell>
             <div>
               <div style={{ fontWeight: 'bold' }}>
-                {student?.nombreCompleto || 'N/A'}
+                {nombreCompleto}
               </div>
               <div style={{ fontSize: '12px', color: '#666' }}>
-                CI: {student?.ci || 'N/A'} {student?.expedicion ? `(${student.expedicion})` : ''}
+                CI: {ci} {expedicion ? `(${expedicion})` : ''}
               </div>
-              {student?.codigoEstudiante && (
+              {codigoEstudiante && (
                 <div style={{ fontSize: '11px', color: '#999' }}>
-                  C?digo: {student.codigoEstudiante}
+                  Código: {codigoEstudiante}
                 </div>
               )}
             </div>
@@ -59,15 +66,19 @@ export const createBecasTableColumns = (navigate, refetch = null) => {
       ellipsis: true,
       render: (_, record) => {
         const scholarship = record.scholarship;
+        // Los datos vienen del backend en formato de presentación (español)
+        const nombre = scholarship?.nombre || 'N/A';
+        const codigo = scholarship?.codigo || null;
+        
         return (
           <TableCell>
             <div>
               <div style={{ fontWeight: 'bold' }}>
-                {scholarship?.nombre || 'N/A'}
+                {nombre}
               </div>
-              {scholarship?.codigo && (
+              {codigo && (
                 <div style={{ fontSize: '11px', color: '#666' }}>
-                  {scholarship.codigo}
+                  {codigo}
                 </div>
               )}
             </div>
@@ -86,10 +97,13 @@ export const createBecasTableColumns = (navigate, refetch = null) => {
       ellipsis: true,
       render: (_, record) => {
         const scholarship = record.scholarship;
-        if (scholarship?.porcentaje) {
+        // Los datos vienen del backend en formato de presentación (español)
+        const porcentaje = scholarship?.porcentaje;
+        
+        if (porcentaje != null && porcentaje !== undefined) {
           return (
             <TableCell icon={<PercentageOutlined />}>
-              {scholarship.porcentaje}%
+              {porcentaje}%
             </TableCell>
           );
         }
@@ -102,14 +116,20 @@ export const createBecasTableColumns = (navigate, refetch = null) => {
       },
     },
     {
-      title: 'Gesti?n',
+      title: 'Gestión',
       dataIndex: ['management', 'codigo'],
       ellipsis: true,
       render: (_, record) => {
         const management = record.management;
+        // Los datos vienen del backend en formato de presentación (español)
+        const codigo = management?.codigo || null;
+        const nombre = management?.nombre || null;
+        const anio = management?.anio || null;
+        const gestionDisplay = codigo || nombre || anio || 'N/A';
+        
         return (
           <TableCell icon={<CalendarOutlined />}>
-            {management?.codigo || management?.nombre || management?.anio || 'N/A'}
+            {gestionDisplay}
           </TableCell>
         );
       },
@@ -173,27 +193,49 @@ export const createBecasTableColumns = (navigate, refetch = null) => {
       fixed: 'right',
       width: 150,
       align: 'right',
-      render: (_, record) => (
-        <TableActions
-          record={record}
-          navigate={navigate}
-          refetch={refetch}
-          useCaseKey="eliminarBecaDescuento"
-          itemName={`la beca ${record.scholarship?.nombre || record.id}`}
-          viewPath={record.studentId ? `/estudiantes/:id` : null}
-          editPath={null}
-          onEdit={() => {
-            // TODO: Implementar edici?n de beca asignada
-            console.log('Editar beca asignada:', record.id);
-          }}
-          onView={() => {
-            // Ver detalle del estudiante si hay studentId
-            if (record.studentId) {
-              navigate(`/estudiantes/${record.studentId}`);
-            }
-          }}
-        />
-      ),
+      render: (_, record) => {
+        // Extraer información para el diálogo de confirmación
+        const estudianteNombre = record.student?.nombreCompleto || 'N/A';
+        const codigoEstudiante = record.student?.codigoEstudiante || 'N/A';
+        const becaNombre = record.scholarship?.nombre || 'N/A';
+        const becaPorcentaje = record.scholarship?.porcentaje ? `${record.scholarship.porcentaje}%` : 'N/A';
+        const gestionAnio = record.management?.anio || record.management?.codigo || 'N/A';
+        const estado = record.state || 'N/A';
+
+        const itemName = `la beca ${becaNombre} del estudiante ${estudianteNombre}`;
+        const itemDetails = [
+          { label: 'Estudiante', value: estudianteNombre },
+          { label: 'Código', value: codigoEstudiante },
+          { label: 'Beca', value: becaNombre },
+          { label: 'Descuento', value: becaPorcentaje },
+          { label: 'Gestión', value: String(gestionAnio) },
+          { label: 'Estado', value: estado },
+        ].filter((d) => d.value && d.value !== 'N/A' && d.value !== 'Sin nombre');
+
+        return (
+          <TableActions
+            record={record}
+            navigate={navigate}
+            refetch={refetch}
+            useCaseKey={deleteBeca ? null : 'eliminarBecaDescuento'}
+            deleteFn={deleteBeca}
+            itemName={itemName}
+            itemDetails={itemDetails}
+            viewPath={record.studentId ? `/estudiantes/:id` : null}
+            editPath={null}
+            onEdit={() => {
+              // TODO: Implementar edición de beca asignada
+              console.log('Editar beca asignada:', record.id);
+            }}
+            onView={() => {
+              // Ver detalle del estudiante si hay studentId
+              if (record.studentId) {
+                navigate(`/estudiantes/${record.studentId}`);
+              }
+            }}
+          />
+        );
+      },
     },
   ];
 };
