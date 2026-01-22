@@ -42,7 +42,7 @@ CREATE TABLE estudiantes (
     fecha_nacimiento DATE NOT NULL COMMENT 'Fecha de nacimiento',
     genero ENUM('MASCULINO', 'FEMENINO', 'OTRO') NOT NULL COMMENT 'Género',
     estado_civil_id INT COMMENT 'Estado civil',
-    tipo_sangre ENUM('A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-') COMMENT 'Tipo de sangre',
+    tipo_sangre ENUM('ARH (+)', 'ARH (-)', 'BRH (+)', 'BRH (-)', 'ABRH (+)', 'ABRH (-)', 'ORH (+)', 'ORH (-)') COMMENT 'Tipo de sangre',
     
     -- Discapacidad (necesario para becas)
     -- Los detalles de discapacidad están en la tabla estudiantes_discapacidades

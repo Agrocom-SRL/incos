@@ -33,7 +33,7 @@
 export const createEstudianteDatosPersonalesFields = () => {
   return {
     datosPersonales: {
-      title: 'Datos Personales',
+      title: 'DATOS PERSONALES',
       fields: [
         // CI
         {

@@ -59,7 +59,7 @@ export class LanguageRepository extends BaseRepository {
    * 
    * Ejemplos de uso:
    * - findBy({ isoCode: 'es' }) → Busca idioma por código ISO
-   * - findAll({ name: 'Español' }) → Busca por nombre exacto
+   * - findAll({ name: 'Castellano' }) → Busca por nombre exacto
    * 
    * @param {Object} filters - Filtros de búsqueda
    *   - name: Nombre del idioma (búsqueda exacta, para búsqueda de texto usar search())

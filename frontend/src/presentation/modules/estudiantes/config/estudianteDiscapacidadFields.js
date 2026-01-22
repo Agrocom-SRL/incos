@@ -30,7 +30,7 @@
 export const createEstudianteDiscapacidadFields = () => {
   return {
     discapacidad: {
-      title: 'Datos de Discapacidad',
+      title: 'DATOS DE DISCAPACIDAD',
       fields: [
         // Tipo de Discapacidad
         {

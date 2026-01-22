@@ -31,7 +31,7 @@ const DatosPersonalesSection = ({ studentData }) => {
 
   return (
     <Card
-      title="Datos Personales"
+      title="DATOS PERSONALES"
       style={{ marginBottom: '24px' }}
       headerColor="primary"
     >

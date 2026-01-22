@@ -63,7 +63,7 @@ const createCamposResidencia = () => {
 export const createEstudianteContactoFields = () => {
   return {
     contacto: {
-      title: 'Datos de Contacto',
+      title: 'DATOS REFERENCIALES DEL ESTUDIANTE',
       fields: [
         // Email Personal
         {

@@ -29,17 +29,17 @@ export const useEstudianteWizardTitles = (completarMode = false) => {
       step1: {
         title: 'Datos Generales',
         formTitle: 'Información Personal del Estudiante',
-        sectionTitle: 'Datos Personales',
+        sectionTitle: 'DATOS PERSONALES',
       },
       step2: {
         title: 'Contacto de Emergencia',
         formTitle: 'Datos de Contacto de Emergencia',
-        sectionTitle: 'Contacto de Emergencia',
+        sectionTitle: 'DATOS DE CONTACTO DE EMERGENCIA',
       },
       step3: {
         title: 'Documentación',
         formTitle: 'Documentación del Estudiante',
-        sectionTitle: 'Documentos Requeridos',
+        sectionTitle: 'DOCUMENTACIÓN REQUERIDA',
       },
     };
 

@@ -20,9 +20,9 @@ export const GENEROS = ['MASCULINO', 'FEMENINO', 'OTRO'];
 
 /**
  * Lista de tipos de sangre (ordenados de más común a más raro)
- * O+ es el más común, AB- es el más raro
+ * ORH (+) es el más común, ABRH (-) es el más raro
  */
-export const TIPOS_SANGRE = ['O+', 'A+', 'B+', 'AB+', 'O-', 'A-', 'B-', 'AB-'];
+export const TIPOS_SANGRE = ['ORH (+)', 'ARH (+)', 'BRH (+)', 'ABRH (+)', 'ORH (-)', 'ARH (-)', 'BRH (-)', 'ABRH (-)'];
 
 /**
  * Edad mínima requerida para el registro de estudiantes (en años)

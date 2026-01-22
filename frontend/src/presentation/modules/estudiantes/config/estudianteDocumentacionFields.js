@@ -120,7 +120,7 @@ export const createCamposDocumentacionDinamicos = (documentacionProcesada = []) 
 export const createEstudianteDocumentacionFields = () => {
   return {
     documentacion: {
-      title: 'Documentación Requerida',
+      title: 'DOCUMENTACIÓN REQUERIDA',
       // Los campos se generan dinámicamente usando createCamposDocumentacionDinamicos
       // Este objeto solo define la estructura base
       fields: [],

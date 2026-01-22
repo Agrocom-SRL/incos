@@ -31,7 +31,7 @@ DROP TABLE IF EXISTS idiomas;
 
 CREATE TABLE idiomas (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(50) NOT NULL COMMENT 'Español, Quechua, Aymara, Guaraní, Inglés',
+    nombre VARCHAR(50) NOT NULL COMMENT 'Castellano, Quechua, Aymara, Guaraní, Inglés',
     codigo_iso CHAR(3) COMMENT 'spa, quz, aym, grn, eng',
     
     -- Campos de auditoría y control (ESTÁNDAR)

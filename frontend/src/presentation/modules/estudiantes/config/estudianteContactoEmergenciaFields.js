@@ -221,7 +221,7 @@ export const createCamposContactosEmergenciaDinamicos = (contactosIndices, elimi
 export const createEstudianteContactoEmergenciaFields = () => {
     return {
         contactoEmergencia: {
-            title: 'Datos de Contacto de Emergencia',
+            title: 'DATOS DE CONTACTO DE EMERGENCIA',
             // Los campos se generan dinámicamente usando useContactosEmergenciaDinamicos
             // Este objeto solo define la estructura base
             fields: [],

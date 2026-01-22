@@ -101,7 +101,7 @@ const GuardiansSection = ({ guardians }) => {
             <Col xs={24} sm={12}>
               <StudentInfoItem
                 icon={<SafetyOutlined style={{ fontSize: '24px', color: '#fff' }} />}
-                label="Contacto de Emergencia"
+                label="DATOS DE CONTACTO DE EMERGENCIA"
                 value={guardian.isEmergencyContact ? 'Sí' : 'No'}
               />
             </Col>

@@ -151,8 +151,8 @@ export const registerStudentValidator = [
 
   body('tipoSangre')
     .optional()
-    .isIn(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'])
-    .withMessage('Tipo de sangre debe ser uno de: A+, A-, B+, B-, AB+, AB-, O+, O-'),
+    .isIn(['ARH (+)', 'ARH (-)', 'BRH (+)', 'BRH (-)', 'ABRH (+)', 'ABRH (-)', 'ORH (+)', 'ORH (-)'])
+    .withMessage('Tipo de sangre debe ser uno de: ARH (+), ARH (-), BRH (+), BRH (-), ABRH (+), ABRH (-), ORH (+), ORH (-)'),
 
   body('emailPersonal')
     .customSanitizer((value) => {

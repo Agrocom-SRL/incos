@@ -57,7 +57,7 @@ const createCamposBoliviana = (prefix = '') => {
       required: false,
       span: 12,
       capitalize: true, // Capitaliza automáticamente la primera letra
-      placeholder: 'Ingrese localidad o comunidad',
+      placeholder: 'Ingrese localidad o comunidad de nacimiento',
     },
   ];
 };
@@ -86,6 +86,7 @@ const createCamposExtranjera = (prefix = '') => {
       span: 12,
       capitalize: true, // Capitaliza automáticamente la primera letra
       placeholder: 'Ingrese ciudad de nacimiento',
+      description: 'Ciudad donde nació el estudiante',
     },
   ];
 };
@@ -107,7 +108,7 @@ const createCamposExtranjera = (prefix = '') => {
 export const createEstudianteGeograficosFields = () => {
   return {
     geograficos: {
-      title: 'Datos Geográficos de Origen',
+      title: 'DATOS GEOGRÁFICOS DE ORIGEN',
       fields: [
         // Idioma Más Hablado (idioma que más habla)
         {

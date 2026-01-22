@@ -103,14 +103,14 @@ export const GENEROS_VALUES = Object.values(GENEROS);
  * Tipos de sangre
  */
 export const TIPOS_SANGRE = {
-  A_POSITIVO: 'A+',
-  A_NEGATIVO: 'A-',
-  B_POSITIVO: 'B+',
-  B_NEGATIVO: 'B-',
-  AB_POSITIVO: 'AB+',
-  AB_NEGATIVO: 'AB-',
-  O_POSITIVO: 'O+',
-  O_NEGATIVO: 'O-',
+  A_POSITIVO: 'ARH (+)',
+  A_NEGATIVO: 'ARH (-)',
+  B_POSITIVO: 'BRH (+)',
+  B_NEGATIVO: 'BRH (-)',
+  AB_POSITIVO: 'ABRH (+)',
+  AB_NEGATIVO: 'ABRH (-)',
+  O_POSITIVO: 'ORH (+)',
+  O_NEGATIVO: 'ORH (-)',
 };
 
 /**

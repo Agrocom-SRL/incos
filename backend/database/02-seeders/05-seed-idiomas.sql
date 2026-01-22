@@ -19,7 +19,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 
 INSERT INTO idiomas (id, nombre, codigo_iso) VALUES
 -- 1. PRIMER BLOQUE: Idiomas oficiales más hablados en Bolivia (por orden de hablantes)
-(1, 'Español', 'SPA'),           -- 1. Idioma más hablado (lengua franca)
+(1, 'Castellano', 'SPA'),           -- 1. Idioma más hablado (lengua franca)
 (2, 'Quechua', 'QUE'),           -- 2. Segundo idioma indígena más hablado
 (3, 'Aymara', 'AYM'),            -- 3. Tercer idioma indígena más hablado
 (4, 'Guaraní', 'GRN'),           -- 4. Cuarto idioma indígena más hablado
