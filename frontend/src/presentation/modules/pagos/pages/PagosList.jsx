@@ -23,7 +23,6 @@ import { createPagosTableColumns } from '@pagos/config';
 const PagosList = () => {
     const navigate = useNavigate();
 
-    // Obtener datos del contexto (toda la lógica está en el Provider)
     const {
         pagos = [],
         loading = false,
@@ -31,16 +30,16 @@ const PagosList = () => {
         searchText = '',
         setSearchText,
         refetch,
+        deletePago,
     } = usePagosListContext();
 
     const handleNuevoPago = () => {
         navigate('/pagos/registrar');
     };
 
-    // Crear columnas de la tabla (memoizadas para evitar recrearlas en cada render)
     const tableColumns = useMemo(
-        () => createPagosTableColumns(navigate, refetch),
-        [navigate, refetch]
+        () => createPagosTableColumns(navigate, refetch, deletePago),
+        [navigate, refetch, deletePago]
     );
 
     // Configurar breadcrumb items

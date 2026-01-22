@@ -34,13 +34,13 @@ const ensurePrimitive = (value, fallback = 'N/A') => {
 
 /**
  * Crea las columnas de la tabla de pagos
- * 
+ *
  * @param {Function} navigate - Función de navegación de react-router
  * @param {Function} refetch - Función para recargar los datos después de eliminar
+ * @param {Function} [deletePago] - Función para eliminar pago (desde contexto). Si se pasa, se usa en lugar de useCaseKey.
  * @returns {Array} Array de configuración de columnas para Ant Design Table
  */
-export const createPagosTableColumns = (navigate, refetch = null) => {
-
+export const createPagosTableColumns = (navigate, refetch = null, deletePago = null) => {
   return [
     {
       title: 'Número de Recibo',
@@ -202,9 +202,46 @@ export const createPagosTableColumns = (navigate, refetch = null) => {
       fixed: 'right',
       width: 150,
       align: 'right',
-      render: (_, record) => (
-        <PagoTableActions record={record} navigate={navigate} refetch={refetch} />
-      ),
+      render: (_, record) => {
+        const student = record.estudiante || record.student;
+        const gestion = record.gestion || record.management;
+        const estudianteNombre =
+          typeof student === 'object' && student !== null
+            ? student.nombreCompleto ||
+              `${student.nombre || ''} ${student.apellidoPaterno || ''} ${student.apellidoMaterno || ''}`.trim() ||
+              'Sin nombre'
+            : 'Sin nombre';
+        const numeroRecibo =
+          ensurePrimitive(
+            record.numeroRecibo || record.receipt_number || record.receiptNumber,
+            'N/A'
+          );
+        const concepto = ensurePrimitive(record.concepto || record.concept, 'N/A');
+        const montoTotal = record.montoTotal ?? record.total_amount ?? 0;
+        const descuento = record.descuentoBeca ?? record.scholarship_discount ?? 0;
+        const montoFinal = Number(montoTotal) - Number(descuento);
+        const gestionAnio = gestion?.anio ?? gestion?.year ?? 'N/A';
+
+        const itemName = `el pago con recibo ${numeroRecibo} del estudiante ${estudianteNombre}`;
+        const itemDetails = [
+          { label: 'Estudiante', value: estudianteNombre },
+          { label: 'Nº Recibo', value: numeroRecibo },
+          { label: 'Concepto', value: concepto },
+          { label: 'Monto', value: `Bs. ${montoFinal.toFixed(2)}` },
+          { label: 'Gestión', value: String(gestionAnio) },
+        ].filter((d) => d.value && d.value !== 'N/A' && d.value !== 'Sin nombre');
+
+        return (
+          <PagoTableActions
+            record={record}
+            navigate={navigate}
+            refetch={refetch}
+            deletePago={deletePago}
+            itemName={itemName}
+            itemDetails={itemDetails}
+          />
+        );
+      },
     },
   ];
 };

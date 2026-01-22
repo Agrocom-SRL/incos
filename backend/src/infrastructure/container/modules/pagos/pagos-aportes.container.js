@@ -91,6 +91,8 @@ export function registerPagosAportesResource(container) {
         (c) =>
             new DeletePaymentAporteUseCase({
                 contributionPaymentRepository: c.resolve(REPOSITORIOS_TOKENS.contributionPaymentRepository),
+                studentDocumentRepository: c.resolve(REPOSITORIOS_TOKENS.studentDocumentRepository),
+                studentDocumentDeliveryRepository: c.resolve(REPOSITORIOS_TOKENS.studentDocumentDeliveryRepository),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
     );

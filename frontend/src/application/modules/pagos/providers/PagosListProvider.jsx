@@ -20,10 +20,8 @@ import { useTableData } from '@molecules';
 import { PagosListContext } from '@application-pagos/context/PagosListContext';
 
 export const PagosListProvider = ({ children }) => {
-    // Obtener datos compartidos del estado en memoria
-    const { pagos: pagosData, loading, error, refetch } = usePagosContext();
+    const { pagos: pagosData, loading, error, refetch, deletePago } = usePagosContext();
 
-    // Función para obtener los campos de búsqueda de un pago
     const getSearchFields = useMemo(
         () => (pago) => {
             const student = pago.estudiante || pago.student;
@@ -39,7 +37,6 @@ export const PagosListProvider = ({ children }) => {
         []
     );
 
-    // Hook genérico para manejo de búsqueda y filtrado (solo lógica de UI)
     const { searchText, setSearchText, filteredData } = useTableData(
         pagosData,
         getSearchFields
@@ -50,6 +47,7 @@ export const PagosListProvider = ({ children }) => {
         loading,
         error,
         refetch,
+        deletePago,
         searchText,
         setSearchText,
     };
