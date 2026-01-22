@@ -31,6 +31,7 @@ import { useWizardActionsVisibility } from './useWizardActionsVisibility';
  * @param {boolean} options.viewMode - Si estamos en modo visualización
  * @param {Function} [options.onSave] - Callback para guardar
  * @param {Function} [options.onFinish] - Callback para finalizar
+ * @param {boolean} [options.showSaveButton=true] - Si mostrar el botón de guardar
  * @returns {Object} Objeto con estados y visibilidad
  */
 export const useWizardActions = ({
@@ -39,6 +40,7 @@ export const useWizardActions = ({
   viewMode = false,
   onSave,
   onFinish,
+  showSaveButton = true,
 }) => {
   // Calcular estados derivados
   const { isFirstStep, isLastStep } = useWizardActionsState({
@@ -53,6 +55,7 @@ export const useWizardActions = ({
     viewMode,
     onSave,
     onFinish,
+    showSaveButton,
   });
 
   return {

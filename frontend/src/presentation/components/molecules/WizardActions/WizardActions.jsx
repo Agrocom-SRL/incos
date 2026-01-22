@@ -30,6 +30,7 @@ const WizardActions = ({
   onNext,
   onFinish,
   onSave,
+  showSaveButton = true,
   prevLabel = 'Anterior',
   nextLabel = 'Siguiente',
   finishLabel = 'Finalizar Registro',
@@ -48,6 +49,7 @@ const WizardActions = ({
     viewMode,
     onSave,
     onFinish,
+    showSaveButton,
   });
 
   return (

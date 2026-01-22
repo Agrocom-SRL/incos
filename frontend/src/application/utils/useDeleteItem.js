@@ -23,6 +23,7 @@ import { showDeleteConfirm } from '@molecules/DeleteConfirmModal';
  * @param {Object} options - Opciones del hook
  * @param {Function} options.deleteFn - Función que ejecuta la eliminación (debe retornar Promise)
  * @param {string} options.itemName - Nombre del elemento para el mensaje (opcional)
+ * @param {Array} options.itemDetails - Detalles del elemento para mostrar en el diálogo (opcional)
  * @param {Function} options.onSuccess - Callback al eliminar exitosamente (opcional)
  * @param {Function} options.onError - Callback al fallar (opcional)
  * @returns {Object} { deleteItem, loading }
@@ -30,22 +31,26 @@ import { showDeleteConfirm } from '@molecules/DeleteConfirmModal';
 export const useDeleteItem = ({
   deleteFn,
   itemName = 'este elemento',
+  itemDetails,
   onSuccess,
   onError,
 }) => {
   const [loading, setLoading] = useState(false);
-  const { message } = App.useApp();
+  const { message, modal } = App.useApp();
 
-  const deleteItem = useCallback(async (id, customItemName = null) => {
+  const deleteItem = useCallback(async (id, customItemName = null, customItemDetails = null) => {
     if (!deleteFn) {
       console.warn('Función de eliminación no disponible');
       return false;
     }
 
     const name = customItemName || itemName;
+    const details = customItemDetails || itemDetails;
     
     const confirmed = await showDeleteConfirm({
+      modal,
       itemName: name,
+      itemDetails: details,
       onConfirm: async () => {
         setLoading(true);
         try {
@@ -75,7 +80,7 @@ export const useDeleteItem = ({
     });
 
     return confirmed;
-  }, [deleteFn, itemName, onSuccess, onError, message]);
+  }, [deleteFn, itemName, itemDetails, onSuccess, onError, message]);
 
   return { deleteItem, loading };
 };

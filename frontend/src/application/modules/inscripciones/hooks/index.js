@@ -31,6 +31,7 @@ export { useInscripcionNuevaData } from './state/useInscripcionNuevaData';
 export { useInscripcionesApi } from './api/useInscripcionesApi';
 export { useGetInscripcionById } from './api/useGetInscripcionById';
 export { useCreateInscripcion } from './api/useCreateInscripcion';
+export { useDeleteInscripcion } from './api/useDeleteInscripcion';
 
 // ============================================
 // 4. FEATURE LOGIC (Application Layer)

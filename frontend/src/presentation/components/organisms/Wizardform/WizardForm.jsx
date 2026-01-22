@@ -42,6 +42,7 @@ const WizardForm = ({
   loading = false,
   onFinish,
   onSave,
+  showSaveButton = true,
   resolveOptions = () => [],
   minAge = null,
   conditionalLoaders = {},
@@ -130,6 +131,7 @@ const WizardForm = ({
         onNext={next}
         onFinish={onFinish}
         onSave={onSave}
+        showSaveButton={showSaveButton}
       />
     </FormCard>
   );

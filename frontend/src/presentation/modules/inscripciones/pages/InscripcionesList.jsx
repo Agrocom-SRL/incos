@@ -17,13 +17,13 @@ import { PageTemplate } from '@templates';
 import { TableListView } from '@organisms';
 import { PageHeader } from '@molecules';
 import { Button } from '@atoms';
-import { useInscripcionesListContext } from '@application-inscripciones/hooks';
+import { useInscripcionesListContext, useInscripcionesContext } from '@application-inscripciones/hooks';
 import { createInscripcionesTableColumns } from '@inscripciones/config';
 
 const InscripcionesList = () => {
     const navigate = useNavigate();
 
-    // Obtener datos del contexto (toda la lógica está en el Provider)
+    // Obtener datos del contexto de lista (toda la lógica está en el Provider)
     const {
         inscripciones = [],
         loading = false,
@@ -33,14 +33,23 @@ const InscripcionesList = () => {
         refetch,
     } = useInscripcionesListContext();
 
+    // Obtener el contexto principal para acceder a deleteInscripcion (actualiza estado en memoria)
+    let deleteInscripcion = null;
+    try {
+        const mainContext = useInscripcionesContext();
+        deleteInscripcion = mainContext.deleteInscripcion;
+    } catch (error) {
+        // El contexto principal no está disponible, usar use case del container
+    }
+
     const handleNuevaInscripcion = () => {
         navigate('/inscripciones/nueva');
     };
 
     // Crear columnas de la tabla (memoizadas para evitar recrearlas en cada render)
     const tableColumns = useMemo(
-        () => createInscripcionesTableColumns(navigate, refetch),
-        [navigate, refetch]
+        () => createInscripcionesTableColumns(navigate, refetch, deleteInscripcion),
+        [navigate, refetch, deleteInscripcion]
     );
 
     // Configurar breadcrumb items

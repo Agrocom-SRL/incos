@@ -94,6 +94,7 @@ const InscripcionesNueva = () => {
                 form={form}
                 onFinish={handleFinish}
                 onSave={handleSave}
+                showSaveButton={false}
             />
         </PageTemplate>
     );

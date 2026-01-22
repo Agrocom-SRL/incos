@@ -79,6 +79,19 @@ export function buildInscripcionesRouter({ controllers, middlewares }) {
         (req, res, next) => controllers.getEnrollmentByIdController.handle(req, res, next)
     );
 
+    /**
+     * DELETE /api/v1/inscripciones/:id
+     * Eliminar inscripción (soft delete)
+     * Path: id
+     * Elimina la inscripción y todas sus relaciones (materias inscritas, boletas, etc.)
+     */
+    router.delete(
+        '/:id',
+        idValidator,
+        validateRequest,
+        (req, res, next) => controllers.deleteEnrollmentController.handle(req, res, next)
+    );
+
     // ============================================
     // ENDPOINTS FUTUROS (TODO: Implementar cuando se necesiten)
     // ============================================
@@ -89,12 +102,6 @@ export function buildInscripcionesRouter({ controllers, middlewares }) {
     //     updateEnrollmentValidator,
     //     validateRequest,
     //     (req, res, next) => controllers.updateEnrollmentController.handle(req, res, next)
-    // );
-
-    // DELETE /:id - Eliminar inscripción (soft delete)
-    // router.delete(
-    //     '/:id',
-    //     (req, res, next) => controllers.deleteEnrollmentController.handle(req, res, next)
     // );
 
     return router;

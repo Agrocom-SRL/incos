@@ -29,6 +29,7 @@ import { useMemo } from 'react';
  * @param {boolean} options.viewMode - Si estamos en modo visualización
  * @param {Function} [options.onSave] - Callback para guardar
  * @param {Function} [options.onFinish] - Callback para finalizar
+ * @param {boolean} [options.showSaveButton=true] - Si mostrar el botón de guardar (por defecto true)
  * @returns {Object} Objeto con flags de visibilidad
  */
 export const useWizardActionsVisibility = ({
@@ -37,14 +38,15 @@ export const useWizardActionsVisibility = ({
   viewMode = false,
   onSave,
   onFinish,
+  showSaveButton = true,
 }) => {
   const visibility = useMemo(() => {
     return {
       // Botón Anterior: mostrar solo si no es el primer paso
       showPrev: !isFirstStep,
       
-      // Botón Guardar: mostrar solo si no es viewMode y existe onSave
-      showSave: !viewMode && !!onSave,
+      // Botón Guardar: mostrar solo si showSaveButton es true, no es viewMode y existe onSave
+      showSave: showSaveButton && !viewMode && !!onSave,
       
       // Botón Siguiente: mostrar solo si no es el último paso
       showNext: !isLastStep,
@@ -52,7 +54,7 @@ export const useWizardActionsVisibility = ({
       // Botón Finalizar: mostrar solo si es el último paso, no es viewMode y existe onFinish
       showFinish: isLastStep && !viewMode && !!onFinish,
     };
-  }, [isFirstStep, isLastStep, viewMode, onSave, onFinish]);
+  }, [isFirstStep, isLastStep, viewMode, onSave, onFinish, showSaveButton]);
 
   return visibility;
 };

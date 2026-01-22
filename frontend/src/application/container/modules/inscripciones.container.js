@@ -38,5 +38,9 @@ export function registerInscripcionesModule(factory) {
     return new ObtenerTodasInscripcionesUseCase(inscripcionRepository);
   };
 
+  factory.eliminarInscripcion = () => {
+    return new EliminarInscripcionUseCase({ inscripcionRepository });
+  };
+
   return factory;
 }

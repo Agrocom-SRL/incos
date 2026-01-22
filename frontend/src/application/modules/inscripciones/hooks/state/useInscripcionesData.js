@@ -20,10 +20,14 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useInscripcionesApi } from '@application-inscripciones/hooks/api/useInscripcionesApi';
+import { useDeleteInscripcion } from '@application-inscripciones/hooks/api/useDeleteInscripcion';
 
 export const useInscripcionesData = () => {
     // Hook para cargar datos iniciales desde BD
     const { inscripciones: inscripcionesFromApi, loading, error, refetch: refetchFromApi } = useInscripcionesApi();
+
+    // Hook para eliminar inscripciones (usa Use Case del Domain Layer)
+    const { deleteInscripcion: deleteInscripcionApi, loading: deleting } = useDeleteInscripcion();
 
     // Estado local en memoria (puede ser actualizado sin recargar desde BD)
     const [inscripciones, setInscripciones] = useState([]);
@@ -66,10 +70,29 @@ export const useInscripcionesData = () => {
 
     /**
      * Elimina una inscripción del estado en memoria
+     * Solo actualiza el estado local, no hace llamada a la API
      */
     const removeInscripcion = useCallback((inscripcionId) => {
         setInscripciones((prev) => prev.filter(ins => ins.id !== inscripcionId));
     }, []);
+
+    /**
+     * Elimina una inscripción usando el hook de API (que usa el Use Case) y actualiza el estado en memoria
+     * 
+     * @param {string|number} inscripcionId - ID de la inscripción a eliminar
+     * @returns {Promise<{success: boolean, error?: string}>}
+     */
+    const deleteInscripcion = useCallback(async (inscripcionId) => {
+        // Llamar al hook de API que usa el Use Case del Domain Layer
+        const result = await deleteInscripcionApi(inscripcionId);
+        
+        // Si la eliminación fue exitosa, actualizar el estado en memoria
+        if (result.success) {
+            removeInscripcion(inscripcionId);
+        }
+        
+        return result;
+    }, [deleteInscripcionApi, removeInscripcion]);
 
     /**
      * Sincroniza el estado local con la BD (recarga desde BD)
@@ -84,15 +107,16 @@ export const useInscripcionesData = () => {
     return useMemo(() => ({
         // Datos
         inscripciones,
-        loading,
+        loading: loading || deleting, // Combinar loading de carga y eliminación
         error,
 
         // Métodos para CRUD en memoria
         addInscripcion,
         updateInscripcion,
         removeInscripcion,
+        deleteInscripcion, // Método que usa el hook de API (Use Case) y actualiza el estado
 
         // Método para sincronizar con BD
         refetch,
-    }), [inscripciones, loading, error, addInscripcion, updateInscripcion, removeInscripcion, refetch]);
+    }), [inscripciones, loading, deleting, error, addInscripcion, updateInscripcion, removeInscripcion, deleteInscripcion, refetch]);
 };

@@ -14,8 +14,8 @@
 
 import { INSCRIPCIONES_TOKENS, REPOSITORIOS_TOKENS, SERVICIOS_TOKENS } from '../../tokens/index.js';
 import { registerComponent } from '../../utils/container.helpers.js';
-import { ListEnrollmentsUseCase, CreateEnrollmentUseCase, GetEnrollmentByIdUseCase, GenerateBoletaInscripcionUseCase } from '../../../../application/use-cases/inscripciones/index.js';
-import { ListEnrollmentsController, CreateEnrollmentController, GetEnrollmentByIdController, GenerateBoletaInscripcionController } from '../../../../presentation/controllers/inscripciones/index.js';
+import { ListEnrollmentsUseCase, CreateEnrollmentUseCase, GetEnrollmentByIdUseCase, DeleteEnrollmentUseCase, GenerateBoletaInscripcionUseCase } from '../../../../application/use-cases/inscripciones/index.js';
+import { ListEnrollmentsController, CreateEnrollmentController, GetEnrollmentByIdController, DeleteEnrollmentController, GenerateBoletaInscripcionController } from '../../../../presentation/controllers/inscripciones/index.js';
 import { buildInscripcionesRouter } from '../../../../presentation/routes/inscripciones.routes.js';
 
 /**
@@ -99,6 +99,19 @@ export function registerInscripcionesResource(container) {
 
     registerComponent(
         container,
+        INSCRIPCIONES_TOKENS.deleteEnrollmentUseCase,
+        (c) =>
+            new DeleteEnrollmentUseCase({
+                enrollmentRepository: c.resolve(REPOSITORIOS_TOKENS.enrollmentRepository),
+                enrollmentSubjectRepository: c.resolve(REPOSITORIOS_TOKENS.enrollmentSubjectRepository),
+                studentAcademicDataRepository: c.resolve(REPOSITORIOS_TOKENS.studentAcademicDataRepository),
+                studentDocumentRepository: c.resolve(REPOSITORIOS_TOKENS.studentDocumentRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
+    registerComponent(
+        container,
         INSCRIPCIONES_TOKENS.generateBoletaInscripcionUseCase,
         (c) =>
             new GenerateBoletaInscripcionUseCase({
@@ -164,6 +177,17 @@ export function registerInscripcionesResource(container) {
 
     registerComponent(
         container,
+        INSCRIPCIONES_TOKENS.deleteEnrollmentController,
+        (c) =>
+            new DeleteEnrollmentController({
+                deleteEnrollmentUseCase: c.resolve(INSCRIPCIONES_TOKENS.deleteEnrollmentUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
+    );
+
+    registerComponent(
+        container,
         INSCRIPCIONES_TOKENS.generateBoletaInscripcionController,
         (c) =>
             new GenerateBoletaInscripcionController({
@@ -186,6 +210,7 @@ export function registerInscripcionesResource(container) {
                 listEnrollmentsController: c.resolve(INSCRIPCIONES_TOKENS.listEnrollmentsController),
                 createEnrollmentController: c.resolve(INSCRIPCIONES_TOKENS.createEnrollmentController),
                 getEnrollmentByIdController: c.resolve(INSCRIPCIONES_TOKENS.getEnrollmentByIdController),
+                deleteEnrollmentController: c.resolve(INSCRIPCIONES_TOKENS.deleteEnrollmentController),
                 generateBoletaInscripcionController: c.resolve(INSCRIPCIONES_TOKENS.generateBoletaInscripcionController),
                 // TODO: Agregar otros controllers cuando se implementen sus rutas
             };

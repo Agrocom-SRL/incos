@@ -23,7 +23,9 @@ import { useContainer } from '@container';
  * @param {Function} props.navigate - Función de navegación
  * @param {Function} props.refetch - Función para recargar datos
  * @param {string} props.useCaseKey - Clave del use case en el container (ej: 'eliminarPagoAporte')
+ * @param {Function} props.deleteFn - Función personalizada de eliminación (opcional, tiene prioridad sobre useCaseKey)
  * @param {string} props.itemName - Nombre del elemento para el mensaje (ej: 'el pago')
+ * @param {Array} props.itemDetails - Detalles del elemento para mostrar en el diálogo (opcional)
  * @param {string} props.viewPath - Ruta para ver detalle (ej: '/pagos/:id')
  * @param {string} props.editPath - Ruta para editar (opcional, ej: '/pagos/:id/editar')
  * @param {Function} props.onEdit - Función personalizada para editar (opcional)
@@ -35,7 +37,9 @@ const TableActions = ({
   navigate,
   refetch,
   useCaseKey,
+  deleteFn: customDeleteFn,
   itemName,
+  itemDetails,
   viewPath,
   editPath,
   onEdit,
@@ -49,7 +53,7 @@ const TableActions = ({
 
   // Obtener el use case de eliminación si está disponible
   let eliminarUseCase = null;
-  if (useCaseKey) {
+  if (useCaseKey && !customDeleteFn) {
     try {
       eliminarUseCase = container.resolve(useCaseKey);
     } catch (error) {
@@ -57,12 +61,25 @@ const TableActions = ({
     }
   }
 
-  // Hook para manejar la eliminación (solo si hay use case disponible)
+  // Función de eliminación: prioriza customDeleteFn, luego use case, luego error
+  const deleteFn = customDeleteFn
+    ? customDeleteFn
+    : eliminarUseCase
+      ? (id) => eliminarUseCase.ejecutar(id)
+      : null;
+
+  // Determinar si hay funcionalidad de eliminación disponible
+  const hasDeleteFunctionality = !!deleteFn;
+
+  // Hook para manejar la eliminación (solo si hay función disponible)
   const { deleteItem } = useDeleteItem({
-    deleteFn: eliminarUseCase ? (id) => eliminarUseCase.ejecutar(id) : async () => ({ success: false, error: 'Funcionalidad no disponible' }),
+    deleteFn: deleteFn || (async () => ({ success: false, error: 'Funcionalidad no disponible' })),
     itemName: itemName || `el elemento #${record.id}`,
+    itemDetails: itemDetails,
     onSuccess: () => {
       // Recargar la lista después de eliminar
+      // Si deleteFn viene del contexto, el estado ya se actualizó automáticamente
+      // pero aún así llamamos refetch para asegurar sincronización
       if (refetch) {
         refetch();
       }
@@ -88,7 +105,7 @@ const TableActions = ({
   };
 
   const handleDelete = () => {
-    if (eliminarUseCase) {
+    if (hasDeleteFunctionality) {
       deleteItem(record.id);
     } else {
       console.warn('Funcionalidad de eliminación no disponible');
@@ -124,7 +141,7 @@ const TableActions = ({
           />
         </Tooltip>
       ))}
-      {eliminarUseCase && (
+      {hasDeleteFunctionality && (
         <Tooltip title={`${deleteAction.tooltip} ${itemName || 'elemento'}`}>
           <IconButton
             icon={<deleteAction.icon />}
@@ -133,7 +150,7 @@ const TableActions = ({
           />
         </Tooltip>
       )}
-      {!eliminarUseCase && useCaseKey && (
+      {!hasDeleteFunctionality && (useCaseKey || customDeleteFn) && (
         <Tooltip title="Eliminación no disponible">
           <IconButton
             icon={<deleteAction.icon />}

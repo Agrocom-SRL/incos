@@ -302,6 +302,7 @@ export class BaseRepository extends IRepository {
    * TEMPLATE METHOD: Eliminar un registro (soft delete)
    * Usa el método destroy() de Sequelize que respeta paranoid: true
    * Esto automáticamente establece deletedAt y respeta el soft delete
+   * También marca el registro como inactivo (activo = false)
    * 
    * @param {number} id - ID del registro a eliminar
    * @param {number} userId - ID del usuario que elimina (opcional)
@@ -317,13 +318,18 @@ export class BaseRepository extends IRepository {
       return false;
     }
 
-    // Actualizar deletedBy antes de eliminar
+    // Actualizar campos antes de eliminar: activo = false y deletedBy
+    const updateData = {
+      activo: false,
+    };
+    
     if (userId) {
-      await Model.update(
-        { deletedBy: userId },
-        { where: { id } }
-      );
+      updateData.deletedBy = userId;
     }
+
+    await Model.update(updateData, {
+      where: { id },
+    });
 
     // destroy() con paranoid: true hace soft delete (establece deletedAt)
     await model.destroy();

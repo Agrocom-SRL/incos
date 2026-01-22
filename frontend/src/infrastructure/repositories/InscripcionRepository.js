@@ -141,8 +141,10 @@ export class InscripcionRepository extends IInscripcionRepository {
    * Elimina una inscripción (soft delete)
    * DELETE /v1/inscripciones/:id
    * 
-   * TODO: Este endpoint aún no está implementado en el backend
-   * Por ahora retorna un error indicando que no está disponible
+   * Elimina la inscripción y todas sus relaciones:
+   * - inscripciones_materias (materias inscritas)
+   * - calificaciones relacionadas (si existen)
+   * - boletas de inscripción (documentos físicos y registros en BD)
    * 
    * @param {string|number} id - ID de la inscripción a eliminar
    * @returns {Promise<{success: boolean, error?: string}>}
@@ -157,14 +159,13 @@ export class InscripcionRepository extends IInscripcionRepository {
         };
       }
 
-      // TODO: Cuando el backend implemente DELETE /inscripciones/:id, usar:
-      // const response = await apiClient.delete(INSCRIPCIONES_ENDPOINTS.BY_ID(id));
-      
-      // Por ahora, retornar error indicando que no está disponible
-      return {
-        success: false,
-        error: 'El endpoint de eliminación aún no está implementado en el backend',
-      };
+      // Llamada HTTP directa al endpoint
+      const response = await apiClient.delete(INSCRIPCIONES_ENDPOINTS.BY_ID(id));
+
+      // Procesar respuesta exitosa
+      const result = handleSuccessResponse(response);
+
+      return result;
     } catch (error) {
       return handleErrorResponse(error, 'Error al eliminar inscripción');
     }
