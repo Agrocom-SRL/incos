@@ -33,17 +33,8 @@ export class StudentDocumentDelivery extends BaseEntity {
       // Solo usar valor por defecto si no se está usando attributes limitados
       this.enTramite = false;
     }
-    if (data.hasOwnProperty('esOriginal')) {
-      this.esOriginal = data.esOriginal;
-    } else if (!data.hasOwnProperty('studentId')) {
-      // Solo usar valor por defecto si no se está usando attributes limitados
-      this.esOriginal = false;
-    }
     if (data.hasOwnProperty('fechaEntrega')) {
       this.fechaEntrega = data.fechaEntrega;
-    }
-    if (data.hasOwnProperty('fechaVencimientoTramite')) {
-      this.fechaVencimientoTramite = data.fechaVencimientoTramite;
     }
     if (data.hasOwnProperty('observaciones')) {
       this.observaciones = data.observaciones;
@@ -66,26 +57,6 @@ export class StudentDocumentDelivery extends BaseEntity {
     return this.enTramite === true;
   }
 
-  /**
-   * Verifica si el documento es original
-   * @returns {boolean}
-   */
-  isOriginal() {
-    return this.esOriginal === true;
-  }
-
-  /**
-   * Verifica si el trámite está vencido
-   * @returns {boolean}
-   */
-  isTramiteExpired() {
-    if (!this.enTramite || !this.fechaVencimientoTramite) {
-      return false;
-    }
-    const today = new Date();
-    const vencimiento = new Date(this.fechaVencimientoTramite);
-    return today > vencimiento;
-  }
 
   /**
    * Convierte la entidad a objeto plano
@@ -108,14 +79,8 @@ export class StudentDocumentDelivery extends BaseEntity {
     if (this.hasOwnProperty('enTramite')) {
       plainObject.enTramite = this.enTramite;
     }
-    if (this.hasOwnProperty('esOriginal')) {
-      plainObject.esOriginal = this.esOriginal;
-    }
     if (this.hasOwnProperty('fechaEntrega')) {
       plainObject.fechaEntrega = this.fechaEntrega;
-    }
-    if (this.hasOwnProperty('fechaVencimientoTramite')) {
-      plainObject.fechaVencimientoTramite = this.fechaVencimientoTramite;
     }
     if (this.hasOwnProperty('observaciones')) {
       plainObject.observaciones = this.observaciones;

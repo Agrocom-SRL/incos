@@ -55,23 +55,9 @@ const DocumentDeliveriesSection = ({ documentDeliveries }) => {
             </Col>
             <Col xs={24} sm={12}>
               <StudentInfoItem
-                icon={<FileProtectOutlined style={{ fontSize: '24px', color: '#fff' }} />}
-                label="Es Original"
-                value={doc.esOriginal ? 'Sí' : 'No'}
-              />
-            </Col>
-            <Col xs={24} sm={12}>
-              <StudentInfoItem
                 icon={<CalendarOutlined style={{ fontSize: '24px', color: '#fff' }} />}
                 label="Fecha de Entrega"
                 value={doc.fechaEntrega}
-              />
-            </Col>
-            <Col xs={24} sm={12}>
-              <StudentInfoItem
-                icon={<CalendarOutlined style={{ fontSize: '24px', color: '#fff' }} />}
-                label="Fecha Vencimiento Trámite"
-                value={doc.fechaVencimientoTramite}
               />
             </Col>
             {doc.observaciones && (

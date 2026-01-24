@@ -904,9 +904,7 @@ export class RegisterAporteVoluntarioUseCase {
                 documentacionId: null, // NULL porque no hay documento específico en catálogo para pagos
                 entregado: true, // El documento fue entregado digitalmente
                 enTramite: false, // No está en trámite, ya fue entregado
-                esOriginal: false, // Es una copia digital, no el original físico
                 fechaEntrega: paymentDate, // Fecha de entrega = fecha del pago
-                fechaVencimientoTramite: null, // No aplica porque no está en trámite
                 observaciones: `Comprobante de pago de aporte académico: ${concept || 'Aporte Académico'}.`,
             };
 

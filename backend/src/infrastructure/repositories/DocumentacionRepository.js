@@ -102,7 +102,6 @@ export class DocumentacionRepository extends BaseRepository {
    *   - order: Orden de visualización
    *   - description: Descripción (búsqueda exacta, para búsqueda de texto usar search())
    *   - parentDocumentId: ID del documento padre (null para documentos principales)
-   *   - isOriginal: Si requiere original (true/false)
    *   - isSystemDocument: Si es documento del sistema (true/false)
    * @returns {Object} Objeto WHERE para Sequelize
    */
@@ -130,9 +129,6 @@ export class DocumentacionRepository extends BaseRepository {
     }
     if (filters.parentDocumentId !== undefined) {
       where.documentoPadreId = filters.parentDocumentId;
-    }
-    if (filters.isOriginal !== undefined) {
-      where.esOriginal = filters.isOriginal;
     }
     if (filters.isSystemDocument !== undefined) {
       where.esDocumentoSistema = filters.isSystemDocument;

@@ -53,14 +53,8 @@ export class StudentDocumentDeliveryMapper {
     if ('enTramite' in dataValues && dataValues.enTramite !== undefined) {
       specificFields.enTramite = dataValues.enTramite === 1 || dataValues.enTramite === true;
     }
-    if ('esOriginal' in dataValues && dataValues.esOriginal !== undefined) {
-      specificFields.esOriginal = dataValues.esOriginal === 1 || dataValues.esOriginal === true;
-    }
     if ('fechaEntrega' in dataValues && dataValues.fechaEntrega !== undefined) {
       specificFields.fechaEntrega = dataValues.fechaEntrega;
-    }
-    if ('fechaVencimientoTramite' in dataValues && dataValues.fechaVencimientoTramite !== undefined) {
-      specificFields.fechaVencimientoTramite = dataValues.fechaVencimientoTramite;
     }
     if ('observaciones' in dataValues && dataValues.observaciones !== undefined) {
       specificFields.observations = dataValues.observaciones;
@@ -93,9 +87,7 @@ export class StudentDocumentDeliveryMapper {
       documentacionId: data.documentacionId || null,
       entregado: data.entregado !== undefined ? data.entregado : false,
       enTramite: data.enTramite !== undefined ? data.enTramite : false,
-      esOriginal: data.esOriginal !== undefined ? data.esOriginal : false,
       fechaEntrega: data.fechaEntrega || null,
-      fechaVencimientoTramite: data.fechaVencimientoTramite || null,
       observaciones: data.observaciones || null,
     };
   }
@@ -130,14 +122,8 @@ export class StudentDocumentDeliveryMapper {
     if ('enTramite' in data) {
       updateData.enTramite = data.enTramite;
     }
-    if ('esOriginal' in data) {
-      updateData.esOriginal = data.esOriginal;
-    }
     if ('fechaEntrega' in data) {
       updateData.fechaEntrega = data.fechaEntrega || null;
-    }
-    if ('fechaVencimientoTramite' in data) {
-      updateData.fechaVencimientoTramite = data.fechaVencimientoTramite || null;
     }
     if ('observations' in data) {
       updateData.observaciones = data.observations || null;

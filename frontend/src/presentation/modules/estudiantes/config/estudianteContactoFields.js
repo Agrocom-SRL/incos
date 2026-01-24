@@ -103,11 +103,11 @@ export const createEstudianteContactoFields = () => {
         // Zona
         {
           name: 'zona',
-          label: 'Zona/Barrio',
+          label: 'Localidad/Zona/Barrio',
           type: 'input',
           required: false,
           span: 12,
-          placeholder: 'Ej: Zona Sur, Barrio San Pedro',
+          placeholder: 'Ej: Localidad: Lagunillas, Zona Sur, Barrio San Pedro',
           maxLength: 100,
         },
         // Dirección

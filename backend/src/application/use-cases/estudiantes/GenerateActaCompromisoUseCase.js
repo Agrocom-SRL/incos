@@ -812,9 +812,7 @@ export class GenerateActaCompromisoUseCase {
         documentacionId: null, // NULL porque no hay documento específico en catálogo para acta de compromiso
         entregado: true, // El acta fue generada y entregada
         enTramite: false, // No está en trámite, ya fue generada
-        esOriginal: true, // El acta generada por el sistema es el documento original
         fechaEntrega: fechaEntrega,
-        fechaVencimientoTramite: null, // No aplica porque no está en trámite
         observaciones: `Acta de compromiso generada automáticamente por el sistema para la entrega de documentos faltantes.`,
       };
 

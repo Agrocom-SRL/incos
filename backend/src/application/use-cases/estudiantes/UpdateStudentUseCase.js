@@ -262,9 +262,7 @@ export class UpdateStudentUseCase {
                 documentacionId,
                 entregado: docData.entregado !== undefined ? docData.entregado : false,
                 enTramite: docData.enTramite !== undefined ? docData.enTramite : false,
-                esOriginal: docData.esOriginal !== undefined ? docData.esOriginal : false,
                 fechaEntrega: docData.fechaEntrega || null,
-                fechaVencimientoTramite: docData.fechaVencimientoTramite || null,
                 observaciones: docData.observaciones || null,
               };
               

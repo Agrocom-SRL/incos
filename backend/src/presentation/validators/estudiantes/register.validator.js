@@ -451,23 +451,11 @@ export const registerStudentValidator = [
     .isBoolean()
     .withMessage('en_tramite debe ser un booleano'),
 
-  body('documentacion.*.es_original')
-    .if(body('documentacion').isObject())
-    .optional()
-    .isBoolean()
-    .withMessage('es_original debe ser un booleano'),
-
   body('documentacion.*.fechaEntrega')
     .if(body('documentacion').isObject())
     .optional()
     .isISO8601()
     .withMessage('fechaEntrega debe ser una fecha válida (ISO 8601)'),
-
-  body('documentacion.*.fechaVencimientoTramite')
-    .if(body('documentacion').isObject())
-    .optional()
-    .isISO8601()
-    .withMessage('fechaVencimientoTramite debe ser una fecha válida (ISO 8601)'),
 
   body('documentacion.*.observaciones')
     .if(body('documentacion').isObject())

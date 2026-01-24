@@ -49,12 +49,6 @@ export const Documentacion = sequelize.define(
         key: 'id',
       },
     },
-    esOriginal: {
-      type: DataTypes.BOOLEAN,
-      field: 'es_original',
-      defaultValue: false,
-      comment: 'Indica si el documento debe ser original',
-    },
     esDocumentoSistema: {
       type: DataTypes.BOOLEAN,
       field: 'es_documento_sistema',

@@ -147,9 +147,7 @@ CREATE TABLE estudiantes_documentos_entrega (
     documentacion_id INT NULL COMMENT 'Tipo de documentación requerida (referencia a documentacion)',
     entregado BOOLEAN DEFAULT FALSE COMMENT 'Indica si el documento fue entregado físicamente (TRUE) o no (FALSE)',
     en_tramite BOOLEAN DEFAULT FALSE COMMENT 'Indica si el documento está en trámite. Si es TRUE, el estudiante puede registrar aunque no lo tenga físicamente, pero debe presentarlo posteriormente',
-    es_original BOOLEAN DEFAULT FALSE COMMENT 'Indica si el documento entregado es original (TRUE) o fotocopia (FALSE). Solo aplica si entregado = TRUE y en_tramite = FALSE.',
     fecha_entrega DATE COMMENT 'Fecha en que se entregó físicamente el documento',
-    fecha_vencimiento_tramite DATE COMMENT 'Fecha límite para entregar el documento si está en trámite (ej: 10 días desde el registro)',
     observaciones TEXT COMMENT 'Observaciones adicionales sobre la entrega del documento (incluye motivo de trámite si aplica)',
     
     -- Campos de auditoría y control (ESTÁNDAR)
@@ -169,12 +167,10 @@ CREATE TABLE estudiantes_documentos_entrega (
     INDEX idx_documentacion_id (documentacion_id) COMMENT 'Búsqueda por tipo de documentación',
     INDEX idx_entregado (entregado) COMMENT 'Filtrado por documentos entregados',
     INDEX idx_en_tramite (en_tramite) COMMENT 'Filtrado por documentos en trámite',
-    INDEX idx_es_original (es_original, entregado, activo, deleted_at) COMMENT 'Filtrado por tipo de documento entregado (original/fotocopia)',
     INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
     INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
     INDEX idx_estudiante_documentacion (estudiante_id, documentacion_id, activo, deleted_at) COMMENT 'Búsqueda de entrega por estudiante y tipo de documentación',
-    INDEX idx_entregado_tramite (entregado, en_tramite, activo, deleted_at) COMMENT 'Búsqueda por estado de entrega y trámite',
-    INDEX idx_fecha_vencimiento (fecha_vencimiento_tramite, en_tramite, activo, deleted_at) COMMENT 'Búsqueda de documentos en trámite próximos a vencer'
+    INDEX idx_entregado_tramite (entregado, en_tramite, activo, deleted_at) COMMENT 'Búsqueda por estado de entrega y trámite'
     
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Relación entre estudiantes y documentos requeridos. Rastrea el estado de entrega de cada documento requerido por estudiante (entregado, en trámite, fecha de entrega). NO almacena archivos digitales, solo la relación y estado. Los archivos digitales se almacenan en documentos_estudiante.';

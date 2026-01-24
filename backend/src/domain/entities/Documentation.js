@@ -40,12 +40,6 @@ export class Documentation extends BaseEntity {
     if (data.hasOwnProperty('parentDocumentId')) {
       this.parentDocumentId = data.parentDocumentId;
     }
-    if (data.hasOwnProperty('isOriginal')) {
-      this.isOriginal = data.isOriginal;
-    } else if (!data.hasOwnProperty('name')) {
-      // Solo usar valor por defecto si no se está usando attributes limitados
-      this.isOriginal = false;
-    }
     if (data.hasOwnProperty('isSystemDocument')) {
       this.isSystemDocument = data.isSystemDocument;
     } else if (!data.hasOwnProperty('name')) {
@@ -92,9 +86,6 @@ export class Documentation extends BaseEntity {
     }
     if (this.hasOwnProperty('parentDocumentId')) {
       plainObject.parentDocumentId = this.parentDocumentId;
-    }
-    if (this.hasOwnProperty('isOriginal')) {
-      plainObject.isOriginal = this.isOriginal;
     }
     if (this.hasOwnProperty('isSystemDocument')) {
       plainObject.isSystemDocument = this.isSystemDocument;

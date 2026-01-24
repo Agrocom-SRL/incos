@@ -45,7 +45,6 @@ export const normalizeDocumentos = (documentos = []) => {
     name: doc.nombre || doc.name, // Backend devuelve 'nombre', frontend espera 'name'
     description: doc.descripcion || doc.description, // Backend devuelve 'descripcion', frontend espera 'description'
     required: doc.requerido !== undefined ? doc.requerido : (doc.required !== undefined ? doc.required : true),
-    esOriginal: doc.esOriginal !== undefined ? doc.esOriginal : false,
     acceptsPhotocopy: doc.aceptaFotocopia !== undefined ? doc.aceptaFotocopia : (doc.acceptsPhotocopy !== undefined ? doc.acceptsPhotocopy : false),
     orden: doc.orden !== undefined ? doc.orden : (doc.order !== undefined ? doc.order : 0),
     esDocumentoSistema: doc.esDocumentoSistema !== undefined ? doc.esDocumentoSistema : false,
@@ -126,7 +125,6 @@ export const heredarCaracteristicasPadre = (hijo, padre) => {
     description: hijo.description || padre.description || null,
     required: hijo.required !== undefined ? hijo.required : (padre.required !== undefined ? padre.required : true),
     acceptsPhotocopy: hijo.acceptsPhotocopy !== undefined ? hijo.acceptsPhotocopy : (padre.acceptsPhotocopy !== undefined ? padre.acceptsPhotocopy : false),
-    esOriginal: hijo.esOriginal !== undefined ? hijo.esOriginal : (padre.esOriginal !== undefined ? padre.esOriginal : false),
     // Mantener el orden del hijo si existe, sino usar el del padre
     orden: hijo.orden !== undefined ? hijo.orden : (padre.orden !== undefined ? padre.orden : 0),
   };

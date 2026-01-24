@@ -29,23 +29,11 @@ export const EstudianteDocumentoEntrega = sequelize.define(
       defaultValue: false,
       comment: 'Indica si el documento está en trámite. Si es TRUE, el estudiante puede registrar aunque no lo tenga físicamente, pero debe presentarlo posteriormente',
     },
-    esOriginal: {
-      type: DataTypes.BOOLEAN,
-      field: 'es_original',
-      defaultValue: false,
-      comment: 'Indica si el documento entregado es original (TRUE) o fotocopia (FALSE). Solo aplica si entregado = TRUE y en_tramite = FALSE.',
-    },
     fechaEntrega: {
       type: DataTypes.DATEONLY,
       field: 'fecha_entrega',
       allowNull: true,
       comment: 'Fecha en que se entregó físicamente el documento',
-    },
-    fechaVencimientoTramite: {
-      type: DataTypes.DATEONLY,
-      field: 'fecha_vencimiento_tramite',
-      allowNull: true,
-      comment: 'Fecha límite para entregar el documento si está en trámite (ej: 10 días desde el registro)',
     },
     observaciones: {
       type: DataTypes.TEXT,

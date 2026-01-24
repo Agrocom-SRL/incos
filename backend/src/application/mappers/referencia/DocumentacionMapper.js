@@ -29,7 +29,6 @@ export function entityToPresentation(documentation) {
     orden: documentation.order,
     descripcion: documentation.description,
     documentoPadreId: documentation.parentDocumentId,
-    esOriginal: documentation.isOriginal,
     esDocumentoSistema: documentation.isSystemDocument,
     activo: documentation.active,
     createdAt: documentation.createdAt,

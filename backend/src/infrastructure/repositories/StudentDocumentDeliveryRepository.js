@@ -62,9 +62,7 @@ export class StudentDocumentDeliveryRepository extends BaseRepository {
    *   - documentacionId: ID de la documentación
    *   - entregado: Si fue entregado (true/false)
    *   - enTramite: Si está en trámite (true/false)
-   *   - esOriginal: Si es original (true/false)
    *   - fechaEntrega: Fecha de entrega
-   *   - fechaVencimientoTramite: Fecha de vencimiento del trámite
    *   - observaciones: Observaciones (búsqueda exacta, para búsqueda de texto usar search())
    * @returns {Object} Objeto WHERE para Sequelize
    */
@@ -85,14 +83,8 @@ export class StudentDocumentDeliveryRepository extends BaseRepository {
     if (filters.enTramite !== undefined) {
       where.enTramite = filters.enTramite;
     }
-    if (filters.esOriginal !== undefined) {
-      where.esOriginal = filters.esOriginal;
-    }
     if (filters.fechaEntrega !== undefined) {
       where.fechaEntrega = filters.fechaEntrega;
-    }
-    if (filters.fechaVencimientoTramite !== undefined) {
-      where.fechaVencimientoTramite = filters.fechaVencimientoTramite;
     }
     if (filters.observaciones !== undefined) {
       where.observaciones = filters.observaciones;

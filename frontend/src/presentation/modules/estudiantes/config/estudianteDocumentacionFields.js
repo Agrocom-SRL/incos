@@ -20,7 +20,6 @@
  * - documentacionId: ID del documento de referencia
  * - description: Descripción del documento
  * - acceptsPhotocopy: Si acepta fotocopia
- * - esOriginal: Si debe ser original
  * 
  * Estructura de datos resultante:
  * Los datos se guardarán en el formato:
@@ -29,14 +28,12 @@
  *     1: {
  *       entregado: true,
  *       en_tramite: false,
- *       observaciones: "...",
- *       es_original: true
+ *       observaciones: "..."
  *     },
  *     2: {
  *       entregado: false,
  *       en_tramite: true,
- *       observaciones: "...",
- *       es_original: false
+ *       observaciones: "..."
  *     }
  *   }
  * }
@@ -51,7 +48,6 @@
  * @param {string} documento.description - Descripción del documento
  * @param {boolean} documento.required - Si el documento es requerido
  * @param {boolean} documento.acceptsPhotocopy - Si acepta fotocopia
- * @param {boolean} documento.esOriginal - Si debe ser original
  * @param {boolean} documento.entregado - Estado de entrega del documento
  * @returns {Object} Configuración del campo de tipo documento
  */
@@ -73,7 +69,6 @@ const createCampoDocumento = (documento) => {
       description: documento.description || null,
       required: documento.required || false,
       acceptsPhotocopy: documento.acceptsPhotocopy || false,
-      esOriginal: documento.esOriginal || false,
       entregado: documento.entregado || false,
     },
   };

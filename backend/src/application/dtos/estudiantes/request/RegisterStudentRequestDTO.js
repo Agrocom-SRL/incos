@@ -154,9 +154,7 @@ export class RegisterStudentRequestDTO {
           documentation[docKey] = {
             entregado: docData.entregado ?? false,
             enTramite: docData.en_tramite ?? false, // Frontend envía snake_case, use case espera camelCase
-            esOriginal: docData.es_original ?? false, // Frontend envía snake_case, use case espera camelCase
             fechaEntrega: docData.fechaEntrega || null,
-            fechaVencimientoTramite: docData.fechaVencimientoTramite || null,
             observaciones: docData.observaciones || null,
           };
         }

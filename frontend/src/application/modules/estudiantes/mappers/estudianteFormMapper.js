@@ -225,9 +225,7 @@ export const estudianteFormMapper = (studentDetail) => {
       documentacion[docKey] = {
         entregado: delivery.entregado !== undefined ? delivery.entregado : false,
         en_tramite: delivery.enTramite !== undefined ? delivery.enTramite : false,
-        es_original: delivery.esOriginal !== undefined ? delivery.esOriginal : false,
         fechaEntrega: delivery.fechaEntrega || null,
-        fechaVencimientoTramite: delivery.fechaVencimientoTramite || null,
         observaciones: delivery.observaciones || null,
       };
     });

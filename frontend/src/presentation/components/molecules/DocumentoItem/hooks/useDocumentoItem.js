@@ -16,7 +16,7 @@
  * - Genera los indicadores del documento (requerido, original, acepta fotocopia)
  * - Construye el título con indicadores
  * - Determina qué indicadores visuales mostrar
- * - Determina nombres de campos adicionales (en_tramite, observaciones, es_original)
+ * - Determina nombres de campos adicionales (en_tramite, observaciones)
  */
 
 import { useMemo } from 'react';
@@ -29,7 +29,6 @@ import { useMemo } from 'react';
  * @param {string} documento.name - Nombre del documento
  * @param {string} documento.description - Descripción del documento
  * @param {boolean} documento.required - Si el documento es requerido
- * @param {boolean} documento.esOriginal - Si debe ser original
  * @param {boolean} documento.acceptsPhotocopy - Si acepta fotocopia
  * @param {boolean} documento.entregado - Estado de entrega del documento
  * @returns {Object} Objeto con datos procesados para renderizado
@@ -60,18 +59,11 @@ export const useDocumentoItem = (documento) => {
   }, [documento.name]);
 
   /**
-   * Determina si debe mostrar el indicador de original
-   */
-  const mostrarIndicadorOriginal = useMemo(() => {
-    return documento.esOriginal === true;
-  }, [documento.esOriginal]);
-
-  /**
    * Determina si debe mostrar el indicador de fotocopia
    */
   const mostrarIndicadorFotocopia = useMemo(() => {
-    return !documento.esOriginal && documento.acceptsPhotocopy === true;
-  }, [documento.esOriginal, documento.acceptsPhotocopy]);
+    return documento.acceptsPhotocopy === true;
+  }, [documento.acceptsPhotocopy]);
 
   /**
    * Valor por defecto del switch (estado de entrega)
@@ -100,32 +92,13 @@ export const useDocumentoItem = (documento) => {
     return [...basePath, 'observaciones'];
   }, [basePath]);
 
-  /**
-   * Nombre del campo para es_original
-   * Formato: ['documentacion', id, 'es_original']
-   */
-  const fieldNameEsOriginal = useMemo(() => {
-    return [...basePath, 'es_original'];
-  }, [basePath]);
-
-  /**
-   * Determina si debe mostrar el campo es_original
-   * Solo se muestra si acceptsPhotocopy es true (acepta fotocopia)
-   */
-  const mostrarCampoEsOriginal = useMemo(() => {
-    return documento.acceptsPhotocopy === true;
-  }, [documento.acceptsPhotocopy]);
-
   return {
     fieldName,
     fieldNameEnTramite,
     fieldNameObservaciones,
-    fieldNameEsOriginal,
     tituloDocumento,
     esRequerido: documento.required === true,
-    mostrarIndicadorOriginal,
     mostrarIndicadorFotocopia,
-    mostrarCampoEsOriginal,
     defaultChecked,
   };
 };

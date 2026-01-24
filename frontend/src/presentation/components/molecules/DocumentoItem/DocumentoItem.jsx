@@ -20,10 +20,9 @@
  * - Switch para marcar como entregado/pendiente
  * - Alert con descripción del documento
  * - Iconos que indican si solo se aceptan originales
- * - Campos adicionales (condicionales, solo cuando entregado = true):
+ * - Campos adicionales (condicionales, solo cuando entregado = false):
  *   - Checkbox para "En trámite" (en_tramite)
  *   - Textarea para observaciones
- *   - Checkbox para "Es original" (solo si acceptsPhotocopy = true)
  * 
  * Reactividad:
  * - Usa Form.useWatch para escuchar cambios en el switch de entrega
@@ -42,7 +41,6 @@ import { useDocumentoItem } from './hooks/useDocumentoItem';
  * - documento_{id}: Switch para entregado/pendiente
  * - documento_{id}_en_tramite: Checkbox para indicar si está en trámite
  * - documento_{id}_observaciones: Textarea para observaciones
- * - documento_{id}_es_original: Checkbox para indicar si es original (solo si acceptsPhotocopy = true)
  * 
  * @param {Object} props
  * @param {Object} props.documento - Objeto con datos del documento
@@ -50,7 +48,6 @@ import { useDocumentoItem } from './hooks/useDocumentoItem';
  * @param {string} props.documento.name - Nombre del documento
  * @param {string} props.documento.description - Descripción del documento
  * @param {boolean} props.documento.required - Si el documento es requerido
- * @param {boolean} props.documento.esOriginal - Si debe ser original
  * @param {boolean} props.documento.acceptsPhotocopy - Si acepta fotocopia
  * @param {boolean} props.documento.entregado - Estado de entrega del documento
  * @param {Object} props.form - Instancia del formulario de Ant Design
@@ -66,12 +63,9 @@ const DocumentoItem = ({
     fieldName,
     fieldNameEnTramite,
     fieldNameObservaciones,
-    fieldNameEsOriginal,
     tituloDocumento,
     esRequerido,
-    mostrarIndicadorOriginal,
     mostrarIndicadorFotocopia,
-    mostrarCampoEsOriginal,
     defaultChecked,
   } = useDocumentoItem(documento);
 
@@ -116,38 +110,17 @@ const DocumentoItem = ({
         />
       )}
 
-      {/* Fila horizontal: Badge, Es original, En trámite (cada uno span=8) */}
+      {/* Fila horizontal: Badge, En trámite */}
       {/* Responsive: En móviles cada elemento ocupa 100% (span=24), en desktop ocupa span=8 */}
       <Row gutter={[16, 16]}>
-        {/* Badge (solo si hay indicador) - Responsive: 24 en móviles, 8 en desktop */}
-        <Col xs={24} sm={24} md={8} lg={8} xl={8}>
-          {mostrarIndicadorOriginal && (
-            <Badge
-              variant="error"
-              icon={<CheckCircleOutlined />}
-              text="Solo Original"
-            />
-          )}
-          {mostrarIndicadorFotocopia && (
+        {/* Badge (solo si acepta fotocopia) - Responsive: 24 en móviles, 8 en desktop */}
+        {mostrarIndicadorFotocopia && (
+          <Col xs={24} sm={24} md={8} lg={8} xl={8}>
             <Badge
               variant="success"
               icon={<CheckCircleOutlined />}
               text="Se acepta Fotocopia"
             />
-          )}
-        </Col>
-
-        {/* Checkbox para es_original (solo si acceptsPhotocopy es true) - Responsive: 24 en móviles, 8 en desktop */}
-        {mostrarCampoEsOriginal && (
-          <Col xs={24} sm={24} md={8} lg={8} xl={8}>
-            <Form.Item
-              name={fieldNameEsOriginal}
-              valuePropName="checked"
-            >
-              <FieldCheckbox disabled={readOnly}>
-                Es original (no fotocopia)
-              </FieldCheckbox>
-            </Form.Item>
           </Col>
         )}
 

@@ -62,9 +62,6 @@ export class DocumentacionMapper {
     if ('documentoPadreId' in dataValues && dataValues.documentoPadreId !== undefined) {
       specificFields.parentDocumentId = dataValues.documentoPadreId ?? null;
     }
-    if ('esOriginal' in dataValues && dataValues.esOriginal !== undefined) {
-      specificFields.isOriginal = Boolean(dataValues.esOriginal);
-    }
     if ('esDocumentoSistema' in dataValues && dataValues.esDocumentoSistema !== undefined) {
       specificFields.isSystemDocument = Boolean(dataValues.esDocumentoSistema);
     }
@@ -99,7 +96,6 @@ export class DocumentacionMapper {
       orden: data.order || 0,
       descripcion: data.description || null,
       documentoPadreId: data.parentDocumentId ?? null,
-      esOriginal: data.isOriginal !== undefined ? data.isOriginal : false,
       esDocumentoSistema: data.isSystemDocument !== undefined ? data.isSystemDocument : false,
     };
   }
@@ -142,9 +138,6 @@ export class DocumentacionMapper {
     }
     if ('parentDocumentId' in data) {
       updateData.documentoPadreId = data.parentDocumentId ?? null;
-    }
-    if ('isOriginal' in data) {
-      updateData.esOriginal = data.isOriginal;
     }
     if ('isSystemDocument' in data) {
       updateData.esDocumentoSistema = data.isSystemDocument;
