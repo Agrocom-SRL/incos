@@ -62,15 +62,9 @@ export class StudentGuardianRepository extends BaseRepository {
    *   - relationshipTypeId: ID del tipo de parentesco
    *   - firstName: Nombre (búsqueda exacta, para búsqueda de texto usar search())
    *   - lastName: Apellidos (búsqueda exacta, para búsqueda de texto usar search())
-   *   - ci: Cédula de identidad
-   *   - occupation: Ocupación (búsqueda exacta, para búsqueda de texto usar search())
-   *   - workplace: Lugar de trabajo (búsqueda exacta, para búsqueda de texto usar search())
-   *   - address: Dirección (búsqueda exacta, para búsqueda de texto usar search())
-   *   - phone: Teléfono
-   *   - email: Email (búsqueda exacta)
-   *   - isEmergencyContact: Si es contacto de emergencia (true/false)
+   *   - cellphone1: Celular 1
+   *   - cellphone2: Celular 2
    *   - livesWithStudent: Si vive con el estudiante (true/false)
-   *   - observations: Observaciones (búsqueda exacta, para búsqueda de texto usar search())
    * @returns {Object} Objeto WHERE para Sequelize
    */
   buildWhereClause(filters) {
@@ -89,32 +83,14 @@ export class StudentGuardianRepository extends BaseRepository {
     if (filters.lastName !== undefined) {
       where.apellidos = filters.lastName;
     }
-    if (filters.ci !== undefined) {
-      where.ci = filters.ci;
+    if (filters.cellphone1 !== undefined) {
+      where.celular1 = filters.cellphone1;
     }
-    if (filters.occupation !== undefined) {
-      where.ocupacion = filters.occupation;
-    }
-    if (filters.workplace !== undefined) {
-      where.lugarTrabajo = filters.workplace;
-    }
-    if (filters.address !== undefined) {
-      where.direccion = filters.address;
-    }
-    if (filters.phone !== undefined) {
-      where.telefono = filters.phone;
-    }
-    if (filters.email !== undefined) {
-      where.email = filters.email;
-    }
-    if (filters.isEmergencyContact !== undefined) {
-      where.esContactoEmergencia = filters.isEmergencyContact;
+    if (filters.cellphone2 !== undefined) {
+      where.celular2 = filters.cellphone2;
     }
     if (filters.livesWithStudent !== undefined) {
       where.viveConEstudiante = filters.livesWithStudent;
-    }
-    if (filters.observations !== undefined) {
-      where.observaciones = filters.observations;
     }
 
     return where;
@@ -127,7 +103,7 @@ export class StudentGuardianRepository extends BaseRepository {
    * @returns {string[]} Array de nombres de campos del modelo Sequelize
    */
   getSearchFields() {
-    return ['nombres', 'apellidos', 'ci', 'email', 'ocupacion', 'lugarTrabajo'];
+    return ['nombres', 'apellidos', 'celular1', 'celular2'];
   }
 
   /**

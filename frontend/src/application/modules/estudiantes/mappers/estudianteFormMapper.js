@@ -209,15 +209,9 @@ export const estudianteFormMapper = (studentDetail) => {
       tipoParentescoId: guardian.relationshipTypeId || null,
       nombres: guardian.firstName || '',
       apellidos: guardian.lastName || '',
-      ci: guardian.ci || '',
-      telefono: guardian.phone || '',
-      email: guardian.email || '',
-      ocupacion: guardian.occupation || '',
-      lugarTrabajo: guardian.workplace || '',
-      direccion: guardian.address || '',
-      esContactoEmergencia: guardian.isEmergencyContact !== undefined ? guardian.isEmergencyContact : true,
+      celular1: guardian.cellphone1 || '',
+      celular2: guardian.cellphone2 || '',
       viveConEstudiante: guardian.livesWithStudent !== undefined ? guardian.livesWithStudent : false,
-      observaciones: guardian.observations || '',
     }));
   } else {
     formData.contactosEmergencia = [];

@@ -87,10 +87,8 @@ export class RegisterStudentController extends BaseCreateController {
     if (sanitized.contactosEmergencia && Array.isArray(sanitized.contactosEmergencia)) {
       sanitized.contactosEmergencia = sanitized.contactosEmergencia.map((contact) => {
         const sanitizedContact = { ...contact };
-        if (sanitizedContact.ci) sanitizedContact.ci = '***';
-        if (sanitizedContact.email) sanitizedContact.email = '***';
-        if (sanitizedContact.telefono) sanitizedContact.telefono = '***';
-        if (sanitizedContact.direccion) sanitizedContact.direccion = '***';
+        if (sanitizedContact.celular1) sanitizedContact.celular1 = '***';
+        if (sanitizedContact.celular2) sanitizedContact.celular2 = '***';
         return sanitizedContact;
       });
     }

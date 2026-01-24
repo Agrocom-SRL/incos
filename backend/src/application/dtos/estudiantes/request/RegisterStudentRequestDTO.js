@@ -136,15 +136,9 @@ export class RegisterStudentRequestDTO {
           relationshipTypeId: contacto.tipoParentescoId,
           firstName: contacto.nombres,
           lastName: contacto.apellidos,
-          ci: contacto.ci,
-          phone: contacto.telefono,
-          email: contacto.email,
-          occupation: contacto.ocupacion,
-          workplace: contacto.lugarTrabajo,
-          address: contacto.direccion,
-          isEmergencyContact: contacto.esContactoEmergencia ?? true,
+          cellphone1: contacto.celular1,
+          cellphone2: contacto.celular2,
           livesWithStudent: contacto.viveConEstudiante ?? false,
-          observations: contacto.observaciones,
         }))
       : [];
 

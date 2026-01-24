@@ -12,12 +12,7 @@
 import { Row, Col, Divider } from 'antd';
 import { 
   UserOutlined,
-  IdcardOutlined,
   PhoneOutlined,
-  MailOutlined,
-  BankOutlined,
-  HomeOutlined,
-  SafetyOutlined,
   TeamOutlined
 } from '@ant-design/icons';
 import { Card } from '@atoms';
@@ -58,51 +53,16 @@ const GuardiansSection = ({ guardians }) => {
             </Col>
             <Col xs={24} sm={12}>
               <StudentInfoItem
-                icon={<IdcardOutlined style={{ fontSize: '24px', color: '#fff' }} />}
-                label="CI"
-                value={guardian.ci}
+                icon={<PhoneOutlined style={{ fontSize: '24px', color: '#fff' }} />}
+                label="Celular 1"
+                value={guardian.cellphone1 || guardian.celular1}
               />
             </Col>
             <Col xs={24} sm={12}>
               <StudentInfoItem
                 icon={<PhoneOutlined style={{ fontSize: '24px', color: '#fff' }} />}
-                label="Teléfono"
-                value={guardian.phone || guardian.telefono}
-              />
-            </Col>
-            <Col xs={24} sm={12}>
-              <StudentInfoItem
-                icon={<MailOutlined style={{ fontSize: '24px', color: '#fff' }} />}
-                label="Email"
-                value={guardian.email}
-              />
-            </Col>
-            <Col xs={24} sm={12}>
-              <StudentInfoItem
-                icon={<BankOutlined style={{ fontSize: '24px', color: '#fff' }} />}
-                label="Ocupación"
-                value={guardian.occupation || guardian.ocupacion}
-              />
-            </Col>
-            <Col xs={24} sm={12}>
-              <StudentInfoItem
-                icon={<BankOutlined style={{ fontSize: '24px', color: '#fff' }} />}
-                label="Lugar de Trabajo"
-                value={guardian.workplace || guardian.lugarTrabajo}
-              />
-            </Col>
-            <Col xs={24}>
-              <StudentInfoItem
-                icon={<HomeOutlined style={{ fontSize: '24px', color: '#fff' }} />}
-                label="Dirección"
-                value={guardian.address || guardian.direccion}
-              />
-            </Col>
-            <Col xs={24} sm={12}>
-              <StudentInfoItem
-                icon={<SafetyOutlined style={{ fontSize: '24px', color: '#fff' }} />}
-                label="DATOS DE CONTACTO DE EMERGENCIA"
-                value={guardian.isEmergencyContact ? 'Sí' : 'No'}
+                label="Celular 2"
+                value={guardian.cellphone2 || guardian.celular2}
               />
             </Col>
             <Col xs={24} sm={12}>
@@ -112,15 +72,6 @@ const GuardiansSection = ({ guardians }) => {
                 value={guardian.livesWithStudent ? 'Sí' : 'No'}
               />
             </Col>
-            {guardian.observations && (
-              <Col xs={24}>
-                <StudentInfoItem
-                  icon={<UserOutlined style={{ fontSize: '24px', color: '#fff' }} />}
-                  label="Observaciones"
-                  value={guardian.observations}
-                />
-              </Col>
-            )}
           </Row>
           {index < guardians.length - 1 && (
             <Divider style={{ margin: '24px 0' }} />

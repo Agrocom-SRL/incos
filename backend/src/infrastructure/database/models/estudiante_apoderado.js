@@ -20,7 +20,7 @@ export const EstudianteApoderado = sequelize.define(
     },
     nombres: {
       type: DataTypes.STRING(150),
-      allowNull: false,
+      allowNull: true,
       comment: 'Nombres completos del apoderado/tutor',
     },
     apellidos: {
@@ -28,50 +28,23 @@ export const EstudianteApoderado = sequelize.define(
       allowNull: true,
       comment: 'Apellidos del apoderado/tutor',
     },
-    ci: {
+    celular1: {
       type: DataTypes.STRING(20),
+      field: 'celular_1',
       allowNull: true,
-      comment: 'Cédula de identidad',
+      comment: 'Celular 1',
     },
-    ocupacion: {
-      type: DataTypes.STRING(100),
-      allowNull: true,
-      comment: 'Ocupación',
-    },
-    lugarTrabajo: {
-      type: DataTypes.STRING(200),
-      field: 'lugar_trabajo',
-      allowNull: true,
-      comment: 'Lugar de trabajo',
-    },
-    direccion: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-      comment: 'Dirección de domicilio',
-    },
-    telefono: {
+    celular2: {
       type: DataTypes.STRING(20),
+      field: 'celular_2',
       allowNull: true,
-    },
-    email: {
-      type: DataTypes.STRING(150),
-      allowNull: true,
-    },
-    esContactoEmergencia: {
-      type: DataTypes.BOOLEAN,
-      field: 'es_contacto_emergencia',
-      defaultValue: true,
-      comment: 'Es contacto de emergencia',
+      comment: 'Celular 2',
     },
     viveConEstudiante: {
       type: DataTypes.BOOLEAN,
       field: 'vive_con_estudiante',
       defaultValue: false,
       comment: 'Vive con el estudiante',
-    },
-    observaciones: {
-      type: DataTypes.TEXT,
-      allowNull: true,
     },
   },
   {

@@ -178,25 +178,15 @@ CREATE TABLE estudiantes_apoderados (
     tipo_parentesco_id INT NULL COMMENT 'Tipo de parentesco (padre, madre, abuelo, tío, tutor, apoderado, orfanato, etc.) (NULL permite flexibilidad en migraciones)',
     
     -- Datos personales básicos
-    nombres VARCHAR(150) NOT NULL COMMENT 'Nombres completos del apoderado/tutor',
+    nombres VARCHAR(150) COMMENT 'Nombres completos del apoderado/tutor',
     apellidos VARCHAR(150) COMMENT 'Apellidos del apoderado/tutor',
-    ci VARCHAR(20) COMMENT 'Cédula de identidad',
-    
-    -- Datos laborales
-    ocupacion VARCHAR(100) COMMENT 'Ocupación',
-    lugar_trabajo VARCHAR(200) COMMENT 'Lugar de trabajo',
     
     -- Datos de contacto
-    direccion TEXT COMMENT 'Dirección de domicilio',
-    telefono VARCHAR(20) COMMENT 'Teléfono',
-    email VARCHAR(150) COMMENT 'Email',
+    celular_1 VARCHAR(20) COMMENT 'Celular 1',
+    celular_2 VARCHAR(20) COMMENT 'Celular 2',
     
     -- Relación con el estudiante
-    es_contacto_emergencia BOOLEAN DEFAULT TRUE COMMENT 'Es contacto de emergencia',
     vive_con_estudiante BOOLEAN DEFAULT FALSE COMMENT 'Vive con el estudiante',
-    
-    -- Observaciones
-    observaciones TEXT COMMENT 'Observaciones',
     
     -- Campos de auditoría y control (ESTÁNDAR)
     activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
@@ -214,7 +204,6 @@ CREATE TABLE estudiantes_apoderados (
     INDEX idx_tipo_parentesco_id (tipo_parentesco_id) COMMENT 'Búsqueda por tipo de parentesco',
     INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
     INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
-    INDEX idx_contacto_emergencia (es_contacto_emergencia, activo) COMMENT 'Búsqueda de contactos de emergencia',
     INDEX idx_vive_con (vive_con_estudiante, activo) COMMENT 'Búsqueda por quienes viven con el estudiante'
     
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci

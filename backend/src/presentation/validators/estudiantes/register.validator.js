@@ -13,7 +13,7 @@ import { body } from 'express-validator';
  * 
  * Campos requeridos basados en schema SQL (NOT NULL):
  * - estudiantes: ci, nombres, fechaNacimiento, genero, celular
- * - estudiantes_apoderados: tipoParentescoId, nombres, apellidos (si se envía el array)
+ * - estudiantes_apoderados: Todos los campos son opcionales (NULL permitido)
  * 
  * Ubicación: presentation/validators/estudiantes (validators específicos del módulo)
  * 
@@ -341,20 +341,33 @@ export const registerStudentValidator = [
 
   body('contactosEmergencia.*.tipoParentescoId')
     .if(body('contactosEmergencia').isArray())
-    .notEmpty()
-    .withMessage('Tipo de parentesco es requerido para cada contacto')
+    .customSanitizer((value) => {
+      // Convertir string vacío a null antes de validar
+      return value === '' ? null : value;
+    })
+    .optional({ nullable: true, checkFalsy: true }) // Todos los campos son opcionales
     .isInt({ min: 1 })
     .withMessage('Tipo de parentesco ID debe ser un número entero mayor a 0'),
 
   body('contactosEmergencia.*.nombres')
     .if(body('contactosEmergencia').isArray())
-    .notEmpty()
-    .withMessage('Nombres son requeridos para cada contacto')
+    .customSanitizer((value) => {
+      // Convertir string vacío a null antes de validar
+      return value === '' ? null : value;
+    })
+    .optional({ nullable: true, checkFalsy: true }) // Todos los campos son opcionales
     .isString()
     .withMessage('Nombres debe ser una cadena de texto')
     .trim()
-    .isLength({ min: 2, max: 150 })
-    .withMessage('Nombres debe tener entre 2 y 150 caracteres'),
+    .custom((value) => {
+      // Si está presente después del trim, validar longitud
+      if (value && value.length > 0) {
+        if (value.length < 2 || value.length > 150) {
+          throw new Error('Nombres debe tener entre 2 y 150 caracteres');
+        }
+      }
+      return true;
+    }),
 
   body('contactosEmergencia.*.apellidos')
     .if(body('contactosEmergencia').isArray())
@@ -362,7 +375,7 @@ export const registerStudentValidator = [
       // Convertir string vacío a null antes de validar
       return value === '' ? null : value;
     })
-    .optional({ nullable: true, checkFalsy: true }) // Permitir null, undefined, '' según schema (es opcional)
+    .optional({ nullable: true, checkFalsy: true }) // Todos los campos son opcionales
     .trim()
     .custom((value) => {
       // Si está presente después del trim, validar longitud
@@ -374,136 +387,47 @@ export const registerStudentValidator = [
       return true;
     }),
 
-  body('contactosEmergencia.*.ci')
+  body('contactosEmergencia.*.celular1')
     .if(body('contactosEmergencia').isArray())
     .customSanitizer((value) => {
       // Convertir string vacío a null antes de validar
       return value === '' ? null : value;
     })
-    .optional({ nullable: true, checkFalsy: true }) // Permitir null, undefined, '' según schema (es opcional)
-    .trim()
-    .custom((value) => {
-      // Si está presente después del trim, validar longitud
-      if (value && value.length > 0) {
-        if (value.length < 5 || value.length > 20) {
-          throw new Error('CI debe tener entre 5 y 20 caracteres');
-        }
-      }
-      return true;
-    }),
-
-  body('contactosEmergencia.*.telefono')
-    .if(body('contactosEmergencia').isArray())
-    .customSanitizer((value) => {
-      // Convertir string vacío a null antes de validar
-      return value === '' ? null : value;
-    })
-    .optional({ nullable: true, checkFalsy: true }) // Permitir null, undefined, '' según schema (es opcional)
+    .optional({ nullable: true, checkFalsy: true }) // Todos los campos son opcionales
     .trim()
     .custom((value) => {
       // Si está presente después del trim, validar longitud
       if (value && value.length > 0) {
         if (value.length < 7 || value.length > 20) {
-          throw new Error('Teléfono debe tener entre 7 y 20 caracteres');
+          throw new Error('Celular 1 debe tener entre 7 y 20 caracteres');
         }
       }
       return true;
     }),
 
-  body('contactosEmergencia.*.email')
+  body('contactosEmergencia.*.celular2')
     .if(body('contactosEmergencia').isArray())
     .customSanitizer((value) => {
       // Convertir string vacío a null antes de validar
       return value === '' ? null : value;
     })
-    .optional({ nullable: true, checkFalsy: true }) // Permitir null, undefined, '' según schema (es opcional)
-    .isEmail()
-    .withMessage('Email debe ser un email válido')
-    .normalizeEmail(),
-
-  body('contactosEmergencia.*.ocupacion')
-    .if(body('contactosEmergencia').isArray())
-    .customSanitizer((value) => {
-      // Convertir string vacío a null antes de validar
-      return value === '' ? null : value;
-    })
-    .optional({ nullable: true, checkFalsy: true }) // Permitir null, undefined, '' según schema (es opcional)
+    .optional({ nullable: true, checkFalsy: true }) // Todos los campos son opcionales
     .trim()
     .custom((value) => {
       // Si está presente después del trim, validar longitud
       if (value && value.length > 0) {
-        if (value.length > 100) {
-          throw new Error('Ocupación no puede exceder 100 caracteres');
+        if (value.length < 7 || value.length > 20) {
+          throw new Error('Celular 2 debe tener entre 7 y 20 caracteres');
         }
       }
       return true;
     }),
-
-  body('contactosEmergencia.*.lugarTrabajo')
-    .if(body('contactosEmergencia').isArray())
-    .customSanitizer((value) => {
-      // Convertir string vacío a null antes de validar
-      return value === '' ? null : value;
-    })
-    .optional({ nullable: true, checkFalsy: true }) // Permitir null, undefined, '' según schema (es opcional)
-    .trim()
-    .custom((value) => {
-      // Si está presente después del trim, validar longitud
-      if (value && value.length > 0) {
-        if (value.length > 200) {
-          throw new Error('Lugar de trabajo no puede exceder 200 caracteres');
-        }
-      }
-      return true;
-    }),
-
-  body('contactosEmergencia.*.direccion')
-    .if(body('contactosEmergencia').isArray())
-    .customSanitizer((value) => {
-      // Convertir string vacío a null antes de validar
-      return value === '' ? null : value;
-    })
-    .optional({ nullable: true, checkFalsy: true }) // Permitir null, undefined, '' según schema (es opcional)
-    .trim()
-    .custom((value) => {
-      // Si está presente después del trim, validar longitud
-      if (value && value.length > 0) {
-        if (value.length > 500) {
-          throw new Error('Dirección no puede exceder 500 caracteres');
-        }
-      }
-      return true;
-    }),
-
-  body('contactosEmergencia.*.esContactoEmergencia')
-    .if(body('contactosEmergencia').isArray())
-    .optional()
-    .isBoolean()
-    .withMessage('esContactoEmergencia debe ser un booleano'),
 
   body('contactosEmergencia.*.viveConEstudiante')
     .if(body('contactosEmergencia').isArray())
     .optional()
     .isBoolean()
     .withMessage('viveConEstudiante debe ser un booleano'),
-
-  body('contactosEmergencia.*.observaciones')
-    .if(body('contactosEmergencia').isArray())
-    .customSanitizer((value) => {
-      // Convertir string vacío a null antes de validar
-      return value === '' ? null : value;
-    })
-    .optional({ nullable: true, checkFalsy: true }) // Permitir null, undefined, '' según schema (es opcional)
-    .trim()
-    .custom((value) => {
-      // Si está presente después del trim, validar longitud
-      if (value && value.length > 0) {
-        if (value.length > 500) {
-          throw new Error('Observaciones no puede exceder 500 caracteres');
-        }
-      }
-      return true;
-    }),
 
   // ============================================
   // DOCUMENTACIÓN (OPCIONAL - Objeto)

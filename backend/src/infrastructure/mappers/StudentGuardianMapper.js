@@ -53,32 +53,14 @@ export class StudentGuardianMapper {
     if ('apellidos' in dataValues && dataValues.apellidos !== undefined) {
       specificFields.lastName = dataValues.apellidos;
     }
-    if ('ci' in dataValues && dataValues.ci !== undefined) {
-      specificFields.ci = dataValues.ci;
+    if ('celular1' in dataValues && dataValues.celular1 !== undefined) {
+      specificFields.cellphone1 = dataValues.celular1;
     }
-    if ('ocupacion' in dataValues && dataValues.ocupacion !== undefined) {
-      specificFields.occupation = dataValues.ocupacion;
-    }
-    if ('lugarTrabajo' in dataValues && dataValues.lugarTrabajo !== undefined) {
-      specificFields.workplace = dataValues.lugarTrabajo;
-    }
-    if ('direccion' in dataValues && dataValues.direccion !== undefined) {
-      specificFields.address = dataValues.direccion;
-    }
-    if ('telefono' in dataValues && dataValues.telefono !== undefined) {
-      specificFields.phone = dataValues.telefono;
-    }
-    if ('email' in dataValues && dataValues.email !== undefined) {
-      specificFields.email = dataValues.email;
-    }
-    if ('esContactoEmergencia' in dataValues && dataValues.esContactoEmergencia !== undefined) {
-      specificFields.isEmergencyContact = dataValues.esContactoEmergencia === 1 || dataValues.esContactoEmergencia === true;
+    if ('celular2' in dataValues && dataValues.celular2 !== undefined) {
+      specificFields.cellphone2 = dataValues.celular2;
     }
     if ('viveConEstudiante' in dataValues && dataValues.viveConEstudiante !== undefined) {
       specificFields.livesWithStudent = dataValues.viveConEstudiante === 1 || dataValues.viveConEstudiante === true;
-    }
-    if ('observaciones' in dataValues && dataValues.observaciones !== undefined) {
-      specificFields.observations = dataValues.observaciones;
     }
 
     // Combina campos base (id, active, timestamps, audit) con campos específicos
@@ -106,17 +88,11 @@ export class StudentGuardianMapper {
     return {
       estudianteId: data.studentId || null,
       tipoParentescoId: data.relationshipTypeId || null,
-      nombres: data.firstName,
+      nombres: data.firstName || null,
       apellidos: data.lastName || null,
-      ci: data.ci || null,
-      ocupacion: data.occupation || null,
-      lugarTrabajo: data.workplace || null,
-      direccion: data.address || null,
-      telefono: data.phone || null,
-      email: data.email ? data.email.toLowerCase() : null,
-      esContactoEmergencia: data.isEmergencyContact !== undefined ? data.isEmergencyContact : true,
+      celular1: data.cellphone1 || null,
+      celular2: data.cellphone2 || null,
       viveConEstudiante: data.livesWithStudent !== undefined ? data.livesWithStudent : false,
-      observaciones: data.observations || null,
     };
   }
 
@@ -145,37 +121,19 @@ export class StudentGuardianMapper {
       updateData.tipoParentescoId = data.relationshipTypeId || null;
     }
     if ('firstName' in data) {
-      updateData.nombres = data.firstName;
+      updateData.nombres = data.firstName || null;
     }
     if ('lastName' in data) {
       updateData.apellidos = data.lastName || null;
     }
-    if ('ci' in data) {
-      updateData.ci = data.ci || null;
+    if ('cellphone1' in data) {
+      updateData.celular1 = data.cellphone1 || null;
     }
-    if ('occupation' in data) {
-      updateData.ocupacion = data.occupation || null;
-    }
-    if ('workplace' in data) {
-      updateData.lugarTrabajo = data.workplace || null;
-    }
-    if ('address' in data) {
-      updateData.direccion = data.address || null;
-    }
-    if ('phone' in data) {
-      updateData.telefono = data.phone || null;
-    }
-    if ('email' in data) {
-      updateData.email = data.email ? data.email.toLowerCase() : null;
-    }
-    if ('isEmergencyContact' in data) {
-      updateData.esContactoEmergencia = data.isEmergencyContact;
+    if ('cellphone2' in data) {
+      updateData.celular2 = data.cellphone2 || null;
     }
     if ('livesWithStudent' in data) {
       updateData.viveConEstudiante = data.livesWithStudent;
-    }
-    if ('observations' in data) {
-      updateData.observaciones = data.observations || null;
     }
 
     // Campos base (active/activo)

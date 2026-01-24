@@ -109,17 +109,33 @@ export function validateRegisterStudent(datosEstudiante) {
       });
     } else {
       // Validar cada contacto
-      // Según schema estudiantes_apoderados: nombres es NOT NULL si se envía el contacto
-      // tipo_parentesco_id es opcional según schema (NULL permitido)
+      // Todos los campos son opcionales según el nuevo schema
       datosEstudiante.contactosEmergencia.forEach((contacto, index) => {
-        if (!contacto.nombres) {
+        // Validaciones opcionales: si se proporcionan, deben cumplir formato
+        if (contacto.celular1 && (contacto.celular1.length < 7 || contacto.celular1.length > 20)) {
           errors.push({
-            field: `contactosEmergencia[${index}].nombres`,
-            message: 'Nombres del contacto son requeridos',
+            field: `contactosEmergencia[${index}].celular1`,
+            message: 'Celular 1 debe tener entre 7 y 20 caracteres',
           });
         }
-        // telefono es opcional según schema, no se valida como requerido
-        // tipoParentescoId es opcional según schema, no se valida como requerido
+        if (contacto.celular2 && (contacto.celular2.length < 7 || contacto.celular2.length > 20)) {
+          errors.push({
+            field: `contactosEmergencia[${index}].celular2`,
+            message: 'Celular 2 debe tener entre 7 y 20 caracteres',
+          });
+        }
+        if (contacto.nombres && (contacto.nombres.length < 2 || contacto.nombres.length > 150)) {
+          errors.push({
+            field: `contactosEmergencia[${index}].nombres`,
+            message: 'Nombres debe tener entre 2 y 150 caracteres',
+          });
+        }
+        if (contacto.apellidos && (contacto.apellidos.length < 2 || contacto.apellidos.length > 150)) {
+          errors.push({
+            field: `contactosEmergencia[${index}].apellidos`,
+            message: 'Apellidos debe tener entre 2 y 150 caracteres',
+          });
+        }
       });
     }
   }
