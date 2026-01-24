@@ -28,17 +28,10 @@
  *       useCase: generateActaCompromisoUseCase,
  *       logger,
  *       responseFormatter,
- *       resourceName: 'acta de compromiso',
- *       dataFieldName: 'acta'
+ *       resourceName: 'acta de compromiso'
  *     });
  *   }
  * 
- *   // Opcional: Sobrescribir para agregar opciones personalizadas
- *   buildOptions(req) {
- *     return {
- *       // Opciones personalizadas del body o configuración
- *     };
- *   }
  * }
  */
 export class BaseDocumentController {
@@ -48,9 +41,8 @@ export class BaseDocumentController {
    * @param {Object} params.logger - Logger para registro de eventos
    * @param {Object} params.responseFormatter - Formatter de respuestas exitosas (inyectado)
    * @param {string} params.resourceName - Nombre del recurso en español (ej: 'acta de compromiso')
-   * @param {string} params.dataFieldName - Nombre del campo en la respuesta del use case (ej: 'acta', 'licencia')
    */
-  constructor({ useCase, logger, responseFormatter, resourceName, dataFieldName }) {
+  constructor({ useCase, logger, responseFormatter, resourceName }) {
     if (!useCase) {
       throw new Error('useCase es requerido');
     }
@@ -63,32 +55,11 @@ export class BaseDocumentController {
     if (!resourceName) {
       throw new Error('resourceName es requerido');
     }
-    if (!dataFieldName) {
-      throw new Error('dataFieldName es requerido');
-    }
 
     this.useCase = useCase;
     this.logger = logger;
     this.responseFormatter = responseFormatter;
     this.resourceName = resourceName;
-    this.dataFieldName = dataFieldName;
-  }
-
-  /**
-   * Construye las opciones adicionales para el caso de uso
-   * 
-   * Método template: Puede ser sobrescrito por subclases para agregar opciones personalizadas
-   * 
-   * Por defecto retorna un objeto vacío, ya que opciones como plazoMaximo
-   * deben venir de configuración del sistema (no del body)
-   * 
-   * @param {Object} req - Request de Express
-   * @returns {Object} Opciones adicionales para el use case
-   */
-  buildOptions(req) {
-    // Por defecto, no agrega opciones del body
-    // Las subclases pueden sobrescribir si necesitan opciones personalizadas
-    return {};
   }
 
   /**
@@ -96,10 +67,9 @@ export class BaseDocumentController {
    * 
    * Template Method: Define el algoritmo común de:
    * 1. Extraer y validar ID del recurso
-   * 2. Construir opciones (delegado a buildOptions)
-   * 3. Ejecutar use case
-   * 4. Formatear respuesta
-   * 5. Manejar errores
+   * 2. Ejecutar use case
+   * 3. Formatear respuesta
+   * 4. Manejar errores
    * 
    * @param {Object} req - Request de Express
    * @param {Object} res - Response de Express
@@ -117,19 +87,16 @@ export class BaseDocumentController {
         path: req.path,
       });
 
-      // 3. Construir opciones adicionales (si buildOptions fue sobrescrito)
-      const options = this.buildOptions(req);
+      // 3. Ejecutar el caso de uso
+      // Las opciones vienen de configuración del sistema, no del body
+      const result = await this.useCase.execute(id, {});
 
-      // 4. Ejecutar el caso de uso
-      const result = await this.useCase.execute(id, options);
-
-      // 5. Formatear respuesta exitosa usando ResponseFormatter
-      const responseData = this.dataFieldName ? { [this.dataFieldName]: result } : result;
-
-      return this.responseFormatter.generated(res, responseData, this.resourceName, id, req);
+      // 4. Formatear respuesta exitosa usando ResponseFormatter
+      // Pasar result directamente en data (sin envolver en subdivisión) para homogeneizar con listado
+      return this.responseFormatter.generated(res, result, this.resourceName, id, req);
 
     } catch (error) {
-      // 6. Manejo de errores consistente
+      // 5. Manejo de errores consistente
       this.logger.error(`Error al generar ${this.resourceName}`, {
         error: error.message,
         stack: error.stack,

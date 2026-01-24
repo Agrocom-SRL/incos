@@ -20,11 +20,9 @@
  * {
  *   success: true,
  *   data: {
- *     acta: {
- *       filePath: "/uploads/documentos/estudiantes/123/ACTA_COMPROMISO_xxx.pdf",
- *       fileName: "ACTA_COMPROMISO_xxx.pdf",
- *       absolutePath: "/path/to/file.pdf"
- *     }
+ *     filePath: "/uploads/documentos/estudiantes/123/ACTA_COMPROMISO_xxx.pdf",
+ *     fileName: "ACTA_COMPROMISO_xxx.pdf",
+ *     absolutePath: "/path/to/file.pdf"
  *   },
  *   message: "Acta de compromiso generada correctamente"
  * }
@@ -52,12 +50,10 @@ export class ActaCompromisoController extends BaseDocumentController {
       logger,
       responseFormatter,
       resourceName: 'acta de compromiso',
-      dataFieldName: 'acta',
     });
   }
 
-  // No es necesario sobrescribir handle() ni buildOptions()
+  // No es necesario sobrescribir handle()
   // El base controller maneja toda la lógica común
-  // buildOptions() retorna {} por defecto, ya que no hay opciones del body
 }
 

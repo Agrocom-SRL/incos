@@ -46,14 +46,14 @@ export class GenerateActaCompromisoUseCase {
    * @param {Object} params.managementRepository - Repositorio de gestiones
    * @param {ILogger} params.logger - Logger para registro de eventos
    */
-  constructor({ 
-    studentRepository, 
-    documentacionRepository, 
+  constructor({
+    studentRepository,
+    documentacionRepository,
     studentDocumentDeliveryRepository,
     studentDocumentRepository,
     configuracionSistemaRepository,
     managementRepository,
-    logger 
+    logger
   }) {
     this.studentRepository = studentRepository;
     this.documentacionRepository = documentacionRepository;
@@ -84,7 +84,7 @@ export class GenerateActaCompromisoUseCase {
       const student = await this._validateStudent(studentId);
 
       // 2. Obtener documentos de inscripción (solo campos necesarios: id y nombre)
-      const documentosInscripcion = await this._getInscripcionDocuments();
+      /* const documentosInscripcion = await this._getInscripcionDocuments();
 
       // 3. Crear mapa de IDs a nombres desde los documentos recuperados
       // Debug: Verificar qué contiene documentosInscripcion antes de crear el mapa
@@ -179,8 +179,9 @@ export class GenerateActaCompromisoUseCase {
       const management = await this._getCurrentManagement();
 
       // 11. Generar PDF y retornar respuesta
-      return await this._buildResponse(studentId, estadoDocumentos, student, documentosInscripcion, management);
+      return await this._buildResponse(studentId, estadoDocumentos, student, documentosInscripcion, management); */
 
+      return student;
     } catch (error) {
       this.logger.error('[Estudiantes] Error al generar ACTA DE COMPROMISO', {
         studentId,
@@ -313,7 +314,7 @@ export class GenerateActaCompromisoUseCase {
 
     this.logger.info(`[Estudiantes] Documentos de inscripción obtenidos - cantidad: ${documentos.length}`);
     this.logger.info(`[Estudiantes] Result del repositorio - documentations: ${result.documentations ? result.documentations.length : 'undefined'}, keys: ${Object.keys(result).join(', ')}`);
-    
+
     documentos.forEach((doc, index) => {
       const docPlain = doc.toPlainObject ? doc.toPlainObject() : doc;
       this.logger.info(`[Estudiantes] Documento ${index + 1}: id=${docPlain.id}, name=${docPlain.name || docPlain.nombre || 'N/A'}, tipo=${typeof docPlain.id}`);
@@ -355,7 +356,7 @@ export class GenerateActaCompromisoUseCase {
    */
   _filterInscripcionDeliveries(deliveries, documentIds) {
     this.logger.info(`[Estudiantes] Filtrando entregas - totalEntregas: ${deliveries.length}, idsDocumentosInscripcion: [${documentIds.join(', ')}]`);
-    
+
     const entregasFiltradas = deliveries.filter(entrega => {
       const entregaPlain = entrega.toPlainObject ? entrega.toPlainObject() : entrega;
       const entregaId = normalizeId(entregaPlain.documentacionId);
@@ -406,7 +407,7 @@ export class GenerateActaCompromisoUseCase {
         return normalizeId(ePlain.documentacionId);
       })
       .filter(id => id !== null);
-    
+
     return requiredDocuments.filter(
       doc => {
         const docPlain = doc.toPlainObject ? doc.toPlainObject() : doc;
@@ -479,7 +480,7 @@ export class GenerateActaCompromisoUseCase {
     // 1. Construir datos para el documento
     const studentPlain = student.toPlainObject ? student.toPlainObject() : student;
     const nombreCompleto = `${studentPlain.firstName || ''} ${studentPlain.lastName || ''} ${studentPlain.motherLastName || ''}`.trim();
-    
+
     // Fecha actual
     const fechaActual = new Date();
     const dia = fechaActual.getDate();
@@ -489,13 +490,13 @@ export class GenerateActaCompromisoUseCase {
     // Obtener listas de documentos entregados y faltantes (nombres)
     const nombresDocumentosEntregados = estadoDocumentos.documentosEntregados.map(doc => doc.nombre);
     const nombresDocumentosFaltantes = estadoDocumentos.documentosFaltantes.map(doc => doc.nombre);
-    
+
     // Crear mapa de documentos requeridos
     const documentosRequeridos = documentosInscripcion.map(doc => {
       const docPlain = doc.toPlainObject ? doc.toPlainObject() : doc;
       return docPlain.name || 'Documento sin nombre';
     });
-    
+
     // Calcular índices de documentos ENTREGADOS (para marcar con ☒)
     const indicesEntregados = documentosRequeridos
       .map((nombre, index) => nombresDocumentosEntregados.includes(nombre) ? index : null)
@@ -524,19 +525,19 @@ export class GenerateActaCompromisoUseCase {
     const relativePath = path.join('documentos', 'estudiantes', String(studentId));
     const timestamp = Date.now();
     const baseFileName = `ACTA_COMPROMISO_${studentId}_${timestamp}`;
-    
+
     const docxFileName = `${baseFileName}.docx`;
     const pdfFileName = `${baseFileName}.pdf`;
-    
+
     // Rutas absolutas (para guardar en disco)
     const absoluteDocxPath = path.isAbsolute(uploadDir)
       ? path.join(uploadDir, relativePath, docxFileName)
       : path.resolve(__dirname, '../../../..', uploadDir, relativePath, docxFileName);
-      
+
     const absolutePdfPath = path.isAbsolute(uploadDir)
       ? path.join(uploadDir, relativePath, pdfFileName)
       : path.resolve(__dirname, '../../../..', uploadDir, relativePath, pdfFileName);
-    
+
     // Rutas relativas (para acceso HTTP)
     const docxFilePath = path.join('/', uploadDir, relativePath, docxFileName).replace(/\\/g, '/');
     const pdfFilePath = path.join('/', uploadDir, relativePath, pdfFileName).replace(/\\/g, '/');
@@ -577,15 +578,15 @@ export class GenerateActaCompromisoUseCase {
 
     let pdfGenerated = false;
     let actualPdfPath = absolutePdfPath; // Ruta real del PDF generado
-    
+
     try {
       // WordToPdfConverter.convert() retorna la ruta del PDF generado
       // Si falla, lanzará un error que será capturado
       const generatedPdfPath = await WordToPdfConverter.convert(absoluteDocxPath, absolutePdfPath);
-      
+
       // Usar la ruta que retorna el convertidor (puede ser diferente si se movió)
       actualPdfPath = generatedPdfPath;
-      
+
       // Verificar que el PDF existe (el convertidor ya lo verifica, pero doble verificación)
       pdfGenerated = fs.existsSync(actualPdfPath);
 
@@ -611,7 +612,7 @@ export class GenerateActaCompromisoUseCase {
         docxPath: absoluteDocxPath,
         pdfPath: absolutePdfPath,
       });
-      
+
       // IMPORTANTE: Si falla la conversión a PDF, lanzar error
       // El PDF es el formato requerido para distribución al estudiante
       // El DOCX se guarda como respaldo interno, pero la respuesta debe ser PDF
@@ -630,7 +631,7 @@ export class GenerateActaCompromisoUseCase {
     try {
       // 6.1. Guardar DOCX (editable, para uso interno)
       const relativeDocxFilePath = path.join(relativePath, docxFileName).replace(/\\/g, '/');
-      
+
       savedDocxDocument = await this._saveActaDocument(
         studentId,
         docxFileName,
@@ -653,7 +654,7 @@ export class GenerateActaCompromisoUseCase {
       }
 
       const relativePdfFilePath = path.join(relativePath, pdfFileName).replace(/\\/g, '/');
-      
+
       savedPdfDocument = await this._saveActaDocument(
         studentId,
         pdfFileName,
@@ -696,36 +697,36 @@ export class GenerateActaCompromisoUseCase {
       filePath: pdfFilePath,           // Ruta relativa del PDF
       fileName: pdfFileName,           // Nombre del PDF
       absolutePath: actualPdfPath,    // Ruta absoluta del PDF generado
-      
+
       // Incluir ambas rutas para uso interno (DOCX para edición, PDF para distribución)
       docxPath: docxFilePath,         // Ruta relativa del DOCX (uso interno)
       pdfPath: pdfFilePath,            // Ruta relativa del PDF (distribución)
-      
+
       // Indicador de formato (siempre 'pdf' si llegamos aquí)
       format: 'pdf',
-      
+
       // Estado de documentos
       estadoDocumentos,
-      
+
       // Documentos guardados en BD
       documents: {},
     };
 
     if (savedDocxDocument) {
-      response.documents.docx = savedDocxDocument.toPlainObject 
-        ? savedDocxDocument.toPlainObject() 
+      response.documents.docx = savedDocxDocument.toPlainObject
+        ? savedDocxDocument.toPlainObject()
         : savedDocxDocument;
     }
 
     if (savedPdfDocument) {
-      response.documents.pdf = savedPdfDocument.toPlainObject 
-        ? savedPdfDocument.toPlainObject() 
+      response.documents.pdf = savedPdfDocument.toPlainObject
+        ? savedPdfDocument.toPlainObject()
         : savedPdfDocument;
     }
 
     if (savedDocumentDelivery) {
-      response.documentDelivery = savedDocumentDelivery.toPlainObject 
-        ? savedDocumentDelivery.toPlainObject() 
+      response.documentDelivery = savedDocumentDelivery.toPlainObject
+        ? savedDocumentDelivery.toPlainObject()
         : savedDocumentDelivery;
     }
 
@@ -746,9 +747,9 @@ export class GenerateActaCompromisoUseCase {
    * @returns {Promise<Object>} Documento guardado
    */
   async _saveActaDocument(
-    studentId, 
-    fileName, 
-    absolutePath, 
+    studentId,
+    fileName,
+    absolutePath,
     relativeFilePath,
     extension = 'docx',
     tipoMime = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'

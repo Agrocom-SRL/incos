@@ -18,11 +18,9 @@
  * {
  *   success: true,
  *   data: {
- *     boleta: {
- *       filePath: "/uploads/documentos/estudiantes/123/BOLETA_INSCRIPCION_123_xxx.pdf",
- *       fileName: "BOLETA_INSCRIPCION_123_xxx.pdf",
- *       absolutePath: "/path/to/file.pdf"
- *     }
+ *     filePath: "/uploads/documentos/estudiantes/123/BOLETA_INSCRIPCION_123_xxx.pdf",
+ *     fileName: "BOLETA_INSCRIPCION_123_xxx.pdf",
+ *     absolutePath: "/path/to/file.pdf"
  *   },
  *   message: "Boleta de inscripción generada correctamente"
  * }
@@ -50,10 +48,9 @@ export class GenerateBoletaInscripcionController extends BaseDocumentController 
       logger,
       responseFormatter,
       resourceName: 'boleta de inscripción',
-      dataFieldName: 'boleta',
     });
   }
 
-  // No es necesario sobrescribir handle() ni buildOptions()
+  // No es necesario sobrescribir handle()
   // El base controller maneja toda la lógica común
 }
