@@ -2,6 +2,7 @@ import { IEstudianteDocumentoEntregaRepository } from '../../domain/interfaces/r
 import { BaseRepository } from './BaseRepository.js';
 import { EstudianteDocumentoEntrega } from '../database/models/estudiante_documento_entrega.js';
 import { StudentDocumentDeliveryMapper } from '../mappers/StudentDocumentDeliveryMapper.js';
+import { sequelize } from '../database/sequelize.js';
 
 /**
  * Implementación del repositorio de entregas de documentos de estudiantes usando Sequelize
@@ -138,6 +139,91 @@ export class StudentDocumentDeliveryRepository extends BaseRepository {
    */
   getCollectionName() {
     return 'studentDocumentDeliveries';
+  }
+
+  /**
+   * Obtiene entregas de documentos con detalles del documento
+   * Retorna datos que incluyen tanto la información de la entrega como los detalles del documento
+   * 
+   * IMPORTANTE:
+   * - Retorna objetos planos (no entidades) porque viene de consulta SQL directa
+   * - Solo incluye registros activos (soft delete validado)
+   * 
+   * @param {Object} filters - Filtros opcionales
+   *   - estudiante_id: ID del estudiante
+   *   - documentacion_id: ID de la documentación
+   *   - tipo_documento: Tipo de documento ('INSCRIPCION', 'LICENCIA', 'PASANTIA', etc.)
+   *   - entregado: Si fue entregado (true/false)
+   *   - documento_padre_id: ID del documento padre (null para documentos sin padre, número para padre específico)
+   * @returns {Promise<Array>} Array de objetos planos con datos enriquecidos
+   *   Campos retornados (según vista_base_estudiante_documentos_entrega):
+   *   - entrega_id: ID del registro de entrega
+   *   - estudiante_id: ID del estudiante
+   *   - documentacion_id: ID de la documentación
+   *   - entregado: Si fue entregado
+   *   - en_tramite: Si está en trámite
+   *   - fecha_entrega: Fecha de entrega
+   *   - observaciones_entrega: Observaciones
+   *   - nombre_documento: Nombre del documento
+   *   - tipo_documento: Tipo de documento
+   *   - documento_padre_id: ID del documento padre
+   *   - es_documento_sistema: Si es documento del sistema
+   */
+  async obtenerEntregasConDetalleDocumento(filters = {}) {
+    // Construir condiciones WHERE dinámicamente
+    const whereConditions = [];
+    const replacements = [];
+
+    if (filters.estudiante_id !== undefined) {
+      whereConditions.push('estudiante_id = ?');
+      replacements.push(filters.estudiante_id);
+    }
+
+    if (filters.documentacion_id !== undefined) {
+      whereConditions.push('documentacion_id = ?');
+      replacements.push(filters.documentacion_id);
+    }
+
+    if (filters.tipo_documento !== undefined) {
+      whereConditions.push('tipo_documento = ?');
+      replacements.push(filters.tipo_documento);
+    }
+
+    if (filters.entregado !== undefined) {
+      whereConditions.push('entregado = ?');
+      replacements.push(filters.entregado);
+    }
+
+    if (filters.documento_padre_id !== undefined) {
+      if (filters.documento_padre_id === null) {
+        // Filtrar documentos sin padre (documentos raíz)
+        whereConditions.push('documento_padre_id IS NULL');
+      } else {
+        // Filtrar documentos con un padre específico
+        whereConditions.push('documento_padre_id = ?');
+        replacements.push(filters.documento_padre_id);
+      }
+    }
+
+    // Construir la consulta SQL
+    const whereClause = whereConditions.length > 0 
+      ? `WHERE ${whereConditions.join(' AND ')}`
+      : '';
+
+    const query = `
+      SELECT *
+      FROM vista_base_estudiante_documentos_entrega
+      ${whereClause}
+      ORDER BY nombre_documento ASC
+    `;
+
+    const results = await sequelize.query(query, {
+      replacements,
+      type: sequelize.QueryTypes.SELECT,
+    });
+
+    // Retornar datos planos (no entidades, porque viene de consulta SQL directa)
+    return results;
   }
 }
 

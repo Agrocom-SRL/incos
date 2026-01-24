@@ -1,5 +1,5 @@
 import { NotFoundError, ValidationError } from '../../../domain/errors/AppError.js';
-import { normalizeId, createMap } from '../../../domain/utils/mapUtils.js';
+import { normalizeId } from '../../../domain/utils/mapUtils.js';
 import { TIPOS_DOCUMENTO_SISTEMA } from '../../../domain/constants/index.js';
 import { PDFGenerator } from '../../../infrastructure/external/pdf/PDFGenerator.js';
 import { ActaCompromisoWordGenerator } from '../../../infrastructure/external/word/ActaCompromisoWordGenerator.js';
@@ -83,105 +83,36 @@ export class GenerateActaCompromisoUseCase {
       // 1. Validar y obtener estudiante completo
       const student = await this._validateStudent(studentId);
 
-      // 2. Obtener documentos de inscripción (solo campos necesarios: id y nombre)
-      /* const documentosInscripcion = await this._getInscripcionDocuments();
-
-      // 3. Crear mapa de IDs a nombres desde los documentos recuperados
-      // Debug: Verificar qué contiene documentosInscripcion antes de crear el mapa
-      this.logger.info(`[Estudiantes] Antes de crear mapa - cantidad documentosInscripcion: ${documentosInscripcion.length}`);
-      if (documentosInscripcion.length > 0) {
-        const primerDoc = documentosInscripcion[0];
-        const primerDocPlain = primerDoc.toPlainObject ? primerDoc.toPlainObject() : primerDoc;
-        this.logger.info(`[Estudiantes] Primer documento - id=${primerDocPlain.id}, name=${primerDocPlain.name || primerDocPlain.nombre}, keys=${Object.keys(primerDocPlain).join(', ')}`);
-      }
-      
-      // Crear mapa de IDs a nombres usando toPlainObject() para acceder a propiedades de la entidad
-      const documentosMap = createMap(
-        documentosInscripcion.map(doc => {
-          const docPlain = doc.toPlainObject ? doc.toPlainObject() : doc;
-          return { id: docPlain.id, name: docPlain.name };
-        }),
-        'id',
-        'name'
-      );
-      
-      // Extraer IDs de documentos de inscripción (la entidad Documentation tiene 'id' en inglés)
-      const idsDocumentosInscripcion = documentosInscripcion.map(doc => {
-        const docPlain = doc.toPlainObject ? doc.toPlainObject() : doc;
-        return docPlain.id;
-      }).filter(id => id !== undefined && id !== null);
-      
-      this.logger.info(`[Estudiantes] IDs documentos inscripcion para filtrar: [${idsDocumentosInscripcion.join(', ')}]`);
-
-      // 4. Obtener entregas de documentos del estudiante
-      const entregas = await this._getStudentDocumentDeliveries(studentId);
-
-      // 5. Validar que tenga al menos un documento registrado
-      this._validateHasDeliveryRecords(entregas, studentId);
-
-      // 6. Filtrar solo entregas de documentos de inscripción
-      const entregasInscripcion = this._filterInscripcionDeliveries(
-        entregas,
-        idsDocumentosInscripcion
-      );
-
-      // 7. Separar documentos entregados y faltantes
-      const { entregados, faltantes } = this._separateDeliveredAndMissing(entregasInscripcion);
-
-      // Debug: Log de la separación de entregados y faltantes
-      this.logger.info(`[Estudiantes] Separación - totalEntregasInscripcion: ${entregasInscripcion.length}, entregados: ${entregados.length}, faltantes: ${faltantes.length}`);
-      entregados.forEach((e, index) => {
-        const ePlain = e.toPlainObject ? e.toPlainObject() : e;
-        this.logger.info(`[Estudiantes] Entregado ${index + 1}: id=${ePlain.id}, documentacionId=${ePlain.documentacionId}, entregado=${ePlain.entregado} (tipo: ${typeof ePlain.entregado})`);
-      });
-      faltantes.forEach((e, index) => {
-        const ePlain = e.toPlainObject ? e.toPlainObject() : e;
-        this.logger.info(`[Estudiantes] Faltante ${index + 1}: id=${ePlain.id}, documentacionId=${ePlain.documentacionId}, entregado=${ePlain.entregado} (tipo: ${typeof ePlain.entregado})`);
+      // 2. Obtener entregas de documentos de inscripción con detalles usando la vista
+      // Filtra por: estudiante, tipo INSCRIPCION, y documentos principales (sin padre)
+      const entregasConDetalle = await this.studentDocumentDeliveryRepository.obtenerEntregasConDetalleDocumento({
+        estudiante_id: studentId,
+        tipo_documento: TIPOS_DOCUMENTO_SISTEMA.INSCRIPCION,
+        documento_padre_id: null, // Solo documentos principales
       });
 
-      // 8. Identificar documentos sin entrega registrada
-      const documentosSinEntrega = this._findDocumentsWithoutDelivery(
-        documentosInscripcion,
-        entregasInscripcion
-      );
+      this.logger.info(`[Estudiantes] Entregas con detalle obtenidas - cantidad: ${entregasConDetalle.length}`);
 
-      // Debug: Log de documentos sin entrega
-      this.logger.info(`[Estudiantes] Documentos sin entrega: ${documentosSinEntrega.length}`);
-      this.logger.info(`[Estudiantes] IDs documentos inscripcion: ${documentosInscripcion.map(doc => doc.id).join(', ')}`);
-      this.logger.info(`[Estudiantes] IDs entregas inscripcion: ${entregasInscripcion.map(e => (e.toPlainObject ? e.toPlainObject() : e).documentacionId).join(', ')}`);
-      documentosSinEntrega.forEach((doc, index) => {
-        const docPlain = doc.toPlainObject ? doc.toPlainObject() : doc;
-        this.logger.info(`[Estudiantes] Sin entrega ${index + 1}: id=${docPlain.id}, name=${docPlain.name || docPlain.nombre || 'N/A'}`);
-      });
-
-      // 9. Construir estado de documentos
-      const estadoDocumentos = this._buildDocumentStatus(
+      // 7. Construir estado de documentos
+      /* const estadoDocumentos = this._buildDocumentStatusFromView(
         documentosInscripcion,
         entregados,
         faltantes,
-        documentosSinEntrega,
-        documentosMap
+        documentosSinEntrega
       );
 
-      // Debug: Log del estado de documentos antes de validar
       this.logger.info(`[Estudiantes] Estado final - totalRequeridos: ${estadoDocumentos.totalRequeridos}, entregados: ${estadoDocumentos.entregados}, faltantes: ${estadoDocumentos.faltantes}`);
-      estadoDocumentos.documentosEntregados.forEach((d, index) => {
-        this.logger.info(`[Estudiantes] Entregado ${index + 1}: id=${d.id}, nombre=${d.nombre}`);
-      });
-      estadoDocumentos.documentosFaltantes.forEach((d, index) => {
-        this.logger.info(`[Estudiantes] Faltante ${index + 1}: id=${d.id}, nombre=${d.nombre}, tieneRegistroEntrega=${d.tieneRegistroEntrega || false}`);
-      });
 
-      // 9.1. Validar que tenga documentos faltantes (regla de negocio)
+      // 8. Validar que tenga documentos faltantes (regla de negocio)
       this._validateHasMissingDocuments(estadoDocumentos, studentId);
 
-      // 10. Obtener gestión activa
+      // 9. Obtener gestión activa
       const management = await this._getCurrentManagement();
 
-      // 11. Generar PDF y retornar respuesta
+      // 10. Generar PDF y retornar respuesta
       return await this._buildResponse(studentId, estadoDocumentos, student, documentosInscripcion, management); */
+      return entregasConDetalle;
 
-      return student;
     } catch (error) {
       this.logger.error('[Estudiantes] Error al generar ACTA DE COMPROMISO', {
         studentId,
@@ -200,17 +131,13 @@ export class GenerateActaCompromisoUseCase {
    * @throws {NotFoundError} Si el estudiante no existe
    */
   async _validateStudent(studentId) {
-    const student = await this.studentRepository.findById(studentId);
+    const student = await this.studentRepository.findById(studentId, {
+      attributes: ['id', 'codigoEstudiante', 'ci', 'expedicion', 'nombres', 'apellidoPaterno', 'apellidoMaterno'],
+    });
+
     if (!student) {
       throw new NotFoundError(`Estudiante con ID ${studentId}`);
     }
-
-    this.logger.info('[Estudiantes] Estudiante encontrado', {
-      studentId,
-      studentCode: student.studentCode,
-      firstName: student.firstName,
-      lastName: student.lastName,
-    });
 
     return student;
   }
@@ -258,200 +185,31 @@ export class GenerateActaCompromisoUseCase {
   }
 
   /**
-   * Valida que el estudiante tenga al menos un documento registrado
-   * @private
-   * @param {Array} deliveries - Array de entregas de documentos
-   * @param {number} studentId - ID del estudiante
-   * @returns {void}
-   * @throws {ValidationError} Si no tiene documentos registrados
-   */
-  _validateHasDeliveryRecords(deliveries, studentId) {
-    if (!deliveries || deliveries.length === 0) {
-      throw new ValidationError(
-        `El estudiante con ID ${studentId} no tiene documentos registrados en el sistema`
-      );
-    }
-  }
-
-  /**
-   * Valida que el estudiante tenga documentos faltantes
-   * Regla de negocio: Solo se genera acta si hay documentos pendientes
-   * @private
-   * @param {Object} estadoDocumentos - Estado de documentos
-   * @param {number} studentId - ID del estudiante
-   * @returns {void}
-   * @throws {ValidationError} Si no tiene documentos faltantes
-   */
-  _validateHasMissingDocuments(estadoDocumentos, studentId) {
-    if (estadoDocumentos.faltantes === 0) {
-      throw new ValidationError(
-        `El estudiante con ID ${studentId} ya ha entregado todos los documentos requeridos. No se requiere acta de compromiso.`
-      );
-    }
-
-    this.logger.info('[Estudiantes] Validación de documentos faltantes exitosa', {
-      studentId,
-      totalFaltantes: estadoDocumentos.faltantes,
-      totalEntregados: estadoDocumentos.entregados,
-    });
-  }
-
-  /**
-   * Obtiene documentos de inscripción con solo campos necesarios (id y nombre)
-   * @private
-   * @returns {Promise<Array>} Array de entidades Documentacion con solo id y name
-   */
-  async _getInscripcionDocuments() {
-    const result = await this.documentacionRepository.findAll({
-      documentType: TIPOS_DOCUMENTO_SISTEMA.INSCRIPCION, // Campo en inglés para el repositorio
-      parentDocumentId: null, // Solo documentos principales (sin padre) - campo en inglés para el repositorio
-      attributes: ['id', 'nombre'], // Solo campos necesarios para optimización
-    });
-
-    // El repositorio devuelve entidades Documentation con la clave 'documentations' (inglés)
-    // Ver DocumentacionRepository.getCollectionName() que retorna 'documentations'
-    const documentos = result.documentations || [];
-
-    this.logger.info(`[Estudiantes] Documentos de inscripción obtenidos - cantidad: ${documentos.length}`);
-    this.logger.info(`[Estudiantes] Result del repositorio - documentations: ${result.documentations ? result.documentations.length : 'undefined'}, keys: ${Object.keys(result).join(', ')}`);
-
-    documentos.forEach((doc, index) => {
-      const docPlain = doc.toPlainObject ? doc.toPlainObject() : doc;
-      this.logger.info(`[Estudiantes] Documento ${index + 1}: id=${docPlain.id}, name=${docPlain.name || docPlain.nombre || 'N/A'}, tipo=${typeof docPlain.id}`);
-    });
-
-    return documentos;
-  }
-
-  /**
-   * Obtiene las entregas de documentos del estudiante
-   * @private
-   * @param {number} studentId - ID del estudiante
-   * @returns {Promise<Array>} Array de entidades StudentDocumentDelivery
-   */
-  async _getStudentDocumentDeliveries(studentId) {
-    const result = await this.studentDocumentDeliveryRepository.findAll({
-      studentId: studentId, // Campo en inglés para el repositorio (mapea a estudianteId en BD)
-      attributes: ['id', 'documentacionId', 'entregado', 'enTramite'],
-    });
-
-    const entregas = result.studentDocumentDeliveries || [];
-
-    // Debug: Log detallado de las entregas obtenidas
-    this.logger.info(`[Estudiantes] Entregas de documentos obtenidas - studentId: ${studentId}, cantidad: ${entregas.length}`);
-    entregas.forEach((entrega, index) => {
-      const entregaPlain = entrega.toPlainObject ? entrega.toPlainObject() : entrega;
-      this.logger.info(`[Estudiantes] Entrega ${index + 1}: id=${entregaPlain.id}, documentacionId=${entregaPlain.documentacionId}, entregado=${entregaPlain.entregado}, enTramite=${entregaPlain.enTramite}`);
-    });
-
-    return entregas;
-  }
-
-  /**
-   * Filtra entregas que correspondan a documentos de inscripción
-   * @private
-   * @param {Array} deliveries - Array de entidades StudentDocumentDelivery
-   * @param {Array<number>} documentIds - Array de IDs de documentos de inscripción
-   * @returns {Array} Array filtrado de entregas
-   */
-  _filterInscripcionDeliveries(deliveries, documentIds) {
-    this.logger.info(`[Estudiantes] Filtrando entregas - totalEntregas: ${deliveries.length}, idsDocumentosInscripcion: [${documentIds.join(', ')}]`);
-
-    const entregasFiltradas = deliveries.filter(entrega => {
-      const entregaPlain = entrega.toPlainObject ? entrega.toPlainObject() : entrega;
-      const entregaId = normalizeId(entregaPlain.documentacionId);
-      const estaIncluido = entregaId !== null && documentIds.includes(entregaId);
-      this.logger.info(`[Estudiantes] Entrega id=${entregaPlain.id}, documentacionId=${entregaPlain.documentacionId}, normalized=${entregaId}, incluido=${estaIncluido}`);
-      return estaIncluido;
-    });
-
-    this.logger.info(`[Estudiantes] Entregas filtradas - total: ${entregasFiltradas.length}`);
-
-    return entregasFiltradas;
-  }
-
-  /**
-   * Separa entregas en entregados y faltantes
-   * @private
-   * @param {Array} deliveries - Array de entidades StudentDocumentDelivery
-   * @returns {Object} { entregados: Array, faltantes: Array }
-   */
-  _separateDeliveredAndMissing(deliveries) {
-    // Usar toPlainObject() para acceder a propiedades de la entidad StudentDocumentDelivery
-    // La entidad mantiene propiedades en español (entregado, documentacionId, enTramite)
-    const entregados = deliveries.filter(entrega => {
-      const entregaPlain = entrega.toPlainObject ? entrega.toPlainObject() : entrega;
-      return entregaPlain.entregado === true || entregaPlain.entregado === 1;
-    });
-
-    const faltantes = deliveries.filter(entrega => {
-      const entregaPlain = entrega.toPlainObject ? entrega.toPlainObject() : entrega;
-      return entregaPlain.entregado === false || entregaPlain.entregado === 0 || entregaPlain.entregado === null;
-    });
-
-    return { entregados, faltantes };
-  }
-
-  /**
-   * Identifica documentos requeridos que no tienen ninguna entrega registrada
+   * Construye el estado de documentos para la respuesta desde datos de la vista
    * @private
    * @param {Array} requiredDocuments - Array de entidades Documentacion
-   * @param {Array} deliveries - Array de entidades StudentDocumentDelivery
-   * @returns {Array} Array de documentos sin entrega
-   */
-  _findDocumentsWithoutDelivery(requiredDocuments, deliveries) {
-    // Usar toPlainObject() para acceder a propiedades de las entidades
-    const entregasDocumentacionIds = deliveries
-      .map(e => {
-        const ePlain = e.toPlainObject ? e.toPlainObject() : e;
-        return normalizeId(ePlain.documentacionId);
-      })
-      .filter(id => id !== null);
-
-    return requiredDocuments.filter(
-      doc => {
-        const docPlain = doc.toPlainObject ? doc.toPlainObject() : doc;
-        const docId = normalizeId(docPlain.id);
-        return docId !== null && !entregasDocumentacionIds.includes(docId);
-      }
-    );
-  }
-
-  /**
-   * Construye el estado de documentos para la respuesta
-   * @private
-   * @param {Array} requiredDocuments - Array de entidades Documentacion
-   * @param {Array} deliveredList - Array de entregas entregadas
-   * @param {Array} missingList - Array de entregas faltantes
+   * @param {Array} deliveredList - Array de objetos planos de entregas entregadas
+   * @param {Array} missingList - Array de objetos planos de entregas faltantes
    * @param {Array} noDeliveryDocs - Array de documentos sin entrega
-   * @param {Object} documentMap - Mapa de IDs a nombres
    * @returns {Object} Estado de documentos formateado
    */
-  _buildDocumentStatus(requiredDocuments, deliveredList, missingList, noDeliveryDocs, documentMap) {
+  _buildDocumentStatusFromView(requiredDocuments, deliveredList, missingList, noDeliveryDocs) {
     return {
       totalRequeridos: requiredDocuments.length,
       entregados: deliveredList.length,
       faltantes: missingList.length + noDeliveryDocs.length,
-      documentosEntregados: deliveredList.map(e => {
-        const ePlain = e.toPlainObject ? e.toPlainObject() : e;
-        const docId = normalizeId(ePlain.documentacionId);
-        return {
-          id: ePlain.documentacionId,
-          nombre: docId !== null ? (documentMap[docId] || documentMap[String(docId)] || 'Documento no encontrado') : 'Documento no encontrado',
-          entregado: true,
-        };
-      }),
+      documentosEntregados: deliveredList.map(entrega => ({
+        id: entrega.documentacion_id,
+        nombre: entrega.nombre_documento || 'Documento no encontrado',
+        entregado: true,
+      })),
       documentosFaltantes: [
-        ...missingList.map(e => {
-          const ePlain = e.toPlainObject ? e.toPlainObject() : e;
-          const docId = normalizeId(ePlain.documentacionId);
-          return {
-            id: ePlain.documentacionId,
-            nombre: docId !== null ? (documentMap[docId] || documentMap[String(docId)] || 'Documento no encontrado') : 'Documento no encontrado',
-            entregado: false,
-            tieneRegistroEntrega: true,
-          };
-        }),
+        ...missingList.map(entrega => ({
+          id: entrega.documentacion_id,
+          nombre: entrega.nombre_documento || 'Documento no encontrado',
+          entregado: false,
+          tieneRegistroEntrega: true,
+        })),
         ...noDeliveryDocs.map(doc => {
           const docPlain = doc.toPlainObject ? doc.toPlainObject() : doc;
           return {
