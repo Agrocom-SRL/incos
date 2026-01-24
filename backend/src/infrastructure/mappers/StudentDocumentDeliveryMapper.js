@@ -125,8 +125,8 @@ export class StudentDocumentDeliveryMapper {
     if ('fechaEntrega' in data) {
       updateData.fechaEntrega = data.fechaEntrega || null;
     }
-    if ('observations' in data) {
-      updateData.observaciones = data.observations || null;
+    if ('observations' in data || 'observaciones' in data) {
+      updateData.observaciones = data.observations ?? data.observaciones ?? null;
     }
 
     // Campos base (active/activo)

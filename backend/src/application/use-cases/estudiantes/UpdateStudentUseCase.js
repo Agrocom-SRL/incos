@@ -131,17 +131,19 @@ export class UpdateStudentUseCase {
       let guardians = [];
       if (data.guardians !== undefined) {
         // 3.1. Eliminar apoderados existentes
-        const existingGuardians = await this.studentGuardianRepository.findAll(
+        const existingGuardiansResult = await this.studentGuardianRepository.findAll(
           { studentId },
           null,
           null
         );
-        for (const guardian of existingGuardians.data || []) {
-          await this.studentGuardianRepository.delete(guardian.id);
+        const existingGuardians = existingGuardiansResult.studentGuardians || [];
+        for (const guardian of existingGuardians) {
+          const g = guardian.toPlainObject ? guardian.toPlainObject() : guardian;
+          await this.studentGuardianRepository.delete(g.id);
         }
         this.logger.info('[Estudiantes] Apoderados existentes eliminados', {
           studentId,
-          count: (existingGuardians.data || []).length,
+          count: existingGuardians.length,
         });
 
         // 3.2. Crear nuevos apoderados si se proporcionan
@@ -166,17 +168,19 @@ export class UpdateStudentUseCase {
       let disabilities = [];
       if (data.disabilities !== undefined) {
         // 4.1. Eliminar discapacidades existentes
-        const existingDisabilities = await this.studentDisabilityRepository.findAll(
+        const existingDisabilitiesResult = await this.studentDisabilityRepository.findAll(
           { studentId },
           null,
           null
         );
-        for (const disability of existingDisabilities.data || []) {
-          await this.studentDisabilityRepository.delete(disability.id);
+        const existingDisabilities = existingDisabilitiesResult.studentDisabilities || [];
+        for (const disability of existingDisabilities) {
+          const d = disability.toPlainObject ? disability.toPlainObject() : disability;
+          await this.studentDisabilityRepository.delete(d.id);
         }
         this.logger.info('[Estudiantes] Discapacidades existentes eliminadas', {
           studentId,
-          count: (existingDisabilities.data || []).length,
+          count: existingDisabilities.length,
         });
 
         // 4.2. Crear nuevas discapacidades si se proporcionan
@@ -201,17 +205,19 @@ export class UpdateStudentUseCase {
       let origins = [];
       if (data.origins !== undefined) {
         // 5.1. Eliminar orígenes existentes
-        const existingOrigins = await this.studentOriginRepository.findAll(
+        const existingOriginsResult = await this.studentOriginRepository.findAll(
           { studentId },
           null,
           null
         );
-        for (const origin of existingOrigins.data || []) {
-          await this.studentOriginRepository.delete(origin.id);
+        const existingOrigins = existingOriginsResult.studentOrigins || [];
+        for (const origin of existingOrigins) {
+          const o = origin.toPlainObject ? origin.toPlainObject() : origin;
+          await this.studentOriginRepository.delete(o.id);
         }
         this.logger.info('[Estudiantes] Orígenes existentes eliminados', {
           studentId,
-          count: (existingOrigins.data || []).length,
+          count: existingOrigins.length,
         });
 
         // 5.2. Crear nuevos orígenes si se proporcionan
@@ -232,48 +238,130 @@ export class UpdateStudentUseCase {
         }
       }
 
-      // 6. Actualizar entregas de documentos (reemplazo completo si se proporcionan)
+      // 6. Actualizar entregas de documentos (actualización inteligente: update o create según corresponda)
       let documentDeliveries = [];
       if (data.documentation !== undefined) {
-        // 6.1. Eliminar entregas de documentos existentes
-        const existingDeliveries = await this.studentDocumentDeliveryRepository.findAll(
+        // 6.1. Obtener entregas de documentos existentes y crear un mapa por documentacionId
+        const existingDeliveriesResult = await this.studentDocumentDeliveryRepository.findAll(
           { studentId },
           null,
           null
         );
-        for (const delivery of existingDeliveries.data || []) {
-          await this.studentDocumentDeliveryRepository.delete(delivery.id);
+        const existingDeliveries = existingDeliveriesResult.studentDocumentDeliveries || [];
+        
+        // Crear mapa de entregas existentes por documentacionId
+        // NOTA: Un estudiante puede tener múltiples entregas para el mismo documento (historial)
+        // Pero para actualización, tomamos la última entrega activa por documentacionId
+        const deliveryMapByDocumentacionId = new Map();
+        for (const delivery of existingDeliveries) {
+          const deliveryPlain = delivery.toPlainObject ? delivery.toPlainObject() : delivery;
+          const docId = deliveryPlain.documentacionId;
+          // Si ya existe una entrega para este documentacionId, mantener la más reciente (mayor ID)
+          if (!deliveryMapByDocumentacionId.has(docId) || 
+              deliveryPlain.id > deliveryMapByDocumentacionId.get(docId).id) {
+            deliveryMapByDocumentacionId.set(docId, deliveryPlain);
+          }
         }
-        this.logger.info('[Estudiantes] Entregas de documentos existentes eliminadas', {
+
+        this.logger.info('[Estudiantes] Entregas existentes encontradas', {
           studentId,
-          count: (existingDeliveries.data || []).length,
+          count: existingDeliveries.length,
+          unicasPorDocumento: deliveryMapByDocumentacionId.size,
         });
 
-        // 6.2. Crear nuevas entregas de documentos si se proporcionan
+        // 6.2. Procesar entregas de documentos del request
         if (data.documentation && typeof data.documentation === 'object') {
           // data.documentation es un objeto con keys como 'doc_1', 'doc_2', etc.
+          const processedDocumentacionIds = new Set();
+          
           for (const [docKey, docData] of Object.entries(data.documentation)) {
             // Extraer el ID del documento de la key (ej: 'doc_1' -> 1)
             const documentacionId = parseInt(docKey.replace('doc_', ''), 10);
             
             if (!isNaN(documentacionId) && docData) {
-              const deliveryToCreate = {
-                studentId: studentId,
-                documentacionId,
-                entregado: docData.entregado !== undefined ? docData.entregado : false,
+              // Verificar si ya procesamos este documentacionId (evitar duplicados en el mismo request)
+              if (processedDocumentacionIds.has(documentacionId)) {
+                this.logger.warn('[Estudiantes] Documento duplicado en request, ignorando', {
+                  studentId,
+                  documentacionId,
+                  docKey,
+                });
+                continue;
+              }
+              processedDocumentacionIds.add(documentacionId);
+
+              // Preparar datos de la entrega
+              const entregado = docData.entregado !== undefined ? docData.entregado : false;
+              const deliveryData = {
+                entregado,
                 enTramite: docData.enTramite !== undefined ? docData.enTramite : false,
                 fechaEntrega: docData.fechaEntrega || null,
-                observaciones: docData.observaciones || null,
+                // Si se marca como entregado, observaciones debe quedar null (no conservar motivo de no entrega)
+                observaciones: entregado ? null : (docData.observaciones || null),
               };
+
+              // Verificar si ya existe una entrega para este documentacionId
+              const existingDelivery = deliveryMapByDocumentacionId.get(documentacionId);
               
-              // NOTA: userId no se pasa porque actualmente no hay autenticación
-              const delivery = await this.studentDocumentDeliveryRepository.create(deliveryToCreate);
-              documentDeliveries.push(delivery);
+              if (existingDelivery) {
+                // 6.2.1. Actualizar entrega existente
+                // NOTA: userId no se pasa porque actualmente no hay autenticación
+                const updatedDelivery = await this.studentDocumentDeliveryRepository.update(
+                  existingDelivery.id,
+                  deliveryData
+                );
+                documentDeliveries.push(updatedDelivery);
+                this.logger.info('[Estudiantes] Entrega de documento actualizada', {
+                  studentId,
+                  deliveryId: existingDelivery.id,
+                  documentacionId,
+                });
+              } else {
+                // 6.2.2. Crear nueva entrega
+                const deliveryToCreate = {
+                  ...deliveryData,
+                  studentId: studentId,
+                  documentacionId,
+                };
+                // NOTA: userId no se pasa porque actualmente no hay autenticación
+                const newDelivery = await this.studentDocumentDeliveryRepository.create(deliveryToCreate);
+                documentDeliveries.push(newDelivery);
+                this.logger.info('[Estudiantes] Nueva entrega de documento creada', {
+                  studentId,
+                  documentacionId,
+                });
+              }
             }
           }
-          this.logger.info('[Estudiantes] Nuevas entregas de documentos creadas', {
+
+          // 6.3. Eliminar entregas que no están en el request (opcional: solo si se quiere limpiar)
+          // NOTA: Por ahora NO eliminamos entregas que no están en el request para mantener historial
+          // Si se quiere eliminar entregas no mencionadas, descomentar el siguiente bloque:
+          /*
+          const documentacionIdsInRequest = Array.from(processedDocumentacionIds);
+          for (const [docId, existingDelivery] of deliveryMapByDocumentacionId.entries()) {
+            if (!documentacionIdsInRequest.includes(docId)) {
+              await this.studentDocumentDeliveryRepository.delete(existingDelivery.id);
+              this.logger.info('[Estudiantes] Entrega de documento eliminada (no está en request)', {
+                studentId,
+                deliveryId: existingDelivery.id,
+                documentacionId: docId,
+              });
+            }
+          }
+          */
+
+          this.logger.info('[Estudiantes] Entregas de documentos procesadas', {
             studentId,
-            count: documentDeliveries.length,
+            actualizadas: documentDeliveries.filter(d => {
+              const plain = d.toPlainObject ? d.toPlainObject() : d;
+              return deliveryMapByDocumentacionId.has(plain.documentacionId);
+            }).length,
+            creadas: documentDeliveries.filter(d => {
+              const plain = d.toPlainObject ? d.toPlainObject() : d;
+              return !deliveryMapByDocumentacionId.has(plain.documentacionId);
+            }).length,
+            total: documentDeliveries.length,
           });
         }
       }
@@ -281,36 +369,36 @@ export class UpdateStudentUseCase {
       // 7. Obtener el estudiante actualizado con todas sus relaciones
       // Si no se actualizaron relaciones, obtenerlas de la base de datos
       if (guardians.length === 0 && data.guardians === undefined) {
-        const existingGuardians = await this.studentGuardianRepository.findAll(
+        const res = await this.studentGuardianRepository.findAll(
           { studentId },
           null,
           null
         );
-        guardians = existingGuardians.data || [];
+        guardians = res.studentGuardians || [];
       }
       if (disabilities.length === 0 && data.disabilities === undefined) {
-        const existingDisabilities = await this.studentDisabilityRepository.findAll(
+        const res = await this.studentDisabilityRepository.findAll(
           { studentId },
           null,
           null
         );
-        disabilities = existingDisabilities.data || [];
+        disabilities = res.studentDisabilities || [];
       }
       if (origins.length === 0 && data.origins === undefined) {
-        const existingOrigins = await this.studentOriginRepository.findAll(
+        const res = await this.studentOriginRepository.findAll(
           { studentId },
           null,
           null
         );
-        origins = existingOrigins.data || [];
+        origins = res.studentOrigins || [];
       }
       if (documentDeliveries.length === 0 && data.documentation === undefined) {
-        const existingDeliveries = await this.studentDocumentDeliveryRepository.findAll(
+        const res = await this.studentDocumentDeliveryRepository.findAll(
           { studentId },
           null,
           null
         );
-        documentDeliveries = existingDeliveries.data || [];
+        documentDeliveries = res.studentDocumentDeliveries || [];
       }
 
       // 8. Retornar el estudiante actualizado con todos sus datos relacionados

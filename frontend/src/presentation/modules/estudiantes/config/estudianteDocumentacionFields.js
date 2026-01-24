@@ -70,6 +70,8 @@ const createCampoDocumento = (documento) => {
       required: documento.required || false,
       acceptsPhotocopy: documento.acceptsPhotocopy || false,
       entregado: documento.entregado || false,
+      en_tramite: documento.en_tramite || false,
+      observaciones: documento.observaciones ?? null,
     },
   };
 };

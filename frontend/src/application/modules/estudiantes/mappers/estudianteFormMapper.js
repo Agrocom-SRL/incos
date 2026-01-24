@@ -217,18 +217,25 @@ export const estudianteFormMapper = (studentDetail) => {
     formData.contactosEmergencia = [];
   }
 
-  // Mapear documentación entregada
+  // Mapear documentación entregada (una entrada por documentacionId; si hay varias, usar la más reciente)
   if (documentDeliveries && documentDeliveries.length > 0) {
+    const byDocId = new Map();
+    const sorted = [...documentDeliveries].sort((a, b) => (b.id ?? 0) - (a.id ?? 0));
+    for (const delivery of sorted) {
+      const docId = delivery.documentacionId;
+      if (docId != null && !byDocId.has(docId)) {
+        byDocId.set(docId, {
+          entregado: delivery.entregado !== undefined ? delivery.entregado : false,
+          en_tramite: delivery.enTramite !== undefined ? delivery.enTramite : false,
+          fechaEntrega: delivery.fechaEntrega || null,
+          observaciones: delivery.observaciones ?? null,
+        });
+      }
+    }
     const documentacion = {};
-    documentDeliveries.forEach((delivery) => {
-      const docKey = `doc_${delivery.documentacionId}`;
-      documentacion[docKey] = {
-        entregado: delivery.entregado !== undefined ? delivery.entregado : false,
-        en_tramite: delivery.enTramite !== undefined ? delivery.enTramite : false,
-        fechaEntrega: delivery.fechaEntrega || null,
-        observaciones: delivery.observaciones || null,
-      };
-    });
+    for (const [docId, val] of byDocId) {
+      documentacion[`doc_${docId}`] = val;
+    }
     formData.documentacion = documentacion;
   } else {
     formData.documentacion = {};

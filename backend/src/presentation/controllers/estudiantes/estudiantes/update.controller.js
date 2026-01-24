@@ -89,11 +89,12 @@ export class UpdateStudentController {
     const result = {};
 
     // Extraer datos básicos del estudiante (campos de la tabla estudiantes)
+    // NOTA: Los campos de origen (paisId, ciudadNacimiento, etc.) se procesan por separado
     const studentFields = [
       'ci', 'expedicionId', 'expedicion', 'nombres', 'apellidoPaterno', 'apellidoMaterno',
       'fechaNacimiento', 'generoId', 'estadoCivilId', 'tipoSangre', 'tieneDiscapacidad',
       'emailPersonal', 'celular', 'telefonoFijo', 'direccion', 'municipioResidenciaId',
-      'zona', 'observaciones'
+      'departamentoResidenciaId', 'provinciaResidenciaId', 'zona', 'observaciones'
     ];
 
     const studentData = {};
@@ -149,7 +150,7 @@ export class UpdateStudentController {
         delete preparedStudent.estadoCivilId;
       }
       
-      // Transformar tipoSangre a bloodType
+      // Transformar tipoSangre a bloodType. Solo valores actuales; legacy ya reemplazado por null en validador.
       if (preparedStudent.tipoSangre !== undefined) {
         preparedStudent.bloodType = preparedStudent.tipoSangre;
         delete preparedStudent.tipoSangre;
@@ -197,23 +198,96 @@ export class UpdateStudentController {
         delete preparedStudent.zona;
       }
       
+      // Transformar municipioResidenciaId a residenceMunicipalityId
+      if (preparedStudent.municipioResidenciaId !== undefined) {
+        preparedStudent.residenceMunicipalityId = preparedStudent.municipioResidenciaId;
+        delete preparedStudent.municipioResidenciaId;
+      }
+      
       // Observaciones ya está en el formato correcto (observations)
 
       result.student = preparedStudent;
     }
 
-    // Extraer relaciones (si se proporcionan)
-    if (body.guardians !== undefined) {
-      result.guardians = body.guardians;
-    }
-    if (body.disabilities !== undefined) {
+    // Transformar discapacidades (similar a RegisterStudentRequestDTO)
+    const { tieneDiscapacidad, tipoDiscapacidadId, gradoDiscapacidad, descripcion } = body;
+    if (tieneDiscapacidad && tipoDiscapacidadId) {
+      result.disabilities = [
+        {
+          disabilityTypeId: tipoDiscapacidadId,
+          description: descripcion,
+          disabilityDegree: gradoDiscapacidad,
+        },
+      ];
+    } else if (body.disabilities !== undefined) {
+      // También aceptar disabilities directamente (por compatibilidad)
       result.disabilities = body.disabilities;
     }
-    if (body.origins !== undefined) {
+
+    // Transformar campos de origen a origins (similar a RegisterStudentRequestDTO)
+    // Los campos de origen vienen en el body plano pero se agrupan en un array origins
+    const {
+      paisId,
+      ciudadNacimiento,
+      idiomaMaternoId,
+      idiomaSecundarioId,
+      tipoOrigen,
+    } = body;
+
+    // IMPORTANTE: tipoOrigen puede ser 0 (BOLIVIANA), que es falsy, por lo que debemos verificar explícitamente !== undefined
+    const hasOriginData = paisId || ciudadNacimiento || idiomaMaternoId || idiomaSecundarioId || (tipoOrigen !== undefined && tipoOrigen !== null);
+    
+    if (hasOriginData) {
+      result.origins = [
+        {
+          countryId: paisId,
+          birthMunicipalityId: body.municipioResidenciaId, // Se usa el mismo que residencia si no hay uno específico
+          birthCity: ciudadNacimiento,
+          motherTongueId: idiomaMaternoId,
+          secondaryLanguageId: idiomaSecundarioId,
+          originType: tipoOrigen, // Puede ser 0, 1, 2 o string del ENUM
+          isPrincipal: true, // Asumimos que el primer origen es principal
+        },
+      ];
+    } else if (body.origins !== undefined) {
+      // También aceptar origins directamente (por compatibilidad)
       result.origins = body.origins;
     }
-    if (body.documentation !== undefined) {
-      result.documentation = body.documentation;
+
+    // Transformar contactosEmergencia a guardians (similar a RegisterStudentRequestDTO)
+    if (body.contactosEmergencia !== undefined) {
+      result.guardians = Array.isArray(body.contactosEmergencia)
+        ? body.contactosEmergencia.map((contacto) => ({
+            relationshipTypeId: contacto.tipoParentescoId,
+            firstName: contacto.nombres,
+            lastName: contacto.apellidos,
+            cellphone1: contacto.celular1,
+            cellphone2: contacto.celular2,
+            livesWithStudent: contacto.viveConEstudiante ?? false,
+          }))
+        : [];
+    } else if (body.guardians !== undefined) {
+      // También aceptar guardians directamente (por compatibilidad)
+      result.guardians = body.guardians;
+    }
+
+    // Transformar documentacion a documentation (similar a RegisterStudentRequestDTO)
+    if (body.documentacion !== undefined || body.documentation !== undefined) {
+      const documentacion = body.documentacion || body.documentation;
+      if (documentacion && typeof documentacion === 'object') {
+        result.documentation = {};
+        for (const docKey in documentacion) {
+          if (Object.hasOwnProperty.call(documentacion, docKey)) {
+            const docData = documentacion[docKey];
+            result.documentation[docKey] = {
+              entregado: docData.entregado ?? false,
+              enTramite: docData.en_tramite ?? docData.enTramite ?? false,
+              fechaEntrega: docData.fechaEntrega || null,
+              observaciones: docData.observaciones || null,
+            };
+          }
+        }
+      }
     }
 
     return result;
@@ -255,7 +329,7 @@ export class UpdateStudentController {
           success: false,
           error: {
             code: 'VALIDATION_ERROR',
-            message: 'Debe proporcionar al menos un campo para actualizar (student, guardians, disabilities, origins, o documentation)',
+            message: 'Debe proporcionar al menos un campo para actualizar (student, contactosEmergencia/guardians, disabilities, origins, o documentacion/documentation)',
           },
         });
       }

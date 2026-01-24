@@ -78,6 +78,9 @@ export class RegisterStudentRequestDTO {
       // NOTA: Los datos académicos (careerId, managementId, etc.) se manejan en otro módulo
     } = body;
 
+    // tipoSangre: solo valores actuales; legacy ya reemplazado por null en validador
+    const bloodType = tipoSangre ?? null;
+
     // 1. Datos del estudiante principal
     const student = {
       ci,
@@ -88,7 +91,7 @@ export class RegisterStudentRequestDTO {
       birthDate: fechaNacimiento,
       gender: generoId,
       civilStatusId: estadoCivilId,
-      bloodType: tipoSangre,
+      bloodType,
       hasDisability: tieneDiscapacidad,
       personalEmail: emailPersonal,
       mobilePhone: celular,

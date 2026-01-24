@@ -92,10 +92,20 @@ export const useDocumentoItem = (documento) => {
     return [...basePath, 'observaciones'];
   }, [basePath]);
 
+  /**
+   * Valor inicial de observaciones (motivo de no entrega).
+   * Se usa al editar para mostrar por qué no se entregó el documento.
+   */
+  const initialObservaciones = useMemo(() => {
+    const v = documento.observaciones;
+    return v != null && v !== '' ? String(v) : undefined;
+  }, [documento.observaciones]);
+
   return {
     fieldName,
     fieldNameEnTramite,
     fieldNameObservaciones,
+    initialObservaciones,
     tituloDocumento,
     esRequerido: documento.required === true,
     mostrarIndicadorFotocopia,

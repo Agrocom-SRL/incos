@@ -171,7 +171,20 @@ export class GetStudentByIdUseCase {
         null,
         null
       );
-      const documentDeliveries = documentDeliveriesResult.studentDocumentDeliveries || [];
+      let documentDeliveries = documentDeliveriesResult.studentDocumentDeliveries || [];
+
+      // 5.1. Deduplicar por documentacionId: conservar solo la más reciente (mayor id) por documento.
+      // Incluye observaciones para edición (motivo de no entrega cuando entregado=false).
+      const byDocId = new Map();
+      for (const d of documentDeliveries) {
+        const plain = d.toPlainObject ? d.toPlainObject() : d;
+        const docId = plain.documentacionId;
+        const current = byDocId.get(docId);
+        if (!current || (plain.id != null && (current.id == null || plain.id > current.id))) {
+          byDocId.set(docId, d);
+        }
+      }
+      documentDeliveries = Array.from(byDocId.values());
 
       this.logger.info('[Estudiantes] Entregas de documentos encontradas', {
         studentId: student.id,

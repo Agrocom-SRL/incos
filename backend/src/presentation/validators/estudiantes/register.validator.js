@@ -150,9 +150,15 @@ export const registerStudentValidator = [
     .withMessage('Estado civil ID debe ser un número entero mayor a 0'),
 
   body('tipoSangre')
-    .optional()
-    .isIn(['ARH (+)', 'ARH (-)', 'BRH (+)', 'BRH (-)', 'ABRH (+)', 'ABRH (-)', 'ORH (+)', 'ORH (-)'])
-    .withMessage('Tipo de sangre debe ser uno de: ARH (+), ARH (-), BRH (+), BRH (-), ABRH (+), ABRH (-), ORH (+), ORH (-)'),
+    .optional({ nullable: true, checkFalsy: false })
+    .customSanitizer((value) => {
+      // Solo valores actuales (ARH (+), etc.). Legacy (A+, etc.) -> null (default).
+      if (value === null || value === undefined || value === '') return null;
+      const trimmed = typeof value === 'string' ? value.trim() : String(value);
+      const validValues = ['ARH (+)', 'ARH (-)', 'BRH (+)', 'BRH (-)', 'ABRH (+)', 'ABRH (-)', 'ORH (+)', 'ORH (-)'];
+      return validValues.includes(trimmed) ? trimmed : null;
+    })
+    .custom(() => true),
 
   body('emailPersonal')
     .customSanitizer((value) => {

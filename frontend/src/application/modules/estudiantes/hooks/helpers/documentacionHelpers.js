@@ -77,22 +77,26 @@ export const separateDocumentosPadresHijos = (documentos = []) => {
 };
 
 /**
- * Agrega estado de entregado a un documento basándose en los valores del formulario
+ * Agrega estado de entregado, en trámite y observaciones a un documento basándose en los valores del formulario
  * 
  * @param {Object} documento - Documento al que agregar estado
  * @param {Object} formValues - Valores actuales del formulario
- * @returns {Object} Documento con estado de entregado agregado
+ * @returns {Object} Documento con estado agregado (entregado, en_tramite, observaciones)
  */
 export const addEstadoEntregado = (documento, formValues = {}) => {
-  // Buscar en la estructura: documentacion['doc_id'].entregado (objeto con keys con prefijo 'doc_')
+  // Buscar en la estructura: documentacion['doc_id'].* (objeto con keys con prefijo 'doc_')
   const docKey = `doc_${documento.id}`;
-  const entregadoDelForm = formValues.documentacion?.[docKey]?.entregado;
-  
+  const docForm = formValues.documentacion?.[docKey];
+  const entregadoDelForm = docForm?.entregado;
+  const enTramiteDelForm = docForm?.en_tramite;
+  const observacionesDelForm = docForm?.observaciones;
+
   return {
     ...documento,
     // Si hay valor en el formulario, usarlo; si no, por defecto true (entregado)
-    // El switch debe iniciar en true, y cuando el usuario lo cambie a false, se mostrarán los hijos
     entregado: entregadoDelForm !== undefined ? entregadoDelForm : true,
+    en_tramite: enTramiteDelForm !== undefined ? enTramiteDelForm : false,
+    observaciones: observacionesDelForm ?? null,
   };
 };
 

@@ -50,6 +50,7 @@ import { useDocumentoItem } from './hooks/useDocumentoItem';
  * @param {boolean} props.documento.required - Si el documento es requerido
  * @param {boolean} props.documento.acceptsPhotocopy - Si acepta fotocopia
  * @param {boolean} props.documento.entregado - Estado de entrega del documento
+ * @param {string} [props.documento.observaciones] - Motivo de no entrega (solo cuando entregado=false)
  * @param {Object} props.form - Instancia del formulario de Ant Design
  * @param {boolean} props.readOnly - Si el componente está en modo solo lectura
  */
@@ -63,6 +64,7 @@ const DocumentoItem = ({
     fieldName,
     fieldNameEnTramite,
     fieldNameObservaciones,
+    initialObservaciones,
     tituloDocumento,
     esRequerido,
     mostrarIndicadorFotocopia,
@@ -139,13 +141,15 @@ const DocumentoItem = ({
         </Col>
       </Row>
 
-      {/* Textarea para observaciones - solo visible cuando switch es FALSE */}
+      {/* Textarea para observaciones (motivo de no entrega) - solo visible cuando switch es FALSE */}
       {!entregado && (
         <Form.Item
           name={fieldNameObservaciones}
+          label="Motivo de no entrega"
+          initialValue={initialObservaciones}
         >
           <FieldTextarea
-            placeholder="Observaciones adicionales sobre la entrega del documento..."
+            placeholder="Indique por qué no se entregó el documento (ej. en trámite, vencido, no trajo, etc.)"
             disabled={readOnly}
             rows={3}
           />
