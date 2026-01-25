@@ -70,13 +70,12 @@ export class GenerateActaCompromisoUseCase extends BaseDocumentGenerationUseCase
     /**
      * Ejecuta el caso de uso de generación de acta de compromiso
      * 
-     * Flujo:
-     * 1. Validar estudiante (lógica propia)
-     * 2. Buscar entregas de documentos (lógica específica)
-     * 3. Obtener gestión activa del sistema (usa método del base: _getCurrentManagement)
-     * 4. Generar PDF usando PDFGenerator con gestión activa (lógica específica)
-     * 5. Guardar en uploads (usa método del base: _saveToUploads)
-     * 6. Guardar en BD (usa método del base: _saveDocumentToDatabase)
+     * Orquesta el flujo completo de generación del documento:
+     * 1. Validar y obtener estudiante
+     * 2. Buscar entregas de documentos
+     * 3. Obtener gestión activa
+     * 4. Generar PDF
+     * 5. Guardar archivo y persistir en BD
      * 
      * @param {number} studentId - ID del estudiante
      * @param {Object} options - Opciones adicionales (por defecto vacío)
@@ -89,60 +88,20 @@ export class GenerateActaCompromisoUseCase extends BaseDocumentGenerationUseCase
         });
 
         try {
-            // 1. Validar y obtener estudiante (lógica propia)
-            const student = await this.studentRepository.findById(studentId, {
-                attributes: ['id', 'codigoEstudiante', 'ci', 'expedicion', 'nombres', 'apellidoPaterno', 'apellidoMaterno'],
-            });
+            // 1. Validar y obtener estudiante
+            const student = await this._validateAndGetStudent(studentId);
 
-            if (!student) {
-                throw new NotFoundError(`Estudiante con ID ${studentId}`);
-            }
+            // 2. Buscar entregas de documentos de inscripción
+            await this._fetchDocumentDeliveries(studentId);
 
-            // 2. Buscar entregas de documentos de inscripción con detalle (lógica específica)
-            const entregasConDetalle = await this.studentDocumentDeliveryRepository.obtenerEntregasConDetalle({
-                estudiante_id: studentId,
-                tipo_documento: TIPOS_DOCUMENTO_SISTEMA.INSCRIPCION,
-                documento_padre_id: null,
-            });
+            // 3. Obtener año de gestión activa (usa método del base)
+            const gestionYear = await this._getCurrentManagementYear();
 
-            this.logger.info('[Estudiantes] Entregas con detalle obtenidas', {
-                studentId,
-                cantidad: entregasConDetalle.length,
-            });
+            // 4. Generar PDF con gestión activa
+            const pdfBuffer = await this._generatePdfBuffer(gestionYear);
 
-            // 3. Obtener gestión activa del sistema (usa método del base)
-            const management = await this._getCurrentManagement();
-            const gestionYear = management.year || management.anio || new Date().getFullYear();
-
-            this.logger.info('[Estudiantes] Gestión activa obtenida', {
-                studentId,
-                gestionYear,
-                managementId: management.id,
-            });
-
-            // 4. Generar PDF usando el método específico del PDFGenerator (lógica específica)
-            // Por ahora se usa plantilla vacía, después se pasarán los datos (entregasConDetalle)
-            // Pasar la gestión activa para que se muestre en el subtítulo "GESTIÓN XXXX"
-            const pdfBuffer = await this.pdfGenerator.generateActaCompromiso({
-                gestion: gestionYear,
-            });
-
-            // 5. Preparar información para guardar
-            const relativeScope = UPLOAD.actaCompromiso(studentId);
-            const pdfFileName = `acta_compromiso_${student.studentCode}.pdf`;
-
-            // 6. Guardar PDF en uploads (usa método del base)
-            const result = await this._saveToUploads(studentId, pdfBuffer, relativeScope, pdfFileName);
-
-            // 7. Guardar información del documento en BD (usa método del base)
-            await this._saveDocumentToDatabase(studentId, {
-                fileName: result.fileName,
-                filePath: result.filePath,
-                absolutePath: result.absolutePath,
-                extension: 'pdf',
-                tipoDocumento: 'INSCRIPCION',
-                documentacionId: null,
-            });
+            // 5. Guardar archivo y persistir en BD
+            const result = await this._persistDocument(studentId, pdfBuffer, student);
 
             this.logger.info('[Estudiantes] Acta PDF generada correctamente', {
                 studentId,
@@ -159,5 +118,99 @@ export class GenerateActaCompromisoUseCase extends BaseDocumentGenerationUseCase
             });
             throw error;
         }
+    }
+
+    /**
+     * Valida y obtiene el estudiante por ID
+     * 
+     * @private
+     * @param {number} studentId - ID del estudiante
+     * @returns {Promise<Object>} Datos del estudiante
+     * @throws {NotFoundError} Si el estudiante no existe
+     */
+    async _validateAndGetStudent(studentId) {
+        const student = await this.studentRepository.findById(studentId, {
+            attributes: ['id', 'codigoEstudiante', 'ci', 'expedicion', 'nombres', 'apellidoPaterno', 'apellidoMaterno'],
+        });
+
+        if (!student) {
+            throw new NotFoundError(`Estudiante con ID ${studentId}`);
+        }
+
+        return student;
+    }
+
+    /**
+     * Busca las entregas de documentos de inscripción con detalle
+     * 
+     * @private
+     * @param {number} studentId - ID del estudiante
+     * @returns {Promise<Array>} Lista de entregas con detalle
+     */
+    async _fetchDocumentDeliveries(studentId) {
+        const entregasConDetalle = await this.studentDocumentDeliveryRepository.obtenerEntregasConDetalle({
+            estudiante_id: studentId,
+            tipo_documento: TIPOS_DOCUMENTO_SISTEMA.INSCRIPCION,
+            documento_padre_id: null,
+        });
+
+        this.logger.info('[Estudiantes] Entregas con detalle obtenidas', {
+            studentId,
+            cantidad: entregasConDetalle.length,
+        });
+
+        // Por ahora no se usan, pero se guardan para uso futuro
+        return entregasConDetalle;
+    }
+
+    /**
+     * Genera el buffer del PDF del acta de compromiso
+     * 
+     * @private
+     * @param {number} gestionYear - Año de gestión activa
+     * @returns {Promise<Buffer>} Buffer del PDF generado
+     */
+    async _generatePdfBuffer(gestionYear) {
+        // Por ahora se usa plantilla vacía, después se pasarán los datos (entregasConDetalle)
+        // Pasar la gestión activa para que se muestre en el subtítulo "GESTIÓN XXXX"
+        return await this.pdfGenerator.generateActaCompromiso({
+            gestion: gestionYear,
+        });
+    }
+
+    /**
+     * Persiste el documento: guarda en uploads y registra en BD
+     * 
+     * Prepara la información del archivo (ruta relativa y nombre) y luego
+     * guarda el PDF en uploads y registra la información en la base de datos.
+     * 
+     * @private
+     * @param {number} studentId - ID del estudiante
+     * @param {Buffer} pdfBuffer - Buffer del PDF generado
+     * @param {Object} student - Datos del estudiante
+     * @returns {Promise<{filePath: string, fileName: string, absolutePath: string}>} Resultado del guardado
+     */
+    async _persistDocument(studentId, pdfBuffer, student) {
+        // Preparar información del archivo
+        const relativeScope = UPLOAD.studentDocuments(studentId);
+        const fileName = `acta_compromiso_${student.codigoEstudiante}.pdf`;
+
+        // Guardar PDF en uploads (usa método del base)
+        const result = await this._saveToUploads(
+            studentId,
+            pdfBuffer,
+            relativeScope,
+            fileName
+        );
+
+        // Guardar información del documento en BD (usa método del base)
+        await this._saveDocumentToDatabase(studentId, result, {
+            extension: 'pdf',
+            tipoDocumento: 'INSCRIPCION',
+            documentacionId: null,
+            state: 'APROBADO',
+        });
+
+        return result;
     }
 }

@@ -68,235 +68,263 @@ import { UPLOAD } from '../../../infrastructure/config/uploads.config.js';
  * }
  */
 export class BaseDocumentGenerationUseCase {
-  /**
-   * @param {Object} params - Parámetros de configuración
-   * @param {Object} params.studentDocumentRepository - Repositorio de documentos de estudiantes (requerido)
-   * @param {IPDFGenerator} params.pdfGenerator - Servicio de generación PDF (requerido)
-   * @param {IUploadsStorage} params.uploadsStorage - Servicio de almacenamiento en uploads (requerido)
-   * @param {ILogger} params.logger - Logger para registro de eventos (requerido)
-   * @param {string} params.moduleName - Nombre del módulo para logs (ej: 'Estudiantes', 'Pagos')
-   * @param {string} params.documentType - Tipo de documento para logs (ej: 'ACTA DE COMPROMISO', 'RECIBO DE PAGO')
-   * @param {Object} [params.configuracionSistemaRepository] - Repositorio de configuración del sistema (opcional, para obtener gestión activa)
-   * @param {Object} [params.managementRepository] - Repositorio de gestiones (opcional, para obtener gestión activa)
-   */
-  constructor({
-    studentDocumentRepository,
-    pdfGenerator,
-    uploadsStorage,
-    logger,
-    moduleName,
-    documentType,
-    configuracionSistemaRepository = null,
-    managementRepository = null,
-  }) {
-    if (!studentDocumentRepository) {
-      throw new Error('studentDocumentRepository es requerido');
-    }
-    if (!pdfGenerator) {
-      throw new Error('pdfGenerator es requerido');
-    }
-    if (!uploadsStorage) {
-      throw new Error('uploadsStorage es requerido');
-    }
-    if (!logger) {
-      throw new Error('logger es requerido');
-    }
-    if (!moduleName) {
-      throw new Error('moduleName es requerido');
-    }
-    if (!documentType) {
-      throw new Error('documentType es requerido');
+    /**
+     * @param {Object} params - Parámetros de configuración
+     * @param {Object} params.studentDocumentRepository - Repositorio de documentos de estudiantes (requerido)
+     * @param {IPDFGenerator} params.pdfGenerator - Servicio de generación PDF (requerido)
+     * @param {IUploadsStorage} params.uploadsStorage - Servicio de almacenamiento en uploads (requerido)
+     * @param {ILogger} params.logger - Logger para registro de eventos (requerido)
+     * @param {string} params.moduleName - Nombre del módulo para logs (ej: 'Estudiantes', 'Pagos')
+     * @param {string} params.documentType - Tipo de documento para logs (ej: 'ACTA DE COMPROMISO', 'RECIBO DE PAGO')
+     * @param {Object} [params.configuracionSistemaRepository] - Repositorio de configuración del sistema (opcional, para obtener gestión activa)
+     * @param {Object} [params.managementRepository] - Repositorio de gestiones (opcional, para obtener gestión activa)
+     */
+    constructor({
+        studentDocumentRepository,
+        pdfGenerator,
+        uploadsStorage,
+        logger,
+        moduleName,
+        documentType,
+        configuracionSistemaRepository = null,
+        managementRepository = null,
+    }) {
+        if (!studentDocumentRepository) {
+            throw new Error('studentDocumentRepository es requerido');
+        }
+        if (!pdfGenerator) {
+            throw new Error('pdfGenerator es requerido');
+        }
+        if (!uploadsStorage) {
+            throw new Error('uploadsStorage es requerido');
+        }
+        if (!logger) {
+            throw new Error('logger es requerido');
+        }
+        if (!moduleName) {
+            throw new Error('moduleName es requerido');
+        }
+        if (!documentType) {
+            throw new Error('documentType es requerido');
+        }
+
+        this.studentDocumentRepository = studentDocumentRepository;
+        this.pdfGenerator = pdfGenerator;
+        this.uploadsStorage = uploadsStorage;
+        this.logger = logger;
+        this.moduleName = moduleName;
+        this.documentType = documentType;
+        this.configuracionSistemaRepository = configuracionSistemaRepository;
+        this.managementRepository = managementRepository;
     }
 
-    this.studentDocumentRepository = studentDocumentRepository;
-    this.pdfGenerator = pdfGenerator;
-    this.uploadsStorage = uploadsStorage;
-    this.logger = logger;
-    this.moduleName = moduleName;
-    this.documentType = documentType;
-    this.configuracionSistemaRepository = configuracionSistemaRepository;
-    this.managementRepository = managementRepository;
-  }
+    /**
+     * Guarda el documento en uploads y retorna las rutas
+     * 
+     * Método helper común usado por todas las subclases
+     * 
+     * @protected
+     * @param {number} studentId - ID del estudiante (para logging)
+     * @param {Buffer} pdfBuffer - Buffer del PDF generado
+     * @param {string} relativeScope - Ruta relativa dentro de uploads
+     * @param {string} fileName - Nombre del archivo
+     * @returns {Object} Objeto con filePath, fileName, absolutePath
+     */
+    async _saveToUploads(studentId, pdfBuffer, relativeScope, fileName) {
+        const result = this.uploadsStorage.saveToUploads(relativeScope, fileName, pdfBuffer);
 
-  /**
-   * Guarda el documento en uploads y retorna las rutas
-   * 
-   * Método helper común usado por todas las subclases
-   * 
-   * @protected
-   * @param {number} studentId - ID del estudiante (para logging)
-   * @param {Buffer} pdfBuffer - Buffer del PDF generado
-   * @param {string} relativeScope - Ruta relativa dentro de uploads
-   * @param {string} fileName - Nombre del archivo
-   * @returns {Object} Objeto con filePath, fileName, absolutePath
-   */
-  async _saveToUploads(studentId, pdfBuffer, relativeScope, fileName) {
-    const result = this.uploadsStorage.saveToUploads(relativeScope, fileName, pdfBuffer);
-
-    this.logger.info(`[${this.moduleName}] Documento guardado en uploads`, {
-      studentId,
-      filePath: result.filePath,
-      absolutePath: result.absolutePath,
-    });
-
-    return result;
-  }
-
-  /**
-   * Guarda la información del documento en la base de datos
-   * 
-   * Método helper común usado por todas las subclases que necesitan guardar en BD
-   * 
-   * @protected
-   * @param {number} studentId - ID del estudiante
-   * @param {Object} documentInfo - Información del documento generado
-   * @param {string} documentInfo.fileName - Nombre del archivo
-   * @param {string} documentInfo.filePath - Ruta relativa del archivo
-   * @param {string} documentInfo.absolutePath - Ruta absoluta del archivo
-   * @param {string} documentInfo.extension - Extensión del archivo (ej: 'pdf')
-   * @param {string} documentInfo.tipoDocumento - Tipo de documento (ej: 'ACTA_COMPROMISO', 'INSCRIPCION')
-   * @param {number} [documentInfo.documentacionId] - ID de documentación específica (opcional)
-   * @param {Object} [options] - Opciones adicionales
-   * @returns {Promise<Object|null>} Documento guardado en BD o null si ya existe
-   */
-  async _saveDocumentToDatabase(studentId, documentInfo, options = {}) {
-    try {
-      // Verificar si ya existe un documento con el mismo filePath
-      const existingDocument = await this.studentDocumentRepository.findBy({
-        studentId,
-        filePath: documentInfo.filePath,
-      });
-
-      if (existingDocument) {
-        // Si existe, actualizar el documento existente
-        this.logger.info(`[${this.moduleName}] Documento ya existe, actualizando`, {
-          studentId,
-          documentId: existingDocument.id,
-          filePath: documentInfo.filePath,
+        this.logger.info(`[${this.moduleName}] Documento guardado en uploads`, {
+            studentId,
+            filePath: result.filePath,
+            absolutePath: result.absolutePath,
         });
 
-        const updated = await this.studentDocumentRepository.update(existingDocument.id, {
-          fileName: documentInfo.fileName,
-          filePath: documentInfo.filePath,
-          extension: documentInfo.extension,
-          tipoMime: documentInfo.extension === 'pdf' ? 'application/pdf' : null,
+        return result;
+    }
+
+    /**
+     * Guarda la información del documento en la base de datos
+     * 
+     * Método helper común usado por todas las subclases que necesitan guardar en BD.
+     * Recibe el resultado de _saveToUploads y los metadatos específicos del documento.
+     * 
+     * @protected
+     * @param {number} studentId - ID del estudiante
+     * @param {Object} uploadResult - Resultado de _saveToUploads (contiene fileName, filePath, absolutePath)
+     * @param {string} uploadResult.fileName - Nombre del archivo
+     * @param {string} uploadResult.filePath - Ruta relativa del archivo
+     * @param {string} uploadResult.absolutePath - Ruta absoluta del archivo
+     * @param {Object} metadata - Metadatos específicos del documento
+     * @param {string} metadata.extension - Extensión del archivo (ej: 'pdf'). Si no se proporciona, se infiere del fileName
+     * @param {string} metadata.tipoDocumento - Tipo de documento (ej: 'ACTA_COMPROMISO', 'INSCRIPCION')
+     * @param {number} [metadata.documentacionId] - ID de documentación específica (opcional)
+     * @returns {Promise<Object|null>} Documento guardado en BD o null si ya existe
+     */
+    async _saveDocumentToDatabase(studentId, uploadResult, metadata) {
+        try {
+            // Inferir extensión del fileName si no se proporciona
+            const extension = metadata.extension || uploadResult.fileName.split('.').pop() || 'pdf';
+
+            // Verificar si ya existe un documento con el mismo filePath
+            const existingDocument = await this.studentDocumentRepository.findBy({
+                studentId,
+                filePath: uploadResult.filePath,
+            });
+
+            if (existingDocument) {
+                // Si existe, actualizar el documento existente
+                this.logger.info(`[${this.moduleName}] Documento ya existe, actualizando`, {
+                    studentId,
+                    documentId: existingDocument.id,
+                    filePath: uploadResult.filePath,
+                });
+
+                const updated = await this.studentDocumentRepository.update(existingDocument.id, {
+                    fileName: uploadResult.fileName,
+                    filePath: uploadResult.filePath,
+                    extension: extension,
+                    tipoMime: extension === 'pdf' ? 'application/pdf' : null,
+                });
+
+                return updated || existingDocument;
+            }
+
+            // Si no existe, crear nuevo documento
+            const documentData = {
+                studentId,
+                tipoDocumento: metadata.tipoDocumento,
+                documentacionId: metadata.documentacionId || null,
+                fileName: uploadResult.fileName,
+                filePath: uploadResult.filePath,
+                extension: extension,
+                tipoMime: extension === 'pdf' ? 'application/pdf' : null,
+                contieneMultipleDocumentos: false,
+                verified: true, // Documentos generados por el sistema se consideran verificados
+                state: metadata.state || 'APROBADO', // Documentos generados por el sistema están aprobados automáticamente
+            };
+
+            const savedDocument = await this.studentDocumentRepository.create(documentData);
+
+            this.logger.info(`[${this.moduleName}] Documento guardado en BD`, {
+                studentId,
+                documentId: savedDocument.id,
+                fileName: uploadResult.fileName,
+                filePath: uploadResult.filePath,
+            });
+
+            return savedDocument;
+        } catch (error) {
+            this.logger.error(`[${this.moduleName}] Error al guardar documento en BD`, {
+                studentId,
+                error: error.message,
+                stack: error.stack,
+                uploadResult,
+                metadata,
+            });
+            // No lanzar error para no interrumpir el proceso si falla el guardado en BD
+            return null;
+        }
+    }
+
+    /**
+     * Obtiene la gestión vigente actual desde la configuración del sistema
+     * 
+     * Método común usado por casos de uso que necesitan la gestión activa
+     * Similar al método en CreateStudentScholarshipUseCase, RegisterAporteVoluntarioUseCase y GenerateBoletaInscripcionUseCase
+     * 
+     * @protected
+     * @returns {Promise<Object>} Entidad Management
+     * @throws {NotFoundError} Si no se encuentra la configuración o la gestión
+     * @throws {ValidationError} Si la gestión no está vigente o los repositorios no están inyectados
+     */
+    async _getCurrentManagement() {
+        if (!this.configuracionSistemaRepository) {
+            throw new ValidationError('configuracionSistemaRepository no está inyectado. Inyéctalo en el constructor si necesitas obtener la gestión activa.');
+        }
+        if (!this.managementRepository) {
+            throw new ValidationError('managementRepository no está inyectado. Inyéctalo en el constructor si necesitas obtener la gestión activa.');
+        }
+
+        // 1. Obtener la gestión actual desde la configuración del sistema
+        const gestionActualConfig = await this.configuracionSistemaRepository.findBy({
+            key: 'gestion_actual',
         });
 
-        return updated || existingDocument;
-      }
+        // 2. Validar que se encontró la configuración
+        if (!gestionActualConfig) {
+            throw new NotFoundError('Configuración de gestión actual no encontrada');
+        }
 
-      // Si no existe, crear nuevo documento
-      const documentData = {
-        studentId,
-        tipoDocumento: documentInfo.tipoDocumento,
-        documentacionId: documentInfo.documentacionId || null,
-        fileName: documentInfo.fileName,
-        filePath: documentInfo.filePath,
-        extension: documentInfo.extension,
-        tipoMime: documentInfo.extension === 'pdf' ? 'application/pdf' : null,
-        contieneMultipleDocumentos: false,
-        verified: true, // Documentos generados por el sistema se consideran verificados
-        state: 'APROBADO', // Documentos generados por el sistema están aprobados automáticamente
-      };
+        // 3. Convertir el año académico a número
+        const gestionAnio = parseInt(gestionActualConfig.value, 10);
+        if (isNaN(gestionAnio)) {
+            throw new ValidationError('La gestión actual configurada no es un año válido');
+        }
 
-      const savedDocument = await this.studentDocumentRepository.create(documentData);
+        // 4. Buscar la gestión vigente por año usando findBy
+        // Filtrar directamente por año y vigente: true en la consulta
+        const management = await this.managementRepository.findBy({
+            year: gestionAnio,
+            vigente: true,
+        });
 
-      this.logger.info(`[${this.moduleName}] Documento guardado en BD`, {
-        studentId,
-        documentId: savedDocument.id,
-        fileName: documentInfo.fileName,
-        filePath: documentInfo.filePath,
-      });
+        // 5. Validar que se encontró la gestión vigente
+        if (!management) {
+            throw new NotFoundError(`No se encontró una gestión vigente para el año ${gestionAnio}`);
+        }
 
-      return savedDocument;
-    } catch (error) {
-      this.logger.error(`[${this.moduleName}] Error al guardar documento en BD`, {
-        studentId,
-        error: error.message,
-        stack: error.stack,
-        documentInfo,
-      });
-      // No lanzar error para no interrumpir el proceso si falla el guardado en BD
-      return null;
-    }
-  }
+        this.logger.info(`[${this.moduleName}] Gestión vigente obtenida desde configuración`, {
+            managementId: management.id,
+            year: management.year,
+        });
 
-  /**
-   * Obtiene la gestión vigente actual desde la configuración del sistema
-   * 
-   * Método común usado por casos de uso que necesitan la gestión activa
-   * Similar al método en CreateStudentScholarshipUseCase, RegisterAporteVoluntarioUseCase y GenerateBoletaInscripcionUseCase
-   * 
-   * @protected
-   * @returns {Promise<Object>} Entidad Management
-   * @throws {NotFoundError} Si no se encuentra la configuración o la gestión
-   * @throws {ValidationError} Si la gestión no está vigente o los repositorios no están inyectados
-   */
-  async _getCurrentManagement() {
-    if (!this.configuracionSistemaRepository) {
-      throw new ValidationError('configuracionSistemaRepository no está inyectado. Inyéctalo en el constructor si necesitas obtener la gestión activa.');
-    }
-    if (!this.managementRepository) {
-      throw new ValidationError('managementRepository no está inyectado. Inyéctalo en el constructor si necesitas obtener la gestión activa.');
+        return management;
     }
 
-    // 1. Obtener la gestión actual desde la configuración del sistema
-    const gestionActualConfig = await this.configuracionSistemaRepository.findBy({
-      key: 'gestion_actual',
-    });
+    /**
+     * Obtiene el año de la gestión vigente actual
+     * 
+     * Método helper que extrae el año de la gestión activa con fallback
+     * Usa _getCurrentManagement() internamente y maneja la extracción del año
+     * 
+     * @protected
+     * @returns {Promise<number>} Año de la gestión activa
+     * @throws {NotFoundError} Si no se encuentra la configuración o la gestión
+     * @throws {ValidationError} Si la gestión no está vigente o los repositorios no están inyectados
+     */
+    async _getCurrentManagementYear() {
+        const management = await this._getCurrentManagement();
+        const gestionYear = management.year || management.anio || new Date().getFullYear();
 
-    // 2. Validar que se encontró la configuración
-    if (!gestionActualConfig) {
-      throw new NotFoundError('Configuración de gestión actual no encontrada');
+        this.logger.info(`[${this.moduleName}] Año de gestión obtenido`, {
+            gestionYear,
+            managementId: management.id,
+        });
+
+        return gestionYear;
     }
 
-    // 3. Convertir el año académico a número
-    const gestionAnio = parseInt(gestionActualConfig.value, 10);
-    if (isNaN(gestionAnio)) {
-      throw new ValidationError('La gestión actual configurada no es un año válido');
+    /**
+     * Ejecuta el caso de uso de generación de documento
+     * 
+     * NOTA: Este método debe ser sobrescrito por cada caso de uso particular.
+     * El base solo proporciona métodos helper (_saveToUploads, _saveDocumentToDatabase, _getCurrentManagement, _getCurrentManagementYear).
+     * 
+     * Cada caso de uso es responsable de:
+     * 1. Validar estudiante (lógica propia, cada caso tiene sus necesidades)
+     * 2. Buscar sus propios datos (lógica específica)
+     * 3. Construir la información para el PDF (lógica específica)
+     * 4. Llamar al método específico del PDFGenerator (lógica específica)
+     * 5. Guardar en uploads (usar _saveToUploads)
+     * 6. Guardar en BD si es necesario (usar _saveDocumentToDatabase con el result de _saveToUploads y los metadatos)
+     * 
+     * @abstract
+     * @param {number} studentId - ID del estudiante
+     * @param {Object} options - Opciones adicionales (por defecto vacío)
+     * @returns {Promise<{filePath: string, fileName: string, absolutePath: string}>} Rutas del documento generado
+     * @throws {Error} Si falla la generación del documento
+     */
+    async execute(studentId, options = {}) {
+        throw new Error('Method execute must be implemented by subclass');
     }
-
-    // 4. Buscar la gestión vigente por año usando findBy
-    // Filtrar directamente por año y vigente: true en la consulta
-    const management = await this.managementRepository.findBy({
-      year: gestionAnio,
-      vigente: true,
-    });
-
-    // 5. Validar que se encontró la gestión vigente
-    if (!management) {
-      throw new NotFoundError(`No se encontró una gestión vigente para el año ${gestionAnio}`);
-    }
-
-    this.logger.info(`[${this.moduleName}] Gestión vigente obtenida desde configuración`, {
-      managementId: management.id,
-      year: management.year,
-    });
-
-    return management;
-  }
-
-  /**
-   * Ejecuta el caso de uso de generación de documento
-   * 
-   * NOTA: Este método debe ser sobrescrito por cada caso de uso particular.
-   * El base solo proporciona métodos helper (_saveToUploads, _saveDocumentToDatabase, _getCurrentManagement).
-   * 
-   * Cada caso de uso es responsable de:
-   * 1. Validar estudiante (lógica propia, cada caso tiene sus necesidades)
-   * 2. Buscar sus propios datos (lógica específica)
-   * 3. Construir la información para el PDF (lógica específica)
-   * 4. Llamar al método específico del PDFGenerator (lógica específica)
-   * 5. Guardar en uploads (usar _saveToUploads)
-   * 6. Guardar en BD si es necesario (usar _saveDocumentToDatabase)
-   * 
-   * @abstract
-   * @param {number} studentId - ID del estudiante
-   * @param {Object} options - Opciones adicionales (por defecto vacío)
-   * @returns {Promise<{filePath: string, fileName: string, absolutePath: string}>} Rutas del documento generado
-   * @throws {Error} Si falla la generación del documento
-   */
-  async execute(studentId, options = {}) {
-    throw new Error('Method execute must be implemented by subclass');
-  }
 }

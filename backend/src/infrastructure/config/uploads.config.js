@@ -19,13 +19,6 @@ export const UPLOAD = {
   studentDocuments: (studentId) => `documentos/estudiantes/${studentId}`,
 
   /**
-   * Ruta para actas de compromiso de estudiantes
-   * @param {number} studentId - ID del estudiante
-   * @returns {string} Ruta relativa (ej: 'documentos/estudiantes/1')
-   */
-  actaCompromiso: (studentId) => `documentos/estudiantes/${studentId}`,
-
-  /**
    * Ruta para documentos de pagos de estudiantes
    * @param {number} studentId - ID del estudiante
    * @returns {string} Ruta relativa (ej: 'documentos/estudiantes/1/pagos')
