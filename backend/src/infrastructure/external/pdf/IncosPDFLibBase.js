@@ -379,63 +379,117 @@ export class IncosPDFLibBase {
      * Agrega un párrafo de texto normal
      * 
      * Método simplificado que usa el estado interno (página y posición Y).
+     * Siempre usa fuente Helvetica, tamaño normal, color texto, alineado a la izquierda.
      * 
      * @protected
      * @param {string} text - Texto del párrafo
-     * @param {Object} options - Opciones adicionales
      * @returns {Promise<void>} Actualiza el estado interno _currentY
      */
-    async _addParagraph(text, options = {}) {
+    async _addParagraph(text) {
         if (!this._pdfDoc || !this._currentPage) {
             throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
         }
-        const opts = {
-            align: 'left', // 'left', 'center', 'right', 'justify'
-            indent: 0,
-            bold: false,
-            fontSize: IncosPDFBase.FONTS.normal.size,
-            ...options,
-        };
 
         const { width: pageWidth } = this._currentPage.getSize();
-        // Usar fuente desde configuración: IncosPDFBase.FONTS.normal.font o IncosPDFBase.FONTS.bold.font
-        const configFontName = opts.bold ? IncosPDFBase.FONTS.bold.font : IncosPDFBase.FONTS.normal.font;
-        const standardFont = this._mapFontNameToStandardFont(configFontName);
-        const font = await this._pdfDoc.embedFont(standardFont);
+        
+        // Usar fuente normal desde configuración
+        const normalFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.normal.font);
+        const font = await this._pdfDoc.embedFont(normalFontName);
+        const fontSize = IncosPDFBase.FONTS.normal.size;
         const textRgb = this._hexToRgb(IncosPDFBase.COLORS.text);
 
-        const maxWidth = pageWidth - IncosPDFBase.LAYOUT.margins.left - IncosPDFBase.LAYOUT.margins.right - opts.indent;
-        const x = IncosPDFBase.LAYOUT.margins.left + opts.indent;
+        const maxWidth = pageWidth - IncosPDFBase.LAYOUT.margins.left - IncosPDFBase.LAYOUT.margins.right;
+        const x = IncosPDFBase.LAYOUT.margins.left;
 
         // Dividir texto en líneas si es necesario
-        const lines = this._wrapText(text, font, opts.fontSize, maxWidth);
+        const lines = this._wrapText(text, font, fontSize, maxWidth);
 
         let currentY = this._currentY;
         for (const line of lines) {
-            let lineX = x;
-
-            // Calcular posición X según alineación
-            if (opts.align === 'center') {
-                const lineWidth = font.widthOfTextAtSize(line, opts.fontSize);
-                lineX = (pageWidth - lineWidth) / 2;
-            } else if (opts.align === 'right') {
-                const lineWidth = font.widthOfTextAtSize(line, opts.fontSize);
-                lineX = pageWidth - IncosPDFBase.LAYOUT.margins.right - lineWidth;
-            }
-
             this._currentPage.drawText(line, {
-                x: lineX,
+                x,
                 y: currentY,
-                size: opts.fontSize,
+                size: fontSize,
                 font,
                 color: textRgb,
             });
 
-            currentY -= opts.fontSize + IncosPDFBase.LAYOUT.spacing.line;
+            currentY -= fontSize + IncosPDFBase.LAYOUT.spacing.line;
         }
 
         // Actualizar posición Y después del párrafo
         this._currentY = currentY - IncosPDFBase.LAYOUT.spacing.paragraph;
+    }
+
+    /**
+     * Agrega una viñeta con círculo negro rellenado seguido de texto
+     * 
+     * Método simplificado que usa el estado interno (página y posición Y).
+     * Dibuja un círculo negro rellenado y luego el texto al lado.
+     * Las viñetas tienen indentación adicional respecto a las secciones.
+     * 
+     * @protected
+     * @param {string} text - Texto de la viñeta
+     * @returns {Promise<void>} Actualiza el estado interno _currentY
+     */
+    async _addBulletPoint(text) {
+        if (!this._pdfDoc || !this._currentPage) {
+            throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
+        }
+
+        const { width: pageWidth } = this._currentPage.getSize();
+        
+        // Usar fuente normal desde configuración
+        const normalFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.normal.font);
+        const font = await this._pdfDoc.embedFont(normalFontName);
+        const fontSize = IncosPDFBase.FONTS.normal.size;
+        const textRgb = this._hexToRgb(IncosPDFBase.COLORS.text);
+        const bulletRgb = this._hexToRgb(IncosPDFBase.COLORS.text); // Círculo negro
+
+        // Indentación y tamaño desde configuración
+        const bulletIndent = IncosPDFBase.LAYOUT.bulletIndent;
+        const bulletX = IncosPDFBase.LAYOUT.margins.left + bulletIndent;
+        const bulletDiameter = IncosPDFBase.LAYOUT.bulletDiameter;
+        const bulletRadius = bulletDiameter / 2;
+        
+        // Calcular posición Y del círculo: centrado verticalmente con la línea de texto
+        const bulletY = this._currentY + (fontSize * 0.3); // Centro vertical del texto (mitad de la altura)
+
+        // Dibujar círculo negro rellenado
+        this._currentPage.drawCircle({
+            x: bulletX + bulletRadius,
+            y: bulletY,
+            size: bulletDiameter, // Diámetro en pdf-lib
+            color: bulletRgb,
+        });
+
+        // Posición del texto (después del círculo con espacio desde configuración)
+        const bulletSpacing = IncosPDFBase.LAYOUT.bulletSpacing;
+        const textX = bulletX + bulletDiameter + bulletSpacing;
+        const maxWidth = pageWidth - IncosPDFBase.LAYOUT.margins.right - textX;
+
+        // Dividir texto en líneas si es necesario
+        const lines = this._wrapText(text, font, fontSize, maxWidth);
+
+        let currentY = this._currentY;
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+            // Primera línea alineada con texto después del círculo, siguientes líneas con la misma indentación
+            const lineX = i === 0 ? textX : bulletX + bulletDiameter + bulletSpacing;
+
+            this._currentPage.drawText(line, {
+                x: lineX,
+                y: currentY,
+                size: fontSize,
+                font,
+                color: textRgb,
+            });
+
+            currentY -= fontSize + IncosPDFBase.LAYOUT.spacing.line;
+        }
+
+        // Actualizar posición Y después de la viñeta
+        this._currentY = currentY - IncosPDFBase.LAYOUT.spacing.bullet;
     }
 
     /**

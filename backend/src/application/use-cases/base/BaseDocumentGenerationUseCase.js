@@ -305,6 +305,29 @@ export class BaseDocumentGenerationUseCase {
     }
 
     /**
+     * Obtiene la fecha actual formateada para documentos
+     * 
+     * Método helper común usado por casos de uso que necesitan la fecha de generación del documento.
+     * Retorna la fecha actual en formato: "día de mes de año" (ej: "25 de enero de 2026").
+     * 
+     * @protected
+     * @returns {string} Fecha actual formateada (ej: "25 de enero de 2026")
+     */
+    _getCurrentDate() {
+        const now = new Date();
+        const day = now.getDate();
+        const month = now.getMonth();
+        const year = now.getFullYear();
+
+        const monthNames = [
+            'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+            'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
+        ];
+
+        return `${day} de ${monthNames[month]} de ${year}`;
+    }
+
+    /**
      * Ejecuta el caso de uso de generación de documento
      * 
      * NOTA: Este método debe ser sobrescrito por cada caso de uso particular.

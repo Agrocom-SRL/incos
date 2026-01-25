@@ -47,6 +47,8 @@ export class ActaCompromisoPdfGenerator extends IncosPDFLibBase {
      *
      * @param {Object} [options] - Opciones para la generación
      * @param {string|number} [options.gestion] - Año de gestión (ej: '2026' o 2026). Ya validado por el caso de uso
+     * @param {Object} [options.student] - Datos del estudiante
+     * @param {string} [options.fechaActual] - Fecha actual formateada (ej: "25 de enero de 2026")
      * @returns {Promise<Buffer>} Contenido del PDF con título agregado
      */
     async generate(options = {}) {
@@ -75,8 +77,52 @@ export class ActaCompromisoPdfGenerator extends IncosPDFLibBase {
 
             // Agregar títulos de secciones
             await this._addSection(IncosPDFBase.SECTION_TITLES.FECHA_REGISTRO);
+
+            // Agregar párrafo de fecha con ciudad (reemplazar placeholder con fecha actual)
+            if (options.fechaActual) {
+                const fechaTexto = IncosPDFBase.TEMPLATE_TEXTS.FECHA_REGISTRO.replace('{FECHA}', options.fechaActual);
+                await this._addParagraph(fechaTexto);
+            }
+
             await this._addSection(IncosPDFBase.SECTION_TITLES.NOMBRE_IDENTIFICACION);
+
+            // Agregar párrafo con información del estudiante
+            if (options.student) {
+                const nombreTexto = IncosPDFBase.TEMPLATE_TEXTS.NOMBRE_IDENTIFICACION
+                    .replace('{APELLIDO_PATERNO}', options.student.apellidoPaterno || '')
+                    .replace('{APELLIDO_MATERNO}', options.student.apellidoMaterno || '')
+                    .replace('{NOMBRES}', options.student.nombres || '')
+                    .replace('{CI}', options.student.ci || '')
+                    .replace('{EXPEDICION}', options.student.expedicion || '');
+                await this._addParagraph(nombreTexto);
+            }
+
             await this._addSection(IncosPDFBase.SECTION_TITLES.REQUISITOS);
+
+            // Agregar párrafo introductorio antes de la lista de documentos
+            await this._addParagraph(IncosPDFBase.TEMPLATE_TEXTS.REQUISITOS_INTRO);
+
+            // Agregar lista de documentos con viñetas
+            if (options.entregas && Array.isArray(options.entregas) && options.entregas.length > 0) {
+                for (const entrega of options.entregas) {
+                    // Construir texto con los campos relevantes
+                    const nombreDocumento = entrega.nombre_documento || 'Documento sin nombre';
+                    const observaciones = entrega.observaciones_entrega || '';
+                    const enTramite = entrega.en_tramite === 1 || entrega.en_tramite === true;
+
+                    // Construir texto del documento
+                    let documentoTexto = nombreDocumento;
+                    if (enTramite) {
+                        documentoTexto += ' - En trámite';
+                    }
+
+                    await this._addBulletPoint(documentoTexto);
+                }
+            }
+
+            // Espaciado después de la lista de documentos para separar de las secciones
+            this._addSpace();
+
             await this._addSection(IncosPDFBase.SECTION_TITLES.PLAZOS_COMPROMISO);
             await this._addSection(IncosPDFBase.SECTION_TITLES.MOTIVOS);
 

@@ -72,6 +72,20 @@ export class IncosPDFBase {
     };
 
     // ============================================
+    // TEXTOS DE PLANTILLA
+    // ============================================
+
+    /**
+     * Textos de plantilla para documentos
+     * Usar placeholders como {FECHA}, {APELLIDO_PATERNO}, {APELLIDO_MATERNO}, {NOMBRES}, {CI}, {EXPEDICION}
+     */
+    static TEMPLATE_TEXTS = {
+        FECHA_REGISTRO: 'En la ciudad de Santa Cruz de la Sierra, {FECHA}.',
+        NOMBRE_IDENTIFICACION: 'Yo {APELLIDO_PATERNO} {APELLIDO_MATERNO} {NOMBRES} con C.I. {CI} {EXPEDICION}, me comprometo completar la documentación Faltante.',
+        REQUISITOS_INTRO: 'Los siguientes documentos están pendientes de entrega:',
+    };
+
+    // ============================================
     // COLORES INSTITUCIONALES
     // ============================================
 
@@ -110,6 +124,7 @@ export class IncosPDFBase {
             subsection: 15,   // Entre subsecciones
             paragraph: 16,    // Entre párrafos
             line: 5,          // Entre líneas
+            bullet: 8,        // Entre viñetas y texto
         },
         pageSize: 'LETTER',
         lineHeight: 15,
@@ -117,6 +132,10 @@ export class IncosPDFBase {
         // Posicionamiento para documentos con plantilla (encabezado)
         headerHeight: 100,  // Altura del encabezado desde arriba (para plantillas)
         spacingAfterHeader: 15, // Espacio después del encabezado antes del contenido
+        // Configuración de viñetas
+        bulletIndent: 16,   // Indentación adicional para viñetas (más a la derecha que las secciones)
+        bulletDiameter: 4,  // Diámetro del círculo de la viñeta (en puntos)
+        bulletSpacing: 8,  // Espacio entre el círculo y el texto de la viñeta (en puntos)
     };
 
     // ============================================

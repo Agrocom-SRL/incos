@@ -92,13 +92,13 @@ export class GenerateActaCompromisoUseCase extends BaseDocumentGenerationUseCase
             const student = await this._validateAndGetStudent(studentId);
 
             // 2. Buscar entregas de documentos de inscripción
-            await this._fetchDocumentDeliveries(studentId);
+            const entregasConDetalle = await this._fetchDocumentDeliveries(studentId);
 
             // 3. Obtener año de gestión activa (usa método del base)
             const gestionYear = await this._getCurrentManagementYear();
 
-            // 4. Generar PDF con gestión activa
-            const pdfBuffer = await this._generatePdfBuffer(gestionYear);
+            // 4. Generar PDF con gestión activa, datos del estudiante y entregas
+            const pdfBuffer = await this._generatePdfBuffer(gestionYear, student, entregasConDetalle);
 
             // 5. Guardar archivo y persistir en BD
             const result = await this._persistDocument(studentId, pdfBuffer, student);
@@ -152,6 +152,7 @@ export class GenerateActaCompromisoUseCase extends BaseDocumentGenerationUseCase
             estudiante_id: studentId,
             tipo_documento: TIPOS_DOCUMENTO_SISTEMA.INSCRIPCION,
             documento_padre_id: null,
+            entregado: false,
         });
 
         this.logger.info('[Estudiantes] Entregas con detalle obtenidas', {
@@ -159,7 +160,6 @@ export class GenerateActaCompromisoUseCase extends BaseDocumentGenerationUseCase
             cantidad: entregasConDetalle.length,
         });
 
-        // Por ahora no se usan, pero se guardan para uso futuro
         return entregasConDetalle;
     }
 
@@ -168,13 +168,28 @@ export class GenerateActaCompromisoUseCase extends BaseDocumentGenerationUseCase
      * 
      * @private
      * @param {number} gestionYear - Año de gestión activa
+     * @param {Object} student - Datos del estudiante
+     * @param {Array} entregasConDetalle - Lista de entregas de documentos con detalle
      * @returns {Promise<Buffer>} Buffer del PDF generado
      */
-    async _generatePdfBuffer(gestionYear) {
-        // Por ahora se usa plantilla vacía, después se pasarán los datos (entregasConDetalle)
-        // Pasar la gestión activa para que se muestre en el subtítulo "GESTIÓN XXXX"
+    async _generatePdfBuffer(gestionYear, student, entregasConDetalle) {
+        // Obtener fecha actual desde el método del base
+        const fechaActual = this._getCurrentDate();
+
+        // Pasar todos los datos necesarios al generador de PDF
         return await this.pdfGenerator.generateActaCompromiso({
             gestion: gestionYear,
+            student: {
+                id: student.id,
+                codigoEstudiante: student.codigoEstudiante,
+                ci: student.ci,
+                expedicion: student.expedition,
+                nombres: student.firstName,
+                apellidoPaterno: student.lastName,
+                apellidoMaterno: student.motherLastName,
+            },
+            fechaActual: fechaActual,
+            entregas: entregasConDetalle || [],
         });
     }
 
