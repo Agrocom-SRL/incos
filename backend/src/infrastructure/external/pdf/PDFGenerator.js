@@ -1,48 +1,48 @@
 /**
- * PDFGenerator - Clase principal para generación de PDFs del Instituto INCOS
+ * PDFGenerator - Adaptador de generación de PDFs que implementa IPDFGenerator
  * 
- * Esta clase sirve como fachada para todos los generadores de PDF específicos.
- * Cada tipo de documento tiene su propio generador especializado que extiende
- * de IncosPDFBase para mantener consistencia visual y funcional.
+ * Esta clase implementa IPDFGenerator y sirve como fachada única para todos los generadores de PDF:
+ * - Generadores que crean PDFs desde cero (usando IncosPDFBase + pdfkit)
+ * - Generadores que editan plantillas PDF (usando pdf-lib)
+ * 
+ * Se registra en el container DI y se inyecta en use cases.
+ * 
+ * Clean Architecture:
+ * - Domain: IPDFGenerator (interfaz)
+ * - Infrastructure: PDFGenerator implementa IPDFGenerator
+ *   y delega en generadores específicos (ReciboPagoMejorado, ActaCompromisoPdfGenerator)
  * 
  * Generadores disponibles:
- * - ReciboPagoMejorado: Recibos de pago con diseño institucional mejorado (NUEVO)
+ * - ReciboPagoMejorado: Recibos de pago (crea desde cero)
+ * - ActaCompromiso: Actas de compromiso (edita plantilla PDF)
  * 
- * NOTA: Las Actas de Compromiso ahora se generan usando ActaCompromisoWordGenerator
- * que genera DOCX desde plantilla Word y luego lo convierte a PDF.
- * 
- * NOTA: FormularioInscripcionGenerator y ReciboPagoGenerator están comentados hasta que se implementen.
- * 
- * Uso:
- * await PDFGenerator.generateReciboPagoMejorado(data, outputPath); // Versión mejorada (RECOMENDADA)
+ * @module PDFGenerator
+ * @implements {IPDFGenerator}
  */
 
+import { IPDFGenerator } from '../../../domain/interfaces/services/IPDFGenerator.js';
 import { ReciboPagoMejorado } from './ReciboPagoMejorado.js';
 
-export class PDFGenerator {
-  // ============================================
-  // GENERADORES ESPECÍFICOS
-  // ============================================
-
+export class PDFGenerator extends IPDFGenerator {
   /**
-   * Genera el Formulario de Inscripción
-   * 
-   * TODO: Este método está comentado hasta que se implemente FormularioInscripcionGenerator
-   * 
-   * @param {Object} data - Datos del estudiante y de la inscripción
-   * @param {string} outputPath - Ruta donde guardar el PDF
-   * @returns {Promise<string>} Ruta del archivo generado
+   * @param {Object} params - Dependencias inyectadas
+   * @param {Object} params.actaCompromisoPdfGenerator - Generador de actas (DI)
+   * @param {ILogger} [params.logger] - Logger para registro de eventos
    */
-  // static async generateFormularioInscripcion(data, outputPath) {
-  //   return await FormularioInscripcionGenerator.generate(data, outputPath);
-  // }
+  constructor({ actaCompromisoPdfGenerator, logger } = {}) {
+    super();
+    this.actaCompromisoPdfGenerator = actaCompromisoPdfGenerator;
+    this.logger = logger;
+  }
+
+  // ============================================
+  // GENERADORES QUE CREAN DESDE CERO (pdfkit)
+  // ============================================
 
   /**
-   * Genera un Recibo de Pago con diseño institucional mejorado (RECOMENDADA)
+   * Genera un Recibo de Pago con diseño institucional mejorado
    * 
-   * Este es el nuevo generador de recibos que sigue el diseño institucional
-   * estándar con tabla de datos personales, declaración jurada y formato
-   * profesional.
+   * Este generador crea PDFs desde cero usando IncosPDFBase + pdfkit.
    * 
    * @param {Object} data - Datos del pago
    * @param {Object} [data.institutoInfo] - Información personalizada del instituto
@@ -57,36 +57,50 @@ export class PDFGenerator {
    * @returns {Promise<string>} Ruta del archivo generado
    * 
    * @example
-   * await PDFGenerator.generateReciboPagoMejorado(data, '/path/to/output.pdf');
+   * await pdfGenerator.generateReciboPagoMejorado(data, '/path/to/output.pdf');
    */
-  static async generateReciboPagoMejorado(data, outputPath) {
+  async generateReciboPagoMejorado(data, outputPath) {
     return await ReciboPagoMejorado.generate(data, outputPath);
   }
 
   // ============================================
-  // UTILIDADES
+  // GENERADORES QUE USAN PLANTILLAS (pdf-lib)
   // ============================================
 
   /**
-   * Obtiene el nombre del mes en español
-   * @param {number} monthIndex - Índice del mes (0-11)
-   * @returns {string} Nombre del mes
+   * Genera un Acta de Compromiso a partir de la plantilla PDF
+   * 
+   * Este generador edita la plantilla PDF (Plantilla.pdf) usando pdf-lib.
+   * 
+   * @returns {Promise<Buffer>} Contenido del PDF generado
+   * 
+   * @example
+   * const pdfBuffer = await pdfGenerator.generateActaCompromiso();
    */
-  static getMonthName(monthIndex) {
-    const meses = [
-      'Enero',
-      'Febrero',
-      'Marzo',
-      'Abril',
-      'Mayo',
-      'Junio',
-      'Julio',
-      'Agosto',
-      'Septiembre',
-      'Octubre',
-      'Noviembre',
-      'Diciembre',
-    ];
-    return meses[monthIndex] || '';
+  async generateActaCompromiso() {
+    if (!this.actaCompromisoPdfGenerator) {
+      throw new Error(
+        'ActaCompromisoPdfGenerator no está inyectado. ' +
+        'Asegúrate de registrar PDFGenerator en el container con todas sus dependencias.'
+      );
+    }
+
+    return await this.actaCompromisoPdfGenerator.generateEmpty();
+  }
+
+  // ============================================
+  // MÉTODOS ESTÁTICOS (para compatibilidad)
+  // ============================================
+
+  /**
+   * Genera un Recibo de Pago (método estático para compatibilidad)
+   * 
+   * @deprecated Usa el método de instancia generateReciboPagoMejorado() en su lugar
+   * @param {Object} data - Datos del pago
+   * @param {string} outputPath - Ruta donde guardar el PDF
+   * @returns {Promise<string>} Ruta del archivo generado
+   */
+  static async generateReciboPagoMejorado(data, outputPath) {
+    return await ReciboPagoMejorado.generate(data, outputPath);
   }
 }

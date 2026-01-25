@@ -38,6 +38,11 @@ export class IncosPDFBase {
     website: 'www.incos.edu.bo',
   };
 
+  // Títulos de documentos
+  static DOCUMENT_TITLES = {
+    ACTA_COMPROMISO: 'ACTA DE COMPROMISO PARA LA ENTREGA DE DOCUMENTOS',
+  };
+
   // Colores institucionales (usando los colores del sistema)
   static COLORS = {
     primary: '#196b45',      // Verde primario institucional

@@ -6,12 +6,14 @@
  * - errorFormatter: Formateo de errores para respuestas HTTP
  * - responseFormatter: Formateo de respuestas exitosas
  * - validateRequest: Middleware de validación de requests
+ * - actaCompromisoPdfGenerator: Generador interno de actas (pdf-lib, usado por PDFGenerator)
+ * - pdfGenerator: Implementa IPDFGenerator, fachada única para generación de PDFs
+ * - uploadsStorage: Implementa IUploadsStorage, almacenamiento de archivos en uploads
  * 
  * Servicios disponibles pero no registrados hasta que se necesiten:
  * - fileUploadService: Servicio de subida de archivos (Multer)
  * - fileStorageService: Gestión de archivos
  * - emailService: Envío de emails
- * - pdfService: Generación de PDFs
  * 
  * Todos los servicios se registran como singleton ya que:
  * - No mantienen estado mutable por request
@@ -27,6 +29,9 @@ import { logger } from '../../services/WinstonLoggerFactory.js';
 import { errorFormatter } from '../../services/ErrorFormatter.js';
 import { responseFormatter } from '../../services/ResponseFormatter.js';
 import { createValidateRequest } from '../../../presentation/middleware/validation.middleware.js';
+import { ActaCompromisoPdfGenerator } from '../../external/pdf/ActaCompromisoPdfGenerator.js';
+import { PDFGenerator } from '../../external/pdf/PDFGenerator.js';
+import { UploadsStorageAdapter } from '../../services/UploadsStorageAdapter.js';
 
 export function registerServicesModule(container) {
     // ============================================
@@ -51,6 +56,38 @@ export function registerServicesModule(container) {
         container,
         SERVICIOS_TOKENS.validateRequest,
         (c) => createValidateRequest(c.resolve(SERVICIOS_TOKENS.logger))
+    );
+
+    // ============================================
+    // ACTA COMPROMISO PDF GENERATOR (interno)
+    // ============================================
+    registerService(
+        container,
+        SERVICIOS_TOKENS.actaCompromisoPdfGenerator,
+        (c) => new ActaCompromisoPdfGenerator({
+            logger: c.resolve(SERVICIOS_TOKENS.logger),
+        })
+    );
+
+    // ============================================
+    // PDF GENERATOR (IPDFGenerator - Fachada única)
+    // ============================================
+    registerService(
+        container,
+        SERVICIOS_TOKENS.pdfGenerator,
+        (c) => new PDFGenerator({
+            actaCompromisoPdfGenerator: c.resolve(SERVICIOS_TOKENS.actaCompromisoPdfGenerator),
+            logger: c.resolve(SERVICIOS_TOKENS.logger),
+        })
+    );
+
+    // ============================================
+    // UPLOADS STORAGE (IUploadsStorage)
+    // ============================================
+    registerService(
+        container,
+        SERVICIOS_TOKENS.uploadsStorage,
+        () => new UploadsStorageAdapter()
     );
 
     // ============================================

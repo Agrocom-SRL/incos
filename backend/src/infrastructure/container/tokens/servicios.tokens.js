@@ -12,5 +12,8 @@ export const SERVICIOS_TOKENS = {
     validateRequest: 'validateRequest',
     fileUploadService: 'fileUploadService',
     fileStorageService: 'fileStorageService',
+    actaCompromisoPdfGenerator: 'actaCompromisoPdfGenerator', // Interno, usado por PDFGenerator
+    pdfGenerator: 'pdfGenerator', // IPDFGenerator (fachada única)
+    uploadsStorage: 'uploadsStorage',
 };
 
