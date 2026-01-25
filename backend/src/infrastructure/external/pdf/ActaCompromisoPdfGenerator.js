@@ -17,7 +17,7 @@
  *   - _addDocumentTitle(): Título principal del documento (específico del acta)
  *   - generate(): Método principal de generación (orquesta la construcción)
  * 
- * Todos los métodos comunes (_addSubtitle, _addParagraph, _addField, etc.) están
+ * Todos los métodos comunes (_addSubtitle, _addParagraph, _addSection, _addBulletPoint, etc.) están
  * en IncosPDFLibBase y se heredan automáticamente.
  * 
  * Principios SOLID:
@@ -68,6 +68,7 @@ export class ActaCompromisoPdfGenerator extends IncosPDFLibBase {
             await this._buildRequisitos(options);
             await this._buildPlazosCompromiso(options);
             await this._buildMotivos(options);
+            await this._buildFirma(options);
 
             // 4. Serializar el PDF a bytes (usa método heredado)
             const pdfBuffer = await this._saveDocument(pdfDoc);
@@ -241,5 +242,23 @@ export class ActaCompromisoPdfGenerator extends IncosPDFLibBase {
                 }
             }
         }
+    }
+
+    /**
+     * Construye el bloque de firma (footer) al final del documento.
+     * Usa IncosPDFBase.SIGNATURE para los textos y options.student (ci, expedicion).
+     * Delega el dibujo a _addSignatureBlock de la base (solo líneas de texto).
+     *
+     * @private
+     * @param {Object} options - Opciones de generación
+     * @returns {Promise<void>}
+     */
+    async _buildFirma(options) {
+        const label = IncosPDFBase.SIGNATURE.LABEL;
+        let ci = (IncosPDFBase.SIGNATURE.CI_FORMAT || 'C.I.: {CI} {EXPEDICION}')
+            .replace('{CI}', options.student?.ci ?? '')
+            .replace('{EXPEDICION}', (options.student?.expedicion ?? '').toString().trim());
+        ci = ci.replace(/\s+/g, ' ').trim();
+        await this._addSignatureBlock({ lines: [label, ci] });
     }
 }

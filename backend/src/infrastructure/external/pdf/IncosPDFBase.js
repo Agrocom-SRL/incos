@@ -87,6 +87,15 @@ export class IncosPDFBase {
         MOTIVOS_INTRO: 'Por estos motivos no ha presentado los documentos faltantes:',
     };
 
+    /**
+     * Textos del bloque de firma (footer). Independiente de TEMPLATE_TEXTS.
+     * LABEL: etiqueta bajo la línea (ej. "Firma"). CI_FORMAT: placeholders {CI}, {EXPEDICION}.
+     */
+    static SIGNATURE = {
+        LABEL: 'Firma',
+        CI_FORMAT: 'C.I.: {CI} {EXPEDICION}',
+    };
+
     // ============================================
     // COLORES INSTITUCIONALES
     // ============================================
@@ -138,6 +147,14 @@ export class IncosPDFBase {
         bulletIndent: 16,   // Indentación adicional para viñetas (más a la derecha que las secciones)
         bulletDiameter: 4,  // Diámetro del círculo de la viñeta (en puntos)
         bulletSpacing: 8,  // Espacio entre el círculo y el texto de la viñeta (en puntos)
+        // Bloque de firma en footer (posición fija al final de página)
+        signatureLineWidth: 150,         // Ancho de la línea de firma (puntos), centrada
+        signatureLineThickness: 1,       // Grosor de la línea (puntos)
+        signatureFooterPadding: 10,      // Espacio entre el pie de plantilla y el bloque de firma
+        /** Altura del pie de página de la plantilla (franja verde, contacto, etc.). El bloque de firma se dibuja por encima. */
+        signatureTemplateFooterHeight: 45,
+        signatureSpacingLineToFirstText: 8,  // Espacio entre línea y primera línea de texto
+        signatureSpacingBetweenTextLines: 4, // Espacio entre líneas de texto bajo la firma
     };
 
     // ============================================

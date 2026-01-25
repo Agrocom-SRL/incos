@@ -11,7 +11,7 @@
  * - Utilidades de formato y posicionamiento
  * - Constantes de estilo institucional (desde IncosPDFBase)
  * 
- * Tecnología: pdf-lib (edita plantillas PDF o crea desde cero, retorna Buffer)
+ * Tecnología: pdf-lib (edita plantillas PDF, retorna Buffer)
  * 
  * Principios SOLID:
  * - Single Responsibility: Solo maneja operaciones de pdf-lib
@@ -25,28 +25,19 @@
  * 
  * Diferencia con IncosPDFBase:
  * - IncosPDFBase: pdfkit (crea desde cero, escribe en disco)
- * - IncosPDFLibBase: pdf-lib (edita plantillas o crea desde cero, retorna Buffer)
+ * - IncosPDFLibBase: pdf-lib (edita plantillas PDF, retorna Buffer)
  * - NO comparten métodos porque las APIs son diferentes
  * 
  * @abstract
  * @example
- * // Ejemplo 1: Generador que usa plantilla
+ * // Ejemplo: Generador que usa plantilla
  * class MyTemplateGenerator extends IncosPDFLibBase {
  *   async generate(options = {}) {
  *     const pdfDoc = await this._loadTemplate('template.pdf');
  *     const page = pdfDoc.getPages()[0];
- *     let y = await this._addSubtitle(pdfDoc, page, 'Título', 700);
- *     return await this._saveDocument(pdfDoc);
- *   }
- * }
- * 
- * @example
- * // Ejemplo 2: Generador que crea desde cero
- * class MyBlankGenerator extends IncosPDFLibBase {
- *   async generate(options = {}) {
- *     const pdfDoc = await this._createBlankDocument({ pageSize: 'LETTER' });
- *     const page = pdfDoc.getPages()[0];
- *     let y = await this._addDocumentTitle(pdfDoc, page, 'Mi Documento', 750);
+ *     this._initializeDocumentState(pdfDoc, page, true);
+ *     await this._addDocumentTitle('Mi Documento');
+ *     await this._addSubtitle('Subtítulo');
  *     return await this._saveDocument(pdfDoc);
  *   }
  * }
@@ -73,34 +64,6 @@ export class IncosPDFLibBase {
     // ============================================
     // MÉTODOS DE CREACIÓN Y CARGA DE DOCUMENTOS
     // ============================================
-
-    /**
-     * Crea un documento PDF en blanco
-     * 
-     * Útil para generadores que no usan plantillas y crean el documento desde cero.
-     * 
-     * @protected
-     * @param {Object} options - Opciones del documento
-     * @param {string} [options.pageSize] - Tamaño de página: 'LETTER', 'A4', etc. (por defecto: 'LETTER')
-     * @returns {Promise<PDFDocument>} Documento PDF en blanco
-     */
-    async _createBlankDocument(options = {}) {
-        const opts = {
-            pageSize: IncosPDFBase.LAYOUT.pageSize, // Tamaño por defecto desde configuración
-            ...options,
-        };
-
-        const pdfDoc = await PDFDocument.create();
-
-        // Registrar fontkit para poder usar fuentes personalizadas TTF/OTF
-        pdfDoc.registerFontkit(fontkit);
-
-        // Agregar una página inicial con el tamaño especificado desde configuración
-        const dimensions = IncosPDFBase.PAGE_SIZES[opts.pageSize] || IncosPDFBase.PAGE_SIZES[IncosPDFBase.LAYOUT.pageSize];
-        pdfDoc.addPage(dimensions);
-
-        return pdfDoc;
-    }
 
     /**
      * Carga una plantilla PDF desde un archivo
@@ -493,177 +456,6 @@ export class IncosPDFLibBase {
     }
 
     /**
-     * Agrega un campo de formulario (etiqueta: valor)
-     * 
-     * Método simplificado que usa el estado interno (página y posición Y).
-     * 
-     * @protected
-     * @param {string} label - Etiqueta del campo
-     * @param {string} value - Valor del campo
-     * @param {Object} options - Opciones adicionales
-     * @returns {Promise<void>} Actualiza el estado interno _currentY
-     */
-    async _addField(label, value, options = {}) {
-        if (!this._pdfDoc || !this._currentPage) {
-            throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
-        }
-        const opts = {
-            labelWidth: IncosPDFBase.LAYOUT.labelWidth, // Ancho desde configuración
-            indent: 0,
-            bold: false,
-            ...options,
-        };
-
-        // Usar fuentes desde configuración
-        const normalFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.normal.font);
-        const boldFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.bold.font);
-        const helveticaFont = await pdfDoc.embedFont(normalFontName);
-        const helveticaBoldFont = await pdfDoc.embedFont(boldFontName);
-        const fontSize = IncosPDFBase.FONTS.normal.size;
-        const textRgb = this._hexToRgb(IncosPDFBase.COLORS.text);
-
-        const x = IncosPDFBase.LAYOUT.margins.left + opts.indent;
-
-        // Dibujar etiqueta
-        const labelFont = opts.bold ? helveticaBoldFont : helveticaFont;
-        page.drawText(`${label}:`, {
-            x,
-            y,
-            size: fontSize,
-            font: labelFont,
-            color: textRgb,
-        });
-
-        // Dibujar valor
-        const valueX = x + opts.labelWidth;
-        page.drawText(value || '', {
-            x: valueX,
-            y,
-            size: fontSize,
-            font: helveticaFont,
-            color: textRgb,
-        });
-
-        // Retornar nueva posición Y
-        return y - IncosPDFBase.LAYOUT.lineHeight;
-    }
-
-    /**
-     * Agrega un checkbox (cuadrado con X si está marcado)
-     * 
-     * Método simplificado que usa el estado interno (página y posición Y).
-     * 
-     * @protected
-     * @param {string} label - Etiqueta del checkbox
-     * @param {boolean} checked - Si está marcado
-     * @param {Object} options - Opciones adicionales
-     * @param {number} [options.x] - Posición X (por defecto: margen izquierdo)
-     * @param {number} [options.size] - Tamaño del checkbox (por defecto: 12)
-     * @returns {Promise<void>} Actualiza el estado interno _currentY
-     */
-    async _addCheckbox(label, checked, options = {}) {
-        if (!this._pdfDoc || !this._currentPage) {
-            throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
-        }
-
-        const opts = {
-            x: IncosPDFBase.LAYOUT.margins.left, // Posición X por defecto desde configuración
-            size: 12,
-            ...options,
-        };
-
-        // Usar fuentes desde configuración
-        const normalFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.normal.font);
-        const boldFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.bold.font);
-        const helveticaFont = await this._pdfDoc.embedFont(normalFontName);
-        const helveticaBoldFont = await this._pdfDoc.embedFont(boldFontName);
-        const fontSize = IncosPDFBase.FONTS.normal.size;
-        const textRgb = this._hexToRgb(IncosPDFBase.COLORS.text);
-        const borderRgb = this._hexToRgb(IncosPDFBase.COLORS.border);
-
-        // Dibujar cuadrado
-        this._currentPage.drawRectangle({
-            x: opts.x,
-            y: this._currentY - opts.size,
-            width: opts.size,
-            height: opts.size,
-            borderColor: borderRgb,
-            borderWidth: 1,
-        });
-
-        // Dibujar X si está marcado
-        if (checked) {
-            const xText = 'X';
-            const xWidth = helveticaBoldFont.widthOfTextAtSize(xText, opts.size - 4);
-            const xX = opts.x + (opts.size - xWidth) / 2;
-            const xY = this._currentY - opts.size + 2;
-
-            this._currentPage.drawText(xText, {
-                x: xX,
-                y: xY,
-                size: opts.size - 4,
-                font: helveticaBoldFont,
-                color: textRgb,
-            });
-        }
-
-        // Dibujar etiqueta
-        const labelX = opts.x + opts.size + 10;
-        this._currentPage.drawText(label, {
-            x: labelX,
-            y: this._currentY,
-            size: fontSize,
-            font: helveticaFont,
-            color: textRgb,
-        });
-
-        // Actualizar posición Y después del checkbox
-        this._currentY = this._currentY - IncosPDFBase.LAYOUT.lineHeight;
-    }
-
-    /**
-     * Agrega una línea horizontal
-     * 
-     * Método simplificado que usa el estado interno (página y posición Y).
-     * 
-     * @protected
-     * @param {Object} options - Opciones adicionales
-     * @returns {void} Actualiza el estado interno _currentY
-     */
-    _addLine(options = {}) {
-        if (!this._currentPage) {
-            throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
-        }
-        const opts = {
-            width: 1,
-            color: IncosPDFBase.COLORS.border,
-            fullWidth: true,
-            indent: 0,
-            ...options,
-        };
-
-        const { width: pageWidth } = this._currentPage.getSize();
-        const lineRgb = this._hexToRgb(opts.color);
-
-        const startX = opts.fullWidth
-            ? IncosPDFBase.LAYOUT.margins.left
-            : IncosPDFBase.LAYOUT.margins.left + opts.indent;
-        const endX = opts.fullWidth
-            ? pageWidth - IncosPDFBase.LAYOUT.margins.right
-            : pageWidth - IncosPDFBase.LAYOUT.margins.right - opts.indent;
-
-        this._currentPage.drawLine({
-            start: { x: startX, y: this._currentY },
-            end: { x: endX, y: this._currentY },
-            thickness: opts.width,
-            color: lineRgb,
-        });
-
-        // Actualizar posición Y después de la línea
-        this._currentY = this._currentY - opts.width - IncosPDFBase.LAYOUT.spacing.line;
-    }
-
-    /**
      * Agrega un espacio en blanco
      * 
      * Método simplificado que usa el estado interno (posición Y).
@@ -677,6 +469,69 @@ export class IncosPDFLibBase {
             throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
         }
         this._currentY = this._currentY - height;
+    }
+
+    /**
+     * Dibuja un bloque de firma tipo footer: línea horizontal centrada y líneas de texto debajo.
+     * Posición fija al final de la página (footer), no depende de _currentY.
+     * No maneja contenidos: quien llama proporciona las cadenas a mostrar.
+     *
+     * @protected
+     * @param {Object} opts - Opciones
+     * @param {string[]} opts.lines - Líneas de texto centradas bajo la línea (orden: primera más cerca de la línea)
+     * @returns {Promise<void>}
+     */
+    async _addSignatureBlock(opts = {}) {
+        if (!this._pdfDoc || !this._currentPage) {
+            throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
+        }
+
+        const lines = Array.isArray(opts.lines) ? opts.lines : [];
+        const { width: pageWidth } = this._currentPage.getSize();
+        const cfg = IncosPDFBase.LAYOUT;
+        const margins = cfg.margins;
+        const lineWidth = cfg.signatureLineWidth ?? 150;
+        const lineThickness = cfg.signatureLineThickness ?? 1;
+        const footerPadding = cfg.signatureFooterPadding ?? 10;
+        const templateFooterHeight = cfg.signatureTemplateFooterHeight ?? 0;
+        const spaceLineToFirst = cfg.signatureSpacingLineToFirstText ?? 8;
+        const spaceBetweenLines = cfg.signatureSpacingBetweenTextLines ?? 4;
+
+        const normalFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.normal.font);
+        const font = await this._pdfDoc.embedFont(normalFontName);
+        const fontSize = IncosPDFBase.FONTS.normal.size;
+        const textRgb = this._hexToRgb(IncosPDFBase.COLORS.text);
+
+        const centerX = pageWidth / 2;
+        const halfLine = lineWidth / 2;
+
+        const blockHeight = lineThickness + spaceLineToFirst +
+            lines.length * fontSize + Math.max(0, lines.length - 1) * spaceBetweenLines;
+        const blockBottomY = margins.bottom + templateFooterHeight + footerPadding;
+        const lineY = blockBottomY + blockHeight - lineThickness;
+
+        this._currentPage.drawLine({
+            start: { x: centerX - halfLine, y: lineY },
+            end: { x: centerX + halfLine, y: lineY },
+            thickness: lineThickness,
+            color: textRgb,
+        });
+
+        let textY = lineY - lineThickness - spaceLineToFirst;
+        for (let i = 0; i < lines.length; i++) {
+            const str = String(lines[i] ?? '').trim();
+            const w = str ? font.widthOfTextAtSize(str, fontSize) : 0;
+            if (str) {
+                this._currentPage.drawText(str, {
+                    x: centerX - w / 2,
+                    y: textY,
+                    size: fontSize,
+                    font,
+                    color: textRgb,
+                });
+            }
+            textY -= fontSize + (i < lines.length - 1 ? spaceBetweenLines : 0);
+        }
     }
 
     // ============================================
