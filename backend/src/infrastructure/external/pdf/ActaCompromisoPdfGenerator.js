@@ -59,77 +59,15 @@ export class ActaCompromisoPdfGenerator extends IncosPDFLibBase {
             // 2. Obtener la primera página e inicializar el estado interno
             const pages = pdfDoc.getPages();
             const firstPage = pages[0];
-
-            // 3. Construir el documento agregando componentes secuencialmente
             this._initializeDocumentState(pdfDoc, firstPage, true);
 
-            // Agregar título principal (usa fuente por defecto desde configuración)
-            await this._addDocumentTitle(IncosPDFBase.DOCUMENT_TITLES.ACTA_COMPROMISO);
-
-            // Agregar subtítulo de gestión si se proporciona
-            if (options.gestion) {
-                const gestionYear = String(options.gestion);
-                await this._addSubtitle(`GESTIÓN ${gestionYear}`);
-            }
-
-            // Espaciado después del subtítulo para separar de las secciones
-            this._addSpace();
-
-            // Agregar títulos de secciones
-            await this._addSection(IncosPDFBase.SECTION_TITLES.FECHA_REGISTRO);
-
-            // Agregar párrafo de fecha con ciudad (reemplazar placeholder con fecha actual)
-            if (options.fechaActual) {
-                const fechaTexto = IncosPDFBase.TEMPLATE_TEXTS.FECHA_REGISTRO.replace('{FECHA}', options.fechaActual);
-                await this._addParagraph(fechaTexto);
-            }
-
-            await this._addSection(IncosPDFBase.SECTION_TITLES.NOMBRE_IDENTIFICACION);
-
-            // Agregar párrafo con información del estudiante
-            if (options.student) {
-                const nombreTexto = IncosPDFBase.TEMPLATE_TEXTS.NOMBRE_IDENTIFICACION
-                    .replace('{APELLIDO_PATERNO}', options.student.apellidoPaterno || '')
-                    .replace('{APELLIDO_MATERNO}', options.student.apellidoMaterno || '')
-                    .replace('{NOMBRES}', options.student.nombres || '')
-                    .replace('{CI}', options.student.ci || '')
-                    .replace('{EXPEDICION}', options.student.expedicion || '');
-                await this._addParagraph(nombreTexto);
-            }
-
-            await this._addSection(IncosPDFBase.SECTION_TITLES.REQUISITOS);
-
-            // Agregar párrafo introductorio antes de la lista de documentos
-            await this._addParagraph(IncosPDFBase.TEMPLATE_TEXTS.REQUISITOS_INTRO);
-
-            // Agregar lista de documentos con viñetas
-            if (options.entregas && Array.isArray(options.entregas) && options.entregas.length > 0) {
-                for (const entrega of options.entregas) {
-                    // Construir texto con los campos relevantes
-                    const nombreDocumento = entrega.nombre_documento || 'Documento sin nombre';
-                    const observaciones = entrega.observaciones_entrega || '';
-                    const enTramite = entrega.en_tramite === 1 || entrega.en_tramite === true;
-
-                    // Construir texto del documento
-                    let documentoTexto = nombreDocumento;
-                    if (enTramite) {
-                        documentoTexto += ' - En trámite';
-                    }
-
-                    await this._addBulletPoint(documentoTexto);
-                }
-            }
-
-            // Espaciado después de la lista de documentos para separar de las secciones
-            this._addSpace();
-
-            await this._addSection(IncosPDFBase.SECTION_TITLES.PLAZOS_COMPROMISO);
-            await this._addSection(IncosPDFBase.SECTION_TITLES.MOTIVOS);
-
-            // Aquí se pueden agregar más componentes (la librería maneja automáticamente currentY):
-            // await this._addParagraph('Texto del párrafo...');
-            // await this._addField('Campo', 'Valor');
-            // this._addLine();
+            // 3. Construir el documento sección por sección
+            await this._buildHeader(options);
+            await this._buildFechaRegistro(options);
+            await this._buildNombreIdentificacion(options);
+            await this._buildRequisitos(options);
+            await this._buildPlazosCompromiso(options);
+            await this._buildMotivos(options);
 
             // 4. Serializar el PDF a bytes (usa método heredado)
             const pdfBuffer = await this._saveDocument(pdfDoc);
@@ -156,10 +94,152 @@ export class ActaCompromisoPdfGenerator extends IncosPDFLibBase {
     // MÉTODOS ESPECÍFICOS DEL ACTA DE COMPROMISO
     // ============================================
 
-    /* -----------------------------------------------------------------------
-     * Métodos de construcción de contenido (comentados hasta uso por partes).
-     * Se usarán cuando se construya el documento con datos del estudiante.
-     * -----------------------------------------------------------------------
-  
-    */
+    /**
+     * Construye el encabezado del documento (título y subtítulo)
+     * 
+     * @private
+     * @param {Object} options - Opciones de generación
+     * @returns {Promise<void>}
+     */
+    async _buildHeader(options) {
+        // Agregar título principal
+        await this._addDocumentTitle(IncosPDFBase.DOCUMENT_TITLES.ACTA_COMPROMISO);
+
+        // Agregar subtítulo de gestión si se proporciona
+        if (options.gestion) {
+            const gestionYear = String(options.gestion);
+            await this._addSubtitle(`GESTIÓN ${gestionYear}`);
+        }
+
+        // Espaciado después del subtítulo para separar de las secciones
+        this._addSpace();
+    }
+
+    /**
+     * Construye la sección de fecha de registro
+     * 
+     * @private
+     * @param {Object} options - Opciones de generación
+     * @returns {Promise<void>}
+     */
+    async _buildFechaRegistro(options) {
+        await this._addSection(IncosPDFBase.SECTION_TITLES.FECHA_REGISTRO);
+
+        // Agregar párrafo de fecha con ciudad
+        if (options.fechaActual) {
+            const fechaTexto = IncosPDFBase.TEMPLATE_TEXTS.FECHA_REGISTRO.replace('{FECHA}', options.fechaActual);
+            await this._addParagraph(fechaTexto);
+        }
+    }
+
+    /**
+     * Construye la sección de nombre completo e identificación
+     * 
+     * @private
+     * @param {Object} options - Opciones de generación
+     * @returns {Promise<void>}
+     */
+    async _buildNombreIdentificacion(options) {
+        await this._addSection(IncosPDFBase.SECTION_TITLES.NOMBRE_IDENTIFICACION);
+
+        // Agregar párrafo con información del estudiante
+        if (options.student) {
+            const nombreTexto = IncosPDFBase.TEMPLATE_TEXTS.NOMBRE_IDENTIFICACION
+                .replace('{APELLIDO_PATERNO}', options.student.apellidoPaterno || '')
+                .replace('{APELLIDO_MATERNO}', options.student.apellidoMaterno || '')
+                .replace('{NOMBRES}', options.student.nombres || '')
+                .replace('{CI}', options.student.ci || '')
+                .replace('{EXPEDICION}', options.student.expedicion || '');
+            await this._addParagraph(nombreTexto);
+        }
+    }
+
+    /**
+     * Construye la sección de requisitos con lista de documentos
+     * 
+     * @private
+     * @param {Object} options - Opciones de generación
+     * @returns {Promise<void>}
+     */
+    async _buildRequisitos(options) {
+        await this._addSection(IncosPDFBase.SECTION_TITLES.REQUISITOS);
+
+        // Agregar párrafo introductorio antes de la lista de documentos
+        await this._addParagraph(IncosPDFBase.TEMPLATE_TEXTS.REQUISITOS_INTRO);
+
+        // Agregar lista de documentos con viñetas
+        if (options.entregas && Array.isArray(options.entregas) && options.entregas.length > 0) {
+            for (const entrega of options.entregas) {
+                const nombreDocumento = entrega.nombre_documento || 'Documento sin nombre';
+                const enTramite = entrega.en_tramite === 1 || entrega.en_tramite === true;
+
+                // Construir texto del documento
+                let documentoTexto = nombreDocumento;
+                if (enTramite) {
+                    documentoTexto += ' - En trámite';
+                }
+
+                await this._addBulletPoint(documentoTexto);
+            }
+        }
+
+        // Espaciado después de la lista de documentos
+        this._addSpace();
+    }
+
+    /**
+     * Construye la sección de plazos de compromiso
+     * 
+     * @private
+     * @param {Object} options - Opciones de generación
+     * @returns {Promise<void>}
+     */
+    async _buildPlazosCompromiso(options) {
+        await this._addSection(IncosPDFBase.SECTION_TITLES.PLAZOS_COMPROMISO);
+
+        // Agregar párrafo de plazos de compromiso
+        const diasPlazo = options.diasPlazo || 30; // Valor por defecto si no se proporciona
+        const plazosTexto = IncosPDFBase.TEMPLATE_TEXTS.PLAZOS_COMPROMISO
+            .replace('{DIAS_PLAZO}', String(diasPlazo))
+            .replace('{INSTITUTE_NAME}', IncosPDFBase.INSTITUTE.name);
+        await this._addParagraph(plazosTexto);
+    }
+
+    /**
+     * Construye la sección de motivos con lista de observaciones
+     * 
+     * @private
+     * @param {Object} options - Opciones de generación
+     * @returns {Promise<void>}
+     */
+    async _buildMotivos(options) {
+        await this._addSection(IncosPDFBase.SECTION_TITLES.MOTIVOS);
+
+        // Agregar párrafo introductorio antes de la lista de motivos
+        await this._addParagraph(IncosPDFBase.TEMPLATE_TEXTS.MOTIVOS_INTRO);
+
+        // Agregar lista de motivos (observaciones) con viñetas
+        if (options.entregas && Array.isArray(options.entregas) && options.entregas.length > 0) {
+            for (const entrega of options.entregas) {
+                const observaciones = entrega.observaciones_entrega || '';
+                const nombreDocumento = entrega.nombre_documento || 'Documento sin nombre';
+
+                // Solo agregar viñeta si hay observaciones
+                if (observaciones) {
+                    // Limpiar saltos de línea y caracteres problemáticos para pdf-lib
+                    const observacionesLimpias = observaciones
+                        .replace(/\n/g, ' ')  // Reemplazar saltos de línea con espacios
+                        .replace(/\r/g, '')   // Eliminar retornos de carro
+                        .replace(/\t/g, ' ')   // Reemplazar tabs con espacios
+                        .trim();               // Eliminar espacios al inicio y final
+
+                    if (observacionesLimpias) {
+                        // Agregar nombre del documento entre paréntesis
+                        const motivoTexto = `${observacionesLimpias} (${nombreDocumento}).`;
+                        await this._addBulletPoint(motivoTexto);
+                    }
+                }
+            }
+        }
+    }
 }

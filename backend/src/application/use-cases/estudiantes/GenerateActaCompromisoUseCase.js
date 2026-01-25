@@ -176,6 +176,9 @@ export class GenerateActaCompromisoUseCase extends BaseDocumentGenerationUseCase
         // Obtener fecha actual desde el método del base
         const fechaActual = this._getCurrentDate();
 
+        // Valor estático de días de plazo (hasta que se implemente la lógica de plazos)
+        const diasPlazo = 30;
+
         // Pasar todos los datos necesarios al generador de PDF
         return await this.pdfGenerator.generateActaCompromiso({
             gestion: gestionYear,
@@ -190,6 +193,7 @@ export class GenerateActaCompromisoUseCase extends BaseDocumentGenerationUseCase
             },
             fechaActual: fechaActual,
             entregas: entregasConDetalle || [],
+            diasPlazo: diasPlazo,
         });
     }
 

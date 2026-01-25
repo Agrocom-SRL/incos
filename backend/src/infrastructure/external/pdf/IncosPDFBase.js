@@ -77,12 +77,14 @@ export class IncosPDFBase {
 
     /**
      * Textos de plantilla para documentos
-     * Usar placeholders como {FECHA}, {APELLIDO_PATERNO}, {APELLIDO_MATERNO}, {NOMBRES}, {CI}, {EXPEDICION}
+     * Usar placeholders como {FECHA}, {APELLIDO_PATERNO}, {APELLIDO_MATERNO}, {NOMBRES}, {CI}, {EXPEDICION}, {INSTITUTE_NAME}, {DIAS_PLAZO}
      */
     static TEMPLATE_TEXTS = {
         FECHA_REGISTRO: 'En la ciudad de Santa Cruz de la Sierra, {FECHA}.',
         NOMBRE_IDENTIFICACION: 'Yo {APELLIDO_PATERNO} {APELLIDO_MATERNO} {NOMBRES} con C.I. {CI} {EXPEDICION}, me comprometo completar la documentación Faltante.',
         REQUISITOS_INTRO: 'Los siguientes documentos están pendientes de entrega:',
+        PLAZOS_COMPROMISO: 'En un plazo máximo de {DIAS_PLAZO} días, a partir de la fecha de registro. Una vez vencido el plazo y en caso de no haber completado los requisitos exigidos por el {INSTITUTE_NAME}, me sujeto a las disposiciones de las Autoridades del Instituto.',
+        MOTIVOS_INTRO: 'Por estos motivos no ha presentado los documentos faltantes:',
     };
 
     // ============================================
