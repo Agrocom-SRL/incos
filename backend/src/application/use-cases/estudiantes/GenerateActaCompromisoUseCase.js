@@ -193,7 +193,7 @@ export class GenerateActaCompromisoUseCase extends BaseDocumentGenerationUseCase
     async _persistDocument(studentId, pdfBuffer, student) {
         // Preparar información del archivo
         const relativeScope = UPLOAD.studentDocuments(studentId);
-        const fileName = `acta_compromiso_${student.codigoEstudiante}.pdf`;
+        const fileName = `acta_compromiso_${student.studentCode}.pdf`;
 
         // Guardar PDF en uploads (usa método del base)
         const result = await this._saveToUploads(
