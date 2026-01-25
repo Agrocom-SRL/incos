@@ -1,6 +1,13 @@
 import { getEnv, getEnvAsNumber, getEnvAsBoolean } from './env.validator.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 const nodeEnv = getEnv('NODE_ENV', 'development');
+
+// Obtener ruta base del backend (desde este archivo: config/ -> src/ -> backend/)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const BACKEND_ROOT = path.resolve(__dirname, '../..');
 
 /**
  * Configuración del servidor Express
@@ -23,6 +30,7 @@ export const serverConfig = {
 
     // Rutas
     uploadsPath: getEnv('UPLOAD_DIR', 'uploads'),
+    backendRoot: BACKEND_ROOT, // Ruta base del backend para resolver rutas relativas
 
     // Aplicación
     appName: getEnv('APP_NAME', 'Sistema INCOS'),

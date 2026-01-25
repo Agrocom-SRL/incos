@@ -72,12 +72,15 @@ export class PDFGenerator extends IPDFGenerator {
    * 
    * Este generador edita la plantilla PDF (Plantilla.pdf) usando pdf-lib.
    * 
+   * @param {Object} [options] - Opciones para la generación
+   * @param {string|number} [options.gestion] - Año de gestión (ej: '2026' o 2026). Si no se proporciona, usa el año actual
    * @returns {Promise<Buffer>} Contenido del PDF generado
    * 
    * @example
    * const pdfBuffer = await pdfGenerator.generateActaCompromiso();
+   * const pdfBuffer = await pdfGenerator.generateActaCompromiso({ gestion: 2026 });
    */
-  async generateActaCompromiso() {
+  async generateActaCompromiso(options = {}) {
     if (!this.actaCompromisoPdfGenerator) {
       throw new Error(
         'ActaCompromisoPdfGenerator no está inyectado. ' +
@@ -85,7 +88,7 @@ export class PDFGenerator extends IPDFGenerator {
       );
     }
 
-    return await this.actaCompromisoPdfGenerator.generateEmpty();
+    return await this.actaCompromisoPdfGenerator.generateEmpty(options);
   }
 
   // ============================================

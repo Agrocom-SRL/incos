@@ -118,7 +118,10 @@ export function registerEstudiantesResource(container) {
         (c) =>
             new GenerateActaCompromisoUseCase({
                 studentRepository: c.resolve(REPOSITORIOS_TOKENS.studentRepository),
+                studentDocumentRepository: c.resolve(REPOSITORIOS_TOKENS.studentDocumentRepository),
                 studentDocumentDeliveryRepository: c.resolve(REPOSITORIOS_TOKENS.studentDocumentDeliveryRepository),
+                configuracionSistemaRepository: c.resolve(REPOSITORIOS_TOKENS.configuracionSistemaRepository),
+                managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
                 pdfGenerator: c.resolve(SERVICIOS_TOKENS.pdfGenerator),
                 uploadsStorage: c.resolve(SERVICIOS_TOKENS.uploadsStorage),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),

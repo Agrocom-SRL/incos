@@ -1,9 +1,12 @@
 import { getEnv, getEnvAsNumber } from './env.validator.js';
 
 /**
- * Configuración de uploads (Multer)
+ * Configuración de Multer (middleware de upload de archivos)
+ * 
+ * Define límites, tipos de archivo permitidos y configuración para el middleware Multer.
+ * Se usa en upload.middleware.js para validar y procesar archivos subidos.
  */
-export const uploadConfig = {
+export const multerConfig = {
     // Directorio de uploads
     uploadDir: getEnv('UPLOAD_DIR', 'uploads'),
 

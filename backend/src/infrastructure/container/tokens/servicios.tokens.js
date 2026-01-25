@@ -6,14 +6,13 @@
  */
 
 export const SERVICIOS_TOKENS = {
-    logger: 'logger',
-    errorFormatter: 'errorFormatter',
-    responseFormatter: 'responseFormatter',
-    validateRequest: 'validateRequest',
-    fileUploadService: 'fileUploadService',
-    fileStorageService: 'fileStorageService',
-    actaCompromisoPdfGenerator: 'actaCompromisoPdfGenerator', // Interno, usado por PDFGenerator
+    logger: 'logger', // Sistema de logging (Winston) - Implementa ILogger
+    errorFormatter: 'errorFormatter', // Formateo de errores para respuestas HTTP
+    responseFormatter: 'responseFormatter', // Formateo de respuestas exitosas
+    validateRequest: 'validateRequest', // Middleware de validación de requests
+    fileUploadService: 'fileUploadService', // Servicio de subida de archivos (Multer) - futuro
+    actaCompromisoPdfGenerator: 'actaCompromisoPdfGenerator', // Generador de actas de compromiso (pdf-lib)
     pdfGenerator: 'pdfGenerator', // IPDFGenerator (fachada única)
-    uploadsStorage: 'uploadsStorage',
+    uploadsStorage: 'uploadsStorage', // IUploadsStorage (almacenamiento en uploads)
 };
 

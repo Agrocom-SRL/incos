@@ -1,12 +1,9 @@
 import multer from 'multer';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import fs from 'fs';
-import { uploadConfig } from '../../infrastructure/config/upload.config.js';
-
-// Obtener __dirname en ES modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import { multerConfig } from '../../infrastructure/config/multer.config.js';
+import { serverConfig } from '../../infrastructure/config/server.config.js';
+import { UPLOAD } from '../../infrastructure/config/uploads.config.js';
 
 /**
  * Middleware de upload para documentos de pago
@@ -24,18 +21,14 @@ export function createUploadMiddleware(fieldName = 'documentoRespaldo') {
             // Obtener student_id del body o params
             const studentId = req.body.student_id || req.params.studentId || 'temp';
             
-            // Crear ruta: backend/uploads/documentos/estudiantes/{studentId}/pagos/
-            // __dirname es: backend/src/presentation/middleware/
-            // Necesitamos subir 3 niveles para llegar a backend/
-            const uploadPath = path.resolve(
-                __dirname,
-                '../../../',  // Subir 3 niveles: middleware -> presentation -> src -> backend
-                uploadConfig.uploadDir,
-                'documentos',
-                'estudiantes',
-                String(studentId),
-                'pagos'
-            );
+            // Usar configuración centralizada para construir la ruta
+            const relativeScope = UPLOAD.studentPayments(studentId);
+            const relativePath = path.join(relativeScope);
+            
+            // Resolver ruta absoluta usando serverConfig
+            const uploadPath = path.isAbsolute(multerConfig.uploadDir)
+                ? path.join(multerConfig.uploadDir, relativePath)
+                : path.resolve(serverConfig.backendRoot, multerConfig.uploadDir, relativePath);
 
             // Crear directorio si no existe
             if (!fs.existsSync(uploadPath)) {
@@ -45,12 +38,8 @@ export function createUploadMiddleware(fieldName = 'documentoRespaldo') {
             cb(null, uploadPath);
         },
         filename: (req, file, cb) => {
-            // Generar nombre único: PAGO_{timestamp}_{nombreOriginal}
-            const timestamp = Date.now();
-            const originalName = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
-            const ext = path.extname(originalName);
-            const nameWithoutExt = path.basename(originalName, ext);
-            const filename = `PAGO_${timestamp}_${nameWithoutExt}${ext}`;
+            // Usar función centralizada para generar nombre de archivo
+            const filename = UPLOAD.generatePaymentFileName(file.originalname);
             cb(null, filename);
         },
     });
@@ -61,20 +50,20 @@ export function createUploadMiddleware(fieldName = 'documentoRespaldo') {
         const mimeType = file.mimetype;
 
         // Validar extensión
-        if (!uploadConfig.allowedFileTypes.includes(ext)) {
+        if (!multerConfig.allowedFileTypes.includes(ext)) {
             return cb(
                 new Error(
-                    `Tipo de archivo no permitido. Tipos permitidos: ${uploadConfig.allowedFileTypes.join(', ')}`
+                    `Tipo de archivo no permitido. Tipos permitidos: ${multerConfig.allowedFileTypes.join(', ')}`
                 ),
                 false
             );
         }
 
         // Validar MIME type
-        if (!uploadConfig.allowedMimeTypes.includes(mimeType)) {
+        if (!multerConfig.allowedMimeTypes.includes(mimeType)) {
             return cb(
                 new Error(
-                    `Tipo MIME no permitido. Tipos permitidos: ${uploadConfig.allowedMimeTypes.join(', ')}`
+                    `Tipo MIME no permitido. Tipos permitidos: ${multerConfig.allowedMimeTypes.join(', ')}`
                 ),
                 false
             );
@@ -87,7 +76,7 @@ export function createUploadMiddleware(fieldName = 'documentoRespaldo') {
     const upload = multer({
         storage,
         fileFilter,
-        limits: uploadConfig.limits,
+        limits: multerConfig.limits,
     });
 
     // Retornar middleware para un solo archivo

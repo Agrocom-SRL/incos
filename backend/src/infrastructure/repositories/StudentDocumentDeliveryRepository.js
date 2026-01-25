@@ -169,7 +169,7 @@ export class StudentDocumentDeliveryRepository extends BaseRepository {
    *   - documento_padre_id: ID del documento padre
    *   - es_documento_sistema: Si es documento del sistema
    */
-  async obtenerEntregasConDetalleDocumento(filters = {}) {
+  async obtenerEntregasConDetalle(filters = {}) {
     // Construir condiciones WHERE dinámicamente
     const whereConditions = [];
     const replacements = [];

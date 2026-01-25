@@ -57,9 +57,11 @@ export class ActaCompromisoPdfGenerator {
    * Retorna el contenido como Buffer. No escribe en disco; el guardado lo hace
    * UploadsStorage u otro componente externo.
    *
+   * @param {Object} [options] - Opciones para la generación
+   * @param {string|number} [options.gestion] - Año de gestión (ej: '2026' o 2026). Si no se proporciona, usa el año actual
    * @returns {Promise<Buffer>} Contenido del PDF con título agregado
    */
-  async generateEmpty() {
+  async generateEmpty(options = {}) {
     try {
       if (!fs.existsSync(TEMPLATE_PATH)) {
         throw new Error(
@@ -81,11 +83,14 @@ export class ActaCompromisoPdfGenerator {
 
       // Construir el documento agregando componentes
       // El título se posiciona debajo del encabezado de la plantilla
-      // Obtener año actual para la gestión
-      const currentYear = new Date().getFullYear();
+      // Obtener año de gestión: usar el proporcionado o el año actual como fallback
+      const gestionYear = options.gestion 
+        ? String(options.gestion) 
+        : new Date().getFullYear().toString();
+      
       let currentY = await this._addDocumentTitle(pdfDoc, firstPage, {
         headerHeight: 100,
-        gestion: currentYear.toString(),
+        gestion: gestionYear,
       });
       
       // Aquí se pueden agregar más componentes usando currentY:

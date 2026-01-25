@@ -15,7 +15,7 @@ import { IRepository } from './IRepository.js';
  * - count(filters)
  * 
  * Métodos específicos:
- * - obtenerEntregasConDetalleDocumento(filters) - Obtiene entregas de documentos con detalles del documento
+ * - obtenerEntregasConDetalle(filters) - Obtiene entregas de documentos con detalles del documento
  */
 export class IEstudianteDocumentoEntregaRepository extends IRepository {
   /**
@@ -41,8 +41,8 @@ export class IEstudianteDocumentoEntregaRepository extends IRepository {
    *   - documento_padre_id: ID del documento padre
    *   - es_documento_sistema: Si es documento del sistema
    */
-  async obtenerEntregasConDetalleDocumento(filters = {}) {
-    throw new Error('Method obtenerEntregasConDetalleDocumento must be implemented by subclass');
+  async obtenerEntregasConDetalle(filters = {}) {
+    throw new Error('Method obtenerEntregasConDetalle must be implemented by subclass');
   }
 }
 

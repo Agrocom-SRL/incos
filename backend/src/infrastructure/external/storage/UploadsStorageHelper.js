@@ -19,14 +19,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import { serverConfig } from '../../config/server.config.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-/** Base absoluta para uploads (backend root cuando uploadDir es relativo) */
-const BACKEND_ROOT = path.resolve(__dirname, '../../../..');
 
 export class UploadsStorageHelper {
   /**
@@ -45,7 +38,7 @@ export class UploadsStorageHelper {
 
     const absolutePath = path.isAbsolute(uploadDir)
       ? path.join(uploadDir, relativePath)
-      : path.resolve(BACKEND_ROOT, uploadDir, relativePath);
+      : path.resolve(serverConfig.backendRoot, uploadDir, relativePath);
 
     const dir = path.dirname(absolutePath);
     if (!fs.existsSync(dir)) {

@@ -12,7 +12,6 @@
  * 
  * Servicios disponibles pero no registrados hasta que se necesiten:
  * - fileUploadService: Servicio de subida de archivos (Multer)
- * - fileStorageService: Gestión de archivos
  * - emailService: Envío de emails
  * 
  * Todos los servicios se registran como singleton ya que:
