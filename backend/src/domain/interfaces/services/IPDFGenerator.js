@@ -31,4 +31,16 @@ export class IPDFGenerator {
   generateActaCompromiso() {
     throw new Error('Method generateActaCompromiso must be implemented');
   }
+
+  /**
+   * Genera un Formulario de Inscripción a partir de la plantilla PDF
+   * 
+   * Edita la plantilla PDF (Plantilla.pdf) usando pdf-lib (FormularioInscripcionPdfGenerator).
+   * 
+   * @param {Object} [options] - Opciones (gestionYear, apellidoPaterno, apellidoMaterno, nombres, ci, expedicion, etc.)
+   * @returns {Promise<Buffer>} Contenido del PDF generado
+   */
+  generateFormularioInscripcion(options = {}) {
+    throw new Error('Method generateFormularioInscripcion must be implemented');
+  }
 }

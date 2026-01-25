@@ -12,6 +12,7 @@ export const SERVICIOS_TOKENS = {
     validateRequest: 'validateRequest', // Middleware de validación de requests
     fileUploadService: 'fileUploadService', // Servicio de subida de archivos (Multer) - futuro
     actaCompromisoPdfGenerator: 'actaCompromisoPdfGenerator', // Generador de actas de compromiso (pdf-lib)
+    formularioInscripcionPdfGenerator: 'formularioInscripcionPdfGenerator', // Generador de formulario de inscripción (pdf-lib)
     pdfGenerator: 'pdfGenerator', // IPDFGenerator (fachada única)
     uploadsStorage: 'uploadsStorage', // IUploadsStorage (almacenamiento en uploads)
 };

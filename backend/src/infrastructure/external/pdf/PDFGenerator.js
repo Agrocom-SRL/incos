@@ -15,6 +15,7 @@
  * Generadores disponibles:
  * - ReciboPagoMejorado: Recibos de pago (crea desde cero)
  * - ActaCompromiso: Actas de compromiso (edita plantilla PDF)
+ * - FormularioInscripcion: Formulario de inscripción (edita plantilla PDF)
  * 
  * @module PDFGenerator
  * @implements {IPDFGenerator}
@@ -27,11 +28,13 @@ export class PDFGenerator extends IPDFGenerator {
     /**
      * @param {Object} params - Dependencias inyectadas
      * @param {Object} params.actaCompromisoPdfGenerator - Generador de actas (DI)
+     * @param {Object} params.formularioInscripcionPdfGenerator - Generador de formulario de inscripción (DI)
      * @param {ILogger} [params.logger] - Logger para registro de eventos
      */
-    constructor({ actaCompromisoPdfGenerator, logger } = {}) {
+    constructor({ actaCompromisoPdfGenerator, formularioInscripcionPdfGenerator, logger } = {}) {
         super();
         this.actaCompromisoPdfGenerator = actaCompromisoPdfGenerator;
+        this.formularioInscripcionPdfGenerator = formularioInscripcionPdfGenerator;
         this.logger = logger;
     }
 
@@ -89,6 +92,25 @@ export class PDFGenerator extends IPDFGenerator {
         }
 
         return await this.actaCompromisoPdfGenerator.generate(options);
+    }
+
+    /**
+     * Genera un Formulario de Inscripción a partir de la plantilla PDF
+     *
+     * Delega en FormularioInscripcionPdfGenerator (pdf-lib).
+     *
+     * @param {Object} [options] - Opciones (gestionYear, apellidoPaterno, apellidoMaterno, nombres, ci, expedicion, etc.)
+     * @returns {Promise<Buffer>} Contenido del PDF generado
+     */
+    async generateFormularioInscripcion(options = {}) {
+        if (!this.formularioInscripcionPdfGenerator) {
+            throw new Error(
+                'FormularioInscripcionPdfGenerator no está inyectado. ' +
+                'Asegúrate de registrar PDFGenerator en el container con todas sus dependencias.'
+            );
+        }
+
+        return await this.formularioInscripcionPdfGenerator.generate(options);
     }
 
     // ============================================

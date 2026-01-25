@@ -7,6 +7,7 @@
  * - responseFormatter: Formateo de respuestas exitosas
  * - validateRequest: Middleware de validación de requests
  * - actaCompromisoPdfGenerator: Generador interno de actas (pdf-lib, usado por PDFGenerator)
+ * - formularioInscripcionPdfGenerator: Generador de formulario de inscripción (pdf-lib, usado por PDFGenerator)
  * - pdfGenerator: Implementa IPDFGenerator, fachada única para generación de PDFs
  * - uploadsStorage: Implementa IUploadsStorage, almacenamiento de archivos en uploads
  * 
@@ -29,6 +30,7 @@ import { errorFormatter } from '../../services/ErrorFormatter.js';
 import { responseFormatter } from '../../services/ResponseFormatter.js';
 import { createValidateRequest } from '../../../presentation/middleware/validation.middleware.js';
 import { ActaCompromisoPdfGenerator } from '../../external/pdf/ActaCompromisoPdfGenerator.js';
+import { FormularioInscripcionPdfGenerator } from '../../external/pdf/FormularioInscripcionPdfGenerator.js';
 import { PDFGenerator } from '../../external/pdf/PDFGenerator.js';
 import { UploadsStorageAdapter } from '../../services/UploadsStorageAdapter.js';
 
@@ -68,6 +70,14 @@ export function registerServicesModule(container) {
         })
     );
 
+    registerService(
+        container,
+        SERVICIOS_TOKENS.formularioInscripcionPdfGenerator,
+        (c) => new FormularioInscripcionPdfGenerator({
+            logger: c.resolve(SERVICIOS_TOKENS.logger),
+        })
+    );
+
     // ============================================
     // PDF GENERATOR (IPDFGenerator - Fachada única)
     // ============================================
@@ -76,6 +86,7 @@ export function registerServicesModule(container) {
         SERVICIOS_TOKENS.pdfGenerator,
         (c) => new PDFGenerator({
             actaCompromisoPdfGenerator: c.resolve(SERVICIOS_TOKENS.actaCompromisoPdfGenerator),
+            formularioInscripcionPdfGenerator: c.resolve(SERVICIOS_TOKENS.formularioInscripcionPdfGenerator),
             logger: c.resolve(SERVICIOS_TOKENS.logger),
         })
     );

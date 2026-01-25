@@ -19,7 +19,7 @@ export const INSCRIPCIONES_TOKENS = {
     createEnrollmentUseCase: 'inscripciones.createEnrollmentUseCase',
     getEnrollmentByIdUseCase: 'inscripciones.getEnrollmentByIdUseCase',
     deleteEnrollmentUseCase: 'inscripciones.deleteEnrollmentUseCase',
-    generateBoletaInscripcionUseCase: 'inscripciones.generateBoletaInscripcionUseCase',
+    generateFormularioInscripcionUseCase: 'inscripciones.generateFormularioInscripcionUseCase',
     // TODO: Agregar otros Use Cases cuando se implementen sus endpoints
     // updateEnrollmentUseCase: 'inscripciones.updateEnrollmentUseCase',
 
@@ -28,7 +28,7 @@ export const INSCRIPCIONES_TOKENS = {
     createEnrollmentController: 'inscripciones.createEnrollmentController',
     getEnrollmentByIdController: 'inscripciones.getEnrollmentByIdController',
     deleteEnrollmentController: 'inscripciones.deleteEnrollmentController',
-    generateBoletaInscripcionController: 'inscripciones.generateBoletaInscripcionController',
+    generateFormularioInscripcionController: 'inscripciones.generateFormularioInscripcionController',
     // TODO: Agregar otros Controllers cuando se implementen sus endpoints
     // updateEnrollmentController: 'inscripciones.updateEnrollmentController',
 

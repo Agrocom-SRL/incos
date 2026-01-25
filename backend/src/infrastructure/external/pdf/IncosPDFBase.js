@@ -57,6 +57,7 @@ export class IncosPDFBase {
 
     static DOCUMENT_TITLES = {
         ACTA_COMPROMISO: 'ACTA DE COMPROMISO PARA LA ENTREGA DE DOCUMENTOS',
+        FORMULARIO_INSCRIPCION: 'FORMULARIO DE INSCRIPCIÓN',
     };
 
     // ============================================
