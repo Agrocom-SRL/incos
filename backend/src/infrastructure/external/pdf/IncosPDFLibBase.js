@@ -266,119 +266,113 @@ export class IncosPDFLibBase {
      * Agrega el título principal del documento
      * 
      * Método simplificado que usa el estado interno (página y posición Y).
-     * Usa automáticamente la fuente por defecto desde configuración.
+     * Siempre usa la fuente por defecto desde configuración (defaultTitleFont) y está centrado.
      * 
      * @protected
      * @param {string} titleText - Texto del título
-     * @param {Object} options - Opciones de personalización
-     * @param {string|string[]} [options.fontName] - Nombre de fuente personalizada (por defecto: IncosPDFBase.FONTS.defaultTitleFont)
-     * @param {number} [options.fontSize] - Tamaño de fuente (por defecto: IncosPDFBase.FONTS.title.size)
-     * @param {string} [options.color] - Color en hexadecimal (por defecto: IncosPDFBase.COLORS.primary)
-     * @param {string} [options.align] - Alineación: 'left', 'center', 'right' (por defecto: 'center')
      * @returns {Promise<void>} Actualiza el estado interno _currentY
      */
-    async _addDocumentTitle(titleText, options = {}) {
+    async _addDocumentTitle(titleText) {
         if (!this._pdfDoc || !this._currentPage) {
             throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
         }
 
-        const opts = {
-            fontName: IncosPDFBase.FONTS.defaultTitleFont, // Fuente por defecto desde configuración
-            fontSize: IncosPDFBase.FONTS.title.size, // Tamaño desde configuración
-            color: IncosPDFBase.COLORS.primary,
-            align: 'center',
-            ...options,
-        };
-
         const { width: pageWidth } = this._currentPage.getSize();
 
-        // Cargar fuente (puede ser personalizada o estándar)
-        let titleFont;
-        if (opts.fontName && !opts.fontName.startsWith('Helvetica') && !opts.fontName.startsWith('Times') && !opts.fontName.startsWith('Courier')) {
-            // Es una fuente personalizada
-            titleFont = await this._loadCustomFont(this._pdfDoc, opts.fontName);
-        } else {
-            // Es una fuente estándar - usar mapeo desde configuración
-            const fontNameToUse = opts.fontName || IncosPDFBase.FONTS.title.font;
-            const standardFont = this._mapFontNameToStandardFont(fontNameToUse);
-            titleFont = await this._pdfDoc.embedFont(standardFont);
-        }
+        // Siempre usar fuente personalizada por defecto desde configuración
+        const titleFont = await this._loadCustomFont(this._pdfDoc, IncosPDFBase.FONTS.defaultTitleFont);
+        const titleFontSize = IncosPDFBase.FONTS.title.size;
+        const titleRgb = this._hexToRgb(IncosPDFBase.COLORS.primary);
 
-        const titleRgb = this._hexToRgb(opts.color);
-
-        // Calcular posición X según alineación
-        const titleWidth = titleFont.widthOfTextAtSize(titleText, opts.fontSize);
-        let titleX;
-        if (opts.align === 'center') {
-            titleX = (pageWidth - titleWidth) / 2;
-        } else if (opts.align === 'right') {
-            titleX = pageWidth - IncosPDFBase.LAYOUT.margins.right - titleWidth;
-        } else {
-            titleX = IncosPDFBase.LAYOUT.margins.left;
-        }
+        // Siempre centrado
+        const titleWidth = titleFont.widthOfTextAtSize(titleText, titleFontSize);
+        const titleX = (pageWidth - titleWidth) / 2;
 
         // Dibujar el título principal
         this._currentPage.drawText(titleText, {
             x: titleX,
             y: this._currentY,
-            size: opts.fontSize,
+            size: titleFontSize,
             font: titleFont,
             color: titleRgb,
         });
 
-        // Actualizar posición Y después del título
-        this._currentY = this._currentY - opts.fontSize - IncosPDFBase.LAYOUT.spacing.section;
+        // Actualizar posición Y después del título (espaciado reducido para subtítulo)
+        this._currentY = this._currentY - titleFontSize - IncosPDFBase.LAYOUT.spacing.line;
     }
 
     /**
      * Agrega un subtítulo (sección) al documento
      * 
      * Método simplificado que usa el estado interno (página y posición Y).
-     * Usa automáticamente la fuente y tamaño desde configuración.
+     * Siempre usa la misma fuente, color y tamaño que el título, y está centrado.
      * 
      * @protected
      * @param {string} text - Texto del subtítulo
-     * @param {Object} options - Opciones adicionales
-     * @param {string} [options.align] - Alineación: 'left', 'center', 'right' (por defecto: 'center')
-     * @param {number} [options.indent] - Indentación desde el margen izquierdo (por defecto: 0)
      * @returns {Promise<void>} Actualiza el estado interno _currentY
      */
-    async _addSubtitle(text, options = {}) {
+    async _addSubtitle(text) {
         if (!this._pdfDoc || !this._currentPage) {
             throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
         }
 
-        const opts = {
-            align: 'center', // 'left', 'center', 'right'
-            indent: 0,
-            ...options,
-        };
-
         const { width: pageWidth } = this._currentPage.getSize();
-        // Usar fuente desde configuración: IncosPDFBase.FONTS.subtitle.font
-        const subtitleFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.subtitle.font);
-        const helveticaBoldFont = await this._pdfDoc.embedFont(subtitleFontName);
+
+        // Usar la misma fuente, color y tamaño que el título
+        const subtitleFont = await this._loadCustomFont(this._pdfDoc, IncosPDFBase.FONTS.defaultTitleFont);
         const subtitleFontSize = IncosPDFBase.FONTS.subtitle.size;
         const subtitleRgb = this._hexToRgb(IncosPDFBase.COLORS.primary);
 
-        let x;
-        if (opts.align === 'center') {
-            const textWidth = helveticaBoldFont.widthOfTextAtSize(text, subtitleFontSize);
-            x = (pageWidth - textWidth) / 2;
-        } else {
-            x = IncosPDFBase.LAYOUT.margins.left + opts.indent;
-        }
+        // Siempre centrado
+        const textWidth = subtitleFont.widthOfTextAtSize(text, subtitleFontSize);
+        const x = (pageWidth - textWidth) / 2;
 
         this._currentPage.drawText(text.toUpperCase(), {
             x,
             y: this._currentY,
             size: subtitleFontSize,
-            font: helveticaBoldFont,
+            font: subtitleFont,
             color: subtitleRgb,
         });
 
         // Actualizar posición Y después del subtítulo
-        this._currentY = this._currentY - subtitleFontSize - IncosPDFBase.LAYOUT.spacing.subsection;
+        this._currentY = this._currentY - subtitleFontSize - IncosPDFBase.LAYOUT.spacing.paragraph;
+    }
+
+    /**
+     * Agrega un título de sección al documento
+     * 
+     * Método simplificado que usa el estado interno (página y posición Y).
+     * Usa fuente Helvetica-Bold, color primario, alineado a la izquierda.
+     * 
+     * @protected
+     * @param {string} text - Texto del título de sección
+     * @returns {Promise<void>} Actualiza el estado interno _currentY
+     */
+    async _addSection(text) {
+        if (!this._pdfDoc || !this._currentPage) {
+            throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
+        }
+
+        // Usar fuente Helvetica-Bold desde configuración
+        const sectionFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.section.font);
+        const sectionFont = await this._pdfDoc.embedFont(sectionFontName);
+        const sectionFontSize = IncosPDFBase.FONTS.section.size;
+        const sectionRgb = this._hexToRgb(IncosPDFBase.COLORS.primary);
+
+        // Siempre alineado a la izquierda
+        const x = IncosPDFBase.LAYOUT.margins.left;
+
+        this._currentPage.drawText(text, {
+            x,
+            y: this._currentY,
+            size: sectionFontSize,
+            font: sectionFont,
+            color: sectionRgb,
+        });
+
+        // Actualizar posición Y después del título de sección (con salto de línea)
+        this._currentY = this._currentY - sectionFontSize - IncosPDFBase.LAYOUT.spacing.paragraph;
     }
 
     /**

@@ -70,12 +70,20 @@ export class ActaCompromisoPdfGenerator extends IncosPDFLibBase {
                 await this._addSubtitle(`GESTIÓN ${gestionYear}`);
             }
 
+            // Espaciado después del subtítulo para separar de las secciones
+            this._addSpace();
+
+            // Agregar títulos de secciones
+            await this._addSection(IncosPDFBase.SECTION_TITLES.FECHA_REGISTRO);
+            await this._addSection(IncosPDFBase.SECTION_TITLES.NOMBRE_IDENTIFICACION);
+            await this._addSection(IncosPDFBase.SECTION_TITLES.REQUISITOS);
+            await this._addSection(IncosPDFBase.SECTION_TITLES.PLAZOS_COMPROMISO);
+            await this._addSection(IncosPDFBase.SECTION_TITLES.MOTIVOS);
+
             // Aquí se pueden agregar más componentes (la librería maneja automáticamente currentY):
-            // await this._addSubtitle('I. DATOS PERSONALES');
             // await this._addParagraph('Texto del párrafo...');
             // await this._addField('Campo', 'Valor');
             // this._addLine();
-            // this._addSpace();
 
             // 4. Serializar el PDF a bytes (usa método heredado)
             const pdfBuffer = await this._saveDocument(pdfDoc);

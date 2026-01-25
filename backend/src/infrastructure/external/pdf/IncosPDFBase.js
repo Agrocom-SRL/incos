@@ -60,6 +60,18 @@ export class IncosPDFBase {
     };
 
     // ============================================
+    // TÍTULOS DE SECCIONES
+    // ============================================
+
+    static SECTION_TITLES = {
+        FECHA_REGISTRO: 'I. FECHA DE REGISTRO',
+        NOMBRE_IDENTIFICACION: 'II. NOMBRE COMPLETO E IDENTIFICACION',
+        REQUISITOS: 'III. REQUISISTOS',
+        PLAZOS_COMPROMISO: 'IV. PLAZOS DE COMPROMISO',
+        MOTIVOS: 'V. MOTIVOS',
+    };
+
+    // ============================================
     // COLORES INSTITUCIONALES
     // ============================================
 
@@ -77,9 +89,9 @@ export class IncosPDFBase {
     // ============================================
 
     static FONTS = {
-        title: { size: 16, font: 'Helvetica-Bold' },
-        subtitle: { size: 14, font: 'Helvetica-Bold' },
-        heading: { size: 12, font: 'Helvetica-Bold' },
+        title: { size: 16 }, // Tamaño para títulos (usa defaultTitleFont)
+        subtitle: { size: 14 }, // Tamaño para subtítulos (usa defaultTitleFont)
+        section: { size: 12, font: 'Helvetica-Bold' }, // Títulos de secciones (Helvetica-Bold)
         normal: { size: 10, font: 'Helvetica' },
         small: { size: 8, font: 'Helvetica' },
         bold: { size: 10, font: 'Helvetica-Bold' },
@@ -96,7 +108,7 @@ export class IncosPDFBase {
         spacing: {
             section: 20,      // Entre secciones
             subsection: 15,   // Entre subsecciones
-            paragraph: 10,    // Entre párrafos
+            paragraph: 16,    // Entre párrafos
             line: 5,          // Entre líneas
         },
         pageSize: 'LETTER',
