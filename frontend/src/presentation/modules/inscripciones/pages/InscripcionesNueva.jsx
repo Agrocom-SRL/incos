@@ -17,7 +17,7 @@
  * Nota: Esta es una versión base que se irá completando por pasos
  */
 
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { WizardForm } from '@organisms';
@@ -69,6 +69,19 @@ const InscripcionesNueva = () => {
 
     // Búsqueda de estudiantes (objeto específico desde useInscripcionNuevaStudentSearch)
     const { studentSearch } = context;
+    
+    // Si ya hay un estudiante seleccionado, empezar desde el paso 1 (omitir búsqueda)
+    // Paso 0: Buscar Estudiante
+    // Paso 1: Seleccionar Paralelos
+    // Paso 2: Horario de Clases
+    // Usar useMemo para recalcular cuando selectedStudent cambia
+    const initialStep = useMemo(() => {
+      // Si hay un estudiante seleccionado y no está cargando, empezar en paso 1
+      if (studentSearch?.selectedStudent && !studentSearch?.loading) {
+        return 1;
+      }
+      return 0;
+    }, [studentSearch?.selectedStudent, studentSearch?.loading]);
 
     // TODO: Se agregarán en pasos siguientes:
     // const { inscripcionResult } = context; // Para reaccionar al resultado de la inscripción
@@ -95,6 +108,7 @@ const InscripcionesNueva = () => {
                 onFinish={handleFinish}
                 onSave={handleSave}
                 showSaveButton={false}
+                initialStep={initialStep}
             />
         </PageTemplate>
     );

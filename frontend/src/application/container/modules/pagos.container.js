@@ -19,6 +19,7 @@ import {
   ObtenerTodosPagosAportesUseCase,
   ObtenerPagoAportePorIdUseCase,
   EliminarPagoAporteUseCase,
+  GenerarReciboPagoUseCase,
 } from '@useCases/pagos';
 
 import PaymentAccountRepository from '@infrastructure/repositories/PaymentAccountRepository';
@@ -78,6 +79,11 @@ export function registerPagosModule(factory) {
   // Registrar Use Cases de Eliminación de Pago de Aporte
   factory.eliminarPagoAporte = () => {
     return new EliminarPagoAporteUseCase({ pagoAporteRepository });
+  };
+
+  // Registrar Use Cases de Generación de Recibo de Pago
+  factory.generarReciboPago = () => {
+    return new GenerarReciboPagoUseCase(pagoAporteRepository);
   };
 
   return factory;

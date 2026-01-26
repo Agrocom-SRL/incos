@@ -47,12 +47,16 @@ const allEnrichers = [...studentEnrichers, ...carreraEnrichers, ...paraleloEnric
  * Hook que gestiona el estado del contexto de inscripción nueva
  * 
  * @param {string} mode - Modo de operación ('nuevo' por defecto)
+ * @param {Object} options - Opciones adicionales
+ * @param {string|number|null} options.studentId - ID del estudiante para omitir paso de búsqueda (opcional)
  * @returns {Object} Objeto con todo el contexto de inscripción nueva
  */
-export const useInscripcionNuevaData = (mode = 'nuevo') => {
+export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
+    const { studentId = null } = options;
+    
     // 1. Hooks de feature
     const pageData = useInscripcionNuevaPageData({ mode });
-    const studentSearch = useInscripcionNuevaStudentSearch();
+    const studentSearch = useInscripcionNuevaStudentSearch({ studentId });
     const carrerasData = useInscripcionNuevaCarreras();
     
     // Determinar carreraId para filtrar paralelos:

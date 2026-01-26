@@ -50,6 +50,7 @@ const WizardForm = ({
   className = '',
   form: externalForm,
   onFormValuesChange, // Callback opcional para notificar cambios en valores del formulario
+  initialStep = 0, // Paso inicial del wizard (default: 0)
 }) => {
   // Hook que compone toda la lógica del wizard (navegación + formulario + cargadores)
   const {
@@ -64,6 +65,7 @@ const WizardForm = ({
     steps,
     externalForm,
     conditionalLoaders,
+    initialStep,
   });
 
   // Notificar cambios en valores del formulario al componente padre

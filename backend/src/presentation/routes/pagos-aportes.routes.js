@@ -86,6 +86,34 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
     );
 
     // ============================================
+    // GENERACIÓN DE RECIBO DE PAGO
+    // ============================================
+
+    /**
+     * GET /api/v1/pagos-aportes/:id/recibo
+     * Generar u obtener el recibo de pago de un aporte académico
+     * 
+     * Verifica si el recibo ya existe en documentos_estudiante:
+     * - Si existe, retorna la información del archivo existente
+     * - Si no existe, genera el recibo y lo guarda en documentos_estudiante
+     * 
+     * Response:
+     * {
+     *   success: true,
+     *   data: {
+     *     filePath: "/uploads/recibos/2026/pago_1234567_000001.pdf",
+     *     fileName: "pago_1234567_000001.pdf",
+     *     absolutePath: "/path/to/file.pdf"
+     *   },
+     *   message: "Recibo de pago generado correctamente"
+     * }
+     */
+    router.get(
+        '/:id/recibo',
+        (req, res, next) => controllers.generateReciboPagoController.handle(req, res, next)
+    );
+
+    // ============================================
     // ENDPOINTS FUTUROS (TODO)
     // ============================================
     // GET /estudiante/:studentId - Obtener pagos de un estudiante
