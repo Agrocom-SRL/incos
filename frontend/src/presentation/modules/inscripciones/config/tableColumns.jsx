@@ -8,6 +8,7 @@ import { Tag } from 'antd';
 import { UserOutlined, BookOutlined, CalendarOutlined } from '@ant-design/icons';
 import { TableCell } from '@molecules';
 import TableActions from '@molecules/TableActions';
+import { getDataTableAction } from '@config/icons';
 
 /**
  * Crea las columnas de la tabla de inscripciones
@@ -211,6 +212,108 @@ export const createInscripcionesTableColumns = (navigate, refetch = null, delete
           { label: 'Gestión', value: gestionAnio },
         ].filter(detail => detail.value && detail.value !== 'N/A' && detail.value !== 'Sin nombre');
         
+        // Verificar si se puede editar (solo si el tipo de inscripción es 'NUEVO')
+        // Los estudiantes NUEVOS pueden editar su inscripción porque todavía no comenzaron las clases
+        // y no se cambian los datos de estudiantes_datos_academicos, solo la inscripción
+        const tipoInscripcion = record.tipoInscripcion 
+          || record.tipo_inscripcion
+          || record.enrollment?.tipoInscripcion 
+          || record.enrollment?.tipo_inscripcion
+          || record.enrollmentType
+          || null;
+        const canEdit = tipoInscripcion === 'NUEVO';
+        
+        // Debug: Verificar valores (remover después de verificar)
+        if (inscripcionId === 2) {
+          console.log('[DEBUG] Inscripción 2:', {
+            tipoInscripcion,
+            canEdit,
+            recordKeys: Object.keys(record),
+            recordTipoInscripcion: record.tipoInscripcion,
+            recordTipo_inscripcion: record.tipo_inscripcion,
+            enrollmentTipoInscripcion: record.enrollment?.tipoInscripcion,
+            enrollmentTipo_inscripcion: record.enrollment?.tipo_inscripcion,
+            recordEnrollmentType: record.enrollmentType,
+          });
+        }
+        
+        // Extraer datos necesarios para la edición
+        const estudianteId = student?.id || record.estudianteId || record.enrollment?.estudianteId;
+        const carreraId = carrera?.id || record.carreraId || record.enrollment?.carreraId;
+        
+        // Para inscripciones NUEVAS, el periodo viene del plan de estudios (periodo 1)
+        // No necesitamos periodoId explícito, se obtiene del paralelo seleccionado
+        const periodoId = null; // Se obtendrá del paralelo en el wizard
+        
+        // Obtener el paraleloId del primer curso inscrito (si existe)
+        // Los cursos inscritos vienen en inscripcionesMaterias, materiasInscritas, o enrollmentSubjects
+        // El curso tiene paraleloId que es el ID del paralelo
+        const materiasInscritas = record.inscripcionesMaterias 
+          || record.materiasInscritas 
+          || record.enrollmentSubjects
+          || record.enrollment?.inscripcionesMaterias 
+          || record.enrollment?.enrollmentSubjects
+          || [];
+        const primerMateria = materiasInscritas.length > 0 ? materiasInscritas[0] : null;
+        
+        // El paraleloId puede venir de diferentes estructuras:
+        // 1. curso.paraleloId (si el curso está incluido)
+        // 2. teacherAssignment.course.paraleloId (si la asignación docente está incluida)
+        // 3. Directamente del paralelo si está incluido
+        let paraleloId = null;
+        if (primerMateria) {
+          // Intentar obtener desde curso directo
+          paraleloId = primerMateria?.curso?.paraleloId 
+            || primerMateria?.curso?.paralelo_id
+            || primerMateria?.teacherAssignment?.course?.paraleloId
+            || primerMateria?.teacherAssignment?.course?.paralelo_id
+            || primerMateria?.paraleloId 
+            || primerMateria?.paralelo_id
+            || null;
+        }
+        
+        const handleEdit = (recordParam) => {
+          // TableActions pasa el record como parámetro, pero usamos el del closure
+          // para tener acceso a todos los datos ya extraídos
+          console.log('[DEBUG] handleEdit llamado para inscripción:', inscripcionId, {
+            canEdit,
+            tipoInscripcion,
+            estudianteId,
+            carreraId,
+            paraleloId,
+            editDisabled: !canEdit,
+          });
+          
+          // Si el botón está deshabilitado, no hacer nada
+          // (el botón debería estar deshabilitado si canEdit es false)
+          if (!canEdit) {
+            console.warn('[DEBUG] No se puede editar porque tipoInscripcion no es NUEVO:', tipoInscripcion);
+            return;
+          }
+          
+          // Navegar a la página de edición con los datos de la inscripción
+          console.log('[DEBUG] Navegando a /inscripciones/nueva con estado:', {
+            mode: 'editar',
+            inscripcionId,
+            studentId: estudianteId,
+            carreraId,
+            periodoId,
+            paraleloId,
+          });
+          
+          navigate('/inscripciones/nueva', {
+            state: {
+              mode: 'editar',
+              inscripcionId: inscripcionId,
+              studentId: estudianteId,
+              carreraId: carreraId,
+              periodoId: periodoId,
+              paraleloId: paraleloId,
+            }
+          });
+        };
+        
+        // Mostrar el botón de editar, deshabilitado si no se puede editar
         return (
           <TableActions
             record={{ ...record, id: inscripcionId }}
@@ -222,10 +325,8 @@ export const createInscripcionesTableColumns = (navigate, refetch = null, delete
             itemDetails={itemDetails}
             viewPath="/inscripciones/:id"
             editPath={null}
-            onEdit={() => {
-              // TODO: Implementar edición de inscripción
-              console.log('Editar inscripción:', inscripcionId);
-            }}
+            onEdit={handleEdit}
+            editDisabled={!canEdit}
           />
         );
       },
