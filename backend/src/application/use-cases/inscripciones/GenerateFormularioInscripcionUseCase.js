@@ -1,4 +1,5 @@
 import { NotFoundError } from '../../../domain/errors/AppError.js';
+import { TIPOS_DOCUMENTO_SISTEMA } from '../../../domain/constants/index.js';
 import { UPLOAD } from '../../../infrastructure/config/uploads.config.js';
 import { BaseDocumentGenerationUseCase } from '../base/BaseDocumentGenerationUseCase.js';
 
@@ -35,6 +36,9 @@ export class GenerateFormularioInscripcionUseCase extends BaseDocumentGeneration
      * @param {Object} params - Dependencias inyectadas
      * @param {Object} params.studentRepository - Repositorio de estudiantes (específico, para validar estudiante)
      * @param {Object} params.studentDocumentRepository - Repositorio de documentos de estudiantes (común, para guardar en BD)
+     * @param {Object} params.enrollmentRepository - Repositorio de inscripciones (para obtener inscripción actual con materias)
+     * @param {Object} params.studentAcademicDataRepository - Repositorio de datos académicos (para obtener carrera y datos académicos)
+     * @param {Object} params.studentDocumentDeliveryRepository - Repositorio de entregas de documentos (para obtener documentos entregados)
      * @param {Object} params.configuracionSistemaRepository - Repositorio de configuración del sistema (para obtener gestión activa)
      * @param {Object} params.managementRepository - Repositorio de gestiones (para obtener gestión activa)
      * @param {IPDFGenerator} params.pdfGenerator - Servicio de generación PDF (DI, implementa IPDFGenerator)
@@ -44,6 +48,9 @@ export class GenerateFormularioInscripcionUseCase extends BaseDocumentGeneration
     constructor({
         studentRepository,
         studentDocumentRepository,
+        enrollmentRepository,
+        studentAcademicDataRepository,
+        studentDocumentDeliveryRepository,
         configuracionSistemaRepository,
         managementRepository,
         pdfGenerator,
@@ -61,8 +68,11 @@ export class GenerateFormularioInscripcionUseCase extends BaseDocumentGeneration
             managementRepository,
         });
 
-        // Repositorio específico para validar y obtener datos del estudiante
+        // Repositorios específicos para obtener datos del estudiante
         this.studentRepository = studentRepository;
+        this.enrollmentRepository = enrollmentRepository;
+        this.studentAcademicDataRepository = studentAcademicDataRepository;
+        this.studentDocumentDeliveryRepository = studentDocumentDeliveryRepository;
     }
 
     /**
@@ -88,11 +98,21 @@ export class GenerateFormularioInscripcionUseCase extends BaseDocumentGeneration
             // 1. Validar y obtener estudiante
             const student = await this._validateAndGetStudent(studentId);
 
-            // 2. Obtener año de gestión activa (usa método del base)
-            const gestionYear = await this._getCurrentManagementYear();
+            // 2. Obtener gestión activa (usa método del base)
+            const currentManagement = await this._getCurrentManagement();
+            const gestionYear = currentManagement.year || currentManagement.anio;
 
-            // 3. Generar PDF con gestión activa y datos del estudiante
-            const pdfBuffer = await this._generatePdfBuffer(gestionYear, student);
+            // 3. Obtener datos académicos del estudiante (carrera, etc.)
+            const academicData = await this._fetchAcademicData(studentId);
+
+            // 4. Obtener inscripción actual con materias
+            const enrollmentData = await this._fetchEnrollmentData(studentId, currentManagement.id);
+
+            // 5. Obtener documentos entregados
+            const entregas = await this._fetchDocumentDeliveries(studentId);
+
+            // 6. Generar PDF con gestión activa, datos del estudiante, datos académicos, inscripción y entregas
+            const pdfBuffer = await this._generatePdfBuffer(gestionYear, student, academicData, enrollmentData, entregas);
 
             // 4. Guardar archivo y persistir en BD
             const result = await this._persistDocument(studentId, pdfBuffer, student);
@@ -201,6 +221,125 @@ export class GenerateFormularioInscripcionUseCase extends BaseDocumentGeneration
     }
 
     /**
+     * Obtiene los datos académicos del estudiante desde vista_estudiante_datos_academicos
+     * 
+     * @private
+     * @param {number} studentId - ID del estudiante
+     * @returns {Promise<Object|null>} Datos académicos o null si no existen
+     */
+    async _fetchAcademicData(studentId) {
+        try {
+            const results = await this.studentAcademicDataRepository.obtenerDatosAcademicos({
+                estudiante_id: studentId,
+            });
+
+            if (!results || results.length === 0) {
+                this.logger.warn('[Inscripciones] No se encontraron datos académicos para el estudiante', {
+                    studentId,
+                });
+                return null;
+            }
+
+            const data = results[0];
+            return {
+                carreraNombre: data.carrera_nombre || data.carreraNombre || null,
+                carreraCodigo: data.carrera_codigo || data.carreraCodigo || null,
+                estadoAcademico: data.estado_academico || data.estadoAcademico || null,
+            };
+        } catch (error) {
+            this.logger.error('[Inscripciones] Error al obtener datos académicos', {
+                studentId,
+                error: error.message,
+            });
+            return null;
+        }
+    }
+
+    /**
+     * Obtiene la inscripción actual del estudiante con materias desde vista_estudiante_inscripcion_actual
+     * 
+     * @private
+     * @param {number} studentId - ID del estudiante
+     * @param {number} managementId - ID de la gestión activa
+     * @returns {Promise<Object|null>} Datos de inscripción con materias o null si no existe
+     */
+    async _fetchEnrollmentData(studentId, managementId) {
+        try {
+            const results = await this.enrollmentRepository.obtenerInscripcionActual({
+                estudiante_id: studentId,
+                gestion_id: managementId,
+            });
+
+            if (!results || results.length === 0) {
+                this.logger.warn('[Inscripciones] No se encontró inscripción actual para el estudiante', {
+                    studentId,
+                    managementId,
+                });
+                return null;
+            }
+
+            // Extraer datos únicos de la inscripción (todos los registros tienen los mismos datos de inscripción)
+            const firstRow = results[0];
+            const materias = results.map(row => ({
+                sigla: row.materia_sigla || row.materiaSigla || '',
+                nombre: row.materia_nombre || row.materiaNombre || '',
+                periodo: row.periodo_numero || row.periodoNumero || null,
+                periodoNombre: row.periodo_nombre || row.periodoNombre || null,
+            }));
+
+            // Obtener periodo único (si todas las materias tienen el mismo periodo)
+            const periodosUnicos = [...new Set(materias.map(m => m.periodoNombre).filter(Boolean))];
+            const periodoNombre = periodosUnicos.length === 1 ? periodosUnicos[0] : null;
+
+            return {
+                inscripcionId: firstRow.inscripcion_id || firstRow.inscripcionId,
+                tipoInscripcion: firstRow.tipo_inscripcion || firstRow.tipoInscripcion,
+                fechaInscripcion: firstRow.fecha_inscripcion || firstRow.fechaInscripcion,
+                periodoNombre,
+                materias,
+            };
+        } catch (error) {
+            this.logger.error('[Inscripciones] Error al obtener inscripción actual', {
+                studentId,
+                managementId,
+                error: error.message,
+            });
+            return null;
+        }
+    }
+
+    /**
+     * Busca las entregas de documentos de inscripción entregados (entregado: true)
+     * 
+     * @private
+     * @param {number} studentId - ID del estudiante
+     * @returns {Promise<Array>} Lista de entregas entregadas
+     */
+    async _fetchDocumentDeliveries(studentId) {
+        try {
+            const entregasConDetalle = await this.studentDocumentDeliveryRepository.obtenerEntregasConDetalle({
+                estudiante_id: studentId,
+                tipo_documento: TIPOS_DOCUMENTO_SISTEMA.INSCRIPCION,
+                documento_padre_id: null,
+                entregado: true,
+            });
+
+            this.logger.info('[Inscripciones] Entregas entregadas obtenidas', {
+                studentId,
+                cantidad: entregasConDetalle.length,
+            });
+
+            return entregasConDetalle;
+        } catch (error) {
+            this.logger.error('[Inscripciones] Error al obtener entregas entregadas', {
+                studentId,
+                error: error.message,
+            });
+            return [];
+        }
+    }
+
+    /**
      * Genera el buffer del PDF del formulario de inscripción.
      * Pasa student con claves en español (como Acta): id, codigoEstudiante, ci, expedicion, nombres, apellidoPaterno, apellidoMaterno.
      * Calcula edad y fecha literal de nacimiento y las pasa en options.
@@ -208,9 +347,12 @@ export class GenerateFormularioInscripcionUseCase extends BaseDocumentGeneration
      * @private
      * @param {number} gestionYear - Año de gestión activa
      * @param {Object} student - Estudiante normalizado desde vista (claves español)
+     * @param {Object|null} academicData - Datos académicos (carrera, etc.)
+     * @param {Object|null} enrollmentData - Datos de inscripción con materias
+     * @param {Array} entregas - Lista de documentos entregados
      * @returns {Promise<Buffer>} Buffer del PDF generado
      */
-    async _generatePdfBuffer(gestionYear, student) {
+    async _generatePdfBuffer(gestionYear, student, academicData, enrollmentData, entregas) {
         const fechaActual = this._getCurrentDate();
         const fechaNacimientoLiteral = this._formatFechaLiteral(student.fechaNacimiento);
         const edad = this._calcEdad(student.fechaNacimiento);
@@ -222,7 +364,11 @@ export class GenerateFormularioInscripcionUseCase extends BaseDocumentGeneration
                 fechaNacimientoLiteral,
                 edad,
             },
+            academicData,
+            enrollmentData,
+            entregas,
             fechaActual,
+            signatureTwoColumns: true,
         });
     }
 
