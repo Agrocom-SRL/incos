@@ -2,6 +2,7 @@ import { IEnrollmentRepository } from '../../domain/interfaces/repositories/IEnr
 import { Inscripcion as InscripcionModel } from '../database/models/inscripcion.js';
 import { BaseRepository } from './BaseRepository.js';
 import { EnrollmentMapper } from '../mappers/EnrollmentMapper.js';
+import { sequelize } from '../database/sequelize.js';
 
 /**
  * Implementación del repositorio de inscripciones usando Sequelize
@@ -144,5 +145,57 @@ export class EnrollmentRepository extends BaseRepository {
    */
   getCollectionName() {
     return 'enrollments';
+  }
+
+  /**
+   * Obtiene inscripción actual del estudiante por gestión desde vista_estudiante_inscripcion_actual.
+   * Consulta directa a la vista. Retorna una fila por materia inscrita con información completa.
+   * Retorna objetos planos, no entidades.
+   *
+   * @param {Object} filters - Filtros opcionales
+   *   - estudiante_id: ID del estudiante
+   *   - codigo_estudiante: Código único del estudiante
+   *   - gestion_id: ID de la gestión académica
+   *   - inscripcion_id: ID de la inscripción
+   * @returns {Promise<Array>} Array de objetos planos (una fila por materia inscrita)
+   */
+  async obtenerInscripcionActual(filters = {}) {
+    const whereConditions = [];
+    const replacements = [];
+
+    if (filters.estudiante_id !== undefined) {
+      whereConditions.push('estudiante_id = ?');
+      replacements.push(filters.estudiante_id);
+    }
+    if (filters.codigo_estudiante !== undefined) {
+      whereConditions.push('codigo_estudiante = ?');
+      replacements.push(filters.codigo_estudiante);
+    }
+    if (filters.gestion_id !== undefined) {
+      whereConditions.push('gestion_id = ?');
+      replacements.push(filters.gestion_id);
+    }
+    if (filters.inscripcion_id !== undefined) {
+      whereConditions.push('inscripcion_id = ?');
+      replacements.push(filters.inscripcion_id);
+    }
+
+    const whereClause = whereConditions.length > 0
+      ? `WHERE ${whereConditions.join(' AND ')}`
+      : '';
+
+    const query = `
+      SELECT *
+      FROM vista_estudiante_inscripcion_actual
+      ${whereClause}
+      ORDER BY inscripcion_id ASC, materia_orden ASC, materia_nombre ASC
+    `;
+
+    const results = await sequelize.query(query, {
+      replacements,
+      type: sequelize.QueryTypes.SELECT,
+    });
+
+    return results;
   }
 }

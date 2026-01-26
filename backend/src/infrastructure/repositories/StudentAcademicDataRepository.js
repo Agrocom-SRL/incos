@@ -2,6 +2,7 @@ import { IEstudianteDatosAcademicosRepository } from '../../domain/interfaces/re
 import { EstudianteDatosAcademicos as EstudianteDatosAcademicosModel } from '../database/models/estudiante_datos_academicos.js';
 import { BaseRepository } from './BaseRepository.js';
 import { StudentAcademicDataMapper } from '../mappers/StudentAcademicDataMapper.js';
+import { sequelize } from '../database/sequelize.js';
 
 /**
  * Implementación del repositorio de datos académicos de estudiantes usando Sequelize
@@ -168,6 +169,54 @@ export class StudentAcademicDataRepository extends BaseRepository {
    */
   getCollectionName() {
     return 'studentAcademicData';
+  }
+
+  /**
+   * Obtiene datos académicos completos del estudiante desde vista_estudiante_datos_academicos.
+   * Consulta directa a la vista (estudiantes_datos_academicos + carreras + gestiones).
+   * Retorna objetos planos, no entidades.
+   *
+   * @param {Object} filters - Filtros opcionales (datos que diferencian a cada estudiante)
+   *   - estudiante_id: ID del estudiante
+   *   - codigo_estudiante: Código único del estudiante
+   *   - ci: Cédula de identidad (usar junto con expedicion para identificación única)
+   *   - expedicion: Expedición del CI (SC, LP, CB, etc.)
+   * @returns {Promise<Array>} Array de objetos planos con datos académicos enriquecidos
+   */
+  async obtenerDatosAcademicos(filters = {}) {
+    const whereConditions = [];
+    const replacements = [];
+
+    if (filters.estudiante_id !== undefined) {
+      whereConditions.push('estudiante_id = ?');
+      replacements.push(filters.estudiante_id);
+    }
+    if (filters.codigo_estudiante !== undefined) {
+      whereConditions.push('codigo_estudiante = ?');
+      replacements.push(filters.codigo_estudiante);
+    }
+    if (filters.ci !== undefined) {
+      whereConditions.push('ci = ?');
+      replacements.push(filters.ci);
+    }
+
+    const whereClause = whereConditions.length > 0
+      ? `WHERE ${whereConditions.join(' AND ')}`
+      : '';
+
+    const query = `
+      SELECT *
+      FROM vista_estudiante_datos_academicos
+      ${whereClause}
+      ORDER BY estudiante_id ASC
+    `;
+
+    const results = await sequelize.query(query, {
+      replacements,
+      type: sequelize.QueryTypes.SELECT,
+    });
+
+    return results;
   }
 }
 
