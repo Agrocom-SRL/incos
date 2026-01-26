@@ -539,6 +539,7 @@ export class RegisterAporteVoluntarioUseCase {
         // EFECTIVO (1): cuenta NULL, transacción opcional
         // QR (2): cuenta opcional (la cuenta está en la imagen del QR), transacción requerida
         // TRANSFERENCIA (3): cuenta requerida, transacción requerida
+        // DEPOSITO (4): cuenta requerida, transacción requerida
 
         if (paymentMethodId === 1) { // EFECTIVO
             if (paymentAccountId) {
@@ -550,6 +551,13 @@ export class RegisterAporteVoluntarioUseCase {
                 throw new ValidationError(`El método ${paymentMethod.nombre} requiere un número de transacción`);
             }
         } else if (paymentMethodId === 3) { // TRANSFERENCIA
+            if (!paymentAccountId) {
+                throw new ValidationError(`El método ${paymentMethod.nombre} requiere una cuenta de pago`);
+            }
+            if (!transactionNumber) {
+                throw new ValidationError(`El método ${paymentMethod.nombre} requiere un número de transacción`);
+            }
+        } else if (paymentMethodId === 4) { // DEPOSITO
             if (!paymentAccountId) {
                 throw new ValidationError(`El método ${paymentMethod.nombre} requiere una cuenta de pago`);
             }

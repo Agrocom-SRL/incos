@@ -103,17 +103,17 @@ const SelectedPaymentSection = ({
   // Solo si NO es pago gratuito
   const requiereFechaPago = !esPagoGratuito && !esEfectivo;
   
-  // Métodos que requieren documento de respaldo (todos excepto EFECTIVO)
+  // Mostrar campo de documento de respaldo (opcional) para todos los métodos excepto EFECTIVO
   // Solo si NO es pago gratuito
-  const requiereDocumentoRespaldo = !esPagoGratuito && !esEfectivo;
+  const mostrarDocumentoRespaldo = !esPagoGratuito && !esEfectivo; // Mostrar pero no requerir
   
-  // Métodos que requieren número de transacción (solo TRANSFERENCIA)
+  // Métodos que requieren número de transacción (TRANSFERENCIA y DEPOSITO)
   // Solo si NO es pago gratuito
-  const requiereNumeroTransaccion = !esPagoGratuito && esTransferencia;
+  const requiereNumeroTransaccion = !esPagoGratuito && (esTransferencia || esDeposito);
   
-  // Métodos que requieren código de comprobante (QR, TRANSFERENCIA)
+  // Métodos que requieren código de comprobante (QR, TRANSFERENCIA, DEPOSITO)
   // Solo si NO es pago gratuito
-  const requiereCodigoComprobante = !esPagoGratuito && (esQR || esTransferencia);
+  const requiereCodigoComprobante = !esPagoGratuito && (esQR || esTransferencia || esDeposito);
 
   // Sincronizar descuento en el formulario cuando cambie la beca o configuración
   useEffect(() => {
@@ -308,7 +308,7 @@ const SelectedPaymentSection = ({
                 requiereCuenta={requiereCuenta}
                 requiereNumeroTransaccion={requiereNumeroTransaccion}
                 requiereCodigoComprobante={requiereCodigoComprobante}
-                requiereDocumentoRespaldo={requiereDocumentoRespaldo}
+                requiereDocumentoRespaldo={mostrarDocumentoRespaldo}
                 esQR={esQR}
               />
             </Form>

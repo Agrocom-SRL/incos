@@ -163,8 +163,8 @@ const PagosRegistrar = () => {
         }
 
         metodoPagoId = Number(metodosPago.selectedMetodoPago.id);
-        if (![1, 2, 3].includes(metodoPagoId)) {
-          message.error('El método de pago debe ser: EFECTIVO (1), QR (2) o TRANSFERENCIA (3)');
+        if (![1, 2, 3, 4].includes(metodoPagoId)) {
+          message.error('El método de pago debe ser: EFECTIVO (1), QR (2), TRANSFERENCIA (3) o DEPOSITO (4)');
           setIsSubmitting(false);
           isSubmittingRef.current = false;
           return;
@@ -216,12 +216,14 @@ const PagosRegistrar = () => {
         const esEfectivo = metodoPagoId === 1;
         const esQR = metodoPagoId === 2;
         const esTransferencia = metodoPagoId === 3;
+        const esDeposito = metodoPagoId === 4;
 
-        if (esTransferencia) {
-          // Para TRANSFERENCIA, la cuenta es REQUERIDA
+        if (esTransferencia || esDeposito) {
+          // Para TRANSFERENCIA y DEPOSITO, la cuenta es REQUERIDA
           paymentAccountId = values.cuentaPagoId || cuentasPago?.selectedCuentaPago?.id;
           if (!paymentAccountId || !Number.isInteger(Number(paymentAccountId)) || Number(paymentAccountId) < 1) {
-            message.error('La cuenta de pago es requerida para método TRANSFERENCIA');
+            const metodoNombre = esTransferencia ? 'TRANSFERENCIA' : 'DEPOSITO';
+            message.error(`La cuenta de pago es requerida para método ${metodoNombre}`);
             setIsSubmitting(false);
             isSubmittingRef.current = false;
             return;
@@ -245,12 +247,13 @@ const PagosRegistrar = () => {
         const esEfectivo = metodoPagoId === 1;
         const esQR = metodoPagoId === 2;
         const esTransferencia = metodoPagoId === 3;
+        const esDeposito = metodoPagoId === 4;
 
-        if (esQR || esTransferencia) {
-          // Para QR y TRANSFERENCIA, el número de transacción es REQUERIDO
+        if (esQR || esTransferencia || esDeposito) {
+          // Para QR, TRANSFERENCIA y DEPOSITO, el número de transacción es REQUERIDO
           transactionNumber = (values.numeroTransaccion || values.codigoComprobante || '').trim();
           if (!transactionNumber || transactionNumber.length === 0) {
-            message.error('El número de transacción es requerido para método QR o TRANSFERENCIA');
+            message.error('El número de transacción es requerido para método QR, TRANSFERENCIA o DEPOSITO');
             setIsSubmitting(false);
             isSubmittingRef.current = false;
             return;
