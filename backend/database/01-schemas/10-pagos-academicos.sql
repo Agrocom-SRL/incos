@@ -188,8 +188,8 @@ CREATE TABLE pago_aporte (
     descuento_beca DECIMAL(10,2) DEFAULT 0.00 COMMENT 'Descuento por beca aplicado',
     monto_pagado DECIMAL(10,2) NOT NULL COMMENT 'Monto efectivamente pagado (calculado por lógica de negocio: monto_total - descuento_beca)',
     numero_transaccion VARCHAR(100) COMMENT 'Número de transacción/código (para TRANSFERENCIA/DEPOSITO/TARJETA/QR/TIGO_MONEY)',
-    concepto TEXT COMMENT 'Concepto del pago',
-    observaciones TEXT COMMENT 'Observaciones',
+    codigo_comprobante VARCHAR(100) COMMENT 'Código del comprobante (requerido para QR/TRANSFERENCIA/DEPOSITO)',
+    descripcion TEXT COMMENT 'Descripción del pago (opcional)',
     
     -- Campos de auditoría y control (ESTÁNDAR)
     activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
@@ -217,6 +217,7 @@ CREATE TABLE pago_aporte (
     INDEX idx_fecha_pago (fecha_pago) COMMENT 'Búsqueda por fecha de pago',
     INDEX idx_numero_recibo (numero_recibo) COMMENT 'Búsqueda por número de recibo',
     INDEX idx_numero_transaccion (numero_transaccion) COMMENT 'Búsqueda por número de transacción',
+    INDEX idx_codigo_comprobante (codigo_comprobante) COMMENT 'Búsqueda por código de comprobante',
     INDEX idx_monto_total (monto_total) COMMENT 'Búsqueda por monto total',
     INDEX idx_monto_pagado (monto_pagado) COMMENT 'Búsqueda por monto pagado',
     INDEX idx_descuento_beca (descuento_beca) COMMENT 'Búsqueda por descuento de beca',

@@ -27,11 +27,10 @@ export const PagosListProvider = ({ children }) => {
             const student = pago.estudiante || pago.student;
             return [
                 student?.nombreCompleto || student?.nombre || '',
-                pago.numeroRecibo || '',
-                pago.concepto || '',
-                pago.metodoPago || '',
-                pago.estado || '',
-                pago.montoTotal?.toString() || '',
+                pago.numeroRecibo || pago.receipt_number || '',
+                pago.codigo_comprobante || pago.codigoComprobante || '',
+                pago.metodoPago?.nombre || pago.metodoPago || '',
+                pago.montoTotal?.toString() || pago.total_amount?.toString() || '',
             ];
         },
         []

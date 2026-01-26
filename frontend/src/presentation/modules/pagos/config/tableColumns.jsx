@@ -5,7 +5,7 @@
  */
 
 import { Tag } from 'antd';
-import { DollarOutlined, UserOutlined, CalendarOutlined, CreditCardOutlined } from '@ant-design/icons';
+import { DollarOutlined, UserOutlined, CalendarOutlined, CreditCardOutlined, QrcodeOutlined } from '@ant-design/icons';
 import { TableCell } from '@molecules';
 import PagoTableActions from './PagoTableActions';
 
@@ -165,24 +165,35 @@ export const createPagosTableColumns = (navigate, refetch = null, deletePago = n
       },
     },
     {
-      title: 'Estado',
-      dataIndex: 'estado',
-      width: 100,
-      render: (estado, record) => {
-        // Asegurar que estado sea un valor primitivo
-        const estadoValue = ensurePrimitive(estado || record.estado, 'N/A');
-        const colorMap = {
-          'APROBADO': 'success',
-          'PENDIENTE': 'warning',
-          'RECHAZADO': 'error',
-        };
+      title: 'Comprobante',
+      dataIndex: 'codigoComprobante',
+      width: 180,
+      ellipsis: true,
+      render: (codigoComprobante, record) => {
+        // Manejar tanto codigoComprobante como codigo_comprobante (del backend)
+        const codigo = ensurePrimitive(
+          codigoComprobante || record.codigoComprobante || record.codigo_comprobante,
+          null
+        );
+        // Solo mostrar si tiene valor
+        if (!codigo || codigo === 'N/A') {
+          return (
+            <TableCell textStyle={{ fontSize: 'var(--font-size-sm)', color: '#8c8c8c', fontStyle: 'italic' }}>
+              -
+            </TableCell>
+          );
+        }
         return (
-          <Tag color={colorMap[estadoValue] || 'default'}>
-            {estadoValue}
-          </Tag>
+          <TableCell icon={<QrcodeOutlined />} textStyle={{ fontSize: 'var(--font-size-sm)', fontFamily: 'monospace' }}>
+            {codigo}
+          </TableCell>
         );
       },
-      sorter: (a, b) => (a.estado || '').localeCompare(b.estado || ''),
+      sorter: (a, b) => {
+        const codigoA = a.codigo_comprobante || a.codigoComprobante || '';
+        const codigoB = b.codigo_comprobante || b.codigoComprobante || '';
+        return codigoA.localeCompare(codigoB);
+      },
     },
     {
       title: 'Acciones',
@@ -204,7 +215,6 @@ export const createPagosTableColumns = (navigate, refetch = null, deletePago = n
             record.numeroRecibo || record.receipt_number || record.receiptNumber,
             'N/A'
           );
-        const concepto = ensurePrimitive(record.concepto || record.concept, 'N/A');
         const montoTotal = record.montoTotal ?? record.total_amount ?? 0;
         const descuento = record.descuentoBeca ?? record.scholarship_discount ?? 0;
         const montoFinal = Number(montoTotal) - Number(descuento);
@@ -214,7 +224,6 @@ export const createPagosTableColumns = (navigate, refetch = null, deletePago = n
         const itemDetails = [
           { label: 'Estudiante', value: estudianteNombre },
           { label: 'Nº Recibo', value: numeroRecibo },
-          { label: 'Concepto', value: concepto },
           { label: 'Monto', value: `Bs. ${montoFinal.toFixed(2)}` },
           { label: 'Gestión', value: String(gestionAnio) },
         ].filter((d) => d.value && d.value !== 'N/A' && d.value !== 'Sin nombre');

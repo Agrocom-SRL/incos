@@ -68,11 +68,11 @@ export function entityToPresentation(payment) {
   if (payment.transactionNumber !== undefined) {
     presentation.transaction_number = payment.transactionNumber;
   }
-  if (payment.concept !== undefined) {
-    presentation.concept = payment.concept;
+  if (payment.comprobanteCode !== undefined) {
+    presentation.codigo_comprobante = payment.comprobanteCode;
   }
-  if (payment.observations !== undefined) {
-    presentation.observations = payment.observations;
+  if (payment.description !== undefined) {
+    presentation.descripcion = payment.description;
   }
 
   return presentation;

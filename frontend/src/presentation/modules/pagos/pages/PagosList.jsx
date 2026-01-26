@@ -74,7 +74,7 @@ const PagosList = () => {
                 error={error}
                 searchText={searchText}
                 onSearchChange={(e) => setSearchText(e.target.value)}
-                searchPlaceholder="Buscar por estudiante, número de recibo, concepto..."
+                searchPlaceholder="Buscar por estudiante, número de recibo, código de comprobante..."
                 columns={tableColumns}
                 rowKey={(record) => record.id || record.numeroRecibo || Math.random()}
                 pagination={{

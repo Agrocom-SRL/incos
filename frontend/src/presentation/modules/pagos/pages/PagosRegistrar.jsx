@@ -171,19 +171,20 @@ const PagosRegistrar = () => {
         }
       }
 
-      // 3. Validar payment_date (requerido solo si NO es pago gratuito)
-      // Si es pago gratuito, usar fecha actual por defecto
+      // 3. Validar payment_date (SIEMPRE requerido para todos los métodos)
       let paymentDate;
       if (esPagoGratuito) {
         // Para pagos gratuitos, usar fecha actual
         paymentDate = dayjs().format('YYYY-MM-DD');
       } else {
-        // Para pagos con monto, validar fecha
+        // Para todos los métodos (incluyendo EFECTIVO), la fecha es REQUERIDA
         if (values.fechaPago) {
           paymentDate = dayjs(values.fechaPago).format('YYYY-MM-DD');
         } else {
-          // Si no hay fecha, usar hoy (EFECTIVO no requiere fecha en el formulario)
-          paymentDate = dayjs().format('YYYY-MM-DD');
+          message.error('La fecha de pago es requerida');
+          setIsSubmitting(false);
+          isSubmittingRef.current = false;
+          return;
         }
 
         // Validar formato de fecha
@@ -195,20 +196,15 @@ const PagosRegistrar = () => {
         }
       }
 
-      // 4. Validar concept (requerido, string 3-500 caracteres)
-      const concept = (values.concepto || '').trim();
-      if (!concept || concept.length < 3) {
-        message.error('El concepto del pago es requerido y debe tener al menos 3 caracteres');
+      // 4. Validar descripcion (opcional, string máximo 500 caracteres si se proporciona)
+      const descripcion = (values.descripcion || '').trim();
+      if (descripcion && descripcion.length > 500) {
+        message.error('La descripción no puede exceder 500 caracteres');
         setIsSubmitting(false);
         isSubmittingRef.current = false;
         return;
       }
-      if (concept.length > 500) {
-        message.error('El concepto del pago no puede exceder 500 caracteres');
-        setIsSubmitting(false);
-        isSubmittingRef.current = false;
-        return;
-      }
+      // Si está vacío, usar null o string vacío (según lo que acepte el backend)
 
       // 5. Validar payment_account_id (solo si NO es pago gratuito)
       let paymentAccountId = null;
@@ -241,30 +237,34 @@ const PagosRegistrar = () => {
         }
       }
 
-      // 6. Validar transaction_number (solo si NO es pago gratuito)
-      let transactionNumber = null;
+      // 6. Validar código de comprobante (REQUERIDO para QR, TRANSFERENCIA, DEPOSITO)
+      let codigoComprobante = null;
       if (!esPagoGratuito && metodoPagoId) {
-        const esEfectivo = metodoPagoId === 1;
         const esQR = metodoPagoId === 2;
         const esTransferencia = metodoPagoId === 3;
         const esDeposito = metodoPagoId === 4;
 
         if (esQR || esTransferencia || esDeposito) {
-          // Para QR, TRANSFERENCIA y DEPOSITO, el número de transacción es REQUERIDO
-          transactionNumber = (values.numeroTransaccion || values.codigoComprobante || '').trim();
-          if (!transactionNumber || transactionNumber.length === 0) {
-            message.error('El número de transacción es requerido para método QR, TRANSFERENCIA o DEPOSITO');
+          // Para QR, TRANSFERENCIA y DEPOSITO, el código de comprobante es REQUERIDO
+          codigoComprobante = (values.codigoComprobante || '').trim();
+          if (!codigoComprobante || codigoComprobante.length === 0) {
+            const metodoNombre = esQR ? 'QR' : esTransferencia ? 'TRANSFERENCIA' : 'DEPOSITO';
+            message.error(`El código de comprobante es requerido para método ${metodoNombre}`);
             setIsSubmitting(false);
             isSubmittingRef.current = false;
             return;
           }
-        } else if (esEfectivo) {
-          // Para EFECTIVO, el número de transacción es opcional
-          transactionNumber = (values.numeroTransaccion || values.codigoComprobante || '').trim() || null;
         }
       }
 
-      // 7. Obtener archivo de documento de respaldo (si existe)
+      // 7. Validar transaction_number (OPCIONAL para todos los métodos)
+      let transactionNumber = null;
+      if (!esPagoGratuito && metodoPagoId) {
+        // El número de transacción es opcional, solo se guarda si se proporciona
+        transactionNumber = (values.numeroTransaccion || '').trim() || null;
+      }
+
+      // 8. Obtener archivo de documento de respaldo (si existe)
       let documentoRespaldo = null;
       if (values.documentoRespaldo && values.documentoRespaldo.length > 0) {
         // Ant Design Upload devuelve un array, obtener el primer archivo
@@ -299,9 +299,10 @@ const PagosRegistrar = () => {
         paymentMethodId: metodoPagoId || 1, // Si es gratuito, usar EFECTIVO (1) por defecto
         paymentAccountId: paymentAccountId,
         paymentDate: paymentDate,
-        transactionNumber: transactionNumber,
-        concept: concept,
-        documentoRespaldo: documentoRespaldo, // Archivo de documento de respaldo
+        transactionNumber: transactionNumber, // Opcional, puede ser null
+        codigoComprobante: codigoComprobante || null, // Requerido para QR/TRANSFERENCIA/DEPOSITO, null para otros
+        descripcion: descripcion || null, // Opcional, puede ser null o string vacío
+        documentoRespaldo: documentoRespaldo, // Archivo de documento de respaldo (opcional)
       };
 
       // Llamar a la función de registro del contexto

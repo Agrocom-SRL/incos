@@ -48,11 +48,11 @@ export class ContributionPaymentMapper {
     if ('numeroTransaccion' in dataValues && dataValues.numeroTransaccion !== undefined) {
       specificFields.transactionNumber = dataValues.numeroTransaccion;
     }
-    if ('concepto' in dataValues && dataValues.concepto !== undefined) {
-      specificFields.concept = dataValues.concepto;
+    if ('codigoComprobante' in dataValues && dataValues.codigoComprobante !== undefined) {
+      specificFields.comprobanteCode = dataValues.codigoComprobante;
     }
-    if ('observaciones' in dataValues && dataValues.observaciones !== undefined) {
-      specificFields.observations = dataValues.observaciones;
+    if ('descripcion' in dataValues && dataValues.descripcion !== undefined) {
+      specificFields.description = dataValues.descripcion;
     }
 
     const entityData = BaseMapper.combineBaseAndSpecificFields(model, specificFields);
@@ -99,11 +99,11 @@ export class ContributionPaymentMapper {
     if ('transactionNumber' in data) {
       modelData.numeroTransaccion = data.transactionNumber || null;
     }
-    if ('concept' in data) {
-      modelData.concepto = data.concept || null;
+    if ('comprobanteCode' in data) {
+      modelData.codigoComprobante = data.comprobanteCode || null;
     }
-    if ('observations' in data) {
-      modelData.observaciones = data.observations || null;
+    if ('description' in data) {
+      modelData.descripcion = data.description || null;
     }
 
     return modelData;
@@ -149,11 +149,11 @@ export class ContributionPaymentMapper {
     if ('transactionNumber' in data) {
       updateData.numeroTransaccion = data.transactionNumber || null;
     }
-    if ('concept' in data) {
-      updateData.concepto = data.concept || null;
+    if ('comprobanteCode' in data) {
+      updateData.codigoComprobante = data.comprobanteCode || null;
     }
-    if ('observations' in data) {
-      updateData.observaciones = data.observations || null;
+    if ('description' in data) {
+      updateData.descripcion = data.description || null;
     }
 
     const baseFields = BaseMapper.baseFieldsToModelForUpdate(entity);

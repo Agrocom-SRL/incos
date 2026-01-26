@@ -78,15 +78,16 @@ export const PagoAporte = sequelize.define(
       allowNull: true,
       comment: 'Número de transacción/código (para TRANSFERENCIA/DEPOSITO/TARJETA/QR/TIGO_MONEY)',
     },
-    concepto: {
-      type: DataTypes.TEXT,
+    codigoComprobante: {
+      type: DataTypes.STRING(100),
+      field: 'codigo_comprobante',
       allowNull: true,
-      comment: 'Concepto del pago',
+      comment: 'Código del comprobante (requerido para QR/TRANSFERENCIA/DEPOSITO)',
     },
-    observaciones: {
+    descripcion: {
       type: DataTypes.TEXT,
       allowNull: true,
-      comment: 'Observaciones',
+      comment: 'Descripción del pago (opcional)',
     },
   },
   {

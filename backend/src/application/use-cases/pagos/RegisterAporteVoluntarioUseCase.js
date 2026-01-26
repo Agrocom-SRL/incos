@@ -90,23 +90,32 @@ export class RegisterAporteVoluntarioUseCase {
      * @param {number} data.student_id - ID del estudiante (requerido)
      * @param {number} data.payment_method_id - ID del método de pago (requerido)
      * @param {number|null} data.payment_account_id - ID de la cuenta (NULL para EFECTIVO)
-     * @param {string} data.payment_date - Fecha del pago en formato YYYY-MM-DD (requerido)
-     * @param {string} [data.transaction_number] - Número de transacción (requerido para QR/TRANSFERENCIA)
-     * @param {string} data.concept - Concepto del pago (requerido)
+     * @param {string} data.payment_date - Fecha del pago en formato YYYY-MM-DD (SIEMPRE requerido)
+     * @param {string} [data.transaction_number] - Número de transacción (opcional)
+     * @param {string} [data.codigo_comprobante] - Código del comprobante (requerido para QR/TRANSFERENCIA/DEPOSITO)
+     * @param {string} [data.descripcion] - Descripción del pago (opcional)
      * @returns {Promise<Object>} Pago creado con todos sus datos
      */
     async execute(data) {
         const studentId = data.student_id || data.studentId;
         const paymentMethodId = data.payment_method_id || data.paymentMethodId;
         const paymentAccountId = data.payment_account_id || data.paymentAccountId || null;
+        // La fecha de pago es SIEMPRE requerida (validada en el validador)
         const paymentDate = data.payment_date || data.paymentDate;
+        if (!paymentDate) {
+            throw new ValidationError('La fecha de pago es requerida');
+        }
         const transactionNumber = data.transaction_number || data.transactionNumber || null;
-        const concept = data.concept;
+        const codigoComprobante = data.codigo_comprobante || data.codigoComprobante || null;
+        // El número de transacción es opcional e independiente del código de comprobante
+        // NO usar el código de comprobante como número de transacción
+        const finalTransactionNumber = transactionNumber || null;
+        const descripcion = data.descripcion || data.description || null; // Opcional, puede ser null
 
         this.logger.info('[Pagos] Iniciando registro de aporte académico', {
             studentId,
             paymentMethodId,
-            concept,
+            descripcion,
         });
 
         try {
@@ -141,14 +150,21 @@ export class RegisterAporteVoluntarioUseCase {
                 configuracionAporteId: configuracionAporte?.id,
             });
 
-            // 7. Validar método de pago y cuenta (solo si NO es pago gratuito)
-            // Si es pago gratuito (amountToPay === 0), usar EFECTIVO (1) por defecto sin validaciones estrictas
+            // 7. Validar método de pago y cuenta
+            // IMPORTANTE: Si el usuario envía un método diferente a EFECTIVO, se debe validar
+            // el código de comprobante incluso si el monto es 0 (pago gratuito)
+            // Solo si es pago gratuito Y el método enviado es EFECTIVO (o no se especifica),
+            // se usa EFECTIVO por defecto sin validaciones estrictas
             let paymentMethod = null;
-            if (amountToPay === 0) {
-                // Para pagos gratuitos, usar EFECTIVO por defecto sin validar cuenta ni transacción
-                this.logger.info('[Pagos] Pago gratuito detectado, usando método EFECTIVO por defecto', {
+            const esPagoGratuito = amountToPay === 0;
+            const esMetodoEfectivo = paymentMethodId === 1;
+            
+            if (esPagoGratuito && esMetodoEfectivo) {
+                // Para pagos gratuitos con método EFECTIVO, usar EFECTIVO por defecto sin validar cuenta ni código de comprobante
+                this.logger.info('[Pagos] Pago gratuito con método EFECTIVO, usando método EFECTIVO por defecto', {
                     studentId,
                     amountToPay,
+                    paymentMethodId,
                 });
                 
                 // Obtener método EFECTIVO para incluir en el recibo
@@ -158,15 +174,24 @@ export class RegisterAporteVoluntarioUseCase {
                     this.logger.warn('[Pagos] Método EFECTIVO no encontrado, usando null para pago gratuito');
                 }
             } else {
-                // Para pagos con monto, validar método de pago normalmente
-                paymentMethod = await this._validatePaymentMethod(paymentMethodId, paymentAccountId, transactionNumber);
+                // Para pagos con monto O pagos gratuitos con método diferente a EFECTIVO,
+                // validar método de pago normalmente (incluyendo código de comprobante)
+                this.logger.info('[Pagos] Validando método de pago', {
+                    studentId,
+                    paymentMethodId,
+                    amountToPay,
+                    esPagoGratuito,
+                    esMetodoEfectivo,
+                });
+                paymentMethod = await this._validatePaymentMethod(paymentMethodId, paymentAccountId, finalTransactionNumber, codigoComprobante);
             }
 
             // 8. Preparar datos del pago
-            // Para pagos gratuitos, usar método EFECTIVO (1) por defecto
-            const finalPaymentMethodId = amountToPay === 0 ? 1 : paymentMethodId;
-            const finalPaymentAccountId = amountToPay === 0 ? null : paymentAccountId;
-            const finalTransactionNumber = amountToPay === 0 ? null : transactionNumber;
+            // Para pagos gratuitos SOLO si el método enviado es EFECTIVO, usar EFECTIVO (1) por defecto
+            // Si es pago gratuito pero el método enviado NO es EFECTIVO, usar el método enviado (ya validado)
+            const finalPaymentMethodId = (esPagoGratuito && esMetodoEfectivo) ? 1 : paymentMethodId;
+            const finalPaymentAccountId = (esPagoGratuito && esMetodoEfectivo) ? null : paymentAccountId;
+            const finalTransactionNumberForPayment = (esPagoGratuito && esMetodoEfectivo) ? null : finalTransactionNumber;
 
             const paymentData = this._preparePaymentData({
                 studentId,
@@ -179,8 +204,9 @@ export class RegisterAporteVoluntarioUseCase {
                 scholarshipDiscount,
                 amountToPay,
                 paymentDate,
-                transactionNumber: finalTransactionNumber,
-                concept,
+                transactionNumber: finalTransactionNumberForPayment,
+                comprobanteCode: codigoComprobante || null, // Código de comprobante (requerido para QR/TRANSFERENCIA/DEPOSITO)
+                description: descripcion || null, // Descripción opcional
             });
 
             // 9. Crear registro de pago
@@ -329,14 +355,14 @@ export class RegisterAporteVoluntarioUseCase {
                         studentId,
                         documentId: savedDocument.id,
                         paymentDate,
-                        concept,
+                        descripcion,
                     });
                     
                     savedDocumentDelivery = await this._savePaymentDocumentDelivery(
                         studentId,
                         savedDocument.id,
                         paymentDate,
-                        concept
+                        descripcion
                     );
                 } else {
                     this.logger.warn('[Pagos] No se pudo guardar el documento de respaldo', {
@@ -355,7 +381,7 @@ export class RegisterAporteVoluntarioUseCase {
                 paymentId: finalPayment.id,
                 receiptNumber: finalPayment.receiptNumber || receiptNumber,
                 amountPaid: finalPayment.amountPaid,
-                concept: finalPayment.concept,
+                description: finalPayment.description,
                 hasDocument: !!savedDocument,
                 hasReciboPDF: !!reciboPDF,
                 hasReciboDocument: !!savedReciboDocument,
@@ -524,11 +550,12 @@ export class RegisterAporteVoluntarioUseCase {
      * @private
      * @param {number} paymentMethodId - ID del método de pago
      * @param {number|null} paymentAccountId - ID de la cuenta de pago
-     * @param {string|null} transactionNumber - Número de transacción
+     * @param {string|null} transactionNumber - Número de transacción (opcional)
+     * @param {string|null} codigoComprobante - Código del comprobante (requerido para QR/TRANSFERENCIA/DEPOSITO)
      * @returns {Promise<Object>} Método de pago validado
      * @throws {ValidationError} Si el método no es válido o faltan datos requeridos
      */
-    async _validatePaymentMethod(paymentMethodId, paymentAccountId, transactionNumber) {
+    async _validatePaymentMethod(paymentMethodId, paymentAccountId, transactionNumber, codigoComprobante) {
         // Validar que el método de pago exista
         const paymentMethod = await this.paymentMethodRepository.findById(paymentMethodId);
         if (!paymentMethod) {
@@ -536,10 +563,10 @@ export class RegisterAporteVoluntarioUseCase {
         }
 
         // Reglas según método de pago:
-        // EFECTIVO (1): cuenta NULL, transacción opcional
-        // QR (2): cuenta opcional (la cuenta está en la imagen del QR), transacción requerida
-        // TRANSFERENCIA (3): cuenta requerida, transacción requerida
-        // DEPOSITO (4): cuenta requerida, transacción requerida
+        // EFECTIVO (1): cuenta NULL, transacción opcional, código comprobante no aplica
+        // QR (2): cuenta opcional, código comprobante REQUERIDO, transacción opcional
+        // TRANSFERENCIA (3): cuenta REQUERIDA, código comprobante REQUERIDO, transacción opcional
+        // DEPOSITO (4): cuenta REQUERIDA, código comprobante REQUERIDO, transacción opcional
 
         if (paymentMethodId === 1) { // EFECTIVO
             if (paymentAccountId) {
@@ -547,22 +574,23 @@ export class RegisterAporteVoluntarioUseCase {
             }
         } else if (paymentMethodId === 2) { // QR
             // QR no requiere cuenta de pago (está en la imagen del QR)
-            if (!transactionNumber) {
-                throw new ValidationError(`El método ${paymentMethod.nombre} requiere un número de transacción`);
+            // QR requiere código de comprobante
+            if (!codigoComprobante) {
+                throw new ValidationError(`El método ${paymentMethod.nombre} requiere un código de comprobante`);
             }
         } else if (paymentMethodId === 3) { // TRANSFERENCIA
             if (!paymentAccountId) {
                 throw new ValidationError(`El método ${paymentMethod.nombre} requiere una cuenta de pago`);
             }
-            if (!transactionNumber) {
-                throw new ValidationError(`El método ${paymentMethod.nombre} requiere un número de transacción`);
+            if (!codigoComprobante) {
+                throw new ValidationError(`El método ${paymentMethod.nombre} requiere un código de comprobante`);
             }
         } else if (paymentMethodId === 4) { // DEPOSITO
             if (!paymentAccountId) {
                 throw new ValidationError(`El método ${paymentMethod.nombre} requiere una cuenta de pago`);
             }
-            if (!transactionNumber) {
-                throw new ValidationError(`El método ${paymentMethod.nombre} requiere un número de transacción`);
+            if (!codigoComprobante) {
+                throw new ValidationError(`El método ${paymentMethod.nombre} requiere un código de comprobante`);
             }
         }
 
@@ -689,6 +717,13 @@ export class RegisterAporteVoluntarioUseCase {
     _preparePaymentData(data) {
         const amountToPay = data.amountToPay || (data.totalAmount - data.scholarshipDiscount);
 
+        // La fecha de pago es SIEMPRE requerida (validada en el validador)
+        // No se asigna por defecto, debe venir en los datos
+        const paymentDate = data.paymentDate;
+        if (!paymentDate) {
+            throw new ValidationError('La fecha de pago es requerida');
+        }
+
         const paymentData = {
             studentId: data.studentId,
             managementId: data.managementId,
@@ -699,13 +734,24 @@ export class RegisterAporteVoluntarioUseCase {
             totalAmount: data.totalAmount, // 400.00 (base)
             scholarshipDiscount: data.scholarshipDiscount || 0.00,
             amountPaid: amountToPay,
-            paymentDate: data.paymentDate,
-            concept: data.concept,
+            paymentDate: paymentDate, // Siempre debe tener un valor (NOT NULL en schema)
+            description: data.description || null, // Opcional, puede ser null
         };
 
         // Solo incluir campos opcionales si tienen valor
+        // El número de transacción es independiente del código de comprobante
         if (data.transactionNumber) {
             paymentData.transactionNumber = data.transactionNumber;
+        } else {
+            paymentData.transactionNumber = null; // Permitir null explícitamente
+        }
+
+        // Código de comprobante (requerido para QR/TRANSFERENCIA/DEPOSITO, validado antes)
+        // Se pasa desde execute() como comprobanteCode
+        if (data.comprobanteCode !== undefined) {
+            paymentData.comprobanteCode = data.comprobanteCode;
+        } else {
+            paymentData.comprobanteCode = null; // Permitir null explícitamente
         }
 
         // NOTA: El número de recibo se asigna después de crear el registro (usando el ID)
@@ -751,7 +797,7 @@ export class RegisterAporteVoluntarioUseCase {
                 montoTotal: totalAmount || 400.00,
                 descuentoBeca: scholarshipDiscount || 0,
                 montoPagado: amountToPay || totalAmount || 400.00,
-                concepto: paymentPlain.concepto || paymentPlain.concept || 'Aporte Voluntario Anual',
+                concepto: paymentPlain.descripcion || paymentPlain.description || 'Aporte Voluntario Anual',
                 metodoPago: paymentMethod?.nombre || paymentMethod?.name || 'N/A',
                 numeroTransaccion: paymentPlain.numeroTransaccion || paymentPlain.numero_transaccion || paymentPlain.transactionNumber || paymentPlain.transaction_number || null,
                 
@@ -930,10 +976,10 @@ export class RegisterAporteVoluntarioUseCase {
      * @param {number} studentId - ID del estudiante
      * @param {number} documentId - ID del documento guardado en documentos_estudiante
      * @param {string} paymentDate - Fecha del pago (YYYY-MM-DD)
-     * @param {string} concept - Concepto del pago (para observaciones)
+     * @param {string} descripcion - Descripción del pago (para observaciones)
      * @returns {Promise<Object>} Registro de entrega de documento creado
      */
-    async _savePaymentDocumentDelivery(studentId, documentId, paymentDate, concept) {
+    async _savePaymentDocumentDelivery(studentId, documentId, paymentDate, descripcion) {
         try {
             // Preparar datos para estudiantes_documentos_entrega
             // NOTA: documentacionId es NULL porque no hay un documento específico en el catálogo para "comprobante de pago"
@@ -944,7 +990,7 @@ export class RegisterAporteVoluntarioUseCase {
                 entregado: true, // El documento fue entregado digitalmente
                 enTramite: false, // No está en trámite, ya fue entregado
                 fechaEntrega: paymentDate, // Fecha de entrega = fecha del pago
-                observaciones: `Comprobante de pago de aporte académico: ${concept || 'Aporte Académico'}.`,
+                observaciones: `Comprobante de pago de aporte académico: ${descripcion || 'Aporte Académico'}.`,
             };
 
             // Crear el registro de entrega

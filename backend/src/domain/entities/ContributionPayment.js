@@ -44,11 +44,11 @@ export class ContributionPayment extends BaseEntity {
     if (data.hasOwnProperty('transactionNumber')) {
       this.transactionNumber = data.transactionNumber;
     }
-    if (data.hasOwnProperty('concept')) {
-      this.concept = data.concept;
+    if (data.hasOwnProperty('comprobanteCode')) {
+      this.comprobanteCode = data.comprobanteCode;
     }
-    if (data.hasOwnProperty('observations')) {
-      this.observations = data.observations;
+    if (data.hasOwnProperty('description')) {
+      this.description = data.description;
     }
   }
 
@@ -108,11 +108,11 @@ export class ContributionPayment extends BaseEntity {
     if (this.hasOwnProperty('transactionNumber')) {
       plainObject.transactionNumber = this.transactionNumber;
     }
-    if (this.hasOwnProperty('concept')) {
-      plainObject.concept = this.concept;
+    if (this.hasOwnProperty('comprobanteCode')) {
+      plainObject.comprobanteCode = this.comprobanteCode;
     }
-    if (this.hasOwnProperty('observations')) {
-      plainObject.observations = this.observations;
+    if (this.hasOwnProperty('description')) {
+      plainObject.description = this.description;
     }
 
     return plainObject;
