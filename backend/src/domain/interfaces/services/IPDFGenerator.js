@@ -11,14 +11,13 @@ export class IPDFGenerator {
   /**
    * Genera un Recibo de Pago con diseño institucional mejorado
    * 
-   * Crea un PDF desde cero usando IncosPDFBase + pdfkit.
+   * Crea un PDF desde cero usando pdf-lib (ReciboPagoPdfGenerator).
    * 
    * @param {Object} data - Datos del pago
-   * @param {string} outputPath - Ruta donde guardar el PDF
-   * @returns {Promise<string>} Ruta del archivo generado
+   * @returns {Promise<Buffer>} Contenido del PDF generado
    */
-  generateReciboPagoMejorado(data, outputPath) {
-    throw new Error('Method generateReciboPagoMejorado must be implemented');
+  generateReciboPago(data) {
+    throw new Error('Method generateReciboPago must be implemented');
   }
 
   /**

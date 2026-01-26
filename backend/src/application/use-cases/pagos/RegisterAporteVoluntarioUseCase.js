@@ -1,6 +1,7 @@
 import { NotFoundError, ValidationError } from '../../../domain/errors/AppError.js';
 import path from 'path';
 import fs from 'fs';
+import { UploadsStorageHelper } from '../../../infrastructure/external/storage/UploadsStorageHelper.js';
 
 /**
  * Use Case: RegisterAporteVoluntarioUseCase
@@ -215,7 +216,7 @@ export class RegisterAporteVoluntarioUseCase {
                         scholarshipDiscount,
                         amountToPay
                     );
-                    reciboPDF = reciboResult.relativePath;
+                    reciboPDF = reciboResult.filePath; // Usar filePath (incluye /uploads/)
                     
                     this.logger.info('[Pagos] Recibo PDF generado exitosamente', {
                         paymentId: finalPayment.id,
@@ -225,13 +226,13 @@ export class RegisterAporteVoluntarioUseCase {
                     });
 
                     // 11.1. Guardar recibo PDF en documentos_estudiante
-                    if (reciboResult.absolutePath && reciboResult.fileName) {
+                    if (reciboResult.filePath && reciboResult.fileName) {
                         try {
                             savedReciboDocument = await this._saveReciboDocument(
                                 studentId,
                                 reciboResult.fileName,
                                 reciboResult.absolutePath,
-                                reciboResult.relativePath
+                                reciboResult.filePath // Usar filePath en lugar de relativePath
                             );
 
                             this.logger.info('[Pagos] Recibo PDF guardado en documentos_estudiante', {
@@ -251,11 +252,45 @@ export class RegisterAporteVoluntarioUseCase {
                         }
                     }
                 } catch (pdfError) {
-                    this.logger.error('[Pagos] Error al generar recibo PDF', {
-                        error: pdfError.message,
-                        stack: pdfError.stack,
+                    // Extraer información del error de forma segura
+                    const errorInfo = {
+                        studentId,
                         paymentId: finalPayment.id,
-                    });
+                        errorMessage: pdfError?.message || 'Error desconocido',
+                        errorName: pdfError?.name || 'Error',
+                        errorType: pdfError?.constructor?.name || 'Unknown',
+                    };
+
+                    // Agregar stack trace si existe
+                    if (pdfError?.stack) {
+                        errorInfo.stack = pdfError.stack;
+                    }
+
+                    // Intentar extraer más información del error si es posible
+                    if (pdfError?.code) {
+                        errorInfo.errorCode = pdfError.code;
+                    }
+                    if (pdfError?.errno) {
+                        errorInfo.errno = pdfError.errno;
+                    }
+                    if (pdfError?.syscall) {
+                        errorInfo.syscall = pdfError.syscall;
+                    }
+                    if (pdfError?.path) {
+                        errorInfo.path = pdfError.path;
+                    }
+
+                    // Si el error tiene propiedades adicionales, intentar incluirlas
+                    try {
+                        const errorKeys = Object.getOwnPropertyNames(pdfError);
+                        if (errorKeys.length > 0) {
+                            errorInfo.errorProperties = errorKeys;
+                        }
+                    } catch (e) {
+                        // Ignorar si no se pueden obtener las propiedades
+                    }
+
+                    this.logger.error('[Pagos] Error al generar recibo PDF', errorInfo);
                     // No fallar el proceso si el PDF falla
                 }
             } else {
@@ -671,7 +706,7 @@ export class RegisterAporteVoluntarioUseCase {
     }
 
     /**
-     * NUEVO: Genera el recibo de pago en PDF
+     * Genera el recibo de pago en PDF usando el nuevo generador (pdf-lib)
      * @private
      * @param {Object} payment - Registro del pago
      * @param {Object} student - Datos del estudiante
@@ -681,36 +716,30 @@ export class RegisterAporteVoluntarioUseCase {
      * @param {number} totalAmount - Monto total del aporte
      * @param {number} scholarshipDiscount - Descuento por beca
      * @param {number} amountToPay - Monto a pagar (total - descuento)
-     * @returns {Promise<Object>} Información del PDF generado {relativePath, absolutePath, fileName}
+     * @returns {Promise<Object>} Información del PDF generado {filePath, fileName, absolutePath}
      */
     async _generateReciboPDF(payment, student, management, paymentMethod, scholarshipInfo, totalAmount, scholarshipDiscount, amountToPay) {
         try {
-            // Convertir estudiante a objeto plano
+            // Convertir a objetos planos
             const studentPlain = student.toPlainObject ? student.toPlainObject() : student;
             const paymentPlain = payment.toPlainObject ? payment.toPlainObject() : payment;
             const managementPlain = management.toPlainObject ? management.toPlainObject() : management;
             
             // Preparar datos para el PDF
-            // NOTA: Los datos del instituto se toman de IncosPDFBase por defecto
-            // Solo especificar si se necesita personalizar
             const reciboData = {
-                // Información del instituto (opcional)
-                // Si no se especifica, se usan los valores por defecto de IncosPDFBase
-                // institutoInfo: null, // Se usará IncosPDFBase.INSTITUTE.name y logo por defecto
-
                 // Datos del recibo
-                // Usar el ID del pago como número de recibo (formato: 000001, 000002, etc.)
                 numeroRecibo: paymentPlain.receiptNumber || paymentPlain.numeroRecibo || paymentPlain.numero_recibo || String(paymentPlain.id).padStart(6, '0'),
                 fechaPago: paymentPlain.fechaPago || paymentPlain.fecha_pago || paymentPlain.paymentDate || paymentPlain.payment_date,
 
-                // Datos del estudiante (usando campos en inglés de la entidad)
+                // Datos del estudiante
                 nombreCompleto: `${studentPlain.lastName || studentPlain.apellido_paterno || ''} ${studentPlain.motherLastName || studentPlain.apellido_materno || ''} ${studentPlain.firstName || studentPlain.nombres || ''}`.trim().toUpperCase(),
                 ci: studentPlain.ci || 'N/A',
+                expedicion: studentPlain.expedicion || studentPlain.expedition || '',
                 carrera: null, // No mostrar si no existe
                 cursoParalelo: null, // No mostrar si no existe
                 anio: null, // No mostrar si no existe
 
-                // Datos del pago - USAR VALORES CALCULADOS DIRECTAMENTE
+                // Datos del pago
                 montoTotal: totalAmount || 400.00,
                 descuentoBeca: scholarshipDiscount || 0,
                 montoPagado: amountToPay || totalAmount || 400.00,
@@ -725,49 +754,40 @@ export class RegisterAporteVoluntarioUseCase {
                 } : null,
             };
 
-            // Generar nombre del archivo con formato constante
-            // Formato: pago_estudencode_nrorecibe.pdf
+            // Generar PDF usando el nuevo generador (retorna Buffer)
+            const pdfBuffer = await this.pdfGenerator.generateReciboPago(reciboData);
+
+            // Generar nombre del archivo
             const numeroRecibo = paymentPlain.receiptNumber || paymentPlain.numeroRecibo || paymentPlain.numero_recibo || String(paymentPlain.id).padStart(6, '0');
+            const year = managementPlain.anio || managementPlain.year || new Date().getFullYear();
             const codigoEstudiante = studentPlain.studentCode || studentPlain.codigo_estudiante || studentPlain.id;
             const fileName = `pago_${codigoEstudiante}_${numeroRecibo}.pdf`;
-            const year = managementPlain.anio || managementPlain.year || new Date().getFullYear();
-            const outputDir = path.join(process.cwd(), 'uploads', 'recibos', String(year));
+
+            // Guardar PDF en uploads usando UploadsStorageHelper
+            // Usar ruta de recibos según configuración
+            const relativeScope = `recibos/${year}`;
+            const result = UploadsStorageHelper.saveToUploads(relativeScope, fileName, pdfBuffer);
             
-            // Crear directorio si no existe
-            if (!fs.existsSync(outputDir)) {
-                fs.mkdirSync(outputDir, { recursive: true });
-            }
-
-            const absolutePath = path.join(outputDir, fileName);
-
-            // Generar PDF usando el nuevo generador
-            await this.pdfGenerator.generateReciboPagoMejorado(reciboData, absolutePath);
-
-            // Verificar que el PDF fue generado
-            if (!fs.existsSync(absolutePath)) {
-                throw new Error(`El PDF fue generado pero no se encuentra en: ${absolutePath}`);
-            }
-
-            // Ruta relativa para el frontend (desde uploads/)
-            const relativePath = path.join('recibos', String(year), fileName).replace(/\\/g, '/');
-            
-            this.logger.info('[Pagos] Recibo PDF generado exitosamente', {
-                absolutePath: absolutePath,
-                relativePath: relativePath,
-                fileName: fileName,
-                fileSize: fs.statSync(absolutePath).size,
+            this.logger.info('[Pagos] Recibo PDF generado y guardado exitosamente', {
+                paymentId: payment.id,
+                filePath: result.filePath,
+                absolutePath: result.absolutePath,
+                fileName: result.fileName,
+                fileSize: pdfBuffer.length,
             });
 
             return {
-                relativePath,
-                absolutePath,
-                fileName,
+                filePath: result.filePath,
+                fileName: result.fileName,
+                absolutePath: result.absolutePath,
+                relativePath: relativeScope + '/' + fileName, // Para compatibilidad
             };
         } catch (error) {
             this.logger.error('[Pagos] Error al generar recibo PDF', {
+                studentId: payment.studentId || payment.estudianteId,
+                paymentId: payment.id,
                 error: error.message,
                 stack: error.stack,
-                paymentId: payment.id,
             });
             throw error;
         }
@@ -780,18 +800,28 @@ export class RegisterAporteVoluntarioUseCase {
      * @param {number} studentId - ID del estudiante
      * @param {string} fileName - Nombre del archivo PDF
      * @param {string} absolutePath - Ruta absoluta del archivo
-     * @param {string} relativePath - Ruta relativa desde uploads/
+     * @param {string} filePath - Ruta relativa desde /uploads/ (ej: /uploads/recibos/2026/...)
      * @returns {Promise<Object>} Documento guardado
      */
-    async _saveReciboDocument(studentId, fileName, absolutePath, relativePath) {
+    async _saveReciboDocument(studentId, fileName, absolutePath, filePath) {
         try {
+            // Extraer ruta relativa sin el prefijo /uploads/ para guardar en BD
+            // filePath viene como /uploads/recibos/2026/archivo.pdf
+            // Necesitamos guardar solo: recibos/2026/archivo.pdf
+            let relativePath = filePath;
+            if (relativePath.startsWith('/uploads/')) {
+                relativePath = relativePath.substring('/uploads/'.length);
+            } else if (relativePath.startsWith('uploads/')) {
+                relativePath = relativePath.substring('uploads/'.length);
+            }
+
             // Preparar datos del documento
             const documentData = {
                 studentId,
                 tipoDocumento: 'PAGO', // El recibo es parte del proceso de pago
                 documentacionId: null, // No hay documento específico en catálogo para "Recibo de Pago"
                 fileName: fileName,
-                filePath: relativePath,
+                filePath: relativePath, // Guardar sin prefijo /uploads/
                 extension: 'pdf',
                 tipoMime: 'application/pdf',
                 contieneMultipleDocumentos: false,
