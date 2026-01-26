@@ -7,6 +7,7 @@
 -- Métodos:
 --   - TRANSFERENCIA (metodo_pago_id = 3): requiere banco_id y numero_cuenta
 --   - QR (metodo_pago_id = 2): requiere banco_id, numero_cuenta y qr_imagen_url
+--   - DEPOSITO (metodo_pago_id = 4): requiere banco_id y numero_cuenta
 -- Bancos:
 --   - BNB (banco_id = 1)
 --   - MERCANTIL (banco_id = 2)
@@ -22,7 +23,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 
 -- ============================================
 -- INSERTAR CUENTAS DE PAGO
--- IDs fijos: 1 (TRANSFERENCIA BNB), 2 (TRANSFERENCIA MERCANTIL), 3 (QR BNB)
+-- IDs fijos: 1 (TRANSFERENCIA BNB), 2 (TRANSFERENCIA MERCANTIL), 3 (QR BNB), 4 (DEPOSITO BNB)
 -- ============================================
 
 -- Cuenta 1: TRANSFERENCIA - BNB
@@ -43,6 +44,12 @@ INSERT INTO cuentas_pago (id, metodo_pago_id, banco_id, nombre_titular, numero_c
 INSERT INTO cuentas_pago (id, metodo_pago_id, banco_id, nombre_titular, numero_cuenta, qr_imagen_url, activo) VALUES
 (3, 2, 1, 'Instituto INCOS', '1234567890123456', '/uploads/qr/codigo-qr-bnb.png', TRUE);
 
+-- Cuenta 4: DEPOSITO - BNB
+-- Método: DEPOSITO (metodo_pago_id = 4)
+-- Banco: BNB (banco_id = 1)
+INSERT INTO cuentas_pago (id, metodo_pago_id, banco_id, nombre_titular, numero_cuenta, activo) VALUES
+(4, 4, 1, 'Instituto INCOS', '1234567890123456', TRUE);
+
 -- Rehabilitar foreign key checks
 SET FOREIGN_KEY_CHECKS = 1;
 
@@ -52,6 +59,7 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- Cuenta 1 (id=1): TRANSFERENCIA - BNB - N° 1234567890123456
 -- Cuenta 2 (id=2): TRANSFERENCIA - MERCANTIL - N° 9876543210987654
 -- Cuenta 3 (id=3): QR - BNB - N° 1234567890123456 - QR: /uploads/qr/codigo-qr-bnb.png
+-- Cuenta 4 (id=4): DEPOSITO - BNB - N° 1234567890123456
 -- ============================================
 -- NOTA: Los datos son de ejemplo. Actualizar con valores reales cuando se confirmen.
 -- ============================================

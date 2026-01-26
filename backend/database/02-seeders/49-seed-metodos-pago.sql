@@ -14,8 +14,8 @@ SET FOREIGN_KEY_CHECKS = 0;
 
 -- ============================================
 -- INSERTAR MÉTODOS DE PAGO
--- IDs fijos: 1 (EFECTIVO), 2 (QR), 3 (TRANSFERENCIA)
--- Orden: EFECTIVO primero, luego QR, después TRANSFERENCIA
+-- IDs fijos: 1 (EFECTIVO), 2 (QR), 3 (TRANSFERENCIA), 4 (DEPOSITO)
+-- Orden: EFECTIVO primero, luego QR, después TRANSFERENCIA, y finalmente DEPOSITO
 -- ============================================
 
 -- Método de Pago 1: EFECTIVO
@@ -29,6 +29,10 @@ INSERT INTO metodos_pago (id, codigo, nombre, activo) VALUES
 -- Método de Pago 3: TRANSFERENCIA
 INSERT INTO metodos_pago (id, codigo, nombre, activo) VALUES
 (3, 'TRANSFERENCIA', 'Transferencia Bancaria', TRUE);
+
+-- Método de Pago 4: DEPOSITO
+INSERT INTO metodos_pago (id, codigo, nombre, activo) VALUES
+(4, 'DEPOSITO', 'Depósito Bancario', TRUE);
 
 -- Rehabilitar foreign key checks
 SET FOREIGN_KEY_CHECKS = 1;
