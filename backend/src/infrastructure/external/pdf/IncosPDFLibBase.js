@@ -387,15 +387,17 @@ export class IncosPDFLibBase {
     /**
      * Dibuja "label" (bold) y "value" (normal) en la misma línea, en (x, y).
      * No modifica _currentY. Usado por _addLabelValue y _addLabelValueGrid.
+     * Si se proporciona maxWidth, envuelve el texto para que no se desborde.
      *
      * @protected
      * @param {number} x - Posición X (origen izquierdo)
      * @param {number} y - Posición Y (baseline)
      * @param {string} label - Texto en negrita (ej. "Nombres y Apellidos:")
      * @param {string} value - Texto normal a continuación
-     * @returns {Promise<void>}
+     * @param {number} [maxWidth] - Ancho máximo disponible (opcional, para evitar desbordamiento)
+     * @returns {Promise<number>} Altura total usada (para múltiples líneas)
      */
-    async _drawLabelValueAt(x, y, label, value) {
+    async _drawLabelValueAt(x, y, label, value, maxWidth = null) {
         if (!this._pdfDoc || !this._currentPage) {
             throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
         }
@@ -407,11 +409,53 @@ export class IncosPDFLibBase {
         const boldFont = await this._pdfDoc.embedFont(boldFontName);
         const normalFont = await this._pdfDoc.embedFont(normalFontName);
         const fontSize = IncosPDFBase.FONTS.normal.size;
+        const lineSpacing = IncosPDFBase.LAYOUT.spacing.line;
         const textRgb = this._hexToRgb(IncosPDFBase.COLORS.text);
 
         const labelStr = String(label ?? '');
         const valueStr = String(value ?? '');
 
+        // Si no hay maxWidth, dibujar normalmente (comportamiento original)
+        if (maxWidth === null) {
+            this._currentPage.drawText(labelStr, {
+                x,
+                y,
+                size: fontSize,
+                font: boldFont,
+                color: textRgb,
+            });
+
+            if (valueStr) {
+                const labelWidth = boldFont.widthOfTextAtSize(labelStr, fontSize);
+                const valueX = x + labelWidth + gap;
+                this._currentPage.drawText(valueStr, {
+                    x: valueX,
+                    y,
+                    size: fontSize,
+                    font: normalFont,
+                    color: textRgb,
+                });
+            }
+            return fontSize; // Altura de una línea
+        }
+
+        // Con maxWidth: envolver texto si es necesario
+        const labelWidth = boldFont.widthOfTextAtSize(labelStr, fontSize);
+        const availableWidth = maxWidth - labelWidth - gap;
+
+        if (availableWidth <= 0) {
+            // Si el label es más ancho que el espacio disponible, solo dibujar el label
+            this._currentPage.drawText(labelStr, {
+                x,
+                y,
+                size: fontSize,
+                font: boldFont,
+                color: textRgb,
+            });
+            return fontSize;
+        }
+
+        // Dibujar label
         this._currentPage.drawText(labelStr, {
             x,
             y,
@@ -420,17 +464,36 @@ export class IncosPDFLibBase {
             color: textRgb,
         });
 
-        if (valueStr) {
-            const labelWidth = boldFont.widthOfTextAtSize(labelStr, fontSize);
-            const valueX = x + labelWidth + gap;
-            this._currentPage.drawText(valueStr, {
-                x: valueX,
-                y,
+        if (!valueStr) {
+            return fontSize;
+        }
+
+        // Envolver el value si es necesario
+        const valueLines = this._wrapText(valueStr, normalFont, fontSize, availableWidth);
+        const valueX = x + labelWidth + gap;
+        let currentY = y;
+        let totalHeight = fontSize;
+
+        for (let i = 0; i < valueLines.length; i++) {
+            const line = valueLines[i];
+            // Primera línea al lado del label, siguientes líneas con indentación
+            const lineX = i === 0 ? valueX : x + labelWidth + gap;
+
+            this._currentPage.drawText(line, {
+                x: lineX,
+                y: currentY,
                 size: fontSize,
                 font: normalFont,
                 color: textRgb,
             });
+
+            if (i < valueLines.length - 1) {
+                currentY -= fontSize + lineSpacing;
+                totalHeight += fontSize + lineSpacing;
+            }
         }
+
+        return totalHeight;
     }
 
     /**
@@ -458,7 +521,7 @@ export class IncosPDFLibBase {
 
     /**
      * Dibuja un grid de "label: value" en 2 o 3 columnas.
-     * items = [{ label, value }, ...]. Misma línea por celda; solo se muestran ítems con valor.
+     * items = [{ label, value }, ...]. Envuelve texto si es necesario para evitar desbordamiento.
      *
      * @protected
      * @param {{ label: string, value: string }[]} items - Lista de { label, value }
@@ -473,32 +536,67 @@ export class IncosPDFLibBase {
         const cfg = IncosPDFBase.LAYOUT;
         const colGap = cfg.gridColGap ?? 16;
         const fontSize = IncosPDFBase.FONTS.normal.size;
-        const lineSpacing = IncosPDFBase.LAYOUT.bulletSpacing;
-
-        /* Misma separación entre filas que _addLabelValue (fontSize + lineSpacing) para espaciado uniforme. */
-        const rowGap = lineSpacing;
+        const lineSpacing = IncosPDFBase.LAYOUT.spacing.line;
 
         const totalWidth = pageWidth - m.left - m.right;
         const colWidth = (totalWidth - (numCols - 1) * colGap) / numCols;
         const numRows = Math.ceil(items.length / numCols);
         const baseX = m.left;
 
+        // Primero calcular alturas de cada fila sin dibujar
+        const boldFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.bold.font);
+        const normalFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.normal.font);
+        const boldFont = await this._pdfDoc.embedFont(boldFontName);
+        const normalFont = await this._pdfDoc.embedFont(normalFontName);
+        const gap = cfg.labelValueGap ?? 3;
+
+        const rowHeights = [];
+
         for (let row = 0; row < numRows; row++) {
+            let maxRowHeight = fontSize; // Altura mínima de una fila
+
+            for (let col = 0; col < numCols; col++) {
+                const idx = row * numCols + col;
+                if (idx >= items.length) break;
+                const { label, value } = items[idx];
+                
+                const labelStr = String(label ?? '');
+                const valueStr = String(value ?? '');
+                const labelWidth = boldFont.widthOfTextAtSize(labelStr, fontSize);
+                const availableWidth = colWidth - labelWidth - gap;
+
+                if (availableWidth > 0 && valueStr) {
+                    // Calcular cuántas líneas necesita el value
+                    const valueLines = this._wrapText(valueStr, normalFont, fontSize, availableWidth);
+                    const cellHeight = valueLines.length * fontSize + (valueLines.length - 1) * lineSpacing;
+                    maxRowHeight = Math.max(maxRowHeight, cellHeight);
+                }
+            }
+
+            rowHeights.push(maxRowHeight);
+        }
+
+        // Ahora dibujar todas las celdas
+        let currentY = this._currentY;
+        for (let row = 0; row < numRows; row++) {
+            const rowY = currentY;
+
             for (let col = 0; col < numCols; col++) {
                 const idx = row * numCols + col;
                 if (idx >= items.length) break;
                 const { label, value } = items[idx];
                 const x = baseX + col * (colWidth + colGap);
-                const y = this._currentY - row * (fontSize + rowGap);
-                await this._drawLabelValueAt(x, y, label, value);
+                
+                // Dibujar con el ancho máximo de columna para evitar desbordamiento
+                await this._drawLabelValueAt(x, rowY, label, value, colWidth);
             }
+
+            // Mover a la siguiente fila
+            currentY -= rowHeights[row] + lineSpacing;
         }
 
-        /* Altura solo de las filas usadas (casillas ocupadas), sin contar columnas vacías.
-         * 1 fila: fontSize + lineSpacing. 2+ filas: numRows * fontSize + (numRows-1) * rowGap + lineSpacing. */
-        const contentHeight = numRows * fontSize + Math.max(0, numRows - 1) * rowGap;
-        const totalHeight = contentHeight + lineSpacing;
-        this._currentY -= totalHeight;
+        // Actualizar _currentY con la altura total usada
+        this._currentY = currentY;
     }
 
     /**

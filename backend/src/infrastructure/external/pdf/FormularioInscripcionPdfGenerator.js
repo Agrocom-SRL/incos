@@ -240,37 +240,6 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
         const origenes = Array.isArray(s.origenes) ? s.origenes : [];
         const principal = origenes.find((o) => o.es_principal === 1 || o.es_principal === true) || origenes[0];
 
-        // Construir dirección según nacionalidad (boliviana vs extranjera)
-        const tipoOrigen = (principal?.tipo_origen ?? '').toString().toUpperCase();
-        const esBoliviana = tipoOrigen === 'BOLIVIANA' || tipoOrigen === 'BOLIVIANO';
-        let lugarVal = '—';
-
-        if (principal) {
-            if (esBoliviana) {
-                // Boliviana: localidad-municipio, provincia, departamento
-                const lugarParts = [
-                    principal?.ciudad ?? principal?.ciudad_nacimiento_raw,
-                    principal?.nacimiento_municipio_nombre,
-                    principal?.nacimiento_provincia_nombre,
-                    principal?.nacimiento_departamento_nombre,
-                ].filter(Boolean);
-                if (lugarParts.length > 0) {
-                    // Si hay ciudad y municipio, unir con guion; luego provincia y departamento
-                    const ciudadMunicipio = [lugarParts[0], lugarParts[1]].filter(Boolean).join('-');
-                    const resto = lugarParts.slice(2).filter(Boolean);
-                    lugarVal = [ciudadMunicipio, ...resto].filter(Boolean).join(', ');
-                }
-            } else {
-                // Extranjera: ciudad, país
-                const ciudad = (principal?.ciudad ?? principal?.ciudad_nacimiento_raw ?? '').toString().trim();
-                const pais = (principal?.pais_nombre ?? principal?.paisNombre ?? '').toString().trim();
-                const extParts = [ciudad, pais].filter(Boolean);
-                lugarVal = extParts.length > 0 ? extParts.join(', ') : '—';
-            }
-        }
-
-        await this._addLabelValue(T.LUGAR_NACIMIENTO_LABEL, lugarVal);
-
         // Grid 2 columnas: fecha literal, edad, nacionalidad, idioma principal, idioma secundario, teléfono fijo (solo si existen)
         const gridItems = [];
         const fechaLiteral = (s.fechaNacimientoLiteral ?? '').toString().trim();
@@ -307,6 +276,37 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
         if (gridItems.length > 0) {
             await this._addLabelValueGrid(gridItems, 2);
         }
+
+        // Construir dirección según nacionalidad (boliviana vs extranjera)
+        const tipoOrigen = (principal?.tipo_origen ?? '').toString().toUpperCase();
+        const esBoliviana = tipoOrigen === 'BOLIVIANA' || tipoOrigen === 'BOLIVIANO';
+        let lugarVal = '—';
+
+        if (principal) {
+            if (esBoliviana) {
+                // Boliviana: localidad-municipio, provincia, departamento
+                const lugarParts = [
+                    principal?.ciudad ?? principal?.ciudad_nacimiento_raw,
+                    principal?.nacimiento_municipio_nombre,
+                    principal?.nacimiento_provincia_nombre,
+                    principal?.nacimiento_departamento_nombre,
+                ].filter(Boolean);
+                if (lugarParts.length > 0) {
+                    // Si hay ciudad y municipio, unir con guion; luego provincia y departamento
+                    const ciudadMunicipio = [lugarParts[0], lugarParts[1]].filter(Boolean).join('-');
+                    const resto = lugarParts.slice(2).filter(Boolean);
+                    lugarVal = [ciudadMunicipio, ...resto].filter(Boolean).join(', ');
+                }
+            } else {
+                // Extranjera: ciudad, país
+                const ciudad = (principal?.ciudad ?? principal?.ciudad_nacimiento_raw ?? '').toString().trim();
+                const pais = (principal?.pais_nombre ?? principal?.paisNombre ?? '').toString().trim();
+                const extParts = [ciudad, pais].filter(Boolean);
+                lugarVal = extParts.length > 0 ? extParts.join(', ') : '—';
+            }
+        }
+
+        await this._addLabelValue(T.LUGAR_NACIMIENTO_LABEL, lugarVal);
 
         // Domicilio: dirección/zona primero, luego municipio, provincia, departamento
         const domicilioParts = [];
@@ -365,34 +365,42 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
         // Mostrar grid si hay datos
         if (gridItems.length > 0) {
             await this._addLabelValueGrid(gridItems, 2);
+            this._addSpace(IncosPDFBase.LAYOUT.spacing.line);
         }
 
-        // Materias como viñetas
+        // Materias en grid de 2 columnas (sigla como label, nombre como value)
         const materias = enrollmentData.materias || [];
         if (materias.length > 0) {
             // Título para la lista de materias
             await this._addLabelValue('Materias inscritas:', '');
 
-            // Agregar cada materia como viñeta (igual que en ActaCompromisoPdfGenerator)
+            // Crear grid items para las materias
+            const materiasGridItems = [];
             for (const materia of materias) {
-                // Formato: "SIGLA - Nombre" o solo "Nombre" si no hay sigla
-                let materiaTexto = '';
-                if (materia.sigla && materia.nombre) {
-                    materiaTexto = `${materia.sigla} - ${materia.nombre}`;
-                } else if (materia.nombre) {
-                    materiaTexto = materia.nombre;
-                } else if (materia.sigla) {
-                    materiaTexto = materia.sigla;
-                }
+                const sigla = (materia.sigla || '').toString().trim();
+                const nombre = (materia.nombre || '').toString().trim();
 
-                if (materiaTexto) {
-                    await this._addBulletPoint(materiaTexto);
+                if (sigla || nombre) {
+                    // Label: sigla (o "Sin sigla" si no hay), Value: nombre (o "Sin nombre" si no hay)
+                    materiasGridItems.push({
+                        label: sigla || 'Sin sigla',
+                        value: nombre || 'Sin nombre',
+                    });
                 }
+            }
+
+            if (materiasGridItems.length > 0) {
+                await this._addLabelValueGrid(materiasGridItems, 2);
+            } else {
+                // Si no hay materias válidas, mostrar mensaje
+                await this._addLabelValue('Materias inscritas:', 'No hay materias inscritas');
             }
         } else {
             // Si no hay materias, mostrar mensaje
-            await this._addBulletPoint('No hay materias inscritas');
+            await this._addLabelValue('Materias inscritas:', 'No hay materias inscritas');
         }
+
+        this._addSpace();
     }
 
     /**
@@ -493,7 +501,7 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
         ];
 
         const blockHeight = lineThickness + spaceLineToFirst +
-            Math.max(leftLines.length, rightLines.length) * fontSize + 
+            Math.max(leftLines.length, rightLines.length) * fontSize +
             Math.max(0, Math.max(leftLines.length, rightLines.length) - 1) * spaceBetweenLines;
         const blockBottomY = margins.bottom + templateFooterHeight + footerPadding;
         const lineY = blockBottomY + blockHeight - lineThickness;
