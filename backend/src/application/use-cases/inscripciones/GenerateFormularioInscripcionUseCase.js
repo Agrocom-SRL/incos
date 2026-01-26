@@ -115,50 +115,107 @@ export class GenerateFormularioInscripcionUseCase extends BaseDocumentGeneration
     }
 
     /**
-     * Valida y obtiene el estudiante por ID
+     * Valida y obtiene el estudiante por ID desde vista_estudiante_datos_personales.
+     * Parsea apoderados, origenes y discapacidades (JSON de la vista) a arrays.
      *
      * @private
      * @param {number} studentId - ID del estudiante
-     * @returns {Promise<Object>} Datos del estudiante
+     * @returns {Promise<Object>} Datos del estudiante (normalizados + apoderados, origenes, discapacidades como arrays)
      * @throws {NotFoundError} Si el estudiante no existe
      */
     async _validateAndGetStudent(studentId) {
-        const student = await this.studentRepository.findById(studentId, {
-            attributes: ['id', 'codigoEstudiante', 'ci', 'expedicion', 'nombres', 'apellidoPaterno', 'apellidoMaterno'],
-        });
+        const results = await this.studentRepository.obtenerDatosPersonales({ id: studentId });
 
-        if (!student) {
+        if (!results || results.length === 0) {
             throw new NotFoundError(`Estudiante con ID ${studentId}`);
         }
 
-        return student;
+        const row = results[0];
+        return this._normalizeStudentFromView(row);
     }
 
     /**
-     * Genera el buffer del PDF del formulario de inscripción
+     * Normaliza una fila de vista_estudiante_datos_personales.
+     * Mapeo 1:1 con la vista; claves en español (como Acta). Sin duplicados.
+     * Parsea apoderados, origenes y discapacidades (JSON de la vista) a arrays.
+     *
+     * @private
+     * @param {Object} row - Fila plana de la vista (snake_case)
+     * @returns {Object} Estudiante normalizado (claves español) con apoderados, origenes, discapacidades como Array
+     */
+    _normalizeStudentFromView(row) {
+        const apoderados = this._ensureArray(row.apoderados);
+        const origenes = this._ensureArray(row.origenes);
+        const discapacidades = this._ensureArray(row.discapacidades);
+
+        return {
+            id: row.id,
+            codigoEstudiante: row.codigo_estudiante,
+            ci: row.ci,
+            expedicion: row.expedicion,
+            nombres: row.nombres,
+            apellidoPaterno: row.apellido_paterno,
+            apellidoMaterno: row.apellido_materno,
+            fechaNacimiento: row.fecha_nacimiento,
+            genero: row.genero,
+            estadoCivilId: row.estado_civil_id,
+            estadoCivilNombre: row.estado_civil_nombre,
+            estadoCivilAbreviatura: row.estado_civil_abreviatura,
+            tipoSangre: row.tipo_sangre,
+            tieneDiscapacidad: row.tiene_discapacidad,
+            emailPersonal: row.email_personal,
+            celular: row.celular,
+            telefonoFijo: row.telefono_fijo,
+            direccion: row.direccion,
+            municipioResidenciaId: row.municipio_residencia_id,
+            zona: row.zona,
+            residenciaMunicipioNombre: row.residencia_municipio_nombre,
+            residenciaProvinciaNombre: row.residencia_provincia_nombre,
+            residenciaDepartamentoNombre: row.residencia_departamento_nombre,
+            apoderados,
+            origenes,
+            discapacidades,
+        };
+    }
+
+    /**
+     * Asegura que un valor (JSON string o ya parseado) sea un array.
+     * Los COALESCE de la vista devuelven JSON; el driver puede devolver string u objeto.
+     *
+     * @private
+     * @param {string|Array|null|undefined} value - Valor de apoderados, origenes o discapacidades
+     * @returns {Array}
+     */
+    _ensureArray(value) {
+        if (value == null) return [];
+        if (Array.isArray(value)) return value;
+        if (typeof value === 'string') {
+            try {
+                const parsed = JSON.parse(value);
+                return Array.isArray(parsed) ? parsed : [];
+            } catch {
+                return [];
+            }
+        }
+        return [];
+    }
+
+    /**
+     * Genera el buffer del PDF del formulario de inscripción.
+     * Pasa student con claves en español (como Acta): id, codigoEstudiante, ci, expedicion, nombres, apellidoPaterno, apellidoMaterno.
      *
      * @private
      * @param {number} gestionYear - Año de gestión activa
-     * @param {Object} student - Datos del estudiante
+     * @param {Object} student - Estudiante normalizado desde vista (claves español)
      * @returns {Promise<Buffer>} Buffer del PDF generado
      */
     async _generatePdfBuffer(gestionYear, student) {
-        // Obtener fecha actual desde el método del base
         const fechaActual = this._getCurrentDate();
 
-        // Pasar todos los datos necesarios al generador de PDF
         return await this.pdfGenerator.generateFormularioInscripcion({
             gestion: gestionYear,
-            student: {
-                id: student.id,
-                codigoEstudiante: student.codigoEstudiante,
-                ci: student.ci,
-                expedicion: student.expedition,
-                nombres: student.firstName,
-                apellidoPaterno: student.lastName,
-                apellidoMaterno: student.motherLastName,
-            },
-            fechaActual: fechaActual,
+            student,
+            fechaActual,
         });
     }
 
@@ -177,7 +234,7 @@ export class GenerateFormularioInscripcionUseCase extends BaseDocumentGeneration
     async _persistDocument(studentId, pdfBuffer, student) {
         // Preparar información del archivo
         const relativeScope = UPLOAD.studentDocuments(studentId);
-        const fileName = `formulario_inscripcion_${student.studentCode}.pdf`;
+        const fileName = `formulario_inscripcion_${student.codigoEstudiante}.pdf`;
 
         // Guardar PDF en uploads (usa método del base)
         const result = await this._saveToUploads(studentId, pdfBuffer, relativeScope, fileName);

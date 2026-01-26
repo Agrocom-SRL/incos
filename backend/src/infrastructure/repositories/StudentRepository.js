@@ -2,6 +2,7 @@ import { IEstudianteRepository } from '../../domain/interfaces/repositories/IEst
 import { Estudiante as EstudianteModel } from '../database/models/estudiante.js';
 import { BaseRepository } from './BaseRepository.js';
 import { StudentMapper } from '../mappers/StudentMapper.js';
+import { sequelize } from '../database/sequelize.js';
 
 /**
  * Implementación del repositorio de estudiantes usando Sequelize
@@ -151,11 +152,52 @@ export class StudentRepository extends BaseRepository {
     return 'students';
   }
 
-  // NOTA: Los métodos específicos (findByCI, findByCodigo, findByEmail, getNextStudentNumber) 
-  // han sido eliminados. Ahora se usan los métodos base de IRepository:
-  // - findBy({ ci, expedicion }) para buscar por CI
-  // - findBy({ studentCode }) para buscar por código
-  // - findBy({ personalEmail }) para buscar por email
-  // - getNextStudentNumber debe moverse a un caso de uso o servicio de generación de códigos
+  /**
+   * Obtiene datos personales completos del estudiante desde vista_estudiante_datos_personales.
+   * Consulta directa a la vista (torso + piezas 09–14). Retorna objetos planos, no entidades.
+   *
+   * @param {Object} filters - Filtros opcionales (datos que diferencian a cada estudiante)
+   *   - id: ID del estudiante
+   *   - codigo_estudiante: Código único del estudiante
+   *   - ci: Cédula de identidad (usar junto con expedicion para identificación única)
+   *   - expedicion: Expedición del CI (SC, LP, CB, etc.)
+   * @returns {Promise<Array>} Array de objetos planos con datos enriquecidos
+   */
+  async obtenerDatosPersonales(filters = {}) {
+    const whereConditions = [];
+    const replacements = [];
+
+    if (filters.id !== undefined) {
+      whereConditions.push('id = ?');
+      replacements.push(filters.id);
+    }
+    if (filters.codigo_estudiante !== undefined) {
+      whereConditions.push('codigo_estudiante = ?');
+      replacements.push(filters.codigo_estudiante);
+    }
+    if (filters.ci !== undefined) {
+      whereConditions.push('ci = ?');
+      replacements.push(filters.ci);
+    }
+
+    const whereClause = whereConditions.length > 0
+      ? `WHERE ${whereConditions.join(' AND ')}`
+      : '';
+
+    const query = `
+      SELECT *
+      FROM vista_estudiante_datos_personales
+      ${whereClause}
+      ORDER BY id ASC
+    `;
+
+    const results = await sequelize.query(query, {
+      replacements,
+      type: sequelize.QueryTypes.SELECT,
+    });
+
+    return results;
+  }
+
 }
 

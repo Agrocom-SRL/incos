@@ -385,6 +385,123 @@ export class IncosPDFLibBase {
     }
 
     /**
+     * Dibuja "label" (bold) y "value" (normal) en la misma línea, en (x, y).
+     * No modifica _currentY. Usado por _addLabelValue y _addLabelValueGrid.
+     *
+     * @protected
+     * @param {number} x - Posición X (origen izquierdo)
+     * @param {number} y - Posición Y (baseline)
+     * @param {string} label - Texto en negrita (ej. "Nombres y Apellidos:")
+     * @param {string} value - Texto normal a continuación
+     * @returns {Promise<void>}
+     */
+    async _drawLabelValueAt(x, y, label, value) {
+        if (!this._pdfDoc || !this._currentPage) {
+            throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
+        }
+
+        const cfg = IncosPDFBase.LAYOUT;
+        const gap = cfg.labelValueGap ?? 3;
+        const boldFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.bold.font);
+        const normalFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.normal.font);
+        const boldFont = await this._pdfDoc.embedFont(boldFontName);
+        const normalFont = await this._pdfDoc.embedFont(normalFontName);
+        const fontSize = IncosPDFBase.FONTS.normal.size;
+        const textRgb = this._hexToRgb(IncosPDFBase.COLORS.text);
+
+        const labelStr = String(label ?? '');
+        const valueStr = String(value ?? '');
+
+        this._currentPage.drawText(labelStr, {
+            x,
+            y,
+            size: fontSize,
+            font: boldFont,
+            color: textRgb,
+        });
+
+        if (valueStr) {
+            const labelWidth = boldFont.widthOfTextAtSize(labelStr, fontSize);
+            const valueX = x + labelWidth + gap;
+            this._currentPage.drawText(valueStr, {
+                x: valueX,
+                y,
+                size: fontSize,
+                font: normalFont,
+                color: textRgb,
+            });
+        }
+    }
+
+    /**
+     * Agrega una línea "label (bold): value (normal)" en la misma línea.
+     * Usa margen izquierdo y _currentY; avanza _currentY una línea.
+     *
+     * @protected
+     * @param {string} label - Etiqueta en negrita (incluir ":" si se desea)
+     * @param {string} value - Valor en texto normal
+     * @returns {Promise<void>}
+     */
+    async _addLabelValue(label, value) {
+        if (!this._pdfDoc || !this._currentPage) {
+            throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
+        }
+
+        const m = IncosPDFBase.LAYOUT.margins;
+        const x = m.left;
+        const fontSize = IncosPDFBase.FONTS.normal.size;
+        const lineSpacing = IncosPDFBase.LAYOUT.bulletSpacing;
+
+        await this._drawLabelValueAt(x, this._currentY, label, value);
+        this._currentY -= fontSize + lineSpacing;
+    }
+
+    /**
+     * Dibuja un grid de "label: value" en 2 o 3 columnas.
+     * items = [{ label, value }, ...]. Misma línea por celda; solo se muestran ítems con valor.
+     *
+     * @protected
+     * @param {{ label: string, value: string }[]} items - Lista de { label, value }
+     * @param {number} numCols - Número de columnas (2 o 3)
+     * @returns {Promise<void>}
+     */
+    async _addLabelValueGrid(items, numCols = 2) {
+        if (!this._pdfDoc || !this._currentPage || !items.length) return;
+
+        const { width: pageWidth } = this._currentPage.getSize();
+        const m = IncosPDFBase.LAYOUT.margins;
+        const cfg = IncosPDFBase.LAYOUT;
+        const colGap = cfg.gridColGap ?? 16;
+        const fontSize = IncosPDFBase.FONTS.normal.size;
+        const lineSpacing = IncosPDFBase.LAYOUT.bulletSpacing;
+
+        /* Misma separación entre filas que _addLabelValue (fontSize + lineSpacing) para espaciado uniforme. */
+        const rowGap = lineSpacing;
+
+        const totalWidth = pageWidth - m.left - m.right;
+        const colWidth = (totalWidth - (numCols - 1) * colGap) / numCols;
+        const numRows = Math.ceil(items.length / numCols);
+        const baseX = m.left;
+
+        for (let row = 0; row < numRows; row++) {
+            for (let col = 0; col < numCols; col++) {
+                const idx = row * numCols + col;
+                if (idx >= items.length) break;
+                const { label, value } = items[idx];
+                const x = baseX + col * (colWidth + colGap);
+                const y = this._currentY - row * (fontSize + rowGap);
+                await this._drawLabelValueAt(x, y, label, value);
+            }
+        }
+
+        /* Altura solo de las filas usadas (casillas ocupadas), sin contar columnas vacías.
+         * 1 fila: fontSize + lineSpacing. 2+ filas: numRows * fontSize + (numRows-1) * rowGap + lineSpacing. */
+        const contentHeight = numRows * fontSize + Math.max(0, numRows - 1) * rowGap;
+        const totalHeight = contentHeight + lineSpacing;
+        this._currentY -= totalHeight;
+    }
+
+    /**
      * Agrega una viñeta con círculo negro rellenado seguido de texto
      * 
      * Método simplificado que usa el estado interno (página y posición Y).

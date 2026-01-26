@@ -72,6 +72,16 @@ export class IncosPDFBase {
         MOTIVOS: 'V. MOTIVOS',
     };
 
+    /**
+     * Títulos de secciones del Formulario de Inscripción (I, II, III).
+     * Usado por FormularioInscripcionPdfGenerator.
+     */
+    static FORMULARIO_SECTION_TITLES = {
+        DATOS_PERSONALES: 'I. DATOS PERSONALES',
+        DATOS_ACADEMICOS: 'II. DATOS ACADÉMICOS',
+        DOCUMENTOS_RECEPCIONADOS: 'III. DOCUMENTOS RECEPCIONADOS',
+    };
+
     // ============================================
     // TEXTOS DE PLANTILLA
     // ============================================
@@ -95,6 +105,38 @@ export class IncosPDFBase {
     static SIGNATURE = {
         LABEL: 'Firma',
         CI_FORMAT: 'C.I.: {CI} {EXPEDICION}',
+    };
+
+    /**
+     * Textos del Formulario de Inscripción (I. DATOS PERSONALES).
+     * Solo labels (clave); el generador construye el valor y lo pasa.
+     */
+    static FORMULARIO_TEXTS = {
+        NOMBRES_APELLIDOS_LABEL: 'Nombres y Apellidos:',
+        CI_LABEL: 'C.I.:',
+        GENERO_LABEL: 'Género:',
+        ESTADO_CIVIL_LABEL: 'Estado civil:',
+        TIPO_SANGRE_LABEL: 'Tipo de sangre:',
+        DISCAPACIDAD_LABEL: 'Discapacidad:',
+        EMAIL_LABEL: 'Email:',
+        CELULAR_LABEL: 'Celular:',
+        /** Línea debajo del grid cuando tiene discapacidad; valor desde vista_base_estudiante_discapacidades. */
+        DETALLE_DISCAPACIDAD_LABEL: 'Detalle discapacidad:',
+        /**
+         * Texto del detalle por ítem. Reemplazo de valores como TEMPLATE_TEXTS.
+         * Placeholders: {TIPO}, {GRADO}, {DESCRIPCION}, {CAUSA}. Solo se incluyen segmentos con valor.
+         */
+        DETALLE_DISCAPACIDAD_ITEM_FMT: 'Tipo: {TIPO}. Grado: {GRADO}. Descripción: {DESCRIPCION}. Causa: {CAUSA}.',
+        /** Separador entre ítems de discapacidad (varios ítems en una sola línea). */
+        DETALLE_DISCAPACIDAD_SEP: ' — ',
+        // Lugar y fecha de nacimiento, domicilio, idioma (orígenes + residencia)
+        LUGAR_FECHA_NACIMIENTO_TITLE: 'Lugar y Fecha de Nacimiento',
+        DOMICILIO_LABEL: 'Domicilio:',
+        LOCALIDAD_LABEL: 'Localidad',
+        DEPARTAMENTO_LABEL: 'Departamento',
+        NACIONALIDAD_LABEL: 'Nacionalidad',
+        EDAD_LABEL: 'Edad',
+        IDIOMA_ORIGEN_LABEL: 'Idioma de origen',
     };
 
     // ============================================
@@ -133,7 +175,7 @@ export class IncosPDFBase {
         margins: { top: 50, bottom: 50, left: 50, right: 50 },
         spacing: {
             section: 20,      // Entre secciones
-            subsection: 15,   // Entre subsecciones
+            subsection: 12,   // Entre subsecciones
             paragraph: 16,    // Entre párrafos
             line: 5,          // Entre líneas
             bullet: 8,        // Entre viñetas y texto
@@ -148,6 +190,10 @@ export class IncosPDFBase {
         bulletIndent: 16,   // Indentación adicional para viñetas (más a la derecha que las secciones)
         bulletDiameter: 4,  // Diámetro del círculo de la viñeta (en puntos)
         bulletSpacing: 8,  // Espacio entre el círculo y el texto de la viñeta (en puntos)
+        // Label + valor en misma línea y grid (formularios)
+        labelValueGap: 3,   // Espacio entre label (bold) y valor (normal) en la misma línea
+        gridColGap: 16,     // Espacio entre columnas en _addLabelValueGrid
+        gridRowSpacing: 6,  // Espacio entre filas del grid
         // Bloque de firma en footer (posición fija al final de página)
         signatureLineWidth: 150,         // Ancho de la línea de firma (puntos), centrada
         signatureLineThickness: 1,       // Grosor de la línea (puntos)
