@@ -203,6 +203,7 @@ export class GenerateFormularioInscripcionUseCase extends BaseDocumentGeneration
     /**
      * Genera el buffer del PDF del formulario de inscripción.
      * Pasa student con claves en español (como Acta): id, codigoEstudiante, ci, expedicion, nombres, apellidoPaterno, apellidoMaterno.
+     * Calcula edad y fecha literal de nacimiento y las pasa en options.
      *
      * @private
      * @param {number} gestionYear - Año de gestión activa
@@ -211,12 +212,65 @@ export class GenerateFormularioInscripcionUseCase extends BaseDocumentGeneration
      */
     async _generatePdfBuffer(gestionYear, student) {
         const fechaActual = this._getCurrentDate();
+        const fechaNacimientoLiteral = this._formatFechaLiteral(student.fechaNacimiento);
+        const edad = this._calcEdad(student.fechaNacimiento);
 
         return await this.pdfGenerator.generateFormularioInscripcion({
             gestion: gestionYear,
-            student,
+            student: {
+                ...student,
+                fechaNacimientoLiteral,
+                edad,
+            },
             fechaActual,
         });
+    }
+
+    /**
+     * Formatea fecha YYYY-MM-DD a formato literal "día de mes de año" (ej: "25 de enero de 2026").
+     * Similar a _getCurrentDate pero para fecha de nacimiento.
+     *
+     * @private
+     * @param {string|undefined|null} fecha - fecha_nacimiento (YYYY-MM-DD)
+     * @returns {string} Fecha formateada o '—' si falta o no parsea
+     */
+    _formatFechaLiteral(fecha) {
+        if (fecha == null || fecha === '') return '—';
+        const str = String(fecha).trim();
+        const m = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
+        if (!m) return '—';
+
+        const day = Number(m[3]);
+        const month = Number(m[2]) - 1; // 0-indexed
+        const year = Number(m[1]);
+
+        const monthNames = [
+            'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+            'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
+        ];
+
+        if (month < 0 || month >= 12) return '—';
+        return `${day} de ${monthNames[month]} de ${year}`;
+    }
+
+    /**
+     * Calcula edad en años desde fecha_nacimiento. Retorna '—' si falta o no parsea.
+     *
+     * @private
+     * @param {string|undefined|null} fecha - fecha_nacimiento (YYYY-MM-DD)
+     * @returns {string} Edad en años o '—'
+     */
+    _calcEdad(fecha) {
+        if (fecha == null || fecha === '') return '—';
+        const str = String(fecha).trim();
+        const m = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
+        if (!m) return '—';
+        const birth = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+        const today = new Date();
+        let age = today.getFullYear() - birth.getFullYear();
+        const mDiff = today.getMonth() - birth.getMonth();
+        if (mDiff < 0 || (mDiff === 0 && today.getDate() < birth.getDate())) age -= 1;
+        return age >= 0 ? String(age) : '—';
     }
 
     /**

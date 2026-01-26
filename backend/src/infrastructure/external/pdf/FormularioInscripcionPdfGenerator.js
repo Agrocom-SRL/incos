@@ -97,17 +97,38 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
 
     /**
      * I. DATOS PERSONALES.
-     * Label (bold) + valor (normal) en la misma línea. Opcionales en grid 2 columnas fijas.
+     * Orquesta dos bloques visuales: identificación personal y lugar/fecha/domicilio.
      *
      * @private
      * @param {Object} options - Opciones de generación
      * @returns {Promise<void>}
      */
     async _buildDatosPersonales(options) {
+        await this._addSection(IncosPDFBase.FORMULARIO_SECTION_TITLES.DATOS_PERSONALES);
+
+        // Bloque 1: Identificación personal (nombres, grid CI/género/etc., detalle discapacidad)
+        await this._buildIdentificacionPersonal(options);
+
+        this._addSpace();
+
+        // Bloque 2: Lugar y Fecha de Nacimiento, Domicilio, Idioma de origen
+        await this._buildLugarFechaNacimientoYDomicilio(options);
+
+        this._addSpace();
+    }
+
+    /**
+     * Bloque 1 de DATOS PERSONALES: Identificación personal.
+     * Nombres y apellidos, grid (C.I., Género, Email, Celular, Estado civil, Tipo sangre, Discapacidad),
+     * detalle de discapacidad si aplica.
+     *
+     * @private
+     * @param {Object} options - Opciones de generación (options.student)
+     * @returns {Promise<void>}
+     */
+    async _buildIdentificacionPersonal(options) {
         const T = IncosPDFBase.FORMULARIO_TEXTS;
         const s = options.student || {};
-
-        await this._addSection(IncosPDFBase.FORMULARIO_SECTION_TITLES.DATOS_PERSONALES);
 
         // Label (T) + valor construido aquí; misma línea
         const nombresVal = [s.apellidoPaterno, s.apellidoMaterno, s.nombres]
@@ -158,13 +179,6 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
                 await this._addLabelValue(T.DETALLE_DISCAPACIDAD_LABEL, detalleVal);
             }
         }
-
-        this._addSpace();
-
-        // Lugar y Fecha de Nacimiento, Domicilio, Idioma de origen (orígenes + residencia + idiomas)
-        await this._buildLugarFechaNacimientoYDomicilio(options);
-
-        this._addSpace();
     }
 
     /**
@@ -205,11 +219,18 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
     /**
      * Lugar y Fecha de Nacimiento, Domicilio, Idioma de origen.
      * Datos desde origenes (vista_base_estudiante_origenes + idiomas), residencia (vista_base_estudiante_residencia)
-     * y student.fechaNacimiento. Composición similar al formulario: título, línea lugar, grid 3 cols
-     * (Localidad=fecha, Nacionalidad, Edad), Domicilio, grid 2 cols (Idioma de origen | Celular).
+     * y student (fechaNacimientoLiteral, edad calculados en caso de uso).
+     *
+     * Dirección según nacionalidad:
+     * - Boliviana: localidad-municipio, provincia, departamento
+     * - Extranjera: ciudad, país
+     * - Doble nacionalidad: usa origen principal (es_principal)
+     *
+     * Grid 2 columnas: fecha de nacimiento (literal), edad, nacionalidad, idioma principal, idioma secundario, teléfono fijo (solo si existen).
+     * Domicilio: dirección/zona primero, luego municipio, provincia, departamento.
      *
      * @private
-     * @param {Object} options - Opciones de generación (options.student)
+     * @param {Object} options - Opciones de generación (options.student con fechaNacimientoLiteral, edad)
      * @returns {Promise<void>}
      */
     async _buildLugarFechaNacimientoYDomicilio(options) {
@@ -218,91 +239,89 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
         const origenes = Array.isArray(s.origenes) ? s.origenes : [];
         const principal = origenes.find((o) => o.es_principal === 1 || o.es_principal === true) || origenes[0];
 
-        await this._addLabelValue(T.LUGAR_FECHA_NACIMIENTO_TITLE, '');
+        // Construir dirección según nacionalidad (boliviana vs extranjera)
+        const tipoOrigen = (principal?.tipo_origen ?? '').toString().toUpperCase();
+        const esBoliviana = tipoOrigen === 'BOLIVIANA' || tipoOrigen === 'BOLIVIANO';
+        let lugarVal = '—';
 
-        const lugarParts = [
-            principal?.ciudad ?? principal?.ciudad_nacimiento_raw,
-            principal?.nacimiento_municipio_nombre,
-            principal?.nacimiento_provincia_nombre,
-            principal?.nacimiento_departamento_nombre,
-        ].filter(Boolean);
-        const lugarVal = lugarParts.length > 0 ? lugarParts.join(', ') : '—';
-        await this._addParagraph(lugarVal);
+        if (principal) {
+            if (esBoliviana) {
+                // Boliviana: localidad-municipio, provincia, departamento
+                const lugarParts = [
+                    principal?.ciudad ?? principal?.ciudad_nacimiento_raw,
+                    principal?.nacimiento_municipio_nombre,
+                    principal?.nacimiento_provincia_nombre,
+                    principal?.nacimiento_departamento_nombre,
+                ].filter(Boolean);
+                if (lugarParts.length > 0) {
+                    // Si hay ciudad y municipio, unir con guion; luego provincia y departamento
+                    const ciudadMunicipio = [lugarParts[0], lugarParts[1]].filter(Boolean).join('-');
+                    const resto = lugarParts.slice(2).filter(Boolean);
+                    lugarVal = [ciudadMunicipio, ...resto].filter(Boolean).join(', ');
+                }
+            } else {
+                // Extranjera: ciudad, país
+                const ciudad = (principal?.ciudad ?? principal?.ciudad_nacimiento_raw ?? '').toString().trim();
+                const pais = (principal?.pais_nombre ?? principal?.paisNombre ?? '').toString().trim();
+                const extParts = [ciudad, pais].filter(Boolean);
+                lugarVal = extParts.length > 0 ? extParts.join(', ') : '—';
+            }
+        }
 
-        this._addSpace(IncosPDFBase.LAYOUT.spacing.line);
+        await this._addLabelValue(T.LUGAR_NACIMIENTO_LABEL, lugarVal);
 
-        const fechaStr = this._formatFechaDDMMYYYY(s.fechaNacimiento);
-        const edadVal = this._calcEdad(s.fechaNacimiento);
-        const nacionalidadVal = (principal?.pais_nombre ?? principal?.paisNombre ?? '').trim() || '—';
+        // Grid 2 columnas: fecha literal, edad, nacionalidad, idioma principal, idioma secundario, teléfono fijo (solo si existen)
+        const gridItems = [];
+        const fechaLiteral = (s.fechaNacimientoLiteral ?? '').toString().trim();
+        const edad = (s.edad ?? '').toString().trim();
+        // Nacionalidad es tipo_origen (ENUM: 'BOLIVIANA', 'EXTRANJERA', 'DOBLE_NACIONALIDAD')
+        const tipoOrigenRaw = (principal?.tipo_origen ?? principal?.tipoOrigen ?? '').toString().trim().toUpperCase();
+        const nacionalidad = tipoOrigenRaw === 'BOLIVIANA' ? 'Boliviana' 
+            : tipoOrigenRaw === 'EXTRANJERA' ? 'Extranjera' 
+            : tipoOrigenRaw === 'DOBLE_NACIONALIDAD' ? 'Doble Nacionalidad' 
+            : tipoOrigenRaw || '—';
+        const idiomaPrincipal = (principal?.idioma_materno_nombre ?? principal?.idiomaMaternoNombre ?? '').toString().trim();
+        const idiomaSecundario = (principal?.idioma_secundario_nombre ?? principal?.idiomaSecundarioNombre ?? '').toString().trim();
+        const telefonoFijo = (s.telefonoFijo ?? '').toString().trim();
 
-        const lugarFechaItems = [
-            { label: T.LOCALIDAD_LABEL, value: fechaStr },
-            { label: T.NACIONALIDAD_LABEL, value: nacionalidadVal },
-            { label: T.EDAD_LABEL, value: edadVal },
-        ];
-        await this._addLabelValueGrid(lugarFechaItems, 3);
+        if (fechaLiteral && fechaLiteral !== '—') {
+            gridItems.push({ label: T.FECHA_NACIMIENTO_LABEL, value: fechaLiteral });
+        }
+        if (edad && edad !== '—') {
+            gridItems.push({ label: T.EDAD_LABEL, value: edad });
+        }
+        if (nacionalidad && nacionalidad !== '—') {
+            gridItems.push({ label: T.NACIONALIDAD_LABEL, value: nacionalidad });
+        }
+        if (idiomaPrincipal) {
+            gridItems.push({ label: T.IDIOMA_PRINCIPAL_LABEL, value: idiomaPrincipal });
+        }
+        if (idiomaSecundario) {
+            gridItems.push({ label: T.IDIOMA_SECUNDARIO_LABEL, value: idiomaSecundario });
+        }
+        if (telefonoFijo) {
+            gridItems.push({ label: T.TELEFONO_FIJO_LABEL, value: telefonoFijo });
+        }
 
-        this._addSpace(IncosPDFBase.LAYOUT.spacing.line);
+        if (gridItems.length > 0) {
+            await this._addLabelValueGrid(gridItems, 2);
+        }
 
-        const domicilioParts = [
-            (s.direccion ?? '').toString().trim(),
-            s.residenciaMunicipioNombre ?? s.residencia_municipio_nombre,
-            s.residenciaProvinciaNombre ?? s.residencia_provincia_nombre,
-            s.residenciaDepartamentoNombre ?? s.residencia_departamento_nombre,
-        ].filter(Boolean);
+        // Domicilio: dirección/zona primero, luego municipio, provincia, departamento
+        const domicilioParts = [];
+        const direccion = (s.direccion ?? '').toString().trim();
+        const zona = (s.zona ?? '').toString().trim();
+        if (direccion) domicilioParts.push(direccion);
+        if (zona) domicilioParts.push(zona);
+        const residenciaMunicipio = s.residenciaMunicipioNombre ?? s.residencia_municipio_nombre;
+        const residenciaProvincia = s.residenciaProvinciaNombre ?? s.residencia_provincia_nombre;
+        const residenciaDepartamento = s.residenciaDepartamentoNombre ?? s.residencia_departamento_nombre;
+        if (residenciaMunicipio) domicilioParts.push(residenciaMunicipio);
+        if (residenciaProvincia) domicilioParts.push(residenciaProvincia);
+        if (residenciaDepartamento) domicilioParts.push(residenciaDepartamento);
+
         const domicilioVal = domicilioParts.length > 0 ? domicilioParts.join(', ') : '—';
         await this._addLabelValue(T.DOMICILIO_LABEL, domicilioVal);
-
-        this._addSpace(IncosPDFBase.LAYOUT.spacing.line);
-
-        const idiomaParts = [
-            principal?.idioma_materno_nombre ?? principal?.idiomaMaternoNombre,
-            principal?.idioma_secundario_nombre ?? principal?.idiomaSecundarioNombre,
-        ].filter(Boolean);
-        const idiomaVal = idiomaParts.length > 0 ? idiomaParts.join(' / ') : '—';
-        const celularVal = (s.celular ?? '').toString().trim() || '—';
-        await this._addLabelValueGrid(
-            [
-                { label: T.IDIOMA_ORIGEN_LABEL, value: idiomaVal },
-                { label: T.CELULAR_LABEL, value: celularVal },
-            ],
-            2,
-        );
-    }
-
-    /**
-     * Formatea fecha YYYY-MM-DD a DD-MM-YYYY. Retorna '—' si falta o no parsea.
-     *
-     * @private
-     * @param {string|undefined|null} fecha - fecha_nacimiento
-     * @returns {string}
-     */
-    _formatFechaDDMMYYYY(fecha) {
-        if (fecha == null || fecha === '') return '—';
-        const str = String(fecha).trim();
-        const m = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
-        if (!m) return str || '—';
-        return `${m[3]}-${m[2]}-${m[1]}`;
-    }
-
-    /**
-     * Calcula edad en años desde fecha_nacimiento. Retorna '—' si falta o no parsea.
-     *
-     * @private
-     * @param {string|undefined|null} fecha - fecha_nacimiento
-     * @returns {string}
-     */
-    _calcEdad(fecha) {
-        if (fecha == null || fecha === '') return '—';
-        const str = String(fecha).trim();
-        const m = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
-        if (!m) return '—';
-        const birth = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
-        const today = new Date();
-        let age = today.getFullYear() - birth.getFullYear();
-        const mDiff = today.getMonth() - birth.getMonth();
-        if (mDiff < 0 || (mDiff === 0 && today.getDate() < birth.getDate())) age -= 1;
-        return age >= 0 ? String(age) : '—';
     }
 
     /**

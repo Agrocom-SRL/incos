@@ -130,13 +130,17 @@ export class IncosPDFBase {
         /** Separador entre ítems de discapacidad (varios ítems en una sola línea). */
         DETALLE_DISCAPACIDAD_SEP: ' — ',
         // Lugar y fecha de nacimiento, domicilio, idioma (orígenes + residencia)
-        LUGAR_FECHA_NACIMIENTO_TITLE: 'Lugar y Fecha de Nacimiento',
+        LUGAR_NACIMIENTO_LABEL: 'Lugar de nacimiento:',
         DOMICILIO_LABEL: 'Domicilio:',
-        LOCALIDAD_LABEL: 'Localidad',
-        DEPARTAMENTO_LABEL: 'Departamento',
-        NACIONALIDAD_LABEL: 'Nacionalidad',
-        EDAD_LABEL: 'Edad',
-        IDIOMA_ORIGEN_LABEL: 'Idioma de origen',
+        LOCALIDAD_LABEL: 'Localidad:',
+        DEPARTAMENTO_LABEL: 'Departamento:',
+        NACIONALIDAD_LABEL: 'Nacionalidad:',
+        EDAD_LABEL: 'Edad:',
+        FECHA_NACIMIENTO_LABEL: 'Fecha de nacimiento:',
+        IDIOMA_PRINCIPAL_LABEL: 'Idioma principal:',
+        IDIOMA_SECUNDARIO_LABEL: 'Idioma secundario:',
+        TELEFONO_FIJO_LABEL: 'Teléfono fijo:',
+        IDIOMA_ORIGEN_LABEL: 'Idioma de origen:',
     };
 
     // ============================================
