@@ -51,6 +51,7 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
             await this._buildDatosPersonales(options);
             await this._buildDatosAcademicos(options);
             await this._buildDocumentosRecepcionados(options);
+            await this._buildFirma(options);
 
             const pdfBuffer = await this._saveDocument(pdfDoc);
 
@@ -276,10 +277,10 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
         const edad = (s.edad ?? '').toString().trim();
         // Nacionalidad es tipo_origen (ENUM: 'BOLIVIANA', 'EXTRANJERA', 'DOBLE_NACIONALIDAD')
         const tipoOrigenRaw = (principal?.tipo_origen ?? principal?.tipoOrigen ?? '').toString().trim().toUpperCase();
-        const nacionalidad = tipoOrigenRaw === 'BOLIVIANA' ? 'Boliviana' 
-            : tipoOrigenRaw === 'EXTRANJERA' ? 'Extranjera' 
-            : tipoOrigenRaw === 'DOBLE_NACIONALIDAD' ? 'Doble Nacionalidad' 
-            : tipoOrigenRaw || '—';
+        const nacionalidad = tipoOrigenRaw === 'BOLIVIANA' ? 'Boliviana'
+            : tipoOrigenRaw === 'EXTRANJERA' ? 'Extranjera'
+                : tipoOrigenRaw === 'DOBLE_NACIONALIDAD' ? 'Doble Nacionalidad'
+                    : tipoOrigenRaw || '—';
         const idiomaPrincipal = (principal?.idioma_materno_nombre ?? principal?.idiomaMaternoNombre ?? '').toString().trim();
         const idiomaSecundario = (principal?.idioma_secundario_nombre ?? principal?.idiomaSecundarioNombre ?? '').toString().trim();
         const telefonoFijo = (s.telefonoFijo ?? '').toString().trim();
@@ -325,26 +326,233 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
     }
 
     /**
-     * II. DATOS ACADÉMICOS. Solo título de sección; contenido en migración.
+     * II. DATOS ACADÉMICOS.
+     * Muestra carrera y periodo en grid de 2 columnas, y materias como viñetas.
      *
      * @private
      * @param {Object} options - Opciones de generación
+     * @param {Object} [options.academicData] - Datos académicos (carreraNombre, carreraCodigo, estadoAcademico)
+     * @param {Object} [options.enrollmentData] - Datos de inscripción (periodoNombre, materias[])
      * @returns {Promise<void>}
      */
     async _buildDatosAcademicos(options) {
         await this._addSection(IncosPDFBase.FORMULARIO_SECTION_TITLES.DATOS_ACADEMICOS);
-        // TODO(migración): carrera, año, materias desde options
+
+        const academicData = options.academicData || {};
+        const enrollmentData = options.enrollmentData || {};
+
+        // Grid de 2 columnas: Carrera y Periodo
+        const gridItems = [];
+
+        // Carrera
+        const carreraNombre = academicData.carreraNombre || academicData.carrera_nombre;
+        if (carreraNombre) {
+            gridItems.push({
+                label: 'Carrera:',
+                value: carreraNombre,
+            });
+        }
+
+        // Periodo (desde inscripción)
+        const periodoNombre = enrollmentData.periodoNombre || enrollmentData.periodo_nombre;
+        if (periodoNombre) {
+            gridItems.push({
+                label: 'Periodo:',
+                value: periodoNombre,
+            });
+        }
+
+        // Mostrar grid si hay datos
+        if (gridItems.length > 0) {
+            await this._addLabelValueGrid(gridItems, 2);
+        }
+
+        // Materias como viñetas
+        const materias = enrollmentData.materias || [];
+        if (materias.length > 0) {
+            // Título para la lista de materias
+            await this._addLabelValue('Materias inscritas:', '');
+
+            // Agregar cada materia como viñeta (igual que en ActaCompromisoPdfGenerator)
+            for (const materia of materias) {
+                // Formato: "SIGLA - Nombre" o solo "Nombre" si no hay sigla
+                let materiaTexto = '';
+                if (materia.sigla && materia.nombre) {
+                    materiaTexto = `${materia.sigla} - ${materia.nombre}`;
+                } else if (materia.nombre) {
+                    materiaTexto = materia.nombre;
+                } else if (materia.sigla) {
+                    materiaTexto = materia.sigla;
+                }
+
+                if (materiaTexto) {
+                    await this._addBulletPoint(materiaTexto);
+                }
+            }
+        } else {
+            // Si no hay materias, mostrar mensaje
+            await this._addBulletPoint('No hay materias inscritas');
+        }
     }
 
     /**
-     * III. DOCUMENTOS RECEPCIONADOS. Solo título de sección; contenido en migración.
+     * III. DOCUMENTOS RECEPCIONADOS.
+     * Muestra lista de documentos entregados con viñetas (solo nombre del archivo).
      *
      * @private
      * @param {Object} options - Opciones de generación
+     * @param {Array} [options.entregas] - Lista de entregas de documentos (con entregado: true)
      * @returns {Promise<void>}
      */
     async _buildDocumentosRecepcionados(options) {
         await this._addSection(IncosPDFBase.FORMULARIO_SECTION_TITLES.DOCUMENTOS_RECEPCIONADOS);
-        // TODO(migración): lista de documentos desde options.documentos / entregas
+
+        // Agregar lista de documentos entregados con viñetas (igual que en ActaCompromisoPdfGenerator)
+        if (options.entregas && Array.isArray(options.entregas) && options.entregas.length > 0) {
+            for (const entrega of options.entregas) {
+                const nombreDocumento = entrega.nombre_documento || entrega.nombreDocumento || 'Documento sin nombre';
+                await this._addBulletPoint(nombreDocumento);
+            }
+        } else {
+            // Si no hay documentos entregados, mostrar mensaje
+            await this._addBulletPoint('No hay documentos entregados');
+        }
+    }
+
+    /**
+     * Construye el bloque de firma (footer) al final del documento.
+     * Usa IncosPDFBase.SIGNATURE para los textos y options.student (ci, expedicion).
+     * 
+     * Opcionalmente puede usar firma en 2 columnas si se pasa options.signatureTwoColumns = true.
+     *
+     * @private
+     * @param {Object} options - Opciones de generación
+     * @param {boolean} [options.signatureTwoColumns] - Si true, muestra 2 firmas en columnas (estudiante y responsable)
+     * @returns {Promise<void>}
+     */
+    async _buildFirma(options) {
+        if (options.signatureTwoColumns) {
+            await this._addSignatureBlockTwoColumns(options);
+        } else {
+            // Firma simple (igual que ActaCompromisoPdfGenerator)
+            const label = IncosPDFBase.SIGNATURE.LABEL;
+            let ci = (IncosPDFBase.SIGNATURE.CI_FORMAT || 'C.I.: {CI} {EXPEDICION}')
+                .replace('{CI}', options.student?.ci ?? '')
+                .replace('{EXPEDICION}', (options.student?.expedicion ?? '').toString().trim());
+            ci = ci.replace(/\s+/g, ' ').trim();
+            await this._addSignatureBlock({ lines: [label, ci] });
+        }
+    }
+
+    /**
+     * Construye bloque de firma en 2 columnas (estudiante y responsable).
+     * 
+     * @private
+     * @param {Object} options - Opciones de generación
+     * @returns {Promise<void>}
+     */
+    async _addSignatureBlockTwoColumns(options) {
+        if (!this._pdfDoc || !this._currentPage) {
+            throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
+        }
+
+        const { width: pageWidth } = this._currentPage.getSize();
+        const cfg = IncosPDFBase.LAYOUT;
+        const margins = cfg.margins;
+        const lineWidth = cfg.signatureLineWidth ?? 150;
+        const lineThickness = cfg.signatureLineThickness ?? 1;
+        const footerPadding = cfg.signatureFooterPadding ?? 10;
+        const templateFooterHeight = cfg.signatureTemplateFooterHeight ?? 0;
+        const spaceLineToFirst = cfg.signatureSpacingLineToFirstText ?? 8;
+        const spaceBetweenLines = cfg.signatureSpacingBetweenTextLines ?? 4;
+        const colGap = 40; // Espacio entre las dos columnas
+
+        const normalFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.normal.font);
+        const font = await this._pdfDoc.embedFont(normalFontName);
+        const fontSize = IncosPDFBase.FONTS.normal.size;
+        const textRgb = this._hexToRgb(IncosPDFBase.COLORS.text);
+
+        // Calcular posiciones de las dos columnas
+        const totalWidth = pageWidth - margins.left - margins.right;
+        const colWidth = (totalWidth - colGap) / 2;
+        const leftColX = margins.left;
+        const rightColX = margins.left + colWidth + colGap;
+
+        // Líneas de texto para cada columna
+        const leftLines = [
+            'Estudiante',
+            (IncosPDFBase.SIGNATURE.CI_FORMAT || 'C.I.: {CI} {EXPEDICION}')
+                .replace('{CI}', options.student?.ci ?? '')
+                .replace('{EXPEDICION}', (options.student?.expedicion ?? '').toString().trim())
+                .replace(/\s+/g, ' ')
+                .trim(),
+        ];
+        const rightLines = [
+            'Responsable Inscripción',
+            '',
+        ];
+
+        const blockHeight = lineThickness + spaceLineToFirst +
+            Math.max(leftLines.length, rightLines.length) * fontSize + 
+            Math.max(0, Math.max(leftLines.length, rightLines.length) - 1) * spaceBetweenLines;
+        const blockBottomY = margins.bottom + templateFooterHeight + footerPadding;
+        const lineY = blockBottomY + blockHeight - lineThickness;
+
+        // Dibujar líneas de firma para ambas columnas
+        const halfLine = lineWidth / 2;
+        const leftLineCenterX = leftColX + colWidth / 2;
+        const rightLineCenterX = rightColX + colWidth / 2;
+
+        // Línea izquierda (estudiante)
+        this._currentPage.drawLine({
+            start: { x: leftLineCenterX - halfLine, y: lineY },
+            end: { x: leftLineCenterX + halfLine, y: lineY },
+            thickness: lineThickness,
+            color: textRgb,
+        });
+
+        // Línea derecha (responsable)
+        this._currentPage.drawLine({
+            start: { x: rightLineCenterX - halfLine, y: lineY },
+            end: { x: rightLineCenterX + halfLine, y: lineY },
+            thickness: lineThickness,
+            color: textRgb,
+        });
+
+        // Dibujar textos debajo de las líneas
+        let textY = lineY - lineThickness - spaceLineToFirst;
+
+        // Columna izquierda
+        for (let i = 0; i < leftLines.length; i++) {
+            const str = String(leftLines[i] ?? '').trim();
+            if (str) {
+                const w = font.widthOfTextAtSize(str, fontSize);
+                this._currentPage.drawText(str, {
+                    x: leftLineCenterX - w / 2,
+                    y: textY,
+                    size: fontSize,
+                    font,
+                    color: textRgb,
+                });
+            }
+            textY -= fontSize + (i < leftLines.length - 1 ? spaceBetweenLines : 0);
+        }
+
+        // Columna derecha
+        textY = lineY - lineThickness - spaceLineToFirst;
+        for (let i = 0; i < rightLines.length; i++) {
+            const str = String(rightLines[i] ?? '').trim();
+            if (str) {
+                const w = font.widthOfTextAtSize(str, fontSize);
+                this._currentPage.drawText(str, {
+                    x: rightLineCenterX - w / 2,
+                    y: textY,
+                    size: fontSize,
+                    font,
+                    color: textRgb,
+                });
+            }
+            textY -= fontSize + (i < rightLines.length - 1 ? spaceBetweenLines : 0);
+        }
     }
 }

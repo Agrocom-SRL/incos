@@ -117,6 +117,9 @@ export function registerInscripcionesResource(container) {
             new GenerateFormularioInscripcionUseCase({
                 studentRepository: c.resolve(REPOSITORIOS_TOKENS.studentRepository),
                 studentDocumentRepository: c.resolve(REPOSITORIOS_TOKENS.studentDocumentRepository),
+                enrollmentRepository: c.resolve(REPOSITORIOS_TOKENS.enrollmentRepository),
+                studentAcademicDataRepository: c.resolve(REPOSITORIOS_TOKENS.studentAcademicDataRepository),
+                studentDocumentDeliveryRepository: c.resolve(REPOSITORIOS_TOKENS.studentDocumentDeliveryRepository),
                 configuracionSistemaRepository: c.resolve(REPOSITORIOS_TOKENS.configuracionSistemaRepository),
                 managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
                 pdfGenerator: c.resolve(SERVICIOS_TOKENS.pdfGenerator),
