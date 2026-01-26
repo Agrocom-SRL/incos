@@ -214,12 +214,13 @@ const PaymentFormFields = ({
         </Col>
       )}
 
-      {/* Documento de Respaldo - Para todos los métodos excepto EFECTIVO */}
+      {/* Documento de Respaldo - Opcional para todos los métodos excepto EFECTIVO */}
       {requiereDocumentoRespaldo && (
         <Col xs={24} sm={12}>
           <Form.Item
             name="documentoRespaldo"
             valuePropName="fileList"
+            required={false}
             getValueFromEvent={(e) => {
               if (Array.isArray(e)) {
                 return e;
@@ -233,9 +234,7 @@ const PaymentFormFields = ({
               </span>
             }
             tooltip="Arrastre y suelte un archivo o haga clic para seleccionar (imagen, PDF, etc.)"
-            rules={[
-              { required: requiereDocumentoRespaldo, message: 'Por favor suba un documento de respaldo' }
-            ]}
+            rules={[]}
           >
             <Dragger
               maxCount={1}

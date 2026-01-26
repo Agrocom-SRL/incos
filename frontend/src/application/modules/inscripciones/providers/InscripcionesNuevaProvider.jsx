@@ -18,15 +18,16 @@
  * 
  * @param {Object} props
  * @param {React.ReactNode} props.children - Componentes hijos
- * @param {string} props.mode - Modo de operación ('nuevo' por defecto)
+ * @param {string} props.mode - Modo de operación ('nuevo' o 'editar')
  * @param {string|number|null} props.studentId - ID del estudiante para omitir paso de búsqueda (opcional)
+ * @param {Object|null} props.editData - Datos de edición (inscripcionId, carreraId, periodoId, paraleloId) (opcional)
  */
 
 import { InscripcionesNuevaContext } from '@application-inscripciones/context/InscripcionesNuevaContext';
 import { useInscripcionNuevaData } from '@application-inscripciones/hooks';
 
-export const InscripcionesNuevaProvider = ({ children, mode = 'nuevo', studentId = null }) => {
-    const value = useInscripcionNuevaData(mode, { studentId });
+export const InscripcionesNuevaProvider = ({ children, mode = 'nuevo', studentId = null, editData = null }) => {
+    const value = useInscripcionNuevaData(mode, { studentId, editData });
 
     return (
         <InscripcionesNuevaContext.Provider value={value}>

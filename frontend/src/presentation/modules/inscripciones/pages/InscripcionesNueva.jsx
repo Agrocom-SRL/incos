@@ -18,6 +18,7 @@
  */
 
 import { useEffect, useMemo } from 'react';
+import { useLocation } from 'react-router-dom';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { WizardForm } from '@organisms';
@@ -25,6 +26,9 @@ import { useInscripcionesNuevaContext } from '@application-inscripciones/hooks';
 import { downloadFile } from '@application/utils/fileDownload';
 
 const InscripcionesNueva = () => {
+    const location = useLocation();
+    // Obtener datos de edición del estado de navegación
+    const editData = location.state?.mode === 'editar' ? location.state : null;
 
     // Solo consumir datos del contexto (toda la lógica está en el Provider)
     // El provider hace spread de objetos, así que las propiedades están aplanadas en el contexto
@@ -70,18 +74,56 @@ const InscripcionesNueva = () => {
     // Búsqueda de estudiantes (objeto específico desde useInscripcionNuevaStudentSearch)
     const { studentSearch } = context;
     
-    // Si ya hay un estudiante seleccionado, empezar desde el paso 1 (omitir búsqueda)
+    // Datos de carreras y paralelos para pre-cargar valores en modo edición
+    const { carrerasData, paralelosData } = context;
+    
+    // Si ya hay un estudiante seleccionado o estamos en modo edición, empezar desde el paso 1 (Seleccionar Paralelos)
     // Paso 0: Buscar Estudiante
-    // Paso 1: Seleccionar Paralelos
+    // Paso 1: Seleccionar Paralelos (aquí se puede cambiar carrera y paralelo)
     // Paso 2: Horario de Clases
-    // Usar useMemo para recalcular cuando selectedStudent cambia
+    // Usar useMemo para recalcular cuando selectedStudent cambia o hay datos de edición
     const initialStep = useMemo(() => {
+      // Si estamos en modo edición, empezar en paso 1 para permitir cambiar carrera/paralelo
+      if (editData) {
+        return 1;
+      }
       // Si hay un estudiante seleccionado y no está cargando, empezar en paso 1
       if (studentSearch?.selectedStudent && !studentSearch?.loading) {
         return 1;
       }
       return 0;
-    }, [studentSearch?.selectedStudent, studentSearch?.loading]);
+    }, [editData, studentSearch?.selectedStudent, studentSearch?.loading]);
+    
+    // Pre-cargar valores iniciales del formulario en modo edición
+    // Nota: Los paralelos se pre-seleccionan automáticamente mediante los hooks
+    // Solo necesitamos pre-cargar la carrera en el formulario
+    const initialValues = useMemo(() => {
+      if (!editData) {
+        return {};
+      }
+      
+      const values = {};
+      
+      // Pre-cargar carrera si está disponible
+      if (editData.carreraId && carrerasData?.carreras) {
+        const carrera = carrerasData.carreras.find(c => c.id === Number(editData.carreraId));
+        if (carrera) {
+          values.carrera = carrera.id;
+        }
+      }
+      
+      return values;
+    }, [editData, carrerasData?.carreras]);
+    
+    // Efecto para establecer valores iniciales en el formulario cuando estén disponibles
+    useEffect(() => {
+      if (editData && form && editData.carreraId && carrerasData?.carreras && carrerasData.carreras.length > 0) {
+        const carrera = carrerasData.carreras.find(c => c.id === Number(editData.carreraId));
+        if (carrera) {
+          form.setFieldsValue({ carrera: carrera.id });
+        }
+      }
+    }, [editData, form, carrerasData?.carreras]);
 
     // TODO: Se agregarán en pasos siguientes:
     // const { inscripcionResult } = context; // Para reaccionar al resultado de la inscripción
@@ -103,7 +145,7 @@ const InscripcionesNueva = () => {
                 loading={loading}
                 viewMode={false}
                 resolveOptions={() => []}
-                initialValues={{}}
+                initialValues={initialValues}
                 form={form}
                 onFinish={handleFinish}
                 onSave={handleSave}

@@ -20,15 +20,19 @@
  * - Separa la lógica del Provider (Provider solo orquesta)
  */
 
-import { useState, useCallback, useMemo, useRef } from 'react';
+import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { useCarrerasApi } from '@application-configuracion/academico/carreras/hooks/useCarrerasApi';
 
 /**
  * Hook para cargar y seleccionar carreras en el contexto de inscripción nueva
  * 
+ * @param {Object} options - Opciones del hook
+ * @param {number|null} options.initialCarreraId - ID de la carrera para pre-seleccionar (opcional)
  * @returns {Object} Objeto con carreras, loading, error, refetch, selectedCarrera, onSelectCarrera
  */
-export const useInscripcionNuevaCarreras = () => {
+export const useInscripcionNuevaCarreras = (options = {}) => {
+  const { initialCarreraId = null } = options;
+  
   // Usar el hook genérico de carreras
   const { carreras, loading, error, refetch } = useCarrerasApi();
 
@@ -59,6 +63,16 @@ export const useInscripcionNuevaCarreras = () => {
       });
     }
   }, []);
+  
+  // Pre-seleccionar carrera si se proporciona initialCarreraId
+  useEffect(() => {
+    if (initialCarreraId && carreras && carreras.length > 0 && !selectedCarrera) {
+      const carrera = carreras.find(c => c.id === Number(initialCarreraId));
+      if (carrera) {
+        onSelectCarrera(carrera);
+      }
+    }
+  }, [initialCarreraId, carreras, selectedCarrera, onSelectCarrera]);
 
   // TODO: Aquí se puede agregar lógica específica de inscripciones si es necesario
   // Por ejemplo: filtrar carreras según el estudiante seleccionado, validaciones específicas, etc.

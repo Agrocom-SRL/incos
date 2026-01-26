@@ -33,8 +33,8 @@ export const registerPagoAporteValidator = [
         .withMessage('El ID del método de pago es requerido')
         .isInt({ min: 1 })
         .withMessage('El ID del método de pago debe ser un número entero mayor a 0')
-        .isIn([1, 2, 3])
-        .withMessage('El método de pago debe ser: 1 (EFECTIVO), 2 (QR) o 3 (TRANSFERENCIA)')
+        .isIn([1, 2, 3, 4])
+        .withMessage('El método de pago debe ser: 1 (EFECTIVO), 2 (QR), 3 (TRANSFERENCIA) o 4 (DEPOSITO)')
         .toInt(),
 
     body('payment_date')
@@ -61,9 +61,9 @@ export const registerPagoAporteValidator = [
         .custom((value, { req }) => {
             const methodId = req.body.payment_method_id;
 
-            // Para TRANSFERENCIA (3), la cuenta es REQUERIDA
-            if (methodId === 3 && !value) {
-                throw new Error('La cuenta de pago es requerida para método TRANSFERENCIA');
+            // Para TRANSFERENCIA (3) y DEPOSITO (4), la cuenta es REQUERIDA
+            if ((methodId === 3 || methodId === 4) && !value) {
+                throw new Error('La cuenta de pago es requerida para método TRANSFERENCIA o DEPOSITO');
             }
 
             // Para EFECTIVO (1), la cuenta debe ser NULL
@@ -88,9 +88,9 @@ export const registerPagoAporteValidator = [
         .custom((value, { req }) => {
             const methodId = req.body.payment_method_id;
 
-            // Para QR (2) y TRANSFERENCIA (3), el número de transacción es REQUERIDO
-            if ((methodId === 2 || methodId === 3) && !value) {
-                throw new Error('El número de transacción es requerido para método QR o TRANSFERENCIA');
+            // Para QR (2), TRANSFERENCIA (3) y DEPOSITO (4), el número de transacción es REQUERIDO
+            if ((methodId === 2 || methodId === 3 || methodId === 4) && !value) {
+                throw new Error('El número de transacción es requerido para método QR, TRANSFERENCIA o DEPOSITO');
             }
 
             // Si existe valor, debe ser una cadena no vacía

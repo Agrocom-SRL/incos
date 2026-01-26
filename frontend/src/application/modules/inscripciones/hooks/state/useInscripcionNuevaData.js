@@ -49,21 +49,27 @@ const allEnrichers = [...studentEnrichers, ...carreraEnrichers, ...paraleloEnric
  * @param {string} mode - Modo de operación ('nuevo' por defecto)
  * @param {Object} options - Opciones adicionales
  * @param {string|number|null} options.studentId - ID del estudiante para omitir paso de búsqueda (opcional)
+ * @param {Object|null} options.editData - Datos de edición (inscripcionId, carreraId, periodoId, paraleloId) (opcional)
  * @returns {Object} Objeto con todo el contexto de inscripción nueva
  */
 export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
-    const { studentId = null } = options;
+    const { studentId = null, editData = null } = options;
     
     // 1. Hooks de feature
     const pageData = useInscripcionNuevaPageData({ mode });
-    const studentSearch = useInscripcionNuevaStudentSearch({ studentId });
-    const carrerasData = useInscripcionNuevaCarreras();
+    const studentSearch = useInscripcionNuevaStudentSearch({ studentId: studentId || editData?.studentId });
+    const carrerasData = useInscripcionNuevaCarreras({ initialCarreraId: editData?.carreraId });
     
     // Determinar carreraId para filtrar paralelos:
-    // 1. Prioridad: carrera del estudiante si tiene datos académicos (carreraId del estudiante)
-    // 2. Segunda opción: carrera seleccionada manualmente (carrerasData.selectedCarrera?.id)
+    // 1. Prioridad: carrera de edición (editData.carreraId)
+    // 2. Segunda prioridad: carrera del estudiante si tiene datos académicos (carreraId del estudiante)
+    // 3. Tercera opción: carrera seleccionada manualmente (carrerasData.selectedCarrera?.id)
     // Esto asegura que se muestren solo paralelos de la carrera correcta del estudiante
     const carreraIdForParalelos = useMemo(() => {
+        // Si hay datos de edición, usar la carrera de edición
+        if (editData?.carreraId) {
+            return editData.carreraId;
+        }
         // Si el estudiante tiene datos académicos con carrera, usar esa carrera
         const studentCareerId = studentSearch.selectedStudent?.careerId || studentSearch.selectedStudent?.carreraId;
         if (studentCareerId) {
@@ -71,10 +77,11 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
         }
         // Si no, usar la carrera seleccionada manualmente
         return carrerasData.selectedCarrera?.id;
-    }, [studentSearch.selectedStudent, carrerasData.selectedCarrera]);
+    }, [editData?.carreraId, studentSearch.selectedStudent, carrerasData.selectedCarrera]);
     
     const paralelosData = useInscripcionNuevaParalelos({ 
-        carreraId: carreraIdForParalelos 
+        carreraId: carreraIdForParalelos,
+        initialParaleloId: editData?.paraleloId,
     });
     
     // Form handlers necesita acceso a selectedStudent y selectedParalelo

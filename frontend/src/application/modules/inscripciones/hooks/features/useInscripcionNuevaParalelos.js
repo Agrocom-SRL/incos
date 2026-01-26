@@ -29,10 +29,11 @@ import { useParalelosApi } from '@application-academico/paralelos/hooks/useParal
  * 
  * @param {Object} options - Opciones del hook
  * @param {number} [options.carreraId] - ID de la carrera para filtrar paralelos
+ * @param {number} [options.initialParaleloId] - ID del paralelo para pre-seleccionar (opcional)
  * @returns {Object} Objeto con paralelos, loading, error, refetch, selectedParalelo, onSelectParalelo
  */
 export const useInscripcionNuevaParalelos = (options = {}) => {
-  const { carreraId } = options;
+  const { carreraId, initialParaleloId = null } = options;
 
   // Usar el hook genérico de paralelos
   const { paralelos, loading, error, fetch } = useParalelosApi();
@@ -99,6 +100,19 @@ export const useInscripcionNuevaParalelos = (options = {}) => {
       });
     }
   }, []);
+  
+  // Pre-seleccionar paralelo si se proporciona initialParaleloId
+  useEffect(() => {
+    if (initialParaleloId && paralelos && paralelos.length > 0) {
+      // Solo pre-seleccionar si no hay un paralelo seleccionado o si el ID es diferente
+      if (!selectedParalelo || selectedParalelo.id !== Number(initialParaleloId)) {
+        const paralelo = paralelos.find(p => p.id === Number(initialParaleloId));
+        if (paralelo) {
+          onSelectParalelo(paralelo);
+        }
+      }
+    }
+  }, [initialParaleloId, paralelos, selectedParalelo, onSelectParalelo]);
 
   // TODO: Aquí se puede agregar lógica específica de inscripciones si es necesario
   // Por ejemplo: filtrar paralelos según la carrera seleccionada, validaciones específicas, etc.

@@ -8,6 +8,7 @@ import { Tag } from 'antd';
 import { UserOutlined, BookOutlined, CalendarOutlined } from '@ant-design/icons';
 import { TableCell } from '@molecules';
 import TableActions from '@molecules/TableActions';
+import { getDataTableAction } from '@config/icons';
 
 /**
  * Crea las columnas de la tabla de inscripciones
@@ -27,10 +28,10 @@ export const createInscripcionesTableColumns = (navigate, refetch = null, delete
       ellipsis: true,
       render: (codigo, record) => {
         // Priorizar código del estudiante o ID de inscripción como fallback
-        const codigoValue = codigo 
-          || record.estudiante?.codigoEstudiante 
-          || record.enrollment?.codigo 
-          || `INS-${record.id}` 
+        const codigoValue = codigo
+          || record.estudiante?.codigoEstudiante
+          || record.enrollment?.codigo
+          || `INS-${record.id}`
           || 'N/A';
         return (
           <TableCell
@@ -42,15 +43,15 @@ export const createInscripcionesTableColumns = (navigate, refetch = null, delete
         );
       },
       sorter: (a, b) => {
-        const codigoA = a.codigo 
-          || a.estudiante?.codigoEstudiante 
-          || a.enrollment?.codigo 
-          || `INS-${a.id}` 
+        const codigoA = a.codigo
+          || a.estudiante?.codigoEstudiante
+          || a.enrollment?.codigo
+          || `INS-${a.id}`
           || '';
-        const codigoB = b.codigo 
-          || b.estudiante?.codigoEstudiante 
-          || b.enrollment?.codigo 
-          || `INS-${b.id}` 
+        const codigoB = b.codigo
+          || b.estudiante?.codigoEstudiante
+          || b.enrollment?.codigo
+          || `INS-${b.id}`
           || '';
         return codigoA.localeCompare(codigoB, undefined, { numeric: true, sensitivity: 'base' });
       },
@@ -107,10 +108,10 @@ export const createInscripcionesTableColumns = (navigate, refetch = null, delete
       width: 100,
       render: (anio, record) => {
         // Priorizar año de la gestión o año de carrera
-        const anioValue = anio 
-          || record.gestion?.anio 
-          || record.anioCarrera 
-          || record.enrollment?.anioCarrera 
+        const anioValue = anio
+          || record.gestion?.anio
+          || record.anioCarrera
+          || record.enrollment?.anioCarrera
           || 'N/A';
         return (
           <Tag color="blue">
@@ -159,13 +160,13 @@ export const createInscripcionesTableColumns = (navigate, refetch = null, delete
       width: 100,
       render: (estado, record) => {
         // Priorizar tipoInscripcion como estado, o derivar de activo
-        const estadoValue = estado 
-          || record.tipoInscripcion 
+        const estadoValue = estado
+          || record.tipoInscripcion
           || record.enrollment?.tipoInscripcion
           || (record.activo ? 'ACTIVA' : 'INACTIVA')
-          || record.enrollment?.estado 
+          || record.enrollment?.estado
           || 'N/A';
-        
+
         // Mapear tipos de inscripción a colores
         const getEstadoColor = (estado) => {
           if (estado === 'ACTIVA' || estado === 'NUEVO') return 'success';
@@ -173,7 +174,7 @@ export const createInscripcionesTableColumns = (navigate, refetch = null, delete
           if (estado === 'CONTINUIDAD' || estado === 'REINGRESO') return 'blue';
           return 'default';
         };
-        
+
         return (
           <Tag color={getEstadoColor(estadoValue)}>
             {estadoValue}
@@ -189,20 +190,20 @@ export const createInscripcionesTableColumns = (navigate, refetch = null, delete
       align: 'right',
       render: (_, record) => {
         const inscripcionId = record.id || record.enrollment?.id;
-        
+
         // Extraer información descriptiva de la inscripción para el diálogo
         const student = record.estudiante || record.student || record.enrollment?.student;
         const carrera = record.carrera || record.enrollment?.carrera;
         const gestion = record.gestion || record.enrollment?.gestion;
-        
+
         const estudianteNombre = student?.nombreCompleto || student?.nombre || 'Sin nombre';
         const codigoEstudiante = student?.codigoEstudiante || student?.codigo || 'N/A';
         const carreraNombre = carrera?.nombre || 'N/A';
         const gestionAnio = gestion?.anio || gestion?.year || 'N/A';
-        
+
         // Construir nombre descriptivo para el diálogo
         const itemName = `la inscripción del estudiante ${estudianteNombre}`;
-        
+
         // Detalles para mostrar en el diálogo
         const itemDetails = [
           { label: 'Estudiante', value: estudianteNombre },
@@ -210,22 +211,123 @@ export const createInscripcionesTableColumns = (navigate, refetch = null, delete
           { label: 'Carrera', value: carreraNombre },
           { label: 'Gestión', value: gestionAnio },
         ].filter(detail => detail.value && detail.value !== 'N/A' && detail.value !== 'Sin nombre');
-        
+
+        // Verificar si se puede editar (solo si el tipo de inscripción es 'NUEVO')
+        // Los estudiantes NUEVOS pueden editar su inscripción porque todavía no comenzaron las clases
+        // y no se cambian los datos de estudiantes_datos_academicos, solo la inscripción
+        const tipoInscripcion = record.tipoInscripcion
+          || record.tipo_inscripcion
+          || record.enrollment?.tipoInscripcion
+          || record.enrollment?.tipo_inscripcion
+          || record.enrollmentType
+          || null;
+        const canEdit = tipoInscripcion === 'NUEVO';
+
+        // Debug: Verificar valores (remover después de verificar)
+        if (inscripcionId === 2) {
+          console.log('[DEBUG] Inscripción 2:', {
+            tipoInscripcion,
+            canEdit,
+            recordKeys: Object.keys(record),
+            recordTipoInscripcion: record.tipoInscripcion,
+            recordTipo_inscripcion: record.tipo_inscripcion,
+            enrollmentTipoInscripcion: record.enrollment?.tipoInscripcion,
+            enrollmentTipo_inscripcion: record.enrollment?.tipo_inscripcion,
+            recordEnrollmentType: record.enrollmentType,
+          });
+        }
+
+        // Extraer datos necesarios para la edición
+        const estudianteId = student?.id || record.estudianteId || record.enrollment?.estudianteId;
+        const carreraId = carrera?.id || record.carreraId || record.enrollment?.carreraId;
+
+        // Para inscripciones NUEVAS, el periodo viene del plan de estudios (periodo 1)
+        // No necesitamos periodoId explícito, se obtiene del paralelo seleccionado
+        const periodoId = null; // Se obtendrá del paralelo en el wizard
+
+        // Obtener el paraleloId del primer curso inscrito (si existe)
+        // Los cursos inscritos vienen en inscripcionesMaterias, materiasInscritas, o enrollmentSubjects
+        // El curso tiene paraleloId que es el ID del paralelo
+        const materiasInscritas = record.inscripcionesMaterias
+          || record.materiasInscritas
+          || record.enrollmentSubjects
+          || record.enrollment?.inscripcionesMaterias
+          || record.enrollment?.enrollmentSubjects
+          || [];
+        const primerMateria = materiasInscritas.length > 0 ? materiasInscritas[0] : null;
+
+        // El paraleloId puede venir de diferentes estructuras:
+        // 1. curso.paraleloId (si el curso está incluido)
+        // 2. teacherAssignment.course.paraleloId (si la asignación docente está incluida)
+        // 3. Directamente del paralelo si está incluido
+        let paraleloId = null;
+        if (primerMateria) {
+          // Intentar obtener desde curso directo
+          paraleloId = primerMateria?.curso?.paraleloId
+            || primerMateria?.curso?.paralelo_id
+            || primerMateria?.teacherAssignment?.course?.paraleloId
+            || primerMateria?.teacherAssignment?.course?.paralelo_id
+            || primerMateria?.paraleloId
+            || primerMateria?.paralelo_id
+            || null;
+        }
+
+        const handleEdit = (recordParam) => {
+          // TableActions pasa el record como parámetro, pero usamos el del closure
+          // para tener acceso a todos los datos ya extraídos
+          console.log('[DEBUG] handleEdit llamado para inscripción:', inscripcionId, {
+            canEdit,
+            tipoInscripcion,
+            estudianteId,
+            carreraId,
+            paraleloId,
+            editDisabled: !canEdit,
+          });
+
+          // Si el botón está deshabilitado, no hacer nada
+          // (el botón debería estar deshabilitado si canEdit es false)
+          if (!canEdit) {
+            console.warn('[DEBUG] No se puede editar porque tipoInscripcion no es NUEVO:', tipoInscripcion);
+            return;
+          }
+
+          // Navegar a la página de edición con los datos de la inscripción
+          console.log('[DEBUG] Navegando a /inscripciones/nueva con estado:', {
+            mode: 'editar',
+            inscripcionId,
+            studentId: estudianteId,
+            carreraId,
+            periodoId,
+            paraleloId,
+          });
+
+          navigate('/inscripciones/nueva', {
+            state: {
+              mode: 'editar',
+              inscripcionId: inscripcionId,
+              studentId: estudianteId,
+              carreraId: carreraId,
+              periodoId: periodoId,
+              paraleloId: paraleloId,
+            }
+          });
+        };
+
+        // Mostrar el botón de editar, deshabilitado si no se puede editar
+        // Habilitar eliminar desde la lista (anular inscripción)
         return (
           <TableActions
             record={{ ...record, id: inscripcionId }}
             navigate={navigate}
             refetch={refetch}
-            useCaseKey={null} // No permitir eliminar desde la lista general
-            deleteFn={null} // No permitir eliminar desde la lista general
-            itemName={itemName}
+            useCaseKey={deleteInscripcion ? null : "eliminarInscripcion"}
+            deleteFn={deleteInscripcion}
+            itemName={`anular ${itemName}`}
             itemDetails={itemDetails}
             viewPath="/inscripciones/:id"
             editPath={null}
-            onEdit={() => {
-              // TODO: Implementar edición de inscripción
-              console.log('Editar inscripción:', inscripcionId);
-            }}
+            onEdit={handleEdit}
+            editDisabled={!canEdit}
           />
         );
       },
@@ -245,10 +347,10 @@ export const createInscripcionesTableColumns = (navigate, refetch = null, delete
 export const createInscripcionesAnularTableColumns = (navigate, refetch = null, deleteInscripcion = null) => {
   // Reutilizar las mismas columnas de visualización
   const baseColumns = createInscripcionesTableColumns(navigate, refetch, deleteInscripcion);
-  
+
   // Reemplazar la columna de acciones con una versión específica para anular
   const accionesIndex = baseColumns.findIndex(col => col.key === 'acciones');
-  
+
   if (accionesIndex !== -1) {
     baseColumns[accionesIndex] = {
       title: 'Acción',
@@ -258,20 +360,20 @@ export const createInscripcionesAnularTableColumns = (navigate, refetch = null, 
       align: 'right',
       render: (_, record) => {
         const inscripcionId = record.id || record.enrollment?.id;
-        
+
         // Extraer información descriptiva de la inscripción para el diálogo
         const student = record.estudiante || record.student || record.enrollment?.student;
         const carrera = record.carrera || record.enrollment?.carrera;
         const gestion = record.gestion || record.enrollment?.gestion;
-        
+
         const estudianteNombre = student?.nombreCompleto || student?.nombre || 'Sin nombre';
         const codigoEstudiante = student?.codigoEstudiante || student?.codigo || 'N/A';
         const carreraNombre = carrera?.nombre || 'N/A';
         const gestionAnio = gestion?.anio || gestion?.year || 'N/A';
-        
+
         // Construir nombre descriptivo para el diálogo de anulación
         const itemName = `la inscripción del estudiante ${estudianteNombre}`;
-        
+
         // Detalles para mostrar en el diálogo
         const itemDetails = [
           { label: 'Estudiante', value: estudianteNombre },
@@ -279,7 +381,7 @@ export const createInscripcionesAnularTableColumns = (navigate, refetch = null, 
           { label: 'Carrera', value: carreraNombre },
           { label: 'Gestión', value: gestionAnio },
         ].filter(detail => detail.value && detail.value !== 'N/A' && detail.value !== 'Sin nombre');
-        
+
         return (
           <TableActions
             record={{ ...record, id: inscripcionId }}
@@ -296,6 +398,6 @@ export const createInscripcionesAnularTableColumns = (navigate, refetch = null, 
       },
     };
   }
-  
+
   return baseColumns;
 };

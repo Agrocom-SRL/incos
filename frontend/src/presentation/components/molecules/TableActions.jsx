@@ -30,6 +30,7 @@ import { useContainer } from '@container';
  * @param {string} props.editPath - Ruta para editar (opcional, ej: '/pagos/:id/editar')
  * @param {Function} props.onEdit - Función personalizada para editar (opcional)
  * @param {Function} props.onView - Función personalizada para ver (opcional)
+ * @param {boolean} props.editDisabled - Si el botón de editar debe estar deshabilitado (opcional)
  * @param {Object} props.extraActions - Acciones adicionales (opcional)
  */
 const TableActions = ({
@@ -44,6 +45,7 @@ const TableActions = ({
   editPath,
   onEdit,
   onView,
+  editDisabled = false,
   extraActions = [],
 }) => {
   const container = useContainer();
@@ -87,6 +89,12 @@ const TableActions = ({
   });
 
   const handleEdit = () => {
+    // Si el botón está deshabilitado, no hacer nada
+    if (editDisabled) {
+      console.log('[TableActions] Botón de editar deshabilitado, no se ejecuta handleEdit');
+      return;
+    }
+    
     if (onEdit) {
       onEdit(record);
     } else if (editPath) {
@@ -124,11 +132,19 @@ const TableActions = ({
         </Tooltip>
       )}
       {(editPath || onEdit) && (
-        <Tooltip title={`${editAction.tooltip} ${itemName || 'elemento'}`}>
+        <Tooltip title={editDisabled 
+          ? `Solo se puede editar inscripciones de tipo NUEVO (aún no comenzaron las clases)` 
+          : `${editAction.tooltip} ${itemName || 'elemento'}`}>
           <IconButton
             icon={<editAction.icon />}
             variant={editAction.variant}
             onClick={handleEdit}
+            disabled={editDisabled}
+            onMouseEnter={() => {
+              if (editDisabled) {
+                console.log('[TableActions] Botón de editar deshabilitado. editDisabled:', editDisabled);
+              }
+            }}
           />
         </Tooltip>
       )}

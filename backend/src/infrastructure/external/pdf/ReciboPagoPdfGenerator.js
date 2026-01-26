@@ -484,7 +484,7 @@ export class ReciboPagoPdfGenerator extends IncosPDFLibBase {
 
         // Fila 2: N° C.I.
         if (data.ci) {
-            await this._addTableRow('N° C.I.', data.ci, false);
+            await this._addTableRow('CÉDULA DE IDENTIDAD', data.ci, true);
         }
 
         // Fila 3: CARRERA | CURSO Y PARALELO | Año (solo si hay datos válidos)
