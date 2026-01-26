@@ -725,10 +725,11 @@ export class RegisterAporteVoluntarioUseCase {
                 } : null,
             };
 
-            // Generar nombre del archivo
-            // Usar el ID del pago como número de recibo (formato: 000001, 000002, etc.)
+            // Generar nombre del archivo con formato constante
+            // Formato: pago_estudencode_nrorecibe.pdf
             const numeroRecibo = paymentPlain.receiptNumber || paymentPlain.numeroRecibo || paymentPlain.numero_recibo || String(paymentPlain.id).padStart(6, '0');
-            const fileName = `RECIBO_PAGO_${studentPlain.ci || studentPlain.id}_${numeroRecibo}_${Date.now()}.pdf`;
+            const codigoEstudiante = studentPlain.studentCode || studentPlain.codigo_estudiante || studentPlain.id;
+            const fileName = `pago_${codigoEstudiante}_${numeroRecibo}.pdf`;
             const year = managementPlain.anio || managementPlain.year || new Date().getFullYear();
             const outputDir = path.join(process.cwd(), 'uploads', 'recibos', String(year));
             
