@@ -22,7 +22,7 @@ import { useStudentDetailContext } from '@application-estudiantes/hooks';
 import { useGenerateActaCompromiso } from '@application-estudiantes/hooks';
 import { usePagosContextOptional } from '@application-pagos/hooks';
 import { downloadFile } from '@application/utils';
-import { Spin, Alert, Empty, Card, Descriptions, Tag, App } from 'antd';
+import { Spin, Alert, Empty, Card, Descriptions, Tag, App, Button as AntdButton } from 'antd';
 import { GiftOutlined, FileTextOutlined, DollarOutlined, DownloadOutlined, BookOutlined, EyeOutlined, ArrowLeftOutlined, PlusCircleOutlined } from '@ant-design/icons';
 import { Button } from '@atoms';
 import {
@@ -190,14 +190,6 @@ const EstudiantesDetail = () => {
   const actaCompromisoData = student?.actaCompromiso;
   const headerActions = useMemo(() => (
     <>
-      <Button
-        variant="default"
-        icon={<ArrowLeftOutlined />}
-        onClick={handleVolverALista}
-        style={{ marginRight: 8 }}
-      >
-        Volver a la Lista
-      </Button>
       {/* 1. Acta de Compromiso */}
       {actaCompromisoData ? (
         <Button
