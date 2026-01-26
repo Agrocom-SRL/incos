@@ -41,6 +41,18 @@ const PagosRegistrar = () => {
   // Obtener studentId del estado de navegación
   const studentId = location.state?.studentId || null;
 
+  // Redirigir a lista de pagos si no hay studentId (ANTES de otros hooks)
+  useEffect(() => {
+    if (!studentId) {
+      navigate('/pagos/listar', { replace: true });
+    }
+  }, [studentId, navigate]);
+
+  // Si no hay studentId, no renderizar nada (se redirige automáticamente)
+  // IMPORTANTE: Este return debe estar DESPUÉS de todos los hooks
+  // pero React requiere que todos los hooks se llamen incondicionalmente
+  // Por eso movemos la redirección al useEffect y renderizamos un loading
+
   // Obtener datos del estudiante desde el contexto de detalle (para StudentInfoSection)
   const studentDetailContext = useStudentDetailContext();
   const student = studentDetailContext?.student?.student || null;
@@ -393,16 +405,26 @@ const PagosRegistrar = () => {
     { title: 'Registrar Pago' },
   ], []);
 
-  // Redirigir a lista de pagos si no hay studentId
-  useEffect(() => {
-    if (!studentId) {
-      navigate('/pagos/listar', { replace: true });
-    }
-  }, [studentId, navigate]);
-
-  // Si no hay studentId, no renderizar nada (se redirige automáticamente)
+  // Si no hay studentId, mostrar loading mientras se redirige
   if (!studentId) {
-    return null;
+    return (
+      <PageTemplate
+        header={
+          <PageHeader
+            title="Registrar Pago"
+            breadcrumbItems={breadcrumbItems}
+          />
+        }
+      >
+        <div style={{ padding: '24px', textAlign: 'center' }}>
+          <Spin size="large">
+            <div style={{ minHeight: '200px' }}>
+              <p>Redirigiendo...</p>
+            </div>
+          </Spin>
+        </div>
+      </PageTemplate>
+    );
   }
 
   return (

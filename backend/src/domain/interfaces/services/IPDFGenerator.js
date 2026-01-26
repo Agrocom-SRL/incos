@@ -17,8 +17,8 @@ export class IPDFGenerator {
    * @param {string} outputPath - Ruta donde guardar el PDF
    * @returns {Promise<string>} Ruta del archivo generado
    */
-  generateReciboPagoMejorado(data, outputPath) {
-    throw new Error('Method generateReciboPagoMejorado must be implemented');
+  generateReciboPago(data, outputPath) {
+    throw new Error('Method generateReciboPago must be implemented');
   }
 
   /**

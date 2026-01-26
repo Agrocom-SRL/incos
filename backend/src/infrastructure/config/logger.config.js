@@ -35,13 +35,26 @@ const customFormat = winston.format.combine(
 );
 
 /**
- * Formato para consola (con colores)
+ * Formato para consola (con colores y metadatos)
  */
 const consoleFormat = winston.format.combine(
     winston.format.colorize({ all: true }),
     winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-    winston.format.printf(({ level, message, timestamp }) => {
-        return `${timestamp} ${level}: ${message}`;
+    winston.format.errors({ stack: true }),
+    winston.format.printf(({ level, message, timestamp, stack, ...meta }) => {
+        let log = `${timestamp} ${level}: ${message}`;
+        
+        // Agregar metadata si existe
+        if (Object.keys(meta).length > 0) {
+            log += ` ${JSON.stringify(meta, null, 2)}`;
+        }
+        
+        // Agregar stack trace si existe
+        if (stack) {
+            log += `\n${stack}`;
+        }
+        
+        return log;
     })
 );
 

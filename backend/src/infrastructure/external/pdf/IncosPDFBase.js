@@ -167,6 +167,7 @@ export class IncosPDFBase {
         normal: { size: 10, font: 'Helvetica' },
         small: { size: 8, font: 'Helvetica' },
         bold: { size: 10, font: 'Helvetica-Bold' },
+        amount: { size: 12, font: 'Helvetica-Bold' }, // Tamaño para montos (más grande y bold)
         // Fuente personalizada por defecto para títulos de documentos
         defaultTitleFont: 'britannic-bold-regular',
     };

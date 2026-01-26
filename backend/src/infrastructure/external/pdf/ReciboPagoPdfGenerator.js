@@ -1,0 +1,886 @@
+/**
+ * ReciboPagoPdfGenerator
+ *
+ * Servicio de infraestructura que genera el RECIBO DE PAGO a partir de una plantilla PDF en blanco.
+ * 
+ * Tecnología: Usa pdf-lib para crear el documento desde cero (similar a ReciboPagoMejorado pero con pdf-lib).
+ * 
+ * Diseño:
+ * - Documento vertical (portrait)
+ * - Logo a la izquierda
+ * - Título al centro
+ * - Fecha y número de recibo (FAV) a la derecha
+ * - Datos del instituto desde IncosPDFBase.INSTITUTE
+ *
+ * Arquitectura:
+ * - Extiende IncosPDFLibBase para reutilizar métodos comunes de pdf-lib
+ * - Crea el documento desde cero (no edita plantilla)
+ * 
+ * Principios SOLID:
+ * - Single Responsibility: Solo maneja lógica específica del recibo de pago
+ * - Open/Closed: Extiende IncosPDFLibBase sin modificar la clase base
+ * - Liskov Substitution: Puede usarse donde se espere IncosPDFLibBase
+ *
+ * @module ReciboPagoPdfGenerator
+ */
+
+import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+import { IncosPDFLibBase } from './IncosPDFLibBase.js';
+import { IncosPDFBase } from './IncosPDFBase.js';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+export class ReciboPagoPdfGenerator extends IncosPDFLibBase {
+    /**
+     * @param {Object} params - Dependencias inyectadas
+     * @param {ILogger} [params.logger] - Logger para registro de eventos
+     */
+    constructor({ logger } = {}) {
+        super({ logger });
+    }
+
+    /**
+     * Genera un PDF de Recibo de Pago desde cero.
+     * Retorna Buffer. El guardado en uploads lo hace el caso de uso / almacenamiento.
+     *
+     * @param {Object} data - Datos del recibo
+     * @param {string} data.numeroRecibo - Número del recibo (FAV)
+     * @param {string} data.fechaPago - Fecha del pago (formato YYYY-MM-DD o DD/MM/YYYY)
+     * @param {string} data.nombreCompleto - Nombre completo del estudiante
+     * @param {string} data.ci - Cédula de identidad
+     * @param {string} [data.carrera] - Nombre de la carrera (opcional)
+     * @param {string} [data.cursoParalelo] - Curso y paralelo (opcional)
+     * @param {string} [data.anio] - Año académico (opcional)
+     * @param {number} data.montoTotal - Monto total del aporte
+     * @param {number} data.descuentoBeca - Descuento por beca
+     * @param {number} data.montoPagado - Monto pagado (total - descuento)
+     * @param {string} data.concepto - Concepto del pago
+     * @param {string} data.metodoPago - Método de pago
+     * @param {string} [data.numeroTransaccion] - Número de transacción (opcional)
+     * @param {Object} [data.becaInfo] - Información de beca (opcional)
+     * @returns {Promise<Buffer>} Contenido del PDF generado
+     */
+    async generate(data) {
+        try {
+            if (this.logger) {
+                this.logger.debug('[ReciboPagoPdfGenerator] Iniciando generación de PDF', {
+                    hasData: !!data,
+                    numeroRecibo: data?.numeroRecibo,
+                });
+            }
+
+            // Crear documento PDF desde cero (vertical/portrait)
+            const pdfDoc = await PDFDocument.create();
+            
+            // Registrar fontkit para poder usar fuentes personalizadas TTF/OTF
+            // Importar fontkit dinámicamente para evitar problemas de carga
+            const fontkit = (await import('@pdf-lib/fontkit')).default;
+            pdfDoc.registerFontkit(fontkit);
+            
+            // Crear página con tamaño LETTER vertical
+            const page = pdfDoc.addPage([612, 792]); // LETTER: 8.5" x 11" en puntos
+            
+            // Inicializar estado interno
+            this._initializeDocumentState(pdfDoc, page, false);
+            
+            if (this.logger) {
+                this.logger.debug('[ReciboPagoPdfGenerator] Estado inicializado', {
+                    currentY: this._currentY,
+                });
+            }
+
+            // Construir el documento sección por sección
+            try {
+                await this._buildHeader(data);
+                if (this.logger) {
+                    this.logger.debug('[ReciboPagoPdfGenerator] Header construido');
+                }
+            } catch (headerError) {
+                if (this.logger) {
+                    this.logger.error('[ReciboPagoPdfGenerator] Error en _buildHeader', {
+                        error: headerError.message,
+                        stack: headerError.stack,
+                    });
+                }
+                throw headerError;
+            }
+
+            try {
+                await this._buildDatosPersonales(data);
+                if (this.logger) {
+                    this.logger.debug('[ReciboPagoPdfGenerator] Datos personales construidos');
+                }
+            } catch (datosError) {
+                if (this.logger) {
+                    this.logger.error('[ReciboPagoPdfGenerator] Error en _buildDatosPersonales', {
+                        error: datosError.message,
+                        stack: datosError.stack,
+                    });
+                }
+                throw datosError;
+            }
+
+            try {
+                await this._buildDeclaracionJurada(data);
+                if (this.logger) {
+                    this.logger.debug('[ReciboPagoPdfGenerator] Declaración jurada construida');
+                }
+            } catch (declaracionError) {
+                if (this.logger) {
+                    this.logger.error('[ReciboPagoPdfGenerator] Error en _buildDeclaracionJurada', {
+                        error: declaracionError.message,
+                        stack: declaracionError.stack,
+                    });
+                }
+                throw declaracionError;
+            }
+
+            // Serializar el PDF a bytes
+            const pdfBuffer = await this._saveDocument(pdfDoc);
+
+            if (this.logger) {
+                this.logger.info('[ReciboPagoPdfGenerator] Recibo de pago PDF generado (buffer)', {
+                    size: pdfBuffer.length,
+                });
+            }
+
+            return pdfBuffer;
+        } catch (error) {
+            if (this.logger) {
+                this.logger.error('[ReciboPagoPdfGenerator] Error al generar recibo de pago PDF', {
+                    error: error.message,
+                    stack: error.stack,
+                });
+            }
+            throw error;
+        }
+    }
+
+    // ============================================
+    // MÉTODOS ESPECÍFICOS DEL RECIBO DE PAGO
+    // ============================================
+
+    /**
+     * Construye el encabezado del documento
+     * Logo a la izquierda, título al centro, fecha y FAV a la derecha
+     * 
+     * @private
+     * @param {Object} data - Datos del recibo
+     * @returns {Promise<void>}
+     */
+    async _buildHeader(data) {
+        const { width: pageWidth, height: pageHeight } = this._currentPage.getSize();
+        const margins = IncosPDFBase.LAYOUT.margins;
+        const startY = pageHeight - margins.top;
+
+        // =========================
+        // LOGO (esquina superior izquierda)
+        // =========================
+        const logoPath = path.resolve(__dirname, '../templates/logo.png');
+        let logoLoaded = false;
+        let logoHeight = 0;
+        let logoWidth = 0;
+        const logoMaxHeight = 64;
+        const logoMaxWidth = 120;
+
+        if (fs.existsSync(logoPath)) {
+            try {
+                const logoBytes = fs.readFileSync(logoPath);
+                // Intentar cargar como PNG primero, luego como JPG
+                let logoImage;
+                try {
+                    logoImage = await this._pdfDoc.embedPng(logoBytes);
+                } catch (pngError) {
+                    try {
+                        logoImage = await this._pdfDoc.embedJpg(logoBytes);
+                    } catch (jpgError) {
+                        throw new Error('No se pudo cargar la imagen como PNG ni JPG');
+                    }
+                }
+                
+                // Calcular dimensiones manteniendo proporción
+                const logoDims = logoImage.scale(1);
+                const scale = Math.min(
+                    logoMaxWidth / logoDims.width,
+                    logoMaxHeight / logoDims.height
+                );
+                
+                logoWidth = logoDims.width * scale;
+                logoHeight = logoDims.height * scale;
+                
+                this._currentPage.drawImage(logoImage, {
+                    x: margins.left,
+                    y: startY - logoHeight,
+                    width: logoWidth,
+                    height: logoHeight,
+                });
+                
+                logoLoaded = true;
+            } catch (imageError) {
+                if (this.logger) {
+                    this.logger.warn('[ReciboPagoPdfGenerator] No se pudo cargar el logo:', imageError.message);
+                }
+            }
+        }
+
+        // =========================
+        // TÍTULO AL CENTRO
+        // =========================
+        const titleFont = await this._loadCustomFont(this._pdfDoc, IncosPDFBase.FONTS.defaultTitleFont);
+        const titleFontSize = IncosPDFBase.FONTS.title.size;
+        const titleRgb = this._hexToRgb(IncosPDFBase.COLORS.primary);
+        
+        const titleText = IncosPDFBase.INSTITUTE.name;
+        let titleTextWidth = 0;
+        try {
+            titleTextWidth = titleFont.widthOfTextAtSize(titleText, titleFontSize);
+        } catch (widthError) {
+            // Si widthOfTextAtSize falla (puede pasar con algunas fuentes), usar estimación
+            if (this.logger) {
+                this.logger.warn('[ReciboPagoPdfGenerator] Error al calcular ancho del título, usando estimación', {
+                    error: widthError.message,
+                });
+            }
+            // Estimación aproximada: 0.6 puntos por carácter
+            titleTextWidth = titleText.length * titleFontSize * 0.6;
+        }
+        
+        // Calcular posición X del título (centrado, considerando logo y área de recibo a la derecha)
+        const reciboAreaWidth = 100; // Área para fecha y número de recibo a la derecha
+        const availableWidth = pageWidth - margins.left - margins.right - reciboAreaWidth;
+        const titleStartX = logoLoaded 
+            ? margins.left + logoWidth + 10 
+            : margins.left;
+        const titleMaxWidth = logoLoaded 
+            ? availableWidth - logoWidth - 10 
+            : availableWidth;
+        const titleX = titleStartX + (titleMaxWidth - titleTextWidth) / 2;
+
+        this._currentPage.drawText(titleText, {
+            x: titleX,
+            y: startY - 20,
+            size: titleFontSize,
+            font: titleFont,
+            color: titleRgb,
+        });
+
+        // Subtítulo: BOLETA DE APORTE VOLUNTARIO
+        const subtitleFont = await this._loadCustomFont(this._pdfDoc, IncosPDFBase.FONTS.defaultTitleFont);
+        const subtitleFontSize = IncosPDFBase.FONTS.subtitle.size;
+        const subtitleText = 'BOLETA DE APORTE VOLUNTARIO';
+        let subtitleTextWidth = 0;
+        try {
+            subtitleTextWidth = subtitleFont.widthOfTextAtSize(subtitleText, subtitleFontSize);
+        } catch (widthError) {
+            // Si widthOfTextAtSize falla, usar estimación
+            if (this.logger) {
+                this.logger.warn('[ReciboPagoPdfGenerator] Error al calcular ancho del subtítulo, usando estimación', {
+                    error: widthError.message,
+                });
+            }
+            subtitleTextWidth = subtitleText.length * subtitleFontSize * 0.6;
+        }
+        const subtitleX = titleStartX + (titleMaxWidth - subtitleTextWidth) / 2;
+
+        this._currentPage.drawText(subtitleText, {
+            x: subtitleX,
+            y: startY - 40,
+            size: subtitleFontSize,
+            font: subtitleFont,
+            color: titleRgb,
+        });
+
+        // =========================
+        // FECHA (a la izquierda, debajo del subtítulo)
+        // =========================
+        const normalFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.normal.font);
+        const normalFont = await this._pdfDoc.embedFont(normalFontName);
+        const smallFontSize = IncosPDFBase.FONTS.small.size;
+        const textRgb = this._hexToRgb(IncosPDFBase.COLORS.textLight);
+
+        const fechaFormateada = this._formatFecha(data?.fechaPago || data?.fecha_pago || new Date());
+        // Aumentar espaciado después del subtítulo para que la fecha sea más visible
+        const fechaY = startY - 70;
+
+        this._currentPage.drawText('FECHA:', {
+            x: margins.left,
+            y: fechaY,
+            size: smallFontSize,
+            font: normalFont,
+            color: textRgb,
+        });
+
+        this._currentPage.drawText(fechaFormateada, {
+            x: margins.left + 40,
+            y: fechaY,
+            size: IncosPDFBase.FONTS.normal.size,
+            font: normalFont,
+            color: this._hexToRgb(IncosPDFBase.COLORS.text),
+        });
+
+        // =========================
+        // NÚMERO DE RECIBO (esquina superior derecha)
+        // =========================
+        const reciboBoxWidth = 75;
+        const reciboBoxHeight = 30;
+        const reciboBoxX = pageWidth - margins.right - reciboBoxWidth;
+        const reciboBoxY = startY - 25;
+        const reciboRgb = this._hexToRgb(IncosPDFBase.COLORS.primary);
+
+        // Fondo del cuadro de número de recibo
+        this._currentPage.drawRectangle({
+            x: reciboBoxX,
+            y: reciboBoxY,
+            width: reciboBoxWidth,
+            height: reciboBoxHeight,
+            color: reciboRgb,
+        });
+
+        // Borde del cuadro de número de recibo
+        this._currentPage.drawRectangle({
+            x: reciboBoxX,
+            y: reciboBoxY,
+            width: reciboBoxWidth,
+            height: reciboBoxHeight,
+            borderColor: this._hexToRgb(IncosPDFBase.COLORS.border),
+            borderWidth: 1.5,
+        });
+
+        // Número de recibo (centrado en el cuadro)
+        const boldFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.bold.font);
+        const boldFont = await this._pdfDoc.embedFont(boldFontName);
+        const numeroRecibo = data?.numeroRecibo || data?.numero_recibo || data?.receiptNumber || '001';
+        const numeroReciboText = String(numeroRecibo);
+        let numeroReciboWidth = 0;
+        try {
+            numeroReciboWidth = boldFont.widthOfTextAtSize(numeroReciboText, 16);
+        } catch (widthError) {
+            // Si widthOfTextAtSize falla, usar estimación
+            if (this.logger) {
+                this.logger.warn('[ReciboPagoPdfGenerator] Error al calcular ancho del número de recibo, usando estimación', {
+                    error: widthError.message,
+                });
+            }
+            numeroReciboWidth = numeroReciboText.length * 16 * 0.6;
+        }
+        const numeroReciboX = reciboBoxX + (reciboBoxWidth - numeroReciboWidth) / 2;
+        
+        this._currentPage.drawText(numeroReciboText, {
+            x: numeroReciboX,
+            y: reciboBoxY + (reciboBoxHeight - 16) / 2 + 4, // Centrado verticalmente
+            size: 16,
+            font: boldFont,
+            color: rgb(1, 1, 1), // Blanco
+        });
+
+        // Línea decorativa
+        const lineY = Math.max(startY - logoHeight, startY - 60) + 5;
+        this._currentY = lineY;
+        this._addLine(IncosPDFBase.COLORS.primary, 2);
+        // Espaciado después del header (aumentado para mejor separación)
+        this._currentY = this._currentY - IncosPDFBase.LAYOUT.spacing.section; // Mover hacia abajo (restar en coordenadas Y)
+    }
+
+    /**
+     * Agrega una línea horizontal
+     * @private
+     * @param {string} color - Color en hexadecimal
+     * @param {number} thickness - Grosor de la línea
+     */
+    _addLine(color, thickness = 1) {
+        if (!this._currentPage) {
+            throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
+        }
+        if (this._currentY === null || this._currentY === undefined) {
+            throw new Error('_currentY no está inicializado');
+        }
+
+        const { width: pageWidth } = this._currentPage.getSize();
+        const margins = IncosPDFBase.LAYOUT.margins;
+        const lineRgb = this._hexToRgb(color);
+
+        this._currentPage.drawLine({
+            start: { x: margins.left, y: this._currentY },
+            end: { x: pageWidth - margins.right, y: this._currentY },
+            thickness: thickness,
+            color: lineRgb,
+        });
+    }
+
+    /**
+     * Construye la sección de datos personales del estudiante
+     * 
+     * @private
+     * @param {Object} data - Datos del recibo
+     * @returns {Promise<void>}
+     */
+    async _buildDatosPersonales(data) {
+        const margins = IncosPDFBase.LAYOUT.margins;
+        const { width: pageWidth } = this._currentPage.getSize();
+        const sectionHeight = 20;
+        
+        // Espaciado antes de la sección
+        this._currentY -= IncosPDFBase.LAYOUT.spacing.section;
+
+        // Título de la sección
+        const sectionRgb = this._hexToRgb(IncosPDFBase.COLORS.primary);
+        this._currentPage.drawRectangle({
+            x: margins.left,
+            y: this._currentY - sectionHeight,
+            width: pageWidth - margins.left - margins.right,
+            height: sectionHeight,
+            color: sectionRgb,
+        });
+
+        const boldFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.bold.font);
+        const boldFont = await this._pdfDoc.embedFont(boldFontName);
+        
+        this._currentPage.drawText('DATOS PERSONALES DEL ESTUDIANTE', {
+            x: margins.left + 5,
+            y: this._currentY - sectionHeight + 6,
+            size: IncosPDFBase.FONTS.section.size,
+            font: boldFont,
+            color: rgb(1, 1, 1), // Blanco
+        });
+
+        this._currentY -= sectionHeight;
+
+        // Fila 1: APELLIDOS Y NOMBRES
+        if (data.nombreCompleto) {
+            await this._addTableRow('APELLIDOS Y NOMBRES', data.nombreCompleto, true);
+        }
+
+        // Fila 2: N° C.I.
+        if (data.ci) {
+            await this._addTableRow('N° C.I.', data.ci, false);
+        }
+
+        // Fila 3: CARRERA | CURSO Y PARALELO | Año (solo si hay datos válidos)
+        const hasCarrera = data.carrera && String(data.carrera).trim() !== '' && data.carrera !== 'N/A';
+        const hasCursoParalelo = data.cursoParalelo && String(data.cursoParalelo).trim() !== '' && data.cursoParalelo !== 'N/A';
+        const hasAnio = data.anio && String(data.anio).trim() !== '' && data.anio !== 'N/A' && data.anio !== '1° A';
+
+        if (hasCarrera || hasCursoParalelo || hasAnio) {
+            const columns = [];
+            if (hasCarrera) {
+                columns.push({
+                    label: 'CARRERA',
+                    value: String(data.carrera).trim(),
+                    width: (hasCursoParalelo || hasAnio) ? 0.5 : 1.0
+                });
+            }
+            if (hasCursoParalelo) {
+                columns.push({
+                    label: 'CURSO Y PARALELO',
+                    value: String(data.cursoParalelo).trim(),
+                    width: (hasCarrera && hasAnio) ? 0.25 : ((hasCarrera || hasAnio) ? 0.5 : 1.0)
+                });
+            }
+            if (hasAnio) {
+                columns.push({
+                    label: '',
+                    value: String(data.anio).trim(),
+                    width: (hasCarrera && hasCursoParalelo) ? 0.25 : ((hasCarrera || hasCursoParalelo) ? 0.5 : 1.0)
+                });
+            }
+
+            if (columns.length > 0) {
+                // Normalizar anchos
+                const totalWidth = columns.reduce((sum, col) => sum + col.width, 0);
+                if (totalWidth > 0) {
+                    columns.forEach(col => {
+                        col.width = col.width / totalWidth;
+                    });
+                }
+                await this._addTableRowMultipleColumns(columns);
+            }
+        }
+
+        // Filas de monto: MONTO TOTAL → DESCUENTO → APORTE
+        const montoTotal = Number(data.montoTotal) ?? 400.00;
+        const descuentoBeca = Number(data.descuentoBeca) ?? 0;
+        const montoPagado = montoTotal - descuentoBeca;
+
+        if (descuentoBeca > 0) {
+            await this._addTableRow('MONTO TOTAL', this._formatMonto(montoTotal), false);
+            await this._addTableRow('DESCUENTO POR BECA', `- ${this._formatMonto(descuentoBeca)}`, false);
+        }
+
+        // APORTE (monto final)
+        await this._addTableRow('APORTE', this._formatAporte({ montoPagado }), true);
+
+        // Espaciado después de la sección
+        this._currentY -= IncosPDFBase.LAYOUT.spacing.section;
+    }
+
+    /**
+     * Agrega una fila de tabla simple (label | value)
+     * @private
+     * @param {string} label - Etiqueta
+     * @param {string} value - Valor
+     * @param {boolean} isHeader - Si es header (bold)
+     * @returns {Promise<void>}
+     */
+    async _addTableRow(label, value, isHeader = false) {
+        const margins = IncosPDFBase.LAYOUT.margins;
+        const { width: pageWidth } = this._currentPage.getSize();
+        const rowHeight = 22; // Aumentado para mejor espaciado
+        const labelWidth = (pageWidth - margins.left - margins.right) * 0.35;
+        const rowY = this._currentY - rowHeight;
+
+        // Bordes
+        const borderRgb = this._hexToRgb(IncosPDFBase.COLORS.border);
+        this._currentPage.drawRectangle({
+            x: margins.left,
+            y: rowY,
+            width: labelWidth,
+            height: rowHeight,
+            borderColor: borderRgb,
+            borderWidth: 1,
+        });
+        this._currentPage.drawRectangle({
+            x: margins.left + labelWidth,
+            y: rowY,
+            width: pageWidth - margins.left - margins.right - labelWidth,
+            height: rowHeight,
+            borderColor: borderRgb,
+            borderWidth: 1,
+        });
+
+        // Textos
+        const boldFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.bold.font);
+        const normalFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.normal.font);
+        const boldFont = await this._pdfDoc.embedFont(boldFontName);
+        const normalFont = await this._pdfDoc.embedFont(normalFontName);
+        
+        // Usar tamaño de fuente mayor para montos (si es header o contiene "Bs")
+        const isAmount = isHeader || value.includes('Bs') || value.includes('GRATIS');
+        const fontSize = isAmount ? IncosPDFBase.FONTS.amount.size : IncosPDFBase.FONTS.normal.size;
+        const textRgb = this._hexToRgb(IncosPDFBase.COLORS.text);
+
+        this._currentPage.drawText(label, {
+            x: margins.left + 3,
+            y: rowY + 6, // Ajustado para centrado vertical
+            size: fontSize,
+            font: boldFont,
+            color: textRgb,
+        });
+
+        this._currentPage.drawText(value, {
+            x: margins.left + labelWidth + 3,
+            y: rowY + 6, // Ajustado para centrado vertical
+            size: fontSize,
+            font: isHeader || isAmount ? boldFont : normalFont,
+            color: textRgb,
+        });
+
+        this._currentY -= rowHeight;
+    }
+
+    /**
+     * Agrega una fila de tabla con múltiples columnas
+     * @private
+     * @param {Array} columns - Array de {label, value, width}
+     * @returns {Promise<void>}
+     */
+    async _addTableRowMultipleColumns(columns) {
+        const margins = IncosPDFBase.LAYOUT.margins;
+        const { width: pageWidth } = this._currentPage.getSize();
+        const rowHeight = 18;
+        const rowY = this._currentY - rowHeight;
+        const totalWidth = pageWidth - margins.left - margins.right;
+
+        const borderRgb = this._hexToRgb(IncosPDFBase.COLORS.border);
+        const boldFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.bold.font);
+        const normalFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.normal.font);
+        const boldFont = await this._pdfDoc.embedFont(boldFontName);
+        const normalFont = await this._pdfDoc.embedFont(normalFontName);
+        const fontSize = IncosPDFBase.FONTS.normal.size;
+        const textRgb = this._hexToRgb(IncosPDFBase.COLORS.text);
+
+        let currentX = margins.left;
+        for (const col of columns) {
+            const colWidth = totalWidth * col.width;
+            
+            // Borde
+            this._currentPage.drawRectangle({
+                x: currentX,
+                y: rowY,
+                width: colWidth,
+                height: rowHeight,
+                borderColor: borderRgb,
+                borderWidth: 1,
+            });
+
+            // Label (si existe)
+            if (col.label && col.label.trim() !== '') {
+                this._currentPage.drawText(col.label, {
+                    x: currentX + 3,
+                    y: rowY + 3,
+                    size: fontSize,
+                    font: boldFont,
+                    color: textRgb,
+                });
+            }
+
+            // Value
+            if (col.value && col.value.trim() !== '') {
+                this._currentPage.drawText(col.value, {
+                    x: currentX + 3,
+                    y: rowY + (col.label ? 11 : 5),
+                    size: fontSize,
+                    font: normalFont,
+                    color: textRgb,
+                });
+            }
+
+            currentX += colWidth;
+        }
+
+        this._currentY -= rowHeight;
+    }
+
+    /**
+     * Construye la sección de declaración jurada
+     * 
+     * @private
+     * @param {Object} data - Datos del recibo
+     * @returns {Promise<void>}
+     */
+    async _buildDeclaracionJurada(data) {
+        const margins = IncosPDFBase.LAYOUT.margins;
+        const { width: pageWidth } = this._currentPage.getSize();
+
+        // Espaciado antes de la sección
+        this._currentY -= IncosPDFBase.LAYOUT.spacing.section;
+
+        // Título de la sección
+        const sectionHeight = 20;
+        const sectionRgb = this._hexToRgb(IncosPDFBase.COLORS.primary);
+        this._currentPage.drawRectangle({
+            x: margins.left,
+            y: this._currentY - sectionHeight,
+            width: pageWidth - margins.left - margins.right,
+            height: sectionHeight,
+            color: sectionRgb,
+        });
+
+        const boldFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.bold.font);
+        const boldFont = await this._pdfDoc.embedFont(boldFontName);
+        
+        this._currentPage.drawText('DECLARACIÓN JURADA', {
+            x: margins.left + 5,
+            y: this._currentY - sectionHeight + 6,
+            size: IncosPDFBase.FONTS.section.size,
+            font: boldFont,
+            color: rgb(1, 1, 1), // Blanco
+        });
+
+        this._currentY -= sectionHeight;
+
+        // Contenido de la declaración
+        const declaracionTexto = this._getDeclaracionTexto(data);
+        const boxHeight = 200;
+
+        // Borde del cuadro
+        const borderRgb = this._hexToRgb(IncosPDFBase.COLORS.border);
+        this._currentPage.drawRectangle({
+            x: margins.left,
+            y: this._currentY - boxHeight,
+            width: pageWidth - margins.left - margins.right,
+            height: boxHeight,
+            borderColor: borderRgb,
+            borderWidth: 1,
+        });
+
+        // Texto de la declaración
+        const normalFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.normal.font);
+        const normalFont = await this._pdfDoc.embedFont(normalFontName);
+        const fontSize = IncosPDFBase.FONTS.normal.size;
+        const textRgb = this._hexToRgb(IncosPDFBase.COLORS.text);
+
+        // Dividir texto en líneas
+        const lines = this._wrapText(declaracionTexto, normalFont, fontSize, pageWidth - margins.left - margins.right - 16);
+        
+        let currentY = this._currentY - 8;
+        for (const line of lines) {
+            this._currentPage.drawText(line, {
+                x: margins.left + 8,
+                y: currentY,
+                size: fontSize,
+                font: normalFont,
+                color: textRgb,
+            });
+            currentY -= fontSize + 3;
+        }
+
+        // Área de firma dentro del cuadro
+        const firmaY = this._currentY - boxHeight + 35;
+        this._currentPage.drawText('Firma del estudiante: .......................................', {
+            x: margins.left + 8,
+            y: firmaY,
+            size: fontSize,
+            font: normalFont,
+            color: textRgb,
+        });
+
+        this._currentY -= boxHeight + 5;
+    }
+
+    /**
+     * Construye el bloque de firma (footer)
+     * 
+     * @private
+     * @param {Object} data - Datos del recibo
+     * @returns {Promise<void>}
+     */
+    async _buildFirma(data) {
+        await this._addSignatureBlock({
+            lines: [
+                IncosPDFBase.SIGNATURE.LABEL,
+                `C.I.: ${data.ci || ''} ${data.expedicion || ''}`.trim()
+            ]
+        });
+    }
+
+    /**
+     * Obtiene el texto de la declaración jurada
+     * @private
+     * @param {Object} data - Datos del recibo
+     * @returns {string}
+     */
+    _getDeclaracionTexto(data) {
+        return `Yo, el estudiante arriba descrito, declaro de manera voluntaria y consciente que realizo el presente aporte económico, sin que exista ningún tipo de obligación, presión o condicionamiento académico.
+
+Manifiesto que tengo pleno conocimiento de que este aporte será destinado exclusivamente a cubrir gastos de equipamiento, mantenimiento, materiales, suministros y actividades necesarias, los cuales serán ejecutados de manera gradual durante la gestión, en función a la planificación del POA institucional, con el objetivo de fortalecer mi formación y desarrollo profesional.
+
+Asimismo, dejo constancia de que estoy de acuerdo con el monto aportado y con el destino del mismo, entendiendo que se trata de un aporte voluntario, aceptado libremente y sin derecho a reclamo posterior.
+
+En conformidad, firmo la presente para los fines que correspondan.`;
+    }
+
+    /**
+     * Formatea un monto en formato monetario
+     * @private
+     * @param {number} monto - Monto a formatear
+     * @returns {string} Monto formateado (ej: "400.00 Bs")
+     */
+    _formatMonto(monto) {
+        if (monto === null || monto === undefined) return '0.00 Bs';
+        return `${Number(monto).toFixed(2)} Bs`;
+    }
+
+    /**
+     * Formatea la información del aporte
+     * @private
+     * @param {Object} data - Datos con montoPagado
+     * @returns {string} Aporte formateado
+     */
+    _formatAporte(data) {
+        try {
+            if (!data || typeof data !== 'object') {
+                return '0.00 Bs';
+            }
+
+            const monto = Number(data.montoPagado ?? data.montoTotal ?? data.monto_pagado ?? data.monto_total ?? 0);
+
+            if (monto === 0 || monto < 0 || isNaN(monto)) {
+                return 'GRATIS';
+            }
+
+            const bolivianos = Math.floor(monto);
+            const centavos = Math.round((monto - bolivianos) * 100);
+            const montoEnLetras = this._numberToWords(bolivianos);
+
+            return `${bolivianos} Bs (${montoEnLetras} con ${String(centavos).padStart(2, '0')}/100 bolivianos)`;
+        } catch (error) {
+            if (this.logger) {
+                this.logger.error('[ReciboPagoPdfGenerator] Error en _formatAporte:', error.message);
+            }
+            return '0.00 Bs';
+        }
+    }
+
+    /**
+     * Convierte un número a palabras en español
+     * @private
+     * @param {number} num - Número a convertir
+     * @returns {string} Número en palabras
+     */
+    _numberToWords(num) {
+        if (num === 0) return 'cero';
+
+        const unidades = ['', 'uno', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve'];
+        const decenas = ['', '', 'veinte', 'treinta', 'cuarenta', 'cincuenta', 'sesenta', 'setenta', 'ochenta', 'noventa'];
+        const especiales = ['diez', 'once', 'doce', 'trece', 'catorce', 'quince', 'dieciséis', 'diecisiete', 'dieciocho', 'diecinueve'];
+
+        if (num < 10) return unidades[num];
+        if (num < 20) return especiales[num - 10];
+        if (num < 100) {
+            const decena = Math.floor(num / 10);
+            const unidad = num % 10;
+            if (unidad === 0) return decenas[decena];
+            return `${decenas[decena]} y ${unidades[unidad]}`;
+        }
+        if (num < 1000) {
+            const centena = Math.floor(num / 100);
+            const resto = num % 100;
+            let resultado = centena === 1 ? 'ciento' : `${unidades[centena]}cientos`;
+            if (resto > 0) resultado += ` ${this._numberToWords(resto)}`;
+            return resultado;
+        }
+
+        return `${num} bolivianos`;
+    }
+
+    /**
+     * Formatea la fecha en formato DD/MM/YYYY
+     * @private
+     * @param {string|Date} fecha - Fecha a formatear
+     * @returns {string} Fecha formateada
+     */
+    _formatFecha(fecha) {
+        try {
+            if (!fecha) {
+                const hoy = new Date();
+                return `${String(hoy.getDate()).padStart(2, '0')}/${String(hoy.getMonth() + 1).padStart(2, '0')}/${hoy.getFullYear()}`;
+            }
+
+            // Si es string en formato YYYY-MM-DD
+            if (typeof fecha === 'string' && fecha.includes('-')) {
+                const partes = fecha.split('-');
+                if (partes.length === 3) {
+                    return `${partes[2]}/${partes[1]}/${partes[0]}`;
+                }
+            }
+
+            // Si es string en formato DD/MM/YYYY, devolverlo tal cual
+            if (typeof fecha === 'string' && fecha.includes('/')) {
+                return fecha;
+            }
+
+            // Si es Date object
+            if (fecha instanceof Date) {
+                if (isNaN(fecha.getTime())) {
+                    const hoy = new Date();
+                    return `${String(hoy.getDate()).padStart(2, '0')}/${String(hoy.getMonth() + 1).padStart(2, '0')}/${hoy.getFullYear()}`;
+                }
+                return `${String(fecha.getDate()).padStart(2, '0')}/${String(fecha.getMonth() + 1).padStart(2, '0')}/${fecha.getFullYear()}`;
+            }
+
+            // Si no se puede formatear, usar fecha actual
+            const hoy = new Date();
+            return `${String(hoy.getDate()).padStart(2, '0')}/${String(hoy.getMonth() + 1).padStart(2, '0')}/${hoy.getFullYear()}`;
+        } catch (error) {
+            if (this.logger) {
+                this.logger.error('[ReciboPagoPdfGenerator] Error en _formatFecha:', error.message);
+            }
+            const hoy = new Date();
+            return `${String(hoy.getDate()).padStart(2, '0')}/${String(hoy.getMonth() + 1).padStart(2, '0')}/${hoy.getFullYear()}`;
+        }
+    }
+}
