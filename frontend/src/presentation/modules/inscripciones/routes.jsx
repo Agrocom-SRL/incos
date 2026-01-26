@@ -17,7 +17,7 @@ import { UnderConstruction } from '@components/pages';
 const InscripcionesNuevaConnector = lazy(() => import('./connectors/InscripcionesNuevaConnector'));
 const InscripcionesDetailConnector = lazy(() => import('./connectors/DetailConnector'));
 const InscripcionesListConnector = lazy(() => import('./connectors/ListConnector'));
-const AnularConnector = lazy(() => import('./connectors/AnularConnector'));
+// const AnularConnector = lazy(() => import('./connectors/AnularConnector')); // Removido - anular desde lista
 
 export const inscripcionesRoutes = [
     // Módulo raíz: Inscripciones (muestra la lista directamente)
@@ -98,17 +98,6 @@ export const inscripcionesRoutes = [
             module: 'INS',
             parent: 'INS',
             order: 5,
-        },
-    },
-    {
-        path: '/inscripciones/anular',
-        element: <AnularConnector />,
-        key: 'INS-ANULAR',
-        menu: {
-            label: 'Anular Inscripción',
-            module: 'INS',
-            parent: 'INS',
-            order: 6,
         },
     },
     // Ruta sin menú (se accede desde las páginas de inscripción)
