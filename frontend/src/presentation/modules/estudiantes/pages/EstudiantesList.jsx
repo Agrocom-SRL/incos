@@ -23,6 +23,7 @@ import { TableListView } from '@organisms';
 import { PageHeader } from '@molecules';
 import { Button } from '@atoms';
 import { useStudentListContext } from '@application-estudiantes/hooks';
+import { usePagosContextOptional } from '@application-pagos/hooks';
 import { createEstudiantesTableColumns } from '@estudiantes/config';
 
 const EstudiantesList = () => {
@@ -39,14 +40,18 @@ const EstudiantesList = () => {
         deleteStudent,
     } = useStudentListContext();
 
+    // Obtener contexto de pagos para verificar si los estudiantes ya tienen pagos
+    // Usar hook opcional que no lanza error si el provider no está disponible
+    const pagosContext = usePagosContextOptional();
+
     const handleNuevoEstudiante = () => {
         navigate('/estudiantes/registrar');
     };
 
     // Crear columnas de la tabla (memoizadas para evitar recrearlas en cada render)
     const tableColumns = useMemo(
-        () => createEstudiantesTableColumns(navigate, refetch, deleteStudent),
-        [navigate, refetch, deleteStudent]
+        () => createEstudiantesTableColumns(navigate, refetch, deleteStudent, pagosContext),
+        [navigate, refetch, deleteStudent, pagosContext]
     );
 
     // Configurar breadcrumb items

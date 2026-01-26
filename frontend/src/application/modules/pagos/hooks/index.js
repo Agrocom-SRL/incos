@@ -13,6 +13,7 @@
 // ============================================
 // Exporta directamente desde los archivos (los index.js intermedios son opcionales)
 export { usePagosContext } from './context/usePagosContext';
+export { usePagosContextOptional } from './context/usePagosContextOptional';
 export { usePagosRegistrarContext } from './context/usePagosRegistrarContext';
 export { usePagosListContext } from './context/usePagosListContext';
 export { usePagosDetailContext } from './context/usePagosDetailContext';

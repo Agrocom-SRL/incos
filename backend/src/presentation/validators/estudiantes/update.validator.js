@@ -561,18 +561,31 @@ export const updateStudentValidator = [
 
   body('documentacion.*.observaciones')
     .if(body('documentacion').isObject())
-    .optional({ nullable: true, checkFalsy: true })
     .customSanitizer((value) => {
-      return value === '' ? null : value;
+      // Convertir string vacío a null antes de validar
+      if (value === '' || (typeof value === 'string' && value.trim() === '')) {
+        return null;
+      }
+      return value;
     })
-    .trim()
+    .optional({ nullable: true, checkFalsy: true })
     .custom((value) => {
-      if (value && value.length > 0) {
-        if (value.length > 500) {
+      // Si es null o undefined, es válido (campo opcional)
+      if (value === null || value === undefined) {
+        return true;
+      }
+      // Si es string, validar que no esté vacío después de trim y que no exceda 500 caracteres
+      if (typeof value === 'string') {
+        const trimmed = value.trim();
+        if (trimmed.length === 0) {
+          return true; // String vacío se convierte a null en el sanitizer
+        }
+        if (trimmed.length > 500) {
           throw new Error('Observaciones no puede exceder 500 caracteres');
         }
+        return true;
       }
-      return true;
+      throw new Error('Observaciones debe ser una cadena de texto');
     }),
 
   // ============================================

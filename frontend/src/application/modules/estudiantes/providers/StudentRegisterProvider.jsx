@@ -26,7 +26,7 @@
  * - Expone datos + lógica vía StudentRegisterContext
  */
 
-import { useMemo, useEffect } from 'react';
+import { useMemo, useEffect, useRef, useState } from 'react';
 import {
     useStudentCatalogApi,
     useStudentGeographicApi,
@@ -82,46 +82,109 @@ export const StudentRegisterProvider = ({ children, mode = 'create', studentId =
     // Hook especializado: transformar datos a opciones de formulario
     const resolveOptions = useStudentFormOptions(contextData);
 
+    // Obtener documentación del catálogo (no de referenceData)
+    const documentacion = catalogData.documentacion || [];
+
     // Hook especializado: manejar handlers de submit y gestión del formulario
     // Este hook usa useRegisterStudent o useUpdateStudent según el modo
-    const { handleFinish, handleSave, registerForm, getFormValues, formRef, loading, error, validationErrors, registrationResult } = useStudentFormHandlers(showMessage, mode, studentId);
+    // IMPORTANTE: Inicialmente pasamos array vacío, pero useStudentFormHandlers usa un ref interno
+    // que se actualizará cuando documentacionProcesada esté disponible
+    const { handleFinish, handleSave, registerForm, getFormValues, formRef, loading, error, validationErrors, registrationResult } = useStudentFormHandlers(showMessage, mode, studentId, []);
+
+    // Hook compuesto: procesar documentación sin observar valores del formulario
+    // NO observa valores en tiempo real - solo procesa con valores por defecto
+    // Los valores reales se capturan solo al finalizar el registro en getFormValues
+    // Esto evita completamente la lentitud en campos de texto
+    const { documentacion: documentacionProcesada } = useDocumentacionProcesada(
+      documentacion, 
+      formRef // Se pasa pero no se usa para observación
+    );
+    
+    // NOTA: useStudentFormHandlers se llama con array vacío inicialmente, pero tiene un ref interno
+    // que se actualiza cuando documentacionProcesada cambia. Sin embargo, como se pasa como parámetro
+    // vacío, el useEffect interno no se ejecutará cuando documentacionProcesada esté disponible.
+    // Para solucionar esto, pasamos documentacionProcesada directamente cuando esté disponible.
+    // Como los hooks se ejecutan en orden, usamos documentacionProcesada directamente si está disponible.
+    const { handleFinish: handleFinishFinal, handleSave: handleSaveFinal, registerForm: registerFormFinal, getFormValues: getFormValuesFinal, formRef: formRefFinal, loading: loadingFinal, error: errorFinal, validationErrors: validationErrorsFinal, registrationResult: registrationResultFinal } = useStudentFormHandlers(showMessage, mode, studentId, documentacionProcesada || []);
+    
+    // Usar los handlers finales (que incluyen documentacionProcesada cuando esté disponible)
+    const finalHandlers = {
+      handleFinish: handleFinishFinal,
+      handleSave: handleSaveFinal,
+      registerForm: registerFormFinal,
+      getFormValues: getFormValuesFinal,
+      formRef: formRefFinal,
+      loading: loadingFinal,
+      error: errorFinal,
+      validationErrors: validationErrorsFinal,
+      registrationResult: registrationResultFinal,
+    };
 
     // Hook para manejar el estado de contactos de emergencia dinámicos
     const { contactosIndices, agregarContacto, eliminarContacto } = useContactosEmergenciaDinamicos();
 
-    // Obtener documentación del catálogo (no de referenceData)
-    const documentacion = catalogData.documentacion || [];
-
-    // Hook compuesto: observar valores del formulario y procesar documentación
-    const { documentacion: documentacionProcesada } = useDocumentacionProcesada(documentacion, getFormValues);
-
+    // MANTENER REFERENCIA ESTABLE DEL CONTEXTO
+    // Comparar valores, no solo referencias, para evitar recálculos innecesarios
+    const prevValueRef = useRef(null);
+    
     // Componer el valor del contexto: datos + lógica + funciones de carga
     // El provider solo orquesta hooks y expone sus resultados
-    const value = useMemo(() => ({
-        ...contextData,
-        resolveOptions,
-        handleFinish,
-        handleSave,
-        minAge: EDAD_MINIMA_REGISTRO,
-        registerForm, // Expuesto desde useStudentFormHandlers
-        // Estados del registro (expuestos desde useStudentFormHandlers)
-        loading,
-        error,
-        validationErrors,
-        registrationResult, // Resultado del registro para que la página pueda reaccionar
-        // Contactos de emergencia dinámicos
-        contactosIndices,
-        agregarContacto,
-        eliminarContacto,
-        // Documentación procesada
-        documentacionProcesada,
-        // Exponer funciones de carga bajo demanda
-        loadDiscapacidades: referenceData.loadDiscapacidades,
-        loadTiposParentesco: referenceData.loadTiposParentesco,
-        loadDepartamentos: geographicData.loadDepartamentos,
-        loadProvincias: geographicData.loadProvincias,
-        loadMunicipios: geographicData.loadMunicipios,
-    }), [contextData, resolveOptions, handleFinish, handleSave, registerForm, loading, error, validationErrors, registrationResult, contactosIndices, agregarContacto, eliminarContacto, documentacionProcesada, referenceData.loadDiscapacidades, referenceData.loadTiposParentesco, geographicData.loadDepartamentos, geographicData.loadProvincias, geographicData.loadMunicipios]);
+    const value = useMemo(() => {
+        const current = {
+            ...contextData,
+            resolveOptions,
+            handleFinish: finalHandlers.handleFinish,
+            handleSave: finalHandlers.handleSave,
+            minAge: EDAD_MINIMA_REGISTRO,
+            registerForm: finalHandlers.registerForm, // Expuesto desde useStudentFormHandlers
+            // Estados del registro (expuestos desde useStudentFormHandlers)
+            loading: finalHandlers.loading,
+            error: finalHandlers.error,
+            validationErrors: finalHandlers.validationErrors,
+            registrationResult: finalHandlers.registrationResult, // Resultado del registro para que la página pueda reaccionar
+            // Contactos de emergencia dinámicos
+            contactosIndices,
+            agregarContacto,
+            eliminarContacto,
+            // Documentación procesada
+            documentacionProcesada,
+            // Exponer funciones de carga bajo demanda
+            loadDiscapacidades: referenceData.loadDiscapacidades,
+            loadTiposParentesco: referenceData.loadTiposParentesco,
+            loadDepartamentos: geographicData.loadDepartamentos,
+            loadProvincias: geographicData.loadProvincias,
+            loadMunicipios: geographicData.loadMunicipios,
+        };
+
+        const prev = prevValueRef.current;
+        
+        // Comparar valores clave, no solo referencias
+        if (prev &&
+            prev.loading === current.loading &&
+            prev.error === current.error &&
+            prev.validationErrors === current.validationErrors &&
+            prev.registrationResult === current.registrationResult &&
+            prev.minAge === current.minAge &&
+            prev.resolveOptions === current.resolveOptions &&
+            prev.handleFinish === current.handleFinish &&
+            prev.handleSave === current.handleSave &&
+            prev.registerForm === current.registerForm &&
+            prev.contactosIndices === current.contactosIndices &&
+            prev.agregarContacto === current.agregarContacto &&
+            prev.eliminarContacto === current.eliminarContacto &&
+            prev.documentacionProcesada === current.documentacionProcesada &&
+            prev.loadDiscapacidades === current.loadDiscapacidades &&
+            prev.loadTiposParentesco === current.loadTiposParentesco &&
+            prev.loadDepartamentos === current.loadDepartamentos &&
+            prev.loadProvincias === current.loadProvincias &&
+            prev.loadMunicipios === current.loadMunicipios &&
+            prev.contextData === current.contextData) {
+            return prev;
+        }
+
+        prevValueRef.current = current;
+        return current;
+    }, [contextData, resolveOptions, finalHandlers, contactosIndices, agregarContacto, eliminarContacto, documentacionProcesada, referenceData.loadDiscapacidades, referenceData.loadTiposParentesco, geographicData.loadDepartamentos, geographicData.loadProvincias, geographicData.loadMunicipios]);
 
     return (
         <StudentRegisterContext.Provider value={value}>

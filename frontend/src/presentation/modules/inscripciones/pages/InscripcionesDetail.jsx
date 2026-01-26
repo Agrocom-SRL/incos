@@ -68,13 +68,13 @@ const InscripcionesDetail = () => {
   };
 
   // Función para generar la boleta de inscripción
-  // El endpoint espera el ID del estudiante, no el ID de la inscripción
+  // El endpoint requiere el ID del estudiante, no el ID de inscripción
   const handleGenerateBoleta = async () => {
     // Obtener el ID del estudiante desde los datos de la inscripción
     const studentId = inscripcion?.student?.id || inscripcion?.enrollment?.studentId;
     
     if (!studentId) {
-      message.error('No se puede generar la boleta: ID de estudiante no disponible');
+      message.error('No se puede generar la boleta: ID del estudiante no disponible');
       return;
     }
 

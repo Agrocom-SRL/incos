@@ -75,7 +75,7 @@ export const useGenerateBoletaInscripcion = () => {
    */
   const generateBoletaInscripcion = useCallback(async (studentId) => {
     if (!studentId) {
-      const errorMsg = 'ID de estudiante requerido';
+      const errorMsg = 'ID del estudiante requerido';
       setError(errorMsg);
       return { success: false, error: errorMsg };
     }
@@ -99,7 +99,7 @@ export const useGenerateBoletaInscripcion = () => {
       const result = handleSuccessResponse(response);
 
       // Si la boleta se generó exitosamente, descargar el archivo
-      // La respuesta tiene filePath y fileName directamente en data
+      // El backend devuelve {filePath, fileName, absolutePath} directamente en result.data
       if (result.success && result.data) {
         const { filePath, fileName } = result.data;
         
