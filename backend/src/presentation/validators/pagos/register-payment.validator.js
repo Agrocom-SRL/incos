@@ -5,17 +5,19 @@ import { body } from 'express-validator';
  * POST /api/v1/pagos-aportes
  * 
  * Reglas de Negocio:
- * - EFECTIVO (id=1): No requiere numero_transaccion, cuenta_pago_id = NULL
- * - QR (id=2): Requiere numero_transaccion, cuenta_pago_id opcional (la cuenta está en la imagen del QR)
- * - TRANSFERENCIA (id=3): Requiere numero_transaccion, cuenta_pago_id requerida
+ * - EFECTIVO (id=1): Requiere fecha, cuenta_pago_id = NULL, código comprobante no aplica
+ * - QR (id=2): Requiere fecha y código_comprobante, cuenta_pago_id opcional, transaction_number opcional
+ * - TRANSFERENCIA (id=3): Requiere fecha, cuenta_pago_id y código_comprobante, transaction_number opcional
+ * - DEPOSITO (id=4): Requiere fecha, cuenta_pago_id y código_comprobante, transaction_number opcional
  * 
  * Campos que recibe del frontend:
  * - student_id: ID del estudiante (requerido)
- * - payment_method_id: ID del método de pago (requerido, 1=EFECTIVO, 2=QR, 3=TRANSFERENCIA)
- * - payment_account_id: ID de la cuenta de pago (requerido solo para TRANSFERENCIA, opcional para QR, NULL para EFECTIVO)
- * - payment_date: Fecha del pago (requerido, formato YYYY-MM-DD)
- * - transaction_number: Número de transacción (requerido para QR y TRANSFERENCIA, opcional para EFECTIVO)
- * - concept: Concepto del pago (requerido, ej: "Aporte Académico", "Pago de Matrícula")
+ * - payment_method_id: ID del método de pago (requerido, 1=EFECTIVO, 2=QR, 3=TRANSFERENCIA, 4=DEPOSITO)
+ * - payment_account_id: ID de la cuenta de pago (requerido para TRANSFERENCIA/DEPOSITO, opcional para QR, NULL para EFECTIVO)
+ * - payment_date: Fecha del pago (SIEMPRE requerida, formato YYYY-MM-DD)
+ * - codigo_comprobante: Código del comprobante (requerido para QR/TRANSFERENCIA/DEPOSITO, no aplica para EFECTIVO)
+ * - transaction_number: Número de transacción (opcional para todos los métodos)
+ * - descripcion: Descripción del pago (opcional)
  */
 export const registerPagoAporteValidator = [
     // ============================================
@@ -44,14 +46,18 @@ export const registerPagoAporteValidator = [
         .withMessage('La fecha de pago debe estar en formato YYYY-MM-DD')
         .toDate(),
 
-    body('concept')
-        .notEmpty()
-        .withMessage('El concepto del pago es requerido')
+    body('descripcion')
+        .optional({ nullable: true })
         .isString()
-        .withMessage('El concepto debe ser una cadena de texto')
+        .withMessage('La descripción debe ser una cadena de texto')
         .trim()
-        .isLength({ min: 3, max: 500 })
-        .withMessage('El concepto debe tener entre 3 y 500 caracteres'),
+        .custom((value) => {
+            // Si se proporciona un valor, validar longitud
+            if (value && value.length > 500) {
+                throw new Error('La descripción no puede exceder 500 caracteres');
+            }
+            return true;
+        }),
 
     // ============================================
     // CAMPOS CONDICIONALES (según método de pago)
@@ -85,21 +91,37 @@ export const registerPagoAporteValidator = [
 
     body('transaction_number')
         .optional({ nullable: true })
+        .custom((value) => {
+            // El número de transacción es completamente opcional
+            // Si existe valor, debe ser una cadena válida
+            if (value !== null && value !== undefined) {
+                if (typeof value !== 'string') {
+                    throw new Error('El número de transacción debe ser una cadena de texto');
+                }
+                // Permitir string vacío (se convertirá a null en el backend)
+            }
+            return true;
+        })
+        .trim(),
+
+    // Código de comprobante - Obligatorio para QR, TRANSFERENCIA y DEPOSITO
+    body('codigo_comprobante')
+        .optional({ nullable: true })
         .custom((value, { req }) => {
             const methodId = req.body.payment_method_id;
 
-            // Para QR (2), TRANSFERENCIA (3) y DEPOSITO (4), el número de transacción es REQUERIDO
+            // Para QR (2), TRANSFERENCIA (3) y DEPOSITO (4), el código de comprobante es REQUERIDO
             if ((methodId === 2 || methodId === 3 || methodId === 4) && !value) {
-                throw new Error('El número de transacción es requerido para método QR, TRANSFERENCIA o DEPOSITO');
+                throw new Error('El código de comprobante es requerido para método QR, TRANSFERENCIA o DEPOSITO');
             }
 
             // Si existe valor, debe ser una cadena no vacía
             if (value && typeof value !== 'string') {
-                throw new Error('El número de transacción debe ser una cadena de texto');
+                throw new Error('El código de comprobante debe ser una cadena de texto');
             }
 
             if (value && value.trim().length === 0) {
-                throw new Error('El número de transacción no puede estar vacío');
+                throw new Error('El código de comprobante no puede estar vacío');
             }
 
             return true;

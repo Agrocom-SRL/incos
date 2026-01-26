@@ -99,19 +99,19 @@ const SelectedPaymentSection = ({
   // Solo si NO es pago gratuito
   const requiereCuenta = !esPagoGratuito && codigoMetodo && ['TRANSFERENCIA', 'DEPOSITO', 'TIGO_MONEY'].includes(codigoMetodo);
   
-  // Métodos que requieren fecha de pago (todos excepto EFECTIVO)
+  // La fecha de pago es SIEMPRE requerida (para todos los métodos, incluyendo EFECTIVO)
   // Solo si NO es pago gratuito
-  const requiereFechaPago = !esPagoGratuito && !esEfectivo;
+  const requiereFechaPago = !esPagoGratuito;
   
   // Mostrar campo de documento de respaldo (opcional) para todos los métodos excepto EFECTIVO
   // Solo si NO es pago gratuito
   const mostrarDocumentoRespaldo = !esPagoGratuito && !esEfectivo; // Mostrar pero no requerir
   
-  // Métodos que requieren número de transacción (TRANSFERENCIA y DEPOSITO)
+  // Métodos que requieren número de transacción (TRANSFERENCIA y DEPOSITO) - OPCIONAL
   // Solo si NO es pago gratuito
-  const requiereNumeroTransaccion = !esPagoGratuito && (esTransferencia || esDeposito);
+  const mostrarNumeroTransaccion = !esPagoGratuito && (esTransferencia || esDeposito);
   
-  // Métodos que requieren código de comprobante (QR, TRANSFERENCIA, DEPOSITO)
+  // Métodos que requieren código de comprobante (QR, TRANSFERENCIA, DEPOSITO) - OBLIGATORIO
   // Solo si NO es pago gratuito
   const requiereCodigoComprobante = !esPagoGratuito && (esQR || esTransferencia || esDeposito);
 
@@ -158,7 +158,7 @@ const SelectedPaymentSection = ({
       }}
       headerColor="primary"
     >
-      {/* Si el monto es 0 (gratis), mostrar label de pago gratuito y concepto */}
+      {/* Si el monto es 0 (gratis), mostrar label de pago gratuito y descripción */}
       {montoPagado === 0 ? (
         <div>
           {/* Label de Pago Gratuito */}
@@ -181,30 +181,43 @@ const SelectedPaymentSection = ({
             </Tag>
           </div>
 
-          {/* Formulario para el concepto */}
+          {/* Formulario para la descripción */}
           <Form
             form={form}
             layout="vertical"
             onFinish={onFinish}
             initialValues={{
               descuentoBeca: descuentoBeca,
+              descripcion: undefined,
             }}
           >
             <Form.Item
-              name="concepto"
+              name="descripcion"
               label={
                 <span style={{ fontWeight: 500, fontSize: '14px' }}>
-                  Concepto
+                  Descripción
                 </span>
               }
-              tooltip="Descripción del concepto del pago"
+              tooltip="Descripción del pago (opcional)"
+              required={false}
               rules={[
-                { required: true, message: 'Por favor ingrese el concepto del pago' }
+                // Validar longitud solo si se proporciona un valor
+                {
+                  validator: (_, value) => {
+                    if (!value || value.trim().length === 0) {
+                      return Promise.resolve(); // Permitir vacío
+                    }
+                    if (value.trim().length > 500) {
+                      return Promise.reject('La descripción no puede exceder 500 caracteres');
+                    }
+                    return Promise.resolve();
+                  }
+                }
               ]}
             >
               <Input.TextArea
                 rows={3}
-                placeholder="Ej: Pago de aporte académico gestión 2025..."
+                placeholder="Ej: Pago de aporte académico gestión 2025... (opcional)"
                 maxLength={500}
                 showCount
                 style={{ 
@@ -298,6 +311,7 @@ const SelectedPaymentSection = ({
               initialValues={{
                 fechaPago: requiereFechaPago ? dayjs() : undefined,
                 descuentoBeca: descuentoBeca,
+                descripcion: undefined,
               }}
             >
               <PaymentFormFields
@@ -306,7 +320,7 @@ const SelectedPaymentSection = ({
                 bancosAutorizadosData={bancosAutorizadosData}
                 requiereFechaPago={requiereFechaPago}
                 requiereCuenta={requiereCuenta}
-                requiereNumeroTransaccion={requiereNumeroTransaccion}
+                requiereNumeroTransaccion={mostrarNumeroTransaccion}
                 requiereCodigoComprobante={requiereCodigoComprobante}
                 requiereDocumentoRespaldo={mostrarDocumentoRespaldo}
                 esQR={esQR}

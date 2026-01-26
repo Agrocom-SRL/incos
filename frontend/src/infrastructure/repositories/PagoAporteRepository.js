@@ -23,11 +23,12 @@ export class PagoAporteRepository extends IPagoAporteRepository {
    * 
    * @param {Object} data - Datos del pago a registrar
    * @param {number} data.student_id - ID del estudiante
-   * @param {number} data.payment_method_id - ID del método de pago (1=EFECTIVO, 2=QR, 3=TRANSFERENCIA)
-   * @param {number|null} data.payment_account_id - ID de la cuenta de pago (NULL para EFECTIVO, opcional para QR, requerido para TRANSFERENCIA)
-   * @param {string} data.payment_date - Fecha del pago (YYYY-MM-DD)
-   * @param {string|null} data.transaction_number - Número de transacción (requerido para QR/TRANSFERENCIA, opcional para EFECTIVO)
-   * @param {string} data.concept - Concepto del pago
+   * @param {number} data.payment_method_id - ID del método de pago (1=EFECTIVO, 2=QR, 3=TRANSFERENCIA, 4=DEPOSITO)
+   * @param {number|null} data.payment_account_id - ID de la cuenta de pago (NULL para EFECTIVO, opcional para QR, requerido para TRANSFERENCIA/DEPOSITO)
+   * @param {string|null} data.payment_date - Fecha del pago (YYYY-MM-DD, requerida para QR/TRANSFERENCIA/DEPOSITO)
+   * @param {string|null} data.transaction_number - Número de transacción (opcional)
+   * @param {string|null} data.codigo_comprobante - Código del comprobante (requerido para QR/TRANSFERENCIA/DEPOSITO)
+   * @param {string|null} data.descripcion - Descripción del pago (opcional)
    * @param {File|null} data.documentoRespaldo - Archivo de documento de respaldo (opcional)
    * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
    */
@@ -45,20 +46,6 @@ export class PagoAporteRepository extends IPagoAporteRepository {
         return {
           success: false,
           error: 'El ID del método de pago es requerido',
-        };
-      }
-
-      if (!data.payment_date) {
-        return {
-          success: false,
-          error: 'La fecha de pago es requerida',
-        };
-      }
-
-      if (!data.concept) {
-        return {
-          success: false,
-          error: 'El concepto del pago es requerido',
         };
       }
 
@@ -87,11 +74,19 @@ export class PagoAporteRepository extends IPagoAporteRepository {
         if (data.payment_account_id) {
           formData.append('payment_account_id', data.payment_account_id);
         }
-        formData.append('payment_date', data.payment_date);
+        if (data.payment_date) {
+          formData.append('payment_date', data.payment_date);
+        }
         if (data.transaction_number) {
           formData.append('transaction_number', data.transaction_number);
         }
-        formData.append('concept', data.concept);
+        const codigoComprobante = data.codigo_comprobante || data.codigoComprobante;
+        if (codigoComprobante) {
+          formData.append('codigo_comprobante', codigoComprobante);
+        }
+        if (data.descripcion) {
+          formData.append('descripcion', data.descripcion);
+        }
         formData.append('documentoRespaldo', data.documentoRespaldo);
 
         console.log('[PagoAporteRepository] Enviando FormData con archivo', {
@@ -103,13 +98,15 @@ export class PagoAporteRepository extends IPagoAporteRepository {
         // No establecer Content-Type, el navegador lo hará automáticamente con el boundary
       } else {
         // Usar JSON normal
+        const codigoComprobante = data.codigo_comprobante || data.codigoComprobante;
         requestData = {
           student_id: data.student_id,
           payment_method_id: data.payment_method_id,
           payment_account_id: data.payment_account_id || null,
-          payment_date: data.payment_date,
+          payment_date: data.payment_date || null,
           transaction_number: data.transaction_number || null,
-          concept: data.concept,
+          codigo_comprobante: codigoComprobante || null,
+          descripcion: data.descripcion || null,
         };
         headers['Content-Type'] = 'application/json';
       }

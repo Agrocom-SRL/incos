@@ -32,11 +32,12 @@ export class RegisterPagoAporteUseCase {
    * 
    * @param {Object} data - Datos del pago a registrar
    * @param {number} data.student_id - ID del estudiante (requerido)
-   * @param {number} data.payment_method_id - ID del método de pago (requerido, 1=EFECTIVO, 2=QR, 3=TRANSFERENCIA)
-   * @param {number|null} data.payment_account_id - ID de la cuenta de pago (NULL para EFECTIVO, opcional para QR, requerido para TRANSFERENCIA)
+   * @param {number} data.payment_method_id - ID del método de pago (requerido, 1=EFECTIVO, 2=QR, 3=TRANSFERENCIA, 4=DEPOSITO)
+   * @param {number|null} data.payment_account_id - ID de la cuenta de pago (NULL para EFECTIVO, opcional para QR, requerido para TRANSFERENCIA/DEPOSITO)
    * @param {string} data.payment_date - Fecha del pago en formato YYYY-MM-DD (requerido)
-   * @param {string|null} data.transaction_number - Número de transacción (requerido para QR/TRANSFERENCIA, opcional para EFECTIVO)
-   * @param {string} data.concept - Concepto del pago (requerido)
+   * @param {string|null} data.transaction_number - Número de transacción (opcional para todos los métodos)
+   * @param {string|null} data.codigo_comprobante - Código del comprobante (requerido para QR/TRANSFERENCIA/DEPOSITO, no aplica para EFECTIVO)
+   * @param {string|null} data.descripcion - Descripción del pago (opcional)
    * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
    */
   async ejecutar(data) {
@@ -63,36 +64,33 @@ export class RegisterPagoAporteUseCase {
         };
       }
 
-      if (!data.concept || data.concept.trim().length === 0) {
-        return {
-          success: false,
-          error: 'El concepto del pago es requerido',
-        };
-      }
+      // La descripción es opcional, no se valida aquí (el backend también la valida)
 
       // Validaciones según método de pago
       const paymentMethodId = Number(data.payment_method_id);
       
-      if (paymentMethodId === 3) {
-        // TRANSFERENCIA (3) requiere cuenta y número de transacción
+      if (paymentMethodId === 3 || paymentMethodId === 4) {
+        // TRANSFERENCIA (3) y DEPOSITO (4) requieren cuenta y código de comprobante
         if (!data.payment_account_id) {
+          const metodoNombre = paymentMethodId === 3 ? 'TRANSFERENCIA' : 'DEPOSITO';
           return {
             success: false,
-            error: 'La cuenta de pago es requerida para método TRANSFERENCIA',
+            error: `La cuenta de pago es requerida para método ${metodoNombre}`,
           };
         }
-        if (!data.transaction_number || data.transaction_number.trim().length === 0) {
+        if (!data.codigo_comprobante || data.codigo_comprobante.trim().length === 0) {
+          const metodoNombre = paymentMethodId === 3 ? 'TRANSFERENCIA' : 'DEPOSITO';
           return {
             success: false,
-            error: 'El número de transacción es requerido para método TRANSFERENCIA',
+            error: `El código de comprobante es requerido para método ${metodoNombre}`,
           };
         }
       } else if (paymentMethodId === 2) {
-        // QR (2) solo requiere número de transacción (la cuenta está en la imagen del QR)
-        if (!data.transaction_number || data.transaction_number.trim().length === 0) {
+        // QR (2) requiere código de comprobante (la cuenta está en la imagen del QR y es opcional)
+        if (!data.codigo_comprobante || data.codigo_comprobante.trim().length === 0) {
           return {
             success: false,
-            error: 'El número de transacción es requerido para método QR',
+            error: 'El código de comprobante es requerido para método QR',
           };
         }
       }

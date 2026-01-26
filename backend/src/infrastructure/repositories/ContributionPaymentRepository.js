@@ -58,18 +58,18 @@ export class ContributionPaymentRepository extends BaseRepository {
     if (filters.transactionNumber !== undefined) {
       where.numeroTransaccion = filters.transactionNumber;
     }
-    if (filters.concept !== undefined) {
-      where.concepto = filters.concept;
+    if (filters.comprobanteCode !== undefined) {
+      where.codigoComprobante = filters.comprobanteCode;
     }
-    if (filters.observations !== undefined) {
-      where.observaciones = filters.observations;
+    if (filters.description !== undefined) {
+      where.descripcion = filters.description;
     }
 
     return where;
   }
 
   getSearchFields() {
-    return ['numeroRecibo', 'numeroTransaccion', 'concepto', 'observaciones'];
+    return ['numeroRecibo', 'numeroTransaccion', 'codigoComprobante', 'descripcion'];
   }
 
   getDefaultSort() {

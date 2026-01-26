@@ -93,6 +93,19 @@ const PaymentMethodSelectionSection = ({
     }
   };
 
+  // Ordenar métodos de pago: EFECTIVO primero, luego los demás en su orden original
+  const sortedMetodosPago = metodosPagoData.metodosPago ? [...metodosPagoData.metodosPago].sort((a, b) => {
+    const codigoA = a.codigo?.toUpperCase() || '';
+    const codigoB = b.codigo?.toUpperCase() || '';
+    
+    // EFECTIVO siempre va primero
+    if (codigoA === 'EFECTIVO') return -1;
+    if (codigoB === 'EFECTIVO') return 1;
+    
+    // Mantener el orden original para los demás
+    return 0;
+  }) : [];
+
   return (
     <Card
       title={
@@ -157,7 +170,7 @@ const PaymentMethodSelectionSection = ({
                 gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
                 gap: '16px'
               }}>
-                {metodosPagoData.metodosPago.map((metodoPago) => {
+                {sortedMetodosPago.map((metodoPago) => {
                   const isSelected = selectedValue === metodoPago.id;
                   const { icon: IconComponent, color, bgColor } = getMethodConfig(metodoPago.codigo);
 

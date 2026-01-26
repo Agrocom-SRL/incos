@@ -82,7 +82,7 @@ const PaymentFormFields = ({
   };
   return (
     <Row gutter={[16, 16]}>
-      {/* Fecha de Pago - Solo para métodos que no sean EFECTIVO */}
+      {/* 1. Fecha de Pago - SIEMPRE obligatoria para todos los métodos (excepto pagos gratuitos) */}
       {requiereFechaPago && (
         <Col xs={24} sm={12}>
           <Form.Item
@@ -112,7 +112,7 @@ const PaymentFormFields = ({
         </Col>
       )}
 
-      {/* Cuenta de Pago - Solo si requiere cuenta */}
+      {/* 2. Cuenta de Pago - Obligatoria para TRANSFERENCIA o DEPOSITO */}
       {requiereCuenta && (
         <Col xs={24} sm={12}>
           <Form.Item
@@ -162,33 +162,7 @@ const PaymentFormFields = ({
         </Col>
       )}
 
-      {/* Número de Transacción - Solo para TRANSFERENCIA */}
-      {requiereNumeroTransaccion && (
-        <Col xs={24} sm={12}>
-          <Form.Item
-            name="numeroTransaccion"
-            label={
-              <span style={{ fontWeight: 500, fontSize: '14px' }}>
-                <FileTextOutlined style={{ marginRight: '6px', color: '#1890ff' }} />
-                Número de Transacción/Código
-              </span>
-            }
-            tooltip="Ingrese el número de transacción o código de transferencia bancaria"
-            rules={[
-              { required: requiereNumeroTransaccion, message: 'Por favor ingrese el número de transacción' }
-            ]}
-          >
-            <Input
-              placeholder="Número de transacción o código"
-              prefix={<FileTextOutlined style={{ color: '#8c8c8c' }} />}
-              size="large"
-              style={{ borderRadius: '8px' }}
-            />
-          </Form.Item>
-        </Col>
-      )}
-
-      {/* Código del Comprobante - Para QR y TRANSFERENCIA */}
+      {/* 3. Código del Comprobante - Obligatorio para QR, TRANSFERENCIA o DEPOSITO */}
       {requiereCodigoComprobante && (
         <Col xs={24} sm={12}>
           <Form.Item
@@ -199,7 +173,7 @@ const PaymentFormFields = ({
                 Código del Comprobante
               </span>
             }
-            tooltip={esQR ? "Ingrese el código del comprobante QR" : "Ingrese el código del comprobante de transferencia"}
+            tooltip={esQR ? "Ingrese el código del comprobante QR" : "Ingrese el código del comprobante de transferencia o depósito"}
             rules={[
               { required: requiereCodigoComprobante, message: 'Por favor ingrese el código del comprobante' }
             ]}
@@ -214,7 +188,32 @@ const PaymentFormFields = ({
         </Col>
       )}
 
-      {/* Documento de Respaldo - Opcional para todos los métodos excepto EFECTIVO */}
+      {/* 4. Número de Transacción - Opcional */}
+      {requiereNumeroTransaccion && (
+        <Col xs={24} sm={12}>
+          <Form.Item
+            name="numeroTransaccion"
+            label={
+              <span style={{ fontWeight: 500, fontSize: '14px' }}>
+                <FileTextOutlined style={{ marginRight: '6px', color: '#1890ff' }} />
+                Número de Transacción
+              </span>
+            }
+            tooltip="Ingrese el número de transacción bancaria (opcional)"
+            required={false}
+            rules={[]}
+          >
+            <Input
+              placeholder="Número de transacción bancaria"
+              prefix={<FileTextOutlined style={{ color: '#8c8c8c' }} />}
+              size="large"
+              style={{ borderRadius: '8px' }}
+            />
+          </Form.Item>
+        </Col>
+      )}
+
+      {/* 5. Documento de Respaldo - Opcional */}
       {requiereDocumentoRespaldo && (
         <Col xs={24} sm={12}>
           <Form.Item
@@ -233,7 +232,7 @@ const PaymentFormFields = ({
                 Documento de Respaldo
               </span>
             }
-            tooltip="Arrastre y suelte un archivo o haga clic para seleccionar (imagen, PDF, etc.)"
+            tooltip="Arrastre y suelte un archivo o haga clic para seleccionar (imagen, PDF, etc.) - Opcional"
             rules={[]}
           >
             <Dragger
@@ -265,22 +264,34 @@ const PaymentFormFields = ({
         </Col>
       )}
 
-      {/* Concepto */}
+      {/* 6. Descripción - Opcional */}
       <Col xs={12}>
         <Form.Item
-          name="concepto"
+          name="descripcion"
           label={
             <span style={{ fontWeight: 500, fontSize: '14px' }}>
-              Concepto
+              Descripción
             </span>
           }
-          tooltip="Descripción del concepto del pago"
+          tooltip="Descripción del pago (opcional)"
+          required={false}
           rules={[
-            { required: true, message: 'Por favor ingrese el concepto del pago' }
+            // Validar longitud solo si se proporciona un valor
+            {
+              validator: (_, value) => {
+                if (!value || value.trim().length === 0) {
+                  return Promise.resolve(); // Permitir vacío
+                }
+                if (value.trim().length > 500) {
+                  return Promise.reject('La descripción no puede exceder 500 caracteres');
+                }
+                return Promise.resolve();
+              }
+            }
           ]}
         >
           <TextArea
-            rows={3}
+            rows={4}
             placeholder="Ej: Pago de aporte académico gestión 2025..."
             maxLength={500}
             showCount

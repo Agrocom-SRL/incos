@@ -176,8 +176,9 @@ export const usePagosRegistrarData = (studentId = null) => {
                 payment_method_id: pagoData.paymentMethodId,
                 payment_account_id: pagoData.paymentAccountId || null,
                 payment_date: pagoData.paymentDate,
-                transaction_number: pagoData.transactionNumber || null,
-                concept: pagoData.concept || 'Aporte Académico',
+                transaction_number: pagoData.transactionNumber || null, // Opcional, independiente del código de comprobante
+                codigo_comprobante: pagoData.codigoComprobante || null, // Requerido para QR/TRANSFERENCIA/DEPOSITO, independiente de transaction_number
+                descripcion: pagoData.descripcion || null, // Opcional
                 documentoRespaldo: pagoData.documentoRespaldo || null, // Archivo de documento de respaldo
             };
 

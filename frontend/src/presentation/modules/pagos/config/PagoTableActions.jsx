@@ -31,11 +31,7 @@ const PagoTableActions = ({
       itemName={itemName ?? fallbackItemName}
       itemDetails={itemDetails?.length ? itemDetails : undefined}
       viewPath="/pagos/:id"
-      editPath={null}
-      onEdit={() => {
-        // TODO: Implementar edición de pago
-        console.log('Editar pago:', record.id);
-      }}
+      // Los pagos no se pueden editar, por lo que no se pasa editPath ni onEdit
     />
   );
 };

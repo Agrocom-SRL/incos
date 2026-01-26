@@ -21,7 +21,8 @@ import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { usePagosDetailContext, useGenerateReciboPago } from '@application-pagos/hooks';
 import { Descriptions, Card, Spin, Alert, Empty, Tag, Divider, Button } from 'antd';
-import { DollarOutlined, UserOutlined, CalendarOutlined, CreditCardOutlined, FileTextOutlined, DownloadOutlined } from '@ant-design/icons';
+import { Button as CustomButton } from '@atoms';
+import { DollarOutlined, UserOutlined, CalendarOutlined, CreditCardOutlined, FileTextOutlined, DownloadOutlined, QrcodeOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import { downloadFile } from '@application/utils';
 import { useCasesFactory } from '@container';
 
@@ -215,12 +216,25 @@ const PagosDetail = () => {
     }
   };
 
+  const handleBack = () => {
+    navigate('/pagos');
+  };
+
   return (
     <PageTemplate
       header={
         <PageHeader
           title={`Detalle del Pago #${pago.receipt_number || pago.numeroRecibo || pago.id}`}
           breadcrumbItems={breadcrumbItems}
+          actions={
+            <CustomButton
+              variant="default"
+              icon={<ArrowLeftOutlined />}
+              onClick={handleBack}
+            >
+              Volver a Lista
+            </CustomButton>
+          }
         />
       }
     >
@@ -274,8 +288,8 @@ const PagosDetail = () => {
                 {formatFecha(pago.payment_date || pago.fechaPago)}
               </span>
             </Descriptions.Item>
-            <Descriptions.Item label="Concepto" span={2}>
-              {pago.concept || pago.concepto || 'N/A'}
+            <Descriptions.Item label="Descripción" span={2}>
+              {pago.descripcion || pago.description || pago.concept || pago.concepto || 'N/A'}
             </Descriptions.Item>
             <Descriptions.Item label="Monto Total">
               <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#1890ff' }}>
@@ -308,16 +322,19 @@ const PagosDetail = () => {
                 'N/A'
               )}
             </Descriptions.Item>
+            {pago.codigo_comprobante || pago.codigoComprobante ? (
+              <Descriptions.Item label="Código de Comprobante" span={2}>
+                <span style={{ fontFamily: 'monospace' }}>
+                  <QrcodeOutlined style={{ marginRight: '4px' }} />
+                  {pago.codigo_comprobante || pago.codigoComprobante}
+                </span>
+              </Descriptions.Item>
+            ) : null}
             {pago.transaction_number || pago.numeroTransaccion ? (
               <Descriptions.Item label="Número de Transacción" span={2}>
                 <span style={{ fontFamily: 'monospace' }}>
                   {pago.transaction_number || pago.numeroTransaccion}
                 </span>
-              </Descriptions.Item>
-            ) : null}
-            {pago.observations ? (
-              <Descriptions.Item label="Observaciones" span={2}>
-                {pago.observations}
               </Descriptions.Item>
             ) : null}
           </Descriptions>
