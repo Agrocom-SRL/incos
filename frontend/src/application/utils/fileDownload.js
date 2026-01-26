@@ -15,14 +15,35 @@
 export const downloadFile = async (filePath, fileName) => {
   try {
     // Los archivos estáticos se sirven directamente en /uploads (sin /api)
-    // Usar window.location.origin para obtener la base URL del servidor
+    // Vite tiene un proxy configurado para /uploads que redirige al backend
     const baseUrl = window.location.origin;
     
-    // Asegurar que filePath empiece con /
-    const normalizedPath = filePath.startsWith('/') ? filePath : `/${filePath}`;
+    // Normalizar el filePath:
+    // - Remover cualquier prefijo relativo (./, ../)
+    // - Asegurar que empiece con /
+    // - Remover dobles barras
+    let normalizedPath = (filePath || '').trim();
+    
+    // Remover prefijos relativos si existen
+    normalizedPath = normalizedPath.replace(/^\.\//, '');
+    normalizedPath = normalizedPath.replace(/^\.\.\//, '');
+    
+    // Asegurar que empiece con /
+    if (!normalizedPath.startsWith('/')) {
+      normalizedPath = `/${normalizedPath}`;
+    }
+    
+    // Remover dobles barras (excepto después del protocolo)
+    normalizedPath = normalizedPath.replace(/\/+/g, '/');
+    
     const fileUrl = `${baseUrl}${normalizedPath}`;
 
-    console.log('[downloadFile] Intentando descargar:', { fileUrl, fileName });
+    console.log('[downloadFile] Intentando descargar:', { 
+      originalFilePath: filePath,
+      normalizedPath,
+      fileUrl, 
+      fileName 
+    });
 
     // Intentar descargar usando fetch y blob (más confiable)
     try {
