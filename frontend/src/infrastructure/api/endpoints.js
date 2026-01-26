@@ -134,8 +134,9 @@ export const DOCUMENTACION_ENDPOINTS = createCRUDEndpoints('/documentacion');
 // ============================================
 export const INSCRIPCIONES_ENDPOINTS = {
   ...createCRUDEndpoints('/inscripciones'),
-  // Endpoint específico para generar boleta de inscripción
-  GENERATE_BOLETA: (enrollmentId) => `${API_BASE}/inscripciones/${enrollmentId}/generar-boleta`,
+  // Endpoint específico para generar formulario de inscripción
+  // NOTA: El parámetro es studentId, no enrollmentId (el endpoint espera el ID del estudiante)
+  GENERATE_BOLETA: (studentId) => `${API_BASE}/inscripciones/${studentId}/generar-formulario`,
 };
 
 // ============================================
