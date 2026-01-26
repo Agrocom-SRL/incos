@@ -456,13 +456,36 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
     // Usar documentación procesada expuesta desde el provider (ya filtrada y ordenada)
     const camposDocumentacion = createCamposDocumentacionDinamicos(documentacionProcesada);
     
-    // Reemplazar campos estáticos de documentación con campos dinámicos
+    // Agregar subsección de observaciones del estudiante al final de la lista de documentos
+    // Similar a las subsecciones en los campos geográficos
+    const subseccionObservaciones = {
+      type: 'subsection',
+      subsectionTitle: 'Observaciones del Estudiante',
+      conditional: false, // Siempre visible
+      fields: [
+        {
+          name: 'observaciones',
+          label: 'Observaciones',
+          type: 'textarea',
+          required: false,
+          span: 24, // Ocupa todo el ancho (100%)
+          placeholder: 'Ingrese observaciones adicionales sobre el estudiante (opcional)',
+          maxLength: 1000,
+          rows: 4, // Altura del textarea
+        },
+      ],
+    };
+    
+    // Combinar campos de documentación con la subsección de observaciones
+    const camposCompletos = [...camposDocumentacion, subseccionObservaciones];
+    
+    // Reemplazar campos estáticos de documentación con campos dinámicos + subsección de observaciones
     const documentacionStep = steps.find((step) => 
       step.sections.includes('documentacion')
     );
     
     if (documentacionStep && documentacionStep.config.documentacion) {
-      documentacionStep.config.documentacion.fields = camposDocumentacion;
+      documentacionStep.config.documentacion.fields = camposCompletos;
     }
     
     return steps;

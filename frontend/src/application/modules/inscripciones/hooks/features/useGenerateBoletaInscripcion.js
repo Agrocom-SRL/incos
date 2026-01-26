@@ -50,13 +50,13 @@ export const useGenerateBoletaInscripcion = () => {
   }, []);
 
   /**
-   * Genera y descarga la boleta de inscripción para una inscripción existente
-   * @param {string|number} enrollmentId - ID de la inscripción
+   * Genera y descarga la boleta de inscripción para un estudiante
+   * @param {string|number} studentId - ID del estudiante
    * @returns {Promise<{success: boolean, error?: string}>}
    */
-  const generateBoletaInscripcion = useCallback(async (enrollmentId) => {
-    if (!enrollmentId) {
-      const errorMsg = 'ID de inscripción requerido';
+  const generateBoletaInscripcion = useCallback(async (studentId) => {
+    if (!studentId) {
+      const errorMsg = 'ID del estudiante requerido';
       setError(errorMsg);
       return { success: false, error: errorMsg };
     }
@@ -68,7 +68,7 @@ export const useGenerateBoletaInscripcion = () => {
       // Llamar al endpoint POST para generar la boleta
       // Aumentar timeout a 60 segundos porque la generación de PDF puede tardar
       const response = await apiClient.post(
-        INSCRIPCIONES_ENDPOINTS.GENERATE_BOLETA(enrollmentId),
+        INSCRIPCIONES_ENDPOINTS.GENERATE_BOLETA(studentId),
         {},
         {
           timeout: 60000, // 60 segundos para generación de PDF
@@ -79,8 +79,9 @@ export const useGenerateBoletaInscripcion = () => {
       const result = handleSuccessResponse(response);
 
       // Si la boleta se generó exitosamente, descargar el archivo
-      if (result.success && result.data?.boleta) {
-        const { filePath, fileName } = result.data.boleta;
+      // El backend devuelve {filePath, fileName, absolutePath} directamente en result.data
+      if (result.success && result.data) {
+        const { filePath, fileName } = result.data;
         
         if (filePath) {
           downloadFile(filePath, fileName);

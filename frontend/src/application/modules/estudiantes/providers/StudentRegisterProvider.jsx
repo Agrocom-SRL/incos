@@ -26,7 +26,7 @@
  * - Expone datos + lógica vía StudentRegisterContext
  */
 
-import { useMemo, useEffect, useRef } from 'react';
+import { useMemo, useEffect, useRef, useState } from 'react';
 import {
     useStudentCatalogApi,
     useStudentGeographicApi,
@@ -85,29 +85,40 @@ export const StudentRegisterProvider = ({ children, mode = 'create', studentId =
     // Obtener documentación del catálogo (no de referenceData)
     const documentacion = catalogData.documentacion || [];
 
-    // Ref para almacenar getFormValues (se actualizará después cuando se cree useStudentFormHandlers)
-    // Esto resuelve la dependencia circular: useDocumentacionProcesada necesita getFormValues,
-    // pero useStudentFormHandlers necesita documentacionProcesada
-    const getFormValuesRef = useRef(() => ({}));
-
-    // Hook compuesto: observar valores del formulario y procesar documentación
-    // Usa getFormValuesRef.current para obtener valores del formulario
-    const { documentacion: documentacionProcesada } = useDocumentacionProcesada(
-      documentacion, 
-      () => getFormValuesRef.current()
-    );
-
     // Hook especializado: manejar handlers de submit y gestión del formulario
     // Este hook usa useRegisterStudent o useUpdateStudent según el modo
-    // IMPORTANTE: Pasar documentacionProcesada para que getFormValues incluya todos los documentos
-    const { handleFinish, handleSave, registerForm, getFormValues, formRef, loading, error, validationErrors, registrationResult } = useStudentFormHandlers(showMessage, mode, studentId, documentacionProcesada);
+    // IMPORTANTE: Inicialmente pasamos array vacío, pero useStudentFormHandlers usa un ref interno
+    // que se actualizará cuando documentacionProcesada esté disponible
+    const { handleFinish, handleSave, registerForm, getFormValues, formRef, loading, error, validationErrors, registrationResult } = useStudentFormHandlers(showMessage, mode, studentId, []);
+
+    // Hook compuesto: procesar documentación sin observar valores del formulario
+    // NO observa valores en tiempo real - solo procesa con valores por defecto
+    // Los valores reales se capturan solo al finalizar el registro en getFormValues
+    // Esto evita completamente la lentitud en campos de texto
+    const { documentacion: documentacionProcesada } = useDocumentacionProcesada(
+      documentacion, 
+      formRef // Se pasa pero no se usa para observación
+    );
     
-    // Actualizar el ref con la función real de getFormValues
-    useEffect(() => {
-      if (getFormValues) {
-        getFormValuesRef.current = getFormValues;
-      }
-    }, [getFormValues]);
+    // NOTA: useStudentFormHandlers se llama con array vacío inicialmente, pero tiene un ref interno
+    // que se actualiza cuando documentacionProcesada cambia. Sin embargo, como se pasa como parámetro
+    // vacío, el useEffect interno no se ejecutará cuando documentacionProcesada esté disponible.
+    // Para solucionar esto, pasamos documentacionProcesada directamente cuando esté disponible.
+    // Como los hooks se ejecutan en orden, usamos documentacionProcesada directamente si está disponible.
+    const { handleFinish: handleFinishFinal, handleSave: handleSaveFinal, registerForm: registerFormFinal, getFormValues: getFormValuesFinal, formRef: formRefFinal, loading: loadingFinal, error: errorFinal, validationErrors: validationErrorsFinal, registrationResult: registrationResultFinal } = useStudentFormHandlers(showMessage, mode, studentId, documentacionProcesada || []);
+    
+    // Usar los handlers finales (que incluyen documentacionProcesada cuando esté disponible)
+    const finalHandlers = {
+      handleFinish: handleFinishFinal,
+      handleSave: handleSaveFinal,
+      registerForm: registerFormFinal,
+      getFormValues: getFormValuesFinal,
+      formRef: formRefFinal,
+      loading: loadingFinal,
+      error: errorFinal,
+      validationErrors: validationErrorsFinal,
+      registrationResult: registrationResultFinal,
+    };
 
     // Hook para manejar el estado de contactos de emergencia dinámicos
     const { contactosIndices, agregarContacto, eliminarContacto } = useContactosEmergenciaDinamicos();
@@ -122,15 +133,15 @@ export const StudentRegisterProvider = ({ children, mode = 'create', studentId =
         const current = {
             ...contextData,
             resolveOptions,
-            handleFinish,
-            handleSave,
+            handleFinish: finalHandlers.handleFinish,
+            handleSave: finalHandlers.handleSave,
             minAge: EDAD_MINIMA_REGISTRO,
-            registerForm, // Expuesto desde useStudentFormHandlers
+            registerForm: finalHandlers.registerForm, // Expuesto desde useStudentFormHandlers
             // Estados del registro (expuestos desde useStudentFormHandlers)
-            loading,
-            error,
-            validationErrors,
-            registrationResult, // Resultado del registro para que la página pueda reaccionar
+            loading: finalHandlers.loading,
+            error: finalHandlers.error,
+            validationErrors: finalHandlers.validationErrors,
+            registrationResult: finalHandlers.registrationResult, // Resultado del registro para que la página pueda reaccionar
             // Contactos de emergencia dinámicos
             contactosIndices,
             agregarContacto,
@@ -173,7 +184,7 @@ export const StudentRegisterProvider = ({ children, mode = 'create', studentId =
 
         prevValueRef.current = current;
         return current;
-    }, [contextData, resolveOptions, handleFinish, handleSave, registerForm, loading, error, validationErrors, registrationResult, contactosIndices, agregarContacto, eliminarContacto, documentacionProcesada, referenceData.loadDiscapacidades, referenceData.loadTiposParentesco, geographicData.loadDepartamentos, geographicData.loadProvincias, geographicData.loadMunicipios]);
+    }, [contextData, resolveOptions, finalHandlers, contactosIndices, agregarContacto, eliminarContacto, documentacionProcesada, referenceData.loadDiscapacidades, referenceData.loadTiposParentesco, geographicData.loadDepartamentos, geographicData.loadProvincias, geographicData.loadMunicipios]);
 
     return (
         <StudentRegisterContext.Provider value={value}>

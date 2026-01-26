@@ -88,6 +88,18 @@ export const useStudentFormHandlers = (showMessage, mode = 'create', studentId =
           formValues.documentacion = {};
         }
         
+        // Función helper para normalizar observaciones (convertir string vacío a null)
+        const normalizeObservaciones = (value) => {
+          if (value === null || value === undefined) {
+            return null;
+          }
+          if (typeof value === 'string') {
+            const trimmed = value.trim();
+            return trimmed === '' ? null : trimmed;
+          }
+          return value;
+        };
+        
         // Para cada documento procesado, asegurar que esté presente
         documentacionProcesada.forEach((documento) => {
           const docKey = `doc_${documento.id}`;
@@ -97,7 +109,7 @@ export const useStudentFormHandlers = (showMessage, mode = 'create', studentId =
             formValues.documentacion[docKey] = {
               entregado: documento.entregado !== undefined ? documento.entregado : true, // Por defecto true (entregado)
               en_tramite: documento.en_tramite !== undefined ? documento.en_tramite : false,
-              observaciones: documento.observaciones || null,
+              observaciones: normalizeObservaciones(documento.observaciones),
             };
           } else {
             // Si el documento está presente pero no tiene entregado, usar el valor por defecto
@@ -108,10 +120,8 @@ export const useStudentFormHandlers = (showMessage, mode = 'create', studentId =
             if (formValues.documentacion[docKey].en_tramite === undefined) {
               formValues.documentacion[docKey].en_tramite = documento.en_tramite !== undefined ? documento.en_tramite : false;
             }
-            // Asegurar que observaciones tenga un valor por defecto si no está presente
-            if (formValues.documentacion[docKey].observaciones === undefined) {
-              formValues.documentacion[docKey].observaciones = documento.observaciones || null;
-            }
+            // Normalizar observaciones: convertir string vacío a null para cumplir con el validador del backend
+            formValues.documentacion[docKey].observaciones = normalizeObservaciones(formValues.documentacion[docKey].observaciones);
           }
         });
       }
