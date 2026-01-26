@@ -22,7 +22,7 @@ import { useStudentDetailContext } from '@application-estudiantes/hooks';
 import { useGenerateActaCompromiso } from '@application-estudiantes/hooks';
 import { downloadFile } from '@application/utils';
 import { Spin, Alert, Empty, Card, Descriptions, Tag, App } from 'antd';
-import { GiftOutlined, FileTextOutlined, DollarOutlined, DownloadOutlined, BookOutlined, EyeOutlined, ArrowLeftOutlined } from '@ant-design/icons';
+import { GiftOutlined, FileTextOutlined, DollarOutlined, DownloadOutlined, BookOutlined, EyeOutlined, ArrowLeftOutlined, PlusCircleOutlined } from '@ant-design/icons';
 import { Button } from '@atoms';
 import {
   DatosPersonalesSection,
@@ -123,6 +123,13 @@ const EstudiantesDetail = () => {
     }
   }, [navigate, student, studentId]);
 
+  // Handler para registrar nueva inscripción
+  const handleNuevaInscripcion = useCallback(() => {
+    navigate('/inscripciones/nueva', {
+      state: { studentId: studentId }
+    });
+  }, [navigate, studentId]);
+
   // Handler para volver a la lista de estudiantes
   const handleVolverALista = useCallback(() => {
     navigate('/estudiantes');
@@ -176,11 +183,19 @@ const EstudiantesDetail = () => {
         variant="primary"
         icon={<GiftOutlined />}
         onClick={handleAsignarBeca}
+        style={{ marginRight: 8 }}
       >
         Asignar Beca
       </Button>
+      <Button
+        variant="primary"
+        icon={<PlusCircleOutlined />}
+        onClick={handleNuevaInscripcion}
+      >
+        Nueva Inscripción
+      </Button>
     </>
-  ), [handleAsignarBeca, handleGenerateActaCompromiso, handleRegistrarPago, handleDownloadActaCompromiso, handleVolverALista, loadingActa, tieneDocumentosFaltantesFlag, actaCompromisoData]);
+  ), [handleAsignarBeca, handleGenerateActaCompromiso, handleRegistrarPago, handleDownloadActaCompromiso, handleVolverALista, handleNuevaInscripcion, loadingActa, tieneDocumentosFaltantesFlag, actaCompromisoData]);
 
   // Si está cargando
   if (loading) {

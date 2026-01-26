@@ -15,13 +15,18 @@
  * - Simplificado: Toda la lógica está en useInscripcionNuevaData
  * - Testeable: Se puede testear el hook independientemente
  * - Mantenible: Separación clara entre Provider y lógica
+ * 
+ * @param {Object} props
+ * @param {React.ReactNode} props.children - Componentes hijos
+ * @param {string} props.mode - Modo de operación ('nuevo' por defecto)
+ * @param {string|number|null} props.studentId - ID del estudiante para omitir paso de búsqueda (opcional)
  */
 
 import { InscripcionesNuevaContext } from '@application-inscripciones/context/InscripcionesNuevaContext';
 import { useInscripcionNuevaData } from '@application-inscripciones/hooks';
 
-export const InscripcionesNuevaProvider = ({ children, mode = 'nuevo' }) => {
-    const value = useInscripcionNuevaData(mode);
+export const InscripcionesNuevaProvider = ({ children, mode = 'nuevo', studentId = null }) => {
+    const value = useInscripcionNuevaData(mode, { studentId });
 
     return (
         <InscripcionesNuevaContext.Provider value={value}>

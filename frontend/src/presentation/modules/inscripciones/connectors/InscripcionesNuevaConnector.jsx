@@ -14,13 +14,18 @@
  * - InscripcionesNuevaProvider: Provider específico para la feature de inscripción nueva
  */
 
+import { useLocation } from 'react-router-dom';
 import { InscripcionesProvider, InscripcionesNuevaProvider } from '@application-inscripciones/providers';
 import InscripcionesNueva from '@inscripciones/pages/InscripcionesNueva';
 
 const InscripcionesNuevaConnector = () => {
+  const location = useLocation();
+  // Obtener studentId del estado de navegación (si viene desde EstudiantesDetail)
+  const studentId = location.state?.studentId || null;
+
   return (
     <InscripcionesProvider>
-      <InscripcionesNuevaProvider>
+      <InscripcionesNuevaProvider studentId={studentId}>
         <InscripcionesNueva />
       </InscripcionesNuevaProvider>
     </InscripcionesProvider>

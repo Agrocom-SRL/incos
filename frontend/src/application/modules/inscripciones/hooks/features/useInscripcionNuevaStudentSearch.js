@@ -20,20 +20,81 @@
  * - Separa la lógica del Provider (Provider solo orquesta)
  */
 
-import { useState, useCallback, useMemo, useRef } from 'react';
-import { useSearchStudent } from '@application-estudiantes/hooks/api';
+import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
+import { useSearchStudent, useGetStudentById } from '@application-estudiantes/hooks/api';
+import { buildPersonDisplayData } from '@application/utils/formatters';
 
 /**
  * Hook para buscar y seleccionar estudiantes en el contexto de inscripción nueva
  * 
+ * @param {Object} options - Opciones del hook
+ * @param {string|number|null} options.studentId - ID del estudiante para cargar automáticamente (opcional)
  * @returns {Object} Objeto con students, loading, error, searchStudent, refetch, selectedStudent, onSelectStudent
  */
-export const useInscripcionNuevaStudentSearch = () => {
+export const useInscripcionNuevaStudentSearch = (options = {}) => {
+  const { studentId = null } = options;
+  
   // Usar el hook genérico de búsqueda de estudiantes
   const { students, loading, error, searchStudent, refetch } = useSearchStudent();
+  
+  // Hook para obtener estudiante por ID (si se proporciona studentId)
+  const { student: studentById, loading: loadingById, getStudentById } = useGetStudentById();
 
   // Estado para el estudiante seleccionado (se usará en step2 para cargar datos académicos)
   const [selectedStudent, setSelectedStudent] = useState(null);
+  
+  // Cargar estudiante automáticamente si se proporciona studentId
+  useEffect(() => {
+    if (studentId) {
+      // Solo cargar si no hay estudiante seleccionado o si el ID es diferente
+      if (!selectedStudent || selectedStudent.id !== Number(studentId)) {
+        getStudentById(studentId);
+      }
+    }
+  }, [studentId, getStudentById, selectedStudent]);
+  
+  // Cuando se carga el estudiante por ID, seleccionarlo automáticamente
+  useEffect(() => {
+    if (studentById && studentId) {
+      // El hook useGetStudentById retorna { student: data } donde data es el objeto del estudiante
+      // studentById ya es el objeto del estudiante extraído por createApiHook usando dataKey: 'student'
+      // Pero puede venir con estructura anidada del backend, así que verificamos diferentes posibilidades
+      let studentData = null;
+      
+      // Intentar diferentes estructuras posibles del objeto retornado
+      if (studentById.id) {
+        // Si tiene id directamente, es el objeto del estudiante
+        studentData = studentById;
+      } else if (studentById.student && studentById.student.id) {
+        // Si tiene una propiedad student con id, usar esa
+        studentData = studentById.student;
+      } else if (studentById.data?.student) {
+        // Si tiene data.student, usar esa
+        studentData = studentById.data.student;
+      }
+      
+      if (studentData && studentData.id && (!selectedStudent || selectedStudent.id !== studentData.id)) {
+        // Construir CI completo y nombre completo usando formatters
+        // El backend puede retornar datos en inglés (firstName, lastName) o español
+        const { ciCompleto, nombreCompleto } = buildPersonDisplayData({
+          ci: studentData.ci,
+          expedicion: studentData.expedition || studentData.expedicion,
+          nombres: studentData.firstName || studentData.nombres,
+          apellidoPaterno: studentData.lastName || studentData.apellidoPaterno,
+          apellidoMaterno: studentData.motherLastName || studentData.apellidoMaterno,
+        });
+        
+        setSelectedStudent({
+          id: studentData.id,
+          codigoEstudiante: studentData.codigoEstudiante || studentData.studentCode,
+          nombreCompleto: studentData.nombreCompleto || nombreCompleto,
+          ciCompleto: studentData.ciCompleto || ciCompleto,
+          careerId: studentData.careerId || studentData.carreraId,
+          carreraId: studentData.carreraId || studentData.careerId,
+        });
+      }
+    }
+  }, [studentById, studentId]); // Remover selectedStudent de dependencias para permitir actualizaciones
 
   /**
    * Función para manejar la selección de un estudiante
@@ -68,10 +129,13 @@ export const useInscripcionNuevaStudentSearch = () => {
   // Comparar valores, no solo referencias, para evitar recálculos innecesarios
   const prevResultRef = useRef(null);
   
+  // Combinar estados de loading (búsqueda o carga por ID)
+  const combinedLoading = loading || loadingById;
+  
   return useMemo(() => {
     const current = {
       students,
-      loading,
+      loading: combinedLoading,
       error,
       searchStudent,
       refetch,
@@ -95,5 +159,5 @@ export const useInscripcionNuevaStudentSearch = () => {
 
     prevResultRef.current = current;
     return current;
-  }, [students, loading, error, searchStudent, refetch, selectedStudent, onSelectStudent]);
+  }, [students, combinedLoading, error, searchStudent, refetch, selectedStudent, onSelectStudent]);
 };

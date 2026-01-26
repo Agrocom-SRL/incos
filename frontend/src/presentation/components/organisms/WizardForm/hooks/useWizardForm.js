@@ -32,11 +32,12 @@ import { useConditionalLoaders } from './useConditionalLoaders';
  * @param {Array} options.steps - Array de configuración de pasos
  * @param {FormInstance} [options.externalForm] - Formulario externo (opcional)
  * @param {Object} [options.conditionalLoaders] - Funciones de carga condicionales
+ * @param {number} [options.initialStep] - Paso inicial del wizard (default: 0)
  * @returns {Object} Objeto con toda la lógica del wizard form
  */
-export const useWizardForm = ({ steps = [], externalForm, conditionalLoaders = {} }) => {
+export const useWizardForm = ({ steps = [], externalForm, conditionalLoaders = {}, initialStep = 0 }) => {
   // Hook de navegación del wizard
-  const wizard = useWizard(0, steps.length);
+  const wizard = useWizard(initialStep, steps.length);
 
   // Gestionar formulario: usar externo o crear interno
   const [internalForm] = Form.useForm();
