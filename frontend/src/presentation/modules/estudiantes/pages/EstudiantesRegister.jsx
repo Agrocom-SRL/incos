@@ -289,6 +289,80 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
     }
   }, [isEditMode, form, provincias, municipios, segundaProvincias, segundaMunicipios, provinciasResidencia, municipiosResidencia]);
 
+  // Ref para rastrear si ya se inicializaron los valores de documentación
+  const documentacionInitializedRef = useRef(false);
+  
+  // Ref para mantener referencia estable de documentacionProcesada
+  const documentacionProcesadaRef = useRef(documentacionProcesada);
+  
+  // Actualizar ref cuando documentacionProcesada cambie
+  useEffect(() => {
+    documentacionProcesadaRef.current = documentacionProcesada;
+    // Resetear flag cuando cambia la documentación
+    if (documentacionProcesada && Array.isArray(documentacionProcesada) && documentacionProcesada.length > 0) {
+      documentacionInitializedRef.current = false;
+    }
+  }, [documentacionProcesada]);
+
+  // Inicializar valores por defecto de documentación cuando se cargan los documentos
+  // Esto asegura que todos los documentos se incluyan en el formulario, incluso si el usuario no interactúa con ellos
+  useEffect(() => {
+    const documentacionProcesada = documentacionProcesadaRef.current;
+    
+    if (documentacionProcesada && Array.isArray(documentacionProcesada) && documentacionProcesada.length > 0 && form && !documentacionInitializedRef.current) {
+      // Construir objeto con valores por defecto para todos los documentos
+      const documentacionInitialValues = {};
+      
+      documentacionProcesada.forEach((documento) => {
+        const docKey = `doc_${documento.id}`;
+        // Inicializar con valores por defecto: entregado: true, en_tramite: false, observaciones: null
+        documentacionInitialValues[docKey] = {
+          entregado: documento.entregado !== undefined ? documento.entregado : true, // Por defecto true (entregado)
+          en_tramite: documento.en_tramite !== undefined ? documento.en_tramite : false,
+          observaciones: documento.observaciones || null,
+        };
+      });
+      
+      // Obtener valores actuales del formulario
+      const currentValues = form.getFieldsValue(true);
+      
+      // Solo establecer valores si no existen ya (para no sobrescribir valores del usuario)
+      if (!currentValues.documentacion || Object.keys(currentValues.documentacion).length === 0) {
+        form.setFieldsValue({
+          documentacion: documentacionInitialValues,
+        });
+        documentacionInitializedRef.current = true;
+      } else {
+        // Si ya hay valores, solo agregar los que faltan
+        const documentacionActual = currentValues.documentacion || {};
+        const valoresAAgregar = {};
+        let necesitaActualizar = false;
+        
+        documentacionProcesada.forEach((documento) => {
+          const docKey = `doc_${documento.id}`;
+          if (!documentacionActual[docKey]) {
+            valoresAAgregar[docKey] = {
+              entregado: documento.entregado !== undefined ? documento.entregado : true,
+              en_tramite: documento.en_tramite !== undefined ? documento.en_tramite : false,
+              observaciones: documento.observaciones || null,
+            };
+            necesitaActualizar = true;
+          }
+        });
+        
+        if (necesitaActualizar) {
+          form.setFieldsValue({
+            documentacion: {
+              ...documentacionActual,
+              ...valoresAAgregar,
+            },
+          });
+        }
+        documentacionInitializedRef.current = true;
+      }
+    }
+  }, [form]); // Solo form como dependencia - usa refs para documentacionProcesada
+
   // Reaccionar al resultado exitoso del registro/actualización
   // Solo para handleFinish (registro/actualización completo), no para handleSave (guardado parcial)
   useEffect(() => {

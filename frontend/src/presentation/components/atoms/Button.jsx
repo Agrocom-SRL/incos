@@ -12,7 +12,10 @@
  * 
  * Variantes semánticas:
  * - variant: 'default' | 'primary' | 'secondary' | 'info' | 'success' | 'warning' | 'error'
- * - style: 'filled' | 'outlined' (solo para variantes semánticas)
+ * - buttonStyle: 'filled' | 'outlined' (solo para variantes semánticas)
+ * 
+ * Nota: Se usa 'buttonStyle' en lugar de 'style' para evitar conflicto con el prop 'style' de React
+ * para estilos inline. Los estilos inline se pueden pasar normalmente via prop 'style'.
  */
 
 import { Button as AntButton } from 'antd';
@@ -20,7 +23,7 @@ import { Button as AntButton } from 'antd';
 const Button = ({
   type = 'default',
   variant = 'default', // 'primary' | 'secondary' | 'default' | 'info' | 'success' | 'warning' | 'error'
-  style = 'filled', // 'filled' | 'outlined' (solo para variantes semánticas)
+  buttonStyle = 'filled', // 'filled' | 'outlined' (solo para variantes semánticas) - renombrado de 'style' para evitar conflicto con estilos inline
   size = 'large',
   loading = false,
   disabled = false,
@@ -34,7 +37,7 @@ const Button = ({
   const semanticVariants = ['info', 'success', 'warning', 'error'];
   const isSemantic = semanticVariants.includes(variant);
   const variantClassName = isSemantic ? `button--${variant}` : '';
-  const styleClassName = isSemantic && style === 'filled' ? 'button--filled' : '';
+  const styleClassName = isSemantic && buttonStyle === 'filled' ? 'button--filled' : '';
   const buttonClassName = className 
     ? `${baseClassName} ${variantClassName} ${styleClassName} ${className}`.trim() 
     : `${baseClassName} ${variantClassName} ${styleClassName}`.trim();

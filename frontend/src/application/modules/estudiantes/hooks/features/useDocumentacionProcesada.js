@@ -19,7 +19,7 @@
  * Usado por: StudentRegisterProvider (para procesar documentación reactiva)
  */
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { useDocumentacionDinamica } from './useDocumentacionDinamica';
 
 /**
@@ -33,16 +33,24 @@ export const useDocumentacionProcesada = (documentacion = [], getFormValues) => 
   // Estado para almacenar valores del formulario observados (estructura original)
   // Mantener la estructura original documentacion['doc_id'][field] para que addEstadoEntregado pueda leerla
   const [formValues, setFormValues] = useState({});
+  
+  // Ref para mantener referencia estable de getFormValues
+  const getFormValuesRef = useRef(getFormValues);
+  
+  // Actualizar ref cuando getFormValues cambie
+  useEffect(() => {
+    getFormValuesRef.current = getFormValues;
+  }, [getFormValues]);
 
   // Observar valores del formulario y pasarlos directamente a useDocumentacionDinamica
   // Usar polling con getFormValues para evitar problemas con hooks condicionales
   useEffect(() => {
-    if (!getFormValues) return;
+    if (!getFormValuesRef.current) return;
 
     // Función para actualizar valores del formulario
     const updateFormValues = () => {
       try {
-        const values = getFormValues();
+        const values = getFormValuesRef.current();
         // Extraer solo la sección de documentación, manteniendo la estructura original
         // Estructura: { documentacion: { 'doc_1': { entregado: true, ... }, 'doc_2': { ... } } }
         const documentacionValues = values.documentacion || {};
@@ -70,19 +78,44 @@ export const useDocumentacionProcesada = (documentacion = [], getFormValues) => 
     const interval = setInterval(updateFormValues, 200);
 
     return () => clearInterval(interval);
-  }, [getFormValues]);
+  }, []); // Sin dependencias - usa getFormValuesRef.current
 
   // Procesar documentación con los valores observados del formulario (estructura original)
   const documentacionProcesadaResult = useDocumentacionDinamica(documentacion, formValues);
 
-  // Retornar solo lo necesario (documentación procesada)
-  return useMemo(() => ({
-    documentacion: documentacionProcesadaResult.documentacion,
-    documentosRequeridos: documentacionProcesadaResult.documentosRequeridos,
-    documentosOpcionales: documentacionProcesadaResult.documentosOpcionales,
-    cantidadDocumentos: documentacionProcesadaResult.cantidadDocumentos,
-    cantidadRequeridos: documentacionProcesadaResult.cantidadRequeridos,
-    cantidadOpcionales: documentacionProcesadaResult.cantidadOpcionales,
-  }), [documentacionProcesadaResult]);
+  // MANTENER REFERENCIA ESTABLE
+  // Comparar valores, no solo referencias, para evitar recálculos innecesarios
+  const prevResultRef = useRef(null);
+  
+  return useMemo(() => {
+    const current = {
+      documentacion: documentacionProcesadaResult.documentacion,
+      documentosRequeridos: documentacionProcesadaResult.documentosRequeridos,
+      documentosOpcionales: documentacionProcesadaResult.documentosOpcionales,
+      cantidadDocumentos: documentacionProcesadaResult.cantidadDocumentos,
+      cantidadRequeridos: documentacionProcesadaResult.cantidadRequeridos,
+      cantidadOpcionales: documentacionProcesadaResult.cantidadOpcionales,
+    };
+
+    const prev = prevResultRef.current;
+    
+    // Comparar valores, no solo referencias
+    // Para arrays, comparar por cantidad y IDs (si tienen)
+    if (prev &&
+        prev.cantidadDocumentos === current.cantidadDocumentos &&
+        prev.cantidadRequeridos === current.cantidadRequeridos &&
+        prev.cantidadOpcionales === current.cantidadOpcionales) {
+      // Comparar arrays por longitud y IDs si están disponibles
+      const prevDocIds = prev.documentacion?.map(d => d.id).sort().join(',') || '';
+      const currentDocIds = current.documentacion?.map(d => d.id).sort().join(',') || '';
+      
+      if (prevDocIds === currentDocIds) {
+        return prev;
+      }
+    }
+
+    prevResultRef.current = current;
+    return current;
+  }, [documentacionProcesadaResult]);
 };
 

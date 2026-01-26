@@ -23,7 +23,7 @@
  * Usado por: StudentRegisterProvider (para exponer handlers vía Context)
  */
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useRef, useState, useEffect } from 'react';
 import { useRegisterStudent, useUpdateStudent } from '@application-estudiantes/hooks/api';
 
 /**
@@ -32,9 +32,10 @@ import { useRegisterStudent, useUpdateStudent } from '@application-estudiantes/h
  * @param {Function} showMessage - Función para mostrar mensajes (debe venir del provider)
  * @param {string} mode - Modo del formulario: 'create' (default) o 'edit'
  * @param {string|number} studentId - ID del estudiante (requerido si mode === 'edit')
+ * @param {Array} documentacionProcesada - Array de documentos procesados (para incluir valores por defecto)
  * @returns {Object} Objeto con handleFinish, handleSave, registerForm, getFormValues, loading, error, validationErrors, registrationResult
  */
-export const useStudentFormHandlers = (showMessage, mode = 'create', studentId = null) => {
+export const useStudentFormHandlers = (showMessage, mode = 'create', studentId = null, documentacionProcesada = []) => {
   const isEditMode = mode === 'edit';
   
   // Hook de API para registro de estudiantes
@@ -58,7 +59,17 @@ export const useStudentFormHandlers = (showMessage, mode = 'create', studentId =
     formRef.current = formInstance;
   }, []);
 
+  // Ref para mantener referencia estable de documentacionProcesada
+  const documentacionProcesadaRef = useRef(documentacionProcesada);
+  
+  // Actualizar ref cuando documentacionProcesada cambie
+  useEffect(() => {
+    documentacionProcesadaRef.current = documentacionProcesada;
+  }, [documentacionProcesada]);
+
   // Función para obtener los valores del formulario
+  // IMPORTANTE: Incluye todos los documentos con valores por defecto si no están presentes
+  // Esto asegura que todos los documentos se envíen al backend, incluso si el usuario no interactuó con ellos
   const getFormValues = useCallback(() => {
     if (!formRef.current) {
       console.warn('⚠️ El formulario no está registrado aún');
@@ -67,12 +78,50 @@ export const useStudentFormHandlers = (showMessage, mode = 'create', studentId =
     try {
       // Obtener todos los valores del formulario (incluye campos no renderizados)
       const formValues = formRef.current.getFieldsValue(true);
+      
+      // Asegurar que todos los documentos estén presentes con valores por defecto
+      // Si un documento no está en formValues, agregarlo con entregado: true por defecto
+      const documentacionProcesada = documentacionProcesadaRef.current;
+      if (documentacionProcesada && Array.isArray(documentacionProcesada) && documentacionProcesada.length > 0) {
+        // Inicializar documentacion si no existe
+        if (!formValues.documentacion) {
+          formValues.documentacion = {};
+        }
+        
+        // Para cada documento procesado, asegurar que esté presente
+        documentacionProcesada.forEach((documento) => {
+          const docKey = `doc_${documento.id}`;
+          
+          // Si el documento no está presente en formValues, agregarlo con valores por defecto
+          if (!formValues.documentacion[docKey]) {
+            formValues.documentacion[docKey] = {
+              entregado: documento.entregado !== undefined ? documento.entregado : true, // Por defecto true (entregado)
+              en_tramite: documento.en_tramite !== undefined ? documento.en_tramite : false,
+              observaciones: documento.observaciones || null,
+            };
+          } else {
+            // Si el documento está presente pero no tiene entregado, usar el valor por defecto
+            if (formValues.documentacion[docKey].entregado === undefined) {
+              formValues.documentacion[docKey].entregado = documento.entregado !== undefined ? documento.entregado : true;
+            }
+            // Asegurar que en_tramite tenga un valor por defecto si no está presente
+            if (formValues.documentacion[docKey].en_tramite === undefined) {
+              formValues.documentacion[docKey].en_tramite = documento.en_tramite !== undefined ? documento.en_tramite : false;
+            }
+            // Asegurar que observaciones tenga un valor por defecto si no está presente
+            if (formValues.documentacion[docKey].observaciones === undefined) {
+              formValues.documentacion[docKey].observaciones = documento.observaciones || null;
+            }
+          }
+        });
+      }
+      
       return formValues;
     } catch (error) {
       console.error('❌ Error al obtener valores del formulario:', error);
       return {};
     }
-  }, []);
+  }, []); // Sin dependencias - usa documentacionProcesadaRef.current
 
   // Handler para finalizar el registro/actualización
   const handleFinish = useCallback(async (step) => {

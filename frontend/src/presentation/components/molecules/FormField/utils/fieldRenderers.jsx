@@ -235,18 +235,27 @@ const renderAlert = (field, disabled, readOnly) => {
  * Renderer para campo de tipo button (acción)
  * No se envuelve en Form.Item, se renderiza directamente
  */
-const renderButton = (field, disabled, readOnly) => (
-  <Button
-    variant={field.variant || 'info'}
-    style={field.style || 'outlined'}
-    size={field.size || 'large'}
-    disabled={disabled || readOnly}
-    onClick={field.onClick}
-    className={field.className}
-  >
-    {field.buttonText || field.label || 'Botón'}
-  </Button>
-);
+const renderButton = (field, disabled, readOnly) => {
+  // Separar buttonStyle (filled/outlined) de style (estilos inline CSS)
+  // Si field.style es un string 'filled' o 'outlined', es buttonStyle
+  // Si field.style es un objeto, es un estilo inline CSS
+  const buttonStyle = field.buttonStyle || (typeof field.style === 'string' && (field.style === 'filled' || field.style === 'outlined') ? field.style : 'outlined');
+  const inlineStyle = typeof field.style === 'object' ? field.style : undefined;
+  
+  return (
+    <Button
+      variant={field.variant || 'info'}
+      buttonStyle={buttonStyle}
+      size={field.size || 'large'}
+      disabled={disabled || readOnly}
+      onClick={field.onClick}
+      className={field.className}
+      style={inlineStyle}
+    >
+      {field.buttonText || field.label || 'Botón'}
+    </Button>
+  );
+};
 
 /**
  * Registry de renderers por tipo de campo

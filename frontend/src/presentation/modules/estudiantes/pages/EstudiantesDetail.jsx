@@ -20,6 +20,7 @@ import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { useStudentDetailContext } from '@application-estudiantes/hooks';
 import { useGenerateActaCompromiso } from '@application-estudiantes/hooks';
+import { usePagosContextOptional } from '@application-pagos/hooks';
 import { downloadFile } from '@application/utils';
 import { Spin, Alert, Empty, Card, Descriptions, Tag, App } from 'antd';
 import { GiftOutlined, FileTextOutlined, DollarOutlined, DownloadOutlined, BookOutlined, EyeOutlined, ArrowLeftOutlined, PlusCircleOutlined } from '@ant-design/icons';
@@ -48,6 +49,10 @@ const EstudiantesDetail = () => {
   // Hook para generar acta de compromiso
   const { generateActaCompromiso, loading: loadingActa } = useGenerateActaCompromiso();
 
+  // Obtener contexto de pagos para verificar si el estudiante ya tiene un pago
+  // Usar hook opcional que no lanza error si el provider no está disponible
+  const pagosContext = usePagosContextOptional();
+
   // Configurar breadcrumb items
   const breadcrumbItems = useMemo(() => [
     { title: 'Inicio', href: '/' },
@@ -62,12 +67,55 @@ const EstudiantesDetail = () => {
     });
   }, [navigate, studentId]);
 
-  // Handler para navegar al registro de pagos
+  // Handler para navegar al registro de pagos o al detalle si ya existe un pago
   const handleRegistrarPago = useCallback(() => {
+    if (!studentId) {
+      message.warning('ID de estudiante no disponible');
+      return;
+    }
+
+    // Verificar si el estudiante ya tiene un pago
+    if (pagosContext?.pagos && Array.isArray(pagosContext.pagos)) {
+      // Filtrar pagos del estudiante
+      const pagosEstudiante = pagosContext.pagos.filter((pago) => {
+        const pagoStudentId = pago.estudiante?.id || 
+                             pago.student?.id || 
+                             pago.estudianteId || 
+                             pago.studentId || 
+                             pago.estudiante_id || 
+                             pago.student_id;
+        return Number(pagoStudentId) === Number(studentId);
+      });
+
+      // Si hay pagos, obtener el más reciente (por ID o fecha de creación)
+      if (pagosEstudiante.length > 0) {
+        // Ordenar por ID descendente (el más reciente primero) o por fecha
+        const pagoMasReciente = pagosEstudiante.sort((a, b) => {
+          // Intentar ordenar por ID primero
+          const idA = a.id || 0;
+          const idB = b.id || 0;
+          if (idA !== idB) return idB - idA;
+          
+          // Si no hay ID, ordenar por fecha de creación
+          const fechaA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const fechaB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return fechaB - fechaA;
+        })[0];
+
+        // Navegar al detalle del pago más reciente
+        const pagoId = pagoMasReciente.id;
+        if (pagoId) {
+          navigate(`/pagos/${pagoId}`);
+          return;
+        }
+      }
+    }
+
+    // Si no hay pagos, navegar al registro
     navigate('/pagos/registrar', {
       state: { studentId: studentId }
     });
-  }, [navigate, studentId]);
+  }, [navigate, studentId, pagosContext, message]);
 
   // Handler para generar y descargar acta de compromiso
   const handleGenerateActaCompromiso = useCallback(async () => {
@@ -150,9 +198,11 @@ const EstudiantesDetail = () => {
       >
         Volver a la Lista
       </Button>
+      {/* 1. Acta de Compromiso */}
       {actaCompromisoData ? (
         <Button
-          variant="default"
+          variant="warning"
+          buttonStyle="filled"
           icon={<DownloadOutlined />}
           onClick={handleDownloadActaCompromiso}
           style={{ marginRight: 8 }}
@@ -161,7 +211,8 @@ const EstudiantesDetail = () => {
         </Button>
       ) : tieneDocumentosFaltantesFlag ? (
         <Button
-          variant="default"
+          variant="warning"
+          buttonStyle="filled"
           icon={<FileTextOutlined />}
           onClick={handleGenerateActaCompromiso}
           loading={loadingActa}
@@ -170,6 +221,16 @@ const EstudiantesDetail = () => {
           Generar Acta de Compromiso
         </Button>
       ) : null}
+      {/* 2. Asignar Beca */}
+      <Button
+        variant="success"
+        icon={<GiftOutlined />}
+        onClick={handleAsignarBeca}
+        style={{ marginRight: 8 }}
+      >
+        Asignar Beca
+      </Button>
+      {/* 3. Registrar Pago */}
       <div style={{ marginRight: 8, display: 'inline-block' }}>
         <Button
           variant="error"
@@ -179,14 +240,7 @@ const EstudiantesDetail = () => {
           Registrar Pago
         </Button>
       </div>
-      <Button
-        variant="primary"
-        icon={<GiftOutlined />}
-        onClick={handleAsignarBeca}
-        style={{ marginRight: 8 }}
-      >
-        Asignar Beca
-      </Button>
+      {/* 4. Nueva Inscripción */}
       <Button
         variant="primary"
         icon={<PlusCircleOutlined />}

@@ -18,9 +18,64 @@ import TableActions from '@molecules/TableActions';
  * @param {Function} navigate - Función de navegación de react-router
  * @param {Function} refetch - Función para recargar los datos después de eliminar
  * @param {Function} deleteStudent - Función para eliminar un estudiante
+ * @param {Object} pagosContext - Contexto de pagos (opcional) para verificar si el estudiante ya tiene un pago
  * @returns {Array} Array de configuración de columnas para Ant Design Table
  */
-export const createEstudiantesTableColumns = (navigate, refetch = null, deleteStudent = null) => {
+export const createEstudiantesTableColumns = (navigate, refetch = null, deleteStudent = null, pagosContext = null) => {
+  
+  // Función helper para manejar la navegación a registro o detalle de pago
+  const handleRegistrarPagoClick = (record) => {
+    const studentId = record.id;
+    if (!studentId) {
+      console.warn('[tableColumns] ID de estudiante no disponible');
+      navigate('/pagos/registrar', {
+        state: { studentId: studentId }
+      });
+      return;
+    }
+
+    // Verificar si el estudiante ya tiene un pago
+    if (pagosContext?.pagos && Array.isArray(pagosContext.pagos)) {
+      // Filtrar pagos del estudiante
+      const pagosEstudiante = pagosContext.pagos.filter((pago) => {
+        const pagoStudentId = pago.estudiante?.id || 
+                             pago.student?.id || 
+                             pago.estudianteId || 
+                             pago.studentId || 
+                             pago.estudiante_id || 
+                             pago.student_id;
+        return Number(pagoStudentId) === Number(studentId);
+      });
+
+      // Si hay pagos, obtener el más reciente (por ID o fecha de creación)
+      if (pagosEstudiante.length > 0) {
+        // Ordenar por ID descendente (el más reciente primero) o por fecha
+        const pagoMasReciente = pagosEstudiante.sort((a, b) => {
+          // Intentar ordenar por ID primero
+          const idA = a.id || 0;
+          const idB = b.id || 0;
+          if (idA !== idB) return idB - idA;
+          
+          // Si no hay ID, ordenar por fecha de creación
+          const fechaA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const fechaB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return fechaB - fechaA;
+        })[0];
+
+        // Navegar al detalle del pago más reciente
+        const pagoId = pagoMasReciente.id;
+        if (pagoId) {
+          navigate(`/pagos/${pagoId}`);
+          return;
+        }
+      }
+    }
+
+    // Si no hay pagos, navegar al registro
+    navigate('/pagos/registrar', {
+      state: { studentId: studentId }
+    });
+  };
 
   return [
     {
@@ -143,9 +198,7 @@ export const createEstudiantesTableColumns = (navigate, refetch = null, deleteSt
                 icon: <DollarOutlined />,
                 variant: 'primary',
                 tooltip: 'Registrar pago',
-                onClick: (record) => navigate('/pagos/registrar', {
-                  state: { studentId: record.id }
-                }),
+                onClick: handleRegistrarPagoClick,
               },
             ]}
           />
