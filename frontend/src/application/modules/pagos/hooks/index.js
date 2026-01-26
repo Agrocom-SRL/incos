@@ -31,6 +31,7 @@ export { usePagosRegistrarData } from './state/usePagosRegistrarData';
 export { usePagosApi } from './api/usePagosApi';
 export { useGetPagoById } from './api/useGetPagoById';
 export { useDeletePagoAporte } from './api/useDeletePagoAporte';
+export { useGenerateReciboPago } from './api/useGenerateReciboPago';
 export { usePaymentAccountsApi } from './api/usePaymentAccountsApi';
 export { useAuthorizedBanksApi } from './api/useAuthorizedBanksApi';
 export { usePaymentMethodsApi } from './api/usePaymentMethodsApi';

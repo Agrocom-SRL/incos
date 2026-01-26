@@ -19,10 +19,11 @@ import { useNavigate } from 'react-router-dom';
 import { App } from 'antd';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
-import { usePagosDetailContext } from '@application-pagos/hooks';
+import { usePagosDetailContext, useGenerateReciboPago } from '@application-pagos/hooks';
 import { Descriptions, Card, Spin, Alert, Empty, Tag, Divider, Button } from 'antd';
 import { DollarOutlined, UserOutlined, CalendarOutlined, CreditCardOutlined, FileTextOutlined, DownloadOutlined } from '@ant-design/icons';
 import { downloadFile } from '@application/utils';
+import { useCasesFactory } from '@container';
 
 const PagosDetail = () => {
   const navigate = useNavigate();
@@ -34,6 +35,9 @@ const PagosDetail = () => {
     loading = false,
     error = null,
   } = usePagosDetailContext();
+
+  // Hook para generar/obtener el recibo de pago (debe estar antes de los returns tempranos)
+  const { generateReciboPago, loading: loadingRecibo, recibo, error: errorRecibo } = useGenerateReciboPago();
 
   // Redirigir a la lista solo si hay un error definitivo (no mientras carga)
   useEffect(() => {
@@ -139,36 +143,70 @@ const PagosDetail = () => {
     return statusColors[status] || 'default';
   };
 
-  // Obtener el documento del recibo desde los datos del pago
-  const reciboDocumento = pago?.reciboDocumento || null;
-
   // Función para descargar el recibo de pago
+  // Siempre llama al endpoint para que el backend verifique si el archivo físico existe
+  // y lo regenere si es necesario
   const handleDownloadRecibo = async () => {
-    if (!reciboDocumento) {
-      message.warning('El recibo de pago no está disponible');
-      return;
-    }
-
     try {
-      const filePath = reciboDocumento.filePath;
-      const fileName = reciboDocumento.fileName || 'recibo_pago.pdf';
+      // Validar que tengamos el ID del pago
+      if (!pago?.id) {
+        message.error('ID del pago no disponible');
+        return;
+      }
+
+      message.loading({ content: 'Verificando recibo de pago...', key: 'download' });
       
-      console.log('[PagosDetail] Intentando descargar recibo:', {
+      // Llamar directamente al Use Case para obtener el resultado
+      // El hook createApiHook actualiza el estado pero no retorna el resultado
+      // Por eso necesitamos llamar directamente al Use Case
+      const useCase = useCasesFactory.generarReciboPago();
+      
+      if (!useCase) {
+        message.error({ 
+          content: 'No se pudo inicializar el caso de uso',
+          key: 'download',
+          duration: 5,
+        });
+        return;
+      }
+
+      // Ejecutar el Use Case directamente
+      const result = await useCase.ejecutar(pago.id);
+      
+      if (!result || !result.success) {
+        const errorMessage = result?.error || result?.message || 'Error desconocido al generar el recibo';
+        message.error({ 
+          content: `Error al generar el recibo de pago: ${errorMessage}`,
+          key: 'download',
+          duration: 5,
+        });
+        return;
+      }
+
+      // El resultado contiene data con filePath, fileName, absolutePath
+      const reciboData = result.data;
+      if (!reciboData || !reciboData.filePath) {
+        message.error({ 
+          content: 'No se pudo obtener la información del recibo generado',
+          key: 'download',
+          duration: 5,
+        });
+        return;
+      }
+
+      const filePath = reciboData.filePath;
+      const fileName = reciboData.fileName || 'recibo_pago.pdf';
+
+      console.log('[PagosDetail] Recibo obtenido/generado, descargando:', {
         filePath,
         fileName,
       });
 
-      // Verificar que filePath esté presente
-      if (!filePath) {
-        message.error('La ruta del archivo no está disponible');
-        return;
-      }
-
-      message.loading({ content: 'Descargando recibo de pago...', key: 'download' });
+      // Descargar el archivo
       await downloadFile(filePath, fileName);
       message.success({ content: 'Recibo de pago descargado exitosamente', key: 'download' });
     } catch (err) {
-      console.error('Error al descargar el recibo de pago:', err);
+      console.error('Error al descargar/generar el recibo de pago:', err);
       message.error({ 
         content: 'Error al descargar el recibo de pago: ' + (err.message || 'Error desconocido'),
         key: 'download',
@@ -188,50 +226,34 @@ const PagosDetail = () => {
     >
       <div style={{ padding: '24px' }}>
         {/* Botón de descarga del recibo */}
-        {reciboDocumento ? (
-          <Card 
-            style={{ marginBottom: '24px', backgroundColor: '#f0f9ff', border: '1px solid #1890ff' }}
-            styles={{ body: { padding: '16px' } }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <h3 style={{ margin: 0, color: '#1890ff', fontSize: '16px' }}>
-                  📄 Recibo de Pago Disponible
-                </h3>
-                <p style={{ margin: '4px 0 0 0', color: '#666', fontSize: '14px' }}>
-                  Puede descargar el Recibo de Pago en formato PDF
-                </p>
-              </div>
-              <Button
-                type="primary"
-                size="large"
-                icon={<DownloadOutlined />}
-                onClick={handleDownloadRecibo}
-              >
-                Descargar Recibo de Pago
-              </Button>
+        {/* Siempre mostrar el botón, el endpoint verifica y regenera si es necesario */}
+        <Card
+          style={{ marginBottom: '24px', backgroundColor: '#f0f9ff', border: '1px solid #1890ff' }}
+          styles={{ body: { padding: '16px' } }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <h3 style={{ margin: 0, color: '#1890ff', fontSize: '16px' }}>
+                📄 Recibo de Pago
+              </h3>
+              <p style={{ margin: '4px 0 0 0', color: '#666', fontSize: '14px' }}>
+                Descargue el Recibo de Pago en formato PDF. El sistema verificará si existe y lo generará si es necesario.
+              </p>
             </div>
-          </Card>
-        ) : (
-          <Card 
-            style={{ marginBottom: '24px', backgroundColor: '#fff7e6', border: '1px solid #faad14' }}
-            styles={{ body: { padding: '16px' } }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <h3 style={{ margin: 0, color: '#faad14', fontSize: '16px' }}>
-                  📋 Recibo de Pago No Disponible
-                </h3>
-                <p style={{ margin: '4px 0 0 0', color: '#666', fontSize: '14px' }}>
-                  El recibo de pago no está disponible para descarga en este momento.
-                </p>
-              </div>
-            </div>
-          </Card>
-        )}
+            <Button
+              type="primary"
+              size="large"
+              icon={<DownloadOutlined />}
+              onClick={handleDownloadRecibo}
+              loading={loadingRecibo}
+            >
+              Descargar Recibo de Pago
+            </Button>
+          </div>
+        </Card>
 
         {/* Datos del Pago */}
-        <Card 
+        <Card
           title={
             <span>
               <DollarOutlined style={{ marginRight: '8px' }} />
@@ -305,7 +327,7 @@ const PagosDetail = () => {
 
         {/* Datos del Estudiante */}
         {pago.estudiante && (
-          <Card 
+          <Card
             title={
               <span>
                 <UserOutlined style={{ marginRight: '8px' }} />
@@ -344,7 +366,7 @@ const PagosDetail = () => {
 
         {/* Datos de la Gestión */}
         {pago.gestion && (
-          <Card 
+          <Card
             title={
               <span>
                 <CalendarOutlined style={{ marginRight: '8px' }} />
@@ -371,7 +393,7 @@ const PagosDetail = () => {
 
         {/* Información de Beca */}
         {pago.beca && (
-          <Card 
+          <Card
             title={
               <span>
                 <FileTextOutlined style={{ marginRight: '8px' }} />
@@ -425,7 +447,7 @@ const PagosDetail = () => {
         {pago.inscripcion && (
           <>
             <Divider />
-            <Card 
+            <Card
               title={
                 <span>
                   <FileTextOutlined style={{ marginRight: '8px' }} />
@@ -454,7 +476,7 @@ const PagosDetail = () => {
         )}
 
         {/* Información Adicional */}
-        <Card 
+        <Card
           title="Información Adicional"
           style={{ marginBottom: '24px' }}
         >

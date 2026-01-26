@@ -211,6 +211,39 @@ export class PagoAporteRepository extends IPagoAporteRepository {
       return handleErrorResponse(error, 'Error al eliminar pago de aporte');
     }
   }
+
+  /**
+   * Genera u obtiene el recibo de pago de un aporte académico
+   * GET /v1/pagos-aportes/:id/recibo
+   * 
+   * Verifica si el recibo ya existe en documentos_estudiante:
+   * - Si existe, retorna la información del archivo existente
+   * - Si no existe, genera el recibo y lo guarda en documentos_estudiante
+   * 
+   * @param {string|number} id - ID del pago
+   * @returns {Promise<{success: boolean, data?: {filePath: string, fileName: string, absolutePath: string}, error?: string}>}
+   */
+  async generarRecibo(id) {
+    try {
+      // Validar que el ID sea válido
+      if (!id || (typeof id !== 'string' && typeof id !== 'number')) {
+        return {
+          success: false,
+          error: 'ID del pago es requerido',
+        };
+      }
+
+      // Llamada HTTP directa al endpoint
+      const response = await apiClient.get(PAGOS_APORTES_ENDPOINTS.GENERATE_RECIBO(id));
+
+      // Procesar respuesta exitosa
+      const result = handleSuccessResponse(response);
+
+      return result;
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al generar recibo de pago');
+    }
+  }
 }
 
 export default new PagoAporteRepository();

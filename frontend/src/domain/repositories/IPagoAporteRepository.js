@@ -50,4 +50,19 @@ export class IPagoAporteRepository extends IBaseRepository {
   async eliminar(id) {
     throw new Error('Method eliminar must be implemented');
   }
+
+  /**
+   * Genera u obtiene el recibo de pago de un aporte académico
+   * GET /v1/pagos-aportes/:id/recibo
+   * 
+   * Verifica si el recibo ya existe en documentos_estudiante:
+   * - Si existe, retorna la información del archivo existente
+   * - Si no existe, genera el recibo y lo guarda en documentos_estudiante
+   * 
+   * @param {string|number} id - ID del pago
+   * @returns {Promise<{success: boolean, data?: {filePath: string, fileName: string, absolutePath: string}, error?: string}>}
+   */
+  async generarRecibo(id) {
+    throw new Error('Method generarRecibo must be implemented');
+  }
 }
