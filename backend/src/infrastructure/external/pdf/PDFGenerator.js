@@ -2,7 +2,7 @@
  * PDFGenerator - Adaptador de generación de PDFs que implementa IPDFGenerator
  * 
  * Esta clase implementa IPDFGenerator y sirve como fachada única para todos los generadores de PDF:
- * - Generadores que crean PDFs desde cero (usando IncosPDFBase + pdfkit)
+ * - Generadores que crean PDFs desde cero (usando pdf-lib)
  * - Generadores que editan plantillas PDF (usando pdf-lib)
  * 
  * Se registra en el container DI y se inyecta en use cases.
@@ -46,8 +46,7 @@ export class PDFGenerator extends IPDFGenerator {
     /**
      * Genera un Recibo de Pago con diseño institucional
      * 
-     * Este generador crea PDFs desde cero usando IncosPDFLibBase + pdf-lib.
-     * Retorna Buffer en lugar de escribir en disco.
+     * Este generador crea PDFs desde cero usando pdf-lib (ReciboPagoPdfGenerator).
      * 
      * @param {Object} data - Datos del pago
      * @param {string} data.numeroRecibo - Número del recibo (FAV)
@@ -55,16 +54,12 @@ export class PDFGenerator extends IPDFGenerator {
      * @param {string} data.nombreCompleto - Nombre completo del estudiante
      * @param {string} data.ci - Cédula de identidad
      * @param {string} [data.carrera] - Nombre de la carrera (opcional)
-     * @param {string} [data.cursoParalelo] - Curso y paralelo (opcional)
-     * @param {string} [data.anio] - Año académico (opcional)
      * @param {number} data.montoTotal - Monto total del aporte
      * @param {number} data.descuentoBeca - Descuento por beca
-     * @param {number} data.montoPagado - Monto pagado (totalAmount - descuentoBeca)
+     * @param {number} data.montoPagado - Monto pagado (total - descuento)
      * @param {string} data.concepto - Concepto del pago
      * @param {string} data.metodoPago - Método de pago
-     * @param {string} [data.numeroTransaccion] - Número de transacción (opcional)
-     * @param {Object} [data.becaInfo] - Información de beca (opcional)
-     * @returns {Promise<Buffer>} Buffer del PDF generado
+     * @returns {Promise<Buffer>} Contenido del PDF generado
      * 
      * @example
      * const pdfBuffer = await pdfGenerator.generateReciboPago(data);
@@ -127,24 +122,4 @@ export class PDFGenerator extends IPDFGenerator {
         return await this.formularioInscripcionPdfGenerator.generate(options);
     }
 
-    // ============================================
-    // MÉTODOS ESTÁTICOS (para compatibilidad)
-    // ============================================
-
-    /**
-     * Genera un Recibo de Pago (método estático para compatibilidad)
-     * 
-     * @deprecated Usa el método de instancia generateReciboPago() en su lugar
-     * Este método ya no está disponible. Usa una instancia de PDFGenerator con el método generateReciboPago()
-     * @param {Object} data - Datos del pago
-     * @param {string} outputPath - Ruta donde guardar el PDF
-     * @returns {Promise<string>} Ruta del archivo generado
-     * @throws {Error} Este método estático ya no está disponible
-     */
-    static async generateReciboPago(data, outputPath) {
-        throw new Error(
-            'El método estático generateReciboPago() ya no está disponible. ' +
-            'Usa una instancia de PDFGenerator con el método generateReciboPago() que retorna un Buffer.'
-        );
-    }
 }

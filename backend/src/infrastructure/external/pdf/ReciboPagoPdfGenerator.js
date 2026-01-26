@@ -75,18 +75,28 @@ export class ReciboPagoPdfGenerator extends IncosPDFLibBase {
 
             // Crear documento PDF desde cero (vertical/portrait)
             const pdfDoc = await PDFDocument.create();
-            
+
             // Registrar fontkit para poder usar fuentes personalizadas TTF/OTF
             // Importar fontkit dinámicamente para evitar problemas de carga
-            const fontkit = (await import('@pdf-lib/fontkit')).default;
-            pdfDoc.registerFontkit(fontkit);
-            
+            try {
+                const fontkit = (await import('@pdf-lib/fontkit')).default;
+                pdfDoc.registerFontkit(fontkit);
+            } catch (fontkitError) {
+                if (this.logger) {
+                    this.logger.warn('[ReciboPagoPdfGenerator] Error al cargar fontkit, continuando sin fuentes personalizadas', {
+                        error: fontkitError.message,
+                        stack: fontkitError.stack,
+                    });
+                }
+                // Continuar sin fontkit (solo se podrán usar fuentes estándar)
+            }
+
             // Crear página con tamaño LETTER vertical
             const page = pdfDoc.addPage([612, 792]); // LETTER: 8.5" x 11" en puntos
-            
+
             // Inicializar estado interno
             this._initializeDocumentState(pdfDoc, page, false);
-            
+
             if (this.logger) {
                 this.logger.debug('[ReciboPagoPdfGenerator] Estado inicializado', {
                     currentY: this._currentY,
@@ -151,10 +161,34 @@ export class ReciboPagoPdfGenerator extends IncosPDFLibBase {
             return pdfBuffer;
         } catch (error) {
             if (this.logger) {
-                this.logger.error('[ReciboPagoPdfGenerator] Error al generar recibo de pago PDF', {
-                    error: error.message,
-                    stack: error.stack,
-                });
+                const errorInfo = {
+                    errorMessage: error?.message || 'Error desconocido',
+                    errorName: error?.name || 'Error',
+                    errorType: error?.constructor?.name || 'Unknown',
+                };
+
+                // Agregar stack trace si existe
+                if (error?.stack) {
+                    errorInfo.stack = error.stack;
+                }
+
+                // Agregar información adicional del error si existe
+                if (error?.code) errorInfo.errorCode = error.code;
+                if (error?.errno) errorInfo.errno = error.errno;
+                if (error?.syscall) errorInfo.syscall = error.syscall;
+                if (error?.path) errorInfo.path = error.path;
+
+                // Intentar obtener propiedades del error
+                try {
+                    const errorKeys = Object.getOwnPropertyNames(error);
+                    if (errorKeys.length > 0) {
+                        errorInfo.errorProperties = errorKeys;
+                    }
+                } catch (e) {
+                    // Ignorar si no se pueden obtener las propiedades
+                }
+
+                this.logger.error('[ReciboPagoPdfGenerator] Error al generar recibo de pago PDF', errorInfo);
             }
             throw error;
         }
@@ -201,24 +235,22 @@ export class ReciboPagoPdfGenerator extends IncosPDFLibBase {
                         throw new Error('No se pudo cargar la imagen como PNG ni JPG');
                     }
                 }
-                
                 // Calcular dimensiones manteniendo proporción
                 const logoDims = logoImage.scale(1);
                 const scale = Math.min(
                     logoMaxWidth / logoDims.width,
                     logoMaxHeight / logoDims.height
                 );
-                
+
                 logoWidth = logoDims.width * scale;
                 logoHeight = logoDims.height * scale;
-                
+
                 this._currentPage.drawImage(logoImage, {
                     x: margins.left,
                     y: startY - logoHeight,
                     width: logoWidth,
                     height: logoHeight,
                 });
-                
                 logoLoaded = true;
             } catch (imageError) {
                 if (this.logger) {
@@ -233,7 +265,6 @@ export class ReciboPagoPdfGenerator extends IncosPDFLibBase {
         const titleFont = await this._loadCustomFont(this._pdfDoc, IncosPDFBase.FONTS.defaultTitleFont);
         const titleFontSize = IncosPDFBase.FONTS.title.size;
         const titleRgb = this._hexToRgb(IncosPDFBase.COLORS.primary);
-        
         const titleText = IncosPDFBase.INSTITUTE.name;
         let titleTextWidth = 0;
         try {
@@ -248,15 +279,15 @@ export class ReciboPagoPdfGenerator extends IncosPDFLibBase {
             // Estimación aproximada: 0.6 puntos por carácter
             titleTextWidth = titleText.length * titleFontSize * 0.6;
         }
-        
+
         // Calcular posición X del título (centrado, considerando logo y área de recibo a la derecha)
         const reciboAreaWidth = 100; // Área para fecha y número de recibo a la derecha
         const availableWidth = pageWidth - margins.left - margins.right - reciboAreaWidth;
-        const titleStartX = logoLoaded 
-            ? margins.left + logoWidth + 10 
+        const titleStartX = logoLoaded
+            ? margins.left + logoWidth + 10
             : margins.left;
-        const titleMaxWidth = logoLoaded 
-            ? availableWidth - logoWidth - 10 
+        const titleMaxWidth = logoLoaded
+            ? availableWidth - logoWidth - 10
             : availableWidth;
         const titleX = titleStartX + (titleMaxWidth - titleTextWidth) / 2;
 
@@ -368,7 +399,6 @@ export class ReciboPagoPdfGenerator extends IncosPDFLibBase {
             numeroReciboWidth = numeroReciboText.length * 16 * 0.6;
         }
         const numeroReciboX = reciboBoxX + (reciboBoxWidth - numeroReciboWidth) / 2;
-        
         this._currentPage.drawText(numeroReciboText, {
             x: numeroReciboX,
             y: reciboBoxY + (reciboBoxHeight - 16) / 2 + 4, // Centrado verticalmente
@@ -377,12 +407,12 @@ export class ReciboPagoPdfGenerator extends IncosPDFLibBase {
             color: rgb(1, 1, 1), // Blanco
         });
 
-        // Línea decorativa
-        const lineY = Math.max(startY - logoHeight, startY - 60) + 5;
+        // Línea decorativa - Aumentar espaciado después del logo
+        // Calcular posición Y de la línea: debajo del logo con más espacio
+        const logoBottomY = logoLoaded ? (startY - logoHeight) : startY;
+        const lineY = logoBottomY - 15; // 15 puntos de espacio entre logo y línea
         this._currentY = lineY;
         this._addLine(IncosPDFBase.COLORS.primary, 2);
-        // Espaciado después del header (aumentado para mejor separación)
-        this._currentY = this._currentY - IncosPDFBase.LAYOUT.spacing.section; // Mover hacia abajo (restar en coordenadas Y)
     }
 
     /**
@@ -422,7 +452,6 @@ export class ReciboPagoPdfGenerator extends IncosPDFLibBase {
         const margins = IncosPDFBase.LAYOUT.margins;
         const { width: pageWidth } = this._currentPage.getSize();
         const sectionHeight = 20;
-        
         // Espaciado antes de la sección
         this._currentY -= IncosPDFBase.LAYOUT.spacing.section;
 
@@ -438,7 +467,6 @@ export class ReciboPagoPdfGenerator extends IncosPDFLibBase {
 
         const boldFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.bold.font);
         const boldFont = await this._pdfDoc.embedFont(boldFontName);
-        
         this._currentPage.drawText('DATOS PERSONALES DEL ESTUDIANTE', {
             x: margins.left + 5,
             y: this._currentY - sectionHeight + 6,
@@ -512,9 +540,6 @@ export class ReciboPagoPdfGenerator extends IncosPDFLibBase {
 
         // APORTE (monto final)
         await this._addTableRow('APORTE', this._formatAporte({ montoPagado }), true);
-
-        // Espaciado después de la sección
-        this._currentY -= IncosPDFBase.LAYOUT.spacing.section;
     }
 
     /**
@@ -556,7 +581,6 @@ export class ReciboPagoPdfGenerator extends IncosPDFLibBase {
         const normalFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.normal.font);
         const boldFont = await this._pdfDoc.embedFont(boldFontName);
         const normalFont = await this._pdfDoc.embedFont(normalFontName);
-        
         // Usar tamaño de fuente mayor para montos (si es header o contiene "Bs")
         const isAmount = isHeader || value.includes('Bs') || value.includes('GRATIS');
         const fontSize = isAmount ? IncosPDFBase.FONTS.amount.size : IncosPDFBase.FONTS.normal.size;
@@ -605,7 +629,6 @@ export class ReciboPagoPdfGenerator extends IncosPDFLibBase {
         let currentX = margins.left;
         for (const col of columns) {
             const colWidth = totalWidth * col.width;
-            
             // Borde
             this._currentPage.drawRectangle({
                 x: currentX,
@@ -671,7 +694,6 @@ export class ReciboPagoPdfGenerator extends IncosPDFLibBase {
 
         const boldFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.bold.font);
         const boldFont = await this._pdfDoc.embedFont(boldFontName);
-        
         this._currentPage.drawText('DECLARACIÓN JURADA', {
             x: margins.left + 5,
             y: this._currentY - sectionHeight + 6,
@@ -684,7 +706,25 @@ export class ReciboPagoPdfGenerator extends IncosPDFLibBase {
 
         // Contenido de la declaración
         const declaracionTexto = this._getDeclaracionTexto(data);
-        const boxHeight = 200;
+
+        // Preparar fuentes y estilos (necesarios para calcular altura del cuadro)
+        const normalFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.normal.font);
+        const normalFont = await this._pdfDoc.embedFont(normalFontName);
+        const fontSize = IncosPDFBase.FONTS.normal.size;
+        const textRgb = this._hexToRgb(IncosPDFBase.COLORS.text);
+        const lineSpacing = IncosPDFBase.LAYOUT.spacing.line;
+        const paragraphSpacing = IncosPDFBase.LAYOUT.spacing.paragraph;
+
+        // Calcular altura necesaria para el contenido antes de dibujar el cuadro
+        // Estimación: cada párrafo tiene aproximadamente 3-4 líneas, más espacio para firmas
+        const parrafosEstimados = declaracionTexto.split(/\n\s*\n/).filter(p => p.trim() !== '');
+        const estimatedLines = parrafosEstimados.length * 3.5; // Estimación de líneas por párrafo
+        const espacioFirmas = 60; // Espacio para las firmas
+        const boxHeightBase = 220; // Altura base suficiente para texto y firmas
+        const boxHeight = Math.max(
+            boxHeightBase,
+            (estimatedLines * (fontSize + lineSpacing)) + espacioFirmas + 30
+        );
 
         // Borde del cuadro
         const borderRgb = this._hexToRgb(IncosPDFBase.COLORS.border);
@@ -697,30 +737,70 @@ export class ReciboPagoPdfGenerator extends IncosPDFLibBase {
             borderWidth: 1,
         });
 
-        // Texto de la declaración
-        const normalFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.normal.font);
-        const normalFont = await this._pdfDoc.embedFont(normalFontName);
-        const fontSize = IncosPDFBase.FONTS.normal.size;
-        const textRgb = this._hexToRgb(IncosPDFBase.COLORS.text);
+        // Calcular ancho máximo disponible (con padding interno del cuadro)
+        const padding = 16; // 8 puntos a cada lado
+        const maxWidth = pageWidth - margins.left - margins.right - padding;
 
-        // Dividir texto en líneas
-        const lines = this._wrapText(declaracionTexto, normalFont, fontSize, pageWidth - margins.left - margins.right - 16);
-        
-        let currentY = this._currentY - 8;
-        for (const line of lines) {
-            this._currentPage.drawText(line, {
-                x: margins.left + 8,
-                y: currentY,
-                size: fontSize,
-                font: normalFont,
-                color: textRgb,
-            });
-            currentY -= fontSize + 3;
+        // Dividir texto en párrafos (respetar saltos de línea dobles)
+        // Ya calculamos parrafos arriba, pero lo recalculamos aquí para usar en el loop
+        const parrafos = declaracionTexto.split(/\n\s*\n/).filter(p => p.trim() !== '');
+
+        let currentY = this._currentY - 12; // Empezar un poco más arriba
+
+        for (let i = 0; i < parrafos.length; i++) {
+            const parrafo = parrafos[i].trim();
+
+            // Envolver cada párrafo en líneas
+            let parrafoLines = [];
+            try {
+                parrafoLines = this._wrapText(parrafo, normalFont, fontSize, maxWidth);
+            } catch (wrapError) {
+                if (this.logger) {
+                    this.logger.error('[ReciboPagoPdfGenerator] Error al envolver párrafo de declaración', {
+                        error: wrapError.message,
+                        parrafo: parrafo?.substring(0, 100),
+                    });
+                }
+                // Fallback: dividir por espacios
+                parrafoLines = parrafo.split(' ').filter(w => w.trim() !== '');
+            }
+
+            // Dibujar cada línea del párrafo
+            for (const line of parrafoLines) {
+                try {
+                    this._currentPage.drawText(line, {
+                        x: margins.left + 8,
+                        y: currentY,
+                        size: fontSize,
+                        font: normalFont,
+                        color: textRgb,
+                    });
+                } catch (drawError) {
+                    if (this.logger) {
+                        this.logger.error('[ReciboPagoPdfGenerator] Error al dibujar línea de declaración', {
+                            error: drawError.message,
+                            line: line?.substring(0, 50),
+                        });
+                    }
+                }
+                currentY -= fontSize + lineSpacing;
+            }
+
+            // Espaciado entre párrafos (excepto después del último)
+            if (i < parrafos.length - 1) {
+                currentY -= paragraphSpacing - lineSpacing;
+            }
         }
 
-        // Área de firma dentro del cuadro
-        const firmaY = this._currentY - boxHeight + 35;
-        this._currentPage.drawText('Firma del estudiante: .......................................', {
+        // Área de firmas dentro del cuadro
+        // Calcular posición Y para las firmas (debajo del texto, con espacio)
+        const espacioEntreTextoYFirmas = 20;
+        const firmaY = currentY - espacioEntreTextoYFirmas;
+        const firmaLineHeight = fontSize + 5;
+
+        // Firma del estudiante (izquierda)
+        const firmaEstudianteText = 'Firma del estudiante: .......................................';
+        this._currentPage.drawText(firmaEstudianteText, {
             x: margins.left + 8,
             y: firmaY,
             size: fontSize,
@@ -728,7 +808,43 @@ export class ReciboPagoPdfGenerator extends IncosPDFLibBase {
             color: textRgb,
         });
 
-        this._currentY -= boxHeight + 5;
+        // Carrera y Paralelo (derecha, alineados) - Campos para llenar manualmente
+        const rightAlignX = pageWidth - margins.right - 8;
+
+        // Carrera (siempre visible, con puntos para llenar manualmente)
+        const carreraText = 'Carrera: .......................................';
+        let carreraTextWidth = 0;
+        try {
+            carreraTextWidth = normalFont.widthOfTextAtSize(carreraText, fontSize);
+        } catch (widthError) {
+            // Estimación si falla
+            carreraTextWidth = carreraText.length * fontSize * 0.6;
+        }
+        this._currentPage.drawText(carreraText, {
+            x: rightAlignX - carreraTextWidth,
+            y: firmaY,
+            size: fontSize,
+            font: normalFont,
+            color: textRgb,
+        });
+
+        // Paralelo (siempre visible, con puntos para llenar manualmente, debajo de carrera)
+        const paraleloText = 'Paralelo: .......................................';
+        let paraleloTextWidth = 0;
+        try {
+            paraleloTextWidth = normalFont.widthOfTextAtSize(paraleloText, fontSize);
+        } catch (widthError) {
+            // Estimación si falla
+            paraleloTextWidth = paraleloText.length * fontSize * 0.6;
+        }
+        this._currentPage.drawText(paraleloText, {
+            x: rightAlignX - paraleloTextWidth,
+            y: firmaY - firmaLineHeight,
+            size: fontSize,
+            font: normalFont,
+            color: textRgb,
+        });
+
     }
 
     /**

@@ -1,8 +1,6 @@
 import { NotFoundError, ValidationError } from '../../../domain/errors/AppError.js';
 import path from 'path';
 import fs from 'fs';
-import { UploadsStorageHelper } from '../../../infrastructure/external/storage/UploadsStorageHelper.js';
-import { UPLOAD } from '../../../infrastructure/config/uploads.config.js';
 
 /**
  * Use Case: RegisterAporteVoluntarioUseCase
@@ -254,10 +252,9 @@ export class RegisterAporteVoluntarioUseCase {
                     }
                 } catch (pdfError) {
                     this.logger.error('[Pagos] Error al generar recibo PDF', {
-                        studentId,
-                        paymentId: finalPayment.id,
                         error: pdfError.message,
                         stack: pdfError.stack,
+                        paymentId: finalPayment.id,
                     });
                     // No fallar el proceso si el PDF falla
                 }
@@ -728,7 +725,14 @@ export class RegisterAporteVoluntarioUseCase {
             // Generar nombre del archivo
             const numeroRecibo = paymentPlain.receiptNumber || paymentPlain.numeroRecibo || paymentPlain.numero_recibo || String(paymentPlain.id).padStart(6, '0');
             const year = managementPlain.anio || managementPlain.year || new Date().getFullYear();
-            const fileName = `RECIBO_PAGO_${studentPlain.ci || studentPlain.id}_${numeroRecibo}_${Date.now()}.pdf`;
+            const outputDir = path.join(process.cwd(), 'uploads', 'recibos', String(year));
+            
+            // Crear directorio si no existe
+            if (!fs.existsSync(outputDir)) {
+                fs.mkdirSync(outputDir, { recursive: true });
+            }
+
+            const absolutePath = path.join(outputDir, fileName);
 
             // Guardar PDF en uploads usando UploadsStorageHelper
             // Usar ruta de recibos según configuración
