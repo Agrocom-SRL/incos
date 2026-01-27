@@ -76,5 +76,6 @@ export const REPOSITORIOS_TOKENS = {
     authorizedBankRepository: 'authorizedBankRepository',
     paymentAccountRepository: 'paymentAccountRepository',
     contributionPaymentRepository: 'contributionPaymentRepository',
+    contributionPaymentInstallmentRepository: 'contributionPaymentInstallmentRepository',
 };
 

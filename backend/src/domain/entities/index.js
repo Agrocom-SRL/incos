@@ -101,3 +101,4 @@ export { PaymentMethod } from './PaymentMethod.js';
 export { AuthorizedBank } from './AuthorizedBank.js';
 export { PaymentAccount } from './PaymentAccount.js';
 export { ContributionPayment } from './ContributionPayment.js';
+export { ContributionPaymentInstallment } from './ContributionPaymentInstallment.js';

@@ -95,3 +95,4 @@ export { IPaymentMethodRepository } from './IPaymentMethodRepository.js';
 export { IAuthorizedBankRepository } from './IAuthorizedBankRepository.js';
 export { IPaymentAccountRepository } from './IPaymentAccountRepository.js';
 export { IContributionPaymentRepository } from './IContributionPaymentRepository.js';
+export { IContributionPaymentInstallmentRepository } from './IContributionPaymentInstallmentRepository.js';

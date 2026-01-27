@@ -92,6 +92,12 @@ export { LicenseRequestMapper } from './LicenseRequestMapper.js';
 export { SessionMapper } from './SessionMapper.js';
 
 // ============================================
+// PAGOS ACADÉMICOS
+// ============================================
+export { ContributionPaymentMapper } from './ContributionPaymentMapper.js';
+export { ContributionPaymentInstallmentMapper } from './ContributionPaymentInstallmentMapper.js';
+
+// ============================================
 // CONFIGURACIÓN
 // ============================================
 export { SystemConfigurationMapper } from './SystemConfigurationMapper.js';
