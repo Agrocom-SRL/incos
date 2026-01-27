@@ -84,58 +84,38 @@ const SelectedPaymentSection = ({
   // Determinar si es pago gratuito (monto = 0)
   const esPagoGratuito = montoPagado === 0;
 
-  // Para pagos gratuitos, no requerir método de pago
-  // Para pagos con monto, requerir método de pago
-  if (!esPagoGratuito && !selectedMetodoPago) return null;
-
-  // Determinar características del método de pago (solo si hay método seleccionado)
+  // Siempre computar características del método (con valores por defecto si no hay método)
+  // para poder llamar los hooks incondicionalmente y evitar "Expected static flag was missing"
   const codigoMetodo = selectedMetodoPago?.codigo?.toUpperCase() || '';
   const esEfectivo = codigoMetodo === 'EFECTIVO';
   const esTransferencia = codigoMetodo === 'TRANSFERENCIA';
   const esQR = codigoMetodo === 'QR';
   const esDeposito = codigoMetodo === 'DEPOSITO';
   const esTigoMoney = codigoMetodo === 'TIGO_MONEY';
-  
-  // Métodos que requieren cuenta bancaria (QR NO requiere cuenta bancaria)
-  // Solo si NO es pago gratuito
+
   const requiereCuenta = !esPagoGratuito && codigoMetodo && ['TRANSFERENCIA', 'DEPOSITO', 'TIGO_MONEY'].includes(codigoMetodo);
-  
-  // La fecha de pago es SIEMPRE requerida (para todos los métodos, incluyendo EFECTIVO)
-  // Solo si NO es pago gratuito
   const requiereFechaPago = !esPagoGratuito;
-  
-  // Mostrar campo de documento de respaldo (opcional) para todos los métodos excepto EFECTIVO
-  // Solo si NO es pago gratuito
-  const mostrarDocumentoRespaldo = !esPagoGratuito && !esEfectivo; // Mostrar pero no requerir
-  
-  // Métodos que requieren número de transacción (TRANSFERENCIA y DEPOSITO) - OPCIONAL
-  // Solo si NO es pago gratuito
+  const mostrarDocumentoRespaldo = !esPagoGratuito && !esEfectivo;
   const mostrarNumeroTransaccion = !esPagoGratuito && (esTransferencia || esDeposito);
-  
-  // Métodos que requieren código de comprobante (QR, TRANSFERENCIA, DEPOSITO) - OBLIGATORIO
-  // Solo si NO es pago gratuito
   const requiereCodigoComprobante = !esPagoGratuito && (esQR || esTransferencia || esDeposito);
 
-  // Sincronizar descuento en el formulario cuando cambie la beca o configuración
+  // Hooks siempre en el mismo orden (nunca después de un return condicional)
   useEffect(() => {
     if (form) {
       form.setFieldsValue({ descuentoBeca: descuentoBeca });
     }
   }, [descuentoBeca, form]);
 
-  // Limpiar campos cuando cambie el método de pago (solo si NO es pago gratuito)
   useEffect(() => {
     if (form && !esPagoGratuito && selectedMetodoPago) {
-      // Limpiar campos específicos según el método
       if (esEfectivo) {
-        form.setFieldsValue({ 
+        form.setFieldsValue({
           fechaPago: undefined,
           numeroTransaccion: undefined,
           codigoComprobante: undefined,
           documentoRespaldo: undefined,
         });
       } else {
-        // Para métodos que no son efectivo, establecer fecha por defecto
         if (!form.getFieldValue('fechaPago')) {
           form.setFieldsValue({ fechaPago: dayjs() });
         }
@@ -143,7 +123,6 @@ const SelectedPaymentSection = ({
     }
   }, [codigoMetodo, form, esEfectivo, esPagoGratuito, selectedMetodoPago]);
 
-  // Fecha de pago por defecto: siempre hoy cuando se requiere (Completar Información del Pago)
   useEffect(() => {
     if (form && requiereFechaPago) {
       const actual = form.getFieldValue('fechaPago');
@@ -153,6 +132,7 @@ const SelectedPaymentSection = ({
     }
   }, [form, requiereFechaPago]);
 
+  // El padre solo renderiza este componente cuando esPagoGratuito || selectedMetodoPago
   return (
     <Card
       title={
@@ -169,7 +149,6 @@ const SelectedPaymentSection = ({
       }}
       headerColor="primary"
     >
-      {/* Si el monto es 0 (gratis), mostrar label de pago gratuito y descripción */}
       {montoPagado === 0 ? (
         <div>
           {/* Label de Pago Gratuito */}
