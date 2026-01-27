@@ -70,6 +70,8 @@ const PagosRegistrar = () => {
   // Estado local para idempotencia: prevenir múltiples clics
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isSubmittingRef = useRef(false); // Ref para evitar race conditions
+  // Bloquear redirección automática (saldo 0 → detalle) hasta después de descargar el recibo
+  const pendienteDescargaReciboRef = useRef(false);
 
   // Monto de esta cuota (lo que el usuario ingresa en Detalle del Aporte). Se muestra en "Saldo a Pagar" y se envía al registrar.
   const [montoCuota, setMontoCuota] = useState(null);
@@ -346,39 +348,32 @@ const PagosRegistrar = () => {
       console.log('[PagosRegistrar] Resultado del registro:', result);
 
       if (result && result.success) {
+        // Bloquear redirección automática (saldo 0 → detalle) hasta descargar recibo y navegar nosotros
+        pendienteDescargaReciboRef.current = true;
         message.success('Pago registrado exitosamente');
-        
-        // NUEVO: Descargar automáticamente el recibo PDF si está disponible
+
+        const irAlEstudiante = () => {
+          navigate(`/estudiantes/${studentId}`);
+          pendienteDescargaReciboRef.current = false;
+        };
+
         if (result.data && result.data.reciboPDF) {
           try {
-            // El backend ya retorna la ruta relativa lista para descargar
             const reciboPath = result.data.reciboPDF;
-            
-            // Asegurar que la ruta empiece con /
-            const relativePath = reciboPath.startsWith('/') 
-              ? reciboPath 
-              : '/' + reciboPath;
-            
-            // Obtener el nombre del archivo del path
+            const relativePath = reciboPath.startsWith('/') ? reciboPath : '/' + reciboPath;
             const fileName = relativePath.split('/').pop() || 'recibo_pago.pdf';
-            
-            // Descargar el recibo PDF
             downloadFile(relativePath, fileName);
-            
-            message.success('Recibo de pago generado y descargado correctamente', 3);
+            message.success('Recibo descargado. Redirigiendo al estudiante...', 2);
+            // No saltar de página hasta que el usuario haya tenido tiempo de ver y guardar el recibo
+            setTimeout(irAlEstudiante, 2500);
           } catch (pdfError) {
             console.error('Error al descargar el recibo PDF:', pdfError);
-            // No mostrar error al usuario si solo falla la descarga
-            // El pago ya fue registrado exitosamente
-            message.warning('Pago registrado exitosamente. El recibo PDF se generó pero no se pudo descargar automáticamente.');
+            message.warning('Pago registrado. El recibo no se pudo descargar; estará en Documentos del estudiante.');
+            setTimeout(irAlEstudiante, 2000);
           }
+        } else {
+          setTimeout(irAlEstudiante, 1500);
         }
-        
-        // Redirigir al detalle del estudiante después de un breve delay
-        // NOTA: No reseteamos isSubmitting aquí porque vamos a navegar fuera
-        setTimeout(() => {
-          navigate(`/estudiantes/${studentId}`);
-        }, 1500);
       } else {
         // Extraer el mensaje de error correctamente
         let errorMessage = 'Error al registrar el pago';
@@ -431,8 +426,9 @@ const PagosRegistrar = () => {
   }, [studentId, navigate]);
 
   // Si el saldo es 0 y existe cabecera, ir al detalle del pago (no mostrar formulario de registro)
-  // Pasamos studentId en state para que "Volver" en PagosDetail vaya al detalle del estudiante
+  // No redirigir si estamos esperando descargar el recibo tras un pago recién registrado
   useEffect(() => {
+    if (pendienteDescargaReciboRef.current) return;
     if (estadoActualAporte && !loadingEstadoAporte && Number(estadoActualAporte.saldo_pendiente) === 0 && estadoActualAporte.cabecera?.id && studentId) {
       navigate(`/pagos/${estadoActualAporte.cabecera.id}`, { replace: true, state: { studentId } });
     }
@@ -444,7 +440,8 @@ const PagosRegistrar = () => {
   }
 
   // Si saldo es 0 y hay cabecera, no mostrar formulario (se redirige al detalle)
-  const redirigirADetalle = estadoActualAporte && !loadingEstadoAporte && Number(estadoActualAporte.saldo_pendiente) === 0 && estadoActualAporte.cabecera?.id;
+  // No entrar aquí si acabamos de registrar y estamos descargando el recibo
+  const redirigirADetalle = estadoActualAporte && !loadingEstadoAporte && Number(estadoActualAporte.saldo_pendiente) === 0 && estadoActualAporte.cabecera?.id && !pendienteDescargaReciboRef.current;
   if (redirigirADetalle) {
     return (
       <PageTemplate header={<PageHeader title="Registrar Pago" breadcrumbItems={breadcrumbItems} />}>
