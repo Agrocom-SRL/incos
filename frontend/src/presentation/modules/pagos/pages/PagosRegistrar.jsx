@@ -17,7 +17,7 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useMemo, useEffect, useState, useRef } from 'react';
 import { Spin, Form, App } from 'antd';
-import { ArrowLeftOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, GiftOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
@@ -69,6 +69,9 @@ const PagosRegistrar = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isSubmittingRef = useRef(false); // Ref para evitar race conditions
 
+  // Monto de esta cuota (lo que el usuario ingresa en Detalle del Aporte). Se muestra en "Saldo a Pagar" y se envía al registrar.
+  const [montoCuota, setMontoCuota] = useState(null);
+
   // Formulario para registro de pago
   // Si el contexto no proporciona un form, crear uno nuevo
   const [formPago] = Form.useForm();
@@ -117,10 +120,25 @@ const PagosRegistrar = () => {
   // Determinar si es pago gratuito (monto = 0)
   const esPagoGratuito = montoPagado === 0;
 
+  // Inicializar montoCuota con el saldo total cuando carga la config (primera cuota = total por defecto; solo si aún no hay valor)
+  useEffect(() => {
+    if (montoPagado > 0 && (montoCuota == null || montoCuota === '')) {
+      setMontoCuota(montoPagado);
+    }
+  }, [montoPagado]);
 
   // Handler para volver
   const handleVolver = () => {
     navigate(`/estudiantes/${studentId}`);
+  };
+
+  // Handler para ir a asignar beca (misma lógica que en detalle de estudiante)
+  const handleAsignarBeca = () => {
+    if (!studentId) {
+      message.warning('ID de estudiante no disponible');
+      return;
+    }
+    navigate('/estudiantes/becas/asignar', { state: { studentId } });
   };
 
   // Handler para finalizar el registro de pago
@@ -145,6 +163,14 @@ const PagosRegistrar = () => {
       if (!studentId || !Number.isInteger(Number(studentId)) || Number(studentId) < 1) {
         message.error('El ID del estudiante es requerido y debe ser un número válido');
         // Resetear estado si falla validación temprana
+        setIsSubmitting(false);
+        isSubmittingRef.current = false;
+        return;
+      }
+
+      // 1.1. Validar monto de esta cuota (solo si NO es pago gratuito)
+      if (!esPagoGratuito && (!montoCuota || Number(montoCuota) <= 0)) {
+        message.error('Indique el monto de esta cuota en el detalle del aporte');
         setIsSubmitting(false);
         isSubmittingRef.current = false;
         return;
@@ -296,6 +322,7 @@ const PagosRegistrar = () => {
       // ============================================
       const pagoData = {
         studentId: Number(studentId),
+        amount: esPagoGratuito ? 0 : Number(montoCuota), // Monto de esta cuota (el que se muestra en "Saldo a Pagar")
         paymentMethodId: metodoPagoId || 1, // Si es gratuito, usar EFECTIVO (1) por defecto
         paymentAccountId: paymentAccountId,
         paymentDate: paymentDate,
@@ -416,13 +443,23 @@ const PagosRegistrar = () => {
           title={`Registrar Pago${student ? ` - ${student.nombreCompleto || student.codigoEstudiante || ''}` : ''}`}
           breadcrumbItems={breadcrumbItems}
           actions={
-            <Button
-              icon={<ArrowLeftOutlined />}
-              onClick={handleVolver}
-              variant="default"
-            >
-              Volver
-            </Button>
+            <>
+              <Button
+                variant="success"
+                icon={<GiftOutlined />}
+                onClick={handleAsignarBeca}
+                style={{ marginRight: 8 }}
+              >
+                Asignar Beca
+              </Button>
+              <Button
+                icon={<ArrowLeftOutlined />}
+                onClick={handleVolver}
+                variant="default"
+              >
+                Volver
+              </Button>
+            </>
           }
         />
       }
@@ -447,6 +484,9 @@ const PagosRegistrar = () => {
               becaActiva={becaActiva}
               loading={configuracionAportes.loading || loadingScholarships}
               error={configuracionAportes.error}
+              montoCuota={montoCuota}
+              onMontoCuotaChange={setMontoCuota}
+              montoObligatorioMax={montoPagado}
             />
 
             {/* Sección 3: Selección de Método de Pago (solo si NO es pago gratuito) */}
@@ -467,11 +507,13 @@ const PagosRegistrar = () => {
               cuentasPagoData={cuentasPago}
               bancosAutorizadosData={bancosAutorizados}
               becaActiva={becaActiva}
+              montoCuota={montoCuota}
               form={formInstance}
               onFinish={handleFinish}
               onCancel={handleVolver}
               disabled={
                 !configuracionAporteActiva || 
+                (!esPagoGratuito && (!montoCuota || Number(montoCuota) <= 0)) ||
                 (!esPagoGratuito && !metodosPago.selectedMetodoPago) || 
                 loadingStudent || 
                 loading || 

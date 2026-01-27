@@ -24,7 +24,6 @@ export const createPagosTableColumns = (navigate, refetch = null, deletePago = n
         {
             title: 'Gestión',
             dataIndex: 'gestion',
-            width: 120,
             render: (gestion, record) => {
                 const g = gestion || record.management;
                 const label = g ? (g.nombre || g.anio || String(g.id)) : 'N/A';
@@ -43,7 +42,6 @@ export const createPagosTableColumns = (navigate, refetch = null, deletePago = n
         {
             title: 'Estudiante',
             dataIndex: ['estudiante', 'nombreCompleto'],
-            width: 220,
             ellipsis: true,
             render: (_, record) => (
                 <TableCell
@@ -63,7 +61,6 @@ export const createPagosTableColumns = (navigate, refetch = null, deletePago = n
         {
             title: 'Monto a pagar',
             dataIndex: 'monto_obligatorio',
-            width: 160,
             align: 'right',
             render: (_, record) => {
                 const base = Number(record.monto_base ?? 0);
@@ -77,7 +74,7 @@ export const createPagosTableColumns = (navigate, refetch = null, deletePago = n
                                 Base Bs. {base.toFixed(2)}
                             </Text>
                             <Text type="secondary" style={{ fontSize: 'var(--font-size-sm)' }}>
-                                Descuento beca Bs. {desc.toFixed(2)}
+                                Descuento Bs. {desc.toFixed(2)}
                             </Text>
                             <Text strong style={{ fontSize: 'var(--font-size-base)' }}>
                                 Bs. {oblig.toFixed(2)}
@@ -91,15 +88,17 @@ export const createPagosTableColumns = (navigate, refetch = null, deletePago = n
         {
             title: 'Detalle del pago',
             dataIndex: ['total_pagado', 'cantidad_pagos'],
-            width: 140,
-            align: 'right',
+            align: 'left',
             render: (_, record) => {
                 const t = record.total_pagado ?? 0;
-                const n = record.cantidad_pagos ?? 0;
+                const n = Number(record.cantidad_pagos ?? 0);
+                if (n === 0) {
+                    return <TableCell fallback="—">sin pagos</TableCell>;
+                }
                 return (
                     <TableCell
                         icon={<DollarOutlined />}
-                        subtext={`${Number(n)} pagos`}
+                        subtext={`${n} pagos`}
                         fallback="—"
                     >
                         Bs. {Number(t).toFixed(2)}
@@ -111,7 +110,6 @@ export const createPagosTableColumns = (navigate, refetch = null, deletePago = n
         {
             title: 'Saldo pendiente',
             dataIndex: 'saldo_pendiente',
-            width: 130,
             align: 'right',
             render: (val, record) => {
                 const s = val ?? record.saldo_pendiente ?? 0;
@@ -127,7 +125,6 @@ export const createPagosTableColumns = (navigate, refetch = null, deletePago = n
         {
             title: 'Estado',
             dataIndex: 'estado',
-            width: 110,
             render: (estado, record) => {
                 const e = estado ?? record.estado ?? 'N/A';
                 const color = e === 'CANCELADO' ? 'default' : e === 'PENDIENTE' ? 'warning' : 'success';
@@ -139,7 +136,7 @@ export const createPagosTableColumns = (navigate, refetch = null, deletePago = n
             title: 'Acciones',
             key: 'acciones',
             fixed: 'right',
-            width: 150,
+            width: 80,
             align: 'right',
             render: (_, record) => {
                 const e = record.estudiante;

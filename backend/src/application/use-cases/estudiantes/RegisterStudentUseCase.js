@@ -2,7 +2,7 @@
  * Use Case: RegisterStudentUseCase
  * Módulo: Estudiantes
  * Registra un nuevo estudiante con todos sus datos relacionados
- * 
+ *
  * Responsabilidades:
  * - Validar que no exista un estudiante con el mismo CI
  * - Crear el estudiante principal
@@ -10,14 +10,15 @@
  * - Crear discapacidades (múltiples)
  * - Crear orígenes (múltiples)
  * - Crear entregas de documentos (múltiples)
+ * - Crear deuda en pago_aporte para la gestión vigente si no existe (una cabecera por estudiante por gestión)
  * - Retornar el estudiante creado con todos sus datos
- * 
+ *
  * NOTA: Los datos académicos se manejan en otro módulo, no se incluyen aquí
- * 
+ *
  * Principios SOLID:
  * - Single Responsibility: Solo maneja el registro completo de estudiantes
  * - Dependency Inversion: Depende de abstracciones (repositorios)
- * 
+ *
  * Clean Architecture:
  * - Application Layer: Orquesta la lógica de negocio
  * - Depende de Repositories (Infrastructure) a través de abstracciones
@@ -32,6 +33,9 @@ export class RegisterStudentUseCase {
    * @param {Object} params.studentOriginRepository - Repositorio de orígenes
    * @param {Object} params.studentDocumentDeliveryRepository - Repositorio de entregas de documentos
    * @param {Object} params.configuracionSistemaRepository - Repositorio de configuración del sistema
+   * @param {Object} params.contributionPaymentRepository - Repositorio de cabecera de aporte (pago_aporte)
+   * @param {Object} params.managementRepository - Repositorio de gestiones académicas
+   * @param {Object} params.contributionConfigurationRepository - Repositorio de configuración de aportes por gestión
    * @param {ILogger} params.logger - Logger para registro de eventos
    */
   constructor({
@@ -41,6 +45,9 @@ export class RegisterStudentUseCase {
     studentOriginRepository,
     studentDocumentDeliveryRepository,
     configuracionSistemaRepository,
+    contributionPaymentRepository,
+    managementRepository,
+    contributionConfigurationRepository,
     logger,
   }) {
     this.studentRepository = studentRepository;
@@ -49,6 +56,9 @@ export class RegisterStudentUseCase {
     this.studentOriginRepository = studentOriginRepository;
     this.studentDocumentDeliveryRepository = studentDocumentDeliveryRepository;
     this.configuracionSistemaRepository = configuracionSistemaRepository;
+    this.contributionPaymentRepository = contributionPaymentRepository;
+    this.managementRepository = managementRepository;
+    this.contributionConfigurationRepository = contributionConfigurationRepository;
     this.logger = logger;
   }
 
@@ -109,6 +119,96 @@ export class RegisterStudentUseCase {
     });
 
     return codigoEstudiante;
+  }
+
+  /**
+   * Obtiene la gestión vigente actual desde la configuración del sistema.
+   * Misma lógica que BaseDocumentGenerationUseCase._getCurrentManagement().
+   *
+   * @returns {Promise<Object>} Entidad Management (gestión vigente)
+   * @throws {Error} Si no se encuentra la configuración o la gestión vigente
+   */
+  async _getCurrentManagement() {
+    const gestionActualConfig = await this.configuracionSistemaRepository.findBy({
+      key: 'gestion_actual',
+    });
+    if (!gestionActualConfig) {
+      throw new Error('Configuración de gestión actual no encontrada');
+    }
+    const gestionAnio = parseInt(gestionActualConfig.value, 10);
+    if (Number.isNaN(gestionAnio)) {
+      throw new Error('La gestión actual configurada no es un año válido');
+    }
+    const management = await this.managementRepository.findBy({
+      year: gestionAnio,
+      vigente: true,
+    });
+    if (!management) {
+      throw new Error(`No se encontró una gestión vigente para el año ${gestionAnio}`);
+    }
+    return management;
+  }
+
+  /**
+   * Crea la deuda en pago_aporte para la gestión vigente si el estudiante aún no tiene cabecera para esa gestión.
+   * Una sola cabecera por (estudiante, gestión). Monto base desde configuracion_aportes; sin beca al registro.
+   *
+   * @param {number} studentId - ID del estudiante recién creado
+   */
+  async _createPagoAporteIfNeeded(studentId) {
+    if (!this.contributionPaymentRepository || !this.managementRepository || !this.contributionConfigurationRepository) {
+      this.logger.warn('[Estudiantes] Repositorios de pago/gestión/config no inyectados; no se crea pago_aporte');
+      return;
+    }
+    try {
+      const management = await this._getCurrentManagement();
+      const managementId = management.id ?? management.toPlainObject?.().id;
+
+      const existing = await this.contributionPaymentRepository.findBy({
+        studentId,
+        managementId,
+      });
+      if (existing) {
+        this.logger.info('[Estudiantes] Ya existe pago_aporte para estudiante y gestión vigente; no se crea otro', {
+          studentId,
+          managementId,
+        });
+        return;
+      }
+
+      const configResult = await this.contributionConfigurationRepository.findAll(
+        { managementId, contributionActive: true },
+        1,
+        1
+      );
+      const list = configResult.contributionConfigurations ?? configResult.configuracionesAportes ?? [];
+      const config = list[0] ?? null;
+      const montoBase = config
+        ? (parseFloat(config.baseAmount ?? config.montoBase) || 400)
+        : 400;
+
+      const pagoAporteData = {
+        studentId,
+        managementId,
+        baseAmount: montoBase,
+        scholarshipDiscount: 0,
+        mandatoryAmount: montoBase,
+        state: 'PENDIENTE',
+      };
+      await this.contributionPaymentRepository.create(pagoAporteData);
+      this.logger.info('[Estudiantes] Deuda pago_aporte creada para gestión vigente', {
+        studentId,
+        managementId,
+        montoBase,
+      });
+    } catch (err) {
+      this.logger.error('[Estudiantes] Error al crear pago_aporte (no se bloquea el registro)', {
+        studentId,
+        error: err.message,
+        stack: err.stack,
+      });
+      // No relanzar: el registro del estudiante ya fue exitoso; la deuda se puede crear después
+    }
   }
 
   /**
@@ -250,7 +350,10 @@ export class RegisterStudentUseCase {
         });
       }
 
-      // 8. Retornar el estudiante creado con todos sus datos relacionados
+      // 8. Crear deuda en pago_aporte para la gestión vigente si no existe (una cabecera por estudiante por gestión)
+      await this._createPagoAporteIfNeeded(student.id);
+
+      // 9. Retornar el estudiante creado con todos sus datos relacionados
       const result = {
         student: student.toPlainObject ? student.toPlainObject() : student,
         guardians: guardians.map((g) =>

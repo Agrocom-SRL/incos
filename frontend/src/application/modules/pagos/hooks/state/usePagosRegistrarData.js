@@ -170,9 +170,10 @@ export const usePagosRegistrarData = (studentId = null) => {
             setLoadingRegister(true);
             setErrorRegister(null);
             
-            // Preparar datos para el backend (snake_case)
+            // Preparar datos para el backend (snake_case). amount = monto de esta cuota (lo que se muestra en "Saldo a Pagar").
             const dataToSend = {
                 student_id: pagoData.studentId || studentId,
+                amount: pagoData.amount != null ? Number(pagoData.amount) : undefined,
                 payment_method_id: pagoData.paymentMethodId,
                 payment_account_id: pagoData.paymentAccountId || null,
                 payment_date: pagoData.paymentDate,

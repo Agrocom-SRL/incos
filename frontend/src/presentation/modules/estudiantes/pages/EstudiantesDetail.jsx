@@ -23,7 +23,7 @@ import { useGenerateActaCompromiso } from '@application-estudiantes/hooks';
 import { usePagosContextOptional } from '@application-pagos/hooks';
 import { downloadFile } from '@application/utils';
 import { Spin, Alert, Empty, Card, Descriptions, Tag, App, Button as AntdButton } from 'antd';
-import { GiftOutlined, FileTextOutlined, DollarOutlined, DownloadOutlined, BookOutlined, EyeOutlined, ArrowLeftOutlined, PlusCircleOutlined } from '@ant-design/icons';
+import { FileTextOutlined, DollarOutlined, DownloadOutlined, BookOutlined, EyeOutlined, PlusCircleOutlined } from '@ant-design/icons';
 import { Button } from '@atoms';
 import {
   DatosPersonalesSection,
@@ -59,13 +59,6 @@ const EstudiantesDetail = () => {
     { title: 'Estudiantes', href: '/estudiantes' },
     { title: 'Detalle del Estudiante' },
   ], []);
-
-  // Handler para navegar a la asignación de becas
-  const handleAsignarBeca = useCallback(() => {
-    navigate('/estudiantes/becas/asignar', {
-      state: { studentId: studentId }
-    });
-  }, [navigate, studentId]);
 
   // Handler para navegar al registro de pagos o al detalle si ya existe un pago
   const handleRegistrarPago = useCallback(() => {
@@ -213,16 +206,7 @@ const EstudiantesDetail = () => {
           Generar Acta de Compromiso
         </Button>
       ) : null}
-      {/* 2. Asignar Beca */}
-      <Button
-        variant="success"
-        icon={<GiftOutlined />}
-        onClick={handleAsignarBeca}
-        style={{ marginRight: 8 }}
-      >
-        Asignar Beca
-      </Button>
-      {/* 3. Registrar Pago */}
+      {/* 2. Registrar Pago */}
       <div style={{ marginRight: 8, display: 'inline-block' }}>
         <Button
           variant="error"
@@ -232,7 +216,7 @@ const EstudiantesDetail = () => {
           Registrar Pago
         </Button>
       </div>
-      {/* 4. Nueva Inscripción */}
+      {/* 3. Nueva Inscripción */}
       <Button
         variant="primary"
         icon={<PlusCircleOutlined />}
@@ -241,7 +225,7 @@ const EstudiantesDetail = () => {
         Nueva Inscripción
       </Button>
     </>
-  ), [handleAsignarBeca, handleGenerateActaCompromiso, handleRegistrarPago, handleDownloadActaCompromiso, handleVolverALista, handleNuevaInscripcion, loadingActa, tieneDocumentosFaltantesFlag, actaCompromisoData]);
+  ), [handleGenerateActaCompromiso, handleRegistrarPago, handleDownloadActaCompromiso, handleNuevaInscripcion, loadingActa, tieneDocumentosFaltantesFlag, actaCompromisoData]);
 
   // Si está cargando
   if (loading) {
