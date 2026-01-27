@@ -1,6 +1,7 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../sequelize.js';
 import { baseModelFields, baseModelOptions } from './base_model.js';
+import { ESTADOS_PAGO_APORTE_VALUES, ESTADOS_PAGO_APORTE } from '../../../domain/constants/pagos.constants.js';
 
 export const PagoAporte = sequelize.define(
   'PagoAporte',
@@ -10,84 +11,44 @@ export const PagoAporte = sequelize.define(
       type: DataTypes.INTEGER,
       field: 'estudiante_id',
       allowNull: true,
-      comment: 'Estudiante que realiza el pago',
+      comment: 'Estudiante que debe el aporte',
     },
     gestionId: {
       type: DataTypes.INTEGER,
       field: 'gestion_id',
       allowNull: true,
-      comment: 'Gestión académica para la cual se realiza el pago (el pago es ANTES de la inscripción)',
-    },
-    inscripcionId: {
-      type: DataTypes.INTEGER,
-      field: 'inscripcion_id',
-      allowNull: true,
-      comment: 'Inscripción asociada (se vincula después de que el estudiante se inscriba usando el recibo como documento)',
+      comment: 'Gestión académica del aporte (una cabecera por estudiante por gestión)',
     },
     estudianteBecaId: {
       type: DataTypes.INTEGER,
       field: 'estudiante_beca_id',
       allowNull: true,
-      comment: 'Referencia a estudiantes_becas.id si se aplicó descuento por beca',
+      comment: 'Beca/descuento aplicado UNA SOLA VEZ por gestión (referencia a estudiantes_becas). Solo un registro por cabecera.',
     },
-    metodoPagoId: {
-      type: DataTypes.INTEGER,
-      field: 'metodo_pago_id',
-      allowNull: true,
-      comment: 'Método de pago utilizado',
-    },
-    cuentaPagoId: {
-      type: DataTypes.INTEGER,
-      field: 'cuenta_pago_id',
-      allowNull: true,
-      comment: 'Cuenta utilizada para el pago (referencia a cuentas_pago, contiene banco_id cuando aplica. Solo para TRANSFERENCIA/DEPOSITO/QR/TIGO_MONEY)',
-    },
-    numeroRecibo: {
-      type: DataTypes.STRING(50),
-      field: 'numero_recibo',
-      allowNull: true,
-      comment: 'Número de recibo único (generado por la lógica de negocio)',
-    },
-    fechaPago: {
-      type: DataTypes.DATEONLY,
-      field: 'fecha_pago',
-      allowNull: false,
-      comment: 'Fecha del pago',
-    },
-    montoTotal: {
+    montoBase: {
       type: DataTypes.DECIMAL(10, 2),
-      field: 'monto_total',
+      field: 'monto_base',
       allowNull: false,
-      comment: 'Monto base del aporte (de configuracion_aportes)',
+      comment: 'Monto base del aporte para esta gestión (de configuracion_aportes)',
     },
     descuentoBeca: {
       type: DataTypes.DECIMAL(10, 2),
       field: 'descuento_beca',
-      defaultValue: 0.00,
-      comment: 'Descuento por beca aplicado',
-    },
-    montoPagado: {
-      type: DataTypes.DECIMAL(10, 2),
-      field: 'monto_pagado',
       allowNull: false,
-      comment: 'Monto efectivamente pagado (calculado por lógica de negocio: monto_total - descuento_beca)',
+      defaultValue: 0.0,
+      comment: 'Descuento por beca aplicado a esta cabecera (una vez por gestión)',
     },
-    numeroTransaccion: {
-      type: DataTypes.STRING(100),
-      field: 'numero_transaccion',
-      allowNull: true,
-      comment: 'Número de transacción/código (para TRANSFERENCIA/DEPOSITO/TARJETA/QR/TIGO_MONEY)',
+    montoObligatorio: {
+      type: DataTypes.DECIMAL(10, 2),
+      field: 'monto_obligatorio',
+      allowNull: false,
+      comment: 'Monto a pagar = monto_base - descuento_beca',
     },
-    codigoComprobante: {
-      type: DataTypes.STRING(100),
-      field: 'codigo_comprobante',
-      allowNull: true,
-      comment: 'Código del comprobante (requerido para QR/TRANSFERENCIA/DEPOSITO)',
-    },
-    descripcion: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-      comment: 'Descripción del pago (opcional)',
+    estado: {
+      type: DataTypes.ENUM(...ESTADOS_PAGO_APORTE_VALUES),
+      allowNull: false,
+      defaultValue: ESTADOS_PAGO_APORTE.PENDIENTE,
+      comment: 'PENDIENTE=sin pagos, PARCIAL=algún pago, CANCELADO=total pagado >= monto_obligatorio',
     },
   },
   {

@@ -1,7 +1,7 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../sequelize.js';
 import { baseModelFields, baseModelOptions } from './base_model.js';
-import { GRADOS_DISCAPACIDAD_VALUES } from '../../../domain/constants/student.constants.js';
+import { GRADOS_DISCAPACIDAD_VALUES } from '../../../domain/constants/estudiantes.constants.js';
 
 export const EstudianteDiscapacidad = sequelize.define(
   'EstudianteDiscapacidad',

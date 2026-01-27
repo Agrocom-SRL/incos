@@ -2,16 +2,14 @@
  * Constantes para el módulo de Pagos
  */
 
-// Estados de pago
-export const ESTADOS_PAGO = {
+// Estados del aporte académico (cabecera pago_aporte: PENDIENTE=sin pagos, PARCIAL=algún pago, CANCELADO=total pagado)
+export const ESTADOS_PAGO_APORTE = {
   PENDIENTE: 'PENDIENTE',
-  PAGADO: 'PAGADO',
   PARCIAL: 'PARCIAL',
-  VENCIDO: 'VENCIDO',
-  ANULADO: 'ANULADO',
+  CANCELADO: 'CANCELADO',
 };
 
-export const ESTADOS_PAGO_VALUES = Object.values(ESTADOS_PAGO);
+export const ESTADOS_PAGO_APORTE_VALUES = Object.values(ESTADOS_PAGO_APORTE);
 
 // Métodos de pago
 export const METODOS_PAGO = {

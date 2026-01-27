@@ -1,7 +1,7 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../sequelize.js';
 import { baseModelFields, baseModelOptions } from './base_model.js';
-import { TIPOS_ORIGEN_VALUES, TIPOS_ORIGEN } from '../../../domain/constants/student.constants.js';
+import { TIPOS_ORIGEN_VALUES, TIPOS_ORIGEN } from '../../../domain/constants/estudiantes.constants.js';
 
 export const EstudianteOrigen = sequelize.define(
   'EstudianteOrigen',
