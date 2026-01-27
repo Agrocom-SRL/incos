@@ -528,54 +528,56 @@ const PagosRegistrar = () => {
             </Spin>
           </div>
         ) : (
-          <>
+          <div data-section="pagos-registrar-form">
             {/* Sección 1: Información del Estudiante */}
-            {student && <StudentInfoSection student={student} />}
+            {student ? <StudentInfoSection student={student} /> : null}
 
             {/* Sección 2: Detalle del Aporte (Resumen tipo recibo; usa estado actual si existe para saldo real y cuotas pagadas) */}
             <ContributionDetailSummary
               configuracionAporte={configuracionAporteActiva}
               becaActiva={becaActiva}
               estadoActualAporte={estadoActualAporte}
-              loading={configuracionAportes.loading || loadingScholarships || loadingEstadoAporte}
-              error={configuracionAportes.error}
+              loading={configuracionAportes?.loading || loadingScholarships || loadingEstadoAporte}
+              error={configuracionAportes?.error}
               montoCuota={montoCuota}
               onMontoCuotaChange={setMontoCuota}
               montoObligatorioMax={montoPagado}
             />
 
             {/* Sección 3: Selección de Método de Pago (solo si NO es pago gratuito) */}
-            {!esPagoGratuito && (
+            {!esPagoGratuito ? (
               <PaymentMethodSelectionSection
                 metodosPagoData={metodosPago}
-                onSelectMetodoPago={metodosPago.onSelectMetodoPago}
+                onSelectMetodoPago={metodosPago?.onSelectMetodoPago}
                 form={formInstance}
                 onFinish={handleFinish}
               />
-            )}
+            ) : null}
 
-            {/* Sección 4: Detalles del Pago y Formulario Completo */}
-            <SelectedPaymentSection
-              selectedConfiguracion={configuracionAporteActiva}
-              selectedMetodoPago={esPagoGratuito ? null : metodosPago.selectedMetodoPago}
-              selectedCuentaPago={cuentasPago.selectedCuentaPago}
-              cuentasPagoData={cuentasPago}
-              bancosAutorizadosData={bancosAutorizados}
-              becaActiva={becaActiva}
-              montoCuota={montoCuota}
-              form={formInstance}
-              onFinish={handleFinish}
-              onCancel={handleVolver}
-              disabled={
-                !configuracionAporteActiva ||
-                (!esPagoGratuito && (!montoCuota || Number(montoCuota) <= 0)) ||
-                (!esPagoGratuito && !metodosPago.selectedMetodoPago) ||
-                loadingStudent ||
-                loading ||
-                isSubmitting
-              }
-            />
-          </>
+            {/* Sección 4: Detalles del Pago y Formulario Completo (solo si es gratuito o ya hay método seleccionado) */}
+            {(esPagoGratuito || metodosPago?.selectedMetodoPago) ? (
+              <SelectedPaymentSection
+                selectedConfiguracion={configuracionAporteActiva}
+                selectedMetodoPago={esPagoGratuito ? null : metodosPago?.selectedMetodoPago ?? null}
+                selectedCuentaPago={cuentasPago?.selectedCuentaPago ?? null}
+                cuentasPagoData={cuentasPago ?? {}}
+                bancosAutorizadosData={bancosAutorizados ?? {}}
+                becaActiva={becaActiva}
+                montoCuota={montoCuota}
+                form={formInstance}
+                onFinish={handleFinish}
+                onCancel={handleVolver}
+                disabled={
+                  !configuracionAporteActiva ||
+                  (!esPagoGratuito && (!montoCuota || Number(montoCuota) <= 0)) ||
+                  (!esPagoGratuito && !(metodosPago?.selectedMetodoPago)) ||
+                  loadingStudent ||
+                  loading ||
+                  isSubmitting
+                }
+              />
+            ) : null}
+          </div>
         )}
       </div>
     </PageTemplate>

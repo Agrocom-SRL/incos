@@ -425,11 +425,12 @@ export class CreateEnrollmentUseCase {
   }
 
   /**
-   * Valida que el estudiante haya realizado el pago del aporte anual para la gestión vigente
+   * Valida que el estudiante tenga un pago de aporte válido (PARCIAL o CANCELADO) para la gestión vigente.
+   * No se permite inscribir si el pago está pendiente, eliminado o no existe.
    * @private
    * @param {Object} student - Entidad Student
    * @param {Object} management - Entidad Management
-   * @throws {ValidationError} Si no existe un pago válido
+   * @throws {ValidationError} Si no existe pago, está eliminado o el estado no es PARCIAL/CANCELADO
    */
   async _validatePaymentExists(student, management) {
     const result = await this.contributionPaymentRepository.findAll(
@@ -449,14 +450,21 @@ export class CreateEnrollmentUseCase {
     }
 
     const payment = result.contributionPayments[0];
-    
-    // NOTA: No validamos que amountPaid > 0 porque los estudiantes con beca 100%
-    // pueden tener monto_pagado = 0 (monto_total - descuento_beca = 0)
+    const estado = String(payment.state ?? payment.estado ?? '').toUpperCase();
+    const estadosPermitidos = ['PARCIAL', 'CANCELADO'];
+
+    if (!estadosPermitidos.includes(estado)) {
+      throw new ValidationError(
+        `El aporte para la gestión ${management.year} está pendiente de pago. ` +
+        `Solo puede inscribirse cuando el aporte tenga al menos un pago registrado.`
+      );
+    }
 
     this.logger.info('[Inscripciones] Validación de pago de aporte exitosa', {
       studentId: student.id,
       managementId: management.id,
       paymentId: payment.id,
+      estado,
       amountPaid: payment.amountPaid,
       scholarshipDiscount: payment.scholarshipDiscount,
     });

@@ -132,7 +132,7 @@ export class RegisterAporteVoluntarioUseCase {
             const finalTransactionNumber = (esPagoGratuito && esMetodoEfectivo) ? null : transactionNumber;
             const finalCodigoComprobante = (esPagoGratuito && esMetodoEfectivo) ? null : (codigoComprobante ?? null);
 
-            // Crear cuota con numero_recibo temporal (NOT NULL + UNIQUE en BD); luego se reemplaza por ID a 6 dígitos
+            // Crear cuota con numero_recibo temporal (NOT NULL); luego se reemplaza por ID a 6 dígitos (unicidad en lógica)
             const cuotaData = {
                 contributionPaymentId: cabecera.id,
                 receiptNumber: `TEMP-${cabecera.id}-${Date.now()}`,
