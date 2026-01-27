@@ -165,9 +165,9 @@ export class RegisterAporteVoluntarioUseCase {
             const totalAmount = Number(cabecera.baseAmount ?? cabecera.montoBase ?? 0);
             const scholarshipDiscount = Number(cabecera.scholarshipDiscount ?? cabecera.descuentoBeca ?? 0);
             const scholarshipInfo = null;
-
             const saldoPendienteDespues = Math.max(0, montoObligatorio - nuevoTotalPagado);
 
+            // Generar PDF y guardar en documentos_estudiante antes de responder para que el frontend pueda descargar el recibo antes de navegar.
             if (this.pdfGenerator) {
                 try {
                     const reciboResult = await this._generateReciboPDF(
