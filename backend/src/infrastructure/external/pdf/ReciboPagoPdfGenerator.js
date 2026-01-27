@@ -485,12 +485,12 @@ export class ReciboPagoPdfGenerator extends IncosPDFLibBase {
 
         // Fila 1: APELLIDOS Y NOMBRES
         if (data.nombreCompleto) {
-            await this._addTableRow('APELLIDOS Y NOMBRES', data.nombreCompleto, true);
+            await this._addTableRow('APELLIDOS Y NOMBRES', data.nombreCompleto, false);
         }
 
         // Fila 2: N° C.I.
         if (data.ci) {
-            await this._addTableRow('CÉDULA DE IDENTIDAD', data.ci, true);
+            await this._addTableRow('CÉDULA DE IDENTIDAD', data.ci, false);
         }
 
         // Fila 3: CARRERA | CURSO Y PARALELO | Año (solo si hay datos válidos)
@@ -534,18 +534,34 @@ export class ReciboPagoPdfGenerator extends IncosPDFLibBase {
             }
         }
 
-        // Filas de monto: MONTO TOTAL → DESCUENTO → APORTE
+        // Recibo por cuota: base, descuento, total a pagar, ya pagado, monto de esta cuota, saldo pendiente
         const montoTotal = Number(data.montoTotal) ?? 400.00;
         const descuentoBeca = Number(data.descuentoBeca) ?? 0;
-        const montoPagado = montoTotal - descuentoBeca;
+        const montoObligatorio = Number(data.montoObligatorio) ?? (montoTotal - descuentoBeca);
+        const totalPagadoAntes = Number(data.totalPagadoAntes) ?? 0;
+        const montoEstaCuota = Number(data.montoPagado) ?? 0;
+        const saldoPendiente = data.saldoPendiente != null ? Number(data.saldoPendiente) : null;
 
-        if (descuentoBeca > 0) {
-            await this._addTableRow('MONTO TOTAL', this._formatMonto(montoTotal), false);
-            await this._addTableRow('DESCUENTO POR BECA', `- ${this._formatMonto(descuentoBeca)}`, false);
+        const esReciboPorCuota = saldoPendiente !== null && saldoPendiente !== undefined;
+
+        if (esReciboPorCuota) {
+            await this._addTableRow('BASE DEL APORTE', this._formatMonto(montoTotal), false);
+            if (descuentoBeca > 0) {
+                await this._addTableRow('DESCUENTO POR BECA', `- ${this._formatMonto(descuentoBeca)}`, false);
+            }
+            await this._addTableRow('TOTAL A PAGAR', this._formatMonto(montoObligatorio), true);
+            if (totalPagadoAntes > 0) {
+                await this._addTableRow('MONTO YA PAGADO', this._formatMonto(totalPagadoAntes), false);
+            }
+            await this._addTableRow('MONTO PAGADO', this._formatAporte({ montoPagado: montoEstaCuota }), true);
+            await this._addTableRow('SALDO PENDIENTE', this._formatMonto(saldoPendiente), true);
+        } else {
+            if (descuentoBeca > 0) {
+                await this._addTableRow('MONTO TOTAL', this._formatMonto(montoTotal), false);
+                await this._addTableRow('DESCUENTO POR BECA', `- ${this._formatMonto(descuentoBeca)}`, false);
+            }
+            await this._addTableRow('MONTO PAGADO', this._formatAporte({ montoPagado: montoEstaCuota || (montoTotal - descuentoBeca) }), true);
         }
-
-        // APORTE (monto final)
-        await this._addTableRow('APORTE', this._formatAporte({ montoPagado }), true);
     }
 
     /**
@@ -588,11 +604,11 @@ export class ReciboPagoPdfGenerator extends IncosPDFLibBase {
         const boldFont = await this._pdfDoc.embedFont(boldFontName);
         const normalFont = await this._pdfDoc.embedFont(normalFontName);
 
-        // Usar tamaño de fuente mayor para montos (si es header o contiene "Bs")
-        const isAmount = isHeader || value.includes('Bs') || value.includes('GRATIS');
-        const fontSize = isAmount ? IncosPDFBase.FONTS.amount.size : IncosPDFBase.FONTS.normal.size;
+        // Tamaño: mayor solo para filas marcadas como destacadas (isHeader)
+        const fontSize = isHeader ? IncosPDFBase.FONTS.amount.size : IncosPDFBase.FONTS.normal.size;
         const textRgb = this._hexToRgb(IncosPDFBase.COLORS.text);
 
+        // Label: siempre en negrita
         this._currentPage.drawText(label, {
             x: margins.left + 3,
             y: rowY + 6, // Ajustado para centrado vertical
@@ -601,11 +617,12 @@ export class ReciboPagoPdfGenerator extends IncosPDFLibBase {
             color: textRgb,
         });
 
+        // Valor: negrita solo cuando isHeader (ej. TOTAL A PAGAR, MONTO PAGADO, SALDO PENDIENTE)
         this._currentPage.drawText(value, {
             x: margins.left + labelWidth + 3,
             y: rowY + 6, // Ajustado para centrado vertical
             size: fontSize,
-            font: isHeader || isAmount ? boldFont : normalFont,
+            font: isHeader ? boldFont : normalFont,
             color: textRgb,
         });
 

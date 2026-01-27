@@ -49,6 +49,9 @@ export class PagoAporteRepository extends IPagoAporteRepository {
         };
       }
 
+      // Monto de la cuota (requerido por el backend). Si no viene, 0 (p. ej. pago gratuito).
+      const amount = data.amount != null && !Number.isNaN(Number(data.amount)) ? Number(data.amount) : 0;
+
       // Si hay un archivo, usar FormData, sino usar JSON normal
       let requestData;
       let headers = {};
@@ -70,6 +73,7 @@ export class PagoAporteRepository extends IPagoAporteRepository {
         // Usar FormData para enviar archivo
         const formData = new FormData();
         formData.append('student_id', data.student_id);
+        formData.append('amount', String(amount));
         formData.append('payment_method_id', data.payment_method_id);
         if (data.payment_account_id) {
           formData.append('payment_account_id', data.payment_account_id);
@@ -97,10 +101,11 @@ export class PagoAporteRepository extends IPagoAporteRepository {
         requestData = formData;
         // No establecer Content-Type, el navegador lo hará automáticamente con el boundary
       } else {
-        // Usar JSON normal
+        // Usar JSON normal (management_id no se envía; el backend usa la gestión vigente)
         const codigoComprobante = data.codigo_comprobante || data.codigoComprobante;
         requestData = {
           student_id: data.student_id,
+          amount,
           payment_method_id: data.payment_method_id,
           payment_account_id: data.payment_account_id || null,
           payment_date: data.payment_date || null,
@@ -125,6 +130,30 @@ export class PagoAporteRepository extends IPagoAporteRepository {
       return result;
     } catch (error) {
       return handleErrorResponse(error, 'Error al registrar pago de aporte');
+    }
+  }
+
+  /**
+   * Obtiene el estado actual del aporte de un estudiante para el formulario de registro de pago.
+   * GET /v1/pagos-aportes/estado-registro?estudiante_id=&gestion_id=
+   *
+   * @param {number} estudianteId - ID del estudiante (requerido)
+   * @param {number|null} [gestionId] - ID de la gestión (opcional; si no se envía, se usa la vigente)
+   * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
+   */
+  async obtenerEstadoRegistro(estudianteId, gestionId = null) {
+    try {
+      if (!estudianteId || Number(estudianteId) < 1) {
+        return { success: false, error: 'estudiante_id es requerido y debe ser mayor a 0' };
+      }
+      const params = { estudiante_id: Number(estudianteId) };
+      if (gestionId != null && gestionId !== '') {
+        params.gestion_id = Number(gestionId);
+      }
+      const response = await apiClient.get(PAGOS_APORTES_ENDPOINTS.ESTADO_REGISTRO, { params });
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al obtener estado del aporte para registro');
     }
   }
 

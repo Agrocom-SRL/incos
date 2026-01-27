@@ -8,7 +8,7 @@ import { body } from 'express-validator';
  *
  * Campos requeridos para el caso de uso:
  * - student_id: ID del estudiante
- * - management_id: ID de la gestión (para identificar/crear cabecera estudiante-gestión)
+ * - management_id: Opcional; si no se envía, el backend usa la gestión vigente
  * - amount: Monto de la cuota (número > 0)
  * - payment_date: Fecha del pago
  * - payment_method_id: ID del método de pago (1=EFECTIVO, 2=QR, 3=TRANSFERENCIA, 4=DEPOSITO)
@@ -28,8 +28,7 @@ export const registerPagoAporteValidator = [
         .toInt(),
 
     body('management_id')
-        .notEmpty()
-        .withMessage('El ID de la gestión es requerido')
+        .optional({ values: 'falsy' })
         .isInt({ min: 1 })
         .withMessage('El ID de la gestión debe ser un número entero mayor a 0')
         .toInt(),

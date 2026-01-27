@@ -53,10 +53,12 @@ const PagosRegistrar = () => {
     loadingScholarships,
   } = pagosRegistrarContext || {};
 
-  // Obtener TODO del contexto de registro de pagos
+  // Obtener TODO del contexto de registro de pagos (incluye estado actual del aporte: saldo real, cuotas pagadas, tiene_descuento_aplicado)
   const {
     loading = false,
     error = null,
+    estadoActualAporte = null,
+    loadingEstadoAporte = false,
     metodosPago,
     configuracionAportes,
     cuentasPago,
@@ -88,44 +90,41 @@ const PagosRegistrar = () => {
     ) || configuracionAportes.configuracionAportes[0] || null; // Si no hay activa, usar la primera
   }, [configuracionAportes]);
 
-  // Calcular monto pagado para determinar si es pago gratuito
+  // Saldo real a pagar: si hay estado actual del aporte, usar saldo_pendiente; si no, calcular desde config + beca
   const montoPagado = useMemo(() => {
+    if (estadoActualAporte && typeof estadoActualAporte.saldo_pendiente === 'number') {
+      return Number(estadoActualAporte.saldo_pendiente);
+    }
     if (!configuracionAporteActiva) return 0;
-    
     const montoBase = Number(configuracionAporteActiva.montoBase) || 0;
-    
-    // Calcular descuento por beca
     const tieneBeca = becaActiva && (() => {
       const stateValue = becaActiva.state || becaActiva.estado;
       if (!stateValue) return false;
-      
       const normalizedState = String(stateValue).toUpperCase();
       const tieneEstadoValido = normalizedState === 'ACTIVA' || normalizedState === 'ACTIVE' || normalizedState === 'PENDIENTE';
       const tienePorcentaje = becaActiva.scholarshipPercentage || becaActiva.porcentaje;
-      
       return tieneEstadoValido && tienePorcentaje;
     })();
-    
-    const porcentajeDescuento = tieneBeca ? (
-      becaActiva.scholarshipPercentage || 
-      becaActiva.porcentaje || 
-      (becaActiva.scholarshipType?.percentage) ||
-      0
-    ) : 0;
-    
+    const porcentajeDescuento = tieneBeca ? (becaActiva.scholarshipPercentage || becaActiva.porcentaje || (becaActiva.scholarshipType?.percentage) || 0) : 0;
     const descuentoBeca = tieneBeca ? (montoBase * porcentajeDescuento / 100) : 0;
     return Math.max(0, montoBase - descuentoBeca);
-  }, [configuracionAporteActiva, becaActiva]);
+  }, [configuracionAporteActiva, becaActiva, estadoActualAporte]);
+
+  // Si ya tiene descuento aplicado en la cabecera, ocultar botón "Asignar Beca"
+  const ocultarBotonAsignarBeca = !!(estadoActualAporte && estadoActualAporte.tiene_descuento_aplicado);
 
   // Determinar si es pago gratuito (monto = 0)
   const esPagoGratuito = montoPagado === 0;
 
-  // Inicializar montoCuota con el saldo total cuando carga la config (primera cuota = total por defecto; solo si aún no hay valor)
+  // Inicializar o corregir montoCuota con el saldo real: si está vacío o si supera el saldo (ej. 400 cuando el saldo real es 140), usar saldo. Solo enteros.
   useEffect(() => {
-    if (montoPagado > 0 && (montoCuota == null || montoCuota === '')) {
-      setMontoCuota(montoPagado);
+    if (montoPagado <= 0) return;
+    const saldoEntero = Math.floor(Number(montoPagado));
+    const actual = montoCuota != null && montoCuota !== '' ? Math.floor(Number(montoCuota)) : null;
+    if (actual == null || actual > saldoEntero) {
+      setMontoCuota(saldoEntero);
     }
-  }, [montoPagado]);
+  }, [montoPagado, montoCuota]);
 
   // Handler para volver
   const handleVolver = () => {
@@ -444,14 +443,16 @@ const PagosRegistrar = () => {
           breadcrumbItems={breadcrumbItems}
           actions={
             <>
-              <Button
-                variant="success"
-                icon={<GiftOutlined />}
-                onClick={handleAsignarBeca}
-                style={{ marginRight: 8 }}
-              >
-                Asignar Beca
-              </Button>
+              {!ocultarBotonAsignarBeca && (
+                <Button
+                  variant="success"
+                  icon={<GiftOutlined />}
+                  onClick={handleAsignarBeca}
+                  style={{ marginRight: 8 }}
+                >
+                  Asignar Beca
+                </Button>
+              )}
               <Button
                 icon={<ArrowLeftOutlined />}
                 onClick={handleVolver}
@@ -478,11 +479,12 @@ const PagosRegistrar = () => {
             {/* Sección 1: Información del Estudiante */}
             {student && <StudentInfoSection student={student} />}
 
-            {/* Sección 2: Detalle del Aporte (Resumen tipo recibo) */}
+            {/* Sección 2: Detalle del Aporte (Resumen tipo recibo; usa estado actual si existe para saldo real y cuotas pagadas) */}
             <ContributionDetailSummary
               configuracionAporte={configuracionAporteActiva}
               becaActiva={becaActiva}
-              loading={configuracionAportes.loading || loadingScholarships}
+              estadoActualAporte={estadoActualAporte}
+              loading={configuracionAportes.loading || loadingScholarships || loadingEstadoAporte}
               error={configuracionAportes.error}
               montoCuota={montoCuota}
               onMontoCuotaChange={setMontoCuota}

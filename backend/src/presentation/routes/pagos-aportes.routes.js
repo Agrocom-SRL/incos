@@ -40,6 +40,16 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
         (req, res, next) => controllers.listPagosAportesController.handle(req, res, next)
     );
 
+    /**
+     * GET /api/v1/pagos-aportes/estado-registro
+     * Estado actual del aporte de un estudiante para el formulario de registro de pago.
+     * Query: estudiante_id (requerido), gestion_id (opcional; si no se envía, gestión vigente).
+     */
+    router.get(
+        '/estado-registro',
+        (req, res, next) => controllers.getEstadoAporteRegistroController.handle(req, res, next)
+    );
+
     // ============================================
     // REGISTRO DE CUOTA (ABONO)
     // ============================================

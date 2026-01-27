@@ -31,6 +31,7 @@ export { usePagosRegistrarData } from './state/usePagosRegistrarData';
 // Exporta directamente desde los archivos (sin index.js intermedio)
 export { usePagosApi } from './api/usePagosApi';
 export { useGetPagoById } from './api/useGetPagoById';
+export { useEstadoAporteRegistro } from './api/useEstadoAporteRegistro';
 export { useDeletePagoAporte } from './api/useDeletePagoAporte';
 export { useGenerateReciboPago } from './api/useGenerateReciboPago';
 export { usePaymentAccountsApi } from './api/usePaymentAccountsApi';
