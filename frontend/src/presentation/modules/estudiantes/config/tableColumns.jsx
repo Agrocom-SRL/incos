@@ -1,10 +1,10 @@
 /**
- * tableColumns - Configuraci?n de columnas para la tabla de estudiantes
+ * tableColumns - Configuración de columnas para la tabla de estudiantes
  * 
- * Single Responsibility: Definir las columnas y su configuraci?n para EstudiantesTable
+ * Single Responsibility: Definir las columnas y su configuración para EstudiantesTable
  * 
- * Este archivo separa la configuraci?n de las columnas de la l?gica del componente,
- * permitiendo reutilizar y modificar f?cilmente las columnas sin tocar el componente.
+ * Este archivo separa la configuración de las columnas de la lógica del componente,
+ * permitiendo reutilizar y modificar fácilmente las columnas sin tocar el componente.
  */
 
 import { Space } from 'antd';
@@ -79,7 +79,7 @@ export const createEstudiantesTableColumns = (navigate, refetch = null, deleteSt
 
   return [
     {
-      title: 'C?digo de Estudiante',
+      title: 'Código de Estudiante',
       dataIndex: 'codigoEstudiante',
       fixed: 'left',
       ellipsis: true,
