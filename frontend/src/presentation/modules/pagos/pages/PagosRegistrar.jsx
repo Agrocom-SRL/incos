@@ -430,9 +430,32 @@ const PagosRegistrar = () => {
     }
   }, [studentId, navigate]);
 
+  // Si el saldo es 0 y existe cabecera, ir al detalle del pago (no mostrar formulario de registro)
+  useEffect(() => {
+    if (estadoActualAporte && !loadingEstadoAporte && Number(estadoActualAporte.saldo_pendiente) === 0 && estadoActualAporte.cabecera?.id) {
+      navigate(`/pagos/${estadoActualAporte.cabecera.id}`, { replace: true });
+    }
+  }, [estadoActualAporte, loadingEstadoAporte, navigate]);
+
   // Si no hay studentId, no renderizar nada (se redirige automáticamente)
   if (!studentId) {
     return null;
+  }
+
+  // Si saldo es 0 y hay cabecera, no mostrar formulario (se redirige al detalle)
+  const redirigirADetalle = estadoActualAporte && !loadingEstadoAporte && Number(estadoActualAporte.saldo_pendiente) === 0 && estadoActualAporte.cabecera?.id;
+  if (redirigirADetalle) {
+    return (
+      <PageTemplate header={<PageHeader title="Registrar Pago" breadcrumbItems={breadcrumbItems} />}>
+        <div style={{ textAlign: 'center', padding: '50px' }}>
+          <Spin size="large">
+            <div style={{ minHeight: '120px' }}>
+              <p>El aporte ya está cubierto. Redirigiendo al detalle del pago...</p>
+            </div>
+          </Spin>
+        </div>
+      </PageTemplate>
+    );
   }
 
   return (

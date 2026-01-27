@@ -20,7 +20,7 @@ import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { useStudentDetailContext } from '@application-estudiantes/hooks';
 import { useGenerateActaCompromiso } from '@application-estudiantes/hooks';
-import { usePagosContextOptional } from '@application-pagos/hooks';
+import { usePagosContextOptional, useEstadoAporteRegistro } from '@application-pagos/hooks';
 import { downloadFile } from '@application/utils';
 import { Spin, Alert, Empty, Card, Descriptions, Tag, App, Button as AntdButton } from 'antd';
 import { FileTextOutlined, DollarOutlined, DownloadOutlined, BookOutlined, EyeOutlined, PlusCircleOutlined } from '@ant-design/icons';
@@ -50,8 +50,9 @@ const EstudiantesDetail = () => {
   const { generateActaCompromiso, loading: loadingActa } = useGenerateActaCompromiso();
 
   // Obtener contexto de pagos para verificar si el estudiante ya tiene un pago
-  // Usar hook opcional que no lanza error si el provider no está disponible
   const pagosContext = usePagosContextOptional();
+  // Estado del aporte: si saldo es 0 y hay cabecera, el botón "Registrar Pago" debe ir al detalle del pago
+  const { estadoAporte, loading: loadingEstadoAporte } = useEstadoAporteRegistro(studentId || null, null);
 
   // Configurar breadcrumb items
   const breadcrumbItems = useMemo(() => [
@@ -67,9 +68,14 @@ const EstudiantesDetail = () => {
       return;
     }
 
-    // Verificar si el estudiante ya tiene un pago
+    // Si el estado del aporte está cargado y el saldo es 0, ir al detalle del pago (cabecera)
+    if (!loadingEstadoAporte && estadoAporte?.saldo_pendiente === 0 && estadoAporte?.cabecera?.id) {
+      navigate(`/pagos/${estadoAporte.cabecera.id}`);
+      return;
+    }
+
+    // Verificar si el estudiante ya tiene un pago (listado del contexto)
     if (pagosContext?.pagos && Array.isArray(pagosContext.pagos)) {
-      // Filtrar pagos del estudiante
       const pagosEstudiante = pagosContext.pagos.filter((pago) => {
         const pagoStudentId = pago.estudiante?.id || 
                              pago.student?.id || 
@@ -80,22 +86,16 @@ const EstudiantesDetail = () => {
         return Number(pagoStudentId) === Number(studentId);
       });
 
-      // Si hay pagos, obtener el más reciente (por ID o fecha de creación)
       if (pagosEstudiante.length > 0) {
-        // Ordenar por ID descendente (el más reciente primero) o por fecha
         const pagoMasReciente = pagosEstudiante.sort((a, b) => {
-          // Intentar ordenar por ID primero
           const idA = a.id || 0;
           const idB = b.id || 0;
           if (idA !== idB) return idB - idA;
-          
-          // Si no hay ID, ordenar por fecha de creación
           const fechaA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
           const fechaB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
           return fechaB - fechaA;
         })[0];
 
-        // Navegar al detalle del pago más reciente
         const pagoId = pagoMasReciente.id;
         if (pagoId) {
           navigate(`/pagos/${pagoId}`);
@@ -104,11 +104,11 @@ const EstudiantesDetail = () => {
       }
     }
 
-    // Si no hay pagos, navegar al registro
+    // Si no hay pagos o saldo > 0, navegar al registro
     navigate('/pagos/registrar', {
       state: { studentId: studentId }
     });
-  }, [navigate, studentId, pagosContext, message]);
+  }, [navigate, studentId, pagosContext, message, loadingEstadoAporte, estadoAporte]);
 
   // Handler para generar y descargar acta de compromiso
   const handleGenerateActaCompromiso = useCallback(async () => {

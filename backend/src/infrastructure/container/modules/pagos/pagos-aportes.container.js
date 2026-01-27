@@ -113,6 +113,7 @@ export function registerPagosAportesResource(container) {
         (c) =>
             new GenerateReciboPagoUseCase({
                 contributionPaymentRepository: c.resolve(REPOSITORIOS_TOKENS.contributionPaymentRepository),
+                contributionPaymentInstallmentRepository: c.resolve(REPOSITORIOS_TOKENS.contributionPaymentInstallmentRepository),
                 studentRepository: c.resolve(REPOSITORIOS_TOKENS.studentRepository),
                 managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
                 paymentMethodRepository: c.resolve(REPOSITORIOS_TOKENS.paymentMethodRepository),

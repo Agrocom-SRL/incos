@@ -163,6 +163,11 @@ export class GetPaymentAporteByIdUseCase {
       transaction_number: p.transactionNumber,
       codigo_comprobante: p.comprobanteCode,
       descripcion: p.description,
+      // Campos de pago_aporte (cabecera) para detalle
+      monto_base: p.baseAmount ?? p.montoBase ?? p.monto_base,
+      descuento_beca: p.scholarshipDiscount ?? p.descuentoBeca ?? p.descuento_beca,
+      monto_obligatorio: p.mandatoryAmount ?? p.montoObligatorio ?? p.monto_obligatorio,
+      estado: p.state ?? p.estado,
     };
     return Object.fromEntries(Object.entries(out).filter(([, v]) => v !== undefined));
   }
