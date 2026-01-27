@@ -17,12 +17,13 @@
  *
  * Tablas afectadas (según RegisterAporteVoluntarioUseCase):
  * - pago_aporte: Registro principal del pago
+ * - pago_cuotas: Cuotas/abonos vinculados al pago (pago_aporte_id); se eliminan antes que la cabecera
  * - documentos_estudiante: Recibo PDF generado y documento de respaldo (tipo_documento: 'PAGO')
  * - estudiantes_documentos_entrega: Registro de entrega del documento de respaldo
  *
  * Clean Architecture:
  * - Application Layer: Orquesta la eliminación de un pago
- * - Depende de: ContributionPaymentRepository, StudentDocumentRepository, StudentDocumentDeliveryRepository
+ * - Depende de: ContributionPaymentRepository, ContributionPaymentInstallmentRepository, StudentDocumentRepository, StudentDocumentDeliveryRepository
  */
 
 import { NotFoundError, ValidationError } from '../../../domain/errors/AppError.js';
@@ -37,18 +38,21 @@ const __dirname = path.dirname(__filename);
 export class DeletePaymentAporteUseCase {
   /**
    * @param {Object} dependencies - Dependencias inyectadas
-   * @param {ContributionPaymentRepository} dependencies.contributionPaymentRepository - Repositorio de pagos
+   * @param {ContributionPaymentRepository} dependencies.contributionPaymentRepository - Repositorio de pagos (pago_aporte)
+   * @param {Object} dependencies.contributionPaymentInstallmentRepository - Repositorio de cuotas (pago_cuotas)
    * @param {Object} dependencies.studentDocumentRepository - Repositorio de documentos de estudiantes
    * @param {Object} dependencies.studentDocumentDeliveryRepository - Repositorio de entregas de documentos
    * @param {ILogger} dependencies.logger - Logger para registro de eventos
    */
   constructor({
     contributionPaymentRepository,
+    contributionPaymentInstallmentRepository,
     studentDocumentRepository,
     studentDocumentDeliveryRepository,
     logger,
   }) {
     this.contributionPaymentRepository = contributionPaymentRepository;
+    this.contributionPaymentInstallmentRepository = contributionPaymentInstallmentRepository;
     this.studentDocumentRepository = studentDocumentRepository;
     this.studentDocumentDeliveryRepository = studentDocumentDeliveryRepository;
     this.logger = logger;
@@ -91,13 +95,16 @@ export class DeletePaymentAporteUseCase {
         );
       }
 
-      // 3. Buscar y eliminar documentos de tipo 'PAGO' asociados al estudiante
+      // 3. Eliminar cuotas (pago_cuotas) vinculadas a este pago_aporte
+      await this._deletePaymentInstallments(paymentId);
+
+      // 4. Buscar y eliminar documentos de tipo 'PAGO' asociados al estudiante
       // Incluye: recibo PDF generado y documento de respaldo subido
       if (studentId) {
         await this._deletePaymentDocuments(studentId, paymentDate, concept);
       }
 
-      // 4. Ejecutar eliminación del pago principal (soft delete)
+      // 5. Ejecutar eliminación del pago principal (soft delete)
       const deleted = await this.contributionPaymentRepository.delete(paymentId);
 
       if (!deleted) {
@@ -111,6 +118,55 @@ export class DeletePaymentAporteUseCase {
       });
     } catch (error) {
       this.logger.error('[Pagos] Error al eliminar pago', {
+        paymentId,
+        error: error.message,
+        stack: error.stack,
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Elimina las cuotas (pago_cuotas) vinculadas al pago_aporte por pago_aporte_id.
+   * Ejecuta soft delete de cada cuota antes de eliminar la cabecera.
+   *
+   * @private
+   * @param {number} paymentId - ID del pago_aporte (cabecera)
+   */
+  async _deletePaymentInstallments(paymentId) {
+    try {
+      const result = await this.contributionPaymentInstallmentRepository.findAll(
+        { contributionPaymentId: paymentId },
+        null,
+        null
+      );
+      const collectionName = this.contributionPaymentInstallmentRepository.getCollectionName
+        ? this.contributionPaymentInstallmentRepository.getCollectionName()
+        : 'contributionPaymentInstallments';
+      const installments = result[collectionName] || result.contributionPaymentInstallments || [];
+
+      if (installments.length === 0) {
+        this.logger.info('[Pagos] No se encontraron cuotas vinculadas al pago para eliminar', {
+          paymentId,
+        });
+        return;
+      }
+
+      for (const installment of installments) {
+        const plain = installment.toPlainObject ? installment.toPlainObject() : installment;
+        const id = plain.id;
+        if (id) {
+          await this.contributionPaymentInstallmentRepository.delete(id);
+          this.logger.info('[Pagos] Cuota de pago eliminada (soft delete)', { paymentId, installmentId: id });
+        }
+      }
+
+      this.logger.info('[Pagos] Cuotas del pago eliminadas', {
+        paymentId,
+        cuotasEliminadas: installments.length,
+      });
+    } catch (error) {
+      this.logger.error('[Pagos] Error al eliminar cuotas del pago', {
         paymentId,
         error: error.message,
         stack: error.stack,
