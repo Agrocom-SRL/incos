@@ -177,8 +177,8 @@ export const useAsignarBecaFormHandlers = (studentId, options = {}) => {
             const pagoAporteId = data.pagoAporteId ?? null;
 
             if (esBeca100 && pagoAporteId) {
-                // Beca 100%: el aporte ya está cubierto, ir al detalle del pago
-                navigate(`/pagos/${pagoAporteId}`, { replace: true });
+                // Beca 100%: el aporte ya está cubierto, ir al detalle del pago (Volver llevará al estudiante)
+                navigate(`/pagos/${pagoAporteId}`, { replace: true, state: { studentId } });
             } else {
                 // Beca < 100%: ir a registrar pago con el estudiante
                 navigate('/pagos/registrar', { state: { studentId }, replace: true });

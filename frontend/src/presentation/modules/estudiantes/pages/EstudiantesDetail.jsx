@@ -69,8 +69,9 @@ const EstudiantesDetail = () => {
     }
 
     // Si el estado del aporte está cargado y el saldo es 0, ir al detalle del pago (cabecera)
+    // Pasamos studentId en state para que "Volver" en PagosDetail vaya al detalle del estudiante
     if (!loadingEstadoAporte && estadoAporte?.saldo_pendiente === 0 && estadoAporte?.cabecera?.id) {
-      navigate(`/pagos/${estadoAporte.cabecera.id}`);
+      navigate(`/pagos/${estadoAporte.cabecera.id}`, { state: { studentId } });
       return;
     }
 
@@ -98,7 +99,7 @@ const EstudiantesDetail = () => {
 
         const pagoId = pagoMasReciente.id;
         if (pagoId) {
-          navigate(`/pagos/${pagoId}`);
+          navigate(`/pagos/${pagoId}`, { state: { studentId } });
           return;
         }
       }

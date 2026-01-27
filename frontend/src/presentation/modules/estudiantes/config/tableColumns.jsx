@@ -62,10 +62,10 @@ export const createEstudiantesTableColumns = (navigate, refetch = null, deleteSt
           return fechaB - fechaA;
         })[0];
 
-        // Navegar al detalle del pago más reciente
+        // Navegar al detalle del pago más reciente (state para que Volver vaya al estudiante)
         const pagoId = pagoMasReciente.id;
         if (pagoId) {
-          navigate(`/pagos/${pagoId}`);
+          navigate(`/pagos/${pagoId}`, { state: { studentId } });
           return;
         }
       }

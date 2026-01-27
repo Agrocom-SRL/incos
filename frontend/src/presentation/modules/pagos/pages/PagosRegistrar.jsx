@@ -431,11 +431,12 @@ const PagosRegistrar = () => {
   }, [studentId, navigate]);
 
   // Si el saldo es 0 y existe cabecera, ir al detalle del pago (no mostrar formulario de registro)
+  // Pasamos studentId en state para que "Volver" en PagosDetail vaya al detalle del estudiante
   useEffect(() => {
-    if (estadoActualAporte && !loadingEstadoAporte && Number(estadoActualAporte.saldo_pendiente) === 0 && estadoActualAporte.cabecera?.id) {
-      navigate(`/pagos/${estadoActualAporte.cabecera.id}`, { replace: true });
+    if (estadoActualAporte && !loadingEstadoAporte && Number(estadoActualAporte.saldo_pendiente) === 0 && estadoActualAporte.cabecera?.id && studentId) {
+      navigate(`/pagos/${estadoActualAporte.cabecera.id}`, { replace: true, state: { studentId } });
     }
-  }, [estadoActualAporte, loadingEstadoAporte, navigate]);
+  }, [estadoActualAporte, loadingEstadoAporte, navigate, studentId]);
 
   // Si no hay studentId, no renderizar nada (se redirige automáticamente)
   if (!studentId) {

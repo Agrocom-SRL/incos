@@ -15,7 +15,7 @@
  */
 
 import { useMemo, useEffect, useCallback, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { App } from 'antd';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
@@ -28,7 +28,12 @@ import { useCasesFactory } from '@container';
 
 const PagosDetail = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { message } = App.useApp();
+
+  // Si venimos de Registrar Pago o del detalle de estudiante, Volver va al estudiante; si no, a la lista de pagos
+  const studentIdFromState = location.state?.studentId ?? null;
+  const volverALista = !studentIdFromState;
 
   // Obtener datos del contexto
   const {
@@ -182,7 +187,11 @@ const PagosDetail = () => {
   };
 
   const handleBack = () => {
-    navigate('/pagos');
+    if (volverALista) {
+      navigate('/pagos');
+    } else {
+      navigate(`/estudiantes/${studentIdFromState}`);
+    }
   };
 
   return (
