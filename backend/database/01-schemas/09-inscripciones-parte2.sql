@@ -116,7 +116,9 @@ CREATE TABLE inscripciones_materias (
     updated_by INT NULL COMMENT 'Usuario que modificó',
     deleted_by INT NULL COMMENT 'Usuario que eliminó',
     
-    -- Foreign keys
+    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
+    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
+    
     FOREIGN KEY (inscripcion_id) REFERENCES inscripciones(id) ON DELETE SET NULL,
     FOREIGN KEY (asignacion_docente_id) REFERENCES asignaciones_docentes(id) ON DELETE SET NULL,
     
@@ -201,7 +203,9 @@ CREATE TABLE calificaciones (
     updated_by INT NULL COMMENT 'Usuario que modificó',
     deleted_by INT NULL COMMENT 'Usuario que eliminó',
     
-    -- Foreign keys
+    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
+    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
+    
     FOREIGN KEY (inscripcion_materia_id) REFERENCES inscripciones_materias(id) ON DELETE SET NULL,
     
     -- Índices para optimización
@@ -263,7 +267,9 @@ CREATE TABLE historial_nivelaciones (
     updated_by INT NULL COMMENT 'Usuario que modificó',
     deleted_by INT NULL COMMENT 'Usuario que eliminó',
     
-    -- Foreign keys
+    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
+    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
+    
     FOREIGN KEY (estudiante_id) REFERENCES estudiantes(id) ON DELETE SET NULL,
     FOREIGN KEY (inscripcion_materia_id) REFERENCES inscripciones_materias(id) ON DELETE SET NULL,
     FOREIGN KEY (materia_id) REFERENCES materias(id) ON DELETE SET NULL,

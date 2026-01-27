@@ -77,6 +77,9 @@ CREATE TABLE docentes (
     updated_by INT NULL COMMENT 'Usuario que modificó',
     deleted_by INT NULL COMMENT 'Usuario que eliminó',
     
+    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
+    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
+    
     FOREIGN KEY (estado_civil_id) REFERENCES estados_civiles(id) ON DELETE SET NULL,
     FOREIGN KEY (municipio_residencia_id) REFERENCES municipios(id) ON DELETE SET NULL,
     
@@ -121,6 +124,9 @@ CREATE TABLE paralelos (
     updated_by INT NULL COMMENT 'ID del usuario que modificó el registro',
     deleted_by INT NULL COMMENT 'ID del usuario que eliminó el registro',
     
+    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
+    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
+    
     FOREIGN KEY (carrera_id) REFERENCES carreras(id) ON DELETE SET NULL,
     FOREIGN KEY (periodo_id) REFERENCES periodos(id) ON DELETE SET NULL,
     
@@ -160,6 +166,8 @@ CREATE TABLE aulas (
     updated_by INT NULL COMMENT 'ID del usuario que modificó el registro',
     deleted_by INT NULL COMMENT 'ID del usuario que eliminó el registro',
     
+    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
+    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
     
     INDEX idx_codigo (codigo) COMMENT 'Búsqueda por código',
     INDEX idx_categoria (categoria) COMMENT 'Búsqueda por categoría',
@@ -207,6 +215,8 @@ CREATE TABLE horarios (
     updated_by INT NULL COMMENT 'ID del usuario que modificó el registro',
     deleted_by INT NULL COMMENT 'ID del usuario que eliminó el registro',
     
+    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
+    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
     
     INDEX idx_dia (dia) COMMENT 'Búsqueda por día',
     INDEX idx_turno (turno) COMMENT 'Búsqueda por turno',
@@ -250,7 +260,9 @@ CREATE TABLE cursos (
     updated_by INT NULL COMMENT 'ID del usuario que modificó el registro',
     deleted_by INT NULL COMMENT 'ID del usuario que eliminó el registro',
     
-    -- Foreign keys
+    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
+    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
+    
     FOREIGN KEY (paralelo_id) REFERENCES paralelos(id) ON DELETE SET NULL,
     FOREIGN KEY (asignatura_plan_id) REFERENCES asignaturas_plan(id) ON DELETE SET NULL,
     
@@ -292,6 +304,9 @@ CREATE TABLE cursos_horarios (
     created_by INT NULL COMMENT 'ID del usuario que creó el registro',
     updated_by INT NULL COMMENT 'ID del usuario que modificó el registro',
     deleted_by INT NULL COMMENT 'ID del usuario que eliminó el registro',
+    
+    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
+    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
     
     FOREIGN KEY (curso_id) REFERENCES cursos(id) ON DELETE SET NULL,
     FOREIGN KEY (horario_id) REFERENCES horarios(id) ON DELETE SET NULL,

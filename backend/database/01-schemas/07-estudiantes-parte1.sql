@@ -68,6 +68,9 @@ CREATE TABLE estudiantes (
     updated_by INT COMMENT 'Usuario que modificó',
     deleted_by INT COMMENT 'Usuario que eliminó',
     
+    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
+    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
+    
     FOREIGN KEY (estado_civil_id) REFERENCES estados_civiles(id) ON DELETE SET NULL,
     FOREIGN KEY (municipio_residencia_id) REFERENCES municipios(id) ON DELETE SET NULL,
     
@@ -111,6 +114,9 @@ CREATE TABLE estudiantes_datos_academicos (
     created_by INT COMMENT 'Usuario que creó',
     updated_by INT COMMENT 'Usuario que modificó',
     deleted_by INT COMMENT 'Usuario que eliminó',
+    
+    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
+    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
     
     FOREIGN KEY (estudiante_id) REFERENCES estudiantes(id) ON DELETE SET NULL,
     FOREIGN KEY (carrera_id) REFERENCES carreras(id) ON DELETE SET NULL,
@@ -158,6 +164,9 @@ CREATE TABLE estudiantes_documentos_entrega (
     created_by INT COMMENT 'Usuario que creó',
     updated_by INT COMMENT 'Usuario que modificó',
     deleted_by INT COMMENT 'Usuario que eliminó',
+    
+    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
+    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
     
     FOREIGN KEY (estudiante_id) REFERENCES estudiantes(id) ON DELETE SET NULL,
     FOREIGN KEY (documentacion_id) REFERENCES documentacion(id) ON DELETE SET NULL,
@@ -211,6 +220,9 @@ CREATE TABLE documentos_estudiante (
     updated_by INT COMMENT 'Usuario que modificó',
     deleted_by INT COMMENT 'Usuario que eliminó',
     
+    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
+    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
+
     FOREIGN KEY (estudiante_id) REFERENCES estudiantes(id) ON DELETE SET NULL,
     FOREIGN KEY (documentacion_id) REFERENCES documentacion(id) ON DELETE SET NULL,
     

@@ -51,6 +51,9 @@ CREATE TABLE becas_descuentos (
     updated_by INT COMMENT 'Usuario que modificó',
     deleted_by INT COMMENT 'Usuario que eliminó',
     
+    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
+    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
+    
     -- Índices esenciales
     INDEX idx_porcentaje (porcentaje) COMMENT 'Búsqueda por porcentaje',
     INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
@@ -87,6 +90,9 @@ CREATE TABLE estudiantes_becas (
     created_by INT COMMENT 'Usuario que creó',
     updated_by INT COMMENT 'Usuario que modificó',
     deleted_by INT COMMENT 'Usuario que eliminó',
+    
+    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
+    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
     
     FOREIGN KEY (estudiante_id) REFERENCES estudiantes(id) ON DELETE SET NULL,
     FOREIGN KEY (beca_descuento_id) REFERENCES becas_descuentos(id) ON DELETE SET NULL,
@@ -142,6 +148,9 @@ CREATE TABLE licencias_solicitudes (
     updated_by INT COMMENT 'Usuario que modificó',
     deleted_by INT COMMENT 'Usuario que eliminó',
     
+    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
+    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
+    
     FOREIGN KEY (estudiante_id) REFERENCES estudiantes(id) ON DELETE SET NULL,
     FOREIGN KEY (carrera_id) REFERENCES carreras(id) ON DELETE SET NULL,
     FOREIGN KEY (gestion_id) REFERENCES gestiones(id) ON DELETE SET NULL,
@@ -184,8 +193,6 @@ CREATE TABLE estudiantes_apoderados (
     -- Datos de contacto
     celular_1 VARCHAR(20) COMMENT 'Celular 1',
     celular_2 VARCHAR(20) COMMENT 'Celular 2',
-    
-    -- Relación con el estudiante
     vive_con_estudiante BOOLEAN DEFAULT FALSE COMMENT 'Vive con el estudiante',
     
     -- Campos de auditoría y control (ESTÁNDAR)
@@ -196,6 +203,9 @@ CREATE TABLE estudiantes_apoderados (
     created_by INT COMMENT 'Usuario que creó',
     updated_by INT COMMENT 'Usuario que modificó',
     deleted_by INT COMMENT 'Usuario que eliminó',
+    
+    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
+    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
     
     FOREIGN KEY (estudiante_id) REFERENCES estudiantes(id) ON DELETE SET NULL,
     FOREIGN KEY (tipo_parentesco_id) REFERENCES tipos_parentesco(id) ON DELETE SET NULL,

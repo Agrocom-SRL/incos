@@ -54,7 +54,8 @@ CREATE TABLE carreras (
     updated_by INT COMMENT 'ID del usuario que modificó el registro',
     deleted_by INT COMMENT 'ID del usuario que eliminó el registro',
     
-    -- Foreign keys de auditoría
+    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
+    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
     
     -- Índices para optimización
     INDEX idx_codigo (codigo) COMMENT 'Búsqueda rápida por código de carrera',
@@ -92,7 +93,8 @@ CREATE TABLE materias (
     updated_by INT COMMENT 'ID del usuario que modificó el registro',
     deleted_by INT COMMENT 'ID del usuario que eliminó el registro',
     
-    -- Foreign keys de auditoría
+    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
+    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
     
     -- Índices para optimización
     INDEX idx_sigla (sigla) COMMENT 'Búsqueda rápida por sigla',
@@ -143,7 +145,9 @@ CREATE TABLE planes_estudios (
     updated_by INT NULL COMMENT 'ID del usuario que modificó el registro',
     deleted_by INT NULL COMMENT 'ID del usuario que eliminó el registro',
     
-    -- Foreign keys (todas con NULL y ON DELETE SET NULL)
+    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
+    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
+    
     FOREIGN KEY (carrera_id) REFERENCES carreras(id) ON DELETE SET NULL,
     
     -- Índices para optimización
@@ -191,7 +195,9 @@ CREATE TABLE periodos (
     updated_by INT NULL COMMENT 'ID del usuario que modificó el registro',
     deleted_by INT NULL COMMENT 'ID del usuario que eliminó el registro',
     
-    -- Foreign keys (todas con NULL y ON DELETE SET NULL)
+    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
+    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
+    
     FOREIGN KEY (plan_estudio_id) REFERENCES planes_estudios(id) ON DELETE SET NULL,
     
     -- Índices para optimización
@@ -234,7 +240,9 @@ CREATE TABLE asignaturas_plan (
     updated_by INT NULL COMMENT 'ID del usuario que modificó el registro',
     deleted_by INT NULL COMMENT 'ID del usuario que eliminó el registro',
     
-    -- Foreign keys (todas con NULL y ON DELETE SET NULL)
+    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
+    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
+    
     FOREIGN KEY (plan_estudio_id) REFERENCES planes_estudios(id) ON DELETE SET NULL,
     FOREIGN KEY (periodo_id) REFERENCES periodos(id) ON DELETE SET NULL,
     FOREIGN KEY (materia_id) REFERENCES materias(id) ON DELETE SET NULL,
@@ -276,7 +284,9 @@ CREATE TABLE prerrequisitos (
     updated_by INT NULL COMMENT 'ID del usuario que modificó el registro',
     deleted_by INT NULL COMMENT 'ID del usuario que eliminó el registro',
     
-    -- Foreign keys (todas con NULL y ON DELETE SET NULL)
+    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
+    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
+    
     FOREIGN KEY (plan_estudio_id) REFERENCES planes_estudios(id) ON DELETE SET NULL,
     FOREIGN KEY (asignatura_id) REFERENCES asignaturas_plan(id) ON DELETE SET NULL,
     FOREIGN KEY (prerrequisito_id) REFERENCES asignaturas_plan(id) ON DELETE SET NULL,
