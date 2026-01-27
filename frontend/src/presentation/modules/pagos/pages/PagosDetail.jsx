@@ -215,7 +215,8 @@ const PagosDetail = () => {
           style={{ marginBottom: '24px', borderRadius: '8px' }}
           styles={{ body: { padding: '24px 28px' } }}
         >
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' }}>
+          {/* Fila 1: 3 columnas — Estudiante | Gestión | Datos del Aporte */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(200px, 1fr))', gap: '24px', marginBottom: pago.beca ? '24px' : 0 }}>
             {pago.estudiante && (
               <div style={{ padding: '18px 20px', background: '#f6ffed', borderRadius: '8px', border: '1px solid #b7eb8f' }}>
                 <div style={{ fontSize: '18px', color: '#52c41a', fontWeight: 700, marginBottom: '12px' }}>Estudiante</div>
@@ -246,6 +247,24 @@ const PagosDetail = () => {
               </div>
             </div>
           </div>
+          {/* Fila 2: 1 columna ancha — Información de Beca */}
+          {pago.beca && (
+            <div style={{ padding: '18px 20px', background: '#f9f0ff', borderRadius: '8px', border: '1px solid #d3adf7' }}>
+              <div style={{ fontSize: '18px', color: '#722ed1', fontWeight: 700, marginBottom: '12px' }}>Información de Beca</div>
+              <div style={{ fontSize: '18px', lineHeight: 1.8 }}>
+                <div><strong>Estado:</strong> {pago.beca.estado ? <Tag color={pago.beca.estado === 'ACTIVA' ? 'success' : 'default'}>{pago.beca.estado}</Tag> : 'N/A'}</div>
+                <div><strong>Fecha de solicitud:</strong> {pago.beca.fechaSolicitud ? formatFecha(pago.beca.fechaSolicitud) : 'N/A'}</div>
+                {pago.beca.tipoBeca && (
+                  <>
+                    <div><strong>Tipo de beca:</strong> {pago.beca.tipoBeca.nombre || 'N/A'}</div>
+                    <div><strong>Descuento:</strong> {pago.beca.tipoBeca.porcentaje != null ? <Tag color="green">{pago.beca.tipoBeca.porcentaje}%</Tag> : 'N/A'}</div>
+                    {pago.beca.tipoBeca.codigo ? <div><strong>Código:</strong> {pago.beca.tipoBeca.codigo}</div> : null}
+                    {pago.beca.tipoBeca.descripcion ? <div style={{ marginTop: '8px' }}><strong>Descripción:</strong> {pago.beca.tipoBeca.descripcion}</div> : null}
+                  </>
+                )}
+              </div>
+            </div>
+          )}
         </Card>
 
         {/* Detalle del Aporte (estado: cuotas, total pagado, saldo), diseño similar a imagen */}
@@ -339,60 +358,6 @@ const PagosDetail = () => {
             </div>
           )}
         </Card>
-
-        <Divider />
-
-        {/* Información de Beca */}
-        {pago.beca && (
-          <Card
-            title={
-              <span>
-                <FileTextOutlined style={{ marginRight: '8px' }} />
-                Información de Beca
-              </span>
-            }
-            style={{ marginBottom: '24px' }}
-          >
-            <Descriptions column={2} bordered>
-              <Descriptions.Item label="Estado de la Beca">
-                {pago.beca.estado ? (
-                  <Tag color={pago.beca.estado === 'ACTIVA' ? 'success' : 'default'}>
-                    {pago.beca.estado}
-                  </Tag>
-                ) : 'N/A'}
-              </Descriptions.Item>
-              {pago.beca.fechaSolicitud ? (
-                <Descriptions.Item label="Fecha de Solicitud">
-                  {formatFecha(pago.beca.fechaSolicitud)}
-                </Descriptions.Item>
-              ) : (
-                <Descriptions.Item label="">-</Descriptions.Item>
-              )}
-              {pago.beca.tipoBeca && (
-                <>
-                  <Descriptions.Item label="Tipo de Beca">
-                    {pago.beca.tipoBeca.nombre || 'N/A'}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Descuento">
-                    {pago.beca.tipoBeca.porcentaje ? (
-                      <Tag color="green">{pago.beca.tipoBeca.porcentaje}%</Tag>
-                    ) : 'N/A'}
-                  </Descriptions.Item>
-                  {pago.beca.tipoBeca.codigo ? (
-                    <Descriptions.Item label="Código" span={2}>
-                      {pago.beca.tipoBeca.codigo}
-                    </Descriptions.Item>
-                  ) : null}
-                  {pago.beca.tipoBeca.descripcion && (
-                    <Descriptions.Item label="Descripción" span={2}>
-                      {pago.beca.tipoBeca.descripcion}
-                    </Descriptions.Item>
-                  )}
-                </>
-              )}
-            </Descriptions>
-          </Card>
-        )}
 
         {/* Información de Inscripción (si existe) */}
         {pago.inscripcion && (

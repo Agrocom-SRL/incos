@@ -139,6 +139,10 @@ export function registerEstudiantesResource(container) {
                 studentScholarshipRepository: c.resolve(REPOSITORIOS_TOKENS.studentScholarshipRepository),
                 configuracionSistemaRepository: c.resolve(REPOSITORIOS_TOKENS.configuracionSistemaRepository),
                 managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
+                scholarshipRepository: c.resolve(REPOSITORIOS_TOKENS.scholarshipRepository),
+                contributionConfigurationRepository: c.resolve(REPOSITORIOS_TOKENS.contributionConfigurationRepository),
+                contributionPaymentRepository: c.resolve(REPOSITORIOS_TOKENS.contributionPaymentRepository),
+                contributionPaymentInstallmentRepository: c.resolve(REPOSITORIOS_TOKENS.contributionPaymentInstallmentRepository),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
     );
