@@ -215,7 +215,7 @@ CREATE TABLE pago_aporte (
     FOREIGN KEY (gestion_id) REFERENCES gestiones(id) ON DELETE SET NULL,
     FOREIGN KEY (estudiante_beca_id) REFERENCES estudiantes_becas(id) ON DELETE SET NULL,
     
-    UNIQUE KEY uk_estudiante_gestion (estudiante_id, gestion_id) COMMENT 'Una sola cabecera de aporte por estudiante y gestión',
+    -- Sin UNIQUE en (estudiante_id, gestion_id): con soft delete puede haber fila eliminada y otra nueva; la “una cabecera activa” se garantiza en lógica de negocio
     INDEX idx_estudiante_id (estudiante_id) COMMENT 'Búsqueda por estudiante',
     INDEX idx_gestion_id (gestion_id) COMMENT 'Búsqueda por gestión',
     INDEX idx_estudiante_beca_id (estudiante_beca_id) COMMENT 'Búsqueda por beca',
@@ -264,7 +264,8 @@ CREATE TABLE pago_cuotas (
     FOREIGN KEY (metodo_pago_id) REFERENCES metodos_pago(id) ON DELETE SET NULL,
     FOREIGN KEY (cuenta_pago_id) REFERENCES cuentas_pago(id) ON DELETE SET NULL,
     
-    UNIQUE KEY uk_numero_recibo (numero_recibo) COMMENT 'Un recibo único por cuota',
+    -- Sin UNIQUE en numero_recibo: con soft delete puede haber cuota eliminada y otra nueva; la unicidad se garantiza en lógica al generar el número
+    INDEX idx_numero_recibo (numero_recibo) COMMENT 'Búsqueda por número de recibo',
     INDEX idx_pago_aporte_id (pago_aporte_id) COMMENT 'Búsqueda por cabecera',
     INDEX idx_fecha_pago (fecha_pago) COMMENT 'Búsqueda por fecha de pago',
     INDEX idx_metodo_pago_id (metodo_pago_id) COMMENT 'Búsqueda por método de pago',
