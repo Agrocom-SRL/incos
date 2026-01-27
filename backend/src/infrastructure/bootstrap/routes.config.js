@@ -20,8 +20,9 @@ import swaggerSpec from '../config/swagger.config.js';
 export function setupRoutes(app, logger, errorFormatter) {
     // ============================================
     // HEALTH CHECK
+    // /health y /api/v1/health para scripts de despliegue y monitoreo
     // ============================================
-    app.get('/health', (req, res) => {
+    const healthHandler = (req, res) => {
         res.status(200).json({
             status: 'OK',
             timestamp: new Date().toISOString(),
@@ -29,7 +30,9 @@ export function setupRoutes(app, logger, errorFormatter) {
             environment: serverConfig.nodeEnv,
             version: '1.0.0',
         });
-    });
+    };
+    app.get('/health', healthHandler);
+    app.get('/api/v1/health', healthHandler);
 
     // ============================================
     // API V1 ROUTES

@@ -691,15 +691,14 @@ export class RegisterAporteVoluntarioUseCase {
 
             // Generar nombre del archivo (mismo criterio que numeroRecibo del recibo)
             const numeroRecibo = numeroReciboParaPdf;
-            const year = managementPlain.anio || managementPlain.year || new Date().getFullYear();
-            const codigoEstudiante = studentPlain.studentCode || studentPlain.codigo_estudiante || studentPlain.id;
-            const fileName = `pago_${codigoEstudiante}_${numeroRecibo}.pdf`;
+            const year = managementPlain?.anio ?? managementPlain?.year ?? new Date().getFullYear();
+            const codigoEstudiante = String(studentPlain?.studentCode ?? studentPlain?.codigo_estudiante ?? studentPlain?.id ?? 'sin-codigo');
+            const pdfFileName = `pago_${codigoEstudiante}_${numeroRecibo}.pdf`;
 
             // Guardar PDF en uploads usando UploadsStorageHelper
-            // Usar ruta de recibos según configuración
             const relativeScope = `recibos/${year}`;
-            const result = UploadsStorageHelper.saveToUploads(relativeScope, fileName, pdfBuffer);
-            
+            const result = UploadsStorageHelper.saveToUploads(relativeScope, pdfFileName, pdfBuffer);
+
             this.logger.info('[Pagos] Recibo PDF generado y guardado exitosamente', {
                 paymentId: payment.id,
                 filePath: result.filePath,
@@ -712,7 +711,7 @@ export class RegisterAporteVoluntarioUseCase {
                 filePath: result.filePath,
                 fileName: result.fileName,
                 absolutePath: result.absolutePath,
-                relativePath: relativeScope + '/' + fileName, // Para compatibilidad
+                relativePath: relativeScope + '/' + pdfFileName,
             };
         } catch (error) {
             this.logger.error('[Pagos] Error al generar recibo PDF', {
