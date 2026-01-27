@@ -31,7 +31,7 @@ export const TIPOS_CONFIGURACION_VALUES = Object.values(TIPOS_CONFIGURACION);
 
 /**
  * Tipos de documento del sistema (documentación requerida)
- * Nota: Esta constante actualiza y expande TIPOS_DOCUMENTO_ESTUDIANTE de student.constants.js
+ * Nota: Esta constante actualiza y expande TIPOS_DOCUMENTO_ESTUDIANTE de estudiantes.constants.js
  */
 export const TIPOS_DOCUMENTO_SISTEMA = {
   INSCRIPCION: 'INSCRIPCION',

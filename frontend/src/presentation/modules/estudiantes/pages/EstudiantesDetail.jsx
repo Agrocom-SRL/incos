@@ -20,10 +20,10 @@ import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { useStudentDetailContext } from '@application-estudiantes/hooks';
 import { useGenerateActaCompromiso } from '@application-estudiantes/hooks';
-import { usePagosContextOptional } from '@application-pagos/hooks';
+import { usePagosContextOptional, useEstadoAporteRegistro } from '@application-pagos/hooks';
 import { downloadFile } from '@application/utils';
 import { Spin, Alert, Empty, Card, Descriptions, Tag, App, Button as AntdButton } from 'antd';
-import { GiftOutlined, FileTextOutlined, DollarOutlined, DownloadOutlined, BookOutlined, EyeOutlined, ArrowLeftOutlined, PlusCircleOutlined } from '@ant-design/icons';
+import { FileTextOutlined, DollarOutlined, DownloadOutlined, BookOutlined, EyeOutlined, PlusCircleOutlined } from '@ant-design/icons';
 import { Button } from '@atoms';
 import {
   DatosPersonalesSection,
@@ -50,8 +50,9 @@ const EstudiantesDetail = () => {
   const { generateActaCompromiso, loading: loadingActa } = useGenerateActaCompromiso();
 
   // Obtener contexto de pagos para verificar si el estudiante ya tiene un pago
-  // Usar hook opcional que no lanza error si el provider no está disponible
   const pagosContext = usePagosContextOptional();
+  // Estado del aporte: si saldo es 0 y hay cabecera, el botón "Registrar Pago" debe ir al detalle del pago
+  const { estadoAporte, loading: loadingEstadoAporte } = useEstadoAporteRegistro(studentId || null, null);
 
   // Configurar breadcrumb items
   const breadcrumbItems = useMemo(() => [
@@ -60,13 +61,6 @@ const EstudiantesDetail = () => {
     { title: 'Detalle del Estudiante' },
   ], []);
 
-  // Handler para navegar a la asignación de becas
-  const handleAsignarBeca = useCallback(() => {
-    navigate('/estudiantes/becas/asignar', {
-      state: { studentId: studentId }
-    });
-  }, [navigate, studentId]);
-
   // Handler para navegar al registro de pagos o al detalle si ya existe un pago
   const handleRegistrarPago = useCallback(() => {
     if (!studentId) {
@@ -74,9 +68,15 @@ const EstudiantesDetail = () => {
       return;
     }
 
-    // Verificar si el estudiante ya tiene un pago
+    // Si el estado del aporte está cargado y el saldo es 0, ir al detalle del pago (cabecera)
+    // Pasamos studentId en state para que "Volver" en PagosDetail vaya al detalle del estudiante
+    if (!loadingEstadoAporte && estadoAporte?.saldo_pendiente === 0 && estadoAporte?.cabecera?.id) {
+      navigate(`/pagos/${estadoAporte.cabecera.id}`, { state: { studentId } });
+      return;
+    }
+
+    // Verificar si el estudiante ya tiene un pago (listado del contexto)
     if (pagosContext?.pagos && Array.isArray(pagosContext.pagos)) {
-      // Filtrar pagos del estudiante
       const pagosEstudiante = pagosContext.pagos.filter((pago) => {
         const pagoStudentId = pago.estudiante?.id || 
                              pago.student?.id || 
@@ -87,35 +87,29 @@ const EstudiantesDetail = () => {
         return Number(pagoStudentId) === Number(studentId);
       });
 
-      // Si hay pagos, obtener el más reciente (por ID o fecha de creación)
       if (pagosEstudiante.length > 0) {
-        // Ordenar por ID descendente (el más reciente primero) o por fecha
         const pagoMasReciente = pagosEstudiante.sort((a, b) => {
-          // Intentar ordenar por ID primero
           const idA = a.id || 0;
           const idB = b.id || 0;
           if (idA !== idB) return idB - idA;
-          
-          // Si no hay ID, ordenar por fecha de creación
           const fechaA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
           const fechaB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
           return fechaB - fechaA;
         })[0];
 
-        // Navegar al detalle del pago más reciente
         const pagoId = pagoMasReciente.id;
         if (pagoId) {
-          navigate(`/pagos/${pagoId}`);
+          navigate(`/pagos/${pagoId}`, { state: { studentId } });
           return;
         }
       }
     }
 
-    // Si no hay pagos, navegar al registro
+    // Si no hay pagos o saldo > 0, navegar al registro
     navigate('/pagos/registrar', {
       state: { studentId: studentId }
     });
-  }, [navigate, studentId, pagosContext, message]);
+  }, [navigate, studentId, pagosContext, message, loadingEstadoAporte, estadoAporte]);
 
   // Handler para generar y descargar acta de compromiso
   const handleGenerateActaCompromiso = useCallback(async () => {
@@ -213,16 +207,7 @@ const EstudiantesDetail = () => {
           Generar Acta de Compromiso
         </Button>
       ) : null}
-      {/* 2. Asignar Beca */}
-      <Button
-        variant="success"
-        icon={<GiftOutlined />}
-        onClick={handleAsignarBeca}
-        style={{ marginRight: 8 }}
-      >
-        Asignar Beca
-      </Button>
-      {/* 3. Registrar Pago */}
+      {/* 2. Registrar Pago */}
       <div style={{ marginRight: 8, display: 'inline-block' }}>
         <Button
           variant="error"
@@ -232,7 +217,7 @@ const EstudiantesDetail = () => {
           Registrar Pago
         </Button>
       </div>
-      {/* 4. Nueva Inscripción */}
+      {/* 3. Nueva Inscripción */}
       <Button
         variant="primary"
         icon={<PlusCircleOutlined />}
@@ -241,7 +226,7 @@ const EstudiantesDetail = () => {
         Nueva Inscripción
       </Button>
     </>
-  ), [handleAsignarBeca, handleGenerateActaCompromiso, handleRegistrarPago, handleDownloadActaCompromiso, handleVolverALista, handleNuevaInscripcion, loadingActa, tieneDocumentosFaltantesFlag, actaCompromisoData]);
+  ), [handleGenerateActaCompromiso, handleRegistrarPago, handleDownloadActaCompromiso, handleNuevaInscripcion, loadingActa, tieneDocumentosFaltantesFlag, actaCompromisoData]);
 
   // Si está cargando
   if (loading) {

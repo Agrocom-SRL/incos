@@ -45,6 +45,7 @@ const SelectedPaymentSection = ({
   cuentasPagoData,
   bancosAutorizadosData,
   becaActiva,
+  montoCuota,
   form,
   onFinish,
   onCancel,
@@ -141,6 +142,16 @@ const SelectedPaymentSection = ({
       }
     }
   }, [codigoMetodo, form, esEfectivo, esPagoGratuito, selectedMetodoPago]);
+
+  // Fecha de pago por defecto: siempre hoy cuando se requiere (Completar Información del Pago)
+  useEffect(() => {
+    if (form && requiereFechaPago) {
+      const actual = form.getFieldValue('fechaPago');
+      if (!actual) {
+        form.setFieldsValue({ fechaPago: dayjs() });
+      }
+    }
+  }, [form, requiereFechaPago]);
 
   return (
     <Card
@@ -274,10 +285,10 @@ const SelectedPaymentSection = ({
         <>
           {/* Saldo a Pagar y Método de Pago lado a lado */}
           <Row gutter={[24, 16]} style={{ marginBottom: '24px' }}>
-            {/* Saldo a Pagar */}
+            {/* Saldo a Pagar: monto de esta cuota (el que ingresó el usuario en Detalle del Aporte) */}
             <Col xs={24} md={12}>
               <PaymentAmountDisplay
-                montoPagado={montoPagado}
+                montoPagado={montoCuota != null && montoCuota !== '' ? Number(montoCuota) : montoPagado}
               />
             </Col>
             

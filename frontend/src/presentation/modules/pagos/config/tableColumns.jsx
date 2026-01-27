@@ -1,244 +1,174 @@
 /**
- * tableColumns - Configuración de columnas para la tabla de pagos
- * 
- * Single Responsibility: Definir las columnas y su configuración para PagosTable
+ * tableColumns - Configuración de columnas para la tabla de pagos de aportes (vista_pago_aporte_listado)
+ *
+ * Campos según vista: estudiante, gestion, monto_base, descuento_beca, monto_obligatorio,
+ * total_pagado, cantidad_pagos, saldo_pendiente, estado.
+ * Los ítems llegan con estudiante.nombreCompleto desde pagosListMapper.
  */
 
-import { Tag } from 'antd';
-import { DollarOutlined, UserOutlined, CalendarOutlined, CreditCardOutlined, QrcodeOutlined } from '@ant-design/icons';
+import { UserOutlined, CalendarOutlined, DollarOutlined, NumberOutlined } from '@ant-design/icons';
+import { Tag, Space, Flex } from 'antd';
 import { TableCell } from '@molecules';
+import { Text } from '@atoms';
 import PagoTableActions from './PagoTableActions';
 
 /**
- * Helper para asegurar que un valor sea primitivo (string, number, etc.)
- * Si es un objeto, intenta extraer un valor útil o retorna 'N/A'
- * 
- * @param {any} value - Valor a convertir
- * @param {string} fallback - Valor por defecto si no se puede convertir
- * @returns {string|number} Valor primitivo
- */
-const ensurePrimitive = (value, fallback = 'N/A') => {
-  if (value === null || value === undefined || value === '') {
-    return fallback;
-  }
-  if (typeof value === 'object') {
-    // Si es un objeto, intentar extraer propiedades comunes
-    if (value.nombre) return value.nombre;
-    if (value.codigo) return value.codigo;
-    if (value.nombreCompleto) return value.nombreCompleto;
-    if (value.id) return String(value.id);
-    return fallback;
-  }
-  return value;
-};
-
-/**
- * Crea las columnas de la tabla de pagos
+ * Crea las columnas de la tabla de pagos de aportes.
  *
  * @param {Function} navigate - Función de navegación de react-router
- * @param {Function} refetch - Función para recargar los datos después de eliminar
- * @param {Function} [deletePago] - Función para eliminar pago (desde contexto). Si se pasa, se usa en lugar de useCaseKey.
- * @returns {Array} Array de configuración de columnas para Ant Design Table
+ * @param {Function} refetch - Función para recargar con params (page, limit, search, sort, gestion_id, estudiante_id, estado)
+ * @param {Function} [deletePago] - Función para eliminar pago
  */
 export const createPagosTableColumns = (navigate, refetch = null, deletePago = null) => {
-  return [
-    {
-      title: 'Número de Recibo',
-      dataIndex: 'numeroRecibo',
-      fixed: 'left',
-      width: 200,
-      ellipsis: true,
-      render: (numeroRecibo, record) => {
-        // Manejar tanto numeroRecibo como receipt_number (del backend)
-        // El backend retorna receipt_number desde el mapper
-        const numero = ensurePrimitive(
-          numeroRecibo || record.receipt_number || record.numeroRecibo || record.receiptNumber,
-          'N/A'
-        );
-        return (
-          <TableCell
-            strong
-            textStyle={{ fontFamily: 'monospace', fontSize: '13px' }}
-          >
-            {numero}
-          </TableCell>
-        );
-      },
-      sorter: (a, b) => {
-        const numA = a.receipt_number || a.numeroRecibo || a.receiptNumber || '';
-        const numB = b.receipt_number || b.numeroRecibo || b.receiptNumber || '';
-        return numA.localeCompare(numB, undefined, { numeric: true });
-      },
-    },
-    {
-      title: 'Estudiante',
-      dataIndex: 'estudiante',
-      width: 200,
-      ellipsis: true,
-      render: (estudiante, record) => {
-        // Manejar tanto objeto enriquecido como objeto anidado o ID
-        const student = estudiante || record.student || record.estudiante;
-        const nombre = typeof student === 'object' && student !== null
-          ? (student.nombreCompleto || `${student.nombre || ''} ${student.apellidoPaterno || ''} ${student.apellidoMaterno || ''}`.trim() || 'Sin nombre')
-          : 'Sin nombre';
-        return (
-          <TableCell
-            strong
-            icon={<UserOutlined />}
-            fallback="Sin estudiante"
-          >
-            {nombre}
-          </TableCell>
-        );
-      },
-      sorter: (a, b) => {
-        const studentA = a.estudiante || a.student;
-        const studentB = b.estudiante || b.student;
-        const nombreA = typeof studentA === 'object' && studentA !== null
-          ? (studentA.nombreCompleto || `${studentA.nombre || ''} ${studentA.apellidoPaterno || ''} ${studentA.apellidoMaterno || ''}`.trim())
-          : '';
-        const nombreB = typeof studentB === 'object' && studentB !== null
-          ? (studentB.nombreCompleto || `${studentB.nombre || ''} ${studentB.apellidoPaterno || ''} ${studentB.apellidoMaterno || ''}`.trim())
-          : '';
-        return nombreA.localeCompare(nombreB);
-      },
-    },
-    {
-      title: 'Monto',
-      dataIndex: 'montoTotal',
-      width: 120,
-      align: 'right',
-      render: (montoTotal, record) => {
-        // Manejar tanto montoTotal como total_amount (del backend)
-        const monto = montoTotal || record.montoTotal || record.total_amount || 0;
-        // Manejar tanto descuentoBeca como scholarship_discount (del backend)
-        const descuento = record.descuentoBeca || record.scholarship_discount || record.descuentoBeca || 0;
-        const montoFinal = monto - descuento;
-        return (
-          <TableCell icon={<DollarOutlined />} strong>
-            Bs. {montoFinal.toFixed(2)}
-          </TableCell>
-        );
-      },
-      sorter: (a, b) => {
-        const montoA = (a.montoTotal || a.total_amount || 0) - (a.descuentoBeca || a.scholarship_discount || 0);
-        const montoB = (b.montoTotal || b.total_amount || 0) - (b.descuentoBeca || b.scholarship_discount || 0);
-        return montoA - montoB;
-      },
-    },
-    {
-      title: 'Método de Pago',
-      dataIndex: 'metodoPago',
-      width: 150,
-      render: (metodoPago, record) => {
-        // Manejar tanto objeto enriquecido como string/ID
-        const metodoPagoNombre = typeof metodoPago === 'object' && metodoPago !== null
-          ? metodoPago.nombre || metodoPago.codigo || 'N/A'
-          : metodoPago || record.paymentMethod || 'N/A';
-        return (
-          <TableCell icon={<CreditCardOutlined />} textStyle={{ fontSize: 'var(--font-size-sm)' }}>
-            {metodoPagoNombre}
-          </TableCell>
-        );
-      },
-    },
-    {
-      title: 'Fecha',
-      dataIndex: 'fechaPago',
-      width: 120,
-      render: (fechaPago, record) => {
-        // Manejar tanto fechaPago como payment_date (del backend)
-        const fecha = ensurePrimitive(
-          fechaPago || record.fechaPago || record.payment_date,
-          'N/A'
-        );
-        return (
-          <TableCell icon={<CalendarOutlined />} textStyle={{ fontSize: 'var(--font-size-sm)' }}>
-            {fecha}
-          </TableCell>
-        );
-      },
-      sorter: (a, b) => {
-        const fechaA = a.fechaPago || a.payment_date || '';
-        const fechaB = b.fechaPago || b.payment_date || '';
-        return new Date(fechaA) - new Date(fechaB);
-      },
-    },
-    {
-      title: 'Comprobante',
-      dataIndex: 'codigoComprobante',
-      width: 180,
-      ellipsis: true,
-      render: (codigoComprobante, record) => {
-        // Manejar tanto codigoComprobante como codigo_comprobante (del backend)
-        const codigo = ensurePrimitive(
-          codigoComprobante || record.codigoComprobante || record.codigo_comprobante,
-          null
-        );
-        // Solo mostrar si tiene valor
-        if (!codigo || codigo === 'N/A') {
-          return (
-            <TableCell textStyle={{ fontSize: 'var(--font-size-sm)', color: '#8c8c8c', fontStyle: 'italic' }}>
-              -
-            </TableCell>
-          );
-        }
-        return (
-          <TableCell icon={<QrcodeOutlined />} textStyle={{ fontSize: 'var(--font-size-sm)', fontFamily: 'monospace' }}>
-            {codigo}
-          </TableCell>
-        );
-      },
-      sorter: (a, b) => {
-        const codigoA = a.codigo_comprobante || a.codigoComprobante || '';
-        const codigoB = b.codigo_comprobante || b.codigoComprobante || '';
-        return codigoA.localeCompare(codigoB);
-      },
-    },
-    {
-      title: 'Acciones',
-      key: 'acciones',
-      fixed: 'right',
-      width: 150,
-      align: 'right',
-      render: (_, record) => {
-        const student = record.estudiante || record.student;
-        const gestion = record.gestion || record.management;
-        const estudianteNombre =
-          typeof student === 'object' && student !== null
-            ? student.nombreCompleto ||
-              `${student.nombre || ''} ${student.apellidoPaterno || ''} ${student.apellidoMaterno || ''}`.trim() ||
-              'Sin nombre'
-            : 'Sin nombre';
-        const numeroRecibo =
-          ensurePrimitive(
-            record.numeroRecibo || record.receipt_number || record.receiptNumber,
-            'N/A'
-          );
-        const montoTotal = record.montoTotal ?? record.total_amount ?? 0;
-        const descuento = record.descuentoBeca ?? record.scholarship_discount ?? 0;
-        const montoFinal = Number(montoTotal) - Number(descuento);
-        const gestionAnio = gestion?.anio ?? gestion?.year ?? 'N/A';
+    return [
+        {
+            title: 'Gestión',
+            dataIndex: 'gestion',
+            render: (gestion, record) => {
+                const g = gestion || record.management;
+                const label = g ? (g.nombre || g.anio || String(g.id)) : 'N/A';
+                return (
+                    <TableCell icon={<CalendarOutlined />} textStyle={{ fontSize: 'var(--font-size-sm)' }}>
+                        {label}
+                    </TableCell>
+                );
+            },
+            sorter: (a, b) => {
+                const ga = a.gestion || a.management;
+                const gb = b.gestion || b.management;
+                return (ga?.nombre || ga?.anio || '').localeCompare(gb?.nombre || gb?.anio || '');
+            },
+        },
+        {
+            title: 'Estudiante',
+            dataIndex: ['estudiante', 'nombreCompleto'],
+            ellipsis: true,
+            render: (_, record) => (
+                <TableCell
+                    strong
+                    icon={<UserOutlined />}
+                    subtext={record.estudiante?.codigoEstudiante ?? '—'}
+                    fallback="Sin nombre"
+                >
+                    {record.estudiante?.nombreCompleto ?? record.estudiante?.codigoEstudiante ?? 'Sin nombre'}
+                </TableCell>
+            ),
+            sorter: (a, b) =>
+                (a.estudiante?.nombreCompleto ?? a.estudiante?.codigoEstudiante ?? '').localeCompare(
+                    b.estudiante?.nombreCompleto ?? b.estudiante?.codigoEstudiante ?? ''
+                ),
+        },
+        {
+            title: 'Monto a pagar',
+            dataIndex: 'monto_obligatorio',
+            align: 'right',
+            render: (_, record) => {
+                const base = Number(record.monto_base ?? 0);
+                const desc = Number(record.descuento_beca ?? 0);
+                const oblig = Number(record.monto_obligatorio ?? 0);
+                return (
+                    <Space align="start" size={8}>
+                        <DollarOutlined style={{ marginTop: 4 }} />
+                        <Flex vertical align="flex-end" gap={2}>
+                            <Text type="secondary" style={{ fontSize: 'var(--font-size-sm)' }}>
+                                Base Bs. {base.toFixed(2)}
+                            </Text>
+                            <Text type="secondary" style={{ fontSize: 'var(--font-size-sm)' }}>
+                                Descuento Bs. {desc.toFixed(2)}
+                            </Text>
+                            <Text strong style={{ fontSize: 'var(--font-size-base)' }}>
+                                Bs. {oblig.toFixed(2)}
+                            </Text>
+                        </Flex>
+                    </Space>
+                );
+            },
+            sorter: (a, b) => (a.monto_obligatorio ?? 0) - (b.monto_obligatorio ?? 0),
+        },
+        {
+            title: 'Detalle del pago',
+            dataIndex: ['total_pagado', 'cantidad_pagos'],
+            align: 'left',
+            render: (_, record) => {
+                const t = record.total_pagado ?? 0;
+                const n = Number(record.cantidad_pagos ?? 0);
+                if (n === 0) {
+                    return <TableCell fallback="—">sin pagos</TableCell>;
+                }
+                return (
+                    <TableCell
+                        icon={<DollarOutlined />}
+                        subtext={`${n} pagos`}
+                        fallback="—"
+                    >
+                        Bs. {Number(t).toFixed(2)}
+                    </TableCell>
+                );
+            },
+            sorter: (a, b) => (a.total_pagado ?? 0) - (b.total_pagado ?? 0),
+        },
+        {
+            title: 'Saldo pendiente',
+            dataIndex: 'saldo_pendiente',
+            align: 'right',
+            render: (val, record) => {
+                const s = val ?? record.saldo_pendiente ?? 0;
+                const num = Number(s);
+                return (
+                    <TableCell icon={<DollarOutlined />} strong={num > 0}>
+                        Bs. {num.toFixed(2)}
+                    </TableCell>
+                );
+            },
+            sorter: (a, b) => (a.saldo_pendiente ?? 0) - (b.saldo_pendiente ?? 0),
+        },
+        {
+            title: 'Estado',
+            dataIndex: 'estado',
+            render: (estado, record) => {
+                const e = estado ?? record.estado ?? 'N/A';
+                const color = e === 'CANCELADO' ? 'default' : e === 'PENDIENTE' ? 'warning' : 'success';
+                return <Tag color={color}>{e}</Tag>;
+            },
+            sorter: (a, b) => (a.estado ?? '').localeCompare(b.estado ?? ''),
+        },
+        {
+            title: 'Acciones',
+            key: 'acciones',
+            fixed: 'right',
+            width: 80,
+            align: 'right',
+            render: (_, record) => {
+                const e = record.estudiante;
+                const g = record.gestion || record.management;
+                const nombre = e?.nombreCompleto ?? e?.codigoEstudiante ?? 'Sin nombre';
+                const codigo = e?.codigoEstudiante ?? '—';
+                const gestionLabel = g ? (g.nombre || g.anio || '') : 'N/A';
+                const base = Number(record.monto_base ?? 0);
+                const desc = Number(record.descuento_beca ?? 0);
+                const oblig = Number(record.monto_obligatorio ?? 0);
+                const saldo = Number(record.saldo_pendiente ?? 0);
 
-        const itemName = `el pago con recibo ${numeroRecibo} del estudiante ${estudianteNombre}`;
-        const itemDetails = [
-          { label: 'Estudiante', value: estudianteNombre },
-          { label: 'Nº Recibo', value: numeroRecibo },
-          { label: 'Monto', value: `Bs. ${montoFinal.toFixed(2)}` },
-          { label: 'Gestión', value: String(gestionAnio) },
-        ].filter((d) => d.value && d.value !== 'N/A' && d.value !== 'Sin nombre');
+                const itemName = `el aporte de ${nombre} (${gestionLabel})`;
+                const itemDetails = [
+                    { label: 'Estudiante', value: nombre },
+                    { label: 'Código', value: codigo },
+                    { label: 'Gestión', value: gestionLabel },
+                    { label: 'Monto a pagar', value: `Base Bs. ${base.toFixed(2)} · Descuento Bs. ${desc.toFixed(2)} · Total Bs. ${oblig.toFixed(2)}` },
+                    { label: 'Saldo pendiente', value: `Bs. ${saldo.toFixed(2)}` },
+                ].filter((d) => d.value && d.value !== 'N/A' && d.value !== '—');
 
-        return (
-          <PagoTableActions
-            record={record}
-            navigate={navigate}
-            refetch={refetch}
-            deletePago={deletePago}
-            itemName={itemName}
-            itemDetails={itemDetails}
-          />
-        );
-      },
-    },
-  ];
+                return (
+                    <PagoTableActions
+                        record={record}
+                        navigate={navigate}
+                        refetch={refetch}
+                        deletePago={deletePago}
+                        itemName={itemName}
+                        itemDetails={itemDetails}
+                    />
+                );
+            },
+        },
+    ];
 };

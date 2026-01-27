@@ -88,6 +88,16 @@ export { Inscripcion } from './inscripcion.js';
 export { InscripcionMateria } from './inscripcion_materia.js';
 
 // ============================================
+// PAGOS ACADÉMICOS
+// ============================================
+export { ConfiguracionAporte } from './configuracion_aporte.js';
+export { MetodoPago } from './metodo_pago.js';
+export { BancoAutorizado } from './banco_autorizado.js';
+export { CuentaPago } from './cuenta_pago.js';
+export { PagoAporte } from './pago_aporte.js';
+export { PagoCuotas } from './pago_cuotas.js';
+
+// ============================================
 // CONFIGURACIÓN DEL SISTEMA
 // ============================================
 export { ConfiguracionSistema } from './configuracion_sistema.js';

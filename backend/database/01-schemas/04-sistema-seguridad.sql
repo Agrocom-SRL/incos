@@ -50,7 +50,8 @@ CREATE TABLE roles (
     updated_by INT COMMENT 'Usuario que modificó',
     deleted_by INT COMMENT 'Usuario que eliminó',
     
-    -- Foreign Keys
+    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
+    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
     
     INDEX idx_codigo (codigo) COMMENT 'Búsqueda por código',
     INDEX idx_nombre (nombre) COMMENT 'Búsqueda por nombre',
@@ -79,7 +80,8 @@ CREATE TABLE permisos (
     updated_by INT COMMENT 'Usuario que modificó',
     deleted_by INT COMMENT 'Usuario que eliminó',
     
-    -- Foreign Keys
+    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
+    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
     
     INDEX idx_codigo (codigo) COMMENT 'Búsqueda por código',
     INDEX idx_modulo (modulo) COMMENT 'Búsqueda por módulo',
@@ -116,7 +118,9 @@ CREATE TABLE usuarios (
     updated_by INT COMMENT 'Usuario que modificó',
     deleted_by INT COMMENT 'Usuario que eliminó',
     
-    -- Foreign Keys
+    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
+    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
+    
     FOREIGN KEY (rol_id) REFERENCES roles(id) ON DELETE SET NULL,
     
     INDEX idx_rol_id (rol_id) COMMENT 'Búsqueda por rol',
@@ -152,7 +156,9 @@ CREATE TABLE roles_permisos (
     updated_by INT COMMENT 'Usuario que modificó',
     deleted_by INT COMMENT 'Usuario que eliminó',
     
-    -- Foreign Keys
+    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
+    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
+    
     FOREIGN KEY (rol_id) REFERENCES roles(id) ON DELETE SET NULL,
     FOREIGN KEY (permiso_id) REFERENCES permisos(id) ON DELETE SET NULL,
     
@@ -195,7 +201,8 @@ CREATE TABLE sesiones (
     updated_by INT COMMENT 'Usuario que modificó',
     deleted_by INT COMMENT 'Usuario que eliminó',
     
-    -- Foreign Keys
+    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
+    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
     
     INDEX idx_usuario_id (usuario_id) COMMENT 'Búsqueda por usuario',
     INDEX idx_token_sesion (token_sesion(255)) COMMENT 'Búsqueda por token de sesión',
@@ -227,7 +234,8 @@ CREATE TABLE configuracion_sistema (
     updated_by INT COMMENT 'Usuario que modificó',
     deleted_by INT COMMENT 'Usuario que eliminó',
     
-    -- Foreign Keys
+    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
+    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
     
     INDEX idx_clave (clave) COMMENT 'Búsqueda por clave',
     INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
@@ -276,7 +284,9 @@ CREATE TABLE personal (
     updated_by INT COMMENT 'Usuario que modificó',
     deleted_by INT COMMENT 'Usuario que eliminó',
     
-    -- Foreign Keys
+    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
+    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
+    
     FOREIGN KEY (estado_civil_id) REFERENCES estados_civiles(id) ON DELETE SET NULL,
     FOREIGN KEY (municipio_id) REFERENCES municipios(id) ON DELETE SET NULL,
     

@@ -17,9 +17,10 @@ import { registerComponent } from '../../utils/container.helpers.js';
 import { RegisterAporteVoluntarioUseCase } from '../../../../application/use-cases/pagos/RegisterAporteVoluntarioUseCase.js';
 import { ListPagosAportesUseCase } from '../../../../application/use-cases/pagos/ListPagosAportesUseCase.js';
 import { GetPaymentAporteByIdUseCase } from '../../../../application/use-cases/pagos/GetPaymentAporteByIdUseCase.js';
+import { GetEstadoAporteRegistroUseCase } from '../../../../application/use-cases/pagos/GetEstadoAporteRegistroUseCase.js';
 import { DeletePaymentAporteUseCase } from '../../../../application/use-cases/pagos/DeletePaymentAporteUseCase.js';
 import { GenerateReciboPagoUseCase } from '../../../../application/use-cases/pagos/GenerateReciboPagoUseCase.js';
-import { RegisterPagoAporteController, ListPagosAportesController, GetPaymentAporteByIdController, DeletePaymentAporteController, GenerateReciboPagoController } from '../../../../presentation/controllers/pagos/index.js';
+import { RegisterPagoAporteController, ListPagosAportesController, GetPaymentAporteByIdController, GetEstadoAporteRegistroController, DeletePaymentAporteController, GenerateReciboPagoController } from '../../../../presentation/controllers/pagos/index.js';
 import { buildPagosAportesRouter } from '../../../../presentation/routes/pagos-aportes.routes.js';
 
 /**
@@ -38,9 +39,9 @@ export function registerPagosAportesResource(container) {
         (c) =>
             new RegisterAporteVoluntarioUseCase({
                 contributionPaymentRepository: c.resolve(REPOSITORIOS_TOKENS.contributionPaymentRepository),
+                contributionPaymentInstallmentRepository: c.resolve(REPOSITORIOS_TOKENS.contributionPaymentInstallmentRepository),
                 paymentMethodRepository: c.resolve(REPOSITORIOS_TOKENS.paymentMethodRepository),
                 studentRepository: c.resolve(REPOSITORIOS_TOKENS.studentRepository),
-                enrollmentRepository: c.resolve(REPOSITORIOS_TOKENS.enrollmentRepository),
                 studentScholarshipRepository: c.resolve(REPOSITORIOS_TOKENS.studentScholarshipRepository),
                 scholarshipRepository: c.resolve(REPOSITORIOS_TOKENS.scholarshipRepository),
                 managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
@@ -58,12 +59,6 @@ export function registerPagosAportesResource(container) {
         (c) =>
             new ListPagosAportesUseCase({
                 contributionPaymentRepository: c.resolve(REPOSITORIOS_TOKENS.contributionPaymentRepository),
-                studentRepository: c.resolve(REPOSITORIOS_TOKENS.studentRepository),
-                managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
-                paymentMethodRepository: c.resolve(REPOSITORIOS_TOKENS.paymentMethodRepository),
-                studentScholarshipRepository: c.resolve(REPOSITORIOS_TOKENS.studentScholarshipRepository),
-                scholarshipRepository: c.resolve(REPOSITORIOS_TOKENS.scholarshipRepository),
-                enrollmentRepository: c.resolve(REPOSITORIOS_TOKENS.enrollmentRepository),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
     );
@@ -87,6 +82,21 @@ export function registerPagosAportesResource(container) {
 
     registerComponent(
         container,
+        PAGOS_TOKENS.getEstadoAporteRegistroUseCase,
+        (c) =>
+            new GetEstadoAporteRegistroUseCase({
+                contributionPaymentRepository: c.resolve(REPOSITORIOS_TOKENS.contributionPaymentRepository),
+                contributionPaymentInstallmentRepository: c.resolve(REPOSITORIOS_TOKENS.contributionPaymentInstallmentRepository),
+                managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
+                contributionConfigurationRepository: c.resolve(REPOSITORIOS_TOKENS.contributionConfigurationRepository),
+                studentScholarshipRepository: c.resolve(REPOSITORIOS_TOKENS.studentScholarshipRepository),
+                scholarshipRepository: c.resolve(REPOSITORIOS_TOKENS.scholarshipRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
+    registerComponent(
+        container,
         PAGOS_TOKENS.deletePaymentAporteUseCase,
         (c) =>
             new DeletePaymentAporteUseCase({
@@ -103,6 +113,7 @@ export function registerPagosAportesResource(container) {
         (c) =>
             new GenerateReciboPagoUseCase({
                 contributionPaymentRepository: c.resolve(REPOSITORIOS_TOKENS.contributionPaymentRepository),
+                contributionPaymentInstallmentRepository: c.resolve(REPOSITORIOS_TOKENS.contributionPaymentInstallmentRepository),
                 studentRepository: c.resolve(REPOSITORIOS_TOKENS.studentRepository),
                 managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
                 paymentMethodRepository: c.resolve(REPOSITORIOS_TOKENS.paymentMethodRepository),
@@ -152,6 +163,17 @@ export function registerPagosAportesResource(container) {
 
     registerComponent(
         container,
+        PAGOS_TOKENS.getEstadoAporteRegistroController,
+        (c) =>
+            new GetEstadoAporteRegistroController({
+                getEstadoAporteRegistroUseCase: c.resolve(PAGOS_TOKENS.getEstadoAporteRegistroUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
+    );
+
+    registerComponent(
+        container,
         PAGOS_TOKENS.deletePaymentAporteController,
         (c) =>
             new DeletePaymentAporteController({
@@ -183,6 +205,7 @@ export function registerPagosAportesResource(container) {
                 registerPagoAporteController: c.resolve(PAGOS_TOKENS.registerPagoAporteController),
                 listPagosAportesController: c.resolve(PAGOS_TOKENS.listPagosAportesController),
                 getPaymentAporteByIdController: c.resolve(PAGOS_TOKENS.getPaymentAporteByIdController),
+                getEstadoAporteRegistroController: c.resolve(PAGOS_TOKENS.getEstadoAporteRegistroController),
                 deletePaymentAporteController: c.resolve(PAGOS_TOKENS.deletePaymentAporteController),
                 generateReciboPagoController: c.resolve(PAGOS_TOKENS.generateReciboPagoController),
             };

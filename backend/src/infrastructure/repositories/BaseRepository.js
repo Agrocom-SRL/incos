@@ -1,5 +1,6 @@
 import { Op } from 'sequelize';
 import { IRepository } from '../../domain/interfaces/repositories/IRepository.js';
+import { sequelize } from '../database/sequelize.js';
 
 /**
  * Clase base abstracta para repositorios usando el patrón Template Method
@@ -413,6 +414,41 @@ export class BaseRepository extends IRepository {
 
     const count = await Model.count({ where });
     return count;
+  }
+
+  /**
+   * Consulta una vista (o tabla) con paginación: COUNT + SELECT con mismo WHERE.
+   * Reutilizable por repositorios que listan desde vistas (misma lógica que tabla con datos extras).
+   *
+   * @protected
+   * @param {string} viewName - Nombre de la vista/tabla (ej: vista_pago_aporte_listado)
+   * @param {string[]} whereConditions - Fragmentos SQL para WHERE (ej: ['estudiante_id = ?', 'estado = ?'])
+   * @param {Array} replacements - Valores para los ? del WHERE (y luego limit/offset)
+   * @param {string} orderClause - Cláusula ORDER BY (ej: 'ORDER BY id ASC')
+   * @param {number} page - Página (1-based)
+   * @param {number} limit - Límite por página
+   * @returns {Promise<{rows: Array, total: number}>}
+   */
+  async _queryViewPaged(viewName, whereConditions, replacements, orderClause, page, limit) {
+    const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const limitNum = Math.max(1, Math.min(100, parseInt(limit, 10) || 50));
+    const offset = (pageNum - 1) * limitNum;
+
+    const countQuery = `SELECT COUNT(*) AS total FROM ${viewName} ${whereClause}`;
+    const countResult = await sequelize.query(countQuery, {
+      replacements,
+      type: sequelize.QueryTypes.SELECT,
+    });
+    const total = Number(countResult[0]?.total ?? 0);
+
+    const dataQuery = `SELECT * FROM ${viewName} ${whereClause} ${orderClause} LIMIT ? OFFSET ?`;
+    const rows = await sequelize.query(dataQuery, {
+      replacements: [...replacements, limitNum, offset],
+      type: sequelize.QueryTypes.SELECT,
+    });
+
+    return { rows, total };
   }
 
 }

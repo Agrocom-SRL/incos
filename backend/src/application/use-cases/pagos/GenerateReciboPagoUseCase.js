@@ -27,6 +27,7 @@ export class GenerateReciboPagoUseCase {
     /**
      * @param {Object} params - Dependencias inyectadas
      * @param {Object} params.contributionPaymentRepository - Repositorio de pagos de aporte
+     * @param {Object} params.contributionPaymentInstallmentRepository - Repositorio de cuotas (pago_cuotas)
      * @param {Object} params.studentRepository - Repositorio de estudiantes
      * @param {Object} params.managementRepository - Repositorio de gestiones académicas
      * @param {Object} params.paymentMethodRepository - Repositorio de métodos de pago
@@ -38,6 +39,7 @@ export class GenerateReciboPagoUseCase {
      */
     constructor({
         contributionPaymentRepository,
+        contributionPaymentInstallmentRepository,
         studentRepository,
         managementRepository,
         paymentMethodRepository,
@@ -48,6 +50,7 @@ export class GenerateReciboPagoUseCase {
         logger,
     }) {
         this.contributionPaymentRepository = contributionPaymentRepository;
+        this.contributionPaymentInstallmentRepository = contributionPaymentInstallmentRepository;
         this.studentRepository = studentRepository;
         this.managementRepository = managementRepository;
         this.paymentMethodRepository = paymentMethodRepository;
@@ -68,10 +71,10 @@ export class GenerateReciboPagoUseCase {
      * 4. Si no existe, generar el recibo usando la misma lógica que RegisterAporteVoluntarioUseCase
      * 5. Guardar el recibo generado en documentos_estudiante
      * 
-     * @param {number} paymentId - ID del pago
+     * @param {number|string} paymentId - ID de cuota (numérico), número de recibo (string, ej. "REC-1-1", "000004") o ID de cabecera (numérico)
      * @param {Object} options - Opciones adicionales (por defecto vacío)
      * @returns {Promise<{filePath: string, fileName: string, absolutePath: string}>} Rutas del recibo
-     * @throws {NotFoundError} Si el pago no existe
+     * @throws {NotFoundError} Si no existe cuota ni cabecera con ese id/numero de recibo
      * @throws {Error} Si falla la generación del recibo
      */
     async execute(paymentId, options = {}) {
@@ -80,17 +83,38 @@ export class GenerateReciboPagoUseCase {
         });
 
         try {
-            // 1. Validar que el pago exista
-            const payment = await this.contributionPaymentRepository.findById(paymentId);
+            // Aceptar id de cuota (numérico) o número de recibo (string, ej. "REC-1-1", "000004")
+            if (this.contributionPaymentInstallmentRepository) {
+                const idNum = Number(paymentId);
+                if (!Number.isNaN(idNum) && idNum > 0) {
+                    const installmentById = await this.contributionPaymentInstallmentRepository.findById(idNum);
+                    if (installmentById) {
+                        return await this._executeReciboPorCuota(installmentById);
+                    }
+                }
+                if (paymentId != null && String(paymentId).trim() !== '') {
+                    const installmentByRecibo = await this.contributionPaymentInstallmentRepository.findBy({ receiptNumber: String(paymentId).trim() });
+                    if (installmentByRecibo) {
+                        return await this._executeReciboPorCuota(installmentByRecibo);
+                    }
+                }
+            }
+
+            // Si no es cuota, intentar como cabecera (id numérico)
+            const idNum = Number(paymentId);
+            if (Number.isNaN(idNum) || idNum < 1) {
+                throw new NotFoundError(`No se encontró una cuota con número de recibo "${paymentId}" ni cabecera con ID ${paymentId}`);
+            }
+            const payment = await this.contributionPaymentRepository.findById(idNum);
             if (!payment) {
-                throw new NotFoundError(`No se encontró un pago con ID ${paymentId}`);
+                throw new NotFoundError(`No se encontró un pago ni cuota con ID ${paymentId}`);
             }
 
             const paymentPlain = payment.toPlainObject ? payment.toPlainObject() : payment;
             const studentId = paymentPlain.studentId || paymentPlain.student_id;
 
             // 2. Verificar si el recibo ya existe en documentos_estudiante Y si el archivo físico existe
-            const existingRecibo = await this._findExistingRecibo(studentId, paymentId);
+            const existingRecibo = await this._findExistingRecibo(studentId, idNum);
             let shouldRegenerate = true;
             let existingDocumentId = null;
 
@@ -262,6 +286,122 @@ export class GenerateReciboPagoUseCase {
             });
             throw error;
         }
+    }
+
+    /**
+     * Genera el recibo de pago para una cuota (pago_cuotas).
+     * Usado cuando el id recibido en execute() corresponde a una cuota.
+     * @private
+     * @param {Object} cuota - Entidad o plain de cuota (pago_cuotas)
+     * @returns {Promise<{filePath: string, fileName: string, absolutePath: string}>}
+     */
+    async _executeReciboPorCuota(cuota) {
+        const cuotaPlain = cuota.toPlainObject ? cuota.toPlainObject() : cuota;
+        const cabeceraId = cuotaPlain.contributionPaymentId ?? cuotaPlain.pagoAporteId ?? cuotaPlain.pago_aporte_id;
+        if (!cabeceraId) {
+            throw new NotFoundError(`La cuota con ID ${cuotaPlain.id} no tiene cabecera asociada`);
+        }
+
+        const cabecera = await this.contributionPaymentRepository.findById(cabeceraId);
+        if (!cabecera) {
+            throw new NotFoundError(`No se encontró la cabecera de aporte con ID ${cabeceraId}`);
+        }
+        const cabeceraPlain = cabecera.toPlainObject ? cabecera.toPlainObject() : cabecera;
+        const studentId = cabeceraPlain.studentId ?? cabeceraPlain.estudianteId ?? cabeceraPlain.student_id;
+        const montoObligatorio = Number(cabeceraPlain.mandatoryAmount ?? cabeceraPlain.montoObligatorio ?? 0);
+        const montoBase = Number(cabeceraPlain.baseAmount ?? cabeceraPlain.montoBase ?? 0);
+        const descuentoBeca = Number(cabeceraPlain.scholarshipDiscount ?? cabeceraPlain.descuentoBeca ?? 0);
+
+        const resultCuotas = await this.contributionPaymentInstallmentRepository.findAll(
+            { contributionPaymentId: cabeceraId },
+            1,
+            5000
+        );
+        const list = resultCuotas.contributionPaymentInstallments ?? resultCuotas.contributionPaymentInstallment ?? [];
+        const cuotasOrdenadas = [...list].sort((a, b) => {
+            const idA = (a.toPlainObject ? a.toPlainObject() : a).id ?? 0;
+            const idB = (b.toPlainObject ? b.toPlainObject() : b).id ?? 0;
+            return idA - idB;
+        });
+
+        let totalPagadoAntes = 0;
+        const cuotaId = cuotaPlain.id;
+        for (const c of cuotasOrdenadas) {
+            const p = c.toPlainObject ? c.toPlainObject() : c;
+            if (p.id === cuotaId) break;
+            totalPagadoAntes += Number(p.amount ?? p.monto ?? 0) || 0;
+        }
+        const montoEstaCuota = Number(cuotaPlain.amount ?? cuotaPlain.monto ?? 0) || 0;
+        const totalPagado = totalPagadoAntes + montoEstaCuota;
+        const saldoPendiente = Math.max(0, montoObligatorio - totalPagado);
+
+        const [student, management, paymentMethod] = await Promise.all([
+            this.studentRepository.findById(studentId),
+            this.managementRepository.findById(cabeceraPlain.managementId ?? cabeceraPlain.gestionId ?? cabeceraPlain.management_id),
+            (cuotaPlain.paymentMethodId ?? cuotaPlain.metodoPagoId ?? cuotaPlain.metodo_pago_id)
+                ? this.paymentMethodRepository.findById(cuotaPlain.paymentMethodId ?? cuotaPlain.metodoPagoId ?? cuotaPlain.metodo_pago_id)
+                : null,
+        ]);
+
+        if (!student) {
+            throw new NotFoundError(`No se encontró el estudiante con ID ${studentId}`);
+        }
+        if (!management) {
+            throw new NotFoundError(`No se encontró la gestión para la cabecera ${cabeceraId}`);
+        }
+
+        let scholarshipInfo = null;
+        const studentScholarshipId = cabeceraPlain.studentScholarshipId ?? cabeceraPlain.estudianteBecaId ?? cabeceraPlain.estudiante_beca_id;
+        if (studentScholarshipId) {
+            const studentScholarship = await this.studentScholarshipRepository.findById(studentScholarshipId);
+            if (studentScholarship) {
+                const plainSs = studentScholarship.toPlainObject ? studentScholarship.toPlainObject() : studentScholarship;
+                const scholarshipId = plainSs.scholarshipId ?? plainSs.becaDescuentoId ?? plainSs.beca_descuento_id;
+                if (scholarshipId) {
+                    scholarshipInfo = await this.scholarshipRepository.findById(scholarshipId);
+                }
+            }
+        }
+
+        const studentPlain = student.toPlainObject ? student.toPlainObject() : student;
+        const managementPlain = management.toPlainObject ? management.toPlainObject() : management;
+        const numeroRecibo = (cuotaPlain.receiptNumber ?? cuotaPlain.numeroRecibo ?? cuotaPlain.numero_recibo)
+            || (cuotaPlain.id != null ? String(cuotaPlain.id).padStart(6, '0') : '000000');
+
+        const reciboData = {
+            numeroRecibo,
+            fechaPago: cuotaPlain.paymentDate ?? cuotaPlain.fechaPago ?? cuotaPlain.fecha_pago,
+            nombreCompleto: `${studentPlain.lastName ?? studentPlain.apellido_paterno ?? ''} ${studentPlain.motherLastName ?? studentPlain.apellido_materno ?? ''} ${studentPlain.firstName ?? studentPlain.nombres ?? ''}`.trim().toUpperCase(),
+            ci: studentPlain.ci ?? 'N/A',
+            expedicion: studentPlain.expedicion ?? studentPlain.expedition ?? '',
+            carrera: null,
+            cursoParalelo: null,
+            anio: null,
+            montoTotal: montoBase || 400,
+            descuentoBeca,
+            montoObligatorio,
+            totalPagadoAntes,
+            montoPagado: montoEstaCuota,
+            saldoPendiente,
+            concepto: cuotaPlain.descripcion ?? cuotaPlain.description ?? 'Aporte Académico',
+            metodoPago: paymentMethod?.nombre ?? paymentMethod?.name ?? 'N/A',
+            numeroTransaccion: cuotaPlain.transactionNumber ?? cuotaPlain.numeroTransaccion ?? cuotaPlain.numero_transaccion ?? null,
+            becaInfo: scholarshipInfo ? { nombre: scholarshipInfo.nombre ?? scholarshipInfo.name, porcentaje: scholarshipInfo.porcentaje ?? scholarshipInfo.percentage } : null,
+        };
+
+        const pdfBuffer = await this.pdfGenerator.generateReciboPago(reciboData);
+        const year = managementPlain.anio ?? managementPlain.year ?? new Date().getFullYear();
+        const codigoEstudiante = studentPlain.studentCode ?? studentPlain.codigo_estudiante ?? studentPlain.id;
+        const fileName = `pago_${codigoEstudiante}_${numeroRecibo}.pdf`;
+        const relativeScope = `recibos/${year}`;
+        const result = UploadsStorageHelper.saveToUploads(relativeScope, fileName, pdfBuffer);
+
+        this.logger.info('[Pagos] Recibo de cuota generado', { cuotaId: cuotaPlain.id, fileName });
+        return {
+            filePath: result.filePath,
+            fileName: result.fileName,
+            absolutePath: result.absolutePath,
+        };
     }
 
     /**

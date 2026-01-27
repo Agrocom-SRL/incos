@@ -28,36 +28,26 @@ export class ObtenerTodosPagosAportesUseCase {
   }
 
   /**
-   * Ejecuta el caso de uso de obtener todos los pagos de aportes
-   * 
+   * Ejecuta el caso de uso de obtener todos los pagos de aportes (listado desde vista).
+   *
    * @param {Object} options - Opciones para obtener pagos
-   * @param {Object} options.params - Parámetros HTTP para el repositorio
-   * @param {number} options.params.pagina - Número de página (paginación)
-   * @param {number} options.params.limite - Cantidad por página (paginación)
-   * @param {string} options.params.busqueda - Búsqueda general
-   * @param {number} options.params.student_id - Filtro por ID de estudiante
-   * @param {number} options.params.management_id - Filtro por ID de gestión
-   * @param {string} options.params.ordenar - Campo de ordenamiento (ej: "fecha_pago", "-created_at")
-   * @returns {Promise<{success: boolean, data?: Array, error?: string}>}
+   * @param {Object} options.params - Parámetros HTTP (alineados al backend: page, limit, search, sort, gestion_id, estudiante_id, estado)
+   * @returns {Promise<{success: boolean, data?: Array, pagination?: {page, limit, total, totalPages}, error?: string}>}
    */
   async ejecutar(options = {}) {
     const { params = {} } = options;
 
     try {
-      // El repositorio hace la llamada HTTP con todos los params
-      // GET /v1/pagos-aportes?pagina=1&limite=10&busqueda=...&student_id=1&ordenar=fecha_pago
       const result = await this.pagoAporteRepository.obtenerTodos({ params });
-      
-      // Si hay error en el repositorio, retornarlo
+
       if (!result.success) {
         return result;
       }
 
-      // Retornar datos directamente del backend
-      // No hay lógica adicional de negocio en este caso
       return {
         success: true,
         data: result.data || [],
+        pagination: result.pagination || null,
       };
     } catch (error) {
       return {

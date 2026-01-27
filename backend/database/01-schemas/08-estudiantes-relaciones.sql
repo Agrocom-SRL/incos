@@ -50,7 +50,9 @@ CREATE TABLE estudiantes_discapacidades (
     updated_by INT NULL COMMENT 'Usuario que modificó',
     deleted_by INT NULL COMMENT 'Usuario que eliminó',
     
-    -- Foreign Keys
+    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
+    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
+    
     FOREIGN KEY (estudiante_id) REFERENCES estudiantes(id) ON DELETE SET NULL,
     FOREIGN KEY (tipo_discapacidad_id) REFERENCES tipos_discapacidad(id) ON DELETE SET NULL,
     
@@ -99,7 +101,9 @@ CREATE TABLE estudiantes_origenes (
     updated_by INT NULL COMMENT 'Usuario que modificó',
     deleted_by INT NULL COMMENT 'Usuario que eliminó',
     
-    -- Foreign Keys
+    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
+    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
+    
     FOREIGN KEY (estudiante_id) REFERENCES estudiantes(id) ON DELETE SET NULL,
     FOREIGN KEY (pais_id) REFERENCES paises(id) ON DELETE SET NULL,
     FOREIGN KEY (municipio_nacimiento_id) REFERENCES municipios(id) ON DELETE SET NULL,

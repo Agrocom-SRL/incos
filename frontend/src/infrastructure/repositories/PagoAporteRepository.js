@@ -49,6 +49,9 @@ export class PagoAporteRepository extends IPagoAporteRepository {
         };
       }
 
+      // Monto de la cuota (requerido por el backend). Si no viene, 0 (p. ej. pago gratuito).
+      const amount = data.amount != null && !Number.isNaN(Number(data.amount)) ? Number(data.amount) : 0;
+
       // Si hay un archivo, usar FormData, sino usar JSON normal
       let requestData;
       let headers = {};
@@ -70,6 +73,7 @@ export class PagoAporteRepository extends IPagoAporteRepository {
         // Usar FormData para enviar archivo
         const formData = new FormData();
         formData.append('student_id', data.student_id);
+        formData.append('amount', String(amount));
         formData.append('payment_method_id', data.payment_method_id);
         if (data.payment_account_id) {
           formData.append('payment_account_id', data.payment_account_id);
@@ -97,10 +101,11 @@ export class PagoAporteRepository extends IPagoAporteRepository {
         requestData = formData;
         // No establecer Content-Type, el navegador lo hará automáticamente con el boundary
       } else {
-        // Usar JSON normal
+        // Usar JSON normal (management_id no se envía; el backend usa la gestión vigente)
         const codigoComprobante = data.codigo_comprobante || data.codigoComprobante;
         requestData = {
           student_id: data.student_id,
+          amount,
           payment_method_id: data.payment_method_id,
           payment_account_id: data.payment_account_id || null,
           payment_date: data.payment_date || null,
@@ -129,29 +134,58 @@ export class PagoAporteRepository extends IPagoAporteRepository {
   }
 
   /**
-   * Obtiene la lista de pagos de aportes con filtros y paginación
-   * GET /v1/pagos-aportes?pagina=1&limite=10&busqueda=...
-   * 
+   * Obtiene el estado actual del aporte de un estudiante para el formulario de registro de pago.
+   * GET /v1/pagos-aportes/estado-registro?estudiante_id=&gestion_id=
+   *
+   * @param {number} estudianteId - ID del estudiante (requerido)
+   * @param {number|null} [gestionId] - ID de la gestión (opcional; si no se envía, se usa la vigente)
+   * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
+   */
+  async obtenerEstadoRegistro(estudianteId, gestionId = null) {
+    try {
+      if (!estudianteId || Number(estudianteId) < 1) {
+        return { success: false, error: 'estudiante_id es requerido y debe ser mayor a 0' };
+      }
+      const params = { estudiante_id: Number(estudianteId) };
+      if (gestionId != null && gestionId !== '') {
+        params.gestion_id = Number(gestionId);
+      }
+      const response = await apiClient.get(PAGOS_APORTES_ENDPOINTS.ESTADO_REGISTRO, { params });
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al obtener estado del aporte para registro');
+    }
+  }
+
+  /**
+   * Obtiene la lista de pagos de aportes con filtros y paginación (vista_pago_aporte_listado).
+   * GET /v1/pagos-aportes?page=1&limit=50&search=...&sort=id:ASC&gestion_id=&estudiante_id=&estado=
+   *
    * @param {Object} options - Opciones de consulta
-   * @param {Object} options.params - Parámetros de consulta HTTP
-   * @returns {Promise<{success: boolean, data?: Array, error?: string}>}
+   * @param {Object} options.params - Parámetros de consulta HTTP (page, limit, search, sort, gestion_id, estudiante_id, estado)
+   * @returns {Promise<{success: boolean, data?: Array, pagination?: {page, limit, total, totalPages}, error?: string}>}
    */
   async obtenerTodos(options = {}) {
     try {
       const { params = {} } = options;
 
-      // Llamada HTTP directa al endpoint
       const response = await apiClient.get(PAGOS_APORTES_ENDPOINTS.BASE, { params });
+      const responseData = response.data;
 
-      // Procesar respuesta exitosa
-      const result = handleSuccessResponse(response);
-
-      // Asegurar que data sea un array
-      if (result.success && result.data) {
-        result.data = Array.isArray(result.data) ? result.data : [];
+      if (responseData.success === false) {
+        return {
+          success: false,
+          error: responseData.error || 'Error en la respuesta del servidor',
+        };
+      }
+      if (responseData.error) {
+        return { success: false, error: responseData.error };
       }
 
-      return result;
+      const data = Array.isArray(responseData.data) ? responseData.data : [];
+      const pagination = responseData.pagination || null;
+
+      return { success: true, data, pagination };
     } catch (error) {
       return handleErrorResponse(error, 'Error al obtener pagos de aportes');
     }

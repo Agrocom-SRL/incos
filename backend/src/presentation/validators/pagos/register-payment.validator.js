@@ -1,23 +1,20 @@
 import { body } from 'express-validator';
 
 /**
- * Validador para registro de pagos de aporte académico
+ * Validador para registro de cuota (abono) de aporte académico
  * POST /api/v1/pagos-aportes
- * 
- * Reglas de Negocio:
- * - EFECTIVO (id=1): Requiere fecha, cuenta_pago_id = NULL, código comprobante no aplica
- * - QR (id=2): Requiere fecha y código_comprobante, cuenta_pago_id opcional, transaction_number opcional
- * - TRANSFERENCIA (id=3): Requiere fecha, cuenta_pago_id y código_comprobante, transaction_number opcional
- * - DEPOSITO (id=4): Requiere fecha, cuenta_pago_id y código_comprobante, transaction_number opcional
- * 
- * Campos que recibe del frontend:
- * - student_id: ID del estudiante (requerido)
- * - payment_method_id: ID del método de pago (requerido, 1=EFECTIVO, 2=QR, 3=TRANSFERENCIA, 4=DEPOSITO)
- * - payment_account_id: ID de la cuenta de pago (requerido para TRANSFERENCIA/DEPOSITO, opcional para QR, NULL para EFECTIVO)
- * - payment_date: Fecha del pago (SIEMPRE requerida, formato YYYY-MM-DD)
- * - codigo_comprobante: Código del comprobante (requerido para QR/TRANSFERENCIA/DEPOSITO, no aplica para EFECTIVO)
- * - transaction_number: Número de transacción (opcional para todos los métodos)
- * - descripcion: Descripción del pago (opcional)
+ *
+ * Modelo: cabecera (pago_aporte) + cuotas (pago_cuotas). Este endpoint registra una cuota.
+ *
+ * Campos requeridos para el caso de uso:
+ * - student_id: ID del estudiante
+ * - management_id: Opcional; si no se envía, el backend usa la gestión vigente
+ * - amount: Monto de la cuota (número > 0)
+ * - payment_date: Fecha del pago
+ * - payment_method_id: ID del método de pago (1=EFECTIVO, 2=QR, 3=TRANSFERENCIA, 4=DEPOSITO)
+ * - payment_account_id, codigo_comprobante: según método (ver reglas abajo)
+ *
+ * Reglas por método: EFECTIVO (cuenta NULL); QR/TRANSFERENCIA/DEPOSITO requieren codigo_comprobante; TRANSFERENCIA/DEPOSITO requieren payment_account_id.
  */
 export const registerPagoAporteValidator = [
     // ============================================
@@ -29,6 +26,19 @@ export const registerPagoAporteValidator = [
         .isInt({ min: 1 })
         .withMessage('El ID del estudiante debe ser un número entero mayor a 0')
         .toInt(),
+
+    body('management_id')
+        .optional({ values: 'falsy' })
+        .isInt({ min: 1 })
+        .withMessage('El ID de la gestión debe ser un número entero mayor a 0')
+        .toInt(),
+
+    body('amount')
+        .notEmpty()
+        .withMessage('El monto de la cuota es requerido')
+        .isFloat({ min: 0.01 })
+        .withMessage('El monto debe ser un número mayor a 0')
+        .toFloat(),
 
     body('payment_method_id')
         .notEmpty()

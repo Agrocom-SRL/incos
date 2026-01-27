@@ -8,8 +8,8 @@
  * por entidades, value objects y servicios de dominio.
  */
 
-// Re-exportar constantes de estudiantes (todas consolidadas en student.constants.js)
-export * from './student.constants.js';
+// Re-exportar constantes de estudiantes (todas consolidadas en estudiantes.constants.js)
+export * from './estudiantes.constants.js';
 
 // Re-exportar constantes de configuración (implementado - Subject/Materias)
 export * from './configuracion.constants.js';
@@ -37,6 +37,9 @@ export * from './cursos.constants.js';
 
 // Re-exportar constantes de inscripciones
 export * from './inscripciones.constants.js';
+
+// Re-exportar constantes de pagos
+export * from './pagos.constants.js';
 
 // Re-exportar constantes del sistema
 export * from './sistema.constants.js';

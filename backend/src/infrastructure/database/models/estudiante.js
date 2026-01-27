@@ -1,8 +1,7 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../sequelize.js';
 import { baseModelFields, baseModelOptions } from './base_model.js';
-import { GENEROS_VALUES } from '../../../domain/constants/student.constants.js';
-import { TIPOS_SANGRE_VALUES } from '../../../domain/constants/student.constants.js';
+import { GENEROS_VALUES, TIPOS_SANGRE_VALUES } from '../../../domain/constants/estudiantes.constants.js';
 
 export const Estudiante = sequelize.define(
   'Estudiante',

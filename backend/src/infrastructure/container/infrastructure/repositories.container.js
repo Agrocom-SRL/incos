@@ -111,6 +111,7 @@ import { PaymentMethodRepository } from '../../repositories/PaymentMethodReposit
 import { AuthorizedBankRepository } from '../../repositories/AuthorizedBankRepository.js';
 import { PaymentAccountRepository } from '../../repositories/PaymentAccountRepository.js';
 import { ContributionPaymentRepository } from '../../repositories/ContributionPaymentRepository.js';
+import { ContributionPaymentInstallmentRepository } from '../../repositories/ContributionPaymentInstallmentRepository.js';
 
 /**
  * Registra todas las dependencias de repositorios
@@ -209,6 +210,7 @@ export function registerRepositoriesModule(container) {
     registerRepository(container, REPOSITORIOS_TOKENS.authorizedBankRepository, AuthorizedBankRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.paymentAccountRepository, PaymentAccountRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.contributionPaymentRepository, ContributionPaymentRepository);
+    registerRepository(container, REPOSITORIOS_TOKENS.contributionPaymentInstallmentRepository, ContributionPaymentInstallmentRepository);
 
     return container;
 }

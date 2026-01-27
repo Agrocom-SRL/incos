@@ -69,6 +69,8 @@ CREATE TABLE gestiones (
     updated_by INT COMMENT 'Usuario que modificó',
     deleted_by INT COMMENT 'Usuario que eliminó',
     
+    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
+    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
     
     INDEX idx_codigo (codigo) COMMENT 'Búsqueda por código',
     INDEX idx_anio (anio) COMMENT 'Búsqueda por año',
@@ -110,6 +112,9 @@ CREATE TABLE gestiones_planes (
     created_by INT NULL COMMENT 'ID del usuario que creó el registro',
     updated_by INT NULL COMMENT 'ID del usuario que modificó el registro',
     deleted_by INT NULL COMMENT 'ID del usuario que eliminó el registro',
+    
+    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
+    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
     
     FOREIGN KEY (gestion_id) REFERENCES gestiones(id) ON DELETE SET NULL,
     FOREIGN KEY (plan_estudio_id) REFERENCES planes_estudios(id) ON DELETE SET NULL,
@@ -160,6 +165,8 @@ CREATE TABLE actividades (
     updated_by INT COMMENT 'Usuario que modificó',
     deleted_by INT COMMENT 'Usuario que eliminó',
     
+    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
+    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
     
     INDEX idx_tipo (tipo) COMMENT 'Búsqueda por tipo',
     INDEX idx_destacada (es_destacada) COMMENT 'Filtrado por actividades destacadas',
@@ -207,6 +214,9 @@ CREATE TABLE periodos_academicos (
     created_by INT COMMENT 'Usuario que creó',
     updated_by INT COMMENT 'Usuario que modificó',
     deleted_by INT COMMENT 'Usuario que eliminó',
+    
+    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
+    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
     
     FOREIGN KEY (gestion_id) REFERENCES gestiones(id) ON DELETE SET NULL,
     
@@ -259,7 +269,9 @@ CREATE TABLE actividades_calendario (
     updated_by INT NULL COMMENT 'Usuario que modificó',
     deleted_by INT NULL COMMENT 'Usuario que eliminó',
     
-    -- Foreign keys
+    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
+    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
+    
     FOREIGN KEY (periodo_academico_id) REFERENCES periodos_academicos(id) ON DELETE SET NULL,
     FOREIGN KEY (actividad_id) REFERENCES actividades(id) ON DELETE SET NULL,
     FOREIGN KEY (horario_id) REFERENCES horarios(id) ON DELETE SET NULL,
@@ -310,6 +322,9 @@ CREATE TABLE asignaciones_docentes (
     created_by INT NULL COMMENT 'ID del usuario que creó el registro',
     updated_by INT NULL COMMENT 'ID del usuario que modificó el registro',
     deleted_by INT NULL COMMENT 'ID del usuario que eliminó el registro',
+    
+    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
+    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
     
     FOREIGN KEY (gestion_plan_id) REFERENCES gestiones_planes(id) ON DELETE SET NULL,
     FOREIGN KEY (curso_id) REFERENCES cursos(id) ON DELETE SET NULL,

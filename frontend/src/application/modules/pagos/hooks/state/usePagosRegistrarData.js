@@ -32,6 +32,7 @@ import {
     usePagosRegistrarContributionConfigurations,
 } from '../features';
 import { useGetStudentScholarships } from '@application-estudiantes/hooks/api';
+import { useEstadoAporteRegistro } from '../api/useEstadoAporteRegistro';
 import { useCasesFactory } from '@container';
 
 /**
@@ -54,6 +55,9 @@ export const usePagosRegistrarData = (studentId = null) => {
         loading: loadingScholarships, 
         error: errorScholarships 
     } = useGetStudentScholarships(studentId);
+
+    // 1.1.1. Hook para estado actual del aporte (saldo real, cuotas pagadas, tiene_descuento_aplicado)
+    const { estadoAporte: estadoActualAporte, loading: loadingEstadoAporte, error: errorEstadoAporte, refetch: refetchEstadoAporte } = useEstadoAporteRegistro(studentId, null);
 
     // 1.2. Estado para registro de pago (no usamos el hook porque necesitamos preservar el error completo)
     const [aporteVoluntario, setAporteVoluntario] = useState(null);
@@ -100,6 +104,7 @@ export const usePagosRegistrarData = (studentId = null) => {
                            paymentMethodsData.loading || 
                            contributionConfigurationsData.loading || 
                            loadingScholarships ||
+                           loadingEstadoAporte ||
                            loadingRegister ||
                            loading;
     
@@ -107,6 +112,7 @@ export const usePagosRegistrarData = (studentId = null) => {
     const combinedError = error || 
                          errorRegister ||
                          errorScholarships ||
+                         errorEstadoAporte ||
                          paymentAccountsData.error || 
                          authorizedBanksData.error || 
                          paymentMethodsData.error || 
@@ -170,9 +176,10 @@ export const usePagosRegistrarData = (studentId = null) => {
             setLoadingRegister(true);
             setErrorRegister(null);
             
-            // Preparar datos para el backend (snake_case)
+            // Preparar datos para el backend (snake_case). amount = monto de esta cuota (lo que se muestra en "Saldo a Pagar").
             const dataToSend = {
                 student_id: pagoData.studentId || studentId,
+                amount: pagoData.amount != null ? Number(pagoData.amount) : undefined,
                 payment_method_id: pagoData.paymentMethodId,
                 payment_account_id: pagoData.paymentAccountId || null,
                 payment_date: pagoData.paymentDate,
@@ -212,8 +219,9 @@ export const usePagosRegistrarData = (studentId = null) => {
                 return { success: false, error: errorToReturn };
             }
 
-            // Si hay éxito, actualizar el estado
+            // Si hay éxito, actualizar el estado y refrescar estado del aporte (saldo, cuotas)
             setAporteVoluntario(result.data);
+            refetchEstadoAporte();
             return { success: true, data: result.data };
         } catch (err) {
             const errorMsg = err.message || 'Error al registrar el pago';
@@ -224,7 +232,7 @@ export const usePagosRegistrarData = (studentId = null) => {
             setLoading(false);
             setLoadingRegister(false);
         }
-    }, [studentId, setLoading, setError]);
+    }, [studentId, refetchEstadoAporte]);
 
     // 5. Componer value final del contexto (similar a useInscripcionNuevaData)
     return useMemo(() => ({
@@ -232,6 +240,11 @@ export const usePagosRegistrarData = (studentId = null) => {
         formData,
         loading: combinedLoading,
         error: combinedError,
+
+        // Estado actual del aporte (saldo real, cuotas pagadas, tiene_descuento_aplicado)
+        estadoActualAporte,
+        loadingEstadoAporte,
+        refetchEstadoAporte,
 
         // Datos de becas del estudiante
         becaActiva,
@@ -292,6 +305,9 @@ export const usePagosRegistrarData = (studentId = null) => {
         formData,
         combinedLoading,
         combinedError,
+        estadoActualAporte,
+        loadingEstadoAporte,
+        refetchEstadoAporte,
         becaActiva,
         scholarships,
         catalogs,

@@ -6,7 +6,8 @@
  * Responsabilidades:
  * - Validar que el estudiante exista
  * - Validar que NO tenga inscripciones activas
- * - Validar que NO tenga pagos activos vinculados
+ * - Validar pago_aporte: solo se permite eliminar si cada aporte está CANCELADO o no tiene ninguna cuota (pago_cuotas).
+ *   Si tiene estado PARCIAL con cuotas, debe eliminarlas primero.
  * - Validar que NO tenga becas activas asignadas
  * - Eliminar (soft delete) todas las relaciones:
  *   - Apoderados (estudiantes_apoderados)
@@ -35,7 +36,7 @@
  * - Depende de: StudentRepository, StudentGuardianRepository, StudentDisabilityRepository,
  *   StudentOriginRepository, StudentDocumentDeliveryRepository, StudentDocumentRepository,
  *   StudentAcademicDataRepository, EnrollmentRepository, ContributionPaymentRepository,
- *   StudentScholarshipRepository
+ *   ContributionPaymentInstallmentRepository, StudentScholarshipRepository
  */
 
 import { NotFoundError, ValidationError } from '../../../domain/errors/AppError.js';
@@ -58,7 +59,8 @@ export class DeleteStudentUseCase {
    * @param {Object} dependencies.studentDocumentRepository - Repositorio de documentos de estudiantes
    * @param {Object} dependencies.studentAcademicDataRepository - Repositorio de datos académicos
    * @param {Object} dependencies.enrollmentRepository - Repositorio de inscripciones
-   * @param {Object} dependencies.contributionPaymentRepository - Repositorio de pagos
+   * @param {Object} dependencies.contributionPaymentRepository - Repositorio de cabecera de aporte (pago_aporte)
+   * @param {Object} dependencies.contributionPaymentInstallmentRepository - Repositorio de cuotas (pago_cuotas)
    * @param {Object} dependencies.studentScholarshipRepository - Repositorio de becas asignadas
    * @param {ILogger} dependencies.logger - Logger para registro de eventos
    */
@@ -72,6 +74,7 @@ export class DeleteStudentUseCase {
     studentAcademicDataRepository,
     enrollmentRepository,
     contributionPaymentRepository,
+    contributionPaymentInstallmentRepository,
     studentScholarshipRepository,
     logger,
   }) {
@@ -84,6 +87,7 @@ export class DeleteStudentUseCase {
     this.studentAcademicDataRepository = studentAcademicDataRepository;
     this.enrollmentRepository = enrollmentRepository;
     this.contributionPaymentRepository = contributionPaymentRepository;
+    this.contributionPaymentInstallmentRepository = contributionPaymentInstallmentRepository;
     this.studentScholarshipRepository = studentScholarshipRepository;
     this.logger = logger;
   }
@@ -266,15 +270,20 @@ export class DeleteStudentUseCase {
   }
 
   /**
-   * Valida que el estudiante NO tenga pagos activos vinculados
+   * Valida que el estudiante pueda eliminarse según pago_aporte y pago_cuotas.
+   * Solo se permite eliminar cuando, para cada aporte del estudiante:
+   * - el estado es CANCELADO, o
+   * - no tiene ningún registro en pago_cuotas (activas).
+   * Si tiene aporte en estado PARCIAL con cuotas, debe eliminarlas antes.
+   *
    * @private
    * @param {number} studentId - ID del estudiante
-   * @throws {ValidationError} Si tiene pagos activos
+   * @throws {ValidationError} Si tiene aporte PARCIAL con cuotas registradas
    */
   async _validateNoActivePayments(studentId) {
     try {
       const paymentsResult = await this.contributionPaymentRepository.findAll(
-        { studentId: studentId, active: true },
+        { studentId, active: true },
         null,
         null
       );
@@ -285,52 +294,48 @@ export class DeleteStudentUseCase {
         paymentsResult.payments ||
         [];
 
-      if (payments.length > 0) {
-        const firstPayment = payments[0];
-        const paymentPlain = firstPayment.toPlainObject
-          ? firstPayment.toPlainObject()
-          : firstPayment;
-        const receiptNumber =
-          paymentPlain.receiptNumber ??
-          paymentPlain.numero_recibo ??
-          paymentPlain.numeroRecibo ??
-          paymentPlain.id;
+      for (const payment of payments) {
+        const plain = payment.toPlainObject ? payment.toPlainObject() : payment;
+        const state = plain.state ?? plain.estado;
+        const pagoAporteId = plain.id;
 
-        this.logger.warn(
-          '[Estudiantes] Intento de eliminar estudiante con pagos activos',
-          {
-            studentId,
-            paymentsCount: payments.length,
-            firstPaymentId: paymentPlain.id,
-            receiptNumber,
-          }
-        );
+        if (state === 'CANCELADO') {
+          continue;
+        }
 
-        throw new ValidationError(
-          `No se puede eliminar el estudiante porque tiene ${payments.length} pago(s) activo(s). ` +
-            `Número de recibo: ${receiptNumber || 'N/A'}. ` +
-            `Solo se pueden eliminar estudiantes que no tengan pagos asociados.`
-        );
+        const cuotasCount = await this.contributionPaymentInstallmentRepository.count({
+          contributionPaymentId: pagoAporteId,
+        });
+
+        if (cuotasCount > 0) {
+          this.logger.warn(
+            '[Estudiantes] Intento de eliminar estudiante con aporte PARCIAL y cuotas',
+            {
+              studentId,
+              pagoAporteId,
+              state,
+              cuotasCount,
+            }
+          );
+          throw new ValidationError(
+            'No se puede eliminar el estudiante porque tiene aporte(s) con estado PARCIAL y cuotas registradas. ' +
+              'Solo se puede eliminar cuando el estado del aporte es CANCELADO o no tiene ninguna cuota. ' +
+              'Si el estado es PARCIAL, primero debe eliminar las cuotas de pago.'
+          );
+        }
       }
 
       this.logger.info(
-        '[Estudiantes] Validación exitosa: el estudiante no tiene pagos activos',
-        {
-          studentId,
-        }
+        '[Estudiantes] Validación exitosa: aportes permiten eliminar (CANCELADO o sin cuotas)',
+        { studentId }
       );
     } catch (error) {
       if (error instanceof ValidationError) {
         throw error;
       }
-
       this.logger.error(
         '[Estudiantes] Error al validar pagos del estudiante',
-        {
-          studentId,
-          error: error.message,
-          stack: error.stack,
-        }
+        { studentId, error: error.message, stack: error.stack }
       );
       throw error;
     }

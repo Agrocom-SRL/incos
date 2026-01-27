@@ -150,6 +150,8 @@ export const CUENTAS_PAGO_ENDPOINTS = createCRUDEndpoints('/cuentas-pago');
 export const CONFIGURACION_APORTES_ENDPOINTS = createCRUDEndpoints('/configuracion-aportes');
 export const PAGOS_APORTES_ENDPOINTS = {
   ...createCRUDEndpoints('/pagos-aportes'),
+  // Estado del aporte para el formulario de registro (estudiante_id, gestion_id opcional)
+  ESTADO_REGISTRO: `${API_BASE}/pagos-aportes/estado-registro`,
   // Endpoint específico para generar/obtener recibo de pago
-  GENERATE_RECIBO: (paymentId) => `${API_BASE}/pagos-aportes/${paymentId}/recibo`,
+  GENERATE_RECIBO: (paymentId) => `${API_BASE}/pagos-aportes/${encodeURIComponent(String(paymentId))}/recibo`,
 };

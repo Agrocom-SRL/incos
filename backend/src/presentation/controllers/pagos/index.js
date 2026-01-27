@@ -10,5 +10,6 @@ export { ListConfiguracionAportesController } from './configuracion-aportes/list
 export { RegisterPagoAporteController } from './pagos-aportes/register.controller.js';
 export { ListPagosAportesController } from './pagos-aportes/list.controller.js';
 export { GetPaymentAporteByIdController } from './pagos-aportes/detail.controller.js';
+export { GetEstadoAporteRegistroController } from './pagos-aportes/estado-registro.controller.js';
 export { DeletePaymentAporteController } from './pagos-aportes/delete.controller.js';
 export { GenerateReciboPagoController } from './pagos-aportes/generate-recibo.controller.js';

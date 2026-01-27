@@ -155,7 +155,9 @@ CREATE TABLE inscripciones (
     updated_by INT NULL COMMENT 'Usuario que modificó',
     deleted_by INT NULL COMMENT 'Usuario que eliminó',
     
-    -- Foreign keys
+    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
+    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
+    
     FOREIGN KEY (estudiante_datos_academicos_id) REFERENCES estudiantes_datos_academicos(id) ON DELETE SET NULL,
     FOREIGN KEY (gestion_id) REFERENCES gestiones(id) ON DELETE SET NULL,
     

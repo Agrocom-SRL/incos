@@ -94,9 +94,14 @@ export class AsignarBecaController extends BaseCreateController {
       // 4. Ejecutar el caso de uso
       const result = await this.useCase.execute(preparedData);
 
-      // 5. Extraer datos y ID para la respuesta
-      const responseData = result[this.dataFieldName] || result;
-      const resourceId = responseData?.id || responseData?.resourceId || 'nuevo';
+      // 5. Extraer datos para la respuesta (incluye pagoAporteId y esBeca100 para redirección en frontend)
+      const studentScholarship = result[this.dataFieldName] || result.studentScholarship;
+      const responseData = {
+        studentScholarship,
+        pagoAporteId: result.pagoAporteId ?? null,
+        esBeca100: result.esBeca100 === true,
+      };
+      const resourceId = studentScholarship?.id || studentScholarship?.resourceId || 'nuevo';
 
       // 6. Formatear y enviar respuesta JSON estandarizada usando el servicio inyectado
       return this.responseFormatter.created(

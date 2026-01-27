@@ -17,7 +17,7 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useMemo, useEffect, useState, useRef } from 'react';
 import { Spin, Form, App } from 'antd';
-import { ArrowLeftOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, GiftOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
@@ -57,7 +57,7 @@ const PagosRegistrar = () => {
   const studentDetailContext = useStudentDetailContext();
   const student = studentDetailContext?.student?.student || null;
   const loadingStudent = studentDetailContext?.loading || false;
-  
+
   // Obtener datos de becas desde el contexto de registro de pagos
   const pagosRegistrarContext = usePagosRegistrarContext();
   const {
@@ -65,10 +65,12 @@ const PagosRegistrar = () => {
     loadingScholarships,
   } = pagosRegistrarContext || {};
 
-  // Obtener TODO del contexto de registro de pagos
+  // Obtener TODO del contexto de registro de pagos (incluye estado actual del aporte: saldo real, cuotas pagadas, tiene_descuento_aplicado)
   const {
     loading = false,
     error = null,
+    estadoActualAporte = null,
+    loadingEstadoAporte = false,
     metodosPago,
     configuracionAportes,
     cuentasPago,
@@ -80,6 +82,9 @@ const PagosRegistrar = () => {
   // Estado local para idempotencia: prevenir múltiples clics
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isSubmittingRef = useRef(false); // Ref para evitar race conditions
+
+  // Monto de esta cuota (lo que el usuario ingresa en Detalle del Aporte). Se muestra en "Saldo a Pagar" y se envía al registrar.
+  const [montoCuota, setMontoCuota] = useState(null);
 
   // Formulario para registro de pago
   // Si el contexto no proporciona un form, crear uno nuevo
@@ -97,42 +102,54 @@ const PagosRegistrar = () => {
     ) || configuracionAportes.configuracionAportes[0] || null; // Si no hay activa, usar la primera
   }, [configuracionAportes]);
 
-  // Calcular monto pagado para determinar si es pago gratuito
+  // Saldo real a pagar: si hay estado actual del aporte, usar saldo_pendiente; si no, calcular desde config + beca
   const montoPagado = useMemo(() => {
+    if (estadoActualAporte && typeof estadoActualAporte.saldo_pendiente === 'number') {
+      return Number(estadoActualAporte.saldo_pendiente);
+    }
     if (!configuracionAporteActiva) return 0;
-    
     const montoBase = Number(configuracionAporteActiva.montoBase) || 0;
-    
-    // Calcular descuento por beca
     const tieneBeca = becaActiva && (() => {
       const stateValue = becaActiva.state || becaActiva.estado;
       if (!stateValue) return false;
-      
       const normalizedState = String(stateValue).toUpperCase();
       const tieneEstadoValido = normalizedState === 'ACTIVA' || normalizedState === 'ACTIVE' || normalizedState === 'PENDIENTE';
       const tienePorcentaje = becaActiva.scholarshipPercentage || becaActiva.porcentaje;
-      
       return tieneEstadoValido && tienePorcentaje;
     })();
-    
-    const porcentajeDescuento = tieneBeca ? (
-      becaActiva.scholarshipPercentage || 
-      becaActiva.porcentaje || 
-      (becaActiva.scholarshipType?.percentage) ||
-      0
-    ) : 0;
-    
+    const porcentajeDescuento = tieneBeca ? (becaActiva.scholarshipPercentage || becaActiva.porcentaje || (becaActiva.scholarshipType?.percentage) || 0) : 0;
     const descuentoBeca = tieneBeca ? (montoBase * porcentajeDescuento / 100) : 0;
     return Math.max(0, montoBase - descuentoBeca);
-  }, [configuracionAporteActiva, becaActiva]);
+  }, [configuracionAporteActiva, becaActiva, estadoActualAporte]);
+
+  // Si ya tiene descuento aplicado en la cabecera, ocultar botón "Asignar Beca"
+  const ocultarBotonAsignarBeca = !!(estadoActualAporte && estadoActualAporte.tiene_descuento_aplicado);
 
   // Determinar si es pago gratuito (monto = 0)
   const esPagoGratuito = montoPagado === 0;
 
+  // Inicializar o corregir montoCuota con el saldo real: si está vacío o si supera el saldo (ej. 400 cuando el saldo real es 140), usar saldo. Solo enteros.
+  useEffect(() => {
+    if (montoPagado <= 0) return;
+    const saldoEntero = Math.floor(Number(montoPagado));
+    const actual = montoCuota != null && montoCuota !== '' ? Math.floor(Number(montoCuota)) : null;
+    if (actual == null || actual > saldoEntero) {
+      setMontoCuota(saldoEntero);
+    }
+  }, [montoPagado, montoCuota]);
 
   // Handler para volver
   const handleVolver = () => {
     navigate(`/estudiantes/${studentId}`);
+  };
+
+  // Handler para ir a asignar beca (misma lógica que en detalle de estudiante)
+  const handleAsignarBeca = () => {
+    if (!studentId) {
+      message.warning('ID de estudiante no disponible');
+      return;
+    }
+    navigate('/estudiantes/becas/asignar', { state: { studentId } });
   };
 
   // Handler para finalizar el registro de pago
@@ -152,11 +169,19 @@ const PagosRegistrar = () => {
       // ============================================
       // VALIDACIONES SEGÚN EL VALIDADOR DEL BACKEND
       // ============================================
-      
+
       // 1. Validar student_id (requerido, número entero > 0)
       if (!studentId || !Number.isInteger(Number(studentId)) || Number(studentId) < 1) {
         message.error('El ID del estudiante es requerido y debe ser un número válido');
         // Resetear estado si falla validación temprana
+        setIsSubmitting(false);
+        isSubmittingRef.current = false;
+        return;
+      }
+
+      // 1.1. Validar monto de esta cuota (solo si NO es pago gratuito)
+      if (!esPagoGratuito && (!montoCuota || Number(montoCuota) <= 0)) {
+        message.error('Indique el monto de esta cuota en el detalle del aporte');
         setIsSubmitting(false);
         isSubmittingRef.current = false;
         return;
@@ -308,6 +333,7 @@ const PagosRegistrar = () => {
       // ============================================
       const pagoData = {
         studentId: Number(studentId),
+        amount: esPagoGratuito ? 0 : Number(montoCuota), // Monto de esta cuota (el que se muestra en "Saldo a Pagar")
         paymentMethodId: metodoPagoId || 1, // Si es gratuito, usar EFECTIVO (1) por defecto
         paymentAccountId: paymentAccountId,
         paymentDate: paymentDate,
@@ -333,24 +359,24 @@ const PagosRegistrar = () => {
 
       if (result && result.success) {
         message.success('Pago registrado exitosamente');
-        
+
         // NUEVO: Descargar automáticamente el recibo PDF si está disponible
         if (result.data && result.data.reciboPDF) {
           try {
             // El backend ya retorna la ruta relativa lista para descargar
             const reciboPath = result.data.reciboPDF;
-            
+
             // Asegurar que la ruta empiece con /
-            const relativePath = reciboPath.startsWith('/') 
-              ? reciboPath 
+            const relativePath = reciboPath.startsWith('/')
+              ? reciboPath
               : '/' + reciboPath;
-            
+
             // Obtener el nombre del archivo del path
             const fileName = relativePath.split('/').pop() || 'recibo_pago.pdf';
-            
+
             // Descargar el recibo PDF
             downloadFile(relativePath, fileName);
-            
+
             message.success('Recibo de pago generado y descargado correctamente', 3);
           } catch (pdfError) {
             console.error('Error al descargar el recibo PDF:', pdfError);
@@ -359,7 +385,7 @@ const PagosRegistrar = () => {
             message.warning('Pago registrado exitosamente. El recibo PDF se generó pero no se pudo descargar automáticamente.');
           }
         }
-        
+
         // Redirigir al detalle del estudiante después de un breve delay
         // NOTA: No reseteamos isSubmitting aquí porque vamos a navegar fuera
         setTimeout(() => {
@@ -371,7 +397,7 @@ const PagosRegistrar = () => {
         if (result && result.error) {
           // Debug: Log del error para ver su estructura
           console.log('[PagosRegistrar] Error recibido:', result.error, 'Tipo:', typeof result.error);
-          
+
           if (typeof result.error === 'object' && result.error !== null) {
             // Si el error es un objeto con estructura { code, message, details }
             if (result.error.message && typeof result.error.message === 'string') {
@@ -387,7 +413,7 @@ const PagosRegistrar = () => {
         }
         console.log('[PagosRegistrar] Mensaje de error final:', errorMessage);
         message.error(errorMessage);
-        
+
         // Resetear estado en caso de error para permitir reintento
         setIsSubmitting(false);
         isSubmittingRef.current = false;
@@ -395,7 +421,7 @@ const PagosRegistrar = () => {
     } catch (error) {
       console.error('Error al registrar pago:', error);
       message.error('Error inesperado al registrar el pago');
-      
+
       // Resetear estado en caso de error para permitir reintento
       setIsSubmitting(false);
       isSubmittingRef.current = false;
@@ -409,7 +435,22 @@ const PagosRegistrar = () => {
     { title: 'Registrar Pago' },
   ], []);
 
-  // Si no hay studentId, mostrar loading mientras se redirige
+  // Redirigir a lista de pagos si no hay studentId
+  useEffect(() => {
+    if (!studentId) {
+      navigate('/pagos/listar', { replace: true });
+    }
+  }, [studentId, navigate]);
+
+  // Si el saldo es 0 y existe cabecera, ir al detalle del pago (no mostrar formulario de registro)
+  // Pasamos studentId en state para que "Volver" en PagosDetail vaya al detalle del estudiante
+  useEffect(() => {
+    if (estadoActualAporte && !loadingEstadoAporte && Number(estadoActualAporte.saldo_pendiente) === 0 && estadoActualAporte.cabecera?.id && studentId) {
+      navigate(`/pagos/${estadoActualAporte.cabecera.id}`, { replace: true, state: { studentId } });
+    }
+  }, [estadoActualAporte, loadingEstadoAporte, navigate, studentId]);
+
+  // Si no hay studentId, no renderizar nada (se redirige automáticamente)
   if (!studentId) {
     return (
       <PageTemplate
@@ -431,6 +472,22 @@ const PagosRegistrar = () => {
     );
   }
 
+  // Si saldo es 0 y hay cabecera, no mostrar formulario (se redirige al detalle)
+  const redirigirADetalle = estadoActualAporte && !loadingEstadoAporte && Number(estadoActualAporte.saldo_pendiente) === 0 && estadoActualAporte.cabecera?.id;
+  if (redirigirADetalle) {
+    return (
+      <PageTemplate header={<PageHeader title="Registrar Pago" breadcrumbItems={breadcrumbItems} />}>
+        <div style={{ textAlign: 'center', padding: '50px' }}>
+          <Spin size="large">
+            <div style={{ minHeight: '120px' }}>
+              <p>El aporte ya está cubierto. Redirigiendo al detalle del pago...</p>
+            </div>
+          </Spin>
+        </div>
+      </PageTemplate>
+    );
+  }
+
   return (
     <PageTemplate
       header={
@@ -438,13 +495,25 @@ const PagosRegistrar = () => {
           title={`Registrar Pago${student ? ` - ${student.nombreCompleto || student.codigoEstudiante || ''}` : ''}`}
           breadcrumbItems={breadcrumbItems}
           actions={
-            <Button
-              icon={<ArrowLeftOutlined />}
-              onClick={handleVolver}
-              variant="default"
-            >
-              Volver
-            </Button>
+            <>
+              {!ocultarBotonAsignarBeca && (
+                <Button
+                  variant="success"
+                  icon={<GiftOutlined />}
+                  onClick={handleAsignarBeca}
+                  style={{ marginRight: 8 }}
+                >
+                  Asignar Beca
+                </Button>
+              )}
+              <Button
+                icon={<ArrowLeftOutlined />}
+                onClick={handleVolver}
+                variant="default"
+              >
+                Volver
+              </Button>
+            </>
           }
         />
       }
@@ -463,12 +532,16 @@ const PagosRegistrar = () => {
             {/* Sección 1: Información del Estudiante */}
             {student && <StudentInfoSection student={student} />}
 
-            {/* Sección 2: Detalle del Aporte (Resumen tipo recibo) */}
+            {/* Sección 2: Detalle del Aporte (Resumen tipo recibo; usa estado actual si existe para saldo real y cuotas pagadas) */}
             <ContributionDetailSummary
               configuracionAporte={configuracionAporteActiva}
               becaActiva={becaActiva}
-              loading={configuracionAportes.loading || loadingScholarships}
+              estadoActualAporte={estadoActualAporte}
+              loading={configuracionAportes.loading || loadingScholarships || loadingEstadoAporte}
               error={configuracionAportes.error}
+              montoCuota={montoCuota}
+              onMontoCuotaChange={setMontoCuota}
+              montoObligatorioMax={montoPagado}
             />
 
             {/* Sección 3: Selección de Método de Pago (solo si NO es pago gratuito) */}
@@ -489,14 +562,16 @@ const PagosRegistrar = () => {
               cuentasPagoData={cuentasPago}
               bancosAutorizadosData={bancosAutorizados}
               becaActiva={becaActiva}
+              montoCuota={montoCuota}
               form={formInstance}
               onFinish={handleFinish}
               onCancel={handleVolver}
               disabled={
-                !configuracionAporteActiva || 
-                (!esPagoGratuito && !metodosPago.selectedMetodoPago) || 
-                loadingStudent || 
-                loading || 
+                !configuracionAporteActiva ||
+                (!esPagoGratuito && (!montoCuota || Number(montoCuota) <= 0)) ||
+                (!esPagoGratuito && !metodosPago.selectedMetodoPago) ||
+                loadingStudent ||
+                loading ||
                 isSubmitting
               }
             />

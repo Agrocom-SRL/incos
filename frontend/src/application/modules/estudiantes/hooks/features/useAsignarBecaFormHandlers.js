@@ -172,15 +172,16 @@ export const useAsignarBecaFormHandlers = (studentId, options = {}) => {
             // Guardar resultado para que la página pueda reaccionar
             setAsignarBecaResult(result);
             
-            // Obtener el ID de la asignación creada (si existe)
-            const asignarBecaId = result.data?.studentScholarship?.id || result.data?.id;
-            
-            if (asignarBecaId) {
-                // Navegar a la página de detalle del estudiante
-                navigate(`/estudiantes/${studentId}`, { replace: true });
+            const data = result.data || {};
+            const esBeca100 = data.esBeca100 === true;
+            const pagoAporteId = data.pagoAporteId ?? null;
+
+            if (esBeca100 && pagoAporteId) {
+                // Beca 100%: el aporte ya está cubierto, ir al detalle del pago (Volver llevará al estudiante)
+                navigate(`/pagos/${pagoAporteId}`, { replace: true, state: { studentId } });
             } else {
-                // Si no hay ID, solo mostrar mensaje y navegar al detalle del estudiante
-                navigate(`/estudiantes/${studentId}`, { replace: true });
+                // Beca < 100%: ir a registrar pago con el estudiante
+                navigate('/pagos/registrar', { state: { studentId }, replace: true });
             }
         } else {
             // Manejar error

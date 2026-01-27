@@ -2,17 +2,19 @@
  * Use Case: CreateStudentScholarshipUseCase
  * Módulo: Estudiantes
  * Crea una nueva asignación de beca para un estudiante
- * 
+ *
  * Responsabilidades:
  * - Obtener la gestión actual desde la configuración del sistema
  * - Validar que no exista una asignación duplicada (mismo estudiante + misma beca + misma gestión)
  * - Crear la asignación de beca con valores por defecto según el schema
+ * - Actualizar pago_aporte con estudiante_beca_id, descuento_beca y monto_obligatorio recalculados
+ * - Si la beca es 100%, registrar una cuota con monto 0 en pago_cuotas y marcar pago_aporte como CANCELADO
  * - Retornar la asignación creada mapeada a formato de presentación
- * 
+ *
  * Principios SOLID:
- * - Single Responsibility: Solo maneja la creación de asignaciones de becas
+ * - Single Responsibility: Solo maneja la creación de asignaciones de becas y su impacto en aportes
  * - Dependency Inversion: Depende de abstracciones (repositorios)
- * 
+ *
  * Clean Architecture:
  * - Application Layer: Orquesta la lógica de negocio
  * - Depende de Repositories (Infrastructure) a través de abstracciones
@@ -20,6 +22,7 @@
  */
 
 import { ESTADOS_BECAS } from '../../../../domain/constants/index.js';
+import { ESTADOS_PAGO_APORTE } from '../../../../domain/constants/pagos.constants.js';
 import { ValidationError, NotFoundError } from '../../../../domain/errors/AppError.js';
 import { StudentScholarship } from '../../../../domain/entities/StudentScholarship.js';
 import { StudentScholarshipMapper } from '../../../mappers/estudiantes/StudentScholarshipMapper.js';
@@ -30,17 +33,29 @@ export class CreateStudentScholarshipUseCase {
    * @param {Object} params.studentScholarshipRepository - Repositorio de asignaciones de becas
    * @param {Object} params.configuracionSistemaRepository - Repositorio de configuración del sistema
    * @param {Object} params.managementRepository - Repositorio de gestiones
+   * @param {Object} params.scholarshipRepository - Repositorio de becas/descuentos (porcentaje)
+   * @param {Object} params.contributionConfigurationRepository - Repositorio de configuración de aportes (monto base)
+   * @param {Object} params.contributionPaymentRepository - Repositorio de cabecera pago_aporte
+   * @param {Object} params.contributionPaymentInstallmentRepository - Repositorio de cuotas pago_cuotas
    * @param {ILogger} params.logger - Logger para registro de eventos
    */
   constructor({
     studentScholarshipRepository,
     configuracionSistemaRepository,
     managementRepository,
+    scholarshipRepository,
+    contributionConfigurationRepository,
+    contributionPaymentRepository,
+    contributionPaymentInstallmentRepository,
     logger,
   }) {
     this.studentScholarshipRepository = studentScholarshipRepository;
     this.configuracionSistemaRepository = configuracionSistemaRepository;
     this.managementRepository = managementRepository;
+    this.scholarshipRepository = scholarshipRepository;
+    this.contributionConfigurationRepository = contributionConfigurationRepository;
+    this.contributionPaymentRepository = contributionPaymentRepository;
+    this.contributionPaymentInstallmentRepository = contributionPaymentInstallmentRepository;
     this.logger = logger;
   }
 
@@ -146,6 +161,134 @@ export class CreateStudentScholarshipUseCase {
   }
 
   /**
+   * Obtiene la configuración de aporte activa para una gestión (monto base).
+   * @private
+   * @param {number} managementId - ID de la gestión
+   * @returns {Promise<number>} Monto base del aporte (default 400)
+   */
+  async _getMontoBaseAporte(managementId) {
+    try {
+      const result = await this.contributionConfigurationRepository.findAll(
+        { managementId, contributionActive: true },
+        null,
+        { limit: 1 }
+      );
+      const list = result?.contributionConfigurations ?? result?.configuracionesAportes ?? [];
+      const config = list[0] ?? null;
+      const monto = config?.montoBase ?? config?.baseAmount ?? 400;
+      return Number(monto) || 400;
+    } catch (err) {
+      this.logger.warn('[Estudiantes] No se pudo obtener configuración de aporte', {
+        managementId,
+        error: err?.message,
+      });
+      return 400;
+    }
+  }
+
+  /**
+   * Actualiza pago_aporte con la beca asignada: estudiante_beca_id, descuento_beca y monto_obligatorio.
+   * Si la beca es 100%, registra una cuota con monto 0 y marca el aporte como CANCELADO.
+   *
+   * @private
+   * @param {Object} createdAssignment - Asignación de beca recién creada (estudiantes_becas)
+   * @param {Object} data - Datos de entrada (studentId, scholarshipId)
+   * @param {Object} currentManagement - Gestión vigente
+   * @returns {Promise<{pagoAporteId?: number, esBeca100?: boolean}>}
+   */
+  async _actualizarPagoAportePorBeca(createdAssignment, data, currentManagement) {
+    const studentId = data.studentId;
+    const managementId = currentManagement.id ?? currentManagement.toPlainObject?.()?.id;
+    const scholarshipId = data.scholarshipId ?? createdAssignment.scholarshipId;
+
+    const scholarship = await this.scholarshipRepository.findById(scholarshipId);
+    if (!scholarship) {
+      this.logger.warn('[Estudiantes] Tipo de beca no encontrado, no se actualiza pago_aporte', {
+        studentId,
+        scholarshipId,
+      });
+      return {};
+    }
+
+    const percentage = Number(scholarship.percentage ?? scholarship.porcentaje ?? 0);
+    const baseAmount = await this._getMontoBaseAporte(managementId);
+    const scholarshipDiscount = parseFloat(
+      (baseAmount * (percentage / 100)).toFixed(2)
+    );
+    const mandatoryAmount = Math.max(0, parseFloat((baseAmount - scholarshipDiscount).toFixed(2)));
+
+    let cabecera = await this.contributionPaymentRepository.findBy({
+      studentId,
+      managementId,
+    });
+
+    if (cabecera) {
+      await this.contributionPaymentRepository.update(cabecera.id, {
+        studentScholarshipId: createdAssignment.id,
+        scholarshipDiscount,
+        mandatoryAmount,
+      });
+      this.logger.info('[Estudiantes] pago_aporte actualizado con beca', {
+        cabeceraId: cabecera.id,
+        studentId,
+        managementId,
+        studentScholarshipId: createdAssignment.id,
+        scholarshipDiscount,
+        mandatoryAmount,
+      });
+    } else {
+      const cabeceraData = {
+        studentId,
+        managementId,
+        studentScholarshipId: createdAssignment.id,
+        baseAmount,
+        scholarshipDiscount,
+        mandatoryAmount,
+        state: ESTADOS_PAGO_APORTE.PENDIENTE,
+      };
+      cabecera = await this.contributionPaymentRepository.create(cabeceraData);
+      this.logger.info('[Estudiantes] pago_aporte creado con beca', {
+        cabeceraId: cabecera.id,
+        studentId,
+        managementId,
+      });
+    }
+
+    const cabeceraId = cabecera.id ?? cabecera.toPlainObject?.()?.id;
+    const esBeca100 = percentage >= 99.99;
+
+    if (esBeca100 && cabeceraId) {
+      const hoy = new Date().toISOString().split('T')[0];
+      const cuotaData = {
+        contributionPaymentId: cabeceraId,
+        receiptNumber: `TEMP-${cabeceraId}-${Date.now()}`,
+        paymentDate: hoy,
+        amount: 0,
+        paymentMethodId: 1,
+        paymentAccountId: null,
+        transactionNumber: null,
+        comprobanteCode: null,
+        description: 'Beca 100% - aporte cubierto por beca.',
+      };
+      const cuota = await this.contributionPaymentInstallmentRepository.create(cuotaData);
+      const numeroRecibo = String(cuota.id).padStart(6, '0');
+      await this.contributionPaymentInstallmentRepository.update(cuota.id, {
+        receiptNumber: numeroRecibo,
+      });
+      await this.contributionPaymentRepository.update(cabeceraId, {
+        state: ESTADOS_PAGO_APORTE.CANCELADO,
+      });
+      this.logger.info('[Estudiantes] Beca 100%: cuota 0 registrada y pago_aporte CANCELADO', {
+        cabeceraId: cabeceraId,
+        cuotaId: cuota.id,
+        numeroRecibo,
+      });
+    }
+
+    return { pagoAporteId: cabeceraId ?? null, esBeca100 };
+  }
+
+  /**
    * Ejecuta el caso de uso de crear una asignación de beca
    * 
    * Sigue el patrón de GetEnrollmentByIdUseCase:
@@ -204,14 +347,32 @@ export class CreateStudentScholarshipUseCase {
         state: createdAssignment.state,
       });
 
+      // 5.1 Actualizar pago_aporte con beca: descuento y monto obligatorio; si beca 100%, cuota 0 y estado CANCELADO
+      let pagoAporteId = null;
+      let esBeca100 = false;
+      try {
+        const pagoResult = await this._actualizarPagoAportePorBeca(createdAssignment, data, currentManagement);
+        pagoAporteId = pagoResult?.pagoAporteId ?? null;
+        esBeca100 = pagoResult?.esBeca100 === true;
+      } catch (errPago) {
+        this.logger.error('[Estudiantes] Error al actualizar pago_aporte por beca (asignación ya creada)', {
+          error: errPago?.message,
+          studentId: data.studentId,
+          assignmentId: createdAssignment.id,
+        });
+        throw errPago;
+      }
+
       // 6. Convertir entidad de dominio a formato de presentación usando mapper
       const studentScholarshipPresentation = StudentScholarshipMapper.entityToPresentation(
         createdAssignment
       );
 
-      // 7. Retornar la asignación creada en formato de presentación
+      // 7. Retornar la asignación creada y datos para redirección (pago_aporte id y si es beca 100%)
       return {
         studentScholarship: studentScholarshipPresentation,
+        pagoAporteId,
+        esBeca100,
       };
     } catch (error) {
       this.logger.error('[Estudiantes] Error al crear asignación de beca', {

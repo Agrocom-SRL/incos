@@ -16,8 +16,9 @@ import { Text } from '@atoms';
 
 /**
  * TableCell - Componente molecular para celdas de tabla
- * 
+ *
  * @param {ReactNode} children - Contenido principal de la celda
+ * @param {string} subtext - Opcional. Si se pasa, se muestra debajo de children como texto secundario
  * @param {ReactNode} icon - Icono opcional a mostrar antes del contenido
  * @param {string} fallback - Texto a mostrar si children está vacío (default: 'N/A')
  * @param {boolean} strong - Si el texto debe ser negrita
@@ -33,6 +34,7 @@ import { Text } from '@atoms';
  */
 const TableCell = ({
     children,
+    subtext,
     icon,
     fallback = 'N/A',
     strong = false,
@@ -50,11 +52,9 @@ const TableCell = ({
     const content = children ?? fallback;
     const hasContent = content !== null && content !== undefined && content !== '';
 
-    // Determinar clase de alineación
     const alignClass = `table-cell--align-${align}`;
     const cellClassName = `table-cell ${alignClass}`;
 
-    // Si es para acciones, renderizar directamente sin Text
     if (actions) {
         return (
             <Flex className={cellClassName}>
@@ -65,38 +65,44 @@ const TableCell = ({
         );
     }
 
+    const textBlock = subtext != null && subtext !== '' ? (
+        <Flex vertical gap={2}>
+            {hasContent && (
+                <Text strong={strong} type={textType} style={textStyle}>
+                    {content}
+                </Text>
+            )}
+            {!hasContent && fallback && (
+                <Text type="secondary" style={textStyle}>
+                    {fallback}
+                </Text>
+            )}
+            <Text type="secondary" style={{ fontSize: 'var(--font-size-sm)', ...textStyle }}>
+                {subtext}
+            </Text>
+        </Flex>
+    ) : (
+        hasContent ? (
+            <Text strong={strong} type={textType} style={textStyle}>
+                {content}
+            </Text>
+        ) : (
+            fallback && (
+                <Text type="secondary" style={textStyle}>
+                    {fallback}
+                </Text>
+            )
+        )
+    );
+
     return (
         <div className={cellClassName}>
-            <Space
-                size={size}
-                orientation={orientation}
-                style={spaceStyle}
-                {...props}
-            >
+            <Space size={size} orientation={orientation} style={spaceStyle} {...props}>
                 {icon && icon}
-                {hasContent && (
-                    <Text
-                        strong={strong}
-                        type={textType}
-                        style={textStyle}
-                    >
-                        {content}
-                    </Text>
-                )}
-                {!hasContent && fallback && (
-                    <Text
-                        type="secondary"
-                        style={textStyle}
-                    >
-                        {fallback}
-                    </Text>
-                )}
+                {textBlock}
                 {tag && (
                     <Tag
-                        className={`table-cell__tag ${orientation === 'vertical' ?
-                            'table-cell__tag--vertical' :
-                            ''
-                            } table-cell__tag--${tagColor}`}
+                        className={`table-cell__tag ${orientation === 'vertical' ? 'table-cell__tag--vertical' : ''} table-cell__tag--${tagColor}`}
                     >
                         {tag}
                     </Tag>
