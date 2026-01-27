@@ -20,8 +20,6 @@
  */
 
 import { NotFoundError } from '../../../domain/errors/AppError.js';
-import { ContributionPaymentMapper } from '../../mappers/pagos/index.js';
-import { serverConfig } from '../../../infrastructure/config/server.config.js';
 
 export class GetPaymentAporteByIdUseCase {
   /**
@@ -80,32 +78,17 @@ export class GetPaymentAporteByIdUseCase {
         paymentId: payment.id,
       });
 
-      // 2. Convertir entidad a formato de presentación
-      // El mapper puede trabajar directamente con la entidad o con un objeto plano
-      let paymentPlain;
-      try {
-        if (payment && typeof payment.toPlainObject === 'function') {
-          // Si es una entidad, convertir a objeto plano primero
-          const plain = payment.toPlainObject();
-          paymentPlain = ContributionPaymentMapper.entityToPresentation(plain);
-        } else {
-          // Si ya es un objeto plano, usar directamente
-          paymentPlain = ContributionPaymentMapper.entityToPresentation(payment);
-        }
-        
-        this.logger.info('[Pagos] Pago convertido a formato de presentación', {
-          paymentId: payment.id,
-          hasStudentId: !!paymentPlain.student_id,
-          hasManagementId: !!paymentPlain.management_id,
-        });
-      } catch (mapperError) {
-        this.logger.error('[Pagos] Error al convertir pago a formato de presentación', {
-          error: mapperError.message,
-          stack: mapperError.stack,
-          paymentId: payment.id,
-        });
-        throw mapperError;
-      }
+      // 2. Convertir entidad a formato de presentación (snake_case para API)
+      const plain = payment && typeof payment.toPlainObject === 'function'
+        ? payment.toPlainObject()
+        : payment;
+      const paymentPlain = this._paymentEntityToPresentation(plain);
+
+      this.logger.info('[Pagos] Pago convertido a formato de presentación', {
+        paymentId: payment.id,
+        hasStudentId: !!paymentPlain.student_id,
+        hasManagementId: !!paymentPlain.management_id,
+      });
 
       // 3. Obtener datos relacionados
       const [student, management, paymentMethod, studentScholarship, scholarship, enrollment, reciboDocument] = await Promise.all([
@@ -151,6 +134,37 @@ export class GetPaymentAporteByIdUseCase {
       });
       throw error;
     }
+  }
+
+  /**
+   * Convierte entidad/plain de pago aporte a formato de presentación (snake_case).
+   * Usado solo por este use case; el listado usa vista + ContributionPaymentMapper.entitiesToPresentation.
+   * @private
+   */
+  _paymentEntityToPresentation(payment) {
+    if (!payment) return {};
+    const p = payment;
+    const out = {
+      id: p.id,
+      active: p.active,
+      created_at: p.createdAt,
+      updated_at: p.updatedAt,
+      student_id: p.studentId,
+      management_id: p.managementId,
+      enrollment_id: p.enrollmentId,
+      student_scholarship_id: p.studentScholarshipId,
+      payment_method_id: p.paymentMethodId,
+      payment_account_id: p.paymentAccountId,
+      receipt_number: p.receiptNumber,
+      payment_date: p.paymentDate,
+      total_amount: p.totalAmount,
+      scholarship_discount: p.scholarshipDiscount,
+      amount_paid: p.amountPaid,
+      transaction_number: p.transactionNumber,
+      codigo_comprobante: p.comprobanteCode,
+      descripcion: p.description,
+    };
+    return Object.fromEntries(Object.entries(out).filter(([, v]) => v !== undefined));
   }
 
   /**

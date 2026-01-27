@@ -5,12 +5,16 @@ import { listValidator } from '../validators/common/index.js';
 
 /**
  * Construye el router del recurso Pagos de Aportes Académicos
- * 
- * Responsabilidades:
- * - Definir rutas y métodos HTTP
- * - Vincular validators y middlewares
- * - Delegar lógica a controllers inyectados
- * 
+ *
+ * Modelo de datos: cabecera (pago_aporte) + cuotas (pago_cuotas).
+ * - Cabecera: una por (estudiante, gestión); montos y estado.
+ * - Cuota: cada abono es un registro en pago_cuotas con numero_recibo, fecha_pago, monto, etc.
+ *
+ * Contrato de :id en rutas:
+ * - GET /:id → id = cabecera id (pago_aporte). Retorna cabecera + cuotas.
+ * - DELETE /:id → id = cuota id (pago_cuotas). Elimina un abono.
+ * - GET /:id/recibo → id = cuota id (pago_cuotas). Genera recibo de esa cuota.
+ *
  * @param {Object} params - Dependencias inyectadas
  * @param {Object} params.controllers - Controllers del módulo
  * @param {Object} params.middlewares - Middlewares (validateRequest, etc.)
@@ -21,12 +25,12 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
     const { validateRequest } = middlewares;
 
     // ============================================
-    // LISTADO DE PAGOS
+    // LISTADO DE CABECERAS DE APORTE
     // ============================================
 
     /**
      * GET /api/v1/pagos-aportes
-     * Listar pagos de aportes con filtros y paginación
+     * Listar cabeceras de aporte (una por estudiante-gestión) con filtros y paginación
      * Query: page, limit, search, sort
      */
     router.get(
@@ -37,13 +41,13 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
     );
 
     // ============================================
-    // REGISTRO DE PAGO
+    // REGISTRO DE CUOTA (ABONO)
     // ============================================
 
     /**
      * POST /api/v1/pagos-aportes
-     * Registrar pago de aporte académico
-     * Body (multipart/form-data): student_id, payment_method_id, payment_account_id, payment_date, transaction_number, concept, documentoRespaldo (archivo)
+     * Registrar una cuota (abono). Crea/actualiza cabecera si hace falta e inserta en pago_cuotas.
+     * Body (multipart/form-data): student_id, management_id, amount, payment_method_id, payment_account_id, payment_date, transaction_number, codigo_comprobante, descripcion, documentoRespaldo (archivo)
      */
     router.post(
         '/',
@@ -64,12 +68,13 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
     );
 
     // ============================================
-    // DETALLE DE PAGO
+    // DETALLE DE CABECERA DE APORTE
     // ============================================
 
     /**
      * GET /api/v1/pagos-aportes/:id
-     * Obtener pago de aporte por ID con todos sus datos relacionados
+     * Detalle de cabecera de aporte por id. :id = cabecera id (pago_aporte).
+     * El caso de uso retorna cabecera + sus cuotas.
      */
     router.get(
         '/:id',
@@ -78,7 +83,8 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
 
     /**
      * DELETE /api/v1/pagos-aportes/:id
-     * Eliminar pago de aporte por ID (soft delete)
+     * Eliminar una cuota (abono) por id. :id = cuota id (pago_cuotas).
+     * Soft delete de la cuota; el caso de uso actualiza estado de la cabecera si aplica.
      */
     router.delete(
         '/:id',
@@ -86,27 +92,12 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
     );
 
     // ============================================
-    // GENERACIÓN DE RECIBO DE PAGO
+    // GENERACIÓN DE RECIBO DE CUOTA
     // ============================================
 
     /**
      * GET /api/v1/pagos-aportes/:id/recibo
-     * Generar u obtener el recibo de pago de un aporte académico
-     * 
-     * Verifica si el recibo ya existe en documentos_estudiante:
-     * - Si existe, retorna la información del archivo existente
-     * - Si no existe, genera el recibo y lo guarda en documentos_estudiante
-     * 
-     * Response:
-     * {
-     *   success: true,
-     *   data: {
-     *     filePath: "/uploads/recibos/2026/pago_1234567_000001.pdf",
-     *     fileName: "pago_1234567_000001.pdf",
-     *     absolutePath: "/path/to/file.pdf"
-     *   },
-     *   message: "Recibo de pago generado correctamente"
-     * }
+     * Generar u obtener el recibo de una cuota. :id = cuota id (pago_cuotas).
      */
     router.get(
         '/:id/recibo',
@@ -116,7 +107,7 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
     // ============================================
     // ENDPOINTS FUTUROS (TODO)
     // ============================================
-    // GET /estudiante/:studentId - Obtener pagos de un estudiante
+    // GET /:id/cuotas - Listar cuotas de una cabecera (id = cabecera id)
 
     return router;
 }

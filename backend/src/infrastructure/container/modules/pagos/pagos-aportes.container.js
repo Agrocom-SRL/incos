@@ -58,12 +58,6 @@ export function registerPagosAportesResource(container) {
         (c) =>
             new ListPagosAportesUseCase({
                 contributionPaymentRepository: c.resolve(REPOSITORIOS_TOKENS.contributionPaymentRepository),
-                studentRepository: c.resolve(REPOSITORIOS_TOKENS.studentRepository),
-                managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
-                paymentMethodRepository: c.resolve(REPOSITORIOS_TOKENS.paymentMethodRepository),
-                studentScholarshipRepository: c.resolve(REPOSITORIOS_TOKENS.studentScholarshipRepository),
-                scholarshipRepository: c.resolve(REPOSITORIOS_TOKENS.scholarshipRepository),
-                enrollmentRepository: c.resolve(REPOSITORIOS_TOKENS.enrollmentRepository),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
     );

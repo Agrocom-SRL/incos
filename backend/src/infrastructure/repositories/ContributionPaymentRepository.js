@@ -131,4 +131,67 @@ export class ContributionPaymentRepository extends BaseRepository {
   getCollectionName() {
     return 'contributionPayments';
   }
+
+  /**
+   * Obtiene el listado de pagos de aportes desde vista_pago_aporte_listado.
+   * Fusiona baseFilters + queryParams internamente. COUNT y SELECT vía BaseRepository._queryViewPaged.
+   *
+   * @param {Object} baseFilters - Filtros base (search, sort) de ListRequestDTO
+   * @param {number} page - Página (1-based)
+   * @param {number} limit - Límite por página
+   * @param {Object} queryParams - Parámetros de query (gestion_id, estudiante_id, estado, etc.)
+   * @returns {Promise<{contributionPayments: Array, total: number}>}
+   */
+  async obtenerListadoPagosAportes(baseFilters = {}, page = 1, limit = 50, queryParams = {}) {
+    const filters = { ...baseFilters, ...queryParams };
+
+    const whereConditions = [];
+    const replacements = [];
+
+    if (filters.estudiante_id !== undefined) {
+      whereConditions.push('estudiante_id = ?');
+      replacements.push(filters.estudiante_id);
+    }
+    if (filters.gestion_id !== undefined) {
+      whereConditions.push('gestion_id = ?');
+      replacements.push(filters.gestion_id);
+    }
+    if (filters.estado !== undefined) {
+      whereConditions.push('estado = ?');
+      replacements.push(filters.estado);
+    }
+    if (filters.search && typeof filters.search === 'string') {
+      const term = `%${filters.search.trim()}%`;
+      whereConditions.push(
+        '(codigo_estudiante LIKE ? OR estudiante_nombres LIKE ? OR estudiante_apellido_paterno LIKE ? OR estudiante_apellido_materno LIKE ? OR gestion_nombre LIKE ?)'
+      );
+      replacements.push(term, term, term, term, term);
+    }
+
+    const orderClause = this._orderClauseForListado(filters.sort);
+
+    const { rows, total } = await this._queryViewPaged(
+      'vista_pago_aporte_listado',
+      whereConditions,
+      replacements,
+      orderClause,
+      page,
+      limit
+    );
+
+    return { contributionPayments: rows, total };
+  }
+
+  /**
+   * Orden para vista_pago_aporte_listado. Whitelist de columnas.
+   * @private
+   */
+  _orderClauseForListado(sort) {
+    const allowed = ['id', 'estado', 'created_at', 'gestion_anio', 'total_pagado', 'cantidad_pagos', 'saldo_pendiente', 'codigo_estudiante', 'gestion_nombre'];
+    if (!sort || typeof sort !== 'string') return 'ORDER BY id ASC';
+    const [field, dir] = sort.trim().split(':');
+    const col = (field || 'id').toLowerCase();
+    const direction = (dir || 'ASC').toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
+    return allowed.includes(col) ? `ORDER BY ${col} ${direction}` : 'ORDER BY id ASC';
+  }
 }

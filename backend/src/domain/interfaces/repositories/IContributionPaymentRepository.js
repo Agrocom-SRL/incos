@@ -3,10 +3,7 @@ import { IRepository } from './IRepository.js';
 /**
  * Interfaz de Repositorio: IContributionPaymentRepository
  * Define el contrato que debe cumplir el repositorio de pagos de aporte
- * 
- * NOTA: Solo extiende IRepository sin métodos adicionales.
- * La especialización está en la implementación (buildWhereClause), no en la interfaz.
- * 
+ *
  * Métodos heredados de IRepository:
  * - findById(id)
  * - findBy(criteria, options)
@@ -16,7 +13,22 @@ import { IRepository } from './IRepository.js';
  * - delete(id, userId)
  * - search(searchTerm, options)
  * - count(filters)
+ *
+ * Métodos específicos:
+ * - obtenerListadoPagosAportes(baseFilters, page, limit, queryParams) - Listado desde vista_pago_aporte_listado
  */
 export class IContributionPaymentRepository extends IRepository {
-  // Solo hereda métodos de IRepository
+  /**
+   * Obtiene el listado de pagos de aportes desde vista_pago_aporte_listado.
+   * Retorna objetos planos (no entidades). El repositorio fusiona baseFilters + queryParams internamente.
+   *
+   * @param {Object} baseFilters - Filtros base (search, sort) de ListRequestDTO
+   * @param {number} page - Página (1-based)
+   * @param {number} limit - Límite por página
+   * @param {Object} queryParams - Parámetros de query (gestion_id, estudiante_id, estado, etc.)
+   * @returns {Promise<{contributionPayments: Array, total: number}>} Objetos planos según la vista
+   */
+  async obtenerListadoPagosAportes(baseFilters = {}, page = 1, limit = 50, queryParams = {}) {
+    throw new Error('Method obtenerListadoPagosAportes must be implemented by subclass');
+  }
 }
