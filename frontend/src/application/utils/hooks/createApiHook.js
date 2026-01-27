@@ -80,6 +80,7 @@ import { useStableApiResult } from './useStableApiResult';
  * @param {string} [config.dataKey='data'] - Nombre de la propiedad en el resultado (default: 'data')
  * @param {string} [config.fetchName='fetch'] - Nombre de la función fetch (default: 'fetch')
  * @param {string} [config.errorMessage] - Mensaje de error por defecto
+ * @param {string} [config.paginationKey] - Si el use case devuelve { data, pagination }, clave para exponer pagination en el resultado (ej: 'pagination')
  * @returns {Function} Hook de React
  */
 export const createApiHook = ({
@@ -95,6 +96,7 @@ export const createApiHook = ({
   dataKey = 'data',
   fetchName = 'fetch',
   errorMessage,
+  paginationKey,
 }) => {
   return () => {
     // Estado inicial según el tipo de dato
@@ -102,6 +104,7 @@ export const createApiHook = ({
     const [data, setData] = useState(initialData);
     const [loading, setLoading] = useState(initialLoading);
     const [error, setError] = useState(null);
+    const [pagination, setPagination] = useState(paginationKey ? null : undefined);
 
     // Setters optimizados para evitar actualizaciones innecesarias
     // Usar useRef para mantener referencias estables (setState de React ya es estable)
@@ -159,6 +162,7 @@ export const createApiHook = ({
           );
           optimizedSetErrorRef.current(errorMsg);
           optimizedSetDataRef.current(initialData);
+          if (paginationKey) setPagination(null);
           return;
         }
 
@@ -172,6 +176,11 @@ export const createApiHook = ({
 
         // OPTIMIZACIÓN: Solo actualizar el estado si los datos realmente cambiaron
         optimizedSetDataRef.current(finalData);
+        if (paginationKey && result.pagination != null) {
+          setPagination(result.pagination);
+        } else if (paginationKey) {
+          setPagination(null);
+        }
       } catch (err) {
         // Error inesperado (no debería llegar aquí si el Use Case maneja bien los errores)
         const errorMsg = normalizeError(
@@ -180,6 +189,7 @@ export const createApiHook = ({
         );
         optimizedSetErrorRef.current(errorMsg);
         optimizedSetDataRef.current(initialData);
+        if (paginationKey) setPagination(null);
       } finally {
         // OPTIMIZACIÓN: Solo actualizar si el valor realmente cambió
         optimizedSetLoadingRef.current(false);
@@ -216,6 +226,9 @@ export const createApiHook = ({
       [fetchName]: fetch,
       refetch,
     };
+    if (paginationKey) {
+      result[paginationKey] = pagination ?? null;
+    }
 
     // Usar helper para mantener referencia estable del resultado
     return useStableApiResult(result, enableLogs, name);

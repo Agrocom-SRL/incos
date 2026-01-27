@@ -129,29 +129,34 @@ export class PagoAporteRepository extends IPagoAporteRepository {
   }
 
   /**
-   * Obtiene la lista de pagos de aportes con filtros y paginación
-   * GET /v1/pagos-aportes?pagina=1&limite=10&busqueda=...
-   * 
+   * Obtiene la lista de pagos de aportes con filtros y paginación (vista_pago_aporte_listado).
+   * GET /v1/pagos-aportes?page=1&limit=50&search=...&sort=id:ASC&gestion_id=&estudiante_id=&estado=
+   *
    * @param {Object} options - Opciones de consulta
-   * @param {Object} options.params - Parámetros de consulta HTTP
-   * @returns {Promise<{success: boolean, data?: Array, error?: string}>}
+   * @param {Object} options.params - Parámetros de consulta HTTP (page, limit, search, sort, gestion_id, estudiante_id, estado)
+   * @returns {Promise<{success: boolean, data?: Array, pagination?: {page, limit, total, totalPages}, error?: string}>}
    */
   async obtenerTodos(options = {}) {
     try {
       const { params = {} } = options;
 
-      // Llamada HTTP directa al endpoint
       const response = await apiClient.get(PAGOS_APORTES_ENDPOINTS.BASE, { params });
+      const responseData = response.data;
 
-      // Procesar respuesta exitosa
-      const result = handleSuccessResponse(response);
-
-      // Asegurar que data sea un array
-      if (result.success && result.data) {
-        result.data = Array.isArray(result.data) ? result.data : [];
+      if (responseData.success === false) {
+        return {
+          success: false,
+          error: responseData.error || 'Error en la respuesta del servidor',
+        };
+      }
+      if (responseData.error) {
+        return { success: false, error: responseData.error };
       }
 
-      return result;
+      const data = Array.isArray(responseData.data) ? responseData.data : [];
+      const pagination = responseData.pagination || null;
+
+      return { success: true, data, pagination };
     } catch (error) {
       return handleErrorResponse(error, 'Error al obtener pagos de aportes');
     }

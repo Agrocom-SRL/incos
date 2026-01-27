@@ -1,59 +1,45 @@
 /**
  * Provider: PagosListProvider
- * 
- * Single Responsibility: Proporcionar estado compartido SOLO para la feature de lista de pagos
- * 
- * Clean Architecture:
- * - Application Layer: Provider específico para la feature de listado
- * - Usa datos compartidos de PagosProvider (estado en memoria)
- * - Solo maneja lógica de UI (búsqueda, filtrado, formateo)
- * 
- * Ventajas:
- * - Aislamiento de errores: errores en registro no afectan la lista
- * - Performance: usa estado compartido en memoria (no recarga desde BD)
- * - Separación de responsabilidades: datos compartidos, UI específica
+ *
+ * Single Responsibility: Proporcionar estado de la lista de pagos (vista_pago_aporte_listado)
+ *
+ * - Usa usePagosApi: listado con paginación, búsqueda, filtros y orden en servidor
+ * - Usa useDeletePagoAporte: eliminar y recargar lista al éxito
+ * - searchText/setSearchText para el input; refetch({ params: { page, limit, search, ... } })
  */
 
-import { useMemo } from 'react';
-import { usePagosContext } from '@application-pagos/hooks';
-import { useTableData } from '@molecules';
+import { useState, useCallback, useMemo } from 'react';
+import { usePagosApi, useDeletePagoAporte } from '@application-pagos/hooks';
 import { PagosListContext } from '@application-pagos/context/PagosListContext';
 
 export const PagosListProvider = ({ children }) => {
-    const { pagos: pagosData, loading, error, refetch, deletePago } = usePagosContext();
+    const { pagos, pagination, loading, error, refetch } = usePagosApi();
+    const { deletePagoAporte, loading: deleting } = useDeletePagoAporte();
 
-    const getSearchFields = useMemo(
-        () => (pago) => {
-            const student = pago.estudiante || pago.student;
-            return [
-                student?.nombreCompleto || student?.nombre || '',
-                pago.numeroRecibo || pago.receipt_number || '',
-                pago.codigo_comprobante || pago.codigoComprobante || '',
-                pago.metodoPago?.nombre || pago.metodoPago || '',
-                pago.montoTotal?.toString() || pago.total_amount?.toString() || '',
-            ];
+    const [searchText, setSearchText] = useState('');
+
+    const deletePago = useCallback(
+        async (pagoId) => {
+            const result = await deletePagoAporte(pagoId);
+            if (result.success) refetch();
+            return result;
         },
-        []
+        [deletePagoAporte, refetch]
     );
 
-    const { searchText, setSearchText, filteredData } = useTableData(
-        pagosData,
-        getSearchFields
+    const value = useMemo(
+        () => ({
+            pagos,
+            pagination,
+            loading: loading || deleting,
+            error,
+            refetch,
+            deletePago,
+            searchText,
+            setSearchText,
+        }),
+        [pagos, pagination, loading, deleting, error, refetch, deletePago, searchText]
     );
 
-    const value = {
-        pagos: filteredData,
-        loading,
-        error,
-        refetch,
-        deletePago,
-        searchText,
-        setSearchText,
-    };
-
-    return (
-        <PagosListContext.Provider value={value}>
-            {children}
-        </PagosListContext.Provider>
-    );
+    return <PagosListContext.Provider value={value}>{children}</PagosListContext.Provider>;
 };
