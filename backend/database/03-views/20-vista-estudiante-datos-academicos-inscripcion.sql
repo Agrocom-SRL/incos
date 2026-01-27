@@ -1,14 +1,14 @@
 -- ============================================
 -- VISTA: vista_estudiante_inscripcion_actual
--- Datos de inscripci?n actual del estudiante por gesti?n: una fila por materia
+-- Datos de inscripción actual del estudiante por gestión: una fila por materia
 --
--- Prop?sito: Une inscripciones (por gesti?n) con las piezas base 04, 02, 01, 18-19 para obtener:
--- - Inscripci?n: gesti?n_id, tipo_inscripcion, fecha_inscripcion
--- - Materias inscritas: una fila por materia con informaci?n completa
--- - Paralelo, periodo, carrera: campos complementarios por materia (desde curso ? paralelo)
+-- Propósito: Une inscripciones (por gestión) con las piezas base 04, 02, 01, 18-19 para obtener:
+-- - Inscripción: gestion_id, tipo_inscripcion, fecha_inscripcion
+-- - Materias inscritas: una fila por materia con información completa
+-- - Paralelo, periodo, carrera: campos complementarios por materia (desde curso a paralelo)
 --
 -- Devuelve una fila por materia inscrita. Cada fila incluye:
--- - Datos de inscripci?n (compartidos)
+-- - Datos de inscripción (compartidos)
 -- - Datos de la materia (sigla, nombre, tipo, etc.)
 -- - Paralelo, periodo, carrera (complementarios, desde el curso de la materia)
 --
