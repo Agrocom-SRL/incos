@@ -137,13 +137,13 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
         const T = IncosPDFBase.FORMULARIO_TEXTS;
         const s = options.student || {};
 
-        // Label (T) + valor construido aquí; misma línea
+        // Campo de nombres y apellidos con recuadro
         const nombresVal = [s.apellidoPaterno, s.apellidoMaterno, s.nombres]
             .filter(Boolean)
             .join(' ')
             .replace(/\s+/g, ' ')
             .trim();
-        await this._addLabelValue(T.NOMBRES_APELLIDOS_LABEL, nombresVal || '—');
+        await this._addBoxedField(T.NOMBRES_APELLIDOS_LABEL, nombresVal || '—');
 
         // Grid 2 columnas fijas. Orden: C.I., Código, Género, Email, Celular, Estado civil, Tipo sangre, Discapacidad.
         const gridItems = [];

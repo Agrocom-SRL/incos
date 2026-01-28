@@ -282,7 +282,6 @@ export class IncosPDFLibBase {
         const boxCfg = IncosPDFBase.LAYOUT.registrationBox || {};
         const boxWidth = boxCfg.width ?? 90;
         const rowHeight = boxCfg.rowHeight ?? 18;
-        const padding = boxCfg.padding ?? 4;
         const borderWidth = boxCfg.borderWidth ?? 1;
         const rightMargin = boxCfg.rightMargin ?? margins.right;
         const offsetFromTop = boxCfg.offsetFromTop ?? 0;
@@ -316,12 +315,12 @@ export class IncosPDFLibBase {
             borderWidth,
         });
 
-        // Etiqueta en blanco, centrada en la fila
+        // Etiqueta en blanco, centrada en la fila (verticalmente mejor centrada)
         const labelStr = String(label ?? '').trim();
         if (labelStr) {
             const labelWidth = font.widthOfTextAtSize(labelStr, fontSize);
             const labelX = boxX + (boxWidth - labelWidth) / 2;
-            const labelY = topRowY + rowHeight / 2 - fontSize / 2 + fontSize * 0.35;
+            const labelY = topRowY + (rowHeight - fontSize) / 2 + fontSize * 0.3;
             this._currentPage.drawText(labelStr, {
                 x: labelX,
                 y: labelY,
@@ -331,14 +330,7 @@ export class IncosPDFLibBase {
             });
         }
 
-        // Fila inferior: fondo blanco
-        this._currentPage.drawRectangle({
-            x: boxX,
-            y: bottomRowY,
-            width: boxWidth,
-            height: rowHeight,
-            color: whiteRgb,
-        });
+        // Fila inferior: solo borde (sin fondo blanco)
         this._currentPage.drawRectangle({
             x: boxX,
             y: bottomRowY,
@@ -348,12 +340,12 @@ export class IncosPDFLibBase {
             borderWidth,
         });
 
-        // Valor en negro, centrado (baseline centrada en la fila)
+        // Valor en negro, centrado (verticalmente mejor centrado)
         const valueStr = String(value ?? '').trim();
         if (valueStr) {
             const valueWidth = font.widthOfTextAtSize(valueStr, fontSize);
             const valueX = boxX + (boxWidth - valueWidth) / 2;
-            const valueY = bottomRowY + rowHeight / 2 - fontSize / 2 + fontSize * 0.35;
+            const valueY = bottomRowY + (rowHeight - fontSize) / 2 + fontSize * 0.3;
             this._currentPage.drawText(valueStr, {
                 x: valueX,
                 y: valueY,
@@ -634,6 +626,81 @@ export class IncosPDFLibBase {
         }
 
         return totalHeight;
+    }
+
+    /**
+     * Agrega un campo con label normal y valor dentro de un recuadro con borde.
+     * El recuadro ocupa el 100% del ancho menos los márgenes.
+     * Label en texto normal (no bold), valor centrado dentro del recuadro.
+     *
+     * @protected
+     * @param {string} label - Etiqueta en texto normal (incluir ":" si se desea)
+     * @param {string} value - Valor a mostrar dentro del recuadro
+     * @returns {Promise<void>}
+     */
+    async _addBoxedField(label, value) {
+        if (!this._pdfDoc || !this._currentPage) {
+            throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
+        }
+
+        const { width: pageWidth } = this._currentPage.getSize();
+        const margins = IncosPDFBase.LAYOUT.margins;
+        const fontSize = IncosPDFBase.FONTS.normal.size;
+        const boxHeight = 20; // Altura del recuadro
+        const borderWidth = 1; // Grosor del borde
+
+        const normalFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.normal.font);
+        const font = await this._pdfDoc.embedFont(normalFontName);
+        const textRgb = this._hexToRgb(IncosPDFBase.COLORS.text);
+        const borderRgb = this._hexToRgb(IncosPDFBase.COLORS.border);
+
+        // Dibujar label en texto normal (no bold)
+        const labelStr = String(label ?? '').trim();
+        if (labelStr) {
+            this._currentPage.drawText(labelStr, {
+                x: margins.left,
+                y: this._currentY,
+                size: fontSize,
+                font,
+                color: textRgb,
+            });
+            // Reducir espacio entre label y recuadro
+            this._currentY -= fontSize - 4;
+        }
+
+        // Dibujar recuadro con borde (solo borde, sin fondo)
+        const boxX = margins.left;
+        const boxY = this._currentY - boxHeight;
+        const boxWidth = pageWidth - margins.left - margins.right;
+
+        // Borde del recuadro
+        this._currentPage.drawRectangle({
+            x: boxX,
+            y: boxY,
+            width: boxWidth,
+            height: boxHeight,
+            borderColor: borderRgb,
+            borderWidth,
+        });
+
+        // Valor centrado dentro del recuadro (horizontal y vertical)
+        const valueStr = String(value ?? '').trim();
+        if (valueStr) {
+            const valueWidth = font.widthOfTextAtSize(valueStr, fontSize);
+            const valueX = boxX + (boxWidth - valueWidth) / 2;
+            // Centrar verticalmente mejor: usar el centro exacto del recuadro
+            const valueY = boxY + (boxHeight - fontSize) / 2 + fontSize * 0.2;
+            this._currentPage.drawText(valueStr, {
+                x: valueX,
+                y: valueY,
+                size: fontSize,
+                font,
+                color: textRgb,
+            });
+        }
+
+        // Actualizar posición Y después del recuadro (menos espacio)
+        this._currentY = boxY - boxHeight;
     }
 
     /**
