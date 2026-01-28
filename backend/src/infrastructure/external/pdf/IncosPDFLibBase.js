@@ -295,8 +295,13 @@ export class IncosPDFLibBase {
         const borderRgb = this._hexToRgb(IncosPDFBase.COLORS.border);
         const whiteRgb = rgb(1, 1, 1);
 
-        const font = await this._pdfDoc.embedFont(StandardFonts.HelveticaOblique);
-        const fontSize = IncosPDFBase.FONTS.normal.size;
+        const labelFont = await this._pdfDoc.embedFont(StandardFonts.HelveticaOblique);
+        const labelFontSize = IncosPDFBase.FONTS.normal.size;
+        
+        // Fuente bold y tamaño del título para el valor del código
+        const valueFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.bold.font);
+        const valueFont = await this._pdfDoc.embedFont(valueFontName);
+        const valueFontSize = IncosPDFBase.FONTS.title.size; // Mismo tamaño que _addDocumentTitle
 
         // Fila superior: fondo verde primario
         this._currentPage.drawRectangle({
@@ -318,14 +323,14 @@ export class IncosPDFLibBase {
         // Etiqueta en blanco, centrada en la fila (verticalmente mejor centrada)
         const labelStr = String(label ?? '').trim();
         if (labelStr) {
-            const labelWidth = font.widthOfTextAtSize(labelStr, fontSize);
+            const labelWidth = labelFont.widthOfTextAtSize(labelStr, labelFontSize);
             const labelX = boxX + (boxWidth - labelWidth) / 2;
-            const labelY = topRowY + (rowHeight - fontSize) / 2 + fontSize * 0.3;
+            const labelY = topRowY + (rowHeight - labelFontSize) / 2 + labelFontSize * 0.3;
             this._currentPage.drawText(labelStr, {
                 x: labelX,
                 y: labelY,
-                size: fontSize,
-                font,
+                size: labelFontSize,
+                font: labelFont,
                 color: whiteRgb,
             });
         }
@@ -340,17 +345,17 @@ export class IncosPDFLibBase {
             borderWidth,
         });
 
-        // Valor en negro, centrado (verticalmente mejor centrado)
+        // Valor en negro, bold, tamaño del título, centrado (verticalmente mejor centrado)
         const valueStr = String(value ?? '').trim();
         if (valueStr) {
-            const valueWidth = font.widthOfTextAtSize(valueStr, fontSize);
+            const valueWidth = valueFont.widthOfTextAtSize(valueStr, valueFontSize);
             const valueX = boxX + (boxWidth - valueWidth) / 2;
-            const valueY = bottomRowY + (rowHeight - fontSize) / 2 + fontSize * 0.3;
+            const valueY = bottomRowY + (rowHeight - valueFontSize) / 2 + valueFontSize * 0.3;
             this._currentPage.drawText(valueStr, {
                 x: valueX,
                 y: valueY,
-                size: fontSize,
-                font,
+                size: valueFontSize,
+                font: valueFont,
                 color: textRgb,
             });
         }
@@ -684,7 +689,7 @@ export class IncosPDFLibBase {
         const availableTextWidth = boxWidth - (cellPadding * 2);
         
         const valueStr = String(value ?? '').trim();
-        const valueLines = valueStr ? this._wrapText(valueStr, valueFont, fontSize, availableTextWidth) : [''];
+        const valueLines = valueStr ? this._wrapText(valueStr, valueFont, finalValueFontSize, availableTextWidth) : [''];
         const numLines = valueLines.length;
 
         // Calcular altura real del cuadro (mínimo boxHeight, más espacio si hay múltiples líneas)
@@ -704,19 +709,19 @@ export class IncosPDFLibBase {
         // Dibujar cada línea del valor centrado dentro del recuadro
         if (valueStr && valueLines.length > 0) {
             const totalTextHeight = numLines * lineHeight;
-            const startTextY = boxY + (calculatedBoxHeight - totalTextHeight) / 2 + fontSize * verticalCenterFactor;
+            const startTextY = boxY + (calculatedBoxHeight - totalTextHeight) / 2 + finalValueFontSize * verticalCenterFactor;
 
             for (let lineIdx = 0; lineIdx < numLines; lineIdx++) {
                 const lineText = valueLines[lineIdx];
                 if (lineText) {
-                    const textWidth = valueFont.widthOfTextAtSize(lineText, fontSize);
+                    const textWidth = valueFont.widthOfTextAtSize(lineText, finalValueFontSize);
                     const textX = boxX + (boxWidth - textWidth) / 2; // Centrado horizontal
                     const textY = startTextY + (numLines - 1 - lineIdx) * lineHeight;
                     
                     this._currentPage.drawText(lineText, {
                         x: textX,
                         y: textY,
-                        size: fontSize,
+                        size: finalValueFontSize,
                         font: valueFont,
                         color: textRgb,
                     });

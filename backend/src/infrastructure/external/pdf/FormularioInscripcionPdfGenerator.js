@@ -135,13 +135,14 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
         const T = IncosPDFBase.FORMULARIO_TEXTS;
         const s = options.student || {};
 
-        // Campo de nombres y apellidos con recuadro (valor en bold)
+        // Campo de nombres y apellidos con recuadro (valor en bold, tamaño del título, color negro)
         const nombresVal = [s.apellidoPaterno, s.apellidoMaterno, s.nombres]
             .filter(Boolean)
             .join(' ')
             .replace(/\s+/g, ' ')
             .trim();
-        await this._addBoxedField(T.NOMBRES_APELLIDOS_LABEL, nombresVal || '—', true);
+        // valueBold=true y valueFontSize=title.size para usar tamaño del título (14) con Helvetica-Bold
+        await this._addBoxedField(T.NOMBRES_APELLIDOS_LABEL, nombresVal || '—', true, IncosPDFBase.FONTS.title.size);
 
         // Bloque 1: Datos básicos (CI, Género, Celular, Correo, Estado civil, Grupo sanguíneo)
         await this._buildDatosBasicosIdentificacion(options);
