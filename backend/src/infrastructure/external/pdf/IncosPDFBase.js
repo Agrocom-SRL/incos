@@ -147,6 +147,10 @@ export class IncosPDFBase {
         // Lugar y fecha de nacimiento, domicilio, idioma (orígenes + residencia)
         LUGAR_NACIMIENTO_LABEL: 'Lugar de nacimiento:',
         DOMICILIO_LABEL: 'Domicilio:',
+        // Contacto de emergencia (apoderado)
+        PARENTESCO_LABEL: 'Parentesco:',
+        CELULAR_CONTACTO_LABEL: 'Celular:',
+        DATOS_REFERENCIA_LABEL: 'Datos de referencia:',
         LOCALIDAD_LABEL: 'Localidad:',
         DEPARTAMENTO_LABEL: 'Departamento:',
         NACIONALIDAD_LABEL: 'Nacionalidad:',
@@ -182,7 +186,7 @@ export class IncosPDFBase {
         normal: { size: 8, font: 'Helvetica' },
         small: { size: 6, font: 'Helvetica' },
         bold: { size: 8, font: 'Helvetica-Bold' },
-        amount: { size: 10, font: 'Helvetica-Bold' }, // Tamaño para montos (más grande y bold)
+        amount: { size: 9, font: 'Helvetica-Bold' }, // Tamaño para montos (más grande y bold)
         // Fuente personalizada por defecto para títulos de documentos
         defaultTitleFont: 'britannic-bold-regular',
     };
@@ -247,6 +251,8 @@ export class IncosPDFBase {
             labelBoxSpacing: 4,
             /** Factor de ajuste vertical para centrar texto dentro del recuadro (multiplicado por fontSize) */
             verticalCenterFactor: 0.2,
+            /** Padding interno de las celdas (para text wrapping) */
+            cellPadding: 4,
         },
         // Tablas (para asignaturas y otros datos tabulares)
         table: {

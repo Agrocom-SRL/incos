@@ -117,13 +117,15 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
         // Bloque 2: Lugar y Fecha de Nacimiento, Domicilio, Idioma de origen
         await this._buildLugarFechaNacimientoYDomicilio(options);
 
+        // Bloque 3: Contacto de emergencia (apoderado)
+        await this._buildContactoEmergencia(options);
+
         this._addSpace();
     }
 
     /**
      * Bloque 1 de DATOS PERSONALES: Identificación personal.
-     * Nombres y apellidos, grid (C.I., Género, Email, Celular, Estado civil, Tipo sangre, Discapacidad),
-     * detalle de discapacidad si aplica.
+     * Orquesta los 3 sub-bloques: datos básicos, discapacidad, y datos de origen.
      *
      * @private
      * @param {Object} options - Opciones de generación (options.student)
@@ -132,28 +134,41 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
     async _buildIdentificacionPersonal(options) {
         const T = IncosPDFBase.FORMULARIO_TEXTS;
         const s = options.student || {};
-        const origenes = Array.isArray(s.origenes) ? s.origenes : [];
-        const principal = origenes.find((o) => o.es_principal === 1 || o.es_principal === true) || origenes[0];
 
-        // Campo de nombres y apellidos con recuadro
+        // Campo de nombres y apellidos con recuadro (valor en bold)
         const nombresVal = [s.apellidoPaterno, s.apellidoMaterno, s.nombres]
             .filter(Boolean)
             .join(' ')
             .replace(/\s+/g, ' ')
             .trim();
-        await this._addBoxedField(T.NOMBRES_APELLIDOS_LABEL, nombresVal || '—');
+        await this._addBoxedField(T.NOMBRES_APELLIDOS_LABEL, nombresVal || '—', true);
 
-        // Preparar datos para nacionalidad e idioma
-        const tipoOrigenRaw = (principal?.tipo_origen ?? principal?.tipoOrigen ?? '').toString().trim().toUpperCase();
-        const nacionalidad = tipoOrigenRaw === 'BOLIVIANA' ? 'Boliviana'
-            : tipoOrigenRaw === 'EXTRANJERA' ? 'Extranjera'
-                : tipoOrigenRaw === 'DOBLE_NACIONALIDAD' ? 'Doble Nacionalidad'
-                    : tipoOrigenRaw || '—';
-        const idiomaPrincipal = (principal?.idioma_materno_nombre ?? principal?.idiomaMaternoNombre ?? '').toString().trim();
+        // Bloque 1: Datos básicos (CI, Género, Celular, Correo, Estado civil, Grupo sanguíneo)
+        await this._buildDatosBasicosIdentificacion(options);
 
-        // Grid 2 columnas con campos con recuadro
-        // Columna izquierda: C.I., Celular, Estado civil, Discapacidad, Edad, Nacionalidad
+        // Bloque 2: Discapacidad y detalle
+        await this._buildDiscapacidadIdentificacion(options);
+
+        // Bloque 3: Edad, Fecha de nacimiento, Nacionalidad, Idioma principal
+        await this._buildDatosOrigenIdentificacion(options);
+    }
+
+    /**
+     * Bloque 1.1: Datos básicos de identificación.
+     * Grid 2 columnas: CI, Celular, Estado civil (izq) | Género, Correo, Tipo sangre (der)
+     *
+     * @private
+     * @param {Object} options - Opciones de generación (options.student)
+     * @returns {Promise<void>}
+     */
+    async _buildDatosBasicosIdentificacion(options) {
+        const T = IncosPDFBase.FORMULARIO_TEXTS;
+        const s = options.student || {};
+
         const leftColumnItems = [];
+        const rightColumnItems = [];
+
+        // Columna izquierda: C.I., Celular, Estado civil
         const ci = (s.ci ?? '').toString().trim();
         const exp = (s.expedicion ?? '').toString().trim();
         if (ci || exp) {
@@ -167,20 +182,8 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
         if (s.estadoCivilNombre) {
             leftColumnItems.push({ label: T.ESTADO_CIVIL_LABEL, value: s.estadoCivilNombre });
         }
-        if (s.tieneDiscapacidad !== undefined && s.tieneDiscapacidad !== null) {
-            const disc = s.tieneDiscapacidad === true || s.tieneDiscapacidad === 1 ? 'Sí' : 'No';
-            leftColumnItems.push({ label: T.DISCAPACIDAD_LABEL, value: disc });
-        }
-        const edad = (s.edad ?? '').toString().trim();
-        if (edad && edad !== '—') {
-            leftColumnItems.push({ label: T.EDAD_LABEL, value: `${edad} años` });
-        }
-        if (nacionalidad && nacionalidad !== '—') {
-            leftColumnItems.push({ label: T.NACIONALIDAD_LABEL, value: nacionalidad });
-        }
 
-        // Columna derecha: Género, Email, Tipo sangre, Fecha de nacimiento, Idioma principal
-        const rightColumnItems = [];
+        // Columna derecha: Género, Correo, Tipo sangre
         if (s.genero) {
             const g = String(s.genero).toLowerCase();
             const generoVal = g === 'masculino' ? 'Masculino' : g === 'femenino' ? 'Femenino' : g === 'otro' ? 'Otro' : s.genero;
@@ -193,7 +196,35 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
         if (s.tipoSangre) {
             rightColumnItems.push({ label: T.TIPO_SANGRE_LABEL, value: s.tipoSangre });
         }
-        // Detalle de discapacidad (solo TIPO y GRADO) debajo de Tipo sangre
+
+        // Dibujar grid de 2 columnas (35% izquierda, 65% derecha)
+        if (leftColumnItems.length > 0 || rightColumnItems.length > 0) {
+            await this._addBoxedFieldGrid(leftColumnItems, rightColumnItems, 35);
+        }
+    }
+
+    /**
+     * Bloque 1.2: Discapacidad y detalle.
+     * Grid 2 columnas: Discapacidad (izq) | Detalle discapacidad (der)
+     *
+     * @private
+     * @param {Object} options - Opciones de generación (options.student)
+     * @returns {Promise<void>}
+     */
+    async _buildDiscapacidadIdentificacion(options) {
+        const T = IncosPDFBase.FORMULARIO_TEXTS;
+        const s = options.student || {};
+
+        const leftColumnItems = [];
+        const rightColumnItems = [];
+
+        // Columna izquierda: Discapacidad
+        if (s.tieneDiscapacidad !== undefined && s.tieneDiscapacidad !== null) {
+            const disc = s.tieneDiscapacidad === true || s.tieneDiscapacidad === 1 ? 'Sí' : 'No';
+            leftColumnItems.push({ label: T.DISCAPACIDAD_LABEL, value: disc });
+        }
+
+        // Columna derecha: Detalle discapacidad (solo TIPO y GRADO)
         const tieneDisc = s.tieneDiscapacidad === true || s.tieneDiscapacidad === 1;
         const list = Array.isArray(s.discapacidades) ? s.discapacidades : [];
         if (tieneDisc && list.length > 0) {
@@ -202,6 +233,49 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
                 rightColumnItems.push({ label: T.DETALLE_DISCAPACIDAD_LABEL, value: detalleVal });
             }
         }
+
+        // Dibujar grid de 2 columnas (35% izquierda, 65% derecha)
+        // Siempre respeta el porcentaje incluso si una columna está vacía (comportamiento por defecto)
+        if (leftColumnItems.length > 0 || rightColumnItems.length > 0) {
+            await this._addBoxedFieldGrid(leftColumnItems, rightColumnItems, 35);
+        }
+    }
+
+    /**
+     * Bloque 1.3: Datos de origen (edad, fecha nacimiento, nacionalidad, idioma).
+     * Grid 2 columnas: Edad, Nacionalidad (izq) | Fecha de nacimiento, Idioma principal (der)
+     *
+     * @private
+     * @param {Object} options - Opciones de generación (options.student)
+     * @returns {Promise<void>}
+     */
+    async _buildDatosOrigenIdentificacion(options) {
+        const T = IncosPDFBase.FORMULARIO_TEXTS;
+        const s = options.student || {};
+        const origenes = Array.isArray(s.origenes) ? s.origenes : [];
+        const principal = origenes.find((o) => o.es_principal === 1 || o.es_principal === true) || origenes[0];
+
+        // Preparar datos para nacionalidad e idioma
+        const tipoOrigenRaw = (principal?.tipo_origen ?? principal?.tipoOrigen ?? '').toString().trim().toUpperCase();
+        const nacionalidad = tipoOrigenRaw === 'BOLIVIANA' ? 'Boliviana'
+            : tipoOrigenRaw === 'EXTRANJERA' ? 'Extranjera'
+                : tipoOrigenRaw === 'DOBLE_NACIONALIDAD' ? 'Doble Nacionalidad'
+                    : tipoOrigenRaw || '—';
+        const idiomaPrincipal = (principal?.idioma_materno_nombre ?? principal?.idiomaMaternoNombre ?? '').toString().trim();
+
+        const leftColumnItems = [];
+        const rightColumnItems = [];
+
+        // Columna izquierda: Edad, Nacionalidad
+        const edad = (s.edad ?? '').toString().trim();
+        if (edad && edad !== '—') {
+            leftColumnItems.push({ label: T.EDAD_LABEL, value: `${edad} años` });
+        }
+        if (nacionalidad && nacionalidad !== '—') {
+            leftColumnItems.push({ label: T.NACIONALIDAD_LABEL, value: nacionalidad });
+        }
+
+        // Columna derecha: Fecha de nacimiento, Idioma principal
         const fechaLiteral = (s.fechaNacimientoLiteral ?? '').toString().trim();
         if (fechaLiteral && fechaLiteral !== '—') {
             rightColumnItems.push({ label: T.FECHA_NACIMIENTO_LABEL, value: fechaLiteral });
@@ -210,7 +284,7 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
             rightColumnItems.push({ label: T.IDIOMA_PRINCIPAL_LABEL, value: idiomaPrincipal });
         }
 
-        // Dibujar grid de 2 columnas (40% izquierda, 60% derecha)
+        // Dibujar grid de 2 columnas (35% izquierda, 65% derecha)
         if (leftColumnItems.length > 0 || rightColumnItems.length > 0) {
             await this._addBoxedFieldGrid(leftColumnItems, rightColumnItems, 35);
         }
@@ -321,8 +395,59 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
         }
 
         // Dibujar campos en una sola columna (ocupa todo el ancho)
+        // leftColumnWidthPercent=100 indica que es una sola columna que ocupa el 100% del ancho
         if (singleColumnItems.length > 0) {
-            await this._addBoxedFieldGrid(singleColumnItems, [], 100, 80);
+            await this._addBoxedFieldGrid(singleColumnItems, [], 100, 90);
+        }
+    }
+
+    /**
+     * Bloque 3 de DATOS PERSONALES: Contacto de emergencia (apoderado).
+     * Grid de 2 columnas: Columna izquierda (Parentesco, Celular), Columna derecha (Nombre completo).
+     *
+     * @private
+     * @param {Object} options - Opciones de generación (options.student)
+     * @returns {Promise<void>}
+     */
+    async _buildContactoEmergencia(options) {
+        const T = IncosPDFBase.FORMULARIO_TEXTS;
+        const s = options.student || {};
+        const apoderados = Array.isArray(s.apoderados) ? s.apoderados : [];
+
+        // Obtener el primer apoderado (o el principal si existe)
+        const apoderado = apoderados.find((a) => a.es_principal === 1 || a.es_principal === true) || apoderados[0];
+
+        if (!apoderado) {
+            // Si no hay apoderado, no mostrar nada
+            return;
+        }
+
+        // Preparar datos para grid de 2 columnas
+        const leftColumnItems = [];
+        const rightColumnItems = [];
+
+        // Columna izquierda: Parentesco y Celular
+        const parentesco = (apoderado.tipo_parentesco_nombre ?? apoderado.tipoParentescoNombre ?? '').toString().trim();
+        if (parentesco) {
+            leftColumnItems.push({ label: T.PARENTESCO_LABEL, value: parentesco });
+        }
+
+        const celular = (apoderado.celular_1 ?? apoderado.celular1 ?? '').toString().trim();
+        if (celular) {
+            leftColumnItems.push({ label: T.CELULAR_CONTACTO_LABEL, value: celular });
+        }
+
+        // Columna derecha: Nombre completo (nombres + apellidos)
+        const nombres = (apoderado.apoderado_nombres ?? apoderado.apoderadoNombres ?? '').toString().trim();
+        const apellidos = (apoderado.apoderado_apellidos ?? apoderado.apoderadoApellidos ?? '').toString().trim();
+        const nombreCompleto = [nombres, apellidos].filter(Boolean).join(' ').trim();
+        if (nombreCompleto) {
+            rightColumnItems.push({ label: T.DATOS_REFERENCIA_LABEL, value: nombreCompleto });
+        }
+
+        // Dibujar grid de 2 columnas solo si hay datos
+        if (leftColumnItems.length > 0 || rightColumnItems.length > 0) {
+            await this._addBoxedFieldGrid(leftColumnItems, rightColumnItems, 35);
         }
     }
 
@@ -363,12 +488,18 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
             });
         }
 
-        // Paralelo: "paralelo_nombre - paralelo_turno" (sin periodo, ya que está en Año)
+        // Paralelo: "paralelo_nombre - paralelo_turno" (solo primera palabra en mayúscula, resto en minúscula)
         const paraleloNombre = enrollmentData.paraleloNombre || enrollmentData.paralelo_nombre || '';
         if (paraleloNombre.length > 0) {
+            // Convertir a formato: primera palabra mayúscula, resto minúscula
+            const palabras = paraleloNombre.toLowerCase().split(' ');
+            const primeraPalabra = palabras[0] ? palabras[0].charAt(0).toUpperCase() + palabras[0].slice(1) : '';
+            const restoPalabras = palabras.slice(1).join(' ');
+            const paraleloFormateado = restoPalabras ? `${primeraPalabra} ${restoPalabras}` : primeraPalabra;
+
             leftColumnItems.push({
                 label: 'Paralelo:',
-                value: paraleloNombre,
+                value: paraleloFormateado,
             });
         }
 

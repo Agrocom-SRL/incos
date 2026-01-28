@@ -632,13 +632,15 @@ export class IncosPDFLibBase {
      * Agrega un campo con label normal y valor dentro de un recuadro con borde.
      * El recuadro ocupa el 100% del ancho menos los márgenes.
      * Label en texto normal (no bold), valor centrado dentro del recuadro.
+     * Ajusta automáticamente la altura del cuadro si el contenido es más ancho.
      *
      * @protected
      * @param {string} label - Etiqueta en texto normal (incluir ":" si se desea)
      * @param {string} value - Valor a mostrar dentro del recuadro
+     * @param {boolean} [valueBold=false] - Si es true, el valor se muestra en negrita
      * @returns {Promise<void>}
      */
-    async _addBoxedField(label, value) {
+    async _addBoxedField(label, value, valueBold = false) {
         if (!this._pdfDoc || !this._currentPage) {
             throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
         }
@@ -652,9 +654,13 @@ export class IncosPDFLibBase {
         const borderWidth = boxCfg.borderWidth ?? 1;
         const labelBoxSpacing = boxCfg.labelBoxSpacing ?? 4;
         const verticalCenterFactor = boxCfg.verticalCenterFactor ?? 0.3;
+        const cellPadding = boxCfg.cellPadding ?? 4;
+        const lineHeight = fontSize * 1.2;
 
         const normalFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.normal.font);
-        const font = await this._pdfDoc.embedFont(normalFontName);
+        const boldFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.bold.font);
+        const labelFont = await this._pdfDoc.embedFont(normalFontName);
+        const valueFont = await this._pdfDoc.embedFont(valueBold ? boldFontName : normalFontName);
         const textRgb = this._hexToRgb(IncosPDFBase.COLORS.text);
         const borderRgb = this._hexToRgb(IncosPDFBase.COLORS.border);
 
@@ -665,42 +671,57 @@ export class IncosPDFLibBase {
                 x: margins.left,
                 y: this._currentY,
                 size: fontSize,
-                font,
+                font: labelFont,
                 color: textRgb,
             });
             // Reducir espacio entre label y recuadro
             this._currentY -= fontSize - labelBoxSpacing;
         }
 
-        // Dibujar recuadro con borde (solo borde, sin fondo)
+        // Calcular ancho del recuadro y dividir texto en líneas si es necesario
         const boxX = margins.left;
-        const boxY = this._currentY - boxHeight;
         const boxWidth = pageWidth - margins.left - margins.right;
+        const availableTextWidth = boxWidth - (cellPadding * 2);
+        
+        const valueStr = String(value ?? '').trim();
+        const valueLines = valueStr ? this._wrapText(valueStr, valueFont, fontSize, availableTextWidth) : [''];
+        const numLines = valueLines.length;
+
+        // Calcular altura real del cuadro (mínimo boxHeight, más espacio si hay múltiples líneas)
+        const calculatedBoxHeight = Math.max(boxHeight, (numLines * lineHeight) + (cellPadding * 2));
+        const boxY = this._currentY - calculatedBoxHeight;
 
         // Borde del recuadro
         this._currentPage.drawRectangle({
             x: boxX,
             y: boxY,
             width: boxWidth,
-            height: boxHeight,
+            height: calculatedBoxHeight,
             borderColor: borderRgb,
             borderWidth,
         });
 
-        // Valor centrado dentro del recuadro (horizontal y vertical)
-        const valueStr = String(value ?? '').trim();
-        if (valueStr) {
-            const valueWidth = font.widthOfTextAtSize(valueStr, fontSize);
-            const valueX = boxX + (boxWidth - valueWidth) / 2;
-            // Centrar verticalmente mejor: usar el centro exacto del recuadro
-            const valueY = boxY + (boxHeight - fontSize) / 2 + fontSize * verticalCenterFactor;
-            this._currentPage.drawText(valueStr, {
-                x: valueX,
-                y: valueY,
-                size: fontSize,
-                font,
-                color: textRgb,
-            });
+        // Dibujar cada línea del valor centrado dentro del recuadro
+        if (valueStr && valueLines.length > 0) {
+            const totalTextHeight = numLines * lineHeight;
+            const startTextY = boxY + (calculatedBoxHeight - totalTextHeight) / 2 + fontSize * verticalCenterFactor;
+
+            for (let lineIdx = 0; lineIdx < numLines; lineIdx++) {
+                const lineText = valueLines[lineIdx];
+                if (lineText) {
+                    const textWidth = valueFont.widthOfTextAtSize(lineText, fontSize);
+                    const textX = boxX + (boxWidth - textWidth) / 2; // Centrado horizontal
+                    const textY = startTextY + (numLines - 1 - lineIdx) * lineHeight;
+                    
+                    this._currentPage.drawText(lineText, {
+                        x: textX,
+                        y: textY,
+                        size: fontSize,
+                        font: valueFont,
+                        color: textRgb,
+                    });
+                }
+            }
         }
 
         // Actualizar posición Y después del recuadro (menos espacio)
@@ -709,20 +730,21 @@ export class IncosPDFLibBase {
 
     /**
      * Agrega un grid de 2 columnas con campos con recuadro (label + cuadro con valor).
-     * Cada columna tiene ancho proporcional (40% y 60% por defecto).
+     * Cada columna tiene ancho proporcional según el porcentaje definido.
      * Dentro de cada columna: label con ancho fijo, cuadro con borde que ocupa el resto.
      * Las filas están alineadas horizontalmente entre columnas.
-     * Si solo se proporciona una columna (leftColumnItems o rightColumnItems), esa columna ocupa todo el ancho disponible.
+     * SIEMPRE respeta el porcentaje definido, incluso si una columna está vacía.
+     * Si se proporciona leftColumnWidthPercent=100, se trata como una sola columna que ocupa todo el ancho.
      *
      * @protected
-     * @param {{ label: string, value: string }[]} leftColumnItems - Items para la columna izquierda (opcional si solo se usa una columna)
-     * @param {{ label: string, value: string }[]} [rightColumnItems] - Items para la columna derecha (opcional si solo se usa una columna)
-     * @param {number} [leftColumnWidthPercent=40] - Porcentaje de ancho para la columna izquierda (0-100). Si solo hay una columna, se ignora y usa 100%
+     * @param {{ label: string, value: string }[]} leftColumnItems - Items para la columna izquierda
+     * @param {{ label: string, value: string }[]} [rightColumnItems] - Items para la columna derecha
+     * @param {number} [leftColumnWidthPercent=40] - Porcentaje de ancho para la columna izquierda (0-100). Siempre se respeta este porcentaje
      * @param {number} [leftLabelWidth=80] - Ancho fijo para los labels de la columna izquierda
      * @param {number} [rightLabelWidth=100] - Ancho fijo para los labels de la columna derecha
      * @returns {Promise<void>}
      */
-    async _addBoxedFieldGrid(leftColumnItems, rightColumnItems = [], leftColumnWidthPercent = 40, leftLabelWidth = 60, rightLabelWidth = 80) {
+    async _addBoxedFieldGrid(leftColumnItems, rightColumnItems = [], leftColumnWidthPercent = 40, leftLabelWidth = 60, rightLabelWidth = 90) {
         if (!this._pdfDoc || !this._currentPage) {
             throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
         }
@@ -746,25 +768,26 @@ export class IncosPDFLibBase {
         const leftItems = Array.isArray(leftColumnItems) ? leftColumnItems : [];
         const rightItems = Array.isArray(rightColumnItems) ? rightColumnItems : [];
 
-        // Determinar si es una sola columna o dos columnas
-        const isSingleColumn = leftItems.length === 0 || rightItems.length === 0;
         const totalWidth = pageWidth - margins.left - margins.right;
 
         let leftColWidth, rightColWidth, leftColX, rightColX;
 
-        if (isSingleColumn) {
-            // Una sola columna: ocupa todo el ancho
+        // Si el porcentaje es 100, se trata como una sola columna que ocupa todo el ancho
+        if (leftColumnWidthPercent >= 100) {
             leftColWidth = totalWidth;
             rightColWidth = totalWidth;
             leftColX = margins.left;
             rightColX = margins.left;
         } else {
-            // Dos columnas: calcular proporciones
+            // Dos columnas: siempre calcular proporciones según el porcentaje definido
+            // Respeta el porcentaje incluso si una columna está vacía
             leftColWidth = (totalWidth - colGap) * (leftColumnWidthPercent / 100);
             rightColWidth = totalWidth - colGap - leftColWidth;
             leftColX = margins.left;
             rightColX = margins.left + leftColWidth + colGap;
         }
+
+        const isSingleColumn = leftColumnWidthPercent >= 100;
 
         // Calcular número máximo de filas
         const maxRows = Math.max(leftItems.length, rightItems.length);
@@ -772,11 +795,12 @@ export class IncosPDFLibBase {
         // Dibujar fila por fila
         for (let row = 0; row < maxRows; row++) {
             const rowY = this._currentY;
+            let maxRowHeight = boxHeight; // Altura mínima
 
             // Columna izquierda (o única columna si solo hay leftItems)
             if (row < leftItems.length) {
                 const { label, value } = leftItems[row];
-                await this._drawBoxedFieldInColumn(
+                const actualHeight = await this._drawBoxedFieldInColumn(
                     leftColX,
                     rowY,
                     leftColWidth,
@@ -791,12 +815,13 @@ export class IncosPDFLibBase {
                     textRgb,
                     borderRgb
                 );
+                maxRowHeight = Math.max(maxRowHeight, actualHeight);
             }
 
-            // Columna derecha (solo si hay dos columnas)
+            // Columna derecha (solo si hay dos columnas o si es una sola columna con rightItems)
             if (!isSingleColumn && row < rightItems.length) {
                 const { label, value } = rightItems[row];
-                await this._drawBoxedFieldInColumn(
+                const actualHeight = await this._drawBoxedFieldInColumn(
                     rightColX,
                     rowY,
                     rightColWidth,
@@ -811,10 +836,11 @@ export class IncosPDFLibBase {
                     textRgb,
                     borderRgb
                 );
+                maxRowHeight = Math.max(maxRowHeight, actualHeight);
             }
 
-            // Mover a la siguiente fila
-            this._currentY -= boxHeight + lineSpacing;
+            // Mover a la siguiente fila usando la altura máxima de la fila
+            this._currentY -= maxRowHeight + lineSpacing;
         }
     }
 
@@ -1112,6 +1138,7 @@ export class IncosPDFLibBase {
     /**
      * Dibuja campos con recuadro dentro de un ancho específico de columna.
      * Este método es similar a _addBoxedFieldGrid pero respeta el ancho de columna proporcionado.
+     * Ajusta automáticamente la altura de cada cuadro según su contenido.
      *
      * @protected
      * @param {{ label: string, value: string }[]} items - Items a dibujar (label + cuadro con valor)
@@ -1141,10 +1168,10 @@ export class IncosPDFLibBase {
         const textRgb = this._hexToRgb(IncosPDFBase.COLORS.text);
         const borderRgb = this._hexToRgb(IncosPDFBase.COLORS.border);
 
-        // Dibujar cada campo
+        // Dibujar cada campo y usar la altura real retornada
         for (const item of items) {
             const { label, value } = item;
-            await this._drawBoxedFieldInColumn(
+            const actualBoxHeight = await this._drawBoxedFieldInColumn(
                 colX,
                 this._currentY,
                 colWidth,
@@ -1160,8 +1187,8 @@ export class IncosPDFLibBase {
                 borderRgb
             );
 
-            // Mover a la siguiente fila
-            this._currentY -= boxHeight + lineSpacing;
+            // Mover a la siguiente fila usando la altura real del cuadro
+            this._currentY -= actualBoxHeight + lineSpacing;
         }
     }
 
@@ -1232,6 +1259,7 @@ export class IncosPDFLibBase {
 
     /**
      * Helper: Dibuja un campo con label y cuadro dentro de una columna específica.
+     * Ajusta automáticamente la altura del cuadro si el contenido es más ancho.
      * 
      * @private
      * @param {number} colX - Posición X de la columna
@@ -1239,7 +1267,7 @@ export class IncosPDFLibBase {
      * @param {number} colWidth - Ancho total de la columna
      * @param {number} labelWidth - Ancho fijo del label
      * @param {number} labelBoxGap - Espacio entre label y cuadro
-     * @param {number} boxHeight - Altura del cuadro
+     * @param {number} boxHeight - Altura mínima del cuadro
      * @param {number} borderWidth - Grosor del borde
      * @param {string} label - Texto del label
      * @param {string} value - Valor a mostrar en el cuadro
@@ -1247,20 +1275,31 @@ export class IncosPDFLibBase {
      * @param {number} fontSize - Tamaño de fuente
      * @param {RGB} textRgb - Color del texto
      * @param {RGB} borderRgb - Color del borde
-     * @returns {Promise<void>}
+     * @returns {Promise<number>} Altura real del cuadro (puede ser mayor que boxHeight si hay múltiples líneas)
      */
     async _drawBoxedFieldInColumn(colX, rowY, colWidth, labelWidth, labelBoxGap, boxHeight, borderWidth, label, value, font, fontSize, textRgb, borderRgb) {
         const labelStr = String(label ?? '').trim();
         const valueStr = String(value ?? '').trim();
 
-        // Calcular posición y tamaño del cuadro (misma línea horizontal que el label)
+        // Calcular posición y tamaño del cuadro
         const boxX = colX + labelWidth + labelBoxGap;
         const boxWidth = colWidth - labelWidth - labelBoxGap;
-        const boxY = rowY - boxHeight;
+        const boxCfg = IncosPDFBase.LAYOUT.boxedFields || {};
+        const cellPadding = boxCfg.cellPadding ?? 4;
+        const lineHeight = fontSize * 1.2; // Espacio entre líneas
+
+        // Dividir el texto en líneas si es necesario
+        const availableTextWidth = boxWidth - (cellPadding * 2);
+        const valueLines = valueStr ? this._wrapText(valueStr, font, fontSize, availableTextWidth) : [''];
+        const numLines = valueLines.length;
+
+        // Calcular altura real del cuadro (mínimo boxHeight, más espacio si hay múltiples líneas)
+        const calculatedBoxHeight = Math.max(boxHeight, (numLines * lineHeight) + (cellPadding * 2));
+        const boxY = rowY - calculatedBoxHeight;
 
         // Dibujar label (alineado verticalmente con el centro del cuadro)
         if (labelStr) {
-            const labelY = boxY + (boxHeight - fontSize) / 2 + fontSize * 0.3;
+            const labelY = boxY + (calculatedBoxHeight - fontSize) / 2 + fontSize * 0.3;
             this._currentPage.drawText(labelStr, {
                 x: colX,
                 y: labelY,
@@ -1275,26 +1314,36 @@ export class IncosPDFLibBase {
             x: boxX,
             y: boxY,
             width: boxWidth,
-            height: boxHeight,
+            height: calculatedBoxHeight,
             borderColor: borderRgb,
             borderWidth,
         });
 
-        // Dibujar valor centrado dentro del cuadro
-        if (valueStr) {
-            const boxCfg = IncosPDFBase.LAYOUT.boxedFields || {};
+        // Dibujar cada línea del valor centrado dentro del cuadro
+        if (valueStr && valueLines.length > 0) {
             const verticalCenterFactor = boxCfg.verticalCenterFactor ?? 0.3;
-            const valueWidth = font.widthOfTextAtSize(valueStr, fontSize);
-            const valueX = boxX + (boxWidth - valueWidth) / 2;
-            const valueY = boxY + (boxHeight - fontSize) / 2 + fontSize * verticalCenterFactor;
-            this._currentPage.drawText(valueStr, {
-                x: valueX,
-                y: valueY,
-                size: fontSize,
-                font,
-                color: textRgb,
-            });
+            const totalTextHeight = numLines * lineHeight;
+            const startTextY = boxY + (calculatedBoxHeight - totalTextHeight) / 2 + fontSize * verticalCenterFactor;
+
+            for (let lineIdx = 0; lineIdx < numLines; lineIdx++) {
+                const lineText = valueLines[lineIdx];
+                if (lineText) {
+                    const textWidth = font.widthOfTextAtSize(lineText, fontSize);
+                    const textX = boxX + (boxWidth - textWidth) / 2; // Centrado horizontal
+                    const textY = startTextY + (numLines - 1 - lineIdx) * lineHeight;
+                    
+                    this._currentPage.drawText(lineText, {
+                        x: textX,
+                        y: textY,
+                        size: fontSize,
+                        font,
+                        color: textRgb,
+                    });
+                }
+            }
         }
+
+        return calculatedBoxHeight;
     }
 
     /**
