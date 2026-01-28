@@ -127,14 +127,13 @@ export class IncosPDFBase {
     static FORMULARIO_TEXTS = {
         /** Etiqueta del recuadro en esquina superior derecha del Formulario de Inscripción */
         REGISTRO_HEADER_LABEL: 'No. Registro:',
-        CODIGO_ESTUDIANTE_LABEL: 'Nro. Registro:',
         NOMBRES_APELLIDOS_LABEL: 'Nombres y Apellidos:',
         CI_LABEL: 'C.I.:',
         GENERO_LABEL: 'Género:',
-        ESTADO_CIVIL_LABEL: 'Estado civil:',
+        ESTADO_CIVIL_LABEL: 'Estado Civil:',
         TIPO_SANGRE_LABEL: 'Tipo de sangre:',
         DISCAPACIDAD_LABEL: 'Discapacidad:',
-        EMAIL_LABEL: 'Email:',
+        EMAIL_LABEL: 'Correo Electrónico:',
         CELULAR_LABEL: 'Celular:',
         /** Línea debajo del grid cuando tiene discapacidad; valor desde vista_base_estudiante_discapacidades. */
         DETALLE_DISCAPACIDAD_LABEL: 'Detalle discapacidad:',
@@ -233,6 +232,21 @@ export class IncosPDFBase {
             rightMargin: 20,
             /** Desplazamiento hacia abajo desde el margen superior (más = recuadro más abajo) */
             offsetFromTop: 40,
+        },
+        // Campos con recuadro (label + cuadro con valor)
+        boxedFields: {
+            /** Altura del recuadro */
+            boxHeight: 20,
+            /** Grosor del borde del recuadro */
+            borderWidth: 1,
+            /** Espacio entre label y cuadro dentro de cada columna */
+            labelBoxGap: 4,
+            /** Espacio entre columnas en grid de 2 columnas */
+            colGap: 16,
+            /** Espacio entre label y recuadro en campos de una sola columna (reducción desde fontSize) */
+            labelBoxSpacing: 4,
+            /** Factor de ajuste vertical para centrar texto dentro del recuadro (multiplicado por fontSize) */
+            verticalCenterFactor: 0.3,
         },
     };
 
