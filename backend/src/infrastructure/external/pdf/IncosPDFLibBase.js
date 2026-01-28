@@ -467,7 +467,7 @@ export class IncosPDFLibBase {
         });
 
         // Actualizar posición Y después del título de sección (con salto de línea)
-        this._currentY = this._currentY - sectionFontSize - IncosPDFBase.LAYOUT.spacing.paragraph;
+        this._currentY = this._currentY - sectionFontSize - IncosPDFBase.LAYOUT.spacing.subsection;
     }
 
     /**
@@ -722,7 +722,7 @@ export class IncosPDFLibBase {
      * @param {number} [rightLabelWidth=100] - Ancho fijo para los labels de la columna derecha
      * @returns {Promise<void>}
      */
-    async _addBoxedFieldGrid(leftColumnItems, rightColumnItems = [], leftColumnWidthPercent = 40, leftLabelWidth = 70, rightLabelWidth = 100) {
+    async _addBoxedFieldGrid(leftColumnItems, rightColumnItems = [], leftColumnWidthPercent = 40, leftLabelWidth = 60, rightLabelWidth = 80) {
         if (!this._pdfDoc || !this._currentPage) {
             throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
         }
@@ -816,6 +816,418 @@ export class IncosPDFLibBase {
             // Mover a la siguiente fila
             this._currentY -= boxHeight + lineSpacing;
         }
+    }
+
+    /**
+     * Dibuja una tabla con encabezado y filas de datos.
+     * El encabezado tiene fondo de color primario y texto blanco.
+     * Las filas tienen bordes negros.
+     *
+     * @protected
+     * @param {string[]} headers - Títulos de las columnas del encabezado
+     * @param {number[]} columnWidths - Anchos de cada columna (en puntos o porcentajes). Si son porcentajes, deben sumar 100
+     * @param {Array<Array<string>>} rows - Filas de datos (cada fila es un array de strings, uno por columna)
+     * @param {number} [tableWidth] - Ancho total de la tabla. Si no se proporciona, usa el ancho disponible menos márgenes
+     * @param {string[]} [alignments] - Alineación de cada columna ('left', 'center', 'right'). Por defecto todas 'left'
+     * @param {number} [tableX] - Posición X de la tabla. Si no se proporciona, se centra si tableWidth está definido, o usa margins.left
+     * @returns {Promise<void>}
+     */
+    async _addTable(headers, columnWidths, rows, tableWidth = null, alignments = [], tableX = null) {
+        if (!this._pdfDoc || !this._currentPage) {
+            throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
+        }
+
+        const { width: pageWidth } = this._currentPage.getSize();
+        const margins = IncosPDFBase.LAYOUT.margins;
+        const tableCfg = IncosPDFBase.LAYOUT.table || {};
+        const rowHeight = tableCfg.rowHeight ?? 18;
+        const headerHeight = tableCfg.headerHeight ?? 20;
+        const borderWidth = tableCfg.borderWidth ?? 1;
+        const cellPadding = tableCfg.cellPadding ?? 4;
+
+        const normalFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.normal.font);
+        const boldFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.bold.font);
+        const font = await this._pdfDoc.embedFont(normalFontName);
+        const headerFont = await this._pdfDoc.embedFont(boldFontName);
+        const fontSize = IncosPDFBase.FONTS.small.size; // Contenido usa small.size
+        const headerFontSize = IncosPDFBase.FONTS.normal.size; // Header usa normal.size
+
+        const textRgb = this._hexToRgb(IncosPDFBase.COLORS.text);
+        const borderRgb = this._hexToRgb(IncosPDFBase.COLORS.border);
+        const headerBgRgb = this._hexToRgb(IncosPDFBase.COLORS.primary);
+        const whiteRgb = rgb(1, 1, 1);
+
+        // Calcular ancho de la tabla
+        const availableWidth = tableWidth ?? (pageWidth - margins.left - margins.right);
+        // Calcular posición X: si se proporciona tableX, usarlo; si hay tableWidth pero no tableX, centrar; si no, usar margins.left
+        const finalTableX = tableX !== null ? tableX : (tableWidth ? (pageWidth - tableWidth) / 2 : margins.left);
+
+        // Normalizar anchos de columnas (convertir porcentajes a puntos si es necesario)
+        const numCols = headers.length;
+        const normalizedWidths = [];
+        let totalPercent = 0;
+        let totalPoints = 0;
+
+        for (let i = 0; i < columnWidths.length; i++) {
+            const width = columnWidths[i];
+            if (width < 1) {
+                // Es un porcentaje (0-1)
+                normalizedWidths.push(width);
+                totalPercent += width;
+            } else if (width <= 100 && i === 0 && columnWidths.every(w => w <= 100)) {
+                // Podrían ser porcentajes (0-100)
+                normalizedWidths.push(width / 100);
+                totalPercent += width / 100;
+            } else {
+                // Son puntos absolutos
+                normalizedWidths.push(null);
+                totalPoints += width;
+            }
+        }
+
+        // Si hay porcentajes, calcular anchos absolutos
+        const actualWidths = [];
+        if (totalPercent > 0) {
+            const widthForPercent = availableWidth - totalPoints;
+            for (let i = 0; i < normalizedWidths.length; i++) {
+                if (normalizedWidths[i] !== null) {
+                    actualWidths[i] = widthForPercent * normalizedWidths[i];
+                } else {
+                    actualWidths[i] = columnWidths[i];
+                }
+            }
+        } else {
+            // Todos son puntos absolutos
+            actualWidths.push(...columnWidths);
+        }
+
+        // Normalizar alineaciones
+        const normalizedAlignments = [];
+        for (let i = 0; i < numCols; i++) {
+            normalizedAlignments[i] = alignments[i] || 'left';
+        }
+
+        // Calcular posición inicial
+        let currentY = this._currentY;
+        const startY = currentY;
+
+        // Dibujar encabezado
+        const headerY = currentY - headerHeight;
+        let currentX = finalTableX;
+
+        // Fondo del encabezado
+        this._currentPage.drawRectangle({
+            x: finalTableX,
+            y: headerY,
+            width: availableWidth,
+            height: headerHeight,
+            color: headerBgRgb,
+        });
+
+        // Bordes del encabezado
+        this._currentPage.drawRectangle({
+            x: finalTableX,
+            y: headerY,
+            width: availableWidth,
+            height: headerHeight,
+            borderColor: borderRgb,
+            borderWidth,
+        });
+
+        // Texto del encabezado
+        for (let col = 0; col < numCols; col++) {
+            const colWidth = actualWidths[col];
+            const headerText = String(headers[col] ?? '').trim();
+            const alignment = normalizedAlignments[col];
+
+            if (headerText) {
+                const textWidth = headerFont.widthOfTextAtSize(headerText, headerFontSize);
+                let textX;
+                if (alignment === 'center') {
+                    textX = currentX + (colWidth - textWidth) / 2;
+                } else if (alignment === 'right') {
+                    textX = currentX + colWidth - textWidth - cellPadding;
+                } else {
+                    textX = currentX + cellPadding;
+                }
+
+                const textY = headerY + (headerHeight - headerFontSize) / 2 + headerFontSize * 0.3;
+                this._currentPage.drawText(headerText.toUpperCase(), {
+                    x: textX,
+                    y: textY,
+                    size: headerFontSize,
+                    font: headerFont,
+                    color: whiteRgb,
+                });
+            }
+
+            // Línea vertical entre columnas
+            if (col < numCols - 1) {
+                this._currentPage.drawLine({
+                    start: { x: currentX + colWidth, y: headerY },
+                    end: { x: currentX + colWidth, y: headerY + headerHeight },
+                    thickness: borderWidth,
+                    color: borderRgb,
+                });
+            }
+
+            currentX += colWidth;
+        }
+
+        // Helper: Divide texto en líneas que caben en el ancho disponible
+        const wrapText = (text, maxWidth, font, fontSize) => {
+            const words = text.split(' ');
+            const lines = [];
+            let currentLine = '';
+
+            for (const word of words) {
+                const testLine = currentLine ? `${currentLine} ${word}` : word;
+                const testWidth = font.widthOfTextAtSize(testLine, fontSize);
+
+                if (testWidth <= maxWidth) {
+                    currentLine = testLine;
+                } else {
+                    if (currentLine) {
+                        lines.push(currentLine);
+                    }
+                    // Si una palabra sola es más ancha que el espacio, dividirla
+                    if (font.widthOfTextAtSize(word, fontSize) > maxWidth) {
+                        // Dividir palabra en caracteres
+                        let charLine = '';
+                        for (const char of word) {
+                            const testCharLine = charLine + char;
+                            if (font.widthOfTextAtSize(testCharLine, fontSize) <= maxWidth) {
+                                charLine = testCharLine;
+                            } else {
+                                if (charLine) lines.push(charLine);
+                                charLine = char;
+                            }
+                        }
+                        currentLine = charLine;
+                    } else {
+                        currentLine = word;
+                    }
+                }
+            }
+            if (currentLine) {
+                lines.push(currentLine);
+            }
+            return lines.length > 0 ? lines : [''];
+        };
+
+        // Dibujar filas de datos
+        currentY = headerY;
+        for (let rowIdx = 0; rowIdx < rows.length; rowIdx++) {
+            const row = rows[rowIdx];
+            
+            // Calcular altura necesaria para esta fila (basada en el contenido más alto)
+            let maxLines = 1;
+            const cellLines = [];
+            for (let col = 0; col < numCols; col++) {
+                const colWidth = actualWidths[col];
+                const cellValue = String(row[col] ?? '').trim();
+                const availableTextWidth = colWidth - (cellPadding * 2);
+                const lines = wrapText(cellValue, availableTextWidth, font, fontSize);
+                cellLines[col] = lines;
+                maxLines = Math.max(maxLines, lines.length);
+            }
+
+            // Calcular altura de la fila (mínimo rowHeight, más espacio si hay múltiples líneas)
+            const lineHeight = fontSize * 1.2; // Espacio entre líneas
+            const calculatedRowHeight = Math.max(rowHeight, (maxLines * lineHeight) + (cellPadding * 2));
+            
+            currentY -= calculatedRowHeight;
+            currentX = finalTableX;
+
+            // Borde superior de la fila
+            this._currentPage.drawLine({
+                start: { x: finalTableX, y: currentY },
+                end: { x: finalTableX + availableWidth, y: currentY },
+                thickness: borderWidth,
+                color: borderRgb,
+            });
+
+            // Dibujar celdas de la fila
+            for (let col = 0; col < numCols; col++) {
+                const colWidth = actualWidths[col];
+                const lines = cellLines[col] || [''];
+                const alignment = normalizedAlignments[col];
+                const numLines = lines.length;
+
+                // Dibujar cada línea del texto
+                for (let lineIdx = 0; lineIdx < numLines; lineIdx++) {
+                    const lineText = lines[lineIdx];
+                    if (lineText) {
+                        const textWidth = font.widthOfTextAtSize(lineText, fontSize);
+                        let textX;
+                        if (alignment === 'center') {
+                            textX = currentX + (colWidth - textWidth) / 2;
+                        } else if (alignment === 'right') {
+                            textX = currentX + colWidth - textWidth - cellPadding;
+                        } else {
+                            textX = currentX + cellPadding;
+                        }
+
+                        // Calcular posición Y: centrar verticalmente todas las líneas dentro de la celda
+                        const totalTextHeight = numLines * lineHeight;
+                        const startTextY = currentY + (calculatedRowHeight - totalTextHeight) / 2 + fontSize * 0.3;
+                        const textY = startTextY + (numLines - 1 - lineIdx) * lineHeight;
+
+                        this._currentPage.drawText(lineText, {
+                            x: textX,
+                            y: textY,
+                            size: fontSize,
+                            font,
+                            color: textRgb,
+                        });
+                    }
+                }
+
+                // Línea vertical entre columnas
+                if (col < numCols - 1) {
+                    this._currentPage.drawLine({
+                        start: { x: currentX + colWidth, y: currentY },
+                        end: { x: currentX + colWidth, y: currentY + calculatedRowHeight },
+                        thickness: borderWidth,
+                        color: borderRgb,
+                    });
+                }
+
+                currentX += colWidth;
+            }
+        }
+
+        // Borde inferior de la tabla
+        this._currentPage.drawLine({
+            start: { x: finalTableX, y: currentY },
+            end: { x: finalTableX + availableWidth, y: currentY },
+            thickness: borderWidth,
+            color: borderRgb,
+        });
+
+        // Actualizar posición Y después de la tabla
+        this._currentY = currentY - IncosPDFBase.LAYOUT.spacing.line;
+    }
+
+    /**
+     * Dibuja campos con recuadro dentro de un ancho específico de columna.
+     * Este método es similar a _addBoxedFieldGrid pero respeta el ancho de columna proporcionado.
+     *
+     * @protected
+     * @param {{ label: string, value: string }[]} items - Items a dibujar (label + cuadro con valor)
+     * @param {number} colX - Posición X de la columna
+     * @param {number} colWidth - Ancho total de la columna
+     * @param {number} [labelWidth=60] - Ancho fijo para los labels
+     * @returns {Promise<void>}
+     */
+    async _addBoxedFieldsInColumn(items, colX, colWidth, labelWidth = 60) {
+        if (!this._pdfDoc || !this._currentPage) {
+            throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
+        }
+
+        if (!items || items.length === 0) {
+            return;
+        }
+
+        const boxCfg = IncosPDFBase.LAYOUT.boxedFields || {};
+        const boxHeight = boxCfg.boxHeight ?? 18;
+        const borderWidth = boxCfg.borderWidth ?? 1;
+        const labelBoxGap = boxCfg.labelBoxGap ?? 4;
+        const lineSpacing = IncosPDFBase.LAYOUT.spacing.line;
+        const fontSize = IncosPDFBase.FONTS.normal.size;
+
+        const normalFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.normal.font);
+        const font = await this._pdfDoc.embedFont(normalFontName);
+        const textRgb = this._hexToRgb(IncosPDFBase.COLORS.text);
+        const borderRgb = this._hexToRgb(IncosPDFBase.COLORS.border);
+
+        // Dibujar cada campo
+        for (const item of items) {
+            const { label, value } = item;
+            await this._drawBoxedFieldInColumn(
+                colX,
+                this._currentY,
+                colWidth,
+                labelWidth,
+                labelBoxGap,
+                boxHeight,
+                borderWidth,
+                label,
+                value,
+                font,
+                fontSize,
+                textRgb,
+                borderRgb
+            );
+
+            // Mover a la siguiente fila
+            this._currentY -= boxHeight + lineSpacing;
+        }
+    }
+
+    /**
+     * Agrega un layout de dos columnas con contenido diferente en cada lado.
+     * Columna izquierda: campos con recuadro (usando _addBoxedFieldsInColumn).
+     * Columna derecha: tabla (usando _addTable).
+     * Las columnas están alineadas horizontalmente en la parte superior.
+     *
+     * @protected
+     * @param {{ label: string, value: string }[]} leftColumnItems - Items para la columna izquierda (campos con recuadro)
+     * @param {Object} rightTableConfig - Configuración de la tabla derecha
+     * @param {string[]} rightTableConfig.headers - Títulos de las columnas de la tabla
+     * @param {number[]} rightTableConfig.columnWidths - Anchos de cada columna (porcentajes 0-1 o puntos)
+     * @param {Array<Array<string>>} rightTableConfig.rows - Filas de datos de la tabla
+     * @param {string[]} [rightTableConfig.alignments] - Alineación de cada columna ('left', 'center', 'right')
+     * @param {number} [leftColumnWidthPercent=40] - Porcentaje de ancho para la columna izquierda (0-100)
+     * @param {number} [leftLabelWidth=60] - Ancho fijo para los labels de la columna izquierda
+     * @returns {Promise<void>}
+     */
+    async _addTwoColumnLayout(leftColumnItems, rightTableConfig, leftColumnWidthPercent = 40, leftLabelWidth = 60) {
+        if (!this._pdfDoc || !this._currentPage) {
+            throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
+        }
+
+        const { width: pageWidth } = this._currentPage.getSize();
+        const margins = IncosPDFBase.LAYOUT.margins;
+        const boxCfg = IncosPDFBase.LAYOUT.boxedFields || {};
+        const colGap = boxCfg.colGap ?? 16;
+
+        const totalWidth = pageWidth - margins.left - margins.right;
+        const leftColWidth = (totalWidth - colGap) * (leftColumnWidthPercent / 100);
+        const rightColWidth = totalWidth - colGap - leftColWidth;
+
+        const leftColX = margins.left;
+        const rightColX = margins.left + leftColWidth + colGap;
+
+        // Guardar posición Y inicial
+        const startY = this._currentY;
+        let leftColumnEndY = startY;
+        let rightColumnEndY = startY;
+
+        // Dibujar columna izquierda (campos con recuadro) con ancho específico
+        if (leftColumnItems && leftColumnItems.length > 0) {
+            await this._addBoxedFieldsInColumn(leftColumnItems, leftColX, leftColWidth, leftLabelWidth);
+            leftColumnEndY = this._currentY;
+        }
+
+        // Restaurar posición Y para la tabla derecha
+        this._currentY = startY;
+
+        // Dibujar tabla derecha
+        if (rightTableConfig && rightTableConfig.headers && rightTableConfig.rows) {
+            await this._addTable(
+                rightTableConfig.headers,
+                rightTableConfig.columnWidths,
+                rightTableConfig.rows,
+                rightColWidth,
+                rightTableConfig.alignments,
+                rightColX
+            );
+            rightColumnEndY = this._currentY;
+        }
+
+        // Actualizar posición Y al mínimo de ambas columnas (el que esté más abajo)
+        this._currentY = Math.min(leftColumnEndY, rightColumnEndY);
     }
 
     /**

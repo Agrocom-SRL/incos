@@ -231,14 +231,14 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
         const parts = discapacidades.map((d) => {
             const tipo = (d.tipo_discapacidad_nombre ?? d.tipoDiscapacidadNombre ?? '').toString().trim();
             const grado = (d.grado_discapacidad ?? d.gradoDiscapacidad ?? '').toString().trim();
-            
+
             const segments = [];
             if (tipo) segments.push(`Tipo: ${tipo}`);
             if (grado) segments.push(`Grado: ${grado}`);
-            
+
             return segments.join(segmentSep);
         }).filter((p) => p.length > 0);
-        
+
         return parts.join(sep);
     }
 
@@ -296,7 +296,7 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
 
         // Campos con recuadro en una sola columna (ocupa todo el ancho)
         const singleColumnItems = [];
-        
+
         // Lugar de nacimiento
         if (lugarVal && lugarVal !== '—') {
             singleColumnItems.push({ label: T.LUGAR_NACIMIENTO_LABEL, value: lugarVal });
@@ -322,7 +322,7 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
 
         // Dibujar campos en una sola columna (ocupa todo el ancho)
         if (singleColumnItems.length > 0) {
-            await this._addBoxedFieldGrid(singleColumnItems, [], 100, 100);
+            await this._addBoxedFieldGrid(singleColumnItems, [], 100, 80);
         }
     }
 
@@ -342,68 +342,66 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
         const academicData = options.academicData || {};
         const enrollmentData = options.enrollmentData || {};
 
-        // Grid de 2 columnas: Carrera y Periodo
-        const gridItems = [];
+        // Preparar datos para columna izquierda (campos con recuadro)
+        const leftColumnItems = [];
 
         // Carrera
         const carreraNombre = academicData.carreraNombre || academicData.carrera_nombre;
         if (carreraNombre) {
-            gridItems.push({
+            leftColumnItems.push({
                 label: 'Carrera:',
                 value: carreraNombre,
             });
         }
 
-        // Paralelo: "paralelo_nombre - paralelo_turno (periodo_nombre)" desde inscripción
-        const paraleloLabel = enrollmentData.paraleloLabel
-            || (() => {
-                const p = [enrollmentData.paraleloNombre, enrollmentData.paraleloTurno].filter(Boolean).join(' - ');
-                const periodo = enrollmentData.periodoNombre || enrollmentData.periodo_nombre || '';
-                return p ? (periodo ? `${p} (${periodo})` : p) : periodo;
-            })();
-        if (paraleloLabel) {
-            gridItems.push({
-                label: 'Paralelo:',
-                value: paraleloLabel,
+        // Año académico (ya viene con formato correcto: "Primer Año", "Segundo Año", etc.)
+        const periodoNombre = enrollmentData.periodoNombre || enrollmentData.periodo_nombre || '';
+        if (periodoNombre) {
+            leftColumnItems.push({
+                label: 'Año:',
+                value: periodoNombre,
             });
         }
 
-        // Mostrar grid si hay datos
-        if (gridItems.length > 0) {
-            await this._addLabelValueGrid(gridItems, 2);
-            this._addSpace(IncosPDFBase.LAYOUT.spacing.line);
+        // Paralelo: "paralelo_nombre - paralelo_turno" (sin periodo, ya que está en Año)
+        const paraleloNombre = enrollmentData.paraleloNombre || enrollmentData.paralelo_nombre || '';
+        if (paraleloNombre.length > 0) {
+            leftColumnItems.push({
+                label: 'Paralelo:',
+                value: paraleloNombre,
+            });
         }
 
-        // Materias en grid de 2 columnas (sigla como label, nombre como value)
+        // Preparar tabla de materias para columna derecha
         const materias = enrollmentData.materias || [];
-        if (materias.length > 0) {
-            // Título para la lista de materias
-            await this._addLabelValue('Asignaturas Matriculadas:', '');
+        const tableRows = [];
+        for (const materia of materias) {
+            const sigla = (materia.sigla || '').toString().trim();
+            const nombre = (materia.nombre || '').toString().trim();
+            const horas = materia.horas !== null && materia.horas !== undefined ? String(materia.horas) : '-';
 
-            // Crear grid items para las materias
-            const materiasGridItems = [];
-            for (const materia of materias) {
-                const sigla = (materia.sigla || '').toString().trim();
-                const nombre = (materia.nombre || '').toString().trim();
-
-                if (sigla || nombre) {
-                    // Label: sigla (o "Sin sigla" si no hay), Value: nombre (o "Sin nombre" si no hay)
-                    materiasGridItems.push({
-                        label: sigla || 'Sin sigla',
-                        value: nombre || 'Sin nombre',
-                    });
-                }
+            if (sigla || nombre) {
+                tableRows.push([
+                    sigla || '-',
+                    nombre || '-',
+                    horas,
+                ]);
             }
+        }
 
-            if (materiasGridItems.length > 0) {
-                await this._addLabelValueGrid(materiasGridItems, 2);
-            } else {
-                // Si no hay materias válidas, mostrar mensaje
-                await this._addLabelValue('Materias inscritas:', 'No hay materias inscritas');
-            }
+        // Usar layout de dos columnas solo si hay datos para mostrar
+        if (leftColumnItems.length > 0 || tableRows.length > 0) {
+            const rightTableConfig = tableRows.length > 0 ? {
+                headers: ['CÓDIGO', 'ASIGNATURAS', 'HORAS'],
+                columnWidths: [0.25, 0.60, 0.15], // 25%, 60%, 15%
+                rows: tableRows,
+                alignments: ['left', 'left', 'right'], // Código y asignatura izquierda, horas derecha
+            } : null;
+
+            await this._addTwoColumnLayout(leftColumnItems, rightTableConfig, 35, 60);
         } else {
-            // Si no hay materias, mostrar mensaje
-            await this._addLabelValue('Materias inscritas:', 'No hay materias inscritas');
+            // Si no hay datos, mostrar mensaje
+            await this._addLabelValue('Datos académicos:', 'No hay datos académicos disponibles');
         }
 
         this._addSpace();

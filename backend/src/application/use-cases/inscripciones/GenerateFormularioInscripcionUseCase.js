@@ -285,6 +285,7 @@ export class GenerateFormularioInscripcionUseCase extends BaseDocumentGeneration
                 nombre: row.materia_nombre || row.materiaNombre || '',
                 periodo: row.periodo_numero || row.periodoNumero || null,
                 periodoNombre: row.periodo_nombre || row.periodoNombre || null,
+                horas: row.horas_semanales || row.horasSemanales || null,
             }));
 
             // Obtener periodo único (si todas las materias tienen el mismo periodo)

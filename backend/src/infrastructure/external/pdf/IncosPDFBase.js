@@ -176,13 +176,13 @@ export class IncosPDFBase {
     // ============================================
 
     static FONTS = {
-        title: { size: 16 }, // Tamaño para títulos (usa defaultTitleFont)
-        subtitle: { size: 14 }, // Tamaño para subtítulos (usa defaultTitleFont)
-        section: { size: 12, font: 'Helvetica-Bold' }, // Títulos de secciones (Helvetica-Bold)
-        normal: { size: 10, font: 'Helvetica' },
-        small: { size: 8, font: 'Helvetica' },
-        bold: { size: 10, font: 'Helvetica-Bold' },
-        amount: { size: 12, font: 'Helvetica-Bold' }, // Tamaño para montos (más grande y bold)
+        title: { size: 14 }, // Tamaño para títulos (usa defaultTitleFont)
+        subtitle: { size: 12 }, // Tamaño para subtítulos (usa defaultTitleFont)
+        section: { size: 10, font: 'Helvetica-Bold' }, // Títulos de secciones (Helvetica-Bold)
+        normal: { size: 8, font: 'Helvetica' },
+        small: { size: 6, font: 'Helvetica' },
+        bold: { size: 8, font: 'Helvetica-Bold' },
+        amount: { size: 10, font: 'Helvetica-Bold' }, // Tamaño para montos (más grande y bold)
         // Fuente personalizada por defecto para títulos de documentos
         defaultTitleFont: 'britannic-bold-regular',
     };
@@ -194,11 +194,11 @@ export class IncosPDFBase {
     static LAYOUT = {
         margins: { top: 50, bottom: 50, left: 50, right: 50 },
         spacing: {
-            section: 20,      // Entre secciones
-            subsection: 12,   // Entre subsecciones
-            paragraph: 16,    // Entre párrafos
-            line: 5,          // Entre líneas
-            bullet: 8,        // Entre viñetas y texto
+            section: 16,      // Entre secciones
+            subsection: 8,   // Entre subsecciones
+            paragraph: 12,    // Entre párrafos
+            line: 4,          // Entre líneas
+            bullet: 6,        // Entre viñetas y texto
         },
         pageSize: 'LETTER',
         lineHeight: 15,
@@ -207,9 +207,9 @@ export class IncosPDFBase {
         headerHeight: 100,  // Altura del encabezado desde arriba (para plantillas)
         spacingAfterHeader: 15, // Espacio después del encabezado antes del contenido
         // Configuración de viñetas
-        bulletIndent: 16,   // Indentación adicional para viñetas (más a la derecha que las secciones)
-        bulletDiameter: 4,  // Diámetro del círculo de la viñeta (en puntos)
-        bulletSpacing: 8,  // Espacio entre el círculo y el texto de la viñeta (en puntos)
+        bulletIndent: 12,   // Indentación adicional para viñetas (más a la derecha que las secciones)
+        bulletDiameter: 2,  // Diámetro del círculo de la viñeta (en puntos)
+        bulletSpacing: 6,  // Espacio entre el círculo y el texto de la viñeta (en puntos)
         // Label + valor en misma línea y grid (formularios)
         labelValueGap: 3,   // Espacio entre label (bold) y valor (normal) en la misma línea
         gridColGap: 16,     // Espacio entre columnas en _addLabelValueGrid
@@ -224,19 +224,19 @@ export class IncosPDFBase {
         signatureSpacingBetweenTextLines: 4, // Espacio entre líneas de texto bajo la firma
         // Recuadro "No. Registro" en esquina superior derecha (Formulario de Inscripción)
         registrationBox: {
-            width: 90,
-            rowHeight: 20,
+            width: 80,
+            rowHeight: 16,
             padding: 6,
             borderWidth: 1,
             /** Margen derecho del recuadro (más pequeño = más pegado al borde de la hoja) */
             rightMargin: 20,
             /** Desplazamiento hacia abajo desde el margen superior (más = recuadro más abajo) */
-            offsetFromTop: 40,
+            offsetFromTop: 50,
         },
         // Campos con recuadro (label + cuadro con valor)
         boxedFields: {
             /** Altura del recuadro */
-            boxHeight: 20,
+            boxHeight: 18,
             /** Grosor del borde del recuadro */
             borderWidth: 1,
             /** Espacio entre label y cuadro dentro de cada columna */
@@ -246,7 +246,20 @@ export class IncosPDFBase {
             /** Espacio entre label y recuadro en campos de una sola columna (reducción desde fontSize) */
             labelBoxSpacing: 4,
             /** Factor de ajuste vertical para centrar texto dentro del recuadro (multiplicado por fontSize) */
-            verticalCenterFactor: 0.3,
+            verticalCenterFactor: 0.2,
+        },
+        // Tablas (para asignaturas y otros datos tabulares)
+        table: {
+            /** Altura de cada fila de la tabla */
+            rowHeight: 18,
+            /** Altura del encabezado de la tabla */
+            headerHeight: 20,
+            /** Grosor del borde de la tabla */
+            borderWidth: 1,
+            /** Padding interno de las celdas */
+            cellPadding: 4,
+            /** Color de fondo del encabezado (color primario) */
+            headerBackgroundColor: '#196b45',
         },
     };
 
