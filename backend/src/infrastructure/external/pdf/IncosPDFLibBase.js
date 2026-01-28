@@ -281,14 +281,9 @@ export class IncosPDFLibBase {
         const margins = IncosPDFBase.LAYOUT.margins;
         const boxCfg = IncosPDFBase.LAYOUT.registrationBox || {};
         const boxWidth = boxCfg.width ?? 90;
-        const rowHeight = boxCfg.rowHeight ?? 18;
         const borderWidth = boxCfg.borderWidth ?? 1;
         const rightMargin = boxCfg.rightMargin ?? margins.right;
         const offsetFromTop = boxCfg.offsetFromTop ?? 0;
-
-        const boxX = pageWidth - rightMargin - boxWidth;
-        const topRowY = pageHeight - margins.top - offsetFromTop - rowHeight;
-        const bottomRowY = topRowY - rowHeight;
 
         const primaryRgb = this._hexToRgb(IncosPDFBase.COLORS.primary);
         const textRgb = this._hexToRgb(IncosPDFBase.COLORS.text);
@@ -303,19 +298,28 @@ export class IncosPDFLibBase {
         const valueFont = await this._pdfDoc.embedFont(valueFontName);
         const valueFontSize = IncosPDFBase.FONTS.title.size; // Mismo tamaño que _addDocumentTitle
 
+        // Calcular altura de filas basándose en el tamaño de fuente más grande
+        const padding = boxCfg.padding ?? 6;
+        const topRowHeight = Math.max(boxCfg.rowHeight ?? 18, labelFontSize + (padding * 2));
+        const bottomRowHeight = Math.max(boxCfg.rowHeight ?? 18, valueFontSize + (padding * 2));
+
+        const boxX = pageWidth - rightMargin - boxWidth;
+        const topRowY = pageHeight - margins.top - offsetFromTop - topRowHeight;
+        const bottomRowY = topRowY - bottomRowHeight;
+
         // Fila superior: fondo verde primario
         this._currentPage.drawRectangle({
             x: boxX,
             y: topRowY,
             width: boxWidth,
-            height: rowHeight,
+            height: topRowHeight,
             color: primaryRgb,
         });
         this._currentPage.drawRectangle({
             x: boxX,
             y: topRowY,
             width: boxWidth,
-            height: rowHeight,
+            height: topRowHeight,
             borderColor: borderRgb,
             borderWidth,
         });
@@ -325,7 +329,7 @@ export class IncosPDFLibBase {
         if (labelStr) {
             const labelWidth = labelFont.widthOfTextAtSize(labelStr, labelFontSize);
             const labelX = boxX + (boxWidth - labelWidth) / 2;
-            const labelY = topRowY + (rowHeight - labelFontSize) / 2 + labelFontSize * 0.3;
+            const labelY = topRowY + (topRowHeight - labelFontSize) / 2 + labelFontSize * 0.3;
             this._currentPage.drawText(labelStr, {
                 x: labelX,
                 y: labelY,
@@ -340,7 +344,7 @@ export class IncosPDFLibBase {
             x: boxX,
             y: bottomRowY,
             width: boxWidth,
-            height: rowHeight,
+            height: bottomRowHeight,
             borderColor: borderRgb,
             borderWidth,
         });
@@ -350,7 +354,7 @@ export class IncosPDFLibBase {
         if (valueStr) {
             const valueWidth = valueFont.widthOfTextAtSize(valueStr, valueFontSize);
             const valueX = boxX + (boxWidth - valueWidth) / 2;
-            const valueY = bottomRowY + (rowHeight - valueFontSize) / 2 + valueFontSize * 0.3;
+            const valueY = bottomRowY + (bottomRowHeight - valueFontSize) / 2 + valueFontSize * 0.3;
             this._currentPage.drawText(valueStr, {
                 x: valueX,
                 y: valueY,
@@ -643,9 +647,10 @@ export class IncosPDFLibBase {
      * @param {string} label - Etiqueta en texto normal (incluir ":" si se desea)
      * @param {string} value - Valor a mostrar dentro del recuadro
      * @param {boolean} [valueBold=false] - Si es true, el valor se muestra en negrita
+     * @param {number} [valueFontSize] - Tamaño de fuente para el valor. Si no se proporciona, usa fontSize normal o title.size si valueBold es true
      * @returns {Promise<void>}
      */
-    async _addBoxedField(label, value, valueBold = false) {
+    async _addBoxedField(label, value, valueBold = false, valueFontSize = null) {
         if (!this._pdfDoc || !this._currentPage) {
             throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
         }
@@ -653,6 +658,8 @@ export class IncosPDFLibBase {
         const { width: pageWidth } = this._currentPage.getSize();
         const margins = IncosPDFBase.LAYOUT.margins;
         const fontSize = IncosPDFBase.FONTS.normal.size;
+        // Si valueBold es true y no se especifica valueFontSize, usar tamaño del título
+        const finalValueFontSize = valueFontSize ?? (valueBold ? IncosPDFBase.FONTS.title.size : fontSize);
         const lineSpacing = IncosPDFBase.LAYOUT.spacing.line;
         const boxCfg = IncosPDFBase.LAYOUT.boxedFields || {};
         const boxHeight = boxCfg.boxHeight ?? 20;
@@ -660,7 +667,7 @@ export class IncosPDFLibBase {
         const labelBoxSpacing = boxCfg.labelBoxSpacing ?? 4;
         const verticalCenterFactor = boxCfg.verticalCenterFactor ?? 0.3;
         const cellPadding = boxCfg.cellPadding ?? 4;
-        const lineHeight = fontSize * 1.2;
+        const lineHeight = finalValueFontSize * 1.2;
 
         const normalFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.normal.font);
         const boldFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.bold.font);
