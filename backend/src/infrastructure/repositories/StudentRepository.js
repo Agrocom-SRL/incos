@@ -74,9 +74,14 @@ export class StudentRepository extends BaseRepository {
     const where = {};
 
     // Criterios de búsqueda únicos (para findBy)
-    if (filters.ci && filters.expedicion) {
+    if (filters.ci) {
       where.ci = filters.ci;
-      where.expedicion = filters.expedicion.toUpperCase();
+    }
+    if (filters.expedicion !== undefined) {
+      // Mismo criterio que otros campos: valor tal cual (null o '' permitidos); solo normalizar strings no vacíos
+      where.expedicion = (filters.expedicion !== null && String(filters.expedicion).trim() !== '')
+        ? String(filters.expedicion).trim().toUpperCase()
+        : filters.expedicion;
     }
     if (filters.studentCode) {
       where.codigoEstudiante = filters.studentCode;

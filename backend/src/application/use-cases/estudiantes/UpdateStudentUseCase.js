@@ -103,17 +103,23 @@ export class UpdateStudentUseCase {
         const studentData = data.student;
         if (studentData.ci || studentData.expedition) {
           const ciToCheck = studentData.ci || existingStudent.ci;
-          const expedicionToCheck = studentData.expedition || existingStudent.expedition;
-          
+          // Normalizar: string vacío y null se tratan igual para la búsqueda
+          const rawExpedicion = studentData.expedition ?? existingStudent.expedition;
+          const expedicionToCheck = (rawExpedicion !== undefined && rawExpedicion !== null && String(rawExpedicion).trim() !== '')
+            ? String(rawExpedicion).trim()
+            : null;
+
           const studentWithSameCI = await this.studentRepository.findBy({
             ci: ciToCheck,
             expedicion: expedicionToCheck,
           });
 
-          // Si existe otro estudiante con el mismo CI y expedición, y no es el mismo estudiante
-          if (studentWithSameCI && studentWithSameCI.id !== studentId) {
+          // Si existe otro estudiante con el mismo CI y expedición, y no es el mismo (comparar IDs como número para evitar "3" !== 3)
+          const sameStudent = studentWithSameCI && Number(studentWithSameCI.id) === Number(studentId);
+          if (studentWithSameCI && !sameStudent) {
+            const expedicionLabel = expedicionToCheck ?? 'sin expedición';
             throw new Error(
-              `Ya existe otro estudiante con CI ${ciToCheck} ${expedicionToCheck}`
+              `Ya existe otro estudiante con CI ${ciToCheck} ${expedicionLabel}`
             );
           }
         }

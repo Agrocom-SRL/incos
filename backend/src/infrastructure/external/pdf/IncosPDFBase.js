@@ -112,6 +112,7 @@ export class IncosPDFBase {
      * Solo labels (clave); el generador construye el valor y lo pasa.
      */
     static FORMULARIO_TEXTS = {
+        CODIGO_ESTUDIANTE_LABEL: 'Nro. Registro:',
         NOMBRES_APELLIDOS_LABEL: 'Nombres y Apellidos:',
         CI_LABEL: 'C.I.:',
         GENERO_LABEL: 'Género:',

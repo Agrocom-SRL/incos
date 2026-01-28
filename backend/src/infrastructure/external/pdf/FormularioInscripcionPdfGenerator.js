@@ -139,13 +139,17 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
             .trim();
         await this._addLabelValue(T.NOMBRES_APELLIDOS_LABEL, nombresVal || '—');
 
-        // Grid 2 columnas fijas. Orden: C.I., Género, Email, Celular, Estado civil, Tipo sangre, Discapacidad.
+        // Grid 2 columnas fijas. Orden: C.I., Código, Género, Email, Celular, Estado civil, Tipo sangre, Discapacidad.
         const gridItems = [];
         const ci = (s.ci ?? '').toString().trim();
         const exp = (s.expedicion ?? '').toString().trim();
         if (ci || exp) {
             const ciVal = [ci, exp].filter(Boolean).join(' ').trim();
             gridItems.push({ label: T.CI_LABEL, value: ciVal || '—' });
+        }
+        const codigoEstudiante = (s.codigoEstudiante ?? s.codigo_estudiante ?? '').toString().trim();
+        if (codigoEstudiante) {
+            gridItems.push({ label: T.CODIGO_ESTUDIANTE_LABEL, value: codigoEstudiante });
         }
         if (s.genero) {
             const g = String(s.genero).toLowerCase();
@@ -353,12 +357,17 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
             });
         }
 
-        // Periodo (desde inscripción)
-        const periodoNombre = enrollmentData.periodoNombre || enrollmentData.periodo_nombre;
-        if (periodoNombre) {
+        // Paralelo: "paralelo_nombre - paralelo_turno (periodo_nombre)" desde inscripción
+        const paraleloLabel = enrollmentData.paraleloLabel
+            || (() => {
+                const p = [enrollmentData.paraleloNombre, enrollmentData.paraleloTurno].filter(Boolean).join(' - ');
+                const periodo = enrollmentData.periodoNombre || enrollmentData.periodo_nombre || '';
+                return p ? (periodo ? `${p} (${periodo})` : p) : periodo;
+            })();
+        if (paraleloLabel) {
             gridItems.push({
-                label: 'Periodo:',
-                value: periodoNombre,
+                label: 'Paralelo:',
+                value: paraleloLabel,
             });
         }
 
@@ -372,7 +381,7 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
         const materias = enrollmentData.materias || [];
         if (materias.length > 0) {
             // Título para la lista de materias
-            await this._addLabelValue('Materias inscritas:', '');
+            await this._addLabelValue('Asignaturas Matriculadas:', '');
 
             // Crear grid items para las materias
             const materiasGridItems = [];
