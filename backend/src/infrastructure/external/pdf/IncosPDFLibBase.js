@@ -226,6 +226,145 @@ export class IncosPDFLibBase {
     }
 
     /**
+     * Agrega el bloque de encabezado institucional (varias líneas centradas arriba del título).
+     * Usa fuente normal, color primario. Actualiza _currentY después de cada línea.
+     *
+     * @protected
+     * @param {string[]} [lines] - Líneas a dibujar (de arriba a abajo). Por defecto usa IncosPDFBase.INSTITUTIONAL_HEADER_LINES
+     * @returns {Promise<void>}
+     */
+    async _addInstitutionalHeader(lines = IncosPDFBase.INSTITUTIONAL_HEADER_LINES) {
+        if (!this._pdfDoc || !this._currentPage) {
+            throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
+        }
+        if (!lines || lines.length === 0) return;
+
+        const { width: pageWidth } = this._currentPage.getSize();
+        const font = await this._pdfDoc.embedFont(StandardFonts.HelveticaBold);
+        const fontSize = IncosPDFBase.FONTS.normal.size;
+        const color = this._hexToRgb(IncosPDFBase.COLORS.text);
+        const lineSpacing = IncosPDFBase.LAYOUT.spacing.line;
+
+        for (const text of lines) {
+            const textWidth = font.widthOfTextAtSize(text, fontSize);
+            const x = (pageWidth - textWidth) / 2;
+            this._currentPage.drawText(text, {
+                x,
+                y: this._currentY,
+                size: fontSize,
+                font,
+                color,
+            });
+            this._currentY = this._currentY - fontSize - lineSpacing;
+        }
+
+        // Espacio entre bloque institucional y título del documento
+        this._currentY -= IncosPDFBase.LAYOUT.spacing.line;
+    }
+
+    /**
+     * Dibuja el recuadro "No. Registro" en la esquina superior derecha de la página.
+     * Dos filas apiladas: primera con fondo verde primario y etiqueta en blanco; segunda con fondo blanco y valor centrado.
+     * No modifica _currentY.
+     *
+     * @protected
+     * @param {string} label - Texto de la etiqueta (ej. "No. Registro:")
+     * @param {string} value - Código del estudiante (valor a mostrar en la segunda fila)
+     * @returns {Promise<void>}
+     */
+    async _drawRegistrationBox(label, value) {
+        if (!this._pdfDoc || !this._currentPage) {
+            throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
+        }
+
+        const { width: pageWidth, height: pageHeight } = this._currentPage.getSize();
+        const margins = IncosPDFBase.LAYOUT.margins;
+        const boxCfg = IncosPDFBase.LAYOUT.registrationBox || {};
+        const boxWidth = boxCfg.width ?? 90;
+        const rowHeight = boxCfg.rowHeight ?? 18;
+        const padding = boxCfg.padding ?? 4;
+        const borderWidth = boxCfg.borderWidth ?? 1;
+        const rightMargin = boxCfg.rightMargin ?? margins.right;
+        const offsetFromTop = boxCfg.offsetFromTop ?? 0;
+
+        const boxX = pageWidth - rightMargin - boxWidth;
+        const topRowY = pageHeight - margins.top - offsetFromTop - rowHeight;
+        const bottomRowY = topRowY - rowHeight;
+
+        const primaryRgb = this._hexToRgb(IncosPDFBase.COLORS.primary);
+        const textRgb = this._hexToRgb(IncosPDFBase.COLORS.text);
+        const borderRgb = this._hexToRgb(IncosPDFBase.COLORS.border);
+        const whiteRgb = rgb(1, 1, 1);
+
+        const font = await this._pdfDoc.embedFont(StandardFonts.HelveticaOblique);
+        const fontSize = IncosPDFBase.FONTS.normal.size;
+
+        // Fila superior: fondo verde primario
+        this._currentPage.drawRectangle({
+            x: boxX,
+            y: topRowY,
+            width: boxWidth,
+            height: rowHeight,
+            color: primaryRgb,
+        });
+        this._currentPage.drawRectangle({
+            x: boxX,
+            y: topRowY,
+            width: boxWidth,
+            height: rowHeight,
+            borderColor: borderRgb,
+            borderWidth,
+        });
+
+        // Etiqueta en blanco, centrada en la fila
+        const labelStr = String(label ?? '').trim();
+        if (labelStr) {
+            const labelWidth = font.widthOfTextAtSize(labelStr, fontSize);
+            const labelX = boxX + (boxWidth - labelWidth) / 2;
+            const labelY = topRowY + rowHeight / 2 - fontSize / 2 + fontSize * 0.35;
+            this._currentPage.drawText(labelStr, {
+                x: labelX,
+                y: labelY,
+                size: fontSize,
+                font,
+                color: whiteRgb,
+            });
+        }
+
+        // Fila inferior: fondo blanco
+        this._currentPage.drawRectangle({
+            x: boxX,
+            y: bottomRowY,
+            width: boxWidth,
+            height: rowHeight,
+            color: whiteRgb,
+        });
+        this._currentPage.drawRectangle({
+            x: boxX,
+            y: bottomRowY,
+            width: boxWidth,
+            height: rowHeight,
+            borderColor: borderRgb,
+            borderWidth,
+        });
+
+        // Valor en negro, centrado (baseline centrada en la fila)
+        const valueStr = String(value ?? '').trim();
+        if (valueStr) {
+            const valueWidth = font.widthOfTextAtSize(valueStr, fontSize);
+            const valueX = boxX + (boxWidth - valueWidth) / 2;
+            const valueY = bottomRowY + rowHeight / 2 - fontSize / 2 + fontSize * 0.35;
+            this._currentPage.drawText(valueStr, {
+                x: valueX,
+                y: valueY,
+                size: fontSize,
+                font,
+                color: textRgb,
+            });
+        }
+    }
+
+    /**
      * Agrega el título principal del documento
      * 
      * Método simplificado que usa el estado interno (página y posición Y).
@@ -233,9 +372,10 @@ export class IncosPDFLibBase {
      * 
      * @protected
      * @param {string} titleText - Texto del título
+     * @param {boolean} [usePrimaryColor=true] - Si true usa color primario (verde); si false usa negro (COLORS.text)
      * @returns {Promise<void>} Actualiza el estado interno _currentY
      */
-    async _addDocumentTitle(titleText) {
+    async _addDocumentTitle(titleText, usePrimaryColor = true) {
         if (!this._pdfDoc || !this._currentPage) {
             throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
         }
@@ -245,7 +385,7 @@ export class IncosPDFLibBase {
         // Siempre usar fuente personalizada por defecto desde configuración
         const titleFont = await this._loadCustomFont(this._pdfDoc, IncosPDFBase.FONTS.defaultTitleFont);
         const titleFontSize = IncosPDFBase.FONTS.title.size;
-        const titleRgb = this._hexToRgb(IncosPDFBase.COLORS.primary);
+        const titleRgb = this._hexToRgb(usePrimaryColor ? IncosPDFBase.COLORS.primary : IncosPDFBase.COLORS.text);
 
         // Siempre centrado
         const titleWidth = titleFont.widthOfTextAtSize(titleText, titleFontSize);
@@ -354,7 +494,7 @@ export class IncosPDFLibBase {
         }
 
         const { width: pageWidth } = this._currentPage.getSize();
-        
+
         // Usar fuente normal desde configuración
         const normalFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.normal.font);
         const font = await this._pdfDoc.embedFont(normalFontName);
@@ -559,7 +699,7 @@ export class IncosPDFLibBase {
                 const idx = row * numCols + col;
                 if (idx >= items.length) break;
                 const { label, value } = items[idx];
-                
+
                 const labelStr = String(label ?? '');
                 const valueStr = String(value ?? '');
                 const labelWidth = boldFont.widthOfTextAtSize(labelStr, fontSize);
@@ -586,7 +726,7 @@ export class IncosPDFLibBase {
                 if (idx >= items.length) break;
                 const { label, value } = items[idx];
                 const x = baseX + col * (colWidth + colGap);
-                
+
                 // Dibujar con el ancho máximo de columna para evitar desbordamiento
                 await this._drawLabelValueAt(x, rowY, label, value, colWidth);
             }
@@ -616,7 +756,7 @@ export class IncosPDFLibBase {
         }
 
         const { width: pageWidth } = this._currentPage.getSize();
-        
+
         // Usar fuente normal desde configuración
         const normalFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.normal.font);
         const font = await this._pdfDoc.embedFont(normalFontName);
@@ -629,7 +769,7 @@ export class IncosPDFLibBase {
         const bulletX = IncosPDFBase.LAYOUT.margins.left + bulletIndent;
         const bulletDiameter = IncosPDFBase.LAYOUT.bulletDiameter;
         const bulletRadius = bulletDiameter / 2;
-        
+
         // Calcular posición Y del círculo: centrado verticalmente con la línea de texto
         const bulletY = this._currentY + (fontSize * 0.3); // Centro vertical del texto (mitad de la altura)
 

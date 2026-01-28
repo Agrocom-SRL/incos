@@ -86,6 +86,12 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
      * @returns {Promise<void>}
      */
     async _buildHeader(options) {
+        const T = IncosPDFBase.FORMULARIO_TEXTS;
+        const codigo = (options.student?.codigoEstudiante ?? options.student?.codigo_estudiante ?? '').toString().trim();
+        await this._drawRegistrationBox(T.REGISTRO_HEADER_LABEL, codigo || '—');
+
+        await this._addInstitutionalHeader(IncosPDFBase.INSTITUTIONAL_HEADER_LINES);
+        await this._addDocumentTitle(IncosPDFBase.INSTITUTE.name, false);
         await this._addDocumentTitle(IncosPDFBase.DOCUMENT_TITLES.FORMULARIO_INSCRIPCION);
 
         if (options.gestion) {

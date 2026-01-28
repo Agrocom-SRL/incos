@@ -51,6 +51,19 @@ export class IncosPDFBase {
         motto: 'RESOLUCIÓN MINISTERIAL No. 426/2016',
     };
 
+    /**
+     * Líneas del encabezado institucional (Ministerio, Viceministerio, Dirección, Instituto).
+     * Se dibujan arriba del título del documento en el Formulario de Inscripción y otros PDFs.
+     * Color: negro (COLORS.text). Orden: de arriba a abajo. Sin resolución ministerial en este bloque.
+     */
+    static get INSTITUTIONAL_HEADER_LINES() {
+        return [
+            'MINISTERIO DE EDUCACIÓN',
+            'VICEMINISTERIO DE EDUCACIÓN SUPERIOR DE FORMACIÓN PROFESIONAL',
+            'DIRECCIÓN GENERAL DE EDUCACIÓN SUPERIOR TÉCNICA TECNOLÓGICA LINGÜÍSTICA Y ARTÍSTICA',
+        ];
+    }
+
     // ============================================
     // TÍTULOS DE DOCUMENTOS
     // ============================================
@@ -112,6 +125,8 @@ export class IncosPDFBase {
      * Solo labels (clave); el generador construye el valor y lo pasa.
      */
     static FORMULARIO_TEXTS = {
+        /** Etiqueta del recuadro en esquina superior derecha del Formulario de Inscripción */
+        REGISTRO_HEADER_LABEL: 'No. Registro:',
         CODIGO_ESTUDIANTE_LABEL: 'Nro. Registro:',
         NOMBRES_APELLIDOS_LABEL: 'Nombres y Apellidos:',
         CI_LABEL: 'C.I.:',
@@ -153,7 +168,7 @@ export class IncosPDFBase {
         secondary: '#8b5cf6',    // Púrpura accent
         text: '#000000',         // Negro texto principal
         textLight: '#666666',    // Gris texto secundario
-        border: '#cccccc',       // Gris bordes
+        border: '#000000',       // Gris bordes
         background: '#f5f5f5',   // Fondo claro
     };
 
@@ -208,6 +223,17 @@ export class IncosPDFBase {
         signatureTemplateFooterHeight: 45,
         signatureSpacingLineToFirstText: 8,  // Espacio entre línea y primera línea de texto
         signatureSpacingBetweenTextLines: 4, // Espacio entre líneas de texto bajo la firma
+        // Recuadro "No. Registro" en esquina superior derecha (Formulario de Inscripción)
+        registrationBox: {
+            width: 90,
+            rowHeight: 20,
+            padding: 6,
+            borderWidth: 1,
+            /** Margen derecho del recuadro (más pequeño = más pegado al borde de la hoja) */
+            rightMargin: 20,
+            /** Desplazamiento hacia abajo desde el margen superior (más = recuadro más abajo) */
+            offsetFromTop: 40,
+        },
     };
 
     // ============================================
