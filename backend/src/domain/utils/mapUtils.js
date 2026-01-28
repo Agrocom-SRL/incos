@@ -1,19 +1,44 @@
 /**
  * Utilidades genéricas para operaciones de mapeo
- * 
- * Responsabilidades:
- * - Crear mapas de clave-valor desde arrays u objetos
- * - Normalizar claves (IDs) para evitar problemas de tipo (number vs string)
- * - Operaciones genéricas reutilizables sin dependencias externas
- * 
- * Ubicación: domain/utils (capa de dominio - funciones puras sin dependencias)
- * 
- * NOTA: Funciones puras sin dependencias externas, por lo que están en Domain según Clean Architecture
- * 
- * Principios SOLID aplicados:
- * - Single Responsibility: Solo operaciones de mapeo genéricas
- * - Open/Closed: Extensible para nuevos tipos de mapeo sin modificar existentes
+ *
+ * Rol: lo que un mapper de aplicación no puede resolver solo con BaseMapper (campo a campo).
+ * - parseJsonArray: columnas JSON de vistas (apoderados, origenes, discapacidades) → array
+ * - mapRows: array de filas + función (row → objeto) → array mapeado sin nulos
+ * - normalizeId: IDs string/number para comparaciones
+ * - createMap: array → mapa clave-valor normalizado
+ *
+ * Los mappers de vista (ContributionPaymentMapper, StudentPersonalDataMapper,
+ * StudentDocumentDeliveryViewMapper) usan application/mappers/base/BaseMapper para
+ * el mapeo campo a campo y mapUtils para lo anterior.
+ *
+ * Ubicación: domain/utils (funciones puras sin dependencias)
  */
+
+/**
+ * Parsea un valor a array de forma segura (vistas/BD pueden devolver JSON string o ya array).
+ * Útil para columnas JSON de vistas (apoderados, origenes, discapacidades, etc.).
+ *
+ * @param {string|Array|null|undefined} raw - Valor crudo de la columna (string JSON o array)
+ * @returns {Array} Array parseado o vacío si no es válido
+ *
+ * @example
+ * parseJsonArray('[{"id":1}]') // [{ id: 1 }]
+ * parseJsonArray([{ id: 1 }])  // [{ id: 1 }]
+ * parseJsonArray(null)        // []
+ */
+export function parseJsonArray(raw) {
+  if (Array.isArray(raw)) return raw;
+  if (raw == null || raw === '') return [];
+  if (typeof raw === 'string') {
+    try {
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
 
 /**
  * Crea un mapa normalizado de clave-valor desde un array de objetos
@@ -66,6 +91,23 @@ export function createMap(source, keyField, valueField) {
   });
 
   return map;
+}
+
+/**
+ * Mapea un array de filas con una función y filtra nulos.
+ * Útil para vistas que devuelven arrays: mapear cada fila a formato API y descartar fallos.
+ *
+ * @param {Array} rows - Array de filas (p. ej. resultado de una vista)
+ * @param {Function} mapper - Función (row) => objeto|null por fila
+ * @returns {Array} Array de objetos mapeados (sin nulos)
+ *
+ * @example
+ * const rows = [{ id: 1, name: 'A' }, { id: 2, name: 'B' }];
+ * mapRows(rows, (row) => ({ id: row.id, label: row.name })); // [{ id: 1, label: 'A' }, ...]
+ */
+export function mapRows(rows, mapper) {
+  if (!rows || !Array.isArray(rows)) return [];
+  return rows.map(mapper).filter((item) => item !== null);
 }
 
 /**

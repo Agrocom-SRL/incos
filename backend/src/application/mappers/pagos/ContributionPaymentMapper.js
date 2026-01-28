@@ -13,6 +13,7 @@
  */
 
 import { BaseMapper } from '../base/index.js';
+import { mapRows } from '../../../domain/utils/mapUtils.js';
 
 /**
  * Convierte una fila de vista_pago_aporte_listado (entidad de listado) a formato de presentación.
@@ -41,31 +42,32 @@ export function entityToPresentation(row) {
     BaseMapper.mapFieldIfExists(row, 'saldo_pendiente', 'saldo_pendiente', presentation);
     BaseMapper.mapFieldIfExists(row, 'estado', 'estado', presentation);
 
-    presentation.estudiante = {
-        id: row.estudiante_id,
-        nombre: row.estudiante_nombres,
-        apellidoPaterno: row.estudiante_apellido_paterno,
-        apellidoMaterno: row.estudiante_apellido_materno,
-        codigoEstudiante: row.codigo_estudiante,
-    };
+    const estudiante = {};
+    BaseMapper.mapFieldIfExists(row, 'estudiante_id', 'id', estudiante);
+    BaseMapper.mapFieldIfExists(row, 'estudiante_nombres', 'nombre', estudiante);
+    BaseMapper.mapFieldIfExists(row, 'estudiante_apellido_paterno', 'apellidoPaterno', estudiante);
+    BaseMapper.mapFieldIfExists(row, 'estudiante_apellido_materno', 'apellidoMaterno', estudiante);
+    BaseMapper.mapFieldIfExists(row, 'codigo_estudiante', 'codigoEstudiante', estudiante);
+    presentation.estudiante = estudiante;
 
-    presentation.gestion = {
-        id: row.gestion_id,
-        nombre: row.gestion_nombre,
-        anio: row.gestion_anio,
-    };
+    const gestion = {};
+    BaseMapper.mapFieldIfExists(row, 'gestion_id', 'id', gestion);
+    BaseMapper.mapFieldIfExists(row, 'gestion_nombre', 'nombre', gestion);
+    BaseMapper.mapFieldIfExists(row, 'gestion_anio', 'anio', gestion);
+    presentation.gestion = gestion;
 
     return presentation;
 }
 
 /**
- * Convierte un array de filas de vista_pago_aporte_listado a formato de presentación
+ * Convierte un array de filas de vista_pago_aporte_listado a formato de presentación.
+ * Usa mapRows (mapUtils) para no duplicar lógica y filtrar nulos.
+ *
  * @param {Object[]} rows - Filas de la vista
  * @returns {Object[]} Array de objetos en formato de presentación
  */
 export function entitiesToPresentation(rows) {
-    if (!Array.isArray(rows)) return [];
-    return rows.map(entityToPresentation);
+    return mapRows(rows, entityToPresentation);
 }
 
 /**

@@ -25,9 +25,8 @@
  * - Depende de Repositories (Infrastructure) a través de abstracciones
  */
 
-import { TIPOS_DOCUMENTO_SISTEMA } from '../../../domain/constants/index.js';
-import { normalizeId } from '../../../domain/utils/mapUtils.js';
 import { serverConfig } from '../../../infrastructure/config/server.config.js';
+import { StudentPersonalDataMapper, StudentDocumentDeliveryViewMapper } from '../../mappers/estudiantes/index.js';
 
 export class GetStudentByIdUseCase {
   /**
@@ -114,79 +113,31 @@ export class GetStudentByIdUseCase {
     });
 
     try {
-      // 1. Obtener el estudiante principal
-      const student = await this.studentRepository.findById(studentId);
+      // 1–4. Datos personales desde vista (estudiante + apoderados + discapacidades + orígenes)
+      const rows = await this.studentRepository.obtenerDatosPersonales({ id: studentId });
 
-      if (!student) {
+      if (!rows || rows.length === 0) {
         throw new Error(`No se encontró un estudiante con ID ${studentId}`);
       }
 
-      this.logger.info('[Estudiantes] Estudiante encontrado', {
-        studentId: student.id,
-        studentCode: student.studentCode,
+      const { student, guardians, disabilities, origins } =
+        StudentPersonalDataMapper.entityToPresentation(rows[0]);
+
+      this.logger.info('[Estudiantes] Estudiante encontrado (vista)', {
+        studentId: student?.id,
+        studentCode: student?.studentCode,
+        guardiansCount: guardians?.length ?? 0,
+        disabilitiesCount: disabilities?.length ?? 0,
+        originsCount: origins?.length ?? 0,
       });
 
-      // 2. Obtener apoderados (múltiples)
-      const guardiansResult = await this.studentGuardianRepository.findAll(
-        { studentId: student.id },
-        null,
-        null
-      );
-      const guardians = guardiansResult.studentGuardians || [];
-
-      this.logger.info('[Estudiantes] Apoderados encontrados', {
-        studentId: student.id,
-        count: guardians.length,
+      // 5. Obtener entregas de documentos desde vista (todas, sin filtrar por entregado)
+      const entregasRows = await this.studentDocumentDeliveryRepository.obtenerEntregasConDetalle({
+        estudiante_id: student.id,
       });
+      const documentDeliveries = StudentDocumentDeliveryViewMapper.entitiesToPresentation(entregasRows || []);
 
-      // 3. Obtener discapacidades (múltiples)
-      const disabilitiesResult = await this.studentDisabilityRepository.findAll(
-        { studentId: student.id },
-        null,
-        null
-      );
-      const disabilities = disabilitiesResult.studentDisabilities || [];
-
-      this.logger.info('[Estudiantes] Discapacidades encontradas', {
-        studentId: student.id,
-        count: disabilities.length,
-      });
-
-      // 4. Obtener orígenes (múltiples)
-      const originsResult = await this.studentOriginRepository.findAll(
-        { studentId: student.id },
-        null,
-        null
-      );
-      const origins = originsResult.studentOrigins || [];
-
-      this.logger.info('[Estudiantes] Orígenes encontrados', {
-        studentId: student.id,
-        count: origins.length,
-      });
-
-      // 5. Obtener entregas de documentos (múltiples)
-      const documentDeliveriesResult = await this.studentDocumentDeliveryRepository.findAll(
-        { studentId: student.id },
-        null,
-        null
-      );
-      let documentDeliveries = documentDeliveriesResult.studentDocumentDeliveries || [];
-
-      // 5.1. Deduplicar por documentacionId: conservar solo la más reciente (mayor id) por documento.
-      // Incluye observaciones para edición (motivo de no entrega cuando entregado=false).
-      const byDocId = new Map();
-      for (const d of documentDeliveries) {
-        const plain = d.toPlainObject ? d.toPlainObject() : d;
-        const docId = plain.documentacionId;
-        const current = byDocId.get(docId);
-        if (!current || (plain.id != null && (current.id == null || plain.id > current.id))) {
-          byDocId.set(docId, d);
-        }
-      }
-      documentDeliveries = Array.from(byDocId.values());
-
-      this.logger.info('[Estudiantes] Entregas de documentos encontradas', {
+      this.logger.info('[Estudiantes] Entregas de documentos encontradas (vista)', {
         studentId: student.id,
         count: documentDeliveries.length,
       });
@@ -204,200 +155,8 @@ export class GetStudentByIdUseCase {
         count: scholarships.length,
       });
 
-      // 7. Obtener datos relacionados de catálogos
-      const studentPlain = student.toPlainObject ? student.toPlainObject() : student;
-      
-      // 6.1. Estado civil del estudiante
-      let civilStatus = null;
-      if (studentPlain.civilStatusId) {
-        try {
-          civilStatus = await this.civilStatusRepository.findById(studentPlain.civilStatusId);
-          civilStatus = civilStatus?.toPlainObject ? civilStatus.toPlainObject() : civilStatus;
-        } catch (err) {
-          this.logger.warn('[Estudiantes] Error al obtener estado civil', {
-            studentId: student.id,
-            civilStatusId: studentPlain.civilStatusId,
-            error: err.message,
-          });
-        }
-      }
-
-      // 6.2. Municipio de residencia (y su provincia y departamento)
-      let residenceMunicipality = null;
-      let residenceProvince = null;
-      let residenceDepartment = null;
-      if (studentPlain.residenceMunicipalityId) {
-        try {
-          residenceMunicipality = await this.municipalityRepository.findById(studentPlain.residenceMunicipalityId);
-          residenceMunicipality = residenceMunicipality?.toPlainObject ? residenceMunicipality.toPlainObject() : residenceMunicipality;
-          
-          if (residenceMunicipality?.provinciaId) {
-            residenceProvince = await this.provinceRepository.findById(residenceMunicipality.provinciaId);
-            residenceProvince = residenceProvince?.toPlainObject ? residenceProvince.toPlainObject() : residenceProvince;
-            
-            if (residenceProvince?.departamentoId) {
-              residenceDepartment = await this.departmentRepository.findById(residenceProvince.departamentoId);
-              residenceDepartment = residenceDepartment?.toPlainObject ? residenceDepartment.toPlainObject() : residenceDepartment;
-            }
-          }
-        } catch (err) {
-          this.logger.warn('[Estudiantes] Error al obtener datos geográficos de residencia', {
-            studentId: student.id,
-            residenceMunicipalityId: studentPlain.residenceMunicipalityId,
-            error: err.message,
-          });
-        }
-      }
-
-      // 6.3. Datos relacionados de orígenes (países, idiomas, municipios)
-      const originCountryIds = new Set();
-      const originLanguageIds = new Set();
-      const originMunicipalityIds = new Set();
-      
-      origins.forEach((origin) => {
-        if (origin.countryId) originCountryIds.add(origin.countryId);
-        if (origin.motherTongueId) originLanguageIds.add(origin.motherTongueId);
-        if (origin.secondaryLanguageId) originLanguageIds.add(origin.secondaryLanguageId);
-        if (origin.birthMunicipalityId) originMunicipalityIds.add(origin.birthMunicipalityId);
-      });
-
-      const originCountries = {};
-      const originLanguages = {};
-      const originMunicipalities = {};
-      const originProvinces = {};
-      const originDepartments = {};
-
-      // Obtener países de orígenes
-      for (const countryId of originCountryIds) {
-        try {
-          const country = await this.countryRepository.findById(countryId);
-          if (country) {
-            originCountries[countryId] = country.toPlainObject ? country.toPlainObject() : country;
-          }
-        } catch (err) {
-          this.logger.warn('[Estudiantes] Error al obtener país de origen', {
-            studentId: student.id,
-            countryId,
-            error: err.message,
-          });
-        }
-      }
-
-      // Obtener idiomas de orígenes
-      for (const languageId of originLanguageIds) {
-        try {
-          const language = await this.languageRepository.findById(languageId);
-          if (language) {
-            originLanguages[languageId] = language.toPlainObject ? language.toPlainObject() : language;
-          }
-        } catch (err) {
-          this.logger.warn('[Estudiantes] Error al obtener idioma', {
-            studentId: student.id,
-            languageId,
-            error: err.message,
-          });
-        }
-      }
-
-      // Obtener municipios de orígenes (y sus provincias y departamentos)
-      for (const municipalityId of originMunicipalityIds) {
-        try {
-          const municipality = await this.municipalityRepository.findById(municipalityId);
-          if (municipality) {
-            const municipalityPlain = municipality.toPlainObject ? municipality.toPlainObject() : municipality;
-            originMunicipalities[municipalityId] = municipalityPlain;
-            
-            if (municipalityPlain.provinciaId) {
-              const province = await this.provinceRepository.findById(municipalityPlain.provinciaId);
-              if (province) {
-                const provincePlain = province.toPlainObject ? province.toPlainObject() : province;
-                originProvinces[municipalityPlain.provinciaId] = provincePlain;
-                
-                if (provincePlain.departamentoId) {
-                  const department = await this.departmentRepository.findById(provincePlain.departamentoId);
-                  if (department) {
-                    originDepartments[provincePlain.departamentoId] = department.toPlainObject ? department.toPlainObject() : department;
-                  }
-                }
-              }
-            }
-          }
-        } catch (err) {
-          this.logger.warn('[Estudiantes] Error al obtener municipio de origen', {
-            studentId: student.id,
-            municipalityId,
-            error: err.message,
-          });
-        }
-      }
-
-      // 6.4. Tipos de discapacidad
-      const disabilityTypeIds = new Set();
-      disabilities.forEach((disability) => {
-        if (disability.disabilityTypeId) disabilityTypeIds.add(disability.disabilityTypeId);
-      });
-
-      const disabilityTypes = {};
-      for (const disabilityTypeId of disabilityTypeIds) {
-        try {
-          const disabilityType = await this.disabilityTypeRepository.findById(disabilityTypeId);
-          if (disabilityType) {
-            disabilityTypes[disabilityTypeId] = disabilityType.toPlainObject ? disabilityType.toPlainObject() : disabilityType;
-          }
-        } catch (err) {
-          this.logger.warn('[Estudiantes] Error al obtener tipo de discapacidad', {
-            studentId: student.id,
-            disabilityTypeId,
-            error: err.message,
-          });
-        }
-      }
-
-      // 6.5. Tipos de parentesco de apoderados
-      const relationshipTypeIds = new Set();
-      guardians.forEach((guardian) => {
-        if (guardian.relationshipTypeId) relationshipTypeIds.add(guardian.relationshipTypeId);
-      });
-
-      const relationshipTypes = {};
-      for (const relationshipTypeId of relationshipTypeIds) {
-        try {
-          const relationshipType = await this.relationshipTypeRepository.findById(relationshipTypeId);
-          if (relationshipType) {
-            relationshipTypes[relationshipTypeId] = relationshipType.toPlainObject ? relationshipType.toPlainObject() : relationshipType;
-          }
-        } catch (err) {
-          this.logger.warn('[Estudiantes] Error al obtener tipo de parentesco', {
-            studentId: student.id,
-            relationshipTypeId,
-            error: err.message,
-          });
-        }
-      }
-
-      // 6.6. Documentación de entregas
-      const documentacionIds = new Set();
-      documentDeliveries.forEach((delivery) => {
-        if (delivery.documentacionId) documentacionIds.add(delivery.documentacionId);
-      });
-
-      const documentaciones = {};
-      for (const documentacionId of documentacionIds) {
-        try {
-          const documentacion = await this.documentacionRepository.findById(documentacionId);
-          if (documentacion) {
-            documentaciones[documentacionId] = documentacion.toPlainObject ? documentacion.toPlainObject() : documentacion;
-          }
-        } catch (err) {
-          this.logger.warn('[Estudiantes] Error al obtener documentación', {
-            studentId: student.id,
-            documentacionId,
-            error: err.message,
-          });
-        }
-      }
-
-      // 6.7. Datos relacionados de becas (tipo de beca y gestión)
+      // 7. Catálogos: solo becas y gestiones (student, guardians, origins, documentDeliveries ya traen nombres desde las vistas)
+      // No cargamos: civilStatus, residence*, originCountries, relationshipTypes, documentaciones, disabilityTypes (redundantes)
       const scholarshipIds = new Set();
       const managementIds = new Set();
       scholarships.forEach((scholarship) => {
@@ -437,18 +196,13 @@ export class GetStudentByIdUseCase {
         }
       }
 
-      // 7. Calcular si faltan documentos de inscripción
-      const tieneDocumentosFaltantes = await this._checkMissingDocuments(
-        student.id,
-        documentDeliveries
+      // 7. Faltan documentos de inscripción: si alguna entrega (tipo INSCRIPCION, raíz) tiene entregado false/0
+      const tieneDocumentosFaltantes = documentDeliveries.some(
+        (d) =>
+          d.tipoDocumento === 'INSCRIPCION' &&
+          (d.documentoPadreId == null || d.documentoPadreId === null) &&
+          (d.entregado === false || d.entregado === 0)
       );
-
-      this.logger.info('[Estudiantes] Estado de documentos calculado', {
-        studentId: student.id,
-        tieneDocumentosFaltantes,
-        tipo: typeof tieneDocumentosFaltantes,
-        documentDeliveriesCount: documentDeliveries.length,
-      });
 
       // 7.1. Buscar acta de compromiso existente
       let actaCompromiso = null;
@@ -567,34 +321,15 @@ export class GetStudentByIdUseCase {
 
       // 8. Retornar el estudiante con todos sus datos relacionados
       const result = {
-        student: studentPlain,
-        guardians: guardians.map((g) =>
-          g.toPlainObject ? g.toPlainObject() : g
-        ),
-        disabilities: disabilities.map((d) =>
-          d.toPlainObject ? d.toPlainObject() : d
-        ),
-        origins: origins.map((o) => (o.toPlainObject ? o.toPlainObject() : o)),
-        documentDeliveries: documentDeliveries.map((d) =>
-          d.toPlainObject ? d.toPlainObject() : d
-        ),
+        student: student,
+        guardians,
+        disabilities,
+        origins,
+        documentDeliveries,
         scholarships: scholarships.map((s) =>
           s.toPlainObject ? s.toPlainObject() : s
         ),
-        // Datos relacionados de catálogos
         catalogs: {
-          civilStatus,
-          residenceMunicipality,
-          residenceProvince,
-          residenceDepartment,
-          originCountries,
-          originLanguages,
-          originMunicipalities,
-          originProvinces,
-          originDepartments,
-          disabilityTypes,
-          relationshipTypes,
-          documentaciones,
           scholarships: scholarshipsCatalog,
           managements,
         },
@@ -617,12 +352,6 @@ export class GetStudentByIdUseCase {
         tipoTieneDocumentosFaltantes: typeof result.tieneDocumentosFaltantes,
         resultKeys: Object.keys(result),
         catalogsCount: {
-          countries: Object.keys(result.catalogs.originCountries).length,
-          languages: Object.keys(result.catalogs.originLanguages).length,
-          municipalities: Object.keys(result.catalogs.originMunicipalities).length,
-          disabilityTypes: Object.keys(result.catalogs.disabilityTypes).length,
-          relationshipTypes: Object.keys(result.catalogs.relationshipTypes).length,
-          documentaciones: Object.keys(result.catalogs.documentaciones).length,
           scholarships: Object.keys(result.catalogs.scholarships).length,
           managements: Object.keys(result.catalogs.managements).length,
         },
@@ -636,186 +365,6 @@ export class GetStudentByIdUseCase {
         studentId,
       });
       throw error;
-    }
-  }
-
-  /**
-   * Verifica si el estudiante tiene documentos de inscripción faltantes
-   * @private
-   * @param {number} studentId - ID del estudiante
-   * @param {Array} documentDeliveries - Array de entregas de documentos del estudiante
-   * @returns {Promise<boolean>} true si faltan documentos, false si todos están entregados
-   */
-  async _checkMissingDocuments(studentId, documentDeliveries) {
-    try {
-      // 1. Obtener documentos de inscripción (documentos padre requeridos)
-      // Usar la misma lógica que GenerateActaCompromisoUseCase
-      const inscripcionDocsResult = await this.documentacionRepository.findAll({
-        documentType: TIPOS_DOCUMENTO_SISTEMA.INSCRIPCION,
-        parentDocumentId: null,
-        attributes: ['id'],
-      });
-
-      const documentosInscripcion = inscripcionDocsResult.documentations || [];
-
-      this.logger.info('[Estudiantes] _checkMissingDocuments - documentos de inscripción obtenidos', {
-        studentId,
-        cantidad: documentosInscripcion.length,
-      });
-
-      if (documentosInscripcion.length === 0) {
-        // Si no hay documentos de inscripción definidos, no hay faltantes
-        this.logger.info('[Estudiantes] _checkMissingDocuments - no hay documentos de inscripción definidos', { studentId });
-        return false;
-      }
-
-      // 2. Obtener IDs de documentos de inscripción (usando la misma lógica que GenerateActaCompromisoUseCase)
-      const idsDocumentosInscripcion = documentosInscripcion.map(doc => {
-        const docPlain = doc.toPlainObject ? doc.toPlainObject() : doc;
-        return docPlain.id; // No normalizar aquí, solo obtener el ID directamente
-      }).filter(id => id !== undefined && id !== null);
-
-      this.logger.info('[Estudiantes] _checkMissingDocuments - IDs documentos inscripcion', {
-        studentId,
-        ids: idsDocumentosInscripcion.join(', '),
-        idsCount: idsDocumentosInscripcion.length,
-      });
-
-      // Debug: Log de todas las entregas de documentos del estudiante
-      this.logger.info('[Estudiantes] _checkMissingDocuments - todas las entregas del estudiante', {
-        studentId,
-        totalEntregas: documentDeliveries.length,
-        entregas: documentDeliveries.map(e => {
-          const ePlain = e.toPlainObject ? e.toPlainObject() : e;
-          return { id: ePlain.id, documentacionId: ePlain.documentacionId, entregado: ePlain.entregado };
-        }),
-      });
-
-      // 3. Filtrar entregas que correspondan a documentos de inscripción
-      // Usar la misma lógica que GenerateActaCompromisoUseCase._filterInscripcionDeliveries
-      const entregasInscripcion = documentDeliveries.filter(entrega => {
-        const entregaPlain = entrega.toPlainObject ? entrega.toPlainObject() : entrega;
-        const entregaId = normalizeId(entregaPlain.documentacionId);
-        const estaIncluido = entregaId !== null && idsDocumentosInscripcion.includes(entregaId);
-        if (!estaIncluido) {
-          this.logger.info('[Estudiantes] _checkMissingDocuments - entrega filtrada (no es inscripción)', {
-            studentId,
-            entregaId: entregaPlain.id,
-            documentacionId: entregaPlain.documentacionId,
-            entregado: entregaPlain.entregado,
-            normalizedId: entregaId,
-          });
-        }
-        return estaIncluido;
-      });
-
-      this.logger.info('[Estudiantes] _checkMissingDocuments - entregas filtradas de inscripción', {
-        studentId,
-        totalEntregas: documentDeliveries.length,
-        entregasInscripcion: entregasInscripcion.length,
-        entregasInscripcionDetalle: entregasInscripcion.map(e => {
-          const ePlain = e.toPlainObject ? e.toPlainObject() : e;
-          return { id: ePlain.id, documentacionId: ePlain.documentacionId, entregado: ePlain.entregado };
-        }),
-      });
-
-      // 4. Separar entregas en entregados y faltantes (usar la misma lógica que GenerateActaCompromisoUseCase._separateDeliveredAndMissing)
-      const entregados = entregasInscripcion.filter(entrega => {
-        const entregaPlain = entrega.toPlainObject ? entrega.toPlainObject() : entrega;
-        const isDelivered = entregaPlain.entregado === true || entregaPlain.entregado === 1;
-        this.logger.info('[Estudiantes] _checkMissingDocuments - evaluando entrega (entregado)', {
-          studentId,
-          entregaId: entregaPlain.id,
-          documentacionId: entregaPlain.documentacionId,
-          entregado: entregaPlain.entregado,
-          tipo: typeof entregaPlain.entregado,
-          isDelivered,
-        });
-        return isDelivered;
-      });
-
-      const faltantes = entregasInscripcion.filter(entrega => {
-        const entregaPlain = entrega.toPlainObject ? entrega.toPlainObject() : entrega;
-        const isMissing = entregaPlain.entregado === false || entregaPlain.entregado === 0 || entregaPlain.entregado === null;
-        this.logger.info('[Estudiantes] _checkMissingDocuments - evaluando entrega (faltante)', {
-          studentId,
-          entregaId: entregaPlain.id,
-          documentacionId: entregaPlain.documentacionId,
-          entregado: entregaPlain.entregado,
-          tipo: typeof entregaPlain.entregado,
-          isMissing,
-        });
-        return isMissing;
-      });
-
-      // 5. Identificar documentos sin entrega registrada (usar la misma lógica que GenerateActaCompromisoUseCase._findDocumentsWithoutDelivery)
-      const entregasDocumentacionIds = entregasInscripcion.map(e => {
-        const ePlain = e.toPlainObject ? e.toPlainObject() : e;
-        return normalizeId(ePlain.documentacionId);
-      }).filter(id => id !== null);
-
-      this.logger.info('[Estudiantes] _checkMissingDocuments - IDs de entregas registradas', {
-        studentId,
-        idsEntregas: entregasDocumentacionIds.join(', '),
-        idsDocumentosInscripcion: idsDocumentosInscripcion.join(', '),
-      });
-
-      const documentosSinEntrega = documentosInscripcion.filter(doc => {
-        const docPlain = doc.toPlainObject ? doc.toPlainObject() : doc;
-        const docId = normalizeId(docPlain.id);
-        const sinEntrega = docId !== null && !entregasDocumentacionIds.includes(docId);
-        if (sinEntrega) {
-          this.logger.info('[Estudiantes] _checkMissingDocuments - documento sin entrega encontrado', {
-            studentId,
-            documentId: docPlain.id,
-            normalizedId: docId,
-          });
-        }
-        return sinEntrega;
-      });
-
-      // 6. Calcular total de faltantes
-      const totalFaltantes = faltantes.length + documentosSinEntrega.length;
-
-      // 7. IMPORTANTE: Solo retornar true si hay faltantes Y al menos un documento entregado
-      // Esto evita mostrar el botón de acta de compromiso cuando el estudiante no ha guardado ningún documento
-      const tieneAlMenosUnDocumentoEntregado = entregados.length > 0;
-      const resultadoFinal = totalFaltantes > 0 && tieneAlMenosUnDocumentoEntregado;
-      
-      this.logger.info('[Estudiantes] _checkMissingDocuments - resultado final', {
-        studentId,
-        totalDocumentosInscripcion: documentosInscripcion.length,
-        totalEntregasInscripcion: entregasInscripcion.length,
-        entregados: entregados.length,
-        faltantes: faltantes.length,
-        documentosSinEntrega: documentosSinEntrega.length,
-        totalFaltantes,
-        tieneAlMenosUnDocumentoEntregado,
-        resultado: resultadoFinal,
-        'resultado (boolean)': resultadoFinal,
-        detallesFaltantes: faltantes.map(f => {
-          const fPlain = f.toPlainObject ? f.toPlainObject() : f;
-          return { id: fPlain.id, documentacionId: fPlain.documentacionId, entregado: fPlain.entregado };
-        }),
-        detallesSinEntrega: documentosSinEntrega.map(d => {
-          const dPlain = d.toPlainObject ? d.toPlainObject() : d;
-          return { id: dPlain.id };
-        }),
-        detallesEntregados: entregados.map(e => {
-          const ePlain = e.toPlainObject ? e.toPlainObject() : e;
-          return { id: ePlain.id, documentacionId: ePlain.documentacionId, entregado: ePlain.entregado };
-        }),
-      });
-
-      // 8. Retornar true solo si hay faltantes Y al menos un documento entregado
-      return resultadoFinal;
-    } catch (err) {
-      // Si hay error al verificar, asumir que no faltan para no bloquear la visualización
-      this.logger.warn('[Estudiantes] Error al verificar documentos faltantes', {
-        studentId,
-        error: err.message,
-      });
-      return false;
     }
   }
 }

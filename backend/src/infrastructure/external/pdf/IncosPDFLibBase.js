@@ -226,6 +226,137 @@ export class IncosPDFLibBase {
     }
 
     /**
+     * Agrega el bloque de encabezado institucional (varias líneas centradas arriba del título).
+     * Usa fuente normal, color primario. Actualiza _currentY después de cada línea.
+     *
+     * @protected
+     * @param {string[]} [lines] - Líneas a dibujar (de arriba a abajo). Por defecto usa IncosPDFBase.INSTITUTIONAL_HEADER_LINES
+     * @returns {Promise<void>}
+     */
+    async _addInstitutionalHeader(lines = IncosPDFBase.INSTITUTIONAL_HEADER_LINES) {
+        if (!this._pdfDoc || !this._currentPage) {
+            throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
+        }
+        if (!lines || lines.length === 0) return;
+
+        const { width: pageWidth } = this._currentPage.getSize();
+        const font = await this._pdfDoc.embedFont(StandardFonts.HelveticaBold);
+        const fontSize = IncosPDFBase.FONTS.normal.size;
+        const color = this._hexToRgb(IncosPDFBase.COLORS.text);
+        const lineSpacing = IncosPDFBase.LAYOUT.spacing.line;
+
+        for (const text of lines) {
+            const textWidth = font.widthOfTextAtSize(text, fontSize);
+            const x = (pageWidth - textWidth) / 2;
+            this._currentPage.drawText(text, {
+                x,
+                y: this._currentY,
+                size: fontSize,
+                font,
+                color,
+            });
+            this._currentY = this._currentY - fontSize - lineSpacing;
+        }
+
+        // Espacio entre bloque institucional y título del documento
+        this._currentY -= IncosPDFBase.LAYOUT.spacing.line;
+    }
+
+    /**
+     * Dibuja el recuadro "No. Registro" en la esquina superior derecha de la página.
+     * Dos filas apiladas: primera con fondo verde primario y etiqueta en blanco; segunda con fondo blanco y valor centrado.
+     * No modifica _currentY.
+     *
+     * @protected
+     * @param {string} label - Texto de la etiqueta (ej. "No. Registro:")
+     * @param {string} value - Código del estudiante (valor a mostrar en la segunda fila)
+     * @returns {Promise<void>}
+     */
+    async _drawRegistrationBox(label, value) {
+        if (!this._pdfDoc || !this._currentPage) {
+            throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
+        }
+
+        const { width: pageWidth, height: pageHeight } = this._currentPage.getSize();
+        const margins = IncosPDFBase.LAYOUT.margins;
+        const boxCfg = IncosPDFBase.LAYOUT.registrationBox || {};
+        const boxWidth = boxCfg.width ?? 90;
+        const rowHeight = boxCfg.rowHeight ?? 18;
+        const borderWidth = boxCfg.borderWidth ?? 1;
+        const rightMargin = boxCfg.rightMargin ?? margins.right;
+        const offsetFromTop = boxCfg.offsetFromTop ?? 0;
+
+        const boxX = pageWidth - rightMargin - boxWidth;
+        const topRowY = pageHeight - margins.top - offsetFromTop - rowHeight;
+        const bottomRowY = topRowY - rowHeight;
+
+        const primaryRgb = this._hexToRgb(IncosPDFBase.COLORS.primary);
+        const textRgb = this._hexToRgb(IncosPDFBase.COLORS.text);
+        const borderRgb = this._hexToRgb(IncosPDFBase.COLORS.border);
+        const whiteRgb = rgb(1, 1, 1);
+
+        const font = await this._pdfDoc.embedFont(StandardFonts.HelveticaOblique);
+        const fontSize = IncosPDFBase.FONTS.normal.size;
+
+        // Fila superior: fondo verde primario
+        this._currentPage.drawRectangle({
+            x: boxX,
+            y: topRowY,
+            width: boxWidth,
+            height: rowHeight,
+            color: primaryRgb,
+        });
+        this._currentPage.drawRectangle({
+            x: boxX,
+            y: topRowY,
+            width: boxWidth,
+            height: rowHeight,
+            borderColor: borderRgb,
+            borderWidth,
+        });
+
+        // Etiqueta en blanco, centrada en la fila (verticalmente mejor centrada)
+        const labelStr = String(label ?? '').trim();
+        if (labelStr) {
+            const labelWidth = font.widthOfTextAtSize(labelStr, fontSize);
+            const labelX = boxX + (boxWidth - labelWidth) / 2;
+            const labelY = topRowY + (rowHeight - fontSize) / 2 + fontSize * 0.3;
+            this._currentPage.drawText(labelStr, {
+                x: labelX,
+                y: labelY,
+                size: fontSize,
+                font,
+                color: whiteRgb,
+            });
+        }
+
+        // Fila inferior: solo borde (sin fondo blanco)
+        this._currentPage.drawRectangle({
+            x: boxX,
+            y: bottomRowY,
+            width: boxWidth,
+            height: rowHeight,
+            borderColor: borderRgb,
+            borderWidth,
+        });
+
+        // Valor en negro, centrado (verticalmente mejor centrado)
+        const valueStr = String(value ?? '').trim();
+        if (valueStr) {
+            const valueWidth = font.widthOfTextAtSize(valueStr, fontSize);
+            const valueX = boxX + (boxWidth - valueWidth) / 2;
+            const valueY = bottomRowY + (rowHeight - fontSize) / 2 + fontSize * 0.3;
+            this._currentPage.drawText(valueStr, {
+                x: valueX,
+                y: valueY,
+                size: fontSize,
+                font,
+                color: textRgb,
+            });
+        }
+    }
+
+    /**
      * Agrega el título principal del documento
      * 
      * Método simplificado que usa el estado interno (página y posición Y).
@@ -233,9 +364,10 @@ export class IncosPDFLibBase {
      * 
      * @protected
      * @param {string} titleText - Texto del título
+     * @param {boolean} [usePrimaryColor=true] - Si true usa color primario (verde); si false usa negro (COLORS.text)
      * @returns {Promise<void>} Actualiza el estado interno _currentY
      */
-    async _addDocumentTitle(titleText) {
+    async _addDocumentTitle(titleText, usePrimaryColor = true) {
         if (!this._pdfDoc || !this._currentPage) {
             throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
         }
@@ -245,7 +377,7 @@ export class IncosPDFLibBase {
         // Siempre usar fuente personalizada por defecto desde configuración
         const titleFont = await this._loadCustomFont(this._pdfDoc, IncosPDFBase.FONTS.defaultTitleFont);
         const titleFontSize = IncosPDFBase.FONTS.title.size;
-        const titleRgb = this._hexToRgb(IncosPDFBase.COLORS.primary);
+        const titleRgb = this._hexToRgb(usePrimaryColor ? IncosPDFBase.COLORS.primary : IncosPDFBase.COLORS.text);
 
         // Siempre centrado
         const titleWidth = titleFont.widthOfTextAtSize(titleText, titleFontSize);
@@ -335,7 +467,7 @@ export class IncosPDFLibBase {
         });
 
         // Actualizar posición Y después del título de sección (con salto de línea)
-        this._currentY = this._currentY - sectionFontSize - IncosPDFBase.LAYOUT.spacing.paragraph;
+        this._currentY = this._currentY - sectionFontSize - IncosPDFBase.LAYOUT.spacing.subsection;
     }
 
     /**
@@ -354,7 +486,7 @@ export class IncosPDFLibBase {
         }
 
         const { width: pageWidth } = this._currentPage.getSize();
-        
+
         // Usar fuente normal desde configuración
         const normalFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.normal.font);
         const font = await this._pdfDoc.embedFont(normalFontName);
@@ -497,6 +629,724 @@ export class IncosPDFLibBase {
     }
 
     /**
+     * Agrega un campo con label normal y valor dentro de un recuadro con borde.
+     * El recuadro ocupa el 100% del ancho menos los márgenes.
+     * Label en texto normal (no bold), valor centrado dentro del recuadro.
+     * Ajusta automáticamente la altura del cuadro si el contenido es más ancho.
+     *
+     * @protected
+     * @param {string} label - Etiqueta en texto normal (incluir ":" si se desea)
+     * @param {string} value - Valor a mostrar dentro del recuadro
+     * @param {boolean} [valueBold=false] - Si es true, el valor se muestra en negrita
+     * @returns {Promise<void>}
+     */
+    async _addBoxedField(label, value, valueBold = false) {
+        if (!this._pdfDoc || !this._currentPage) {
+            throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
+        }
+
+        const { width: pageWidth } = this._currentPage.getSize();
+        const margins = IncosPDFBase.LAYOUT.margins;
+        const fontSize = IncosPDFBase.FONTS.normal.size;
+        const lineSpacing = IncosPDFBase.LAYOUT.spacing.line;
+        const boxCfg = IncosPDFBase.LAYOUT.boxedFields || {};
+        const boxHeight = boxCfg.boxHeight ?? 20;
+        const borderWidth = boxCfg.borderWidth ?? 1;
+        const labelBoxSpacing = boxCfg.labelBoxSpacing ?? 4;
+        const verticalCenterFactor = boxCfg.verticalCenterFactor ?? 0.3;
+        const cellPadding = boxCfg.cellPadding ?? 4;
+        const lineHeight = fontSize * 1.2;
+
+        const normalFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.normal.font);
+        const boldFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.bold.font);
+        const labelFont = await this._pdfDoc.embedFont(normalFontName);
+        const valueFont = await this._pdfDoc.embedFont(valueBold ? boldFontName : normalFontName);
+        const textRgb = this._hexToRgb(IncosPDFBase.COLORS.text);
+        const borderRgb = this._hexToRgb(IncosPDFBase.COLORS.border);
+
+        // Dibujar label en texto normal (no bold)
+        const labelStr = String(label ?? '').trim();
+        if (labelStr) {
+            this._currentPage.drawText(labelStr, {
+                x: margins.left,
+                y: this._currentY,
+                size: fontSize,
+                font: labelFont,
+                color: textRgb,
+            });
+            // Reducir espacio entre label y recuadro
+            this._currentY -= fontSize - labelBoxSpacing;
+        }
+
+        // Calcular ancho del recuadro y dividir texto en líneas si es necesario
+        const boxX = margins.left;
+        const boxWidth = pageWidth - margins.left - margins.right;
+        const availableTextWidth = boxWidth - (cellPadding * 2);
+        
+        const valueStr = String(value ?? '').trim();
+        const valueLines = valueStr ? this._wrapText(valueStr, valueFont, fontSize, availableTextWidth) : [''];
+        const numLines = valueLines.length;
+
+        // Calcular altura real del cuadro (mínimo boxHeight, más espacio si hay múltiples líneas)
+        const calculatedBoxHeight = Math.max(boxHeight, (numLines * lineHeight) + (cellPadding * 2));
+        const boxY = this._currentY - calculatedBoxHeight;
+
+        // Borde del recuadro
+        this._currentPage.drawRectangle({
+            x: boxX,
+            y: boxY,
+            width: boxWidth,
+            height: calculatedBoxHeight,
+            borderColor: borderRgb,
+            borderWidth,
+        });
+
+        // Dibujar cada línea del valor centrado dentro del recuadro
+        if (valueStr && valueLines.length > 0) {
+            const totalTextHeight = numLines * lineHeight;
+            const startTextY = boxY + (calculatedBoxHeight - totalTextHeight) / 2 + fontSize * verticalCenterFactor;
+
+            for (let lineIdx = 0; lineIdx < numLines; lineIdx++) {
+                const lineText = valueLines[lineIdx];
+                if (lineText) {
+                    const textWidth = valueFont.widthOfTextAtSize(lineText, fontSize);
+                    const textX = boxX + (boxWidth - textWidth) / 2; // Centrado horizontal
+                    const textY = startTextY + (numLines - 1 - lineIdx) * lineHeight;
+                    
+                    this._currentPage.drawText(lineText, {
+                        x: textX,
+                        y: textY,
+                        size: fontSize,
+                        font: valueFont,
+                        color: textRgb,
+                    });
+                }
+            }
+        }
+
+        // Actualizar posición Y después del recuadro (menos espacio)
+        this._currentY = boxY - lineSpacing;
+    }
+
+    /**
+     * Agrega un grid de 2 columnas con campos con recuadro (label + cuadro con valor).
+     * Cada columna tiene ancho proporcional según el porcentaje definido.
+     * Dentro de cada columna: label con ancho fijo, cuadro con borde que ocupa el resto.
+     * Las filas están alineadas horizontalmente entre columnas.
+     * SIEMPRE respeta el porcentaje definido, incluso si una columna está vacía.
+     * Si se proporciona leftColumnWidthPercent=100, se trata como una sola columna que ocupa todo el ancho.
+     *
+     * @protected
+     * @param {{ label: string, value: string }[]} leftColumnItems - Items para la columna izquierda
+     * @param {{ label: string, value: string }[]} [rightColumnItems] - Items para la columna derecha
+     * @param {number} [leftColumnWidthPercent=40] - Porcentaje de ancho para la columna izquierda (0-100). Siempre se respeta este porcentaje
+     * @param {number} [leftLabelWidth=80] - Ancho fijo para los labels de la columna izquierda
+     * @param {number} [rightLabelWidth=100] - Ancho fijo para los labels de la columna derecha
+     * @returns {Promise<void>}
+     */
+    async _addBoxedFieldGrid(leftColumnItems, rightColumnItems = [], leftColumnWidthPercent = 40, leftLabelWidth = 60, rightLabelWidth = 90) {
+        if (!this._pdfDoc || !this._currentPage) {
+            throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
+        }
+
+        const { width: pageWidth } = this._currentPage.getSize();
+        const margins = IncosPDFBase.LAYOUT.margins;
+        const fontSize = IncosPDFBase.FONTS.normal.size;
+        const lineSpacing = IncosPDFBase.LAYOUT.spacing.line;
+        const boxCfg = IncosPDFBase.LAYOUT.boxedFields || {};
+        const boxHeight = boxCfg.boxHeight ?? 20;
+        const borderWidth = boxCfg.borderWidth ?? 1;
+        const colGap = boxCfg.colGap ?? 16;
+        const labelBoxGap = boxCfg.labelBoxGap ?? 4;
+
+        const normalFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.normal.font);
+        const font = await this._pdfDoc.embedFont(normalFontName);
+        const textRgb = this._hexToRgb(IncosPDFBase.COLORS.text);
+        const borderRgb = this._hexToRgb(IncosPDFBase.COLORS.border);
+
+        // Normalizar arrays vacíos
+        const leftItems = Array.isArray(leftColumnItems) ? leftColumnItems : [];
+        const rightItems = Array.isArray(rightColumnItems) ? rightColumnItems : [];
+
+        const totalWidth = pageWidth - margins.left - margins.right;
+
+        let leftColWidth, rightColWidth, leftColX, rightColX;
+
+        // Si el porcentaje es 100, se trata como una sola columna que ocupa todo el ancho
+        if (leftColumnWidthPercent >= 100) {
+            leftColWidth = totalWidth;
+            rightColWidth = totalWidth;
+            leftColX = margins.left;
+            rightColX = margins.left;
+        } else {
+            // Dos columnas: siempre calcular proporciones según el porcentaje definido
+            // Respeta el porcentaje incluso si una columna está vacía
+            leftColWidth = (totalWidth - colGap) * (leftColumnWidthPercent / 100);
+            rightColWidth = totalWidth - colGap - leftColWidth;
+            leftColX = margins.left;
+            rightColX = margins.left + leftColWidth + colGap;
+        }
+
+        const isSingleColumn = leftColumnWidthPercent >= 100;
+
+        // Calcular número máximo de filas
+        const maxRows = Math.max(leftItems.length, rightItems.length);
+
+        // Dibujar fila por fila
+        for (let row = 0; row < maxRows; row++) {
+            const rowY = this._currentY;
+            let maxRowHeight = boxHeight; // Altura mínima
+
+            // Columna izquierda (o única columna si solo hay leftItems)
+            if (row < leftItems.length) {
+                const { label, value } = leftItems[row];
+                const actualHeight = await this._drawBoxedFieldInColumn(
+                    leftColX,
+                    rowY,
+                    leftColWidth,
+                    leftLabelWidth,
+                    labelBoxGap,
+                    boxHeight,
+                    borderWidth,
+                    label,
+                    value,
+                    font,
+                    fontSize,
+                    textRgb,
+                    borderRgb
+                );
+                maxRowHeight = Math.max(maxRowHeight, actualHeight);
+            }
+
+            // Columna derecha (solo si hay dos columnas o si es una sola columna con rightItems)
+            if (!isSingleColumn && row < rightItems.length) {
+                const { label, value } = rightItems[row];
+                const actualHeight = await this._drawBoxedFieldInColumn(
+                    rightColX,
+                    rowY,
+                    rightColWidth,
+                    rightLabelWidth,
+                    labelBoxGap,
+                    boxHeight,
+                    borderWidth,
+                    label,
+                    value,
+                    font,
+                    fontSize,
+                    textRgb,
+                    borderRgb
+                );
+                maxRowHeight = Math.max(maxRowHeight, actualHeight);
+            }
+
+            // Mover a la siguiente fila usando la altura máxima de la fila
+            this._currentY -= maxRowHeight + lineSpacing;
+        }
+    }
+
+    /**
+     * Dibuja una tabla con encabezado y filas de datos.
+     * El encabezado tiene fondo de color primario y texto blanco.
+     * Las filas tienen bordes negros.
+     *
+     * @protected
+     * @param {string[]} headers - Títulos de las columnas del encabezado
+     * @param {number[]} columnWidths - Anchos de cada columna (en puntos o porcentajes). Si son porcentajes, deben sumar 100
+     * @param {Array<Array<string>>} rows - Filas de datos (cada fila es un array de strings, uno por columna)
+     * @param {number} [tableWidth] - Ancho total de la tabla. Si no se proporciona, usa el ancho disponible menos márgenes
+     * @param {string[]} [alignments] - Alineación de cada columna ('left', 'center', 'right'). Por defecto todas 'left'
+     * @param {number} [tableX] - Posición X de la tabla. Si no se proporciona, se centra si tableWidth está definido, o usa margins.left
+     * @returns {Promise<void>}
+     */
+    async _addTable(headers, columnWidths, rows, tableWidth = null, alignments = [], tableX = null) {
+        if (!this._pdfDoc || !this._currentPage) {
+            throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
+        }
+
+        const { width: pageWidth } = this._currentPage.getSize();
+        const margins = IncosPDFBase.LAYOUT.margins;
+        const tableCfg = IncosPDFBase.LAYOUT.table || {};
+        const rowHeight = tableCfg.rowHeight ?? 18;
+        const headerHeight = tableCfg.headerHeight ?? 20;
+        const borderWidth = tableCfg.borderWidth ?? 1;
+        const cellPadding = tableCfg.cellPadding ?? 4;
+
+        const normalFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.normal.font);
+        const boldFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.bold.font);
+        const font = await this._pdfDoc.embedFont(normalFontName);
+        const headerFont = await this._pdfDoc.embedFont(boldFontName);
+        const fontSize = IncosPDFBase.FONTS.small.size; // Contenido usa small.size
+        const headerFontSize = IncosPDFBase.FONTS.normal.size; // Header usa normal.size
+
+        const textRgb = this._hexToRgb(IncosPDFBase.COLORS.text);
+        const borderRgb = this._hexToRgb(IncosPDFBase.COLORS.border);
+        const headerBgRgb = this._hexToRgb(IncosPDFBase.COLORS.primary);
+        const whiteRgb = rgb(1, 1, 1);
+
+        // Calcular ancho de la tabla
+        const availableWidth = tableWidth ?? (pageWidth - margins.left - margins.right);
+        // Calcular posición X: si se proporciona tableX, usarlo; si hay tableWidth pero no tableX, centrar; si no, usar margins.left
+        const finalTableX = tableX !== null ? tableX : (tableWidth ? (pageWidth - tableWidth) / 2 : margins.left);
+
+        // Normalizar anchos de columnas (convertir porcentajes a puntos si es necesario)
+        const numCols = headers.length;
+        const normalizedWidths = [];
+        let totalPercent = 0;
+        let totalPoints = 0;
+
+        for (let i = 0; i < columnWidths.length; i++) {
+            const width = columnWidths[i];
+            if (width < 1) {
+                // Es un porcentaje (0-1)
+                normalizedWidths.push(width);
+                totalPercent += width;
+            } else if (width <= 100 && i === 0 && columnWidths.every(w => w <= 100)) {
+                // Podrían ser porcentajes (0-100)
+                normalizedWidths.push(width / 100);
+                totalPercent += width / 100;
+            } else {
+                // Son puntos absolutos
+                normalizedWidths.push(null);
+                totalPoints += width;
+            }
+        }
+
+        // Si hay porcentajes, calcular anchos absolutos
+        const actualWidths = [];
+        if (totalPercent > 0) {
+            const widthForPercent = availableWidth - totalPoints;
+            for (let i = 0; i < normalizedWidths.length; i++) {
+                if (normalizedWidths[i] !== null) {
+                    actualWidths[i] = widthForPercent * normalizedWidths[i];
+                } else {
+                    actualWidths[i] = columnWidths[i];
+                }
+            }
+        } else {
+            // Todos son puntos absolutos
+            actualWidths.push(...columnWidths);
+        }
+
+        // Normalizar alineaciones
+        const normalizedAlignments = [];
+        for (let i = 0; i < numCols; i++) {
+            normalizedAlignments[i] = alignments[i] || 'left';
+        }
+
+        // Calcular posición inicial
+        let currentY = this._currentY;
+        const startY = currentY;
+
+        // Dibujar encabezado
+        const headerY = currentY - headerHeight;
+        let currentX = finalTableX;
+
+        // Fondo del encabezado
+        this._currentPage.drawRectangle({
+            x: finalTableX,
+            y: headerY,
+            width: availableWidth,
+            height: headerHeight,
+            color: headerBgRgb,
+        });
+
+        // Bordes del encabezado
+        this._currentPage.drawRectangle({
+            x: finalTableX,
+            y: headerY,
+            width: availableWidth,
+            height: headerHeight,
+            borderColor: borderRgb,
+            borderWidth,
+        });
+
+        // Texto del encabezado
+        for (let col = 0; col < numCols; col++) {
+            const colWidth = actualWidths[col];
+            const headerText = String(headers[col] ?? '').trim();
+            const alignment = normalizedAlignments[col];
+
+            if (headerText) {
+                const textWidth = headerFont.widthOfTextAtSize(headerText, headerFontSize);
+                let textX;
+                if (alignment === 'center') {
+                    textX = currentX + (colWidth - textWidth) / 2;
+                } else if (alignment === 'right') {
+                    textX = currentX + colWidth - textWidth - cellPadding;
+                } else {
+                    textX = currentX + cellPadding;
+                }
+
+                const textY = headerY + (headerHeight - headerFontSize) / 2 + headerFontSize * 0.3;
+                this._currentPage.drawText(headerText.toUpperCase(), {
+                    x: textX,
+                    y: textY,
+                    size: headerFontSize,
+                    font: headerFont,
+                    color: whiteRgb,
+                });
+            }
+
+            // Línea vertical entre columnas
+            if (col < numCols - 1) {
+                this._currentPage.drawLine({
+                    start: { x: currentX + colWidth, y: headerY },
+                    end: { x: currentX + colWidth, y: headerY + headerHeight },
+                    thickness: borderWidth,
+                    color: borderRgb,
+                });
+            }
+
+            currentX += colWidth;
+        }
+
+        // Helper: Divide texto en líneas que caben en el ancho disponible
+        const wrapText = (text, maxWidth, font, fontSize) => {
+            const words = text.split(' ');
+            const lines = [];
+            let currentLine = '';
+
+            for (const word of words) {
+                const testLine = currentLine ? `${currentLine} ${word}` : word;
+                const testWidth = font.widthOfTextAtSize(testLine, fontSize);
+
+                if (testWidth <= maxWidth) {
+                    currentLine = testLine;
+                } else {
+                    if (currentLine) {
+                        lines.push(currentLine);
+                    }
+                    // Si una palabra sola es más ancha que el espacio, dividirla
+                    if (font.widthOfTextAtSize(word, fontSize) > maxWidth) {
+                        // Dividir palabra en caracteres
+                        let charLine = '';
+                        for (const char of word) {
+                            const testCharLine = charLine + char;
+                            if (font.widthOfTextAtSize(testCharLine, fontSize) <= maxWidth) {
+                                charLine = testCharLine;
+                            } else {
+                                if (charLine) lines.push(charLine);
+                                charLine = char;
+                            }
+                        }
+                        currentLine = charLine;
+                    } else {
+                        currentLine = word;
+                    }
+                }
+            }
+            if (currentLine) {
+                lines.push(currentLine);
+            }
+            return lines.length > 0 ? lines : [''];
+        };
+
+        // Dibujar filas de datos
+        currentY = headerY;
+        for (let rowIdx = 0; rowIdx < rows.length; rowIdx++) {
+            const row = rows[rowIdx];
+            
+            // Calcular altura necesaria para esta fila (basada en el contenido más alto)
+            let maxLines = 1;
+            const cellLines = [];
+            for (let col = 0; col < numCols; col++) {
+                const colWidth = actualWidths[col];
+                const cellValue = String(row[col] ?? '').trim();
+                const availableTextWidth = colWidth - (cellPadding * 2);
+                const lines = wrapText(cellValue, availableTextWidth, font, fontSize);
+                cellLines[col] = lines;
+                maxLines = Math.max(maxLines, lines.length);
+            }
+
+            // Calcular altura de la fila (mínimo rowHeight, más espacio si hay múltiples líneas)
+            const lineHeight = fontSize * 1.2; // Espacio entre líneas
+            const calculatedRowHeight = Math.max(rowHeight, (maxLines * lineHeight) + (cellPadding * 2));
+            
+            currentY -= calculatedRowHeight;
+            currentX = finalTableX;
+
+            // Borde superior de la fila
+            this._currentPage.drawLine({
+                start: { x: finalTableX, y: currentY },
+                end: { x: finalTableX + availableWidth, y: currentY },
+                thickness: borderWidth,
+                color: borderRgb,
+            });
+
+            // Dibujar celdas de la fila
+            for (let col = 0; col < numCols; col++) {
+                const colWidth = actualWidths[col];
+                const lines = cellLines[col] || [''];
+                const alignment = normalizedAlignments[col];
+                const numLines = lines.length;
+
+                // Dibujar cada línea del texto
+                for (let lineIdx = 0; lineIdx < numLines; lineIdx++) {
+                    const lineText = lines[lineIdx];
+                    if (lineText) {
+                        const textWidth = font.widthOfTextAtSize(lineText, fontSize);
+                        let textX;
+                        if (alignment === 'center') {
+                            textX = currentX + (colWidth - textWidth) / 2;
+                        } else if (alignment === 'right') {
+                            textX = currentX + colWidth - textWidth - cellPadding;
+                        } else {
+                            textX = currentX + cellPadding;
+                        }
+
+                        // Calcular posición Y: centrar verticalmente todas las líneas dentro de la celda
+                        const totalTextHeight = numLines * lineHeight;
+                        const startTextY = currentY + (calculatedRowHeight - totalTextHeight) / 2 + fontSize * 0.3;
+                        const textY = startTextY + (numLines - 1 - lineIdx) * lineHeight;
+
+                        this._currentPage.drawText(lineText, {
+                            x: textX,
+                            y: textY,
+                            size: fontSize,
+                            font,
+                            color: textRgb,
+                        });
+                    }
+                }
+
+                // Línea vertical entre columnas
+                if (col < numCols - 1) {
+                    this._currentPage.drawLine({
+                        start: { x: currentX + colWidth, y: currentY },
+                        end: { x: currentX + colWidth, y: currentY + calculatedRowHeight },
+                        thickness: borderWidth,
+                        color: borderRgb,
+                    });
+                }
+
+                currentX += colWidth;
+            }
+        }
+
+        // Borde inferior de la tabla
+        this._currentPage.drawLine({
+            start: { x: finalTableX, y: currentY },
+            end: { x: finalTableX + availableWidth, y: currentY },
+            thickness: borderWidth,
+            color: borderRgb,
+        });
+
+        // Actualizar posición Y después de la tabla
+        this._currentY = currentY - IncosPDFBase.LAYOUT.spacing.line;
+    }
+
+    /**
+     * Dibuja campos con recuadro dentro de un ancho específico de columna.
+     * Este método es similar a _addBoxedFieldGrid pero respeta el ancho de columna proporcionado.
+     * Ajusta automáticamente la altura de cada cuadro según su contenido.
+     *
+     * @protected
+     * @param {{ label: string, value: string }[]} items - Items a dibujar (label + cuadro con valor)
+     * @param {number} colX - Posición X de la columna
+     * @param {number} colWidth - Ancho total de la columna
+     * @param {number} [labelWidth=60] - Ancho fijo para los labels
+     * @returns {Promise<void>}
+     */
+    async _addBoxedFieldsInColumn(items, colX, colWidth, labelWidth = 60) {
+        if (!this._pdfDoc || !this._currentPage) {
+            throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
+        }
+
+        if (!items || items.length === 0) {
+            return;
+        }
+
+        const boxCfg = IncosPDFBase.LAYOUT.boxedFields || {};
+        const boxHeight = boxCfg.boxHeight ?? 18;
+        const borderWidth = boxCfg.borderWidth ?? 1;
+        const labelBoxGap = boxCfg.labelBoxGap ?? 4;
+        const lineSpacing = IncosPDFBase.LAYOUT.spacing.line;
+        const fontSize = IncosPDFBase.FONTS.normal.size;
+
+        const normalFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.normal.font);
+        const font = await this._pdfDoc.embedFont(normalFontName);
+        const textRgb = this._hexToRgb(IncosPDFBase.COLORS.text);
+        const borderRgb = this._hexToRgb(IncosPDFBase.COLORS.border);
+
+        // Dibujar cada campo y usar la altura real retornada
+        for (const item of items) {
+            const { label, value } = item;
+            const actualBoxHeight = await this._drawBoxedFieldInColumn(
+                colX,
+                this._currentY,
+                colWidth,
+                labelWidth,
+                labelBoxGap,
+                boxHeight,
+                borderWidth,
+                label,
+                value,
+                font,
+                fontSize,
+                textRgb,
+                borderRgb
+            );
+
+            // Mover a la siguiente fila usando la altura real del cuadro
+            this._currentY -= actualBoxHeight + lineSpacing;
+        }
+    }
+
+    /**
+     * Agrega un layout de dos columnas con contenido diferente en cada lado.
+     * Columna izquierda: campos con recuadro (usando _addBoxedFieldsInColumn).
+     * Columna derecha: tabla (usando _addTable).
+     * Las columnas están alineadas horizontalmente en la parte superior.
+     *
+     * @protected
+     * @param {{ label: string, value: string }[]} leftColumnItems - Items para la columna izquierda (campos con recuadro)
+     * @param {Object} rightTableConfig - Configuración de la tabla derecha
+     * @param {string[]} rightTableConfig.headers - Títulos de las columnas de la tabla
+     * @param {number[]} rightTableConfig.columnWidths - Anchos de cada columna (porcentajes 0-1 o puntos)
+     * @param {Array<Array<string>>} rightTableConfig.rows - Filas de datos de la tabla
+     * @param {string[]} [rightTableConfig.alignments] - Alineación de cada columna ('left', 'center', 'right')
+     * @param {number} [leftColumnWidthPercent=40] - Porcentaje de ancho para la columna izquierda (0-100)
+     * @param {number} [leftLabelWidth=60] - Ancho fijo para los labels de la columna izquierda
+     * @returns {Promise<void>}
+     */
+    async _addTwoColumnLayout(leftColumnItems, rightTableConfig, leftColumnWidthPercent = 40, leftLabelWidth = 60) {
+        if (!this._pdfDoc || !this._currentPage) {
+            throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
+        }
+
+        const { width: pageWidth } = this._currentPage.getSize();
+        const margins = IncosPDFBase.LAYOUT.margins;
+        const boxCfg = IncosPDFBase.LAYOUT.boxedFields || {};
+        const colGap = boxCfg.colGap ?? 16;
+
+        const totalWidth = pageWidth - margins.left - margins.right;
+        const leftColWidth = (totalWidth - colGap) * (leftColumnWidthPercent / 100);
+        const rightColWidth = totalWidth - colGap - leftColWidth;
+
+        const leftColX = margins.left;
+        const rightColX = margins.left + leftColWidth + colGap;
+
+        // Guardar posición Y inicial
+        const startY = this._currentY;
+        let leftColumnEndY = startY;
+        let rightColumnEndY = startY;
+
+        // Dibujar columna izquierda (campos con recuadro) con ancho específico
+        if (leftColumnItems && leftColumnItems.length > 0) {
+            await this._addBoxedFieldsInColumn(leftColumnItems, leftColX, leftColWidth, leftLabelWidth);
+            leftColumnEndY = this._currentY;
+        }
+
+        // Restaurar posición Y para la tabla derecha
+        this._currentY = startY;
+
+        // Dibujar tabla derecha
+        if (rightTableConfig && rightTableConfig.headers && rightTableConfig.rows) {
+            await this._addTable(
+                rightTableConfig.headers,
+                rightTableConfig.columnWidths,
+                rightTableConfig.rows,
+                rightColWidth,
+                rightTableConfig.alignments,
+                rightColX
+            );
+            rightColumnEndY = this._currentY;
+        }
+
+        // Actualizar posición Y al mínimo de ambas columnas (el que esté más abajo)
+        this._currentY = Math.min(leftColumnEndY, rightColumnEndY);
+    }
+
+    /**
+     * Helper: Dibuja un campo con label y cuadro dentro de una columna específica.
+     * Ajusta automáticamente la altura del cuadro si el contenido es más ancho.
+     * 
+     * @private
+     * @param {number} colX - Posición X de la columna
+     * @param {number} rowY - Posición Y de la fila
+     * @param {number} colWidth - Ancho total de la columna
+     * @param {number} labelWidth - Ancho fijo del label
+     * @param {number} labelBoxGap - Espacio entre label y cuadro
+     * @param {number} boxHeight - Altura mínima del cuadro
+     * @param {number} borderWidth - Grosor del borde
+     * @param {string} label - Texto del label
+     * @param {string} value - Valor a mostrar en el cuadro
+     * @param {PDFFont} font - Fuente a usar
+     * @param {number} fontSize - Tamaño de fuente
+     * @param {RGB} textRgb - Color del texto
+     * @param {RGB} borderRgb - Color del borde
+     * @returns {Promise<number>} Altura real del cuadro (puede ser mayor que boxHeight si hay múltiples líneas)
+     */
+    async _drawBoxedFieldInColumn(colX, rowY, colWidth, labelWidth, labelBoxGap, boxHeight, borderWidth, label, value, font, fontSize, textRgb, borderRgb) {
+        const labelStr = String(label ?? '').trim();
+        const valueStr = String(value ?? '').trim();
+
+        // Calcular posición y tamaño del cuadro
+        const boxX = colX + labelWidth + labelBoxGap;
+        const boxWidth = colWidth - labelWidth - labelBoxGap;
+        const boxCfg = IncosPDFBase.LAYOUT.boxedFields || {};
+        const cellPadding = boxCfg.cellPadding ?? 4;
+        const lineHeight = fontSize * 1.2; // Espacio entre líneas
+
+        // Dividir el texto en líneas si es necesario
+        const availableTextWidth = boxWidth - (cellPadding * 2);
+        const valueLines = valueStr ? this._wrapText(valueStr, font, fontSize, availableTextWidth) : [''];
+        const numLines = valueLines.length;
+
+        // Calcular altura real del cuadro (mínimo boxHeight, más espacio si hay múltiples líneas)
+        const calculatedBoxHeight = Math.max(boxHeight, (numLines * lineHeight) + (cellPadding * 2));
+        const boxY = rowY - calculatedBoxHeight;
+
+        // Dibujar label (alineado verticalmente con el centro del cuadro)
+        if (labelStr) {
+            const labelY = boxY + (calculatedBoxHeight - fontSize) / 2 + fontSize * 0.3;
+            this._currentPage.drawText(labelStr, {
+                x: colX,
+                y: labelY,
+                size: fontSize,
+                font,
+                color: textRgb,
+            });
+        }
+
+        // Dibujar borde del recuadro
+        this._currentPage.drawRectangle({
+            x: boxX,
+            y: boxY,
+            width: boxWidth,
+            height: calculatedBoxHeight,
+            borderColor: borderRgb,
+            borderWidth,
+        });
+
+        // Dibujar cada línea del valor centrado dentro del cuadro
+        if (valueStr && valueLines.length > 0) {
+            const verticalCenterFactor = boxCfg.verticalCenterFactor ?? 0.3;
+            const totalTextHeight = numLines * lineHeight;
+            const startTextY = boxY + (calculatedBoxHeight - totalTextHeight) / 2 + fontSize * verticalCenterFactor;
+
+            for (let lineIdx = 0; lineIdx < numLines; lineIdx++) {
+                const lineText = valueLines[lineIdx];
+                if (lineText) {
+                    const textWidth = font.widthOfTextAtSize(lineText, fontSize);
+                    const textX = boxX + (boxWidth - textWidth) / 2; // Centrado horizontal
+                    const textY = startTextY + (numLines - 1 - lineIdx) * lineHeight;
+                    
+                    this._currentPage.drawText(lineText, {
+                        x: textX,
+                        y: textY,
+                        size: fontSize,
+                        font,
+                        color: textRgb,
+                    });
+                }
+            }
+        }
+
+        return calculatedBoxHeight;
+    }
+
+    /**
      * Agrega una línea "label (bold): value (normal)" en la misma línea.
      * Usa margen izquierdo y _currentY; avanza _currentY una línea.
      *
@@ -559,7 +1409,7 @@ export class IncosPDFLibBase {
                 const idx = row * numCols + col;
                 if (idx >= items.length) break;
                 const { label, value } = items[idx];
-                
+
                 const labelStr = String(label ?? '');
                 const valueStr = String(value ?? '');
                 const labelWidth = boldFont.widthOfTextAtSize(labelStr, fontSize);
@@ -586,7 +1436,7 @@ export class IncosPDFLibBase {
                 if (idx >= items.length) break;
                 const { label, value } = items[idx];
                 const x = baseX + col * (colWidth + colGap);
-                
+
                 // Dibujar con el ancho máximo de columna para evitar desbordamiento
                 await this._drawLabelValueAt(x, rowY, label, value, colWidth);
             }
@@ -616,7 +1466,7 @@ export class IncosPDFLibBase {
         }
 
         const { width: pageWidth } = this._currentPage.getSize();
-        
+
         // Usar fuente normal desde configuración
         const normalFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.normal.font);
         const font = await this._pdfDoc.embedFont(normalFontName);
@@ -629,7 +1479,7 @@ export class IncosPDFLibBase {
         const bulletX = IncosPDFBase.LAYOUT.margins.left + bulletIndent;
         const bulletDiameter = IncosPDFBase.LAYOUT.bulletDiameter;
         const bulletRadius = bulletDiameter / 2;
-        
+
         // Calcular posición Y del círculo: centrado verticalmente con la línea de texto
         const bulletY = this._currentY + (fontSize * 0.3); // Centro vertical del texto (mitad de la altura)
 

@@ -86,14 +86,18 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
      * @returns {Promise<void>}
      */
     async _buildHeader(options) {
+        const T = IncosPDFBase.FORMULARIO_TEXTS;
+        const codigo = (options.student?.codigoEstudiante ?? options.student?.codigo_estudiante ?? '').toString().trim();
+        await this._drawRegistrationBox(T.REGISTRO_HEADER_LABEL, codigo || '—');
+
+        await this._addInstitutionalHeader(IncosPDFBase.INSTITUTIONAL_HEADER_LINES);
+        await this._addDocumentTitle(IncosPDFBase.INSTITUTE.name, false);
         await this._addDocumentTitle(IncosPDFBase.DOCUMENT_TITLES.FORMULARIO_INSCRIPCION);
 
         if (options.gestion) {
             const gestionYear = String(options.gestion);
             await this._addSubtitle(`GESTIÓN ${gestionYear}`);
         }
-
-        this._addSpace();
     }
 
     /**
@@ -110,18 +114,18 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
         // Bloque 1: Identificación personal (nombres, grid CI/género/etc., detalle discapacidad)
         await this._buildIdentificacionPersonal(options);
 
-        this._addSpace();
-
         // Bloque 2: Lugar y Fecha de Nacimiento, Domicilio, Idioma de origen
         await this._buildLugarFechaNacimientoYDomicilio(options);
+
+        // Bloque 3: Contacto de emergencia (apoderado)
+        await this._buildContactoEmergencia(options);
 
         this._addSpace();
     }
 
     /**
      * Bloque 1 de DATOS PERSONALES: Identificación personal.
-     * Nombres y apellidos, grid (C.I., Género, Email, Celular, Estado civil, Tipo sangre, Discapacidad),
-     * detalle de discapacidad si aplica.
+     * Orquesta los 3 sub-bloques: datos básicos, discapacidad, y datos de origen.
      *
      * @private
      * @param {Object} options - Opciones de generación (options.student)
@@ -131,93 +135,184 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
         const T = IncosPDFBase.FORMULARIO_TEXTS;
         const s = options.student || {};
 
-        // Label (T) + valor construido aquí; misma línea
+        // Campo de nombres y apellidos con recuadro (valor en bold)
         const nombresVal = [s.apellidoPaterno, s.apellidoMaterno, s.nombres]
             .filter(Boolean)
             .join(' ')
             .replace(/\s+/g, ' ')
             .trim();
-        await this._addLabelValue(T.NOMBRES_APELLIDOS_LABEL, nombresVal || '—');
+        await this._addBoxedField(T.NOMBRES_APELLIDOS_LABEL, nombresVal || '—', true);
 
-        // Grid 2 columnas fijas. Orden: C.I., Código, Género, Email, Celular, Estado civil, Tipo sangre, Discapacidad.
-        const gridItems = [];
+        // Bloque 1: Datos básicos (CI, Género, Celular, Correo, Estado civil, Grupo sanguíneo)
+        await this._buildDatosBasicosIdentificacion(options);
+
+        // Bloque 2: Discapacidad y detalle
+        await this._buildDiscapacidadIdentificacion(options);
+
+        // Bloque 3: Edad, Fecha de nacimiento, Nacionalidad, Idioma principal
+        await this._buildDatosOrigenIdentificacion(options);
+    }
+
+    /**
+     * Bloque 1.1: Datos básicos de identificación.
+     * Grid 2 columnas: CI, Celular, Estado civil (izq) | Género, Correo, Tipo sangre (der)
+     *
+     * @private
+     * @param {Object} options - Opciones de generación (options.student)
+     * @returns {Promise<void>}
+     */
+    async _buildDatosBasicosIdentificacion(options) {
+        const T = IncosPDFBase.FORMULARIO_TEXTS;
+        const s = options.student || {};
+
+        const leftColumnItems = [];
+        const rightColumnItems = [];
+
+        // Columna izquierda: C.I., Celular, Estado civil
         const ci = (s.ci ?? '').toString().trim();
         const exp = (s.expedicion ?? '').toString().trim();
         if (ci || exp) {
             const ciVal = [ci, exp].filter(Boolean).join(' ').trim();
-            gridItems.push({ label: T.CI_LABEL, value: ciVal || '—' });
+            leftColumnItems.push({ label: T.CI_LABEL, value: ciVal || '—' });
         }
-        const codigoEstudiante = (s.codigoEstudiante ?? s.codigo_estudiante ?? '').toString().trim();
-        if (codigoEstudiante) {
-            gridItems.push({ label: T.CODIGO_ESTUDIANTE_LABEL, value: codigoEstudiante });
+        const celularVal = (s.celular ?? '').toString().trim();
+        if (celularVal) {
+            leftColumnItems.push({ label: T.CELULAR_LABEL, value: celularVal });
         }
+        if (s.estadoCivilNombre) {
+            leftColumnItems.push({ label: T.ESTADO_CIVIL_LABEL, value: s.estadoCivilNombre });
+        }
+
+        // Columna derecha: Género, Correo, Tipo sangre
         if (s.genero) {
             const g = String(s.genero).toLowerCase();
             const generoVal = g === 'masculino' ? 'Masculino' : g === 'femenino' ? 'Femenino' : g === 'otro' ? 'Otro' : s.genero;
-            gridItems.push({ label: T.GENERO_LABEL, value: generoVal });
+            rightColumnItems.push({ label: T.GENERO_LABEL, value: generoVal });
         }
         const emailVal = (s.emailPersonal ?? '').toString().trim();
-        const celularVal = (s.celular ?? '').toString().trim();
-        if (emailVal) gridItems.push({ label: T.EMAIL_LABEL, value: emailVal });
-        if (celularVal) gridItems.push({ label: T.CELULAR_LABEL, value: celularVal });
-        if (s.estadoCivilNombre) {
-            gridItems.push({ label: T.ESTADO_CIVIL_LABEL, value: s.estadoCivilNombre });
+        if (emailVal) {
+            rightColumnItems.push({ label: T.EMAIL_LABEL, value: emailVal });
         }
         if (s.tipoSangre) {
-            gridItems.push({ label: T.TIPO_SANGRE_LABEL, value: s.tipoSangre });
+            rightColumnItems.push({ label: T.TIPO_SANGRE_LABEL, value: s.tipoSangre });
         }
+
+        // Dibujar grid de 2 columnas (35% izquierda, 65% derecha)
+        if (leftColumnItems.length > 0 || rightColumnItems.length > 0) {
+            await this._addBoxedFieldGrid(leftColumnItems, rightColumnItems, 35);
+        }
+    }
+
+    /**
+     * Bloque 1.2: Discapacidad y detalle.
+     * Grid 2 columnas: Discapacidad (izq) | Detalle discapacidad (der)
+     *
+     * @private
+     * @param {Object} options - Opciones de generación (options.student)
+     * @returns {Promise<void>}
+     */
+    async _buildDiscapacidadIdentificacion(options) {
+        const T = IncosPDFBase.FORMULARIO_TEXTS;
+        const s = options.student || {};
+
+        const leftColumnItems = [];
+        const rightColumnItems = [];
+
+        // Columna izquierda: Discapacidad
         if (s.tieneDiscapacidad !== undefined && s.tieneDiscapacidad !== null) {
             const disc = s.tieneDiscapacidad === true || s.tieneDiscapacidad === 1 ? 'Sí' : 'No';
-            gridItems.push({ label: T.DISCAPACIDAD_LABEL, value: disc });
+            leftColumnItems.push({ label: T.DISCAPACIDAD_LABEL, value: disc });
         }
 
-        if (gridItems.length > 0) {
-            await this._addLabelValueGrid(gridItems, 2);
-        }
-
-        // Si tiene discapacidad y hay datos de vista_base_estudiante_discapacidades: una línea debajo
+        // Columna derecha: Detalle discapacidad (solo TIPO y GRADO)
         const tieneDisc = s.tieneDiscapacidad === true || s.tieneDiscapacidad === 1;
         const list = Array.isArray(s.discapacidades) ? s.discapacidades : [];
         if (tieneDisc && list.length > 0) {
             const detalleVal = this._buildDetalleDiscapacidad(list);
             if (detalleVal) {
-                await this._addLabelValue(T.DETALLE_DISCAPACIDAD_LABEL, detalleVal);
+                rightColumnItems.push({ label: T.DETALLE_DISCAPACIDAD_LABEL, value: detalleVal });
             }
+        }
+
+        // Dibujar grid de 2 columnas (35% izquierda, 65% derecha)
+        // Siempre respeta el porcentaje incluso si una columna está vacía (comportamiento por defecto)
+        if (leftColumnItems.length > 0 || rightColumnItems.length > 0) {
+            await this._addBoxedFieldGrid(leftColumnItems, rightColumnItems, 35);
+        }
+    }
+
+    /**
+     * Bloque 1.3: Datos de origen (edad, fecha nacimiento, nacionalidad, idioma).
+     * Grid 2 columnas: Edad, Nacionalidad (izq) | Fecha de nacimiento, Idioma principal (der)
+     *
+     * @private
+     * @param {Object} options - Opciones de generación (options.student)
+     * @returns {Promise<void>}
+     */
+    async _buildDatosOrigenIdentificacion(options) {
+        const T = IncosPDFBase.FORMULARIO_TEXTS;
+        const s = options.student || {};
+        const origenes = Array.isArray(s.origenes) ? s.origenes : [];
+        const principal = origenes.find((o) => o.es_principal === 1 || o.es_principal === true) || origenes[0];
+
+        // Preparar datos para nacionalidad e idioma
+        const tipoOrigenRaw = (principal?.tipo_origen ?? principal?.tipoOrigen ?? '').toString().trim().toUpperCase();
+        const nacionalidad = tipoOrigenRaw === 'BOLIVIANA' ? 'Boliviana'
+            : tipoOrigenRaw === 'EXTRANJERA' ? 'Extranjera'
+                : tipoOrigenRaw === 'DOBLE_NACIONALIDAD' ? 'Doble Nacionalidad'
+                    : tipoOrigenRaw || '—';
+        const idiomaPrincipal = (principal?.idioma_materno_nombre ?? principal?.idiomaMaternoNombre ?? '').toString().trim();
+
+        const leftColumnItems = [];
+        const rightColumnItems = [];
+
+        // Columna izquierda: Edad, Nacionalidad
+        const edad = (s.edad ?? '').toString().trim();
+        if (edad && edad !== '—') {
+            leftColumnItems.push({ label: T.EDAD_LABEL, value: `${edad} años` });
+        }
+        if (nacionalidad && nacionalidad !== '—') {
+            leftColumnItems.push({ label: T.NACIONALIDAD_LABEL, value: nacionalidad });
+        }
+
+        // Columna derecha: Fecha de nacimiento, Idioma principal
+        const fechaLiteral = (s.fechaNacimientoLiteral ?? '').toString().trim();
+        if (fechaLiteral && fechaLiteral !== '—') {
+            rightColumnItems.push({ label: T.FECHA_NACIMIENTO_LABEL, value: fechaLiteral });
+        }
+        if (idiomaPrincipal) {
+            rightColumnItems.push({ label: T.IDIOMA_PRINCIPAL_LABEL, value: idiomaPrincipal });
+        }
+
+        // Dibujar grid de 2 columnas (35% izquierda, 65% derecha)
+        if (leftColumnItems.length > 0 || rightColumnItems.length > 0) {
+            await this._addBoxedFieldGrid(leftColumnItems, rightColumnItems, 35);
         }
     }
 
     /**
      * Construye el texto de detalle desde discapacidades (vista_base_estudiante_discapacidades).
-     * Usa DETALLE_DISCAPACIDAD_ITEM_FMT como texto con reemplazo (TEMPLATE_TEXTS); solo se incluyen segmentos con valor.
+     * Solo incluye TIPO y GRADO (sin DESCRIPCION ni CAUSA).
      *
      * @private
      * @param {Array<Object>} discapacidades - Items de la vista (snake_case o camelCase)
      * @returns {string}
      */
     _buildDetalleDiscapacidad(discapacidades) {
-        const T = IncosPDFBase.FORMULARIO_TEXTS;
-        const fmt = T.DETALLE_DISCAPACIDAD_ITEM_FMT ?? '';
-        const sep = T.DETALLE_DISCAPACIDAD_SEP ?? ' — ';
+        const sep = ' — ';
         const segmentSep = '. ';
 
         const parts = discapacidades.map((d) => {
-            const values = {
-                TIPO: (d.tipo_discapacidad_nombre ?? d.tipoDiscapacidadNombre ?? '').toString().trim(),
-                GRADO: (d.grado_discapacidad ?? d.gradoDiscapacidad ?? '').toString().trim(),
-                DESCRIPCION: (d.discapacidad_descripcion ?? d.discapacidadDescripcion ?? '').toString().trim(),
-                CAUSA: (d.discapacidad_causa ?? d.discapacidadCausa ?? '').toString().trim(),
-            };
-            const segments = fmt.split(segmentSep).map((s) => s.trim()).filter(Boolean);
-            const out = [];
-            for (const seg of segments) {
-                const m = seg.match(/\{(\w+)\}/);
-                if (!m) continue;
-                const key = m[1];
-                const val = values[key];
-                if (val) out.push(seg.replace(`{${key}}`, val));
-            }
-            return out.join(segmentSep);
+            const tipo = (d.tipo_discapacidad_nombre ?? d.tipoDiscapacidadNombre ?? '').toString().trim();
+            const grado = (d.grado_discapacidad ?? d.gradoDiscapacidad ?? '').toString().trim();
+
+            const segments = [];
+            if (tipo) segments.push(`Tipo: ${tipo}`);
+            if (grado) segments.push(`Grado: ${grado}`);
+
+            return segments.join(segmentSep);
         }).filter((p) => p.length > 0);
+
         return parts.join(sep);
     }
 
@@ -243,43 +338,6 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
         const s = options.student || {};
         const origenes = Array.isArray(s.origenes) ? s.origenes : [];
         const principal = origenes.find((o) => o.es_principal === 1 || o.es_principal === true) || origenes[0];
-
-        // Grid 2 columnas: fecha literal, edad, nacionalidad, idioma principal, idioma secundario, teléfono fijo (solo si existen)
-        const gridItems = [];
-        const fechaLiteral = (s.fechaNacimientoLiteral ?? '').toString().trim();
-        const edad = (s.edad ?? '').toString().trim();
-        // Nacionalidad es tipo_origen (ENUM: 'BOLIVIANA', 'EXTRANJERA', 'DOBLE_NACIONALIDAD')
-        const tipoOrigenRaw = (principal?.tipo_origen ?? principal?.tipoOrigen ?? '').toString().trim().toUpperCase();
-        const nacionalidad = tipoOrigenRaw === 'BOLIVIANA' ? 'Boliviana'
-            : tipoOrigenRaw === 'EXTRANJERA' ? 'Extranjera'
-                : tipoOrigenRaw === 'DOBLE_NACIONALIDAD' ? 'Doble Nacionalidad'
-                    : tipoOrigenRaw || '—';
-        const idiomaPrincipal = (principal?.idioma_materno_nombre ?? principal?.idiomaMaternoNombre ?? '').toString().trim();
-        const idiomaSecundario = (principal?.idioma_secundario_nombre ?? principal?.idiomaSecundarioNombre ?? '').toString().trim();
-        const telefonoFijo = (s.telefonoFijo ?? '').toString().trim();
-
-        if (fechaLiteral && fechaLiteral !== '—') {
-            gridItems.push({ label: T.FECHA_NACIMIENTO_LABEL, value: fechaLiteral });
-        }
-        if (edad && edad !== '—') {
-            gridItems.push({ label: T.EDAD_LABEL, value: edad });
-        }
-        if (nacionalidad && nacionalidad !== '—') {
-            gridItems.push({ label: T.NACIONALIDAD_LABEL, value: nacionalidad });
-        }
-        if (idiomaPrincipal) {
-            gridItems.push({ label: T.IDIOMA_PRINCIPAL_LABEL, value: idiomaPrincipal });
-        }
-        if (idiomaSecundario) {
-            gridItems.push({ label: T.IDIOMA_SECUNDARIO_LABEL, value: idiomaSecundario });
-        }
-        if (telefonoFijo) {
-            gridItems.push({ label: T.TELEFONO_FIJO_LABEL, value: telefonoFijo });
-        }
-
-        if (gridItems.length > 0) {
-            await this._addLabelValueGrid(gridItems, 2);
-        }
 
         // Construir dirección según nacionalidad (boliviana vs extranjera)
         const tipoOrigen = (principal?.tipo_origen ?? '').toString().toUpperCase();
@@ -310,7 +368,13 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
             }
         }
 
-        await this._addLabelValue(T.LUGAR_NACIMIENTO_LABEL, lugarVal);
+        // Campos con recuadro en una sola columna (ocupa todo el ancho)
+        const singleColumnItems = [];
+
+        // Lugar de nacimiento
+        if (lugarVal && lugarVal !== '—') {
+            singleColumnItems.push({ label: T.LUGAR_NACIMIENTO_LABEL, value: lugarVal });
+        }
 
         // Domicilio: dirección/zona primero, luego municipio, provincia, departamento
         const domicilioParts = [];
@@ -326,7 +390,65 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
         if (residenciaDepartamento) domicilioParts.push(residenciaDepartamento);
 
         const domicilioVal = domicilioParts.length > 0 ? domicilioParts.join(', ') : '—';
-        await this._addLabelValue(T.DOMICILIO_LABEL, domicilioVal);
+        if (domicilioVal && domicilioVal !== '—') {
+            singleColumnItems.push({ label: T.DOMICILIO_LABEL, value: domicilioVal });
+        }
+
+        // Dibujar campos en una sola columna (ocupa todo el ancho)
+        // leftColumnWidthPercent=100 indica que es una sola columna que ocupa el 100% del ancho
+        if (singleColumnItems.length > 0) {
+            await this._addBoxedFieldGrid(singleColumnItems, [], 100, 90);
+        }
+    }
+
+    /**
+     * Bloque 3 de DATOS PERSONALES: Contacto de emergencia (apoderado).
+     * Grid de 2 columnas: Columna izquierda (Parentesco, Celular), Columna derecha (Nombre completo).
+     *
+     * @private
+     * @param {Object} options - Opciones de generación (options.student)
+     * @returns {Promise<void>}
+     */
+    async _buildContactoEmergencia(options) {
+        const T = IncosPDFBase.FORMULARIO_TEXTS;
+        const s = options.student || {};
+        const apoderados = Array.isArray(s.apoderados) ? s.apoderados : [];
+
+        // Obtener el primer apoderado (o el principal si existe)
+        const apoderado = apoderados.find((a) => a.es_principal === 1 || a.es_principal === true) || apoderados[0];
+
+        if (!apoderado) {
+            // Si no hay apoderado, no mostrar nada
+            return;
+        }
+
+        // Preparar datos para grid de 2 columnas
+        const leftColumnItems = [];
+        const rightColumnItems = [];
+
+        // Columna izquierda: Parentesco y Celular
+        const parentesco = (apoderado.tipo_parentesco_nombre ?? apoderado.tipoParentescoNombre ?? '').toString().trim();
+        if (parentesco) {
+            leftColumnItems.push({ label: T.PARENTESCO_LABEL, value: parentesco });
+        }
+
+        const celular = (apoderado.celular_1 ?? apoderado.celular1 ?? '').toString().trim();
+        if (celular) {
+            leftColumnItems.push({ label: T.CELULAR_CONTACTO_LABEL, value: celular });
+        }
+
+        // Columna derecha: Nombre completo (nombres + apellidos)
+        const nombres = (apoderado.apoderado_nombres ?? apoderado.apoderadoNombres ?? '').toString().trim();
+        const apellidos = (apoderado.apoderado_apellidos ?? apoderado.apoderadoApellidos ?? '').toString().trim();
+        const nombreCompleto = [nombres, apellidos].filter(Boolean).join(' ').trim();
+        if (nombreCompleto) {
+            rightColumnItems.push({ label: T.DATOS_REFERENCIA_LABEL, value: nombreCompleto });
+        }
+
+        // Dibujar grid de 2 columnas solo si hay datos
+        if (leftColumnItems.length > 0 || rightColumnItems.length > 0) {
+            await this._addBoxedFieldGrid(leftColumnItems, rightColumnItems, 35);
+        }
     }
 
     /**
@@ -345,68 +467,72 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
         const academicData = options.academicData || {};
         const enrollmentData = options.enrollmentData || {};
 
-        // Grid de 2 columnas: Carrera y Periodo
-        const gridItems = [];
+        // Preparar datos para columna izquierda (campos con recuadro)
+        const leftColumnItems = [];
 
         // Carrera
         const carreraNombre = academicData.carreraNombre || academicData.carrera_nombre;
         if (carreraNombre) {
-            gridItems.push({
+            leftColumnItems.push({
                 label: 'Carrera:',
                 value: carreraNombre,
             });
         }
 
-        // Paralelo: "paralelo_nombre - paralelo_turno (periodo_nombre)" desde inscripción
-        const paraleloLabel = enrollmentData.paraleloLabel
-            || (() => {
-                const p = [enrollmentData.paraleloNombre, enrollmentData.paraleloTurno].filter(Boolean).join(' - ');
-                const periodo = enrollmentData.periodoNombre || enrollmentData.periodo_nombre || '';
-                return p ? (periodo ? `${p} (${periodo})` : p) : periodo;
-            })();
-        if (paraleloLabel) {
-            gridItems.push({
-                label: 'Paralelo:',
-                value: paraleloLabel,
+        // Año académico (ya viene con formato correcto: "Primer Año", "Segundo Año", etc.)
+        const periodoNombre = enrollmentData.periodoNombre || enrollmentData.periodo_nombre || '';
+        if (periodoNombre) {
+            leftColumnItems.push({
+                label: 'Año:',
+                value: periodoNombre,
             });
         }
 
-        // Mostrar grid si hay datos
-        if (gridItems.length > 0) {
-            await this._addLabelValueGrid(gridItems, 2);
-            this._addSpace(IncosPDFBase.LAYOUT.spacing.line);
+        // Paralelo: "paralelo_nombre - paralelo_turno" (solo primera palabra en mayúscula, resto en minúscula)
+        const paraleloNombre = enrollmentData.paraleloNombre || enrollmentData.paralelo_nombre || '';
+        if (paraleloNombre.length > 0) {
+            // Convertir a formato: primera palabra mayúscula, resto minúscula
+            const palabras = paraleloNombre.toLowerCase().split(' ');
+            const primeraPalabra = palabras[0] ? palabras[0].charAt(0).toUpperCase() + palabras[0].slice(1) : '';
+            const restoPalabras = palabras.slice(1).join(' ');
+            const paraleloFormateado = restoPalabras ? `${primeraPalabra} ${restoPalabras}` : primeraPalabra;
+
+            leftColumnItems.push({
+                label: 'Paralelo:',
+                value: paraleloFormateado,
+            });
         }
 
-        // Materias en grid de 2 columnas (sigla como label, nombre como value)
+        // Preparar tabla de materias para columna derecha
         const materias = enrollmentData.materias || [];
-        if (materias.length > 0) {
-            // Título para la lista de materias
-            await this._addLabelValue('Asignaturas Matriculadas:', '');
+        const tableRows = [];
+        for (const materia of materias) {
+            const sigla = (materia.sigla || '').toString().trim();
+            const nombre = (materia.nombre || '').toString().trim();
+            const horas = materia.horas !== null && materia.horas !== undefined ? String(materia.horas) : '-';
 
-            // Crear grid items para las materias
-            const materiasGridItems = [];
-            for (const materia of materias) {
-                const sigla = (materia.sigla || '').toString().trim();
-                const nombre = (materia.nombre || '').toString().trim();
-
-                if (sigla || nombre) {
-                    // Label: sigla (o "Sin sigla" si no hay), Value: nombre (o "Sin nombre" si no hay)
-                    materiasGridItems.push({
-                        label: sigla || 'Sin sigla',
-                        value: nombre || 'Sin nombre',
-                    });
-                }
+            if (sigla || nombre) {
+                tableRows.push([
+                    sigla || '-',
+                    nombre || '-',
+                    horas,
+                ]);
             }
+        }
 
-            if (materiasGridItems.length > 0) {
-                await this._addLabelValueGrid(materiasGridItems, 2);
-            } else {
-                // Si no hay materias válidas, mostrar mensaje
-                await this._addLabelValue('Materias inscritas:', 'No hay materias inscritas');
-            }
+        // Usar layout de dos columnas solo si hay datos para mostrar
+        if (leftColumnItems.length > 0 || tableRows.length > 0) {
+            const rightTableConfig = tableRows.length > 0 ? {
+                headers: ['CÓDIGO', 'ASIGNATURAS', 'HORAS'],
+                columnWidths: [0.25, 0.60, 0.15], // 25%, 60%, 15%
+                rows: tableRows,
+                alignments: ['left', 'left', 'right'], // Código y asignatura izquierda, horas derecha
+            } : null;
+
+            await this._addTwoColumnLayout(leftColumnItems, rightTableConfig, 35, 60);
         } else {
-            // Si no hay materias, mostrar mensaje
-            await this._addLabelValue('Materias inscritas:', 'No hay materias inscritas');
+            // Si no hay datos, mostrar mensaje
+            await this._addLabelValue('Datos académicos:', 'No hay datos académicos disponibles');
         }
 
         this._addSpace();
