@@ -37,104 +37,36 @@ export const estudianteDetailMapper = (dataBackend) => {
     apellidoMaterno: student.motherLastName,
   });
 
-  // Construir dirección completa de residencia
-  const residenceAddressParts = [];
-  if (catalogs.residenceMunicipality?.name) {
-    residenceAddressParts.push(catalogs.residenceMunicipality.name);
-  }
-  if (catalogs.residenceProvince?.name) {
-    residenceAddressParts.push(catalogs.residenceProvince.name);
-  }
-  if (catalogs.residenceDepartment?.name) {
-    residenceAddressParts.push(catalogs.residenceDepartment.name);
-  }
-  const residenceAddressComplete = residenceAddressParts.length > 0 
-    ? residenceAddressParts.join(', ') 
+  // Dirección de residencia: ya vienen en student desde la vista
+  const residenceAddressParts = [
+    student.residenceMunicipalityName,
+    student.residenceProvinceName,
+    student.residenceDepartmentName,
+  ].filter(Boolean);
+  const residenceAddressComplete = residenceAddressParts.length > 0
+    ? residenceAddressParts.join(', ')
     : null;
 
-  // Enriquecer apoderados con tipo de parentesco
-  const enrichedGuardians = (Array.isArray(guardians) ? guardians : []).map((guardian) => {
-    const relationshipType = guardian.relationshipTypeId 
-      ? catalogs.relationshipTypes?.[guardian.relationshipTypeId] 
-      : null;
-    
-    return {
-      ...guardian,
-      relationshipTypeName: relationshipType?.name || null,
-    };
-  });
+  // Apoderados y orígenes/documentDeliveries ya traen nombres desde la vista; solo pasamos
+  const enrichedGuardians = Array.isArray(guardians) ? guardians : [];
+  const enrichedDisabilities = Array.isArray(disabilities) ? disabilities : [];
 
-  // Enriquecer discapacidades con tipo de discapacidad
-  const enrichedDisabilities = (Array.isArray(disabilities) ? disabilities : []).map((disability) => {
-    const disabilityType = disability.disabilityTypeId 
-      ? catalogs.disabilityTypes?.[disability.disabilityTypeId] 
-      : null;
-    
-    return {
-      ...disability,
-      disabilityTypeName: disabilityType?.name || null,
-    };
-  });
-
-  // Enriquecer orígenes con datos de catálogos
+  // Orígenes: ya traen countryName, motherTongueName, birthMunicipalityName, etc. desde la vista
   const enrichedOrigins = (Array.isArray(origins) ? origins : []).map((origin) => {
-    const country = origin.countryId 
-      ? catalogs.originCountries?.[origin.countryId] 
+    const originAddressParts = [
+      origin.birthCity,
+      origin.birthMunicipalityName,
+      origin.birthProvinceName,
+      origin.birthDepartmentName,
+    ].filter(Boolean);
+    const originAddressComplete = originAddressParts.length > 0
+      ? originAddressParts.join(', ')
       : null;
-    const motherTongue = origin.motherTongueId 
-      ? catalogs.originLanguages?.[origin.motherTongueId] 
-      : null;
-    const secondaryLanguage = origin.secondaryLanguageId 
-      ? catalogs.originLanguages?.[origin.secondaryLanguageId] 
-      : null;
-    
-    // Construir dirección completa de origen
-    const originAddressParts = [];
-    if (origin.birthCity) {
-      originAddressParts.push(origin.birthCity);
-    }
-    if (origin.birthMunicipalityId) {
-      const municipality = catalogs.originMunicipalities?.[origin.birthMunicipalityId];
-      if (municipality?.name) {
-        originAddressParts.push(municipality.name);
-      }
-      if (municipality?.provinceId) {
-        const province = catalogs.originProvinces?.[municipality.provinceId];
-        if (province?.name) {
-          originAddressParts.push(province.name);
-        }
-        if (province?.departmentId) {
-          const department = catalogs.originDepartments?.[province.departmentId];
-          if (department?.name) {
-            originAddressParts.push(department.name);
-          }
-        }
-      }
-    }
-    const originAddressComplete = originAddressParts.length > 0 
-      ? originAddressParts.join(', ') 
-      : null;
-    
-    return {
-      ...origin,
-      countryName: country?.name || null,
-      motherTongueName: motherTongue?.name || null,
-      secondaryLanguageName: secondaryLanguage?.name || null,
-      originAddressComplete,
-    };
+    return { ...origin, originAddressComplete };
   });
 
-  // Enriquecer entregas de documentos con información de documentación
-  const enrichedDocumentDeliveries = (Array.isArray(documentDeliveries) ? documentDeliveries : []).map((delivery) => {
-    const documentacion = delivery.documentacionId 
-      ? catalogs.documentaciones?.[delivery.documentacionId] 
-      : null;
-    
-    return {
-      ...delivery,
-      documentacionName: documentacion?.name || null,
-    };
-  });
+  // Entregas de documentos ya traen documentacionName desde la vista
+  const enrichedDocumentDeliveries = Array.isArray(documentDeliveries) ? documentDeliveries : [];
 
   // Enriquecer asignaciones de becas con información de tipo de beca y gestión
   const enrichedScholarships = (Array.isArray(scholarships) ? scholarships : []).map((scholarship) => {
@@ -170,7 +102,7 @@ export const estudianteDetailMapper = (dataBackend) => {
       fechaNacimiento: student.birthDate,
       genero: student.gender,
       estadoCivilId: student.civilStatusId,
-      estadoCivilName: catalogs.civilStatus?.name || null,
+      estadoCivilName: student.estadoCivilNombre || null,
       tipoSangre: student.bloodType,
       tieneDiscapacidad: student.hasDisability,
       emailPersonal: student.personalEmail,
@@ -178,9 +110,9 @@ export const estudianteDetailMapper = (dataBackend) => {
       telefonoFijo: student.landlinePhone,
       direccion: student.address,
       municipioResidenciaId: student.residenceMunicipalityId,
-      municipioResidenciaName: catalogs.residenceMunicipality?.name || null,
-      provinciaResidenciaName: catalogs.residenceProvince?.name || null,
-      departamentoResidenciaName: catalogs.residenceDepartment?.name || null,
+      municipioResidenciaName: student.residenceMunicipalityName || null,
+      provinciaResidenciaName: student.residenceProvinceName || null,
+      departamentoResidenciaName: student.residenceDepartmentName || null,
       residenceAddressComplete,
       zona: student.zone,
       observaciones: student.observations,

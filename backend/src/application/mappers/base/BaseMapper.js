@@ -1,13 +1,14 @@
 /**
  * Mapper base para la capa de aplicación
- * Proporciona funcionalidad común para mappers de presentación
- * 
- * Clean Architecture:
- * - Application Layer: Utilidades para conversión Domain → Presentation
- * 
- * Responsabilidades:
- * - Mapear campos base comunes (id, active, timestamps)
- * - Proporcionar helpers para mapeo condicional de campos
+ * Proporciona funcionalidad común para mappers de presentación (vista → API)
+ *
+ * Rol: solo el mapeo campo a campo condicional (origen → presentación).
+ * Para el resto (parsear JSON de columnas, mapear arrays de filas, normalizar IDs)
+ * se usa domain/utils/mapUtils.js (parseJsonArray, mapRows, normalizeId, createMap).
+ *
+ * Referencia simple: ContributionPaymentMapper (una fila → un objeto, solo BaseMapper).
+ * Variantes: StudentPersonalDataMapper (fila con JSON → parseJsonArray + BaseMapper por ítem),
+ *            StudentDocumentDeliveryViewMapper (filas → mapRows(rows, rowToPresentation)).
  */
 
 /**
