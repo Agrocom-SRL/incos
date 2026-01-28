@@ -291,11 +291,22 @@ export class GenerateFormularioInscripcionUseCase extends BaseDocumentGeneration
             const periodosUnicos = [...new Set(materias.map(m => m.periodoNombre).filter(Boolean))];
             const periodoNombre = periodosUnicos.length === 1 ? periodosUnicos[0] : null;
 
+            // Paralelo y turno desde la vista (una fila por materia; paralelo/periodo son iguales en todas)
+            const paraleloNombre = firstRow.paralelo_nombre ?? firstRow.paraleloNombre ?? null;
+            const paraleloTurno = firstRow.paralelo_turno ?? firstRow.paraleloTurno ?? null;
+            const paraleloPart = [paraleloNombre, paraleloTurno].filter(Boolean).join(' - ');
+            const paraleloLabel = paraleloPart
+                ? (periodoNombre ? `${paraleloPart} (${periodoNombre})` : paraleloPart)
+                : periodoNombre;
+
             return {
                 inscripcionId: firstRow.inscripcion_id || firstRow.inscripcionId,
                 tipoInscripcion: firstRow.tipo_inscripcion || firstRow.tipoInscripcion,
                 fechaInscripcion: firstRow.fecha_inscripcion || firstRow.fechaInscripcion,
                 periodoNombre,
+                paraleloNombre,
+                paraleloTurno,
+                paraleloLabel,
                 materias,
             };
         } catch (error) {
