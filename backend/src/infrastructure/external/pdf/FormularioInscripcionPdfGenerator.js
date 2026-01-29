@@ -89,6 +89,9 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
         const T = IncosPDFBase.FORMULARIO_TEXTS;
         const codigo = (options.student?.codigoEstudiante ?? options.student?.codigo_estudiante ?? '').toString().trim();
         await this._drawRegistrationBox(T.REGISTRO_HEADER_LABEL, codigo || '—');
+        
+        // Dibujar cuadro de foto 3x3 debajo del código de registro
+        await this._drawPhotoBox(options.photoPath || null);
 
         await this._addInstitutionalHeader(IncosPDFBase.INSTITUTIONAL_HEADER_LINES);
         await this._addDocumentTitle(IncosPDFBase.INSTITUTE.name, false);
@@ -489,14 +492,14 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
             });
         }
 
-        // Paralelo: "paralelo_nombre - paralelo_turno" (solo primera palabra en mayúscula, resto en minúscula)
+        // Paralelo: todas las primeras letras en mayúsculas
         const paraleloNombre = enrollmentData.paraleloNombre || enrollmentData.paralelo_nombre || '';
         if (paraleloNombre.length > 0) {
-            // Convertir a formato: primera palabra mayúscula, resto minúscula
+            // Convertir a formato: primera letra de cada palabra en mayúscula
             const palabras = paraleloNombre.toLowerCase().split(' ');
-            const primeraPalabra = palabras[0] ? palabras[0].charAt(0).toUpperCase() + palabras[0].slice(1) : '';
-            const restoPalabras = palabras.slice(1).join(' ');
-            const paraleloFormateado = restoPalabras ? `${primeraPalabra} ${restoPalabras}` : primeraPalabra;
+            const paraleloFormateado = palabras.map(palabra => 
+                palabra ? palabra.charAt(0).toUpperCase() + palabra.slice(1) : ''
+            ).join(' ');
 
             leftColumnItems.push({
                 label: 'Paralelo:',

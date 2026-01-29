@@ -208,7 +208,7 @@ export class IncosPDFBase {
         lineHeight: 15,
         labelWidth: 150,    // Ancho por defecto para etiquetas en campos de formulario
         // Posicionamiento para documentos con plantilla (encabezado)
-        headerHeight: 100,  // Altura del encabezado desde arriba (para plantillas)
+        headerHeight: 90,  // Altura del encabezado desde arriba (para plantillas)
         spacingAfterHeader: 15, // Espacio después del encabezado antes del contenido
         // Configuración de viñetas
         bulletIndent: 12,   // Indentación adicional para viñetas (más a la derecha que las secciones)
@@ -228,14 +228,21 @@ export class IncosPDFBase {
         signatureSpacingBetweenTextLines: 4, // Espacio entre líneas de texto bajo la firma
         // Recuadro "No. Registro" en esquina superior derecha (Formulario de Inscripción)
         registrationBox: {
-            width: 90,
-            rowHeight: 16,
-            padding: 6,
+            width: 72,
+            rowHeight: 10,
+            padding: 4,
             borderWidth: 1,
             /** Margen derecho del recuadro (más pequeño = más pegado al borde de la hoja) */
-            rightMargin: 14,
+            rightMargin: 18,
             /** Desplazamiento hacia abajo desde el margen superior (más = recuadro más abajo) */
             offsetFromTop: 50,
+        },
+        // Cuadro de foto 3x3 debajo del código de registro
+        photoBox: {
+            /** Espacio entre el recuadro de registro y el cuadro de foto */
+            spacingBelowRegistration: 4,
+            /** Grosor del borde del cuadro de foto */
+            borderWidth: 1,
         },
         // Campos con recuadro (label + cuadro con valor)
         boxedFields: {

@@ -291,13 +291,13 @@ export class IncosPDFLibBase {
         const whiteRgb = rgb(1, 1, 1);
 
         const labelFont = await this._pdfDoc.embedFont(StandardFonts.HelveticaOblique);
-        // Mismo tamaño de fuente para label y valor
-        const labelFontSize = IncosPDFBase.FONTS.subtitle.size;
-
-        // Fuente bold y tamaño del título para el valor del código
+        // Usar tamaño de fuente "section" para ambos cuadros
+        const labelFontSize = IncosPDFBase.FONTS.section.size;
+        
+        // Fuente bold y tamaño "section" para el valor del código
         const valueFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.bold.font);
         const valueFont = await this._pdfDoc.embedFont(valueFontName);
-        const valueFontSize = IncosPDFBase.FONTS.subtitle.size;
+        const valueFontSize = IncosPDFBase.FONTS.section.size;
 
         // Calcular altura de filas basándose en el tamaño de fuente más grande
         const padding = boxCfg.padding ?? 6;
@@ -364,6 +364,64 @@ export class IncosPDFLibBase {
                 color: textRgb,
             });
         }
+    }
+
+    /**
+     * Dibuja un cuadro para foto 3x3 centímetros debajo del recuadro de registro.
+     * El cuadro tiene un borde negro y está posicionado debajo del código de registro.
+     * No modifica _currentY.
+     *
+     * @protected
+     * @param {string} [photoPath] - Ruta opcional a una imagen para insertar (futuro)
+     * @returns {Promise<void>}
+     */
+    async _drawPhotoBox(photoPath = null) {
+        if (!this._pdfDoc || !this._currentPage) {
+            throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
+        }
+
+        const { width: pageWidth, height: pageHeight } = this._currentPage.getSize();
+        const margins = IncosPDFBase.LAYOUT.margins;
+        const boxCfg = IncosPDFBase.LAYOUT.registrationBox || {};
+        const photoCfg = IncosPDFBase.LAYOUT.photoBox || {};
+        const rightMargin = boxCfg.rightMargin ?? margins.right;
+        const offsetFromTop = boxCfg.offsetFromTop ?? 0;
+        const registrationBoxWidth = boxCfg.width ?? 75;
+        const registrationRowHeight = boxCfg.rowHeight ?? 14;
+        const padding = boxCfg.padding ?? 4;
+        const labelFontSize = IncosPDFBase.FONTS.title.size - 2;
+        const valueFontSize = IncosPDFBase.FONTS.title.size - 2;
+        const topRowHeight = Math.max(registrationRowHeight, labelFontSize + (padding * 2));
+        const bottomRowHeight = Math.max(registrationRowHeight, valueFontSize + (padding * 2));
+        const totalRegistrationHeight = topRowHeight + bottomRowHeight;
+        const spacingBelowRegistration = photoCfg.spacingBelowRegistration ?? 8;
+
+        // Tamaño de foto reducido: 2.5x2.5 cm (1 cm = 28.35 puntos, entonces 2.5 cm = 70.875 puntos)
+        const photoSizeCm = 2.5;
+        const cmToPoints = 28.35;
+        const photoSize = photoSizeCm * cmToPoints; // ~71 puntos
+
+        const borderWidth = photoCfg.borderWidth ?? 1;
+        // Alinear el cuadro de foto con el borde izquierdo del cuadro de registro
+        const boxX = pageWidth - rightMargin - registrationBoxWidth;
+        const registrationTopY = pageHeight - margins.top - offsetFromTop;
+        const registrationBottomY = registrationTopY - totalRegistrationHeight;
+        const photoBoxY = registrationBottomY - spacingBelowRegistration - photoSize;
+
+        const borderRgb = this._hexToRgb(IncosPDFBase.COLORS.border);
+
+        // Dibujar cuadro de foto (borde negro)
+        this._currentPage.drawRectangle({
+            x: boxX,
+            y: photoBoxY,
+            width: photoSize,
+            height: photoSize,
+            borderColor: borderRgb,
+            borderWidth,
+        });
+
+        // TODO: Si photoPath está proporcionado, insertar la imagen aquí
+        // Por ahora solo dibujamos el cuadro vacío
     }
 
     /**
@@ -658,7 +716,8 @@ export class IncosPDFLibBase {
 
         const { width: pageWidth } = this._currentPage.getSize();
         const margins = IncosPDFBase.LAYOUT.margins;
-        const fontSize = IncosPDFBase.FONTS.normal.size;
+        // Aumentar tamaño de fuente para datos personales: 8pt -> 9pt (1 punto más)
+        const fontSize = IncosPDFBase.FONTS.normal.size + 1;
         // Si valueBold es true y no se especifica valueFontSize, usar tamaño del título
         const finalValueFontSize = valueFontSize ?? (valueBold ? IncosPDFBase.FONTS.title.size : fontSize);
         const lineSpacing = IncosPDFBase.LAYOUT.spacing.line;
@@ -764,7 +823,8 @@ export class IncosPDFLibBase {
 
         const { width: pageWidth } = this._currentPage.getSize();
         const margins = IncosPDFBase.LAYOUT.margins;
-        const fontSize = IncosPDFBase.FONTS.normal.size;
+        // Aumentar tamaño de fuente para datos personales: 8pt -> 9pt (1 punto más)
+        const fontSize = IncosPDFBase.FONTS.normal.size + 1;
         const lineSpacing = IncosPDFBase.LAYOUT.spacing.line;
         const boxCfg = IncosPDFBase.LAYOUT.boxedFields || {};
         const boxHeight = boxCfg.boxHeight ?? 20;
@@ -1196,7 +1256,8 @@ export class IncosPDFLibBase {
         const borderWidth = boxCfg.borderWidth ?? 1;
         const labelBoxGap = boxCfg.labelBoxGap ?? 4;
         const lineSpacing = IncosPDFBase.LAYOUT.spacing.line;
-        const fontSize = IncosPDFBase.FONTS.normal.size;
+        // Aumentar tamaño de fuente para datos personales: 8pt -> 9pt (1 punto más)
+        const fontSize = IncosPDFBase.FONTS.normal.size + 1;
 
         const normalFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.normal.font);
         const font = await this._pdfDoc.embedFont(normalFontName);
