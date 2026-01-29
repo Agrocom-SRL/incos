@@ -291,12 +291,13 @@ export class IncosPDFLibBase {
         const whiteRgb = rgb(1, 1, 1);
 
         const labelFont = await this._pdfDoc.embedFont(StandardFonts.HelveticaOblique);
-        const labelFontSize = IncosPDFBase.FONTS.normal.size;
-        
+        // Mismo tamaño de fuente para label y valor
+        const labelFontSize = IncosPDFBase.FONTS.subtitle.size;
+
         // Fuente bold y tamaño del título para el valor del código
         const valueFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.bold.font);
         const valueFont = await this._pdfDoc.embedFont(valueFontName);
-        const valueFontSize = IncosPDFBase.FONTS.title.size; // Mismo tamaño que _addDocumentTitle
+        const valueFontSize = IncosPDFBase.FONTS.subtitle.size;
 
         // Calcular altura de filas basándose en el tamaño de fuente más grande
         const padding = boxCfg.padding ?? 6;
@@ -694,7 +695,7 @@ export class IncosPDFLibBase {
         const boxX = margins.left;
         const boxWidth = pageWidth - margins.left - margins.right;
         const availableTextWidth = boxWidth - (cellPadding * 2);
-        
+
         const valueStr = String(value ?? '').trim();
         const valueLines = valueStr ? this._wrapText(valueStr, valueFont, finalValueFontSize, availableTextWidth) : [''];
         const numLines = valueLines.length;
@@ -724,7 +725,7 @@ export class IncosPDFLibBase {
                     const textWidth = valueFont.widthOfTextAtSize(lineText, finalValueFontSize);
                     const textX = boxX + (boxWidth - textWidth) / 2; // Centrado horizontal
                     const textY = startTextY + (numLines - 1 - lineIdx) * lineHeight;
-                    
+
                     this._currentPage.drawText(lineText, {
                         x: textX,
                         y: textY,
@@ -1055,9 +1056,12 @@ export class IncosPDFLibBase {
 
         // Dibujar filas de datos
         currentY = headerY;
+        const tableTopY = headerY + headerHeight; // Parte superior del encabezado
+        let tableBottomY = headerY; // Se actualizará con la última fila
+
         for (let rowIdx = 0; rowIdx < rows.length; rowIdx++) {
             const row = rows[rowIdx];
-            
+
             // Calcular altura necesaria para esta fila (basada en el contenido más alto)
             let maxLines = 1;
             const cellLines = [];
@@ -1073,9 +1077,10 @@ export class IncosPDFLibBase {
             // Calcular altura de la fila (mínimo rowHeight, más espacio si hay múltiples líneas)
             const lineHeight = fontSize * 1.2; // Espacio entre líneas
             const calculatedRowHeight = Math.max(rowHeight, (maxLines * lineHeight) + (cellPadding * 2));
-            
+
             currentY -= calculatedRowHeight;
             currentX = finalTableX;
+            tableBottomY = currentY; // Actualizar la parte inferior de la tabla
 
             // Borde superior de la fila
             this._currentPage.drawLine({
@@ -1139,6 +1144,24 @@ export class IncosPDFLibBase {
         this._currentPage.drawLine({
             start: { x: finalTableX, y: currentY },
             end: { x: finalTableX + availableWidth, y: currentY },
+            thickness: borderWidth,
+            color: borderRgb,
+        });
+
+        // Líneas verticales laterales (izquierda y derecha) de toda la tabla
+        // Línea vertical izquierda: desde el inicio del encabezado hasta el final de la última fila
+        this._currentPage.drawLine({
+            start: { x: finalTableX, y: tableTopY },
+            end: { x: finalTableX, y: tableBottomY },
+            thickness: borderWidth,
+            color: borderRgb,
+        });
+
+        // Línea vertical derecha: desde el inicio del encabezado hasta el final de la última fila
+        const tableRightX = finalTableX + availableWidth;
+        this._currentPage.drawLine({
+            start: { x: tableRightX, y: tableTopY },
+            end: { x: tableRightX, y: tableBottomY },
             thickness: borderWidth,
             color: borderRgb,
         });
@@ -1343,7 +1366,7 @@ export class IncosPDFLibBase {
                     const textWidth = font.widthOfTextAtSize(lineText, fontSize);
                     const textX = boxX + (boxWidth - textWidth) / 2; // Centrado horizontal
                     const textY = startTextY + (numLines - 1 - lineIdx) * lineHeight;
-                    
+
                     this._currentPage.drawText(lineText, {
                         x: textX,
                         y: textY,

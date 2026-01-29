@@ -126,7 +126,7 @@ export class IncosPDFBase {
      */
     static FORMULARIO_TEXTS = {
         /** Etiqueta del recuadro en esquina superior derecha del Formulario de Inscripción */
-        REGISTRO_HEADER_LABEL: 'No. Registro:',
+        REGISTRO_HEADER_LABEL: 'No. Registro',
         NOMBRES_APELLIDOS_LABEL: 'Nombres y Apellidos:',
         CI_LABEL: 'C.I.:',
         GENERO_LABEL: 'Género:',
@@ -228,12 +228,12 @@ export class IncosPDFBase {
         signatureSpacingBetweenTextLines: 4, // Espacio entre líneas de texto bajo la firma
         // Recuadro "No. Registro" en esquina superior derecha (Formulario de Inscripción)
         registrationBox: {
-            width: 80,
+            width: 90,
             rowHeight: 16,
             padding: 6,
             borderWidth: 1,
             /** Margen derecho del recuadro (más pequeño = más pegado al borde de la hoja) */
-            rightMargin: 20,
+            rightMargin: 14,
             /** Desplazamiento hacia abajo desde el margen superior (más = recuadro más abajo) */
             offsetFromTop: 50,
         },
