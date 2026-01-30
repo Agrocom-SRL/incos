@@ -212,7 +212,7 @@ export class IncosPDFBase {
         spacingAfterHeader: 15, // Espacio después del encabezado antes del contenido
         // Configuración de viñetas
         bulletIndent: 12,   // Indentación adicional para viñetas (más a la derecha que las secciones)
-        bulletDiameter: 2,  // Diámetro del círculo de la viñeta (en puntos)
+        bulletDiameter: 3,  // Diámetro del círculo de la viñeta (en puntos)
         bulletSpacing: 6,  // Espacio entre el círculo y el texto de la viñeta (en puntos)
         // Label + valor en misma línea y grid (formularios)
         labelValueGap: 3,   // Espacio entre label (bold) y valor (normal) en la misma línea

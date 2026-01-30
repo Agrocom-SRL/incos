@@ -247,7 +247,7 @@ export class ActaCompromisoPdfGenerator extends IncosPDFLibBase {
     /**
      * Construye el bloque de firma (footer) al final del documento.
      * Usa IncosPDFBase.SIGNATURE para los textos y options.student (ci, expedicion).
-     * Delega el dibujo a _addSignatureBlock de la base (solo líneas de texto).
+     * Sobrescribe el método base para ajustar la posición de la firma (más arriba).
      *
      * @private
      * @param {Object} options - Opciones de generación
@@ -259,6 +259,115 @@ export class ActaCompromisoPdfGenerator extends IncosPDFLibBase {
             .replace('{CI}', options.student?.ci ?? '')
             .replace('{EXPEDICION}', (options.student?.expedicion ?? '').toString().trim());
         ci = ci.replace(/\s+/g, ' ').trim();
-        await this._addSignatureBlock({ lines: [label, ci] });
+        await this._addSignatureBlockActa({ lines: [label, ci] });
+    }
+
+    /**
+     * Agrega un párrafo de texto normal con tamaño de fuente aumentado (específico para Acta de Compromiso).
+     * Sobrescribe el comportamiento del método base para usar un tamaño de fuente más grande.
+     * 
+     * @protected
+     * @param {string} text - Texto del párrafo
+     * @returns {Promise<void>} Actualiza el estado interno _currentY
+     */
+    async _addParagraph(text) {
+        if (!this._pdfDoc || !this._currentPage) {
+            throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
+        }
+
+        const { width: pageWidth } = this._currentPage.getSize();
+
+        // Usar fuente normal con tamaño aumentado (9pt en lugar de 8pt)
+        const normalFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.normal.font);
+        const font = await this._pdfDoc.embedFont(normalFontName);
+        const fontSize = IncosPDFBase.FONTS.section.size; // Aumentar 1 punto
+        const textRgb = this._hexToRgb(IncosPDFBase.COLORS.text);
+
+        const maxWidth = pageWidth - IncosPDFBase.LAYOUT.margins.left - IncosPDFBase.LAYOUT.margins.right;
+        const x = IncosPDFBase.LAYOUT.margins.left;
+
+        // Dividir texto en líneas si es necesario
+        const lines = this._wrapText(text, font, fontSize, maxWidth);
+
+        let currentY = this._currentY;
+        for (const line of lines) {
+            this._currentPage.drawText(line, {
+                x,
+                y: currentY,
+                size: fontSize,
+                font,
+                color: textRgb,
+            });
+
+            currentY -= fontSize + IncosPDFBase.LAYOUT.spacing.line;
+        }
+
+        // Actualizar posición Y después del párrafo
+        this._currentY = currentY - IncosPDFBase.LAYOUT.spacing.paragraph;
+    }
+
+    /**
+     * Dibuja un bloque de firma tipo footer con posición ajustada (más arriba).
+     * Específico para Acta de Compromiso. Sobrescribe el comportamiento del método base.
+     *
+     * @protected
+     * @param {Object} opts - Opciones
+     * @param {string[]} opts.lines - Líneas de texto centradas bajo la línea (orden: primera más cerca de la línea)
+     * @returns {Promise<void>}
+     */
+    async _addSignatureBlockActa(opts = {}) {
+        if (!this._pdfDoc || !this._currentPage) {
+            throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
+        }
+
+        const lines = Array.isArray(opts.lines) ? opts.lines : [];
+        const { width: pageWidth } = this._currentPage.getSize();
+        const cfg = IncosPDFBase.LAYOUT;
+        const margins = cfg.margins;
+        const lineWidth = cfg.signatureLineWidth ?? 150;
+        const lineThickness = cfg.signatureLineThickness ?? 1;
+        const headerHeight = cfg.headerHeight ?? 90;
+        const spaceLineToFirst = cfg.signatureSpacingLineToFirstText ?? 8;
+        const spaceBetweenLines = cfg.signatureSpacingBetweenTextLines ?? 4;
+
+        const normalFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.normal.font);
+        const font = await this._pdfDoc.embedFont(normalFontName);
+        const fontSize = IncosPDFBase.FONTS.normal.size;
+        const textRgb = this._hexToRgb(IncosPDFBase.COLORS.text);
+
+        const centerX = pageWidth / 2;
+        const halfLine = lineWidth / 2;
+
+        // Calcular altura del bloque de firma
+        const blockHeight = lineThickness + spaceLineToFirst +
+            lines.length * fontSize + Math.max(0, lines.length - 1) * spaceBetweenLines;
+        
+        // Posicionar la firma continuando desde _currentY con un espaciado basado en headerHeight
+        // El espaciado es igual al headerHeight (90 puntos) para dar suficiente espacio
+        const spacingFromContent = headerHeight;
+        const lineY = this._currentY - spacingFromContent;
+
+        this._currentPage.drawLine({
+            start: { x: centerX - halfLine, y: lineY },
+            end: { x: centerX + halfLine, y: lineY },
+            thickness: lineThickness,
+            color: textRgb,
+        });
+
+        let textY = lineY - lineThickness - spaceLineToFirst;
+        for (let i = 0; i < lines.length; i++) {
+            const str = String(lines[i] ?? '').trim();
+            const w = str ? font.widthOfTextAtSize(str, fontSize) : 0;
+            if (str) {
+                this._currentPage.drawText(str, {
+                    x: centerX - w / 2,
+                    y: textY,
+                    size: fontSize,
+                    font,
+                    color: textRgb,
+                });
+            }
+            textY -= fontSize + (i < lines.length - 1 ? spaceBetweenLines : 0);
+        }
     }
 }
