@@ -1566,7 +1566,7 @@ export class IncosPDFLibBase {
         // Usar fuente normal desde configuración
         const normalFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.normal.font);
         const font = await this._pdfDoc.embedFont(normalFontName);
-        const fontSize = IncosPDFBase.FONTS.normal.size;
+        const fontSize = IncosPDFBase.FONTS.section.size;
         const textRgb = this._hexToRgb(IncosPDFBase.COLORS.text);
         const bulletRgb = this._hexToRgb(IncosPDFBase.COLORS.text); // Círculo negro
 
