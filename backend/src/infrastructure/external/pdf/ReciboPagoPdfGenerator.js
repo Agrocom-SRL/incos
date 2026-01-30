@@ -339,11 +339,13 @@ export class ReciboPagoPdfGenerator extends IncosPDFLibBase {
         const fechaFormateada = this._formatFecha(data?.fechaPago || data?.fecha_pago || new Date());
         // Aumentar espaciado después del subtítulo para que la fecha sea más visible
         const fechaY = startY - 70;
+        // Aumentar tamaño de fuente de la fecha (de normal.size a section.size)
+        const fechaFontSize = IncosPDFBase.FONTS.section.size;
 
         this._currentPage.drawText('FECHA:', {
             x: margins.left,
             y: fechaY,
-            size: smallFontSize,
+            size: fechaFontSize,
             font: normalFont,
             color: textRgb,
         });
@@ -351,18 +353,53 @@ export class ReciboPagoPdfGenerator extends IncosPDFLibBase {
         this._currentPage.drawText(fechaFormateada, {
             x: margins.left + 40,
             y: fechaY,
-            size: IncosPDFBase.FONTS.normal.size,
+            size: fechaFontSize,
             font: normalFont,
             color: this._hexToRgb(IncosPDFBase.COLORS.text),
         });
 
         // =========================
-        // NÚMERO DE RECIBO (esquina superior derecha)
+        // CÓDIGO FAV-{GESTIÓN} (arriba del número de recibo)
+        // =========================
+        const gestion = data?.gestion || data?.gestionYear || new Date().getFullYear();
+        const favText = `FAV-${gestion}`;
+        const favFontSize = 16; // Mismo tamaño que el número del registro
+        
+        // Cargar fuente bold para el FAV
+        const boldFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.bold.font);
+        const boldFont = await this._pdfDoc.embedFont(boldFontName);
+        
+        let favTextWidth = 0;
+        try {
+            favTextWidth = boldFont.widthOfTextAtSize(favText, favFontSize);
+        } catch (widthError) {
+            favTextWidth = favText.length * favFontSize * 0.6;
+        }
+
+        // =========================
+        // NÚMERO DE RECIBO (esquina superior derecha, debajo del FAV)
         // =========================
         const reciboBoxWidth = 75;
         const reciboBoxHeight = 30;
         const reciboBoxX = pageWidth - margins.right - reciboBoxWidth;
-        const reciboBoxY = startY - 25;
+        // Bajar el cuadro verde: posicionarlo más abajo para dejar espacio para el FAV arriba
+        const spacingBetweenFavAndBox = 8; // Espacio entre FAV y cuadro verde
+        const reciboBoxY = startY - 25 - favFontSize - spacingBetweenFavAndBox; // Bajar el cuadro
+
+        // Centrar el texto FAV sobre el cuadro verde
+        const favX = reciboBoxX + (reciboBoxWidth - favTextWidth) / 2;
+        // Posicionar el FAV arriba del cuadro verde
+        const favY = reciboBoxY + reciboBoxHeight + spacingBetweenFavAndBox;
+
+        // Dibujar el texto FAV ANTES del cuadro verde para que quede visible
+        this._currentPage.drawText(favText, {
+            x: favX,
+            y: favY,
+            size: favFontSize,
+            font: boldFont,
+            color: this._hexToRgb(IncosPDFBase.COLORS.text), // Negro
+        });
+
         const reciboRgb = this._hexToRgb(IncosPDFBase.COLORS.primary);
 
         // Fondo del cuadro de número de recibo
@@ -385,8 +422,6 @@ export class ReciboPagoPdfGenerator extends IncosPDFLibBase {
         });
 
         // Número de recibo (centrado en el cuadro)
-        const boldFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.bold.font);
-        const boldFont = await this._pdfDoc.embedFont(boldFontName);
         const numeroRecibo = data?.numeroRecibo || data?.numero_recibo || data?.receiptNumber || '001';
         const numeroReciboText = String(numeroRecibo);
         let numeroReciboWidth = 0;
@@ -736,7 +771,7 @@ export class ReciboPagoPdfGenerator extends IncosPDFLibBase {
         // Preparar fuentes y estilos (necesarios para calcular altura del cuadro)
         const normalFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.normal.font);
         const normalFont = await this._pdfDoc.embedFont(normalFontName);
-        const fontSize = IncosPDFBase.FONTS.normal.size;
+        const fontSize = IncosPDFBase.FONTS.section.size;
         const textRgb = this._hexToRgb(IncosPDFBase.COLORS.text);
         const lineSpacing = IncosPDFBase.LAYOUT.spacing.line;
         const paragraphSpacing = IncosPDFBase.LAYOUT.spacing.paragraph;
