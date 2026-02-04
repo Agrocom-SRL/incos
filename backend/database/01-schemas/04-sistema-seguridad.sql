@@ -46,9 +46,9 @@ CREATE TABLE roles (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
     deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
-    created_by INT COMMENT 'Usuario que creó',
-    updated_by INT COMMENT 'Usuario que modificó',
-    deleted_by INT COMMENT 'Usuario que eliminó',
+    created_by INT NULL COMMENT 'Usuario que creó',
+    updated_by INT NULL COMMENT 'Usuario que modificó',
+    deleted_by INT NULL COMMENT 'Usuario que eliminó',
     
     -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
     -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
@@ -76,9 +76,9 @@ CREATE TABLE permisos (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
     deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
-    created_by INT COMMENT 'Usuario que creó',
-    updated_by INT COMMENT 'Usuario que modificó',
-    deleted_by INT COMMENT 'Usuario que eliminó',
+    created_by INT NULL COMMENT 'Usuario que creó',
+    updated_by INT NULL COMMENT 'Usuario que modificó',
+    deleted_by INT NULL COMMENT 'Usuario que eliminó',
     
     -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
     -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
@@ -114,9 +114,9 @@ CREATE TABLE usuarios (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
     deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
-    created_by INT COMMENT 'Usuario que creó',
-    updated_by INT COMMENT 'Usuario que modificó',
-    deleted_by INT COMMENT 'Usuario que eliminó',
+    created_by INT NULL COMMENT 'Usuario que creó',
+    updated_by INT NULL COMMENT 'Usuario que modificó',
+    deleted_by INT NULL COMMENT 'Usuario que eliminó',
     
     -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
     -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
@@ -152,9 +152,9 @@ CREATE TABLE roles_permisos (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
     deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
-    created_by INT COMMENT 'Usuario que creó',
-    updated_by INT COMMENT 'Usuario que modificó',
-    deleted_by INT COMMENT 'Usuario que eliminó',
+    created_by INT NULL COMMENT 'Usuario que creó',
+    updated_by INT NULL COMMENT 'Usuario que modificó',
+    deleted_by INT NULL COMMENT 'Usuario que eliminó',
     
     -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
     -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
@@ -197,9 +197,9 @@ CREATE TABLE sesiones (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
     deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
-    created_by INT COMMENT 'Usuario que creó',
-    updated_by INT COMMENT 'Usuario que modificó',
-    deleted_by INT COMMENT 'Usuario que eliminó',
+    created_by INT NULL COMMENT 'Usuario que creó',
+    updated_by INT NULL COMMENT 'Usuario que modificó',
+    deleted_by INT NULL COMMENT 'Usuario que eliminó',
     
     -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
     -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
@@ -230,9 +230,9 @@ CREATE TABLE configuracion_sistema (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
     deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
-    created_by INT COMMENT 'Usuario que creó',
-    updated_by INT COMMENT 'Usuario que modificó',
-    deleted_by INT COMMENT 'Usuario que eliminó',
+    created_by INT NULL COMMENT 'Usuario que creó',
+    updated_by INT NULL COMMENT 'Usuario que modificó',
+    deleted_by INT NULL COMMENT 'Usuario que eliminó',
     
     -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
     -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
@@ -280,9 +280,9 @@ CREATE TABLE personal (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
     deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
-    created_by INT COMMENT 'Usuario que creó',
-    updated_by INT COMMENT 'Usuario que modificó',
-    deleted_by INT COMMENT 'Usuario que eliminó',
+    created_by INT NULL COMMENT 'Usuario que creó',
+    updated_by INT NULL COMMENT 'Usuario que modificó',
+    deleted_by INT NULL COMMENT 'Usuario que eliminó',
     
     -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
     -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
@@ -322,10 +322,21 @@ CREATE TABLE rectores (
     resolucion_nombramiento VARCHAR(100) COMMENT 'Resolución o número de contrato',
     periodo_mandato_inicio DATE COMMENT 'Inicio del período de mandato',
     periodo_mandato_fin DATE NULL COMMENT 'Fin del período de mandato (NULL = mandato indefinido)',
-    
-    -- Foreign Keys
+
+    -- Campos de auditoría y control (ESTÁNDAR)
+    activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
+    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
+    created_by INT NULL COMMENT 'Usuario que creó',
+    updated_by INT NULL COMMENT 'Usuario que modificó',
+    deleted_by INT NULL COMMENT 'Usuario que eliminó',
+
+    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
+    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
+
     FOREIGN KEY (personal_id) REFERENCES personal(id) ON DELETE SET NULL,
-    
+
     INDEX idx_personal_id (personal_id) COMMENT 'Búsqueda por personal',
     INDEX idx_periodo_mandato (periodo_mandato_inicio, periodo_mandato_fin) COMMENT 'Búsqueda por período de mandato'
     
@@ -352,8 +363,19 @@ CREATE TABLE directores (
     nivel_academico ENUM('TECNICO', 'LICENCIATURA', 'MAESTRIA', 'DOCTORADO') COMMENT 'Nivel académico',
     institucion_egreso VARCHAR(200) COMMENT 'Institución de egreso (universidad o instituto técnico)',
     anio_egreso INT COMMENT 'Año de egreso',
-    
-    -- Foreign Keys
+
+    -- Campos de auditoría y control (ESTÁNDAR)
+    activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
+    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
+    created_by INT NULL COMMENT 'Usuario que creó',
+    updated_by INT NULL COMMENT 'Usuario que modificó',
+    deleted_by INT NULL COMMENT 'Usuario que eliminó',
+
+    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
+    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
+
     FOREIGN KEY (personal_id) REFERENCES personal(id) ON DELETE SET NULL,
 
     INDEX idx_personal_id (personal_id) COMMENT 'Búsqueda por personal',
@@ -380,8 +402,19 @@ CREATE TABLE secretarias (
     fecha_contratacion DATE COMMENT 'Fecha de contratación',
     fecha_fin_contrato DATE NULL COMMENT 'Fecha de fin de contrato (NULL = contrato indefinido)',
     tipo_contrato ENUM('EVENTUAL', 'TEMPORAL', 'INDEFINIDO') COMMENT 'Tipo de contrato',
-    
-    -- Foreign Keys
+
+    -- Campos de auditoría y control (ESTÁNDAR)
+    activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
+    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
+    created_by INT NULL COMMENT 'Usuario que creó',
+    updated_by INT NULL COMMENT 'Usuario que modificó',
+    deleted_by INT NULL COMMENT 'Usuario que eliminó',
+
+    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
+    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
+
     FOREIGN KEY (personal_id) REFERENCES personal(id) ON DELETE SET NULL,
 
     INDEX idx_personal_id (personal_id) COMMENT 'Búsqueda por personal',

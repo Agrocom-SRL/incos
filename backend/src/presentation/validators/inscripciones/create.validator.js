@@ -47,8 +47,8 @@ export const createEnrollmentValidator = [
   // ============================================
   body('enrollment_type')
     .optional()
-    .isIn(['NUEVO', 'REINGRESO', 'CONTINUIDAD', 'TRANSFERENCIA_ENTRADA', 'TRASPASO_ENTRADA'])
-    .withMessage('El tipo de inscripción debe ser uno de: NUEVO, REINGRESO, CONTINUIDAD, TRANSFERENCIA_ENTRADA, TRASPASO_ENTRADA'),
+    .isIn(['NUEVO', 'REINGRESO', 'CONTINUIDAD', 'TRASPASO_ENTRADA', 'TRANSITABILIDAD_ENTRADA'])
+    .withMessage('El tipo de inscripción debe ser uno de: NUEVO, REINGRESO, CONTINUIDAD, TRASPASO_ENTRADA, TRANSITABILIDAD_ENTRADA'),
 
   body('observations')
     .optional({ nullable: true, checkFalsy: true })

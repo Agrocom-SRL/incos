@@ -1,5 +1,5 @@
 -- ============================================
--- MÓDULOS OPERATIVOS - PARTE 2
+-- MÓDULO DE SUPERVISIÓN DOCENTE Y LIBROS DE REGISTRO
 -- Sistema de Gestión Académica - Instituto INCOS
 -- 4 Tablas: supervisiones_programadas, fichas_supervision,
 --           libros_registro, folios_estudiantes
@@ -27,16 +27,17 @@ DROP TABLE IF EXISTS supervisiones_programadas;
 
 -- ============================================
 -- TABLA: supervisiones_programadas
+-- Programación de supervisiones a docentes (formato INCOS)
 -- ============================================
 
 CREATE TABLE supervisiones_programadas (
     id INT AUTO_INCREMENT PRIMARY KEY,
     
     -- Relaciones
-    docente_id INT NOT NULL COMMENT 'Docente a supervisar',
-    materia_id INT NOT NULL COMMENT 'Materia',
-    curso_id INT NOT NULL COMMENT 'Curso específico',
-    supervisor_id INT NOT NULL COMMENT 'Usuario que supervisará (Director Académico)',
+    docente_id INT NULL COMMENT 'Docente a supervisar (referencia a docentes)',
+    materia_id INT NULL COMMENT 'Materia (referencia a materias)',
+    curso_id INT NULL COMMENT 'Curso específico (referencia a cursos)',
+    supervisor_id INT NULL COMMENT 'Usuario que supervisará (referencia a usuarios)',
     
     -- Programación
     fecha_programada DATE NOT NULL COMMENT 'Fecha programada de supervisión',
@@ -44,57 +45,60 @@ CREATE TABLE supervisiones_programadas (
     hora_fin TIME COMMENT 'Hora de fin',
     
     -- Tipo
-    tipo ENUM('PRESENCIAL', 'VIRTUAL', 'HIBRIDA') DEFAULT 'PRESENCIAL',
+    tipo ENUM('PRESENCIAL', 'VIRTUAL', 'HIBRIDA') DEFAULT 'PRESENCIAL' COMMENT 'Modalidad de la supervisión',
     
     -- Estado
-    estado ENUM('PROGRAMADA', 'REALIZADA', 'CANCELADA', 'REPROGRAMADA') DEFAULT 'PROGRAMADA',
-    motivo_cancelacion TEXT,
+    estado ENUM('PROGRAMADA', 'REALIZADA', 'CANCELADA', 'REPROGRAMADA') DEFAULT 'PROGRAMADA' COMMENT 'Estado de la supervisión',
+    motivo_cancelacion TEXT COMMENT 'Motivo de cancelación (si estado = CANCELADA)',
     fecha_reprogramada DATE COMMENT 'Nueva fecha si se reprogramó',
     
     -- Observaciones
-    observaciones TEXT,
+    observaciones TEXT COMMENT 'Observaciones sobre la programación',
     
     -- Campos de auditoría y control (ESTÁNDAR)
     activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
     deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
-    created_by INT COMMENT 'Usuario que creó',
-    updated_by INT COMMENT 'Usuario que modificó',
-    deleted_by INT COMMENT 'Usuario que eliminó',
+    created_by INT NULL COMMENT 'Usuario que creó',
+    updated_by INT NULL COMMENT 'Usuario que modificó',
+    deleted_by INT NULL COMMENT 'Usuario que eliminó',
     
-    -- Foreign Keys
+    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
+    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
+    
     FOREIGN KEY (docente_id) REFERENCES docentes(id) ON DELETE SET NULL,
     FOREIGN KEY (materia_id) REFERENCES materias(id) ON DELETE SET NULL,
     FOREIGN KEY (curso_id) REFERENCES cursos(id) ON DELETE SET NULL,
     
-    -- Índices
-    INDEX idx_activo (activo),
-    INDEX idx_deleted_at (deleted_at),
-    INDEX idx_fecha_programada (fecha_programada),
-    INDEX idx_estado (estado),
-    INDEX idx_docente_id (docente_id),
-    INDEX idx_supervisor_id (supervisor_id)
+    -- Índices para optimización
+    INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
+    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
+    INDEX idx_fecha_programada (fecha_programada) COMMENT 'Búsqueda por fecha programada',
+    INDEX idx_estado (estado) COMMENT 'Filtrado por estado',
+    INDEX idx_docente_id (docente_id) COMMENT 'Búsqueda por docente',
+    INDEX idx_supervisor_id (supervisor_id) COMMENT 'Búsqueda por supervisor'
     
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Programación de supervisiones docentes';
 
 -- ============================================
 -- TABLA: fichas_supervision
+-- Fichas detalladas de supervisión docente (formato oficial INCOS)
 -- ============================================
 
 CREATE TABLE fichas_supervision (
     id INT AUTO_INCREMENT PRIMARY KEY,
     
     -- Relación
-    supervision_id INT NOT NULL COMMENT 'Supervisión programada',
+    supervision_id INT NULL COMMENT 'Supervisión programada (referencia a supervisiones_programadas)',
     
     -- Fecha real
     fecha_supervision DATE NOT NULL COMMENT 'Fecha en que se realizó',
     
     -- 1. Lista de Asistencia
     control_asistencia BOOLEAN DEFAULT FALSE COMMENT 'Controla asistencia de estudiantes',
-    metodo_control ENUM('LISTA_MANUAL', 'EXCEL', 'GOOGLE_MEET', 'OTRO') DEFAULT 'LISTA_MANUAL',
+    metodo_control ENUM('LISTA_MANUAL', 'EXCEL', 'GOOGLE_MEET', 'OTRO') DEFAULT 'LISTA_MANUAL' COMMENT 'Método de control de asistencia',
     
     -- 2. Presentación del Tema
     presenta_titulo BOOLEAN DEFAULT FALSE COMMENT 'Presenta título del tema',
@@ -102,22 +106,22 @@ CREATE TABLE fichas_supervision (
     realiza_retroalimentacion BOOLEAN DEFAULT FALSE COMMENT 'Realiza retroalimentación',
     
     -- 3. Recursos Utilizados
-    usa_powerpoint BOOLEAN DEFAULT FALSE,
-    usa_pdf BOOLEAN DEFAULT FALSE,
-    usa_excel BOOLEAN DEFAULT FALSE,
-    usa_word BOOLEAN DEFAULT FALSE,
-    usa_tablet_grafica BOOLEAN DEFAULT FALSE,
-    usa_pizarra BOOLEAN DEFAULT FALSE,
-    usa_proyector BOOLEAN DEFAULT FALSE,
+    usa_powerpoint BOOLEAN DEFAULT FALSE COMMENT 'Utiliza PowerPoint',
+    usa_pdf BOOLEAN DEFAULT FALSE COMMENT 'Utiliza PDF',
+    usa_excel BOOLEAN DEFAULT FALSE COMMENT 'Utiliza Excel',
+    usa_word BOOLEAN DEFAULT FALSE COMMENT 'Utiliza Word',
+    usa_tablet_grafica BOOLEAN DEFAULT FALSE COMMENT 'Utiliza tablet gráfica',
+    usa_pizarra BOOLEAN DEFAULT FALSE COMMENT 'Utiliza pizarra',
+    usa_proyector BOOLEAN DEFAULT FALSE COMMENT 'Utiliza proyector',
     otros_recursos TEXT COMMENT 'Otros recursos utilizados',
     
     -- 4. Exposición del Docente
     exposicion_clara BOOLEAN DEFAULT FALSE COMMENT 'Exposición clara y ordenada',
-    usa_resumenes BOOLEAN DEFAULT FALSE,
-    usa_cuadros_sinopticos BOOLEAN DEFAULT FALSE,
-    usa_mapas_conceptuales BOOLEAN DEFAULT FALSE,
-    usa_analisis_criticos BOOLEAN DEFAULT FALSE,
-    usa_estudios_caso BOOLEAN DEFAULT FALSE,
+    usa_resumenes BOOLEAN DEFAULT FALSE COMMENT 'Utiliza resúmenes',
+    usa_cuadros_sinopticos BOOLEAN DEFAULT FALSE COMMENT 'Utiliza cuadros sinópticos',
+    usa_mapas_conceptuales BOOLEAN DEFAULT FALSE COMMENT 'Utiliza mapas conceptuales',
+    usa_analisis_criticos BOOLEAN DEFAULT FALSE COMMENT 'Utiliza análisis críticos',
+    usa_estudios_caso BOOLEAN DEFAULT FALSE COMMENT 'Utiliza estudios de caso',
     
     -- 5. Participación de Estudiantes
     participacion_activa BOOLEAN DEFAULT FALSE COMMENT 'Estudiantes participan activamente',
@@ -126,11 +130,11 @@ CREATE TABLE fichas_supervision (
     estudiantes_comprenden BOOLEAN DEFAULT FALSE COMMENT 'Estudiantes comprenden el tema',
     
     -- 6. Actividades Prácticas
-    realiza_practicas BOOLEAN DEFAULT FALSE,
+    realiza_practicas BOOLEAN DEFAULT FALSE COMMENT 'Realiza actividades prácticas',
     practicas_relacionadas BOOLEAN DEFAULT FALSE COMMENT 'Prácticas relacionadas con teoría',
     
     -- 7. Evaluación
-    tipo_evaluacion ENUM('PROCESO', 'RESULTADO', 'AMBAS', 'NINGUNA'),
+    tipo_evaluacion ENUM('PROCESO', 'RESULTADO', 'AMBAS', 'NINGUNA') COMMENT 'Tipo de evaluación utilizada',
     instrumentos_evaluacion TEXT COMMENT 'Instrumentos de evaluación utilizados',
     
     -- 8. Retroalimentación General
@@ -148,25 +152,28 @@ CREATE TABLE fichas_supervision (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
     deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
-    created_by INT COMMENT 'Usuario que creó',
-    updated_by INT COMMENT 'Usuario que modificó',
-    deleted_by INT COMMENT 'Usuario que eliminó',
+    created_by INT NULL COMMENT 'Usuario que creó',
+    updated_by INT NULL COMMENT 'Usuario que modificó',
+    deleted_by INT NULL COMMENT 'Usuario que eliminó',
     
-    -- Foreign Keys
+    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
+    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
+
     FOREIGN KEY (supervision_id) REFERENCES supervisiones_programadas(id) ON DELETE SET NULL,
     
-    -- Índices
-    INDEX idx_activo (activo),
-    INDEX idx_deleted_at (deleted_at),
-    INDEX idx_supervision_id (supervision_id),
-    INDEX idx_calificacion_general (calificacion_general),
-    INDEX idx_fecha_supervision (fecha_supervision)
+    -- Índices para optimización
+    INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
+    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
+    INDEX idx_supervision_id (supervision_id) COMMENT 'Búsqueda por supervisión',
+    INDEX idx_calificacion_general (calificacion_general) COMMENT 'Filtrado por calificación',
+    INDEX idx_fecha_supervision (fecha_supervision) COMMENT 'Búsqueda por fecha de supervisión'
     
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Fichas detalladas de supervisión docente (según formato INCOS)';
 
 -- ============================================
 -- TABLA: libros_registro
+-- Libros físicos de registro académico oficial
 -- ============================================
 
 CREATE TABLE libros_registro (
@@ -174,7 +181,7 @@ CREATE TABLE libros_registro (
     
     -- Datos del libro
     numero_libro INT NOT NULL COMMENT 'Número del libro físico',
-    carrera_id INT NOT NULL COMMENT 'Carrera a la que pertenece',
+    carrera_id INT NULL COMMENT 'Carrera a la que pertenece (referencia a carreras)',
     
     -- Gestiones que abarca
     gestion_inicio INT NOT NULL COMMENT 'Año de inicio (2025)',
@@ -191,39 +198,43 @@ CREATE TABLE libros_registro (
     fecha_cierre DATE COMMENT 'Fecha de cierre del libro',
     
     -- Observaciones
-    observaciones TEXT,
+    observaciones TEXT COMMENT 'Observaciones sobre el libro',
     
     -- Campos de auditoría y control (ESTÁNDAR)
     activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
     deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
-    created_by INT COMMENT 'Usuario que creó',
-    updated_by INT COMMENT 'Usuario que modificó',
-    deleted_by INT COMMENT 'Usuario que eliminó',
+    created_by INT NULL COMMENT 'Usuario que creó',
+    updated_by INT NULL COMMENT 'Usuario que modificó',
+    deleted_by INT NULL COMMENT 'Usuario que eliminó',
     
-    -- Foreign Keys
+    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
+    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
+    
     FOREIGN KEY (carrera_id) REFERENCES carreras(id) ON DELETE SET NULL,
     
-    -- Índices
-    INDEX idx_activo (activo),
-    INDEX idx_deleted_at (deleted_at),
-    INDEX idx_libro_activo (libro_activo),
-    INDEX idx_carrera_id (carrera_id)
+    -- Índices para optimización
+    INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
+    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
+    INDEX idx_libro_activo (libro_activo) COMMENT 'Filtrado por libro activo',
+    INDEX idx_carrera_id (carrera_id) COMMENT 'Búsqueda por carrera'
     
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Libros físicos de registro académico oficial';
 
 -- ============================================
 -- TABLA: folios_estudiantes
+-- Folios oficiales de estudiantes (uno por año académico por estudiante)
 -- ============================================
 
 CREATE TABLE folios_estudiantes (
     id INT AUTO_INCREMENT PRIMARY KEY,
     
     -- Relaciones
-    estudiante_id INT NOT NULL COMMENT 'Estudiante',
-    libro_id INT NOT NULL COMMENT 'Libro de registro',
+    estudiante_id INT NULL COMMENT 'Estudiante (referencia a estudiantes)',
+    libro_id INT NULL COMMENT 'Libro de registro (referencia a libros_registro)',
+    periodo_id INT NULL COMMENT 'Periodo académico al que corresponde este folio (1er, 2do, 3er año). Permite múltiples folios por estudiante (uno por año). Según Historial Académico: cada estudiante tiene un folio diferente por cada año.',
     
     -- Datos del folio
     numero_folio INT NOT NULL COMMENT 'Número de folio en el libro',
@@ -253,23 +264,32 @@ CREATE TABLE folios_estudiantes (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
     deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
-    created_by INT COMMENT 'Usuario que creó',
-    updated_by INT COMMENT 'Usuario que modificó',
-    deleted_by INT COMMENT 'Usuario que eliminó',
+    created_by INT NULL COMMENT 'Usuario que creó',
+    updated_by INT NULL COMMENT 'Usuario que modificó',
+    deleted_by INT NULL COMMENT 'Usuario que eliminó',
     
-    -- Foreign Keys
+    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
+    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
+    
     FOREIGN KEY (estudiante_id) REFERENCES estudiantes(id) ON DELETE SET NULL,
     FOREIGN KEY (libro_id) REFERENCES libros_registro(id) ON DELETE SET NULL,
+    FOREIGN KEY (periodo_id) REFERENCES periodos(id) ON DELETE SET NULL,
     
-    -- Índices
-    INDEX idx_activo (activo),
-    INDEX idx_deleted_at (deleted_at),
-    INDEX idx_estudiante_id (estudiante_id),
-    INDEX idx_estado (estado),
-    INDEX idx_numero_folio (numero_folio)
+    -- Índices para optimización
+    INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
+    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
+    INDEX idx_estudiante_id (estudiante_id) COMMENT 'Búsqueda por estudiante',
+    INDEX idx_estado (estado) COMMENT 'Filtrado por estado',
+    INDEX idx_numero_folio (numero_folio) COMMENT 'Búsqueda por número de folio',
+    INDEX idx_periodo (periodo_id) COMMENT 'Búsqueda por periodo',
+    INDEX idx_estudiante_periodo (estudiante_id, periodo_id, activo, deleted_at) COMMENT 'Búsqueda de folios por estudiante y periodo (permite múltiples folios por estudiante)'
     
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Folios oficiales de estudiantes en libros de registro';
+COMMENT='Folios oficiales de estudiantes en libros de registro. Cada estudiante puede tener múltiples folios (uno por año académico). Según Historial Académico: 1er año → Libro X, Folio Y; 2do año → Libro Z, Folio W; 3er año → Libro A, Folio B.';
+
+-- ============================================
+-- FASE 3: REHABILITAR FOREIGN KEY CHECKS (antes de triggers)
+-- ============================================
 
 SET FOREIGN_KEY_CHECKS = 1;
 
@@ -323,7 +343,7 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- VERIFICACIÓN
 -- ============================================
 
-SELECT 'Módulos operativos - Parte 2 creada (4 tablas)' as mensaje;
+SELECT 'Módulo de supervisión docente y libros de registro creado (4 tablas)' as mensaje;
 
 SELECT 
     TABLE_NAME as tabla,
@@ -376,5 +396,5 @@ Ejemplo:
 */
 
 -- ============================================
--- FIN DE MÓDULOS OPERATIVOS
+-- FIN DEL MÓDULO DE SUPERVISIÓN DOCENTE Y LIBROS DE REGISTRO
 -- ============================================

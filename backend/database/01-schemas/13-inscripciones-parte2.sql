@@ -3,38 +3,6 @@
 -- Sistema de Gestión Académica - Instituto INCOS
 -- 3 Tablas: inscripciones_materias, calificaciones, historial_nivelaciones
 -- ============================================
---
--- NORMALIZACIÓN DE DATOS:
---
--- PROBLEMA: La tabla original mezclaba demasiadas responsabilidades:
--- - La relación estudiante → asignación docente
--- - Las calificaciones (notas de parciales, práctico, recuperatorio)
--- - La asistencia
--- - El estado
---
--- SOLUCIÓN: Separar en tablas especializadas:
---
--- 1. inscripciones_materias: Solo la relación estudiante → asignación docente
---    - Contiene: inscripcion_id, asignacion_docente_id, estado
---    - Contiene: resumen (nota_final, nota_definitiva - calculados desde calificaciones)
---    - NO contiene: asistencia (debe estar en tabla separada de asistencia/clases)
---    - NO contiene: numero_intento (la inscripción no se reutiliza)
---    - NO contiene: gestion_vencida/gestion_lleva (no corresponde a detalle de inscripción)
---    - NO contiene: control de notas cerradas (corresponde a calificaciones)
---
--- 2. calificaciones: Todas las notas de evaluaciones
---    - Contiene: inscripcion_materia_id, tipo_evaluacion, nota, fecha, intento
---    - Tipos: 1ER_PARCIAL, 2DO_PARCIAL, 3ER_PARCIAL, 4TO_PARCIAL, PRACTICO, RECUPERATORIO
---    - Permite múltiples evaluaciones del mismo tipo (ej: múltiples recuperatorios)
---
--- 3. historial_nivelaciones: Exámenes de nivelación (separado porque es proceso especial)
---
--- VENTAJAS DE ESTA ESTRUCTURA:
--- - Normalización: Cada tabla tiene una responsabilidad clara
--- - Flexibilidad: Puede haber múltiples evaluaciones del mismo tipo
--- - Escalabilidad: Fácil agregar nuevos tipos de evaluación
--- - Consultas: Más simples para reportes específicos
--- ============================================
 
 USE instituto_incos;
 
@@ -58,26 +26,6 @@ DROP TABLE IF EXISTS inscripciones_materias;
 -- ============================================
 -- TABLA: inscripciones_materias
 -- ============================================
--- Registra la inscripción de un estudiante a una asignación docente específica.
--- Esta es la TABLA PRINCIPAL que vincula estudiante con asignación docente.
---
--- ¿QUÉ CONTIENE?
--- - La relación básica: estudiante (vía inscripcion_id) → asignacion_docente_id
--- - Estado: estado (INSCRITO, CURSANDO, APROBADO, REPROBADO, etc.)
--- - Resumen académico: nota_final, nota_definitiva (calculados desde calificaciones)
---
--- ¿QUÉ NO CONTIENE?
--- - Las notas individuales de cada parcial (están en calificaciones)
--- - Las fechas de cada evaluación (están en calificaciones)
--- - Los detalles de recuperatorios (están en calificaciones)
--- - Asistencia (debe estar en tabla separada de asistencia/clases)
--- - numero_intento (la inscripción no se reutiliza, cada intento es una nueva inscripción)
--- - gestion_vencida/gestion_lleva (no corresponde a detalle de inscripción)
--- - Control de notas cerradas (corresponde a calificaciones o gestión)
---
--- NOTA: nota_final y nota_definitiva se calculan mediante VISTA o TRIGGER
--- desde la tabla calificaciones.
--- ============================================
 
 CREATE TABLE inscripciones_materias (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -85,15 +33,10 @@ CREATE TABLE inscripciones_materias (
     asignacion_docente_id INT NULL COMMENT 'Asignación docente específica (curso + docente + gestion_plan) a la que se inscribe. Garantiza que el curso esté activo en la gestión y tenga docente asignado.',
     
     -- Resumen académico (calculado desde calificaciones)
-    -- Estos campos se actualizan mediante TRIGGER o VISTA desde la tabla calificaciones
-    nota_final DECIMAL(5,2) NULL COMMENT 'Nota final (promedio de parciales y práctico, calculado desde calificaciones)',
-    nota_definitiva DECIMAL(5,2) NULL COMMENT 'Nota definitiva (considera recuperatorio si aprobó >=60, calculado desde calificaciones)',
+    nota_final DECIMAL(5,2) NULL COMMENT 'Nota final calculada (0-100)',
+    nota_definitiva DECIMAL(5,2) NULL COMMENT 'Nota definitiva (0-100)',
     
     -- Estado de la materia
-    -- DIFERENCIA CON tipo_inscripcion (en inscripciones):
-    -- - tipo_inscripcion: Tipo de inscripción del estudiante (NUEVO, REINGRESO, CONTINUIDAD)
-    -- - estado: Estado de esta materia específica (INSCRITO, CURSANDO, APROBADO, REPROBADO, etc.)
-    -- Un estudiante puede tener tipo_inscripcion=CONTINUIDAD pero una materia con estado=REPROBADO
     estado ENUM(
         'INSCRITO', 
         'CURSANDO', 
@@ -101,7 +44,7 @@ CREATE TABLE inscripciones_materias (
         'REPROBADO', 
         'ABANDONO', 
         'RETIRADO'
-    ) DEFAULT 'INSCRITO' COMMENT 'Estado de la materia individual (se actualiza automáticamente según nota_definitiva). Diferente de tipo_inscripcion que está en la tabla inscripciones.',
+    ) DEFAULT 'INSCRITO' COMMENT 'Estado de la materia individual',
     
     -- Observaciones
     observaciones TEXT COMMENT 'Observaciones generales',
@@ -134,33 +77,10 @@ CREATE TABLE inscripciones_materias (
     INDEX idx_estado_activo (estado, activo, deleted_at) COMMENT 'Búsqueda por estado'
     
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Inscripción de estudiante a una asignación docente específica. Contiene solo la relación básica (inscripcion_id → asignacion_docente_id), estado y resumen académico (nota_final, nota_definitiva calculados desde calificaciones). Las calificaciones detalladas están en la tabla calificaciones. La asistencia debe estar en una tabla separada de asistencia/clases.';
+COMMENT='Inscripción de estudiante a una asignación docente específica';
 
 -- ============================================
 -- TABLA: calificaciones
--- ============================================
--- Registra todas las calificaciones (notas) de un estudiante en una materia.
--- Cada evaluación (parcial, práctico, recuperatorio) es un registro separado.
---
--- ¿QUÉ CONTIENE?
--- - inscripcion_materia_id: A qué materia pertenece esta calificación
--- - tipo_evaluacion: Qué tipo de evaluación es (1ER_PARCIAL, 2DO_PARCIAL, etc.)
--- - nota: La nota obtenida (0-100)
--- - fecha: Fecha de la evaluación
--- - intento: Número de intento (para recuperatorios: 1, 2, 3)
--- - Control de notas: notas_cerradas, fecha_cierre_notas, cerradas_por
--- - observaciones: Observaciones sobre esta evaluación específica
---
--- ¿POR QUÉ TABLA SEPARADA?
--- - Permite múltiples evaluaciones del mismo tipo (ej: 3 recuperatorios)
--- - Facilita agregar nuevos tipos de evaluación sin modificar la estructura
--- - Normalización: Separar datos de evaluaciones de la inscripción
--- - Consultas más simples: Fácil filtrar por tipo de evaluación
---
--- EJEMPLO DE USO:
--- - Estudiante tiene: 1ER_PARCIAL (nota=75), 2DO_PARCIAL (nota=80), RECUPERATORIO intento 1 (nota=55), RECUPERATORIO intento 2 (nota=65)
--- - Se calcula nota_final = promedio de parciales = (75+80)/2 = 77.5
--- - Se calcula nota_definitiva = 60 (porque aprobó recuperatorio >=60)
 -- ============================================
 
 CREATE TABLE calificaciones (
@@ -180,8 +100,11 @@ CREATE TABLE calificaciones (
     ) NULL COMMENT 'Tipo de evaluación',
     
     -- Calificación
-    nota DECIMAL(5,2) NULL COMMENT 'Nota obtenida (0-100)',
+    nota DECIMAL(5,2) NULL COMMENT 'Nota obtenida (0-100). Nota mínima para aprobar: 61. Validación: 0-100',
     fecha DATE NULL COMMENT 'Fecha de la evaluación',
+    
+    -- Bimestre (según Registro Académico de Notas: 4 bimestres por gestión)
+    bimestre INT NULL COMMENT 'Número de bimestre (1, 2, 3, 4) para evaluaciones periódicas. NULL para evaluaciones especiales (recuperatorio, habilitación, etc.)',
     
     -- Control de intentos (para recuperatorios/habilitaciones)
     intento INT DEFAULT 1 COMMENT 'Número de intento (1, 2, 3 para recuperatorios/habilitaciones, 1 para parciales)',
@@ -213,34 +136,19 @@ CREATE TABLE calificaciones (
     INDEX idx_tipo_evaluacion (tipo_evaluacion) COMMENT 'Filtrado por tipo de evaluación',
     INDEX idx_nota (nota) COMMENT 'Búsqueda por nota',
     INDEX idx_fecha (fecha) COMMENT 'Búsqueda por fecha',
+    INDEX idx_bimestre (bimestre) COMMENT 'Búsqueda por bimestre',
     INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
     INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
     INDEX idx_inscripcion_tipo (inscripcion_materia_id, tipo_evaluacion, activo, deleted_at) COMMENT 'Búsqueda por inscripción y tipo de evaluación',
+    INDEX idx_inscripcion_bimestre (inscripcion_materia_id, bimestre, tipo_evaluacion, activo, deleted_at) COMMENT 'Búsqueda de evaluaciones por inscripción, bimestre y tipo',
     INDEX idx_inscripcion_intento (inscripcion_materia_id, tipo_evaluacion, intento, activo, deleted_at) COMMENT 'Búsqueda de intentos por tipo',
     INDEX idx_notas_cerradas (notas_cerradas, activo, deleted_at) COMMENT 'Búsqueda de notas cerradas'
     
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Calificaciones (notas) de evaluaciones. Cada evaluación (parcial, práctico, recuperatorio) es un registro separado. Permite múltiples evaluaciones del mismo tipo (ej: múltiples recuperatorios).';
+COMMENT='Calificaciones (notas) de evaluaciones. Cada evaluación (parcial, práctico, recuperatorio) es un registro separado. Permite múltiples evaluaciones del mismo tipo (ej: múltiples recuperatorios). Escala: 0-100 puntos. Nota mínima para aprobar: 61. Sistema de 4 bimestres según Registro Académico de Notas.';
 
 -- ============================================
 -- TABLA: historial_nivelaciones
--- ============================================
--- Registra el historial de nivelaciones de materias reprobadas.
--- Una nivelación es un examen especial para aprobar una materia reprobada.
---
--- ¿QUÉ ES ESTA TABLA?
--- Cuando un estudiante reprueba una materia 2+ veces, debe hacer una "nivelación"
--- (examen especial) para poder continuar. Esta tabla registra esos exámenes.
---
--- ¿POR QUÉ EXISTE ESTA TABLA?
--- Porque las nivelaciones son procesos separados de las materias normales.
--- Tienen su propia gestión, fecha, docente evaluador, etc.
---
--- REGLAS DE NIVELACIÓN:
--- - Máximo 3 intentos por materia
--- - Se programa en una gestión específica
--- - Nota mínima para aprobar: 60
--- - Si aprueba, se actualiza el estado de la materia original
 -- ============================================
 
 CREATE TABLE historial_nivelaciones (
@@ -299,7 +207,4 @@ SET FOREIGN_KEY_CHECKS = 1;
 
 -- ============================================
 -- FIN DEL SCRIPT
--- ============================================
--- NOTA: Los triggers para calcular nota_final y nota_definitiva desde calificaciones
--- se encuentran en: 12-inscripciones-logica.sql
 -- ============================================

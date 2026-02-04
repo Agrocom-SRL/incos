@@ -65,19 +65,19 @@ export class Enrollment extends BaseEntity {
   }
 
   /**
-   * Verifica si es una transferencia de entrada
-   * @returns {boolean}
-   */
-  isTransferIn() {
-    return this.enrollmentType === TIPOS_INSCRIPCION.TRANSFERENCIA_ENTRADA;
-  }
-
-  /**
-   * Verifica si es un traspaso de entrada
+   * Verifica si es un traspaso de entrada (de otro instituto)
    * @returns {boolean}
    */
   isTransferBetweenCampuses() {
     return this.enrollmentType === TIPOS_INSCRIPCION.TRASPASO_ENTRADA;
+  }
+
+  /**
+   * Verifica si es transitabilidad (Técnico Medio → solo materias complementarias)
+   * @returns {boolean}
+   */
+  isTransitabilidadEntrada() {
+    return this.enrollmentType === TIPOS_INSCRIPCION.TRANSITABILIDAD_ENTRADA;
   }
 
   /**

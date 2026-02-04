@@ -55,9 +55,9 @@
 -- - NUEVO: Estudiante nuevo (primera vez en el instituto)
 -- - REINGRESO: Estudiante que regresa después de un periodo sin inscribirse
 -- - CONTINUIDAD: Estudiante que continúa de la gestión anterior
--- - TRANSFERENCIA_ENTRADA: Estudiante que viene de otra institución (ver parte 3)
--- - TRASPASO_ENTRADA: Estudiante que viene de otra sede (ver parte 4)
--- 
+-- - TRASPASO_ENTRADA: Estudiante de otro instituto que completó un periodo; se inscribe al siguiente (traspaso_id → traspasos, ver 12-traspasos.sql)
+-- - TRANSITABILIDAD_ENTRADA: Estudiante con Técnico Medio que cursa solo materias complementarias (transitabilidad_id → transitabilidades, ver 12-transitabilidades.sql)
+--
 -- RELACIÓN CON OTRAS TABLAS:
 -- - inscripciones_materias: Asignaciones específicas inscritas (ver parte 2)
 -- - calificaciones: Notas de evaluaciones (ver parte 2, tabla separada para normalización)
@@ -68,8 +68,8 @@
 -- - gestiones: Gestión académica en la que se inscribe (diferente de gestion_ingreso_id)
 -- - gestiones_planes: Plan habilitado en la gestión (garantiza coherencia)
 -- - asignaciones_docentes: Cursos disponibles con docente en la gestión
--- - transferencias: Si tipo_inscripcion = TRANSFERENCIA_ENTRADA, se puede consultar desde transferencias (parte 3)
--- - traspasos: Si tipo_inscripcion = TRASPASO_ENTRADA, se puede consultar desde traspasos (parte 4)
+-- - traspasos: Si tipo_inscripcion = TRASPASO_ENTRADA, inscripciones.traspaso_id → traspasos (ver 12-traspasos.sql)
+-- - transitabilidades: Si tipo_inscripcion = TRANSITABILIDAD_ENTRADA, inscripciones.transitabilidad_id → transitabilidades (ver 12-transitabilidades.sql)
 -- ============================================
 
 USE instituto_incos;
@@ -110,7 +110,7 @@ DROP TABLE IF EXISTS inscripciones;
 -- - gestion_id: Gestión en la que se inscribe (diferente de gestion_ingreso_id en estudiantes_datos_academicos)
 --   Ejemplo: Estudiante ingresó en 2023 (gestion_ingreso_id=2023) pero se inscribe a materias en 2024 (gestion_id=2024)
 -- - REGLA CRÍTICA: Si tiene nivelaciones pendientes, NO puede inscribirse
---   hasta que apruebe todas sus nivelaciones (ver bloqueos_inscripcion en parte 5)
+--   hasta que apruebe todas sus nivelaciones (ver bloqueos_inscripcion en 12-bloqueos-inscripcion.sql)
 -- - Los choques de horario se validan antes de registrar (si hay choque, no se registra)
 -- - Los prerrequisitos se validan antes de registrar (si no cumple, no se registra)
 -- - Los cupos se validan antes de registrar (si no hay cupo, no se registra)
@@ -137,12 +137,14 @@ CREATE TABLE inscripciones (
     gestion_id INT NULL COMMENT 'Gestión académica (año lectivo) en la que se inscribe (referencia a gestiones). Diferente de gestion_ingreso_id en estudiantes_datos_academicos.',
     
     -- Tipo de inscripción
-    tipo_inscripcion ENUM('NUEVO', 'REINGRESO', 'CONTINUIDAD', 'TRANSFERENCIA_ENTRADA', 'TRASPASO_ENTRADA') DEFAULT 'CONTINUIDAD' 
-        COMMENT 'Tipo de inscripción: NUEVO (primera vez, se inscribe por bloques - todas las materias del periodo 1), REINGRESO (regresa después de ausencia), CONTINUIDAD (continúa de gestión anterior, puede elegir materias individuales), TRANSFERENCIA_ENTRADA (viene de otra institución), TRASPASO_ENTRADA (viene de otra sede)',
-    
+    tipo_inscripcion ENUM('NUEVO', 'REINGRESO', 'CONTINUIDAD', 'TRASPASO_ENTRADA', 'TRANSITABILIDAD_ENTRADA') DEFAULT 'CONTINUIDAD'
+        COMMENT 'Tipo de inscripción: NUEVO (bloques periodo 1), REINGRESO, CONTINUIDAD (materias individuales), TRASPASO_ENTRADA (de otro instituto, traspaso_id), TRANSITABILIDAD_ENTRADA (Técnico Medio, transitabilidad_id)',
+    traspaso_id INT NULL COMMENT 'Si tipo_inscripcion=TRASPASO_ENTRADA, referencia a traspasos. FK se añade en 12-traspasos.sql',
+    transitabilidad_id INT NULL COMMENT 'Si tipo_inscripcion=TRANSITABILIDAD_ENTRADA, referencia a transitabilidades. FK se añade en 12-transitabilidades.sql',
+
     -- Fecha de inscripción
-    fecha_inscripcion DATE NULL DEFAULT (CURDATE()) COMMENT 'Fecha en que se realizó la inscripción',
-    
+    fecha_inscripcion DATE NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha en que se realizó la inscripción',
+
     -- Observaciones
     observaciones TEXT COMMENT 'Observaciones generales sobre la inscripción',
     
@@ -170,10 +172,12 @@ CREATE TABLE inscripciones (
     INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
     INDEX idx_estudiante_datos_gestion (estudiante_datos_academicos_id, gestion_id, activo, deleted_at) COMMENT 'Búsqueda de inscripciones por estudiante y gestión',
     INDEX idx_gestion_activo (gestion_id, activo, deleted_at) COMMENT 'Búsqueda de inscripciones por gestión',
-    INDEX idx_tipo_activo (tipo_inscripcion, activo, deleted_at) COMMENT 'Búsqueda por tipo de inscripción'
-    
+    INDEX idx_tipo_activo (tipo_inscripcion, activo, deleted_at) COMMENT 'Búsqueda por tipo de inscripción',
+    INDEX idx_traspaso_id (traspaso_id) COMMENT 'Búsqueda por traspaso',
+    INDEX idx_transitabilidad_id (transitabilidad_id) COMMENT 'Búsqueda por transitabilidad'
+
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Inscripciones de estudiantes a una gestión académica. Se relaciona con estudiantes_datos_academicos (que contiene la carrera del estudiante). El estudiante ya debe estar registrado con documentos y pago completos. Registra qué asignaciones_docentes (cursos con docente) va a cursar en la gestión. Los estudiantes NUEVOS se inscriben por bloques (todas las materias del periodo 1). Los estudiantes CONTINUIDAD/REINGRESO pueden elegir materias individuales. El periodo de cada materia viene del plan de estudios, no se elige directamente. Si hay choques de horario, nivelaciones pendientes o prerrequisitos no cumplidos, NO se registra la inscripción. El número de materias y carga horaria se calculan desde inscripciones_materias. Las transferencias y traspasos se consultan desde sus respectivas tablas (partes 3 y 4).';
+COMMENT='Inscripciones de estudiantes a una gestión académica. traspaso_id y transitabilidad_id vinculan con traspasos (12-traspasos.sql) y transitabilidades (12-transitabilidades.sql).';
 
 -- ============================================
 -- FASE 3: REHABILITAR FOREIGN KEY CHECKS

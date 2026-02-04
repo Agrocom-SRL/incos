@@ -1,27 +1,7 @@
 -- ============================================
--- MÓDULO DE INSCRIPCIONES - PARTE 5
+-- MÓDULO DE BLOQUEOS DE INSCRIPCIÓN
 -- Sistema de Gestión Académica - Instituto INCOS
 -- 1 Tabla: bloqueos_inscripcion
--- ============================================
---
--- Esta parte contiene la tabla de bloqueos de inscripción.
--- Los bloqueos impiden a un estudiante inscribirse por diversas razones.
---
--- REGLAS DE NEGOCIO CRÍTICAS:
--- 1. Un estudiante con 2+ aplazos (REPROBADO) en una materia NO puede inscribirse en NINGUNA materia
---    hasta que apruebe todas sus nivelaciones pendientes
--- 2. Se crea automáticamente un bloqueo cuando hay nivelaciones pendientes (ver 07-inscripciones-logica.sql)
--- 3. El bloqueo impide inscribirse en CUALQUIER materia, no solo nuevas
--- 4. El bloqueo se resuelve automáticamente cuando se aprueban TODAS las nivelaciones
---
--- RELACIÓN CON OTRAS TABLAS:
--- - estudiantes: Estudiante bloqueado
--- - gestiones: Gestión en la que está bloqueado
--- - historial_nivelaciones: Nivelaciones que causan el bloqueo
--- - inscripciones: Inscripciones bloqueadas
---
--- NOTA: La lógica de negocio (triggers, stored procedures, vistas) se encuentra en:
--- 12-inscripciones-logica.sql
 -- ============================================
 
 USE instituto_incos;
@@ -44,35 +24,11 @@ DROP TABLE IF EXISTS bloqueos_inscripcion;
 -- ============================================
 -- TABLA: bloqueos_inscripcion
 -- ============================================
--- Registra los bloqueos que impiden a un estudiante inscribirse.
--- Los bloqueos pueden ser por nivelaciones pendientes, documentos incompletos,
--- mora en pagos, o razones administrativas.
---
--- MOTIVOS DE BLOQUEO:
--- - NIVELACIONES_PENDIENTES: Tiene nivelaciones pendientes (automático cuando hay 2+ aplazos)
---   ⚠️ CRÍTICO: Este bloqueo impide inscribirse en TODAS las materias, no solo nuevas
--- - DOCUMENTOS_INCOMPLETOS: Faltan documentos requeridos
--- - MORA_PAGOS: Tiene pagos pendientes o en mora
--- - ADMINISTRATIVO: Bloqueo manual por razones administrativas
--- - PRERREQUISITOS: No cumple prerrequisitos de materias
--- - CHOQUE_HORARIO: Tiene choques de horario en materias inscritas
---
--- ESTADOS:
--- - ACTIVO: Bloqueo vigente, impide inscripción
--- - RESUELTO: Bloqueo resuelto, ya no impide inscripción
--- - ANULADO: Bloqueo anulado manualmente
---
--- FLUJO:
--- 1. Se crea un bloqueo (automático o manual)
--- 2. El estudiante no puede inscribirse mientras el bloqueo esté ACTIVO
--- 3. Se resuelve el bloqueo cuando se cumple el requisito
--- 4. El estudiante puede inscribirse nuevamente
--- ============================================
 
 CREATE TABLE bloqueos_inscripcion (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    estudiante_id INT NOT NULL COMMENT 'Estudiante bloqueado (referencia a estudiantes)',
-    gestion_id INT NOT NULL COMMENT 'Gestión en la que está bloqueado (referencia a gestiones)',
+    estudiante_id INT NULL COMMENT 'Estudiante bloqueado (referencia a estudiantes)',
+    gestion_id INT NULL COMMENT 'Gestión en la que está bloqueado (referencia a gestiones)',
     motivo_bloqueo ENUM(
         'NIVELACIONES_PENDIENTES',
         'DOCUMENTOS_INCOMPLETOS',
@@ -97,14 +53,18 @@ CREATE TABLE bloqueos_inscripcion (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
     deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
-    created_by INT COMMENT 'Usuario que creó',
-    updated_by INT COMMENT 'Usuario que modificó',
-    deleted_by INT COMMENT 'Usuario que eliminó',
+    created_by INT NULL COMMENT 'Usuario que creó',
+    updated_by INT NULL COMMENT 'Usuario que modificó',
+    deleted_by INT NULL COMMENT 'Usuario que eliminó',
+    
+    -- NOTA: Las Foreign Keys a usuarios (resuelto_por) se omiten para evitar dependencias circulares
+    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
     
     FOREIGN KEY (estudiante_id) REFERENCES estudiantes(id) ON DELETE SET NULL,
     FOREIGN KEY (gestion_id) REFERENCES gestiones(id) ON DELETE SET NULL,
     FOREIGN KEY (nivelacion_id) REFERENCES historial_nivelaciones(id) ON DELETE SET NULL,
     
+    -- Índices para optimización
     INDEX idx_estudiante_id (estudiante_id) COMMENT 'Búsqueda por estudiante',
     INDEX idx_gestion_id (gestion_id) COMMENT 'Búsqueda por gestión',
     INDEX idx_motivo_bloqueo (motivo_bloqueo) COMMENT 'Filtrado por motivo',
@@ -126,7 +86,4 @@ SET FOREIGN_KEY_CHECKS = 1;
 
 -- ============================================
 -- FIN DEL SCRIPT
--- ============================================
--- NOTA: Los triggers, stored procedures y vistas se encuentran en:
--- 07-inscripciones-logica.sql
 -- ============================================

@@ -56,7 +56,10 @@ CREATE TABLE estudiantes (
     municipio_residencia_id INT COMMENT 'Municipio de residencia (contiene toda la info geográfica)',
     zona VARCHAR(100) COMMENT 'Zona/barrio',
     
-    -- Observaciones
+    -- Datos laborales
+    trabaja BOOLEAN DEFAULT FALSE COMMENT 'Indica si el estudiante trabaja',
+    empresa_institucion VARCHAR(200) COMMENT 'Nombre de la empresa o institución donde trabaja',
+    cargo VARCHAR(150) COMMENT 'Cargo o puesto que ocupa',
     observaciones TEXT COMMENT 'Observaciones adicionales',
     
     -- Campos de auditoría y control (ESTÁNDAR)
@@ -64,9 +67,9 @@ CREATE TABLE estudiantes (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
     deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
-    created_by INT COMMENT 'Usuario que creó',
-    updated_by INT COMMENT 'Usuario que modificó',
-    deleted_by INT COMMENT 'Usuario que eliminó',
+    created_by INT NULL COMMENT 'Usuario que creó',
+    updated_by INT NULL COMMENT 'Usuario que modificó',
+    deleted_by INT NULL COMMENT 'Usuario que eliminó',
     
     -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
     -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
@@ -82,7 +85,8 @@ CREATE TABLE estudiantes (
     INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
     INDEX idx_apellidos (apellido_paterno, apellido_materno) COMMENT 'Búsqueda por apellidos',
     INDEX idx_municipio_residencia (municipio_residencia_id) COMMENT 'Búsqueda por municipio de residencia',
-    INDEX idx_tiene_discapacidad (tiene_discapacidad) COMMENT 'Búsqueda por discapacidad'
+    INDEX idx_tiene_discapacidad (tiene_discapacidad) COMMENT 'Búsqueda por discapacidad',
+    INDEX idx_trabaja (trabaja) COMMENT 'Filtrado por situación laboral'
     
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Estudiantes del instituto';
@@ -111,9 +115,9 @@ CREATE TABLE estudiantes_datos_academicos (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
     deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
-    created_by INT COMMENT 'Usuario que creó',
-    updated_by INT COMMENT 'Usuario que modificó',
-    deleted_by INT COMMENT 'Usuario que eliminó',
+    created_by INT NULL COMMENT 'Usuario que creó',
+    updated_by INT NULL COMMENT 'Usuario que modificó',
+    deleted_by INT NULL COMMENT 'Usuario que eliminó',
     
     -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
     -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
@@ -161,9 +165,9 @@ CREATE TABLE estudiantes_documentos_entrega (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
     deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
-    created_by INT COMMENT 'Usuario que creó',
-    updated_by INT COMMENT 'Usuario que modificó',
-    deleted_by INT COMMENT 'Usuario que eliminó',
+    created_by INT NULL COMMENT 'Usuario que creó',
+    updated_by INT NULL COMMENT 'Usuario que modificó',
+    deleted_by INT NULL COMMENT 'Usuario que eliminó',
     
     -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
     -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
@@ -197,7 +201,7 @@ COMMENT='Relación entre estudiantes y documentos requeridos. Rastrea el estado 
 CREATE TABLE documentos_estudiante (
     id INT AUTO_INCREMENT PRIMARY KEY,
     estudiante_id INT NULL COMMENT 'Estudiante propietario del archivo',
-    tipo_documento VARCHAR(50) NULL COMMENT 'Tipo de documento según categoría (INSCRIPCION, LICENCIA, PASANTIA, DESCUENTO, TITULACION, TRASPASO, TRANSFERENCIA, BECA, OTRO). El usuario selecciona el tipo y luego puede elegir un documento específico de ese tipo.',
+    tipo_documento VARCHAR(50) NULL COMMENT 'Tipo de documento según categoría (INSCRIPCION, LICENCIA, PASANTIA, DESCUENTO, TITULACION, TRASPASO, TRANSITABILIDAD, BECA, OTRO). El usuario selecciona el tipo y luego puede elegir un documento específico de ese tipo.',
     documentacion_id INT NULL COMMENT 'Documento específico de la categoría tipo_documento (referencia a documentacion). NULL si el archivo contiene TODOS los documentos del tipo_documento o múltiples documentos de diferentes tipos.',
     nombre_archivo VARCHAR(255) NOT NULL COMMENT 'Nombre del archivo digital',
     ruta_archivo VARCHAR(500) NOT NULL COMMENT 'Ruta del archivo en el servidor',
@@ -216,9 +220,9 @@ CREATE TABLE documentos_estudiante (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
     deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
-    created_by INT COMMENT 'Usuario que creó',
-    updated_by INT COMMENT 'Usuario que modificó',
-    deleted_by INT COMMENT 'Usuario que eliminó',
+    created_by INT NULL COMMENT 'Usuario que creó',
+    updated_by INT NULL COMMENT 'Usuario que modificó',
+    deleted_by INT NULL COMMENT 'Usuario que eliminó',
     
     -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
     -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría

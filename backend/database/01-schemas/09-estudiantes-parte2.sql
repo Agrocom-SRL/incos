@@ -47,9 +47,9 @@ CREATE TABLE becas_descuentos (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
     deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
-    created_by INT COMMENT 'Usuario que creó',
-    updated_by INT COMMENT 'Usuario que modificó',
-    deleted_by INT COMMENT 'Usuario que eliminó',
+    created_by INT NULL COMMENT 'Usuario que creó',
+    updated_by INT NULL COMMENT 'Usuario que modificó',
+    deleted_by INT NULL COMMENT 'Usuario que eliminó',
     
     -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
     -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
@@ -58,11 +58,8 @@ CREATE TABLE becas_descuentos (
     INDEX idx_porcentaje (porcentaje) COMMENT 'Búsqueda por porcentaje',
     INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
     INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
-    INDEX idx_es_automatica (es_automatica) COMMENT 'Filtrado de becas automáticas',
-    
-    -- Constraints
-    CHECK (porcentaje >= 0 AND porcentaje <= 100)
-    
+    INDEX idx_es_automatica (es_automatica) COMMENT 'Filtrado de becas automáticas'
+
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Catálogo de becas y descuentos sobre el aporte anual de matrícula (400 bs). Permite registrar cualquier tipo de descuento. Escasos recursos es un tipo de descuento más, no un atributo del sistema.';
 
@@ -87,9 +84,9 @@ CREATE TABLE estudiantes_becas (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
     deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
-    created_by INT COMMENT 'Usuario que creó',
-    updated_by INT COMMENT 'Usuario que modificó',
-    deleted_by INT COMMENT 'Usuario que eliminó',
+    created_by INT NULL COMMENT 'Usuario que creó',
+    updated_by INT NULL COMMENT 'Usuario que modificó',
+    deleted_by INT NULL COMMENT 'Usuario que eliminó',
     
     -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
     -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
@@ -144,9 +141,9 @@ CREATE TABLE licencias_solicitudes (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
     deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
-    created_by INT COMMENT 'Usuario que creó',
-    updated_by INT COMMENT 'Usuario que modificó',
-    deleted_by INT COMMENT 'Usuario que eliminó',
+    created_by INT NULL COMMENT 'Usuario que creó',
+    updated_by INT NULL COMMENT 'Usuario que modificó',
+    deleted_by INT NULL COMMENT 'Usuario que eliminó',
     
     -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
     -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
@@ -169,11 +166,8 @@ CREATE TABLE licencias_solicitudes (
     INDEX idx_motivo (motivo, estado, activo) COMMENT 'Búsqueda por motivo y estado',
     INDEX idx_fechas (fecha_desde, fecha_hasta) COMMENT 'Búsqueda por rango de fechas',
     INDEX idx_fecha_decision (fecha_decision, estado) COMMENT 'Búsqueda por fecha de decisión',
-    INDEX idx_fechas_entrega (fecha_inicio_entrega_documentos, fecha_fin_entrega_documentos) COMMENT 'Búsqueda por rango de fechas de entrega de documentos',
-    
-    CHECK (fecha_hasta >= fecha_desde),
-    CHECK (total_dias > 0 AND total_dias <= 15)
-    
+    INDEX idx_fechas_entrega (fecha_inicio_entrega_documentos, fecha_fin_entrega_documentos) COMMENT 'Búsqueda por rango de fechas de entrega de documentos'
+
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Solicitudes de licencias estudiantiles (máx 15 días/gestión). Requiere documentación de respaldo según motivo (enfermedad, trabajo, familiar, etc.). Los documentos se gestionan en documentos_estudiante con tipo_referencia=licencias_solicitudes. Los motivos indican permiso para modificación de horarios de clases por choque con actividades.';
 
@@ -200,9 +194,9 @@ CREATE TABLE estudiantes_apoderados (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
     deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
-    created_by INT COMMENT 'Usuario que creó',
-    updated_by INT COMMENT 'Usuario que modificó',
-    deleted_by INT COMMENT 'Usuario que eliminó',
+    created_by INT NULL COMMENT 'Usuario que creó',
+    updated_by INT NULL COMMENT 'Usuario que modificó',
+    deleted_by INT NULL COMMENT 'Usuario que eliminó',
     
     -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
     -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría

@@ -101,17 +101,6 @@ export const reportesRoutes = [
         },
     },
     {
-        path: '/reportes/solicitudes/transferencia',
-        element: <UnderConstruction />,
-        key: 'REP-SOLICITUDES-TRANSFERENCIA',
-        menu: {
-            label: 'Por Transferencia',
-            module: 'REP',
-            parent: 'REP-SOLICITUDES',
-            order: 4,
-        },
-    },
-    {
         path: '/reportes/solicitudes/pasantia',
         element: <UnderConstruction />,
         key: 'REP-SOLICITUDES-PASANTIA',

@@ -109,9 +109,9 @@ CREATE TABLE gestiones_planes (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación del registro',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de última modificación',
     deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Fecha de eliminación lógica (soft delete)',
-    created_by INT NULL COMMENT 'ID del usuario que creó el registro',
-    updated_by INT NULL COMMENT 'ID del usuario que modificó el registro',
-    deleted_by INT NULL COMMENT 'ID del usuario que eliminó el registro',
+    created_by INT NULL COMMENT 'Usuario que creó',
+    updated_by INT NULL COMMENT 'Usuario que modificó',
+    deleted_by INT NULL COMMENT 'Usuario que eliminó',
     
     -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
     -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
@@ -265,9 +265,9 @@ CREATE TABLE actividades_calendario (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
     deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
-    created_by INT NULL COMMENT 'Usuario que creó',
-    updated_by INT NULL COMMENT 'Usuario que modificó',
-    deleted_by INT NULL COMMENT 'Usuario que eliminó',
+    created_by INT COMMENT 'Usuario que creó',
+    updated_by INT COMMENT 'Usuario que modificó',
+    deleted_by INT COMMENT 'Usuario que eliminó',
     
     -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
     -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
@@ -319,9 +319,9 @@ CREATE TABLE asignaciones_docentes (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación del registro',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de última modificación',
     deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Fecha de eliminación lógica (soft delete)',
-    created_by INT NULL COMMENT 'ID del usuario que creó el registro',
-    updated_by INT NULL COMMENT 'ID del usuario que modificó el registro',
-    deleted_by INT NULL COMMENT 'ID del usuario que eliminó el registro',
+    created_by INT NULL COMMENT 'Usuario que creó',
+    updated_by INT NULL COMMENT 'Usuario que modificó',
+    deleted_by INT NULL COMMENT 'Usuario que eliminó',
     
     -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
     -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
