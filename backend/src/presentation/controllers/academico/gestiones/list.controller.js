@@ -14,7 +14,8 @@
  * - page: Número de página (default: 1)
  * - limit: Cantidad de resultados por página (default: 50)
  * - search: Término de búsqueda por código, nombre o año (opcional)
- * - filtros: Filtros específicos (ej: { active: true, vigente: true })
+ * - vigente: Filtrar por vigencia (0 = no vigentes, 1 = vigentes). Ej: ?vigente=0
+ * - filtros: JSON con filtros (ej: filtros={"vigente":false,"active":true})
  * 
  * Principios SOLID:
  * - Single Responsibility: Solo maneja la comunicación HTTP para listar gestiones

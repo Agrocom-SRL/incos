@@ -112,6 +112,7 @@ export const PARALELOS_ENDPOINTS = {
   // Endpoint específico para obtener horarios de un paralelo
   SCHEDULE: (id) => `${API_BASE}/paralelos/${id}/schedule`,
 };
+export const GESTIONES_ENDPOINTS = createCRUDEndpoints('/gestiones');
 
 // ============================================
 // MÓDULO: GEOGRÁFICOS

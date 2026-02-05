@@ -12,13 +12,17 @@
  * @param {boolean} loading - Estado de carga
  * @param {string} error - Mensaje de error
  * @param {Function} onCarreraChange - Callback cuando cambia la carrera seleccionada
+ * @param {boolean} embedded - Si true, no renderiza Card (para usar dentro de otro cuadro)
+ * @param {boolean} compact - Si true, tarjetas de carrera con altura reducida
  */
 
-import { useEffect } from 'react';
 import { Form, Alert, Radio, Spin, Empty, Typography } from 'antd';
 import { Card } from '@atoms';
 
 const { Text } = Typography;
+
+const CARD_HEIGHT_DEFAULT = 260;
+const CARD_HEIGHT_COMPACT = 220;
 
 const CarreraSelectionSection = ({
   form,
@@ -26,7 +30,10 @@ const CarreraSelectionSection = ({
   loading = false,
   error = null,
   onCarreraChange,
+  embedded = false,
+  compact = false,
 }) => {
+  const cardHeight = compact ? CARD_HEIGHT_COMPACT : CARD_HEIGHT_DEFAULT;
   // Handler para cuando cambia la selección del radio
   const handleRadioChange = (e) => {
     const carreraId = e.target.value;
@@ -57,21 +64,8 @@ const CarreraSelectionSection = ({
     return `${serverBaseUrl}${imagenRuta.startsWith('/') ? imagenRuta : '/' + imagenRuta}`;
   };
 
-  return (
-    <Card
-      title={
-        <span style={{ fontSize: '18px', fontWeight: 600 }}>
-          Seleccione la Carrera
-        </span>
-      }
-      style={{ 
-        marginTop: '24px', 
-        marginBottom: '24px',
-        borderRadius: '12px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
-      }}
-      headerColor="primary"
-    >
+  const content = (
+    <>
       {error && (
         <Alert
           title="Error al cargar carreras"
@@ -83,9 +77,9 @@ const CarreraSelectionSection = ({
       )}
 
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '60px 40px' }}>
+        <div style={{ textAlign: 'center', padding: compact ? '24px 16px' : '60px 40px' }}>
           <Spin size="large">
-            <div style={{ minHeight: '100px' }}>
+            <div style={{ minHeight: compact ? 60 : 100 }}>
               <p style={{ marginTop: '16px', color: '#8c8c8c' }}>Cargando carreras...</p>
             </div>
           </Spin>
@@ -117,8 +111,8 @@ const CarreraSelectionSection = ({
             >
               <div style={{ 
                 display: 'grid', 
-                gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                gap: '20px'
+                gridTemplateColumns: compact ? 'repeat(auto-fit, minmax(200px, 1fr))' : 'repeat(auto-fit, minmax(280px, 1fr))',
+                gap: compact ? 12 : 20
               }}>
                 {carreras.map((carrera) => {
                   const isSelected = selectedValue === carrera.id;
@@ -154,7 +148,7 @@ const CarreraSelectionSection = ({
                         style={{
                           position: 'relative',
                           width: '100%',
-                          height: '260px',
+                          height: cardHeight,
                           borderRadius: '12px',
                           overflow: 'hidden',
                           backgroundColor: hasImage ? '#f5f5f5' : `${colorHex}25`,
@@ -310,6 +304,29 @@ const CarreraSelectionSection = ({
           box-shadow: none !important;
         }
       `}</style>
+    </>
+  );
+
+  if (embedded) {
+    return content;
+  }
+
+  return (
+    <Card
+      title={
+        <span style={{ fontSize: '18px', fontWeight: 600 }}>
+          Seleccione la Carrera
+        </span>
+      }
+      style={{ 
+        marginTop: '24px', 
+        marginBottom: '24px',
+        borderRadius: '12px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
+      }}
+      headerColor="primary"
+    >
+      {content}
     </Card>
   );
 };

@@ -38,6 +38,7 @@ export { IDiscapacidadRepository } from './IDiscapacidadRepository';
 // MÓDULO: ACADÉMICO
 // ============================================
 export { IParaleloRepository } from './IParaleloRepository';
+export { IGestionRepository } from './IGestionRepository';
 
 // ============================================
 // MÓDULO: INSCRIPCIONES

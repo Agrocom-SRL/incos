@@ -8,20 +8,36 @@
  * - Usa Use Cases del Domain Layer (nunca llama directamente a Repository o API)
  * 
  * Este hook:
- * - Obtiene todas las gestiones activas usando el Use Case correspondiente
+ * - Obtiene gestiones aplicando el filtro vigente en el backend (?vigente=0 | ?vigente=1)
  * - Maneja estados de loading y error
  * - Proporciona función para refetch
+ * 
+ * @param {Object} options - Opciones del hook
+ * @param {boolean} [options.vigente] - true = solo vigentes, false = solo no vigentes, undefined = todas
+ * @param {boolean} [options.autoFetch=true] - Si debe cargar al montar
  */
 
 import { createApiHook } from '@application/utils';
 
-export const useGestionesApi = createApiHook({
-  name: 'useGestionesApi',
-  useCase: 'obtenerTodasGestiones', // Asumiendo que existe este use case, si no, usar 'obtenerGestiones' o similar
-  dataType: 'array',
-  dataKey: 'gestiones',
-  initialLoading: false,
-  autoFetch: true,
-  autoFetchArgs: [{ filters: { active: true } }], // Solo gestiones activas
-  errorMessage: 'Error al cargar las gestiones',
-});
+export const useGestionesApi = (options = {}) => {
+  const { vigente, autoFetch = true } = options;
+  
+  // Construir params con el filtro vigente (0 o 1)
+  const params = {};
+  if (vigente !== undefined) {
+    params.vigente = vigente ? 1 : 0;
+  }
+  
+  const autoFetchArgs = Object.keys(params).length > 0 ? [{ params }] : undefined;
+
+  return createApiHook({
+    name: 'useGestionesApi',
+    useCase: 'obtenerTodasGestiones',
+    dataType: 'array',
+    dataKey: 'gestiones',
+    initialLoading: false,
+    autoFetch,
+    autoFetchArgs,
+    errorMessage: 'Error al cargar las gestiones',
+  })();
+};

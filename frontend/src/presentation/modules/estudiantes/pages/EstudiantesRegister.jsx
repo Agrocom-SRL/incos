@@ -69,12 +69,13 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
     municipios = [], // Municipios de origen (necesarios para mostrar nombres)
     segundaProvincias = [], // Provincias de segunda nacionalidad (necesarias para mostrar nombres)
     segundaMunicipios = [], // Municipios de segunda nacionalidad (necesarios para mostrar nombres)
-    gestiones = [], // Gestiones académicas
+    gestiones = [], // Gestiones académicas (solo se cargan cuando tipo es ANTIGUO, gestiones no vigentes)
     carreras = [], // Carreras académicas
     carrerasLoading = false,
     gestionesLoading = false,
     carrerasError = null,
     gestionesError = null,
+    cargarGestiones,
     
     // Contactos de emergencia dinámicos (expuestos desde el provider)
     contactosIndices = [],
@@ -549,6 +550,7 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
         gestionesLoading={gestionesLoading}
         carrerasError={carrerasError}
         gestionesError={gestionesError}
+        cargarGestiones={cargarGestiones}
       />
     </PageTemplate>
   );

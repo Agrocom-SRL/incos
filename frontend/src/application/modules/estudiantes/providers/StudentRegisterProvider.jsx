@@ -26,7 +26,7 @@
  * - Expone datos + lógica vía StudentRegisterContext
  */
 
-import { useMemo, useEffect, useRef, useState } from 'react';
+import { useMemo, useEffect, useRef, useState, useCallback } from 'react';
 import {
     useStudentCatalogApi,
     useStudentGeographicApi,
@@ -74,11 +74,18 @@ export const StudentRegisterProvider = ({ children, mode = 'create', studentId =
         }
     }, [referenceData.loadTiposParentesco, mode]);
 
-    // Hook para cargar gestiones académicas
-    const gestionesApi = useGestionesApi();
+    // Hook para gestiones académicas
+    // Por defecto NO carga gestiones (estudiantes nuevos no necesitan gestiones)
+    // Solo se carga cuando el tipo de admisión es ANTIGUO (gestiones no vigentes)
+    const gestionesApi = useGestionesApi({ vigente: false, autoFetch: false });
     const gestiones = gestionesApi.gestiones || [];
     const gestionesLoading = gestionesApi.loading || false;
     const gestionesError = gestionesApi.error || null;
+    
+    // Función para cargar gestiones (cuando tipo es ANTIGUO; vigente lo resuelve el repositorio)
+    const cargarGestiones = useCallback(() => {
+      gestionesApi.fetch({ params: { vigente: 0 } });
+    }, [gestionesApi.fetch]);
 
     // Hook para cargar carreras académicas
     const carrerasApi = useCarrerasApi();
@@ -91,7 +98,7 @@ export const StudentRegisterProvider = ({ children, mode = 'create', studentId =
         ...catalogData,
         ...geographicData,
         ...referenceData,
-        gestiones, // Gestiones académicas
+        gestiones, // Gestiones académicas (solo se cargan cuando tipo es ANTIGUO, gestiones no vigentes)
         carreras, // Carreras académicas
     }), [catalogData, geographicData, referenceData, gestiones, carreras]);
 
@@ -175,6 +182,8 @@ export const StudentRegisterProvider = ({ children, mode = 'create', studentId =
             gestionesLoading,
             carrerasError,
             gestionesError,
+            // Función para cargar gestiones (cuando tipo es ANTIGUO)
+            cargarGestiones,
         };
 
         const prev = prevValueRef.current;

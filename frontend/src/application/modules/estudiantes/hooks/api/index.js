@@ -18,4 +18,5 @@ export { useCreateAsignarBeca } from './useCreateAsignarBeca';
 export { useDeleteBecaAsignada } from './useDeleteBecaAsignada';
 export { useGetStudentScholarships } from './useGetStudentScholarships';
 export { useDeleteStudent } from './useDeleteStudent';
+export { useGestionesApi } from './useGestionesApi';
 

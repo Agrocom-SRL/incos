@@ -102,7 +102,7 @@ export const useStudentFormOptions = (contextData) => {
     gradosDiscapacidad = [],
     tiposOrigen = [],
     tiposParentesco = [],
-    gestiones = [], // Gestiones académicas
+    gestiones = [], // Todas las gestiones académicas (se filtran según tipo de admisión)
     carreras = [], // Carreras académicas
     departamentos = [],
     provincias = [], // Para origen (primera nacionalidad)
@@ -116,8 +116,11 @@ export const useStudentFormOptions = (contextData) => {
   // Función para resolver opciones de campos select
   // Usa mappers centralizados para transformar datos del contexto a opciones de formulario
   // SOLID: Usa Strategy Pattern para mapear diferentes tipos de datos
+  // 
+  // NOTA: Para 'gestiones', puede recibir un segundo parámetro opcional (form) para observar
+  // el tipo de admisión y devolver las gestiones correctas (vigentes o no vigentes)
   const resolveOptions = useMemo(() => {
-    return (key) => {
+    return (key, form = null) => {
       const dataMap = {
         expediciones,
         generos,
@@ -129,7 +132,7 @@ export const useStudentFormOptions = (contextData) => {
         gradosDiscapacidad,
         tiposOrigen,
         tiposParentesco,
-        gestiones, // Gestiones académicas
+        gestiones, // Gestiones académicas vigentes (por defecto)
         carreras, // Carreras académicas
         departamentos,
         provincias, // Para origen (primera nacionalidad)
@@ -139,6 +142,12 @@ export const useStudentFormOptions = (contextData) => {
         municipiosResidencia, // Para residencia
         segundaMunicipios, // Para segunda nacionalidad
       };
+
+      // Caso especial: gestiones - las gestiones ya vienen filtradas del backend según el tipo de admisión
+      // No necesitamos filtrar aquí, solo transformar a opciones
+      if (key === 'gestiones') {
+        return transformToOptions(key, gestiones);
+      }
 
       // Caso especial: paisesExtranjeros necesita todos los países para filtrar
       if (key === 'paisesExtranjeros') {

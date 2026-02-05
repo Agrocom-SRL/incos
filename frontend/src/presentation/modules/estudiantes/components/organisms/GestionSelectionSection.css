@@ -1,0 +1,90 @@
+/* ============================================================================
+   GESTION SELECTION SECTION
+   Colores alineados con el menú del sidebar (color primario)
+   - Seleccionado: mismo estilo que ítem seleccionado del menú
+   - Hover: fondo y texto primario
+   - Divisores visibles entre filas
+   ============================================================================ */
+
+.gestion-selection-list {
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius, 8px);
+  overflow: hidden;
+  background: var(--color-bg-container, #fff);
+}
+
+.gestion-selection-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  margin: 0;
+  cursor: pointer;
+  border-bottom: 1px solid var(--color-border);
+  background-color: transparent;
+  color: var(--color-content-text, rgba(0, 0, 0, 0.88));
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.gestion-selection-item .gestion-selection-item-icon,
+.gestion-selection-item .gestion-selection-item-text {
+  color: inherit;
+}
+
+.gestion-selection-item .gestion-selection-item-year {
+  color: var(--color-text-tertiary, rgba(0, 0, 0, 0.45));
+}
+
+.gestion-selection-item:last-child {
+  border-bottom: none;
+}
+
+/* Hover: mismo criterio que menú del sidebar */
+.gestion-selection-item:hover {
+  background-color: var(--color-menu-item-hover-bg) !important;
+  color: var(--color-menu-item-hover-color) !important;
+}
+
+.gestion-selection-item:hover .gestion-selection-item-icon,
+.gestion-selection-item:hover .gestion-selection-item-text {
+  color: var(--color-menu-item-hover-color) !important;
+}
+
+.gestion-selection-item:hover .gestion-selection-item-year {
+  color: var(--color-menu-item-hover-color) !important;
+  opacity: 0.9;
+}
+
+/* Seleccionado: mismo estilo que ítem seleccionado del sidebar (sobresale) */
+.gestion-selection-item.gestion-selection-item-selected {
+  background-color: var(--color-menu-item-selected-bg) !important;
+  color: var(--color-menu-item-selected-color) !important;
+}
+
+.gestion-selection-item.gestion-selection-item-selected .gestion-selection-item-icon,
+.gestion-selection-item.gestion-selection-item-selected .gestion-selection-item-text {
+  color: var(--color-menu-item-selected-color) !important;
+}
+
+.gestion-selection-item.gestion-selection-item-selected .gestion-selection-item-year {
+  color: var(--color-menu-item-selected-color) !important;
+  opacity: 0.9;
+}
+
+/* Radio: en fila seleccionada el círculo debe verse claro sobre fondo primario */
+.gestion-selection-item.gestion-selection-item-selected .ant-radio-wrapper {
+  color: var(--color-menu-item-selected-color) !important;
+}
+
+.gestion-selection-item.gestion-selection-item-selected .ant-radio-inner {
+  border-color: var(--color-menu-item-selected-color) !important;
+}
+
+.gestion-selection-item.gestion-selection-item-selected .ant-radio-checked .ant-radio-inner {
+  border-color: var(--color-menu-item-selected-color) !important;
+  background-color: transparent !important;
+}
+
+.gestion-selection-item.gestion-selection-item-selected .ant-radio-checked .ant-radio-inner::after {
+  background-color: var(--color-menu-item-selected-color) !important;
+}

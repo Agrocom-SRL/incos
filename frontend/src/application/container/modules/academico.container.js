@@ -7,11 +7,13 @@
  * 
  * Ubicación: application/container/modules
  * - Parte del módulo Académico
- * - Features: Paralelos
+ * - Features: Paralelos, Gestiones
  */
 
 import { GetTodosParalelosUseCase, GetParaleloHorariosUseCase } from '@useCases/academico/paralelos';
+import { GetTodasGestionesUseCase } from '@useCases/academico/gestiones';
 import ParaleloRepository from '@infrastructure/repositories/ParaleloRepository';
+import GestionRepository from '@infrastructure/repositories/GestionRepository';
 
 /**
  * Registra los Use Cases del módulo académico
@@ -19,8 +21,9 @@ import ParaleloRepository from '@infrastructure/repositories/ParaleloRepository'
  * @returns {Object} Factory con los Use Cases registrados
  */
 export function registerAcademicoModule(factory) {
-  // Repositorio singleton (stateless)
+  // Repositorios singleton (stateless)
   const paraleloRepository = ParaleloRepository;
+  const gestionRepository = GestionRepository;
 
   // Registrar Use Cases de Paralelos
   factory.obtenerTodosParalelos = () => {
@@ -29,6 +32,11 @@ export function registerAcademicoModule(factory) {
 
   factory.obtenerParaleloHorarios = () => {
     return new GetParaleloHorariosUseCase(paraleloRepository);
+  };
+
+  // Registrar Use Cases de Gestiones
+  factory.obtenerTodasGestiones = () => {
+    return new GetTodasGestionesUseCase(gestionRepository);
   };
 
   return factory;

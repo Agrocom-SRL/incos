@@ -31,11 +31,11 @@
  */
 
 import React from 'react';
-import { Steps, Form } from 'antd';
+import { Steps, Form, Card, Row, Col } from 'antd';
 import { FormCard } from '@atoms';
 import { WizardActions, FormSection } from '@molecules';
 import { useWizardForm } from './hooks/useWizardForm';
-import { TipoAdmisionSelectionSection, CarreraSelectionSection } from '@estudiantes/components/organisms';
+import { TipoAdmisionSelectionSection, CarreraSelectionSection, GestionSelectionSection } from '@estudiantes/components/organisms';
 
 const WizardForm = ({
   steps = [],
@@ -59,6 +59,7 @@ const WizardForm = ({
   gestionesLoading = false,
   carrerasError = null,
   gestionesError = null,
+  cargarGestiones,
 }) => {
   // Hook que compone toda la lógica del wizard (navegación + formulario + cargadores)
   const {
@@ -124,8 +125,10 @@ const WizardForm = ({
                 key={sectionKey}
                 form={form}
                 onTipoAdmisionChange={(tipoAdmision) => {
-                  // Notificar cambio para que las secciones condicionales se actualicen
                   form.setFieldsValue({ tipoAdmision });
+                  if (tipoAdmision === 'ANTIGUO' && typeof cargarGestiones === 'function') {
+                    cargarGestiones();
+                  }
                 }}
               />
             );
@@ -134,39 +137,52 @@ const WizardForm = ({
           // Renderizar componente visual especial para carreraId en datosAcademicosIniciales
           // Solo si estamos en step 0 y la sección es datosAcademicosIniciales
           if (currentStep === 0 && sectionKey === 'datosAcademicosIniciales') {
-            // Separar campos: gestionIngresoId (select normal) y carreraId (componente visual)
-            const gestionIngresoField = section.fields?.find(f => f.name === 'gestionIngresoId');
             const carreraField = section.fields?.find(f => f.name === 'carreraId');
-            
+            const esAntiguo = allFormValues?.tipoAdmision === 'ANTIGUO';
+
             return (
-              <div key={sectionKey}>
-                {/* Campo de gestión de ingreso (select normal) */}
-                {gestionIngresoField && (
-                  <FormSection
-                    key={`${sectionKey}-gestion`}
-                    title={section.title}
-                    fields={[gestionIngresoField]}
-                    form={form}
-                    resolveOptions={resolveOptions}
-                    minAge={minAge}
-                    readOnly={viewMode}
-                  />
-                )}
-                
-                {/* Componente visual de carrera */}
-                {carreraField && (
-                  <CarreraSelectionSection
-                    key={`${sectionKey}-carrera`}
-                    form={form}
-                    carreras={carreras}
-                    loading={carrerasLoading}
-                    error={carrerasError}
-                    onCarreraChange={(carrera) => {
-                      // El componente ya actualiza el formulario internamente
-                    }}
-                  />
-                )}
-              </div>
+              <Card
+                key={sectionKey}
+                title={
+                  <span style={{ fontSize: '18px', fontWeight: 600 }}>
+                    {section.title}
+                  </span>
+                }
+                style={{
+                  marginTop: 24,
+                  marginBottom: 24,
+                  borderRadius: 12,
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                }}
+              >
+                <Row gutter={24}>
+                  {/* Col 4/12: Gestión de ingreso (solo si tipo ANTIGUO) */}
+                  {esAntiguo && (
+                    <Col xs={24} sm={24} md={8} lg={8}>
+                      <GestionSelectionSection
+                        form={form}
+                        gestiones={gestiones}
+                        loading={gestionesLoading}
+                        error={gestionesError}
+                      />
+                    </Col>
+                  )}
+                  {/* Col 8/12: Carrera */}
+                  {carreraField && (
+                    <Col xs={24} sm={24} md={esAntiguo ? 16 : 24} lg={esAntiguo ? 16 : 24}>
+                      <CarreraSelectionSection
+                        form={form}
+                        carreras={carreras}
+                        loading={carrerasLoading}
+                        error={carrerasError}
+                        onCarreraChange={() => {}}
+                        embedded
+                        compact={!!esAntiguo}
+                      />
+                    </Col>
+                  )}
+                </Row>
+              </Card>
             );
           }
 
