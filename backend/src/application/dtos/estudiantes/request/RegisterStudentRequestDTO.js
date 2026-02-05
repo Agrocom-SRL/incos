@@ -72,10 +72,14 @@ export class RegisterStudentRequestDTO {
       idiomaMaternoId,
       idiomaSecundarioId,
       tipoOrigen,
+      // Tipo de admisión y datos académicos iniciales (para estudiantes antiguos)
+      tipoAdmision,
+      gestionIngresoId, // Gestión de ingreso (requerido si tipoAdmision === 'ANTIGUO')
+      carreraId, // Carrera de ingreso (requerido si tipoAdmision === 'ANTIGUO')
       // Arrays y objetos
       contactosEmergencia,
       documentacion,
-      // NOTA: Los datos académicos (careerId, managementId, etc.) se manejan en otro módulo
+      // NOTA: Para estudiantes ANTIGUOS, carreraId y gestionIngresoId se usan para crear estudiantes_datos_academicos
     } = body;
 
     // tipoSangre: solo valores actuales; legacy ya reemplazado por null en validador
@@ -170,6 +174,9 @@ export class RegisterStudentRequestDTO {
       disabilities,
       origins,
       documentation,
+      tipoAdmision, // Tipo de admisión (NUEVO, ANTIGUO, TRANSITABILIDAD, TRASPASO)
+      gestionIngresoId, // Gestión de ingreso (requerido si tipoAdmision === 'ANTIGUO')
+      carreraId, // Carrera de ingreso (requerido si tipoAdmision === 'ANTIGUO')
     };
   }
 }

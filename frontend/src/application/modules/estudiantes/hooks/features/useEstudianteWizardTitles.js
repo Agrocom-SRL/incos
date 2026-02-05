@@ -26,6 +26,11 @@ export const useEstudianteWizardTitles = (completarMode = false) => {
   const titles = useMemo(() => {
     // Títulos base (modo nuevo)
     const baseTitles = {
+      step0: {
+        title: 'Tipo de Admisión',
+        formTitle: 'Seleccione el Tipo de Admisión',
+        sectionTitle: 'TIPO DE ADMISIÓN',
+      },
       step1: {
         title: 'Datos Generales',
         formTitle: 'Información Personal del Estudiante',
@@ -46,6 +51,11 @@ export const useEstudianteWizardTitles = (completarMode = false) => {
     // Si es modo completar, agregar prefijo "Completar"
     if (completarMode) {
       return {
+        step0: {
+          title: `Completar ${baseTitles.step0.title}`,
+          formTitle: `Completar ${baseTitles.step0.formTitle}`,
+          sectionTitle: `Completar ${baseTitles.step0.sectionTitle}`,
+        },
         step1: {
           title: `Completar ${baseTitles.step1.title}`,
           formTitle: `Completar ${baseTitles.step1.formTitle}`,

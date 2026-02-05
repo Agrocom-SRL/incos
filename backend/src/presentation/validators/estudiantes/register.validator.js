@@ -491,5 +491,39 @@ export const registerStudentValidator = [
       }
       throw new Error('Observaciones debe ser una cadena de texto');
     }),
+
+  // ============================================
+  // TIPO DE ADMISIÓN Y DATOS ACADÉMICOS INICIALES
+  // ============================================
+  body('tipoAdmision')
+    .optional()
+    .isIn(['NUEVO', 'ANTIGUO', 'TRANSITABILIDAD', 'TRASPASO'])
+    .withMessage('El tipo de admisión debe ser uno de: NUEVO, ANTIGUO, TRANSITABILIDAD, TRASPASO'),
+
+  body('gestionIngresoId')
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage('Gestión de ingreso ID debe ser un número entero mayor a 0')
+    .toInt()
+    .custom((value, { req }) => {
+      // Si tipoAdmision es ANTIGUO, gestionIngresoId es requerido
+      if (req.body.tipoAdmision === 'ANTIGUO' && !value) {
+        throw new Error('Gestión de ingreso es requerida para estudiantes antiguos');
+      }
+      return true;
+    }),
+
+  body('carreraId')
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage('Carrera ID debe ser un número entero mayor a 0')
+    .toInt()
+    .custom((value, { req }) => {
+      // Si tipoAdmision es ANTIGUO, carreraId es requerido
+      if (req.body.tipoAdmision === 'ANTIGUO' && !value) {
+        throw new Error('Carrera es requerida para estudiantes antiguos');
+      }
+      return true;
+    }),
 ];
 

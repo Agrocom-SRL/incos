@@ -39,6 +39,8 @@ import {
 import { useMessage } from '@application/utils';
 import { StudentRegisterContext } from '@application-estudiantes/context/StudentRegisterContext';
 import { EDAD_MINIMA_REGISTRO } from '@infrastructure/config/constants/studentConstants';
+import { useCarrerasApi } from '@application-configuracion/academico/carreras/hooks/useCarrerasApi';
+import { useGestionesApi } from '@application-estudiantes/hooks/api/useGestionesApi';
 
 export const StudentRegisterProvider = ({ children, mode = 'create', studentId = null }) => {
     // Hook genérico compartido para mostrar mensajes
@@ -72,12 +74,26 @@ export const StudentRegisterProvider = ({ children, mode = 'create', studentId =
         }
     }, [referenceData.loadTiposParentesco, mode]);
 
+    // Hook para cargar gestiones académicas
+    const gestionesApi = useGestionesApi();
+    const gestiones = gestionesApi.gestiones || [];
+    const gestionesLoading = gestionesApi.loading || false;
+    const gestionesError = gestionesApi.error || null;
+
+    // Hook para cargar carreras académicas
+    const carrerasApi = useCarrerasApi();
+    const carreras = carrerasApi.carreras || [];
+    const carrerasLoading = carrerasApi.loading || false;
+    const carrerasError = carrerasApi.error || null;
+
     // Componer todos los datos del contexto
     const contextData = useMemo(() => ({
         ...catalogData,
         ...geographicData,
         ...referenceData,
-    }), [catalogData, geographicData, referenceData]);
+        gestiones, // Gestiones académicas
+        carreras, // Carreras académicas
+    }), [catalogData, geographicData, referenceData, gestiones, carreras]);
 
     // Hook especializado: transformar datos a opciones de formulario
     const resolveOptions = useStudentFormOptions(contextData);
@@ -154,6 +170,11 @@ export const StudentRegisterProvider = ({ children, mode = 'create', studentId =
             loadDepartamentos: geographicData.loadDepartamentos,
             loadProvincias: geographicData.loadProvincias,
             loadMunicipios: geographicData.loadMunicipios,
+            // Estados de carreras y gestiones para componentes visuales
+            carrerasLoading,
+            gestionesLoading,
+            carrerasError,
+            gestionesError,
         };
 
         const prev = prevValueRef.current;

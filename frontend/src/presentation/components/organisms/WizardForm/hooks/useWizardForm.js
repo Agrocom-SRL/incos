@@ -61,7 +61,14 @@ export const useWizardForm = ({ steps = [], externalForm, conditionalLoaders = {
         return true; // Mostrar si no es condicional
       }
       const dependsOnValue = allFormValues?.[section.dependsOn];
-      return !!dependsOnValue; // Mostrar solo si el campo dependiente tiene valor
+      
+      // Si hay visibleWhenValue, comparar con ese valor específico
+      if (section.visibleWhenValue !== undefined) {
+        return dependsOnValue === section.visibleWhenValue;
+      }
+      
+      // Si no hay visibleWhenValue, usar lógica booleana (truthy)
+      return !!dependsOnValue;
     };
   }, [allFormValues]);
 

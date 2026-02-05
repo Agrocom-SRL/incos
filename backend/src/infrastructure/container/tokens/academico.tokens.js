@@ -11,11 +11,14 @@ export const ACADEMICO_TOKENS = {
     // USE CASES
     listParalelosUseCase: 'academico.listParalelosUseCase',
     getParaleloHorariosUseCase: 'academico.getParaleloHorariosUseCase',
+    listGestionesUseCase: 'academico.listGestionesUseCase',
 
     // CONTROLLERS
     listParalelosController: 'academico.listParalelosController',
     getParaleloScheduleController: 'academico.getParaleloScheduleController',
+    listGestionesController: 'academico.listGestionesController',
 
     // ROUTERS
     paralelosRouter: 'academico.paralelosRouter',
+    gestionesRouter: 'academico.gestionesRouter',
 };
