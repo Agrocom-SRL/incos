@@ -18,7 +18,10 @@ export const estudianteFormMapper = (studentDetail) => {
     return null;
   }
 
-  const { student, guardians, disabilities, origins, documentDeliveries } = studentDetail;
+  const { student, guardians, disabilities, origins, documentDeliveries, academicData } = studentDetail;
+
+  // Tipo de admisión y datos académicos (paso 0): NUEVO si no tiene gestión de ingreso, ANTIGUO si tiene
+  const hasGestionIngreso = academicData?.gestionIngresoId != null && academicData?.gestionIngresoId !== '';
 
   // Mapear datos personales del estudiante
   const formData = {
@@ -40,8 +43,12 @@ export const estudianteFormMapper = (studentDetail) => {
     municipioResidenciaId: student.municipioResidenciaId || null,
     zona: student.zona || '',
     observaciones: student.observaciones || '',
+    // Paso 0: tipo admisión y datos académicos (para edición)
+    tipoAdmision: hasGestionIngreso ? 'ANTIGUO' : 'NUEVO',
+    gestionIngresoId: academicData?.gestionIngresoId ?? null,
+    carreraId: academicData?.carreraId ?? null,
   };
-  
+
   // Extraer IDs geográficos de residencia desde los catálogos
   // Esto es necesario para cargar las provincias y municipios correctamente
   if (studentDetail.catalogs) {
@@ -203,9 +210,10 @@ export const estudianteFormMapper = (studentDetail) => {
     }
   }
 
-  // Mapear contactos de emergencia/apoderados
+  // Mapear contactos de emergencia/apoderados (incluir id para que al editar se actualicen en vez de duplicar)
   if (guardians && guardians.length > 0) {
     formData.contactosEmergencia = guardians.map((guardian) => ({
+      id: guardian.id ?? null,
       tipoParentescoId: guardian.relationshipTypeId || null,
       nombres: guardian.firstName || '',
       apellidos: guardian.lastName || '',

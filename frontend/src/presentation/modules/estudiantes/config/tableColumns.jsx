@@ -193,6 +193,11 @@ export const createEstudiantesTableColumns = (navigate, refetch = null, deleteSt
             itemDetails={itemDetails}
             viewPath="/estudiantes/:id"
             editPath="/estudiantes/:id/editar"
+            onEdit={() => {
+              if (record.id) {
+                navigate(`/estudiantes/${record.id}/editar`, { state: { initialStep: 1 } });
+              }
+            }}
             extraActions={[
               {
                 icon: <DollarOutlined />,

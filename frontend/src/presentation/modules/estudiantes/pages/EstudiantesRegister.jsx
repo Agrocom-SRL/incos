@@ -16,7 +16,7 @@
  */
 
 import { useMemo, useEffect, useRef, useCallback } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import { Form } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
@@ -40,11 +40,21 @@ import {
 const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [form] = Form.useForm();
   
   // Obtener parámetros de la URL
   const completarMode = searchParams.get('completar') === 'true';
   const isEditMode = mode === 'edit';
+  // Paso inicial del wizard desde state de navegación (como InscripcionesNueva con editData)
+  // Ej.: desde lista de becas "Editar estudiante" o desde detalle → state: { initialStep: 1 }
+  const initialStep = useMemo(() => {
+    const step = location.state?.initialStep;
+    if (step != null && typeof step === 'number' && !Number.isNaN(step) && step >= 0) {
+      return step;
+    }
+    return 0;
+  }, [location.state?.initialStep]);
 
   // Obtener datos del contexto de registro (toda la lógica está en el Provider)
   const {
@@ -59,6 +69,8 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
     handleFinish,
     handleSave,
     registerForm, // Función para registrar el formulario en el contexto
+    saveStep0Values, // Preservar valores del paso 0 (tipoAdmision, gestionIngresoId, carreraId) al cambiar de paso
+    getStep0Values, // Valores preservados del paso 0 (para restaurar al volver al paso 0)
     
     // Datos del contexto
     paises = [],
@@ -182,12 +194,21 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
           ...otrosValores 
         } = formData;
         form.setFieldsValue(otrosValores);
+
+        // Preservar valores del paso 0 (tipo admisión, gestión, carrera) para cuando el usuario esté en otro paso
+        if (saveStep0Values && (formData.tipoAdmision != null || formData.gestionIngresoId != null || formData.carreraId != null)) {
+          saveStep0Values({
+            tipoAdmision: formData.tipoAdmision,
+            gestionIngresoId: formData.gestionIngresoId,
+            carreraId: formData.carreraId,
+          });
+        }
         
         // Los valores geográficos se establecerán cuando las opciones estén disponibles
         initialDataLoadedRef.current = true;
       }
     }
-  }, [isEditMode, studentDetail, form, loadProvincias, loadMunicipios, departamentos]);
+  }, [isEditMode, studentDetail, form, loadProvincias, loadMunicipios, departamentos, saveStep0Values]);
   
   // Efecto para establecer valores geográficos cuando las opciones estén disponibles
   useEffect(() => {
@@ -509,6 +530,28 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
     });
   }, []);
 
+  // Preservar valores del paso 0 al cambiar de paso (el wizard solo renderiza el paso actual y Ant Design pierde los valores al desmontar)
+  const onBeforeNextStep = useCallback((stepIndex, formInstance) => {
+    if (stepIndex === 0 && saveStep0Values && formInstance) {
+      const values = formInstance.getFieldsValue(true);
+      saveStep0Values({
+        tipoAdmision: values.tipoAdmision,
+        gestionIngresoId: values.gestionIngresoId,
+        carreraId: values.carreraId,
+      });
+    }
+  }, [saveStep0Values]);
+
+  // Restaurar valores del paso 0 al volver al paso 0 (para que se muestren tipo admisión, gestión y carrera)
+  const onBeforePrevStep = useCallback((stepIndex, formInstance) => {
+    if (stepIndex === 1 && getStep0Values && formInstance) {
+      const step0 = getStep0Values();
+      if (step0 && typeof step0 === 'object' && Object.keys(step0).length > 0) {
+        formInstance.setFieldsValue(step0);
+      }
+    }
+  }, [getStep0Values]);
+
   // Handler para volver a la lista de estudiantes
   const handleVolverALista = useCallback(() => {
     navigate('/estudiantes');
@@ -552,11 +595,14 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
         minAge={minAge}
         conditionalLoaders={conditionalLoaders}
         initialValues={{}}
+        initialStep={initialStep}
         form={form}
         onFinish={handleFinish}
         onSave={handleSave}
         hideSaveOnSteps={[0]}
         onValidateBeforeNext={onValidateBeforeNext}
+        onBeforeNextStep={onBeforeNextStep}
+        onBeforePrevStep={onBeforePrevStep}
         carreras={carreras}
         gestiones={gestiones}
         carrerasLoading={carrerasLoading}

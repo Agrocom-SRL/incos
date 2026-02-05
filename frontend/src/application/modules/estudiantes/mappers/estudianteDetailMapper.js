@@ -25,7 +25,7 @@ export const estudianteDetailMapper = (dataBackend) => {
     return null;
   }
 
-  const { student, guardians, disabilities, origins, documentDeliveries, scholarships, catalogs = {}, tieneDocumentosFaltantes, actaCompromiso, inscripcion } = normalizedData;
+  const { student, guardians, disabilities, origins, documentDeliveries, scholarships, catalogs = {}, tieneDocumentosFaltantes, actaCompromiso, inscripcion, academicData } = normalizedData;
 
   // Construir CI completo y nombre completo usando utilidades compartidas
   // El backend retorna nombres en inglés, los convertimos para el formatter
@@ -132,6 +132,8 @@ export const estudianteDetailMapper = (dataBackend) => {
     actaCompromiso: actaCompromiso || null,
     // Inscripción más reciente si existe
     inscripcion: inscripcion || null,
+    // Datos académicos (gestionIngresoId, carreraId) para formulario de edición / paso 0
+    academicData: academicData || null,
   };
 };
 

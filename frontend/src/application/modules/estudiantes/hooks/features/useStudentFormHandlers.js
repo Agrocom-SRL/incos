@@ -61,15 +61,36 @@ export const useStudentFormHandlers = (showMessage, mode = 'create', studentId =
 
   // Ref para mantener referencia estable de documentacionProcesada
   const documentacionProcesadaRef = useRef(documentacionProcesada);
+
+  // Ref para preservar valores del paso 0 (tipo admisión, gestión, carrera).
+  // El wizard solo renderiza el paso actual; al cambiar de paso los Form.Item del paso 0
+  // se desmontan y Ant Design elimina sus valores del store. Al enviar desde el último paso
+  // getFieldsValue() no incluiría tipoAdmision, gestionIngresoId, carreraId si no los preservamos.
+  const step0ValuesRef = useRef({});
   
   // Actualizar ref cuando documentacionProcesada cambie
   useEffect(() => {
     documentacionProcesadaRef.current = documentacionProcesada;
   }, [documentacionProcesada]);
 
+  /** Guarda los valores del paso 0 para usarlos en getFormValues cuando el usuario ya está en otro paso. */
+  const saveStep0Values = useCallback((values) => {
+    if (values && typeof values === 'object') {
+      step0ValuesRef.current = {
+        tipoAdmision: values.tipoAdmision,
+        gestionIngresoId: values.gestionIngresoId,
+        carreraId: values.carreraId,
+      };
+    }
+  }, []);
+
+  /** Devuelve los valores preservados del paso 0 (para restaurar en el formulario al volver al paso 0). */
+  const getStep0Values = useCallback(() => step0ValuesRef.current, []);
+
   // Función para obtener los valores del formulario
   // IMPORTANTE: Incluye todos los documentos con valores por defecto si no están presentes
   // Esto asegura que todos los documentos se envíen al backend, incluso si el usuario no interactuó con ellos
+  // También restaura tipoAdmision, gestionIngresoId, carreraId del paso 0 si ya no están en el store (pasos posteriores)
   const getFormValues = useCallback(() => {
     if (!formRef.current) {
       console.warn('⚠️ El formulario no está registrado aún');
@@ -78,6 +99,14 @@ export const useStudentFormHandlers = (showMessage, mode = 'create', studentId =
     try {
       // Obtener todos los valores del formulario (incluye campos no renderizados)
       const formValues = formRef.current.getFieldsValue(true);
+
+      // Restaurar valores del paso 0 si no están en el store (el usuario está en un paso posterior)
+      const step0 = step0ValuesRef.current;
+      if (step0 && Object.keys(step0).length > 0) {
+        if (formValues.tipoAdmision === undefined || formValues.tipoAdmision === null) formValues.tipoAdmision = step0.tipoAdmision;
+        if (formValues.gestionIngresoId === undefined || formValues.gestionIngresoId === null) formValues.gestionIngresoId = step0.gestionIngresoId;
+        if (formValues.carreraId === undefined || formValues.carreraId === null) formValues.carreraId = step0.carreraId;
+      }
       
       // Asegurar que todos los documentos estén presentes con valores por defecto
       // Si un documento no está en formValues, agregarlo con entregado: true por defecto
@@ -202,6 +231,8 @@ export const useStudentFormHandlers = (showMessage, mode = 'create', studentId =
     handleSave,
     registerForm,
     getFormValues,
+    saveStep0Values, // Preservar valores del paso 0 (tipoAdmision, gestionIngresoId, carreraId) al cambiar de paso
+    getStep0Values, // Valores preservados del paso 0 (para restaurar al volver al paso 0)
     formRef, // Exponer formRef para que useDocumentacionProcesada pueda usar Form.useWatch
     // Estados del registro (expuestos desde useRegisterStudent)
     loading,
