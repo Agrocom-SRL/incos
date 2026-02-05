@@ -498,6 +498,17 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
     return steps;
   }, [wizardTitles, contactosIndices, agregarContacto, eliminarContacto, documentacionProcesada]);
 
+  // Validar paso 0 antes de permitir Siguiente: tipoAdmision obligatorio; si ANTIGUO, gestión y carrera obligatorios
+  const onValidateBeforeNext = useCallback((stepIndex, formInstance) => {
+    if (stepIndex !== 0) return Promise.resolve();
+    return formInstance.validateFields(['tipoAdmision']).then(() => {
+      const tipo = formInstance.getFieldValue('tipoAdmision');
+      if (tipo === 'ANTIGUO') {
+        return formInstance.validateFields(['gestionIngresoId', 'carreraId']);
+      }
+    });
+  }, []);
+
   // Handler para volver a la lista de estudiantes
   const handleVolverALista = useCallback(() => {
     navigate('/estudiantes');
@@ -544,6 +555,8 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
         form={form}
         onFinish={handleFinish}
         onSave={handleSave}
+        hideSaveOnSteps={[0]}
+        onValidateBeforeNext={onValidateBeforeNext}
         carreras={carreras}
         gestiones={gestiones}
         carrerasLoading={carrerasLoading}

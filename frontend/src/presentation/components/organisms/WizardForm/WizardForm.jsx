@@ -44,6 +44,8 @@ const WizardForm = ({
   onFinish,
   onSave,
   showSaveButton = true,
+  hideSaveOnSteps = [],
+  onValidateBeforeNext,
   resolveOptions = () => [],
   minAge = null,
   conditionalLoaders = {},
@@ -83,6 +85,20 @@ const WizardForm = ({
       onFormValuesChange(allFormValues);
     }
   }, [allFormValues, onFormValuesChange]);
+
+  // Ocultar botón Guardar en pasos indicados (ej. step 0)
+  const showSaveButtonEffective = showSaveButton && !(hideSaveOnSteps || []).includes(currentStep);
+
+  // Siguiente: validar paso actual antes de avanzar (si onValidateBeforeNext está definido)
+  const handleNext = React.useCallback(() => {
+    if (onValidateBeforeNext) {
+      onValidateBeforeNext(currentStep, form)
+        .then(() => next())
+        .catch(() => { /* errores de validación ya mostrados por el formulario */ });
+    } else {
+      next();
+    }
+  }, [currentStep, form, next, onValidateBeforeNext]);
 
   // Si no hay step configurado, no renderizar nada
   if (!currentStepConfig) {
@@ -207,10 +223,10 @@ const WizardForm = ({
         viewMode={viewMode}
         loading={loading}
         onPrev={prev}
-        onNext={next}
+        onNext={handleNext}
         onFinish={onFinish}
         onSave={onSave}
-        showSaveButton={showSaveButton}
+        showSaveButton={showSaveButtonEffective}
       />
     </FormCard>
   );
