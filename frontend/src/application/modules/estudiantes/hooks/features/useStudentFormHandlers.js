@@ -125,7 +125,11 @@ export const useStudentFormHandlers = (showMessage, mode = 'create', studentId =
           formValues.tipoAdmision = 'ANTIGUO';
         }
       }
-      
+      // Fallback final: si tipoAdmision sigue sin valor (p. ej. nunca se llamó saveStep0Values), enviar NUEVO
+      if (formValues.tipoAdmision === undefined || formValues.tipoAdmision === null || formValues.tipoAdmision === '') {
+        formValues.tipoAdmision = 'NUEVO';
+      }
+
       // Asegurar que todos los documentos estén presentes con valores por defecto
       // Si un documento no está en formValues, agregarlo con entregado: true por defecto
       const documentacionProcesada = documentacionProcesadaRef.current;

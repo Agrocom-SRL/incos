@@ -320,6 +320,7 @@ export class RegisterStudentUseCase {
         : (hasGestionOrCarrera ? 'ANTIGUO' : 'NUEVO');
       const gestionIngresoId = data.gestionIngresoId || null;
       const carreraId = data.carreraId || null;
+
       const studentCode = await this.generateStudentCode(gestionIngresoId);
 
       // 3. Crear el estudiante principal con el código generado

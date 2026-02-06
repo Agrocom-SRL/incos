@@ -46,12 +46,11 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
   // Obtener parámetros de la URL
   const completarMode = searchParams.get('completar') === 'true';
   const isEditMode = mode === 'edit';
-  // Paso inicial del wizard desde state de navegación (como InscripcionesNueva con editData)
-  // Ej.: desde lista de becas "Editar estudiante" o desde detalle → state: { initialStep: 1 }
+  // Paso inicial del wizard: state puede venir 1-based (1 = primer paso). Internamente el wizard usa 0-based.
   const initialStep = useMemo(() => {
     const step = location.state?.initialStep;
-    if (step != null && typeof step === 'number' && !Number.isNaN(step) && step >= 0) {
-      return step;
+    if (step != null && typeof step === 'number' && !Number.isNaN(step)) {
+      return step >= 1 ? step - 1 : 0; // 1-based → 0-based (paso 1 → índice 0)
     }
     return 0;
   }, [location.state?.initialStep]);
@@ -69,8 +68,8 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
     handleFinish,
     handleSave,
     registerForm, // Función para registrar el formulario en el contexto
-    saveStep0Values, // Preservar valores del paso 0 (tipoAdmision, gestionIngresoId, carreraId) al cambiar de paso
-    getStep0Values, // Valores preservados del paso 0 (para restaurar al volver al paso 0)
+    saveStep0Values, // Preservar valores del paso 1 (tipoAdmision, gestionIngresoId, carreraId) al cambiar de paso
+    getStep0Values, // Valores preservados del paso 1 (para restaurar al volver al paso 1)
     
     // Datos del contexto
     paises = [],
@@ -519,9 +518,9 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
     return steps;
   }, [wizardTitles, contactosIndices, agregarContacto, eliminarContacto, documentacionProcesada]);
 
-  // Validar paso 0 antes de permitir Siguiente: tipoAdmision obligatorio; si ANTIGUO, gestión y carrera obligatorios
-  const onValidateBeforeNext = useCallback((stepIndex, formInstance) => {
-    if (stepIndex !== 0) return Promise.resolve();
+  // Validar paso 1 (primer paso) antes de Siguiente: tipoAdmision obligatorio; si ANTIGUO, gestión y carrera obligatorios
+  const onValidateBeforeNext = useCallback((stepNumber, formInstance) => {
+    if (stepNumber !== 1) return Promise.resolve();
     return formInstance.validateFields(['tipoAdmision']).then(() => {
       const tipo = formInstance.getFieldValue('tipoAdmision');
       if (tipo === 'ANTIGUO') {
@@ -530,24 +529,25 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
     });
   }, []);
 
-  // Preservar valores del paso 0 al cambiar de paso (el wizard solo renderiza el paso actual y Ant Design pierde los valores al desmontar)
-  const onBeforeNextStep = useCallback((stepIndex, formInstance) => {
-    if (stepIndex === 0 && saveStep0Values && formInstance) {
+  // Preservar valores del paso 1 (tipo admisión, gestión, carrera) al salir de ese paso
+  const onBeforeNextStep = useCallback((stepNumber, formInstance) => {
+    if (stepNumber === 1 && saveStep0Values && formInstance) {
       const values = formInstance.getFieldsValue(true);
+      const tipoAdmision = values.tipoAdmision ?? 'NUEVO';
       saveStep0Values({
-        tipoAdmision: values.tipoAdmision,
+        tipoAdmision,
         gestionIngresoId: values.gestionIngresoId,
         carreraId: values.carreraId,
       });
     }
   }, [saveStep0Values]);
 
-  // Restaurar valores del paso 0 al volver al paso 0 (para que se muestren tipo admisión, gestión y carrera)
-  const onBeforePrevStep = useCallback((stepIndex, formInstance) => {
-    if (stepIndex === 1 && getStep0Values && formInstance) {
-      const step0 = getStep0Values();
-      if (step0 && typeof step0 === 'object' && Object.keys(step0).length > 0) {
-        formInstance.setFieldsValue(step0);
+  // Restaurar valores del paso 1 al volver desde el paso 2 (para que se muestren tipo admisión, gestión y carrera)
+  const onBeforePrevStep = useCallback((stepNumber, formInstance) => {
+    if (stepNumber === 2 && getStep0Values && formInstance) {
+      const step1Values = getStep0Values();
+      if (step1Values && typeof step1Values === 'object' && Object.keys(step1Values).length > 0) {
+        formInstance.setFieldsValue(step1Values);
       }
     }
   }, [getStep0Values]);
@@ -594,12 +594,12 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
         resolveOptions={resolveOptions}
         minAge={minAge}
         conditionalLoaders={conditionalLoaders}
-        initialValues={{}}
+        initialValues={{ tipoAdmision: 'NUEVO' }}
         initialStep={initialStep}
         form={form}
         onFinish={handleFinish}
         onSave={handleSave}
-        hideSaveOnSteps={[0]}
+        hideSaveOnSteps={[1]}
         onValidateBeforeNext={onValidateBeforeNext}
         onBeforeNextStep={onBeforeNextStep}
         onBeforePrevStep={onBeforePrevStep}

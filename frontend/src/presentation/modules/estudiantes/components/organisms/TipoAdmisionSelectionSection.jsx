@@ -65,35 +65,32 @@ const TipoAdmisionSelectionSection = ({
   form,
   onTipoAdmisionChange,
 }) => {
-  // Handler para cuando cambia la selección del radio
+  // Handler para cuando cambia la selección del radio.
+  // Actualizamos el form con setFieldsValue para que el Form.Item y getFieldsValue() vean el valor.
   const handleRadioChange = (e) => {
     const tipoAdmision = e.target.value;
-    
-    // Actualizar el formulario
+
     if (form) {
       form.setFieldsValue({ tipoAdmision });
-      
-      // Si no es ANTIGUO, limpiar campos relacionados
       if (tipoAdmision !== 'ANTIGUO') {
-        form.setFieldsValue({ 
+        form.setFieldsValue({
           gestionIngresoId: undefined,
           carreraId: undefined,
         });
       }
     }
-    
-    // Llamar al callback de cambio
+
     if (onTipoAdmisionChange) {
       onTipoAdmisionChange(tipoAdmision);
     }
   };
 
-  // Obtener el valor seleccionado del formulario
-  const selectedValue = form?.getFieldValue('tipoAdmision') || 'NUEVO';
+  // Valor para la UI: leer del form para que Form.Item sea la única fuente de verdad
+  const selectedValue = form?.getFieldValue('tipoAdmision') ?? 'NUEVO';
 
-  // Sincronizar el valor inicial del formulario
+  // Sincronizar valor inicial en el form (por si no viene por initialValues del wizard)
   useEffect(() => {
-    if (form && !form.getFieldValue('tipoAdmision')) {
+    if (form && (form.getFieldValue('tipoAdmision') === undefined || form.getFieldValue('tipoAdmision') === null)) {
       form.setFieldsValue({ tipoAdmision: 'NUEVO' });
     }
   }, [form]);
@@ -120,8 +117,8 @@ const TipoAdmisionSelectionSection = ({
           { required: true, message: 'Por favor seleccione un tipo de admisión' }
         ]}
       >
+        {/* No pasar value: dejar que Form.Item inyecte value/onChange para que el form store se actualice siempre */}
         <Radio.Group
-          value={selectedValue}
           onChange={handleRadioChange}
           style={{ width: '100%' }}
         >

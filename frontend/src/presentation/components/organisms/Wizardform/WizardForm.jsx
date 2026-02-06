@@ -46,8 +46,8 @@ const WizardForm = ({
   showSaveButton = true,
   hideSaveOnSteps = [],
   onValidateBeforeNext,
-  onBeforeNextStep, // (stepIndex, form) => void - llamado tras validar y antes de next(), para preservar valores del paso
-  onBeforePrevStep, // (stepIndex, form) => void - llamado antes de prev(), p. ej. para restaurar valores del paso al que volvemos
+  onBeforeNextStep, // (stepNumber, form) => void - stepNumber es 1-based (1, 2, 3...). Llamado tras validar y antes de next()
+  onBeforePrevStep, // (stepNumber, form) => void - stepNumber es 1-based. Llamado antes de prev(), p. ej. para restaurar valores
   resolveOptions = () => [],
   minAge = null,
   conditionalLoaders = {},
@@ -55,7 +55,7 @@ const WizardForm = ({
   className = '',
   form: externalForm,
   onFormValuesChange, // Callback opcional para notificar cambios en valores del formulario
-  initialStep = 0, // Paso inicial del wizard (default: 0)
+  initialStep = 0, // Paso inicial (índice 0-based interno: 0 = primer paso)
   // Datos adicionales para componentes visuales
   carreras = [],
   gestiones = [],
@@ -88,29 +88,31 @@ const WizardForm = ({
     }
   }, [allFormValues, onFormValuesChange]);
 
-  // Ocultar botón Guardar en pasos indicados (ej. step 0)
-  const showSaveButtonEffective = showSaveButton && !(hideSaveOnSteps || []).includes(currentStep);
+  // stepNumber 1-based para la página (1 = primer paso, 2 = segundo, etc.)
+  const stepNumber = currentStep + 1;
+  // Ocultar botón Guardar en pasos indicados por número 1-based (ej. [1] = primer paso)
+  const showSaveButtonEffective = showSaveButton && !(hideSaveOnSteps || []).includes(stepNumber);
 
   // Siguiente: validar paso actual antes de avanzar (si onValidateBeforeNext está definido)
   const handleNext = React.useCallback(() => {
     if (onValidateBeforeNext) {
-      onValidateBeforeNext(currentStep, form)
+      onValidateBeforeNext(stepNumber, form)
         .then(() => {
-          onBeforeNextStep?.(currentStep, form);
+          onBeforeNextStep?.(stepNumber, form);
           next();
         })
         .catch(() => { /* errores de validación ya mostrados por el formulario */ });
     } else {
-      onBeforeNextStep?.(currentStep, form);
+      onBeforeNextStep?.(stepNumber, form);
       next();
     }
-  }, [currentStep, form, next, onValidateBeforeNext, onBeforeNextStep]);
+  }, [stepNumber, form, next, onValidateBeforeNext, onBeforeNextStep]);
 
-  // Anterior: opcionalmente notificar al padre antes de retroceder (p. ej. restaurar valores del paso 0)
+  // Anterior: notificar al padre con stepNumber 1-based (ej. al volver desde paso 2, stepNumber es 2)
   const handlePrev = React.useCallback(() => {
-    onBeforePrevStep?.(currentStep, form);
+    onBeforePrevStep?.(stepNumber, form);
     prev();
-  }, [currentStep, form, prev, onBeforePrevStep]);
+  }, [stepNumber, form, prev, onBeforePrevStep]);
 
   // Si no hay step configurado, no renderizar nada
   if (!currentStepConfig) {
@@ -146,7 +148,7 @@ const WizardForm = ({
             return null;
           }
 
-          // Renderizar componente visual especial para tipoAdmision en step 0
+          // Renderizar componente visual especial para tipoAdmision en el primer paso (índice 0)
           if (currentStep === 0 && sectionKey === 'tipoAdmision') {
             return (
               <TipoAdmisionSelectionSection
@@ -162,8 +164,7 @@ const WizardForm = ({
             );
           }
 
-          // Renderizar componente visual especial para carreraId en datosAcademicosIniciales
-          // Solo si estamos en step 0 y la sección es datosAcademicosIniciales
+          // Renderizar componente visual especial para carreraId en datosAcademicosIniciales (primer paso)
           if (currentStep === 0 && sectionKey === 'datosAcademicosIniciales') {
             const carreraField = section.fields?.find(f => f.name === 'carreraId');
             const esAntiguo = allFormValues?.tipoAdmision === 'ANTIGUO';

@@ -109,6 +109,7 @@ export class StudentAcademicDataMapper {
       gestionIngresoId: data.managementId,
       estadoAcademico: data.academicState || 'REGULAR',
       estadoRegistro: data.registrationState || 'BORRADOR', // BORRADOR, PENDIENTE, ADMITIDO
+      tipoAdmision: data.admissionType ?? data.tipoAdmision ?? 'NUEVO', // NUEVO, ANTIGUO, TRANSITABILIDAD, TRASPASO
       unidadEducativaProcedencia: data.previousSchool || null,
       anioEgresoSecundaria: data.highSchoolGraduationYear || null,
       promedioAnual: data.annualAverage || null,
