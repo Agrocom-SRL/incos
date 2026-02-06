@@ -76,10 +76,27 @@ export const useResidenciaLogic = ({
   }, [departamentos.length, loadDepartamentos]);
 
   // Inicializar departamento de residencia con Santa Cruz y cargar provincias
+  // Solo si no hay valores ya establecidos (modo edición puede tener valores del estudiante)
   useEffect(() => {
     if (!form || !santaCruzId || initializedRef.current) return;
     
-    // Establecer departamento de residencia por defecto
+    // Verificar si ya hay valores de residencia establecidos (modo edición)
+    const currentValues = form.getFieldsValue(['departamentoResidenciaId', 'provinciaResidenciaId', 'municipioResidenciaId']);
+    const tieneValoresEstablecidos = currentValues.departamentoResidenciaId != null || 
+                                      currentValues.provinciaResidenciaId != null || 
+                                      currentValues.municipioResidenciaId != null;
+    
+    if (tieneValoresEstablecidos) {
+      // Ya hay valores (modo edición): usar el departamento que ya está establecido o Santa Cruz
+      const deptoId = currentValues.departamentoResidenciaId || santaCruzId;
+      if (loadProvincias && typeof loadProvincias === 'function') {
+        loadProvincias(deptoId, 'residencia');
+      }
+      initializedRef.current = true;
+      return;
+    }
+    
+    // Modo creación: establecer departamento de residencia por defecto (Santa Cruz)
     form.setFieldsValue({
       departamentoResidenciaId: santaCruzId,
     });
@@ -92,32 +109,31 @@ export const useResidenciaLogic = ({
     initializedRef.current = true;
   }, [form, santaCruzId, loadProvincias]);
 
-  // Seleccionar automáticamente la primera provincia cuando se cargan las provincias de residencia
+  // Si hay provincia ya seleccionada (ej. modo edición), cargar sus municipios. Si no, seleccionar la primera provincia.
   useEffect(() => {
     if (!form || !initializedRef.current || primeraProvinciaSeleccionadaRef.current) return;
     
-    // Solo seleccionar la primera provincia si hay provincias de residencia y no hay una provincia ya seleccionada
     if (provinciasResidencia.length > 0) {
       const currentProvinciaId = form.getFieldsValue(['provinciaResidenciaId']).provinciaResidenciaId;
       
-      // Solo seleccionar automáticamente si no hay provincia seleccionada
-      if (!currentProvinciaId) {
+      if (currentProvinciaId) {
+        // Ya hay provincia (ej. cargada en edición): solo cargar municipios de esa provincia
+        if (loadMunicipios && typeof loadMunicipios === 'function') {
+          loadMunicipios(currentProvinciaId, 'residencia');
+        }
+        primeraProvinciaSeleccionadaRef.current = true;
+      } else {
+        // Creación: seleccionar la primera provincia y cargar sus municipios
         const primeraProvincia = provinciasResidencia[0];
         if (primeraProvincia?.id) {
           form.setFieldsValue({
             provinciaResidenciaId: primeraProvincia.id,
           });
-          
-          // Cargar municipios de la primera provincia automáticamente (con contexto 'residencia')
           if (loadMunicipios && typeof loadMunicipios === 'function') {
             loadMunicipios(primeraProvincia.id, 'residencia');
           }
-          
           primeraProvinciaSeleccionadaRef.current = true;
         }
-      } else {
-        // Si ya hay una provincia seleccionada, marcar como inicializado
-        primeraProvinciaSeleccionadaRef.current = true;
       }
     }
   }, [form, provinciasResidencia, loadMunicipios]);

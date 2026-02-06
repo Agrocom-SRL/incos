@@ -269,7 +269,7 @@ export const createEstudiantesTableColumns = (navigate, refetch = null, deleteSt
             editPath="/estudiantes/:id/editar"
             onEdit={() => {
               if (record.id) {
-                navigate(`/estudiantes/${record.id}/editar`, { state: { initialStep: 1 } });
+                navigate(`/estudiantes/${record.id}/editar`, { state: { initialStep: 2 } });
               }
             }}
             extraActions={[

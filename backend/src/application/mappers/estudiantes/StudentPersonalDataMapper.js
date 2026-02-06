@@ -49,13 +49,18 @@ export function entityToPresentation(row) {
   BaseMapper.mapFieldIfExists(row, 'direccion', 'address', student);
   BaseMapper.mapFieldIfExists(row, 'municipio_residencia_id', 'residenceMunicipalityId', student);
   BaseMapper.mapFieldIfExists(row, 'zona', 'zone', student);
+  BaseMapper.mapFieldIfExists(row, 'trabaja', 'works', student);
+  BaseMapper.mapFieldIfExists(row, 'empresa_institucion', 'employerInstitution', student);
+  BaseMapper.mapFieldIfExists(row, 'cargo', 'position', student);
   BaseMapper.mapFieldIfExists(row, 'observaciones', 'observations', student);
   BaseMapper.mapFieldIfExists(row, 'activo', 'activo', student);
   BaseMapper.mapFieldIfExists(row, 'created_at', 'createdAt', student);
   BaseMapper.mapFieldIfExists(row, 'updated_at', 'updatedAt', student);
   BaseMapper.mapFieldIfExists(row, 'estado_civil_nombre', 'estadoCivilNombre', student);
   BaseMapper.mapFieldIfExists(row, 'residencia_municipio_nombre', 'residenceMunicipalityName', student);
+  BaseMapper.mapFieldIfExists(row, 'residencia_provincia_id', 'residenceProvinceId', student);
   BaseMapper.mapFieldIfExists(row, 'residencia_provincia_nombre', 'residenceProvinceName', student);
+  BaseMapper.mapFieldIfExists(row, 'residencia_departamento_id', 'residenceDepartmentId', student);
   BaseMapper.mapFieldIfExists(row, 'residencia_departamento_nombre', 'residenceDepartmentName', student);
 
   // Apoderados: JSON → array en formato API (BaseMapper por ítem)
@@ -68,8 +73,8 @@ export function entityToPresentation(row) {
     BaseMapper.mapFieldIfExists(a, 'tipo_parentesco_nombre', 'relationshipTypeName', g);
     BaseMapper.mapFieldIfExists(a, 'apoderado_nombres', 'firstName', g);
     BaseMapper.mapFieldIfExists(a, 'apoderado_apellidos', 'lastName', g);
-    BaseMapper.mapFieldIfExists(a, 'celular_1', 'phone1', g);
-    BaseMapper.mapFieldIfExists(a, 'celular_2', 'phone2', g);
+    BaseMapper.mapFieldIfExists(a, 'celular_1', 'cellphone1', g);
+    BaseMapper.mapFieldIfExists(a, 'celular_2', 'cellphone2', g);
     BaseMapper.mapFieldIfExists(a, 'vive_con_estudiante', 'livesWithStudent', g);
     return g;
   });
@@ -83,26 +88,56 @@ export function entityToPresentation(row) {
     BaseMapper.mapFieldIfExists(d, 'tipo_discapacidad_id', 'disabilityTypeId', disp);
     BaseMapper.mapFieldIfExists(d, 'tipo_discapacidad_nombre', 'disabilityTypeName', disp);
     BaseMapper.mapFieldIfExists(d, 'discapacidad_descripcion', 'description', disp);
-    BaseMapper.mapFieldIfExists(d, 'grado_discapacidad', 'degree', disp);
+    BaseMapper.mapFieldIfExists(d, 'grado_discapacidad', 'disabilityDegree', disp);
     BaseMapper.mapFieldIfExists(d, 'discapacidad_causa', 'cause', disp);
     return disp;
   });
 
   // Orígenes: JSON → array en formato API (BaseMapper por ítem)
+  // NOTA: El driver puede devolver el JSON con claves snake_case (pais_id) o camelCase (paisId); aceptar ambos
   const origenesRaw = parseJsonArray(row.origenes);
   const origins = origenesRaw.map((o) => {
     const originPresentation = {};
     BaseMapper.mapFieldIfExists(o, 'origen_id', 'id', originPresentation);
-    BaseMapper.mapFieldIfExists(o, 'pais_id_efectivo', 'countryId', originPresentation);
+    BaseMapper.mapFieldIfExists(o, 'id', 'id', originPresentation); // por si viene camelCase
+    // País: priorizar pais_id (BD); fallback a paisId (por si el JSON ya viene camelCase)
+    const paisIdRaw = o.pais_id ?? o.paisId;
+    if (paisIdRaw != null) originPresentation.paisId = paisIdRaw;
+    const countryIdRaw = o.pais_id_efectivo ?? o.countryId ?? o.pais_id ?? o.paisId;
+    if (countryIdRaw != null) originPresentation.countryId = countryIdRaw;
     BaseMapper.mapFieldIfExists(o, 'pais_nombre', 'countryName', originPresentation);
+    // Usar nacimiento_municipio_id como fuente principal (viene de vista de geografía), municipio_nacimiento_id como fallback
+    if (o.nacimiento_municipio_id != null) {
+      originPresentation.birthMunicipalityId = o.nacimiento_municipio_id;
+    } else {
+      BaseMapper.mapFieldIfExists(o, 'municipio_nacimiento_id', 'birthMunicipalityId', originPresentation);
+    }
+    BaseMapper.mapFieldIfExists(o, 'nacimiento_provincia_id', 'birthProvinceId', originPresentation);
+    BaseMapper.mapFieldIfExists(o, 'nacimiento_departamento_id', 'birthDepartmentId', originPresentation);
     BaseMapper.mapFieldIfExists(o, 'ciudad', 'birthCity', originPresentation);
+    BaseMapper.mapFieldIfExists(o, 'ciudad_nacimiento_raw', 'birthCityRaw', originPresentation);
+    BaseMapper.mapFieldIfExists(o, 'ciudad', 'ciudadNacimiento', originPresentation);
+    // Fallback: si la ciudad no se mapeó, usar cualquier clave disponible (driver puede devolver camelCase)
+    const ciudadRaw = o.ciudad_nacimiento_raw ?? o.ciudad ?? o.birthCityRaw ?? o.ciudadNacimiento ?? o.birthCity;
+    if (ciudadRaw != null) {
+      if (!originPresentation.birthCityRaw) originPresentation.birthCityRaw = ciudadRaw;
+      if (!originPresentation.ciudadNacimiento) originPresentation.ciudadNacimiento = ciudadRaw;
+    }
     BaseMapper.mapFieldIfExists(o, 'tipo_origen', 'originType', originPresentation);
-    BaseMapper.mapFieldIfExists(o, 'es_principal', 'isPrincipal', originPresentation);
+    const esPrincipalRaw = o.es_principal ?? o.isPrincipal ?? o.esPrincipal;
+    if (esPrincipalRaw !== undefined && esPrincipalRaw !== null) {
+      originPresentation.isPrincipal = esPrincipalRaw === true || esPrincipalRaw === 1 || esPrincipalRaw === '1';
+      originPresentation.esPrincipal = esPrincipalRaw;
+    }
     BaseMapper.mapFieldIfExists(o, 'nacimiento_municipio_nombre', 'birthMunicipalityName', originPresentation);
     BaseMapper.mapFieldIfExists(o, 'nacimiento_provincia_nombre', 'birthProvinceName', originPresentation);
     BaseMapper.mapFieldIfExists(o, 'nacimiento_departamento_nombre', 'birthDepartmentName', originPresentation);
+    BaseMapper.mapFieldIfExists(o, 'idioma_materno_id', 'motherTongueId', originPresentation);
     BaseMapper.mapFieldIfExists(o, 'idioma_materno_nombre', 'motherTongueName', originPresentation);
+    BaseMapper.mapFieldIfExists(o, 'idioma_materno_codigo_iso', 'motherTongueCode', originPresentation);
+    BaseMapper.mapFieldIfExists(o, 'idioma_secundario_id', 'secondaryLanguageId', originPresentation);
     BaseMapper.mapFieldIfExists(o, 'idioma_secundario_nombre', 'secondaryLanguageName', originPresentation);
+    BaseMapper.mapFieldIfExists(o, 'idioma_secundario_codigo_iso', 'secondaryLanguageCode', originPresentation);
     return originPresentation;
   });
 

@@ -228,13 +228,14 @@ export class UpdateStudentController {
     }
 
     // Transformar discapacidades (similar a RegisterStudentRequestDTO)
-    const { tieneDiscapacidad, tipoDiscapacidadId, gradoDiscapacidad, descripcion } = body;
+    const { tieneDiscapacidad, tipoDiscapacidadId, gradoDiscapacidad, descripcion, causa } = body;
     if (tieneDiscapacidad && tipoDiscapacidadId) {
       result.disabilities = [
         {
           disabilityTypeId: tipoDiscapacidadId,
           description: descripcion,
           disabilityDegree: gradoDiscapacidad,
+          cause: causa ?? null,
         },
       ];
     } else if (body.disabilities !== undefined) {
@@ -247,26 +248,70 @@ export class UpdateStudentController {
     const {
       paisId,
       ciudadNacimiento,
+      municipioId,
+      localidadComunidad,
       idiomaMaternoId,
       idiomaSecundarioId,
       tipoOrigen,
+      primeraNacionalidad,
+      // Campos para segunda nacionalidad (doble nacionalidad)
+      segundaPaisId,
+      segundaCiudadNacimiento,
+      segundaMunicipioId,
+      segundaLocalidadComunidad,
     } = body;
 
     // IMPORTANTE: tipoOrigen puede ser 0 (BOLIVIANA), que es falsy, por lo que debemos verificar explícitamente !== undefined
-    const hasOriginData = paisId || ciudadNacimiento || idiomaMaternoId || idiomaSecundarioId || (tipoOrigen !== undefined && tipoOrigen !== null);
+    const hasOriginData = paisId || ciudadNacimiento || municipioId || localidadComunidad || idiomaMaternoId || idiomaSecundarioId || (tipoOrigen !== undefined && tipoOrigen !== null);
     
     if (hasOriginData) {
-      result.origins = [
-        {
-          countryId: paisId,
-          birthMunicipalityId: body.municipioResidenciaId, // Se usa el mismo que residencia si no hay uno específico
-          birthCity: ciudadNacimiento,
-          motherTongueId: idiomaMaternoId,
-          secondaryLanguageId: idiomaSecundarioId,
-          originType: tipoOrigen, // Puede ser 0, 1, 2 o string del ENUM
-          isPrincipal: true, // Asumimos que el primer origen es principal
-        },
-      ];
+      // Normalizar tipoOrigen a string
+      const tipoOrigenNormalizado = tipoOrigen === 0 || tipoOrigen === '0' ? 'BOLIVIANA'
+        : tipoOrigen === 1 || tipoOrigen === '1' ? 'EXTRANJERA'
+        : tipoOrigen === 2 || tipoOrigen === '2' ? 'DOBLE_NACIONALIDAD'
+        : tipoOrigen;
+      
+      result.origins = [];
+      
+      if (tipoOrigenNormalizado === 'DOBLE_NACIONALIDAD' && primeraNacionalidad) {
+        // Doble nacionalidad: crear 2 orígenes
+        const primeraEsBoliviana = primeraNacionalidad === 'BOLIVIANA' || primeraNacionalidad === '0';
+        
+        // Primera nacionalidad (principal)
+        result.origins.push({
+          countryId: primeraEsBoliviana ? null : (paisId || null),
+          birthMunicipalityId: primeraEsBoliviana ? (municipioId || null) : null,
+          birthCity: primeraEsBoliviana ? (localidadComunidad || null) : (ciudadNacimiento || null),
+          motherTongueId: idiomaMaternoId || null,
+          secondaryLanguageId: idiomaSecundarioId || null,
+          originType: primeraEsBoliviana ? 'BOLIVIANA' : 'EXTRANJERA',
+          isPrincipal: true,
+        });
+        
+        // Segunda nacionalidad (secundaria)
+        const segundaEsBoliviana = !primeraEsBoliviana;
+        result.origins.push({
+          countryId: segundaEsBoliviana ? null : (segundaPaisId || null),
+          birthMunicipalityId: segundaEsBoliviana ? (segundaMunicipioId || null) : null,
+          birthCity: segundaEsBoliviana ? (segundaLocalidadComunidad || null) : (segundaCiudadNacimiento || null),
+          motherTongueId: null, // Los idiomas van solo en el principal
+          secondaryLanguageId: null,
+          originType: segundaEsBoliviana ? 'BOLIVIANA' : 'EXTRANJERA',
+          isPrincipal: false,
+        });
+      } else {
+        // Nacionalidad simple (BOLIVIANA o EXTRANJERA)
+        const esBoliviana = tipoOrigenNormalizado === 'BOLIVIANA';
+        result.origins.push({
+          countryId: esBoliviana ? null : (paisId || null),
+          birthMunicipalityId: esBoliviana ? (municipioId || null) : null,
+          birthCity: esBoliviana ? (localidadComunidad || null) : (ciudadNacimiento || null),
+          motherTongueId: idiomaMaternoId || null,
+          secondaryLanguageId: idiomaSecundarioId || null,
+          originType: tipoOrigenNormalizado,
+          isPrincipal: true,
+        });
+      }
     } else if (body.origins !== undefined) {
       // También aceptar origins directamente (por compatibilidad)
       result.origins = body.origins;

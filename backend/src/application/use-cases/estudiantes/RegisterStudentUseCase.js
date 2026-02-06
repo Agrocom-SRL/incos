@@ -374,14 +374,22 @@ export class RegisterStudentUseCase {
         });
       }
 
-      // 6. Crear orígenes (múltiples)
+      // 6. Crear orígenes (el DTO ya construye el array correctamente según tipo de nacionalidad)
+      // Lógica: BOLIVIANA/EXTRANJERA = 1 registro; DOBLE_NACIONALIDAD = 2 registros (principal + secundario)
       const origins = [];
-      if (data.origins && Array.isArray(data.origins)) {
+      if (data.origins && Array.isArray(data.origins) && data.origins.length > 0) {
         for (const originData of data.origins) {
           const originToCreate = {
-            ...originData,
             studentId: student.id,
+            countryId: originData.countryId || null,
+            birthMunicipalityId: originData.birthMunicipalityId || null,
+            birthCity: originData.birthCity || null,
+            motherTongueId: originData.motherTongueId || null,
+            secondaryLanguageId: originData.secondaryLanguageId || null,
+            originType: originData.originType || 'BOLIVIANA',
+            isPrincipal: originData.isPrincipal !== undefined ? originData.isPrincipal : true,
           };
+          
           // NOTA: userId no se pasa porque actualmente no hay autenticación
           // El repositorio tiene userId = null como default
           const origin = await this.studentOriginRepository.create(originToCreate);
@@ -390,6 +398,10 @@ export class RegisterStudentUseCase {
         this.logger.info('[Estudiantes] Orígenes creados', {
           studentId: student.id,
           count: origins.length,
+          tipos: origins.map(o => {
+            const plain = o.toPlainObject ? o.toPlainObject() : o;
+            return { tipo: plain.originType, principal: plain.isPrincipal };
+          }),
         });
       }
 

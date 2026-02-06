@@ -183,16 +183,34 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
           });
         }
         
-        // Establecer todos los valores excepto los geográficos primero (incluye tipoAdmision, gestionIngresoId, carreraId del paso 1)
+        // Establecer todos los valores excepto los geográficos de origen y segunda nacionalidad
+        // Incluimos residencia (departamento, provincia, municipio) y localidadComunidad para que useResidenciaLogic no sobrescriba
         const { 
           departamentoId, provinciaId, municipioId,
           segundaDepartamentoId, segundaProvinciaId, segundaMunicipioId,
-          departamentoResidenciaId: _departamentoResidenciaId, 
-          provinciaResidenciaId, 
-          municipioResidenciaId,
           ...otrosValores 
         } = formData;
+        // Establecer valores del formulario (incluye residencia, segundaLocalidadComunidad, paisId, ciudadNacimiento, etc.)
         form.setFieldsValue(otrosValores);
+        
+        // Asegurar que los valores de residencia y segundaLocalidadComunidad se establezcan explícitamente
+        const valoresAdicionales = {};
+        if (formData.departamentoResidenciaId != null || formData.provinciaResidenciaId != null || formData.municipioResidenciaId != null) {
+          valoresAdicionales.departamentoResidenciaId = formData.departamentoResidenciaId ?? null;
+          valoresAdicionales.provinciaResidenciaId = formData.provinciaResidenciaId ?? null;
+          valoresAdicionales.municipioResidenciaId = formData.municipioResidenciaId ?? null;
+        }
+        // Establecer segundaLocalidadComunidad (ciudad de nacimiento para segunda nacionalidad boliviana)
+        if (formData.segundaLocalidadComunidad != null && formData.segundaLocalidadComunidad !== '') {
+          valoresAdicionales.segundaLocalidadComunidad = formData.segundaLocalidadComunidad;
+        }
+        // Establecer localidadComunidad (ciudad de nacimiento para primera nacionalidad boliviana)
+        if (formData.localidadComunidad != null && formData.localidadComunidad !== '') {
+          valoresAdicionales.localidadComunidad = formData.localidadComunidad;
+        }
+        if (Object.keys(valoresAdicionales).length > 0) {
+          form.setFieldsValue(valoresAdicionales);
+        }
 
         // Preservar valores del paso 1 (tipo admisión, gestión, carrera) para cuando el usuario cambie de paso
         if (saveStep0Values && (formData.tipoAdmision != null || formData.gestionIngresoId != null || formData.carreraId != null)) {
@@ -208,11 +226,16 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
           cargarGestiones();
         }
         
+        // Si tiene discapacidad, cargar tipos de discapacidad para que el select muestre opciones
+        if (formData.tieneDiscapacidad && typeof loadDiscapacidades === 'function') {
+          loadDiscapacidades();
+        }
+        
         // Los valores geográficos se establecerán cuando las opciones estén disponibles
         initialDataLoadedRef.current = true;
       }
     }
-  }, [isEditMode, studentDetail, form, loadProvincias, loadMunicipios, departamentos, saveStep0Values, cargarGestiones]);
+  }, [isEditMode, studentDetail, form, loadProvincias, loadMunicipios, departamentos, saveStep0Values, cargarGestiones, loadDiscapacidades]);
   
   // Efecto para establecer valores geográficos cuando las opciones estén disponibles
   useEffect(() => {
@@ -222,94 +245,112 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
       let necesitaEstablecer = false;
       
       // ===== VALORES GEOGRÁFICOS DE ORIGEN =====
-      // Verificar si hay departamentoId y establecerlo (no necesita opciones)
-      if (formData.departamentoId) {
-        valoresGeograficos.departamentoId = formData.departamentoId;
+      if (formData.departamentoId != null) {
+        valoresGeograficos.departamentoId = Number(formData.departamentoId);
         necesitaEstablecer = true;
       }
       
       // Verificar si hay provinciaId y las provincias están disponibles
-      if (formData.provinciaId && provincias.length > 0) {
-        // Verificar que la provinciaId existe en las opciones disponibles
-        const provinciaExiste = provincias.some(p => 
-          (p.value === formData.provinciaId) || (p.id === formData.provinciaId)
-        );
+      if (formData.provinciaId != null && provincias.length > 0) {
+        const idProv = Number(formData.provinciaId);
+        const provinciaExiste = provincias.some(p => Number(p.value) === idProv || Number(p.id) === idProv);
         if (provinciaExiste) {
-          valoresGeograficos.provinciaId = formData.provinciaId;
+          valoresGeograficos.provinciaId = idProv;
           necesitaEstablecer = true;
         }
       }
       
       // Verificar si hay municipioId y los municipios están disponibles
-      if (formData.municipioId && municipios.length > 0) {
-        // Verificar que el municipioId existe en las opciones disponibles
-        const municipioExiste = municipios.some(m => 
-          (m.value === formData.municipioId) || (m.id === formData.municipioId)
-        );
+      if (formData.municipioId != null && municipios.length > 0) {
+        const idMun = Number(formData.municipioId);
+        const municipioExiste = municipios.some(m => Number(m.value) === idMun || Number(m.id) === idMun);
         if (municipioExiste) {
-          valoresGeograficos.municipioId = formData.municipioId;
+          valoresGeograficos.municipioId = idMun;
           necesitaEstablecer = true;
         }
       }
       
       // ===== VALORES GEOGRÁFICOS DE SEGUNDA NACIONALIDAD (DOBLE NACIONALIDAD) =====
-      // Verificar si hay segundaDepartamentoId y establecerlo (no necesita opciones)
-      if (formData.segundaDepartamentoId) {
-        valoresGeograficos.segundaDepartamentoId = formData.segundaDepartamentoId;
+      if (formData.segundaDepartamentoId != null) {
+        valoresGeograficos.segundaDepartamentoId = Number(formData.segundaDepartamentoId);
         necesitaEstablecer = true;
       }
       
       // Verificar si hay segundaProvinciaId y las provincias de segunda nacionalidad están disponibles
-      if (formData.segundaProvinciaId && segundaProvincias.length > 0) {
-        // Verificar que la segundaProvinciaId existe en las opciones disponibles
+      if (formData.segundaProvinciaId != null && segundaProvincias.length > 0) {
+        const idProv = Number(formData.segundaProvinciaId);
         const provinciaExiste = segundaProvincias.some(p => 
-          (p.value === formData.segundaProvinciaId) || (p.id === formData.segundaProvinciaId)
+          Number(p.value) === idProv || Number(p.id) === idProv
         );
         if (provinciaExiste) {
-          valoresGeograficos.segundaProvinciaId = formData.segundaProvinciaId;
+          valoresGeograficos.segundaProvinciaId = idProv;
           necesitaEstablecer = true;
         }
       }
       
       // Verificar si hay segundaMunicipioId y los municipios de segunda nacionalidad están disponibles
-      if (formData.segundaMunicipioId && segundaMunicipios.length > 0) {
-        // Verificar que el segundaMunicipioId existe en las opciones disponibles
+      if (formData.segundaMunicipioId != null && segundaMunicipios.length > 0) {
+        const idMun = Number(formData.segundaMunicipioId);
         const municipioExiste = segundaMunicipios.some(m => 
-          (m.value === formData.segundaMunicipioId) || (m.id === formData.segundaMunicipioId)
+          Number(m.value) === idMun || Number(m.id) === idMun
         );
         if (municipioExiste) {
-          valoresGeograficos.segundaMunicipioId = formData.segundaMunicipioId;
+          valoresGeograficos.segundaMunicipioId = idMun;
           necesitaEstablecer = true;
         }
       }
       
+      // Establecer segundaLocalidadComunidad (ciudad de nacimiento para segunda nacionalidad boliviana)
+      if (formData.segundaLocalidadComunidad != null && formData.segundaLocalidadComunidad !== '') {
+        valoresGeograficos.segundaLocalidadComunidad = formData.segundaLocalidadComunidad;
+        necesitaEstablecer = true;
+      }
+      
+      // Establecer localidadComunidad (ciudad de nacimiento para primera nacionalidad boliviana)
+      if (formData.localidadComunidad != null && formData.localidadComunidad !== '') {
+        valoresGeograficos.localidadComunidad = formData.localidadComunidad;
+        necesitaEstablecer = true;
+      }
+      
+      // ===== VALORES DE ORIGEN EXTRANJERO (PAÍS Y CIUDAD) =====
+      // Establecer paisId cuando los países estén disponibles (para que el select muestre el label)
+      if (formData.paisId != null && paises.length > 0) {
+        const idPais = Number(formData.paisId);
+        const paisExiste = paises.some(p => Number(p.value) === idPais || Number(p.id) === idPais);
+        if (paisExiste) {
+          valoresGeograficos.paisId = idPais;
+          necesitaEstablecer = true;
+        }
+      }
+      
+      // Establecer ciudadNacimiento (siempre que exista, no depende de opciones)
+      if (formData.ciudadNacimiento != null && formData.ciudadNacimiento !== '') {
+        valoresGeograficos.ciudadNacimiento = formData.ciudadNacimiento;
+        necesitaEstablecer = true;
+      }
+      
       // ===== VALORES GEOGRÁFICOS DE RESIDENCIA =====
-      // Verificar si hay departamentoResidenciaId y establecerlo (no necesita opciones)
-      if (formData.departamentoResidenciaId) {
-        valoresGeograficos.departamentoResidenciaId = formData.departamentoResidenciaId;
+      if (formData.departamentoResidenciaId != null) {
+        valoresGeograficos.departamentoResidenciaId = Number(formData.departamentoResidenciaId);
         necesitaEstablecer = true;
       }
       
       // Verificar si hay provinciaResidenciaId y las provincias de residencia están disponibles
-      if (formData.provinciaResidenciaId && provinciasResidencia.length > 0) {
-        // Verificar que la provinciaResidenciaId existe en las opciones disponibles
-        const provinciaExiste = provinciasResidencia.some(p => 
-          (p.value === formData.provinciaResidenciaId) || (p.id === formData.provinciaResidenciaId)
-        );
+      if (formData.provinciaResidenciaId != null && provinciasResidencia.length > 0) {
+        const idProv = Number(formData.provinciaResidenciaId);
+        const provinciaExiste = provinciasResidencia.some(p => Number(p.value) === idProv || Number(p.id) === idProv);
         if (provinciaExiste) {
-          valoresGeograficos.provinciaResidenciaId = formData.provinciaResidenciaId;
+          valoresGeograficos.provinciaResidenciaId = idProv;
           necesitaEstablecer = true;
         }
       }
       
       // Verificar si hay municipioResidenciaId y los municipios de residencia están disponibles
-      if (formData.municipioResidenciaId && municipiosResidencia.length > 0) {
-        // Verificar que el municipioResidenciaId existe en las opciones disponibles
-        const municipioExiste = municipiosResidencia.some(m => 
-          (m.value === formData.municipioResidenciaId) || (m.id === formData.municipioResidenciaId)
-        );
+      if (formData.municipioResidenciaId != null && municipiosResidencia.length > 0) {
+        const idMun = Number(formData.municipioResidenciaId);
+        const municipioExiste = municipiosResidencia.some(m => Number(m.value) === idMun || Number(m.id) === idMun);
         if (municipioExiste) {
-          valoresGeograficos.municipioResidenciaId = formData.municipioResidenciaId;
+          valoresGeograficos.municipioResidenciaId = idMun;
           necesitaEstablecer = true;
         }
       }
@@ -319,7 +360,7 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
         form.setFieldsValue(valoresGeograficos);
       }
     }
-  }, [isEditMode, form, provincias, municipios, segundaProvincias, segundaMunicipios, provinciasResidencia, municipiosResidencia]);
+  }, [isEditMode, form, provincias, municipios, segundaProvincias, segundaMunicipios, provinciasResidencia, municipiosResidencia, paises]);
 
   // Ref para rastrear si ya se inicializaron los valores de documentación
   const documentacionInitializedRef = useRef(false);

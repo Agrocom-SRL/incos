@@ -42,11 +42,11 @@ export const estudianteFormMapper = (studentDetail) => {
     celular: student.celular || '',
     telefonoFijo: student.telefonoFijo || '',
     direccion: student.direccion || '',
-    municipioResidenciaId: student.municipioResidenciaId || null,
+    municipioResidenciaId: student.residenceMunicipalityId || student.municipioResidenciaId || null,
     zona: student.zona || '',
-    trabaja: student.trabaja ?? false,
-    empresaInstitucion: student.empresaInstitucion ?? '',
-    cargo: student.cargo ?? '',
+    trabaja: student.works ?? student.trabaja ?? false,
+    empresaInstitucion: student.employerInstitution ?? student.empresaInstitucion ?? '',
+    cargo: student.position ?? student.cargo ?? '',
     observaciones: student.observaciones ?? '',
     // Paso 0: tipo admisión y datos académicos (para edición; tipoAdmision persistido en BD)
     tipoAdmision,
@@ -54,28 +54,19 @@ export const estudianteFormMapper = (studentDetail) => {
     carreraId: academicData?.carreraId ?? null,
   };
 
-  // Extraer IDs geográficos de residencia desde los catálogos
-  // Esto es necesario para cargar las provincias y municipios correctamente
-  if (studentDetail.catalogs) {
+  // Extraer IDs geográficos de residencia (vienen de vista_estudiante_datos_personales → vista_base_estudiante_residencia)
+  // Priorizar IDs que vienen en el student desde la vista; fallback a catálogos si existieran
+  const municipioResId = student.municipioResidenciaId ?? student.residenceMunicipalityId;
+  const provinciaResId = student.residenceProvinceId;
+  const departamentoResId = student.residenceDepartmentId;
+  formData.municipioResidenciaId = municipioResId != null ? (typeof municipioResId === 'number' ? municipioResId : Number(municipioResId)) : null;
+  formData.provinciaResidenciaId = provinciaResId != null ? (typeof provinciaResId === 'number' ? provinciaResId : Number(provinciaResId)) : null;
+  formData.departamentoResidenciaId = departamentoResId != null ? (typeof departamentoResId === 'number' ? departamentoResId : Number(departamentoResId)) : null;
+  if (studentDetail.catalogs?.residenceMunicipality || studentDetail.catalogs?.residenceProvince || studentDetail.catalogs?.residenceDepartment) {
     const { residenceMunicipality, residenceProvince, residenceDepartment } = studentDetail.catalogs;
-    
-    if (residenceMunicipality) {
-      formData.municipioResidenciaId = residenceMunicipality.id || student.municipioResidenciaId || null;
-      
-      // Obtener provinciaId desde el municipio o desde residenceProvince
-      if (residenceProvince) {
-        formData.provinciaResidenciaId = residenceProvince.id || residenceMunicipality.provinciaId || null;
-      } else if (residenceMunicipality.provinciaId) {
-        formData.provinciaResidenciaId = residenceMunicipality.provinciaId;
-      }
-      
-      // Obtener departamentoId desde la provincia o desde residenceDepartment
-      if (residenceDepartment) {
-        formData.departamentoResidenciaId = residenceDepartment.id || residenceProvince?.departamentoId || null;
-      } else if (residenceProvince?.departamentoId) {
-        formData.departamentoResidenciaId = residenceProvince.departamentoId;
-      }
-    }
+    if (residenceMunicipality) formData.municipioResidenciaId = residenceMunicipality.id || formData.municipioResidenciaId;
+    if (residenceProvince) formData.provinciaResidenciaId = residenceProvince.id || residenceMunicipality?.provinciaId || formData.provinciaResidenciaId;
+    if (residenceDepartment) formData.departamentoResidenciaId = residenceDepartment.id || residenceProvince?.departamentoId || formData.departamentoResidenciaId;
   }
 
   // Mapear discapacidades
@@ -84,6 +75,7 @@ export const estudianteFormMapper = (studentDetail) => {
     formData.tipoDiscapacidadId = primeraDiscapacidad.disabilityTypeId || null;
     formData.gradoDiscapacidad = primeraDiscapacidad.disabilityDegree || null;
     formData.descripcion = primeraDiscapacidad.description || '';
+    formData.causa = primeraDiscapacidad.cause || '';
   }
 
   // ============================================
@@ -105,25 +97,17 @@ export const estudianteFormMapper = (studentDetail) => {
   }
 
   // Separar orígenes según sean principales o secundarios
-  // Buscar por esPrincipal o isPrincipal (puede venir en diferentes formatos)
-  const origenPrincipal = origins.find(o => 
-    o.esPrincipal === true || 
-    o.esPrincipal === 1 || 
-    o.isPrincipal === true || 
-    o.isPrincipal === 1
-  ) || origins[0]; // Si no hay marcado como principal, usar el primero
-  
-  const origenSecundario = origins.find(o => 
-    (o.esPrincipal === false || o.esPrincipal === 0 || o.isPrincipal === false || o.isPrincipal === 0) &&
-    o !== origenPrincipal
-  );
+  // MySQL/JSON puede devolver es_principal como 1/0 (number) o "1"/"0" (string)
+  const isPrincipal = (o) => Number(o?.esPrincipal) === 1 || Number(o?.isPrincipal) === 1 || o?.esPrincipal === true || o?.isPrincipal === true;
+  const isSecundario = (o) => Number(o?.esPrincipal) === 0 || Number(o?.isPrincipal) === 0 || o?.esPrincipal === false || o?.isPrincipal === false;
+  const origenPrincipal = origins.find(isPrincipal) || origins[0]; // Si no hay marcado como principal, usar el primero
+  const origenSecundario = origins.find(o => isSecundario(o) && o !== origenPrincipal);
 
   // Determinar primera nacionalidad para doble nacionalidad
   if (tipoOrigen === 'DOBLE_NACIONALIDAD' && origenPrincipal) {
-    // Si tiene municipioNacimientoId, es boliviana; si no, es extranjera
-    primeraNacionalidad = origenPrincipal.birthMunicipalityId || origenPrincipal.municipioNacimientoId
-      ? 'BOLIVIANA'
-      : 'EXTRANJERA';
+    // Principal boliviano si tiene municipio de nacimiento; si no, extranjero (tiene paisId)
+    const principalTieneMunicipio = !!(origenPrincipal.birthMunicipalityId ?? origenPrincipal.municipioNacimientoId);
+    primeraNacionalidad = principalTieneMunicipio ? 'BOLIVIANA' : 'EXTRANJERA';
     formData.primeraNacionalidad = primeraNacionalidad;
   }
 
@@ -138,26 +122,41 @@ export const estudianteFormMapper = (studentDetail) => {
     formData.idiomaMaternoId = origenPrincipal.motherTongueId || origenPrincipal.idiomaMaternoId || null;
     formData.idiomaSecundarioId = origenPrincipal.secondaryLanguageId || origenPrincipal.idiomaSecundarioId || null;
     
-    // Si es boliviana (tiene municipioNacimientoId)
-    if (origenPrincipal.birthMunicipalityId || origenPrincipal.municipioNacimientoId) {
+    // Determinar si el origen principal es boliviano o extranjero
+    const origenPrincipalEsBoliviano = !!(origenPrincipal.birthMunicipalityId || origenPrincipal.municipioNacimientoId);
+    
+    if (origenPrincipalEsBoliviano) {
+      // Si es boliviana (tiene municipioNacimientoId o birthMunicipalityId)
+      // Priorizar birthMunicipalityId (viene de vista SQL nacimiento_municipio_id)
       const municipioNacimientoId = origenPrincipal.birthMunicipalityId || origenPrincipal.municipioNacimientoId;
       
-      // Extraer jerarquía geográfica desde catálogos
-      if (studentDetail.catalogs) {
-        const { originMunicipalities, originProvinces, originDepartments } = studentDetail.catalogs;
-        
-        if (municipioNacimientoId && originMunicipalities) {
-          const municipio = originMunicipalities[municipioNacimientoId];
-          if (municipio) {
-            formData.municipioId = municipioNacimientoId;
-            formData.localidadComunidad = origenPrincipal.birthCity || origenPrincipal.ciudadNacimiento || '';
-            
-            if (municipio.provinciaId) {
-              formData.provinciaId = municipio.provinciaId;
+      // Usar IDs directamente desde el origen (vienen desde vista_estudiante_datos_personales)
+      formData.municipioId = municipioNacimientoId;
+      // Localidad/Comunidad = ciudad de nacimiento cuando nacionalidad es Boliviana (birthCity/birthCityRaw)
+      formData.localidadComunidad = origenPrincipal.birthCityRaw || origenPrincipal.ciudadNacimiento || origenPrincipal.birthCity || '';
+      
+      // Obtener provinciaId y departamentoId desde el origen (vienen desde vista SQL: nacimiento_provincia_id, nacimiento_departamento_id)
+      if (origenPrincipal.birthProvinceId) {
+        formData.provinciaId = origenPrincipal.birthProvinceId;
+      }
+      if (origenPrincipal.birthDepartmentId) {
+        formData.departamentoId = origenPrincipal.birthDepartmentId;
+      }
+      
+      // Fallback: intentar obtener desde catálogos si no vienen en el origen
+      if (!formData.provinciaId || !formData.departamentoId) {
+        if (studentDetail.catalogs) {
+          const { originMunicipalities, originProvinces, originDepartments } = studentDetail.catalogs;
+          
+          if (municipioNacimientoId && originMunicipalities) {
+            const municipio = originMunicipalities[municipioNacimientoId];
+            if (municipio) {
+              if (!formData.provinciaId && municipio.provinciaId) {
+                formData.provinciaId = municipio.provinciaId;
+              }
               
-              // Obtener departamentoId desde la provincia
-              if (originProvinces && originProvinces[municipio.provinciaId]) {
-                const provincia = originProvinces[municipio.provinciaId];
+              if (!formData.departamentoId && formData.provinciaId && originProvinces && originProvinces[formData.provinciaId]) {
+                const provincia = originProvinces[formData.provinciaId];
                 if (provincia && provincia.departamentoId) {
                   formData.departamentoId = provincia.departamentoId;
                 }
@@ -166,11 +165,15 @@ export const estudianteFormMapper = (studentDetail) => {
           }
         }
       }
-    }
-    // Si es extranjera (tiene paisId)
-    else if (origenPrincipal.countryId || origenPrincipal.paisId) {
-      formData.paisId = origenPrincipal.countryId || origenPrincipal.paisId;
-      formData.ciudadNacimiento = origenPrincipal.birthCity || origenPrincipal.ciudadNacimiento || '';
+    } else {
+      // Si es extranjera (no tiene municipio; tiene pais_id en BD)
+      // Aceptar camelCase (API) o snake_case (por si llega crudo)
+      const paisIdOrigen = origenPrincipal.paisId ?? origenPrincipal.countryId ?? origenPrincipal.pais_id ?? origenPrincipal.pais_id_efectivo;
+      if (paisIdOrigen != null && paisIdOrigen !== '') {
+        formData.paisId = typeof paisIdOrigen === 'number' ? paisIdOrigen : Number(paisIdOrigen);
+      }
+      const ciudadRaw = origenPrincipal.birthCityRaw ?? origenPrincipal.ciudadNacimiento ?? origenPrincipal.birthCity ?? origenPrincipal.ciudad_nacimiento_raw ?? origenPrincipal.ciudad ?? '';
+      formData.ciudadNacimiento = typeof ciudadRaw === 'string' ? ciudadRaw : String(ciudadRaw ?? '');
     }
   }
 
@@ -179,26 +182,40 @@ export const estudianteFormMapper = (studentDetail) => {
   // ============================================
   
   if (origenSecundario && tipoOrigen === 'DOBLE_NACIONALIDAD') {
-    // Si la segunda nacionalidad es boliviana (tiene municipioNacimientoId)
-    if (origenSecundario.birthMunicipalityId || origenSecundario.municipioNacimientoId) {
-      const municipioNacimientoId = origenSecundario.birthMunicipalityId || origenSecundario.municipioNacimientoId;
+    // Determinar si la segunda nacionalidad es boliviana o extranjera
+    const segundaEsBoliviana = !!(origenSecundario.birthMunicipalityId ?? origenSecundario.municipioNacimientoId);
+    
+    if (segundaEsBoliviana) {
+      // Si la segunda nacionalidad es boliviana (tiene municipio); priorizar nacimiento_municipio_id
+      const municipioNacimientoId = origenSecundario.birthMunicipalityId ?? origenSecundario.municipioNacimientoId;
+      if (municipioNacimientoId != null) {
+        formData.segundaMunicipioId = typeof municipioNacimientoId === 'number' ? municipioNacimientoId : Number(municipioNacimientoId);
+      }
+      // Localidad/Comunidad = ciudad de nacimiento cuando nacionalidad es Boliviana (birthCity/birthCityRaw, ej. "colomi")
+      formData.segundaLocalidadComunidad = origenSecundario.birthCityRaw || origenSecundario.ciudadNacimiento || origenSecundario.birthCity || '';
       
-      // Extraer jerarquía geográfica desde catálogos
-      if (studentDetail.catalogs) {
-        const { originMunicipalities, originProvinces } = studentDetail.catalogs;
-        
-        if (municipioNacimientoId && originMunicipalities) {
-          const municipio = originMunicipalities[municipioNacimientoId];
-          if (municipio) {
-            formData.segundaMunicipioId = municipioNacimientoId;
-            formData.segundaLocalidadComunidad = origenSecundario.birthCity || origenSecundario.ciudadNacimiento || '';
-            
-            if (municipio.provinciaId) {
-              formData.segundaProvinciaId = municipio.provinciaId;
+      // Provincia y departamento desde vista (nacimiento_provincia_id, nacimiento_departamento_id)
+      if (origenSecundario.birthProvinceId != null) {
+        formData.segundaProvinciaId = typeof origenSecundario.birthProvinceId === 'number' ? origenSecundario.birthProvinceId : Number(origenSecundario.birthProvinceId);
+      }
+      if (origenSecundario.birthDepartmentId != null) {
+        formData.segundaDepartamentoId = typeof origenSecundario.birthDepartmentId === 'number' ? origenSecundario.birthDepartmentId : Number(origenSecundario.birthDepartmentId);
+      }
+      
+      // Fallback: intentar obtener desde catálogos si no vienen en el origen
+      if (!formData.segundaProvinciaId || !formData.segundaDepartamentoId) {
+        if (studentDetail.catalogs) {
+          const { originMunicipalities, originProvinces } = studentDetail.catalogs;
+          
+          if (municipioNacimientoId && originMunicipalities) {
+            const municipio = originMunicipalities[municipioNacimientoId];
+            if (municipio) {
+              if (!formData.segundaProvinciaId && municipio.provinciaId) {
+                formData.segundaProvinciaId = municipio.provinciaId;
+              }
               
-              // Obtener departamentoId desde la provincia
-              if (originProvinces && originProvinces[municipio.provinciaId]) {
-                const provincia = originProvinces[municipio.provinciaId];
+              if (!formData.segundaDepartamentoId && formData.segundaProvinciaId && originProvinces && originProvinces[formData.segundaProvinciaId]) {
+                const provincia = originProvinces[formData.segundaProvinciaId];
                 if (provincia && provincia.departamentoId) {
                   formData.segundaDepartamentoId = provincia.departamentoId;
                 }
@@ -207,11 +224,15 @@ export const estudianteFormMapper = (studentDetail) => {
           }
         }
       }
-    }
-    // Si la segunda nacionalidad es extranjera (tiene paisId)
-    else if (origenSecundario.countryId || origenSecundario.paisId) {
-      formData.segundaPaisId = origenSecundario.countryId || origenSecundario.paisId;
-      formData.segundaCiudadNacimiento = origenSecundario.birthCity || origenSecundario.ciudadNacimiento || '';
+    } else {
+      // Si la segunda nacionalidad es extranjera (no tiene municipio, pero tiene paisId)
+      // Para extranjeros, paisId siempre tiene valor (no es null)
+      // countryId (pais_id_efectivo) siempre tiene valor, pero para extranjeros debería ser igual a paisId
+      const segundaPaisIdOrigen = origenSecundario.paisId ?? origenSecundario.countryId;
+      if (segundaPaisIdOrigen != null) {
+        formData.segundaPaisId = typeof segundaPaisIdOrigen === 'number' ? segundaPaisIdOrigen : Number(segundaPaisIdOrigen);
+      }
+      formData.segundaCiudadNacimiento = origenSecundario.birthCityRaw || origenSecundario.ciudadNacimiento || origenSecundario.birthCity || '';
     }
   }
 

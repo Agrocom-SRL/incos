@@ -29,15 +29,19 @@
 export function parseJsonArray(raw) {
   if (Array.isArray(raw)) return raw;
   if (raw == null || raw === '') return [];
-  if (typeof raw === 'string') {
-    try {
-      const parsed = JSON.parse(raw);
-      return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return [];
-    }
+  // MySQL/driver puede devolver JSON como string o Buffer
+  let str = raw;
+  if (typeof str !== 'string') {
+    if (typeof str?.toString === 'function') str = str.toString();
+    else return [];
   }
-  return [];
+  if (typeof str !== 'string') return [];
+  try {
+    const parsed = JSON.parse(str);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
 }
 
 /**
