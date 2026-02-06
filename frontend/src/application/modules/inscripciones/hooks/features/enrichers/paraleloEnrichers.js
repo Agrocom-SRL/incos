@@ -31,7 +31,7 @@
  * 4. Cuando el usuario selecciona un paralelo, se ejecuta onSelectParalelo que guarda el ID
  * 5. Solo muestra paralelos si hay una carrera seleccionada
  * 
- * @param {Object} field - Configuración del campo (desde step2SeleccionarParalelos.jsx)
+ * @param {Object} field - Configuración del campo (desde step2PeriodoYParalelos.jsx)
  * @param {Object} context - Contexto con callbacks y datos disponibles
  * @param {Object} context.paralelosData - Objeto con paralelos, loading, error (desde useInscripcionNuevaParalelos)
  * @param {Function} context.onSelectParalelo - Callback para manejar la selección de un paralelo
@@ -39,13 +39,12 @@
  * @returns {Object} Campo enriquecido con items, loading, emptyMessage, onSelect o el campo original
  */
 export const enrichParaleloListField = (field, context = {}) => {
-    const { paralelosData, onSelectParalelo, carrerasData } = context;
-    
-    // Si es el campo de lista/tarjetas de paralelos, agregar los datos
-    // El campo debe tener name='listaParalelos' y type='list' o 'cards'
+    const { paralelosData, onSelectParalelo, carrerasData, periodosData } = context;
+
     if (field.name === 'listaParalelos' && (field.type === 'list' || field.type === 'cards') && paralelosData) {
-        // Solo mostrar paralelos si hay una carrera seleccionada
         const hasCarrera = carrerasData?.selectedCarrera?.id;
+        const hasPeriodo = periodosData?.selectedPeriod?.id != null;
+        const canShowParalelos = hasCarrera && hasPeriodo;
         
         // Enriquecer paralelos con el nombre de la carrera
         // El backend solo devuelve carreraId, necesitamos buscar el nombre en carrerasData.carreras
@@ -62,30 +61,28 @@ export const enrichParaleloListField = (field, context = {}) => {
         
         // Crear wrapper para el callback que recibe (item, index) de DataList
         // y lo convierte a solo el item para onSelectParalelo
-        const handleSelect = hasCarrera && onSelectParalelo
+        const handleSelect = canShowParalelos && onSelectParalelo
             ? (item, index) => {
                 if (item && onSelectParalelo) {
                     onSelectParalelo(item);
                 }
             }
             : null;
-        
+
+        let emptyMessage = 'Seleccione un periodo (paso anterior) y una carrera para ver los paralelos disponibles.';
+        if (hasPeriodo && !hasCarrera) emptyMessage = 'Seleccione una carrera para ver los paralelos disponibles.';
+        if (hasCarrera && hasPeriodo) emptyMessage = field.emptyMessage || 'No hay paralelos disponibles para esta carrera en el período seleccionado.';
+
         return {
             ...field,
-            // Datos agregados por el enricher (consumidos por DataList o DataCards)
-            items: hasCarrera ? paralelosEnriquecidos : [], // Array de paralelos enriquecidos
-            loading: paralelosData.loading || false, // Estado de carga
-            emptyMessage: hasCarrera 
-                ? (field.emptyMessage || 'No hay paralelos disponibles para esta carrera en el período actual.')
-                : 'Seleccione una carrera para ver los paralelos disponibles.',
-            // Wrapper que convierte (item, index) a solo item para onSelectParalelo
+            items: canShowParalelos ? paralelosEnriquecidos : [],
+            loading: paralelosData.loading || false,
+            emptyMessage,
             onSelect: handleSelect,
-            // Paralelo seleccionado para aplicar estado activo en DataList o DataCards
             selectedItem: paralelosData.selectedParalelo || null,
-            // Ocultar si no hay carrera seleccionada
-            hidden: !hasCarrera,
-            // renderItem ya está definido en step2SeleccionarParalelos.jsx
-            // orientation ya está definido en step2SeleccionarParalelos.jsx
+            hidden: !canShowParalelos,
+            // renderItem ya está definido en step2PeriodoYParalelos.jsx
+            // orientation ya está definido en step2PeriodoYParalelos.jsx
         };
     }
     

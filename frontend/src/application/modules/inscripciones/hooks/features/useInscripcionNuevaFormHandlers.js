@@ -48,10 +48,11 @@ import { useCreateInscripcion } from '@application-inscripciones/hooks';
  * @param {Object} options - Opciones adicionales
  * @param {Object} options.selectedStudent - Estudiante seleccionado (con id)
  * @param {Object} options.selectedParalelo - Paralelo seleccionado (con id)
+ * @param {Object} options.selectedPeriod - Periodo seleccionado (con id)
  * @returns {Object} Objeto con form, handleFinish, handleSave, getFormValues, loading, error, validationErrors, inscripcionResult
  */
 export const useInscripcionNuevaFormHandlers = (mode = 'nuevo', options = {}) => {
-    const { selectedStudent, selectedParalelo } = options;
+    const { selectedStudent, selectedParalelo, selectedPeriod } = options;
     
     // Hook genérico compartido para mostrar mensajes
     const showMessage = useMessage();
@@ -98,7 +99,6 @@ export const useInscripcionNuevaFormHandlers = (mode = 'nuevo', options = {}) =>
 
     useEffect(() => {
         if (form) {
-            // Actualizar parallel_id en el formulario cuando se seleccione un paralelo
             if (selectedParalelo?.id) {
                 form.setFieldsValue({
                     parallel_id: selectedParalelo.id,
@@ -106,6 +106,15 @@ export const useInscripcionNuevaFormHandlers = (mode = 'nuevo', options = {}) =>
             }
         }
     }, [form, selectedParalelo]);
+
+    useEffect(() => {
+        if (form && selectedPeriod?.id != null) {
+            form.setFieldsValue({
+                periodo_id: selectedPeriod.id,
+                periodo: selectedPeriod.id,
+            });
+        }
+    }, [form, selectedPeriod]);
 
     // Función para obtener los valores del formulario
     const getFormValues = useCallback(() => {
@@ -176,15 +185,15 @@ export const useInscripcionNuevaFormHandlers = (mode = 'nuevo', options = {}) =>
             };
         }
 
-        // Preparar datos para la API (snake_case como espera el backend)
+        const periodoId = selectedPeriod?.id ?? formValues.periodo_id ?? formValues.periodo;
         const inscripcionData = {
             student_id: studentId,
             parallel_id: parallelId,
+            periodo_id: periodoId ?? undefined,
             enrollment_type: formValues.enrollment_type || 'NUEVO',
             observations: formValues.observations || null,
         };
 
-        // Llamar al hook de API para crear la inscripción
         const result = await createInscripcion(inscripcionData);
 
         // Manejar el resultado
@@ -218,7 +227,7 @@ export const useInscripcionNuevaFormHandlers = (mode = 'nuevo', options = {}) =>
         }
 
         return result;
-    }, [selectedStudent, selectedParalelo, getFormValues, createInscripcion, showMessage, handleSubmitResult, navigate]);
+    }, [selectedStudent, selectedParalelo, selectedPeriod, getFormValues, createInscripcion, showMessage, handleSubmitResult, navigate]);
 
     // Handler para guardar parcialmente
     // NOTA: Por ahora, el guardado parcial también crea la inscripción completa
@@ -256,20 +265,18 @@ export const useInscripcionNuevaFormHandlers = (mode = 'nuevo', options = {}) =>
             };
         }
         
-        // Preparar datos para la API (snake_case como espera el backend)
+        const periodoId = selectedPeriod?.id ?? formValues.periodo_id ?? formValues.periodo;
         const inscripcionData = {
             student_id: studentId,
             parallel_id: parallelId,
+            periodo_id: periodoId ?? undefined,
             enrollment_type: formValues.enrollment_type || 'NUEVO',
             observations: formValues.observations || null,
         };
 
-        // Llamar al hook de API para crear la inscripción
         const result = await createInscripcion(inscripcionData);
 
-        // Manejar el resultado
         if (result?.success) {
-            // Mostrar mensaje de éxito
             if (showMessage) {
                 showMessage('success', 'Datos guardados correctamente. Puede continuar después.');
             }
@@ -286,7 +293,7 @@ export const useInscripcionNuevaFormHandlers = (mode = 'nuevo', options = {}) =>
         }
 
         return result;
-    }, [selectedStudent, selectedParalelo, getFormValues, createInscripcion, showMessage, handleSubmitResult]);
+    }, [selectedStudent, selectedParalelo, selectedPeriod, getFormValues, createInscripcion, showMessage, handleSubmitResult]);
 
     // Memoizar el objeto retornado para mantener referencia estable
     // Esto permite que el useMemo del Provider sea más efectivo

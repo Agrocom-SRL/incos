@@ -29,11 +29,12 @@ import { useParalelosApi } from '@application-academico/paralelos/hooks/useParal
  * 
  * @param {Object} options - Opciones del hook
  * @param {number} [options.carreraId] - ID de la carrera para filtrar paralelos
+ * @param {number} [options.periodoId] - ID del periodo seleccionado (obligatorio para cargar; antes se usaba periodo 1 fijo)
  * @param {number} [options.initialParaleloId] - ID del paralelo para pre-seleccionar (opcional)
  * @returns {Object} Objeto con paralelos, loading, error, refetch, selectedParalelo, onSelectParalelo
  */
 export const useInscripcionNuevaParalelos = (options = {}) => {
-  const { carreraId, initialParaleloId = null } = options;
+  const { carreraId, periodoId, initialParaleloId = null } = options;
 
   // Usar el hook genérico de paralelos
   const { paralelos, loading, error, fetch } = useParalelosApi();
@@ -42,29 +43,23 @@ export const useInscripcionNuevaParalelos = (options = {}) => {
   const [selectedParalelo, setSelectedParalelo] = useState(null);
 
   /**
-   * Función para cargar paralelos con periodo: 1 y carrera_id (si existe)
-   * El backend espera carrera_id (snake_case) según el validador
+   * Función para cargar paralelos con periodo_id (seleccionado por el usuario) y carrera_id (si existe)
+   * El backend acepta periodo_id o periodo (número). Priorizamos periodo_id.
    */
   const loadParalelos = useCallback(() => {
-    const params = { periodo: 1 };
-    if (carreraId) {
-      params.carrera_id = carreraId; // Backend espera carrera_id (snake_case)
-    }
+    const params = {};
+    if (periodoId) params.periodo_id = periodoId;
+    if (carreraId) params.carrera_id = carreraId;
     fetch({ params });
-  }, [carreraId, fetch]);
+  }, [carreraId, periodoId, fetch]);
 
-  // Cargar paralelos cuando cambie carreraId
-  // Limpiar paralelo seleccionado cuando cambie la carrera
+  // Cargar paralelos cuando cambie carreraId o periodoId; limpiar selección al cambiar
   useEffect(() => {
-    // Limpiar selección cuando cambia la carrera
     setSelectedParalelo(null);
-    
-    // Cargar paralelos solo si hay carrera seleccionada
-    if (carreraId) {
+    if (carreraId && periodoId) {
       loadParalelos();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [carreraId]); // Solo cuando cambie carreraId
+  }, [carreraId, periodoId, loadParalelos]);
 
   /**
    * Función para recargar paralelos

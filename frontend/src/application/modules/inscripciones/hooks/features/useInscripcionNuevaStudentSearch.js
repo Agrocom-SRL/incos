@@ -53,29 +53,18 @@ export const useInscripcionNuevaStudentSearch = (options = {}) => {
     }
   }, [studentId, getStudentById, selectedStudent]);
   
-  // Cuando se carga el estudiante por ID, seleccionarlo automáticamente
+  // Cuando se carga el estudiante por ID, seleccionarlo con datos académicos (tipoAdmision, carrera)
   useEffect(() => {
     if (studentById && studentId) {
-      // El hook useGetStudentById retorna { student: data } donde data es el objeto del estudiante
-      // studentById ya es el objeto del estudiante extraído por createApiHook usando dataKey: 'student'
-      // Pero puede venir con estructura anidada del backend, así que verificamos diferentes posibilidades
+      // useGetStudentById retorna { student: result.data }; result.data = { student, guardians, academicData, ... }
       let studentData = null;
-      
-      // Intentar diferentes estructuras posibles del objeto retornado
-      if (studentById.id) {
-        // Si tiene id directamente, es el objeto del estudiante
-        studentData = studentById;
-      } else if (studentById.student && studentById.student.id) {
-        // Si tiene una propiedad student con id, usar esa
-        studentData = studentById.student;
-      } else if (studentById.data?.student) {
-        // Si tiene data.student, usar esa
-        studentData = studentById.data.student;
-      }
-      
-      if (studentData && studentData.id && (!selectedStudent || selectedStudent.id !== studentData.id)) {
-        // Construir CI completo y nombre completo usando formatters
-        // El backend puede retornar datos en inglés (firstName, lastName) o español
+      const payload = studentById;
+      if (payload?.student?.id) studentData = payload.student;
+      else if (payload?.id) studentData = payload;
+      else if (payload?.data?.student) studentData = payload.data.student;
+      const academicData = payload?.academicData ?? null;
+
+      if (studentData?.id && (!selectedStudent || selectedStudent.id !== studentData.id)) {
         const { ciCompleto, nombreCompleto } = buildPersonDisplayData({
           ci: studentData.ci,
           expedicion: studentData.expedition || studentData.expedicion,
@@ -83,14 +72,17 @@ export const useInscripcionNuevaStudentSearch = (options = {}) => {
           apellidoPaterno: studentData.lastName || studentData.apellidoPaterno,
           apellidoMaterno: studentData.motherLastName || studentData.apellidoMaterno,
         });
-        
+        const careerId = academicData?.careerId ?? academicData?.carreraId ?? studentData.careerId ?? studentData.carreraId;
+        const tipoAdmision = academicData?.tipoAdmision ?? academicData?.admissionType ?? (careerId ? 'ANTIGUO' : 'NUEVO');
         setSelectedStudent({
           id: studentData.id,
           codigoEstudiante: studentData.codigoEstudiante || studentData.studentCode,
           nombreCompleto: studentData.nombreCompleto || nombreCompleto,
           ciCompleto: studentData.ciCompleto || ciCompleto,
-          careerId: studentData.careerId || studentData.carreraId,
-          carreraId: studentData.carreraId || studentData.careerId,
+          careerId: careerId || null,
+          carreraId: careerId || null,
+          tipoAdmision,
+          carreraNombre: academicData?.careerName ?? academicData?.carreraNombre ?? null,
         });
       }
     }

@@ -17,3 +17,5 @@ export { default as DisabilitiesSection } from './DisabilitiesSection';
 export { default as OriginsSection } from './OriginsSection';
 export { default as DocumentDeliveriesSection } from './DocumentDeliveriesSection';
 export { default as ScholarshipsSection } from './ScholarshipsSection';
+export { default as EstudianteTipoAdmisionStepContent } from './EstudianteTipoAdmisionStepContent';
+export { default as EstudianteDatosAcademicosStepContent } from './EstudianteDatosAcademicosStepContent';

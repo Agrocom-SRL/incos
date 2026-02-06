@@ -21,6 +21,16 @@ export const getStep3Fields = () => {
       title: 'Horario de Clases',
       fields: [
         {
+          name: 'infoGestionAcademica',
+          type: 'alert',
+          label: '',
+          message: 'Gestión académica',
+          description: 'Si el estudiante es de ingreso nuevo se usará la gestión vigente. Si es antiguo, la gestión se recupera de sus datos académicos.',
+          alertType: 'info',
+          span: 24,
+          required: false,
+        },
+        {
           name: 'resumenInscripcion',
           type: 'alert',
           label: '',

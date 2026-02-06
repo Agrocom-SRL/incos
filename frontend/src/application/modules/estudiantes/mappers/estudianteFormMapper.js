@@ -132,8 +132,8 @@ export const estudianteFormMapper = (studentDetail) => {
       
       // Usar IDs directamente desde el origen (vienen desde vista_estudiante_datos_personales)
       formData.municipioId = municipioNacimientoId;
-      // Localidad/Comunidad = ciudad de nacimiento cuando nacionalidad es Boliviana (birthCity/birthCityRaw)
-      formData.localidadComunidad = origenPrincipal.birthCityRaw || origenPrincipal.ciudadNacimiento || origenPrincipal.birthCity || '';
+      // Localidad/Comunidad = solo lo guardado en BD (birthCityRaw/ciudadNacimiento). No usar birthCity para no repetir el nombre del municipio.
+      formData.localidadComunidad = origenPrincipal.birthCityRaw ?? origenPrincipal.ciudadNacimiento ?? '';
       
       // Obtener provinciaId y departamentoId desde el origen (vienen desde vista SQL: nacimiento_provincia_id, nacimiento_departamento_id)
       if (origenPrincipal.birthProvinceId) {
@@ -191,8 +191,8 @@ export const estudianteFormMapper = (studentDetail) => {
       if (municipioNacimientoId != null) {
         formData.segundaMunicipioId = typeof municipioNacimientoId === 'number' ? municipioNacimientoId : Number(municipioNacimientoId);
       }
-      // Localidad/Comunidad = ciudad de nacimiento cuando nacionalidad es Boliviana (birthCity/birthCityRaw, ej. "colomi")
-      formData.segundaLocalidadComunidad = origenSecundario.birthCityRaw || origenSecundario.ciudadNacimiento || origenSecundario.birthCity || '';
+      // Localidad/Comunidad = solo lo guardado en BD. No usar birthCity para no repetir el nombre del municipio.
+      formData.segundaLocalidadComunidad = origenSecundario.birthCityRaw ?? origenSecundario.ciudadNacimiento ?? '';
       
       // Provincia y departamento desde vista (nacimiento_provincia_id, nacimiento_departamento_id)
       if (origenSecundario.birthProvinceId != null) {
@@ -232,7 +232,7 @@ export const estudianteFormMapper = (studentDetail) => {
       if (segundaPaisIdOrigen != null) {
         formData.segundaPaisId = typeof segundaPaisIdOrigen === 'number' ? segundaPaisIdOrigen : Number(segundaPaisIdOrigen);
       }
-      formData.segundaCiudadNacimiento = origenSecundario.birthCityRaw || origenSecundario.ciudadNacimiento || origenSecundario.birthCity || '';
+      formData.segundaCiudadNacimiento = origenSecundario.birthCityRaw ?? origenSecundario.ciudadNacimiento ?? '';
     }
   }
 

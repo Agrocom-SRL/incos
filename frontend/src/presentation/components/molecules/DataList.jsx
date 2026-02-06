@@ -24,7 +24,7 @@
  * - emptyMessage: Mensaje cuando no hay datos
  * - renderItem: Función que retorna un objeto con props para ListItem: { avatar, title, caption }
  *   - Estos props coinciden exactamente con los que espera ListItem
- *   - Se define en la configuración del step (ej: step1BuscarEstudiante.jsx)
+ *   - Se define en la configuración del step (ej: step0BuscarEstudiante.jsx)
  * - onSelect: Callback cuando se selecciona un item (opcional)
  * - selectedItem: Item seleccionado para aplicar estado activo (opcional)
  * - isSelected: Función para determinar si un item está seleccionado (item, index) => boolean (opcional)

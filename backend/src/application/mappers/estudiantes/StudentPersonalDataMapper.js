@@ -114,15 +114,12 @@ export function entityToPresentation(row) {
     }
     BaseMapper.mapFieldIfExists(o, 'nacimiento_provincia_id', 'birthProvinceId', originPresentation);
     BaseMapper.mapFieldIfExists(o, 'nacimiento_departamento_id', 'birthDepartmentId', originPresentation);
+    // birthCity: valor para mostrar (ciudad = COALESCE(ciudad_nacimiento, municipio_nombre) en la vista)
     BaseMapper.mapFieldIfExists(o, 'ciudad', 'birthCity', originPresentation);
+    // birthCityRaw y ciudadNacimiento: solo lo guardado en Localidad/Comunidad (ciudad_nacimiento_raw).
+    // No usar 'ciudad' aquí para no repetir el nombre del municipio cuando el usuario dejó vacía la localidad.
     BaseMapper.mapFieldIfExists(o, 'ciudad_nacimiento_raw', 'birthCityRaw', originPresentation);
-    BaseMapper.mapFieldIfExists(o, 'ciudad', 'ciudadNacimiento', originPresentation);
-    // Fallback: si la ciudad no se mapeó, usar cualquier clave disponible (driver puede devolver camelCase)
-    const ciudadRaw = o.ciudad_nacimiento_raw ?? o.ciudad ?? o.birthCityRaw ?? o.ciudadNacimiento ?? o.birthCity;
-    if (ciudadRaw != null) {
-      if (!originPresentation.birthCityRaw) originPresentation.birthCityRaw = ciudadRaw;
-      if (!originPresentation.ciudadNacimiento) originPresentation.ciudadNacimiento = ciudadRaw;
-    }
+    BaseMapper.mapFieldIfExists(o, 'ciudad_nacimiento_raw', 'ciudadNacimiento', originPresentation);
     BaseMapper.mapFieldIfExists(o, 'tipo_origen', 'originType', originPresentation);
     const esPrincipalRaw = o.es_principal ?? o.isPrincipal ?? o.esPrincipal;
     if (esPrincipalRaw !== undefined && esPrincipalRaw !== null) {

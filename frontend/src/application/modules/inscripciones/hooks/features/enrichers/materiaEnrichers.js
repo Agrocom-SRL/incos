@@ -33,7 +33,7 @@
  * 6. Las materias se cargan automáticamente cuando hay paralelos disponibles (usando periodoId del primer paralelo)
  * 7. Solo muestra materias si hay una carrera seleccionada Y hay paralelos disponibles
  * 
- * @param {Object} field - Configuración del campo (desde step2SeleccionarParalelos.jsx)
+ * @param {Object} field - Configuración del campo (desde step2PeriodoYParalelos.jsx)
  * @param {Object} context - Contexto con callbacks y datos disponibles
  * @param {Object} context.materiasData - Objeto con materias, loading, error (desde useInscripcionNuevaMaterias)
  * @param {Object} context.paralelosData - Objeto con paralelos para verificar si hay paralelos disponibles

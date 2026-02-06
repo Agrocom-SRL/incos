@@ -23,7 +23,7 @@ import { EXPEDICIONES, GENEROS, TIPOS_SANGRE } from '@infrastructure/config/cons
 import { createOptimizedArraySetter, createOptimizedPrimitiveSetter, useStableApiResult } from '@application/utils';
 
 // Flag para activar/desactivar logs de renderizado (solo desarrollo)
-const ENABLE_RENDER_LOGS = import.meta.env.DEV && true; // Cambiar a true para activar logs
+const ENABLE_RENDER_LOGS = import.meta.env.DEV && false; // Cambiar a true para activar logs
 
 export const useStudentCatalogApi = (initialDelay = 0) => {
   // Estados para datos esenciales (siempre necesarios)

@@ -36,6 +36,10 @@ import {
   createCamposContactosEmergenciaDinamicos,
   createCamposDocumentacionDinamicos
 } from '@estudiantes/config';
+import {
+  EstudianteTipoAdmisionStepContent,
+  EstudianteDatosAcademicosStepContent,
+} from '@estudiantes/components/organisms';
 
 const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
   const [searchParams] = useSearchParams();
@@ -610,6 +614,51 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
     </Button>
   ), [handleVolverALista]);
 
+  // Contenido custom del paso 0 (tipo admisión + datos académicos): la página construye el panel
+  const renderSectionContent = useCallback(
+    (stepIndex, sectionKey, section, form) => {
+      if (stepIndex !== 0) return null;
+      if (sectionKey === 'tipoAdmision') {
+        return (
+          <EstudianteTipoAdmisionStepContent
+            key={sectionKey}
+            form={form}
+            onTipoAdmisionChange={(tipoAdmision) => {
+              if (tipoAdmision === 'ANTIGUO' && typeof cargarGestiones === 'function') {
+                cargarGestiones();
+              }
+            }}
+          />
+        );
+      }
+      if (sectionKey === 'datosAcademicosIniciales') {
+        return (
+          <EstudianteDatosAcademicosStepContent
+            key={sectionKey}
+            form={form}
+            section={section}
+            carreras={carreras}
+            gestiones={gestiones}
+            carrerasLoading={carrerasLoading}
+            gestionesLoading={gestionesLoading}
+            carrerasError={carrerasError}
+            gestionesError={gestionesError}
+          />
+        );
+      }
+      return null;
+    },
+    [
+      carreras,
+      gestiones,
+      carrerasLoading,
+      gestionesLoading,
+      carrerasError,
+      gestionesError,
+      cargarGestiones,
+    ]
+  );
+
   return (
     <PageTemplate 
       header={
@@ -638,13 +687,7 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
         onValidateBeforeNext={onValidateBeforeNext}
         onBeforeNextStep={onBeforeNextStep}
         onBeforePrevStep={onBeforePrevStep}
-        carreras={carreras}
-        gestiones={gestiones}
-        carrerasLoading={carrerasLoading}
-        gestionesLoading={gestionesLoading}
-        carrerasError={carrerasError}
-        gestionesError={gestionesError}
-        cargarGestiones={cargarGestiones}
+        renderSectionContent={renderSectionContent}
       />
     </PageTemplate>
   );

@@ -31,11 +31,10 @@
  */
 
 import React from 'react';
-import { Steps, Form, Card, Row, Col } from 'antd';
+import { Steps, Form } from 'antd';
 import { FormCard } from '@atoms';
 import { WizardActions, FormSection } from '@molecules';
 import { useWizardForm } from './hooks/useWizardForm';
-import { TipoAdmisionSelectionSection, CarreraSelectionSection, GestionSelectionSection } from '@estudiantes/components/organisms';
 
 const WizardForm = ({
   steps = [],
@@ -56,14 +55,8 @@ const WizardForm = ({
   form: externalForm,
   onFormValuesChange, // Callback opcional para notificar cambios en valores del formulario
   initialStep = 0, // Paso inicial (índice 0-based interno: 0 = primer paso)
-  // Datos adicionales para componentes visuales
-  carreras = [],
-  gestiones = [],
-  carrerasLoading = false,
-  gestionesLoading = false,
-  carrerasError = null,
-  gestionesError = null,
-  cargarGestiones,
+  // Contenido custom por sección: la página construye el panel (inscripciones step 1 carrera, estudiantes step 0 tipoAdmision/datosAcademicos)
+  renderSectionContent, // (stepIndex, sectionKey, section, form) => ReactNode | null
 }) => {
   // Hook que compone toda la lógica del wizard (navegación + formulario + cargadores)
   const {
@@ -148,71 +141,12 @@ const WizardForm = ({
             return null;
           }
 
-          // Renderizar componente visual especial para tipoAdmision en el primer paso (índice 0)
-          if (currentStep === 0 && sectionKey === 'tipoAdmision') {
-            return (
-              <TipoAdmisionSelectionSection
-                key={sectionKey}
-                form={form}
-                onTipoAdmisionChange={(tipoAdmision) => {
-                  form.setFieldsValue({ tipoAdmision });
-                  if (tipoAdmision === 'ANTIGUO' && typeof cargarGestiones === 'function') {
-                    cargarGestiones();
-                  }
-                }}
-              />
-            );
-          }
-
-          // Renderizar componente visual especial para carreraId en datosAcademicosIniciales (primer paso)
-          if (currentStep === 0 && sectionKey === 'datosAcademicosIniciales') {
-            const carreraField = section.fields?.find(f => f.name === 'carreraId');
-            const esAntiguo = allFormValues?.tipoAdmision === 'ANTIGUO';
-
-            return (
-              <Card
-                key={sectionKey}
-                title={
-                  <span style={{ fontSize: '18px', fontWeight: 600 }}>
-                    {section.title}
-                  </span>
-                }
-                style={{
-                  marginTop: 24,
-                  marginBottom: 24,
-                  borderRadius: 12,
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-                }}
-              >
-                <Row gutter={24}>
-                  {/* Col 4/12: Gestión de ingreso (solo si tipo ANTIGUO) */}
-                  {esAntiguo && (
-                    <Col xs={24} sm={24} md={8} lg={8}>
-                      <GestionSelectionSection
-                        form={form}
-                        gestiones={gestiones}
-                        loading={gestionesLoading}
-                        error={gestionesError}
-                      />
-                    </Col>
-                  )}
-                  {/* Col 8/12: Carrera */}
-                  {carreraField && (
-                    <Col xs={24} sm={24} md={esAntiguo ? 16 : 24} lg={esAntiguo ? 16 : 24}>
-                      <CarreraSelectionSection
-                        form={form}
-                        carreras={carreras}
-                        loading={carrerasLoading}
-                        error={carrerasError}
-                        onCarreraChange={() => {}}
-                        embedded
-                        compact={!!esAntiguo}
-                      />
-                    </Col>
-                  )}
-                </Row>
-              </Card>
-            );
+          // Contenido custom por página: la página construye el panel (inscripciones, estudiantes, etc.)
+          if (typeof renderSectionContent === 'function') {
+            const customContent = renderSectionContent(currentStep, sectionKey, section, form);
+            if (customContent != null) {
+              return <React.Fragment key={sectionKey}>{customContent}</React.Fragment>;
+            }
           }
 
           return (

@@ -29,19 +29,53 @@ import {
     useInscripcionNuevaFormHandlers,
     useInscripcionNuevaStudentSearch,
     useInscripcionNuevaCarreras,
+    useInscripcionNuevaPeriodos,
     useInscripcionNuevaParalelos,
     useInscripcionNuevaParaleloHorarios,
     useInscripcionNuevaMaterias
 } from '@application-inscripciones/hooks';
 import { useEnrichWizardSteps } from '@application-utils/hooks';
-import { studentEnrichers } from '@application-inscripciones/hooks/features/enrichers/studentEnrichers';
+import { studentEnrichers, buildStep0StudentDescription } from '@application-inscripciones/hooks/features/enrichers/studentEnrichers';
+import { periodoEnrichers } from '@application-inscripciones/hooks/features/enrichers/periodoEnrichers';
 import { carreraEnrichers } from '@application-inscripciones/hooks/features/enrichers/carreraEnrichers';
 import { paraleloEnrichers } from '@application-inscripciones/hooks/features/enrichers/paraleloEnrichers';
 import { materiaEnrichers } from '@application-inscripciones/hooks/features/enrichers/materiaEnrichers';
 import { horarioEnrichers } from '@application-inscripciones/hooks/features/enrichers/horarioEnrichers';
 
-// Combinar enrichers (referencia estable fuera del componente)
-const allEnrichers = [...studentEnrichers, ...carreraEnrichers, ...paraleloEnrichers, ...materiaEnrichers, ...horarioEnrichers];
+const allEnrichers = [...studentEnrichers, ...periodoEnrichers, ...carreraEnrichers, ...paraleloEnrichers, ...materiaEnrichers, ...horarioEnrichers];
+
+/**
+ * Estrategia de enriquecimiento para step 0: cuando hay estudiante pre-seleccionado
+ * (p. ej. desde detalle de estudiante), mostrar solo los datos del estudiante en lugar del buscador.
+ */
+const step0EnrichmentStrategy = (step, stepIndex, _enrichers, context) => {
+    const selectedStudent = context?.studentSearch?.selectedStudent;
+    if (stepIndex !== 0 || !selectedStudent?.id) return null;
+    const carreraNombre = selectedStudent.carreraNombre
+        || context?.carrerasData?.carreras?.find((c) => c.id === selectedStudent.careerId)?.nombre;
+    const description = buildStep0StudentDescription({ ...selectedStudent, carreraNombre });
+    return {
+        ...step,
+        title: 'Estudiante a inscribir',
+        config: {
+            buscarEstudiante: {
+                title: 'Estudiante a inscribir',
+                fields: [
+                    {
+                        name: 'estudianteSeleccionado',
+                        type: 'alert',
+                        label: '',
+                        message: 'Estudiante a inscribir',
+                        description,
+                        alertType: 'success',
+                        span: 24,
+                        required: false,
+                    },
+                ],
+            },
+        },
+    };
+};
 
 /**
  * Hook que gestiona el estado del contexto de inscripción nueva
@@ -79,30 +113,24 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
         return carrerasData.selectedCarrera?.id;
     }, [editData?.carreraId, studentSearch.selectedStudent, carrerasData.selectedCarrera]);
     
-    const paralelosData = useInscripcionNuevaParalelos({ 
+    // Periodos: lista extraída de paralelos; solo cargar paralelos cuando hay carrera (evita 400)
+    const periodosData = useInscripcionNuevaPeriodos({ carreraId: carreraIdForParalelos ?? undefined });
+    const selectedPeriod = periodosData.selectedPeriod;
+
+    const paralelosData = useInscripcionNuevaParalelos({
         carreraId: carreraIdForParalelos,
+        periodoId: selectedPeriod?.id,
         initialParaleloId: editData?.paraleloId,
     });
-    
-    // Form handlers necesita acceso a selectedStudent y selectedParalelo
+
     const formHandlers = useInscripcionNuevaFormHandlers(mode, {
         selectedStudent: studentSearch.selectedStudent,
         selectedParalelo: paralelosData.selectedParalelo,
+        selectedPeriod,
     });
-    
-    // Obtener el periodoId del primer paralelo cuando hay paralelos disponibles
-    // Las materias son las mismas para todos los paralelos del periodo 1, 
-    // así que usamos el primer paralelo para obtener el periodoId
-    const periodoIdFromFirstParalelo = useMemo(() => {
-        if (paralelosData.paralelos && paralelosData.paralelos.length > 0) {
-            const firstParalelo = paralelosData.paralelos[0];
-            return firstParalelo?.periodoId || null;
-        }
-        return null;
-    }, [paralelosData.paralelos]);
-    
+
     const materiasData = useInscripcionNuevaMaterias({
-        periodoId: periodoIdFromFirstParalelo
+        periodoId: selectedPeriod?.id,
     });
 
     // Hook para cargar horarios del paralelo seleccionado
@@ -130,6 +158,13 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
         }
     }, [carrerasData.carreras, carrerasData.onSelectCarrera]);
 
+    const handleSelectPeriod = useCallback((value) => {
+        const period = periodosData.periodos?.find((p) => p.id === value || p.id === Number(value));
+        if (period && periodosData.onSelectPeriod) {
+            periodosData.onSelectPeriod(period);
+        }
+    }, [periodosData.periodos, periodosData.onSelectPeriod]);
+
     const handleSelectParalelo = useCallback((paralelo) => {
         if (paralelo && paralelosData.onSelectParalelo) {
             paralelosData.onSelectParalelo(paralelo);
@@ -146,9 +181,16 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
     const enrichContext = useMemo(() => ({
         onSearchStudent: handleSearchStudent,
         onSelectStudent: handleSelectStudent,
+        onSelectPeriod: handleSelectPeriod,
         onSelectCarrera: handleSelectCarrera,
         onSelectParalelo: handleSelectParalelo,
         onSelectMateria: handleSelectMateria,
+        periodosData: {
+            periodos: periodosData.periodos,
+            loading: periodosData.loading,
+            error: periodosData.error,
+            selectedPeriod: periodosData.selectedPeriod,
+        },
         studentSearch: {
             students: studentSearch.students,
             loading: studentSearch.loading,
@@ -181,9 +223,14 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
     }), [
         handleSearchStudent,
         handleSelectStudent,
+        handleSelectPeriod,
         handleSelectCarrera,
         handleSelectParalelo,
         handleSelectMateria,
+        periodosData.periodos,
+        periodosData.loading,
+        periodosData.error,
+        periodosData.selectedPeriod,
         studentSearch.students,
         studentSearch.loading,
         studentSearch.error,
@@ -205,11 +252,12 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
         horariosData.error,
     ]);
 
-    // 4. Enriquecer wizardSteps
+    // 4. Enriquecer wizardSteps (step 0: buscador o datos del estudiante si viene pre-seleccionado)
     const enrichedWizardSteps = useEnrichWizardSteps(
         pageData.wizardSteps,
         allEnrichers,
-        enrichContext
+        enrichContext,
+        step0EnrichmentStrategy
     );
 
     // 5. Componer value final del contexto
@@ -220,6 +268,17 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
 
         // Handlers de formulario
         ...formHandlers,
+
+        // Callback para step 1 carrera (CarreraSelectionSection)
+        onSelectCarrera: handleSelectCarrera,
+
+        // Periodos (selección de periodo académico)
+        periodosData: {
+            periodos: periodosData.periodos,
+            loading: periodosData.loading,
+            error: periodosData.error,
+            selectedPeriod: periodosData.selectedPeriod,
+        },
 
         // Búsqueda de estudiantes
         studentSearch: {
@@ -263,6 +322,8 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
         pageData,
         enrichedWizardSteps,
         formHandlers,
+        handleSelectCarrera,
+        periodosData,
         studentSearch,
         carrerasData,
         paralelosData,

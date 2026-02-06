@@ -17,11 +17,12 @@
  * Nota: Esta es una versión base que se irá completando por pasos
  */
 
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { WizardForm } from '@organisms';
+import { InscripcionesCarreraStepContent } from '@inscripciones/components/organisms';
 import { useInscripcionesNuevaContext } from '@application-inscripciones/hooks';
 import { downloadFile } from '@application/utils/fileDownload';
 
@@ -71,26 +72,13 @@ const InscripcionesNueva = () => {
         }
     }, [inscripcionResult]);
 
-    // Búsqueda de estudiantes (objeto específico desde useInscripcionNuevaStudentSearch)
-    const { studentSearch } = context;
+    // Búsqueda de estudiantes, carreras y paralelos (step 1 usa CarreraSelectionSection + nuevo/antiguo)
+    const { studentSearch, carrerasData, paralelosData } = context;
     
-    // Datos de carreras y paralelos para pre-cargar valores en modo edición
-    const { carrerasData, paralelosData } = context;
-    
-    // Si ya hay un estudiante seleccionado o estamos en modo edición, empezar desde el paso 1 (Seleccionar Paralelos)
-    // Paso 0: Buscar Estudiante
-    // Paso 1: Seleccionar Paralelos (aquí se puede cambiar carrera y paralelo)
-    // Paso 2: Horario de Clases
-    // Usar useMemo para recalcular cuando selectedStudent cambia o hay datos de edición
+    // Pasos: 0=Buscar Estudiante, 1=Carrera, 2=Periodo y Paralelos, 3=Horario
     const initialStep = useMemo(() => {
-      // Si estamos en modo edición, empezar en paso 1 para permitir cambiar carrera/paralelo
-      if (editData) {
-        return 1;
-      }
-      // Si hay un estudiante seleccionado y no está cargando, empezar en paso 1
-      if (studentSearch?.selectedStudent && !studentSearch?.loading) {
-        return 1;
-      }
+      if (editData) return 2; // Edición: ir a Periodo y Paralelos
+      if (studentSearch?.selectedStudent && !studentSearch?.loading) return 1; // Estudiante ya elegido: ir a Carrera
       return 0;
     }, [editData, studentSearch?.selectedStudent, studentSearch?.loading]);
     
@@ -125,6 +113,34 @@ const InscripcionesNueva = () => {
       }
     }, [editData, form, carrerasData?.carreras]);
 
+    // Contenido custom del paso 1 (Seleccionar Carrera): la página construye el panel
+    const renderSectionContent = useCallback(
+      (stepIndex, sectionKey, section, form) => {
+        if (stepIndex === 1 && sectionKey === 'carrera') {
+          return (
+            <InscripcionesCarreraStepContent
+              key={sectionKey}
+              form={form}
+              section={section}
+              carreras={carrerasData?.carreras ?? []}
+              carrerasLoading={carrerasData?.loading ?? false}
+              carrerasError={carrerasData?.error ?? null}
+              selectedStudent={studentSearch?.selectedStudent ?? null}
+              onCarreraChange={(carrera) => context.onSelectCarrera?.(carrera?.id)}
+            />
+          );
+        }
+        return null;
+      },
+      [
+        carrerasData?.carreras,
+        carrerasData?.loading,
+        carrerasData?.error,
+        studentSearch?.selectedStudent,
+        context.onSelectCarrera,
+      ]
+    );
+
     // TODO: Se agregarán en pasos siguientes:
     // const { inscripcionResult } = context; // Para reaccionar al resultado de la inscripción
     // const { validationErrors } = context; // Para mostrar errores de validación
@@ -151,6 +167,7 @@ const InscripcionesNueva = () => {
                 onSave={handleSave}
                 showSaveButton={false}
                 initialStep={initialStep}
+                renderSectionContent={renderSectionContent}
             />
         </PageTemplate>
     );

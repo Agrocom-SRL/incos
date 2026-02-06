@@ -21,7 +21,7 @@
  * - emptyMessage: Mensaje cuando no hay datos
  * - renderItem: Función que retorna el contenido JSX para cada Card
  *   - Recibe (item, index) y debe retornar JSX
- *   - Se define en la configuración del step (ej: step2SeleccionarParalelos.jsx)
+ *   - Se define en la configuración del step (ej: step2PeriodoYParalelos.jsx)
  * - onSelect: Callback cuando se selecciona una tarjeta (opcional)
  * - selectedItem: Item seleccionado para aplicar estado activo (opcional)
  * - isSelected: Función para determinar si un item está seleccionado (item, index) => boolean (opcional)
