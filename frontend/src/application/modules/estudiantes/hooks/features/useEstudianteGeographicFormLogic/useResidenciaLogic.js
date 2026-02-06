@@ -31,6 +31,7 @@ import { useProvinciaLogic } from './useProvinciaLogic';
  * @param {Function} options.loadProvincias - Función para cargar provincias
  * @param {Function} options.loadMunicipios - Función para cargar municipios
  * @param {Object} options.allFormValues - Todos los valores del formulario (trigger)
+ * @param {boolean} options.isEditMode - Si true, no seleccionar primera provincia (respetar valores del API)
  */
 export const useResidenciaLogic = ({
   form,
@@ -40,6 +41,7 @@ export const useResidenciaLogic = ({
   loadProvincias,
   loadMunicipios,
   allFormValues,
+  isEditMode = false,
 }) => {
   const initializedRef = useRef(false);
   const santaCruzIdRef = useRef(null);
@@ -109,21 +111,22 @@ export const useResidenciaLogic = ({
     initializedRef.current = true;
   }, [form, santaCruzId, loadProvincias]);
 
-  // Si hay provincia ya seleccionada (ej. modo edición), cargar sus municipios. Si no, seleccionar la primera provincia.
+  // Si hay provincia ya seleccionada (ej. modo edición), cargar sus municipios. Si no y NO es edición, seleccionar la primera provincia.
+  // Incluir allFormValues en deps para que cuando el padre establezca provinciaResidenciaId (al cargar estudiante), carguemos sus municipios.
   useEffect(() => {
-    if (!form || !initializedRef.current || primeraProvinciaSeleccionadaRef.current) return;
+    if (!form || !initializedRef.current) return;
     
     if (provinciasResidencia.length > 0) {
       const currentProvinciaId = form.getFieldsValue(['provinciaResidenciaId']).provinciaResidenciaId;
       
       if (currentProvinciaId) {
-        // Ya hay provincia (ej. cargada en edición): solo cargar municipios de esa provincia
+        // Ya hay provincia (cargada en edición o por usuario): cargar municipios de esa provincia
         if (loadMunicipios && typeof loadMunicipios === 'function') {
           loadMunicipios(currentProvinciaId, 'residencia');
         }
         primeraProvinciaSeleccionadaRef.current = true;
-      } else {
-        // Creación: seleccionar la primera provincia y cargar sus municipios
+      } else if (!isEditMode && !primeraProvinciaSeleccionadaRef.current) {
+        // Solo en creación: seleccionar la primera provincia y cargar sus municipios (en edición no sobrescribir)
         const primeraProvincia = provinciasResidencia[0];
         if (primeraProvincia?.id) {
           form.setFieldsValue({
@@ -136,7 +139,7 @@ export const useResidenciaLogic = ({
         }
       }
     }
-  }, [form, provinciasResidencia, loadMunicipios]);
+  }, [form, provinciasResidencia, loadMunicipios, isEditMode, allFormValues]);
 
   // Reutilizar useProvinciaLogic para manejar cambios de provincia de residencia
   // Con limpieza automática de municipio cuando cambia la provincia

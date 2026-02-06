@@ -196,9 +196,9 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
         // Asegurar que los valores de residencia y segundaLocalidadComunidad se establezcan explícitamente
         const valoresAdicionales = {};
         if (formData.departamentoResidenciaId != null || formData.provinciaResidenciaId != null || formData.municipioResidenciaId != null) {
-          valoresAdicionales.departamentoResidenciaId = formData.departamentoResidenciaId ?? null;
-          valoresAdicionales.provinciaResidenciaId = formData.provinciaResidenciaId ?? null;
-          valoresAdicionales.municipioResidenciaId = formData.municipioResidenciaId ?? null;
+          valoresAdicionales.departamentoResidenciaId = formData.departamentoResidenciaId != null ? Number(formData.departamentoResidenciaId) : null;
+          valoresAdicionales.provinciaResidenciaId = formData.provinciaResidenciaId != null ? Number(formData.provinciaResidenciaId) : null;
+          valoresAdicionales.municipioResidenciaId = formData.municipioResidenciaId != null ? Number(formData.municipioResidenciaId) : null;
         }
         // Establecer segundaLocalidadComunidad (ciudad de nacimiento para segunda nacionalidad boliviana)
         if (formData.segundaLocalidadComunidad != null && formData.segundaLocalidadComunidad !== '') {
@@ -330,29 +330,18 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
       }
       
       // ===== VALORES GEOGRÁFICOS DE RESIDENCIA =====
+      // Siempre establecer IDs cuando formData los tiene (número) para que el Select muestre la opción cuando las listas carguen
       if (formData.departamentoResidenciaId != null) {
         valoresGeograficos.departamentoResidenciaId = Number(formData.departamentoResidenciaId);
         necesitaEstablecer = true;
       }
-      
-      // Verificar si hay provinciaResidenciaId y las provincias de residencia están disponibles
-      if (formData.provinciaResidenciaId != null && provinciasResidencia.length > 0) {
-        const idProv = Number(formData.provinciaResidenciaId);
-        const provinciaExiste = provinciasResidencia.some(p => Number(p.value) === idProv || Number(p.id) === idProv);
-        if (provinciaExiste) {
-          valoresGeograficos.provinciaResidenciaId = idProv;
-          necesitaEstablecer = true;
-        }
+      if (formData.provinciaResidenciaId != null) {
+        valoresGeograficos.provinciaResidenciaId = Number(formData.provinciaResidenciaId);
+        necesitaEstablecer = true;
       }
-      
-      // Verificar si hay municipioResidenciaId y los municipios de residencia están disponibles
-      if (formData.municipioResidenciaId != null && municipiosResidencia.length > 0) {
-        const idMun = Number(formData.municipioResidenciaId);
-        const municipioExiste = municipiosResidencia.some(m => Number(m.value) === idMun || Number(m.id) === idMun);
-        if (municipioExiste) {
-          valoresGeograficos.municipioResidenciaId = idMun;
-          necesitaEstablecer = true;
-        }
+      if (formData.municipioResidenciaId != null) {
+        valoresGeograficos.municipioResidenciaId = Number(formData.municipioResidenciaId);
+        necesitaEstablecer = true;
       }
       
       // Establecer valores geográficos si están listos
@@ -360,7 +349,7 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
         form.setFieldsValue(valoresGeograficos);
       }
     }
-  }, [isEditMode, form, provincias, municipios, segundaProvincias, segundaMunicipios, provinciasResidencia, municipiosResidencia, paises]);
+  }, [isEditMode, form, studentDetail, provincias, municipios, segundaProvincias, segundaMunicipios, provinciasResidencia, municipiosResidencia, paises]);
 
   // Ref para rastrear si ya se inicializaron los valores de documentación
   const documentacionInitializedRef = useRef(false);
@@ -487,12 +476,12 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
     tieneDiscapacidad: loadDiscapacidades,
   }), [loadDiscapacidades]);
 
-  // Lógica específica del formulario geográfico de estudiantes
+  // Lógica específica del formulario geográfico de estudiantes (isEditMode: no seleccionar primera provincia en residencia)
   useEstudianteGeographicFormLogic(form, {
     loadDepartamentos,
     loadProvincias,
     loadMunicipios,
-  }, paises, departamentos, provinciasResidencia);
+  }, paises, departamentos, provinciasResidencia, isEditMode);
 
   // Determinar el título según los parámetros (memoizado)
   const pageTitle = useMemo(() => {

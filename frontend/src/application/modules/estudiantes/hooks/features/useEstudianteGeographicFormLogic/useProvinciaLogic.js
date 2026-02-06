@@ -57,10 +57,12 @@ export const useProvinciaLogic = ({
       return;
     }
     
+    const prevProvinciaId = prevProvinciaIdRef.current;
     prevProvinciaIdRef.current = currentProvinciaId;
     
-    // Limpiar municipio cuando cambia la provincia (si está habilitado)
-    if (clearMunicipioOnChange && municipioField) {
+    // Limpiar municipio solo cuando el usuario cambia de una provincia a otra (no en carga inicial)
+    // Si prevProvinciaId era undefined, es carga/edición: no borrar municipio para que se muestre el valor guardado
+    if (clearMunicipioOnChange && municipioField && prevProvinciaId != null) {
       form.setFieldsValue({
         [municipioField]: undefined,
       });

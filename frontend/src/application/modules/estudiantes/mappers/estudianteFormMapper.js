@@ -56,9 +56,9 @@ export const estudianteFormMapper = (studentDetail) => {
 
   // Extraer IDs geográficos de residencia (vienen de vista_estudiante_datos_personales → vista_base_estudiante_residencia)
   // Priorizar IDs que vienen en el student desde la vista; fallback a catálogos si existieran
-  const municipioResId = student.municipioResidenciaId ?? student.residenceMunicipalityId;
-  const provinciaResId = student.residenceProvinceId;
-  const departamentoResId = student.residenceDepartmentId;
+  const municipioResId = student.municipioResidenciaId ?? student.residenceMunicipalityId ?? student.residence_municipality_id;
+  const provinciaResId = student.residenceProvinceId ?? student.provinciaResidenciaId ?? student.residence_province_id;
+  const departamentoResId = student.residenceDepartmentId ?? student.departamentoResidenciaId ?? student.residence_department_id;
   formData.municipioResidenciaId = municipioResId != null ? (typeof municipioResId === 'number' ? municipioResId : Number(municipioResId)) : null;
   formData.provinciaResidenciaId = provinciaResId != null ? (typeof provinciaResId === 'number' ? provinciaResId : Number(provinciaResId)) : null;
   formData.departamentoResidenciaId = departamentoResId != null ? (typeof departamentoResId === 'number' ? departamentoResId : Number(departamentoResId)) : null;
