@@ -24,6 +24,7 @@ SELECT
   eda.gestion_ingreso_id,
   eda.estado_academico,
   eda.estado_registro,
+  eda.tipo_admision,
   eda.unidad_educativa_procedencia,
   eda.anio_egreso_secundaria,
   eda.promedio_anual,

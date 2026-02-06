@@ -183,7 +183,7 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
           });
         }
         
-        // Establecer todos los valores excepto los geográficos primero
+        // Establecer todos los valores excepto los geográficos primero (incluye tipoAdmision, gestionIngresoId, carreraId del paso 1)
         const { 
           departamentoId, provinciaId, municipioId,
           segundaDepartamentoId, segundaProvinciaId, segundaMunicipioId,
@@ -194,7 +194,7 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
         } = formData;
         form.setFieldsValue(otrosValores);
 
-        // Preservar valores del paso 0 (tipo admisión, gestión, carrera) para cuando el usuario esté en otro paso
+        // Preservar valores del paso 1 (tipo admisión, gestión, carrera) para cuando el usuario cambie de paso
         if (saveStep0Values && (formData.tipoAdmision != null || formData.gestionIngresoId != null || formData.carreraId != null)) {
           saveStep0Values({
             tipoAdmision: formData.tipoAdmision,
@@ -202,12 +202,17 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
             carreraId: formData.carreraId,
           });
         }
+
+        // Si tipo admisión es ANTIGUO, cargar gestiones para que GestionSelectionSection muestre opciones y la selección actual
+        if (formData.tipoAdmision === 'ANTIGUO' && typeof cargarGestiones === 'function') {
+          cargarGestiones();
+        }
         
         // Los valores geográficos se establecerán cuando las opciones estén disponibles
         initialDataLoadedRef.current = true;
       }
     }
-  }, [isEditMode, studentDetail, form, loadProvincias, loadMunicipios, departamentos, saveStep0Values]);
+  }, [isEditMode, studentDetail, form, loadProvincias, loadMunicipios, departamentos, saveStep0Values, cargarGestiones]);
   
   // Efecto para establecer valores geográficos cuando las opciones estén disponibles
   useEffect(() => {

@@ -1,7 +1,8 @@
 /**
  * Use Case: ListStudentsUseCase
  * Módulo: Estudiantes
- * Lista estudiantes con filtros, paginación y ordenamiento
+ * Lista estudiantes desde vista_estudiante_datos_personales y enriquece con datos académicos
+ * (carrera, gestión de ingreso, tipo de admisión) desde vista_estudiante_datos_academicos.
  */
 
 import { BaseListUseCase } from '../base/BaseListUseCase.js';
@@ -10,30 +11,99 @@ import { StudentMapper } from '../../mappers/estudiantes/index.js';
 export class ListStudentsUseCase extends BaseListUseCase {
   /**
    * @param {Object} params - Dependencias inyectadas
-   * @param {Object} params.studentRepository - Repositorio de estudiantes
-   * @param {ILogger} params.logger - Logger para registro de eventos
+   * @param {Object} params.studentRepository - Repositorio de estudiantes (listFromView)
+   * @param {Object} params.studentAcademicDataRepository - Repositorio de datos académicos (obtenerDatosAcademicosPorEstudianteIds)
+   * @param {ILogger} params.logger - Logger
    */
-  constructor({ studentRepository, logger }) {
+  constructor({ studentRepository, studentAcademicDataRepository, logger }) {
     super({
       repository: studentRepository,
       logger,
       moduleName: 'Estudiantes',
       resourceName: 'estudiantes',
-      // collectionFieldName: Nombre del campo en la respuesta del repositorio (estándar en inglés)
-      // Debe coincidir con el valor retornado por repository.getCollectionName()
       collectionFieldName: 'students',
-      // dataFieldName: Nombre del campo en la respuesta final de la API (español para el frontend)
-      // Este es el nombre que verá el cliente en la respuesta JSON
       dataFieldName: 'estudiantes',
     });
+    this.studentAcademicDataRepository = studentAcademicDataRepository;
+  }
+
+  getMapper() {
+    return StudentMapper;
   }
 
   /**
-   * Retorna el mapper a usar para convertir entidades Student a presentación
-   * @returns {StudentMapper}
+   * Ejecuta el listado: vista datos personales + enriquecimiento con datos académicos (carrera, gestión, tipo admisión).
+   * @override
    */
-  getMapper() {
-    return StudentMapper;
+  async execute(baseFilters = {}, page = 1, limit = 50, queryParams = {}) {
+    const initialFilters = Object.keys(queryParams).length > 0
+      ? this.buildSpecificFilters(queryParams, baseFilters)
+      : baseFilters;
+    const filters = await this.prepareFilters(initialFilters, queryParams);
+    const pageNum = parseInt(page) || 1;
+    const limitNum = parseInt(limit) || 50;
+
+    this.logger.info(`[${this.moduleName}] Iniciando listado de ${this.resourceName}`, {
+      filters,
+      page: pageNum,
+      limit: limitNum,
+    });
+
+    try {
+      const result = await this.repository.listFromView(filters, pageNum, limitNum);
+      const data = StudentMapper.viewRowsToPresentation(result.students || []);
+
+      // Enriquecer con datos académicos (carrera, gestión ingreso, tipo admisión) desde vista_estudiante_datos_academicos
+      const studentIds = data.map((s) => s.id).filter((id) => id != null);
+      let academicByStudentId = {};
+      if (studentIds.length > 0 && this.studentAcademicDataRepository) {
+        const academicRows = await this.studentAcademicDataRepository.obtenerDatosAcademicosPorEstudianteIds(studentIds);
+        academicRows.forEach((row) => {
+          const id = row.estudiante_id;
+          if (id != null && !academicByStudentId[id]) {
+            academicByStudentId[id] = {
+              carreraNombre: row.carrera_nombre ?? null,
+              gestionIngresoNombre: row.gestion_ingreso_nombre ?? null,
+              tipoAdmision: row.tipo_admision ?? null,
+            };
+          }
+        });
+      }
+      const dataWithAcademic = data.map((item) => ({
+        ...item,
+        carreraNombre: academicByStudentId[item.id]?.carreraNombre ?? null,
+        gestionIngresoNombre: academicByStudentId[item.id]?.gestionIngresoNombre ?? null,
+        tipoAdmision: academicByStudentId[item.id]?.tipoAdmision ?? null,
+      }));
+
+      const enrichedData = await this.enrichData(dataWithAcademic, result);
+      const totalPages = Math.ceil(result.total / limitNum);
+
+      this.logger.info(`[${this.moduleName}] ${this.resourceName} listados exitosamente`, {
+        total: result.total,
+        page: pageNum,
+        limit: limitNum,
+        totalPages,
+        count: enrichedData.length,
+      });
+
+      return {
+        [this.dataFieldName]: enrichedData,
+        total: result.total,
+        page: pageNum,
+        limit: limitNum,
+        totalPages,
+      };
+    } catch (error) {
+      this.logger.error(`[${this.moduleName}] Error al listar ${this.resourceName}`, {
+        error: error.message,
+        stack: error.stack,
+        filters,
+        page: pageNum,
+        limit: limitNum,
+      });
+      throw error;
+    }
   }
 }
 

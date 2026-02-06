@@ -135,7 +135,7 @@ export const estudianteDetailMapper = (dataBackend) => {
     actaCompromiso: actaCompromiso || null,
     // Inscripción más reciente si existe
     inscripcion: inscripcion || null,
-    // Datos académicos (gestionIngresoId, carreraId) para formulario de edición / paso 0
+    // Datos académicos (tipoAdmision, gestionIngresoId, carreraId) para formulario de edición / paso 1
     academicData: academicData || null,
   };
 };

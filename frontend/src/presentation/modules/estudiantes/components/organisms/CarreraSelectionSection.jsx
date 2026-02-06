@@ -99,7 +99,6 @@ const CarreraSelectionSection = ({
           ]}
         >
           <Radio.Group
-              value={selectedValue}
               onChange={handleRadioChange}
               style={{ width: '100%' }}
             >

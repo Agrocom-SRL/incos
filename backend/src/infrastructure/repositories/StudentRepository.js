@@ -204,5 +204,74 @@ export class StudentRepository extends BaseRepository {
     return results;
   }
 
+  /**
+   * Lista estudiantes desde vista_estudiante_datos_personales con paginación y búsqueda.
+   * Usado por ListStudentsUseCase para devolver datos enriquecidos (residencia, estado civil, etc.) y datos de trabajo.
+   *
+   * @param {Object} filters - Filtros (search, sort)
+   *   - search: Término de búsqueda (LIKE en nombres, apellidos, codigo_estudiante, ci)
+   *   - sort: Orden (ej. "id:ASC", "nombres:ASC")
+   * @param {number} page - Página (1-based)
+   * @param {number} limit - Límite por página
+   * @returns {Promise<{students: Object[], total: number, page: number, limit: number}>}
+   */
+  async listFromView(filters = {}, page = 1, limit = 50) {
+    const whereConditions = [];
+    const replacements = [];
+
+    if (filters.search && String(filters.search).trim() !== '') {
+      const term = `%${String(filters.search).trim()}%`;
+      whereConditions.push(
+        '(nombres LIKE ? OR apellido_paterno LIKE ? OR apellido_materno LIKE ? OR codigo_estudiante LIKE ? OR ci LIKE ?)'
+      );
+      replacements.push(term, term, term, term, term);
+    }
+
+    const whereClause = whereConditions.length > 0
+      ? `WHERE ${whereConditions.join(' AND ')}`
+      : '';
+
+    let orderBy = 'id ASC';
+    if (filters.sort && String(filters.sort).trim() !== '') {
+      const [field, dir] = filters.sort.split(':');
+      const direction = (dir || 'ASC').toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
+      const allowedSort = ['id', 'nombres', 'apellido_paterno', 'apellido_materno', 'codigo_estudiante', 'ci', 'created_at'];
+      if (field && allowedSort.includes(field)) {
+        orderBy = `${field} ${direction}`;
+      }
+    }
+
+    const offset = (page - 1) * limit;
+
+    const countQuery = `
+      SELECT COUNT(*) AS total
+      FROM vista_estudiante_datos_personales
+      ${whereClause}
+    `;
+    const countResult = await sequelize.query(countQuery, {
+      replacements: [...replacements],
+      type: sequelize.QueryTypes.SELECT,
+    });
+    const total = Number(countResult[0]?.total ?? 0);
+
+    const dataQuery = `
+      SELECT *
+      FROM vista_estudiante_datos_personales
+      ${whereClause}
+      ORDER BY ${orderBy}
+      LIMIT ? OFFSET ?
+    `;
+    const rows = await sequelize.query(dataQuery, {
+      replacements: [...replacements, limit, offset],
+      type: sequelize.QueryTypes.SELECT,
+    });
+
+    return {
+      students: rows,
+      total,
+      page,
+      limit,
+    };
+  }
 }
 

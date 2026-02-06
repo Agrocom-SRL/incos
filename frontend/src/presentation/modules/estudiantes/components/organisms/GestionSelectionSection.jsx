@@ -79,7 +79,6 @@ const GestionSelectionSection = ({
           style={{ marginBottom: 0 }}
         >
           <Radio.Group
-              value={selectedValue}
               onChange={handleRadioChange}
               style={{ width: '100%', display: 'block' }}
             >

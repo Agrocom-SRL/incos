@@ -39,6 +39,7 @@ export function registerEstudiantesResource(container) {
         (c) =>
             new ListStudentsUseCase({
                 studentRepository: c.resolve(REPOSITORIOS_TOKENS.studentRepository),
+                studentAcademicDataRepository: c.resolve(REPOSITORIOS_TOKENS.studentAcademicDataRepository),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
     );

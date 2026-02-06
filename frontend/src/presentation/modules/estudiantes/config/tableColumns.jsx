@@ -8,9 +8,29 @@
  */
 
 import { Space } from 'antd';
-import { UserOutlined, PhoneOutlined, MailOutlined, DollarOutlined } from '@ant-design/icons';
+import { UserOutlined, PhoneOutlined, MailOutlined, DollarOutlined, BankOutlined, BookOutlined, CalendarOutlined, TagOutlined } from '@ant-design/icons';
 import { TableCell } from '@molecules';
 import TableActions from '@molecules/TableActions';
+
+/** Construye nombre completo desde partes si no viene compuesto */
+const getNombreCompleto = (record) =>
+  record.nombreCompleto ||
+  [record.apellidoPaterno, record.apellidoMaterno, record.nombres].filter(Boolean).join(' ') ||
+  'Sin nombre';
+
+/** Construye CI completo desde partes si no viene compuesto */
+const getCiCompleto = (record) =>
+  record.ciCompleto ||
+  (record.expedicion ? `${record.ci || ''} ${record.expedicion}`.trim() : (record.ci || ''));
+
+/** Color del tag para tipo de admisión: NUEVO (verde/success), ANTIGUO (naranja/warning), otros (azul) */
+const getTipoAdmisionTagColor = (tipoAdmision) => {
+  if (!tipoAdmision) return 'default';
+  const t = String(tipoAdmision).toUpperCase();
+  if (t === 'NUEVO') return 'success';
+  if (t === 'ANTIGUO') return 'warning';
+  return 'blue'; // TRANSITABILIDAD, TRASPASO, etc.
+};
 
 /**
  * Crea las columnas de la tabla de estudiantes
@@ -22,7 +42,7 @@ import TableActions from '@molecules/TableActions';
  * @returns {Array} Array de configuración de columnas para Ant Design Table
  */
 export const createEstudiantesTableColumns = (navigate, refetch = null, deleteStudent = null, pagosContext = null) => {
-  
+
   // Función helper para manejar la navegación a registro o detalle de pago
   const handleRegistrarPagoClick = (record) => {
     const studentId = record.id;
@@ -38,12 +58,12 @@ export const createEstudiantesTableColumns = (navigate, refetch = null, deleteSt
     if (pagosContext?.pagos && Array.isArray(pagosContext.pagos)) {
       // Filtrar pagos del estudiante
       const pagosEstudiante = pagosContext.pagos.filter((pago) => {
-        const pagoStudentId = pago.estudiante?.id || 
-                             pago.student?.id || 
-                             pago.estudianteId || 
-                             pago.studentId || 
-                             pago.estudiante_id || 
-                             pago.student_id;
+        const pagoStudentId = pago.estudiante?.id ||
+          pago.student?.id ||
+          pago.estudianteId ||
+          pago.studentId ||
+          pago.estudiante_id ||
+          pago.student_id;
         return Number(pagoStudentId) === Number(studentId);
       });
 
@@ -55,7 +75,7 @@ export const createEstudiantesTableColumns = (navigate, refetch = null, deleteSt
           const idA = a.id || 0;
           const idB = b.id || 0;
           if (idA !== idB) return idB - idA;
-          
+
           // Si no hay ID, ordenar por fecha de creación
           const fechaA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
           const fechaB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
@@ -102,7 +122,7 @@ export const createEstudiantesTableColumns = (navigate, refetch = null, deleteSt
       title: 'Nombre Completo',
       dataIndex: 'nombreCompleto',
       ellipsis: true,
-      render: (nombreCompleto, record) => (
+      render: (_, record) => (
         <TableCell
           strong
           fallback="Sin nombre"
@@ -110,55 +130,110 @@ export const createEstudiantesTableColumns = (navigate, refetch = null, deleteSt
           tagColor="blue"
           orientation="vertical"
         >
-          {nombreCompleto}
+          {getNombreCompleto(record)}
         </TableCell>
       ),
-      sorter: (a, b) => {
-        const nombreA = a.nombreCompleto || 'Sin nombre';
-        const nombreB = b.nombreCompleto || 'Sin nombre';
-        return nombreA.localeCompare(nombreB);
-      },
+      sorter: (a, b) => getNombreCompleto(a).localeCompare(getNombreCompleto(b)),
     },
     {
       title: 'CI',
       dataIndex: 'ciCompleto',
       ellipsis: true,
-      render: (ciCompleto) => (
-        <TableCell
-          icon={<UserOutlined />}
-          strong
-        >
-          {ciCompleto}
+      render: (_, record) => (
+        <TableCell icon={<UserOutlined />} strong>
+          {getCiCompleto(record)}
         </TableCell>
       ),
-      sorter: (a, b) => (a.ciCompleto || '').localeCompare(b.ciCompleto || ''),
+      sorter: (a, b) => getCiCompleto(a).localeCompare(getCiCompleto(b)),
     },
     {
       title: 'Contacto',
-      dataIndex: 'contacto',
+      key: 'contacto',
       ellipsis: true,
       render: (_, record) => (
         <Space orientation="vertical" size={4} style={{ width: '100%' }}>
           {record.emailPersonal && (
-            <TableCell
-              icon={<MailOutlined />}
-              textStyle={{ fontSize: 'var(--font-size-sm)' }}
-              size="small"
-            >
+            <TableCell icon={<MailOutlined />} textStyle={{ fontSize: 'var(--font-size-sm)' }} size="small">
               {record.emailPersonal}
             </TableCell>
           )}
           {record.celular && (
-            <TableCell
-              icon={<PhoneOutlined />}
-              textStyle={{ fontSize: 'var(--font-size-sm)' }}
-              size="small"
-            >
+            <TableCell icon={<PhoneOutlined />} textStyle={{ fontSize: 'var(--font-size-sm)' }} size="small">
               {record.celular}
             </TableCell>
           )}
         </Space>
       ),
+    },
+    {
+      title: 'Datos académicos',
+      key: 'datosAcademicos',
+      ellipsis: true,
+      render: (_, record) => (
+        <Space orientation="vertical" size={4} style={{ width: '100%' }}>
+          {record.carreraNombre && (
+            <TableCell
+              strong
+              icon={<BookOutlined />} textStyle={{ fontSize: 'var(--font-size-md)' }} size="small">
+              {record.carreraNombre}
+            </TableCell>
+          )}
+          {record.gestionIngresoNombre && (
+            <TableCell icon={<CalendarOutlined />} textStyle={{ fontSize: 'var(--font-size-sm)' }} size="small">
+              {record.gestionIngresoNombre}
+            </TableCell>
+          )}
+          {record.tipoAdmision && (
+            <TableCell
+              icon={<TagOutlined />}
+              tag={record.tipoAdmision}
+              tagColor={getTipoAdmisionTagColor(record.tipoAdmision)}
+              fallback=""
+              textStyle={{ fontSize: 'var(--font-size-sm)' }}
+              size="small"
+            />
+          )}
+          {!record.carreraNombre && !record.gestionIngresoNombre && !record.tipoAdmision && (
+            <TableCell icon={<BookOutlined />} fallback="—" textStyle={{ fontSize: 'var(--font-size-sm)' }}>
+              —
+            </TableCell>
+          )}
+        </Space>
+      ),
+      sorter: (a, b) => {
+        const textA = [a.carreraNombre, a.gestionIngresoNombre, a.tipoAdmision].filter(Boolean).join(' ');
+        const textB = [b.carreraNombre, b.gestionIngresoNombre, b.tipoAdmision].filter(Boolean).join(' ');
+        return textA.localeCompare(textB);
+      },
+    },
+    {
+      title: 'Datos laborales',
+      key: 'datosTrabajo',
+      ellipsis: true,
+      render: (_, record) => (
+        <Space orientation="vertical" size={4} style={{ width: '100%' }}>
+          {record.empresaInstitucion && (
+            <TableCell textStyle={{ fontSize: 'var(--font-size-sm)' }} size="small">
+              {record.empresaInstitucion}
+            </TableCell>
+          )}
+          {record.cargo && (
+            <TableCell icon={<BankOutlined />} textStyle={{ fontSize: 'var(--font-size-sm)' }} size="small">
+              {record.cargo}
+            </TableCell>
+          )}
+          {!record.empresaInstitucion && !record.cargo && (
+            <TableCell icon={<BankOutlined />} fallback="—" textStyle={{ fontSize: 'var(--font-size-sm)' }}>
+              —
+            </TableCell>
+          )}
+        </Space>
+      ),
+      sorter: (a, b) => {
+        const textA = (a.datosTrabajo || a.empresaInstitucion || a.cargo || '').toString();
+        const textB = (b.datosTrabajo || b.empresaInstitucion || b.cargo || '').toString();
+        return textA.localeCompare(textB);
+      },
     },
     {
       title: 'Acciones',
@@ -167,21 +242,20 @@ export const createEstudiantesTableColumns = (navigate, refetch = null, deleteSt
       width: 180,
       align: 'right',
       render: (_, record) => {
-        // Extraer información para el diálogo de confirmación
-        const nombreCompleto = record.nombreCompleto || 'N/A';
-        const codigoEstudiante = record.codigoEstudiante || 'N/A';
-        const ciCompleto = record.ciCompleto || 'N/A';
-        const emailPersonal = record.emailPersonal || 'N/A';
-        const celular = record.celular || 'N/A';
-
+        const nombreCompleto = getNombreCompleto(record);
+        const ciCompleto = getCiCompleto(record);
         const itemName = `el estudiante ${nombreCompleto}`;
         const itemDetails = [
           { label: 'Nombre', value: nombreCompleto },
-          { label: 'Código', value: codigoEstudiante },
+          { label: 'Código', value: record.codigoEstudiante },
           { label: 'CI', value: ciCompleto },
-          { label: 'Email', value: emailPersonal },
-          { label: 'Celular', value: celular },
-        ].filter((d) => d.value && d.value !== 'N/A');
+          { label: 'Email', value: record.emailPersonal },
+          { label: 'Celular', value: record.celular },
+          { label: 'Carrera', value: record.carreraNombre },
+          { label: 'Gestión ingreso', value: record.gestionIngresoNombre },
+          { label: 'Tipo admisión', value: record.tipoAdmision },
+          { label: 'Trabajo', value: record.datosTrabajo },
+        ].filter((d) => d.value != null && d.value !== '' && d.value !== 'N/A' && d.value !== '—');
 
         return (
           <TableActions

@@ -23,7 +23,7 @@ export const StudentListProvider = ({ children }) => {
     // Obtener datos compartidos del estado en memoria
     const { estudiantes: estudiantesData, loading, error, refetch, deleteStudent } = useStudentContext();
 
-    // Función para obtener los campos de búsqueda de un estudiante
+    // Campos de búsqueda: nombre, CI, contacto, datos académicos, datos laborales
     const getSearchFields = useMemo(
         () => (estudiante) => [
             estudiante.nombreCompleto,
@@ -31,7 +31,13 @@ export const StudentListProvider = ({ children }) => {
             estudiante.ciCompleto,
             estudiante.emailPersonal,
             estudiante.celular,
-        ],
+            estudiante.carreraNombre,
+            estudiante.gestionIngresoNombre,
+            estudiante.tipoAdmision,
+            estudiante.datosTrabajo,
+            estudiante.empresaInstitucion,
+            estudiante.cargo,
+        ].filter(Boolean),
         []
     );
 

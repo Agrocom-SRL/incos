@@ -343,7 +343,7 @@ export class GetStudentByIdUseCase {
         actaCompromiso,
         // Inscripción más reciente si existe
         inscripcion,
-        // Datos académicos (primer registro: gestionIngresoId, carreraId) para formulario de edición / paso 0
+        // Datos académicos (tipoAdmision, gestionIngresoId, carreraId) para formulario de edición / paso 1
         academicData,
       };
 
