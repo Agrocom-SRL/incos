@@ -79,6 +79,18 @@ export class Student extends BaseEntity {
     if (data.hasOwnProperty('observations')) {
       this.observations = data.observations;
     }
+    // Datos laborales
+    if (data.hasOwnProperty('works')) {
+      this.works = data.works;
+    } else if (!data.hasOwnProperty('userId')) {
+      this.works = false;
+    }
+    if (data.hasOwnProperty('employerInstitution')) {
+      this.employerInstitution = data.employerInstitution;
+    }
+    if (data.hasOwnProperty('position')) {
+      this.position = data.position;
+    }
   }
 
   /**
@@ -245,6 +257,15 @@ export class Student extends BaseEntity {
     }
     if (this.hasOwnProperty('observations')) {
       plainObject.observations = this.observations;
+    }
+    if (this.hasOwnProperty('works')) {
+      plainObject.works = this.works;
+    }
+    if (this.hasOwnProperty('employerInstitution')) {
+      plainObject.employerInstitution = this.employerInstitution;
+    }
+    if (this.hasOwnProperty('position')) {
+      plainObject.position = this.position;
     }
 
     return plainObject;

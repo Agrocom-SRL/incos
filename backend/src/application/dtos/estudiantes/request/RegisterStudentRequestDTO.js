@@ -61,6 +61,9 @@ export class RegisterStudentRequestDTO {
       departamentoResidenciaId,
       provinciaResidenciaId,
       zona,
+      trabaja,
+      empresaInstitucion,
+      cargo,
       observaciones,
       // Datos de discapacidad
       tipoDiscapacidadId,
@@ -103,6 +106,9 @@ export class RegisterStudentRequestDTO {
       address: direccion,
       residenceMunicipalityId: municipioResidenciaId,
       zone: zona,
+      works: trabaja ?? false,
+      employerInstitution: empresaInstitucion ?? null,
+      position: cargo ?? null,
       observations: observaciones,
     };
 

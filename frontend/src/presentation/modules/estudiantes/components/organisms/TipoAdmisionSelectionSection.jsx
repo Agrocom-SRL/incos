@@ -113,136 +113,129 @@ const TipoAdmisionSelectionSection = ({
       }}
       headerColor="primary"
     >
-      <Form
-        form={form}
-        layout="vertical"
-        initialValues={{
-          tipoAdmision: selectedValue
-        }}
+      {/* No usar Form aquí: ya estamos dentro del Form del WizardForm; solo Form.Item para no anidar <form> */}
+      <Form.Item
+        name="tipoAdmision"
+        rules={[
+          { required: true, message: 'Por favor seleccione un tipo de admisión' }
+        ]}
       >
-        <Form.Item
-          name="tipoAdmision"
-          rules={[
-            { required: true, message: 'Por favor seleccione un tipo de admisión' }
-          ]}
+        <Radio.Group
+          value={selectedValue}
+          onChange={handleRadioChange}
+          style={{ width: '100%' }}
         >
-          <Radio.Group
-            value={selectedValue}
-            onChange={handleRadioChange}
-            style={{ width: '100%' }}
-          >
-            <div style={{ 
-              display: 'grid', 
-              gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-              gap: '16px'
-            }}>
-              {TIPOS_ADMISION.map((tipo) => {
-                const isSelected = selectedValue === tipo.value;
-                const IconComponent = tipo.icon;
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+            gap: '16px'
+          }}>
+            {TIPOS_ADMISION.map((tipo) => {
+              const isSelected = selectedValue === tipo.value;
+              const IconComponent = tipo.icon;
 
-                return (
-                  <Radio.Button
-                    key={tipo.value}
-                    value={tipo.value}
-                    disabled={tipo.disabled}
+              return (
+                <Radio.Button
+                  key={tipo.value}
+                  value={tipo.value}
+                  disabled={tipo.disabled}
+                  style={{
+                    width: '100%',
+                    height: 'auto',
+                    padding: '0',
+                    margin: 0,
+                    border: isSelected 
+                      ? `2px solid ${tipo.color}` 
+                      : '2px solid #e8e8e8',
+                    borderRadius: '12px',
+                    backgroundColor: isSelected ? tipo.bgColor : '#ffffff',
+                    transition: 'all 0.3s ease',
+                    overflow: 'hidden',
+                    cursor: tipo.disabled ? 'not-allowed' : 'pointer',
+                    boxShadow: isSelected 
+                      ? `0 4px 12px rgba(0,0,0,0.1)` 
+                      : '0 2px 4px rgba(0,0,0,0.04)',
+                    opacity: tipo.disabled ? 0.6 : 1,
+                  }}
+                  className="tipo-admision-card"
+                >
+                  <div
                     style={{
-                      width: '100%',
-                      height: 'auto',
-                      padding: '0',
-                      margin: 0,
-                      border: isSelected 
-                        ? `2px solid ${tipo.color}` 
-                        : '2px solid #e8e8e8',
-                      borderRadius: '12px',
-                      backgroundColor: isSelected ? tipo.bgColor : '#ffffff',
-                      transition: 'all 0.3s ease',
-                      overflow: 'hidden',
-                      cursor: tipo.disabled ? 'not-allowed' : 'pointer',
-                      boxShadow: isSelected 
-                        ? `0 4px 12px rgba(0,0,0,0.1)` 
-                        : '0 2px 4px rgba(0,0,0,0.04)',
-                      opacity: tipo.disabled ? 0.6 : 1,
+                      padding: '20px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '16px',
                     }}
-                    className="tipo-admision-card"
                   >
                     <div
                       style={{
-                        padding: '20px',
+                        width: '56px',
+                        height: '56px',
+                        borderRadius: '12px',
+                        backgroundColor: isSelected ? tipo.color : '#f5f5f5',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '16px',
+                        justifyContent: 'center',
+                        transition: 'all 0.3s ease',
+                        flexShrink: 0,
                       }}
                     >
+                      <IconComponent 
+                        style={{ 
+                          fontSize: '28px', 
+                          color: isSelected ? '#fff' : '#8c8c8c',
+                          transition: 'all 0.3s ease',
+                        }} 
+                      />
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
                       <div
                         style={{
-                          width: '56px',
-                          height: '56px',
-                          borderRadius: '12px',
-                          backgroundColor: isSelected ? tipo.color : '#f5f5f5',
+                          fontWeight: 600,
+                          fontSize: '16px',
+                          color: '#262626',
+                          marginBottom: '4px',
+                          lineHeight: '1.4',
+                        }}
+                      >
+                        {tipo.label}
+                      </div>
+                      {tipo.description && (
+                        <Text
+                          type="secondary"
+                          style={{
+                            fontSize: '13px',
+                            display: 'block',
+                            lineHeight: '1.5',
+                          }}
+                        >
+                          {tipo.description}
+                        </Text>
+                      )}
+                    </div>
+                    {isSelected && !tipo.disabled && (
+                      <div
+                        style={{
+                          width: '24px',
+                          height: '24px',
+                          borderRadius: '50%',
+                          backgroundColor: tipo.color,
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          transition: 'all 0.3s ease',
                           flexShrink: 0,
                         }}
                       >
-                        <IconComponent 
-                          style={{ 
-                            fontSize: '28px', 
-                            color: isSelected ? '#fff' : '#8c8c8c',
-                            transition: 'all 0.3s ease',
-                          }} 
-                        />
+                        <span style={{ color: '#fff', fontSize: '14px' }}>✓</span>
                       </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div
-                          style={{
-                            fontWeight: 600,
-                            fontSize: '16px',
-                            color: '#262626',
-                            marginBottom: '4px',
-                            lineHeight: '1.4',
-                          }}
-                        >
-                          {tipo.label}
-                        </div>
-                        {tipo.description && (
-                          <Text
-                            type="secondary"
-                            style={{
-                              fontSize: '13px',
-                              display: 'block',
-                              lineHeight: '1.5',
-                            }}
-                          >
-                            {tipo.description}
-                          </Text>
-                        )}
-                      </div>
-                      {isSelected && !tipo.disabled && (
-                        <div
-                          style={{
-                            width: '24px',
-                            height: '24px',
-                            borderRadius: '50%',
-                            backgroundColor: tipo.color,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            flexShrink: 0,
-                          }}
-                        >
-                          <span style={{ color: '#fff', fontSize: '14px' }}>✓</span>
-                        </div>
-                      )}
-                    </div>
-                  </Radio.Button>
-                );
-              })}
-            </div>
-          </Radio.Group>
-        </Form.Item>
-      </Form>
+                    )}
+                  </div>
+                </Radio.Button>
+              );
+            })}
+          </div>
+        </Radio.Group>
+      </Form.Item>
       
       <style>{`
         .tipo-admision-card:hover:not(.ant-radio-button-wrapper-disabled) {

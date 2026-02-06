@@ -91,20 +91,14 @@ const CarreraSelectionSection = ({
           style={{ padding: '40px 0' }}
         />
       ) : (
-        <Form
-          form={form}
-          layout="vertical"
-          initialValues={{
-            carreraId: selectedValue
-          }}
+        /* No usar Form aquí: ya estamos dentro del Form del WizardForm; solo Form.Item para no anidar <form> */
+        <Form.Item
+          name="carreraId"
+          rules={[
+            { required: true, message: 'Por favor seleccione una carrera' }
+          ]}
         >
-          <Form.Item
-            name="carreraId"
-            rules={[
-              { required: true, message: 'Por favor seleccione una carrera' }
-            ]}
-          >
-            <Radio.Group
+          <Radio.Group
               value={selectedValue}
               onChange={handleRadioChange}
               style={{ width: '100%' }}
@@ -286,8 +280,7 @@ const CarreraSelectionSection = ({
                 })}
               </div>
             </Radio.Group>
-          </Form.Item>
-        </Form>
+        </Form.Item>
       )}
       
       <style>{`

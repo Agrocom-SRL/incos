@@ -56,6 +56,9 @@ export class StudentAcademicDataMapper {
     if ('estadoRegistro' in dataValues && dataValues.estadoRegistro !== undefined) {
       specificFields.registrationState = dataValues.estadoRegistro || 'BORRADOR'; // BORRADOR, PENDIENTE, ADMITIDO
     }
+    if ('tipoAdmision' in dataValues && dataValues.tipoAdmision !== undefined) {
+      specificFields.admissionType = dataValues.tipoAdmision; // BD → dominio; API expone tipoAdmision en toPlainObject
+    }
     if ('unidadEducativaProcedencia' in dataValues && dataValues.unidadEducativaProcedencia !== undefined) {
       specificFields.previousSchool = dataValues.unidadEducativaProcedencia;
     }
@@ -148,6 +151,9 @@ export class StudentAcademicDataMapper {
     }
     if ('registrationState' in data) {
       updateData.estadoRegistro = data.registrationState;
+    }
+    if ('admissionType' in data || 'tipoAdmision' in data) {
+      updateData.tipoAdmision = data.admissionType ?? data.tipoAdmision ?? 'NUEVO';
     }
     if ('previousSchool' in data) {
       updateData.unidadEducativaProcedencia = data.previousSchool || null;

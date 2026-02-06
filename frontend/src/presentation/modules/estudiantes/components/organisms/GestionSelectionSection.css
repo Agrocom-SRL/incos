@@ -72,6 +72,16 @@
 }
 
 /* Radio: en fila seleccionada el círculo debe verse claro sobre fondo primario */
+/* IMPORTANTE: Todos los selectores están scoped a .gestion-selection-item para no afectar otros radio buttons */
+.gestion-selection-item .ant-radio-wrapper {
+  /* Resetear cualquier estilo que pueda afectar otros radio buttons */
+  display: flex !important;
+  align-items: center !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: normal !important;
+}
+
 .gestion-selection-item.gestion-selection-item-selected .ant-radio-wrapper {
   color: var(--color-menu-item-selected-color) !important;
 }

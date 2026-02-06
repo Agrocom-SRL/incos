@@ -17,10 +17,10 @@
  */
 
 import { Row, Col, Space, Form, Input } from 'antd';
-import { 
-  GiftOutlined, 
-  PercentageOutlined, 
-  FileTextOutlined, 
+import {
+  GiftOutlined,
+  PercentageOutlined,
+  FileTextOutlined,
   SaveOutlined,
   CalendarOutlined,
   CheckCircleOutlined,
@@ -36,10 +36,10 @@ const formatDate = (dateString) => {
   if (!dateString) return 'N/A';
   try {
     const date = new Date(dateString);
-    return date.toLocaleDateString('es-BO', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
+    return date.toLocaleDateString('es-BO', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
     });
   } catch {
     return dateString;
@@ -123,45 +123,40 @@ const SelectedBecaSection = ({
       </Row>
 
       {/* Formulario para completar la asignación */}
-      <div style={{ 
-        marginTop: '24px', 
-        paddingTop: '24px', 
-        borderTop: '1px solid var(--color-border-secondary, #e8e8e8)' 
+      <div style={{
+        marginTop: '24px',
+        paddingTop: '24px',
+        borderTop: '1px solid var(--color-border-secondary, #e8e8e8)'
       }}>
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={onFinish}
-        >
-          <Form.Item
-            name="observaciones"
-            label="Motivo / Observaciones"
-            tooltip={{
-              title: 'Ingrese el motivo de la solicitud de beca (ej: madre soltera, escasos recursos, etc.)',
-              placement: 'top',
-              styles: {
-                root: {
-                  maxWidth: '350px',
-                },
-                container: {
-                  fontSize: '16px',
-                  lineHeight: '1.5',
-                  padding: '12px 16px',
-                },
+        {/* No usar Form aquí: ya estamos dentro del Form del padre; solo Form.Item para no anidar <form> */}
+        <Form.Item
+          name="observaciones"
+          label="Motivo / Observaciones"
+          tooltip={{
+            title: 'Ingrese el motivo de la solicitud de beca (ej: madre soltera, escasos recursos, etc.)',
+            placement: 'top',
+            styles: {
+              root: {
+                maxWidth: '350px',
               },
-            }}
-            rules={[
-              { required: true, message: 'Por favor ingrese el motivo de la solicitud' }
-            ]}
-          >
-            <TextArea
-              rows={4}
-              placeholder="Ingrese el motivo de la solicitud de beca..."
-              maxLength={500}
-              showCount
-            />
-          </Form.Item>
-        </Form>
+              container: {
+                fontSize: '16px',
+                lineHeight: '1.5',
+                padding: '12px 16px',
+              },
+            },
+          }}
+          rules={[
+            { required: true, message: 'Por favor ingrese el motivo de la solicitud' }
+          ]}
+        >
+          <TextArea
+            rows={4}
+            placeholder="Ingrese el motivo de la solicitud de beca..."
+            maxLength={500}
+            showCount
+          />
+        </Form.Item>
       </div>
 
       {/* Botones de acción - Solo se muestran cuando hay una beca seleccionada */}

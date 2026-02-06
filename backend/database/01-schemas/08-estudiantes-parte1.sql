@@ -100,8 +100,12 @@ CREATE TABLE estudiantes_datos_academicos (
     estudiante_id INT NULL COMMENT 'Estudiante (NULL permite flexibilidad en migraciones)',
     carrera_id INT NULL COMMENT 'Carrera (NULL permite flexibilidad en migraciones)',
     gestion_ingreso_id INT NULL COMMENT 'Gestión de ingreso (NULL permite flexibilidad en migraciones)',
+
+    -- Datos académicos
     estado_academico ENUM('REGULAR', 'NIVELACION', 'RETIRADO', 'EGRESADO', 'ABANDONO') DEFAULT 'REGULAR' COMMENT 'Estado académico',
     estado_registro ENUM('BORRADOR', 'PENDIENTE', 'ADMITIDO') DEFAULT 'BORRADOR' COMMENT 'Estado del proceso de registro: BORRADOR (datos completos, documentos pendientes), PENDIENTE (al menos un documento original), ADMITIDO (todos los documentos originales verificados)',
+    tipo_admision ENUM('NUEVO', 'ANTIGUO', 'TRANSITABILIDAD', 'TRASPASO') DEFAULT 'NUEVO' COMMENT 'Tipo de admisión del estudiante: NUEVO (primera vez), ANTIGUO (reinscripción), TRANSITABILIDAD, TRASPASO',
+    
     unidad_educativa_procedencia VARCHAR(200) COMMENT 'Unidad educativa de procedencia',
     anio_egreso_secundaria INT COMMENT 'Año de egreso de secundaria',
     promedio_anual DECIMAL(5,2) COMMENT 'Promedio anual (se usa para cálculo de descuentos en becas)',
@@ -130,6 +134,7 @@ CREATE TABLE estudiantes_datos_academicos (
     INDEX idx_carrera_id (carrera_id) COMMENT 'Búsqueda por carrera',
     INDEX idx_estado_academico (estado_academico) COMMENT 'Filtrado por estado académico',
     INDEX idx_estado_registro (estado_registro, activo, deleted_at) COMMENT 'Búsqueda por estado de registro',
+    INDEX idx_tipo_admision (tipo_admision, activo, deleted_at) COMMENT 'Búsqueda por tipo de admisión',
     INDEX idx_promedio_anual (promedio_anual) COMMENT 'Búsqueda por promedio anual',
     INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
     INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',

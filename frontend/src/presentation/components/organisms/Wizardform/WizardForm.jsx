@@ -46,6 +46,8 @@ const WizardForm = ({
   showSaveButton = true,
   hideSaveOnSteps = [],
   onValidateBeforeNext,
+  onBeforeNextStep, // (stepIndex, form) => void - llamado tras validar y antes de next(), para preservar valores del paso
+  onBeforePrevStep, // (stepIndex, form) => void - llamado antes de prev(), p. ej. para restaurar valores del paso al que volvemos
   resolveOptions = () => [],
   minAge = null,
   conditionalLoaders = {},
@@ -93,12 +95,22 @@ const WizardForm = ({
   const handleNext = React.useCallback(() => {
     if (onValidateBeforeNext) {
       onValidateBeforeNext(currentStep, form)
-        .then(() => next())
+        .then(() => {
+          onBeforeNextStep?.(currentStep, form);
+          next();
+        })
         .catch(() => { /* errores de validación ya mostrados por el formulario */ });
     } else {
+      onBeforeNextStep?.(currentStep, form);
       next();
     }
-  }, [currentStep, form, next, onValidateBeforeNext]);
+  }, [currentStep, form, next, onValidateBeforeNext, onBeforeNextStep]);
+
+  // Anterior: opcionalmente notificar al padre antes de retroceder (p. ej. restaurar valores del paso 0)
+  const handlePrev = React.useCallback(() => {
+    onBeforePrevStep?.(currentStep, form);
+    prev();
+  }, [currentStep, form, prev, onBeforePrevStep]);
 
   // Si no hay step configurado, no renderizar nada
   if (!currentStepConfig) {
@@ -222,7 +234,7 @@ const WizardForm = ({
         totalSteps={steps.length}
         viewMode={viewMode}
         loading={loading}
-        onPrev={prev}
+        onPrev={handlePrev}
         onNext={handleNext}
         onFinish={onFinish}
         onSave={onSave}

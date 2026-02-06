@@ -108,6 +108,15 @@ export class StudentMapper {
     if ('observaciones' in dataValues && dataValues.observaciones !== undefined) {
       specificFields.observations = dataValues.observaciones;
     }
+    if ('trabaja' in dataValues && dataValues.trabaja !== undefined) {
+      specificFields.works = dataValues.trabaja === 1 || dataValues.trabaja === true;
+    }
+    if ('empresaInstitucion' in dataValues && dataValues.empresaInstitucion !== undefined) {
+      specificFields.employerInstitution = dataValues.empresaInstitucion;
+    }
+    if ('cargo' in dataValues && dataValues.cargo !== undefined) {
+      specificFields.position = dataValues.cargo;
+    }
 
     // Combina campos base (id, active, timestamps, audit) con campos específicos
     const entityData = BaseMapper.combineBaseAndSpecificFields(model, specificFields);
@@ -153,6 +162,9 @@ export class StudentMapper {
       direccion: data.address || null,
       municipioResidenciaId: data.residenceMunicipalityId || null,
       zona: data.zone || null,
+      trabaja: data.works !== undefined ? data.works : false,
+      empresaInstitucion: data.employerInstitution || null,
+      cargo: data.position || null,
       observaciones: data.observations || null,
     };
   }
@@ -236,6 +248,15 @@ export class StudentMapper {
     }
     if ('observations' in data) {
       updateData.observaciones = data.observations || null;
+    }
+    if ('works' in data) {
+      updateData.trabaja = data.works;
+    }
+    if ('employerInstitution' in data) {
+      updateData.empresaInstitucion = data.employerInstitution || null;
+    }
+    if ('position' in data) {
+      updateData.cargo = data.position || null;
     }
 
     // Campos base (active/activo)

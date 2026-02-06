@@ -258,12 +258,19 @@ const renderButton = (field, disabled, readOnly) => {
 };
 
 /**
+ * Renderer para campo oculto (valor no visible, se envía en el formulario).
+ * Usa input nativo para garantizar que no ocupe espacio ni sea visible.
+ */
+const renderHidden = () => <input type="hidden" />;
+
+/**
  * Registry de renderers por tipo de campo
- * 
+ *
  * Strategy Pattern: Cada tipo de campo tiene su propia estrategia de renderizado
  * Open/Closed: Para agregar un nuevo tipo, solo hay que agregar una entrada aquí
  */
 export const fieldRenderers = {
+  hidden: renderHidden,
   input: renderInput,
   search: renderSearch,
   select: renderSelect,
@@ -282,6 +289,7 @@ export const fieldRenderers = {
  * Define qué parámetros adicionales necesita cada tipo de campo
  */
 const fieldRendererParams = {
+  hidden: ['field', 'disabled', 'readOnly'],
   input: ['field', 'disabled', 'readOnly'],
   search: ['field', 'disabled', 'readOnly'],
   switch: ['field', 'disabled', 'readOnly'],

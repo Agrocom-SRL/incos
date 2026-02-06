@@ -20,8 +20,10 @@ export const estudianteFormMapper = (studentDetail) => {
 
   const { student, guardians, disabilities, origins, documentDeliveries, academicData } = studentDetail;
 
-  // Tipo de admisión y datos académicos (paso 0): NUEVO si no tiene gestión de ingreso, ANTIGUO si tiene
+  // Tipo de admisión y datos académicos (paso 0): usar valor persistido o inferir por gestión de ingreso
   const hasGestionIngreso = academicData?.gestionIngresoId != null && academicData?.gestionIngresoId !== '';
+  const tipoAdmisionFromApi = academicData?.tipoAdmision ?? academicData?.admissionType;
+  const tipoAdmision = tipoAdmisionFromApi ?? (hasGestionIngreso ? 'ANTIGUO' : 'NUEVO');
 
   // Mapear datos personales del estudiante
   const formData = {
@@ -42,9 +44,12 @@ export const estudianteFormMapper = (studentDetail) => {
     direccion: student.direccion || '',
     municipioResidenciaId: student.municipioResidenciaId || null,
     zona: student.zona || '',
-    observaciones: student.observaciones || '',
-    // Paso 0: tipo admisión y datos académicos (para edición)
-    tipoAdmision: hasGestionIngreso ? 'ANTIGUO' : 'NUEVO',
+    trabaja: student.trabaja ?? false,
+    empresaInstitucion: student.empresaInstitucion ?? '',
+    cargo: student.cargo ?? '',
+    observaciones: student.observaciones ?? '',
+    // Paso 0: tipo admisión y datos académicos (para edición; tipoAdmision persistido en BD)
+    tipoAdmision,
     gestionIngresoId: academicData?.gestionIngresoId ?? null,
     carreraId: academicData?.carreraId ?? null,
   };

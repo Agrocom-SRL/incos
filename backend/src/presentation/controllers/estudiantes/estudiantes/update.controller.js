@@ -88,13 +88,19 @@ export class UpdateStudentController {
   prepareData(body) {
     const result = {};
 
+    // Datos académicos iniciales (tipo admisión, gestión de ingreso, carrera) - misma vista que registro
+    if (body.tipoAdmision !== undefined) result.tipoAdmision = body.tipoAdmision;
+    if (body.gestionIngresoId !== undefined) result.gestionIngresoId = body.gestionIngresoId == null || body.gestionIngresoId === '' ? null : body.gestionIngresoId;
+    if (body.carreraId !== undefined) result.carreraId = body.carreraId == null || body.carreraId === '' ? null : body.carreraId;
+
     // Extraer datos básicos del estudiante (campos de la tabla estudiantes)
     // NOTA: Los campos de origen (paisId, ciudadNacimiento, etc.) se procesan por separado
     const studentFields = [
       'ci', 'expedicionId', 'expedicion', 'nombres', 'apellidoPaterno', 'apellidoMaterno',
       'fechaNacimiento', 'generoId', 'estadoCivilId', 'tipoSangre', 'tieneDiscapacidad',
       'emailPersonal', 'celular', 'telefonoFijo', 'direccion', 'municipioResidenciaId',
-      'departamentoResidenciaId', 'provinciaResidenciaId', 'zona', 'observaciones'
+      'departamentoResidenciaId', 'provinciaResidenciaId', 'zona',
+      'trabaja', 'empresaInstitucion', 'cargo', 'observaciones'
     ];
 
     const studentData = {};
@@ -198,13 +204,25 @@ export class UpdateStudentController {
         delete preparedStudent.zona;
       }
       
-      // Transformar municipioResidenciaId a residenceMunicipalityId
-      if (preparedStudent.municipioResidenciaId !== undefined) {
-        preparedStudent.residenceMunicipalityId = preparedStudent.municipioResidenciaId;
-        delete preparedStudent.municipioResidenciaId;
+      // Transformar observaciones a observations
+      if (preparedStudent.observaciones !== undefined) {
+        preparedStudent.observations = preparedStudent.observaciones;
+        delete preparedStudent.observaciones;
       }
       
-      // Observaciones ya está en el formato correcto (observations)
+      // Transformar datos laborales al formato dominio
+      if (preparedStudent.trabaja !== undefined) {
+        preparedStudent.works = preparedStudent.trabaja;
+        delete preparedStudent.trabaja;
+      }
+      if (preparedStudent.empresaInstitucion !== undefined) {
+        preparedStudent.employerInstitution = preparedStudent.empresaInstitucion;
+        delete preparedStudent.empresaInstitucion;
+      }
+      if (preparedStudent.cargo !== undefined) {
+        preparedStudent.position = preparedStudent.cargo;
+        delete preparedStudent.cargo;
+      }
 
       result.student = preparedStudent;
     }
@@ -255,16 +273,23 @@ export class UpdateStudentController {
     }
 
     // Transformar contactosEmergencia a guardians (similar a RegisterStudentRequestDTO)
+    // Incluir id cuando exista para que el backend actualice en vez de crear duplicados
     if (body.contactosEmergencia !== undefined) {
       result.guardians = Array.isArray(body.contactosEmergencia)
-        ? body.contactosEmergencia.map((contacto) => ({
-            relationshipTypeId: contacto.tipoParentescoId,
-            firstName: contacto.nombres,
-            lastName: contacto.apellidos,
-            cellphone1: contacto.celular1,
-            cellphone2: contacto.celular2,
-            livesWithStudent: contacto.viveConEstudiante ?? false,
-          }))
+        ? body.contactosEmergencia.map((contacto) => {
+            const item = {
+              relationshipTypeId: contacto.tipoParentescoId,
+              firstName: contacto.nombres,
+              lastName: contacto.apellidos,
+              cellphone1: contacto.celular1,
+              cellphone2: contacto.celular2,
+              livesWithStudent: contacto.viveConEstudiante ?? false,
+            };
+            if (contacto.id != null && contacto.id !== '') {
+              item.id = typeof contacto.id === 'number' ? contacto.id : parseInt(contacto.id, 10);
+            }
+            return item;
+          })
         : [];
     } else if (body.guardians !== undefined) {
       // También aceptar guardians directamente (por compatibilidad)
@@ -323,13 +348,16 @@ export class UpdateStudentController {
                           preparedData.disabilities !== undefined ||
                           preparedData.origins !== undefined ||
                           preparedData.documentation !== undefined;
+      const hasAcademicData = preparedData.tipoAdmision !== undefined ||
+                             preparedData.gestionIngresoId !== undefined ||
+                             preparedData.carreraId !== undefined;
 
-      if (!hasStudentData && !hasRelations) {
+      if (!hasStudentData && !hasRelations && !hasAcademicData) {
         return res.status(400).json({
           success: false,
           error: {
             code: 'VALIDATION_ERROR',
-            message: 'Debe proporcionar al menos un campo para actualizar (student, contactosEmergencia/guardians, disabilities, origins, o documentacion/documentation)',
+            message: 'Debe proporcionar al menos un campo para actualizar (student, contactosEmergencia/guardians, disabilities, origins, documentacion/documentation, o tipoAdmision/gestionIngresoId/carreraId)',
           },
         });
       }

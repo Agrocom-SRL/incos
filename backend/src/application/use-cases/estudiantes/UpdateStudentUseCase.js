@@ -13,10 +13,13 @@ import { NotFoundError } from '../../../domain/errors/AppError.js';
  * - Actualizar discapacidades (reemplazo completo)
  * - Actualizar orígenes (reemplazo completo)
  * - Actualizar entregas de documentos (reemplazo completo)
+ * - Actualizar datos académicos (tipoAdmision, gestionIngresoId, carreraId) si se envían
+ * - Asegurar que exista la clave admision_gestion_YYYY en configuracion_sistema cuando se asigna gestionIngresoId (estudiante antiguo)
  * - Retornar el estudiante actualizado con todos sus datos relacionados
- * 
- * NOTA: Los datos académicos se manejan en otro módulo, no se incluyen aquí
- * 
+ *
+ * NOTA: tipoAdmision, gestionIngresoId y carreraId actualizan estudiantes_datos_academicos (estado según schema).
+ * NOTA: Si se asigna una gestión de ingreso (ANTIGUO), se garantiza que exista el correlativo para ese año en config.
+ *
  * Principios SOLID aplicados:
  * - Single Responsibility: Solo maneja la actualización completa de estudiantes
  * - Dependency Inversion: Depende de abstracciones (repositorios inyectados)
@@ -34,22 +37,58 @@ export class UpdateStudentUseCase {
    * @param {Object} params.studentDisabilityRepository - Repositorio de discapacidades
    * @param {Object} params.studentOriginRepository - Repositorio de orígenes
    * @param {Object} params.studentDocumentDeliveryRepository - Repositorio de entregas de documentos
+   * @param {Object} [params.studentAcademicDataRepository] - Repositorio de datos académicos (opcional)
+   * @param {Object} [params.configuracionSistemaRepository] - Repositorio de configuración del sistema (para asegurar correlativo por gestión)
+   * @param {Object} [params.managementRepository] - Repositorio de gestiones (para resolver año desde gestionIngresoId)
    * @param {ILogger} params.logger - Logger para registro de eventos
    */
-  constructor({ 
+  constructor({
     studentRepository,
     studentGuardianRepository,
     studentDisabilityRepository,
     studentOriginRepository,
     studentDocumentDeliveryRepository,
-    logger 
+    studentAcademicDataRepository,
+    configuracionSistemaRepository,
+    managementRepository,
+    logger,
   }) {
     this.studentRepository = studentRepository;
     this.studentGuardianRepository = studentGuardianRepository;
     this.studentDisabilityRepository = studentDisabilityRepository;
     this.studentOriginRepository = studentOriginRepository;
     this.studentDocumentDeliveryRepository = studentDocumentDeliveryRepository;
+    this.studentAcademicDataRepository = studentAcademicDataRepository || null;
+    this.configuracionSistemaRepository = configuracionSistemaRepository || null;
+    this.managementRepository = managementRepository || null;
     this.logger = logger;
+  }
+
+  /**
+   * Asegura que exista la clave admision_gestion_YYYY en configuracion_sistema para el año dado.
+   * Si no existe, la crea con valor '0'. Necesario para estudiantes antiguos (varias gestiones).
+   *
+   * @param {number} gestionAnio - Año de la gestión (ej: 2023, 2026)
+   */
+  async ensureAdmisionCorrelativoForYear(gestionAnio) {
+    if (!this.configuracionSistemaRepository || typeof gestionAnio !== 'number' || Number.isNaN(gestionAnio)) {
+      return;
+    }
+    const claveCorrelativo = `admision_gestion_${gestionAnio}`;
+    const existing = await this.configuracionSistemaRepository.findBy({ key: claveCorrelativo });
+    if (existing) {
+      return;
+    }
+    await this.configuracionSistemaRepository.create({
+      key: claveCorrelativo,
+      value: '0',
+      type: 'NUMBER',
+      description: `Último número correlativo usado para códigos de estudiantes en la gestión ${gestionAnio}`,
+    });
+    this.logger.info('[Estudiantes] Correlativo de gestión creado en configuracion_sistema', {
+      clave: claveCorrelativo,
+      gestionAnio,
+    });
   }
 
   /**
@@ -133,41 +172,71 @@ export class UpdateStudentUseCase {
         });
       }
 
-      // 3. Actualizar apoderados (reemplazo completo si se proporcionan)
+      // 3. Actualizar apoderados (actualización inteligente: update o create según corresponda; eliminar los que ya no vienen)
       let guardians = [];
       if (data.guardians !== undefined) {
-        // 3.1. Eliminar apoderados existentes
         const existingGuardiansResult = await this.studentGuardianRepository.findAll(
           { studentId },
           null,
           null
         );
-        const existingGuardians = existingGuardiansResult.studentGuardians || [];
-        for (const guardian of existingGuardians) {
-          const g = guardian.toPlainObject ? guardian.toPlainObject() : guardian;
-          await this.studentGuardianRepository.delete(g.id);
+        const existingGuardiansList = existingGuardiansResult.studentGuardians || [];
+        const existingGuardiansById = new Map();
+        for (const g of existingGuardiansList) {
+          const plain = g.toPlainObject ? g.toPlainObject() : g;
+          existingGuardiansById.set(Number(plain.id), plain);
         }
-        this.logger.info('[Estudiantes] Apoderados existentes eliminados', {
-          studentId,
-          count: existingGuardians.length,
-        });
 
-        // 3.2. Crear nuevos apoderados si se proporcionan
+        const requestedIds = new Set();
         if (Array.isArray(data.guardians) && data.guardians.length > 0) {
           for (const guardianData of data.guardians) {
-            const guardianToCreate = {
-              ...guardianData,
-              studentId: studentId,
-            };
-            // NOTA: userId no se pasa porque actualmente no hay autenticación
-            const guardian = await this.studentGuardianRepository.create(guardianToCreate);
-            guardians.push(guardian);
+            const guardianId = guardianData.id != null && guardianData.id !== ''
+              ? (typeof guardianData.id === 'number' ? guardianData.id : parseInt(guardianData.id, 10))
+              : null;
+            const exists = guardianId != null && !Number.isNaN(guardianId) &&
+              existingGuardiansById.has(guardianId);
+
+            if (exists) {
+              const updatePayload = {
+                relationshipTypeId: guardianData.relationshipTypeId,
+                firstName: guardianData.firstName,
+                lastName: guardianData.lastName,
+                cellphone1: guardianData.cellphone1,
+                cellphone2: guardianData.cellphone2,
+                livesWithStudent: guardianData.livesWithStudent,
+              };
+              const updated = await this.studentGuardianRepository.update(guardianId, updatePayload);
+              guardians.push(updated);
+              requestedIds.add(guardianId);
+              this.logger.info('[Estudiantes] Apoderado actualizado', { studentId, guardianId });
+            } else {
+              const createPayload = {
+                relationshipTypeId: guardianData.relationshipTypeId,
+                firstName: guardianData.firstName,
+                lastName: guardianData.lastName,
+                cellphone1: guardianData.cellphone1,
+                cellphone2: guardianData.cellphone2,
+                livesWithStudent: guardianData.livesWithStudent,
+                studentId,
+              };
+              const created = await this.studentGuardianRepository.create(createPayload);
+              guardians.push(created);
+              this.logger.info('[Estudiantes] Apoderado creado', { studentId });
+            }
           }
-          this.logger.info('[Estudiantes] Nuevos apoderados creados', {
-            studentId,
-            count: guardians.length,
-          });
         }
+
+        for (const [id] of existingGuardiansById) {
+          if (!requestedIds.has(id)) {
+            await this.studentGuardianRepository.delete(id);
+            this.logger.info('[Estudiantes] Apoderado eliminado (ya no en la lista)', { studentId, guardianId: id });
+          }
+        }
+
+        this.logger.info('[Estudiantes] Apoderados procesados', {
+          studentId,
+          total: guardians.length,
+        });
       }
 
       // 4. Actualizar discapacidades (reemplazo completo si se proporcionan)
@@ -372,7 +441,96 @@ export class UpdateStudentUseCase {
         }
       }
 
-      // 7. Obtener el estudiante actualizado con todas sus relaciones
+      // 7. Actualizar datos académicos (estudiantes_datos_academicos) si se envían tipoAdmision, gestionIngresoId o carreraId
+      // Permite: NUEVO → ANTIGUO (asignar gestión/carrera anterior) y ANTIGUO → NUEVO (limpiar para que lleve solo primer periodo)
+      const hasAcademicPayload = data.tipoAdmision !== undefined ||
+        data.gestionIngresoId !== undefined ||
+        data.carreraId !== undefined;
+      if (hasAcademicPayload && this.studentAcademicDataRepository) {
+        const tipoAdmision = data.tipoAdmision;
+        const isNuevo = tipoAdmision === 'NUEVO';
+        // Si es NUEVO, forzar null (permite cambiar ANTIGUO → NUEVO). Si es ANTIGUO, usar valores enviados.
+        const gestionIngresoId = isNuevo
+          ? null
+          : (data.gestionIngresoId == null || data.gestionIngresoId === ''
+            ? null
+            : (typeof data.gestionIngresoId === 'number' ? data.gestionIngresoId : parseInt(data.gestionIngresoId, 10)));
+        const carreraId = isNuevo
+          ? null
+          : (data.carreraId == null || data.carreraId === ''
+            ? null
+            : (typeof data.carreraId === 'number' ? data.carreraId : parseInt(data.carreraId, 10)));
+
+        // Si se asigna gestión de ingreso (estudiante antiguo), asegurar que exista admision_gestion_YYYY en config
+        if (gestionIngresoId != null && this.managementRepository && this.configuracionSistemaRepository) {
+          try {
+            const gestionInfo = await this.managementRepository.findById(gestionIngresoId);
+            if (gestionInfo) {
+              const gestionPlain = gestionInfo.toPlainObject ? gestionInfo.toPlainObject() : gestionInfo;
+              const gestionAnio = gestionPlain.year ?? gestionPlain.anio;
+              if (typeof gestionAnio === 'number' && !Number.isNaN(gestionAnio)) {
+                await this.ensureAdmisionCorrelativoForYear(gestionAnio);
+              }
+            }
+          } catch (err) {
+            this.logger.warn('[Estudiantes] No se pudo asegurar correlativo de gestión (no bloquea la actualización)', {
+              gestionIngresoId,
+              error: err.message,
+            });
+          }
+        }
+
+        const academicResult = await this.studentAcademicDataRepository.findAll(
+          { studentId },
+          null,
+          null
+        );
+        const academicList = academicResult.studentAcademicData || academicResult.studentAcademicDatas || [];
+        const existingAcademic = academicList[0] || null;
+
+        if (existingAcademic) {
+          const academicPlain = existingAcademic.toPlainObject ? existingAcademic.toPlainObject() : existingAcademic;
+          // StudentAcademicDataMapper.toModelForUpdate espera nombres de dominio (managementId, careerId)
+          const updatePayload = {};
+          if (data.tipoAdmision !== undefined) {
+            updatePayload.admissionType = data.tipoAdmision; // mapper: admissionType → tipo_admision
+          }
+          if (data.tipoAdmision === 'NUEVO') {
+            updatePayload.managementId = null;
+            updatePayload.careerId = null;
+          } else {
+            if (data.gestionIngresoId !== undefined) updatePayload.managementId = gestionIngresoId;
+            if (data.carreraId !== undefined) updatePayload.careerId = carreraId;
+          }
+          if (Object.keys(updatePayload).length > 0) {
+            await this.studentAcademicDataRepository.update(academicPlain.id, updatePayload);
+            this.logger.info('[Estudiantes] Datos académicos actualizados', {
+              studentId,
+              academicDataId: academicPlain.id,
+              tipoAdmision: data.tipoAdmision,
+              gestionIngresoId,
+              carreraId,
+            });
+          }
+        } else {
+          // StudentAcademicDataMapper.toModel espera nombres de dominio (managementId, careerId)
+          const createPayload = {
+            studentId,
+            managementId: gestionIngresoId,
+            careerId: carreraId,
+            admissionType: data.tipoAdmision ?? 'NUEVO',
+          };
+          await this.studentAcademicDataRepository.create(createPayload);
+          this.logger.info('[Estudiantes] Datos académicos creados (no existían)', {
+            studentId,
+            tipoAdmision: data.tipoAdmision,
+            gestionIngresoId,
+            carreraId,
+          });
+        }
+      }
+
+      // 8. Obtener el estudiante actualizado con todas sus relaciones
       // Si no se actualizaron relaciones, obtenerlas de la base de datos
       if (guardians.length === 0 && data.guardians === undefined) {
         const res = await this.studentGuardianRepository.findAll(
@@ -407,7 +565,7 @@ export class UpdateStudentUseCase {
         documentDeliveries = res.studentDocumentDeliveries || [];
       }
 
-      // 8. Retornar el estudiante actualizado con todos sus datos relacionados
+      // 9. Retornar el estudiante actualizado con todos sus datos relacionados
       const result = {
         student: updatedStudent.toPlainObject ? updatedStudent.toPlainObject() : updatedStudent,
         guardians: guardians.map((g) =>

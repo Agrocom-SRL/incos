@@ -100,12 +100,30 @@ export const useStudentFormHandlers = (showMessage, mode = 'create', studentId =
       // Obtener todos los valores del formulario (incluye campos no renderizados)
       const formValues = formRef.current.getFieldsValue(true);
 
-      // Restaurar valores del paso 0 si no están en el store (el usuario está en un paso posterior)
+      // Mantener la ref del paso 0 actualizada: si el form tiene algún valor del paso 0, guardarlo
+      // (así no se pierde si el usuario hace "Guardar" en paso 0 o si el store aún los tiene al avanzar)
+      const step0Current = step0ValuesRef.current;
+      const hasStep0InForm = formValues.tipoAdmision !== undefined || formValues.gestionIngresoId !== undefined || formValues.carreraId !== undefined;
+      if (hasStep0InForm) {
+        step0ValuesRef.current = {
+          tipoAdmision: formValues.tipoAdmision ?? step0Current?.tipoAdmision,
+          gestionIngresoId: formValues.gestionIngresoId ?? step0Current?.gestionIngresoId,
+          carreraId: formValues.carreraId ?? step0Current?.carreraId,
+        };
+      }
+
+      // Restaurar valores del paso 0 si no están en el store (el usuario está en un paso posterior y los campos están desmontados)
       const step0 = step0ValuesRef.current;
       if (step0 && Object.keys(step0).length > 0) {
         if (formValues.tipoAdmision === undefined || formValues.tipoAdmision === null) formValues.tipoAdmision = step0.tipoAdmision;
         if (formValues.gestionIngresoId === undefined || formValues.gestionIngresoId === null) formValues.gestionIngresoId = step0.gestionIngresoId;
         if (formValues.carreraId === undefined || formValues.carreraId === null) formValues.carreraId = step0.carreraId;
+      }
+      // Si tenemos gestión/carrera pero tipoAdmision sigue vacío, inferir ANTIGUO (evita enviar NUEVO por error)
+      if ((formValues.gestionIngresoId != null && formValues.gestionIngresoId !== '') || (formValues.carreraId != null && formValues.carreraId !== '')) {
+        if (formValues.tipoAdmision === undefined || formValues.tipoAdmision === null || formValues.tipoAdmision === '') {
+          formValues.tipoAdmision = 'ANTIGUO';
+        }
       }
       
       // Asegurar que todos los documentos estén presentes con valores por defecto

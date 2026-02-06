@@ -57,7 +57,9 @@ const createCamposResidencia = () => {
  * - División Política de Residencia (departamento, provincia, municipio)
  * - Dirección (textarea)
  * - Zona (input)
- * 
+ * - Datos laborales: trabaja (switch), empresa/institución, cargo
+ * - Observaciones (textarea)
+ *
  * @returns {Object} Configuración de campos organizados por sección
  */
 export const createEstudianteContactoFields = () => {
@@ -119,6 +121,36 @@ export const createEstudianteContactoFields = () => {
           span: 12,
           placeholder: 'Ingrese dirección completa',
           rows: 3,
+        },
+        // Datos laborales: solo si marca "¿Trabaja?" se muestran empresa y cargo
+        {
+          name: 'trabaja',
+          label: '¿El estudiante trabaja?',
+          type: 'switch',
+          required: false,
+          span: 12,
+        },
+        {
+          name: 'empresaInstitucion',
+          label: 'Empresa / Institución',
+          type: 'input',
+          required: false,
+          span: 12,
+          placeholder: 'Nombre de la empresa o institución donde trabaja',
+          maxLength: 200,
+          conditional: true,
+          dependsOn: 'trabaja',
+        },
+        {
+          name: 'cargo',
+          label: 'Cargo',
+          type: 'input',
+          required: false,
+          span: 12,
+          placeholder: 'Cargo o puesto que ocupa',
+          maxLength: 150,
+          conditional: true,
+          dependsOn: 'trabaja',
         },
       ],
     },

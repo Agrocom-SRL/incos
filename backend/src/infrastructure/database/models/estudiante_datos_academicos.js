@@ -1,7 +1,7 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../sequelize.js';
 import { baseModelFields, baseModelOptions } from './base_model.js';
-import { ESTADOS_ACADEMICOS_VALUES, ESTADOS_ACADEMICOS, ESTADOS_REGISTRO_ESTUDIANTE_VALUES, ESTADOS_REGISTRO_ESTUDIANTE } from '../../../domain/constants/estudiantes.constants.js';
+import { ESTADOS_ACADEMICOS_VALUES, ESTADOS_ACADEMICOS, ESTADOS_REGISTRO_ESTUDIANTE_VALUES, ESTADOS_REGISTRO_ESTUDIANTE, TIPOS_ADMISION_VALUES, TIPOS_ADMISION } from '../../../domain/constants/estudiantes.constants.js';
 
 export const EstudianteDatosAcademicos = sequelize.define(
   'EstudianteDatosAcademicos',
@@ -38,6 +38,13 @@ export const EstudianteDatosAcademicos = sequelize.define(
       allowNull: false,
       defaultValue: ESTADOS_REGISTRO_ESTUDIANTE.BORRADOR,
       comment: 'Estado del proceso de registro: BORRADOR (datos completos, documentos pendientes), PENDIENTE (al menos un documento original), ADMITIDO (todos los documentos originales verificados)',
+    },
+    tipoAdmision: {
+      type: DataTypes.ENUM(...TIPOS_ADMISION_VALUES),
+      field: 'tipo_admision',
+      allowNull: false,
+      defaultValue: TIPOS_ADMISION.NUEVO,
+      comment: 'Tipo de admisión del estudiante: NUEVO, ANTIGUO, TRANSITABILIDAD, TRASPASO',
     },
     unidadEducativaProcedencia: {
       type: DataTypes.STRING(200),

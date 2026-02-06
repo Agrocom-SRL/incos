@@ -72,13 +72,13 @@ const GestionSelectionSection = ({
           style={{ padding: '24px 0' }}
         />
       ) : (
-        <Form form={form} layout="vertical" initialValues={{ gestionIngresoId: selectedValue }}>
-          <Form.Item
-            name="gestionIngresoId"
-            rules={[{ required: true, message: 'Seleccione la gestión anterior' }]}
-            style={{ marginBottom: 0 }}
-          >
-            <Radio.Group
+        /* No usar Form aquí: ya estamos dentro del Form del WizardForm; solo Form.Item para no anidar <form> */
+        <Form.Item
+          name="gestionIngresoId"
+          rules={[{ required: true, message: 'Seleccione la gestión anterior' }]}
+          style={{ marginBottom: 0 }}
+        >
+          <Radio.Group
               value={selectedValue}
               onChange={handleRadioChange}
               style={{ width: '100%', display: 'block' }}
@@ -111,8 +111,7 @@ const GestionSelectionSection = ({
                 })}
               </div>
             </Radio.Group>
-          </Form.Item>
-        </Form>
+        </Form.Item>
       )}
     </div>
   );

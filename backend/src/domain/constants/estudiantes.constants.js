@@ -179,6 +179,21 @@ export const ESTADOS_REGISTRO_ESTUDIANTE = {
  */
 export const ESTADOS_REGISTRO_ESTUDIANTE_VALUES = Object.values(ESTADOS_REGISTRO_ESTUDIANTE);
 
+/**
+ * Tipos de admisión del estudiante (cómo ingresó al instituto)
+ */
+export const TIPOS_ADMISION = {
+  NUEVO: 'NUEVO',
+  ANTIGUO: 'ANTIGUO',
+  TRANSITABILIDAD: 'TRANSITABILIDAD',
+  TRASPASO: 'TRASPASO',
+};
+
+/**
+ * Array de tipos de admisión válidos (útil para validators)
+ */
+export const TIPOS_ADMISION_VALUES = Object.values(TIPOS_ADMISION);
+
 // ============================================
 // ORIGENES Y NACIONALIDADES
 // ============================================
