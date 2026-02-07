@@ -39,10 +39,10 @@
  * @returns {Object} Campo enriquecido con items, loading, emptyMessage, onSelect o el campo original
  */
 export const enrichParaleloListField = (field, context = {}) => {
-    const { paralelosData, onSelectParalelo, carrerasData, periodosData } = context;
+    const { paralelosData, onSelectParalelo, carrerasData, periodosData, carreraIdForParalelos } = context;
 
     if (field.name === 'listaParalelos' && (field.type === 'list' || field.type === 'cards') && paralelosData) {
-        const hasCarrera = carrerasData?.selectedCarrera?.id;
+        const hasCarrera = (carrerasData?.selectedCarrera?.id ?? carreraIdForParalelos) != null;
         const hasPeriodo = periodosData?.selectedPeriod?.id != null;
         const canShowParalelos = hasCarrera && hasPeriodo;
         

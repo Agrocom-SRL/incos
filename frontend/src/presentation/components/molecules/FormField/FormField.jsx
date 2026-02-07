@@ -109,6 +109,10 @@ const FormField = ({ field, form, resolveOptions, minAge = null, readOnly = fals
     );
   }
 
+  const formItemClassName = field.className
+    ? `form-field ${field.className}`.trim()
+    : 'form-field';
+
   return (
     <Form.Item
       name={fieldName}
@@ -116,7 +120,7 @@ const FormField = ({ field, form, resolveOptions, minAge = null, readOnly = fals
       labelCol={labelCol}
       wrapperCol={wrapperCol}
       rules={rules}
-      className="form-field"
+      className={formItemClassName}
     >
       {renderField()}
     </Form.Item>

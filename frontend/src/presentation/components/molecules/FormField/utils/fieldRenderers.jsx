@@ -120,16 +120,28 @@ const renderTextarea = (field, disabled, readOnly) => (
 );
 
 /**
- * Renderer para campo de tipo radio
+ * Renderer para campo de tipo radio (soporta botones horizontales: optionType='button', radioLayout='horizontal')
+ * Si field.onChange existe (p. ej. enricher), se llama al elegir; el Form.Item actualiza el valor del formulario.
  */
-const renderRadio = (field, disabled, readOnly, selectOptions) => (
-  <FieldRadio
-    disabled={disabled}
-    readOnly={readOnly}
-    options={selectOptions}
-    defaultValue={field.defaultValue}
-  />
-);
+const renderRadio = (field, disabled, readOnly, selectOptions, form) => {
+  const handleChange = (e) => {
+    const value = e?.target?.value ?? e;
+    if (form && field.name) form.setFieldsValue({ [field.name]: value });
+    if (field.onChange) field.onChange(value);
+  };
+
+  return (
+    <FieldRadio
+      disabled={disabled}
+      readOnly={readOnly}
+      options={selectOptions}
+      defaultValue={field.defaultValue}
+      onChange={handleChange}
+      optionType={field.optionType || 'default'}
+      radioLayout={field.radioLayout || 'vertical'}
+    />
+  );
+};
 
 /**
  * Renderer para campo de tipo search

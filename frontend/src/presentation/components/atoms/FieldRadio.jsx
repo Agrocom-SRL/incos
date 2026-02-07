@@ -29,9 +29,17 @@ const FieldRadio = ({
   defaultValue,
   onChange,
   className = '',
+  optionType = 'default',
+  radioLayout = 'vertical',
   ...props
 }) => {
   const radioClassName = className ? `field-radio ${className}`.trim() : 'field-radio';
+  const isButton = optionType === 'button';
+  const isHorizontal = radioLayout === 'horizontal';
+
+  const groupStyle = isHorizontal
+    ? { display: 'flex', flexWrap: 'wrap', gap: 8 }
+    : undefined;
 
   return (
     <Radio.Group
@@ -40,27 +48,31 @@ const FieldRadio = ({
       value={value}
       defaultValue={defaultValue}
       onChange={onChange}
+      optionType={isButton ? 'button' : undefined}
+      style={groupStyle}
       {...props}
     >
       {options.map((option) => {
         const optionDisabled = option.disabled !== undefined ? option.disabled : false;
-        const hasDescription = option.description && option.description.trim();
+        const hasDescription = option.description && option.description.trim() && !isButton;
         
         return (
-          <Radio 
-            key={option.value} 
+          <Radio
+            key={option.value}
             value={option.value}
             disabled={optionDisabled || disabled || readOnly}
             style={hasDescription ? { display: 'block', marginBottom: 8 } : {}}
           >
-            <div>
-              <div>{option.label}</div>
-              {hasDescription && (
+            {hasDescription ? (
+              <div>
+                <div>{option.label}</div>
                 <Text type="secondary" style={{ fontSize: '12px', display: 'block', marginTop: 4 }}>
                   {option.description}
                 </Text>
-              )}
-            </div>
+              </div>
+            ) : (
+              option.label
+            )}
           </Radio>
         );
       })}

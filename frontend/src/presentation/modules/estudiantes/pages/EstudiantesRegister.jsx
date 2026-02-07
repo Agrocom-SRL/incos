@@ -36,10 +36,6 @@ import {
   createCamposContactosEmergenciaDinamicos,
   createCamposDocumentacionDinamicos
 } from '@estudiantes/config';
-import {
-  EstudianteTipoAdmisionStepContent,
-  EstudianteDatosAcademicosStepContent,
-} from '@estudiantes/components/organisms';
 
 const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
   const [searchParams] = useSearchParams();
@@ -169,46 +165,51 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
         }
         
         // ============================================
-        // CARGAR JERARQUÍA DE RESIDENCIA
+        // CARGAR JERARQUÍA DE RESIDENCIA Y ESTABLECER VALORES DESPUÉS
         // ============================================
-        // El departamento de residencia siempre es Santa Cruz, pero necesitamos cargar provincias y municipios
-        // Si no hay departamentoResidenciaId en formData, usar el ID de Santa Cruz desde departamentos
-        const departamentoResidenciaId = formData.departamentoResidenciaId || 
-          (departamentos.find(d => d.nombre?.toUpperCase().includes('SANTA CRUZ'))?.id);
-        
+        // Cargar primero provincias y municipios; establecer residencia en el form solo cuando las opciones estén listas
+        // para que los Select muestren el label (Sara, Portachuelo) y no queden vacíos o mostrando solo el ID
+        const departamentoResidenciaId = formData.departamentoResidenciaId != null
+          ? Number(formData.departamentoResidenciaId)
+          : (departamentos.find(d => d.nombre?.toUpperCase().includes('SANTA CRUZ'))?.id);
+        const provinciaResidenciaId = formData.provinciaResidenciaId != null ? Number(formData.provinciaResidenciaId) : null;
+        const municipioResidenciaId = formData.municipioResidenciaId != null ? Number(formData.municipioResidenciaId) : null;
+
+        const setResidenciaCuandoOpcionesListas = () => {
+          const r = {};
+          if (departamentoResidenciaId != null) r.departamentoResidenciaId = departamentoResidenciaId;
+          if (provinciaResidenciaId != null) r.provinciaResidenciaId = provinciaResidenciaId;
+          if (municipioResidenciaId != null) r.municipioResidenciaId = municipioResidenciaId;
+          if (Object.keys(r).length > 0) form.setFieldsValue(r);
+        };
+
         if (departamentoResidenciaId && loadProvincias) {
-          loadProvincias(departamentoResidenciaId, 'residencia').then(() => {
-            // Después de cargar provincias de residencia, cargar municipios si hay provinciaResidenciaId
-            if (formData.provinciaResidenciaId && loadMunicipios) {
-              loadMunicipios(formData.provinciaResidenciaId, 'residencia');
-            }
-          }).catch(err => {
-            console.warn('Error al cargar provincias de residencia en modo edición:', err);
-          });
+          loadProvincias(departamentoResidenciaId, 'residencia')
+            .then(() => (provinciaResidenciaId && loadMunicipios ? loadMunicipios(provinciaResidenciaId, 'residencia') : Promise.resolve()))
+            .then(setResidenciaCuandoOpcionesListas)
+            .catch(err => {
+              console.warn('Error al cargar provincias de residencia en modo edición:', err);
+              setResidenciaCuandoOpcionesListas();
+            });
+        } else {
+          setResidenciaCuandoOpcionesListas();
         }
-        
-        // Establecer todos los valores excepto los geográficos de origen y segunda nacionalidad
-        // Incluimos residencia (departamento, provincia, municipio) y localidadComunidad para que useResidenciaLogic no sobrescriba
-        const { 
+
+        // Establecer todos los valores excepto los geográficos de origen, segunda nacionalidad y residencia
+        // (residencia se establece arriba cuando las opciones están cargadas)
+        const {
           departamentoId, provinciaId, municipioId,
           segundaDepartamentoId, segundaProvinciaId, segundaMunicipioId,
-          ...otrosValores 
+          departamentoResidenciaId: _dRes, provinciaResidenciaId: _pRes, municipioResidenciaId: _mRes,
+          ...otrosValores
         } = formData;
-        // Establecer valores del formulario (incluye residencia, segundaLocalidadComunidad, paisId, ciudadNacimiento, etc.)
         form.setFieldsValue(otrosValores);
-        
-        // Asegurar que los valores de residencia y segundaLocalidadComunidad se establezcan explícitamente
+
+        // Segunda localidad y localidad (no dependen de opciones)
         const valoresAdicionales = {};
-        if (formData.departamentoResidenciaId != null || formData.provinciaResidenciaId != null || formData.municipioResidenciaId != null) {
-          valoresAdicionales.departamentoResidenciaId = formData.departamentoResidenciaId != null ? Number(formData.departamentoResidenciaId) : null;
-          valoresAdicionales.provinciaResidenciaId = formData.provinciaResidenciaId != null ? Number(formData.provinciaResidenciaId) : null;
-          valoresAdicionales.municipioResidenciaId = formData.municipioResidenciaId != null ? Number(formData.municipioResidenciaId) : null;
-        }
-        // Establecer segundaLocalidadComunidad (ciudad de nacimiento para segunda nacionalidad boliviana)
         if (formData.segundaLocalidadComunidad != null && formData.segundaLocalidadComunidad !== '') {
           valoresAdicionales.segundaLocalidadComunidad = formData.segundaLocalidadComunidad;
         }
-        // Establecer localidadComunidad (ciudad de nacimiento para primera nacionalidad boliviana)
         if (formData.localidadComunidad != null && formData.localidadComunidad !== '') {
           valoresAdicionales.localidadComunidad = formData.localidadComunidad;
         }
@@ -334,18 +335,29 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
       }
       
       // ===== VALORES GEOGRÁFICOS DE RESIDENCIA =====
-      // Siempre establecer IDs cuando formData los tiene (número) para que el Select muestre la opción cuando las listas carguen
       if (formData.departamentoResidenciaId != null) {
         valoresGeograficos.departamentoResidenciaId = Number(formData.departamentoResidenciaId);
         necesitaEstablecer = true;
       }
-      if (formData.provinciaResidenciaId != null) {
-        valoresGeograficos.provinciaResidenciaId = Number(formData.provinciaResidenciaId);
-        necesitaEstablecer = true;
+      
+      // Verificar si hay provinciaResidenciaId y las provincias de residencia están disponibles
+      if (formData.provinciaResidenciaId != null && provinciasResidencia.length > 0) {
+        const idProv = Number(formData.provinciaResidenciaId);
+        const provinciaExiste = provinciasResidencia.some(p => Number(p.value) === idProv || Number(p.id) === idProv);
+        if (provinciaExiste) {
+          valoresGeograficos.provinciaResidenciaId = idProv;
+          necesitaEstablecer = true;
+        }
       }
-      if (formData.municipioResidenciaId != null) {
-        valoresGeograficos.municipioResidenciaId = Number(formData.municipioResidenciaId);
-        necesitaEstablecer = true;
+      
+      // Verificar si hay municipioResidenciaId y los municipios de residencia están disponibles
+      if (formData.municipioResidenciaId != null && municipiosResidencia.length > 0) {
+        const idMun = Number(formData.municipioResidenciaId);
+        const municipioExiste = municipiosResidencia.some(m => Number(m.value) === idMun || Number(m.id) === idMun);
+        if (municipioExiste) {
+          valoresGeograficos.municipioResidenciaId = idMun;
+          necesitaEstablecer = true;
+        }
       }
       
       // Establecer valores geográficos si están listos
@@ -353,7 +365,7 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
         form.setFieldsValue(valoresGeograficos);
       }
     }
-  }, [isEditMode, form, studentDetail, provincias, municipios, segundaProvincias, segundaMunicipios, provinciasResidencia, municipiosResidencia, paises]);
+  }, [isEditMode, form, provincias, municipios, segundaProvincias, segundaMunicipios, provinciasResidencia, municipiosResidencia, paises]);
 
   // Ref para rastrear si ya se inicializaron los valores de documentación
   const documentacionInitializedRef = useRef(false);
@@ -614,51 +626,6 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
     </Button>
   ), [handleVolverALista]);
 
-  // Contenido custom del paso 0 (tipo admisión + datos académicos): la página construye el panel
-  const renderSectionContent = useCallback(
-    (stepIndex, sectionKey, section, form) => {
-      if (stepIndex !== 0) return null;
-      if (sectionKey === 'tipoAdmision') {
-        return (
-          <EstudianteTipoAdmisionStepContent
-            key={sectionKey}
-            form={form}
-            onTipoAdmisionChange={(tipoAdmision) => {
-              if (tipoAdmision === 'ANTIGUO' && typeof cargarGestiones === 'function') {
-                cargarGestiones();
-              }
-            }}
-          />
-        );
-      }
-      if (sectionKey === 'datosAcademicosIniciales') {
-        return (
-          <EstudianteDatosAcademicosStepContent
-            key={sectionKey}
-            form={form}
-            section={section}
-            carreras={carreras}
-            gestiones={gestiones}
-            carrerasLoading={carrerasLoading}
-            gestionesLoading={gestionesLoading}
-            carrerasError={carrerasError}
-            gestionesError={gestionesError}
-          />
-        );
-      }
-      return null;
-    },
-    [
-      carreras,
-      gestiones,
-      carrerasLoading,
-      gestionesLoading,
-      carrerasError,
-      gestionesError,
-      cargarGestiones,
-    ]
-  );
-
   return (
     <PageTemplate 
       header={
@@ -687,7 +654,13 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
         onValidateBeforeNext={onValidateBeforeNext}
         onBeforeNextStep={onBeforeNextStep}
         onBeforePrevStep={onBeforePrevStep}
-        renderSectionContent={renderSectionContent}
+        carreras={carreras}
+        gestiones={gestiones}
+        carrerasLoading={carrerasLoading}
+        gestionesLoading={gestionesLoading}
+        carrerasError={carrerasError}
+        gestionesError={gestionesError}
+        cargarGestiones={cargarGestiones}
       />
     </PageTemplate>
   );

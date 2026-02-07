@@ -113,8 +113,12 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
         return carrerasData.selectedCarrera?.id;
     }, [editData?.carreraId, studentSearch.selectedStudent, carrerasData.selectedCarrera]);
     
-    // Periodos: lista extraída de paralelos; solo cargar paralelos cuando hay carrera (evita 400)
-    const periodosData = useInscripcionNuevaPeriodos({ carreraId: carreraIdForParalelos ?? undefined });
+    // Periodos: según tipo admisión (NUEVO = solo primer periodo; ANTIGUO = todos). Lista extraída de paralelos.
+    const tipoAdmision = studentSearch?.selectedStudent?.tipoAdmision ?? null;
+    const periodosData = useInscripcionNuevaPeriodos({
+      carreraId: carreraIdForParalelos ?? undefined,
+      tipoAdmision: tipoAdmision ?? undefined,
+    });
     const selectedPeriod = periodosData.selectedPeriod;
 
     const paralelosData = useInscripcionNuevaParalelos({
@@ -185,6 +189,7 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
         onSelectCarrera: handleSelectCarrera,
         onSelectParalelo: handleSelectParalelo,
         onSelectMateria: handleSelectMateria,
+        carreraIdForParalelos: carreraIdForParalelos ?? null,
         periodosData: {
             periodos: periodosData.periodos,
             loading: periodosData.loading,
@@ -227,6 +232,7 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
         handleSelectCarrera,
         handleSelectParalelo,
         handleSelectMateria,
+        carreraIdForParalelos,
         periodosData.periodos,
         periodosData.loading,
         periodosData.error,

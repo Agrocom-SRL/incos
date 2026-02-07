@@ -14,7 +14,6 @@
  */
 import { BaseListUseCase } from '../base/BaseListUseCase.js';
 import { ParallelMapper } from '../../mappers/academico/index.js';
-import { sequelize } from '../../../infrastructure/database/sequelize.js';
 
 export class ListParalelosUseCase extends BaseListUseCase {
   /**
@@ -177,83 +176,7 @@ export class ListParalelosUseCase extends BaseListUseCase {
         return data;
       }
 
-      // Usar vista SQL reutilizable para obtener estadísticas
-      // La vista vista_estadisticas_paralelos_por_gestion ya tiene toda la lógica de JOINs
-      // y reutiliza las vistas base modulares (vista_base_paralelos_info, vista_base_cursos_paralelos, etc.)
-      // 
-      // NOTA: La vista agrupa por gestion_id, por lo que paralelos sin inscripciones tendrán gestion_id = NULL
-      // Usamos LEFT JOIN para incluir todos los paralelos, incluso sin inscripciones
-      // También incluimos el número del periodo para mostrarlo en el resumen
-      const parallelIdsPlaceholder = parallelIds.map(() => '?').join(',');
-      const query = `
-        SELECT 
-          p.id AS paralelo_id,
-          COALESCE(v.gestion_id, ?) AS gestion_id,
-          COALESCE(v.total_inscritos, 0) AS total_inscritos,
-          COALESCE(v.total_hombres, 0) AS total_hombres,
-          COALESCE(v.total_mujeres, 0) AS total_mujeres,
-          per.numero AS periodo_numero
-        FROM paralelos p
-        LEFT JOIN vista_estadisticas_paralelos_por_gestion v 
-          ON v.paralelo_id = p.id 
-          AND v.gestion_id = ?
-        LEFT JOIN periodos per ON per.id = p.periodo_id
-          AND per.activo = TRUE 
-          AND per.deleted_at IS NULL
-        WHERE p.id IN (${parallelIdsPlaceholder})
-          AND p.activo = TRUE 
-          AND p.deleted_at IS NULL
-      `;
-
-      const results = await sequelize.query(query, {
-        replacements: [management.id, management.id, ...parallelIds],
-        type: sequelize.QueryTypes.SELECT,
-      });
-
-      // Log de depuración (solo en desarrollo)
-      if (process.env.NODE_ENV !== 'production') {
-        this.logger.debug('[Académico] Estadísticas de paralelos calculadas', {
-          parallelIds,
-          managementId: management.id,
-          managementYear: management.year,
-          resultsCount: results?.length || 0,
-          results: results,
-        });
-        
-        // Log adicional para diagnosticar si no hay resultados
-        if (!results || results.length === 0) {
-          // Consulta de diagnóstico usando la vista
-          try {
-            const diagnosticQuery = `
-              SELECT 
-                COUNT(DISTINCT paralelo_id) AS paralelos_con_datos,
-                SUM(total_inscritos) AS total_inscritos_vista,
-                SUM(total_hombres) AS total_hombres_vista,
-                SUM(total_mujeres) AS total_mujeres_vista
-              FROM vista_estadisticas_paralelos_por_gestion
-              WHERE gestion_id = ?
-                AND paralelo_id IN (${parallelIdsPlaceholder})
-            `;
-            
-            const diagnosticResult = await sequelize.query(diagnosticQuery, {
-              replacements: [management.id, ...parallelIds],
-              type: sequelize.QueryTypes.SELECT,
-            });
-            
-            this.logger.warn('[Académico] Diagnóstico de datos relacionados', {
-              parallelIds,
-              managementId: management.id,
-              diagnosticData: diagnosticResult[0] || {},
-              suggestion: 'Verificar que existan: cursos activos, asignaciones docentes vigentes, inscripciones_materias, e inscripciones en la gestión actual',
-            });
-          } catch (diagError) {
-            this.logger.error('[Académico] Error en consulta de diagnóstico', {
-              error: diagError.message,
-              stack: diagError.stack,
-            });
-          }
-        }
-      }
+      const results = await this.repository.obtenerEstadisticasYPeriodoPorGestion(parallelIds, management.id);
 
       // Crear mapa de estadísticas por paralelo
       // MySQL puede retornar valores como strings, BigInt, o Decimal
@@ -293,31 +216,36 @@ export class ListParalelosUseCase extends BaseListUseCase {
         });
       }
 
-      // Crear mapa de números de periodo por paralelo
+      // Crear mapa de número y nombre de periodo por paralelo
       const periodoNumeroMap = {};
+      const periodoNombreMap = {};
       if (Array.isArray(results) && results.length > 0) {
         results.forEach(row => {
-          if (row.paralelo_id && row.periodo_numero !== null && row.periodo_numero !== undefined) {
-            periodoNumeroMap[row.paralelo_id] = parseInt(row.periodo_numero || 0, 10);
+          if (row.paralelo_id) {
+            if (row.periodo_numero !== null && row.periodo_numero !== undefined) {
+              periodoNumeroMap[row.paralelo_id] = parseInt(row.periodo_numero || 0, 10);
+            }
+            if (row.periodo_nombre) {
+              periodoNombreMap[row.paralelo_id] = row.periodo_nombre;
+            }
           }
         });
       }
 
-      // Enriquecer cada paralelo con sus estadísticas y número de periodo
+      // Enriquecer cada paralelo con estadísticas, número y nombre de periodo
       const enrichedData = data.map(paralelo => {
         const estadisticas = statsMap[paralelo.id] || {
           totalInscritos: 0,
           totalHombres: 0,
           totalMujeres: 0,
         };
-        
-        // Agregar número de periodo si está disponible
         const periodoNumero = periodoNumeroMap[paralelo.id];
-        
+        const periodoNombre = periodoNombreMap[paralelo.id];
         return {
           ...paralelo,
           estadisticas,
-          ...(periodoNumero && { periodoNumero }),
+          ...(periodoNumero != null && { periodoNumero }),
+          ...(periodoNombre && { periodoNombre }),
         };
       });
 

@@ -1,0 +1,243 @@
+/* ============================================================================
+   STEP 2 - Periodo y Paralelos (Material Design inspired)
+   ============================================================================
+   Elevation, surfaces, typography hierarchy, chips
+   ============================================================================ */
+
+/* ---- Contenedores de sección (materias y paralelos) ---- */
+/* Superficie de tarjetas: gris muy suave para que destaquen sobre fondo blanco/gris claro */
+.step2-materias-list {
+  --step2-elevation-1: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --step2-elevation-2: 0 4px 12px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+  --step2-surface: #f5f6f8;
+  --step2-surface-border: rgba(0, 0, 0, 0.1);
+  --step2-radius: 12px;
+  --step2-radius-sm: 8px;
+  padding: 4px 0;
+}
+
+.step2-paralelos-cards {
+  --step2-elevation-1: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --step2-elevation-2: 0 4px 12px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+  --step2-elevation-hover: 0 12px 24px -8px rgba(0, 0, 0, 0.15), 0 4px 8px -4px rgba(0, 0, 0, 0.08);
+  --step2-surface: #f5f6f8;
+  --step2-surface-border: rgba(0, 0, 0, 0.1);
+  --step2-radius: 12px;
+  --step2-radius-sm: 8px;
+}
+
+/* Lista de materias: tarjetas con superficie gris y borde visible */
+.step2-materias-list .activity-list {
+  gap: 12px !important;
+}
+
+.step2-materias-list .activity-item {
+  background: var(--step2-surface) !important;
+  border: 1px solid var(--step2-surface-border) !important;
+  border-radius: var(--step2-radius);
+  padding: 14px 16px !important;
+  box-shadow: var(--step2-elevation-1);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.step2-materias-list .activity-item:hover {
+  box-shadow: var(--step2-elevation-2);
+  border-color: rgba(0, 0, 0, 0.14) !important;
+}
+
+/* ---- Tarjeta de paralelo (Material card) ---- */
+.step2-paralelo-card {
+  width: 100%;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+
+.step2-paralelo-card__header {
+  margin-bottom: 12px;
+}
+
+.step2-paralelo-card__title {
+  margin: 0 !important;
+  font-size: 1.125rem !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.01em;
+  line-height: 1.35 !important;
+  color: rgba(0, 0, 0, 0.87) !important;
+}
+
+.step2-paralelo-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.step2-paralelo-card__chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.25;
+  background: rgba(0, 0, 0, 0.06);
+  color: rgba(0, 0, 0, 0.72);
+}
+
+.step2-paralelo-card__chip--turno {
+  background: rgba(24, 144, 255, 0.12);
+  color: #1890ff;
+}
+
+.step2-paralelo-card__desc {
+  font-size: 0.8125rem;
+  color: rgba(0, 0, 0, 0.6);
+  line-height: 1.4;
+  margin-top: 8px;
+}
+
+.step2-paralelo-card__divider {
+  height: 1px;
+  background: rgba(0, 0, 0, 0.08);
+  margin: 12px 0;
+  border: none;
+}
+
+.step2-paralelo-card__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.step2-paralelo-card__stat {
+  flex: 1;
+  min-width: 70px;
+  padding: 10px 12px;
+  border-radius: var(--step2-radius-sm);
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  text-align: center;
+  transition: background 0.2s ease;
+}
+
+.step2-paralelo-card__stat-label {
+  display: block;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: rgba(0, 0, 0, 0.5);
+  margin-bottom: 4px;
+}
+
+.step2-paralelo-card__stat-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: rgba(0, 0, 0, 0.87);
+}
+
+.step2-paralelo-card__stat--total .step2-paralelo-card__stat-value {
+  color: rgba(0, 0, 0, 0.87);
+}
+
+.step2-paralelo-card__stat--hombres .step2-paralelo-card__stat-value {
+  color: #1890ff;
+}
+
+.step2-paralelo-card__stat--mujeres .step2-paralelo-card__stat-value {
+  color: #eb2f96;
+}
+
+/* Tarjeta de paralelo: superficie gris y borde visible para contraste con el fondo */
+.step2-paralelos-cards .data-cards__card .ant-card-body {
+  padding: 20px !important;
+  border-radius: var(--step2-radius);
+  background: var(--step2-surface) !important;
+}
+
+.step2-paralelos-cards .data-cards__card {
+  border-radius: var(--step2-radius) !important;
+  border: 1px solid var(--step2-surface-border) !important;
+  box-shadow: var(--step2-elevation-1) !important;
+  background: var(--step2-surface) !important;
+  transition: box-shadow 0.25s ease, transform 0.2s ease, border-color 0.2s ease !important;
+}
+
+.step2-paralelos-cards .data-cards__card:hover {
+  box-shadow: var(--step2-elevation-hover) !important;
+  border-color: rgba(0, 0, 0, 0.16) !important;
+}
+
+/* Tarjeta seleccionada: fondo y borde en color primario */
+.step2-paralelos-cards .data-cards__card--active {
+  border-color: var(--color-primary, #1890ff) !important;
+  background: var(--color-primary, #1890ff) !important;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.25), var(--step2-elevation-2) !important;
+}
+
+.step2-paralelos-cards .data-cards__card--active .ant-card {
+  background: var(--color-primary, #1890ff) !important;
+}
+
+.step2-paralelos-cards .data-cards__card--active .ant-card-body {
+  background: var(--color-primary, #1890ff) !important;
+}
+
+/* Tarjeta activa: mantener legibilidad de chips y stats */
+.step2-paralelos-cards .data-cards__card--active .step2-paralelo-card__title {
+  color: #fff !important;
+}
+
+.step2-paralelos-cards .data-cards__card--active .step2-paralelo-card__chip {
+  background: rgba(255, 255, 255, 0.25);
+  color: #fff;
+}
+
+.step2-paralelos-cards .data-cards__card--active .step2-paralelo-card__chip--turno {
+  background: rgba(255, 255, 255, 0.3);
+  color: #fff;
+}
+
+.step2-paralelos-cards .data-cards__card--active .step2-paralelo-card__desc {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.step2-paralelos-cards .data-cards__card--active .step2-paralelo-card__divider {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.step2-paralelos-cards .data-cards__card--active .step2-paralelo-card__stat {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.step2-paralelos-cards .data-cards__card--active .step2-paralelo-card__stat-label {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.step2-paralelos-cards .data-cards__card--active .step2-paralelo-card__stat-value {
+  color: #fff !important;
+}
+
+.step2-paralelos-cards .data-cards__card--active .step2-paralelo-card__stat--hombres .step2-paralelo-card__stat-value {
+  color: #bae7ff !important;
+}
+
+.step2-paralelos-cards .data-cards__card--active .step2-paralelo-card__stat--mujeres .step2-paralelo-card__stat-value {
+  color: #ffadd2 !important;
+}
+
+/* ---- Periodo: radio group horizontal (botones) ---- */
+.step2-periodo-radio .field-radio.ant-radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.step2-periodo-radio .ant-radio-button-wrapper {
+  border-radius: 8px;
+}

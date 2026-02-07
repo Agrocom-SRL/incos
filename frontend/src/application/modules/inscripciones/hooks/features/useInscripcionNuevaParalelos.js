@@ -53,20 +53,24 @@ export const useInscripcionNuevaParalelos = (options = {}) => {
     fetch({ params });
   }, [carreraId, periodoId, fetch]);
 
-  // Cargar paralelos cuando cambie carreraId o periodoId; limpiar selección al cambiar
+  // Cargar paralelos solo cuando cambien carreraId o periodoId (no cuando cambie loadParalelos)
+  // para evitar doble petición y que la UI quede en loading o sin datos
   useEffect(() => {
     setSelectedParalelo(null);
-    if (carreraId && periodoId) {
-      loadParalelos();
+    if (carreraId != null && periodoId != null) {
+      const params = { periodo_id: periodoId, carrera_id: carreraId };
+      fetch({ params });
     }
-  }, [carreraId, periodoId, loadParalelos]);
+  }, [carreraId, periodoId, fetch]);
 
   /**
    * Función para recargar paralelos
    */
   const refetch = useCallback(() => {
-    loadParalelos();
-  }, [loadParalelos]);
+    if (carreraId != null && periodoId != null) {
+      fetch({ params: { periodo_id: periodoId, carrera_id: carreraId } });
+    }
+  }, [carreraId, periodoId, fetch]);
 
   /**
    * Función para manejar la selección de un paralelo

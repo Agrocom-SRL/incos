@@ -5,7 +5,7 @@
 export const enrichPeriodoSelectField = (field, context = {}) => {
   const { periodosData, onSelectPeriod } = context;
 
-  if (field.name === 'periodo' && field.type === 'select' && periodosData) {
+  if (field.name === 'periodo' && (field.type === 'select' || field.type === 'radio') && periodosData) {
     const options = (periodosData.periodos || []).map((p) => ({
       value: p.id,
       label: p.nombre || `Periodo ${p.numero}`,
@@ -16,6 +16,24 @@ export const enrichPeriodoSelectField = (field, context = {}) => {
       loading: periodosData.loading || false,
       onChange: onSelectPeriod || undefined,
     };
+  }
+  return field;
+};
+
+/**
+ * Enricher para el mensaje de información del paso Periodo y Paralelos según tipo de admisión.
+ */
+export const enrichInfoPeriodoParalelosField = (field, context = {}) => {
+  const { studentSearch } = context;
+  if (field.name === 'infoPeriodoParalelos' && field.type === 'alert') {
+    const tipoAdmision = studentSearch?.selectedStudent?.tipoAdmision;
+    const description =
+      tipoAdmision === 'NUEVO'
+        ? 'Estudiante nuevo: se inscribe en Primer Año. Elija un paralelo para ver las materias y armar el horario.'
+        : tipoAdmision === 'ANTIGUO'
+          ? 'Estudiante antiguo: elija el año que cursa. Luego elija un paralelo para ver las materias y armar el horario.'
+          : 'Seleccione el periodo. Luego elija un paralelo para ver las materias y armar el horario.';
+    return { ...field, description };
   }
   return field;
 };
@@ -34,4 +52,8 @@ export const enrichEstudianteSeleccionadoPeriodoStep = (field, context = {}) => 
   return field;
 };
 
-export const periodoEnrichers = [enrichPeriodoSelectField, enrichEstudianteSeleccionadoPeriodoStep];
+export const periodoEnrichers = [
+  enrichPeriodoSelectField,
+  enrichInfoPeriodoParalelosField,
+  enrichEstudianteSeleccionadoPeriodoStep,
+];
