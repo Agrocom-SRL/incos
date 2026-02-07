@@ -5,10 +5,12 @@
  *
  * - Obtiene periodos únicos a partir de paralelos (GET /paralelos con carrera_id).
  * - Según tipo de admisión: NUEVO = solo primer periodo (Primer Año); ANTIGUO = todos los periodos del plan.
- * - Para NUEVO auto-selecciona el primer periodo para cargar paralelos y materias.
+ * - Para NUEVO auto-selecciona el primer periodo. Para ANTIGUO permite multi-selección (checkbox).
+ * - selectedPeriods: array de periodos seleccionados (para cargar paralelos de varios periodos).
+ * - selectedPeriod: primer periodo seleccionado (compatibilidad con lógica que espera un solo periodo).
  *
  * @param {Object} options - carreraId, tipoAdmision ('NUEVO' | 'ANTIGUO')
- * @returns {Object} periodos, loading, error, refetch, selectedPeriod, onSelectPeriod
+ * @returns {Object} periodos, loading, error, refetch, selectedPeriods, selectedPeriod, onTogglePeriods
  */
 
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
@@ -16,17 +18,24 @@ import { useParalelosApi } from '@application-academico/paralelos/hooks/useParal
 
 /**
  * Extrae periodos únicos de la lista de paralelos (id, numero, nombre).
- * El nombre viene de la API (periodos.nombre en BD); si no viene, se usa "Periodo N".
+ * Acepta camelCase (periodoId, periodoNumero, periodoNombre) y snake_case (periodo_id, etc.)
+ * por si la API o el mapper devuelven uno u otro.
  */
 function extractPeriodosFromParalelos(paralelos) {
   if (!Array.isArray(paralelos) || paralelos.length === 0) return [];
   const byId = new Map();
   paralelos.forEach((p) => {
-    const id = p.periodoId ?? p.periodId;
-    const numero = p.periodoNumero ?? p.numero ?? (typeof id === 'number' ? id : null);
-    const nombre = p.periodoNombre ?? (numero != null ? `Periodo ${numero}` : null);
-    if (id != null && numero != null && !byId.has(id)) {
-      byId.set(id, { id, numero, nombre: nombre || `Periodo ${numero}` });
+    const id = p.periodoId ?? p.periodId ?? p.periodo_id;
+    const numero =
+      p.periodoNumero ?? p.numero ?? p.periodo_numero ?? (typeof id === 'number' ? id : null);
+    const nombre =
+      p.periodoNombre ?? p.periodo_nombre ?? (numero != null ? `Periodo ${numero}` : null);
+    if (id != null && !byId.has(id)) {
+      byId.set(id, {
+        id,
+        numero: numero ?? id,
+        nombre: nombre || `Periodo ${numero ?? id}`,
+      });
     }
   });
   return Array.from(byId.values()).sort((a, b) => (a.numero ?? 0) - (b.numero ?? 0));
@@ -35,7 +44,7 @@ function extractPeriodosFromParalelos(paralelos) {
 export const useInscripcionNuevaPeriodos = (options = {}) => {
   const { carreraId = null, tipoAdmision = null } = options;
   const { paralelos, loading, error, fetch } = useParalelosApi();
-  const [selectedPeriod, setSelectedPeriod] = useState(null);
+  const [selectedPeriodIds, setSelectedPeriodIds] = useState([]);
 
   const loadParalelos = useCallback(() => {
     const params = { limit: 100 };
@@ -45,7 +54,7 @@ export const useInscripcionNuevaPeriodos = (options = {}) => {
 
   useEffect(() => {
     if (carreraId != null) {
-      setSelectedPeriod(null);
+      setSelectedPeriodIds([]);
       loadParalelos();
     }
   }, [carreraId, loadParalelos]);
@@ -61,28 +70,32 @@ export const useInscripcionNuevaPeriodos = (options = {}) => {
   }, [allPeriodos, tipoAdmision]);
 
   useEffect(() => {
-    if (tipoAdmision === 'NUEVO' && periodos.length === 1 && !selectedPeriod) {
-      setSelectedPeriod(periodos[0]);
+    if (tipoAdmision === 'NUEVO' && periodos.length === 1 && selectedPeriodIds.length === 0) {
+      setSelectedPeriodIds([periodos[0].id]);
     }
-  }, [tipoAdmision, periodos, selectedPeriod]);
+  }, [tipoAdmision, periodos, selectedPeriodIds.length]);
+
+  const onTogglePeriods = useCallback((checkedIds) => {
+    const ids = Array.isArray(checkedIds) ? checkedIds : [];
+    setSelectedPeriodIds((prev) => {
+      if (prev.length === ids.length && prev.every((id, i) => id === ids[i])) return prev;
+      return ids;
+    });
+  }, []);
 
   const onSelectPeriod = useCallback((periodOrId) => {
     if (periodOrId == null) return;
-    let period = periodOrId;
-    if (typeof periodOrId === 'number' || typeof periodOrId === 'string') {
-      const id = typeof periodOrId === 'string' ? parseInt(periodOrId, 10) : periodOrId;
-      period = allPeriodos.find((p) => p.id === id) ?? periodos.find((p) => p.id === id);
-    }
-    if (period && (period.id != null || period.numero != null)) {
-      setSelectedPeriod((prev) => {
-        const numero = period.numero ?? period.id;
-        const nombre = period.nombre ?? `Periodo ${numero}`;
-        const next = { id: period.id ?? period.numero, numero, nombre };
-        if (prev?.id === next.id) return prev;
-        return next;
-      });
-    }
-  }, [allPeriodos, periodos]);
+    const id = typeof periodOrId === 'object' ? periodOrId?.id : periodOrId;
+    const numId = typeof id === 'string' ? parseInt(id, 10) : id;
+    if (numId != null) setSelectedPeriodIds((prev) => (prev.length === 1 && prev[0] === numId ? prev : [numId]));
+  }, []);
+
+  const selectedPeriods = useMemo(() => {
+    if (!selectedPeriodIds.length || !periodos.length) return [];
+    return periodos.filter((p) => selectedPeriodIds.includes(p.id));
+  }, [periodos, selectedPeriodIds]);
+
+  const selectedPeriod = useMemo(() => selectedPeriods[0] ?? null, [selectedPeriods]);
 
   const prevResultRef = useRef(null);
   return useMemo(() => {
@@ -91,21 +104,28 @@ export const useInscripcionNuevaPeriodos = (options = {}) => {
       loading,
       error,
       refetch: loadParalelos,
+      selectedPeriods,
       selectedPeriod,
+      selectedPeriodIds,
+      onTogglePeriods,
       onSelectPeriod,
     };
     const prev = prevResultRef.current;
+    const sameIds =
+      prev?.selectedPeriodIds?.length === current.selectedPeriodIds?.length &&
+      prev?.selectedPeriodIds?.every((id, i) => id === current.selectedPeriodIds[i]);
     if (
       prev &&
       prev.loading === current.loading &&
       prev.error === current.error &&
       prev.periodos === current.periodos &&
-      prev.selectedPeriod?.id === current.selectedPeriod?.id &&
+      sameIds &&
+      prev.onTogglePeriods === current.onTogglePeriods &&
       prev.onSelectPeriod === current.onSelectPeriod
     ) {
       return prev;
     }
     prevResultRef.current = current;
     return current;
-  }, [periodos, loading, error, loadParalelos, selectedPeriod, onSelectPeriod]);
+  }, [periodos, loading, error, loadParalelos, selectedPeriods, selectedPeriod, selectedPeriodIds, onTogglePeriods, onSelectPeriod]);
 };

@@ -23,7 +23,7 @@
  * Para CONSUMIR el contexto, usa useInscripcionesNuevaContext (con 's') en context/.
  */
 
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback, useState } from 'react';
 import {
     useInscripcionNuevaPageData,
     useInscripcionNuevaFormHandlers,
@@ -32,7 +32,8 @@ import {
     useInscripcionNuevaPeriodos,
     useInscripcionNuevaParalelos,
     useInscripcionNuevaParaleloHorarios,
-    useInscripcionNuevaMaterias
+    useInscripcionNuevaMaterias,
+    useInscripcionNuevaMateriasByPeriods,
 } from '@application-inscripciones/hooks';
 import { useEnrichWizardSteps } from '@application-utils/hooks';
 import { studentEnrichers, buildStep0StudentDescription } from '@application-inscripciones/hooks/features/enrichers/studentEnrichers';
@@ -105,7 +106,11 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
             return editData.carreraId;
         }
         // Si el estudiante tiene datos académicos con carrera, usar esa carrera
-        const studentCareerId = studentSearch.selectedStudent?.careerId || studentSearch.selectedStudent?.carreraId;
+        const studentCareerId =
+            studentSearch.selectedStudent?.careerId ||
+            studentSearch.selectedStudent?.carreraId ||
+            studentSearch.selectedStudent?.career_id ||
+            studentSearch.selectedStudent?.carrera_id;
         if (studentCareerId) {
             return studentCareerId;
         }
@@ -123,6 +128,7 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
 
     const paralelosData = useInscripcionNuevaParalelos({
         carreraId: carreraIdForParalelos,
+        periodoIds: periodosData.selectedPeriodIds?.length ? periodosData.selectedPeriodIds : undefined,
         periodoId: selectedPeriod?.id,
         initialParaleloId: editData?.paraleloId,
     });
@@ -136,6 +142,13 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
     const materiasData = useInscripcionNuevaMaterias({
         periodoId: selectedPeriod?.id,
     });
+
+    // Materias por periodo (Step 2: NUEVO = primer año; ANTIGUO = materias por periodo con checkboxes)
+    const materiasByPeriodsData = useInscripcionNuevaMateriasByPeriods(
+      periodosData.selectedPeriodIds ?? [],
+      carreraIdForParalelos ?? null
+    );
+    const [selectedMateriaIdsByPeriod, setSelectedMateriaIdsByPeriod] = useState({});
 
     // Hook para cargar horarios del paralelo seleccionado
     const horariosData = useInscripcionNuevaParaleloHorarios({
@@ -169,6 +182,12 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
         }
     }, [periodosData.periodos, periodosData.onSelectPeriod]);
 
+    const handleTogglePeriods = useCallback((checkedIds) => {
+        if (periodosData.onTogglePeriods) {
+            periodosData.onTogglePeriods(checkedIds);
+        }
+    }, [periodosData.onTogglePeriods]);
+
     const handleSelectParalelo = useCallback((paralelo) => {
         if (paralelo && paralelosData.onSelectParalelo) {
             paralelosData.onSelectParalelo(paralelo);
@@ -181,11 +200,19 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
         }
     }, [materiasData.onSelectMateria]);
 
+    const handleToggleMaterias = useCallback((periodId, materiaIds) => {
+        setSelectedMateriaIdsByPeriod((prev) => ({
+            ...prev,
+            [periodId]: Array.isArray(materiaIds) ? materiaIds : [],
+        }));
+    }, []);
+
     // 3. Context para enrichers (objeto memoizado)
     const enrichContext = useMemo(() => ({
         onSearchStudent: handleSearchStudent,
         onSelectStudent: handleSelectStudent,
         onSelectPeriod: handleSelectPeriod,
+        onTogglePeriods: handleTogglePeriods,
         onSelectCarrera: handleSelectCarrera,
         onSelectParalelo: handleSelectParalelo,
         onSelectMateria: handleSelectMateria,
@@ -195,6 +222,8 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
             loading: periodosData.loading,
             error: periodosData.error,
             selectedPeriod: periodosData.selectedPeriod,
+            selectedPeriods: periodosData.selectedPeriods,
+            selectedPeriodIds: periodosData.selectedPeriodIds || [],
         },
         studentSearch: {
             students: studentSearch.students,
@@ -213,6 +242,7 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
             loading: paralelosData.loading,
             error: paralelosData.error,
             selectedParalelo: paralelosData.selectedParalelo,
+            selectedParalelosByPeriod: paralelosData.selectedParalelosByPeriod ?? {},
         },
         materiasData: {
             materias: materiasData.materias,
@@ -220,6 +250,13 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
             error: materiasData.error,
             selectedMateria: materiasData.selectedMateria,
         },
+        materiasByPeriodsData: {
+            materiasByPeriod: materiasByPeriodsData.materiasByPeriod,
+            loading: materiasByPeriodsData.loading,
+            error: materiasByPeriodsData.error,
+        },
+        selectedMateriaIdsByPeriod,
+        onToggleMaterias: handleToggleMaterias,
         horariosData: {
             schedule: horariosData.schedule,
             loading: horariosData.loading,
@@ -229,6 +266,7 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
         handleSearchStudent,
         handleSelectStudent,
         handleSelectPeriod,
+        handleTogglePeriods,
         handleSelectCarrera,
         handleSelectParalelo,
         handleSelectMateria,
@@ -237,6 +275,8 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
         periodosData.loading,
         periodosData.error,
         periodosData.selectedPeriod,
+        periodosData.selectedPeriods,
+        periodosData.selectedPeriodIds,
         studentSearch.students,
         studentSearch.loading,
         studentSearch.error,
@@ -249,10 +289,16 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
         paralelosData.loading,
         paralelosData.error,
         paralelosData.selectedParalelo,
+        paralelosData.selectedParalelosByPeriod,
         materiasData.materias,
         materiasData.loading,
         materiasData.error,
         materiasData.selectedMateria,
+        materiasByPeriodsData.materiasByPeriod,
+        materiasByPeriodsData.loading,
+        materiasByPeriodsData.error,
+        selectedMateriaIdsByPeriod,
+        handleToggleMaterias,
         horariosData.schedule,
         horariosData.loading,
         horariosData.error,
@@ -284,6 +330,7 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
             loading: periodosData.loading,
             error: periodosData.error,
             selectedPeriod: periodosData.selectedPeriod,
+            selectedPeriodIds: periodosData.selectedPeriodIds || [],
         },
 
         // Búsqueda de estudiantes
@@ -309,6 +356,7 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
             error: paralelosData.error,
             selectedParalelo: paralelosData.selectedParalelo,
         },
+        onSelectParalelo: handleSelectParalelo,
 
         // Materias
         materiasData: {
@@ -317,6 +365,15 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
             error: materiasData.error,
             selectedMateria: materiasData.selectedMateria,
         },
+
+        // Materias por periodo (Step 2)
+        materiasByPeriodsData: {
+            materiasByPeriod: materiasByPeriodsData.materiasByPeriod,
+            loading: materiasByPeriodsData.loading,
+            error: materiasByPeriodsData.error,
+        },
+        selectedMateriaIdsByPeriod,
+        onToggleMaterias: handleToggleMaterias,
 
         // Horarios
         horariosData: {
@@ -329,11 +386,15 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
         enrichedWizardSteps,
         formHandlers,
         handleSelectCarrera,
+        handleSelectParalelo,
         periodosData,
         studentSearch,
         carrerasData,
         paralelosData,
         materiasData,
+        materiasByPeriodsData,
+        selectedMateriaIdsByPeriod,
+        handleToggleMaterias,
         horariosData,
     ]);
 };

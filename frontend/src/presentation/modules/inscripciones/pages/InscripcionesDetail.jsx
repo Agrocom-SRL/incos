@@ -169,7 +169,7 @@ const InscripcionesDetail = () => {
         }
       >
         <Alert
-          message="Error al cargar la inscripción"
+          title="Error al cargar la inscripción"
           description={error}
           type="error"
           showIcon

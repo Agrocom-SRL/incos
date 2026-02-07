@@ -57,7 +57,7 @@ const InscripcionesCarreraStepContent = ({
         <Col xs={24} md={12}>
           {estudianteField && !estudianteField.hidden && (
             <Alert
-              message={estudianteField.message}
+              title={estudianteField.message}
               description={estudianteField.description}
               type={estudianteField.alertType || 'success'}
               showIcon

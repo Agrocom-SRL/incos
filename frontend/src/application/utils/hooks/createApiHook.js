@@ -92,7 +92,7 @@ export const createApiHook = ({
   initialLoading = false,
   autoFetch = false,
   autoFetchArgs,
-  enableLogs = import.meta.env.DEV && true,
+  enableLogs = false,
   dataKey = 'data',
   fetchName = 'fetch',
   errorMessage,

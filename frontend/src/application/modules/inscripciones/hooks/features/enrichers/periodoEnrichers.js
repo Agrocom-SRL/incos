@@ -1,38 +1,66 @@
 /**
+ * Extrae periodos únicos desde paralelos cuando periodosData.periodos está vacío
+ * (p. ej. si la extracción en useInscripcionNuevaPeriodos no encontró periodoId/numero)
+ */
+function extractPeriodosFromParalelosList(paralelos) {
+  if (!Array.isArray(paralelos) || paralelos.length === 0) return [];
+  const byId = new Map();
+  paralelos.forEach((p) => {
+    const id = p.periodoId ?? p.periodId ?? p.periodo_id;
+    const numero = p.periodoNumero ?? p.numero ?? p.periodo_numero ?? id;
+    const nombre = p.periodoNombre ?? p.periodo_nombre ?? `Periodo ${numero}`;
+    if (id != null && !byId.has(id)) {
+      byId.set(id, { id, numero, nombre });
+    }
+  });
+  return Array.from(byId.values()).sort((a, b) => (a.numero ?? 0) - (b.numero ?? 0));
+}
+
+/**
  * Periodo Enrichers: enriquecen campos del paso "Seleccionar Periodo"
  */
-
 export const enrichPeriodoSelectField = (field, context = {}) => {
-  const { periodosData, onSelectPeriod } = context;
+  const { periodosData, onSelectPeriod, onTogglePeriods, paralelosData } = context;
 
-  if (field.name === 'periodo' && (field.type === 'select' || field.type === 'radio') && periodosData) {
-    const options = (periodosData.periodos || []).map((p) => ({
-      value: p.id,
-      label: p.nombre || `Periodo ${p.numero}`,
-    }));
-    return {
-      ...field,
-      options,
-      loading: periodosData.loading || false,
-      onChange: onSelectPeriod || undefined,
-    };
+  if (field.name !== 'periodo') return field;
+
+  const isCheckboxGroup = field.type === 'checkboxGroup';
+  const isSelectOrRadio = field.type === 'select' || field.type === 'radio';
+  if (!isCheckboxGroup && !isSelectOrRadio) return field;
+
+  // Opciones: priorizar periodosData.periodos; si está vacío, derivar de paralelos
+  let periodos = periodosData?.periodos || [];
+  if (periodos.length === 0 && paralelosData?.paralelos?.length > 0) {
+    periodos = extractPeriodosFromParalelosList(paralelosData.paralelos);
   }
-  return field;
+
+  const options = periodos.map((p) => ({
+    value: p.id,
+    label: p.nombre || `Periodo ${p.numero}`,
+  }));
+
+  return {
+    ...field,
+    options,
+    loading: periodosData?.loading ?? false,
+    value: isCheckboxGroup ? (periodosData?.selectedPeriodIds || []) : undefined,
+    onChange: isCheckboxGroup ? (onTogglePeriods || undefined) : (onSelectPeriod || undefined),
+  };
 };
 
 /**
- * Enricher para el mensaje de información del paso Periodo y Paralelos según tipo de admisión.
+ * Enricher para el mensaje de información del paso Periodo y materias según tipo de admisión.
  */
 export const enrichInfoPeriodoParalelosField = (field, context = {}) => {
   const { studentSearch } = context;
-  if (field.name === 'infoPeriodoParalelos' && field.type === 'alert') {
+  if ((field.name === 'infoPeriodoParalelos' || field.name === 'infoPeriodoMaterias') && field.type === 'alert') {
     const tipoAdmision = studentSearch?.selectedStudent?.tipoAdmision;
     const description =
       tipoAdmision === 'NUEVO'
-        ? 'Estudiante nuevo: se inscribe en Primer Año. Elija un paralelo para ver las materias y armar el horario.'
+        ? 'Estudiante nuevo: se inscriben todas las materias del primer año (ya seleccionadas). En el siguiente paso elija el paralelo (turno).'
         : tipoAdmision === 'ANTIGUO'
-          ? 'Estudiante antiguo: elija el año que cursa. Luego elija un paralelo para ver las materias y armar el horario.'
-          : 'Seleccione el periodo. Luego elija un paralelo para ver las materias y armar el horario.';
+          ? 'Estudiante antiguo: marque uno o más periodos y las materias que cursará. En el siguiente paso elija el paralelo por periodo.'
+          : 'Marque uno o más periodos y las materias que cursará. En el siguiente paso elija el paralelo por periodo.';
     return { ...field, description };
   }
   return field;

@@ -3,20 +3,28 @@ import { NotFoundError, ValidationError } from '../../../domain/errors/AppError.
 /**
  * Use Case: CreateEnrollmentUseCase
  * Módulo: Inscripciones
- * Crea una nueva inscripción con materias asociadas
- * 
- * Responsabilidades:
- * - Validar estudiante y paralelo
+ * Crea una nueva inscripción con materias asociadas (capa INSCRIPCIÓN únicamente).
+ *
+ * Separación conceptual Inscripción vs Matriculación:
+ * - INSCRIPCIÓN (este use case): El estudiante elige turno y materias. Se crean
+ *   inscripciones e inscripciones_materias (asignacion_docente_id). No se asignan
+ *   horarios ni aulas; el horario viene definido en cursos_horarios del curso.
+ * - MATRICULACIÓN (concepto separado): Proceso que trabaja con horarios concretos
+ *   (cursos_horarios, horarios, aulas), cupos y habilitación de aulas. No forma
+ *   parte de este caso de uso. Ver docs/inscripcion-vs-matriculacion.md.
+ *
+ * Responsabilidades (solo inscripción):
+ * - Validar estudiante y paralelo o asignaciones docentes
  * - Obtener gestión actual desde configuración
  * - Crear datos académicos del estudiante si no existen
- * - Crear la inscripción principal
- * - Insertar todas las materias del paralelo en inscripciones_materias
- * 
+ * - Crear la inscripción principal (inscripciones)
+ * - Insertar materias inscritas (inscripciones_materias) por paralelo o por teacherAssignmentIds
+ *
  * Principios SOLID aplicados:
  * - Single Responsibility: Cada método privado tiene una sola responsabilidad
  * - Open/Closed: Abierto para extensión (métodos privados), cerrado para modificación
  * - Dependency Inversion: Depende de abstracciones (repositorios inyectados)
- * 
+ *
  * Clean Architecture:
  * - Application Layer: Orquesta la lógica de negocio
  * - Depende de Repositories (Infrastructure) a través de abstracciones
@@ -94,76 +102,127 @@ export class CreateEnrollmentUseCase {
   }
 
   /**
-   * Ejecuta el caso de uso de creación de inscripción
+   * Ejecuta el caso de uso de creación de inscripción.
+   * Dos modos: con parallelId (todas las materias del paralelo) o con teacherAssignmentIds (solo materias elegidas).
+   *
    * @param {Object} data - Datos de la inscripción
    * @param {number} data.studentId - ID del estudiante
-   * @param {number} data.parallelId - ID del paralelo
-   * @param {string} [data.enrollmentType] - Tipo de inscripción (opcional, por defecto 'NUEVO')
-   * @param {string} [data.enrollmentDate] - Fecha de inscripción (opcional, por defecto fecha actual)
+   * @param {number} [data.parallelId] - ID del paralelo (requerido si no se envía teacherAssignmentIds)
+   * @param {number[]} [data.teacherAssignmentIds] - IDs de asignaciones docentes (opcional; inscribir solo esas materias)
+   * @param {string} [data.enrollmentType] - Tipo de inscripción (opcional)
+   * @param {string} [data.enrollmentDate] - Fecha de inscripción (opcional)
    * @param {string} [data.observations] - Observaciones (opcional)
    * @returns {Promise<Object>} Inscripción creada con materias asociadas
    */
   async execute(data) {
-    const { studentId, parallelId, enrollmentType = 'NUEVO', enrollmentDate, observations } = data;
+    const {
+      studentId,
+      parallelId,
+      teacherAssignmentIds,
+      enrollmentType = 'NUEVO',
+      enrollmentDate,
+      observations,
+    } = data;
+
+    const useMateriasMode = Array.isArray(teacherAssignmentIds) && teacherAssignmentIds.length > 0;
 
     this.logger.info('[Inscripciones] Iniciando creación de inscripción', {
       studentId,
       parallelId,
+      teacherAssignmentIds: useMateriasMode ? teacherAssignmentIds : undefined,
+      mode: useMateriasMode ? 'materias' : 'paralelo',
       enrollmentType,
     });
 
     try {
-      // 1. Validar estudiante y paralelo
       const student = await this._validateStudent(studentId);
-      const parallel = await this._validateParallel(parallelId);
-
-      // 2. Obtener gestión actual desde configuración
       const management = await this._getCurrentManagement();
 
-      // 3. Obtener o crear datos académicos del estudiante
+      let parallel;
+      let teacherAssignments;
+
+      if (useMateriasMode) {
+        const { parallel: firstParallel } = await this._getParallelFromFirstTeacherAssignment(
+          teacherAssignmentIds[0]
+        );
+        if (!firstParallel) {
+          throw new ValidationError(
+            'No se pudo determinar la carrera desde las asignaciones docentes seleccionadas'
+          );
+        }
+        parallel = firstParallel;
+        const studentAcademicData = await this._getOrCreateStudentAcademicData(
+          student,
+          parallel,
+          management
+        );
+        const { managementPlan } = await this._getStudyPlanAndManagementPlan(
+          studentAcademicData,
+          management
+        );
+        teacherAssignments = await this._validateAndResolveTeacherAssignments(
+          teacherAssignmentIds,
+          managementPlan.id
+        );
+        await this._validateNoExistingEnrollment(studentAcademicData, management);
+        await this._validatePaymentExists(student, management);
+        const enrollment = await this._createEnrollment(
+          studentAcademicData,
+          management,
+          enrollmentType,
+          observations
+        );
+        const enrollmentSubjects = await this._createEnrollmentSubjects(
+          enrollment,
+          teacherAssignments
+        );
+        return this._buildResponse(
+          enrollment,
+          enrollmentSubjects,
+          studentId,
+          parallel.id,
+          management
+        );
+      }
+
+      if (!parallelId) {
+        throw new ValidationError(
+          'El ID del paralelo es requerido cuando no se envían materias específicas (teacherAssignmentIds)'
+        );
+      }
+      parallel = await this._validateParallel(parallelId);
       const studentAcademicData = await this._getOrCreateStudentAcademicData(
         student,
         parallel,
         management
       );
-
-      // 4. Obtener plan de estudios y plan habilitado
-      const { studyPlan, managementPlan } = await this._getStudyPlanAndManagementPlan(
+      const { managementPlan } = await this._getStudyPlanAndManagementPlan(
         studentAcademicData,
         management
       );
-
-      // 5. Validar que no exista inscripción previa
       await this._validateNoExistingEnrollment(studentAcademicData, management);
-
-      // 6. Validar que el estudiante haya realizado el pago del aporte anual
       await this._validatePaymentExists(student, management);
-
-      // 7. Obtener todas las asignaciones docentes del paralelo
-      const teacherAssignments = await this._getTeacherAssignmentsFromParallel(
+      teacherAssignments = await this._getTeacherAssignmentsFromParallel(
         parallel,
         managementPlan
       );
-
-      // 8. Crear la inscripción principal
       const enrollment = await this._createEnrollment(
         studentAcademicData,
         management,
         enrollmentType,
         observations
       );
-
-      // 9. Crear las inscripciones de materias para todas las asignaciones docentes
       const enrollmentSubjects = await this._createEnrollmentSubjects(
         enrollment,
         teacherAssignments
       );
-
-      // 10. Construir y retornar respuesta
-      // NOTA: La generación de boleta de inscripción ahora se hace mediante un endpoint separado
-      // POST /api/v1/inscripciones/:id/generar-boleta
-      return this._buildResponse(enrollment, enrollmentSubjects, studentId, parallelId, management);
-
+      return this._buildResponse(
+        enrollment,
+        enrollmentSubjects,
+        studentId,
+        parallelId,
+        management
+      );
     } catch (error) {
       this.logger.error('[Inscripciones] Error al crear inscripción', {
         error: error.message,
@@ -224,6 +283,68 @@ export class CreateEnrollmentUseCase {
     });
 
     return parallel;
+  }
+
+  /**
+   * Obtiene el paralelo (y carrera) a partir de la primera asignación docente.
+   * Usado en modo materias para determinar carrera y datos académicos sin enviar parallelId.
+   * @private
+   * @param {number} teacherAssignmentId - ID de la asignación docente
+   * @returns {Promise<{parallel: Object|null}>}
+   */
+  async _getParallelFromFirstTeacherAssignment(teacherAssignmentId) {
+    const assignment = await this.teacherAssignmentRepository.findById(teacherAssignmentId);
+    if (!assignment) {
+      throw new NotFoundError(`Asignación docente con ID ${teacherAssignmentId}`);
+    }
+    const assignmentPlain = assignment.toPlainObject ? assignment.toPlainObject() : assignment;
+    const courseId = assignmentPlain.courseId ?? assignmentPlain.cursoId;
+    if (!courseId) {
+      this.logger.warn('[Inscripciones] Asignación docente sin curso', { teacherAssignmentId });
+      return { parallel: null };
+    }
+    const course = await this.courseRepository.findById(courseId);
+    if (!course) {
+      throw new NotFoundError(`Curso con ID ${courseId}`);
+    }
+    const coursePlain = course.toPlainObject ? course.toPlainObject() : course;
+    const parallelId = coursePlain.paraleloId ?? coursePlain.parallelId;
+    if (!parallelId) {
+      this.logger.warn('[Inscripciones] Curso sin paralelo', { courseId });
+      return { parallel: null };
+    }
+    const parallel = await this.parallelRepository.findById(parallelId);
+    return { parallel: parallel || null };
+  }
+
+  /**
+   * Valida y resuelve las asignaciones docentes por ID; todas deben pertenecer al mismo plan habilitado.
+   * @private
+   * @param {number[]} teacherAssignmentIds - IDs de asignaciones docentes
+   * @param {number} managementPlanId - ID del plan habilitado
+   * @returns {Promise<Array>} Array de entidades TeacherAssignment
+   */
+  async _validateAndResolveTeacherAssignments(teacherAssignmentIds, managementPlanId) {
+    const assignments = [];
+    for (const id of teacherAssignmentIds) {
+      const assignment = await this.teacherAssignmentRepository.findById(id);
+      if (!assignment) {
+        throw new NotFoundError(`Asignación docente con ID ${id}`);
+      }
+      const plain = assignment.toPlainObject ? assignment.toPlainObject() : assignment;
+      const planId = plain.managementPlanId ?? plain.gestionPlanId;
+      if (planId !== managementPlanId) {
+        throw new ValidationError(
+          `La asignación docente ${id} no pertenece al plan habilitado de la gestión actual`
+        );
+      }
+      assignments.push(assignment);
+    }
+    this.logger.info('[Inscripciones] Asignaciones docentes validadas (modo materias)', {
+      count: assignments.length,
+      managementPlanId,
+    });
+    return assignments;
   }
 
   /**

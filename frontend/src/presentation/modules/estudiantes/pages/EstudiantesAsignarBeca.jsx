@@ -77,7 +77,7 @@ const EstudiantesAsignarBeca = () => {
         }
       >
         <Alert
-          message="Error"
+          title="Error"
           description="No se proporcionó el ID del estudiante. Por favor, seleccione un estudiante desde la lista."
           type="error"
           showIcon

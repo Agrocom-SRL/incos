@@ -72,7 +72,13 @@ export const useInscripcionNuevaStudentSearch = (options = {}) => {
           apellidoPaterno: studentData.lastName || studentData.apellidoPaterno,
           apellidoMaterno: studentData.motherLastName || studentData.apellidoMaterno,
         });
-        const careerId = academicData?.careerId ?? academicData?.carreraId ?? studentData.careerId ?? studentData.carreraId;
+        const careerId =
+          academicData?.careerId ??
+          academicData?.carreraId ??
+          academicData?.carrera_id ??
+          studentData.careerId ??
+          studentData.carreraId ??
+          studentData.carrera_id;
         const tipoAdmision = academicData?.tipoAdmision ?? academicData?.admissionType ?? (careerId ? 'ANTIGUO' : 'NUEVO');
         setSelectedStudent({
           id: studentData.id,
@@ -86,7 +92,38 @@ export const useInscripcionNuevaStudentSearch = (options = {}) => {
         });
       }
     }
-  }, [studentById, studentId]); // Remover selectedStudent de dependencias para permitir actualizaciones
+  }, [studentById, studentId]);
+
+  // Cuando se cargó estudiante por ID tras selección en búsqueda (sin studentId), enriquecer selectedStudent con datos académicos
+  useEffect(() => {
+    if (!studentById || studentId) return;
+    const payload = studentById;
+    let studentData = payload?.student?.id ? payload.student : payload?.id ? payload : payload?.data?.student ? payload.data : null;
+    if (!studentData?.id) studentData = payload?.student ?? payload;
+    const academicData = payload?.academicData ?? null;
+    const careerId =
+      academicData?.careerId ??
+      academicData?.carreraId ??
+      academicData?.carrera_id ??
+      studentData?.careerId ??
+      studentData?.carreraId ??
+      studentData?.carrera_id ??
+      null;
+    setSelectedStudent(prev => {
+      if (!prev || prev.id !== studentData.id) return prev;
+      if (prev.careerId != null || prev.carreraId != null) return prev;
+      return {
+        ...prev,
+        careerId: careerId ?? null,
+        carreraId: careerId ?? null,
+        tipoAdmision:
+          academicData?.tipoAdmision ??
+          academicData?.admissionType ??
+          (careerId ? 'ANTIGUO' : 'NUEVO'),
+        carreraNombre: academicData?.careerName ?? academicData?.carreraNombre ?? null,
+      };
+    });
+  }, [studentById, studentId]);
 
   /**
    * Función para manejar la selección de un estudiante
@@ -96,23 +133,42 @@ export const useInscripcionNuevaStudentSearch = (options = {}) => {
    */
   const onSelectStudent = useCallback((student) => {
     if (student && student.id) {
-      // ✅ OPTIMIZACIÓN: Solo actualizar si realmente cambió
       setSelectedStudent(prev => {
-        // Si ya está seleccionado el mismo estudiante, mantener referencia
         if (prev?.id === student.id) {
           return prev;
         }
-        
-        // Si cambió, crear nuevo objeto
+        const careerId =
+          student.careerId ??
+          student.carreraId ??
+          student.career_id ??
+          student.carrera_id ??
+          null;
+        const tipoAdmision =
+          student.tipoAdmision ??
+          student.admissionType ??
+          (careerId ? 'ANTIGUO' : 'NUEVO');
         return {
           id: student.id,
-          codigoEstudiante: student.codigoEstudiante,
+          codigoEstudiante: student.codigoEstudiante ?? student.studentCode,
           nombreCompleto: student.nombreCompleto,
           ciCompleto: student.ciCompleto,
+          careerId: careerId ?? null,
+          carreraId: careerId ?? null,
+          tipoAdmision,
+          carreraNombre: student.carreraNombre ?? student.careerName ?? null,
         };
       });
+      // Cargar datos completos (académicos) si el estudiante no trae carrera/tipoAdmision
+      const hasCareer =
+        student.careerId ??
+        student.carreraId ??
+        student.career_id ??
+        student.carrera_id;
+      if (!hasCareer) {
+        getStudentById(student.id);
+      }
     }
-  }, []);
+  }, [getStudentById]);
 
   // TODO: Aquí se puede agregar lógica específica de inscripciones si es necesario
   // Por ejemplo: filtrar estudiantes que ya están inscritos, validaciones específicas, etc.

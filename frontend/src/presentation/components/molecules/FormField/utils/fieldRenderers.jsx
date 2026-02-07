@@ -24,6 +24,7 @@ import {
   FieldSwitch,
   FieldTextarea,
   FieldRadio,
+  FieldCheckboxGroup,
   Button,
   SearchBar,
   Alert
@@ -139,6 +140,43 @@ const renderRadio = (field, disabled, readOnly, selectOptions, form) => {
       onChange={handleChange}
       optionType={field.optionType || 'default'}
       radioLayout={field.radioLayout || 'vertical'}
+    />
+  );
+};
+
+/**
+ * Renderer para campo de tipo checkbox group (selección múltiple, estilo botón)
+ * value y onChange son array de valores (ids). Si field.onChange existe, se llama con el array.
+ * Key por opciones para forzar re-mount cuando las opciones cambian (p. ej. de [] a cargadas).
+ */
+const renderCheckboxGroup = (field, disabled, readOnly, selectOptions, form) => {
+  const handleChange = (checkedValues) => {
+    const value = Array.isArray(checkedValues) ? checkedValues : [];
+    if (form && field.name) form.setFieldsValue({ [field.name]: value });
+    if (field.onChange) field.onChange(value);
+  };
+
+  const rawValue = form?.getFieldValue?.(field.name) ?? field.value ?? field.defaultValue;
+  const safeValue = Array.isArray(rawValue)
+    ? rawValue
+    : rawValue != null
+      ? [rawValue]
+      : [];
+
+  const options = Array.isArray(selectOptions) ? selectOptions : [];
+  const optionsKey = options.length ? options.map((o) => o.value ?? o.id).join(',') : 'empty';
+
+  return (
+    <FieldCheckboxGroup
+      key={`${field.name}-${optionsKey}`}
+      disabled={disabled}
+      readOnly={readOnly}
+      options={options}
+      value={safeValue}
+      onChange={handleChange}
+      optionType={field.optionType || 'default'}
+      checkboxLayout={field.checkboxLayout || 'vertical'}
+      className={field.className}
     />
   );
 };
@@ -290,6 +328,7 @@ export const fieldRenderers = {
   switch: renderSwitch,
   textarea: renderTextarea,
   radio: renderRadio,
+  checkboxGroup: renderCheckboxGroup,
   display: renderDisplay,
   alert: renderAlert,
   button: renderButton,
@@ -308,6 +347,7 @@ const fieldRendererParams = {
   textarea: ['field', 'disabled', 'readOnly'],
   select: ['field', 'disabled', 'readOnly', 'selectOptions'],
   radio: ['field', 'disabled', 'readOnly', 'selectOptions'],
+  checkboxGroup: ['field', 'disabled', 'readOnly', 'selectOptions'],
   date: ['field', 'disabled', 'readOnly', 'minAge'],
   display: ['field', 'disabled', 'readOnly', 'form'],
   alert: ['field', 'disabled', 'readOnly'],

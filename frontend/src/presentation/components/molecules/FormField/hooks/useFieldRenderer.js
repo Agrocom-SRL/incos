@@ -58,6 +58,11 @@ export const useFieldRenderer = ({
       // Select necesita form para combinar onChange personalizado con Form.Item
       return renderer(field, disabled, readOnly, selectOptions, form);
     }
+
+    if (fieldType === 'checkboxGroup') {
+      // CheckboxGroup necesita selectOptions (opciones) y form (valor/onChange)
+      return renderer(field, disabled, readOnly, selectOptions, form);
+    }
     
     if (fieldType === 'date') {
       return renderer(field, disabled, readOnly, minAge);

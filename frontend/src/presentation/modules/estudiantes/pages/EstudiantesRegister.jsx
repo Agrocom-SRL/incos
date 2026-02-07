@@ -36,6 +36,10 @@ import {
   createCamposContactosEmergenciaDinamicos,
   createCamposDocumentacionDinamicos
 } from '@estudiantes/config';
+import {
+  EstudianteTipoAdmisionStepContent,
+  EstudianteDatosAcademicosStepContent,
+} from '@estudiantes/components/organisms';
 
 const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
   const [searchParams] = useSearchParams();
@@ -615,6 +619,49 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
     { title: pageTitle },
   ], [pageTitle]);
 
+  // Contenido custom del paso 0 (Tipo de admisión + Gestión y Carrera)
+  const renderSectionContent = useCallback(
+    (stepIndex, sectionKey, section, formInstance) => {
+      if (stepIndex !== 0) return null;
+      if (sectionKey === 'tipoAdmision') {
+        return (
+          <EstudianteTipoAdmisionStepContent
+            form={formInstance}
+            onTipoAdmisionChange={(tipoAdmision) => {
+              if (tipoAdmision === 'ANTIGUO' && typeof cargarGestiones === 'function') {
+                cargarGestiones();
+              }
+            }}
+          />
+        );
+      }
+      if (sectionKey === 'datosAcademicosIniciales') {
+        return (
+          <EstudianteDatosAcademicosStepContent
+            form={formInstance}
+            section={section}
+            carreras={carreras}
+            gestiones={gestiones}
+            carrerasLoading={carrerasLoading}
+            gestionesLoading={gestionesLoading}
+            carrerasError={carrerasError}
+            gestionesError={gestionesError}
+          />
+        );
+      }
+      return null;
+    },
+    [
+      cargarGestiones,
+      carreras,
+      gestiones,
+      carrerasLoading,
+      gestionesLoading,
+      carrerasError,
+      gestionesError,
+    ]
+  );
+
   // Acciones del header
   const headerActions = useMemo(() => (
     <Button
@@ -654,6 +701,7 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
         onValidateBeforeNext={onValidateBeforeNext}
         onBeforeNextStep={onBeforeNextStep}
         onBeforePrevStep={onBeforePrevStep}
+        renderSectionContent={renderSectionContent}
         carreras={carreras}
         gestiones={gestiones}
         carrerasLoading={carrerasLoading}

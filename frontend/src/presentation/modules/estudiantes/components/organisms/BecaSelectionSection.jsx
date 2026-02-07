@@ -38,7 +38,7 @@ const BecaSelectionSection = ({
     >
       {becasDescuentosData.error && (
         <Alert
-          message="Error al cargar becas y descuentos"
+          title="Error al cargar becas y descuentos"
           description={becasDescuentosData.error}
           type="error"
           showIcon

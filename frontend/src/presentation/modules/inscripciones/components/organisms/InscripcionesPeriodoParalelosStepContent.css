@@ -1,0 +1,78 @@
+/* ============================================================================
+   InscripcionesPeriodoParalelosStepContent - Paralelos por periodo en columnas
+   ============================================================================ */
+
+.step2-periodo-paralelos-section .step2-paralelos-columns-title {
+  margin-top: 20px;
+  margin-bottom: 12px;
+  font-size: 1rem;
+  color: rgba(0, 0, 0, 0.65);
+}
+
+.step2-paralelos-columns {
+  margin-top: 0;
+}
+
+/* Columnas más compactas cuando hay 3 periodos */
+.step2-paralelos-columns--three .step2-paralelos-column-col {
+  max-width: 30.333%;
+}
+
+.step2-paralelos-columns--three .step2-paralelos-column {
+  padding: 8px 6px;
+  min-height: 100px;
+}
+
+.step2-paralelos-columns--three .step2-paralelos-column__header {
+  font-size: 0.85rem;
+  margin-bottom: 8px;
+  padding-bottom: 4px;
+}
+
+.step2-paralelos-columns--three .step2-paralelos-cards .data-cards__card {
+  margin-bottom: 6px;
+  padding: 8px 10px;
+}
+
+.step2-paralelos-column-col {
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+.step2-paralelos-column {
+  min-height: 120px;
+  padding: 12px 8px;
+}
+
+/* Divisor vertical entre columnas (todas menos la primera) */
+.step2-paralelos-column--with-divider {
+  border-left: 1px solid rgba(0, 0, 0, 0.12);
+  padding-left: 16px;
+  margin-left: 0;
+}
+
+.step2-paralelos-column__header {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: rgba(0, 0, 0, 0.85);
+  margin-bottom: 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.step2-paralelos-empty-hint {
+  margin-top: 16px;
+  padding: 12px 16px;
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 8px;
+  color: rgba(0, 0, 0, 0.45);
+  font-size: 0.9rem;
+}
+
+.step2-periodo-paralelos-section .step2-paralelos-cards {
+  min-height: 80px;
+}
+
+.step2-periodo-paralelos-section .step2-paralelos-cards .data-cards__card {
+  margin-bottom: 8px;
+}

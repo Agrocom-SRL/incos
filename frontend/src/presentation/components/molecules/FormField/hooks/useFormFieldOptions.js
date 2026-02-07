@@ -50,8 +50,8 @@ export const useFormFieldOptions = ({
 
   // Resolver y filtrar opciones
   const selectOptions = useMemo(() => {
-    // Solo procesar para select y radio
-    if (fieldType !== 'select' && fieldType !== 'radio') {
+    // Procesar para select, radio y checkboxGroup (todos usan opciones value/label)
+    if (fieldType !== 'select' && fieldType !== 'radio' && fieldType !== 'checkboxGroup') {
       return [];
     }
 

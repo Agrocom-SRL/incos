@@ -18,6 +18,7 @@ export { default as FieldSelect } from './FieldSelect';
 export { default as FieldDatePicker } from './FieldDatePicker';
 export { default as FieldSwitch } from './FieldSwitch';
 export { default as FieldCheckbox } from './FieldCheckbox';
+export { default as FieldCheckboxGroup } from './FieldCheckboxGroup';
 export { default as FieldTextarea } from './FieldTextarea';
 export { default as FieldRadio } from './FieldRadio';
 export { default as Badge } from './Badge';

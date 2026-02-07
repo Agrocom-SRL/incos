@@ -241,3 +241,29 @@
 .step2-periodo-radio .ant-radio-button-wrapper {
   border-radius: 8px;
 }
+
+/* ---- Periodo como checkbox group (multi-select, estilo botón) ---- */
+.step2-periodo-checkbox.field-checkbox-group--button .ant-checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.step2-periodo-checkbox.field-checkbox-group--button .ant-checkbox-wrapper {
+  margin-inline-start: 0;
+  padding: 4px 12px;
+  border: 1px solid #d9d9d9;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.step2-periodo-checkbox.field-checkbox-group--button .ant-checkbox-wrapper:hover {
+  border-color: var(--ant-color-primary-hover, #4096ff);
+  color: var(--ant-color-primary, #1677ff);
+}
+
+.step2-periodo-checkbox.field-checkbox-group--button .ant-checkbox-wrapper.ant-checkbox-wrapper-checked {
+  border-color: var(--ant-color-primary, #1677ff);
+  background-color: var(--ant-color-primary-bg, #e6f4ff);
+  color: var(--ant-color-primary, #1677ff);
+}

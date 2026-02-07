@@ -130,7 +130,7 @@ const PagosDetail = () => {
         }
       >
         <Alert
-          message="Error al cargar el pago"
+          title="Error al cargar el pago"
           description={error}
           type="error"
           showIcon

@@ -1,12 +1,13 @@
 /**
  * inscripcionNuevaWizardSteps - Configuración de los 4 pasos del wizard de inscripción
  *
- * Orden según flujo y schema (estudiantes_datos_academicos, carreras, periodos, paralelos, horarios):
+ * Orden según flujo de INSCRIPCIÓN (turno + materias; horario es solo visualización):
  * - Paso 0: Buscar estudiante
- * - Paso 1: Seleccionar carrera (gestión: nuevo = vigente, antiguo = datos académicos)
- * - Paso 2: Periodo y paralelos (materias para armar horario)
- * - Paso 3: Horario de clases
+ * - Paso 1: Seleccionar carrera
+ * - Paso 2: Periodo y materias (elegir periodo(s) y qué materias cursar; paralelos por periodo)
+ * - Paso 3: Paralelo y horario (elegir turno/paralelo, ver resumen de horario)
  *
+ * La matriculación (horarios concretos, aulas, cupos) es concepto separado.
  * Un archivo por paso: step0, step1, step2, step3.
  */
 
@@ -28,14 +29,14 @@ const STEP1_HEADER = {
 };
 
 const STEP2_HEADER = {
-  title: 'Periodo y Paralelos',
-  formTitle: 'Periodo y Paralelos',
+  title: 'Periodo y materias',
+  formTitle: 'Periodo y materias',
   sections: ['periodoYParalelos'],
 };
 
 const STEP3_HEADER = {
-  title: 'Horario de Clases',
-  formTitle: 'Configurar Horario',
+  title: 'Paralelo y horario',
+  formTitle: 'Paralelo y horario',
   sections: ['horario'],
 };
 

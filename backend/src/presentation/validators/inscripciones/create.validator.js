@@ -1,33 +1,20 @@
-import { body } from 'express-validator';
-
 /**
  * Validador para creación de inscripciones (POST /api/v1/inscripciones)
- * 
+ *
+ * Modos:
+ * - Con parallel_id: inscribe en todas las materias del paralelo (estudiantes nuevos).
+ * - Con teacher_assignment_ids: inscribe solo en las materias indicadas (estudiantes antiguos).
+ *
  * Valida la estructura de datos que viene del frontend:
- * - studentId: ID del estudiante (requerido)
- * - parallelId: ID del paralelo (requerido)
- * - enrollmentType: Tipo de inscripción (opcional, default: CONTINUIDAD)
- * - enrollmentDate: Fecha de inscripción (opcional)
- * - observations: Observaciones (opcional)
- * 
- * NOTA: Este validator valida la estructura del frontend.
- * El Use Case recuperará todos los datos necesarios (datos académicos, gestión, plan, asignaciones docentes)
- * basándose en estos IDs y creará los registros en las tablas correspondientes.
- * 
- * Ubicación: presentation/validators/inscripciones (validators específicos del módulo)
- * 
- * Principios SOLID:
- * - Single Responsibility: Solo valida estructura y tipos de datos del request
- * - La lógica de negocio (validaciones complejas) está en el use case
- * 
- * @example
- * import { createEnrollmentValidator } from '../validators/inscripciones/index.js';
- * router.post('/', createEnrollmentValidator, validateRequest, controller);
+ * - student_id: ID del estudiante (requerido)
+ * - parallel_id: ID del paralelo (requerido si no se envía teacher_assignment_ids)
+ * - teacher_assignment_ids: array de IDs de asignaciones docentes (opcional; si se envía, parallel_id es opcional)
+ * - enrollment_type, enrollment_date, observations: opcionales
  */
+import expressValidator from 'express-validator';
+const { body } = expressValidator;
+
 export const createEnrollmentValidator = [
-  // ============================================
-  // CAMPOS REQUERIDOS
-  // ============================================
   body('student_id')
     .notEmpty()
     .withMessage('El ID del estudiante es requerido')
@@ -36,11 +23,33 @@ export const createEnrollmentValidator = [
     .toInt(),
 
   body('parallel_id')
-    .notEmpty()
-    .withMessage('El ID del paralelo es requerido')
+    .optional({ nullable: true, values: 'null' })
     .isInt({ min: 1 })
     .withMessage('El ID del paralelo debe ser un número entero mayor a 0')
     .toInt(),
+
+  body('teacher_assignment_ids')
+    .optional({ nullable: true })
+    .isArray()
+    .withMessage('teacher_assignment_ids debe ser un arreglo')
+    .custom((value) => {
+      if (value == null) return true;
+      if (!Array.isArray(value)) return false;
+      return value.every((id) => Number.isInteger(Number(id)) && Number(id) >= 1);
+    })
+    .withMessage('Cada elemento de teacher_assignment_ids debe ser un entero mayor a 0'),
+
+  body('parallel_id')
+    .custom((parallelId, { req }) => {
+      const teacherAssignmentIds = req.body?.teacher_assignment_ids ?? req.body?.teacherAssignmentIds;
+      const hasParallel = parallelId != null && parallelId !== '' && Number(parallelId) >= 1;
+      const hasMaterias =
+        Array.isArray(teacherAssignmentIds) && teacherAssignmentIds.length > 0;
+      if (hasParallel || hasMaterias) return true;
+      throw new Error(
+        'Debe enviar parallel_id o teacher_assignment_ids (al menos una materia)'
+      );
+    }),
 
   // ============================================
   // CAMPOS OPCIONALES
