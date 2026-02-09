@@ -23,7 +23,6 @@
 /* SelectableDataList: fila con checkbox + ListItem */
 .selectable-data-list__row {
   width: 100%;
-  margin-bottom: var(--spacing-md);
 }
 
 .selectable-data-list__row .ant-checkbox-wrapper {

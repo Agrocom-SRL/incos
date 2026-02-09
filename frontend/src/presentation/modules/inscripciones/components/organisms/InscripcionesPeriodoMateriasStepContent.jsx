@@ -14,7 +14,6 @@ import { Card } from '@atoms';
 import { FormField } from '@molecules';
 import { getFieldColumns } from '@molecules/FormSection/utils/fieldColumns';
 import MateriasList from './MateriasList';
-import './InscripcionesPeriodoMateriasStepContent.css';
 
 function buildMateriasGroups(materiasByPeriod, selectedPeriodIds, periodos) {
   if (!selectedPeriodIds?.length) return [];
@@ -69,7 +68,7 @@ const InscripcionesPeriodoMateriasStepContent = ({
     >
       <Row gutter={[24, 16]}>
         {section?.fields
-          ?.filter((f) => f.name !== 'listaParalelos' && f.name !== 'infoPeriodoMaterias' && f.type !== 'cards')
+          ?.filter((f) => f.name !== 'listaParalelos' && f.type !== 'cards')
           .map((field) => (
             <Col key={field.name} {...getFieldColumns(field.span ?? 12)}>
               <FormField field={field} form={form} resolveOptions={resolveOptions} />
@@ -79,19 +78,6 @@ const InscripcionesPeriodoMateriasStepContent = ({
 
       {selectedPeriodIds.length > 0 && (
         <>
-          {/* Alerta de información como componente aparte (fuera de infoPeriodoMaterias) */}
-          <Alert
-            type="info"
-            showIcon
-            message="Información"
-            description={
-              isNuevo
-                ? 'Estudiante nuevo: todas las materias del primer año están seleccionadas. En el siguiente paso elija el paralelo (turno).'
-                : 'Estudiante antiguo: marque uno o más periodos y las materias que cursará. En el siguiente paso elija el paralelo por periodo.'
-            }
-            className="step2-periodo-materias-section__info-alert"
-          />
-
           <Typography.Title level={5} className="step2-materias-list-title">
             {isNuevo ? 'Materias del primer año' : 'Materias por periodo'}
           </Typography.Title>

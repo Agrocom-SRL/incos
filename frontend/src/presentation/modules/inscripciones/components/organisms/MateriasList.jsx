@@ -22,7 +22,7 @@ function getMateriaAvatar(materia) {
         width: 32,
         height: 32,
         borderRadius: '50%',
-        background: 'var(--color-primary)',
+        background: 'var(--color-success)',
         color: '#fff',
         fontSize: 14,
         fontWeight: 600,

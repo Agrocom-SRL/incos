@@ -143,7 +143,7 @@ const InscripcionesNueva = () => {
           />
         );
       }
-      if (stepIndex === 2 && sectionKey === 'periodoYParalelos') {
+      if (stepIndex === 2 && sectionKey === 'periodoYMaterias') {
         return (
           <InscripcionesPeriodoMateriasStepContent
             key={sectionKey}

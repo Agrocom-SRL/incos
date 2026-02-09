@@ -31,7 +31,7 @@
  * 4. Cuando el usuario selecciona un paralelo, se ejecuta onSelectParalelo que guarda el ID
  * 5. Solo muestra paralelos si hay una carrera seleccionada
  * 
- * @param {Object} field - Configuración del campo (desde step2PeriodoYParalelos.jsx)
+ * @param {Object} field - Configuración del campo (desde step2PeriodoYMaterias.jsx)
  * @param {Object} context - Contexto con callbacks y datos disponibles
  * @param {Object} context.paralelosData - Objeto con paralelos, loading, error (desde useInscripcionNuevaParalelos)
  * @param {Function} context.onSelectParalelo - Callback para manejar la selección de un paralelo
@@ -81,8 +81,8 @@ export const enrichParaleloListField = (field, context = {}) => {
             onSelect: handleSelect,
             selectedItem: paralelosData.selectedParalelo || null,
             hidden: !canShowParalelos,
-            // renderItem ya está definido en step2PeriodoYParalelos.jsx
-            // orientation ya está definido en step2PeriodoYParalelos.jsx
+            // renderItem ya está definido en step2PeriodoYMaterias.jsx
+            // orientation ya está definido en step2PeriodoYMaterias.jsx
         };
     }
     

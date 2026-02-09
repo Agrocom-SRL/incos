@@ -11,7 +11,6 @@ import { Row, Col, Typography } from 'antd';
 import { Card } from '@atoms';
 import { FormField, DataCards } from '@molecules';
 import { getFieldColumns } from '@molecules/FormSection/utils/fieldColumns';
-import './InscripcionesPeriodoParalelosStepContent.css';
 
 const { Title } = Typography;
 

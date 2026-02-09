@@ -13,7 +13,7 @@
 
 import { getStep0Fields } from './steps/step0BuscarEstudiante.jsx';
 import { getStep1CarreraFields } from './steps/step1SeleccionarCarrera.js';
-import { getStep2PeriodoYParalelosFields } from './steps/step2PeriodoYParalelos.jsx';
+import { getStep2PeriodoYMateriasFields } from './steps/step2PeriodoYMaterias.jsx';
 import { getStep3Fields } from './steps/step3HorarioClases';
 
 const STEP0_HEADER = {
@@ -31,7 +31,7 @@ const STEP1_HEADER = {
 const STEP2_HEADER = {
   title: 'Periodo y materias',
   formTitle: 'Periodo y materias',
-  sections: ['periodoYParalelos'],
+  sections: ['periodoYMaterias'],
 };
 
 const STEP3_HEADER = {
@@ -44,6 +44,6 @@ const STEP3_HEADER = {
 export const createInscripcionNuevaWizardSteps = () => [
   { ...STEP0_HEADER, config: getStep0Fields() },
   { ...STEP1_HEADER, config: getStep1CarreraFields() },
-  { ...STEP2_HEADER, config: getStep2PeriodoYParalelosFields() },
+  { ...STEP2_HEADER, config: getStep2PeriodoYMateriasFields() },
   { ...STEP3_HEADER, config: getStep3Fields() },
 ];
