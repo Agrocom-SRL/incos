@@ -82,30 +82,38 @@ const WizardForm = ({
   }, [allFormValues, onFormValuesChange]);
 
   // stepNumber 1-based para la página (1 = primer paso, 2 = segundo, etc.)
+  // IMPORTANTE: Calcular stepNumber dentro del callback para usar el currentStep actual
   const stepNumber = currentStep + 1;
   // Ocultar botón Guardar en pasos indicados por número 1-based (ej. [1] = primer paso)
   const showSaveButtonEffective = showSaveButton && !(hideSaveOnSteps || []).includes(stepNumber);
 
   // Siguiente: validar paso actual antes de avanzar (si onValidateBeforeNext está definido)
+  // IMPORTANTE: Usar currentStep directamente para calcular stepNumber dentro del callback
+  // para evitar que se ejecute la validación del paso siguiente cuando currentStep cambia
   const handleNext = React.useCallback(() => {
+    // Calcular stepNumber usando el currentStep actual (antes de avanzar)
+    const currentStepNumber = currentStep + 1;
+    
     if (onValidateBeforeNext) {
-      onValidateBeforeNext(stepNumber, form)
+      onValidateBeforeNext(currentStepNumber, form)
         .then(() => {
-          onBeforeNextStep?.(stepNumber, form);
+          onBeforeNextStep?.(currentStepNumber, form);
           next();
         })
         .catch(() => { /* errores de validación ya mostrados por el formulario */ });
     } else {
-      onBeforeNextStep?.(stepNumber, form);
+      onBeforeNextStep?.(currentStepNumber, form);
       next();
     }
-  }, [stepNumber, form, next, onValidateBeforeNext, onBeforeNextStep]);
+  }, [currentStep, form, next, onValidateBeforeNext, onBeforeNextStep]);
 
   // Anterior: notificar al padre con stepNumber 1-based (ej. al volver desde paso 2, stepNumber es 2)
+  // IMPORTANTE: Usar currentStep directamente para calcular stepNumber dentro del callback
   const handlePrev = React.useCallback(() => {
-    onBeforePrevStep?.(stepNumber, form);
+    const currentStepNumber = currentStep + 1;
+    onBeforePrevStep?.(currentStepNumber, form);
     prev();
-  }, [stepNumber, form, prev, onBeforePrevStep]);
+  }, [currentStep, form, prev, onBeforePrevStep]);
 
   // Si no hay step configurado, no renderizar nada
   if (!currentStepConfig) {

@@ -156,7 +156,10 @@ const renderCheckboxGroup = (field, disabled, readOnly, selectOptions, form) => 
     if (field.onChange) field.onChange(value);
   };
 
-  const rawValue = form?.getFieldValue?.(field.name) ?? field.value ?? field.defaultValue;
+  // Priorizar field.value (estado externo, ej. selectedPeriodIds) sobre el form para evitar
+  // desincronización cuando el form actualiza de forma asíncrona (al marcar 2, 3 y luego 1
+  // el form podía devolver valor obsoleto y el grupo quedaba solo con [1]).
+  const rawValue = field.value ?? form?.getFieldValue?.(field.name) ?? field.defaultValue;
   const safeValue = Array.isArray(rawValue)
     ? rawValue
     : rawValue != null

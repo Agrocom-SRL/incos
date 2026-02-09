@@ -31,7 +31,6 @@ import {
     useInscripcionNuevaCarreras,
     useInscripcionNuevaPeriodos,
     useInscripcionNuevaParalelos,
-    useInscripcionNuevaParaleloHorarios,
     useInscripcionNuevaMaterias,
     useInscripcionNuevaMateriasByPeriods,
 } from '@application-inscripciones/hooks';
@@ -150,11 +149,6 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
     );
     const [selectedMateriaIdsByPeriod, setSelectedMateriaIdsByPeriod] = useState({});
 
-    // Hook para cargar horarios del paralelo seleccionado
-    const horariosData = useInscripcionNuevaParaleloHorarios({
-        parallelId: paralelosData.selectedParalelo?.id
-    });
-
     // 2. Callbacks memoizados para los enrichers
     const handleSearchStudent = useCallback((value) => {
         if (value?.trim() && studentSearch.searchStudent) {
@@ -257,11 +251,6 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
         },
         selectedMateriaIdsByPeriod,
         onToggleMaterias: handleToggleMaterias,
-        horariosData: {
-            schedule: horariosData.schedule,
-            loading: horariosData.loading,
-            error: horariosData.error,
-        },
     }), [
         handleSearchStudent,
         handleSelectStudent,
@@ -299,9 +288,6 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
         materiasByPeriodsData.error,
         selectedMateriaIdsByPeriod,
         handleToggleMaterias,
-        horariosData.schedule,
-        horariosData.loading,
-        horariosData.error,
     ]);
 
     // 4. Enriquecer wizardSteps (step 0: buscador o datos del estudiante si viene pre-seleccionado)
@@ -355,6 +341,7 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
             loading: paralelosData.loading,
             error: paralelosData.error,
             selectedParalelo: paralelosData.selectedParalelo,
+            selectedParalelosByPeriod: paralelosData.selectedParalelosByPeriod ?? {},
         },
         onSelectParalelo: handleSelectParalelo,
 
@@ -374,13 +361,6 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
         },
         selectedMateriaIdsByPeriod,
         onToggleMaterias: handleToggleMaterias,
-
-        // Horarios
-        horariosData: {
-            schedule: horariosData.schedule,
-            loading: horariosData.loading,
-            error: horariosData.error,
-        },
     }), [
         pageData,
         enrichedWizardSteps,
@@ -395,6 +375,5 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
         materiasByPeriodsData,
         selectedMateriaIdsByPeriod,
         handleToggleMaterias,
-        horariosData,
     ]);
 };

@@ -1,20 +1,31 @@
 /**
  * Validador para creación de inscripciones (POST /api/v1/inscripciones)
  *
- * Modos:
+ * Modos de inscripción:
  * - Con parallel_id: inscribe en todas las materias del paralelo (estudiantes nuevos).
- * - Con teacher_assignment_ids: inscribe solo en las materias indicadas (estudiantes antiguos).
+ * - Con teacher_assignment_ids: inscribe solo en las asignaciones docentes indicadas
+ *   (permite múltiples paralelos/periodos en una sola inscripción).
  *
- * Valida la estructura de datos que viene del frontend:
+ * Nota: La inscripción NO incluye horarios ni aulas; esos datos se asignan en el proceso de
+ * matriculación posterior, antes del inicio de clases.
+ *
+ * Campos validados (sincronizados con el frontend):
  * - student_id: ID del estudiante (requerido)
- * - parallel_id: ID del paralelo (requerido si no se envía teacher_assignment_ids)
- * - teacher_assignment_ids: array de IDs de asignaciones docentes (opcional; si se envía, parallel_id es opcional)
- * - enrollment_type, enrollment_date, observations: opcionales
+ * - parallel_id: ID del paralelo (opcional si se envía teacher_assignment_ids)
+ * - teacher_assignment_ids: array de IDs de asignaciones docentes (opcional)
+ * - enrollment_type: Tipo de inscripción (opcional)
+ * - observations: Observaciones (opcional, máximo 1000 caracteres)
+ *
+ * NOTA: enrollment_date NO se valida aquí porque el backend lo genera automáticamente
+ * en CreateEnrollmentUseCase usando la fecha actual.
  */
 import expressValidator from 'express-validator';
 const { body } = expressValidator;
 
 export const createEnrollmentValidator = [
+  // ============================================
+  // CAMPOS REQUERIDOS
+  // ============================================
   body('student_id')
     .notEmpty()
     .withMessage('El ID del estudiante es requerido')
@@ -22,6 +33,9 @@ export const createEnrollmentValidator = [
     .withMessage('El ID del estudiante debe ser un número entero mayor a 0')
     .toInt(),
 
+  // ============================================
+  // CAMPOS CONDICIONALES (al menos uno requerido)
+  // ============================================
   body('parallel_id')
     .optional({ nullable: true, values: 'null' })
     .isInt({ min: 1 })
@@ -35,17 +49,23 @@ export const createEnrollmentValidator = [
     .custom((value) => {
       if (value == null) return true;
       if (!Array.isArray(value)) return false;
+      if (value.length === 0) return false; // Si se envía, debe tener al menos un elemento
       return value.every((id) => Number.isInteger(Number(id)) && Number(id) >= 1);
     })
-    .withMessage('Cada elemento de teacher_assignment_ids debe ser un entero mayor a 0'),
+    .withMessage('teacher_assignment_ids debe ser un arreglo con al menos un ID válido (entero mayor a 0)'),
 
-  body('parallel_id')
-    .custom((parallelId, { req }) => {
+  // Validación condicional: debe enviar parallel_id O teacher_assignment_ids (al menos uno)
+  // Usamos un campo virtual para evitar duplicar la validación de parallel_id
+  body()
+    .custom((_, { req }) => {
+      const parallelId = req.body?.parallel_id;
       const teacherAssignmentIds = req.body?.teacher_assignment_ids ?? req.body?.teacherAssignmentIds;
+      
       const hasParallel = parallelId != null && parallelId !== '' && Number(parallelId) >= 1;
-      const hasMaterias =
-        Array.isArray(teacherAssignmentIds) && teacherAssignmentIds.length > 0;
+      const hasMaterias = Array.isArray(teacherAssignmentIds) && teacherAssignmentIds.length > 0;
+      
       if (hasParallel || hasMaterias) return true;
+      
       throw new Error(
         'Debe enviar parallel_id o teacher_assignment_ids (al menos una materia)'
       );
@@ -59,6 +79,9 @@ export const createEnrollmentValidator = [
     .isIn(['NUEVO', 'REINGRESO', 'CONTINUIDAD', 'TRASPASO_ENTRADA', 'TRANSITABILIDAD_ENTRADA'])
     .withMessage('El tipo de inscripción debe ser uno de: NUEVO, REINGRESO, CONTINUIDAD, TRASPASO_ENTRADA, TRANSITABILIDAD_ENTRADA'),
 
+  // NOTA: enrollment_date NO se valida aquí porque el backend lo genera automáticamente
+  // en CreateEnrollmentUseCase._createEnrollment() usando la fecha actual
+
   body('observations')
     .optional({ nullable: true, checkFalsy: true })
     .customSanitizer((value) => {
@@ -68,7 +91,7 @@ export const createEnrollmentValidator = [
       }
       // Si es una cadena, hacer trim
       if (typeof value === 'string') {
-        return value.trim();
+        return value.trim() || null; // Si después del trim queda vacío, convertir a null
       }
       return value;
     })

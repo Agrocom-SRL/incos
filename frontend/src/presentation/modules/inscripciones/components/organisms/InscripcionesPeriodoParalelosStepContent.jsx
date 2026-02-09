@@ -1,9 +1,9 @@
 /**
- * InscripcionesPeriodoParalelosStepContent - Contenido del paso "Periodo y Paralelos" (step 2)
+ * InscripcionesPeriodoParalelosStepContent - Contenido del paso "Paralelos por periodo" (step 3)
  *
- * Muestra los checkboxes de periodos y, por cada periodo seleccionado, una columna
- * con los paralelos de ese periodo, separadas por un divisor vertical.
- * La fila de paralelos ocupa siempre el ancho completo (span 24).
+ * Muestra por cada periodo seleccionado (en step 2) una columna con los paralelos
+ * de ese periodo, con datos estadísticos y turnos. La selección (carrera, periodos, materias)
+ * se recupera del paso anterior.
  */
 
 import React from 'react';
@@ -15,6 +15,53 @@ import { getFieldColumns } from '@molecules/FormSection/utils/fieldColumns';
 const { Title } = Typography;
 
 const ROW_SPAN = 24;
+
+/** Estadísticas del paralelo (backend puede enviar estadisticas o campos planos) */
+function getParaleloStats(paralelo) {
+  const est = paralelo?.estadisticas ?? {};
+  return {
+    total: est.totalInscritos ?? paralelo?.totalInscritos ?? 0,
+    hombres: est.totalHombres ?? paralelo?.totalHombres ?? 0,
+    mujeres: est.totalMujeres ?? paralelo?.totalMujeres ?? 0,
+  };
+}
+
+/** Render por defecto de la tarjeta de paralelo: título, turno, estadísticas */
+function defaultRenderParaleloCard(paralelo) {
+  if (!paralelo) return null;
+  const nombre = paralelo.nombre ?? paralelo.codigo ?? `Paralelo ${paralelo.id}`;
+  const turno = paralelo.turno ?? '';
+  const desc = paralelo.descripcion ?? '';
+  const stats = getParaleloStats(paralelo);
+  return (
+    <div className="step2-paralelo-card">
+      <div className="step2-paralelo-card__header">
+        <h4 className="step2-paralelo-card__title">{nombre}</h4>
+        <div className="step2-paralelo-card__meta">
+          {turno && (
+            <span className="step2-paralelo-card__chip step2-paralelo-card__chip--turno">{turno}</span>
+          )}
+        </div>
+      </div>
+      {desc && <p className="step2-paralelo-card__desc">{desc}</p>}
+      <hr className="step2-paralelo-card__divider" />
+      <div className="step2-paralelo-card__stats">
+        <div className="step2-paralelo-card__stat step2-paralelo-card__stat--total">
+          <span className="step2-paralelo-card__stat-label">Total</span>
+          <span className="step2-paralelo-card__stat-value">{stats.total}</span>
+        </div>
+        <div className="step2-paralelo-card__stat step2-paralelo-card__stat--hombres">
+          <span className="step2-paralelo-card__stat-label">Hombres</span>
+          <span className="step2-paralelo-card__stat-value">{stats.hombres}</span>
+        </div>
+        <div className="step2-paralelo-card__stat step2-paralelo-card__stat--mujeres">
+          <span className="step2-paralelo-card__stat-label">Mujeres</span>
+          <span className="step2-paralelo-card__stat-value">{stats.mujeres}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 /**
  * Agrupa paralelos por periodoId respetando el orden de selectedPeriodIds.
@@ -57,7 +104,7 @@ const InscripcionesPeriodoParalelosStepContent = ({
   const carreras = carrerasData?.carreras ?? [];
   const loading = paralelosData?.loading ?? false;
   const listaParalelosField = section?.fields?.find((f) => f.name === 'listaParalelos');
-  const renderItem = listaParalelosField?.renderItem;
+  const renderItem = listaParalelosField?.renderItem ?? defaultRenderParaleloCard;
   const emptyMessage = listaParalelosField?.emptyMessage ?? 'No hay paralelos en este periodo.';
   const selectedParalelosByPeriod = paralelosData?.selectedParalelosByPeriod ?? {};
 
@@ -126,7 +173,7 @@ const InscripcionesPeriodoParalelosStepContent = ({
 
       {selectedPeriodIds.length === 0 && (
         <div className="step2-paralelos-empty-hint">
-          Marque uno o más periodos arriba para ver los paralelos por columna.
+          Seleccione carrera y uno o más periodos en los pasos anteriores para ver los paralelos por columna.
         </div>
       )}
     </Card>
