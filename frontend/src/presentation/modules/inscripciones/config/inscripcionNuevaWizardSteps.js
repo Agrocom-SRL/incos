@@ -1,20 +1,20 @@
 /**
  * inscripcionNuevaWizardSteps - Configuración de los 4 pasos del wizard de inscripción
  *
- * Orden según flujo de INSCRIPCIÓN (turno + materias; horario es solo visualización):
- * - Paso 0: Buscar estudiante
- * - Paso 1: Seleccionar carrera
- * - Paso 2: Periodo y materias (elegir periodo(s) y qué materias cursar; paralelos por periodo)
- * - Paso 3: Paralelo y horario (elegir turno/paralelo, ver resumen de horario)
+ * Orden según flujo de INSCRIPCIÓN (numeración visual):
+ * - Paso 1: Buscar estudiante (stepIndex 0)
+ * - Paso 2: Seleccionar carrera (stepIndex 1)
+ * - Paso 3: Periodo y materias (stepIndex 2) - elegir periodo(s) y qué materias cursar
+ * - Paso 4: Paralelo (stepIndex 3) - resumen de inscripción y elegir paralelo por periodo
  *
- * La matriculación (horarios concretos, aulas, cupos) es concepto separado.
- * Un archivo por paso: step0, step1, step2, step3.
+ * Un archivo por paso: step1, step2, step3, step4.
+ * Nota: Los nombres de archivos coinciden con la numeración visual (1-4), pero stepIndex es 0-based (0-3).
  */
 
-import { getStep0Fields } from './steps/step0BuscarEstudiante.jsx';
-import { getStep1CarreraFields } from './steps/step1SeleccionarCarrera.js';
-import { getStep2PeriodoYMateriasFields } from './steps/step2PeriodoYMaterias.jsx';
-import { getStep3Fields } from './steps/step3HorarioClases';
+import { getStep1Fields } from './steps/step1BuscarEstudiante.jsx';
+import { getStep2Fields } from './steps/step2SeleccionarCarrera.js';
+import { getStep3Fields } from './steps/step3PeriodoYMaterias.jsx';
+import { getStep4Fields } from './steps/step4Paralelo.js';
 
 const STEP0_HEADER = {
   title: 'Buscar Estudiante',
@@ -35,15 +35,15 @@ const STEP2_HEADER = {
 };
 
 const STEP3_HEADER = {
-  title: 'Paralelo y horario',
-  formTitle: 'Paralelo y horario',
-  sections: ['horario'],
+  title: 'Paralelo',
+  formTitle: 'Paralelo',
+  sections: ['resumen', 'paralelos'],
 };
 
 /** Crea la configuración de los 4 pasos para WizardForm */
 export const createInscripcionNuevaWizardSteps = () => [
-  { ...STEP0_HEADER, config: getStep0Fields() },
-  { ...STEP1_HEADER, config: getStep1CarreraFields() },
-  { ...STEP2_HEADER, config: getStep2PeriodoYMateriasFields() },
-  { ...STEP3_HEADER, config: getStep3Fields() },
+  { ...STEP0_HEADER, config: getStep1Fields() }, // Paso visual 1 (stepIndex 0)
+  { ...STEP1_HEADER, config: getStep2Fields() }, // Paso visual 2 (stepIndex 1)
+  { ...STEP2_HEADER, config: getStep3Fields() }, // Paso visual 3 (stepIndex 2)
+  { ...STEP3_HEADER, config: getStep4Fields() }, // Paso visual 4 (stepIndex 3)
 ];

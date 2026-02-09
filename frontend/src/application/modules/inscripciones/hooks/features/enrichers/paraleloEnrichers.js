@@ -43,7 +43,9 @@ export const enrichParaleloListField = (field, context = {}) => {
 
     if (field.name === 'listaParalelos' && (field.type === 'list' || field.type === 'cards') && paralelosData) {
         const hasCarrera = (carrerasData?.selectedCarrera?.id ?? carreraIdForParalelos) != null;
-        const hasPeriodo = periodosData?.selectedPeriod?.id != null;
+        const hasPeriodo =
+            periodosData?.selectedPeriod?.id != null ||
+            (Array.isArray(periodosData?.selectedPeriodIds) && periodosData.selectedPeriodIds.length > 0);
         const canShowParalelos = hasCarrera && hasPeriodo;
         
         // Enriquecer paralelos con el nombre de la carrera
@@ -81,6 +83,8 @@ export const enrichParaleloListField = (field, context = {}) => {
             onSelect: handleSelect,
             selectedItem: paralelosData.selectedParalelo || null,
             hidden: !canShowParalelos,
+            // Si el campo está oculto, asegurarse de que no sea requerido para evitar validación
+            required: canShowParalelos ? (field.required ?? false) : false,
             // renderItem ya está definido en step2PeriodoYMaterias.jsx
             // orientation ya está definido en step2PeriodoYMaterias.jsx
         };

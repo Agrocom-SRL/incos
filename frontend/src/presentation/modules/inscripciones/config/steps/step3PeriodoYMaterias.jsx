@@ -1,10 +1,10 @@
 /**
- * step2PeriodoYMaterias - Paso 2: Periodo y materias
+ * step3PeriodoYMaterias - Paso 3 del wizard de inscripción (Paso visual 3)
  *
  * La carrera ya fue seleccionada. Aquí se elige el periodo y las materias:
  * - NUEVO: solo primer año, todas las materias pre-seleccionadas (solo lectura).
  * - ANTIGUO: uno o más periodos, marcar las materias que cursará.
- * En el paso 3 se elige el paralelo por periodo.
+ * En el paso 4 se elige el paralelo por periodo.
  */
 
 const PERIODO_MATERIAS_HEADER = {
@@ -35,7 +35,7 @@ const PERIODO_MATERIAS_FIELDS = [
   },
 ];
 
-export const getStep2PeriodoYMateriasFields = () => ({
+export const getStep3Fields = () => ({
   periodoYMaterias: {
     ...PERIODO_MATERIAS_HEADER,
     fields: PERIODO_MATERIAS_FIELDS,

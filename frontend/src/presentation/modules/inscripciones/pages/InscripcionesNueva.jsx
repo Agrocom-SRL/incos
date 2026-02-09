@@ -19,6 +19,7 @@
 
 import { useEffect, useMemo, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
+import { App } from 'antd';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { WizardForm } from '@organisms';
@@ -32,6 +33,9 @@ import { downloadFile } from '@application/utils/fileDownload';
 
 const InscripcionesNueva = () => {
   const location = useLocation();
+  // Obtener message del contexto de App de Ant Design (para evitar warnings)
+  const { message } = App.useApp();
+  
   // Obtener datos de edición del estado de navegación
   const editData = location.state?.mode === 'editar' ? location.state : null;
 
@@ -76,7 +80,7 @@ const InscripcionesNueva = () => {
     }
   }, [inscripcionResult]);
 
-  // Búsqueda de estudiantes, carreras, periodos, paralelos y materias (step 1 carrera, step 2 periodo/materias)
+  // Búsqueda de estudiantes, carreras, periodos, paralelos y materias (step 1 carrera, step 2 periodo/materias, step 3 paralelos)
   const {
     studentSearch,
     carrerasData,
@@ -88,11 +92,15 @@ const InscripcionesNueva = () => {
     onSelectParalelo,
   } = context;
 
-  // Pasos: 0=Buscar Estudiante, 1=Carrera, 2=Periodo y Paralelos, 3=Horario
+  // Pasos (stepIndex 0-based): 
+  // 0=Buscar Estudiante (Paso visual 1), 
+  // 1=Carrera (Paso visual 2), 
+  // 2=Periodo y materias (Paso visual 3), 
+  // 3=Paralelo (Paso visual 4)
   const initialStep = useMemo(() => {
-    if (editData) return 2; // Edición: ir a Periodo y Paralelos
-    if (studentSearch?.selectedStudent && !studentSearch?.loading) return 1; // Estudiante ya elegido: ir a Carrera
-    return 0;
+    if (editData) return 2; // Edición: ir a Periodo y materias (stepIndex 2, paso visual 3)
+    if (studentSearch?.selectedStudent && !studentSearch?.loading) return 1; // Estudiante ya elegido: ir a Carrera (stepIndex 1, paso visual 2)
+    return 0; // Buscar Estudiante (stepIndex 0, paso visual 1)
   }, [editData, studentSearch?.selectedStudent, studentSearch?.loading]);
 
   // Pre-cargar valores iniciales del formulario en modo edición
@@ -126,9 +134,131 @@ const InscripcionesNueva = () => {
     }
   }, [editData, form, carrerasData?.carreras]);
 
-  // Contenido custom: paso 1 Carrera, paso 2 Periodo y Paralelos (columnas por periodo)
+  // Validación antes de avanzar al siguiente paso
+  // IMPORTANTE: stepNumber es 1-based según la numeración visual del wizard:
+  // Paso 1: Estudiante a inscribir (no requiere validación, solo búsqueda)
+  // Paso 2: Seleccionar Carrera → stepNumber === 2
+  // Paso 3: Periodo y materias → stepNumber === 3
+  // Paso 4: Paralelo → stepNumber === 4
+  const handleValidateBeforeNext = useCallback((stepNumber, formInstance) => {
+    return new Promise((resolve, reject) => {
+      // Paso 2: Validar que hay carrera seleccionada
+      if (stepNumber === 2) {
+        const carreraId = formInstance?.getFieldValue('carrera') ?? carrerasData?.selectedCarrera?.id;
+        if (!carreraId) {
+          message.error('Por favor seleccione una carrera antes de continuar.');
+          reject(new Error('Carrera no seleccionada'));
+          return;
+        }
+        resolve();
+        return;
+      }
+
+      // Paso 3: Validar que hay periodos seleccionados y materias por periodo
+      // IMPORTANTE: NO validar paralelos aquí, eso es para el paso 4
+      if (stepNumber === 3) {
+        const selectedPeriodIds = periodosData?.selectedPeriodIds ?? [];
+        
+        // Validar periodos seleccionados
+        if (!selectedPeriodIds.length) {
+          message.error('Por favor seleccione al menos un periodo académico antes de continuar.');
+          reject(new Error('Periodos no seleccionados'));
+          return;
+        }
+
+        // Validar materias seleccionadas por periodo
+        const tipoAdmision = studentSearch?.selectedStudent?.tipoAdmision;
+        const isNuevo = tipoAdmision === 'NUEVO';
+        
+        // Para estudiantes nuevos, las materias se auto-seleccionan, solo validar periodos
+        // NO validar paralelos aquí - eso se hace en el paso 3
+        if (!isNuevo) {
+          const periodosSinMaterias = selectedPeriodIds.filter((periodId) => {
+            const materiasDelPeriodo = selectedMateriaIdsByPeriod?.[periodId] ?? [];
+            return materiasDelPeriodo.length === 0;
+          });
+
+          if (periodosSinMaterias.length > 0) {
+            const periodosNombres = periodosSinMaterias
+              .map((pid) => {
+                const periodo = periodosData?.periodos?.find((p) => p.id === pid);
+                return periodo?.nombre ?? `Periodo ${pid}`;
+              })
+              .join(', ');
+            message.error(`Por favor seleccione al menos una materia para: ${periodosNombres}`);
+            reject(new Error('Materias no seleccionadas'));
+            return;
+          }
+        }
+        
+        // Paso 3 validado correctamente - NO validar paralelos aquí
+        resolve();
+        return;
+      }
+
+      // Paso 4: Validar que hay paralelos seleccionados por periodo
+      // IMPORTANTE: Esta validación SOLO debe ejecutarse cuando stepNumber === 4
+      if (stepNumber === 4) {
+        const selectedPeriodIds = periodosData?.selectedPeriodIds ?? [];
+        const selectedParalelosByPeriod = paralelosData?.selectedParalelosByPeriod ?? {};
+        const paralelosLoading = paralelosData?.loading ?? false;
+        const paralelosAvailable = (paralelosData?.paralelos ?? []).length > 0;
+
+        if (!selectedPeriodIds.length) {
+          message.error('No hay periodos seleccionados. Por favor regrese al paso anterior.');
+          reject(new Error('Periodos no seleccionados'));
+          return;
+        }
+
+        // Si los paralelos aún se están cargando, esperar
+        if (paralelosLoading) {
+          message.warning('Cargando paralelos disponibles. Por favor espere...');
+          reject(new Error('Paralelos cargando'));
+          return;
+        }
+
+        // Si no hay paralelos disponibles, informar al usuario
+        if (!paralelosAvailable) {
+          message.error('No hay paralelos disponibles para los periodos seleccionados. Por favor regrese al paso anterior y seleccione otros periodos.');
+          reject(new Error('No hay paralelos disponibles'));
+          return;
+        }
+
+        // Validar que cada periodo tiene un paralelo seleccionado
+        const periodosSinParalelo = selectedPeriodIds.filter((periodId) => {
+          return !selectedParalelosByPeriod[periodId]?.id;
+        });
+
+        if (periodosSinParalelo.length > 0) {
+          const periodosNombres = periodosSinParalelo
+            .map((pid) => {
+              const periodo = periodosData?.periodos?.find((p) => p.id === pid);
+              return periodo?.nombre ?? `Periodo ${pid}`;
+            })
+            .join(', ');
+          message.error(`Por favor seleccione un paralelo para: ${periodosNombres}`);
+          reject(new Error('Paralelos no seleccionados'));
+          return;
+        }
+
+        resolve();
+        return;
+      }
+
+      // Otros pasos: permitir avanzar sin validación adicional
+      resolve();
+    });
+  }, [carrerasData?.selectedCarrera, periodosData, selectedMateriaIdsByPeriod, paralelosData?.selectedParalelosByPeriod, paralelosData?.loading, paralelosData?.paralelos, studentSearch?.selectedStudent?.tipoAdmision]);
+
+  // Contenido custom por paso
+  // IMPORTANTE: stepIndex es 0-based según la estructura del array de pasos:
+  // Paso visual 1 (Estudiante) → stepIndex = 0
+  // Paso visual 2 (Carrera) → stepIndex = 1
+  // Paso visual 3 (Periodo y materias) → stepIndex = 2
+  // Paso visual 4 (Paralelo) → stepIndex = 3
   const renderSectionContent = useCallback(
     (stepIndex, sectionKey, section, form) => {
+      // Paso visual 2: Seleccionar Carrera (stepIndex = 1)
       if (stepIndex === 1 && sectionKey === 'carrera') {
         return (
           <InscripcionesCarreraStepContent
@@ -143,6 +273,7 @@ const InscripcionesNueva = () => {
           />
         );
       }
+      // Paso visual 3: Periodo y materias (stepIndex = 2)
       if (stepIndex === 2 && sectionKey === 'periodoYMaterias') {
         return (
           <InscripcionesPeriodoMateriasStepContent
@@ -158,6 +289,21 @@ const InscripcionesNueva = () => {
           />
         );
       }
+      // Paso visual 4: Paralelo (stepIndex = 3)
+      if (stepIndex === 3 && sectionKey === 'paralelos') {
+        return (
+          <InscripcionesPeriodoParalelosStepContent
+            key={sectionKey}
+            form={form}
+            section={section}
+            periodosData={periodosData}
+            paralelosData={paralelosData}
+            carrerasData={carrerasData}
+            onSelectParalelo={onSelectParalelo}
+            resolveOptions={() => []}
+          />
+        );
+      }
       return null;
     },
     [
@@ -168,6 +314,7 @@ const InscripcionesNueva = () => {
       studentSearch?.selectedStudent,
       context.onSelectCarrera,
       periodosData,
+      paralelosData,
       materiasByPeriodsData,
       selectedMateriaIdsByPeriod,
       onToggleMaterias,
@@ -198,6 +345,7 @@ const InscripcionesNueva = () => {
         showSaveButton={false}
         initialStep={initialStep}
         renderSectionContent={renderSectionContent}
+        onValidateBeforeNext={handleValidateBeforeNext}
       />
     </PageTemplate>
   );

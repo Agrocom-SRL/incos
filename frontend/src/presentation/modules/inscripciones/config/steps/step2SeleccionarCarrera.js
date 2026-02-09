@@ -1,7 +1,7 @@
 /**
- * step1SeleccionarCarrera - Paso 1: Seleccionar Carrera
+ * step2SeleccionarCarrera - Paso 2 del wizard de inscripción (Paso visual 2)
  *
- * Orden del wizard: 0=Buscar estudiante, 1=Carrera, 2=Periodo y Paralelos, 3=Horario.
+ * Orden del wizard visual: 1=Buscar estudiante, 2=Carrera, 3=Periodo y materias, 4=Paralelo.
  * Si el estudiante es nuevo se usa la gestión vigente; si es antiguo la gestión
  * se recupera de sus datos académicos.
  */
@@ -31,7 +31,7 @@ const CARRERA_FIELDS = [
   },
 ];
 
-export const getStep1CarreraFields = () => ({
+export const getStep2Fields = () => ({
   carrera: {
     ...CARRERA_HEADER,
     fields: CARRERA_FIELDS,

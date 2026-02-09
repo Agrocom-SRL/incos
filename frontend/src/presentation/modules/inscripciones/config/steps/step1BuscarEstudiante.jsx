@@ -1,7 +1,7 @@
 /**
- * step0BuscarEstudiante - Paso 0 del wizard de inscripción
+ * step1BuscarEstudiante - Paso 1 del wizard de inscripción (Paso visual 1)
  *
- * Orden del wizard: 0=Buscar estudiante, 1=Carrera, 2=Periodo y Paralelos, 3=Horario.
+ * Orden del wizard visual: 1=Buscar estudiante, 2=Carrera, 3=Periodo y materias, 4=Paralelo.
  * Single Responsibility: Definir los campos del paso "Buscar Estudiante".
  */
 
@@ -53,8 +53,8 @@ const BUSCAR_ESTUDIANTE_FIELDS = [
   },
 ];
 
-/** Retorna la configuración del paso 0: Buscar Estudiante */
-export const getStep0Fields = () => ({
+/** Retorna la configuración del paso 1: Buscar Estudiante */
+export const getStep1Fields = () => ({
   buscarEstudiante: {
     ...BUSCAR_ESTUDIANTE_HEADER,
     fields: BUSCAR_ESTUDIANTE_FIELDS,
