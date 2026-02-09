@@ -39,6 +39,7 @@ export function registerEstudiantesResource(container) {
         (c) =>
             new ListStudentsUseCase({
                 studentRepository: c.resolve(REPOSITORIOS_TOKENS.studentRepository),
+                studentAcademicDataRepository: c.resolve(REPOSITORIOS_TOKENS.studentAcademicDataRepository),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
     );
@@ -57,6 +58,7 @@ export function registerEstudiantesResource(container) {
                 contributionPaymentRepository: c.resolve(REPOSITORIOS_TOKENS.contributionPaymentRepository),
                 managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
                 contributionConfigurationRepository: c.resolve(REPOSITORIOS_TOKENS.contributionConfigurationRepository),
+                studentAcademicDataRepository: c.resolve(REPOSITORIOS_TOKENS.studentAcademicDataRepository),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
     );
@@ -71,6 +73,9 @@ export function registerEstudiantesResource(container) {
                 studentDisabilityRepository: c.resolve(REPOSITORIOS_TOKENS.studentDisabilityRepository),
                 studentOriginRepository: c.resolve(REPOSITORIOS_TOKENS.studentOriginRepository),
                 studentDocumentDeliveryRepository: c.resolve(REPOSITORIOS_TOKENS.studentDocumentDeliveryRepository),
+                studentAcademicDataRepository: c.resolve(REPOSITORIOS_TOKENS.studentAcademicDataRepository),
+                configuracionSistemaRepository: c.resolve(REPOSITORIOS_TOKENS.configuracionSistemaRepository),
+                managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
     );

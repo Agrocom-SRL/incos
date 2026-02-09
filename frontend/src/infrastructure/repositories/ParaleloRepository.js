@@ -35,11 +35,8 @@ export class ParaleloRepository extends IParaleloRepository {
       // Procesar respuesta exitosa
       const result = handleSuccessResponse(response);
 
-      // Asegurar que data sea un array
-      if (result.success && result.data) {
-        result.data = Array.isArray(result.data) ? result.data : [];
-      }
-
+      // No forzar data a array: el backend devuelve { paralelos: [...], meta?: ... }
+      // y el mapper en useParalelosApi usa normalizeFieldToArray(data, 'paralelos')
       return result;
     } catch (error) {
       return handleErrorResponse(error, 'Error al obtener paralelos');

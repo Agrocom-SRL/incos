@@ -1,34 +1,18 @@
 /**
- * step1BuscarEstudiante - Campos del primer paso del wizard de inscripción
- * 
- * Single Responsibility: Definir únicamente los fields del paso 1 (Buscar Estudiante)
- * 
- * Clean Architecture:
- * - Presentation Layer: Configuración de UI (metadata de presentación)
- * 
- * Este archivo contiene únicamente la definición de campos del primer paso,
- * permitiendo modificar los campos sin afectar la estructura del step.
+ * step1BuscarEstudiante - Paso 1 del wizard de inscripción (Paso visual 1)
+ *
+ * Orden del wizard visual: 1=Buscar estudiante, 2=Carrera, 3=Periodo y materias, 4=Paralelo.
+ * Single Responsibility: Definir los campos del paso "Buscar Estudiante".
  */
 
 import { UserOutlined } from '@ant-design/icons';
 import { Text } from '@atoms';
 
-/**
- * Configuración de cabecera de la sección buscarEstudiante
- * 
- * Estos datos pueden depender de configuraciones globales o del estado del wizard
- */
 const BUSCAR_ESTUDIANTE_HEADER = {
   title: 'Datos del Estudiante',
 };
 
-/**
- * Configuración de campos para la sección buscarEstudiante
- * 
- * Estos campos pueden depender de configuraciones o validaciones dinámicas
- */
 const BUSCAR_ESTUDIANTE_FIELDS = [
-
   {
     name: 'buscarEstudiante',
     type: 'search',
@@ -55,26 +39,11 @@ const BUSCAR_ESTUDIANTE_FIELDS = [
     span: 24,
     required: false,
     emptyMessage: 'No se encontraron estudiantes. Realice una búsqueda para ver resultados.',
-    // Función para renderizar cada item usando los datos ya transformados por el mapper
-    // Los datos vienen del mapper (estudianteListMapper) que ya tiene:
-    // - nombreCompleto: formateado por buildPersonDisplayData
-    // - ciCompleto: formateado por buildPersonDisplayData
-    // - codigoEstudiante: del backend
     renderItem: (student) => {
-      // Los datos ya vienen transformados del mapper (useSearchStudent → mapEstudiantesList → estudianteListMapper)
-      // Usar directamente nombreCompleto y ciCompleto que ya están formateados
       const data = [];
-
-      if (student.ciCompleto) {
-        data.push(`CI: ${student.ciCompleto}`);
-      }
-
-      if (student.codigoEstudiante) {
-        data.push(`Código: ${student.codigoEstudiante}`);
-      }
-
+      if (student.ciCompleto) data.push(`CI: ${student.ciCompleto}`);
+      if (student.codigoEstudiante) data.push(`Código: ${student.codigoEstudiante}`);
       const caption = data.length > 0 ? data.join(' | ') : null;
-
       return {
         avatar: <UserOutlined />,
         title: student.nombreCompleto || 'Sin nombre',
@@ -84,16 +53,10 @@ const BUSCAR_ESTUDIANTE_FIELDS = [
   },
 ];
 
-/**
- * Retorna la configuración de campos para el paso 1: Buscar Estudiante
- * 
- * @returns {Object} Configuración de campos para la sección buscarEstudiante
- */
-export const getStep1Fields = () => {
-  return {
-    buscarEstudiante: {
-      ...BUSCAR_ESTUDIANTE_HEADER,
-      fields: BUSCAR_ESTUDIANTE_FIELDS,
-    },
-  };
-};
+/** Retorna la configuración del paso 1: Buscar Estudiante */
+export const getStep1Fields = () => ({
+  buscarEstudiante: {
+    ...BUSCAR_ESTUDIANTE_HEADER,
+    fields: BUSCAR_ESTUDIANTE_FIELDS,
+  },
+});

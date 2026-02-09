@@ -86,7 +86,7 @@ const EstudiantesList = () => {
                 error={error}
                 searchText={searchText}
                 onSearchChange={(e) => setSearchText(e.target.value)}
-                searchPlaceholder="Buscar por código, nombre, CI, email o celular..."
+                searchPlaceholder="Buscar por código, nombre, CI, contacto, carrera o datos académicos..."
                 columns={tableColumns}
                 rowKey={(record) => record.id || record.ciCompleto || Math.random()}
                 pagination={{

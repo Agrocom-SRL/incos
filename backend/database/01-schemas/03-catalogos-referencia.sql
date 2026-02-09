@@ -39,9 +39,9 @@ CREATE TABLE idiomas (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
     deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
-    created_by INT COMMENT 'Usuario que creó',
-    updated_by INT COMMENT 'Usuario que modificó',
-    deleted_by INT COMMENT 'Usuario que eliminó',
+    created_by INT NULL COMMENT 'Usuario que creó',
+    updated_by INT NULL COMMENT 'Usuario que modificó',
+    deleted_by INT NULL COMMENT 'Usuario que eliminó',
     
     -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
     -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
@@ -69,9 +69,9 @@ CREATE TABLE estados_civiles (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
     deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
-    created_by INT COMMENT 'Usuario que creó',
-    updated_by INT COMMENT 'Usuario que modificó',
-    deleted_by INT COMMENT 'Usuario que eliminó',
+    created_by INT NULL COMMENT 'Usuario que creó',
+    updated_by INT NULL COMMENT 'Usuario que modificó',
+    deleted_by INT NULL COMMENT 'Usuario que eliminó',
     
     -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
     -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
@@ -99,9 +99,9 @@ CREATE TABLE tipos_discapacidad (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
     deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
-    created_by INT COMMENT 'Usuario que creó',
-    updated_by INT COMMENT 'Usuario que modificó',
-    deleted_by INT COMMENT 'Usuario que eliminó',
+    created_by INT NULL COMMENT 'Usuario que creó',
+    updated_by INT NULL COMMENT 'Usuario que modificó',
+    deleted_by INT NULL COMMENT 'Usuario que eliminó',
     
     -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
     -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
@@ -128,9 +128,9 @@ CREATE TABLE tipos_parentesco (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
     deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
-    created_by INT COMMENT 'Usuario que creó',
-    updated_by INT COMMENT 'Usuario que modificó',
-    deleted_by INT COMMENT 'Usuario que eliminó',
+    created_by INT NULL COMMENT 'Usuario que creó',
+    updated_by INT NULL COMMENT 'Usuario que modificó',
+    deleted_by INT NULL COMMENT 'Usuario que eliminó',
     
     -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
     -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
@@ -157,10 +157,10 @@ CREATE TABLE documentacion (
         'DESCUENTO',
         'TITULACION',
         'TRASPASO',
-        'TRANSFERENCIA',
+        'TRANSITABILIDAD',
         'BECA',
         'OTRO'
-    ) NOT NULL COMMENT 'Tipo de documento según categoría: inscripción, licencia, pasantía, descuento, titulación, traspaso, transferencia, beca u otro',
+    ) NOT NULL COMMENT 'Tipo de documento según categoría: inscripción, licencia, pasantía, descuento, titulación, traspaso, transitabilidad, beca u otro',
     documento_padre_id INT NULL COMMENT 'ID del documento padre al que reemplaza. Si es NULL, es un documento de primer orden. Si tiene valor, es un documento alternativo/reemplazo del padre. Permite crear jerarquías de documentos (ej: Boletín de Calificaciones como alternativa de Diploma de Bachiller)',
     acepta_fotocopia BOOLEAN DEFAULT FALSE COMMENT 'Indica si se acepta fotocopia del documento. Si es TRUE, se acepta fotocopia simple o legalizada según política del instituto. Si es FALSE, solo se acepta documento original.',
     requerido BOOLEAN DEFAULT TRUE COMMENT 'Indica si el documento es requerido para completar la inscripción. Si es FALSE, no se generará acta de compromiso si falta.',
@@ -173,9 +173,9 @@ CREATE TABLE documentacion (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
     deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
-    created_by INT COMMENT 'Usuario que creó',
-    updated_by INT COMMENT 'Usuario que modificó',
-    deleted_by INT COMMENT 'Usuario que eliminó',
+    created_by INT NULL COMMENT 'Usuario que creó',
+    updated_by INT NULL COMMENT 'Usuario que modificó',
+    deleted_by INT NULL COMMENT 'Usuario que eliminó',
     
     -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
     -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría

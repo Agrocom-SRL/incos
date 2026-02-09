@@ -345,11 +345,9 @@ export const enrichResumenInscripcionField = (field, context = {}) => {
 };
 
 /**
- * Array de enrichers específicos para horarios
- * 
+ * Enrichers para el paso 3: resumen de inscripción (ya no se usa horario de clases).
  * @type {Array<Function>}
  */
 export const horarioEnrichers = [
   enrichResumenInscripcionField,
-  enrichHorarioField,
 ];

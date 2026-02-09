@@ -122,6 +122,24 @@ export const Estudiante = sequelize.define(
       allowNull: true,
       comment: 'Zona/barrio',
     },
+    // Datos laborales
+    trabaja: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+      comment: 'Indica si el estudiante trabaja',
+    },
+    empresaInstitucion: {
+      type: DataTypes.STRING(200),
+      field: 'empresa_institucion',
+      allowNull: true,
+      comment: 'Nombre de la empresa o institución donde trabaja',
+    },
+    cargo: {
+      type: DataTypes.STRING(150),
+      allowNull: true,
+      comment: 'Cargo o puesto que ocupa',
+    },
     observaciones: {
       type: DataTypes.TEXT,
       allowNull: true,

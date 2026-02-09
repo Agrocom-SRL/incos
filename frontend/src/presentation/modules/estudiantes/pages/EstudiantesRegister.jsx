@@ -16,7 +16,7 @@
  */
 
 import { useMemo, useEffect, useRef, useCallback } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import { Form } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
@@ -36,15 +36,28 @@ import {
   createCamposContactosEmergenciaDinamicos,
   createCamposDocumentacionDinamicos
 } from '@estudiantes/config';
+import {
+  EstudianteTipoAdmisionStepContent,
+  EstudianteDatosAcademicosStepContent,
+} from '@estudiantes/components/organisms';
 
 const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [form] = Form.useForm();
   
   // Obtener parámetros de la URL
   const completarMode = searchParams.get('completar') === 'true';
   const isEditMode = mode === 'edit';
+  // Paso inicial del wizard: state puede venir 1-based (1 = primer paso). Internamente el wizard usa 0-based.
+  const initialStep = useMemo(() => {
+    const step = location.state?.initialStep;
+    if (step != null && typeof step === 'number' && !Number.isNaN(step)) {
+      return step >= 1 ? step - 1 : 0; // 1-based → 0-based (paso 1 → índice 0)
+    }
+    return 0;
+  }, [location.state?.initialStep]);
 
   // Obtener datos del contexto de registro (toda la lógica está en el Provider)
   const {
@@ -59,6 +72,8 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
     handleFinish,
     handleSave,
     registerForm, // Función para registrar el formulario en el contexto
+    saveStep0Values, // Preservar valores del paso 1 (tipoAdmision, gestionIngresoId, carreraId) al cambiar de paso
+    getStep0Values, // Valores preservados del paso 1 (para restaurar al volver al paso 1)
     
     // Datos del contexto
     paises = [],
@@ -69,6 +84,13 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
     municipios = [], // Municipios de origen (necesarios para mostrar nombres)
     segundaProvincias = [], // Provincias de segunda nacionalidad (necesarias para mostrar nombres)
     segundaMunicipios = [], // Municipios de segunda nacionalidad (necesarios para mostrar nombres)
+    gestiones = [], // Gestiones académicas (solo se cargan cuando tipo es ANTIGUO, gestiones no vigentes)
+    carreras = [], // Carreras académicas
+    carrerasLoading = false,
+    gestionesLoading = false,
+    carrerasError = null,
+    gestionesError = null,
+    cargarGestiones,
     
     // Contactos de emergencia dinámicos (expuestos desde el provider)
     contactosIndices = [],
@@ -147,40 +169,82 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
         }
         
         // ============================================
-        // CARGAR JERARQUÍA DE RESIDENCIA
+        // CARGAR JERARQUÍA DE RESIDENCIA Y ESTABLECER VALORES DESPUÉS
         // ============================================
-        // El departamento de residencia siempre es Santa Cruz, pero necesitamos cargar provincias y municipios
-        // Si no hay departamentoResidenciaId en formData, usar el ID de Santa Cruz desde departamentos
-        const departamentoResidenciaId = formData.departamentoResidenciaId || 
-          (departamentos.find(d => d.nombre?.toUpperCase().includes('SANTA CRUZ'))?.id);
-        
+        // Cargar primero provincias y municipios; establecer residencia en el form solo cuando las opciones estén listas
+        // para que los Select muestren el label (Sara, Portachuelo) y no queden vacíos o mostrando solo el ID
+        const departamentoResidenciaId = formData.departamentoResidenciaId != null
+          ? Number(formData.departamentoResidenciaId)
+          : (departamentos.find(d => d.nombre?.toUpperCase().includes('SANTA CRUZ'))?.id);
+        const provinciaResidenciaId = formData.provinciaResidenciaId != null ? Number(formData.provinciaResidenciaId) : null;
+        const municipioResidenciaId = formData.municipioResidenciaId != null ? Number(formData.municipioResidenciaId) : null;
+
+        const setResidenciaCuandoOpcionesListas = () => {
+          const r = {};
+          if (departamentoResidenciaId != null) r.departamentoResidenciaId = departamentoResidenciaId;
+          if (provinciaResidenciaId != null) r.provinciaResidenciaId = provinciaResidenciaId;
+          if (municipioResidenciaId != null) r.municipioResidenciaId = municipioResidenciaId;
+          if (Object.keys(r).length > 0) form.setFieldsValue(r);
+        };
+
         if (departamentoResidenciaId && loadProvincias) {
-          loadProvincias(departamentoResidenciaId, 'residencia').then(() => {
-            // Después de cargar provincias de residencia, cargar municipios si hay provinciaResidenciaId
-            if (formData.provinciaResidenciaId && loadMunicipios) {
-              loadMunicipios(formData.provinciaResidenciaId, 'residencia');
-            }
-          }).catch(err => {
-            console.warn('Error al cargar provincias de residencia en modo edición:', err);
-          });
+          loadProvincias(departamentoResidenciaId, 'residencia')
+            .then(() => (provinciaResidenciaId && loadMunicipios ? loadMunicipios(provinciaResidenciaId, 'residencia') : Promise.resolve()))
+            .then(setResidenciaCuandoOpcionesListas)
+            .catch(err => {
+              console.warn('Error al cargar provincias de residencia en modo edición:', err);
+              setResidenciaCuandoOpcionesListas();
+            });
+        } else {
+          setResidenciaCuandoOpcionesListas();
         }
-        
-        // Establecer todos los valores excepto los geográficos primero
-        const { 
+
+        // Establecer todos los valores excepto los geográficos de origen, segunda nacionalidad y residencia
+        // (residencia se establece arriba cuando las opciones están cargadas)
+        const {
           departamentoId, provinciaId, municipioId,
           segundaDepartamentoId, segundaProvinciaId, segundaMunicipioId,
-          departamentoResidenciaId: _departamentoResidenciaId, 
-          provinciaResidenciaId, 
-          municipioResidenciaId,
-          ...otrosValores 
+          departamentoResidenciaId: _dRes, provinciaResidenciaId: _pRes, municipioResidenciaId: _mRes,
+          ...otrosValores
         } = formData;
         form.setFieldsValue(otrosValores);
+
+        // Segunda localidad y localidad (no dependen de opciones)
+        const valoresAdicionales = {};
+        if (formData.segundaLocalidadComunidad != null && formData.segundaLocalidadComunidad !== '') {
+          valoresAdicionales.segundaLocalidadComunidad = formData.segundaLocalidadComunidad;
+        }
+        if (formData.localidadComunidad != null && formData.localidadComunidad !== '') {
+          valoresAdicionales.localidadComunidad = formData.localidadComunidad;
+        }
+        if (Object.keys(valoresAdicionales).length > 0) {
+          form.setFieldsValue(valoresAdicionales);
+        }
+
+        // Preservar valores del paso 1 (tipo admisión, gestión, carrera) para cuando el usuario cambie de paso
+        if (saveStep0Values && (formData.tipoAdmision != null || formData.gestionIngresoId != null || formData.carreraId != null)) {
+          saveStep0Values({
+            tipoAdmision: formData.tipoAdmision,
+            gestionIngresoId: formData.gestionIngresoId,
+            carreraId: formData.carreraId,
+          });
+        }
+
+        // Si tipo admisión es ANTIGUO, cargar gestiones para que GestionSelectionSection muestre opciones y la selección actual
+        if (formData.tipoAdmision === 'ANTIGUO' && typeof cargarGestiones === 'function') {
+          cargarGestiones();
+        }
+        
+        // Si tiene discapacidad, cargar tipos de discapacidad para que el select muestre opciones
+        if (formData.tieneDiscapacidad && typeof loadDiscapacidades === 'function') {
+          loadDiscapacidades();
+        }
         
         // Los valores geográficos se establecerán cuando las opciones estén disponibles
         initialDataLoadedRef.current = true;
       }
     }
-  }, [isEditMode, studentDetail, form, loadProvincias, loadMunicipios, departamentos]);
+  }, [isEditMode, studentDetail, form, loadProvincias, loadMunicipios, departamentos, saveStep0Values, cargarGestiones, loadDiscapacidades]);
   
   // Efecto para establecer valores geográficos cuando las opciones estén disponibles
   useEffect(() => {
@@ -190,94 +254,112 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
       let necesitaEstablecer = false;
       
       // ===== VALORES GEOGRÁFICOS DE ORIGEN =====
-      // Verificar si hay departamentoId y establecerlo (no necesita opciones)
-      if (formData.departamentoId) {
-        valoresGeograficos.departamentoId = formData.departamentoId;
+      if (formData.departamentoId != null) {
+        valoresGeograficos.departamentoId = Number(formData.departamentoId);
         necesitaEstablecer = true;
       }
       
       // Verificar si hay provinciaId y las provincias están disponibles
-      if (formData.provinciaId && provincias.length > 0) {
-        // Verificar que la provinciaId existe en las opciones disponibles
-        const provinciaExiste = provincias.some(p => 
-          (p.value === formData.provinciaId) || (p.id === formData.provinciaId)
-        );
+      if (formData.provinciaId != null && provincias.length > 0) {
+        const idProv = Number(formData.provinciaId);
+        const provinciaExiste = provincias.some(p => Number(p.value) === idProv || Number(p.id) === idProv);
         if (provinciaExiste) {
-          valoresGeograficos.provinciaId = formData.provinciaId;
+          valoresGeograficos.provinciaId = idProv;
           necesitaEstablecer = true;
         }
       }
       
       // Verificar si hay municipioId y los municipios están disponibles
-      if (formData.municipioId && municipios.length > 0) {
-        // Verificar que el municipioId existe en las opciones disponibles
-        const municipioExiste = municipios.some(m => 
-          (m.value === formData.municipioId) || (m.id === formData.municipioId)
-        );
+      if (formData.municipioId != null && municipios.length > 0) {
+        const idMun = Number(formData.municipioId);
+        const municipioExiste = municipios.some(m => Number(m.value) === idMun || Number(m.id) === idMun);
         if (municipioExiste) {
-          valoresGeograficos.municipioId = formData.municipioId;
+          valoresGeograficos.municipioId = idMun;
           necesitaEstablecer = true;
         }
       }
       
       // ===== VALORES GEOGRÁFICOS DE SEGUNDA NACIONALIDAD (DOBLE NACIONALIDAD) =====
-      // Verificar si hay segundaDepartamentoId y establecerlo (no necesita opciones)
-      if (formData.segundaDepartamentoId) {
-        valoresGeograficos.segundaDepartamentoId = formData.segundaDepartamentoId;
+      if (formData.segundaDepartamentoId != null) {
+        valoresGeograficos.segundaDepartamentoId = Number(formData.segundaDepartamentoId);
         necesitaEstablecer = true;
       }
       
       // Verificar si hay segundaProvinciaId y las provincias de segunda nacionalidad están disponibles
-      if (formData.segundaProvinciaId && segundaProvincias.length > 0) {
-        // Verificar que la segundaProvinciaId existe en las opciones disponibles
+      if (formData.segundaProvinciaId != null && segundaProvincias.length > 0) {
+        const idProv = Number(formData.segundaProvinciaId);
         const provinciaExiste = segundaProvincias.some(p => 
-          (p.value === formData.segundaProvinciaId) || (p.id === formData.segundaProvinciaId)
+          Number(p.value) === idProv || Number(p.id) === idProv
         );
         if (provinciaExiste) {
-          valoresGeograficos.segundaProvinciaId = formData.segundaProvinciaId;
+          valoresGeograficos.segundaProvinciaId = idProv;
           necesitaEstablecer = true;
         }
       }
       
       // Verificar si hay segundaMunicipioId y los municipios de segunda nacionalidad están disponibles
-      if (formData.segundaMunicipioId && segundaMunicipios.length > 0) {
-        // Verificar que el segundaMunicipioId existe en las opciones disponibles
+      if (formData.segundaMunicipioId != null && segundaMunicipios.length > 0) {
+        const idMun = Number(formData.segundaMunicipioId);
         const municipioExiste = segundaMunicipios.some(m => 
-          (m.value === formData.segundaMunicipioId) || (m.id === formData.segundaMunicipioId)
+          Number(m.value) === idMun || Number(m.id) === idMun
         );
         if (municipioExiste) {
-          valoresGeograficos.segundaMunicipioId = formData.segundaMunicipioId;
+          valoresGeograficos.segundaMunicipioId = idMun;
           necesitaEstablecer = true;
         }
       }
       
+      // Establecer segundaLocalidadComunidad (ciudad de nacimiento para segunda nacionalidad boliviana)
+      if (formData.segundaLocalidadComunidad != null && formData.segundaLocalidadComunidad !== '') {
+        valoresGeograficos.segundaLocalidadComunidad = formData.segundaLocalidadComunidad;
+        necesitaEstablecer = true;
+      }
+      
+      // Establecer localidadComunidad (ciudad de nacimiento para primera nacionalidad boliviana)
+      if (formData.localidadComunidad != null && formData.localidadComunidad !== '') {
+        valoresGeograficos.localidadComunidad = formData.localidadComunidad;
+        necesitaEstablecer = true;
+      }
+      
+      // ===== VALORES DE ORIGEN EXTRANJERO (PAÍS Y CIUDAD) =====
+      // Establecer paisId cuando los países estén disponibles (para que el select muestre el label)
+      if (formData.paisId != null && paises.length > 0) {
+        const idPais = Number(formData.paisId);
+        const paisExiste = paises.some(p => Number(p.value) === idPais || Number(p.id) === idPais);
+        if (paisExiste) {
+          valoresGeograficos.paisId = idPais;
+          necesitaEstablecer = true;
+        }
+      }
+      
+      // Establecer ciudadNacimiento (siempre que exista, no depende de opciones)
+      if (formData.ciudadNacimiento != null && formData.ciudadNacimiento !== '') {
+        valoresGeograficos.ciudadNacimiento = formData.ciudadNacimiento;
+        necesitaEstablecer = true;
+      }
+      
       // ===== VALORES GEOGRÁFICOS DE RESIDENCIA =====
-      // Verificar si hay departamentoResidenciaId y establecerlo (no necesita opciones)
-      if (formData.departamentoResidenciaId) {
-        valoresGeograficos.departamentoResidenciaId = formData.departamentoResidenciaId;
+      if (formData.departamentoResidenciaId != null) {
+        valoresGeograficos.departamentoResidenciaId = Number(formData.departamentoResidenciaId);
         necesitaEstablecer = true;
       }
       
       // Verificar si hay provinciaResidenciaId y las provincias de residencia están disponibles
-      if (formData.provinciaResidenciaId && provinciasResidencia.length > 0) {
-        // Verificar que la provinciaResidenciaId existe en las opciones disponibles
-        const provinciaExiste = provinciasResidencia.some(p => 
-          (p.value === formData.provinciaResidenciaId) || (p.id === formData.provinciaResidenciaId)
-        );
+      if (formData.provinciaResidenciaId != null && provinciasResidencia.length > 0) {
+        const idProv = Number(formData.provinciaResidenciaId);
+        const provinciaExiste = provinciasResidencia.some(p => Number(p.value) === idProv || Number(p.id) === idProv);
         if (provinciaExiste) {
-          valoresGeograficos.provinciaResidenciaId = formData.provinciaResidenciaId;
+          valoresGeograficos.provinciaResidenciaId = idProv;
           necesitaEstablecer = true;
         }
       }
       
       // Verificar si hay municipioResidenciaId y los municipios de residencia están disponibles
-      if (formData.municipioResidenciaId && municipiosResidencia.length > 0) {
-        // Verificar que el municipioResidenciaId existe en las opciones disponibles
-        const municipioExiste = municipiosResidencia.some(m => 
-          (m.value === formData.municipioResidenciaId) || (m.id === formData.municipioResidenciaId)
-        );
+      if (formData.municipioResidenciaId != null && municipiosResidencia.length > 0) {
+        const idMun = Number(formData.municipioResidenciaId);
+        const municipioExiste = municipiosResidencia.some(m => Number(m.value) === idMun || Number(m.id) === idMun);
         if (municipioExiste) {
-          valoresGeograficos.municipioResidenciaId = formData.municipioResidenciaId;
+          valoresGeograficos.municipioResidenciaId = idMun;
           necesitaEstablecer = true;
         }
       }
@@ -287,7 +369,7 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
         form.setFieldsValue(valoresGeograficos);
       }
     }
-  }, [isEditMode, form, provincias, municipios, segundaProvincias, segundaMunicipios, provinciasResidencia, municipiosResidencia]);
+  }, [isEditMode, form, provincias, municipios, segundaProvincias, segundaMunicipios, provinciasResidencia, municipiosResidencia, paises]);
 
   // Ref para rastrear si ya se inicializaron los valores de documentación
   const documentacionInitializedRef = useRef(false);
@@ -414,12 +496,12 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
     tieneDiscapacidad: loadDiscapacidades,
   }), [loadDiscapacidades]);
 
-  // Lógica específica del formulario geográfico de estudiantes
+  // Lógica específica del formulario geográfico de estudiantes (isEditMode: no seleccionar primera provincia en residencia)
   useEstudianteGeographicFormLogic(form, {
     loadDepartamentos,
     loadProvincias,
     loadMunicipios,
-  }, paises, departamentos, provinciasResidencia);
+  }, paises, departamentos, provinciasResidencia, isEditMode);
 
   // Determinar el título según los parámetros (memoizado)
   const pageTitle = useMemo(() => {
@@ -491,6 +573,40 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
     return steps;
   }, [wizardTitles, contactosIndices, agregarContacto, eliminarContacto, documentacionProcesada]);
 
+  // Validar paso 1 (primer paso) antes de Siguiente: tipoAdmision obligatorio; si ANTIGUO, gestión y carrera obligatorios
+  const onValidateBeforeNext = useCallback((stepNumber, formInstance) => {
+    if (stepNumber !== 1) return Promise.resolve();
+    return formInstance.validateFields(['tipoAdmision']).then(() => {
+      const tipo = formInstance.getFieldValue('tipoAdmision');
+      if (tipo === 'ANTIGUO') {
+        return formInstance.validateFields(['gestionIngresoId', 'carreraId']);
+      }
+    });
+  }, []);
+
+  // Preservar valores del paso 1 (tipo admisión, gestión, carrera) al salir de ese paso
+  const onBeforeNextStep = useCallback((stepNumber, formInstance) => {
+    if (stepNumber === 1 && saveStep0Values && formInstance) {
+      const values = formInstance.getFieldsValue(true);
+      const tipoAdmision = values.tipoAdmision ?? 'NUEVO';
+      saveStep0Values({
+        tipoAdmision,
+        gestionIngresoId: values.gestionIngresoId,
+        carreraId: values.carreraId,
+      });
+    }
+  }, [saveStep0Values]);
+
+  // Restaurar valores del paso 1 al volver desde el paso 2 (para que se muestren tipo admisión, gestión y carrera)
+  const onBeforePrevStep = useCallback((stepNumber, formInstance) => {
+    if (stepNumber === 2 && getStep0Values && formInstance) {
+      const step1Values = getStep0Values();
+      if (step1Values && typeof step1Values === 'object' && Object.keys(step1Values).length > 0) {
+        formInstance.setFieldsValue(step1Values);
+      }
+    }
+  }, [getStep0Values]);
+
   // Handler para volver a la lista de estudiantes
   const handleVolverALista = useCallback(() => {
     navigate('/estudiantes');
@@ -502,6 +618,49 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
     { title: 'Estudiantes', href: '/estudiantes' },
     { title: pageTitle },
   ], [pageTitle]);
+
+  // Contenido custom del paso 0 (Tipo de admisión + Gestión y Carrera)
+  const renderSectionContent = useCallback(
+    (stepIndex, sectionKey, section, formInstance) => {
+      if (stepIndex !== 0) return null;
+      if (sectionKey === 'tipoAdmision') {
+        return (
+          <EstudianteTipoAdmisionStepContent
+            form={formInstance}
+            onTipoAdmisionChange={(tipoAdmision) => {
+              if (tipoAdmision === 'ANTIGUO' && typeof cargarGestiones === 'function') {
+                cargarGestiones();
+              }
+            }}
+          />
+        );
+      }
+      if (sectionKey === 'datosAcademicosIniciales') {
+        return (
+          <EstudianteDatosAcademicosStepContent
+            form={formInstance}
+            section={section}
+            carreras={carreras}
+            gestiones={gestiones}
+            carrerasLoading={carrerasLoading}
+            gestionesLoading={gestionesLoading}
+            carrerasError={carrerasError}
+            gestionesError={gestionesError}
+          />
+        );
+      }
+      return null;
+    },
+    [
+      cargarGestiones,
+      carreras,
+      gestiones,
+      carrerasLoading,
+      gestionesLoading,
+      carrerasError,
+      gestionesError,
+    ]
+  );
 
   // Acciones del header
   const headerActions = useMemo(() => (
@@ -533,10 +692,23 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
         resolveOptions={resolveOptions}
         minAge={minAge}
         conditionalLoaders={conditionalLoaders}
-        initialValues={{}}
+        initialValues={{ tipoAdmision: 'NUEVO' }}
+        initialStep={initialStep}
         form={form}
         onFinish={handleFinish}
         onSave={handleSave}
+        hideSaveOnSteps={[1]}
+        onValidateBeforeNext={onValidateBeforeNext}
+        onBeforeNextStep={onBeforeNextStep}
+        onBeforePrevStep={onBeforePrevStep}
+        renderSectionContent={renderSectionContent}
+        carreras={carreras}
+        gestiones={gestiones}
+        carrerasLoading={carrerasLoading}
+        gestionesLoading={gestionesLoading}
+        carrerasError={carrerasError}
+        gestionesError={gestionesError}
+        cargarGestiones={cargarGestiones}
       />
     </PageTemplate>
   );

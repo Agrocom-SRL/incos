@@ -133,7 +133,7 @@ export const TIPOS_DOCUMENTO_ESTUDIANTE = {
   DESCUENTO: 'DESCUENTO',
   TITULACION: 'TITULACION',
   TRASPASO: 'TRASPASO',
-  TRANSFERENCIA: 'TRANSFERENCIA',
+  TRANSITABILIDAD: 'TRANSITABILIDAD',
   BECA: 'BECA',
   PAGO_INSCRIPCION: 'PAGO_INSCRIPCION',
   PAGO_TITULACION: 'PAGO_TITULACION',
@@ -178,6 +178,21 @@ export const ESTADOS_REGISTRO_ESTUDIANTE = {
  * Array de estados de registro válidos (útil para validators)
  */
 export const ESTADOS_REGISTRO_ESTUDIANTE_VALUES = Object.values(ESTADOS_REGISTRO_ESTUDIANTE);
+
+/**
+ * Tipos de admisión del estudiante (cómo ingresó al instituto)
+ */
+export const TIPOS_ADMISION = {
+  NUEVO: 'NUEVO',
+  ANTIGUO: 'ANTIGUO',
+  TRANSITABILIDAD: 'TRANSITABILIDAD',
+  TRASPASO: 'TRASPASO',
+};
+
+/**
+ * Array de tipos de admisión válidos (útil para validators)
+ */
+export const TIPOS_ADMISION_VALUES = Object.values(TIPOS_ADMISION);
 
 // ============================================
 // ORIGENES Y NACIONALIDADES

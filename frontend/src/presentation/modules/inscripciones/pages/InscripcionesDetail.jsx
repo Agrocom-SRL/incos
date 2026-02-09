@@ -169,7 +169,7 @@ const InscripcionesDetail = () => {
         }
       >
         <Alert
-          message="Error al cargar la inscripción"
+          title="Error al cargar la inscripción"
           description={error}
           type="error"
           showIcon
@@ -223,8 +223,8 @@ const InscripcionesDetail = () => {
       'NUEVO': 'green',
       'REINGRESO': 'orange',
       'CONTINUIDAD': 'blue',
-      'TRANSFERENCIA_ENTRADA': 'purple',
       'TRASPASO_ENTRADA': 'cyan',
+      'TRANSITABILIDAD_ENTRADA': 'gold',
     };
     return typeColors[type] || 'default';
   };

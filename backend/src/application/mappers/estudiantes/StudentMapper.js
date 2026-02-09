@@ -26,10 +26,10 @@ export function entityToPresentation(student) {
   if (!student) return null;
 
   const presentation = {};
-  
+
   // Mapear campos base comunes (id, active, createdAt, updatedAt)
   BaseMapper.mapBaseFields(student, presentation);
-  
+
   // Mapear campos específicos de Student
   // Solo incluir campos que existen en la entidad (usando mapFieldIfExists)
   // Esto es importante cuando se usan attributes limitados en las consultas
@@ -51,9 +51,71 @@ export function entityToPresentation(student) {
   BaseMapper.mapFieldIfExists(student, 'address', 'direccion', presentation);
   BaseMapper.mapFieldIfExists(student, 'residenceMunicipalityId', 'municipioResidenciaId', presentation);
   BaseMapper.mapFieldIfExists(student, 'zone', 'zona', presentation);
+  BaseMapper.mapFieldIfExists(student, 'works', 'trabaja', presentation);
+  BaseMapper.mapFieldIfExists(student, 'employerInstitution', 'empresaInstitucion', presentation);
+  BaseMapper.mapFieldIfExists(student, 'position', 'cargo', presentation);
   BaseMapper.mapFieldIfExists(student, 'observations', 'observaciones', presentation);
 
   return presentation;
+}
+
+/**
+ * Convierte una fila de vista_estudiante_datos_personales (snake_case) a formato de presentación.
+ * Usado por ListStudentsUseCase cuando lista desde la vista.
+ *
+ * @param {Object} row - Fila plana de la vista (snake_case)
+ * @returns {Object|null} Objeto en formato de presentación o null si row es null/undefined
+ */
+export function viewRowToPresentation(row) {
+  if (!row) return null;
+
+  const presentation = {};
+  const map = (src, dest) => {
+    if (row[src] !== undefined && row[src] !== null) presentation[dest] = row[src];
+  };
+
+  map('id', 'id');
+  map('activo', 'activo');
+  map('created_at', 'createdAt');
+  map('updated_at', 'updatedAt');
+  map('usuario_id', 'usuarioId');
+  map('codigo_estudiante', 'codigoEstudiante');
+  map('ci', 'ci');
+  map('expedicion', 'expedicion');
+  map('nombres', 'nombres');
+  map('apellido_paterno', 'apellidoPaterno');
+  map('apellido_materno', 'apellidoMaterno');
+  map('fecha_nacimiento', 'fechaNacimiento');
+  map('genero', 'genero');
+  map('estado_civil_id', 'estadoCivilId');
+  map('tipo_sangre', 'tipoSangre');
+  map('tiene_discapacidad', 'tieneDiscapacidad');
+  map('email_personal', 'emailPersonal');
+  map('celular', 'celular');
+  map('telefono_fijo', 'telefonoFijo');
+  map('direccion', 'direccion');
+  map('municipio_residencia_id', 'municipioResidenciaId');
+  map('zona', 'zona');
+  presentation.trabaja = row.trabaja === 1 || row.trabaja === true;
+  map('empresa_institucion', 'empresaInstitucion');
+  map('cargo', 'cargo');
+  map('observaciones', 'observaciones');
+  if (row.residencia_municipio_nombre !== undefined) presentation.residenciaMunicipioNombre = row.residencia_municipio_nombre;
+  if (row.residencia_provincia_nombre !== undefined) presentation.residenciaProvinciaNombre = row.residencia_provincia_nombre;
+  if (row.residencia_departamento_nombre !== undefined) presentation.residenciaDepartamentoNombre = row.residencia_departamento_nombre;
+  if (row.estado_civil_nombre !== undefined) presentation.estadoCivilNombre = row.estado_civil_nombre;
+
+  return presentation;
+}
+
+/**
+ * Convierte un array de filas de la vista a formato de presentación.
+ * @param {Object[]} rows - Array de filas de vista_estudiante_datos_personales
+ * @returns {Object[]} Array de objetos en formato de presentación
+ */
+export function viewRowsToPresentation(rows) {
+  if (!Array.isArray(rows)) return [];
+  return rows.map(viewRowToPresentation).filter(Boolean);
 }
 
 /**
@@ -76,6 +138,14 @@ export class StudentMapper {
 
   static entitiesToPresentation(students) {
     return entitiesToPresentation(students);
+  }
+
+  static viewRowToPresentation(row) {
+    return viewRowToPresentation(row);
+  }
+
+  static viewRowsToPresentation(rows) {
+    return viewRowsToPresentation(rows);
   }
 }
 

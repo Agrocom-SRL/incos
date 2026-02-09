@@ -322,7 +322,7 @@ export const TimetableCalendar = ({
     <Card className="timetable-calendar">
       {hasConflicts && (
         <Alert
-          message="⚠️ Se detectaron conflictos de horario"
+          title="⚠️ Se detectaron conflictos de horario"
           type="warning"
           showIcon
           style={{ marginBottom: 16 }}

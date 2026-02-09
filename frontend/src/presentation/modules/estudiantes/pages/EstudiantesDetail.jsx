@@ -262,7 +262,7 @@ const EstudiantesDetail = () => {
         }
       >
         <Alert
-          message="Error al cargar el estudiante"
+          title="Error al cargar el estudiante"
           description={error}
           type="error"
           showIcon

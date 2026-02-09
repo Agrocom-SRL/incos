@@ -24,6 +24,7 @@ import {
   FieldSwitch,
   FieldTextarea,
   FieldRadio,
+  FieldCheckboxGroup,
   Button,
   SearchBar,
   Alert
@@ -120,16 +121,68 @@ const renderTextarea = (field, disabled, readOnly) => (
 );
 
 /**
- * Renderer para campo de tipo radio
+ * Renderer para campo de tipo radio (soporta botones horizontales: optionType='button', radioLayout='horizontal')
+ * Si field.onChange existe (p. ej. enricher), se llama al elegir; el Form.Item actualiza el valor del formulario.
  */
-const renderRadio = (field, disabled, readOnly, selectOptions) => (
-  <FieldRadio
-    disabled={disabled}
-    readOnly={readOnly}
-    options={selectOptions}
-    defaultValue={field.defaultValue}
-  />
-);
+const renderRadio = (field, disabled, readOnly, selectOptions, form) => {
+  const handleChange = (e) => {
+    const value = e?.target?.value ?? e;
+    if (form && field.name) form.setFieldsValue({ [field.name]: value });
+    if (field.onChange) field.onChange(value);
+  };
+
+  return (
+    <FieldRadio
+      disabled={disabled}
+      readOnly={readOnly}
+      options={selectOptions}
+      defaultValue={field.defaultValue}
+      onChange={handleChange}
+      optionType={field.optionType || 'default'}
+      radioLayout={field.radioLayout || 'vertical'}
+    />
+  );
+};
+
+/**
+ * Renderer para campo de tipo checkbox group (selección múltiple, estilo botón)
+ * value y onChange son array de valores (ids). Si field.onChange existe, se llama con el array.
+ * Key por opciones para forzar re-mount cuando las opciones cambian (p. ej. de [] a cargadas).
+ */
+const renderCheckboxGroup = (field, disabled, readOnly, selectOptions, form) => {
+  const handleChange = (checkedValues) => {
+    const value = Array.isArray(checkedValues) ? checkedValues : [];
+    if (form && field.name) form.setFieldsValue({ [field.name]: value });
+    if (field.onChange) field.onChange(value);
+  };
+
+  // Priorizar field.value (estado externo, ej. selectedPeriodIds) sobre el form para evitar
+  // desincronización cuando el form actualiza de forma asíncrona (al marcar 2, 3 y luego 1
+  // el form podía devolver valor obsoleto y el grupo quedaba solo con [1]).
+  const rawValue = field.value ?? form?.getFieldValue?.(field.name) ?? field.defaultValue;
+  const safeValue = Array.isArray(rawValue)
+    ? rawValue
+    : rawValue != null
+      ? [rawValue]
+      : [];
+
+  const options = Array.isArray(selectOptions) ? selectOptions : [];
+  const optionsKey = options.length ? options.map((o) => o.value ?? o.id).join(',') : 'empty';
+
+  return (
+    <FieldCheckboxGroup
+      key={`${field.name}-${optionsKey}`}
+      disabled={disabled}
+      readOnly={readOnly}
+      options={options}
+      value={safeValue}
+      onChange={handleChange}
+      optionType={field.optionType || 'default'}
+      checkboxLayout={field.checkboxLayout || 'vertical'}
+      className={field.className}
+    />
+  );
+};
 
 /**
  * Renderer para campo de tipo search
@@ -258,12 +311,19 @@ const renderButton = (field, disabled, readOnly) => {
 };
 
 /**
+ * Renderer para campo oculto (valor no visible, se envía en el formulario).
+ * Usa input nativo para garantizar que no ocupe espacio ni sea visible.
+ */
+const renderHidden = () => <input type="hidden" />;
+
+/**
  * Registry de renderers por tipo de campo
- * 
+ *
  * Strategy Pattern: Cada tipo de campo tiene su propia estrategia de renderizado
  * Open/Closed: Para agregar un nuevo tipo, solo hay que agregar una entrada aquí
  */
 export const fieldRenderers = {
+  hidden: renderHidden,
   input: renderInput,
   search: renderSearch,
   select: renderSelect,
@@ -271,6 +331,7 @@ export const fieldRenderers = {
   switch: renderSwitch,
   textarea: renderTextarea,
   radio: renderRadio,
+  checkboxGroup: renderCheckboxGroup,
   display: renderDisplay,
   alert: renderAlert,
   button: renderButton,
@@ -282,12 +343,14 @@ export const fieldRenderers = {
  * Define qué parámetros adicionales necesita cada tipo de campo
  */
 const fieldRendererParams = {
+  hidden: ['field', 'disabled', 'readOnly'],
   input: ['field', 'disabled', 'readOnly'],
   search: ['field', 'disabled', 'readOnly'],
   switch: ['field', 'disabled', 'readOnly'],
   textarea: ['field', 'disabled', 'readOnly'],
   select: ['field', 'disabled', 'readOnly', 'selectOptions'],
   radio: ['field', 'disabled', 'readOnly', 'selectOptions'],
+  checkboxGroup: ['field', 'disabled', 'readOnly', 'selectOptions'],
   date: ['field', 'disabled', 'readOnly', 'minAge'],
   display: ['field', 'disabled', 'readOnly', 'form'],
   alert: ['field', 'disabled', 'readOnly'],

@@ -48,9 +48,13 @@ export const mapGenericOptions = (data) => {
     }
 
     // Si es un objeto, extraer label y value
+    const rawValue = item.id ?? item.value ?? item.code ?? item;
+    // Normalizar a número cuando sea numérico para que Ant Design Select coincida con form value (number)
+    const num = typeof rawValue === 'number' ? rawValue : Number(rawValue);
+    const value = rawValue != null && rawValue !== '' && !Number.isNaN(num) ? num : rawValue;
     return {
       label: item.nombre || item.label || item.name || String(item),
-      value: item.id || item.value || item.code || item,
+      value,
     };
   });
 };

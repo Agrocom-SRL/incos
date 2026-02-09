@@ -1,5 +1,5 @@
 import { BaseEntity } from './BaseEntity.js';
-import { ESTADOS_ACADEMICOS_VALUES, ESTADOS_ACADEMICOS, ESTADOS_REGISTRO_ESTUDIANTE_VALUES, ESTADOS_REGISTRO_ESTUDIANTE } from '../constants/index.js';
+import { ESTADOS_ACADEMICOS_VALUES, ESTADOS_ACADEMICOS, ESTADOS_REGISTRO_ESTUDIANTE_VALUES, ESTADOS_REGISTRO_ESTUDIANTE, TIPOS_ADMISION_VALUES, TIPOS_ADMISION } from '../constants/index.js';
 
 /**
  * Entidad de Dominio: StudentAcademicData
@@ -31,23 +31,15 @@ export class StudentAcademicData extends BaseEntity {
       // Solo usar valor por defecto si no se está usando attributes limitados
       this.registrationState = ESTADOS_REGISTRO_ESTUDIANTE.BORRADOR;
     }
-    if (data.hasOwnProperty('previousSchool')) {
-      this.previousSchool = data.previousSchool;
-    }
-    if (data.hasOwnProperty('highSchoolGraduationYear')) {
-      this.highSchoolGraduationYear = data.highSchoolGraduationYear;
+    if (data.hasOwnProperty('admissionType')) {
+      this.admissionType = data.admissionType;
+    } else if (data.hasOwnProperty('tipoAdmision')) {
+      this.admissionType = data.tipoAdmision;
+    } else if (!data.hasOwnProperty('studentId')) {
+      this.admissionType = TIPOS_ADMISION.NUEVO;
     }
     if (data.hasOwnProperty('annualAverage')) {
       this.annualAverage = data.annualAverage;
-    }
-    if (data.hasOwnProperty('graduationDate')) {
-      this.graduationDate = data.graduationDate;
-    }
-    if (data.hasOwnProperty('withdrawalDate')) {
-      this.withdrawalDate = data.withdrawalDate;
-    }
-    if (data.hasOwnProperty('withdrawalReason')) {
-      this.withdrawalReason = data.withdrawalReason;
     }
     if (data.hasOwnProperty('photoUrl')) {
       this.photoUrl = data.photoUrl;
@@ -111,9 +103,11 @@ export class StudentAcademicData extends BaseEntity {
     }
     if (this.hasOwnProperty('careerId')) {
       plainObject.careerId = this.careerId;
+      plainObject.carreraId = this.careerId; // API: frontend espera carreraId
     }
     if (this.hasOwnProperty('managementId')) {
       plainObject.managementId = this.managementId;
+      plainObject.gestionIngresoId = this.managementId; // API: frontend espera gestionIngresoId
     }
     if (this.hasOwnProperty('academicState')) {
       plainObject.academicState = this.academicState;
@@ -121,23 +115,12 @@ export class StudentAcademicData extends BaseEntity {
     if (this.hasOwnProperty('registrationState')) {
       plainObject.registrationState = this.registrationState;
     }
-    if (this.hasOwnProperty('previousSchool')) {
-      plainObject.previousSchool = this.previousSchool;
-    }
-    if (this.hasOwnProperty('highSchoolGraduationYear')) {
-      plainObject.highSchoolGraduationYear = this.highSchoolGraduationYear;
+    if (this.hasOwnProperty('admissionType')) {
+      plainObject.admissionType = this.admissionType;
+      plainObject.tipoAdmision = this.admissionType; // API: frontend espera tipoAdmision
     }
     if (this.hasOwnProperty('annualAverage')) {
       plainObject.annualAverage = this.annualAverage;
-    }
-    if (this.hasOwnProperty('graduationDate')) {
-      plainObject.graduationDate = this.graduationDate;
-    }
-    if (this.hasOwnProperty('withdrawalDate')) {
-      plainObject.withdrawalDate = this.withdrawalDate;
-    }
-    if (this.hasOwnProperty('withdrawalReason')) {
-      plainObject.withdrawalReason = this.withdrawalReason;
     }
     if (this.hasOwnProperty('photoUrl')) {
       plainObject.photoUrl = this.photoUrl;

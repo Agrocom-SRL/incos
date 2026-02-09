@@ -63,11 +63,13 @@ const mapCarreraToDashboard = (carreraBackend) => {
     || carreraBackend.imageUrl 
     || (carreraBackend.imagenRuta ? buildImageUrl(carreraBackend.imagenRuta) : null);
 
-  // Mapeamos a: { id, image, label }
+  // Mapeamos a: { id, image, label, codigo, colorHex } para tarjetas con imagen y fallback
   return {
     id: carreraBackend.id,
     image: imageUrl,
     label: carreraBackend.nombre || carreraBackend.name || null,
+    codigo: carreraBackend.codigo || null,
+    colorHex: carreraBackend.colorHex || carreraBackend.color_hex || '#1890ff',
   };
 };
 

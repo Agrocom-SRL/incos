@@ -58,7 +58,7 @@ export class RegisterStudentController extends BaseCreateController {
    * Prepara los datos del body antes de enviarlos al use case
    * Usa RegisterStudentRequestDTO para transformar la estructura plana del frontend
    * a la estructura anidada que espera el use case
-   * 
+   *
    * @param {Object} body - Body de la petición HTTP (estructura plana del frontend)
    * @returns {Object} Datos estructurados para el use case
    */

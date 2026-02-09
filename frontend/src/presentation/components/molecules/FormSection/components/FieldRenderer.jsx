@@ -120,6 +120,7 @@ const FieldRenderer = ({
           selectedItem={field.selectedItem}
           isSelected={field.isSelected}
           loadingText={field.loadingText}
+          className={field.className || ''}
         />
       </Col>
     );
@@ -139,6 +140,7 @@ const FieldRenderer = ({
           gap={field.gap}
           onItemClick={field.onItemClick || null}
           accentColors={field.accentColors}
+          className={field.className || ''}
         />
       </Col>
     );

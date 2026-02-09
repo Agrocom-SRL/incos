@@ -61,15 +61,36 @@ export const useStudentFormHandlers = (showMessage, mode = 'create', studentId =
 
   // Ref para mantener referencia estable de documentacionProcesada
   const documentacionProcesadaRef = useRef(documentacionProcesada);
+
+  // Ref para preservar valores del paso 0 (tipo admisión, gestión, carrera).
+  // El wizard solo renderiza el paso actual; al cambiar de paso los Form.Item del paso 0
+  // se desmontan y Ant Design elimina sus valores del store. Al enviar desde el último paso
+  // getFieldsValue() no incluiría tipoAdmision, gestionIngresoId, carreraId si no los preservamos.
+  const step0ValuesRef = useRef({});
   
   // Actualizar ref cuando documentacionProcesada cambie
   useEffect(() => {
     documentacionProcesadaRef.current = documentacionProcesada;
   }, [documentacionProcesada]);
 
+  /** Guarda los valores del paso 0 para usarlos en getFormValues cuando el usuario ya está en otro paso. */
+  const saveStep0Values = useCallback((values) => {
+    if (values && typeof values === 'object') {
+      step0ValuesRef.current = {
+        tipoAdmision: values.tipoAdmision,
+        gestionIngresoId: values.gestionIngresoId,
+        carreraId: values.carreraId,
+      };
+    }
+  }, []);
+
+  /** Devuelve los valores preservados del paso 0 (para restaurar en el formulario al volver al paso 0). */
+  const getStep0Values = useCallback(() => step0ValuesRef.current, []);
+
   // Función para obtener los valores del formulario
   // IMPORTANTE: Incluye todos los documentos con valores por defecto si no están presentes
   // Esto asegura que todos los documentos se envíen al backend, incluso si el usuario no interactuó con ellos
+  // También restaura tipoAdmision, gestionIngresoId, carreraId del paso 0 si ya no están en el store (pasos posteriores)
   const getFormValues = useCallback(() => {
     if (!formRef.current) {
       console.warn('⚠️ El formulario no está registrado aún');
@@ -78,7 +99,37 @@ export const useStudentFormHandlers = (showMessage, mode = 'create', studentId =
     try {
       // Obtener todos los valores del formulario (incluye campos no renderizados)
       const formValues = formRef.current.getFieldsValue(true);
-      
+
+      // Mantener la ref del paso 0 actualizada: si el form tiene algún valor del paso 0, guardarlo
+      // (así no se pierde si el usuario hace "Guardar" en paso 0 o si el store aún los tiene al avanzar)
+      const step0Current = step0ValuesRef.current;
+      const hasStep0InForm = formValues.tipoAdmision !== undefined || formValues.gestionIngresoId !== undefined || formValues.carreraId !== undefined;
+      if (hasStep0InForm) {
+        step0ValuesRef.current = {
+          tipoAdmision: formValues.tipoAdmision ?? step0Current?.tipoAdmision,
+          gestionIngresoId: formValues.gestionIngresoId ?? step0Current?.gestionIngresoId,
+          carreraId: formValues.carreraId ?? step0Current?.carreraId,
+        };
+      }
+
+      // Restaurar valores del paso 0 si no están en el store (el usuario está en un paso posterior y los campos están desmontados)
+      const step0 = step0ValuesRef.current;
+      if (step0 && Object.keys(step0).length > 0) {
+        if (formValues.tipoAdmision === undefined || formValues.tipoAdmision === null) formValues.tipoAdmision = step0.tipoAdmision;
+        if (formValues.gestionIngresoId === undefined || formValues.gestionIngresoId === null) formValues.gestionIngresoId = step0.gestionIngresoId;
+        if (formValues.carreraId === undefined || formValues.carreraId === null) formValues.carreraId = step0.carreraId;
+      }
+      // Si tenemos gestión/carrera pero tipoAdmision sigue vacío, inferir ANTIGUO (evita enviar NUEVO por error)
+      if ((formValues.gestionIngresoId != null && formValues.gestionIngresoId !== '') || (formValues.carreraId != null && formValues.carreraId !== '')) {
+        if (formValues.tipoAdmision === undefined || formValues.tipoAdmision === null || formValues.tipoAdmision === '') {
+          formValues.tipoAdmision = 'ANTIGUO';
+        }
+      }
+      // Fallback final: si tipoAdmision sigue sin valor (p. ej. nunca se llamó saveStep0Values), enviar NUEVO
+      if (formValues.tipoAdmision === undefined || formValues.tipoAdmision === null || formValues.tipoAdmision === '') {
+        formValues.tipoAdmision = 'NUEVO';
+      }
+
       // Asegurar que todos los documentos estén presentes con valores por defecto
       // Si un documento no está en formValues, agregarlo con entregado: true por defecto
       const documentacionProcesada = documentacionProcesadaRef.current;
@@ -202,6 +253,8 @@ export const useStudentFormHandlers = (showMessage, mode = 'create', studentId =
     handleSave,
     registerForm,
     getFormValues,
+    saveStep0Values, // Preservar valores del paso 0 (tipoAdmision, gestionIngresoId, carreraId) al cambiar de paso
+    getStep0Values, // Valores preservados del paso 0 (para restaurar al volver al paso 0)
     formRef, // Exponer formRef para que useDocumentacionProcesada pueda usar Form.useWatch
     // Estados del registro (expuestos desde useRegisterStudent)
     loading,

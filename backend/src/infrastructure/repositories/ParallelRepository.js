@@ -2,6 +2,7 @@ import { IParallelRepository } from '../../domain/interfaces/repositories/IParal
 import { Paralelo as ParaleloModel } from '../database/models/paralelo.js';
 import { BaseRepository } from './BaseRepository.js';
 import { ParallelMapper } from '../mappers/ParallelMapper.js';
+import { sequelize } from '../database/sequelize.js';
 
 /**
  * Implementación del repositorio de paralelos usando Sequelize
@@ -108,10 +109,52 @@ export class ParallelRepository extends BaseRepository {
 
   /**
    * Retorna el nombre de la colección en la respuesta JSON
-   * 
+   *
    * @returns {string} Nombre de la colección para la respuesta JSON
    */
   getCollectionName() {
     return 'parallels';
+  }
+
+  /**
+   * Obtiene estadísticas de inscripción por paralelo para una gestión y datos del periodo.
+   * Consulta la vista vista_paralelos_estadisticas_periodo (backend/database/03-views/24-vista-paralelos-estadisticas-periodo.sql).
+   *
+   * @param {number[]} parallelIds - IDs de paralelos
+   * @param {number} managementId - ID de la gestión académica
+   * @returns {Promise<Array>} Array de objetos planos: paralelo_id, total_inscritos, total_hombres, total_mujeres, periodo_numero, periodo_nombre
+   */
+  async obtenerEstadisticasYPeriodoPorGestion(parallelIds, managementId) {
+    if (!Array.isArray(parallelIds) || parallelIds.length === 0) {
+      return [];
+    }
+
+    const placeholders = parallelIds.map(() => '?').join(',');
+    const query = `
+      SELECT
+        paralelo_id,
+        gestion_id,
+        total_inscritos,
+        total_hombres,
+        total_mujeres,
+        periodo_numero,
+        periodo_nombre
+      FROM (
+        SELECT
+          *,
+          ROW_NUMBER() OVER (PARTITION BY paralelo_id ORDER BY (CASE WHEN gestion_id = ? THEN 0 WHEN gestion_id IS NULL THEN 1 ELSE 2 END)) AS rn
+        FROM vista_paralelos_estadisticas_periodo
+        WHERE paralelo_id IN (${placeholders})
+          AND (gestion_id = ? OR gestion_id IS NULL)
+      ) t
+      WHERE rn = 1
+    `;
+
+    const results = await sequelize.query(query, {
+      replacements: [managementId, ...parallelIds, managementId],
+      type: sequelize.QueryTypes.SELECT,
+    });
+
+    return results;
   }
 }

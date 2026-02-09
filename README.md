@@ -332,11 +332,14 @@ Los scripts de schema están organizados en `backend/database/01-schemas/` y deb
 6. `05-estructura-academica-parte2.sql` - Docentes y asignaciones
 7. `06-estudiantes-parte1.sql` - Estudiantes y datos académicos
 8. `06-estudiantes-parte2.sql` - Becas y licencias
-9. `07-inscripciones-parte1.sql` - Inscripciones principales
-10. `07-inscripciones-parte2.sql` - Calificaciones y asistencias
-11. `10-pagos.sql` - Sistema de pagos
-12. `11-modulos-operativos-parte1.sql` - Pasantías y supervisión
-13. `11-modulos-operativos-parte2.sql` - Historial oficial
+9. `09-inscripciones-parte1.sql` - Inscripciones principales
+10. `09-inscripciones-parte2.sql` - Calificaciones y asistencias
+11. `10-pagos-academicos.sql` - Sistema de pagos
+12. `12-traspasos.sql` - Traspasos de estudiantes
+13. `12-bloqueos-inscripcion.sql` - Bloqueos de inscripción
+14. `12-transitabilidades.sql` - Transitabilidades
+15. `14-pasantias.sql` - Pasantías
+16. `14-supervision-libros.sql` - Supervisión docente y libros de registro
 14. `12-indices.sql` - Índices de optimización
 15. `12-sincronizacion.sql` - Sistema de sincronización
 16. `13-indices-optimizacion.sql` - Índices adicionales

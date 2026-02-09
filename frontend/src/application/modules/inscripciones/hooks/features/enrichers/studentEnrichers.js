@@ -57,7 +57,7 @@ export const enrichStudentSearchField = (field, context = {}) => {
  * 3. Si hay estudiantes, oculta el campo (hidden: true)
  * 4. Si no hay estudiantes, muestra el campo (hidden: false)
  * 
- * @param {Object} field - Configuración del campo (desde step1BuscarEstudiante.jsx)
+ * @param {Object} field - Configuración del campo (desde step0BuscarEstudiante.jsx)
  * @param {Object} context - Contexto con callbacks y datos disponibles
  * @param {Object} context.studentSearch - Objeto con students, loading, error (desde useInscripcionNuevaStudentSearch)
  * @returns {Object} Campo enriquecido con hidden o el campo original
@@ -92,7 +92,7 @@ export const enrichStudentInfoField = (field, context = {}) => {
  * 4. Cuando el usuario selecciona un estudiante, se ejecuta onSelectStudent que guarda el ID
  * 5. El ID guardado se puede usar en step2 para cargar datos académicos
  * 
- * @param {Object} field - Configuración del campo (desde step1BuscarEstudiante.js)
+ * @param {Object} field - Configuración del campo (desde step0BuscarEstudiante.jsx)
  * @param {Object} context - Contexto con callbacks y datos disponibles
  * @param {Object} context.studentSearch - Objeto con students, loading, error (desde useInscripcionNuevaStudentSearch)
  * @param {Function} context.onSelectStudent - Callback para manejar la selección de un estudiante
@@ -115,7 +115,7 @@ export const enrichStudentListField = (field, context = {}) => {
             onSelect: onSelectStudent || null,
             // Estudiante seleccionado para aplicar estado activo en DataList
             selectedItem: studentSearch.selectedStudent || null,
-            // renderItem ya está definido en step1BuscarEstudiante.jsx
+            // renderItem ya está definido en step0BuscarEstudiante.jsx
         };
     }
     
@@ -123,60 +123,58 @@ export const enrichStudentListField = (field, context = {}) => {
 };
 
 /**
- * Enricher para mostrar el estudiante seleccionado en el step 2
+ * Construye la descripción del estudiante para mostrar en alertas (step 0 y step 1)
+ *
+ * @param {Object} student - Estudiante con nombreCompleto, codigoEstudiante, ciCompleto
+ * @returns {string} Texto para description del alert
+ */
+export const buildStudentSelectedDescription = (student) => {
+    if (!student || !student.id) return 'Estudiante seleccionado';
+    const parts = [];
+    if (student.nombreCompleto) parts.push(`Nombre: ${student.nombreCompleto}`);
+    if (student.codigoEstudiante) parts.push(`Código: ${student.codigoEstudiante}`);
+    if (student.ciCompleto) parts.push(`CI: ${student.ciCompleto}`);
+    return parts.length > 0 ? parts.join(' | ') : 'Estudiante seleccionado';
+};
+
+/**
+ * Descripción enriquecida para step 0 (desde detalle): incluye tipo NUEVO/ANTIGUO y carrera si aplica
+ *
+ * @param {Object} student - Estudiante con nombreCompleto, ciCompleto, codigoEstudiante, tipoAdmision, carreraNombre
+ * @returns {string} Texto para description del alert en step 0
+ */
+export const buildStep0StudentDescription = (student) => {
+    const base = buildStudentSelectedDescription(student);
+    if (!student?.tipoAdmision) return base;
+    const tipoLabel = student.tipoAdmision === 'ANTIGUO' ? 'Estudiante antiguo' : 'Estudiante nuevo';
+    const carreraPart = student.tipoAdmision === 'ANTIGUO' && student.carreraNombre
+        ? ` | Carrera: ${student.carreraNombre}`
+        : '';
+    return `${base}\n\nTipo: ${tipoLabel}${carreraPart}`;
+};
+
+/**
+ * Enricher para mostrar el estudiante seleccionado (step 1 Carrera, step 2 Periodo)
  * Enriquece el campo 'estudianteSeleccionado' con los datos del estudiante seleccionado
- * 
- * Flujo:
- * 1. Este enricher se ejecuta en useEnrichWizardSteps (antes del renderizado)
- * 2. Si hay un estudiante seleccionado, enriquece el campo con su información
- * 3. Si no hay estudiante seleccionado, oculta el campo (hidden: true)
- * 4. El campo se muestra arriba del select de carreras en el step 2
- * 
- * @param {Object} field - Configuración del campo (desde step2SeleccionarParalelos.js)
- * @param {Object} context - Contexto con callbacks y datos disponibles
- * @param {Object} context.studentSearch - Objeto con students, loading, error, selectedStudent
+ *
+ * @param {Object} field - Configuración del campo
+ * @param {Object} context - Contexto con studentSearch.selectedStudent
  * @returns {Object} Campo enriquecido con description y hidden o el campo original
  */
 export const enrichStudentSelectedField = (field, context = {}) => {
     const { studentSearch } = context;
     const selectedStudent = studentSearch?.selectedStudent;
-    
-    // Si es el campo de estudiante seleccionado
+
     if (field.name === 'estudianteSeleccionado' && field.type === 'alert') {
-        // Si hay un estudiante seleccionado, mostrar su información
         if (selectedStudent && selectedStudent.id) {
-            const studentInfo = [];
-            
-            if (selectedStudent.nombreCompleto) {
-                studentInfo.push(`Nombre: ${selectedStudent.nombreCompleto}`);
-            }
-            
-            if (selectedStudent.codigoEstudiante) {
-                studentInfo.push(`Código: ${selectedStudent.codigoEstudiante}`);
-            }
-            
-            if (selectedStudent.ciCompleto) {
-                studentInfo.push(`CI: ${selectedStudent.ciCompleto}`);
-            }
-            
-            const description = studentInfo.length > 0 
-                ? studentInfo.join(' | ')
-                : 'Estudiante seleccionado';
-            
             return {
                 ...field,
-                description,
-                hidden: false, // Mostrar el campo
+                description: buildStudentSelectedDescription(selectedStudent),
+                hidden: false,
             };
         }
-        
-        // Si no hay estudiante seleccionado, ocultar el campo
-        return {
-            ...field,
-            hidden: true, // Ocultar el campo
-        };
+        return { ...field, hidden: true };
     }
-    
     return field;
 };
 

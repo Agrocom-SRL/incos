@@ -1,29 +1,27 @@
-import { body } from 'express-validator';
-
 /**
  * Validador para creación de inscripciones (POST /api/v1/inscripciones)
- * 
- * Valida la estructura de datos que viene del frontend:
- * - studentId: ID del estudiante (requerido)
- * - parallelId: ID del paralelo (requerido)
- * - enrollmentType: Tipo de inscripción (opcional, default: CONTINUIDAD)
- * - enrollmentDate: Fecha de inscripción (opcional)
- * - observations: Observaciones (opcional)
- * 
- * NOTA: Este validator valida la estructura del frontend.
- * El Use Case recuperará todos los datos necesarios (datos académicos, gestión, plan, asignaciones docentes)
- * basándose en estos IDs y creará los registros en las tablas correspondientes.
- * 
- * Ubicación: presentation/validators/inscripciones (validators específicos del módulo)
- * 
- * Principios SOLID:
- * - Single Responsibility: Solo valida estructura y tipos de datos del request
- * - La lógica de negocio (validaciones complejas) está en el use case
- * 
- * @example
- * import { createEnrollmentValidator } from '../validators/inscripciones/index.js';
- * router.post('/', createEnrollmentValidator, validateRequest, controller);
+ *
+ * Modos de inscripción:
+ * - Con parallel_id: inscribe en todas las materias del paralelo (estudiantes nuevos).
+ * - Con teacher_assignment_ids: inscribe solo en las asignaciones docentes indicadas
+ *   (permite múltiples paralelos/periodos en una sola inscripción).
+ *
+ * Nota: La inscripción NO incluye horarios ni aulas; esos datos se asignan en el proceso de
+ * matriculación posterior, antes del inicio de clases.
+ *
+ * Campos validados (sincronizados con el frontend):
+ * - student_id: ID del estudiante (requerido)
+ * - parallel_id: ID del paralelo (opcional si se envía teacher_assignment_ids)
+ * - teacher_assignment_ids: array de IDs de asignaciones docentes (opcional)
+ * - enrollment_type: Tipo de inscripción (opcional)
+ * - observations: Observaciones (opcional, máximo 1000 caracteres)
+ *
+ * NOTA: enrollment_date NO se valida aquí porque el backend lo genera automáticamente
+ * en CreateEnrollmentUseCase usando la fecha actual.
  */
+import expressValidator from 'express-validator';
+const { body } = expressValidator;
+
 export const createEnrollmentValidator = [
   // ============================================
   // CAMPOS REQUERIDOS
@@ -35,20 +33,54 @@ export const createEnrollmentValidator = [
     .withMessage('El ID del estudiante debe ser un número entero mayor a 0')
     .toInt(),
 
+  // ============================================
+  // CAMPOS CONDICIONALES (al menos uno requerido)
+  // ============================================
   body('parallel_id')
-    .notEmpty()
-    .withMessage('El ID del paralelo es requerido')
+    .optional({ nullable: true, values: 'null' })
     .isInt({ min: 1 })
     .withMessage('El ID del paralelo debe ser un número entero mayor a 0')
     .toInt(),
+
+  body('teacher_assignment_ids')
+    .optional({ nullable: true })
+    .isArray()
+    .withMessage('teacher_assignment_ids debe ser un arreglo')
+    .custom((value) => {
+      if (value == null) return true;
+      if (!Array.isArray(value)) return false;
+      if (value.length === 0) return false; // Si se envía, debe tener al menos un elemento
+      return value.every((id) => Number.isInteger(Number(id)) && Number(id) >= 1);
+    })
+    .withMessage('teacher_assignment_ids debe ser un arreglo con al menos un ID válido (entero mayor a 0)'),
+
+  // Validación condicional: debe enviar parallel_id O teacher_assignment_ids (al menos uno)
+  // Usamos un campo virtual para evitar duplicar la validación de parallel_id
+  body()
+    .custom((_, { req }) => {
+      const parallelId = req.body?.parallel_id;
+      const teacherAssignmentIds = req.body?.teacher_assignment_ids ?? req.body?.teacherAssignmentIds;
+      
+      const hasParallel = parallelId != null && parallelId !== '' && Number(parallelId) >= 1;
+      const hasMaterias = Array.isArray(teacherAssignmentIds) && teacherAssignmentIds.length > 0;
+      
+      if (hasParallel || hasMaterias) return true;
+      
+      throw new Error(
+        'Debe enviar parallel_id o teacher_assignment_ids (al menos una materia)'
+      );
+    }),
 
   // ============================================
   // CAMPOS OPCIONALES
   // ============================================
   body('enrollment_type')
     .optional()
-    .isIn(['NUEVO', 'REINGRESO', 'CONTINUIDAD', 'TRANSFERENCIA_ENTRADA', 'TRASPASO_ENTRADA'])
-    .withMessage('El tipo de inscripción debe ser uno de: NUEVO, REINGRESO, CONTINUIDAD, TRANSFERENCIA_ENTRADA, TRASPASO_ENTRADA'),
+    .isIn(['NUEVO', 'REINGRESO', 'CONTINUIDAD', 'TRASPASO_ENTRADA', 'TRANSITABILIDAD_ENTRADA'])
+    .withMessage('El tipo de inscripción debe ser uno de: NUEVO, REINGRESO, CONTINUIDAD, TRASPASO_ENTRADA, TRANSITABILIDAD_ENTRADA'),
+
+  // NOTA: enrollment_date NO se valida aquí porque el backend lo genera automáticamente
+  // en CreateEnrollmentUseCase._createEnrollment() usando la fecha actual
 
   body('observations')
     .optional({ nullable: true, checkFalsy: true })
@@ -59,7 +91,7 @@ export const createEnrollmentValidator = [
       }
       // Si es una cadena, hacer trim
       if (typeof value === 'string') {
-        return value.trim();
+        return value.trim() || null; // Si después del trim queda vacío, convertir a null
       }
       return value;
     })

@@ -34,7 +34,10 @@ SELECT
   -- Ciudad siempre: ciudad_nacimiento o, si falta, municipio de nacimiento (Bolivia)
   COALESCE(eo.ciudad_nacimiento, g.municipio_nombre) AS ciudad,
   eo.ciudad_nacimiento AS ciudad_nacimiento_raw,
-  -- Geografía de nacimiento (Bolivia)
+  -- Geografía de nacimiento (Bolivia) - incluir IDs para mapeo en frontend
+  g.municipio_id        AS nacimiento_municipio_id,
+  g.provincia_id        AS nacimiento_provincia_id,
+  g.departamento_id     AS nacimiento_departamento_id,
   g.municipio_nombre    AS nacimiento_municipio_nombre,
   g.municipio_codigo    AS nacimiento_municipio_codigo,
   g.provincia_nombre    AS nacimiento_provincia_nombre,

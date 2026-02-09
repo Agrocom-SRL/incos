@@ -17,7 +17,7 @@ export const DocumentoEstudiante = sequelize.define(
       type: DataTypes.STRING(50),
       field: 'tipo_documento',
       allowNull: true,
-      comment: 'Tipo de documento según categoría (INSCRIPCION, LICENCIA, PASANTIA, DESCUENTO, TITULACION, TRASPASO, TRANSFERENCIA, BECA, OTRO). El usuario selecciona el tipo y luego puede elegir un documento específico de ese tipo.',
+      comment: 'Tipo de documento según categoría (INSCRIPCION, LICENCIA, PASANTIA, DESCUENTO, TITULACION, TRASPASO, TRANSITABILIDAD, BECA, OTRO). El usuario selecciona el tipo y luego puede elegir un documento específico de ese tipo.',
     },
     documentacionId: {
       type: DataTypes.INTEGER,

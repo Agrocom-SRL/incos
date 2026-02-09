@@ -51,12 +51,12 @@ const DisabilitiesSection = ({ disabilities }) => {
                 value={disability.description || disability.descripcion}
               />
             </Col>
-            {disability.causa && (
+            {(disability.cause || disability.causa) && (
               <Col xs={24}>
                 <StudentInfoItem
                   icon={<AlertOutlined style={{ fontSize: '24px', color: '#fff' }} />}
                   label="Causa"
-                  value={disability.causa}
+                  value={disability.cause || disability.causa}
                 />
               </Col>
             )}

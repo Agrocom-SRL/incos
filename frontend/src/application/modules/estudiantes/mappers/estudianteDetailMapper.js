@@ -25,7 +25,7 @@ export const estudianteDetailMapper = (dataBackend) => {
     return null;
   }
 
-  const { student, guardians, disabilities, origins, documentDeliveries, scholarships, catalogs = {}, tieneDocumentosFaltantes, actaCompromiso, inscripcion } = normalizedData;
+  const { student, guardians, disabilities, origins, documentDeliveries, scholarships, catalogs = {}, tieneDocumentosFaltantes, actaCompromiso, inscripcion, academicData } = normalizedData;
 
   // Construir CI completo y nombre completo usando utilidades compartidas
   // El backend retorna nombres en inglés, los convertimos para el formatter
@@ -110,12 +110,18 @@ export const estudianteDetailMapper = (dataBackend) => {
       telefonoFijo: student.landlinePhone,
       direccion: student.address,
       municipioResidenciaId: student.residenceMunicipalityId,
+      residenceMunicipalityId: student.residenceMunicipalityId,
+      residenceProvinceId: student.residenceProvinceId,
+      residenceDepartmentId: student.residenceDepartmentId,
       municipioResidenciaName: student.residenceMunicipalityName || null,
       provinciaResidenciaName: student.residenceProvinceName || null,
       departamentoResidenciaName: student.residenceDepartmentName || null,
       residenceAddressComplete,
       zona: student.zone,
-      observaciones: student.observations,
+      trabaja: student.works ?? false,
+      empresaInstitucion: student.employerInstitution ?? '',
+      cargo: student.position ?? '',
+      observaciones: student.observations ?? '',
       activo: student.activo,
       createdAt: student.createdAt,
       updatedAt: student.updatedAt,
@@ -132,6 +138,8 @@ export const estudianteDetailMapper = (dataBackend) => {
     actaCompromiso: actaCompromiso || null,
     // Inscripción más reciente si existe
     inscripcion: inscripcion || null,
+    // Datos académicos (tipoAdmision, gestionIngresoId, carreraId) para formulario de edición / paso 1
+    academicData: academicData || null,
   };
 };
 

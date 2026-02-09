@@ -151,17 +151,6 @@ export const configuracionRoutes = [
             order: 4,
         },
     },
-    {
-        path: '/configuracion/documentacion/transferencia',
-        element: <UnderConstruction />,
-        key: 'CFG-DOCUMENTACION-TRANSFERENCIA',
-        menu: {
-            label: 'Para la Transferencia',
-            module: 'CFG',
-            parent: 'CFG-DOCUMENTACION',
-            order: 5,
-        },
-    },
     // Submenu: Datos Complementarios
     {
         path: '/configuracion/datos-complementarios',

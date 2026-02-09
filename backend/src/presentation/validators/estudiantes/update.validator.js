@@ -589,6 +589,52 @@ export const updateStudentValidator = [
     }),
 
   // ============================================
+  // TIPO DE ADMISIÓN Y DATOS ACADÉMICOS INICIALES (OPCIONAL - misma vista que registro)
+  // ============================================
+  body('tipoAdmision')
+    .optional()
+    .isIn(['NUEVO', 'ANTIGUO', 'TRANSITABILIDAD', 'TRASPASO'])
+    .withMessage('El tipo de admisión debe ser uno de: NUEVO, ANTIGUO, TRANSITABILIDAD, TRASPASO'),
+
+  body('gestionIngresoId')
+    .customSanitizer((value) => (value === '' ? null : value))
+    .optional({ nullable: true, checkFalsy: true })
+    .custom((value) => {
+      if (value !== null && value !== undefined) {
+        const numValue = parseInt(value, 10);
+        if (isNaN(numValue) || numValue < 1) {
+          throw new Error('Gestión de ingreso ID debe ser un número entero mayor a 0');
+        }
+      }
+      return true;
+    })
+    .custom((value, { req }) => {
+      if (req.body.tipoAdmision === 'ANTIGUO' && (value == null || value === '')) {
+        throw new Error('Gestión de ingreso es requerida para estudiantes antiguos');
+      }
+      return true;
+    }),
+
+  body('carreraId')
+    .customSanitizer((value) => (value === '' ? null : value))
+    .optional({ nullable: true, checkFalsy: true })
+    .custom((value) => {
+      if (value !== null && value !== undefined) {
+        const numValue = parseInt(value, 10);
+        if (isNaN(numValue) || numValue < 1) {
+          throw new Error('Carrera ID debe ser un número entero mayor a 0');
+        }
+      }
+      return true;
+    })
+    .custom((value, { req }) => {
+      if (req.body.tipoAdmision === 'ANTIGUO' && (value == null || value === '')) {
+        throw new Error('Carrera es requerida para estudiantes antiguos');
+      }
+      return true;
+    }),
+
+  // ============================================
   // OBSERVACIONES (OPCIONAL)
   // ============================================
   body('observaciones')

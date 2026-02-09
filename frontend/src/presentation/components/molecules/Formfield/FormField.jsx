@@ -59,6 +59,15 @@ const FormField = ({ field, form, resolveOptions, minAge = null, readOnly = fals
     return renderField();
   }
 
+  // Campo oculto: Form.Item sin label ni espacio (noStyle) para enviar id u otros valores
+  if (field.type === 'hidden') {
+    return (
+      <Form.Item name={fieldName} noStyle>
+        {renderField()}
+      </Form.Item>
+    );
+  }
+
   // Campos de tipo display: calculados automáticamente, no se guardan en el formulario
   if (field.type === 'display') {
     return (
@@ -100,6 +109,10 @@ const FormField = ({ field, form, resolveOptions, minAge = null, readOnly = fals
     );
   }
 
+  const formItemClassName = field.className
+    ? `form-field ${field.className}`.trim()
+    : 'form-field';
+
   return (
     <Form.Item
       name={fieldName}
@@ -107,7 +120,7 @@ const FormField = ({ field, form, resolveOptions, minAge = null, readOnly = fals
       labelCol={labelCol}
       wrapperCol={wrapperCol}
       rules={rules}
-      className="form-field"
+      className={formItemClassName}
     >
       {renderField()}
     </Form.Item>

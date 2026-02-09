@@ -61,21 +61,37 @@ export class RegisterStudentRequestDTO {
       departamentoResidenciaId,
       provinciaResidenciaId,
       zona,
+      trabaja,
+      empresaInstitucion,
+      cargo,
       observaciones,
       // Datos de discapacidad
       tipoDiscapacidadId,
       gradoDiscapacidad,
       descripcion,
+      causa,
       // Datos de origen
       paisId,
       ciudadNacimiento,
+      municipioId,
+      localidadComunidad,
       idiomaMaternoId,
       idiomaSecundarioId,
       tipoOrigen,
+      primeraNacionalidad,
+      // Campos para segunda nacionalidad (doble nacionalidad)
+      segundaPaisId,
+      segundaCiudadNacimiento,
+      segundaMunicipioId,
+      segundaLocalidadComunidad,
+      // Tipo de admisión y datos académicos iniciales (para estudiantes antiguos)
+      tipoAdmision,
+      gestionIngresoId, // Gestión de ingreso (requerido si tipoAdmision === 'ANTIGUO')
+      carreraId, // Carrera de ingreso (requerido si tipoAdmision === 'ANTIGUO')
       // Arrays y objetos
       contactosEmergencia,
       documentacion,
-      // NOTA: Los datos académicos (careerId, managementId, etc.) se manejan en otro módulo
+      // NOTA: Para estudiantes ANTIGUOS, carreraId y gestionIngresoId se usan para crear estudiantes_datos_academicos
     } = body;
 
     // tipoSangre: solo valores actuales; legacy ya reemplazado por null en validador
@@ -99,6 +115,9 @@ export class RegisterStudentRequestDTO {
       address: direccion,
       residenceMunicipalityId: municipioResidenciaId,
       zone: zona,
+      works: trabaja ?? false,
+      employerInstitution: empresaInstitucion ?? null,
+      position: cargo ?? null,
       observations: observaciones,
     };
 
@@ -110,26 +129,63 @@ export class RegisterStudentRequestDTO {
               disabilityTypeId: tipoDiscapacidadId,
               description: descripcion,
               disabilityDegree: gradoDiscapacidad,
+              cause: causa ?? null,
             },
           ]
         : [];
 
     // 3. Orígenes (array, opcional)
     // IMPORTANTE: tipoOrigen puede ser 0 (BOLIVIANA), que es falsy, por lo que debemos verificar explícitamente !== undefined
-    const hasOriginData = paisId || ciudadNacimiento || idiomaMaternoId || idiomaSecundarioId || (tipoOrigen !== undefined && tipoOrigen !== null);
-    const origins = hasOriginData
-        ? [
-            {
-              countryId: paisId,
-              birthMunicipalityId: municipioResidenciaId, // Se usa el mismo que residencia si no hay uno específico
-              birthCity: ciudadNacimiento,
-              motherTongueId: idiomaMaternoId,
-              secondaryLanguageId: idiomaSecundarioId,
-              originType: tipoOrigen, // Puede ser 0, 1, 2 o string del ENUM
-              isPrincipal: true, // Asumimos que el primer origen es principal
-            },
-          ]
-        : [];
+    const hasOriginData = paisId || ciudadNacimiento || municipioId || localidadComunidad || idiomaMaternoId || idiomaSecundarioId || (tipoOrigen !== undefined && tipoOrigen !== null);
+    let origins = [];
+    
+    if (hasOriginData) {
+      // Normalizar tipoOrigen a string
+      const tipoOrigenNormalizado = tipoOrigen === 0 || tipoOrigen === '0' ? 'BOLIVIANA'
+        : tipoOrigen === 1 || tipoOrigen === '1' ? 'EXTRANJERA'
+        : tipoOrigen === 2 || tipoOrigen === '2' ? 'DOBLE_NACIONALIDAD'
+        : tipoOrigen;
+      
+      if (tipoOrigenNormalizado === 'DOBLE_NACIONALIDAD' && primeraNacionalidad) {
+        // Doble nacionalidad: crear 2 orígenes
+        const primeraEsBoliviana = primeraNacionalidad === 'BOLIVIANA' || primeraNacionalidad === '0';
+        
+        // Primera nacionalidad (principal)
+        origins.push({
+          countryId: primeraEsBoliviana ? null : (paisId || null),
+          birthMunicipalityId: primeraEsBoliviana ? (municipioId || null) : null,
+          birthCity: primeraEsBoliviana ? (localidadComunidad || null) : (ciudadNacimiento || null),
+          motherTongueId: idiomaMaternoId || null,
+          secondaryLanguageId: idiomaSecundarioId || null,
+          originType: primeraEsBoliviana ? 'BOLIVIANA' : 'EXTRANJERA',
+          isPrincipal: true,
+        });
+        
+        // Segunda nacionalidad (secundaria)
+        const segundaEsBoliviana = !primeraEsBoliviana;
+        origins.push({
+          countryId: segundaEsBoliviana ? null : (segundaPaisId || null),
+          birthMunicipalityId: segundaEsBoliviana ? (segundaMunicipioId || null) : null,
+          birthCity: segundaEsBoliviana ? (segundaLocalidadComunidad || null) : (segundaCiudadNacimiento || null),
+          motherTongueId: null, // Los idiomas van solo en el principal
+          secondaryLanguageId: null,
+          originType: segundaEsBoliviana ? 'BOLIVIANA' : 'EXTRANJERA',
+          isPrincipal: false,
+        });
+      } else {
+        // Nacionalidad simple (BOLIVIANA o EXTRANJERA)
+        const esBoliviana = tipoOrigenNormalizado === 'BOLIVIANA';
+        origins.push({
+          countryId: esBoliviana ? null : (paisId || null),
+          birthMunicipalityId: esBoliviana ? (municipioId || null) : null,
+          birthCity: esBoliviana ? (localidadComunidad || null) : (ciudadNacimiento || null),
+          motherTongueId: idiomaMaternoId || null,
+          secondaryLanguageId: idiomaSecundarioId || null,
+          originType: tipoOrigenNormalizado,
+          isPrincipal: true,
+        });
+      }
+    }
 
     // 4. Apoderados/Contactos de emergencia (array, opcional)
     // El frontend ya envía contactosEmergencia como array, pero necesitamos transformar
@@ -170,6 +226,9 @@ export class RegisterStudentRequestDTO {
       disabilities,
       origins,
       documentation,
+      tipoAdmision, // Tipo de admisión (NUEVO, ANTIGUO, TRANSITABILIDAD, TRASPASO)
+      gestionIngresoId, // Gestión de ingreso (requerido si tipoAdmision === 'ANTIGUO')
+      carreraId, // Carrera de ingreso (requerido si tipoAdmision === 'ANTIGUO')
     };
   }
 }

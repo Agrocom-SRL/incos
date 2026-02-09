@@ -44,31 +44,26 @@ const ConfigurationSelectionSection = ({
         />
       )}
 
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={onFinish}
+      {/* No usar Form aquí: ya estamos dentro del Form del padre; solo Form.Item para no anidar <form> */}
+      <Form.Item
+        name="configuracionAporteId"
+        rules={[
+          { required: true, message: 'Por favor seleccione una configuración de aporte' }
+        ]}
       >
-        <Form.Item
-          name="configuracionAporteId"
-          rules={[
-            { required: true, message: 'Por favor seleccione una configuración de aporte' }
-          ]}
-        >
-          <DataCards
-            data={configuracionAportesData.configuracionAportes || []}
-            loading={configuracionAportesData.loading}
-            emptyMessage="No hay configuraciones de aportes disponibles"
-            renderItem={renderConfiguracionCard}
-            onSelect={onSelectConfiguracion}
-            selectedItem={configuracionAportesData.selectedConfiguracion}
-            isSelected={(item) => {
-              return configuracionAportesData.selectedConfiguracion?.id === item.id;
-            }}
-            loadingText="Cargando configuraciones de aportes..."
-          />
-        </Form.Item>
-      </Form>
+        <DataCards
+          data={configuracionAportesData.configuracionAportes || []}
+          loading={configuracionAportesData.loading}
+          emptyMessage="No hay configuraciones de aportes disponibles"
+          renderItem={renderConfiguracionCard}
+          onSelect={onSelectConfiguracion}
+          selectedItem={configuracionAportesData.selectedConfiguracion}
+          isSelected={(item) => {
+            return configuracionAportesData.selectedConfiguracion?.id === item.id;
+          }}
+          loadingText="Cargando configuraciones de aportes..."
+        />
+      </Form.Item>
     </Card>
   );
 };

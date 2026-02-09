@@ -1,22 +1,46 @@
 import { NotFoundError, ValidationError } from '../../../domain/errors/AppError.js';
+import {
+  ESTADOS_ACADEMICOS,
+  ESTADOS_REGISTRO_ESTUDIANTE,
+} from '../../../domain/constants/estudiantes.constants.js';
+import {
+  TIPOS_INSCRIPCION,
+  ESTADOS_MATERIA_INSCRITA,
+} from '../../../domain/constants/inscripciones.constants.js';
 
 /**
  * Use Case: CreateEnrollmentUseCase
  * Módulo: Inscripciones
- * Crea una nueva inscripción con materias asociadas
- * 
- * Responsabilidades:
- * - Validar estudiante y paralelo
+ * Crea una nueva inscripción con materias asociadas (capa INSCRIPCIÓN únicamente).
+ *
+ * Separación conceptual Inscripción vs Matriculación:
+ * - INSCRIPCIÓN (este use case): El estudiante elige paralelo(s) y materias por periodo.
+ *   Se crean inscripciones e inscripciones_materias (asignacion_docente_id). La inscripción
+ *   vincula al estudiante con asignaciones docentes específicas (curso + docente + gestion_plan).
+ *   NO se asignan horarios ni aulas en este proceso; eso corresponde a la MATRICULACIÓN.
+ * - MATRICULACIÓN (concepto separado): Proceso posterior que trabaja con horarios concretos
+ *   (cursos_horarios, horarios, aulas), cupos y habilitación de aulas. Se realiza después
+ *   de la inscripción, antes del inicio de clases. No forma parte de este caso de uso.
+ *
+ * Estructura de datos:
+ * - inscripciones: registro principal por estudiante y gestión
+ * - inscripciones_materias: vincula inscripción con asignacion_docente_id
+ * - asignaciones_docentes: vincula curso (paralelo + materia) con docente y gestion_plan
+ * - cursos: vincula paralelo con materia
+ * - paralelos: agrupa estudiantes por carrera, periodo y turno
+ *
+ * Responsabilidades (solo inscripción):
+ * - Validar estudiante y paralelo(s) o asignaciones docentes específicas
  * - Obtener gestión actual desde configuración
  * - Crear datos académicos del estudiante si no existen
- * - Crear la inscripción principal
- * - Insertar todas las materias del paralelo en inscripciones_materias
- * 
+ * - Crear la inscripción principal (inscripciones)
+ * - Insertar materias inscritas (inscripciones_materias) por paralelo completo o por teacherAssignmentIds
+ *
  * Principios SOLID aplicados:
  * - Single Responsibility: Cada método privado tiene una sola responsabilidad
  * - Open/Closed: Abierto para extensión (métodos privados), cerrado para modificación
  * - Dependency Inversion: Depende de abstracciones (repositorios inyectados)
- * 
+ *
  * Clean Architecture:
  * - Application Layer: Orquesta la lógica de negocio
  * - Depende de Repositories (Infrastructure) a través de abstracciones
@@ -94,76 +118,146 @@ export class CreateEnrollmentUseCase {
   }
 
   /**
-   * Ejecuta el caso de uso de creación de inscripción
+   * Ejecuta el caso de uso de creación de inscripción.
+   * 
+   * Dos modos de operación:
+   * 1. Modo paralelo completo: con parallelId inscribe al estudiante en todas las materias del paralelo
+   *    (usado típicamente para estudiantes nuevos que cursan todas las materias del periodo).
+   * 2. Modo materias específicas: con teacherAssignmentIds inscribe solo en las asignaciones docentes
+   *    seleccionadas (usado para estudiantes antiguos que eligen materias específicas).
+   *
    * @param {Object} data - Datos de la inscripción
-   * @param {number} data.studentId - ID del estudiante
-   * @param {number} data.parallelId - ID del paralelo
-   * @param {string} [data.enrollmentType] - Tipo de inscripción (opcional, por defecto 'NUEVO')
-   * @param {string} [data.enrollmentDate] - Fecha de inscripción (opcional, por defecto fecha actual)
+   * @param {number} data.studentId - ID del estudiante (requerido)
+   * @param {number} [data.parallelId] - ID del paralelo (requerido si no se envía teacherAssignmentIds)
+   * @param {number[]} [data.teacherAssignmentIds] - IDs de asignaciones docentes (opcional; permite inscribir
+   *   materias de diferentes paralelos/periodos en una sola inscripción. Todas deben pertenecer al mismo plan habilitado)
+   * @param {string} [data.enrollmentType] - Tipo de inscripción (NUEVO, REINGRESO, CONTINUIDAD, etc.)
    * @param {string} [data.observations] - Observaciones (opcional)
    * @returns {Promise<Object>} Inscripción creada con materias asociadas
+   * 
+   * NOTA: enrollmentDate NO se recibe del frontend; se genera automáticamente en _createEnrollment()
+   * usando la fecha actual del sistema.
    */
   async execute(data) {
-    const { studentId, parallelId, enrollmentType = 'NUEVO', enrollmentDate, observations } = data;
+    const {
+      studentId,
+      parallelId,
+      teacherAssignmentIds,
+      enrollmentType = TIPOS_INSCRIPCION.NUEVO,
+      observations,
+    } = data;
+
+    // Determinar modo: materias específicas si se envía array no vacío de teacherAssignmentIds
+    const useMateriasMode = Array.isArray(teacherAssignmentIds) && teacherAssignmentIds.length > 0;
 
     this.logger.info('[Inscripciones] Iniciando creación de inscripción', {
       studentId,
       parallelId,
+      teacherAssignmentIds: useMateriasMode ? teacherAssignmentIds : undefined,
+      mode: useMateriasMode ? 'materias' : 'paralelo',
       enrollmentType,
     });
 
     try {
-      // 1. Validar estudiante y paralelo
       const student = await this._validateStudent(studentId);
-      const parallel = await this._validateParallel(parallelId);
-
-      // 2. Obtener gestión actual desde configuración
       const management = await this._getCurrentManagement();
 
-      // 3. Obtener o crear datos académicos del estudiante
+      let parallel;
+      let teacherAssignments;
+
+      if (useMateriasMode) {
+        // Modo materias específicas: permite inscribir materias de diferentes paralelos/periodos
+        // Se usa el primer paralelo solo para determinar la carrera y crear/obtener datos académicos
+        // Las asignaciones docentes pueden ser de cualquier paralelo/periodo de la misma carrera
+        const { parallel: firstParallel } = await this._getParallelFromFirstTeacherAssignment(
+          teacherAssignmentIds[0]
+        );
+        if (!firstParallel) {
+          throw new ValidationError(
+            'No se pudo determinar la carrera desde las asignaciones docentes seleccionadas'
+          );
+        }
+        parallel = firstParallel;
+
+        // Crear o obtener datos académicos del estudiante (si no existen, se crean automáticamente)
+        const studentAcademicData = await this._getOrCreateStudentAcademicData(
+          student,
+          parallel,
+          management
+        );
+        const { managementPlan } = await this._getStudyPlanAndManagementPlan(
+          studentAcademicData,
+          management
+        );
+
+        // Validar y resolver todas las asignaciones docentes (pueden ser de diferentes paralelos/periodos)
+        // Todas deben pertenecer al mismo plan habilitado (misma carrera)
+        teacherAssignments = await this._validateAndResolveTeacherAssignments(
+          teacherAssignmentIds,
+          managementPlan.id
+        );
+        await this._validateNoExistingEnrollment(studentAcademicData, management);
+        await this._validatePaymentExists(student, management);
+        const enrollment = await this._createEnrollment(
+          studentAcademicData,
+          management,
+          enrollmentType,
+          observations
+        );
+        const enrollmentSubjects = await this._createEnrollmentSubjects(
+          enrollment,
+          teacherAssignments
+        );
+        return this._buildResponse(
+          enrollment,
+          enrollmentSubjects,
+          studentId,
+          parallel.id,
+          management
+        );
+      }
+
+      if (!parallelId) {
+        throw new ValidationError(
+          'El ID del paralelo es requerido cuando no se envían materias específicas (teacherAssignmentIds)'
+        );
+      }
+      // Modo paralelo completo: inscribe en todas las materias del paralelo
+      parallel = await this._validateParallel(parallelId);
+
+      // Crear o obtener datos académicos del estudiante (si no existen, se crean automáticamente)
       const studentAcademicData = await this._getOrCreateStudentAcademicData(
         student,
         parallel,
         management
       );
-
-      // 4. Obtener plan de estudios y plan habilitado
-      const { studyPlan, managementPlan } = await this._getStudyPlanAndManagementPlan(
+      const { managementPlan } = await this._getStudyPlanAndManagementPlan(
         studentAcademicData,
         management
       );
-
-      // 5. Validar que no exista inscripción previa
       await this._validateNoExistingEnrollment(studentAcademicData, management);
-
-      // 6. Validar que el estudiante haya realizado el pago del aporte anual
       await this._validatePaymentExists(student, management);
-
-      // 7. Obtener todas las asignaciones docentes del paralelo
-      const teacherAssignments = await this._getTeacherAssignmentsFromParallel(
+      teacherAssignments = await this._getTeacherAssignmentsFromParallel(
         parallel,
         managementPlan
       );
-
-      // 8. Crear la inscripción principal
       const enrollment = await this._createEnrollment(
         studentAcademicData,
         management,
         enrollmentType,
         observations
       );
-
-      // 9. Crear las inscripciones de materias para todas las asignaciones docentes
       const enrollmentSubjects = await this._createEnrollmentSubjects(
         enrollment,
         teacherAssignments
       );
-
-      // 10. Construir y retornar respuesta
-      // NOTA: La generación de boleta de inscripción ahora se hace mediante un endpoint separado
-      // POST /api/v1/inscripciones/:id/generar-boleta
-      return this._buildResponse(enrollment, enrollmentSubjects, studentId, parallelId, management);
-
+      return this._buildResponse(
+        enrollment,
+        enrollmentSubjects,
+        studentId,
+        parallelId,
+        management
+      );
     } catch (error) {
       this.logger.error('[Inscripciones] Error al crear inscripción', {
         error: error.message,
@@ -227,6 +321,76 @@ export class CreateEnrollmentUseCase {
   }
 
   /**
+   * Obtiene el paralelo (y carrera) a partir de la primera asignación docente.
+   * Usado en modo materias para determinar carrera y datos académicos sin enviar parallelId.
+   * @private
+   * @param {number} teacherAssignmentId - ID de la asignación docente
+   * @returns {Promise<{parallel: Object|null}>}
+   */
+  async _getParallelFromFirstTeacherAssignment(teacherAssignmentId) {
+    const assignment = await this.teacherAssignmentRepository.findById(teacherAssignmentId);
+    if (!assignment) {
+      throw new NotFoundError(`Asignación docente con ID ${teacherAssignmentId}`);
+    }
+    const assignmentPlain = assignment.toPlainObject ? assignment.toPlainObject() : assignment;
+    const courseId = assignmentPlain.courseId ?? assignmentPlain.cursoId;
+    if (!courseId) {
+      this.logger.warn('[Inscripciones] Asignación docente sin curso', { teacherAssignmentId });
+      return { parallel: null };
+    }
+    const course = await this.courseRepository.findById(courseId);
+    if (!course) {
+      throw new NotFoundError(`Curso con ID ${courseId}`);
+    }
+    const coursePlain = course.toPlainObject ? course.toPlainObject() : course;
+    const parallelId = coursePlain.paraleloId ?? coursePlain.parallelId;
+    if (!parallelId) {
+      this.logger.warn('[Inscripciones] Curso sin paralelo', { courseId });
+      return { parallel: null };
+    }
+    const parallel = await this.parallelRepository.findById(parallelId);
+    return { parallel: parallel || null };
+  }
+
+  /**
+   * Valida y resuelve las asignaciones docentes por ID; todas deben pertenecer al mismo plan habilitado.
+   * 
+   * IMPORTANTE: Este método permite inscribir materias de diferentes paralelos y periodos en una sola
+   * inscripción. Cada asignación docente está vinculada a un curso específico (paralelo + materia),
+   * por lo que se pueden seleccionar materias de múltiples paralelos/periodos siempre que todas
+   * pertenezcan al mismo plan habilitado (misma carrera y gestión).
+   * 
+   * @private
+   * @param {number[]} teacherAssignmentIds - IDs de asignaciones docentes (pueden ser de diferentes paralelos/periodos)
+   * @param {number} managementPlanId - ID del plan habilitado (todas las asignaciones deben pertenecer a este plan)
+   * @returns {Promise<Array>} Array de entidades TeacherAssignment validadas
+   * @throws {NotFoundError} Si alguna asignación docente no existe
+   * @throws {ValidationError} Si alguna asignación no pertenece al plan habilitado
+   */
+  async _validateAndResolveTeacherAssignments(teacherAssignmentIds, managementPlanId) {
+    const assignments = [];
+    for (const id of teacherAssignmentIds) {
+      const assignment = await this.teacherAssignmentRepository.findById(id);
+      if (!assignment) {
+        throw new NotFoundError(`Asignación docente con ID ${id}`);
+      }
+      const plain = assignment.toPlainObject ? assignment.toPlainObject() : assignment;
+      const planId = plain.managementPlanId ?? plain.gestionPlanId;
+      if (planId !== managementPlanId) {
+        throw new ValidationError(
+          `La asignación docente ${id} no pertenece al plan habilitado de la gestión actual`
+        );
+      }
+      assignments.push(assignment);
+    }
+    this.logger.info('[Inscripciones] Asignaciones docentes validadas (modo materias)', {
+      count: assignments.length,
+      managementPlanId,
+    });
+    return assignments;
+  }
+
+  /**
    * Obtiene la gestión actual desde la configuración del sistema
    * @private
    * @returns {Promise<Object>} Entidad Management
@@ -237,7 +401,7 @@ export class CreateEnrollmentUseCase {
     const config = await this.configuracionSistemaRepository.findBy(
       { key: 'gestion_actual' }
     );
-    
+
     if (!config || !config.value) {
       throw new ValidationError(
         'No se encontró la configuración de gestión actual. Por favor, configure el sistema.'
@@ -256,7 +420,7 @@ export class CreateEnrollmentUseCase {
       year: gestionYear,
       vigente: true,
     });
-    
+
     if (!management) {
       throw new ValidationError(
         `No se encontró una gestión vigente para el año ${gestionYear}. Por favor, configure el sistema.`
@@ -272,12 +436,25 @@ export class CreateEnrollmentUseCase {
   }
 
   /**
-   * Obtiene o crea los datos académicos del estudiante
+   * Obtiene o crea los datos académicos del estudiante.
+   * 
+   * Este método es crucial para estudiantes nuevos que aún no tienen datos académicos registrados.
+   * Si el estudiante no tiene datos académicos activos, se crean automáticamente con:
+   * - La carrera del paralelo seleccionado
+   * - La gestión de ingreso actual
+   * - Estado académico: ESTADOS_ACADEMICOS.REGULAR (valor por defecto según esquema de BD)
+   * - Estado de registro: ESTADOS_REGISTRO_ESTUDIANTE.ADMITIDO (al crear inscripción, el estudiante queda admitido)
+   * 
+   * Si el estudiante ya tiene datos académicos:
+   * - Se actualiza la carrera si cambia
+   * - Se actualiza el estado_registro a ESTADOS_REGISTRO_ESTUDIANTE.ADMITIDO si aún no lo está
+   *   (BORRADOR o PENDIENTE) porque al crear una inscripción, el estudiante queda formalmente admitido
+   * 
    * @private
    * @param {Object} student - Entidad Student
-   * @param {Object} parallel - Entidad Parallel
-   * @param {Object} management - Entidad Management
-   * @returns {Promise<Object>} Entidad StudentAcademicData
+   * @param {Object} parallel - Entidad Parallel (se usa para determinar la carrera)
+   * @param {Object} management - Entidad Management (gestión actual)
+   * @returns {Promise<Object>} Entidad StudentAcademicData (existente o recién creada)
    */
   async _getOrCreateStudentAcademicData(student, parallel, management) {
     // Buscar datos académicos existentes del estudiante
@@ -289,27 +466,51 @@ export class CreateEnrollmentUseCase {
     const existingAcademicData = result.studentAcademicData?.find((data) => data.active);
 
     if (existingAcademicData) {
-      // Si existe, actualizar la carrera si es necesario
+      // Si existe, actualizar la carrera y el estado de registro si es necesario
       const parallelPlain = parallel.toPlainObject ? parallel.toPlainObject() : parallel;
       const careerId = parallelPlain.careerId || parallel.careerId;
+      
+      // Verificar si necesita actualización (carrera o estado_registro)
+      const needsCareerUpdate = existingAcademicData.careerId !== careerId;
+      
+      // Obtener estado_registro actual (puede venir como registrationState desde entidad o estadoRegistro desde modelo)
+      const existingPlain = existingAcademicData.toPlainObject ? existingAcademicData.toPlainObject() : existingAcademicData;
+      const currentRegistrationStatus = existingPlain.registrationState || existingPlain.estadoRegistro || ESTADOS_REGISTRO_ESTUDIANTE.BORRADOR;
+      const needsStatusUpdate = currentRegistrationStatus !== ESTADOS_REGISTRO_ESTUDIANTE.ADMITIDO;
 
-      if (existingAcademicData.careerId !== careerId) {
-        this.logger.info('[Inscripciones] Actualizando carrera del estudiante', {
-          studentId: student.id,
-          oldCareerId: existingAcademicData.careerId,
-          newCareerId: careerId,
-        });
+      if (needsCareerUpdate || needsStatusUpdate) {
+        const updateData = {};
+        
+        if (needsCareerUpdate) {
+          updateData.careerId = careerId;
+          updateData.managementIngressId = management.id;
+          this.logger.info('[Inscripciones] Actualizando carrera del estudiante', {
+            studentId: student.id,
+            oldCareerId: existingAcademicData.careerId,
+            newCareerId: careerId,
+          });
+        }
+        
+        if (needsStatusUpdate) {
+          // Actualizar estado_registro a ADMITIDO cuando se crea una inscripción
+          // El mapper espera registrationState (dominio) y lo mapea a estadoRegistro (BD)
+          updateData.registrationState = ESTADOS_REGISTRO_ESTUDIANTE.ADMITIDO;
+          this.logger.info('[Inscripciones] Actualizando estado_registro a ADMITIDO', {
+            studentId: student.id,
+            oldStatus: currentRegistrationStatus,
+            newStatus: ESTADOS_REGISTRO_ESTUDIANTE.ADMITIDO,
+          });
+        }
 
-        await this.studentAcademicDataRepository.update(existingAcademicData.id, {
-          careerId,
-          managementIngressId: management.id,
-        });
+        await this.studentAcademicDataRepository.update(existingAcademicData.id, updateData);
 
         // Obtener los datos actualizados
         const updated = await this.studentAcademicDataRepository.findById(existingAcademicData.id);
-        this.logger.info('[Inscripciones] Carrera del estudiante actualizada', {
+        this.logger.info('[Inscripciones] Datos académicos del estudiante actualizados', {
           studentId: student.id,
           academicDataId: updated.id,
+          careerUpdated: needsCareerUpdate,
+          statusUpdated: needsStatusUpdate,
         });
 
         return updated;
@@ -326,8 +527,8 @@ export class CreateEnrollmentUseCase {
       studentId: student.id,
       careerId,
       managementIngressId: management.id,
-      academicStatus: 'EN_CURSO',
-      registrationStatus: 'ADMITIDO',
+      academicState: ESTADOS_ACADEMICOS.REGULAR, // Estado académico por defecto según esquema
+      registrationState: ESTADOS_REGISTRO_ESTUDIANTE.ADMITIDO, // Al crear inscripción, el estudiante queda ADMITIDO
     };
 
     const created = await this.studentAcademicDataRepository.create(academicData);
@@ -559,12 +760,12 @@ export class CreateEnrollmentUseCase {
    */
   async _createEnrollmentSubjects(enrollment, teacherAssignments) {
     const enrollmentSubjects = [];
-    
+
     for (const assignment of teacherAssignments) {
       const enrollmentSubjectData = {
         enrollmentId: enrollment.id,
         teacherAssignmentId: assignment.id,
-        status: 'INSCRITO',
+        status: ESTADOS_MATERIA_INSCRITA.INSCRITO,
         observations: null,
         teacherObservations: null,
       };

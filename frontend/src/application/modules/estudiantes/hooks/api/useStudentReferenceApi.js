@@ -19,7 +19,7 @@ import { GRADO_DISCAPACIDAD } from '@infrastructure/config/constants';
 import { createOptimizedArraySetter, useStableApiResult } from '@application/utils';
 
 // Flag para activar/desactivar logs de renderizado (solo desarrollo)
-const ENABLE_RENDER_LOGS = import.meta.env.DEV && true; // Cambiar a true para activar logs
+const ENABLE_RENDER_LOGS = import.meta.env.DEV && false; // Cambiar a true para activar logs
 
 export const useStudentReferenceApi = () => {
   // Estados para datos de referencia (cargados bajo demanda)

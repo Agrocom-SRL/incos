@@ -23,10 +23,10 @@ import { Row, Col, Space, Form, Divider, Typography, Input, Tag } from 'antd';
 import { SaveOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { Card, Button } from '@atoms';
-import { 
-  PaymentAmountDisplay, 
-  PaymentMethodInfo, 
-  PaymentFormFields 
+import {
+  PaymentAmountDisplay,
+  PaymentMethodInfo,
+  PaymentFormFields
 } from '../molecules';
 
 const { Title } = Typography;
@@ -56,28 +56,28 @@ const SelectedPaymentSection = ({
 
   // Calcular descuento automáticamente basado en beca activa
   const montoTotal = Number(selectedConfiguracion.montoBase) || 0;
-  
+
   // Verificar si hay beca aplicable (ACTIVA o PENDIENTE con porcentaje)
   // Para mostrar el descuento, aceptamos becas ACTIVA o PENDIENTE que tengan porcentaje
   const tieneBeca = becaActiva && (() => {
     const stateValue = becaActiva.state || becaActiva.estado;
     if (!stateValue) return false;
-    
+
     const normalizedState = String(stateValue).toUpperCase();
     const tieneEstadoValido = normalizedState === 'ACTIVA' || normalizedState === 'ACTIVE' || normalizedState === 'PENDIENTE';
     const tienePorcentaje = becaActiva.scholarshipPercentage || becaActiva.porcentaje || becaActiva.scholarshipType?.percentage;
-    
+
     return tieneEstadoValido && tienePorcentaje;
   })();
-  
+
   // Obtener porcentaje de descuento (puede venir de diferentes campos)
   const porcentajeDescuento = tieneBeca ? (
-    becaActiva.scholarshipPercentage || 
-    becaActiva.porcentaje || 
+    becaActiva.scholarshipPercentage ||
+    becaActiva.porcentaje ||
     (becaActiva.scholarshipType?.percentage) ||
     0
   ) : 0;
-  
+
   const descuentoBeca = tieneBeca ? (montoTotal * porcentajeDescuento / 100) : 0;
   const montoPagado = calcularMontoPagado(montoTotal, descuentoBeca);
 
@@ -141,8 +141,8 @@ const SelectedPaymentSection = ({
           <span style={{ fontSize: '18px', fontWeight: 600 }}>Detalles del Pago</span>
         </Space>
       }
-      style={{ 
-        marginTop: '24px', 
+      style={{
+        marginTop: '24px',
         marginBottom: '24px',
         borderRadius: '12px',
         boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
@@ -152,16 +152,16 @@ const SelectedPaymentSection = ({
       {montoPagado === 0 ? (
         <div>
           {/* Label de Pago Gratuito */}
-          <div style={{ 
+          <div style={{
             marginBottom: '24px',
             display: 'flex',
             alignItems: 'center',
             gap: '8px'
           }}>
-            <Tag 
-              color="success" 
-              style={{ 
-                fontSize: '20px', 
+            <Tag
+              color="success"
+              style={{
+                fontSize: '20px',
                 padding: '4px 12px',
                 fontWeight: 600,
                 borderRadius: '6px'
@@ -171,53 +171,43 @@ const SelectedPaymentSection = ({
             </Tag>
           </div>
 
-          {/* Formulario para la descripción */}
-          <Form
-            form={form}
-            layout="vertical"
-            onFinish={onFinish}
-            initialValues={{
-              descuentoBeca: descuentoBeca,
-              descripcion: undefined,
-            }}
-          >
-            <Form.Item
-              name="descripcion"
-              label={
-                <span style={{ fontWeight: 500, fontSize: '14px' }}>
-                  Descripción
-                </span>
-              }
-              tooltip="Descripción del pago (opcional)"
-              required={false}
-              rules={[
-                // Validar longitud solo si se proporciona un valor
-                {
-                  validator: (_, value) => {
-                    if (!value || value.trim().length === 0) {
-                      return Promise.resolve(); // Permitir vacío
-                    }
-                    if (value.trim().length > 500) {
-                      return Promise.reject('La descripción no puede exceder 500 caracteres');
-                    }
-                    return Promise.resolve();
+          {/* No usar Form aquí: ya estamos dentro del Form del padre; solo Form.Item para no anidar <form> */}
+          <Form.Item
+            name="descripcion"
+            label={
+              <span style={{ fontWeight: 500, fontSize: '14px' }}>
+                Descripción
+              </span>
+            }
+            tooltip="Descripción del pago (opcional)"
+            required={false}
+            rules={[
+              // Validar longitud solo si se proporciona un valor
+              {
+                validator: (_, value) => {
+                  if (!value || value.trim().length === 0) {
+                    return Promise.resolve(); // Permitir vacío
                   }
+                  if (value.trim().length > 500) {
+                    return Promise.reject('La descripción no puede exceder 500 caracteres');
+                  }
+                  return Promise.resolve();
                 }
-              ]}
-            >
-              <Input.TextArea
-                rows={3}
-                placeholder="Ej: Pago de aporte académico gestión 2025... (opcional)"
-                maxLength={500}
-                showCount
-                style={{ 
-                  borderRadius: '8px',
-                  fontSize: '14px'
-                }}
-              />
-            </Form.Item>
-          </Form>
-          
+              }
+            ]}
+          >
+            <Input.TextArea
+              rows={3}
+              placeholder="Ej: Pago de aporte académico gestión 2025... (opcional)"
+              maxLength={500}
+              showCount
+              style={{
+                borderRadius: '8px',
+                fontSize: '14px'
+              }}
+            />
+          </Form.Item>
+
           {/* Botones de acción */}
           <Divider style={{ margin: '32px 0 24px 0' }} />
           <div style={{
@@ -270,7 +260,7 @@ const SelectedPaymentSection = ({
                 montoPagado={montoCuota != null && montoCuota !== '' ? Number(montoCuota) : montoPagado}
               />
             </Col>
-            
+
             {/* Método de Pago */}
             <Col xs={24} md={12}>
               <PaymentMethodInfo
@@ -286,7 +276,7 @@ const SelectedPaymentSection = ({
 
           {/* Formulario para completar el pago */}
           <div>
-            <Title level={5} style={{ 
+            <Title level={5} style={{
               marginBottom: '20px',
               fontSize: '16px',
               fontWeight: 600,
@@ -294,28 +284,18 @@ const SelectedPaymentSection = ({
             }}>
               Completar Información del Pago
             </Title>
-            <Form
+            {/* No usar Form aquí: ya estamos dentro del Form del padre; solo contenido para no anidar <form> */}
+            <PaymentFormFields
               form={form}
-              layout="vertical"
-              onFinish={onFinish}
-              initialValues={{
-                fechaPago: requiereFechaPago ? dayjs() : undefined,
-                descuentoBeca: descuentoBeca,
-                descripcion: undefined,
-              }}
-            >
-              <PaymentFormFields
-                form={form}
-                cuentasPagoData={cuentasPagoData}
-                bancosAutorizadosData={bancosAutorizadosData}
-                requiereFechaPago={requiereFechaPago}
-                requiereCuenta={requiereCuenta}
-                requiereNumeroTransaccion={mostrarNumeroTransaccion}
-                requiereCodigoComprobante={requiereCodigoComprobante}
-                requiereDocumentoRespaldo={mostrarDocumentoRespaldo}
-                esQR={esQR}
-              />
-            </Form>
+              cuentasPagoData={cuentasPagoData}
+              bancosAutorizadosData={bancosAutorizadosData}
+              requiereFechaPago={requiereFechaPago}
+              requiereCuenta={requiereCuenta}
+              requiereNumeroTransaccion={mostrarNumeroTransaccion}
+              requiereCodigoComprobante={requiereCodigoComprobante}
+              requiereDocumentoRespaldo={mostrarDocumentoRespaldo}
+              esQR={esQR}
+            />
           </div>
 
           {/* Botones de acción */}

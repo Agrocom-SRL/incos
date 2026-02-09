@@ -31,10 +31,26 @@
 }
 
 /* Radio buttons: cada item ocupa todo el ancho disponible */
+/* Asegurar alineación vertical del label con el círculo del radio */
 .form-field .field-radio .ant-radio-wrapper {
-  display: block;
+  display: flex;
+  align-items: flex-start;
   width: 100%;
   margin-bottom: var(--spacing-xs);
+  line-height: 1.5715; /* Line height estándar de Ant Design */
+}
+
+.form-field .field-radio .ant-radio-wrapper .ant-radio {
+  /* Asegurar que el círculo del radio esté alineado arriba */
+  margin-top: 2px; /* Ajuste fino para alineación visual */
+  flex-shrink: 0;
+}
+
+.form-field .field-radio .ant-radio-wrapper .ant-radio + span {
+  /* Asegurar que el label esté alineado con el círculo */
+  padding-left: 8px;
+  line-height: 1.5715;
+  flex: 1;
 }
 
 .form-field .field-radio .ant-radio-wrapper:last-child {

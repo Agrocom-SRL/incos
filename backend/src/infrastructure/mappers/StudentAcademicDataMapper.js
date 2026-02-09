@@ -56,23 +56,11 @@ export class StudentAcademicDataMapper {
     if ('estadoRegistro' in dataValues && dataValues.estadoRegistro !== undefined) {
       specificFields.registrationState = dataValues.estadoRegistro || 'BORRADOR'; // BORRADOR, PENDIENTE, ADMITIDO
     }
-    if ('unidadEducativaProcedencia' in dataValues && dataValues.unidadEducativaProcedencia !== undefined) {
-      specificFields.previousSchool = dataValues.unidadEducativaProcedencia;
-    }
-    if ('anioEgresoSecundaria' in dataValues && dataValues.anioEgresoSecundaria !== undefined) {
-      specificFields.highSchoolGraduationYear = dataValues.anioEgresoSecundaria;
+    if ('tipoAdmision' in dataValues && dataValues.tipoAdmision !== undefined) {
+      specificFields.admissionType = dataValues.tipoAdmision; // BD → dominio; API expone tipoAdmision en toPlainObject
     }
     if ('promedioAnual' in dataValues && dataValues.promedioAnual !== undefined) {
       specificFields.annualAverage = dataValues.promedioAnual ? parseFloat(dataValues.promedioAnual) : null;
-    }
-    if ('fechaEgreso' in dataValues && dataValues.fechaEgreso !== undefined) {
-      specificFields.graduationDate = dataValues.fechaEgreso;
-    }
-    if ('fechaRetiro' in dataValues && dataValues.fechaRetiro !== undefined) {
-      specificFields.withdrawalDate = dataValues.fechaRetiro;
-    }
-    if ('motivoRetiro' in dataValues && dataValues.motivoRetiro !== undefined) {
-      specificFields.withdrawalReason = dataValues.motivoRetiro;
     }
     if ('fotoUrl' in dataValues && dataValues.fotoUrl !== undefined) {
       specificFields.photoUrl = dataValues.fotoUrl;
@@ -106,12 +94,8 @@ export class StudentAcademicDataMapper {
       gestionIngresoId: data.managementId,
       estadoAcademico: data.academicState || 'REGULAR',
       estadoRegistro: data.registrationState || 'BORRADOR', // BORRADOR, PENDIENTE, ADMITIDO
-      unidadEducativaProcedencia: data.previousSchool || null,
-      anioEgresoSecundaria: data.highSchoolGraduationYear || null,
+      tipoAdmision: data.admissionType ?? data.tipoAdmision ?? 'NUEVO', // NUEVO, ANTIGUO, TRANSITABILIDAD, TRASPASO
       promedioAnual: data.annualAverage || null,
-      fechaEgreso: data.graduationDate || null,
-      fechaRetiro: data.withdrawalDate || null,
-      motivoRetiro: data.withdrawalReason || null,
       fotoUrl: data.photoUrl || null,
     };
   }
@@ -149,23 +133,11 @@ export class StudentAcademicDataMapper {
     if ('registrationState' in data) {
       updateData.estadoRegistro = data.registrationState;
     }
-    if ('previousSchool' in data) {
-      updateData.unidadEducativaProcedencia = data.previousSchool || null;
-    }
-    if ('highSchoolGraduationYear' in data) {
-      updateData.anioEgresoSecundaria = data.highSchoolGraduationYear || null;
+    if ('admissionType' in data || 'tipoAdmision' in data) {
+      updateData.tipoAdmision = data.admissionType ?? data.tipoAdmision ?? 'NUEVO';
     }
     if ('annualAverage' in data) {
       updateData.promedioAnual = data.annualAverage || null;
-    }
-    if ('graduationDate' in data) {
-      updateData.fechaEgreso = data.graduationDate || null;
-    }
-    if ('withdrawalDate' in data) {
-      updateData.fechaRetiro = data.withdrawalDate || null;
-    }
-    if ('withdrawalReason' in data) {
-      updateData.motivoRetiro = data.withdrawalReason || null;
     }
     if ('photoUrl' in data) {
       updateData.fotoUrl = data.photoUrl || null;

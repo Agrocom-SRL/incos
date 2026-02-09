@@ -41,9 +41,10 @@ import { useResidenciaLogic } from './useEstudianteGeographicFormLogic/useReside
  * @param {Array} paises - Array de países para buscar Bolivia
  * @param {Array} departamentos - Array de departamentos para buscar Santa Cruz (residencia)
  * @param {Array} provinciasResidencia - Array de provincias de residencia cargadas (para seleccionar la primera en residencia)
+ * @param {boolean} isEditMode - Si true, no seleccionar primera provincia en residencia (respetar valores del API)
  * @returns {void}
  */
-export const useEstudianteGeographicFormLogic = (form, loaders, paises = [], departamentos = [], provinciasResidencia = []) => {
+export const useEstudianteGeographicFormLogic = (form, loaders, paises = [], departamentos = [], provinciasResidencia = [], isEditMode = false) => {
   const { loadDepartamentos, loadProvincias, loadMunicipios } = loaders || {};
   
   // Observar TODOS los campos del formulario para detectar cambios
@@ -117,7 +118,7 @@ export const useEstudianteGeographicFormLogic = (form, loaders, paises = [], dep
   // Hook para manejar residencia (departamento fijo: Santa Cruz)
   // El instituto está en Santa Cruz, por lo que todos los estudiantes residen en Santa Cruz
   // No se muestra selector de departamento, solo provincia y municipio
-  // Selecciona automáticamente la primera provincia para agilizar el proceso
+  // En creación: selecciona la primera provincia. En edición: no sobrescribir, solo cargar municipios de la provincia del estudiante.
   useResidenciaLogic({
     form,
     departamentos,
@@ -126,5 +127,6 @@ export const useEstudianteGeographicFormLogic = (form, loaders, paises = [], dep
     loadProvincias,
     loadMunicipios,
     allFormValues,
+    isEditMode,
   });
 };

@@ -38,7 +38,7 @@ const BecaSelectionSection = ({
     >
       {becasDescuentosData.error && (
         <Alert
-          message="Error al cargar becas y descuentos"
+          title="Error al cargar becas y descuentos"
           description={becasDescuentosData.error}
           type="error"
           showIcon
@@ -46,34 +46,26 @@ const BecaSelectionSection = ({
         />
       )}
 
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={onFinish}
-        initialValues={{
-          studentId: studentId,
-        }}
+      {/* No usar Form aquí: ya estamos dentro del Form del padre; solo Form.Item para no anidar <form> */}
+      <Form.Item
+        name="becaDescuentoId"
+        rules={[
+          { required: true, message: 'Por favor seleccione una beca o descuento' }
+        ]}
       >
-        <Form.Item
-          name="becaDescuentoId"
-          rules={[
-            { required: true, message: 'Por favor seleccione una beca o descuento' }
-          ]}
-        >
-          <DataCards
-            data={becasDescuentosData.becasDescuentos || []}
-            loading={becasDescuentosData.loading}
-            emptyMessage="No hay becas o descuentos disponibles"
-            renderItem={renderBecaCard}
-            onSelect={onSelectBeca}
-            selectedItem={becasDescuentosData.selectedBecaDescuento}
-            isSelected={(item) => {
-              return becasDescuentosData.selectedBecaDescuento?.id === item.id;
-            }}
-            loadingText="Cargando becas y descuentos..."
-          />
-        </Form.Item>
-      </Form>
+        <DataCards
+          data={becasDescuentosData.becasDescuentos || []}
+          loading={becasDescuentosData.loading}
+          emptyMessage="No hay becas o descuentos disponibles"
+          renderItem={renderBecaCard}
+          onSelect={onSelectBeca}
+          selectedItem={becasDescuentosData.selectedBecaDescuento}
+          isSelected={(item) => {
+            return becasDescuentosData.selectedBecaDescuento?.id === item.id;
+          }}
+          loadingText="Cargando becas y descuentos..."
+        />
+      </Form.Item>
     </Card>
   );
 };

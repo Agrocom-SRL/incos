@@ -182,11 +182,14 @@ Los scripts principales están en `database/01-schemas/` y deben ejecutarse en e
 6. **`05-estructura-academica-parte2.sql`** - Docentes, asignaciones, horarios, aulas, turnos
 7. **`06-estudiantes-parte1.sql`** - Estudiantes, datos académicos, documentos
 8. **`06-estudiantes-parte2.sql`** - Datos económicos, becas, descuentos, contactos de emergencia
-9. **`07-inscripciones-parte1.sql`** - Inscripciones principales por gestión
-10. **`07-inscripciones-parte2.sql`** - Inscripciones a materias, calificaciones, asistencias
-11. **`10-pagos.sql`** - Sistema de pagos (aranceles, detalle de pagos)
-12. **`11-modulos-operativos-parte1.sql`** - Pasantías (empresas, asignaciones, evaluaciones), Supervisión docente
-13. **`11-modulos-operativos-parte2.sql`** - Licencias estudiantiles, Historial académico oficial (libros, folios)
+9. **`09-inscripciones-parte1.sql`** - Inscripciones principales por gestión
+10. **`09-inscripciones-parte2.sql`** - Inscripciones a materias, calificaciones, asistencias
+11. **`10-pagos-academicos.sql`** - Sistema de pagos (aranceles, detalle de pagos)
+12. **`12-traspasos.sql`** - Traspasos de estudiantes de otros institutos (instituciones, traspasos, traspasos_materias)
+13. **`12-bloqueos-inscripcion.sql`** - Bloqueos de inscripción (nivelaciones pendientes, documentos, mora, etc.)
+14. **`12-transitabilidades.sql`** - Transitabilidades (Técnico Medio a Técnico Superior)
+15. **`14-pasantias.sql`** - Pasantías (empresas, asignaciones, evaluaciones)
+16. **`14-supervision-libros.sql`** - Supervisión docente y libros de registro oficial (supervisiones, fichas, libros, folios)
 14. **`12-indices.sql`** - Índices de optimización
 15. **`12-sincronizacion.sql`** - Sistema de sincronización con sistema nacional
 16. **`13-indices-optimizacion.sql`** - Índices adicionales de optimización
@@ -227,10 +230,13 @@ mysql -u root -p instituto_incos < database/01-schemas/05-estructura-academica-p
 mysql -u root -p instituto_incos < database/01-schemas/06-estudiantes-parte1.sql
 mysql -u root -p instituto_incos < database/01-schemas/06-estudiantes-parte2.sql
 mysql -u root -p instituto_incos < database/01-schemas/07-inscripciones-parte1.sql
-mysql -u root -p instituto_incos < database/01-schemas/07-inscripciones-parte2.sql
-mysql -u root -p instituto_incos < database/01-schemas/10-pagos.sql
-mysql -u root -p instituto_incos < database/01-schemas/11-modulos-operativos-parte1.sql
-mysql -u root -p instituto_incos < database/01-schemas/11-modulos-operativos-parte2.sql
+mysql -u root -p instituto_incos < database/01-schemas/09-inscripciones-parte2.sql
+mysql -u root -p instituto_incos < database/01-schemas/10-pagos-academicos.sql
+mysql -u root -p instituto_incos < database/01-schemas/12-traspasos.sql
+mysql -u root -p instituto_incos < database/01-schemas/12-bloqueos-inscripcion.sql
+mysql -u root -p instituto_incos < database/01-schemas/12-transitabilidades.sql
+mysql -u root -p instituto_incos < database/01-schemas/14-pasantias.sql
+mysql -u root -p instituto_incos < database/01-schemas/14-supervision-libros.sql
 mysql -u root -p instituto_incos < database/01-schemas/12-indices.sql
 mysql -u root -p instituto_incos < database/01-schemas/12-sincronizacion.sql
 mysql -u root -p instituto_incos < database/01-schemas/13-indices-optimizacion.sql

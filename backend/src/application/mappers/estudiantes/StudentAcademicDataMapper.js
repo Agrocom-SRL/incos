@@ -38,12 +38,8 @@ export function entityToPresentation(studentAcademicData) {
   BaseMapper.mapFieldIfExists(studentAcademicData, 'managementId', 'gestionId', presentation);
   BaseMapper.mapFieldIfExists(studentAcademicData, 'academicState', 'estadoAcademico', presentation);
   BaseMapper.mapFieldIfExists(studentAcademicData, 'registrationState', 'estadoRegistro', presentation);
-  BaseMapper.mapFieldIfExists(studentAcademicData, 'previousSchool', 'colegioAnterior', presentation);
-  BaseMapper.mapFieldIfExists(studentAcademicData, 'highSchoolGraduationYear', 'anioEgresoColegio', presentation);
+  BaseMapper.mapFieldIfExists(studentAcademicData, 'admissionType', 'tipoAdmision', presentation);
   BaseMapper.mapFieldIfExists(studentAcademicData, 'annualAverage', 'promedioAnual', presentation);
-  BaseMapper.mapFieldIfExists(studentAcademicData, 'graduationDate', 'fechaEgreso', presentation);
-  BaseMapper.mapFieldIfExists(studentAcademicData, 'withdrawalDate', 'fechaRetiro', presentation);
-  BaseMapper.mapFieldIfExists(studentAcademicData, 'withdrawalReason', 'motivoRetiro', presentation);
   BaseMapper.mapFieldIfExists(studentAcademicData, 'photoUrl', 'fotoUrl', presentation);
 
   return presentation;

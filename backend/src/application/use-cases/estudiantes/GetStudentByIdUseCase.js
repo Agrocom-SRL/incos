@@ -245,7 +245,8 @@ export class GetStudentByIdUseCase {
         }
       }
 
-      // 7.2. Buscar inscripción más reciente del estudiante (solo si está inscrito)
+      // 7.2. Datos académicos del estudiante (para edición: tipo admisión, gestión de ingreso, carrera) e inscripción más reciente
+      let academicData = null;
       let inscripcion = null;
       if (this.studentAcademicDataRepository && this.enrollmentRepository && this.getEnrollmentByIdUseCase) {
         try {
@@ -258,6 +259,9 @@ export class GetStudentByIdUseCase {
           const academicDataList = academicDataResult.studentAcademicData || [];
 
           if (academicDataList.length > 0) {
+            // Exponer el primer registro de datos académicos (gestionIngresoId, carreraId) para el formulario de edición
+            const first = academicDataList[0];
+            academicData = first.toPlainObject ? first.toPlainObject() : first;
             // Buscar inscripciones para cada dato académico
             let latestEnrollment = null;
             let latestEnrollmentDate = null;
@@ -339,6 +343,8 @@ export class GetStudentByIdUseCase {
         actaCompromiso,
         // Inscripción más reciente si existe
         inscripcion,
+        // Datos académicos (tipoAdmision, gestionIngresoId, carreraId) para formulario de edición / paso 1
+        academicData,
       };
 
       this.logger.info('[Estudiantes] Estudiante obtenido exitosamente', {

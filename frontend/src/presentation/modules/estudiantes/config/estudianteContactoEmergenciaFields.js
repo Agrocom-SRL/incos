@@ -49,6 +49,12 @@ export const createCamposContactoEmergencia = (index = 0) => {
     const basePath = ['contactosEmergencia', index];
 
     return [
+        // Campo oculto para id del apoderado (permite actualizar en vez de duplicar al editar)
+        {
+            name: [...basePath, 'id'],
+            type: 'hidden',
+            hidden: true,
+        },
         {
             name: [...basePath, 'tipoParentescoId'],
             label: 'Tipo de Parentesco',

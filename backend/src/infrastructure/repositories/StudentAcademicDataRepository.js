@@ -65,12 +65,7 @@ export class StudentAcademicDataRepository extends BaseRepository {
    *   - managementId: ID de la gestión de ingreso
    *   - academicState: Estado académico (REGULAR, RETIRADO, ABANDONO, etc.)
    *   - registrationState: Estado de registro (BORRADOR, PENDIENTE, ADMITIDO)
-   *   - previousSchool: Unidad educativa de procedencia (búsqueda exacta, para búsqueda de texto usar search())
-   *   - highSchoolGraduationYear: Año de egreso de secundaria
    *   - annualAverage: Promedio anual
-   *   - graduationDate: Fecha de egreso
-   *   - withdrawalDate: Fecha de retiro
-   *   - withdrawalReason: Motivo de retiro (búsqueda exacta, para búsqueda de texto usar search())
    *   - photoUrl: URL de la foto
    * @returns {Object} Objeto WHERE para Sequelize
    */
@@ -93,23 +88,8 @@ export class StudentAcademicDataRepository extends BaseRepository {
     if (filters.registrationState) {
       where.estadoRegistro = filters.registrationState;
     }
-    if (filters.previousSchool !== undefined) {
-      where.unidadEducativaProcedencia = filters.previousSchool;
-    }
-    if (filters.highSchoolGraduationYear !== undefined) {
-      where.anioEgresoSecundaria = filters.highSchoolGraduationYear;
-    }
     if (filters.annualAverage !== undefined) {
       where.promedioAnual = filters.annualAverage;
-    }
-    if (filters.graduationDate !== undefined) {
-      where.fechaEgreso = filters.graduationDate;
-    }
-    if (filters.withdrawalDate !== undefined) {
-      where.fechaRetiro = filters.withdrawalDate;
-    }
-    if (filters.withdrawalReason !== undefined) {
-      where.motivoRetiro = filters.withdrawalReason;
     }
     if (filters.photoUrl !== undefined) {
       where.fotoUrl = filters.photoUrl;
@@ -125,7 +105,7 @@ export class StudentAcademicDataRepository extends BaseRepository {
    * @returns {string[]} Array de nombres de campos del modelo Sequelize
    */
   getSearchFields() {
-    return ['unidadEducativaProcedencia', 'motivoRetiro'];
+    return []; // Sin campos de texto para búsqueda por término (promedio_anual es numérico)
   }
 
   /**
@@ -172,32 +152,37 @@ export class StudentAcademicDataRepository extends BaseRepository {
   }
 
   /**
-   * Obtiene datos académicos completos del estudiante desde vista_estudiante_datos_academicos.
-   * Consulta directa a la vista (estudiantes_datos_academicos + carreras + gestiones).
-   * Retorna objetos planos, no entidades.
+   * Obtiene datos académicos desde vista_estudiante_datos_academicos.
+   * Consulta directa a la vista. Retorna objetos planos, no entidades.
    *
-   * @param {Object} filters - Filtros opcionales (datos que diferencian a cada estudiante)
+   * @param {Object} filters - Filtros opcionales
    *   - estudiante_id: ID del estudiante
    *   - codigo_estudiante: Código único del estudiante
-   *   - ci: Cédula de identidad (usar junto con expedicion para identificación única)
-   *   - expedicion: Expedición del CI (SC, LP, CB, etc.)
-   * @returns {Promise<Array>} Array de objetos planos con datos académicos enriquecidos
+   *   - ci: Cédula de identidad
+   * @param {number[]|null} estudianteIds - Si se pasa, filtra por estudiante_id IN (...). Ignora filters para estudiante.
+   * @returns {Promise<Array>} Array de objetos planos con datos académicos
    */
-  async obtenerDatosAcademicos(filters = {}) {
+  async obtenerDatosAcademicos(filters = {}, estudianteIds = null) {
     const whereConditions = [];
     const replacements = [];
 
-    if (filters.estudiante_id !== undefined) {
-      whereConditions.push('estudiante_id = ?');
-      replacements.push(filters.estudiante_id);
-    }
-    if (filters.codigo_estudiante !== undefined) {
-      whereConditions.push('codigo_estudiante = ?');
-      replacements.push(filters.codigo_estudiante);
-    }
-    if (filters.ci !== undefined) {
-      whereConditions.push('ci = ?');
-      replacements.push(filters.ci);
+    if (estudianteIds != null && Array.isArray(estudianteIds) && estudianteIds.length > 0) {
+      const placeholders = estudianteIds.map(() => '?').join(', ');
+      whereConditions.push(`estudiante_id IN (${placeholders})`);
+      replacements.push(...estudianteIds);
+    } else {
+      if (filters.estudiante_id !== undefined) {
+        whereConditions.push('estudiante_id = ?');
+        replacements.push(filters.estudiante_id);
+      }
+      if (filters.codigo_estudiante !== undefined) {
+        whereConditions.push('codigo_estudiante = ?');
+        replacements.push(filters.codigo_estudiante);
+      }
+      if (filters.ci !== undefined) {
+        whereConditions.push('ci = ?');
+        replacements.push(filters.ci);
+      }
     }
 
     const whereClause = whereConditions.length > 0
@@ -218,5 +203,15 @@ export class StudentAcademicDataRepository extends BaseRepository {
 
     return results;
   }
-}
 
+  /**
+   * Obtiene datos académicos por una lista de IDs de estudiante.
+   * Delega en obtenerDatosAcademicos({}, estudianteIds).
+   *
+   * @param {number[]} estudianteIds - IDs de estudiantes
+   * @returns {Promise<Array>} Array de objetos planos con datos académicos
+   */
+  async obtenerDatosAcademicosPorEstudianteIds(estudianteIds) {
+    return this.obtenerDatosAcademicos({}, estudianteIds);
+  }
+}

@@ -3,10 +3,7 @@ import { IRepository } from './IRepository.js';
 /**
  * Interfaz de Repositorio: IParallelRepository
  * Define el contrato que debe cumplir el repositorio de paralelos
- * 
- * NOTA: Solo extiende IRepository sin métodos adicionales.
- * La especialización está en la implementación (buildWhereClause), no en la interfaz.
- * 
+ *
  * Métodos heredados de IRepository:
  * - findById(id)
  * - findBy(criteria, options)
@@ -16,7 +13,20 @@ import { IRepository } from './IRepository.js';
  * - delete(id, userId)
  * - search(searchTerm, options)
  * - count(filters)
+ *
+ * Métodos específicos:
+ * - obtenerEstadisticasYPeriodoPorGestion(parallelIds, managementId) - Consulta vista_estadisticas_paralelos_por_gestion + periodos
  */
 export class IParallelRepository extends IRepository {
-  // Solo hereda métodos de IRepository
+  /**
+   * Obtiene estadísticas de inscripción por paralelo para una gestión y datos del periodo.
+   * Consulta la vista vista_estadisticas_paralelos_por_gestion (LEFT JOIN) y periodos.
+   *
+   * @param {number[]} parallelIds - IDs de paralelos
+   * @param {number} managementId - ID de la gestión académica
+   * @returns {Promise<Array>} Array de objetos planos: paralelo_id, total_inscritos, total_hombres, total_mujeres, periodo_numero, periodo_nombre
+   */
+  async obtenerEstadisticasYPeriodoPorGestion(parallelIds, managementId) {
+    throw new Error('Method obtenerEstadisticasYPeriodoPorGestion must be implemented by subclass');
+  }
 }

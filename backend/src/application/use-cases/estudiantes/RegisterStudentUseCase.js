@@ -5,6 +5,8 @@
  *
  * Responsabilidades:
  * - Validar que no exista un estudiante con el mismo CI
+ * - Generar código del estudiante (YYYYNNNN) según gestión de ingreso (nuevo: gestión actual; antiguo: gestionIngresoId)
+ * - Asegurar que exista admision_gestion_YYYY en configuracion_sistema para la gestión usada (crear con valor 0 si no existe)
  * - Crear el estudiante principal
  * - Crear apoderados (múltiples)
  * - Crear discapacidades (múltiples)
@@ -33,11 +35,12 @@ export class RegisterStudentUseCase {
    * @param {Object} params.studentOriginRepository - Repositorio de orígenes
    * @param {Object} params.studentDocumentDeliveryRepository - Repositorio de entregas de documentos
    * @param {Object} params.configuracionSistemaRepository - Repositorio de configuración del sistema
-   * @param {Object} params.contributionPaymentRepository - Repositorio de cabecera de aporte (pago_aporte)
-   * @param {Object} params.managementRepository - Repositorio de gestiones académicas
-   * @param {Object} params.contributionConfigurationRepository - Repositorio de configuración de aportes por gestión
-   * @param {ILogger} params.logger - Logger para registro de eventos
-   */
+ * @param {Object} params.contributionPaymentRepository - Repositorio de cabecera de aporte (pago_aporte)
+ * @param {Object} params.managementRepository - Repositorio de gestiones académicas
+ * @param {Object} params.contributionConfigurationRepository - Repositorio de configuración de aportes por gestión
+ * @param {Object} params.studentAcademicDataRepository - Repositorio de datos académicos del estudiante
+ * @param {ILogger} params.logger - Logger para registro de eventos
+ */
   constructor({
     studentRepository,
     studentGuardianRepository,
@@ -48,6 +51,7 @@ export class RegisterStudentUseCase {
     contributionPaymentRepository,
     managementRepository,
     contributionConfigurationRepository,
+    studentAcademicDataRepository,
     logger,
   }) {
     this.studentRepository = studentRepository;
@@ -59,63 +63,122 @@ export class RegisterStudentUseCase {
     this.contributionPaymentRepository = contributionPaymentRepository;
     this.managementRepository = managementRepository;
     this.contributionConfigurationRepository = contributionConfigurationRepository;
+    this.studentAcademicDataRepository = studentAcademicDataRepository;
     this.logger = logger;
   }
 
   /**
-   * Genera el código del estudiante basado en la gestión actual y el correlativo
+   * Asegura que exista la clave admision_gestion_YYYY en configuracion_sistema para el año dado.
+   * Si no existe, la crea con valor '0'. Usado tanto para estudiantes nuevos (gestión actual) como antiguos (gestión de ingreso).
+   *
+   * @param {number} gestionAnio - Año de la gestión (ej: 2023, 2026)
+   */
+  async ensureAdmisionCorrelativoForYear(gestionAnio) {
+    if (!this.configuracionSistemaRepository || typeof gestionAnio !== 'number' || Number.isNaN(gestionAnio)) {
+      return;
+    }
+    const claveCorrelativo = `admision_gestion_${gestionAnio}`;
+    const existing = await this.configuracionSistemaRepository.findBy({ key: claveCorrelativo });
+    if (existing) {
+      return;
+    }
+    await this.configuracionSistemaRepository.create({
+      key: claveCorrelativo,
+      value: '0',
+      type: 'NUMBER',
+      description: `Último número correlativo usado para códigos de estudiantes en la gestión ${gestionAnio}`,
+    });
+    this.logger.info('[Estudiantes] Correlativo de gestión creado en configuracion_sistema', {
+      clave: claveCorrelativo,
+      gestionAnio,
+    });
+  }
+
+  /**
+   * Genera el código del estudiante basado en la gestión de ingreso y el correlativo
    * Formato: YYYYNNNN (ej: 20260001)
-   * 
+   *
+   * IMPORTANTE: Si se proporciona gestionIngresoId, usa esa gestión para generar el código.
+   * Esto permite registrar estudiantes antiguos con el código de su gestión original.
+   * Si no se proporciona, usa la gestión actual (comportamiento para estudiantes nuevos).
+   * Siempre asegura que exista la clave admision_gestion_YYYY (crea con 0 si no existe) antes de incrementar.
+   *
+   * @param {number|null} gestionIngresoId - ID de la gestión de ingreso (opcional)
    * @returns {Promise<string>} Código del estudiante generado
    */
-  async generateStudentCode() {
-    // 1. Obtener la gestión actual
-    const gestionActualConfig = await this.configuracionSistemaRepository.findBy(
-      { key: 'gestion_actual' }
-    );
+  async generateStudentCode(gestionIngresoId = null) {
+    let gestionAnio;
+    let gestionInfo = null;
 
-    if (!gestionActualConfig) {
-      throw new Error('No se encontró la configuración de gestión actual');
+    // 1. Determinar qué gestión usar para generar el código
+    if (gestionIngresoId) {
+      // Estudiante antiguo: usar la gestión de ingreso proporcionada
+      gestionInfo = await this.managementRepository.findById(gestionIngresoId);
+      if (!gestionInfo) {
+        throw new Error(`No se encontró la gestión con ID ${gestionIngresoId}`);
+      }
+
+      const gestionPlain = gestionInfo.toPlainObject ? gestionInfo.toPlainObject() : gestionInfo;
+      gestionAnio = gestionPlain.year || gestionPlain.anio;
+
+      if (!gestionAnio) {
+        throw new Error(`La gestión con ID ${gestionIngresoId} no tiene año definido`);
+      }
+
+      this.logger.info('[Estudiantes] Usando gestión de ingreso para código', {
+        gestionIngresoId,
+        gestionAnio,
+        gestionCodigo: gestionPlain.code || gestionPlain.codigo,
+      });
+    } else {
+      // Estudiante nuevo: usar la gestión actual de la configuración
+      const gestionActualConfig = await this.configuracionSistemaRepository.findBy(
+        { key: 'gestion_actual' }
+      );
+
+      if (!gestionActualConfig) {
+        throw new Error('No se encontró la configuración de gestión actual');
+      }
+
+      gestionAnio = parseInt(gestionActualConfig.value, 10);
+      if (Number.isNaN(gestionAnio)) {
+        throw new Error('La gestión actual configurada no es un año válido');
+      }
+
+      this.logger.info('[Estudiantes] Usando gestión actual para código', { gestionAnio });
     }
 
-    const gestionActual = gestionActualConfig.value;
-    this.logger.info('[Estudiantes] Gestión actual obtenida', { gestionActual });
+    // 2. Asegurar que exista el correlativo para esta gestión (crear admision_gestion_YYYY con 0 si no existe)
+    await this.ensureAdmisionCorrelativoForYear(gestionAnio);
 
-    // 2. Obtener el correlativo de la gestión actual
-    const claveCorrelativo = `admision_gestion_${gestionActual}`;
+    // 3. Obtener el correlativo (ya existe tras ensure), incrementar y actualizar
+    const claveCorrelativo = `admision_gestion_${gestionAnio}`;
     const correlativoConfig = await this.configuracionSistemaRepository.findBy(
       { key: claveCorrelativo }
     );
-
     if (!correlativoConfig) {
-      throw new Error(
-        `No se encontró la configuración de correlativo para la gestión ${gestionActual}`
-      );
+      throw new Error(`No se pudo obtener el correlativo para gestión ${gestionAnio} tras asegurarlo`);
     }
 
-    // 3. Incrementar el correlativo
     const nuevoCorrelativo = parseInt(correlativoConfig.value, 10) + 1;
     this.logger.info('[Estudiantes] Nuevo correlativo calculado', {
-      gestion: gestionActual,
+      gestionAnio,
       correlativoAnterior: correlativoConfig.value,
       nuevoCorrelativo,
     });
 
-    // 4. Actualizar el correlativo en la base de datos
-    // NOTA: userId no se pasa porque actualmente no hay autenticación
-    // El repositorio tiene userId = null como default
     await this.configuracionSistemaRepository.update(
       correlativoConfig.id,
       { value: nuevoCorrelativo.toString() }
     );
 
-    // 5. Generar el código del estudiante: YYYYNNNN (rellenar con ceros a la izquierda)
-    const codigoEstudiante = `${gestionActual}${nuevoCorrelativo.toString().padStart(4, '0')}`;
-    
+    const codigoEstudiante = `${gestionAnio}${nuevoCorrelativo.toString().padStart(4, '0')}`;
+
     this.logger.info('[Estudiantes] Código de estudiante generado', {
       codigoEstudiante,
-      gestion: gestionActual,
+      gestionAnio,
       correlativo: nuevoCorrelativo,
+      gestionIngresoId: gestionIngresoId || 'gestión actual',
     });
 
     return codigoEstudiante;
@@ -248,7 +311,17 @@ export class RegisterStudentUseCase {
       }
 
       // 2. Generar el código del estudiante
-      const studentCode = await this.generateStudentCode();
+      // Si se proporciona gestionIngresoId, usar esa gestión para generar el código
+      // Esto permite registrar estudiantes antiguos con el código de su gestión original
+      // Si llegan gestión/carrera pero no tipoAdmision, inferir ANTIGUO (evita guardar NUEVO por error)
+      const hasGestionOrCarrera = (data.gestionIngresoId != null && data.gestionIngresoId !== '') || (data.carreraId != null && data.carreraId !== '');
+      const tipoAdmision = data.tipoAdmision && data.tipoAdmision !== ''
+        ? data.tipoAdmision
+        : (hasGestionOrCarrera ? 'ANTIGUO' : 'NUEVO');
+      const gestionIngresoId = data.gestionIngresoId || null;
+      const carreraId = data.carreraId || null;
+
+      const studentCode = await this.generateStudentCode(gestionIngresoId);
 
       // 3. Crear el estudiante principal con el código generado
       const studentData = {
@@ -301,14 +374,22 @@ export class RegisterStudentUseCase {
         });
       }
 
-      // 6. Crear orígenes (múltiples)
+      // 6. Crear orígenes (el DTO ya construye el array correctamente según tipo de nacionalidad)
+      // Lógica: BOLIVIANA/EXTRANJERA = 1 registro; DOBLE_NACIONALIDAD = 2 registros (principal + secundario)
       const origins = [];
-      if (data.origins && Array.isArray(data.origins)) {
+      if (data.origins && Array.isArray(data.origins) && data.origins.length > 0) {
         for (const originData of data.origins) {
           const originToCreate = {
-            ...originData,
             studentId: student.id,
+            countryId: originData.countryId || null,
+            birthMunicipalityId: originData.birthMunicipalityId || null,
+            birthCity: originData.birthCity || null,
+            motherTongueId: originData.motherTongueId || null,
+            secondaryLanguageId: originData.secondaryLanguageId || null,
+            originType: originData.originType || 'BOLIVIANA',
+            isPrincipal: originData.isPrincipal !== undefined ? originData.isPrincipal : true,
           };
+          
           // NOTA: userId no se pasa porque actualmente no hay autenticación
           // El repositorio tiene userId = null como default
           const origin = await this.studentOriginRepository.create(originToCreate);
@@ -317,6 +398,10 @@ export class RegisterStudentUseCase {
         this.logger.info('[Estudiantes] Orígenes creados', {
           studentId: student.id,
           count: origins.length,
+          tipos: origins.map(o => {
+            const plain = o.toPlainObject ? o.toPlainObject() : o;
+            return { tipo: plain.originType, principal: plain.isPrincipal };
+          }),
         });
       }
 
@@ -350,10 +435,52 @@ export class RegisterStudentUseCase {
         });
       }
 
-      // 8. Crear deuda en pago_aporte para la gestión vigente si no existe (una cabecera por estudiante por gestión)
+      // 8. Crear datos académicos del estudiante (estudiantes_datos_academicos) con gestion_ingreso_id
+      let academicData = null;
+      if (this.studentAcademicDataRepository) {
+        // Obtener gestión de ingreso (ya se obtuvo antes para generar el código)
+        // Si no se proporcionó gestionIngresoId, obtener la gestión vigente
+        let gestionIngresoIdFinal = gestionIngresoId;
+        
+        if (!gestionIngresoIdFinal) {
+          // Si no se proporciona gestionIngresoId, obtener la gestión vigente
+          try {
+            const gestionVigente = await this._getCurrentManagement();
+            gestionIngresoIdFinal = gestionVigente.id ?? gestionVigente.toPlainObject?.().id;
+          } catch (err) {
+            this.logger.warn('[Estudiantes] No se pudo obtener gestión vigente para datos académicos', {
+              error: err.message,
+            });
+            // Continuar sin gestionIngresoId (será NULL)
+            gestionIngresoIdFinal = null;
+          }
+        }
+        
+        // Crear datos académicos con gestion_ingreso_id y carrera_id
+        // Para estudiantes ANTIGUOS, ambos campos son requeridos
+        // Para estudiantes NUEVOS, se pueden dejar como null o usar valores por defecto
+        // NOTA: El repositorio usa StudentAcademicDataMapper.toModel() que espera nombres de dominio (careerId, managementId)
+        const academicDataToCreate = {
+          studentId: student.id,
+          managementId: gestionIngresoIdFinal || null, // dominio: managementId → BD gestion_ingreso_id
+          careerId: carreraId || null, // dominio: careerId → BD carrera_id
+          admissionType: tipoAdmision, // dominio: admissionType → BD tipo_admision
+        };
+        
+        academicData = await this.studentAcademicDataRepository.create(academicDataToCreate);
+        this.logger.info('[Estudiantes] Datos académicos creados', {
+          studentId: student.id,
+          academicDataId: academicData.id,
+          gestionIngresoId: gestionIngresoIdFinal || null,
+          carreraId: carreraId || null,
+          tipoAdmision,
+        });
+      }
+
+      // 9. Crear deuda en pago_aporte para la gestión vigente si no existe (una cabecera por estudiante por gestión)
       await this._createPagoAporteIfNeeded(student.id);
 
-      // 9. Retornar el estudiante creado con todos sus datos relacionados
+      // 10. Retornar el estudiante creado con todos sus datos relacionados
       const result = {
         student: student.toPlainObject ? student.toPlainObject() : student,
         guardians: guardians.map((g) =>
