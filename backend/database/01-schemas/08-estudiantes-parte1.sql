@@ -106,12 +106,7 @@ CREATE TABLE estudiantes_datos_academicos (
     estado_registro ENUM('BORRADOR', 'PENDIENTE', 'ADMITIDO') DEFAULT 'BORRADOR' COMMENT 'Estado del proceso de registro: BORRADOR (datos completos, documentos pendientes), PENDIENTE (al menos un documento original), ADMITIDO (todos los documentos originales verificados)',
     tipo_admision ENUM('NUEVO', 'ANTIGUO', 'TRANSITABILIDAD', 'TRASPASO') DEFAULT 'NUEVO' COMMENT 'Tipo de admisión del estudiante: NUEVO (primera vez), ANTIGUO (reinscripción), TRANSITABILIDAD, TRASPASO',
     
-    unidad_educativa_procedencia VARCHAR(200) COMMENT 'Unidad educativa de procedencia',
-    anio_egreso_secundaria INT COMMENT 'Año de egreso de secundaria',
     promedio_anual DECIMAL(5,2) COMMENT 'Promedio anual (se usa para cálculo de descuentos en becas)',
-    fecha_egreso DATE COMMENT 'Fecha de egreso',
-    fecha_retiro DATE COMMENT 'Fecha de retiro',
-    motivo_retiro TEXT COMMENT 'Motivo de retiro/abandono',
     foto_url VARCHAR(255) COMMENT 'URL de la fotografía',
     
     -- Campos de auditoría y control (ESTÁNDAR)

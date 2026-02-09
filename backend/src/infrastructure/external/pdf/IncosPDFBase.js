@@ -151,6 +151,10 @@ export class IncosPDFBase {
         PARENTESCO_LABEL: 'Parentesco:',
         CELULAR_CONTACTO_LABEL: 'Celular:',
         DATOS_REFERENCIA_LABEL: 'Datos de referencia:',
+        // Datos del trabajo (estudiante trabaja, empresa, cargo)
+        TRABAJA_LABEL: 'Trabaja:',
+        EMPRESA_INSTITUCION_LABEL: 'Empresa o institución:',
+        CARGO_LABEL: 'Cargo:',
         LOCALIDAD_LABEL: 'Localidad:',
         DEPARTAMENTO_LABEL: 'Departamento:',
         NACIONALIDAD_LABEL: 'Nacionalidad:',

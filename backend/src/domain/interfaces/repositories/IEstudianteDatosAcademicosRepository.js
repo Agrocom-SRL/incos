@@ -30,8 +30,7 @@ export class IEstudianteDatosAcademicosRepository extends IRepository {
    *   - expedicion: Expedición del CI (SC, LP, CB, etc.)
    * @returns {Promise<Array>} Array de objetos planos con datos académicos enriquecidos (0 o 1 elemento si se filtra por id/codigo/ci+expedicion)
    *   Campos según vista_estudiante_datos_academicos: estudiante_datos_academicos_id, estudiante_id, carrera_id,
-   *   gestion_ingreso_id, estado_academico, estado_registro, unidad_educativa_procedencia, anio_egreso_secundaria,
-   *   promedio_anual, fecha_egreso, fecha_retiro, motivo_retiro, foto_url, codigo_estudiante, ci, expedicion,
+   *   gestion_ingreso_id, estado_academico, estado_registro, tipo_admision, promedio_anual, foto_url, codigo_estudiante, ci, expedicion,
    *   carrera_nombre, carrera_codigo, carrera_descripcion, carrera_area_formacion, carrera_titulo_otorgado,
    *   gestion_ingreso_nombre, gestion_ingreso_anio, gestion_ingreso_vigente
    */

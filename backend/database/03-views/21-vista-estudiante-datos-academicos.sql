@@ -25,12 +25,7 @@ SELECT
   eda.estado_academico,
   eda.estado_registro,
   eda.tipo_admision,
-  eda.unidad_educativa_procedencia,
-  eda.anio_egreso_secundaria,
   eda.promedio_anual,
-  eda.fecha_egreso,
-  eda.fecha_retiro,
-  eda.motivo_retiro,
   eda.foto_url,
   -- Estudiante básico (para filtros)
   est.codigo_estudiante,

@@ -123,6 +123,9 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
         // Bloque 3: Contacto de emergencia (apoderado)
         await this._buildContactoEmergencia(options);
 
+        // Bloque 4: Datos del trabajo (trabaja, empresa, cargo)
+        await this._buildDatosTrabajo(options);
+
         this._addSpace();
     }
 
@@ -450,6 +453,42 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
         }
 
         // Dibujar grid de 2 columnas solo si hay datos
+        if (leftColumnItems.length > 0 || rightColumnItems.length > 0) {
+            await this._addBoxedFieldGrid(leftColumnItems, rightColumnItems, 35);
+        }
+    }
+
+    /**
+     * Bloque 4 de DATOS PERSONALES: Datos del trabajo.
+     * Grid 2 columnas: Trabaja (Sí/No), Cargo (izq) | Empresa o institución (der).
+     * Datos desde student (trabaja, empresaInstitucion, cargo) - tabla estudiantes.
+     *
+     * @private
+     * @param {Object} options - Opciones de generación (options.student)
+     * @returns {Promise<void>}
+     */
+    async _buildDatosTrabajo(options) {
+        const T = IncosPDFBase.FORMULARIO_TEXTS;
+        const s = options.student || {};
+
+        const leftColumnItems = [];
+        const rightColumnItems = [];
+
+        // Columna izquierda: Trabaja (Sí/No), Cargo
+        const trabajaVal = s.trabaja === true || s.trabaja === 1 ? 'Sí' : 'No';
+        leftColumnItems.push({ label: T.TRABAJA_LABEL, value: trabajaVal });
+
+        const cargo = (s.cargo ?? '').toString().trim();
+        if (cargo) {
+            leftColumnItems.push({ label: T.CARGO_LABEL, value: cargo });
+        }
+
+        // Columna derecha: Empresa o institución
+        const empresaInstitucion = (s.empresaInstitucion ?? s.empresa_institucion ?? '').toString().trim();
+        if (empresaInstitucion) {
+            rightColumnItems.push({ label: T.EMPRESA_INSTITUCION_LABEL, value: empresaInstitucion });
+        }
+
         if (leftColumnItems.length > 0 || rightColumnItems.length > 0) {
             await this._addBoxedFieldGrid(leftColumnItems, rightColumnItems, 35);
         }

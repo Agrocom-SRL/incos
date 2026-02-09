@@ -1,7 +1,7 @@
 -- ============================================
 -- MÓDULO DE TRASPASOS
 -- Sistema de Gestión Académica - Instituto INCOS
--- Catálogo: instituciones. Tablas: traspasos, traspasos_materias
+-- Tablas: traspasos, traspasos_materias (instituciones se crea en 15-transitabilidades.sql)
 -- ============================================
 --
 -- TRASPASO: Estudiante que viene de otro instituto (no INCOS), completó un periodo
@@ -27,7 +27,7 @@ USE instituto_incos;
 
 SET FOREIGN_KEY_CHECKS = 0;
 
--- Eliminar tablas si existen (instituciones se crea si no existe en este script)
+-- Eliminar tablas si existen
 DROP TABLE IF EXISTS traspasos_materias;
 DROP TABLE IF EXISTS traspasos;
 
@@ -35,35 +35,6 @@ DROP TABLE IF EXISTS traspasos;
 -- FASE 2: CREACIÓN DE TABLAS
 -- Las foreign key checks siguen deshabilitadas durante la creación
 -- ============================================
-
--- ============================================
--- TABLA: instituciones
--- Catálogo de instituciones educativas (origen de traspasos/transitabilidades)
--- ============================================
-
-CREATE TABLE IF NOT EXISTS instituciones (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(200) NOT NULL COMMENT 'Nombre del instituto',
-    sigla VARCHAR(50) NULL COMMENT 'Sigla o código',
-
-    -- Campos de auditoría y control (ESTÁNDAR)
-    activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
-    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
-    created_by INT NULL COMMENT 'Usuario que creó',
-    updated_by INT NULL COMMENT 'Usuario que modificó',
-    deleted_by INT NULL COMMENT 'Usuario que eliminó',
-
-    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
-    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
-
-    -- Índices para optimización
-    INDEX idx_nombre (nombre) COMMENT 'Búsqueda por nombre',
-    INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
-    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Catálogo de instituciones educativas (origen para traspasos y transitabilidades).';
 
 -- ============================================
 -- TABLA: traspasos
@@ -86,7 +57,7 @@ CREATE TABLE traspasos (
 
     -- Validación
     estado ENUM('SOLICITADO', 'EN_REVISION', 'APROBADO', 'RECHAZADO') DEFAULT 'SOLICITADO' COMMENT 'Estado de la solicitud de traspaso',
-    fecha_solicitud DATE NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de solicitud',
+    fecha_solicitud DATE NULL COMMENT 'Fecha de solicitud (sin default; la aplicación la proporciona al crear)',
     fecha_resolucion DATE NULL COMMENT 'Fecha en que se aprobó o rechazó',
     resuelto_por INT NULL COMMENT 'Usuario que resolvió (referencia a usuarios)',
     motivo_rechazo TEXT NULL COMMENT 'Motivo de rechazo (si estado = RECHAZADO)',

@@ -46,41 +46,11 @@ export const EstudianteDatosAcademicos = sequelize.define(
       defaultValue: TIPOS_ADMISION.NUEVO,
       comment: 'Tipo de admisión del estudiante: NUEVO, ANTIGUO, TRANSITABILIDAD, TRASPASO',
     },
-    unidadEducativaProcedencia: {
-      type: DataTypes.STRING(200),
-      field: 'unidad_educativa_procedencia',
-      allowNull: true,
-      comment: 'Unidad educativa de procedencia',
-    },
-    anioEgresoSecundaria: {
-      type: DataTypes.INTEGER,
-      field: 'anio_egreso_secundaria',
-      allowNull: true,
-      comment: 'Año de egreso de secundaria',
-    },
     promedioAnual: {
       type: DataTypes.DECIMAL(5, 2),
       field: 'promedio_anual',
       allowNull: true,
-      comment: 'Promedio anual',
-    },
-    fechaEgreso: {
-      type: DataTypes.DATEONLY,
-      field: 'fecha_egreso',
-      allowNull: true,
-      comment: 'Fecha de egreso',
-    },
-    fechaRetiro: {
-      type: DataTypes.DATEONLY,
-      field: 'fecha_retiro',
-      allowNull: true,
-      comment: 'Fecha de retiro',
-    },
-    motivoRetiro: {
-      type: DataTypes.TEXT,
-      field: 'motivo_retiro',
-      allowNull: true,
-      comment: 'Motivo de retiro/abandono',
+      comment: 'Promedio anual (se usa para cálculo de descuentos en becas)',
     },
     fotoUrl: {
       type: DataTypes.STRING(255),

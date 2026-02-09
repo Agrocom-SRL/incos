@@ -65,12 +65,7 @@ export class StudentAcademicDataRepository extends BaseRepository {
    *   - managementId: ID de la gestión de ingreso
    *   - academicState: Estado académico (REGULAR, RETIRADO, ABANDONO, etc.)
    *   - registrationState: Estado de registro (BORRADOR, PENDIENTE, ADMITIDO)
-   *   - previousSchool: Unidad educativa de procedencia (búsqueda exacta, para búsqueda de texto usar search())
-   *   - highSchoolGraduationYear: Año de egreso de secundaria
    *   - annualAverage: Promedio anual
-   *   - graduationDate: Fecha de egreso
-   *   - withdrawalDate: Fecha de retiro
-   *   - withdrawalReason: Motivo de retiro (búsqueda exacta, para búsqueda de texto usar search())
    *   - photoUrl: URL de la foto
    * @returns {Object} Objeto WHERE para Sequelize
    */
@@ -93,23 +88,8 @@ export class StudentAcademicDataRepository extends BaseRepository {
     if (filters.registrationState) {
       where.estadoRegistro = filters.registrationState;
     }
-    if (filters.previousSchool !== undefined) {
-      where.unidadEducativaProcedencia = filters.previousSchool;
-    }
-    if (filters.highSchoolGraduationYear !== undefined) {
-      where.anioEgresoSecundaria = filters.highSchoolGraduationYear;
-    }
     if (filters.annualAverage !== undefined) {
       where.promedioAnual = filters.annualAverage;
-    }
-    if (filters.graduationDate !== undefined) {
-      where.fechaEgreso = filters.graduationDate;
-    }
-    if (filters.withdrawalDate !== undefined) {
-      where.fechaRetiro = filters.withdrawalDate;
-    }
-    if (filters.withdrawalReason !== undefined) {
-      where.motivoRetiro = filters.withdrawalReason;
     }
     if (filters.photoUrl !== undefined) {
       where.fotoUrl = filters.photoUrl;
@@ -125,7 +105,7 @@ export class StudentAcademicDataRepository extends BaseRepository {
    * @returns {string[]} Array de nombres de campos del modelo Sequelize
    */
   getSearchFields() {
-    return ['unidadEducativaProcedencia', 'motivoRetiro'];
+    return []; // Sin campos de texto para búsqueda por término (promedio_anual es numérico)
   }
 
   /**

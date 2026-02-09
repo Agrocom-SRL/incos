@@ -1,7 +1,7 @@
 -- ============================================
 -- MÓDULO DE TRANSITABILIDADES
 -- Sistema de Gestión Académica - Instituto INCOS
--- 2 Tablas: transitabilidades, transitabilidades_materias
+-- Catálogo: instituciones. Tablas: transitabilidades, transitabilidades_materias
 -- ============================================
 
 USE instituto_incos;
@@ -21,6 +21,36 @@ DROP TABLE IF EXISTS transitabilidades;
 -- FASE 2: CREACIÓN DE TABLAS
 -- Las foreign key checks siguen deshabilitadas durante la creación
 -- ============================================
+
+-- ============================================
+-- TABLA: instituciones
+-- Catálogo de instituciones educativas (origen de traspasos/transitabilidades).
+-- Se crea aquí para que este script pueda ejecutarse antes que 16-traspasos.sql.
+-- ============================================
+
+CREATE TABLE IF NOT EXISTS instituciones (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(200) NOT NULL COMMENT 'Nombre del instituto',
+    sigla VARCHAR(50) NULL COMMENT 'Sigla o código',
+
+    -- Campos de auditoría y control (ESTÁNDAR)
+    activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
+    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
+    created_by INT NULL COMMENT 'Usuario que creó',
+    updated_by INT NULL COMMENT 'Usuario que modificó',
+    deleted_by INT NULL COMMENT 'Usuario que eliminó',
+
+    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
+    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
+
+    -- Índices para optimización
+    INDEX idx_nombre (nombre) COMMENT 'Búsqueda por nombre',
+    INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
+    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+COMMENT='Catálogo de instituciones educativas (origen para traspasos y transitabilidades).';
 
 -- ============================================
 -- TABLA: transitabilidades
@@ -46,7 +76,7 @@ CREATE TABLE transitabilidades (
 
     -- Validación
     estado ENUM('SOLICITADO', 'EN_REVISION', 'APROBADO', 'RECHAZADO') DEFAULT 'SOLICITADO' COMMENT 'Estado de la solicitud de transitabilidad',
-    fecha_solicitud DATE NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de solicitud',
+    fecha_solicitud DATE NULL COMMENT 'Fecha de solicitud (sin default; la aplicación la proporciona al crear)',
     fecha_resolucion DATE NULL COMMENT 'Fecha en que se aprobó o rechazó',
     resuelto_por INT NULL COMMENT 'Usuario que resolvió (referencia a usuarios)',
     motivo_rechazo TEXT NULL COMMENT 'Motivo de rechazo (si estado = RECHAZADO)',

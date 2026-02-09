@@ -36,10 +36,8 @@ CREATE TABLE inscripciones (
     traspaso_id INT NULL COMMENT 'Si tipo_inscripcion=TRASPASO_ENTRADA, referencia a traspasos. FK se añade en 12-traspasos.sql',
     transitabilidad_id INT NULL COMMENT 'Si tipo_inscripcion=TRANSITABILIDAD_ENTRADA, referencia a transitabilidades. FK se añade en 12-transitabilidades.sql',
 
-    -- Fecha de inscripción
-    fecha_inscripcion DATE NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha en que se realizó la inscripción',
-
-    -- Observaciones
+    -- Fecha de inscripción (sin default; la aplicación o el INSERT la proporcionan)
+    fecha_inscripcion DATE NULL COMMENT 'Fecha en que se realizó la inscripción',
     observaciones TEXT COMMENT 'Observaciones generales sobre la inscripción',
     
     -- Campos de auditoría y control (ESTÁNDAR)

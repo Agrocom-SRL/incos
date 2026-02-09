@@ -38,23 +38,8 @@ export class StudentAcademicData extends BaseEntity {
     } else if (!data.hasOwnProperty('studentId')) {
       this.admissionType = TIPOS_ADMISION.NUEVO;
     }
-    if (data.hasOwnProperty('previousSchool')) {
-      this.previousSchool = data.previousSchool;
-    }
-    if (data.hasOwnProperty('highSchoolGraduationYear')) {
-      this.highSchoolGraduationYear = data.highSchoolGraduationYear;
-    }
     if (data.hasOwnProperty('annualAverage')) {
       this.annualAverage = data.annualAverage;
-    }
-    if (data.hasOwnProperty('graduationDate')) {
-      this.graduationDate = data.graduationDate;
-    }
-    if (data.hasOwnProperty('withdrawalDate')) {
-      this.withdrawalDate = data.withdrawalDate;
-    }
-    if (data.hasOwnProperty('withdrawalReason')) {
-      this.withdrawalReason = data.withdrawalReason;
     }
     if (data.hasOwnProperty('photoUrl')) {
       this.photoUrl = data.photoUrl;
@@ -134,23 +119,8 @@ export class StudentAcademicData extends BaseEntity {
       plainObject.admissionType = this.admissionType;
       plainObject.tipoAdmision = this.admissionType; // API: frontend espera tipoAdmision
     }
-    if (this.hasOwnProperty('previousSchool')) {
-      plainObject.previousSchool = this.previousSchool;
-    }
-    if (this.hasOwnProperty('highSchoolGraduationYear')) {
-      plainObject.highSchoolGraduationYear = this.highSchoolGraduationYear;
-    }
     if (this.hasOwnProperty('annualAverage')) {
       plainObject.annualAverage = this.annualAverage;
-    }
-    if (this.hasOwnProperty('graduationDate')) {
-      plainObject.graduationDate = this.graduationDate;
-    }
-    if (this.hasOwnProperty('withdrawalDate')) {
-      plainObject.withdrawalDate = this.withdrawalDate;
-    }
-    if (this.hasOwnProperty('withdrawalReason')) {
-      plainObject.withdrawalReason = this.withdrawalReason;
     }
     if (this.hasOwnProperty('photoUrl')) {
       plainObject.photoUrl = this.photoUrl;
