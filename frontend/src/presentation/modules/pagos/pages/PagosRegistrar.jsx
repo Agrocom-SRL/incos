@@ -525,7 +525,12 @@ const PagosRegistrar = () => {
             </Spin>
           </div>
         ) : (
-          <div data-section="pagos-registrar-form">
+          <Form
+            form={formInstance}
+            onFinish={handleFinish}
+            layout="vertical"
+            data-section="pagos-registrar-form"
+          >
             {/* Sección 1: Información del Estudiante */}
             {student ? <StudentInfoSection student={student} /> : null}
 
@@ -574,7 +579,7 @@ const PagosRegistrar = () => {
                 }
               />
             ) : null}
-          </div>
+          </Form>
         )}
       </div>
     </PageTemplate>

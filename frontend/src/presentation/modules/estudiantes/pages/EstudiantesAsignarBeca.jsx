@@ -15,7 +15,7 @@
  */
 
 import { useLocation } from 'react-router-dom';
-import { Alert, Spin } from 'antd';
+import { Alert, Form, Spin } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
@@ -123,7 +123,11 @@ const EstudiantesAsignarBeca = () => {
             </Spin>
           </div>
         ) : (
-          <>
+          <Form
+            form={form}
+            onFinish={(values) => handleFinish(values, becasDescuentosData.selectedBecaDescuento)}
+            layout="vertical"
+          >
             {/* Sección 1: Información del Estudiante */}
             <StudentInfoSection student={student} />
 
@@ -145,7 +149,7 @@ const EstudiantesAsignarBeca = () => {
               onCancel={handleVolver}
               disabled={!becasDescuentosData.selectedBecaDescuento || loadingStudent || loadingAsignar}
             />
-          </>
+          </Form>
         )}
       </div>
     </PageTemplate>
