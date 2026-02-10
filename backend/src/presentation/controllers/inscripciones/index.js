@@ -6,8 +6,7 @@ export { CreateEnrollmentController } from './inscripciones/create.controller.js
 export { GetEnrollmentByIdController } from './inscripciones/get-by-id.controller.js';
 export { DeleteEnrollmentController } from './inscripciones/delete.controller.js';
 export { GenerateFormularioInscripcionController } from './generate-formulario.controller.js';
-// TODO: Agregar otros controllers cuando se implementen sus endpoints
-// export { UpdateEnrollmentController } from './inscripciones/update.controller.js';
+export { UpdateEnrollmentController } from './inscripciones/update.controller.js';
 
 // ============================================
 // CONTROLLERS FUTUROS - MATERIAS INSCRITAS

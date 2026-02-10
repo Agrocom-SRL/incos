@@ -133,7 +133,7 @@ const TableActions = ({
       )}
       {(editPath || onEdit) && (
         <Tooltip title={editDisabled 
-          ? `Solo se puede editar inscripciones de tipo NUEVO (aún no comenzaron las clases)` 
+          ? `No se puede editar este tipo de inscripción` 
           : `${editAction.tooltip} ${itemName || 'elemento'}`}>
           <IconButton
             icon={<editAction.icon />}

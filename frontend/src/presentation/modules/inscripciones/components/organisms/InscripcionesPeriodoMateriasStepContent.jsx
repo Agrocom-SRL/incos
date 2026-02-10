@@ -37,12 +37,14 @@ const InscripcionesPeriodoMateriasStepContent = ({
   onToggleMaterias,
   studentSearch,
   resolveOptions,
+  readOnly = false,
 }) => {
   const periodos = periodosData?.periodos ?? [];
   const selectedPeriodIds = periodosData?.selectedPeriodIds ?? [];
   const { materiasByPeriod, loading, error } = materiasByPeriodsData ?? {};
   const tipoAdmision = studentSearch?.selectedStudent?.tipoAdmision ?? null;
   const isNuevo = tipoAdmision === 'NUEVO';
+  const disableMaterias = isNuevo || readOnly;
 
   const groups = buildMateriasGroups(materiasByPeriod, selectedPeriodIds, periodos);
 
@@ -66,6 +68,15 @@ const InscripcionesPeriodoMateriasStepContent = ({
       headerColor="primary"
       className="form-section step2-periodo-materias-section"
     >
+      {readOnly && (
+        <Alert
+          type="info"
+          showIcon
+          message="Modo edición (solo paralelo)"
+          description="En inscripciones de tipo NUEVO solo puede cambiar el paralelo en el siguiente paso. Periodo y materias no se modifican."
+          style={{ marginBottom: 16, borderRadius: 8 }}
+        />
+      )}
       <Row gutter={[24, 16]}>
         {section?.fields
           ?.filter((f) => f.name !== 'listaParalelos' && f.type !== 'cards')
@@ -96,9 +107,9 @@ const InscripcionesPeriodoMateriasStepContent = ({
                   onSelectionChange={(ids) => onToggleMaterias?.(group.periodId, ids)}
                   loading={loading}
                   emptyMessage="No hay materias en este periodo."
-                  disabled={isNuevo}
+                  disabled={disableMaterias}
                   showInfo={false}
-                  showSelectAll={!isNuevo}
+                  showSelectAll={!disableMaterias}
                 />
               </div>
             ))}

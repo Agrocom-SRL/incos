@@ -6,8 +6,7 @@ export { CreateEnrollmentUseCase } from './CreateEnrollmentUseCase.js';
 export { GetEnrollmentByIdUseCase } from './GetEnrollmentByIdUseCase.js';
 export { DeleteEnrollmentUseCase } from './DeleteEnrollmentUseCase.js';
 export { GenerateFormularioInscripcionUseCase } from './GenerateFormularioInscripcionUseCase.js';
-// TODO: Agregar otros use cases cuando se implementen sus endpoints
-// export { UpdateEnrollmentUseCase } from './UpdateEnrollmentUseCase.js';
+export { UpdateEnrollmentUseCase } from './UpdateEnrollmentUseCase.js';
 
 // ============================================
 // USE CASES FUTUROS - MATERIAS INSCRITAS

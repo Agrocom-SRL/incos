@@ -212,40 +212,21 @@ export const createInscripcionesTableColumns = (navigate, refetch = null, delete
           { label: 'Gestión', value: gestionAnio },
         ].filter(detail => detail.value && detail.value !== 'N/A' && detail.value !== 'Sin nombre');
 
-        // Verificar si se puede editar (solo si el tipo de inscripción es 'NUEVO')
-        // Los estudiantes NUEVOS pueden editar su inscripción porque todavía no comenzaron las clases
-        // y no se cambian los datos de estudiantes_datos_academicos, solo la inscripción
+        // Permitir editar NUEVO (solo paralelo) y ANTIGUO - REINGRESO/CONTINUIDAD (periodo, materias, paralelo)
+        // Estudiante y carrera no se editan aquí; se gestionan en registro de estudiantes
         const tipoInscripcion = record.tipoInscripcion
           || record.tipo_inscripcion
           || record.enrollment?.tipoInscripcion
           || record.enrollment?.tipo_inscripcion
           || record.enrollmentType
           || null;
-        const canEdit = tipoInscripcion === 'NUEVO';
-
-        // Debug: Verificar valores (remover después de verificar)
-        if (inscripcionId === 2) {
-          console.log('[DEBUG] Inscripción 2:', {
-            tipoInscripcion,
-            canEdit,
-            recordKeys: Object.keys(record),
-            recordTipoInscripcion: record.tipoInscripcion,
-            recordTipo_inscripcion: record.tipo_inscripcion,
-            enrollmentTipoInscripcion: record.enrollment?.tipoInscripcion,
-            enrollmentTipo_inscripcion: record.enrollment?.tipo_inscripcion,
-            recordEnrollmentType: record.enrollmentType,
-          });
-        }
+        const canEdit = ['NUEVO', 'REINGRESO', 'CONTINUIDAD'].includes(tipoInscripcion);
 
         // Extraer datos necesarios para la edición
         const estudianteId = student?.id || record.estudianteId || record.enrollment?.estudianteId;
         const carreraId = carrera?.id || record.carreraId || record.enrollment?.carreraId;
 
-        // Para inscripciones NUEVAS, el periodo viene del plan de estudios (periodo 1)
-        // No necesitamos periodoId explícito, se obtiene del paralelo seleccionado
-        const periodoId = null; // Se obtendrá del paralelo en el wizard
-
-        // Obtener el paraleloId del primer curso inscrito (si existe)
+        // Obtener periodoId y paraleloId del primer curso inscrito (para pre-seleccionar en edición)
         // Los cursos inscritos vienen en inscripcionesMaterias, materiasInscritas, o enrollmentSubjects
         // El curso tiene paraleloId que es el ID del paralelo
         const materiasInscritas = record.inscripcionesMaterias
@@ -256,60 +237,27 @@ export const createInscripcionesTableColumns = (navigate, refetch = null, delete
           || [];
         const primerMateria = materiasInscritas.length > 0 ? materiasInscritas[0] : null;
 
-        // El paraleloId puede venir de diferentes estructuras:
-        // 1. curso.paraleloId (si el curso está incluido)
-        // 2. teacherAssignment.course.paraleloId (si la asignación docente está incluida)
-        // 3. Directamente del paralelo si está incluido
+        // paraleloId y periodoId del primer curso inscrito (para pre-seleccionar en edición)
         let paraleloId = null;
+        let periodoId = null;
         if (primerMateria) {
-          // Intentar obtener desde curso directo
-          paraleloId = primerMateria?.curso?.paraleloId
-            || primerMateria?.curso?.paralelo_id
-            || primerMateria?.teacherAssignment?.course?.paraleloId
-            || primerMateria?.teacherAssignment?.course?.paralelo_id
-            || primerMateria?.paraleloId
-            || primerMateria?.paralelo_id
-            || null;
+          const curso = primerMateria?.curso ?? primerMateria?.teacherAssignment?.course;
+          paraleloId = curso?.paraleloId ?? curso?.paralelo_id ?? primerMateria?.paraleloId ?? primerMateria?.paralelo_id ?? null;
+          periodoId = curso?.periodoId ?? curso?.periodo_id ?? primerMateria?.periodoId ?? primerMateria?.periodo_id ?? record.periodoId ?? record.enrollment?.periodoId ?? null;
         }
 
-        const handleEdit = (recordParam) => {
-          // TableActions pasa el record como parámetro, pero usamos el del closure
-          // para tener acceso a todos los datos ya extraídos
-          console.log('[DEBUG] handleEdit llamado para inscripción:', inscripcionId, {
-            canEdit,
-            tipoInscripcion,
-            estudianteId,
-            carreraId,
-            paraleloId,
-            editDisabled: !canEdit,
-          });
-
-          // Si el botón está deshabilitado, no hacer nada
-          // (el botón debería estar deshabilitado si canEdit es false)
-          if (!canEdit) {
-            console.warn('[DEBUG] No se puede editar porque tipoInscripcion no es NUEVO:', tipoInscripcion);
-            return;
-          }
-
-          // Navegar a la página de edición con los datos de la inscripción
-          console.log('[DEBUG] Navegando a /inscripciones/nueva con estado:', {
-            mode: 'editar',
-            inscripcionId,
-            studentId: estudianteId,
-            carreraId,
-            periodoId,
-            paraleloId,
-          });
-
+        const handleEdit = () => {
+          if (!canEdit) return;
           navigate('/inscripciones/nueva', {
             state: {
               mode: 'editar',
-              inscripcionId: inscripcionId,
+              inscripcionId,
               studentId: estudianteId,
-              carreraId: carreraId,
-              periodoId: periodoId,
-              paraleloId: paraleloId,
-            }
+              carreraId,
+              periodoId,
+              paraleloId,
+              tipoInscripcion, // NUEVO → solo paralelo editable; REINGRESO/CONTINUIDAD → periodo, materias, paralelo
+            },
           });
         };
 

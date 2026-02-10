@@ -2,7 +2,7 @@
 -- MIGRACIÓN DE DATOS: pago_aporte
 -- Origen: instituto_incos.sql
 -- Schema: 11-pagos-academicos.sql (tabla pago_aporte)
--- Dependencias: 01-migrate-estudiantes, 06-migrate-estudiantes-becas (estudiante_beca_id 1,2), 16-seed-gestiones (gestion_id 2). 26 filas verificadas contra dump.
+-- Dependencias: 01-migrate-estudiantes, 06-migrate-estudiantes-becas (estudiante_beca_id 1,2), 16-seed-gestiones (gestion_id 2). 27 filas verificadas contra dump.
 -- ============================================
 
 USE instituto_incos;
@@ -35,6 +35,7 @@ INSERT INTO pago_aporte (id, estudiante_id, gestion_id, estudiante_beca_id, mont
 (23, 22, 2, NULL, 400.00, 0.00, 400.00, 'CANCELADO', 1, '2026-02-05 22:47:30', '2026-02-05 22:47:51', NULL, NULL, NULL, NULL),
 (24, 23, 2, NULL, 400.00, 0.00, 400.00, 'CANCELADO', 1, '2026-02-06 17:21:36', '2026-02-06 17:21:55', NULL, NULL, NULL, NULL),
 (25, 24, 2, NULL, 400.00, 0.00, 400.00, 'CANCELADO', 1, '2026-02-06 22:38:14', '2026-02-06 22:39:29', NULL, NULL, NULL, NULL),
-(26, 25, 2, NULL, 400.00, 0.00, 400.00, 'CANCELADO', 1, '2026-02-07 21:55:19', '2026-02-07 21:55:35', NULL, NULL, NULL, NULL);
+(26, 25, 2, NULL, 400.00, 0.00, 400.00, 'CANCELADO', 1, '2026-02-07 21:55:19', '2026-02-07 21:55:35', NULL, NULL, NULL, NULL),
+(27, 26, 2, NULL, 400.00, 0.00, 400.00, 'PENDIENTE', 1, '2026-02-09 22:30:05', '2026-02-09 22:30:05', NULL, NULL, NULL, NULL);
 
 SET FOREIGN_KEY_CHECKS = 1;

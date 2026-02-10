@@ -42,7 +42,7 @@ function extractPeriodosFromParalelos(paralelos) {
 }
 
 export const useInscripcionNuevaPeriodos = (options = {}) => {
-  const { carreraId = null, tipoAdmision = null } = options;
+  const { carreraId = null, tipoAdmision = null, initialPeriodId = null } = options;
   const { paralelos, loading, error, fetch } = useParalelosApi();
   const [selectedPeriodIds, setSelectedPeriodIds] = useState([]);
 
@@ -74,6 +74,18 @@ export const useInscripcionNuevaPeriodos = (options = {}) => {
       setSelectedPeriodIds([periodos[0].id]);
     }
   }, [tipoAdmision, periodos, selectedPeriodIds.length]);
+
+  // Modo edición: pre-seleccionar el periodo de la inscripción cuando initialPeriodId está definido
+  useEffect(() => {
+    if (initialPeriodId == null || !periodos.length) return;
+    const periodId = Number(initialPeriodId);
+    const exists = periodos.some((p) => p.id === periodId);
+    if (!exists) return;
+    setSelectedPeriodIds((prev) => {
+      if (prev.includes(periodId)) return prev;
+      return [periodId];
+    });
+  }, [initialPeriodId, periodos]);
 
   const onTogglePeriods = useCallback((checkedIds) => {
     const ids = Array.isArray(checkedIds) ? checkedIds : [];

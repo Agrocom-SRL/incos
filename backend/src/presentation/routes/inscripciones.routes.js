@@ -1,6 +1,6 @@
 import express from 'express';
 import { listValidator, idValidator } from '../validators/common/index.js';
-import { createEnrollmentValidator } from '../validators/inscripciones/index.js';
+import { createEnrollmentValidator, updateEnrollmentValidator } from '../validators/inscripciones/index.js';
 
 /**
  * Construye el router del módulo Inscripciones
@@ -89,17 +89,17 @@ export function buildInscripcionesRouter({ controllers, middlewares }) {
         (req, res, next) => controllers.deleteEnrollmentController.handle(req, res, next)
     );
 
-    // ============================================
-    // ENDPOINTS FUTUROS (TODO: Implementar cuando se necesiten)
-    // ============================================
-
-    // PUT /:id - Actualizar inscripción
-    // router.put(
-    //     '/:id',
-    //     updateEnrollmentValidator,
-    //     validateRequest,
-    //     (req, res, next) => controllers.updateEnrollmentController.handle(req, res, next)
-    // );
+    /**
+     * PUT /api/v1/inscripciones/:id
+     * Actualizar inscripción (observaciones, fecha; TODO: paralelo/materias)
+     */
+    router.put(
+        '/:id',
+        idValidator,
+        updateEnrollmentValidator,
+        validateRequest,
+        (req, res, next) => controllers.updateEnrollmentController.handle(req, res, next)
+    );
 
     return router;
 }
