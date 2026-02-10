@@ -10,6 +10,10 @@
 -- - 12 orígenes + 14 idiomas (1:N → JSON, orígenes con país, ciudad e idiomas)
 -- - 13 discapacidades (1:N → JSON)
 --
+-- NOTA: Se usan tablas derivadas (LEFT JOIN de agregados por estudiante_id) en lugar
+-- de subconsultas correlacionadas en el SELECT, para evitar el error MySQL #1054
+-- "No se reconoce la columna 'e.id' en WHERE" al crear/importar la vista.
+--
 -- IMPORTANTE: Ejecutar primero las vistas base en este orden:
 -- 1. 08-vista-base-municipios-geografia.sql
 -- 2. 12-vista-base-estudiante-origenes.sql (debe incluir nacimiento_municipio_id, nacimiento_provincia_id, nacimiento_departamento_id)
@@ -27,7 +31,6 @@ DROP VIEW IF EXISTS vista_estudiante_datos_personales;
 
 CREATE VIEW vista_estudiante_datos_personales AS
 SELECT
-  -- Torso: estudiantes (07)
   e.id,
   e.codigo_estudiante,
   e.ci,
@@ -54,10 +57,8 @@ SELECT
   e.activo,
   e.created_at,
   e.updated_at,
-  -- Pieza 09: estado civil
   ec.estado_civil_nombre,
   ec.estado_civil_abreviatura,
-  -- Pieza 10: residencia (geografía vía 08)
   r.residencia_municipio_nombre,
   r.residencia_municipio_codigo,
   r.residencia_provincia_id,
@@ -66,9 +67,16 @@ SELECT
   r.residencia_departamento_id,
   r.residencia_departamento_nombre,
   r.residencia_departamento_codigo,
-  -- Pieza 11: apoderados (1:N → JSON)
-  COALESCE(
-    (SELECT JSON_ARRAYAGG(
+  COALESCE(apoderados_agg.apoderados_json, JSON_ARRAY()) AS apoderados,
+  COALESCE(origenes_agg.origenes_json, JSON_ARRAY()) AS origenes,
+  COALESCE(discapacidades_agg.discapacidades_json, JSON_ARRAY()) AS discapacidades
+FROM estudiantes e
+LEFT JOIN vista_base_estudiante_estado_civil ec ON ec.estudiante_id = e.id
+LEFT JOIN vista_base_estudiante_residencia r ON r.estudiante_id = e.id
+LEFT JOIN (
+  SELECT
+    a.estudiante_id,
+    JSON_ARRAYAGG(
       JSON_OBJECT(
         'apoderado_id', a.apoderado_id,
         'tipo_parentesco_id', a.tipo_parentesco_id,
@@ -79,73 +87,73 @@ SELECT
         'celular_2', a.celular_2,
         'vive_con_estudiante', a.vive_con_estudiante
       )
-    ) FROM vista_base_estudiante_apoderados a WHERE a.estudiante_id = e.id),
-    JSON_ARRAY()
-  ) AS apoderados,
-  -- Pieza 12+14: orígenes con idiomas (1:N → JSON)
-  -- NOTA: Requiere que vista_base_estudiante_origenes tenga los campos nacimiento_municipio_id, nacimiento_provincia_id, nacimiento_departamento_id
-  -- Ejecutar primero: 12-vista-base-estudiante-origenes.sql
-  COALESCE(
-    (SELECT JSON_ARRAYAGG(
+    ) AS apoderados_json
+  FROM vista_base_estudiante_apoderados a
+  GROUP BY a.estudiante_id
+) apoderados_agg ON apoderados_agg.estudiante_id = e.id
+LEFT JOIN (
+  SELECT
+    o_ordenado.estudiante_id,
+    JSON_ARRAYAGG(
       JSON_OBJECT(
-        'origen_id', origen_ordenado.origen_id,
-        'pais_id', origen_ordenado.pais_id,
-        'pais_id_efectivo', origen_ordenado.pais_id_efectivo,
-        'pais_nombre', origen_ordenado.pais_nombre,
-        'pais_codigo_iso', origen_ordenado.pais_codigo_iso,
-        'municipio_nacimiento_id', origen_ordenado.municipio_nacimiento_id,
-        'nacimiento_municipio_id', origen_ordenado.nacimiento_municipio_id,
-        'nacimiento_provincia_id', origen_ordenado.nacimiento_provincia_id,
-        'nacimiento_departamento_id', origen_ordenado.nacimiento_departamento_id,
-        'ciudad', origen_ordenado.ciudad,
-        'ciudad_nacimiento_raw', origen_ordenado.ciudad_nacimiento_raw,
-        'tipo_origen', origen_ordenado.tipo_origen,
-        'es_principal', origen_ordenado.es_principal,
-        'nacimiento_municipio_nombre', origen_ordenado.nacimiento_municipio_nombre,
-        'nacimiento_provincia_nombre', origen_ordenado.nacimiento_provincia_nombre,
-        'nacimiento_departamento_nombre', origen_ordenado.nacimiento_departamento_nombre,
-        'idioma_materno_id', origen_ordenado.idioma_materno_id,
-        'idioma_materno_nombre', origen_ordenado.idioma_materno_nombre,
-        'idioma_materno_codigo_iso', origen_ordenado.idioma_materno_codigo_iso,
-        'idioma_secundario_id', origen_ordenado.idioma_secundario_id,
-        'idioma_secundario_nombre', origen_ordenado.idioma_secundario_nombre,
-        'idioma_secundario_codigo_iso', origen_ordenado.idioma_secundario_codigo_iso
+        'origen_id', o_ordenado.origen_id,
+        'pais_id', o_ordenado.pais_id,
+        'pais_id_efectivo', o_ordenado.pais_id_efectivo,
+        'pais_nombre', o_ordenado.pais_nombre,
+        'pais_codigo_iso', o_ordenado.pais_codigo_iso,
+        'municipio_nacimiento_id', o_ordenado.municipio_nacimiento_id,
+        'nacimiento_municipio_id', o_ordenado.nacimiento_municipio_id,
+        'nacimiento_provincia_id', o_ordenado.nacimiento_provincia_id,
+        'nacimiento_departamento_id', o_ordenado.nacimiento_departamento_id,
+        'ciudad', o_ordenado.ciudad,
+        'ciudad_nacimiento_raw', o_ordenado.ciudad_nacimiento_raw,
+        'tipo_origen', o_ordenado.tipo_origen,
+        'es_principal', o_ordenado.es_principal,
+        'nacimiento_municipio_nombre', o_ordenado.nacimiento_municipio_nombre,
+        'nacimiento_provincia_nombre', o_ordenado.nacimiento_provincia_nombre,
+        'nacimiento_departamento_nombre', o_ordenado.nacimiento_departamento_nombre,
+        'idioma_materno_id', o_ordenado.idioma_materno_id,
+        'idioma_materno_nombre', o_ordenado.idioma_materno_nombre,
+        'idioma_materno_codigo_iso', o_ordenado.idioma_materno_codigo_iso,
+        'idioma_secundario_id', o_ordenado.idioma_secundario_id,
+        'idioma_secundario_nombre', o_ordenado.idioma_secundario_nombre,
+        'idioma_secundario_codigo_iso', o_ordenado.idioma_secundario_codigo_iso
       )
-    )
-    FROM (
-      SELECT 
-        o.origen_id,
-        o.pais_id,
-        o.pais_id_efectivo,
-        o.pais_nombre,
-        o.pais_codigo_iso,
-        o.municipio_nacimiento_id,
-        o.nacimiento_municipio_id,
-        o.nacimiento_provincia_id,
-        o.nacimiento_departamento_id,
-        o.ciudad,
-        o.ciudad_nacimiento_raw,
-        o.tipo_origen,
-        o.es_principal,
-        o.nacimiento_municipio_nombre,
-        o.nacimiento_provincia_nombre,
-        o.nacimiento_departamento_nombre,
-        i.idioma_materno_id,
-        i.idioma_materno_nombre,
-        i.idioma_materno_codigo_iso,
-        i.idioma_secundario_id,
-        i.idioma_secundario_nombre,
-        i.idioma_secundario_codigo_iso
-      FROM vista_base_estudiante_origenes o
-      LEFT JOIN vista_base_estudiante_origenes_idiomas i ON i.origen_id = o.origen_id
-      WHERE o.estudiante_id = e.id
-      ORDER BY o.es_principal DESC, o.origen_id ASC
-    ) AS origen_ordenado),
-    JSON_ARRAY()
-  ) AS origenes,
-  -- Pieza 13: discapacidades (1:N → JSON)
-  COALESCE(
-    (SELECT JSON_ARRAYAGG(
+    ) AS origenes_json
+  FROM (
+    SELECT
+      o.origen_id,
+      o.estudiante_id,
+      o.pais_id,
+      o.pais_id_efectivo,
+      o.pais_nombre,
+      o.pais_codigo_iso,
+      o.municipio_nacimiento_id,
+      o.nacimiento_municipio_id,
+      o.nacimiento_provincia_id,
+      o.nacimiento_departamento_id,
+      o.ciudad,
+      o.ciudad_nacimiento_raw,
+      o.tipo_origen,
+      o.es_principal,
+      o.nacimiento_municipio_nombre,
+      o.nacimiento_provincia_nombre,
+      o.nacimiento_departamento_nombre,
+      i.idioma_materno_id,
+      i.idioma_materno_nombre,
+      i.idioma_materno_codigo_iso,
+      i.idioma_secundario_id,
+      i.idioma_secundario_nombre,
+      i.idioma_secundario_codigo_iso
+    FROM vista_base_estudiante_origenes o
+    LEFT JOIN vista_base_estudiante_origenes_idiomas i ON i.origen_id = o.origen_id
+  ) o_ordenado
+  GROUP BY o_ordenado.estudiante_id
+) origenes_agg ON origenes_agg.estudiante_id = e.id
+LEFT JOIN (
+  SELECT
+    d.estudiante_id,
+    JSON_ARRAYAGG(
       JSON_OBJECT(
         'discapacidad_id', d.discapacidad_id,
         'tipo_discapacidad_id', d.tipo_discapacidad_id,
@@ -154,11 +162,9 @@ SELECT
         'grado_discapacidad', d.grado_discapacidad,
         'discapacidad_causa', d.discapacidad_causa
       )
-    ) FROM vista_base_estudiante_discapacidades d WHERE d.estudiante_id = e.id),
-    JSON_ARRAY()
-  ) AS discapacidades
-FROM estudiantes e
-LEFT JOIN vista_base_estudiante_estado_civil ec ON ec.estudiante_id = e.id
-LEFT JOIN vista_base_estudiante_residencia r ON r.estudiante_id = e.id
+    ) AS discapacidades_json
+  FROM vista_base_estudiante_discapacidades d
+  GROUP BY d.estudiante_id
+) discapacidades_agg ON discapacidades_agg.estudiante_id = e.id
 WHERE e.activo = TRUE
   AND e.deleted_at IS NULL;

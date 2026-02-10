@@ -26,11 +26,14 @@ const InscripcionesCarreraStepContent = ({
   carrerasError = null,
   selectedStudent = null,
   onCarreraChange,
+  readOnly = false,
 }) => {
   const esAntiguo = selectedStudent?.tipoAdmision === 'ANTIGUO';
   const estudianteField = section?.fields?.find((f) => f.name === 'estudianteSeleccionado');
-  const disabledCareerIds =
-    esAntiguo && selectedStudent?.careerId
+  // En modo edición (readOnly) no se puede cambiar estudiante ni carrera
+  const disabledCareerIds = readOnly && carreras.length
+    ? carreras.map((c) => c.id)
+    : esAntiguo && selectedStudent?.careerId
       ? carreras
           .map((c) => c.id)
           .filter(
@@ -66,7 +69,15 @@ const InscripcionesCarreraStepContent = ({
           )}
         </Col>
         <Col xs={24} md={12}>
-          {esAntiguo ? (
+          {readOnly ? (
+            <Alert
+              title="Modo edición"
+              description="El estudiante y la carrera no se modifican aquí. Puede cambiar periodo, materias y paralelo en los siguientes pasos."
+              type="info"
+              showIcon
+              style={{ borderRadius: 8 }}
+            />
+          ) : esAntiguo ? (
             <Alert
               title="Estudiante antiguo"
               description="La carrera ya está asignada según sus datos académicos y no puede modificarse."

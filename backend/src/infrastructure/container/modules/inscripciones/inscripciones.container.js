@@ -14,8 +14,8 @@
 
 import { INSCRIPCIONES_TOKENS, REPOSITORIOS_TOKENS, SERVICIOS_TOKENS } from '../../tokens/index.js';
 import { registerComponent } from '../../utils/container.helpers.js';
-import { ListEnrollmentsUseCase, CreateEnrollmentUseCase, GetEnrollmentByIdUseCase, DeleteEnrollmentUseCase, GenerateFormularioInscripcionUseCase } from '../../../../application/use-cases/inscripciones/index.js';
-import { ListEnrollmentsController, CreateEnrollmentController, GetEnrollmentByIdController, DeleteEnrollmentController, GenerateFormularioInscripcionController } from '../../../../presentation/controllers/inscripciones/index.js';
+import { ListEnrollmentsUseCase, CreateEnrollmentUseCase, GetEnrollmentByIdUseCase, DeleteEnrollmentUseCase, GenerateFormularioInscripcionUseCase, UpdateEnrollmentUseCase } from '../../../../application/use-cases/inscripciones/index.js';
+import { ListEnrollmentsController, CreateEnrollmentController, GetEnrollmentByIdController, DeleteEnrollmentController, GenerateFormularioInscripcionController, UpdateEnrollmentController } from '../../../../presentation/controllers/inscripciones/index.js';
 import { buildInscripcionesRouter } from '../../../../presentation/routes/inscripciones.routes.js';
 
 /**
@@ -128,7 +128,23 @@ export function registerInscripcionesResource(container) {
             })
     );
 
-    // TODO: Agregar otros Use Cases cuando se implementen sus endpoints
+    registerComponent(
+        container,
+        INSCRIPCIONES_TOKENS.updateEnrollmentUseCase,
+        (c) =>
+            new UpdateEnrollmentUseCase({
+                enrollmentRepository: c.resolve(REPOSITORIOS_TOKENS.enrollmentRepository),
+                enrollmentSubjectRepository: c.resolve(REPOSITORIOS_TOKENS.enrollmentSubjectRepository),
+                studentAcademicDataRepository: c.resolve(REPOSITORIOS_TOKENS.studentAcademicDataRepository),
+                parallelRepository: c.resolve(REPOSITORIOS_TOKENS.parallelRepository),
+                courseRepository: c.resolve(REPOSITORIOS_TOKENS.courseRepository),
+                teacherAssignmentRepository: c.resolve(REPOSITORIOS_TOKENS.teacherAssignmentRepository),
+                managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
+                managementPlanRepository: c.resolve(REPOSITORIOS_TOKENS.managementPlanRepository),
+                studyPlanRepository: c.resolve(REPOSITORIOS_TOKENS.studyPlanRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
 
     // ============================================
     // CONTROLLERS
@@ -188,7 +204,16 @@ export function registerInscripcionesResource(container) {
             })
     );
 
-    // TODO: Agregar otros Controllers cuando se implementen sus endpoints
+    registerComponent(
+        container,
+        INSCRIPCIONES_TOKENS.updateEnrollmentController,
+        (c) =>
+            new UpdateEnrollmentController({
+                updateEnrollmentUseCase: c.resolve(INSCRIPCIONES_TOKENS.updateEnrollmentUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
+    );
 
     // ============================================
     // ROUTER
@@ -203,7 +228,7 @@ export function registerInscripcionesResource(container) {
                 getEnrollmentByIdController: c.resolve(INSCRIPCIONES_TOKENS.getEnrollmentByIdController),
                 deleteEnrollmentController: c.resolve(INSCRIPCIONES_TOKENS.deleteEnrollmentController),
                 generateFormularioInscripcionController: c.resolve(INSCRIPCIONES_TOKENS.generateFormularioInscripcionController),
-                // TODO: Agregar otros controllers cuando se implementen sus rutas
+                updateEnrollmentController: c.resolve(INSCRIPCIONES_TOKENS.updateEnrollmentController),
             };
 
             const middlewares = {

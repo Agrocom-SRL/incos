@@ -3,7 +3,7 @@
 -- Origen: instituto_incos.sql
 -- Schema: 10-estudiantes-relaciones.sql (tabla estudiantes_origenes)
 -- Dependencias: 04-seed-municipios.sql (municipio_nacimiento_id 1,6), 05-seed-idiomas.sql (idioma 1,2,3,4). 01-migrate-estudiantes.
--- Columnas y 33 filas verificadas contra dump.
+-- Columnas y 34 filas verificadas contra dump.
 -- ============================================
 
 USE instituto_incos;
@@ -43,6 +43,7 @@ INSERT INTO estudiantes_origenes (id, estudiante_id, pais_id, municipio_nacimien
 (30, 22, NULL, 1, NULL, 1, NULL, 'BOLIVIANA', 1, 1, '2026-02-05 22:47:30', '2026-02-05 22:47:30', NULL, NULL, NULL, NULL),
 (31, 23, NULL, 1, NULL, 1, NULL, 'BOLIVIANA', 1, 1, '2026-02-06 17:21:36', '2026-02-06 17:21:36', NULL, NULL, NULL, NULL),
 (32, 24, NULL, 1, NULL, 1, 3, 'BOLIVIANA', 1, 1, '2026-02-06 22:38:14', '2026-02-06 22:38:14', NULL, NULL, NULL, NULL),
-(33, 25, NULL, 1, NULL, 1, 4, 'BOLIVIANA', 1, 1, '2026-02-07 21:55:19', '2026-02-07 21:55:19', NULL, NULL, NULL, NULL);
+(33, 25, NULL, 1, NULL, 1, 4, 'BOLIVIANA', 1, 1, '2026-02-07 21:55:19', '2026-02-07 21:55:19', NULL, NULL, NULL, NULL),
+(34, 26, NULL, 1, NULL, NULL, NULL, 'BOLIVIANA', 1, 1, '2026-02-09 22:30:05', '2026-02-09 22:30:05', NULL, NULL, NULL, NULL);
 
 SET FOREIGN_KEY_CHECKS = 1;

@@ -117,18 +117,26 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
         return carrerasData.selectedCarrera?.id;
     }, [editData?.carreraId, studentSearch.selectedStudent, carrerasData.selectedCarrera]);
     
-    // Periodos: según tipo admisión (NUEVO = solo primer periodo; ANTIGUO = todos). Lista extraída de paralelos.
+    // Periodos: según tipo admisión (NUEVO = solo primer periodo; ANTIGUO = todos). En edición pre-seleccionar editData.periodoId.
     const tipoAdmision = studentSearch?.selectedStudent?.tipoAdmision ?? null;
     const periodosData = useInscripcionNuevaPeriodos({
       carreraId: carreraIdForParalelos ?? undefined,
       tipoAdmision: tipoAdmision ?? undefined,
+      initialPeriodId: editData?.periodoId ?? undefined,
     });
     const selectedPeriod = periodosData.selectedPeriod;
 
+    // En modo edición: si aún no hay periodos seleccionados, usar editData.periodoId para cargar paralelos y pre-seleccionar
+    const periodoIdsForParalelos = useMemo(() => {
+        if (periodosData.selectedPeriodIds?.length) return periodosData.selectedPeriodIds;
+        if (editData?.periodoId != null) return [editData.periodoId];
+        return undefined;
+    }, [periodosData.selectedPeriodIds, editData?.periodoId]);
+
     const paralelosData = useInscripcionNuevaParalelos({
         carreraId: carreraIdForParalelos,
-        periodoIds: periodosData.selectedPeriodIds?.length ? periodosData.selectedPeriodIds : undefined,
-        periodoId: selectedPeriod?.id,
+        periodoIds: periodoIdsForParalelos,
+        periodoId: selectedPeriod?.id ?? editData?.periodoId,
         initialParaleloId: editData?.paraleloId,
     });
 

@@ -3,7 +3,7 @@
 -- Origen: instituto_incos.sql
 -- Schema: 09-estudiantes-parte2.sql (tabla estudiantes_apoderados)
 -- Dependencias: 08-seed-tipos-parentesco.sql (tipo_parentesco_id 1,2,5,9,13,16). 01-migrate-estudiantes.
--- Columnas y 33 filas verificadas contra dump.
+-- Columnas y 34 filas verificadas contra dump.
 -- ============================================
 
 USE instituto_incos;
@@ -43,6 +43,7 @@ INSERT INTO estudiantes_apoderados (id, estudiante_id, tipo_parentesco_id, nombr
 (30, 22, 16, 'EVELIN', 'CORONADO  BOZO', '76657817', NULL, 0, 1, '2026-02-05 22:47:30', '2026-02-05 22:47:30', NULL, NULL, NULL, NULL),
 (31, 23, 2, 'JUANA FLORA', 'CHAMBI TAPIA', '65063335', NULL, 0, 1, '2026-02-06 17:21:36', '2026-02-06 17:21:36', NULL, NULL, NULL, NULL),
 (32, 24, 13, 'MARIANO', 'CALLISAYA', '76731101', NULL, 0, 1, '2026-02-06 22:38:14', '2026-02-06 22:38:14', NULL, NULL, NULL, NULL),
-(33, 25, 9, 'VICTOR', 'SANCHEZ CUELLAR', '76861477', NULL, 0, 1, '2026-02-07 21:55:19', '2026-02-07 21:55:19', NULL, NULL, NULL, NULL);
+(33, 25, 9, 'VICTOR', 'SANCHEZ CUELLAR', '76861477', NULL, 0, 1, '2026-02-07 21:55:19', '2026-02-07 21:55:19', NULL, NULL, NULL, NULL),
+(34, 26, 2, 'JUANA', 'APAZA HUANCA', '62019838', NULL, 1, 1, '2026-02-09 22:30:05', '2026-02-09 22:30:05', NULL, NULL, NULL, NULL);
 
 SET FOREIGN_KEY_CHECKS = 1;

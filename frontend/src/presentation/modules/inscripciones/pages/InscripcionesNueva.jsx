@@ -93,14 +93,14 @@ const InscripcionesNueva = () => {
   } = context;
 
   // Pasos (stepIndex 0-based): 
-  // 0=Buscar Estudiante (Paso visual 1), 
-  // 1=Carrera (Paso visual 2), 
-  // 2=Periodo y materias (Paso visual 3), 
-  // 3=Paralelo (Paso visual 4)
+  // 0=Buscar Estudiante, 1=Carrera, 2=Periodo y materias, 3=Paralelo
+  // Edición: NUEVO → solo paralelo (step 3); ANTIGUO (REINGRESO/CONTINUIDAD) → periodo, materias y paralelo (step 2)
+  // Estudiante y carrera no se editan aquí (solo lectura en modo edición)
   const initialStep = useMemo(() => {
-    if (editData) return 2; // Edición: ir a Periodo y materias (stepIndex 2, paso visual 3)
-    if (studentSearch?.selectedStudent && !studentSearch?.loading) return 1; // Estudiante ya elegido: ir a Carrera (stepIndex 1, paso visual 2)
-    return 0; // Buscar Estudiante (stepIndex 0, paso visual 1)
+    if (editData?.tipoInscripcion === 'NUEVO') return 3; // Edición NUEVO: ir directo a Paralelo
+    if (editData) return 2; // Edición ANTIGUO: ir a Periodo y materias
+    if (studentSearch?.selectedStudent && !studentSearch?.loading) return 1;
+    return 0;
   }, [editData, studentSearch?.selectedStudent, studentSearch?.loading]);
 
   // Pre-cargar valores iniciales del formulario en modo edición
@@ -258,7 +258,7 @@ const InscripcionesNueva = () => {
   // Paso visual 4 (Paralelo) → stepIndex = 3
   const renderSectionContent = useCallback(
     (stepIndex, sectionKey, section, form) => {
-      // Paso visual 2: Seleccionar Carrera (stepIndex = 1)
+      // Paso visual 2: Seleccionar Carrera (stepIndex = 1). En edición, estudiante y carrera son solo lectura.
       if (stepIndex === 1 && sectionKey === 'carrera') {
         return (
           <InscripcionesCarreraStepContent
@@ -270,10 +270,11 @@ const InscripcionesNueva = () => {
             carrerasError={carrerasData?.error ?? null}
             selectedStudent={studentSearch?.selectedStudent ?? null}
             onCarreraChange={(carrera) => context.onSelectCarrera?.(carrera?.id)}
+            readOnly={!!editData}
           />
         );
       }
-      // Paso visual 3: Periodo y materias (stepIndex = 2)
+      // Paso visual 3: Periodo y materias (stepIndex = 2). En edición NUEVO solo se edita paralelo (este paso es solo lectura).
       if (stepIndex === 2 && sectionKey === 'periodoYMaterias') {
         return (
           <InscripcionesPeriodoMateriasStepContent
@@ -286,6 +287,7 @@ const InscripcionesNueva = () => {
             onToggleMaterias={onToggleMaterias}
             studentSearch={studentSearch}
             resolveOptions={() => []}
+            readOnly={editData?.tipoInscripcion === 'NUEVO'}
           />
         );
       }
@@ -307,6 +309,7 @@ const InscripcionesNueva = () => {
       return null;
     },
     [
+      editData,
       carrerasData?.carreras,
       carrerasData?.loading,
       carrerasData?.error,

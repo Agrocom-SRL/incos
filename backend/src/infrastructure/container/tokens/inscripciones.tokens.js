@@ -11,8 +11,7 @@
 export const INSCRIPCIONES_TOKENS = {
     // VALIDATORS
     createEnrollmentValidator: 'inscripciones.createEnrollmentValidator',
-    // TODO: Agregar otros validators cuando se implementen
-    // updateEnrollmentValidator: 'inscripciones.updateEnrollmentValidator',
+    updateEnrollmentValidator: 'inscripciones.updateEnrollmentValidator',
 
     // USE CASES
     listEnrollmentsUseCase: 'inscripciones.listEnrollmentsUseCase',
@@ -21,7 +20,7 @@ export const INSCRIPCIONES_TOKENS = {
     deleteEnrollmentUseCase: 'inscripciones.deleteEnrollmentUseCase',
     generateFormularioInscripcionUseCase: 'inscripciones.generateFormularioInscripcionUseCase',
     // TODO: Agregar otros Use Cases cuando se implementen sus endpoints
-    // updateEnrollmentUseCase: 'inscripciones.updateEnrollmentUseCase',
+    updateEnrollmentUseCase: 'inscripciones.updateEnrollmentUseCase',
 
     // CONTROLLERS
     listEnrollmentsController: 'inscripciones.listEnrollmentsController',
@@ -30,7 +29,7 @@ export const INSCRIPCIONES_TOKENS = {
     deleteEnrollmentController: 'inscripciones.deleteEnrollmentController',
     generateFormularioInscripcionController: 'inscripciones.generateFormularioInscripcionController',
     // TODO: Agregar otros Controllers cuando se implementen sus endpoints
-    // updateEnrollmentController: 'inscripciones.updateEnrollmentController',
+    updateEnrollmentController: 'inscripciones.updateEnrollmentController',
 
     // ROUTERS
     inscripcionesRouter: 'inscripciones.inscripcionesRouter',

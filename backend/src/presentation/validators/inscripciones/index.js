@@ -5,5 +5,4 @@
  */
 
 export { createEnrollmentValidator } from './create.validator.js';
-// TODO: Agregar otros validators cuando se implementen sus endpoints
-// export { updateEnrollmentValidator } from './update.validator.js';
+export { updateEnrollmentValidator } from './update.validator.js';
