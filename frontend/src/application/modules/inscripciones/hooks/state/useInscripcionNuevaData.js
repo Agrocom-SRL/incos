@@ -126,6 +126,9 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
     });
     const selectedPeriod = periodosData.selectedPeriod;
 
+    // Materias seleccionadas por periodo (Step 2); debe estar antes de formHandlers para pasarlo como opción
+    const [selectedMateriaIdsByPeriod, setSelectedMateriaIdsByPeriod] = useState({});
+
     // En modo edición: si aún no hay periodos seleccionados, usar editData.periodoId para cargar paralelos y pre-seleccionar
     const periodoIdsForParalelos = useMemo(() => {
         if (periodosData.selectedPeriodIds?.length) return periodosData.selectedPeriodIds;
@@ -144,6 +147,8 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
         selectedStudent: studentSearch.selectedStudent,
         selectedParalelo: paralelosData.selectedParalelo,
         selectedPeriod,
+        selectedParalelosByPeriod: paralelosData.selectedParalelosByPeriod ?? {},
+        selectedMateriaIdsByPeriod,
     });
 
     const materiasData = useInscripcionNuevaMaterias({
@@ -155,7 +160,6 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
       periodosData.selectedPeriodIds ?? [],
       carreraIdForParalelos ?? null
     );
-    const [selectedMateriaIdsByPeriod, setSelectedMateriaIdsByPeriod] = useState({});
 
     // 2. Callbacks memoizados para los enrichers
     const handleSearchStudent = useCallback((value) => {

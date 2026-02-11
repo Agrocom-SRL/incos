@@ -11,8 +11,10 @@
  *
  * Campos validados (sincronizados con el frontend):
  * - student_id: ID del estudiante (requerido)
- * - parallel_id: ID del paralelo (opcional si se envía teacher_assignment_ids)
+ * - parallel_id: ID del paralelo (opcional si se envía teacher_assignment_ids o selección por periodo)
  * - teacher_assignment_ids: array de IDs de asignaciones docentes (opcional)
+ * - parallel_ids_by_period: objeto { periodId: parallelId } para inscripción por materias (ANTIGUO)
+ * - materia_ids_by_period: objeto { periodId: [materiaIds] } para inscripción por materias (ANTIGUO)
  * - enrollment_type: Tipo de inscripción (opcional)
  * - observations: Observaciones (opcional, máximo 1000 caracteres)
  *
@@ -54,20 +56,38 @@ export const createEnrollmentValidator = [
     })
     .withMessage('teacher_assignment_ids debe ser un arreglo con al menos un ID válido (entero mayor a 0)'),
 
-  // Validación condicional: debe enviar parallel_id O teacher_assignment_ids (al menos uno)
-  // Usamos un campo virtual para evitar duplicar la validación de parallel_id
+  body('parallel_ids_by_period')
+    .optional({ nullable: true })
+    .isObject()
+    .withMessage('parallel_ids_by_period debe ser un objeto { periodId: parallelId }'),
+
+  body('materia_ids_by_period')
+    .optional({ nullable: true })
+    .isObject()
+    .withMessage('materia_ids_by_period debe ser un objeto { periodId: [materiaIds] }'),
+
+  // Validación condicional: debe enviar parallel_id O teacher_assignment_ids O (parallel_ids_by_period + materia_ids_by_period)
   body()
     .custom((_, { req }) => {
       const parallelId = req.body?.parallel_id;
       const teacherAssignmentIds = req.body?.teacher_assignment_ids ?? req.body?.teacherAssignmentIds;
-      
+      const parallelIdsByPeriod = req.body?.parallel_ids_by_period ?? req.body?.parallelIdsByPeriod;
+      const materiaIdsByPeriod = req.body?.materia_ids_by_period ?? req.body?.materiaIdsByPeriod;
+
       const hasParallel = parallelId != null && parallelId !== '' && Number(parallelId) >= 1;
       const hasMaterias = Array.isArray(teacherAssignmentIds) && teacherAssignmentIds.length > 0;
-      
-      if (hasParallel || hasMaterias) return true;
-      
+      const hasSelectionByPeriod =
+        parallelIdsByPeriod &&
+        typeof parallelIdsByPeriod === 'object' &&
+        materiaIdsByPeriod &&
+        typeof materiaIdsByPeriod === 'object' &&
+        Object.keys(materiaIdsByPeriod).length > 0 &&
+        Object.values(materiaIdsByPeriod).some((arr) => Array.isArray(arr) && arr.length > 0);
+
+      if (hasParallel || hasMaterias || hasSelectionByPeriod) return true;
+
       throw new Error(
-        'Debe enviar parallel_id o teacher_assignment_ids (al menos una materia)'
+        'Debe enviar parallel_id, teacher_assignment_ids, o parallel_ids_by_period con materia_ids_by_period (al menos una materia)'
       );
     }),
 

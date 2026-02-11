@@ -46,13 +46,15 @@ import { useCreateInscripcion } from '@application-inscripciones/hooks';
  * 
  * @param {string} mode - Modo del formulario: 'nuevo' (default) o 'editar'
  * @param {Object} options - Opciones adicionales
- * @param {Object} options.selectedStudent - Estudiante seleccionado (con id)
+ * @param {Object} options.selectedStudent - Estudiante seleccionado (con id, tipoAdmision)
  * @param {Object} options.selectedParalelo - Paralelo seleccionado (con id)
  * @param {Object} options.selectedPeriod - Periodo seleccionado (con id)
+ * @param {Object} [options.selectedParalelosByPeriod] - Paralelo por periodo { periodId: { id } } (ANTIGUO)
+ * @param {Object} [options.selectedMateriaIdsByPeriod] - Materias por periodo { periodId: [materiaIds] } (ANTIGUO)
  * @returns {Object} Objeto con form, handleFinish, handleSave, getFormValues, loading, error, validationErrors, inscripcionResult
  */
 export const useInscripcionNuevaFormHandlers = (mode = 'nuevo', options = {}) => {
-    const { selectedStudent, selectedParalelo, selectedPeriod } = options;
+    const { selectedStudent, selectedParalelo, selectedPeriod, selectedParalelosByPeriod = {}, selectedMateriaIdsByPeriod = {} } = options;
     
     // Hook genérico compartido para mostrar mensajes
     const showMessage = useMessage();
@@ -159,40 +161,62 @@ export const useInscripcionNuevaFormHandlers = (mode = 'nuevo', options = {}) =>
         // Obtener student_id: prioridad 1) del contexto, 2) del formulario
         const studentId = selectedStudent?.id || formValues.student_id;
         
-        // Obtener parallel_id: prioridad 1) del contexto, 2) del formulario
+        // Estudiante ANTIGUO: puede enviar selección por periodo (paralelo + materias por periodo)
+        const tipoAdmision = selectedStudent?.tipoAdmision ?? formValues.enrollment_type ?? 'NUEVO';
+        const isAntiguo = tipoAdmision !== 'NUEVO';
+
+        const hasSelectionByPeriod = isAntiguo &&
+            selectedParalelosByPeriod &&
+            Object.keys(selectedParalelosByPeriod).length > 0 &&
+            selectedMateriaIdsByPeriod &&
+            Object.keys(selectedMateriaIdsByPeriod).some(
+                (periodId) => Array.isArray(selectedMateriaIdsByPeriod[periodId]) && selectedMateriaIdsByPeriod[periodId].length > 0
+            );
+
         const parallelId = selectedParalelo?.id || formValues.parallel_id;
-        
-        // Validar que se haya seleccionado estudiante y paralelo
+
         if (!studentId) {
             const errorMessage = 'Debe seleccionar un estudiante';
-            if (showMessage) {
-                showMessage('error', errorMessage);
-            }
-            return {
-                success: false,
-                error: errorMessage,
-            };
+            if (showMessage) showMessage('error', errorMessage);
+            return { success: false, error: errorMessage };
         }
 
-        if (!parallelId) {
-            const errorMessage = 'Debe seleccionar un paralelo';
-            if (showMessage) {
-                showMessage('error', errorMessage);
-            }
-            return {
-                success: false,
-                error: errorMessage,
-            };
+        if (!hasSelectionByPeriod && !parallelId) {
+            const errorMessage = 'Debe seleccionar un paralelo o completar periodo y materias por periodo';
+            if (showMessage) showMessage('error', errorMessage);
+            return { success: false, error: errorMessage };
         }
 
         const periodoId = selectedPeriod?.id ?? formValues.periodo_id ?? formValues.periodo;
+        const rawEnrollmentType = formValues.enrollment_type || tipoAdmision || 'NUEVO';
+        const enrollmentTypeForApi = rawEnrollmentType === 'ANTIGUO' ? 'CONTINUIDAD' : rawEnrollmentType;
         const inscripcionData = {
             student_id: studentId,
-            parallel_id: parallelId,
             periodo_id: periodoId ?? undefined,
-            enrollment_type: formValues.enrollment_type || 'NUEVO',
+            enrollment_type: enrollmentTypeForApi,
             observations: formValues.observations || null,
         };
+
+        if (hasSelectionByPeriod) {
+            const parallelIdsByPeriod = {};
+            const materiaIdsByPeriod = {};
+            for (const periodId of Object.keys(selectedMateriaIdsByPeriod || {})) {
+                const materiaIds = selectedMateriaIdsByPeriod[periodId];
+                if (!Array.isArray(materiaIds) || materiaIds.length === 0) continue;
+                const paralelo = selectedParalelosByPeriod?.[periodId];
+                const pid = paralelo?.id ?? paralelo;
+                if (pid == null) continue;
+                parallelIdsByPeriod[String(periodId)] = Number(pid);
+                materiaIdsByPeriod[String(periodId)] = materiaIds.map(Number);
+            }
+            if (Object.keys(materiaIdsByPeriod).length > 0) {
+                inscripcionData.parallel_ids_by_period = parallelIdsByPeriod;
+                inscripcionData.materia_ids_by_period = materiaIdsByPeriod;
+            }
+        }
+        if (!inscripcionData.parallel_ids_by_period && parallelId) {
+            inscripcionData.parallel_id = parallelId;
+        }
 
         const result = await createInscripcion(inscripcionData);
 
@@ -227,52 +251,62 @@ export const useInscripcionNuevaFormHandlers = (mode = 'nuevo', options = {}) =>
         }
 
         return result;
-    }, [selectedStudent, selectedParalelo, selectedPeriod, getFormValues, createInscripcion, showMessage, handleSubmitResult, navigate]);
+    }, [selectedStudent, selectedParalelo, selectedPeriod, selectedParalelosByPeriod, selectedMateriaIdsByPeriod, getFormValues, createInscripcion, showMessage, handleSubmitResult, navigate]);
 
     // Handler para guardar parcialmente
     // NOTA: Por ahora, el guardado parcial también crea la inscripción completa
-    // En el futuro se puede implementar un guardado como borrador
     const handleSave = useCallback(async (step) => {
-        // Obtener valores del formulario primero (incluye campos hidden sincronizados)
         const formValues = getFormValues ? getFormValues() : {};
-        
-        // Obtener student_id: prioridad 1) del contexto, 2) del formulario
         const studentId = selectedStudent?.id || formValues.student_id;
-        
-        // Obtener parallel_id: prioridad 1) del contexto, 2) del formulario
+        const tipoAdmision = selectedStudent?.tipoAdmision ?? formValues.enrollment_type ?? 'NUEVO';
+        const isAntiguo = tipoAdmision !== 'NUEVO';
+        const hasSelectionByPeriod = isAntiguo &&
+            selectedParalelosByPeriod &&
+            Object.keys(selectedParalelosByPeriod).length > 0 &&
+            selectedMateriaIdsByPeriod &&
+            Object.keys(selectedMateriaIdsByPeriod).some(
+                (periodId) => Array.isArray(selectedMateriaIdsByPeriod[periodId]) && selectedMateriaIdsByPeriod[periodId].length > 0
+            );
         const parallelId = selectedParalelo?.id || formValues.parallel_id;
-        
-        // Validar que se haya seleccionado estudiante y paralelo
+
         if (!studentId) {
-            const errorMessage = 'Debe seleccionar un estudiante';
-            if (showMessage) {
-                showMessage('error', errorMessage);
-            }
-            return {
-                success: false,
-                error: errorMessage,
-            };
+            if (showMessage) showMessage('error', 'Debe seleccionar un estudiante');
+            return { success: false, error: 'Debe seleccionar un estudiante' };
+        }
+        if (!hasSelectionByPeriod && !parallelId) {
+            if (showMessage) showMessage('error', 'Debe seleccionar un paralelo o completar periodo y materias por periodo');
+            return { success: false, error: 'Debe seleccionar un paralelo o completar periodo y materias por periodo' };
         }
 
-        if (!parallelId) {
-            const errorMessage = 'Debe seleccionar un paralelo';
-            if (showMessage) {
-                showMessage('error', errorMessage);
-            }
-            return {
-                success: false,
-                error: errorMessage,
-            };
-        }
-        
         const periodoId = selectedPeriod?.id ?? formValues.periodo_id ?? formValues.periodo;
+        const rawEnrollmentTypeSave = formValues.enrollment_type || tipoAdmision || 'NUEVO';
+        const enrollmentTypeForApiSave = rawEnrollmentTypeSave === 'ANTIGUO' ? 'CONTINUIDAD' : rawEnrollmentTypeSave;
         const inscripcionData = {
             student_id: studentId,
-            parallel_id: parallelId,
             periodo_id: periodoId ?? undefined,
-            enrollment_type: formValues.enrollment_type || 'NUEVO',
+            enrollment_type: enrollmentTypeForApiSave,
             observations: formValues.observations || null,
         };
+        if (hasSelectionByPeriod) {
+            const parallelIdsByPeriod = {};
+            const materiaIdsByPeriod = {};
+            for (const periodId of Object.keys(selectedMateriaIdsByPeriod || {})) {
+                const materiaIds = selectedMateriaIdsByPeriod[periodId];
+                if (!Array.isArray(materiaIds) || materiaIds.length === 0) continue;
+                const paralelo = selectedParalelosByPeriod?.[periodId];
+                const pid = paralelo?.id ?? paralelo;
+                if (pid == null) continue;
+                parallelIdsByPeriod[String(periodId)] = Number(pid);
+                materiaIdsByPeriod[String(periodId)] = materiaIds.map(Number);
+            }
+            if (Object.keys(materiaIdsByPeriod).length > 0) {
+                inscripcionData.parallel_ids_by_period = parallelIdsByPeriod;
+                inscripcionData.materia_ids_by_period = materiaIdsByPeriod;
+            }
+        }
+        if (!inscripcionData.parallel_ids_by_period && parallelId) {
+            inscripcionData.parallel_id = parallelId;
+        }
 
         const result = await createInscripcion(inscripcionData);
 
@@ -293,7 +327,7 @@ export const useInscripcionNuevaFormHandlers = (mode = 'nuevo', options = {}) =>
         }
 
         return result;
-    }, [selectedStudent, selectedParalelo, selectedPeriod, getFormValues, createInscripcion, showMessage, handleSubmitResult]);
+    }, [selectedStudent, selectedParalelo, selectedPeriod, selectedParalelosByPeriod, selectedMateriaIdsByPeriod, getFormValues, createInscripcion, showMessage, handleSubmitResult]);
 
     // Memoizar el objeto retornado para mantener referencia estable
     // Esto permite que el useMemo del Provider sea más efectivo

@@ -68,6 +68,7 @@ export class CreateEnrollmentUseCase {
    * @param {Object} params.provinceRepository - Repositorio de provincias
    * @param {Object} params.departmentRepository - Repositorio de departamentos
    * @param {Object} params.languageRepository - Repositorio de idiomas
+   * @param {Object} params.planSubjectRepository - Repositorio de asignaturas del plan (para resolver materias por periodo)
    * @param {Object} params.contributionPaymentRepository - Repositorio de pagos de aporte
    * @param {ILogger} params.logger - Logger para registro de eventos
    */
@@ -91,6 +92,7 @@ export class CreateEnrollmentUseCase {
     provinceRepository,
     departmentRepository,
     languageRepository,
+    planSubjectRepository,
     contributionPaymentRepository,
     logger,
   }) {
@@ -113,6 +115,7 @@ export class CreateEnrollmentUseCase {
     this.provinceRepository = provinceRepository;
     this.departmentRepository = departmentRepository;
     this.languageRepository = languageRepository;
+    this.planSubjectRepository = planSubjectRepository;
     this.contributionPaymentRepository = contributionPaymentRepository;
     this.logger = logger;
   }
@@ -139,16 +142,27 @@ export class CreateEnrollmentUseCase {
    * usando la fecha actual del sistema.
    */
   async execute(data) {
-    const {
+    let {
       studentId,
       parallelId,
       teacherAssignmentIds,
+      parallelIdsByPeriod,
+      materiaIdsByPeriod,
       enrollmentType = TIPOS_INSCRIPCION.NUEVO,
       observations,
     } = data;
 
-    // Determinar modo: materias específicas si se envía array no vacío de teacherAssignmentIds
-    const useMateriasMode = Array.isArray(teacherAssignmentIds) && teacherAssignmentIds.length > 0;
+    // Determinar si el frontend envió selección por periodo (ANTIGUO) para resolver a teacherAssignmentIds
+    const hasSelectionByPeriod =
+      parallelIdsByPeriod &&
+      typeof parallelIdsByPeriod === 'object' &&
+      materiaIdsByPeriod &&
+      typeof materiaIdsByPeriod === 'object' &&
+      Object.keys(materiaIdsByPeriod).length > 0 &&
+      Object.values(materiaIdsByPeriod).some((arr) => Array.isArray(arr) && arr.length > 0);
+
+    // Determinar modo: materias específicas si se envía array no vacío de teacherAssignmentIds (o se resuelve desde selección)
+    let useMateriasMode = Array.isArray(teacherAssignmentIds) && teacherAssignmentIds.length > 0;
 
     this.logger.info('[Inscripciones] Iniciando creación de inscripción', {
       studentId,
@@ -161,6 +175,24 @@ export class CreateEnrollmentUseCase {
     try {
       const student = await this._validateStudent(studentId);
       const management = await this._getCurrentManagement();
+
+      // Resolver teacherAssignmentIds desde selección por periodo (ANTIGUO) si aplica
+      if (hasSelectionByPeriod && (!Array.isArray(teacherAssignmentIds) || teacherAssignmentIds.length === 0)) {
+        const resolved = await this._resolveTeacherAssignmentIdsFromSelection(
+          parallelIdsByPeriod,
+          materiaIdsByPeriod,
+          student,
+          management
+        );
+        if (resolved && resolved.length > 0) {
+          teacherAssignmentIds = resolved;
+          useMateriasMode = true;
+          this.logger.info('[Inscripciones] teacherAssignmentIds resueltos desde selección por periodo', {
+            count: teacherAssignmentIds.length,
+            parallelIdsByPeriod: Object.keys(parallelIdsByPeriod).length,
+          });
+        }
+      }
 
       let parallel;
       let teacherAssignments;
@@ -669,6 +701,88 @@ export class CreateEnrollmentUseCase {
       amountPaid: payment.amountPaid,
       scholarshipDiscount: payment.scholarshipDiscount,
     });
+  }
+
+  /**
+   * Resuelve teacherAssignmentIds a partir de la selección por periodo (paralelo por periodo + materias por periodo).
+   * Usado cuando el frontend envía parallel_ids_by_period y materia_ids_by_period (estudiante ANTIGUO).
+   *
+   * @private
+   * @param {Object} parallelIdsByPeriod - { [periodId]: parallelId }
+   * @param {Object} materiaIdsByPeriod - { [periodId]: [materiaId, ...] }
+   * @param {Object} student - Entidad Student
+   * @param {Object} management - Entidad Management
+   * @returns {Promise<number[]>} Array de IDs de asignaciones docentes
+   */
+  async _resolveTeacherAssignmentIdsFromSelection(parallelIdsByPeriod, materiaIdsByPeriod, student, management) {
+    const periodIds = Object.keys(materiaIdsByPeriod).filter(
+      (k) => Array.isArray(materiaIdsByPeriod[k]) && materiaIdsByPeriod[k].length > 0
+    );
+    if (periodIds.length === 0) return [];
+
+    const firstPeriodId = periodIds[0];
+    const firstParallelId = parallelIdsByPeriod[firstPeriodId];
+    if (!firstParallelId) return [];
+
+    const parallel = await this.parallelRepository.findById(Number(firstParallelId));
+    if (!parallel) return [];
+
+    const studentAcademicData = await this._getOrCreateStudentAcademicData(student, parallel, management);
+    const { managementPlan } = await this._getStudyPlanAndManagementPlan(studentAcademicData, management);
+    const managementPlanId = managementPlan.id;
+
+    const assignmentIds = [];
+    const materiaIdSetByPeriod = {};
+    for (const pid of periodIds) {
+      materiaIdSetByPeriod[pid] = new Set((materiaIdsByPeriod[pid] || []).map(Number));
+    }
+
+    for (const periodId of periodIds) {
+      const parallelId = parallelIdsByPeriod[periodId];
+      if (!parallelId) continue;
+
+      const coursesResult = await this.courseRepository.findAll({ parallelId: Number(parallelId) }, null, null);
+      const courses = coursesResult.courses || [];
+
+      for (const course of courses) {
+        const coursePlain = course.toPlainObject ? course.toPlainObject() : course;
+        const asignaturaPlanId = coursePlain.planSubjectId ?? coursePlain.asignaturaPlanId;
+        if (!asignaturaPlanId) continue;
+
+        const planSubject = await this.planSubjectRepository.findById(asignaturaPlanId);
+        if (!planSubject) continue;
+
+        const planPlain = planSubject.toPlainObject ? planSubject.toPlainObject() : planSubject;
+        const planPeriodId = planPlain.periodId ?? planPlain.periodoId;
+        const planMateriaId = planPlain.subjectId ?? planPlain.materiaId;
+        if (Number(planPeriodId) !== Number(periodId)) continue;
+
+        const allowedMaterias = materiaIdSetByPeriod[periodId];
+        if (!allowedMaterias || !allowedMaterias.has(Number(planMateriaId))) continue;
+
+        const assignmentsResult = await this.teacherAssignmentRepository.findAll(
+          {
+            managementPlanId,
+            courseId: coursePlain.id,
+            active: true,
+          },
+          1,
+          null
+        );
+        const list = assignmentsResult.teacherAssignments ?? assignmentsResult.teacherAssignment ?? [];
+        if (list.length > 0) {
+          const assign = list[0];
+          const assignId = assign.id ?? assign.toPlainObject?.()?.id;
+          if (assignId) assignmentIds.push(assignId);
+        }
+      }
+    }
+
+    this.logger.info('[Inscripciones] Teacher assignments resueltos desde selección', {
+      periodCount: periodIds.length,
+      assignmentCount: assignmentIds.length,
+    });
+    return assignmentIds;
   }
 
   /**

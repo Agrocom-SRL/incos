@@ -34,7 +34,9 @@ export class CrearInscripcionUseCase {
    * 
    * @param {Object} datosInscripcion - Datos de la inscripción a crear
    * @param {number} datosInscripcion.student_id - ID del estudiante (requerido)
-   * @param {number} datosInscripcion.parallel_id - ID del paralelo (requerido)
+   * @param {number} [datosInscripcion.parallel_id] - ID del paralelo (requerido si no se envía selección por periodo)
+   * @param {Object} [datosInscripcion.parallel_ids_by_period] - { periodId: parallelId } para inscripción por materias (ANTIGUO)
+   * @param {Object} [datosInscripcion.materia_ids_by_period] - { periodId: [materiaIds] } para inscripción por materias (ANTIGUO)
    * @param {string} [datosInscripcion.enrollment_type] - Tipo de inscripción (NUEVO, CONTINUIDAD, REINGRESO, etc.) - opcional
    * @param {string} [datosInscripcion.observations] - Observaciones (opcional)
    * @returns {Promise<{success: boolean, data?: Object, error?: string, validationErrors?: Array}>}
@@ -64,10 +66,19 @@ export class CrearInscripcionUseCase {
         };
       }
 
-      if (!datosInscripcion.parallel_id) {
+      const hasParallelId = datosInscripcion.parallel_id != null && datosInscripcion.parallel_id !== '' && Number(datosInscripcion.parallel_id) >= 1;
+      const hasSelectionByPeriod =
+        datosInscripcion.parallel_ids_by_period &&
+        typeof datosInscripcion.parallel_ids_by_period === 'object' &&
+        datosInscripcion.materia_ids_by_period &&
+        typeof datosInscripcion.materia_ids_by_period === 'object' &&
+        Object.keys(datosInscripcion.materia_ids_by_period).some(
+          (k) => Array.isArray(datosInscripcion.materia_ids_by_period[k]) && datosInscripcion.materia_ids_by_period[k].length > 0
+        );
+      if (!hasParallelId && !hasSelectionByPeriod) {
         return {
           success: false,
-          error: 'El ID del paralelo es requerido',
+          error: 'Debe enviar parallel_id o parallel_ids_by_period con materia_ids_by_period (al menos una materia)',
         };
       }
 
