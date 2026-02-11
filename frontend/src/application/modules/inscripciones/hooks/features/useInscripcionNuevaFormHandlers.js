@@ -165,18 +165,31 @@ export const useInscripcionNuevaFormHandlers = (mode = 'nuevo', options = {}) =>
         const tipoAdmision = selectedStudent?.tipoAdmision ?? formValues.enrollment_type ?? 'NUEVO';
         const isAntiguo = tipoAdmision !== 'NUEVO';
 
+        const periodIdsWithMaterias = Object.keys(selectedMateriaIdsByPeriod || {}).filter(
+            (pid) => Array.isArray(selectedMateriaIdsByPeriod[pid]) && selectedMateriaIdsByPeriod[pid].length > 0
+        );
+        const periodsMissingParallel = periodIdsWithMaterias.filter((pid) => {
+            const paralelo = selectedParalelosByPeriod?.[pid];
+            const pidVal = paralelo?.id ?? paralelo;
+            return pidVal == null || pidVal === '' || Number(pidVal) < 1;
+        });
+
         const hasSelectionByPeriod = isAntiguo &&
-            selectedParalelosByPeriod &&
-            Object.keys(selectedParalelosByPeriod).length > 0 &&
-            selectedMateriaIdsByPeriod &&
-            Object.keys(selectedMateriaIdsByPeriod).some(
-                (periodId) => Array.isArray(selectedMateriaIdsByPeriod[periodId]) && selectedMateriaIdsByPeriod[periodId].length > 0
-            );
+            periodIdsWithMaterias.length > 0 &&
+            periodsMissingParallel.length === 0;
 
         const parallelId = selectedParalelo?.id || formValues.parallel_id;
 
         if (!studentId) {
             const errorMessage = 'Debe seleccionar un estudiante';
+            if (showMessage) showMessage('error', errorMessage);
+            return { success: false, error: errorMessage };
+        }
+
+        if (isAntiguo && periodIdsWithMaterias.length > 0 && periodsMissingParallel.length > 0) {
+            const errorMessage = periodIdsWithMaterias.length === 1
+                ? 'Debe seleccionar un paralelo para el periodo con materias seleccionadas.'
+                : `Debe seleccionar un paralelo para cada periodo con materias seleccionadas. Faltan paralelos en ${periodsMissingParallel.length} periodo(s).`;
             if (showMessage) showMessage('error', errorMessage);
             return { success: false, error: errorMessage };
         }
@@ -260,18 +273,32 @@ export const useInscripcionNuevaFormHandlers = (mode = 'nuevo', options = {}) =>
         const studentId = selectedStudent?.id || formValues.student_id;
         const tipoAdmision = selectedStudent?.tipoAdmision ?? formValues.enrollment_type ?? 'NUEVO';
         const isAntiguo = tipoAdmision !== 'NUEVO';
+
+        const periodIdsWithMateriasSave = Object.keys(selectedMateriaIdsByPeriod || {}).filter(
+            (pid) => Array.isArray(selectedMateriaIdsByPeriod[pid]) && selectedMateriaIdsByPeriod[pid].length > 0
+        );
+        const periodsMissingParallelSave = periodIdsWithMateriasSave.filter((pid) => {
+            const paralelo = selectedParalelosByPeriod?.[pid];
+            const pidVal = paralelo?.id ?? paralelo;
+            return pidVal == null || pidVal === '' || Number(pidVal) < 1;
+        });
+
         const hasSelectionByPeriod = isAntiguo &&
-            selectedParalelosByPeriod &&
-            Object.keys(selectedParalelosByPeriod).length > 0 &&
-            selectedMateriaIdsByPeriod &&
-            Object.keys(selectedMateriaIdsByPeriod).some(
-                (periodId) => Array.isArray(selectedMateriaIdsByPeriod[periodId]) && selectedMateriaIdsByPeriod[periodId].length > 0
-            );
+            periodIdsWithMateriasSave.length > 0 &&
+            periodsMissingParallelSave.length === 0;
+
         const parallelId = selectedParalelo?.id || formValues.parallel_id;
 
         if (!studentId) {
             if (showMessage) showMessage('error', 'Debe seleccionar un estudiante');
             return { success: false, error: 'Debe seleccionar un estudiante' };
+        }
+        if (isAntiguo && periodIdsWithMateriasSave.length > 0 && periodsMissingParallelSave.length > 0) {
+            const errorMsg = periodIdsWithMateriasSave.length === 1
+                ? 'Debe seleccionar un paralelo para el periodo con materias seleccionadas.'
+                : `Debe seleccionar un paralelo para cada periodo con materias seleccionadas. Faltan paralelos en ${periodsMissingParallelSave.length} periodo(s).`;
+            if (showMessage) showMessage('error', errorMsg);
+            return { success: false, error: errorMsg };
         }
         if (!hasSelectionByPeriod && !parallelId) {
             if (showMessage) showMessage('error', 'Debe seleccionar un paralelo o completar periodo y materias por periodo');
