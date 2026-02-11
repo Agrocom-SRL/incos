@@ -70,6 +70,8 @@ export class CreateEnrollmentController extends BaseCreateController {
       studentId: body.student_id || body.studentId,
       parallelId: body.parallel_id || body.parallelId || null,
       teacherAssignmentIds: body.teacher_assignment_ids || body.teacherAssignmentIds || null,
+      parallelIdsByPeriod: body.parallel_ids_by_period || body.parallelIdsByPeriod || null,
+      materiaIdsByPeriod: body.materia_ids_by_period || body.materiaIdsByPeriod || null,
       enrollmentType: body.enrollment_type || body.enrollmentType,
       // enrollmentDate se genera automáticamente en el use case, no se envía desde el frontend
       observations: body.observations || null,

@@ -572,7 +572,7 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
                 alignments: ['left', 'left', 'right'], // Código y asignatura izquierda, horas derecha
             } : null;
 
-            await this._addTwoColumnLayout(leftColumnItems, rightTableConfig, 35, 60);
+            await this._addTwoColumnLayout(leftColumnItems, rightTableConfig, 35, 60, { topOffset: 6 });
         } else {
             // Si no hay datos, mostrar mensaje
             await this._addLabelValue('Datos académicos:', 'No hay datos académicos disponibles');
@@ -651,18 +651,21 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
         const templateFooterHeight = cfg.signatureTemplateFooterHeight ?? 0;
         const spaceLineToFirst = cfg.signatureSpacingLineToFirstText ?? 8;
         const spaceBetweenLines = cfg.signatureSpacingBetweenTextLines ?? 4;
-        const colGap = 40; // Espacio entre las dos columnas
+        const colGap = 50; // Espacio entre las dos columnas
 
         const normalFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.normal.font);
         const font = await this._pdfDoc.embedFont(normalFontName);
         const fontSize = IncosPDFBase.FONTS.normal.size;
         const textRgb = this._hexToRgb(IncosPDFBase.COLORS.text);
 
-        // Calcular posiciones de las dos columnas
+        // Bloque de firmas alineado a la derecha: ocupa un poco más de la mitad del ancho y no va centrado
         const totalWidth = pageWidth - margins.left - margins.right;
-        const colWidth = (totalWidth - colGap) / 2;
-        const leftColX = margins.left;
-        const rightColX = margins.left + colWidth + colGap;
+        const blockWidth = totalWidth * 0.58; // ~58% del ancho (un poco más de la mitad)
+        const blockLeftX = margins.left + (totalWidth - blockWidth); // bloque pegado al lado derecho
+        const leftColWidth = blockWidth * 0.42; // Estudiante: ~42% del bloque
+        const rightColWidth = blockWidth - leftColWidth - colGap; // Resto para Responsable
+        const leftColX = blockLeftX;
+        const rightColX = blockLeftX + leftColWidth + colGap;
 
         // Líneas de texto para cada columna
         const leftLines = [
@@ -686,8 +689,8 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
 
         // Dibujar líneas de firma para ambas columnas
         const halfLine = lineWidth / 2;
-        const leftLineCenterX = leftColX + colWidth / 2;
-        const rightLineCenterX = rightColX + colWidth / 2;
+        const leftLineCenterX = leftColX + leftColWidth / 2;
+        const rightLineCenterX = rightColX + rightColWidth / 2;
 
         // Línea izquierda (estudiante)
         this._currentPage.drawLine({

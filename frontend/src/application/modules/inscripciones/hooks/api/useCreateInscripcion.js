@@ -86,8 +86,17 @@ export const useCreateInscripcion = () => {
         };
       }
 
-      if (!formValues.parallel_id) {
-        const errorMessage = 'El ID del paralelo es requerido';
+      const hasParallelId = formValues.parallel_id != null && formValues.parallel_id !== '' && Number(formValues.parallel_id) >= 1;
+      const hasSelectionByPeriod =
+        formValues.parallel_ids_by_period &&
+        typeof formValues.parallel_ids_by_period === 'object' &&
+        formValues.materia_ids_by_period &&
+        typeof formValues.materia_ids_by_period === 'object' &&
+        Object.keys(formValues.materia_ids_by_period).some(
+          (k) => Array.isArray(formValues.materia_ids_by_period[k]) && formValues.materia_ids_by_period[k].length > 0
+        );
+      if (!hasParallelId && !hasSelectionByPeriod) {
+        const errorMessage = 'Debe enviar parallel_id o parallel_ids_by_period con materia_ids_by_period (al menos una materia)';
         optimizedSetErrorRef.current(errorMessage);
         return {
           success: false,

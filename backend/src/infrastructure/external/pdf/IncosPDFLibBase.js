@@ -535,7 +535,7 @@ export class IncosPDFLibBase {
         });
 
         // Actualizar posición Y después del título de sección (con salto de línea)
-        this._currentY = this._currentY - sectionFontSize - IncosPDFBase.LAYOUT.spacing.subsection;
+        this._currentY = this._currentY - sectionFontSize - IncosPDFBase.LAYOUT.spacing.line;
     }
 
     /**
@@ -1303,9 +1303,11 @@ export class IncosPDFLibBase {
      * @param {string[]} [rightTableConfig.alignments] - Alineación de cada columna ('left', 'center', 'right')
      * @param {number} [leftColumnWidthPercent=40] - Porcentaje de ancho para la columna izquierda (0-100)
      * @param {number} [leftLabelWidth=60] - Ancho fijo para los labels de la columna izquierda
+     * @param {Object} [options] - Opciones
+     * @param {number} [options.topOffset] - Puntos a subir el Y de inicio (positivo = contenido más pegado al título de sección; ahorra espacio)
      * @returns {Promise<void>}
      */
-    async _addTwoColumnLayout(leftColumnItems, rightTableConfig, leftColumnWidthPercent = 40, leftLabelWidth = 60) {
+    async _addTwoColumnLayout(leftColumnItems, rightTableConfig, leftColumnWidthPercent = 40, leftLabelWidth = 60, options = {}) {
         if (!this._pdfDoc || !this._currentPage) {
             throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
         }
@@ -1321,6 +1323,12 @@ export class IncosPDFLibBase {
 
         const leftColX = margins.left;
         const rightColX = margins.left + leftColWidth + colGap;
+
+        // Opcional: subir el Y de inicio para que el contenido empiece más cerca del título de sección
+        const topOffset = options.topOffset ?? 0;
+        if (topOffset > 0) {
+            this._currentY += topOffset;
+        }
 
         // Guardar posición Y inicial
         const startY = this._currentY;

@@ -67,6 +67,7 @@ export function registerInscripcionesResource(container) {
                 provinceRepository: c.resolve(REPOSITORIOS_TOKENS.provinceRepository),
                 departmentRepository: c.resolve(REPOSITORIOS_TOKENS.departmentRepository),
                 languageRepository: c.resolve(REPOSITORIOS_TOKENS.languageRepository),
+                planSubjectRepository: c.resolve(REPOSITORIOS_TOKENS.planSubjectRepository),
                 contributionPaymentRepository: c.resolve(REPOSITORIOS_TOKENS.contributionPaymentRepository),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })

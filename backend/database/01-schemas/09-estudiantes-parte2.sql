@@ -120,7 +120,7 @@ CREATE TABLE licencias_solicitudes (
     carrera_id INT NULL COMMENT 'Carrera (NULL permite flexibilidad en migraciones)',
     gestion_id INT NULL COMMENT 'Gestión (NULL permite flexibilidad en migraciones)',
     curso_id INT NULL COMMENT 'Curso donde está matriculado (para verificar si la licencia aplica para ese curso en esa gestión)',
-    fecha_solicitud DATE NOT NULL DEFAULT (CURRENT_DATE) COMMENT 'Fecha de solicitud',
+    fecha_solicitud DATE NOT NULL COMMENT 'Fecha de solicitud (asignar en aplicación o trigger)',
     fecha_desde DATE NOT NULL COMMENT 'Inicio de la licencia (Desde)',
     fecha_hasta DATE NOT NULL COMMENT 'Fin de la licencia (Hasta)',
     total_dias INT NOT NULL COMMENT 'Total de días',

@@ -582,14 +582,23 @@ export class ReciboPagoPdfGenerator extends IncosPDFLibBase {
             if (totalPagadoAntes > 0) {
                 await this._addTableRow('MONTO YA PAGADO', this._formatMonto(totalPagadoAntes), false);
             }
-            await this._addTableRow('MONTO PAGADO', this._formatAporte({ montoPagado: montoEstaCuota }), true);
+            const esExclusionCuota = (montoEstaCuota === 0 || montoEstaCuota < 0) && data.becaInfo && String(data.becaInfo.nombre ?? data.becaInfo.name ?? '').trim() !== '';
+            const valorAporteCuota = esExclusionCuota
+                ? String(data.becaInfo.nombre ?? data.becaInfo.name).trim().toUpperCase()
+                : this._formatAporte({ montoPagado: montoEstaCuota, becaInfo: data.becaInfo });
+            await this._addTableRow(esExclusionCuota ? 'EXCLUSIÓN DE PAGO' : 'MONTO PAGADO', valorAporteCuota, true);
             await this._addTableRow('SALDO PENDIENTE', this._formatMonto(saldoPendiente), true);
         } else {
             if (descuentoBeca > 0) {
                 await this._addTableRow('MONTO TOTAL', this._formatMonto(montoTotal), false);
                 await this._addTableRow('DESCUENTO POR BECA', `- ${this._formatMonto(descuentoBeca)}`, false);
             }
-            await this._addTableRow('MONTO PAGADO', this._formatAporte({ montoPagado: montoEstaCuota || (montoTotal - descuentoBeca) }), true);
+            const montoPagadoCabecera = montoEstaCuota || (montoTotal - descuentoBeca);
+            const esExclusionCabecera = (Number(montoPagadoCabecera) === 0 || Number(montoPagadoCabecera) < 0) && data.becaInfo && String(data.becaInfo.nombre ?? data.becaInfo.name ?? '').trim() !== '';
+            const valorAporteCabecera = esExclusionCabecera
+                ? String(data.becaInfo.nombre ?? data.becaInfo.name).trim().toUpperCase()
+                : this._formatAporte({ montoPagado: montoPagadoCabecera, becaInfo: data.becaInfo });
+            await this._addTableRow(esExclusionCabecera ? 'EXCLUSIÓN DE PAGO' : 'MONTO PAGADO', valorAporteCabecera, true);
         }
     }
 
@@ -944,9 +953,11 @@ En conformidad, firmo la presente para los fines que correspondan.`;
     }
 
     /**
-     * Formatea la información del aporte
+     * Formatea la información del aporte.
+     * Si el monto es 0 y hay beca/descuento aplicado (becaInfo), devuelve solo el nombre del descuento en mayúsculas
+     * (el prefijo "EXCLUSIÓN DE PAGO" va en la etiqueta de la fila, no aquí).
      * @private
-     * @param {Object} data - Datos con montoPagado
+     * @param {Object} data - Datos con montoPagado y opcionalmente becaInfo { nombre, porcentaje }
      * @returns {string} Aporte formateado
      */
     _formatAporte(data) {
@@ -958,6 +969,11 @@ En conformidad, firmo la presente para los fines que correspondan.`;
             const monto = Number(data.montoPagado ?? data.montoTotal ?? data.monto_pagado ?? data.monto_total ?? 0);
 
             if (monto === 0 || monto < 0 || isNaN(monto)) {
+                const becaInfo = data.becaInfo;
+                const nombreDescuento = becaInfo?.nombre ?? becaInfo?.name ?? '';
+                if (nombreDescuento && String(nombreDescuento).trim() !== '') {
+                    return String(nombreDescuento).trim().toUpperCase();
+                }
                 return 'GRATIS';
             }
 
