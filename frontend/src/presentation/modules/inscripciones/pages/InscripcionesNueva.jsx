@@ -86,21 +86,24 @@ const InscripcionesNueva = () => {
     onSelectParalelo,
   } = context;
 
+  // Tipo de estudiante según datos académicos (no el tipo de inscripción)
+  const tipoAdmision =
+    studentSearch?.selectedStudent?.tipoAdmision ?? editData?.tipoAdmision ?? null;
+  const isNuevoEstudiante = String(tipoAdmision ?? '').toUpperCase() === 'NUEVO';
+
   // Pasos (stepIndex 0-based): 0=Estudiante, 1=Carrera, 2=Periodo y materias, 3=Paralelo
-  // Lanzamiento: ANTIGUO (CONTINUIDAD/REINGRESO) → step 3 (Periodo y materias); NUEVO → step 4 (Paralelo)
+  // Lanzamiento: ANTIGUO → step 3 (Periodo y materias); NUEVO → step 4 (Paralelo)
   const initialStep = useMemo(() => {
-    const isNuevoByTipo = (tipo) => String(tipo ?? '').toUpperCase() === 'NUEVO';
     if (editData) {
-      return isNuevoByTipo(editData.tipoInscripcion) ? 3 : 2; // NUEVO → Paralelo (4); ANTIGUO → Periodo y materias (3)
+      return isNuevoEstudiante ? 3 : 2; // NUEVO → Paralelo (4); ANTIGUO → Periodo y materias (3)
     }
     const hasStudent = studentSearch?.selectedStudent && !studentSearch?.loading;
     if (hasStudent && carrerasData?.selectedCarrera) {
-      const tipo = studentSearch.selectedStudent?.tipoAdmision ?? studentSearch.selectedStudent?.tipoInscripcion;
-      return isNuevoByTipo(tipo) ? 3 : 2;
+      return isNuevoEstudiante ? 3 : 2;
     }
     if (hasStudent) return 1;
     return 0;
-  }, [editData, studentSearch?.selectedStudent, studentSearch?.loading, carrerasData?.selectedCarrera]);
+  }, [editData, isNuevoEstudiante, studentSearch?.selectedStudent, studentSearch?.loading, carrerasData?.selectedCarrera]);
 
   // Pre-cargar valores iniciales del formulario en modo edición
   // Nota: Los paralelos se pre-seleccionan automáticamente mediante los hooks
@@ -165,13 +168,10 @@ const InscripcionesNueva = () => {
           return;
         }
 
-        // Validar materias seleccionadas por periodo
-        const tipoAdmision = studentSearch?.selectedStudent?.tipoAdmision;
-        const isNuevo = tipoAdmision === 'NUEVO';
-        
+        // Validar materias seleccionadas por periodo (según tipo de estudiante, datos académicos)
         // Para estudiantes nuevos, las materias se auto-seleccionan, solo validar periodos
         // NO validar paralelos aquí - eso se hace en el paso 3
-        if (!isNuevo) {
+        if (!isNuevoEstudiante) {
           const periodosSinMaterias = selectedPeriodIds.filter((periodId) => {
             const materiasDelPeriodo = selectedMateriaIdsByPeriod?.[periodId] ?? [];
             return materiasDelPeriodo.length === 0;
@@ -247,7 +247,7 @@ const InscripcionesNueva = () => {
       // Otros pasos: permitir avanzar sin validación adicional
       resolve();
     });
-  }, [carrerasData?.selectedCarrera, periodosData, selectedMateriaIdsByPeriod, paralelosData?.selectedParalelosByPeriod, paralelosData?.loading, paralelosData?.paralelos, studentSearch?.selectedStudent?.tipoAdmision]);
+  }, [carrerasData?.selectedCarrera, periodosData, selectedMateriaIdsByPeriod, paralelosData?.selectedParalelosByPeriod, paralelosData?.loading, paralelosData?.paralelos, isNuevoEstudiante]);
 
   // Contenido custom por paso
   // IMPORTANTE: stepIndex es 0-based según la estructura del array de pasos:
@@ -286,8 +286,8 @@ const InscripcionesNueva = () => {
             onToggleMaterias={onToggleMaterias}
             studentSearch={studentSearch}
             resolveOptions={() => []}
-            readOnly={editData?.tipoInscripcion === 'NUEVO'}
-            isEditModeAntiguo={!!editData && editData.tipoInscripcion !== 'NUEVO'}
+            readOnly={!!editData && isNuevoEstudiante}
+            isEditModeAntiguo={!!editData && !isNuevoEstudiante}
           />
         );
       }

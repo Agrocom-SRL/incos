@@ -33,6 +33,14 @@ function buildEditDataFromInscripcion(inscripcion) {
   const studentId = student?.id ?? enrollment?.estudianteId ?? enrollment?.studentId ?? null;
   const carreraId = career?.id ?? inscripcion.studentAcademicData?.carreraId ?? enrollment?.carreraId ?? null;
   const tipoInscripcion = enrollment?.tipoInscripcion ?? enrollment?.tipo_inscripcion ?? null;
+  // Tipo del estudiante según datos académicos (no el tipo de la inscripción)
+  const tipoAdmision =
+    student?.tipoAdmision ??
+    inscripcion.studentAcademicData?.tipoAdmision ??
+    student?.admissionType ??
+    enrollment?.tipoInscripcion ??
+    enrollment?.tipo_inscripcion ??
+    null;
   const inscripcionId = enrollment?.id ?? null;
 
   let periodoId = null;
@@ -76,6 +84,7 @@ function buildEditDataFromInscripcion(inscripcion) {
     periodoId,
     paraleloId,
     tipoInscripcion,
+    tipoAdmision,
     selectedPeriodIds: selectedPeriodIds?.length ? selectedPeriodIds : null,
     materiaIdsByPeriod: materiaIdsByPeriod && Object.keys(materiaIdsByPeriod).length ? materiaIdsByPeriod : null,
     parallelIdsByPeriod: parallelIdsByPeriod && Object.keys(parallelIdsByPeriod).length ? parallelIdsByPeriod : null,
@@ -107,7 +116,7 @@ function InscripcionesEditarContent() {
       <PageTemplate
         header={<PageHeader title="Editar Inscripción" breadcrumbItems={[{ title: 'Inicio', href: '/' }, { title: 'Inscripciones', href: '/inscripciones' }, { title: 'Editar Inscripción' }]} />}
       >
-        <Alert type="error" showIcon message="Error al cargar la inscripción" description={error} />
+        <Alert type="error" showIcon title="Error al cargar la inscripción" description={error} />
       </PageTemplate>
     );
   }
@@ -117,7 +126,7 @@ function InscripcionesEditarContent() {
       <PageTemplate
         header={<PageHeader title="Editar Inscripción" breadcrumbItems={[{ title: 'Inicio', href: '/' }, { title: 'Inscripciones', href: '/inscripciones' }, { title: 'Editar Inscripción' }]} />}
       >
-        <Alert type="warning" showIcon message="No se encontró la inscripción" />
+        <Alert type="warning" showIcon title="No se encontró la inscripción" />
       </PageTemplate>
     );
   }

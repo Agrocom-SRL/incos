@@ -169,6 +169,7 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
         selectedPeriod,
         selectedParalelosByPeriod: paralelosData.selectedParalelosByPeriod ?? {},
         selectedMateriaIdsByPeriod,
+        inscripcionId: editData?.inscripcionId ?? null,
     });
 
     const materiasData = useInscripcionNuevaMaterias({

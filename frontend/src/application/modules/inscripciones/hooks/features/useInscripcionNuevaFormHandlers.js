@@ -34,7 +34,7 @@ import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import { Form } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { useMessage } from '@application/utils';
-import { useCreateInscripcion } from '@application-inscripciones/hooks';
+import { useCreateInscripcion, useUpdateInscripcion } from '@application-inscripciones/hooks';
 
 /**
  * Hook para gestionar handlers de submit del formulario de inscripción
@@ -54,21 +54,17 @@ import { useCreateInscripcion } from '@application-inscripciones/hooks';
  * @returns {Object} Objeto con form, handleFinish, handleSave, getFormValues, loading, error, validationErrors, inscripcionResult
  */
 export const useInscripcionNuevaFormHandlers = (mode = 'nuevo', options = {}) => {
-    const { selectedStudent, selectedParalelo, selectedPeriod, selectedParalelosByPeriod = {}, selectedMateriaIdsByPeriod = {} } = options;
-    
-    // Hook genérico compartido para mostrar mensajes
+    const { selectedStudent, selectedParalelo, selectedPeriod, selectedParalelosByPeriod = {}, selectedMateriaIdsByPeriod = {}, inscripcionId = null } = options;
+    const isEditMode = Boolean(inscripcionId);
+
     const showMessage = useMessage();
-    
-    // Hook de navegación
     const navigate = useNavigate();
-    
-    // Hook de API para crear inscripción
     const { createInscripcion, loading: loadingCreate, error: errorCreate, validationErrors: validationErrorsCreate } = useCreateInscripcion();
-    
-    // Usar estados del hook de API
-    const loading = loadingCreate;
-    const error = errorCreate;
-    const validationErrors = validationErrorsCreate;
+    const { updateInscripcion, loading: loadingUpdate, error: errorUpdate, validationErrors: validationErrorsUpdate } = useUpdateInscripcion();
+
+    const loading = isEditMode ? loadingUpdate : loadingCreate;
+    const error = isEditMode ? errorUpdate : errorCreate;
+    const validationErrors = isEditMode ? validationErrorsUpdate : validationErrorsCreate;
     
     // Crear la instancia del formulario (el hook maneja todo el ciclo de vida)
     const [form] = Form.useForm();
@@ -231,40 +227,31 @@ export const useInscripcionNuevaFormHandlers = (mode = 'nuevo', options = {}) =>
             inscripcionData.parallel_id = parallelId;
         }
 
-        const result = await createInscripcion(inscripcionData);
+        const result = isEditMode
+            ? await updateInscripcion(inscripcionId, inscripcionData)
+            : await createInscripcion(inscripcionData);
 
-        // Manejar el resultado
         if (result?.success) {
-            // Mostrar mensaje de éxito
             if (showMessage) {
-                showMessage('success', 'Inscripción completada correctamente');
+                showMessage('success', isEditMode ? 'Inscripción actualizada correctamente' : 'Inscripción completada correctamente');
             }
-            
-            // Guardar resultado para que la página pueda reaccionar
             setInscripcionResult(result);
-            
-            // Obtener el ID de la inscripción creada
-            const inscripcionId = result.data?.enrollment?.id || result.data?.id;
-            
-            if (inscripcionId) {
-                // Navegar a la página de detalle de la inscripción
-                // El InscripcionDetailProvider cargará automáticamente los datos cuando se monte
-                navigate(`/inscripciones/${inscripcionId}`, { replace: true });
-            } else {
-                // Si no hay ID, solo mostrar mensaje (no navegar)
+            const id = result.data?.enrollment?.id ?? result.data?.id ?? inscripcionId;
+            if (id) {
+                navigate(`/inscripciones/${id}`, { replace: true });
+            } else if (!isEditMode) {
                 console.warn('⚠️ Inscripción creada pero no se obtuvo ID para navegar');
             }
         } else {
-            // Manejar error
             handleSubmitResult(
                 result,
-                'Inscripción completada correctamente',
-                'Error al completar la inscripción'
+                isEditMode ? 'Inscripción actualizada correctamente' : 'Inscripción completada correctamente',
+                isEditMode ? 'Error al actualizar la inscripción' : 'Error al completar la inscripción'
             );
         }
 
         return result;
-    }, [selectedStudent, selectedParalelo, selectedPeriod, selectedParalelosByPeriod, selectedMateriaIdsByPeriod, getFormValues, createInscripcion, showMessage, handleSubmitResult, navigate]);
+    }, [isEditMode, inscripcionId, selectedStudent, selectedParalelo, selectedPeriod, selectedParalelosByPeriod, selectedMateriaIdsByPeriod, getFormValues, createInscripcion, updateInscripcion, showMessage, handleSubmitResult, navigate]);
 
     // Handler para guardar parcialmente
     // NOTA: Por ahora, el guardado parcial también crea la inscripción completa
@@ -335,26 +322,25 @@ export const useInscripcionNuevaFormHandlers = (mode = 'nuevo', options = {}) =>
             inscripcionData.parallel_id = parallelId;
         }
 
-        const result = await createInscripcion(inscripcionData);
+        const result = isEditMode
+            ? await updateInscripcion(inscripcionId, inscripcionData)
+            : await createInscripcion(inscripcionData);
 
         if (result?.success) {
             if (showMessage) {
                 showMessage('success', 'Datos guardados correctamente. Puede continuar después.');
             }
-            
-            // Guardar resultado
             setInscripcionResult(result);
         } else {
-            // Manejar error
             handleSubmitResult(
                 result,
                 'Datos guardados correctamente. Puede continuar después.',
-                'Error al guardar los datos'
+                isEditMode ? 'Error al actualizar la inscripción' : 'Error al guardar los datos'
             );
         }
 
         return result;
-    }, [selectedStudent, selectedParalelo, selectedPeriod, selectedParalelosByPeriod, selectedMateriaIdsByPeriod, getFormValues, createInscripcion, showMessage, handleSubmitResult]);
+    }, [isEditMode, inscripcionId, selectedStudent, selectedParalelo, selectedPeriod, selectedParalelosByPeriod, selectedMateriaIdsByPeriod, getFormValues, createInscripcion, updateInscripcion, showMessage, handleSubmitResult]);
 
     // Memoizar el objeto retornado para mantener referencia estable
     // Esto permite que el useMemo del Provider sea más efectivo
