@@ -29,7 +29,10 @@ const InscripcionesNuevaConnector = () => {
     carreraId: location.state.carreraId,
     periodoId: location.state.periodoId,
     paraleloId: location.state.paraleloId,
-    tipoInscripcion: location.state.tipoInscripcion, // NUEVO → solo paralelo; REINGRESO/CONTINUIDAD → periodo, materias, paralelo
+    tipoInscripcion: location.state.tipoInscripcion,
+    selectedPeriodIds: location.state.selectedPeriodIds ?? null,
+    materiaIdsByPeriod: location.state.materiaIdsByPeriod ?? null,
+    parallelIdsByPeriod: location.state.parallelIdsByPeriod ?? null,
   } : null;
 
   return (

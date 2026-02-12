@@ -38,6 +38,7 @@ const InscripcionesPeriodoMateriasStepContent = ({
   studentSearch,
   resolveOptions,
   readOnly = false,
+  isEditModeAntiguo = false,
 }) => {
   const periodos = periodosData?.periodos ?? [];
   const selectedPeriodIds = periodosData?.selectedPeriodIds ?? [];
@@ -47,6 +48,22 @@ const InscripcionesPeriodoMateriasStepContent = ({
   const disableMaterias = isNuevo || readOnly;
 
   const groups = buildMateriasGroups(materiasByPeriod, selectedPeriodIds, periodos);
+
+  // Sincronizar el campo del formulario "periodo" con selectedPeriodIds para que los checkboxes se muestren marcados
+  useEffect(() => {
+    if (!form || !Array.isArray(selectedPeriodIds) || !periodos?.length) return;
+    const valueToSet = selectedPeriodIds.map((id) => {
+      const p = periodos.find((pr) => Number(pr.id) === Number(id));
+      return p ? p.id : id;
+    });
+    const current = form.getFieldValue('periodo');
+    const same =
+      Array.isArray(current) &&
+      current.length === valueToSet.length &&
+      valueToSet.every((id) => current.some((c) => c === id || Number(c) === Number(id)));
+    if (same) return;
+    form.setFieldsValue({ periodo: valueToSet });
+  }, [form, selectedPeriodIds, periodos]);
 
   // NUEVO: inicializar todas las materias del primer periodo como seleccionadas
   useEffect(() => {
@@ -72,7 +89,7 @@ const InscripcionesPeriodoMateriasStepContent = ({
         <Alert
           type="info"
           showIcon
-          message="Modo edición (solo paralelo)"
+          title="Modo edición (solo paralelo)"
           description="En inscripciones de tipo NUEVO solo puede cambiar el paralelo en el siguiente paso. Periodo y materias no se modifican."
           style={{ marginBottom: 16, borderRadius: 8 }}
         />
@@ -94,7 +111,7 @@ const InscripcionesPeriodoMateriasStepContent = ({
           </Typography.Title>
 
           {error && (
-            <Alert type="error" message={error} className="step2-materias-alert step2-materias-error" />
+            <Alert type="error" title={error} className="step2-materias-alert step2-materias-error" />
           )}
 
           <div className="step2-materias-blocks">

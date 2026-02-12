@@ -28,17 +28,20 @@ export class UpdateEnrollmentController {
     try {
       const data = this.prepareData(body);
       const updated = await this.updateEnrollmentUseCase.execute(enrollmentId, data);
-      return this.responseFormatter.success(res, {
-        enrollment: updated,
-        message: `Inscripción (ID: ${enrollmentId}) actualizada correctamente`,
-      });
+      return this.responseFormatter.updated(
+        res,
+        { enrollment: updated },
+        'inscripción',
+        enrollmentId,
+        req
+      );
     } catch (error) {
       next(error);
     }
   }
 
   prepareData(body) {
-    return {
+    const data = {
       observations: body.observations ?? body.observaciones ?? undefined,
       enrollmentDate: body.enrollment_date ?? body.enrollmentDate ?? body.fechaInscripcion ?? undefined,
       parallelId: body.parallel_id ?? body.parallelId ?? undefined,
@@ -48,5 +51,12 @@ export class UpdateEnrollmentController {
           ? body.teacherAssignmentIds
           : undefined,
     };
+    if (body.parallel_ids_by_period != null && typeof body.parallel_ids_by_period === 'object') {
+      data.parallelIdsByPeriod = body.parallel_ids_by_period;
+    }
+    if (body.materia_ids_by_period != null && typeof body.materia_ids_by_period === 'object') {
+      data.materiaIdsByPeriod = body.materia_ids_by_period;
+    }
+    return data;
   }
 }

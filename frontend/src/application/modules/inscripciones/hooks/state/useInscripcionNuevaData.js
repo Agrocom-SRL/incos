@@ -23,7 +23,7 @@
  * Para CONSUMIR el contexto, usa useInscripcionesNuevaContext (con 's') en context/.
  */
 
-import { useMemo, useCallback, useState } from 'react';
+import { useMemo, useCallback, useState, useEffect } from 'react';
 import {
     useInscripcionNuevaPageData,
     useInscripcionNuevaFormHandlers,
@@ -118,37 +118,62 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
     }, [editData?.carreraId, studentSearch.selectedStudent, carrerasData.selectedCarrera]);
     
     // Periodos: según tipo admisión (NUEVO = solo primer periodo; ANTIGUO = todos). En edición pre-seleccionar editData.periodoId.
-    const tipoAdmision = studentSearch?.selectedStudent?.tipoAdmision ?? null;
+    // En modo edición usar editData.tipoAdmision para no filtrar periodos antes de cargar el estudiante
+    const tipoAdmision =
+      editData?.tipoAdmision ?? studentSearch?.selectedStudent?.tipoAdmision ?? null;
+    const initialSelectedPeriodIds = editData?.selectedPeriodIds ?? undefined;
     const periodosData = useInscripcionNuevaPeriodos({
       carreraId: carreraIdForParalelos ?? undefined,
       tipoAdmision: tipoAdmision ?? undefined,
       initialPeriodId: editData?.periodoId ?? undefined,
+      initialSelectedPeriodIds,
     });
     const selectedPeriod = periodosData.selectedPeriod;
 
     // Materias seleccionadas por periodo (Step 2); debe estar antes de formHandlers para pasarlo como opción
     const [selectedMateriaIdsByPeriod, setSelectedMateriaIdsByPeriod] = useState({});
 
-    // En modo edición: si aún no hay periodos seleccionados, usar editData.periodoId para cargar paralelos y pre-seleccionar
+    // Modo edición ANTIGUO: pre-llenar materias por periodo desde la inscripción anterior (solo una vez al montar)
+    useEffect(() => {
+        if (!editData?.materiaIdsByPeriod || typeof editData.materiaIdsByPeriod !== 'object') return;
+        const byPeriod = {};
+        Object.entries(editData.materiaIdsByPeriod).forEach(([key, ids]) => {
+            if (Array.isArray(ids) && ids.length > 0) {
+                byPeriod[String(key)] = ids.map(Number);
+            }
+        });
+        if (Object.keys(byPeriod).length > 0) {
+            setSelectedMateriaIdsByPeriod((prev) => {
+                if (Object.keys(prev).length > 0) return prev;
+                return byPeriod;
+            });
+        }
+    }, [editData?.materiaIdsByPeriod]);
+
+    // En modo edición: si aún no hay periodos seleccionados, usar editData.periodoId o selectedPeriodIds para cargar paralelos
     const periodoIdsForParalelos = useMemo(() => {
         if (periodosData.selectedPeriodIds?.length) return periodosData.selectedPeriodIds;
+        if (Array.isArray(editData?.selectedPeriodIds) && editData.selectedPeriodIds.length > 0) return editData.selectedPeriodIds;
         if (editData?.periodoId != null) return [editData.periodoId];
         return undefined;
-    }, [periodosData.selectedPeriodIds, editData?.periodoId]);
+    }, [periodosData.selectedPeriodIds, editData?.periodoId, editData?.selectedPeriodIds]);
 
     const paralelosData = useInscripcionNuevaParalelos({
         carreraId: carreraIdForParalelos,
         periodoIds: periodoIdsForParalelos,
         periodoId: selectedPeriod?.id ?? editData?.periodoId,
         initialParaleloId: editData?.paraleloId,
+        initialParallelIdsByPeriod: editData?.parallelIdsByPeriod ?? undefined,
     });
 
     const formHandlers = useInscripcionNuevaFormHandlers(mode, {
         selectedStudent: studentSearch.selectedStudent,
         selectedParalelo: paralelosData.selectedParalelo,
         selectedPeriod,
+        selectedPeriodIds: periodosData?.selectedPeriodIds ?? [],
         selectedParalelosByPeriod: paralelosData.selectedParalelosByPeriod ?? {},
         selectedMateriaIdsByPeriod,
+        inscripcionId: editData?.inscripcionId ?? null,
     });
 
     const materiasData = useInscripcionNuevaMaterias({
@@ -373,6 +398,8 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
         },
         selectedMateriaIdsByPeriod,
         onToggleMaterias: handleToggleMaterias,
+
+        editData,
     }), [
         pageData,
         enrichedWizardSteps,
@@ -387,5 +414,6 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
         materiasByPeriodsData,
         selectedMateriaIdsByPeriod,
         handleToggleMaterias,
+        editData,
     ]);
 };

@@ -458,12 +458,17 @@ export class GetEnrollmentByIdUseCase {
               }
             }
 
+            const periodoId = planSubject?.periodId ?? planSubject?.periodoId ?? null;
+            const paraleloId = course?.parallelId ?? course?.paraleloId ?? null;
+
             return {
               ...enrollmentSubjectPlain,
               materiaId: subject ? subject.id : null,
               materiaNombre: subject ? subject.name : null,
               materiaSigla: subject ? subject.acronym : null,
               color: course ? course.colorHex : null,
+              periodoId,
+              paraleloId,
               docente: teacher
                 ? {
                     id: teacher.id,
@@ -494,6 +499,24 @@ export class GetEnrollmentByIdUseCase {
 
       // Filtrar materias nulas (errores)
       const materiasValidas = materiasConDetalles.filter((m) => m !== null);
+
+      // 7b. Agregar periodos y paralelos por periodo para el formulario de edición (array de IDs de periodos y objeto periodo -> paralelo)
+      const byPeriod = {};
+      materiasValidas.forEach((item) => {
+        const pid = item.periodoId ?? item.periodo_id ?? item.periodId;
+        const plid = item.paraleloId ?? item.paralelo_id ?? item.parallelId;
+        const mid = item.materiaId ?? item.materia_id ?? item.subjectId;
+        if (pid == null || mid == null) return;
+        const key = String(pid);
+        if (!byPeriod[key]) byPeriod[key] = { materiaIds: [], paraleloId: plid };
+        if (!byPeriod[key].materiaIds.includes(Number(mid))) byPeriod[key].materiaIds.push(Number(mid));
+        if (plid != null) byPeriod[key].paraleloId = plid;
+      });
+      const selectedPeriodIds = Object.keys(byPeriod).map((k) => Number(k)).sort((a, b) => a - b);
+      const parallelIdsByPeriod = {};
+      Object.keys(byPeriod).forEach((key) => {
+        if (byPeriod[key].paraleloId != null) parallelIdsByPeriod[key] = Number(byPeriod[key].paraleloId);
+      });
 
       // 8. Buscar formulario de inscripción del estudiante
       let formularioInscripcion = null;
@@ -613,214 +636,6 @@ export class GetEnrollmentByIdUseCase {
         enrollmentSubjectsCount: materiasValidas.length,
       });
 
-      // TODO: Construir el schema por partes
-      // Comentado temporalmente para construcción incremental
-      // Los siguientes pasos se implementarán gradualmente:
-
-      //   // 2. Obtener materias inscritas (múltiples)
-      //   const enrollmentSubjectsResult = await this.enrollmentSubjectRepository.findAll(
-      //     { enrollmentId: enrollment.id },
-      //     null,
-      //     null
-      //   );
-      //   const enrollmentSubjects = enrollmentSubjectsResult.enrollmentSubjects || [];
-
-      //   this.logger.info('[Inscripciones] Materias inscritas encontradas', {
-      //     enrollmentId: enrollment.id,
-      //     count: enrollmentSubjects.length,
-      //   });
-
-      //   // 3. Obtener datos académicos del estudiante
-      //   let studentAcademicData = null;
-      //   if (enrollment.studentAcademicDataId) {
-      //     try {
-      //       studentAcademicData = await this.studentAcademicDataRepository.findById(
-      //         enrollment.studentAcademicDataId
-      //       );
-      //       studentAcademicData = studentAcademicData?.toPlainObject
-      //         ? studentAcademicData.toPlainObject()
-      //         : studentAcademicData;
-      //     } catch (err) {
-      //       this.logger.warn('[Inscripciones] Error al obtener datos académicos', {
-      //         enrollmentId: enrollment.id,
-      //         studentAcademicDataId: enrollment.studentAcademicDataId,
-      //         error: err.message,
-      //       });
-      //     }
-      //   }
-
-      //   // 4. Obtener gestión académica
-      //   let management = null;
-      //   if (enrollment.managementId) {
-      //     try {
-      //       management = await this.managementRepository.findById(enrollment.managementId);
-      //       management = management?.toPlainObject ? management.toPlainObject() : management;
-      //     } catch (err) {
-      //       this.logger.warn('[Inscripciones] Error al obtener gestión', {
-      //         enrollmentId: enrollment.id,
-      //         managementId: enrollment.managementId,
-      //         error: err.message,
-      //       });
-      //     }
-      //   }
-
-      //   // 5. Obtener estudiante desde datos académicos
-      //   let student = null;
-      //   if (studentAcademicData?.studentId) {
-      //     try {
-      //       student = await this.studentRepository.findById(studentAcademicData.studentId);
-      //       student = student?.toPlainObject ? student.toPlainObject() : student;
-      //     } catch (err) {
-      //       this.logger.warn('[Inscripciones] Error al obtener estudiante', {
-      //         enrollmentId: enrollment.id,
-      //         studentId: studentAcademicData.studentId,
-      //         error: err.message,
-      //       });
-      //     }
-      //   }
-
-      //   // 6. Obtener carrera desde datos académicos
-      //   let career = null;
-      //   if (studentAcademicData?.careerId) {
-      //     try {
-      //       career = await this.careerRepository.findById(studentAcademicData.careerId);
-      //       career = career?.toPlainObject ? career.toPlainObject() : career;
-      //     } catch (err) {
-      //       this.logger.warn('[Inscripciones] Error al obtener carrera', {
-      //         enrollmentId: enrollment.id,
-      //         careerId: studentAcademicData.careerId,
-      //         error: err.message,
-      //       });
-      //     }
-      //   }
-
-      //   // 7. Obtener plan de estudio desde carrera
-      //   let studyPlan = null;
-      //   if (studentAcademicData?.careerId) {
-      //     try {
-      //       const studyPlans = await this.studyPlanRepository.findByCarreraId(studentAcademicData.careerId);
-      //       // Obtener el plan activo o el primero disponible
-      //       studyPlan = studyPlans.find((sp) => sp.isActive) || studyPlans[0];
-      //       studyPlan = studyPlan?.toPlainObject ? studyPlan.toPlainObject() : studyPlan;
-      //     } catch (err) {
-      //       this.logger.warn('[Inscripciones] Error al obtener plan de estudio', {
-      //         enrollmentId: enrollment.id,
-      //         careerId: studentAcademicData.careerId,
-      //         error: err.message,
-      //       });
-      //     }
-      //   }
-
-      //   // 8. Obtener datos completos de cada materia inscrita (asignación docente, curso, asignatura de plan, materia)
-      //   const enrollmentSubjectsWithDetails = await Promise.all(
-      //     enrollmentSubjects.map(async (es) => {
-      //       const enrollmentSubjectPlain = es.toPlainObject ? es.toPlainObject() : es;
-      //       let teacherAssignment = null;
-      //       let course = null;
-      //       let planSubject = null;
-      //       let subject = null;
-
-      //       // Obtener asignación docente
-      //       if (es.teacherAssignmentId) {
-      //         try {
-      //           teacherAssignment = await this.teacherAssignmentRepository.findById(es.teacherAssignmentId);
-      //           teacherAssignment = teacherAssignment?.toPlainObject
-      //             ? teacherAssignment.toPlainObject()
-      //             : teacherAssignment;
-
-      //           // Obtener curso desde la asignación docente
-      //           if (teacherAssignment?.courseId) {
-      //             try {
-      //               course = await this.courseRepository.findById(teacherAssignment.courseId);
-      //               course = course?.toPlainObject ? course.toPlainObject() : course;
-
-      //               // Obtener asignatura de plan desde el curso
-      //               if (course?.planSubjectId) {
-      //                 try {
-      //                   planSubject = await this.planSubjectRepository.findById(course.planSubjectId);
-      //                   planSubject = planSubject?.toPlainObject ? planSubject.toPlainObject() : planSubject;
-
-      //                   // Obtener materia desde la asignatura de plan
-      //                   if (planSubject?.subjectId) {
-      //                     try {
-      //                       subject = await this.subjectRepository.findById(planSubject.subjectId);
-      //                       subject = subject?.toPlainObject ? subject.toPlainObject() : subject;
-      //                     } catch (err) {
-      //                       this.logger.warn('[Inscripciones] Error al obtener materia', {
-      //                         enrollmentSubjectId: es.id,
-      //                         subjectId: planSubject.subjectId,
-      //                         error: err.message,
-      //                       });
-      //                     }
-      //                   }
-      //                 } catch (err) {
-      //                   this.logger.warn('[Inscripciones] Error al obtener asignatura de plan', {
-      //                     enrollmentSubjectId: es.id,
-      //                     planSubjectId: course.planSubjectId,
-      //                     error: err.message,
-      //                   });
-      //                 }
-      //               }
-      //             } catch (err) {
-      //               this.logger.warn('[Inscripciones] Error al obtener curso', {
-      //                 enrollmentSubjectId: es.id,
-      //                 courseId: teacherAssignment.courseId,
-      //                 error: err.message,
-      //               });
-      //             }
-      //           }
-      //         } catch (err) {
-      //           this.logger.warn('[Inscripciones] Error al obtener asignación docente', {
-      //             enrollmentSubjectId: es.id,
-      //             teacherAssignmentId: es.teacherAssignmentId,
-      //             error: err.message,
-      //           });
-      //         }
-      //       }
-
-      //       return {
-      //         ...enrollmentSubjectPlain,
-      //         teacherAssignment,
-      //         course,
-      //         planSubject,
-      //         subject,
-      //       };
-      //     })
-      //   );
-
-      //   // 9. Retornar la inscripción con todos sus datos relacionados
-      //   const result = {
-      //     enrollment: enrollment.toPlainObject ? enrollment.toPlainObject() : enrollment,
-      //     enrollmentSubjects: enrollmentSubjectsWithDetails,
-      //     related: {
-      //       studentAcademicData,
-      //       student,
-      //       career,
-      //       studyPlan,
-      //       management,
-      //     },
-      //   };
-
-      //   this.logger.info('[Inscripciones] Inscripción obtenida exitosamente', {
-      //     enrollmentId: enrollment.id,
-      //     enrollmentSubjectsCount: enrollmentSubjects.length,
-      //     hasStudentAcademicData: !!studentAcademicData,
-      //     hasStudent: !!student,
-      //     hasCareer: !!career,
-      //     hasStudyPlan: !!studyPlan,
-      //     hasManagement: !!management,
-      //   });
-
-      //   return result;
-      // } catch (error) {
-      //   this.logger.error('[Inscripciones] Error al obtener inscripción por ID', {
-      //     error: error.message,
-      //     stack: error.stack,
-      //     enrollmentId,
-      //   });
-      //   throw error;
-      // }
-
       // Retornar todas las entidades en formato de presentación
       const result = {
         enrollment: enrollmentPresentation,
@@ -829,6 +644,11 @@ export class GetEnrollmentByIdUseCase {
         student: studentPresentation,
         career: careerPresentation,
         enrollmentSubjects: materiasValidas,
+        selectedPeriodIds: selectedPeriodIds.length > 0 ? selectedPeriodIds : undefined,
+        parallelIdsByPeriod: Object.keys(parallelIdsByPeriod).length > 0 ? parallelIdsByPeriod : undefined,
+        materiaIdsByPeriod: Object.keys(byPeriod).length > 0
+          ? Object.fromEntries(Object.entries(byPeriod).map(([k, v]) => [k, v.materiaIds]))
+          : undefined,
       };
 
       // Agregar formulario de inscripción si existe

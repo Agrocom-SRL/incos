@@ -24,17 +24,7 @@ import { EnrollmentMapper, EnrollmentSubjectMapper } from '../../mappers/inscrip
 
 export class UpdateEnrollmentUseCase {
   /**
-   * @param {Object} params - Dependencias inyectadas
-   * @param {Object} params.enrollmentRepository - Repositorio de inscripciones
-   * @param {Object} params.enrollmentSubjectRepository - Repositorio de materias inscritas (inscripciones_materias)
-   * @param {Object} params.studentAcademicDataRepository - Repositorio de datos académicos
-   * @param {Object} params.parallelRepository - Repositorio de paralelos
-   * @param {Object} params.courseRepository - Repositorio de cursos
-   * @param {Object} params.teacherAssignmentRepository - Repositorio de asignaciones docentes
-   * @param {Object} params.managementRepository - Repositorio de gestiones
-   * @param {Object} params.managementPlanRepository - Repositorio de planes habilitados
-   * @param {Object} params.studyPlanRepository - Repositorio de planes de estudios
-   * @param {ILogger} params.logger - Logger para registro de eventos
+   * @param {Object} params - Dependencias inyectadas (incluye planSubjectRepository para resolver desde parallelIdsByPeriod + materiaIdsByPeriod)
    */
   constructor({
     enrollmentRepository,
@@ -46,6 +36,7 @@ export class UpdateEnrollmentUseCase {
     managementRepository,
     managementPlanRepository,
     studyPlanRepository,
+    planSubjectRepository,
     logger,
   }) {
     this.enrollmentRepository = enrollmentRepository;
@@ -57,6 +48,7 @@ export class UpdateEnrollmentUseCase {
     this.managementRepository = managementRepository;
     this.managementPlanRepository = managementPlanRepository;
     this.studyPlanRepository = studyPlanRepository;
+    this.planSubjectRepository = planSubjectRepository;
     this.logger = logger;
   }
 
@@ -91,9 +83,30 @@ export class UpdateEnrollmentUseCase {
       updateData.enrollmentDate = payload.enrollmentDate ?? null;
     }
 
+    let resolvedTeacherAssignmentIds = payload.teacherAssignmentIds;
+    if (
+      !resolvedTeacherAssignmentIds?.length &&
+      payload.parallelIdsByPeriod &&
+      typeof payload.parallelIdsByPeriod === 'object' &&
+      payload.materiaIdsByPeriod &&
+      typeof payload.materiaIdsByPeriod === 'object' &&
+      Object.keys(payload.materiaIdsByPeriod).some(
+        (k) => Array.isArray(payload.materiaIdsByPeriod[k]) && payload.materiaIdsByPeriod[k].length > 0
+      )
+    ) {
+      resolvedTeacherAssignmentIds = await this._resolveTeacherAssignmentIdsFromSelection(
+        enrollmentPlain,
+        payload.parallelIdsByPeriod,
+        payload.materiaIdsByPeriod
+      );
+      this.logger.info('[Inscripciones] teacherAssignmentIds resueltos desde selección por periodo (update)', {
+        count: resolvedTeacherAssignmentIds?.length ?? 0,
+      });
+    }
+
     const hasMateriasUpdate =
       (payload.parallelId != null && payload.parallelId !== '') ||
-      (Array.isArray(payload.teacherAssignmentIds) && payload.teacherAssignmentIds.length > 0);
+      (Array.isArray(resolvedTeacherAssignmentIds) && resolvedTeacherAssignmentIds.length > 0);
 
     let newEnrollmentSubjects = null;
 
@@ -101,7 +114,7 @@ export class UpdateEnrollmentUseCase {
       const teacherAssignments = await this._resolveTeacherAssignmentsForUpdate(
         enrollmentPlain,
         payload.parallelId,
-        payload.teacherAssignmentIds
+        resolvedTeacherAssignmentIds
       );
       await this._replaceEnrollmentSubjects(enrollmentId, enrollment, teacherAssignments);
       newEnrollmentSubjects = await this._findEnrollmentSubjects(enrollmentId);
@@ -158,8 +171,75 @@ export class UpdateEnrollmentUseCase {
     }
 
     throw new ValidationError(
-      'Para actualizar el detalle de inscripción envíe parallelId (NUEVO) o teacherAssignmentIds (ANTIGUO).'
+      'Para actualizar el detalle de inscripción envíe parallelId (NUEVO), teacherAssignmentIds (ANTIGUO) o parallel_ids_by_period con materia_ids_by_period.'
     );
+  }
+
+  /**
+   * Resuelve teacherAssignmentIds desde parallelIdsByPeriod + materiaIdsByPeriod (misma lógica que Create).
+   * @private
+   */
+  async _resolveTeacherAssignmentIdsFromSelection(enrollmentPlain, parallelIdsByPeriod, materiaIdsByPeriod) {
+    const periodIds = Object.keys(materiaIdsByPeriod).filter(
+      (k) => Array.isArray(materiaIdsByPeriod[k]) && materiaIdsByPeriod[k].length > 0
+    );
+    if (periodIds.length === 0) return [];
+
+    const studentAcademicDataId = enrollmentPlain.studentAcademicDataId ?? enrollmentPlain.studentAcademicData_id;
+    const managementId = enrollmentPlain.managementId ?? enrollmentPlain.management_id;
+    if (!studentAcademicDataId || !managementId) return [];
+
+    const studentAcademicData = await this.studentAcademicDataRepository.findById(studentAcademicDataId);
+    const management = await this.managementRepository.findById(managementId);
+    if (!studentAcademicData || !management) return [];
+
+    const { managementPlan } = await this._getStudyPlanAndManagementPlan(studentAcademicData, management);
+    const managementPlanId = managementPlan.id;
+
+    const assignmentIds = [];
+    const materiaIdSetByPeriod = {};
+    for (const pid of periodIds) {
+      materiaIdSetByPeriod[pid] = new Set((materiaIdsByPeriod[pid] || []).map(Number));
+    }
+
+    for (const periodId of periodIds) {
+      const parallelId = parallelIdsByPeriod[periodId];
+      if (!parallelId) continue;
+
+      const coursesResult = await this.courseRepository.findAll({ parallelId: Number(parallelId) }, null, null);
+      const courses = coursesResult.courses || [];
+
+      for (const course of courses) {
+        const coursePlain = course.toPlainObject ? course.toPlainObject() : course;
+        const asignaturaPlanId = coursePlain.planSubjectId ?? coursePlain.asignaturaPlanId;
+        if (!asignaturaPlanId) continue;
+
+        const planSubject = await this.planSubjectRepository.findById(asignaturaPlanId);
+        if (!planSubject) continue;
+
+        const planPlain = planSubject.toPlainObject ? planSubject.toPlainObject() : planSubject;
+        const planPeriodId = planPlain.periodId ?? planPlain.periodoId;
+        const planMateriaId = planPlain.subjectId ?? planPlain.materiaId;
+        if (Number(planPeriodId) !== Number(periodId)) continue;
+
+        const allowedMaterias = materiaIdSetByPeriod[periodId];
+        if (!allowedMaterias || !allowedMaterias.has(Number(planMateriaId))) continue;
+
+        const assignmentsResult = await this.teacherAssignmentRepository.findAll(
+          { managementPlanId, courseId: coursePlain.id, active: true },
+          1,
+          null
+        );
+        const list = assignmentsResult.teacherAssignments ?? assignmentsResult.teacherAssignment ?? [];
+        if (list.length > 0) {
+          const assign = list[0];
+          const assignId = assign.id ?? assign.toPlainObject?.()?.id;
+          if (assignId) assignmentIds.push(assignId);
+        }
+      }
+    }
+
+    return assignmentIds;
   }
 
   async _getStudyPlanAndManagementPlan(studentAcademicData, management) {

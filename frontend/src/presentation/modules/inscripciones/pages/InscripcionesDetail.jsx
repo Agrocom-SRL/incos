@@ -20,8 +20,9 @@ import { App } from 'antd';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { useInscripcionDetailContext, useGenerateBoletaInscripcion } from '@application-inscripciones/hooks';
-import { Descriptions, Card, Divider, Spin, Alert, Empty, Tag, Button } from 'antd';
-import { DownloadOutlined, FileTextOutlined, ArrowLeftOutlined } from '@ant-design/icons';
+import { Descriptions, Card, Divider, Spin, Alert, Empty, Tag } from 'antd';
+import { Button } from '@atoms';
+import { DownloadOutlined, FileTextOutlined, ArrowLeftOutlined, EditOutlined } from '@ant-design/icons';
 import { downloadFile } from '@application/utils';
 
 const InscripcionesDetail = () => {
@@ -115,6 +116,12 @@ const InscripcionesDetail = () => {
     }
   }, [navigate, location.state, inscripcion]);
 
+  // Ir al formulario de edición (misma ruta que el icono Editar de la lista)
+  const handleEditar = useCallback(() => {
+    if (!id) return;
+    navigate(`/inscripciones/${id}/editar`);
+  }, [navigate, id]);
+
   // Configurar breadcrumb items
   const breadcrumbItems = useMemo(() => [
     { title: 'Inicio', href: '/' },
@@ -122,16 +129,31 @@ const InscripcionesDetail = () => {
     { title: 'Detalle de la Inscripción' },
   ], []);
 
-  // Acciones del header
+  // Misma lógica que la lista: solo NUEVO, REINGRESO y CONTINUIDAD son editables
+  const tipoInscripcion = inscripcion?.enrollment?.tipoInscripcion ?? inscripcion?.enrollment?.tipo_inscripcion ?? null;
+  const canEdit = tipoInscripcion && ['NUEVO', 'REINGRESO', 'CONTINUIDAD'].includes(tipoInscripcion);
+
+  // Acciones del header (Button de @atoms para variant warning/default)
   const headerActions = useMemo(() => (
-    <Button
-      variant="default"
-      icon={<ArrowLeftOutlined />}
-      onClick={handleVolverAtras}
-    >
-      Volver
-    </Button>
-  ), [handleVolverAtras]);
+    <>
+      <Button
+        variant="warning"
+        icon={<EditOutlined />}
+        onClick={handleEditar}
+        disabled={!canEdit}
+        style={{ marginRight: 8 }}
+      >
+        Editar
+      </Button>
+      <Button
+        variant="default"
+        icon={<ArrowLeftOutlined />}
+        onClick={handleVolverAtras}
+      >
+        Volver
+      </Button>
+    </>
+  ), [handleVolverAtras, handleEditar, canEdit]);
 
   // Si está cargando
   if (loading) {
@@ -256,7 +278,7 @@ const InscripcionesDetail = () => {
                 </p>
               </div>
               <Button
-                type="primary"
+                variant="primary"
                 size="large"
                 icon={<DownloadOutlined />}
                 onClick={handleDownloadBoleta}
@@ -280,7 +302,7 @@ const InscripcionesDetail = () => {
                 </p>
               </div>
               <Button
-                type="primary"
+                variant="primary"
                 size="large"
                 icon={<FileTextOutlined />}
                 onClick={handleGenerateBoleta}

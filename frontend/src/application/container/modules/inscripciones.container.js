@@ -8,6 +8,7 @@
 
 import { 
   CrearInscripcionUseCase,
+  ActualizarInscripcionUseCase,
   ObtenerInscripcionPorIdUseCase,
   ObtenerTodasInscripcionesUseCase,
   EliminarInscripcionUseCase,
@@ -28,6 +29,10 @@ export function registerInscripcionesModule(factory) {
   // Registrar Use Cases
   factory.crearInscripcion = () => {
     return new CrearInscripcionUseCase(inscripcionRepository);
+  };
+
+  factory.actualizarInscripcion = () => {
+    return new ActualizarInscripcionUseCase(inscripcionRepository);
   };
 
   factory.obtenerInscripcionPorId = () => {

@@ -42,7 +42,7 @@ function extractPeriodosFromParalelos(paralelos) {
 }
 
 export const useInscripcionNuevaPeriodos = (options = {}) => {
-  const { carreraId = null, tipoAdmision = null, initialPeriodId = null } = options;
+  const { carreraId = null, tipoAdmision = null, initialPeriodId = null, initialSelectedPeriodIds = null } = options;
   const { paralelos, loading, error, fetch } = useParalelosApi();
   const [selectedPeriodIds, setSelectedPeriodIds] = useState([]);
 
@@ -54,10 +54,16 @@ export const useInscripcionNuevaPeriodos = (options = {}) => {
 
   useEffect(() => {
     if (carreraId != null) {
-      setSelectedPeriodIds([]);
+      // En modo edición no borrar selección; aplicar initialSelectedPeriodIds de inmediato para que los checkboxes se marquen
+      const hasInitialPeriods = Array.isArray(initialSelectedPeriodIds) && initialSelectedPeriodIds.length > 0;
+      if (hasInitialPeriods) {
+        setSelectedPeriodIds([...initialSelectedPeriodIds]);
+      } else {
+        setSelectedPeriodIds([]);
+      }
       loadParalelos();
     }
-  }, [carreraId, loadParalelos]);
+  }, [carreraId, loadParalelos, initialSelectedPeriodIds]);
 
   const allPeriodos = useMemo(() => extractPeriodosFromParalelos(paralelos), [paralelos]);
 
@@ -76,16 +82,36 @@ export const useInscripcionNuevaPeriodos = (options = {}) => {
   }, [tipoAdmision, periodos, selectedPeriodIds.length]);
 
   // Modo edición: pre-seleccionar el periodo de la inscripción cuando initialPeriodId está definido
+  // (no aplicar si ya tenemos initialSelectedPeriodIds, para no pisar varios periodos en ANTIGUO)
   useEffect(() => {
     if (initialPeriodId == null || !periodos.length) return;
+    if (Array.isArray(initialSelectedPeriodIds) && initialSelectedPeriodIds.length > 0) return;
     const periodId = Number(initialPeriodId);
-    const exists = periodos.some((p) => p.id === periodId);
+    const exists = periodos.some((p) => Number(p.id) === periodId);
     if (!exists) return;
     setSelectedPeriodIds((prev) => {
       if (prev.includes(periodId)) return prev;
       return [periodId];
     });
-  }, [initialPeriodId, periodos]);
+  }, [initialPeriodId, initialSelectedPeriodIds, periodos]);
+
+  // Modo edición ANTIGUO: pre-seleccionar varios periodos cuando initialSelectedPeriodIds está definido
+  useEffect(() => {
+    if (!Array.isArray(initialSelectedPeriodIds) || initialSelectedPeriodIds.length === 0 || !periodos.length) return;
+    // Usar el id tal como viene de periodos para que coincida con las options del checkbox (evitar número vs string)
+    const ids = initialSelectedPeriodIds
+      .map((id) => {
+        const num = Number(id);
+        const p = periodos.find((p) => Number(p.id) === num);
+        return p ? p.id : null;
+      })
+      .filter((id) => id != null);
+    if (ids.length === 0) return;
+    setSelectedPeriodIds((prev) => {
+      if (prev.length === ids.length && prev.every((id, i) => id === ids[i])) return prev;
+      return ids;
+    });
+  }, [initialSelectedPeriodIds, periodos]);
 
   const onTogglePeriods = useCallback((checkedIds) => {
     const ids = Array.isArray(checkedIds) ? checkedIds : [];

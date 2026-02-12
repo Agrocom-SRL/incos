@@ -24,7 +24,7 @@ import { mapParalelosList } from '@application-academico/paralelos/mappers';
  * @returns {Object} paralelos, loading, error, refetch, selectedParalelo, onSelectParalelo
  */
 export const useInscripcionNuevaParalelos = (options = {}) => {
-  const { carreraId, periodoId, periodoIds: periodoIdsProp, initialParaleloId = null } = options;
+  const { carreraId, periodoId, periodoIds: periodoIdsProp, initialParaleloId = null, initialParallelIdsByPeriod = null } = options;
   const periodoIds = Array.isArray(periodoIdsProp) && periodoIdsProp.length > 0
     ? periodoIdsProp
     : periodoId != null ? [periodoId] : [];
@@ -186,6 +186,37 @@ export const useInscripcionNuevaParalelos = (options = {}) => {
       });
     }
   }, [initialParaleloId, paralelos]);
+
+  // Modo edición ANTIGUO: pre-seleccionar paralelos por periodo cuando initialParallelIdsByPeriod está definido
+  useEffect(() => {
+    if (!initialParallelIdsByPeriod || typeof initialParallelIdsByPeriod !== 'object' || !paralelos?.length) return;
+    const entries = Object.entries(initialParallelIdsByPeriod).filter(([, plid]) => plid != null);
+    if (entries.length === 0) return;
+    setSelectedParalelosByPeriod((prev) => {
+      let next = { ...prev };
+      let changed = false;
+      for (const [periodIdKey, parallelId] of entries) {
+        const paralelo = paralelos.find((p) => p.id === Number(parallelId));
+        if (!paralelo) continue;
+        const pid = paralelo.periodoId ?? paralelo.periodo_id ?? periodIdKey;
+        const pidStr = String(pid);
+        if (prev[pidStr]?.id === paralelo.id) continue;
+        next = {
+          ...next,
+          [String(pid)]: {
+            id: paralelo.id,
+            nombre: paralelo.nombre,
+            codigo: paralelo.codigo,
+            carreraId: paralelo.carreraId,
+            periodoId: pid,
+            materiaId: paralelo.materiaId,
+          },
+        };
+        changed = true;
+      }
+      return changed ? next : prev;
+    });
+  }, [initialParallelIdsByPeriod, paralelos]);
 
   // TODO: Aquí se puede agregar lógica específica de inscripciones si es necesario
   // Por ejemplo: filtrar paralelos según la carrera seleccionada, validaciones específicas, etc.

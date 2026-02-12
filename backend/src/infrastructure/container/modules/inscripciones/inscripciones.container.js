@@ -143,6 +143,7 @@ export function registerInscripcionesResource(container) {
                 managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
                 managementPlanRepository: c.resolve(REPOSITORIOS_TOKENS.managementPlanRepository),
                 studyPlanRepository: c.resolve(REPOSITORIOS_TOKENS.studyPlanRepository),
+                planSubjectRepository: c.resolve(REPOSITORIOS_TOKENS.planSubjectRepository),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
     );
