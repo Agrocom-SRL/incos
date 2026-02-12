@@ -23,7 +23,7 @@
  * Para CONSUMIR el contexto, usa useInscripcionesNuevaContext (con 's') en context/.
  */
 
-import { useMemo, useCallback, useState } from 'react';
+import { useMemo, useCallback, useState, useEffect } from 'react';
 import {
     useInscripcionNuevaPageData,
     useInscripcionNuevaFormHandlers,
@@ -123,24 +123,44 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
       carreraId: carreraIdForParalelos ?? undefined,
       tipoAdmision: tipoAdmision ?? undefined,
       initialPeriodId: editData?.periodoId ?? undefined,
+      initialSelectedPeriodIds: editData?.selectedPeriodIds ?? undefined,
     });
     const selectedPeriod = periodosData.selectedPeriod;
 
     // Materias seleccionadas por periodo (Step 2); debe estar antes de formHandlers para pasarlo como opción
     const [selectedMateriaIdsByPeriod, setSelectedMateriaIdsByPeriod] = useState({});
 
-    // En modo edición: si aún no hay periodos seleccionados, usar editData.periodoId para cargar paralelos y pre-seleccionar
+    // Modo edición ANTIGUO: pre-llenar materias por periodo desde la inscripción anterior (solo una vez al montar)
+    useEffect(() => {
+        if (!editData?.materiaIdsByPeriod || typeof editData.materiaIdsByPeriod !== 'object') return;
+        const byPeriod = {};
+        Object.entries(editData.materiaIdsByPeriod).forEach(([key, ids]) => {
+            if (Array.isArray(ids) && ids.length > 0) {
+                byPeriod[String(key)] = ids.map(Number);
+            }
+        });
+        if (Object.keys(byPeriod).length > 0) {
+            setSelectedMateriaIdsByPeriod((prev) => {
+                if (Object.keys(prev).length > 0) return prev;
+                return byPeriod;
+            });
+        }
+    }, [editData?.materiaIdsByPeriod]);
+
+    // En modo edición: si aún no hay periodos seleccionados, usar editData.periodoId o selectedPeriodIds para cargar paralelos
     const periodoIdsForParalelos = useMemo(() => {
         if (periodosData.selectedPeriodIds?.length) return periodosData.selectedPeriodIds;
+        if (Array.isArray(editData?.selectedPeriodIds) && editData.selectedPeriodIds.length > 0) return editData.selectedPeriodIds;
         if (editData?.periodoId != null) return [editData.periodoId];
         return undefined;
-    }, [periodosData.selectedPeriodIds, editData?.periodoId]);
+    }, [periodosData.selectedPeriodIds, editData?.periodoId, editData?.selectedPeriodIds]);
 
     const paralelosData = useInscripcionNuevaParalelos({
         carreraId: carreraIdForParalelos,
         periodoIds: periodoIdsForParalelos,
         periodoId: selectedPeriod?.id ?? editData?.periodoId,
         initialParaleloId: editData?.paraleloId,
+        initialParallelIdsByPeriod: editData?.parallelIdsByPeriod ?? undefined,
     });
 
     const formHandlers = useInscripcionNuevaFormHandlers(mode, {
@@ -373,6 +393,8 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
         },
         selectedMateriaIdsByPeriod,
         onToggleMaterias: handleToggleMaterias,
+
+        editData,
     }), [
         pageData,
         enrichedWizardSteps,
@@ -387,5 +409,6 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
         materiasByPeriodsData,
         selectedMateriaIdsByPeriod,
         handleToggleMaterias,
+        editData,
     ]);
 };

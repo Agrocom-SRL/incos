@@ -458,12 +458,17 @@ export class GetEnrollmentByIdUseCase {
               }
             }
 
+            const periodoId = planSubject?.periodId ?? planSubject?.periodoId ?? null;
+            const paraleloId = course?.parallelId ?? course?.paraleloId ?? null;
+
             return {
               ...enrollmentSubjectPlain,
               materiaId: subject ? subject.id : null,
               materiaNombre: subject ? subject.name : null,
               materiaSigla: subject ? subject.acronym : null,
               color: course ? course.colorHex : null,
+              periodoId,
+              paraleloId,
               docente: teacher
                 ? {
                     id: teacher.id,

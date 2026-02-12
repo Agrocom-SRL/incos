@@ -38,6 +38,7 @@ const InscripcionesPeriodoMateriasStepContent = ({
   studentSearch,
   resolveOptions,
   readOnly = false,
+  isEditModeAntiguo = false,
 }) => {
   const periodos = periodosData?.periodos ?? [];
   const selectedPeriodIds = periodosData?.selectedPeriodIds ?? [];
@@ -74,6 +75,15 @@ const InscripcionesPeriodoMateriasStepContent = ({
           showIcon
           message="Modo edición (solo paralelo)"
           description="En inscripciones de tipo NUEVO solo puede cambiar el paralelo en el siguiente paso. Periodo y materias no se modifican."
+          style={{ marginBottom: 16, borderRadius: 8 }}
+        />
+      )}
+      {isEditModeAntiguo && !readOnly && (
+        <Alert
+          type="info"
+          showIcon
+          message="Materias de la inscripción actual"
+          description="Se muestran las materias previamente seleccionadas. Puede modificar periodos y materias antes de elegir el paralelo en el siguiente paso."
           style={{ marginBottom: 16, borderRadius: 8 }}
         />
       )}

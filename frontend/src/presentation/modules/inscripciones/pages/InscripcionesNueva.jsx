@@ -33,18 +33,12 @@ import { downloadFile } from '@application/utils/fileDownload';
 
 const InscripcionesNueva = () => {
   const location = useLocation();
-  // Obtener message del contexto de App de Ant Design (para evitar warnings)
   const { message } = App.useApp();
-  
-  // Obtener datos de edición del estado de navegación
-  const editData = location.state?.mode === 'editar' ? location.state : null;
 
-  // Solo consumir datos del contexto (toda la lógica está en el Provider)
-  // El provider hace spread de objetos, así que las propiedades están aplanadas en el contexto
-  // Separar por grupos lógicos para mejor organización y claridad
   const context = useInscripcionesNuevaContext();
+  // editData: desde contexto (cuando se entra por /inscripciones/:id/editar) o desde location.state (cuando se entra por /inscripciones/nueva con state)
+  const editData = context.editData ?? (location.state?.mode === 'editar' ? location.state : null);
 
-  // Datos de la página (desde useInscripcionNuevaPageData - spread de pageData)
   const {
     pageTitle,
     breadcrumbItems,
@@ -92,16 +86,21 @@ const InscripcionesNueva = () => {
     onSelectParalelo,
   } = context;
 
-  // Pasos (stepIndex 0-based): 
-  // 0=Buscar Estudiante, 1=Carrera, 2=Periodo y materias, 3=Paralelo
-  // Edición: NUEVO → solo paralelo (step 3); ANTIGUO (REINGRESO/CONTINUIDAD) → periodo, materias y paralelo (step 2)
-  // Estudiante y carrera no se editan aquí (solo lectura en modo edición)
+  // Pasos (stepIndex 0-based): 0=Estudiante, 1=Carrera, 2=Periodo y materias, 3=Paralelo
+  // Lanzamiento: ANTIGUO (CONTINUIDAD/REINGRESO) → step 3 (Periodo y materias); NUEVO → step 4 (Paralelo)
   const initialStep = useMemo(() => {
-    if (editData?.tipoInscripcion === 'NUEVO') return 3; // Edición NUEVO: ir directo a Paralelo
-    if (editData) return 2; // Edición ANTIGUO: ir a Periodo y materias
-    if (studentSearch?.selectedStudent && !studentSearch?.loading) return 1;
+    const isNuevoByTipo = (tipo) => String(tipo ?? '').toUpperCase() === 'NUEVO';
+    if (editData) {
+      return isNuevoByTipo(editData.tipoInscripcion) ? 3 : 2; // NUEVO → Paralelo (4); ANTIGUO → Periodo y materias (3)
+    }
+    const hasStudent = studentSearch?.selectedStudent && !studentSearch?.loading;
+    if (hasStudent && carrerasData?.selectedCarrera) {
+      const tipo = studentSearch.selectedStudent?.tipoAdmision ?? studentSearch.selectedStudent?.tipoInscripcion;
+      return isNuevoByTipo(tipo) ? 3 : 2;
+    }
+    if (hasStudent) return 1;
     return 0;
-  }, [editData, studentSearch?.selectedStudent, studentSearch?.loading]);
+  }, [editData, studentSearch?.selectedStudent, studentSearch?.loading, carrerasData?.selectedCarrera]);
 
   // Pre-cargar valores iniciales del formulario en modo edición
   // Nota: Los paralelos se pre-seleccionan automáticamente mediante los hooks
@@ -288,6 +287,7 @@ const InscripcionesNueva = () => {
             studentSearch={studentSearch}
             resolveOptions={() => []}
             readOnly={editData?.tipoInscripcion === 'NUEVO'}
+            isEditModeAntiguo={!!editData && editData.tipoInscripcion !== 'NUEVO'}
           />
         );
       }

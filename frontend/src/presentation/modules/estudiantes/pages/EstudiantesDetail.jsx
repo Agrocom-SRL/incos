@@ -165,12 +165,15 @@ const EstudiantesDetail = () => {
     }
   }, [navigate, student, studentId]);
 
-  // Handler para registrar nueva inscripción
+  // Handler: si ya tiene inscripción → ir al detalle; si no → ir al formulario nueva inscripción
   const handleNuevaInscripcion = useCallback(() => {
-    navigate('/inscripciones/nueva', {
-      state: { studentId: studentId }
-    });
-  }, [navigate, studentId]);
+    const enrollmentId = student?.inscripcion?.enrollment?.id;
+    if (enrollmentId) {
+      navigate(`/inscripciones/${enrollmentId}`, { state: { studentId } });
+    } else {
+      navigate('/inscripciones/nueva', { state: { studentId } });
+    }
+  }, [navigate, studentId, student?.inscripcion?.enrollment?.id]);
 
   // Handler para volver a la lista de estudiantes
   const handleVolverALista = useCallback(() => {
@@ -217,16 +220,16 @@ const EstudiantesDetail = () => {
           Registrar Pago
         </Button>
       </div>
-      {/* 3. Nueva Inscripción */}
+      {/* 3. Ver Inscripción (si tiene) o Nueva Inscripción */}
       <Button
         variant="primary"
-        icon={<PlusCircleOutlined />}
+        icon={student?.inscripcion?.enrollment?.id ? <EyeOutlined /> : <PlusCircleOutlined />}
         onClick={handleNuevaInscripcion}
       >
-        Nueva Inscripción
+        {student?.inscripcion?.enrollment?.id ? 'Ver Inscripción' : 'Nueva Inscripción'}
       </Button>
     </>
-  ), [handleGenerateActaCompromiso, handleRegistrarPago, handleDownloadActaCompromiso, handleNuevaInscripcion, loadingActa, tieneDocumentosFaltantesFlag, actaCompromisoData]);
+  ), [handleGenerateActaCompromiso, handleRegistrarPago, handleDownloadActaCompromiso, handleNuevaInscripcion, loadingActa, tieneDocumentosFaltantesFlag, actaCompromisoData, student?.inscripcion?.enrollment?.id]);
 
   // Si está cargando
   if (loading) {

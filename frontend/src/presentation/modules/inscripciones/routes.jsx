@@ -15,6 +15,7 @@ import { UnderConstruction } from '@components/pages';
 // Lazy loading de connectors
 // El Suspense ya está manejado globalmente por MainLayout con LoadingFallback
 const InscripcionesNuevaConnector = lazy(() => import('./connectors/InscripcionesNuevaConnector'));
+const InscripcionesEditarConnector = lazy(() => import('./connectors/InscripcionesEditarConnector'));
 const InscripcionesDetailConnector = lazy(() => import('./connectors/DetailConnector'));
 const InscripcionesListConnector = lazy(() => import('./connectors/ListConnector'));
 // const AnularConnector = lazy(() => import('./connectors/AnularConnector')); // Removido - anular desde lista
@@ -60,12 +61,12 @@ export const inscripcionesRoutes = [
         key: 'INS-DETALLE',
         menu: null, // No aparece en el menú, se accede por URL con /inscripciones/:id
     },
-    // Editar inscripción (sin menú, se accede por URL con parámetro de ruta :id)
+    // Editar inscripción (sin menú, se accede desde la lista o por URL /inscripciones/:id/editar)
     {
         path: '/inscripciones/:id/editar',
-        element: <UnderConstruction />,
+        element: <InscripcionesEditarConnector />,
         key: 'INS-EDITAR',
-        menu: null, // No aparece en el menú, se accede por URL con /inscripciones/:id/editar
+        menu: null,
     },
     {
         path: '/inscripciones/horario',

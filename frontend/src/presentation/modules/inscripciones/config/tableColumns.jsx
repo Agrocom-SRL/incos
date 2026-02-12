@@ -226,39 +226,9 @@ export const createInscripcionesTableColumns = (navigate, refetch = null, delete
         const estudianteId = student?.id || record.estudianteId || record.enrollment?.estudianteId;
         const carreraId = carrera?.id || record.carreraId || record.enrollment?.carreraId;
 
-        // Obtener periodoId y paraleloId del primer curso inscrito (para pre-seleccionar en edición)
-        // Los cursos inscritos vienen en inscripcionesMaterias, materiasInscritas, o enrollmentSubjects
-        // El curso tiene paraleloId que es el ID del paralelo
-        const materiasInscritas = record.inscripcionesMaterias
-          || record.materiasInscritas
-          || record.enrollmentSubjects
-          || record.enrollment?.inscripcionesMaterias
-          || record.enrollment?.enrollmentSubjects
-          || [];
-        const primerMateria = materiasInscritas.length > 0 ? materiasInscritas[0] : null;
-
-        // paraleloId y periodoId del primer curso inscrito (para pre-seleccionar en edición)
-        let paraleloId = null;
-        let periodoId = null;
-        if (primerMateria) {
-          const curso = primerMateria?.curso ?? primerMateria?.teacherAssignment?.course;
-          paraleloId = curso?.paraleloId ?? curso?.paralelo_id ?? primerMateria?.paraleloId ?? primerMateria?.paralelo_id ?? null;
-          periodoId = curso?.periodoId ?? curso?.periodo_id ?? primerMateria?.periodoId ?? primerMateria?.periodo_id ?? record.periodoId ?? record.enrollment?.periodoId ?? null;
-        }
-
         const handleEdit = () => {
           if (!canEdit) return;
-          navigate('/inscripciones/nueva', {
-            state: {
-              mode: 'editar',
-              inscripcionId,
-              studentId: estudianteId,
-              carreraId,
-              periodoId,
-              paraleloId,
-              tipoInscripcion, // NUEVO → solo paralelo editable; REINGRESO/CONTINUIDAD → periodo, materias, paralelo
-            },
-          });
+          navigate(`/inscripciones/${inscripcionId}/editar`);
         };
 
         // Mostrar el botón de editar, deshabilitado si no se puede editar
