@@ -49,6 +49,22 @@ const InscripcionesPeriodoMateriasStepContent = ({
 
   const groups = buildMateriasGroups(materiasByPeriod, selectedPeriodIds, periodos);
 
+  // Sincronizar el campo del formulario "periodo" con selectedPeriodIds para que los checkboxes se muestren marcados
+  useEffect(() => {
+    if (!form || !Array.isArray(selectedPeriodIds) || !periodos?.length) return;
+    const valueToSet = selectedPeriodIds.map((id) => {
+      const p = periodos.find((pr) => Number(pr.id) === Number(id));
+      return p ? p.id : id;
+    });
+    const current = form.getFieldValue('periodo');
+    const same =
+      Array.isArray(current) &&
+      current.length === valueToSet.length &&
+      valueToSet.every((id) => current.some((c) => c === id || Number(c) === Number(id)));
+    if (same) return;
+    form.setFieldsValue({ periodo: valueToSet });
+  }, [form, selectedPeriodIds, periodos]);
+
   // NUEVO: inicializar todas las materias del primer periodo como seleccionadas
   useEffect(() => {
     if (!isNuevo || groups.length !== 1 || !onToggleMaterias) return;

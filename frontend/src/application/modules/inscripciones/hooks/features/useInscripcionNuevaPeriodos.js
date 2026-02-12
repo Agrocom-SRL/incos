@@ -54,9 +54,13 @@ export const useInscripcionNuevaPeriodos = (options = {}) => {
 
   useEffect(() => {
     if (carreraId != null) {
-      // En modo edición no borrar selección; se restaurará cuando periodos estén cargados
+      // En modo edición no borrar selección; aplicar initialSelectedPeriodIds de inmediato para que los checkboxes se marquen
       const hasInitialPeriods = Array.isArray(initialSelectedPeriodIds) && initialSelectedPeriodIds.length > 0;
-      if (!hasInitialPeriods) setSelectedPeriodIds([]);
+      if (hasInitialPeriods) {
+        setSelectedPeriodIds([...initialSelectedPeriodIds]);
+      } else {
+        setSelectedPeriodIds([]);
+      }
       loadParalelos();
     }
   }, [carreraId, loadParalelos, initialSelectedPeriodIds]);

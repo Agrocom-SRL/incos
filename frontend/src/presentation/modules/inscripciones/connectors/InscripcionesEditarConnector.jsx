@@ -20,7 +20,8 @@ import InscripcionesNueva from '@inscripciones/pages/InscripcionesNueva';
 
 /**
  * Construye editData para InscripcionesNuevaProvider a partir de la inscripción cargada por GetEnrollmentById.
- * Incluye selectedPeriodIds, materiaIdsByPeriod, parallelIdsByPeriod para estudiantes ANTIGUO (REINGRESO/CONTINUIDAD).
+ * Usa selectedPeriodIds, materiaIdsByPeriod y parallelIdsByPeriod devueltos por la API cuando existen;
+ * si no, los deriva de enrollmentSubjects (retrocompatibilidad).
  */
 function buildEditDataFromInscripcion(inscripcion) {
   if (!inscripcion?.enrollment) return null;
@@ -33,7 +34,6 @@ function buildEditDataFromInscripcion(inscripcion) {
   const studentId = student?.id ?? enrollment?.estudianteId ?? enrollment?.studentId ?? null;
   const carreraId = career?.id ?? inscripcion.studentAcademicData?.carreraId ?? enrollment?.carreraId ?? null;
   const tipoInscripcion = enrollment?.tipoInscripcion ?? enrollment?.tipo_inscripcion ?? null;
-  // Tipo del estudiante según datos académicos (no el tipo de la inscripción)
   const tipoAdmision =
     student?.tipoAdmision ??
     inscripcion.studentAcademicData?.tipoAdmision ??
@@ -45,11 +45,11 @@ function buildEditDataFromInscripcion(inscripcion) {
 
   let periodoId = null;
   let paraleloId = null;
-  let selectedPeriodIds = null;
-  let materiaIdsByPeriod = null;
-  let parallelIdsByPeriod = null;
+  let selectedPeriodIds = inscripcion.selectedPeriodIds ?? null;
+  let materiaIdsByPeriod = inscripcion.materiaIdsByPeriod ?? null;
+  let parallelIdsByPeriod = inscripcion.parallelIdsByPeriod ?? null;
 
-  if (enrollmentSubjects.length > 0) {
+  if ((!selectedPeriodIds?.length || !materiaIdsByPeriod || !Object.keys(materiaIdsByPeriod).length) && enrollmentSubjects.length > 0) {
     const byPeriod = {};
     enrollmentSubjects.forEach((item) => {
       const pid = item?.periodoId ?? item?.periodo_id ?? item?.periodId;
@@ -57,24 +57,29 @@ function buildEditDataFromInscripcion(inscripcion) {
       const mid = item?.materiaId ?? item?.materia_id ?? item?.subjectId;
       if (pid == null || mid == null) return;
       const key = String(pid);
-      if (!byPeriod[key]) {
-        byPeriod[key] = { materiaIds: [], paraleloId: plid };
-      }
+      if (!byPeriod[key]) byPeriod[key] = { materiaIds: [], paraleloId: plid };
       if (!byPeriod[key].materiaIds.includes(mid)) byPeriod[key].materiaIds.push(Number(mid));
       if (plid != null) byPeriod[key].paraleloId = plid;
     });
 
-    selectedPeriodIds = Object.keys(byPeriod).map(Number);
-    materiaIdsByPeriod = {};
-    parallelIdsByPeriod = {};
-    Object.keys(byPeriod).forEach((key) => {
-      materiaIdsByPeriod[key] = byPeriod[key].materiaIds;
-      if (byPeriod[key].paraleloId != null) parallelIdsByPeriod[key] = byPeriod[key].paraleloId;
-    });
+    if (!selectedPeriodIds?.length) selectedPeriodIds = Object.keys(byPeriod).map(Number);
+    if (!materiaIdsByPeriod || !Object.keys(materiaIdsByPeriod).length) {
+      materiaIdsByPeriod = {};
+      Object.keys(byPeriod).forEach((key) => { materiaIdsByPeriod[key] = byPeriod[key].materiaIds; });
+    }
+    if (!parallelIdsByPeriod || !Object.keys(parallelIdsByPeriod).length) {
+      parallelIdsByPeriod = {};
+      Object.keys(byPeriod).forEach((key) => {
+        if (byPeriod[key].paraleloId != null) parallelIdsByPeriod[key] = byPeriod[key].paraleloId;
+      });
+    }
 
     const first = enrollmentSubjects[0];
-    periodoId = first?.periodoId ?? first?.periodo_id ?? first?.periodId ?? selectedPeriodIds[0] ?? null;
-    paraleloId = first?.paraleloId ?? first?.paralelo_id ?? first?.parallelId ?? (parallelIdsByPeriod[String(selectedPeriodIds[0])] ?? null);
+    periodoId = first?.periodoId ?? first?.periodo_id ?? first?.periodId ?? selectedPeriodIds?.[0] ?? null;
+    paraleloId = first?.paraleloId ?? first?.paralelo_id ?? first?.parallelId ?? (selectedPeriodIds?.[0] != null ? parallelIdsByPeriod[String(selectedPeriodIds[0])] : null) ?? null;
+  } else if (selectedPeriodIds?.length) {
+    periodoId = selectedPeriodIds[0];
+    paraleloId = parallelIdsByPeriod?.[String(selectedPeriodIds[0])] ?? null;
   }
 
   return {

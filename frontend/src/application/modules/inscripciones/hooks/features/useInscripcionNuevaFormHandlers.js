@@ -54,7 +54,7 @@ import { useCreateInscripcion, useUpdateInscripcion } from '@application-inscrip
  * @returns {Object} Objeto con form, handleFinish, handleSave, getFormValues, loading, error, validationErrors, inscripcionResult
  */
 export const useInscripcionNuevaFormHandlers = (mode = 'nuevo', options = {}) => {
-    const { selectedStudent, selectedParalelo, selectedPeriod, selectedParalelosByPeriod = {}, selectedMateriaIdsByPeriod = {}, inscripcionId = null } = options;
+    const { selectedStudent, selectedParalelo, selectedPeriod, selectedPeriodIds = [], selectedParalelosByPeriod = {}, selectedMateriaIdsByPeriod = {}, inscripcionId = null } = options;
     const isEditMode = Boolean(inscripcionId);
 
     const showMessage = useMessage();
@@ -161,8 +161,9 @@ export const useInscripcionNuevaFormHandlers = (mode = 'nuevo', options = {}) =>
         const tipoAdmision = selectedStudent?.tipoAdmision ?? formValues.enrollment_type ?? 'NUEVO';
         const isAntiguo = tipoAdmision !== 'NUEVO';
 
-        const periodIdsWithMaterias = Object.keys(selectedMateriaIdsByPeriod || {}).filter(
-            (pid) => Array.isArray(selectedMateriaIdsByPeriod[pid]) && selectedMateriaIdsByPeriod[pid].length > 0
+        const periodIdsToConsider = selectedPeriodIds?.length ? selectedPeriodIds : Object.keys(selectedMateriaIdsByPeriod || {});
+        const periodIdsWithMaterias = periodIdsToConsider.filter(
+            (pid) => Array.isArray(selectedMateriaIdsByPeriod?.[pid]) && selectedMateriaIdsByPeriod[pid].length > 0
         );
         const periodsMissingParallel = periodIdsWithMaterias.filter((pid) => {
             const paralelo = selectedParalelosByPeriod?.[pid];
@@ -209,14 +210,16 @@ export const useInscripcionNuevaFormHandlers = (mode = 'nuevo', options = {}) =>
         if (hasSelectionByPeriod) {
             const parallelIdsByPeriod = {};
             const materiaIdsByPeriod = {};
-            for (const periodId of Object.keys(selectedMateriaIdsByPeriod || {})) {
-                const materiaIds = selectedMateriaIdsByPeriod[periodId];
+            const periodIdsToSend = selectedPeriodIds?.length ? selectedPeriodIds : Object.keys(selectedMateriaIdsByPeriod || {});
+            for (const periodId of periodIdsToSend) {
+                const materiaIds = selectedMateriaIdsByPeriod?.[periodId];
                 if (!Array.isArray(materiaIds) || materiaIds.length === 0) continue;
                 const paralelo = selectedParalelosByPeriod?.[periodId];
                 const pid = paralelo?.id ?? paralelo;
                 if (pid == null) continue;
-                parallelIdsByPeriod[String(periodId)] = Number(pid);
-                materiaIdsByPeriod[String(periodId)] = materiaIds.map(Number);
+                const key = String(periodId);
+                parallelIdsByPeriod[key] = Number(pid);
+                materiaIdsByPeriod[key] = materiaIds.map(Number);
             }
             if (Object.keys(materiaIdsByPeriod).length > 0) {
                 inscripcionData.parallel_ids_by_period = parallelIdsByPeriod;
@@ -251,7 +254,7 @@ export const useInscripcionNuevaFormHandlers = (mode = 'nuevo', options = {}) =>
         }
 
         return result;
-    }, [isEditMode, inscripcionId, selectedStudent, selectedParalelo, selectedPeriod, selectedParalelosByPeriod, selectedMateriaIdsByPeriod, getFormValues, createInscripcion, updateInscripcion, showMessage, handleSubmitResult, navigate]);
+    }, [isEditMode, inscripcionId, selectedStudent, selectedParalelo, selectedPeriod, selectedPeriodIds, selectedParalelosByPeriod, selectedMateriaIdsByPeriod, getFormValues, createInscripcion, updateInscripcion, showMessage, handleSubmitResult, navigate]);
 
     // Handler para guardar parcialmente
     // NOTA: Por ahora, el guardado parcial también crea la inscripción completa
@@ -261,8 +264,9 @@ export const useInscripcionNuevaFormHandlers = (mode = 'nuevo', options = {}) =>
         const tipoAdmision = selectedStudent?.tipoAdmision ?? formValues.enrollment_type ?? 'NUEVO';
         const isAntiguo = tipoAdmision !== 'NUEVO';
 
-        const periodIdsWithMateriasSave = Object.keys(selectedMateriaIdsByPeriod || {}).filter(
-            (pid) => Array.isArray(selectedMateriaIdsByPeriod[pid]) && selectedMateriaIdsByPeriod[pid].length > 0
+        const periodIdsToConsiderSave = selectedPeriodIds?.length ? selectedPeriodIds : Object.keys(selectedMateriaIdsByPeriod || {});
+        const periodIdsWithMateriasSave = periodIdsToConsiderSave.filter(
+            (pid) => Array.isArray(selectedMateriaIdsByPeriod?.[pid]) && selectedMateriaIdsByPeriod[pid].length > 0
         );
         const periodsMissingParallelSave = periodIdsWithMateriasSave.filter((pid) => {
             const paralelo = selectedParalelosByPeriod?.[pid];
@@ -304,14 +308,16 @@ export const useInscripcionNuevaFormHandlers = (mode = 'nuevo', options = {}) =>
         if (hasSelectionByPeriod) {
             const parallelIdsByPeriod = {};
             const materiaIdsByPeriod = {};
-            for (const periodId of Object.keys(selectedMateriaIdsByPeriod || {})) {
-                const materiaIds = selectedMateriaIdsByPeriod[periodId];
+            const periodIdsToSend = selectedPeriodIds?.length ? selectedPeriodIds : Object.keys(selectedMateriaIdsByPeriod || {});
+            for (const periodId of periodIdsToSend) {
+                const materiaIds = selectedMateriaIdsByPeriod?.[periodId];
                 if (!Array.isArray(materiaIds) || materiaIds.length === 0) continue;
                 const paralelo = selectedParalelosByPeriod?.[periodId];
                 const pid = paralelo?.id ?? paralelo;
                 if (pid == null) continue;
-                parallelIdsByPeriod[String(periodId)] = Number(pid);
-                materiaIdsByPeriod[String(periodId)] = materiaIds.map(Number);
+                const key = String(periodId);
+                parallelIdsByPeriod[key] = Number(pid);
+                materiaIdsByPeriod[key] = materiaIds.map(Number);
             }
             if (Object.keys(materiaIdsByPeriod).length > 0) {
                 inscripcionData.parallel_ids_by_period = parallelIdsByPeriod;

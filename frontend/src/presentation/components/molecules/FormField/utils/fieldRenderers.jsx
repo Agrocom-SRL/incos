@@ -148,6 +148,11 @@ const renderRadio = (field, disabled, readOnly, selectOptions, form) => {
  * Renderer para campo de tipo checkbox group (selección múltiple, estilo botón)
  * value y onChange son array de valores (ids). Si field.onChange existe, se llama con el array.
  * Key por opciones para forzar re-mount cuando las opciones cambian (p. ej. de [] a cargadas).
+ *
+ * Form.Item de Ant Design clona el hijo e inyecta value/onChange del store; eso pisa nuestro value.
+ * Para que en edición los checkboxes muestren field.value (p. ej. selectedPeriodIds [1,2]) aunque
+ * el form aún no tenga el valor (setFieldsValue corre en useEffect), el hijo debe ser un componente
+ * que use field.value cuando exista, así Form.Item no lo sobrescribe.
  */
 const renderCheckboxGroup = (field, disabled, readOnly, selectOptions, form) => {
   const handleChange = (checkedValues) => {
@@ -156,32 +161,40 @@ const renderCheckboxGroup = (field, disabled, readOnly, selectOptions, form) => 
     if (field.onChange) field.onChange(value);
   };
 
-  // Priorizar field.value (estado externo, ej. selectedPeriodIds) sobre el form para evitar
-  // desincronización cuando el form actualiza de forma asíncrona (al marcar 2, 3 y luego 1
-  // el form podía devolver valor obsoleto y el grupo quedaba solo con [1]).
-  const rawValue = field.value ?? form?.getFieldValue?.(field.name) ?? field.defaultValue;
-  const safeValue = Array.isArray(rawValue)
-    ? rawValue
-    : rawValue != null
-      ? [rawValue]
-      : [];
-
   const options = Array.isArray(selectOptions) ? selectOptions : [];
   const optionsKey = options.length ? options.map((o) => o.value ?? o.id).join(',') : 'empty';
 
-  return (
-    <FieldCheckboxGroup
-      key={`${field.name}-${optionsKey}`}
-      disabled={disabled}
-      readOnly={readOnly}
-      options={options}
-      value={safeValue}
-      onChange={handleChange}
-      optionType={field.optionType || 'default'}
-      checkboxLayout={field.checkboxLayout || 'vertical'}
-      className={field.className}
-    />
-  );
+  // Componente wrapper: recibe value/onChange inyectados por Form.Item y prioriza field.value
+  // para la visualización, así los checkboxes se marcan en edición aunque el store se actualice después.
+  function CheckboxGroupFormAdapter(injectedProps) {
+    const { value: formValue, onChange: formOnChange, ...restInjected } = injectedProps || {};
+    const rawValue =
+      field.value !== undefined && field.value !== null
+        ? field.value
+        : formValue !== undefined && formValue !== null
+          ? formValue
+          : field.defaultValue;
+    const safeValue = Array.isArray(rawValue)
+      ? rawValue
+      : rawValue != null
+        ? [rawValue]
+        : [];
+    return (
+      <FieldCheckboxGroup
+        {...restInjected}
+        key={`${field.name}-${optionsKey}`}
+        disabled={disabled}
+        readOnly={readOnly}
+        options={options}
+        value={safeValue}
+        onChange={handleChange}
+        optionType={field.optionType || 'default'}
+        checkboxLayout={field.checkboxLayout || 'vertical'}
+        className={field.className}
+      />
+    );
+  }
+  return <CheckboxGroupFormAdapter />;
 };
 
 /**

@@ -118,12 +118,15 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
     }, [editData?.carreraId, studentSearch.selectedStudent, carrerasData.selectedCarrera]);
     
     // Periodos: según tipo admisión (NUEVO = solo primer periodo; ANTIGUO = todos). En edición pre-seleccionar editData.periodoId.
-    const tipoAdmision = studentSearch?.selectedStudent?.tipoAdmision ?? null;
+    // En modo edición usar editData.tipoAdmision para no filtrar periodos antes de cargar el estudiante
+    const tipoAdmision =
+      editData?.tipoAdmision ?? studentSearch?.selectedStudent?.tipoAdmision ?? null;
+    const initialSelectedPeriodIds = editData?.selectedPeriodIds ?? undefined;
     const periodosData = useInscripcionNuevaPeriodos({
       carreraId: carreraIdForParalelos ?? undefined,
       tipoAdmision: tipoAdmision ?? undefined,
       initialPeriodId: editData?.periodoId ?? undefined,
-      initialSelectedPeriodIds: editData?.selectedPeriodIds ?? undefined,
+      initialSelectedPeriodIds,
     });
     const selectedPeriod = periodosData.selectedPeriod;
 
@@ -167,6 +170,7 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
         selectedStudent: studentSearch.selectedStudent,
         selectedParalelo: paralelosData.selectedParalelo,
         selectedPeriod,
+        selectedPeriodIds: periodosData?.selectedPeriodIds ?? [],
         selectedParalelosByPeriod: paralelosData.selectedParalelosByPeriod ?? {},
         selectedMateriaIdsByPeriod,
         inscripcionId: editData?.inscripcionId ?? null,
