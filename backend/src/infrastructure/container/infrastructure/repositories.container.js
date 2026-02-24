@@ -37,6 +37,7 @@ import { CivilStatusRepository } from '../../repositories/CivilStatusRepository.
 import { DisabilityTypeRepository } from '../../repositories/DisabilityTypeRepository.js';
 import { RelationshipTypeRepository } from '../../repositories/RelationshipTypeRepository.js';
 import { DocumentacionRepository } from '../../repositories/DocumentacionRepository.js';
+import { InstitutionRepository } from '../../repositories/InstitutionRepository.js';
 
 // ============================================
 // CONFIGURACIÓN DEL SISTEMA
@@ -96,6 +97,8 @@ import { ScholarshipRepository } from '../../repositories/ScholarshipRepository.
 import { StudentScholarshipRepository } from '../../repositories/StudentScholarshipRepository.js';
 import { LicenseRequestRepository } from '../../repositories/LicenseRequestRepository.js';
 import { StudentGuardianRepository } from '../../repositories/StudentGuardianRepository.js';
+import { TransitabilityRepository } from '../../repositories/TransitabilityRepository.js';
+import { TransferRepository } from '../../repositories/TransferRepository.js';
 
 // ============================================
 // INSCRIPCIONES
@@ -136,6 +139,7 @@ export function registerRepositoriesModule(container) {
     registerRepository(container, REPOSITORIOS_TOKENS.disabilityTypeRepository, DisabilityTypeRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.relationshipTypeRepository, RelationshipTypeRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.documentacionRepository, DocumentacionRepository);
+    registerRepository(container, REPOSITORIOS_TOKENS.institutionRepository, InstitutionRepository);
 
     // ============================================
     // CONFIGURACIÓN DEL SISTEMA
@@ -195,6 +199,12 @@ export function registerRepositoriesModule(container) {
     registerRepository(container, REPOSITORIOS_TOKENS.studentScholarshipRepository, StudentScholarshipRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.licenseRequestRepository, LicenseRequestRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.studentGuardianRepository, StudentGuardianRepository);
+
+    // ============================================
+    // TRANSITABILIDAD Y TRASPASOS
+    // ============================================
+    registerRepository(container, REPOSITORIOS_TOKENS.transitabilityRepository, TransitabilityRepository);
+    registerRepository(container, REPOSITORIOS_TOKENS.transferRepository, TransferRepository);
 
     // ============================================
     // INSCRIPCIONES
