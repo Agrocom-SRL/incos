@@ -187,6 +187,7 @@ La documentación completa del sistema se encuentra en el directorio [`docs/`](.
 ## 📊 Estadísticas del Proyecto
 
 | Métrica | Cantidad |
+
 |---------|----------|
 | **Total de Documentos Técnicos** | 15 |
 | **Total de Páginas** | ~815 páginas |
@@ -340,9 +341,6 @@ Los scripts de schema están organizados en `backend/database/01-schemas/` y deb
 14. `12-transitabilidades.sql` - Transitabilidades
 15. `14-pasantias.sql` - Pasantías
 16. `14-supervision-libros.sql` - Supervisión docente y libros de registro
-14. `12-indices.sql` - Índices de optimización
-15. `12-sincronizacion.sql` - Sistema de sincronización
-16. `13-indices-optimizacion.sql` - Índices adicionales
 
 Ver **[Modelo de Datos](docs/05-modelo-datos.md)** para documentación completa.
 

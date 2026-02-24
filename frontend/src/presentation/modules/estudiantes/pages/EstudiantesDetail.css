@@ -1,0 +1,502 @@
+/**
+ * EstudiantesDetail — Estilo moderno HRment
+ * Tipografía clara, layout 2-3 columnas, espaciado generoso, sin ruido visual.
+ */
+
+/* ─────────────────────────────────────────
+   TOKENS
+───────────────────────────────────────── */
+.sd {
+  --primary:        #196b45;
+  --primary-dark:   #134d32;
+  --primary-light:  #e8f5e9;
+  --primary-mid:    #22854f;
+  --accent:         #399f53;
+
+  --text-900:       #111827;
+  --text-700:       #374151;
+  --text-500:       #6b7280;
+  --text-400:       #9ca3af;
+  --text-300:       #d1d5db;
+
+  --surface:        #ffffff;
+  --bg:             #f3f4f6;
+  --border:         #e5e7eb;
+  --border-soft:    #f3f4f6;
+
+  --radius-sm:      6px;
+  --radius-md:      10px;
+  --radius-lg:      14px;
+  --radius-xl:      18px;
+
+  --shadow-sm:      0 1px 2px rgba(0,0,0,.05);
+  --shadow-md:      0 1px 3px rgba(0,0,0,.07), 0 4px 12px rgba(0,0,0,.05);
+  --shadow-focus:   0 0 0 3px rgba(25,107,69,.15);
+
+  font-family: 'DM Sans', 'Nunito Sans', ui-sans-serif, system-ui, sans-serif;
+  background: var(--bg);
+  min-height: 100%;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ─────────────────────────────────────────
+   PROFILE CARD
+───────────────────────────────────────── */
+.sd-profile {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  padding: 24px 28px;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+/* Identity */
+.sd-profile__identity {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.sd-profile__avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.sd-profile__avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+  color: #fff;
+  font-size: 24px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: -0.5px;
+  box-shadow: 0 4px 14px rgba(25,107,69,.3);
+}
+
+.sd-profile__status-dot {
+  position: absolute;
+  bottom: 3px;
+  right: 3px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #34d399;
+  border: 2px solid var(--surface);
+}
+
+.sd-profile__name-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sd-profile__name {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-900);
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+}
+
+.sd-profile__sub {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  color: var(--text-500);
+}
+
+.sd-profile__sub .anticon {
+  color: var(--primary);
+  font-size: 12px;
+}
+
+/* Divider vertical */
+.sd-profile__divider {
+  width: 1px;
+  height: 52px;
+  background: var(--border);
+  flex-shrink: 0;
+  align-self: center;
+}
+
+@media (max-width: 860px) {
+  .sd-profile__divider { display: none; }
+}
+
+/* Quick stats */
+.sd-profile__stats {
+  display: flex;
+  gap: 32px;
+  align-items: center;
+  flex: 1;
+  flex-wrap: wrap;
+}
+
+.sd-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.sd-stat__label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  color: var(--text-400);
+}
+
+.sd-stat__value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-700);
+}
+
+.sd-stat__value--primary {
+  color: var(--primary);
+  font-size: 15px;
+}
+
+/* Actions */
+.sd-profile__actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+
+/* ─────────────────────────────────────────
+   BUTTONS PROPIOS (sin depender de atoms)
+   Los usamos solo en profile, el resto usa Button atom
+───────────────────────────────────────── */
+.sd-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: transform .12s, box-shadow .12s, background .12s;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.sd-btn:active { transform: scale(.97); }
+.sd-btn:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+
+.sd-btn--primary {
+  background: var(--primary);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(25,107,69,.3);
+}
+.sd-btn--primary:hover {
+  background: var(--primary-dark);
+  box-shadow: 0 4px 14px rgba(25,107,69,.35);
+}
+
+.sd-btn--danger {
+  background: #e41c24;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(228,28,36,.25);
+}
+.sd-btn--danger:hover { background: #c01019; }
+
+.sd-btn--warn {
+  background: #f59e0b;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(245,158,11,.25);
+}
+.sd-btn--warn:hover { background: #d97706; }
+.sd-btn--warn:disabled { opacity: .6; cursor: not-allowed; }
+
+/* ─────────────────────────────────────────
+   TABS SHELL
+───────────────────────────────────────── */
+.sd-tabs-shell {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+
+.sd-tabs .ant-tabs-nav {
+  margin: 0 !important;
+  padding: 0 24px !important;
+  border-bottom: 1px solid var(--border) !important;
+  background: var(--surface) !important;
+}
+
+.sd-tabs .ant-tabs-nav::before {
+  border: none !important;
+}
+
+.sd-tabs .ant-tabs-tab {
+  padding: 16px 0 !important;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+  color: var(--text-500) !important;
+  transition: color .15s !important;
+}
+
+.sd-tabs .ant-tabs-tab + .ant-tabs-tab {
+  margin-left: 28px !important;
+}
+
+.sd-tabs .ant-tabs-tab:hover .ant-tabs-tab-btn {
+  color: var(--primary) !important;
+}
+
+.sd-tabs .ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: var(--text-900) !important;
+  font-weight: 600 !important;
+}
+
+.sd-tabs .ant-tabs-ink-bar {
+  background: var(--primary) !important;
+  height: 2px !important;
+  border-radius: 2px 2px 0 0 !important;
+}
+
+.sd-tabs .ant-tabs-content-holder {
+  padding: 0 !important;
+}
+
+.sd-tab-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.sd-tab-label .anticon {
+  font-size: 14px;
+}
+
+/* ─────────────────────────────────────────
+   TAB BODY
+───────────────────────────────────────── */
+.sd-tab-body {
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ─────────────────────────────────────────
+   INFO CARD
+───────────────────────────────────────── */
+.sd-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.sd-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border-soft);
+  background: #fafafa;
+}
+
+.sd-card__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .7px;
+  color: var(--text-500);
+}
+
+.sd-card__title-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  background: var(--primary-light);
+  color: var(--primary);
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.sd-card__extra {
+  display: flex;
+  gap: 8px;
+}
+
+.sd-card__body {
+  padding: 20px;
+  display: grid;
+  gap: 20px 32px;
+}
+
+.sd-card__body--cols-2 { grid-template-columns: repeat(2, 1fr); }
+.sd-card__body--cols-3 { grid-template-columns: repeat(3, 1fr); }
+
+@media (max-width: 900px) {
+  .sd-card__body--cols-3 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+  .sd-card__body--cols-2,
+  .sd-card__body--cols-3 { grid-template-columns: 1fr; }
+}
+
+/* ─────────────────────────────────────────
+   FIELD — label arriba, valor abajo
+───────────────────────────────────────── */
+.sd-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.sd-field--span-1 { grid-column: span 1; }
+.sd-field--span-2 { grid-column: span 2; }
+.sd-field--span-3 { grid-column: span 3; }
+
+@media (max-width: 900px) {
+  .sd-field--span-3 { grid-column: span 2; }
+}
+@media (max-width: 600px) {
+  .sd-field--span-2,
+  .sd-field--span-3 { grid-column: span 1; }
+}
+
+.sd-field__label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .55px;
+  color: var(--text-400);
+  white-space: nowrap;
+}
+
+.sd-field__value {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-700);
+  word-break: break-word;
+}
+
+/* ─────────────────────────────────────────
+   LINK
+───────────────────────────────────────── */
+.sd-link {
+  color: var(--primary);
+  font-weight: 600;
+  text-decoration: none;
+}
+.sd-link:hover {
+  color: var(--primary-dark);
+  text-decoration: underline;
+}
+
+/* ─────────────────────────────────────────
+   BADGE
+───────────────────────────────────────── */
+.sd-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.sd-badge--blue {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid rgba(59,130,246,.2);
+}
+
+.sd-badge--green {
+  background: var(--primary-light);
+  color: var(--primary);
+  border: 1px solid rgba(25,107,69,.2);
+}
+
+/* ─────────────────────────────────────────
+   EMPTY
+───────────────────────────────────────── */
+.sd-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 60px 24px;
+  text-align: center;
+}
+
+.sd-empty__icon {
+  font-size: 36px !important;
+  color: var(--text-300) !important;
+}
+
+.sd-empty__text {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-500);
+}
+
+/* ─────────────────────────────────────────
+   LOADING
+───────────────────────────────────────── */
+.sd-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 80px 24px;
+  color: var(--text-500);
+}
+
+/* ─────────────────────────────────────────
+   RESPONSIVE PROFILE
+───────────────────────────────────────── */
+@media (max-width: 860px) {
+  .sd-profile {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .sd-profile__stats {
+    gap: 20px;
+  }
+  .sd-profile__actions {
+    margin-left: 0;
+    width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .sd { padding: 12px; }
+  .sd-profile { padding: 16px; }
+  .sd-tab-body { padding: 16px; }
+  .sd-card__body { padding: 16px; gap: 16px 20px; }
+}
