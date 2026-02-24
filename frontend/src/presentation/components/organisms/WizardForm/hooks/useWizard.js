@@ -26,14 +26,13 @@ import { useState, useCallback, useEffect } from 'react';
  */
 export const useWizard = (initialStep = 0, totalSteps = 0) => {
   const [currentStep, setCurrentStep] = useState(initialStep);
-  
+
   // Sincronizar currentStep con initialStep cuando cambia (útil cuando el estudiante se carga después)
-  // Solo actualizar si initialStep es válido y es diferente del currentStep actual
   useEffect(() => {
     if (initialStep >= 0 && initialStep < totalSteps && initialStep !== currentStep) {
       setCurrentStep(initialStep);
     }
-  }, [initialStep, totalSteps]); // Remover currentStep de dependencias para evitar loops
+  }, [initialStep, totalSteps]);
 
   // Avanzar al siguiente paso
   const next = useCallback(() => {

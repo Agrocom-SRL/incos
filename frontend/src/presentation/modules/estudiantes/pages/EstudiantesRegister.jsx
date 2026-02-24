@@ -529,72 +529,59 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
   // Hook para obtener títulos dinámicos según el modo
   const wizardTitles = useEstudianteWizardTitles(completarMode);
 
-  // Crear configuración de steps (memoizada para evitar recrearlas en cada render)
+  // Crear configuración de steps (4 pasos: Tipo+Datos académicos, Datos personales, Contacto emergencia, Documentación)
   const wizardSteps = useMemo(() => {
     const steps = createEstudianteWizardSteps(wizardTitles);
-    
-    // Generar campos dinámicos de contactos de emergencia desde la capa de configuración
-    // Usar datos expuestos desde el provider
+
     const camposDinamicos = createCamposContactosEmergenciaDinamicos(
-      contactosIndices, 
-      eliminarContacto, 
+      contactosIndices,
+      eliminarContacto,
       agregarContacto
     );
-    
-    // Reemplazar campos estáticos de contacto de emergencia con campos dinámicos
-    const contactoEmergenciaStep = steps.find((step) => 
+    const contactoEmergenciaStep = steps.find((step) =>
       step.sections.includes('contactoEmergencia')
     );
-    
-    if (contactoEmergenciaStep && contactoEmergenciaStep.config.contactoEmergencia) {
+    if (contactoEmergenciaStep?.config?.contactoEmergencia) {
       contactoEmergenciaStep.config.contactoEmergencia.fields = camposDinamicos;
     }
-    
-    // Generar campos dinámicos de documentación desde la capa de configuración
-    // Usar documentación procesada expuesta desde el provider (ya filtrada y ordenada)
+
     const camposDocumentacion = createCamposDocumentacionDinamicos(documentacionProcesada);
-    
-    // Agregar subsección de observaciones del estudiante al final de la lista de documentos
-    // Similar a las subsecciones en los campos geográficos
     const subseccionObservaciones = {
       type: 'subsection',
       subsectionTitle: 'Observaciones del Estudiante',
-      conditional: false, // Siempre visible
+      conditional: false,
       fields: [
         {
           name: 'observaciones',
           label: 'Observaciones',
           type: 'textarea',
           required: false,
-          span: 24, // Ocupa todo el ancho (100%)
+          span: 24,
           placeholder: 'Ingrese observaciones adicionales sobre el estudiante (opcional)',
           maxLength: 1000,
-          rows: 4, // Altura del textarea
+          rows: 4,
         },
       ],
     };
-    
-    // Combinar campos de documentación con la subsección de observaciones
     const camposCompletos = [...camposDocumentacion, subseccionObservaciones];
-    
-    // Reemplazar campos estáticos de documentación con campos dinámicos + subsección de observaciones
-    const documentacionStep = steps.find((step) => 
+    const documentacionStep = steps.find((step) =>
       step.sections.includes('documentacion')
     );
-    
-    if (documentacionStep && documentacionStep.config.documentacion) {
+    if (documentacionStep?.config?.documentacion) {
       documentacionStep.config.documentacion.fields = camposCompletos;
     }
-    
+
     return steps;
   }, [wizardTitles, contactosIndices, agregarContacto, eliminarContacto, documentacionProcesada]);
 
-  // Validar paso 1 (primer paso) antes de Siguiente: tipoAdmision obligatorio; si ANTIGUO, gestión y carrera obligatorios
+  // Validar paso 1: tipoAdmision obligatorio; si ANTIGUO/TRANSITABILIDAD/TRASPASO, gestión y carrera obligatorios
   const onValidateBeforeNext = useCallback((stepNumber, formInstance) => {
     if (stepNumber !== 1) return Promise.resolve();
     return formInstance.validateFields(['tipoAdmision']).then(() => {
       const tipo = formInstance.getFieldValue('tipoAdmision');
-      if (tipo === 'ANTIGUO') {
+      const requiereGestionCarrera =
+        tipo === 'ANTIGUO' || tipo === 'TRANSITABILIDAD' || tipo === 'TRASPASO';
+      if (requiereGestionCarrera) {
         return formInstance.validateFields(['gestionIngresoId', 'carreraId']);
       }
     });
@@ -604,16 +591,15 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
   const onBeforeNextStep = useCallback((stepNumber, formInstance) => {
     if (stepNumber === 1 && saveStep0Values && formInstance) {
       const values = formInstance.getFieldsValue(true);
-      const tipoAdmision = values.tipoAdmision ?? 'NUEVO';
       saveStep0Values({
-        tipoAdmision,
+        tipoAdmision: values.tipoAdmision ?? 'NUEVO',
         gestionIngresoId: values.gestionIngresoId,
         carreraId: values.carreraId,
       });
     }
   }, [saveStep0Values]);
 
-  // Restaurar valores del paso 1 al volver desde el paso 2 (para que se muestren tipo admisión, gestión y carrera)
+  // Restaurar valores del paso 1 al volver desde el paso 2
   const onBeforePrevStep = useCallback((stepNumber, formInstance) => {
     if (stepNumber === 2 && getStep0Values && formInstance) {
       const step1Values = getStep0Values();
@@ -635,7 +621,7 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
     { title: pageTitle },
   ], [pageTitle]);
 
-  // Contenido custom del paso 0 (Tipo de admisión + Gestión y Carrera)
+  // Contenido custom del paso 0 (Tipo de admisión + Datos académicos iniciales cuando aplica)
   const renderSectionContent = useCallback(
     (stepIndex, sectionKey, section, formInstance) => {
       if (stepIndex !== 0) return null;

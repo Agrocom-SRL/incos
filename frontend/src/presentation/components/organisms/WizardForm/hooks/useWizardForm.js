@@ -64,6 +64,10 @@ export const useWizardForm = ({ steps = [], externalForm, conditionalLoaders = {
       
       // Si hay visibleWhenValue, comparar con ese valor específico
       if (section.visibleWhenValue !== undefined) {
+        // Permitir tanto un valor único como un array de valores
+        if (Array.isArray(section.visibleWhenValue)) {
+          return section.visibleWhenValue.includes(dependsOnValue);
+        }
         return dependsOnValue === section.visibleWhenValue;
       }
       

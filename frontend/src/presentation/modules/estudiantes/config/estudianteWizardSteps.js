@@ -13,7 +13,6 @@
  * - config: Configuración completa del formulario (secciones con campos)
  */
 
-import { createEstudianteTipoAdmisionFields } from './estudianteTipoAdmisionFields';
 import { createEstudianteDatosAcademicosInicialesFields } from './estudianteDatosAcademicosInicialesFields';
 import { createEstudianteDatosPersonalesFields } from './estudianteDatosPersonalesFields';
 import { createEstudianteContactoFields } from './estudianteContactoFields';
@@ -32,9 +31,6 @@ import { createEstudianteContactoEmergenciaFields } from './estudianteContactoEm
  */
 export const createEstudianteWizardSteps = (titles) => {
   // Obtener configuración de campos
-  const tipoAdmisionFields = createEstudianteTipoAdmisionFields();
-  const tipoAdmisionSection = tipoAdmisionFields.tipoAdmision;
-
   const datosAcademicosInicialesFields = createEstudianteDatosAcademicosInicialesFields();
   const datosAcademicosInicialesSection = datosAcademicosInicialesFields.datosAcademicosIniciales;
 
@@ -54,26 +50,26 @@ export const createEstudianteWizardSteps = (titles) => {
   const contactoEmergenciaFields = estudianteContactoEmergenciaFields.contactoEmergencia;
 
   return [
-    // STEP 0: Tipo de Admisión
+    // STEP 0: Tipo de Admisión + Datos Académicos Iniciales (gestión y carrera se muestran en este mismo paso cuando tipo es ANTIGUO/TRANSITABILIDAD/TRASPASO)
     {
       title: titles.step0.title,
       formTitle: titles.step0.formTitle,
       sections: ['tipoAdmision', 'datosAcademicosIniciales'],
       config: {
         tipoAdmision: {
-          title: tipoAdmisionSection.title,
+          title: 'TIPO DE ADMISIÓN',
           fields: [], // Los campos se renderizan mediante TipoAdmisionSelectionSection (componente visual)
         },
         datosAcademicosIniciales: {
           title: datosAcademicosInicialesSection.title,
           fields: datosAcademicosInicialesSection.fields,
-          conditional: true, // Sección condicional
-          dependsOn: 'tipoAdmision', // Depende del campo tipoAdmision
-          visibleWhenValue: 'ANTIGUO', // Solo visible cuando tipoAdmision === 'ANTIGUO'
+          conditional: true,
+          dependsOn: 'tipoAdmision',
+          visibleWhenValue: ['ANTIGUO', 'TRANSITABILIDAD', 'TRASPASO'],
         },
       },
     },
-    // STEP 1: Datos Personales (antes era step1, ahora es step2)
+    // STEP 1: Datos Personales
     {
       title: titles.step1.title,
       formTitle: titles.step1.formTitle,
@@ -99,7 +95,7 @@ export const createEstudianteWizardSteps = (titles) => {
         },
       },
     },
-    // STEP 2: Contacto de Emergencia (antes era step2, ahora es step3)
+    // STEP 2: Contacto de Emergencia
     {
       title: titles.step2.title,
       formTitle: titles.step2.formTitle,
@@ -111,7 +107,7 @@ export const createEstudianteWizardSteps = (titles) => {
         },
       },
     },
-    // STEP 3: Documentación (antes era step3, ahora es step4)
+    // STEP 3: Documentación
     {
       title: titles.step3.title,
       formTitle: titles.step3.formTitle,

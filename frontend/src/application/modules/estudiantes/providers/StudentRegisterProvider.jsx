@@ -76,15 +76,26 @@ export const StudentRegisterProvider = ({ children, mode = 'create', studentId =
 
     // Hook para gestiones académicas
     // Por defecto NO carga gestiones (estudiantes nuevos no necesitan gestiones)
-    // Solo se carga cuando el tipo de admisión es ANTIGUO (gestiones no vigentes)
-    const gestionesApi = useGestionesApi({ vigente: false, autoFetch: false });
+    // La carga y el filtro (vigentes / no vigentes / todas) dependen del tipo de admisión
+    const gestionesApi = useGestionesApi({ autoFetch: false });
     const gestiones = gestionesApi.gestiones || [];
     const gestionesLoading = gestionesApi.loading || false;
     const gestionesError = gestionesApi.error || null;
     
-    // Función para cargar gestiones (cuando tipo es ANTIGUO; vigente lo resuelve el repositorio)
-    const cargarGestiones = useCallback(() => {
-      gestionesApi.fetch({ params: { vigente: 0 } });
+    // Función para cargar gestiones según el tipo de admisión
+    // - ANTIGUO: solo gestiones no vigentes (pasadas)
+    // - TRANSITABILIDAD / TRASPASO: todas las gestiones (incluye la vigente)
+    const cargarGestiones = useCallback((tipoAdmision) => {
+      if (!gestionesApi.fetch) return;
+
+      if (tipoAdmision === 'ANTIGUO') {
+        gestionesApi.fetch({ params: { vigente: 0 } });
+        return;
+      }
+
+      if (tipoAdmision === 'TRANSITABILIDAD' || tipoAdmision === 'TRASPASO') {
+        gestionesApi.fetch(); // Sin filtro de vigente => todas las gestiones
+      }
     }, [gestionesApi.fetch]);
 
     // Hook para cargar carreras académicas
