@@ -17,6 +17,7 @@ import {
   PlusCircleOutlined,
   UserOutlined,
   FileProtectOutlined,
+  GlobalOutlined,
 } from '@ant-design/icons';
 import { useStudentDetailContext } from '@application-estudiantes/hooks';
 import {
@@ -60,7 +61,7 @@ const InfoCard = ({ title, icon, extra, children, cols = 2 }) => (
 const EstudiantesDetail = () => {
   const {
     loading, error, student, studentData,
-    guardians, documentDeliveries, scholarships, inscripcion,
+    guardians, documentDeliveries, scholarships, inscripcion, origins,
     breadcrumbItems, avatarInitials, profileSubtitle,
     handleRegistrarPago, handleGenerateActaCompromiso,
     handleDownloadActaCompromiso, handleVerInscripcion,
@@ -72,6 +73,34 @@ const EstudiantesDetail = () => {
     studentData?.residenceAddressComplete ||
     [studentData?.municipioResidenciaName, studentData?.provinciaResidenciaName, studentData?.departamentoResidenciaName]
       .filter(Boolean).join(', ') || null;
+
+  // Nacionalidad e idiomas derivados de origins
+  const { nacionalidadLabel, idiomaMaterno, idiomaSecundario, lugarNacimiento, paises } = useMemo(() => {
+    const list = Array.isArray(origins) ? origins : [];
+    const isPrincipal = (o) => Number(o?.esPrincipal) === 1 || Number(o?.isPrincipal) === 1 || o?.esPrincipal === true || o?.isPrincipal === true;
+    const principal = list.find(isPrincipal) || list[0];
+    const secundario = list.find((o) => o !== principal) || null;
+
+    let nacionalidadLabel = '—';
+    if (list.length === 0) return { nacionalidadLabel: '—', idiomaMaterno: null, idiomaSecundario: null, lugarNacimiento: null, paises: null };
+    if (list.length >= 2) {
+      nacionalidadLabel = 'Doble nacionalidad';
+    } else if (principal) {
+      const tipo = principal.originType || principal.tipoOrigen || '';
+      if (tipo === 'BOLIVIANA') nacionalidadLabel = 'Boliviano';
+      else if (tipo === 'EXTRANJERA') nacionalidadLabel = 'Extranjero';
+      else nacionalidadLabel = tipo || '—';
+    }
+
+    const idiomaMaterno = principal?.motherTongueName || principal?.motherTongueCode || null;
+    const idiomaSecundario = principal?.secondaryLanguageName || principal?.secondaryLanguageCode || null;
+    const lugarNacimiento = principal?.originAddressComplete || [principal?.birthCity, principal?.birthMunicipalityName, principal?.birthDepartmentName].filter(Boolean).join(', ') || null;
+    const paises = list.length >= 2
+      ? list.map((o) => o.countryName || o.countryId).filter(Boolean).join(' / ')
+      : principal?.countryName || null;
+
+    return { nacionalidadLabel, idiomaMaterno, idiomaSecundario, lugarNacimiento, paises };
+  }, [origins]);
 
   /* Tab items */
   const tabItems = useMemo(() => [
@@ -116,6 +145,18 @@ const EstudiantesDetail = () => {
               <Field label="Observaciones" span={3}>{studentData.observaciones}</Field>
             )}
           </InfoCard>
+
+          {(origins?.length > 0) && (
+            <InfoCard title="Nacionalidad e idiomas" icon={<GlobalOutlined />} cols={3}>
+              <Field label="Nacionalidad">{nacionalidadLabel}</Field>
+              {paises && <Field label="País(s)">{paises}</Field>}
+              <Field label="Idioma materno">{idiomaMaterno}</Field>
+              <Field label="Idioma secundario">{idiomaSecundario}</Field>
+              {lugarNacimiento && (
+                <Field label="Lugar de nacimiento" span={3}>{lugarNacimiento}</Field>
+              )}
+            </InfoCard>
+          )}
 
           <GuardiansSection guardians={guardians} />
         </div>
@@ -188,7 +229,7 @@ const EstudiantesDetail = () => {
         </div>
       ),
     },
-  ], [studentData, residenciaCompleta, guardians, documentDeliveries, scholarships, inscripcion, handleVerInscripcion, handleNuevaInscripcion]);
+  ], [studentData, residenciaCompleta, guardians, documentDeliveries, scholarships, inscripcion, origins, nacionalidadLabel, idiomaMaterno, idiomaSecundario, lugarNacimiento, paises, handleVerInscripcion, handleNuevaInscripcion]);
 
   /* ── Estados de carga / error ── */
   if (loading) return (
