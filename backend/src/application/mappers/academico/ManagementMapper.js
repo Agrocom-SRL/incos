@@ -40,6 +40,7 @@ export function entityToPresentation(management) {
   BaseMapper.mapFieldIfExists(management, 'startDate', 'fechaInicio', presentation);
   BaseMapper.mapFieldIfExists(management, 'endDate', 'fechaFin', presentation);
   BaseMapper.mapFieldIfExists(management, 'isActive', 'activo', presentation);
+  BaseMapper.mapFieldIfExists(management, 'vigente', 'vigente', presentation);
 
   return presentation;
 }

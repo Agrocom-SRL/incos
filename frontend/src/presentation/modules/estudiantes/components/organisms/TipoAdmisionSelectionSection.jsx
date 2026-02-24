@@ -44,20 +44,18 @@ const TIPOS_ADMISION = [
   { 
     value: 'TRANSITABILIDAD',
     label: 'Transitabilidad',
-    description: 'Estudiante con Técnico Medio que cursa solo materias complementarias',
+    description: 'Estudiante con título de Técnico Medio (UETHP/CEA) que postula a Técnico Superior (ITT).',
     icon: SwapOutlined,
     color: '#722ed1',
     bgColor: '#f9f0ff',
-    disabled: true, // Por ahora deshabilitado hasta implementar
   },
   { 
     value: 'TRASPASO',
     label: 'Traspaso',
-    description: 'Estudiante que viene de otro instituto y completó un periodo',
+    description: 'Estudiante que cursó uno o dos años en otro ITT y solicita continuar en INCOS.',
     icon: ImportOutlined,
     color: '#eb2f96',
     bgColor: '#fff0f6',
-    disabled: true, // Por ahora deshabilitado hasta implementar
   },
 ];
 
@@ -72,7 +70,9 @@ const TipoAdmisionSelectionSection = ({
 
     if (form) {
       form.setFieldsValue({ tipoAdmision });
-      if (tipoAdmision !== 'ANTIGUO') {
+      // Solo limpiar gestión y carrera cuando es NUEVO. Para TRASPASO/TRANSITABILIDAD
+      // la página preseleccionará la gestión vigente cuando carguen las gestiones.
+      if (tipoAdmision === 'NUEVO') {
         form.setFieldsValue({
           gestionIngresoId: undefined,
           carreraId: undefined,

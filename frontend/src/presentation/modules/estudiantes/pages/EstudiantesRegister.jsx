@@ -129,6 +129,22 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
     }
   }, [registerForm, form]);
 
+  // Preseleccionar gestión vigente solo la primera vez (gestionIngresoId undefined) en Traspaso/Transitabilidad.
+  // Si ya hay un valor seleccionado, no sobrescribir al cambiar tipo de admisión.
+  const tipoAdmision = Form.useWatch('tipoAdmision', form);
+  useEffect(() => {
+    if (!form || gestionesLoading || !gestiones?.length) return;
+    if (tipoAdmision !== 'TRASPASO' && tipoAdmision !== 'TRANSITABILIDAD') return;
+
+    const current = form.getFieldValue('gestionIngresoId');
+    if (current != null) return; // Ya hay selección; mantener la opción marcada
+
+    const vigente = gestiones.find((g) => g?.vigente === true || g?.vigente === 1);
+    if (vigente?.id == null) return;
+
+    form.setFieldsValue({ gestionIngresoId: vigente.id });
+  }, [form, tipoAdmision, gestiones, gestionesLoading]);
+
   // Ref para almacenar los datos del formulario mientras se cargan las opciones
   const pendingFormDataRef = useRef(null);
   
@@ -230,9 +246,9 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
           });
         }
 
-        // Si tipo admisión es ANTIGUO, cargar gestiones para que GestionSelectionSection muestre opciones y la selección actual
-        if (formData.tipoAdmision === 'ANTIGUO' && typeof cargarGestiones === 'function') {
-          cargarGestiones();
+        // Si hay tipo de admisión, cargar gestiones según la modalidad
+        if (formData.tipoAdmision && typeof cargarGestiones === 'function') {
+          cargarGestiones(formData.tipoAdmision);
         }
         
         // Si tiene discapacidad, cargar tipos de discapacidad para que el select muestre opciones
@@ -628,8 +644,8 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
           <EstudianteTipoAdmisionStepContent
             form={formInstance}
             onTipoAdmisionChange={(tipoAdmision) => {
-              if (tipoAdmision === 'ANTIGUO' && typeof cargarGestiones === 'function') {
-                cargarGestiones();
+              if (tipoAdmision && typeof cargarGestiones === 'function') {
+                cargarGestiones(tipoAdmision);
               }
             }}
           />
