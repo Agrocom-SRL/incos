@@ -44,11 +44,10 @@ export class TransitabilityRepository extends BaseRepository {
   /**
    * WHERE específico para filtros de transitabilidad.
    *
-   * Filtros soportados:
-   * - studentId: id del estudiante
-   * - originInstitutionId: institución de origen
-   * - destinationCareerId: carrera destino
-   * - status: estado de la solicitud
+   * Filtros soportados (alineados con tabla transitabilidades):
+   * - studentId: id del estudiante (estudiante_id)
+   * - originInstitutionId: institución de origen (institucion_origen_id)
+   * - status: estado de la solicitud (estado)
    */
   buildWhereClause(filters) {
     const where = {};
@@ -58,9 +57,6 @@ export class TransitabilityRepository extends BaseRepository {
     }
     if (filters.originInstitutionId !== undefined) {
       where.institucionOrigenId = filters.originInstitutionId;
-    }
-    if (filters.destinationCareerId !== undefined) {
-      where.carreraDestinoId = filters.destinationCareerId;
     }
     if (filters.status !== undefined) {
       where.estado = filters.status;

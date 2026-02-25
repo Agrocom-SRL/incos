@@ -24,9 +24,6 @@ export class InstitutionMapper {
     if ('nombre' in dataValues) {
       specificFields.nombre = dataValues.nombre;
     }
-    if ('sigla' in dataValues) {
-      specificFields.sigla = dataValues.sigla;
-    }
     if ('tipo' in dataValues) {
       specificFields.tipo = dataValues.tipo;
     }
@@ -58,8 +55,7 @@ export class InstitutionMapper {
 
     return {
       nombre: data.nombre,
-      sigla: data.sigla ?? null,
-      tipo: data.tipo ?? 'OTRO',
+      tipo: data.tipo,
       dependencia: data.dependencia ?? null,
       codigoSie: data.codigoSie ?? null,
       departamentoId: data.departamentoId ?? null,
@@ -81,11 +77,8 @@ export class InstitutionMapper {
     if ('nombre' in data) {
       updateData.nombre = data.nombre;
     }
-    if ('sigla' in data) {
-      updateData.sigla = data.sigla ?? null;
-    }
     if ('tipo' in data) {
-      updateData.tipo = data.tipo ?? 'OTRO';
+      updateData.tipo = data.tipo;
     }
     if ('dependencia' in data) {
       updateData.dependencia = data.dependencia ?? null;

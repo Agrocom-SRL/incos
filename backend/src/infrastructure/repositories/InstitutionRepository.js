@@ -46,7 +46,7 @@ export class InstitutionRepository extends BaseRepository {
    *
    * Filtros soportados:
    * - name: nombre exacto
-   * - type: tipo de institución (UETHP, CEA, ITT, UNIVERSIDAD, OTRO)
+   * - type: tipo de institución (UETHP, CEA, ITT, UNIVERSIDAD)
    * - dependency: dependencia (FISCAL, CONVENIO, PRIVADO)
    * - sieCode: código SIE-UE
    * - departmentId: id de departamento
@@ -77,7 +77,7 @@ export class InstitutionRepository extends BaseRepository {
    * Campos usados en búsqueda de texto (search()).
    */
   getSearchFields() {
-    return ['nombre', 'sigla', 'codigoSie', 'distritoEducativo'];
+    return ['nombre', 'codigoSie', 'distritoEducativo'];
   }
 
   /**

@@ -44,12 +44,11 @@ export class TransferRepository extends BaseRepository {
   /**
    * WHERE específico para filtros de traspaso.
    *
-   * Filtros soportados:
-   * - studentId: id del estudiante
-   * - originInstitutionId: institución de origen
-   * - destinationCareerId: carrera destino
-   * - status: estado de la solicitud
-   * - yearCompleted: año cursado en origen (PRIMERO / SEGUNDO)
+   * Filtros soportados (alineados con tabla traspasos):
+   * - studentId: id del estudiante (estudiante_id)
+   * - originInstitutionId: institución de origen (institucion_origen_id)
+   * - status: estado de la solicitud (estado)
+   * - yearCompleted: año cursado en origen (anio_cursado: PRIMERO / SEGUNDO)
    */
   buildWhereClause(filters) {
     const where = {};
@@ -59,9 +58,6 @@ export class TransferRepository extends BaseRepository {
     }
     if (filters.originInstitutionId !== undefined) {
       where.institucionOrigenId = filters.originInstitutionId;
-    }
-    if (filters.destinationCareerId !== undefined) {
-      where.carreraDestinoId = filters.destinationCareerId;
     }
     if (filters.status !== undefined) {
       where.estado = filters.status;

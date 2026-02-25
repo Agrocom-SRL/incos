@@ -36,38 +36,17 @@ export class TransferMapper {
     if ('regimenOrigen' in dataValues) {
       specificFields.regimenOrigen = dataValues.regimenOrigen;
     }
-    if ('tieneActaCompromiso' in dataValues) {
-      specificFields.tieneActaCompromiso = dataValues.tieneActaCompromiso;
-    }
-    if ('fechaActaCompromiso' in dataValues) {
-      specificFields.fechaActaCompromiso = dataValues.fechaActaCompromiso;
-    }
     if ('estado' in dataValues) {
       specificFields.estado = dataValues.estado;
     }
     if ('fechaSolicitud' in dataValues) {
       specificFields.fechaSolicitud = dataValues.fechaSolicitud;
     }
-    if ('fechaResolucion' in dataValues) {
-      specificFields.fechaResolucion = dataValues.fechaResolucion;
-    }
-    if ('resueltoPor' in dataValues) {
-      specificFields.resueltoPor = dataValues.resueltoPor;
-    }
     if ('motivoNoProcedente' in dataValues) {
       specificFields.motivoNoProcedente = dataValues.motivoNoProcedente;
     }
     if ('observaciones' in dataValues) {
       specificFields.observaciones = dataValues.observaciones;
-    }
-    if ('carreraDestinoId' in dataValues) {
-      specificFields.carreraDestinoId = dataValues.carreraDestinoId;
-    }
-    if ('planEstudioDestinoId' in dataValues) {
-      specificFields.planEstudioDestinoId = dataValues.planEstudioDestinoId;
-    }
-    if ('periodoDestinoId' in dataValues) {
-      specificFields.periodoDestinoId = dataValues.periodoDestinoId;
     }
 
     const entityData = BaseMapper.combineBaseAndSpecificFields(model, specificFields);
@@ -89,17 +68,10 @@ export class TransferMapper {
       carreraOrigen: data.carreraOrigen,
       anioCursado: data.anioCursado,
       regimenOrigen: data.regimenOrigen ?? null,
-      tieneActaCompromiso: data.tieneActaCompromiso ?? false,
-      fechaActaCompromiso: data.fechaActaCompromiso ?? null,
       estado: data.estado ?? 'SOLICITADO',
       fechaSolicitud: data.fechaSolicitud ?? null,
-      fechaResolucion: data.fechaResolucion ?? null,
-      resueltoPor: data.resueltoPor ?? null,
       motivoNoProcedente: data.motivoNoProcedente ?? null,
       observaciones: data.observaciones ?? null,
-      carreraDestinoId: data.carreraDestinoId ?? null,
-      planEstudioDestinoId: data.planEstudioDestinoId ?? null,
-      periodoDestinoId: data.periodoDestinoId ?? null,
     };
   }
 
@@ -129,38 +101,17 @@ export class TransferMapper {
     if ('regimenOrigen' in data) {
       updateData.regimenOrigen = data.regimenOrigen ?? null;
     }
-    if ('tieneActaCompromiso' in data) {
-      updateData.tieneActaCompromiso = data.tieneActaCompromiso ?? false;
-    }
-    if ('fechaActaCompromiso' in data) {
-      updateData.fechaActaCompromiso = data.fechaActaCompromiso ?? null;
-    }
     if ('estado' in data) {
       updateData.estado = data.estado ?? 'SOLICITADO';
     }
     if ('fechaSolicitud' in data) {
       updateData.fechaSolicitud = data.fechaSolicitud ?? null;
     }
-    if ('fechaResolucion' in data) {
-      updateData.fechaResolucion = data.fechaResolucion ?? null;
-    }
-    if ('resueltoPor' in data) {
-      updateData.resueltoPor = data.resueltoPor ?? null;
-    }
     if ('motivoNoProcedente' in data) {
       updateData.motivoNoProcedente = data.motivoNoProcedente ?? null;
     }
     if ('observaciones' in data) {
       updateData.observaciones = data.observaciones ?? null;
-    }
-    if ('carreraDestinoId' in data) {
-      updateData.carreraDestinoId = data.carreraDestinoId ?? null;
-    }
-    if ('planEstudioDestinoId' in data) {
-      updateData.planEstudioDestinoId = data.planEstudioDestinoId ?? null;
-    }
-    if ('periodoDestinoId' in data) {
-      updateData.periodoDestinoId = data.periodoDestinoId ?? null;
     }
 
     const baseFields = BaseMapper.baseFieldsToModelForUpdate(entity);

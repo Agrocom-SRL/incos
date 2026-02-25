@@ -35,18 +35,6 @@ export const Transitabilidad = sequelize.define(
       allowNull: true,
       comment: 'Año de conclusión de estudios en la institución de origen',
     },
-    carreraDestinoId: {
-      type: DataTypes.INTEGER,
-      field: 'carrera_destino_id',
-      allowNull: true,
-      comment: 'Carrera del ITT (INCOS) a la que postula (referencia a carreras)',
-    },
-    planEstudioDestinoId: {
-      type: DataTypes.INTEGER,
-      field: 'plan_estudio_destino_id',
-      allowNull: true,
-      comment: 'Plan de estudios de la carrera destino en INCOS (referencia a planes_estudios)',
-    },
     regimenEstudios: {
       type: DataTypes.ENUM('SEMESTRAL', 'ANUAL'),
       field: 'regimen_estudios',
@@ -78,19 +66,7 @@ export const Transitabilidad = sequelize.define(
       type: DataTypes.DATEONLY,
       field: 'fecha_solicitud',
       allowNull: true,
-      comment: 'Fecha en que el postulante presentó la solicitud',
-    },
-    fechaResolucion: {
-      type: DataTypes.DATEONLY,
-      field: 'fecha_resolucion',
-      allowNull: true,
-      comment: 'Fecha en que la Dirección Académica emitió la resolución',
-    },
-    resueltoPor: {
-      type: DataTypes.INTEGER,
-      field: 'resuelto_por',
-      allowNull: true,
-      comment: 'Usuario que resolvió la solicitud (referencia a usuarios)',
+      comment: 'Fecha en que el postulante presentó la solicitud (sección 4), si se desea registrar',
     },
     motivoNoProcedente: {
       type: DataTypes.TEXT,

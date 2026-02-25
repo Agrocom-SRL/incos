@@ -16,17 +16,11 @@ export const Institucion = sequelize.define(
       allowNull: false,
       comment: 'Nombre completo de la institución',
     },
-    sigla: {
-      type: DataTypes.STRING(50),
-      allowNull: true,
-      comment: 'Sigla o código de la institución',
-    },
     tipo: {
-      type: DataTypes.ENUM('UETHP', 'CEA', 'ITT', 'UNIVERSIDAD', 'OTRO'),
+      type: DataTypes.ENUM('UETHP', 'CEA', 'ITT', 'UNIVERSIDAD'),
       allowNull: false,
-      defaultValue: 'OTRO',
       comment:
-        'Tipo de institución: UETHP (Unidad Educativa Técnica Humanística Plena), CEA (Centro de Educación Alternativa), ITT (Instituto Técnico y Tecnológico), UNIVERSIDAD, OTRO',
+        'Tipo de institución: UETHP (Unidad Educativa Técnica Humanística Plena), CEA (Centro de Educación Alternativa), ITT (Instituto Técnico y Tecnológico), UNIVERSIDAD',
     },
     dependencia: {
       type: DataTypes.ENUM('FISCAL', 'CONVENIO', 'PRIVADO'),

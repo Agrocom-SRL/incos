@@ -12,9 +12,6 @@ export class Institution extends BaseEntity {
     if (data.hasOwnProperty('nombre')) {
       this.nombre = data.nombre;
     }
-    if (data.hasOwnProperty('sigla')) {
-      this.sigla = data.sigla;
-    }
     if (data.hasOwnProperty('tipo')) {
       this.tipo = data.tipo;
     }
@@ -37,9 +34,6 @@ export class Institution extends BaseEntity {
 
     if (this.hasOwnProperty('nombre')) {
       plainObject.nombre = this.nombre;
-    }
-    if (this.hasOwnProperty('sigla')) {
-      plainObject.sigla = this.sigla;
     }
     if (this.hasOwnProperty('tipo')) {
       plainObject.tipo = this.tipo;

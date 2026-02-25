@@ -24,12 +24,6 @@ export class Transitability extends BaseEntity {
     if (data.hasOwnProperty('anioConclusion')) {
       this.anioConclusion = data.anioConclusion;
     }
-    if (data.hasOwnProperty('carreraDestinoId')) {
-      this.carreraDestinoId = data.carreraDestinoId;
-    }
-    if (data.hasOwnProperty('planEstudioDestinoId')) {
-      this.planEstudioDestinoId = data.planEstudioDestinoId;
-    }
     if (data.hasOwnProperty('regimenEstudios')) {
       this.regimenEstudios = data.regimenEstudios;
     }
@@ -44,12 +38,6 @@ export class Transitability extends BaseEntity {
     }
     if (data.hasOwnProperty('fechaSolicitud')) {
       this.fechaSolicitud = data.fechaSolicitud;
-    }
-    if (data.hasOwnProperty('fechaResolucion')) {
-      this.fechaResolucion = data.fechaResolucion;
-    }
-    if (data.hasOwnProperty('resueltoPor')) {
-      this.resueltoPor = data.resueltoPor;
     }
     if (data.hasOwnProperty('motivoNoProcedente')) {
       this.motivoNoProcedente = data.motivoNoProcedente;
@@ -78,12 +66,6 @@ export class Transitability extends BaseEntity {
     if (this.hasOwnProperty('anioConclusion')) {
       plainObject.anioConclusion = this.anioConclusion;
     }
-    if (this.hasOwnProperty('carreraDestinoId')) {
-      plainObject.carreraDestinoId = this.carreraDestinoId;
-    }
-    if (this.hasOwnProperty('planEstudioDestinoId')) {
-      plainObject.planEstudioDestinoId = this.planEstudioDestinoId;
-    }
     if (this.hasOwnProperty('regimenEstudios')) {
       plainObject.regimenEstudios = this.regimenEstudios;
     }
@@ -98,12 +80,6 @@ export class Transitability extends BaseEntity {
     }
     if (this.hasOwnProperty('fechaSolicitud')) {
       plainObject.fechaSolicitud = this.fechaSolicitud;
-    }
-    if (this.hasOwnProperty('fechaResolucion')) {
-      plainObject.fechaResolucion = this.fechaResolucion;
-    }
-    if (this.hasOwnProperty('resueltoPor')) {
-      plainObject.resueltoPor = this.resueltoPor;
     }
     if (this.hasOwnProperty('motivoNoProcedente')) {
       plainObject.motivoNoProcedente = this.motivoNoProcedente;

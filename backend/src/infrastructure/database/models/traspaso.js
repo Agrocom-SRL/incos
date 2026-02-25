@@ -22,13 +22,13 @@ export const Traspaso = sequelize.define(
       field: 'institucion_origen_id',
       allowNull: true,
       comment:
-        'ITT de origen donde el estudiante cursó estudios previos (referencia a instituciones)',
+        'ITT de origen donde el estudiante cursó estudios previos (referencia a instituciones; el nombre está en instituciones.nombre)',
     },
     carreraOrigen: {
       type: DataTypes.STRING(200),
       field: 'carrera_origen',
-      allowNull: false,
-      comment: 'Nombre de la carrera cursada en el ITT de origen',
+      allowNull: true,
+      comment: 'Nombre de la carrera cursada en el ITT de origen (opcional)',
     },
     anioCursado: {
       type: DataTypes.ENUM('PRIMERO', 'SEGUNDO'),
@@ -43,20 +43,6 @@ export const Traspaso = sequelize.define(
       allowNull: true,
       comment: 'Régimen de estudios en el ITT de origen: SEMESTRAL o ANUAL',
     },
-    tieneActaCompromiso: {
-      type: DataTypes.BOOLEAN,
-      field: 'tiene_acta_compromiso',
-      allowNull: false,
-      defaultValue: false,
-      comment:
-        'TRUE si se generó acta de compromiso por no presentar alguno de los últimos 3 documentos requeridos',
-    },
-    fechaActaCompromiso: {
-      type: DataTypes.DATEONLY,
-      field: 'fecha_acta_compromiso',
-      allowNull: true,
-      comment: 'Fecha en que se generó y firmó el acta de compromiso',
-    },
     estado: {
       type: DataTypes.ENUM('SOLICITADO', 'EN_REVISION', 'PROCEDENTE', 'NO_PROCEDENTE'),
       allowNull: false,
@@ -68,19 +54,7 @@ export const Traspaso = sequelize.define(
       type: DataTypes.DATEONLY,
       field: 'fecha_solicitud',
       allowNull: true,
-      comment: 'Fecha en que el postulante presentó la solicitud',
-    },
-    fechaResolucion: {
-      type: DataTypes.DATEONLY,
-      field: 'fecha_resolucion',
-      allowNull: true,
-      comment: 'Fecha en que la Dirección Académica emitió la resolución',
-    },
-    resueltoPor: {
-      type: DataTypes.INTEGER,
-      field: 'resuelto_por',
-      allowNull: true,
-      comment: 'Usuario (director académico) que resolvió la solicitud (referencia a usuarios)',
+      comment: 'Fecha en que el postulante presentó la solicitud, si se desea registrar',
     },
     motivoNoProcedente: {
       type: DataTypes.TEXT,
@@ -92,24 +66,6 @@ export const Traspaso = sequelize.define(
       type: DataTypes.TEXT,
       allowNull: true,
       comment: 'Observaciones adicionales de la revisión académica',
-    },
-    carreraDestinoId: {
-      type: DataTypes.INTEGER,
-      field: 'carrera_destino_id',
-      allowNull: true,
-      comment: 'Carrera en INCOS a la que ingresará si es Procedente (referencia a carreras)',
-    },
-    planEstudioDestinoId: {
-      type: DataTypes.INTEGER,
-      field: 'plan_estudio_destino_id',
-      allowNull: true,
-      comment: 'Plan de estudios en INCOS (referencia a planes_estudios)',
-    },
-    periodoDestinoId: {
-      type: DataTypes.INTEGER,
-      field: 'periodo_destino_id',
-      allowNull: true,
-      comment: 'Periodo académico al que ingresa en INCOS (referencia a periodos)',
     },
   },
   {

@@ -27,38 +27,17 @@ export class Transfer extends BaseEntity {
     if (data.hasOwnProperty('regimenOrigen')) {
       this.regimenOrigen = data.regimenOrigen;
     }
-    if (data.hasOwnProperty('tieneActaCompromiso')) {
-      this.tieneActaCompromiso = data.tieneActaCompromiso;
-    }
-    if (data.hasOwnProperty('fechaActaCompromiso')) {
-      this.fechaActaCompromiso = data.fechaActaCompromiso;
-    }
     if (data.hasOwnProperty('estado')) {
       this.estado = data.estado;
     }
     if (data.hasOwnProperty('fechaSolicitud')) {
       this.fechaSolicitud = data.fechaSolicitud;
     }
-    if (data.hasOwnProperty('fechaResolucion')) {
-      this.fechaResolucion = data.fechaResolucion;
-    }
-    if (data.hasOwnProperty('resueltoPor')) {
-      this.resueltoPor = data.resueltoPor;
-    }
     if (data.hasOwnProperty('motivoNoProcedente')) {
       this.motivoNoProcedente = data.motivoNoProcedente;
     }
     if (data.hasOwnProperty('observaciones')) {
       this.observaciones = data.observaciones;
-    }
-    if (data.hasOwnProperty('carreraDestinoId')) {
-      this.carreraDestinoId = data.carreraDestinoId;
-    }
-    if (data.hasOwnProperty('planEstudioDestinoId')) {
-      this.planEstudioDestinoId = data.planEstudioDestinoId;
-    }
-    if (data.hasOwnProperty('periodoDestinoId')) {
-      this.periodoDestinoId = data.periodoDestinoId;
     }
   }
 
@@ -84,38 +63,17 @@ export class Transfer extends BaseEntity {
     if (this.hasOwnProperty('regimenOrigen')) {
       plainObject.regimenOrigen = this.regimenOrigen;
     }
-    if (this.hasOwnProperty('tieneActaCompromiso')) {
-      plainObject.tieneActaCompromiso = this.tieneActaCompromiso;
-    }
-    if (this.hasOwnProperty('fechaActaCompromiso')) {
-      plainObject.fechaActaCompromiso = this.fechaActaCompromiso;
-    }
     if (this.hasOwnProperty('estado')) {
       plainObject.estado = this.estado;
     }
     if (this.hasOwnProperty('fechaSolicitud')) {
       plainObject.fechaSolicitud = this.fechaSolicitud;
     }
-    if (this.hasOwnProperty('fechaResolucion')) {
-      plainObject.fechaResolucion = this.fechaResolucion;
-    }
-    if (this.hasOwnProperty('resueltoPor')) {
-      plainObject.resueltoPor = this.resueltoPor;
-    }
     if (this.hasOwnProperty('motivoNoProcedente')) {
       plainObject.motivoNoProcedente = this.motivoNoProcedente;
     }
     if (this.hasOwnProperty('observaciones')) {
       plainObject.observaciones = this.observaciones;
-    }
-    if (this.hasOwnProperty('carreraDestinoId')) {
-      plainObject.carreraDestinoId = this.carreraDestinoId;
-    }
-    if (this.hasOwnProperty('planEstudioDestinoId')) {
-      plainObject.planEstudioDestinoId = this.planEstudioDestinoId;
-    }
-    if (this.hasOwnProperty('periodoDestinoId')) {
-      plainObject.periodoDestinoId = this.periodoDestinoId;
     }
 
     return plainObject;
