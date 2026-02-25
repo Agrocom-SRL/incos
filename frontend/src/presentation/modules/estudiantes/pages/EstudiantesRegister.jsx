@@ -15,7 +15,7 @@
  * - Organism maneja: funcionalidad (wizard, pasos, validación, guardado)
  */
 
-import { useMemo, useEffect, useRef, useCallback } from 'react';
+import { useMemo, useEffect, useRef, useCallback, useState } from 'react';
 import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import { Form } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
@@ -28,7 +28,6 @@ import {
   useStudentContext,
   useStudentDetailContext,
   useEstudianteGeographicFormLogic,
-  useEstudianteWizardTitles,
 } from '@application-estudiantes/hooks';
 import { mapEstudianteToForm } from '@application-estudiantes/mappers';
 import { 
@@ -39,6 +38,8 @@ import {
 import {
   EstudianteTipoAdmisionStepContent,
   EstudianteDatosAcademicosStepContent,
+  EstudianteTransitabilidadStepContent,
+  EstudianteTraspasoStepContent,
 } from '@estudiantes/components/organisms';
 
 const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
@@ -46,6 +47,10 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [form] = Form.useForm();
+
+  // Tipo de admisión usado solo para construir los pasos del wizard. Se actualiza al elegir tipo o al restaurar paso 0.
+  // Evita que re-renders (p. ej. saveStep0Values) hagan que wizardSteps pase de 5 a 4 pasos temporalmente.
+  const [tipoAdmisionForSteps, setTipoAdmisionForSteps] = useState('NUEVO');
   
   // Obtener parámetros de la URL
   const completarMode = searchParams.get('completar') === 'true';
@@ -244,6 +249,11 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
             gestionIngresoId: formData.gestionIngresoId,
             carreraId: formData.carreraId,
           });
+        }
+
+        // Sincronizar tipo para la lista de pasos (modo edición)
+        if (formData.tipoAdmision != null) {
+          setTipoAdmisionForSteps(formData.tipoAdmision);
         }
 
         // Si hay tipo de admisión, cargar gestiones según la modalidad
@@ -526,19 +536,17 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
     return 'Registrar Nueva Admisión';
   }, [isEditMode, completarMode]);
 
-  // Hook para obtener títulos dinámicos según el modo
-  const wizardTitles = useEstudianteWizardTitles(completarMode);
-
-  // Crear configuración de steps (4 pasos: Tipo+Datos académicos, Datos personales, Contacto emergencia, Documentación)
+  // Pasos visibles: 4 (NUEVO/ANTIGUO) o 5 (TRANSITABILIDAD o TRASPASO con paso dinámico de datos de tabla transitabilidades/traspasos)
   const wizardSteps = useMemo(() => {
-    const steps = createEstudianteWizardSteps(wizardTitles);
+    const allSteps = createEstudianteWizardSteps(completarMode);
+    // allSteps: [0]=Tipo+Datos académicos, [1]=Transitabilidad, [2]=Traspaso, [3]=Datos personales, [4]=Contacto, [5]=Documentación
 
     const camposDinamicos = createCamposContactosEmergenciaDinamicos(
       contactosIndices,
       eliminarContacto,
       agregarContacto
     );
-    const contactoEmergenciaStep = steps.find((step) =>
+    const contactoEmergenciaStep = allSteps.find((step) =>
       step.sections.includes('contactoEmergencia')
     );
     if (contactoEmergenciaStep?.config?.contactoEmergencia) {
@@ -564,30 +572,51 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
       ],
     };
     const camposCompletos = [...camposDocumentacion, subseccionObservaciones];
-    const documentacionStep = steps.find((step) =>
+    const documentacionStep = allSteps.find((step) =>
       step.sections.includes('documentacion')
     );
     if (documentacionStep?.config?.documentacion) {
       documentacionStep.config.documentacion.fields = camposCompletos;
     }
 
-    return steps;
-  }, [wizardTitles, contactosIndices, agregarContacto, eliminarContacto, documentacionProcesada]);
+    // Insertar paso dinámico solo para TRANSITABILIDAD o TRASPASO; NUEVO y ANTIGUO no lo muestran.
+    // Usamos tipoAdmisionForSteps (estado estable) y no Form.useWatch para evitar que un re-render
+    // devuelva 4 pasos por un instante y useWizard reseteé currentStep.
+    if (tipoAdmisionForSteps === 'TRANSITABILIDAD') {
+      return [allSteps[0], allSteps[1], allSteps[3], allSteps[4], allSteps[5]];
+    }
+    if (tipoAdmisionForSteps === 'TRASPASO') {
+      return [allSteps[0], allSteps[2], allSteps[3], allSteps[4], allSteps[5]];
+    }
+    return [allSteps[0], allSteps[3], allSteps[4], allSteps[5]];
+  }, [completarMode, tipoAdmisionForSteps, contactosIndices, agregarContacto, eliminarContacto, documentacionProcesada]);
 
-  // Validar paso 1: tipoAdmision obligatorio; si ANTIGUO/TRANSITABILIDAD/TRASPASO, gestión y carrera obligatorios
+  // Validar paso 1: tipoAdmision siempre; si ANTIGUO/TRANSITABILIDAD/TRASPASO también gestionIngresoId y carreraId.
   const onValidateBeforeNext = useCallback((stepNumber, formInstance) => {
-    if (stepNumber !== 1) return Promise.resolve();
-    return formInstance.validateFields(['tipoAdmision']).then(() => {
-      const tipo = formInstance.getFieldValue('tipoAdmision');
-      const requiereGestionCarrera =
-        tipo === 'ANTIGUO' || tipo === 'TRANSITABILIDAD' || tipo === 'TRASPASO';
-      if (requiereGestionCarrera) {
-        return formInstance.validateFields(['gestionIngresoId', 'carreraId']);
-      }
-    });
+    if (stepNumber === 1) {
+      return formInstance
+        .validateFields(['tipoAdmision'])
+        .then(() => {
+          const tipo = formInstance.getFieldValue('tipoAdmision');
+          const requiereGestionCarrera =
+            tipo === 'ANTIGUO' || tipo === 'TRANSITABILIDAD' || tipo === 'TRASPASO';
+          if (requiereGestionCarrera) {
+            return formInstance.validateFields(['gestionIngresoId', 'carreraId']);
+          }
+        });
+    }
+    const stepConfig = wizardSteps[stepNumber - 1];
+    if (stepConfig?.sections?.includes('transitabilidad') || stepConfig?.sections?.includes('traspaso')) {
+      return Promise.resolve();
+    }
+    return Promise.resolve();
+  }, [wizardSteps]);
+
+  const onValidationError = useCallback((_err) => {
+    // Opcional: mostrar mensaje o log cuando falla la validación antes de Siguiente
   }, []);
 
-  // Preservar valores del paso 1 (tipo admisión, gestión, carrera) al salir de ese paso
+  // Preservar tipo admisión, gestión y carrera al salir del paso 1
   const onBeforeNextStep = useCallback((stepNumber, formInstance) => {
     if (stepNumber === 1 && saveStep0Values && formInstance) {
       const values = formInstance.getFieldsValue(true);
@@ -599,11 +628,14 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
     }
   }, [saveStep0Values]);
 
-  // Restaurar valores del paso 1 al volver desde el paso 2
+  // Restaurar valores del paso 1 al volver (cuando el paso anterior es Tipo+Datos académicos)
   const onBeforePrevStep = useCallback((stepNumber, formInstance) => {
     if (stepNumber === 2 && getStep0Values && formInstance) {
       const step1Values = getStep0Values();
       if (step1Values && typeof step1Values === 'object' && Object.keys(step1Values).length > 0) {
+        if (step1Values.tipoAdmision != null) {
+          setTipoAdmisionForSteps(step1Values.tipoAdmision);
+        }
         formInstance.setFieldsValue(step1Values);
       }
     }
@@ -621,15 +653,15 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
     { title: pageTitle },
   ], [pageTitle]);
 
-  // Contenido custom del paso 0 (Tipo de admisión + Datos académicos iniciales cuando aplica)
+  // Contenido custom: paso 0 (Tipo + Datos académicos) y paso dinámico Transitabilidad/Traspaso
   const renderSectionContent = useCallback(
     (stepIndex, sectionKey, section, formInstance) => {
-      if (stepIndex !== 0) return null;
       if (sectionKey === 'tipoAdmision') {
         return (
           <EstudianteTipoAdmisionStepContent
             form={formInstance}
             onTipoAdmisionChange={(tipoAdmision) => {
+              setTipoAdmisionForSteps(tipoAdmision ?? 'NUEVO');
               if (tipoAdmision && typeof cargarGestiones === 'function') {
                 cargarGestiones(tipoAdmision);
               }
@@ -650,6 +682,12 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
             gestionesError={gestionesError}
           />
         );
+      }
+      if (sectionKey === 'transitabilidad') {
+        return <EstudianteTransitabilidadStepContent form={formInstance} section={section} />;
+      }
+      if (sectionKey === 'traspaso') {
+        return <EstudianteTraspasoStepContent form={formInstance} section={section} />;
       }
       return null;
     },
@@ -703,6 +741,7 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
         onValidateBeforeNext={onValidateBeforeNext}
         onBeforeNextStep={onBeforeNextStep}
         onBeforePrevStep={onBeforePrevStep}
+        onValidationError={onValidationError}
         renderSectionContent={renderSectionContent}
         carreras={carreras}
         gestiones={gestiones}

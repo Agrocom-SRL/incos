@@ -15,7 +15,7 @@
  * Uso: Solo dentro del componente WizardForm
  */
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 
 /**
  * Hook para manejar la navegación de un wizard/stepper
@@ -26,6 +26,7 @@ import { useState, useCallback, useEffect } from 'react';
  */
 export const useWizard = (initialStep = 0, totalSteps = 0) => {
   const [currentStep, setCurrentStep] = useState(initialStep);
+  const prevTotalStepsRef = useRef(totalSteps);
 
   // Sincronizar currentStep con initialStep cuando cambia (útil cuando el estudiante se carga después)
   useEffect(() => {
@@ -34,14 +35,19 @@ export const useWizard = (initialStep = 0, totalSteps = 0) => {
     }
   }, [initialStep, totalSteps]);
 
+  // Si el número de pasos disminuye: solo ajustar currentStep si queda fuera de rango (clamp).
+  // No resetear siempre a 0, porque con steps dinámicos el padre puede re-renderizar y totalSteps
+  // puede bajar temporalmente (ej. tipoAdmision leído en otro tick) y luego volver a subir.
+  useEffect(() => {
+    if (totalSteps < prevTotalStepsRef.current) {
+      setCurrentStep((prev) => Math.min(prev, Math.max(0, totalSteps - 1)));
+    }
+    prevTotalStepsRef.current = totalSteps;
+  }, [totalSteps]);
+
   // Avanzar al siguiente paso
   const next = useCallback(() => {
-    setCurrentStep((prev) => {
-      if (prev < totalSteps - 1) {
-        return prev + 1;
-      }
-      return prev;
-    });
+    setCurrentStep((prev) => (prev < totalSteps - 1 ? prev + 1 : prev));
   }, [totalSteps]);
 
   // Retroceder al paso anterior
