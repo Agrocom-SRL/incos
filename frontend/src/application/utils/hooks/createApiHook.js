@@ -115,10 +115,10 @@ export const createApiHook = ({
     // Inicializar los setters optimizados una sola vez
     if (!optimizedSetDataRef.current) {
       // Seleccionar el setter optimizado según el tipo de dato
-      const setterFactory = dataType === 'array' 
-        ? createOptimizedArraySetter 
+      const setterFactory = dataType === 'array'
+        ? createOptimizedArraySetter
         : createOptimizedObjectSetter;
-      
+
       optimizedSetDataRef.current = setterFactory(setData);
       optimizedSetLoadingRef.current = createOptimizedPrimitiveSetter(setLoading);
       optimizedSetErrorRef.current = createOptimizedPrimitiveSetter(setError);
@@ -168,7 +168,7 @@ export const createApiHook = ({
 
         // 5. Si hay éxito, mapear (si existe mapper) y actualizar el estado
         let finalData = result.data;
-        
+
         // Aplicar mapper si existe
         if (mapper) {
           finalData = mapper(finalData);
@@ -211,12 +211,18 @@ export const createApiHook = ({
     }, [autoFetch]); // fetch es estable (no cambia), autoFetchArgs se pasa como prop estática
 
     /**
-     * Función para recargar los datos manualmente
-     * Es un alias de fetch para mantener consistencia con otros hooks
+     * Función para recargar los datos manualmente.
+     * Si se llama sin argumentos y existe autoFetchArgs, usa esos argumentos
+     * (así la recarga obtiene el mismo conjunto de datos que la carga inicial).
      */
     const refetch = useCallback(async (...args) => {
-      await fetch(...args);
-    }, [fetch]);
+      if (args.length === 0 && autoFetchArgs !== undefined) {
+        const argsToUse = Array.isArray(autoFetchArgs) ? autoFetchArgs : [autoFetchArgs];
+        await fetch(...argsToUse);
+      } else {
+        await fetch(...args);
+      }
+    }, [fetch, autoFetchArgs]);
 
     // Construir el objeto de resultado
     const result = {

@@ -30,7 +30,7 @@ export const useInscripcionesApi = createApiHook({
   dataType: 'array', // Retorna un array
   initialLoading: false, // No carga automáticamente al montar
   autoFetch: true, // Carga automáticamente al montar
-  autoFetchArgs: {}, // Argumentos para el auto-fetch
+  autoFetchArgs: [{ params: { page: 1, limit: 10000 } }], // Traer todos los registros (búsqueda/filtro en cliente)
   dataKey: 'inscripciones', // Nombre de la propiedad en el resultado
   errorMessage: 'Error al cargar las inscripciones',
 });
