@@ -19,5 +19,3 @@ export { default as DocumentDeliveriesSection } from './DocumentDeliveriesSectio
 export { default as ScholarshipsSection } from './ScholarshipsSection';
 export { default as EstudianteTipoAdmisionStepContent } from './EstudianteTipoAdmisionStepContent';
 export { default as EstudianteDatosAcademicosStepContent } from './EstudianteDatosAcademicosStepContent';
-export { default as EstudianteTransitabilidadStepContent } from './EstudianteTransitabilidadStepContent';
-export { default as EstudianteTraspasoStepContent } from './EstudianteTraspasoStepContent';

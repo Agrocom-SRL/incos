@@ -111,6 +111,7 @@ export const StudentRegisterProvider = ({ children, mode = 'create', studentId =
         ...referenceData,
         gestiones, // Gestiones académicas (solo se cargan cuando tipo es ANTIGUO, gestiones no vigentes)
         carreras, // Carreras académicas
+        instituciones: catalogData.instituciones || [], // Instituciones de origen (para paso Traspaso)
     }), [catalogData, geographicData, referenceData, gestiones, carreras]);
 
     // Hook especializado: transformar datos a opciones de formulario
@@ -118,6 +119,7 @@ export const StudentRegisterProvider = ({ children, mode = 'create', studentId =
 
     // Obtener documentación del catálogo (no de referenceData)
     const documentacion = catalogData.documentacion || [];
+    const documentacionTraspaso = catalogData.documentacionTraspaso || [];
 
     // Hook especializado: manejar handlers de submit y gestión del formulario
     // Este hook usa useRegisterStudent o useUpdateStudent según el modo
@@ -133,7 +135,11 @@ export const StudentRegisterProvider = ({ children, mode = 'create', studentId =
       documentacion, 
       formRef // Se pasa pero no se usa para observación
     );
-    
+    const { documentacion: documentacionTraspasoProcesada } = useDocumentacionProcesada(
+      documentacionTraspaso,
+      formRef
+    );
+
     // NOTA: useStudentFormHandlers se llama con array vacío inicialmente, pero tiene un ref interno
     // que se actualiza cuando documentacionProcesada cambia. Sin embargo, como se pasa como parámetro
     // vacío, el useEffect interno no se ejecutará cuando documentacionProcesada esté disponible.
@@ -184,8 +190,9 @@ export const StudentRegisterProvider = ({ children, mode = 'create', studentId =
             contactosIndices,
             agregarContacto,
             eliminarContacto,
-            // Documentación procesada
+            // Documentación procesada (INSCRIPCION y TRASPASO para step Documentación)
             documentacionProcesada,
+            documentacionTraspasoProcesada,
             // Exponer funciones de carga bajo demanda
             loadDiscapacidades: referenceData.loadDiscapacidades,
             loadTiposParentesco: referenceData.loadTiposParentesco,
@@ -220,6 +227,7 @@ export const StudentRegisterProvider = ({ children, mode = 'create', studentId =
             prev.agregarContacto === current.agregarContacto &&
             prev.eliminarContacto === current.eliminarContacto &&
             prev.documentacionProcesada === current.documentacionProcesada &&
+            prev.documentacionTraspasoProcesada === current.documentacionTraspasoProcesada &&
             prev.loadDiscapacidades === current.loadDiscapacidades &&
             prev.loadTiposParentesco === current.loadTiposParentesco &&
             prev.loadDepartamentos === current.loadDepartamentos &&
@@ -231,7 +239,7 @@ export const StudentRegisterProvider = ({ children, mode = 'create', studentId =
 
         prevValueRef.current = current;
         return current;
-    }, [contextData, resolveOptions, finalHandlers, contactosIndices, agregarContacto, eliminarContacto, documentacionProcesada, referenceData.loadDiscapacidades, referenceData.loadTiposParentesco, geographicData.loadDepartamentos, geographicData.loadProvincias, geographicData.loadMunicipios]);
+    }, [contextData, resolveOptions, finalHandlers, contactosIndices, agregarContacto, eliminarContacto, documentacionProcesada, documentacionTraspasoProcesada, referenceData.loadDiscapacidades, referenceData.loadTiposParentesco, geographicData.loadDepartamentos, geographicData.loadProvincias, geographicData.loadMunicipios]);
 
     return (
         <StudentRegisterContext.Provider value={value}>

@@ -38,8 +38,6 @@ import {
 import {
   EstudianteTipoAdmisionStepContent,
   EstudianteDatosAcademicosStepContent,
-  EstudianteTransitabilidadStepContent,
-  EstudianteTraspasoStepContent,
 } from '@estudiantes/components/organisms';
 
 const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
@@ -104,7 +102,8 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
     
     // Documentación procesada (expuesta desde el provider)
     documentacionProcesada = [],
-    
+    documentacionTraspasoProcesada = [],
+
     // Funciones de carga bajo demanda
     loadDiscapacidades,
     loadTiposParentesco,
@@ -553,7 +552,15 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
       contactoEmergenciaStep.config.contactoEmergencia.fields = camposDinamicos;
     }
 
-    const camposDocumentacion = createCamposDocumentacionDinamicos(documentacionProcesada);
+    // Cuando tipo es TRASPASO, el step Documentación muestra: 2 docs TRASPASO + Carnet/Cert.Nacimiento/Diploma (ids 3,2,1)
+    const documentacionParaStep =
+      tipoAdmisionForSteps === 'TRASPASO'
+        ? [
+            ...(documentacionTraspasoProcesada || []),
+            ...(documentacionProcesada || []).filter((d) => [1, 2, 3].includes(d.id)),
+          ]
+        : documentacionProcesada;
+    const camposDocumentacion = createCamposDocumentacionDinamicos(documentacionParaStep);
     const subseccionObservaciones = {
       type: 'subsection',
       subsectionTitle: 'Observaciones del Estudiante',
@@ -589,7 +596,7 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
       return [allSteps[0], allSteps[2], allSteps[3], allSteps[4], allSteps[5]];
     }
     return [allSteps[0], allSteps[3], allSteps[4], allSteps[5]];
-  }, [completarMode, tipoAdmisionForSteps, contactosIndices, agregarContacto, eliminarContacto, documentacionProcesada]);
+  }, [completarMode, tipoAdmisionForSteps, contactosIndices, agregarContacto, eliminarContacto, documentacionProcesada, documentacionTraspasoProcesada]);
 
   // Validar paso 1: tipoAdmision siempre; si ANTIGUO/TRANSITABILIDAD/TRASPASO también gestionIngresoId y carreraId.
   const onValidateBeforeNext = useCallback((stepNumber, formInstance) => {
@@ -683,12 +690,7 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
           />
         );
       }
-      if (sectionKey === 'transitabilidad') {
-        return <EstudianteTransitabilidadStepContent form={formInstance} section={section} />;
-      }
-      if (sectionKey === 'traspaso') {
-        return <EstudianteTraspasoStepContent form={formInstance} section={section} />;
-      }
+      // Paso Transitabilidad y Traspaso: se renderizan con FormSection/FormField vía config (estudianteTransitabilidadFields / estudianteTraspasoFields)
       return null;
     },
     [

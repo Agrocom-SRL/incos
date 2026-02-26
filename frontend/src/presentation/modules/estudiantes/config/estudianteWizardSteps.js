@@ -17,6 +17,8 @@ import { createEstudianteContactoFields } from './estudianteContactoFields';
 import { createEstudianteGeograficosFields } from './estudianteGeograficosFields';
 import { createEstudianteDiscapacidadFields } from './estudianteDiscapacidadFields';
 import { createEstudianteContactoEmergenciaFields } from './estudianteContactoEmergenciaFields';
+import { createEstudianteTransitabilidadFields } from './estudianteTransitabilidadFields';
+import { createEstudianteTraspasoFields } from './estudianteTraspasoFields';
 
 const BASE_TITLES = {
   step0: {
@@ -96,6 +98,9 @@ export const createEstudianteWizardSteps = (completarMode = false) => {
   const estudianteContactoEmergenciaFields = createEstudianteContactoEmergenciaFields();
   const contactoEmergenciaFields = estudianteContactoEmergenciaFields.contactoEmergencia;
 
+  const transitabilidadFields = createEstudianteTransitabilidadFields();
+  const traspasoFields = createEstudianteTraspasoFields();
+
   return [
     // STEP 0: Tipo de Admisión + Datos Académicos Iniciales (gestión y carrera se muestran en este mismo paso cuando tipo es ANTIGUO/TRANSITABILIDAD/TRASPASO)
     {
@@ -116,28 +121,26 @@ export const createEstudianteWizardSteps = (completarMode = false) => {
         },
       },
     },
-    // STEP opcional: Datos de Transitabilidad (tabla transitabilidades). Solo visible cuando tipoAdmision === 'TRANSITABILIDAD'. La página filtra este paso.
+    // STEP opcional: Datos de Transitabilidad (tabla instituciones + transitabilidades). Solo visible cuando tipoAdmision === 'TRANSITABILIDAD'.
+    // Misma estructura que Traspaso: FormSection/FormField desde config (estudianteTransitabilidadFields).
     {
       title: titles.stepTransitabilidad.title,
       formTitle: titles.stepTransitabilidad.formTitle,
-      sections: ['transitabilidad'],
+      sections: ['formacionAcademica', 'cumplimientoRequisitos'],
       config: {
-        transitabilidad: {
-          title: titles.stepTransitabilidad.sectionTitle,
-          fields: [], // Se renderiza con EstudianteTransitabilidadStepContent (formulario tabla transitabilidades)
-        },
+        formacionAcademica: transitabilidadFields.formacionAcademica,
+        cumplimientoRequisitos: transitabilidadFields.cumplimientoRequisitos,
       },
     },
     // STEP opcional: Datos de Traspaso (tabla traspasos). Solo visible cuando tipoAdmision === 'TRASPASO'. La página filtra este paso.
+    // Usa FormSection/FormField como el resto de steps (config en estudianteTraspasoFields).
     {
       title: titles.stepTraspaso.title,
       formTitle: titles.stepTraspaso.formTitle,
-      sections: ['traspaso'],
+      sections: ['formacionAcademica', 'cumplimientoRequisitos'],
       config: {
-        traspaso: {
-          title: titles.stepTraspaso.sectionTitle,
-          fields: [], // Se renderiza con EstudianteTraspasoStepContent (formulario tabla traspasos)
-        },
+        formacionAcademica: traspasoFields.formacionAcademica,
+        cumplimientoRequisitos: traspasoFields.cumplimientoRequisitos,
       },
     },
     // STEP 1: Datos Personales

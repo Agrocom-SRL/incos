@@ -40,6 +40,7 @@ const studentMappers = {
   tiposParentesco: (data) => transformGeneric('generic', data),
   gestiones: (data) => transformGeneric('generic', data), // Gestiones académicas
   carreras: (data) => transformGeneric('generic', data), // Carreras académicas
+  instituciones: (data) => transformGeneric('generic', data), // Instituciones de origen (traspaso)
   departamentos: (data) => transformGeneric('generic', data),
   provincias: (data) => transformGeneric('generic', data),
   provinciasResidencia: (data) => transformGeneric('generic', data),
@@ -104,6 +105,7 @@ export const useStudentFormOptions = (contextData) => {
     tiposParentesco = [],
     gestiones = [], // Todas las gestiones académicas (se filtran según tipo de admisión)
     carreras = [], // Carreras académicas
+    instituciones = [], // Instituciones de origen (para traspaso)
     departamentos = [],
     provincias = [], // Para origen (primera nacionalidad)
     provinciasResidencia = [], // Para residencia
@@ -134,6 +136,7 @@ export const useStudentFormOptions = (contextData) => {
         tiposParentesco,
         gestiones, // Gestiones académicas vigentes (por defecto)
         carreras, // Carreras académicas
+        instituciones, // Instituciones de origen (traspaso)
         departamentos,
         provincias, // Para origen (primera nacionalidad)
         provinciasResidencia, // Para residencia
@@ -169,7 +172,7 @@ export const useStudentFormOptions = (contextData) => {
 
       return transformToOptions(key, data);
     };
-  }, [expediciones, generos, paises, idiomas, estadosCiviles, tiposSangre, discapacidades, gradosDiscapacidad, tiposOrigen, tiposParentesco, gestiones, carreras, departamentos, provincias, provinciasResidencia, segundaProvincias, municipios, municipiosResidencia, segundaMunicipios]);
+  }, [expediciones, generos, paises, idiomas, estadosCiviles, tiposSangre, discapacidades, gradosDiscapacidad, tiposOrigen, tiposParentesco, gestiones, carreras, instituciones, departamentos, provincias, provinciasResidencia, segundaProvincias, municipios, municipiosResidencia, segundaMunicipios]);
 
   return resolveOptions;
 };
