@@ -552,18 +552,25 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
       contactoEmergenciaStep.config.contactoEmergencia.fields = camposDinamicos;
     }
 
-    // Cuando tipo es TRASPASO, el step Documentación muestra: docs TRASPASO + Carnet/Cert.Nacimiento/Diploma (ids 1,2,3).
-    // Evitar duplicados por id: si documentacionTraspasoProcesada ya incluye 1,2,3 no volver a añadirlos desde documentacionProcesada.
+    // Documentación según tipo de admisión:
+    // - TRASPASO: docs TRASPASO + Carnet/Cert.Nacimiento/Diploma (ids 1,2,3). Sin duplicados por id.
+    // - NUEVO/ANTIGUO/TRANSITABILIDAD: solo documentos que NO son de traspaso (tipoDocumento !== 'TRASPASO').
     const documentacionParaStep = (() => {
-      if (tipoAdmisionForSteps !== 'TRASPASO') {
-        return documentacionProcesada;
+      if (tipoAdmisionForSteps === 'TRASPASO') {
+        const traspaso = documentacionTraspasoProcesada || [];
+        const idsEnTraspaso = new Set(traspaso.map((d) => d.id));
+        const comunes = (documentacionProcesada || []).filter(
+          (d) => [1, 2, 3].includes(d.id) && !idsEnTraspaso.has(d.id)
+        );
+        return [...traspaso, ...comunes];
       }
-      const traspaso = documentacionTraspasoProcesada || [];
-      const idsEnTraspaso = new Set(traspaso.map((d) => d.id));
-      const comunes = (documentacionProcesada || []).filter(
-        (d) => [1, 2, 3].includes(d.id) && !idsEnTraspaso.has(d.id)
+      // Solo mostrar documentos que no son de traspaso (inscripción, etc.)
+      // Filtrar por tipoDocumento o por ids conocidos de traspaso (8, 9) por si el API no envía tipo
+      const lista = documentacionProcesada || [];
+      const idsTraspaso = [8, 9];
+      return lista.filter(
+        (d) => d.tipoDocumento !== 'TRASPASO' && !idsTraspaso.includes(Number(d.id))
       );
-      return [...traspaso, ...comunes];
     })();
     const camposDocumentacion = createCamposDocumentacionDinamicos(documentacionParaStep);
     const subseccionObservaciones = {

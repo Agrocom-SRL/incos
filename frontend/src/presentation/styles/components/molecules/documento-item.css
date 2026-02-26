@@ -40,3 +40,27 @@
   line-height: 1;
   flex-shrink: 0;
 }
+
+/* Wrapper del indicador fotocopia: una línea propia para que no se apriete con "En trámite" */
+.documento-item__fotocopia-wrap {
+  margin-bottom: var(--spacing-xs);
+}
+
+/* Indicador "Se acepta Fotocopia": etiqueta horizontal (icono + texto), no circular */
+.documento-item__fotocopia-badge {
+  border-radius: 6px !important;
+  white-space: nowrap;
+  width: fit-content;
+  display: inline-flex !important;
+}
+
+.documento-item__fotocopia-badge .badge-icon .anticon,
+.documento-item__fotocopia-badge .badge-icon [class*="anticon"] {
+  font-size: 14px !important;
+}
+
+@media (max-width: 575.98px) {
+  .documento-item__fotocopia-badge {
+    font-size: var(--font-size-xs);
+  }
+}
