@@ -59,6 +59,9 @@ export function registerEstudiantesResource(container) {
                 managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
                 contributionConfigurationRepository: c.resolve(REPOSITORIOS_TOKENS.contributionConfigurationRepository),
                 studentAcademicDataRepository: c.resolve(REPOSITORIOS_TOKENS.studentAcademicDataRepository),
+                institutionRepository: c.resolve(REPOSITORIOS_TOKENS.institutionRepository),
+                transitabilityRepository: c.resolve(REPOSITORIOS_TOKENS.transitabilityRepository),
+                transferRepository: c.resolve(REPOSITORIOS_TOKENS.transferRepository),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
     );

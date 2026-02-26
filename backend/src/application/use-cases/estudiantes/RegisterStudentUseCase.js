@@ -35,11 +35,14 @@ export class RegisterStudentUseCase {
    * @param {Object} params.studentOriginRepository - Repositorio de orígenes
    * @param {Object} params.studentDocumentDeliveryRepository - Repositorio de entregas de documentos
    * @param {Object} params.configuracionSistemaRepository - Repositorio de configuración del sistema
- * @param {Object} params.contributionPaymentRepository - Repositorio de cabecera de aporte (pago_aporte)
- * @param {Object} params.managementRepository - Repositorio de gestiones académicas
- * @param {Object} params.contributionConfigurationRepository - Repositorio de configuración de aportes por gestión
- * @param {Object} params.studentAcademicDataRepository - Repositorio de datos académicos del estudiante
- * @param {ILogger} params.logger - Logger para registro de eventos
+   * @param {Object} params.contributionPaymentRepository - Repositorio de cabecera de aporte (pago_aporte)
+   * @param {Object} params.managementRepository - Repositorio de gestiones académicas
+   * @param {Object} params.contributionConfigurationRepository - Repositorio de configuración de aportes por gestión
+   * @param {Object} params.studentAcademicDataRepository - Repositorio de datos académicos del estudiante
+   * @param {Object} params.institutionRepository - Repositorio de instituciones (origen UETHP/CEA/ITT)
+   * @param {Object} params.transitabilityRepository - Repositorio de transitabilidades
+   * @param {Object} params.transferRepository - Repositorio de traspasos
+   * @param {ILogger} params.logger - Logger para registro de eventos
  */
   constructor({
     studentRepository,
@@ -52,6 +55,9 @@ export class RegisterStudentUseCase {
     managementRepository,
     contributionConfigurationRepository,
     studentAcademicDataRepository,
+    institutionRepository,
+    transitabilityRepository,
+    transferRepository,
     logger,
   }) {
     this.studentRepository = studentRepository;
@@ -64,6 +70,9 @@ export class RegisterStudentUseCase {
     this.managementRepository = managementRepository;
     this.contributionConfigurationRepository = contributionConfigurationRepository;
     this.studentAcademicDataRepository = studentAcademicDataRepository;
+    this.institutionRepository = institutionRepository;
+    this.transitabilityRepository = transitabilityRepository;
+    this.transferRepository = transferRepository;
     this.logger = logger;
   }
 
@@ -275,6 +284,187 @@ export class RegisterStudentUseCase {
   }
 
   /**
+   * Crea (o reutiliza) la institución de origen y el registro de transitabilidad
+   * para estudiantes con tipo de admisión TRANSITABILIDAD.
+   *
+   * No lanza error si faltan datos mínimos; simplemente no crea el registro
+   * para no interrumpir el flujo de registro.
+   *
+   * @param {Object} student - Entidad Student recién creada
+   * @param {Object|null} transitability - Datos específicos de transitabilidad desde el DTO
+   */
+  async _createTransitabilityIfNeeded(student, transitability) {
+    if (
+      !this.institutionRepository ||
+      !this.transitabilityRepository ||
+      !student ||
+      !transitability
+    ) {
+      return null;
+    }
+
+    const {
+      institucionNombre,
+      codigoSie,
+      tipoInstitucion,
+      dependencia,
+      departamentoId,
+      distritoEducativo,
+      carreraOrigen,
+      anioConclusion,
+      estado,
+      motivoNoProcedente,
+    } = transitability;
+
+    // Datos mínimos requeridos para crear transitabilidad
+    if (!institucionNombre || !tipoInstitucion) {
+      this.logger.warn(
+        '[Estudiantes] Datos de transitabilidad incompletos; se omite creación de registro',
+        {
+          studentId: student.id,
+        }
+      );
+      return null;
+    }
+
+    // 1. Buscar o crear institución de origen (UETHP / CEA)
+    const where = {
+      nombre: institucionNombre,
+      tipo: tipoInstitucion,
+    };
+    if (dependencia) where.dependencia = dependencia;
+    if (departamentoId) where.departamentoId = departamentoId;
+    if (distritoEducativo) where.distritoEducativo = distritoEducativo;
+    if (codigoSie) where.codigoSie = codigoSie;
+
+    let institution = await this.institutionRepository.findBy(where);
+    if (!institution) {
+      const institutionToCreate = {
+        nombre: institucionNombre,
+        tipo: tipoInstitucion,
+        dependencia: dependencia || null,
+        codigoSie: codigoSie || null,
+        departamentoId: departamentoId || null,
+        distritoEducativo: distritoEducativo || null,
+      };
+      institution = await this.institutionRepository.create(institutionToCreate);
+    }
+
+    const institutionPlain = institution.toPlainObject
+      ? institution.toPlainObject()
+      : institution;
+    const institucionOrigenId = institutionPlain.id;
+
+    // 2. Crear registro en transitabilidades
+    const transitabilityToCreate = {
+      estudianteId: student.id,
+      institucionOrigenId,
+      carreraOrigen: carreraOrigen || null,
+      anioConclusion: anioConclusion || null,
+      estado: estado || 'SOLICITADO',
+      motivoNoProcedente: motivoNoProcedente || null,
+    };
+
+    const transitabilityRecord = await this.transitabilityRepository.create(
+      transitabilityToCreate
+    );
+    this.logger.info('[Estudiantes] Registro de transitabilidad creado', {
+      studentId: student.id,
+      transitabilityId:
+        transitabilityRecord.id ??
+        transitabilityRecord.toPlainObject?.().id ??
+        null,
+    });
+
+    return transitabilityRecord;
+  }
+
+  /**
+   * Crea (o reutiliza) la institución de origen y el registro de traspaso
+   * para estudiantes con tipo de admisión TRASPASO.
+   *
+   * No lanza error si faltan datos mínimos; simplemente no crea el registro
+   * para no interrumpir el flujo de registro.
+   *
+   * @param {Object} student - Entidad Student recién creada
+   * @param {Object|null} transfer - Datos específicos de traspaso desde el DTO
+   */
+  async _createTransferIfNeeded(student, transfer) {
+    if (!this.institutionRepository || !this.transferRepository || !student || !transfer) {
+      return null;
+    }
+
+    const {
+      institucionNombre,
+      dependencia,
+      departamentoId,
+      distritoEducativo,
+      carreraOrigen,
+      anioCursado,
+      regimenOrigen,
+      estado,
+      motivoNoProcedente,
+    } = transfer;
+
+    // Datos mínimos requeridos para crear traspaso
+    if (!institucionNombre) {
+      this.logger.warn(
+        '[Estudiantes] Datos de traspaso incompletos; se omite creación de registro',
+        {
+          studentId: student.id,
+        }
+      );
+      return null;
+    }
+
+    // 1. Buscar o crear institución de origen (ITT)
+    const where = {
+      nombre: institucionNombre,
+      tipo: 'ITT',
+    };
+    if (dependencia) where.dependencia = dependencia;
+    if (departamentoId) where.departamentoId = departamentoId;
+    if (distritoEducativo) where.distritoEducativo = distritoEducativo;
+
+    let institution = await this.institutionRepository.findBy(where);
+    if (!institution) {
+      const institutionToCreate = {
+        nombre: institucionNombre,
+        tipo: 'ITT',
+        dependencia: dependencia || null,
+        codigoSie: null,
+        departamentoId: departamentoId || null,
+        distritoEducativo: distritoEducativo || null,
+      };
+      institution = await this.institutionRepository.create(institutionToCreate);
+    }
+
+    const institutionPlain = institution.toPlainObject
+      ? institution.toPlainObject()
+      : institution;
+    const institucionOrigenId = institutionPlain.id;
+
+    // 2. Crear registro en traspasos
+    const transferToCreate = {
+      estudianteId: student.id,
+      institucionOrigenId,
+      carreraOrigen: carreraOrigen || null,
+      anioCursado: anioCursado || null,
+      regimenOrigen: regimenOrigen || null,
+      estado: estado || 'SOLICITADO',
+      motivoNoProcedente: motivoNoProcedente || null,
+    };
+
+    const transferRecord = await this.transferRepository.create(transferToCreate);
+    this.logger.info('[Estudiantes] Registro de traspaso creado', {
+      studentId: student.id,
+      transferId: transferRecord.id ?? transferRecord.toPlainObject?.().id ?? null,
+    });
+
+    return transferRecord;
+  }
+
+  /**
    * Ejecuta el caso de uso de registro de estudiante
    * 
    * @param {Object} data - Datos del estudiante a registrar
@@ -310,20 +500,34 @@ export class RegisterStudentUseCase {
         }
       }
 
-      // 2. Generar el código del estudiante
+      // 2. Resolver tipo de admisión y datos académicos iniciales
       // Si se proporciona gestionIngresoId, usar esa gestión para generar el código
       // Esto permite registrar estudiantes antiguos con el código de su gestión original
       // Si llegan gestión/carrera pero no tipoAdmision, inferir ANTIGUO (evita guardar NUEVO por error)
-      const hasGestionOrCarrera = (data.gestionIngresoId != null && data.gestionIngresoId !== '') || (data.carreraId != null && data.carreraId !== '');
-      const tipoAdmision = data.tipoAdmision && data.tipoAdmision !== ''
-        ? data.tipoAdmision
-        : (hasGestionOrCarrera ? 'ANTIGUO' : 'NUEVO');
+      const hasGestionOrCarrera =
+        (data.gestionIngresoId != null && data.gestionIngresoId !== '') ||
+        (data.carreraId != null && data.carreraId !== '');
+      const tipoAdmision =
+        data.tipoAdmision && data.tipoAdmision !== ''
+          ? data.tipoAdmision
+          : hasGestionOrCarrera
+          ? 'ANTIGUO'
+          : 'NUEVO';
       const gestionIngresoId = data.gestionIngresoId || null;
       const carreraId = data.carreraId || null;
 
+      this.logger.info('[Estudiantes] Datos de admisión recibidos en RegisterStudentUseCase', {
+        tipoAdmision,
+        gestionIngresoId,
+        carreraId,
+        transitability: data.transitability || null,
+        transfer: data.transfer || null,
+      });
+
+      // 3. Generar el código del estudiante
       const studentCode = await this.generateStudentCode(gestionIngresoId);
 
-      // 3. Crear el estudiante principal con el código generado
+      // 4. Crear el estudiante principal con el código generado
       const studentData = {
         ...data.student,
         studentCode, // Usar studentCode (dominio) en vez de codigoEstudiante (base de datos)
@@ -331,12 +535,12 @@ export class RegisterStudentUseCase {
       // NOTA: userId no se pasa porque actualmente no hay autenticación
       // El repositorio tiene userId = null como default
       const student = await this.studentRepository.create(studentData);
-      this.logger.info('[Estudiantes] Estudiante creado', { 
+      this.logger.info('[Estudiantes] Estudiante creado', {
         studentId: student.id,
         studentCode: student.studentCode,
       });
 
-      // 4. Crear apoderados (múltiples)
+      // 5. Crear apoderados (múltiples)
       const guardians = [];
       if (data.guardians && Array.isArray(data.guardians)) {
         for (const guardianData of data.guardians) {
@@ -353,6 +557,26 @@ export class RegisterStudentUseCase {
           studentId: student.id,
           count: guardians.length,
         });
+      }
+
+      // 4.1 Crear registro de Transitabilidad / Traspaso si aplica (no bloqueante)
+      try {
+        if (tipoAdmision === 'TRANSITABILIDAD' && data.transitability) {
+          await this._createTransitabilityIfNeeded(student, data.transitability);
+        } else if (tipoAdmision === 'TRASPASO' && data.transfer) {
+          await this._createTransferIfNeeded(student, data.transfer);
+        }
+      } catch (err) {
+        // No bloquear el registro completo por errores en estos módulos
+        this.logger.error(
+          '[Estudiantes] Error al crear registro de transitabilidad/traspaso (no bloqueante)',
+          {
+            studentId: student.id,
+            tipoAdmision,
+            error: err.message,
+            stack: err.stack,
+          }
+        );
       }
 
       // 5. Crear discapacidades (múltiples)
@@ -389,7 +613,7 @@ export class RegisterStudentUseCase {
             originType: originData.originType || 'BOLIVIANA',
             isPrincipal: originData.isPrincipal !== undefined ? originData.isPrincipal : true,
           };
-          
+
           // NOTA: userId no se pasa porque actualmente no hay autenticación
           // El repositorio tiene userId = null como default
           const origin = await this.studentOriginRepository.create(originToCreate);
@@ -412,7 +636,7 @@ export class RegisterStudentUseCase {
         for (const [docKey, docData] of Object.entries(data.documentation)) {
           // Extraer el ID del documento de la key (ej: 'doc_1' -> 1)
           const documentacionId = parseInt(docKey.replace('doc_', ''), 10);
-          
+
           if (!isNaN(documentacionId) && docData) {
             const deliveryToCreate = {
               studentId: student.id,
@@ -422,7 +646,7 @@ export class RegisterStudentUseCase {
               fechaEntrega: docData.fechaEntrega || null,
               observaciones: docData.observaciones || null,
             };
-            
+
             // NOTA: userId no se pasa porque actualmente no hay autenticación
             // El repositorio tiene userId = null como default
             const delivery = await this.studentDocumentDeliveryRepository.create(deliveryToCreate);
@@ -441,7 +665,7 @@ export class RegisterStudentUseCase {
         // Obtener gestión de ingreso (ya se obtuvo antes para generar el código)
         // Si no se proporcionó gestionIngresoId, obtener la gestión vigente
         let gestionIngresoIdFinal = gestionIngresoId;
-        
+
         if (!gestionIngresoIdFinal) {
           // Si no se proporciona gestionIngresoId, obtener la gestión vigente
           try {
@@ -455,7 +679,7 @@ export class RegisterStudentUseCase {
             gestionIngresoIdFinal = null;
           }
         }
-        
+
         // Crear datos académicos con gestion_ingreso_id y carrera_id
         // Para estudiantes ANTIGUOS, ambos campos son requeridos
         // Para estudiantes NUEVOS, se pueden dejar como null o usar valores por defecto
@@ -466,7 +690,7 @@ export class RegisterStudentUseCase {
           careerId: carreraId || null, // dominio: careerId → BD carrera_id
           admissionType: tipoAdmision, // dominio: admissionType → BD tipo_admision
         };
-        
+
         academicData = await this.studentAcademicDataRepository.create(academicDataToCreate);
         this.logger.info('[Estudiantes] Datos académicos creados', {
           studentId: student.id,

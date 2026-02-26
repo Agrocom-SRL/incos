@@ -41,7 +41,7 @@ const TIPOS_ADMISION = [
     color: '#1890ff',
     bgColor: '#e6f7ff',
   },
-  { 
+  {
     value: 'TRANSITABILIDAD',
     label: 'Transitabilidad',
     description: 'Estudiante con título de Técnico Medio (UETHP/CEA) que postula a Técnico Superior (ITT).',
@@ -49,7 +49,7 @@ const TIPOS_ADMISION = [
     color: '#722ed1',
     bgColor: '#f9f0ff',
   },
-  { 
+  {
     value: 'TRASPASO',
     label: 'Traspaso',
     description: 'Estudiante que cursó uno o dos años en otro ITT y solicita continuar en INCOS.',

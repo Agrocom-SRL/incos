@@ -213,12 +213,12 @@ export const createEstudiantesTableColumns = (navigate, refetch = null, deleteSt
       render: (_, record) => (
         <Space orientation="vertical" size={4} style={{ width: '100%' }}>
           {record.empresaInstitucion && (
-            <TableCell textStyle={{ fontSize: 'var(--font-size-sm)' }} size="small">
+            <TableCell icon={<BankOutlined />} textStyle={{ fontSize: 'var(--font-size-sm)' }} size="small">
               {record.empresaInstitucion}
             </TableCell>
           )}
           {record.cargo && (
-            <TableCell icon={<BankOutlined />} textStyle={{ fontSize: 'var(--font-size-sm)' }} size="small">
+            <TableCell textStyle={{ fontSize: 'var(--font-size-sm)' }} size="small">
               {record.cargo}
             </TableCell>
           )}

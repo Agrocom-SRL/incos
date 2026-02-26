@@ -121,29 +121,7 @@ export const createEstudianteWizardSteps = (completarMode = false) => {
         },
       },
     },
-    // STEP opcional: Datos de Transitabilidad (tabla instituciones + transitabilidades). Solo visible cuando tipoAdmision === 'TRANSITABILIDAD'.
-    // Misma estructura que Traspaso: FormSection/FormField desde config (estudianteTransitabilidadFields).
-    {
-      title: titles.stepTransitabilidad.title,
-      formTitle: titles.stepTransitabilidad.formTitle,
-      sections: ['formacionAcademica', 'cumplimientoRequisitos'],
-      config: {
-        formacionAcademica: transitabilidadFields.formacionAcademica,
-        cumplimientoRequisitos: transitabilidadFields.cumplimientoRequisitos,
-      },
-    },
-    // STEP opcional: Datos de Traspaso (tabla traspasos). Solo visible cuando tipoAdmision === 'TRASPASO'. La página filtra este paso.
-    // Usa FormSection/FormField como el resto de steps (config en estudianteTraspasoFields).
-    {
-      title: titles.stepTraspaso.title,
-      formTitle: titles.stepTraspaso.formTitle,
-      sections: ['formacionAcademica', 'cumplimientoRequisitos'],
-      config: {
-        formacionAcademica: traspasoFields.formacionAcademica,
-        cumplimientoRequisitos: traspasoFields.cumplimientoRequisitos,
-      },
-    },
-    // STEP 1: Datos Personales
+    // STEP 1: Datos Personales (Datos Generales)
     {
       title: titles.step1.title,
       formTitle: titles.step1.formTitle,
@@ -167,6 +145,26 @@ export const createEstudianteWizardSteps = (completarMode = false) => {
           title: contactoFields.title,
           fields: contactoFields.fields,
         },
+      },
+    },
+    // STEP 2 (dinámico): Datos de Transitabilidad. Solo visible cuando tipoAdmision === 'TRANSITABILIDAD'. Tercer lugar (después de Datos Generales).
+    {
+      title: titles.stepTransitabilidad.title,
+      formTitle: titles.stepTransitabilidad.formTitle,
+      sections: ['formacionAcademica', 'cumplimientoRequisitos'],
+      config: {
+        formacionAcademica: transitabilidadFields.formacionAcademica,
+        cumplimientoRequisitos: transitabilidadFields.cumplimientoRequisitos,
+      },
+    },
+    // STEP 2 (dinámico): Datos de Traspaso. Solo visible cuando tipoAdmision === 'TRASPASO'. Tercer lugar (después de Datos Generales).
+    {
+      title: titles.stepTraspaso.title,
+      formTitle: titles.stepTraspaso.formTitle,
+      sections: ['formacionAcademica', 'cumplimientoRequisitos'],
+      config: {
+        formacionAcademica: traspasoFields.formacionAcademica,
+        cumplimientoRequisitos: traspasoFields.cumplimientoRequisitos,
       },
     },
     // STEP 2: Contacto de Emergencia

@@ -538,7 +538,7 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
   // Pasos visibles: 4 (NUEVO/ANTIGUO) o 5 (TRANSITABILIDAD o TRASPASO con paso dinámico de datos de tabla transitabilidades/traspasos)
   const wizardSteps = useMemo(() => {
     const allSteps = createEstudianteWizardSteps(completarMode);
-    // allSteps: [0]=Tipo+Datos académicos, [1]=Transitabilidad, [2]=Traspaso, [3]=Datos personales, [4]=Contacto, [5]=Documentación
+    // allSteps: [0]=Tipo+Datos académicos, [1]=Datos Generales, [2]=Transitabilidad, [3]=Traspaso, [4]=Contacto, [5]=Documentación
 
     const camposDinamicos = createCamposContactosEmergenciaDinamicos(
       contactosIndices,
@@ -552,14 +552,19 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
       contactoEmergenciaStep.config.contactoEmergencia.fields = camposDinamicos;
     }
 
-    // Cuando tipo es TRASPASO, el step Documentación muestra: 2 docs TRASPASO + Carnet/Cert.Nacimiento/Diploma (ids 3,2,1)
-    const documentacionParaStep =
-      tipoAdmisionForSteps === 'TRASPASO'
-        ? [
-            ...(documentacionTraspasoProcesada || []),
-            ...(documentacionProcesada || []).filter((d) => [1, 2, 3].includes(d.id)),
-          ]
-        : documentacionProcesada;
+    // Cuando tipo es TRASPASO, el step Documentación muestra: docs TRASPASO + Carnet/Cert.Nacimiento/Diploma (ids 1,2,3).
+    // Evitar duplicados por id: si documentacionTraspasoProcesada ya incluye 1,2,3 no volver a añadirlos desde documentacionProcesada.
+    const documentacionParaStep = (() => {
+      if (tipoAdmisionForSteps !== 'TRASPASO') {
+        return documentacionProcesada;
+      }
+      const traspaso = documentacionTraspasoProcesada || [];
+      const idsEnTraspaso = new Set(traspaso.map((d) => d.id));
+      const comunes = (documentacionProcesada || []).filter(
+        (d) => [1, 2, 3].includes(d.id) && !idsEnTraspaso.has(d.id)
+      );
+      return [...traspaso, ...comunes];
+    })();
     const camposDocumentacion = createCamposDocumentacionDinamicos(documentacionParaStep);
     const subseccionObservaciones = {
       type: 'subsection',
@@ -587,15 +592,15 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
     }
 
     // Insertar paso dinámico solo para TRANSITABILIDAD o TRASPASO; NUEVO y ANTIGUO no lo muestran.
-    // Usamos tipoAdmisionForSteps (estado estable) y no Form.useWatch para evitar que un re-render
-    // devuelva 4 pasos por un instante y useWizard reseteé currentStep.
+    // allSteps[1]=Datos Generales, [2]=Transitabilidad, [3]=Traspaso. Usamos tipoAdmisionForSteps (estado estable).
     if (tipoAdmisionForSteps === 'TRANSITABILIDAD') {
-      return [allSteps[0], allSteps[1], allSteps[3], allSteps[4], allSteps[5]];
+      return [allSteps[0], allSteps[1], allSteps[2], allSteps[4], allSteps[5]];
     }
     if (tipoAdmisionForSteps === 'TRASPASO') {
-      return [allSteps[0], allSteps[2], allSteps[3], allSteps[4], allSteps[5]];
+      return [allSteps[0], allSteps[1], allSteps[3], allSteps[4], allSteps[5]];
     }
-    return [allSteps[0], allSteps[3], allSteps[4], allSteps[5]];
+    // NUEVO/ANTIGUO: Tipo, Datos Generales, Contacto, Documentación (sin paso Transitabilidad ni Traspaso)
+    return [allSteps[0], allSteps[1], allSteps[4], allSteps[5]];
   }, [completarMode, tipoAdmisionForSteps, contactosIndices, agregarContacto, eliminarContacto, documentacionProcesada, documentacionTraspasoProcesada]);
 
   // Validar paso 1: tipoAdmision siempre; si ANTIGUO/TRANSITABILIDAD/TRASPASO también gestionIngresoId y carreraId.
