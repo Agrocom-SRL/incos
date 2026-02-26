@@ -12,7 +12,7 @@
  * 
  * Query Parameters:
  * - page: Número de página (default: 1) - manejado por BaseListController y ListRequestDTO
- * - limit: Cantidad de resultados por página (default: 50, max: 100) - manejado por BaseListController y ListRequestDTO
+ * - limit: Cantidad de resultados por página (default: 50, max: 10000) - manejado por BaseListController y ListRequestDTO
  * - search: Término de búsqueda general (opcional) - manejado por BaseListController y ListRequestDTO
  * - sort: Ordenamiento (opcional, formato: "campo:DIRECCION") - manejado genéricamente por BaseListController
  * 

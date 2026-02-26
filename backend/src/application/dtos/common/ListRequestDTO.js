@@ -6,7 +6,7 @@
  * 
  * Query Parameters comunes:
  * - page: Número de página (default: 1)
- * - limit: Cantidad de resultados por página (default: 50, max: 100)
+ * - limit: Cantidad de resultados por página (default: 50, max: 10000)
  * - search: Término de búsqueda general (opcional)
  * - sort: Ordenamiento (opcional, formato: "nombreCampo:ASC" o "nombreCampo:DESC")
  *   Ejemplos: "codigoEstudiante:ASC", "nombres:DESC"
@@ -43,7 +43,7 @@ export class ListRequestDTO {
 
     // Validar valores mínimos y máximos
     const normalizedPage = Math.max(1, page);
-    const normalizedLimit = Math.min(Math.max(1, limit), 100); // Máximo 100 por página
+    const normalizedLimit = Math.min(Math.max(1, limit), 10000); // Máximo 10000 por página (listados completos)
 
     // 2. Construir filtros básicos (search, sort, filtros específicos se agregan en buildFilters)
     const filters = {};
