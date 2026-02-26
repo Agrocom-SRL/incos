@@ -29,8 +29,8 @@ export const listValidator = [
 
   query('limit')
     .optional()
-    .isInt({ min: 1, max: 100 })
-    .withMessage('El límite debe ser un número entre 1 y 100'),
+    .isInt({ min: 1, max: 10000 })
+    .withMessage('El límite debe ser un número entre 1 y 10000'),
 
   query('search')
     .optional()
