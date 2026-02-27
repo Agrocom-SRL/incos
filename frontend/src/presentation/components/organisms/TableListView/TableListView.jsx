@@ -49,6 +49,9 @@ const TableListView = ({
     defaultPageSize = 10,
     defaultSort,
 
+    // Estilos adicionales para la tabla (permite aplicar reglas específicas por módulo)
+    tableClassName = '',
+
     // Loading personalizado
     loadingTip = 'Cargando...',
 }) => {
@@ -131,6 +134,7 @@ const TableListView = ({
                             rowKey={rowKey}
                             pagination={finalPagination}
                             defaultSort={defaultSort}
+                            className={tableClassName}
                         />
                     </Card>
                 </>

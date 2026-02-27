@@ -10,7 +10,7 @@
 
 import { IconButton } from '@atoms';
 import { TableCell } from '@molecules';
-import { Tooltip } from 'antd';
+import { Tooltip, Grid } from 'antd';
 import { getDataTableAction } from '@config/icons';
 import { useDeleteItem } from '@application/utils/useDeleteItem';
 import { useContainer } from '@container';
@@ -48,6 +48,11 @@ const TableActions = ({
   editDisabled = false,
   extraActions = [],
 }) => {
+  const screens = Grid.useBreakpoint();
+  const isSmall = !screens.lg;
+  const actionsDirection = isSmall ? 'vertical' : 'horizontal';
+  const actionsSize = isSmall ? 'small' : 'middle';
+
   const container = useContainer();
   const viewAction = getDataTableAction('view');
   const editAction = getDataTableAction('edit');
@@ -121,7 +126,7 @@ const TableActions = ({
   };
 
   return (
-    <TableCell actions align="right">
+    <TableCell actions align="right" direction={actionsDirection} size={actionsSize}>
       {viewPath && (
         <Tooltip title={`${viewAction.tooltip} ${itemName || 'elemento'}`}>
           <IconButton

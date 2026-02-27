@@ -39,9 +39,18 @@ const getTipoAdmisionTagColor = (tipoAdmision) => {
  * @param {Function} refetch - Función para recargar los datos después de eliminar
  * @param {Function} deleteStudent - Función para eliminar un estudiante
  * @param {Object} pagosContext - Contexto de pagos (opcional) para verificar si el estudiante ya tiene un pago
+ * @param {Object} options - Opciones de presentación (ej: { isSmall: boolean })
  * @returns {Array} Array de configuración de columnas para Ant Design Table
  */
-export const createEstudiantesTableColumns = (navigate, refetch = null, deleteStudent = null, pagosContext = null) => {
+export const createEstudiantesTableColumns = (
+  navigate,
+  refetch = null,
+  deleteStudent = null,
+  pagosContext = null,
+  options = {},
+) => {
+
+  const { isSmall = false } = options;
 
   // Función helper para manejar la navegación a registro o detalle de pago
   const handleRegistrarPagoClick = (record) => {
@@ -101,8 +110,9 @@ export const createEstudiantesTableColumns = (navigate, refetch = null, deleteSt
     {
       title: 'Código de Estudiante',
       dataIndex: 'codigoEstudiante',
-      fixed: 'left',
       ellipsis: true,
+      // Siempre visible en todos los tamaños
+      responsive: ['xs', 'sm', 'md', 'lg', 'xl', 'xxl'],
       render: (codigo) => (
         <TableCell
           strong
@@ -122,6 +132,8 @@ export const createEstudiantesTableColumns = (navigate, refetch = null, deleteSt
       title: 'Nombre Completo',
       dataIndex: 'nombreCompleto',
       ellipsis: true,
+      // Siempre visible en todos los tamaños
+      responsive: ['xs', 'sm', 'md', 'lg', 'xl', 'xxl'],
       render: (_, record) => (
         <TableCell
           strong
@@ -139,6 +151,8 @@ export const createEstudiantesTableColumns = (navigate, refetch = null, deleteSt
       title: 'CI',
       dataIndex: 'ciCompleto',
       ellipsis: true,
+      // Ocultar CI en xs/sm para simplificar en móviles muy pequeños
+      responsive: ['md', 'lg', 'xl', 'xxl'],
       render: (_, record) => (
         <TableCell icon={<UserOutlined />} strong>
           {getCiCompleto(record)}
@@ -150,6 +164,8 @@ export const createEstudiantesTableColumns = (navigate, refetch = null, deleteSt
       title: 'Contacto',
       key: 'contacto',
       ellipsis: true,
+      // Mostrar contacto solo desde pantallas medianas hacia arriba
+      responsive: ['lg', 'xl', 'xxl'],
       render: (_, record) => (
         <Space orientation="vertical" size={4} style={{ width: '100%' }}>
           {record.emailPersonal && (
@@ -169,6 +185,8 @@ export const createEstudiantesTableColumns = (navigate, refetch = null, deleteSt
       title: 'Datos académicos',
       key: 'datosAcademicos',
       ellipsis: true,
+      // Ocultar en xs para móviles muy estrechos, visible desde sm
+      responsive: ['sm', 'md', 'lg', 'xl', 'xxl'],
       render: (_, record) => (
         <Space orientation="vertical" size={4} style={{ width: '100%' }}>
           {record.carreraNombre && (
@@ -207,40 +225,12 @@ export const createEstudiantesTableColumns = (navigate, refetch = null, deleteSt
       },
     },
     {
-      title: 'Datos laborales',
-      key: 'datosTrabajo',
-      ellipsis: true,
-      render: (_, record) => (
-        <Space orientation="vertical" size={4} style={{ width: '100%' }}>
-          {record.empresaInstitucion && (
-            <TableCell icon={<BankOutlined />} textStyle={{ fontSize: 'var(--font-size-sm)' }} size="small">
-              {record.empresaInstitucion}
-            </TableCell>
-          )}
-          {record.cargo && (
-            <TableCell textStyle={{ fontSize: 'var(--font-size-sm)' }} size="small">
-              {record.cargo}
-            </TableCell>
-          )}
-          {!record.empresaInstitucion && !record.cargo && (
-            <TableCell icon={<BankOutlined />} fallback="—" textStyle={{ fontSize: 'var(--font-size-sm)' }}>
-              —
-            </TableCell>
-          )}
-        </Space>
-      ),
-      sorter: (a, b) => {
-        const textA = (a.datosTrabajo || a.empresaInstitucion || a.cargo || '').toString();
-        const textB = (b.datosTrabajo || b.empresaInstitucion || b.cargo || '').toString();
-        return textA.localeCompare(textB);
-      },
-    },
-    {
       title: 'Acciones',
       key: 'acciones',
-      fixed: 'right',
-      width: 180,
+      width: isSmall ? 140 : 180,
       align: 'right',
+      // Siempre visible para permitir interacción, pero con ancho reducido en pantallas pequeñas
+      responsive: ['xs', 'sm', 'md', 'lg', 'xl', 'xxl'],
       render: (_, record) => {
         const nombreCompleto = getNombreCompleto(record);
         const ciCompleto = getCiCompleto(record);
