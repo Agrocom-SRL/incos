@@ -29,7 +29,7 @@ const ScholarshipsSection = ({ scholarships }) => {
           align-items: center;
           gap: 8px;
           margin-bottom: 14px;
-          font-size: 12px;
+          font-size: 13px;
           font-weight: 700;
           text-transform: uppercase;
           letter-spacing: .7px;
@@ -89,7 +89,7 @@ const ScholarshipsSection = ({ scholarships }) => {
         }
         .sc__name {
           margin: 0;
-          font-size: 15px;
+          font-size: 16px;
           font-weight: 700;
           color: #111827;
           white-space: nowrap;
@@ -97,14 +97,14 @@ const ScholarshipsSection = ({ scholarships }) => {
           text-overflow: ellipsis;
         }
         .sc__code {
-          font-size: 12px;
+          font-size: 13px;
           color: #9ca3af;
           font-weight: 500;
           margin-top: 1px;
         }
         .sc__estado-badge {
           display: inline-block;
-          font-size: 11px;
+          font-size: 12px;
           font-weight: 700;
           text-transform: uppercase;
           letter-spacing: .5px;
@@ -125,20 +125,20 @@ const ScholarshipsSection = ({ scholarships }) => {
           gap: 4px;
         }
         .sc__field-label {
-          font-size: 11px;
+          font-size: 12px;
           font-weight: 600;
           text-transform: uppercase;
           letter-spacing: .55px;
           color: #9ca3af;
         }
         .sc__field-value {
-          font-size: 14px;
+          font-size: 15px;
           font-weight: 600;
           color: #374151;
         }
         .sc__pct {
           display: inline-block;
-          font-size: 14px;
+          font-size: 15px;
           font-weight: 700;
           color: #196b45;
           background: #e8f5e9;
@@ -150,7 +150,7 @@ const ScholarshipsSection = ({ scholarships }) => {
           display: inline-flex;
           align-items: center;
           gap: 4px;
-          font-size: 13px;
+          font-size: 14px;
           font-weight: 600;
           color: #196b45;
         }
@@ -158,13 +158,13 @@ const ScholarshipsSection = ({ scholarships }) => {
           display: inline-flex;
           align-items: center;
           gap: 4px;
-          font-size: 13px;
+          font-size: 14px;
           font-weight: 600;
           color: #d97706;
         }
         .sc__obs {
           padding: 10px 20px 14px;
-          font-size: 12.5px;
+          font-size: 13.5px;
           color: #6b7280;
           border-top: 1px dashed #f3f4f6;
           font-style: italic;

@@ -13,6 +13,7 @@ export const SERVICIOS_TOKENS = {
     fileUploadService: 'fileUploadService', // Servicio de subida de archivos (Multer) - futuro
     actaCompromisoPdfGenerator: 'actaCompromisoPdfGenerator', // Generador de actas de compromiso (pdf-lib)
     formularioInscripcionPdfGenerator: 'formularioInscripcionPdfGenerator', // Generador de formulario de inscripción (pdf-lib)
+    declaracionJuradaPdfGenerator: 'declaracionJuradaPdfGenerator', // Generador de formulario de declaración jurada (pdf-lib)
     reciboPagoPdfGenerator: 'reciboPagoPdfGenerator', // Generador de recibo de pago (pdf-lib)
     pdfGenerator: 'pdfGenerator', // IPDFGenerator (fachada única)
     uploadsStorage: 'uploadsStorage', // IUploadsStorage (almacenamiento en uploads)

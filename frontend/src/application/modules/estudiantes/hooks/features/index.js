@@ -14,4 +14,5 @@ export { useAsignarBecaBecasDescuentos } from './useAsignarBecaBecasDescuentos';
 export { useAsignarBecaPageData } from './useAsignarBecaPageData';
 export { useAsignarBecaFormHandlers } from './useAsignarBecaFormHandlers';
 export { useGenerateActaCompromiso } from './useGenerateActaCompromiso';
+export { useGenerateDeclaracionJurada } from './useGenerateDeclaracionJurada';
 

@@ -16,7 +16,7 @@
 import { useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGetStudentById } from '@application-estudiantes/hooks/api';
-import { useGenerateActaCompromiso } from '../features';
+import { useGenerateActaCompromiso, useGenerateDeclaracionJurada } from '../features';
 import { usePagosContextOptional, useEstadoAporteRegistro } from '@application-pagos/hooks';
 import { mapEstudianteDetail } from '@application-estudiantes/mappers';
 import { downloadFile } from '@application/utils';
@@ -28,6 +28,7 @@ export const useStudentDetail = (studentId) => {
 
   const { student: studentRaw, loading, error, getStudentById, refetch } = useGetStudentById();
   const { generateActaCompromiso, loading: loadingActa } = useGenerateActaCompromiso();
+  const { generateDeclaracionJurada, loading: loadingDeclaracion } = useGenerateDeclaracionJurada();
   const pagosContext = usePagosContextOptional();
   const { estadoAporte, loading: loadingEstadoAporte } = useEstadoAporteRegistro(studentId || null, null);
 
@@ -114,6 +115,28 @@ export const useStudentDetail = (studentId) => {
     }
   }, [studentId, generateActaCompromiso, message]);
 
+  const handleGenerateDeclaracionJurada = useCallback(async () => {
+    if (!studentId) {
+      message.error('ID de estudiante no disponible');
+      return;
+    }
+    const tipoAdmision = student?.tipoAdmision || null;
+    const result = await generateDeclaracionJurada(studentId, { tipoAdmision });
+    if (!result.success) {
+      let errorMessage = 'Error al generar la declaración jurada';
+      if (result.error) {
+        if (typeof result.error === 'string') errorMessage = result.error;
+        else if (result.error.message) errorMessage = result.error.message;
+        else if (result.error.code) {
+          errorMessage = `${result.error.code}: ${result.error.message || 'Error desconocido'}`;
+        }
+      } else if (result.message) errorMessage = result.message;
+      message.error(errorMessage);
+    } else {
+      message.success('Declaración jurada generada y descargada correctamente');
+    }
+  }, [studentId, generateDeclaracionJurada, message]);
+
   const handleDownloadActaCompromiso = useCallback(() => {
     const actaCompromisoData = student?.actaCompromiso;
     if (actaCompromisoData) {
@@ -180,12 +203,14 @@ export const useStudentDetail = (studentId) => {
     profileSubtitle,
     handleRegistrarPago,
     handleGenerateActaCompromiso,
+    handleGenerateDeclaracionJurada,
     handleDownloadActaCompromiso,
     handleVerInscripcion,
     handleNuevaInscripcion,
     tieneDocumentosFaltantesFlag,
     actaCompromisoData,
     loadingActa,
+    loadingDeclaracion,
     hasInscripcion,
   };
 };

@@ -16,7 +16,7 @@ const DocumentDeliveriesSection = ({ documentDeliveries }) => {
           align-items: center;
           gap: 8px;
           margin-bottom: 14px;
-          font-size: 12px;
+          font-size: 13px;
           font-weight: 700;
           text-transform: uppercase;
           letter-spacing: .7px;
@@ -71,7 +71,7 @@ const DocumentDeliveriesSection = ({ documentDeliveries }) => {
           min-width: 0;
         }
         .dd__item-name {
-          font-size: 14px;
+          font-size: 15px;
           font-weight: 600;
           color: #111827;
           margin: 0 0 3px;
@@ -80,12 +80,12 @@ const DocumentDeliveriesSection = ({ documentDeliveries }) => {
           text-overflow: ellipsis;
         }
         .dd__item-meta {
-          font-size: 12px;
+          font-size: 13px;
           color: #9ca3af;
           margin: 0;
         }
         .dd__item-obs {
-          font-size: 12px;
+          font-size: 13px;
           color: #6b7280;
           margin-top: 2px;
         }
@@ -100,7 +100,7 @@ const DocumentDeliveriesSection = ({ documentDeliveries }) => {
           display: inline-flex;
           align-items: center;
           gap: 4px;
-          font-size: 11.5px;
+          font-size: 12.5px;
           font-weight: 600;
           padding: 3px 10px;
           border-radius: 20px;

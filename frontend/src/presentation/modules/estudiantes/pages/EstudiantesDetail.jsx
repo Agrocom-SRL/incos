@@ -63,11 +63,45 @@ const EstudiantesDetail = () => {
     loading, error, student, studentData,
     guardians, documentDeliveries, scholarships, inscripcion, origins,
     breadcrumbItems, avatarInitials, profileSubtitle,
-    handleRegistrarPago, handleGenerateActaCompromiso,
+    handleRegistrarPago, handleGenerateActaCompromiso, handleGenerateDeclaracionJurada,
     handleDownloadActaCompromiso, handleVerInscripcion,
     handleNuevaInscripcion, tieneDocumentosFaltantesFlag,
-    actaCompromisoData, loadingActa, hasInscripcion,
+    actaCompromisoData, loadingActa, loadingDeclaracion, hasInscripcion,
   } = useStudentDetailContext();
+
+  const tipoAdmision = studentData?.tipoAdmision;
+  const tipoAdmisionUpper = (tipoAdmision || '').toString().toUpperCase();
+  const admissionKind =
+    tipoAdmisionUpper === 'NUEVO'
+      ? 'nuevo'
+      : tipoAdmisionUpper === 'ANTIGUO'
+        ? 'antiguo'
+        : tipoAdmisionUpper === 'TRASPASO'
+          ? 'traspaso'
+          : tipoAdmisionUpper === 'TRANSITABILIDAD'
+            ? 'transitabilidad'
+            : tipoAdmision
+              ? 'default'
+              : null;
+
+  const avatarClassName = admissionKind
+    ? `sd-profile__avatar sd-profile__avatar--${admissionKind}`
+    : 'sd-profile__avatar';
+
+  const admissionPillClass = !admissionKind
+    ? ''
+    : admissionKind === 'nuevo'
+      ? 'sd-profile__admission-pill sd-profile__admission-pill--nuevo'
+      : admissionKind === 'antiguo'
+        ? 'sd-profile__admission-pill sd-profile__admission-pill--antiguo'
+        : admissionKind === 'traspaso'
+          ? 'sd-profile__admission-pill sd-profile__admission-pill--traspaso'
+          : admissionKind === 'transitabilidad'
+            ? 'sd-profile__admission-pill sd-profile__admission-pill--transitabilidad'
+            : 'sd-profile__admission-pill sd-profile__admission-pill--default';
+
+  const showDeclaracionButton =
+    tipoAdmisionUpper === 'TRASPASO' || tipoAdmisionUpper === 'TRANSITABILIDAD';
 
   const residenciaCompleta =
     studentData?.residenceAddressComplete ||
@@ -260,15 +294,24 @@ const EstudiantesDetail = () => {
           {/* Avatar + nombre + subtítulo */}
           <div className="sd-profile__identity">
             <div className="sd-profile__avatar-wrap">
-              <div className="sd-profile__avatar">{avatarInitials}</div>
+              <div className={avatarClassName}>{avatarInitials}</div>
               <span className="sd-profile__status-dot" />
             </div>
             <div className="sd-profile__name-block">
               <h1 className="sd-profile__name">{studentData.nombreCompleto || 'N/A'}</h1>
-              <p className="sd-profile__sub">
-                <EnvironmentOutlined />
-                {profileSubtitle}
-              </p>
+              <div className="sd-profile__meta">
+                <p className="sd-profile__sub">
+                  <EnvironmentOutlined />
+                  {profileSubtitle}
+                </p>
+                {studentData?.tipoAdmision && (
+                  <span
+                    className={admissionPillClass}
+                  >
+                    {studentData.tipoAdmision}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
 
@@ -304,6 +347,16 @@ const EstudiantesDetail = () => {
 
           {/* Actions */}
           <div className="sd-profile__actions">
+            {showDeclaracionButton && (
+              <button
+                type="button"
+                className="sd-btn sd-btn--warn"
+                onClick={handleGenerateDeclaracionJurada}
+                disabled={loadingDeclaracion}
+              >
+                <FileTextOutlined /> Declaración Jurada
+              </button>
+            )}
             {actaCompromisoData ? (
               <button type="button" className="sd-btn sd-btn--warn" onClick={handleDownloadActaCompromiso}>
                 <DownloadOutlined /> Descargar Acta

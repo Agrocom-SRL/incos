@@ -32,6 +32,21 @@ export class IPDFGenerator {
   }
 
   /**
+   * Genera un Formulario de Declaración Jurada (Traspaso / Transitabilidad)
+   * a partir de la plantilla PDF.
+   *
+   * Edita la plantilla PDF usando pdf-lib (DeclaracionJuradaPdfGenerator),
+   * reutilizando la estructura base del formulario de inscripción pero con
+   * secciones adaptadas.
+   *
+   * @param {Object} [options] - Opciones (gestion, student, academicData, enrollmentData, entregas, tipoAdmision, fechaActual, etc.)
+   * @returns {Promise<Buffer>} Contenido del PDF generado
+   */
+  generateFormularioDeclaracionJurada(options = {}) {
+    throw new Error('Method generateFormularioDeclaracionJurada must be implemented');
+  }
+
+  /**
    * Genera un Formulario de Inscripción a partir de la plantilla PDF
    * 
    * Edita la plantilla PDF (Plantilla.pdf) usando pdf-lib (FormularioInscripcionPdfGenerator).

@@ -81,6 +81,8 @@ export const ESTUDIANTES_ENDPOINTS = {
   ...createCRUDEndpoints('/estudiantes'),
   // Endpoint específico para generar acta de compromiso
   GENERATE_ACTA_COMPROMISO: (studentId) => `${API_BASE}/estudiantes/${studentId}/documentos/acta-compromiso`,
+  // Endpoint específico para generar declaración jurada (formulario/boleta)
+  GENERATE_DECLARACION_JURADA: (studentId) => `${API_BASE}/estudiantes/${studentId}/documentos/declaracion-jurada`,
 };
 export const BECAS_DESCUENTOS_ENDPOINTS = createCRUDEndpoints('/becas-descuentos');
 export const ESTUDIANTES_BECAS_ENDPOINTS = {
@@ -135,11 +137,8 @@ export const DOCUMENTACION_ENDPOINTS = createCRUDEndpoints('/documentacion');
 // ============================================
 export const INSCRIPCIONES_ENDPOINTS = {
   ...createCRUDEndpoints('/inscripciones'),
-  // Endpoint específico para generar boleta/formulario de inscripción
-  // NOTA: El backend usa "generar-formulario" pero el frontend lo llama "boleta"
-  // Ambos términos se refieren al mismo documento
-  // IMPORTANTE: El parámetro es el ID del estudiante, no el ID de inscripción
-  GENERATE_BOLETA: (studentId) => `${API_BASE}/inscripciones/${studentId}/generar-formulario`,
+  // Endpoint específico para generar formulario de inscripción (se usará desde el módulo de inscripciones)
+  GENERATE_FORMULARIO: (studentId) => `${API_BASE}/inscripciones/${studentId}/generar-formulario`,
 };
 
 // ============================================

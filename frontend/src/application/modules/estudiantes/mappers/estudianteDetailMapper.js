@@ -25,7 +25,19 @@ export const estudianteDetailMapper = (dataBackend) => {
     return null;
   }
 
-  const { student, guardians, disabilities, origins, documentDeliveries, scholarships, catalogs = {}, tieneDocumentosFaltantes, actaCompromiso, inscripcion, academicData } = normalizedData;
+  const {
+    student,
+    guardians,
+    disabilities,
+    origins,
+    documentDeliveries,
+    scholarships,
+    catalogs = {},
+    tieneDocumentosFaltantes,
+    actaCompromiso,
+    inscripcion,
+    academicData,
+  } = normalizedData;
 
   // Construir CI completo y nombre completo usando utilidades compartidas
   // El backend retorna nombres en inglés, los convertimos para el formatter
@@ -158,6 +170,8 @@ export const estudianteDetailMapper = (dataBackend) => {
       trabaja: student.works ?? false,
       empresaInstitucion: student.employerInstitution ?? '',
       cargo: student.position ?? '',
+      // Tipo de admisión asociado a sus datos académicos (para mostrar en cabecera)
+      tipoAdmision: academicData?.tipoAdmision ?? null,
       observaciones: student.observations ?? '',
       activo: student.activo,
       createdAt: student.createdAt,

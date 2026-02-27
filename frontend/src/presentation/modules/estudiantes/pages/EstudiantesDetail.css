@@ -86,6 +86,29 @@
   box-shadow: 0 4px 14px rgba(25,107,69,.3);
 }
 
+/* Variantes de color de avatar según tipo de admisión */
+.sd-profile__avatar--nuevo {
+  background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);
+}
+
+.sd-profile__avatar--antiguo {
+  background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+}
+
+.sd-profile__avatar--traspaso {
+  /* Mismo color base que la tarjeta de TRASPASO en el formulario (TipoAdmisionSelectionSection) */
+  background: #eb2f96;
+}
+
+.sd-profile__avatar--transitabilidad {
+  /* Mismo color base que la tarjeta de TRANSITABILIDAD en el formulario */
+  background: #722ed1;
+}
+
+.sd-profile__avatar--default {
+  background: linear-gradient(135deg, #4b5563 0%, #6b7280 100%);
+}
+
 .sd-profile__status-dot {
   position: absolute;
   bottom: 3px;
@@ -114,16 +137,69 @@
 
 .sd-profile__sub {
   margin: 0;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-500);
 }
 
 .sd-profile__sub .anticon {
   color: var(--primary);
   font-size: 12px;
+}
+
+/* Fila de meta bajo el nombre: subtítulo + tipo de admisión */
+.sd-profile__meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.sd-profile__admission-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  border: 1px solid transparent;
+}
+
+.sd-profile__admission-pill--nuevo {
+  background: #e8f5e9;
+  color: var(--primary-dark);
+  border-color: rgba(25,107,69,.25);
+}
+
+.sd-profile__admission-pill--antiguo {
+  background: #fef3c7;
+  color: #92400e;
+  border-color: rgba(245,158,11,.25);
+}
+
+.sd-profile__admission-pill--traspaso {
+  /* Colores alineados con la tarjeta TRASPASO (bgColor + color) */
+  background: #fff0f6;
+  color: #eb2f96;
+  border-color: rgba(235,47,150,.25);
+}
+
+.sd-profile__admission-pill--transitabilidad {
+  /* Colores alineados con la tarjeta TRANSITABILIDAD (bgColor + color) */
+  background: #f9f0ff;
+  color: #722ed1;
+  border-color: rgba(114,46,209,.25);
+}
+
+.sd-profile__admission-pill--default {
+  background: #e5e7eb;
+  color: var(--text-700);
+  border-color: #d1d5db;
 }
 
 /* Divider vertical */
@@ -155,7 +231,7 @@
 }
 
 .sd-stat__label {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: .6px;
@@ -163,14 +239,14 @@
 }
 
 .sd-stat__value {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--text-700);
 }
 
 .sd-stat__value--primary {
   color: var(--primary);
-  font-size: 15px;
+  font-size: 16px;
 }
 
 /* Actions */
@@ -190,9 +266,9 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 16px;
+  padding: 9px 18px;
   border-radius: var(--radius-md);
-  font-size: 13.5px;
+  font-size: 14.5px;
   font-weight: 600;
   cursor: pointer;
   border: none;
@@ -253,7 +329,7 @@
 
 .sd-tabs .ant-tabs-tab {
   padding: 16px 0 !important;
-  font-size: 13.5px !important;
+  font-size: 14.5px !important;
   font-weight: 500 !important;
   color: var(--text-500) !important;
   transition: color .15s !important;
@@ -390,7 +466,7 @@
 }
 
 .sd-field__label {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: .55px;
@@ -399,7 +475,7 @@
 }
 
 .sd-field__value {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 500;
   color: var(--text-700);
   word-break: break-word;

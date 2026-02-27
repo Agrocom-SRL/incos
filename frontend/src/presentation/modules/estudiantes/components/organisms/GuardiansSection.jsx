@@ -65,7 +65,7 @@ const GuardiansSection = ({ guardians }) => {
           align-items: center;
           gap: 8px;
           margin-bottom: 16px;
-          font-size: 12px;
+          font-size: 13px;
           font-weight: 700;
           text-transform: uppercase;
           letter-spacing: .7px;
@@ -121,14 +121,14 @@ const GuardiansSection = ({ guardians }) => {
         }
         .gc__name {
           margin: 0 0 3px;
-          font-size: 14px;
+          font-size: 15px;
           font-weight: 700;
           color: #111827;
           line-height: 1.2;
         }
         .gc__role {
           display: inline-block;
-          font-size: 11px;
+          font-size: 12px;
           font-weight: 600;
           text-transform: uppercase;
           letter-spacing: .4px;
@@ -143,7 +143,7 @@ const GuardiansSection = ({ guardians }) => {
           display: inline-flex;
           align-items: center;
           gap: 4px;
-          font-size: 11px;
+          font-size: 12px;
           font-weight: 600;
           padding: 3px 9px;
           border-radius: 20px;
@@ -171,14 +171,14 @@ const GuardiansSection = ({ guardians }) => {
           gap: 3px;
         }
         .gc__field-label {
-          font-size: 11px;
+          font-size: 12px;
           font-weight: 600;
           text-transform: uppercase;
           letter-spacing: .55px;
           color: #9ca3af;
         }
         .gc__field-value {
-          font-size: 14px;
+          font-size: 15px;
           font-weight: 500;
           color: #374151;
         }
