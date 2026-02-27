@@ -19,10 +19,15 @@ const DataTable = ({
   columns = [],
   loading = false,
   pagination = {
-    pageSize: 10,
+    defaultPageSize: 10,
     showSizeChanger: true,
-    showTotal: (total) => `Total: ${total} registros`,
+    showQuickJumper: false,
+    showTotal: (total, range) =>
+      `Mostrando ${range[0]}-${range[1]} de ${total} registros`,
     pageSizeOptions: ['10', '20', '50', '100'],
+    locale: {
+      items_per_page: 'registros / página',
+    },
   },
   scroll,
   size = 'middle',

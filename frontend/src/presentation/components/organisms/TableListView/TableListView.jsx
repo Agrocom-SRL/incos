@@ -44,18 +44,48 @@ const TableListView = ({
     // Configuración de tabla
     columns = [],
     rowKey = (record) => record.id || Math.random(),
-    pagination = {
-        pageSize: 10,
-        showSizeChanger: true,
-        showTotal: (total) => `Total: ${total} registros`,
-        pageSizeOptions: ['10', '20', '50', '100'],
-    },
+    pagination,
+    pageSizeOptions = ['10', '20', '50', '100'],
+    defaultPageSize = 10,
     defaultSort,
 
     // Loading personalizado
     loadingTip = 'Cargando...',
 }) => {
     const isLoading = loading && data.length === 0;
+
+    // Evitar paginación controlada por props (pageSize) para que el usuario
+    // pueda cambiar libremente la cantidad de registros por página.
+    const sanitizePagination = (paginationProp) => {
+        if (!paginationProp) return {};
+
+        const { pageSize, ...rest } = paginationProp;
+
+        return {
+            ...rest,
+            ...(pageSize ? { defaultPageSize: pageSize } : {}),
+        };
+    };
+
+    const basePagination = {
+        defaultPageSize,
+        showSizeChanger: true,
+        showQuickJumper: false,
+        showTotal: (total, range) =>
+            `Mostrando ${range[0]}-${range[1]} de ${total} registros`,
+        pageSizeOptions,
+        locale: {
+            items_per_page: 'registros / página',
+        },
+    };
+
+    const finalPagination = {
+        ...basePagination,
+        ...sanitizePagination(pagination),
+        pageSizeOptions: (pagination && pagination.pageSizeOptions) || pageSizeOptions,
+        // Forzar que no se muestre el "quick jumper" nativo
+        showQuickJumper: false,
+    };
 
     return (
         <>
@@ -99,7 +129,7 @@ const TableListView = ({
                             columns={columns}
                             loading={loading}
                             rowKey={rowKey}
-                            pagination={pagination}
+                            pagination={finalPagination}
                             defaultSort={defaultSort}
                         />
                     </Card>
