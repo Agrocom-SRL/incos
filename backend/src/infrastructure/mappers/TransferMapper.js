@@ -24,6 +24,9 @@ export class TransferMapper {
     if ('estudianteId' in dataValues) {
       specificFields.estudianteId = dataValues.estudianteId;
     }
+    if ('codigoRude' in dataValues) {
+      specificFields.codigoRude = dataValues.codigoRude;
+    }
     if ('institucionOrigenId' in dataValues) {
       specificFields.institucionOrigenId = dataValues.institucionOrigenId;
     }
@@ -64,6 +67,7 @@ export class TransferMapper {
 
     return {
       estudianteId: data.estudianteId ?? null,
+      codigoRude: data.codigoRude ?? null,
       institucionOrigenId: data.institucionOrigenId ?? null,
       carreraOrigen: data.carreraOrigen,
       anioCursado: data.anioCursado,
@@ -88,6 +92,9 @@ export class TransferMapper {
 
     if ('estudianteId' in data) {
       updateData.estudianteId = data.estudianteId ?? null;
+    }
+    if ('codigoRude' in data) {
+      updateData.codigoRude = data.codigoRude ?? null;
     }
     if ('institucionOrigenId' in data) {
       updateData.institucionOrigenId = data.institucionOrigenId ?? null;

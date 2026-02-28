@@ -102,6 +102,7 @@ export class RegisterStudentRequestDTO {
       transitabilidad_motivo_no_procedente,
       // Campos específicos de Traspaso (formulario de traspaso)
       traspaso_institucion_origen_nombre,
+      traspaso_codigo_rude,
       traspaso_dependencia,
       traspaso_departamento_id,
       traspaso_distrito_educativo,
@@ -275,6 +276,7 @@ export class RegisterStudentRequestDTO {
 
       transfer = {
         institucionNombre: traspaso_institucion_origen_nombre || null,
+        codigoRude: traspaso_codigo_rude || null,
         dependencia: traspaso_dependencia || null,
         departamentoId: !Number.isNaN(deptId) ? deptId : null,
         distritoEducativo: traspaso_distrito_educativo || null,

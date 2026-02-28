@@ -29,6 +29,7 @@ export class GenerateDeclaracionJuradaUseCase extends GenerateFormularioInscripc
 
         // Repositorios adicionales para secciones de Formación Académica / Justificación
         this.transitabilityRepository = deps.transitabilityRepository || null;
+        this.transferRepository = deps.transferRepository || null;
         this.institutionRepository = deps.institutionRepository || null;
     }
 
@@ -126,10 +127,43 @@ export class GenerateDeclaracionJuradaUseCase extends GenerateFormularioInscripc
             null;
 
         // Datos específicos de transitabilidad / traspaso e institución de origen
+        const rawTipo = (tipoAdmision || '').toString().trim().toUpperCase();
         let transitabilityData = null;
+        let transferData = null;
         let institutionData = null;
 
-        if (this.transitabilityRepository) {
+        if (rawTipo === 'TRASPASO' && this.transferRepository) {
+            try {
+                const transfer = await this.transferRepository.findBy({
+                    studentId: student.id,
+                });
+                if (transfer) {
+                    const plain =
+                        typeof transfer.toPlainObject === 'function'
+                            ? transfer.toPlainObject()
+                            : transfer;
+                    transferData = plain;
+                    const institucionOrigenId =
+                        plain.institucionOrigenId ?? plain.institucion_origen_id;
+                    if (institucionOrigenId && this.institutionRepository) {
+                        const institution = await this.institutionRepository.findById(
+                            institucionOrigenId
+                        );
+                        if (institution) {
+                            institutionData =
+                                typeof institution.toPlainObject === 'function'
+                                    ? institution.toPlainObject()
+                                    : institution;
+                        }
+                    }
+                }
+            } catch (error) {
+                this.logger.error(
+                    '[Estudiantes] Error al obtener datos de traspaso/institución para declaración jurada',
+                    { studentId: student.id, error: error.message, stack: error.stack }
+                );
+            }
+        } else if (this.transitabilityRepository) {
             try {
                 const transitability = await this.transitabilityRepository.findBy({
                     studentId: student.id,
@@ -187,6 +221,7 @@ export class GenerateDeclaracionJuradaUseCase extends GenerateFormularioInscripc
             signatureTwoColumns: true,
             tipoAdmision,
             transitabilityData,
+            transferData,
             institutionData,
         });
     }

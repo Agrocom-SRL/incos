@@ -124,6 +124,7 @@ export class UpdateStudentController {
 
       result.transfer = {
         institucionNombre: body.traspaso_institucion_origen_nombre || null,
+        codigoRude: body.traspaso_codigo_rude || null,
         dependencia: body.traspaso_dependencia || null,
         departamentoId: !Number.isNaN(deptId) ? deptId : null,
         distritoEducativo: body.traspaso_distrito_educativo || null,

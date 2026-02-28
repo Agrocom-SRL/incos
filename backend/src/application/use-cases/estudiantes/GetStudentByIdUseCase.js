@@ -208,8 +208,8 @@ export class GetStudentByIdUseCase {
         }
       }
 
-      // 7. Faltan documentos de inscripción: si alguna entrega (tipo INSCRIPCION, raíz) tiene entregado false/0
-      const tieneDocumentosFaltantes = documentDeliveries.some(
+      // 7. Faltan documentos: inscripción (raíz no entregado) y, si tipo admisión TRASPASO, también documentos TRASPASO (raíz no entregado)
+      let tieneDocumentosFaltantes = documentDeliveries.some(
         (d) =>
           d.tipoDocumento === 'INSCRIPCION' &&
           (d.documentoPadreId == null || d.documentoPadreId === null) &&
@@ -379,6 +379,22 @@ export class GetStudentByIdUseCase {
         }
       }
 
+      // 7.2.1. Si el estudiante es de tipo TRASPASO, también considerar documentos de traspaso no entregados para el acta
+      if (academicData) {
+        const tipoAdmisionUpper = (academicData.tipoAdmision ?? academicData.admissionType ?? '')
+          .toString()
+          .toUpperCase();
+        if (tipoAdmisionUpper === 'TRASPASO') {
+          const faltanDocumentosTraspaso = documentDeliveries.some(
+            (d) =>
+              d.tipoDocumento === 'TRASPASO' &&
+              (d.documentoPadreId == null || d.documentoPadreId === null) &&
+              (d.entregado === false || d.entregado === 0)
+          );
+          tieneDocumentosFaltantes = tieneDocumentosFaltantes || faltanDocumentosTraspaso;
+        }
+      }
+
       // 8.1. Obtener datos específicos de Transitabilidad / Traspaso (para formularios)
       if (this.institutionRepository && this.transitabilityRepository) {
         try {
@@ -491,6 +507,7 @@ export class GetStudentByIdUseCase {
 
             transfer = {
               institucionNombre: institution?.nombre || null,
+              codigoRude: tPlain.codigoRude || null,
               dependencia: institution?.dependencia || null,
               departamentoId: institution?.departamentoId ?? institution?.departmentId ?? institution?.departamento_id ?? null,
               departamento: transferDepartamentoNombre,

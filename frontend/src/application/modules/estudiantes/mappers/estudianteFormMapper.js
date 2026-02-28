@@ -293,6 +293,7 @@ export const estudianteFormMapper = (studentDetail) => {
   // Mapear datos de Traspaso (paso Traspaso en edición)
   if (transfer) {
     formData.traspaso_institucion_origen_nombre = transfer.institucionNombre ?? '';
+    formData.traspaso_codigo_rude = transfer.codigoRude ?? '';
     formData.traspaso_dependencia = transfer.dependencia ?? null;
     formData.traspaso_departamento_id = transfer.departamentoId != null ? Number(transfer.departamentoId) : null;
     formData.traspaso_distrito_educativo = transfer.distritoEducativo ?? '';

@@ -3,6 +3,9 @@ import { TIPOS_DOCUMENTO_SISTEMA } from '../../../domain/constants/index.js';
 import { UPLOAD } from '../../../infrastructure/config/uploads.config.js';
 import { BaseDocumentGenerationUseCase } from '../base/BaseDocumentGenerationUseCase.js';
 
+/** Tipo de admisión TRASPASO para incluir documentos de traspaso en el acta */
+const TIPO_ADMISION_TRASPASO = 'TRASPASO';
+
 /**
  * Use Case: GenerateActaCompromisoUseCase
  * Módulo: Estudiantes
@@ -35,6 +38,7 @@ export class GenerateActaCompromisoUseCase extends BaseDocumentGenerationUseCase
      * @param {Object} params.studentRepository - Repositorio de estudiantes (específico, para validar estudiante)
      * @param {Object} params.studentDocumentRepository - Repositorio de documentos de estudiantes (común, para guardar en BD)
      * @param {Object} params.studentDocumentDeliveryRepository - Repositorio de entregas de documentos (específico, para buscar datos)
+     * @param {Object} params.studentAcademicDataRepository - Repositorio de datos académicos (para saber si es TRASPASO)
      * @param {Object} params.configuracionSistemaRepository - Repositorio de configuración del sistema (para obtener gestión activa)
      * @param {Object} params.managementRepository - Repositorio de gestiones (para obtener gestión activa)
      * @param {IPDFGenerator} params.pdfGenerator - Servicio de generación PDF (DI, implementa IPDFGenerator)
@@ -45,6 +49,7 @@ export class GenerateActaCompromisoUseCase extends BaseDocumentGenerationUseCase
         studentRepository,
         studentDocumentRepository,
         studentDocumentDeliveryRepository,
+        studentAcademicDataRepository,
         configuracionSistemaRepository,
         managementRepository,
         pdfGenerator,
@@ -65,6 +70,7 @@ export class GenerateActaCompromisoUseCase extends BaseDocumentGenerationUseCase
         // Repositorios específicos para buscar datos necesarios
         this.studentRepository = studentRepository;
         this.studentDocumentDeliveryRepository = studentDocumentDeliveryRepository;
+        this.studentAcademicDataRepository = studentAcademicDataRepository || null;
     }
 
     /**
@@ -91,16 +97,19 @@ export class GenerateActaCompromisoUseCase extends BaseDocumentGenerationUseCase
             // 1. Validar y obtener estudiante
             const student = await this._validateAndGetStudent(studentId);
 
-            // 2. Buscar entregas de documentos de inscripción
-            const entregasConDetalle = await this._fetchDocumentDeliveries(studentId);
+            // 2. Determinar si es estudiante de tipo TRASPASO (para incluir documentos de traspaso no entregados)
+            const esTraspaso = await this._isStudentTraspaso(studentId);
 
-            // 3. Obtener año de gestión activa (usa método del base)
+            // 3. Buscar entregas de documentos no entregados: INSCRIPCION (raíz) y, si es TRASPASO, también TRASPASO (raíz)
+            const entregasConDetalle = await this._fetchDocumentDeliveries(studentId, esTraspaso);
+
+            // 4. Obtener año de gestión activa (usa método del base)
             const gestionYear = await this._getCurrentManagementYear();
 
-            // 4. Generar PDF con gestión activa, datos del estudiante y entregas
+            // 5. Generar PDF con gestión activa, datos del estudiante y entregas
             const pdfBuffer = await this._generatePdfBuffer(gestionYear, student, entregasConDetalle);
 
-            // 5. Guardar archivo y persistir en BD
+            // 6. Guardar archivo y persistir en BD
             const result = await this._persistDocument(studentId, pdfBuffer, student);
 
             this.logger.info('[Estudiantes] Acta PDF generada correctamente', {
@@ -141,26 +150,77 @@ export class GenerateActaCompromisoUseCase extends BaseDocumentGenerationUseCase
     }
 
     /**
-     * Busca las entregas de documentos de inscripción con detalle
-     * 
+     * Indica si el estudiante es de tipo admisión TRASPASO (para incluir documentos de traspaso en el acta).
+     *
      * @private
      * @param {number} studentId - ID del estudiante
-     * @returns {Promise<Array>} Lista de entregas con detalle
+     * @returns {Promise<boolean>} true si tipo admisión es TRASPASO
      */
-    async _fetchDocumentDeliveries(studentId) {
-        const entregasConDetalle = await this.studentDocumentDeliveryRepository.obtenerEntregasConDetalle({
+    async _isStudentTraspaso(studentId) {
+        if (!this.studentAcademicDataRepository) {
+            return false;
+        }
+        try {
+            const result = await this.studentAcademicDataRepository.findAll(
+                { studentId },
+                null,
+                null
+            );
+            const list = result.studentAcademicData || [];
+            if (list.length === 0) return false;
+            const first = list[0];
+            const plain = first.toPlainObject ? first.toPlainObject() : first;
+            const tipo = (plain.tipoAdmision ?? plain.admissionType ?? '').toString().toUpperCase();
+            return tipo === TIPO_ADMISION_TRASPASO;
+        } catch (err) {
+            this.logger.warn('[Estudiantes] Error al obtener tipo de admisión para acta', {
+                studentId,
+                error: err.message,
+            });
+            return false;
+        }
+    }
+
+    /**
+     * Busca las entregas de documentos no entregados: INSCRIPCION (raíz) y, si es TRASPASO, también TRASPASO (raíz).
+     * El PDF espera filas con nombre_documento (snake_case desde la vista).
+     *
+     * @private
+     * @param {number} studentId - ID del estudiante
+     * @param {boolean} esTraspaso - Si el estudiante es de tipo admisión TRASPASO
+     * @returns {Promise<Array>} Lista de entregas con detalle (no entregadas)
+     */
+    async _fetchDocumentDeliveries(studentId, esTraspaso = false) {
+        const baseFilters = {
             estudiante_id: studentId,
-            tipo_documento: TIPOS_DOCUMENTO_SISTEMA.INSCRIPCION,
             documento_padre_id: null,
             entregado: false,
+        };
+
+        const entregasInscripcion = await this.studentDocumentDeliveryRepository.obtenerEntregasConDetalle({
+            ...baseFilters,
+            tipo_documento: TIPOS_DOCUMENTO_SISTEMA.INSCRIPCION,
         });
 
-        this.logger.info('[Estudiantes] Entregas con detalle obtenidas', {
+        let entregasTraspaso = [];
+        if (esTraspaso) {
+            entregasTraspaso = await this.studentDocumentDeliveryRepository.obtenerEntregasConDetalle({
+                ...baseFilters,
+                tipo_documento: TIPOS_DOCUMENTO_SISTEMA.TRASPASO,
+            });
+        }
+
+        const todas = [...entregasInscripcion, ...entregasTraspaso];
+
+        this.logger.info('[Estudiantes] Entregas con detalle obtenidas para acta', {
             studentId,
-            cantidad: entregasConDetalle.length,
+            esTraspaso,
+            cantidadInscripcion: entregasInscripcion.length,
+            cantidadTraspaso: entregasTraspaso.length,
+            cantidadTotal: todas.length,
         });
 
-        return entregasConDetalle;
+        return todas;
     }
 
     /**

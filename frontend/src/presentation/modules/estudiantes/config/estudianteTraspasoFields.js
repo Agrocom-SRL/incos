@@ -23,28 +23,32 @@ export const createEstudianteTraspasoFields = () => {
     formacionAcademica: {
       title: 'Formación académica',
       fields: [
-        // Datos de la institución de origen (tabla instituciones) - tipo ITT para traspaso
         {
           name: 'traspaso_institucion_origen_nombre',
-          label: 'Instituto en el que estudió (ITT de origen)',
+          label: 'Instituto en el que estudió',
           type: 'input',
           inputType: 'text',
           required: true,
-          span: 12,
-          placeholder: 'Nombre del instituto ITT de origen',
+          span: 18,
+          placeholder: 'Nombre del ITT de origen',
         },
         {
-          name: 'traspaso_dependencia',
-          label: 'Dependencia',
-          type: 'select',
+          name: 'traspaso_codigo_rude',
+          label: 'Código RUDE / RUDEAL',
+          type: 'input',
+          inputType: 'text',
           required: false,
           span: 12,
-          options: [
-            { label: 'Fiscal', value: 'FISCAL' },
-            { label: 'Convenio', value: 'CONVENIO' },
-            { label: 'Privado', value: 'PRIVADO' },
-          ],
-          placeholder: 'Seleccione dependencia',
+          placeholder: 'Código RUDE o RUDEAL del postulante',
+        },
+        {
+          name: 'traspaso_carrera_origen',
+          label: 'Carrera',
+          type: 'input',
+          inputType: 'text',
+          required: false,
+          span: 12,
+          placeholder: 'Carrera cursada en el ITT de origen',
         },
         {
           name: 'traspaso_departamento_id',
@@ -62,17 +66,7 @@ export const createEstudianteTraspasoFields = () => {
           inputType: 'text',
           required: false,
           span: 12,
-          placeholder: 'Distrito educativo al que pertenece',
-        },
-        // Datos específicos de traspasos (tabla traspasos)
-        {
-          name: 'traspaso_carrera_origen',
-          label: 'Carrera (en el ITT de origen)',
-          type: 'input',
-          inputType: 'text',
-          required: false,
-          span: 12,
-          placeholder: 'Nombre de la carrera cursada en origen',
+          placeholder: 'Distrito educativo',
         },
         {
           name: 'traspaso_anio_cursado',
@@ -81,8 +75,8 @@ export const createEstudianteTraspasoFields = () => {
           required: true,
           span: 12,
           options: [
-            { label: 'Primer año', value: 'PRIMERO' },
-            { label: 'Segundo año', value: 'SEGUNDO' },
+            { label: 'Primer Año', value: 'PRIMERO' },
+            { label: 'Segundo Año', value: 'SEGUNDO' },
           ],
         },
         {
@@ -95,6 +89,19 @@ export const createEstudianteTraspasoFields = () => {
             { label: 'Semestral', value: 'SEMESTRAL' },
             { label: 'Anual', value: 'ANUAL' },
           ],
+        },
+        {
+          name: 'traspaso_dependencia',
+          label: 'Dependencia',
+          type: 'select',
+          required: false,
+          span: 12,
+          options: [
+            { label: 'Fiscal', value: 'FISCAL' },
+            { label: 'Convenio', value: 'CONVENIO' },
+            { label: 'Privado', value: 'PRIVADO' },
+          ],
+          placeholder: 'Seleccione dependencia',
         },
       ],
     },

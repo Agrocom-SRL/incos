@@ -15,6 +15,9 @@ export class Transfer extends BaseEntity {
     if (data.hasOwnProperty('estudianteId')) {
       this.estudianteId = data.estudianteId;
     }
+    if (data.hasOwnProperty('codigoRude')) {
+      this.codigoRude = data.codigoRude;
+    }
     if (data.hasOwnProperty('institucionOrigenId')) {
       this.institucionOrigenId = data.institucionOrigenId;
     }
@@ -50,6 +53,9 @@ export class Transfer extends BaseEntity {
 
     if (this.hasOwnProperty('estudianteId')) {
       plainObject.estudianteId = this.estudianteId;
+    }
+    if (this.hasOwnProperty('codigoRude')) {
+      plainObject.codigoRude = this.codigoRude;
     }
     if (this.hasOwnProperty('institucionOrigenId')) {
       plainObject.institucionOrigenId = this.institucionOrigenId;

@@ -227,6 +227,7 @@ export class UpdateStudentUseCase {
 
     const {
       institucionNombre,
+      codigoRude,
       dependencia,
       departamentoId,
       distritoEducativo,
@@ -287,6 +288,7 @@ export class UpdateStudentUseCase {
     const payload = {
       estudianteId: student.id,
       institucionOrigenId,
+      codigoRude: codigoRude ?? null,
       carreraOrigen,
       anioCursado: anioCursado || null,
       regimenOrigen: regimenOrigen || null,

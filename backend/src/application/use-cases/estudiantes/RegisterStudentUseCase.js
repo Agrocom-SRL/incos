@@ -440,6 +440,7 @@ export class RegisterStudentUseCase {
 
     const {
       institucionNombre,
+      codigoRude,
       dependencia,
       departamentoId,
       distritoEducativo,
@@ -494,6 +495,7 @@ export class RegisterStudentUseCase {
     const transferToCreate = {
       estudianteId: student.id,
       institucionOrigenId,
+      codigoRude: codigoRude || null,
       carreraOrigen: carreraOrigen || null,
       anioCursado: anioCursado || null,
       regimenOrigen: regimenOrigen || null,

@@ -17,6 +17,12 @@ export const Traspaso = sequelize.define(
       allowNull: true,
       comment: 'Estudiante postulante (referencia a estudiantes)',
     },
+    codigoRude: {
+      type: DataTypes.STRING(50),
+      field: 'codigo_rude',
+      allowNull: true,
+      comment: 'Código RUDE o RUDEAL del postulante (exclusivo de traspaso)',
+    },
     institucionOrigenId: {
       type: DataTypes.INTEGER,
       field: 'institucion_origen_id',
