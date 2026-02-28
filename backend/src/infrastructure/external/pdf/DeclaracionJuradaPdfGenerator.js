@@ -178,45 +178,8 @@ export class DeclaracionJuradaPdfGenerator extends FormularioInscripcionPdfGener
         }
 
         if (formacionItems.length > 0) {
-            // Usar casillas (recuadros) como en datos personales
-            // Columna izquierda: nivel, unidad, distrito
-            const leftColumnItems = [];
-            const rightColumnItems = [];
-
-            // Para mantener el orden visual, distribuir manualmente
-            const nivelItem = formacionItems.find((i) =>
-                i.label.startsWith('Nivel académico')
-            );
-            const unidadItem = formacionItems.find((i) =>
-                i.label.startsWith('Unidad Educativa')
-            );
-            const distritoItem = formacionItems.find((i) =>
-                i.label.startsWith('Distrito educativo')
-            );
-            const carreraItem = formacionItems.find((i) => i.label === 'Carrera:');
-            const anioItem = formacionItems.find((i) =>
-                i.label.startsWith('Año de conclusión')
-            );
-
-            if (nivelItem) leftColumnItems.push(nivelItem);
-            if (unidadItem) leftColumnItems.push(unidadItem);
-            if (distritoItem) leftColumnItems.push(distritoItem);
-
-            if (carreraItem) rightColumnItems.push(carreraItem);
-            if (anioItem) rightColumnItems.push(anioItem);
-
-            // Agregar cualquier item restante al final de la columna izquierda
-            for (const item of formacionItems) {
-                if (
-                    ![nivelItem, unidadItem, distritoItem, carreraItem, anioItem].includes(
-                        item
-                    )
-                ) {
-                    leftColumnItems.push(item);
-                }
-            }
-
-            await this._addBoxedFieldGrid(leftColumnItems, rightColumnItems, 50);
+            // Hacer que cada fila ocupe el 100% del ancho (como Domicilio / Lugar de nacimiento)
+            await this._addBoxedFieldGrid(formacionItems, [], 100, 100);
         } else {
             await this._addLabelValue(
                 'Formación académica:',
@@ -231,11 +194,10 @@ export class DeclaracionJuradaPdfGenerator extends FormularioInscripcionPdfGener
         // ============================================
         await this._addSection('III. JUSTIFICATIVO DE LA POSTULACIÓN');
 
-        const leftJustItems = [];
-        const rightJustItems = [];
+        const justItems = [];
 
         // Instituto Técnico y Tecnológico (Razón social) - Instituto destino (INCOS)
-        leftJustItems.push({
+        justItems.push({
             label: 'INSTITUTO TÉCNICO Y TECNOLÓGICO (Razón social):',
             value: IncosPDFBase.INSTITUTE.name,
         });
@@ -247,7 +209,7 @@ export class DeclaracionJuradaPdfGenerator extends FormularioInscripcionPdfGener
             carreraOrigen ||
             '';
         if (carreraDestino) {
-            leftJustItems.push({
+            justItems.push({
                 label: 'Carrera a la que postula:',
                 value: carreraDestino,
             });
@@ -256,7 +218,7 @@ export class DeclaracionJuradaPdfGenerator extends FormularioInscripcionPdfGener
         // Dependencia (usa dependencia de la institución de origen si existe)
         const dependencia = (institution.dependencia || '').toString().trim();
         if (dependencia) {
-            rightJustItems.push({
+            justItems.push({
                 label: 'Dependencia:',
                 value: dependencia,
             });
@@ -272,14 +234,15 @@ export class DeclaracionJuradaPdfGenerator extends FormularioInscripcionPdfGener
                     : upper === 'ANUAL'
                     ? 'Anual'
                     : regimenRaw;
-            rightJustItems.push({
+            justItems.push({
                 label: 'Régimen de estudios:',
                 value: regimen,
             });
         }
 
-        if (leftJustItems.length > 0 || rightJustItems.length > 0) {
-            await this._addBoxedFieldGrid(leftJustItems, rightJustItems, 50);
+        if (justItems.length > 0) {
+            // También a ancho completo para evitar sobreposiciones de texto
+            await this._addBoxedFieldGrid(justItems, [], 100, 120);
         } else {
             await this._addLabelValue(
                 'Justificativo de la postulación:',
@@ -307,10 +270,6 @@ export class DeclaracionJuradaPdfGenerator extends FormularioInscripcionPdfGener
         const textoDeclaracion =
             'Declaro que la documentación académica presentada para la postulación y otros fines es auténtica y verificable y me comprometo a respaldarla con los documentos originales, en caso de ser requerida.';
 
-        await this._addParagraph(textoDeclaracion);
-        this._addSpace(8);
-
-        // Línea de firma del postulante dentro de la sección IV
         if (!this._pdfDoc || !this._currentPage) {
             throw new Error(
                 'Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes'
@@ -322,7 +281,38 @@ export class DeclaracionJuradaPdfGenerator extends FormularioInscripcionPdfGener
         const lineWidth = IncosPDFBase.LAYOUT.signatureLineWidth ?? 150;
         const lineThickness = IncosPDFBase.LAYOUT.signatureLineThickness ?? 1;
         const textRgb = this._hexToRgb(IncosPDFBase.COLORS.text);
+        const fontName = this._mapFontNameToStandardFont(
+            IncosPDFBase.FONTS.normal.font
+        );
+        const font = await this._pdfDoc.embedFont(fontName);
+        const fontSize = IncosPDFBase.FONTS.section.size; // un poco más grande
 
+        const maxWidth = pageWidth - m.left - m.right;
+        const x = m.left;
+        const lineSpacing = IncosPDFBase.LAYOUT.spacing.line;
+
+        // Párrafo de declaración con fuente más grande
+        let currentY = this._currentY;
+        const linesDeclaracion = this._wrapText(
+            textoDeclaracion,
+            font,
+            fontSize,
+            maxWidth
+        );
+        for (const line of linesDeclaracion) {
+            this._currentPage.drawText(line, {
+                x,
+                y: currentY,
+                size: fontSize,
+                font,
+                color: textRgb,
+            });
+            currentY -= fontSize + lineSpacing;
+        }
+
+        this._currentY = currentY - IncosPDFBase.LAYOUT.spacing.paragraph;
+
+        // Línea de firma del postulante dentro de la sección IV
         const centerX = pageWidth / 2;
         const halfLine = lineWidth / 2;
         const lineY = this._currentY - 12;
@@ -335,12 +325,7 @@ export class DeclaracionJuradaPdfGenerator extends FormularioInscripcionPdfGener
             color: textRgb,
         });
 
-        // Texto "Firma del postulante"
-        const normalFontName = this._mapFontNameToStandardFont(
-            IncosPDFBase.FONTS.normal.font
-        );
-        const font = await this._pdfDoc.embedFont(normalFontName);
-        const fontSize = IncosPDFBase.FONTS.normal.size;
+        // Texto "Firma del postulante" (mismo tamaño aumentado)
         const label = 'Firma del postulante';
         const labelWidth = font.widthOfTextAtSize(label, fontSize);
         const labelY = lineY - fontSize - 2;
@@ -366,7 +351,26 @@ export class DeclaracionJuradaPdfGenerator extends FormularioInscripcionPdfGener
             'presentados por la o el postulante y el análisis académico de la pertinencia de la solicitud en el marco de la normativa vigente, ' +
             'concluye: ____________________ (Procedente/No procedente).';
 
-        await this._addParagraph(textoCumplimiento);
+        // Párrafo de cumplimiento con fuente más grande
+        currentY = this._currentY;
+        const linesCumplimiento = this._wrapText(
+            textoCumplimiento,
+            font,
+            fontSize,
+            maxWidth
+        );
+        for (const line of linesCumplimiento) {
+            this._currentPage.drawText(line, {
+                x,
+                y: currentY,
+                size: fontSize,
+                font,
+                color: textRgb,
+            });
+            currentY -= fontSize + lineSpacing;
+        }
+
+        this._currentY = currentY - IncosPDFBase.LAYOUT.spacing.paragraph;
 
         // Líneas de firma para Dirección Académica y Rector del ITT
         const totalWidth = pageWidth - m.left - m.right;
@@ -423,7 +427,29 @@ export class DeclaracionJuradaPdfGenerator extends FormularioInscripcionPdfGener
             ? `${lugarBase}, ${fechaLiteral}`
             : lugarBase;
 
-        await this._addLabelValue('Lugar y fecha:', lugarYFecha);
+        // "Lugar y fecha" con fuente aumentada (mismo tamaño que párrafos)
+        const lugarLabel = 'Lugar y fecha:';
+        const lugarText = `${lugarLabel} ${lugarYFecha}`;
+        const linesLugar = this._wrapText(
+            lugarText,
+            font,
+            fontSize,
+            maxWidth
+        );
+
+        let yLugar = this._currentY;
+        for (const line of linesLugar) {
+            this._currentPage.drawText(line, {
+                x,
+                y: yLugar,
+                size: fontSize,
+                font,
+                color: textRgb,
+            });
+            yLugar -= fontSize + lineSpacing;
+        }
+
+        this._currentY = yLugar;
     }
 
     /**

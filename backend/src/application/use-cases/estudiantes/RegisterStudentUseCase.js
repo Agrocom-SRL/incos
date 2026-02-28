@@ -317,11 +317,16 @@ export class RegisterStudentUseCase {
     } = transitability;
 
     // Datos mínimos requeridos para crear transitabilidad
-    if (!institucionNombre || !tipoInstitucion) {
+    // IMPORTANTE: carreraOrigen es NOT NULL en la tabla transitabilidades,
+    // así que si viene vacío provocaríamos un error de base de datos.
+    if (!institucionNombre || !tipoInstitucion || !carreraOrigen) {
       this.logger.warn(
         '[Estudiantes] Datos de transitabilidad incompletos; se omite creación de registro',
         {
           studentId: student.id,
+          institucionNombre,
+          tipoInstitucion,
+          carreraOrigen,
         }
       );
       return null;

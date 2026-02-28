@@ -51,6 +51,9 @@ export class GetStudentByIdUseCase {
  * @param {Object} params.studentAcademicDataRepository - Repositorio de datos académicos del estudiante
  * @param {Object} params.enrollmentRepository - Repositorio de inscripciones
  * @param {Object} params.getEnrollmentByIdUseCase - Use case para obtener detalle de inscripción
+ * @param {Object} params.institutionRepository - Repositorio de instituciones (origen UETHP/CEA/ITT)
+ * @param {Object} params.transitabilityRepository - Repositorio de transitabilidades
+ * @param {Object} params.transferRepository - Repositorio de traspasos
  * @param {ILogger} params.logger - Logger para registro de eventos
  */
   constructor({
@@ -75,6 +78,9 @@ export class GetStudentByIdUseCase {
     studentAcademicDataRepository,
     enrollmentRepository,
     getEnrollmentByIdUseCase,
+    institutionRepository,
+    transitabilityRepository,
+    transferRepository,
     logger,
   }) {
     this.studentRepository = studentRepository;
@@ -98,6 +104,9 @@ export class GetStudentByIdUseCase {
     this.studentAcademicDataRepository = studentAcademicDataRepository;
     this.enrollmentRepository = enrollmentRepository;
     this.getEnrollmentByIdUseCase = getEnrollmentByIdUseCase;
+    this.institutionRepository = institutionRepository;
+    this.transitabilityRepository = transitabilityRepository;
+    this.transferRepository = transferRepository;
     this.logger = logger;
   }
 
@@ -248,6 +257,8 @@ export class GetStudentByIdUseCase {
       // 7.2. Datos académicos del estudiante (para edición: tipo admisión, gestión de ingreso, carrera) e inscripción más reciente
       let academicData = null;
       let inscripcion = null;
+      let transitability = null;
+      let transfer = null;
       if (this.studentAcademicDataRepository && this.enrollmentRepository && this.getEnrollmentByIdUseCase) {
         try {
           // Obtener datos académicos del estudiante
@@ -323,7 +334,100 @@ export class GetStudentByIdUseCase {
         }
       }
 
-      // 8. Retornar el estudiante con todos sus datos relacionados
+      // 8.1. Obtener datos específicos de Transitabilidad / Traspaso (para formularios)
+      if (this.institutionRepository && this.transitabilityRepository) {
+        try {
+          const transit = await this.transitabilityRepository.findBy({
+            studentId: student.id,
+          });
+          if (transit) {
+            const tPlain = transit.toPlainObject ? transit.toPlainObject() : transit;
+            let institution = null;
+            if (tPlain.institucionOrigenId) {
+              try {
+                const inst = await this.institutionRepository.findById(
+                  tPlain.institucionOrigenId
+                );
+                if (inst) {
+                  institution = inst.toPlainObject ? inst.toPlainObject() : inst;
+                }
+              } catch (err) {
+                this.logger.warn('[Estudiantes] Error al obtener institución de transitabilidad', {
+                  studentId: student.id,
+                  institucionOrigenId: tPlain.institucionOrigenId,
+                  error: err.message,
+                });
+              }
+            }
+
+            transitability = {
+              institucionNombre: institution?.nombre || null,
+              codigoSie: institution?.codigoSie || null,
+              tipoInstitucion: institution?.tipo || null,
+              dependencia: institution?.dependencia || null,
+              departamentoId: institution?.departamentoId || null,
+              distritoEducativo: institution?.distritoEducativo || null,
+              carreraOrigen: tPlain.carreraOrigen || null,
+              anioConclusion: tPlain.anioConclusion || null,
+              regimenEstudios: tPlain.regimenEstudios || null,
+              estado: tPlain.estado || null,
+              motivoNoProcedente: tPlain.motivoNoProcedente || null,
+            };
+          }
+        } catch (err) {
+          this.logger.warn('[Estudiantes] Error al obtener transitabilidad del estudiante', {
+            studentId: student.id,
+            error: err.message,
+          });
+        }
+      }
+
+      if (this.institutionRepository && this.transferRepository) {
+        try {
+          const tr = await this.transferRepository.findBy({
+            studentId: student.id,
+          });
+          if (tr) {
+            const tPlain = tr.toPlainObject ? tr.toPlainObject() : tr;
+            let institution = null;
+            if (tPlain.institucionOrigenId) {
+              try {
+                const inst = await this.institutionRepository.findById(
+                  tPlain.institucionOrigenId
+                );
+                if (inst) {
+                  institution = inst.toPlainObject ? inst.toPlainObject() : inst;
+                }
+              } catch (err) {
+                this.logger.warn('[Estudiantes] Error al obtener institución de traspaso', {
+                  studentId: student.id,
+                  institucionOrigenId: tPlain.institucionOrigenId,
+                  error: err.message,
+                });
+              }
+            }
+
+            transfer = {
+              institucionNombre: institution?.nombre || null,
+              dependencia: institution?.dependencia || null,
+              departamentoId: institution?.departamentoId || null,
+              distritoEducativo: institution?.distritoEducativo || null,
+              carreraOrigen: tPlain.carreraOrigen || null,
+              anioCursado: tPlain.anioCursado || null,
+              regimenOrigen: tPlain.regimenOrigen || null,
+              estado: tPlain.estado || null,
+              motivoNoProcedente: tPlain.motivoNoProcedente || null,
+            };
+          }
+        } catch (err) {
+          this.logger.warn('[Estudiantes] Error al obtener traspaso del estudiante', {
+            studentId: student.id,
+            error: err.message,
+          });
+        }
+      }
+
+      // 9. Retornar el estudiante con todos sus datos relacionados
       const result = {
         student: student,
         guardians,
@@ -345,6 +449,9 @@ export class GetStudentByIdUseCase {
         inscripcion,
         // Datos académicos (tipoAdmision, gestionIngresoId, carreraId) para formulario de edición / paso 1
         academicData,
+        // Datos específicos de Transitabilidad / Traspaso para formularios de edición
+        transitability,
+        transfer,
       };
 
       this.logger.info('[Estudiantes] Estudiante obtenido exitosamente', {
@@ -354,6 +461,8 @@ export class GetStudentByIdUseCase {
         originsCount: origins.length,
         documentDeliveriesCount: documentDeliveries.length,
         scholarshipsCount: scholarships.length,
+        hasTransitability: !!transitability,
+        hasTransfer: !!transfer,
         tieneDocumentosFaltantes: result.tieneDocumentosFaltantes,
         tipoTieneDocumentosFaltantes: typeof result.tieneDocumentosFaltantes,
         resultKeys: Object.keys(result),

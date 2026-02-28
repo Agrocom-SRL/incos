@@ -93,6 +93,47 @@ export class UpdateStudentController {
     if (body.gestionIngresoId !== undefined) result.gestionIngresoId = body.gestionIngresoId == null || body.gestionIngresoId === '' ? null : body.gestionIngresoId;
     if (body.carreraId !== undefined) result.carreraId = body.carreraId == null || body.carreraId === '' ? null : body.carreraId;
 
+    // Datos específicos de Transitabilidad (solo cuando tipoAdmision es TRANSITABILIDAD)
+    if (body.tipoAdmision === 'TRANSITABILIDAD') {
+      const deptId =
+        body.transitabilidad_departamento_id != null && body.transitabilidad_departamento_id !== ''
+          ? parseInt(body.transitabilidad_departamento_id, 10)
+          : null;
+
+      result.transitability = {
+        institucionNombre: body.transitabilidad_institucion_nombre || null,
+        codigoSie: body.transitabilidad_codigo_sie || null,
+        tipoInstitucion: body.transitabilidad_tipo || null, // UETHP / CEA
+        dependencia: body.transitabilidad_dependencia || null,
+        departamentoId: !Number.isNaN(deptId) ? deptId : null,
+        distritoEducativo: body.transitabilidad_distrito_educativo || null,
+        carreraOrigen: body.transitabilidad_carrera_origen || null,
+        anioConclusion: body.transitabilidad_anio_conclusion || null,
+        estado: body.transitabilidad_estado || 'SOLICITADO',
+        motivoNoProcedente: body.transitabilidad_motivo_no_procedente || null,
+      };
+    }
+
+    // Datos específicos de Traspaso (solo cuando tipoAdmision es TRASPASO)
+    if (body.tipoAdmision === 'TRASPASO') {
+      const deptId =
+        body.traspaso_departamento_id != null && body.traspaso_departamento_id !== ''
+          ? parseInt(body.traspaso_departamento_id, 10)
+          : null;
+
+      result.transfer = {
+        institucionNombre: body.traspaso_institucion_origen_nombre || null,
+        dependencia: body.traspaso_dependencia || null,
+        departamentoId: !Number.isNaN(deptId) ? deptId : null,
+        distritoEducativo: body.traspaso_distrito_educativo || null,
+        carreraOrigen: body.traspaso_carrera_origen || null,
+        anioCursado: body.traspaso_anio_cursado || null, // PRIMERO / SEGUNDO
+        regimenOrigen: body.traspaso_regimen_origen || null, // SEMESTRAL / ANUAL
+        estado: body.traspaso_estado || 'SOLICITADO',
+        motivoNoProcedente: body.traspaso_motivo_no_procedente || null,
+      };
+    }
+
     // Extraer datos básicos del estudiante (campos de la tabla estudiantes)
     // NOTA: Los campos de origen (paisId, ciudadNacimiento, etc.) se procesan por separado
     const studentFields = [
