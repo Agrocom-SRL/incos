@@ -48,6 +48,7 @@ export class GetStudentByIdUseCase {
  * @param {Object} params.studentScholarshipRepository - Repositorio de asignaciones de becas
  * @param {Object} params.scholarshipRepository - Repositorio de becas/descuentos
  * @param {Object} params.managementRepository - Repositorio de gestiones
+ * @param {Object} params.careerRepository - Repositorio de carreras
  * @param {Object} params.studentAcademicDataRepository - Repositorio de datos académicos del estudiante
  * @param {Object} params.enrollmentRepository - Repositorio de inscripciones
  * @param {Object} params.getEnrollmentByIdUseCase - Use case para obtener detalle de inscripción
@@ -74,6 +75,7 @@ export class GetStudentByIdUseCase {
     studentScholarshipRepository,
     scholarshipRepository,
     managementRepository,
+    careerRepository,
     studentDocumentRepository,
     studentAcademicDataRepository,
     enrollmentRepository,
@@ -100,6 +102,7 @@ export class GetStudentByIdUseCase {
     this.studentScholarshipRepository = studentScholarshipRepository;
     this.scholarshipRepository = scholarshipRepository;
     this.managementRepository = managementRepository;
+    this.careerRepository = careerRepository || null;
     this.studentDocumentRepository = studentDocumentRepository;
     this.studentAcademicDataRepository = studentAcademicDataRepository;
     this.enrollmentRepository = enrollmentRepository;
@@ -273,6 +276,48 @@ export class GetStudentByIdUseCase {
             // Exponer el primer registro de datos académicos (gestionIngresoId, carreraId) para el formulario de edición
             const first = academicDataList[0];
             academicData = first.toPlainObject ? first.toPlainObject() : first;
+            // Enriquecer con gestión y carrera (nombres para mostrar en detalle, no solo IDs)
+            const mgId = academicData.managementId ?? academicData.gestionIngresoId;
+            const carId = academicData.careerId ?? academicData.carreraId;
+            if (mgId && this.managementRepository) {
+              try {
+                const management = await this.managementRepository.findById(mgId);
+                if (management) {
+                  const mgPlain = management.toPlainObject ? management.toPlainObject() : management;
+                  academicData.management = {
+                    id: mgPlain.id,
+                    name: mgPlain.name ?? mgPlain.nombre ?? null,
+                    year: mgPlain.year ?? mgPlain.anio ?? null,
+                    code: mgPlain.code ?? mgPlain.codigo ?? null,
+                  };
+                }
+              } catch (err) {
+                this.logger.warn('[Estudiantes] Error al obtener gestión para datos académicos', {
+                  studentId: student.id,
+                  managementId: mgId,
+                  error: err.message,
+                });
+              }
+            }
+            if (carId && this.careerRepository) {
+              try {
+                const career = await this.careerRepository.findById(carId);
+                if (career) {
+                  const carPlain = career.toPlainObject ? career.toPlainObject() : career;
+                  academicData.career = {
+                    id: carPlain.id,
+                    name: carPlain.name ?? carPlain.nombre ?? null,
+                    code: carPlain.code ?? carPlain.codigo ?? null,
+                  };
+                }
+              } catch (err) {
+                this.logger.warn('[Estudiantes] Error al obtener carrera para datos académicos', {
+                  studentId: student.id,
+                  careerId: carId,
+                  error: err.message,
+                });
+              }
+            }
             // Buscar inscripciones para cada dato académico
             let latestEnrollment = null;
             let latestEnrollmentDate = null;
@@ -360,12 +405,31 @@ export class GetStudentByIdUseCase {
               }
             }
 
+            let departamentoNombre = null;
+            const depId = institution?.departamentoId ?? institution?.departmentId ?? institution?.departamento_id;
+            if (depId && this.departmentRepository) {
+              try {
+                const dep = await this.departmentRepository.findById(depId, { paranoid: false });
+                if (dep) {
+                  const dPlain = dep.toPlainObject ? dep.toPlainObject() : dep;
+                  departamentoNombre = (dPlain && (dPlain.name ?? dPlain.nombre)) ? (dPlain.name ?? dPlain.nombre) : null;
+                }
+              } catch (err) {
+                this.logger.warn('[Estudiantes] Error al obtener departamento de transitabilidad', {
+                  studentId: student.id,
+                  departamentoId: depId,
+                  error: err.message,
+                });
+              }
+            }
+
             transitability = {
               institucionNombre: institution?.nombre || null,
               codigoSie: institution?.codigoSie || null,
               tipoInstitucion: institution?.tipo || null,
               dependencia: institution?.dependencia || null,
-              departamentoId: institution?.departamentoId || null,
+              departamentoId: institution?.departamentoId ?? institution?.departmentId ?? institution?.departamento_id ?? null,
+              departamento: departamentoNombre,
               distritoEducativo: institution?.distritoEducativo || null,
               carreraOrigen: tPlain.carreraOrigen || null,
               anioConclusion: tPlain.anioConclusion || null,
@@ -407,10 +471,29 @@ export class GetStudentByIdUseCase {
               }
             }
 
+            let transferDepartamentoNombre = null;
+            const trDepId = institution?.departamentoId ?? institution?.departmentId ?? institution?.departamento_id;
+            if (trDepId && this.departmentRepository) {
+              try {
+                const dep = await this.departmentRepository.findById(trDepId, { paranoid: false });
+                if (dep) {
+                  const dPlain = dep.toPlainObject ? dep.toPlainObject() : dep;
+                  transferDepartamentoNombre = (dPlain && (dPlain.name ?? dPlain.nombre)) ? (dPlain.name ?? dPlain.nombre) : null;
+                }
+              } catch (err) {
+                this.logger.warn('[Estudiantes] Error al obtener departamento de traspaso', {
+                  studentId: student.id,
+                  departamentoId: trDepId,
+                  error: err.message,
+                });
+              }
+            }
+
             transfer = {
               institucionNombre: institution?.nombre || null,
               dependencia: institution?.dependencia || null,
-              departamentoId: institution?.departamentoId || null,
+              departamentoId: institution?.departamentoId ?? institution?.departmentId ?? institution?.departamento_id ?? null,
+              departamento: transferDepartamentoNombre,
               distritoEducativo: institution?.distritoEducativo || null,
               carreraOrigen: tPlain.carreraOrigen || null,
               anioCursado: tPlain.anioCursado || null,

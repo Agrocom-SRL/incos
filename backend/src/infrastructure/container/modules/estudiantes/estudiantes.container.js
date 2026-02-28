@@ -108,6 +108,7 @@ export function registerEstudiantesResource(container) {
                 studentScholarshipRepository: c.resolve(REPOSITORIOS_TOKENS.studentScholarshipRepository),
                 scholarshipRepository: c.resolve(REPOSITORIOS_TOKENS.scholarshipRepository),
                 managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
+                careerRepository: c.resolve(REPOSITORIOS_TOKENS.careerRepository),
                 studentDocumentRepository: c.resolve(REPOSITORIOS_TOKENS.studentDocumentRepository),
                 studentAcademicDataRepository: c.resolve(REPOSITORIOS_TOKENS.studentAcademicDataRepository),
                 enrollmentRepository: c.resolve(REPOSITORIOS_TOKENS.enrollmentRepository),

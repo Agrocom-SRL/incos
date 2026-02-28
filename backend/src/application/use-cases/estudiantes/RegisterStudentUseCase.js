@@ -333,15 +333,9 @@ export class RegisterStudentUseCase {
     }
 
     // 1. Buscar o crear institución de origen (UETHP / CEA)
-    const where = {
-      nombre: institucionNombre,
-      tipo: tipoInstitucion,
-    };
-    if (dependencia) where.dependencia = dependencia;
-    if (departamentoId) where.departamentoId = departamentoId;
-    if (distritoEducativo) where.distritoEducativo = distritoEducativo;
-    if (codigoSie) where.codigoSie = codigoSie;
-
+    // Buscar SOLO por nombre + tipo para reutilizar la misma institución y no crear duplicados
+    // (dependencia, departamento, distrito, codigoSie pueden variar entre formularios y provocar duplicados)
+    const where = { name: institucionNombre, type: tipoInstitucion };
     let institution = await this.institutionRepository.findBy(where);
     if (!institution) {
       const institutionToCreate = {
@@ -353,6 +347,17 @@ export class RegisterStudentUseCase {
         distritoEducativo: distritoEducativo || null,
       };
       institution = await this.institutionRepository.create(institutionToCreate);
+    } else {
+      // Actualizar campos opcionales si llegaron datos nuevos (evita perder distrito/dependencia/SIE)
+      const institutionPlain = institution.toPlainObject ? institution.toPlainObject() : institution;
+      const updates = {};
+      if (dependencia != null && dependencia !== '') updates.dependencia = dependencia;
+      if (codigoSie != null && codigoSie !== '') updates.codigoSie = codigoSie;
+      if (departamentoId != null) updates.departamentoId = departamentoId;
+      if (distritoEducativo != null && distritoEducativo !== '') updates.distritoEducativo = distritoEducativo;
+      if (Object.keys(updates).length > 0) {
+        institution = await this.institutionRepository.update(institutionPlain.id, { ...institutionPlain, ...updates });
+      }
     }
 
     const institutionPlain = institution.toPlainObject
@@ -422,15 +427,8 @@ export class RegisterStudentUseCase {
       return null;
     }
 
-    // 1. Buscar o crear institución de origen (ITT)
-    const where = {
-      nombre: institucionNombre,
-      tipo: 'ITT',
-    };
-    if (dependencia) where.dependencia = dependencia;
-    if (departamentoId) where.departamentoId = departamentoId;
-    if (distritoEducativo) where.distritoEducativo = distritoEducativo;
-
+    // 1. Buscar o crear institución de origen (ITT). Solo por nombre + tipo para no duplicar.
+    const where = { name: institucionNombre, type: 'ITT' };
     let institution = await this.institutionRepository.findBy(where);
     if (!institution) {
       const institutionToCreate = {
@@ -442,6 +440,15 @@ export class RegisterStudentUseCase {
         distritoEducativo: distritoEducativo || null,
       };
       institution = await this.institutionRepository.create(institutionToCreate);
+    } else {
+      const institutionPlain = institution.toPlainObject ? institution.toPlainObject() : institution;
+      const updates = {};
+      if (dependencia != null && dependencia !== '') updates.dependencia = dependencia;
+      if (departamentoId != null) updates.departamentoId = departamentoId;
+      if (distritoEducativo != null && distritoEducativo !== '') updates.distritoEducativo = distritoEducativo;
+      if (Object.keys(updates).length > 0) {
+        institution = await this.institutionRepository.update(institutionPlain.id, { ...institutionPlain, ...updates });
+      }
     }
 
     const institutionPlain = institution.toPlainObject

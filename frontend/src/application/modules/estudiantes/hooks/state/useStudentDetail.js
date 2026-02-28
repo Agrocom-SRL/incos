@@ -47,6 +47,10 @@ export const useStudentDetail = (studentId) => {
   const documentDeliveries = student?.documentDeliveries;
   const scholarships = student?.scholarships;
   const inscripcion = student?.inscripcion;
+  const transitability = student?.transitability ?? null;
+  const transfer = student?.transfer ?? null;
+  const academicData = student?.academicData ?? null;
+  const catalogs = student?.catalogs ?? {};
 
   const breadcrumbItems = useMemo(
     () => [
@@ -120,7 +124,7 @@ export const useStudentDetail = (studentId) => {
       message.error('ID de estudiante no disponible');
       return;
     }
-    const tipoAdmision = student?.tipoAdmision || null;
+    const tipoAdmision = studentData?.tipoAdmision ?? student?.academicData?.tipoAdmision ?? student?.academicData?.admissionType ?? null;
     const result = await generateDeclaracionJurada(studentId, { tipoAdmision });
     if (!result.success) {
       let errorMessage = 'Error al generar la declaración jurada';
@@ -135,7 +139,7 @@ export const useStudentDetail = (studentId) => {
     } else {
       message.success('Declaración jurada generada y descargada correctamente');
     }
-  }, [studentId, generateDeclaracionJurada, message]);
+  }, [studentId, studentData, student, generateDeclaracionJurada, message]);
 
   const handleDownloadActaCompromiso = useCallback(() => {
     const actaCompromisoData = student?.actaCompromiso;
@@ -198,6 +202,10 @@ export const useStudentDetail = (studentId) => {
     documentDeliveries,
     scholarships,
     inscripcion,
+    transitability,
+    transfer,
+    academicData,
+    catalogs,
     breadcrumbItems,
     avatarInitials,
     profileSubtitle,

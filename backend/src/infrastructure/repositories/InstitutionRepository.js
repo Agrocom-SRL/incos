@@ -50,6 +50,7 @@ export class InstitutionRepository extends BaseRepository {
    * - dependency: dependencia (FISCAL, CONVENIO, PRIVADO)
    * - sieCode: código SIE-UE
    * - departmentId: id de departamento
+   * - distritoEducativo: distrito educativo
    */
   buildWhereClause(filters) {
     const where = {};
@@ -68,6 +69,9 @@ export class InstitutionRepository extends BaseRepository {
     }
     if (filters.departmentId !== undefined) {
       where.departamentoId = filters.departmentId;
+    }
+    if (filters.distritoEducativo !== undefined) {
+      where.distritoEducativo = filters.distritoEducativo;
     }
 
     return where;

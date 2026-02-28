@@ -18,6 +18,7 @@ import {
   UserOutlined,
   FileProtectOutlined,
   GlobalOutlined,
+  SwapOutlined,
 } from '@ant-design/icons';
 import { useStudentDetailContext } from '@application-estudiantes/hooks';
 import {
@@ -62,6 +63,7 @@ const EstudiantesDetail = () => {
   const {
     loading, error, student, studentData,
     guardians, documentDeliveries, scholarships, inscripcion, origins,
+    transitability, transfer, academicData, catalogs,
     breadcrumbItems, avatarInitials, profileSubtitle,
     handleRegistrarPago, handleGenerateActaCompromiso, handleGenerateDeclaracionJurada,
     handleDownloadActaCompromiso, handleVerInscripcion,
@@ -201,6 +203,41 @@ const EstudiantesDetail = () => {
       label: <span className="sd-tab-label"><BookOutlined /> Académico</span>,
       children: (
         <div className="sd-tab-body">
+          {/* Datos académicos (estudiantes_datos_academicos): tipo admisión, gestión de ingreso, carrera */}
+          {(academicData?.tipoAdmision != null || academicData?.admissionType != null || academicData?.managementId != null || academicData?.gestionIngresoId != null || academicData?.careerId != null || academicData?.carreraId != null) && (
+            <InfoCard title="Datos académicos" icon={<BookOutlined />} cols={3}>
+              <Field label="Tipo de admisión">
+                {(academicData?.tipoAdmision ?? academicData?.admissionType)
+                  ? <Tag color="blue" style={{ margin: 0 }}>{academicData.tipoAdmision ?? academicData.admissionType}</Tag>
+                  : null}
+              </Field>
+              <Field label="Gestión de ingreso">
+                {(() => {
+                  const mg = academicData?.management;
+                  if (mg && (mg.name || mg.year || mg.code)) {
+                    return mg.name && mg.year ? `${mg.name} (${mg.year})` : (mg.name || mg.code || `ID: ${mg.id}`);
+                  }
+                  const mgId = academicData?.managementId ?? academicData?.gestionIngresoId;
+                  const mgCat = mgId && catalogs?.managements?.[mgId] ? catalogs.managements[mgId] : null;
+                  return mgCat ? `${mgCat.name ?? mgCat.nombre ?? ''} (${mgCat.year ?? mgCat.anio ?? ''})` : (mgId ? `ID: ${mgId}` : null);
+                })()}
+              </Field>
+              <Field label="Carrera">
+                {(() => {
+                  const car = academicData?.career;
+                  if (car && (car.name || car.code)) {
+                    return car.code && car.name ? `${car.code} — ${car.name}` : (car.name || car.code || `ID: ${car.id}`);
+                  }
+                  const carId = academicData?.careerId ?? academicData?.carreraId;
+                  const sameCareer = inscripcion?.studentAcademicData && (inscripcion.studentAcademicData.careerId === carId || inscripcion.studentAcademicData.carreraId === carId);
+                  return sameCareer && inscripcion?.career?.name
+                    ? `${inscripcion.career.code ?? ''} — ${inscripcion.career.name}`
+                    : (carId ? `ID: ${carId}` : null);
+                })()}
+              </Field>
+            </InfoCard>
+          )}
+
           {inscripcion?.enrollment ? (
             <InfoCard
               title="Inscripción actual"
@@ -253,6 +290,50 @@ const EstudiantesDetail = () => {
         </div>
       ),
     },
+    ...((transitability || transfer) ? [{
+      key: 'transitabilidad-traspaso',
+      label: <span className="sd-tab-label"><SwapOutlined /> {transitability ? 'Transitabilidad' : 'Traspaso'}</span>,
+      children: (
+        <div className="sd-tab-body">
+          {transitability && (
+            <InfoCard title="Formación académica (Transitabilidad)" icon={<SwapOutlined />} cols={3}>
+              <Field label="Unidad Educativa / Centro">{transitability.institucionNombre}</Field>
+              <Field label="Tipo de institución">{transitability.tipoInstitucion}</Field>
+              <Field label="Código SIE-UE">{transitability.codigoSie}</Field>
+              <Field label="Dependencia">{transitability.dependencia}</Field>
+              <Field label="Departamento">{transitability.departamento ?? (transitability.departamentoId ? `ID: ${transitability.departamentoId}` : null)}</Field>
+              <Field label="Distrito educativo">{transitability.distritoEducativo}</Field>
+              <Field label="Carrera de origen">{transitability.carreraOrigen}</Field>
+              <Field label="Año de conclusión">{transitability.anioConclusion}</Field>
+              <Field label="Régimen de estudios">{transitability.regimenEstudios}</Field>
+              <Field label="Estado">
+                {transitability.estado ? <Tag color={transitability.estado === 'PROCEDENTE' ? 'success' : 'default'} style={{ margin: 0 }}>{transitability.estado}</Tag> : null}
+              </Field>
+              {transitability.motivoNoProcedente && (
+                <Field label="Motivo no procedente" span={3}>{transitability.motivoNoProcedente}</Field>
+              )}
+            </InfoCard>
+          )}
+          {transfer && !transitability && (
+            <InfoCard title="Datos de traspaso" icon={<SwapOutlined />} cols={3}>
+              <Field label="Instituto de origen">{transfer.institucionNombre}</Field>
+              <Field label="Dependencia">{transfer.dependencia}</Field>
+              <Field label="Departamento">{transfer.departamento ?? (transfer.departamentoId ? `ID: ${transfer.departamentoId}` : null)}</Field>
+              <Field label="Distrito educativo">{transfer.distritoEducativo}</Field>
+              <Field label="Carrera">{transfer.carreraOrigen}</Field>
+              <Field label="Año cursado">{transfer.anioCursado}</Field>
+              <Field label="Régimen de estudios">{transfer.regimenOrigen}</Field>
+              <Field label="Estado">
+                {transfer.estado ? <Tag color={transfer.estado === 'PROCEDENTE' ? 'success' : 'default'} style={{ margin: 0 }}>{transfer.estado}</Tag> : null}
+              </Field>
+              {transfer.motivoNoProcedente && (
+                <Field label="Motivo no procedente" span={3}>{transfer.motivoNoProcedente}</Field>
+              )}
+            </InfoCard>
+          )}
+        </div>
+      ),
+    }] : []),
     {
       key: 'documentacion',
       label: <span className="sd-tab-label"><FileProtectOutlined /> Documentación</span>,
@@ -263,7 +344,7 @@ const EstudiantesDetail = () => {
         </div>
       ),
     },
-  ], [studentData, residenciaCompleta, guardians, documentDeliveries, scholarships, inscripcion, origins, nacionalidadLabel, idiomaMaterno, idiomaSecundario, lugarNacimiento, paises, handleVerInscripcion, handleNuevaInscripcion]);
+  ], [studentData, residenciaCompleta, guardians, documentDeliveries, scholarships, inscripcion, origins, nacionalidadLabel, idiomaMaterno, idiomaSecundario, lugarNacimiento, paises, handleVerInscripcion, handleNuevaInscripcion, academicData, catalogs, transitability, transfer]);
 
   /* ── Estados de carga / error ── */
   if (loading) return (
