@@ -63,10 +63,10 @@ const WizardActions = ({
         </Button>
       )}
 
-      {/* Botón Guardar y Continuar Después */}
+      {/* Botón Guardar y Continuar Después (no se muestra en el último paso; solo Finalizar) */}
       {showSave && (
         <Button 
-          onClick={onSave} 
+          onClick={() => onSave?.(currentStep + 1)} 
           size="large"
           loading={loading}
         >
@@ -85,11 +85,11 @@ const WizardActions = ({
         </Button>
       )}
 
-      {/* Botón Finalizar */}
+      {/* Botón Finalizar (solo en el último paso) */}
       {showFinish && (
         <Button 
           variant="primary"
-          onClick={onFinish} 
+          onClick={() => onFinish?.(currentStep + 1)} 
           size="large"
           loading={loading}
         >

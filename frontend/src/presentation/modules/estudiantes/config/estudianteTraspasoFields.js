@@ -29,7 +29,7 @@ export const createEstudianteTraspasoFields = () => {
           type: 'input',
           inputType: 'text',
           required: true,
-          span: 18,
+          span: 12,
           placeholder: 'Nombre del ITT de origen',
         },
         {
@@ -60,15 +60,6 @@ export const createEstudianteTraspasoFields = () => {
           placeholder: 'Seleccione departamento',
         },
         {
-          name: 'traspaso_distrito_educativo',
-          label: 'Distrito educativo',
-          type: 'input',
-          inputType: 'text',
-          required: false,
-          span: 12,
-          placeholder: 'Distrito educativo',
-        },
-        {
           name: 'traspaso_anio_cursado',
           label: 'Año cursado',
           type: 'radio',
@@ -89,6 +80,15 @@ export const createEstudianteTraspasoFields = () => {
             { label: 'Semestral', value: 'SEMESTRAL' },
             { label: 'Anual', value: 'ANUAL' },
           ],
+        },
+        {
+          name: 'traspaso_distrito_educativo',
+          label: 'Distrito educativo',
+          type: 'input',
+          inputType: 'text',
+          required: false,
+          span: 12,
+          placeholder: 'Distrito educativo',
         },
         {
           name: 'traspaso_dependencia',

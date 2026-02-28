@@ -29,6 +29,7 @@ import {
   DocumentDeliveriesSection,
   ScholarshipsSection,
 } from '@estudiantes/components/organisms';
+import { getAdmissionTypeTagStyle } from '../config/admissionTypeColors';
 import './EstudiantesDetail.css';
 
 /* ─────────────────────────────────────────
@@ -212,7 +213,11 @@ const EstudiantesDetail = () => {
             <InfoCard title="Datos académicos" icon={<BookOutlined />} cols={3}>
               <Field label="Tipo de admisión">
                 {(academicData?.tipoAdmision ?? academicData?.admissionType)
-                  ? <Tag color="blue" style={{ margin: 0 }}>{academicData.tipoAdmision ?? academicData.admissionType}</Tag>
+                  ? (
+                      <Tag style={{ margin: 0, ...getAdmissionTypeTagStyle(academicData.tipoAdmision ?? academicData.admissionType) }}>
+                        {academicData.tipoAdmision ?? academicData.admissionType}
+                      </Tag>
+                    )
                   : null}
               </Field>
               <Field label="Gestión de ingreso">
@@ -338,7 +343,7 @@ const EstudiantesDetail = () => {
         </div>
       ),
     }] : []),
-    {
+    ...((documentDeliveries?.length > 0 || scholarships?.length > 0) ? [{
       key: 'documentacion',
       label: <span className="sd-tab-label"><FileProtectOutlined /> Documentación</span>,
       children: (
@@ -347,7 +352,7 @@ const EstudiantesDetail = () => {
           <ScholarshipsSection scholarships={scholarships} />
         </div>
       ),
-    },
+    }] : []),
   ], [studentData, residenciaCompleta, guardians, documentDeliveries, scholarships, inscripcion, origins, nacionalidadLabel, idiomaMaterno, idiomaSecundario, lugarNacimiento, paises, handleVerInscripcion, handleNuevaInscripcion, academicData, catalogs, transitability, transfer]);
 
   /* ── Estados de carga / error ── */

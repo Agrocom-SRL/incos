@@ -45,8 +45,9 @@ export const useWizardActionsVisibility = ({
       // Botón Anterior: mostrar solo si no es el primer paso
       showPrev: !isFirstStep,
       
-      // Botón Guardar: mostrar solo si showSaveButton es true, no es viewMode y existe onSave
-      showSave: showSaveButton && !viewMode && !!onSave,
+      // Botón Guardar: mostrar solo si no es el último paso, showSaveButton, no viewMode y existe onSave
+      // En el último paso solo se muestra Finalizar, no "Guardar y continuar"
+      showSave: showSaveButton && !viewMode && !!onSave && !isLastStep,
       
       // Botón Siguiente: mostrar solo si no es el último paso
       showNext: !isLastStep,

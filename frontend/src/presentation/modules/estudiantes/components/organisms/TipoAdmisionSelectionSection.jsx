@@ -20,42 +20,43 @@ import {
   SwapOutlined,
   ImportOutlined
 } from '@ant-design/icons';
+import { ADMISSION_TYPE_COLORS } from '../../config/admissionTypeColors';
 
 const { Text } = Typography;
 
-// Opciones de tipo de admisión con configuración visual
+// Opciones de tipo de admisión; colores alineados con EstudiantesDetail (pill cabecera)
 const TIPOS_ADMISION = [
   { 
     value: 'NUEVO',
     label: 'Nuevo',
     description: 'Estudiante que ingresa por primera vez en la gestión actual',
     icon: UserAddOutlined,
-    color: '#52c41a',
-    bgColor: '#f6ffed',
+    color: ADMISSION_TYPE_COLORS.NUEVO.color,
+    bgColor: ADMISSION_TYPE_COLORS.NUEVO.bgColor,
   },
   { 
     value: 'ANTIGUO',
     label: 'Antiguo',
     description: 'Estudiante que ya estudió en gestiones anteriores pero no está en el sistema',
     icon: HistoryOutlined,
-    color: '#1890ff',
-    bgColor: '#e6f7ff',
+    color: ADMISSION_TYPE_COLORS.ANTIGUO.color,
+    bgColor: ADMISSION_TYPE_COLORS.ANTIGUO.bgColor,
   },
   {
     value: 'TRANSITABILIDAD',
     label: 'Transitabilidad',
     description: 'Estudiante con título de Técnico Medio (UETHP/CEA) que postula a Técnico Superior (ITT).',
     icon: SwapOutlined,
-    color: '#722ed1',
-    bgColor: '#f9f0ff',
+    color: ADMISSION_TYPE_COLORS.TRANSITABILIDAD.color,
+    bgColor: ADMISSION_TYPE_COLORS.TRANSITABILIDAD.bgColor,
   },
   {
     value: 'TRASPASO',
     label: 'Traspaso',
     description: 'Estudiante que cursó uno o dos años en otro ITT y solicita continuar en INCOS.',
     icon: ImportOutlined,
-    color: '#eb2f96',
-    bgColor: '#fff0f6',
+    color: ADMISSION_TYPE_COLORS.TRASPASO.color,
+    bgColor: ADMISSION_TYPE_COLORS.TRASPASO.bgColor,
   },
 ];
 

@@ -11,6 +11,7 @@ import { Space } from 'antd';
 import { UserOutlined, PhoneOutlined, MailOutlined, DollarOutlined, BankOutlined, BookOutlined, CalendarOutlined, TagOutlined } from '@ant-design/icons';
 import { TableCell } from '@molecules';
 import TableActions from '@molecules/TableActions';
+import { getAdmissionTypeTagStyle } from './admissionTypeColors';
 
 /** Construye nombre completo desde partes si no viene compuesto */
 const getNombreCompleto = (record) =>
@@ -23,13 +24,10 @@ const getCiCompleto = (record) =>
   record.ciCompleto ||
   (record.expedicion ? `${record.ci || ''} ${record.expedicion}`.trim() : (record.ci || ''));
 
-/** Color del tag para tipo de admisión: NUEVO (verde/success), ANTIGUO (naranja/warning), otros (azul) */
-const getTipoAdmisionTagColor = (tipoAdmision) => {
-  if (!tipoAdmision) return 'default';
-  const t = String(tipoAdmision).toUpperCase();
-  if (t === 'NUEVO') return 'success';
-  if (t === 'ANTIGUO') return 'warning';
-  return 'blue'; // TRANSITABILIDAD, TRASPASO, etc.
+/** Estilo del tag de tipo de admisión (mismos colores que pill en EstudiantesDetail) */
+const getTipoAdmisionTagStyle = (tipoAdmision) => {
+  if (!tipoAdmision) return undefined;
+  return getAdmissionTypeTagStyle(tipoAdmision);
 };
 
 /**
@@ -205,7 +203,7 @@ export const createEstudiantesTableColumns = (
             <TableCell
               icon={<TagOutlined />}
               tag={record.tipoAdmision}
-              tagColor={getTipoAdmisionTagColor(record.tipoAdmision)}
+              tagStyle={getTipoAdmisionTagStyle(record.tipoAdmision)}
               fallback=""
               textStyle={{ fontSize: 'var(--font-size-sm)' }}
               size="small"

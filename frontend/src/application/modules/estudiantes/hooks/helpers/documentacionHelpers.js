@@ -48,7 +48,7 @@ export const normalizeDocumentos = (documentos = []) => {
     acceptsPhotocopy: doc.aceptaFotocopia !== undefined ? doc.aceptaFotocopia : (doc.acceptsPhotocopy !== undefined ? doc.acceptsPhotocopy : false),
     orden: doc.orden !== undefined ? doc.orden : (doc.order !== undefined ? doc.order : 0),
     esDocumentoSistema: doc.esDocumentoSistema !== undefined ? doc.esDocumentoSistema : false,
-    documentoPadreId: doc.documentoPadreId !== undefined ? doc.documentoPadreId : null,
+    documentoPadreId: doc.documentoPadreId !== undefined ? doc.documentoPadreId : (doc.documento_padre_id !== undefined ? doc.documento_padre_id : null),
     // Mantener otros campos si existen
     ...(doc.tipoDocumento && { tipoDocumento: doc.tipoDocumento }),
   }));
@@ -149,14 +149,16 @@ export const applyLogicaPadreHijo = (documentosPadres = [], documentosHijos = []
   }
   
   return documentosPadres.flatMap((padre) => {
-    // Si el padre está entregado, mostrar solo el padre
-    if (padre.entregado === true) {
+    // Si el padre está entregado (true o 1 desde backend/form), mostrar solo el padre
+    const padreEntregado = padre.entregado === true || padre.entregado === 1;
+    if (padreEntregado) {
       return [padre];
     }
 
     // Si el padre NO está entregado, buscar sus hijos para mostrarlos al lado
+    const padreId = Number(padre.id);
     const hijosDelPadre = documentosHijos.filter(
-      (hijo) => hijo.documentoPadreId === padre.id
+      (hijo) => Number(hijo.documentoPadreId ?? hijo.documento_padre_id) === padreId
     );
 
     // Si tiene hijos, retornar el padre Y los hijos (el padre primero, luego los hijos)
@@ -172,6 +174,64 @@ export const applyLogicaPadreHijo = (documentosPadres = [], documentosHijos = []
     // Si no tiene hijos, retornar solo el padre
     return [padre];
   });
+};
+
+/**
+ * Devuelve el catálogo de documentación a usar al filtrar valores del form en edición.
+ * Debe incluir todos los documentos que pueden estar en el form (padres e hijos), con
+ * documentoPadreId/documento_padre_id, para que al cargar en edición se oculten los hijos
+ * cuyo padre está marcado como entregado (sin importar tipo de admisión).
+ * Para TRASPASO: inscripción completa (incluye hijos, ej. doc 6) + documentación traspaso.
+ *
+ * @param {string} tipoAdmision - NUEVO, ANTIGUO, TRASPASO, TRANSITABILIDAD
+ * @param {Array} documentacionRaw - Catálogo de documentación inscripción (padres e hijos)
+ * @param {Array} documentacionTraspasoRaw - Catálogo de documentación traspaso
+ * @returns {Array} Catálogo a pasar a filterDocumentacionOcultarHijosCuandoPadreEntregado
+ */
+export const getDocumentacionCatalogForEdit = (tipoAdmision = '', documentacionRaw = [], documentacionTraspasoRaw = []) => {
+  const tipo = String(tipoAdmision || '').toUpperCase();
+  const inscripcion = documentacionRaw || [];
+  if (tipo !== 'TRASPASO') {
+    return inscripcion;
+  }
+  const traspaso = documentacionTraspasoRaw || [];
+  // Incluir todos los documentos de inscripción (padres e hijos) + traspaso, para que
+  // la regla "ocultar hijo si padre entregado" aplique a todos (ej. doc 6 hijo de doc 1).
+  return [...traspaso, ...inscripcion];
+};
+
+/**
+ * Filtra el objeto documentacion del formulario para no incluir hijos cuando el padre está entregado.
+ * Así, al cargar en edición, el form no tendrá doc_6 si doc_1.entregado es true y la UI aplicará
+ * correctamente "solo padre visible cuando entregado".
+ * Para TRASPASO debe usarse un catálogo que incluya documentacionTraspaso (getDocumentacionCatalogForEdit).
+ *
+ * @param {Object} documentacionForm - Objeto documentacion del form (doc_X: { entregado, ... })
+ * @param {Array} documentacionCatalog - Catálogo raw (con id y documentoPadreId/documento_padre_id)
+ * @returns {Object} Copia de documentacionForm sin las keys de hijos cuyo padre está entregado
+ */
+export const filterDocumentacionOcultarHijosCuandoPadreEntregado = (documentacionForm = {}, documentacionCatalog = []) => {
+  if (!documentacionForm || typeof documentacionForm !== 'object') return documentacionForm;
+  if (!documentacionCatalog || documentacionCatalog.length === 0) return { ...documentacionForm };
+
+  const catalogById = new Map(documentacionCatalog.map((d) => [Number(d.id), d]));
+  const result = { ...documentacionForm };
+
+  for (const key of Object.keys(result)) {
+    if (!key.startsWith('doc_')) continue;
+    const docId = parseInt(key.replace('doc_', ''), 10);
+    if (Number.isNaN(docId)) continue;
+    const doc = catalogById.get(docId);
+    if (!doc) continue;
+    const padreId = Number(doc.documentoPadreId ?? doc.documento_padre_id);
+    if (Number.isNaN(padreId) || padreId === 0) continue;
+    const padreKey = `doc_${padreId}`;
+    const padreEntregadoVal = result[padreKey]?.entregado;
+    const padreEntregado = padreEntregadoVal === true || padreEntregadoVal === 1;
+    if (padreEntregado) delete result[key];
+  }
+
+  return result;
 };
 
 /**

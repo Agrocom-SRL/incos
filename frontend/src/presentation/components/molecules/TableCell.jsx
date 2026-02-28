@@ -25,7 +25,8 @@ import { Text } from '@atoms';
  * @param {object} textStyle - Estilos adicionales para el Text
  * @param {string} textType - Tipo de texto (default, secondary, success, warning, danger)
  * @param {ReactNode} tag - Tag opcional a mostrar después del contenido
- * @param {string} tagColor - Color del tag
+ * @param {string} tagColor - Color del tag (clase CSS o preset Ant Design)
+ * @param {object} tagStyle - Estilo inline del tag (prioridad sobre tagColor cuando se usa colores de tipo admisión)
  * @param {string} orientation - Orientación del Space (horizontal | vertical)
  * @param {string} size - Tamaño del Space (small | middle | large)
  * @param {object} spaceStyle - Estilos adicionales para el Space
@@ -42,6 +43,7 @@ const TableCell = ({
     textType = 'default',
     tag,
     tagColor = 'blue',
+    tagStyle,
     orientation: orientationProp = 'horizontal',
     size = 'small',
     spaceStyle = {},
@@ -104,7 +106,8 @@ const TableCell = ({
                 {textBlock}
                 {tag && (
                     <Tag
-                        className={`table-cell__tag ${orientation === 'vertical' ? 'table-cell__tag--vertical' : ''} table-cell__tag--${tagColor}`}
+                        className={`table-cell__tag ${orientation === 'vertical' ? 'table-cell__tag--vertical' : ''} ${!tagStyle ? `table-cell__tag--${tagColor}` : ''}`}
+                        style={tagStyle}
                     >
                         {tag}
                     </Tag>

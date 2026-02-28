@@ -193,6 +193,9 @@ export const StudentRegisterProvider = ({ children, mode = 'create', studentId =
             // Documentación procesada (INSCRIPCION y TRASPASO para step Documentación)
             documentacionProcesada,
             documentacionTraspasoProcesada,
+            // Documentación raw del catálogo (para paso documentación con lógica padre-hijo dinámica)
+            documentacionRaw: documentacion,
+            documentacionTraspasoRaw: documentacionTraspaso,
             // Exponer funciones de carga bajo demanda
             loadDiscapacidades: referenceData.loadDiscapacidades,
             loadTiposParentesco: referenceData.loadTiposParentesco,

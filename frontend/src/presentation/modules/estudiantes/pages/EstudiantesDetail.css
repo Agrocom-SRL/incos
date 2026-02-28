@@ -216,6 +216,7 @@
   border: 1px solid transparent;
 }
 
+/* Valores alineados con admissionTypeColors.js (fuente única en frontend) */
 .sd-profile__admission-pill--nuevo {
   background: #e8f5e9;
   color: var(--primary-dark);
@@ -229,14 +230,12 @@
 }
 
 .sd-profile__admission-pill--traspaso {
-  /* Colores alineados con la tarjeta TRASPASO (bgColor + color) */
   background: #fff0f6;
   color: #eb2f96;
   border-color: rgba(235,47,150,.25);
 }
 
 .sd-profile__admission-pill--transitabilidad {
-  /* Colores alineados con la tarjeta TRANSITABILIDAD (bgColor + color) */
   background: #f9f0ff;
   color: #722ed1;
   border-color: rgba(114,46,209,.25);

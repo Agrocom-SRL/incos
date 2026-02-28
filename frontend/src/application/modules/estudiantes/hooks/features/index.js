@@ -9,7 +9,7 @@ export { useStudentFormHandlers } from './useStudentFormHandlers';
 export { useEstudianteGeographicFormLogic } from './useEstudianteGeographicFormLogic';
 export { useContactosEmergenciaDinamicos } from './useContactosEmergenciaDinamicos';
 export { useDocumentacionDinamica } from './useDocumentacionDinamica';
-export { useDocumentacionProcesada } from './useDocumentacionProcesada';
+export { useDocumentacionProcesada, useDocumentacionProcesadaConForm } from './useDocumentacionProcesada';
 export { useAsignarBecaBecasDescuentos } from './useAsignarBecaBecasDescuentos';
 export { useAsignarBecaPageData } from './useAsignarBecaPageData';
 export { useAsignarBecaFormHandlers } from './useAsignarBecaFormHandlers';
