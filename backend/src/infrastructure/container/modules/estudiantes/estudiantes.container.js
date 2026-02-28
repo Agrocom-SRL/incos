@@ -62,6 +62,7 @@ export function registerEstudiantesResource(container) {
                 institutionRepository: c.resolve(REPOSITORIOS_TOKENS.institutionRepository),
                 transitabilityRepository: c.resolve(REPOSITORIOS_TOKENS.transitabilityRepository),
                 transferRepository: c.resolve(REPOSITORIOS_TOKENS.transferRepository),
+                documentacionRepository: c.resolve(REPOSITORIOS_TOKENS.documentacionRepository),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
     );
@@ -82,6 +83,7 @@ export function registerEstudiantesResource(container) {
                 institutionRepository: c.resolve(REPOSITORIOS_TOKENS.institutionRepository),
                 transitabilityRepository: c.resolve(REPOSITORIOS_TOKENS.transitabilityRepository),
                 transferRepository: c.resolve(REPOSITORIOS_TOKENS.transferRepository),
+                documentacionRepository: c.resolve(REPOSITORIOS_TOKENS.documentacionRepository),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
     );

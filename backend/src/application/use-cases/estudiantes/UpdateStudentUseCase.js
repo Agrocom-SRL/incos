@@ -43,6 +43,7 @@ export class UpdateStudentUseCase {
    * @param {Object} [params.institutionRepository] - Repositorio de instituciones (para transitabilidad/traspaso)
    * @param {Object} [params.transitabilityRepository] - Repositorio de transitabilidades
    * @param {Object} [params.transferRepository] - Repositorio de traspasos
+   * @param {Object} [params.documentacionRepository] - Repositorio de documentación (para resolver IDs de documentos de traspaso por tipo)
    * @param {ILogger} params.logger - Logger para registro de eventos
    */
   constructor({
@@ -57,6 +58,7 @@ export class UpdateStudentUseCase {
     institutionRepository,
     transitabilityRepository,
     transferRepository,
+    documentacionRepository,
     logger,
   }) {
     this.studentRepository = studentRepository;
@@ -70,7 +72,37 @@ export class UpdateStudentUseCase {
     this.institutionRepository = institutionRepository || null;
     this.transitabilityRepository = transitabilityRepository || null;
     this.transferRepository = transferRepository || null;
+    this.documentacionRepository = documentacionRepository || null;
     this.logger = logger;
+  }
+
+  /**
+   * Obtiene los IDs de documentación cuyo tipo es TRASPASO (desde BD, sin IDs fijos).
+   * Usado para filtrar qué documentos aplicar solo cuando tipoAdmision === TRASPASO.
+   *
+   * @returns {Promise<number[]>} Array de IDs de documentación de tipo TRASPASO
+   */
+  async _getTraspasoDocumentacionIds() {
+    if (!this.documentacionRepository) {
+      return [];
+    }
+    try {
+      const result = await this.documentacionRepository.findAll(
+        { documentType: 'TRASPASO' },
+        null,
+        null
+      );
+      const list = result.documentations || [];
+      return list
+        .map((d) => (d && (d.id ?? (d.toPlainObject ? d.toPlainObject().id : null))) ?? null)
+        .filter((id) => id != null && !Number.isNaN(Number(id)))
+        .map((id) => Number(id));
+    } catch (err) {
+      this.logger.warn('[Estudiantes] No se pudieron obtener IDs de documentación TRASPASO', {
+        error: err.message,
+      });
+      return [];
+    }
   }
 
   /**
@@ -98,6 +130,7 @@ export class UpdateStudentUseCase {
       distritoEducativo,
       carreraOrigen,
       anioConclusion,
+      regimenEstudios,
       estado,
       motivoNoProcedente,
     } = transitability;
@@ -157,6 +190,7 @@ export class UpdateStudentUseCase {
       institucionOrigenId,
       carreraOrigen,
       anioConclusion: anioConclusion || null,
+      regimenEstudios: regimenEstudios || null,
       estado: estado || 'SOLICITADO',
       motivoNoProcedente: motivoNoProcedente || null,
     };
@@ -663,6 +697,8 @@ export class UpdateStudentUseCase {
       }
 
       // 6. Actualizar entregas de documentos (actualización inteligente: update o create según corresponda)
+      // Solo documentos de inscripción para NUEVO/ANTIGUO/TRANSITABILIDAD; inscripción + documentos de tipo TRASPASO solo para TRASPASO (IDs desde BD por tipo_documento).
+      const traspasoDocumentacionIds = await this._getTraspasoDocumentacionIds();
       let documentDeliveries = [];
       if (data.documentation !== undefined) {
         // 6.1. Obtener entregas de documentos existentes y crear un mapa por documentacionId
@@ -695,15 +731,29 @@ export class UpdateStudentUseCase {
 
         // 6.2. Procesar entregas de documentos del request
         if (data.documentation && typeof data.documentation === 'object') {
-          // data.documentation es un objeto con keys como 'doc_1', 'doc_2', etc.
+          let tipoAdmisionParaDoc = data.tipoAdmision;
+          if (tipoAdmisionParaDoc === undefined && this.studentAcademicDataRepository) {
+            const academicResult = await this.studentAcademicDataRepository.findAll(
+              { studentId },
+              null,
+              null
+            );
+            const academicList = academicResult.studentAcademicData || academicResult.studentAcademicDatas || [];
+            const firstAcademic = academicList[0];
+            if (firstAcademic) {
+              const plain = firstAcademic.toPlainObject ? firstAcademic.toPlainObject() : firstAcademic;
+              tipoAdmisionParaDoc = plain.admissionType ?? plain.tipoAdmision ?? null;
+            }
+          }
           const processedDocumentacionIds = new Set();
-          
+
           for (const [docKey, docData] of Object.entries(data.documentation)) {
-            // Extraer el ID del documento de la key (ej: 'doc_1' -> 1)
             const documentacionId = parseInt(docKey.replace('doc_', ''), 10);
-            
+
             if (!isNaN(documentacionId) && docData) {
-              // Verificar si ya procesamos este documentacionId (evitar duplicados en el mismo request)
+              if (tipoAdmisionParaDoc !== 'TRASPASO' && traspasoDocumentacionIds.includes(documentacionId)) {
+                continue;
+              }
               if (processedDocumentacionIds.has(documentacionId)) {
                 this.logger.warn('[Estudiantes] Documento duplicado en request, ignorando', {
                   studentId,

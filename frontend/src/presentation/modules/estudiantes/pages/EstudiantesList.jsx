@@ -100,8 +100,8 @@ const EstudiantesList = () => {
                     pageSizeOptions: ['10', '20', '50', '100'],
                 }}
                 defaultSort={{
-                    field: 'codigoEstudiante',
-                    order: 'ascend',
+                    field: 'createdAt',
+                    order: 'descend',
                 }}
                 loadingTip="Cargando estudiantes..."
             />

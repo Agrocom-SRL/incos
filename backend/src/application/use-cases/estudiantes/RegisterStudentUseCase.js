@@ -42,6 +42,7 @@ export class RegisterStudentUseCase {
    * @param {Object} params.institutionRepository - Repositorio de instituciones (origen UETHP/CEA/ITT)
    * @param {Object} params.transitabilityRepository - Repositorio de transitabilidades
    * @param {Object} params.transferRepository - Repositorio de traspasos
+   * @param {Object} [params.documentacionRepository] - Repositorio de documentación (para resolver IDs de documentos de traspaso por tipo)
    * @param {ILogger} params.logger - Logger para registro de eventos
  */
   constructor({
@@ -58,6 +59,7 @@ export class RegisterStudentUseCase {
     institutionRepository,
     transitabilityRepository,
     transferRepository,
+    documentacionRepository,
     logger,
   }) {
     this.studentRepository = studentRepository;
@@ -73,7 +75,37 @@ export class RegisterStudentUseCase {
     this.institutionRepository = institutionRepository;
     this.transitabilityRepository = transitabilityRepository;
     this.transferRepository = transferRepository;
+    this.documentacionRepository = documentacionRepository || null;
     this.logger = logger;
+  }
+
+  /**
+   * Obtiene los IDs de documentación cuyo tipo es TRASPASO (desde BD, sin IDs fijos).
+   * Usado para filtrar qué documentos aplicar solo cuando tipoAdmision === TRASPASO.
+   *
+   * @returns {Promise<number[]>} Array de IDs de documentación de tipo TRASPASO
+   */
+  async _getTraspasoDocumentacionIds() {
+    if (!this.documentacionRepository) {
+      return [];
+    }
+    try {
+      const result = await this.documentacionRepository.findAll(
+        { documentType: 'TRASPASO' },
+        null,
+        null
+      );
+      const list = result.documentations || [];
+      return list
+        .map((d) => (d && (d.id ?? (d.toPlainObject ? d.toPlainObject().id : null))) ?? null)
+        .filter((id) => id != null && !Number.isNaN(Number(id)))
+        .map((id) => Number(id));
+    } catch (err) {
+      this.logger.warn('[Estudiantes] No se pudieron obtener IDs de documentación TRASPASO', {
+        error: err.message,
+      });
+      return [];
+    }
   }
 
   /**
@@ -312,6 +344,7 @@ export class RegisterStudentUseCase {
       distritoEducativo,
       carreraOrigen,
       anioConclusion,
+      regimenEstudios,
       estado,
       motivoNoProcedente,
     } = transitability;
@@ -371,6 +404,7 @@ export class RegisterStudentUseCase {
       institucionOrigenId,
       carreraOrigen: carreraOrigen || null,
       anioConclusion: anioConclusion || null,
+      regimenEstudios: regimenEstudios || null,
       estado: estado || 'SOLICITADO',
       motivoNoProcedente: motivoNoProcedente || null,
     };
@@ -642,14 +676,18 @@ export class RegisterStudentUseCase {
       }
 
       // 7. Crear entregas de documentos (múltiples)
+      // Solo documentos de inscripción para NUEVO, ANTIGUO, TRANSITABILIDAD.
+      // Inscripción + documentos de tipo TRASPASO solo cuando tipoAdmision === TRASPASO (IDs desde BD por tipo_documento).
+      const traspasoDocumentacionIds = await this._getTraspasoDocumentacionIds();
       const documentDeliveries = [];
       if (data.documentation && typeof data.documentation === 'object') {
-        // data.documentation es un objeto con keys como 'doc_1', 'doc_2', etc.
         for (const [docKey, docData] of Object.entries(data.documentation)) {
-          // Extraer el ID del documento de la key (ej: 'doc_1' -> 1)
           const documentacionId = parseInt(docKey.replace('doc_', ''), 10);
 
           if (!isNaN(documentacionId) && docData) {
+            if (tipoAdmision !== 'TRASPASO' && traspasoDocumentacionIds.includes(documentacionId)) {
+              continue;
+            }
             const deliveryToCreate = {
               studentId: student.id,
               documentacionId,

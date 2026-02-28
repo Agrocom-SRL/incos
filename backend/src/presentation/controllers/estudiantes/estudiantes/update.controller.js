@@ -109,6 +109,7 @@ export class UpdateStudentController {
         distritoEducativo: body.transitabilidad_distrito_educativo || null,
         carreraOrigen: body.transitabilidad_carrera_origen || null,
         anioConclusion: body.transitabilidad_anio_conclusion || null,
+        regimenEstudios: body.transitabilidad_regimen_estudios || null,
         estado: body.transitabilidad_estado || 'SOLICITADO',
         motivoNoProcedente: body.transitabilidad_motivo_no_procedente || null,
       };

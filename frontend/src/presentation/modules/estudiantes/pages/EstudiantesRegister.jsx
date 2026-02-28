@@ -264,12 +264,17 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
         if (formData.tieneDiscapacidad && typeof loadDiscapacidades === 'function') {
           loadDiscapacidades();
         }
+
+        // Si tiene transitabilidad o traspaso con departamento, cargar departamentos para que los Select muestren el label
+        if ((formData.transitabilidad_departamento_id != null || formData.traspaso_departamento_id != null) && typeof loadDepartamentos === 'function') {
+          loadDepartamentos();
+        }
         
         // Los valores geográficos se establecerán cuando las opciones estén disponibles
         initialDataLoadedRef.current = true;
       }
     }
-  }, [isEditMode, studentDetail, form, loadProvincias, loadMunicipios, departamentos, saveStep0Values, cargarGestiones, loadDiscapacidades]);
+  }, [isEditMode, studentDetail, form, loadProvincias, loadMunicipios, loadDepartamentos, departamentos, saveStep0Values, cargarGestiones, loadDiscapacidades]);
   
   // Efecto para establecer valores geográficos cuando las opciones estén disponibles
   useEffect(() => {

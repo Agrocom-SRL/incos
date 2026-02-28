@@ -18,7 +18,7 @@ export const estudianteFormMapper = (studentDetail) => {
     return null;
   }
 
-  const { student, guardians, disabilities, origins, documentDeliveries, academicData } = studentDetail;
+  const { student, guardians, disabilities, origins, documentDeliveries, academicData, transitability, transfer } = studentDetail;
 
   // Tipo de admisión y datos académicos (paso 0): usar valor persistido o inferir por gestión de ingreso
   const hasGestionIngreso = academicData?.gestionIngresoId != null && academicData?.gestionIngresoId !== '';
@@ -273,6 +273,34 @@ export const estudianteFormMapper = (studentDetail) => {
     formData.documentacion = documentacion;
   } else {
     formData.documentacion = {};
+  }
+
+  // Mapear datos de Transitabilidad (paso Transitabilidad en edición)
+  if (transitability) {
+    formData.transitabilidad_institucion_nombre = transitability.institucionNombre ?? '';
+    formData.transitabilidad_codigo_sie = transitability.codigoSie ?? '';
+    formData.transitabilidad_tipo = transitability.tipoInstitucion ?? null;
+    formData.transitabilidad_dependencia = transitability.dependencia ?? null;
+    formData.transitabilidad_departamento_id = transitability.departamentoId != null ? Number(transitability.departamentoId) : null;
+    formData.transitabilidad_distrito_educativo = transitability.distritoEducativo ?? '';
+    formData.transitabilidad_carrera_origen = transitability.carreraOrigen ?? '';
+    formData.transitabilidad_anio_conclusion = transitability.anioConclusion ?? null;
+    formData.transitabilidad_regimen_estudios = transitability.regimenEstudios ?? null;
+    formData.transitabilidad_estado = transitability.estado ?? null;
+    formData.transitabilidad_motivo_no_procedente = transitability.motivoNoProcedente ?? '';
+  }
+
+  // Mapear datos de Traspaso (paso Traspaso en edición)
+  if (transfer) {
+    formData.traspaso_institucion_origen_nombre = transfer.institucionNombre ?? '';
+    formData.traspaso_dependencia = transfer.dependencia ?? null;
+    formData.traspaso_departamento_id = transfer.departamentoId != null ? Number(transfer.departamentoId) : null;
+    formData.traspaso_distrito_educativo = transfer.distritoEducativo ?? '';
+    formData.traspaso_carrera_origen = transfer.carreraOrigen ?? '';
+    formData.traspaso_anio_cursado = transfer.anioCursado ?? null;
+    formData.traspaso_regimen_origen = transfer.regimenOrigen ?? null;
+    formData.traspaso_estado = transfer.estado ?? null;
+    formData.traspaso_motivo_no_procedente = transfer.motivoNoProcedente ?? '';
   }
 
   return formData;

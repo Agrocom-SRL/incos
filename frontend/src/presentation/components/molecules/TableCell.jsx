@@ -42,13 +42,15 @@ const TableCell = ({
     textType = 'default',
     tag,
     tagColor = 'blue',
-    orientation = 'horizontal',
+    orientation: orientationProp = 'horizontal',
     size = 'small',
     spaceStyle = {},
     align = 'left',
     actions = false,
+    direction: _directionDeprecated, // antd Space: use orientation instead
     ...props
 }) => {
+    const orientation = orientationProp ?? _directionDeprecated ?? 'horizontal';
     const content = children ?? fallback;
     const hasContent = content !== null && content !== undefined && content !== '';
 
@@ -58,7 +60,7 @@ const TableCell = ({
     if (actions) {
         return (
             <Flex className={cellClassName}>
-                <Space size={size} style={spaceStyle} {...props}>
+                <Space size={size} orientation={orientation} style={spaceStyle} {...props}>
                     {children}
                 </Space>
             </Flex>

@@ -231,7 +231,8 @@ export class StudentRepository extends BaseRepository {
       ? `WHERE ${whereConditions.join(' AND ')}`
       : '';
 
-    let orderBy = 'id ASC';
+    // Por defecto: más recientes primero (created_at DESC)
+    let orderBy = 'created_at DESC';
     if (filters.sort && String(filters.sort).trim() !== '') {
       const [field, dir] = filters.sort.split(':');
       const direction = (dir || 'ASC').toUpperCase() === 'DESC' ? 'DESC' : 'ASC';

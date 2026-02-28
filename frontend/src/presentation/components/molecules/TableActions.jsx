@@ -126,7 +126,7 @@ const TableActions = ({
   };
 
   return (
-    <TableCell actions align="right" direction={actionsDirection} size={actionsSize}>
+    <TableCell actions align="right" orientation={actionsDirection} size={actionsSize}>
       {viewPath && (
         <Tooltip title={`${viewAction.tooltip} ${itemName || 'elemento'}`}>
           <IconButton

@@ -97,6 +97,7 @@ export class RegisterStudentRequestDTO {
       transitabilidad_distrito_educativo,
       transitabilidad_carrera_origen,
       transitabilidad_anio_conclusion,
+      transitabilidad_regimen_estudios,
       transitabilidad_estado,
       transitabilidad_motivo_no_procedente,
       // Campos específicos de Traspaso (formulario de traspaso)
@@ -258,6 +259,7 @@ export class RegisterStudentRequestDTO {
         distritoEducativo: transitabilidad_distrito_educativo || null,
         carreraOrigen: transitabilidad_carrera_origen || null,
         anioConclusion: transitabilidad_anio_conclusion || null,
+        regimenEstudios: transitabilidad_regimen_estudios || null,
         estado: transitabilidad_estado || 'SOLICITADO',
         motivoNoProcedente: transitabilidad_motivo_no_procedente || null,
       };

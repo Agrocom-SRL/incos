@@ -4,9 +4,10 @@
  */
 
 import { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
-import { Spin, Alert, Empty, Tabs, Tag } from 'antd';
+import { Spin, Alert, Empty, Tabs, Tag, Tooltip } from 'antd';
 import {
   EnvironmentOutlined,
   FileTextOutlined,
@@ -19,6 +20,8 @@ import {
   FileProtectOutlined,
   GlobalOutlined,
   SwapOutlined,
+  EditOutlined,
+  ArrowLeftOutlined,
 } from '@ant-design/icons';
 import { useStudentDetailContext } from '@application-estudiantes/hooks';
 import {
@@ -60,6 +63,7 @@ const InfoCard = ({ title, icon, extra, children, cols = 2 }) => (
    Main
 ───────────────────────────────────────── */
 const EstudiantesDetail = () => {
+  const navigate = useNavigate();
   const {
     loading, error, student, studentData,
     guardians, documentDeliveries, scholarships, inscripcion, origins,
@@ -365,12 +369,35 @@ const EstudiantesDetail = () => {
     </PageTemplate>
   );
 
+  const headerActions = (
+    <button
+      type="button"
+      className="sd-btn sd-btn--outline"
+      onClick={() => navigate('/estudiantes')}
+    >
+      <ArrowLeftOutlined /> Volver
+    </button>
+  );
+
   return (
-    <PageTemplate header={<PageHeader title="Detalle del Estudiante" breadcrumbItems={breadcrumbItems} />}>
+    <PageTemplate header={<PageHeader title="Detalle del Estudiante" breadcrumbItems={breadcrumbItems} actions={headerActions} />}>
       <div className="sd">
 
         {/* ═══ PROFILE CARD ═══ */}
         <div className="sd-profile">
+          {/* Botón editar: esquina superior derecha de la tarjeta */}
+          {studentData?.id ? (
+            <Tooltip title="Editar datos del estudiante">
+              <button
+                type="button"
+                className="sd-profile__edit-btn"
+                onClick={() => navigate(`/estudiantes/${studentData.id}/editar`)}
+                aria-label="Editar estudiante"
+              >
+                <EditOutlined />
+              </button>
+            </Tooltip>
+          ) : null}
 
           {/* Avatar + nombre + subtítulo */}
           <div className="sd-profile__identity">
@@ -431,7 +458,7 @@ const EstudiantesDetail = () => {
             {showDeclaracionButton && (
               <button
                 type="button"
-                className="sd-btn sd-btn--warn"
+                className="sd-btn sd-btn--declaracion"
                 onClick={handleGenerateDeclaracionJurada}
                 disabled={loadingDeclaracion}
               >

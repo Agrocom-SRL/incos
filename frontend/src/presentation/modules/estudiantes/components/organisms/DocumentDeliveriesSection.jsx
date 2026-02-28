@@ -121,6 +121,14 @@ const DocumentDeliveriesSection = ({ documentDeliveries }) => {
           color: #9ca3af;
           border: 1px solid #e5e7eb;
         }
+        .dd__item-status-obs {
+          font-size: 12px;
+          color: #b45309;
+          text-align: right;
+          max-width: 200px;
+          margin-top: 2px;
+          line-height: 1.3;
+        }
         @media (max-width: 500px) {
           .dd__item { flex-wrap: wrap; }
           .dd__item-status { align-items: flex-start; flex-direction: row; margin-top: 6px; }
@@ -146,7 +154,7 @@ const DocumentDeliveriesSection = ({ documentDeliveries }) => {
                 {doc.fechaEntrega && (
                   <p className="dd__item-meta">Entregado el {doc.fechaEntrega}</p>
                 )}
-                {doc.observaciones && (
+                {doc.observaciones && !doc.enTramite && (
                   <p className="dd__item-obs">{doc.observaciones}</p>
                 )}
               </div>
@@ -160,10 +168,17 @@ const DocumentDeliveriesSection = ({ documentDeliveries }) => {
                     <CloseCircleFilled /> Pendiente
                   </span>
                 )}
-                {doc.enTramite && (
-                  <span className="dd__pill dd__pill--amber">
-                    <SyncOutlined spin /> En trámite
-                  </span>
+                {Boolean(doc.enTramite) && (
+                  <>
+                    <span className="dd__pill dd__pill--amber">
+                      <SyncOutlined spin /> En trámite
+                    </span>
+                    {doc.observaciones && (
+                      <span className="dd__item-status-obs" title={doc.observaciones}>
+                        {doc.observaciones}
+                      </span>
+                    )}
+                  </>
                 )}
               </div>
             </div>
