@@ -65,7 +65,7 @@ const GuardiansSection = ({ guardians }) => {
           align-items: center;
           gap: 8px;
           margin-bottom: 16px;
-          font-size: 13px;
+          font-size: 14px;
           font-weight: 700;
           text-transform: uppercase;
           letter-spacing: .7px;
@@ -171,7 +171,7 @@ const GuardiansSection = ({ guardians }) => {
           gap: 3px;
         }
         .gc__field-label {
-          font-size: 12px;
+          font-size: 13.5px;
           font-weight: 600;
           text-transform: uppercase;
           letter-spacing: .55px;

@@ -16,7 +16,7 @@ const DocumentDeliveriesSection = ({ documentDeliveries }) => {
           align-items: center;
           gap: 8px;
           margin-bottom: 14px;
-          font-size: 13px;
+          font-size: 14px;
           font-weight: 700;
           text-transform: uppercase;
           letter-spacing: .7px;
@@ -40,18 +40,21 @@ const DocumentDeliveriesSection = ({ documentDeliveries }) => {
           gap: 8px;
         }
         .dd__item {
-          display: flex;
-          align-items: center;
-          gap: 14px;
-          padding: 14px 16px;
           border: 1px solid #e5e7eb;
           border-radius: 10px;
           background: #fff;
+          overflow: hidden;
           transition: box-shadow .15s, border-color .15s;
         }
         .dd__item:hover {
           box-shadow: 0 2px 10px rgba(0,0,0,.06);
           border-color: #d1d5db;
+        }
+        .dd__item-row {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          padding: 14px 16px;
         }
         .dd__item-icon-wrap {
           width: 36px;
@@ -89,6 +92,14 @@ const DocumentDeliveriesSection = ({ documentDeliveries }) => {
           color: #6b7280;
           margin-top: 2px;
         }
+        .dd__item-obs-block {
+          padding: 10px 16px 14px;
+          border-top: 1px dashed #f3f4f6;
+          background: #fffbeb;
+          font-size: 13px;
+          color: #b45309;
+          line-height: 1.4;
+        }
         .dd__item-status {
           display: flex;
           flex-direction: column;
@@ -121,16 +132,8 @@ const DocumentDeliveriesSection = ({ documentDeliveries }) => {
           color: #9ca3af;
           border: 1px solid #e5e7eb;
         }
-        .dd__item-status-obs {
-          font-size: 12px;
-          color: #b45309;
-          text-align: right;
-          max-width: 200px;
-          margin-top: 2px;
-          line-height: 1.3;
-        }
         @media (max-width: 500px) {
-          .dd__item { flex-wrap: wrap; }
+          .dd__item-row { flex-wrap: wrap; }
           .dd__item-status { align-items: flex-start; flex-direction: row; margin-top: 6px; }
         }
       `}</style>
@@ -144,43 +147,38 @@ const DocumentDeliveriesSection = ({ documentDeliveries }) => {
         <div className="dd__list">
           {documentDeliveries.map((doc, i) => (
             <div className="dd__item" key={doc.id || i}>
-              <div className="dd__item-icon-wrap">
-                <FileOutlined />
-              </div>
-              <div className="dd__item-main">
-                <p className="dd__item-name">
-                  {doc.documentacionName || doc.documentacionId || `Documento ${i + 1}`}
-                </p>
-                {doc.fechaEntrega && (
-                  <p className="dd__item-meta">Entregado el {doc.fechaEntrega}</p>
-                )}
-                {doc.observaciones && !doc.enTramite && (
-                  <p className="dd__item-obs">{doc.observaciones}</p>
-                )}
-              </div>
-              <div className="dd__item-status">
-                {doc.entregado ? (
-                  <span className="dd__pill dd__pill--green">
-                    <CheckCircleFilled /> Entregado
-                  </span>
-                ) : (
-                  <span className="dd__pill dd__pill--gray">
-                    <CloseCircleFilled /> Pendiente
-                  </span>
-                )}
-                {Boolean(doc.enTramite) && (
-                  <>
+              <div className="dd__item-row">
+                <div className="dd__item-icon-wrap">
+                  <FileOutlined />
+                </div>
+                <div className="dd__item-main">
+                  <p className="dd__item-name">
+                    {doc.documentacionName || doc.documentacionId || `Documento ${i + 1}`}
+                  </p>
+                  {doc.fechaEntrega && (
+                    <p className="dd__item-meta">Entregado el {doc.fechaEntrega}</p>
+                  )}
+                </div>
+                <div className="dd__item-status">
+                  {doc.entregado ? (
+                    <span className="dd__pill dd__pill--green">
+                      <CheckCircleFilled /> Entregado
+                    </span>
+                  ) : (
+                    <span className="dd__pill dd__pill--gray">
+                      <CloseCircleFilled /> Pendiente
+                    </span>
+                  )}
+                  {Boolean(doc.enTramite) && (
                     <span className="dd__pill dd__pill--amber">
                       <SyncOutlined spin /> En trámite
                     </span>
-                    {doc.observaciones && (
-                      <span className="dd__item-status-obs" title={doc.observaciones}>
-                        {doc.observaciones}
-                      </span>
-                    )}
-                  </>
-                )}
+                  )}
+                </div>
               </div>
+              {doc.observaciones && (
+                <div className="dd__item-obs-block">{doc.observaciones}</div>
+              )}
             </div>
           ))}
         </div>

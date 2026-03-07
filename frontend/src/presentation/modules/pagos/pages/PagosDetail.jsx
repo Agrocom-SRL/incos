@@ -288,7 +288,9 @@ const PagosDetail = () => {
         >
           {loadingEstado ? (
             <div style={{ textAlign: 'center', padding: '24px' }}>
-              <Spin tip="Cargando detalle del aporte..." />
+              <Spin tip="Cargando detalle del aporte...">
+                <div style={{ minHeight: '80px' }} />
+              </Spin>
             </div>
           ) : estadoAporte ? (
             <>

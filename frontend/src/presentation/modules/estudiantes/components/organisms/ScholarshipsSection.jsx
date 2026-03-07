@@ -29,7 +29,7 @@ const ScholarshipsSection = ({ scholarships }) => {
           align-items: center;
           gap: 8px;
           margin-bottom: 14px;
-          font-size: 13px;
+          font-size: 14px;
           font-weight: 700;
           text-transform: uppercase;
           letter-spacing: .7px;
@@ -125,7 +125,7 @@ const ScholarshipsSection = ({ scholarships }) => {
           gap: 4px;
         }
         .sc__field-label {
-          font-size: 12px;
+          font-size: 13.5px;
           font-weight: 600;
           text-transform: uppercase;
           letter-spacing: .55px;
