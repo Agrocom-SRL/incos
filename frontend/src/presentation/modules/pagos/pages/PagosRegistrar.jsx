@@ -223,10 +223,10 @@ const PagosRegistrar = () => {
         }
       }
 
-      // 4. Validar descripcion (opcional, string máximo 500 caracteres si se proporciona)
+      // 4. Validar observación (campo descripcion en API, opcional, máx. 500 caracteres)
       const descripcion = (values.descripcion || '').trim();
       if (descripcion && descripcion.length > 500) {
-        message.error('La descripción no puede exceder 500 caracteres');
+        message.error('La observación no puede exceder 500 caracteres');
         setIsSubmitting(false);
         isSubmittingRef.current = false;
         return;

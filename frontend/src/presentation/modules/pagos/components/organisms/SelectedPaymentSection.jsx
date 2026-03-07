@@ -176,10 +176,10 @@ const SelectedPaymentSection = ({
             name="descripcion"
             label={
               <span style={{ fontWeight: 500, fontSize: '14px' }}>
-                Descripción
+                Observación
               </span>
             }
-            tooltip="Descripción del pago (opcional)"
+            tooltip="Observación del pago: plazo, datos adicionales (opcional)"
             required={false}
             rules={[
               // Validar longitud solo si se proporciona un valor
@@ -189,7 +189,7 @@ const SelectedPaymentSection = ({
                     return Promise.resolve(); // Permitir vacío
                   }
                   if (value.trim().length > 500) {
-                    return Promise.reject('La descripción no puede exceder 500 caracteres');
+                    return Promise.reject('La observación no puede exceder 500 caracteres');
                   }
                   return Promise.resolve();
                 }
@@ -198,7 +198,7 @@ const SelectedPaymentSection = ({
           >
             <Input.TextArea
               rows={3}
-              placeholder="Ej: Pago de aporte académico gestión 2025... (opcional)"
+              placeholder="Ej: Plazo de entrega, datos adicionales... (opcional)"
               maxLength={500}
               showCount
               style={{

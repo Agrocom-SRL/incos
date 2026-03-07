@@ -606,6 +606,93 @@ export class ReciboPagoPdfGenerator extends IncosPDFLibBase {
                 : this._formatAporte({ montoPagado: montoPagadoCabecera, becaInfo: data.becaInfo });
             await this._addTableRow(esExclusionCabecera ? 'EXCLUSIÓN DE PAGO' : 'MONTO PAGADO', valorAporteCabecera, true);
         }
+
+        // Fila OBSERVACIÓN debajo del cuadro de datos personales (plazo, datos adicionales)
+        // Usa fila con texto que hace wrap para evitar desborde
+        const observacion = (data.observacion ?? data.descripcion ?? '').toString().trim();
+        await this._addTableRowObservacion('OBSERVACIÓN', observacion || '—');
+    }
+
+    /**
+     * Agrega una fila de tabla para OBSERVACIÓN con valor que hace wrap en varias líneas.
+     * Evita que el texto se desborde cuando es largo.
+     * @private
+     * @param {string} label - Etiqueta (ej. OBSERVACIÓN)
+     * @param {string} value - Texto que puede ser largo
+     * @returns {Promise<void>}
+     */
+    async _addTableRowObservacion(label, value) {
+        const margins = IncosPDFBase.LAYOUT.margins;
+        const { width: pageWidth } = this._currentPage.getSize();
+        const totalWidth = pageWidth - margins.left - margins.right;
+        const labelWidth = totalWidth * 0.3;
+        const valueWidth = totalWidth - labelWidth;
+        const paddingHorizontal = 6;
+        const paddingVertical = 6;
+        const lineSpacing = IncosPDFBase.LAYOUT.spacing.line ?? 4;
+        const minRowHeight = 22;
+
+        const normalFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.normal.font);
+        const boldFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.bold.font);
+        const normalFont = await this._pdfDoc.embedFont(normalFontName);
+        const boldFont = await this._pdfDoc.embedFont(boldFontName);
+        const fontSize = IncosPDFBase.FONTS.normal.size;
+        const textRgb = this._hexToRgb(IncosPDFBase.COLORS.text);
+        const borderRgb = this._hexToRgb(IncosPDFBase.COLORS.border);
+
+        const maxValueWidth = valueWidth - paddingHorizontal * 2;
+        const valueLines = value
+            ? this._wrapText(value, normalFont, fontSize, maxValueWidth)
+            : ['—'];
+        const lineHeight = fontSize + lineSpacing;
+        const contentHeight = valueLines.length * lineHeight - lineSpacing;
+        const rowHeight = Math.max(minRowHeight, contentHeight + paddingVertical * 2);
+
+        const rowY = this._currentY - rowHeight;
+
+        // Celdas: label (izq) y valor (der)
+        this._currentPage.drawRectangle({
+            x: margins.left,
+            y: rowY,
+            width: labelWidth,
+            height: rowHeight,
+            borderColor: borderRgb,
+            borderWidth: 1,
+        });
+        this._currentPage.drawRectangle({
+            x: margins.left + labelWidth,
+            y: rowY,
+            width: valueWidth,
+            height: rowHeight,
+            borderColor: borderRgb,
+            borderWidth: 1,
+        });
+
+        // Label (centrado verticalmente en la celda izquierda)
+        const labelY = rowY + (rowHeight - fontSize) / 2 + fontSize * 0.3;
+        this._currentPage.drawText(label, {
+            x: margins.left + 3,
+            y: labelY,
+            size: fontSize,
+            font: boldFont,
+            color: textRgb,
+        });
+
+        // Valor: varias líneas desde arriba de la celda
+        const valueStartY = rowY + rowHeight - paddingVertical - fontSize;
+        let currentValueY = valueStartY;
+        for (const line of valueLines) {
+            this._currentPage.drawText(line, {
+                x: margins.left + labelWidth + paddingHorizontal,
+                y: currentValueY,
+                size: fontSize,
+                font: normalFont,
+                color: textRgb,
+            });
+            currentValueY -= lineHeight;
+        }
+
+        this._currentY -= rowHeight;
     }
 
     /**
@@ -620,7 +707,7 @@ export class ReciboPagoPdfGenerator extends IncosPDFLibBase {
         const margins = IncosPDFBase.LAYOUT.margins;
         const { width: pageWidth } = this._currentPage.getSize();
         const rowHeight = 22; // Aumentado para mejor espaciado
-        const labelWidth = (pageWidth - margins.left - margins.right) * 0.35;
+        const labelWidth = (pageWidth - margins.left - margins.right) * 0.3;
         const rowY = this._currentY - rowHeight;
 
         // Bordes

@@ -210,6 +210,22 @@ export class GenerateReciboPagoUseCase {
                     }
                 }
 
+                // Observación: la cabecera (pago_aporte) no tiene descripcion; se toma de la última cuota (pago_cuotas.descripcion)
+                let observacionCabecera = '';
+                if (this.contributionPaymentInstallmentRepository) {
+                    const resultCuotas = await this.contributionPaymentInstallmentRepository.findAll(
+                        { contributionPaymentId: idNum },
+                        1,
+                        100
+                    );
+                    const cuotas = resultCuotas.contributionPaymentInstallments ?? resultCuotas.contributionPaymentInstallment ?? [];
+                    if (cuotas.length > 0) {
+                        const ultima = cuotas[cuotas.length - 1];
+                        const plain = ultima.toPlainObject ? ultima.toPlainObject() : ultima;
+                        observacionCabecera = (plain.description ?? plain.descripcion ?? '').toString().trim() || '';
+                    }
+                }
+
                 // 5. Generar el recibo PDF usando la misma lógica que RegisterAporteVoluntarioUseCase
                 const reciboResult = await this._generateReciboPDF(
                     payment,
@@ -219,7 +235,8 @@ export class GenerateReciboPagoUseCase {
                     scholarshipInfo,
                     paymentPlain.totalAmount || paymentPlain.total_amount || paymentPlain.montoTotal || paymentPlain.monto_total || 400.00,
                     paymentPlain.scholarshipDiscount || paymentPlain.scholarship_discount || paymentPlain.descuentoBeca || paymentPlain.descuento_beca || 0.00,
-                    paymentPlain.amountPaid || paymentPlain.amount_paid || paymentPlain.montoPagado || paymentPlain.monto_pagado || (paymentPlain.totalAmount || paymentPlain.total_amount || 400.00)
+                    paymentPlain.amountPaid || paymentPlain.amount_paid || paymentPlain.montoPagado || paymentPlain.monto_pagado || (paymentPlain.totalAmount || paymentPlain.total_amount || 400.00),
+                    observacionCabecera
                 );
 
                 // 6. Guardar o actualizar el recibo en documentos_estudiante
@@ -368,6 +385,9 @@ export class GenerateReciboPagoUseCase {
         const numeroRecibo = (cuotaPlain.receiptNumber ?? cuotaPlain.numeroRecibo ?? cuotaPlain.numero_recibo)
             || (cuotaPlain.id != null ? String(cuotaPlain.id).padStart(6, '0') : '000000');
 
+        // Observación: pago_cuotas.descripcion (en entidad se expone como description)
+        const observacionCuota = (cuotaPlain.description ?? cuotaPlain.descripcion ?? '').toString().trim() || '';
+
         const reciboData = {
             numeroRecibo,
             fechaPago: cuotaPlain.paymentDate ?? cuotaPlain.fechaPago ?? cuotaPlain.fecha_pago,
@@ -383,10 +403,11 @@ export class GenerateReciboPagoUseCase {
             totalPagadoAntes,
             montoPagado: montoEstaCuota,
             saldoPendiente,
-            concepto: cuotaPlain.descripcion ?? cuotaPlain.description ?? 'Aporte Académico',
+            concepto: 'Aporte Académico',
             metodoPago: paymentMethod?.nombre ?? paymentMethod?.name ?? 'N/A',
             numeroTransaccion: cuotaPlain.transactionNumber ?? cuotaPlain.numeroTransaccion ?? cuotaPlain.numero_transaccion ?? null,
             becaInfo: scholarshipInfo ? { nombre: scholarshipInfo.nombre ?? scholarshipInfo.name, porcentaje: scholarshipInfo.porcentaje ?? scholarshipInfo.percentage } : null,
+            observacion: observacionCuota,
         };
 
         const pdfBuffer = await this.pdfGenerator.generateReciboPago(reciboData);
@@ -521,7 +542,7 @@ export class GenerateReciboPagoUseCase {
     /**
      * Genera el recibo de pago en PDF usando la misma lógica que RegisterAporteVoluntarioUseCase
      * @private
-     * @param {Object} payment - Registro del pago
+     * @param {Object} payment - Registro del pago (cabecera pago_aporte)
      * @param {Object} student - Datos del estudiante
      * @param {Object} management - Gestión académica
      * @param {Object} paymentMethod - Método de pago
@@ -529,14 +550,18 @@ export class GenerateReciboPagoUseCase {
      * @param {number} totalAmount - Monto total del aporte
      * @param {number} scholarshipDiscount - Descuento por beca
      * @param {number} amountToPay - Monto a pagar (total - descuento)
+     * @param {string} [observacionFromCuota] - Observación tomada de la última cuota (pago_cuotas.descripcion); la cabecera no tiene este campo
      * @returns {Promise<Object>} Información del PDF generado {filePath, fileName, absolutePath}
      */
-    async _generateReciboPDF(payment, student, management, paymentMethod, scholarshipInfo, totalAmount, scholarshipDiscount, amountToPay) {
+    async _generateReciboPDF(payment, student, management, paymentMethod, scholarshipInfo, totalAmount, scholarshipDiscount, amountToPay, observacionFromCuota = '') {
         try {
             // Convertir a objetos planos
             const studentPlain = student.toPlainObject ? student.toPlainObject() : student;
             const paymentPlain = payment.toPlainObject ? payment.toPlainObject() : payment;
             const managementPlain = management.toPlainObject ? management.toPlainObject() : management;
+
+            // Observación: en BD es pago_cuotas.descripcion; la cabecera (pago_aporte) no tiene descripcion, se pasa desde la última cuota
+            const observacion = (observacionFromCuota || paymentPlain.descripcion || paymentPlain.description || '').toString().trim() || '';
 
             // Preparar datos para el PDF
             const reciboData = {
@@ -559,6 +584,9 @@ export class GenerateReciboPagoUseCase {
                 concepto: paymentPlain.concepto || paymentPlain.concept || 'Aporte Voluntario Anual',
                 metodoPago: paymentMethod?.nombre || paymentMethod?.name || 'N/A',
                 numeroTransaccion: paymentPlain.numeroTransaccion || paymentPlain.numero_transaccion || paymentPlain.transactionNumber || paymentPlain.transaction_number || null,
+
+                // Observación (pago_cuotas.descripcion): plazo, datos adicionales; en UI se llama "Observación"
+                observacion,
 
                 // Información de beca (si existe)
                 becaInfo: scholarshipInfo ? {
