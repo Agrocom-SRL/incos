@@ -1006,73 +1006,6 @@ export class IncosPDFLibBase {
             normalizedAlignments[i] = alignments[i] || 'left';
         }
 
-        // Calcular posición inicial
-        let currentY = this._currentY;
-        const startY = currentY;
-
-        // Dibujar encabezado
-        const headerY = currentY - headerHeight;
-        let currentX = finalTableX;
-
-        // Fondo del encabezado
-        this._currentPage.drawRectangle({
-            x: finalTableX,
-            y: headerY,
-            width: availableWidth,
-            height: headerHeight,
-            color: headerBgRgb,
-        });
-
-        // Bordes del encabezado
-        this._currentPage.drawRectangle({
-            x: finalTableX,
-            y: headerY,
-            width: availableWidth,
-            height: headerHeight,
-            borderColor: borderRgb,
-            borderWidth,
-        });
-
-        // Texto del encabezado
-        for (let col = 0; col < numCols; col++) {
-            const colWidth = actualWidths[col];
-            const headerText = String(headers[col] ?? '').trim();
-            const alignment = normalizedAlignments[col];
-
-            if (headerText) {
-                const textWidth = headerFont.widthOfTextAtSize(headerText, headerFontSize);
-                let textX;
-                if (alignment === 'center') {
-                    textX = currentX + (colWidth - textWidth) / 2;
-                } else if (alignment === 'right') {
-                    textX = currentX + colWidth - textWidth - cellPadding;
-                } else {
-                    textX = currentX + cellPadding;
-                }
-
-                const textY = headerY + (headerHeight - headerFontSize) / 2 + headerFontSize * 0.3;
-                this._currentPage.drawText(headerText.toUpperCase(), {
-                    x: textX,
-                    y: textY,
-                    size: headerFontSize,
-                    font: headerFont,
-                    color: whiteRgb,
-                });
-            }
-
-            // Línea vertical entre columnas
-            if (col < numCols - 1) {
-                this._currentPage.drawLine({
-                    start: { x: currentX + colWidth, y: headerY },
-                    end: { x: currentX + colWidth, y: headerY + headerHeight },
-                    thickness: borderWidth,
-                    color: borderRgb,
-                });
-            }
-
-            currentX += colWidth;
-        }
-
         // Helper: Divide texto en líneas que caben en el ancho disponible
         const wrapText = (text, maxWidth, font, fontSize) => {
             const words = text.split(' ');
@@ -1114,10 +1047,92 @@ export class IncosPDFLibBase {
             return lines.length > 0 ? lines : [''];
         };
 
+        // Calcular posición inicial
+        let currentY = this._currentY;
+        const startY = currentY;
+
+        // Encabezado con wrap: calcular líneas por columna y altura dinámica
+        const headerLinesByCol = [];
+        const headerLineHeight = headerFontSize * 1.2;
+        let maxHeaderLines = 1;
+        for (let col = 0; col < numCols; col++) {
+            const colWidth = actualWidths[col];
+            const headerText = String(headers[col] ?? '').trim().toUpperCase();
+            const availableHeaderWidth = colWidth - (cellPadding * 2);
+            const lines = wrapText(headerText, availableHeaderWidth, headerFont, headerFontSize);
+            headerLinesByCol[col] = lines;
+            maxHeaderLines = Math.max(maxHeaderLines, lines.length);
+        }
+        const actualHeaderHeight = Math.max(headerHeight, maxHeaderLines * headerLineHeight + (cellPadding * 2));
+        const headerY = currentY - actualHeaderHeight;
+
+        // Fondo del encabezado
+        this._currentPage.drawRectangle({
+            x: finalTableX,
+            y: headerY,
+            width: availableWidth,
+            height: actualHeaderHeight,
+            color: headerBgRgb,
+        });
+
+        // Bordes del encabezado
+        this._currentPage.drawRectangle({
+            x: finalTableX,
+            y: headerY,
+            width: availableWidth,
+            height: actualHeaderHeight,
+            borderColor: borderRgb,
+            borderWidth,
+        });
+
+        // Texto del encabezado (varias líneas por celda)
+        let currentX = finalTableX;
+        for (let col = 0; col < numCols; col++) {
+            const colWidth = actualWidths[col];
+            const lines = headerLinesByCol[col] || [''];
+            const alignment = normalizedAlignments[col];
+            const numLines = lines.length;
+
+            for (let lineIdx = 0; lineIdx < numLines; lineIdx++) {
+                const lineText = lines[lineIdx];
+                if (lineText) {
+                    const textWidth = headerFont.widthOfTextAtSize(lineText, headerFontSize);
+                    let textX;
+                    if (alignment === 'center') {
+                        textX = currentX + (colWidth - textWidth) / 2;
+                    } else if (alignment === 'right') {
+                        textX = currentX + colWidth - textWidth - cellPadding;
+                    } else {
+                        textX = currentX + cellPadding;
+                    }
+                    const totalTextHeight = numLines * headerLineHeight;
+                    const startTextY = headerY + (actualHeaderHeight - totalTextHeight) / 2 + headerFontSize * 0.3;
+                    const textY = startTextY + (numLines - 1 - lineIdx) * headerLineHeight;
+                    this._currentPage.drawText(lineText, {
+                        x: textX,
+                        y: textY,
+                        size: headerFontSize,
+                        font: headerFont,
+                        color: whiteRgb,
+                    });
+                }
+            }
+
+            if (col < numCols - 1) {
+                this._currentPage.drawLine({
+                    start: { x: currentX + colWidth, y: headerY },
+                    end: { x: currentX + colWidth, y: headerY + actualHeaderHeight },
+                    thickness: borderWidth,
+                    color: borderRgb,
+                });
+            }
+            currentX += colWidth;
+        }
+
         // Dibujar filas de datos
         currentY = headerY;
-        const tableTopY = headerY + headerHeight; // Parte superior del encabezado
-        let tableBottomY = headerY; // Se actualizará con la última fila
+        const tableTopY = headerY + actualHeaderHeight;
+        let tableBottomY = headerY;
 
         for (let rowIdx = 0; rowIdx < rows.length; rowIdx++) {
             const row = rows[rowIdx];

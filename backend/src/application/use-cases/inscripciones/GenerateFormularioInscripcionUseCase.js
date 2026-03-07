@@ -260,12 +260,13 @@ export class GenerateFormularioInscripcionUseCase extends BaseDocumentGeneration
     }
 
     /**
-     * Obtiene la inscripción actual del estudiante con materias desde vista_estudiante_inscripcion_actual
-     * 
+     * Obtiene la inscripción actual del estudiante con materias desde vista_estudiante_inscripcion_actual.
+     * Paralelo y periodo vienen de esa vista (vista_base_paralelos_info); no de vista_estudiante_datos_academicos.
+     *
      * @private
      * @param {number} studentId - ID del estudiante
      * @param {number} managementId - ID de la gestión activa
-     * @returns {Promise<Object|null>} Datos de inscripción con materias o null si no existe
+     * @returns {Promise<Object|null>} Datos de inscripción con materias, paraleloLabel (con periodo), periodoNombre
      */
     async _fetchEnrollmentData(studentId, managementId) {
         try {
@@ -284,17 +285,21 @@ export class GenerateFormularioInscripcionUseCase extends BaseDocumentGeneration
 
             // Extraer datos únicos de la inscripción (todos los registros tienen los mismos datos de inscripción)
             const firstRow = results[0];
+            // Cada fila de la vista trae paralelo y periodo de esa materia/curso (pueden variar por materia)
             const materias = results.map(row => ({
                 sigla: row.materia_sigla || row.materiaSigla || '',
                 nombre: row.materia_nombre || row.materiaNombre || '',
                 periodo: row.periodo_numero || row.periodoNumero || null,
                 periodoNombre: row.periodo_nombre || row.periodoNombre || null,
+                paraleloNombre: row.paralelo_nombre ?? row.paraleloNombre ?? null,
+                paraleloTurno: row.paralelo_turno ?? row.paraleloTurno ?? null,
                 horas: row.horas_semanales || row.horasSemanales || null,
             }));
 
-            // Obtener periodo único (si todas las materias tienen el mismo periodo)
+            // Periodo: desde primera fila (vista_estudiante_inscripcion_actual trae periodo_nombre por paralelo)
+            const periodoNombreFromRow = (firstRow.periodo_nombre ?? firstRow.periodoNombre ?? '').toString().trim() || null;
             const periodosUnicos = [...new Set(materias.map(m => m.periodoNombre).filter(Boolean))];
-            const periodoNombre = periodosUnicos.length === 1 ? periodosUnicos[0] : null;
+            const periodoNombre = periodoNombreFromRow || (periodosUnicos.length === 1 ? periodosUnicos[0] : null);
 
             // Paralelo y turno desde la vista (una fila por materia; paralelo/periodo son iguales en todas)
             const paraleloNombre = firstRow.paralelo_nombre ?? firstRow.paraleloNombre ?? null;
@@ -302,7 +307,7 @@ export class GenerateFormularioInscripcionUseCase extends BaseDocumentGeneration
             const paraleloPart = [paraleloNombre, paraleloTurno].filter(Boolean).join(' - ');
             const paraleloLabel = paraleloPart
                 ? (periodoNombre ? `${paraleloPart} (${periodoNombre})` : paraleloPart)
-                : periodoNombre;
+                : (periodoNombre || null);
 
             return {
                 inscripcionId: firstRow.inscripcion_id || firstRow.inscripcionId,

@@ -105,7 +105,7 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
 
     /**
      * I. DATOS PERSONALES.
-     * Orquesta dos bloques visuales: identificación personal y lugar/fecha/domicilio.
+     * Orden: identificación personal → lugar/fecha y domicilio → datos del trabajo → contacto de emergencia.
      *
      * @private
      * @param {Object} options - Opciones de generación
@@ -117,14 +117,14 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
         // Bloque 1: Identificación personal (nombres, grid CI/género/etc., detalle discapacidad)
         await this._buildIdentificacionPersonal(options);
 
-        // Bloque 2: Lugar y Fecha de Nacimiento, Domicilio, Idioma de origen
+        // Bloque 2: Lugar y Fecha de Nacimiento, Domicilio
         await this._buildLugarFechaNacimientoYDomicilio(options);
 
-        // Bloque 3: Contacto de emergencia (apoderado)
-        await this._buildContactoEmergencia(options);
-
-        // Bloque 4: Datos del trabajo (trabaja, empresa, cargo)
+        // Bloque 3: Datos del trabajo (trabaja, empresa, cargo)
         await this._buildDatosTrabajo(options);
+
+        // Bloque 4: Contacto de emergencia (apoderado) — al final del sector
+        await this._buildContactoEmergencia(options);
 
         this._addSpace();
     }
@@ -324,6 +324,31 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
     }
 
     /**
+     * Formatea el texto de la columna PARALELO por materia (paralelo - turno (periodo)).
+     * Usa datos por materia desde vista_estudiante_inscripcion_actual; si faltan, usa fallback.
+     *
+     * @private
+     * @param {Object} materia - { paraleloNombre, paraleloTurno, periodoNombre }
+     * @param {string} fallbackParaleloLabel - Texto único de inscripción cuando la materia no trae paralelo/periodo
+     * @returns {string}
+     */
+    _formatParaleloColumna(materia, fallbackParaleloLabel) {
+        let pNombre = (materia.paraleloNombre ?? materia.paralelo_nombre ?? '').toString().trim();
+        const pTurno = (materia.paraleloTurno ?? materia.paralelo_turno ?? '').toString().trim();
+        const periodo = (materia.periodoNombre ?? materia.periodo_nombre ?? '').toString().trim();
+        if (pNombre) {
+            const palabras = pNombre.toLowerCase().split(' ');
+            pNombre = palabras.map(p => (p ? p.charAt(0).toUpperCase() + p.slice(1) : '')).join(' ');
+        }
+        const part = [pNombre, pTurno].filter(Boolean).join(' - ');
+        if (part) {
+            return periodo ? `${part} (${periodo})` : part;
+        }
+        if (periodo) return periodo;
+        return fallbackParaleloLabel || '—';
+    }
+
+    /**
      * Lugar y Fecha de Nacimiento, Domicilio, Idioma de origen.
      * Datos desde origenes (vista_base_estudiante_origenes + idiomas), residencia (vista_base_estudiante_residencia)
      * y student (fechaNacimientoLiteral, edad calculados en caso de uso).
@@ -409,8 +434,9 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
     }
 
     /**
-     * Bloque 3 de DATOS PERSONALES: Contacto de emergencia (apoderado).
-     * Grid de 2 columnas: Columna izquierda (Parentesco, Celular), Columna derecha (Nombre completo).
+     * Bloque 4 de DATOS PERSONALES: Contacto de emergencia (apoderado).
+     * No se muestra si no hay apoderado o si todos los datos (parentesco, celular, nombre) son null/vacíos.
+     * Si se muestra: título "Contacto de emergencia" y grid (Parentesco, Celular | Nombre). Nombre vacío → "Sin nombre".
      *
      * @private
      * @param {Object} options - Opciones de generación (options.student)
@@ -425,37 +451,74 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
         const apoderado = apoderados.find((a) => a.es_principal === 1 || a.es_principal === true) || apoderados[0];
 
         if (!apoderado) {
-            // Si no hay apoderado, no mostrar nada
             return;
         }
 
-        // Preparar datos para grid de 2 columnas
+        const parentesco = (apoderado.tipo_parentesco_nombre ?? apoderado.tipoParentescoNombre ?? '').toString().trim();
+        const celular = (apoderado.celular_1 ?? apoderado.celular1 ?? '').toString().trim();
+        const nombres = (apoderado.apoderado_nombres ?? apoderado.apoderadoNombres ?? '').toString().trim();
+        const apellidos = (apoderado.apoderado_apellidos ?? apoderado.apoderadoApellidos ?? '').toString().trim();
+        const nombreCompleto = [nombres, apellidos].filter(Boolean).join(' ').trim();
+
+        // No mostrar el bloque si no tiene datos (todos null/vacíos)
+        if (!parentesco && !celular && !nombreCompleto) {
+            return;
+        }
+
+        // Separación y título "Contacto de emergencia" para que no queden los datos "al aire"
+        this._addSpace(IncosPDFBase.LAYOUT.spacing.subsection);
+        await this._addContactoEmergenciaSeparator(T.CONTACTO_EMERGENCIA_TITULO);
+
         const leftColumnItems = [];
         const rightColumnItems = [];
 
-        // Columna izquierda: Parentesco y Celular
-        const parentesco = (apoderado.tipo_parentesco_nombre ?? apoderado.tipoParentescoNombre ?? '').toString().trim();
         if (parentesco) {
             leftColumnItems.push({ label: T.PARENTESCO_LABEL, value: parentesco });
         }
-
-        const celular = (apoderado.celular_1 ?? apoderado.celular1 ?? '').toString().trim();
         if (celular) {
             leftColumnItems.push({ label: T.CELULAR_CONTACTO_LABEL, value: celular });
         }
 
-        // Columna derecha: Nombre completo (nombres + apellidos)
-        const nombres = (apoderado.apoderado_nombres ?? apoderado.apoderadoNombres ?? '').toString().trim();
-        const apellidos = (apoderado.apoderado_apellidos ?? apoderado.apoderadoApellidos ?? '').toString().trim();
-        const nombreCompleto = [nombres, apellidos].filter(Boolean).join(' ').trim();
-        if (nombreCompleto) {
-            rightColumnItems.push({ label: T.DATOS_REFERENCIA_LABEL, value: nombreCompleto });
-        }
+        rightColumnItems.push({
+            label: T.DATOS_REFERENCIA_LABEL,
+            value: nombreCompleto || T.SIN_NOMBRE_PLACEHOLDER,
+        });
 
-        // Dibujar grid de 2 columnas solo si hay datos
         if (leftColumnItems.length > 0 || rightColumnItems.length > 0) {
             await this._addBoxedFieldGrid(leftColumnItems, rightColumnItems, 35);
         }
+    }
+
+    /**
+     * Añade el título de subsección "Contacto de emergencia".
+     * Separa visualmente el bloque de trabajo del bloque de contacto de emergencia.
+     *
+     * @private
+     * @param {string} titleText - Texto del título (ej. "Contacto de emergencia")
+     * @returns {Promise<void>}
+     */
+    async _addContactoEmergenciaSeparator(titleText) {
+        if (!this._pdfDoc || !this._currentPage) {
+            throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
+        }
+
+        const margins = IncosPDFBase.LAYOUT.margins;
+        const sectionRgb = this._hexToRgb(IncosPDFBase.COLORS.primary);
+
+        // Título de subsección (alineado a la izquierda, fuente section, color primario)
+        const sectionFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.section.font);
+        const sectionFont = await this._pdfDoc.embedFont(sectionFontName);
+        const sectionFontSize = IncosPDFBase.FONTS.section.size;
+
+        this._currentPage.drawText(titleText, {
+            x: margins.left,
+            y: this._currentY,
+            size: sectionFontSize,
+            font: sectionFont,
+            color: sectionRgb,
+        });
+
+        this._currentY = this._currentY - IncosPDFBase.LAYOUT.spacing.bullet;
     }
 
     /**
@@ -496,12 +559,13 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
 
     /**
      * II. DATOS ACADÉMICOS.
-     * Muestra carrera y periodo en grid de 2 columnas, y materias como viñetas.
+     * Una sola tabla a ancho completo (menos márgenes) con: CÓDIGO, ASIGNATURAS CARRERA: [nombre], HORAS, PARALELO.
+     * Se eliminaron los campos sueltos de Carrera, Año y Paralelo a la izquierda.
      *
      * @private
      * @param {Object} options - Opciones de generación
-     * @param {Object} [options.academicData] - Datos académicos (carreraNombre, carreraCodigo, estadoAcademico)
-     * @param {Object} [options.enrollmentData] - Datos de inscripción (periodoNombre, materias[])
+     * @param {Object} [options.academicData] - Datos académicos (carreraNombre, carreraCodigo)
+     * @param {Object} [options.enrollmentData] - Datos de inscripción (periodoNombre, paraleloLabel, materias[])
      * @returns {Promise<void>}
      */
     async _buildDatosAcademicos(options) {
@@ -510,72 +574,43 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
         const academicData = options.academicData || {};
         const enrollmentData = options.enrollmentData || {};
 
-        // Preparar datos para columna izquierda (campos con recuadro)
-        const leftColumnItems = [];
+        const carreraNombre = (academicData.carreraNombre || academicData.carrera_nombre || '').toString().trim();
+        const fallbackParaleloLabel = (enrollmentData.paraleloLabel || enrollmentData.paralelo_label || '').toString().trim();
 
-        // Carrera
-        const carreraNombre = academicData.carreraNombre || academicData.carrera_nombre;
-        if (carreraNombre) {
-            leftColumnItems.push({
-                label: 'Carrera:',
-                value: carreraNombre,
-            });
-        }
-
-        // Año académico (ya viene con formato correcto: "Primer Año", "Segundo Año", etc.)
-        const periodoNombre = enrollmentData.periodoNombre || enrollmentData.periodo_nombre || '';
-        if (periodoNombre) {
-            leftColumnItems.push({
-                label: 'Año:',
-                value: periodoNombre,
-            });
-        }
-
-        // Paralelo: todas las primeras letras en mayúsculas
-        const paraleloNombre = enrollmentData.paraleloNombre || enrollmentData.paralelo_nombre || '';
-        if (paraleloNombre.length > 0) {
-            // Convertir a formato: primera letra de cada palabra en mayúscula
-            const palabras = paraleloNombre.toLowerCase().split(' ');
-            const paraleloFormateado = palabras.map(palabra => 
-                palabra ? palabra.charAt(0).toUpperCase() + palabra.slice(1) : ''
-            ).join(' ');
-
-            leftColumnItems.push({
-                label: 'Paralelo:',
-                value: paraleloFormateado,
-            });
-        }
-
-        // Preparar tabla de materias para columna derecha
         const materias = enrollmentData.materias || [];
         const tableRows = [];
         for (const materia of materias) {
             const sigla = (materia.sigla || '').toString().trim();
             const nombre = (materia.nombre || '').toString().trim();
             const horas = materia.horas !== null && materia.horas !== undefined ? String(materia.horas) : '-';
-
             if (sigla || nombre) {
+                // Columna PARALELO por materia: paralelo - turno (periodo) desde vista_estudiante_inscripcion_actual
+                const paraleloTexto = this._formatParaleloColumna(materia, fallbackParaleloLabel);
                 tableRows.push([
                     sigla || '-',
                     nombre || '-',
                     horas,
+                    paraleloTexto,
                 ]);
             }
         }
 
-        // Usar layout de dos columnas solo si hay datos para mostrar
-        if (leftColumnItems.length > 0 || tableRows.length > 0) {
-            const rightTableConfig = tableRows.length > 0 ? {
-                headers: ['CÓDIGO', 'ASIGNATURAS', 'HORAS'],
-                columnWidths: [0.25, 0.60, 0.15], // 25%, 60%, 15%
-                rows: tableRows,
-                alignments: ['left', 'left', 'right'], // Código y asignatura izquierda, horas derecha
-            } : null;
+        if (tableRows.length > 0) {
+            // Encabezado: ASIGNATURAS incluye "ASIGNATURAS CARRERA: [nombre]" en el cuadro verde
+            const asignaturasHeader = carreraNombre
+                ? `ASIGNATURAS CARRERA: ${carreraNombre}`
+                : 'ASIGNATURAS';
+            const headers = ['CÓDIGO', asignaturasHeader, 'HORAS', 'PARALELO'];
+            const columnWidths = [0.18, 0.42, 0.12, 0.28]; // Código, Asignaturas, Horas, Paralelo
+            const alignments = ['left', 'left', 'right', 'left'];
 
-            await this._addTwoColumnLayout(leftColumnItems, rightTableConfig, 35, 60, { topOffset: 6 });
+            const { width: pageWidth } = this._currentPage.getSize();
+            const margins = IncosPDFBase.LAYOUT.margins;
+            const fullWidth = pageWidth - margins.left - margins.right;
+
+            await this._addTable(headers, columnWidths, tableRows, fullWidth, alignments, margins.left);
         } else {
-            // Si no hay datos, mostrar mensaje
-            await this._addLabelValue('Datos académicos:', 'No hay datos académicos disponibles');
+            await this._addLabelValue('Datos académicos:', carreraNombre ? `Carrera: ${carreraNombre}. No hay materias inscritas.` : 'No hay datos académicos disponibles');
         }
 
         this._addSpace();
