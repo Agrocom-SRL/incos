@@ -1,4 +1,5 @@
 import { GenerateFormularioInscripcionUseCase } from '../inscripciones/GenerateFormularioInscripcionUseCase.js';
+import { TIPOS_DOCUMENTO_SISTEMA } from '../../../domain/constants/index.js';
 import { UPLOAD } from '../../../infrastructure/config/uploads.config.js';
 
 /**
@@ -27,10 +28,11 @@ export class GenerateDeclaracionJuradaUseCase extends GenerateFormularioInscripc
         // Sobrescribir el tipo de documento para registros en BD / logs
         this.documentType = 'DECLARACIÓN JURADA';
 
-        // Repositorios adicionales para secciones de Formación Académica / Justificación
+        // Repositorios adicionales para secciones de Formación Académica / Justificación / Documentos Presentados
         this.transitabilityRepository = deps.transitabilityRepository || null;
         this.transferRepository = deps.transferRepository || null;
         this.institutionRepository = deps.institutionRepository || null;
+        this.documentacionRepository = deps.documentacionRepository || null;
     }
 
     /**
@@ -71,6 +73,12 @@ export class GenerateDeclaracionJuradaUseCase extends GenerateFormularioInscripc
             // 5. Obtener documentos entregados
             const entregas = await this._fetchDocumentDeliveries(studentId);
 
+            // 5b. Para TRASPASO: lista de documentos presentados desde vista (entregados), misma lógica que acta pero invertida (entregado: true)
+            const documentosPresentadosTraspaso =
+                (academicData?.tipoAdmision || student.tipoAdmision || '').toString().trim().toUpperCase() === 'TRASPASO'
+                    ? await this._fetchDocumentosPresentadosTraspaso(studentId)
+                    : null;
+
             // 6. Generar PDF de Declaración Jurada
             const pdfBuffer = await this._generatePdfBuffer(
                 gestionYear,
@@ -78,6 +86,7 @@ export class GenerateDeclaracionJuradaUseCase extends GenerateFormularioInscripc
                 academicData,
                 enrollmentData,
                 entregas,
+                documentosPresentadosTraspaso,
                 options,
             );
 
@@ -112,10 +121,11 @@ export class GenerateDeclaracionJuradaUseCase extends GenerateFormularioInscripc
      * @param {Object|null} academicData
      * @param {Object|null} enrollmentData
      * @param {Array} entregas
+     * @param {Array|null} documentosPresentadosTraspaso - Para TRASPASO: [{ id, nombre, presentado }]
      * @param {Object} options - Opciones adicionales (ej: { tipoAdmision })
      * @returns {Promise<Buffer>}
      */
-    async _generatePdfBuffer(gestionYear, student, academicData, enrollmentData, entregas, options = {}) {
+    async _generatePdfBuffer(gestionYear, student, academicData, enrollmentData, entregas, documentosPresentadosTraspaso, options = {}) {
         const fechaActual = this._getCurrentDate();
         const fechaNacimientoLiteral = this._formatFechaLiteral(student.fechaNacimiento);
         const edad = this._calcEdad(student.fechaNacimiento);
@@ -217,6 +227,7 @@ export class GenerateDeclaracionJuradaUseCase extends GenerateFormularioInscripc
             },
             enrollmentData,
             entregas,
+            documentosPresentadosTraspaso: documentosPresentadosTraspaso || undefined,
             fechaActual,
             signatureTwoColumns: true,
             tipoAdmision,
@@ -224,6 +235,92 @@ export class GenerateDeclaracionJuradaUseCase extends GenerateFormularioInscripc
             transferData,
             institutionData,
         });
+    }
+
+    /**
+     * Obtiene la lista de documentos presentados (entregados) para el formulario de Traspaso.
+     * Usa la misma vista y repositorio que el acta de compromiso, pero con entregado: true
+     * (inverso del acta, que lista los no entregados).
+     * Orden: TRASPASO (por orden) + INSCRIPCION ids 3, 2, 1. Los últimos tres se muestran como "Fotocopia de ...".
+     *
+     * @private
+     * @param {number} studentId
+     * @returns {Promise<Array<{ nombre: string }>>}
+     */
+    async _fetchDocumentosPresentadosTraspaso(studentId) {
+        try {
+            const orderedDocIds = await this._getOrderedDocumentacionIdsTraspasoForm();
+            if (orderedDocIds.length === 0) return [];
+
+            const entregasEntregadas = await this.studentDocumentDeliveryRepository.obtenerEntregasConDetalle({
+                estudiante_id: studentId,
+                documento_padre_id: null,
+                entregado: true,
+            });
+
+            const byDocId = new Map();
+            for (const e of entregasEntregadas || []) {
+                const id = e.documentacion_id != null ? Number(e.documentacion_id) : null;
+                if (id != null && orderedDocIds.includes(id) && !byDocId.has(id)) {
+                    byDocId.set(id, e);
+                }
+            }
+
+            const idsUltimos3 = [3, 2, 1];
+            const result = [];
+            for (const id of orderedDocIds) {
+                const entrega = byDocId.get(id);
+                if (!entrega) continue;
+                const nombreDoc = (entrega.nombre_documento || entrega.nombreDocumento || '').toString().trim();
+                const nombre = idsUltimos3.includes(id)
+                    ? (nombreDoc ? `Fotocopia de ${nombreDoc}` : '')
+                    : nombreDoc;
+                if (nombre) result.push({ nombre });
+            }
+
+            this.logger.info('[Estudiantes] Documentos presentados traspaso obtenidos desde vista', {
+                studentId,
+                cantidad: result.length,
+            });
+            return result;
+        } catch (error) {
+            this.logger.error('[Estudiantes] Error al obtener documentos presentados traspaso', {
+                studentId,
+                error: error.message,
+            });
+            return [];
+        }
+    }
+
+    /**
+     * Orden de documentacion_id para "Documentos Presentados" del formulario de Traspaso:
+     * primero TRASPASO (por orden en BD), luego INSCRIPCION 3, 2, 1 (Carnet, Cert. Nacimiento, Diploma).
+     *
+     * @private
+     * @returns {Promise<number[]>}
+     */
+    async _getOrderedDocumentacionIdsTraspasoForm() {
+        const idsInscripcionUltimos3 = [3, 2, 1];
+        if (!this.documentacionRepository) {
+            return idsInscripcionUltimos3;
+        }
+        try {
+            const docsTraspaso = await this.documentacionRepository.findAll(
+                { documentType: TIPOS_DOCUMENTO_SISTEMA.TRASPASO, parentDocumentId: null },
+                null,
+                null
+            );
+            const listTraspaso = (docsTraspaso.documentations || [])
+                .map((d) => ({ id: d.id, order: d.order ?? 0 }))
+                .sort((a, b) => a.order - b.order);
+            const traspasoIds = listTraspaso.map((d) => Number(d.id)).filter((id) => !Number.isNaN(id));
+            return [...traspasoIds, ...idsInscripcionUltimos3];
+        } catch (err) {
+            this.logger.warn('[Estudiantes] Error al obtener IDs documentación traspaso, usando solo INSCRIPCION', {
+                error: err.message,
+            });
+            return idsInscripcionUltimos3;
+        }
     }
 
     /**

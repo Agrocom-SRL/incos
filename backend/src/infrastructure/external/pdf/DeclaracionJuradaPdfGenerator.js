@@ -28,6 +28,33 @@ export class DeclaracionJuradaPdfGenerator extends FormularioInscripcionPdfGener
     }
 
     /**
+     * Orquesta el build del PDF. Inserta "Documentos Presentados" (solo TRASPASO)
+     * entre Formación académica y Declaración jurada.
+     *
+     * @override
+     */
+    async generate(options = {}) {
+        const pdfDoc = await this._loadTemplate('Plantilla.pdf');
+        const pages = pdfDoc.getPages();
+        const firstPage = pages[0];
+        this._initializeDocumentState(pdfDoc, firstPage, true);
+
+        await this._buildHeader(options);
+        await this._buildDatosPersonales(options);
+        await this._buildDatosAcademicos(options);
+
+        const rawTipo = (options.tipoAdmision || options.academicData?.tipoAdmision || '').toString().trim().toUpperCase();
+        if (rawTipo === 'TRASPASO') {
+            await this._buildDocumentosPresentadosTraspaso(options);
+        }
+
+        await this._buildDocumentosRecepcionados(options);
+        await this._buildFirma(options);
+
+        return await this._saveDocument(pdfDoc);
+    }
+
+    /**
      * Encabezado específico para Declaración Jurada.
      * Elimina el recuadro "No. Registro" y el cuadro de foto,
      * y cambia el título del documento según tipo de admisión.
@@ -157,10 +184,10 @@ export class DeclaracionJuradaPdfGenerator extends FormularioInscripcionPdfGener
         const transfer = options.transferData || {};
         const institution = options.institutionData || {};
 
-        await this._addSection('II. FORMACIÓN ACADÉMICA');
+        await this._addSection('II. FORMACIÓN ACADÉMICA', true);
         const formacionItemsFullWidth = [];
 
-        // Instituto en el que estudió (nombre desde institución o transfer)
+        // Solo el instituto ocupa 100%; el resto va en la cuadrícula de 2 columnas
         const institucionNombre =
             (institution.nombre || '').toString().trim() ||
             (transfer.institucionNombre || '').toString().trim();
@@ -174,27 +201,15 @@ export class DeclaracionJuradaPdfGenerator extends FormularioInscripcionPdfGener
         // Código RUDE/RUDEAL (exclusivo de traspaso)
         const codigoRude = (transfer.codigoRude || transfer.codigo_rude || '').toString().trim();
 
-        // Departamento (institución o transfer)
+        // Departamento (institución o transfer) → va en la cuadrícula de 2 columnas
         const departamento =
             (institution.departamento || '').toString().trim() ||
             (transfer.departamentoNombre || transfer.departamento_nombre || '').toString().trim();
-        if (departamento) {
-            formacionItemsFullWidth.push({
-                label: 'Departamento:',
-                value: departamento,
-            });
-        }
 
-        // Distrito educativo
+        // Distrito educativo → va en la cuadrícula de 2 columnas
         const distritoEducativo =
             (institution.distritoEducativo || institution.distrito_educativo || '').toString().trim() ||
             (transfer.distritoEducativo || transfer.distrito_educativo || '').toString().trim();
-        if (distritoEducativo) {
-            formacionItemsFullWidth.push({
-                label: 'Distrito educativo:',
-                value: distritoEducativo,
-            });
-        }
 
         // Campos que deben ocupar 2 columnas al 50% (según diseño solicitado)
         // Carrera | Año cursado
@@ -259,11 +274,11 @@ export class DeclaracionJuradaPdfGenerator extends FormularioInscripcionPdfGener
                 : '—';
 
         if (formacionItemsFullWidth.length > 0) {
-            // 1 columna a 100% para los campos largos (instituto/departamento/distrito)
-            await this._addBoxedFieldGrid(formacionItemsFullWidth, [], 100, 120);
+            // Solo el instituto a 100%
+            await this._addBoxedFieldGrid(formacionItemsFullWidth, [], 100, 115);
         }
 
-        // 2 columnas 50/50 para Código RUDE, Carrera, Año cursado, Régimen, Dependencia
+        // 2 columnas 50/50 con medidas constantes (50, 115, 115): Departamento, Distrito, Código RUDE, Carrera, Año cursado, Régimen, Dependencia
         const leftColumnItems = [];
         if (codigoRude) {
             leftColumnItems.push({
@@ -271,28 +286,37 @@ export class DeclaracionJuradaPdfGenerator extends FormularioInscripcionPdfGener
                 value: codigoRude,
             });
         }
+        if (departamento) {
+            leftColumnItems.push({ label: 'Departamento:', value: departamento });
+        }
         leftColumnItems.push(
             { label: 'Carrera:', value: carreraOrigenVal },
             { label: 'Régimen de estudios:', value: regimenVal }
         );
-        const rightColumnItems = [
+        const rightColumnItems = [];
+        if (distritoEducativo) {
+            rightColumnItems.push({ label: 'Distrito educativo:', value: distritoEducativo });
+        }
+        rightColumnItems.push(
             { label: 'Año cursado:', value: anioCursadoVal },
-            { label: 'Dependencia:', value: dependenciaVal },
-        ];
-        await this._addBoxedFieldGrid(leftColumnItems, rightColumnItems, 50, 95, 95);
+            { label: 'Dependencia:', value: dependenciaVal }
+        );
+        await this._addBoxedFieldGrid(leftColumnItems, rightColumnItems, 50, 115, 115);
     }
 
     /**
      * II. FORMACIÓN ACADÉMICA para Transitabilidad.
+     * Distribuido en 2 columnas al 50%.
      * @private
      */
     async _buildFormacionAcademicaTransitabilidad(options) {
         const transitability = options.transitabilityData || {};
         const institution = options.institutionData || {};
 
-        await this._addSection('II. FORMACIÓN ACADÉMICA');
+        await this._addSection('II. FORMACIÓN ACADÉMICA', true);
 
-        const formacionItems = [];
+        const leftColumnItems = [];
+        const rightColumnItems = [];
 
         const tipoInstitucion = (institution.tipo || '').toString().toUpperCase();
         let nivelAcademico = '';
@@ -300,33 +324,35 @@ export class DeclaracionJuradaPdfGenerator extends FormularioInscripcionPdfGener
         else if (tipoInstitucion === 'CEA') nivelAcademico = 'Técnico Medio CEA';
         else if (tipoInstitucion) nivelAcademico = tipoInstitucion;
         if (nivelAcademico) {
-            formacionItems.push({ label: 'Nivel académico alcanzado:', value: nivelAcademico });
+            leftColumnItems.push({ label: 'Nivel académico alcanzado:', value: nivelAcademico });
         }
 
         const carreraOrigen = (transitability.carreraOrigen || '').toString().trim();
-        if (carreraOrigen) formacionItems.push({ label: 'Carrera:', value: carreraOrigen });
+        if (carreraOrigen) leftColumnItems.push({ label: 'Carrera:', value: carreraOrigen });
 
         const institucionNombre = (institution.nombre || '').toString().trim();
         if (institucionNombre) {
-            formacionItems.push({ label: 'Unidad Educativa / Institución:', value: institucionNombre });
+            leftColumnItems.push({ label: 'Unidad Educativa / Institución:', value: institucionNombre });
         }
 
         const codigoSie = (institution.codigoSie || '').toString().trim();
-        if (codigoSie) formacionItems.push({ label: 'Código SIE-UE:', value: codigoSie });
+        if (codigoSie) rightColumnItems.push({ label: 'Código SIE-UE:', value: codigoSie });
 
         const anioConclusion =
             transitability.anioConclusion != null ? String(transitability.anioConclusion) : '';
         if (anioConclusion) {
-            formacionItems.push({ label: 'Año de conclusión de estudios:', value: anioConclusion });
+            rightColumnItems.push({ label: 'Año de conclusión de estudios:', value: anioConclusion });
         }
 
         const distritoEducativo = (institution.distritoEducativo || '').toString().trim();
         if (distritoEducativo) {
-            formacionItems.push({ label: 'Distrito educativo:', value: distritoEducativo });
+            rightColumnItems.push({ label: 'Distrito educativo:', value: distritoEducativo });
         }
 
-        if (formacionItems.length > 0) {
-            await this._addBoxedFieldGrid(formacionItems, [], 100, 100);
+        const hasAnyData = leftColumnItems.length > 0 || rightColumnItems.length > 0;
+        if (hasAnyData) {
+            // Label width 115pt para que labels largos ("Unidad Educativa / Institución:", "Año de conclusión...") envuelvan sin desborde
+            await this._addBoxedFieldGrid(leftColumnItems, rightColumnItems, 50, 115, 115);
         } else {
             await this._addLabelValue(
                 'Formación académica:',
@@ -338,6 +364,7 @@ export class DeclaracionJuradaPdfGenerator extends FormularioInscripcionPdfGener
 
     /**
      * III. JUSTIFICATIVO DE LA POSTULACIÓN (solo Transitabilidad).
+     * En 2 columnas al 50%. No se incluye "INSTITUTO TÉCNICO Y TECNOLÓGICO" (ya está en sección V).
      * @private
      */
     async _buildJustificativoTransitabilidad(options) {
@@ -345,40 +372,60 @@ export class DeclaracionJuradaPdfGenerator extends FormularioInscripcionPdfGener
         const transitability = options.transitabilityData || {};
         const institution = options.institutionData || {};
 
-        await this._addSection('III. JUSTIFICATIVO DE LA POSTULACIÓN');
+        await this._addSection('III. JUSTIFICATIVO DE LA POSTULACIÓN', true);
 
-        const justItems = [];
-        justItems.push({
-            label: 'INSTITUTO TÉCNICO Y TECNOLÓGICO (Razón social):',
-            value: IncosPDFBase.INSTITUTE.name,
-        });
+        const leftColumnItems = [];
+        const rightColumnItems = [];
 
         const carreraOrigen = (transitability.carreraOrigen || '').toString().trim();
         const carreraDestino =
             academicData.carreraNombre || academicData.carrera_nombre || carreraOrigen || '';
         if (carreraDestino) {
-            justItems.push({ label: 'Carrera a la que postula:', value: carreraDestino });
+            leftColumnItems.push({ label: 'Carrera a la que postula:', value: carreraDestino });
         }
 
         const dependencia = (institution.dependencia || '').toString().trim();
         if (dependencia) {
-            justItems.push({ label: 'Dependencia:', value: dependencia });
+            leftColumnItems.push({ label: 'Dependencia:', value: dependencia });
         }
 
         const regimenRaw = (transitability.regimenEstudios || '').toString().trim();
         if (regimenRaw) {
             const upper = regimenRaw.toUpperCase();
             const regimen = upper === 'SEMESTRAL' ? 'Semestral' : upper === 'ANUAL' ? 'Anual' : regimenRaw;
-            justItems.push({ label: 'Régimen de estudios:', value: regimen });
+            rightColumnItems.push({ label: 'Régimen de estudios:', value: regimen });
         }
 
-        if (justItems.length > 0) {
-            await this._addBoxedFieldGrid(justItems, [], 100, 120);
+        const hasAnyData = leftColumnItems.length > 0 || rightColumnItems.length > 0;
+        if (hasAnyData) {
+            // Mismo ancho de label (115) que en Formación académica para que las cajas tengan la misma medida
+            await this._addBoxedFieldGrid(leftColumnItems, rightColumnItems, 50, 115, 115);
         } else {
             await this._addLabelValue(
                 'Justificativo de la postulación:',
                 'No hay datos de justificación disponibles'
             );
+        }
+    }
+
+    /**
+     * III. DOCUMENTOS PRESENTADOS (solo formulario de Traspaso).
+     * Lista desde vista estudiantes_documentos_entrega (entregado: true). Mismo estilo que Documentos Recepcionados y Requisitos.
+     *
+     * @private
+     */
+    async _buildDocumentosPresentadosTraspaso(options) {
+        const lista = options.documentosPresentadosTraspaso || [];
+
+        await this._addSection('III. DOCUMENTOS PRESENTADOS');
+
+        if (lista.length > 0) {
+            for (const item of lista) {
+                const nombre = (item.nombre || '').toString().trim() || 'Documento sin nombre';
+                await this._addBulletPoint(nombre);
+            }
+        } else {
+            await this._addBulletPoint('No hay documentos presentados');
         }
     }
 
@@ -475,17 +522,12 @@ export class DeclaracionJuradaPdfGenerator extends FormularioInscripcionPdfGener
         await this._addSection('V. CUMPLIMIENTO DE LOS REQUISITOS');
 
         const instituteName = IncosPDFBase.INSTITUTE.name;
-        const estado =
-            (options.transitabilityData?.estado || options.transferData?.estado || '')
-                .toString()
-                .toUpperCase();
-        const isNoProcedente = estado === 'NO_PROCEDENTE';
 
         const textoCumplimiento =
             `La Dirección Académica del ${instituteName} tras realizar la revisión del cumplimiento de los requisitos ` +
             'presentados por la o el postulante y el análisis académico de la pertinencia de la solicitud en el marco de la normativa vigente, concluye:';
 
-        // Párrafo de cumplimiento (sin "Procedente/No procedente" en el texto; se dibujan casillas)
+        // Párrafo de cumplimiento; las casillas Procedente / No procedente van en la misma línea que "concluye:"
         currentY = this._currentY;
         const linesCumplimiento = this._wrapText(
             textoCumplimiento,
@@ -506,32 +548,35 @@ export class DeclaracionJuradaPdfGenerator extends FormularioInscripcionPdfGener
             currentY -= fontSize + lineSpacing;
         }
 
-        // Opciones de conclusión: Procedente / No procedente
-        // Mantiene el estilo de la plantilla Word, sin encabezado adicional.
+        // Casillas vacías (para que el rector marque) al lado del texto "concluye:" en la misma línea
         const boxSize = 10;
         const boxGap = 6;
+        const gapAfterText = 8;
 
         const procedenteLabel = 'Procedente';
         const noProcedenteLabel = 'No procedente';
 
-        // Casillas inmediatamente después del texto de conclusión
-        const optionsBaseY = lastLineY - fontSize - 4;
+        const lastLineText = linesCumplimiento.length > 0 ? linesCumplimiento[linesCumplimiento.length - 1] : '';
+        const lastLineWidth = lastLineText ? font.widthOfTextAtSize(lastLineText, fontSize) : 0;
+        const optionsStartX = x + lastLineWidth + gapAfterText;
 
-        // Opción "Procedente"
-        const procBoxX = x;
+        // Misma línea que el último renglón: texto y casillas comparten la misma baseline
+        const optionTextY = lastLineY;
+        // Centrar la casilla con la línea de texto; offset hacia arriba para alinear con la altura visual del texto
+        const boxUpOffset = 10;
+        const boxBottomY = lastLineY - (fontSize / 2) - (boxSize / 2) + boxUpOffset;
+
+        // Casilla "Procedente" (siempre vacía)
+        const procBoxX = optionsStartX;
         this._currentPage.drawRectangle({
             x: procBoxX,
-            y: optionsBaseY - boxSize,
+            y: boxBottomY,
             width: boxSize,
             height: boxSize,
             borderColor: textRgb,
             borderWidth: 1,
         });
-        if (!isNoProcedente) {
-            this._drawCheckmark(procBoxX + 1.5, optionsBaseY - boxSize + 1.5, boxSize - 3, textRgb);
-        }
         const procTextX = procBoxX + boxSize + boxGap;
-        const optionTextY = optionsBaseY - fontSize - 2;
         this._currentPage.drawText(procedenteLabel, {
             x: procTextX,
             y: optionTextY,
@@ -540,20 +585,17 @@ export class DeclaracionJuradaPdfGenerator extends FormularioInscripcionPdfGener
             color: textRgb,
         });
 
-        // Opción "No procedente" alineada a la derecha pero dentro del margen
+        // Casilla "No procedente" (siempre vacía), a la derecha de "Procedente"
         const procLabelWidth = font.widthOfTextAtSize(procedenteLabel, fontSize);
-        const noProcBoxX = procTextX + procLabelWidth + 40;
+        const noProcBoxX = procTextX + procLabelWidth + 24;
         this._currentPage.drawRectangle({
             x: noProcBoxX,
-            y: optionsBaseY - boxSize,
+            y: boxBottomY,
             width: boxSize,
             height: boxSize,
             borderColor: textRgb,
             borderWidth: 1,
         });
-        if (isNoProcedente) {
-            this._drawCheckmark(noProcBoxX + 1.5, optionsBaseY - boxSize + 1.5, boxSize - 3, textRgb);
-        }
         const noProcTextX = noProcBoxX + boxSize + boxGap;
         this._currentPage.drawText(noProcedenteLabel, {
             x: noProcTextX,
@@ -563,7 +605,7 @@ export class DeclaracionJuradaPdfGenerator extends FormularioInscripcionPdfGener
             color: textRgb,
         });
 
-        this._currentY = optionsBaseY - boxSize - IncosPDFBase.LAYOUT.spacing.paragraph;
+        this._currentY = boxBottomY - IncosPDFBase.LAYOUT.spacing.paragraph;
 
         // Líneas de firma: Dirección Académica (izq) y SELLO (der)
         const totalWidth = pageWidth - m.left - m.right;
@@ -571,7 +613,7 @@ export class DeclaracionJuradaPdfGenerator extends FormularioInscripcionPdfGener
         const espacioEntreBloques = totalWidth - bloqueAncho * 2;
         const leftCenterX = m.left + bloqueAncho / 2;
         const rightCenterX = m.left + bloqueAncho + espacioEntreBloques + bloqueAncho / 2;
-        const lineY5 = this._currentY - 16;
+        const lineY5 = this._currentY - IncosPDFBase.LAYOUT.spacing.section - IncosPDFBase.LAYOUT.spacing.paragraph;
 
         this._currentPage.drawLine({
             start: { x: leftCenterX - bloqueAncho / 2, y: lineY5 },

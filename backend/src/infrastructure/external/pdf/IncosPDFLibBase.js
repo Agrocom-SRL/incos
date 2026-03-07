@@ -507,12 +507,13 @@ export class IncosPDFLibBase {
      * 
      * Método simplificado que usa el estado interno (página y posición Y).
      * Usa fuente Helvetica-Bold, color primario, alineado a la izquierda.
-     * 
+     *
      * @protected
      * @param {string} text - Texto del título de sección
+     * @param {boolean} [compactSpacing=false] - Si true, solo se resta LAYOUT.spacing.line en Y (no sectionFontSize). Si false, se resta sectionFontSize + spacing.
      * @returns {Promise<void>} Actualiza el estado interno _currentY
      */
-    async _addSection(text) {
+    async _addSection(text, compactSpacing = false) {
         if (!this._pdfDoc || !this._currentPage) {
             throw new Error('Debe inicializar el estado del documento con _initializeDocumentState() antes de agregar componentes');
         }
@@ -534,8 +535,12 @@ export class IncosPDFLibBase {
             color: sectionRgb,
         });
 
-        // Actualizar posición Y después del título de sección (con salto de línea)
-        this._currentY = this._currentY - sectionFontSize - IncosPDFBase.LAYOUT.spacing.line;
+        // Actualizar posición Y después del título de sección
+        if (compactSpacing) {
+            this._currentY = this._currentY - IncosPDFBase.LAYOUT.spacing.line;
+        } else {
+            this._currentY = this._currentY - sectionFontSize - IncosPDFBase.LAYOUT.spacing.line;
+        }
     }
 
     /**
@@ -1006,9 +1011,11 @@ export class IncosPDFLibBase {
             normalizedAlignments[i] = alignments[i] || 'left';
         }
 
-        // Helper: Divide texto en líneas que caben en el ancho disponible
+        // Helper: Divide texto en líneas que caben en el ancho disponible (normaliza \n/\r para WinAnsi)
         const wrapText = (text, maxWidth, font, fontSize) => {
-            const words = text.split(' ');
+            if (text == null || text === '') return [''];
+            const normalized = String(text).replace(/\r\n|\n|\r/g, ' ').replace(/\s+/g, ' ').trim();
+            const words = normalized.split(' ');
             const lines = [];
             let currentLine = '';
 
@@ -1407,7 +1414,11 @@ export class IncosPDFLibBase {
         const cellPadding = boxCfg.cellPadding ?? 4;
         const lineHeight = fontSize * 1.2; // Espacio entre líneas
 
-        // Dividir el texto en líneas si es necesario
+        // Si el label es largo, envolver en varias líneas para evitar desborde
+        const labelLines = labelStr ? this._wrapText(labelStr, font, fontSize, labelWidth) : [];
+        const totalLabelHeight = labelLines.length * lineHeight;
+
+        // Dividir el texto del valor en líneas si es necesario
         const availableTextWidth = boxWidth - (cellPadding * 2);
         const valueLines = valueStr ? this._wrapText(valueStr, font, fontSize, availableTextWidth) : [''];
         const numLines = valueLines.length;
@@ -1416,16 +1427,29 @@ export class IncosPDFLibBase {
         const calculatedBoxHeight = Math.max(boxHeight, (numLines * lineHeight) + (cellPadding * 2));
         const boxY = rowY - calculatedBoxHeight;
 
-        // Dibujar label (alineado verticalmente con el centro del cuadro)
-        if (labelStr) {
-            const labelY = boxY + (calculatedBoxHeight - fontSize) / 2 + fontSize * 0.3;
-            this._currentPage.drawText(labelStr, {
-                x: colX,
-                y: labelY,
-                size: fontSize,
-                font,
-                color: textRgb,
-            });
+        // Dibujar label: una línea centrada con el cuadro; varias líneas alineadas al tope del cuadro
+        if (labelLines.length > 0) {
+            if (labelLines.length === 1) {
+                const labelY = boxY + (calculatedBoxHeight - fontSize) / 2 + fontSize * 0.3;
+                this._currentPage.drawText(labelLines[0], {
+                    x: colX,
+                    y: labelY,
+                    size: fontSize,
+                    font,
+                    color: textRgb,
+                });
+            } else {
+                for (let i = 0; i < labelLines.length; i++) {
+                    const labelY = boxY + calculatedBoxHeight - (i + 1) * lineHeight - (fontSize * 0.15);
+                    this._currentPage.drawText(labelLines[i], {
+                        x: colX,
+                        y: labelY,
+                        size: fontSize,
+                        font,
+                        color: textRgb,
+                    });
+                }
+            }
         }
 
         // Dibujar borde del recuadro
@@ -1462,7 +1486,9 @@ export class IncosPDFLibBase {
             }
         }
 
-        return calculatedBoxHeight;
+        // La altura de la fila debe contemplar tanto el cuadro como el label si ocupa más de una línea
+        const effectiveRowHeight = Math.max(calculatedBoxHeight, totalLabelHeight);
+        return effectiveRowHeight;
     }
 
     /**
@@ -1771,7 +1797,8 @@ export class IncosPDFLibBase {
     }
 
     /**
-     * Envuelve texto en múltiples líneas según el ancho máximo
+     * Envuelve texto en múltiples líneas según el ancho máximo.
+     * Normaliza el texto para que no contenga \\n o \\r (WinAnsi no puede codificarlos).
      * @protected
      * @param {string} text - Texto a envolver
      * @param {PDFFont} font - Fuente a usar
@@ -1780,7 +1807,9 @@ export class IncosPDFLibBase {
      * @returns {Array<string>} Array de líneas
      */
     _wrapText(text, font, fontSize, maxWidth) {
-        const words = text.split(' ');
+        if (text == null || text === '') return [];
+        const normalized = String(text).replace(/\r\n|\n|\r/g, ' ').replace(/\s+/g, ' ').trim();
+        const words = normalized.split(' ');
         const lines = [];
         let currentLine = '';
 
