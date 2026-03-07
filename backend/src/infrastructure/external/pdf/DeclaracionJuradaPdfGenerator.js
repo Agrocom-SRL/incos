@@ -91,6 +91,41 @@ export class DeclaracionJuradaPdfGenerator extends FormularioInscripcionPdfGener
     }
 
     /**
+     * Bloque 1 de DATOS PERSONALES: Identificación personal.
+     *
+     * Para la Declaración Jurada se reutilizan los datos básicos y de origen,
+     * pero se omite explícitamente el bloque de discapacidad.
+     *
+     * @override
+     * @param {Object} options - Opciones de generación (options.student)
+     * @returns {Promise<void>}
+     */
+    async _buildIdentificacionPersonal(options) {
+        const T = IncosPDFBase.FORMULARIO_TEXTS;
+        const s = options.student || {};
+
+        const nombresVal = [s.apellidoPaterno, s.apellidoMaterno, s.nombres]
+            .filter(Boolean)
+            .join(' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+
+        await this._addBoxedField(
+            T.NOMBRES_APELLIDOS_LABEL,
+            nombresVal || '—',
+            true,
+            IncosPDFBase.FONTS.title.size
+        );
+
+        // Bloque 1: Datos básicos (CI, Género, Celular, Correo, Estado civil, Grupo sanguíneo)
+        await this._buildDatosBasicosIdentificacion(options);
+
+        // Bloque 2: Datos de origen (edad, fecha nacimiento, nacionalidad, idioma)
+        // Se omite el bloque de discapacidad en este documento.
+        await this._buildDatosOrigenIdentificacion(options);
+    }
+
+    /**
      * II. FORMACIÓN ACADÉMICA
      * III. JUSTIFICATIVO DE LA POSTULACIÓN (solo Transitabilidad)
      *
@@ -123,15 +158,14 @@ export class DeclaracionJuradaPdfGenerator extends FormularioInscripcionPdfGener
         const institution = options.institutionData || {};
 
         await this._addSection('II. FORMACIÓN ACADÉMICA');
-
-        const formacionItems = [];
+        const formacionItemsFullWidth = [];
 
         // Instituto en el que estudió (nombre desde institución o transfer)
         const institucionNombre =
             (institution.nombre || '').toString().trim() ||
             (transfer.institucionNombre || '').toString().trim();
         if (institucionNombre) {
-            formacionItems.push({
+            formacionItemsFullWidth.push({
                 label: 'Instituto en el que estudió:',
                 value: institucionNombre,
             });
@@ -139,37 +173,13 @@ export class DeclaracionJuradaPdfGenerator extends FormularioInscripcionPdfGener
 
         // Código RUDE/RUDEAL (exclusivo de traspaso)
         const codigoRude = (transfer.codigoRude || transfer.codigo_rude || '').toString().trim();
-        if (codigoRude) {
-            formacionItems.push({
-                label: 'Código RUDE/RUDEAL:',
-                value: codigoRude,
-            });
-        }
-
-        // Carrera
-        const carreraOrigen = (transfer.carreraOrigen || transfer.carrera_origen || '').toString().trim();
-        if (carreraOrigen) {
-            formacionItems.push({
-                label: 'Carrera:',
-                value: carreraOrigen,
-            });
-        }
-
-        // Año cursado: PRIMERO -> "Primer Año", SEGUNDO -> "Segundo Año"
-        const anioCursado = (transfer.anioCursado || transfer.anio_cursado || '').toString().toUpperCase();
-        if (anioCursado === 'PRIMERO' || anioCursado === 'SEGUNDO') {
-            formacionItems.push({
-                label: 'Año cursado:',
-                value: anioCursado === 'PRIMERO' ? 'Primer Año' : 'Segundo Año',
-            });
-        }
 
         // Departamento (institución o transfer)
         const departamento =
             (institution.departamento || '').toString().trim() ||
             (transfer.departamentoNombre || transfer.departamento_nombre || '').toString().trim();
         if (departamento) {
-            formacionItems.push({
+            formacionItemsFullWidth.push({
                 label: 'Departamento:',
                 value: departamento,
             });
@@ -180,44 +190,96 @@ export class DeclaracionJuradaPdfGenerator extends FormularioInscripcionPdfGener
             (institution.distritoEducativo || institution.distrito_educativo || '').toString().trim() ||
             (transfer.distritoEducativo || transfer.distrito_educativo || '').toString().trim();
         if (distritoEducativo) {
-            formacionItems.push({
+            formacionItemsFullWidth.push({
                 label: 'Distrito educativo:',
                 value: distritoEducativo,
             });
         }
 
+        // Campos que deben ocupar 2 columnas al 50% (según diseño solicitado)
+        // Carrera | Año cursado
+        // Régimen | Dependencia
+        const carreraOrigenRaw = (transfer.carreraOrigen || transfer.carrera_origen || '').toString().trim();
+
+        // Año cursado: PRIMERO -> "Primer Año", SEGUNDO -> "Segundo Año"
+        const anioCursadoRaw = (transfer.anioCursado || transfer.anio_cursado || '').toString().trim();
+
         // Régimen de estudios
         const regimenRaw = (transfer.regimenOrigen || transfer.regimen_origen || '').toString().trim();
-        if (regimenRaw) {
-            const upper = regimenRaw.toUpperCase();
-            const regimen = upper === 'SEMESTRAL' ? 'Semestral' : upper === 'ANUAL' ? 'Anual' : regimenRaw;
-            formacionItems.push({
-                label: 'Régimen de estudios:',
-                value: regimen,
-            });
-        }
 
         // Dependencia
-        const dependencia =
+        const dependenciaRaw =
             (institution.dependencia || '').toString().trim() ||
             (transfer.dependencia || '').toString().trim();
-        if (dependencia) {
-            const dep = dependencia.toUpperCase();
-            const depLabel = dep === 'FISCAL' ? 'Fiscal' : dep === 'CONVENIO' ? 'Convenio' : dep === 'PRIVADO' ? 'Privado' : dependencia;
-            formacionItems.push({
-                label: 'Dependencia:',
-                value: depLabel,
-            });
-        }
 
-        if (formacionItems.length > 0) {
-            await this._addBoxedFieldGrid(formacionItems, [], 100, 100);
-        } else {
+        const hasAnyData =
+            Boolean(institucionNombre) ||
+            Boolean(codigoRude) ||
+            Boolean(departamento) ||
+            Boolean(distritoEducativo) ||
+            Boolean(carreraOrigenRaw) ||
+            Boolean(anioCursadoRaw) ||
+            Boolean(regimenRaw) ||
+            Boolean(dependenciaRaw);
+
+        if (!hasAnyData) {
             await this._addLabelValue(
                 'Formación académica:',
                 'No hay datos de formación académica disponibles'
             );
+            return;
         }
+
+        const carreraOrigenVal = carreraOrigenRaw || '—';
+
+        const anioCursadoUpper = anioCursadoRaw.toUpperCase();
+        const anioCursadoVal =
+            anioCursadoUpper === 'PRIMERO'
+                ? 'Primer Año'
+                : anioCursadoUpper === 'SEGUNDO'
+                    ? 'Segundo Año'
+                    : (anioCursadoRaw || '—');
+
+        const regimenUpper = regimenRaw.toUpperCase();
+        const regimenVal =
+            regimenRaw
+                ? (regimenUpper === 'SEMESTRAL' ? 'Semestral' : regimenUpper === 'ANUAL' ? 'Anual' : regimenRaw)
+                : '—';
+
+        const dependenciaUpper = dependenciaRaw.toUpperCase();
+        const dependenciaVal =
+            dependenciaRaw
+                ? (dependenciaUpper === 'FISCAL'
+                    ? 'Fiscal'
+                    : dependenciaUpper === 'CONVENIO'
+                        ? 'Convenio'
+                        : dependenciaUpper === 'PRIVADO'
+                            ? 'Privado'
+                            : dependenciaRaw)
+                : '—';
+
+        if (formacionItemsFullWidth.length > 0) {
+            // 1 columna a 100% para los campos largos (instituto/departamento/distrito)
+            await this._addBoxedFieldGrid(formacionItemsFullWidth, [], 100, 120);
+        }
+
+        // 2 columnas 50/50 para Código RUDE, Carrera, Año cursado, Régimen, Dependencia
+        const leftColumnItems = [];
+        if (codigoRude) {
+            leftColumnItems.push({
+                label: 'Código RUDE/RUDEAL:',
+                value: codigoRude,
+            });
+        }
+        leftColumnItems.push(
+            { label: 'Carrera:', value: carreraOrigenVal },
+            { label: 'Régimen de estudios:', value: regimenVal }
+        );
+        const rightColumnItems = [
+            { label: 'Año cursado:', value: anioCursadoVal },
+            { label: 'Dependencia:', value: dependenciaVal },
+        ];
+        await this._addBoxedFieldGrid(leftColumnItems, rightColumnItems, 50, 95, 95);
     }
 
     /**
@@ -431,6 +493,7 @@ export class DeclaracionJuradaPdfGenerator extends FormularioInscripcionPdfGener
             fontSize,
             maxWidth
         );
+        let lastLineY = currentY;
         for (const line of linesCumplimiento) {
             this._currentPage.drawText(line, {
                 x,
@@ -439,54 +502,68 @@ export class DeclaracionJuradaPdfGenerator extends FormularioInscripcionPdfGener
                 font,
                 color: textRgb,
             });
+            lastLineY = currentY;
             currentY -= fontSize + lineSpacing;
         }
 
-        // Casillas Procedente / No procedente
+        // Opciones de conclusión: Procedente / No procedente
+        // Mantiene el estilo de la plantilla Word, sin encabezado adicional.
         const boxSize = 10;
-        const boxGap = 8;
-        const procX = x;
-        const procY = currentY - 4;
+        const boxGap = 6;
+
+        const procedenteLabel = 'Procedente';
+        const noProcedenteLabel = 'No procedente';
+
+        // Casillas inmediatamente después del texto de conclusión
+        const optionsBaseY = lastLineY - fontSize - 4;
+
+        // Opción "Procedente"
+        const procBoxX = x;
         this._currentPage.drawRectangle({
-            x: procX,
-            y: procY - boxSize,
+            x: procBoxX,
+            y: optionsBaseY - boxSize,
             width: boxSize,
             height: boxSize,
             borderColor: textRgb,
             borderWidth: 1,
         });
         if (!isNoProcedente) {
-            this._drawCheckmark(procX + 1.5, procY - boxSize + 1.5, boxSize - 3, textRgb);
+            this._drawCheckmark(procBoxX + 1.5, optionsBaseY - boxSize + 1.5, boxSize - 3, textRgb);
         }
-        this._currentPage.drawText('Procedente', {
-            x: procX + boxSize + boxGap,
-            y: procY - fontSize - 2,
+        const procTextX = procBoxX + boxSize + boxGap;
+        const optionTextY = optionsBaseY - fontSize - 2;
+        this._currentPage.drawText(procedenteLabel, {
+            x: procTextX,
+            y: optionTextY,
             size: fontSize,
             font,
             color: textRgb,
         });
 
-        const noProcX = procX + boxSize + boxGap + font.widthOfTextAtSize('Procedente', fontSize) + 20;
+        // Opción "No procedente" alineada a la derecha pero dentro del margen
+        const procLabelWidth = font.widthOfTextAtSize(procedenteLabel, fontSize);
+        const noProcBoxX = procTextX + procLabelWidth + 40;
         this._currentPage.drawRectangle({
-            x: noProcX,
-            y: procY - boxSize,
+            x: noProcBoxX,
+            y: optionsBaseY - boxSize,
             width: boxSize,
             height: boxSize,
             borderColor: textRgb,
             borderWidth: 1,
         });
         if (isNoProcedente) {
-            this._drawCheckmark(noProcX + 1.5, procY - boxSize + 1.5, boxSize - 3, textRgb);
+            this._drawCheckmark(noProcBoxX + 1.5, optionsBaseY - boxSize + 1.5, boxSize - 3, textRgb);
         }
-        this._currentPage.drawText('No procedente', {
-            x: noProcX + boxSize + boxGap,
-            y: procY - fontSize - 2,
+        const noProcTextX = noProcBoxX + boxSize + boxGap;
+        this._currentPage.drawText(noProcedenteLabel, {
+            x: noProcTextX,
+            y: optionTextY,
             size: fontSize,
             font,
             color: textRgb,
         });
 
-        this._currentY = procY - boxSize - IncosPDFBase.LAYOUT.spacing.paragraph - 8;
+        this._currentY = optionsBaseY - boxSize - IncosPDFBase.LAYOUT.spacing.paragraph;
 
         // Líneas de firma: Dirección Académica (izq) y SELLO (der)
         const totalWidth = pageWidth - m.left - m.right;
@@ -504,12 +581,13 @@ export class DeclaracionJuradaPdfGenerator extends FormularioInscripcionPdfGener
         });
 
         const labelDir = 'Firma/sello dirección académica ITT';
-        const labelDirWidth = font.widthOfTextAtSize(labelDir, fontSize);
-        const labelDirY = lineY5 - fontSize - 2;
+        const labelFontSize = IncosPDFBase.FONTS.normal.size || fontSize;
+        const labelDirWidth = font.widthOfTextAtSize(labelDir, labelFontSize);
+        const labelDirY = lineY5 - labelFontSize - 2;
         this._currentPage.drawText(labelDir, {
             x: leftCenterX - labelDirWidth / 2,
             y: labelDirY,
-            size: fontSize,
+            size: labelFontSize,
             font,
             color: textRgb,
         });
@@ -522,16 +600,17 @@ export class DeclaracionJuradaPdfGenerator extends FormularioInscripcionPdfGener
         });
 
         const labelSello = 'SELLO';
-        const labelSelloWidth = font.widthOfTextAtSize(labelSello, fontSize);
+        const labelSelloWidth = font.widthOfTextAtSize(labelSello, labelFontSize);
         this._currentPage.drawText(labelSello, {
             x: rightCenterX - labelSelloWidth / 2,
             y: labelDirY,
-            size: fontSize,
+            size: labelFontSize,
             font,
             color: textRgb,
         });
 
-        this._currentY = labelDirY - IncosPDFBase.LAYOUT.spacing.paragraph;
+        const extraSpaceBelowSignatures = 20;
+        this._currentY = labelDirY - IncosPDFBase.LAYOUT.spacing.paragraph - extraSpaceBelowSignatures;
 
         // Lugar y fecha al final de la sección V
         const fechaLiteral = (options.fechaActual || '').toString().trim();
