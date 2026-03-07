@@ -36,6 +36,9 @@ import { useNavigate } from 'react-router-dom';
 import { useMessage } from '@application/utils';
 import { useCreateInscripcion, useUpdateInscripcion } from '@application-inscripciones/hooks';
 
+/** Mensaje del backend cuando falta el pago del aporte para inscribirse (mostramos diálogo en lugar de toast). */
+const PAYMENT_REQUIRED_ERROR_PATTERN = 'pago del aporte académico';
+
 /**
  * Hook para gestionar handlers de submit del formulario de inscripción
  * 
@@ -74,6 +77,17 @@ export const useInscripcionNuevaFormHandlers = (mode = 'nuevo', options = {}) =>
     
     // Estado para almacenar el resultado de la inscripción (para que la página pueda reaccionar)
     const [inscripcionResult, setInscripcionResult] = useState(null);
+
+    // Cuando el backend rechaza por falta de pago del aporte, mostramos diálogo "Ir a registrar pago" en la página
+    const [paymentRequiredStudentId, setPaymentRequiredStudentId] = useState(null);
+    const clearPaymentRequiredDialog = useCallback(() => setPaymentRequiredStudentId(null), []);
+
+    const isPaymentRequiredError = useCallback((result) => {
+        if (result?.success) return false;
+        const msg = typeof result?.error === 'object' ? result?.error?.message : result?.error;
+        const str = (msg ?? '').toString().toLowerCase();
+        return str.includes(PAYMENT_REQUIRED_ERROR_PATTERN.toLowerCase());
+    }, []);
 
     // Registrar automáticamente el formulario cuando esté disponible
     useEffect(() => {
@@ -245,6 +259,9 @@ export const useInscripcionNuevaFormHandlers = (mode = 'nuevo', options = {}) =>
             } else if (!isEditMode) {
                 console.warn('⚠️ Inscripción creada pero no se obtuvo ID para navegar');
             }
+        } else if (isPaymentRequiredError(result) && studentId) {
+            setPaymentRequiredStudentId(Number(studentId));
+            setInscripcionResult(null);
         } else {
             handleSubmitResult(
                 result,
@@ -254,7 +271,7 @@ export const useInscripcionNuevaFormHandlers = (mode = 'nuevo', options = {}) =>
         }
 
         return result;
-    }, [isEditMode, inscripcionId, selectedStudent, selectedParalelo, selectedPeriod, selectedPeriodIds, selectedParalelosByPeriod, selectedMateriaIdsByPeriod, getFormValues, createInscripcion, updateInscripcion, showMessage, handleSubmitResult, navigate]);
+    }, [isEditMode, inscripcionId, selectedStudent, selectedParalelo, selectedPeriod, selectedPeriodIds, selectedParalelosByPeriod, selectedMateriaIdsByPeriod, getFormValues, createInscripcion, updateInscripcion, showMessage, handleSubmitResult, navigate, isPaymentRequiredError]);
 
     // Handler para guardar parcialmente
     // NOTA: Por ahora, el guardado parcial también crea la inscripción completa
@@ -337,6 +354,9 @@ export const useInscripcionNuevaFormHandlers = (mode = 'nuevo', options = {}) =>
                 showMessage('success', 'Datos guardados correctamente. Puede continuar después.');
             }
             setInscripcionResult(result);
+        } else if (isPaymentRequiredError(result) && studentId) {
+            setPaymentRequiredStudentId(Number(studentId));
+            setInscripcionResult(null);
         } else {
             handleSubmitResult(
                 result,
@@ -346,7 +366,7 @@ export const useInscripcionNuevaFormHandlers = (mode = 'nuevo', options = {}) =>
         }
 
         return result;
-    }, [isEditMode, inscripcionId, selectedStudent, selectedParalelo, selectedPeriod, selectedParalelosByPeriod, selectedMateriaIdsByPeriod, getFormValues, createInscripcion, updateInscripcion, showMessage, handleSubmitResult]);
+    }, [isEditMode, inscripcionId, selectedStudent, selectedParalelo, selectedPeriod, selectedParalelosByPeriod, selectedMateriaIdsByPeriod, getFormValues, createInscripcion, updateInscripcion, showMessage, handleSubmitResult, isPaymentRequiredError]);
 
     // Memoizar el objeto retornado para mantener referencia estable
     // Esto permite que el useMemo del Provider sea más efectivo
@@ -354,19 +374,23 @@ export const useInscripcionNuevaFormHandlers = (mode = 'nuevo', options = {}) =>
         return {
             // Instancia del formulario (creada y registrada automáticamente)
             form,
-            
+
             // Handlers de submit
             handleFinish,
             handleSave,
-            
+
             // Funciones auxiliares
             getFormValues,
-            
+
             // Estados
             loading,
             error,
             validationErrors,
             inscripcionResult,
+
+            // Diálogo "Ir a registrar pago" cuando el backend rechaza por falta de pago del aporte
+            paymentRequiredStudentId,
+            clearPaymentRequiredDialog,
         };
-    }, [form, handleFinish, handleSave, getFormValues, loading, error, validationErrors, inscripcionResult]);
+    }, [form, handleFinish, handleSave, getFormValues, loading, error, validationErrors, inscripcionResult, paymentRequiredStudentId, clearPaymentRequiredDialog]);
 };

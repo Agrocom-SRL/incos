@@ -18,8 +18,9 @@
  */
 
 import { useEffect, useMemo, useCallback } from 'react';
-import { useLocation } from 'react-router-dom';
-import { App } from 'antd';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { App, Modal, Typography } from 'antd';
+import { DollarOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { WizardForm } from '@organisms';
@@ -31,8 +32,11 @@ import {
 import { useInscripcionesNuevaContext } from '@application-inscripciones/hooks';
 import { downloadFile } from '@application/utils/fileDownload';
 
+const { Paragraph } = Typography;
+
 const InscripcionesNueva = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { message } = App.useApp();
 
   const context = useInscripcionesNuevaContext();
@@ -54,6 +58,8 @@ const InscripcionesNueva = () => {
     handleFinish,
     handleSave,
     inscripcionResult,
+    paymentRequiredStudentId,
+    clearPaymentRequiredDialog,
   } = context;
 
   // Descargar automáticamente el formulario cuando la inscripción se complete exitosamente
@@ -73,6 +79,14 @@ const InscripcionesNueva = () => {
       }
     }
   }, [inscripcionResult]);
+
+  // Diálogo cuando el backend rechaza la inscripción por falta de pago del aporte (acceso directo a registrar pago)
+  const handleGoToRegistrarPago = useCallback(() => {
+    if (paymentRequiredStudentId) {
+      clearPaymentRequiredDialog();
+      navigate('/pagos/registrar', { state: { studentId: paymentRequiredStudentId } });
+    }
+  }, [paymentRequiredStudentId, clearPaymentRequiredDialog, navigate]);
 
   // Búsqueda de estudiantes, carreras, periodos, paralelos y materias (step 1 carrera, step 2 periodo/materias, step 3 paralelos)
   const {
@@ -326,17 +340,41 @@ const InscripcionesNueva = () => {
   );
 
   return (
-    <PageTemplate
-      header={
-        <PageHeader
-          title={pageTitle}
-          breadcrumbItems={breadcrumbItems}
-        />
-      }
-      sidebar={null}
-    >
-      {/* Contenido principal - Wizard de inscripción */}
-      <WizardForm
+    <>
+      <Modal
+        title={
+          <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <DollarOutlined style={{ color: '#faad14', fontSize: 28 }} />
+            Pago de aporte requerido
+          </span>
+        }
+        open={!!paymentRequiredStudentId}
+        onCancel={clearPaymentRequiredDialog}
+        onOk={handleGoToRegistrarPago}
+        okText="Ir a registrar pago"
+        cancelText="Cancelar"
+        width={480}
+        closable
+      >
+        <Paragraph style={{ marginBottom: 0 }}>
+          El estudiante no ha realizado el pago del aporte académico para esta gestión. Debe registrar el pago antes de inscribirse.
+        </Paragraph>
+        <Paragraph type="secondary" style={{ marginTop: 8, marginBottom: 0 }}>
+          ¿Desea ir a registrar el pago de este estudiante ahora?
+        </Paragraph>
+      </Modal>
+
+      <PageTemplate
+        header={
+          <PageHeader
+            title={pageTitle}
+            breadcrumbItems={breadcrumbItems}
+          />
+        }
+        sidebar={null}
+      >
+        {/* Contenido principal - Wizard de inscripción */}
+        <WizardForm
         steps={wizardSteps}
         loading={loading}
         viewMode={false}
@@ -350,7 +388,8 @@ const InscripcionesNueva = () => {
         renderSectionContent={renderSectionContent}
         onValidateBeforeNext={handleValidateBeforeNext}
       />
-    </PageTemplate>
+      </PageTemplate>
+    </>
   );
 };
 

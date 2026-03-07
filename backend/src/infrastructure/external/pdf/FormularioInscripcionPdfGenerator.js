@@ -583,24 +583,34 @@ export class FormularioInscripcionPdfGenerator extends IncosPDFLibBase {
 
     /**
      * III. DOCUMENTOS RECEPCIONADOS.
-     * Muestra lista de documentos entregados con viñetas (solo nombre del archivo).
+     * Solo se muestra cuando el tipo de admisión es NUEVO.
+     * Para antiguo, traspaso o transitabilidad no se incluye esta sección (según reunión sistema).
      *
      * @private
      * @param {Object} options - Opciones de generación
      * @param {Array} [options.entregas] - Lista de entregas de documentos (con entregado: true)
+     * @param {Object} [options.academicData] - Datos académicos (tipoAdmision)
      * @returns {Promise<void>}
      */
     async _buildDocumentosRecepcionados(options) {
+        const tipoRaw = (options.academicData?.tipoAdmision ?? options.academicData?.tipo_admision ?? options.tipoAdmision ?? '')
+            .toString()
+            .trim()
+            .toUpperCase();
+        const soloNuevoMuestraDocumentos = tipoRaw === 'NUEVO';
+
+        if (!soloNuevoMuestraDocumentos) {
+            return;
+        }
+
         await this._addSection(IncosPDFBase.FORMULARIO_SECTION_TITLES.DOCUMENTOS_RECEPCIONADOS);
 
-        // Agregar lista de documentos entregados con viñetas (igual que en ActaCompromisoPdfGenerator)
         if (options.entregas && Array.isArray(options.entregas) && options.entregas.length > 0) {
             for (const entrega of options.entregas) {
                 const nombreDocumento = entrega.nombre_documento || entrega.nombreDocumento || 'Documento sin nombre';
                 await this._addBulletPoint(nombreDocumento);
             }
         } else {
-            // Si no hay documentos entregados, mostrar mensaje
             await this._addBulletPoint('No hay documentos entregados');
         }
     }

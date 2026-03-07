@@ -248,6 +248,7 @@ export class GenerateFormularioInscripcionUseCase extends BaseDocumentGeneration
                 carreraNombre: data.carrera_nombre || data.carreraNombre || null,
                 carreraCodigo: data.carrera_codigo || data.carreraCodigo || null,
                 estadoAcademico: data.estado_academico || data.estadoAcademico || null,
+                tipoAdmision: data.tipo_admision || data.tipoAdmision || null,
             };
         } catch (error) {
             this.logger.error('[Inscripciones] Error al obtener datos académicos', {
