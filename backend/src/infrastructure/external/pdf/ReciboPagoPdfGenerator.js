@@ -632,10 +632,11 @@ export class ReciboPagoPdfGenerator extends IncosPDFLibBase {
         const lineSpacing = IncosPDFBase.LAYOUT.spacing.line ?? 4;
         const minRowHeight = 22;
 
-        const normalFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.normal.font);
+        // Mismo formato y tamaño de fuente que _addTableRow (filas normales)
         const boldFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.bold.font);
-        const normalFont = await this._pdfDoc.embedFont(normalFontName);
+        const normalFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.normal.font);
         const boldFont = await this._pdfDoc.embedFont(boldFontName);
+        const normalFont = await this._pdfDoc.embedFont(normalFontName);
         const fontSize = IncosPDFBase.FONTS.normal.size;
         const textRgb = this._hexToRgb(IncosPDFBase.COLORS.text);
         const borderRgb = this._hexToRgb(IncosPDFBase.COLORS.border);

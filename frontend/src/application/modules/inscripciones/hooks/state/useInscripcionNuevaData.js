@@ -92,7 +92,18 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
     // 1. Hooks de feature
     const pageData = useInscripcionNuevaPageData({ mode });
     const studentSearch = useInscripcionNuevaStudentSearch({ studentId: studentId || editData?.studentId });
-    const carrerasData = useInscripcionNuevaCarreras({ initialCarreraId: editData?.carreraId });
+
+    // Carrera inicial: edición, o estudiante TRASPASO/TRANSITABILIDAD (ya tienen carrera asignada, como los antiguos)
+    const initialCarreraId = useMemo(() => {
+        if (editData?.carreraId) return editData.carreraId;
+        const student = studentSearch?.selectedStudent;
+        if (!student) return null;
+        const tipo = String(student.tipoAdmision ?? '').toUpperCase();
+        if (tipo !== 'TRASPASO' && tipo !== 'TRANSITABILIDAD') return null;
+        return student.careerId ?? student.carreraId ?? student.career_id ?? student.carrera_id ?? null;
+    }, [editData?.carreraId, studentSearch?.selectedStudent]);
+
+    const carrerasData = useInscripcionNuevaCarreras({ initialCarreraId });
     
     // Determinar carreraId para filtrar paralelos:
     // 1. Prioridad: carrera de edición (editData.carreraId)

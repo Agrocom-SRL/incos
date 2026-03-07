@@ -24,7 +24,7 @@ export const Inscripcion = sequelize.define(
       field: 'tipo_inscripcion',
       allowNull: false,
       defaultValue: TIPOS_INSCRIPCION.CONTINUIDAD,
-      comment: 'Tipo de inscripción: NUEVO, REINGRESO, CONTINUIDAD, TRASPASO_ENTRADA (otro instituto), TRANSITABILIDAD_ENTRADA (Técnico Medio, solo materias complementarias)',
+      comment: 'Tipo de inscripción: NUEVO, REINGRESO, CONTINUIDAD, TRASPASO (otro instituto), TRANSITABILIDAD (Técnico Medio, solo materias complementarias)',
     },
     fechaInscripcion: {
       type: DataTypes.DATEONLY,

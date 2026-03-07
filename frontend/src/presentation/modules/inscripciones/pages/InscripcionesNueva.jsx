@@ -104,6 +104,7 @@ const InscripcionesNueva = () => {
   const tipoAdmision =
     studentSearch?.selectedStudent?.tipoAdmision ?? editData?.tipoAdmision ?? null;
   const isNuevoEstudiante = String(tipoAdmision ?? '').toUpperCase() === 'NUEVO';
+  const isTraspasoOrTransitabilidad = ['TRASPASO', 'TRANSITABILIDAD'].includes(String(tipoAdmision ?? '').toUpperCase());
 
   // Pasos (stepIndex 0-based): 0=Estudiante, 1=Carrera, 2=Periodo y materias, 3=Paralelo
   // Lanzamiento: ANTIGUO → step 3 (Periodo y materias); NUEVO → step 4 (Paralelo)
@@ -271,7 +272,7 @@ const InscripcionesNueva = () => {
   // Paso visual 4 (Paralelo) → stepIndex = 3
   const renderSectionContent = useCallback(
     (stepIndex, sectionKey, section, form) => {
-      // Paso visual 2: Seleccionar Carrera (stepIndex = 1). En edición, estudiante y carrera son solo lectura.
+      // Paso visual 2: Seleccionar Carrera (stepIndex = 1). En edición o TRASPASO/TRANSITABILIDAD, carrera ya está fijada (solo lectura).
       if (stepIndex === 1 && sectionKey === 'carrera') {
         return (
           <InscripcionesCarreraStepContent
@@ -283,7 +284,7 @@ const InscripcionesNueva = () => {
             carrerasError={carrerasData?.error ?? null}
             selectedStudent={studentSearch?.selectedStudent ?? null}
             onCarreraChange={(carrera) => context.onSelectCarrera?.(carrera?.id)}
-            readOnly={!!editData}
+            readOnly={!!editData || isTraspasoOrTransitabilidad}
           />
         );
       }
@@ -324,6 +325,7 @@ const InscripcionesNueva = () => {
     },
     [
       editData,
+      isTraspasoOrTransitabilidad,
       carrerasData?.carreras,
       carrerasData?.loading,
       carrerasData?.error,

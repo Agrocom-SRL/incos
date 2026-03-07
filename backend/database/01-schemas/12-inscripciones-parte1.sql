@@ -31,10 +31,10 @@ CREATE TABLE inscripciones (
     gestion_id INT NULL COMMENT 'Gestión académica (año lectivo) en la que se inscribe (referencia a gestiones). Diferente de gestion_ingreso_id en estudiantes_datos_academicos.',
     
     -- Tipo de inscripción
-    tipo_inscripcion ENUM('NUEVO', 'REINGRESO', 'CONTINUIDAD', 'TRASPASO_ENTRADA', 'TRANSITABILIDAD_ENTRADA') DEFAULT 'CONTINUIDAD'
-        COMMENT 'Tipo de inscripción: NUEVO (bloques periodo 1), REINGRESO, CONTINUIDAD (materias individuales), TRASPASO_ENTRADA (de otro instituto, traspaso_id), TRANSITABILIDAD_ENTRADA (Técnico Medio, transitabilidad_id)',
-    traspaso_id INT NULL COMMENT 'Si tipo_inscripcion=TRASPASO_ENTRADA, referencia a traspasos. FK se añade en 12-traspasos.sql',
-    transitabilidad_id INT NULL COMMENT 'Si tipo_inscripcion=TRANSITABILIDAD_ENTRADA, referencia a transitabilidades. FK se añade en 12-transitabilidades.sql',
+    tipo_inscripcion ENUM('NUEVO', 'REINGRESO', 'CONTINUIDAD', 'TRASPASO', 'TRANSITABILIDAD') DEFAULT 'CONTINUIDAD'
+        COMMENT 'Tipo de inscripción: NUEVO (bloques periodo 1), REINGRESO, CONTINUIDAD (materias individuales), TRASPASO (de otro instituto, traspaso_id), TRANSITABILIDAD (Técnico Medio, transitabilidad_id)',
+    traspaso_id INT NULL COMMENT 'Si tipo_inscripcion=TRASPASO, referencia a traspasos. FK se añade en 12-traspasos.sql',
+    transitabilidad_id INT NULL COMMENT 'Si tipo_inscripcion=TRANSITABILIDAD, referencia a transitabilidades. FK se añade en 12-transitabilidades.sql',
 
     -- Fecha de inscripción (sin default; la aplicación o el INSERT la proporcionan)
     fecha_inscripcion DATE NULL COMMENT 'Fecha en que se realizó la inscripción',

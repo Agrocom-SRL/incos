@@ -526,6 +526,7 @@ export class GetEnrollmentByIdUseCase {
             {
               studentId: student.id,
               tipoDocumento: 'INSCRIPCION',
+              includeInactive: true, // Incluir documentos inactivos para no perder formularios ya generados
             },
             null,
             null
@@ -542,8 +543,8 @@ export class GetEnrollmentByIdUseCase {
             }).length,
           });
           
-          // Filtrar solo documentos que sean boletas de inscripción (deben tener BOLETA_INSCRIPCION en el nombre)
-          // y que sean PDF (la boleta se genera como PDF)
+          // Filtrar solo documentos que sean boleta/formulario de inscripción (PDF)
+          // Nombres aceptados: BOLETA_INSCRIPCION, FORMULARIO_INSCRIPCION, o formulario_inscripcion_* (GenerateFormularioInscripcionUseCase)
           // Ordenar por fecha de creación descendente para obtener el más reciente
           const formulariosDocs = documentos
             .map(doc => {
@@ -554,13 +555,15 @@ export class GetEnrollmentByIdUseCase {
               // El documento puede tener fileName (desde entidad) o nombreArchivo (desde modelo Sequelize directo)
               const fileName = doc.fileName || doc.nombreArchivo || '';
               const extension = doc.extension || '';
-              
-              // Debe tener tipoDocumento === 'INSCRIPCION' 
-              // Y el nombre debe incluir 'BOLETA_INSCRIPCION' (nombre generado por CreateEnrollmentUseCase)
-              // Y debe ser PDF (extension === 'pdf')
-              const matches = doc.tipoDocumento === 'INSCRIPCION' && 
-                     (fileName.includes('BOLETA_INSCRIPCION') || fileName.includes('FORMULARIO_INSCRIPCION')) &&
-                     (extension === 'pdf' || fileName.toLowerCase().endsWith('.pdf'));
+              const fileNameLower = fileName.toLowerCase();
+
+              // tipoDocumento === 'INSCRIPCION' y nombre de boleta/formulario (varios formatos usados al guardar)
+              const isFormularioOrBoleta =
+                fileName.includes('BOLETA_INSCRIPCION') ||
+                fileName.includes('FORMULARIO_INSCRIPCION') ||
+                fileNameLower.includes('formulario_inscripcion');
+              const isPdf = extension === 'pdf' || fileNameLower.endsWith('.pdf');
+              const matches = doc.tipoDocumento === 'INSCRIPCION' && isFormularioOrBoleta && isPdf;
               
               if (doc.tipoDocumento === 'INSCRIPCION') {
                 this.logger.debug('[Inscripciones] Documento INSCRIPCION encontrado', {
