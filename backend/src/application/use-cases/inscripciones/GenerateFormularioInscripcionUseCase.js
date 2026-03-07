@@ -1,6 +1,9 @@
+import fs from 'fs';
+import path from 'path';
 import { NotFoundError } from '../../../domain/errors/AppError.js';
 import { TIPOS_DOCUMENTO_SISTEMA } from '../../../domain/constants/index.js';
 import { UPLOAD } from '../../../infrastructure/config/uploads.config.js';
+import { serverConfig } from '../../../infrastructure/config/server.config.js';
 import { BaseDocumentGenerationUseCase } from '../base/BaseDocumentGenerationUseCase.js';
 
 /**
@@ -95,6 +98,16 @@ export class GenerateFormularioInscripcionUseCase extends BaseDocumentGeneration
         });
 
         try {
+            // 0. Si ya existe el archivo en disco, retornar sus rutas sin regenerar
+            const existing = await this._tryGetExistingFormularioFile(studentId);
+            if (existing) {
+                this.logger.info('[Inscripciones] Formulario de inscripción ya existe en disco, se retorna sin regenerar', {
+                    studentId,
+                    filePath: existing.filePath,
+                });
+                return existing;
+            }
+
             // 1. Validar y obtener estudiante
             const student = await this._validateAndGetStudent(studentId);
 
@@ -114,7 +127,7 @@ export class GenerateFormularioInscripcionUseCase extends BaseDocumentGeneration
             // 6. Generar PDF con gestión activa, datos del estudiante, datos académicos, inscripción y entregas
             const pdfBuffer = await this._generatePdfBuffer(gestionYear, student, academicData, enrollmentData, entregas);
 
-            // 4. Guardar archivo y persistir en BD
+            // 7. Guardar archivo y persistir en BD
             const result = await this._persistDocument(studentId, pdfBuffer, student);
 
             this.logger.info('[Inscripciones] Formulario de inscripción PDF generado correctamente', {
@@ -131,6 +144,83 @@ export class GenerateFormularioInscripcionUseCase extends BaseDocumentGeneration
                 stack: error.stack,
             });
             throw error;
+        }
+    }
+
+    /**
+     * Busca un documento de formulario de inscripción existente para el estudiante y verifica
+     * si el archivo existe en disco. Si existe, retorna las rutas para descarga sin regenerar.
+     *
+     * @private
+     * @param {number} studentId - ID del estudiante
+     * @returns {Promise<{filePath: string, fileName: string, absolutePath: string}|null>} Rutas si el archivo existe, null en caso contrario
+     */
+    async _tryGetExistingFormularioFile(studentId) {
+        try {
+            const documentosResult = await this.studentDocumentRepository.findAll(
+                {
+                    studentId,
+                    tipoDocumento: 'INSCRIPCION',
+                    includeInactive: true,
+                },
+                null,
+                null
+            );
+            const documentos = documentosResult.studentDocuments || [];
+
+            const formulariosDocs = documentos
+                .map((doc) => (doc?.toPlainObject ? doc.toPlainObject() : doc))
+                .filter((doc) => {
+                    const fileName = doc.fileName || doc.nombreArchivo || '';
+                    const fileNameLower = (fileName || '').toLowerCase();
+                    const isFormulario =
+                        (fileName || '').includes('BOLETA_INSCRIPCION') ||
+                        (fileName || '').includes('FORMULARIO_INSCRIPCION') ||
+                        fileNameLower.includes('formulario_inscripcion');
+                    const isPdf = (doc.extension || '').toLowerCase() === 'pdf' || fileNameLower.endsWith('.pdf');
+                    return doc.tipoDocumento === 'INSCRIPCION' && isFormulario && isPdf;
+                })
+                .sort((a, b) => {
+                    const dateA = a.createdAt ? new Date(a.createdAt) : new Date(0);
+                    const dateB = b.createdAt ? new Date(b.createdAt) : new Date(0);
+                    return dateB - dateA;
+                });
+
+            const doc = formulariosDocs[0];
+            if (!doc) return null;
+
+            const filePathRaw = (doc.filePath || doc.rutaArchivo || '').replace(/\\/g, '/');
+            const fileNameRaw = doc.fileName || doc.nombreArchivo || 'formulario_inscripcion.pdf';
+            let relativePath = filePathRaw.replace(/^\/+/, '').replace(/^uploads\//, '');
+            if (!relativePath || (!relativePath.startsWith('documentos/') && !relativePath.includes('documentos'))) {
+                relativePath = `documentos/estudiantes/${studentId}/${path.basename(fileNameRaw)}`;
+            }
+
+            const uploadDir = serverConfig.uploadsPath || 'uploads';
+            const absolutePath = path.isAbsolute(uploadDir)
+                ? path.join(uploadDir, relativePath)
+                : path.resolve(serverConfig.backendRoot, uploadDir, relativePath);
+
+            if (!fs.existsSync(absolutePath)) {
+                this.logger.warn('[Inscripciones] Registro de formulario existe en BD pero el archivo no está en disco', {
+                    studentId,
+                    absolutePath,
+                });
+                return null;
+            }
+
+            const filePath = `/${path.join(uploadDir, relativePath).replace(/\\/g, '/')}`;
+            return {
+                filePath,
+                fileName: fileNameRaw,
+                absolutePath,
+            };
+        } catch (err) {
+            this.logger.warn('[Inscripciones] Error al buscar formulario existente', {
+                studentId,
+                error: err.message,
+            });
+            return null;
         }
     }
 

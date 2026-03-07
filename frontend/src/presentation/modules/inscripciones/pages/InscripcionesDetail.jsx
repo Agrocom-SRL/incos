@@ -20,10 +20,9 @@ import { App } from 'antd';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { useInscripcionDetailContext, useGenerateBoletaInscripcion } from '@application-inscripciones/hooks';
-import { Descriptions, Card, Divider, Spin, Alert, Empty, Tag } from 'antd';
+import { Descriptions, Card, Spin, Alert, Empty, Tag } from 'antd';
 import { Button } from '@atoms';
 import { DownloadOutlined, FileTextOutlined, ArrowLeftOutlined, EditOutlined } from '@ant-design/icons';
-import { downloadFile } from '@application/utils';
 
 const InscripcionesDetail = () => {
   const navigate = useNavigate();
@@ -54,48 +53,38 @@ const InscripcionesDetail = () => {
   }, [loading, error, navigate]);
 
   // Obtener el formulario de inscripción (boleta PDF) desde los datos de la inscripción
-  const boletaInscripcion = inscripcion?.formularioInscripcion || null;
+  // Soporta respuesta en raíz o anidada en .data (según capa API)
+  const boletaInscripcion =
+    inscripcion?.formularioInscripcion ?? inscripcion?.data?.formularioInscripcion ?? null;
 
-  // Función para descargar la boleta de inscripción
-  const handleDownloadBoleta = () => {
-    if (boletaInscripcion) {
-      try {
-        downloadFile(boletaInscripcion.filePath, boletaInscripcion.fileName);
-      } catch (err) {
-        console.error('Error al descargar la boleta de inscripción:', err);
-        message.error('Error al descargar la boleta de inscripción');
-      }
-    }
-  };
+  // Obtener studentId una vez para descarga y generación
+  const studentId = inscripcion?.student?.id || inscripcion?.enrollment?.studentId;
 
-  // Función para generar la boleta de inscripción
-  // El endpoint requiere el ID del estudiante, no el ID de inscripción
-  const handleGenerateBoleta = async () => {
-    // Obtener el ID del estudiante desde los datos de la inscripción
-    const studentId = inscripcion?.student?.id || inscripcion?.enrollment?.studentId;
-    
+  // Descargar o generar boleta: siempre se llama al caso de uso (API). El backend verifica
+  // si el archivo existe en disco; si existe lo retorna sin regenerar, si no lo genera.
+  // boletaInscripcion solo se usa para mostrar la tarjeta "Descargar" vs "Generar".
+  const handleDownloadOrGenerateBoleta = async () => {
     if (!studentId) {
-      message.error('No se puede generar la boleta: ID del estudiante no disponible');
+      message.error('No se puede continuar: ID del estudiante no disponible');
       return;
     }
 
     try {
       const result = await generateBoletaInscripcion(studentId);
-      
+
       if (result.success) {
-        message.success('Boleta de inscripción generada y descargada exitosamente');
-        // Recargar los datos de la inscripción para actualizar el estado
-        // Nota: En el futuro se puede agregar una función refetch si está disponible
-        // Pequeño delay para que el usuario vea el mensaje de éxito antes de recargar
-        setTimeout(() => {
-          window.location.reload();
-        }, 1000);
+        message.success(boletaInscripcion
+          ? 'Boleta de inscripción descargada correctamente'
+          : 'Boleta de inscripción generada y descargada exitosamente');
+        if (!boletaInscripcion) {
+          setTimeout(() => window.location.reload(), 1000);
+        }
       } else {
-        message.error(result.error || 'Error al generar la boleta de inscripción');
+        message.error(result.error || 'Error al obtener la boleta de inscripción');
       }
     } catch (err) {
-      console.error('Error al generar la boleta de inscripción:', err);
-      message.error('Error al generar la boleta de inscripción. La operación puede estar tardando más de lo esperado.');
+      console.error('Error al obtener la boleta de inscripción:', err);
+      message.error('Error al obtener la boleta de inscripción. La operación puede estar tardando más de lo esperado.');
     }
   };
 
@@ -245,8 +234,8 @@ const InscripcionesDetail = () => {
       'NUEVO': 'green',
       'REINGRESO': 'orange',
       'CONTINUIDAD': 'blue',
-      'TRASPASO_ENTRADA': 'cyan',
-      'TRANSITABILIDAD_ENTRADA': 'gold',
+      'TRASPASO': 'cyan',
+      'TRANSITABILIDAD': 'gold',
     };
     return typeColors[type] || 'default';
   };
@@ -281,9 +270,11 @@ const InscripcionesDetail = () => {
                 variant="primary"
                 size="large"
                 icon={<DownloadOutlined />}
-                onClick={handleDownloadBoleta}
+                onClick={handleDownloadOrGenerateBoleta}
+                loading={generatingBoleta}
+                disabled={generatingBoleta || !studentId}
               >
-                Descargar Boleta de Inscripción
+                {generatingBoleta ? 'Preparando...' : 'Descargar Boleta de Inscripción'}
               </Button>
             </div>
           </Card>
@@ -305,9 +296,9 @@ const InscripcionesDetail = () => {
                 variant="primary"
                 size="large"
                 icon={<FileTextOutlined />}
-                onClick={handleGenerateBoleta}
+                onClick={handleDownloadOrGenerateBoleta}
                 loading={generatingBoleta}
-                disabled={generatingBoleta || !id}
+                disabled={generatingBoleta || !studentId}
               >
                 {generatingBoleta ? 'Generando...' : 'Generar Boleta de Inscripción'}
               </Button>
