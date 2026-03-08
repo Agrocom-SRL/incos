@@ -73,6 +73,7 @@ const PagosDetail = () => {
   const { message, modal } = App.useApp();
 
   const studentIdFromState = location.state?.studentId ?? null;
+  const fromBeca100 = location.state?.fromBeca100 === true;
   const volverALista = !studentIdFromState;
 
   const {
@@ -487,6 +488,20 @@ const PagosDetail = () => {
           <div className="sd-profile__divider" />
 
           <div className="sd-profile__actions">
+            {fromBeca100 && estadoAporte?.cuotas?.length > 0 && (() => {
+              const cuotaBeca100 = estadoAporte.cuotas[0];
+              const cuotaId = cuotaBeca100?.id ?? cuotaBeca100?.numero_recibo;
+              return cuotaId ? (
+                <button
+                  type="button"
+                  className="sd-btn sd-btn--primary"
+                  onClick={() => handleDownloadReciboCuota(cuotaId)}
+                  disabled={downloadingCuotaId === cuotaId}
+                >
+                  <DownloadOutlined /> Descargar recibo de beca 100%
+                </button>
+              ) : null;
+            })()}
             {studentIdForRegistrar && Number(estadoAporte?.saldo_pendiente ?? 0) > 0 && (
               <button type="button" className="sd-btn sd-btn--primary" onClick={handleRegistrarSiguienteCuota}>
                 <PlusCircleOutlined /> Registrar siguiente pago

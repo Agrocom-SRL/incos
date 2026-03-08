@@ -8,8 +8,7 @@
  *
  * Secciones según 15-transitabilidades.sql:
  * - Formación académica: datos de institución de origen (tabla instituciones) + carrera_origen, anio_conclusion (tabla transitabilidades).
- * - Cumplimiento: estado y motivo_no_procedente.
- * La declaración jurada, las observaciones y el justificativo son parte del documento que se genera al registrar, no del formulario digital.
+ * La sección "Cumplimiento de los requisitos" (estado/motivo_no_procedente) ya no se usa en el formulario; el backend acepta valores por defecto.
  */
 
 /**
@@ -112,34 +111,6 @@ export const createEstudianteTransitabilidadFields = () => {
           required: false,
           span: 12,
           placeholder: 'Distrito educativo al que pertenece',
-        },
-      ],
-    },
-    cumplimientoRequisitos: {
-      title: 'Cumplimiento de los requisitos',
-      fields: [
-        {
-          name: 'transitabilidad_estado',
-          label: 'Conclusión',
-          type: 'radio',
-          required: true,
-          span: 12,
-          options: [
-            { label: 'Procedente', value: 'PROCEDENTE' },
-            { label: 'No procedente', value: 'NO_PROCEDENTE' },
-          ],
-        },
-        {
-          name: 'transitabilidad_motivo_no_procedente',
-          label: 'Motivo (no procedente)',
-          type: 'textarea',
-          required: true,
-          span: 24,
-          placeholder: 'Motivo por el que la solicitud fue declarada No Procedente',
-          rows: 3,
-          conditional: true,
-          dependsOn: 'transitabilidad_estado',
-          showIf: (valor) => valor === 'NO_PROCEDENTE',
         },
       ],
     },

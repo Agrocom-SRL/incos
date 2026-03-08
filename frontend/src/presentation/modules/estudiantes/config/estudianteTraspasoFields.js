@@ -9,8 +9,7 @@
  *
  * Secciones según 16-traspasos.sql e instituciones (15-transitabilidades.sql):
  * - Formación académica: datos de institución de origen + carrera origen (opcional), año cursado, régimen.
- * - Cumplimiento: estado y motivo si no procedente.
- * La declaración jurada (firma y fecha del postulante) y las observaciones se manejan en el documento final o en otra interfaz administrativa, no en este formulario.
+ * La sección "Cumplimiento de los requisitos" (estado/motivo no procedente) ya no se usa en el formulario; el backend acepta valores por defecto.
  */
 
 /**
@@ -102,34 +101,6 @@ export const createEstudianteTraspasoFields = () => {
             { label: 'Privado', value: 'PRIVADO' },
           ],
           placeholder: 'Seleccione dependencia',
-        },
-      ],
-    },
-    cumplimientoRequisitos: {
-      title: 'Cumplimiento de los requisitos',
-      fields: [
-        {
-          name: 'traspaso_estado',
-          label: 'Conclusión',
-          type: 'radio',
-          required: true,
-          span: 12,
-          options: [
-            { label: 'Procedente', value: 'PROCEDENTE' },
-            { label: 'No procedente', value: 'NO_PROCEDENTE' },
-          ],
-        },
-        {
-          name: 'traspaso_motivo_no_procedente',
-          label: 'Motivo (no procedente)',
-          type: 'textarea',
-          required: true,
-          span: 24,
-          placeholder: 'Motivo por el que la solicitud fue declarada No Procedente',
-          rows: 3,
-          conditional: true,
-          dependsOn: 'traspaso_estado',
-          showIf: (valor) => valor === 'NO_PROCEDENTE',
         },
       ],
     },

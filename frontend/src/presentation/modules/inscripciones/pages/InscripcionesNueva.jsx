@@ -20,9 +20,10 @@
 import { useEffect, useMemo, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { App, Modal, Typography } from 'antd';
-import { DollarOutlined } from '@ant-design/icons';
+import { DollarOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
+import { Button } from '@atoms';
 import { WizardForm } from '@organisms';
 import {
   InscripcionesCarreraStepContent,
@@ -42,6 +43,8 @@ const InscripcionesNueva = () => {
   const context = useInscripcionesNuevaContext();
   // editData: desde contexto (cuando se entra por /inscripciones/:id/editar) o desde location.state (cuando se entra por /inscripciones/nueva con state)
   const editData = context.editData ?? (location.state?.mode === 'editar' ? location.state : null);
+  // Si se llegó desde la página de estudiante (ej. "Inscribir"), volver al detalle del estudiante; si no, a la lista de inscripciones
+  const studentIdFromState = location.state?.studentId ?? null;
 
   const {
     pageTitle,
@@ -87,6 +90,15 @@ const InscripcionesNueva = () => {
       navigate('/pagos/registrar', { state: { studentId: paymentRequiredStudentId } });
     }
   }, [paymentRequiredStudentId, clearPaymentRequiredDialog, navigate]);
+
+  // Volver: al detalle del estudiante si se llegó desde ahí; si no, a la lista de inscripciones (como en PagosRegistrar)
+  const handleVolver = useCallback(() => {
+    if (studentIdFromState) {
+      navigate(`/estudiantes/${studentIdFromState}`);
+    } else {
+      navigate('/inscripciones');
+    }
+  }, [navigate, studentIdFromState]);
 
   // Búsqueda de estudiantes, carreras, periodos, paralelos y materias (step 1 carrera, step 2 periodo/materias, step 3 paralelos)
   const {
@@ -371,6 +383,15 @@ const InscripcionesNueva = () => {
           <PageHeader
             title={pageTitle}
             breadcrumbItems={breadcrumbItems}
+            actions={
+              <Button
+                variant="default"
+                icon={<ArrowLeftOutlined />}
+                onClick={handleVolver}
+              >
+                Volver
+              </Button>
+            }
           />
         }
         sidebar={null}

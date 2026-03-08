@@ -147,24 +147,22 @@ export const createEstudianteWizardSteps = (completarMode = false) => {
         },
       },
     },
-    // STEP 2 (dinámico): Datos de Transitabilidad. Solo visible cuando tipoAdmision === 'TRANSITABILIDAD'. Tercer lugar (después de Datos Generales).
+    // STEP 2 (dinámico): Datos de Transitabilidad. Solo visible cuando tipoAdmision === 'TRANSITABILIDAD'. Sin sección Cumplimiento de requisitos.
     {
       title: titles.stepTransitabilidad.title,
       formTitle: titles.stepTransitabilidad.formTitle,
-      sections: ['formacionAcademica', 'cumplimientoRequisitos'],
+      sections: ['formacionAcademica'],
       config: {
         formacionAcademica: transitabilidadFields.formacionAcademica,
-        cumplimientoRequisitos: transitabilidadFields.cumplimientoRequisitos,
       },
     },
-    // STEP 2 (dinámico): Datos de Traspaso. Solo visible cuando tipoAdmision === 'TRASPASO'. Tercer lugar (después de Datos Generales).
+    // STEP 2 (dinámico): Datos de Traspaso. Solo visible cuando tipoAdmision === 'TRASPASO'. Sin sección Cumplimiento de requisitos.
     {
       title: titles.stepTraspaso.title,
       formTitle: titles.stepTraspaso.formTitle,
-      sections: ['formacionAcademica', 'cumplimientoRequisitos'],
+      sections: ['formacionAcademica'],
       config: {
         formacionAcademica: traspasoFields.formacionAcademica,
-        cumplimientoRequisitos: traspasoFields.cumplimientoRequisitos,
       },
     },
     // STEP 2: Contacto de Emergencia
