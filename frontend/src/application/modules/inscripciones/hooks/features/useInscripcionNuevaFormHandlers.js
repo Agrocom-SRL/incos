@@ -36,8 +36,11 @@ import { useNavigate } from 'react-router-dom';
 import { useMessage } from '@application/utils';
 import { useCreateInscripcion, useUpdateInscripcion } from '@application-inscripciones/hooks';
 
-/** Mensaje del backend cuando falta el pago del aporte para inscribirse (mostramos diálogo en lugar de toast). */
-const PAYMENT_REQUIRED_ERROR_PATTERN = 'pago del aporte académico';
+/** Patrones del backend cuando falta el pago del aporte para inscribirse (mostramos diálogo en lugar de toast). */
+const PAYMENT_REQUIRED_ERROR_PATTERNS = [
+  'pago del aporte académico',
+  'pendiente de pago', // "El aporte para la gestión X está pendiente de pago..."
+];
 
 /**
  * Hook para gestionar handlers de submit del formulario de inscripción
@@ -86,7 +89,9 @@ export const useInscripcionNuevaFormHandlers = (mode = 'nuevo', options = {}) =>
         if (result?.success) return false;
         const msg = typeof result?.error === 'object' ? result?.error?.message : result?.error;
         const str = (msg ?? '').toString().toLowerCase();
-        return str.includes(PAYMENT_REQUIRED_ERROR_PATTERN.toLowerCase());
+        return PAYMENT_REQUIRED_ERROR_PATTERNS.some((pattern) =>
+            str.includes(pattern.toLowerCase())
+        );
     }, []);
 
     // Registrar automáticamente el formulario cuando esté disponible

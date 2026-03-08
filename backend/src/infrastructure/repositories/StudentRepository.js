@@ -1,3 +1,4 @@
+import { Op } from 'sequelize';
 import { IEstudianteRepository } from '../../domain/interfaces/repositories/IEstudianteRepository.js';
 import { Estudiante as EstudianteModel } from '../database/models/estudiante.js';
 import { BaseRepository } from './BaseRepository.js';
@@ -68,10 +69,19 @@ export class StudentRepository extends BaseRepository {
    *   - userId: ID del usuario
    *   - gender: Género
    *   - hasDisability: Si tiene discapacidad (true/false)
+   *   - excludeId: ID a excluir de la búsqueda (ej: al actualizar, excluir el propio estudiante para validar CI único)
    * @returns {Object} Objeto WHERE para Sequelize
    */
   buildWhereClause(filters) {
     const where = {};
+
+    // Excluir un ID de la búsqueda (ej: validar CI único en actualización excluyendo al actual)
+    const excludeId = filters.excludeId != null && !Number.isNaN(Number(filters.excludeId))
+      ? Number(filters.excludeId)
+      : null;
+    if (excludeId !== null) {
+      where.id = { [Op.ne]: excludeId };
+    }
 
     // Criterios de búsqueda únicos (para findBy)
     if (filters.ci) {
