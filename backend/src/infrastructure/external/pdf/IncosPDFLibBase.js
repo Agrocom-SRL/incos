@@ -293,7 +293,7 @@ export class IncosPDFLibBase {
         const labelFont = await this._pdfDoc.embedFont(StandardFonts.HelveticaOblique);
         // Usar tamaño de fuente "section" para ambos cuadros
         const labelFontSize = IncosPDFBase.FONTS.section.size;
-        
+
         // Fuente bold y tamaño "section" para el valor del código
         const valueFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.bold.font);
         const valueFont = await this._pdfDoc.embedFont(valueFontName);
@@ -1808,14 +1808,35 @@ export class IncosPDFLibBase {
      */
     _wrapText(text, font, fontSize, maxWidth) {
         if (text == null || text === '') return [];
-        const normalized = String(text).replace(/\r\n|\n|\r/g, ' ').replace(/\s+/g, ' ').trim();
-        const words = normalized.split(' ');
+        // Limpiar el texto: reemplazar saltos de línea y caracteres problemáticos con espacios
+        const cleanText = String(text)
+            .replace(/\r\n/g, ' ')  // Windows line breaks
+            .replace(/\n/g, ' ')    // Unix line breaks
+            .replace(/\r/g, ' ')     // Old Mac line breaks
+            .replace(/\t/g, ' ')     // Tabs
+            .replace(/\s+/g, ' ')   // Múltiples espacios
+            .trim();
+        const words = cleanText.split(' ');
         const lines = [];
         let currentLine = '';
 
         for (const word of words) {
+            if (!word) continue; // Saltar palabras vacías
+
             const testLine = currentLine ? `${currentLine} ${word}` : word;
-            const testWidth = font.widthOfTextAtSize(testLine, fontSize);
+            let testWidth = 0;
+            try {
+                testWidth = font.widthOfTextAtSize(testLine, fontSize);
+            } catch (widthError) {
+                // Si widthOfTextAtSize falla (puede pasar con algunas fuentes), usar estimación
+                // Estimación aproximada: 0.6 puntos por carácter
+                testWidth = testLine.length * fontSize * 0.6;
+                if (this.logger) {
+                    this.logger.warn('[IncosPDFLibBase] Error al calcular ancho en _wrapText, usando estimación', {
+                        error: widthError.message,
+                    });
+                }
+            }
 
             if (testWidth > maxWidth && currentLine) {
                 lines.push(currentLine);

@@ -1,3 +1,4 @@
+import { Op } from 'sequelize';
 import { IEnrollmentSubjectRepository } from '../../domain/interfaces/repositories/IEnrollmentSubjectRepository.js';
 import { InscripcionMateria as InscripcionMateriaModel } from '../database/models/inscripcion_materia.js';
 import { BaseRepository } from './BaseRepository.js';
@@ -72,7 +73,9 @@ export class EnrollmentSubjectRepository extends BaseRepository {
     const where = {};
 
     // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
-    if (filters.enrollmentId) {
+    if (filters.enrollmentIds && Array.isArray(filters.enrollmentIds) && filters.enrollmentIds.length > 0) {
+      where.inscripcionId = { [Op.in]: filters.enrollmentIds };
+    } else if (filters.enrollmentId) {
       where.inscripcionId = filters.enrollmentId;
     }
     if (filters.teacherAssignmentId) {

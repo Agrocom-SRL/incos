@@ -52,7 +52,7 @@ const DataTable = ({
       scroll={defaultScroll}
       size={size}
       defaultSort={defaultSort}
-      tableLayout="auto"
+      tableLayout="fixed"
       {...props}
     />
   );

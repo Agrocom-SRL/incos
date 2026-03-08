@@ -8,7 +8,7 @@
  */
 
 import { Space } from 'antd';
-import { UserOutlined, PhoneOutlined, MailOutlined, DollarOutlined, BankOutlined, BookOutlined, CalendarOutlined, TagOutlined } from '@ant-design/icons';
+import { UserOutlined, PhoneOutlined, MailOutlined, DollarOutlined, BankOutlined, BookOutlined, CalendarOutlined, TagOutlined, IdcardOutlined, ManOutlined, WomanOutlined } from '@ant-design/icons';
 import { TableCell } from '@molecules';
 import TableActions from '@molecules/TableActions';
 import { getAdmissionTypeTagStyle } from './admissionTypeColors';
@@ -28,6 +28,27 @@ const getCiCompleto = (record) =>
 const getTipoAdmisionTagStyle = (tipoAdmision) => {
   if (!tipoAdmision) return undefined;
   return getAdmissionTypeTagStyle(tipoAdmision);
+};
+
+/** Texto resumido de datos de trabajo (trabaja, empresa, cargo). Máx 120 caracteres + ellipsis. */
+const MAX_TRABAJO_CHARS = 50;
+const getDatosTrabajoText = (record) => {
+  if (!record.trabaja) return null;
+  const parts = [record.empresaInstitucion, record.cargo].filter(Boolean);
+  const text = parts.length > 0 ? parts.join(' · ') : 'Sí trabaja';
+  return text.length > MAX_TRABAJO_CHARS ? `${text.slice(0, MAX_TRABAJO_CHARS)}…` : text;
+};
+
+/** Icono y color por género (MASCULINO, FEMENINO, OTRO): azul hombre, rosado mujer, gris otro */
+const getGeneroIconAndColor = (genero) => {
+  const g = String(genero || '').toUpperCase();
+  if (g === 'MASCULINO' || g === 'M') {
+    return { icon: <ManOutlined />, color: '#1890ff', label: 'Masculino' };
+  }
+  if (g === 'FEMENINO' || g === 'F') {
+    return { icon: <WomanOutlined />, color: '#eb2f96', label: 'Femenino' };
+  }
+  return { icon: <UserOutlined />, color: '#8c8c8c', label: genero || 'Otro' };
 };
 
 /**
@@ -105,98 +126,150 @@ export const createEstudiantesTableColumns = (
   };
 
   return [
+    // 1. Registro: fecha de registro (createdAt) + gestión de ingreso (enriquecido desde vista_estudiante_datos_academicos)
     {
-      title: 'Código de Estudiante',
-      dataIndex: 'codigoEstudiante',
+      title: 'Registro',
+      key: 'registro',
       ellipsis: true,
-      // Siempre visible en todos los tamaños
+      width: 120,
       responsive: ['xs', 'sm', 'md', 'lg', 'xl', 'xxl'],
-      render: (codigo) => (
-        <TableCell
-          strong
-          textStyle={{ fontFamily: 'monospace', fontSize: '13px' }}
-        >
-          {codigo}
-        </TableCell>
-      ),
-      sorter: (a, b) => {
-        const codigoA = a.codigoEstudiante || '';
-        const codigoB = b.codigoEstudiante || '';
-        return codigoA.localeCompare(codigoB, undefined, { numeric: true, sensitivity: 'base' });
+      render: (_, record) => {
+        const createdAt = record.createdAt;
+        let fechaRegistro = '—';
+        if (createdAt) {
+          try {
+            const d = new Date(createdAt);
+            if (!isNaN(d.getTime())) {
+              fechaRegistro = d.toLocaleDateString('es-BO', { year: 'numeric', month: '2-digit', day: '2-digit' });
+            }
+          } catch (e) {
+            fechaRegistro = String(createdAt);
+          }
+        }
+        const gestionNombre = record.gestionIngresoNombre || null;
+        return (
+          <Space orientation="vertical" size={4} style={{ width: '100%' }}>
+            <TableCell icon={<CalendarOutlined />} textStyle={{ fontSize: 'var(--font-size-sm)' }} size="small">
+              {fechaRegistro}
+            </TableCell>
+            {gestionNombre && (
+              <TableCell icon={<CalendarOutlined />} textStyle={{ fontSize: 'var(--font-size-sm)' }} size="small">
+                {gestionNombre}
+              </TableCell>
+            )}
+          </Space>
+        );
       },
-      defaultSortOrder: 'ascend',
+      sorter: (a, b) => {
+        const tA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const tB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return tB - tA;
+      },
+      defaultSortOrder: 'descend',
     },
+    // 2. Estudiante: nombre, CI, código (datos desde vista_estudiante_datos_personales + mapper)
     {
-      title: 'Nombre Completo',
-      dataIndex: 'nombreCompleto',
+      title: 'Estudiante',
+      key: 'estudiante',
       ellipsis: true,
-      // Siempre visible en todos los tamaños
       responsive: ['xs', 'sm', 'md', 'lg', 'xl', 'xxl'],
-      render: (_, record) => (
-        <TableCell
-          strong
-          fallback="Sin nombre"
-          tag={record.genero}
-          tagColor="blue"
-          orientation="vertical"
-        >
-          {getNombreCompleto(record)}
-        </TableCell>
-      ),
-      sorter: (a, b) => getNombreCompleto(a).localeCompare(getNombreCompleto(b)),
-    },
-    {
-      title: 'CI',
-      dataIndex: 'ciCompleto',
-      ellipsis: true,
-      // Ocultar CI en xs/sm para simplificar en móviles muy pequeños
-      responsive: ['md', 'lg', 'xl', 'xxl'],
-      render: (_, record) => (
-        <TableCell icon={<UserOutlined />} strong>
-          {getCiCompleto(record)}
-        </TableCell>
-      ),
-      sorter: (a, b) => getCiCompleto(a).localeCompare(getCiCompleto(b)),
-    },
-    {
-      title: 'Contacto',
-      key: 'contacto',
-      ellipsis: true,
-      // Mostrar contacto solo desde pantallas medianas hacia arriba
-      responsive: ['lg', 'xl', 'xxl'],
       render: (_, record) => (
         <Space orientation="vertical" size={4} style={{ width: '100%' }}>
-          {record.emailPersonal && (
-            <TableCell icon={<MailOutlined />} textStyle={{ fontSize: 'var(--font-size-sm)' }} size="small">
-              {record.emailPersonal}
+          <TableCell strong fallback="Sin nombre" textStyle={{ fontSize: 'var(--font-size-md)' }} size="small">
+            {getNombreCompleto(record)}
+          </TableCell>
+          {getCiCompleto(record) && (
+            <TableCell icon={<UserOutlined />} textStyle={{ fontSize: 'var(--font-size-sm)' }} size="small">
+              CI {getCiCompleto(record)}
             </TableCell>
           )}
-          {record.celular && (
-            <TableCell icon={<PhoneOutlined />} textStyle={{ fontSize: 'var(--font-size-sm)' }} size="small">
-              {record.celular}
+          {record.codigoEstudiante && (
+            <TableCell icon={<IdcardOutlined />} textStyle={{ fontFamily: 'monospace', fontSize: 'var(--font-size-sm)' }} size="small">
+              {record.codigoEstudiante}
             </TableCell>
           )}
         </Space>
       ),
+      sorter: (a, b) => getNombreCompleto(a).localeCompare(getNombreCompleto(b)),
     },
+    // 3. Datos de referencia: género (icono+color), correo, teléfono, trabajo (máx 120 chars + ellipsis)
+    {
+      title: 'Datos de referencia',
+      key: 'datosReferencia',
+      ellipsis: true,
+      responsive: ['sm', 'md', 'lg', 'xl', 'xxl'],
+      render: (_, record) => {
+        const generoInfo = record.genero ? getGeneroIconAndColor(record.genero) : null;
+        const email = record.emailPersonal;
+        const celular = record.celular;
+        const telefonoFijo = record.telefonoFijo;
+        const datosTrabajo = getDatosTrabajoText(record);
+        const hasAny = generoInfo || email || celular || telefonoFijo || datosTrabajo;
+        return (
+          <Space orientation="vertical" size={4} style={{ width: '100%' }}>
+            {generoInfo && (
+              <TableCell
+                icon={<span style={{ color: generoInfo.color }}>{generoInfo.icon}</span>}
+                textStyle={{ fontSize: 'var(--font-size-sm)', color: generoInfo.color }}
+                size="small"
+              >
+                {generoInfo.label}
+              </TableCell>
+            )}
+            {email && (
+              <TableCell icon={<MailOutlined />} textStyle={{ fontSize: 'var(--font-size-sm)' }} size="small">
+                {email}
+              </TableCell>
+            )}
+            {celular && (
+              <TableCell icon={<PhoneOutlined />} textStyle={{ fontSize: 'var(--font-size-sm)' }} size="small">
+                {celular}
+              </TableCell>
+            )}
+            {telefonoFijo && (
+              <TableCell icon={<PhoneOutlined />} textStyle={{ fontSize: 'var(--font-size-sm)' }} size="small">
+                {telefonoFijo}
+              </TableCell>
+            )}
+            {datosTrabajo && (
+              <TableCell
+                icon={<BankOutlined />}
+                textStyle={{ fontSize: 'var(--font-size-sm)', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}
+                size="small"
+              >
+                {datosTrabajo}
+              </TableCell>
+            )}
+            {!hasAny && (
+              <TableCell icon={<UserOutlined />} fallback="—" textStyle={{ fontSize: 'var(--font-size-sm)' }}>
+                —
+              </TableCell>
+            )}
+          </Space>
+        );
+      },
+      sorter: (a, b) => {
+        const textA = [a.genero, a.emailPersonal, a.celular, a.telefonoFijo].filter(Boolean).join(' ');
+        const textB = [b.genero, b.emailPersonal, b.celular, b.telefonoFijo].filter(Boolean).join(' ');
+        return textA.localeCompare(textB);
+      },
+    },
+    // 4. Datos académicos: carrera, tipo admisión (enriquecidos por ListStudentsUseCase desde vista_estudiante_datos_academicos)
     {
       title: 'Datos académicos',
       key: 'datosAcademicos',
       ellipsis: true,
-      // Ocultar en xs para móviles muy estrechos, visible desde sm
       responsive: ['sm', 'md', 'lg', 'xl', 'xxl'],
       render: (_, record) => (
         <Space orientation="vertical" size={4} style={{ width: '100%' }}>
           {record.carreraNombre && (
             <TableCell
               strong
-              icon={<BookOutlined />} textStyle={{ fontSize: 'var(--font-size-md)' }} size="small">
+              icon={<BookOutlined />}
+              textStyle={{ fontSize: 'var(--font-size-md)' }}
+              size="small"
+            >
               {record.carreraNombre}
-            </TableCell>
-          )}
-          {record.gestionIngresoNombre && (
-            <TableCell icon={<CalendarOutlined />} textStyle={{ fontSize: 'var(--font-size-sm)' }} size="small">
-              {record.gestionIngresoNombre}
             </TableCell>
           )}
           {record.tipoAdmision && (
@@ -209,7 +282,7 @@ export const createEstudiantesTableColumns = (
               size="small"
             />
           )}
-          {!record.carreraNombre && !record.gestionIngresoNombre && !record.tipoAdmision && (
+          {!record.carreraNombre && !record.tipoAdmision && (
             <TableCell icon={<BookOutlined />} fallback="—" textStyle={{ fontSize: 'var(--font-size-sm)' }}>
               —
             </TableCell>
@@ -217,32 +290,34 @@ export const createEstudiantesTableColumns = (
         </Space>
       ),
       sorter: (a, b) => {
-        const textA = [a.carreraNombre, a.gestionIngresoNombre, a.tipoAdmision].filter(Boolean).join(' ');
-        const textB = [b.carreraNombre, b.gestionIngresoNombre, b.tipoAdmision].filter(Boolean).join(' ');
+        const textA = [a.carreraNombre, a.tipoAdmision].filter(Boolean).join(' ');
+        const textB = [b.carreraNombre, b.tipoAdmision].filter(Boolean).join(' ');
         return textA.localeCompare(textB);
       },
     },
+    // 5. Acciones (espacio reducido entre botones vía TableActions)
     {
       title: 'Acciones',
       key: 'acciones',
-      width: isSmall ? 140 : 180,
+      width: isSmall ? 120 : 150,
       align: 'right',
-      // Siempre visible para permitir interacción, pero con ancho reducido en pantallas pequeñas
       responsive: ['xs', 'sm', 'md', 'lg', 'xl', 'xxl'],
       render: (_, record) => {
         const nombreCompleto = getNombreCompleto(record);
         const ciCompleto = getCiCompleto(record);
+        const datosTrabajo = getDatosTrabajoText(record);
         const itemName = `el estudiante ${nombreCompleto}`;
         const itemDetails = [
           { label: 'Nombre', value: nombreCompleto },
-          { label: 'Código', value: record.codigoEstudiante },
-          { label: 'CI', value: ciCompleto },
-          { label: 'Email', value: record.emailPersonal },
-          { label: 'Celular', value: record.celular },
-          { label: 'Carrera', value: record.carreraNombre },
-          { label: 'Gestión ingreso', value: record.gestionIngresoNombre },
-          { label: 'Tipo admisión', value: record.tipoAdmision },
-          { label: 'Trabajo', value: record.datosTrabajo },
+          { label: 'Código', value: record.codigoEstudiante, icon: <IdcardOutlined /> },
+          { label: 'CI', value: ciCompleto, icon: <UserOutlined /> },
+          { label: 'Email', value: record.emailPersonal, icon: <MailOutlined /> },
+          { label: 'Celular', value: record.celular, icon: <PhoneOutlined /> },
+          { label: 'Teléfono fijo', value: record.telefonoFijo },
+          { label: 'Carrera', value: record.carreraNombre, icon: <BookOutlined /> },
+          { label: 'Gestión ingreso', value: record.gestionIngresoNombre, icon: <CalendarOutlined /> },
+          { label: 'Tipo admisión', value: record.tipoAdmision, icon: <TagOutlined /> },
+          { label: 'Trabajo', value: datosTrabajo, icon: <BankOutlined /> },
         ].filter((d) => d.value != null && d.value !== '' && d.value !== 'N/A' && d.value !== '—');
 
         return (

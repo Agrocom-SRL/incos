@@ -35,6 +35,7 @@ export function registerInscripcionesResource(container) {
         (c) =>
             new ListEnrollmentsUseCase({
                 enrollmentRepository: c.resolve(REPOSITORIOS_TOKENS.enrollmentRepository),
+                enrollmentSubjectRepository: c.resolve(REPOSITORIOS_TOKENS.enrollmentSubjectRepository),
                 studentAcademicDataRepository: c.resolve(REPOSITORIOS_TOKENS.studentAcademicDataRepository),
                 studentRepository: c.resolve(REPOSITORIOS_TOKENS.studentRepository),
                 careerRepository: c.resolve(REPOSITORIOS_TOKENS.careerRepository),

@@ -2,11 +2,12 @@
  * Use Case: ListEnrollmentsUseCase
  * Módulo: Inscripciones
  * Lista inscripciones con filtros, paginación y ordenamiento
- * 
+ *
  * Enriquece los datos con relaciones:
  * - Estudiante (student) - a través de studentAcademicData
  * - Carrera (career) - a través de studentAcademicData
  * - Gestión (management)
+ * - Cantidad de materias inscritas (cantidadMaterias) - para listado
  */
 
 import { BaseListUseCase } from '../base/BaseListUseCase.js';
@@ -16,33 +17,32 @@ export class ListEnrollmentsUseCase extends BaseListUseCase {
   /**
    * @param {Object} params - Dependencias inyectadas
    * @param {Object} params.enrollmentRepository - Repositorio de inscripciones
+   * @param {Object} params.enrollmentSubjectRepository - Repositorio de materias inscritas (para cantidad)
    * @param {Object} params.studentAcademicDataRepository - Repositorio de datos académicos del estudiante
    * @param {Object} params.studentRepository - Repositorio de estudiantes
    * @param {Object} params.careerRepository - Repositorio de carreras
    * @param {Object} params.managementRepository - Repositorio de gestiones
    * @param {ILogger} params.logger - Logger para registro de eventos
    */
-  constructor({ 
-    enrollmentRepository, 
+  constructor({
+    enrollmentRepository,
+    enrollmentSubjectRepository,
     studentAcademicDataRepository,
     studentRepository,
     careerRepository,
     managementRepository,
-    logger 
+    logger,
   }) {
     super({
       repository: enrollmentRepository,
       logger,
       moduleName: 'Inscripciones',
       resourceName: 'inscripciones',
-      // collectionFieldName: Nombre del campo en la respuesta del repositorio (estándar en inglés)
-      // Debe coincidir con el valor retornado por repository.getCollectionName()
       collectionFieldName: 'enrollments',
-      // dataFieldName: Nombre del campo en la respuesta final de la API (español para el frontend)
-      // Este es el nombre que verá el cliente en la respuesta JSON
       dataFieldName: 'inscripciones',
     });
 
+    this.enrollmentSubjectRepository = enrollmentSubjectRepository;
     this.studentAcademicDataRepository = studentAcademicDataRepository;
     this.studentRepository = studentRepository;
     this.careerRepository = careerRepository;
@@ -120,10 +120,12 @@ export class ListEnrollmentsUseCase extends BaseListUseCase {
         }
       });
 
-      // Obtener estudiantes y carreras en paralelo
-      const [students, careers] = await Promise.all([
+      // Obtener estudiantes, carreras y conteo de materias por inscripción en paralelo
+      const enrollmentIds = data.map((e) => e.id).filter((id) => id != null);
+      const [students, careers, subjectCounts] = await Promise.all([
         this._fetchStudents(Array.from(studentIds)),
         this._fetchCareers(Array.from(careerIds)),
+        this._fetchSubjectCountByEnrollmentIds(enrollmentIds),
       ]);
 
       // Enriquecer cada inscripción con sus relaciones
@@ -152,6 +154,9 @@ export class ListEnrollmentsUseCase extends BaseListUseCase {
           enriched.gestion = this._mapManagement(managements[managementId]);
         }
 
+        // Cantidad de materias inscritas (para columna en listado)
+        enriched.cantidadMaterias = subjectCounts[enrollment.id] ?? 0;
+
         return enriched;
       });
 
@@ -170,6 +175,39 @@ export class ListEnrollmentsUseCase extends BaseListUseCase {
       });
       // En caso de error, retornar datos sin enriquecer en lugar de fallar
       return data;
+    }
+  }
+
+  /**
+   * Obtiene la cantidad de materias inscritas por cada inscripción (batch).
+   * @param {number[]} enrollmentIds - IDs de inscripciones
+   * @returns {Promise<Object>} Mapa { enrollmentId: cantidad }
+   * @private
+   */
+  async _fetchSubjectCountByEnrollmentIds(enrollmentIds) {
+    if (!enrollmentIds || enrollmentIds.length === 0) return {};
+    if (!this.enrollmentSubjectRepository) return {};
+
+    try {
+      const result = await this.enrollmentSubjectRepository.findAll(
+        { enrollmentIds },
+        null,
+        null
+      );
+      const list = result.enrollmentSubjects || result.enrollmentsSubjects || [];
+      const countByEnrollmentId = {};
+      list.forEach((item) => {
+        const eid = item.enrollmentId ?? item.inscripcionId ?? (item.toPlainObject && item.toPlainObject().enrollmentId);
+        if (eid != null) {
+          countByEnrollmentId[eid] = (countByEnrollmentId[eid] || 0) + 1;
+        }
+      });
+      return countByEnrollmentId;
+    } catch (err) {
+      this.logger.warn('[Inscripciones] Error al obtener conteo de materias por inscripción', {
+        error: err.message,
+      });
+      return {};
     }
   }
 

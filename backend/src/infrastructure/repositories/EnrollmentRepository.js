@@ -106,12 +106,12 @@ export class EnrollmentRepository extends BaseRepository {
 
   /**
    * Retorna el orden por defecto para las consultas
-   * Delega el orden al BaseRepository que ordena por ID ASC
-   * 
-   * @returns {Array} Array vacío para usar el orden por defecto del BaseRepository (id ASC)
+   * Inscripciones más recientes primero (fechaInscripcion DESC), luego por id DESC como desempate.
+   *
+   * @returns {Array} Orden para Sequelize (atributo del modelo: fechaInscripcion)
    */
   getDefaultSort() {
-    return []; // Usa el orden por defecto de BaseRepository: [['id', 'ASC']]
+    return [['fechaInscripcion', 'DESC'], ['id', 'DESC']];
   }
 
   /**

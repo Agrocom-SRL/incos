@@ -1,77 +1,111 @@
 /**
  * tableColumns - Configuración de columnas para la tabla de inscripciones
- * 
- * Single Responsibility: Definir las columnas y su configuración para InscripcionesTable
+ *
+ * Mismo diseño que lista de estudiantes: columnas con varios datos (Space vertical),
+ * responsive y opciones (isSmall) para ancho de acciones.
  */
 
-import { Tag } from 'antd';
-import { UserOutlined, BookOutlined, CalendarOutlined } from '@ant-design/icons';
+import { Tag, Space } from 'antd';
+import { UserOutlined, BookOutlined, CalendarOutlined, TagOutlined, IdcardOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import { TableCell } from '@molecules';
 import TableActions from '@molecules/TableActions';
-import { getDataTableAction } from '@config/icons';
+import { getAdmissionTypeTagStyle } from '../../estudiantes/config/admissionTypeColors';
+
+/** Mapear tipo de inscripción → tipo de admisión para reutilizar getAdmissionTypeTagStyle (mismos colores que estudiantes) */
+const mapEstadoToAdmissionType = (valor) => {
+  const v = String(valor || '').toUpperCase();
+  if (v === 'NUEVO' || v === 'ACTIVA') return 'NUEVO';
+  if (v === 'REINGRESO' || v === 'CONTINUIDAD') return 'ANTIGUO';
+  if (v === 'TRASPASO') return 'TRASPASO';
+  if (v === 'TRANSITABILIDAD') return 'TRANSITABILIDAD';
+  return null;
+};
 
 /**
  * Crea las columnas de la tabla de inscripciones
- * 
+ *
  * @param {Function} navigate - Función de navegación de react-router
  * @param {Function} refetch - Función para recargar los datos después de eliminar
  * @param {Function} deleteInscripcion - Función personalizada para eliminar (opcional, viene del contexto)
+ * @param {Object} options - Opciones de presentación (ej: { isSmall: boolean })
  * @returns {Array} Array de configuración de columnas para Ant Design Table
  */
-export const createInscripcionesTableColumns = (navigate, refetch = null, deleteInscripcion = null) => {
+export const createInscripcionesTableColumns = (navigate, refetch = null, deleteInscripcion = null, options = {}) => {
+  const { isSmall = false } = options;
 
   return [
     {
-      title: 'Código',
-      dataIndex: 'codigo',
-      fixed: 'left',
+      title: 'Gestión y fecha',
+      key: 'gestionFecha',
       ellipsis: true,
-      render: (codigo, record) => {
-        // Priorizar código del estudiante o ID de inscripción como fallback
-        const codigoValue = codigo
-          || record.estudiante?.codigoEstudiante
-          || record.enrollment?.codigo
-          || `INS-${record.id}`
-          || 'N/A';
+      responsive: ['sm', 'md', 'lg', 'xl', 'xxl'],
+      render: (_, record) => {
+        const anioValue = record.gestion?.anio || record.anioCarrera || record.enrollment?.anioCarrera || null;
+        const fechaValue = record.fechaInscripcion || record.enrollment?.fechaInscripcion || null;
+        let fechaFormateada = fechaValue;
+        if (fechaValue) {
+          try {
+            const d = new Date(fechaValue);
+            if (!isNaN(d.getTime())) {
+              fechaFormateada = d.toLocaleDateString('es-BO', { year: 'numeric', month: '2-digit', day: '2-digit' });
+            }
+          } catch (e) {
+            fechaFormateada = fechaValue;
+          }
+        }
+        const hasAny = anioValue || fechaFormateada;
         return (
-          <TableCell
-            strong
-            textStyle={{ fontFamily: 'monospace', fontSize: '13px' }}
-          >
-            {codigoValue}
-          </TableCell>
+          <Space orientation="vertical" size={4} style={{ width: '100%' }}>
+            {anioValue && (
+              <TableCell icon={<CalendarOutlined />} textStyle={{ fontSize: 'var(--font-size-sm)' }} size="small">
+                Gestión {anioValue}
+              </TableCell>
+            )}
+            {fechaFormateada && (
+              <TableCell icon={<CalendarOutlined />} textStyle={{ fontSize: 'var(--font-size-sm)' }} size="small">
+                {fechaFormateada}
+              </TableCell>
+            )}
+            {!hasAny && (
+              <TableCell icon={<CalendarOutlined />} fallback="—" textStyle={{ fontSize: 'var(--font-size-sm)' }}>
+                —
+              </TableCell>
+            )}
+          </Space>
         );
       },
       sorter: (a, b) => {
-        const codigoA = a.codigo
-          || a.estudiante?.codigoEstudiante
-          || a.enrollment?.codigo
-          || `INS-${a.id}`
-          || '';
-        const codigoB = b.codigo
-          || b.estudiante?.codigoEstudiante
-          || b.enrollment?.codigo
-          || `INS-${b.id}`
-          || '';
-        return codigoA.localeCompare(codigoB, undefined, { numeric: true, sensitivity: 'base' });
+        const fechaA = a.fechaInscripcion || a.enrollment?.fechaInscripcion || '';
+        const fechaB = b.fechaInscripcion || b.enrollment?.fechaInscripcion || '';
+        return new Date(fechaA) - new Date(fechaB);
       },
     },
     {
       title: 'Estudiante',
       dataIndex: 'estudiante',
       ellipsis: true,
+      responsive: ['xs', 'sm', 'md', 'lg', 'xl', 'xxl'],
       render: (estudiante, record) => {
-        // Priorizar el campo enriquecido del backend (estudiante con nombreCompleto)
         const student = estudiante || record.student || record.enrollment?.student;
         const nombre = student?.nombreCompleto || student?.nombre || 'Sin nombre';
+        const codigo = student?.codigoEstudiante ?? record.estudiante?.codigoEstudiante ?? record.codigo ?? record.enrollment?.codigo ?? (record.id ? `INS-${record.id}` : null) ?? '—';
+        const ci = student?.ci != null ? [student.ci, student.expedicion].filter(Boolean).join(' ') : '—';
         return (
-          <TableCell
-            strong
-            icon={<UserOutlined />}
-            fallback="Sin estudiante"
-          >
-            {nombre}
-          </TableCell>
+          <Space orientation="vertical" size={4} style={{ width: '100%' }}>
+            <TableCell strong icon={<UserOutlined />} fallback="Sin estudiante" textStyle={{ fontSize: 'var(--font-size-md)' }} size="small">
+              {nombre}
+            </TableCell>
+            {codigo && codigo !== '—' && (
+              <TableCell icon={<IdcardOutlined />} textStyle={{ fontFamily: 'monospace', fontSize: 'var(--font-size-sm)' }} size="small">
+                {codigo}
+              </TableCell>
+            )}
+            {ci && ci !== '—' && (
+              <TableCell textStyle={{ fontSize: 'var(--font-size-sm)' }} size="small">
+                CI {ci}
+              </TableCell>
+            )}
+          </Space>
         );
       },
       sorter: (a, b) => {
@@ -83,17 +117,50 @@ export const createInscripcionesTableColumns = (navigate, refetch = null, delete
       },
     },
     {
-      title: 'Carrera',
-      dataIndex: 'carrera',
+      title: 'Datos de inscripción',
+      key: 'datosInscripcion',
       ellipsis: true,
-      render: (carrera, record) => {
-        // Priorizar el campo enriquecido del backend (carrera con nombre)
-        const carreraObj = carrera || record.carrera || record.enrollment?.carrera;
-        const carreraNombre = carreraObj?.nombre || 'N/A';
+      responsive: ['sm', 'md', 'lg', 'xl', 'xxl'],
+      render: (_, record) => {
+        const carreraObj = record.carrera || record.enrollment?.carrera;
+        const carreraNombre = carreraObj?.nombre || null;
+        const estadoValue = record.tipoInscripcion
+          || record.enrollment?.tipoInscripcion
+          || (record.activo ? 'ACTIVA' : 'INACTIVA')
+          || record.enrollment?.estado
+          || 'N/A';
+        const admissionKey = mapEstadoToAdmissionType(estadoValue);
+        const tagStyle = getAdmissionTypeTagStyle(admissionKey ?? undefined);
+
+        const hasAny = carreraNombre || estadoValue;
         return (
-          <TableCell icon={<BookOutlined />}>
-            {carreraNombre}
-          </TableCell>
+          <Space orientation="vertical" size={4} style={{ width: '100%' }}>
+            {carreraNombre && (
+              <TableCell
+                strong
+                icon={<BookOutlined />}
+                textStyle={{ fontSize: 'var(--font-size-md)' }}
+                size="small"
+              >
+                {carreraNombre}
+              </TableCell>
+            )}
+            {estadoValue && (
+              <TableCell
+                icon={<TagOutlined />}
+                fallback=""
+                textStyle={{ fontSize: 'var(--font-size-sm)' }}
+                size="small"
+              >
+                <Tag style={tagStyle}>{estadoValue}</Tag>
+              </TableCell>
+            )}
+            {!hasAny && (
+              <TableCell icon={<BookOutlined />} fallback="—" textStyle={{ fontSize: 'var(--font-size-sm)' }}>
+                —
+              </TableCell>
+            )}
+          </Space>
         );
       },
       sorter: (a, b) => {
@@ -103,91 +170,39 @@ export const createInscripcionesTableColumns = (navigate, refetch = null, delete
       },
     },
     {
-      title: 'Año',
-      dataIndex: 'anio',
-      width: 100,
-      render: (anio, record) => {
-        // Priorizar año de la gestión o año de carrera
-        const anioValue = anio
-          || record.gestion?.anio
-          || record.anioCarrera
-          || record.enrollment?.anioCarrera
-          || 'N/A';
-        return (
-          <Tag color="blue">
-            {anioValue}
-          </Tag>
-        );
-      },
-    },
-    {
-      title: 'Fecha',
-      dataIndex: 'fechaInscripcion',
-      width: 120,
-      render: (fecha, record) => {
-        const fechaValue = fecha || record.fechaInscripcion || record.enrollment?.fechaInscripcion || 'N/A';
-        // Formatear fecha si es válida
-        let fechaFormateada = fechaValue;
-        if (fechaValue && fechaValue !== 'N/A') {
-          try {
-            const fechaObj = new Date(fechaValue);
-            if (!isNaN(fechaObj.getTime())) {
-              fechaFormateada = fechaObj.toLocaleDateString('es-BO', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit'
-              });
-            }
-          } catch (e) {
-            // Si falla el formato, usar el valor original
-          }
+      title: 'Materias',
+      key: 'materias',
+      width: 140,
+      ellipsis: true,
+      responsive: ['md', 'lg', 'xl', 'xxl'],
+      render: (_, record) => {
+        const cantidad = record.cantidadMaterias ?? record.enrollmentSubjects?.length ?? null;
+        if (cantidad == null || cantidad === '') {
+          return (
+            <TableCell icon={<UnorderedListOutlined />} fallback="—" textStyle={{ fontSize: 'var(--font-size-sm)' }}>
+              —
+            </TableCell>
+          );
         }
+        const label = Number(cantidad) === 1 ? '1 materia' : `${cantidad} materias`;
         return (
-          <TableCell icon={<CalendarOutlined />} textStyle={{ fontSize: 'var(--font-size-sm)' }}>
-            {fechaFormateada}
+          <TableCell icon={<UnorderedListOutlined />} textStyle={{ fontSize: 'var(--font-size-sm)' }} size="small">
+            {label}
           </TableCell>
         );
       },
       sorter: (a, b) => {
-        const fechaA = a.fechaInscripcion || a.enrollment?.fechaInscripcion || '';
-        const fechaB = b.fechaInscripcion || b.enrollment?.fechaInscripcion || '';
-        return new Date(fechaA) - new Date(fechaB);
-      },
-    },
-    {
-      title: 'Estado',
-      dataIndex: 'estado',
-      width: 100,
-      render: (estado, record) => {
-        // Priorizar tipoInscripcion como estado, o derivar de activo
-        const estadoValue = estado
-          || record.tipoInscripcion
-          || record.enrollment?.tipoInscripcion
-          || (record.activo ? 'ACTIVA' : 'INACTIVA')
-          || record.enrollment?.estado
-          || 'N/A';
-
-        // Mapear tipos de inscripción a colores
-        const getEstadoColor = (estado) => {
-          if (estado === 'ACTIVA' || estado === 'NUEVO') return 'success';
-          if (estado === 'INACTIVA' || estado === 'RETIRADO') return 'default';
-          if (estado === 'CONTINUIDAD' || estado === 'REINGRESO') return 'blue';
-          return 'default';
-        };
-
-        return (
-          <Tag color={getEstadoColor(estadoValue)}>
-            {estadoValue}
-          </Tag>
-        );
+        const countA = a.cantidadMaterias ?? a.enrollmentSubjects?.length ?? 0;
+        const countB = b.cantidadMaterias ?? b.enrollmentSubjects?.length ?? 0;
+        return countA - countB;
       },
     },
     {
       title: 'Acciones',
       key: 'acciones',
-      fixed: 'right',
-      width: 150,
+      width: isSmall ? 140 : 180,
       align: 'right',
+      responsive: ['xs', 'sm', 'md', 'lg', 'xl', 'xxl'],
       render: (_, record) => {
         const inscripcionId = record.id || record.enrollment?.id;
 
@@ -256,15 +271,15 @@ export const createInscripcionesTableColumns = (navigate, refetch = null, delete
 /**
  * Crea las columnas de la tabla de inscripciones para anular
  * Similar a createInscripcionesTableColumns pero enfocada solo en anular
- * 
+ *
  * @param {Function} navigate - Función de navegación de react-router
  * @param {Function} refetch - Función para recargar los datos después de anular
  * @param {Function} deleteInscripcion - Función personalizada para eliminar/anular (opcional, viene del contexto)
+ * @param {Object} options - Opciones de presentación (ej: { isSmall: boolean })
  * @returns {Array} Array de configuración de columnas para Ant Design Table
  */
-export const createInscripcionesAnularTableColumns = (navigate, refetch = null, deleteInscripcion = null) => {
-  // Reutilizar las mismas columnas de visualización
-  const baseColumns = createInscripcionesTableColumns(navigate, refetch, deleteInscripcion);
+export const createInscripcionesAnularTableColumns = (navigate, refetch = null, deleteInscripcion = null, options = {}) => {
+  const baseColumns = createInscripcionesTableColumns(navigate, refetch, deleteInscripcion, options);
 
   // Reemplazar la columna de acciones con una versión específica para anular
   const accionesIndex = baseColumns.findIndex(col => col.key === 'acciones');
