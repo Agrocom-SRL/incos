@@ -38,6 +38,38 @@ const FieldCheckboxGroup = ({
   // Ant Design Checkbox.Group no tiene optionType; usamos clase para estilizar como botones en CSS
   const finalClassName = isButton ? `${groupClassName} field-checkbox-group--button` : groupClassName;
 
+  const hasOptionClassNames = options.some((o) => o && (o.className != null && o.className !== ''));
+
+  if (hasOptionClassNames) {
+    return (
+      <Checkbox.Group
+        className={finalClassName}
+        disabled={disabled || readOnly}
+        value={safeValue}
+        defaultValue={defaultValue}
+        onChange={onChange}
+        style={groupStyle}
+        {...props}
+      >
+        {options.map((opt) => {
+          const optionClassName = opt.className || undefined;
+          const checkboxEl = (
+            <Checkbox key={opt.value ?? opt.id} value={opt.value} disabled={opt.disabled}>
+              {opt.label}
+            </Checkbox>
+          );
+          return optionClassName ? (
+            <span key={opt.value ?? opt.id} className={optionClassName}>
+              {checkboxEl}
+            </span>
+          ) : (
+            checkboxEl
+          );
+        })}
+      </Checkbox.Group>
+    );
+  }
+
   return (
     <Checkbox.Group
       className={finalClassName}

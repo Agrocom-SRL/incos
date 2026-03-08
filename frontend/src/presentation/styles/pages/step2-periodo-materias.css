@@ -267,3 +267,20 @@
   background-color: var(--ant-color-primary-bg, #e6f4ff);
   color: var(--ant-color-primary, #1677ff);
 }
+
+/* Periodos deshabilitados por traspaso (año ya cursado en institución de origen).
+   La clase está en un span que envuelve cada checkbox para garantizar que se aplique. */
+.step2-periodo-checkbox .periodo-academico--disabled {
+  display: inline-block;
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.step2-periodo-checkbox .periodo-academico--disabled .ant-checkbox-wrapper {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.step2-periodo-checkbox .periodo-academico--disabled .ant-checkbox-label {
+  color: var(--text-500, #6b7280);
+  text-decoration: line-through;
+}

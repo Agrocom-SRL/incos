@@ -63,6 +63,8 @@ export const useInscripcionNuevaStudentSearch = (options = {}) => {
       else if (payload?.id) studentData = payload;
       else if (payload?.data?.student) studentData = payload.data.student;
       const academicData = payload?.academicData ?? null;
+      const transfer = payload?.transfer ?? null;
+      const traspasoAnioCursado = transfer?.anioCursado ?? null;
 
       if (studentData?.id && (!selectedStudent || selectedStudent.id !== studentData.id)) {
         const { ciCompleto, nombreCompleto } = buildPersonDisplayData({
@@ -89,6 +91,7 @@ export const useInscripcionNuevaStudentSearch = (options = {}) => {
           carreraId: careerId || null,
           tipoAdmision,
           carreraNombre: academicData?.careerName ?? academicData?.carreraNombre ?? null,
+          traspasoAnioCursado,
         });
       }
     }
@@ -101,6 +104,7 @@ export const useInscripcionNuevaStudentSearch = (options = {}) => {
     let studentData = payload?.student?.id ? payload.student : payload?.id ? payload : payload?.data?.student ? payload.data : null;
     if (!studentData?.id) studentData = payload?.student ?? payload;
     const academicData = payload?.academicData ?? null;
+    const transfer = payload?.transfer ?? null;
     const careerId =
       academicData?.careerId ??
       academicData?.carreraId ??
@@ -121,6 +125,7 @@ export const useInscripcionNuevaStudentSearch = (options = {}) => {
           academicData?.admissionType ??
           (careerId ? 'ANTIGUO' : 'NUEVO'),
         carreraNombre: academicData?.careerName ?? academicData?.carreraNombre ?? null,
+        traspasoAnioCursado: transfer?.anioCursado ?? prev.traspasoAnioCursado ?? null,
       };
     });
   }, [studentById, studentId]);

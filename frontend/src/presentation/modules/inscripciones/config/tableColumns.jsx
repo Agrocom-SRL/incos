@@ -227,15 +227,8 @@ export const createInscripcionesTableColumns = (navigate, refetch = null, delete
           { label: 'Gestión', value: gestionAnio },
         ].filter(detail => detail.value && detail.value !== 'N/A' && detail.value !== 'Sin nombre');
 
-        // Permitir editar NUEVO (solo paralelo) y ANTIGUO - REINGRESO/CONTINUIDAD (periodo, materias, paralelo)
-        // Estudiante y carrera no se editan aquí; se gestionan en registro de estudiantes
-        const tipoInscripcion = record.tipoInscripcion
-          || record.tipo_inscripcion
-          || record.enrollment?.tipoInscripcion
-          || record.enrollment?.tipo_inscripcion
-          || record.enrollmentType
-          || null;
-        const canEdit = ['NUEVO', 'REINGRESO', 'CONTINUIDAD'].includes(tipoInscripcion);
+        // Permitir editar todos los tipos de inscripción (NUEVO, REINGRESO, CONTINUIDAD, TRASPASO, TRANSITABILIDAD)
+        const canEdit = true;
 
         // Extraer datos necesarios para la edición
         const estudianteId = student?.id || record.estudianteId || record.enrollment?.estudianteId;
