@@ -126,7 +126,13 @@ const TableActions = ({
   };
 
   return (
-    <TableCell actions align="right" orientation={actionsDirection} size={actionsSize}>
+    <TableCell
+      actions
+      align="right"
+      orientation={actionsDirection}
+      size={actionsSize}
+      spaceStyle={{ gap: 4 }}
+    >
       {viewPath && (
         <Tooltip title={`${viewAction.tooltip} ${itemName || 'elemento'}`}>
           <IconButton

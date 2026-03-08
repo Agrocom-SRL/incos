@@ -27,12 +27,19 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 export const useWizard = (initialStep = 0, totalSteps = 0) => {
   const [currentStep, setCurrentStep] = useState(initialStep);
   const prevTotalStepsRef = useRef(totalSteps);
+  const prevInitialStepRef = useRef(undefined);
 
-  // Sincronizar currentStep con initialStep cuando cambia (útil cuando el estudiante se carga después)
+  // Sincronizar currentStep con initialStep solo cuando initialStep cambia (p. ej. al cargar edición en paso 2).
+  // NO sincronizar cuando solo cambia totalSteps: al elegir TRASPASO/TRANSITABILIDAD el wizard pasa de 4 a 5 pasos;
+  // el paso inicial (Tipo de admisión) sigue siendo índice 0 en la nueva vista. Si sincronizáramos con initialStep
+  // (ej. 1 en edición), el usuario saltaría al paso 1 de la nueva vista en lugar de quedarse en el paso 0.
   useEffect(() => {
-    if (initialStep >= 0 && initialStep < totalSteps && initialStep !== currentStep) {
+    const inRange = initialStep >= 0 && initialStep < totalSteps && initialStep !== currentStep;
+    const initialStepChanged = prevInitialStepRef.current !== initialStep; // true en primer run (undefined !== initialStep)
+    if (inRange && initialStepChanged) {
       setCurrentStep(initialStep);
     }
+    prevInitialStepRef.current = initialStep;
   }, [initialStep, totalSteps]);
 
   // Si el número de pasos disminuye: solo ajustar currentStep si queda fuera de rango (clamp).

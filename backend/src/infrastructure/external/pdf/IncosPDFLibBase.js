@@ -293,7 +293,7 @@ export class IncosPDFLibBase {
         const labelFont = await this._pdfDoc.embedFont(StandardFonts.HelveticaOblique);
         // Usar tamaño de fuente "section" para ambos cuadros
         const labelFontSize = IncosPDFBase.FONTS.section.size;
-        
+
         // Fuente bold y tamaño "section" para el valor del código
         const valueFontName = this._mapFontNameToStandardFont(IncosPDFBase.FONTS.bold.font);
         const valueFont = await this._pdfDoc.embedFont(valueFontName);
@@ -1822,7 +1822,6 @@ export class IncosPDFLibBase {
 
         for (const word of words) {
             if (!word) continue; // Saltar palabras vacías
-            
             const testLine = currentLine ? `${currentLine} ${word}` : word;
             let testWidth = 0;
             try {

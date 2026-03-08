@@ -3,8 +3,9 @@
  * Layout limpio: perfil compacto arriba + tabs con cards de 2 columnas abajo.
  */
 
-import { useMemo } from 'react';
+import { useMemo, useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { App } from 'antd';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { Spin, Alert, Empty, Tabs, Tag, Tooltip } from 'antd';
@@ -23,14 +24,16 @@ import {
   EditOutlined,
   ArrowLeftOutlined,
 } from '@ant-design/icons';
-import { useStudentDetailContext } from '@application-estudiantes/hooks';
+import { useStudentDetailContext, useDeleteBecaAsignada } from '@application-estudiantes/hooks';
 import {
   GuardiansSection,
   DocumentDeliveriesSection,
   ScholarshipsSection,
 } from '@estudiantes/components/organisms';
+import { showDeleteConfirm } from '@molecules/DeleteConfirmModal';
 import { getAdmissionTypeTagStyle } from '../config/admissionTypeColors';
-import './EstudiantesDetail.css';
+
+const DURACION_MENSAJE_ERROR = 8;
 
 /* ─────────────────────────────────────────
    Átomo: Field — label arriba, valor abajo
@@ -45,9 +48,9 @@ const Field = ({ label, children, span = 1 }) => (
 /* ─────────────────────────────────────────
    Átomo: InfoCard — card de sección
 ───────────────────────────────────────── */
-const InfoCard = ({ title, icon, extra, children, cols = 2 }) => (
+const InfoCard = ({ title, icon, extra, children, cols = 2, headVariant }) => (
   <div className="sd-card">
-    <div className="sd-card__head">
+    <div className={`sd-card__head${headVariant ? ` sd-card__head--${headVariant}` : ''}`}>
       <span className="sd-card__title">
         {icon && <span className="sd-card__title-icon">{icon}</span>}
         {title}
@@ -65,16 +68,48 @@ const InfoCard = ({ title, icon, extra, children, cols = 2 }) => (
 ───────────────────────────────────────── */
 const EstudiantesDetail = () => {
   const navigate = useNavigate();
+  const { message, modal } = App.useApp();
   const {
     loading, error, student, studentData,
     guardians, documentDeliveries, scholarships, inscripcion, origins,
     transitability, transfer, academicData, catalogs,
     breadcrumbItems, avatarInitials, profileSubtitle,
-    handleRegistrarPago, handleGenerateActaCompromiso, handleGenerateDeclaracionJurada,
+    handleRegistrarPago, handleVerDetallePago, handleGenerateActaCompromiso, handleGenerateDeclaracionJurada,
     handleDownloadActaCompromiso, handleVerInscripcion,
     handleNuevaInscripcion, tieneDocumentosFaltantesFlag,
     actaCompromisoData, loadingActa, loadingDeclaracion, hasInscripcion,
+    estadoAporte, loadingEstadoAporte,
+    refetch,
   } = useStudentDetailContext();
+  const { deleteBecaAsignada, loading: deletingBeca } = useDeleteBecaAsignada();
+  const [deletingBecaId, setDeletingBecaId] = useState(null);
+
+  const handleDeleteBeca = useCallback(async (beca) => {
+    const becaId = beca?.id;
+    if (!becaId) return;
+    await showDeleteConfirm({
+      modal,
+      itemName: 'la asignación de beca',
+      itemDetails: [
+        { label: 'Tipo', value: beca?.scholarshipName || beca?.tipoBeca?.nombre || '—' },
+        { label: 'Estado', value: beca?.state ?? beca?.estado ?? '—' },
+      ],
+      onConfirm: async () => {
+        setDeletingBecaId(becaId);
+        try {
+          const result = await deleteBecaAsignada(becaId);
+          if (result?.success) {
+            message.success('Asignación de beca eliminada correctamente');
+            if (typeof refetch === 'function') refetch();
+          } else {
+            message.error(result?.error || 'Error al eliminar la beca. Debe eliminar primero el pago si está vinculado.', DURACION_MENSAJE_ERROR);
+          }
+        } finally {
+          setDeletingBecaId(null);
+        }
+      },
+    });
+  }, [modal, deleteBecaAsignada, message, refetch]);
 
   const tipoAdmision = studentData?.tipoAdmision;
   const tipoAdmisionUpper = (tipoAdmision || '').toString().toUpperCase();
@@ -343,17 +378,83 @@ const EstudiantesDetail = () => {
         </div>
       ),
     }] : []),
-    ...((documentDeliveries?.length > 0 || scholarships?.length > 0) ? [{
+    // Tab Pago: resumen del aporte + enlace a detalle/registrar + asignación de descuentos (becas)
+    {
+      key: 'pago',
+      label: <span className="sd-tab-label"><DollarOutlined /> Pago</span>,
+      children: (
+        <div className="sd-tab-body">
+          {loadingEstadoAporte ? (
+            <div className="sd-loading" style={{ padding: '40px' }}>
+              <Spin tip="Cargando estado del aporte…" />
+            </div>
+          ) : estadoAporte ? (
+            <InfoCard
+              title="Resumen del aporte"
+              icon={<DollarOutlined />}
+              cols={2}
+              headVariant="resumen"
+              extra={
+                estadoAporte?.cabecera?.id ? (
+                  <button type="button" className="sd-btn sd-btn--primary" onClick={handleVerDetallePago}>
+                    <EyeOutlined /> Ver detalle del pago
+                  </button>
+                ) : (
+                  <button type="button" className="sd-btn sd-btn--primary" onClick={handleRegistrarPago}>
+                    <DollarOutlined /> Registrar pago
+                  </button>
+                )
+              }
+            >
+              <Field label="Concepto">
+                {estadoAporte.gestion
+                  ? `Aporte Académico - Gestión ${estadoAporte.gestion.nombre || ''}`.trim()
+                  : 'Aporte Académico'}
+              </Field>
+              <Field label="Monto base / obligatorio">
+                Bs. {Number(estadoAporte.monto_base ?? estadoAporte.monto_obligatorio ?? 0).toLocaleString('es-BO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </Field>
+              <Field label="Total pagado">
+                Bs. {Number(estadoAporte.total_pagado ?? 0).toLocaleString('es-BO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </Field>
+              <Field label="Saldo pendiente">
+                {Number(estadoAporte.saldo_pendiente ?? 0) > 0 ? (
+                  <span className="sd-field__value--danger">
+                    Bs. {Number(estadoAporte.saldo_pendiente ?? 0).toLocaleString('es-BO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </span>
+                ) : (
+                  `Bs. ${Number(estadoAporte.saldo_pendiente ?? 0).toLocaleString('es-BO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                )}
+              </Field>
+            </InfoCard>
+          ) : (
+            <div className="sd-empty">
+              <DollarOutlined className="sd-empty__icon" />
+              <p className="sd-empty__text">Sin datos de aporte para la gestión vigente.</p>
+              <button type="button" className="sd-btn sd-btn--primary" onClick={handleRegistrarPago}>
+                <DollarOutlined /> Registrar pago
+              </button>
+            </div>
+          )}
+          <ScholarshipsSection
+            scholarships={scholarships}
+            onDeleteBeca={handleDeleteBeca}
+            deletingBecaId={deletingBecaId}
+            deletingBeca={deletingBeca}
+          />
+        </div>
+      ),
+    },
+    ...(documentDeliveries?.length > 0 ? [{
       key: 'documentacion',
       label: <span className="sd-tab-label"><FileProtectOutlined /> Documentación</span>,
       children: (
         <div className="sd-tab-body">
           <DocumentDeliveriesSection documentDeliveries={documentDeliveries} />
-          <ScholarshipsSection scholarships={scholarships} />
         </div>
       ),
     }] : []),
-  ], [studentData, residenciaCompleta, guardians, documentDeliveries, scholarships, inscripcion, origins, nacionalidadLabel, idiomaMaterno, idiomaSecundario, lugarNacimiento, paises, handleVerInscripcion, handleNuevaInscripcion, academicData, catalogs, transitability, transfer]);
+  ], [studentData, residenciaCompleta, guardians, documentDeliveries, scholarships, inscripcion, origins, nacionalidadLabel, idiomaMaterno, idiomaSecundario, lugarNacimiento, paises, handleVerInscripcion, handleNuevaInscripcion, academicData, catalogs, transitability, transfer, handleDeleteBeca, deletingBecaId, deletingBeca, estadoAporte, loadingEstadoAporte, handleVerDetallePago, handleRegistrarPago]);
 
   /* ── Estados de carga / error ── */
   if (loading) return (

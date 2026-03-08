@@ -34,10 +34,16 @@ export const enrichPeriodoSelectField = (field, context = {}) => {
     periodos = extractPeriodosFromParalelosList(paralelosData.paralelos);
   }
 
-  const options = periodos.map((p) => ({
-    value: p.id,
-    label: p.nombre || `Periodo ${p.numero}`,
-  }));
+  const periodosDisabledByTraspaso = periodosData?.periodosDisabledByTraspaso ?? null;
+  const options = periodos.map((p) => {
+    const isDisabled = periodosDisabledByTraspaso != null && periodosDisabledByTraspaso[p.numero] === true;
+    return {
+      value: p.id,
+      label: p.nombre || `Periodo ${p.numero}`,
+      disabled: isDisabled,
+      className: isDisabled ? 'periodo-academico--disabled' : undefined,
+    };
+  });
 
   return {
     ...field,
@@ -60,7 +66,9 @@ export const enrichInfoPeriodoParalelosField = (field, context = {}) => {
         ? 'Estudiante nuevo: se inscriben todas las materias del primer año (ya seleccionadas). En el siguiente paso elija el paralelo (turno).'
         : tipoAdmision === 'ANTIGUO'
           ? 'Estudiante antiguo: marque uno o más periodos y las materias que cursará. En el siguiente paso elija el paralelo por periodo.'
-          : 'Marque uno o más periodos y las materias que cursará. En el siguiente paso elija el paralelo por periodo.';
+          : tipoAdmision === 'TRASPASO'
+            ? 'Estudiante en traspaso: solo puede inscribir los periodos que aún no cursó (según el año cursado en la institución de origen). Los periodos ya cursados aparecen deshabilitados.'
+            : 'Marque uno o más periodos y las materias que cursará. En el siguiente paso elija el paralelo por periodo.';
     return { ...field, description };
   }
   return field;

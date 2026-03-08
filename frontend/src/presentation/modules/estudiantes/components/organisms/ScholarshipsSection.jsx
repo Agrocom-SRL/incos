@@ -1,9 +1,10 @@
 /**
  * ScholarshipsSection — Estilo moderno HRment
  * Cards con campos label-arriba/valor-abajo, badge de estado prominente.
+ * Opcional: onDeleteBeca(beca) para mostrar botón "Eliminar beca asignada" (detalle estudiante, tab Documentación).
  */
 
-import { TrophyOutlined, CheckCircleFilled, CloseCircleFilled } from '@ant-design/icons';
+import { TrophyOutlined, CheckCircleFilled, CloseCircleFilled, DeleteOutlined } from '@ant-design/icons';
 
 const ESTADO = {
   PENDIENTE:  { label: 'Pendiente',  bg: '#fef3c7', color: '#92400e', border: 'rgba(245,158,11,.22)' },
@@ -18,7 +19,7 @@ const formatDate = (d) => {
   catch { return d; }
 };
 
-const ScholarshipsSection = ({ scholarships }) => {
+const ScholarshipsSection = ({ scholarships, onDeleteBeca, deletingBecaId, deletingBeca }) => {
   if (!scholarships || scholarships.length === 0) return null;
 
   return (
@@ -162,14 +163,43 @@ const ScholarshipsSection = ({ scholarships }) => {
           font-weight: 600;
           color: #d97706;
         }
-        .sc__obs {
-          padding: 10px 20px 14px;
-          font-size: 13.5px;
-          color: #6b7280;
-          border-top: 1px dashed #f3f4f6;
-          font-style: italic;
-        }
-        @media (max-width: 500px) {
+                .sc__obs {
+                  padding: 10px 20px 14px;
+                  font-size: 13.5px;
+                  color: #6b7280;
+                  border-top: 1px dashed #f3f4f6;
+                  font-style: italic;
+                }
+                .sc__card-actions {
+                  padding: 12px 20px;
+                  border-top: 1px solid #f3f4f6;
+                  background: #fafafa;
+                  display: flex;
+                  justify-content: flex-end;
+                }
+                .sc__btn-delete {
+                  display: inline-flex;
+                  align-items: center;
+                  gap: 6px;
+                  padding: 6px 14px;
+                  font-size: 13px;
+                  font-weight: 600;
+                  color: #b91c1c;
+                  background: #fef2f2;
+                  border: 1px solid #fecaca;
+                  border-radius: 8px;
+                  cursor: pointer;
+                  transition: background .15s, border-color .15s;
+                }
+                .sc__btn-delete:hover:not(:disabled) {
+                  background: #fee2e2;
+                  border-color: #f87171;
+                }
+                .sc__btn-delete:disabled {
+                  opacity: 0.7;
+                  cursor: not-allowed;
+                }
+                @media (max-width: 500px) {
           .sc__card-body { grid-template-columns: repeat(2, 1fr); }
           .sc__card-head { flex-wrap: wrap; }
         }
@@ -238,6 +268,20 @@ const ScholarshipsSection = ({ scholarships }) => {
 
                 {s.observations && (
                   <div className="sc__obs">Obs: {s.observations}</div>
+                )}
+
+                {typeof onDeleteBeca === 'function' && (
+                  <div className="sc__card-actions">
+                    <button
+                      type="button"
+                      className="sc__btn-delete"
+                      onClick={() => onDeleteBeca(s)}
+                      disabled={deletingBeca || deletingBecaId === (s.id)}
+                    >
+                      <DeleteOutlined />
+                      {deletingBecaId === s.id ? 'Eliminando…' : 'Eliminar beca asignada'}
+                    </button>
+                  </div>
                 )}
               </div>
             );

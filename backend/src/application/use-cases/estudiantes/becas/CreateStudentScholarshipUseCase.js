@@ -259,6 +259,21 @@ export class CreateStudentScholarshipUseCase {
 
     if (esBeca100 && cabeceraId) {
       const hoy = new Date().toISOString().split('T')[0];
+      const observacion = data.observations != null ? String(data.observations).trim() : '';
+      let descripcionCuota;
+      if (observacion !== '') {
+        descripcionCuota = observacion;
+      } else {
+        const scholarshipPlain = scholarship.toPlainObject ? scholarship.toPlainObject() : scholarship;
+        const nombreTipoBeca = scholarshipPlain.name ?? scholarshipPlain.nombre ?? scholarshipPlain.code ?? 'Beca 100%';
+        const fechaRaw = createdAssignment.requestDate ?? createdAssignment.request_date ?? hoy;
+        const fechaStr = typeof fechaRaw === 'string' && fechaRaw.length >= 10
+          ? fechaRaw.slice(0, 10)
+          : hoy;
+        const [y, m, d] = fechaStr.split('-');
+        const fechaAsignacion = [d, m, y].join('/');
+        descripcionCuota = `Beca ${nombreTipoBeca} - ${fechaAsignacion}`;
+      }
       const cuotaData = {
         contributionPaymentId: cabeceraId,
         receiptNumber: `TEMP-${cabeceraId}-${Date.now()}`,
@@ -268,7 +283,7 @@ export class CreateStudentScholarshipUseCase {
         paymentAccountId: null,
         transactionNumber: null,
         comprobanteCode: null,
-        description: 'Beca 100% - aporte cubierto por beca.',
+        description: descripcionCuota,
       };
       const cuota = await this.contributionPaymentInstallmentRepository.create(cuotaData);
       const numeroRecibo = String(cuota.id).padStart(6, '0');

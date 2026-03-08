@@ -13,6 +13,7 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PlusOutlined } from '@ant-design/icons';
+import { Grid } from 'antd';
 import { PageTemplate } from '@templates';
 import { TableListView } from '@organisms';
 import { PageHeader } from '@molecules';
@@ -22,6 +23,8 @@ import { createInscripcionesTableColumns } from '@inscripciones/config';
 
 const InscripcionesList = () => {
     const navigate = useNavigate();
+    const screens = Grid.useBreakpoint();
+    const isSmall = !screens.lg;
 
     // Obtener datos del contexto de lista (toda la lógica está en el Provider)
     const {
@@ -48,8 +51,8 @@ const InscripcionesList = () => {
 
     // Crear columnas de la tabla (memoizadas para evitar recrearlas en cada render)
     const tableColumns = useMemo(
-        () => createInscripcionesTableColumns(navigate, refetch, deleteInscripcion),
-        [navigate, refetch, deleteInscripcion]
+        () => createInscripcionesTableColumns(navigate, refetch, deleteInscripcion, { isSmall }),
+        [navigate, refetch, deleteInscripcion, isSmall]
     );
 
     // Configurar breadcrumb items
@@ -87,6 +90,7 @@ const InscripcionesList = () => {
                 searchPlaceholder="Buscar por estudiante, código, carrera..."
                 columns={tableColumns}
                 rowKey={(record) => record.id || record.enrollment?.id || Math.random()}
+                tableClassName="data-table--inscripciones"
                 pagination={{
                     pageSize: 10,
                     showSizeChanger: true,

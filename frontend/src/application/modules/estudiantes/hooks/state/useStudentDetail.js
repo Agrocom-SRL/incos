@@ -10,7 +10,7 @@
  * - No importa ni devuelve componentes React (Card, Button, etc.)
  *
  * @param {string|number|null} studentId - ID del estudiante a cargar
- * @returns {{ student, loading, error, getStudentById, refetch, studentData, guardians, disabilities, origins, documentDeliveries, scholarships, inscripcion, breadcrumbItems, avatarInitials, profileSubtitle, handleRegistrarPago, handleGenerateActaCompromiso, handleDownloadActaCompromiso, handleVerInscripcion, handleNuevaInscripcion, tieneDocumentosFaltantesFlag, actaCompromisoData, loadingActa, hasInscripcion }}
+ * @returns {{ student, loading, error, getStudentById, refetch, studentData, guardians, disabilities, origins, documentDeliveries, scholarships, inscripcion, breadcrumbItems, avatarInitials, profileSubtitle, handleRegistrarPago, handleVerDetallePago, handleGenerateActaCompromiso, handleDownloadActaCompromiso, handleVerInscripcion, handleNuevaInscripcion, tieneDocumentosFaltantesFlag, actaCompromisoData, loadingActa, hasInscripcion, estadoAporte, loadingEstadoAporte }}
  */
 
 import { useEffect, useMemo, useCallback } from 'react';
@@ -30,7 +30,7 @@ export const useStudentDetail = (studentId) => {
   const { generateActaCompromiso, loading: loadingActa } = useGenerateActaCompromiso();
   const { generateDeclaracionJurada, loading: loadingDeclaracion } = useGenerateDeclaracionJurada();
   const pagosContext = usePagosContextOptional();
-  const { estadoAporte, loading: loadingEstadoAporte } = useEstadoAporteRegistro(studentId || null, null);
+  const { estadoAporte, loading: loadingEstadoAporte, refetch: refetchEstadoAporte } = useEstadoAporteRegistro(studentId || null, null);
 
   useEffect(() => {
     if (studentId) {
@@ -99,6 +99,11 @@ export const useStudentDetail = (studentId) => {
     }
     navigate('/pagos/registrar', { state: { studentId } });
   }, [navigate, studentId, pagosContext, message, loadingEstadoAporte, estadoAporte]);
+
+  const handleVerDetallePago = useCallback(() => {
+    if (!studentId || !estadoAporte?.cabecera?.id) return;
+    navigate(`/pagos/${estadoAporte.cabecera.id}`, { state: { studentId } });
+  }, [navigate, studentId, estadoAporte]);
 
   const handleGenerateActaCompromiso = useCallback(async () => {
     if (!studentId) {
@@ -220,5 +225,9 @@ export const useStudentDetail = (studentId) => {
     loadingActa,
     loadingDeclaracion,
     hasInscripcion,
+    estadoAporte,
+    loadingEstadoAporte,
+    refetchEstadoAporte,
+    handleVerDetallePago,
   };
 };

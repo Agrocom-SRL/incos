@@ -3,8 +3,8 @@
 -- Sistema de Gestión Académica - Instituto INCOS
 -- Asignación de docentes a cursos - Gestión 2026 (VIGENTE)
 -- ============================================
--- Gestión 2026: gestion_id = 2
--- Plan Contaduría General: gestion_plan_id = 6
+-- Gestión 2026: gestion_id = 1 (vigente)
+-- Plan Contaduría General: gestion_plan_id = 3
 -- Periodo: Tercer Año (periodo_id = 9)
 -- Paralelos: TERCERO A (paralelo_id=17), TERCERO B (paralelo_id=18)
 -- Cursos: IDs 125-140 (3A: 125-132, 3B: 133-140)
@@ -36,42 +36,42 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- CONTABILIDAD AGROPECUARIA (curso_id = 125, asignatura_plan_id = 62) - 4 horas/semana
 -- Docente: Lic. Gonzalo Icuña (docente_id = 20)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(125, 6, 125, 20, 4, TRUE, '2026-01-19', TRUE);
+(125, 3, 125, 20, 4, TRUE, '2026-01-19', TRUE);
 
 -- CONTABILIDAD DE COSTOS II (curso_id = 126, asignatura_plan_id = 63) - 4 horas/semana
 -- Docente: Lic. Dory Robles (docente_id = 25)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(126, 6, 126, 25, 4, TRUE, '2026-01-19', TRUE);
+(126, 3, 126, 25, 4, TRUE, '2026-01-19', TRUE);
 
 -- CONTABILIDAD GUBERNAMENTAL (curso_id = 127, asignatura_plan_id = 64) - 4 horas/semana
 -- Docente: Lic. Sebastián Vargas (docente_id = 17)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(127, 6, 127, 17, 4, TRUE, '2026-01-19', TRUE);
+(127, 3, 127, 17, 4, TRUE, '2026-01-19', TRUE);
 
 -- CONTABILIDAD EXTRACTIVA (MINERA, PETROLERA Y FORESTAL) (curso_id = 128, asignatura_plan_id = 65) - 4 horas/semana
 -- Docente: Lic. Dory Robles (docente_id = 25)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(128, 6, 128, 25, 4, TRUE, '2026-01-19', TRUE);
+(128, 3, 128, 25, 4, TRUE, '2026-01-19', TRUE);
 
 -- CONTABILIDAD DE SERVICIOS (CONSTRUCCIÓN, HOTELERÍA Y TRANSPORTE) (curso_id = 129, asignatura_plan_id = 66) - 2 horas/semana
 -- Docente: Lic. Franz Lujan (docente_id = 23)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(129, 6, 129, 23, 2, TRUE, '2026-01-19', TRUE);
+(129, 3, 129, 23, 2, TRUE, '2026-01-19', TRUE);
 
 -- GABINETE CONTABLE INFORMÁTICO (curso_id = 130, asignatura_plan_id = 67) - 4 horas/semana
 -- Docente: Lic. Franz Lujan (docente_id = 23)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(130, 6, 130, 23, 4, TRUE, '2026-01-19', TRUE);
+(130, 3, 130, 23, 4, TRUE, '2026-01-19', TRUE);
 
 -- ANÁLISIS E INTERPRETACIÓN DE ESTADOS FINANCIEROS (curso_id = 131, asignatura_plan_id = 68) - 4 horas/semana
 -- Docente: TEC. Patricia Rodriguez Cuellar (docente_id = 19)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(131, 6, 131, 19, 4, TRUE, '2026-01-19', TRUE);
+(131, 3, 131, 19, 4, TRUE, '2026-01-19', TRUE);
 
 -- TALLER DE MODALIDAD DE GRADUACIÓN (curso_id = 132, asignatura_plan_id = 69) - 4 horas/semana
 -- Docente: Lic. Patricia Rodriguez (docente_id = 19)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(132, 6, 132, 19, 4, TRUE, '2026-01-19', TRUE);
+(132, 3, 132, 19, 4, TRUE, '2026-01-19', TRUE);
 
 -- ============================================
 -- INSERTAR ASIGNACIONES - TERCERO B (NOCHE)
@@ -81,42 +81,42 @@ INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, ca
 -- CONTABILIDAD AGROPECUARIA (curso_id = 133, asignatura_plan_id = 62) - 4 horas/semana
 -- Docente: Lic. Elias Sarzuri (docente_id = 28)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(133, 6, 133, 28, 4, TRUE, '2026-01-19', TRUE);
+(133, 3, 133, 28, 4, TRUE, '2026-01-19', TRUE);
 
 -- CONTABILIDAD DE COSTOS II (curso_id = 134, asignatura_plan_id = 63) - 4 horas/semana
 -- Docente: Lic. Sebastián Vargas (docente_id = 17)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(134, 6, 134, 17, 4, TRUE, '2026-01-19', TRUE);
+(134, 3, 134, 17, 4, TRUE, '2026-01-19', TRUE);
 
 -- CONTABILIDAD GUBERNAMENTAL (curso_id = 135, asignatura_plan_id = 64) - 4 horas/semana
 -- Docente: Lic. Sebastián Vargas (docente_id = 17)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(135, 6, 135, 17, 4, TRUE, '2026-01-19', TRUE);
+(135, 3, 135, 17, 4, TRUE, '2026-01-19', TRUE);
 
 -- CONTABILIDAD EXTRACTIVA (MINERA, PETROLERA Y FORESTAL) (curso_id = 136, asignatura_plan_id = 65) - 4 horas/semana
 -- Docente: Lic. Teodora Paraguayo (docente_id = 29)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(136, 6, 136, 29, 4, TRUE, '2026-01-19', TRUE);
+(136, 3, 136, 29, 4, TRUE, '2026-01-19', TRUE);
 
 -- CONTABILIDAD DE SERVICIOS (CONSTRUCCIÓN, HOTELERÍA Y TRANSPORTE) (curso_id = 137, asignatura_plan_id = 66) - 2 horas/semana
 -- Docente: Lic. Elias Sarzuri (docente_id = 28)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(137, 6, 137, 28, 2, TRUE, '2026-01-19', TRUE);
+(137, 3, 137, 28, 2, TRUE, '2026-01-19', TRUE);
 
 -- GABINETE CONTABLE INFORMÁTICO (curso_id = 138, asignatura_plan_id = 67) - 4 horas/semana
 -- Docente: Lic. Elias Sarzuri (docente_id = 28)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(138, 6, 138, 28, 4, TRUE, '2026-01-19', TRUE);
+(138, 3, 138, 28, 4, TRUE, '2026-01-19', TRUE);
 
 -- ANÁLISIS E INTERPRETACIÓN DE ESTADOS FINANCIEROS (curso_id = 139, asignatura_plan_id = 68) - 4 horas/semana
 -- Docente: Lic. Aurelio Hurtado (docente_id = 27)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(139, 6, 139, 27, 4, TRUE, '2026-01-19', TRUE);
+(139, 3, 139, 27, 4, TRUE, '2026-01-19', TRUE);
 
 -- TALLER DE MODALIDAD DE GRADUACIÓN (curso_id = 140, asignatura_plan_id = 69) - 4 horas/semana
 -- Docente: Lic. Patricia Rodriguez (docente_id = 19)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(140, 6, 140, 19, 4, TRUE, '2026-01-19', TRUE);
+(140, 3, 140, 19, 4, TRUE, '2026-01-19', TRUE);
 
 -- Rehabilitar foreign key checks
 SET FOREIGN_KEY_CHECKS = 1;

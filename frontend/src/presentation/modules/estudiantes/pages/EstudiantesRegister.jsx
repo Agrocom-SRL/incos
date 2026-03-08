@@ -727,6 +727,15 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
               if (tipoAdmision && typeof cargarGestiones === 'function') {
                 cargarGestiones(tipoAdmision);
               }
+              // Preservar paso 0 al cambiar tipo (para que al volver al paso 1 se restaure la selección correcta)
+              if (saveStep0Values && formInstance) {
+                const values = formInstance.getFieldsValue(true);
+                saveStep0Values({
+                  tipoAdmision: tipoAdmision ?? values.tipoAdmision ?? 'NUEVO',
+                  gestionIngresoId: values.gestionIngresoId,
+                  carreraId: values.carreraId,
+                });
+              }
             }}
           />
         );
@@ -763,6 +772,7 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
     },
     [
       cargarGestiones,
+      saveStep0Values,
       carreras,
       gestiones,
       carrerasLoading,
@@ -807,7 +817,7 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
         resolveOptions={resolveOptions}
         minAge={minAge}
         conditionalLoaders={conditionalLoaders}
-        initialValues={{ tipoAdmision: 'NUEVO' }}
+        initialValues={isEditMode ? {} : { tipoAdmision: 'NUEVO' }}
         initialStep={initialStep}
         form={form}
         onFinish={handleFinish}

@@ -9,8 +9,8 @@
  * - selectedPeriods: array de periodos seleccionados (para cargar paralelos de varios periodos).
  * - selectedPeriod: primer periodo seleccionado (compatibilidad con lógica que espera un solo periodo).
  *
- * @param {Object} options - carreraId, tipoAdmision ('NUEVO' | 'ANTIGUO')
- * @returns {Object} periodos, loading, error, refetch, selectedPeriods, selectedPeriod, onTogglePeriods
+ * @param {Object} options - carreraId, tipoAdmision ('NUEVO' | 'ANTIGUO' | 'TRASPASO'), anioCursadoTraspaso ('PRIMERO' | 'SEGUNDO' | null)
+ * @returns {Object} periodos, loading, error, refetch, selectedPeriods, selectedPeriod, onTogglePeriods, periodosDisabledByTraspaso
  */
 
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
@@ -41,8 +41,17 @@ function extractPeriodosFromParalelos(paralelos) {
   return Array.from(byId.values()).sort((a, b) => (a.numero ?? 0) - (b.numero ?? 0));
 }
 
+/** Para TRASPASO: según año cursado en origen, deshabilitar periodos ya cursados. numero 1 = Primer Año, 2 = Segundo, 3 = Tercer Año. */
+function buildPeriodosDisabledByTraspaso(anioCursadoTraspaso) {
+  if (!anioCursadoTraspaso) return null;
+  const v = String(anioCursadoTraspaso).toUpperCase();
+  if (v === 'PRIMERO') return { 1: true, 2: false, 3: false };
+  if (v === 'SEGUNDO') return { 1: true, 2: true, 3: false };
+  return null;
+}
+
 export const useInscripcionNuevaPeriodos = (options = {}) => {
-  const { carreraId = null, tipoAdmision = null, initialPeriodId = null, initialSelectedPeriodIds = null } = options;
+  const { carreraId = null, tipoAdmision = null, anioCursadoTraspaso = null, initialPeriodId = null, initialSelectedPeriodIds = null } = options;
   const { paralelos, loading, error, fetch } = useParalelosApi();
   const [selectedPeriodIds, setSelectedPeriodIds] = useState([]);
 
@@ -74,6 +83,22 @@ export const useInscripcionNuevaPeriodos = (options = {}) => {
     }
     return allPeriodos;
   }, [allPeriodos, tipoAdmision]);
+
+  const periodosDisabledByTraspaso = useMemo(
+    () => (tipoAdmision === 'TRASPASO' ? buildPeriodosDisabledByTraspaso(anioCursadoTraspaso) : null),
+    [tipoAdmision, anioCursadoTraspaso]
+  );
+
+  // Quitar de la selección los periodos que quedan deshabilitados por traspaso
+  useEffect(() => {
+    if (!periodosDisabledByTraspaso || selectedPeriodIds.length === 0) return;
+    const toRemove = selectedPeriodIds.filter((id) => {
+      const p = periodos.find((pr) => pr.id === id || Number(pr.id) === Number(id));
+      return p && periodosDisabledByTraspaso[p.numero] === true;
+    });
+    if (toRemove.length === 0) return;
+    setSelectedPeriodIds((prev) => prev.filter((id) => !toRemove.includes(id)));
+  }, [periodosDisabledByTraspaso, periodos, selectedPeriodIds]);
 
   useEffect(() => {
     if (tipoAdmision === 'NUEVO' && periodos.length === 1 && selectedPeriodIds.length === 0) {
@@ -147,6 +172,7 @@ export const useInscripcionNuevaPeriodos = (options = {}) => {
       selectedPeriodIds,
       onTogglePeriods,
       onSelectPeriod,
+      periodosDisabledByTraspaso,
     };
     const prev = prevResultRef.current;
     const sameIds =
@@ -157,6 +183,7 @@ export const useInscripcionNuevaPeriodos = (options = {}) => {
       prev.loading === current.loading &&
       prev.error === current.error &&
       prev.periodos === current.periodos &&
+      prev.periodosDisabledByTraspaso === current.periodosDisabledByTraspaso &&
       sameIds &&
       prev.onTogglePeriods === current.onTogglePeriods &&
       prev.onSelectPeriod === current.onSelectPeriod
@@ -165,5 +192,5 @@ export const useInscripcionNuevaPeriodos = (options = {}) => {
     }
     prevResultRef.current = current;
     return current;
-  }, [periodos, loading, error, loadParalelos, selectedPeriods, selectedPeriod, selectedPeriodIds, onTogglePeriods, onSelectPeriod]);
+  }, [periodos, loading, error, loadParalelos, selectedPeriods, selectedPeriod, selectedPeriodIds, onTogglePeriods, onSelectPeriod, periodosDisabledByTraspaso]);
 };

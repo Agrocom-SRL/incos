@@ -24,6 +24,7 @@ const { Text, Paragraph } = Typography;
  * @param {Object} options.itemDetails - Detalles del elemento a eliminar (opcional)
  *   - {string} label - Etiqueta del detalle (ej: "Estudiante", "Código")
  *   - {string} value - Valor del detalle (ej: "Juan Pérez", "INS-123")
+ *   - {ReactNode} icon - Icono opcional junto a la etiqueta (ej: <IdcardOutlined />)
  * @param {Function} options.onConfirm - Función a ejecutar al confirmar
  * @param {Function} options.onCancel - Función a ejecutar al cancelar (opcional)
  * @returns {Promise<boolean>} true si se confirmó, false si se canceló
@@ -70,9 +71,12 @@ export const showDeleteConfirm = ({
                     alignItems: 'center',
                     padding: '4px 0'
                   }}>
-                    <Text type="secondary" style={{ fontSize: '13px', fontWeight: 500 }}>
-                      {detail.label}:
-                    </Text>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                      {detail.icon && <span style={{ fontSize: '13px', color: 'inherit' }}>{detail.icon}</span>}
+                      <Text type="secondary" style={{ fontSize: '13px', fontWeight: 500 }}>
+                        {detail.label}:
+                      </Text>
+                    </span>
                     <Text strong style={{ fontSize: '13px', marginLeft: '16px', color: '#262626' }}>
                       {detail.value}
                     </Text>

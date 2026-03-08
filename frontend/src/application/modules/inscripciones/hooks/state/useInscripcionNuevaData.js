@@ -128,14 +128,16 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
         return carrerasData.selectedCarrera?.id;
     }, [editData?.carreraId, studentSearch.selectedStudent, carrerasData.selectedCarrera]);
     
-    // Periodos: según tipo admisión (NUEVO = solo primer periodo; ANTIGUO = todos). En edición pre-seleccionar editData.periodoId.
-    // En modo edición usar editData.tipoAdmision para no filtrar periodos antes de cargar el estudiante
+    // Periodos: según tipo admisión (NUEVO = solo primer periodo; ANTIGUO/TRASPASO = todos; TRASPASO deshabilita periodos ya cursados).
     const tipoAdmision =
       editData?.tipoAdmision ?? studentSearch?.selectedStudent?.tipoAdmision ?? null;
+    const anioCursadoTraspaso =
+      tipoAdmision === 'TRASPASO' ? (studentSearch?.selectedStudent?.traspasoAnioCursado ?? null) : null;
     const initialSelectedPeriodIds = editData?.selectedPeriodIds ?? undefined;
     const periodosData = useInscripcionNuevaPeriodos({
       carreraId: carreraIdForParalelos ?? undefined,
       tipoAdmision: tipoAdmision ?? undefined,
+      anioCursadoTraspaso: anioCursadoTraspaso ?? undefined,
       initialPeriodId: editData?.periodoId ?? undefined,
       initialSelectedPeriodIds,
     });
@@ -266,6 +268,7 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
             selectedPeriod: periodosData.selectedPeriod,
             selectedPeriods: periodosData.selectedPeriods,
             selectedPeriodIds: periodosData.selectedPeriodIds || [],
+            periodosDisabledByTraspaso: periodosData.periodosDisabledByTraspaso ?? null,
         },
         studentSearch: {
             students: studentSearch.students,
@@ -314,6 +317,7 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
         periodosData.selectedPeriod,
         periodosData.selectedPeriods,
         periodosData.selectedPeriodIds,
+        periodosData.periodosDisabledByTraspaso,
         studentSearch.students,
         studentSearch.loading,
         studentSearch.error,

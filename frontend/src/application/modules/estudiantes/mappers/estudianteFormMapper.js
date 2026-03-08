@@ -286,8 +286,6 @@ export const estudianteFormMapper = (studentDetail) => {
     formData.transitabilidad_carrera_origen = transitability.carreraOrigen ?? '';
     formData.transitabilidad_anio_conclusion = transitability.anioConclusion ?? null;
     formData.transitabilidad_regimen_estudios = transitability.regimenEstudios ?? null;
-    formData.transitabilidad_estado = transitability.estado ?? null;
-    formData.transitabilidad_motivo_no_procedente = transitability.motivoNoProcedente ?? '';
   }
 
   // Mapear datos de Traspaso (paso Traspaso en edición)
@@ -300,8 +298,6 @@ export const estudianteFormMapper = (studentDetail) => {
     formData.traspaso_carrera_origen = transfer.carreraOrigen ?? '';
     formData.traspaso_anio_cursado = transfer.anioCursado ?? null;
     formData.traspaso_regimen_origen = transfer.regimenOrigen ?? null;
-    formData.traspaso_estado = transfer.estado ?? null;
-    formData.traspaso_motivo_no_procedente = transfer.motivoNoProcedente ?? '';
   }
 
   return formData;

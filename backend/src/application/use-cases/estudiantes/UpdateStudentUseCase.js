@@ -14,6 +14,8 @@ import { NotFoundError } from '../../../domain/errors/AppError.js';
  * - Actualizar orígenes (reemplazo completo)
  * - Actualizar entregas de documentos (reemplazo completo)
  * - Actualizar datos académicos (tipoAdmision, gestionIngresoId, carreraId) si se envían
+ * - Si tipoAdmision = NUEVO: usar gestión vigente (configuracion_sistema + gestiones vigente) para gestion_ingreso_id en datos académicos
+ * - Al cambiar tipo de admisión: eliminar registros en transitabilidades/traspasos cuando el tipo final no corresponda
  * - Asegurar que exista la clave admision_gestion_YYYY en configuracion_sistema cuando se asigna gestionIngresoId (estudiante antiguo)
  * - Retornar el estudiante actualizado con todos sus datos relacionados
  *
@@ -343,6 +345,256 @@ export class UpdateStudentUseCase {
   }
 
   /**
+   * Obtiene la gestión vigente actual desde la configuración del sistema.
+   * Misma lógica que RegisterStudentUseCase._getCurrentManagement().
+   * Se usa cuando tipoAdmision = NUEVO para asignar gestion_ingreso_id en datos académicos.
+   *
+   * @returns {Promise<Object|null>} Entidad Management (gestión vigente) o null si no está disponible
+   */
+  async _getCurrentManagement() {
+    if (!this.configuracionSistemaRepository || !this.managementRepository) {
+      return null;
+    }
+    try {
+      const gestionActualConfig = await this.configuracionSistemaRepository.findBy({
+        key: 'gestion_actual',
+      });
+      if (!gestionActualConfig) {
+        return null;
+      }
+      const gestionAnio = parseInt(gestionActualConfig.value, 10);
+      if (Number.isNaN(gestionAnio)) {
+        return null;
+      }
+      const management = await this.managementRepository.findBy({
+        year: gestionAnio,
+        vigente: true,
+      });
+      return management || null;
+    } catch (err) {
+      this.logger.warn('[Estudiantes] No se pudo obtener gestión vigente', { error: err.message });
+      return null;
+    }
+  }
+
+  /**
+   * Resuelve tipo de admisión, gestión de ingreso y carrera para la actualización de datos académicos.
+   * Si tipo = NUEVO, usa gestión vigente (igual que en registro); si no, usa valores enviados en data.
+   *
+   * @param {Object} data - Payload del request (data.tipoAdmision, data.gestionIngresoId, data.carreraId)
+   * @param {number} studentId - ID del estudiante (para logs)
+   * @returns {Promise<{ tipoAdmision: string, isNuevo: boolean, gestionIngresoId: number|null, carreraId: number|null }>}
+   */
+  async _resolveGestionAndCarreraForAcademicUpdate(data, studentId) {
+    const tipoAdmision = data.tipoAdmision;
+    const isNuevo = tipoAdmision === 'NUEVO';
+    let gestionIngresoId;
+    if (isNuevo) {
+      const gestionVigente = await this._getCurrentManagement();
+      gestionIngresoId = gestionVigente
+        ? (gestionVigente.id ?? (gestionVigente.toPlainObject ? gestionVigente.toPlainObject().id : null))
+        : null;
+      if (!gestionIngresoId) {
+        this.logger.warn('[Estudiantes] Tipo NUEVO sin gestión vigente; datos académicos quedarán sin gestion_ingreso_id', {
+          studentId,
+        });
+      }
+    } else {
+      gestionIngresoId = data.gestionIngresoId == null || data.gestionIngresoId === ''
+        ? null
+        : (typeof data.gestionIngresoId === 'number' ? data.gestionIngresoId : parseInt(data.gestionIngresoId, 10));
+    }
+    const carreraId = isNuevo
+      ? null
+      : (data.carreraId == null || data.carreraId === ''
+        ? null
+        : (typeof data.carreraId === 'number' ? data.carreraId : parseInt(data.carreraId, 10)));
+    return { tipoAdmision, isNuevo, gestionIngresoId, carreraId };
+  }
+
+  /**
+   * Elimina registros en transitabilidades/traspasos cuando el tipo de admisión final no corresponde.
+   * - Si tipo !== TRANSITABILIDAD → eliminar cualquier transitabilidad del estudiante.
+   * - Si tipo !== TRASPASO → eliminar cualquier traspaso del estudiante.
+   *
+   * @param {number} studentId - ID del estudiante
+   * @param {Object} data - Payload (data.tipoAdmision)
+   * @param {string} tipoAdmision - Tipo de admisión que quedará guardado
+   */
+  async _removeTransitabilidadAndTraspasoIfNotApplicable(studentId, data, tipoAdmision) {
+    if (data.tipoAdmision === undefined) return;
+    if (tipoAdmision !== 'TRANSITABILIDAD' && this.transitabilityRepository) {
+      try {
+        const existingTransitability = await this.transitabilityRepository.findBy({ studentId });
+        if (existingTransitability) {
+          const plain = existingTransitability.toPlainObject ? existingTransitability.toPlainObject() : existingTransitability;
+          await this.transitabilityRepository.delete(plain.id);
+          this.logger.info('[Estudiantes] Registro de transitabilidad eliminado (tipo de admisión no es TRANSITABILIDAD)', {
+            studentId,
+            transitabilityId: plain.id,
+            tipoAdmision,
+          });
+        }
+      } catch (err) {
+        this.logger.warn('[Estudiantes] Error al eliminar transitabilidad (no bloquea la actualización)', {
+          studentId,
+          error: err.message,
+        });
+      }
+    }
+    if (tipoAdmision !== 'TRASPASO' && this.transferRepository) {
+      try {
+        const existingTransfer = await this.transferRepository.findBy({ studentId });
+        if (existingTransfer) {
+          const plain = existingTransfer.toPlainObject ? existingTransfer.toPlainObject() : existingTransfer;
+          await this.transferRepository.delete(plain.id);
+          this.logger.info('[Estudiantes] Registro de traspaso eliminado (tipo de admisión no es TRASPASO)', {
+            studentId,
+            transferId: plain.id,
+            tipoAdmision,
+          });
+        }
+      } catch (err) {
+        this.logger.warn('[Estudiantes] Error al eliminar traspaso (no bloquea la actualización)', {
+          studentId,
+          error: err.message,
+        });
+      }
+    }
+  }
+
+  /**
+   * Determina si debe actualizarse el código del estudiante porque cambió el tipo de admisión o la gestión de ingreso.
+   * El código debe reflejar el año de la gestión (igual que en RegisterStudentUseCase).
+   * Casos: (1) Cambio de tipo de admisión con datos académicos previos. (2) Cambio de gestionIngresoId.
+   * (3) Primera creación de datos académicos con gestión asignada (NUEVO vigente o ANTIGUO con gestión).
+   *
+   * @param {Object|null} existingAcademic - Datos académicos actuales o null
+   * @param {Object} data - Payload (data.tipoAdmision, data.gestionIngresoId)
+   * @param {string} tipoAdmision - Tipo que quedará
+   * @param {number|null} gestionIngresoId - Gestión que quedará
+   * @param {string|null} tipoAdmisionActual - Tipo actual en BD
+   * @param {number|null} gestionIngresoIdActual - Gestión actual en BD
+   * @returns {boolean}
+   */
+  _shouldUpdateStudentCode(existingAcademic, data, tipoAdmision, gestionIngresoId, tipoAdmisionActual, gestionIngresoIdActual) {
+    const tieneDatosAcademicosPrevios = existingAcademic !== null;
+    const tipoAdmisionCambio = tieneDatosAcademicosPrevios &&
+      data.tipoAdmision !== undefined &&
+      tipoAdmision !== tipoAdmisionActual;
+    const gestionIngresoIdCambio = tieneDatosAcademicosPrevios &&
+      gestionIngresoId !== gestionIngresoIdActual &&
+      (data.gestionIngresoId !== undefined || (data.tipoAdmision !== undefined && tipoAdmision === 'ANTIGUO'));
+    // Primera creación de datos académicos pero con gestión (NUEVO→vigente o ANTIGUO): código debe coincidir con ese año
+    const crearConGestion = !tieneDatosAcademicosPrevios && gestionIngresoId != null;
+    return tipoAdmisionCambio || gestionIngresoIdCambio || crearConGestion;
+  }
+
+  /**
+   * Genera un nuevo código de estudiante para la gestión indicada y actualiza el estudiante.
+   * Misma lógica que en registro: código YYYYNNNN según año de la gestión y correlativo.
+   *
+   * @param {number} studentId - ID del estudiante
+   * @param {number|null} gestionIngresoIdForCode - ID de la gestión (null = gestión vigente en generateStudentCode)
+   * @param {Object} existingStudent - Estudiante antes del cambio (para log codigoAnterior)
+   * @param {Object|null} existingAcademicPlain - Datos académicos actuales (para log)
+   * @param {string} tipoAdmision - Tipo que quedará
+   * @param {number|null} gestionIngresoIdNuevo - Gestión que quedará
+   * @throws {Error} Si falla la generación o actualización del código
+   */
+  async _updateStudentCodeForNewManagement(studentId, gestionIngresoIdForCode, existingStudent, existingAcademicPlain, tipoAdmision, gestionIngresoIdNuevo) {
+    const nuevoCodigoEstudiante = await this.generateStudentCode(gestionIngresoIdForCode);
+    await this.studentRepository.update(studentId, { studentCode: nuevoCodigoEstudiante });
+    this.logger.info('[Estudiantes] Código de estudiante actualizado por cambio de tipo admisión/gestión (año de gestión)', {
+      studentId,
+      codigoAnterior: existingStudent.studentCode || existingStudent.codigoEstudiante,
+      codigoNuevo: nuevoCodigoEstudiante,
+      tipoAdmisionAnterior: existingAcademicPlain?.admissionType ?? existingAcademicPlain?.tipoAdmision ?? null,
+      tipoAdmisionNuevo: tipoAdmision,
+      gestionIngresoIdAnterior: existingAcademicPlain?.managementId ?? existingAcademicPlain?.gestionIngresoId ?? null,
+      gestionIngresoIdNuevo: gestionIngresoIdNuevo,
+    });
+  }
+
+  /**
+   * Asegura que exista la clave admision_gestion_YYYY en configuracion_sistema para la gestión indicada.
+   * Solo si gestionIngresoId no es null.
+   *
+   * @param {number|null} gestionIngresoId - ID de la gestión de ingreso
+   */
+  async _ensureAdmisionCorrelativoForGestionIfNeeded(gestionIngresoId) {
+    if (gestionIngresoId == null || !this.managementRepository || !this.configuracionSistemaRepository) {
+      return;
+    }
+    try {
+      const gestionInfo = await this.managementRepository.findById(gestionIngresoId);
+      if (gestionInfo) {
+        const gestionPlain = gestionInfo.toPlainObject ? gestionInfo.toPlainObject() : gestionInfo;
+        const gestionAnio = gestionPlain.year ?? gestionPlain.anio;
+        if (typeof gestionAnio === 'number' && !Number.isNaN(gestionAnio)) {
+          await this.ensureAdmisionCorrelativoForYear(gestionAnio);
+        }
+      }
+    } catch (err) {
+      this.logger.warn('[Estudiantes] No se pudo asegurar correlativo de gestión (no bloquea la actualización)', {
+        gestionIngresoId,
+        error: err.message,
+      });
+    }
+  }
+
+  /**
+   * Actualiza o crea el registro en estudiantes_datos_academicos.
+   *
+   * @param {number} studentId - ID del estudiante
+   * @param {Object} data - Payload (data.tipoAdmision, data.gestionIngresoId, data.carreraId)
+   * @param {Object|null} existingAcademic - Datos académicos actuales o null
+   * @param {string} tipoAdmision - Tipo que quedará
+   * @param {number|null} gestionIngresoId - Gestión que quedará
+   * @param {number|null} carreraId - Carrera que quedará
+   */
+  async _updateOrCreateAcademicData(studentId, data, existingAcademic, tipoAdmision, gestionIngresoId, carreraId) {
+    if (existingAcademic) {
+      const academicPlain = existingAcademic.toPlainObject ? existingAcademic.toPlainObject() : existingAcademic;
+      const updatePayload = {};
+      if (data.tipoAdmision !== undefined) {
+        updatePayload.admissionType = data.tipoAdmision;
+      }
+      if (data.tipoAdmision === 'NUEVO') {
+        updatePayload.managementId = gestionIngresoId;
+        updatePayload.careerId = null;
+      } else {
+        if (data.gestionIngresoId !== undefined) updatePayload.managementId = gestionIngresoId;
+        if (data.carreraId !== undefined) updatePayload.careerId = carreraId;
+      }
+      if (Object.keys(updatePayload).length > 0) {
+        await this.studentAcademicDataRepository.update(academicPlain.id, updatePayload);
+        this.logger.info('[Estudiantes] Datos académicos actualizados', {
+          studentId,
+          academicDataId: academicPlain.id,
+          tipoAdmision: data.tipoAdmision,
+          gestionIngresoId,
+          carreraId,
+        });
+      }
+    } else {
+      const createPayload = {
+        studentId,
+        managementId: gestionIngresoId,
+        careerId: carreraId,
+        admissionType: data.tipoAdmision ?? 'NUEVO',
+      };
+      await this.studentAcademicDataRepository.create(createPayload);
+      this.logger.info('[Estudiantes] Datos académicos creados (no existían)', {
+        studentId,
+        tipoAdmision: data.tipoAdmision,
+        gestionIngresoId,
+        carreraId,
+      });
+    }
+  }
+
+  /**
    * Genera un nuevo código de estudiante basado en la gestión de ingreso y el correlativo.
    * Misma lógica que RegisterStudentUseCase.generateStudentCode.
    * 
@@ -481,7 +733,7 @@ export class UpdateStudentUseCase {
       // 2. Actualizar datos básicos del estudiante (si se proporcionan)
       let updatedStudent = existingStudent;
       if (data.student && Object.keys(data.student).length > 0) {
-        // 2.1. Validar que no exista otro estudiante con el mismo CI si se actualiza CI
+        // 2.1. Validar que no exista otro estudiante con el mismo CI (excluyendo al que se está editando)
         const studentData = data.student;
         if (studentData.ci || studentData.expedition) {
           const ciToCheck = studentData.ci || existingStudent.ci;
@@ -491,14 +743,19 @@ export class UpdateStudentUseCase {
             ? String(rawExpedicion).trim()
             : null;
 
-          const studentWithSameCI = await this.studentRepository.findBy({
-            ci: ciToCheck,
-            expedicion: expedicionToCheck,
-          });
-
-          // Si existe otro estudiante con el mismo CI y expedición, y no es el mismo (comparar IDs como número para evitar "3" !== 3)
-          const sameStudent = studentWithSameCI && Number(studentWithSameCI.id) === Number(studentId);
-          if (studentWithSameCI && !sameStudent) {
+          // Buscar otro estudiante con mismo CI+expedición EXCLUYENDO al actual (evita falso positivo en PUT)
+          const result = await this.studentRepository.findAll(
+            {
+              ci: ciToCheck,
+              expedicion: expedicionToCheck,
+              excludeId: studentId,
+            },
+            1,
+            10
+          );
+          const list = result.students || [];
+          const anotherWithSameCI = list.length > 0 ? list[0] : null;
+          if (anotherWithSameCI) {
             const expedicionLabel = expedicionToCheck ?? 'sin expedición';
             throw new Error(
               `Ya existe otro estudiante con CI ${ciToCheck} ${expedicionLabel}`
@@ -883,49 +1140,32 @@ export class UpdateStudentUseCase {
         const tipoAdmisionActual = existingAcademicPlain?.admissionType || existingAcademicPlain?.tipoAdmision || null;
         const gestionIngresoIdActual = existingAcademicPlain?.managementId || existingAcademicPlain?.gestionIngresoId || null;
 
-        const tipoAdmision = data.tipoAdmision;
-        const isNuevo = tipoAdmision === 'NUEVO';
-        // Si es NUEVO, forzar null (permite cambiar ANTIGUO → NUEVO). Si es ANTIGUO, usar valores enviados.
-        const gestionIngresoId = isNuevo
-          ? null
-          : (data.gestionIngresoId == null || data.gestionIngresoId === ''
-            ? null
-            : (typeof data.gestionIngresoId === 'number' ? data.gestionIngresoId : parseInt(data.gestionIngresoId, 10)));
-        const carreraId = isNuevo
-          ? null
-          : (data.carreraId == null || data.carreraId === ''
-            ? null
-            : (typeof data.carreraId === 'number' ? data.carreraId : parseInt(data.carreraId, 10)));
+        // Resolver tipo, gestión y carrera (NUEVO → gestión vigente; resto → valores enviados)
+        const { tipoAdmision, gestionIngresoId, carreraId } = await this._resolveGestionAndCarreraForAcademicUpdate(data, studentId);
 
-        // 7.2. Detectar si cambió tipoAdmision o gestionIngresoId (requiere actualizar código)
-        // Solo actualizar código si hay un cambio real (no en primera creación de datos académicos)
-        // Casos que requieren actualizar código:
-        // - Cambio de tipoAdmision (NUEVO ↔ ANTIGUO) cuando ya existían datos académicos
-        // - Cambio de gestionIngresoId (diferente año) cuando ya existían datos académicos
-        const tieneDatosAcademicosPrevios = existingAcademic !== null;
-        const tipoAdmisionCambio = tieneDatosAcademicosPrevios && 
-          data.tipoAdmision !== undefined && 
-          tipoAdmision !== tipoAdmisionActual;
-        const gestionIngresoIdCambio = tieneDatosAcademicosPrevios &&
-          gestionIngresoId !== gestionIngresoIdActual &&
-          (data.gestionIngresoId !== undefined || (data.tipoAdmision !== undefined && tipoAdmision === 'ANTIGUO'));
-        const debeActualizarCodigo = tipoAdmisionCambio || gestionIngresoIdCambio;
+        // Eliminar transitabilidad/traspaso si el tipo final no corresponde
+        await this._removeTransitabilidadAndTraspasoIfNotApplicable(studentId, data, tipoAdmision);
 
-        // 7.3. Si cambió tipoAdmision o gestionIngresoId, generar nuevo código y actualizar
+        // Si cambió el tipo de admisión o la gestión de ingreso (año), actualizar código del estudiante (YYYYNNNN) como en registro
+        const debeActualizarCodigo = this._shouldUpdateStudentCode(
+          existingAcademic,
+          data,
+          tipoAdmision,
+          gestionIngresoId,
+          tipoAdmisionActual,
+          gestionIngresoIdActual
+        );
         if (debeActualizarCodigo && this.configuracionSistemaRepository) {
           try {
-            const nuevoCodigoEstudiante = await this.generateStudentCode(gestionIngresoId);
-            await this.studentRepository.update(studentId, { studentCode: nuevoCodigoEstudiante });
-            updatedStudent = await this.studentRepository.findById(studentId);
-            this.logger.info('[Estudiantes] Código de estudiante actualizado por cambio de tipo admisión/gestión', {
+            await this._updateStudentCodeForNewManagement(
               studentId,
-              codigoAnterior: existingStudent.studentCode || existingStudent.codigoEstudiante,
-              codigoNuevo: nuevoCodigoEstudiante,
-              tipoAdmisionAnterior: tipoAdmisionActual,
-              tipoAdmisionNuevo: tipoAdmision,
-              gestionIngresoIdAnterior: gestionIngresoIdActual,
-              gestionIngresoIdNuevo: gestionIngresoId,
-            });
+              gestionIngresoId,
+              existingStudent,
+              existingAcademicPlain,
+              tipoAdmision,
+              gestionIngresoId
+            );
+            updatedStudent = await this.studentRepository.findById(studentId);
           } catch (err) {
             this.logger.error('[Estudiantes] Error al actualizar código de estudiante', {
               studentId,
@@ -936,66 +1176,11 @@ export class UpdateStudentUseCase {
           }
         }
 
-        // 7.4. Si se asigna gestión de ingreso (estudiante antiguo), asegurar que exista admision_gestion_YYYY en config
-        if (gestionIngresoId != null && this.managementRepository && this.configuracionSistemaRepository) {
-          try {
-            const gestionInfo = await this.managementRepository.findById(gestionIngresoId);
-            if (gestionInfo) {
-              const gestionPlain = gestionInfo.toPlainObject ? gestionInfo.toPlainObject() : gestionInfo;
-              const gestionAnio = gestionPlain.year ?? gestionPlain.anio;
-              if (typeof gestionAnio === 'number' && !Number.isNaN(gestionAnio)) {
-                await this.ensureAdmisionCorrelativoForYear(gestionAnio);
-              }
-            }
-          } catch (err) {
-            this.logger.warn('[Estudiantes] No se pudo asegurar correlativo de gestión (no bloquea la actualización)', {
-              gestionIngresoId,
-              error: err.message,
-            });
-          }
-        }
+        // Asegurar correlativo admision_gestion_YYYY para la gestión asignada
+        await this._ensureAdmisionCorrelativoForGestionIfNeeded(gestionIngresoId);
 
-        // 7.5. Actualizar datos académicos
-        if (existingAcademic) {
-          const academicPlain = existingAcademic.toPlainObject ? existingAcademic.toPlainObject() : existingAcademic;
-          // StudentAcademicDataMapper.toModelForUpdate espera nombres de dominio (managementId, careerId)
-          const updatePayload = {};
-          if (data.tipoAdmision !== undefined) {
-            updatePayload.admissionType = data.tipoAdmision; // mapper: admissionType → tipo_admision
-          }
-          if (data.tipoAdmision === 'NUEVO') {
-            updatePayload.managementId = null;
-            updatePayload.careerId = null;
-          } else {
-            if (data.gestionIngresoId !== undefined) updatePayload.managementId = gestionIngresoId;
-            if (data.carreraId !== undefined) updatePayload.careerId = carreraId;
-          }
-          if (Object.keys(updatePayload).length > 0) {
-            await this.studentAcademicDataRepository.update(academicPlain.id, updatePayload);
-            this.logger.info('[Estudiantes] Datos académicos actualizados', {
-              studentId,
-              academicDataId: academicPlain.id,
-              tipoAdmision: data.tipoAdmision,
-              gestionIngresoId,
-              carreraId,
-            });
-          }
-        } else {
-          // StudentAcademicDataMapper.toModel espera nombres de dominio (managementId, careerId)
-          const createPayload = {
-            studentId,
-            managementId: gestionIngresoId,
-            careerId: carreraId,
-            admissionType: data.tipoAdmision ?? 'NUEVO',
-          };
-          await this.studentAcademicDataRepository.create(createPayload);
-          this.logger.info('[Estudiantes] Datos académicos creados (no existían)', {
-            studentId,
-            tipoAdmision: data.tipoAdmision,
-            gestionIngresoId,
-            carreraId,
-          });
-        }
+        // Persistir datos académicos (update o create)
+        await this._updateOrCreateAcademicData(studentId, data, existingAcademic, tipoAdmision, gestionIngresoId, carreraId);
       }
 
       // 8. Obtener el estudiante actualizado con todas sus relaciones
