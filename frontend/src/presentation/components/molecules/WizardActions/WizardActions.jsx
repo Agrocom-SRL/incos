@@ -56,9 +56,9 @@ const WizardActions = ({
     <Space 
       className={`wizard-actions ${className}`.trim()}
     >
-      {/* Botón Anterior */}
+      {/* Botón Anterior - htmlType="button" evita submit del Form al hacer clic o Enter (átomo Button usa htmlType para tipo HTML) */}
       {showPrev && (
-        <Button onClick={onPrev} size="large">
+        <Button htmlType="button" onClick={onPrev} size="large">
           {prevLabel}
         </Button>
       )}
@@ -66,6 +66,7 @@ const WizardActions = ({
       {/* Botón Guardar y Continuar Después (no se muestra en el último paso; solo Finalizar) */}
       {showSave && (
         <Button 
+          htmlType="button"
           onClick={() => onSave?.(currentStep + 1)} 
           size="large"
           loading={loading}
@@ -77,6 +78,7 @@ const WizardActions = ({
       {/* Botón Siguiente */}
       {showNext && (
         <Button 
+          htmlType="button"
           variant="primary"
           onClick={onNext} 
           size="large"
@@ -88,6 +90,7 @@ const WizardActions = ({
       {/* Botón Finalizar (solo en el último paso) */}
       {showFinish && (
         <Button 
+          htmlType="button"
           variant="primary"
           onClick={() => onFinish?.(currentStep + 1)} 
           size="large"

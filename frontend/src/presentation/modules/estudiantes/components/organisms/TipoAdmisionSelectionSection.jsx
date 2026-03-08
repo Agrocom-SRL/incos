@@ -71,9 +71,11 @@ const TipoAdmisionSelectionSection = ({
 
     if (form) {
       form.setFieldsValue({ tipoAdmision });
-      // Solo limpiar gestión y carrera cuando es NUEVO. Para TRASPASO/TRANSITABILIDAD
-      // la página preseleccionará la gestión vigente cuando carguen las gestiones.
-      if (tipoAdmision === 'NUEVO') {
+      // Limpiar gestión y carrera cuando no requieren selección (NUEVO) o cuando cambiamos
+      // a otro tipo que sí los requiere (TRASPASO/TRANSITABILIDAD), para que el usuario
+      // deba elegirlos de nuevo y no se avance de paso con valores de ANTIGUO.
+      // Para TRASPASO/TRANSITABILIDAD la página preseleccionará la gestión vigente al cargar.
+      if (tipoAdmision === 'NUEVO' || tipoAdmision === 'TRASPASO' || tipoAdmision === 'TRANSITABILIDAD') {
         form.setFieldsValue({
           gestionIngresoId: undefined,
           carreraId: undefined,

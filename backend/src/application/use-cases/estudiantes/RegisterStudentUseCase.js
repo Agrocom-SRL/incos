@@ -534,16 +534,28 @@ export class RegisterStudentUseCase {
     });
 
     try {
-      // 1. Validar que no exista un estudiante con el mismo CI y expedición
-      if (data.student?.ci && data.student?.expedicion) {
+      // 1. Validar que no exista un estudiante con el mismo CI + expedición (par único)
+      // Importante: validar siempre que haya CI; si expedición viene vacía o null, se trata como "sin expedición" (un solo permitido por CI)
+      if (data.student?.ci) {
+        const rawExpedicion = data.student.expedicion ?? null;
+        const expedicionToCheck =
+          rawExpedicion !== undefined &&
+          rawExpedicion !== null &&
+          String(rawExpedicion).trim() !== ''
+            ? String(rawExpedicion).trim()
+            : null;
+
         const existingStudent = await this.studentRepository.findBy({
           ci: data.student.ci,
-          expedicion: data.student.expedicion,
+          expedicion: expedicionToCheck,
         });
 
         if (existingStudent) {
+          const expedicionLabel = expedicionToCheck
+            ? expedicionToCheck
+            : 'sin expedición';
           throw new Error(
-            `Ya existe un estudiante con CI ${data.student.ci} ${data.student.expedicion}`
+            `Ya existe un estudiante con CI ${data.student.ci} ${expedicionLabel}`
           );
         }
       }
