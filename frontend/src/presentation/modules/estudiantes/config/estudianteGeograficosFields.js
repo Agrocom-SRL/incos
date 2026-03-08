@@ -52,7 +52,7 @@ const createCamposBoliviana = (prefix = '') => {
     },
     {
       name: prefix ? `${prefix}LocalidadComunidad` : 'localidadComunidad',
-      label: 'Localidad/Comunidad',
+      label: 'Localidad / Comunidad',
       type: 'input',
       required: false,
       span: 12,

@@ -131,7 +131,10 @@ export const useStudentFormHandlers = (showMessage, mode = 'create', studentId =
       }
 
       // Asegurar que todos los documentos estén presentes con valores por defecto
-      // Si un documento no está en formValues, agregarlo con entregado: true por defecto
+      // TRASPASO: no marcar documentos como entregados por defecto (entregado: false).
+      // Resto de tipos: por defecto entregado: true.
+      const tipoAdmision = formValues.tipoAdmision || 'NUEVO';
+      const defaultEntregado = tipoAdmision === 'TRASPASO' ? false : true;
       const documentacionProcesada = documentacionProcesadaRef.current;
       if (documentacionProcesada && Array.isArray(documentacionProcesada) && documentacionProcesada.length > 0) {
         // Inicializar documentacion si no existe
@@ -154,18 +157,19 @@ export const useStudentFormHandlers = (showMessage, mode = 'create', studentId =
         // Para cada documento procesado, asegurar que esté presente
         documentacionProcesada.forEach((documento) => {
           const docKey = `doc_${documento.id}`;
+          const docDefaultEntregado = documento.entregado !== undefined ? documento.entregado : defaultEntregado;
           
           // Si el documento no está presente en formValues, agregarlo con valores por defecto
           if (!formValues.documentacion[docKey]) {
             formValues.documentacion[docKey] = {
-              entregado: documento.entregado !== undefined ? documento.entregado : true, // Por defecto true (entregado)
+              entregado: docDefaultEntregado,
               en_tramite: documento.en_tramite !== undefined ? documento.en_tramite : false,
               observaciones: normalizeObservaciones(documento.observaciones),
             };
           } else {
             // Si el documento está presente pero no tiene entregado, usar el valor por defecto
             if (formValues.documentacion[docKey].entregado === undefined) {
-              formValues.documentacion[docKey].entregado = documento.entregado !== undefined ? documento.entregado : true;
+              formValues.documentacion[docKey].entregado = docDefaultEntregado;
             }
             // Asegurar que en_tramite tenga un valor por defecto si no está presente
             if (formValues.documentacion[docKey].en_tramite === undefined) {

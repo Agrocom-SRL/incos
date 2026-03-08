@@ -95,11 +95,16 @@ export const createCamposDocumentacionDinamicos = (documentacionProcesada = []) 
     return [];
   }
 
-  // Generar un campo de checkbox para cada documento
-  // La documentación ya viene procesada (filtrada y ordenada) del hook
-  return documentacionProcesada.map((documento) => {
-    return createCampoDocumento(documento);
+  // Evitar duplicados por id para que las keys de React (documentacion,doc_X) sean únicas
+  const seenIds = new Set();
+  const unicos = documentacionProcesada.filter((doc) => {
+    const id = doc?.id ?? doc;
+    if (seenIds.has(id)) return false;
+    seenIds.add(id);
+    return true;
   });
+
+  return unicos.map((documento) => createCampoDocumento(documento));
 };
 
 /**

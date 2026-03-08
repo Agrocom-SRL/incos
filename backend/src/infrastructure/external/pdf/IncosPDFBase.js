@@ -148,9 +148,12 @@ export class IncosPDFBase {
         LUGAR_NACIMIENTO_LABEL: 'Lugar de nacimiento:',
         DOMICILIO_LABEL: 'Domicilio:',
         // Contacto de emergencia (apoderado)
+        CONTACTO_EMERGENCIA_TITULO: 'Contacto de emergencia',
         PARENTESCO_LABEL: 'Parentesco:',
         CELULAR_CONTACTO_LABEL: 'Celular:',
         DATOS_REFERENCIA_LABEL: 'Datos de referencia:',
+        /** Valor mostrado cuando el apoderado no tiene nombre registrado */
+        SIN_NOMBRE_PLACEHOLDER: 'Sin nombre',
         // Datos del trabajo (estudiante trabaja, empresa, cargo)
         TRABAJA_LABEL: 'Trabaja:',
         EMPRESA_INSTITUCION_LABEL: 'Empresa o institución:',

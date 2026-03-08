@@ -87,6 +87,18 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
         (req, res, next) => controllers.actaCompromisoController.handle(req, res, next)  // 3. Controller al final
     );
 
+  /**
+   * POST /api/v1/estudiantes/:id/documentos/declaracion-jurada
+   * Generar declaración jurada del formulario de inscripción para un estudiante
+   * Path: id
+   */
+  router.post(
+    '/:id/documentos/declaracion-jurada',
+    idValidator,  // 1. Validator primero
+    validateRequest,  // 2. Middleware que procesa errores
+    (req, res, next) => controllers.declaracionJuradaController.handle(req, res, next)  // 3. Controller al final
+  );
+
     // ============================================
     // BÚSQUEDA DE ESTUDIANTE
     // ============================================

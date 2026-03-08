@@ -18,6 +18,7 @@ export const REPOSITORIOS_TOKENS = {
     disabilityTypeRepository: 'disabilityTypeRepository',
     relationshipTypeRepository: 'relationshipTypeRepository',
     documentacionRepository: 'documentacionRepository',
+    institutionRepository: 'institutionRepository',
 
     // CONFIGURACIÓN DEL SISTEMA
     configuracionSistemaRepository: 'configuracionSistemaRepository',
@@ -77,5 +78,9 @@ export const REPOSITORIOS_TOKENS = {
     paymentAccountRepository: 'paymentAccountRepository',
     contributionPaymentRepository: 'contributionPaymentRepository',
     contributionPaymentInstallmentRepository: 'contributionPaymentInstallmentRepository',
+
+    // TRANSITABILIDAD Y TRASPASOS
+    transitabilityRepository: 'transitabilityRepository',
+    transferRepository: 'transferRepository',
 };
 

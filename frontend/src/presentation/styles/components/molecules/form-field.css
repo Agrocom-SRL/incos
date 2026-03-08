@@ -5,10 +5,24 @@
  * Molécula que renderiza campos de formulario individuales
  */
 
-/* Alineación del label: izquierda por defecto */
+/* Fila: alinear label e input al fondo para que labels largos (varias líneas) queden abajo a la izquierda */
+.form-field.ant-form-item {
+  align-items: flex-end !important;
+}
+
+/* Label: permitir wrap (varias líneas) y no ocultar texto; alineado a la izquierda */
 .form-field .ant-form-item-label {
   text-align: left !important;
   padding-right: var(--spacing-sm) !important; /* Espacio entre label e input */
+  overflow: visible !important;
+  white-space: normal !important;
+}
+
+.form-field .ant-form-item-label > label {
+  white-space: normal !important;
+  overflow: visible !important;
+  height: auto !important;
+  text-align: left !important;
 }
 
 /* Asegurar que el label esté alineado a la izquierda en breakpoints menores a 1200px */

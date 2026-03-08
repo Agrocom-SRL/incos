@@ -47,6 +47,7 @@ const WizardForm = ({
   onValidateBeforeNext,
   onBeforeNextStep, // (stepNumber, form) => void - stepNumber es 1-based (1, 2, 3...). Llamado tras validar y antes de next()
   onBeforePrevStep, // (stepNumber, form) => void - stepNumber es 1-based. Llamado antes de prev(), p. ej. para restaurar valores
+  onValidationError, // (error) => void - opcional, se llama cuando falla la validación antes de "Siguiente" (útil para log o mensaje)
   resolveOptions = () => [],
   minAge = null,
   conditionalLoaders = {},
@@ -82,7 +83,6 @@ const WizardForm = ({
   }, [allFormValues, onFormValuesChange]);
 
   // stepNumber 1-based para la página (1 = primer paso, 2 = segundo, etc.)
-  // IMPORTANTE: Calcular stepNumber dentro del callback para usar el currentStep actual
   const stepNumber = currentStep + 1;
   // Ocultar botón Guardar en pasos indicados por número 1-based (ej. [1] = primer paso)
   const showSaveButtonEffective = showSaveButton && !(hideSaveOnSteps || []).includes(stepNumber);
@@ -91,16 +91,21 @@ const WizardForm = ({
   // IMPORTANTE: Usar currentStep directamente para calcular stepNumber dentro del callback
   // para evitar que se ejecute la validación del paso siguiente cuando currentStep cambia
   const handleNext = React.useCallback(() => {
-    // Calcular stepNumber usando el currentStep actual (antes de avanzar)
     const currentStepNumber = currentStep + 1;
-    
+
     if (onValidateBeforeNext) {
-      onValidateBeforeNext(currentStepNumber, form)
+      const validationPromise = onValidateBeforeNext(currentStepNumber, form);
+      if (!validationPromise || typeof validationPromise?.then !== 'function') {
+        return;
+      }
+      validationPromise
         .then(() => {
           onBeforeNextStep?.(currentStepNumber, form);
           next();
         })
-        .catch(() => { /* errores de validación ya mostrados por el formulario */ });
+        .catch((err) => {
+          if (typeof onValidationError === 'function') onValidationError(err);
+        });
     } else {
       onBeforeNextStep?.(currentStepNumber, form);
       next();

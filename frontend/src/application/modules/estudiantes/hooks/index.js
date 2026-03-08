@@ -27,3 +27,9 @@ export * from './api';
 // 4. FEATURE LOGIC (Application Layer)
 // ============================================
 export * from './features';
+
+// Helpers de documentación (para uso en página de registro/edición)
+export {
+  filterDocumentacionOcultarHijosCuandoPadreEntregado,
+  getDocumentacionCatalogForEdit,
+} from './helpers/documentacionHelpers';

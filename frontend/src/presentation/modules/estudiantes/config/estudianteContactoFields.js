@@ -105,7 +105,7 @@ export const createEstudianteContactoFields = () => {
         // Zona
         {
           name: 'zona',
-          label: 'Localidad/Zona/Barrio',
+          label: 'Localidad / Zona / Barrio',
           type: 'input',
           required: false,
           span: 12,

@@ -31,6 +31,7 @@ export const useStudentCatalogApi = (initialDelay = 0) => {
   const [idiomas, setIdiomas] = useState([]);
   const [estadosCiviles, setEstadosCiviles] = useState([]);
   const [documentacion, setDocumentacion] = useState([]);
+  const [documentacionTraspaso, setDocumentacionTraspaso] = useState([]);
 
   // Estados de carga y error
   const [loading, setLoading] = useState(true);
@@ -42,6 +43,7 @@ export const useStudentCatalogApi = (initialDelay = 0) => {
   const optimizedSetIdiomasRef = useRef(null);
   const optimizedSetEstadosCivilesRef = useRef(null);
   const optimizedSetDocumentacionRef = useRef(null);
+  const optimizedSetDocumentacionTraspasoRef = useRef(null);
   const optimizedSetLoadingRef = useRef(null);
   const optimizedSetErrorRef = useRef(null);
 
@@ -51,6 +53,7 @@ export const useStudentCatalogApi = (initialDelay = 0) => {
     optimizedSetIdiomasRef.current = createOptimizedArraySetter(setIdiomas);
     optimizedSetEstadosCivilesRef.current = createOptimizedArraySetter(setEstadosCiviles);
     optimizedSetDocumentacionRef.current = createOptimizedArraySetter(setDocumentacion);
+    optimizedSetDocumentacionTraspasoRef.current = createOptimizedArraySetter(setDocumentacionTraspaso);
     optimizedSetLoadingRef.current = createOptimizedPrimitiveSetter(setLoading);
     optimizedSetErrorRef.current = createOptimizedPrimitiveSetter(setError);
   }
@@ -83,6 +86,7 @@ export const useStudentCatalogApi = (initialDelay = 0) => {
       optimizedSetIdiomasRef.current(result.data.idiomas || []);
       optimizedSetEstadosCivilesRef.current(result.data.estadosCiviles || []);
       optimizedSetDocumentacionRef.current(result.data.documentacion || []);
+      optimizedSetDocumentacionTraspasoRef.current(result.data.documentacionTraspaso || []);
     } catch (err) {
       // OPTIMIZACIÓN: Solo actualizar si el error realmente cambió
       optimizedSetErrorRef.current(err.message || 'Error inesperado al cargar datos del formulario');
@@ -116,6 +120,7 @@ export const useStudentCatalogApi = (initialDelay = 0) => {
       idiomas,
       estadosCiviles,
       documentacion,
+      documentacionTraspaso,
 
       // Opciones estáticas
       expediciones: EXPEDICIONES,

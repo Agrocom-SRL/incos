@@ -135,6 +135,9 @@ export class BaseRepository extends IRepository {
     if (options.attributes && Array.isArray(options.attributes) && options.attributes.length > 0) {
       queryOptions.attributes = options.attributes;
     }
+    if (options.paranoid === false) {
+      queryOptions.paranoid = false;
+    }
     
     // findByPk con paranoid: true automáticamente excluye deletedAt !== null
     const model = await Model.findByPk(id, queryOptions);

@@ -1,392 +1,501 @@
 /**
- * EstudiantesDetail - Página para ver el detalle de un estudiante
- * 
- * Single Responsibility: Mostrar los datos completos del estudiante recuperados
- * 
- * Atomic Design: Page
- * - Orquesta datos + componentes
- * - Pasa HEADER al Template (estructura)
- * - Muestra los datos del estudiante en formato de "print"
- * 
- * Arquitectura:
- * Page → Template (header) + Contenido (datos del estudiante)
- * - Template maneja: estructura/layout (header, content)
- * - Contenido muestra: datos del estudiante y sus relaciones
+ * EstudiantesDetail - Rediseño moderno estilo HRment
+ * Layout limpio: perfil compacto arriba + tabs con cards de 2 columnas abajo.
  */
 
-import { useMemo, useCallback } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
-import { useStudentDetailContext } from '@application-estudiantes/hooks';
-import { useGenerateActaCompromiso } from '@application-estudiantes/hooks';
-import { usePagosContextOptional, useEstadoAporteRegistro } from '@application-pagos/hooks';
-import { downloadFile } from '@application/utils';
-import { Spin, Alert, Empty, Card, Descriptions, Tag, App, Button as AntdButton } from 'antd';
-import { FileTextOutlined, DollarOutlined, DownloadOutlined, BookOutlined, EyeOutlined, PlusCircleOutlined } from '@ant-design/icons';
-import { Button } from '@atoms';
+import { Spin, Alert, Empty, Tabs, Tag, Tooltip } from 'antd';
 import {
-  DatosPersonalesSection,
+  EnvironmentOutlined,
+  FileTextOutlined,
+  DollarOutlined,
+  DownloadOutlined,
+  BookOutlined,
+  EyeOutlined,
+  PlusCircleOutlined,
+  UserOutlined,
+  FileProtectOutlined,
+  GlobalOutlined,
+  SwapOutlined,
+  EditOutlined,
+  ArrowLeftOutlined,
+} from '@ant-design/icons';
+import { useStudentDetailContext } from '@application-estudiantes/hooks';
+import {
   GuardiansSection,
-  DisabilitiesSection,
-  OriginsSection,
   DocumentDeliveriesSection,
-  ScholarshipsSection
+  ScholarshipsSection,
 } from '@estudiantes/components/organisms';
+import { getAdmissionTypeTagStyle } from '../config/admissionTypeColors';
+import './EstudiantesDetail.css';
 
+/* ─────────────────────────────────────────
+   Átomo: Field — label arriba, valor abajo
+───────────────────────────────────────── */
+const Field = ({ label, children, span = 1 }) => (
+  <div className={`sd-field sd-field--span-${span}`}>
+    <span className="sd-field__label">{label}</span>
+    <span className="sd-field__value">{children ?? '—'}</span>
+  </div>
+);
+
+/* ─────────────────────────────────────────
+   Átomo: InfoCard — card de sección
+───────────────────────────────────────── */
+const InfoCard = ({ title, icon, extra, children, cols = 2 }) => (
+  <div className="sd-card">
+    <div className="sd-card__head">
+      <span className="sd-card__title">
+        {icon && <span className="sd-card__title-icon">{icon}</span>}
+        {title}
+      </span>
+      {extra && <div className="sd-card__extra">{extra}</div>}
+    </div>
+    <div className={`sd-card__body sd-card__body--cols-${cols}`}>
+      {children}
+    </div>
+  </div>
+);
+
+/* ─────────────────────────────────────────
+   Main
+───────────────────────────────────────── */
 const EstudiantesDetail = () => {
   const navigate = useNavigate();
-  const { id: studentId } = useParams();
-  const { message } = App.useApp(); // Hook de message para consumir el contexto del tema
-
-  // Obtener datos del contexto
   const {
-    student,
-    loading = false,
-    error = null,
+    loading, error, student, studentData,
+    guardians, documentDeliveries, scholarships, inscripcion, origins,
+    transitability, transfer, academicData, catalogs,
+    breadcrumbItems, avatarInitials, profileSubtitle,
+    handleRegistrarPago, handleGenerateActaCompromiso, handleGenerateDeclaracionJurada,
+    handleDownloadActaCompromiso, handleVerInscripcion,
+    handleNuevaInscripcion, tieneDocumentosFaltantesFlag,
+    actaCompromisoData, loadingActa, loadingDeclaracion, hasInscripcion,
   } = useStudentDetailContext();
 
-  // Hook para generar acta de compromiso
-  const { generateActaCompromiso, loading: loadingActa } = useGenerateActaCompromiso();
+  const tipoAdmision = studentData?.tipoAdmision;
+  const tipoAdmisionUpper = (tipoAdmision || '').toString().toUpperCase();
+  const admissionKind =
+    tipoAdmisionUpper === 'NUEVO'
+      ? 'nuevo'
+      : tipoAdmisionUpper === 'ANTIGUO'
+        ? 'antiguo'
+        : tipoAdmisionUpper === 'TRASPASO'
+          ? 'traspaso'
+          : tipoAdmisionUpper === 'TRANSITABILIDAD'
+            ? 'transitabilidad'
+            : tipoAdmision
+              ? 'default'
+              : null;
 
-  // Obtener contexto de pagos para verificar si el estudiante ya tiene un pago
-  const pagosContext = usePagosContextOptional();
-  // Estado del aporte: si saldo es 0 y hay cabecera, el botón "Registrar Pago" debe ir al detalle del pago
-  const { estadoAporte, loading: loadingEstadoAporte } = useEstadoAporteRegistro(studentId || null, null);
+  const avatarClassName = admissionKind
+    ? `sd-profile__avatar sd-profile__avatar--${admissionKind}`
+    : 'sd-profile__avatar';
 
-  // Configurar breadcrumb items
-  const breadcrumbItems = useMemo(() => [
-    { title: 'Inicio', href: '/' },
-    { title: 'Estudiantes', href: '/estudiantes' },
-    { title: 'Detalle del Estudiante' },
-  ], []);
+  const admissionPillClass = !admissionKind
+    ? ''
+    : admissionKind === 'nuevo'
+      ? 'sd-profile__admission-pill sd-profile__admission-pill--nuevo'
+      : admissionKind === 'antiguo'
+        ? 'sd-profile__admission-pill sd-profile__admission-pill--antiguo'
+        : admissionKind === 'traspaso'
+          ? 'sd-profile__admission-pill sd-profile__admission-pill--traspaso'
+          : admissionKind === 'transitabilidad'
+            ? 'sd-profile__admission-pill sd-profile__admission-pill--transitabilidad'
+            : 'sd-profile__admission-pill sd-profile__admission-pill--default';
 
-  // Handler para navegar al registro de pagos o al detalle si ya existe un pago
-  const handleRegistrarPago = useCallback(() => {
-    if (!studentId) {
-      message.warning('ID de estudiante no disponible');
-      return;
+  const showDeclaracionButton =
+    tipoAdmisionUpper === 'TRASPASO' || tipoAdmisionUpper === 'TRANSITABILIDAD';
+
+  const residenciaCompleta =
+    studentData?.residenceAddressComplete ||
+    [studentData?.municipioResidenciaName, studentData?.provinciaResidenciaName, studentData?.departamentoResidenciaName]
+      .filter(Boolean).join(', ') || null;
+
+  // Nacionalidad e idiomas derivados de origins
+  const { nacionalidadLabel, idiomaMaterno, idiomaSecundario, lugarNacimiento, paises } = useMemo(() => {
+    const list = Array.isArray(origins) ? origins : [];
+    const isPrincipal = (o) => Number(o?.esPrincipal) === 1 || Number(o?.isPrincipal) === 1 || o?.esPrincipal === true || o?.isPrincipal === true;
+    const principal = list.find(isPrincipal) || list[0];
+    const secundario = list.find((o) => o !== principal) || null;
+
+    let nacionalidadLabel = '—';
+    if (list.length === 0) return { nacionalidadLabel: '—', idiomaMaterno: null, idiomaSecundario: null, lugarNacimiento: null, paises: null };
+    if (list.length >= 2) {
+      nacionalidadLabel = 'Doble nacionalidad';
+    } else if (principal) {
+      const tipo = principal.originType || principal.tipoOrigen || '';
+      if (tipo === 'BOLIVIANA') nacionalidadLabel = 'Boliviano';
+      else if (tipo === 'EXTRANJERA') nacionalidadLabel = 'Extranjero';
+      else nacionalidadLabel = tipo || '—';
     }
 
-    // Si el estado del aporte está cargado y el saldo es 0, ir al detalle del pago (cabecera)
-    // Pasamos studentId en state para que "Volver" en PagosDetail vaya al detalle del estudiante
-    if (!loadingEstadoAporte && estadoAporte?.saldo_pendiente === 0 && estadoAporte?.cabecera?.id) {
-      navigate(`/pagos/${estadoAporte.cabecera.id}`, { state: { studentId } });
-      return;
-    }
+    const idiomaMaterno = principal?.motherTongueName || principal?.motherTongueCode || null;
+    const idiomaSecundario = principal?.secondaryLanguageName || principal?.secondaryLanguageCode || null;
+    const lugarNacimiento = principal?.originAddressComplete || [principal?.birthCity, principal?.birthMunicipalityName, principal?.birthDepartmentName].filter(Boolean).join(', ') || null;
+    const paises = list.length >= 2
+      ? list.map((o) => o.countryName || o.countryId).filter(Boolean).join(' / ')
+      : principal?.countryName || null;
 
-    // Verificar si el estudiante ya tiene un pago (listado del contexto)
-    if (pagosContext?.pagos && Array.isArray(pagosContext.pagos)) {
-      const pagosEstudiante = pagosContext.pagos.filter((pago) => {
-        const pagoStudentId = pago.estudiante?.id || 
-                             pago.student?.id || 
-                             pago.estudianteId || 
-                             pago.studentId || 
-                             pago.estudiante_id || 
-                             pago.student_id;
-        return Number(pagoStudentId) === Number(studentId);
-      });
+    return { nacionalidadLabel, idiomaMaterno, idiomaSecundario, lugarNacimiento, paises };
+  }, [origins]);
 
-      if (pagosEstudiante.length > 0) {
-        const pagoMasReciente = pagosEstudiante.sort((a, b) => {
-          const idA = a.id || 0;
-          const idB = b.id || 0;
-          if (idA !== idB) return idB - idA;
-          const fechaA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-          const fechaB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-          return fechaB - fechaA;
-        })[0];
+  /* Tab items */
+  const tabItems = useMemo(() => [
+    {
+      key: 'informacion',
+      label: <span className="sd-tab-label"><UserOutlined /> Información</span>,
+      children: (
+        <div className="sd-tab-body">
+          <InfoCard title="Datos personales" icon={<UserOutlined />} cols={3}>
+            <Field label="Código de estudiante">{studentData?.codigoEstudiante}</Field>
+            <Field label="Cédula de identidad">{studentData?.ciCompleto}</Field>
+            <Field label="Tipo de sangre">{studentData?.tipoSangre}</Field>
 
-        const pagoId = pagoMasReciente.id;
-        if (pagoId) {
-          navigate(`/pagos/${pagoId}`, { state: { studentId } });
-          return;
-        }
-      }
-    }
+            <Field label="Nombres">{studentData?.nombres}</Field>
+            <Field label="Apellido paterno">{studentData?.apellidoPaterno}</Field>
+            <Field label="Apellido materno">{studentData?.apellidoMaterno}</Field>
 
-    // Si no hay pagos o saldo > 0, navegar al registro
-    navigate('/pagos/registrar', {
-      state: { studentId: studentId }
-    });
-  }, [navigate, studentId, pagosContext, message, loadingEstadoAporte, estadoAporte]);
+            <Field label="Nombre completo" span={3}>{studentData?.nombreCompleto}</Field>
 
-  // Handler para generar y descargar acta de compromiso
-  const handleGenerateActaCompromiso = useCallback(async () => {
-    if (!studentId) {
-      message.error('ID de estudiante no disponible');
-      return;
-    }
+            <Field label="Fecha de nacimiento">{studentData?.fechaNacimiento}</Field>
+            <Field label="Género">{studentData?.genero}</Field>
+            <Field label="Estado civil">{studentData?.estadoCivilName || studentData?.estadoCivilId}</Field>
 
-    const result = await generateActaCompromiso(studentId);
+            <Field label="Correo electrónico" span={2}>
+              {studentData?.emailPersonal
+                ? <a href={`mailto:${studentData.emailPersonal}`} className="sd-link">{studentData.emailPersonal}</a>
+                : null}
+            </Field>
+            <Field label="Celular">
+              {studentData?.celular
+                ? <a href={`tel:${studentData.celular}`} className="sd-link">{studentData.celular}</a>
+                : null}
+            </Field>
 
-    if (!result.success) {
-      // Extraer el mensaje de error (puede ser string u objeto con code/message)
-      let errorMessage = 'Error al generar el acta de compromiso';
+            <Field label="Teléfono fijo">{studentData?.telefonoFijo}</Field>
+            <Field label="Zona">{studentData?.zona}</Field>
+            <Field label="Dirección" span={2}>{studentData?.direccion}</Field>
 
-      if (result.error) {
-        if (typeof result.error === 'string') {
-          errorMessage = result.error;
-        } else if (result.error.message) {
-          errorMessage = result.error.message;
-        } else if (result.error.code) {
-          errorMessage = `${result.error.code}: ${result.error.message || 'Error desconocido'}`;
-        }
-      } else if (result.message) {
-        errorMessage = result.message;
-      }
+            <Field label="Residencia" span={3}>{residenciaCompleta}</Field>
 
-      message.error(errorMessage);
-    } else {
-      // Mostrar mensaje de éxito si success: true (el archivo ya se descargó automáticamente)
-      message.success('Acta de compromiso generada y descargada correctamente');
-    }
-  }, [studentId, generateActaCompromiso]);
+            {studentData?.observaciones && (
+              <Field label="Observaciones" span={3}>{studentData.observaciones}</Field>
+            )}
+          </InfoCard>
 
-  // Handler para descargar acta de compromiso existente
-  const handleDownloadActaCompromiso = useCallback(() => {
-    const actaCompromisoData = student?.actaCompromiso;
-    if (actaCompromisoData) {
-      try {
-        downloadFile(actaCompromisoData.filePath, actaCompromisoData.fileName);
-      } catch (err) {
-        console.error('Error al descargar el acta de compromiso:', err);
-        message.error('Error al descargar el acta de compromiso');
-      }
-    }
-  }, [student]);
+          {(origins?.length > 0) && (
+            <InfoCard title="Nacionalidad e idiomas" icon={<GlobalOutlined />} cols={3}>
+              <Field label="Nacionalidad">{nacionalidadLabel}</Field>
+              {paises && <Field label="País(s)">{paises}</Field>}
+              <Field label="Idioma materno">{idiomaMaterno}</Field>
+              <Field label="Idioma secundario">{idiomaSecundario}</Field>
+              {lugarNacimiento && (
+                <Field label="Lugar de nacimiento" span={3}>{lugarNacimiento}</Field>
+              )}
+            </InfoCard>
+          )}
 
-  // Handler para ver detalle de inscripción
-  const handleVerInscripcion = useCallback(() => {
-    if (student?.inscripcion?.enrollment?.id) {
-      navigate(`/inscripciones/${student.inscripcion.enrollment.id}`, {
-        state: { studentId: studentId }
-      });
-    }
-  }, [navigate, student, studentId]);
-
-  // Handler: si ya tiene inscripción → ir al detalle; si no → ir al formulario nueva inscripción
-  const handleNuevaInscripcion = useCallback(() => {
-    const enrollmentId = student?.inscripcion?.enrollment?.id;
-    if (enrollmentId) {
-      navigate(`/inscripciones/${enrollmentId}`, { state: { studentId } });
-    } else {
-      navigate('/inscripciones/nueva', { state: { studentId } });
-    }
-  }, [navigate, studentId, student?.inscripcion?.enrollment?.id]);
-
-  // Handler para volver a la lista de estudiantes
-  const handleVolverALista = useCallback(() => {
-    navigate('/estudiantes');
-  }, [navigate]);
-
-  // Acciones del header (botones) - debe estar antes de los returns tempranos
-  // Solo mostrar botón de acta si faltan documentos
-  // El campo tieneDocumentosFaltantes viene al nivel raíz del objeto student
-  const tieneDocumentosFaltantesFlag = student?.tieneDocumentosFaltantes === true;
-  const actaCompromisoData = student?.actaCompromiso;
-  const headerActions = useMemo(() => (
-    <>
-      {/* 1. Acta de Compromiso */}
-      {actaCompromisoData ? (
-        <Button
-          variant="warning"
-          buttonStyle="filled"
-          icon={<DownloadOutlined />}
-          onClick={handleDownloadActaCompromiso}
-          style={{ marginRight: 8 }}
-        >
-          Descargar Acta de Compromiso
-        </Button>
-      ) : tieneDocumentosFaltantesFlag ? (
-        <Button
-          variant="warning"
-          buttonStyle="filled"
-          icon={<FileTextOutlined />}
-          onClick={handleGenerateActaCompromiso}
-          loading={loadingActa}
-          style={{ marginRight: 8 }}
-        >
-          Generar Acta de Compromiso
-        </Button>
-      ) : null}
-      {/* 2. Registrar Pago */}
-      <div style={{ marginRight: 8, display: 'inline-block' }}>
-        <Button
-          variant="error"
-          icon={<DollarOutlined />}
-          onClick={handleRegistrarPago}
-        >
-          Registrar Pago
-        </Button>
-      </div>
-      {/* 3. Ver Inscripción (si tiene) o Nueva Inscripción */}
-      <Button
-        variant="primary"
-        icon={student?.inscripcion?.enrollment?.id ? <EyeOutlined /> : <PlusCircleOutlined />}
-        onClick={handleNuevaInscripcion}
-      >
-        {student?.inscripcion?.enrollment?.id ? 'Ver Inscripción' : 'Nueva Inscripción'}
-      </Button>
-    </>
-  ), [handleGenerateActaCompromiso, handleRegistrarPago, handleDownloadActaCompromiso, handleNuevaInscripcion, loadingActa, tieneDocumentosFaltantesFlag, actaCompromisoData, student?.inscripcion?.enrollment?.id]);
-
-  // Si está cargando
-  if (loading) {
-    return (
-      <PageTemplate
-        header={
-          <PageHeader
-            title="Detalle del Estudiante"
-            breadcrumbItems={breadcrumbItems}
-          />
-        }
-      >
-        <div style={{ textAlign: 'center', padding: '50px' }}>
-          <Spin size="large">
-            <div style={{ minHeight: '200px' }}>
-              <p>Cargando datos del estudiante...</p>
-            </div>
-          </Spin>
+          <GuardiansSection guardians={guardians} />
         </div>
-      </PageTemplate>
-    );
-  }
+      ),
+    },
+    {
+      key: 'academico',
+      label: <span className="sd-tab-label"><BookOutlined /> Académico</span>,
+      children: (
+        <div className="sd-tab-body">
+          {/* Datos académicos (estudiantes_datos_academicos): tipo admisión, gestión de ingreso, carrera */}
+          {(academicData?.tipoAdmision != null || academicData?.admissionType != null || academicData?.managementId != null || academicData?.gestionIngresoId != null || academicData?.careerId != null || academicData?.carreraId != null) && (
+            <InfoCard title="Datos académicos" icon={<BookOutlined />} cols={3}>
+              <Field label="Tipo de admisión">
+                {(academicData?.tipoAdmision ?? academicData?.admissionType)
+                  ? (
+                      <Tag style={{ margin: 0, ...getAdmissionTypeTagStyle(academicData.tipoAdmision ?? academicData.admissionType) }}>
+                        {academicData.tipoAdmision ?? academicData.admissionType}
+                      </Tag>
+                    )
+                  : null}
+              </Field>
+              <Field label="Gestión de ingreso">
+                {(() => {
+                  const mg = academicData?.management;
+                  if (mg && (mg.name || mg.year || mg.code)) {
+                    return mg.name && mg.year ? `${mg.name} (${mg.year})` : (mg.name || mg.code || `ID: ${mg.id}`);
+                  }
+                  const mgId = academicData?.managementId ?? academicData?.gestionIngresoId;
+                  const mgCat = mgId && catalogs?.managements?.[mgId] ? catalogs.managements[mgId] : null;
+                  return mgCat ? `${mgCat.name ?? mgCat.nombre ?? ''} (${mgCat.year ?? mgCat.anio ?? ''})` : (mgId ? `ID: ${mgId}` : null);
+                })()}
+              </Field>
+              <Field label="Carrera">
+                {(() => {
+                  const car = academicData?.career;
+                  if (car && (car.name || car.code)) {
+                    return car.code && car.name ? `${car.code} — ${car.name}` : (car.name || car.code || `ID: ${car.id}`);
+                  }
+                  const carId = academicData?.careerId ?? academicData?.carreraId;
+                  const sameCareer = inscripcion?.studentAcademicData && (inscripcion.studentAcademicData.careerId === carId || inscripcion.studentAcademicData.carreraId === carId);
+                  return sameCareer && inscripcion?.career?.name
+                    ? `${inscripcion.career.code ?? ''} — ${inscripcion.career.name}`
+                    : (carId ? `ID: ${carId}` : null);
+                })()}
+              </Field>
+            </InfoCard>
+          )}
 
-  // Si hay error
-  if (error) {
-    return (
-      <PageTemplate
-        header={
-          <PageHeader
-            title="Detalle del Estudiante"
-            breadcrumbItems={breadcrumbItems}
-          />
-        }
-      >
-        <Alert
-          title="Error al cargar el estudiante"
-          description={error}
-          type="error"
-          showIcon
-        />
-      </PageTemplate>
-    );
-  }
+          {inscripcion?.enrollment ? (
+            <InfoCard
+              title="Inscripción actual"
+              icon={<BookOutlined />}
+              cols={3}
+              extra={
+                <button type="button" className="sd-btn sd-btn--primary" onClick={handleVerInscripcion}>
+                  <EyeOutlined /> Ver Detalle
+                </button>
+              }
+            >
+              <Field label="ID de inscripción">{inscripcion.enrollment.id}</Field>
+              <Field label="Tipo de inscripción">
+                {inscripcion.enrollment.enrollmentType
+                  ? <Tag color="blue" style={{ margin: 0 }}>{inscripcion.enrollment.enrollmentType}</Tag>
+                  : null}
+              </Field>
+              <Field label="Gestión">
+                {inscripcion.management?.name
+                  ? `${inscripcion.management.name} (${inscripcion.management.year})`
+                  : inscripcion.enrollment.managementId ? `ID: ${inscripcion.enrollment.managementId}` : null}
+              </Field>
+              <Field label="Carrera" span={2}>
+                {inscripcion.career?.name
+                  ? `${inscripcion.career.code} — ${inscripcion.career.name}`
+                  : inscripcion.studentAcademicData?.careerId ? `ID: ${inscripcion.studentAcademicData.careerId}` : null}
+              </Field>
+              <Field label="Estado de registro">
+                {inscripcion.studentAcademicData?.registrationStatus
+                  ? <Tag color={inscripcion.studentAcademicData.registrationStatus === 'ADMITIDO' ? 'success' : 'warning'} style={{ margin: 0 }}>
+                      {inscripcion.studentAcademicData.registrationStatus}
+                    </Tag>
+                  : null}
+              </Field>
+              <Field label="Materias inscritas">
+                {inscripcion.enrollmentSubjects?.length > 0
+                  ? <span className="sd-badge sd-badge--blue">{inscripcion.enrollmentSubjects.length} materia(s)</span>
+                  : null}
+              </Field>
+            </InfoCard>
+          ) : (
+            <div className="sd-empty">
+              <BookOutlined className="sd-empty__icon" />
+              <p className="sd-empty__text">Sin inscripción registrada</p>
+              <button type="button" className="sd-btn sd-btn--primary" onClick={handleNuevaInscripcion}>
+                <PlusCircleOutlined /> Nueva Inscripción
+              </button>
+            </div>
+          )}
+        </div>
+      ),
+    },
+    ...((transitability || transfer) ? [{
+      key: 'transitabilidad-traspaso',
+      label: <span className="sd-tab-label"><SwapOutlined /> {transitability ? 'Transitabilidad' : 'Traspaso'}</span>,
+      children: (
+        <div className="sd-tab-body">
+          {transitability && (
+            <InfoCard title="Formación académica (Transitabilidad)" icon={<SwapOutlined />} cols={3}>
+              <Field label="Unidad Educativa / Centro">{transitability.institucionNombre}</Field>
+              <Field label="Tipo de institución">{transitability.tipoInstitucion}</Field>
+              <Field label="Código SIE-UE">{transitability.codigoSie}</Field>
+              <Field label="Dependencia">{transitability.dependencia}</Field>
+              <Field label="Departamento">{transitability.departamento ?? (transitability.departamentoId ? `ID: ${transitability.departamentoId}` : null)}</Field>
+              <Field label="Distrito educativo">{transitability.distritoEducativo}</Field>
+              <Field label="Carrera de origen">{transitability.carreraOrigen}</Field>
+              <Field label="Año de conclusión">{transitability.anioConclusion}</Field>
+              <Field label="Régimen de estudios">{transitability.regimenEstudios}</Field>
+              <Field label="Estado">
+                {transitability.estado ? <Tag color={transitability.estado === 'PROCEDENTE' ? 'success' : 'default'} style={{ margin: 0 }}>{transitability.estado}</Tag> : null}
+              </Field>
+              {transitability.motivoNoProcedente && (
+                <Field label="Motivo no procedente" span={3}>{transitability.motivoNoProcedente}</Field>
+              )}
+            </InfoCard>
+          )}
+          {transfer && !transitability && (
+            <InfoCard title="Datos de traspaso" icon={<SwapOutlined />} cols={3}>
+              <Field label="Instituto de origen">{transfer.institucionNombre}</Field>
+              <Field label="Dependencia">{transfer.dependencia}</Field>
+              <Field label="Departamento">{transfer.departamento ?? (transfer.departamentoId ? `ID: ${transfer.departamentoId}` : null)}</Field>
+              <Field label="Distrito educativo">{transfer.distritoEducativo}</Field>
+              <Field label="Carrera">{transfer.carreraOrigen}</Field>
+              <Field label="Año cursado">{transfer.anioCursado}</Field>
+              <Field label="Régimen de estudios">{transfer.regimenOrigen}</Field>
+              <Field label="Estado">
+                {transfer.estado ? <Tag color={transfer.estado === 'PROCEDENTE' ? 'success' : 'default'} style={{ margin: 0 }}>{transfer.estado}</Tag> : null}
+              </Field>
+              {transfer.motivoNoProcedente && (
+                <Field label="Motivo no procedente" span={3}>{transfer.motivoNoProcedente}</Field>
+              )}
+            </InfoCard>
+          )}
+        </div>
+      ),
+    }] : []),
+    ...((documentDeliveries?.length > 0 || scholarships?.length > 0) ? [{
+      key: 'documentacion',
+      label: <span className="sd-tab-label"><FileProtectOutlined /> Documentación</span>,
+      children: (
+        <div className="sd-tab-body">
+          <DocumentDeliveriesSection documentDeliveries={documentDeliveries} />
+          <ScholarshipsSection scholarships={scholarships} />
+        </div>
+      ),
+    }] : []),
+  ], [studentData, residenciaCompleta, guardians, documentDeliveries, scholarships, inscripcion, origins, nacionalidadLabel, idiomaMaterno, idiomaSecundario, lugarNacimiento, paises, handleVerInscripcion, handleNuevaInscripcion, academicData, catalogs, transitability, transfer]);
 
-  // Si no hay estudiante
-  if (!student || !student.student) {
-    return (
-      <PageTemplate
-        header={
-          <PageHeader
-            title="Detalle del Estudiante"
-            breadcrumbItems={breadcrumbItems}
-          />
-        }
-      >
-        <Empty description="No se encontró información del estudiante" />
-      </PageTemplate>
-    );
-  }
+  /* ── Estados de carga / error ── */
+  if (loading) return (
+    <PageTemplate header={<PageHeader title="Detalle del Estudiante" breadcrumbItems={breadcrumbItems} />}>
+      <div className="sd-loading"><Spin size="large" /><p>Cargando datos del estudiante…</p></div>
+    </PageTemplate>
+  );
 
-  const { student: studentData, guardians, disabilities, origins, documentDeliveries, scholarships, tieneDocumentosFaltantes, actaCompromiso, inscripcion } = student;
+  if (error) return (
+    <PageTemplate header={<PageHeader title="Detalle del Estudiante" breadcrumbItems={breadcrumbItems} />}>
+      <Alert message="Error al cargar el estudiante" description={error} type="error" showIcon />
+    </PageTemplate>
+  );
 
-  // Debug: Log para verificar la estructura del objeto student
-  console.log('[EstudiantesDetail] Estructura del objeto student:', {
-    tieneStudent: !!student?.student,
-    tieneTieneDocumentosFaltantes: 'tieneDocumentosFaltantes' in (student || {}),
-    tieneDocumentosFaltantesValue: student?.tieneDocumentosFaltantes,
-    studentKeys: student ? Object.keys(student) : [],
-  });
+  if (!student?.student) return (
+    <PageTemplate header={<PageHeader title="Detalle del Estudiante" breadcrumbItems={breadcrumbItems} />}>
+      <Empty description="No se encontró información del estudiante" />
+    </PageTemplate>
+  );
+
+  const headerActions = (
+    <button
+      type="button"
+      className="sd-btn sd-btn--outline"
+      onClick={() => navigate('/estudiantes')}
+    >
+      <ArrowLeftOutlined /> Volver
+    </button>
+  );
 
   return (
-    <PageTemplate
-      header={
-        <PageHeader
-          title={`Detalle del Estudiante: ${studentData.nombreCompleto || 'N/A'}`}
-          breadcrumbItems={breadcrumbItems}
-          actions={headerActions}
-        />
-      }
-    >
-      <div style={{ padding: '24px' }}>
-        {/* Datos Personales */}
-        <DatosPersonalesSection studentData={studentData} />
+    <PageTemplate header={<PageHeader title="Detalle del Estudiante" breadcrumbItems={breadcrumbItems} actions={headerActions} />}>
+      <div className="sd">
 
-        {/* Apoderados/Contactos de Emergencia */}
-        <GuardiansSection guardians={guardians} />
-
-        {/* Discapacidades */}
-        <DisabilitiesSection disabilities={disabilities} />
-
-        {/* Orígenes */}
-        <OriginsSection origins={origins} />
-
-        {/* Documentos Entregados */}
-        <DocumentDeliveriesSection documentDeliveries={documentDeliveries} />
-
-        {/* Becas Asignadas */}
-        <ScholarshipsSection scholarships={scholarships} />
-
-        {/* Inscripción Actual */}
-        {inscripcion && inscripcion.enrollment && (
-          <Card
-            title={
-              <span>
-                <BookOutlined style={{ marginRight: 8 }} />
-                Inscripción Actual
-              </span>
-            }
-            style={{ marginTop: '24px' }}
-            extra={
-              <Button
-                variant="primary"
-                icon={<EyeOutlined />}
-                onClick={handleVerInscripcion}
+        {/* ═══ PROFILE CARD ═══ */}
+        <div className="sd-profile">
+          {/* Botón editar: esquina superior derecha de la tarjeta */}
+          {studentData?.id ? (
+            <Tooltip title="Editar datos del estudiante">
+              <button
+                type="button"
+                className="sd-profile__edit-btn"
+                onClick={() => navigate(`/estudiantes/${studentData.id}/editar`)}
+                aria-label="Editar estudiante"
               >
-                Ver Detalle
-              </Button>
-            }
-          >
-            <Descriptions column={2} bordered>
-              <Descriptions.Item label="ID de Inscripción">
-                {inscripcion.enrollment.id || 'N/A'}
-              </Descriptions.Item>
-              <Descriptions.Item label="Tipo de Inscripción">
-                {inscripcion.enrollment.enrollmentType ? (
-                  <Tag color="blue">{inscripcion.enrollment.enrollmentType}</Tag>
-                ) : 'N/A'}
-              </Descriptions.Item>
-              <Descriptions.Item label="Gestión">
-                {inscripcion.management?.name ? (
-                  <span>{inscripcion.management.name} ({inscripcion.management.year})</span>
-                ) : inscripcion.enrollment.managementId ? `ID: ${inscripcion.enrollment.managementId}` : 'N/A'}
-              </Descriptions.Item>
-              <Descriptions.Item label="Carrera">
-                {inscripcion.career?.name ? (
-                  <span>{inscripcion.career.code} - {inscripcion.career.name}</span>
-                ) : inscripcion.studentAcademicData?.careerId ? `ID: ${inscripcion.studentAcademicData.careerId}` : 'N/A'}
-              </Descriptions.Item>
-              <Descriptions.Item label="Estado de Registro">
-                {inscripcion.studentAcademicData?.registrationStatus ? (
-                  <Tag color={inscripcion.studentAcademicData.registrationStatus === 'ADMITIDO' ? 'success' : 'warning'}>
-                    {inscripcion.studentAcademicData.registrationStatus}
-                  </Tag>
-                ) : 'N/A'}
-              </Descriptions.Item>
-              <Descriptions.Item label="Materias Inscritas">
-                {inscripcion.enrollmentSubjects && inscripcion.enrollmentSubjects.length > 0 ? (
-                  <Tag color="blue">{inscripcion.enrollmentSubjects.length} materia(s)</Tag>
-                ) : 'N/A'}
-              </Descriptions.Item>
-            </Descriptions>
-          </Card>
-        )}
+                <EditOutlined />
+              </button>
+            </Tooltip>
+          ) : null}
+
+          {/* Avatar + nombre + subtítulo */}
+          <div className="sd-profile__identity">
+            <div className="sd-profile__avatar-wrap">
+              <div className={avatarClassName}>{avatarInitials}</div>
+              <span className="sd-profile__status-dot" />
+            </div>
+            <div className="sd-profile__name-block">
+              <h1 className="sd-profile__name">{studentData.nombreCompleto || 'N/A'}</h1>
+              <div className="sd-profile__meta">
+                <p className="sd-profile__sub">
+                  <EnvironmentOutlined />
+                  {profileSubtitle}
+                </p>
+                {studentData?.tipoAdmision && (
+                  <span
+                    className={admissionPillClass}
+                  >
+                    {studentData.tipoAdmision}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div className="sd-profile__divider" />
+
+          {/* Quick stats */}
+          <div className="sd-profile__stats">
+            <div className="sd-stat">
+              <span className="sd-stat__label">Código</span>
+              <span className="sd-stat__value sd-stat__value--primary">{studentData?.codigoEstudiante || '—'}</span>
+            </div>
+            <div className="sd-stat">
+              <span className="sd-stat__label">Teléfono</span>
+              <span className="sd-stat__value">
+                {studentData?.celular
+                  ? <a href={`tel:${studentData.celular}`} className="sd-link">{studentData.celular}</a>
+                  : studentData?.telefonoFijo || '—'}
+              </span>
+            </div>
+            <div className="sd-stat">
+              <span className="sd-stat__label">Correo</span>
+              <span className="sd-stat__value">
+                {studentData?.emailPersonal
+                  ? <a href={`mailto:${studentData.emailPersonal}`} className="sd-link">{studentData.emailPersonal}</a>
+                  : '—'}
+              </span>
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div className="sd-profile__divider" />
+
+          {/* Actions */}
+          <div className="sd-profile__actions">
+            {showDeclaracionButton && (
+              <button
+                type="button"
+                className="sd-btn sd-btn--declaracion"
+                onClick={handleGenerateDeclaracionJurada}
+                disabled={loadingDeclaracion}
+              >
+                <FileTextOutlined /> Declaración Jurada
+              </button>
+            )}
+            {actaCompromisoData ? (
+              <button type="button" className="sd-btn sd-btn--warn" onClick={handleDownloadActaCompromiso}>
+                <DownloadOutlined /> Descargar Acta
+              </button>
+            ) : tieneDocumentosFaltantesFlag ? (
+              <button type="button" className="sd-btn sd-btn--warn" onClick={handleGenerateActaCompromiso} disabled={loadingActa}>
+                <FileTextOutlined /> Generar Acta
+              </button>
+            ) : null}
+            <button type="button" className="sd-btn sd-btn--danger" onClick={handleRegistrarPago}>
+              <DollarOutlined /> Registrar Pago
+            </button>
+            <button type="button" className="sd-btn sd-btn--primary" onClick={handleNuevaInscripcion}>
+              {hasInscripcion ? <><EyeOutlined /> Ver Inscripción</> : <><PlusCircleOutlined /> Nueva Inscripción</>}
+            </button>
+          </div>
+        </div>
+
+        {/* ═══ TABS ═══ */}
+        <div className="sd-tabs-shell">
+          <Tabs defaultActiveKey="informacion" items={tabItems} className="sd-tabs" />
+        </div>
+
       </div>
     </PageTemplate>
   );
 };
 
 export default EstudiantesDetail;
-

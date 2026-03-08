@@ -40,6 +40,10 @@ export class UpdateStudentUseCase {
    * @param {Object} [params.studentAcademicDataRepository] - Repositorio de datos académicos (opcional)
    * @param {Object} [params.configuracionSistemaRepository] - Repositorio de configuración del sistema (para asegurar correlativo por gestión)
    * @param {Object} [params.managementRepository] - Repositorio de gestiones (para resolver año desde gestionIngresoId)
+   * @param {Object} [params.institutionRepository] - Repositorio de instituciones (para transitabilidad/traspaso)
+   * @param {Object} [params.transitabilityRepository] - Repositorio de transitabilidades
+   * @param {Object} [params.transferRepository] - Repositorio de traspasos
+   * @param {Object} [params.documentacionRepository] - Repositorio de documentación (para resolver IDs de documentos de traspaso por tipo)
    * @param {ILogger} params.logger - Logger para registro de eventos
    */
   constructor({
@@ -51,6 +55,10 @@ export class UpdateStudentUseCase {
     studentAcademicDataRepository,
     configuracionSistemaRepository,
     managementRepository,
+    institutionRepository,
+    transitabilityRepository,
+    transferRepository,
+    documentacionRepository,
     logger,
   }) {
     this.studentRepository = studentRepository;
@@ -61,7 +69,250 @@ export class UpdateStudentUseCase {
     this.studentAcademicDataRepository = studentAcademicDataRepository || null;
     this.configuracionSistemaRepository = configuracionSistemaRepository || null;
     this.managementRepository = managementRepository || null;
+    this.institutionRepository = institutionRepository || null;
+    this.transitabilityRepository = transitabilityRepository || null;
+    this.transferRepository = transferRepository || null;
+    this.documentacionRepository = documentacionRepository || null;
     this.logger = logger;
+  }
+
+  /**
+   * Obtiene los IDs de documentación cuyo tipo es TRASPASO (desde BD, sin IDs fijos).
+   * Usado para filtrar qué documentos aplicar solo cuando tipoAdmision === TRASPASO.
+   *
+   * @returns {Promise<number[]>} Array de IDs de documentación de tipo TRASPASO
+   */
+  async _getTraspasoDocumentacionIds() {
+    if (!this.documentacionRepository) {
+      return [];
+    }
+    try {
+      const result = await this.documentacionRepository.findAll(
+        { documentType: 'TRASPASO' },
+        null,
+        null
+      );
+      const list = result.documentations || [];
+      return list
+        .map((d) => (d && (d.id ?? (d.toPlainObject ? d.toPlainObject().id : null))) ?? null)
+        .filter((id) => id != null && !Number.isNaN(Number(id)))
+        .map((id) => Number(id));
+    } catch (err) {
+      this.logger.warn('[Estudiantes] No se pudieron obtener IDs de documentación TRASPASO', {
+        error: err.message,
+      });
+      return [];
+    }
+  }
+
+  /**
+   * Crea o actualiza la transitabilidad de un estudiante (TRANSITABILIDAD).
+   *
+   * @param {Object} student - Entidad Student (existente)
+   * @param {Object} transitability - Datos específicos de transitabilidad desde el DTO
+   */
+  async _createOrUpdateTransitability(student, transitability) {
+    if (
+      !this.institutionRepository ||
+      !this.transitabilityRepository ||
+      !student ||
+      !transitability
+    ) {
+      return null;
+    }
+
+    const {
+      institucionNombre,
+      codigoSie,
+      tipoInstitucion,
+      dependencia,
+      departamentoId,
+      distritoEducativo,
+      carreraOrigen,
+      anioConclusion,
+      regimenEstudios,
+      estado,
+      motivoNoProcedente,
+    } = transitability;
+
+    // Datos mínimos requeridos para crear/actualizar transitabilidad
+    if (!institucionNombre || !tipoInstitucion || !carreraOrigen) {
+      this.logger.warn(
+        '[Estudiantes] Datos de transitabilidad incompletos en actualización; se omite upsert',
+        {
+          studentId: student.id,
+          institucionNombre,
+          tipoInstitucion,
+          carreraOrigen,
+        }
+      );
+      return null;
+    }
+
+    // 1. Buscar o crear institución de origen (UETHP / CEA)
+    // Buscar SOLO por nombre + tipo para reutilizar la misma institución y no crear duplicados
+    const where = { name: institucionNombre, type: tipoInstitucion };
+    let institution = await this.institutionRepository.findBy(where);
+    if (!institution) {
+      const institutionToCreate = {
+        nombre: institucionNombre,
+        tipo: tipoInstitucion,
+        dependencia: dependencia || null,
+        codigoSie: codigoSie || null,
+        departamentoId: departamentoId || null,
+        distritoEducativo: distritoEducativo || null,
+      };
+      institution = await this.institutionRepository.create(institutionToCreate);
+    } else {
+      const institutionPlain = institution.toPlainObject ? institution.toPlainObject() : institution;
+      const updates = {};
+      if (dependencia != null && dependencia !== '') updates.dependencia = dependencia;
+      if (codigoSie != null && codigoSie !== '') updates.codigoSie = codigoSie;
+      if (departamentoId != null) updates.departamentoId = departamentoId;
+      if (distritoEducativo != null && distritoEducativo !== '') updates.distritoEducativo = distritoEducativo;
+      if (Object.keys(updates).length > 0) {
+        institution = await this.institutionRepository.update(institutionPlain.id, { ...institutionPlain, ...updates });
+      }
+    }
+
+    const institutionPlain = institution.toPlainObject
+      ? institution.toPlainObject()
+      : institution;
+    const institucionOrigenId = institutionPlain.id;
+
+    // 2. Buscar transitabilidad existente del estudiante
+    const existing = await this.transitabilityRepository.findBy({
+      studentId: student.id,
+    });
+
+    const payload = {
+      estudianteId: student.id,
+      institucionOrigenId,
+      carreraOrigen,
+      anioConclusion: anioConclusion || null,
+      regimenEstudios: regimenEstudios || null,
+      estado: estado || 'SOLICITADO',
+      motivoNoProcedente: motivoNoProcedente || null,
+    };
+
+    let record = null;
+    if (existing) {
+      const plain = existing.toPlainObject ? existing.toPlainObject() : existing;
+      record = await this.transitabilityRepository.update(plain.id, payload);
+      this.logger.info('[Estudiantes] Transitabilidad actualizada', {
+        studentId: student.id,
+        transitabilityId: plain.id,
+      });
+    } else {
+      record = await this.transitabilityRepository.create(payload);
+      this.logger.info('[Estudiantes] Transitabilidad creada (update)', {
+        studentId: student.id,
+        transitabilityId: record.id ?? record.toPlainObject?.().id ?? null,
+      });
+    }
+
+    return record;
+  }
+
+  /**
+   * Crea o actualiza el traspaso de un estudiante (TRASPASO).
+   *
+   * @param {Object} student - Entidad Student (existente)
+   * @param {Object} transfer - Datos específicos de traspaso desde el DTO
+   */
+  async _createOrUpdateTransfer(student, transfer) {
+    if (!this.institutionRepository || !this.transferRepository || !student || !transfer) {
+      return null;
+    }
+
+    const {
+      institucionNombre,
+      codigoRude,
+      dependencia,
+      departamentoId,
+      distritoEducativo,
+      carreraOrigen,
+      anioCursado,
+      regimenOrigen,
+      estado,
+      motivoNoProcedente,
+    } = transfer;
+
+    // Datos mínimos requeridos para crear/actualizar traspaso
+    if (!institucionNombre || !carreraOrigen) {
+      this.logger.warn(
+        '[Estudiantes] Datos de traspaso incompletos en actualización; se omite upsert',
+        {
+          studentId: student.id,
+          institucionNombre,
+          carreraOrigen,
+        }
+      );
+      return null;
+    }
+
+    // 1. Buscar o crear institución de origen (ITT). Solo por nombre + tipo para no duplicar.
+    const where = { name: institucionNombre, type: 'ITT' };
+    let institution = await this.institutionRepository.findBy(where);
+    if (!institution) {
+      const institutionToCreate = {
+        nombre: institucionNombre,
+        tipo: 'ITT',
+        dependencia: dependencia || null,
+        codigoSie: null,
+        departamentoId: departamentoId || null,
+        distritoEducativo: distritoEducativo || null,
+      };
+      institution = await this.institutionRepository.create(institutionToCreate);
+    } else {
+      const institutionPlain = institution.toPlainObject ? institution.toPlainObject() : institution;
+      const updates = {};
+      if (dependencia != null && dependencia !== '') updates.dependencia = dependencia;
+      if (departamentoId != null) updates.departamentoId = departamentoId;
+      if (distritoEducativo != null && distritoEducativo !== '') updates.distritoEducativo = distritoEducativo;
+      if (Object.keys(updates).length > 0) {
+        institution = await this.institutionRepository.update(institutionPlain.id, { ...institutionPlain, ...updates });
+      }
+    }
+
+    const institutionPlain = institution.toPlainObject
+      ? institution.toPlainObject()
+      : institution;
+    const institucionOrigenId = institutionPlain.id;
+
+    // 2. Buscar traspaso existente del estudiante
+    const existing = await this.transferRepository.findBy({
+      studentId: student.id,
+    });
+
+    const payload = {
+      estudianteId: student.id,
+      institucionOrigenId,
+      codigoRude: codigoRude ?? null,
+      carreraOrigen,
+      anioCursado: anioCursado || null,
+      regimenOrigen: regimenOrigen || null,
+      estado: estado || 'SOLICITADO',
+      motivoNoProcedente: motivoNoProcedente || null,
+    };
+
+    let record = null;
+    if (existing) {
+      const plain = existing.toPlainObject ? existing.toPlainObject() : existing;
+      record = await this.transferRepository.update(plain.id, payload);
+      this.logger.info('[Estudiantes] Traspaso actualizado', {
+        studentId: student.id,
+        transferId: plain.id,
+      });
+    } else {
+      record = await this.transferRepository.create(payload);
+      this.logger.info('[Estudiantes] Traspaso creado (update)', {
+        studentId: student.id,
+        transferId: record.id ?? record.toPlainObject?.().id ?? null,
+      });
+    }
+
+    return record;
   }
 
   /**
@@ -448,6 +699,8 @@ export class UpdateStudentUseCase {
       }
 
       // 6. Actualizar entregas de documentos (actualización inteligente: update o create según corresponda)
+      // Solo documentos de inscripción para NUEVO/ANTIGUO/TRANSITABILIDAD; inscripción + documentos de tipo TRASPASO solo para TRASPASO (IDs desde BD por tipo_documento).
+      const traspasoDocumentacionIds = await this._getTraspasoDocumentacionIds();
       let documentDeliveries = [];
       if (data.documentation !== undefined) {
         // 6.1. Obtener entregas de documentos existentes y crear un mapa por documentacionId
@@ -480,15 +733,29 @@ export class UpdateStudentUseCase {
 
         // 6.2. Procesar entregas de documentos del request
         if (data.documentation && typeof data.documentation === 'object') {
-          // data.documentation es un objeto con keys como 'doc_1', 'doc_2', etc.
+          let tipoAdmisionParaDoc = data.tipoAdmision;
+          if (tipoAdmisionParaDoc === undefined && this.studentAcademicDataRepository) {
+            const academicResult = await this.studentAcademicDataRepository.findAll(
+              { studentId },
+              null,
+              null
+            );
+            const academicList = academicResult.studentAcademicData || academicResult.studentAcademicDatas || [];
+            const firstAcademic = academicList[0];
+            if (firstAcademic) {
+              const plain = firstAcademic.toPlainObject ? firstAcademic.toPlainObject() : firstAcademic;
+              tipoAdmisionParaDoc = plain.admissionType ?? plain.tipoAdmision ?? null;
+            }
+          }
           const processedDocumentacionIds = new Set();
-          
+
           for (const [docKey, docData] of Object.entries(data.documentation)) {
-            // Extraer el ID del documento de la key (ej: 'doc_1' -> 1)
             const documentacionId = parseInt(docKey.replace('doc_', ''), 10);
-            
+
             if (!isNaN(documentacionId) && docData) {
-              // Verificar si ya procesamos este documentacionId (evitar duplicados en el mismo request)
+              if (tipoAdmisionParaDoc !== 'TRASPASO' && traspasoDocumentacionIds.includes(documentacionId)) {
+                continue;
+              }
               if (processedDocumentacionIds.has(documentacionId)) {
                 this.logger.warn('[Estudiantes] Documento duplicado en request, ignorando', {
                   studentId,
@@ -575,7 +842,26 @@ export class UpdateStudentUseCase {
         }
       }
 
-      // 7. Actualizar datos académicos (estudiantes_datos_academicos) si se envían tipoAdmision, gestionIngresoId o carreraId
+      // 7. Crear o actualizar registro de Transitabilidad / Traspaso si aplica (no bloqueante)
+      try {
+        if (data.transitability) {
+          await this._createOrUpdateTransitability(updatedStudent, data.transitability);
+        }
+        if (data.transfer) {
+          await this._createOrUpdateTransfer(updatedStudent, data.transfer);
+        }
+      } catch (err) {
+        this.logger.error(
+          '[Estudiantes] Error al crear/actualizar transitabilidad/traspaso (no bloqueante en update)',
+          {
+            studentId,
+            error: err.message,
+            stack: err.stack,
+          }
+        );
+      }
+
+      // 8. Actualizar datos académicos (estudiantes_datos_academicos) si se envían tipoAdmision, gestionIngresoId o carreraId
       // Permite: NUEVO → ANTIGUO (asignar gestión/carrera anterior) y ANTIGUO → NUEVO (limpiar para que lleve solo primer periodo)
       // Si cambia tipoAdmision o gestionIngresoId, se actualiza automáticamente el código del estudiante
       const hasAcademicPayload = data.tipoAdmision !== undefined ||

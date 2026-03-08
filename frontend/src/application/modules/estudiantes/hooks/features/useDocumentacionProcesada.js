@@ -1,56 +1,33 @@
 /**
  * Hook: useDocumentacionProcesada
- * 
+ *
  * Single Responsibility: Procesar documentación para el formulario de registro
- * 
- * Clean Architecture:
- * - Application Layer: Hook que procesa documentación sin observar valores del formulario
- * 
- * SOLID Principles:
- * - Single Responsibility: Solo procesa documentación con valores por defecto
- * - Dependency Inversion: No depende de valores del formulario en tiempo real
- * 
- * Este hook:
- * - Procesa documentación con valores por defecto (todos entregado: true inicialmente)
- * - NO observa valores del formulario en tiempo real (evita lentitud en campos de texto)
- * - Los valores reales se capturan solo al finalizar el registro (en getFormValues)
- * - Retorna documentación procesada lista para generar campos dinámicos
- * 
- * NOTA: Eliminamos la observación en tiempo real porque:
- * 1. Los datos solo se necesitan al finalizar el registro
- * 2. No hay necesidad de procesar mientras el usuario escribe
- * 3. Evita completamente la lentitud en campos de texto
- * 
- * Usado por: StudentRegisterProvider (para procesar documentación estática)
+ *
+ * Este hook procesa con valores por defecto (todos entregado: true). No observa el form aquí
+ * para evitar Form.useWatch(null) en el primer render. La lógica padre-hijo (mostrar hijos al
+ * desmarcar padre) se aplica en el paso de documentación con useDocumentacionProcesadaConForm.
+ *
+ * Usado por: StudentRegisterProvider
  */
 
 import { useMemo, useRef } from 'react';
+import { Form } from 'antd';
 import { useDocumentacionDinamica } from './useDocumentacionDinamica';
 
 /**
- * Hook para procesar documentación sin observar valores del formulario
- * 
+ * Procesa documentación con valores por defecto (sin observar formulario).
+ *
  * @param {Array} documentacion - Array de documentos recuperados del endpoint
- * @param {Object} formRef - Ref que contiene la instancia del formulario (NO se usa para observación)
- * @returns {Object} Objeto con documentación procesada y lista para usar
+ * @param {React.RefObject} [formRef] - No usado aquí (evita useWatch con form null)
+ * @returns {Object} Objeto con documentación procesada
  */
 export const useDocumentacionProcesada = (documentacion = [], formRef) => {
-  // Procesar documentación con valores por defecto (todos entregado: true)
-  // NO observamos valores del formulario en tiempo real
-  // Los valores reales se capturarán solo al finalizar el registro en getFormValues
-  // useDocumentacionDinamica usará valores por defecto cuando formValues.documentacion esté vacío
-  const formValues = useMemo(() => {
-    // Retornar objeto vacío - useDocumentacionDinamica usará valores por defecto (entregado: true)
-    return { documentacion: {} };
-  }, []); // Sin dependencias - valores estáticos, no cambian
+  const formValues = useMemo(() => ({ documentacion: {} }), []);
 
-  // Procesar documentación con valores por defecto (sin observar formulario)
   const documentacionProcesadaResult = useDocumentacionDinamica(documentacion, formValues);
 
-  // MANTENER REFERENCIA ESTABLE
-  // Comparar valores, no solo referencias, para evitar recálculos innecesarios
   const prevResultRef = useRef(null);
-  
+
   return useMemo(() => {
     const current = {
       documentacion: documentacionProcesadaResult.documentacion,
@@ -60,26 +37,36 @@ export const useDocumentacionProcesada = (documentacion = [], formRef) => {
       cantidadRequeridos: documentacionProcesadaResult.cantidadRequeridos,
       cantidadOpcionales: documentacionProcesadaResult.cantidadOpcionales,
     };
-
     const prev = prevResultRef.current;
-    
-    // Comparar valores, no solo referencias
-    // Para arrays, comparar por cantidad y IDs (si tienen)
     if (prev &&
         prev.cantidadDocumentos === current.cantidadDocumentos &&
         prev.cantidadRequeridos === current.cantidadRequeridos &&
         prev.cantidadOpcionales === current.cantidadOpcionales) {
-      // Comparar arrays por longitud y IDs si están disponibles
       const prevDocIds = prev.documentacion?.map(d => d.id).sort().join(',') || '';
       const currentDocIds = current.documentacion?.map(d => d.id).sort().join(',') || '';
-      
-      if (prevDocIds === currentDocIds) {
-        return prev;
-      }
+      if (prevDocIds === currentDocIds) return prev;
     }
-
     prevResultRef.current = current;
     return current;
   }, [documentacionProcesadaResult]);
+};
+
+/**
+ * Procesa documentación observando el campo 'documentacion' del formulario.
+ * Muestra documentos hijos cuando el padre está en Pendiente (entregado: false).
+ * Solo debe llamarse cuando form es no null (p. ej. dentro del paso de documentación).
+ *
+ * @param {Array} documentacion - Array de documentos (padres e hijos) del catálogo
+ * @param {Object} form - Instancia del formulario Ant Design (no null)
+ * @returns {Object} Objeto con documentación procesada (incluye hijos cuando padre no entregado)
+ */
+export const useDocumentacionProcesadaConForm = (documentacion = [], form) => {
+  // form debe ser no null; solo usar este hook dentro del paso de documentación donde form existe
+  const documentacionForm = Form.useWatch('documentacion', form);
+  const formValues = useMemo(
+    () => ({ documentacion: documentacionForm ?? {} }),
+    [documentacionForm]
+  );
+  return useDocumentacionDinamica(documentacion, formValues);
 };
 

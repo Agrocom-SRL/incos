@@ -76,15 +76,26 @@ export const StudentRegisterProvider = ({ children, mode = 'create', studentId =
 
     // Hook para gestiones académicas
     // Por defecto NO carga gestiones (estudiantes nuevos no necesitan gestiones)
-    // Solo se carga cuando el tipo de admisión es ANTIGUO (gestiones no vigentes)
-    const gestionesApi = useGestionesApi({ vigente: false, autoFetch: false });
+    // La carga y el filtro (vigentes / no vigentes / todas) dependen del tipo de admisión
+    const gestionesApi = useGestionesApi({ autoFetch: false });
     const gestiones = gestionesApi.gestiones || [];
     const gestionesLoading = gestionesApi.loading || false;
     const gestionesError = gestionesApi.error || null;
     
-    // Función para cargar gestiones (cuando tipo es ANTIGUO; vigente lo resuelve el repositorio)
-    const cargarGestiones = useCallback(() => {
-      gestionesApi.fetch({ params: { vigente: 0 } });
+    // Función para cargar gestiones según el tipo de admisión
+    // - ANTIGUO: solo gestiones no vigentes (pasadas)
+    // - TRANSITABILIDAD / TRASPASO: todas las gestiones (incluye la vigente)
+    const cargarGestiones = useCallback((tipoAdmision) => {
+      if (!gestionesApi.fetch) return;
+
+      if (tipoAdmision === 'ANTIGUO') {
+        gestionesApi.fetch({ params: { vigente: 0 } });
+        return;
+      }
+
+      if (tipoAdmision === 'TRANSITABILIDAD' || tipoAdmision === 'TRASPASO') {
+        gestionesApi.fetch(); // Sin filtro de vigente => todas las gestiones
+      }
     }, [gestionesApi.fetch]);
 
     // Hook para cargar carreras académicas
@@ -100,6 +111,7 @@ export const StudentRegisterProvider = ({ children, mode = 'create', studentId =
         ...referenceData,
         gestiones, // Gestiones académicas (solo se cargan cuando tipo es ANTIGUO, gestiones no vigentes)
         carreras, // Carreras académicas
+        instituciones: catalogData.instituciones || [], // Instituciones de origen (para paso Traspaso)
     }), [catalogData, geographicData, referenceData, gestiones, carreras]);
 
     // Hook especializado: transformar datos a opciones de formulario
@@ -107,6 +119,7 @@ export const StudentRegisterProvider = ({ children, mode = 'create', studentId =
 
     // Obtener documentación del catálogo (no de referenceData)
     const documentacion = catalogData.documentacion || [];
+    const documentacionTraspaso = catalogData.documentacionTraspaso || [];
 
     // Hook especializado: manejar handlers de submit y gestión del formulario
     // Este hook usa useRegisterStudent o useUpdateStudent según el modo
@@ -122,7 +135,11 @@ export const StudentRegisterProvider = ({ children, mode = 'create', studentId =
       documentacion, 
       formRef // Se pasa pero no se usa para observación
     );
-    
+    const { documentacion: documentacionTraspasoProcesada } = useDocumentacionProcesada(
+      documentacionTraspaso,
+      formRef
+    );
+
     // NOTA: useStudentFormHandlers se llama con array vacío inicialmente, pero tiene un ref interno
     // que se actualiza cuando documentacionProcesada cambia. Sin embargo, como se pasa como parámetro
     // vacío, el useEffect interno no se ejecutará cuando documentacionProcesada esté disponible.
@@ -173,8 +190,12 @@ export const StudentRegisterProvider = ({ children, mode = 'create', studentId =
             contactosIndices,
             agregarContacto,
             eliminarContacto,
-            // Documentación procesada
+            // Documentación procesada (INSCRIPCION y TRASPASO para step Documentación)
             documentacionProcesada,
+            documentacionTraspasoProcesada,
+            // Documentación raw del catálogo (para paso documentación con lógica padre-hijo dinámica)
+            documentacionRaw: documentacion,
+            documentacionTraspasoRaw: documentacionTraspaso,
             // Exponer funciones de carga bajo demanda
             loadDiscapacidades: referenceData.loadDiscapacidades,
             loadTiposParentesco: referenceData.loadTiposParentesco,
@@ -209,6 +230,7 @@ export const StudentRegisterProvider = ({ children, mode = 'create', studentId =
             prev.agregarContacto === current.agregarContacto &&
             prev.eliminarContacto === current.eliminarContacto &&
             prev.documentacionProcesada === current.documentacionProcesada &&
+            prev.documentacionTraspasoProcesada === current.documentacionTraspasoProcesada &&
             prev.loadDiscapacidades === current.loadDiscapacidades &&
             prev.loadTiposParentesco === current.loadTiposParentesco &&
             prev.loadDepartamentos === current.loadDepartamentos &&
@@ -220,7 +242,7 @@ export const StudentRegisterProvider = ({ children, mode = 'create', studentId =
 
         prevValueRef.current = current;
         return current;
-    }, [contextData, resolveOptions, finalHandlers, contactosIndices, agregarContacto, eliminarContacto, documentacionProcesada, referenceData.loadDiscapacidades, referenceData.loadTiposParentesco, geographicData.loadDepartamentos, geographicData.loadProvincias, geographicData.loadMunicipios]);
+    }, [contextData, resolveOptions, finalHandlers, contactosIndices, agregarContacto, eliminarContacto, documentacionProcesada, documentacionTraspasoProcesada, referenceData.loadDiscapacidades, referenceData.loadTiposParentesco, geographicData.loadDepartamentos, geographicData.loadProvincias, geographicData.loadMunicipios]);
 
     return (
         <StudentRegisterContext.Provider value={value}>

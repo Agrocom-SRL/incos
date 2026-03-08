@@ -66,28 +66,32 @@ export class ObtenerDatosRegistroEstudianteUseCase {
 
       // Si sequential es true, hacer llamadas secuenciales para evitar problemas de concurrencia
       // Útil en modo edición cuando hay otras llamadas activas al servidor
+      let documentacionTraspasoResult;
       if (sequential) {
         paisesResult = await this.paisRepository.obtenerTodos({ params });
         idiomasResult = await this.idiomaRepository.obtenerTodos({ params });
         estadosCivilesResult = await this.estadoCivilRepository.obtenerTodos({ params });
         documentacionResult = await this.documentacionRepository.obtenerTodos({ params: { tipoDocumento: 'INSCRIPCION', ...params } });
+        documentacionTraspasoResult = await this.documentacionRepository.obtenerTodos({ params: { tipoDocumento: 'TRASPASO', ...params } });
       } else {
         // Obtener solo los catálogos esenciales (siempre necesarios) en paralelo
-        // Los catálogos condicionales se cargan bajo demanda usando otros Use Cases
+        // documentacionTraspaso se usa en el step Documentación cuando tipo de admisión es TRASPASO
         [
           paisesResult,
           idiomasResult,
           estadosCivilesResult,
           documentacionResult,
+          documentacionTraspasoResult,
         ] = await Promise.all([
           this.paisRepository.obtenerTodos({ params }),
           this.idiomaRepository.obtenerTodos({ params }),
           this.estadoCivilRepository.obtenerTodos({ params }),
           this.documentacionRepository.obtenerTodos({ params: { tipoDocumento: 'INSCRIPCION', ...params } }),
+          this.documentacionRepository.obtenerTodos({ params: { tipoDocumento: 'TRASPASO', ...params } }),
         ]);
       }
 
-      // Verificar si algún catálogo falló
+      // Verificar si algún catálogo falló (documentacionTraspaso es opcional: si falla, se usa [])
       const resultados = [
         paisesResult,
         idiomasResult,
@@ -114,6 +118,7 @@ export class ObtenerDatosRegistroEstudianteUseCase {
           idiomas: idiomasResult.data || [],
           estadosCiviles: estadosCivilesResult.data || [],
           documentacion: documentacionResult.data || [],
+          documentacionTraspaso: documentacionTraspasoResult?.data || [],
         },
       };
     } catch (error) {

@@ -11,6 +11,13 @@
   overflow: hidden;
 }
 
+/* Contenedor principal de la tabla con efecto de tarjeta moderna */
+.data-table .ant-table-container {
+  background: var(--color-bg-elevated);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
 /* Headers de tabla - solo estilos personalizados */
 .data-table .ant-table-thead > tr > th {
   /* Font size desde tema */
@@ -47,6 +54,56 @@
 
 .data-table .ant-table-tbody > tr:hover > td {
   background: var(--color-table-row-hover-bg);
+}
+
+/* Zebra rows para mejorar la legibilidad */
+.data-table .ant-table-tbody > tr:nth-child(odd) > td {
+  background-color: var(--color-bg-container);
+}
+
+.data-table .ant-table-tbody > tr:nth-child(even) > td {
+  background-color: var(--color-bg-layout);
+}
+
+/* ============================================================================
+   Reglas específicas para la tabla de Estudiantes
+   - Ocultar columnas menos críticas en pantallas más pequeñas usando CSS
+   - Evita depender de responsive de Ant si la versión no lo soporta
+   ============================================================================
+*/
+
+/* Orden de columnas Estudiantes:
+   1: Código de Estudiante
+   2: Nombre Completo
+   3: CI
+   4: Contacto
+   5: Datos académicos
+   6: Datos laborales
+   7: Acciones
+*/
+
+/* <= 1400px: ocultar 'Datos laborales' (columna 6) */
+@media (max-width: 1400px) {
+  .data-table--estudiantes .ant-table-thead > tr > th:nth-child(6),
+  .data-table--estudiantes .ant-table-tbody > tr > td:nth-child(6) {
+    display: none;
+  }
+}
+
+/* <= 1200px: ocultar también 'Contacto' (columna 4) */
+@media (max-width: 1200px) {
+  .data-table--estudiantes .ant-table-thead > tr > th:nth-child(4),
+  .data-table--estudiantes .ant-table-tbody > tr > td:nth-child(4) {
+    display: none;
+  }
+}
+
+/* <= 992px: ocultar también 'CI' (columna 3), para móviles */
+@media (max-width: 992px) {
+  .data-table--estudiantes .ant-table-thead > tr > th:nth-child(3),
+  .data-table--estudiantes .ant-table-tbody > tr > td:nth-child(3) {
+    display: none;
+  }
 }
 
 /* Celdas de datos - padding desde tema */

@@ -16,6 +16,7 @@
  * - ReciboPagoPdfGenerator: Recibos de pago (crea desde cero con pdf-lib)
  * - ActaCompromiso: Actas de compromiso (edita plantilla PDF)
  * - FormularioInscripcion: Formulario de inscripción (edita plantilla PDF)
+ * - DeclaracionJurada: Formulario de declaración jurada (Traspaso / Transitabilidad)
  * 
  * @module PDFGenerator
  * @implements {IPDFGenerator}
@@ -28,13 +29,15 @@ export class PDFGenerator extends IPDFGenerator {
      * @param {Object} params - Dependencias inyectadas
      * @param {Object} params.actaCompromisoPdfGenerator - Generador de actas (DI)
      * @param {Object} params.formularioInscripcionPdfGenerator - Generador de formulario de inscripción (DI)
+     * @param {Object} params.declaracionJuradaPdfGenerator - Generador de formulario de declaración jurada (DI)
      * @param {Object} params.reciboPagoPdfGenerator - Generador de recibos de pago (DI)
      * @param {ILogger} [params.logger] - Logger para registro de eventos
      */
-    constructor({ actaCompromisoPdfGenerator, formularioInscripcionPdfGenerator, reciboPagoPdfGenerator, logger } = {}) {
+    constructor({ actaCompromisoPdfGenerator, formularioInscripcionPdfGenerator, declaracionJuradaPdfGenerator, reciboPagoPdfGenerator, logger } = {}) {
         super();
         this.actaCompromisoPdfGenerator = actaCompromisoPdfGenerator;
         this.formularioInscripcionPdfGenerator = formularioInscripcionPdfGenerator;
+        this.declaracionJuradaPdfGenerator = declaracionJuradaPdfGenerator;
         this.reciboPagoPdfGenerator = reciboPagoPdfGenerator;
         this.logger = logger;
     }
@@ -101,6 +104,26 @@ export class PDFGenerator extends IPDFGenerator {
         }
 
         return await this.actaCompromisoPdfGenerator.generate(options);
+    }
+
+    /**
+     * Genera un Formulario de Declaración Jurada (Traspaso / Transitabilidad)
+     * a partir de la plantilla PDF.
+     *
+     * Delega en DeclaracionJuradaPdfGenerator (pdf-lib).
+     *
+     * @param {Object} [options] - Opciones (gestion, student, academicData, enrollmentData, entregas, tipoAdmision, fechaActual, etc.)
+     * @returns {Promise<Buffer>} Contenido del PDF generado
+     */
+    async generateFormularioDeclaracionJurada(options = {}) {
+        if (!this.declaracionJuradaPdfGenerator) {
+            throw new Error(
+                'DeclaracionJuradaPdfGenerator no está inyectado. ' +
+                'Asegúrate de registrar PDFGenerator en el container con todas sus dependencias.'
+            );
+        }
+
+        return await this.declaracionJuradaPdfGenerator.generate(options);
     }
 
     /**

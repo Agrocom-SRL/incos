@@ -15,7 +15,7 @@
  * - Organism maneja: funcionalidad (wizard, pasos, validación, guardado)
  */
 
-import { useMemo, useEffect, useRef, useCallback } from 'react';
+import { useMemo, useEffect, useRef, useCallback, useState } from 'react';
 import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import { Form } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
@@ -23,22 +23,24 @@ import { PageTemplate } from '@templates';
 import { WizardForm } from '@organisms';
 import { PageHeader } from '@molecules';
 import { Button } from '@atoms';
-import { 
+import {
   useStudentRegisterContext,
   useStudentContext,
   useStudentDetailContext,
   useEstudianteGeographicFormLogic,
-  useEstudianteWizardTitles,
+  filterDocumentacionOcultarHijosCuandoPadreEntregado,
+  getDocumentacionCatalogForEdit,
 } from '@application-estudiantes/hooks';
 import { mapEstudianteToForm } from '@application-estudiantes/mappers';
-import { 
-  createEstudianteWizardSteps, 
+import {
+  createEstudianteWizardSteps,
   createCamposContactosEmergenciaDinamicos,
   createCamposDocumentacionDinamicos
 } from '@estudiantes/config';
 import {
   EstudianteTipoAdmisionStepContent,
   EstudianteDatosAcademicosStepContent,
+  DocumentacionStepContent,
 } from '@estudiantes/components/organisms';
 
 const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
@@ -46,7 +48,11 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [form] = Form.useForm();
-  
+
+  // Tipo de admisión usado solo para construir los pasos del wizard. Se actualiza al elegir tipo o al restaurar paso 0.
+  // Evita que re-renders (p. ej. saveStep0Values) hagan que wizardSteps pase de 5 a 4 pasos temporalmente.
+  const [tipoAdmisionForSteps, setTipoAdmisionForSteps] = useState('NUEVO');
+
   // Obtener parámetros de la URL
   const completarMode = searchParams.get('completar') === 'true';
   const isEditMode = mode === 'edit';
@@ -65,7 +71,7 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
     loading = false,
     error = null,
     registrationResult = null, // Resultado del registro para reaccionar
-    
+
     // Lógica del formulario (viene de useStudentFormOptions y useStudentFormHandlers)
     resolveOptions,
     minAge,
@@ -74,7 +80,7 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
     registerForm, // Función para registrar el formulario en el contexto
     saveStep0Values, // Preservar valores del paso 1 (tipoAdmision, gestionIngresoId, carreraId) al cambiar de paso
     getStep0Values, // Valores preservados del paso 1 (para restaurar al volver al paso 1)
-    
+
     // Datos del contexto
     paises = [],
     departamentos = [],
@@ -91,15 +97,18 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
     carrerasError = null,
     gestionesError = null,
     cargarGestiones,
-    
+
     // Contactos de emergencia dinámicos (expuestos desde el provider)
     contactosIndices = [],
     agregarContacto,
     eliminarContacto,
-    
+
     // Documentación procesada (expuesta desde el provider)
     documentacionProcesada = [],
-    
+    documentacionTraspasoProcesada = [],
+    documentacionRaw = [],
+    documentacionTraspasoRaw = [],
+
     // Funciones de carga bajo demanda
     loadDiscapacidades,
     loadTiposParentesco,
@@ -118,7 +127,7 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
 
   // Ref para rastrear si ya se procesó el resultado del registro
   const processedResultRef = useRef(null);
-  
+
   // Ref para rastrear si ya se cargaron los datos iniciales en el formulario
   const initialDataLoadedRef = useRef(false);
 
@@ -129,9 +138,25 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
     }
   }, [registerForm, form]);
 
+  // Preseleccionar gestión vigente solo la primera vez (gestionIngresoId undefined) en Traspaso/Transitabilidad.
+  // Si ya hay un valor seleccionado, no sobrescribir al cambiar tipo de admisión.
+  const tipoAdmision = Form.useWatch('tipoAdmision', form);
+  useEffect(() => {
+    if (!form || gestionesLoading || !gestiones?.length) return;
+    if (tipoAdmision !== 'TRASPASO' && tipoAdmision !== 'TRANSITABILIDAD') return;
+
+    const current = form.getFieldValue('gestionIngresoId');
+    if (current != null) return; // Ya hay selección; mantener la opción marcada
+
+    const vigente = gestiones.find((g) => g?.vigente === true || g?.vigente === 1);
+    if (vigente?.id == null) return;
+
+    form.setFieldsValue({ gestionIngresoId: vigente.id });
+  }, [form, tipoAdmision, gestiones, gestionesLoading]);
+
   // Ref para almacenar los datos del formulario mientras se cargan las opciones
   const pendingFormDataRef = useRef(null);
-  
+
   // Cargar datos iniciales del estudiante en modo edición
   useEffect(() => {
     if (isEditMode && studentDetail && !initialDataLoadedRef.current && form) {
@@ -139,7 +164,7 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
       if (formData) {
         // Guardar los datos del formulario para establecerlos después
         pendingFormDataRef.current = formData;
-        
+
         // ============================================
         // CARGAR JERARQUÍA DE ORIGEN PRINCIPAL
         // ============================================
@@ -153,7 +178,7 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
             console.warn('Error al cargar provincias de origen principal:', err);
           });
         }
-        
+
         // ============================================
         // CARGAR JERARQUÍA DE ORIGEN SECUNDARIO (DOBLE NACIONALIDAD)
         // ============================================
@@ -167,7 +192,7 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
             console.warn('Error al cargar provincias de origen secundario:', err);
           });
         }
-        
+
         // ============================================
         // CARGAR JERARQUÍA DE RESIDENCIA Y ESTABLECER VALORES DESPUÉS
         // ============================================
@@ -207,6 +232,21 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
           departamentoResidenciaId: _dRes, provinciaResidenciaId: _pRes, municipioResidenciaId: _mRes,
           ...otrosValores
         } = formData;
+        // En documentación: no incluir hijos en el form cuando el padre está entregado.
+        // Para TRASPASO usar catálogo que incluya documentacionTraspaso (padre/hijo), sino solo inscripción.
+        if (otrosValores.documentacion) {
+          const catalog = getDocumentacionCatalogForEdit(
+            formData.tipoAdmision,
+            documentacionRaw,
+            documentacionTraspasoRaw
+          );
+          if (catalog?.length) {
+            otrosValores.documentacion = filterDocumentacionOcultarHijosCuandoPadreEntregado(
+              otrosValores.documentacion,
+              catalog
+            );
+          }
+        }
         form.setFieldsValue(otrosValores);
 
         // Segunda localidad y localidad (no dependen de opciones)
@@ -230,35 +270,59 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
           });
         }
 
-        // Si tipo admisión es ANTIGUO, cargar gestiones para que GestionSelectionSection muestre opciones y la selección actual
-        if (formData.tipoAdmision === 'ANTIGUO' && typeof cargarGestiones === 'function') {
-          cargarGestiones();
+        // Sincronizar tipo para la lista de pasos (modo edición)
+        if (formData.tipoAdmision != null) {
+          setTipoAdmisionForSteps(formData.tipoAdmision);
         }
-        
+
+        // Si hay tipo de admisión, cargar gestiones según la modalidad
+        if (formData.tipoAdmision && typeof cargarGestiones === 'function') {
+          cargarGestiones(formData.tipoAdmision);
+        }
+
         // Si tiene discapacidad, cargar tipos de discapacidad para que el select muestre opciones
         if (formData.tieneDiscapacidad && typeof loadDiscapacidades === 'function') {
           loadDiscapacidades();
         }
-        
+
+        // Si tiene transitabilidad o traspaso con departamento, cargar departamentos para que los Select muestren el label
+        if ((formData.transitabilidad_departamento_id != null || formData.traspaso_departamento_id != null) && typeof loadDepartamentos === 'function') {
+          loadDepartamentos();
+        }
+
         // Los valores geográficos se establecerán cuando las opciones estén disponibles
         initialDataLoadedRef.current = true;
       }
     }
-  }, [isEditMode, studentDetail, form, loadProvincias, loadMunicipios, departamentos, saveStep0Values, cargarGestiones, loadDiscapacidades]);
-  
+  }, [isEditMode, studentDetail, form, loadProvincias, loadMunicipios, loadDepartamentos, departamentos, saveStep0Values, cargarGestiones, loadDiscapacidades, documentacionRaw, documentacionTraspasoRaw]);
+
+  // Re-aplicar filtro padre/hijo cuando el catálogo se cargue después del estudiante (en edición el catálogo puede llegar después)
+  useEffect(() => {
+    if (!isEditMode || !form || !initialDataLoadedRef.current) return;
+    const tipoAdmision = form.getFieldValue('tipoAdmision') ?? getStep0Values?.()?.tipoAdmision ?? 'NUEVO';
+    const catalog = getDocumentacionCatalogForEdit(tipoAdmision, documentacionRaw, documentacionTraspasoRaw);
+    if (!catalog?.length) return;
+    const current = form.getFieldsValue(true)?.documentacion;
+    if (!current || typeof current !== 'object') return;
+    const filtered = filterDocumentacionOcultarHijosCuandoPadreEntregado(current, catalog);
+    if (Object.keys(filtered).length !== Object.keys(current).length) {
+      form.setFieldsValue({ documentacion: filtered });
+    }
+  }, [isEditMode, form, getStep0Values, documentacionRaw, documentacionTraspasoRaw]);
+
   // Efecto para establecer valores geográficos cuando las opciones estén disponibles
   useEffect(() => {
     if (isEditMode && pendingFormDataRef.current && form && initialDataLoadedRef.current) {
       const formData = pendingFormDataRef.current;
       const valoresGeograficos = {};
       let necesitaEstablecer = false;
-      
+
       // ===== VALORES GEOGRÁFICOS DE ORIGEN =====
       if (formData.departamentoId != null) {
         valoresGeograficos.departamentoId = Number(formData.departamentoId);
         necesitaEstablecer = true;
       }
-      
+
       // Verificar si hay provinciaId y las provincias están disponibles
       if (formData.provinciaId != null && provincias.length > 0) {
         const idProv = Number(formData.provinciaId);
@@ -268,7 +332,7 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
           necesitaEstablecer = true;
         }
       }
-      
+
       // Verificar si hay municipioId y los municipios están disponibles
       if (formData.municipioId != null && municipios.length > 0) {
         const idMun = Number(formData.municipioId);
@@ -278,17 +342,17 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
           necesitaEstablecer = true;
         }
       }
-      
+
       // ===== VALORES GEOGRÁFICOS DE SEGUNDA NACIONALIDAD (DOBLE NACIONALIDAD) =====
       if (formData.segundaDepartamentoId != null) {
         valoresGeograficos.segundaDepartamentoId = Number(formData.segundaDepartamentoId);
         necesitaEstablecer = true;
       }
-      
+
       // Verificar si hay segundaProvinciaId y las provincias de segunda nacionalidad están disponibles
       if (formData.segundaProvinciaId != null && segundaProvincias.length > 0) {
         const idProv = Number(formData.segundaProvinciaId);
-        const provinciaExiste = segundaProvincias.some(p => 
+        const provinciaExiste = segundaProvincias.some(p =>
           Number(p.value) === idProv || Number(p.id) === idProv
         );
         if (provinciaExiste) {
@@ -296,11 +360,11 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
           necesitaEstablecer = true;
         }
       }
-      
+
       // Verificar si hay segundaMunicipioId y los municipios de segunda nacionalidad están disponibles
       if (formData.segundaMunicipioId != null && segundaMunicipios.length > 0) {
         const idMun = Number(formData.segundaMunicipioId);
-        const municipioExiste = segundaMunicipios.some(m => 
+        const municipioExiste = segundaMunicipios.some(m =>
           Number(m.value) === idMun || Number(m.id) === idMun
         );
         if (municipioExiste) {
@@ -308,19 +372,19 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
           necesitaEstablecer = true;
         }
       }
-      
+
       // Establecer segundaLocalidadComunidad (ciudad de nacimiento para segunda nacionalidad boliviana)
       if (formData.segundaLocalidadComunidad != null && formData.segundaLocalidadComunidad !== '') {
         valoresGeograficos.segundaLocalidadComunidad = formData.segundaLocalidadComunidad;
         necesitaEstablecer = true;
       }
-      
+
       // Establecer localidadComunidad (ciudad de nacimiento para primera nacionalidad boliviana)
       if (formData.localidadComunidad != null && formData.localidadComunidad !== '') {
         valoresGeograficos.localidadComunidad = formData.localidadComunidad;
         necesitaEstablecer = true;
       }
-      
+
       // ===== VALORES DE ORIGEN EXTRANJERO (PAÍS Y CIUDAD) =====
       // Establecer paisId cuando los países estén disponibles (para que el select muestre el label)
       if (formData.paisId != null && paises.length > 0) {
@@ -331,19 +395,19 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
           necesitaEstablecer = true;
         }
       }
-      
+
       // Establecer ciudadNacimiento (siempre que exista, no depende de opciones)
       if (formData.ciudadNacimiento != null && formData.ciudadNacimiento !== '') {
         valoresGeograficos.ciudadNacimiento = formData.ciudadNacimiento;
         necesitaEstablecer = true;
       }
-      
+
       // ===== VALORES GEOGRÁFICOS DE RESIDENCIA =====
       if (formData.departamentoResidenciaId != null) {
         valoresGeograficos.departamentoResidenciaId = Number(formData.departamentoResidenciaId);
         necesitaEstablecer = true;
       }
-      
+
       // Verificar si hay provinciaResidenciaId y las provincias de residencia están disponibles
       if (formData.provinciaResidenciaId != null && provinciasResidencia.length > 0) {
         const idProv = Number(formData.provinciaResidenciaId);
@@ -353,7 +417,7 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
           necesitaEstablecer = true;
         }
       }
-      
+
       // Verificar si hay municipioResidenciaId y los municipios de residencia están disponibles
       if (formData.municipioResidenciaId != null && municipiosResidencia.length > 0) {
         const idMun = Number(formData.municipioResidenciaId);
@@ -363,7 +427,7 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
           necesitaEstablecer = true;
         }
       }
-      
+
       // Establecer valores geográficos si están listos
       if (necesitaEstablecer) {
         form.setFieldsValue(valoresGeograficos);
@@ -373,10 +437,10 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
 
   // Ref para rastrear si ya se inicializaron los valores de documentación
   const documentacionInitializedRef = useRef(false);
-  
+
   // Ref para mantener referencia estable de documentacionProcesada
   const documentacionProcesadaRef = useRef(documentacionProcesada);
-  
+
   // Actualizar ref cuando documentacionProcesada cambie
   useEffect(() => {
     documentacionProcesadaRef.current = documentacionProcesada;
@@ -390,11 +454,11 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
   // Esto asegura que todos los documentos se incluyan en el formulario, incluso si el usuario no interactúa con ellos
   useEffect(() => {
     const documentacionProcesada = documentacionProcesadaRef.current;
-    
+
     if (documentacionProcesada && Array.isArray(documentacionProcesada) && documentacionProcesada.length > 0 && form && !documentacionInitializedRef.current) {
       // Construir objeto con valores por defecto para todos los documentos
       const documentacionInitialValues = {};
-      
+
       documentacionProcesada.forEach((documento) => {
         const docKey = `doc_${documento.id}`;
         // Inicializar con valores por defecto: entregado: true, en_tramite: false, observaciones: null
@@ -404,10 +468,10 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
           observaciones: documento.observaciones || null,
         };
       });
-      
+
       // Obtener valores actuales del formulario
       const currentValues = form.getFieldsValue(true);
-      
+
       // Solo establecer valores si no existen ya (para no sobrescribir valores del usuario)
       if (!currentValues.documentacion || Object.keys(currentValues.documentacion).length === 0) {
         form.setFieldsValue({
@@ -419,19 +483,23 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
         const documentacionActual = currentValues.documentacion || {};
         const valoresAAgregar = {};
         let necesitaActualizar = false;
-        
+
         documentacionProcesada.forEach((documento) => {
           const docKey = `doc_${documento.id}`;
-          if (!documentacionActual[docKey]) {
-            valoresAAgregar[docKey] = {
-              entregado: documento.entregado !== undefined ? documento.entregado : true,
-              en_tramite: documento.en_tramite !== undefined ? documento.en_tramite : false,
-              observaciones: documento.observaciones || null,
-            };
-            necesitaActualizar = true;
+          if (documentacionActual[docKey]) return;
+          const padreId = documento.documentoPadreId ?? documento.documento_padre_id;
+          if (padreId != null) {
+            const padreEntregadoVal = documentacionActual[`doc_${padreId}`]?.entregado;
+            if (padreEntregadoVal === true || padreEntregadoVal === 1) return; // No agregar hijo si el padre está entregado
           }
+          valoresAAgregar[docKey] = {
+            entregado: documento.entregado !== undefined ? documento.entregado : true,
+            en_tramite: documento.en_tramite !== undefined ? documento.en_tramite : false,
+            observaciones: documento.observaciones || null,
+          };
+          necesitaActualizar = true;
         });
-        
+
         if (necesitaActualizar) {
           form.setFieldsValue({
             documentacion: {
@@ -449,16 +517,16 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
   // Solo para handleFinish (registro/actualización completo), no para handleSave (guardado parcial)
   useEffect(() => {
     if (
-      registrationResult?.success && 
-      registrationResult?.data && 
+      registrationResult?.success &&
+      registrationResult?.data &&
       processedResultRef.current !== registrationResult
     ) {
       // Marcar como procesado para evitar procesarlo dos veces
       processedResultRef.current = registrationResult;
-      
+
       // Agregar el estudiante al estado global para que aparezca en la lista
       addStudent(registrationResult.data);
-      
+
       // Redirigir según el modo
       if (isEditMode && studentId) {
         // En modo edición, redirigir al detalle del estudiante
@@ -469,10 +537,10 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
         // Estructura final: { success: true, data: { id: ..., nombres: ..., ... } }
         // El objeto 'data' YA ES el objeto 'student' con su 'id'
         // Intentar diferentes formas de acceder al ID por compatibilidad
-        const newStudentId = 
+        const newStudentId =
           registrationResult.data?.id ||           // Forma correcta: data es el student
           registrationResult.data?.student?.id;    // Por si acaso el backend cambia
-        
+
         if (newStudentId) {
           // Redirigir al detalle del estudiante recién creado
           navigate(`/estudiantes/${newStudentId}`);
@@ -510,98 +578,126 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
     return 'Registrar Nueva Admisión';
   }, [isEditMode, completarMode]);
 
-  // Hook para obtener títulos dinámicos según el modo
-  const wizardTitles = useEstudianteWizardTitles(completarMode);
-
-  // Crear configuración de steps (memoizada para evitar recrearlas en cada render)
+  // Pasos visibles: 4 (NUEVO/ANTIGUO) o 5 (TRANSITABILIDAD o TRASPASO con paso dinámico de datos de tabla transitabilidades/traspasos)
   const wizardSteps = useMemo(() => {
-    const steps = createEstudianteWizardSteps(wizardTitles);
-    
-    // Generar campos dinámicos de contactos de emergencia desde la capa de configuración
-    // Usar datos expuestos desde el provider
+    const allSteps = createEstudianteWizardSteps(completarMode);
+    // allSteps: [0]=Tipo+Datos académicos, [1]=Datos Generales, [2]=Transitabilidad, [3]=Traspaso, [4]=Contacto, [5]=Documentación
+
     const camposDinamicos = createCamposContactosEmergenciaDinamicos(
-      contactosIndices, 
-      eliminarContacto, 
+      contactosIndices,
+      eliminarContacto,
       agregarContacto
     );
-    
-    // Reemplazar campos estáticos de contacto de emergencia con campos dinámicos
-    const contactoEmergenciaStep = steps.find((step) => 
+    const contactoEmergenciaStep = allSteps.find((step) =>
       step.sections.includes('contactoEmergencia')
     );
-    
-    if (contactoEmergenciaStep && contactoEmergenciaStep.config.contactoEmergencia) {
+    if (contactoEmergenciaStep?.config?.contactoEmergencia) {
       contactoEmergenciaStep.config.contactoEmergencia.fields = camposDinamicos;
     }
-    
-    // Generar campos dinámicos de documentación desde la capa de configuración
-    // Usar documentación procesada expuesta desde el provider (ya filtrada y ordenada)
-    const camposDocumentacion = createCamposDocumentacionDinamicos(documentacionProcesada);
-    
-    // Agregar subsección de observaciones del estudiante al final de la lista de documentos
-    // Similar a las subsecciones en los campos geográficos
+
+    // Documentación según tipo de admisión:
+    // - TRASPASO: docs TRASPASO + Carnet/Cert.Nacimiento/Diploma (ids 1,2,3). Sin duplicados por id.
+    // - NUEVO/ANTIGUO/TRANSITABILIDAD: solo documentos que NO son de traspaso (tipoDocumento !== 'TRASPASO').
+    const documentacionParaStep = (() => {
+      if (tipoAdmisionForSteps === 'TRASPASO') {
+        const traspaso = documentacionTraspasoProcesada || [];
+        const idsEnTraspaso = new Set(traspaso.map((d) => d.id));
+        const comunes = (documentacionProcesada || []).filter(
+          (d) => [1, 2, 3].includes(d.id) && !idsEnTraspaso.has(d.id)
+        );
+        return [...traspaso, ...comunes];
+      }
+      // Solo mostrar documentos que no son de traspaso (inscripción, etc.)
+      // Filtrar por tipoDocumento o por ids conocidos de traspaso (8, 9) por si el API no envía tipo
+      const lista = documentacionProcesada || [];
+      const idsTraspaso = [8, 9];
+      return lista.filter(
+        (d) => d.tipoDocumento !== 'TRASPASO' && !idsTraspaso.includes(Number(d.id))
+      );
+    })();
+    const camposDocumentacion = createCamposDocumentacionDinamicos(documentacionParaStep);
     const subseccionObservaciones = {
       type: 'subsection',
       subsectionTitle: 'Observaciones del Estudiante',
-      conditional: false, // Siempre visible
+      conditional: false,
       fields: [
         {
           name: 'observaciones',
           label: 'Observaciones',
           type: 'textarea',
           required: false,
-          span: 24, // Ocupa todo el ancho (100%)
+          span: 24,
           placeholder: 'Ingrese observaciones adicionales sobre el estudiante (opcional)',
           maxLength: 1000,
-          rows: 4, // Altura del textarea
+          rows: 4,
         },
       ],
     };
-    
-    // Combinar campos de documentación con la subsección de observaciones
     const camposCompletos = [...camposDocumentacion, subseccionObservaciones];
-    
-    // Reemplazar campos estáticos de documentación con campos dinámicos + subsección de observaciones
-    const documentacionStep = steps.find((step) => 
+    const documentacionStep = allSteps.find((step) =>
       step.sections.includes('documentacion')
     );
-    
-    if (documentacionStep && documentacionStep.config.documentacion) {
+    if (documentacionStep?.config?.documentacion) {
       documentacionStep.config.documentacion.fields = camposCompletos;
     }
-    
-    return steps;
-  }, [wizardTitles, contactosIndices, agregarContacto, eliminarContacto, documentacionProcesada]);
 
-  // Validar paso 1 (primer paso) antes de Siguiente: tipoAdmision obligatorio; si ANTIGUO, gestión y carrera obligatorios
+    // Insertar paso dinámico solo para TRANSITABILIDAD o TRASPASO; NUEVO y ANTIGUO no lo muestran.
+    // allSteps[1]=Datos Generales, [2]=Transitabilidad, [3]=Traspaso. Usamos tipoAdmisionForSteps (estado estable).
+    if (tipoAdmisionForSteps === 'TRANSITABILIDAD') {
+      return [allSteps[0], allSteps[1], allSteps[2], allSteps[4], allSteps[5]];
+    }
+    if (tipoAdmisionForSteps === 'TRASPASO') {
+      return [allSteps[0], allSteps[1], allSteps[3], allSteps[4], allSteps[5]];
+    }
+    // NUEVO/ANTIGUO: Tipo, Datos Generales, Contacto, Documentación (sin paso Transitabilidad ni Traspaso)
+    return [allSteps[0], allSteps[1], allSteps[4], allSteps[5]];
+  }, [completarMode, tipoAdmisionForSteps, contactosIndices, agregarContacto, eliminarContacto, documentacionProcesada, documentacionTraspasoProcesada]);
+
+  // Validar paso 1: tipoAdmision siempre; si ANTIGUO/TRANSITABILIDAD/TRASPASO también gestionIngresoId y carreraId.
   const onValidateBeforeNext = useCallback((stepNumber, formInstance) => {
-    if (stepNumber !== 1) return Promise.resolve();
-    return formInstance.validateFields(['tipoAdmision']).then(() => {
-      const tipo = formInstance.getFieldValue('tipoAdmision');
-      if (tipo === 'ANTIGUO') {
-        return formInstance.validateFields(['gestionIngresoId', 'carreraId']);
-      }
-    });
+    if (stepNumber === 1) {
+      return formInstance
+        .validateFields(['tipoAdmision'])
+        .then(() => {
+          const tipo = formInstance.getFieldValue('tipoAdmision');
+          const requiereGestionCarrera =
+            tipo === 'ANTIGUO' || tipo === 'TRANSITABILIDAD' || tipo === 'TRASPASO';
+          if (requiereGestionCarrera) {
+            return formInstance.validateFields(['gestionIngresoId', 'carreraId']);
+          }
+        });
+    }
+    const stepConfig = wizardSteps[stepNumber - 1];
+    if (stepConfig?.sections?.includes('transitabilidad') || stepConfig?.sections?.includes('traspaso')) {
+      return Promise.resolve();
+    }
+    return Promise.resolve();
+  }, [wizardSteps]);
+
+  const onValidationError = useCallback((_err) => {
+    // Opcional: mostrar mensaje o log cuando falla la validación antes de Siguiente
   }, []);
 
-  // Preservar valores del paso 1 (tipo admisión, gestión, carrera) al salir de ese paso
+  // Preservar tipo admisión, gestión y carrera al salir del paso 1
   const onBeforeNextStep = useCallback((stepNumber, formInstance) => {
     if (stepNumber === 1 && saveStep0Values && formInstance) {
       const values = formInstance.getFieldsValue(true);
-      const tipoAdmision = values.tipoAdmision ?? 'NUEVO';
       saveStep0Values({
-        tipoAdmision,
+        tipoAdmision: values.tipoAdmision ?? 'NUEVO',
         gestionIngresoId: values.gestionIngresoId,
         carreraId: values.carreraId,
       });
     }
   }, [saveStep0Values]);
 
-  // Restaurar valores del paso 1 al volver desde el paso 2 (para que se muestren tipo admisión, gestión y carrera)
+  // Restaurar valores del paso 1 al volver (cuando el paso anterior es Tipo+Datos académicos)
   const onBeforePrevStep = useCallback((stepNumber, formInstance) => {
     if (stepNumber === 2 && getStep0Values && formInstance) {
       const step1Values = getStep0Values();
       if (step1Values && typeof step1Values === 'object' && Object.keys(step1Values).length > 0) {
+        if (step1Values.tipoAdmision != null) {
+          setTipoAdmisionForSteps(step1Values.tipoAdmision);
+        }
         formInstance.setFieldsValue(step1Values);
       }
     }
@@ -619,17 +715,17 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
     { title: pageTitle },
   ], [pageTitle]);
 
-  // Contenido custom del paso 0 (Tipo de admisión + Gestión y Carrera)
+  // Contenido custom: paso 0 (Tipo + Datos académicos) y paso dinámico Transitabilidad/Traspaso
   const renderSectionContent = useCallback(
     (stepIndex, sectionKey, section, formInstance) => {
-      if (stepIndex !== 0) return null;
       if (sectionKey === 'tipoAdmision') {
         return (
           <EstudianteTipoAdmisionStepContent
             form={formInstance}
             onTipoAdmisionChange={(tipoAdmision) => {
-              if (tipoAdmision === 'ANTIGUO' && typeof cargarGestiones === 'function') {
-                cargarGestiones();
+              setTipoAdmisionForSteps(tipoAdmision ?? 'NUEVO');
+              if (tipoAdmision && typeof cargarGestiones === 'function') {
+                cargarGestiones(tipoAdmision);
               }
             }}
           />
@@ -649,6 +745,20 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
           />
         );
       }
+      if (sectionKey === 'documentacion') {
+        return (
+          <DocumentacionStepContent
+            form={formInstance}
+            documentacionRaw={documentacionRaw}
+            documentacionTraspasoRaw={documentacionTraspasoRaw}
+            tipoAdmisionForSteps={tipoAdmisionForSteps}
+            section={section}
+            resolveOptions={resolveOptions}
+            minAge={minAge}
+          />
+        );
+      }
+      // Paso Transitabilidad y Traspaso: se renderizan con FormSection/FormField vía config (estudianteTransitabilidadFields / estudianteTraspasoFields)
       return null;
     },
     [
@@ -659,6 +769,11 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
       gestionesLoading,
       carrerasError,
       gestionesError,
+      documentacionRaw,
+      documentacionTraspasoRaw,
+      tipoAdmisionForSteps,
+      resolveOptions,
+      minAge,
     ]
   );
 
@@ -674,7 +789,7 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
   ), [handleVolverALista]);
 
   return (
-    <PageTemplate 
+    <PageTemplate
       header={
         <PageHeader
           title={pageTitle}
@@ -701,6 +816,7 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
         onValidateBeforeNext={onValidateBeforeNext}
         onBeforeNextStep={onBeforeNextStep}
         onBeforePrevStep={onBeforePrevStep}
+        onValidationError={onValidationError}
         renderSectionContent={renderSectionContent}
         carreras={carreras}
         gestiones={gestiones}

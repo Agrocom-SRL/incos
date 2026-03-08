@@ -88,7 +88,7 @@ export const useGenerateBoletaInscripcion = () => {
       // El endpoint espera el ID del estudiante, no el ID de la inscripción
       // Aumentar timeout a 60 segundos porque la generación de PDF puede tardar
       const response = await apiClient.post(
-        INSCRIPCIONES_ENDPOINTS.GENERATE_BOLETA(studentId),
+        INSCRIPCIONES_ENDPOINTS.GENERATE_FORMULARIO(studentId),
         {},
         {
           timeout: 60000, // 60 segundos para generación de PDF

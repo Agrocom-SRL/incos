@@ -18,6 +18,7 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PlusOutlined } from '@ant-design/icons';
+import { Grid } from 'antd';
 import { PageTemplate } from '@templates';
 import { TableListView } from '@organisms';
 import { PageHeader } from '@molecules';
@@ -28,6 +29,8 @@ import { createEstudiantesTableColumns } from '@estudiantes/config';
 
 const EstudiantesList = () => {
     const navigate = useNavigate();
+    const screens = Grid.useBreakpoint();
+    const isSmall = !screens.lg;
 
     // Obtener datos del contexto (toda la lógica está en el Provider)
     const {
@@ -50,8 +53,8 @@ const EstudiantesList = () => {
 
     // Crear columnas de la tabla (memoizadas para evitar recrearlas en cada render)
     const tableColumns = useMemo(
-        () => createEstudiantesTableColumns(navigate, refetch, deleteStudent, pagosContext),
-        [navigate, refetch, deleteStudent, pagosContext]
+        () => createEstudiantesTableColumns(navigate, refetch, deleteStudent, pagosContext, { isSmall }),
+        [navigate, refetch, deleteStudent, pagosContext, isSmall]
     );
 
     // Configurar breadcrumb items
@@ -89,6 +92,7 @@ const EstudiantesList = () => {
                 searchPlaceholder="Buscar por código, nombre, CI, contacto, carrera o datos académicos..."
                 columns={tableColumns}
                 rowKey={(record) => record.id || record.ciCompleto || Math.random()}
+                tableClassName="data-table--estudiantes"
                 pagination={{
                     pageSize: 10,
                     showSizeChanger: true,
@@ -96,8 +100,8 @@ const EstudiantesList = () => {
                     pageSizeOptions: ['10', '20', '50', '100'],
                 }}
                 defaultSort={{
-                    field: 'codigoEstudiante',
-                    order: 'ascend',
+                    field: 'createdAt',
+                    order: 'descend',
                 }}
                 loadingTip="Cargando estudiantes..."
             />

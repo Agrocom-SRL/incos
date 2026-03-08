@@ -1,0 +1,649 @@
+/**
+ * EstudiantesDetail — Estilo moderno HRment
+ * Tipografía clara, layout 2-3 columnas, espaciado generoso, sin ruido visual.
+ */
+
+/* ─────────────────────────────────────────
+   TOKENS
+───────────────────────────────────────── */
+.sd {
+  --primary:        #196b45;
+  --primary-dark:   #134d32;
+  --primary-light:  #e8f5e9;
+  --primary-mid:    #22854f;
+  --accent:         #399f53;
+
+  --text-900:       #111827;
+  --text-700:       #374151;
+  --text-500:       #6b7280;
+  --text-400:       #9ca3af;
+  --text-300:       #d1d5db;
+
+  --surface:        #ffffff;
+  --bg:             #f3f4f6;
+  --border:         #e5e7eb;
+  --border-soft:    #f3f4f6;
+
+  --radius-sm:      6px;
+  --radius-md:      10px;
+  --radius-lg:      14px;
+  --radius-xl:      18px;
+
+  --shadow-sm:      0 1px 2px rgba(0,0,0,.05);
+  --shadow-md:      0 1px 3px rgba(0,0,0,.07), 0 4px 12px rgba(0,0,0,.05);
+  --shadow-focus:   0 0 0 3px rgba(25,107,69,.15);
+
+  font-family: 'DM Sans', 'Nunito Sans', ui-sans-serif, system-ui, sans-serif;
+  background: var(--bg);
+  min-height: 100%;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ─────────────────────────────────────────
+   PROFILE CARD
+───────────────────────────────────────── */
+.sd-profile {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  /* Derecha mayor para no solapar el botón Editar (absolute) con los botones de acción */
+  padding: 24px 72px 24px 28px;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+/* Animación pulsar: disminuir y aumentar tamaño para invitar a pulsar */
+@keyframes sd-edit-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+/* Botón editar: esquina superior derecha, sin solapar acciones (padding-right del card lo evita) */
+.sd-profile__edit-btn {
+  position: absolute;
+  top: 20px;
+  right: 28px;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(145deg, #facc15 0%, #eab308 100%);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(161, 98, 7, 0.5), 0 2px 6px rgba(120, 53, 15, 0.25);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
+  z-index: 1;
+  animation: sd-edit-pulse 1.8s ease-in-out infinite;
+}
+
+.sd-profile__edit-btn .anticon {
+  font-size: 20px;
+  color: inherit;
+}
+
+.sd-profile__edit-btn:hover {
+  animation: none;
+  transform: scale(1.08);
+  box-shadow: 0 6px 20px rgba(161, 98, 7, 0.55), 0 3px 8px rgba(120, 53, 15, 0.3);
+  color: #fff;
+}
+
+.sd-profile__edit-btn:active {
+  animation: none;
+  transform: scale(0.96);
+}
+
+/* Identity */
+.sd-profile__identity {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.sd-profile__avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.sd-profile__avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+  color: #fff;
+  font-size: 24px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: -0.5px;
+  box-shadow: 0 4px 14px rgba(25,107,69,.3);
+}
+
+/* Variantes de color de avatar según tipo de admisión */
+.sd-profile__avatar--nuevo {
+  background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);
+}
+
+.sd-profile__avatar--antiguo {
+  background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+}
+
+.sd-profile__avatar--traspaso {
+  /* Mismo color base que la tarjeta de TRASPASO en el formulario (TipoAdmisionSelectionSection) */
+  background: #eb2f96;
+}
+
+.sd-profile__avatar--transitabilidad {
+  /* Mismo color base que la tarjeta de TRANSITABILIDAD en el formulario */
+  background: #722ed1;
+}
+
+.sd-profile__avatar--default {
+  background: linear-gradient(135deg, #4b5563 0%, #6b7280 100%);
+}
+
+.sd-profile__status-dot {
+  position: absolute;
+  bottom: 3px;
+  right: 3px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #34d399;
+  border: 2px solid var(--surface);
+}
+
+.sd-profile__name-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sd-profile__name {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-900);
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+}
+
+.sd-profile__sub {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 14px;
+  color: var(--text-500);
+}
+
+.sd-profile__sub .anticon {
+  color: var(--primary);
+  font-size: 12px;
+}
+
+/* Fila de meta bajo el nombre: subtítulo + tipo de admisión */
+.sd-profile__meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.sd-profile__admission-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  border: 1px solid transparent;
+}
+
+/* Valores alineados con admissionTypeColors.js (fuente única en frontend) */
+.sd-profile__admission-pill--nuevo {
+  background: #e8f5e9;
+  color: var(--primary-dark);
+  border-color: rgba(25,107,69,.25);
+}
+
+.sd-profile__admission-pill--antiguo {
+  background: #fef3c7;
+  color: #92400e;
+  border-color: rgba(245,158,11,.25);
+}
+
+.sd-profile__admission-pill--traspaso {
+  background: #fff0f6;
+  color: #eb2f96;
+  border-color: rgba(235,47,150,.25);
+}
+
+.sd-profile__admission-pill--transitabilidad {
+  background: #f9f0ff;
+  color: #722ed1;
+  border-color: rgba(114,46,209,.25);
+}
+
+.sd-profile__admission-pill--default {
+  background: #e5e7eb;
+  color: var(--text-700);
+  border-color: #d1d5db;
+}
+
+/* Divider vertical */
+.sd-profile__divider {
+  width: 1px;
+  height: 52px;
+  background: var(--border);
+  flex-shrink: 0;
+  align-self: center;
+}
+
+@media (max-width: 860px) {
+  .sd-profile__divider { display: none; }
+}
+
+/* Quick stats */
+.sd-profile__stats {
+  display: flex;
+  gap: 32px;
+  align-items: center;
+  flex: 1;
+  flex-wrap: wrap;
+}
+
+.sd-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.sd-stat__label {
+  font-size: 13.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  color: var(--text-400);
+}
+
+.sd-stat__value {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-700);
+}
+
+.sd-stat__value--primary {
+  color: var(--primary);
+  font-size: 16px;
+}
+
+/* Actions */
+.sd-profile__actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+
+/* ─────────────────────────────────────────
+   BUTTONS PROPIOS (sin depender de atoms)
+   Los usamos solo en profile, el resto usa Button atom
+───────────────────────────────────────── */
+.sd-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  border-radius: var(--radius-md);
+  font-size: 14.5px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: transform .12s, box-shadow .12s, background .12s;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.sd-btn:active { transform: scale(.97); }
+.sd-btn:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+
+.sd-btn--primary {
+  background: var(--primary);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(25,107,69,.3);
+}
+.sd-btn--primary:hover {
+  background: var(--primary-dark);
+  box-shadow: 0 4px 14px rgba(25,107,69,.35);
+}
+
+.sd-btn--danger {
+  background: #e41c24;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(228,28,36,.25);
+}
+.sd-btn--danger:hover { background: #c01019; }
+
+.sd-btn--warn {
+  background: #f59e0b;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(245,158,11,.25);
+}
+.sd-btn--warn:hover { background: #d97706; }
+.sd-btn--warn:disabled { opacity: .6; cursor: not-allowed; }
+
+/* Volver: estilo outline/secundario */
+.sd-btn--outline {
+  background: transparent;
+  color: var(--text-700);
+  border: 1.5px solid var(--border);
+  box-shadow: none;
+}
+.sd-btn--outline:hover {
+  background: #f3f4f6;
+  border-color: var(--text-500);
+  color: var(--text-900);
+}
+
+/* Declaración Jurada: color azul/formal (documento legal) */
+.sd-btn--declaracion {
+  background: linear-gradient(145deg, #2563eb 0%, #1d4ed8 100%);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
+}
+.sd-btn--declaracion:hover {
+  background: linear-gradient(145deg, #1d4ed8 0%, #1e40af 100%);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+}
+.sd-btn--declaracion:disabled { opacity: .6; cursor: not-allowed; }
+
+/* ─────────────────────────────────────────
+   TABS SHELL
+───────────────────────────────────────── */
+.sd-tabs-shell {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+
+.sd-tabs .ant-tabs-nav {
+  margin: 0 !important;
+  padding: 0 24px !important;
+  border-bottom: 1px solid var(--border) !important;
+  background: var(--surface) !important;
+}
+
+.sd-tabs .ant-tabs-nav::before {
+  border: none !important;
+}
+
+.sd-tabs .ant-tabs-tab {
+  padding: 16px 0 !important;
+  font-size: 14.5px !important;
+  font-weight: 500 !important;
+  color: var(--text-500) !important;
+  transition: color .15s !important;
+}
+
+.sd-tabs .ant-tabs-tab + .ant-tabs-tab {
+  margin-left: 28px !important;
+}
+
+.sd-tabs .ant-tabs-tab:hover .ant-tabs-tab-btn {
+  color: var(--primary) !important;
+}
+
+.sd-tabs .ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: var(--text-900) !important;
+  font-weight: 600 !important;
+}
+
+.sd-tabs .ant-tabs-ink-bar {
+  background: var(--primary) !important;
+  height: 2px !important;
+  border-radius: 2px 2px 0 0 !important;
+}
+
+.sd-tabs .ant-tabs-content-holder {
+  padding: 0 !important;
+}
+
+.sd-tab-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.sd-tab-label .anticon {
+  font-size: 14px;
+}
+
+/* ─────────────────────────────────────────
+   TAB BODY
+───────────────────────────────────────── */
+.sd-tab-body {
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ─────────────────────────────────────────
+   INFO CARD
+───────────────────────────────────────── */
+.sd-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.sd-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border-soft);
+  background: #fafafa;
+}
+
+.sd-card__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .7px;
+  color: var(--text-500);
+}
+
+.sd-card__title-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  background: var(--primary-light);
+  color: var(--primary);
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.sd-card__extra {
+  display: flex;
+  gap: 8px;
+}
+
+.sd-card__body {
+  padding: 20px;
+  display: grid;
+  gap: 20px 32px;
+}
+
+.sd-card__body--cols-2 { grid-template-columns: repeat(2, 1fr); }
+.sd-card__body--cols-3 { grid-template-columns: repeat(3, 1fr); }
+
+@media (max-width: 900px) {
+  .sd-card__body--cols-3 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+  .sd-card__body--cols-2,
+  .sd-card__body--cols-3 { grid-template-columns: 1fr; }
+}
+
+/* ─────────────────────────────────────────
+   FIELD — label arriba, valor abajo
+───────────────────────────────────────── */
+.sd-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.sd-field--span-1 { grid-column: span 1; }
+.sd-field--span-2 { grid-column: span 2; }
+.sd-field--span-3 { grid-column: span 3; }
+
+@media (max-width: 900px) {
+  .sd-field--span-3 { grid-column: span 2; }
+}
+@media (max-width: 600px) {
+  .sd-field--span-2,
+  .sd-field--span-3 { grid-column: span 1; }
+}
+
+.sd-field__label {
+  font-size: 13.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .55px;
+  color: var(--text-400);
+  white-space: nowrap;
+}
+
+.sd-field__value {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-700);
+  word-break: break-word;
+}
+
+/* ─────────────────────────────────────────
+   LINK
+───────────────────────────────────────── */
+.sd-link {
+  color: var(--primary);
+  font-weight: 600;
+  text-decoration: none;
+}
+.sd-link:hover {
+  color: var(--primary-dark);
+  text-decoration: underline;
+}
+
+/* ─────────────────────────────────────────
+   BADGE
+───────────────────────────────────────── */
+.sd-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.sd-badge--blue {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid rgba(59,130,246,.2);
+}
+
+.sd-badge--green {
+  background: var(--primary-light);
+  color: var(--primary);
+  border: 1px solid rgba(25,107,69,.2);
+}
+
+/* ─────────────────────────────────────────
+   EMPTY
+───────────────────────────────────────── */
+.sd-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 60px 24px;
+  text-align: center;
+}
+
+.sd-empty__icon {
+  font-size: 36px !important;
+  color: var(--text-300) !important;
+}
+
+.sd-empty__text {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-500);
+}
+
+/* ─────────────────────────────────────────
+   LOADING
+───────────────────────────────────────── */
+.sd-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 80px 24px;
+  color: var(--text-500);
+}
+
+/* ─────────────────────────────────────────
+   RESPONSIVE PROFILE
+───────────────────────────────────────── */
+@media (max-width: 860px) {
+  .sd-profile {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .sd-profile__stats {
+    gap: 20px;
+  }
+  .sd-profile__actions {
+    margin-left: 0;
+    width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .sd { padding: 12px; }
+  .sd-profile { padding: 16px 56px 16px 16px; } /* mantener espacio derecho para botón Editar */
+  .sd-profile__edit-btn { right: 16px; top: 16px; }
+  .sd-tab-body { padding: 16px; }
+  .sd-card__body { padding: 16px; gap: 16px 20px; }
+}

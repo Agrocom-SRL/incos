@@ -14,10 +14,10 @@
 
 import { ESTUDIANTES_TOKENS, REPOSITORIOS_TOKENS, SERVICIOS_TOKENS, INSCRIPCIONES_TOKENS } from '../../tokens/index.js';
 import { registerComponent } from '../../utils/container.helpers.js';
-import { ListStudentsUseCase, RegisterStudentUseCase, UpdateStudentUseCase, GetStudentByIdUseCase, SearchStudentUseCase, GenerateActaCompromisoUseCase, CreateStudentScholarshipUseCase, DeleteStudentScholarshipUseCase, DeleteStudentUseCase } from '../../../../application/use-cases/estudiantes/index.js';
+import { ListStudentsUseCase, RegisterStudentUseCase, UpdateStudentUseCase, GetStudentByIdUseCase, SearchStudentUseCase, GenerateActaCompromisoUseCase, GenerateDeclaracionJuradaUseCase, CreateStudentScholarshipUseCase, DeleteStudentScholarshipUseCase, DeleteStudentUseCase } from '../../../../application/use-cases/estudiantes/index.js';
 import { GetStudentScholarshipsByStudentIdUseCase } from '../../../../application/use-cases/estudiantes/becas/GetStudentScholarshipsByStudentIdUseCase.js';
 import { ListStudentScholarshipsUseCase } from '../../../../application/use-cases/estudiantes/becas/ListStudentScholarshipsUseCase.js';
-import { ListStudentsController, RegisterStudentController, UpdateStudentController, GetStudentByIdController, SearchStudentController, ActaCompromisoController, AsignarBecaController, DeleteStudentScholarshipController, DeleteStudentController } from '../../../../presentation/controllers/estudiantes/index.js';
+import { ListStudentsController, RegisterStudentController, UpdateStudentController, GetStudentByIdController, SearchStudentController, ActaCompromisoController, DeclaracionJuradaController, AsignarBecaController, DeleteStudentScholarshipController, DeleteStudentController } from '../../../../presentation/controllers/estudiantes/index.js';
 import { GetStudentScholarshipsController } from '../../../../presentation/controllers/estudiantes/becas/get-scholarships.controller.js';
 import { ListStudentScholarshipsController } from '../../../../presentation/controllers/estudiantes/becas/list-student-scholarships.controller.js';
 import { buildEstudiantesRouter } from '../../../../presentation/routes/estudiantes.routes.js';
@@ -59,6 +59,10 @@ export function registerEstudiantesResource(container) {
                 managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
                 contributionConfigurationRepository: c.resolve(REPOSITORIOS_TOKENS.contributionConfigurationRepository),
                 studentAcademicDataRepository: c.resolve(REPOSITORIOS_TOKENS.studentAcademicDataRepository),
+                institutionRepository: c.resolve(REPOSITORIOS_TOKENS.institutionRepository),
+                transitabilityRepository: c.resolve(REPOSITORIOS_TOKENS.transitabilityRepository),
+                transferRepository: c.resolve(REPOSITORIOS_TOKENS.transferRepository),
+                documentacionRepository: c.resolve(REPOSITORIOS_TOKENS.documentacionRepository),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
     );
@@ -76,6 +80,10 @@ export function registerEstudiantesResource(container) {
                 studentAcademicDataRepository: c.resolve(REPOSITORIOS_TOKENS.studentAcademicDataRepository),
                 configuracionSistemaRepository: c.resolve(REPOSITORIOS_TOKENS.configuracionSistemaRepository),
                 managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
+                institutionRepository: c.resolve(REPOSITORIOS_TOKENS.institutionRepository),
+                transitabilityRepository: c.resolve(REPOSITORIOS_TOKENS.transitabilityRepository),
+                transferRepository: c.resolve(REPOSITORIOS_TOKENS.transferRepository),
+                documentacionRepository: c.resolve(REPOSITORIOS_TOKENS.documentacionRepository),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
     );
@@ -102,10 +110,14 @@ export function registerEstudiantesResource(container) {
                 studentScholarshipRepository: c.resolve(REPOSITORIOS_TOKENS.studentScholarshipRepository),
                 scholarshipRepository: c.resolve(REPOSITORIOS_TOKENS.scholarshipRepository),
                 managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
+                careerRepository: c.resolve(REPOSITORIOS_TOKENS.careerRepository),
                 studentDocumentRepository: c.resolve(REPOSITORIOS_TOKENS.studentDocumentRepository),
                 studentAcademicDataRepository: c.resolve(REPOSITORIOS_TOKENS.studentAcademicDataRepository),
                 enrollmentRepository: c.resolve(REPOSITORIOS_TOKENS.enrollmentRepository),
                 getEnrollmentByIdUseCase: c.resolve(INSCRIPCIONES_TOKENS.getEnrollmentByIdUseCase),
+                institutionRepository: c.resolve(REPOSITORIOS_TOKENS.institutionRepository),
+                transitabilityRepository: c.resolve(REPOSITORIOS_TOKENS.transitabilityRepository),
+                transferRepository: c.resolve(REPOSITORIOS_TOKENS.transferRepository),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
     );
@@ -128,8 +140,31 @@ export function registerEstudiantesResource(container) {
                 studentRepository: c.resolve(REPOSITORIOS_TOKENS.studentRepository),
                 studentDocumentRepository: c.resolve(REPOSITORIOS_TOKENS.studentDocumentRepository),
                 studentDocumentDeliveryRepository: c.resolve(REPOSITORIOS_TOKENS.studentDocumentDeliveryRepository),
+                studentAcademicDataRepository: c.resolve(REPOSITORIOS_TOKENS.studentAcademicDataRepository),
                 configuracionSistemaRepository: c.resolve(REPOSITORIOS_TOKENS.configuracionSistemaRepository),
                 managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
+                pdfGenerator: c.resolve(SERVICIOS_TOKENS.pdfGenerator),
+                uploadsStorage: c.resolve(SERVICIOS_TOKENS.uploadsStorage),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
+    registerComponent(
+        container,
+        ESTUDIANTES_TOKENS.generateDeclaracionJuradaUseCase,
+        (c) =>
+            new GenerateDeclaracionJuradaUseCase({
+                studentRepository: c.resolve(REPOSITORIOS_TOKENS.studentRepository),
+                studentDocumentRepository: c.resolve(REPOSITORIOS_TOKENS.studentDocumentRepository),
+                enrollmentRepository: c.resolve(REPOSITORIOS_TOKENS.enrollmentRepository),
+                studentAcademicDataRepository: c.resolve(REPOSITORIOS_TOKENS.studentAcademicDataRepository),
+                studentDocumentDeliveryRepository: c.resolve(REPOSITORIOS_TOKENS.studentDocumentDeliveryRepository),
+                documentacionRepository: c.resolve(REPOSITORIOS_TOKENS.documentacionRepository),
+                configuracionSistemaRepository: c.resolve(REPOSITORIOS_TOKENS.configuracionSistemaRepository),
+                managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
+                transitabilityRepository: c.resolve(REPOSITORIOS_TOKENS.transitabilityRepository),
+                transferRepository: c.resolve(REPOSITORIOS_TOKENS.transferRepository),
+                institutionRepository: c.resolve(REPOSITORIOS_TOKENS.institutionRepository),
                 pdfGenerator: c.resolve(SERVICIOS_TOKENS.pdfGenerator),
                 uploadsStorage: c.resolve(SERVICIOS_TOKENS.uploadsStorage),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
@@ -280,6 +315,17 @@ export function registerEstudiantesResource(container) {
 
     registerComponent(
         container,
+        ESTUDIANTES_TOKENS.declaracionJuradaController,
+        (c) =>
+            new DeclaracionJuradaController({
+                generateDeclaracionJuradaUseCase: c.resolve(ESTUDIANTES_TOKENS.generateDeclaracionJuradaUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
+    );
+
+    registerComponent(
+        container,
         ESTUDIANTES_TOKENS.asignarBecaController,
         (c) =>
             new AsignarBecaController({
@@ -347,6 +393,7 @@ export function registerEstudiantesResource(container) {
                 getStudentByIdController: c.resolve(ESTUDIANTES_TOKENS.getStudentByIdController),
                 searchStudentController: c.resolve(ESTUDIANTES_TOKENS.searchStudentController),
                 actaCompromisoController: c.resolve(ESTUDIANTES_TOKENS.actaCompromisoController),
+                declaracionJuradaController: c.resolve(ESTUDIANTES_TOKENS.declaracionJuradaController),
                 asignarBecaController: c.resolve(ESTUDIANTES_TOKENS.asignarBecaController),
                 deleteStudentScholarshipController: c.resolve(ESTUDIANTES_TOKENS.deleteStudentScholarshipController),
                 getStudentScholarshipsController: c.resolve(ESTUDIANTES_TOKENS.getStudentScholarshipsController),

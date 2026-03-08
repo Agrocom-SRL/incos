@@ -7,6 +7,7 @@ export { UpdateStudentUseCase } from './UpdateStudentUseCase.js';
 export { GetStudentByIdUseCase } from './GetStudentByIdUseCase.js';
 export { SearchStudentUseCase } from './SearchStudentUseCase.js';
 export { GenerateActaCompromisoUseCase } from './GenerateActaCompromisoUseCase.js';
+export { GenerateDeclaracionJuradaUseCase } from './GenerateDeclaracionJuradaUseCase.js';
 export { DeleteStudentUseCase } from './DeleteStudentUseCase.js';
 
 // ============================================

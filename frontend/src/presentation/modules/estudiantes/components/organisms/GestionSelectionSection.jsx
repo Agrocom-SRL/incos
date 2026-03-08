@@ -11,8 +11,10 @@
  * @param {Array} gestiones - Lista de gestiones disponibles
  * @param {boolean} loading - Estado de carga
  * @param {string} error - Mensaje de error
+ * @param {string} [tipoAdmision] - Tipo de admisión actual (NUEVO, ANTIGUO, TRANSITABILIDAD, TRASPASO)
  */
 
+import { useEffect } from 'react';
 import { Form, Alert, Radio, Spin, Empty } from 'antd';
 import { CalendarOutlined } from '@ant-design/icons';
 import './GestionSelectionSection.css';
@@ -22,6 +24,7 @@ const GestionSelectionSection = ({
   gestiones = [],
   loading = false,
   error = null,
+  tipoAdmision,
 }) => {
   const handleRadioChange = (e) => {
     const gestionIngresoId = e.target.value;
@@ -30,7 +33,31 @@ const GestionSelectionSection = ({
     }
   };
 
-  const selectedValue = form?.getFieldValue('gestionIngresoId') ?? null;
+  // useWatch hace que el componente se re-renderice cuando cambia el valor del form
+  // (p. ej. al preseleccionar la gestión vigente en useEffect), así el item correcto se marca selected
+  const selectedValue = Form.useWatch('gestionIngresoId', form) ?? null;
+
+  // Preseleccionar la gestión vigente cuando corresponde y aún no hay selección
+  useEffect(() => {
+    if (!form || !gestiones?.length) return;
+
+    const currentValue = form.getFieldValue('gestionIngresoId');
+    if (currentValue != null) return;
+
+    const requierePreseleccion =
+      tipoAdmision === 'ANTIGUO' ||
+      tipoAdmision === 'TRANSITABILIDAD' ||
+      tipoAdmision === 'TRASPASO';
+
+    if (requierePreseleccion) {
+      const gestionVigente = gestiones.find(
+        (g) => g?.vigente === true || g?.vigente === 1
+      );
+      if (gestionVigente?.id != null) {
+        form.setFieldsValue({ gestionIngresoId: gestionVigente.id });
+      }
+    }
+  }, [form, tipoAdmision, gestiones]);
 
   return (
     <div style={{ marginBottom: 24 }}>

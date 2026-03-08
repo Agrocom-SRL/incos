@@ -48,6 +48,18 @@ INSERT INTO documentacion (id, nombre, tipo_documento, documento_padre_id, acept
 (7, 'Acta de Compromiso para la Entrega de Documentos', 'OTRO', NULL, FALSE, FALSE, TRUE, 1, 
 'Acta de compromiso generada automáticamente cuando falta documentación. El estudiante se compromete a completar la documentación faltante');
 
+-- ============================================
+-- DOCUMENTACIÓN REQUERIDA PARA TRASPASO
+-- ============================================
+-- Corresponde a "Documentos Presentados" del Formulario de Traspaso físico: los dos primeros
+-- son tipo TRASPASO (ids 8, 9); los otros tres son Carnet, Cert. Nacimiento, Diploma (INSCRIPCION ids 3, 2, 1).
+-- Se muestran en el step Documentación cuando tipo de admisión es TRASPASO.
+INSERT INTO documentacion (id, nombre, tipo_documento, documento_padre_id, acepta_fotocopia, requerido, es_documento_sistema, orden, descripcion) VALUES
+(8, 'Autorización de Traspaso de la Subdirección de Educación Superior', 'TRASPASO', NULL, TRUE, TRUE, FALSE, 1, 
+'Autorización emitida por la Subdirección de Educación Superior para el traspaso del estudiante.'),
+(9, 'Certificado de Calificaciones / Centralizador / Histórico Académico', 'TRASPASO', NULL, TRUE, TRUE, FALSE, 2, 
+'Certificado de calificaciones, centralizador o histórico académico de la institución de origen.');
+
 -- Rehabilitar foreign key checks
 SET FOREIGN_KEY_CHECKS = 1;
 

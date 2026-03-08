@@ -88,6 +88,16 @@ export const useUpdateStudent = () => {
       // Convertir fechaNacimiento a formato ISO aceptado por backend
       const normalizedValues = normalizeUpdateStudentPayload(formValues);
 
+      // 0.1 Guardado parcial: no incluir documentación si el usuario aún no llegó al paso de documentación
+      // NUEVO/ANTIGUO: 4 pasos (documentación = 4). TRASPASO/TRANSITABILIDAD: 5 pasos (documentación = 5).
+      if (isPartial && step != null) {
+        const tipoAdmision = normalizedValues.tipoAdmision || 'NUEVO';
+        const documentacionStep = (tipoAdmision === 'TRASPASO' || tipoAdmision === 'TRANSITABILIDAD') ? 5 : 4;
+        if (step < documentacionStep) {
+          normalizedValues.documentacion = {};
+        }
+      }
+
       // TODO: 1. VALIDACIÓN PREVIA (Application Layer)
       // Validar datos antes de llamar al Use Case para evitar llamadas innecesarias
       // const validation = validateUpdateStudent(normalizedValues);

@@ -25,7 +25,21 @@ export const estudianteDetailMapper = (dataBackend) => {
     return null;
   }
 
-  const { student, guardians, disabilities, origins, documentDeliveries, scholarships, catalogs = {}, tieneDocumentosFaltantes, actaCompromiso, inscripcion, academicData } = normalizedData;
+  const {
+    student,
+    guardians,
+    disabilities,
+    origins,
+    documentDeliveries,
+    scholarships,
+    catalogs = {},
+    tieneDocumentosFaltantes,
+    actaCompromiso,
+    inscripcion,
+    academicData,
+    transitability,
+    transfer,
+  } = normalizedData;
 
   // Construir CI completo y nombre completo usando utilidades compartidas
   // El backend retorna nombres en inglés, los convertimos para el formatter
@@ -67,6 +81,43 @@ export const estudianteDetailMapper = (dataBackend) => {
 
   // Entregas de documentos ya traen documentacionName desde la vista
   const enrichedDocumentDeliveries = Array.isArray(documentDeliveries) ? documentDeliveries : [];
+
+  // Normalizar inscripción: el backend puede devolver nombre/anio/codigo/tipoInscripcion/estadoRegistro;
+  // la UI espera name/year/code/enrollmentType/registrationStatus
+  const normalizedInscripcion = inscripcion
+    ? {
+        ...inscripcion,
+        enrollment: inscripcion.enrollment
+          ? {
+              ...inscripcion.enrollment,
+              id: inscripcion.enrollment.id,
+              managementId: inscripcion.enrollment.managementId ?? inscripcion.enrollment.gestionId,
+              enrollmentType: inscripcion.enrollment.enrollmentType ?? inscripcion.enrollment.tipoInscripcion,
+            }
+          : null,
+        management: inscripcion.management
+          ? {
+              ...inscripcion.management,
+              name: inscripcion.management.name ?? inscripcion.management.nombre,
+              year: inscripcion.management.year ?? inscripcion.management.anio,
+            }
+          : null,
+        career: inscripcion.career
+          ? {
+              ...inscripcion.career,
+              code: inscripcion.career.code ?? inscripcion.career.codigo,
+              name: inscripcion.career.name ?? inscripcion.career.nombre,
+            }
+          : null,
+        studentAcademicData: inscripcion.studentAcademicData
+          ? {
+              ...inscripcion.studentAcademicData,
+              registrationStatus: inscripcion.studentAcademicData.registrationStatus ?? inscripcion.studentAcademicData.estadoRegistro,
+              careerId: inscripcion.studentAcademicData.careerId ?? inscripcion.studentAcademicData.carreraId,
+            }
+          : null,
+      }
+    : null;
 
   // Enriquecer asignaciones de becas con información de tipo de beca y gestión
   const enrichedScholarships = (Array.isArray(scholarships) ? scholarships : []).map((scholarship) => {
@@ -121,6 +172,8 @@ export const estudianteDetailMapper = (dataBackend) => {
       trabaja: student.works ?? false,
       empresaInstitucion: student.employerInstitution ?? '',
       cargo: student.position ?? '',
+      // Tipo de admisión asociado a sus datos académicos (para mostrar en cabecera)
+      tipoAdmision: academicData?.tipoAdmision ?? null,
       observaciones: student.observations ?? '',
       activo: student.activo,
       createdAt: student.createdAt,
@@ -136,10 +189,15 @@ export const estudianteDetailMapper = (dataBackend) => {
     tieneDocumentosFaltantes: tieneDocumentosFaltantes === true,
     // Acta de compromiso si existe
     actaCompromiso: actaCompromiso || null,
-    // Inscripción más reciente si existe
-    inscripcion: inscripcion || null,
+    // Inscripción más reciente (normalizada para la UI: name, year, code, enrollmentType, registrationStatus)
+    inscripcion: normalizedInscripcion,
     // Datos académicos (tipoAdmision, gestionIngresoId, carreraId) para formulario de edición / paso 1
     academicData: academicData || null,
+    // Datos de Transitabilidad o Traspaso (para vista detalle y formularios)
+    transitability: transitability || null,
+    transfer: transfer || null,
+    // Catálogos (managements, scholarships) para mostrar nombres en tab Académico
+    catalogs: catalogs || {},
   };
 };
 

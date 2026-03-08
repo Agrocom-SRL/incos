@@ -264,16 +264,16 @@ const PaymentFormFields = ({
         </Col>
       )}
 
-      {/* 6. Descripción - Opcional */}
+      {/* 6. Observación - Opcional */}
       <Col xs={12}>
         <Form.Item
           name="descripcion"
           label={
             <span style={{ fontWeight: 500, fontSize: '14px' }}>
-              Descripción
+              Observación
             </span>
           }
-          tooltip="Descripción del pago (opcional)"
+          tooltip="Observación del pago: plazo, datos adicionales (opcional)"
           required={false}
           rules={[
             // Validar longitud solo si se proporciona un valor
@@ -283,7 +283,7 @@ const PaymentFormFields = ({
                   return Promise.resolve(); // Permitir vacío
                 }
                 if (value.trim().length > 500) {
-                  return Promise.reject('La descripción no puede exceder 500 caracteres');
+                  return Promise.reject('La observación no puede exceder 500 caracteres');
                 }
                 return Promise.resolve();
               }
@@ -292,7 +292,7 @@ const PaymentFormFields = ({
         >
           <TextArea
             rows={4}
-            placeholder="Ej: Pago de aporte académico gestión 2025..."
+            placeholder="Ej: Plazo de entrega, datos adicionales..."
             maxLength={500}
             showCount
             style={{

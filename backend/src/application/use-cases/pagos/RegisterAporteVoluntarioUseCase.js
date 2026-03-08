@@ -676,7 +676,8 @@ export class RegisterAporteVoluntarioUseCase {
                 montoPagado: montoEstaCuota ?? 0,
                 saldoPendiente: saldoPendiente ?? 0,
 
-                concepto: paymentPlain.descripcion || paymentPlain.description || 'Aporte Voluntario Anual',
+                concepto: 'Aporte Académico',
+                observacion: (paymentPlain.description ?? paymentPlain.descripcion ?? '').toString().trim() || '',
                 metodoPago: paymentMethod?.nombre || paymentMethod?.name || 'N/A',
                 numeroTransaccion: paymentPlain.numeroTransaccion || paymentPlain.numero_transaccion || paymentPlain.transactionNumber || paymentPlain.transaction_number || null,
 

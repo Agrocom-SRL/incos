@@ -29,7 +29,10 @@ const EstudianteDatosAcademicosStepContent = ({
   gestionesError = null,
 }) => {
   const tipoAdmision = Form.useWatch('tipoAdmision', form);
-  const esAntiguo = tipoAdmision === 'ANTIGUO';
+  const requiereGestion =
+    tipoAdmision === 'ANTIGUO' ||
+    tipoAdmision === 'TRANSITABILIDAD' ||
+    tipoAdmision === 'TRASPASO';
   const carreraField = section?.fields?.find((f) => f.name === 'carreraId');
 
   return (
@@ -47,18 +50,19 @@ const EstudianteDatosAcademicosStepContent = ({
       }}
     >
       <Row gutter={24}>
-        {esAntiguo && (
+        {requiereGestion && (
           <Col xs={24} sm={24} md={8} lg={8}>
             <GestionSelectionSection
               form={form}
               gestiones={gestiones}
               loading={gestionesLoading}
               error={gestionesError}
+              tipoAdmision={tipoAdmision}
             />
           </Col>
         )}
         {carreraField && (
-          <Col xs={24} sm={24} md={esAntiguo ? 16 : 24} lg={esAntiguo ? 16 : 24}>
+          <Col xs={24} sm={24} md={requiereGestion ? 16 : 24} lg={requiereGestion ? 16 : 24}>
             <CarreraSelectionSection
               form={form}
               carreras={carreras}
@@ -66,7 +70,7 @@ const EstudianteDatosAcademicosStepContent = ({
               error={carrerasError}
               onCarreraChange={() => {}}
               embedded
-              compact={!!esAntiguo}
+              compact={!!requiereGestion}
             />
           </Col>
         )}

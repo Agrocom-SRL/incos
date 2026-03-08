@@ -1,6 +1,9 @@
+import fs from 'fs';
+import path from 'path';
 import { NotFoundError } from '../../../domain/errors/AppError.js';
 import { TIPOS_DOCUMENTO_SISTEMA } from '../../../domain/constants/index.js';
 import { UPLOAD } from '../../../infrastructure/config/uploads.config.js';
+import { serverConfig } from '../../../infrastructure/config/server.config.js';
 import { BaseDocumentGenerationUseCase } from '../base/BaseDocumentGenerationUseCase.js';
 
 /**
@@ -95,6 +98,16 @@ export class GenerateFormularioInscripcionUseCase extends BaseDocumentGeneration
         });
 
         try {
+            // 0. Si ya existe el archivo en disco, retornar sus rutas sin regenerar
+            const existing = await this._tryGetExistingFormularioFile(studentId);
+            if (existing) {
+                this.logger.info('[Inscripciones] Formulario de inscripción ya existe en disco, se retorna sin regenerar', {
+                    studentId,
+                    filePath: existing.filePath,
+                });
+                return existing;
+            }
+
             // 1. Validar y obtener estudiante
             const student = await this._validateAndGetStudent(studentId);
 
@@ -114,7 +127,7 @@ export class GenerateFormularioInscripcionUseCase extends BaseDocumentGeneration
             // 6. Generar PDF con gestión activa, datos del estudiante, datos académicos, inscripción y entregas
             const pdfBuffer = await this._generatePdfBuffer(gestionYear, student, academicData, enrollmentData, entregas);
 
-            // 4. Guardar archivo y persistir en BD
+            // 7. Guardar archivo y persistir en BD
             const result = await this._persistDocument(studentId, pdfBuffer, student);
 
             this.logger.info('[Inscripciones] Formulario de inscripción PDF generado correctamente', {
@@ -131,6 +144,83 @@ export class GenerateFormularioInscripcionUseCase extends BaseDocumentGeneration
                 stack: error.stack,
             });
             throw error;
+        }
+    }
+
+    /**
+     * Busca un documento de formulario de inscripción existente para el estudiante y verifica
+     * si el archivo existe en disco. Si existe, retorna las rutas para descarga sin regenerar.
+     *
+     * @private
+     * @param {number} studentId - ID del estudiante
+     * @returns {Promise<{filePath: string, fileName: string, absolutePath: string}|null>} Rutas si el archivo existe, null en caso contrario
+     */
+    async _tryGetExistingFormularioFile(studentId) {
+        try {
+            const documentosResult = await this.studentDocumentRepository.findAll(
+                {
+                    studentId,
+                    tipoDocumento: 'INSCRIPCION',
+                    includeInactive: true,
+                },
+                null,
+                null
+            );
+            const documentos = documentosResult.studentDocuments || [];
+
+            const formulariosDocs = documentos
+                .map((doc) => (doc?.toPlainObject ? doc.toPlainObject() : doc))
+                .filter((doc) => {
+                    const fileName = doc.fileName || doc.nombreArchivo || '';
+                    const fileNameLower = (fileName || '').toLowerCase();
+                    const isFormulario =
+                        (fileName || '').includes('BOLETA_INSCRIPCION') ||
+                        (fileName || '').includes('FORMULARIO_INSCRIPCION') ||
+                        fileNameLower.includes('formulario_inscripcion');
+                    const isPdf = (doc.extension || '').toLowerCase() === 'pdf' || fileNameLower.endsWith('.pdf');
+                    return doc.tipoDocumento === 'INSCRIPCION' && isFormulario && isPdf;
+                })
+                .sort((a, b) => {
+                    const dateA = a.createdAt ? new Date(a.createdAt) : new Date(0);
+                    const dateB = b.createdAt ? new Date(b.createdAt) : new Date(0);
+                    return dateB - dateA;
+                });
+
+            const doc = formulariosDocs[0];
+            if (!doc) return null;
+
+            const filePathRaw = (doc.filePath || doc.rutaArchivo || '').replace(/\\/g, '/');
+            const fileNameRaw = doc.fileName || doc.nombreArchivo || 'formulario_inscripcion.pdf';
+            let relativePath = filePathRaw.replace(/^\/+/, '').replace(/^uploads\//, '');
+            if (!relativePath || (!relativePath.startsWith('documentos/') && !relativePath.includes('documentos'))) {
+                relativePath = `documentos/estudiantes/${studentId}/${path.basename(fileNameRaw)}`;
+            }
+
+            const uploadDir = serverConfig.uploadsPath || 'uploads';
+            const absolutePath = path.isAbsolute(uploadDir)
+                ? path.join(uploadDir, relativePath)
+                : path.resolve(serverConfig.backendRoot, uploadDir, relativePath);
+
+            if (!fs.existsSync(absolutePath)) {
+                this.logger.warn('[Inscripciones] Registro de formulario existe en BD pero el archivo no está en disco', {
+                    studentId,
+                    absolutePath,
+                });
+                return null;
+            }
+
+            const filePath = `/${path.join(uploadDir, relativePath).replace(/\\/g, '/')}`;
+            return {
+                filePath,
+                fileName: fileNameRaw,
+                absolutePath,
+            };
+        } catch (err) {
+            this.logger.warn('[Inscripciones] Error al buscar formulario existente', {
+                studentId,
+                error: err.message,
+            });
+            return null;
         }
     }
 
@@ -248,6 +338,7 @@ export class GenerateFormularioInscripcionUseCase extends BaseDocumentGeneration
                 carreraNombre: data.carrera_nombre || data.carreraNombre || null,
                 carreraCodigo: data.carrera_codigo || data.carreraCodigo || null,
                 estadoAcademico: data.estado_academico || data.estadoAcademico || null,
+                tipoAdmision: data.tipo_admision || data.tipoAdmision || null,
             };
         } catch (error) {
             this.logger.error('[Inscripciones] Error al obtener datos académicos', {
@@ -259,12 +350,13 @@ export class GenerateFormularioInscripcionUseCase extends BaseDocumentGeneration
     }
 
     /**
-     * Obtiene la inscripción actual del estudiante con materias desde vista_estudiante_inscripcion_actual
-     * 
+     * Obtiene la inscripción actual del estudiante con materias desde vista_estudiante_inscripcion_actual.
+     * Paralelo y periodo vienen de esa vista (vista_base_paralelos_info); no de vista_estudiante_datos_academicos.
+     *
      * @private
      * @param {number} studentId - ID del estudiante
      * @param {number} managementId - ID de la gestión activa
-     * @returns {Promise<Object|null>} Datos de inscripción con materias o null si no existe
+     * @returns {Promise<Object|null>} Datos de inscripción con materias, paraleloLabel (con periodo), periodoNombre
      */
     async _fetchEnrollmentData(studentId, managementId) {
         try {
@@ -283,17 +375,21 @@ export class GenerateFormularioInscripcionUseCase extends BaseDocumentGeneration
 
             // Extraer datos únicos de la inscripción (todos los registros tienen los mismos datos de inscripción)
             const firstRow = results[0];
+            // Cada fila de la vista trae paralelo y periodo de esa materia/curso (pueden variar por materia)
             const materias = results.map(row => ({
                 sigla: row.materia_sigla || row.materiaSigla || '',
                 nombre: row.materia_nombre || row.materiaNombre || '',
                 periodo: row.periodo_numero || row.periodoNumero || null,
                 periodoNombre: row.periodo_nombre || row.periodoNombre || null,
+                paraleloNombre: row.paralelo_nombre ?? row.paraleloNombre ?? null,
+                paraleloTurno: row.paralelo_turno ?? row.paraleloTurno ?? null,
                 horas: row.horas_semanales || row.horasSemanales || null,
             }));
 
-            // Obtener periodo único (si todas las materias tienen el mismo periodo)
+            // Periodo: desde primera fila (vista_estudiante_inscripcion_actual trae periodo_nombre por paralelo)
+            const periodoNombreFromRow = (firstRow.periodo_nombre ?? firstRow.periodoNombre ?? '').toString().trim() || null;
             const periodosUnicos = [...new Set(materias.map(m => m.periodoNombre).filter(Boolean))];
-            const periodoNombre = periodosUnicos.length === 1 ? periodosUnicos[0] : null;
+            const periodoNombre = periodoNombreFromRow || (periodosUnicos.length === 1 ? periodosUnicos[0] : null);
 
             // Paralelo y turno desde la vista (una fila por materia; paralelo/periodo son iguales en todas)
             const paraleloNombre = firstRow.paralelo_nombre ?? firstRow.paraleloNombre ?? null;
@@ -301,7 +397,7 @@ export class GenerateFormularioInscripcionUseCase extends BaseDocumentGeneration
             const paraleloPart = [paraleloNombre, paraleloTurno].filter(Boolean).join(' - ');
             const paraleloLabel = paraleloPart
                 ? (periodoNombre ? `${paraleloPart} (${periodoNombre})` : paraleloPart)
-                : periodoNombre;
+                : (periodoNombre || null);
 
             return {
                 inscripcionId: firstRow.inscripcion_id || firstRow.inscripcionId,

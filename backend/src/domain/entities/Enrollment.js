@@ -65,11 +65,11 @@ export class Enrollment extends BaseEntity {
   }
 
   /**
-   * Verifica si es un traspaso de entrada (de otro instituto)
+   * Verifica si es un traspaso (de otro instituto)
    * @returns {boolean}
    */
   isTransferBetweenCampuses() {
-    return this.enrollmentType === TIPOS_INSCRIPCION.TRASPASO_ENTRADA;
+    return this.enrollmentType === TIPOS_INSCRIPCION.TRASPASO;
   }
 
   /**
@@ -77,7 +77,7 @@ export class Enrollment extends BaseEntity {
    * @returns {boolean}
    */
   isTransitabilidadEntrada() {
-    return this.enrollmentType === TIPOS_INSCRIPCION.TRANSITABILIDAD_ENTRADA;
+    return this.enrollmentType === TIPOS_INSCRIPCION.TRANSITABILIDAD;
   }
 
   /**

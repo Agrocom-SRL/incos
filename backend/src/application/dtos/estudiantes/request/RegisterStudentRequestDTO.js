@@ -88,6 +88,29 @@ export class RegisterStudentRequestDTO {
       tipoAdmision,
       gestionIngresoId, // Gestión de ingreso (requerido si tipoAdmision === 'ANTIGUO')
       carreraId, // Carrera de ingreso (requerido si tipoAdmision === 'ANTIGUO')
+      // Campos específicos de Transitabilidad (formulario de transitabilidad)
+      transitabilidad_institucion_nombre,
+      transitabilidad_codigo_sie,
+      transitabilidad_tipo,
+      transitabilidad_dependencia,
+      transitabilidad_departamento_id,
+      transitabilidad_distrito_educativo,
+      transitabilidad_carrera_origen,
+      transitabilidad_anio_conclusion,
+      transitabilidad_regimen_estudios,
+      transitabilidad_estado,
+      transitabilidad_motivo_no_procedente,
+      // Campos específicos de Traspaso (formulario de traspaso)
+      traspaso_institucion_origen_nombre,
+      traspaso_codigo_rude,
+      traspaso_dependencia,
+      traspaso_departamento_id,
+      traspaso_distrito_educativo,
+      traspaso_carrera_origen,
+      traspaso_anio_cursado,
+      traspaso_regimen_origen,
+      traspaso_estado,
+      traspaso_motivo_no_procedente,
       // Arrays y objetos
       contactosEmergencia,
       documentacion,
@@ -220,6 +243,51 @@ export class RegisterStudentRequestDTO {
       }
     }
 
+    // 6. Datos específicos de Transitabilidad
+    let transitability = null;
+    if (tipoAdmision === 'TRANSITABILIDAD') {
+      const deptId =
+        transitabilidad_departamento_id != null && transitabilidad_departamento_id !== ''
+          ? parseInt(transitabilidad_departamento_id, 10)
+          : null;
+
+      transitability = {
+        institucionNombre: transitabilidad_institucion_nombre || null,
+        codigoSie: transitabilidad_codigo_sie || null,
+        tipoInstitucion: transitabilidad_tipo || null, // UETHP / CEA
+        dependencia: transitabilidad_dependencia || null,
+        departamentoId: !Number.isNaN(deptId) ? deptId : null,
+        distritoEducativo: transitabilidad_distrito_educativo || null,
+        carreraOrigen: transitabilidad_carrera_origen || null,
+        anioConclusion: transitabilidad_anio_conclusion || null,
+        regimenEstudios: transitabilidad_regimen_estudios || null,
+        estado: transitabilidad_estado || 'SOLICITADO',
+        motivoNoProcedente: transitabilidad_motivo_no_procedente || null,
+      };
+    }
+
+    // 7. Datos específicos de Traspaso
+    let transfer = null;
+    if (tipoAdmision === 'TRASPASO') {
+      const deptId =
+        traspaso_departamento_id != null && traspaso_departamento_id !== ''
+          ? parseInt(traspaso_departamento_id, 10)
+          : null;
+
+      transfer = {
+        institucionNombre: traspaso_institucion_origen_nombre || null,
+        codigoRude: traspaso_codigo_rude || null,
+        dependencia: traspaso_dependencia || null,
+        departamentoId: !Number.isNaN(deptId) ? deptId : null,
+        distritoEducativo: traspaso_distrito_educativo || null,
+        carreraOrigen: traspaso_carrera_origen || null,
+        anioCursado: traspaso_anio_cursado || null, // PRIMERO / SEGUNDO
+        regimenOrigen: traspaso_regimen_origen || null, // SEMESTRAL / ANUAL
+        estado: traspaso_estado || 'SOLICITADO',
+        motivoNoProcedente: traspaso_motivo_no_procedente || null,
+      };
+    }
+
     return {
       student,
       guardians,
@@ -229,6 +297,8 @@ export class RegisterStudentRequestDTO {
       tipoAdmision, // Tipo de admisión (NUEVO, ANTIGUO, TRANSITABILIDAD, TRASPASO)
       gestionIngresoId, // Gestión de ingreso (requerido si tipoAdmision === 'ANTIGUO')
       carreraId, // Carrera de ingreso (requerido si tipoAdmision === 'ANTIGUO')
+      transitability,
+      transfer,
     };
   }
 }

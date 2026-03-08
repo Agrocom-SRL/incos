@@ -31,6 +31,7 @@ import { responseFormatter } from '../../services/ResponseFormatter.js';
 import { createValidateRequest } from '../../../presentation/middleware/validation.middleware.js';
 import { ActaCompromisoPdfGenerator } from '../../external/pdf/ActaCompromisoPdfGenerator.js';
 import { FormularioInscripcionPdfGenerator } from '../../external/pdf/FormularioInscripcionPdfGenerator.js';
+import { DeclaracionJuradaPdfGenerator } from '../../external/pdf/DeclaracionJuradaPdfGenerator.js';
 import { ReciboPagoPdfGenerator } from '../../external/pdf/ReciboPagoPdfGenerator.js';
 import { PDFGenerator } from '../../external/pdf/PDFGenerator.js';
 import { UploadsStorageAdapter } from '../../services/UploadsStorageAdapter.js';
@@ -80,6 +81,17 @@ export function registerServicesModule(container) {
     );
 
     // ============================================
+    // DECLARACIÓN JURADA PDF GENERATOR (interno)
+    // ============================================
+    registerService(
+        container,
+        SERVICIOS_TOKENS.declaracionJuradaPdfGenerator,
+        (c) => new DeclaracionJuradaPdfGenerator({
+            logger: c.resolve(SERVICIOS_TOKENS.logger),
+        })
+    );
+
+    // ============================================
     // RECIBO PAGO PDF GENERATOR (interno)
     // ============================================
     registerService(
@@ -99,6 +111,7 @@ export function registerServicesModule(container) {
         (c) => new PDFGenerator({
             actaCompromisoPdfGenerator: c.resolve(SERVICIOS_TOKENS.actaCompromisoPdfGenerator),
             formularioInscripcionPdfGenerator: c.resolve(SERVICIOS_TOKENS.formularioInscripcionPdfGenerator),
+            declaracionJuradaPdfGenerator: c.resolve(SERVICIOS_TOKENS.declaracionJuradaPdfGenerator),
             reciboPagoPdfGenerator: c.resolve(SERVICIOS_TOKENS.reciboPagoPdfGenerator),
             logger: c.resolve(SERVICIOS_TOKENS.logger),
         })

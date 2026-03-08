@@ -1,13 +1,13 @@
 /**
  * Provider: StudentDetailProvider
- * 
+ *
  * Single Responsibility: Proporcionar estado compartido para el detalle de un estudiante
- * 
+ *
  * Clean Architecture:
  * - Application Layer: Provider específico para la feature de detalle de estudiante
- * - Usa useGetStudentById para obtener datos del backend
- * - Maneja el estado del estudiante completo con todos sus datos relacionados
- * 
+ * - Usa useStudentDetail (Global State) para obtener, mapear y exponer el detalle
+ * - No duplica lógica de API/mapeo; el hook global se encarga de eso
+ *
  * Ventajas:
  * - Aislamiento: estado independiente para el detalle
  * - Reutilizable: puede usarse en cualquier componente que necesite el detalle
@@ -15,37 +15,12 @@
  * - Carga automática: carga el estudiante automáticamente cuando se proporciona studentId
  */
 
-import { useEffect } from 'react';
-import { useGetStudentById } from '@application-estudiantes/hooks/api';
+import { useStudentDetail } from '@application-estudiantes/hooks';
 import { StudentDetailContext } from '@application-estudiantes/context/StudentDetailContext';
-import { mapEstudianteDetail } from '@application-estudiantes/mappers';
 
 export const StudentDetailProvider = ({ children, studentId }) => {
-  // Hook para obtener el estudiante por ID
-  const { student: studentRaw, loading, error, getStudentById, refetch } = useGetStudentById();
+  const value = useStudentDetail(studentId);
 
-  // Cargar automáticamente el estudiante cuando se proporciona studentId
-  useEffect(() => {
-    if (studentId) {
-      getStudentById(studentId);
-    }
-  }, [studentId, getStudentById]);
-
-  // Mapear los datos del estudiante usando el mapper
-  const student = studentRaw ? mapEstudianteDetail(studentRaw) : null;
-
-  const value = {
-    student,
-    loading,
-    error,
-    getStudentById,
-    refetch: () => refetch(studentId),
-  };
-
-  return (
-    <StudentDetailContext.Provider value={value}>
-      {children}
-    </StudentDetailContext.Provider>
-  );
+  return <StudentDetailContext.Provider value={value}>{children}</StudentDetailContext.Provider>;
 };
 
