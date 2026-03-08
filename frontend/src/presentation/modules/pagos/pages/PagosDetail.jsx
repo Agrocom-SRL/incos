@@ -12,7 +12,7 @@ import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { usePagosDetailContext, useEstadoAporteRegistro, useDeletePagoAporte } from '@application-pagos/hooks';
 import { Spin, Alert, Empty, Tabs, Tag, Button, Table } from 'antd';
-import { DollarOutlined, UserOutlined, FileTextOutlined, DownloadOutlined, ArrowLeftOutlined, DeleteOutlined } from '@ant-design/icons';
+import { DollarOutlined, UserOutlined, FileTextOutlined, DownloadOutlined, ArrowLeftOutlined, DeleteOutlined, PlusCircleOutlined } from '@ant-design/icons';
 import { downloadFile } from '@application/utils';
 import { useCasesFactory } from '@container';
 import { showDeleteConfirm } from '@molecules/DeleteConfirmModal';
@@ -50,10 +50,11 @@ const Field = ({ label, children, span = 1 }) => (
 
 /* ─────────────────────────────────────────
    Átomo: InfoCard — card de sección
+   headVariant: 'resumen' = resumen del aporte (sistema, la base). Sin variant = color primary (detalle pago/cuota).
 ───────────────────────────────────────── */
-const InfoCard = ({ title, icon, extra, children, cols = 2 }) => (
+const InfoCard = ({ title, icon, extra, children, cols = 2, headVariant }) => (
   <div className="sd-card">
-    <div className="sd-card__head">
+    <div className={`sd-card__head${headVariant ? ` sd-card__head--${headVariant}` : ''}`}>
       <span className="sd-card__title">
         {icon && <span className="sd-card__title-icon">{icon}</span>}
         {title}
@@ -141,6 +142,15 @@ const PagosDetail = () => {
     }
   }, [volverALista, studentIdFromState, navigate]);
 
+  const studentIdForRegistrar = pago?.estudiante?.id ?? pago?.student_id ?? studentIdFromState ?? null;
+  const handleRegistrarSiguienteCuota = useCallback(() => {
+    if (!studentIdForRegistrar) {
+      message.warning('No se puede registrar cuota: falta ID del estudiante');
+      return;
+    }
+    navigate('/pagos/registrar', { state: { studentId: studentIdForRegistrar } });
+  }, [navigate, studentIdForRegistrar, message]);
+
   const handleEliminarPago = useCallback(async () => {
     if (!pago?.id) return;
     await showDeleteConfirm({
@@ -197,93 +207,127 @@ const PagosDetail = () => {
             )}
           </InfoCard>
         )}
+        {/* Resumen del aporte = estado del sistema (estado-registro). Color distinto = "la base". */}
+        {estadoAporte && (
+          <InfoCard title="Resumen del aporte" icon={<DollarOutlined />} cols={2} headVariant="resumen">
+            <Field label="Concepto">
+              {estadoAporte.gestion
+                ? `Aporte Académico - Gestión ${estadoAporte.gestion.nombre || ''}`.trim()
+                : 'Aporte Académico'}
+            </Field>
+            <Field label="Monto base / obligatorio">
+              Bs. {Number(estadoAporte.monto_base ?? estadoAporte.monto_obligatorio ?? 0).toLocaleString('es-BO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </Field>
+            <Field label="Total pagado">
+              Bs. {Number(estadoAporte.total_pagado ?? 0).toLocaleString('es-BO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </Field>
+            <Field label="Saldo pendiente">
+              {Number(estadoAporte.saldo_pendiente ?? 0) > 0 ? (
+                <span className="sd-field__value--danger">
+                  Bs. {Number(estadoAporte.saldo_pendiente ?? 0).toLocaleString('es-BO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </span>
+              ) : (
+                `Bs. ${Number(estadoAporte.saldo_pendiente ?? 0).toLocaleString('es-BO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+              )}
+            </Field>
+          </InfoCard>
+        )}
+      </div>
+    );
+    const cuotasChildren = (
+      <div className="sd-tab-body">
+        {/* Datos del aporte = cabecera pago_aporte: estado, descuento, montos, total pagado, saldo. Botón lleva a registrar siguiente cuota. */}
         <InfoCard title="Datos del aporte" icon={<DollarOutlined />} cols={3}>
-          <Field label="Monto base">Bs. {formatMonto(pago.monto_base ?? pago.baseAmount ?? pago.montoBase ?? 0)}</Field>
-          <Field label="Descuento beca">
-            {pago.descuento_beca ?? pago.scholarship_discount ?? pago.descuentoBeca
-              ? `Bs. ${formatMonto(pago.descuento_beca ?? pago.scholarship_discount ?? pago.descuentoBeca)}`
-              : 'Sin descuento'}
-          </Field>
-          <Field label="Monto obligatorio">Bs. {formatMonto(montoObligatorioVal)}</Field>
-          <Field label="Estado" span={3}>
+          <Field label="Estado">
             {estadoPagoVal ? (
               <Tag color={estadoPagoVal === 'CANCELADO' ? 'success' : estadoPagoVal === 'PARCIAL' ? 'processing' : 'default'}>
                 {estadoPagoVal}
               </Tag>
             ) : '—'}
           </Field>
+          <Field label="Monto base">Bs. {formatMonto(pago.monto_base ?? pago.baseAmount ?? pago.montoBase ?? 0)}</Field>
+          <Field label="Descuento beca (monto descontado)">
+            {pago.descuento_beca ?? pago.scholarship_discount ?? pago.descuentoBeca
+              ? `Bs. ${formatMonto(pago.descuento_beca ?? pago.scholarship_discount ?? pago.descuentoBeca)}`
+              : 'Bs. 0.00'}
+          </Field>
+          <Field label="Monto obligatorio">Bs. {formatMonto(montoObligatorioVal)}</Field>
+          <Field label="Total pagado">
+            Bs. {Number(estadoAporte?.total_pagado ?? 0).toLocaleString('es-BO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </Field>
+          <Field label="Saldo pendiente">
+            {Number(estadoAporte?.saldo_pendiente ?? 0) > 0 ? (
+              <span className="sd-field__value--danger">
+                Bs. {Number(estadoAporte.saldo_pendiente ?? 0).toLocaleString('es-BO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </span>
+            ) : (
+              `Bs. ${Number(estadoAporte?.saldo_pendiente ?? 0).toLocaleString('es-BO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+            )}
+          </Field>
         </InfoCard>
-      </div>
-    );
-    const cuotasChildren = (
-      <div className="sd-tab-body">
         {loadingEstado ? (
           <div className="sd-loading" style={{ padding: '40px' }}>
             <Spin tip="Cargando detalle del aporte..." />
           </div>
-        ) : estadoAporte ? (
-          <>
-            <InfoCard title="Resumen del aporte" icon={<DollarOutlined />} cols={2}>
-              <Field label="Concepto">
-                {estadoAporte.gestion
-                  ? `Aporte Académico - Gestión ${estadoAporte.gestion.nombre || ''} ${estadoAporte.gestion.anio || ''}`.trim()
-                  : 'Aporte Académico'}
-              </Field>
-              <Field label="Monto base / obligatorio">
-                Bs. {Number(estadoAporte.monto_base ?? estadoAporte.monto_obligatorio ?? 0).toLocaleString('es-BO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </Field>
-              <Field label="Total pagado">
-                Bs. {Number(estadoAporte.total_pagado ?? 0).toLocaleString('es-BO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </Field>
-              <Field label="Saldo pendiente">
-                Bs. {Number(estadoAporte.saldo_pendiente ?? 0).toLocaleString('es-BO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </Field>
-            </InfoCard>
-            {estadoAporte.cuotas && estadoAporte.cuotas.length > 0 && (
+        ) : estadoAporte?.cuotas && estadoAporte.cuotas.length > 0 ? (
               <InfoCard title={`Cuotas registradas (${estadoAporte.cuotas.length})`} icon={<DownloadOutlined />} cols={1}>
                 <Table
                   dataSource={estadoAporte.cuotas}
                   rowKey={(r) => r.id ?? r.numero_recibo}
                   pagination={false}
                   size="small"
+                  expandable={{
+                    expandedRowRender: (record) => {
+                      const cp = record.cuenta_pago;
+                      const hasObservacion = record.observacion && String(record.observacion).trim();
+                      const hasTransaccion = record.numero_transaccion && String(record.numero_transaccion).trim();
+                      const hasComprobante = record.codigo_comprobante && String(record.codigo_comprobante).trim();
+                      const hasCuenta = cp && (cp.nombre_titular || cp.numero_cuenta || cp.numero_celular);
+                      const hasExtra = hasObservacion || hasTransaccion || hasComprobante || hasCuenta;
+                      if (!hasExtra) {
+                        return <span className="sd-field__value" style={{ color: 'var(--text-500)', fontSize: '13px' }}>Sin datos adicionales</span>;
+                      }
+                      return (
+                        <div className="sd-card__body" style={{ padding: '12px 16px', gap: '8px', display: 'flex', flexDirection: 'column', background: 'var(--border-soft, #f3f4f6)' }}>
+                          {hasCuenta && (
+                            <div>
+                              <span className="sd-field__label" style={{ display: 'block', marginBottom: 2 }}>Cuenta / info</span>
+                              <span className="sd-field__value">
+                                {[cp.nombre_titular, cp.numero_cuenta && `Cuenta: ${cp.numero_cuenta}`, cp.numero_celular && `Cel: ${cp.numero_celular}`].filter(Boolean).join(' · ')}
+                              </span>
+                            </div>
+                          )}
+                          {hasObservacion && (
+                            <div><span className="sd-field__label" style={{ display: 'block', marginBottom: 2 }}>Observación</span><span className="sd-field__value">{String(record.observacion).trim()}</span></div>
+                          )}
+                          {hasTransaccion && (
+                            <div><span className="sd-field__label" style={{ display: 'block', marginBottom: 2 }}>Nº transacción</span><span className="sd-field__value">{record.numero_transaccion}</span></div>
+                          )}
+                          {hasComprobante && (
+                            <div><span className="sd-field__label" style={{ display: 'block', marginBottom: 2 }}>Código comprobante</span><span className="sd-field__value">{record.codigo_comprobante}</span></div>
+                          )}
+                        </div>
+                      );
+                    },
+                    rowExpandable: () => true,
+                  }}
                   columns={[
-                    { title: 'Recibo', dataIndex: 'numero_recibo', key: 'numero_recibo', width: 100, render: (v) => v || '—' },
-                    { title: 'Fecha', dataIndex: 'fecha_pago', key: 'fecha_pago', width: 100, render: (v) => formatFecha(v) },
+                    { title: 'Recibo', dataIndex: 'numero_recibo', key: 'numero_recibo', render: (v) => v || '—' },
+                    { title: 'Fecha', dataIndex: 'fecha_pago', key: 'fecha_pago', render: (v) => formatFecha(v) },
                     {
                       title: 'Monto',
                       dataIndex: 'monto',
                       key: 'monto',
-                      width: 110,
                       render: (v) => `Bs. ${Number(v ?? 0).toLocaleString('es-BO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
                     },
                     {
                       title: 'Método de pago',
                       key: 'metodo_pago',
-                      width: 140,
                       render: (_, record) => {
                         const mp = record.metodo_pago;
                         if (!mp) return '—';
                         return mp.nombre || mp.codigo || '—';
                       },
-                    },
-                    {
-                      title: 'Cuenta / info',
-                      key: 'cuenta_pago',
-                      render: (_, record) => {
-                        const cp = record.cuenta_pago;
-                        if (!cp) return '—';
-                        const parts = [cp.nombre_titular].filter(Boolean);
-                        if (cp.numero_cuenta) parts.push(`Cuenta: ${cp.numero_cuenta}`);
-                        if (cp.numero_celular) parts.push(`Cel: ${cp.numero_celular}`);
-                        return parts.length ? parts.join(' · ') : '—';
-                      },
-                    },
-                    {
-                      title: 'Observación',
-                      dataIndex: 'observacion',
-                      key: 'observacion',
-                      ellipsis: true,
-                      render: (v) => (v && String(v).trim() ? String(v).trim() : '—'),
                     },
                     {
                       title: '',
@@ -304,14 +348,12 @@ const PagosDetail = () => {
                   ]}
                 />
               </InfoCard>
-            )}
-          </>
-        ) : (
+        ) : !estadoAporte ? (
           <div className="sd-empty">
             <DollarOutlined className="sd-empty__icon" />
             <p className="sd-empty__text">No hay estado de aporte disponible para esta gestión.</p>
           </div>
-        )}
+        ) : null}
       </div>
     );
     const becaChildren = pago.beca ? (
@@ -359,7 +401,7 @@ const PagosDetail = () => {
       items.push({ key: 'inscripcion', label: <span className="sd-tab-label"><FileTextOutlined /> Inscripción</span>, children: inscripcionChildren });
     }
     return items;
-  }, [pago, estadoAporte, loadingEstado, handleDownloadReciboCuota, downloadingCuotaId]);
+  }, [pago, estadoAporte, loadingEstado, handleDownloadReciboCuota, downloadingCuotaId, studentIdForRegistrar, handleRegistrarSiguienteCuota]);
 
   if (loading) {
     return (
@@ -445,6 +487,11 @@ const PagosDetail = () => {
           <div className="sd-profile__divider" />
 
           <div className="sd-profile__actions">
+            {studentIdForRegistrar && Number(estadoAporte?.saldo_pendiente ?? 0) > 0 && (
+              <button type="button" className="sd-btn sd-btn--primary" onClick={handleRegistrarSiguienteCuota}>
+                <PlusCircleOutlined /> Registrar siguiente pago
+              </button>
+            )}
             {puedeEliminarPago && (
               <button
                 type="button"

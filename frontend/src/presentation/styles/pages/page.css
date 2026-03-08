@@ -401,6 +401,21 @@
   background: linear-gradient(135deg, #f0f9f4 0%, #e8f5ec 100%);
 }
 
+/* Cabecera = datos oficiales del pago (tab Resumen). Verde más marcado = "primero". */
+.sd-card__head--cabecera {
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  border-bottom-color: rgba(25, 107, 69, 0.25);
+}
+.sd-card__head--cabecera .sd-card__title { color: var(--primary-dark); }
+
+/* Resumen = resumen por usuario/cuotas (tab Cuotas). Azul = "por el usuario". */
+.sd-card__head--resumen {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  border-bottom-color: rgba(59, 130, 246, 0.2);
+}
+.sd-card__head--resumen .sd-card__title { color: #1e40af; }
+.sd-card__head--resumen .sd-card__title-icon { background: #3b82f6; color: #fff; }
+
 .sd-card__title {
   display: flex;
   align-items: center;
@@ -473,6 +488,11 @@
   font-weight: 600;
   color: var(--text-900);
   word-break: break-word;
+}
+
+.sd-field__value--danger {
+  color: #b91c1c !important;
+  font-weight: 700;
 }
 
 .sd-link { color: var(--primary); font-weight: 600; text-decoration: none; }
