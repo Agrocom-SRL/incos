@@ -3,8 +3,8 @@
 -- Sistema de Gestión Académica - Instituto INCOS
 -- Asignación de docentes a cursos - Gestión 2026 (VIGENTE)
 -- ============================================
--- Gestión 2026: gestion_id = 2
--- Plan Sistemas Informáticos: gestion_plan_id = 4
+-- Gestión 2026: gestion_id = 1 (vigente)
+-- Plan Sistemas Informáticos: gestion_plan_id = 1
 -- Periodo: Primer Año (periodo_id = 1)
 -- Paralelos: PRIMERO A (paralelo_id=1), PRIMERO B (paralelo_id=2)
 -- Cursos: IDs 1-14 (1A: 1-7, 1B: 8-14)
@@ -35,37 +35,37 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- MATEMÁTICA PARA LA INFORMÁTICA (curso_id = 1, asignatura_plan_id = 1)
 -- Docente: Ing. Magali Ticlla (docente_id = 3)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(1, 4, 1, 3, 4, TRUE, '2026-01-19', TRUE);
+(1, 1, 1, 3, 4, TRUE, '2026-01-19', TRUE);
 
 -- PROGRAMACIÓN I (curso_id = 2, asignatura_plan_id = 2)
 -- Docente: Ing. Roxana Justiniano (docente_id = 2)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(2, 4, 2, 2, 8, TRUE, '2026-01-19', TRUE);
+(2, 1, 2, 2, 8, TRUE, '2026-01-19', TRUE);
 
 -- INGLÉS TÉCNICO (curso_id = 3, asignatura_plan_id = 3)
 -- Docente: Ing. Waly Vargas (docente_id = 4)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(3, 4, 3, 4, 2, TRUE, '2026-01-19', TRUE);
+(3, 1, 3, 4, 2, TRUE, '2026-01-19', TRUE);
 
 -- HARDWARE DE COMPUTADORAS (curso_id = 4, asignatura_plan_id = 4)
 -- Docente: Ing. Ybeth Camacho (docente_id = 1)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(4, 4, 4, 1, 4, TRUE, '2026-01-19', TRUE);
+(4, 1, 4, 1, 4, TRUE, '2026-01-19', TRUE);
 
 -- TALLER DE SISTEMAS OPERATIVOS (curso_id = 5, asignatura_plan_id = 5)
 -- Docente: Ing. Ybeth Camacho (docente_id = 1)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(5, 4, 5, 1, 4, TRUE, '2026-01-19', TRUE);
+(5, 1, 5, 1, 4, TRUE, '2026-01-19', TRUE);
 
 -- OFIMÁTICA Y TECNOLOGÍA MULTIMEDIA (curso_id = 6, asignatura_plan_id = 6)
 -- Docente: Ing. Waly Vargas (docente_id = 4)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(6, 4, 6, 4, 4, TRUE, '2026-01-19', TRUE);
+(6, 1, 6, 4, 4, TRUE, '2026-01-19', TRUE);
 
 -- DISEÑO Y PROGRAMACIÓN WEB I (curso_id = 7, asignatura_plan_id = 7)
 -- Docente: Ing. Giovanna Fernandez (docente_id = 5)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(7, 4, 7, 5, 4, TRUE, '2026-01-19', TRUE);
+(7, 1, 7, 5, 4, TRUE, '2026-01-19', TRUE);
 
 -- ============================================
 -- INSERTAR ASIGNACIONES - PRIMERO B (NOCHE)
@@ -75,37 +75,37 @@ INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, ca
 -- MATEMÁTICA PARA LA INFORMÁTICA (curso_id = 8, asignatura_plan_id = 1)
 -- Docente: Ing. Magali Ticlla (docente_id = 3)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(8, 4, 8, 3, 4, TRUE, '2026-01-19', TRUE);
+(8, 1, 8, 3, 4, TRUE, '2026-01-19', TRUE);
 
 -- PROGRAMACIÓN I (curso_id = 9, asignatura_plan_id = 2)
 -- Docente: Ing. Roxana Justiniano (docente_id = 2)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(9, 4, 9, 2, 8, TRUE, '2026-01-19', TRUE);
+(9, 1, 9, 2, 8, TRUE, '2026-01-19', TRUE);
 
 -- INGLÉS TÉCNICO (curso_id = 10, asignatura_plan_id = 3)
 -- Docente: Ing. Waly Vargas (docente_id = 4)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(10, 4, 10, 4, 2, TRUE, '2026-01-19', TRUE);
+(10, 1, 10, 4, 2, TRUE, '2026-01-19', TRUE);
 
 -- HARDWARE DE COMPUTADORAS (curso_id = 11, asignatura_plan_id = 4)
 -- Docente: Ing. Ybeth Camacho (docente_id = 1)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(11, 4, 11, 1, 4, TRUE, '2026-01-19', TRUE);
+(11, 1, 11, 1, 4, TRUE, '2026-01-19', TRUE);
 
 -- TALLER DE SISTEMAS OPERATIVOS (curso_id = 12, asignatura_plan_id = 5)
 -- Docente: Ing. Yesmani Fernandez (docente_id = 7)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(12, 4, 12, 7, 4, TRUE, '2026-01-19', TRUE);
+(12, 1, 12, 7, 4, TRUE, '2026-01-19', TRUE);
 
 -- OFIMÁTICA Y TECNOLOGÍA MULTIMEDIA (curso_id = 13, asignatura_plan_id = 6)
 -- Docente: Ing. Magali Ticlla (docente_id = 3)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(13, 4, 13, 3, 4, TRUE, '2026-01-19', TRUE);
+(13, 1, 13, 3, 4, TRUE, '2026-01-19', TRUE);
 
 -- DISEÑO Y PROGRAMACIÓN WEB I (curso_id = 14, asignatura_plan_id = 7)
 -- Docente: Ing. Giovanna Fernandez (docente_id = 5)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(14, 4, 14, 5, 4, TRUE, '2026-01-19', TRUE);
+(14, 1, 14, 5, 4, TRUE, '2026-01-19', TRUE);
 
 -- Rehabilitar foreign key checks
 SET FOREIGN_KEY_CHECKS = 1;

@@ -17,40 +17,26 @@ SET FOREIGN_KEY_CHECKS = 0;
 
 -- ============================================
 -- INSERTAR HABILITACIONES DE PLANES
--- IDs fijos: 1-3 (Gestión 2025), 4-6 (Gestión 2026)
+-- Solo gestión vigente 2026 (gestiones.id = 1). IDs 1, 2, 3 para los tres planes.
+-- No se insertan planes para gestion_id = 2 (2025): sin impacto en asignaciones ni estudiantes.
+-- Asignaciones docentes (seeds 40-48) referencian gestion_plan_id 1, 2, 3.
 -- ============================================
 
 -- ============================================
--- GESTIÓN 2025 (CERRADA)
+-- GESTIÓN 2026 (VIGENTE) — gestiones.id = 1
 -- ============================================
 
--- Habilitación: Plan 1 - Sistemas Informáticos (gestión_id = 1, plan_estudio_id = 1)
+-- Habilitación: Plan 1 - Sistemas Informáticos (gestion_plan_id = 1, usado en asignaciones SIS)
 INSERT INTO gestiones_planes (id, gestion_id, plan_estudio_id, nombre, estado, activo) VALUES
-(1, 1, 1, 'Oferta Gestión 2025 - Plan 2025 Sistemas Informáticos', 'CERRADO', TRUE);
+(1, 1, 1, 'Oferta Gestión 2026 - Plan 2023 Sistemas Informáticos', 'VIGENTE', TRUE);
 
--- Habilitación: Plan 2 - Administración de Empresas (gestión_id = 1, plan_estudio_id = 2)
+-- Habilitación: Plan 2 - Administración de Empresas (gestion_plan_id = 2, usado en asignaciones ADM)
 INSERT INTO gestiones_planes (id, gestion_id, plan_estudio_id, nombre, estado, activo) VALUES
-(2, 1, 2, 'Oferta Gestión 2025 - Plan 2025 Administración de Empresas', 'CERRADO', TRUE);
+(2, 1, 2, 'Oferta Gestión 2026 - Plan 2023 Administración de Empresas', 'VIGENTE', TRUE);
 
--- Habilitación: Plan 3 - Contaduría General (gestión_id = 1, plan_estudio_id = 3)
+-- Habilitación: Plan 3 - Contaduría General (gestion_plan_id = 3, usado en asignaciones CON)
 INSERT INTO gestiones_planes (id, gestion_id, plan_estudio_id, nombre, estado, activo) VALUES
-(3, 1, 3, 'Oferta Gestión 2025 - Plan 2025 Contaduría General', 'CERRADO', TRUE);
-
--- ============================================
--- GESTIÓN 2026 (VIGENTE)
--- ============================================
-
--- Habilitación: Plan 1 - Sistemas Informáticos (gestión_id = 2, plan_estudio_id = 1)
-INSERT INTO gestiones_planes (id, gestion_id, plan_estudio_id, nombre, estado, activo) VALUES
-(4, 2, 1, 'Oferta Gestión 2026 - Plan 2025 Sistemas Informáticos', 'VIGENTE', TRUE);
-
--- Habilitación: Plan 2 - Administración de Empresas (gestión_id = 2, plan_estudio_id = 2)
-INSERT INTO gestiones_planes (id, gestion_id, plan_estudio_id, nombre, estado, activo) VALUES
-(5, 2, 2, 'Oferta Gestión 2026 - Plan 2025 Administración de Empresas', 'VIGENTE', TRUE);
-
--- Habilitación: Plan 3 - Contaduría General (gestión_id = 2, plan_estudio_id = 3)
-INSERT INTO gestiones_planes (id, gestion_id, plan_estudio_id, nombre, estado, activo) VALUES
-(6, 2, 3, 'Oferta Gestión 2026 - Plan 2025 Contaduría General', 'VIGENTE', TRUE);
+(3, 1, 3, 'Oferta Gestión 2026 - Plan 2023 Contaduría General', 'VIGENTE', TRUE);
 
 -- Rehabilitar foreign key checks
 SET FOREIGN_KEY_CHECKS = 1;

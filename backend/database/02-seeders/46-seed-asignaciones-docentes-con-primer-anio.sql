@@ -3,8 +3,8 @@
 -- Sistema de Gestión Académica - Instituto INCOS
 -- Asignación de docentes a cursos - Gestión 2026 (VIGENTE)
 -- ============================================
--- Gestión 2026: gestion_id = 2
--- Plan Contaduría General: gestion_plan_id = 6
+-- Gestión 2026: gestion_id = 1 (vigente)
+-- Plan Contaduría General: gestion_plan_id = 3
 -- Periodo: Primer Año (periodo_id = 7)
 -- Paralelos: PRIMERO A (paralelo_id=11), PRIMERO B (paralelo_id=12), PRIMERO C (paralelo_id=13), PRIMERO D (paralelo_id=14)
 -- Cursos: IDs 75-110 (1A: 75-83, 1B: 84-92, 1C: 93-101, 1D: 102-110)
@@ -45,47 +45,47 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- CONTABILIDAD I (curso_id = 75, asignatura_plan_id = 46) - 8 horas/semana
 -- Docente: Lic. Sebastián Vargas (docente_id = 17)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(75, 6, 75, 17, 8, TRUE, '2026-01-19', TRUE);
+(75, 3, 75, 17, 8, TRUE, '2026-01-19', TRUE);
 
 -- MATEMÁTICA FINANCIERA (curso_id = 76, asignatura_plan_id = 47) - 4 horas/semana
 -- Docente: Lic. Hilda Barriga (docente_id = 16)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(76, 6, 76, 16, 4, TRUE, '2026-01-19', TRUE);
+(76, 3, 76, 16, 4, TRUE, '2026-01-19', TRUE);
 
 -- INFORMÁTICA CONTABLE (curso_id = 77, asignatura_plan_id = 48) - 4 horas/semana
 -- Docente: Lic. Miguel Padilla (docente_id = 21)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(77, 6, 77, 21, 4, TRUE, '2026-01-19', TRUE);
+(77, 3, 77, 21, 4, TRUE, '2026-01-19', TRUE);
 
 -- ADMINISTRACIÓN GENERAL (curso_id = 78, asignatura_plan_id = 49) - 4 horas/semana
 -- Docente: Lic. Sonia Carrizales (docente_id = 18)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(78, 6, 78, 18, 4, TRUE, '2026-01-19', TRUE);
+(78, 3, 78, 18, 4, TRUE, '2026-01-19', TRUE);
 
 -- LEGISLACIÓN LABORAL Y SEGURIDAD SOCIAL APLICADA (curso_id = 79, asignatura_plan_id = 50) - 2 horas/semana
 -- Docente: Téc. Patricia Rodriguez Cuellar (docente_id = 19)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(79, 6, 79, 19, 2, TRUE, '2026-01-19', TRUE);
+(79, 3, 79, 19, 2, TRUE, '2026-01-19', TRUE);
 
 -- ECONOMÍA GENERAL APLICADA (curso_id = 80, asignatura_plan_id = 51) - 2 horas/semana
 -- Docente: Lic. Gonzalo Icuña (docente_id = 20)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(80, 6, 80, 20, 2, TRUE, '2026-01-19', TRUE);
+(80, 3, 80, 20, 2, TRUE, '2026-01-19', TRUE);
 
 -- DOCUMENTOS COMERCIALES Y MERCANTILES (curso_id = 81, asignatura_plan_id = 52) - 2 horas/semana
 -- Docente: Lic. Hilda Barriga (docente_id = 16)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(81, 6, 81, 16, 2, TRUE, '2026-01-19', TRUE);
+(81, 3, 81, 16, 2, TRUE, '2026-01-19', TRUE);
 
 -- ESTADÍSTICA APLICADA (curso_id = 82, asignatura_plan_id = 53) - 2 horas/semana
 -- Docente: Lic. Jose Luis Montenegro (docente_id = 22)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(82, 6, 82, 22, 2, TRUE, '2026-01-19', TRUE);
+(82, 3, 82, 22, 2, TRUE, '2026-01-19', TRUE);
 
 -- INGLÉS TÉCNICO (curso_id = 83, asignatura_plan_id = 54) - 2 horas/semana
 -- Docente: Ing. Waly Vargas (docente_id = 4) - Compartido con SIS-INF
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(83, 6, 83, 4, 2, TRUE, '2026-01-19', TRUE);
+(83, 3, 83, 4, 2, TRUE, '2026-01-19', TRUE);
 
 -- ============================================
 -- INSERTAR ASIGNACIONES - PRIMERO B (TARDE)
@@ -95,47 +95,47 @@ INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, ca
 -- CONTABILIDAD I (curso_id = 84, asignatura_plan_id = 46) - 8 horas/semana
 -- Docente: Lic. Teodora Paraguayo (docente_id = 29)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(84, 6, 84, 29, 8, TRUE, '2026-01-19', TRUE);
+(84, 3, 84, 29, 8, TRUE, '2026-01-19', TRUE);
 
 -- MATEMÁTICA FINANCIERA (curso_id = 85, asignatura_plan_id = 47) - 4 horas/semana
 -- Docente: Lic. Georgina Moron (docente_id = 12) - Compartido con ADM-EMP
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(85, 6, 85, 12, 4, TRUE, '2026-01-19', TRUE);
+(85, 3, 85, 12, 4, TRUE, '2026-01-19', TRUE);
 
 -- INFORMÁTICA CONTABLE (curso_id = 86, asignatura_plan_id = 48) - 4 horas/semana
 -- Docente: Lic. Franz Lujan (docente_id = 23)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(86, 6, 86, 23, 4, TRUE, '2026-01-19', TRUE);
+(86, 3, 86, 23, 4, TRUE, '2026-01-19', TRUE);
 
 -- ADMINISTRACIÓN GENERAL (curso_id = 87, asignatura_plan_id = 49) - 4 horas/semana
 -- Docente: Lic. Willma Fernandez (docente_id = 26)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(87, 6, 87, 26, 4, TRUE, '2026-01-19', TRUE);
+(87, 3, 87, 26, 4, TRUE, '2026-01-19', TRUE);
 
 -- LEGISLACIÓN LABORAL Y SEGURIDAD SOCIAL APLICADA (curso_id = 88, asignatura_plan_id = 50) - 2 horas/semana
 -- Docente: Téc. Patricia Rodriguez Cuellar (docente_id = 19)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(88, 6, 88, 19, 2, TRUE, '2026-01-19', TRUE);
+(88, 3, 88, 19, 2, TRUE, '2026-01-19', TRUE);
 
 -- ECONOMÍA GENERAL APLICADA (curso_id = 89, asignatura_plan_id = 51) - 2 horas/semana
 -- Docente: Lic. Georgina Moron (docente_id = 12) - Compartido con ADM-EMP
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(89, 6, 89, 12, 2, TRUE, '2026-01-19', TRUE);
+(89, 3, 89, 12, 2, TRUE, '2026-01-19', TRUE);
 
 -- DOCUMENTOS COMERCIALES Y MERCANTILES (curso_id = 90, asignatura_plan_id = 52) - 2 horas/semana
 -- Docente: Lic. Hilda Barriga (docente_id = 16)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(90, 6, 90, 16, 2, TRUE, '2026-01-19', TRUE);
+(90, 3, 90, 16, 2, TRUE, '2026-01-19', TRUE);
 
 -- ESTADÍSTICA APLICADA (curso_id = 91, asignatura_plan_id = 53) - 2 horas/semana
 -- Docente: Lic. Elio Honor (docente_id = 9) - Compartido con ADM-EMP
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(91, 6, 91, 9, 2, TRUE, '2026-01-19', TRUE);
+(91, 3, 91, 9, 2, TRUE, '2026-01-19', TRUE);
 
 -- INGLÉS TÉCNICO (curso_id = 92, asignatura_plan_id = 54) - 2 horas/semana
 -- Docente: Ing. Waly Vargas (docente_id = 4) - Compartido con SIS-INF
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(92, 6, 92, 4, 2, TRUE, '2026-01-19', TRUE);
+(92, 3, 92, 4, 2, TRUE, '2026-01-19', TRUE);
 
 -- ============================================
 -- INSERTAR ASIGNACIONES - PRIMERO C (NOCHE)
@@ -145,47 +145,47 @@ INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, ca
 -- CONTABILIDAD I (curso_id = 93, asignatura_plan_id = 46) - 8 horas/semana
 -- Docente: Lic. José Antonio Vara (docente_id = 30)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(93, 6, 93, 30, 8, TRUE, '2026-01-19', TRUE);
+(93, 3, 93, 30, 8, TRUE, '2026-01-19', TRUE);
 
 -- MATEMÁTICA FINANCIERA (curso_id = 94, asignatura_plan_id = 47) - 4 horas/semana
 -- Docente: Lic. Georgina Moron (docente_id = 12) - Compartido con ADM-EMP
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(94, 6, 94, 12, 4, TRUE, '2026-01-19', TRUE);
+(94, 3, 94, 12, 4, TRUE, '2026-01-19', TRUE);
 
 -- INFORMÁTICA CONTABLE (curso_id = 95, asignatura_plan_id = 48) - 4 horas/semana
 -- Docente: Lic. Aurelio Hurtado (docente_id = 27)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(95, 6, 95, 27, 4, TRUE, '2026-01-19', TRUE);
+(95, 3, 95, 27, 4, TRUE, '2026-01-19', TRUE);
 
 -- ADMINISTRACIÓN GENERAL (curso_id = 96, asignatura_plan_id = 49) - 4 horas/semana
 -- Docente: Lic. Willma Fernandez (docente_id = 26)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(96, 6, 96, 26, 4, TRUE, '2026-01-19', TRUE);
+(96, 3, 96, 26, 4, TRUE, '2026-01-19', TRUE);
 
 -- LEGISLACIÓN LABORAL Y SEGURIDAD SOCIAL APLICADA (curso_id = 97, asignatura_plan_id = 50) - 2 horas/semana
 -- Docente: Lic. Teodora Paraguayo (docente_id = 29)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(97, 6, 97, 29, 2, TRUE, '2026-01-19', TRUE);
+(97, 3, 97, 29, 2, TRUE, '2026-01-19', TRUE);
 
 -- ECONOMÍA GENERAL APLICADA (curso_id = 98, asignatura_plan_id = 51) - 2 horas/semana
 -- Docente: Lic. Gonzalo Icuña (docente_id = 20)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(98, 6, 98, 20, 2, TRUE, '2026-01-19', TRUE);
+(98, 3, 98, 20, 2, TRUE, '2026-01-19', TRUE);
 
 -- DOCUMENTOS COMERCIALES Y MERCANTILES (curso_id = 99, asignatura_plan_id = 52) - 2 horas/semana
 -- Docente: Lic. Elias Sarzuri (docente_id = 28)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(99, 6, 99, 28, 2, TRUE, '2026-01-19', TRUE);
+(99, 3, 99, 28, 2, TRUE, '2026-01-19', TRUE);
 
 -- ESTADÍSTICA APLICADA (curso_id = 100, asignatura_plan_id = 53) - 2 horas/semana
 -- Docente: Lic. Jose Luis Montenegro (docente_id = 22)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(100, 6, 100, 22, 2, TRUE, '2026-01-19', TRUE);
+(100, 3, 100, 22, 2, TRUE, '2026-01-19', TRUE);
 
 -- INGLÉS TÉCNICO (curso_id = 101, asignatura_plan_id = 54) - 2 horas/semana
 -- Docente: Ing. Yesmani Fernandez (docente_id = 7) - Compartido con SIS-INF
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(101, 6, 101, 7, 2, TRUE, '2026-01-19', TRUE);
+(101, 3, 101, 7, 2, TRUE, '2026-01-19', TRUE);
 
 -- ============================================
 -- INSERTAR ASIGNACIONES - PRIMERO D (NOCHE)
@@ -195,47 +195,47 @@ INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, ca
 -- CONTABILIDAD I (curso_id = 102, asignatura_plan_id = 46) - 8 horas/semana
 -- Docente: Lic. AURELIO HURTADO (docente_id = 27)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(102, 6, 102, 27, 8, TRUE, '2026-01-19', TRUE);
+(102, 3, 102, 27, 8, TRUE, '2026-01-19', TRUE);
 
 -- MATEMÁTICA FINANCIERA (curso_id = 103, asignatura_plan_id = 47) - 4 horas/semana
 -- Docente: Lic. Georgina Moron (docente_id = 12) - Compartido con ADM-EMP
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(103, 6, 103, 12, 4, TRUE, '2026-01-19', TRUE);
+(103, 3, 103, 12, 4, TRUE, '2026-01-19', TRUE);
 
 -- INFORMÁTICA CONTABLE (curso_id = 104, asignatura_plan_id = 48) - 4 horas/semana
 -- Docente: Lic. Aurelio Hurtado (docente_id = 27)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(104, 6, 104, 27, 4, TRUE, '2026-01-19', TRUE);
+(104, 3, 104, 27, 4, TRUE, '2026-01-19', TRUE);
 
 -- ADMINISTRACIÓN GENERAL (curso_id = 105, asignatura_plan_id = 49) - 4 horas/semana
 -- Docente: Lic. Willma Fernandez (docente_id = 26)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(105, 6, 105, 26, 4, TRUE, '2026-01-19', TRUE);
+(105, 3, 105, 26, 4, TRUE, '2026-01-19', TRUE);
 
 -- LEGISLACIÓN LABORAL Y SEGURIDAD SOCIAL APLICADA (curso_id = 106, asignatura_plan_id = 50) - 2 horas/semana
 -- Docente: Lic. Teodora Paraguayo (docente_id = 29)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(106, 6, 106, 29, 2, TRUE, '2026-01-19', TRUE);
+(106, 3, 106, 29, 2, TRUE, '2026-01-19', TRUE);
 
 -- ECONOMÍA GENERAL APLICADA (curso_id = 107, asignatura_plan_id = 51) - 2 horas/semana
 -- Docente: Lic. Gonzalo Icuña (docente_id = 20)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(107, 6, 107, 20, 2, TRUE, '2026-01-19', TRUE);
+(107, 3, 107, 20, 2, TRUE, '2026-01-19', TRUE);
 
 -- DOCUMENTOS COMERCIALES Y MERCANTILES (curso_id = 108, asignatura_plan_id = 52) - 2 horas/semana
 -- Docente: Lic. Elias Sarzuri (docente_id = 28)
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(108, 6, 108, 28, 2, TRUE, '2026-01-19', TRUE);
+(108, 3, 108, 28, 2, TRUE, '2026-01-19', TRUE);
 
 -- ESTADÍSTICA APLICADA (curso_id = 109, asignatura_plan_id = 53) - 2 horas/semana
 -- Docente: Lic. CF PUMA (docente_id = 13) - Compartido con ADM-EMP
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(109, 6, 109, 13, 2, TRUE, '2026-01-19', TRUE);
+(109, 3, 109, 13, 2, TRUE, '2026-01-19', TRUE);
 
 -- INGLÉS TÉCNICO (curso_id = 110, asignatura_plan_id = 54) - 2 horas/semana
 -- Docente: Ing. Waly Vargas (docente_id = 4) - Compartido con SIS-INF
 INSERT INTO asignaciones_docentes (id, gestion_plan_id, curso_id, docente_id, carga_horaria, vigente, fecha_asignacion, activo) VALUES
-(110, 6, 110, 4, 2, TRUE, '2026-01-19', TRUE);
+(110, 3, 110, 4, 2, TRUE, '2026-01-19', TRUE);
 
 -- Rehabilitar foreign key checks
 SET FOREIGN_KEY_CHECKS = 1;

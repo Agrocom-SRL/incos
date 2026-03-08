@@ -18,8 +18,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 
 INSERT INTO configuracion_sistema (id, clave, valor, tipo, descripcion, activo) VALUES
 (1, 'gestion_actual', '2026', 'NUMBER', 'Gestión activa actual para generación de códigos de estudiantes', TRUE),
-(2, 'admision_gestion_2025', '0', 'NUMBER', 'Último número correlativo usado para códigos de estudiantes en la gestión 2025', TRUE),
-(3, 'admision_gestion_2026', '0', 'NUMBER', 'Último número correlativo usado para códigos de estudiantes en la gestión 2026', TRUE);
+(2, 'admision_gestion_2026', '0', 'NUMBER', 'Último número correlativo usado para códigos de estudiantes en la gestión 2026', TRUE);
 
 -- Rehabilitar foreign key checks
 SET FOREIGN_KEY_CHECKS = 1;
