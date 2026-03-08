@@ -16,6 +16,8 @@ export class GetEstadoAporteRegistroUseCase {
      * @param {Object} params - Dependencias inyectadas
      * @param {Object} params.contributionPaymentRepository - Repositorio de cabecera (pago_aporte)
      * @param {Object} params.contributionPaymentInstallmentRepository - Repositorio de cuotas (pago_cuotas)
+     * @param {Object} params.paymentMethodRepository - Repositorio de métodos de pago
+     * @param {Object} params.paymentAccountRepository - Repositorio de cuentas de pago
      * @param {Object} params.managementRepository - Repositorio de gestiones
      * @param {Object} params.contributionConfigurationRepository - Repositorio de configuraciones de aportes
      * @param {Object} params.studentScholarshipRepository - Repositorio de becas de estudiantes
@@ -25,6 +27,8 @@ export class GetEstadoAporteRegistroUseCase {
     constructor({
         contributionPaymentRepository,
         contributionPaymentInstallmentRepository,
+        paymentMethodRepository,
+        paymentAccountRepository,
         managementRepository,
         contributionConfigurationRepository,
         studentScholarshipRepository,
@@ -33,6 +37,8 @@ export class GetEstadoAporteRegistroUseCase {
     }) {
         this.contributionPaymentRepository = contributionPaymentRepository;
         this.contributionPaymentInstallmentRepository = contributionPaymentInstallmentRepository;
+        this.paymentMethodRepository = paymentMethodRepository;
+        this.paymentAccountRepository = paymentAccountRepository;
         this.managementRepository = managementRepository;
         this.contributionConfigurationRepository = contributionConfigurationRepository;
         this.studentScholarshipRepository = studentScholarshipRepository;
@@ -111,19 +117,65 @@ export class GetEstadoAporteRegistroUseCase {
         );
         const list = result.contributionPaymentInstallments || result.contributionPaymentInstallment || [];
         let totalPagado = 0;
-        const cuotas = [];
+        const cuotasRaw = [];
+        const metodoPagoIds = new Set();
+        const cuentaPagoIds = new Set();
         for (const c of list) {
             const p = c.toPlainObject ? c.toPlainObject() : c;
             const monto = Number(p.amount ?? p.monto ?? 0) || 0;
             totalPagado += monto;
-            cuotas.push({
+            const metodoPagoId = p.paymentMethodId ?? p.metodoPagoId ?? p.metodo_pago_id ?? null;
+            const cuentaPagoId = p.paymentAccountId ?? p.cuentaPagoId ?? p.cuenta_pago_id ?? null;
+            if (metodoPagoId != null) metodoPagoIds.add(metodoPagoId);
+            if (cuentaPagoId != null) cuentaPagoIds.add(cuentaPagoId);
+            const observacion = (p.description ?? p.descripcion ?? '').toString().trim() || null;
+            cuotasRaw.push({
                 id: p.id,
                 numero_recibo: p.receiptNumber ?? p.numeroRecibo ?? p.numero_recibo,
                 fecha_pago: p.paymentDate ?? p.fechaPago ?? p.fecha_pago,
                 monto,
-                metodo_pago_id: p.paymentMethodId ?? p.metodoPagoId ?? p.metodo_pago_id,
+                metodo_pago_id: metodoPagoId,
+                cuenta_pago_id: cuentaPagoId,
+                numero_transaccion: (p.transactionNumber ?? p.numeroTransaccion ?? p.numero_transaccion ?? '').toString().trim() || null,
+                codigo_comprobante: (p.comprobanteCode ?? p.codigoComprobante ?? p.codigo_comprobante ?? '').toString().trim() || null,
+                observacion,
             });
         }
+
+        const metodoPagoMap = {};
+        const cuentaPagoMap = {};
+        await Promise.all([
+            ...Array.from(metodoPagoIds).map(async (id) => {
+                try {
+                    const method = await this.paymentMethodRepository.findById(id);
+                    const plain = method?.toPlainObject ? method.toPlainObject() : method;
+                    if (plain) metodoPagoMap[id] = { nombre: plain.name ?? plain.nombre, codigo: plain.code ?? plain.codigo };
+                } catch {
+                    metodoPagoMap[id] = null;
+                }
+            }),
+            ...Array.from(cuentaPagoIds).map(async (id) => {
+                try {
+                    const account = await this.paymentAccountRepository.findById(id);
+                    const plain = account?.toPlainObject ? account.toPlainObject() : account;
+                    if (plain) {
+                        cuentaPagoMap[id] = {
+                            nombre_titular: plain.accountHolderName ?? plain.nombreTitular,
+                            numero_cuenta: plain.accountNumber ?? plain.numeroCuenta ?? null,
+                            numero_celular: plain.phoneNumber ?? plain.numeroCelular ?? null,
+                        };
+                    } else cuentaPagoMap[id] = null;
+                } catch {
+                    cuentaPagoMap[id] = null;
+                }
+            }),
+        ]);
+
+        const cuotas = cuotasRaw.map((q) => ({
+            ...q,
+            metodo_pago: q.metodo_pago_id != null ? metodoPagoMap[q.metodo_pago_id] ?? null : null,
+            cuenta_pago: q.cuenta_pago_id != null ? cuentaPagoMap[q.cuenta_pago_id] ?? null : null,
+        }));
 
         const montoObligatorio = Number(plain.mandatoryAmount ?? plain.montoObligatorio ?? 0);
         const saldoPendiente = Math.max(0, montoObligatorio - totalPagado);

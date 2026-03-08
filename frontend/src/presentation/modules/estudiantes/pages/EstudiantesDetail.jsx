@@ -3,8 +3,9 @@
  * Layout limpio: perfil compacto arriba + tabs con cards de 2 columnas abajo.
  */
 
-import { useMemo } from 'react';
+import { useMemo, useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { App } from 'antd';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { Spin, Alert, Empty, Tabs, Tag, Tooltip } from 'antd';
@@ -23,14 +24,16 @@ import {
   EditOutlined,
   ArrowLeftOutlined,
 } from '@ant-design/icons';
-import { useStudentDetailContext } from '@application-estudiantes/hooks';
+import { useStudentDetailContext, useDeleteBecaAsignada } from '@application-estudiantes/hooks';
 import {
   GuardiansSection,
   DocumentDeliveriesSection,
   ScholarshipsSection,
 } from '@estudiantes/components/organisms';
+import { showDeleteConfirm } from '@molecules/DeleteConfirmModal';
 import { getAdmissionTypeTagStyle } from '../config/admissionTypeColors';
-import './EstudiantesDetail.css';
+
+const DURACION_MENSAJE_ERROR = 8;
 
 /* ─────────────────────────────────────────
    Átomo: Field — label arriba, valor abajo
@@ -65,6 +68,7 @@ const InfoCard = ({ title, icon, extra, children, cols = 2 }) => (
 ───────────────────────────────────────── */
 const EstudiantesDetail = () => {
   const navigate = useNavigate();
+  const { message, modal } = App.useApp();
   const {
     loading, error, student, studentData,
     guardians, documentDeliveries, scholarships, inscripcion, origins,
@@ -74,7 +78,37 @@ const EstudiantesDetail = () => {
     handleDownloadActaCompromiso, handleVerInscripcion,
     handleNuevaInscripcion, tieneDocumentosFaltantesFlag,
     actaCompromisoData, loadingActa, loadingDeclaracion, hasInscripcion,
+    refetch,
   } = useStudentDetailContext();
+  const { deleteBecaAsignada, loading: deletingBeca } = useDeleteBecaAsignada();
+  const [deletingBecaId, setDeletingBecaId] = useState(null);
+
+  const handleDeleteBeca = useCallback(async (beca) => {
+    const becaId = beca?.id;
+    if (!becaId) return;
+    await showDeleteConfirm({
+      modal,
+      itemName: 'la asignación de beca',
+      itemDetails: [
+        { label: 'Tipo', value: beca?.scholarshipName || beca?.tipoBeca?.nombre || '—' },
+        { label: 'Estado', value: beca?.state ?? beca?.estado ?? '—' },
+      ],
+      onConfirm: async () => {
+        setDeletingBecaId(becaId);
+        try {
+          const result = await deleteBecaAsignada(becaId);
+          if (result?.success) {
+            message.success('Asignación de beca eliminada correctamente');
+            if (typeof refetch === 'function') refetch();
+          } else {
+            message.error(result?.error || 'Error al eliminar la beca. Debe eliminar primero el pago si está vinculado.', DURACION_MENSAJE_ERROR);
+          }
+        } finally {
+          setDeletingBecaId(null);
+        }
+      },
+    });
+  }, [modal, deleteBecaAsignada, message, refetch]);
 
   const tipoAdmision = studentData?.tipoAdmision;
   const tipoAdmisionUpper = (tipoAdmision || '').toString().toUpperCase();
@@ -349,11 +383,16 @@ const EstudiantesDetail = () => {
       children: (
         <div className="sd-tab-body">
           <DocumentDeliveriesSection documentDeliveries={documentDeliveries} />
-          <ScholarshipsSection scholarships={scholarships} />
+          <ScholarshipsSection
+            scholarships={scholarships}
+            onDeleteBeca={handleDeleteBeca}
+            deletingBecaId={deletingBecaId}
+            deletingBeca={deletingBeca}
+          />
         </div>
       ),
     }] : []),
-  ], [studentData, residenciaCompleta, guardians, documentDeliveries, scholarships, inscripcion, origins, nacionalidadLabel, idiomaMaterno, idiomaSecundario, lugarNacimiento, paises, handleVerInscripcion, handleNuevaInscripcion, academicData, catalogs, transitability, transfer]);
+  ], [studentData, residenciaCompleta, guardians, documentDeliveries, scholarships, inscripcion, origins, nacionalidadLabel, idiomaMaterno, idiomaSecundario, lugarNacimiento, paises, handleVerInscripcion, handleNuevaInscripcion, academicData, catalogs, transitability, transfer, handleDeleteBeca, deletingBecaId, deletingBeca]);
 
   /* ── Estados de carga / error ── */
   if (loading) return (
