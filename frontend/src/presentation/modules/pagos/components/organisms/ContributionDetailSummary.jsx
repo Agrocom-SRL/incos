@@ -272,21 +272,27 @@ const ContributionDetailSummary = ({
           }}>
             <InputNumber
               controls={false}
-              value={montoCuota != null ? Math.floor(Number(montoCuota)) : undefined}
+              value={
+                montoCuota !== null && montoCuota !== undefined && montoCuota !== ''
+                  ? Math.floor(Number(montoCuota))
+                  : undefined
+              }
               onChange={(val) => {
-                if (val == null) {
+                // Permitir limpiar el campo sin forzar a 1
+                if (val === null || val === undefined || val === '') {
                   onMontoCuotaChange?.(null);
                   return;
                 }
                 const n = Math.floor(Number(val));
-                if (Number.isNaN(n) || n < 1) {
-                  onMontoCuotaChange?.(1);
+                if (Number.isNaN(n) || n < 0) {
+                  // Para valores inválidos o negativos, resetear a 0 (pago gratuito) sin bloquear
+                  onMontoCuotaChange?.(0);
                   return;
                 }
-                const clamped = Math.min(Math.max(n, 1), saldoAPagar);
+                const clamped = Math.min(Math.max(n, 0), saldoAPagar);
                 onMontoCuotaChange?.(clamped);
               }}
-              min={1}
+              min={0}
               max={saldoAPagar}
               step={1}
               prefix="Bs."
@@ -298,13 +304,17 @@ const ContributionDetailSummary = ({
                 fontWeight: 600
               }}
               styles={{ input: { textAlign: 'right' } }}
-              formatter={(value) => value != null ? `${Math.floor(Number(value))}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',') : ''}
+              formatter={(value) =>
+                value !== null && value !== undefined && value !== ''
+                  ? `${Math.floor(Number(value))}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                  : ''
+              }
               parser={(value) => {
-                if (!value) return '';
+                if (!value) return null;
                 const cleaned = String(value).replace(/,/g, '').replace(/[^0-9]/g, '');
                 const num = parseInt(cleaned, 10);
-                if (Number.isNaN(num)) return '';
-                return Math.min(Math.max(num, 1), saldoAPagar);
+                if (Number.isNaN(num)) return null;
+                return Math.min(Math.max(num, 0), saldoAPagar);
               }}
               precision={0}
             />

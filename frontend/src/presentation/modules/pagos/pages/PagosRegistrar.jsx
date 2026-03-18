@@ -127,7 +127,8 @@ const PagosRegistrar = () => {
   // Si ya tiene descuento aplicado en la cabecera, ocultar botón "Asignar Beca"
   const ocultarBotonAsignarBeca = !!(estadoActualAporte && estadoActualAporte.tiene_descuento_aplicado);
 
-  // Determinar si es pago gratuito (monto = 0)
+  // Determinar si es pago gratuito real: solo cuando el saldo obligatorio del aporte es 0
+  // (caso típico: el aporte quedó totalmente cubierto por beca/condonación)
   const esPagoGratuito = montoPagado === 0;
 
   // Inicializar o corregir montoCuota con el saldo real: si está vacío o si supera el saldo (ej. 400 cuando el saldo real es 140), usar saldo. Solo enteros.
@@ -182,8 +183,16 @@ const PagosRegistrar = () => {
       }
 
       // 1.1. Validar monto de esta cuota (solo si NO es pago gratuito)
-      if (!esPagoGratuito && (!montoCuota || Number(montoCuota) <= 0)) {
-        message.error('Indique el monto de esta cuota en el detalle del aporte');
+      if (
+        !esPagoGratuito &&
+        (
+          montoCuota == null ||
+          montoCuota === '' ||
+          Number.isNaN(Number(montoCuota)) ||
+          Number(montoCuota) < 0
+        )
+      ) {
+        message.error('Indique un monto válido (>= 0) en el detalle del aporte');
         setIsSubmitting(false);
         isSubmittingRef.current = false;
         return;
@@ -571,7 +580,12 @@ const PagosRegistrar = () => {
                 onCancel={handleVolver}
                 disabled={
                   !configuracionAporteActiva ||
-                  (!esPagoGratuito && (!montoCuota || Number(montoCuota) <= 0)) ||
+                  (!esPagoGratuito && (
+                    montoCuota == null ||
+                    montoCuota === '' ||
+                    Number.isNaN(Number(montoCuota)) ||
+                    Number(montoCuota) < 0
+                  )) ||
                   (!esPagoGratuito && !(metodosPago?.selectedMetodoPago)) ||
                   loadingStudent ||
                   loading ||
