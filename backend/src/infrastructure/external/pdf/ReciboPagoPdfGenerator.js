@@ -591,7 +591,13 @@ export class ReciboPagoPdfGenerator extends IncosPDFLibBase {
             const esExclusionCuota = (montoEstaCuota === 0 || montoEstaCuota < 0) && data.becaInfo && String(data.becaInfo.nombre ?? data.becaInfo.name ?? '').trim() !== '';
             const valorAporteCuota = esExclusionCuota
                 ? String(data.becaInfo.nombre ?? data.becaInfo.name).trim().toUpperCase()
-                : this._formatAporte({ montoPagado: montoEstaCuota, becaInfo: data.becaInfo });
+                : this._formatAporte({
+                    montoPagado: montoEstaCuota,
+                    becaInfo: data.becaInfo,
+                    // En recibos por cuota, cuando el saldo pendiente es > 0 y el montoPagado es 0,
+                    // queremos mostrar "0.00 Bs" en lugar de "GRATIS".
+                    saldoPendiente,
+                  });
             await this._addTableRow(esExclusionCuota ? 'EXCLUSIÓN DE PAGO' : 'MONTO PAGADO', valorAporteCuota, true);
             await this._addTableRow('SALDO PENDIENTE', this._formatMonto(saldoPendiente), true);
         } else {
@@ -603,7 +609,11 @@ export class ReciboPagoPdfGenerator extends IncosPDFLibBase {
             const esExclusionCabecera = (Number(montoPagadoCabecera) === 0 || Number(montoPagadoCabecera) < 0) && data.becaInfo && String(data.becaInfo.nombre ?? data.becaInfo.name ?? '').trim() !== '';
             const valorAporteCabecera = esExclusionCabecera
                 ? String(data.becaInfo.nombre ?? data.becaInfo.name).trim().toUpperCase()
-                : this._formatAporte({ montoPagado: montoPagadoCabecera, becaInfo: data.becaInfo });
+                : this._formatAporte({
+                    montoPagado: montoPagadoCabecera,
+                    becaInfo: data.becaInfo,
+                    saldoPendiente: data.saldoPendiente ?? null,
+                  });
             await this._addTableRow(esExclusionCabecera ? 'EXCLUSIÓN DE PAGO' : 'MONTO PAGADO', valorAporteCabecera, true);
         }
 
@@ -1064,13 +1074,25 @@ En conformidad, firmo la presente para los fines que correspondan.`;
 
             const monto = Number(data.montoPagado ?? data.montoTotal ?? data.monto_pagado ?? data.monto_total ?? 0);
 
-            if (monto === 0 || monto < 0 || isNaN(monto)) {
+            // Si el monto es 0 pero aún hay saldo pendiente de pago, mostrar "0.00 Bs"
+            // (caso: se registra un recibo con monto 0 solo para dejar constancia/observación,
+            // no un pago gratuito real).
+            const saldoPendiente = data.saldoPendiente != null ? Number(data.saldoPendiente) : null;
+            const haySaldoPendiente = saldoPendiente != null && !isNaN(saldoPendiente) && saldoPendiente > 0;
+
+            if ((monto === 0 || monto < 0 || isNaN(monto)) && !haySaldoPendiente) {
                 const becaInfo = data.becaInfo;
                 const nombreDescuento = becaInfo?.nombre ?? becaInfo?.name ?? '';
                 if (nombreDescuento && String(nombreDescuento).trim() !== '') {
                     return String(nombreDescuento).trim().toUpperCase();
                 }
+                // Solo considerar "GRATIS" cuando no hay saldo pendiente (aporte totalmente cubierto)
                 return 'GRATIS';
+            }
+
+            if (monto === 0 || isNaN(monto)) {
+                // Con saldo pendiente, pero monto de esta cuota 0: mostrar 0.00 Bs
+                return this._formatMonto(0);
             }
 
             const bolivianos = Math.floor(monto);

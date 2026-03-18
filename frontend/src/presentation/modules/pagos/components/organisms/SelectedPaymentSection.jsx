@@ -81,7 +81,8 @@ const SelectedPaymentSection = ({
   const descuentoBeca = tieneBeca ? (montoTotal * porcentajeDescuento / 100) : 0;
   const montoPagado = calcularMontoPagado(montoTotal, descuentoBeca);
 
-  // Determinar si es pago gratuito (monto = 0)
+  // Determinar si es pago gratuito real: solo cuando el monto obligatorio quedó en 0
+  // (caso típico: el aporte quedó totalmente cubierto por beca/condonación)
   const esPagoGratuito = montoPagado === 0;
 
   // Siempre computar características del método (con valores por defecto si no hay método)

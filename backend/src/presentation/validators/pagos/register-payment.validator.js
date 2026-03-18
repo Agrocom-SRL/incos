@@ -36,8 +36,10 @@ export const registerPagoAporteValidator = [
     body('amount')
         .notEmpty()
         .withMessage('El monto de la cuota es requerido')
-        .isFloat({ min: 0.01 })
-        .withMessage('El monto debe ser un número mayor a 0')
+        // Permitir registrar cuotas con monto 0 (por ejemplo, para generar un recibo con observación),
+        // pero seguir evitando montos negativos.
+        .isFloat({ min: 0 })
+        .withMessage('El monto debe ser un número mayor o igual a 0')
         .toFloat(),
 
     body('payment_method_id')
