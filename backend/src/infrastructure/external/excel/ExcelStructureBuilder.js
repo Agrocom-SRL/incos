@@ -6,17 +6,24 @@
 
 import { ExcelStyleManager } from './ExcelStyleManager.js';
 
+/** Título del reporte (más grande que el cuerpo de la tabla). */
+const FONT_SIZE_TITULO_REPORTE = 22;
+
 class ExcelStructureBuilder {
   /**
    * Configura los anchos de las columnas
    */
   static configurarColumnas(worksheet) {
     worksheet.getColumn('A').width = 3;
-    worksheet.getColumn('B').width = 30;
-    worksheet.getColumn('C').width = 12;
-    // Columnas de datos (D a AS) - se eliminó EFECTIVOS y TOTAL GENERAL
-    for (let i = 4; i <= 45; i++) {
+    // B más estrecha → el nombre de carrera hace wrap en el bloque fusionado (4 filas)
+    worksheet.getColumn('B').width = 24;
+    worksheet.getColumn('C').width = 18;
+    for (let i = 4; i <= 39; i++) {
       worksheet.getColumn(i).width = 8;
+    }
+    // Totales por género (títulos largos)
+    for (let i = 40; i <= 45; i++) {
+      worksheet.getColumn(i).width = 15;
     }
   }
 
@@ -27,8 +34,12 @@ class ExcelStructureBuilder {
     worksheet.mergeCells('B3:AS5');
     const titulo = worksheet.getCell('B3');
     titulo.value = `ESTADÍSTICA ESTUDIANTES INSTITUTO INCOS SANTA CRUZ - GESTIÓN ${gestionAnio || ''}`;
-    titulo.font = { size: 18, bold: true };
-    titulo.alignment = { vertical: 'middle', horizontal: 'center' };
+    titulo.font = { size: FONT_SIZE_TITULO_REPORTE, bold: true };
+    titulo.alignment = {
+      vertical: 'middle',
+      horizontal: 'center',
+      wrapText: true
+    };
   }
 
   /**

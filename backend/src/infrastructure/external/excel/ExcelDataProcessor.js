@@ -6,6 +6,52 @@
 
 class ExcelDataProcessor {
   /**
+   * Carreras en el orden del reporte institucional (coincide con seeds / Excel vacío).
+   * Otras carreras activas en BD se añaden al final si aparecen en los datos.
+   */
+  static CARRERAS_ORDEN_INSTITUTO = [
+    'Contaduría General',
+    'Administración de Empresas',
+    'Sistemas Informáticos'
+  ];
+
+  /** Tres años de carrera siempre presentes en la matriz (etiquetas canónicas). */
+  static PERIODOS_ETIQUETAS_REPORTE = ['1ER AÑO', '2DO AÑO', '3ER AÑO'];
+
+  /**
+   * Agrupa filas de la vista y completa todas las carreras × periodos con ceros si faltan.
+   * @param {Array<Record<string, unknown>>} datos - Filas de vista_reporte_excel_inscritos (una gestión)
+   * @returns {Object} { [carreraNombre]: { [etiquetaPeriodo]: { carrera, regimen, paralelos } } }
+   */
+  static construirMatrizReporte(datos) {
+    const agrupados = datos?.length ? this.agruparDatos(datos) : {};
+    return this.rellenarMatrizInstituto(agrupados);
+  }
+
+  /**
+   * Completa la matriz: todas las carreras del orden institucional y los 3 periodos.
+   */
+  static rellenarMatrizInstituto(agrupados) {
+    const periodos = this.PERIODOS_ETIQUETAS_REPORTE;
+    const ordenCarreras = [...this.CARRERAS_ORDEN_INSTITUTO];
+    for (const nombre of Object.keys(agrupados)) {
+      if (!ordenCarreras.includes(nombre)) {
+        ordenCarreras.push(nombre);
+      }
+    }
+
+    const resultado = {};
+    for (const carrera of ordenCarreras) {
+      resultado[carrera] = {};
+      const src = agrupados[carrera] || {};
+      for (const p of periodos) {
+        resultado[carrera][p] = src[p] || { carrera, regimen: p, paralelos: {} };
+      }
+    }
+    return resultado;
+  }
+
+  /**
    * Agrupa los datos por carrera y periodo
    */
   static agruparDatos(datos) {

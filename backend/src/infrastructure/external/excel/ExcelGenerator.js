@@ -31,7 +31,7 @@ class ExcelGenerator {
 
     // Agregar contenido
     if (datos && datos.length > 0) {
-      const datosAgrupados = ExcelDataProcessor.agruparDatos(datos);
+      const datosAgrupados = ExcelDataProcessor.construirMatrizReporte(datos);
       ExcelContentBuilder.poblarDatos(worksheet, datosAgrupados);
     } else {
       ExcelContentBuilder.agregarEstructuraVacia(worksheet);
