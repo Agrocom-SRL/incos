@@ -149,4 +149,4 @@ class ExcelStyleManager {
   }
 }
 
-module.exports = { ExcelStyleManager };
+export { ExcelStyleManager };

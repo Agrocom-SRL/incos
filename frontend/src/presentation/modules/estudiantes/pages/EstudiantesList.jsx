@@ -15,20 +15,21 @@
  * - Organism maneja: funcionalidad (tabla, búsqueda, loading, errores)
  */
 
-import { useMemo } from 'react';
+import { useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PlusOutlined } from '@ant-design/icons';
-import { Grid } from 'antd';
+import { FileExcelOutlined, PlusOutlined } from '@ant-design/icons';
+import { App, Grid, Space } from 'antd';
 import { PageTemplate } from '@templates';
 import { TableListView } from '@organisms';
 import { PageHeader } from '@molecules';
 import { Button } from '@atoms';
-import { useStudentListContext } from '@application-estudiantes/hooks';
+import { useStudentListContext, useExportEstadisticaInscritosExcel } from '@application-estudiantes/hooks';
 import { usePagosContextOptional } from '@application-pagos/hooks';
 import { createEstudiantesTableColumns } from '@estudiantes/config';
 
 const EstudiantesList = () => {
     const navigate = useNavigate();
+    const { message } = App.useApp();
     const screens = Grid.useBreakpoint();
     const isSmall = !screens.lg;
 
@@ -47,9 +48,28 @@ const EstudiantesList = () => {
     // Usar hook opcional que no lanza error si el provider no está disponible
     const pagosContext = usePagosContextOptional();
 
+    const { exportar: exportarEstadisticaInscritos, loading: exportingExcel } =
+        useExportEstadisticaInscritosExcel();
+
     const handleNuevoEstudiante = () => {
         navigate('/estudiantes/registrar');
     };
+
+    const handleExportarEstadisticaInscritos = useCallback(async () => {
+        const key = 'export-excel-inscritos';
+        message.loading({ content: 'Generando Excel...', key, duration: 0 });
+        const result = await exportarEstadisticaInscritos();
+        message.destroy(key);
+        if (result.success) {
+            message.success({ content: 'Archivo descargado', key, duration: 2 });
+        } else {
+            message.error({
+                content: result.error || 'No se pudo exportar el Excel',
+                key,
+                duration: 5,
+            });
+        }
+    }, [exportarEstadisticaInscritos]);
 
     // Crear columnas de la tabla (memoizadas para evitar recrearlas en cada render)
     const tableColumns = useMemo(
@@ -70,13 +90,24 @@ const EstudiantesList = () => {
                     title="Lista de Estudiantes"
                     breadcrumbItems={breadcrumbItems}
                     actions={
-                        <Button
-                            variant="primary"
-                            icon={<PlusOutlined />}
-                            onClick={handleNuevoEstudiante}
-                        >
-                            Nuevo Estudiante
-                        </Button>
+                        <Space wrap>
+                            <Button
+                                variant="success"
+                                buttonStyle="filled"
+                                icon={<FileExcelOutlined />}
+                                loading={exportingExcel}
+                                onClick={handleExportarEstadisticaInscritos}
+                            >
+                                Exportar estadística inscritos
+                            </Button>
+                            <Button
+                                variant="primary"
+                                icon={<PlusOutlined />}
+                                onClick={handleNuevoEstudiante}
+                            >
+                                Nuevo Estudiante
+                            </Button>
+                        </Space>
                     }
                 />
             }

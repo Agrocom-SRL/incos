@@ -5,18 +5,9 @@
  * siguiendo principios SOLID
  */
 
-const { ExcelGenerator } = require('./ExcelGenerator');
-const { ExcelStyleManager } = require('./ExcelStyleManager');
-const { ExcelStructureBuilder } = require('./ExcelStructureBuilder');
-const { ExcelDataProcessor } = require('./ExcelDataProcessor');
-const { ExcelFormulaBuilder } = require('./ExcelFormulaBuilder');
-const { ExcelContentBuilder } = require('./ExcelContentBuilder');
-
-module.exports = {
-  ExcelGenerator,
-  ExcelStyleManager,
-  ExcelStructureBuilder,
-  ExcelDataProcessor,
-  ExcelFormulaBuilder,
-  ExcelContentBuilder
-};
+export { ExcelGenerator } from './ExcelGenerator.js';
+export { ExcelStyleManager } from './ExcelStyleManager.js';
+export { ExcelStructureBuilder } from './ExcelStructureBuilder.js';
+export { ExcelDataProcessor } from './ExcelDataProcessor.js';
+export { ExcelFormulaBuilder } from './ExcelFormulaBuilder.js';
+export { ExcelContentBuilder } from './ExcelContentBuilder.js';

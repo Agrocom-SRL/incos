@@ -21,6 +21,7 @@ import {
   EliminarEstudianteUseCase,
   EliminarBecaDescuentoUseCase,
   EliminarBecaAsignadaUseCase,
+  ExportarEstadisticaInscritosExcelUseCase,
 } from '@useCases/estudiantes';
 
 // Repositorio principal
@@ -138,6 +139,10 @@ export function registerEstudiantesModule(factory) {
   // Use Case para eliminar beca asignada a estudiante
   factory.eliminarBecaAsignada = () => {
     return new EliminarBecaAsignadaUseCase({ estudianteBecaRepository: EstudianteBecaRepository });
+  };
+
+  factory.exportarEstadisticaInscritosExcel = () => {
+    return new ExportarEstadisticaInscritosExcelUseCase(estudianteRepository);
   };
 
   return factory;

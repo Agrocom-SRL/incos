@@ -15,4 +15,5 @@ export { useAsignarBecaPageData } from './useAsignarBecaPageData';
 export { useAsignarBecaFormHandlers } from './useAsignarBecaFormHandlers';
 export { useGenerateActaCompromiso } from './useGenerateActaCompromiso';
 export { useGenerateDeclaracionJurada } from './useGenerateDeclaracionJurada';
+export { useExportEstadisticaInscritosExcel } from './useExportEstadisticaInscritosExcel';
 

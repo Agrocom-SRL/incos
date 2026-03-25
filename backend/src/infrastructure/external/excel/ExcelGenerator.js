@@ -8,10 +8,10 @@
  * const buffer = await ExcelGenerator.generarReporteInscritos(datos, filtros);
  */
 
-const ExcelJS = require('exceljs');
-const { ExcelStructureBuilder } = require('./ExcelStructureBuilder');
-const { ExcelDataProcessor } = require('./ExcelDataProcessor');
-const { ExcelContentBuilder } = require('./ExcelContentBuilder');
+import ExcelJS from 'exceljs';
+import { ExcelStructureBuilder } from './ExcelStructureBuilder.js';
+import { ExcelDataProcessor } from './ExcelDataProcessor.js';
+import { ExcelContentBuilder } from './ExcelContentBuilder.js';
 
 class ExcelGenerator {
   /**
@@ -37,8 +37,8 @@ class ExcelGenerator {
       ExcelContentBuilder.agregarEstructuraVacia(worksheet);
     }
 
-    return await workbook.xlsx.writeBuffer();
+    return workbook.xlsx.writeBuffer();
   }
 }
 
-module.exports = { ExcelGenerator };
+export { ExcelGenerator };

@@ -4,7 +4,7 @@
  * Principio: Single Responsibility Principle (SRP)
  */
 
-const { ExcelStyleManager } = require('./ExcelStyleManager');
+import { ExcelStyleManager } from './ExcelStyleManager.js';
 
 class ExcelStructureBuilder {
   /**
@@ -168,4 +168,4 @@ class ExcelStructureBuilder {
   }
 }
 
-module.exports = { ExcelStructureBuilder };
+export { ExcelStructureBuilder };

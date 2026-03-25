@@ -184,4 +184,4 @@ class ExcelDataProcessor {
   }
 }
 
-module.exports = { ExcelDataProcessor };
+export { ExcelDataProcessor };

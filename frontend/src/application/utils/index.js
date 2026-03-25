@@ -68,4 +68,4 @@ export * from './transformers';
 // ============================================================================
 // File Utilities
 // ============================================================================
-export { downloadFile } from './fileDownload';
+export { downloadFile, downloadBlob } from './fileDownload';

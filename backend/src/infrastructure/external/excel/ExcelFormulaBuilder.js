@@ -4,7 +4,7 @@
  * Principio: Single Responsibility Principle (SRP)
  */
 
-class ExcelFormulaBuilder {
+export class ExcelFormulaBuilder {
   /**
    * Llena una fila con los datos de los paralelos y sus fórmulas
    */
@@ -133,5 +133,3 @@ class ExcelFormulaBuilder {
     });
   }
 }
-
-module.exports = { ExcelFormulaBuilder };

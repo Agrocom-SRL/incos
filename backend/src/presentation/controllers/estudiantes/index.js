@@ -9,6 +9,7 @@ export { SearchStudentController } from './estudiantes/search.controller.js';
 export { ActaCompromisoController } from './estudiantes/acta-compromiso.controller.js';
 export { DeclaracionJuradaController } from './estudiantes/declaracion-jurada.controller.js';
 export { DeleteStudentController } from './estudiantes/delete-student.controller.js';
+export { ExportEstadisticaInscritosExcelController } from './estudiantes/export-estadistica-inscritos-excel.controller.js';
 
 // ============================================
 // CONTROLLERS - BECAS

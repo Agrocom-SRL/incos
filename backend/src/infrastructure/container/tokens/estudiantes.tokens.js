@@ -26,6 +26,7 @@ export const ESTUDIANTES_TOKENS = {
     getStudentScholarshipsByStudentIdUseCase: 'estudiantes.getStudentScholarshipsByStudentIdUseCase',
     listStudentScholarshipsUseCase: 'estudiantes.listStudentScholarshipsUseCase',
     deleteStudentUseCase: 'estudiantes.deleteStudentUseCase',
+    exportStudentEnrollmentStatisticsExcelUseCase: 'estudiantes.exportStudentEnrollmentStatisticsExcelUseCase',
 
     // CONTROLLERS
     listStudentsController: 'estudiantes.listStudentsController',
@@ -41,6 +42,7 @@ export const ESTUDIANTES_TOKENS = {
     getStudentScholarshipsController: 'estudiantes.getStudentScholarshipsController',
     listStudentScholarshipsController: 'estudiantes.listStudentScholarshipsController',
     deleteStudentController: 'estudiantes.deleteStudentController',
+    exportEstadisticaInscritosExcelController: 'estudiantes.exportEstadisticaInscritosExcelController',
 
     // ROUTERS
     estudiantesRouter: 'estudiantes.estudiantesRouter',
