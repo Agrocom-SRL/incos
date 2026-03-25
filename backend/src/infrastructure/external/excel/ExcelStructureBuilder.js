@@ -50,6 +50,7 @@ class ExcelStructureBuilder {
     this.agregarFila8Paralelos(worksheet);
     this.agregarFila9Genero(worksheet);
     ExcelStyleManager.aplicarEstilosEncabezados(worksheet);
+    ExcelStyleManager.aplicarRellenoBlancoParalelosFila8(worksheet);
   }
 
   /**
@@ -118,14 +119,14 @@ class ExcelStructureBuilder {
       textRotation: 90
     };
 
-    // Totales por género
+    // AN→AS: por categoría (abandono, reprobado, aprobado); en cada una primero MASCULINO, luego FEMENINO
     const totalesGenero = [
-      { col: 'AN', label: 'TOTAL MUJERES ABANDONO' },
-      { col: 'AO', label: 'TOTAL VARONES ABANDONO' },
-      { col: 'AP', label: 'TOTAL MUJERES REPROBADOS' },
-      { col: 'AQ', label: 'TOTAL VARONES REPROBADOS' },
-      { col: 'AR', label: 'TOTAL MUJERES APROBADOS' },
-      { col: 'AS', label: 'TOTAL VARONES APROBADOS' }
+      { col: 'AN', label: 'TOTAL ABANDONO MASCULINO' },
+      { col: 'AO', label: 'TOTAL ABANDONO FEMENINO' },
+      { col: 'AP', label: 'TOTAL REPROBADO MASCULINO' },
+      { col: 'AQ', label: 'TOTAL REPROBADO FEMENINO' },
+      { col: 'AR', label: 'TOTAL APROBADO MASCULINO' },
+      { col: 'AS', label: 'TOTAL APROBADO FEMENINO' }
     ];
 
     totalesGenero.forEach(({ col, label }) => {
@@ -161,7 +162,7 @@ class ExcelStructureBuilder {
   }
 
   /**
-   * Agrega la fila 9 con género (M/V)
+   * Fila 9: primero MASCULINO (M), después FEMENINO (F), alineado con MASCULINO/FEMENINO en BD.
    */
   static agregarFila9Genero(worksheet) {
     const secciones = [
@@ -173,7 +174,7 @@ class ExcelStructureBuilder {
 
     secciones.forEach(cols => {
       cols.forEach((col, idx) => {
-        worksheet.getCell(`${col}9`).value = idx % 2 === 0 ? 'M' : 'V';
+        worksheet.getCell(`${col}9`).value = idx % 2 === 0 ? 'M' : 'F';
       });
     });
   }

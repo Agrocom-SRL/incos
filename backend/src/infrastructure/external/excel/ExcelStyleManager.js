@@ -29,7 +29,9 @@ class ExcelStyleManager {
     TOTAL_CONTADURIA_BG: { argb: 'FFE2BEF1' }, // Violeta claro
     TOTAL_ADMINISTRACION_BG: { argb: 'FFB4D8B4' }, // Verde teal más oscuro
     TOTAL_SISTEMAS_BG: { argb: 'FFB4D8E8' }, // Azul teal más oscuro
-    TOTAL_GENERAL_BG: { argb: 'FFFFB6C1' } // Rosado/rojizo claro
+    TOTAL_GENERAL_BG: { argb: 'FFFFB6C1' }, // Rosado/rojizo claro
+    /** Fondo de las celdas de paralelo (A–D) en fila 8 del encabezado */
+    PARALELO_FILA8_BG: { argb: 'FFFFFFFF' }
   };
 
   /**
@@ -53,6 +55,29 @@ class ExcelStyleManager {
     worksheet.getRow(7).height = 34;
     worksheet.getRow(8).height = 28;
     worksheet.getRow(9).height = 28;
+  }
+
+  /**
+   * Relleno blanco en las celdas de la fila 8 donde van las letras A, B, C, D por bloque
+   * (inscripción, abandono, reprobados, aprobados). Ejecutar después de aplicarEstilosEncabezados.
+   */
+  static aplicarRellenoBlancoParalelosFila8(worksheet) {
+    const pares = [
+      ['D', 'E'], ['F', 'G'], ['H', 'I'], ['J', 'K'],
+      ['M', 'N'], ['O', 'P'], ['Q', 'R'], ['S', 'T'],
+      ['V', 'W'], ['X', 'Y'], ['Z', 'AA'], ['AB', 'AC'],
+      ['AE', 'AF'], ['AG', 'AH'], ['AI', 'AJ'], ['AK', 'AL']
+    ];
+    const fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: this.COLORS.PARALELO_FILA8_BG
+    };
+    pares.forEach(([c0, c1]) => {
+      [c0, c1].forEach((c) => {
+        worksheet.getCell(`${c}8`).fill = fill;
+      });
+    });
   }
 
   /**
@@ -110,6 +135,17 @@ class ExcelStyleManager {
     }
     // Default: violeta claro
     return this.COLORS.TOTAL_CONTADURIA_BG;
+  }
+
+  /**
+   * Columna B (nombre de carrera, 4 filas) con el mismo color que la fila TOTAL EN [carrera] (C:L).
+   */
+  static aplicarColorColumnaBCarrera(worksheet, firstRow, lastRow, carreraNombre) {
+    const color = this.obtenerColorTotalCarrera(carreraNombre);
+    for (let r = firstRow; r <= lastRow; r++) {
+      const cell = worksheet.getCell(r, this.COL_TABLA_INICIO);
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: color };
+    }
   }
 
   /**

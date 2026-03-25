@@ -36,10 +36,11 @@ class ExcelContentBuilder {
       });
 
       const totalRow = currentRow;
-      this.agregarTotalCarreraVacia(worksheet, totalRow, carrera.nombre);
+      this.agregarTotalCarreraVacia(worksheet, totalRow, carrera.nombre, firstRow, totalRow - 1);
 
       worksheet.mergeCells(`B${firstRow}:B${totalRow}`);
       ExcelStyleManager.aplicarEstiloCeldaNombreCarrera(worksheet.getCell(`B${firstRow}`));
+      ExcelStyleManager.aplicarColorColumnaBCarrera(worksheet, firstRow, totalRow, carrera.nombre);
 
       currentRow = totalRow + 1;
     });
@@ -52,6 +53,7 @@ class ExcelContentBuilder {
    */
   static poblarDatos(worksheet, datosAgrupados) {
     let currentRow = 10;
+    const filasTotalesPorCarrera = [];
 
     Object.keys(datosAgrupados).forEach(carrera => {
       const regimenes = datosAgrupados[carrera];
@@ -73,25 +75,33 @@ class ExcelContentBuilder {
       });
 
       const totalRow = currentRow;
+      filasTotalesPorCarrera.push(totalRow);
       this.agregarTotalCarreraConDatos(worksheet, totalRow, carrera, firstRow, totalRow - 1);
 
       worksheet.mergeCells(`B${firstRow}:B${totalRow}`);
       ExcelStyleManager.aplicarEstiloCeldaNombreCarrera(worksheet.getCell(`B${firstRow}`));
+      ExcelStyleManager.aplicarColorColumnaBCarrera(worksheet, firstRow, totalRow, carrera);
 
       currentRow = totalRow + 1;
     });
 
-    this.agregarTotalGeneralConDatos(worksheet, currentRow, 10, currentRow - 1);
+    this.agregarTotalGeneralConDatos(worksheet, currentRow, 10, currentRow - 1, filasTotalesPorCarrera);
   }
 
   /**
    * Agrega fila de total por carrera (versión vacía)
    */
-  static agregarTotalCarreraVacia(worksheet, row, carreraNombre) {
+  static agregarTotalCarreraVacia(worksheet, row, carreraNombre, firstRow, lastRow) {
+    ExcelFormulaBuilder.agregarTotalCarrera(worksheet, row, firstRow, lastRow);
     ExcelStyleManager.aplicarEtiquetaTotalEnCarrera(
       worksheet,
       row,
       `TOTAL EN ${carreraNombre.toUpperCase()}`
+    );
+    [...ExcelFormulaBuilder.COLUMNAS_SUMA_VERTICAL_TOTAL_CARRERA, 'AN', 'AO', 'AP', 'AQ', 'AR', 'AS'].forEach(
+      col => {
+        ExcelStyleManager.aplicarNegrita(worksheet.getCell(`${col}${row}`));
+      }
     );
     ExcelStyleManager.aplicarEstiloTotalCarrera(worksheet, row, carreraNombre);
     ExcelStyleManager.aplicarBordesFila(worksheet, row);
@@ -109,10 +119,11 @@ class ExcelContentBuilder {
       `TOTAL EN ${carrera.toUpperCase()}`
     );
 
-    const totalesGenero = ['AN', 'AO', 'AP', 'AQ', 'AR', 'AS'];
-    totalesGenero.forEach(col => {
-      ExcelStyleManager.aplicarNegrita(worksheet.getCell(`${col}${row}`));
-    });
+    [...ExcelFormulaBuilder.COLUMNAS_SUMA_VERTICAL_TOTAL_CARRERA, 'AN', 'AO', 'AP', 'AQ', 'AR', 'AS'].forEach(
+      col => {
+        ExcelStyleManager.aplicarNegrita(worksheet.getCell(`${col}${row}`));
+      }
+    );
 
     ExcelStyleManager.aplicarEstiloTotalCarrera(worksheet, row, carrera);
     ExcelStyleManager.aplicarBordesFila(worksheet, row);
@@ -132,10 +143,10 @@ class ExcelContentBuilder {
   /**
    * Agrega fila de total general (versión con datos)
    */
-  static agregarTotalGeneralConDatos(worksheet, row, firstRow, lastRow) {
+  static agregarTotalGeneralConDatos(worksheet, row, firstRow, lastRow, filasTotalesPorCarrera) {
     worksheet.getCell(`C${row}`).value = 'TOTAL';
     ExcelStyleManager.aplicarNegrita(worksheet.getCell(`C${row}`));
-    ExcelFormulaBuilder.agregarTotalGeneral(worksheet, row, firstRow, lastRow);
+    ExcelFormulaBuilder.agregarTotalGeneral(worksheet, row, firstRow, lastRow, filasTotalesPorCarrera);
     
     const columnas = ['D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',
       'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U',
