@@ -28,7 +28,6 @@ import { downloadFile } from '@application/utils';
 import { StudentInfoSection } from '@estudiantes/components/organisms';
 import {
   PaymentMethodSelectionSection,
-  ConfigurationDetailSection,
   ContributionDetailSummary,
   SelectedPaymentSection,
 } from '../components/organisms';
@@ -73,8 +72,8 @@ const PagosRegistrar = () => {
   // Bloquear redirección automática (saldo 0 → detalle) hasta después de descargar el recibo
   const pendienteDescargaReciboRef = useRef(false);
 
-  // Monto de esta cuota (lo que el usuario ingresa en Detalle del Aporte). Se muestra en "Saldo a Pagar" y se envía al registrar.
-  const [montoCuota, setMontoCuota] = useState(null);
+  // Monto de esta cuota (lo que el usuario ingresa en Detalle del Aporte). Inicia en 0; no se pre-rellena con el saldo pendiente.
+  const [montoCuota, setMontoCuota] = useState(0);
 
   // Formulario para registro de pago
   // Si el contexto no proporciona un form, crear uno nuevo
@@ -119,12 +118,15 @@ const PagosRegistrar = () => {
   // (caso típico: el aporte quedó totalmente cubierto por beca/condonación)
   const esPagoGratuito = montoPagado === 0;
 
-  // Inicializar o corregir montoCuota con el saldo real: si está vacío o si supera el saldo (ej. 400 cuando el saldo real es 140), usar saldo. Solo enteros.
+  // Si no hay deuda, forzar 0. Si el usuario ingresó más que el saldo real (ej. tras actualizar datos), recortar al saldo. No autocompletar el saldo al cargar.
   useEffect(() => {
-    if (montoPagado <= 0) return;
+    if (montoPagado <= 0) {
+      setMontoCuota(0);
+      return;
+    }
     const saldoEntero = Math.floor(Number(montoPagado));
     const actual = montoCuota != null && montoCuota !== '' ? Math.floor(Number(montoCuota)) : null;
-    if (actual == null || actual > saldoEntero) {
+    if (actual != null && actual > saldoEntero) {
       setMontoCuota(saldoEntero);
     }
   }, [montoPagado, montoCuota]);
@@ -170,7 +172,7 @@ const PagosRegistrar = () => {
         return;
       }
 
-      // 1.1. Validar monto de esta cuota (solo si NO es pago gratuito)
+      // 1.1. Validar monto de esta cuota (solo si NO es pago gratuito): >= 0 permitido (p. ej. inicio en 0 sin tocar el input)
       if (
         !esPagoGratuito &&
         (
@@ -184,6 +186,17 @@ const PagosRegistrar = () => {
         setIsSubmitting(false);
         isSubmittingRef.current = false;
         return;
+      }
+
+      if (!esPagoGratuito) {
+        const saldoMax = Math.floor(Number(montoPagado));
+        const montoEnviar = Math.floor(Number(montoCuota));
+        if (montoEnviar > saldoMax) {
+          message.error(`El monto no puede superar el saldo pendiente (${saldoMax})`);
+          setIsSubmitting(false);
+          isSubmittingRef.current = false;
+          return;
+        }
       }
 
       // 2. Validar payment_method_id (solo si NO es pago gratuito)
@@ -357,6 +370,8 @@ const PagosRegistrar = () => {
       console.log('[PagosRegistrar] Resultado del registro:', result);
 
       if (result && result.success) {
+        setIsSubmitting(false);
+        isSubmittingRef.current = false;
         // Bloquear redirección automática (saldo 0 → detalle) hasta descargar recibo y navegar nosotros
         pendienteDescargaReciboRef.current = true;
         message.success('Pago registrado exitosamente');
@@ -549,6 +564,7 @@ const PagosRegistrar = () => {
                 form={formInstance}
                 onFinish={handleFinish}
                 onCancel={handleVolver}
+                submitting={isSubmitting}
                 disabled={
                   !configuracionAporteActiva ||
                   (!esPagoGratuito && (
@@ -559,8 +575,7 @@ const PagosRegistrar = () => {
                   )) ||
                   (!esPagoGratuito && !(metodosPago?.selectedMetodoPago)) ||
                   loadingStudent ||
-                  loading ||
-                  isSubmitting
+                  loading
                 }
               />
             ) : null}

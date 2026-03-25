@@ -7,6 +7,7 @@
  * - Diseño minimalista tipo "Detalle de tu compra" similar a Mercado Pago
  * - Muestra monto base, descuento (si existe), saldo total y input para monto de esta cuota (sistema por cuotas)
  * - Si estadoActualAporte está presente: muestra saldo real a pagar, total pagado y lista de cuotas ya pagadas
+ * - El monto de esta cuota no se pre-rellena con el saldo: lo controla el padre (p. ej. inicia en 0)
  *
  * @param {Object} configuracionAporte - Configuración de aporte activa
  * @param {Object} becaActiva - Beca activa del estudiante (opcional)
@@ -27,12 +28,6 @@ import { Card } from '@atoms';
 const formatMonto = (monto) => {
   if (!monto && monto !== 0) return 'N/A';
   return `Bs. ${Number(monto).toLocaleString('es-BO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-};
-
-// Solo número sin "Bs." para placeholder (el input ya tiene prefix="Bs.")
-const placeholderMonto = (monto) => {
-  if (monto == null || (monto !== 0 && !monto)) return '';
-  return Number(monto).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 };
 
 const ContributionDetailSummary = ({
@@ -111,11 +106,16 @@ const ContributionDetailSummary = ({
   const totalPagado = usaEstadoActual ? (Number(estadoActualAporte.total_pagado) || 0) : 0;
   const cuotasPagadas = (usaEstadoActual && Array.isArray(estadoActualAporte.cuotas)) ? estadoActualAporte.cuotas : [];
 
-  // Asegurar que el input muestre siempre el saldo a pagar: si está vacío o si el valor actual supera el saldo (ej. 400 cuando el saldo es 140), corregir
+  // Sin saldo: normalizar a 0. Con saldo: solo recortar si el valor supera el máximo (no autocompletar con el saldo al cargar)
   useEffect(() => {
-    if (saldoAPagar <= 0 || !onMontoCuotaChange) return;
+    if (!onMontoCuotaChange) return;
+    if (saldoAPagar <= 0) {
+      const actual = montoCuota != null && montoCuota !== '' ? Math.floor(Number(montoCuota)) : 0;
+      if (actual !== 0) onMontoCuotaChange(0);
+      return;
+    }
     const actual = montoCuota != null && montoCuota !== '' ? Math.floor(Number(montoCuota)) : null;
-    if (actual == null || actual > saldoAPagar) {
+    if (actual != null && actual > saldoAPagar) {
       onMontoCuotaChange(saldoAPagar);
     }
   }, [saldoAPagar, montoCuota, onMontoCuotaChange]);
@@ -262,7 +262,7 @@ const ContributionDetailSummary = ({
           gap: '16px'
         }}>
           <div style={{ fontSize: '16px', color: '#262626', flexShrink: 0 }}>
-            Monto de esta cuota (saldo a pagar)
+            Monto de esta cuota
           </div>
           <div style={{ 
             flex: '1', 
