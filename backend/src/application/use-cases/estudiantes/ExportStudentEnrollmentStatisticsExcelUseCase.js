@@ -34,7 +34,8 @@ export class ExportStudentEnrollmentStatisticsExcelUseCase {
       gestion_nombre: plain?.name != null ? String(plain.name) : ''
     };
 
-    const buffer = await ExcelGenerator.generarReporteInscritos(rows, filtros);
+    // Fase 1: solo columnas B:L visibles (inscripción). M:AS quedan generadas y ocultas para activar luego sin reescribir el generador.
+    const buffer = await ExcelGenerator.generarReporteInscritos(rows, filtros, { soloInscripcion: true });
     const safeYear = filtros.gestion_anio.replace(/[^\dA-Za-z._-]/g, '_') || String(gestionId);
     const fileName = `estadistica_inscritos_${safeYear}.xlsx`;
 

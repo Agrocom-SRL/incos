@@ -29,9 +29,13 @@ class ExcelStructureBuilder {
 
   /**
    * Agrega el título del reporte
+   * @param {import('exceljs').Worksheet} worksheet
+   * @param {string} gestionAnio
+   * @param {{ soloInscripcion?: boolean }} [opciones] - si true, el merge solo llega a L (exporte parcial fase 1)
    */
-  static agregarTitulo(worksheet, gestionAnio) {
-    worksheet.mergeCells('B3:AS5');
+  static agregarTitulo(worksheet, gestionAnio, opciones = {}) {
+    const rangoTitulo = opciones.soloInscripcion ? 'B3:L5' : 'B3:AS5';
+    worksheet.mergeCells(rangoTitulo);
     const titulo = worksheet.getCell('B3');
     titulo.value = `ESTADÍSTICA ESTUDIANTES INSTITUTO INCOS SANTA CRUZ - GESTIÓN ${gestionAnio || ''}`;
     titulo.font = { size: FONT_SIZE_TITULO_REPORTE, bold: true };
