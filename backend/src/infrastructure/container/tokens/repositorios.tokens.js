@@ -64,6 +64,7 @@ export const REPOSITORIOS_TOKENS = {
     studentOriginRepository: 'studentOriginRepository',
     studentGuardianRepository: 'studentGuardianRepository',
     studentEnrollmentExcelReportRepository: 'studentEnrollmentExcelReportRepository',
+    studentEnrollmentStudentListExcelReportRepository: 'studentEnrollmentStudentListExcelReportRepository',
     scholarshipRepository: 'scholarshipRepository',
     studentScholarshipRepository: 'studentScholarshipRepository',
     licenseRequestRepository: 'licenseRequestRepository',

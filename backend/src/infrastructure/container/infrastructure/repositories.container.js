@@ -98,6 +98,7 @@ import { StudentScholarshipRepository } from '../../repositories/StudentScholars
 import { LicenseRequestRepository } from '../../repositories/LicenseRequestRepository.js';
 import { StudentGuardianRepository } from '../../repositories/StudentGuardianRepository.js';
 import { StudentEnrollmentExcelReportRepository } from '../../repositories/StudentEnrollmentExcelReportRepository.js';
+import { StudentEnrollmentStudentListExcelReportRepository } from '../../repositories/StudentEnrollmentStudentListExcelReportRepository.js';
 import { TransitabilityRepository } from '../../repositories/TransitabilityRepository.js';
 import { TransferRepository } from '../../repositories/TransferRepository.js';
 
@@ -201,6 +202,7 @@ export function registerRepositoriesModule(container) {
     registerRepository(container, REPOSITORIOS_TOKENS.licenseRequestRepository, LicenseRequestRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.studentGuardianRepository, StudentGuardianRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.studentEnrollmentExcelReportRepository, StudentEnrollmentExcelReportRepository);
+    registerRepository(container, REPOSITORIOS_TOKENS.studentEnrollmentStudentListExcelReportRepository, StudentEnrollmentStudentListExcelReportRepository);
 
     // ============================================
     // TRANSITABILIDAD Y TRASPASOS
