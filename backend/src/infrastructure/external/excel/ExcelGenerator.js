@@ -190,20 +190,16 @@ class ExcelGenerator {
     worksheet.getCell('A8').value = 'CURSO:';
     worksheet.mergeCells('A8:B8');
     worksheet.getCell('C8').value = `${periodoNombre || periodoEtiqueta} - "${paraleloLetra || ''}"`.trim();
-    worksheet.mergeCells('D8:G8');
-    worksheet.getCell('D8').value = {
-      richText: [
-        { text: 'TURNO: ', font: { bold: true, size: FONT_SIZE_LISTA } },
-        { text: turno, font: { size: FONT_SIZE_LISTA } }
-      ]
-    };
+    worksheet.getCell('D8').value = 'TURNO:';
+    worksheet.mergeCells('E8:G8');
+    worksheet.getCell('E8').value = turno;
 
-    ['A3', 'A4', 'A5', 'A6', 'A7', 'A8'].forEach((addr) => {
+    ['A3', 'A4', 'A5', 'A6', 'A7', 'A8', 'D8'].forEach((addr) => {
       worksheet.getCell(addr).font = { bold: true, size: FONT_SIZE_LISTA };
       // Evita que el label se parta en varias líneas por ser columna angosta
       worksheet.getCell(addr).alignment = { horizontal: 'center', vertical: 'middle', wrapText: false };
     });
-    ['C3', 'C4', 'C5', 'C6', 'C7', 'C8'].forEach((addr) => {
+    ['C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'E8'].forEach((addr) => {
       worksheet.getCell(addr).font = { size: FONT_SIZE_LISTA };
     });
     [3, 4, 5, 6, 7, 8].forEach((r) => {
