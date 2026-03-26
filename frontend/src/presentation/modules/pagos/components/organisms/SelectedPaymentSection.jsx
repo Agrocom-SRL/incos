@@ -15,7 +15,8 @@
  * @param {Object} form - Instancia del formulario de Ant Design
  * @param {Function} onFinish - Callback cuando se envía el formulario
  * @param {Function} onCancel - Callback cuando se cancela
- * @param {boolean} disabled - Si los botones están deshabilitados
+ * @param {boolean} disabled - Si el formulario no puede enviarse (validación / carga de datos)
+ * @param {boolean} submitting - Si el envío al servidor está en curso (spinner en el botón)
  */
 
 import { useEffect } from 'react';
@@ -49,7 +50,8 @@ const SelectedPaymentSection = ({
   form,
   onFinish,
   onCancel,
-  disabled = false
+  disabled = false,
+  submitting = false
 }) => {
   // Si no hay configuración, no mostrar
   if (!selectedConfiguracion) return null;
@@ -235,8 +237,8 @@ const SelectedPaymentSection = ({
               variant="primary"
               onClick={() => form?.submit()}
               icon={<SaveOutlined />}
-              disabled={disabled}
-              loading={disabled}
+              disabled={disabled || submitting}
+              loading={submitting}
               size="large"
               style={{
                 borderRadius: '8px',
@@ -247,7 +249,7 @@ const SelectedPaymentSection = ({
                 boxShadow: '0 2px 8px rgba(24, 144, 255, 0.3)',
               }}
             >
-              {disabled ? 'Registrando...' : 'Registrar Pago'}
+              {submitting ? 'Registrando...' : 'Registrar Pago'}
             </Button>
           </div>
         </div>
@@ -325,8 +327,8 @@ const SelectedPaymentSection = ({
               variant="primary"
               onClick={() => form?.submit()}
               icon={<SaveOutlined />}
-              disabled={disabled}
-              loading={disabled}
+              disabled={disabled || submitting}
+              loading={submitting}
               size="large"
               style={{
                 borderRadius: '8px',
@@ -337,7 +339,7 @@ const SelectedPaymentSection = ({
                 boxShadow: '0 2px 8px rgba(24, 144, 255, 0.3)',
               }}
             >
-              {disabled ? 'Registrando...' : 'Registrar Pago'}
+              {submitting ? 'Registrando...' : 'Registrar Pago'}
             </Button>
           </div>
         </>

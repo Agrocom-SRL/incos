@@ -25,6 +25,66 @@ export class EstudianteRepository extends IEstudianteRepository {
    * @param {Object} options.params - Parámetros de consulta HTTP
    * @returns {Promise<{success: boolean, data?: Array, error?: string}>}
    */
+  /**
+   * Descarga Excel de estadística de inscritos (gestión vigente o gestion_id en query).
+   * @param {Object} [options]
+   * @param {string|number} [options.gestionId]
+   * @returns {Promise<{success: boolean, blob?: Blob, fileName?: string, error?: string}>}
+   */
+  async descargarEstadisticaInscritosExcel(options = {}) {
+    try {
+      const params = {};
+      if (options.gestionId != null && options.gestionId !== '') {
+        params.gestion_id = options.gestionId;
+      }
+
+      const response = await apiClient.get(ESTUDIANTES_ENDPOINTS.EXPORT_ESTADISTICA_INSCRITOS, {
+        params,
+        responseType: 'blob',
+      });
+
+      const disposition = response.headers['content-disposition'] || '';
+      const starMatch = disposition.match(/filename\*=UTF-8''([^;\s]+)/i);
+      const quotedMatch = disposition.match(/filename="([^"]+)"/i);
+      const plainMatch = disposition.match(/filename=([^;\s]+)/i);
+
+      let fileName = 'estadistica_inscritos.xlsx';
+      if (starMatch) {
+        try {
+          fileName = decodeURIComponent(starMatch[1].replace(/['"]/g, ''));
+        } catch {
+          fileName = starMatch[1];
+        }
+      } else if (quotedMatch) {
+        fileName = quotedMatch[1];
+      } else if (plainMatch) {
+        fileName = plainMatch[1].replace(/['"]/g, '');
+      }
+
+      return {
+        success: true,
+        blob: response.data,
+        fileName,
+      };
+    } catch (error) {
+      if (error.response?.data instanceof Blob) {
+        try {
+          const text = await error.response.data.text();
+          const json = JSON.parse(text);
+          const errObj = json?.error;
+          const msg =
+            typeof errObj === 'string'
+              ? errObj
+              : errObj?.message || json?.message || 'Error al exportar estadística de inscritos';
+          return { success: false, error: msg };
+        } catch {
+          return { success: false, error: 'Error al exportar estadística de inscritos' };
+        }
+      }
+      return handleErrorResponse(error, 'Error al exportar estadística de inscritos');
+    }
+  }
+
   async obtenerTodos(options = {}) {
     try {
       const { params = {} } = options;

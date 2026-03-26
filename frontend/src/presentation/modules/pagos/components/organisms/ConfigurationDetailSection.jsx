@@ -6,7 +6,7 @@
  * Atomic Design: Organism
  * - Muestra información de la configuración de aporte actual
  * - Incluye información de beca si existe
- * - Calcula y muestra monto base, descuento y saldo a pagar
+ * - Calcula y muestra monto base, descuento y saldo total de la configuración (no el monto por cuota; ese se ingresa en registro de pago)
  * 
  * @param {Object} configuracionAporte - Configuración de aporte activa
  * @param {Object} becaActiva - Beca activa del estudiante (opcional)

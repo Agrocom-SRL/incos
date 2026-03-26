@@ -14,10 +14,10 @@
 
 import { ESTUDIANTES_TOKENS, REPOSITORIOS_TOKENS, SERVICIOS_TOKENS, INSCRIPCIONES_TOKENS } from '../../tokens/index.js';
 import { registerComponent } from '../../utils/container.helpers.js';
-import { ListStudentsUseCase, RegisterStudentUseCase, UpdateStudentUseCase, GetStudentByIdUseCase, SearchStudentUseCase, GenerateActaCompromisoUseCase, GenerateDeclaracionJuradaUseCase, CreateStudentScholarshipUseCase, DeleteStudentScholarshipUseCase, DeleteStudentUseCase } from '../../../../application/use-cases/estudiantes/index.js';
+import { ListStudentsUseCase, RegisterStudentUseCase, UpdateStudentUseCase, GetStudentByIdUseCase, SearchStudentUseCase, GenerateActaCompromisoUseCase, GenerateDeclaracionJuradaUseCase, CreateStudentScholarshipUseCase, DeleteStudentScholarshipUseCase, DeleteStudentUseCase, ExportStudentEnrollmentStatisticsExcelUseCase } from '../../../../application/use-cases/estudiantes/index.js';
 import { GetStudentScholarshipsByStudentIdUseCase } from '../../../../application/use-cases/estudiantes/becas/GetStudentScholarshipsByStudentIdUseCase.js';
 import { ListStudentScholarshipsUseCase } from '../../../../application/use-cases/estudiantes/becas/ListStudentScholarshipsUseCase.js';
-import { ListStudentsController, RegisterStudentController, UpdateStudentController, GetStudentByIdController, SearchStudentController, ActaCompromisoController, DeclaracionJuradaController, AsignarBecaController, DeleteStudentScholarshipController, DeleteStudentController } from '../../../../presentation/controllers/estudiantes/index.js';
+import { ListStudentsController, RegisterStudentController, UpdateStudentController, GetStudentByIdController, SearchStudentController, ActaCompromisoController, DeclaracionJuradaController, AsignarBecaController, DeleteStudentScholarshipController, DeleteStudentController, ExportEstadisticaInscritosExcelController } from '../../../../presentation/controllers/estudiantes/index.js';
 import { GetStudentScholarshipsController } from '../../../../presentation/controllers/estudiantes/becas/get-scholarships.controller.js';
 import { ListStudentScholarshipsController } from '../../../../presentation/controllers/estudiantes/becas/list-student-scholarships.controller.js';
 import { buildEstudiantesRouter } from '../../../../presentation/routes/estudiantes.routes.js';
@@ -244,6 +244,19 @@ export function registerEstudiantesResource(container) {
             })
     );
 
+    registerComponent(
+        container,
+        ESTUDIANTES_TOKENS.exportStudentEnrollmentStatisticsExcelUseCase,
+        (c) =>
+            new ExportStudentEnrollmentStatisticsExcelUseCase({
+                studentEnrollmentExcelReportRepository: c.resolve(
+                    REPOSITORIOS_TOKENS.studentEnrollmentExcelReportRepository
+                ),
+                managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
     // ============================================
     // CONTROLLERS
     // ============================================
@@ -379,6 +392,18 @@ export function registerEstudiantesResource(container) {
             })
     );
 
+    registerComponent(
+        container,
+        ESTUDIANTES_TOKENS.exportEstadisticaInscritosExcelController,
+        (c) =>
+            new ExportEstadisticaInscritosExcelController({
+                exportStudentEnrollmentStatisticsExcelUseCase: c.resolve(
+                    ESTUDIANTES_TOKENS.exportStudentEnrollmentStatisticsExcelUseCase
+                ),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
     // ============================================
     // ROUTER
     // ============================================
@@ -399,6 +424,9 @@ export function registerEstudiantesResource(container) {
                 getStudentScholarshipsController: c.resolve(ESTUDIANTES_TOKENS.getStudentScholarshipsController),
                 listStudentScholarshipsController: c.resolve(ESTUDIANTES_TOKENS.listStudentScholarshipsController),
                 deleteStudentController: c.resolve(ESTUDIANTES_TOKENS.deleteStudentController),
+                exportEstadisticaInscritosExcelController: c.resolve(
+                    ESTUDIANTES_TOKENS.exportEstadisticaInscritosExcelController
+                ),
                 // TODO: Agregar otros controllers cuando se implementen sus rutas
             };
 

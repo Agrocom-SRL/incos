@@ -117,6 +117,18 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
         (req, res, next) => controllers.searchStudentController.handle(req, res, next)  // 3. Controller al final
     );
 
+    /**
+     * GET /api/v1/estudiantes/export/estadistica-inscritos
+     * Descargar Excel de estadística de inscritos (vista_reporte_excel_inscritos).
+     * Query: gestion_id (opcional; por defecto la gestión vigente)
+     *
+     * Debe ir antes de rutas con /:id.
+     */
+    router.get(
+        '/export/estadistica-inscritos',
+        (req, res, next) => controllers.exportEstadisticaInscritosExcelController.handle(req, res, next)
+    );
+
     // ============================================
     // ASIGNACIÓN DE BECAS
     // ============================================

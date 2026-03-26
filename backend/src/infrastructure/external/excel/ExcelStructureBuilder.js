@@ -4,7 +4,10 @@
  * Principio: Single Responsibility Principle (SRP)
  */
 
-const { ExcelStyleManager } = require('./ExcelStyleManager');
+import { ExcelStyleManager } from './ExcelStyleManager.js';
+
+/** Título del reporte (más grande que el cuerpo de la tabla). */
+const FONT_SIZE_TITULO_REPORTE = 22;
 
 class ExcelStructureBuilder {
   /**
@@ -12,23 +15,35 @@ class ExcelStructureBuilder {
    */
   static configurarColumnas(worksheet) {
     worksheet.getColumn('A').width = 3;
-    worksheet.getColumn('B').width = 30;
-    worksheet.getColumn('C').width = 12;
-    // Columnas de datos (D a AS) - se eliminó EFECTIVOS y TOTAL GENERAL
-    for (let i = 4; i <= 45; i++) {
+    // B más estrecha → el nombre de carrera hace wrap en el bloque fusionado (4 filas)
+    worksheet.getColumn('B').width = 24;
+    worksheet.getColumn('C').width = 18;
+    for (let i = 4; i <= 39; i++) {
       worksheet.getColumn(i).width = 8;
+    }
+    // Totales por género (títulos largos)
+    for (let i = 40; i <= 45; i++) {
+      worksheet.getColumn(i).width = 15;
     }
   }
 
   /**
    * Agrega el título del reporte
+   * @param {import('exceljs').Worksheet} worksheet
+   * @param {string} gestionAnio
+   * @param {{ soloInscripcion?: boolean }} [opciones] - si true, el merge solo llega a L (exporte parcial fase 1)
    */
-  static agregarTitulo(worksheet, gestionAnio) {
-    worksheet.mergeCells('B3:AS5');
+  static agregarTitulo(worksheet, gestionAnio, opciones = {}) {
+    const rangoTitulo = opciones.soloInscripcion ? 'B3:L5' : 'B3:AS5';
+    worksheet.mergeCells(rangoTitulo);
     const titulo = worksheet.getCell('B3');
     titulo.value = `ESTADÍSTICA ESTUDIANTES INSTITUTO INCOS SANTA CRUZ - GESTIÓN ${gestionAnio || ''}`;
-    titulo.font = { size: 18, bold: true };
-    titulo.alignment = { vertical: 'middle', horizontal: 'center' };
+    titulo.font = { size: FONT_SIZE_TITULO_REPORTE, bold: true };
+    titulo.alignment = {
+      vertical: 'middle',
+      horizontal: 'center',
+      wrapText: true
+    };
   }
 
   /**
@@ -39,6 +54,7 @@ class ExcelStructureBuilder {
     this.agregarFila8Paralelos(worksheet);
     this.agregarFila9Genero(worksheet);
     ExcelStyleManager.aplicarEstilosEncabezados(worksheet);
+    ExcelStyleManager.aplicarRellenoBlancoParalelosFila8(worksheet);
   }
 
   /**
@@ -107,14 +123,14 @@ class ExcelStructureBuilder {
       textRotation: 90
     };
 
-    // Totales por género
+    // AN→AS: por categoría (abandono, reprobado, aprobado); en cada una primero MASCULINO, luego FEMENINO
     const totalesGenero = [
-      { col: 'AN', label: 'TOTAL MUJERES ABANDONO' },
-      { col: 'AO', label: 'TOTAL VARONES ABANDONO' },
-      { col: 'AP', label: 'TOTAL MUJERES REPROBADOS' },
-      { col: 'AQ', label: 'TOTAL VARONES REPROBADOS' },
-      { col: 'AR', label: 'TOTAL MUJERES APROBADOS' },
-      { col: 'AS', label: 'TOTAL VARONES APROBADOS' }
+      { col: 'AN', label: 'TOTAL ABANDONO MASCULINO' },
+      { col: 'AO', label: 'TOTAL ABANDONO FEMENINO' },
+      { col: 'AP', label: 'TOTAL REPROBADO MASCULINO' },
+      { col: 'AQ', label: 'TOTAL REPROBADO FEMENINO' },
+      { col: 'AR', label: 'TOTAL APROBADO MASCULINO' },
+      { col: 'AS', label: 'TOTAL APROBADO FEMENINO' }
     ];
 
     totalesGenero.forEach(({ col, label }) => {
@@ -150,7 +166,7 @@ class ExcelStructureBuilder {
   }
 
   /**
-   * Agrega la fila 9 con género (M/V)
+   * Fila 9: primero MASCULINO (M), después FEMENINO (F), alineado con MASCULINO/FEMENINO en BD.
    */
   static agregarFila9Genero(worksheet) {
     const secciones = [
@@ -162,10 +178,10 @@ class ExcelStructureBuilder {
 
     secciones.forEach(cols => {
       cols.forEach((col, idx) => {
-        worksheet.getCell(`${col}9`).value = idx % 2 === 0 ? 'M' : 'V';
+        worksheet.getCell(`${col}9`).value = idx % 2 === 0 ? 'M' : 'F';
       });
     });
   }
 }
 
-module.exports = { ExcelStructureBuilder };
+export { ExcelStructureBuilder };

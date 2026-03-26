@@ -9,6 +9,7 @@ export { SearchStudentUseCase } from './SearchStudentUseCase.js';
 export { GenerateActaCompromisoUseCase } from './GenerateActaCompromisoUseCase.js';
 export { GenerateDeclaracionJuradaUseCase } from './GenerateDeclaracionJuradaUseCase.js';
 export { DeleteStudentUseCase } from './DeleteStudentUseCase.js';
+export { ExportStudentEnrollmentStatisticsExcelUseCase } from './ExportStudentEnrollmentStatisticsExcelUseCase.js';
 
 // ============================================
 // USE CASES - BECAS

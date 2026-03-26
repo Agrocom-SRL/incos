@@ -12,6 +12,27 @@
  * @param {string} filePath - Ruta relativa del archivo (ej: /uploads/documentos/estudiantes/3/FORMULARIO_INSCRIPCION_3_xxx.pdf)
  * @param {string} fileName - Nombre del archivo para la descarga
  */
+/**
+ * Descarga un Blob en el navegador (p. ej. respuesta API con responseType: 'blob').
+ * @param {Blob} blob
+ * @param {string} [fileName]
+ */
+export const downloadBlob = (blob, fileName) => {
+  if (!(blob instanceof Blob)) {
+    throw new Error('Se requiere un Blob válido');
+  }
+  const blobUrl = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = blobUrl;
+  link.download = fileName || 'archivo';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  setTimeout(() => {
+    window.URL.revokeObjectURL(blobUrl);
+  }, 100);
+};
+
 export const downloadFile = async (filePath, fileName) => {
   try {
     // Los archivos estáticos se sirven directamente en /uploads (sin /api)

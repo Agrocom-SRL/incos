@@ -63,6 +63,7 @@ export const REPOSITORIOS_TOKENS = {
     studentDisabilityRepository: 'studentDisabilityRepository',
     studentOriginRepository: 'studentOriginRepository',
     studentGuardianRepository: 'studentGuardianRepository',
+    studentEnrollmentExcelReportRepository: 'studentEnrollmentExcelReportRepository',
     scholarshipRepository: 'scholarshipRepository',
     studentScholarshipRepository: 'studentScholarshipRepository',
     licenseRequestRepository: 'licenseRequestRepository',
