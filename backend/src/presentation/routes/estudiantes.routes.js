@@ -129,6 +129,18 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
         (req, res, next) => controllers.exportEstadisticaInscritosExcelController.handle(req, res, next)
     );
 
+    /**
+     * GET /api/v1/estudiantes/export/lista-inscritos-por-carrera
+     * Descargar Excel de lista de inscritos por carrera, una hoja por paralelo.
+     * Query: carrera_id (requerido), gestion_id (opcional; por defecto la gestión vigente)
+     *
+     * Debe ir antes de rutas con /:id.
+     */
+    router.get(
+        '/export/lista-inscritos-por-carrera',
+        (req, res, next) => controllers.exportListaInscritosPorCarreraExcelController.handle(req, res, next)
+    );
+
     // ============================================
     // ASIGNACIÓN DE BECAS
     // ============================================

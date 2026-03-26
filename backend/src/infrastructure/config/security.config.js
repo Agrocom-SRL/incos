@@ -39,7 +39,8 @@ export const corsConfig = {
     credentials: getEnvAsBoolean('CORS_CREDENTIALS', true),
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-    exposedHeaders: ['Content-Range', 'X-Content-Range'],
+    // Necesario para descargas (leer filename en Content-Disposition desde el frontend)
+    exposedHeaders: ['Content-Range', 'X-Content-Range', 'Content-Disposition', 'Content-Type'],
 };
 
 /**

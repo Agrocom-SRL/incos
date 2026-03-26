@@ -22,6 +22,7 @@ import {
   EliminarBecaDescuentoUseCase,
   EliminarBecaAsignadaUseCase,
   ExportarEstadisticaInscritosExcelUseCase,
+  ExportarListaInscritosPorCarreraExcelUseCase,
 } from '@useCases/estudiantes';
 
 // Repositorio principal
@@ -143,6 +144,10 @@ export function registerEstudiantesModule(factory) {
 
   factory.exportarEstadisticaInscritosExcel = () => {
     return new ExportarEstadisticaInscritosExcelUseCase(estudianteRepository);
+  };
+
+  factory.exportarListaInscritosPorCarreraExcel = () => {
+    return new ExportarListaInscritosPorCarreraExcelUseCase(estudianteRepository);
   };
 
   return factory;

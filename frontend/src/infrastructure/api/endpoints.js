@@ -81,6 +81,8 @@ export const ESTUDIANTES_ENDPOINTS = {
   ...createCRUDEndpoints('/estudiantes'),
   /** GET — Excel estadística inscritos (query gestion_id opcional) */
   EXPORT_ESTADISTICA_INSCRITOS: `${API_BASE}/estudiantes/export/estadistica-inscritos`,
+  /** GET — Excel lista inscritos por carrera (query carrera_id requerido; gestion_id opcional) */
+  EXPORT_LISTA_INSCRITOS_POR_CARRERA: `${API_BASE}/estudiantes/export/lista-inscritos-por-carrera`,
   // Endpoint específico para generar acta de compromiso
   GENERATE_ACTA_COMPROMISO: (studentId) => `${API_BASE}/estudiantes/${studentId}/documentos/acta-compromiso`,
   // Endpoint específico para generar declaración jurada (formulario/boleta)
