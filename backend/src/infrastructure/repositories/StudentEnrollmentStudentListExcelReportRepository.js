@@ -17,7 +17,11 @@ export class StudentEnrollmentStudentListExcelReportRepository {
       FROM vista_reporte_excel_lista_inscritos
       WHERE gestion_id = :gestionId
         AND carrera_id = :carreraId
-      ORDER BY periodo_numero, paralelo_nombre, apellido_paterno, apellido_materno, nombres
+      ORDER BY
+        periodo_numero,
+        paralelo_nombre,
+        LOWER(nombre_completo),
+        ci
     `;
 
     return sequelize.query(query, {
