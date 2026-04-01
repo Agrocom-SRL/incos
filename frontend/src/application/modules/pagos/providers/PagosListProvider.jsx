@@ -3,7 +3,7 @@
  *
  * Single Responsibility: Proporcionar estado de la lista de pagos (vista_pago_aporte_listado)
  *
- * - Usa usePagosApi: listado con paginación, búsqueda, filtros y orden en servidor
+ * - Usa usePagosApi: carga completa (limit 10000) y búsqueda en cliente vía useTableData
  * - Usa useDeletePagoAporte: eliminar y recargar lista al éxito
  * - searchText/setSearchText para el input; refetch({ params: { page, limit, search, ... } })
  */

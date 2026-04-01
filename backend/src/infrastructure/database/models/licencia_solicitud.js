@@ -26,11 +26,11 @@ export const LicenciaSolicitud = sequelize.define(
       allowNull: true,
       comment: 'Gestión',
     },
-    turnoCursoId: {
+    cursoId: {
       type: DataTypes.INTEGER,
-      field: 'turno_curso_id',
+      field: 'curso_id',
       allowNull: true,
-      comment: 'Turno/curso paralelo donde está matriculado',
+      comment: 'Curso donde está matriculado (asignación docente / paralelo)',
     },
     fechaSolicitud: {
       type: DataTypes.DATEONLY,

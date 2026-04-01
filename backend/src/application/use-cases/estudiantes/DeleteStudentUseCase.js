@@ -5,41 +5,37 @@
  *
  * Responsabilidades:
  * - Validar que el estudiante exista
- * - Validar que NO tenga inscripciones activas
- * - Validar pago_aporte: solo se permite eliminar si cada aporte está CANCELADO o no tiene ninguna cuota (pago_cuotas).
- *   Si tiene estado PARCIAL con cuotas, debe eliminarlas primero.
- * - Validar que NO tenga becas activas asignadas
- * - Eliminar (soft delete) todas las relaciones:
- *   - Apoderados (estudiantes_apoderados)
- *   - Discapacidades (estudiantes_discapacidades)
- *   - Orígenes (estudiantes_origenes)
- *   - Entregas de documentos (estudiantes_documentos_entrega)
- *   - Documentos del estudiante (documentos_estudiante) - incluyendo actas de compromiso
+ * - Soft delete en cascada (sin calificaciones ni historial_nivelaciones; módulos aún no usados):
+ *   - Inscripciones (inscripciones) e inscripciones_materias del estudiante vía datos académicos
+ *   - pago_cuotas y pago_aporte
+ *   - estudiantes_becas
+ *   - licencias_solicitudes, traspasos, transitabilidades (estudiante_id)
+ *   - documentos_estudiante (y archivos), estudiantes_documentos_entrega
+ *   - estudiantes_origenes, estudiantes_discapacidades, estudiantes_apoderados
+ *   - estudiantes_datos_academicos
  * - Eliminar el estudiante principal (estudiantes)
  *
- * Regla de negocio: Solo se pueden eliminar estudiantes que NO tengan:
- * - Inscripciones activas
- * - Pagos activos vinculados
- * - Becas activas asignadas
+ * Regla de negocio: eliminación lógica completa del vínculo del estudiante con el sistema.
  *
- * Tablas afectadas (según RegisterStudentUseCase y GenerateActaCompromisoUseCase):
- * - estudiantes: Registro principal del estudiante
- * - estudiantes_datos_academicos: Datos académicos del estudiante
- * - estudiantes_apoderados: Apoderados del estudiante
- * - estudiantes_discapacidades: Discapacidades del estudiante
- * - estudiantes_origenes: Orígenes del estudiante
- * - estudiantes_documentos_entrega: Entregas de documentos
- * - documentos_estudiante: Documentos subidos/generados (incluyendo actas de compromiso)
+ * Tablas afectadas (entre otras):
+ * - inscripciones_materias, inscripciones
+ * - pago_cuotas, pago_aporte
+ * - estudiantes_becas
+ * - licencias_solicitudes, traspasos, transitabilidades
+ * - documentos_estudiante, estudiantes_documentos_entrega
+ * - estudiantes_origenes, estudiantes_discapacidades, estudiantes_apoderados
+ * - estudiantes_datos_academicos, estudiantes
  *
  * Clean Architecture:
  * - Application Layer: Orquesta la eliminación de un estudiante
  * - Depende de: StudentRepository, StudentGuardianRepository, StudentDisabilityRepository,
  *   StudentOriginRepository, StudentDocumentDeliveryRepository, StudentDocumentRepository,
- *   StudentAcademicDataRepository, EnrollmentRepository, ContributionPaymentRepository,
- *   ContributionPaymentInstallmentRepository, StudentScholarshipRepository
+ *   StudentAcademicDataRepository, EnrollmentRepository, EnrollmentSubjectRepository,
+ *   ContributionPaymentRepository, ContributionPaymentInstallmentRepository, StudentScholarshipRepository,
+ *   LicenseRequestRepository, TransferRepository, TransitabilityRepository
  */
 
-import { NotFoundError, ValidationError } from '../../../domain/errors/AppError.js';
+import { NotFoundError } from '../../../domain/errors/AppError.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -59,9 +55,13 @@ export class DeleteStudentUseCase {
    * @param {Object} dependencies.studentDocumentRepository - Repositorio de documentos de estudiantes
    * @param {Object} dependencies.studentAcademicDataRepository - Repositorio de datos académicos
    * @param {Object} dependencies.enrollmentRepository - Repositorio de inscripciones
+   * @param {Object} dependencies.enrollmentSubjectRepository - Repositorio de inscripciones_materias
    * @param {Object} dependencies.contributionPaymentRepository - Repositorio de cabecera de aporte (pago_aporte)
    * @param {Object} dependencies.contributionPaymentInstallmentRepository - Repositorio de cuotas (pago_cuotas)
    * @param {Object} dependencies.studentScholarshipRepository - Repositorio de becas asignadas
+   * @param {Object} dependencies.licenseRequestRepository - Repositorio de licencias_solicitudes
+   * @param {Object} dependencies.transferRepository - Repositorio de traspasos
+   * @param {Object} dependencies.transitabilityRepository - Repositorio de transitabilidades
    * @param {ILogger} dependencies.logger - Logger para registro de eventos
    */
   constructor({
@@ -73,9 +73,13 @@ export class DeleteStudentUseCase {
     studentDocumentRepository,
     studentAcademicDataRepository,
     enrollmentRepository,
+    enrollmentSubjectRepository,
     contributionPaymentRepository,
     contributionPaymentInstallmentRepository,
     studentScholarshipRepository,
+    licenseRequestRepository,
+    transferRepository,
+    transitabilityRepository,
     logger,
   }) {
     this.studentRepository = studentRepository;
@@ -86,9 +90,13 @@ export class DeleteStudentUseCase {
     this.studentDocumentRepository = studentDocumentRepository;
     this.studentAcademicDataRepository = studentAcademicDataRepository;
     this.enrollmentRepository = enrollmentRepository;
+    this.enrollmentSubjectRepository = enrollmentSubjectRepository;
     this.contributionPaymentRepository = contributionPaymentRepository;
     this.contributionPaymentInstallmentRepository = contributionPaymentInstallmentRepository;
     this.studentScholarshipRepository = studentScholarshipRepository;
+    this.licenseRequestRepository = licenseRequestRepository;
+    this.transferRepository = transferRepository;
+    this.transitabilityRepository = transitabilityRepository;
     this.logger = logger;
   }
 
@@ -98,7 +106,6 @@ export class DeleteStudentUseCase {
    * @param {number} studentId - ID del estudiante a eliminar
    * @returns {Promise<void>}
    * @throws {NotFoundError} Si el estudiante no existe
-   * @throws {ValidationError} Si el estudiante tiene relaciones activas
    */
   async execute(studentId) {
     try {
@@ -119,34 +126,39 @@ export class DeleteStudentUseCase {
         ? student.toPlainObject()
         : student;
 
-      // 2. Validar que NO tenga inscripciones activas, vigentes o admitidas
-      await this._validateNoActiveEnrollments(studentId);
+      // 2. Inscripciones e inscripciones_materias (soft delete)
+      await this._deleteEnrollmentsForStudent(studentId);
 
-      // 3. Validar que NO tenga pagos activos vinculados
-      await this._validateNoActivePayments(studentId);
+      // 3. Cuotas y cabeceras de aporte (soft delete)
+      await this._deleteContributionPaymentsForStudent(studentId);
 
-      // 4. Validar que NO tenga becas activas asignadas
-      await this._validateNoActiveScholarships(studentId);
+      // 4. Becas asignadas (soft delete)
+      await this._deleteStudentScholarshipsForStudent(studentId);
 
-      // 5. Eliminar documentos del estudiante (incluyendo archivos físicos)
+      // 5. Licencias, traspasos y transitabilidades (soft delete)
+      await this._deleteLicenseRequestsForStudent(studentId);
+      await this._deleteTransfersForStudent(studentId);
+      await this._deleteTransitabilitiesForStudent(studentId);
+
+      // 6. Documentos del estudiante (incluyendo archivos físicos)
       await this._deleteStudentDocuments(studentId);
 
-      // 6. Eliminar entregas de documentos
+      // 7. Entregas de documentos
       await this._deleteDocumentDeliveries(studentId);
 
-      // 7. Eliminar orígenes
+      // 8. Orígenes
       await this._deleteOrigins(studentId);
 
-      // 8. Eliminar discapacidades
+      // 9. Discapacidades
       await this._deleteDisabilities(studentId);
 
-      // 9. Eliminar apoderados
+      // 10. Apoderados
       await this._deleteGuardians(studentId);
 
-      // 10. Eliminar datos académicos del estudiante (si existen)
+      // 11. Datos académicos
       await this._deleteAcademicData(studentId);
 
-      // 11. Eliminar el estudiante principal (soft delete)
+      // 12. Estudiante principal (soft delete)
       const deleted = await this.studentRepository.delete(studentId);
 
       if (!deleted) {
@@ -172,17 +184,16 @@ export class DeleteStudentUseCase {
   }
 
   /**
-   * Valida que el estudiante NO tenga inscripciones activas, vigentes o admitidas
-   * Las inscripciones se relacionan con estudiantes_datos_academicos, no directamente con estudiantes
+   * Soft delete de todas las inscripciones del estudiante y sus inscripciones_materias.
+   * No toca calificaciones ni historial_nivelaciones (módulos no implementados).
+   *
    * @private
-   * @param {number} studentId - ID del estudiante
-   * @throws {ValidationError} Si tiene inscripciones activas
+   * @param {number} studentId
    */
-  async _validateNoActiveEnrollments(studentId) {
+  async _deleteEnrollmentsForStudent(studentId) {
     try {
-      // 1. Buscar datos académicos del estudiante
       const academicDataResult = await this.studentAcademicDataRepository.findAll(
-        { studentId: studentId, active: true },
+        { studentId, active: true },
         null,
         null
       );
@@ -193,7 +204,9 @@ export class DeleteStudentUseCase {
         academicDataResult.data ||
         [];
 
-      // 2. Para cada dato académico, buscar inscripciones
+      let enrollmentsDeleted = 0;
+      let subjectsDeleted = 0;
+
       for (const academicData of academicDataList) {
         const academicDataPlain = academicData.toPlainObject
           ? academicData.toPlainObject()
@@ -205,7 +218,6 @@ export class DeleteStudentUseCase {
 
         if (!academicDataId) continue;
 
-        // Buscar inscripciones por studentAcademicDataId
         const enrollmentsResult = await this.enrollmentRepository.findAll(
           { studentAcademicDataId: academicDataId, active: true },
           null,
@@ -218,69 +230,77 @@ export class DeleteStudentUseCase {
           enrollmentsResult.data ||
           [];
 
-        if (enrollments.length > 0) {
-          const firstEnrollment = enrollments[0];
-          const enrollmentPlain = firstEnrollment.toPlainObject
-            ? firstEnrollment.toPlainObject()
-            : firstEnrollment;
+        for (const enrollment of enrollments) {
+          const enrollmentPlain = enrollment.toPlainObject
+            ? enrollment.toPlainObject()
+            : enrollment;
           const enrollmentId =
             enrollmentPlain.id ||
             enrollmentPlain.enrollmentId ||
             enrollmentPlain.inscripcionId;
 
-          this.logger.warn(
-            '[Estudiantes] Intento de eliminar estudiante con inscripciones activas',
-            {
-              studentId,
-              academicDataId,
-              enrollmentsCount: enrollments.length,
-              firstEnrollmentId: enrollmentId,
-            }
-          );
+          if (!enrollmentId) continue;
 
-          throw new ValidationError(
-            `No se puede eliminar el estudiante porque tiene ${enrollments.length} inscripción(es) activa(s), vigente(s) o admitida(s). ` +
-              `ID de inscripción: ${enrollmentId || 'N/A'}. ` +
-              `Solo se pueden eliminar estudiantes que no tengan inscripciones asociadas.`
-          );
+          const n = await this._deleteEnrollmentSubjectsForEnrollment(enrollmentId);
+          subjectsDeleted += n;
+          await this.enrollmentRepository.delete(enrollmentId);
+          enrollmentsDeleted += 1;
         }
       }
 
-      this.logger.info(
-        '[Estudiantes] Validación exitosa: el estudiante no tiene inscripciones activas',
-        {
-          studentId,
-        }
-      );
+      this.logger.info('[Estudiantes] Inscripciones y materias inscritas eliminadas (soft delete)', {
+        studentId,
+        enrollmentsDeleted,
+        subjectsDeleted,
+      });
     } catch (error) {
-      if (error instanceof ValidationError) {
-        throw error;
-      }
-
-      this.logger.error(
-        '[Estudiantes] Error al validar inscripciones del estudiante',
-        {
-          studentId,
-          error: error.message,
-          stack: error.stack,
-        }
-      );
+      this.logger.error('[Estudiantes] Error al eliminar inscripciones del estudiante', {
+        studentId,
+        error: error.message,
+        stack: error.stack,
+      });
       throw error;
     }
   }
 
   /**
-   * Valida que el estudiante pueda eliminarse según pago_aporte y pago_cuotas.
-   * Solo se permite eliminar cuando, para cada aporte del estudiante:
-   * - el estado es CANCELADO, o
-   * - no tiene ningún registro en pago_cuotas (activas).
-   * Si tiene aporte en estado PARCIAL con cuotas, debe eliminarlas antes.
+   * @private
+   * @param {number} enrollmentId
+   * @returns {Promise<number>} Cantidad de inscripciones_materias eliminadas
+   */
+  async _deleteEnrollmentSubjectsForEnrollment(enrollmentId) {
+    const enrollmentSubjectsResult = await this.enrollmentSubjectRepository.findAll(
+      { enrollmentId, active: true },
+      null,
+      null
+    );
+
+    const enrollmentSubjects =
+      enrollmentSubjectsResult.enrollmentSubjects ||
+      enrollmentSubjectsResult.enrollmentMaterias ||
+      enrollmentSubjectsResult.data ||
+      [];
+
+    let count = 0;
+    for (const row of enrollmentSubjects) {
+      const plain = row.toPlainObject ? row.toPlainObject() : row;
+      const id = plain.id;
+      if (id != null) {
+        await this.enrollmentSubjectRepository.delete(id);
+        count += 1;
+      }
+    }
+    return count;
+  }
+
+  /**
+   * Soft delete de todas las cuotas (pago_cuotas) y cabeceras (pago_aporte) activas del estudiante.
+   * Orden: cuotas primero, luego cabeceras (evita depender de que el usuario borre cuotas a mano).
    *
    * @private
    * @param {number} studentId - ID del estudiante
-   * @throws {ValidationError} Si tiene aporte PARCIAL con cuotas registradas
    */
-  async _validateNoActivePayments(studentId) {
+  async _deleteContributionPaymentsForStudent(studentId) {
     try {
       const paymentsResult = await this.contributionPaymentRepository.findAll(
         { studentId, active: true },
@@ -294,47 +314,54 @@ export class DeleteStudentUseCase {
         paymentsResult.payments ||
         [];
 
+      if (payments.length === 0) {
+        this.logger.info('[Estudiantes] Sin aportes activos que eliminar', { studentId });
+        return;
+      }
+
+      let cuotasDeleted = 0;
+      let aportesDeleted = 0;
+
       for (const payment of payments) {
         const plain = payment.toPlainObject ? payment.toPlainObject() : payment;
-        const state = plain.state ?? plain.estado;
         const pagoAporteId = plain.id;
+        if (!pagoAporteId) continue;
 
-        if (state === 'CANCELADO') {
-          continue;
+        const installmentsResult =
+          await this.contributionPaymentInstallmentRepository.findAll(
+            { contributionPaymentId: pagoAporteId, active: true },
+            null,
+            null
+          );
+
+        const installments =
+          installmentsResult.contributionPaymentInstallments ||
+          installmentsResult.pagoCuotas ||
+          installmentsResult.cuotas ||
+          installmentsResult.data ||
+          [];
+
+        for (const inst of installments) {
+          const instPlain = inst.toPlainObject ? inst.toPlainObject() : inst;
+          const instId = instPlain.id;
+          if (instId != null) {
+            await this.contributionPaymentInstallmentRepository.delete(instId);
+            cuotasDeleted += 1;
+          }
         }
 
-        const cuotasCount = await this.contributionPaymentInstallmentRepository.count({
-          contributionPaymentId: pagoAporteId,
-        });
-
-        if (cuotasCount > 0) {
-          this.logger.warn(
-            '[Estudiantes] Intento de eliminar estudiante con aporte PARCIAL y cuotas',
-            {
-              studentId,
-              pagoAporteId,
-              state,
-              cuotasCount,
-            }
-          );
-          throw new ValidationError(
-            'No se puede eliminar el estudiante porque tiene aporte(s) con estado PARCIAL y cuotas registradas. ' +
-              'Solo se puede eliminar cuando el estado del aporte es CANCELADO o no tiene ninguna cuota. ' +
-              'Si el estado es PARCIAL, primero debe eliminar las cuotas de pago.'
-          );
-        }
+        await this.contributionPaymentRepository.delete(pagoAporteId);
+        aportesDeleted += 1;
       }
 
-      this.logger.info(
-        '[Estudiantes] Validación exitosa: aportes permiten eliminar (CANCELADO o sin cuotas)',
-        { studentId }
-      );
+      this.logger.info('[Estudiantes] Aportes y cuotas del estudiante eliminados (soft delete)', {
+        studentId,
+        aportesDeleted,
+        cuotasDeleted,
+      });
     } catch (error) {
-      if (error instanceof ValidationError) {
-        throw error;
-      }
       this.logger.error(
-        '[Estudiantes] Error al validar pagos del estudiante',
+        '[Estudiantes] Error al eliminar aportes/cuotas del estudiante',
         { studentId, error: error.message, stack: error.stack }
       );
       throw error;
@@ -342,19 +369,17 @@ export class DeleteStudentUseCase {
   }
 
   /**
-   * Valida que el estudiante NO tenga becas activas asignadas
+   * Soft delete de todas las becas activas del estudiante (estudiantes_becas).
    * @private
-   * @param {number} studentId - ID del estudiante
-   * @throws {ValidationError} Si tiene becas activas
+   * @param {number} studentId
    */
-  async _validateNoActiveScholarships(studentId) {
+  async _deleteStudentScholarshipsForStudent(studentId) {
     try {
-      const scholarshipsResult =
-        await this.studentScholarshipRepository.findAll(
-          { studentId: studentId, active: true },
-          null,
-          null
-        );
+      const scholarshipsResult = await this.studentScholarshipRepository.findAll(
+        { studentId, active: true },
+        null,
+        null
+      );
 
       const scholarships =
         scholarshipsResult.studentScholarships ||
@@ -362,51 +387,134 @@ export class DeleteStudentUseCase {
         scholarshipsResult.data ||
         [];
 
-      if (scholarships.length > 0) {
-        const firstScholarship = scholarships[0];
-        const scholarshipPlain = firstScholarship.toPlainObject
-          ? firstScholarship.toPlainObject()
-          : firstScholarship;
-        const scholarshipId =
-          scholarshipPlain.id ||
-          scholarshipPlain.scholarshipId ||
-          scholarshipPlain.becaId;
-
-        this.logger.warn(
-          '[Estudiantes] Intento de eliminar estudiante con becas activas',
-          {
-            studentId,
-            scholarshipsCount: scholarships.length,
-            firstScholarshipId: scholarshipId,
-          }
-        );
-
-        throw new ValidationError(
-          `No se puede eliminar el estudiante porque tiene ${scholarships.length} beca(s) activa(s) asignada(s). ` +
-            `ID de beca: ${scholarshipId || 'N/A'}. ` +
-            `Solo se pueden eliminar estudiantes que no tengan becas asociadas.`
-        );
+      for (const row of scholarships) {
+        const plain = row.toPlainObject ? row.toPlainObject() : row;
+        const id = plain.id;
+        if (id != null) {
+          await this.studentScholarshipRepository.delete(id);
+        }
       }
 
-      this.logger.info(
-        '[Estudiantes] Validación exitosa: el estudiante no tiene becas activas',
-        {
-          studentId,
-        }
-      );
+      this.logger.info('[Estudiantes] Becas del estudiante eliminadas (soft delete)', {
+        studentId,
+        count: scholarships.length,
+      });
     } catch (error) {
-      if (error instanceof ValidationError) {
-        throw error;
+      this.logger.error('[Estudiantes] Error al eliminar becas del estudiante', {
+        studentId,
+        error: error.message,
+        stack: error.stack,
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * @private
+   * @param {number} studentId
+   */
+  async _deleteLicenseRequestsForStudent(studentId) {
+    try {
+      const result = await this.licenseRequestRepository.findAll(
+        { studentId, active: true },
+        null,
+        null
+      );
+      const rows =
+        result.licenseRequests ||
+        result.licencias ||
+        result.data ||
+        [];
+
+      for (const row of rows) {
+        const plain = row.toPlainObject ? row.toPlainObject() : row;
+        if (plain.id != null) {
+          await this.licenseRequestRepository.delete(plain.id);
+        }
       }
 
-      this.logger.error(
-        '[Estudiantes] Error al validar becas del estudiante',
-        {
-          studentId,
-          error: error.message,
-          stack: error.stack,
-        }
+      this.logger.info('[Estudiantes] Licencias del estudiante eliminadas (soft delete)', {
+        studentId,
+        count: rows.length,
+      });
+    } catch (error) {
+      this.logger.error('[Estudiantes] Error al eliminar licencias del estudiante', {
+        studentId,
+        error: error.message,
+        stack: error.stack,
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * @private
+   * @param {number} studentId
+   */
+  async _deleteTransfersForStudent(studentId) {
+    try {
+      const result = await this.transferRepository.findAll(
+        { studentId, active: true },
+        null,
+        null
       );
+      const rows = result.transfers || result.traspasos || result.data || [];
+
+      for (const row of rows) {
+        const plain = row.toPlainObject ? row.toPlainObject() : row;
+        if (plain.id != null) {
+          await this.transferRepository.delete(plain.id);
+        }
+      }
+
+      this.logger.info('[Estudiantes] Traspasos del estudiante eliminados (soft delete)', {
+        studentId,
+        count: rows.length,
+      });
+    } catch (error) {
+      this.logger.error('[Estudiantes] Error al eliminar traspasos del estudiante', {
+        studentId,
+        error: error.message,
+        stack: error.stack,
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * @private
+   * @param {number} studentId
+   */
+  async _deleteTransitabilitiesForStudent(studentId) {
+    try {
+      const result = await this.transitabilityRepository.findAll(
+        { studentId, active: true },
+        null,
+        null
+      );
+      const rows =
+        result.transitabilities ||
+        result.transitabilidades ||
+        result.data ||
+        [];
+
+      for (const row of rows) {
+        const plain = row.toPlainObject ? row.toPlainObject() : row;
+        if (plain.id != null) {
+          await this.transitabilityRepository.delete(plain.id);
+        }
+      }
+
+      this.logger.info('[Estudiantes] Transitabilidades del estudiante eliminadas (soft delete)', {
+        studentId,
+        count: rows.length,
+      });
+    } catch (error) {
+      this.logger.error('[Estudiantes] Error al eliminar transitabilidades del estudiante', {
+        studentId,
+        error: error.message,
+        stack: error.stack,
+      });
       throw error;
     }
   }

@@ -50,8 +50,8 @@ export class LicenseRequestMapper {
     if ('gestionId' in dataValues && dataValues.gestionId !== undefined) {
       specificFields.managementId = dataValues.gestionId;
     }
-    if ('turnoCursoId' in dataValues && dataValues.turnoCursoId !== undefined) {
-      specificFields.courseShiftId = dataValues.turnoCursoId;
+    if ('cursoId' in dataValues && dataValues.cursoId !== undefined) {
+      specificFields.courseShiftId = dataValues.cursoId;
     }
     if ('fechaSolicitud' in dataValues && dataValues.fechaSolicitud !== undefined) {
       specificFields.requestDate = dataValues.fechaSolicitud;
@@ -125,7 +125,7 @@ export class LicenseRequestMapper {
       estudianteId: data.studentId || null,
       carreraId: data.careerId || null,
       gestionId: data.managementId || null,
-      turnoCursoId: data.courseShiftId || null,
+      cursoId: data.courseShiftId || null,
       fechaSolicitud: data.requestDate,
       fechaDesde: data.startDate,
       fechaHasta: data.endDate,
@@ -172,7 +172,7 @@ export class LicenseRequestMapper {
       updateData.gestionId = data.managementId || null;
     }
     if ('courseShiftId' in data) {
-      updateData.turnoCursoId = data.courseShiftId || null;
+      updateData.cursoId = data.courseShiftId || null;
     }
     if ('requestDate' in data) {
       updateData.fechaSolicitud = data.requestDate;
