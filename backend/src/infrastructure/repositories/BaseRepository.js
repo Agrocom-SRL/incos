@@ -2,6 +2,9 @@ import { Op } from 'sequelize';
 import { IRepository } from '../../domain/interfaces/repositories/IRepository.js';
 import { sequelize } from '../database/sequelize.js';
 
+/** Tope de `limit` en `_queryViewPaged`; debe coincidir con `list.validator` (query limit max 10000). */
+const LIST_VIEW_MAX_LIMIT = 10000;
+
 /**
  * Clase base abstracta para repositorios usando el patrón Template Method
  * 
@@ -435,7 +438,7 @@ export class BaseRepository extends IRepository {
   async _queryViewPaged(viewName, whereConditions, replacements, orderClause, page, limit) {
     const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
     const pageNum = Math.max(1, parseInt(page, 10) || 1);
-    const limitNum = Math.max(1, Math.min(100, parseInt(limit, 10) || 50));
+    const limitNum = Math.max(1, Math.min(LIST_VIEW_MAX_LIMIT, parseInt(limit, 10) || 50));
     const offset = (pageNum - 1) * limitNum;
 
     const countQuery = `SELECT COUNT(*) AS total FROM ${viewName} ${whereClause}`;
