@@ -67,7 +67,7 @@ export class LicenseRequestRepository extends BaseRepository {
    *   - studentId: ID del estudiante
    *   - careerId: ID de la carrera
    *   - managementId: ID de la gestión
-   *   - courseShiftId: ID del turno de curso
+   *   - courseShiftId: ID del curso (curso_id; nombre histórico en dominio/API)
    *   - requestDate: Fecha de solicitud
    *   - startDate: Fecha de inicio de la licencia
    *   - endDate: Fecha de fin de la licencia
@@ -99,7 +99,7 @@ export class LicenseRequestRepository extends BaseRepository {
       where.gestionId = filters.managementId;
     }
     if (filters.courseShiftId) {
-      where.turnoCursoId = filters.courseShiftId;
+      where.cursoId = filters.courseShiftId;
     }
     if (filters.requestDate !== undefined) {
       where.fechaSolicitud = filters.requestDate;
