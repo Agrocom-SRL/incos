@@ -103,7 +103,7 @@ function InscripcionesEditarContent() {
   if (loading) {
     return (
       <PageTemplate
-        header={<PageHeader title="Editar Inscripción" breadcrumbItems={[{ title: 'Inicio', href: '/' }, { title: 'Inscripciones', href: '/inscripciones' }, { title: 'Editar Inscripción' }]} />}
+        header={<PageHeader title="Editar Inscripción" breadcrumbItems={[{ title: 'Inicio', href: '/' }, { title: 'Lista de Matrículas', href: '/matricula/listar' }, { title: 'Editar Inscripción' }]} />}
       >
         <div style={{ textAlign: 'center', padding: '50px' }}>
           <Spin size="large">
@@ -119,7 +119,7 @@ function InscripcionesEditarContent() {
   if (error) {
     return (
       <PageTemplate
-        header={<PageHeader title="Editar Inscripción" breadcrumbItems={[{ title: 'Inicio', href: '/' }, { title: 'Inscripciones', href: '/inscripciones' }, { title: 'Editar Inscripción' }]} />}
+        header={<PageHeader title="Editar Inscripción" breadcrumbItems={[{ title: 'Inicio', href: '/' }, { title: 'Lista de Matrículas', href: '/matricula/listar' }, { title: 'Editar Inscripción' }]} />}
       >
         <Alert type="error" showIcon title="Error al cargar la inscripción" description={error} />
       </PageTemplate>
@@ -129,7 +129,7 @@ function InscripcionesEditarContent() {
   if (!inscripcion || !editData) {
     return (
       <PageTemplate
-        header={<PageHeader title="Editar Inscripción" breadcrumbItems={[{ title: 'Inicio', href: '/' }, { title: 'Inscripciones', href: '/inscripciones' }, { title: 'Editar Inscripción' }]} />}
+        header={<PageHeader title="Editar Inscripción" breadcrumbItems={[{ title: 'Inicio', href: '/' }, { title: 'Lista de Matrículas', href: '/matricula/listar' }, { title: 'Editar Inscripción' }]} />}
       >
         <Alert type="warning" showIcon title="No se encontró la inscripción" />
       </PageTemplate>

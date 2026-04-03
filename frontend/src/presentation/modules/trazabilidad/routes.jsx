@@ -1,162 +1,153 @@
 // src/presentation/modules/trazabilidad/routes.jsx
 /**
- * Rutas del módulo de Transitabilidad
- * 
- * Single Responsibility: Define todas las rutas del módulo de transitabilidad
- * 
- * Clean Architecture:
- * - Presentation Layer: Define rutas y metadata de UI (labels del menú, orden)
+ * Rutas de traspasos y transitabilidad (dominio Académico, nivel 2 directo bajo ACA).
  */
 
 import { UnderConstruction } from '@components/pages';
 
 export const trazabilidad = [
-    // Módulo raíz: Transitabilidad
-    {
-        path: '/transitabilidad',
-        element: null, // No tiene página propia, es solo un grupo
-        key: 'TRA',
-        menu: {
-            label: 'Transitabilidad',
-            module: 'TRA',
-            order: 5, // Después de Inscripciones, antes de Calificaciones
-        },
-    },
-    // Submenu: Traspasos (misma ciudad/región)
     {
         path: '/transitabilidad/traspasos',
-        element: null, // No tiene página propia, es solo un grupo
-        key: 'TRA-TRASPASOS',
+        element: null,
+        key: 'ACA-TRASPASOS',
         menu: {
             label: 'Traspasos',
-            module: 'TRA',
-            parent: 'TRA',
-            order: 1,
+            module: 'ACA',
+            parent: 'ACA',
+            order: 3,
         },
     },
     {
         path: '/transitabilidad/traspasos/listar',
         element: <UnderConstruction />,
-        key: 'TRA-TRASPASOS-LIST',
+        key: 'ACA-TRA-TRP-LIST',
+        permiso: 'academico.trazabilidad.traspaso.ver',
         menu: {
             label: 'Listar Traspasos',
-            module: 'TRA',
-            parent: 'TRA-TRASPASOS',
+            module: 'ACA',
+            parent: 'ACA-TRASPASOS',
             order: 1,
         },
     },
     {
         path: '/transitabilidad/traspasos/solicitar',
         element: <UnderConstruction />,
-        key: 'TRA-TRASPASOS-SOLICITAR',
+        key: 'ACA-TRA-TRP-SOLICITAR',
+        permiso: 'academico.trazabilidad.traspaso.solicitar',
         menu: {
             label: 'Solicitar Traspaso (Salida)',
-            module: 'TRA',
-            parent: 'TRA-TRASPASOS',
+            module: 'ACA',
+            parent: 'ACA-TRASPASOS',
             order: 2,
         },
     },
     {
         path: '/transitabilidad/traspasos/recibir',
         element: <UnderConstruction />,
-        key: 'TRA-TRASPASOS-RECIBIR',
+        key: 'ACA-TRA-TRP-RECIBIR',
+        permiso: 'academico.trazabilidad.traspaso.recibir',
         menu: {
             label: 'Recibir Traspaso (Entrada)',
-            module: 'TRA',
-            parent: 'TRA-TRASPASOS',
+            module: 'ACA',
+            parent: 'ACA-TRASPASOS',
             order: 3,
         },
     },
     {
         path: '/transitabilidad/traspasos/convalidar-notas',
         element: <UnderConstruction />,
-        key: 'TRA-TRASPASOS-CONVALIDAR-NOTAS',
+        key: 'ACA-TRA-TRP-CONVALIDAR',
+        permiso: 'academico.trazabilidad.traspaso.convalidar',
         menu: {
             label: 'Convalidar Notas',
-            module: 'TRA',
-            parent: 'TRA-TRASPASOS',
+            module: 'ACA',
+            parent: 'ACA-TRASPASOS',
             order: 4,
         },
     },
     {
         path: '/transitabilidad/traspasos/aprobar',
         element: <UnderConstruction />,
-        key: 'TRA-TRASPASOS-APROBAR',
+        key: 'ACA-TRA-TRP-APROBAR',
+        permiso: 'academico.trazabilidad.traspaso.aprobar',
         menu: {
             label: 'Aprobar Traspaso',
-            module: 'TRA',
-            parent: 'TRA-TRASPASOS',
+            module: 'ACA',
+            parent: 'ACA-TRASPASOS',
             order: 5,
         },
     },
-    // Submenu: Transitabilidad (otra ciudad/región)
     {
         path: '/transitabilidad/transitabilidad',
-        element: null, // No tiene página propia, es solo un grupo
-        key: 'TRA-TRANSFERENCIAS',
+        element: null,
+        key: 'ACA-TRANSIT',
         menu: {
             label: 'Transitabilidad',
-            module: 'TRA',
-            parent: 'TRA',
-            order: 2,
+            module: 'ACA',
+            parent: 'ACA',
+            order: 4,
         },
     },
     {
         path: '/transitabilidad/transitabilidad/listar',
         element: <UnderConstruction />,
-        key: 'TRA-TRANSFERENCIAS-LIST',
+        key: 'ACA-TRA-TNS-LIST',
+        permiso: 'academico.trazabilidad.transitabilidad.ver',
         menu: {
             label: 'Listar Transitabilidad',
-            module: 'TRA',
-            parent: 'TRA-TRANSFERENCIAS',
+            module: 'ACA',
+            parent: 'ACA-TRANSIT',
             order: 1,
         },
     },
     {
         path: '/transitabilidad/transitabilidad/solicitar',
         element: <UnderConstruction />,
-        key: 'TRA-TRANSFERENCIAS-SOLICITAR',
+        key: 'ACA-TRA-TNS-SOLICITAR',
+        permiso: 'academico.trazabilidad.transitabilidad.solicitar',
         menu: {
             label: 'Solicitar Transitabilidad (Salida)',
-            module: 'TRA',
-            parent: 'TRA-TRANSFERENCIAS',
+            module: 'ACA',
+            parent: 'ACA-TRANSIT',
             order: 2,
         },
     },
     {
         path: '/transitabilidad/transitabilidad/recibir',
         element: <UnderConstruction />,
-        key: 'TRA-TRANSFERENCIAS-RECIBIR',
+        key: 'ACA-TRA-TNS-RECIBIR',
+        permiso: 'academico.trazabilidad.transitabilidad.recibir',
         menu: {
             label: 'Recibir Transitabilidad (Entrada)',
-            module: 'TRA',
-            parent: 'TRA-TRANSFERENCIAS',
+            module: 'ACA',
+            parent: 'ACA-TRANSIT',
             order: 3,
         },
     },
     {
         path: '/transitabilidad/transitabilidad/convalidar-notas',
         element: <UnderConstruction />,
-        key: 'TRA-TRANSFERENCIAS-CONVALIDAR-NOTAS',
+        key: 'ACA-TRA-TNS-CONVALIDAR',
+        permiso: 'academico.trazabilidad.transitabilidad.convalidar',
         menu: {
             label: 'Convalidar Notas',
-            module: 'TRA',
-            parent: 'TRA-TRANSFERENCIAS',
+            module: 'ACA',
+            parent: 'ACA-TRANSIT',
             order: 4,
         },
     },
     {
         path: '/transitabilidad/transitabilidad/aprobar',
         element: <UnderConstruction />,
-        key: 'TRA-TRANSFERENCIAS-APROBAR',
+        key: 'ACA-TRA-TNS-APROBAR',
+        permiso: 'academico.trazabilidad.transitabilidad.aprobar',
         menu: {
             label: 'Aprobar Transitabilidad',
-            module: 'TRA',
-            parent: 'TRA-TRANSFERENCIAS',
+            module: 'ACA',
+            parent: 'ACA-TRANSIT',
             order: 5,
         },
     },
 ];
 
 export default trazabilidad;
-

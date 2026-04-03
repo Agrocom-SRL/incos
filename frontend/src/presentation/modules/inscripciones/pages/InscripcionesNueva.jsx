@@ -96,7 +96,7 @@ const InscripcionesNueva = () => {
     if (studentIdFromState) {
       navigate(`/estudiantes/${studentIdFromState}`);
     } else {
-      navigate('/inscripciones');
+      navigate('/matricula/listar');
     }
   }, [navigate, studentIdFromState]);
 

@@ -1,47 +1,42 @@
 // src/presentation/modules/supervision/routes.jsx
 /**
- * Rutas del módulo de Supervisión
- * 
- * Single Responsibility: Define todas las rutas del módulo de supervisión
- * 
- * Clean Architecture:
- * - Presentation Layer: Define rutas y metadata de UI (labels del menú, orden)
+ * Rutas del módulo de Supervisión (dominio Docentes).
  */
 
 import { UnderConstruction } from '@components/pages';
 
 export const supervisionRoutes = [
-    // Módulo raíz: Supervisión
     {
         path: '/supervision',
-        element: null, // No tiene página propia, es solo un grupo
-        key: 'SUP',
+        element: null,
+        key: 'DOC-SUP',
         menu: {
             label: 'Supervisión',
-            module: 'SUP',
-            order: 7, // Usado periódicamente
+            module: 'DOC',
+            parent: 'DOC-DOM',
+            order: 4,
         },
     },
     {
         path: '/supervision/ficha/ver',
         element: <UnderConstruction />,
         key: 'SUP-FICHA-VER',
+        permiso: 'docentes.supervision.evaluar',
         menu: {
             label: 'Evaluar Docente',
-            module: 'SUP',
-            parent: 'SUP',
+            module: 'DOC',
+            parent: 'DOC-SUP',
             order: 1,
         },
     },
-    // Pasantías - Grupo padre (supervisión de estudiantes en pasantías)
     {
         path: '/supervision/pasantias',
-        element: null, // No tiene página propia, es solo un grupo
+        element: null,
         key: 'SUP-PASANTIAS',
         menu: {
             label: 'Pasantías',
-            module: 'SUP',
-            parent: 'SUP',
+            module: 'DOC',
+            parent: 'DOC-SUP',
             order: 2,
         },
     },
@@ -49,10 +44,11 @@ export const supervisionRoutes = [
         path: '/supervision/reporte',
         element: <UnderConstruction />,
         key: 'SUP-REPORTE',
+        permiso: 'docentes.supervision.reporte',
         menu: {
             label: 'Reporte',
-            module: 'SUP',
-            parent: 'SUP',
+            module: 'DOC',
+            parent: 'DOC-SUP',
             order: 3,
         },
     },
@@ -60,9 +56,10 @@ export const supervisionRoutes = [
         path: '/supervision/pasantias/solicitar',
         element: <UnderConstruction />,
         key: 'SUP-PASANTIAS-SOLICITAR',
+        permiso: 'docentes.supervision.pasantia.solicitar',
         menu: {
             label: 'Solicitar Pasantía',
-            module: 'SUP',
+            module: 'DOC',
             parent: 'SUP-PASANTIAS',
             order: 1,
         },
@@ -71,9 +68,10 @@ export const supervisionRoutes = [
         path: '/supervision/pasantias/seguimiento',
         element: <UnderConstruction />,
         key: 'SUP-PASANTIAS-SEGUIMIENTO',
+        permiso: 'docentes.supervision.pasantia.seguimiento',
         menu: {
             label: 'Seguimiento',
-            module: 'SUP',
+            module: 'DOC',
             parent: 'SUP-PASANTIAS',
             order: 2,
         },
@@ -82,33 +80,38 @@ export const supervisionRoutes = [
         path: '/supervision/pasantias/evaluar',
         element: <UnderConstruction />,
         key: 'SUP-PASANTIAS-EVALUAR',
+        permiso: 'docentes.supervision.pasantia.evaluar',
         menu: {
             label: 'Evaluación Final',
-            module: 'SUP',
+            module: 'DOC',
             parent: 'SUP-PASANTIAS',
             order: 3,
         },
     },
-    // Rutas sin menú (se acceden desde las páginas de supervisión)
     {
         path: '/supervision/programar',
         element: <UnderConstruction />,
         key: 'SUP-PROGRAMAR',
-        // Sin menu - se accede desde la página de evaluación docente (programar supervisión)
+        permiso: 'docentes.supervision.programar',
+        menu: null,
+        breadcrumbParent: 'DOC-SUP',
     },
     {
         path: '/supervision/ficha/crear',
         element: <UnderConstruction />,
         key: 'SUP-FICHA-CREAR',
-        // Sin menu - se accede desde la página de evaluación docente (crear ficha después de supervisar)
+        permiso: 'docentes.supervision.ficha.crear',
+        menu: null,
+        breadcrumbParent: 'DOC-SUP',
     },
     {
         path: '/supervision/ficha/editar',
         element: <UnderConstruction />,
         key: 'SUP-FICHA-EDITAR',
-        // Sin menu - se accede desde la página de evaluación docente (editar ficha existente)
+        permiso: 'docentes.supervision.ficha.editar',
+        menu: null,
+        breadcrumbParent: 'DOC-SUP',
     },
 ];
 
 export default supervisionRoutes;
-

@@ -55,7 +55,7 @@ export const useStudentDetail = (studentId) => {
   const breadcrumbItems = useMemo(
     () => [
       { title: 'Inicio', href: '/' },
-      { title: 'Estudiantes', href: '/estudiantes' },
+      { title: 'Listar Admisiones', href: '/estudiantes/listar' },
       { title: 'Detalle del Estudiante' },
     ],
     []
@@ -169,7 +169,7 @@ export const useStudentDetail = (studentId) => {
     if (enrollmentId) {
       navigate(`/inscripciones/${enrollmentId}`, { state: { studentId } });
     } else {
-      navigate('/inscripciones/nueva', { state: { studentId } });
+      navigate('/matricula/nueva', { state: { studentId } });
     }
   }, [navigate, studentId, student?.inscripcion?.enrollment?.id]);
 

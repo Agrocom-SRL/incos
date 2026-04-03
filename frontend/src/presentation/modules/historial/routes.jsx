@@ -1,57 +1,54 @@
 // src/presentation/modules/historial/routes.jsx
 /**
- * Rutas del módulo de Historial
- * 
- * Single Responsibility: Define todas las rutas del módulo de historial
- * 
- * Clean Architecture:
- * - Presentation Layer: Define rutas y metadata de UI (labels del menú, orden)
+ * Rutas del módulo de Historial (dominio Académico).
  */
 
 import { UnderConstruction } from '@components/pages';
 
 export const historialRoutes = [
-    // Módulo raíz: Historial
     {
         path: '/historial',
-        element: null, // No tiene página propia, es solo un grupo
-        key: 'HIS',
+        element: null,
+        key: 'ACA-HIS',
         menu: {
             label: 'Historial',
-            module: 'HIS',
-            order: 9, // Usado ocasionalmente
+            module: 'ACA',
+            parent: 'ACA',
+            order: 5,
         },
     },
     {
         path: '/historial/folio',
         element: <UnderConstruction />,
-        key: 'HIS-FOLIO',
+        key: 'ACA-HIS-FOLIO',
+        permiso: 'academico.historial.folio',
         menu: {
             label: 'Folio del Egresado',
-            module: 'HIS',
-            parent: 'HIS',
-            order: 1, // Folio primero (incluye libros y actas)
+            module: 'ACA',
+            parent: 'ACA-HIS',
+            order: 1,
         },
     },
     {
         path: '/historial/academico',
         element: <UnderConstruction />,
-        key: 'HIS-ACADEMICO',
+        key: 'ACA-HIS-ACADEMICO',
+        permiso: 'academico.historial.academico',
         menu: {
             label: 'Historial Académico',
-            module: 'HIS',
-            parent: 'HIS',
-            order: 2, // Incluye validación automática y generación
+            module: 'ACA',
+            parent: 'ACA-HIS',
+            order: 2,
         },
     },
-    // Ruta sin menú (validación independiente de historiales existentes)
     {
         path: '/historial/validar',
         element: <UnderConstruction />,
-        key: 'HIS-VALIDAR',
-        // Sin menu - validación independiente de historiales existentes (opcional)
+        key: 'ACA-HIS-VALIDAR',
+        permiso: 'academico.historial.validar',
+        menu: null,
+        breadcrumbParent: 'ACA-HIS',
     },
 ];
 
 export default historialRoutes;
-

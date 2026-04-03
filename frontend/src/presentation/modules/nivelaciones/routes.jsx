@@ -1,61 +1,58 @@
 // src/presentation/modules/nivelaciones/routes.jsx
 /**
- * Rutas del módulo de Nivelaciones
- * 
- * Single Responsibility: Define todas las rutas del módulo de nivelaciones
- * 
- * Clean Architecture:
- * - Presentation Layer: Define rutas y metadata de UI (labels del menú, orden)
+ * Rutas del módulo de Nivelaciones (dominio Académico).
  */
 
 import { UnderConstruction } from '@components/pages';
 
 export const nivelacionesRoutes = [
-    // Módulo raíz: Nivelaciones
     {
         path: '/nivelaciones',
-        element: null, // No tiene página propia, es solo un grupo
-        key: 'NIV',
+        element: null,
+        key: 'ACA-NIV',
         menu: {
             label: 'Nivelaciones',
-            module: 'NIV',
-            order: 5, // Usado regularmente
+            module: 'ACA',
+            parent: 'ACA',
+            order: 2,
         },
     },
     {
         path: '/nivelaciones/listar',
         element: <UnderConstruction />,
-        key: 'NIV-LIST',
+        key: 'ACA-NIV-LIST',
+        permiso: 'academico.nivelacion.ver',
         menu: {
             label: 'Listar Nivelaciones',
-            module: 'NIV',
-            parent: 'NIV',
+            module: 'ACA',
+            parent: 'ACA-NIV',
             order: 1,
         },
     },
     {
         path: '/nivelaciones/inscribir',
         element: <UnderConstruction />,
-        key: 'NIV-INSCRIBIR',
+        key: 'ACA-NIV-INSCRIBIR',
+        permiso: 'academico.nivelacion.inscribir',
         menu: {
             label: 'Inscribir Nivelación',
-            module: 'NIV',
-            parent: 'NIV',
+            module: 'ACA',
+            parent: 'ACA-NIV',
             order: 2,
         },
     },
     {
         path: '/nivelaciones/aprobar',
         element: <UnderConstruction />,
-        key: 'NIV-APROBAR',
+        key: 'ACA-NIV-APROBAR',
+        permiso: 'academico.nivelacion.aprobar',
         menu: {
             label: 'Aprobar Nivelación',
-            module: 'NIV',
-            parent: 'NIV',
+            module: 'ACA',
+            parent: 'ACA-NIV',
             order: 3,
         },
     },
 ];
 
 export default nivelacionesRoutes;
-

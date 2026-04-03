@@ -48,7 +48,7 @@ const InscripcionesDetail = () => {
     if (!loading && error) {
       // Solo redirigir si es un error real (no solo falta de datos)
       // Por ejemplo, un error 404 o de servidor
-      navigate('/inscripciones', { replace: true });
+      navigate('/matricula/listar', { replace: true });
     }
   }, [loading, error, navigate]);
 
@@ -101,7 +101,7 @@ const InscripcionesDetail = () => {
       navigate(`/estudiantes/${studentId}`);
     } else {
       // Si no, volver a la lista de inscripciones
-      navigate('/inscripciones');
+      navigate('/matricula/listar');
     }
   }, [navigate, location.state, inscripcion]);
 
@@ -114,7 +114,7 @@ const InscripcionesDetail = () => {
   // Configurar breadcrumb items
   const breadcrumbItems = useMemo(() => [
     { title: 'Inicio', href: '/' },
-    { title: 'Inscripciones', href: '/inscripciones' },
+    { title: 'Lista de Matrículas', href: '/matricula/listar' },
     { title: 'Detalle de la Inscripción' },
   ], []);
 

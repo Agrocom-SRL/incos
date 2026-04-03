@@ -42,7 +42,7 @@ export const useInscripcionNuevaPageData = (options = {}) => {
     // Breadcrumb items
     const breadcrumbItems = useMemo(() => [
         { title: 'Inicio', href: '/' },
-        { title: 'Inscripciones', href: '/inscripciones' },
+        { title: 'Lista de Matrículas', href: '/matricula/listar' },
         { title: pageTitle },
     ], [pageTitle]);
 

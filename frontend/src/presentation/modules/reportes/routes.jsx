@@ -1,31 +1,27 @@
 // src/presentation/modules/reportes/routes.jsx
 /**
- * Rutas del módulo de Reportes
- * 
- * Single Responsibility: Define todas las rutas del módulo de reportes
- * 
- * Clean Architecture:
- * - Presentation Layer: Define rutas y metadata de UI (labels del menú, orden)
+ * Rutas del módulo de Reportes (dominio Reportes).
  */
 
 import { UnderConstruction } from '@components/pages';
 
 export const reportesRoutes = [
-    // Módulo raíz: Reportes
     {
         path: '/reportes',
-        element: null, // No tiene página propia, es solo un grupo
+        element: null,
         key: 'REP',
         menu: {
-            label: 'Reportes',
+            label: 'Informes',
             module: 'REP',
-            order: 11, // Usado ocasionalmente
+            parent: 'REP-DOM',
+            order: 1,
         },
     },
     {
         path: '/reportes/avance-academico',
         element: <UnderConstruction />,
         key: 'REP-AVANCE-ACADEMICO',
+        permiso: 'reportes.avance_academico',
         menu: {
             label: 'Avance Académico',
             module: 'REP',
@@ -37,8 +33,9 @@ export const reportesRoutes = [
         path: '/reportes/asistencia',
         element: <UnderConstruction />,
         key: 'REP-ASISTENCIA',
+        permiso: 'reportes.asistencia',
         menu: {
-            label: 'Reporte de Asistencia',
+            label: 'Asistencia',
             module: 'REP',
             parent: 'REP',
             order: 2,
@@ -48,17 +45,17 @@ export const reportesRoutes = [
         path: '/reportes/desercion',
         element: <UnderConstruction />,
         key: 'REP-DESERCION',
+        permiso: 'reportes.desercion',
         menu: {
-            label: 'Reporte de Deserción',
+            label: 'Deserción',
             module: 'REP',
             parent: 'REP',
             order: 3,
         },
     },
-    // Submenu: Solicitudes
     {
         path: '/reportes/solicitudes',
-        element: null, // No tiene página propia, es solo un grupo
+        element: null,
         key: 'REP-SOLICITUDES',
         menu: {
             label: 'Solicitudes',
@@ -71,6 +68,7 @@ export const reportesRoutes = [
         path: '/reportes/solicitudes/general',
         element: <UnderConstruction />,
         key: 'REP-SOLICITUDES-GENERAL',
+        permiso: 'reportes.solicitudes.general',
         menu: {
             label: 'Reporte General',
             module: 'REP',
@@ -82,6 +80,7 @@ export const reportesRoutes = [
         path: '/reportes/solicitudes/becas',
         element: <UnderConstruction />,
         key: 'REP-SOLICITUDES-BECAS',
+        permiso: 'reportes.solicitudes.becas',
         menu: {
             label: 'Por Becas',
             module: 'REP',
@@ -93,6 +92,7 @@ export const reportesRoutes = [
         path: '/reportes/solicitudes/traspaso',
         element: <UnderConstruction />,
         key: 'REP-SOLICITUDES-TRASPASO',
+        permiso: 'reportes.solicitudes.traspaso',
         menu: {
             label: 'Por Traspaso',
             module: 'REP',
@@ -104,6 +104,7 @@ export const reportesRoutes = [
         path: '/reportes/solicitudes/pasantia',
         element: <UnderConstruction />,
         key: 'REP-SOLICITUDES-PASANTIA',
+        permiso: 'reportes.solicitudes.pasantia',
         menu: {
             label: 'Por Pasantía',
             module: 'REP',
@@ -114,4 +115,3 @@ export const reportesRoutes = [
 ];
 
 export default reportesRoutes;
-

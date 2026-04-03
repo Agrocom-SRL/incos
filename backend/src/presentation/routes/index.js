@@ -17,8 +17,8 @@ const router = express.Router();
 // ============================================
 router.get('/', (req, res) => {
     res.json({
-        message: 'API Instituto INCOS v1',
-        version: '1.0.0',
+        message: 'API Instituto INCOS',
+        version: '1.2.0',
         endpoints: {
             // Módulo: Estudiantes
             estudiantes: '/api/v1/estudiantes',

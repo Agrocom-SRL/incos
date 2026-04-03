@@ -47,7 +47,7 @@ const BecasList = () => {
     // Configurar breadcrumb items
     const breadcrumbItems = useMemo(() => [
       { title: 'Inicio', href: '/' },
-      { title: 'Estudiantes', href: '/estudiantes' },
+      { title: 'Listar Admisiones', href: '/estudiantes/listar' },
       { title: 'Becas' },
     ], []);
 

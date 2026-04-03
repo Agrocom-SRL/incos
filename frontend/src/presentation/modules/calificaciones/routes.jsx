@@ -1,102 +1,101 @@
 // src/presentation/modules/calificaciones/routes.jsx
 /**
- * Rutas del módulo de Calificaciones
- * 
- * Single Responsibility: Define todas las rutas del módulo de calificaciones
- * 
- * Clean Architecture:
- * - Presentation Layer: Define rutas y metadata de UI (labels del menú, orden)
+ * Rutas del módulo de Calificaciones (dominio Académico).
  */
 
 import { UnderConstruction } from '@components/pages';
 
 export const calificacionesRoutes = [
-    // Módulo raíz: Calificaciones
     {
         path: '/calificaciones',
-        element: null, // No tiene página propia, es solo un grupo
-        key: 'CAL',
+        element: null,
+        key: 'ACA-CAL',
         menu: {
             label: 'Calificaciones',
-            module: 'CAL',
-            order: 4, // Muy usado, después de Inscripciones
+            module: 'ACA',
+            parent: 'ACA',
+            order: 1,
         },
     },
-    // Registrar - Grupo padre
     {
         path: '/calificaciones/registrar',
-        element: null, // No tiene página propia, es solo un grupo
-        key: 'CAL-REGISTRAR',
+        element: null,
+        key: 'ACA-CAL-REGISTRAR',
         menu: {
             label: 'Registrar',
-            module: 'CAL',
-            parent: 'CAL',
+            module: 'ACA',
+            parent: 'ACA-CAL',
             order: 1,
         },
     },
     {
         path: '/calificaciones/registrar/parcial',
         element: <UnderConstruction />,
-        key: 'CAL-REGISTRAR-PARCIAL',
+        key: 'ACA-CAL-REG-PARCIAL',
+        permiso: 'academico.calificacion.registrar.parcial',
         menu: {
             label: 'Nota de Parciales',
-            module: 'CAL',
-            parent: 'CAL-REGISTRAR',
+            module: 'ACA',
+            parent: 'ACA-CAL-REGISTRAR',
             order: 1,
         },
     },
     {
         path: '/calificaciones/registrar/practico',
         element: <UnderConstruction />,
-        key: 'CAL-REGISTRAR-PRACTICO',
+        key: 'ACA-CAL-REG-PRACTICO',
+        permiso: 'academico.calificacion.registrar.practico',
         menu: {
             label: 'Notas de Prácticos',
-            module: 'CAL',
-            parent: 'CAL-REGISTRAR',
+            module: 'ACA',
+            parent: 'ACA-CAL-REGISTRAR',
             order: 2,
         },
     },
     {
         path: '/calificaciones/registrar/recuperatorio',
         element: <UnderConstruction />,
-        key: 'CAL-REGISTRAR-RECUPERATORIO',
+        key: 'ACA-CAL-REG-RECUP',
+        permiso: 'academico.calificacion.registrar.recuperatorio',
         menu: {
             label: 'Recuperatorio',
-            module: 'CAL',
-            parent: 'CAL-REGISTRAR',
+            module: 'ACA',
+            parent: 'ACA-CAL-REGISTRAR',
             order: 3,
         },
     },
     {
         path: '/calificaciones/curso',
         element: <UnderConstruction />,
-        key: 'CAL-CURSO',
+        key: 'ACA-CAL-CURSO',
+        permiso: 'academico.calificacion.curso',
         menu: {
             label: 'Notas Por Curso',
-            module: 'CAL',
-            parent: 'CAL',
+            module: 'ACA',
+            parent: 'ACA-CAL',
             order: 2,
         },
     },
     {
         path: '/calificaciones/periodo',
         element: <UnderConstruction />,
-        key: 'CAL-PERIODO',
+        key: 'ACA-CAL-PERIODO',
+        permiso: 'academico.calificacion.periodo',
         menu: {
             label: 'Entregar Notas',
-            module: 'CAL',
-            parent: 'CAL',
-            order: 3, // Incluye cierre de periodo y generación de boletín
+            module: 'ACA',
+            parent: 'ACA-CAL',
+            order: 3,
         },
     },
-    // Ruta sin menú (se accede desde la página de calificaciones)
     {
         path: '/calificaciones/modificar',
         element: <UnderConstruction />,
-        key: 'CAL-MODIFICAR',
-        // Sin menu - se accede desde la página de calificaciones
+        key: 'ACA-CAL-MODIFICAR',
+        permiso: 'academico.calificacion.modificar',
+        menu: null,
+        breadcrumbParent: 'ACA-CAL',
     },
 ];
 
 export default calificacionesRoutes;
-

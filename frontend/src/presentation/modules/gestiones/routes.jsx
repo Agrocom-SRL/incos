@@ -1,34 +1,32 @@
 // src/presentation/modules/gestiones/routes.jsx
 /**
  * Rutas del módulo de Gestiones
- * 
- * Single Responsibility: Define todas las rutas del módulo de gestiones
- * 
- * Clean Architecture:
- * - Presentation Layer: Define rutas y metadata de UI (labels del menú, orden)
+ *
+ * Incluye rutas con path bajo /inscripciones/* (gestión institucional, no flujo MAT individual).
  */
 
 import { UnderConstruction } from '@components/pages';
 
 export const gestionesRoutes = [
-    // Módulo raíz: Gestiones
     {
         path: '/gestiones',
-        element: null, // No tiene página propia, es solo un grupo
+        element: null,
         key: 'GES',
         menu: {
             label: 'Gestiones',
-            module: 'GES',
-            order: 6, // Configuración de gestión específica, después de Docentes
+            module: 'INST',
+            parent: 'INST',
+            order: 1,
         },
     },
     {
         path: '/gestiones/actual',
         element: <UnderConstruction />,
         key: 'GES-ACTUAL',
+        permiso: 'institucional.gestion.actual',
         menu: {
             label: 'Gestión Actual',
-            module: 'GES',
+            module: 'INST',
             parent: 'GES',
             order: 1,
         },
@@ -37,9 +35,10 @@ export const gestionesRoutes = [
         path: '/gestiones/cronograma',
         element: <UnderConstruction />,
         key: 'GES-ETAPAS',
+        permiso: 'institucional.gestion.cronograma',
         menu: {
             label: 'Cronogramas',
-            module: 'GES',
+            module: 'INST',
             parent: 'GES',
             order: 2,
         },
@@ -48,9 +47,10 @@ export const gestionesRoutes = [
         path: '/gestiones/oferta',
         element: <UnderConstruction />,
         key: 'GES-OFERTA',
+        permiso: 'institucional.gestion.oferta',
         menu: {
             label: 'Oferta Académica',
-            module: 'GES',
+            module: 'INST',
             parent: 'GES',
             order: 3,
         },
@@ -59,25 +59,62 @@ export const gestionesRoutes = [
         path: '/gestiones/horarios/asignar',
         element: <UnderConstruction />,
         key: 'GES-HORARIOS-ASIGNAR',
+        permiso: 'institucional.gestion.horarios',
         menu: {
             label: 'Asignar Horarios',
-            module: 'GES',
+            module: 'INST',
             parent: 'GES',
             order: 4,
+        },
+    },
+    {
+        path: '/inscripciones/materias/inscribir',
+        element: <UnderConstruction />,
+        key: 'GES-MAT-INSCRIBIR',
+        permiso: 'institucional.oferta.gestionar',
+        menu: {
+            label: 'Inscribir por Materia',
+            module: 'INST',
+            parent: 'GES',
+            order: 5,
+        },
+    },
+    {
+        path: '/inscripciones/materias/curso',
+        element: <UnderConstruction />,
+        key: 'GES-MAT-CURSO',
+        permiso: 'institucional.oferta.gestionar',
+        menu: {
+            label: 'Inscribir por Curso',
+            module: 'INST',
+            parent: 'GES',
+            order: 6,
+        },
+    },
+    {
+        path: '/inscripciones/horario',
+        element: <UnderConstruction />,
+        key: 'GES-HORARIO-GEN',
+        permiso: 'institucional.horario.asignar',
+        menu: {
+            label: 'Generar Horarios',
+            module: 'INST',
+            parent: 'GES',
+            order: 7,
         },
     },
     {
         path: '/gestiones/pasadas',
         element: <UnderConstruction />,
         key: 'GES-LIST',
+        permiso: 'institucional.gestion.pasadas',
         menu: {
             label: 'Gestiones Pasadas',
-            module: 'GES',
+            module: 'INST',
             parent: 'GES',
-            order: 6,
+            order: 8,
         },
     },
 ];
 
 export default gestionesRoutes;
-

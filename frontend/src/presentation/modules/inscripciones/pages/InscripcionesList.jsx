@@ -62,7 +62,7 @@ const InscripcionesList = () => {
     }
 
     const handleNuevaInscripcion = () => {
-        navigate('/inscripciones/nueva');
+        navigate('/matricula/nueva');
     };
 
     const handleExportLista = async () => {

@@ -479,7 +479,7 @@ const EstudiantesDetail = () => {
     <button
       type="button"
       className="sd-btn sd-btn--outline"
-      onClick={() => navigate('/estudiantes')}
+      onClick={() => navigate('/estudiantes/listar')}
     >
       <ArrowLeftOutlined /> Volver
     </button>

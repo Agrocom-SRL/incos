@@ -1,169 +1,159 @@
 // src/presentation/modules/estudiantes/routes.jsx
 /**
- * Rutas del módulo de Estudiantes
- * 
- * Single Responsibility: Define todas las rutas del módulo de estudiantes
- * 
- * Clean Architecture:
- * - Presentation Layer: Define rutas y metadata de UI (labels del menú, orden)
- * - Depende de: pages (dentro del mismo módulo), connectors
+ * Rutas de admisión, becas y documentos (MAT). Licencias de estudiante: keys ACA-* (menú Académico).
  */
 
 import { UnderConstruction } from '@components/pages';
 import { ListConnector, RegisterConnector, DetailConnector, EditConnector, AsignarBecaConnector, BecasListConnector } from '@estudiantes/connectors';
 
 export const estudiantesRoutes = [
-    // Módulo raíz: Estudiantes (muestra la lista directamente)
     {
-        path: '/estudiantes',
-        element: <ListConnector />,
-        key: 'EST',
+        path: '/matricula/admision',
+        element: null,
+        key: 'MAT-ADMISION',
+        menu: { label: 'Admisión', module: 'MAT', parent: 'MAT', order: 1 },
+    },
+    {
+        path: '/matricula/matriculas',
+        element: null,
+        key: 'MAT-MATRICULAS',
+        menu: { label: 'Matrículas', module: 'MAT', parent: 'MAT', order: 2 },
+    },
+    {
+        path: '/matricula/aportes',
+        element: null,
+        key: 'MAT-APORTES',
+        menu: { label: 'Aportes', module: 'MAT', parent: 'MAT', order: 3 },
+    },
+    {
+        path: '/matricula/becas',
+        element: null,
+        key: 'MAT-BECAS',
+        menu: { label: 'Becas', module: 'MAT', parent: 'MAT', order: 4 },
+    },
+    {
+        path: '/academico/licencias-estudiante',
+        element: null,
+        key: 'ACA-LIC-EST',
         menu: {
-            label: 'Estudiantes',
-            module: 'EST',
-            order: 2, // Módulo más usado, después de Dashboard
+            label: 'Licencias de Estudiante',
+            module: 'ACA',
+            parent: 'ACA',
+            order: 6,
+        },
+    },
+    {
+        path: '/estudiantes/registrar',
+        element: <RegisterConnector />,
+        key: 'MAT-ADM-NUEVA',
+        permiso: 'matricula.admision.crear',
+        menu: {
+            label: 'Nueva Admisión',
+            module: 'MAT',
+            parent: 'MAT-ADMISION',
+            order: 1,
         },
     },
     {
         path: '/estudiantes/listar',
         element: <ListConnector />,
-        key: 'EST-LIST',
+        key: 'MAT-ADM-LISTAR',
+        permiso: 'matricula.admision.ver',
         menu: {
-            label: 'Listar Estudiantes',
-            module: 'EST',
-            parent: 'EST',
-            order: 1,
-        },
-    },
-    // Registrar (nuevo módulo)
-    {
-        path: '/estudiantes/registrar',
-        element: <RegisterConnector />,
-        key: 'EST-REGISTRAR',
-        menu: {
-            label: 'Nueva Admisión',
-            module: 'EST',
-            parent: 'EST',
+            label: 'Listar Admisiones',
+            module: 'MAT',
+            parent: 'MAT-ADMISION',
             order: 2,
         },
     },
-    // Detalle del estudiante (sin menú, se accede por URL con parámetro de ruta :id)
     {
         path: '/estudiantes/:id',
         element: <DetailConnector />,
-        key: 'EST-DETALLE',
-        menu: null, // No aparece en el menú, se accede por URL con /estudiantes/:id
+        key: 'MAT-ADM-DETALLE',
+        permiso: 'matricula.admision.ver',
+        menu: null,
+        breadcrumbParent: 'MAT-ADM-LISTAR',
     },
-    // Editar estudiante (sin menú, se accede por URL con parámetro de ruta :id)
     {
         path: '/estudiantes/:id/editar',
         element: <EditConnector />,
-        key: 'EST-EDITAR',
-        menu: null, // No aparece en el menú, se accede por URL con /estudiantes/:id/editar
-    },
-    // Becas - Grupo padre (muestra la lista directamente)
-    {
-        path: '/estudiantes/becas',
-        element: <BecasListConnector />,
-        key: 'EST-BECAS',
-        menu: {
-            label: 'Becas',
-            module: 'EST',
-            parent: 'EST',
-            order: 3,
-        },
+        key: 'MAT-ADM-EDITAR',
+        permiso: 'matricula.admision.editar',
+        menu: null,
+        breadcrumbParent: 'MAT-ADM-LISTAR',
     },
     {
         path: '/estudiantes/becas/listar',
         element: <BecasListConnector />,
-        key: 'EST-BECAS-LIST',
+        key: 'MAT-BEC-LISTAR',
+        permiso: 'matricula.beca.ver',
         menu: {
             label: 'Listar Becas',
-            module: 'EST',
-            parent: 'EST-BECAS',
-            order: 1, // Listar primero
+            module: 'MAT',
+            parent: 'MAT-BECAS',
+            order: 1,
         },
     },
     {
         path: '/estudiantes/becas/asignar',
         element: <AsignarBecaConnector />,
-        key: 'EST-BECAS-ASIGNAR',
-        menu: {
-            label: 'Asignar Beca',
-            module: 'EST',
-            parent: 'EST-BECAS',
-            order: 2, // Crear/Asignar segundo
-        },
+        key: 'MAT-BEC-ASIGNAR',
+        permiso: 'matricula.beca.asignar',
+        menu: null,
+        breadcrumbParent: 'MAT-BECAS',
     },
     {
         path: '/estudiantes/becas/aprobar',
         element: <UnderConstruction />,
-        key: 'EST-BECAS-APROBAR',
+        key: 'MAT-BEC-APROBAR',
+        permiso: 'matricula.beca.aprobar',
         menu: {
             label: 'Aprobar Beca',
-            module: 'EST',
-            parent: 'EST-BECAS',
-            order: 3, // Estados (Aprobar) tercero
-        },
-    },
-    // Licencias - Grupo padre
-    {
-        path: '/estudiantes/licencias',
-        element: null, // No tiene página propia, es solo un grupo
-        key: 'EST-LICENCIAS',
-        menu: {
-            label: 'Licencias',
-            module: 'EST',
-            parent: 'EST',
-            order: 4,
+            module: 'MAT',
+            parent: 'MAT-BECAS',
+            order: 2,
         },
     },
     {
         path: '/estudiantes/licencias/listar',
         element: <UnderConstruction />,
-        key: 'EST-LICENCIAS-LIST',
+        key: 'ACA-LIC-EST-LIST',
+        permiso: 'academico.licencia.ver',
         menu: {
             label: 'Listar Licencias',
-            module: 'EST',
-            parent: 'EST-LICENCIAS',
-            order: 1, // Listar primero
+            module: 'ACA',
+            parent: 'ACA-LIC-EST',
+            order: 1,
         },
     },
     {
         path: '/estudiantes/licencias/solicitar',
         element: <UnderConstruction />,
-        key: 'EST-LICENCIAS-SOLICITAR',
-        menu: {
-            label: 'Solicitar Licencia',
-            module: 'EST',
-            parent: 'EST-LICENCIAS',
-            order: 2, // Crear/Solicitar segundo
-        },
+        key: 'ACA-LIC-EST-SOLICITAR',
+        permiso: 'academico.licencia.crear',
+        menu: null,
+        breadcrumbParent: 'ACA-LIC-EST',
     },
     {
         path: '/estudiantes/licencias/aprobar',
         element: <UnderConstruction />,
-        key: 'EST-LICENCIAS-APROBAR',
+        key: 'ACA-LIC-EST-APROBAR',
+        permiso: 'academico.licencia.aprobar',
         menu: {
             label: 'Aprobar Licencia',
-            module: 'EST',
-            parent: 'EST-LICENCIAS',
-            order: 3, // Estados (Aprobar) tercero
+            module: 'ACA',
+            parent: 'ACA-LIC-EST',
+            order: 2,
         },
     },
-    // Documentos - Solo listar (verificar y estado son acciones dentro de la lista)
     {
         path: '/estudiantes/documentos',
         element: <UnderConstruction />,
-        key: 'EST-DOCUMENTOS',
-        menu: {
-            label: 'Documentos',
-            module: 'EST',
-            parent: 'EST',
-            order: 6,
-        },
+        key: 'MAT-DOCUMENTOS',
+        permiso: 'matricula.documento.ver',
+        menu: null,
+        breadcrumbParent: 'MAT-ADM-LISTAR',
     },
-    // Rutas sin menú (acciones que se manejan dentro de la página de documentos)
 ];
 
 export default estudiantesRoutes;

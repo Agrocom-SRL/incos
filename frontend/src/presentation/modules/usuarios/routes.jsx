@@ -1,61 +1,53 @@
 // src/presentation/modules/usuarios/routes.jsx
 /**
- * Rutas del módulo de Usuarios
- * 
- * Single Responsibility: Define todas las rutas del módulo de usuarios
- * 
- * Clean Architecture:
- * - Presentation Layer: Define rutas y metadata de UI (labels del menú, orden)
+ * Rutas del módulo de Usuarios (dominio Seguridad).
  */
 
 import { UnderConstruction } from '@components/pages';
 
 export const usuariosRoutes = [
-    // Módulo raíz: Usuarios
     {
         path: '/usuarios',
-        element: null, // No tiene página propia, es solo un grupo
+        element: null,
         key: 'USR',
-        menu: {
-            label: 'Usuarios',
-            module: 'USR',
-            order: 13, // Configuración del sistema, último
-        },
+        menu: null,
     },
     {
         path: '/usuarios/crear',
         element: <UnderConstruction />,
         key: 'USR-CREATE',
+        permiso: 'seguridad.usuario.crear',
         menu: {
             label: 'Crear Nuevo Usuario',
-            module: 'USR',
-            parent: 'USR',
-            order: 1, // Crear primero
+            module: 'SEG',
+            parent: 'SEG',
+            order: 1,
         },
     },
     {
         path: '/usuarios/administrar',
         element: <UnderConstruction />,
         key: 'USR-LIST',
+        permiso: 'seguridad.usuario.administrar',
         menu: {
             label: 'Administrar Usuarios',
-            module: 'USR',
-            parent: 'USR',
-            order: 2, // Administrar segundo
+            module: 'SEG',
+            parent: 'SEG',
+            order: 2,
         },
     },
     {
         path: '/usuarios/roles',
         element: <UnderConstruction />,
         key: 'USR-ROLES',
+        permiso: 'seguridad.rol.gestionar',
         menu: {
-            label: 'Administrar Roles de Usuario',
-            module: 'USR',
-            parent: 'USR',
-            order: 3, // Configuración de roles y permisos
+            label: 'Roles y Permisos',
+            module: 'SEG',
+            parent: 'SEG',
+            order: 3,
         },
     },
 ];
 
 export default usuariosRoutes;
-

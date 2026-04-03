@@ -1,35 +1,20 @@
 // src/presentation/modules/docentes/routes.jsx
 /**
- * Rutas del módulo de Docentes
- * 
- * Single Responsibility: Define todas las rutas del módulo de docentes
- * 
- * Clean Architecture:
- * - Presentation Layer: Define rutas y metadata de UI (labels del menú, orden)
+ * Rutas del módulo de Docentes (dominio Docentes).
  */
 
 import { UnderConstruction } from '@components/pages';
 
 export const docentesRoutes = [
-    // Módulo raíz: Docentes
-    {
-        path: '/docentes',
-        element: null, // No tiene página propia, es solo un grupo
-        key: 'DOC',
-        menu: {
-            label: 'Docentes',
-            module: 'DOC',
-            order: 6, // Usado regularmente
-        },
-    },
     {
         path: '/docentes/listar',
         element: <UnderConstruction />,
         key: 'DOC-LIST',
+        permiso: 'docentes.ver',
         menu: {
             label: 'Listar Docentes',
             module: 'DOC',
-            parent: 'DOC',
+            parent: 'DOC-DOM',
             order: 1,
         },
     },
@@ -37,66 +22,65 @@ export const docentesRoutes = [
         path: '/docentes/registrar',
         element: <UnderConstruction />,
         key: 'DOC-CREATE',
+        permiso: 'docentes.crear',
         menu: {
             label: 'Nuevo Docente',
             module: 'DOC',
-            parent: 'DOC',
+            parent: 'DOC-DOM',
             order: 2,
         },
     },
-    // Licencias - Grupo padre (PROPUESTA: Gestión de Licencias y Permisos de Docentes)
     {
         path: '/docentes/licencias',
-        element: null, // No tiene página propia, es solo un grupo
-        key: 'DOC-LICENCIAS',
+        element: null,
+        key: 'DOC-LIC',
         menu: {
-            label: 'Licencias',
+            label: 'Licencias de Docente',
             module: 'DOC',
-            parent: 'DOC',
+            parent: 'DOC-DOM',
             order: 3,
         },
     },
     {
         path: '/docentes/licencias/listar',
         element: <UnderConstruction />,
-        key: 'DOC-LICENCIAS-LIST',
+        key: 'DOC-LIC-LIST',
+        permiso: 'docentes.licencia.ver',
         menu: {
             label: 'Listar Licencias',
             module: 'DOC',
-            parent: 'DOC-LICENCIAS',
-            order: 1, // Listar primero
+            parent: 'DOC-LIC',
+            order: 1,
         },
     },
     {
         path: '/docentes/licencias/solicitar',
         element: <UnderConstruction />,
-        key: 'DOC-LICENCIAS-SOLICITAR',
-        menu: {
-            label: 'Solicitar Licencia',
-            module: 'DOC',
-            parent: 'DOC-LICENCIAS',
-            order: 2, // Crear/Solicitar segundo
-        },
+        key: 'DOC-LIC-SOLICITAR',
+        permiso: 'docentes.licencia.crear',
+        menu: null,
+        breadcrumbParent: 'DOC-LIC',
     },
     {
         path: '/docentes/licencias/aprobar',
         element: <UnderConstruction />,
-        key: 'DOC-LICENCIAS-APROBAR',
+        key: 'DOC-LIC-APROBAR',
+        permiso: 'docentes.licencia.aprobar',
         menu: {
             label: 'Aprobar Licencia',
             module: 'DOC',
-            parent: 'DOC-LICENCIAS',
-            order: 3, // Estados (Aprobar) tercero
+            parent: 'DOC-LIC',
+            order: 2,
         },
     },
-    // Ruta sin menú (se accede desde Gestiones -> Oferta Académica)
     {
         path: '/docentes/asignar',
         element: <UnderConstruction />,
         key: 'DOC-ASIGNAR',
-        // Sin menu - se accede desde Gestiones -> Oferta Académica (asignar docentes a ofertas)
+        permiso: 'docentes.asignar',
+        menu: null,
+        breadcrumbParent: 'DOC-DOM',
     },
 ];
 
 export default docentesRoutes;
-

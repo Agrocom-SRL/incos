@@ -11,24 +11,15 @@
  * permitiendo personalización por módulo si es necesario.
  */
 
-import { inscripcionesRoutes } from '@inscripciones/routes';
 import { createBreadcrumbItems as createGenericBreadcrumbItems } from '@presentation-utils/breadcrumbs';
 
-/**
- * Crea los items del breadcrumb basándose en la ruta actual
- * 
- * @param {string} routeKey - Key de la ruta (ej: 'INS', 'INS-CREATE', 'INS-DETALLE')
- * @param {string} currentTitle - Título actual de la página (para el último item del breadcrumb)
- * @returns {Array} Array de items del breadcrumb para Ant Design
- */
 export const createBreadcrumbItems = (routeKey, currentTitle = null) => {
   return createGenericBreadcrumbItems(
-    inscripcionesRoutes,
     routeKey,
-    'INS', // rootKey
+    'MAT',
     currentTitle,
-    null, // fallbackIcon (usa el del módulo)
-    'Inscripciones' // fallbackLabel
+    null,
+    'Matrícula'
   );
 };
 
@@ -38,5 +29,5 @@ export const createBreadcrumbItems = (routeKey, currentTitle = null) => {
  * @returns {Array} Array de items del breadcrumb
  */
 export const createDetailBreadcrumbItems = () => {
-  return createBreadcrumbItems('INS-DETALLE', 'Detalle de la Inscripción');
+  return createBreadcrumbItems('MAT-INS-DETALLE', 'Detalle de la Inscripción');
 };
