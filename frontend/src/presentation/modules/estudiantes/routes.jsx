@@ -14,18 +14,6 @@ export const estudiantesRoutes = [
         menu: { label: 'Admisión', module: 'MAT', parent: 'MAT', order: 1 },
     },
     {
-        path: '/matricula/matriculas',
-        element: null,
-        key: 'MAT-MATRICULAS',
-        menu: { label: 'Matrículas', module: 'MAT', parent: 'MAT', order: 2 },
-    },
-    {
-        path: '/matricula/aportes',
-        element: null,
-        key: 'MAT-APORTES',
-        menu: { label: 'Aportes', module: 'MAT', parent: 'MAT', order: 3 },
-    },
-    {
         path: '/matricula/becas',
         element: null,
         key: 'MAT-BECAS',

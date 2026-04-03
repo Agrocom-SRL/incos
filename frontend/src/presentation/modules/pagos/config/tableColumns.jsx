@@ -18,8 +18,10 @@ import PagoTableActions from './PagoTableActions';
  * @param {Function} navigate - Función de navegación de react-router
  * @param {Function} refetch - Función para recargar con params (page, limit, search, sort, gestion_id, estudiante_id, estado)
  * @param {Function} [deletePago] - Función para eliminar pago
+ * @param {Object} [options] - viewNavigateState: estado al abrir detalle desde la tabla (ej. menú Matrícula > Aportes)
  */
-export const createPagosTableColumns = (navigate, refetch = null, deletePago = null) => {
+export const createPagosTableColumns = (navigate, refetch = null, deletePago = null, options = {}) => {
+    const { viewNavigateState } = options;
     return [
         {
             title: 'Gestión',
@@ -166,6 +168,7 @@ export const createPagosTableColumns = (navigate, refetch = null, deletePago = n
                         deletePago={deletePago}
                         itemName={itemName}
                         itemDetails={itemDetails}
+                        viewNavigateState={viewNavigateState}
                     />
                 );
             },

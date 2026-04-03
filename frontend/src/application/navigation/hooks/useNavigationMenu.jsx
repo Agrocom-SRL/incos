@@ -142,10 +142,11 @@ export const useNavigationMenu = (defaultSelectedKey = 'DASH', onMenuClick) => {
      * - Si es el mount inicial (refresh), expande todos los padres del item seleccionado
      * - Esto permite ver la jerarquía completa cuando se refresca con una ruta específica
      */
+    const menuSidebarKeyFromState = location.state?.menuSidebarKey;
+
     useEffect(() => {
-        const currentRoute = location.pathname;
-        const menuKey = getMenuKeyFromRoute(currentRoute);
-        
+        const menuKey = getMenuKeyFromRoute(location.pathname, location.state);
+
         if (menuKey && menuKey !== selectedKeys[0]) {
             setSelectedKeys([menuKey]);
             expandParentKeysOnInitialMount(menuKey);
@@ -154,7 +155,7 @@ export const useNavigationMenu = (defaultSelectedKey = 'DASH', onMenuClick) => {
             isInitialMount.current = false;
         }
         // Si no hay key, no hacer nada - el createAppRouter maneja las redirecciones
-    }, [location.pathname, selectedKeys, navigationMenuItems]);
+    }, [location.pathname, menuSidebarKeyFromState, selectedKeys, navigationMenuItems]);
 
     /**
      * Maneja el click en un item del menú

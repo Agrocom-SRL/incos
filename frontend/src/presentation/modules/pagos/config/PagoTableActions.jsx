@@ -18,6 +18,7 @@ const PagoTableActions = ({
   deletePago = null,
   itemName,
   itemDetails = [],
+  viewNavigateState = undefined,
 }) => {
   const fallbackItemName = `el pago #${record.numeroRecibo || record.receipt_number || record.id}`;
 
@@ -31,6 +32,7 @@ const PagoTableActions = ({
       itemName={itemName ?? fallbackItemName}
       itemDetails={itemDetails?.length ? itemDetails : undefined}
       viewPath="/pagos/:id"
+      viewNavigateState={viewNavigateState}
       // Los pagos no se pueden editar, por lo que no se pasa editPath ni onEdit
     />
   );

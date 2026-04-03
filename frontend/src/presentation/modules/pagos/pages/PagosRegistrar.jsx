@@ -39,6 +39,7 @@ const PagosRegistrar = () => {
 
   // Obtener studentId del estado de navegación
   const studentId = location.state?.studentId || null;
+  const menuSidebarKeyFromState = location.state?.menuSidebarKey;
 
   // Obtener datos del estudiante desde el contexto de detalle (para StudentInfoSection)
   const studentDetailContext = useStudentDetailContext();
@@ -454,9 +455,15 @@ const PagosRegistrar = () => {
   useEffect(() => {
     if (pendienteDescargaReciboRef.current) return;
     if (estadoActualAporte && !loadingEstadoAporte && Number(estadoActualAporte.saldo_pendiente) === 0 && estadoActualAporte.cabecera?.id && studentId) {
-      navigate(`/pagos/${estadoActualAporte.cabecera.id}`, { replace: true, state: { studentId } });
+      navigate(`/pagos/${estadoActualAporte.cabecera.id}`, {
+        replace: true,
+        state: {
+          studentId,
+          ...(menuSidebarKeyFromState ? { menuSidebarKey: menuSidebarKeyFromState } : {}),
+        },
+      });
     }
-  }, [estadoActualAporte, loadingEstadoAporte, navigate, studentId]);
+  }, [estadoActualAporte, loadingEstadoAporte, navigate, studentId, menuSidebarKeyFromState]);
 
   // Si no hay studentId, no renderizar nada (se redirige automáticamente)
   if (!studentId) {

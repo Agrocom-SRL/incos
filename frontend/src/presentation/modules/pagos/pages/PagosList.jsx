@@ -11,7 +11,8 @@
  */
 
 import { useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { MENU_SIDEBAR_KEY_MAT_APORTES } from '@navigation-services/routeMapper';
 import { PlusOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { TableListView } from '@organisms';
@@ -22,6 +23,13 @@ import { createPagosTableColumns } from '@pagos/config';
 
 const PagosList = () => {
     const navigate = useNavigate();
+    const { pathname } = useLocation();
+    const aportesMatriculaContext =
+        pathname === '/matricula/aportes/listar' || pathname.startsWith('/matricula/aportes/');
+    const aportesNavState = useMemo(() => {
+        if (!aportesMatriculaContext) return undefined;
+        return { menuSidebarKey: MENU_SIDEBAR_KEY_MAT_APORTES };
+    }, [aportesMatriculaContext]);
 
     const {
         pagos = [],
@@ -34,12 +42,18 @@ const PagosList = () => {
     } = usePagosListContext();
 
     const handleNuevoPago = () => {
-        navigate('/pagos/registrar');
+        navigate(
+            '/pagos/registrar',
+            aportesNavState != null ? { state: aportesNavState } : undefined
+        );
     };
 
     const tableColumns = useMemo(
-        () => createPagosTableColumns(navigate, refetch, deletePago),
-        [navigate, refetch, deletePago]
+        () =>
+            createPagosTableColumns(navigate, refetch, deletePago, {
+                viewNavigateState: aportesNavState,
+            }),
+        [navigate, refetch, deletePago, aportesNavState]
     );
 
     // Configurar breadcrumb items

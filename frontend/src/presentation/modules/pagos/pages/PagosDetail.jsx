@@ -73,6 +73,7 @@ const PagosDetail = () => {
   const { message, modal } = App.useApp();
 
   const studentIdFromState = location.state?.studentId ?? null;
+  const menuSidebarKeyFromState = location.state?.menuSidebarKey;
   const fromBeca100 = location.state?.fromBeca100 === true;
   const volverALista = !studentIdFromState;
 
@@ -149,8 +150,13 @@ const PagosDetail = () => {
       message.warning('No se puede registrar cuota: falta ID del estudiante');
       return;
     }
-    navigate('/pagos/registrar', { state: { studentId: studentIdForRegistrar } });
-  }, [navigate, studentIdForRegistrar, message]);
+    navigate('/pagos/registrar', {
+      state: {
+        studentId: studentIdForRegistrar,
+        ...(menuSidebarKeyFromState ? { menuSidebarKey: menuSidebarKeyFromState } : {}),
+      },
+    });
+  }, [navigate, studentIdForRegistrar, message, menuSidebarKeyFromState]);
 
   const handleEliminarPago = useCallback(async () => {
     if (!pago?.id) return;

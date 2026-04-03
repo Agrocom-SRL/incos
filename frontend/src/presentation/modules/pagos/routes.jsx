@@ -33,8 +33,8 @@ export const pagosRoutes = [
         menu: {
             label: 'Lista de Aportes',
             module: 'MAT',
-            parent: 'MAT-APORTES',
-            order: 1,
+            parent: 'MAT',
+            order: 3,
         },
     },
     {

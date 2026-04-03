@@ -18,6 +18,7 @@ import { useNavigate } from 'react-router-dom';
 import { useGetStudentById } from '@application-estudiantes/hooks/api';
 import { useGenerateActaCompromiso, useGenerateDeclaracionJurada } from '../features';
 import { usePagosContextOptional, useEstadoAporteRegistro } from '@application-pagos/hooks';
+import { MENU_SIDEBAR_KEY_MAT_APORTES } from '@navigation-services/routeMapper';
 import { mapEstudianteDetail } from '@application-estudiantes/mappers';
 import { downloadFile } from '@application/utils';
 import { App } from 'antd';
@@ -52,6 +53,11 @@ export const useStudentDetail = (studentId) => {
   const academicData = student?.academicData ?? null;
   const catalogs = student?.catalogs ?? {};
 
+  const pagoNavState = useCallback(
+    (sid) => ({ studentId: sid, menuSidebarKey: MENU_SIDEBAR_KEY_MAT_APORTES }),
+    []
+  );
+
   const breadcrumbItems = useMemo(
     () => [
       { title: 'Inicio', href: '/' },
@@ -67,7 +73,7 @@ export const useStudentDetail = (studentId) => {
       return;
     }
     if (!loadingEstadoAporte && estadoAporte?.saldo_pendiente === 0 && estadoAporte?.cabecera?.id) {
-      navigate(`/pagos/${estadoAporte.cabecera.id}`, { state: { studentId } });
+      navigate(`/pagos/${estadoAporte.cabecera.id}`, { state: pagoNavState(studentId) });
       return;
     }
     if (pagosContext?.pagos && Array.isArray(pagosContext.pagos)) {
@@ -92,18 +98,18 @@ export const useStudentDetail = (studentId) => {
         })[0];
         const pagoId = pagoMasReciente.id;
         if (pagoId) {
-          navigate(`/pagos/${pagoId}`, { state: { studentId } });
+          navigate(`/pagos/${pagoId}`, { state: pagoNavState(studentId) });
           return;
         }
       }
     }
-    navigate('/pagos/registrar', { state: { studentId } });
-  }, [navigate, studentId, pagosContext, message, loadingEstadoAporte, estadoAporte]);
+    navigate('/pagos/registrar', { state: pagoNavState(studentId) });
+  }, [navigate, studentId, pagosContext, message, loadingEstadoAporte, estadoAporte, pagoNavState]);
 
   const handleVerDetallePago = useCallback(() => {
     if (!studentId || !estadoAporte?.cabecera?.id) return;
-    navigate(`/pagos/${estadoAporte.cabecera.id}`, { state: { studentId } });
-  }, [navigate, studentId, estadoAporte]);
+    navigate(`/pagos/${estadoAporte.cabecera.id}`, { state: pagoNavState(studentId) });
+  }, [navigate, studentId, estadoAporte, pagoNavState]);
 
   const handleGenerateActaCompromiso = useCallback(async () => {
     if (!studentId) {

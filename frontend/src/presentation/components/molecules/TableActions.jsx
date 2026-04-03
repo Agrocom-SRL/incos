@@ -27,6 +27,7 @@ import { useContainer } from '@container';
  * @param {string} props.itemName - Nombre del elemento para el mensaje (ej: 'el pago')
  * @param {Array} props.itemDetails - Detalles del elemento para mostrar en el diálogo (opcional)
  * @param {string} props.viewPath - Ruta para ver detalle (ej: '/pagos/:id')
+ * @param {Object} [props.viewNavigateState] - Estado opcional para navigate() al ver (ej. menuSidebarKey)
  * @param {string} props.editPath - Ruta para editar (opcional, ej: '/pagos/:id/editar')
  * @param {Function} props.onEdit - Función personalizada para editar (opcional)
  * @param {Function} props.onView - Función personalizada para ver (opcional)
@@ -42,6 +43,7 @@ const TableActions = ({
   itemName,
   itemDetails,
   viewPath,
+  viewNavigateState,
   editPath,
   onEdit,
   onView,
@@ -113,7 +115,8 @@ const TableActions = ({
     if (onView) {
       onView(record);
     } else if (viewPath) {
-      navigate(viewPath.replace(':id', record.id));
+      const path = viewPath.replace(':id', record.id);
+      navigate(path, viewNavigateState != null ? { state: viewNavigateState } : undefined);
     }
   };
 

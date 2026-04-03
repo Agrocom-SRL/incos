@@ -141,8 +141,6 @@ export const menuIconMap = {
 
     // Matrícula (sidebar v1.2)
     'MAT-ADMISION': TeamOutlined,
-    'MAT-MATRICULAS': ReadOutlined,
-    'MAT-APORTES': DollarOutlined,
     'MAT-APO-LISTA': UnorderedListOutlined,
     'MAT-ADM-LISTAR': UnorderedListOutlined,
     'MAT-ADM-NUEVA': UserAddOutlined,

@@ -22,8 +22,8 @@ export const inscripcionesRoutes = [
         menu: {
             label: 'Listar Matrículas',
             module: 'MAT',
-            parent: 'MAT-MATRICULAS',
-            order: 1,
+            parent: 'MAT',
+            order: 2,
         },
     },
     {
@@ -32,7 +32,7 @@ export const inscripcionesRoutes = [
         key: 'MAT-NUEVA',
         permiso: 'matricula.inscribir',
         menu: null,
-        breadcrumbParent: 'MAT-MATRICULAS',
+        breadcrumbParent: 'MAT-LISTA',
     },
     {
         path: '/inscripciones',
