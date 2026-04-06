@@ -15,6 +15,7 @@ import { registerGeograficosModule } from './geograficos/index.js';
 import { registerReferenciaModule } from './referencia/index.js';
 import { registerInscripcionesModule } from './inscripciones/index.js';
 import { registerPagosModule } from './pagos/index.js';
+import { registerAuthModule } from './auth/index.js';
 
 /**
  * Registra todos los módulos de dominio en el contenedor
@@ -23,6 +24,8 @@ import { registerPagosModule } from './pagos/index.js';
  * @returns {Container} Contenedor con todos los módulos registrados
  */
 export function registerAllModules(container) {
+    registerAuthModule(container);
+
     // 1. Módulos de dominio (use cases + controllers + routers)
     // IMPORTANTE: Inscripciones debe registrarse antes de Estudiantes
     // porque GetStudentByIdUseCase depende de GetEnrollmentByIdUseCase

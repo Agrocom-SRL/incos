@@ -13,9 +13,18 @@
 -- - usuarios_permisos.permiso_id → permisos.id
 --
 -- IMPORTANTE:
--- - Requiere tablas roles, permisos, usuarios, roles_permisos, usuarios_permisos.
+-- - Requiere tablas roles, permisos, usuarios, roles_permisos, usuarios_permisos
+--   (esquema aplicado y, para datos útiles, seeders de roles/permisos/roles_permisos).
 -- - Implementación con NOT EXISTS (MySQL 8.0.x sin depender de EXCEPT).
 -- - Variante equivalente con EXCEPT disponible desde MySQL 8.0.31+.
+--
+-- APLICACIÓN (fuente canónica = este archivo):
+-- - El cuerpo DROP + CREATE debe coincidir con lo que aplicas en la BD; no hay otra
+--   definición en código: el backend consulta el nombre fijo
+--   vista_usuario_permisos_efectivos (p. ej. AuthRepository.findPermisosEfectivos,
+--   tienePermiso, MeUseCase).
+-- - Ejecutar contra la base configurada en .env (p. ej. mysql/mysqlsh o pipeline CI),
+--   o ajustar USE instituto_incos al nombre real de la BD.
 --
 -- Uso:
 --   SELECT * FROM vista_usuario_permisos_efectivos

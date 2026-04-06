@@ -36,6 +36,16 @@ export class ValidationError extends AppError {
 }
 
 /**
+ * Error de validación semántica / payload (422 Unprocessable Entity)
+ */
+export class UnprocessableEntityError extends AppError {
+  constructor(message = 'Los datos proporcionados son inválidos', details = []) {
+    super(message, 422, 'VALIDATION_ERROR');
+    this.details = details;
+  }
+}
+
+/**
  * Error de recurso no encontrado (404)
  */
 export class NotFoundError extends AppError {
@@ -58,8 +68,11 @@ export class UnauthorizedError extends AppError {
  * Error de acceso denegado (403)
  */
 export class ForbiddenError extends AppError {
-  constructor(message = 'Acceso denegado') {
+  constructor(message = 'Acceso denegado', details) {
     super(message, 403, 'FORBIDDEN');
+    if (details !== undefined) {
+      this.details = details;
+    }
   }
 }
 

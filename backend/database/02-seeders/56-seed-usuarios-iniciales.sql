@@ -23,7 +23,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 INSERT INTO usuarios (id, username, email, password_hash, rol_id,
                       referencia_id, tipo_referencia, estado, activo) VALUES
 (1, 'admin', 'admin@incos-santacruz.edu.bo',
-    '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TbGDGqrBnv6JqUkqFh7hZ2qBqRUi',
+    '$2a$12$m32JuiW73iPgLQt.oHmEB.uOR5l2FD8WAiIBI98L7RVsnKKVCDmtC',
     8, NULL, NULL, NULL, TRUE);
 
 SET FOREIGN_KEY_CHECKS = 1;
