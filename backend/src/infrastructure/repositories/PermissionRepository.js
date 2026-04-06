@@ -1,5 +1,6 @@
 import { IPermisoRepository } from '../../domain/interfaces/repositories/IPermisoRepository.js';
 import { Permiso as PermisoModel } from '../database/models/permiso.js';
+import { sequelize } from '../database/sequelize.js';
 import { BaseRepository } from './BaseRepository.js';
 import { PermissionMapper } from '../mappers/PermissionMapper.js';
 
@@ -132,6 +133,27 @@ export class PermissionRepository extends BaseRepository {
    */
   getCollectionName() {
     return 'permissions';
+  }
+
+  /**
+   * Catálogo de permisos activos (raw), opcionalmente filtrado por dominio.
+   */
+  async findAllActivosPlano({ dominio = null } = {}) {
+    const dominioClause = dominio ? 'AND p.dominio = :dominio' : '';
+    const replacements = {};
+    if (dominio) {
+      replacements.dominio = dominio;
+    }
+    return sequelize.query(
+      `
+      SELECT p.id, p.codigo, p.nombre, p.dominio, p.modulo
+      FROM permisos p
+      WHERE p.activo = TRUE AND p.deleted_at IS NULL
+        ${dominioClause}
+      ORDER BY p.dominio, p.codigo
+      `,
+      { replacements, type: sequelize.QueryTypes.SELECT }
+    );
   }
 }
 

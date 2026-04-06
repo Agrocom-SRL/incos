@@ -38,4 +38,5 @@ export { REFERENCIA_TOKENS } from './referencia.tokens.js';
 export { INSCRIPCIONES_TOKENS } from './inscripciones.tokens.js';
 export { PAGOS_TOKENS } from './pagos.tokens.js';
 export { AUTH_TOKENS } from './auth.tokens.js';
+export { SEGURIDAD_TOKENS } from './seguridad.tokens.js';
 

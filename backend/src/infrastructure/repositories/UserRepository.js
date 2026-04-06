@@ -1,7 +1,17 @@
 import { IUsuarioRepository } from '../../domain/interfaces/repositories/IUsuarioRepository.js';
 import { Usuario as UsuarioModel } from '../database/models/usuario.js';
+import { sequelize } from '../database/sequelize.js';
 import { BaseRepository } from './BaseRepository.js';
 import { UserMapper } from '../mappers/UserMapper.js';
+
+/** Columnas ORDER BY permitidas para listado SEG (evita inyección SQL). */
+const USUARIO_LIST_SORT_MAP = {
+  id: 'u.id',
+  username: 'u.username',
+  email: 'u.email',
+  created_at: 'u.created_at',
+  rol_nombre: 'r.nombre',
+};
 
 /**
  * Implementación del repositorio de usuarios usando Sequelize
@@ -159,6 +169,138 @@ export class UserRepository extends BaseRepository {
    */
   getCollectionName() {
     return 'users';
+  }
+
+  /**
+   * Orden seguro para listado con JOIN a roles.
+   * @param {string} [sortParam] formato campo:ASC|DESC (default id:ASC)
+   */
+  _resolveUsuarioListOrder(sortParam) {
+    const raw = sortParam || 'id:ASC';
+    const [field, dirPart = 'ASC'] = raw.split(':');
+    const col = USUARIO_LIST_SORT_MAP[field] || 'u.id';
+    const dir = String(dirPart).toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
+    return `${col} ${dir}`;
+  }
+
+  /**
+   * Listado paginado para administración (sin password_hash).
+   */
+  async findAllPaginatedWithRole({ page, limit, search, sort }) {
+    const offset = (page - 1) * limit;
+    const orderSql = this._resolveUsuarioListOrder(sort);
+    const searchClause = search
+      ? 'AND (u.username LIKE :search OR u.email LIKE :search)'
+      : '';
+    const replacements = { limit, offset };
+    if (search) {
+      replacements.search = `%${search}%`;
+    }
+
+    const rows = await sequelize.query(
+      `
+      SELECT
+        u.id, u.username, u.email, u.foto_url,
+        u.estado, u.activo, u.created_at,
+        u.rol_id, r.codigo AS rol_codigo,
+        r.nombre AS rol_nombre, r.nivel_acceso AS rol_nivel
+      FROM usuarios u
+      LEFT JOIN roles r ON r.id = u.rol_id
+        AND r.activo = TRUE AND r.deleted_at IS NULL
+      WHERE u.activo = TRUE AND u.deleted_at IS NULL
+        ${searchClause}
+      ORDER BY ${orderSql}
+      LIMIT :limit OFFSET :offset
+      `,
+      { replacements, type: sequelize.QueryTypes.SELECT }
+    );
+
+    return rows;
+  }
+
+  async countAllWithRoleSearch({ search }) {
+    const searchClause = search
+      ? 'AND (u.username LIKE :search OR u.email LIKE :search)'
+      : '';
+    const replacements = {};
+    if (search) {
+      replacements.search = `%${search}%`;
+    }
+    const rows = await sequelize.query(
+      `
+      SELECT COUNT(*) AS total
+      FROM usuarios u
+      LEFT JOIN roles r ON r.id = u.rol_id
+        AND r.activo = TRUE AND r.deleted_at IS NULL
+      WHERE u.activo = TRUE AND u.deleted_at IS NULL
+        ${searchClause}
+      `,
+      { replacements, type: sequelize.QueryTypes.SELECT }
+    );
+    return Number(rows[0]?.total || 0);
+  }
+
+  /**
+   * Usuario activo con datos de rol (sin password_hash).
+   */
+  async findByIdWithRoleForAdmin(id) {
+    const rows = await sequelize.query(
+      `
+      SELECT
+        u.id, u.username, u.email, u.foto_url,
+        u.estado, u.activo, u.created_at, u.updated_at,
+        u.referencia_id, u.tipo_referencia,
+        u.fecha_cambio_estado, u.motivo_cambio_estado,
+        u.rol_id, r.codigo AS rol_codigo,
+        r.nombre AS rol_nombre, r.nivel_acceso AS rol_nivel
+      FROM usuarios u
+      LEFT JOIN roles r ON r.id = u.rol_id
+        AND r.activo = TRUE AND r.deleted_at IS NULL
+      WHERE u.id = :id
+        AND u.activo = TRUE AND u.deleted_at IS NULL
+      LIMIT 1
+      `,
+      { replacements: { id }, type: sequelize.QueryTypes.SELECT }
+    );
+    return rows[0] || null;
+  }
+
+  async existsUsername(username, excludeUserId = null) {
+    const excludeClause =
+      excludeUserId != null ? 'AND id <> :excludeId' : '';
+    const replacements = { username };
+    if (excludeUserId != null) {
+      replacements.excludeId = excludeUserId;
+    }
+    const rows = await sequelize.query(
+      `
+      SELECT id FROM usuarios
+      WHERE username = :username AND activo = TRUE AND deleted_at IS NULL
+        ${excludeClause}
+      LIMIT 1
+      `,
+      { replacements, type: sequelize.QueryTypes.SELECT }
+    );
+    return rows.length > 0;
+  }
+
+  async existsEmail(email, excludeUserId = null) {
+    const excludeClause =
+      excludeUserId != null ? 'AND id <> :excludeId' : '';
+    const replacements = { email: email.toLowerCase() };
+    if (excludeUserId != null) {
+      replacements.excludeId = excludeUserId;
+    }
+    const rows = await sequelize.query(
+      `
+      SELECT id FROM usuarios
+      WHERE LOWER(email) = :email AND activo = TRUE AND deleted_at IS NULL
+        ${excludeClause}
+      LIMIT 1
+      `,
+      { replacements, type: sequelize.QueryTypes.SELECT }
+    );
+    return rows.length > 0;
   }
 }
 

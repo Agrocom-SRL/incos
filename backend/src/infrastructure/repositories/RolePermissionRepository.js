@@ -1,5 +1,6 @@
 import { IRolPermisoRepository } from '../../domain/interfaces/repositories/IRolPermisoRepository.js';
 import { RolPermiso as RolPermisoModel } from '../database/models/rol_permiso.js';
+import { sequelize } from '../database/sequelize.js';
 import { BaseRepository } from './BaseRepository.js';
 import { RolePermissionMapper } from '../mappers/RolePermissionMapper.js';
 
@@ -131,6 +132,67 @@ export class RolePermissionRepository extends BaseRepository {
    */
   getCollectionName() {
     return 'rolePermissions';
+  }
+
+  /**
+   * Filas planas rol-permiso + metadatos del permiso (para agrupar por dominio).
+   */
+  async findFlatByRolId(rolId) {
+    return sequelize.query(
+      `
+      SELECT
+        rp.id, rp.accion,
+        p.id AS permiso_id, p.codigo, p.nombre, p.dominio, p.modulo
+      FROM roles_permisos rp
+      INNER JOIN permisos p ON p.id = rp.permiso_id
+        AND p.activo = TRUE AND p.deleted_at IS NULL
+      WHERE rp.rol_id = :rolId
+        AND rp.activo = TRUE AND rp.deleted_at IS NULL
+      ORDER BY p.dominio, p.codigo, rp.accion
+      `,
+      { replacements: { rolId }, type: sequelize.QueryTypes.SELECT }
+    );
+  }
+
+  /**
+   * Soft delete de todas las asignaciones activas del rol e inserción de nuevas filas.
+   * @param {number} rolId
+   * @param {{ permiso_id: number, accion: string }[]} asignaciones
+   */
+  async replaceAllAssignmentsForRol(rolId, asignaciones) {
+    return sequelize.transaction(async (t) => {
+      await sequelize.query(
+        `
+        UPDATE roles_permisos
+        SET activo = FALSE,
+            deleted_at = NOW(),
+            updated_at = NOW()
+        WHERE rol_id = :rolId
+          AND activo = TRUE
+          AND deleted_at IS NULL
+        `,
+        { replacements: { rolId }, transaction: t }
+      );
+
+      for (const row of asignaciones) {
+        await sequelize.query(
+          `
+          INSERT INTO roles_permisos
+            (rol_id, permiso_id, accion, activo, created_at, updated_at)
+          VALUES
+            (:rolId, :permisoId, :accion, TRUE, NOW(), NOW())
+          `,
+          {
+            replacements: {
+              rolId,
+              permisoId: row.permiso_id,
+              accion: row.accion,
+            },
+            transaction: t,
+          }
+        );
+      }
+    });
   }
 }
 

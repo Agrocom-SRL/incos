@@ -16,6 +16,7 @@ import { registerReferenciaModule } from './referencia/index.js';
 import { registerInscripcionesModule } from './inscripciones/index.js';
 import { registerPagosModule } from './pagos/index.js';
 import { registerAuthModule } from './auth/index.js';
+import { registerSeguridadModule } from './seguridad/index.js';
 
 /**
  * Registra todos los módulos de dominio en el contenedor
@@ -25,6 +26,7 @@ import { registerAuthModule } from './auth/index.js';
  */
 export function registerAllModules(container) {
     registerAuthModule(container);
+    registerSeguridadModule(container);
 
     // 1. Módulos de dominio (use cases + controllers + routers)
     // IMPORTANTE: Inscripciones debe registrarse antes de Estudiantes

@@ -136,5 +136,20 @@ export class RoleRepository extends BaseRepository {
   getCollectionName() {
     return 'roles';
   }
+
+  /**
+   * Roles activos ordenados por nivel_acceso descendente (panel SEG).
+   */
+  async findAllOrderedByNivelDesc() {
+    const Model = this.getModel();
+    const rows = await Model.findAll({
+      where: { activo: true },
+      order: [
+        ['nivelAcceso', 'DESC'],
+        ['id', 'ASC'],
+      ],
+    });
+    return rows.map((m) => this.toEntity(m));
+  }
 }
 
