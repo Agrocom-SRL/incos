@@ -3,7 +3,11 @@ import { ACCIONES_PERMISOS_VALUES } from '../constants/index.js';
 
 /**
  * Entidad de Dominio: RolePermission
- * Representa la relación entre un rol y un permiso
+ * Representa la relación entre un rol y un permiso con acción concreta.
+ * Contiene la lógica de negocio pura de la asignación rol–permiso.
+ *
+ * Mapeo con BD (tabla roles_permisos, 04-sistema-seguridad.sql):
+ * - roleId ← rol_id, permissionId ← permiso_id, action ← accion
  */
 export class RolePermission extends BaseEntity {
   constructor(data = {}) {

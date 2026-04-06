@@ -2,7 +2,11 @@ import { BaseEntity } from './BaseEntity.js';
 
 /**
  * Entidad de Dominio: Role
- * Representa un rol del sistema
+ * Representa un rol del sistema.
+ * Contiene la lógica de negocio pura del rol (nivel de acceso).
+ *
+ * Mapeo con BD (tabla roles, 04-sistema-seguridad.sql):
+ * - code ← codigo, name ← nombre, accessLevel ← nivel_acceso
  */
 export class Role extends BaseEntity {
   constructor(data = {}) {

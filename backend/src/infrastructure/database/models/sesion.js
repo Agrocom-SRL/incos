@@ -3,6 +3,10 @@ import { sequelize } from '../sequelize.js';
 import { baseModelFields, baseModelOptions } from './base_model.js';
 import { TIPOS_DISPOSITIVO_VALUES } from '../../../domain/constants/usuarios.constants.js';
 
+/**
+ * Modelo ORM: Sesion — tabla `sesiones`
+ * DDL: database/01-schemas/04-sistema-seguridad.sql
+ */
 export const Sesion = sequelize.define(
   'Sesion',
   {

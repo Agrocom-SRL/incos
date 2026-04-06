@@ -3,6 +3,10 @@ import { sequelize } from '../sequelize.js';
 import { baseModelFields, baseModelOptions } from './base_model.js';
 import { NIVELES_ACADEMICOS_PERSONAL_VALUES } from '../../../domain/constants/docentes.constants.js';
 
+/**
+ * Modelo ORM: Rector — tabla `rectores`
+ * DDL: database/01-schemas/22-personal-usuarios.sql
+ */
 export const Rector = sequelize.define(
   'Rector',
   {

@@ -3,7 +3,11 @@ import { EXPEDICIONES_CI_VALUES, GENEROS_VALUES } from '../constants/index.js';
 
 /**
  * Entidad de Dominio: Staff
- * Representa un miembro del personal del instituto
+ * Representa un miembro del personal del instituto (torso de rectores/directores/secretarias).
+ * Contiene la lógica de negocio pura del personal.
+ *
+ * Mapeo con BD (tabla personal, 22-personal-usuarios.sql): mismo patrón que Student
+ * (userId ← usuario_id, firstName ← nombres, lastName ← apellido_paterno, etc.).
  */
 export class Staff extends BaseEntity {
   constructor(data = {}) {

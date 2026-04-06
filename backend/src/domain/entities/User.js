@@ -3,7 +3,13 @@ import { ESTADOS_USUARIOS_VALUES, ESTADOS_USUARIOS, TIPOS_REFERENCIA_VALUES } fr
 
 /**
  * Entidad de Dominio: User
- * Representa un usuario del sistema
+ * Representa un usuario del sistema.
+ * Contiene la lógica de negocio pura del usuario (estado, email, referencia polimórfica).
+ *
+ * Mapeo con BD (tabla usuarios, 04-sistema-seguridad.sql):
+ * - roleId ← rol_id, referenceId ← referencia_id, referenceType ← tipo_referencia
+ * - state ← estado, stateChangeDate ← fecha_cambio_estado, stateChangeReason ← motivo_cambio_estado
+ * - photoUrl ← foto_url, passwordHash ← password_hash
  */
 export class User extends BaseEntity {
   constructor(data = {}) {

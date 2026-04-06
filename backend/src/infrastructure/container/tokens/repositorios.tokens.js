@@ -28,7 +28,12 @@ export const REPOSITORIOS_TOKENS = {
     permissionRepository: 'permissionRepository',
     userRepository: 'userRepository',
     rolePermissionRepository: 'rolePermissionRepository',
+    userPermissionRepository: 'userPermissionRepository',
     sessionRepository: 'sessionRepository',
+    authRepository: 'authRepository',
+    rectorRepository: 'rectorRepository',
+    directorRepository: 'directorRepository',
+    secretaryRepository: 'secretaryRepository',
     staffRepository: 'staffRepository',
 
     // ESTRUCTURA ACADÉMICA - PARTE 1

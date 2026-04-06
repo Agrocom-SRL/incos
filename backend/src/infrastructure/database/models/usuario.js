@@ -4,6 +4,10 @@ import { baseModelFields, baseModelOptions } from './base_model.js';
 import { TIPOS_REFERENCIA_VALUES } from '../../../domain/constants/usuarios.constants.js';
 import { ESTADOS_USUARIOS_VALUES } from '../../../domain/constants/usuarios.constants.js';
 
+/**
+ * Modelo ORM: Usuario — tabla `usuarios`
+ * DDL: database/01-schemas/04-sistema-seguridad.sql
+ */
 export const Usuario = sequelize.define(
   'Usuario',
   {

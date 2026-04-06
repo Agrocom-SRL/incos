@@ -4,6 +4,10 @@ import { IRepository } from './IRepository.js';
  * Interfaz de Repositorio: IEstudianteRepository
  * Define el contrato que debe cumplir el repositorio de estudiantes
  *
+ * Convención de capas: IEstudianteRepository → models/estudiante.js (`estudiantes`)
+ * → Student / StudentMapper / StudentRepository
+ * DDL: database/01-schemas/08-estudiantes-parte1.sql (tabla estudiantes)
+ *
  * Métodos heredados de IRepository:
  * - findById(id)
  * - findBy(criteria, options)

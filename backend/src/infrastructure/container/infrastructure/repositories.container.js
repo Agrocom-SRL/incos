@@ -51,8 +51,13 @@ import { RoleRepository } from '../../repositories/RoleRepository.js';
 import { PermissionRepository } from '../../repositories/PermissionRepository.js';
 import { UserRepository } from '../../repositories/UserRepository.js';
 import { RolePermissionRepository } from '../../repositories/RolePermissionRepository.js';
+import { UserPermissionRepository } from '../../repositories/UserPermissionRepository.js';
 import { SessionRepository } from '../../repositories/SessionRepository.js';
+import { AuthRepository } from '../../repositories/AuthRepository.js';
 import { StaffRepository } from '../../repositories/StaffRepository.js';
+import { RectorRepository } from '../../repositories/RectorRepository.js';
+import { DirectorRepository } from '../../repositories/DirectorRepository.js';
+import { SecretaryRepository } from '../../repositories/SecretaryRepository.js';
 
 // ============================================
 // ESTRUCTURA ACADÉMICA - PARTE 1
@@ -155,8 +160,13 @@ export function registerRepositoriesModule(container) {
     registerRepository(container, REPOSITORIOS_TOKENS.permissionRepository, PermissionRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.userRepository, UserRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.rolePermissionRepository, RolePermissionRepository);
+    registerRepository(container, REPOSITORIOS_TOKENS.userPermissionRepository, UserPermissionRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.sessionRepository, SessionRepository);
+    registerRepository(container, REPOSITORIOS_TOKENS.authRepository, AuthRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.staffRepository, StaffRepository);
+    registerRepository(container, REPOSITORIOS_TOKENS.rectorRepository, RectorRepository);
+    registerRepository(container, REPOSITORIOS_TOKENS.directorRepository, DirectorRepository);
+    registerRepository(container, REPOSITORIOS_TOKENS.secretaryRepository, SecretaryRepository);
 
     // ============================================
     // ESTRUCTURA ACADÉMICA - PARTE 1

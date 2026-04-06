@@ -59,6 +59,16 @@ export const ACCIONES_PERMISOS = {
 export const ACCIONES_PERMISOS_VALUES = Object.values(ACCIONES_PERMISOS);
 
 /**
+ * Override de permiso por usuario (usuarios_permisos.tipo)
+ */
+export const TIPOS_USUARIO_PERMISO = {
+  GRANT: 'GRANT',
+  REVOKE: 'REVOKE',
+};
+
+export const TIPOS_USUARIO_PERMISO_VALUES = Object.values(TIPOS_USUARIO_PERMISO);
+
+/**
  * Tipos de dispositivo
  */
 export const TIPOS_DISPOSITIVO = {

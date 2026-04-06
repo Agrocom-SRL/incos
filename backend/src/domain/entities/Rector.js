@@ -3,7 +3,15 @@ import { NIVELES_ACADEMICOS_PERSONAL_VALUES } from '../constants/index.js';
 
 /**
  * Entidad de Dominio: Rector
- * Representa un rector del instituto
+ * Representa un rector del instituto.
+ * Contiene la lógica de negocio pura del cargo (mandato, nombramiento).
+ *
+ * Mapeo con BD (tabla rectores, 22-personal-usuarios.sql):
+ * - staffId ← personal_id; professionalTitle ← titulo_profesional; specialty ← especialidad;
+ *   academicLevel ← nivel_academico; graduationInstitution ← institucion_egreso;
+ *   graduationYear ← anio_egreso; appointmentDate ← fecha_nombramiento;
+ *   appointmentResolution ← resolucion_nombramiento; mandateStartDate ← periodo_mandato_inicio;
+ *   mandateEndDate ← periodo_mandato_fin
  */
 export class Rector extends BaseEntity {
   constructor(data = {}) {

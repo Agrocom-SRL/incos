@@ -3,7 +3,11 @@ import { IRepository } from './IRepository.js';
 /**
  * Interfaz de Repositorio: IConfiguracionSistemaRepository
  * Define el contrato que debe cumplir el repositorio de configuración del sistema
- * 
+ *
+ * Convención de capas: IConfiguracionSistemaRepository → models/configuracion_sistema.js
+ * → SystemConfiguration / SystemConfigurationMapper / ConfiguracionSistemaRepository
+ * DDL: database/01-schemas/03-catalogos-referencia.sql (tabla configuracion_sistema)
+ *
  * NOTA: Solo extiende IRepository sin métodos adicionales.
  * La especialización está en la implementación (buildWhereClause), no en la interfaz.
  * La lógica de negocio (findOrCreate, incrementValue) debe estar en casos de uso.

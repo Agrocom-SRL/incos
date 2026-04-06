@@ -1,3 +1,4 @@
+import { IConfiguracionSistemaRepository } from '../../domain/interfaces/repositories/IConfiguracionSistemaRepository.js';
 import { ConfiguracionSistema as ConfiguracionSistemaModel } from '../database/models/configuracion_sistema.js';
 import { BaseRepository } from './BaseRepository.js';
 import { SystemConfigurationMapper } from '../mappers/SystemConfigurationMapper.js';
@@ -5,6 +6,8 @@ import { SystemConfigurationMapper } from '../mappers/SystemConfigurationMapper.
 /**
  * Repositorio de configuración del sistema
  * Utiliza el patrón Template Method heredando de BaseRepository
+ *
+ * @implements {IConfiguracionSistemaRepository}
  * 
  * Responsabilidades:
  * - Acceso a datos (consultas, persistencia)

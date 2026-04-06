@@ -3,6 +3,10 @@ import { sequelize } from '../sequelize.js';
 import { baseModelFields, baseModelOptions } from './base_model.js';
 import { TIPOS_CONFIGURACION_VALUES, TIPOS_CONFIGURACION } from '../../../domain/constants/sistema.constants.js';
 
+/**
+ * Modelo ORM: ConfiguracionSistema — tabla `configuracion_sistema`
+ * DDL: database/01-schemas/03-catalogos-referencia.sql
+ */
 export const ConfiguracionSistema = sequelize.define(
   'ConfiguracionSistema',
   {

@@ -32,8 +32,13 @@ export { IRolRepository } from './IRolRepository.js';
 export { IPermisoRepository } from './IPermisoRepository.js';
 export { IUsuarioRepository } from './IUsuarioRepository.js';
 export { IRolPermisoRepository } from './IRolPermisoRepository.js';
+export { IUsuarioPermisoRepository } from './IUsuarioPermisoRepository.js';
+export { IAuthRepository } from './IAuthRepository.js';
 export { ISesionRepository } from './ISesionRepository.js';
 export { IPersonalRepository } from './IPersonalRepository.js';
+export { IRectorRepository } from './IRectorRepository.js';
+export { IDirectorRepository } from './IDirectorRepository.js';
+export { ISecretaryRepository } from './ISecretaryRepository.js';
 export { IConfiguracionSistemaRepository } from './IConfiguracionSistemaRepository.js';
 
 // ============================================

@@ -3,7 +3,13 @@ import { TIPOS_DISPOSITIVO_VALUES } from '../constants/index.js';
 
 /**
  * Entidad de Dominio: Session
- * Representa una sesión de usuario
+ * Representa una sesión de usuario.
+ * Contiene la lógica de negocio pura de expiración y dispositivo.
+ *
+ * Mapeo con BD (tabla sesiones, 04-sistema-seguridad.sql):
+ * - userId ← usuario_id, sessionToken ← token_sesion, recoveryToken ← token_recuperacion
+ * - expirationDate ← fecha_expiracion, lastLogin ← ultimo_login, lastLoginIp ← ip_ultimo_login
+ * - device ← dispositivo
  */
 export class Session extends BaseEntity {
   constructor(data = {}) {

@@ -32,6 +32,7 @@ export { Role } from './Role.js';
 export { Permission } from './Permission.js';
 export { User } from './User.js';
 export { RolePermission } from './RolePermission.js';
+export { UserPermission } from './UserPermission.js';
 export { Session } from './Session.js';
 export { Staff } from './Staff.js';
 export { Rector } from './Rector.js';

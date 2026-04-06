@@ -26,10 +26,7 @@ import { PermissionMapper } from '../mappers/PermissionMapper.js';
  * - La especialización está en buildWhereClause(), no en métodos adicionales
  * - Usa los métodos base de BaseRepository para todas las operaciones de búsqueda
  * 
- * IMPORTANTE: Se eliminaron findByCodigo() y findByModulo() porque son redundantes.
- * Usar en su lugar:
- * - findBy({ code: 'PERMISO_X' }) → Reemplaza findByCodigo()
- * - findAll({ module: 'MODULO_X' }) → Reemplaza findByModulo()
+ * IMPORTANTE: Use findBy / findAll con criterios del dominio (code, domain, module, name).
  */
 export class PermissionRepository extends BaseRepository {
   /**
@@ -59,20 +56,29 @@ export class PermissionRepository extends BaseRepository {
    * sin necesidad de crear métodos adicionales en el repositorio.
    * 
    * Ejemplos de uso:
-   * - findAll({ module: 'ESTUDIANTES' }) → Busca permisos de un módulo
-   * - findBy({ code: 'ESTUDIANTES_CREATE' }) → Busca permiso por código
+   * - findAll({ module: 'MAT' }) → Por subdominio técnico (modulo)
+   * - findAll({ domain: 'ACADEMICO' }) → Por dominio de negocio
+   * - findBy({ code: 'academico.calificacion.ver' }) → Por código exacto
    * 
    * @param {Object} filters - Filtros de búsqueda
-   *   - code: Código del permiso (búsqueda exacta, para búsqueda de texto usar search())
-   *   - module: Módulo del sistema (búsqueda exacta, para búsqueda de texto usar search())
+   *   - code: Código del permiso (exacto)
+   *   - name: Nombre legible (exacto; texto libre → search())
+   *   - domain: Dominio de negocio (exacto)
+   *   - module: Subdominio técnico (exacto)
    * @returns {Object} Objeto WHERE para Sequelize
    */
   buildWhereClause(filters) {
     const where = {};
 
-    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
+    // Mapeo: Dominio (camelCase inglés) → modelo Sequelize (permiso.js)
     if (filters.code !== undefined) {
       where.codigo = filters.code;
+    }
+    if (filters.name !== undefined) {
+      where.nombre = filters.name;
+    }
+    if (filters.domain) {
+      where.dominio = filters.domain;
     }
     if (filters.module) {
       where.modulo = filters.module;
@@ -86,7 +92,7 @@ export class PermissionRepository extends BaseRepository {
    * @returns {string[]}
    */
   getSearchFields() {
-    return ['codigo', 'modulo'];
+    return ['codigo', 'nombre', 'descripcion', 'dominio', 'modulo'];
   }
 
   /**
