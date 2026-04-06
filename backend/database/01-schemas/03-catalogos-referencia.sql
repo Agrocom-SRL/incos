@@ -19,6 +19,7 @@ DROP TABLE IF EXISTS tipos_parentesco;
 DROP TABLE IF EXISTS tipos_discapacidad;
 DROP TABLE IF EXISTS estados_civiles;
 DROP TABLE IF EXISTS idiomas;
+DROP TABLE IF EXISTS configuracion_sistema;
 
 -- ============================================
 -- FASE 2: CREACIÓN DE TABLAS
@@ -197,6 +198,33 @@ CREATE TABLE documentacion (
     
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Catálogo de documentación requerida para inscripción de estudiantes. Define qué documentos se necesitan y si aceptan fotocopia según política del instituto.';
+
+-- ============================================
+-- TABLA: configuracion_sistema
+-- ============================================
+
+CREATE TABLE configuracion_sistema (
+    id INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Identificador único',
+    clave VARCHAR(100) NOT NULL COMMENT 'Clave única de configuración. Ejemplos: codigo_estudiante_correlativo_2025, jwt_expiracion_horas, max_intentos_login',
+    valor TEXT NOT NULL COMMENT 'Valor de la configuración serializado como texto',
+    tipo ENUM('STRING','NUMBER','BOOLEAN','JSON','DATE') DEFAULT 'STRING' COMMENT 'Tipo de dato del valor para deserialización correcta',
+    descripcion TEXT NULL COMMENT 'Descripción de qué controla esta configuración',
+    -- Campos de auditoría y control (ESTÁNDAR)
+    activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
+    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
+    created_by INT NULL COMMENT 'Usuario que creó',
+    updated_by INT NULL COMMENT 'Usuario que modificó',
+    deleted_by INT NULL COMMENT 'Usuario que eliminó',
+    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
+    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
+    INDEX idx_clave (clave),
+    INDEX idx_tipo (tipo),
+    INDEX idx_activo (activo),
+    INDEX idx_deleted_at (deleted_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+COMMENT='Configuración dinámica del sistema por clave-valor';
 
 -- ============================================
 -- FASE 3: REHABILITAR FOREIGN KEY CHECKS
