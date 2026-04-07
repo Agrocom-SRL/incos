@@ -1,4 +1,6 @@
 import express from 'express';
+import { authenticate } from '../middleware/auth.middleware.js';
+import { verificarPermiso } from '../middleware/permisos.middleware.js';
 import { listProvinciasValidator } from '../validators/geograficos/index.js';
 
 /**
@@ -21,6 +23,7 @@ import { listProvinciasValidator } from '../validators/geograficos/index.js';
 export function buildProvinciasRouter({ controllers, middlewares }) {
     const router = express.Router();
     const { validateRequest } = middlewares;
+    const catalogoMatricula = [authenticate, verificarPermiso('matricula.admision.ver', 'VER')];
 
     // ============================================
     // CRUD BÁSICO
@@ -39,6 +42,7 @@ export function buildProvinciasRouter({ controllers, middlewares }) {
      */
     router.get(
         '/',
+        ...catalogoMatricula,
         listProvinciasValidator,
         validateRequest,
         (req, res, next) => controllers.listProvinciasController.handle(req, res, next)

@@ -1,4 +1,6 @@
 import express from 'express';
+import { authenticate } from '../middleware/auth.middleware.js';
+import { verificarPermiso } from '../middleware/permisos.middleware.js';
 import { listValidator } from '../validators/common/index.js';
 
 /**
@@ -21,6 +23,7 @@ import { listValidator } from '../validators/common/index.js';
 export function buildBecasDescuentosRouter({ controllers, middlewares }) {
     const router = express.Router();
     const { validateRequest } = middlewares;
+    const verBeca = [authenticate, verificarPermiso('matricula.beca.ver', 'VER')];
 
     // ============================================
     // CRUD BÁSICO
@@ -39,6 +42,7 @@ export function buildBecasDescuentosRouter({ controllers, middlewares }) {
      */
     router.get(
         '/',
+        ...verBeca,
         listValidator,
         validateRequest,
         (req, res, next) => controllers.listBecasDescuentosController.handle(req, res, next)

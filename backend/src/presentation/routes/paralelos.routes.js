@@ -1,4 +1,6 @@
 import express from 'express';
+import { authenticate } from '../middleware/auth.middleware.js';
+import { verificarPermisoCualquiera } from '../middleware/permisos.middleware.js';
 import { listParalelosValidator } from '../validators/academico/index.js';
 import { idValidator } from '../validators/common/index.js';
 
@@ -22,6 +24,22 @@ import { idValidator } from '../validators/common/index.js';
 export function buildParalelosRouter({ controllers, middlewares }) {
     const router = express.Router();
     const { validateRequest } = middlewares;
+    const listarParalelos = [
+        authenticate,
+        verificarPermisoCualquiera([
+            ['institucional.config.academico.cursos', 'VER'],
+            ['matricula.admision.ver', 'VER'],
+            ['matricula.inscribir', 'CREAR'],
+        ]),
+    ];
+    const verHorarioParalelo = [
+        authenticate,
+        verificarPermisoCualquiera([
+            ['institucional.gestion.actual', 'VER'],
+            ['academico.calificacion.curso', 'VER'],
+            ['academico.calificacion.curso', 'EDITAR'],
+        ]),
+    ];
 
     // ============================================
     // CRUD BÁSICO
@@ -41,6 +59,7 @@ export function buildParalelosRouter({ controllers, middlewares }) {
      */
     router.get(
         '/',
+        ...listarParalelos,
         listParalelosValidator,
         validateRequest,
         (req, res, next) => controllers.listParalelosController.handle(req, res, next)
@@ -59,6 +78,7 @@ export function buildParalelosRouter({ controllers, middlewares }) {
      */
     router.get(
         '/:id/schedule',
+        ...verHorarioParalelo,
         idValidator,
         validateRequest,
         (req, res, next) => controllers.getParaleloScheduleController.handle(req, res, next)

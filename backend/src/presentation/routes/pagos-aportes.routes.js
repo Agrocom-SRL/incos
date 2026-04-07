@@ -1,4 +1,6 @@
 import express from 'express';
+import { authenticate } from '../middleware/auth.middleware.js';
+import { verificarPermiso, verificarPermisoCualquiera } from '../middleware/permisos.middleware.js';
 import { registerPagoAporteValidator } from '../validators/pagos/index.js';
 import { uploadPaymentDocument } from '../middleware/upload.middleware.js';
 import { listValidator } from '../validators/common/index.js';
@@ -24,6 +26,16 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
     const router = express.Router();
     const { validateRequest } = middlewares;
 
+    const pagoVer = [authenticate, verificarPermiso('finanzas.pago.ver', 'VER')];
+    const pagoRegistrar = [
+        authenticate,
+        verificarPermisoCualquiera([
+            ['finanzas.pago.registrar', 'CREAR'],
+            ['matricula.pago.aporte.ver', 'VER'],
+        ]),
+    ];
+    const pagoEditar = [authenticate, verificarPermiso('finanzas.pago.editar', 'EDITAR')];
+
     // ============================================
     // LISTADO DE CABECERAS DE APORTE
     // ============================================
@@ -35,6 +47,7 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
      */
     router.get(
         '/',
+        ...pagoVer,
         listValidator,
         validateRequest,
         (req, res, next) => controllers.listPagosAportesController.handle(req, res, next)
@@ -47,6 +60,7 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
      */
     router.get(
         '/estado-registro',
+        ...pagoVer,
         (req, res, next) => controllers.getEstadoAporteRegistroController.handle(req, res, next)
     );
 
@@ -61,6 +75,7 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
      */
     router.post(
         '/',
+        ...pagoRegistrar,
         // Wrapper para manejar errores de multer
         (req, res, next) => {
             uploadPaymentDocument(req, res, (err) => {
@@ -88,6 +103,7 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
      */
     router.get(
         '/:id',
+        ...pagoVer,
         (req, res, next) => controllers.getPaymentAporteByIdController.handle(req, res, next)
     );
 
@@ -98,6 +114,7 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
      */
     router.delete(
         '/:id',
+        ...pagoEditar,
         (req, res, next) => controllers.deletePaymentAporteController.handle(req, res, next)
     );
 
@@ -111,6 +128,7 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
      */
     router.get(
         '/:id/recibo',
+        ...pagoVer,
         (req, res, next) => controllers.generateReciboPagoController.handle(req, res, next)
     );
 

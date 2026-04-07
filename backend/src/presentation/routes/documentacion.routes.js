@@ -1,4 +1,6 @@
 import express from 'express';
+import { authenticate } from '../middleware/auth.middleware.js';
+import { verificarPermisoCualquiera } from '../middleware/permisos.middleware.js';
 import { listDocumentacionValidator } from '../validators/referencia/index.js';
 
 /**
@@ -21,6 +23,13 @@ import { listDocumentacionValidator } from '../validators/referencia/index.js';
 export function buildDocumentacionRouter({ controllers, middlewares }) {
     const router = express.Router();
     const { validateRequest } = middlewares;
+    const listarDocumentacion = [
+        authenticate,
+        verificarPermisoCualquiera([
+            ['institucional.config.documentacion.inscripcion', 'VER'],
+            ['matricula.admision.ver', 'VER'],
+        ]),
+    ];
 
     // ============================================
     // CRUD BÁSICO
@@ -39,6 +48,7 @@ export function buildDocumentacionRouter({ controllers, middlewares }) {
      */
     router.get(
         '/',
+        ...listarDocumentacion,
         listDocumentacionValidator,
         validateRequest,
         (req, res, next) => controllers.listDocumentacionController.handle(req, res, next)

@@ -1,5 +1,5 @@
 import { verificarToken } from '../../infrastructure/utils/jwt.utils.js';
-import container from '../../infrastructure/container/index.js';
+import { getAppContainer } from './container-ref.js';
 import { REPOSITORIOS_TOKENS } from '../../infrastructure/container/tokens/index.js';
 
 export async function authenticate(req, res, next) {
@@ -16,7 +16,7 @@ export async function authenticate(req, res, next) {
       return res.status(401).json({ error: 'Token inválido' });
     }
 
-    const authRepository = container.resolve(REPOSITORIOS_TOKENS.authRepository);
+    const authRepository = getAppContainer().resolve(REPOSITORIOS_TOKENS.authRepository);
     const sesion = await authRepository.findSesionActiva(token);
     if (!sesion) {
       return res.status(401).json({ error: 'Sesión expirada o inválida' });

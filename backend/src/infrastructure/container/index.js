@@ -6,6 +6,7 @@
 import { Container } from './Container.js';
 import { registerAllModules } from './modules/index.js';
 import { registerInfrastructure } from './infrastructure/index.js';
+import { setAppContainer } from '../../presentation/middleware/container-ref.js';
 
 /**
  * Construye e inicializa el contenedor con todos los módulos registrados
@@ -24,6 +25,7 @@ export function buildContainer() {
  * Instancia única del contenedor (singleton global)
  */
 const container = buildContainer();
+setAppContainer(container);
 
 export default container;
 export { container };
