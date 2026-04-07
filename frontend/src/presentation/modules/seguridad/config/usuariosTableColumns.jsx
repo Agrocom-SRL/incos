@@ -38,7 +38,7 @@ export const createUsuariosTableColumns = (navigate) => [
     title: 'Usuario',
     key: 'usuario',
     render: (_, record) => (
-      <Space direction="vertical" size={2}>
+      <Space orientation="vertical" size={2}>
         <Space size={8}>
           <Avatar size={28}>{String(record.username || '?').slice(0, 2).toUpperCase()}</Avatar>
           <strong>{record.username || '—'}</strong>
@@ -60,7 +60,7 @@ export const createUsuariosTableColumns = (navigate) => [
     render: (_, record) => {
       const st = estadoTag(record.estado);
       return (
-        <Space direction="vertical" size={2}>
+        <Space orientation="vertical" size={2}>
           <Tag color={st.color} style={{ marginInlineEnd: 0 }}>{st.text}</Tag>
           {record.motivo_cambio_estado ? (
             <span style={{ color: 'var(--color-text-secondary, #666666)', fontSize: '12px' }}>
@@ -75,7 +75,7 @@ export const createUsuariosTableColumns = (navigate) => [
     title: 'Registro',
     key: 'registro',
     render: (_, record) => (
-      <Space direction="vertical" size={2}>
+      <Space orientation="vertical" size={2}>
         <TableCell icon={<CalendarOutlined />} textStyle={{ fontSize: 'var(--font-size-sm)' }}>
           Creado: {fmtDate(record.created_at || record.createdAt)}
         </TableCell>

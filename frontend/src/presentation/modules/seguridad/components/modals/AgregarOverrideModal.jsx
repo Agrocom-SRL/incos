@@ -26,7 +26,7 @@ export default function AgregarOverrideModal({
       okText="Agregar"
       cancelText="Cancelar"
       confirmLoading={loading}
-      destroyOnClose
+      destroyOnHidden
     >
       <Form form={form} layout="vertical" initialValues={{ tipo: 'GRANT' }}>
         <Form.Item name="permiso_id" label="Permiso" rules={[{ required: true }]}>

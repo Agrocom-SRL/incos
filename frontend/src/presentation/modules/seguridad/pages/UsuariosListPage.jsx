@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { App } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { PermisoGuard } from '@/presentation/guards/PermisoGuard.jsx';
-import { useUsuarios } from '@modules/seguridad/hooks/useUsuarios.js';
+import { useUsuariosList } from '@/application/modules/seguridad/hooks';
 import { createUsuariosTableColumns } from '@modules/seguridad/config/usuariosTableColumns.jsx';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
@@ -11,46 +11,22 @@ import { TableListView } from '@organisms';
 import { Button } from '@atoms';
 import '@modules/seguridad/styles/seguridad.css';
 
-function errMsg(json) {
-  const e = json?.error;
-  return typeof e === 'string' ? e : e?.message || 'Error';
-}
-
 export default function UsuariosListPage() {
   const navigate = useNavigate();
   const { message } = App.useApp();
-  const api = useUsuarios();
-  const [loading, setLoading] = useState(true);
-  const [dataSource, setDataSource] = useState([]);
-  const [pagination, setPagination] = useState({
-    current: 1,
-    pageSize: 20,
-    total: 0,
-  });
-  const [search, setSearch] = useState('');
+  const { usuarios, loading, searchText, setSearchText, pagination, cargar } = useUsuariosList();
   const columns = useMemo(() => createUsuariosTableColumns(navigate), [navigate]);
   const breadcrumbItems = useMemo(
     () => [{ title: 'Inicio', href: '/' }, { title: 'Seguridad' }, { title: 'Usuarios' }],
     []
   );
 
-  const load = async (page = 1, limit = 20, q = search) => {
-    setLoading(true);
-    const wrapped = await api.listUsers({ page, limit, search: q || undefined });
-    setLoading(false);
-    if (!wrapped) return;
-    const { res, json } = wrapped;
-    if (!res.ok) {
-      message.error(errMsg(json));
-      return;
+  const load = async (page = 1, limit = 20, q = searchText) => {
+    try {
+      await cargar({ page, limit, search: q || undefined });
+    } catch (e) {
+      message.error(e?.error?.message || e?.message || 'Error');
     }
-    setDataSource(Array.isArray(json.data) ? json.data : []);
-    const p = json.pagination || {};
-    setPagination({
-      current: p.page || page,
-      pageSize: p.limit || limit,
-      total: p.total ?? 0,
-    });
   };
 
   useEffect(() => {
@@ -84,16 +60,16 @@ export default function UsuariosListPage() {
         }
       >
         <TableListView
-          data={dataSource}
+          data={usuarios}
           loading={loading}
-          searchText={search}
-          onSearchChange={(e) => setSearch(e.target.value)}
+          searchText={searchText}
+          onSearchChange={(e) => setSearchText(e.target.value)}
           searchPlaceholder="Buscar por usuario o email..."
           columns={columns}
           rowKey={(record) => record.id}
           pagination={{
             ...pagination,
-            onChange: (page, pageSize) => load(page, pageSize, search),
+            onChange: (page, pageSize) => load(page, pageSize, searchText),
           }}
         />
       </PageTemplate>

@@ -10,8 +10,7 @@ import {
 import { CheckCircleOutlined, DeleteOutlined, KeyOutlined, LockOutlined, PlusOutlined } from '@ant-design/icons';
 import { PermisoGuard } from '@/presentation/guards/PermisoGuard.jsx';
 import { usePermiso } from '@/presentation/hooks/usePermiso.js';
-import { useUsuarios } from '@modules/seguridad/hooks/useUsuarios.js';
-import { usePermisos } from '@modules/seguridad/hooks/usePermisos.js';
+import { usePermisosCatalogo, useUsuarioPermisos } from '@/application/modules/seguridad/hooks';
 import AgregarOverrideModal from '@modules/seguridad/components/modals/AgregarOverrideModal.jsx';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
@@ -40,27 +39,22 @@ export default function UsuarioPermisosPage() {
   const navigate = useNavigate();
   const { message } = App.useApp();
   const uid = parseInt(id, 10);
-  const api = useUsuarios();
-  const permApi = usePermisos();
+  const { permisos_rol, overrides, efectivos, loading, cargar, agregarOverride, eliminarOverride } = useUsuarioPermisos();
+  const { permisosAgrupados, cargar: cargarCatalogo } = usePermisosCatalogo();
   const puedeEditar = usePermiso('seguridad.rol.gestionar', 'EDITAR');
-  const [loading, setLoading] = useState(true);
-  const [payload, setPayload] = useState(null);
+  const [payloadUsuario, setPayloadUsuario] = useState(null);
   const [permisoOptions, setPermisoOptions] = useState([]);
   const [overrideOpen, setOverrideOpen] = useState(false);
   const [savingOverride, setSavingOverride] = useState(false);
 
   const load = async () => {
     if (!uid) return;
-    setLoading(true);
-    const w = await api.getUserPermisos(uid);
-    setLoading(false);
-    if (!w) return;
-    const { res, json } = w;
-    if (!res.ok) {
-      message.error(errMsg(json));
-      return;
+    try {
+      const data = await cargar(uid);
+      setPayloadUsuario(data?.usuario ?? null);
+    } catch (e) {
+      message.error(errMsg(e));
     }
-    setPayload(json.data);
   };
 
   useEffect(() => {
@@ -70,11 +64,7 @@ export default function UsuarioPermisosPage() {
 
   useEffect(() => {
     const run = async () => {
-      const w = await permApi.listPermisosAgrupados();
-      if (!w) return;
-      const { res, json } = w;
-      if (!res.ok) return;
-      const grouped = json.data || {};
+      const grouped = await cargarCatalogo();
       const opts = [];
       Object.keys(grouped)
         .sort()
@@ -89,11 +79,11 @@ export default function UsuarioPermisosPage() {
       setPermisoOptions(opts);
     };
     run();
-  }, [permApi]);
+  }, [cargarCatalogo]);
 
   const rolRows = useMemo(
-    () => agruparRol(payload?.permisos_rol),
-    [payload]
+    () => agruparRol(permisos_rol),
+    [permisos_rol]
   );
 
   const breadcrumbItems = useMemo(
@@ -101,33 +91,34 @@ export default function UsuarioPermisosPage() {
       { title: 'Inicio', href: '/' },
       { title: 'Seguridad', href: '/seguridad/usuarios' },
       { title: 'Usuarios', href: '/seguridad/usuarios' },
-      { title: payload?.usuario?.username || `Usuario ${uid}` },
+      { title: payloadUsuario?.username || `Usuario ${uid}` },
       { title: 'Permisos' },
     ],
-    [payload, uid]
+    [payloadUsuario, uid]
   );
 
   const onAddOverride = async (v) => {
     setSavingOverride(true);
-    const w = await api.addOverride(uid, v);
-    setSavingOverride(false);
-    if (!w) return;
-    const { res, json } = w;
-    if (res.ok) {
+    try {
+      await agregarOverride(uid, v);
+      setSavingOverride(false);
       message.success('Override agregado');
       setOverrideOpen(false);
       load();
-    } else message.error(errMsg(json));
+    } catch (e) {
+      setSavingOverride(false);
+      message.error(errMsg(e));
+    }
   };
 
   const removeOv = async (overrideId) => {
-    const w = await api.removeOverride(uid, overrideId);
-    if (!w) return;
-    const { res, json } = w;
-    if (res.ok) {
+    try {
+      await eliminarOverride(uid, overrideId);
       message.success('Eliminado');
       load();
-    } else message.error(errMsg(json));
+    } catch (e) {
+      message.error(errMsg(e));
+    }
   };
 
   return (
@@ -141,7 +132,7 @@ export default function UsuarioPermisosPage() {
       <PageTemplate
         header={
           <PageHeader
-            title={`Permisos de ${payload?.usuario?.username || ''}`}
+            title={`Permisos de ${payloadUsuario?.username || ''}`}
             breadcrumbItems={breadcrumbItems}
             actions={<Button variant="default" onClick={() => navigate(`/seguridad/usuarios/${uid}`)}>Volver</Button>}
           />
@@ -179,7 +170,7 @@ export default function UsuarioPermisosPage() {
           <Table
             rowKey="id"
             size="small"
-            dataSource={payload?.overrides || []}
+            dataSource={overrides || []}
             loading={loading}
             columns={[
               { title: 'Código', dataIndex: 'codigo' },
@@ -208,7 +199,7 @@ export default function UsuarioPermisosPage() {
             size="small"
             pagination={false}
             loading={loading}
-            dataSource={payload?.efectivos || []}
+            dataSource={efectivos || []}
             columns={[
               { title: 'Código', dataIndex: 'codigo' },
               { title: 'Acciones', dataIndex: 'acciones', render: (a) => (Array.isArray(a) ? a.map((v) => <Tag key={v}>{v}</Tag>) : a) },

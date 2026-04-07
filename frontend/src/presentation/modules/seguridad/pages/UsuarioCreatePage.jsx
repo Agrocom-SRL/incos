@@ -3,8 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Alert, App, Col, Form, Input, Row, Select, Tag, Typography } from 'antd';
 import { MailOutlined, SaveOutlined, UserOutlined } from '@ant-design/icons';
 import { PermisoGuard } from '@/presentation/guards/PermisoGuard.jsx';
-import { useUsuarios } from '@modules/seguridad/hooks/useUsuarios.js';
-import { useRoles } from '@modules/seguridad/hooks/useRoles.js';
+import { useUsuarioDetail, useRolesList } from '@/application/modules/seguridad/hooks';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { Button, Card } from '@atoms';
@@ -22,9 +21,8 @@ export default function UsuarioCreatePage() {
   const navigate = useNavigate();
   const { message } = App.useApp();
   const [form] = Form.useForm();
-  const usuariosApi = useUsuarios();
-  const rolesApi = useRoles();
-  const [roles, setRoles] = useState([]);
+  const { crear } = useUsuarioDetail();
+  const { roles, cargar: cargarRoles } = useRolesList();
   const [loading, setLoading] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const tipoReferencia = Form.useWatch('tipo_referencia', form);
@@ -41,28 +39,22 @@ export default function UsuarioCreatePage() {
 
   useEffect(() => {
     const run = async () => {
-      const w = await rolesApi.listRoles();
-      if (!w) return;
-      const { res, json } = w;
-      if (res.ok) {
-        setRoles(json.data?.roles || []);
-      }
+      await cargarRoles();
     };
     run();
-  }, [rolesApi]);
+  }, [cargarRoles]);
 
   const onFinish = async (values) => {
     setSubmitError('');
     setLoading(true);
-    const w = await usuariosApi.createUser(values);
-    setLoading(false);
-    if (!w) return;
-    const { res, json } = w;
-    if (res.ok) {
+    try {
+      const data = await crear(values);
+      setLoading(false);
       message.success('Usuario creado');
-      navigate(`/seguridad/usuarios/${json.data?.id || ''}`);
-    } else {
-      const text = errMsg(json);
+      navigate(`/seguridad/usuarios/${data?.id || ''}`);
+    } catch (e) {
+      setLoading(false);
+      const text = errMsg(e);
       setSubmitError(text);
       message.error(text);
     }

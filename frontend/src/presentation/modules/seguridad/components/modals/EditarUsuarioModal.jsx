@@ -24,7 +24,7 @@ export default function EditarUsuarioModal({
       okText="Guardar"
       cancelText="Cancelar"
       confirmLoading={loading}
-      destroyOnClose
+      destroyOnHidden
       afterOpenChange={(opened) => {
         if (opened) form.setFieldsValue(initialValues || {});
       }}

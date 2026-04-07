@@ -13,8 +13,7 @@ import { PageHeader } from '@molecules';
 import { Button, Card } from '@atoms';
 import { PermisoGuard } from '@/presentation/guards/PermisoGuard.jsx';
 import { usePermiso } from '@/presentation/hooks/usePermiso.js';
-import { useUsuarios } from '@modules/seguridad/hooks/useUsuarios.js';
-import { useRoles } from '@modules/seguridad/hooks/useRoles.js';
+import { useRolesList, useUsuarioDetail } from '@/application/modules/seguridad/hooks';
 import CambiarPasswordModal from '@modules/seguridad/components/modals/CambiarPasswordModal.jsx';
 import CambiarEstadoModal from '@modules/seguridad/components/modals/CambiarEstadoModal.jsx';
 import EditarUsuarioModal from '@modules/seguridad/components/modals/EditarUsuarioModal.jsx';
@@ -33,14 +32,18 @@ export default function UsuarioDetailPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const { message } = App.useApp();
-  const api = useUsuarios();
-  const rolesApi = useRoles();
+  const {
+    usuario,
+    loading,
+    cargar,
+    actualizar,
+    cambiarEstado,
+    cambiarPassword,
+  } = useUsuarioDetail();
+  const { roles, cargar: cargarRoles } = useRolesList();
   const puedeEditar = usePermiso('seguridad.usuario.administrar', 'EDITAR');
   const puedeVerPermisos = usePermiso('seguridad.rol.gestionar', 'VER');
 
-  const [user, setUser] = useState(null);
-  const [roles, setRoles] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
   const [openEstado, setOpenEstado] = useState(false);
@@ -50,17 +53,11 @@ export default function UsuarioDetailPage() {
 
   const load = async () => {
     if (!uid) return;
-    setLoading(true);
-    const w = await api.getUser(uid);
-    setLoading(false);
-    if (!w) return;
-    const { res, json } = w;
-    if (!res.ok) {
-      message.error(errMsg(json));
-      return;
+    try {
+      await cargar(uid);
+    } catch (e) {
+      message.error(errMsg(e));
     }
-    const u = json.data?.usuario ?? json.data;
-    setUser(u);
   };
 
   useEffect(() => {
@@ -70,13 +67,10 @@ export default function UsuarioDetailPage() {
 
   useEffect(() => {
     const run = async () => {
-      const w = await rolesApi.listRoles();
-      if (!w) return;
-      const { res, json } = w;
-      if (res.ok) setRoles(json.data?.roles || []);
+      await cargarRoles();
     };
     run();
-  }, [rolesApi]);
+  }, [cargarRoles]);
 
   useEffect(() => {
     const action = location.state?.quickAction;
@@ -89,41 +83,43 @@ export default function UsuarioDetailPage() {
 
   const saveBasic = async (v) => {
     setSaving(true);
-    const w = await api.updateUser(uid, v);
-    setSaving(false);
-    if (!w) return;
-    const { res, json } = w;
-    if (res.ok) {
+    try {
+      await actualizar(uid, v);
+      setSaving(false);
       message.success('Actualizado');
       setOpenEdit(false);
       load();
-    } else message.error(errMsg(json));
+    } catch (e) {
+      setSaving(false);
+      message.error(errMsg(e));
+    }
   };
 
   const saveEstado = async (v) => {
     setSaving(true);
-    const w = await api.changeEstado(uid, v);
-    setSaving(false);
-    if (!w) return;
-    const { res, json } = w;
-    if (res.ok) {
+    try {
+      await cambiarEstado(uid, v.estado, v.motivo);
+      setSaving(false);
       message.success('Estado actualizado');
       setOpenEstado(false);
       load();
-    } else message.error(errMsg(json));
+    } catch (e) {
+      setSaving(false);
+      message.error(errMsg(e));
+    }
   };
 
   const savePass = async (passwordNuevo) => {
     setSaving(true);
-    const w = await api.changePassword(uid, { password_nuevo: passwordNuevo });
-    setSaving(false);
-    if (!w) return;
-    const { res, json } = w;
-    if (res.ok) {
+    try {
+      await cambiarPassword(uid, passwordNuevo);
+      setSaving(false);
       setOpenPass(false);
       message.success('Contraseña actualizada');
+    } catch (e) {
+      setSaving(false);
+      message.error(errMsg(e));
     }
-    else message.error(errMsg(json));
   };
 
   const estadoTag = (estado) => {
@@ -140,16 +136,16 @@ export default function UsuarioDetailPage() {
       { title: 'Inicio', href: '/' },
       { title: 'Seguridad', href: '/seguridad/usuarios' },
       { title: 'Usuarios', href: '/seguridad/usuarios' },
-      { title: user?.username || `Usuario ${uid}` },
+      { title: usuario?.username || `Usuario ${uid}` },
     ],
-    [user, uid]
+    [usuario, uid]
   );
 
   if (loading) {
     return <div className="sd-loading"><Spin size="large" /></div>;
   }
 
-  if (!user) {
+  if (!usuario) {
     return <Empty description="No se encontró el usuario" />;
   }
 
@@ -164,7 +160,7 @@ export default function UsuarioDetailPage() {
       <PageTemplate
         header={
           <PageHeader
-            title={`Usuario ${user.username}`}
+            title={`Usuario ${usuario.username}`}
             breadcrumbItems={breadcrumbItems}
             actions={<Button variant="default" onClick={() => navigate('/seguridad/usuarios')}>Volver</Button>}
           />
@@ -173,25 +169,25 @@ export default function UsuarioDetailPage() {
         <div className="sd">
           <div className="sd-profile">
             <div className="sd-profile__identity">
-              <div className="sd-profile__avatar">{String(user.username || 'U').slice(0, 2).toUpperCase()}</div>
+              <div className="sd-profile__avatar">{String(usuario.username || 'U').slice(0, 2).toUpperCase()}</div>
               <div className="sd-profile__name-block">
-                <h1 className="sd-profile__name">{user.username}</h1>
-                <p className="seg-profile__sub">{user.email} · {user.rol?.nombre || 'Sin rol'}</p>
+                <h1 className="sd-profile__name">{usuario.username}</h1>
+                <p className="seg-profile__sub">{usuario.email} · {usuario.rol?.nombre || 'Sin rol'}</p>
               </div>
             </div>
             <div className="sd-profile__divider" />
             <div className="sd-profile__stats seg-profile__stats">
               <div className="sd-stat">
                 <span className="sd-stat__label">Rol</span>
-                <span className="sd-stat__value">{user.rol?.nombre || '—'}</span>
+                <span className="sd-stat__value">{usuario.rol?.nombre || '—'}</span>
               </div>
               <div className="sd-stat">
                 <span className="sd-stat__label">Nivel</span>
-                <span className="sd-stat__value"><Tag color={nivelColor(user.rol?.nivel_acceso)}>{user.rol?.nivel_acceso ?? '—'}</Tag></span>
+                <span className="sd-stat__value"><Tag color={nivelColor(usuario.rol?.nivel_acceso)}>{usuario.rol?.nivel_acceso ?? '—'}</Tag></span>
               </div>
               <div className="sd-stat">
                 <span className="sd-stat__label">Estado</span>
-                <span className="sd-stat__value">{estadoTag(user.estado)}</span>
+                <span className="sd-stat__value">{estadoTag(usuario.estado)}</span>
               </div>
             </div>
             <div className="sd-profile__divider" />
@@ -229,12 +225,12 @@ export default function UsuarioDetailPage() {
                       <div className="sd-card">
                         <div className="sd-card__head"><span className="sd-card__title">Datos de la cuenta</span></div>
                         <div className="sd-card__body sd-card__body--cols-3">
-                          <div className="sd-field"><span className="sd-field__label">username</span><span className="sd-field__value">{user.username}</span></div>
-                          <div className="sd-field"><span className="sd-field__label">email</span><span className="sd-field__value">{user.email || '—'}</span></div>
-                          <div className="sd-field"><span className="sd-field__label">foto_url</span><span className="sd-field__value">{user.foto_url || '—'}</span></div>
-                          <div className="sd-field"><span className="sd-field__label">tipo_referencia</span><span className="sd-field__value">{user.tipo_referencia || '—'}</span></div>
-                          <div className="sd-field"><span className="sd-field__label">referencia_id</span><span className="sd-field__value">{user.referencia_id || '—'}</span></div>
-                          <div className="sd-field"><span className="sd-field__label">actualizado</span><span className="sd-field__value">{user.updated_at || user.updatedAt || '—'}</span></div>
+                          <div className="sd-field"><span className="sd-field__label">username</span><span className="sd-field__value">{usuario.username}</span></div>
+                          <div className="sd-field"><span className="sd-field__label">email</span><span className="sd-field__value">{usuario.email || '—'}</span></div>
+                          <div className="sd-field"><span className="sd-field__label">foto_url</span><span className="sd-field__value">{usuario.foto_url || '—'}</span></div>
+                          <div className="sd-field"><span className="sd-field__label">tipo_referencia</span><span className="sd-field__value">{usuario.tipo_referencia || '—'}</span></div>
+                          <div className="sd-field"><span className="sd-field__label">referencia_id</span><span className="sd-field__value">{usuario.referencia_id || '—'}</span></div>
+                          <div className="sd-field"><span className="sd-field__label">actualizado</span><span className="sd-field__value">{usuario.updated_at || usuario.updatedAt || '—'}</span></div>
                         </div>
                       </div>
                     </div>
@@ -248,8 +244,8 @@ export default function UsuarioDetailPage() {
                       <div className="sd-card">
                         <div className="sd-card__head"><span className="sd-card__title">Estado actual</span></div>
                         <div className="sd-card__body sd-card__body--cols-2">
-                          <div className="sd-field"><span className="sd-field__label">estado</span><span className="sd-field__value">{estadoTag(user.estado)}</span></div>
-                          <div className="sd-field"><span className="sd-field__label">motivo</span><span className="sd-field__value">{user.motivo_cambio_estado || 'Usuario activo sin restricciones'}</span></div>
+                          <div className="sd-field"><span className="sd-field__label">estado</span><span className="sd-field__value">{estadoTag(usuario.estado)}</span></div>
+                          <div className="sd-field"><span className="sd-field__label">motivo</span><span className="sd-field__value">{usuario.motivo_cambio_estado || 'Usuario activo sin restricciones'}</span></div>
                         </div>
                       </div>
                     </div>
@@ -265,10 +261,10 @@ export default function UsuarioDetailPage() {
           loading={saving}
           roles={roles}
           initialValues={{
-            username: user.username,
-            email: user.email,
-            rol_id: user.rol?.id,
-            foto_url: user.foto_url,
+            username: usuario.username,
+            email: usuario.email,
+            rol_id: usuario.rol?.id,
+            foto_url: usuario.foto_url,
           }}
           onCancel={() => setOpenEdit(false)}
           onSubmit={saveBasic}
@@ -276,7 +272,7 @@ export default function UsuarioDetailPage() {
         <CambiarEstadoModal
           open={openEstado}
           loading={saving}
-          initialValues={{ estado: user.estado ?? null, motivo: user.motivo_cambio_estado ?? '' }}
+          initialValues={{ estado: usuario.estado ?? null, motivo: usuario.motivo_cambio_estado ?? '' }}
           onCancel={() => setOpenEstado(false)}
           onSubmit={saveEstado}
         />

@@ -18,7 +18,7 @@ export default function CambiarPasswordModal({ open, loading, onCancel, onSubmit
       okText="Actualizar"
       cancelText="Cancelar"
       confirmLoading={loading}
-      destroyOnClose
+      destroyOnHidden
     >
       <Form form={form} layout="vertical">
         <Form.Item
