@@ -1,4 +1,5 @@
 import {
+  ForbiddenError,
   NotFoundError,
   UnprocessableEntityError,
 } from '../../../domain/errors/AppError.js';
@@ -29,6 +30,10 @@ export class ActualizarPermisosRolUseCase {
    * @param {{ asignaciones: { permiso_id: number, accion: string }[] }} body
    */
   async execute(rolId, body) {
+    if (Number(rolId) === 8) {
+      throw new ForbiddenError('Los permisos del ADMIN_SISTEMA no pueden modificarse');
+    }
+
     const rol = await this.roleRepository.findById(rolId);
     if (!rol) {
       throw new NotFoundError('Rol');

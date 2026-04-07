@@ -35,6 +35,7 @@ export default function RolPermisosPage() {
     guardar,
     cancelarCambios,
   } = useRolPermisos();
+  const esAdminSistema = rolInfo?.id === 8 || rolInfo?.codigo === 'ADMIN_SISTEMA';
   const breadcrumbItems = useMemo(
     () => [
       { title: 'Inicio', href: '/' },
@@ -116,24 +117,36 @@ export default function RolPermisosPage() {
             headerColor="primary"
             loading={loading}
             extra={
-              <div className="seg-actions">
-                <Button variant="default" onClick={cancelarCambios}>Cancelar</Button>
-                <Button
-                  variant="primary"
-                  loading={saving}
-                  disabled={!hasChanges}
-                  onClick={guardarCambios}
-                >
-                  Guardar Cambios
-                </Button>
-              </div>
+              !esAdminSistema ? (
+                <div className="seg-actions">
+                  <Button variant="default" onClick={cancelarCambios}>Cancelar</Button>
+                  <Button
+                    variant="primary"
+                    loading={saving}
+                    disabled={!hasChanges}
+                    onClick={guardarCambios}
+                  >
+                    Guardar Cambios
+                  </Button>
+                </div>
+              ) : null
             }
           >
+            {esAdminSistema ? (
+              <Alert
+                type="info"
+                showIcon
+                message="Rol protegido"
+                description="Los permisos del Administrador del Sistema no pueden modificarse desde el panel. Este rol contiene todos los permisos disponibles y sirve como referencia para los demás roles."
+                style={{ marginBottom: 12 }}
+              />
+            ) : null}
             {hasChanges ? <Alert type="info" title="Hay cambios sin guardar" style={{ marginBottom: 12 }} /> : null}
             <PermisosDominioPicker
               permisosAgrupados={catalogo || permisosAgrupados}
               asignacionesActuales={asignaciones}
               onChange={setAsignaciones}
+              disabled={esAdminSistema}
             />
           </Card>
         </Space>
