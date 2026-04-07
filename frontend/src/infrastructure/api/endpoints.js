@@ -159,3 +159,53 @@ export const PAGOS_APORTES_ENDPOINTS = {
   // Endpoint específico para generar/obtener recibo de pago
   GENERATE_RECIBO: (paymentId) => `${API_BASE}/pagos-aportes/${encodeURIComponent(String(paymentId))}/recibo`,
 };
+
+// ============================================
+// MÓDULO: AUTENTICACIÓN (JWT, sesión)
+// Backend: router.use('/auth', ...) bajo /api/v1 → base pública '/api/v1/auth'
+// (ver backend/src/presentation/routes/index.js → endpoints.auth)
+// ============================================
+const AUTH_BASE = `${API_BASE}/auth`;
+
+export const AUTH_ENDPOINTS = {
+  LOGIN: `${AUTH_BASE}/login`,
+  ME: `${AUTH_BASE}/me`,
+  LOGOUT: `${AUTH_BASE}/logout`,
+};
+
+// ============================================
+// MÓDULO: SEGURIDAD (usuarios del sistema, roles, catálogo de permisos)
+// ============================================
+export const USUARIOS_SEG_ENDPOINTS = {
+  ...createCRUDEndpoints('/usuarios'),
+  PERMISOS: (usuarioId) => `${API_BASE}/usuarios/${usuarioId}/permisos`,
+  PERMISO_OVERRIDE: (usuarioId, overrideId) =>
+    `${API_BASE}/usuarios/${usuarioId}/permisos/${overrideId}`,
+  ESTADO: (usuarioId) => `${API_BASE}/usuarios/${usuarioId}/estado`,
+  PASSWORD: (usuarioId) => `${API_BASE}/usuarios/${usuarioId}/password`,
+};
+
+export const ROLES_SEG_ENDPOINTS = {
+  BASE: `${API_BASE}/roles`,
+  PERMISOS: (rolId) => `${API_BASE}/roles/${rolId}/permisos`,
+};
+
+export const PERMISOS_CATALOGO_ENDPOINTS = {
+  BASE: `${API_BASE}/permisos`,
+  withQuery: (params) => {
+    const q = new URLSearchParams(params).toString();
+    return `${API_BASE}/permisos${q ? `?${q}` : ''}`;
+  },
+};
+
+/**
+ * Rutas definidas aquí con prefijo `/v1` (API_BASE) encajan con axios: baseURL termina en `/api`.
+ * Para `fetch` con `getApiBaseUrl()` (…/api/v1), convierte `/v1/foo` → `/foo`.
+ */
+export function toFetchPathFromV1(pathOrUrl) {
+  if (pathOrUrl == null || pathOrUrl === '') return '/';
+  const p = String(pathOrUrl).startsWith('/') ? String(pathOrUrl) : `/${pathOrUrl}`;
+  if (!p.startsWith('/v1')) return p;
+  const rest = p.slice(4);
+  return rest.startsWith('/') ? rest : `/${rest}`;
+}

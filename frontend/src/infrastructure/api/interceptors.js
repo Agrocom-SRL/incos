@@ -30,8 +30,9 @@ import { LocalStorageAdapter } from '@storage/LocalStorageAdapter.js';
  * - Si el data es FormData, elimina Content-Type para que el navegador lo establezca automáticamente
  */
 export const requestInterceptor = (config) => {
-  // Usar adapter en lugar de localStorage directo
-  const token = LocalStorageAdapter.getString('authToken');
+  const token =
+    LocalStorageAdapter.getString('incos_token') ||
+    LocalStorageAdapter.getString('authToken');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -56,9 +57,10 @@ export const responseInterceptor = {
   onRejected: (error) => {
     // Si es 401 (no autorizado), limpiar sesión y redirigir
     if (error.response?.status === 401) {
-      // Usar adapter en lugar de localStorage directo
+      LocalStorageAdapter.remove('incos_token');
+      LocalStorageAdapter.remove('incos_usuario');
       LocalStorageAdapter.remove('authToken');
-      LocalStorageAdapter.remove('user');
+      LocalStorageAdapter.remove('authUser');
       window.location.href = '/login';
     }
     return Promise.reject(error);

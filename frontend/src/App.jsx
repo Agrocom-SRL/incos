@@ -18,8 +18,6 @@
 import { ConfigProvider, App as AntApp } from 'antd';
 import { initStyles } from '@theme/init';
 import AppRouter from '@components-router/AppRouter';
-import { AuthProvider } from '@application-auth';
-
 // Inicializar sistema de estilos (tema + variables CSS + estilos)
 const incosTheme = initStyles();
 
@@ -27,9 +25,7 @@ const App = () => {
     return (
         <ConfigProvider theme={incosTheme}>
             <AntApp>
-                <AuthProvider>
-                    <AppRouter />
-                </AuthProvider>
+                <AppRouter />
             </AntApp>
         </ConfigProvider>
     );

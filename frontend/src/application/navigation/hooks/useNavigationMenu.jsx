@@ -22,11 +22,30 @@
  * un hook puede retornar JSX estructurado para la UI.
  */
 
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import * as menuGenerator from '@navigation-services/menuGenerator';
 import { getRouteFromMenuKey, getMenuKeyFromRoute } from '@navigation-services/routeMapper';
 import MenuItem from '@atoms/MenuItem';
+import { useAuthContext } from '@application-auth';
+
+/**
+ * Oculta ítems sin permiso VER; elimina ramas vacías.
+ */
+function filterMenuByPermiso(items, hasPermisoFn) {
+    if (!items?.length) return [];
+    return items
+        .map((item) => {
+            if (item.children?.length) {
+                const children = filterMenuByPermiso(item.children, hasPermisoFn);
+                if (children.length === 0) return null;
+                return { ...item, children };
+            }
+            if (!item.permiso) return item;
+            return hasPermisoFn(item.permiso, 'VER') ? item : null;
+        })
+        .filter(Boolean);
+}
 
 /**
  * Hook que maneja toda la lógica del menú de navegación
@@ -38,14 +57,27 @@ import MenuItem from '@atoms/MenuItem';
 export const useNavigationMenu = (defaultSelectedKey = 'DASH', onMenuClick) => {
     const navigate = useNavigate();
     const location = useLocation();
+    const { hasPermiso, isAuthenticated } = useAuthContext();
     const [selectedKeys, setSelectedKeys] = useState([defaultSelectedKey]);
     const [openKeys, setOpenKeys] = useState([]);
     
     // Ref para detectar si es el mount inicial (refresh de página)
     const isInitialMount = useRef(true);
 
-    // Generar el menú desde las rutas (memoizado para evitar regeneraciones innecesarias)
-    const navigationMenuItems = useMemo(() => menuGenerator.generateNavigationMenu(), []);
+    const hasPermisoStable = useCallback(
+        (codigo, accion) => hasPermiso(codigo, accion),
+        [hasPermiso]
+    );
+
+    const rawNavigationMenu = useMemo(
+        () => menuGenerator.generateNavigationMenu(),
+        []
+    );
+
+    const navigationMenuItems = useMemo(() => {
+        if (!isAuthenticated) return rawNavigationMenu;
+        return filterMenuByPermiso(rawNavigationMenu, hasPermisoStable);
+    }, [rawNavigationMenu, hasPermisoStable, isAuthenticated]);
 
     /**
      * Función recursiva para mapear items y subitems con iconos
