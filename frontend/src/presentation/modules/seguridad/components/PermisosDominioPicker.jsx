@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { Checkbox, Collapse, Table, Tag } from 'antd';
 import '@modules/seguridad/styles/seguridad.css';
 
+// Orden canónico de columnas; luego se filtra por dominio según acciones_validas.
 const ACCIONES = ['VER', 'CREAR', 'EDITAR', 'ELIMINAR', 'APROBAR', 'EXPORTAR'];
 
 function toSet(asignacionesActuales) {
@@ -150,11 +151,15 @@ export default function PermisosDominioPicker({
         width: 90,
         align: 'center',
         render: (_, p) => (
-          <Checkbox
-            disabled={disabled || !(p.acciones_validas || []).includes(accion)}
-            checked={hasAsignacion(asignacionesSet, p.id, accion)}
-            onChange={(e) => onToggle(p.id, accion, e.target.checked)}
-          />
+          (p.acciones_validas || []).includes(accion) ? (
+            <Checkbox
+              disabled={disabled}
+              checked={hasAsignacion(asignacionesSet, p.id, accion)}
+              onChange={(e) => onToggle(p.id, accion, e.target.checked)}
+            />
+          ) : (
+            <span className="seg-picker__no-aplica">—</span>
+          )
         ),
       })),
     ];

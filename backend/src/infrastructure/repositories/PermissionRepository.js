@@ -191,5 +191,33 @@ export class PermissionRepository extends BaseRepository {
     );
     return rows.length > 0;
   }
+
+  /**
+   * Retorna catálogo completo de acciones válidas en formato plano por dominio.
+   * Útil para resolver dinámicamente ADMIN_SISTEMA sin roles_permisos físicos.
+   * @returns {Promise<Array<{permiso_id:number,codigo:string,nombre:string,dominio:string,accion:string}>>}
+   */
+  async findAllAccionesValidasFlat() {
+    return sequelize.query(
+      `
+      SELECT
+        p.id AS permiso_id,
+        p.codigo,
+        p.nombre,
+        p.dominio,
+        pa.accion
+      FROM permiso_acciones pa
+      JOIN permisos p ON p.id = pa.permiso_id
+      WHERE pa.activo = TRUE
+        AND pa.deleted_at IS NULL
+        AND p.activo = TRUE
+        AND p.deleted_at IS NULL
+      ORDER BY p.dominio, p.id, pa.accion
+      `,
+      {
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+  }
 }
 

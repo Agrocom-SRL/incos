@@ -145,6 +145,48 @@ export class AuthRepository {
    * Verifica si un usuario tiene un permiso+acción específicos.
    */
   async tienePermiso(usuarioId, codigoPermiso, accion) {
+    const userRows = await sequelize.query(
+      `
+            SELECT rol_id
+            FROM usuarios
+            WHERE id = :usuarioId
+              AND activo = TRUE
+              AND deleted_at IS NULL
+            LIMIT 1
+        `,
+      {
+        replacements: { usuarioId },
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+
+    const userRow = userRows[0];
+    if (!userRow) {
+      return false;
+    }
+
+    if (Number(userRow.rol_id) === 8) {
+      const rows = await sequelize.query(
+        `
+            SELECT 1 AS ok
+            FROM permiso_acciones pa
+            JOIN permisos p ON p.id = pa.permiso_id
+            WHERE p.codigo = :codigo
+              AND pa.accion = :accion
+              AND pa.activo = TRUE
+              AND pa.deleted_at IS NULL
+              AND p.activo = TRUE
+              AND p.deleted_at IS NULL
+            LIMIT 1
+        `,
+        {
+          replacements: { codigo: codigoPermiso, accion },
+          type: sequelize.QueryTypes.SELECT,
+        }
+      );
+      return rows.length > 0;
+    }
+
     const rows = await sequelize.query(
       `
             SELECT 1 AS ok

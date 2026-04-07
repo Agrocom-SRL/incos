@@ -5,6 +5,8 @@
 -- Propósito:
 -- - Una fila por (usuario_id, permiso_codigo, accion) efectiva.
 -- - Lógica: permisos del rol + overrides GRANT individuales − REVOKE individuales.
+-- - ADMIN_SISTEMA (rol_id=8) se resuelve dinámicamente en AuthRepository antes
+--   de consultar esta vista (no requiere filas físicas en roles_permisos).
 --
 -- Relaciones (tablas en 01-schemas/04-sistema-seguridad.sql):
 -- - usuarios.rol_id → roles_permisos.rol_id

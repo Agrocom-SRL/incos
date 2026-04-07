@@ -134,6 +134,7 @@ export function registerSeguridadModule(container) {
       new ObtenerPermisosRolUseCase({
         roleRepository: c.resolve(REPOSITORIOS_TOKENS.roleRepository),
         rolePermissionRepository: c.resolve(REPOSITORIOS_TOKENS.rolePermissionRepository),
+        permissionRepository: c.resolve(REPOSITORIOS_TOKENS.permissionRepository),
       })
   );
 
