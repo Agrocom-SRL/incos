@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Alert, App, Col, Form, Input, Row, Select, Tag } from 'antd';
+import { Alert, App, Col, Form, Input, Row, Select, Tag, Typography } from 'antd';
 import { MailOutlined, SaveOutlined, UserOutlined } from '@ant-design/icons';
 import { PermisoGuard } from '@/presentation/guards/PermisoGuard.jsx';
 import { useUsuarios } from '@modules/seguridad/hooks/useUsuarios.js';

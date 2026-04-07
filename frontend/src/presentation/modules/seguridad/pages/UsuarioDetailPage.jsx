@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { App, Empty, Space, Spin, Tabs, Tag } from 'antd';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { App, Empty, Space, Spin, Tabs, Tag, Typography } from 'antd';
 import {
   EditOutlined,
   InfoCircleOutlined,
@@ -30,6 +30,7 @@ function errMsg(json) {
 
 export default function UsuarioDetailPage() {
   const { id } = useParams();
+  const location = useLocation();
   const navigate = useNavigate();
   const { message } = App.useApp();
   const api = useUsuarios();
@@ -58,7 +59,7 @@ export default function UsuarioDetailPage() {
       message.error(errMsg(json));
       return;
     }
-    const u = json.data;
+    const u = json.data?.usuario ?? json.data;
     setUser(u);
   };
 
@@ -76,6 +77,15 @@ export default function UsuarioDetailPage() {
     };
     run();
   }, [rolesApi]);
+
+  useEffect(() => {
+    const action = location.state?.quickAction;
+    if (!action || !puedeEditar) return;
+    if (action === 'edit') setOpenEdit(true);
+    if (action === 'estado') setOpenEstado(true);
+    if (action === 'password') setOpenPass(true);
+    navigate(location.pathname, { replace: true, state: null });
+  }, [location.pathname, location.state, navigate, puedeEditar]);
 
   const saveBasic = async (v) => {
     setSaving(true);

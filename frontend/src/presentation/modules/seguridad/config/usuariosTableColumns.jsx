@@ -1,5 +1,13 @@
 import { Avatar, Space, Tag } from 'antd';
-import { CalendarOutlined, MailOutlined, TagOutlined } from '@ant-design/icons';
+import {
+  CalendarOutlined,
+  EditOutlined,
+  InfoCircleOutlined,
+  KeyOutlined,
+  LockOutlined,
+  MailOutlined,
+  TagOutlined,
+} from '@ant-design/icons';
 import { TableCell, TableActions } from '@molecules';
 
 const nivelColor = (nivel) => {
@@ -87,6 +95,32 @@ export const createUsuariosTableColumns = (navigate) => [
         record={record}
         navigate={navigate}
         viewPath="/seguridad/usuarios/:id"
+        extraActions={[
+          {
+            icon: <EditOutlined />,
+            variant: 'primary',
+            tooltip: 'Editar datos',
+            onClick: () => navigate(`/seguridad/usuarios/${record.id}`, { state: { quickAction: 'edit' } }),
+          },
+          {
+            icon: <InfoCircleOutlined />,
+            variant: 'warning',
+            tooltip: 'Cambiar estado',
+            onClick: () => navigate(`/seguridad/usuarios/${record.id}`, { state: { quickAction: 'estado' } }),
+          },
+          {
+            icon: <LockOutlined />,
+            variant: 'default',
+            tooltip: 'Cambiar contraseña',
+            onClick: () => navigate(`/seguridad/usuarios/${record.id}`, { state: { quickAction: 'password' } }),
+          },
+          {
+            icon: <KeyOutlined />,
+            variant: 'info',
+            tooltip: 'Permisos',
+            onClick: () => navigate(`/seguridad/usuarios/${record.id}/permisos`),
+          },
+        ]}
       />
     ),
   },
