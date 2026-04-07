@@ -25,6 +25,7 @@ import {
   ArrowLeftOutlined,
 } from '@ant-design/icons';
 import { useStudentDetailContext, useDeleteBecaAsignada } from '@application-estudiantes/hooks';
+import { useAuthContext } from '@application-auth';
 import {
   GuardiansSection,
   DocumentDeliveriesSection,
@@ -69,6 +70,7 @@ const InfoCard = ({ title, icon, extra, children, cols = 2, headVariant }) => (
 const EstudiantesDetail = () => {
   const navigate = useNavigate();
   const { message, modal } = App.useApp();
+  const { hasPermiso } = useAuthContext();
   const {
     loading, error, student, studentData,
     guardians, documentDeliveries, scholarships, inscripcion, origins,
@@ -144,6 +146,13 @@ const EstudiantesDetail = () => {
 
   const showDeclaracionButton =
     tipoAdmisionUpper === 'TRASPASO' || tipoAdmisionUpper === 'TRANSITABILIDAD';
+  const puedeVerInscripcion = hasPermiso('matricula.inscribir', 'VER');
+  const puedeCrearInscripcion = hasPermiso('matricula.inscribir', 'CREAR');
+  const puedeRegistrarPago = hasPermiso('finanzas.pago.registrar', 'CREAR');
+  const puedeVerPago = hasPermiso('finanzas.pago.ver', 'VER');
+  const puedeCrearDocumento = hasPermiso('matricula.documento.ver', 'CREAR');
+  const puedeExportarDocumento = hasPermiso('matricula.documento.ver', 'EXPORTAR');
+  const puedeEliminarBeca = hasPermiso('matricula.beca.asignar', 'ELIMINAR');
 
   const residenciaCompleta =
     studentData?.residenceAddressComplete ||
@@ -288,9 +297,11 @@ const EstudiantesDetail = () => {
               icon={<BookOutlined />}
               cols={3}
               extra={
-                <button type="button" className="sd-btn sd-btn--primary" onClick={handleVerInscripcion}>
-                  <EyeOutlined /> Ver Detalle
-                </button>
+                puedeVerInscripcion ? (
+                  <button type="button" className="sd-btn sd-btn--primary" onClick={handleVerInscripcion}>
+                    <EyeOutlined /> Ver Detalle
+                  </button>
+                ) : null
               }
             >
               <Field label="ID de inscripción">{inscripcion.enrollment.id}</Field>
@@ -326,9 +337,11 @@ const EstudiantesDetail = () => {
             <div className="sd-empty">
               <BookOutlined className="sd-empty__icon" />
               <p className="sd-empty__text">Sin inscripción registrada</p>
-              <button type="button" className="sd-btn sd-btn--primary" onClick={handleNuevaInscripcion}>
-                <PlusCircleOutlined /> Nueva Inscripción
-              </button>
+              {puedeCrearInscripcion ? (
+                <button type="button" className="sd-btn sd-btn--primary" onClick={handleNuevaInscripcion}>
+                  <PlusCircleOutlined /> Nueva Inscripción
+                </button>
+              ) : null}
             </div>
           )}
         </div>
@@ -396,13 +409,17 @@ const EstudiantesDetail = () => {
               headVariant="resumen"
               extra={
                 estadoAporte?.cabecera?.id ? (
+                  puedeVerPago ? (
                   <button type="button" className="sd-btn sd-btn--primary" onClick={handleVerDetallePago}>
                     <EyeOutlined /> Ver detalle del pago
                   </button>
+                  ) : null
                 ) : (
+                  puedeRegistrarPago ? (
                   <button type="button" className="sd-btn sd-btn--primary" onClick={handleRegistrarPago}>
                     <DollarOutlined /> Registrar pago
                   </button>
+                  ) : null
                 )
               }
             >
@@ -431,14 +448,16 @@ const EstudiantesDetail = () => {
             <div className="sd-empty">
               <DollarOutlined className="sd-empty__icon" />
               <p className="sd-empty__text">Sin datos de aporte para la gestión vigente.</p>
-              <button type="button" className="sd-btn sd-btn--primary" onClick={handleRegistrarPago}>
-                <DollarOutlined /> Registrar pago
-              </button>
+              {puedeRegistrarPago ? (
+                <button type="button" className="sd-btn sd-btn--primary" onClick={handleRegistrarPago}>
+                  <DollarOutlined /> Registrar pago
+                </button>
+              ) : null}
             </div>
           )}
           <ScholarshipsSection
             scholarships={scholarships}
-            onDeleteBeca={handleDeleteBeca}
+            onDeleteBeca={puedeEliminarBeca ? handleDeleteBeca : undefined}
             deletingBecaId={deletingBecaId}
             deletingBeca={deletingBeca}
           />
@@ -561,7 +580,7 @@ const EstudiantesDetail = () => {
 
           {/* Actions */}
           <div className="sd-profile__actions">
-            {showDeclaracionButton && (
+            {showDeclaracionButton && puedeCrearDocumento && (
               <button
                 type="button"
                 className="sd-btn sd-btn--declaracion"
@@ -571,21 +590,25 @@ const EstudiantesDetail = () => {
                 <FileTextOutlined /> Declaración Jurada
               </button>
             )}
-            {actaCompromisoData ? (
+            {actaCompromisoData && puedeExportarDocumento ? (
               <button type="button" className="sd-btn sd-btn--warn" onClick={handleDownloadActaCompromiso}>
                 <DownloadOutlined /> Descargar Acta
               </button>
-            ) : tieneDocumentosFaltantesFlag ? (
+            ) : tieneDocumentosFaltantesFlag && puedeCrearDocumento ? (
               <button type="button" className="sd-btn sd-btn--warn" onClick={handleGenerateActaCompromiso} disabled={loadingActa}>
                 <FileTextOutlined /> Generar Acta
               </button>
             ) : null}
-            <button type="button" className="sd-btn sd-btn--danger" onClick={handleRegistrarPago}>
-              <DollarOutlined /> Registrar Pago
-            </button>
-            <button type="button" className="sd-btn sd-btn--primary" onClick={handleNuevaInscripcion}>
-              {hasInscripcion ? <><EyeOutlined /> Ver Inscripción</> : <><PlusCircleOutlined /> Nueva Inscripción</>}
-            </button>
+            {puedeRegistrarPago ? (
+              <button type="button" className="sd-btn sd-btn--danger" onClick={handleRegistrarPago}>
+                <DollarOutlined /> Registrar Pago
+              </button>
+            ) : null}
+            {(hasInscripcion ? puedeVerInscripcion : puedeCrearInscripcion) ? (
+              <button type="button" className="sd-btn sd-btn--primary" onClick={hasInscripcion ? handleVerInscripcion : handleNuevaInscripcion}>
+                {hasInscripcion ? <><EyeOutlined /> Ver Inscripción</> : <><PlusCircleOutlined /> Nueva Inscripción</>}
+              </button>
+            ) : null}
           </div>
         </div>
 

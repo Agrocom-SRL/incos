@@ -19,6 +19,7 @@ const PagoTableActions = ({
   itemName,
   itemDetails = [],
   viewNavigateState = undefined,
+  permisos = undefined,
 }) => {
   const fallbackItemName = `el pago #${record.numeroRecibo || record.receipt_number || record.id}`;
 
@@ -33,6 +34,7 @@ const PagoTableActions = ({
       itemDetails={itemDetails?.length ? itemDetails : undefined}
       viewPath="/pagos/:id"
       viewNavigateState={viewNavigateState}
+      permisos={permisos}
       // Los pagos no se pueden editar, por lo que no se pasa editPath ni onEdit
     />
   );

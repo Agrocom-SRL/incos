@@ -17,7 +17,7 @@ import { PlusOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { TableListView } from '@organisms';
 import { PageHeader } from '@molecules';
-import { Button } from '@atoms';
+import { ActionButton } from '@atoms';
 import { usePagosListContext } from '@application-pagos/hooks';
 import { createPagosTableColumns } from '@pagos/config';
 
@@ -69,13 +69,15 @@ const PagosList = () => {
                     title="Lista de Pagos"
                     breadcrumbItems={breadcrumbItems}
                     actions={
-                        <Button
+                        <ActionButton
+                            permiso="finanzas.pago.registrar"
+                            accion="CREAR"
                             variant="primary"
                             icon={<PlusOutlined />}
                             onClick={handleNuevoPago}
                         >
                             Nuevo Pago
-                        </Button>
+                        </ActionButton>
                     }
                 />
             }

@@ -16,6 +16,7 @@ import { DollarOutlined, UserOutlined, FileTextOutlined, DownloadOutlined, Arrow
 import { downloadFile } from '@application/utils';
 import { useCasesFactory } from '@container';
 import { showDeleteConfirm } from '@molecules/DeleteConfirmModal';
+import { useAuthContext } from '@application-auth';
 
 const DURACION_MENSAJE_ERROR = 8;
 
@@ -71,11 +72,15 @@ const PagosDetail = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { message, modal } = App.useApp();
+  const { hasPermiso } = useAuthContext();
 
   const studentIdFromState = location.state?.studentId ?? null;
   const menuSidebarKeyFromState = location.state?.menuSidebarKey;
   const fromBeca100 = location.state?.fromBeca100 === true;
   const volverALista = !studentIdFromState;
+  const puedeExportarPago = hasPermiso('finanzas.pago.ver', 'EXPORTAR');
+  const puedeRegistrarPago = hasPermiso('finanzas.pago.registrar', 'CREAR');
+  const puedeEliminarPagoPermiso = hasPermiso('finanzas.pago.editar', 'ELIMINAR');
 
   const {
     pago,
@@ -494,7 +499,7 @@ const PagosDetail = () => {
           <div className="sd-profile__divider" />
 
           <div className="sd-profile__actions">
-            {fromBeca100 && estadoAporte?.cuotas?.length > 0 && (() => {
+            {fromBeca100 && puedeExportarPago && estadoAporte?.cuotas?.length > 0 && (() => {
               const cuotaBeca100 = estadoAporte.cuotas[0];
               const cuotaId = cuotaBeca100?.id ?? cuotaBeca100?.numero_recibo;
               return cuotaId ? (
@@ -508,12 +513,12 @@ const PagosDetail = () => {
                 </button>
               ) : null;
             })()}
-            {studentIdForRegistrar && Number(estadoAporte?.saldo_pendiente ?? 0) > 0 && (
+            {puedeRegistrarPago && studentIdForRegistrar && Number(estadoAporte?.saldo_pendiente ?? 0) > 0 && (
               <button type="button" className="sd-btn sd-btn--primary" onClick={handleRegistrarSiguienteCuota}>
                 <PlusCircleOutlined /> Registrar siguiente pago
               </button>
             )}
-            {puedeEliminarPago && (
+            {puedeEliminarPagoPermiso && puedeEliminarPago && (
               <button
                 type="button"
                 className="sd-btn sd-btn--danger"

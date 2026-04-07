@@ -169,6 +169,10 @@ export const createPagosTableColumns = (navigate, refetch = null, deletePago = n
                         itemName={itemName}
                         itemDetails={itemDetails}
                         viewNavigateState={viewNavigateState}
+                        permisos={{
+                            ver: { codigo: 'finanzas.pago.ver', accion: 'VER' },
+                            eliminar: { codigo: 'finanzas.pago.editar', accion: 'ELIMINAR' },
+                        }}
                     />
                 );
             },

@@ -338,12 +338,19 @@ export const createEstudiantesTableColumns = (
                 navigate(`/estudiantes/${record.id}/editar`, { state: { initialStep: 2 } });
               }
             }}
+            permisos={{
+              ver: { codigo: 'matricula.admision.ver', accion: 'VER' },
+              editar: { codigo: 'matricula.admision.editar', accion: 'EDITAR' },
+              eliminar: { codigo: 'matricula.admision.editar', accion: 'ELIMINAR' },
+            }}
             extraActions={[
               {
                 icon: <DollarOutlined />,
                 variant: 'primary',
                 tooltip: 'Registrar pago',
                 onClick: handleRegistrarPagoClick,
+                permiso: 'finanzas.pago.registrar',
+                accion: 'CREAR',
               },
             ]}
           />

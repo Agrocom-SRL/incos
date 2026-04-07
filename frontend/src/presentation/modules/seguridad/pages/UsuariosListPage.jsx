@@ -8,7 +8,7 @@ import { createUsuariosTableColumns } from '@modules/seguridad/config/usuariosTa
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { TableListView } from '@organisms';
-import { Button } from '@atoms';
+import { ActionButton } from '@atoms';
 import '@modules/seguridad/styles/seguridad.css';
 
 export default function UsuariosListPage() {
@@ -46,15 +46,15 @@ export default function UsuariosListPage() {
             title="Administración de Usuarios"
             breadcrumbItems={breadcrumbItems}
             actions={
-              <PermisoGuard codigo="seguridad.usuario.crear" accion="CREAR">
-                <Button
-                  variant="primary"
-                  icon={<PlusOutlined />}
-                  onClick={() => navigate('/seguridad/usuarios/nuevo')}
-                >
-                  Nuevo Usuario
-                </Button>
-              </PermisoGuard>
+              <ActionButton
+                permiso="seguridad.usuario.crear"
+                accion="CREAR"
+                variant="primary"
+                icon={<PlusOutlined />}
+                onClick={() => navigate('/seguridad/usuarios/nuevo')}
+              >
+                Nuevo Usuario
+              </ActionButton>
             }
           />
         }

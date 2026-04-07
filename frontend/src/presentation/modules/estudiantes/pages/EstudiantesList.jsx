@@ -22,7 +22,7 @@ import { App, Grid, Space } from 'antd';
 import { PageTemplate } from '@templates';
 import { TableListView } from '@organisms';
 import { PageHeader } from '@molecules';
-import { Button } from '@atoms';
+import { ActionButton } from '@atoms';
 import { useStudentListContext, useExportEstadisticaInscritosExcel } from '@application-estudiantes/hooks';
 import { usePagosContextOptional } from '@application-pagos/hooks';
 import { createEstudiantesTableColumns } from '@estudiantes/config';
@@ -91,7 +91,9 @@ const EstudiantesList = () => {
                     breadcrumbItems={breadcrumbItems}
                     actions={
                         <Space wrap>
-                            <Button
+                            <ActionButton
+                                permiso="matricula.admision.ver"
+                                accion="EXPORTAR"
                                 variant="success"
                                 buttonStyle="filled"
                                 icon={<FileExcelOutlined />}
@@ -99,14 +101,16 @@ const EstudiantesList = () => {
                                 onClick={handleExportarEstadisticaInscritos}
                             >
                                 Exportar estadística inscritos
-                            </Button>
-                            <Button
+                            </ActionButton>
+                            <ActionButton
+                                permiso="matricula.admision.crear"
+                                accion="CREAR"
                                 variant="primary"
                                 icon={<PlusOutlined />}
                                 onClick={handleNuevoEstudiante}
                             >
                                 Nuevo Estudiante
-                            </Button>
+                            </ActionButton>
                         </Space>
                     }
                 />

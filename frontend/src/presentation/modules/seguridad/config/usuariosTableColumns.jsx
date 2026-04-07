@@ -95,30 +95,42 @@ export const createUsuariosTableColumns = (navigate) => [
         record={record}
         navigate={navigate}
         viewPath="/seguridad/usuarios/:id"
+        permisos={{
+          ver: { codigo: 'seguridad.usuario.administrar', accion: 'VER' },
+          editar: { codigo: 'seguridad.usuario.administrar', accion: 'EDITAR' },
+        }}
         extraActions={[
           {
             icon: <EditOutlined />,
             variant: 'primary',
             tooltip: 'Editar datos',
             onClick: () => navigate(`/seguridad/usuarios/${record.id}`, { state: { quickAction: 'edit' } }),
+            permiso: 'seguridad.usuario.administrar',
+            accion: 'EDITAR',
           },
           {
             icon: <InfoCircleOutlined />,
             variant: 'warning',
             tooltip: 'Cambiar estado',
             onClick: () => navigate(`/seguridad/usuarios/${record.id}`, { state: { quickAction: 'estado' } }),
+            permiso: 'seguridad.usuario.administrar',
+            accion: 'EDITAR',
           },
           {
             icon: <LockOutlined />,
             variant: 'default',
             tooltip: 'Cambiar contraseña',
             onClick: () => navigate(`/seguridad/usuarios/${record.id}`, { state: { quickAction: 'password' } }),
+            permiso: 'seguridad.usuario.administrar',
+            accion: 'EDITAR',
           },
           {
             icon: <KeyOutlined />,
             variant: 'info',
             tooltip: 'Permisos',
             onClick: () => navigate(`/seguridad/usuarios/${record.id}/permisos`),
+            permiso: 'seguridad.rol.gestionar',
+            accion: 'VER',
           },
         ]}
       />
