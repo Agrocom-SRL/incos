@@ -93,6 +93,7 @@ export function registerSeguridadModule(container) {
       new ObtenerPermisosUsuarioUseCase({
         userRepository: c.resolve(REPOSITORIOS_TOKENS.userRepository),
         rolePermissionRepository: c.resolve(REPOSITORIOS_TOKENS.rolePermissionRepository),
+        permissionRepository: c.resolve(REPOSITORIOS_TOKENS.permissionRepository),
         userPermissionRepository: c.resolve(REPOSITORIOS_TOKENS.userPermissionRepository),
         authRepository: c.resolve(REPOSITORIOS_TOKENS.authRepository),
       })
