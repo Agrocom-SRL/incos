@@ -241,10 +241,9 @@ export const menuIconMap = {
     'REP-SOLICITUDES-TRANSFERENCIA': ReloadOutlined,
     'REP-SOLICITUDES-PASANTIA': BankOutlined,
 
-    // Usuarios - Nivel 1
-    'USR': UsergroupAddOutlined,
-    'USR-CREATE': UserAddOutlined,
-    'USR-LIST': SettingOutlined,
-    'USR-ROLES': UserSwitchOutlined,
+    // Seguridad (SEG) — menú
+    'SEG-USUARIO-CREAR': UserAddOutlined,
+    'SEG-USUARIOS': SettingOutlined,
+    'SEG-ROLES': UserSwitchOutlined,
 };
 

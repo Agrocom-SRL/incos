@@ -684,7 +684,9 @@ INSERT INTO roles_permisos (id, rol_id, permiso_id, accion, activo) VALUES
 (658, 8, 86, 'EDITAR', TRUE),   -- seguridad.usuario.administrar
 (659, 8, 87, 'VER', TRUE),   -- seguridad.rol.gestionar
 (660, 8, 87, 'CREAR', TRUE),   -- seguridad.rol.gestionar
-(661, 8, 87, 'EDITAR', TRUE);   -- seguridad.rol.gestionar
+(661, 8, 87, 'EDITAR', TRUE),   -- seguridad.rol.gestionar
+(662, 1, 85, 'VER', TRUE),   -- seguridad.usuario.crear (RECTOR: visible en menú)
+(663, 8, 85, 'VER', TRUE);   -- seguridad.usuario.crear (ADMIN_SISTEMA: visible en menú)
 
 SET FOREIGN_KEY_CHECKS = 1;
 

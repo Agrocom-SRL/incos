@@ -1,0 +1,66 @@
+.seg-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.seg-profile__sub {
+  margin: 0;
+  color: var(--text-500, #6b7280);
+}
+
+.seg-profile__stats .sd-stat__value .ant-tag {
+  margin-inline-end: 0;
+}
+
+.seg-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.seg-modal-help {
+  margin-top: 8px;
+  color: var(--color-text-secondary, #666666);
+}
+
+.seg-picker {
+  border: 1px solid var(--color-border, #e8e8e8);
+  border-radius: var(--radius-lg, 12px);
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  background: var(--color-bg-container, #ffffff);
+}
+
+.seg-picker .ant-collapse {
+  border: 0;
+  background: transparent;
+}
+
+.seg-picker .ant-collapse-item-active > .ant-collapse-header {
+  background: var(--color-primary-bg, #e8f5e9);
+}
+
+.seg-picker .ant-collapse-header {
+  transition: all 0.2s ease;
+}
+
+.seg-picker__panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+}
+
+.seg-picker__permiso {
+  font-weight: 600;
+}
+
+.seg-picker__codigo {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--color-text-secondary, #666666);
+  font-size: 12px;
+}

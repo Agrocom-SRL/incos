@@ -1,7 +1,8 @@
 // src/presentation/modules/seguridad/routes.jsx
 /**
  * Rutas del dominio Seguridad (SEG): usuarios, roles, permisos.
- * El menú sigue usando `parent: 'SEG'` y claves USR-* como antes.
+ * Paths bajo `/seguridad/...`; menú con `parent: 'SEG'` (dominio en dominios/routes.jsx).
+ * Orden: rutas estáticas (`nuevo`) y subpaths (`.../permisos`) antes que `:id`.
  */
 
 import { lazy } from 'react';
@@ -27,46 +28,54 @@ const RolPermisosPage = lazy(() =>
 
 export const seguridadRoutes = [
   {
-    path: '/usuarios',
-    element: null,
-    key: 'USR',
-    menu: null,
-  },
-  {
-    path: '/usuarios/crear',
+    path: '/seguridad/usuarios/nuevo',
     element: <UsuarioCreatePage />,
-    key: 'USR-CREATE',
+    key: 'SEG-USUARIO-CREAR',
     permiso: 'seguridad.usuario.crear',
     menu: {
-      label: 'Crear Nuevo Usuario',
+      label: 'Crear Usuario',
       module: 'SEG',
       parent: 'SEG',
       order: 1,
     },
   },
   {
-    path: '/usuarios/administrar',
+    path: '/seguridad/usuarios/:id/permisos',
+    element: <UsuarioPermisosPage />,
+    key: 'SEG-USUARIO-PERMISOS',
+    permiso: 'seguridad.rol.gestionar',
+    menu: null,
+  },
+  {
+    path: '/seguridad/roles/:id/permisos',
+    element: <RolPermisosPage />,
+    key: 'SEG-ROL-PERMISOS',
+    permiso: 'seguridad.rol.gestionar',
+    menu: null,
+  },
+  {
+    path: '/seguridad/usuarios/:id',
+    element: <UsuarioDetailPage />,
+    key: 'SEG-USUARIO-DETALLE',
+    permiso: 'seguridad.usuario.administrar',
+    menu: null,
+  },
+  {
+    path: '/seguridad/usuarios',
     element: <UsuariosListPage />,
-    key: 'USR-LIST',
+    key: 'SEG-USUARIOS',
     permiso: 'seguridad.usuario.administrar',
     menu: {
-      label: 'Administrar Usuarios',
+      label: 'Administrar',
       module: 'SEG',
       parent: 'SEG',
       order: 2,
     },
   },
   {
-    path: '/usuarios/roles/:id/permisos',
-    element: <RolPermisosPage />,
-    key: 'USR-ROL-PERM',
-    permiso: 'seguridad.rol.gestionar',
-    menu: null,
-  },
-  {
-    path: '/usuarios/roles',
+    path: '/seguridad/roles',
     element: <RolesListPage />,
-    key: 'USR-ROLES',
+    key: 'SEG-ROLES',
     permiso: 'seguridad.rol.gestionar',
     menu: {
       label: 'Roles y Permisos',
@@ -74,20 +83,6 @@ export const seguridadRoutes = [
       parent: 'SEG',
       order: 3,
     },
-  },
-  {
-    path: '/usuarios/:id/permisos',
-    element: <UsuarioPermisosPage />,
-    key: 'USR-PERM',
-    permiso: 'seguridad.rol.gestionar',
-    menu: null,
-  },
-  {
-    path: '/usuarios/:id',
-    element: <UsuarioDetailPage />,
-    key: 'USR-DET',
-    permiso: 'seguridad.usuario.administrar',
-    menu: null,
   },
 ];
 

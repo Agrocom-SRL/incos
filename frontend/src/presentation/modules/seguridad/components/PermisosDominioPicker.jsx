@@ -1,83 +1,100 @@
-import { Checkbox, Col, Row, Typography } from 'antd';
+import { useMemo } from 'react';
+import { Checkbox, Collapse, Table, Tag } from 'antd';
+import '@modules/seguridad/styles/seguridad.css';
 
 const ACCIONES = ['VER', 'CREAR', 'EDITAR', 'ELIMINAR', 'APROBAR', 'EXPORTAR'];
 
-function cloneAsignaciones(list) {
-  return list.map((a) => ({ ...a }));
+function toSet(asignacionesActuales) {
+  const s = new Set();
+  (asignacionesActuales || []).forEach((a) => s.add(`${a.permiso_id}:${a.accion}`));
+  return s;
 }
 
-function tieneAsignacion(asignaciones, permisoId, accion) {
-  return asignaciones.some(
-    (a) => a.permiso_id === permisoId && a.accion === accion
-  );
+function hasAsignacion(set, permisoId, accion) {
+  return set.has(`${permisoId}:${accion}`);
 }
 
-/**
- * @param {Record<string, Array<{ id: number, codigo: string, nombre: string }>>} permisosPorDominio
- * @param {Array<{ permiso_id: number, accion: string }>} asignacionesActuales
- * @param {(next: Array<{ permiso_id: number, accion: string }>) => void} onChange
- */
 export default function PermisosDominioPicker({
-  permisosPorDominio = {},
+  permisosAgrupados = {},
   asignacionesActuales = [],
   onChange,
+  disabled = false,
 }) {
-  const toggle = (permisoId, accion, checked) => {
-    let next = cloneAsignaciones(asignacionesActuales);
-    if (checked) {
-      if (!tieneAsignacion(next, permisoId, accion)) {
-        next.push({ permiso_id: permisoId, accion });
-      }
-    } else {
-      next = next.filter(
-        (a) => !(a.permiso_id === permisoId && a.accion === accion)
-      );
-    }
-    onChange(next);
+  const asignacionesSet = useMemo(() => toSet(asignacionesActuales), [asignacionesActuales]);
+
+  const onToggle = (permisoId, accion, checked) => {
+    if (disabled) return;
+    const next = new Set(asignacionesSet);
+    const key = `${permisoId}:${accion}`;
+    if (checked) next.add(key);
+    else next.delete(key);
+    onChange(
+      [...next].map((k) => {
+        const [id, ac] = k.split(':');
+        return { permiso_id: Number(id), accion: ac };
+      })
+    );
   };
 
-  const dominios = Object.keys(permisosPorDominio).sort();
+  const dominios = Object.keys(permisosAgrupados).sort();
+
+  const panels = dominios.map((dominio) => {
+    const rows = permisosAgrupados[dominio] || [];
+    const activeCount = rows.reduce((acc, p) => (
+      acc + ACCIONES.filter((a) => hasAsignacion(asignacionesSet, p.id, a)).length
+    ), 0);
+
+    const columns = [
+      {
+        title: 'Permiso',
+        dataIndex: 'nombre',
+        key: 'nombre',
+        width: '60%',
+        render: (_, p) => (
+          <div>
+            <div className="seg-picker__permiso">{p.nombre}</div>
+            <div className="seg-picker__codigo">{p.codigo}</div>
+          </div>
+        ),
+      },
+      ...ACCIONES.map((accion) => ({
+        title: <Tag color="default">{accion}</Tag>,
+        key: accion,
+        width: 90,
+        align: 'center',
+        render: (_, p) => (
+          <Checkbox
+            disabled={disabled}
+            checked={hasAsignacion(asignacionesSet, p.id, accion)}
+            onChange={(e) => onToggle(p.id, accion, e.target.checked)}
+          />
+        ),
+      })),
+    ];
+
+    return {
+      key: dominio,
+      label: (
+        <div className="seg-picker__panel-head">
+          <span>{dominio}</span>
+          <Tag>{activeCount} activos</Tag>
+        </div>
+      ),
+      children: (
+        <Table
+          rowKey="id"
+          size="small"
+          pagination={false}
+          dataSource={rows}
+          columns={columns}
+        />
+      ),
+    };
+  });
 
   return (
-    <div>
-      {dominios.map((dominio) => (
-        <div key={dominio} style={{ marginBottom: 24 }}>
-          <Typography.Title level={5}>{dominio}</Typography.Title>
-          {(permisosPorDominio[dominio] || []).map((p) => (
-            <div
-              key={p.id}
-              style={{
-                marginBottom: 12,
-                paddingBottom: 12,
-                borderBottom: '1px solid var(--ant-color-border-secondary, #f0f0f0)',
-              }}
-            >
-              <Typography.Text strong>{p.nombre}</Typography.Text>
-              <Typography.Paragraph type="secondary" style={{ marginBottom: 8 }}>
-                {p.codigo}
-              </Typography.Paragraph>
-              <Row gutter={[8, 8]}>
-                {ACCIONES.map((acc) => (
-                  <Col key={acc}>
-                    <Checkbox
-                      checked={tieneAsignacion(
-                        asignacionesActuales,
-                        p.id,
-                        acc
-                      )}
-                      onChange={(e) =>
-                        toggle(p.id, acc, e.target.checked)
-                      }
-                    >
-                      {acc}
-                    </Checkbox>
-                  </Col>
-                ))}
-              </Row>
-            </div>
-          ))}
-        </div>
-      ))}
+    <div className="seg-picker">
+      <Collapse items={panels} defaultActiveKey={dominios.slice(0, 1)} />
     </div>
   );
 }

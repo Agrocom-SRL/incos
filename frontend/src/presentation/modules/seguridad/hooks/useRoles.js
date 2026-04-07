@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { apiCall } from '@/infrastructure/http/apiClient.js';
 import { ROLES_SEG_ENDPOINTS } from '@api/endpoints.js';
 
@@ -29,5 +29,8 @@ export function useRoles() {
     return readJson(res);
   }, []);
 
-  return { listRoles, getRolPermisos, updateRolPermisos };
+  return useMemo(
+    () => ({ listRoles, getRolPermisos, updateRolPermisos }),
+    [listRoles, getRolPermisos, updateRolPermisos]
+  );
 }

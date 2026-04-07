@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { apiCall } from '@/infrastructure/http/apiClient.js';
 import { USUARIOS_SEG_ENDPOINTS } from '@api/endpoints.js';
 
@@ -89,15 +89,28 @@ export function useUsuarios() {
     return readJson(res);
   }, []);
 
-  return {
-    listUsers,
-    getUser,
-    createUser,
-    updateUser,
-    changeEstado,
-    changePassword,
-    getUserPermisos,
-    addOverride,
-    removeOverride,
-  };
+  return useMemo(
+    () => ({
+      listUsers,
+      getUser,
+      createUser,
+      updateUser,
+      changeEstado,
+      changePassword,
+      getUserPermisos,
+      addOverride,
+      removeOverride,
+    }),
+    [
+      listUsers,
+      getUser,
+      createUser,
+      updateUser,
+      changeEstado,
+      changePassword,
+      getUserPermisos,
+      addOverride,
+      removeOverride,
+    ]
+  );
 }

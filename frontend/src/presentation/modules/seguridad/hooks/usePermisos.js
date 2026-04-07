@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { apiCall } from '@/infrastructure/http/apiClient.js';
 import { PERMISOS_CATALOGO_ENDPOINTS } from '@api/endpoints.js';
 
@@ -25,5 +25,8 @@ export function usePermisos() {
     return { res, json, grouped: json.data ?? {} };
   }, [listPermisos]);
 
-  return { listPermisos, listPermisosAgrupados };
+  return useMemo(
+    () => ({ listPermisos, listPermisosAgrupados }),
+    [listPermisos, listPermisosAgrupados]
+  );
 }

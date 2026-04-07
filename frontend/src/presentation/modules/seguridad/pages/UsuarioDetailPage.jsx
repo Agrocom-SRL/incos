@@ -1,20 +1,24 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { App, Empty, Space, Spin, Tabs, Tag } from 'antd';
 import {
-  App,
-  Button,
-  Card,
-  Descriptions,
-  Form,
-  Input,
-  Select,
-  Space,
-  Typography,
-} from 'antd';
+  EditOutlined,
+  InfoCircleOutlined,
+  KeyOutlined,
+  LockOutlined,
+  UserOutlined,
+} from '@ant-design/icons';
+import { PageTemplate } from '@templates';
+import { PageHeader } from '@molecules';
+import { Button, Card } from '@atoms';
 import { PermisoGuard } from '@/presentation/guards/PermisoGuard.jsx';
 import { usePermiso } from '@/presentation/hooks/usePermiso.js';
 import { useUsuarios } from '@modules/seguridad/hooks/useUsuarios.js';
 import { useRoles } from '@modules/seguridad/hooks/useRoles.js';
+import CambiarPasswordModal from '@modules/seguridad/components/modals/CambiarPasswordModal.jsx';
+import CambiarEstadoModal from '@modules/seguridad/components/modals/CambiarEstadoModal.jsx';
+import EditarUsuarioModal from '@modules/seguridad/components/modals/EditarUsuarioModal.jsx';
+import '@modules/seguridad/styles/seguridad.css';
 
 function errMsg(json) {
   const e = json?.error;
@@ -36,9 +40,10 @@ export default function UsuarioDetailPage() {
   const [user, setUser] = useState(null);
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [basicForm] = Form.useForm();
-  const [estadoForm] = Form.useForm();
-  const [passForm] = Form.useForm();
+  const [saving, setSaving] = useState(false);
+  const [openEdit, setOpenEdit] = useState(false);
+  const [openEstado, setOpenEstado] = useState(false);
+  const [openPass, setOpenPass] = useState(false);
 
   const uid = parseInt(id, 10);
 
@@ -55,15 +60,6 @@ export default function UsuarioDetailPage() {
     }
     const u = json.data;
     setUser(u);
-    basicForm.setFieldsValue({
-      username: u.username,
-      email: u.email,
-      rol_id: u.rol?.id,
-    });
-    estadoForm.setFieldsValue({
-      estado: u.estado ?? null,
-      motivo: u.motivo_cambio_estado ?? '',
-    });
   };
 
   useEffect(() => {
@@ -81,40 +77,71 @@ export default function UsuarioDetailPage() {
     run();
   }, [rolesApi]);
 
-  const saveBasic = async () => {
-    const v = await basicForm.validateFields();
+  const saveBasic = async (v) => {
+    setSaving(true);
     const w = await api.updateUser(uid, v);
+    setSaving(false);
     if (!w) return;
     const { res, json } = w;
     if (res.ok) {
       message.success('Actualizado');
+      setOpenEdit(false);
       load();
     } else message.error(errMsg(json));
   };
 
-  const saveEstado = async () => {
-    const v = await estadoForm.validateFields();
-    const w = await api.changeEstado(uid, {
-      estado: v.estado,
-      motivo: v.motivo || null,
-    });
+  const saveEstado = async (v) => {
+    setSaving(true);
+    const w = await api.changeEstado(uid, v);
+    setSaving(false);
     if (!w) return;
     const { res, json } = w;
     if (res.ok) {
       message.success('Estado actualizado');
+      setOpenEstado(false);
       load();
     } else message.error(errMsg(json));
   };
 
-  const savePass = async () => {
-    const v = await passForm.validateFields();
-    const w = await api.changePassword(uid, { password_nuevo: v.password_nuevo });
-    passForm.resetFields();
+  const savePass = async (passwordNuevo) => {
+    setSaving(true);
+    const w = await api.changePassword(uid, { password_nuevo: passwordNuevo });
+    setSaving(false);
     if (!w) return;
     const { res, json } = w;
-    if (res.ok) message.success('Contraseña actualizada');
+    if (res.ok) {
+      setOpenPass(false);
+      message.success('Contraseña actualizada');
+    }
     else message.error(errMsg(json));
   };
+
+  const estadoTag = (estado) => {
+    if (!estado) return <Tag color="success">Activo</Tag>;
+    if (estado === 'BLOQUEADO') return <Tag color="error">BLOQUEADO</Tag>;
+    if (estado === 'SUSPENDIDO') return <Tag color="warning">SUSPENDIDO</Tag>;
+    if (estado === 'RETIRADO') return <Tag>RETIRADO</Tag>;
+    return <Tag>{estado}</Tag>;
+  };
+
+  const nivelColor = (nivel) => (nivel >= 5 ? 'purple' : nivel >= 4 ? 'blue' : nivel >= 3 ? 'cyan' : nivel >= 2 ? 'green' : 'default');
+  const breadcrumbItems = useMemo(
+    () => [
+      { title: 'Inicio', href: '/' },
+      { title: 'Seguridad', href: '/seguridad/usuarios' },
+      { title: 'Usuarios', href: '/seguridad/usuarios' },
+      { title: user?.username || `Usuario ${uid}` },
+    ],
+    [user, uid]
+  );
+
+  if (loading) {
+    return <div className="sd-loading"><Spin size="large" /></div>;
+  }
+
+  if (!user) {
+    return <Empty description="No se encontró el usuario" />;
+  }
 
   return (
     <PermisoGuard
@@ -124,88 +151,132 @@ export default function UsuarioDetailPage() {
         <Typography.Text type="danger">Sin permiso.</Typography.Text>
       }
     >
-      <Space direction="vertical" size="large" style={{ width: '100%' }}>
-        <Button onClick={() => navigate('/usuarios/administrar')}>← Volver al listado</Button>
-        {user ? (
-          <Descriptions title="Usuario" bordered column={1} size="small">
-            <Descriptions.Item label="ID">{user.id}</Descriptions.Item>
-            <Descriptions.Item label="Usuario">{user.username}</Descriptions.Item>
-            <Descriptions.Item label="Email">{user.email}</Descriptions.Item>
-            <Descriptions.Item label="Rol">{user.rol?.nombre}</Descriptions.Item>
-            <Descriptions.Item label="Estado">
-              {user.estado == null ? 'Activo' : String(user.estado)}
-            </Descriptions.Item>
-            <Descriptions.Item label="Activo">{user.activo ? 'Sí' : 'No'}</Descriptions.Item>
-          </Descriptions>
-        ) : null}
+      <PageTemplate
+        header={
+          <PageHeader
+            title={`Usuario ${user.username}`}
+            breadcrumbItems={breadcrumbItems}
+            actions={<Button variant="default" onClick={() => navigate('/seguridad/usuarios')}>Volver</Button>}
+          />
+        }
+      >
+        <div className="sd">
+          <div className="sd-profile">
+            <div className="sd-profile__identity">
+              <div className="sd-profile__avatar">{String(user.username || 'U').slice(0, 2).toUpperCase()}</div>
+              <div className="sd-profile__name-block">
+                <h1 className="sd-profile__name">{user.username}</h1>
+                <p className="seg-profile__sub">{user.email} · {user.rol?.nombre || 'Sin rol'}</p>
+              </div>
+            </div>
+            <div className="sd-profile__divider" />
+            <div className="sd-profile__stats seg-profile__stats">
+              <div className="sd-stat">
+                <span className="sd-stat__label">Rol</span>
+                <span className="sd-stat__value">{user.rol?.nombre || '—'}</span>
+              </div>
+              <div className="sd-stat">
+                <span className="sd-stat__label">Nivel</span>
+                <span className="sd-stat__value"><Tag color={nivelColor(user.rol?.nivel_acceso)}>{user.rol?.nivel_acceso ?? '—'}</Tag></span>
+              </div>
+              <div className="sd-stat">
+                <span className="sd-stat__label">Estado</span>
+                <span className="sd-stat__value">{estadoTag(user.estado)}</span>
+              </div>
+            </div>
+            <div className="sd-profile__divider" />
+            <div className="sd-profile__actions">
+              {puedeEditar ? (
+                <>
+                  <button type="button" className="sd-btn sd-btn--outline" onClick={() => setOpenPass(true)}>
+                    <LockOutlined /> Cambiar contraseña
+                  </button>
+                  <button type="button" className="sd-btn sd-btn--primary" onClick={() => setOpenEdit(true)}>
+                    <EditOutlined /> Editar datos
+                  </button>
+                  <button type="button" className="sd-btn sd-btn--warn" onClick={() => setOpenEstado(true)}>
+                    <InfoCircleOutlined /> Cambiar estado
+                  </button>
+                </>
+              ) : null}
+              {puedeVerPermisos ? (
+                <button type="button" className="sd-btn sd-btn--primary" onClick={() => navigate(`/seguridad/usuarios/${uid}/permisos`)}>
+                  <KeyOutlined /> Ver permisos
+                </button>
+              ) : null}
+            </div>
+          </div>
 
-        {puedeEditar ? (
-          <Card title="Editar datos básicos">
-            <Form form={basicForm} layout="vertical">
-              <Form.Item name="username" label="Usuario" rules={[{ required: true }]}>
-                <Input />
-              </Form.Item>
-              <Form.Item name="email" label="Email" rules={[{ required: true, type: 'email' }]}>
-                <Input />
-              </Form.Item>
-              <Form.Item name="rol_id" label="Rol" rules={[{ required: true }]}>
-                <Select
-                  options={roles.map((r) => ({
-                    value: r.id,
-                    label: `${r.nombre} (${r.codigo})`,
-                  }))}
-                />
-              </Form.Item>
-            </Form>
-            <Button type="primary" onClick={saveBasic} loading={loading}>
-              Guardar datos
-            </Button>
-          </Card>
-        ) : null}
+          <div className="sd-tabs-shell">
+            <Tabs
+              className="sd-tabs"
+              items={[
+                {
+                  key: 'info',
+                  label: <span className="sd-tab-label"><UserOutlined /> Información</span>,
+                  children: (
+                    <div className="sd-tab-body">
+                      <div className="sd-card">
+                        <div className="sd-card__head"><span className="sd-card__title">Datos de la cuenta</span></div>
+                        <div className="sd-card__body sd-card__body--cols-3">
+                          <div className="sd-field"><span className="sd-field__label">username</span><span className="sd-field__value">{user.username}</span></div>
+                          <div className="sd-field"><span className="sd-field__label">email</span><span className="sd-field__value">{user.email || '—'}</span></div>
+                          <div className="sd-field"><span className="sd-field__label">foto_url</span><span className="sd-field__value">{user.foto_url || '—'}</span></div>
+                          <div className="sd-field"><span className="sd-field__label">tipo_referencia</span><span className="sd-field__value">{user.tipo_referencia || '—'}</span></div>
+                          <div className="sd-field"><span className="sd-field__label">referencia_id</span><span className="sd-field__value">{user.referencia_id || '—'}</span></div>
+                          <div className="sd-field"><span className="sd-field__label">actualizado</span><span className="sd-field__value">{user.updated_at || user.updatedAt || '—'}</span></div>
+                        </div>
+                      </div>
+                    </div>
+                  ),
+                },
+                {
+                  key: 'estado',
+                  label: <span className="sd-tab-label"><InfoCircleOutlined /> Estado</span>,
+                  children: (
+                    <div className="sd-tab-body">
+                      <div className="sd-card">
+                        <div className="sd-card__head"><span className="sd-card__title">Estado actual</span></div>
+                        <div className="sd-card__body sd-card__body--cols-2">
+                          <div className="sd-field"><span className="sd-field__label">estado</span><span className="sd-field__value">{estadoTag(user.estado)}</span></div>
+                          <div className="sd-field"><span className="sd-field__label">motivo</span><span className="sd-field__value">{user.motivo_cambio_estado || 'Usuario activo sin restricciones'}</span></div>
+                        </div>
+                      </div>
+                    </div>
+                  ),
+                },
+              ]}
+            />
+          </div>
+        </div>
 
-        {puedeEditar ? (
-          <Card title="Cambiar estado">
-            <Form form={estadoForm} layout="vertical">
-              <Form.Item name="estado" label="Estado">
-                <Select
-                  allowClear
-                  placeholder="null = reactivar"
-                  options={[
-                    { value: 'BLOQUEADO', label: 'BLOQUEADO' },
-                    { value: 'SUSPENDIDO', label: 'SUSPENDIDO' },
-                    { value: 'RETIRADO', label: 'RETIRADO' },
-                  ]}
-                />
-              </Form.Item>
-              <Form.Item name="motivo" label="Motivo">
-                <Input.TextArea rows={2} />
-              </Form.Item>
-            </Form>
-            <Button onClick={saveEstado}>Aplicar estado</Button>
-          </Card>
-        ) : null}
-
-        {puedeEditar ? (
-          <Card title="Cambiar contraseña">
-            <Form form={passForm} layout="vertical">
-              <Form.Item
-                name="password_nuevo"
-                label="Nueva contraseña"
-                rules={[{ required: true }, { min: 8 }]}
-              >
-                <Input.Password />
-              </Form.Item>
-            </Form>
-            <Button onClick={savePass}>Actualizar contraseña</Button>
-          </Card>
-        ) : null}
-
-        {puedeVerPermisos ? (
-          <Button type="link" onClick={() => navigate(`/usuarios/${uid}/permisos`)}>
-            Ver / editar permisos
-          </Button>
-        ) : null}
-      </Space>
+        <EditarUsuarioModal
+          open={openEdit}
+          loading={saving}
+          roles={roles}
+          initialValues={{
+            username: user.username,
+            email: user.email,
+            rol_id: user.rol?.id,
+            foto_url: user.foto_url,
+          }}
+          onCancel={() => setOpenEdit(false)}
+          onSubmit={saveBasic}
+        />
+        <CambiarEstadoModal
+          open={openEstado}
+          loading={saving}
+          initialValues={{ estado: user.estado ?? null, motivo: user.motivo_cambio_estado ?? '' }}
+          onCancel={() => setOpenEstado(false)}
+          onSubmit={saveEstado}
+        />
+        <CambiarPasswordModal
+          open={openPass}
+          loading={saving}
+          onCancel={() => setOpenPass(false)}
+          onSubmit={savePass}
+        />
+      </PageTemplate>
     </PermisoGuard>
   );
 }

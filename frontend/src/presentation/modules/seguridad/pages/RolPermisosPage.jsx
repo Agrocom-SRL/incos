@@ -1,11 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { App, Button, Card, Space, Typography } from 'antd';
+import { Alert, App, Space, Tag, Typography } from 'antd';
+import { KeyOutlined } from '@ant-design/icons';
 import { PermisoGuard } from '@/presentation/guards/PermisoGuard.jsx';
-import { usePermiso } from '@/presentation/hooks/usePermiso.js';
 import PermisosDominioPicker from '@modules/seguridad/components/PermisosDominioPicker.jsx';
 import { useRoles } from '@modules/seguridad/hooks/useRoles.js';
 import { usePermisos } from '@modules/seguridad/hooks/usePermisos.js';
+import { PageTemplate } from '@templates';
+import { PageHeader } from '@molecules';
+import { Button, Card } from '@atoms';
 
 function errMsg(json) {
   const e = json?.error;
@@ -34,13 +37,27 @@ export default function RolPermisosPage() {
   const rolId = parseInt(id, 10);
   const rolesApi = useRoles();
   const permApi = usePermisos();
-  const puedeEditar = usePermiso('seguridad.rol.gestionar', 'EDITAR');
-
   const [catalogo, setCatalogo] = useState({});
   const [asignaciones, setAsignaciones] = useState([]);
   const [rolInfo, setRolInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [baseAsignaciones, setBaseAsignaciones] = useState([]);
+
+  const hasChanges = useMemo(
+    () => JSON.stringify([...asignaciones].sort((a, b) => `${a.permiso_id}:${a.accion}`.localeCompare(`${b.permiso_id}:${b.accion}`)))
+      !== JSON.stringify([...baseAsignaciones].sort((a, b) => `${a.permiso_id}:${a.accion}`.localeCompare(`${b.permiso_id}:${b.accion}`))),
+    [asignaciones, baseAsignaciones]
+  );
+  const breadcrumbItems = useMemo(
+    () => [
+      { title: 'Inicio', href: '/' },
+      { title: 'Seguridad', href: '/seguridad/roles' },
+      { title: 'Roles', href: '/seguridad/roles' },
+      { title: rolInfo?.nombre || 'Permisos de Rol' },
+    ],
+    [rolInfo]
+  );
 
   const loadAll = async () => {
     if (!rolId) return;
@@ -57,7 +74,9 @@ export default function RolPermisosPage() {
     if (rolW.res.ok) {
       const d = rolW.json.data;
       setRolInfo(d.rol);
-      setAsignaciones(flatAsignaciones(d.permisos_por_dominio));
+      const flat = flatAsignaciones(d.permisos_por_dominio);
+      setAsignaciones(flat);
+      setBaseAsignaciones(flat);
     } else message.error(errMsg(rolW.json));
   };
 
@@ -74,36 +93,82 @@ export default function RolPermisosPage() {
     const { res, json } = w;
     if (res.ok) {
       message.success('Permisos guardados');
-      setAsignaciones(flatAsignaciones(json.data?.permisos_por_dominio));
+      const flat = flatAsignaciones(json.data?.permisos_por_dominio);
+      setAsignaciones(flat);
+      setBaseAsignaciones(flat);
     } else message.error(errMsg(json));
   };
 
   return (
     <PermisoGuard
       codigo="seguridad.rol.gestionar"
-      accion="VER"
+      accion="EDITAR"
       fallback={
         <Typography.Text type="danger">Sin permiso.</Typography.Text>
       }
     >
-      <Space direction="vertical" size="large" style={{ width: '100%' }}>
-        <Button onClick={() => navigate('/usuarios/roles')}>← Roles</Button>
-        <Typography.Title level={4}>
-          Permisos del rol {rolInfo ? `— ${rolInfo.nombre}` : ''}
-        </Typography.Title>
-        <Card loading={loading}>
-          <PermisosDominioPicker
-            permisosPorDominio={catalogo}
-            asignacionesActuales={asignaciones}
-            onChange={setAsignaciones}
+      <PageTemplate
+        header={
+          <PageHeader
+            title={`Permisos del Rol ${rolInfo ? `— ${rolInfo.nombre}` : ''}`}
+            breadcrumbItems={breadcrumbItems}
+            actions={
+              <Button variant="default" onClick={() => navigate('/seguridad/roles')}>
+                Volver
+              </Button>
+            }
           />
-          {puedeEditar ? (
-            <Button type="primary" onClick={guardar} loading={saving} style={{ marginTop: 24 }}>
-              Guardar
-            </Button>
-          ) : null}
-        </Card>
-      </Space>
+        }
+      >
+        <Space direction="vertical" size="large" style={{ width: '100%' }}>
+          <Card
+            title="Información del rol"
+            headerColor="primary"
+            variant="outlined"
+          >
+            <div className="sd-card__body sd-card__body--cols-3">
+              <div className="sd-field">
+                <span className="sd-field__label">Código</span>
+                <span className="sd-field__value">{rolInfo?.codigo || '—'}</span>
+              </div>
+              <div className="sd-field">
+                <span className="sd-field__label">Nombre</span>
+                <span className="sd-field__value">{rolInfo?.nombre || '—'}</span>
+              </div>
+              <div className="sd-field">
+                <span className="sd-field__label">Nivel</span>
+                <span className="sd-field__value"><Tag>{rolInfo?.nivel_acceso ?? '—'}</Tag></span>
+              </div>
+            </div>
+          </Card>
+
+          <Card
+            title={<span><KeyOutlined /> Asignación de Permisos</span>}
+            headerColor="primary"
+            loading={loading}
+            extra={
+              <div className="seg-actions">
+                <Button variant="default" onClick={loadAll}>Cancelar</Button>
+                <Button
+                  variant="primary"
+                  loading={saving}
+                  disabled={!hasChanges}
+                  onClick={guardar}
+                >
+                  Guardar Cambios
+                </Button>
+              </div>
+            }
+          >
+            {hasChanges ? <Alert type="info" message="Hay cambios sin guardar" style={{ marginBottom: 12 }} /> : null}
+            <PermisosDominioPicker
+              permisosAgrupados={catalogo}
+              asignacionesActuales={asignaciones}
+              onChange={setAsignaciones}
+            />
+          </Card>
+        </Space>
+      </PageTemplate>
     </PermisoGuard>
   );
 }
