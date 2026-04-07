@@ -1,6 +1,6 @@
 import express from 'express';
 import { authenticate } from '../middleware/auth.middleware.js';
-import { verificarPermisoCualquiera } from '../middleware/permisos.middleware.js';
+import { verificarPermiso } from '../middleware/permisos.middleware.js';
 import { listValidator } from '../validators/common/index.js';
 
 /**
@@ -23,14 +23,7 @@ import { listValidator } from '../validators/common/index.js';
 export function buildCarrerasRouter({ controllers, middlewares }) {
     const router = express.Router();
     const { validateRequest } = middlewares;
-    const listarCarreras = [
-        authenticate,
-        verificarPermisoCualquiera([
-            ['institucional.config.academico.carreras', 'VER'],
-            ['matricula.admision.ver', 'VER'],
-            ['matricula.inscribir', 'CREAR'],
-        ]),
-    ];
+    const listarCarreras = [authenticate, verificarPermiso('institucional.config.academico.carreras', 'VER')];
 
     // ============================================
     // CRUD BÁSICO

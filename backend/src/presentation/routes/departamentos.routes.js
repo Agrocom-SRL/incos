@@ -1,6 +1,5 @@
 import express from 'express';
 import { authenticate } from '../middleware/auth.middleware.js';
-import { verificarPermiso } from '../middleware/permisos.middleware.js';
 import { listValidator } from '../validators/common/index.js';
 
 /**
@@ -23,7 +22,7 @@ import { listValidator } from '../validators/common/index.js';
 export function buildDepartamentosRouter({ controllers, middlewares }) {
     const router = express.Router();
     const { validateRequest } = middlewares;
-    const catalogoMatricula = [authenticate, verificarPermiso('matricula.admision.ver', 'VER')];
+    // Catálogo de referencia: solo autenticación requerida, sin permiso específico
 
     // ============================================
     // CRUD BÁSICO
@@ -42,7 +41,7 @@ export function buildDepartamentosRouter({ controllers, middlewares }) {
      */
     router.get(
         '/',
-        ...catalogoMatricula,
+        authenticate,
         listValidator,
         validateRequest,
         (req, res, next) => controllers.listDepartamentosController.handle(req, res, next)

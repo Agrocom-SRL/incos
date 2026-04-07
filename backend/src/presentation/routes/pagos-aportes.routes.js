@@ -1,6 +1,6 @@
 import express from 'express';
 import { authenticate } from '../middleware/auth.middleware.js';
-import { verificarPermiso, verificarPermisoCualquiera } from '../middleware/permisos.middleware.js';
+import { verificarPermiso } from '../middleware/permisos.middleware.js';
 import { registerPagoAporteValidator } from '../validators/pagos/index.js';
 import { uploadPaymentDocument } from '../middleware/upload.middleware.js';
 import { listValidator } from '../validators/common/index.js';
@@ -27,14 +27,9 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
     const { validateRequest } = middlewares;
 
     const pagoVer = [authenticate, verificarPermiso('finanzas.pago.ver', 'VER')];
-    const pagoRegistrar = [
-        authenticate,
-        verificarPermisoCualquiera([
-            ['finanzas.pago.registrar', 'CREAR'],
-            ['matricula.pago.aporte.ver', 'VER'],
-        ]),
-    ];
-    const pagoEditar = [authenticate, verificarPermiso('finanzas.pago.editar', 'EDITAR')];
+    const pagoRegistrar = [authenticate, verificarPermiso('finanzas.pago.registrar', 'CREAR')];
+    const pagoEliminar = [authenticate, verificarPermiso('finanzas.pago.editar', 'ELIMINAR')];
+    const pagoExportar = [authenticate, verificarPermiso('finanzas.pago.ver', 'EXPORTAR')];
 
     // ============================================
     // LISTADO DE CABECERAS DE APORTE
@@ -114,7 +109,7 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
      */
     router.delete(
         '/:id',
-        ...pagoEditar,
+        ...pagoEliminar,
         (req, res, next) => controllers.deletePaymentAporteController.handle(req, res, next)
     );
 
@@ -128,7 +123,7 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
      */
     router.get(
         '/:id/recibo',
-        ...pagoVer,
+        ...pagoExportar,
         (req, res, next) => controllers.generateReciboPagoController.handle(req, res, next)
     );
 

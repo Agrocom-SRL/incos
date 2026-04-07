@@ -1,6 +1,5 @@
 import express from 'express';
 import { authenticate } from '../middleware/auth.middleware.js';
-import { verificarPermisoCualquiera } from '../middleware/permisos.middleware.js';
 import { listValidator } from '../validators/common/index.js';
 
 /**
@@ -23,13 +22,7 @@ import { listValidator } from '../validators/common/index.js';
 export function buildDiscapacidadRouter({ controllers, middlewares }) {
     const router = express.Router();
     const { validateRequest } = middlewares;
-    const listarDiscapacidad = [
-        authenticate,
-        verificarPermisoCualquiera([
-            ['institucional.config.complementario.discapacidad', 'VER'],
-            ['matricula.admision.ver', 'VER'],
-        ]),
-    ];
+    // Catálogo de referencia: solo autenticación requerida, sin permiso específico
 
     // ============================================
     // CRUD BÁSICO
@@ -48,7 +41,7 @@ export function buildDiscapacidadRouter({ controllers, middlewares }) {
      */
     router.get(
         '/',
-        ...listarDiscapacidad,
+        authenticate,
         listValidator,
         validateRequest,
         (req, res, next) => controllers.listDiscapacidadController.handle(req, res, next)

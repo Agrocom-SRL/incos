@@ -1,6 +1,5 @@
 import express from 'express';
 import { authenticate } from '../middleware/auth.middleware.js';
-import { verificarPermiso } from '../middleware/permisos.middleware.js';
 import { listMunicipiosValidator } from '../validators/geograficos/index.js';
 
 /**
@@ -23,7 +22,7 @@ import { listMunicipiosValidator } from '../validators/geograficos/index.js';
 export function buildMunicipiosRouter({ controllers, middlewares }) {
     const router = express.Router();
     const { validateRequest } = middlewares;
-    const catalogoMatricula = [authenticate, verificarPermiso('matricula.admision.ver', 'VER')];
+    // Catálogo de referencia: solo autenticación requerida, sin permiso específico
 
     // ============================================
     // CRUD BÁSICO
@@ -42,7 +41,7 @@ export function buildMunicipiosRouter({ controllers, middlewares }) {
      */
     router.get(
         '/',
-        ...catalogoMatricula,
+        authenticate,
         listMunicipiosValidator,
         validateRequest,
         (req, res, next) => controllers.listMunicipiosController.handle(req, res, next)
