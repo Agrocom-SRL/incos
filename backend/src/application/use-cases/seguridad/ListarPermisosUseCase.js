@@ -29,6 +29,9 @@ export class ListarPermisosUseCase {
         nombre: p.nombre,
         dominio: p.dominio,
         modulo: p.modulo,
+        acciones_validas: p.acciones_validas
+          ? String(p.acciones_validas).split(',')
+          : ['VER'],
       });
     }
 

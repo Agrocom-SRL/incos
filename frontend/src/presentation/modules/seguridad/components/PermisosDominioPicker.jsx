@@ -41,7 +41,11 @@ export default function PermisosDominioPicker({
   const onToggleFila = (permisoId, checked) => {
     if (disabled) return;
     const next = new Set(asignacionesSet);
-    ACCIONES.forEach((accion) => {
+    const permiso = Object.values(permisosAgrupados)
+      .flat()
+      .find((p) => p.id === permisoId);
+    const acciones = permiso?.acciones_validas || [];
+    acciones.forEach((accion) => {
       const key = `${permisoId}:${accion}`;
       if (checked) next.add(key);
       else next.delete(key);
@@ -53,6 +57,7 @@ export default function PermisosDominioPicker({
     if (disabled) return;
     const next = new Set(asignacionesSet);
     rows.forEach((p) => {
+      if (!(p.acciones_validas || []).includes(accion)) return;
       const key = `${p.id}:${accion}`;
       if (checked) next.add(key);
       else next.delete(key);
@@ -64,7 +69,7 @@ export default function PermisosDominioPicker({
     if (disabled) return;
     const next = new Set(asignacionesSet);
     rows.forEach((p) => {
-      ACCIONES.forEach((accion) => {
+      (p.acciones_validas || []).forEach((accion) => {
         const key = `${p.id}:${accion}`;
         if (checked) next.add(key);
         else next.delete(key);
@@ -77,10 +82,13 @@ export default function PermisosDominioPicker({
 
   const panels = dominios.map((dominio) => {
     const rows = permisosAgrupados[dominio] || [];
+    const accionesDelDominio = ACCIONES.filter((accion) => rows.some((p) => (
+      (p.acciones_validas || []).includes(accion)
+    )));
     const activeCount = rows.reduce((acc, p) => (
-      acc + ACCIONES.filter((a) => hasAsignacion(asignacionesSet, p.id, a)).length
+      acc + (p.acciones_validas || []).filter((a) => hasAsignacion(asignacionesSet, p.id, a)).length
     ), 0);
-    const totalCount = rows.length * ACCIONES.length;
+    const totalCount = rows.reduce((acc, p) => acc + (p.acciones_validas || []).length, 0);
     const allDominioChecked = totalCount > 0 && activeCount === totalCount;
     const dominioIndeterminate = activeCount > 0 && activeCount < totalCount;
 
@@ -94,10 +102,16 @@ export default function PermisosDominioPicker({
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <Checkbox
               disabled={disabled}
-              checked={ACCIONES.every((accion) => hasAsignacion(asignacionesSet, p.id, accion))}
+              checked={(p.acciones_validas || []).every((accion) => (
+                hasAsignacion(asignacionesSet, p.id, accion)
+              ))}
               indeterminate={
-                ACCIONES.some((accion) => hasAsignacion(asignacionesSet, p.id, accion)) &&
-                !ACCIONES.every((accion) => hasAsignacion(asignacionesSet, p.id, accion))
+                (p.acciones_validas || []).some((accion) => (
+                  hasAsignacion(asignacionesSet, p.id, accion)
+                )) &&
+                !(p.acciones_validas || []).every((accion) => (
+                  hasAsignacion(asignacionesSet, p.id, accion)
+                ))
               }
               onChange={(e) => onToggleFila(p.id, e.target.checked)}
             />
@@ -108,16 +122,25 @@ export default function PermisosDominioPicker({
           </div>
         ),
       },
-      ...ACCIONES.map((accion) => ({
+      ...accionesDelDominio.map((accion) => ({
         title: (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
             <Tag color="default">{accion}</Tag>
             <Checkbox
               disabled={disabled || rows.length === 0}
-              checked={rows.length > 0 && rows.every((p) => hasAsignacion(asignacionesSet, p.id, accion))}
+              checked={rows.length > 0 && rows.every((p) => (
+                !(p.acciones_validas || []).includes(accion)
+                  || hasAsignacion(asignacionesSet, p.id, accion)
+              ))}
               indeterminate={
-                rows.some((p) => hasAsignacion(asignacionesSet, p.id, accion)) &&
-                !rows.every((p) => hasAsignacion(asignacionesSet, p.id, accion))
+                rows.some((p) => (
+                  (p.acciones_validas || []).includes(accion)
+                    && hasAsignacion(asignacionesSet, p.id, accion)
+                )) &&
+                !rows.every((p) => (
+                  !(p.acciones_validas || []).includes(accion)
+                    || hasAsignacion(asignacionesSet, p.id, accion)
+                ))
               }
               onChange={(e) => onToggleColumna(rows, accion, e.target.checked)}
             />
@@ -128,7 +151,7 @@ export default function PermisosDominioPicker({
         align: 'center',
         render: (_, p) => (
           <Checkbox
-            disabled={disabled}
+            disabled={disabled || !(p.acciones_validas || []).includes(accion)}
             checked={hasAsignacion(asignacionesSet, p.id, accion)}
             onChange={(e) => onToggle(p.id, accion, e.target.checked)}
           />

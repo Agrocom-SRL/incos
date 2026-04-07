@@ -79,6 +79,18 @@ export class ActualizarPermisosRolUseCase {
       if (!perm) {
         throw new NotFoundError(`Permiso ${row.permiso_id}`);
       }
+      const accionValida = await this.permissionRepository.existsPermisoAccionValida(
+        row.permiso_id,
+        row.accion
+      );
+      if (!accionValida) {
+        throw new UnprocessableEntityError('Los datos proporcionados son inválidos', [
+          {
+            field: `asignaciones[${i}]`,
+            message: `accion '${row.accion}' no es válida para el permiso ${row.permiso_id}`,
+          },
+        ]);
+      }
     }
 
     await this.rolePermissionRepository.replaceAllAssignmentsForRol(rolId, asignaciones);

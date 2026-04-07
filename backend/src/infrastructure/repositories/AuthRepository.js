@@ -88,6 +88,45 @@ export class AuthRepository {
    * Una fila por (permiso_codigo, accion).
    */
   async findPermisosEfectivos(usuarioId) {
+    const userRows = await sequelize.query(
+      `
+            SELECT rol_id
+            FROM usuarios
+            WHERE id = :usuarioId
+              AND activo = TRUE
+              AND deleted_at IS NULL
+            LIMIT 1
+        `,
+      {
+        replacements: { usuarioId },
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+
+    const userRow = userRows[0];
+    if (!userRow) {
+      return [];
+    }
+
+    // ADMIN_SISTEMA: obtiene todo el catálogo válido desde permiso_acciones
+    if (Number(userRow.rol_id) === 8) {
+      return sequelize.query(
+        `
+            SELECT p.codigo AS permiso_codigo, pa.accion
+            FROM permiso_acciones pa
+            JOIN permisos p ON p.id = pa.permiso_id
+            WHERE pa.activo = TRUE
+              AND pa.deleted_at IS NULL
+              AND p.activo = TRUE
+              AND p.deleted_at IS NULL
+            ORDER BY p.id, pa.accion
+        `,
+        {
+          type: sequelize.QueryTypes.SELECT,
+        }
+      );
+    }
+
     return sequelize.query(
       `
             SELECT permiso_codigo, accion

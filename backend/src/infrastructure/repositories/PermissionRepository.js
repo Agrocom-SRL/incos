@@ -146,14 +146,50 @@ export class PermissionRepository extends BaseRepository {
     }
     return sequelize.query(
       `
-      SELECT p.id, p.codigo, p.nombre, p.dominio, p.modulo
+      SELECT
+        p.id,
+        p.codigo,
+        p.nombre,
+        p.dominio,
+        p.modulo,
+        GROUP_CONCAT(pa.accion ORDER BY pa.accion SEPARATOR ',') AS acciones_validas
       FROM permisos p
+      LEFT JOIN permiso_acciones pa
+        ON pa.permiso_id = p.id
+        AND pa.activo = TRUE
+        AND pa.deleted_at IS NULL
       WHERE p.activo = TRUE AND p.deleted_at IS NULL
         ${dominioClause}
-      ORDER BY p.dominio, p.codigo
+      GROUP BY p.id, p.codigo, p.nombre, p.dominio, p.modulo
+      ORDER BY p.dominio, p.id
       `,
       { replacements, type: sequelize.QueryTypes.SELECT }
     );
+  }
+
+  /**
+   * Valida si una combinación (permiso, acción) está habilitada en catálogo.
+   * @param {number} permisoId
+   * @param {string} accion
+   * @returns {Promise<boolean>}
+   */
+  async existsPermisoAccionValida(permisoId, accion) {
+    const rows = await sequelize.query(
+      `
+      SELECT 1
+      FROM permiso_acciones
+      WHERE permiso_id = :permisoId
+        AND accion = :accion
+        AND activo = TRUE
+        AND deleted_at IS NULL
+      LIMIT 1
+      `,
+      {
+        replacements: { permisoId, accion },
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+    return rows.length > 0;
   }
 }
 
