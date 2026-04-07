@@ -18,6 +18,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 DROP TABLE IF EXISTS usuarios_permisos;
 DROP TABLE IF EXISTS sesiones;
 DROP TABLE IF EXISTS roles_permisos;
+DROP TABLE IF EXISTS permiso_acciones;
 DROP TABLE IF EXISTS usuarios;
 DROP TABLE IF EXISTS permisos;
 DROP TABLE IF EXISTS roles;
@@ -82,6 +83,42 @@ CREATE TABLE permisos (
     INDEX idx_deleted_at (deleted_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Permisos del sistema — códigos alineados al campo permiso de routes.jsx. Desacoplados del menú frontend.';
+
+-- ============================================
+-- TABLA: permiso_acciones
+-- ============================================
+
+CREATE TABLE permiso_acciones (
+    id INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Identificador único',
+    permiso_id INT NULL COMMENT 'Permiso al que aplica esta acción válida (NULL permite flexibilidad en migraciones)',
+    accion ENUM('VER','CREAR','EDITAR','ELIMINAR','APROBAR','EXPORTAR')
+        NOT NULL COMMENT 'Acción válida para este permiso según las capacidades reales del sistema',
+    
+    -- Campos de auditoría y control (ESTÁNDAR)
+    activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
+    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
+    created_by INT NULL COMMENT 'Usuario que creó',
+    updated_by INT NULL COMMENT 'Usuario que modificó',
+    deleted_by INT NULL COMMENT 'Usuario que eliminó',
+    
+    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
+    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
+    
+    FOREIGN KEY (permiso_id) REFERENCES permisos(id) ON DELETE SET NULL,
+    
+    -- Índices esenciales
+    INDEX idx_permiso_id (permiso_id) COMMENT 'Búsqueda por permiso (JOIN frecuente)',
+    INDEX idx_accion (accion) COMMENT 'Filtro por tipo de acción',
+    INDEX idx_permiso_accion (permiso_id, accion) COMMENT 'Consulta de combinación permiso-acción',
+    INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
+    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+COMMENT='Catálogo de acciones válidas por permiso.
+         Define qué checkboxes mostrar en el PermisosDominioPicker.
+         ADMIN_SISTEMA debe tener exactamente todas las filas de esta tabla.
+         Una asignación en roles_permisos solo es válida si existe aquí.';
 
 -- ============================================
 -- TABLA: usuarios

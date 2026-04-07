@@ -75,6 +75,62 @@ Documento de auditoria funcional (frontend + backend + seeds) sobre permisos por
 | `permisos.routes.js` | GET | `/api/v1/permisos` | VER catalogo permisos |
 | Catalogos de referencia/config (`*.routes.js`) | GET | `/api/v1/<recurso>` | VER catalogos |
 
+## Catalogo global de capacidades (frontend + endpoints)
+
+Este catalogo define las capacidades reales del sistema para evitar ambiguedad entre:
+- permisos de menu/ruta (`routes.jsx` con `permiso`)
+- controles de UI (`PermisoGuard`, `ActionButton`, `TableActions`)
+- operaciones API (`frontend/src/infrastructure/api/endpoints.js`)
+
+### Guardas y componentes de control por accion
+
+| Componente/hook | Funcion |
+|---|---|
+| `PermisoGuard(codigo, accion)` | habilita/bloquea rutas o bloques de vista |
+| `ActionButton(permiso, accion)` | renderiza/oculta botones de accion en headers y formularios |
+| `TableActions(permisos, extraActions.permiso/accion)` | muestra/oculta ver, editar, eliminar y acciones extra por fila |
+| `useAcciones(codigoPermiso)` | expone `puedeVer/Crear/Editar/Eliminar/Aprobar/Exportar` para una vista |
+
+### Capacidades base por accion (canon RBAC)
+
+| Accion | Capacidad funcional | Fuente tecnica principal |
+|---|---|---|
+| VER | listar, ver detalle, abrir modulo/menu | `GET` + `PermisoGuard` + filtro sidebar |
+| CREAR | alta/registro, generar documento, asignar | `POST` + `ActionButton` |
+| EDITAR | actualizacion de datos/estado/password | `PUT/PATCH` + `TableActions` |
+| ELIMINAR | bajas/soft-delete/override delete | `DELETE` + `TableActions` |
+| APROBAR | pasos de workflow de aprobacion | rutas de aprobacion + botones de flujo |
+| EXPORTAR | excel/pdf/recibos | `GET export/recibo` + botones de descarga |
+
+### Catalogo de capacidades por dominio (resumen operativo)
+
+| Dominio | Permisos codigo base | Capacidades reales detectadas |
+|---|---|---|
+| MATRICULA | `matricula.*` | admision, inscripcion, becas, documentos, aportes |
+| ACADEMICO | `academico.*` | calificaciones, nivelacion, trazabilidad, historial, licencias |
+| DOCENTES | `docentes.*` | docentes, licencias, supervision, pasantias |
+| FINANZAS | `finanzas.*` | pagos, cuotas, reportes, recibos |
+| INSTITUCIONAL | `institucional.*` | gestiones, oferta, horarios, configuraciones |
+| REPORTES | `reportes.*` | reportes de avance/asistencia/desercion/solicitudes |
+| SEGURIDAD | `seguridad.*` | usuarios, roles, permisos, overrides |
+
+### Inventario frontend de permisos en rutas (single source UI)
+
+El barrido de `frontend/src/presentation/modules/**/routes.jsx` confirma que los codigos usados en UI
+estan alineados con `54-seed-permisos.sql` (1..87) y que la visibilidad del sidebar depende de accion `VER`.
+
+### Recomendacion de normalizacion (siguiente paso de schema)
+
+Para evitar redundancia en `roles_permisos`:
+1. mantener `permisos` como catalogo de codigos
+2. agregar tabla `permiso_acciones(permiso_id, accion, activo)` como catalogo de capacidades validas
+3. mantener `roles_permisos(rol_id, permiso_id, accion)` solo como asignacion
+
+Con esto:
+- no se insertan combinaciones invalidas (ej. `APROBAR` donde no existe flujo)
+- `ADMIN_SISTEMA` puede poblarse automaticamente desde `permiso_acciones`
+- el documento de matriz se vuelve trazable 1:1 con el schema
+
 ## Matriz de permisos por pagina (sidebar)
 
 > Convenciones de roles: `ADM` (8), `REC` (1), `DIRA` (2), `DIRM` (3), `SECA` (4), `SECADM` (5), `DOC` (6), `EST` (7).

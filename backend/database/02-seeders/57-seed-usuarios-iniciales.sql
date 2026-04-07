@@ -2,7 +2,8 @@
 -- SEEDER: usuarios
 -- Sistema de Gestión Académica - Instituto INCOS
 -- Usuario administrador inicial del sistema
--- Ejecutar después de 53-seed-roles.sql
+-- Ejecutar después de 56-seed-permiso-acciones.sql
+-- (El rol ADMIN_SISTEMA debe tener catálogo completo en roles_permisos)
 -- ADVERTENCIA: cambiar la contraseña en el primer acceso al sistema
 -- ============================================
 -- NOTA: password_hash bcrypt corresponde a la contraseña de prueba '12345678'
