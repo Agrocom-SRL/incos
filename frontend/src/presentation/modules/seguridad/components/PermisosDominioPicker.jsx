@@ -1,9 +1,47 @@
-import { useMemo } from 'react';
-import { Checkbox, Collapse, Table, Tag } from 'antd';
+import { useEffect, useMemo, useState } from 'react';
+import { Checkbox, Table, Tag, Tabs } from 'antd';
+import {
+  AppstoreOutlined,
+  BankOutlined,
+  BarChartOutlined,
+  BookOutlined,
+  DollarOutlined,
+  IdcardOutlined,
+  SafetyCertificateOutlined,
+  TeamOutlined,
+} from '@ant-design/icons';
 import '@modules/seguridad/styles/seguridad.css';
 
 // Orden canónico de columnas; luego se filtra por dominio según acciones_validas.
 const ACCIONES = ['VER', 'CREAR', 'EDITAR', 'ELIMINAR', 'APROBAR', 'EXPORTAR'];
+
+/** Acentos e iconos por módulo (paleta Material-like, no solo verdes). */
+const DOMINIO_TAB_META = {
+  ACADEMICO: { Icon: BookOutlined, accent: '#1565c0' },
+  DOCENTES: { Icon: TeamOutlined, accent: '#6a1b9a' },
+  FINANZAS: { Icon: DollarOutlined, accent: '#f9a825' },
+  INSTITUCIONAL: { Icon: BankOutlined, accent: '#3949ab' },
+  MATRICULA: { Icon: IdcardOutlined, accent: '#00838f' },
+  REPORTES: { Icon: BarChartOutlined, accent: '#ef6c00' },
+  SEGURIDAD: { Icon: SafetyCertificateOutlined, accent: '#c62828' },
+};
+
+function metaDominio(codigo) {
+  const key = String(codigo || '')
+    .toUpperCase()
+    .replace(/\s+/g, '_');
+  return DOMINIO_TAB_META[key] || { Icon: AppstoreOutlined, accent: '#2e7d32' };
+}
+
+/** Colores de columna por tipo de acción */
+const ACCION_TAG_COLOR = {
+  VER: 'blue',
+  CREAR: 'cyan',
+  EDITAR: 'orange',
+  ELIMINAR: 'red',
+  APROBAR: 'purple',
+  EXPORTAR: 'geekblue',
+};
 
 function toSet(asignacionesActuales) {
   const s = new Set();
@@ -79,9 +117,25 @@ export default function PermisosDominioPicker({
     onChange(setToAsignaciones(next));
   };
 
-  const dominios = Object.keys(permisosAgrupados).sort();
+  const dominios = useMemo(
+    () => Object.keys(permisosAgrupados).sort(),
+    [permisosAgrupados]
+  );
+  const [activeDominio, setActiveDominio] = useState(() => dominios[0] || '');
 
-  const panels = dominios.map((dominio) => {
+  useEffect(() => {
+    if (!dominios.length) {
+      setActiveDominio('');
+      return;
+    }
+    setActiveDominio((prev) => (prev && dominios.includes(prev) ? prev : dominios[0]));
+  }, [dominios]);
+
+  const inkAccent = metaDominio(activeDominio || dominios[0]).accent;
+
+  const tabItems = dominios.map((dominio) => {
+    const meta = metaDominio(dominio);
+    const TabIcon = meta.Icon;
     const rows = permisosAgrupados[dominio] || [];
     const accionesDelDominio = ACCIONES.filter((accion) => rows.some((p) => (
       (p.acciones_validas || []).includes(accion)
@@ -126,7 +180,7 @@ export default function PermisosDominioPicker({
       ...accionesDelDominio.map((accion) => ({
         title: (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-            <Tag color="default">{accion}</Tag>
+            <Tag color={ACCION_TAG_COLOR[accion] || 'default'}>{accion}</Tag>
             <Checkbox
               disabled={disabled || rows.length === 0}
               checked={rows.length > 0 && rows.every((p) => (
@@ -167,11 +221,15 @@ export default function PermisosDominioPicker({
     return {
       key: dominio,
       label: (
-        <div className="seg-picker__panel-head" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <span
+          className="seg-picker__tab-label"
+          style={{ '--seg-tab-accent': meta.accent }}
+        >
           <span
+            className="seg-picker__tab-checkbox"
             onClick={(e) => e.stopPropagation()}
-            role="button"
-            tabIndex={-1}
+            onMouseDown={(e) => e.stopPropagation()}
+            role="presentation"
           >
             <Checkbox
               disabled={disabled || rows.length === 0}
@@ -180,25 +238,52 @@ export default function PermisosDominioPicker({
               onChange={(e) => onToggleDominio(rows, e.target.checked)}
             />
           </span>
-          <span>{dominio}</span>
-          <Tag>{activeCount} activos</Tag>
-        </div>
+          <TabIcon className="seg-picker__tab-icon" aria-hidden />
+          <span className="seg-picker__tab-title">{dominio}</span>
+          <span
+            className="seg-picker__tab-badge"
+            style={{
+              color: meta.accent,
+              background: `${meta.accent}1f`,
+              borderColor: `${meta.accent}55`,
+            }}
+          >
+            {activeCount} activos
+          </span>
+        </span>
       ),
       children: (
-        <Table
-          rowKey="id"
-          size="small"
-          pagination={false}
-          dataSource={rows}
-          columns={columns}
-        />
+        <div className="seg-picker__tab-panel">
+          <Table
+            rowKey="id"
+            size="small"
+            pagination={false}
+            dataSource={rows}
+            columns={columns}
+            className="seg-picker__table"
+          />
+        </div>
       ),
     };
   });
 
   return (
-    <div className="seg-picker">
-      <Collapse items={panels} defaultActiveKey={dominios.slice(0, 1)} />
+    <div className="seg-picker seg-picker--material">
+      {dominios.length === 0 ? (
+        <div className="seg-picker__empty">Sin permisos en catálogo.</div>
+      ) : (
+        <div
+          className="sd-tabs-shell seg-picker__tabs-shell"
+          style={{ '--seg-ink': inkAccent }}
+        >
+          <Tabs
+            className="sd-tabs seg-picker__tabs"
+            items={tabItems}
+            activeKey={activeDominio}
+            onChange={setActiveDominio}
+          />
+        </div>
+      )}
     </div>
   );
 }

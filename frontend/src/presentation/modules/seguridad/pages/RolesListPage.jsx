@@ -13,6 +13,30 @@ function errMsg(json) {
   return typeof e === 'string' ? e : e?.message || 'Error';
 }
 
+/** Alineado con `nivel_acceso` en BD: 1=Estudiante … 5=Rector/Admin */
+const NIVEL_ACCESO_LABEL = {
+  1: 'Estudiante',
+  2: 'Docente',
+  3: 'Secretaría',
+  4: 'Director',
+  5: 'Administración',
+};
+
+function nivelAccesoLabel(nivel) {
+  if (nivel == null || Number.isNaN(Number(nivel))) return '—';
+  const n = Number(nivel);
+  return NIVEL_ACCESO_LABEL[n] ?? `Nivel ${n}`;
+}
+
+function nivelAccesoTagColor(nivel) {
+  const n = Number(nivel);
+  if (n === 5) return 'purple';
+  if (n === 4) return 'blue';
+  if (n === 3) return 'cyan';
+  if (n === 2) return 'green';
+  return 'default';
+}
+
 export default function RolesListPage() {
   const navigate = useNavigate();
   const { message } = App.useApp();
@@ -39,12 +63,9 @@ export default function RolesListPage() {
       title: 'Rol',
       key: 'rol',
       render: (_, record) => (
-        <Space orientation="vertical" size={2}>
-          <Space>
-            <SafetyCertificateOutlined />
-            <strong>{record.nombre}</strong>
-          </Space>
-          <code>{record.codigo}</code>
+        <Space>
+          <SafetyCertificateOutlined />
+          <strong>{record.nombre}</strong>
         </Space>
       ),
     },
@@ -52,7 +73,11 @@ export default function RolesListPage() {
       title: 'Nivel de acceso',
       dataIndex: 'nivel_acceso',
       key: 'nivel_acceso',
-      render: (nivel) => <Tag color={nivel >= 5 ? 'purple' : nivel >= 3 ? 'blue' : 'green'}>{nivel}</Tag>,
+      render: (nivel) => (
+        <Tag color={nivelAccesoTagColor(nivel)} style={{ fontSize: 16 }}>
+          {nivelAccesoLabel(nivel)}
+        </Tag>
+      ),
     },
     {
       title: 'Acciones',

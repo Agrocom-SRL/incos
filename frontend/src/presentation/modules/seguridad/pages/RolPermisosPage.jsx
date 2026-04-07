@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Alert, App, Space, Tag, Typography } from 'antd';
-import { KeyOutlined } from '@ant-design/icons';
+import { Alert, App, Descriptions, Space, Tag, Typography } from 'antd';
+import { ArrowLeftOutlined, KeyOutlined } from '@ant-design/icons';
 import { PermisoGuard } from '@/presentation/guards/PermisoGuard.jsx';
 import PermisosDominioPicker from '@modules/seguridad/components/PermisosDominioPicker.jsx';
 import { usePermisosCatalogo, useRolPermisos } from '@/application/modules/seguridad/hooks';
@@ -82,34 +82,41 @@ export default function RolPermisosPage() {
           <PageHeader
             title={`Permisos del Rol ${rolInfo ? `— ${rolInfo.nombre}` : ''}`}
             breadcrumbItems={breadcrumbItems}
-            actions={
-              <Button variant="default" onClick={() => navigate('/seguridad/roles')}>
-                Volver
-              </Button>
-            }
+            actions={(
+              <button
+                type="button"
+                className="sd-btn sd-btn--outline"
+                onClick={() => navigate('/seguridad/roles')}
+              >
+                <ArrowLeftOutlined /> Volver
+              </button>
+            )}
           />
         }
       >
         <Space orientation="vertical" size="large" style={{ width: '100%' }}>
           <Card
+            size="small"
             title="Información del rol"
             headerColor="primary"
             variant="outlined"
+            styles={{ body: { paddingTop: 12, paddingBottom: 12 } }}
           >
-            <div className="sd-card__body sd-card__body--cols-3">
-              <div className="sd-field">
-                <span className="sd-field__label">Código</span>
-                <span className="sd-field__value">{rolInfo?.codigo || '—'}</span>
-              </div>
-              <div className="sd-field">
-                <span className="sd-field__label">Nombre</span>
-                <span className="sd-field__value">{rolInfo?.nombre || '—'}</span>
-              </div>
-              <div className="sd-field">
-                <span className="sd-field__label">Nivel</span>
-                <span className="sd-field__value"><Tag>{rolInfo?.nivel_acceso ?? '—'}</Tag></span>
-              </div>
-            </div>
+            <Descriptions
+              size="small"
+              colon={false}
+              column={{ xs: 1, sm: 3 }}
+              styles={{ label: { width: 72, color: 'var(--color-text-secondary, #666)' } }}
+              items={[
+                { key: 'codigo', label: 'Código', children: <Typography.Text code>{rolInfo?.codigo || '—'}</Typography.Text> },
+                { key: 'nombre', label: 'Nombre', children: rolInfo?.nombre || '—' },
+                {
+                  key: 'nivel',
+                  label: 'Nivel',
+                  children: <Tag style={{ margin: 0 }}>{rolInfo?.nivel_acceso ?? '—'}</Tag>,
+                },
+              ]}
+            />
           </Card>
 
           <Card
