@@ -74,6 +74,7 @@ export class ObtenerPermisosUsuarioUseCase {
               codigo: user.rol_codigo ?? null,
               nombre: user.rol_nombre ?? null,
               is_system: Boolean(user.rol_is_system),
+              tipo: user.rol_tipo ?? null,
             }
           : null,
       },

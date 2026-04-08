@@ -146,13 +146,13 @@ export default function RolPermisosPage() {
                 <Alert
                   type="info"
                   showIcon
-                  message="Rol protegido"
+                  title="Rol protegido"
                   description="Los permisos del Administrador del Sistema no pueden modificarse desde el panel. Este rol contiene todos los permisos disponibles y sirve como referencia para los demás roles."
                 />
               ) : null}
 
               {!esAdminSistema && hasChanges ? (
-                <Alert type="info" message="Hay cambios sin guardar" showIcon />
+                <Alert type="info" title="Hay cambios sin guardar" showIcon />
               ) : null}
 
               <PermisosDominioPicker

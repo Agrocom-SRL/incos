@@ -70,6 +70,7 @@ export class LoginUseCase {
           codigo: usuario.rol_codigo,
           nombre: usuario.rol_nombre,
           is_system: Boolean(usuario.rol_is_system),
+          tipo: usuario.rol_tipo ?? null,
         },
       },
     };

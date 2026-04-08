@@ -25,6 +25,7 @@ import {
     useExportListaInscritosPorCarreraExcel,
 } from '@application-inscripciones/hooks';
 import { useMessage } from '@application/utils';
+import { usePermiso } from '@/presentation/hooks/usePermiso.js';
 import { createInscripcionesTableColumns } from '@inscripciones/config';
 
 const InscripcionesList = () => {
@@ -32,6 +33,10 @@ const InscripcionesList = () => {
     const screens = Grid.useBreakpoint();
     const isSmall = !screens.lg;
     const showMessage = useMessage();
+
+    const puedeExportarAdmision = usePermiso('matricula.admision.ver', 'EXPORTAR');
+    const puedeExportarInscripcion = usePermiso('matricula.inscribir', 'EXPORTAR');
+    const puedeExportarLista = puedeExportarAdmision || puedeExportarInscripcion;
 
     const [selectedCarreraId, setSelectedCarreraId] = useState(null);
     const { carreras = [], loading: carrerasLoading } = useCarrerasApi();
@@ -98,59 +103,63 @@ const InscripcionesList = () => {
                     breadcrumbItems={breadcrumbItems}
                     actions={
                         <Space wrap>
-                            <Select
-                                style={{ minWidth: isSmall ? 220 : 320 }}
-                                className="inscripciones-carrera-select"
-                                placeholder="Seleccione carrera para exportar"
-                                loading={carrerasLoading}
-                                value={selectedCarreraId}
-                                onChange={(value) => setSelectedCarreraId(value)}
-                                allowClear
-                                status={selectedCarreraId ? 'success' : undefined}
-                                optionFilterProp="label"
-                                showSearch
-                                options={(carreras || []).map((c) => {
-                                    const color = c.colorHex || '#1677ff';
-                                    return {
-                                        value: c.id,
-                                        label: (
-                                            <Space size={10}>
-                                                <span
-                                                    style={{
-                                                        width: 10,
-                                                        height: 10,
-                                                        borderRadius: 999,
-                                                        backgroundColor: color,
-                                                        display: 'inline-block',
-                                                    }}
-                                                />
-                                                <span style={{ fontWeight: 600 }}>{c.nombre}</span>
-                                                {c.codigo ? (
-                                                    <Tag color={color} style={{ marginInlineStart: 0 }}>
-                                                        {c.codigo}
-                                                    </Tag>
-                                                ) : null}
-                                            </Space>
-                                        ),
-                                    };
-                                })}
-                            />
-                            <Button
-                                variant={selectedCarreraId ? 'primary' : 'default'}
-                                loading={exportLoading}
-                                onClick={handleExportLista}
-                                disabled={!selectedCarreraId}
-                                icon={<DownloadOutlined />}
-                                style={
-                                    selectedCarreraId
-                                        ? { backgroundColor: carreraColor, borderColor: carreraColor }
-                                        : undefined
-                                }
-                            >
-                                {selectedCarreraId
-                                    ? `Descargar Excel${selectedCarrera?.codigo ? ` (${selectedCarrera.codigo})` : ''}`
-                                    : 'Seleccione carrera'}
-                            </Button>
+                            {puedeExportarLista ? (
+                                <>
+                                    <Select
+                                        style={{ minWidth: isSmall ? 220 : 320 }}
+                                        className="inscripciones-carrera-select"
+                                        placeholder="Seleccione carrera para exportar"
+                                        loading={carrerasLoading}
+                                        value={selectedCarreraId}
+                                        onChange={(value) => setSelectedCarreraId(value)}
+                                        allowClear
+                                        status={selectedCarreraId ? 'success' : undefined}
+                                        optionFilterProp="label"
+                                        showSearch
+                                        options={(carreras || []).map((c) => {
+                                            const color = c.colorHex || '#1677ff';
+                                            return {
+                                                value: c.id,
+                                                label: (
+                                                    <Space size={10}>
+                                                        <span
+                                                            style={{
+                                                                width: 10,
+                                                                height: 10,
+                                                                borderRadius: 999,
+                                                                backgroundColor: color,
+                                                                display: 'inline-block',
+                                                            }}
+                                                        />
+                                                        <span style={{ fontWeight: 600 }}>{c.nombre}</span>
+                                                        {c.codigo ? (
+                                                            <Tag color={color} style={{ marginInlineStart: 0 }}>
+                                                                {c.codigo}
+                                                            </Tag>
+                                                        ) : null}
+                                                    </Space>
+                                                ),
+                                            };
+                                        })}
+                                    />
+                                    <Button
+                                        variant={selectedCarreraId ? 'primary' : 'default'}
+                                        loading={exportLoading}
+                                        onClick={handleExportLista}
+                                        disabled={!selectedCarreraId}
+                                        icon={<DownloadOutlined />}
+                                        style={
+                                            selectedCarreraId
+                                                ? { backgroundColor: carreraColor, borderColor: carreraColor }
+                                                : undefined
+                                        }
+                                    >
+                                        {selectedCarreraId
+                                            ? `Descargar Excel${selectedCarrera?.codigo ? ` (${selectedCarrera.codigo})` : ''}`
+                                            : 'Seleccione carrera'}
+                                    </Button>
+                                </>
+                            ) : null}
                             <Button
                                 variant="primary"
                                 icon={<PlusOutlined />}
@@ -164,12 +173,14 @@ const InscripcionesList = () => {
             }
             sidebar={null}
         >
-            <style>{`
-                /* Borde gris aun sin focus (mejor contraste visual). */
-                .inscripciones-carrera-select:not(.ant-select-focused):not(.ant-select-status-success):not(.ant-select-status-error) .ant-select-selector {
-                    border-color: #d9d9d9 !important;
-                }
-            `}</style>
+            {puedeExportarLista ? (
+                <style>{`
+                    /* Borde gris aun sin focus (mejor contraste visual). */
+                    .inscripciones-carrera-select:not(.ant-select-focused):not(.ant-select-status-success):not(.ant-select-status-error) .ant-select-selector {
+                        border-color: #d9d9d9 !important;
+                    }
+                `}</style>
+            ) : null}
             {/* Contenido principal - se renderiza en MainContent */}
             <TableListView
                 data={inscripciones}

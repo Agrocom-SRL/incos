@@ -171,8 +171,8 @@ export const createPagosTableColumns = (navigate, refetch = null, deletePago = n
                         viewNavigateState={viewNavigateState}
                         permisos={{
                             ver: [
-                                { codigo: 'finanzas.pago.ver', accion: 'VER' },
-                                { codigo: 'matricula.pago.aporte.ver', accion: 'VER' },
+                                { codigo: 'finanzas.pago.ver', accion: 'DETALLE' },
+                                { codigo: 'matricula.pago.aporte.ver', accion: 'DETALLE' },
                             ],
                             eliminar: [
                                 { codigo: 'finanzas.pago.editar', accion: 'ELIMINAR' },

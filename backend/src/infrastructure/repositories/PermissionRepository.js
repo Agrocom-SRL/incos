@@ -205,11 +205,11 @@ export class PermissionRepository extends BaseRepository {
     return sequelize.query(
       `
       SELECT
-        p.id AS permiso_id,
-        p.codigo,
-        p.nombre,
-        p.dominio,
-        pa.accion
+        permiso_id,
+        codigo,
+        nombre,
+        dominio,
+        accion
       FROM vista_catalogo_acciones_permisos_activas
       ORDER BY dominio, permiso_id, accion
       `,

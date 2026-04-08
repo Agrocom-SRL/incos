@@ -146,14 +146,16 @@ const EstudiantesDetail = () => {
 
   const showDeclaracionButton =
     tipoAdmisionUpper === 'TRASPASO' || tipoAdmisionUpper === 'TRANSITABILIDAD';
-  const puedeVerInscripcion = hasPermiso('matricula.inscribir', 'VER');
+  const puedeVerInscripcion = hasPermiso('matricula.inscribir', 'DETALLE');
   const puedeCrearInscripcion = hasPermiso('matricula.inscribir', 'CREAR');
   const puedeRegistrarPago = hasPermiso('finanzas.pago.registrar', 'CREAR');
-  const puedeVerPago = hasPermiso('finanzas.pago.ver', 'VER')
-    || hasPermiso('matricula.pago.aporte.ver', 'VER');
-  const puedeCrearDocumento = hasPermiso('matricula.documento.ver', 'CREAR');
-  const puedeExportarDocumento = hasPermiso('matricula.documento.ver', 'EXPORTAR');
+  const puedeVerPago =
+    hasPermiso('finanzas.pago.ver', 'DETALLE')
+    || hasPermiso('matricula.pago.aporte.ver', 'DETALLE');
+  /** Acta, declaración y boleta (PDF) — alineado con matricula.documento.ver + GENERAR_PDF en seeders. */
+  const puedeGenerarPdfDocumento = hasPermiso('matricula.documento.ver', 'GENERAR_PDF');
   const puedeEliminarBeca = hasPermiso('matricula.beca.asignar', 'ELIMINAR');
+  const puedeEditarEstudiante = hasPermiso('matricula.admision.editar', 'EDITAR');
 
   const residenciaCompleta =
     studentData?.residenceAddressComplete ||
@@ -474,7 +476,14 @@ const EstudiantesDetail = () => {
         </div>
       ),
     }] : []),
-  ], [studentData, residenciaCompleta, guardians, documentDeliveries, scholarships, inscripcion, origins, nacionalidadLabel, idiomaMaterno, idiomaSecundario, lugarNacimiento, paises, handleVerInscripcion, handleNuevaInscripcion, academicData, catalogs, transitability, transfer, handleDeleteBeca, deletingBecaId, deletingBeca, estadoAporte, loadingEstadoAporte, handleVerDetallePago, handleRegistrarPago]);
+  ], [
+    studentData, residenciaCompleta, guardians, documentDeliveries, scholarships, inscripcion, origins,
+    nacionalidadLabel, idiomaMaterno, idiomaSecundario, lugarNacimiento, paises, handleVerInscripcion,
+    handleNuevaInscripcion, academicData, catalogs, transitability, transfer, handleDeleteBeca,
+    deletingBecaId, deletingBeca, estadoAporte, loadingEstadoAporte, handleVerDetallePago,
+    handleRegistrarPago, puedeVerInscripcion, puedeCrearInscripcion, puedeVerPago, puedeRegistrarPago,
+    puedeEliminarBeca, puedeGenerarPdfDocumento, showDeclaracionButton,
+  ]);
 
   /* ── Estados de carga / error ── */
   if (loading) return (
@@ -512,7 +521,7 @@ const EstudiantesDetail = () => {
         {/* ═══ PROFILE CARD ═══ */}
         <div className="sd-profile">
           {/* Botón editar: esquina superior derecha de la tarjeta */}
-          {studentData?.id ? (
+          {studentData?.id && puedeEditarEstudiante ? (
             <Tooltip title="Editar datos del estudiante">
               <button
                 type="button"
@@ -581,7 +590,7 @@ const EstudiantesDetail = () => {
 
           {/* Actions */}
           <div className="sd-profile__actions">
-            {showDeclaracionButton && puedeCrearDocumento && (
+            {showDeclaracionButton && puedeGenerarPdfDocumento && (
               <button
                 type="button"
                 className="sd-btn sd-btn--declaracion"
@@ -591,11 +600,11 @@ const EstudiantesDetail = () => {
                 <FileTextOutlined /> Declaración Jurada
               </button>
             )}
-            {actaCompromisoData && puedeExportarDocumento ? (
+            {actaCompromisoData && puedeGenerarPdfDocumento ? (
               <button type="button" className="sd-btn sd-btn--warn" onClick={handleDownloadActaCompromiso}>
                 <DownloadOutlined /> Descargar Acta
               </button>
-            ) : tieneDocumentosFaltantesFlag && puedeCrearDocumento ? (
+            ) : tieneDocumentosFaltantesFlag && puedeGenerarPdfDocumento ? (
               <button type="button" className="sd-btn sd-btn--warn" onClick={handleGenerateActaCompromiso} disabled={loadingActa}>
                 <FileTextOutlined /> Generar Acta
               </button>

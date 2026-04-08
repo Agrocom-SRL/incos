@@ -24,16 +24,16 @@ SET FOREIGN_KEY_CHECKS = 0;
 INSERT INTO permisos (id, codigo, nombre, dominio, modulo, grupo_ui, ruta_sidebar, activo) VALUES
 
 -- DOMINIO: MATRICULA (módulo sidebar: MAT)
-(1,  'matricula.admision.ver',    'Admisión: listar, ver ficha y exportar',          'MATRICULA', 'MAT', 'mat_admision',    '/estudiantes/listar',       TRUE),
+(1,  'matricula.admision.ver',    'Admisión: listar, ver ficha; exportar Excel estadística de inscritos', 'MATRICULA', 'MAT', 'mat_admision', '/estudiantes/listar', TRUE),
 (2,  'matricula.admision.crear',  'Admisión: registrar nuevo estudiante',             'MATRICULA', 'MAT', 'mat_admision',    '/estudiantes/listar',       TRUE),
 (3,  'matricula.admision.editar', 'Admisión: editar datos, eliminar y activar',       'MATRICULA', 'MAT', 'mat_admision',    '/estudiantes/listar',       TRUE),
-(4,  'matricula.inscribir',           'Matrículas: listar, ver y crear inscripción', 'MATRICULA', 'MAT', 'mat_inscripcion', '/matricula/listar',         TRUE),
+(4,  'matricula.inscribir',           'Matrículas: listar, ver y crear inscripción; exportar Excel lista por carrera', 'MATRICULA', 'MAT', 'mat_inscripcion', '/matricula/listar', TRUE),
 (5,  'matricula.inscripcion.editar',  'Matrículas: editar y eliminar inscripción',   'MATRICULA', 'MAT', 'mat_inscripcion', '/matricula/listar',         TRUE),
 (6,  'matricula.beca.ver',     'Becas: listar asignaciones y ver detalle',           'MATRICULA', 'MAT', 'mat_becas',       '/estudiantes/becas/listar', TRUE),
 (7,  'matricula.beca.asignar', 'Becas: asignar, ajustar o quitar',                  'MATRICULA', 'MAT', 'mat_becas',       '/estudiantes/becas/listar', TRUE),
 (8,  'matricula.beca.aprobar', 'Becas: aprobar solicitudes',                         'MATRICULA', 'MAT', 'mat_becas',       '/estudiantes/becas/listar', TRUE),
 (9,  'matricula.documento.ver', 'Documentos: ver y generar PDFs (acta, declaración, formulario)', 'MATRICULA', 'MAT', 'mat_documentos', '/estudiantes/documentos', TRUE),
-(10, 'matricula.pago.aporte.ver', 'Aportes: listar, exportar recibo y anular',      'MATRICULA', 'MAT', 'mat_aportes',     '/matricula/aportes/listar', TRUE),
+(10, 'matricula.pago.aporte.ver', 'Aportes: listar, anular, exportar recibo PDF y Excel estado por carrera', 'MATRICULA', 'MAT', 'mat_aportes', '/matricula/aportes/listar', TRUE),
 (11, 'matricula.pasantia.ver',       'Pasantías estudiantiles: listar y ver',        'MATRICULA', 'MAT', 'mat_pasantias',   '/pasantias/listar',         TRUE),
 (12, 'matricula.pasantia.solicitar', 'Pasantías estudiantiles: solicitar',           'MATRICULA', 'MAT', 'mat_pasantias',   '/pasantias/listar',         TRUE),
 (13, 'matricula.pasantia.aprobar',   'Pasantías estudiantiles: aprobar',             'MATRICULA', 'MAT', 'mat_pasantias',   '/pasantias/listar',         TRUE),
@@ -84,7 +84,7 @@ INSERT INTO permisos (id, codigo, nombre, dominio, modulo, grupo_ui, ruta_sideba
 (54, 'docentes.supervision.pasantia.evaluar',    'Pasantías docentes: evaluación final','DOCENTES','DOC', 'doc_pasantias', '/supervision/pasantias', TRUE),
 
 -- DOMINIO: FINANZAS (módulo sidebar: FIN)
-(55, 'finanzas.pago.ver',        'Pagos: listar y ver detalle',                       'FINANZAS', 'FIN', 'fin_pagos',       '/pagos/listar',        TRUE),
+(55, 'finanzas.pago.ver',        'Pagos: listar, ver detalle; exportar recibos y Excel estado aportes por carrera', 'FINANZAS', 'FIN', 'fin_pagos', '/pagos/listar', TRUE),
 (56, 'finanzas.pago.registrar',  'Pagos: registrar pago',                             'FINANZAS', 'FIN', 'fin_pagos',       '/pagos/listar',        TRUE),
 (57, 'finanzas.pago.editar',     'Pagos: editar y eliminar pago',                     'FINANZAS', 'FIN', 'fin_pagos',       '/pagos/listar',        TRUE),
 (58, 'finanzas.pago.adicionales','Pagos adicionales: gestionar',                      'FINANZAS', 'FIN', 'fin_adicionales', '/pagos/adicionales',   TRUE),

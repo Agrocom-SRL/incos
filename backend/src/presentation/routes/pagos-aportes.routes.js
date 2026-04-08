@@ -92,6 +92,7 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
      * GET /api/v1/pagos-aportes/export/lista-por-carrera
      * Excel: inscritos por carrera con monto de aporte, descuento, cuotas, saldo, etc.
      * Query: carrera_id (requerido), gestion_id (opcional; gestión vigente por defecto)
+     * Permiso: finanzas.pago.ver EXPORTAR o matricula.pago.aporte.ver EXPORTAR (pagoExportar).
      */
     router.get(
         '/export/lista-por-carrera',

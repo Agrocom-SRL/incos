@@ -9,6 +9,8 @@
 --   [NUEVO]    accion='DETALLE'     — boton "ver" en fila + URL /:id
 --   [NUEVO]    accion='ACTIVAR'     — toggle estado activo/bloqueado
 --   [NUEVO]    accion='GENERAR_PDF' — generacion de documentos PDF
+--   [NOTA]     EXPORTAR — Excel/API: estadística inscritos (perm.1), lista inscritos/carrera (1 o 4),
+--              estado aportes/carrera (55 o 10), recibos PDF (55 o 10), etc.
 --
 -- Este catalogo define los checkboxes visibles en PermisosDominioPicker.
 -- ADMIN_SISTEMA (rol_id=1) se resuelve dinamicamente desde esta tabla.
@@ -23,7 +25,7 @@ INSERT INTO permiso_acciones (permiso_id, accion, activo) VALUES
 
 -- MATRICULA
 (1,'LISTAR',TRUE),(1,'DETALLE',TRUE),(1,'EXPORTAR',TRUE),(2,'CREAR',TRUE),(3,'EDITAR',TRUE),(3,'ELIMINAR',TRUE),(3,'ACTIVAR',TRUE),
-(4,'LISTAR',TRUE),(4,'DETALLE',TRUE),(4,'CREAR',TRUE),(5,'EDITAR',TRUE),(5,'ELIMINAR',TRUE),
+(4,'LISTAR',TRUE),(4,'DETALLE',TRUE),(4,'CREAR',TRUE),(4,'EXPORTAR',TRUE),(5,'EDITAR',TRUE),(5,'ELIMINAR',TRUE),
 (6,'LISTAR',TRUE),(6,'DETALLE',TRUE),(7,'CREAR',TRUE),(7,'EDITAR',TRUE),(7,'ELIMINAR',TRUE),(8,'APROBAR',TRUE),
 (9,'LISTAR',TRUE),(9,'GENERAR_PDF',TRUE),
 (10,'LISTAR',TRUE),(10,'DETALLE',TRUE),(10,'ELIMINAR',TRUE),(10,'EXPORTAR',TRUE),

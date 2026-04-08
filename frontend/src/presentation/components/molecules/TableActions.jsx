@@ -43,7 +43,8 @@ function cumplePermisoRef(ref, hasPermiso) {
  * @param {Function} props.onView - Función personalizada para ver (opcional)
  * @param {boolean} props.editDisabled - Si el botón de editar debe estar deshabilitado (opcional)
  * @param {Object} props.extraActions - Acciones adicionales (opcional)
- * @param {Object} props.permisos - Permisos por acción; cada valor puede ser {codigo, accion} o array (OR)
+ * @param {Object} props.permisos - Permisos por acción; cada valor puede ser {codigo, accion} o array (OR).
+ *   En permisos v2 el ícono "ver detalle" de fila usa accion **DETALLE** (no existe VER).
  */
 const TableActions = ({
   record,

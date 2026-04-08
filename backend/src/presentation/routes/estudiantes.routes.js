@@ -1,6 +1,6 @@
 import express from 'express';
 import { authenticate } from '../middleware/auth.middleware.js';
-import { verificarPermiso } from '../middleware/permisos.middleware.js';
+import { verificarPermiso, verificarPermisoCualquiera } from '../middleware/permisos.middleware.js';
 import { listValidator, idValidator, searchValidator } from '../validators/common/index.js';
 import { registerStudentValidator, updateStudentValidator, assignBecaValidator } from '../validators/estudiantes/index.js';
 
@@ -31,6 +31,14 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
     const admisionEditar = [authenticate, verificarPermiso('matricula.admision.editar', 'EDITAR')];
     const admisionEliminar = [authenticate, verificarPermiso('matricula.admision.editar', 'ELIMINAR')];
     const admisionExportar = [authenticate, verificarPermiso('matricula.admision.ver', 'EXPORTAR')];
+    /** Excel lista inscritos por carrera: admisión o módulo inscripciones (misma ruta API). */
+    const listaInscritosPorCarreraExportar = [
+        authenticate,
+        verificarPermisoCualquiera([
+            ['matricula.admision.ver', 'EXPORTAR'],
+            ['matricula.inscribir', 'EXPORTAR'],
+        ]),
+    ];
     const documentoPdf = [authenticate, verificarPermiso('matricula.documento.ver', 'GENERAR_PDF')];
     const becaListar = [authenticate, verificarPermiso('matricula.beca.ver', 'LISTAR')];
     const becaDetalle = [authenticate, verificarPermiso('matricula.beca.ver', 'DETALLE')];
@@ -154,12 +162,13 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
      * GET /api/v1/estudiantes/export/lista-inscritos-por-carrera
      * Descargar Excel de lista de inscritos por carrera, una hoja por paralelo.
      * Query: carrera_id (requerido), gestion_id (opcional; por defecto la gestión vigente)
+     * Permiso: matricula.admision.ver EXPORTAR o matricula.inscribir EXPORTAR.
      *
      * Debe ir antes de rutas con /:id.
      */
     router.get(
         '/export/lista-inscritos-por-carrera',
-        ...admisionExportar,
+        ...listaInscritosPorCarreraExportar,
         (req, res, next) => controllers.exportListaInscritosPorCarreraExcelController.handle(req, res, next)
     );
 

@@ -339,7 +339,7 @@ export const createEstudiantesTableColumns = (
               }
             }}
             permisos={{
-              ver: { codigo: 'matricula.admision.ver', accion: 'VER' },
+              ver: { codigo: 'matricula.admision.ver', accion: 'DETALLE' },
               editar: { codigo: 'matricula.admision.editar', accion: 'EDITAR' },
               eliminar: { codigo: 'matricula.admision.editar', accion: 'ELIMINAR' },
             }}
