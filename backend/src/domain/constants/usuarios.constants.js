@@ -45,12 +45,15 @@ export const TIPOS_REFERENCIA_VALUES = Object.values(TIPOS_REFERENCIA);
  * Acciones permitidas en permisos
  */
 export const ACCIONES_PERMISOS = {
-  VER: 'VER',
+  LISTAR: 'LISTAR',
+  DETALLE: 'DETALLE',
   CREAR: 'CREAR',
   EDITAR: 'EDITAR',
   ELIMINAR: 'ELIMINAR',
+  ACTIVAR: 'ACTIVAR',
   APROBAR: 'APROBAR',
   EXPORTAR: 'EXPORTAR',
+  GENERAR_PDF: 'GENERAR_PDF',
 };
 
 /**

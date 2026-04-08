@@ -29,7 +29,7 @@ export class ObtenerPermisosRolUseCase {
         id: rol.id,
         codigo: rol.code,
         nombre: rol.name,
-        nivel_acceso: rol.accessLevel,
+        is_system: Boolean(rol.isSystem),
       },
       permisos_por_dominio: agruparPermisosRolPorDominio(flat),
     };

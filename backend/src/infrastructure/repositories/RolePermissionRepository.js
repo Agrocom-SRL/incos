@@ -141,14 +141,11 @@ export class RolePermissionRepository extends BaseRepository {
     return sequelize.query(
       `
       SELECT
-        rp.id, rp.accion,
-        p.id AS permiso_id, p.codigo, p.nombre, p.dominio, p.modulo
-      FROM roles_permisos rp
-      INNER JOIN permisos p ON p.id = rp.permiso_id
-        AND p.activo = TRUE AND p.deleted_at IS NULL
-      WHERE rp.rol_id = :rolId
-        AND rp.activo = TRUE AND rp.deleted_at IS NULL
-      ORDER BY p.dominio, p.codigo, rp.accion
+        id, accion,
+        permiso_id, codigo, nombre, dominio, modulo
+      FROM vista_roles_permisos_detalle_activos
+      WHERE rol_id = :rolId
+      ORDER BY dominio, codigo, accion
       `,
       { replacements: { rolId }, type: sequelize.QueryTypes.SELECT }
     );

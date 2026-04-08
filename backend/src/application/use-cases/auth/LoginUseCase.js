@@ -69,7 +69,7 @@ export class LoginUseCase {
           id: usuario.rol_id,
           codigo: usuario.rol_codigo,
           nombre: usuario.rol_nombre,
-          nivel_acceso: usuario.rol_nivel,
+          is_system: Boolean(usuario.rol_is_system),
         },
       },
     };

@@ -60,14 +60,11 @@ export class UserPermissionRepository extends BaseRepository {
     return sequelize.query(
       `
       SELECT
-        up.id, up.accion, up.tipo, up.motivo,
-        p.id AS permiso_id, p.codigo, p.nombre, p.dominio
-      FROM usuarios_permisos up
-      INNER JOIN permisos p ON p.id = up.permiso_id
-        AND p.activo = TRUE AND p.deleted_at IS NULL
-      WHERE up.usuario_id = :usuarioId
-        AND up.activo = TRUE AND up.deleted_at IS NULL
-      ORDER BY p.codigo, up.accion
+        id, accion, tipo, motivo,
+        permiso_id, codigo, nombre, dominio
+      FROM vista_usuarios_permisos_overrides_activos
+      WHERE usuario_id = :usuarioId
+      ORDER BY codigo, accion
       `,
       { replacements: { usuarioId }, type: sequelize.QueryTypes.SELECT }
     );
@@ -76,13 +73,11 @@ export class UserPermissionRepository extends BaseRepository {
   async existsActiveDuplicate(usuarioId, permisoId, accion, tipo) {
     const rows = await sequelize.query(
       `
-      SELECT id FROM usuarios_permisos
+      SELECT id FROM vista_usuarios_permisos_overrides_activos
       WHERE usuario_id = :usuarioId
         AND permiso_id = :permisoId
         AND accion = :accion
         AND tipo = :tipo
-        AND activo = TRUE
-        AND deleted_at IS NULL
       LIMIT 1
       `,
       {

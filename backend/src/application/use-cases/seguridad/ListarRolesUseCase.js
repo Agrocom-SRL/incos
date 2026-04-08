@@ -8,13 +8,13 @@ export class ListarRolesUseCase {
   }
 
   async execute() {
-    const roles = await this.roleRepository.findAllOrderedByNivelDesc();
+    const roles = await this.roleRepository.findAllOrderedByName();
     return {
       roles: roles.map((r) => ({
         id: r.id,
         codigo: r.code,
         nombre: r.name,
-        nivel_acceso: r.accessLevel,
+        is_system: Boolean(r.isSystem),
       })),
     };
   }

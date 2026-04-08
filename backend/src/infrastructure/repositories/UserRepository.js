@@ -6,11 +6,11 @@ import { UserMapper } from '../mappers/UserMapper.js';
 
 /** Columnas ORDER BY permitidas para listado SEG (evita inyección SQL). */
 const USUARIO_LIST_SORT_MAP = {
-  id: 'u.id',
-  username: 'u.username',
-  email: 'u.email',
-  created_at: 'u.created_at',
-  rol_nombre: 'r.nombre',
+  id: 'id',
+  username: 'username',
+  email: 'email',
+  created_at: 'created_at',
+  rol_nombre: 'rol_nombre',
 };
 
 /**
@@ -178,7 +178,7 @@ export class UserRepository extends BaseRepository {
   _resolveUsuarioListOrder(sortParam) {
     const raw = sortParam || 'id:ASC';
     const [field, dirPart = 'ASC'] = raw.split(':');
-    const col = USUARIO_LIST_SORT_MAP[field] || 'u.id';
+    const col = USUARIO_LIST_SORT_MAP[field] || 'id';
     const dir = String(dirPart).toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
     return `${col} ${dir}`;
   }
@@ -190,7 +190,7 @@ export class UserRepository extends BaseRepository {
     const offset = (page - 1) * limit;
     const orderSql = this._resolveUsuarioListOrder(sort);
     const searchClause = search
-      ? 'AND (u.username LIKE :search OR u.email LIKE :search)'
+      ? 'AND (username LIKE :search OR email LIKE :search)'
       : '';
     const replacements = { limit, offset };
     if (search) {
@@ -200,14 +200,11 @@ export class UserRepository extends BaseRepository {
     const rows = await sequelize.query(
       `
       SELECT
-        u.id, u.username, u.email, u.foto_url,
-        u.estado, u.activo, u.created_at,
-        u.rol_id, r.codigo AS rol_codigo,
-        r.nombre AS rol_nombre, r.nivel_acceso AS rol_nivel
-      FROM usuarios u
-      LEFT JOIN roles r ON r.id = u.rol_id
-        AND r.activo = TRUE AND r.deleted_at IS NULL
-      WHERE u.activo = TRUE AND u.deleted_at IS NULL
+        id, username, email, foto_url,
+        estado, activo, created_at,
+        rol_id, rol_codigo, rol_nombre, rol_is_system
+      FROM vista_usuarios_admin_base
+      WHERE 1=1
         ${searchClause}
       ORDER BY ${orderSql}
       LIMIT :limit OFFSET :offset
@@ -220,7 +217,7 @@ export class UserRepository extends BaseRepository {
 
   async countAllWithRoleSearch({ search }) {
     const searchClause = search
-      ? 'AND (u.username LIKE :search OR u.email LIKE :search)'
+      ? 'AND (username LIKE :search OR email LIKE :search)'
       : '';
     const replacements = {};
     if (search) {
@@ -229,10 +226,8 @@ export class UserRepository extends BaseRepository {
     const rows = await sequelize.query(
       `
       SELECT COUNT(*) AS total
-      FROM usuarios u
-      LEFT JOIN roles r ON r.id = u.rol_id
-        AND r.activo = TRUE AND r.deleted_at IS NULL
-      WHERE u.activo = TRUE AND u.deleted_at IS NULL
+      FROM vista_usuarios_admin_base
+      WHERE 1=1
         ${searchClause}
       `,
       { replacements, type: sequelize.QueryTypes.SELECT }
@@ -247,17 +242,13 @@ export class UserRepository extends BaseRepository {
     const rows = await sequelize.query(
       `
       SELECT
-        u.id, u.username, u.email, u.foto_url,
-        u.estado, u.activo, u.created_at, u.updated_at,
-        u.referencia_id, u.tipo_referencia,
-        u.fecha_cambio_estado, u.motivo_cambio_estado,
-        u.rol_id, r.codigo AS rol_codigo,
-        r.nombre AS rol_nombre, r.nivel_acceso AS rol_nivel
-      FROM usuarios u
-      LEFT JOIN roles r ON r.id = u.rol_id
-        AND r.activo = TRUE AND r.deleted_at IS NULL
-      WHERE u.id = :id
-        AND u.activo = TRUE AND u.deleted_at IS NULL
+        id, username, email, foto_url,
+        estado, activo, created_at, updated_at,
+        referencia_id, tipo_referencia,
+        fecha_cambio_estado, motivo_cambio_estado,
+        rol_id, rol_codigo, rol_nombre, rol_is_system
+      FROM vista_usuarios_admin_base
+      WHERE id = :id
       LIMIT 1
       `,
       { replacements: { id }, type: sequelize.QueryTypes.SELECT }
@@ -274,8 +265,8 @@ export class UserRepository extends BaseRepository {
     }
     const rows = await sequelize.query(
       `
-      SELECT id FROM usuarios
-      WHERE username = :username AND activo = TRUE AND deleted_at IS NULL
+      SELECT id FROM vista_usuarios_admin_base
+      WHERE username = :username
         ${excludeClause}
       LIMIT 1
       `,
@@ -293,8 +284,8 @@ export class UserRepository extends BaseRepository {
     }
     const rows = await sequelize.query(
       `
-      SELECT id FROM usuarios
-      WHERE LOWER(email) = :email AND activo = TRUE AND deleted_at IS NULL
+      SELECT id FROM vista_usuarios_admin_base
+      WHERE LOWER(email) = :email
         ${excludeClause}
       LIMIT 1
       `,

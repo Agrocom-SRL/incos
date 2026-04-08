@@ -36,20 +36,19 @@ CREATE TABLE roles (
     id INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Identificador único',
     codigo VARCHAR(50) NOT NULL COMMENT 'Código único del rol. Ejemplos: RECTOR, DIR_ACADEMICO, DIR_ADMIN, SEC_ACADEMICA, SEC_ADMIN, DOCENTE, ESTUDIANTE',
     nombre VARCHAR(100) NOT NULL COMMENT 'Nombre descriptivo visible en el sistema',
-    nivel_acceso INT DEFAULT 1 COMMENT 'Nivel jerárquico: 1=Estudiante, 2=Docente, 3=Secretaria, 4=Director, 5=Rector/Admin',
+    is_system BOOLEAN DEFAULT FALSE COMMENT 'TRUE = no se puede eliminar desde la UI',
     -- Campos de auditoría y control (ESTÁNDAR)
     activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
     deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
-    created_by INT NULL COMMENT 'Usuario que creó',
-    updated_by INT NULL COMMENT 'Usuario que modificó',
-    deleted_by INT NULL COMMENT 'Usuario que eliminó',
+    created_by INT COMMENT 'Usuario que creó',
+    updated_by INT COMMENT 'Usuario que modificó',
+    deleted_by INT COMMENT 'Usuario que eliminó',
     -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
     -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
     INDEX idx_codigo (codigo),
     INDEX idx_nombre (nombre),
-    INDEX idx_nivel_acceso (nivel_acceso),
     INDEX idx_activo (activo),
     INDEX idx_deleted_at (deleted_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
@@ -64,21 +63,24 @@ CREATE TABLE permisos (
     codigo VARCHAR(250) NOT NULL COMMENT 'Código de dominio: matricula.admision.ver, academico.calificacion.registrar. Coincide con el campo permiso en routes.jsx del frontend.',
     nombre VARCHAR(150) NOT NULL COMMENT 'Nombre legible para el panel de administración. Ejemplo: Ver Admisiones, Registrar Calificaciones',
     descripcion TEXT NULL COMMENT 'Descripción detallada de qué permite este permiso',
-    dominio VARCHAR(50) NOT NULL COMMENT 'Dominio de negocio estable. Valores: MATRICULA, ACADEMICO, DOCENTES, FINANZAS, INSTITUCIONAL, REPORTES, SEGURIDAD. No cambia aunque el menú del frontend se reorganice.',
-    modulo VARCHAR(50) NOT NULL COMMENT 'Subdominio técnico. Coincide con menu.module del frontend: MAT, ACA, DOC, FIN, INST, REP, SEG. Puede cambiar si se reorganiza el sidebar.',
+    dominio VARCHAR(50) NOT NULL COMMENT 'Dominio de negocio estable. Valores: MATRICULA, ACADEMICO, DOCENTES, FINANZAS, INSTITUCIONAL, CONFIGURACION, REPORTES, SEGURIDAD.',
+    modulo VARCHAR(50) NOT NULL COMMENT 'Subdominio técnico. Coincide con menu.module del frontend: MAT, ACA, DOC, FIN, INST, CFG, REP, SEG.',
+    grupo_ui VARCHAR(100) NULL COMMENT 'Agrupa permisos relacionados en una sola fila de la grilla de seguridad',
+    ruta_sidebar VARCHAR(150) NULL COMMENT 'Path del sidebar que controla este permiso',
     -- Campos de auditoría y control (ESTÁNDAR)
     activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
     deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
-    created_by INT NULL COMMENT 'Usuario que creó',
-    updated_by INT NULL COMMENT 'Usuario que modificó',
-    deleted_by INT NULL COMMENT 'Usuario que eliminó',
+    created_by INT COMMENT 'Usuario que creó',
+    updated_by INT COMMENT 'Usuario que modificó',
+    deleted_by INT COMMENT 'Usuario que eliminó',
     -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
     -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
     INDEX idx_codigo (codigo),
     INDEX idx_dominio (dominio),
     INDEX idx_modulo (modulo),
+    INDEX idx_grupo_ui (grupo_ui),
     INDEX idx_activo (activo),
     INDEX idx_deleted_at (deleted_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
@@ -91,7 +93,10 @@ COMMENT='Permisos del sistema — códigos alineados al campo permiso de routes.
 CREATE TABLE permiso_acciones (
     id INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Identificador único',
     permiso_id INT NULL COMMENT 'Permiso al que aplica esta acción válida (NULL permite flexibilidad en migraciones)',
-    accion ENUM('VER','CREAR','EDITAR','ELIMINAR','APROBAR','EXPORTAR')
+    accion ENUM(
+        'LISTAR','DETALLE','CREAR','EDITAR','ELIMINAR',
+        'ACTIVAR','APROBAR','EXPORTAR','GENERAR_PDF'
+    )
         NOT NULL COMMENT 'Acción válida para este permiso según las capacidades reales del sistema',
     
     -- Campos de auditoría y control (ESTÁNDAR)
@@ -99,9 +104,9 @@ CREATE TABLE permiso_acciones (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
     deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
-    created_by INT NULL COMMENT 'Usuario que creó',
-    updated_by INT NULL COMMENT 'Usuario que modificó',
-    deleted_by INT NULL COMMENT 'Usuario que eliminó',
+    created_by INT COMMENT 'Usuario que creó',
+    updated_by INT COMMENT 'Usuario que modificó',
+    deleted_by INT COMMENT 'Usuario que eliminó',
     
     -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
     -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
@@ -141,9 +146,9 @@ CREATE TABLE usuarios (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
     deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
-    created_by INT NULL COMMENT 'Usuario que creó',
-    updated_by INT NULL COMMENT 'Usuario que modificó',
-    deleted_by INT NULL COMMENT 'Usuario que eliminó',
+    created_by INT COMMENT 'Usuario que creó',
+    updated_by INT COMMENT 'Usuario que modificó',
+    deleted_by INT COMMENT 'Usuario que eliminó',
     -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
     -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
     FOREIGN KEY (rol_id) REFERENCES roles(id) ON DELETE SET NULL,
@@ -169,15 +174,18 @@ CREATE TABLE roles_permisos (
     id INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Identificador único',
     rol_id INT NULL COMMENT 'Rol al que se asigna el permiso',
     permiso_id INT NULL COMMENT 'Permiso asignado al rol',
-    accion ENUM('VER','CREAR','EDITAR','ELIMINAR','APROBAR','EXPORTAR') NOT NULL COMMENT 'Acción específica permitida para esta combinación rol-permiso',
+    accion ENUM(
+        'LISTAR','DETALLE','CREAR','EDITAR','ELIMINAR',
+        'ACTIVAR','APROBAR','EXPORTAR','GENERAR_PDF'
+    ) NOT NULL COMMENT 'Acción específica permitida para esta combinación rol-permiso',
     -- Campos de auditoría y control (ESTÁNDAR)
     activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
     deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
-    created_by INT NULL COMMENT 'Usuario que creó',
-    updated_by INT NULL COMMENT 'Usuario que modificó',
-    deleted_by INT NULL COMMENT 'Usuario que eliminó',
+    created_by INT COMMENT 'Usuario que creó',
+    updated_by INT COMMENT 'Usuario que modificó',
+    deleted_by INT COMMENT 'Usuario que eliminó',
     -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
     -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
     FOREIGN KEY (rol_id) REFERENCES roles(id) ON DELETE SET NULL,
@@ -201,7 +209,10 @@ CREATE TABLE usuarios_permisos (
     id INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Identificador único',
     usuario_id INT NULL COMMENT 'Usuario al que aplica el override',
     permiso_id INT NULL COMMENT 'Permiso afectado por el override',
-    accion ENUM('VER','CREAR','EDITAR','ELIMINAR','APROBAR','EXPORTAR') NOT NULL COMMENT 'Acción específica del override',
+    accion ENUM(
+        'LISTAR','DETALLE','CREAR','EDITAR','ELIMINAR',
+        'ACTIVAR','APROBAR','EXPORTAR','GENERAR_PDF'
+    ) NOT NULL COMMENT 'Acción específica del override',
     tipo ENUM('GRANT','REVOKE') NOT NULL COMMENT 'GRANT: otorgar permiso extra que el rol no tiene. REVOKE: quitar un permiso que el rol sí tiene.',
     motivo TEXT NULL COMMENT 'Razón documentada del override. Obligatorio en implementación, opcional en schema.',
     -- Campos de auditoría y control (ESTÁNDAR)
@@ -209,9 +220,9 @@ CREATE TABLE usuarios_permisos (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
     deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
-    created_by INT NULL COMMENT 'Usuario que creó',
-    updated_by INT NULL COMMENT 'Usuario que modificó',
-    deleted_by INT NULL COMMENT 'Usuario que eliminó',
+    created_by INT COMMENT 'Usuario que creó',
+    updated_by INT COMMENT 'Usuario que modificó',
+    deleted_by INT COMMENT 'Usuario que eliminó',
     -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
     -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE SET NULL,
@@ -242,9 +253,9 @@ CREATE TABLE sesiones (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
     deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
-    created_by INT NULL COMMENT 'Usuario que creó',
-    updated_by INT NULL COMMENT 'Usuario que modificó',
-    deleted_by INT NULL COMMENT 'Usuario que eliminó',
+    created_by INT COMMENT 'Usuario que creó',
+    updated_by INT COMMENT 'Usuario que modificó',
+    deleted_by INT COMMENT 'Usuario que eliminó',
     -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
     -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
     INDEX idx_usuario_id (usuario_id),

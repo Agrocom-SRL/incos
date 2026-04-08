@@ -47,8 +47,8 @@ export class RoleMapper {
     if ('nombre' in dataValues && dataValues.nombre !== undefined) {
       specificFields.name = dataValues.nombre;
     }
-    if ('nivelAcceso' in dataValues && dataValues.nivelAcceso !== undefined) {
-      specificFields.accessLevel = dataValues.nivelAcceso;
+    if ('isSystem' in dataValues && dataValues.isSystem !== undefined) {
+      specificFields.isSystem = dataValues.isSystem;
     }
 
     // Combina campos base (id, active, timestamps, audit) con campos específicos
@@ -76,7 +76,7 @@ export class RoleMapper {
     return {
       codigo: data.code,
       nombre: data.name,
-      nivelAcceso: data.accessLevel !== undefined ? data.accessLevel : 1,
+      isSystem: data.isSystem !== undefined ? data.isSystem : false,
     };
   }
 
@@ -104,8 +104,8 @@ export class RoleMapper {
     if ('name' in data) {
       updateData.nombre = data.name;
     }
-    if ('accessLevel' in data) {
-      updateData.nivelAcceso = data.accessLevel;
+    if ('isSystem' in data) {
+      updateData.isSystem = data.isSystem;
     }
 
     // Campos base (active/activo)

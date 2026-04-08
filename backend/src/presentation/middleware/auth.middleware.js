@@ -36,7 +36,7 @@ export async function authenticate(req, res, next) {
       foto_url: sesion.foto_url,
       rolId: sesion.rol_id,
       rolCodigo: sesion.rol_codigo,
-      rolNivel: sesion.rol_nivel,
+      rolIsSystem: Boolean(sesion.rol_is_system),
     };
     req.sesionData = sesion;
     req.token = token;

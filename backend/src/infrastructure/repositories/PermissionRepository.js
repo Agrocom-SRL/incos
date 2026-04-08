@@ -66,6 +66,8 @@ export class PermissionRepository extends BaseRepository {
    *   - name: Nombre legible (exacto; texto libre → search())
    *   - domain: Dominio de negocio (exacto)
    *   - module: Subdominio técnico (exacto)
+   *   - uiGroup: Agrupador de UI
+   *   - sidebarRoute: Ruta de referencia de sidebar
    * @returns {Object} Objeto WHERE para Sequelize
    */
   buildWhereClause(filters) {
@@ -84,6 +86,12 @@ export class PermissionRepository extends BaseRepository {
     if (filters.module) {
       where.modulo = filters.module;
     }
+    if (filters.uiGroup !== undefined) {
+      where.grupoUi = filters.uiGroup;
+    }
+    if (filters.sidebarRoute !== undefined) {
+      where.rutaSidebar = filters.sidebarRoute;
+    }
 
     return where;
   }
@@ -93,7 +101,7 @@ export class PermissionRepository extends BaseRepository {
    * @returns {string[]}
    */
   getSearchFields() {
-    return ['codigo', 'nombre', 'descripcion', 'dominio', 'modulo'];
+    return ['codigo', 'nombre', 'descripcion', 'dominio', 'modulo', 'grupoUi', 'rutaSidebar'];
   }
 
   /**
@@ -139,7 +147,7 @@ export class PermissionRepository extends BaseRepository {
    * Catálogo de permisos activos (raw), opcionalmente filtrado por dominio.
    */
   async findAllActivosPlano({ dominio = null } = {}) {
-    const dominioClause = dominio ? 'AND p.dominio = :dominio' : '';
+    const dominioClause = dominio ? 'AND dominio = :dominio' : '';
     const replacements = {};
     if (dominio) {
       replacements.dominio = dominio;
@@ -147,21 +155,19 @@ export class PermissionRepository extends BaseRepository {
     return sequelize.query(
       `
       SELECT
-        p.id,
-        p.codigo,
-        p.nombre,
-        p.dominio,
-        p.modulo,
-        GROUP_CONCAT(pa.accion ORDER BY pa.accion SEPARATOR ',') AS acciones_validas
-      FROM permisos p
-      LEFT JOIN permiso_acciones pa
-        ON pa.permiso_id = p.id
-        AND pa.activo = TRUE
-        AND pa.deleted_at IS NULL
-      WHERE p.activo = TRUE AND p.deleted_at IS NULL
+        permiso_id AS id,
+        codigo,
+        nombre,
+        dominio,
+        modulo,
+        grupo_ui,
+        ruta_sidebar,
+        GROUP_CONCAT(accion ORDER BY accion SEPARATOR ',') AS acciones_validas
+      FROM vista_catalogo_acciones_permisos_activas
+      WHERE 1=1
         ${dominioClause}
-      GROUP BY p.id, p.codigo, p.nombre, p.dominio, p.modulo
-      ORDER BY p.dominio, p.id
+      GROUP BY permiso_id, codigo, nombre, dominio, modulo, grupo_ui, ruta_sidebar
+      ORDER BY dominio, permiso_id
       `,
       { replacements, type: sequelize.QueryTypes.SELECT }
     );
@@ -177,11 +183,9 @@ export class PermissionRepository extends BaseRepository {
     const rows = await sequelize.query(
       `
       SELECT 1
-      FROM permiso_acciones
+      FROM vista_catalogo_acciones_permisos_activas
       WHERE permiso_id = :permisoId
         AND accion = :accion
-        AND activo = TRUE
-        AND deleted_at IS NULL
       LIMIT 1
       `,
       {
@@ -206,13 +210,8 @@ export class PermissionRepository extends BaseRepository {
         p.nombre,
         p.dominio,
         pa.accion
-      FROM permiso_acciones pa
-      JOIN permisos p ON p.id = pa.permiso_id
-      WHERE pa.activo = TRUE
-        AND pa.deleted_at IS NULL
-        AND p.activo = TRUE
-        AND p.deleted_at IS NULL
-      ORDER BY p.dominio, p.id, pa.accion
+      FROM vista_catalogo_acciones_permisos_activas
+      ORDER BY dominio, permiso_id, accion
       `,
       {
         type: sequelize.QueryTypes.SELECT,

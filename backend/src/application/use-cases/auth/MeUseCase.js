@@ -42,7 +42,7 @@ export class MeUseCase {
           id: sesionData.rol_id,
           codigo: sesionData.rol_codigo,
           nombre: sesionData.rol_nombre,
-          nivel_acceso: sesionData.rol_nivel,
+          is_system: Boolean(sesionData.rol_is_system),
         },
       },
       permisos,

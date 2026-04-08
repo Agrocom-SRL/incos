@@ -35,6 +35,18 @@ export const Permiso = sequelize.define(
       allowNull: false,
       comment: 'Subdominio técnico (MAT, ACA, …)',
     },
+    grupoUi: {
+      type: DataTypes.STRING(100),
+      field: 'grupo_ui',
+      allowNull: true,
+      comment: 'Agrupador UI para grilla de permisos',
+    },
+    rutaSidebar: {
+      type: DataTypes.STRING(150),
+      field: 'ruta_sidebar',
+      allowNull: true,
+      comment: 'Ruta de referencia del sidebar para este permiso',
+    },
   },
   {
     ...baseModelOptions,

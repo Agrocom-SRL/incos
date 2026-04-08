@@ -15,25 +15,9 @@ export class AuthRepository {
   async findUsuarioParaLogin(usernameOrEmail) {
     const rows = await sequelize.query(
       `
-            SELECT
-                u.id,
-                u.username,
-                u.email,
-                u.password_hash,
-                u.foto_url,
-                u.estado,
-                u.motivo_cambio_estado,
-                u.activo,
-                u.rol_id,
-                r.codigo AS rol_codigo,
-                r.nombre AS rol_nombre,
-                r.nivel_acceso AS rol_nivel
-            FROM usuarios u
-            LEFT JOIN roles r ON r.id = u.rol_id
-                AND r.activo = TRUE AND r.deleted_at IS NULL
-            WHERE (u.username = :valor OR u.email = :valor)
-                AND u.activo = TRUE
-                AND u.deleted_at IS NULL
+            SELECT *
+            FROM vista_auth_usuarios_login
+            WHERE (username = :valor OR email = :valor)
             LIMIT 1
         `,
       {
@@ -52,27 +36,10 @@ export class AuthRepository {
   async findSesionActiva(token) {
     const rows = await sequelize.query(
       `
-            SELECT
-                s.id AS sesion_id,
-                s.usuario_id,
-                u.activo AS usuario_activo,
-                u.estado AS usuario_estado,
-                u.motivo_cambio_estado,
-                u.rol_id,
-                r.codigo AS rol_codigo,
-                r.nombre AS rol_nombre,
-                r.nivel_acceso AS rol_nivel,
-                u.username,
-                u.email,
-                u.foto_url
-            FROM sesiones s
-            JOIN usuarios u ON u.id = s.usuario_id
-            LEFT JOIN roles r ON r.id = u.rol_id
-                AND r.activo = TRUE AND r.deleted_at IS NULL
-            WHERE s.token_sesion = :token
-                AND s.activo = TRUE
-                AND s.deleted_at IS NULL
-                AND (s.fecha_expiracion IS NULL OR s.fecha_expiracion > NOW())
+            SELECT *
+            FROM vista_auth_sesiones_activas
+            WHERE token_sesion = :token
+                AND (fecha_expiracion IS NULL OR fecha_expiracion > NOW())
         `,
       {
         replacements: { token },
@@ -91,10 +58,8 @@ export class AuthRepository {
     const userRows = await sequelize.query(
       `
             SELECT rol_id
-            FROM usuarios
+            FROM vista_usuarios_admin_base
             WHERE id = :usuarioId
-              AND activo = TRUE
-              AND deleted_at IS NULL
             LIMIT 1
         `,
       {
@@ -112,14 +77,9 @@ export class AuthRepository {
     if (Number(userRow.rol_id) === 8) {
       return sequelize.query(
         `
-            SELECT p.codigo AS permiso_codigo, pa.accion
-            FROM permiso_acciones pa
-            JOIN permisos p ON p.id = pa.permiso_id
-            WHERE pa.activo = TRUE
-              AND pa.deleted_at IS NULL
-              AND p.activo = TRUE
-              AND p.deleted_at IS NULL
-            ORDER BY p.id, pa.accion
+            SELECT codigo AS permiso_codigo, accion
+            FROM vista_catalogo_acciones_permisos_activas
+            ORDER BY permiso_id, accion
         `,
         {
           type: sequelize.QueryTypes.SELECT,
@@ -148,10 +108,8 @@ export class AuthRepository {
     const userRows = await sequelize.query(
       `
             SELECT rol_id
-            FROM usuarios
+            FROM vista_usuarios_admin_base
             WHERE id = :usuarioId
-              AND activo = TRUE
-              AND deleted_at IS NULL
             LIMIT 1
         `,
       {
@@ -169,14 +127,9 @@ export class AuthRepository {
       const rows = await sequelize.query(
         `
             SELECT 1 AS ok
-            FROM permiso_acciones pa
-            JOIN permisos p ON p.id = pa.permiso_id
-            WHERE p.codigo = :codigo
-              AND pa.accion = :accion
-              AND pa.activo = TRUE
-              AND pa.deleted_at IS NULL
-              AND p.activo = TRUE
-              AND p.deleted_at IS NULL
+            FROM vista_catalogo_acciones_permisos_activas
+            WHERE codigo = :codigo
+              AND accion = :accion
             LIMIT 1
         `,
         {

@@ -3,10 +3,10 @@ import { BaseEntity } from './BaseEntity.js';
 /**
  * Entidad de Dominio: Role
  * Representa un rol del sistema.
- * Contiene la lógica de negocio pura del rol (nivel de acceso).
+ * Contiene la lógica de negocio pura del rol.
  *
  * Mapeo con BD (tabla roles, 04-sistema-seguridad.sql):
- * - code ← codigo, name ← nombre, accessLevel ← nivel_acceso
+ * - code ← codigo, name ← nombre, isSystem ← is_system
  */
 export class Role extends BaseEntity {
   constructor(data = {}) {
@@ -19,20 +19,9 @@ export class Role extends BaseEntity {
     if (data.hasOwnProperty('name')) {
       this.name = data.name;
     }
-    if (data.hasOwnProperty('accessLevel')) {
-      this.accessLevel = data.accessLevel;
-    } else if (!data.hasOwnProperty('code')) {
-      // Solo usar valor por defecto si no se está usando attributes limitados
-      this.accessLevel = 1;
+    if (data.hasOwnProperty('isSystem')) {
+      this.isSystem = data.isSystem;
     }
-  }
-
-  /**
-   * Valida que el nivel de acceso esté en el rango válido (1-5)
-   * @returns {boolean}
-   */
-  isValidAccessLevel() {
-    return this.accessLevel >= 1 && this.accessLevel <= 5;
   }
 
   /**
@@ -50,8 +39,8 @@ export class Role extends BaseEntity {
     if (this.hasOwnProperty('name')) {
       plainObject.name = this.name;
     }
-    if (this.hasOwnProperty('accessLevel')) {
-      plainObject.accessLevel = this.accessLevel;
+    if (this.hasOwnProperty('isSystem')) {
+      plainObject.isSystem = this.isSystem;
     }
 
     return plainObject;

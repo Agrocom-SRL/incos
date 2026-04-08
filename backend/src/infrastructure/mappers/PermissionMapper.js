@@ -43,6 +43,12 @@ export class PermissionMapper {
     if ('modulo' in dataValues && dataValues.modulo !== undefined) {
       specificFields.module = dataValues.modulo;
     }
+    if ('grupoUi' in dataValues && dataValues.grupoUi !== undefined) {
+      specificFields.uiGroup = dataValues.grupoUi;
+    }
+    if ('rutaSidebar' in dataValues && dataValues.rutaSidebar !== undefined) {
+      specificFields.sidebarRoute = dataValues.rutaSidebar;
+    }
 
     const entityData = BaseMapper.combineBaseAndSpecificFields(model, specificFields);
     return new Permission(entityData);
@@ -65,6 +71,8 @@ export class PermissionMapper {
       descripcion: data.description ?? null,
       dominio: data.domain,
       modulo: data.module,
+      grupoUi: data.uiGroup ?? null,
+      rutaSidebar: data.sidebarRoute ?? null,
     };
   }
 
@@ -92,6 +100,12 @@ export class PermissionMapper {
     }
     if ('module' in data) {
       updateData.modulo = data.module;
+    }
+    if ('uiGroup' in data) {
+      updateData.grupoUi = data.uiGroup ?? null;
+    }
+    if ('sidebarRoute' in data) {
+      updateData.rutaSidebar = data.sidebarRoute ?? null;
     }
 
     const baseFields = BaseMapper.baseFieldsToModelForUpdate(entity);

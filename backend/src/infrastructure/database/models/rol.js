@@ -20,11 +20,11 @@ export const Rol = sequelize.define(
       allowNull: false,
       comment: 'Nombre descriptivo del rol',
     },
-    nivelAcceso: {
-      type: DataTypes.INTEGER,
-      field: 'nivel_acceso',
-      defaultValue: 1,
-      comment: 'Nivel jerárquico (1=bajo, 5=alto)',
+    isSystem: {
+      type: DataTypes.BOOLEAN,
+      field: 'is_system',
+      defaultValue: false,
+      comment: 'TRUE = no se puede eliminar desde la UI',
     },
   },
   {

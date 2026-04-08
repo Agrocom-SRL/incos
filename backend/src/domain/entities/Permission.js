@@ -11,6 +11,8 @@ import { BaseEntity } from './BaseEntity.js';
  * - description ← descripcion
  * - domain ← dominio
  * - module ← modulo
+ * - uiGroup ← grupo_ui
+ * - sidebarRoute ← ruta_sidebar
  */
 export class Permission extends BaseEntity {
   constructor(data = {}) {
@@ -31,6 +33,12 @@ export class Permission extends BaseEntity {
     }
     if (data.hasOwnProperty('module')) {
       this.module = data.module;
+    }
+    if (data.hasOwnProperty('uiGroup')) {
+      this.uiGroup = data.uiGroup;
+    }
+    if (data.hasOwnProperty('sidebarRoute')) {
+      this.sidebarRoute = data.sidebarRoute;
     }
   }
 
@@ -64,6 +72,12 @@ export class Permission extends BaseEntity {
     }
     if (this.hasOwnProperty('module')) {
       plainObject.module = this.module;
+    }
+    if (this.hasOwnProperty('uiGroup')) {
+      plainObject.uiGroup = this.uiGroup;
+    }
+    if (this.hasOwnProperty('sidebarRoute')) {
+      plainObject.sidebarRoute = this.sidebarRoute;
     }
 
     return plainObject;
