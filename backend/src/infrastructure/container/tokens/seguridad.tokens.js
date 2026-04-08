@@ -14,6 +14,7 @@ export const SEGURIDAD_TOKENS = {
   eliminarOverridePermisoUseCase: 'seguridad.eliminarOverridePermisoUseCase',
   listarRolesUseCase: 'seguridad.listarRolesUseCase',
   obtenerPermisosRolUseCase: 'seguridad.obtenerPermisosRolUseCase',
+  obtenerPermisosGrillaRolUseCase: 'seguridad.obtenerPermisosGrillaRolUseCase',
   actualizarPermisosRolUseCase: 'seguridad.actualizarPermisosRolUseCase',
   listarPermisosUseCase: 'seguridad.listarPermisosUseCase',
   seguridadUsuariosController: 'seguridad.seguridadUsuariosController',

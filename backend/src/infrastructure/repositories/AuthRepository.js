@@ -74,7 +74,7 @@ export class AuthRepository {
     }
 
     // ADMIN_SISTEMA: obtiene todo el catálogo válido desde permiso_acciones
-    if (Number(userRow.rol_id) === 8) {
+    if (Number(userRow.rol_id) === 1) {
       return sequelize.query(
         `
             SELECT codigo AS permiso_codigo, accion
@@ -123,7 +123,7 @@ export class AuthRepository {
       return false;
     }
 
-    if (Number(userRow.rol_id) === 8) {
+    if (Number(userRow.rol_id) === 1) {
       const rows = await sequelize.query(
         `
             SELECT 1 AS ok

@@ -20,7 +20,7 @@ export class ObtenerPermisosRolUseCase {
       throw new NotFoundError('Rol');
     }
 
-    const flat = Number(rolId) === 8
+    const flat = Number(rolId) === 1
       ? await this.permissionRepository.findAllAccionesValidasFlat()
       : await this.rolePermissionRepository.findFlatByRolId(rolId);
 

@@ -3,7 +3,7 @@ import {
   agruparPermisosEfectivos,
 } from './permisos-agrupar.helper.js';
 
-const ROL_ADMIN_SISTEMA_ID = 8;
+const ROL_ADMIN_SISTEMA_ID = 1;
 
 export class ObtenerPermisosUsuarioUseCase {
   /**

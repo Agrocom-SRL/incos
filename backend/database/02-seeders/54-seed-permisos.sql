@@ -1,135 +1,142 @@
 -- ============================================
--- SEEDER: permisos
--- Sistema de Gestión Académica - Instituto INCOS
--- Códigos alineados al campo permiso en routes.jsx del frontend
--- Ejecutar después de 53-seed-roles.sql; antes de 55-seed-roles-permisos.sql
+-- SEEDER: permisos v2
+-- Sistema de Gestión Académica · Instituto INCOS
+-- Archivo: backend/database/02-seeders/54-seed-permisos.sql
 --
--- MATRÍCULA (sidebar): rutas UI vs permisos (acciones en 56-seed-permiso-acciones.sql)
---   /estudiantes/listar, /estudiantes/:id, exports estudiantes
---       → matricula.admision.ver (VER, EXPORTAR) + matricula.admision.editar (EDITAR, ELIMINAR)
---       + matricula.admision.crear (CREAR) + finanzas.pago.registrar (CREAR) para registrar pago
---   /estudiantes/registrar → matricula.admision.crear (VER, CREAR)
---   /estudiantes/:id/editar → matricula.admision.editar
---   /matricula/listar, /inscripciones/* → matricula.inscribir + matricula.inscripcion.editar
---       + matricula.documento.ver (CREAR) PDF inscripción
---   /estudiantes/becas/* → matricula.beca.ver | .asignar | .aprobar
---   /matricula/aportes/listar, /pagos/* (API pagos-aportes: también finanzas.pago.* vía OR)
---       → matricula.pago.aporte.ver + finanzas.pago.ver | .registrar | .editar
+-- CAMBIOS respecto al legacy:
+--   [NUEVO]   columnas grupo_ui y ruta_sidebar en todos los registros
+--   [NUEVO]   dominio CONFIGURACION (separado de INSTITUCIONAL)
+--   [NUEVO]   permisos 11-14: pasantías estudiantiles (antes en DOC, ahora en MAT)
+--   [NUEVO]   permiso 37:     avance académico
+--   [NUEVO]   permisos 81-83: convenios (cfg)
+--   [NUEVO]   permiso 84:     config. pagos (cfg)
+--   [NUEVO]   permiso 85:     historial actividades (cfg)
+--   [TOTAL]   95 permisos (antes 87)
+--
+-- Ejecutar después de: 53-seed-roles.sql
+-- Ejecutar antes de:   56-seed-permiso-acciones.sql, 55-seed-roles-permisos.sql
 -- ============================================
 
 USE instituto_incos;
 
 SET FOREIGN_KEY_CHECKS = 0;
 
--- ============================================
--- INSERTAR PERMISOS (IDs 1–87)
--- ============================================
+INSERT INTO permisos (id, codigo, nombre, dominio, modulo, grupo_ui, ruta_sidebar, activo) VALUES
 
-INSERT INTO permisos (id, codigo, nombre, dominio, modulo, activo) VALUES
+-- DOMINIO: MATRICULA (módulo sidebar: MAT)
+(1,  'matricula.admision.ver',    'Admisión: listar, ver ficha y exportar',          'MATRICULA', 'MAT', 'mat_admision',    '/estudiantes/listar',       TRUE),
+(2,  'matricula.admision.crear',  'Admisión: registrar nuevo estudiante',             'MATRICULA', 'MAT', 'mat_admision',    '/estudiantes/listar',       TRUE),
+(3,  'matricula.admision.editar', 'Admisión: editar datos, eliminar y activar',       'MATRICULA', 'MAT', 'mat_admision',    '/estudiantes/listar',       TRUE),
+(4,  'matricula.inscribir',           'Matrículas: listar, ver y crear inscripción', 'MATRICULA', 'MAT', 'mat_inscripcion', '/matricula/listar',         TRUE),
+(5,  'matricula.inscripcion.editar',  'Matrículas: editar y eliminar inscripción',   'MATRICULA', 'MAT', 'mat_inscripcion', '/matricula/listar',         TRUE),
+(6,  'matricula.beca.ver',     'Becas: listar asignaciones y ver detalle',           'MATRICULA', 'MAT', 'mat_becas',       '/estudiantes/becas/listar', TRUE),
+(7,  'matricula.beca.asignar', 'Becas: asignar, ajustar o quitar',                  'MATRICULA', 'MAT', 'mat_becas',       '/estudiantes/becas/listar', TRUE),
+(8,  'matricula.beca.aprobar', 'Becas: aprobar solicitudes',                         'MATRICULA', 'MAT', 'mat_becas',       '/estudiantes/becas/listar', TRUE),
+(9,  'matricula.documento.ver', 'Documentos: ver y generar PDFs (acta, declaración, formulario)', 'MATRICULA', 'MAT', 'mat_documentos', '/estudiantes/documentos', TRUE),
+(10, 'matricula.pago.aporte.ver', 'Aportes: listar, exportar recibo y anular',      'MATRICULA', 'MAT', 'mat_aportes',     '/matricula/aportes/listar', TRUE),
+(11, 'matricula.pasantia.ver',       'Pasantías estudiantiles: listar y ver',        'MATRICULA', 'MAT', 'mat_pasantias',   '/pasantias/listar',         TRUE),
+(12, 'matricula.pasantia.solicitar', 'Pasantías estudiantiles: solicitar',           'MATRICULA', 'MAT', 'mat_pasantias',   '/pasantias/listar',         TRUE),
+(13, 'matricula.pasantia.aprobar',   'Pasantías estudiantiles: aprobar',             'MATRICULA', 'MAT', 'mat_pasantias',   '/pasantias/listar',         TRUE),
+(14, 'matricula.pasantia.evaluar',   'Pasantías estudiantiles: evaluación final',    'MATRICULA', 'MAT', 'mat_pasantias',   '/pasantias/listar',         TRUE),
 
--- DOMINIO: MATRICULA (admisión / inscripción / becas / aportes en menú Matrícula)
-(1, 'matricula.admision.ver', 'Admisiones: listar, ver ficha y exportar (Excel estadística / lista inscritos)', 'MATRICULA', 'MAT', TRUE),
-(2, 'matricula.admision.crear', 'Admisiones: registrar nuevo estudiante (alta)', 'MATRICULA', 'MAT', TRUE),
-(3, 'matricula.admision.editar', 'Admisiones: editar datos y eliminar estudiante', 'MATRICULA', 'MAT', TRUE),
-(4, 'matricula.inscribir', 'Matrícula: listar, ver y crear inscripción', 'MATRICULA', 'MAT', TRUE),
-(5, 'matricula.inscripcion.editar', 'Matrícula: editar, eliminar inscripción', 'MATRICULA', 'MAT', TRUE),
-(6, 'matricula.beca.ver', 'Becas: listar asignaciones y ver detalle', 'MATRICULA', 'MAT', TRUE),
-(7, 'matricula.beca.asignar', 'Becas: asignar, ajustar o quitar asignación', 'MATRICULA', 'MAT', TRUE),
-(8, 'matricula.beca.aprobar', 'Becas: aprobar solicitudes (pantalla en construcción)', 'MATRICULA', 'MAT', TRUE),
-(9, 'matricula.documento.ver', 'Documentos: ver y generar PDFs (acta, declaración, formulario inscripción)', 'MATRICULA', 'MAT', TRUE),
-(10, 'matricula.pago.aporte.ver', 'Aportes matrícula: listar/ver (menú Matrícula); exportar recibo y anular cuota alternativos a Finanzas', 'MATRICULA', 'MAT', TRUE),
+-- DOMINIO: ACADEMICO (módulo sidebar: ACA)
+(15, 'academico.calificacion.registrar.parcial',      'Calificaciones: registrar nota de parciales',    'ACADEMICO', 'ACA', 'aca_calificaciones', '/calificaciones', TRUE),
+(16, 'academico.calificacion.registrar.practico',     'Calificaciones: registrar notas de prácticos',   'ACADEMICO', 'ACA', 'aca_calificaciones', '/calificaciones', TRUE),
+(17, 'academico.calificacion.registrar.recuperatorio','Calificaciones: registrar recuperatorio',         'ACADEMICO', 'ACA', 'aca_calificaciones', '/calificaciones', TRUE),
+(18, 'academico.calificacion.curso',                  'Calificaciones: ver notas por curso',            'ACADEMICO', 'ACA', 'aca_calificaciones', '/calificaciones', TRUE),
+(19, 'academico.calificacion.periodo',                'Calificaciones: entregar notas por período',     'ACADEMICO', 'ACA', 'aca_calificaciones', '/calificaciones', TRUE),
+(20, 'academico.calificacion.modificar',              'Calificaciones: modificar notas',                'ACADEMICO', 'ACA', 'aca_calificaciones', '/calificaciones', TRUE),
+(21, 'academico.nivelacion.ver',       'Nivelaciones: listar y ver',                 'ACADEMICO', 'ACA', 'aca_nivelaciones',    '/nivelaciones/listar', TRUE),
+(22, 'academico.nivelacion.inscribir', 'Nivelaciones: inscribir estudiante',          'ACADEMICO', 'ACA', 'aca_nivelaciones',    '/nivelaciones/listar', TRUE),
+(23, 'academico.nivelacion.aprobar',   'Nivelaciones: aprobar',                       'ACADEMICO', 'ACA', 'aca_nivelaciones',    '/nivelaciones/listar', TRUE),
+(24, 'academico.trazabilidad.traspaso.ver',        'Traspasos: listar y ver',         'ACADEMICO', 'ACA', 'aca_traspasos', '/transitabilidad/traspasos/listar', TRUE),
+(25, 'academico.trazabilidad.traspaso.solicitar',  'Traspasos: solicitar (salida)',    'ACADEMICO', 'ACA', 'aca_traspasos', '/transitabilidad/traspasos/listar', TRUE),
+(26, 'academico.trazabilidad.traspaso.recibir',    'Traspasos: recibir (entrada)',     'ACADEMICO', 'ACA', 'aca_traspasos', '/transitabilidad/traspasos/listar', TRUE),
+(27, 'academico.trazabilidad.traspaso.convalidar', 'Traspasos: convalidar notas',      'ACADEMICO', 'ACA', 'aca_traspasos', '/transitabilidad/traspasos/listar', TRUE),
+(28, 'academico.trazabilidad.traspaso.aprobar',    'Traspasos: aprobar',               'ACADEMICO', 'ACA', 'aca_traspasos', '/transitabilidad/traspasos/listar', TRUE),
+(29, 'academico.trazabilidad.transitabilidad.ver',        'Transitabilidad: listar y ver',    'ACADEMICO', 'ACA', 'aca_transitabilidad', '/transitabilidad/transitabilidad/listar', TRUE),
+(30, 'academico.trazabilidad.transitabilidad.solicitar',  'Transitabilidad: solicitar',        'ACADEMICO', 'ACA', 'aca_transitabilidad', '/transitabilidad/transitabilidad/listar', TRUE),
+(31, 'academico.trazabilidad.transitabilidad.recibir',    'Transitabilidad: recibir',          'ACADEMICO', 'ACA', 'aca_transitabilidad', '/transitabilidad/transitabilidad/listar', TRUE),
+(32, 'academico.trazabilidad.transitabilidad.convalidar', 'Transitabilidad: convalidar notas', 'ACADEMICO', 'ACA', 'aca_transitabilidad', '/transitabilidad/transitabilidad/listar', TRUE),
+(33, 'academico.trazabilidad.transitabilidad.aprobar',    'Transitabilidad: aprobar',          'ACADEMICO', 'ACA', 'aca_transitabilidad', '/transitabilidad/transitabilidad/listar', TRUE),
+(34, 'academico.historial.folio',    'Historial: gestionar folio del egresado',       'ACADEMICO', 'ACA', 'aca_historial', '/historial/academico', TRUE),
+(35, 'academico.historial.academico','Historial: ver historial académico del alumno', 'ACADEMICO', 'ACA', 'aca_historial', '/historial/academico', TRUE),
+(36, 'academico.historial.validar',  'Historial: validar para egreso',                'ACADEMICO', 'ACA', 'aca_historial', '/historial/academico', TRUE),
+(37, 'academico.avance', 'Avance académico: ver progreso del estudiante en su carrera', 'ACADEMICO', 'ACA', 'aca_avance', '/academico/avance', TRUE),
+(38, 'academico.licencia.ver',    'Licencias estudiantiles: listar y ver',            'ACADEMICO', 'ACA', 'aca_licencias_est', '/estudiantes/licencias/listar', TRUE),
+(39, 'academico.licencia.crear',  'Licencias estudiantiles: solicitar',               'ACADEMICO', 'ACA', 'aca_licencias_est', '/estudiantes/licencias/listar', TRUE),
+(40, 'academico.licencia.aprobar','Licencias estudiantiles: aprobar',                 'ACADEMICO', 'ACA', 'aca_licencias_est', '/estudiantes/licencias/listar', TRUE),
 
--- DOMINIO: ACADEMICO
-(11, 'academico.licencia.ver', 'Ver Licencias de Estudiante', 'ACADEMICO', 'ACA', TRUE),
-(12, 'academico.licencia.crear', 'Solicitar Licencia de Estudiante', 'ACADEMICO', 'ACA', TRUE),
-(13, 'academico.licencia.aprobar', 'Aprobar Licencia de Estudiante', 'ACADEMICO', 'ACA', TRUE),
-(14, 'academico.calificacion.registrar.parcial', 'Registrar Nota de Parciales', 'ACADEMICO', 'ACA', TRUE),
-(15, 'academico.calificacion.registrar.practico', 'Registrar Notas de Prácticos', 'ACADEMICO', 'ACA', TRUE),
-(16, 'academico.calificacion.registrar.recuperatorio', 'Registrar Recuperatorio', 'ACADEMICO', 'ACA', TRUE),
-(17, 'academico.calificacion.curso', 'Calificaciones por Curso', 'ACADEMICO', 'ACA', TRUE),
-(18, 'academico.calificacion.periodo', 'Entregar Notas por Período', 'ACADEMICO', 'ACA', TRUE),
-(19, 'academico.calificacion.modificar', 'Modificar Calificaciones', 'ACADEMICO', 'ACA', TRUE),
-(20, 'academico.nivelacion.ver', 'Ver Nivelaciones', 'ACADEMICO', 'ACA', TRUE),
-(21, 'academico.nivelacion.inscribir', 'Inscribir Nivelación', 'ACADEMICO', 'ACA', TRUE),
-(22, 'academico.nivelacion.aprobar', 'Aprobar Nivelación', 'ACADEMICO', 'ACA', TRUE),
-(23, 'academico.trazabilidad.traspaso.ver', 'Ver Traspasos', 'ACADEMICO', 'ACA', TRUE),
-(24, 'academico.trazabilidad.traspaso.solicitar', 'Solicitar Traspaso (Salida)', 'ACADEMICO', 'ACA', TRUE),
-(25, 'academico.trazabilidad.traspaso.recibir', 'Recibir Traspaso (Entrada)', 'ACADEMICO', 'ACA', TRUE),
-(26, 'academico.trazabilidad.traspaso.convalidar', 'Convalidar Notas de Traspaso', 'ACADEMICO', 'ACA', TRUE),
-(27, 'academico.trazabilidad.traspaso.aprobar', 'Aprobar Traspaso', 'ACADEMICO', 'ACA', TRUE),
-(28, 'academico.trazabilidad.transitabilidad.ver', 'Ver Transitabilidad', 'ACADEMICO', 'ACA', TRUE),
-(29, 'academico.trazabilidad.transitabilidad.solicitar', 'Solicitar Transitabilidad (Salida)', 'ACADEMICO', 'ACA', TRUE),
-(30, 'academico.trazabilidad.transitabilidad.recibir', 'Recibir Transitabilidad (Entrada)', 'ACADEMICO', 'ACA', TRUE),
-(31, 'academico.trazabilidad.transitabilidad.convalidar', 'Convalidar Notas de Transitabilidad', 'ACADEMICO', 'ACA', TRUE),
-(32, 'academico.trazabilidad.transitabilidad.aprobar', 'Aprobar Transitabilidad', 'ACADEMICO', 'ACA', TRUE),
-(33, 'academico.historial.folio', 'Gestionar Folio del Egresado', 'ACADEMICO', 'ACA', TRUE),
-(34, 'academico.historial.academico', 'Ver Historial Académico', 'ACADEMICO', 'ACA', TRUE),
-(35, 'academico.historial.validar', 'Validar Historial Académico', 'ACADEMICO', 'ACA', TRUE),
+-- DOMINIO: DOCENTES (módulo sidebar: DOC)
+(41, 'docentes.ver',    'Docentes: listar y ver ficha',                               'DOCENTES', 'DOC', 'doc_docentes',   '/docentes/listar', TRUE),
+(42, 'docentes.crear',  'Docentes: registrar nuevo docente',                          'DOCENTES', 'DOC', 'doc_docentes',   '/docentes/listar', TRUE),
+(43, 'docentes.asignar','Docentes: asignar a oferta académica',                       'DOCENTES', 'DOC', 'doc_docentes',   '/docentes/listar', TRUE),
+(44, 'docentes.licencia.ver',    'Licencias docentes: listar y ver',                  'DOCENTES', 'DOC', 'doc_licencias',  '/docentes/licencias/listar', TRUE),
+(45, 'docentes.licencia.crear',  'Licencias docentes: solicitar',                     'DOCENTES', 'DOC', 'doc_licencias',  '/docentes/licencias/listar', TRUE),
+(46, 'docentes.licencia.aprobar','Licencias docentes: aprobar',                       'DOCENTES', 'DOC', 'doc_licencias',  '/docentes/licencias/listar', TRUE),
+(47, 'docentes.supervision.evaluar',    'Supervisión: evaluar docente',               'DOCENTES', 'DOC', 'doc_supervision', '/supervision', TRUE),
+(48, 'docentes.supervision.reporte',    'Supervisión: ver reportes',                  'DOCENTES', 'DOC', 'doc_supervision', '/supervision', TRUE),
+(49, 'docentes.supervision.programar',  'Supervisión: programar sesión',              'DOCENTES', 'DOC', 'doc_supervision', '/supervision', TRUE),
+(50, 'docentes.supervision.ficha.crear','Supervisión: crear ficha de evaluación',     'DOCENTES', 'DOC', 'doc_supervision', '/supervision', TRUE),
+(51, 'docentes.supervision.ficha.editar','Supervisión: editar ficha de evaluación',   'DOCENTES', 'DOC', 'doc_supervision', '/supervision', TRUE),
+(52, 'docentes.supervision.pasantia.solicitar',  'Pasantías docentes: solicitar',      'DOCENTES', 'DOC', 'doc_pasantias', '/supervision/pasantias', TRUE),
+(53, 'docentes.supervision.pasantia.seguimiento','Pasantías docentes: seguimiento',    'DOCENTES', 'DOC', 'doc_pasantias', '/supervision/pasantias', TRUE),
+(54, 'docentes.supervision.pasantia.evaluar',    'Pasantías docentes: evaluación final','DOCENTES','DOC', 'doc_pasantias', '/supervision/pasantias', TRUE),
 
--- DOMINIO: DOCENTES
-(36, 'docentes.ver', 'Ver Docentes', 'DOCENTES', 'DOC', TRUE),
-(37, 'docentes.crear', 'Registrar Docente', 'DOCENTES', 'DOC', TRUE),
-(38, 'docentes.asignar', 'Asignar Docente a Oferta Académica', 'DOCENTES', 'DOC', TRUE),
-(39, 'docentes.licencia.ver', 'Ver Licencias de Docente', 'DOCENTES', 'DOC', TRUE),
-(40, 'docentes.licencia.crear', 'Solicitar Licencia de Docente', 'DOCENTES', 'DOC', TRUE),
-(41, 'docentes.licencia.aprobar', 'Aprobar Licencia de Docente', 'DOCENTES', 'DOC', TRUE),
-(42, 'docentes.supervision.evaluar', 'Evaluar Docente (Supervisión)', 'DOCENTES', 'DOC', TRUE),
-(43, 'docentes.supervision.reporte', 'Ver Reportes de Supervisión', 'DOCENTES', 'DOC', TRUE),
-(44, 'docentes.supervision.programar', 'Programar Supervisión', 'DOCENTES', 'DOC', TRUE),
-(45, 'docentes.supervision.ficha.crear', 'Crear Ficha de Supervisión', 'DOCENTES', 'DOC', TRUE),
-(46, 'docentes.supervision.ficha.editar', 'Editar Ficha de Supervisión', 'DOCENTES', 'DOC', TRUE),
-(47, 'docentes.supervision.pasantia.solicitar', 'Solicitar Pasantía', 'DOCENTES', 'DOC', TRUE),
-(48, 'docentes.supervision.pasantia.seguimiento', 'Seguimiento de Pasantía', 'DOCENTES', 'DOC', TRUE),
-(49, 'docentes.supervision.pasantia.evaluar', 'Evaluación Final de Pasantía', 'DOCENTES', 'DOC', TRUE),
+-- DOMINIO: FINANZAS (módulo sidebar: FIN)
+(55, 'finanzas.pago.ver',        'Pagos: listar y ver detalle',                       'FINANZAS', 'FIN', 'fin_pagos',       '/pagos/listar',        TRUE),
+(56, 'finanzas.pago.registrar',  'Pagos: registrar pago',                             'FINANZAS', 'FIN', 'fin_pagos',       '/pagos/listar',        TRUE),
+(57, 'finanzas.pago.editar',     'Pagos: editar y eliminar pago',                     'FINANZAS', 'FIN', 'fin_pagos',       '/pagos/listar',        TRUE),
+(58, 'finanzas.pago.adicionales','Pagos adicionales: gestionar',                      'FINANZAS', 'FIN', 'fin_adicionales', '/pagos/adicionales',   TRUE),
+(59, 'finanzas.pago.reporte.carrera',   'Reportes de pagos: por carrera',             'FINANZAS', 'FIN', 'fin_reportes',    '/pagos/reportes',      TRUE),
+(60, 'finanzas.pago.reporte.estudiante','Reportes de pagos: por estudiante',          'FINANZAS', 'FIN', 'fin_reportes',    '/pagos/reportes',      TRUE),
+(61, 'finanzas.pago.reporte.gestion',   'Reportes de pagos: por gestión',             'FINANZAS', 'FIN', 'fin_reportes',    '/pagos/reportes',      TRUE),
 
--- DOMINIO: FINANZAS
-(50, 'finanzas.pago.ver', 'Ver Pagos', 'FINANZAS', 'FIN', TRUE),
-(51, 'finanzas.pago.registrar', 'Registrar Pago', 'FINANZAS', 'FIN', TRUE),
-(52, 'finanzas.pago.editar', 'Editar Pago', 'FINANZAS', 'FIN', TRUE),
-(53, 'finanzas.pago.adicionales', 'Registrar Pagos Adicionales', 'FINANZAS', 'FIN', TRUE),
-(54, 'finanzas.pago.reporte.carrera', 'Reporte de Pagos por Carrera', 'FINANZAS', 'FIN', TRUE),
-(55, 'finanzas.pago.reporte.estudiante', 'Reporte de Pagos por Estudiante', 'FINANZAS', 'FIN', TRUE),
-(56, 'finanzas.pago.reporte.gestion', 'Reporte de Pagos por Gestión', 'FINANZAS', 'FIN', TRUE),
+-- DOMINIO: INSTITUCIONAL (módulo sidebar: INST)
+(62, 'institucional.gestion.actual',    'Gestión actual: ver',                        'INSTITUCIONAL', 'INST', 'inst_gestion',    '/gestiones/actual',          TRUE),
+(63, 'institucional.gestion.cronograma','Cronogramas: gestionar',                     'INSTITUCIONAL', 'INST', 'inst_cronograma', '/gestiones/cronograma',      TRUE),
+(64, 'institucional.gestion.oferta',    'Oferta académica: gestionar',                'INSTITUCIONAL', 'INST', 'inst_oferta',     '/gestiones/oferta',          TRUE),
+(65, 'institucional.gestion.horarios',  'Horarios: asignar',                          'INSTITUCIONAL', 'INST', 'inst_horarios',   '/gestiones/horarios/asignar',TRUE),
+(66, 'institucional.oferta.gestionar',  'Inscripción por materia o curso',            'INSTITUCIONAL', 'INST', 'inst_oferta',     '/gestiones/oferta',          TRUE),
+(67, 'institucional.horario.asignar',   'Generar horarios',                           'INSTITUCIONAL', 'INST', 'inst_horarios',   '/gestiones/horarios/asignar',TRUE),
+(68, 'institucional.gestion.pasadas',   'Gestiones pasadas: ver',                     'INSTITUCIONAL', 'INST', 'inst_pasadas',    '/gestiones/pasadas',         TRUE),
 
--- DOMINIO: INSTITUCIONAL
-(57, 'institucional.gestion.actual', 'Ver Gestión Actual', 'INSTITUCIONAL', 'INST', TRUE),
-(58, 'institucional.gestion.cronograma', 'Gestionar Cronogramas', 'INSTITUCIONAL', 'INST', TRUE),
-(59, 'institucional.gestion.oferta', 'Gestionar Oferta Académica', 'INSTITUCIONAL', 'INST', TRUE),
-(60, 'institucional.gestion.horarios', 'Asignar Horarios (Gestión)', 'INSTITUCIONAL', 'INST', TRUE),
-(61, 'institucional.oferta.gestionar', 'Inscribir por Materia o Curso', 'INSTITUCIONAL', 'INST', TRUE),
-(62, 'institucional.horario.asignar', 'Generar Horarios', 'INSTITUCIONAL', 'INST', TRUE),
-(63, 'institucional.gestion.pasadas', 'Ver Gestiones Pasadas', 'INSTITUCIONAL', 'INST', TRUE),
-(64, 'institucional.config.academico.carreras', 'Gestionar Carreras', 'INSTITUCIONAL', 'INST', TRUE),
-(65, 'institucional.config.academico.materias', 'Gestionar Materias', 'INSTITUCIONAL', 'INST', TRUE),
-(66, 'institucional.config.academico.plan', 'Gestionar Plan de Estudios', 'INSTITUCIONAL', 'INST', TRUE),
-(67, 'institucional.config.academico.cursos', 'Gestionar Cursos/Paralelos', 'INSTITUCIONAL', 'INST', TRUE),
-(68, 'institucional.config.academico.turnos', 'Gestionar Turnos', 'INSTITUCIONAL', 'INST', TRUE),
-(69, 'institucional.config.documentacion.inscripcion', 'Config. Documentación Inscripción', 'INSTITUCIONAL', 'INST', TRUE),
-(70, 'institucional.config.documentacion.becas', 'Config. Documentación Becas', 'INSTITUCIONAL', 'INST', TRUE),
-(71, 'institucional.config.documentacion.pasantias', 'Config. Documentación Pasantías', 'INSTITUCIONAL', 'INST', TRUE),
-(72, 'institucional.config.documentacion.traslado', 'Config. Documentación Traslado', 'INSTITUCIONAL', 'INST', TRUE),
-(73, 'institucional.config.complementario.discapacidad', 'Config. Discapacidad', 'INSTITUCIONAL', 'INST', TRUE),
-(74, 'institucional.config.complementario.apoderados', 'Config. Apoderados', 'INSTITUCIONAL', 'INST', TRUE),
-(75, 'institucional.config.complementario.idiomas', 'Config. Idiomas', 'INSTITUCIONAL', 'INST', TRUE),
-(76, 'institucional.config.gestionar', 'Gestionar Configuración de Pagos (Sistema)', 'INSTITUCIONAL', 'INST', TRUE),
-(77, 'institucional.config.historial_actividades', 'Ver Historial de Actividades', 'INSTITUCIONAL', 'INST', TRUE),
+-- DOMINIO: CONFIGURACION (módulo sidebar: CFG)
+(69, 'cfg.academico.carreras', 'Config. académica: carreras',                         'CONFIGURACION', 'CFG', 'cfg_academico', '/configuracion/academico', TRUE),
+(70, 'cfg.academico.materias', 'Config. académica: materias',                         'CONFIGURACION', 'CFG', 'cfg_academico', '/configuracion/academico', TRUE),
+(71, 'cfg.academico.plan',     'Config. académica: plan de estudios',                 'CONFIGURACION', 'CFG', 'cfg_academico', '/configuracion/academico', TRUE),
+(72, 'cfg.academico.cursos',   'Config. académica: cursos/paralelos',                 'CONFIGURACION', 'CFG', 'cfg_academico', '/configuracion/academico', TRUE),
+(73, 'cfg.academico.turnos',   'Config. académica: turnos',                           'CONFIGURACION', 'CFG', 'cfg_academico', '/configuracion/academico', TRUE),
+(74, 'cfg.documentacion.inscripcion', 'Config. documentación: inscripción',           'CONFIGURACION', 'CFG', 'cfg_documentacion', '/configuracion/documentacion', TRUE),
+(75, 'cfg.documentacion.becas',       'Config. documentación: becas',                 'CONFIGURACION', 'CFG', 'cfg_documentacion', '/configuracion/documentacion', TRUE),
+(76, 'cfg.documentacion.pasantias',   'Config. documentación: pasantías',             'CONFIGURACION', 'CFG', 'cfg_documentacion', '/configuracion/documentacion', TRUE),
+(77, 'cfg.documentacion.traslado',    'Config. documentación: traslado',              'CONFIGURACION', 'CFG', 'cfg_documentacion', '/configuracion/documentacion', TRUE),
+(78, 'cfg.complementario.discapacidad', 'Datos complementarios: discapacidad',        'CONFIGURACION', 'CFG', 'cfg_complementario', '/configuracion/complementario', TRUE),
+(79, 'cfg.complementario.apoderados',   'Datos complementarios: apoderados',          'CONFIGURACION', 'CFG', 'cfg_complementario', '/configuracion/complementario', TRUE),
+(80, 'cfg.complementario.idiomas',      'Datos complementarios: idiomas',             'CONFIGURACION', 'CFG', 'cfg_complementario', '/configuracion/complementario', TRUE),
+(81, 'cfg.convenios.ver',    'Convenios: listar empresas e instituciones',            'CONFIGURACION', 'CFG', 'cfg_convenios', '/configuracion/convenios', TRUE),
+(82, 'cfg.convenios.crear',  'Convenios: registrar empresa/institución',              'CONFIGURACION', 'CFG', 'cfg_convenios', '/configuracion/convenios', TRUE),
+(83, 'cfg.convenios.editar', 'Convenios: editar empresa/institución',                 'CONFIGURACION', 'CFG', 'cfg_convenios', '/configuracion/convenios', TRUE),
+(84, 'cfg.pagos.gestionar', 'Config. de pagos: gestionar aranceles y cuotas',        'CONFIGURACION', 'CFG', 'cfg_pagos', '/pagos/configuracion', TRUE),
+(85, 'cfg.historial_actividades', 'Historial de actividades del sistema',             'CONFIGURACION', 'CFG', 'cfg_historial', '/configuracion/historial-actividades', TRUE),
 
--- DOMINIO: REPORTES
-(78, 'reportes.avance_academico', 'Reporte de Avance Académico', 'REPORTES', 'REP', TRUE),
-(79, 'reportes.asistencia', 'Reporte de Asistencia', 'REPORTES', 'REP', TRUE),
-(80, 'reportes.desercion', 'Reporte de Deserción', 'REPORTES', 'REP', TRUE),
-(81, 'reportes.solicitudes.general', 'Reporte General de Solicitudes', 'REPORTES', 'REP', TRUE),
-(82, 'reportes.solicitudes.becas', 'Reporte de Solicitudes de Becas', 'REPORTES', 'REP', TRUE),
-(83, 'reportes.solicitudes.traspaso', 'Reporte de Solicitudes de Traspaso', 'REPORTES', 'REP', TRUE),
-(84, 'reportes.solicitudes.pasantia', 'Reporte de Solicitudes de Pasantía', 'REPORTES', 'REP', TRUE),
+-- DOMINIO: REPORTES (módulo sidebar: REP)
+(86, 'reportes.avance_academico',    'Reporte de avance académico',                   'REPORTES', 'REP', 'rep_avance',      '/reportes/avance-academico', TRUE),
+(87, 'reportes.asistencia',          'Reporte de asistencia',                         'REPORTES', 'REP', 'rep_asistencia',  '/reportes/asistencia',       TRUE),
+(88, 'reportes.desercion',           'Reporte de deserción',                          'REPORTES', 'REP', 'rep_desercion',   '/reportes/desercion',        TRUE),
+(89, 'reportes.solicitudes.general', 'Reporte general de solicitudes',                'REPORTES', 'REP', 'rep_solicitudes', '/reportes/solicitudes',      TRUE),
+(90, 'reportes.solicitudes.becas',   'Reporte de solicitudes de becas',               'REPORTES', 'REP', 'rep_solicitudes', '/reportes/solicitudes',      TRUE),
+(91, 'reportes.solicitudes.traspaso','Reporte de solicitudes de traspaso',            'REPORTES', 'REP', 'rep_solicitudes', '/reportes/solicitudes',      TRUE),
+(92, 'reportes.solicitudes.pasantia','Reporte de solicitudes de pasantía',            'REPORTES', 'REP', 'rep_solicitudes', '/reportes/solicitudes',      TRUE),
 
--- DOMINIO: SEGURIDAD
-(85, 'seguridad.usuario.crear', 'Crear Usuario', 'SEGURIDAD', 'SEG', TRUE),
-(86, 'seguridad.usuario.administrar', 'Administrar Usuarios', 'SEGURIDAD', 'SEG', TRUE),
-(87, 'seguridad.rol.gestionar', 'Administrar Roles y Permisos', 'SEGURIDAD', 'SEG', TRUE);
+-- DOMINIO: SEGURIDAD (módulo sidebar: SEG)
+(93, 'seguridad.usuario.crear',      'Usuarios: crear nuevo usuario',                 'SEGURIDAD', 'SEG', 'seg_usuarios', '/seguridad/usuarios', TRUE),
+(94, 'seguridad.usuario.administrar','Usuarios: listar, ver y administrar',           'SEGURIDAD', 'SEG', 'seg_usuarios', '/seguridad/usuarios', TRUE),
+(95, 'seguridad.rol.gestionar',      'Roles y permisos: ver y administrar',           'SEGURIDAD', 'SEG', 'seg_roles',    '/seguridad/roles',    TRUE);
 
 SET FOREIGN_KEY_CHECKS = 1;
 
--- ============================================
--- FIN DEL SEEDER (permisos)
--- ============================================
+-- Verificación post-insert:
+-- SELECT COUNT(*) FROM permisos WHERE activo = 1;                        -- 95
+-- SELECT COUNT(*) FROM permisos WHERE grupo_ui IS NULL AND activo = 1;   -- 0
+-- SELECT COUNT(*) FROM permisos WHERE ruta_sidebar IS NULL AND activo=1; -- 0

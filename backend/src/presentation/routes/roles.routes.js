@@ -15,7 +15,7 @@ export function buildRolesRouter({ seguridadRolesController }) {
   const router = express.Router();
   const c = seguridadRolesController;
 
-  const ver = [authenticate, verificarPermiso('seguridad.rol.gestionar', 'VER')];
+  const ver = [authenticate, verificarPermiso('seguridad.rol.gestionar', 'LISTAR')];
   const editar = [
     authenticate,
     verificarPermiso('seguridad.rol.gestionar', 'EDITAR'),
@@ -29,6 +29,22 @@ export function buildRolesRouter({ seguridadRolesController }) {
     rolIdParamValidator,
     validateSeguridadRequest,
     (req, res, next) => c.getPermisos(req, res, next)
+  );
+
+  router.get(
+    '/:id/permisos-grilla',
+    ...ver,
+    rolIdParamValidator,
+    validateSeguridadRequest,
+    (req, res, next) => {
+      if (!req.query.dominio) {
+        return res.status(400).json({
+          success: false,
+          message: 'El parámetro dominio es obligatorio',
+        });
+      }
+      return c.getPermisosGrilla(req, res, next);
+    }
   );
 
   router.put(

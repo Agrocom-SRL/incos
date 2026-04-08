@@ -142,13 +142,48 @@ export class RolePermissionRepository extends BaseRepository {
       `
       SELECT
         id, accion,
-        permiso_id, codigo, nombre, dominio, modulo
+        permiso_id, codigo, nombre, dominio, modulo, grupo_ui, ruta_sidebar
       FROM vista_roles_permisos_detalle_activos
       WHERE rol_id = :rolId
       ORDER BY dominio, codigo, accion
       `,
       { replacements: { rolId }, type: sequelize.QueryTypes.SELECT }
     );
+  }
+
+  /**
+   * Permisos agrupados por grupo_ui para la grilla del panel de seguridad.
+   * Combina acciones validas del catalogo vs acciones asignadas al rol.
+   */
+  async findPermisosParaGrilla(rolId, dominio) {
+    const rows = await sequelize.query(
+      `
+      SELECT
+        grupo_ui,
+        ruta_sidebar,
+        codigos,
+        acciones_validas,
+        acciones_asignadas
+      FROM vista_grilla_roles_permisos_agrupada
+      WHERE rol_id = :rolId
+        AND dominio = :dominio
+      ORDER BY grupo_ui
+      `,
+      {
+        replacements: { rolId, dominio },
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+
+    return rows.map((r) => ({
+      grupoUi: r.grupo_ui,
+      rutaSidebar: r.ruta_sidebar,
+      codigos: r.codigos ? r.codigos.split(',') : [],
+      accionesValidas: r.acciones_validas ? r.acciones_validas.split(',') : [],
+      accionesAsignadas: r.acciones_asignadas
+        ? r.acciones_asignadas.split(',').filter(Boolean)
+        : [],
+    }));
   }
 
   /**

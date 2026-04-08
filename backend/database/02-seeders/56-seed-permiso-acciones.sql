@@ -1,246 +1,80 @@
 -- ============================================
--- SEEDER: permiso_acciones
--- Catálogo de acciones válidas por permiso
--- Fuente de verdad para PermisosDominioPicker
--- y para validación en ActualizarPermisosRolUseCase
--- Ejecutar después de 54-seed-permisos.sql
+-- SEEDER: permiso_acciones v2
+-- Sistema de Gestión Académica · Instituto INCOS
+-- Archivo: backend/database/02-seeders/56-seed-permiso-acciones.sql
 --
--- MATRÍCULA: una pantalla suele combinar varios permisos (ej. listar admisiones usa
--- admision.ver + admision.editar + admision.crear + finanzas.pago.registrar según botones).
--- API pagos-aportes acepta finanzas.pago.* O matricula.pago.aporte.ver (mismo verbo).
+-- CAMBIOS respecto al legacy:
+--   [REMOVIDO] accion='VER' — no existe en vocabulario v2
+--   [NUEVO]    accion='LISTAR'      — item sidebar + pagina de listado
+--   [NUEVO]    accion='DETALLE'     — boton "ver" en fila + URL /:id
+--   [NUEVO]    accion='ACTIVAR'     — toggle estado activo/bloqueado
+--   [NUEVO]    accion='GENERAR_PDF' — generacion de documentos PDF
+--
+-- Este catalogo define los checkboxes visibles en PermisosDominioPicker.
+-- ADMIN_SISTEMA (rol_id=1) se resuelve dinamicamente desde esta tabla.
+-- Una asignacion en roles_permisos solo es valida si existe aqui.
 -- ============================================
 
 USE instituto_incos;
 
 SET FOREIGN_KEY_CHECKS = 0;
 
-TRUNCATE TABLE permiso_acciones;
-
 INSERT INTO permiso_acciones (permiso_id, accion, activo) VALUES
 
--- ==========================================
 -- MATRICULA
--- (1) listar/ver/exportar admisiones  (2) registrar  (3) editar/eliminar estudiante
--- (4) matrículas CRUD alta  (5) editar/eliminar inscripción  (6–8) becas  (9) documentos PDF
--- (10) aportes desde menú Matrícula: ver listado + exportar recibo / anular cuota (OR con Finanzas en API)
--- ==========================================
-(1,  'VER',      TRUE),
-(1,  'EXPORTAR', TRUE),
-(2,  'VER',      TRUE),
-(2,  'CREAR',    TRUE),
-(3,  'VER',      TRUE),
-(3,  'EDITAR',   TRUE),
-(3,  'ELIMINAR', TRUE),
-(4,  'VER',      TRUE),
-(4,  'CREAR',    TRUE),
-(5,  'VER',      TRUE),
-(5,  'EDITAR',   TRUE),
-(5,  'ELIMINAR', TRUE),
-(6,  'VER',      TRUE),
-(6,  'EXPORTAR', TRUE),
-(7,  'VER',      TRUE),
-(7,  'CREAR',    TRUE),
-(7,  'EDITAR',   TRUE),
-(7,  'ELIMINAR', TRUE),
-(8,  'VER',      TRUE),
-(8,  'APROBAR',  TRUE),
-(9,  'VER',      TRUE),
-(9,  'CREAR',    TRUE),
-(10, 'VER',      TRUE),
-(10, 'EXPORTAR', TRUE),
-(10, 'ELIMINAR', TRUE),
+(1,'LISTAR',TRUE),(1,'DETALLE',TRUE),(1,'EXPORTAR',TRUE),(2,'CREAR',TRUE),(3,'EDITAR',TRUE),(3,'ELIMINAR',TRUE),(3,'ACTIVAR',TRUE),
+(4,'LISTAR',TRUE),(4,'DETALLE',TRUE),(4,'CREAR',TRUE),(5,'EDITAR',TRUE),(5,'ELIMINAR',TRUE),
+(6,'LISTAR',TRUE),(6,'DETALLE',TRUE),(7,'CREAR',TRUE),(7,'EDITAR',TRUE),(7,'ELIMINAR',TRUE),(8,'APROBAR',TRUE),
+(9,'LISTAR',TRUE),(9,'GENERAR_PDF',TRUE),
+(10,'LISTAR',TRUE),(10,'DETALLE',TRUE),(10,'ELIMINAR',TRUE),(10,'EXPORTAR',TRUE),
+(11,'LISTAR',TRUE),(11,'DETALLE',TRUE),(12,'CREAR',TRUE),(13,'APROBAR',TRUE),(14,'EDITAR',TRUE),
 
--- ==========================================
 -- ACADEMICO
--- ==========================================
-(11, 'VER',      TRUE),
-(12, 'VER',      TRUE),
-(12, 'CREAR',    TRUE),
-(13, 'VER',      TRUE),
-(13, 'APROBAR',  TRUE),
-(14, 'VER',      TRUE),
-(14, 'CREAR',    TRUE),
-(15, 'VER',      TRUE),
-(15, 'CREAR',    TRUE),
-(16, 'VER',      TRUE),
-(16, 'CREAR',    TRUE),
-(17, 'VER',      TRUE),
-(17, 'EDITAR',   TRUE),
-(18, 'VER',      TRUE),
-(18, 'EDITAR',   TRUE),
-(19, 'VER',      TRUE),
-(19, 'EDITAR',   TRUE),
-(20, 'VER',      TRUE),
-(21, 'VER',      TRUE),
-(21, 'CREAR',    TRUE),
-(22, 'VER',      TRUE),
-(22, 'APROBAR',  TRUE),
-(23, 'VER',      TRUE),
-(24, 'VER',      TRUE),
-(24, 'CREAR',    TRUE),
-(25, 'VER',      TRUE),
-(25, 'CREAR',    TRUE),
-(26, 'VER',      TRUE),
-(26, 'EDITAR',   TRUE),
-(27, 'VER',      TRUE),
-(27, 'APROBAR',  TRUE),
-(28, 'VER',      TRUE),
-(29, 'VER',      TRUE),
-(29, 'CREAR',    TRUE),
-(30, 'VER',      TRUE),
-(30, 'CREAR',    TRUE),
-(31, 'VER',      TRUE),
-(31, 'EDITAR',   TRUE),
-(32, 'VER',      TRUE),
-(32, 'APROBAR',  TRUE),
-(33, 'VER',      TRUE),
-(33, 'CREAR',    TRUE),
-(33, 'EDITAR',   TRUE),
-(34, 'VER',      TRUE),
-(35, 'VER',      TRUE),
-(35, 'APROBAR',  TRUE),
+(15,'CREAR',TRUE),(16,'CREAR',TRUE),(17,'CREAR',TRUE),(18,'LISTAR',TRUE),(18,'DETALLE',TRUE),(19,'CREAR',TRUE),(20,'EDITAR',TRUE),
+(21,'LISTAR',TRUE),(21,'DETALLE',TRUE),(22,'CREAR',TRUE),(23,'APROBAR',TRUE),
+(24,'LISTAR',TRUE),(24,'DETALLE',TRUE),(25,'CREAR',TRUE),(26,'CREAR',TRUE),(27,'EDITAR',TRUE),(28,'APROBAR',TRUE),
+(29,'LISTAR',TRUE),(29,'DETALLE',TRUE),(30,'CREAR',TRUE),(31,'CREAR',TRUE),(32,'EDITAR',TRUE),(33,'APROBAR',TRUE),
+(34,'CREAR',TRUE),(34,'EDITAR',TRUE),(34,'GENERAR_PDF',TRUE),(35,'LISTAR',TRUE),(35,'DETALLE',TRUE),(35,'EXPORTAR',TRUE),(36,'APROBAR',TRUE),
+(37,'LISTAR',TRUE),(37,'EXPORTAR',TRUE),
+(38,'LISTAR',TRUE),(38,'DETALLE',TRUE),(39,'CREAR',TRUE),(40,'APROBAR',TRUE),
 
--- ==========================================
 -- DOCENTES
--- ==========================================
-(36, 'VER',      TRUE),
-(36, 'CREAR',    TRUE),
-(36, 'EDITAR',   TRUE),
-(37, 'VER',      TRUE),
-(37, 'CREAR',    TRUE),
-(38, 'VER',      TRUE),
-(38, 'CREAR',    TRUE),
-(38, 'EDITAR',   TRUE),
-(39, 'VER',      TRUE),
-(40, 'VER',      TRUE),
-(40, 'CREAR',    TRUE),
-(41, 'VER',      TRUE),
-(41, 'APROBAR',  TRUE),
-(42, 'VER',      TRUE),
-(42, 'CREAR',    TRUE),
-(42, 'EDITAR',   TRUE),
-(43, 'VER',      TRUE),
-(44, 'VER',      TRUE),
-(44, 'CREAR',    TRUE),
-(45, 'VER',      TRUE),
-(45, 'CREAR',    TRUE),
-(46, 'VER',      TRUE),
-(46, 'EDITAR',   TRUE),
-(47, 'VER',      TRUE),
-(47, 'CREAR',    TRUE),
-(48, 'VER',      TRUE),
-(48, 'EDITAR',   TRUE),
-(49, 'VER',      TRUE),
-(49, 'EDITAR',   TRUE),
+(41,'LISTAR',TRUE),(41,'DETALLE',TRUE),(41,'EXPORTAR',TRUE),(42,'CREAR',TRUE),(43,'EDITAR',TRUE),
+(44,'LISTAR',TRUE),(44,'DETALLE',TRUE),(45,'CREAR',TRUE),(46,'APROBAR',TRUE),
+(47,'LISTAR',TRUE),(47,'DETALLE',TRUE),(47,'EDITAR',TRUE),(48,'LISTAR',TRUE),(48,'EXPORTAR',TRUE),(49,'CREAR',TRUE),(50,'CREAR',TRUE),(51,'EDITAR',TRUE),
+(52,'CREAR',TRUE),(52,'LISTAR',TRUE),(52,'DETALLE',TRUE),(53,'EDITAR',TRUE),(54,'EDITAR',TRUE),
 
--- ==========================================
 -- FINANZAS
--- ==========================================
-(50, 'VER',      TRUE),
-(50, 'EXPORTAR', TRUE),
-(51, 'VER',      TRUE),
-(51, 'CREAR',    TRUE),
-(52, 'VER',      TRUE),
-(52, 'EDITAR',   TRUE),
-(52, 'ELIMINAR', TRUE),
-(53, 'VER',      TRUE),
-(53, 'CREAR',    TRUE),
-(54, 'VER',      TRUE),
-(54, 'EXPORTAR', TRUE),
-(55, 'VER',      TRUE),
-(55, 'EXPORTAR', TRUE),
-(56, 'VER',      TRUE),
-(56, 'EXPORTAR', TRUE),
+(55,'LISTAR',TRUE),(55,'DETALLE',TRUE),(55,'EXPORTAR',TRUE),(56,'CREAR',TRUE),(57,'EDITAR',TRUE),(57,'ELIMINAR',TRUE),
+(58,'LISTAR',TRUE),(58,'CREAR',TRUE),(58,'EDITAR',TRUE),
+(59,'LISTAR',TRUE),(59,'EXPORTAR',TRUE),(60,'LISTAR',TRUE),(60,'EXPORTAR',TRUE),(61,'LISTAR',TRUE),(61,'EXPORTAR',TRUE),
 
--- ==========================================
 -- INSTITUCIONAL
--- ==========================================
-(57, 'VER',      TRUE),
-(58, 'VER',      TRUE),
-(58, 'CREAR',    TRUE),
-(58, 'EDITAR',   TRUE),
-(59, 'VER',      TRUE),
-(59, 'CREAR',    TRUE),
-(59, 'EDITAR',   TRUE),
-(60, 'VER',      TRUE),
-(60, 'CREAR',    TRUE),
-(60, 'EDITAR',   TRUE),
-(61, 'VER',      TRUE),
-(61, 'CREAR',    TRUE),
-(61, 'EDITAR',   TRUE),
-(62, 'VER',      TRUE),
-(62, 'CREAR',    TRUE),
-(63, 'VER',      TRUE),
-(64, 'VER',      TRUE),
-(64, 'CREAR',    TRUE),
-(64, 'EDITAR',   TRUE),
-(65, 'VER',      TRUE),
-(65, 'CREAR',    TRUE),
-(65, 'EDITAR',   TRUE),
-(66, 'VER',      TRUE),
-(66, 'CREAR',    TRUE),
-(66, 'EDITAR',   TRUE),
-(67, 'VER',      TRUE),
-(67, 'CREAR',    TRUE),
-(67, 'EDITAR',   TRUE),
-(68, 'VER',      TRUE),
-(68, 'CREAR',    TRUE),
-(68, 'EDITAR',   TRUE),
-(69, 'VER',      TRUE),
-(69, 'CREAR',    TRUE),
-(69, 'EDITAR',   TRUE),
-(70, 'VER',      TRUE),
-(70, 'CREAR',    TRUE),
-(70, 'EDITAR',   TRUE),
-(71, 'VER',      TRUE),
-(71, 'CREAR',    TRUE),
-(71, 'EDITAR',   TRUE),
-(72, 'VER',      TRUE),
-(72, 'CREAR',    TRUE),
-(72, 'EDITAR',   TRUE),
-(73, 'VER',      TRUE),
-(73, 'CREAR',    TRUE),
-(73, 'EDITAR',   TRUE),
-(74, 'VER',      TRUE),
-(74, 'CREAR',    TRUE),
-(74, 'EDITAR',   TRUE),
-(75, 'VER',      TRUE),
-(75, 'CREAR',    TRUE),
-(75, 'EDITAR',   TRUE),
-(76, 'VER',      TRUE),
-(76, 'CREAR',    TRUE),
-(76, 'EDITAR',   TRUE),
-(77, 'VER',      TRUE),
+(62,'LISTAR',TRUE),(63,'LISTAR',TRUE),(63,'CREAR',TRUE),(63,'EDITAR',TRUE),(64,'LISTAR',TRUE),(64,'CREAR',TRUE),(64,'EDITAR',TRUE),
+(65,'LISTAR',TRUE),(65,'CREAR',TRUE),(65,'EDITAR',TRUE),(66,'CREAR',TRUE),(66,'EDITAR',TRUE),(67,'CREAR',TRUE),(68,'LISTAR',TRUE),
 
--- ==========================================
--- REPORTES (todos VER + EXPORTAR)
--- ==========================================
-(78, 'VER',      TRUE),
-(78, 'EXPORTAR', TRUE),
-(79, 'VER',      TRUE),
-(79, 'EXPORTAR', TRUE),
-(80, 'VER',      TRUE),
-(80, 'EXPORTAR', TRUE),
-(81, 'VER',      TRUE),
-(81, 'EXPORTAR', TRUE),
-(82, 'VER',      TRUE),
-(82, 'EXPORTAR', TRUE),
-(83, 'VER',      TRUE),
-(83, 'EXPORTAR', TRUE),
-(84, 'VER',      TRUE),
-(84, 'EXPORTAR', TRUE),
+-- CONFIGURACION
+(69,'LISTAR',TRUE),(69,'CREAR',TRUE),(69,'EDITAR',TRUE),(69,'ELIMINAR',TRUE),
+(70,'LISTAR',TRUE),(70,'CREAR',TRUE),(70,'EDITAR',TRUE),(70,'ELIMINAR',TRUE),
+(71,'LISTAR',TRUE),(71,'CREAR',TRUE),(71,'EDITAR',TRUE),
+(72,'LISTAR',TRUE),(72,'CREAR',TRUE),(72,'EDITAR',TRUE),(72,'ELIMINAR',TRUE),
+(73,'LISTAR',TRUE),(73,'CREAR',TRUE),(73,'EDITAR',TRUE),(73,'ELIMINAR',TRUE),
+(74,'LISTAR',TRUE),(74,'CREAR',TRUE),(74,'EDITAR',TRUE),(75,'LISTAR',TRUE),(75,'CREAR',TRUE),(75,'EDITAR',TRUE),
+(76,'LISTAR',TRUE),(76,'CREAR',TRUE),(76,'EDITAR',TRUE),(77,'LISTAR',TRUE),(77,'CREAR',TRUE),(77,'EDITAR',TRUE),
+(78,'LISTAR',TRUE),(78,'CREAR',TRUE),(78,'EDITAR',TRUE),(78,'ELIMINAR',TRUE),
+(79,'LISTAR',TRUE),(79,'CREAR',TRUE),(79,'EDITAR',TRUE),
+(80,'LISTAR',TRUE),(80,'CREAR',TRUE),(80,'EDITAR',TRUE),(80,'ELIMINAR',TRUE),
+(81,'LISTAR',TRUE),(81,'DETALLE',TRUE),(82,'CREAR',TRUE),(83,'EDITAR',TRUE),
+(84,'LISTAR',TRUE),(84,'CREAR',TRUE),(84,'EDITAR',TRUE),(85,'LISTAR',TRUE),
 
--- ==========================================
+-- REPORTES
+(86,'LISTAR',TRUE),(86,'EXPORTAR',TRUE),(87,'LISTAR',TRUE),(87,'EXPORTAR',TRUE),(88,'LISTAR',TRUE),(88,'EXPORTAR',TRUE),
+(89,'LISTAR',TRUE),(89,'EXPORTAR',TRUE),(90,'LISTAR',TRUE),(90,'EXPORTAR',TRUE),(91,'LISTAR',TRUE),(91,'EXPORTAR',TRUE),(92,'LISTAR',TRUE),(92,'EXPORTAR',TRUE),
+
 -- SEGURIDAD
--- ==========================================
-(85, 'VER',      TRUE),
-(85, 'CREAR',    TRUE),
-(86, 'VER',      TRUE),
-(86, 'CREAR',    TRUE),
-(86, 'EDITAR',   TRUE),
-(86, 'ELIMINAR', TRUE),
-(87, 'VER',      TRUE),
-(87, 'CREAR',    TRUE),
-(87, 'EDITAR',   TRUE);
+(93,'CREAR',TRUE),(94,'LISTAR',TRUE),(94,'DETALLE',TRUE),(94,'EDITAR',TRUE),(94,'ELIMINAR',TRUE),(94,'ACTIVAR',TRUE),(95,'LISTAR',TRUE),(95,'EDITAR',TRUE);
 
 SET FOREIGN_KEY_CHECKS = 1;
+
+-- Verificacion post-insert:
+-- SELECT COUNT(*) FROM permiso_acciones WHERE accion = 'VER';  -- 0

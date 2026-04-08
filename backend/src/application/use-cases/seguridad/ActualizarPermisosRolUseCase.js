@@ -30,7 +30,7 @@ export class ActualizarPermisosRolUseCase {
    * @param {{ asignaciones: { permiso_id: number, accion: string }[] }} body
    */
   async execute(rolId, body) {
-    if (Number(rolId) === 8) {
+    if (Number(rolId) === 1) {
       throw new ForbiddenError('Los permisos del ADMIN_SISTEMA no pueden modificarse');
     }
 
