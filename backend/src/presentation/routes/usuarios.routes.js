@@ -21,7 +21,8 @@ export function buildUsuariosRouter({ seguridadUsuariosController }) {
   const router = express.Router();
   const c = seguridadUsuariosController;
 
-  const adminVer = [authenticate, verificarPermiso('seguridad.usuario.administrar', 'VER')];
+  const adminListar = [authenticate, verificarPermiso('seguridad.usuario.administrar', 'LISTAR')];
+  const adminDetalle = [authenticate, verificarPermiso('seguridad.usuario.administrar', 'DETALLE')];
   const adminEditar = [
     authenticate,
     verificarPermiso('seguridad.usuario.administrar', 'EDITAR'),
@@ -30,9 +31,9 @@ export function buildUsuariosRouter({ seguridadUsuariosController }) {
     authenticate,
     verificarPermiso('seguridad.usuario.crear', 'CREAR'),
   ];
-  const rolGestionarVer = [
+  const rolGestionarListar = [
     authenticate,
-    verificarPermiso('seguridad.rol.gestionar', 'VER'),
+    verificarPermiso('seguridad.rol.gestionar', 'LISTAR'),
   ];
   const rolGestionarEditar = [
     authenticate,
@@ -41,7 +42,7 @@ export function buildUsuariosRouter({ seguridadUsuariosController }) {
 
   router.get(
     '/',
-    ...adminVer,
+    ...adminListar,
     usuariosListQueryValidator,
     validateSeguridadRequest,
     (req, res, next) => c.list(req, res, next)
@@ -57,7 +58,7 @@ export function buildUsuariosRouter({ seguridadUsuariosController }) {
 
   router.get(
     '/:id/permisos',
-    ...rolGestionarVer,
+    ...rolGestionarListar,
     usuarioIdParamValidator,
     validateSeguridadRequest,
     (req, res, next) => c.getPermisos(req, res, next)
@@ -83,7 +84,7 @@ export function buildUsuariosRouter({ seguridadUsuariosController }) {
 
   router.get(
     '/:id',
-    ...adminVer,
+    ...adminDetalle,
     usuarioIdParamValidator,
     validateSeguridadRequest,
     (req, res, next) => c.getById(req, res, next)

@@ -23,7 +23,7 @@ import { listValidator } from '../validators/common/index.js';
 export function buildBecasDescuentosRouter({ controllers, middlewares }) {
     const router = express.Router();
     const { validateRequest } = middlewares;
-    const verBeca = [authenticate, verificarPermiso('matricula.beca.ver', 'VER')];
+    const verBeca = [authenticate, verificarPermiso('matricula.beca.ver', 'LISTAR')];
 
     // ============================================
     // CRUD BÁSICO

@@ -80,7 +80,7 @@ export const seguridadRoutes = [
     permiso: 'seguridad.rol.gestionar',
     accion: 'LISTAR',
     menu: {
-      label: 'Roles y Permisos',
+      label: 'Roles y permisos',
       module: 'SEG',
       parent: 'SEG',
       order: 2,

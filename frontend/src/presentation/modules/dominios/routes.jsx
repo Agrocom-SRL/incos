@@ -22,7 +22,7 @@ export const dominiosRoutes = [
     {
         path: '/docentes-dominio',
         element: null,
-        key: 'DOC-DOM',
+        key: 'DOC',
         menu: { label: 'Docentes', module: 'DOC', order: 4 },
     },
     {
@@ -40,7 +40,7 @@ export const dominiosRoutes = [
     {
         path: '/reportes-dominio',
         element: null,
-        key: 'REP-DOM',
+        key: 'REP',
         menu: { label: 'Reportes', module: 'REP', order: 7 },
     },
     {

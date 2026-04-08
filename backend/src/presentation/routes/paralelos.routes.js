@@ -24,7 +24,7 @@ import { idValidator } from '../validators/common/index.js';
 export function buildParalelosRouter({ controllers, middlewares }) {
     const router = express.Router();
     const { validateRequest } = middlewares;
-    const verHorarios = [authenticate, verificarPermiso('institucional.gestion.horarios', 'VER')];
+    const verHorarios = [authenticate, verificarPermiso('institucional.gestion.horarios', 'LISTAR')];
 
     // ============================================
     // CRUD BÁSICO

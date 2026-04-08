@@ -35,7 +35,7 @@ export const estudiantesRoutes = [
     permiso: 'matricula.admision.crear',
     accion: 'CREAR',
     menu: {
-      label: '+ Nuevo estudiante',
+      label: 'Nuevo estudiante',
       module: 'MAT',
       parent: 'MAT',
       order: 1,
@@ -95,7 +95,7 @@ export const estudiantesRoutes = [
     permiso: 'academico.licencia.ver',
     accion: 'LISTAR',
     menu: {
-      label: 'Licencias de Estudiante',
+      label: 'Licencias estudiantiles',
       module: 'ACA',
       parent: 'ACA',
       order: 6,

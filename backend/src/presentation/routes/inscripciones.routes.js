@@ -25,11 +25,12 @@ export function buildInscripcionesRouter({ controllers, middlewares }) {
     const router = express.Router();
     const { validateRequest } = middlewares;
 
-    const verInscripciones = [authenticate, verificarPermiso('matricula.inscribir', 'VER')];
+    const listarInscripciones = [authenticate, verificarPermiso('matricula.inscribir', 'LISTAR')];
+    const detalleInscripcion = [authenticate, verificarPermiso('matricula.inscribir', 'DETALLE')];
     const crearInscripcion = [authenticate, verificarPermiso('matricula.inscribir', 'CREAR')];
     const editarInscripcion = [authenticate, verificarPermiso('matricula.inscripcion.editar', 'EDITAR')];
     const eliminarInscripcion = [authenticate, verificarPermiso('matricula.inscripcion.editar', 'ELIMINAR')];
-    const documentoCrear = [authenticate, verificarPermiso('matricula.documento.ver', 'CREAR')];
+    const documentoPdf = [authenticate, verificarPermiso('matricula.documento.ver', 'GENERAR_PDF')];
 
     // ============================================
     // CRUD BÁSICO
@@ -42,7 +43,7 @@ export function buildInscripcionesRouter({ controllers, middlewares }) {
      */
     router.get(
         '/',
-        ...verInscripciones,
+        ...listarInscripciones,
         listValidator,
         validateRequest,
         (req, res, next) => controllers.listEnrollmentsController.handle(req, res, next)
@@ -69,7 +70,7 @@ export function buildInscripcionesRouter({ controllers, middlewares }) {
      */
     router.post(
         '/:id/generar-formulario',
-        ...documentoCrear,
+        ...documentoPdf,
         idValidator,
         validateRequest,
         (req, res, next) => controllers.generateFormularioInscripcionController.handle(req, res, next)
@@ -82,7 +83,7 @@ export function buildInscripcionesRouter({ controllers, middlewares }) {
      */
     router.get(
         '/:id',
-        ...verInscripciones,
+        ...detalleInscripcion,
         idValidator,
         validateRequest,
         (req, res, next) => controllers.getEnrollmentByIdController.handle(req, res, next)

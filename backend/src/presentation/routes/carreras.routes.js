@@ -23,7 +23,7 @@ import { listValidator } from '../validators/common/index.js';
 export function buildCarrerasRouter({ controllers, middlewares }) {
     const router = express.Router();
     const { validateRequest } = middlewares;
-    const listarCarreras = [authenticate, verificarPermiso('institucional.config.academico.carreras', 'VER')];
+    const listarCarreras = [authenticate, verificarPermiso('cfg.academico.carreras', 'LISTAR')];
 
     // ============================================
     // CRUD BÁSICO

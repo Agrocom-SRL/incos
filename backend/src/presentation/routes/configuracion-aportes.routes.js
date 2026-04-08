@@ -9,11 +9,11 @@ import { listValidator } from '../validators/common/index.js';
 export function buildConfiguracionAportesRouter({ controllers, middlewares }) {
     const router = express.Router();
     const { validateRequest } = middlewares;
-    const configVer = [authenticate, verificarPermiso('institucional.config.gestionar', 'VER')];
+    const configListar = [authenticate, verificarPermiso('cfg.pagos.gestionar', 'LISTAR')];
 
     router.get(
         '/',
-        ...configVer,
+        ...configListar,
         listValidator,
         validateRequest,
         (req, res, next) => controllers.listConfiguracionAportesController.handle(req, res, next)

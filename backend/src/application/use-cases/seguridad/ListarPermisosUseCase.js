@@ -31,7 +31,7 @@ export class ListarPermisosUseCase {
         modulo: p.modulo,
         acciones_validas: p.acciones_validas
           ? String(p.acciones_validas).split(',')
-          : ['VER'],
+          : ['LISTAR'],
       });
     }
 

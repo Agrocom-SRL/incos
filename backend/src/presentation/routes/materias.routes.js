@@ -23,7 +23,7 @@ import { listMateriasValidator } from '../validators/academico/index.js';
 export function buildMateriasRouter({ controllers, middlewares }) {
     const router = express.Router();
     const { validateRequest } = middlewares;
-    const listarMaterias = [authenticate, verificarPermiso('institucional.config.academico.materias', 'VER')];
+    const listarMaterias = [authenticate, verificarPermiso('cfg.academico.materias', 'LISTAR')];
 
     // ============================================
     // CRUD BÁSICO

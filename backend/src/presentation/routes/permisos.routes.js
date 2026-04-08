@@ -14,11 +14,11 @@ import {
  */
 export function buildPermisosRouter({ seguridadPermisosController }) {
   const router = express.Router();
-  const ver = [authenticate, verificarPermiso('seguridad.rol.gestionar', 'VER')];
+  const listarCatalogo = [authenticate, verificarPermiso('seguridad.rol.gestionar', 'LISTAR')];
 
   router.get(
     '/',
-    ...ver,
+    ...listarCatalogo,
     permisosCatalogoQueryValidator,
     validateSeguridadRequest,
     (req, res, next) => seguridadPermisosController.list(req, res, next)

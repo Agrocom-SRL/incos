@@ -26,12 +26,20 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
     const router = express.Router();
     const { validateRequest } = middlewares;
 
-    /** Ver listado/detalle/estado: módulo Finanzas o menú Matrícula (aportes). */
-    const pagoVer = [
+    /** Listado / estado registro: Finanzas o Matrícula (aportes). */
+    const pagoListar = [
         authenticate,
         verificarPermisoCualquiera([
-            ['finanzas.pago.ver', 'VER'],
-            ['matricula.pago.aporte.ver', 'VER'],
+            ['finanzas.pago.ver', 'LISTAR'],
+            ['matricula.pago.aporte.ver', 'LISTAR'],
+        ]),
+    ];
+    /** Detalle de cabecera por id. */
+    const pagoDetalle = [
+        authenticate,
+        verificarPermisoCualquiera([
+            ['finanzas.pago.ver', 'DETALLE'],
+            ['matricula.pago.aporte.ver', 'DETALLE'],
         ]),
     ];
     const pagoRegistrar = [authenticate, verificarPermiso('finanzas.pago.registrar', 'CREAR')];
@@ -63,7 +71,7 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
      */
     router.get(
         '/',
-        ...pagoVer,
+        ...pagoListar,
         listValidator,
         validateRequest,
         (req, res, next) => controllers.listPagosAportesController.handle(req, res, next)
@@ -76,7 +84,7 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
      */
     router.get(
         '/estado-registro',
-        ...pagoVer,
+        ...pagoListar,
         (req, res, next) => controllers.getEstadoAporteRegistroController.handle(req, res, next)
     );
 
@@ -119,7 +127,7 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
      */
     router.get(
         '/:id',
-        ...pagoVer,
+        ...pagoDetalle,
         (req, res, next) => controllers.getPaymentAporteByIdController.handle(req, res, next)
     );
 

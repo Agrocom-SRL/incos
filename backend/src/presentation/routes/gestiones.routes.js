@@ -23,7 +23,7 @@ import { listValidator } from '../validators/common/index.js';
 export function buildGestionesRouter({ controllers, middlewares }) {
     const router = express.Router();
     const { validateRequest } = middlewares;
-    const listarGestiones = [authenticate, verificarPermiso('institucional.gestion.actual', 'VER')];
+    const listarGestiones = [authenticate, verificarPermiso('institucional.gestion.actual', 'LISTAR')];
 
     // ============================================
     // CRUD BÁSICO

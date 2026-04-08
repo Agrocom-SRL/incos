@@ -88,7 +88,17 @@ export const agregarOverrideValidator = [
   body('permiso_id').isInt({ min: 1 }).withMessage('permiso_id inválido'),
   body('accion')
     .notEmpty()
-    .isIn(['VER', 'CREAR', 'EDITAR', 'ELIMINAR', 'APROBAR', 'EXPORTAR']),
+    .isIn([
+      'LISTAR',
+      'DETALLE',
+      'CREAR',
+      'EDITAR',
+      'ELIMINAR',
+      'ACTIVAR',
+      'APROBAR',
+      'EXPORTAR',
+      'GENERAR_PDF',
+    ]),
   body('tipo').notEmpty().isIn(['GRANT', 'REVOKE']),
   body('motivo').optional({ nullable: true }).isString(),
 ];
@@ -98,7 +108,17 @@ export const actualizarPermisosRolValidator = [
   body('asignaciones.*.permiso_id').isInt({ min: 1 }),
   body('asignaciones.*.accion')
     .notEmpty()
-    .isIn(['VER', 'CREAR', 'EDITAR', 'ELIMINAR', 'APROBAR', 'EXPORTAR']),
+    .isIn([
+      'LISTAR',
+      'DETALLE',
+      'CREAR',
+      'EDITAR',
+      'ELIMINAR',
+      'ACTIVAR',
+      'APROBAR',
+      'EXPORTAR',
+      'GENERAR_PDF',
+    ]),
 ];
 
 export const permisosCatalogoQueryValidator = [

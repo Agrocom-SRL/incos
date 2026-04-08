@@ -12,12 +12,7 @@ export const gestionesRoutes = [
         path: '/gestiones',
         element: null,
         key: 'GES',
-        menu: {
-            label: 'Gestiones',
-            module: 'INST',
-            parent: 'INST',
-            order: 1,
-        },
+        menu: null,
     },
     {
         path: '/gestiones/actual',
@@ -28,7 +23,7 @@ export const gestionesRoutes = [
         menu: {
             label: 'Gestión Actual',
             module: 'INST',
-            parent: 'GES',
+            parent: 'INST',
             order: 1,
         },
     },
@@ -41,7 +36,7 @@ export const gestionesRoutes = [
         menu: {
             label: 'Cronogramas',
             module: 'INST',
-            parent: 'GES',
+            parent: 'INST',
             order: 2,
         },
     },
@@ -54,7 +49,7 @@ export const gestionesRoutes = [
         menu: {
             label: 'Oferta Académica',
             module: 'INST',
-            parent: 'GES',
+            parent: 'INST',
             order: 3,
         },
     },
@@ -67,7 +62,7 @@ export const gestionesRoutes = [
         menu: {
             label: 'Asignar Horarios',
             module: 'INST',
-            parent: 'GES',
+            parent: 'INST',
             order: 4,
         },
     },
@@ -107,8 +102,8 @@ export const gestionesRoutes = [
         menu: {
             label: 'Gestiones Pasadas',
             module: 'INST',
-            parent: 'GES',
-            order: 8,
+            parent: 'INST',
+            order: 5,
         },
     },
 ];

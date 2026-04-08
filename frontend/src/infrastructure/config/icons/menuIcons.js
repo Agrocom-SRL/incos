@@ -98,10 +98,10 @@ export const menuIconMap = {
     // Dominios de negocio (sidebar v1.2)
     'MAT': IdcardOutlined,
     'ACA': ReadOutlined,
-    'DOC-DOM': UsergroupAddOutlined,
+    'DOC': UsergroupAddOutlined,
     'FIN': DollarOutlined,
     'INST': HomeOutlined,
-    'REP-DOM': LineChartOutlined,
+    'REP': LineChartOutlined,
     'SEG': SafetyOutlined,
 
     // Gestiones - Nivel 1
@@ -167,14 +167,12 @@ export const menuIconMap = {
     'ACA-TRA': SwapOutlined,
     'ACA-TRASPASOS': TransactionOutlined,
     'ACA-TRA-TRASPASOS': TransactionOutlined,
-    'ACA-TRA-TRP-LIST': UnorderedListOutlined,
     'ACA-TRA-TRP-SOLICITAR': ExportOutlined,
     'ACA-TRA-TRP-RECIBIR': ImportOutlined,
     'ACA-TRA-TRP-CONVALIDAR': FileDoneOutlined,
     'ACA-TRA-TRP-APROBAR': CheckCircleOutlined,
     'ACA-TRA-TRANSIT': ReloadOutlined,
     'ACA-TRANSIT': ReloadOutlined,
-    'ACA-TRA-TNS-LIST': UnorderedListOutlined,
     'ACA-TRA-TNS-SOLICITAR': ExportOutlined,
     'ACA-TRA-TNS-RECIBIR': ImportOutlined,
     'ACA-TRA-TNS-CONVALIDAR': FileDoneOutlined,
@@ -192,7 +190,6 @@ export const menuIconMap = {
 
     // Académico — Nivelaciones
     'ACA-NIV': SyncOutlined,
-    'ACA-NIV-LIST': UnorderedListOutlined,
     'ACA-NIV-INSCRIBIR': BookOutlined,
     'ACA-NIV-APROBAR': CheckCircleOutlined,
 
@@ -201,7 +198,6 @@ export const menuIconMap = {
     'DOC-LIST': UnorderedListOutlined,
     'DOC-CREATE': UserAddOutlined,
     'DOC-LIC': FileTextOutlined,
-    'DOC-LIC-LIST': UnorderedListOutlined,
     'DOC-LIC-SOLICITAR': FileAddOutlined,
     'DOC-LIC-APROBAR': CheckCircleOutlined,
     'DOC-PAS': BankOutlined,
@@ -228,7 +224,6 @@ export const menuIconMap = {
     // Académico — Historial
     'ACA-HIS': HistoryOutlined,
     'ACA-HIS-FOLIO': BookOutlined,
-    'ACA-HIS-ACADEMICO': FileTextOutlined,
     'ACA-AVANCE': LineChartOutlined,
 
     // Reportes - Nivel 1

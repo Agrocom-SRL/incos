@@ -27,10 +27,10 @@ export const configuracionRoutes = [
     // Submenu: Académico
     {
         path: '/configuracion/academico',
-        element: null, // No tiene página propia, es solo un grupo
+        element: null,
         key: 'CFG-ACADEMICO',
-        permiso: 'cfg.academico.carreras',
-        accion: 'LISTAR',
+        permiso: null,
+        accion: null,
         menu: {
             label: 'Académico',
             module: 'CFG',
@@ -44,12 +44,8 @@ export const configuracionRoutes = [
         key: 'CFG-CARRERAS',
         permiso: 'cfg.academico.carreras',
         accion: 'LISTAR',
-        menu: {
-            label: 'Carreras',
-            module: 'CFG',
-            parent: 'CFG-ACADEMICO',
-            order: 1,
-        },
+        menu: null,
+        breadcrumbParent: 'CFG-ACADEMICO',
     },
     {
         path: '/configuracion/academico/materias',
@@ -57,12 +53,8 @@ export const configuracionRoutes = [
         key: 'CFG-MATERIAS',
         permiso: 'cfg.academico.materias',
         accion: 'LISTAR',
-        menu: {
-            label: 'Materias',
-            module: 'CFG',
-            parent: 'CFG-ACADEMICO',
-            order: 2,
-        },
+        menu: null,
+        breadcrumbParent: 'CFG-ACADEMICO',
     },
     {
         path: '/configuracion/academico/plan-estudios',
@@ -70,12 +62,8 @@ export const configuracionRoutes = [
         key: 'CFG-PLAN',
         permiso: 'cfg.academico.plan',
         accion: 'LISTAR',
-        menu: {
-            label: 'Plan de Estudios',
-            module: 'CFG',
-            parent: 'CFG-ACADEMICO',
-            order: 3,
-        },
+        menu: null,
+        breadcrumbParent: 'CFG-ACADEMICO',
     },
     {
         path: '/configuracion/academico/cursos',
@@ -83,12 +71,8 @@ export const configuracionRoutes = [
         key: 'CFG-CURSOS',
         permiso: 'cfg.academico.cursos',
         accion: 'LISTAR',
-        menu: {
-            label: 'Cursos/Paralelos',
-            module: 'CFG',
-            parent: 'CFG-ACADEMICO',
-            order: 4,
-        },
+        menu: null,
+        breadcrumbParent: 'CFG-ACADEMICO',
     },
     {
         path: '/configuracion/academico/turnos',
@@ -96,20 +80,16 @@ export const configuracionRoutes = [
         key: 'CFG-TURNOS',
         permiso: 'cfg.academico.turnos',
         accion: 'LISTAR',
-        menu: {
-            label: 'Turnos',
-            module: 'CFG',
-            parent: 'CFG-ACADEMICO',
-            order: 5,
-        },
+        menu: null,
+        breadcrumbParent: 'CFG-ACADEMICO',
     },
     // Submenu: Documentación
     {
         path: '/configuracion/documentacion',
-        element: null, // No tiene página propia, es solo un grupo
+        element: null,
         key: 'CFG-DOCUMENTACION',
-        permiso: 'cfg.documentacion.inscripcion',
-        accion: 'LISTAR',
+        permiso: null,
+        accion: null,
         menu: {
             label: 'Documentación',
             module: 'CFG',
@@ -123,12 +103,8 @@ export const configuracionRoutes = [
         key: 'CFG-DOCUMENTACION-INSCRIPCION',
         permiso: 'cfg.documentacion.inscripcion',
         accion: 'LISTAR',
-        menu: {
-            label: 'Para la Inscripción',
-            module: 'CFG',
-            parent: 'CFG-DOCUMENTACION',
-            order: 1,
-        },
+        menu: null,
+        breadcrumbParent: 'CFG-DOCUMENTACION',
     },
     {
         path: '/configuracion/documentacion/becas',
@@ -136,12 +112,8 @@ export const configuracionRoutes = [
         key: 'CFG-DOCUMENTACION-BECAS',
         permiso: 'cfg.documentacion.becas',
         accion: 'LISTAR',
-        menu: {
-            label: 'Para la Becas',
-            module: 'CFG',
-            parent: 'CFG-DOCUMENTACION',
-            order: 2,
-        },
+        menu: null,
+        breadcrumbParent: 'CFG-DOCUMENTACION',
     },
     {
         path: '/configuracion/documentacion/pasantias',
@@ -149,12 +121,8 @@ export const configuracionRoutes = [
         key: 'CFG-DOCUMENTACION-PASANTIAS',
         permiso: 'cfg.documentacion.pasantias',
         accion: 'LISTAR',
-        menu: {
-            label: 'Para la Pasantías',
-            module: 'CFG',
-            parent: 'CFG-DOCUMENTACION',
-            order: 3,
-        },
+        menu: null,
+        breadcrumbParent: 'CFG-DOCUMENTACION',
     },
     {
         path: '/configuracion/documentacion/traslado',
@@ -162,20 +130,16 @@ export const configuracionRoutes = [
         key: 'CFG-DOCUMENTACION-TRASLADO',
         permiso: 'cfg.documentacion.traslado',
         accion: 'LISTAR',
-        menu: {
-            label: 'Para la Traslado',
-            module: 'CFG',
-            parent: 'CFG-DOCUMENTACION',
-            order: 4,
-        },
+        menu: null,
+        breadcrumbParent: 'CFG-DOCUMENTACION',
     },
     // Submenu: Datos Complementarios
     {
         path: '/configuracion/datos-complementarios',
-        element: null, // No tiene página propia, es solo un grupo
+        element: null,
         key: 'CFG-COMPLEMENTARIO',
-        permiso: 'cfg.complementario.discapacidad',
-        accion: 'LISTAR',
+        permiso: null,
+        accion: null,
         menu: {
             label: 'Datos Complementarios',
             module: 'CFG',
@@ -189,12 +153,8 @@ export const configuracionRoutes = [
         key: 'CFG-DISCAPACIDAD',
         permiso: 'cfg.complementario.discapacidad',
         accion: 'LISTAR',
-        menu: {
-            label: 'Discapacidad',
-            module: 'CFG',
-            parent: 'CFG-COMPLEMENTARIO',
-            order: 1,
-        },
+        menu: null,
+        breadcrumbParent: 'CFG-COMPLEMENTARIO',
     },
     {
         path: '/configuracion/datos-complementarios/apoderados',
@@ -202,12 +162,8 @@ export const configuracionRoutes = [
         key: 'CFG-APODERADOS',
         permiso: 'cfg.complementario.apoderados',
         accion: 'LISTAR',
-        menu: {
-            label: 'Apoderados',
-            module: 'CFG',
-            parent: 'CFG-COMPLEMENTARIO',
-            order: 2,
-        },
+        menu: null,
+        breadcrumbParent: 'CFG-COMPLEMENTARIO',
     },
     {
         path: '/configuracion/datos-complementarios/idiomas',
@@ -215,12 +171,8 @@ export const configuracionRoutes = [
         key: 'CFG-IDIOMAS',
         permiso: 'cfg.complementario.idiomas',
         accion: 'LISTAR',
-        menu: {
-            label: 'Idiomas',
-            module: 'CFG',
-            parent: 'CFG-COMPLEMENTARIO',
-            order: 3,
-        },
+        menu: null,
+        breadcrumbParent: 'CFG-COMPLEMENTARIO',
     },
     {
         path: '/configuracion/convenios',

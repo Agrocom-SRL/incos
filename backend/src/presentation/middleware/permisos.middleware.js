@@ -5,7 +5,7 @@ import { REPOSITORIOS_TOKENS } from '../../infrastructure/container/tokens/index
  * Autorización por permiso de dominio. Requiere authenticate() antes.
  *
  * @example
- * router.get('/', authenticate, verificarPermiso('matricula.admision.ver', 'VER'), controller)
+ * router.get('/', authenticate, verificarPermiso('matricula.admision.ver', 'LISTAR'), controller)
  */
 export function verificarPermiso(codigoPermiso, accion) {
   return async (req, res, next) => {
