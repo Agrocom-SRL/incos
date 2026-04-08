@@ -8,6 +8,7 @@ import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { Button, Card } from '@atoms';
 import '@modules/seguridad/styles/seguridad.css';
+import { TIPO_CONFIG } from '@modules/seguridad/constants/rolTipoConfig.js';
 
 function errMsg(json) {
   const e = json?.error;
@@ -111,8 +112,8 @@ export default function UsuarioCreatePage() {
                       label: (
                         <span>
                           {r.nombre}{' '}
-                          <Tag color={r.is_system ? 'purple' : 'blue'}>
-                            {r.is_system ? 'Sistema' : 'Personalizado'}
+                          <Tag color={TIPO_CONFIG[r.tipo]?.color ?? 'default'}>
+                            {TIPO_CONFIG[r.tipo]?.label ?? r.tipo ?? '—'}
                           </Tag>
                         </span>
                       ),

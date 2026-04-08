@@ -14,6 +14,7 @@ export class ListarRolesUseCase {
         id: r.id,
         codigo: r.code,
         nombre: r.name,
+        tipo: r.tipo ?? null,
         is_system: Boolean(r.isSystem),
       })),
     };

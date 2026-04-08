@@ -188,6 +188,8 @@ export const USUARIOS_SEG_ENDPOINTS = {
 export const ROLES_SEG_ENDPOINTS = {
   BASE: `${API_BASE}/roles`,
   PERMISOS: (rolId) => `${API_BASE}/roles/${rolId}/permisos`,
+  PERMISOS_GRILLA: (rolId, dominio) =>
+    `${API_BASE}/roles/${rolId}/permisos-grilla?${new URLSearchParams({ dominio }).toString()}`,
 };
 
 export const PERMISOS_CATALOGO_ENDPOINTS = {

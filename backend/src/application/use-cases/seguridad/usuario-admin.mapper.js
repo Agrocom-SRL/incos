@@ -19,6 +19,7 @@ export function mapUsuarioAdminRow(u) {
           id: u.rol_id,
           codigo: u.rol_codigo,
           nombre: u.rol_nombre,
+          tipo: u.rol_tipo ?? null,
           is_system: Boolean(u.rol_is_system),
         }
       : null,

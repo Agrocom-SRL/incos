@@ -20,6 +20,11 @@ export const Rol = sequelize.define(
       allowNull: false,
       comment: 'Nombre descriptivo del rol',
     },
+    tipo: {
+      type: DataTypes.STRING(50),
+      allowNull: true,
+      field: 'tipo',
+    },
     isSystem: {
       type: DataTypes.BOOLEAN,
       field: 'is_system',

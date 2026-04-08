@@ -47,6 +47,9 @@ export class RoleMapper {
     if ('nombre' in dataValues && dataValues.nombre !== undefined) {
       specificFields.name = dataValues.nombre;
     }
+    if ('tipo' in dataValues && dataValues.tipo !== undefined) {
+      specificFields.tipo = dataValues.tipo;
+    }
     if ('isSystem' in dataValues && dataValues.isSystem !== undefined) {
       specificFields.isSystem = dataValues.isSystem;
     }
@@ -76,6 +79,7 @@ export class RoleMapper {
     return {
       codigo: data.code,
       nombre: data.name,
+      tipo: data.tipo,
       isSystem: data.isSystem !== undefined ? data.isSystem : false,
     };
   }
@@ -103,6 +107,9 @@ export class RoleMapper {
     }
     if ('name' in data) {
       updateData.nombre = data.name;
+    }
+    if ('tipo' in data) {
+      updateData.tipo = data.tipo;
     }
     if ('isSystem' in data) {
       updateData.isSystem = data.isSystem;

@@ -9,6 +9,7 @@ export { AgregarOverridePermisoUseCase } from './AgregarOverridePermisoUseCase';
 export { EliminarOverridePermisoUseCase } from './EliminarOverridePermisoUseCase';
 export { ListarRolesUseCase } from './ListarRolesUseCase';
 export { ObtenerPermisosRolUseCase } from './ObtenerPermisosRolUseCase';
+export { ObtenerPermisosGrillaRolUseCase } from './ObtenerPermisosGrillaRolUseCase';
 export { ActualizarPermisosRolUseCase } from './ActualizarPermisosRolUseCase';
 export { ListarPermisosUseCase } from './ListarPermisosUseCase';
 

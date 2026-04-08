@@ -1,6 +1,6 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Alert, App, Descriptions, Space, Tag, Typography } from 'antd';
+import { Alert, App, Descriptions, Select, Space, Tag, Typography } from 'antd';
 import { ArrowLeftOutlined, KeyOutlined } from '@ant-design/icons';
 import { PermisoGuard } from '@/presentation/guards/PermisoGuard.jsx';
 import PermisosDominioPicker from '@modules/seguridad/components/PermisosDominioPicker.jsx';
@@ -22,18 +22,19 @@ export default function RolPermisosPage() {
   const navigate = useNavigate();
   const { message } = App.useApp();
   const rolId = parseInt(id, 10);
-  const { permisosAgrupados: catalogo, cargar: cargarCatalogo } = usePermisosCatalogo();
+  const [dominioSeleccionado, setDominioSeleccionado] = useState('MATRICULA');
+  const { dominios } = usePermisosCatalogo();
   const {
     rol: rolInfo,
-    permisosAgrupados,
-    asignaciones,
-    setAsignaciones,
+    grupos,
+    delta,
     loading,
     saving,
     hayaCambios: hasChanges,
     cargar,
     guardar,
     cancelarCambios,
+    toggleAccion,
   } = useRolPermisos();
   const esAdminSistema = rolInfo?.id === 1 || rolInfo?.codigo === 'ADMIN_SISTEMA';
   const breadcrumbItems = useMemo(
@@ -46,19 +47,18 @@ export default function RolPermisosPage() {
     [rolInfo]
   );
 
-  const loadAll = async () => {
-    if (!rolId) return;
-    try {
-      await Promise.all([cargarCatalogo(), cargar(rolId)]);
-    } catch (e) {
-      message.error(errMsg(e));
-    }
-  };
-
   useEffect(() => {
-    loadAll();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rolId]);
+    if (!rolId) return;
+    (async () => {
+      try {
+        await cargar(rolId, dominioSeleccionado);
+      } catch (e) {
+        message.error(errMsg(e));
+      }
+    })();
+    // message estable de App.useApp()
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- solo recargar al cambiar rol o dominio
+  }, [rolId, dominioSeleccionado, cargar]);
 
   const guardarCambios = async () => {
     try {
@@ -124,41 +124,57 @@ export default function RolPermisosPage() {
           </Card>
 
           <Card
-            title={<span><KeyOutlined /> Asignación de Permisos</span>}
+            title={<span><KeyOutlined /> Asignación de permisos</span>}
             headerColor="primary"
             loading={loading}
-            extra={
-              !esAdminSistema ? (
+          >
+            <Space orientation="vertical" size="middle" style={{ width: '100%' }}>
+              <div>
+                <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 8 }}>
+                  Dominio
+                </Typography.Text>
+                <Select
+                  value={dominioSeleccionado}
+                  onChange={setDominioSeleccionado}
+                  options={dominios.map((d) => ({ value: d.value, label: d.label }))}
+                  style={{ minWidth: 260, maxWidth: '100%' }}
+                  disabled={!rolId}
+                />
+              </div>
+
+              {esAdminSistema ? (
+                <Alert
+                  type="info"
+                  showIcon
+                  message="Rol protegido"
+                  description="Los permisos del Administrador del Sistema no pueden modificarse desde el panel. Este rol contiene todos los permisos disponibles y sirve como referencia para los demás roles."
+                />
+              ) : null}
+
+              {!esAdminSistema && hasChanges ? (
+                <Alert type="info" message="Hay cambios sin guardar" showIcon />
+              ) : null}
+
+              <PermisosDominioPicker
+                grupos={grupos}
+                delta={delta}
+                toggleAccion={toggleAccion}
+                disabled={esAdminSistema}
+              />
+
+              {!esAdminSistema && hasChanges ? (
                 <div className="seg-actions">
                   <Button variant="default" onClick={cancelarCambios}>Cancelar</Button>
                   <Button
                     variant="primary"
                     loading={saving}
-                    disabled={!hasChanges}
                     onClick={guardarCambios}
                   >
-                    Guardar Cambios
+                    Guardar cambios
                   </Button>
                 </div>
-              ) : null
-            }
-          >
-            {esAdminSistema ? (
-              <Alert
-                type="info"
-                showIcon
-                message="Rol protegido"
-                description="Los permisos del Administrador del Sistema no pueden modificarse desde el panel. Este rol contiene todos los permisos disponibles y sirve como referencia para los demás roles."
-                style={{ marginBottom: 12 }}
-              />
-            ) : null}
-            {hasChanges ? <Alert type="info" title="Hay cambios sin guardar" style={{ marginBottom: 12 }} /> : null}
-            <PermisosDominioPicker
-              permisosAgrupados={catalogo || permisosAgrupados}
-              asignacionesActuales={asignaciones}
-              onChange={setAsignaciones}
-              disabled={esAdminSistema}
-            />
+              ) : null}
+            </Space>
           </Card>
         </Space>
       </PageTemplate>

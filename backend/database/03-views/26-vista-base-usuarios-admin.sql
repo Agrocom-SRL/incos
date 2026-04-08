@@ -30,6 +30,7 @@ SELECT
   u.rol_id,
   r.codigo AS rol_codigo,
   r.nombre AS rol_nombre,
+  r.tipo AS rol_tipo,
   r.is_system AS rol_is_system
 FROM usuarios u
 LEFT JOIN roles r ON r.id = u.rol_id

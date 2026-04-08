@@ -16,6 +16,13 @@ export class RolAdminRepository {
     return json.data;
   }
 
+  async findPermisosGrillaById(id, dominio) {
+    const res = await apiCall(ROLES_SEG_ENDPOINTS.PERMISOS_GRILLA(id, dominio));
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) throw json;
+    return Array.isArray(json.data) ? json.data : [];
+  }
+
   async updatePermisos(id, payload) {
     const res = await apiCall(ROLES_SEG_ENDPOINTS.PERMISOS(id), {
       method: 'PUT',

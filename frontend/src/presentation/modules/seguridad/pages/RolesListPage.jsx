@@ -7,6 +7,7 @@ import { useRolesList } from '@/application/modules/seguridad/hooks';
 import { PageTemplate } from '@templates';
 import { PageHeader, TableActions } from '@molecules';
 import { TableListView } from '@organisms';
+import { TIPO_CONFIG } from '@modules/seguridad/constants/rolTipoConfig.js';
 
 function errMsg(json) {
   const e = json?.error;
@@ -48,11 +49,10 @@ export default function RolesListPage() {
     {
       title: 'Tipo',
       key: 'tipo',
-      render: (_, record) => (
-        record.is_system
-          ? <Tag color="purple">Sistema</Tag>
-          : <Tag color="default">Personalizado</Tag>
-      ),
+      render: (_, record) => {
+        const cfg = TIPO_CONFIG[record.tipo] ?? { color: 'default', label: record.tipo ?? '—' };
+        return <Tag color={cfg.color}>{cfg.label}</Tag>;
+      },
     },
     {
       title: 'Acciones',

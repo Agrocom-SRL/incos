@@ -36,6 +36,7 @@ CREATE TABLE roles (
     id INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Identificador único',
     codigo VARCHAR(50) NOT NULL COMMENT 'Código único del rol. Ejemplos: RECTOR, DIR_ACADEMICO, DIR_ADMIN, SEC_ACADEMICA, SEC_ADMIN, DOCENTE, ESTUDIANTE',
     nombre VARCHAR(100) NOT NULL COMMENT 'Nombre descriptivo visible en el sistema',
+    tipo VARCHAR(50) NULL COMMENT 'Categoría visual del rol: SISTEMA | RECTOR | DIRECTIVO | SECRETARIA | DOCENTE | ESTUDIANTE',
     is_system BOOLEAN DEFAULT FALSE COMMENT 'TRUE = no se puede eliminar desde la UI',
     -- Campos de auditoría y control (ESTÁNDAR)
     activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',

@@ -6,7 +6,7 @@ import { BaseEntity } from './BaseEntity.js';
  * Contiene la lógica de negocio pura del rol.
  *
  * Mapeo con BD (tabla roles, 04-sistema-seguridad.sql):
- * - code ← codigo, name ← nombre, isSystem ← is_system
+ * - code ← codigo, name ← nombre, tipo ← tipo, isSystem ← is_system
  */
 export class Role extends BaseEntity {
   constructor(data = {}) {
@@ -18,6 +18,9 @@ export class Role extends BaseEntity {
     }
     if (data.hasOwnProperty('name')) {
       this.name = data.name;
+    }
+    if (data.hasOwnProperty('tipo')) {
+      this.tipo = data.tipo;
     }
     if (data.hasOwnProperty('isSystem')) {
       this.isSystem = data.isSystem;
@@ -38,6 +41,9 @@ export class Role extends BaseEntity {
     }
     if (this.hasOwnProperty('name')) {
       plainObject.name = this.name;
+    }
+    if (this.hasOwnProperty('tipo')) {
+      plainObject.tipo = this.tipo;
     }
     if (this.hasOwnProperty('isSystem')) {
       plainObject.isSystem = this.isSystem;

@@ -202,7 +202,7 @@ export class UserRepository extends BaseRepository {
       SELECT
         id, username, email, foto_url,
         estado, activo, created_at,
-        rol_id, rol_codigo, rol_nombre, rol_is_system
+        rol_id, rol_codigo, rol_nombre, rol_tipo, rol_is_system
       FROM vista_usuarios_admin_base
       WHERE 1=1
         ${searchClause}
@@ -246,7 +246,7 @@ export class UserRepository extends BaseRepository {
         estado, activo, created_at, updated_at,
         referencia_id, tipo_referencia,
         fecha_cambio_estado, motivo_cambio_estado,
-        rol_id, rol_codigo, rol_nombre, rol_is_system
+        rol_id, rol_codigo, rol_nombre, rol_tipo, rol_is_system
       FROM vista_usuarios_admin_base
       WHERE id = :id
       LIMIT 1

@@ -1,4 +1,5 @@
-import { Form, Input, Select } from 'antd';
+import { Form, Input, Select, Tag } from 'antd';
+import { TIPO_CONFIG } from '@modules/seguridad/constants/rolTipoConfig.js';
 
 export default function UsuarioForm({
   form,
@@ -49,7 +50,14 @@ export default function UsuarioForm({
           placeholder="Rol"
           options={roles.map((r) => ({
             value: r.id,
-            label: `${r.nombre} (${r.codigo})`,
+            label: (
+              <span>
+                {r.nombre}{' '}
+                <Tag color={TIPO_CONFIG[r.tipo]?.color ?? 'default'}>
+                  {TIPO_CONFIG[r.tipo]?.label ?? r.tipo ?? '—'}
+                </Tag>
+              </span>
+            ),
           }))}
         />
       </Form.Item>

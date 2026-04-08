@@ -4,7 +4,7 @@ export class ActualizarPermisosRolUseCase {
   }
 
   async ejecutar(rolId, asignaciones) {
-    if (!Array.isArray(asignaciones) || asignaciones.length === 0) {
+    if (!Array.isArray(asignaciones)) {
       throw new Error('Asignaciones requeridas');
     }
     return this.rolAdminRepository.updatePermisos(rolId, { asignaciones });

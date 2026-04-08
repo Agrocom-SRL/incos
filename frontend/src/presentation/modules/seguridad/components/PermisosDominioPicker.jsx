@@ -1,62 +1,19 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Checkbox, Table, Tag, Tabs, Tooltip } from 'antd';
-import {
-  AppstoreOutlined,
-  BankOutlined,
-  BarChartOutlined,
-  BookOutlined,
-  DollarOutlined,
-  IdcardOutlined,
-  SafetyCertificateOutlined,
-  TeamOutlined,
-} from '@ant-design/icons';
+import { Checkbox, Tooltip } from 'antd';
 import '@modules/seguridad/styles/seguridad.css';
 
-// Orden canónico de columnas; luego se filtra por dominio según acciones_validas.
-const ACCIONES = [
-  'LISTAR',
-  'DETALLE',
-  'CREAR',
-  'EDITAR',
-  'ELIMINAR',
-  'ACTIVAR',
-  'APROBAR',
-  'EXPORTAR',
-  'GENERAR_PDF',
+/** Orden de columnas: capa Acceso (1) + Operaciones (5) + Flujos (3) */
+const ACCIONES_GRILLA = [
+  { key: 'LISTAR', header: 'LISTAR', capa: 'acceso' },
+  { key: 'DETALLE', header: 'DETALLE', capa: 'ops' },
+  { key: 'CREAR', header: 'CREAR', capa: 'ops' },
+  { key: 'EDITAR', header: 'EDITAR', capa: 'ops' },
+  { key: 'ELIMINAR', header: 'ELIMINAR', capa: 'ops' },
+  { key: 'ACTIVAR', header: 'ACTIVAR', capa: 'ops' },
+  { key: 'APROBAR', header: 'APROBAR', capa: 'flujos' },
+  { key: 'EXPORTAR', header: 'EXPORTAR', capa: 'flujos' },
+  { key: 'GENERAR_PDF', header: 'PDF', capa: 'flujos' },
 ];
 
-/** Acentos e iconos por módulo (paleta Material-like, no solo verdes). */
-const DOMINIO_TAB_META = {
-  ACADEMICO: { Icon: BookOutlined, accent: '#1565c0' },
-  DOCENTES: { Icon: TeamOutlined, accent: '#6a1b9a' },
-  FINANZAS: { Icon: DollarOutlined, accent: '#f9a825' },
-  INSTITUCIONAL: { Icon: BankOutlined, accent: '#3949ab' },
-  MATRICULA: { Icon: IdcardOutlined, accent: '#00838f' },
-  REPORTES: { Icon: BarChartOutlined, accent: '#ef6c00' },
-  SEGURIDAD: { Icon: SafetyCertificateOutlined, accent: '#c62828' },
-};
-
-function metaDominio(codigo) {
-  const key = String(codigo || '')
-    .toUpperCase()
-    .replace(/\s+/g, '_');
-  return DOMINIO_TAB_META[key] || { Icon: AppstoreOutlined, accent: '#2e7d32' };
-}
-
-/** Colores de columna por tipo de acción */
-const ACCION_TAG_COLOR = {
-  LISTAR: 'blue',
-  DETALLE: 'cyan',
-  CREAR: 'cyan',
-  EDITAR: 'orange',
-  ELIMINAR: 'red',
-  ACTIVAR: 'gold',
-  APROBAR: 'purple',
-  EXPORTAR: 'geekblue',
-  GENERAR_PDF: 'volcano',
-};
-
-/** Texto breve al pasar el mouse: diferencia técnica CREAR vs EDITAR para quien configura roles */
 const ACCION_AYUDA = {
   LISTAR: 'Ver listados y buscar; no implica abrir ficha ni modificar datos.',
   DETALLE: 'Abrir ficha o detalle de un registro concreto.',
@@ -70,251 +27,140 @@ const ACCION_AYUDA = {
   GENERAR_PDF: 'Generar documentos PDF según el módulo.',
 };
 
-function toSet(asignacionesActuales) {
-  const s = new Set();
-  (asignacionesActuales || []).forEach((a) => s.add(`${a.permiso_id}:${a.accion}`));
-  return s;
+const GRUPO_UI_LABELS = {
+  mat_admision: 'Admisión',
+  mat_inscripcion: 'Matrículas',
+  mat_aportes: 'Aportes',
+  mat_becas: 'Becas',
+  mat_pasantias: 'Pasantías estudiantiles',
+  mat_documentos: 'Documentos',
+  aca_calificaciones: 'Calificaciones',
+  aca_nivelaciones: 'Nivelaciones',
+  aca_traspasos: 'Traspasos',
+  aca_transitabilidad: 'Transitabilidad',
+  aca_historial: 'Historial',
+  aca_avance: 'Avance académico',
+  aca_licencias_est: 'Licencias estudiantiles',
+  doc_docentes: 'Docentes',
+  doc_licencias: 'Licencias docentes',
+  doc_supervision: 'Supervisión',
+  doc_pasantias: 'Pasantías docentes',
+  fin_pagos: 'Pagos',
+  fin_adicionales: 'Pagos adicionales',
+  fin_reportes: 'Reportes de pagos',
+  cfg_pagos: 'Config. de pagos',
+  inst_gestion: 'Gestión actual',
+  inst_cronograma: 'Cronogramas',
+  inst_oferta: 'Oferta académica',
+  inst_horarios: 'Horarios',
+  inst_pasadas: 'Gestiones pasadas',
+  cfg_academico: 'Config. académica',
+  cfg_documentacion: 'Config. documentación',
+  cfg_complementario: 'Datos complementarios',
+  cfg_convenios: 'Convenios',
+  cfg_historial: 'Historial actividades',
+  rep_avance: 'Avance académico',
+  rep_asistencia: 'Asistencia',
+  rep_desercion: 'Deserción',
+  rep_solicitudes: 'Solicitudes',
+  seg_usuarios: 'Usuarios',
+  seg_roles: 'Roles y permisos',
+};
+
+function labelGrupoUi(grupoUi) {
+  const k = String(grupoUi || '');
+  return GRUPO_UI_LABELS[k] ?? k;
 }
 
-function hasAsignacion(set, permisoId, accion) {
-  return set.has(`${permisoId}:${accion}`);
+function estaEnDelta(delta, grupo, accion) {
+  const key = `${grupo.grupoUi}:${accion}`;
+  if (Object.prototype.hasOwnProperty.call(delta, key)) {
+    return delta[key].habilitado;
+  }
+  return undefined;
 }
 
-function setToAsignaciones(set) {
-  return [...set].map((k) => {
-    const [id, ac] = k.split(':');
-    return { permiso_id: Number(id), accion: ac };
-  });
-}
-
+/**
+ * Grilla de permisos por dominio (v2): filas = grupos de sidebar, columnas = acciones por capas.
+ * @param {Array<{ grupoUi: string, rutaSidebar: string, codigos: string[], accionesValidas: string[], accionesAsignadas: string[] }>} grupos
+ * @param {Record<string, { permiso_codigo: string, accion: string, habilitado: boolean }>} delta
+ */
 export default function PermisosDominioPicker({
-  permisosAgrupados = {},
-  asignacionesActuales = [],
-  onChange,
+  grupos = [],
+  delta = {},
+  toggleAccion,
   disabled = false,
 }) {
-  const asignacionesSet = useMemo(() => toSet(asignacionesActuales), [asignacionesActuales]);
-
-  const onToggle = (permisoId, accion, checked) => {
-    if (disabled) return;
-    const next = new Set(asignacionesSet);
-    const key = `${permisoId}:${accion}`;
-    if (checked) next.add(key);
-    else next.delete(key);
-    onChange(setToAsignaciones(next));
-  };
-
-  const onToggleFila = (permisoId, checked) => {
-    if (disabled) return;
-    const next = new Set(asignacionesSet);
-    const permiso = Object.values(permisosAgrupados)
-      .flat()
-      .find((p) => p.id === permisoId);
-    const acciones = permiso?.acciones_validas || [];
-    acciones.forEach((accion) => {
-      const key = `${permisoId}:${accion}`;
-      if (checked) next.add(key);
-      else next.delete(key);
-    });
-    onChange(setToAsignaciones(next));
-  };
-
-  const onToggleColumna = (rows, accion, checked) => {
-    if (disabled) return;
-    const next = new Set(asignacionesSet);
-    rows.forEach((p) => {
-      if (!(p.acciones_validas || []).includes(accion)) return;
-      const key = `${p.id}:${accion}`;
-      if (checked) next.add(key);
-      else next.delete(key);
-    });
-    onChange(setToAsignaciones(next));
-  };
-
-  const onToggleDominio = (rows, checked) => {
-    if (disabled) return;
-    const next = new Set(asignacionesSet);
-    rows.forEach((p) => {
-      (p.acciones_validas || []).forEach((accion) => {
-        const key = `${p.id}:${accion}`;
-        if (checked) next.add(key);
-        else next.delete(key);
-      });
-    });
-    onChange(setToAsignaciones(next));
-  };
-
-  const dominios = useMemo(
-    () => Object.keys(permisosAgrupados).sort(),
-    [permisosAgrupados]
-  );
-  const [activeDominio, setActiveDominio] = useState(() => dominios[0] || '');
-
-  useEffect(() => {
-    if (!dominios.length) {
-      setActiveDominio('');
-      return;
+  const renderCelda = (grupo, accion) => {
+    if (!(grupo.accionesValidas || []).includes(accion)) {
+      return (
+        <td key={accion} className="seg-grilla__celda-na">
+          —
+        </td>
+      );
     }
-    setActiveDominio((prev) => (prev && dominios.includes(prev) ? prev : dominios[0]));
-  }, [dominios]);
+    const asignada =
+      estaEnDelta(delta, grupo, accion) ?? (grupo.accionesAsignadas || []).includes(accion);
+    return (
+      <td key={accion} className="seg-grilla__celda-check">
+        <Checkbox
+          checked={asignada}
+          disabled={disabled}
+          onChange={() => toggleAccion(grupo, accion)}
+        />
+      </td>
+    );
+  };
 
-  const inkAccent = metaDominio(activeDominio || dominios[0]).accent;
-
-  const tabItems = dominios.map((dominio) => {
-    const meta = metaDominio(dominio);
-    const TabIcon = meta.Icon;
-    const rows = permisosAgrupados[dominio] || [];
-    const accionesDelDominio = ACCIONES.filter((accion) => rows.some((p) => (
-      (p.acciones_validas || []).includes(accion)
-    )));
-    const activeCount = rows.reduce((acc, p) => (
-      acc + (p.acciones_validas || []).filter((a) => hasAsignacion(asignacionesSet, p.id, a)).length
-    ), 0);
-    const totalCount = rows.reduce((acc, p) => acc + (p.acciones_validas || []).length, 0);
-    const allDominioChecked = totalCount > 0 && activeCount === totalCount;
-    const dominioIndeterminate = activeCount > 0 && activeCount < totalCount;
-
-    const columns = [
-      {
-        title: 'Permiso (todas)',
-        dataIndex: 'nombre',
-        key: 'nombre',
-        width: '60%',
-        render: (_, p) => (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Checkbox
-              disabled={disabled}
-              checked={(p.acciones_validas || []).every((accion) => (
-                hasAsignacion(asignacionesSet, p.id, accion)
-              ))}
-              indeterminate={
-                (p.acciones_validas || []).some((accion) => (
-                  hasAsignacion(asignacionesSet, p.id, accion)
-                )) &&
-                !(p.acciones_validas || []).every((accion) => (
-                  hasAsignacion(asignacionesSet, p.id, accion)
-                ))
-              }
-              onChange={(e) => onToggleFila(p.id, e.target.checked)}
-            />
-            <div>
-              <div className="seg-picker__permiso">{p.nombre}</div>
-              <div className="seg-picker__codigo">{p.codigo}</div>
-            </div>
-          </div>
-        ),
-      },
-      ...accionesDelDominio.map((accion) => ({
-        title: (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-            <Tooltip title={ACCION_AYUDA[accion] || accion}>
-              <Tag color={ACCION_TAG_COLOR[accion] || 'default'} style={{ cursor: 'help' }}>
-                {accion}
-              </Tag>
-            </Tooltip>
-            <Checkbox
-              disabled={disabled || rows.length === 0}
-              checked={rows.length > 0 && rows.every((p) => (
-                !(p.acciones_validas || []).includes(accion)
-                  || hasAsignacion(asignacionesSet, p.id, accion)
-              ))}
-              indeterminate={
-                rows.some((p) => (
-                  (p.acciones_validas || []).includes(accion)
-                    && hasAsignacion(asignacionesSet, p.id, accion)
-                )) &&
-                !rows.every((p) => (
-                  !(p.acciones_validas || []).includes(accion)
-                    || hasAsignacion(asignacionesSet, p.id, accion)
-                ))
-              }
-              onChange={(e) => onToggleColumna(rows, accion, e.target.checked)}
-            />
-          </div>
-        ),
-        key: accion,
-        width: 90,
-        align: 'center',
-        render: (_, p) => (
-          (p.acciones_validas || []).includes(accion) ? (
-            <Checkbox
-              disabled={disabled}
-              checked={hasAsignacion(asignacionesSet, p.id, accion)}
-              onChange={(e) => onToggle(p.id, accion, e.target.checked)}
-            />
-          ) : (
-            <span className="seg-picker__no-aplica">—</span>
-          )
-        ),
-      })),
-    ];
-
-    return {
-      key: dominio,
-      label: (
-        <span
-          className="seg-picker__tab-label"
-          style={{ '--seg-tab-accent': meta.accent }}
-        >
-          <span
-            className="seg-picker__tab-checkbox"
-            onClick={(e) => e.stopPropagation()}
-            onMouseDown={(e) => e.stopPropagation()}
-            role="presentation"
-          >
-            <Checkbox
-              disabled={disabled || rows.length === 0}
-              checked={allDominioChecked}
-              indeterminate={dominioIndeterminate}
-              onChange={(e) => onToggleDominio(rows, e.target.checked)}
-            />
-          </span>
-          <TabIcon className="seg-picker__tab-icon" aria-hidden />
-          <span className="seg-picker__tab-title">{dominio}</span>
-          <span
-            className="seg-picker__tab-badge"
-            style={{
-              color: meta.accent,
-              background: `${meta.accent}1f`,
-              borderColor: `${meta.accent}55`,
-            }}
-          >
-            {activeCount} activos
-          </span>
-        </span>
-      ),
-      children: (
-        <div className="seg-picker__tab-panel">
-          <Table
-            rowKey="id"
-            size="small"
-            pagination={false}
-            dataSource={rows}
-            columns={columns}
-            className="seg-picker__table"
-          />
-        </div>
-      ),
-    };
-  });
+  if (!grupos.length) {
+    return <div className="seg-picker__empty">Sin permisos para este dominio.</div>;
+  }
 
   return (
-    <div className="seg-picker seg-picker--material">
-      {dominios.length === 0 ? (
-        <div className="seg-picker__empty">Sin permisos en catálogo.</div>
-      ) : (
-        <div
-          className="sd-tabs-shell seg-picker__tabs-shell"
-          style={{ '--seg-ink': inkAccent }}
-        >
-          <Tabs
-            className="sd-tabs seg-picker__tabs"
-            items={tabItems}
-            activeKey={activeDominio}
-            onChange={setActiveDominio}
-          />
-        </div>
-      )}
+    <div className="seg-picker seg-grilla-v2">
+      <div className="seg-grilla-v2__scroll">
+        <table className="seg-grilla-v2__table">
+          <thead>
+            <tr>
+              <th rowSpan={2} className="seg-grilla-v2__th-func">
+                Funcionalidad
+              </th>
+              <th colSpan={1} className="seg-grilla-v2__capa seg-grilla-v2__capa--acceso">
+                Acceso
+              </th>
+              <th colSpan={5} className="seg-grilla-v2__capa seg-grilla-v2__capa--ops">
+                Operaciones
+              </th>
+              <th colSpan={3} className="seg-grilla-v2__capa seg-grilla-v2__capa--flujos">
+                Flujos
+              </th>
+            </tr>
+            <tr>
+              {ACCIONES_GRILLA.map(({ key, header, capa }) => (
+                <th
+                  key={key}
+                  className={`seg-grilla-v2__th-acc seg-grilla-v2__th-acc--${capa}`}
+                >
+                  <Tooltip title={ACCION_AYUDA[key] || key}>
+                    <span>{header}</span>
+                  </Tooltip>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {grupos.map((grupo) => (
+              <tr key={grupo.grupoUi}>
+                <td className="seg-grilla-v2__td-func">
+                  <div className="seg-grilla__grupo-titulo">{labelGrupoUi(grupo.grupoUi)}</div>
+                  <div className="seg-grilla__grupo-ruta">{grupo.rutaSidebar || '—'}</div>
+                </td>
+                {ACCIONES_GRILLA.map(({ key }) => renderCelda(grupo, key))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
