@@ -110,7 +110,10 @@ export default function UsuarioCreatePage() {
                       value: r.id,
                       label: (
                         <span>
-                          {r.nombre} ({r.codigo}) <Tag color={r.nivel_acceso >= 5 ? 'purple' : 'blue'}>{r.nivel_acceso}</Tag>
+                          {r.nombre}{' '}
+                          <Tag color={r.is_system ? 'purple' : 'blue'}>
+                            {r.is_system ? 'Sistema' : 'Personalizado'}
+                          </Tag>
                         </span>
                       ),
                     }))}

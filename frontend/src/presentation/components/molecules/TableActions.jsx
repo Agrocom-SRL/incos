@@ -147,7 +147,7 @@ const TableActions = ({
 
   const extraActionsPermitidas = extraActions.filter((action) => {
     if (!action?.permiso) return true;
-    return hasPermiso(action.permiso, action.accion || 'VER');
+    return hasPermiso(action.permiso, action.accion || 'LISTAR');
   });
 
   return (

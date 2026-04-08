@@ -22,11 +22,13 @@ export const nivelacionesRoutes = [
         element: <UnderConstruction />,
         key: 'ACA-NIV-LIST',
         permiso: 'academico.nivelacion.ver',
+        accion: 'LISTAR',
         menu: {
             label: 'Listar Nivelaciones',
             module: 'ACA',
             parent: 'ACA-NIV',
             order: 1,
+            labelByRole: { ESTUDIANTE: 'Mi nivelación' },
         },
     },
     {
@@ -34,24 +36,18 @@ export const nivelacionesRoutes = [
         element: <UnderConstruction />,
         key: 'ACA-NIV-INSCRIBIR',
         permiso: 'academico.nivelacion.inscribir',
-        menu: {
-            label: 'Inscribir Nivelación',
-            module: 'ACA',
-            parent: 'ACA-NIV',
-            order: 2,
-        },
+        accion: 'CREAR',
+        menu: null,
+        breadcrumbParent: 'ACA-NIV',
     },
     {
         path: '/nivelaciones/aprobar',
         element: <UnderConstruction />,
         key: 'ACA-NIV-APROBAR',
         permiso: 'academico.nivelacion.aprobar',
-        menu: {
-            label: 'Aprobar Nivelación',
-            module: 'ACA',
-            parent: 'ACA-NIV',
-            order: 3,
-        },
+        accion: 'APROBAR',
+        menu: null,
+        breadcrumbParent: 'ACA-NIV',
     },
 ];
 

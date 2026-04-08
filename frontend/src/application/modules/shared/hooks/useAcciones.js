@@ -17,7 +17,7 @@ export function useAcciones(codigoPermiso) {
   const { hasPermiso } = useAuthContext();
 
   return {
-    puedeVer: hasPermiso(codigoPermiso, 'VER'),
+    puedeVer: hasPermiso(codigoPermiso, 'LISTAR') || hasPermiso(codigoPermiso, 'DETALLE'),
     puedeCrear: hasPermiso(codigoPermiso, 'CREAR'),
     puedeEditar: hasPermiso(codigoPermiso, 'EDITAR'),
     puedeEliminar: hasPermiso(codigoPermiso, 'ELIMINAR'),

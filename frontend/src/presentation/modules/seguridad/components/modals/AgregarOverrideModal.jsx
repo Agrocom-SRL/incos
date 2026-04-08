@@ -1,6 +1,16 @@
 import { Form, Input, Modal, Radio, Select } from 'antd';
 
-const ACCIONES = ['VER', 'CREAR', 'EDITAR', 'ELIMINAR', 'APROBAR', 'EXPORTAR'];
+const ACCIONES = [
+  'LISTAR',
+  'DETALLE',
+  'CREAR',
+  'EDITAR',
+  'ELIMINAR',
+  'ACTIVAR',
+  'APROBAR',
+  'EXPORTAR',
+  'GENERAR_PDF',
+];
 
 export default function AgregarOverrideModal({
   open,

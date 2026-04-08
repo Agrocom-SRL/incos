@@ -1,6 +1,16 @@
 import { Form, Input, Select } from 'antd';
 
-const ACCIONES = ['VER', 'CREAR', 'EDITAR', 'ELIMINAR', 'APROBAR', 'EXPORTAR'];
+const ACCIONES = [
+  'LISTAR',
+  'DETALLE',
+  'CREAR',
+  'EDITAR',
+  'ELIMINAR',
+  'ACTIVAR',
+  'APROBAR',
+  'EXPORTAR',
+  'GENERAR_PDF',
+];
 const TIPOS = ['GRANT', 'REVOKE'];
 
 /**

@@ -17,6 +17,7 @@ export const pagosRoutes = [
         element: <PagosListConnector />,
         key: 'PAG-LIST',
         permiso: 'finanzas.pago.ver',
+        accion: 'LISTAR',
         menu: {
             label: 'Listar Pagos',
             module: 'FIN',
@@ -30,11 +31,13 @@ export const pagosRoutes = [
         element: <PagosListConnector />,
         key: 'MAT-APO-LISTA',
         permiso: 'matricula.pago.aporte.ver',
+        accion: 'LISTAR',
         menu: {
-            label: 'Lista de Aportes',
+            label: 'Aportes',
             module: 'MAT',
             parent: 'MAT',
-            order: 3,
+            order: 4,
+            labelByRole: { ESTUDIANTE: 'Mis aportes' },
         },
     },
     {
@@ -42,12 +45,9 @@ export const pagosRoutes = [
         element: <PagosRegistrarConnector />,
         key: 'PAG-REGISTRAR',
         permiso: 'finanzas.pago.registrar',
-        menu: {
-            label: 'Registrar Pago',
-            module: 'FIN',
-            parent: 'FIN',
-            order: 2,
-        },
+        accion: 'CREAR',
+        menu: null,
+        breadcrumbParent: 'PAG-LIST',
     },
     {
         path: '/pagos/reportes',
@@ -65,6 +65,7 @@ export const pagosRoutes = [
         element: <UnderConstruction />,
         key: 'PAG-REPORTES-CARRERA',
         permiso: 'finanzas.pago.reporte.carrera',
+        accion: 'LISTAR',
         menu: {
             label: 'Por Carrera',
             module: 'FIN',
@@ -77,6 +78,7 @@ export const pagosRoutes = [
         element: <UnderConstruction />,
         key: 'PAG-REPORTES-ESTUDIANTE',
         permiso: 'finanzas.pago.reporte.estudiante',
+        accion: 'LISTAR',
         menu: {
             label: 'Por Estudiante',
             module: 'FIN',
@@ -89,6 +91,7 @@ export const pagosRoutes = [
         element: <UnderConstruction />,
         key: 'PAG-REPORTES-GESTION',
         permiso: 'finanzas.pago.reporte.gestion',
+        accion: 'LISTAR',
         menu: {
             label: 'Por Gestión',
             module: 'FIN',
@@ -101,6 +104,7 @@ export const pagosRoutes = [
         element: <UnderConstruction />,
         key: 'PAG-ADICIONALES',
         permiso: 'finanzas.pago.adicionales',
+        accion: 'LISTAR',
         menu: {
             label: 'Pagos Adicionales',
             module: 'FIN',
@@ -113,10 +117,11 @@ export const pagosRoutes = [
         path: '/pagos/configuracion',
         element: <UnderConstruction />,
         key: 'CFG-PAGOS',
-        permiso: 'institucional.config.gestionar',
+        permiso: 'cfg.pagos.gestionar',
+        accion: 'LISTAR',
         menu: {
             label: 'Configuración de Pagos',
-            module: 'INST',
+            module: 'FIN',
             parent: 'CFG',
             order: 4,
         },
@@ -126,6 +131,7 @@ export const pagosRoutes = [
         element: <UnderConstruction />,
         key: 'PAG-EDITAR',
         permiso: 'finanzas.pago.editar',
+        accion: 'EDITAR',
         menu: null,
         breadcrumbParent: 'PAG-LIST',
     },
@@ -134,6 +140,7 @@ export const pagosRoutes = [
         element: <PagosDetailConnector />,
         key: 'PAG-DETALLE',
         permiso: 'finanzas.pago.ver',
+        accion: 'DETALLE',
         menu: null,
         breadcrumbParent: 'PAG-LIST',
     },
@@ -142,6 +149,7 @@ export const pagosRoutes = [
         element: <PagosListConnector />,
         key: 'PAG',
         permiso: 'finanzas.pago.ver',
+        accion: 'LISTAR',
         menu: null,
     },
 ];

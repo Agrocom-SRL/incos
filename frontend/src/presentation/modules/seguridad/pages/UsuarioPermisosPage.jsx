@@ -58,12 +58,15 @@ function tipoOverrideEtiqueta(t) {
 }
 
 const ACCION_TAG_COLOR = {
-  VER: 'blue',
+  LISTAR: 'blue',
+  DETALLE: 'cyan',
   CREAR: 'cyan',
   EDITAR: 'orange',
   ELIMINAR: 'red',
+  ACTIVAR: 'gold',
   APROBAR: 'purple',
   EXPORTAR: 'geekblue',
+  GENERAR_PDF: 'volcano',
 };
 
 function celdaPermisoNombreCodigo(_, r) {
@@ -94,7 +97,7 @@ export default function UsuarioPermisosPage() {
   const [savingOverride, setSavingOverride] = useState(false);
 
   const esAdminSistema = useMemo(
-    () => Number(payloadUsuario?.rol?.id) === 8 || payloadUsuario?.rol?.codigo === 'ADMIN_SISTEMA',
+    () => Number(payloadUsuario?.rol?.id) === 1 || payloadUsuario?.rol?.codigo === 'ADMIN_SISTEMA',
     [payloadUsuario]
   );
 
@@ -356,7 +359,7 @@ export default function UsuarioPermisosPage() {
   return (
     <PermisoGuard
       codigo="seguridad.rol.gestionar"
-      accion="VER"
+      accion="LISTAR"
       fallback={
         <Typography.Text type="danger">Sin permiso.</Typography.Text>
       }
@@ -408,8 +411,14 @@ export default function UsuarioPermisosPage() {
                 </span>
               </div>
               <div className="sd-stat">
-                <span className="sd-stat__label">Nivel</span>
-                <span className="sd-stat__value">{payloadUsuario?.rol?.nivel_acceso ?? '—'}</span>
+                <span className="sd-stat__label">Tipo</span>
+                <span className="sd-stat__value">
+                  {!payloadUsuario?.rol
+                    ? '—'
+                    : payloadUsuario.rol.is_system
+                      ? 'Sistema'
+                      : 'Personalizado'}
+                </span>
               </div>
             </div>
           </div>

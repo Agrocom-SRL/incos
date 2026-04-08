@@ -13,7 +13,17 @@ import {
 import '@modules/seguridad/styles/seguridad.css';
 
 // Orden canónico de columnas; luego se filtra por dominio según acciones_validas.
-const ACCIONES = ['VER', 'CREAR', 'EDITAR', 'ELIMINAR', 'APROBAR', 'EXPORTAR'];
+const ACCIONES = [
+  'LISTAR',
+  'DETALLE',
+  'CREAR',
+  'EDITAR',
+  'ELIMINAR',
+  'ACTIVAR',
+  'APROBAR',
+  'EXPORTAR',
+  'GENERAR_PDF',
+];
 
 /** Acentos e iconos por módulo (paleta Material-like, no solo verdes). */
 const DOMINIO_TAB_META = {
@@ -35,23 +45,29 @@ function metaDominio(codigo) {
 
 /** Colores de columna por tipo de acción */
 const ACCION_TAG_COLOR = {
-  VER: 'blue',
+  LISTAR: 'blue',
+  DETALLE: 'cyan',
   CREAR: 'cyan',
   EDITAR: 'orange',
   ELIMINAR: 'red',
+  ACTIVAR: 'gold',
   APROBAR: 'purple',
   EXPORTAR: 'geekblue',
+  GENERAR_PDF: 'volcano',
 };
 
 /** Texto breve al pasar el mouse: diferencia técnica CREAR vs EDITAR para quien configura roles */
 const ACCION_AYUDA = {
-  VER: 'Consultar datos, abrir detalle o listados. No implica poder cambiarlos.',
+  LISTAR: 'Ver listados y buscar; no implica abrir ficha ni modificar datos.',
+  DETALLE: 'Abrir ficha o detalle de un registro concreto.',
   CREAR: 'Registrar registros nuevos (alta). No cubre modificar algo que ya existe.',
   EDITAR:
     'Guardar cambios sobre registros ya existentes (incluye el “Guardar” del formulario de edición). No es lo mismo que CREAR.',
   ELIMINAR: 'Borrar o anular registros según las reglas del módulo.',
+  ACTIVAR: 'Activar o rehabilitar registros cuando el flujo lo permita.',
   APROBAR: 'Aprobar o rechazar solicitudes en flujos con validación.',
-  EXPORTAR: 'Descargar reportes, Excel o PDF según el módulo.',
+  EXPORTAR: 'Descargar reportes o exportaciones (p. ej. Excel) según el módulo.',
+  GENERAR_PDF: 'Generar documentos PDF según el módulo.',
 };
 
 function toSet(asignacionesActuales) {

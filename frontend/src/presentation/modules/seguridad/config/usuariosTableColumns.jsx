@@ -10,14 +10,6 @@ import {
 } from '@ant-design/icons';
 import { TableCell, TableActions } from '@molecules';
 
-const nivelColor = (nivel) => {
-  if (nivel === 5) return 'purple';
-  if (nivel === 4) return 'blue';
-  if (nivel === 3) return 'cyan';
-  if (nivel === 2) return 'green';
-  return 'default';
-};
-
 const estadoTag = (estado) => {
   if (!estado) return { color: 'success', text: 'Activo' };
   if (estado === 'BLOQUEADO') return { color: 'error', text: 'BLOQUEADO' };
@@ -47,8 +39,11 @@ export const createUsuariosTableColumns = (navigate) => [
           {record.email || '—'}
         </TableCell>
         <TableCell icon={<TagOutlined />} size="small">
-          <Tag color={nivelColor(record.rol?.nivel_acceso)} style={{ marginInlineEnd: 0 }}>
-            {record.rol?.nombre || 'Sin rol'} ({record.rol?.nivel_acceso ?? '—'})
+          <Tag color={record.rol?.is_system ? 'purple' : 'blue'} style={{ marginInlineEnd: 0 }}>
+            {record.rol?.nombre || 'Sin rol'}
+            {record.rol
+              ? ` · ${record.rol.is_system ? 'Sistema' : 'Personalizado'}`
+              : ''}
           </Tag>
         </TableCell>
       </Space>
@@ -96,7 +91,7 @@ export const createUsuariosTableColumns = (navigate) => [
         navigate={navigate}
         viewPath="/seguridad/usuarios/:id"
         permisos={{
-          ver: { codigo: 'seguridad.usuario.administrar', accion: 'VER' },
+          ver: { codigo: 'seguridad.usuario.administrar', accion: 'DETALLE' },
           editar: { codigo: 'seguridad.usuario.administrar', accion: 'EDITAR' },
         }}
         extraActions={[
@@ -130,7 +125,7 @@ export const createUsuariosTableColumns = (navigate) => [
             tooltip: 'Permisos',
             onClick: () => navigate(`/seguridad/usuarios/${record.id}/permisos`),
             permiso: 'seguridad.rol.gestionar',
-            accion: 'VER',
+            accion: 'LISTAR',
           },
         ]}
       />

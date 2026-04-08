@@ -35,7 +35,7 @@ export default function RolPermisosPage() {
     guardar,
     cancelarCambios,
   } = useRolPermisos();
-  const esAdminSistema = rolInfo?.id === 8 || rolInfo?.codigo === 'ADMIN_SISTEMA';
+  const esAdminSistema = rolInfo?.id === 1 || rolInfo?.codigo === 'ADMIN_SISTEMA';
   const breadcrumbItems = useMemo(
     () => [
       { title: 'Inicio', href: '/' },
@@ -111,9 +111,13 @@ export default function RolPermisosPage() {
                 { key: 'codigo', label: 'Código', children: <Typography.Text code>{rolInfo?.codigo || '—'}</Typography.Text> },
                 { key: 'nombre', label: 'Nombre', children: rolInfo?.nombre || '—' },
                 {
-                  key: 'nivel',
-                  label: 'Nivel',
-                  children: <Tag style={{ margin: 0 }}>{rolInfo?.nivel_acceso ?? '—'}</Tag>,
+                  key: 'tipo',
+                  label: 'Tipo',
+                  children: !rolInfo
+                    ? '—'
+                    : rolInfo.is_system
+                      ? <Tag color="purple">Sistema</Tag>
+                      : <Tag color="default">Personalizado</Tag>,
                 },
               ]}
             />

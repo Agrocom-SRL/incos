@@ -4,6 +4,8 @@
  * Orden 2–8: Dashboard conserva order 1.
  */
 
+import PerfilPage from '@modules/perfil/pages/PerfilPage.jsx';
+
 export const dominiosRoutes = [
     {
         path: '/matricula',
@@ -46,6 +48,22 @@ export const dominiosRoutes = [
         element: null,
         key: 'SEG',
         menu: { label: 'Seguridad', module: 'SEG', order: 8 },
+    },
+    {
+        path: '/configuracion-sistema',
+        key: 'CFG',
+        element: null,
+        permiso: null,
+        accion: null,
+        menu: { label: 'Configuración', module: 'CFG', order: 9 },
+    },
+    {
+        path: '/perfil',
+        key: 'PERFIL',
+        element: <PerfilPage />,
+        permiso: null,
+        accion: null,
+        menu: { label: 'Mi perfil', module: 'PERFIL', order: 10 },
     },
 ];
 

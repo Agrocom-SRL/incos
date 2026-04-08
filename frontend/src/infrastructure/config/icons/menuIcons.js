@@ -40,6 +40,7 @@ import {
     UsergroupAddOutlined,
     // Pasantías
     BankOutlined,
+    SolutionOutlined,
     FileSearchOutlined,
     EyeOutlined,
     // Supervisión
@@ -132,19 +133,19 @@ export const menuIconMap = {
     'CFG-DOCUMENTACION-TRANSFERENCIA': ReloadOutlined,
     // Submenu Datos Complementarios
     'CFG-DATOS-COMPLEMENTARIOS': InfoCircleOutlined,
+    'CFG-COMPLEMENTARIO': InfoCircleOutlined,
     'CFG-DISCAPACIDAD': SafetyCertificateOutlined,
     'CFG-APODERADOS': UserOutlined,
     'CFG-IDIOMAS': GlobalOutlined,
     'CFG-PAGOS': DollarOutlined,
+    'CFG-CONVENIOS': BankOutlined,
     // Historial de Actividades
     'CFG-HISTORIAL-ACTIVIDADES': HistoryOutlined,
 
     // Matrícula (sidebar v1.2)
     'MAT-ADMISION': TeamOutlined,
     'MAT-APO-LISTA': UnorderedListOutlined,
-    'MAT-ADM-LISTAR': UnorderedListOutlined,
     'MAT-ADM-NUEVA': UserAddOutlined,
-    'MAT-BECAS': GiftOutlined,
     'MAT-BEC-LISTAR': UnorderedListOutlined,
     'MAT-BEC-ASIGNAR': GiftOutlined,
     'MAT-BEC-APROBAR': CheckCircleOutlined,
@@ -155,10 +156,10 @@ export const menuIconMap = {
     'MAT-DOCUMENTOS': FolderOutlined,
     'MAT-LISTA': UnorderedListOutlined,
     'MAT-NUEVA': FileAddOutlined,
+    'MAT-PAS-LISTA': SolutionOutlined,
 
     // Académico — Licencias de estudiante
     'ACA-LIC-EST': FileTextOutlined,
-    'ACA-LIC-EST-LIST': UnorderedListOutlined,
     'ACA-LIC-EST-SOLICITAR': FileAddOutlined,
     'ACA-LIC-EST-APROBAR': CheckCircleOutlined,
 
@@ -203,6 +204,7 @@ export const menuIconMap = {
     'DOC-LIC-LIST': UnorderedListOutlined,
     'DOC-LIC-SOLICITAR': FileAddOutlined,
     'DOC-LIC-APROBAR': CheckCircleOutlined,
+    'DOC-PAS': BankOutlined,
 
     // Supervisión (bajo dominio Docentes)
     'DOC-SUP': EyeOutlined,
@@ -227,6 +229,7 @@ export const menuIconMap = {
     'ACA-HIS': HistoryOutlined,
     'ACA-HIS-FOLIO': BookOutlined,
     'ACA-HIS-ACADEMICO': FileTextOutlined,
+    'ACA-AVANCE': LineChartOutlined,
 
     // Reportes - Nivel 1
     'REP': BarChartOutlined,
@@ -245,5 +248,7 @@ export const menuIconMap = {
     'SEG-USUARIO-CREAR': UserAddOutlined,
     'SEG-USUARIOS': SettingOutlined,
     'SEG-ROLES': UserSwitchOutlined,
+    'PERFIL': UserOutlined,
+    'PERFIL-PASSWORD': LockOutlined,
 };
 

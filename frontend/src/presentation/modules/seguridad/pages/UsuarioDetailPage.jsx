@@ -42,7 +42,7 @@ export default function UsuarioDetailPage() {
   } = useUsuarioDetail();
   const { roles, cargar: cargarRoles } = useRolesList();
   const puedeEditar = usePermiso('seguridad.usuario.administrar', 'EDITAR');
-  const puedeVerPermisos = usePermiso('seguridad.rol.gestionar', 'VER');
+  const puedeVerPermisos = usePermiso('seguridad.rol.gestionar', 'LISTAR');
 
   const [saving, setSaving] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
@@ -130,7 +130,6 @@ export default function UsuarioDetailPage() {
     return <Tag>{estado}</Tag>;
   };
 
-  const nivelColor = (nivel) => (nivel >= 5 ? 'purple' : nivel >= 4 ? 'blue' : nivel >= 3 ? 'cyan' : nivel >= 2 ? 'green' : 'default');
   const breadcrumbItems = useMemo(
     () => [
       { title: 'Inicio', href: '/' },
@@ -152,7 +151,7 @@ export default function UsuarioDetailPage() {
   return (
     <PermisoGuard
       codigo="seguridad.usuario.administrar"
-      accion="VER"
+      accion="DETALLE"
       fallback={
         <Typography.Text type="danger">Sin permiso.</Typography.Text>
       }
@@ -182,8 +181,14 @@ export default function UsuarioDetailPage() {
                 <span className="sd-stat__value">{usuario.rol?.nombre || '—'}</span>
               </div>
               <div className="sd-stat">
-                <span className="sd-stat__label">Nivel</span>
-                <span className="sd-stat__value"><Tag color={nivelColor(usuario.rol?.nivel_acceso)}>{usuario.rol?.nivel_acceso ?? '—'}</Tag></span>
+                <span className="sd-stat__label">Tipo</span>
+                <span className="sd-stat__value">
+                  {!usuario.rol
+                    ? '—'
+                    : usuario.rol.is_system
+                      ? <Tag color="purple">Sistema</Tag>
+                      : <Tag color="default">Personalizado</Tag>}
+                </span>
               </div>
               <div className="sd-stat">
                 <span className="sd-stat__label">Estado</span>

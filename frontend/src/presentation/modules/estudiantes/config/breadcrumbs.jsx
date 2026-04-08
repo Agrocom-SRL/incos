@@ -33,7 +33,7 @@ export const createBreadcrumbItems = (routeKey, currentTitle = null) => {
  * @returns {Array} Array de items del breadcrumb
  */
 export const createListBreadcrumbItems = () => {
-  return createBreadcrumbItems('MAT-ADM-LISTAR');
+  return createBreadcrumbItems('MAT-ADMISION');
 };
 
 /**

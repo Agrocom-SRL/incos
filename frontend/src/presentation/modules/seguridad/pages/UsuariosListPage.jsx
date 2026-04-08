@@ -37,7 +37,7 @@ export default function UsuariosListPage() {
   return (
     <PermisoGuard
       codigo="seguridad.usuario.administrar"
-      accion="VER"
+      accion="LISTAR"
       fallback={<div className="sd-empty">No tiene permiso para ver esta página.</div>}
     >
       <PageTemplate

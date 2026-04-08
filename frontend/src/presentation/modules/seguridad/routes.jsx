@@ -32,18 +32,16 @@ export const seguridadRoutes = [
     element: <UsuarioCreatePage />,
     key: 'SEG-USUARIO-CREAR',
     permiso: 'seguridad.usuario.crear',
-    menu: {
-      label: 'Crear Usuario',
-      module: 'SEG',
-      parent: 'SEG',
-      order: 1,
-    },
+    accion: 'CREAR',
+    menu: null,
+    breadcrumbParent: 'SEG-USUARIOS',
   },
   {
     path: '/seguridad/usuarios/:id/permisos',
     element: <UsuarioPermisosPage />,
     key: 'SEG-USUARIO-PERMISOS',
     permiso: 'seguridad.rol.gestionar',
+    accion: 'EDITAR',
     menu: null,
   },
   {
@@ -51,6 +49,7 @@ export const seguridadRoutes = [
     element: <RolPermisosPage />,
     key: 'SEG-ROL-PERMISOS',
     permiso: 'seguridad.rol.gestionar',
+    accion: 'EDITAR',
     menu: null,
   },
   {
@@ -58,6 +57,7 @@ export const seguridadRoutes = [
     element: <UsuarioDetailPage />,
     key: 'SEG-USUARIO-DETALLE',
     permiso: 'seguridad.usuario.administrar',
+    accion: 'DETALLE',
     menu: null,
   },
   {
@@ -65,11 +65,12 @@ export const seguridadRoutes = [
     element: <UsuariosListPage />,
     key: 'SEG-USUARIOS',
     permiso: 'seguridad.usuario.administrar',
+    accion: 'LISTAR',
     menu: {
-      label: 'Administrar',
+      label: 'Usuarios',
       module: 'SEG',
       parent: 'SEG',
-      order: 2,
+      order: 1,
     },
   },
   {
@@ -77,11 +78,12 @@ export const seguridadRoutes = [
     element: <RolesListPage />,
     key: 'SEG-ROLES',
     permiso: 'seguridad.rol.gestionar',
+    accion: 'LISTAR',
     menu: {
       label: 'Roles y Permisos',
       module: 'SEG',
       parent: 'SEG',
-      order: 3,
+      order: 2,
     },
   },
 ];

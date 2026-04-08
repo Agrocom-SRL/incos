@@ -13,30 +13,6 @@ function errMsg(json) {
   return typeof e === 'string' ? e : e?.message || 'Error';
 }
 
-/** Alineado con `nivel_acceso` en BD: 1=Estudiante … 5=Rector/Admin */
-const NIVEL_ACCESO_LABEL = {
-  1: 'Estudiante',
-  2: 'Docente',
-  3: 'Secretaría',
-  4: 'Director',
-  5: 'Administración',
-};
-
-function nivelAccesoLabel(nivel) {
-  if (nivel == null || Number.isNaN(Number(nivel))) return '—';
-  const n = Number(nivel);
-  return NIVEL_ACCESO_LABEL[n] ?? `Nivel ${n}`;
-}
-
-function nivelAccesoTagColor(nivel) {
-  const n = Number(nivel);
-  if (n === 5) return 'purple';
-  if (n === 4) return 'blue';
-  if (n === 3) return 'cyan';
-  if (n === 2) return 'green';
-  return 'default';
-}
-
 export default function RolesListPage() {
   const navigate = useNavigate();
   const { message } = App.useApp();
@@ -70,13 +46,12 @@ export default function RolesListPage() {
       ),
     },
     {
-      title: 'Nivel de acceso',
-      dataIndex: 'nivel_acceso',
-      key: 'nivel_acceso',
-      render: (nivel) => (
-        <Tag color={nivelAccesoTagColor(nivel)} style={{ fontSize: 16 }}>
-          {nivelAccesoLabel(nivel)}
-        </Tag>
+      title: 'Tipo',
+      key: 'tipo',
+      render: (_, record) => (
+        record.is_system
+          ? <Tag color="purple">Sistema</Tag>
+          : <Tag color="default">Personalizado</Tag>
       ),
     },
     {
@@ -109,7 +84,7 @@ export default function RolesListPage() {
   return (
     <PermisoGuard
       codigo="seguridad.rol.gestionar"
-      accion="VER"
+      accion="LISTAR"
       fallback={
         <div className="sd-empty">Sin permiso.</div>
       }

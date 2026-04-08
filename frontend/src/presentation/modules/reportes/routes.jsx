@@ -22,6 +22,7 @@ export const reportesRoutes = [
         element: <UnderConstruction />,
         key: 'REP-AVANCE-ACADEMICO',
         permiso: 'reportes.avance_academico',
+        accion: 'LISTAR',
         menu: {
             label: 'Avance Académico',
             module: 'REP',
@@ -34,6 +35,7 @@ export const reportesRoutes = [
         element: <UnderConstruction />,
         key: 'REP-ASISTENCIA',
         permiso: 'reportes.asistencia',
+        accion: 'LISTAR',
         menu: {
             label: 'Asistencia',
             module: 'REP',
@@ -46,6 +48,7 @@ export const reportesRoutes = [
         element: <UnderConstruction />,
         key: 'REP-DESERCION',
         permiso: 'reportes.desercion',
+        accion: 'LISTAR',
         menu: {
             label: 'Deserción',
             module: 'REP',
@@ -57,6 +60,8 @@ export const reportesRoutes = [
         path: '/reportes/solicitudes',
         element: null,
         key: 'REP-SOLICITUDES',
+        permiso: 'reportes.solicitudes.general',
+        accion: 'LISTAR',
         menu: {
             label: 'Solicitudes',
             module: 'REP',
@@ -69,48 +74,36 @@ export const reportesRoutes = [
         element: <UnderConstruction />,
         key: 'REP-SOLICITUDES-GENERAL',
         permiso: 'reportes.solicitudes.general',
-        menu: {
-            label: 'Reporte General',
-            module: 'REP',
-            parent: 'REP-SOLICITUDES',
-            order: 1,
-        },
+        accion: 'LISTAR',
+        menu: null,
+        breadcrumbParent: 'REP-SOLICITUDES',
     },
     {
         path: '/reportes/solicitudes/becas',
         element: <UnderConstruction />,
         key: 'REP-SOLICITUDES-BECAS',
         permiso: 'reportes.solicitudes.becas',
-        menu: {
-            label: 'Por Becas',
-            module: 'REP',
-            parent: 'REP-SOLICITUDES',
-            order: 2,
-        },
+        accion: 'LISTAR',
+        menu: null,
+        breadcrumbParent: 'REP-SOLICITUDES',
     },
     {
         path: '/reportes/solicitudes/traspaso',
         element: <UnderConstruction />,
         key: 'REP-SOLICITUDES-TRASPASO',
         permiso: 'reportes.solicitudes.traspaso',
-        menu: {
-            label: 'Por Traspaso',
-            module: 'REP',
-            parent: 'REP-SOLICITUDES',
-            order: 3,
-        },
+        accion: 'LISTAR',
+        menu: null,
+        breadcrumbParent: 'REP-SOLICITUDES',
     },
     {
         path: '/reportes/solicitudes/pasantia',
         element: <UnderConstruction />,
         key: 'REP-SOLICITUDES-PASANTIA',
         permiso: 'reportes.solicitudes.pasantia',
-        menu: {
-            label: 'Por Pasantía',
-            module: 'REP',
-            parent: 'REP-SOLICITUDES',
-            order: 5,
-        },
+        accion: 'LISTAR',
+        menu: null,
+        breadcrumbParent: 'REP-SOLICITUDES',
     },
 ];
 

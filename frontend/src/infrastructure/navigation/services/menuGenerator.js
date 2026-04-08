@@ -33,10 +33,12 @@ const buildMenuHierarchy = (routes) => {
             key: route.key,
             label: route.menu.label,
             module: route.menu.module,
+            menu: { ...route.menu },
             // Solo incluir path si tiene elemento (no es solo un grupo padre)
             ...(route.element && { path: route.path }),
             order: route.menu.order || 999, // Orden por defecto
             ...(route.permiso && { permiso: route.permiso }),
+            ...(route.accion != null && { accion: route.accion }),
             children: [],
         };
 

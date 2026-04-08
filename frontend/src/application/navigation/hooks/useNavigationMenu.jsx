@@ -29,22 +29,26 @@ import { getRouteFromMenuKey, getMenuKeyFromRoute } from '@navigation-services/r
 import MenuItem from '@atoms/MenuItem';
 import { useAuthContext } from '@application-auth';
 
-/**
- * Oculta ítems sin permiso VER; elimina ramas vacías.
- */
-function filterMenuByPermiso(items, hasPermisoFn) {
+function filterMenuByPermiso(items, hasPermisoFn, userRole) {
     if (!items?.length) return [];
     return items
-        .map((item) => {
-            if (item.children?.length) {
-                const children = filterMenuByPermiso(item.children, hasPermisoFn);
-                if (children.length === 0) return null;
-                return { ...item, children };
-            }
-            if (!item.permiso) return item;
-            return hasPermisoFn(item.permiso, 'VER') ? item : null;
-        })
-        .filter(Boolean);
+      .map((item) => {
+        if (item.children?.length) {
+          const children = filterMenuByPermiso(item.children, hasPermisoFn, userRole);
+          if (children.length === 0) return null;
+          if (!item.permiso) return { ...item, children };
+          const accion = item.accion ?? 'LISTAR';
+          return hasPermisoFn(item.permiso, accion) ? { ...item, children } : null;
+        }
+        if (!item.permiso) return item;
+        const accion = item.accion ?? 'LISTAR';
+        if (!hasPermisoFn(item.permiso, accion)) return null;
+        if (item.menu?.labelByRole?.[userRole]) {
+          return { ...item, menu: { ...item.menu, label: item.menu.labelByRole[userRole] } };
+        }
+        return item;
+      })
+      .filter(Boolean);
 }
 
 /**
@@ -57,7 +61,7 @@ function filterMenuByPermiso(items, hasPermisoFn) {
 export const useNavigationMenu = (defaultSelectedKey = 'DASH', onMenuClick) => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { hasPermiso, isAuthenticated } = useAuthContext();
+    const { hasPermiso, isAuthenticated, usuario } = useAuthContext();
     const [selectedKeys, setSelectedKeys] = useState([defaultSelectedKey]);
     const [openKeys, setOpenKeys] = useState([]);
     
@@ -76,8 +80,9 @@ export const useNavigationMenu = (defaultSelectedKey = 'DASH', onMenuClick) => {
 
     const navigationMenuItems = useMemo(() => {
         if (!isAuthenticated) return rawNavigationMenu;
-        return filterMenuByPermiso(rawNavigationMenu, hasPermisoStable);
-    }, [rawNavigationMenu, hasPermisoStable, isAuthenticated]);
+        const userRole = usuario?.rol?.codigo;
+        return filterMenuByPermiso(rawNavigationMenu, hasPermisoStable, userRole);
+    }, [rawNavigationMenu, hasPermisoStable, isAuthenticated, usuario]);
 
     /**
      * Función recursiva para mapear items y subitems con iconos
