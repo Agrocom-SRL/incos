@@ -48,3 +48,4 @@ export { usePagosRegistrarPaymentAccounts } from './features/usePagosRegistrarPa
 export { usePagosRegistrarAuthorizedBanks } from './features/usePagosRegistrarAuthorizedBanks';
 export { usePagosRegistrarPaymentMethods } from './features/usePagosRegistrarPaymentMethods';
 export { usePagosRegistrarContributionConfigurations } from './features/usePagosRegistrarContributionConfigurations';
+export { useExportListaAportesPorCarreraExcel } from './features/useExportListaAportesPorCarreraExcel';

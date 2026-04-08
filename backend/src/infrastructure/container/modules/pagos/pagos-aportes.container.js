@@ -20,7 +20,16 @@ import { GetPaymentAporteByIdUseCase } from '../../../../application/use-cases/p
 import { GetEstadoAporteRegistroUseCase } from '../../../../application/use-cases/pagos/GetEstadoAporteRegistroUseCase.js';
 import { DeletePaymentAporteUseCase } from '../../../../application/use-cases/pagos/DeletePaymentAporteUseCase.js';
 import { GenerateReciboPagoUseCase } from '../../../../application/use-cases/pagos/GenerateReciboPagoUseCase.js';
-import { RegisterPagoAporteController, ListPagosAportesController, GetPaymentAporteByIdController, GetEstadoAporteRegistroController, DeletePaymentAporteController, GenerateReciboPagoController } from '../../../../presentation/controllers/pagos/index.js';
+import { ExportPaymentAporteByCareerExcelUseCase } from '../../../../application/use-cases/pagos/ExportPaymentAporteByCareerExcelUseCase.js';
+import {
+    RegisterPagoAporteController,
+    ListPagosAportesController,
+    GetPaymentAporteByIdController,
+    GetEstadoAporteRegistroController,
+    DeletePaymentAporteController,
+    GenerateReciboPagoController,
+    ExportListaAportesPorCarreraExcelController,
+} from '../../../../presentation/controllers/pagos/index.js';
 import { buildPagosAportesRouter } from '../../../../presentation/routes/pagos-aportes.routes.js';
 
 /**
@@ -128,6 +137,20 @@ export function registerPagosAportesResource(container) {
             })
     );
 
+    registerComponent(
+        container,
+        PAGOS_TOKENS.exportPaymentAporteByCareerExcelUseCase,
+        (c) =>
+            new ExportPaymentAporteByCareerExcelUseCase({
+                paymentAporteCareerExcelReportRepository: c.resolve(
+                    REPOSITORIOS_TOKENS.paymentAporteCareerExcelReportRepository
+                ),
+                managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
+                careerRepository: c.resolve(REPOSITORIOS_TOKENS.careerRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
     // ============================================
     // CONTROLLERS
     // ============================================
@@ -197,6 +220,18 @@ export function registerPagosAportesResource(container) {
             })
     );
 
+    registerComponent(
+        container,
+        PAGOS_TOKENS.exportListaAportesPorCarreraExcelController,
+        (c) =>
+            new ExportListaAportesPorCarreraExcelController({
+                exportPaymentAporteByCareerExcelUseCase: c.resolve(
+                    PAGOS_TOKENS.exportPaymentAporteByCareerExcelUseCase
+                ),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
     // ============================================
     // ROUTER
     // ============================================
@@ -211,6 +246,9 @@ export function registerPagosAportesResource(container) {
                 getEstadoAporteRegistroController: c.resolve(PAGOS_TOKENS.getEstadoAporteRegistroController),
                 deletePaymentAporteController: c.resolve(PAGOS_TOKENS.deletePaymentAporteController),
                 generateReciboPagoController: c.resolve(PAGOS_TOKENS.generateReciboPagoController),
+                exportListaAportesPorCarreraExcelController: c.resolve(
+                    PAGOS_TOKENS.exportListaAportesPorCarreraExcelController
+                ),
             };
 
             const middlewares = {

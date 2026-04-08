@@ -13,3 +13,4 @@ export { GetPaymentAporteByIdController } from './pagos-aportes/detail.controlle
 export { GetEstadoAporteRegistroController } from './pagos-aportes/estado-registro.controller.js';
 export { DeletePaymentAporteController } from './pagos-aportes/delete.controller.js';
 export { GenerateReciboPagoController } from './pagos-aportes/generate-recibo.controller.js';
+export { ExportListaAportesPorCarreraExcelController } from './pagos-aportes/export-lista-por-carrera-excel.controller.js';

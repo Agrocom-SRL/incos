@@ -88,6 +88,17 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
         (req, res, next) => controllers.getEstadoAporteRegistroController.handle(req, res, next)
     );
 
+    /**
+     * GET /api/v1/pagos-aportes/export/lista-por-carrera
+     * Excel: inscritos por carrera con monto de aporte, descuento, cuotas, saldo, etc.
+     * Query: carrera_id (requerido), gestion_id (opcional; gestión vigente por defecto)
+     */
+    router.get(
+        '/export/lista-por-carrera',
+        ...pagoExportar,
+        (req, res, next) => controllers.exportListaAportesPorCarreraExcelController.handle(req, res, next)
+    );
+
     // ============================================
     // REGISTRO DE CUOTA (ABONO)
     // ============================================
