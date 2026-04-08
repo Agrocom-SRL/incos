@@ -78,9 +78,11 @@ const PagosDetail = () => {
   const menuSidebarKeyFromState = location.state?.menuSidebarKey;
   const fromBeca100 = location.state?.fromBeca100 === true;
   const volverALista = !studentIdFromState;
-  const puedeExportarPago = hasPermiso('finanzas.pago.ver', 'EXPORTAR');
+  const puedeExportarPago = hasPermiso('finanzas.pago.ver', 'EXPORTAR')
+    || hasPermiso('matricula.pago.aporte.ver', 'EXPORTAR');
   const puedeRegistrarPago = hasPermiso('finanzas.pago.registrar', 'CREAR');
-  const puedeEliminarPagoPermiso = hasPermiso('finanzas.pago.editar', 'ELIMINAR');
+  const puedeEliminarPagoPermiso = hasPermiso('finanzas.pago.editar', 'ELIMINAR')
+    || hasPermiso('matricula.pago.aporte.ver', 'ELIMINAR');
 
   const {
     pago,

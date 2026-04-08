@@ -4,6 +4,10 @@
 -- Fuente de verdad para PermisosDominioPicker
 -- y para validación en ActualizarPermisosRolUseCase
 -- Ejecutar después de 54-seed-permisos.sql
+--
+-- MATRÍCULA: una pantalla suele combinar varios permisos (ej. listar admisiones usa
+-- admision.ver + admision.editar + admision.crear + finanzas.pago.registrar según botones).
+-- API pagos-aportes acepta finanzas.pago.* O matricula.pago.aporte.ver (mismo verbo).
 -- ============================================
 
 USE instituto_incos;
@@ -16,6 +20,9 @@ INSERT INTO permiso_acciones (permiso_id, accion, activo) VALUES
 
 -- ==========================================
 -- MATRICULA
+-- (1) listar/ver/exportar admisiones  (2) registrar  (3) editar/eliminar estudiante
+-- (4) matrículas CRUD alta  (5) editar/eliminar inscripción  (6–8) becas  (9) documentos PDF
+-- (10) aportes desde menú Matrícula: ver listado + exportar recibo / anular cuota (OR con Finanzas en API)
 -- ==========================================
 (1,  'VER',      TRUE),
 (1,  'EXPORTAR', TRUE),
@@ -40,6 +47,8 @@ INSERT INTO permiso_acciones (permiso_id, accion, activo) VALUES
 (9,  'VER',      TRUE),
 (9,  'CREAR',    TRUE),
 (10, 'VER',      TRUE),
+(10, 'EXPORTAR', TRUE),
+(10, 'ELIMINAR', TRUE),
 
 -- ==========================================
 -- ACADEMICO

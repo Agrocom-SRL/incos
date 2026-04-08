@@ -1,6 +1,6 @@
 import express from 'express';
 import { authenticate } from '../middleware/auth.middleware.js';
-import { verificarPermiso } from '../middleware/permisos.middleware.js';
+import { verificarPermiso, verificarPermisoCualquiera } from '../middleware/permisos.middleware.js';
 import { registerPagoAporteValidator } from '../validators/pagos/index.js';
 import { uploadPaymentDocument } from '../middleware/upload.middleware.js';
 import { listValidator } from '../validators/common/index.js';
@@ -26,10 +26,31 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
     const router = express.Router();
     const { validateRequest } = middlewares;
 
-    const pagoVer = [authenticate, verificarPermiso('finanzas.pago.ver', 'VER')];
+    /** Ver listado/detalle/estado: módulo Finanzas o menú Matrícula (aportes). */
+    const pagoVer = [
+        authenticate,
+        verificarPermisoCualquiera([
+            ['finanzas.pago.ver', 'VER'],
+            ['matricula.pago.aporte.ver', 'VER'],
+        ]),
+    ];
     const pagoRegistrar = [authenticate, verificarPermiso('finanzas.pago.registrar', 'CREAR')];
-    const pagoEliminar = [authenticate, verificarPermiso('finanzas.pago.editar', 'ELIMINAR')];
-    const pagoExportar = [authenticate, verificarPermiso('finanzas.pago.ver', 'EXPORTAR')];
+    /** Anular cuota: Finanzas o permiso paralelo en Matrícula. */
+    const pagoEliminar = [
+        authenticate,
+        verificarPermisoCualquiera([
+            ['finanzas.pago.editar', 'ELIMINAR'],
+            ['matricula.pago.aporte.ver', 'ELIMINAR'],
+        ]),
+    ];
+    /** Recibo PDF: EXPORTAR en Finanzas o en matricula.pago.aporte.ver. */
+    const pagoExportar = [
+        authenticate,
+        verificarPermisoCualquiera([
+            ['finanzas.pago.ver', 'EXPORTAR'],
+            ['matricula.pago.aporte.ver', 'EXPORTAR'],
+        ]),
+    ];
 
     // ============================================
     // LISTADO DE CABECERAS DE APORTE

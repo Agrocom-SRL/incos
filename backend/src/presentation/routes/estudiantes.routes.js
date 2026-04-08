@@ -213,7 +213,7 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
      */
     router.post(
         '/:id/scholarships',
-        ...becaAsignarEliminar,
+        ...becaAsignarCrear,
         assignBecaValidator,  // 1. Validator primero
         validateRequest,  // 2. Middleware que procesa errores
         (req, res, next) => controllers.asignarBecaController.handle(req, res, next)  // 3. Controller al final
@@ -231,7 +231,7 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
      */
     router.delete(
         '/becas/:id',
-        ...becaAsignarCrear,
+        ...becaAsignarEliminar,
         idValidator,  // 1. Validator primero
         validateRequest,  // 2. Middleware que procesa errores
         (req, res, next) => controllers.deleteStudentScholarshipController.handle(req, res, next)  // 3. Controller al final

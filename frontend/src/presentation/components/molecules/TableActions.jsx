@@ -17,6 +17,15 @@ import { useContainer } from '@container';
 import { useAuthContext } from '@application-auth';
 
 /**
+ * Un permiso { codigo, accion } o varios (OR): basta uno para habilitar la acción.
+ */
+function cumplePermisoRef(ref, hasPermiso) {
+  if (!ref) return true;
+  const opciones = Array.isArray(ref) ? ref : [ref];
+  return opciones.some((p) => p?.codigo && hasPermiso(p.codigo, p.accion));
+}
+
+/**
  * Componente genérico de acciones para tablas
  * 
  * @param {Object} props - Propiedades del componente
@@ -34,7 +43,7 @@ import { useAuthContext } from '@application-auth';
  * @param {Function} props.onView - Función personalizada para ver (opcional)
  * @param {boolean} props.editDisabled - Si el botón de editar debe estar deshabilitado (opcional)
  * @param {Object} props.extraActions - Acciones adicionales (opcional)
- * @param {Object} props.permisos - Permisos por accion base (opcional)
+ * @param {Object} props.permisos - Permisos por acción; cada valor puede ser {codigo, accion} o array (OR)
  */
 const TableActions = ({
   record,
@@ -132,9 +141,9 @@ const TableActions = ({
     }
   };
 
-  const puedeVer = !permisos?.ver || hasPermiso(permisos.ver.codigo, permisos.ver.accion);
-  const puedeEditar = !permisos?.editar || hasPermiso(permisos.editar.codigo, permisos.editar.accion);
-  const puedeEliminar = !permisos?.eliminar || hasPermiso(permisos.eliminar.codigo, permisos.eliminar.accion);
+  const puedeVer = cumplePermisoRef(permisos?.ver, hasPermiso);
+  const puedeEditar = cumplePermisoRef(permisos?.editar, hasPermiso);
+  const puedeEliminar = cumplePermisoRef(permisos?.eliminar, hasPermiso);
 
   const extraActionsPermitidas = extraActions.filter((action) => {
     if (!action?.permiso) return true;

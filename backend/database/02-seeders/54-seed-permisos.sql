@@ -3,6 +3,18 @@
 -- Sistema de Gestión Académica - Instituto INCOS
 -- Códigos alineados al campo permiso en routes.jsx del frontend
 -- Ejecutar después de 53-seed-roles.sql; antes de 55-seed-roles-permisos.sql
+--
+-- MATRÍCULA (sidebar): rutas UI vs permisos (acciones en 56-seed-permiso-acciones.sql)
+--   /estudiantes/listar, /estudiantes/:id, exports estudiantes
+--       → matricula.admision.ver (VER, EXPORTAR) + matricula.admision.editar (EDITAR, ELIMINAR)
+--       + matricula.admision.crear (CREAR) + finanzas.pago.registrar (CREAR) para registrar pago
+--   /estudiantes/registrar → matricula.admision.crear (VER, CREAR)
+--   /estudiantes/:id/editar → matricula.admision.editar
+--   /matricula/listar, /inscripciones/* → matricula.inscribir + matricula.inscripcion.editar
+--       + matricula.documento.ver (CREAR) PDF inscripción
+--   /estudiantes/becas/* → matricula.beca.ver | .asignar | .aprobar
+--   /matricula/aportes/listar, /pagos/* (API pagos-aportes: también finanzas.pago.* vía OR)
+--       → matricula.pago.aporte.ver + finanzas.pago.ver | .registrar | .editar
 -- ============================================
 
 USE instituto_incos;
@@ -15,17 +27,17 @@ SET FOREIGN_KEY_CHECKS = 0;
 
 INSERT INTO permisos (id, codigo, nombre, dominio, modulo, activo) VALUES
 
--- DOMINIO: MATRICULA
-(1, 'matricula.admision.ver', 'Ver Admisiones', 'MATRICULA', 'MAT', TRUE),
-(2, 'matricula.admision.crear', 'Registrar Admisión de Estudiante', 'MATRICULA', 'MAT', TRUE),
-(3, 'matricula.admision.editar', 'Editar Datos de Admisión', 'MATRICULA', 'MAT', TRUE),
-(4, 'matricula.inscribir', 'Matricular Estudiante', 'MATRICULA', 'MAT', TRUE),
-(5, 'matricula.inscripcion.editar', 'Editar Matrícula', 'MATRICULA', 'MAT', TRUE),
-(6, 'matricula.beca.ver', 'Ver Becas Asignadas', 'MATRICULA', 'MAT', TRUE),
-(7, 'matricula.beca.asignar', 'Asignar Beca a Estudiante', 'MATRICULA', 'MAT', TRUE),
-(8, 'matricula.beca.aprobar', 'Aprobar Solicitud de Beca', 'MATRICULA', 'MAT', TRUE),
-(9, 'matricula.documento.ver', 'Ver Documentos del Estudiante', 'MATRICULA', 'MAT', TRUE),
-(10, 'matricula.pago.aporte.ver', 'Ver Aportes Voluntarios de Matrícula', 'MATRICULA', 'MAT', TRUE),
+-- DOMINIO: MATRICULA (admisión / inscripción / becas / aportes en menú Matrícula)
+(1, 'matricula.admision.ver', 'Admisiones: listar, ver ficha y exportar (Excel estadística / lista inscritos)', 'MATRICULA', 'MAT', TRUE),
+(2, 'matricula.admision.crear', 'Admisiones: registrar nuevo estudiante (alta)', 'MATRICULA', 'MAT', TRUE),
+(3, 'matricula.admision.editar', 'Admisiones: editar datos y eliminar estudiante', 'MATRICULA', 'MAT', TRUE),
+(4, 'matricula.inscribir', 'Matrícula: listar, ver y crear inscripción', 'MATRICULA', 'MAT', TRUE),
+(5, 'matricula.inscripcion.editar', 'Matrícula: editar, eliminar inscripción', 'MATRICULA', 'MAT', TRUE),
+(6, 'matricula.beca.ver', 'Becas: listar asignaciones y ver detalle', 'MATRICULA', 'MAT', TRUE),
+(7, 'matricula.beca.asignar', 'Becas: asignar, ajustar o quitar asignación', 'MATRICULA', 'MAT', TRUE),
+(8, 'matricula.beca.aprobar', 'Becas: aprobar solicitudes (pantalla en construcción)', 'MATRICULA', 'MAT', TRUE),
+(9, 'matricula.documento.ver', 'Documentos: ver y generar PDFs (acta, declaración, formulario inscripción)', 'MATRICULA', 'MAT', TRUE),
+(10, 'matricula.pago.aporte.ver', 'Aportes matrícula: listar/ver (menú Matrícula); exportar recibo y anular cuota alternativos a Finanzas', 'MATRICULA', 'MAT', TRUE),
 
 -- DOMINIO: ACADEMICO
 (11, 'academico.licencia.ver', 'Ver Licencias de Estudiante', 'ACADEMICO', 'ACA', TRUE),

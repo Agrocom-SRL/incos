@@ -149,7 +149,8 @@ const EstudiantesDetail = () => {
   const puedeVerInscripcion = hasPermiso('matricula.inscribir', 'VER');
   const puedeCrearInscripcion = hasPermiso('matricula.inscribir', 'CREAR');
   const puedeRegistrarPago = hasPermiso('finanzas.pago.registrar', 'CREAR');
-  const puedeVerPago = hasPermiso('finanzas.pago.ver', 'VER');
+  const puedeVerPago = hasPermiso('finanzas.pago.ver', 'VER')
+    || hasPermiso('matricula.pago.aporte.ver', 'VER');
   const puedeCrearDocumento = hasPermiso('matricula.documento.ver', 'CREAR');
   const puedeExportarDocumento = hasPermiso('matricula.documento.ver', 'EXPORTAR');
   const puedeEliminarBeca = hasPermiso('matricula.beca.asignar', 'ELIMINAR');

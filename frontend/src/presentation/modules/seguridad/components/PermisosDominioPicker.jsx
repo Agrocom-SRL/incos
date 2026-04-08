@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Checkbox, Table, Tag, Tabs } from 'antd';
+import { Checkbox, Table, Tag, Tabs, Tooltip } from 'antd';
 import {
   AppstoreOutlined,
   BankOutlined,
@@ -41,6 +41,17 @@ const ACCION_TAG_COLOR = {
   ELIMINAR: 'red',
   APROBAR: 'purple',
   EXPORTAR: 'geekblue',
+};
+
+/** Texto breve al pasar el mouse: diferencia técnica CREAR vs EDITAR para quien configura roles */
+const ACCION_AYUDA = {
+  VER: 'Consultar datos, abrir detalle o listados. No implica poder cambiarlos.',
+  CREAR: 'Registrar registros nuevos (alta). No cubre modificar algo que ya existe.',
+  EDITAR:
+    'Guardar cambios sobre registros ya existentes (incluye el “Guardar” del formulario de edición). No es lo mismo que CREAR.',
+  ELIMINAR: 'Borrar o anular registros según las reglas del módulo.',
+  APROBAR: 'Aprobar o rechazar solicitudes en flujos con validación.',
+  EXPORTAR: 'Descargar reportes, Excel o PDF según el módulo.',
 };
 
 function toSet(asignacionesActuales) {
@@ -180,7 +191,11 @@ export default function PermisosDominioPicker({
       ...accionesDelDominio.map((accion) => ({
         title: (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-            <Tag color={ACCION_TAG_COLOR[accion] || 'default'}>{accion}</Tag>
+            <Tooltip title={ACCION_AYUDA[accion] || accion}>
+              <Tag color={ACCION_TAG_COLOR[accion] || 'default'} style={{ cursor: 'help' }}>
+                {accion}
+              </Tag>
+            </Tooltip>
             <Checkbox
               disabled={disabled || rows.length === 0}
               checked={rows.length > 0 && rows.every((p) => (
