@@ -275,6 +275,70 @@ export class PagoAporteRepository extends IPagoAporteRepository {
       return handleErrorResponse(error, 'Error al generar recibo de pago');
     }
   }
+
+  /**
+   * Descarga Excel de estado de aporte por carrera (una hoja por paralelo).
+   * @param {Object} options
+   * @param {string|number} options.carreraId
+   * @param {string|number} [options.gestionId]
+   * @returns {Promise<{success: boolean, blob?: Blob, fileName?: string, error?: string}>}
+   */
+  async descargarListaAportesPorCarreraExcel(options = {}) {
+    try {
+      if (options.carreraId == null || options.carreraId === '') {
+        return { success: false, error: 'carreraId es requerido' };
+      }
+      const params = { carrera_id: options.carreraId };
+      if (options.gestionId != null && options.gestionId !== '') {
+        params.gestion_id = options.gestionId;
+      }
+
+      const response = await apiClient.get(PAGOS_APORTES_ENDPOINTS.EXPORT_LISTA_POR_CARRERA, {
+        params,
+        responseType: 'blob',
+      });
+
+      const disposition = response.headers['content-disposition'] || '';
+      const starMatch = disposition.match(/filename\*=UTF-8''([^;\s]+)/i);
+      const quotedMatch = disposition.match(/filename="([^"]+)"/i);
+      const plainMatch = disposition.match(/filename=([^;\s]+)/i);
+
+      let fileName = 'lista_aportes.xlsx';
+      if (starMatch) {
+        try {
+          fileName = decodeURIComponent(starMatch[1].replace(/['"]/g, ''));
+        } catch {
+          fileName = starMatch[1];
+        }
+      } else if (quotedMatch) {
+        fileName = quotedMatch[1];
+      } else if (plainMatch) {
+        fileName = plainMatch[1].replace(/['"]/g, '');
+      }
+
+      return {
+        success: true,
+        blob: response.data,
+        fileName,
+      };
+    } catch (error) {
+      if (error.response?.data instanceof Blob) {
+        try {
+          const text = await error.response.data.text();
+          const json = JSON.parse(text);
+          const errObj = json?.error;
+          const msg =
+            typeof errObj === 'string'
+              ? errObj
+              : errObj?.message || json?.message || 'Error al exportar lista de aportes';
+          return { success: false, error: msg };
+        } catch {
+          return { success: false, error: 'Error al exportar lista de aportes' };
+        }
+      }
+      return handleErrorResponse(error, 'Error al exportar lista de aportes');
+    }
+  }
 }
 
 export default new PagoAporteRepository();
