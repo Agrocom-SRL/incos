@@ -51,7 +51,6 @@ import { RoleRepository } from '../../repositories/RoleRepository.js';
 import { PermissionRepository } from '../../repositories/PermissionRepository.js';
 import { UserRepository } from '../../repositories/UserRepository.js';
 import { RolePermissionRepository } from '../../repositories/RolePermissionRepository.js';
-import { UserPermissionRepository } from '../../repositories/UserPermissionRepository.js';
 import { SessionRepository } from '../../repositories/SessionRepository.js';
 import { AuthRepository } from '../../repositories/AuthRepository.js';
 import { StaffRepository } from '../../repositories/StaffRepository.js';
@@ -161,7 +160,6 @@ export function registerRepositoriesModule(container) {
     registerRepository(container, REPOSITORIOS_TOKENS.permissionRepository, PermissionRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.userRepository, UserRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.rolePermissionRepository, RolePermissionRepository);
-    registerRepository(container, REPOSITORIOS_TOKENS.userPermissionRepository, UserPermissionRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.sessionRepository, SessionRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.authRepository, AuthRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.staffRepository, StaffRepository);

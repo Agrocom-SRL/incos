@@ -28,7 +28,6 @@ export const REPOSITORIOS_TOKENS = {
     permissionRepository: 'permissionRepository',
     userRepository: 'userRepository',
     rolePermissionRepository: 'rolePermissionRepository',
-    userPermissionRepository: 'userPermissionRepository',
     sessionRepository: 'sessionRepository',
     authRepository: 'authRepository',
     rectorRepository: 'rectorRepository',
