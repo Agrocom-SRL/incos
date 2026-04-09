@@ -158,4 +158,6 @@ export const PAGOS_APORTES_ENDPOINTS = {
   ESTADO_REGISTRO: `${API_BASE}/pagos-aportes/estado-registro`,
   // Endpoint específico para generar/obtener recibo de pago
   GENERATE_RECIBO: (paymentId) => `${API_BASE}/pagos-aportes/${encodeURIComponent(String(paymentId))}/recibo`,
+  // Endpoint específico para exportar lista de aportes por carrera
+  EXPORT_LISTA_POR_CARRERA: `${API_BASE}/pagos-aportes/export/lista-por-carrera`,
 };

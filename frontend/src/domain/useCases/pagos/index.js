@@ -13,3 +13,4 @@ export { ObtenerTodosPagosAportesUseCase } from './ObtenerTodosPagosAportesUseCa
 export { ObtenerPagoAportePorIdUseCase } from './ObtenerPagoAportePorIdUseCase';
 export { EliminarPagoAporteUseCase } from './EliminarPagoAporteUseCase';
 export { GenerarReciboPagoUseCase } from './GenerarReciboPagoUseCase';
+export { ExportarListaAportesPorCarreraExcelUseCase } from './ExportarListaAportesPorCarreraExcelUseCase';

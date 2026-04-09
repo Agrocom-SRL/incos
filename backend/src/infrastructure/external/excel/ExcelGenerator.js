@@ -105,6 +105,46 @@ class ExcelGenerator {
     return workbook.xlsx.writeBuffer();
   }
 
+  /**
+   * Lista de estado de aporte voluntario por carrera (vista_reporte_excel_lista_aportes_por_carrera).
+   * Nombres alineados a la izquierda en datos (columnas B:C).
+   */
+  static async generarListaAportesPorCarrera(datos = [], filtros = {}) {
+    const workbook = new ExcelJS.Workbook();
+    const logoId = await this._tryAddMinisterioLogo(workbook);
+    const incosLogoId = await this._tryAddIncosLogo(workbook);
+
+    const grouped = new Map();
+    (datos || []).forEach((row) => {
+      const periodoNumero = Number(row.periodo_numero ?? row.periodoNumero ?? 0);
+      const paraleloNombre = String(row.paralelo_nombre ?? row.paraleloNombre ?? 'SIN_PARALELO').trim();
+      const paraleloLetra = this._extractParaleloLetra(paraleloNombre);
+      const periodoEtiqueta = this._toPeriodoEtiqueta(periodoNumero);
+
+      const rawSheetName = [periodoEtiqueta, paraleloLetra].filter(Boolean).join('-') || 'HOJA';
+      const sheetName = this._toSafeWorksheetName(rawSheetName);
+      const sheetKey = `${sheetName}`;
+
+      const current = grouped.get(sheetKey) || { sheetName, paraleloNombre, rows: [] };
+      current.rows.push(row);
+      grouped.set(sheetKey, current);
+    });
+
+    const sheets = grouped.size
+      ? Array.from(grouped.values())
+      : [{ sheetName: 'SIN_DATOS', paraleloNombre: 'SIN_DATOS', rows: [] }];
+
+    sheets.forEach((s) => {
+      const ws = workbook.addWorksheet(s.sheetName);
+      this._buildListaAportesPorCarreraSheet(ws, s.rows, filtros, s.paraleloNombre, {
+        logoId,
+        incosLogoId,
+      });
+    });
+
+    return workbook.xlsx.writeBuffer();
+  }
+
   static _buildListaInscritosSheet(worksheet, rows, filtros, paraleloNombre, assets = {}) {
     const FONT_SIZE_LISTA = 14;
     const FONT_SIZE_TITULO = 18;
@@ -231,9 +271,9 @@ class ExcelGenerator {
     worksheet.getCell(`G${headerRowIdx}`).value = 'OBSERVACIONES';
     const headerRow = worksheet.getRow(headerRowIdx);
     headerRow.font = { bold: true, size: FONT_SIZE_LISTA };
-    headerRow.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
     headerRow.height = 30;
-    headerRow.eachCell((cell) => {
+    headerRow.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+      if (colNumber > 7) return;
       cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDDEAD0' } };
       cell.border = {
         top: { style: 'thin' },
@@ -241,6 +281,11 @@ class ExcelGenerator {
         bottom: { style: 'thin' },
         right: { style: 'thin' }
       };
+      const alignNombreHeader =
+        colNumber === 2 || colNumber === 3
+          ? { horizontal: 'left', vertical: 'middle', wrapText: true }
+          : { horizontal: 'center', vertical: 'middle', wrapText: true };
+      cell.alignment = alignNombreHeader;
     });
 
     const startDataRow = headerRowIdx + 1;
@@ -255,6 +300,9 @@ class ExcelGenerator {
       worksheet.getCell(`A${rowIdx}`).value = idx + 1;
       worksheet.mergeCells(`B${rowIdx}:C${rowIdx}`);
       worksheet.getCell(`B${rowIdx}`).value = nombre;
+      const alignNombre = { horizontal: 'left', vertical: 'middle', wrapText: true };
+      worksheet.getCell(`B${rowIdx}`).alignment = alignNombre;
+      worksheet.getCell(`C${rowIdx}`).alignment = alignNombre;
       worksheet.getCell(`D${rowIdx}`).value = ci;
       worksheet.getCell(`E${rowIdx}`).value = sexo;
       worksheet.getCell(`F${rowIdx}`).value = celular;
@@ -265,28 +313,277 @@ class ExcelGenerator {
       const r = worksheet.getRow(row);
       r.height = 24;
       r.font = { size: FONT_SIZE_LISTA };
-      r.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
-      r.eachCell((cell) => {
+      r.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+        if (colNumber > 7) return;
         cell.border = {
           top: { style: 'thin' },
           left: { style: 'thin' },
           bottom: { style: 'thin' },
           right: { style: 'thin' }
         };
+        if (colNumber === 2 || colNumber === 3) {
+          cell.alignment = { horizontal: 'left', vertical: 'middle', wrapText: true };
+        } else {
+          cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+        }
       });
     }
 
-    // Centrar todo (incluye celdas informativas). "Padding" se simula con alturas de filas.
-    worksheet.eachRow({ includeEmpty: true }, (row) => {
-      row.eachCell({ includeEmpty: true }, (cell) => {
+    // Centrar celdas sin alineación explícita; B:C de la tabla (fila ≥ header) quedan a la izquierda.
+    worksheet.eachRow({ includeEmpty: true }, (row, rowNumber) => {
+      row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+        if (colNumber > 7) return;
         const prev = cell.alignment || {};
+        const esNombreTabla =
+          (colNumber === 2 || colNumber === 3) && rowNumber >= headerRowIdx;
         cell.alignment = {
           ...prev,
-          horizontal: prev.horizontal ?? 'center',
+          horizontal: esNombreTabla
+            ? 'left'
+            : prev.horizontal ?? 'center',
           vertical: prev.vertical ?? 'middle',
           wrapText: prev.wrapText ?? true
         };
       });
+    });
+
+    worksheet.views = [{ state: 'frozen', ySplit: headerRowIdx, showGridLines: false }];
+  }
+
+  /** @param {unknown} v */
+  static _fmtMontoExcel(v) {
+    if (v == null || v === '') return '—';
+    const n = Number(v);
+    if (Number.isNaN(n)) return String(v);
+    return Number(n.toFixed(2));
+  }
+
+  /** Formato numérico para montos en Bs. (separador de miles según Excel regional). */
+  static _NUM_FMT_MONTO = '#,##0.00';
+
+  static _setMontoCell(cell, raw) {
+    const v = this._fmtMontoExcel(raw);
+    cell.value = v;
+    if (typeof v === 'number') {
+      cell.numFmt = this._NUM_FMT_MONTO;
+    }
+  }
+
+  static _buildListaAportesPorCarreraSheet(worksheet, rows, filtros, paraleloNombre, assets = {}) {
+    const FONT_SIZE_LISTA = 14;
+    const FONT_SIZE_TITULO = 18;
+    /** A:N°, B:C nombres, D:C.I., E–K montos/cuotas/estado (sin celular ni beca). */
+    const LAST_COL = 11;
+    const gestionAnio = filtros?.gestion_anio ? String(filtros.gestion_anio) : '';
+    const carreraNombre = filtros?.carrera_nombre ? String(filtros.carrera_nombre) : '';
+    const instituteName = IncosPDFBase?.INSTITUTE?.name || 'INSTITUTO TÉCNICO INCOS SANTA CRUZ';
+
+    const sample = rows?.[0] || {};
+    const turno = String(sample.paralelo_turno ?? sample.paraleloTurno ?? '');
+    const periodoNombre = String(sample.periodo_nombre ?? sample.periodoNombre ?? '');
+    const periodoNumero = Number(sample.periodo_numero ?? sample.periodoNumero ?? 0);
+    const paraleloLetra = this._extractParaleloLetra(paraleloNombre);
+    const periodoEtiqueta = this._toPeriodoEtiqueta(periodoNumero);
+
+    worksheet.columns = [
+      { width: 8 },
+      { width: 18 },
+      { width: 40 },
+      { width: 22 },
+      { width: 14 },
+      { width: 14 },
+      { width: 12 },
+      { width: 14 },
+      { width: 14 },
+      { width: 14 },
+      { width: 14 },
+    ];
+
+    worksheet.getRow(1).height = 58;
+    worksheet.pageSetup = {
+      ...worksheet.pageSetup,
+      margins: { left: 0, right: 0, top: 0, bottom: 0, header: 0, footer: 0 },
+    };
+    worksheet.views = [{ showGridLines: false }];
+    if (assets?.logoId != null) {
+      worksheet.addImage(assets.logoId, {
+        tl: { col: 0, row: 0 },
+        br: { col: 2, row: 1 },
+      });
+    }
+    if (assets?.incosLogoId != null) {
+      worksheet.addImage(assets.incosLogoId, {
+        tl: { col: LAST_COL - 1, row: 0 },
+        br: { col: LAST_COL, row: 1 },
+      });
+    }
+
+    const lastColLetter = String.fromCharCode(64 + LAST_COL);
+    worksheet.mergeCells(`A2:${lastColLetter}2`);
+    worksheet.getCell('A2').value =
+      `LISTA DE ESTADO DE APORTE VOLUNTARIO ${gestionAnio}`.trim();
+    worksheet.getCell('A2').font = { bold: true, size: FONT_SIZE_TITULO };
+    worksheet.getCell('A2').alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+    worksheet.getRow(2).height = 32;
+
+    const mergeVal = (r, label, value) => {
+      worksheet.getCell(r, 1).value = label;
+      worksheet.mergeCells(`A${r}:B${r}`);
+      worksheet.mergeCells(`C${r}:${lastColLetter}${r}`);
+      worksheet.getCell(r, 3).value = value;
+    };
+
+    mergeVal(3, 'INSTITUTO', instituteName);
+    mergeVal(4, 'GESTIÓN:', gestionAnio);
+    mergeVal(5, 'NIVEL:', 'TÉCNICO SUPERIOR');
+    mergeVal(6, 'CARRERA:', carreraNombre);
+    mergeVal(7, 'RÉGIMEN:', 'ANUAL');
+
+    // Fila CURSO/TURNO (11 cols): curso C:F, TURNO en G, valor H:K
+    worksheet.getCell('A8').value = 'CURSO:';
+    worksheet.mergeCells('A8:B8');
+    worksheet.mergeCells('C8:F8');
+    worksheet.getCell('C8').value = `${periodoNombre || periodoEtiqueta} - "${paraleloLetra || ''}"`.trim();
+    worksheet.getCell('G8').value = 'TURNO:';
+    worksheet.mergeCells(`H8:${lastColLetter}8`);
+    worksheet.getCell('H8').value = turno;
+
+    for (let r = 3; r <= 7; r++) {
+      worksheet.getCell(r, 1).font = { bold: true, size: FONT_SIZE_LISTA };
+      worksheet.getCell(r, 1).alignment = { horizontal: 'center', vertical: 'middle', wrapText: false };
+      worksheet.getCell(r, 3).font = { size: FONT_SIZE_LISTA };
+      worksheet.getCell(r, 3).alignment = {
+        horizontal: 'left',
+        vertical: 'middle',
+        wrapText: true,
+      };
+    }
+    ['A8', 'G8'].forEach((addr) => {
+      worksheet.getCell(addr).font = { bold: true, size: FONT_SIZE_LISTA };
+      worksheet.getCell(addr).alignment = { horizontal: 'center', vertical: 'middle', wrapText: false };
+    });
+    ['C8', 'H8'].forEach((addr) => {
+      worksheet.getCell(addr).font = { size: FONT_SIZE_LISTA };
+      worksheet.getCell(addr).alignment = {
+        horizontal: 'left',
+        vertical: 'middle',
+        wrapText: true,
+      };
+    });
+    [3, 4, 5, 6, 7, 8].forEach((r) => {
+      worksheet.getRow(r).height = 24;
+    });
+
+    for (let r = 3; r <= 8; r++) {
+      for (let c = 1; c <= LAST_COL; c++) {
+        worksheet.getCell(r, c).border = {
+          top: { style: 'thin' },
+          left: { style: 'thin' },
+          bottom: { style: 'thin' },
+          right: { style: 'thin' },
+        };
+      }
+    }
+
+    const headerRowIdx = 9;
+    const headers = [
+      'N°',
+      'APELLIDOS Y NOMBRES',
+      '',
+      'C.I.',
+      'APORTE BASE',
+      'DESCUENTO (Bs.)',
+      'N° CUOTAS',
+      'DEUDA TOTAL',
+      'PAGADO',
+      'SALDO',
+      'ESTADO',
+    ];
+
+    worksheet.getCell(headerRowIdx, 1).value = headers[0];
+    worksheet.mergeCells(`B${headerRowIdx}:C${headerRowIdx}`);
+    worksheet.getCell(headerRowIdx, 2).value = headers[1];
+    for (let c = 4; c <= LAST_COL; c++) {
+      worksheet.getCell(headerRowIdx, c).value = headers[c - 1];
+    }
+
+    const headerRow = worksheet.getRow(headerRowIdx);
+    headerRow.font = { bold: true, size: FONT_SIZE_LISTA };
+    headerRow.height = 36;
+    headerRow.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+      if (colNumber > LAST_COL) return;
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDDEAD0' } };
+      cell.border = {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' },
+      };
+      // Nombres en B:C: la celda maestra B queda alineada a la izquierda (y C en el merge).
+      const align =
+        colNumber === 2 || colNumber === 3
+          ? { horizontal: 'left', vertical: 'middle', wrapText: true }
+          : { horizontal: 'center', vertical: 'middle', wrapText: true };
+      cell.alignment = align;
+    });
+
+    const startDataRow = headerRowIdx + 1;
+    (rows || []).forEach((row, idx) => {
+      const nombre = String(row.nombre_completo ?? row.nombreCompleto ?? '').trim();
+      const ci = String(row.ci ?? '').trim();
+      const estadoRaw = row.estado_aporte ?? row.estadoAporte;
+      const estado =
+        estadoRaw != null && String(estadoRaw).trim() !== '' ? String(estadoRaw).trim() : '—';
+
+      const rowIdx = startDataRow + idx;
+      worksheet.getCell(rowIdx, 1).value = idx + 1;
+      worksheet.mergeCells(`B${rowIdx}:C${rowIdx}`);
+      worksheet.getCell(rowIdx, 2).value = nombre;
+      const alignNombreB = { horizontal: 'left', vertical: 'middle', wrapText: true };
+      worksheet.getCell(rowIdx, 2).alignment = alignNombreB;
+      worksheet.getCell(rowIdx, 3).alignment = alignNombreB;
+      worksheet.getCell(rowIdx, 4).value = ci;
+      this._setMontoCell(worksheet.getCell(rowIdx, 5), row.aporte_monto_base ?? row.aporteMontoBase);
+      this._setMontoCell(worksheet.getCell(rowIdx, 6), row.descuento_beca ?? row.descuentoBeca);
+      worksheet.getCell(rowIdx, 7).value =
+        row.pago_aporte_id == null && row.pagoAporteId == null
+          ? '—'
+          : Number(row.cantidad_cuotas ?? row.cantidadCuotas ?? 0);
+      this._setMontoCell(worksheet.getCell(rowIdx, 8), row.monto_total_deuda ?? row.montoTotalDeuda);
+      this._setMontoCell(worksheet.getCell(rowIdx, 9), row.monto_pagado ?? row.montoPagado);
+      this._setMontoCell(worksheet.getCell(rowIdx, 10), row.saldo_pendiente ?? row.saldoPendiente);
+      worksheet.getCell(rowIdx, 11).value = estado;
+
+      const r = worksheet.getRow(rowIdx);
+      r.height = 24;
+      r.font = { size: FONT_SIZE_LISTA };
+      for (let c = 1; c <= LAST_COL; c++) {
+        const cell = worksheet.getCell(rowIdx, c);
+        if (c === 2 || c === 3) continue;
+        cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+        cell.border = {
+          top: { style: 'thin' },
+          left: { style: 'thin' },
+          bottom: { style: 'thin' },
+          right: { style: 'thin' },
+        };
+      }
+      worksheet.getCell(rowIdx, 1).border = {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' },
+      };
+      worksheet.getCell(rowIdx, 1).alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+      for (let c = 2; c <= 3; c++) {
+        const cell = worksheet.getCell(rowIdx, c);
+        cell.border = {
+          top: { style: 'thin' },
+          left: { style: 'thin' },
+          bottom: { style: 'thin' },
+          right: { style: 'thin' },
+        };
+      }
     });
 
     worksheet.views = [{ state: 'frozen', ySplit: headerRowIdx, showGridLines: false }];
