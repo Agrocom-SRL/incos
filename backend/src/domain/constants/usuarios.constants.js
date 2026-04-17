@@ -42,6 +42,21 @@ export const TIPOS_REFERENCIA = {
 export const TIPOS_REFERENCIA_VALUES = Object.values(TIPOS_REFERENCIA);
 
 /**
+ * Flujos de creación de usuario (administración SEG).
+ * - ACCESO_SISTEMA: solo tabla usuarios (rol administrador del sistema).
+ * - PERSONAL_INSTITUCIONAL: personal + fila de cargo + usuario vinculado a personal.id.
+ * - ASIGNAR_ESTUDIANTE / ASIGNAR_DOCENTE: crear usuario y enlazar ficha existente sin usuario.
+ */
+export const CATEGORIAS_CREACION_USUARIO = {
+  ACCESO_SISTEMA: 'ACCESO_SISTEMA',
+  PERSONAL_INSTITUCIONAL: 'PERSONAL_INSTITUCIONAL',
+  ASIGNAR_ESTUDIANTE: 'ASIGNAR_ESTUDIANTE',
+  ASIGNAR_DOCENTE: 'ASIGNAR_DOCENTE',
+};
+
+export const CATEGORIAS_CREACION_USUARIO_VALUES = Object.values(CATEGORIAS_CREACION_USUARIO);
+
+/**
  * Acciones permitidas en permisos
  */
 export const ACCIONES_PERMISOS = {

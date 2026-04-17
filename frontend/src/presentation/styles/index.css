@@ -47,6 +47,8 @@
 @import './components/molecules/table-cell.css';
 @import './components/molecules/data-table.css';
 @import './components/molecules/wizard-actions.css';
+@import './components/molecules/wizard-selection-cards.css';
+@import './components/molecules/gestion-selection-list.css';
 @import './components/molecules/documento-item.css';
 @import './components/molecules/data-list.css';
 @import './components/molecules/data-cards.css';

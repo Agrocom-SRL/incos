@@ -1,6 +1,7 @@
 import express from 'express';
 import { authenticate } from '../middleware/auth.middleware.js';
 import { verificarPermiso } from '../middleware/permisos.middleware.js';
+import { searchValidator } from '../validators/common/index.js';
 import {
   actualizarUsuarioValidator,
   agregarOverrideValidator,
@@ -31,6 +32,7 @@ export function buildUsuariosRouter({ seguridadUsuariosController }) {
     authenticate,
     verificarPermiso('seguridad.usuario.crear', 'CREAR'),
   ];
+  const buscarParaAltaUsuario = [...crearUsuario, searchValidator, validateSeguridadRequest];
   const rolGestionarListar = [
     authenticate,
     verificarPermiso('seguridad.rol.gestionar', 'LISTAR'),
@@ -39,6 +41,18 @@ export function buildUsuariosRouter({ seguridadUsuariosController }) {
     authenticate,
     verificarPermiso('seguridad.rol.gestionar', 'EDITAR'),
   ];
+
+  router.get(
+    '/alta/buscar-estudiantes',
+    ...buscarParaAltaUsuario,
+    (req, res, next) => c.buscarEstudiantesParaAlta(req, res, next)
+  );
+
+  router.get(
+    '/alta/buscar-docentes',
+    ...buscarParaAltaUsuario,
+    (req, res, next) => c.buscarDocentesParaAlta(req, res, next)
+  );
 
   router.get(
     '/',

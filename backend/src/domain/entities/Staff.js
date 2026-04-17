@@ -84,7 +84,7 @@ export class Staff extends BaseEntity {
    * @returns {boolean}
    */
   isValidExpedition() {
-    if (!this.expedition) return false;
+    if (!this.expedition || String(this.expedition).trim() === '') return true;
     return EXPEDICIONES_CI_VALUES.includes(this.expedition);
   }
 

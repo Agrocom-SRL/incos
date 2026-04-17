@@ -9,6 +9,8 @@ import { registerComponent } from '../../utils/container.helpers.js';
 import { ListarUsuariosUseCase } from '../../../../application/use-cases/seguridad/ListarUsuariosUseCase.js';
 import { ObtenerUsuarioUseCase } from '../../../../application/use-cases/seguridad/ObtenerUsuarioUseCase.js';
 import { CrearUsuarioUseCase } from '../../../../application/use-cases/seguridad/CrearUsuarioUseCase.js';
+import { BuscarParaAltaUsuarioEstudiantesUseCase } from '../../../../application/use-cases/seguridad/BuscarParaAltaUsuarioEstudiantesUseCase.js';
+import { BuscarParaAltaUsuarioDocentesUseCase } from '../../../../application/use-cases/seguridad/BuscarParaAltaUsuarioDocentesUseCase.js';
 import { ActualizarUsuarioUseCase } from '../../../../application/use-cases/seguridad/ActualizarUsuarioUseCase.js';
 import { CambiarEstadoUsuarioUseCase } from '../../../../application/use-cases/seguridad/CambiarEstadoUsuarioUseCase.js';
 import { CambiarPasswordUsuarioUseCase } from '../../../../application/use-cases/seguridad/CambiarPasswordUsuarioUseCase.js';
@@ -46,6 +48,9 @@ export function registerSeguridadModule(container) {
       new ObtenerUsuarioUseCase({
         userRepository: c.resolve(REPOSITORIOS_TOKENS.userRepository),
         userPermissionRepository: c.resolve(REPOSITORIOS_TOKENS.userPermissionRepository),
+        usuarioReferenciaVinculoRepository: c.resolve(
+          REPOSITORIOS_TOKENS.usuarioReferenciaVinculoRepository
+        ),
       })
   );
 
@@ -56,6 +61,30 @@ export function registerSeguridadModule(container) {
       new CrearUsuarioUseCase({
         userRepository: c.resolve(REPOSITORIOS_TOKENS.userRepository),
         roleRepository: c.resolve(REPOSITORIOS_TOKENS.roleRepository),
+        staffRepository: c.resolve(REPOSITORIOS_TOKENS.staffRepository),
+        studentRepository: c.resolve(REPOSITORIOS_TOKENS.studentRepository),
+        teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
+        rectorRepository: c.resolve(REPOSITORIOS_TOKENS.rectorRepository),
+        directorRepository: c.resolve(REPOSITORIOS_TOKENS.directorRepository),
+        secretaryRepository: c.resolve(REPOSITORIOS_TOKENS.secretaryRepository),
+      })
+  );
+
+  registerComponent(
+    container,
+    SEGURIDAD_TOKENS.buscarParaAltaUsuarioEstudiantesUseCase,
+    (c) =>
+      new BuscarParaAltaUsuarioEstudiantesUseCase({
+        studentRepository: c.resolve(REPOSITORIOS_TOKENS.studentRepository),
+      })
+  );
+
+  registerComponent(
+    container,
+    SEGURIDAD_TOKENS.buscarParaAltaUsuarioDocentesUseCase,
+    (c) =>
+      new BuscarParaAltaUsuarioDocentesUseCase({
+        teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
       })
   );
 
@@ -178,6 +207,12 @@ export function registerSeguridadModule(container) {
         listarUsuariosUseCase: c.resolve(SEGURIDAD_TOKENS.listarUsuariosUseCase),
         obtenerUsuarioUseCase: c.resolve(SEGURIDAD_TOKENS.obtenerUsuarioUseCase),
         crearUsuarioUseCase: c.resolve(SEGURIDAD_TOKENS.crearUsuarioUseCase),
+        buscarParaAltaUsuarioEstudiantesUseCase: c.resolve(
+          SEGURIDAD_TOKENS.buscarParaAltaUsuarioEstudiantesUseCase
+        ),
+        buscarParaAltaUsuarioDocentesUseCase: c.resolve(
+          SEGURIDAD_TOKENS.buscarParaAltaUsuarioDocentesUseCase
+        ),
         actualizarUsuarioUseCase: c.resolve(SEGURIDAD_TOKENS.actualizarUsuarioUseCase),
         cambiarEstadoUsuarioUseCase: c.resolve(SEGURIDAD_TOKENS.cambiarEstadoUsuarioUseCase),
         cambiarPasswordUsuarioUseCase: c.resolve(

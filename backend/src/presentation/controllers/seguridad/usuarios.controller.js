@@ -9,6 +9,8 @@ export class SeguridadUsuariosController {
     listarUsuariosUseCase,
     obtenerUsuarioUseCase,
     crearUsuarioUseCase,
+    buscarParaAltaUsuarioEstudiantesUseCase,
+    buscarParaAltaUsuarioDocentesUseCase,
     actualizarUsuarioUseCase,
     cambiarEstadoUsuarioUseCase,
     cambiarPasswordUsuarioUseCase,
@@ -20,6 +22,8 @@ export class SeguridadUsuariosController {
     this.listarUsuariosUseCase = listarUsuariosUseCase;
     this.obtenerUsuarioUseCase = obtenerUsuarioUseCase;
     this.crearUsuarioUseCase = crearUsuarioUseCase;
+    this.buscarParaAltaUsuarioEstudiantesUseCase = buscarParaAltaUsuarioEstudiantesUseCase;
+    this.buscarParaAltaUsuarioDocentesUseCase = buscarParaAltaUsuarioDocentesUseCase;
     this.actualizarUsuarioUseCase = actualizarUsuarioUseCase;
     this.cambiarEstadoUsuarioUseCase = cambiarEstadoUsuarioUseCase;
     this.cambiarPasswordUsuarioUseCase = cambiarPasswordUsuarioUseCase;
@@ -58,6 +62,36 @@ export class SeguridadUsuariosController {
     try {
       const data = await this.crearUsuarioUseCase.execute(req.body);
       return this.responseFormatter.created(res, data, 'usuario', data.id, req);
+    } catch (e) {
+      next(e);
+    }
+  };
+
+  buscarEstudiantesParaAlta = async (req, res, next) => {
+    try {
+      const limit = req.query.limit ?? 20;
+      const rows = await this.buscarParaAltaUsuarioEstudiantesUseCase.execute(req.query.query, limit);
+      return this.responseFormatter._success(
+        res,
+        { estudiantes: rows },
+        { statusCode: 200, message: 'Búsqueda realizada correctamente' },
+        req
+      );
+    } catch (e) {
+      next(e);
+    }
+  };
+
+  buscarDocentesParaAlta = async (req, res, next) => {
+    try {
+      const limit = req.query.limit ?? 20;
+      const rows = await this.buscarParaAltaUsuarioDocentesUseCase.execute(req.query.query, limit);
+      return this.responseFormatter._success(
+        res,
+        { docentes: rows },
+        { statusCode: 200, message: 'Búsqueda realizada correctamente' },
+        req
+      );
     } catch (e) {
       next(e);
     }

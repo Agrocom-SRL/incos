@@ -24,13 +24,18 @@
  * - Soporta subsecciones usando FormSubsection
  */
 
-import { Row } from 'antd';
+import { Row, Typography } from 'antd';
 import { Card } from '@atoms';
 import { useFormSectionFields } from './hooks/useFormSectionFields';
 import FieldRenderer from './components/FieldRenderer';
+import { fieldRowKey } from './utils/fieldColumns';
+
+const { Paragraph } = Typography;
 
 const FormSection = ({
   title,
+  /** Texto o nodo React bajo el título (ayuda contextual), p. ej. wizard SEG personal */
+  description = null,
   fields = [],
   form,
   resolveOptions = () => [],
@@ -61,11 +66,16 @@ const FormSection = ({
       shadow={false}
       headerColor="primary"
     >
+      {description ? (
+        <Paragraph type="secondary" style={{ marginBottom: 16 }}>
+          {description}
+        </Paragraph>
+      ) : null}
       {/* Campos del formulario */}
       <Row gutter={[24, 16]} className="form-section-fields">
         {safeFields.map((field, index) => (
           <FieldRenderer
-            key={field.name || `field-${index}`}
+            key={fieldRowKey(field, index)}
             field={field}
             index={index}
             form={form}

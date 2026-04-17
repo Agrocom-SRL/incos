@@ -10,8 +10,7 @@ export function mapUsuarioAdminRow(u) {
     estado: u.estado ?? null,
     activo: Boolean(u.activo),
     created_at: u.created_at,
-    referencia_id: u.referencia_id ?? null,
-    tipo_referencia: u.tipo_referencia ?? null,
+    updated_at: u.updated_at ?? null,
     fecha_cambio_estado: u.fecha_cambio_estado ?? null,
     motivo_cambio_estado: u.motivo_cambio_estado ?? null,
     rol: u.rol_id

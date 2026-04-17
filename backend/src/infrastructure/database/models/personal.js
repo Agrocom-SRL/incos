@@ -24,8 +24,8 @@ export const Personal = sequelize.define(
     },
     expedicion: {
       type: DataTypes.STRING(5),
-      allowNull: false,
-      comment: 'Expedición del CI (SC, LP, CB, etc.)',
+      allowNull: true,
+      comment: 'Expedición del CI (SC, LP, CB, etc.). Opcional.',
     },
     nombres: {
       type: DataTypes.STRING(150),

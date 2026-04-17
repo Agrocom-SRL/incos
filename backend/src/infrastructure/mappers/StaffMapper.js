@@ -109,7 +109,10 @@ export class StaffMapper {
     return {
       usuarioId: data.userId || null,
       ci: data.ci,
-      expedicion: data.expedition ? data.expedition.toUpperCase() : null,
+      expedicion:
+        data.expedition != null && String(data.expedition).trim() !== ''
+          ? String(data.expedition).trim().toUpperCase()
+          : null,
       nombres: data.firstName,
       apellidoPaterno: data.lastName,
       apellidoMaterno: data.motherLastName || null,
@@ -144,7 +147,12 @@ export class StaffMapper {
     // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
     if ('userId' in data) { updateData.usuarioId = data.userId || null; }
     if ('ci' in data) { updateData.ci = data.ci; }
-    if ('expedition' in data) { updateData.expedicion = data.expedition ? data.expedition.toUpperCase() : null; }
+    if ('expedition' in data) {
+      updateData.expedicion =
+        data.expedition != null && String(data.expedition).trim() !== ''
+          ? String(data.expedition).trim().toUpperCase()
+          : null;
+    }
     if ('firstName' in data) { updateData.nombres = data.firstName; }
     if ('lastName' in data) { updateData.apellidoPaterno = data.lastName; }
     if ('motherLastName' in data) { updateData.apellidoMaterno = data.motherLastName || null; }

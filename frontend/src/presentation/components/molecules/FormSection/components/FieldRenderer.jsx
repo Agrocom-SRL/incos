@@ -19,6 +19,7 @@ import { Col } from 'antd';
 import { FormField, FormSubsection, DocumentoItem, DataList, DataCards, ActivityList } from '@molecules';
 import { TimetableCalendar } from '@organisms';
 import { isSubsection, isList, isDocumento, isCards, isActivity, isTimetable } from '../utils/fieldTypes';
+import { fieldRowKey } from '../utils/fieldColumns';
 
 /**
  * Renderiza un campo según su tipo
@@ -75,7 +76,7 @@ const FieldRenderer = ({
   // Si es un campo de tipo documento, renderizar DocumentoItem
   if (isDocumento(field)) {
     return (
-      <Col key={field.name} {...columns}>
+      <Col key={fieldRowKey(field, index)} {...columns}>
         <DocumentoItem
           documento={field.documento}
           form={form}
@@ -90,7 +91,7 @@ const FieldRenderer = ({
   // Solo extraer los datos del field y pasarlos como props individuales a DataList
   if (isList(field)) {
     return (
-      <Col key={field.name} {...columns}>
+      <Col key={fieldRowKey(field, index)} {...columns}>
         <DataList
           data={field.items}
           loading={field.loading}
@@ -110,7 +111,7 @@ const FieldRenderer = ({
   // Solo extraer los datos del field y pasarlos como props individuales a DataCards
   if (isCards(field)) {
     return (
-      <Col key={field.name} {...columns}>
+      <Col key={fieldRowKey(field, index)} {...columns}>
         <DataCards
           data={field.items}
           loading={field.loading}
@@ -131,7 +132,7 @@ const FieldRenderer = ({
   // Solo extraer los datos del field y pasarlos como props individuales a ActivityList
   if (isActivity(field)) {
     return (
-      <Col key={field.name} {...columns}>
+      <Col key={fieldRowKey(field, index)} {...columns}>
         <ActivityList
           activities={field.activities}
           loading={field.loading}
@@ -151,7 +152,7 @@ const FieldRenderer = ({
   // Solo extraer los datos del field y pasarlos como props individuales a TimetableCalendar
   if (isTimetable(field)) {
     return (
-      <Col key={field.name} {...columns}>
+      <Col key={fieldRowKey(field, index)} {...columns}>
         <TimetableCalendar
           schedule={field.schedule || []}
           config={field.config || {}}
@@ -164,7 +165,7 @@ const FieldRenderer = ({
 
   // Para otros tipos de campos, usar FormField
   return (
-    <Col key={field.name} {...columns}>
+    <Col key={fieldRowKey(field, index)} {...columns}>
       <FormField
         field={field}
         form={form}

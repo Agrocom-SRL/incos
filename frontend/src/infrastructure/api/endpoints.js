@@ -184,6 +184,9 @@ export const USUARIOS_SEG_ENDPOINTS = {
     `${API_BASE}/usuarios/${usuarioId}/permisos/${overrideId}`,
   ESTADO: (usuarioId) => `${API_BASE}/usuarios/${usuarioId}/estado`,
   PASSWORD: (usuarioId) => `${API_BASE}/usuarios/${usuarioId}/password`,
+  /** GET query, limit — permiso seguridad.usuario.crear */
+  ALTA_BUSCAR_ESTUDIANTES: `${API_BASE}/usuarios/alta/buscar-estudiantes`,
+  ALTA_BUSCAR_DOCENTES: `${API_BASE}/usuarios/alta/buscar-docentes`,
 };
 
 export const ROLES_SEG_ENDPOINTS = {

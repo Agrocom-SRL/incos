@@ -6,6 +6,8 @@ export const SEGURIDAD_TOKENS = {
   listarUsuariosUseCase: 'seguridad.listarUsuariosUseCase',
   obtenerUsuarioUseCase: 'seguridad.obtenerUsuarioUseCase',
   crearUsuarioUseCase: 'seguridad.crearUsuarioUseCase',
+  buscarParaAltaUsuarioEstudiantesUseCase: 'seguridad.buscarParaAltaUsuarioEstudiantesUseCase',
+  buscarParaAltaUsuarioDocentesUseCase: 'seguridad.buscarParaAltaUsuarioDocentesUseCase',
   actualizarUsuarioUseCase: 'seguridad.actualizarUsuarioUseCase',
   cambiarEstadoUsuarioUseCase: 'seguridad.cambiarEstadoUsuarioUseCase',
   cambiarPasswordUsuarioUseCase: 'seguridad.cambiarPasswordUsuarioUseCase',

@@ -4,4 +4,5 @@ export { useUsuarioPermisos } from './useUsuarioPermisos';
 export { useRolesList } from './useRolesList';
 export { useRolPermisos } from './useRolPermisos';
 export { usePermisosCatalogo, DOMINIOS_V2 } from './usePermisosCatalogo';
+export { useUsuarioWizardPersonalFormData } from './useUsuarioWizardPersonalFormData';
 

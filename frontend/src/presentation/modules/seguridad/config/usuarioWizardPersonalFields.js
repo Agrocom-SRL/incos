@@ -1,0 +1,176 @@
+/**
+ * Definición de campos de la ficha `personal` en el wizard de alta de usuario (SEG).
+ * Misma convención que `estudianteDatosPersonalesFields`: `span: 12`, tipos FormSection/FormField.
+ * Los `name` son rutas anidadas `['personal', …]` para el payload del API.
+ */
+
+const PRESERVE = { preserve: true };
+
+/**
+ * @returns {{ datosPersonales: { title: string, fields: Object[] }, contactoUbicacion: { title: string, fields: Object[] } }}
+ */
+export function createUsuarioWizardPersonalFields() {
+  return {
+    datosPersonales: {
+      title: 'Datos personales',
+      fields: [
+        {
+          name: ['personal', 'ci'],
+          label: 'CI (Cédula de Identidad)',
+          type: 'input',
+          inputType: 'text',
+          required: true,
+          span: 12,
+          placeholder: 'Ej: 1234567',
+          maxLength: 15,
+          ...PRESERVE,
+        },
+        {
+          name: ['personal', 'expedition'],
+          label: 'Expedición',
+          type: 'select',
+          required: false,
+          span: 12,
+          options: 'expediciones',
+          placeholder: 'Seleccione expedición',
+          ...PRESERVE,
+        },
+        {
+          name: ['personal', 'lastName'],
+          label: 'Apellido paterno',
+          type: 'input',
+          inputType: 'text',
+          required: true,
+          span: 12,
+          placeholder: 'Ej: Pérez',
+          maxLength: 100,
+          ...PRESERVE,
+        },
+        {
+          name: ['personal', 'motherLastName'],
+          label: 'Apellido materno',
+          type: 'input',
+          inputType: 'text',
+          required: false,
+          span: 12,
+          placeholder: 'Ej: González',
+          maxLength: 100,
+          ...PRESERVE,
+        },
+        {
+          name: ['personal', 'firstName'],
+          label: 'Nombres',
+          type: 'input',
+          inputType: 'text',
+          required: true,
+          span: 12,
+          placeholder: 'Ej: Juan Carlos',
+          maxLength: 100,
+          ...PRESERVE,
+        },
+        {
+          name: ['personal', 'birthDate'],
+          label: 'Fecha de nacimiento',
+          type: 'date',
+          required: false,
+          span: 12,
+          placeholder: 'DD-MM-YYYY o DD/MM/YYYY',
+          ...PRESERVE,
+        },
+        {
+          name: ['personal', 'gender'],
+          label: 'Género',
+          type: 'select',
+          required: false,
+          span: 12,
+          options: 'generos',
+          placeholder: 'Seleccione género',
+          ...PRESERVE,
+        },
+        {
+          name: ['personal', 'civilStatusId'],
+          label: 'Estado civil',
+          type: 'select',
+          required: false,
+          span: 12,
+          options: 'estadosCiviles',
+          placeholder: 'Seleccione estado civil',
+          ...PRESERVE,
+        },
+      ],
+    },
+    contactoUbicacion: {
+      title: 'Contacto y ubicación',
+      fields: [
+        {
+          name: ['personal', 'personalEmail'],
+          label: 'Email personal',
+          type: 'input',
+          inputType: 'email',
+          required: false,
+          span: 12,
+          ...PRESERVE,
+        },
+        {
+          name: ['personal', 'phone'],
+          label: 'Teléfono',
+          type: 'input',
+          inputType: 'text',
+          required: false,
+          span: 12,
+          ...PRESERVE,
+        },
+        {
+          name: ['personal', 'mobilePhone'],
+          label: 'Celular',
+          type: 'input',
+          inputType: 'text',
+          required: false,
+          span: 12,
+          ...PRESERVE,
+        },
+        {
+          name: ['personal', 'departamentoId'],
+          label: 'Departamento',
+          type: 'select',
+          required: false,
+          span: 12,
+          options: 'departamentos',
+          placeholder: 'Seleccione departamento',
+          ...PRESERVE,
+        },
+        {
+          name: ['personal', 'provinciaId'],
+          label: 'Provincia',
+          type: 'select',
+          required: false,
+          span: 12,
+          options: 'provincias',
+          placeholder: 'Seleccione provincia',
+          ...PRESERVE,
+        },
+        {
+          name: ['personal', 'municipalityId'],
+          label: 'Municipio',
+          type: 'select',
+          required: false,
+          span: 12,
+          options: 'municipios',
+          placeholder: 'Seleccione municipio',
+          ...PRESERVE,
+        },
+        {
+          name: ['personal', 'address'],
+          label: 'Dirección',
+          type: 'textarea',
+          required: false,
+          span: 12,
+          placeholder: 'Dirección completa (opcional)',
+          maxLength: 500,
+          rows: 4,
+          ...PRESERVE,
+        },
+      ],
+    },
+  };
+}

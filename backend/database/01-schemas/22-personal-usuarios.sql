@@ -32,7 +32,7 @@ CREATE TABLE personal (
     id INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Identificador único',
     usuario_id INT NULL COMMENT 'Relación con el usuario del sistema en tabla usuarios. NULL mientras el usuario aún no ha sido creado en el sistema.',
     ci VARCHAR(20) NOT NULL COMMENT 'Cédula de identidad',
-    expedicion VARCHAR(5) NOT NULL COMMENT 'Lugar de expedición del CI: SC, LP, CB, OR, PT, TJ, BE, PD',
+    expedicion VARCHAR(5) NULL COMMENT 'Lugar de expedición del CI (SC, LP, CB, etc.). Opcional si no se registra.',
     nombres VARCHAR(150) NOT NULL COMMENT 'Nombres completos',
     apellido_paterno VARCHAR(100) NOT NULL COMMENT 'Apellido paterno',
     apellido_materno VARCHAR(100) NULL COMMENT 'Apellido materno (puede estar ausente)',

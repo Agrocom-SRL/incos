@@ -41,6 +41,12 @@ export const crearUsuarioValidator = [
     .isLength({ min: 8, max: 100 })
     .withMessage('password debe tener entre 8 y 100 caracteres'),
   body('rol_id').isInt({ min: 1 }).withMessage('rol_id es requerido y debe ser entero positivo'),
+  body('categoria_creacion')
+    .optional({ nullable: true })
+    .isIn(['ACCESO_SISTEMA', 'PERSONAL_INSTITUCIONAL', 'ASIGNAR_ESTUDIANTE', 'ASIGNAR_DOCENTE']),
+  body('estudiante_id').optional({ nullable: true }).isInt({ min: 1 }),
+  body('docente_id').optional({ nullable: true }).isInt({ min: 1 }),
+  body('personal').optional({ nullable: true }).isObject(),
   body('referencia_id').optional({ nullable: true }).isInt({ min: 1 }),
   body('tipo_referencia')
     .optional({ nullable: true })

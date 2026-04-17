@@ -1,0 +1,94 @@
+/**
+ * Paso del wizard: ficha personal, vínculo institucional con rol/referencias, o buscador estudiante/docente.
+ */
+import { useMemo } from 'react';
+import { Form } from 'antd';
+import UsuarioWizardPersonalFichaForm from './UsuarioWizardPersonalFichaForm.jsx';
+import UsuarioWizardCargoInstitucionalBlock from './UsuarioWizardCargoInstitucionalBlock.jsx';
+import UsuarioWizardVinculoBusqueda from './UsuarioWizardVinculoBusqueda.jsx';
+
+const CODIGOS_ROL_INSTITUCIONAL = new Set([
+  'RECTOR',
+  'DIR_ACADEMICO',
+  'DIR_ADMIN',
+  'SEC_ACADEMICA',
+  'SEC_ADMIN',
+]);
+
+export default function UsuarioWizardPerfilStepContent({ form, rolesCatalog = [] }) {
+  const watchedCategoria = Form.useWatch('categoria_creacion', form);
+  const categoria = watchedCategoria ?? form?.getFieldValue('categoria_creacion');
+
+  const rolesInstitucional = useMemo(
+    () => rolesCatalog.filter((r) => CODIGOS_ROL_INSTITUCIONAL.has(r.codigo)),
+    [rolesCatalog]
+  );
+
+  if (categoria === 'ASIGNAR_ESTUDIANTE') {
+    return (
+      <UsuarioWizardVinculoBusqueda
+        form={form}
+        kind="estudiante"
+        fieldName="estudiante_id"
+        title="Vínculo con estudiante"
+        intro={
+          <>
+            Busque al estudiante que ya está registrado y <strong>aún no tiene cuenta de acceso</strong>. Solo
+            aparecen candidatos sin usuario asignado.
+          </>
+        }
+      />
+    );
+  }
+
+  if (categoria === 'ASIGNAR_DOCENTE') {
+    return (
+      <UsuarioWizardVinculoBusqueda
+        form={form}
+        kind="docente"
+        fieldName="docente_id"
+        title="Vínculo con docente"
+        intro={
+          <>
+            Busque al docente que ya está registrado y <strong>aún no tiene cuenta de acceso</strong>. Solo aparecen
+            candidatos sin usuario asignado.
+          </>
+        }
+      />
+    );
+  }
+
+  if (categoria === 'ACCESO_SISTEMA') {
+    return (
+      <UsuarioWizardPersonalFichaForm
+        form={form}
+        intro={
+          <>
+            Indique los datos personales de quien <strong>administrará el sistema</strong>. Es la misma ficha de datos
+            que el resto del personal, sin cargo en el instituto ni vínculo como rector, directivo o secretaría.
+          </>
+        }
+      />
+    );
+  }
+
+  if (categoria === 'PERSONAL_INSTITUCIONAL') {
+    return (
+      <>
+        <UsuarioWizardPersonalFichaForm
+          form={form}
+          intro={
+            <>
+              Complete la <strong>ficha personal</strong>. Más abajo elija el <strong>rol en el instituto</strong> y
+              revise el resumen del vínculo (rectorado, dirección académica o administrativa, secretaría académica o
+              administrativa).
+            </>
+          }
+        />
+        <UsuarioWizardCargoInstitucionalBlock form={form} rolesInstitucional={rolesInstitucional} />
+      </>
+    );
+  }
+
+  return null;
+}
