@@ -85,7 +85,7 @@ export default function UsuarioWizardPerfilStepContent({ form, rolesCatalog = []
             </>
           }
         />
-        <UsuarioWizardCargoInstitucionalBlock form={form} rolesInstitucional={rolesInstitucional} />
+        <UsuarioWizardCargoInstitucionalBlock rolesInstitucional={rolesInstitucional} />
       </>
     );
   }

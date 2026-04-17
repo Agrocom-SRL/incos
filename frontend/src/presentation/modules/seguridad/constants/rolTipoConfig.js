@@ -1,5 +1,6 @@
 /**
  * Etiquetas y colores para `roles.tipo` (categoría de perfil, independiente de is_system).
+ * En uso: RolesListPage, UsuarioForm, wizard credenciales (select rol), InstitutionalRoleRadioOption.
  */
 export const TIPO_CONFIG = {
   SISTEMA: { color: 'purple', label: 'Sistema' },

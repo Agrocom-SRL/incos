@@ -26,7 +26,7 @@ const OPCIONES = [
   {
     value: 'PERSONAL_INSTITUCIONAL',
     label: 'Personal institucional',
-    description: 'Datos personales y cargo en el instituto (rector, directivo o secretaría), con usuario vinculado.',
+    description: 'Cargo en el instituto (rector, directivo o secretaría).',
     icon: TeamOutlined,
   },
   {

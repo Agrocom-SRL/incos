@@ -356,3 +356,171 @@
   text-align: center;
   background: var(--color-bg-container, #fff);
 }
+
+/* Wizard alta usuario: Form.Item sin etiqueta (el título de la card ya orienta). */
+.seg-cargo-form-item.ant-form-item {
+  margin-bottom: 0;
+}
+
+/* Rejilla horizontal de cargos: círculo del radio oculto; la tarjeta es el control visible. */
+.seg-cargo-radio-group.ant-radio-group {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  width: 100%;
+}
+
+@media (max-width: 1199px) {
+  .seg-cargo-radio-group.ant-radio-group {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 767px) {
+  .seg-cargo-radio-group.ant-radio-group {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 479px) {
+  .seg-cargo-radio-group.ant-radio-group {
+    grid-template-columns: 1fr;
+  }
+}
+
+.seg-cargo-radio-group .ant-radio-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  margin-inline-end: 0;
+  margin-bottom: 0;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  cursor: pointer;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.seg-cargo-radio-group .ant-radio-wrapper::after {
+  display: none !important;
+}
+
+/* Ocultar solo el control circular; el input sigue en el DOM (accesibilidad / teclado). */
+.seg-cargo-radio-group .ant-radio {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.seg-cargo-radio-group .ant-radio-input {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.seg-cargo-radio-group .ant-radio-input:focus,
+.seg-cargo-radio-group .ant-radio-input:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.seg-cargo-radio-group .ant-radio-inner {
+  display: none !important;
+}
+
+.seg-cargo-radio-group .ant-radio + span {
+  padding: 0;
+  width: 100%;
+}
+
+.seg-cargo-radio__card {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 128px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: center;
+  gap: 8px;
+  padding: 12px 10px;
+  border-radius: 10px;
+  border: 2px solid var(--color-border, #e8e8e8);
+  background: var(--color-bg-container, #fff);
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.seg-cargo-radio-group .ant-radio-wrapper:hover .seg-cargo-radio__card {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* El estado activo es solo borde/fondo de la tarjeta (inline); sin anillo extra del radio o del navegador. */
+.seg-cargo-radio-group .ant-radio-wrapper:focus-within .seg-cargo-radio__card {
+  outline: none;
+}
+
+.seg-cargo-radio-group .ant-radio-wrapper:focus-visible .seg-cargo-radio__card {
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.12);
+}
+
+.seg-cargo-radio__icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.seg-cargo-radio__body {
+  width: 100%;
+  min-width: 0;
+}
+
+.seg-cargo-radio__title {
+  display: block;
+  font-size: 13px;
+  line-height: 1.25;
+  word-break: break-word;
+}
+
+.seg-cargo-radio__tipo {
+  display: block;
+  font-size: 11px;
+  line-height: 1.2;
+  word-break: break-word;
+}
+
+.seg-cargo-resumen {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  border: 2px solid var(--color-border, #e8e8e8);
+  background: var(--color-bg-layout, #fafafa);
+  max-width: 480px;
+}
+
+.seg-cargo-resumen__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+

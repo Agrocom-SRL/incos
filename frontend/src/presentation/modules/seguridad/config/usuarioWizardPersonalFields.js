@@ -44,6 +44,7 @@ export function createUsuarioWizardPersonalFields() {
           span: 12,
           placeholder: 'Ej: Pérez',
           maxLength: 100,
+          capitalize: true,
           ...PRESERVE,
         },
         {
@@ -55,6 +56,7 @@ export function createUsuarioWizardPersonalFields() {
           span: 12,
           placeholder: 'Ej: González',
           maxLength: 100,
+          capitalize: true,
           ...PRESERVE,
         },
         {
@@ -66,6 +68,7 @@ export function createUsuarioWizardPersonalFields() {
           span: 12,
           placeholder: 'Ej: Juan Carlos',
           maxLength: 100,
+          capitalize: true,
           ...PRESERVE,
         },
         {

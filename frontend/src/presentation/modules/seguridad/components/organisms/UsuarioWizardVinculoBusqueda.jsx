@@ -1,8 +1,9 @@
 /**
  * Buscador remoto para asociar estudiante o docente existente al crear usuario.
+ * Al elegir un registro rellena `email` y `vinculo_nombre_display` en el formulario (paso Credenciales).
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Form, Select, Spin, Typography } from 'antd';
+import { Form, Input, Select, Spin, Typography } from 'antd';
 import { Card } from '@atoms';
 import usuarioAltaLookupRepository from '@/infrastructure/repositories/seguridad/UsuarioAltaLookupRepository.js';
 
@@ -21,6 +22,20 @@ function labelDocente(d) {
   const nom = [d.nombres, d.apellidoPaterno, d.apellidoMaterno].filter(Boolean).join(' ');
   const ci = d.ci && d.expedicion ? `${d.ci} ${d.expedicion}` : d.ci || '';
   return [nom || '—', ci && `CI ${ci}`].filter(Boolean).join(' · ');
+}
+
+function nombreCompletoReferencia(row) {
+  if (!row) return '';
+  const n = row.nombres ?? row.firstName;
+  const ap = row.apellidoPaterno ?? row.lastName;
+  const am = row.apellidoMaterno ?? row.motherLastName;
+  return [n, ap, am].filter(Boolean).join(' ').trim();
+}
+
+function emailReferencia(row) {
+  if (!row) return '';
+  const e = row.emailPersonal ?? row.email_personal ?? row.personalEmail ?? '';
+  return String(e).trim().toLowerCase();
 }
 
 export default function UsuarioWizardVinculoBusqueda({
@@ -50,6 +65,7 @@ export default function UsuarioWizardVinculoBusqueda({
         const mapped = rows.map((row) => ({
           value: row.id,
           label: kind === 'estudiante' ? labelEstudiante(row) : labelDocente(row),
+          datosVinculo: row,
         }));
         setOptions((prev) => {
           const sid = form.getFieldValue(fieldName);
@@ -77,6 +93,24 @@ export default function UsuarioWizardVinculoBusqueda({
     [runSearch]
   );
 
+  const onSelectChange = useCallback(
+    (id, option) => {
+      if (id == null || id === undefined) {
+        form.setFieldsValue({ email: undefined, vinculo_nombre_display: undefined });
+        return;
+      }
+      const row = option?.datosVinculo ?? options.find((o) => o.value === id)?.datosVinculo;
+      if (!row) return;
+      const mail = emailReferencia(row);
+      const nombre = nombreCompletoReferencia(row);
+      form.setFieldsValue({
+        email: mail || undefined,
+        vinculo_nombre_display: nombre || undefined,
+      });
+    },
+    [form, options]
+  );
+
   useEffect(
     () => () => {
       if (timerRef.current) clearTimeout(timerRef.current);
@@ -92,6 +126,9 @@ export default function UsuarioWizardVinculoBusqueda({
             {intro}
           </Paragraph>
         ) : null}
+        <Form.Item name="vinculo_nombre_display" preserve hidden>
+          <Input type="hidden" />
+        </Form.Item>
         <Form.Item
           name={fieldName}
           preserve
@@ -106,6 +143,7 @@ export default function UsuarioWizardVinculoBusqueda({
             notFoundContent={fetching ? <Spin size="small" /> : null}
             options={options}
             onSearch={onSearch}
+            onChange={onSelectChange}
             optionFilterProp="label"
           />
         </Form.Item>

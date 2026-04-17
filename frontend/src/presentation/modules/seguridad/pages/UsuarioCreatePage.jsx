@@ -69,6 +69,8 @@ function buildCreatePayload(values) {
     username,
     email,
     password,
+    password_confirm: _passwordConfirm,
+    vinculo_nombre_display: _vinculoNombre,
     rol_id,
     categoria_creacion,
     estudiante_id,
@@ -110,7 +112,7 @@ const PERSONAL_FIELD_NAMES = [
 ];
 
 function fieldsToValidateOnFinish(categoria) {
-  const base = ['categoria_creacion', 'username', 'email', 'password', 'rol_id'];
+  const base = ['categoria_creacion', 'username', 'email', 'password', 'password_confirm', 'rol_id'];
   if (categoria === 'ASIGNAR_ESTUDIANTE') base.push('estudiante_id');
   if (categoria === 'ASIGNAR_DOCENTE') base.push('docente_id');
   if (categoria === 'PERSONAL_INSTITUCIONAL' || categoria === 'ACCESO_SISTEMA') {
@@ -178,7 +180,13 @@ export default function UsuarioCreatePage() {
   }, [categoria, rolesFiltrados, form]);
 
   useEffect(() => {
-    form.setFieldsValue({ estudiante_id: undefined, docente_id: undefined });
+    form.setFieldsValue({
+      estudiante_id: undefined,
+      docente_id: undefined,
+      email: undefined,
+      vinculo_nombre_display: undefined,
+      password_confirm: undefined,
+    });
   }, [categoria, form]);
 
   const wizardSteps = useMemo(
@@ -219,7 +227,13 @@ export default function UsuarioCreatePage() {
     }
 
     if (stepNumber === 3) {
-      return formInstance.validateFields(['username', 'email', 'password', 'rol_id']);
+      return formInstance.validateFields([
+        'username',
+        'email',
+        'password',
+        'password_confirm',
+        'rol_id',
+      ]);
     }
 
     return Promise.resolve();

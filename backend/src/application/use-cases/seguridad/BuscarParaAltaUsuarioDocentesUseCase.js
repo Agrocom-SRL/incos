@@ -32,7 +32,8 @@ export class BuscarParaAltaUsuarioDocentesUseCase {
         apellidoMaterno: p.motherLastName ?? null,
         ci: p.ci,
         expedicion: p.expedition ?? null,
-        estadoLaboral: p.laborState ?? null
+        estadoLaboral: p.laborState ?? null,
+        emailPersonal: p.personalEmail ?? null,
       };
     });
   }
