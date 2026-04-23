@@ -6,21 +6,17 @@ import { Form } from 'antd';
 import UsuarioWizardPersonalFichaForm from './UsuarioWizardPersonalFichaForm.jsx';
 import UsuarioWizardCargoInstitucionalBlock from './UsuarioWizardCargoInstitucionalBlock.jsx';
 import UsuarioWizardVinculoBusqueda from './UsuarioWizardVinculoBusqueda.jsx';
+import { INSTITUTIONAL_ROLE_ORDER, sortInstitutionalRoles } from '@modules/seguridad/constants/usuarioCargoInstitucionalVisual.jsx';
 
-const CODIGOS_ROL_INSTITUCIONAL = new Set([
-  'RECTOR',
-  'DIR_ACADEMICO',
-  'DIR_ADMIN',
-  'SEC_ACADEMICA',
-  'SEC_ADMIN',
-]);
+/** Códigos de rol institucional (tabla `roles` / seeder 53): solo estos, nunca ADMIN/DOCENTE/ESTUDIANTE. */
+const CODIGOS_ROL_INSTITUCIONAL = new Set(INSTITUTIONAL_ROLE_ORDER);
 
 export default function UsuarioWizardPerfilStepContent({ form, rolesCatalog = [] }) {
   const watchedCategoria = Form.useWatch('categoria_creacion', form);
   const categoria = watchedCategoria ?? form?.getFieldValue('categoria_creacion');
 
   const rolesInstitucional = useMemo(
-    () => rolesCatalog.filter((r) => CODIGOS_ROL_INSTITUCIONAL.has(r.codigo)),
+    () => sortInstitutionalRoles(rolesCatalog.filter((r) => CODIGOS_ROL_INSTITUCIONAL.has(r.codigo))),
     [rolesCatalog]
   );
 

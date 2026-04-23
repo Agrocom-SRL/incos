@@ -22,13 +22,6 @@ export default function UsuarioForm({
       >
         <Input maxLength={50} />
       </Form.Item>
-      <Form.Item
-        name="email"
-        label="Email"
-        rules={[{ required: true, type: 'email', message: 'Email válido' }]}
-      >
-        <Input type="email" />
-      </Form.Item>
       {showPassword ? (
         <Form.Item
           name="password"

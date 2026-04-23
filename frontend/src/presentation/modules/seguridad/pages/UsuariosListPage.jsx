@@ -64,7 +64,7 @@ export default function UsuariosListPage() {
           loading={loading}
           searchText={searchText}
           onSearchChange={(e) => setSearchText(e.target.value)}
-          searchPlaceholder="Buscar por usuario o email..."
+          searchPlaceholder="Buscar por usuario o correo de ficha..."
           columns={columns}
           rowKey={(record) => record.id}
           pagination={{

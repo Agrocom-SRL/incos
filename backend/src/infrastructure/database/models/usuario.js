@@ -17,11 +17,6 @@ export const Usuario = sequelize.define(
       allowNull: false,
       comment: 'Nombre de usuario',
     },
-    email: {
-      type: DataTypes.STRING(150),
-      allowNull: false,
-      comment: 'Email',
-    },
     passwordHash: {
       type: DataTypes.STRING(255),
       field: 'password_hash',

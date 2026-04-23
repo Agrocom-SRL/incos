@@ -1,178 +1,207 @@
 /**
- * Último paso del wizard de alta de usuario: credenciales y rol.
- * Con vínculo estudiante/docente: el correo viene del registro elegido; se muestra nombre y email de referencia.
+ * Último paso del wizard de alta de usuario: rol asignado (card aparte) + credenciales (FormSection).
+ * El rol se muestra en panel blanco con borde y textos en color del catálogo (`getWizardRoleResumenVisual`);
+ * no hay selector de `rol_id` aquí. El valor queda por el paso perfil o por reglas en `UsuarioCreatePage`.
  */
-import { Form, Row, Col, Input, Select, Tag, Typography } from 'antd';
-import { MailOutlined, UserOutlined } from '@ant-design/icons';
+import { useMemo } from 'react';
+import { Form, Typography, Input } from 'antd';
 import { Card } from '@atoms';
+import { FormSection } from '@molecules';
+import { createUsuarioWizardCredencialesFields } from '@modules/seguridad/config/usuarioWizardCredencialesFields.jsx';
 import { TIPO_CONFIG } from '@modules/seguridad/constants/rolTipoConfig.js';
-import { getInstitutionalCargoVisual } from '@modules/seguridad/constants/usuarioCargoInstitucionalVisual.jsx';
+import { getWizardRoleResumenVisual } from '@modules/seguridad/constants/usuarioCargoInstitucionalVisual.jsx';
 
 const { Paragraph, Text } = Typography;
 
-export default function UsuarioWizardCredencialesStepContent({ form, rolesFiltrados = [] }) {
+function resolveSelectedRole(rolId, rolesCatalog) {
+  if (rolId == null || rolId === '') return null;
+  const id = Number(rolId);
+  if (!Number.isFinite(id)) return null;
+  return rolesCatalog.find((r) => r.id === id) || null;
+}
+
+/** Texto de contexto: cómo se obtuvo el rol según el tipo de alta (paso 1 y, si aplica, paso 2). */
+function mensajeOrigenRolAsignacion(categoria) {
+  switch (categoria) {
+    case 'PERSONAL_INSTITUCIONAL':
+      return (
+        <>
+          El rol de acceso es el <strong>cargo institucional</strong> que eligió en el paso anterior
+          («Datos del perfil»): rectorado, dirección académica o administrativa, o secretaría académica o
+          administrativa. No puede cambiarse aquí.
+        </>
+      );
+    case 'ACCESO_SISTEMA':
+      return (
+        <>
+          Al elegir <strong>Cuenta solo sistema</strong> en el primer paso, el sistema asigna el rol de{' '}
+          <strong>administrador del sistema</strong> de forma automática.
+        </>
+      );
+    case 'ASIGNAR_ESTUDIANTE':
+      return (
+        <>
+          Al elegir <strong>Acceso a estudiante</strong> y vincular una ficha en el paso anterior, el rol de
+          acceso es el de <strong>estudiante</strong>, asignado automáticamente.
+        </>
+      );
+    case 'ASIGNAR_DOCENTE':
+      return (
+        <>
+          Al elegir <strong>Acceso a docente</strong> y vincular una ficha en el paso anterior, el rol de
+          acceso es el de <strong>docente</strong>, asignado automáticamente.
+        </>
+      );
+    default:
+      return 'El rol de acceso se definió en los pasos anteriores según el tipo de alta.';
+  }
+}
+
+/**
+ * Panel de solo lectura: fondo blanco, borde y textos en color del rol (`usuarioCargoInstitucionalVisual`).
+ */
+function CredencialesRolAsignadoPanel({ role }) {
+  if (!role?.codigo) {
+    return (
+      <Paragraph type="warning" style={{ marginBottom: 0, marginTop: 12 }}>
+        No hay rol asignado aún. Revise el paso anterior (cargo institucional o tipo de alta) y que el catálogo
+        de roles haya cargado.
+      </Paragraph>
+    );
+  }
+
+  const visual = getWizardRoleResumenVisual(role.codigo);
+  const { Icon } = visual;
+  const tipoLabel = TIPO_CONFIG[role.tipo]?.label ?? role.tipo ?? '—';
+
+  return (
+    <div
+      className="seg-wizard-rol-asignado-panel"
+      style={{ borderColor: visual.color }}
+      role="status"
+      aria-label={`Rol asignado: ${role.nombre}`}
+    >
+      <div
+        className="seg-wizard-rol-asignado-panel__icon"
+        style={{ borderColor: visual.color, color: visual.color }}
+      >
+        <Icon style={{ fontSize: 24 }} />
+      </div>
+      <div className="seg-wizard-rol-asignado-panel__body">
+        <Text strong className="seg-wizard-rol-asignado-panel__nombre" style={{ color: visual.color }}>
+          {role.nombre}
+        </Text>
+        <Text className="seg-wizard-rol-asignado-panel__tipo" style={{ color: visual.color }}>
+          {tipoLabel}
+        </Text>
+      </div>
+    </div>
+  );
+}
+
+export default function UsuarioWizardCredencialesStepContent({ form, rolesCatalog = [] }) {
   const watchedCategoria = Form.useWatch('categoria_creacion', form);
   const categoria = watchedCategoria ?? form?.getFieldValue('categoria_creacion');
-  const mostrarSelectorRol = categoria !== 'PERSONAL_INSTITUCIONAL';
   const esVinculoReferencia =
     categoria === 'ASIGNAR_ESTUDIANTE' || categoria === 'ASIGNAR_DOCENTE';
   const vinculoNombre = Form.useWatch('vinculo_nombre_display', form);
-  const emailVinculo = Form.useWatch('email', form);
+  const vinculoEmail = Form.useWatch('vinculo_email_display', form);
+  const estudianteId = Form.useWatch('estudiante_id', form);
+  const docenteId = Form.useWatch('docente_id', form);
+  const personalEmail = Form.useWatch(['personal', 'personalEmail'], form);
+  const rolId = Form.useWatch('rol_id', form);
+
+  const selectedRole = useMemo(
+    () => resolveSelectedRole(rolId, rolesCatalog),
+    [rolId, rolesCatalog]
+  );
+
+  const credencialesDescription = useMemo(() => {
+    const lines = [];
+
+    lines.push(
+      <Paragraph key="intro" type="secondary" style={{ marginBottom: 0 }}>
+        {esVinculoReferencia
+          ? 'Defina el usuario y la contraseña de acceso. El correo de contacto es el de la ficha de la persona elegida en el paso anterior (no se guarda en la cuenta).'
+          : 'Defina el usuario y la contraseña con la que ingresará al sistema. El correo de contacto queda en la ficha personal del paso anterior, si lo registró.'}
+      </Paragraph>
+    );
+
+    if (esVinculoReferencia && (estudianteId != null || docenteId != null)) {
+      lines.push(
+        <Paragraph key="vinc-nom" style={{ marginBottom: 4, marginTop: 12 }}>
+          <Text type="secondary">Persona vinculada: </Text>
+          <Text strong>{vinculoNombre || '—'}</Text>
+        </Paragraph>
+      );
+      lines.push(
+        <Paragraph key="vinc-mail" style={{ marginBottom: 0 }}>
+          <Text type="secondary">Correo en ficha: </Text>
+          {vinculoEmail ? (
+            <Text strong>{vinculoEmail}</Text>
+          ) : (
+            <Text type="warning">Sin correo registrado en la ficha</Text>
+          )}
+        </Paragraph>
+      );
+    } else if (!esVinculoReferencia && personalEmail) {
+      lines.push(
+        <Paragraph key="ficha-mail" type="secondary" style={{ marginBottom: 0, marginTop: 12 }}>
+          Correo en ficha: <Text strong>{String(personalEmail).trim()}</Text>
+        </Paragraph>
+      );
+    }
+
+    return <>{lines}</>;
+  }, [
+    esVinculoReferencia,
+    estudianteId,
+    docenteId,
+    vinculoNombre,
+    vinculoEmail,
+    personalEmail,
+  ]);
+
+  const flatFields = useMemo(() => createUsuarioWizardCredencialesFields(), []);
 
   return (
     <div className="usuario-wizard-step">
-      <Card
-        className="form-section"
-        variant="outlined"
-        shadow={false}
-        headerColor="primary"
-        title="Credenciales de acceso"
+      <Form.Item
+        name="rol_id"
+        preserve
+        hidden
+        rules={[
+          {
+            required: true,
+            message: 'Falta el rol de acceso. Complete el paso anterior o espere a cargar los roles.',
+          },
+        ]}
       >
-        <Paragraph type="secondary" style={{ marginBottom: 16 }}>
-          {esVinculoReferencia
-            ? 'Usuario y contraseña de acceso. El correo institucional es el registrado en la ficha de la persona elegida en el paso anterior.'
-            : 'Usuario, correo institucional y contraseña con la que ingresará al sistema.'}
-        </Paragraph>
-        {esVinculoReferencia ? (
-          <Form.Item name="email" preserve hidden rules={[{ required: true, type: 'email' }]}>
-            <Input type="hidden" />
-          </Form.Item>
-        ) : null}
-        {esVinculoReferencia && (vinculoNombre || emailVinculo) ? (
-          <Paragraph style={{ marginBottom: 16 }}>
-            <Text type="secondary">Persona vinculada: </Text>
-            <Text strong>{vinculoNombre || '—'}</Text>
-            {emailVinculo ? (
-              <>
-                <br />
-                <Text type="secondary">Correo en datos referenciales: </Text>
-                <Text strong>{emailVinculo}</Text>
-              </>
-            ) : null}
-          </Paragraph>
-        ) : null}
-        <Row gutter={[24, 16]}>
-          <Col xs={24} md={12}>
-            <Form.Item name="username" label="Usuario" rules={[{ required: true }, { max: 50 }]}>
-              <Input placeholder="ej: jperez" suffix={<UserOutlined />} />
-            </Form.Item>
-          </Col>
-          {!esVinculoReferencia ? (
-            <Col xs={24} md={12}>
-              <Form.Item name="email" label="Email" rules={[{ required: true, type: 'email' }]}>
-                <Input placeholder="ej: juan.perez@incos-santacruz.edu.bo" suffix={<MailOutlined />} />
-              </Form.Item>
-            </Col>
-          ) : null}
-          <Col xs={24} md={12}>
-            <Form.Item
-              name="password"
-              label="Contraseña"
-              rules={[
-                { required: true, message: 'Ingrese la contraseña' },
-                { min: 8, message: 'Mínimo 8 caracteres' },
-              ]}
-              hasFeedback
-            >
-              <Input.Password placeholder="Mínimo 8 caracteres" autoComplete="new-password" />
-            </Form.Item>
-          </Col>
-          <Col xs={24} md={12}>
-            <Form.Item
-              name="password_confirm"
-              label="Confirmar contraseña"
-              dependencies={['password']}
-              rules={[
-                { required: true, message: 'Confirme la contraseña' },
-                { min: 8, message: 'Mínimo 8 caracteres' },
-                ({ getFieldValue }) => ({
-                  validator(_, value) {
-                    const pwd = getFieldValue('password');
-                    if (!value || pwd === value) {
-                      return Promise.resolve();
-                    }
-                    return Promise.reject(new Error('Las contraseñas no coinciden'));
-                  },
-                }),
-              ]}
-              hasFeedback
-            >
-              <Input.Password placeholder="Repita la contraseña" autoComplete="new-password" />
-            </Form.Item>
-          </Col>
-        </Row>
-      </Card>
+        <Input type="hidden" />
+      </Form.Item>
 
       <Card
         className="form-section"
         variant="outlined"
         shadow={false}
         headerColor="primary"
-        title="Rol en el sistema"
+        title="Rol de acceso al sistema"
       >
-        <Paragraph type="secondary" style={{ marginBottom: 16 }}>
-          {mostrarSelectorRol
-            ? 'El rol determina los permisos y debe ser coherente con el tipo de alta elegido en el primer paso.'
-            : 'El rol institucional ya se definió en el paso «Datos del perfil» junto con la ficha de personal.'}
+        <Paragraph type="secondary" style={{ marginBottom: 0 }}>
+          {mensajeOrigenRolAsignacion(categoria)}
         </Paragraph>
-        <Row gutter={[24, 16]}>
-          <Col xs={24} md={12} lg={10}>
-            {mostrarSelectorRol ? (
-              <Form.Item name="rol_id" label="Rol" rules={[{ required: true, message: 'Seleccione un rol' }]}>
-                <Select
-                  placeholder="Seleccionar rol"
-                  options={rolesFiltrados.map((r) => ({
-                    value: r.id,
-                    label: (
-                      <span>
-                        {r.nombre}{' '}
-                        <Tag color={TIPO_CONFIG[r.tipo]?.color ?? 'default'}>
-                          {TIPO_CONFIG[r.tipo]?.label ?? r.tipo ?? '—'}
-                        </Tag>
-                      </span>
-                    ),
-                  }))}
-                />
-              </Form.Item>
-            ) : (
-              <Form.Item shouldUpdate={(prev, cur) => prev.rol_id !== cur.rol_id} noStyle>
-                {() => {
-                  const rid = form.getFieldValue('rol_id');
-                  const r = rolesFiltrados.find((x) => x.id === rid);
-                  if (!r) {
-                    return (
-                      <Text type="warning">Vuelva al paso anterior y elija un rol institucional.</Text>
-                    );
-                  }
-                  const visual = getInstitutionalCargoVisual(r.codigo);
-                  const { Icon } = visual;
-                  return (
-                    <div className="seg-cargo-resumen" style={{ borderColor: visual.color, background: visual.tint }}>
-                      <div
-                        className="seg-cargo-resumen__icon"
-                        style={{ background: visual.tint, color: visual.color }}
-                      >
-                        <Icon style={{ fontSize: 24 }} />
-                      </div>
-                      <div>
-                        <Text type="secondary" style={{ fontSize: 12, display: 'block' }}>
-                          Rol institucional elegido
-                        </Text>
-                        <Text strong style={{ fontSize: 16, display: 'block', marginTop: 2 }}>
-                          {r.nombre}
-                        </Text>
-                        <Tag color={TIPO_CONFIG[r.tipo]?.color ?? 'default'} style={{ marginTop: 6 }}>
-                          {TIPO_CONFIG[r.tipo]?.label ?? r.tipo ?? '—'}
-                        </Tag>
-                      </div>
-                    </div>
-                  );
-                }}
-              </Form.Item>
-            )}
-          </Col>
-        </Row>
+        <CredencialesRolAsignadoPanel role={selectedRole} />
       </Card>
+
+      <div style={{ marginTop: 24 }}>
+        <FormSection
+          title="Credenciales y acceso al sistema"
+          description={credencialesDescription}
+          fields={flatFields}
+          form={form}
+          resolveOptions={() => []}
+        />
+      </div>
     </div>
   );
 }

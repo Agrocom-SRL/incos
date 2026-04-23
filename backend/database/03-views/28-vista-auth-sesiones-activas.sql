@@ -5,6 +5,8 @@
 -- Propósito: Validar sesión activa y obtener contexto del usuario autenticado
 -- Reutilizable para middleware auth y /auth/me
 --
+-- El correo (`email`) proviene de vista_usuarios_admin_base (ficha vinculada).
+--
 -- Relaciones según schemas:
 -- - sesiones.usuario_id → usuarios.id
 -- - usuarios.rol_id → roles.id
@@ -29,10 +31,11 @@ SELECT
   r.tipo AS rol_tipo,
   r.is_system AS rol_is_system,
   u.username,
-  u.email,
+  v.email,
   u.foto_url
 FROM sesiones s
 JOIN usuarios u ON u.id = s.usuario_id
+LEFT JOIN vista_usuarios_admin_base v ON v.id = u.id
 LEFT JOIN roles r ON r.id = u.rol_id
   AND r.activo = TRUE
   AND r.deleted_at IS NULL

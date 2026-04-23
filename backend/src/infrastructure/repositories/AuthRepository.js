@@ -10,14 +10,20 @@ import { sequelize } from '../database/sequelize.js';
  */
 export class AuthRepository {
   /**
-   * Busca usuario por username o email con su rol.
+   * Busca usuario por username o por correo resuelto desde la ficha vinculada.
    */
   async findUsuarioParaLogin(usernameOrEmail) {
     const rows = await sequelize.query(
       `
             SELECT *
             FROM vista_auth_usuarios_login
-            WHERE (username = :valor OR email = :valor)
+            WHERE (
+              username = :valor
+              OR (
+                email IS NOT NULL
+                AND LOWER(TRIM(email)) = LOWER(TRIM(:valor))
+              )
+            )
             LIMIT 1
         `,
       {

@@ -78,13 +78,14 @@ const FormSubsection = ({
         </Space>
       </Divider>
       <Row gutter={[24, 16]} className="form-subsection-fields">
-        {safeFields.map((field) => {
+        {safeFields.map((field, index) => {
           // Obtener configuración de columnas (usando helper del hook)
           const columns = getColumns(field);
+          const rowKey = field.key ?? field.name ?? `subsection-field-${index}`;
 
           return (
             <Col
-              key={field.name}
+              key={rowKey}
               {...columns}
             >
               <FormField

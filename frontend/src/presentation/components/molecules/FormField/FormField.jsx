@@ -117,6 +117,13 @@ const FormField = ({ field, form, resolveOptions, minAge = null, readOnly = fals
     : 'form-field';
 
   const preserveProps = field.preserve ? { preserve: true } : {};
+  const extraRules = Array.isArray(field.rules) ? field.rules : [];
+  const mergedRules = extraRules.length > 0 ? [...rules, ...extraRules] : rules;
+  const depProps =
+    Array.isArray(field.dependencies) && field.dependencies.length > 0
+      ? { dependencies: field.dependencies }
+      : {};
+  const feedbackProps = field.hasFeedback === true ? { hasFeedback: true } : {};
 
   return (
     <Form.Item
@@ -124,9 +131,11 @@ const FormField = ({ field, form, resolveOptions, minAge = null, readOnly = fals
       label={field.label}
       labelCol={labelCol}
       wrapperCol={wrapperCol}
-      rules={rules}
+      rules={mergedRules}
       className={formItemClassName}
       {...preserveProps}
+      {...depProps}
+      {...feedbackProps}
     >
       {renderField()}
     </Form.Item>

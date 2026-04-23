@@ -294,7 +294,6 @@ export default function UsuarioDetailPage() {
           roles={roles}
           initialValues={{
             username: usuario.username,
-            email: usuario.email,
             rol_id: usuario.rol?.id,
             foto_url: usuario.foto_url,
           }}

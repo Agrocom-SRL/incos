@@ -138,12 +138,12 @@ export default function LoginPage() {
           >
             <Form.Item
               name="username"
-              label={<span className="login-label">Usuario</span>}
-              rules={[{ required: true, message: 'Por favor ingrese su usuario' }]}
+              label={<span className="login-label">Usuario o correo</span>}
+              rules={[{ required: true, message: 'Por favor ingrese su usuario o correo' }]}
             >
               <Input
                 prefix={<UserOutlined className="login-input-icon" />}
-                placeholder="Ingrese su usuario"
+                placeholder="Usuario o correo de su ficha"
                 autoComplete="username"
                 className="login-input"
               />

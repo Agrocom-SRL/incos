@@ -274,15 +274,16 @@ const renderDisplay = (field, disabled, readOnly, form) => {
  * Soporta HTML en la descripción usando Typography
  */
 const renderAlert = (field, disabled, readOnly) => {
-  // Si la descripción contiene HTML, renderizarla con Typography
   const description = field.description;
-  const hasHTML = description && (description.includes('<') || description.includes('&lt;'));
-  
+  const isHtmlString =
+    typeof description === 'string' &&
+    (description.includes('<') || description.includes('&lt;'));
+
   return (
     <Alert
       title={field.message || field.title}
       description={
-        hasHTML ? (
+        isHtmlString ? (
           <Paragraph style={{ marginBottom: 0 }}>
             <span dangerouslySetInnerHTML={{ __html: description }} />
           </Paragraph>

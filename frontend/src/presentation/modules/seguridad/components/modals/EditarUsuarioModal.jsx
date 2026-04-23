@@ -33,9 +33,6 @@ export default function EditarUsuarioModal({
         <Form.Item name="username" label="Usuario" rules={[{ required: true, max: 50 }]}>
           <Input />
         </Form.Item>
-        <Form.Item name="email" label="Email" rules={[{ required: true, type: 'email' }]}>
-          <Input />
-        </Form.Item>
         <Form.Item name="rol_id" label="Rol" rules={[{ required: true }]}>
           <Select
             options={roles.map((r) => ({

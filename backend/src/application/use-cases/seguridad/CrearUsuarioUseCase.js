@@ -117,7 +117,6 @@ export class CrearUsuarioUseCase {
    */
   async execute(input) {
     const username = String(input.username || '').trim();
-    const email = String(input.email || '').trim().toLowerCase();
     const password = input.password;
     const rolId = input.rol_id;
 
@@ -135,14 +134,10 @@ export class CrearUsuarioUseCase {
     if (await this.userRepository.existsUsername(username)) {
       throw new ConflictError('El nombre de usuario ya está en uso');
     }
-    if (await this.userRepository.existsEmail(email)) {
-      throw new ConflictError('El email ya está en uso');
-    }
 
     const passwordHash = await bcrypt.hash(String(password), 12);
     const userPayloadBase = {
       username,
-      email,
       passwordHash,
       roleId: rolId,
     };

@@ -39,7 +39,7 @@ CREATE TABLE personal (
     fecha_nacimiento DATE NULL COMMENT 'Fecha de nacimiento',
     genero ENUM('MASCULINO','FEMENINO','OTRO') NULL COMMENT 'Género',
     estado_civil_id INT NULL COMMENT 'FK hacia tabla estados_civiles',
-    email_personal VARCHAR(150) NULL COMMENT 'Email personal del empleado (distinto del email institucional que está en usuarios.email)',
+    email_personal VARCHAR(150) NULL COMMENT 'Correo de contacto del empleado (también usado para login si coincide con la ficha vinculada al usuario)',
     telefono VARCHAR(20) NULL COMMENT 'Teléfono fijo',
     celular VARCHAR(20) NULL COMMENT 'Teléfono celular',
     direccion TEXT NULL COMMENT 'Dirección de domicilio completa',

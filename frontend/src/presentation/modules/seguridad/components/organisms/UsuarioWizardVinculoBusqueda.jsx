@@ -1,6 +1,6 @@
 /**
  * Buscador remoto para asociar estudiante o docente existente al crear usuario.
- * Al elegir un registro rellena `email` y `vinculo_nombre_display` en el formulario (paso Credenciales).
+ * Al elegir un registro rellena `vinculo_email_display` y `vinculo_nombre_display` (paso Credenciales).
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Form, Input, Select, Spin, Typography } from 'antd';
@@ -96,7 +96,7 @@ export default function UsuarioWizardVinculoBusqueda({
   const onSelectChange = useCallback(
     (id, option) => {
       if (id == null || id === undefined) {
-        form.setFieldsValue({ email: undefined, vinculo_nombre_display: undefined });
+        form.setFieldsValue({ vinculo_email_display: undefined, vinculo_nombre_display: undefined });
         return;
       }
       const row = option?.datosVinculo ?? options.find((o) => o.value === id)?.datosVinculo;
@@ -104,7 +104,7 @@ export default function UsuarioWizardVinculoBusqueda({
       const mail = emailReferencia(row);
       const nombre = nombreCompletoReferencia(row);
       form.setFieldsValue({
-        email: mail || undefined,
+        vinculo_email_display: mail || undefined,
         vinculo_nombre_display: nombre || undefined,
       });
     },
@@ -127,6 +127,9 @@ export default function UsuarioWizardVinculoBusqueda({
           </Paragraph>
         ) : null}
         <Form.Item name="vinculo_nombre_display" preserve hidden>
+          <Input type="hidden" />
+        </Form.Item>
+        <Form.Item name="vinculo_email_display" preserve hidden>
           <Input type="hidden" />
         </Form.Item>
         <Form.Item

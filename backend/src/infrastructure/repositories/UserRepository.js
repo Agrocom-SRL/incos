@@ -39,7 +39,6 @@ const USUARIO_LIST_SORT_MAP = {
  * IMPORTANTE: Se eliminaron findByUsername(), findByEmail() y findByRolId() porque son redundantes.
  * Usar en su lugar:
  * - findBy({ username: 'usuario' }) → Reemplaza findByUsername()
- * - findBy({ email: 'email@example.com' }) → Reemplaza findByEmail()
  * - findAll({ roleId: X }) → Reemplaza findByRolId()
  */
 export class UserRepository extends BaseRepository {
@@ -71,13 +70,11 @@ export class UserRepository extends BaseRepository {
    * 
    * Ejemplos de uso:
    * - findBy({ username: 'usuario' }) → Busca por username
-   * - findBy({ email: 'email@example.com' }) → Busca por email
    * - findAll({ roleId: 1 }) → Busca usuarios por rol
    * - findAll({ state: 'BLOQUEADO' }) → Busca usuarios bloqueados
    * 
    * @param {Object} filters - Filtros de búsqueda
    *   - username: Nombre de usuario (búsqueda exacta, para búsqueda de texto usar search())
-   *   - email: Email del usuario (búsqueda exacta, para búsqueda de texto usar search())
    *   - roleId: ID del rol
    *   - referenceId: ID de referencia
    *   - referenceType: Tipo de referencia
@@ -92,9 +89,6 @@ export class UserRepository extends BaseRepository {
     // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
     if (filters.username !== undefined) {
       where.username = filters.username;
-    }
-    if (filters.email !== undefined) {
-      where.email = filters.email.toLowerCase();
     }
     if (filters.roleId) {
       where.rolId = filters.roleId;
@@ -125,7 +119,7 @@ export class UserRepository extends BaseRepository {
    * @returns {string[]} Array de nombres de campos del modelo Sequelize
    */
   getSearchFields() {
-    return ['username', 'email'];
+    return ['username'];
   }
 
   /**
@@ -267,25 +261,6 @@ export class UserRepository extends BaseRepository {
       `
       SELECT id FROM vista_usuarios_admin_base
       WHERE username = :username
-        ${excludeClause}
-      LIMIT 1
-      `,
-      { replacements, type: sequelize.QueryTypes.SELECT }
-    );
-    return rows.length > 0;
-  }
-
-  async existsEmail(email, excludeUserId = null) {
-    const excludeClause =
-      excludeUserId != null ? 'AND id <> :excludeId' : '';
-    const replacements = { email: email.toLowerCase() };
-    if (excludeUserId != null) {
-      replacements.excludeId = excludeUserId;
-    }
-    const rows = await sequelize.query(
-      `
-      SELECT id FROM vista_usuarios_admin_base
-      WHERE LOWER(email) = :email
         ${excludeClause}
       LIMIT 1
       `,

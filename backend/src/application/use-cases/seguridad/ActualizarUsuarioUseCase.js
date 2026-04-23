@@ -34,14 +34,6 @@ export class ActualizarUsuarioUseCase {
         }
       }
     }
-    if (body.email !== undefined) {
-      patch.email = String(body.email).trim().toLowerCase();
-      if (patch.email !== String(current.email).toLowerCase()) {
-        if (await this.userRepository.existsEmail(patch.email, usuarioId)) {
-          throw new ConflictError('El email ya está en uso');
-        }
-      }
-    }
     if (body.rol_id !== undefined) {
       const role = await this.roleRepository.findById(body.rol_id);
       if (!role) {

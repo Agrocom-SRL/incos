@@ -27,14 +27,6 @@ export const crearUsuarioValidator = [
     .withMessage('username es requerido')
     .isLength({ max: 50 })
     .withMessage('username máximo 50 caracteres'),
-  body('email')
-    .trim()
-    .notEmpty()
-    .withMessage('email es requerido')
-    .isEmail()
-    .withMessage('email inválido')
-    .isLength({ max: 150 })
-    .withMessage('email máximo 150 caracteres'),
   body('password')
     .notEmpty()
     .withMessage('password es requerido')
@@ -60,7 +52,6 @@ export const actualizarUsuarioValidator = [
     .notEmpty()
     .isLength({ max: 50 })
     .withMessage('username máximo 50 caracteres'),
-  body('email').optional().trim().isEmail().isLength({ max: 150 }),
   body('rol_id').optional().isInt({ min: 1 }),
   body('foto_url').optional({ nullable: true }).isString(),
 ];

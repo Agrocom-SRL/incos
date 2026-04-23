@@ -67,10 +67,10 @@ function personalPayloadFromForm(personal) {
 function buildCreatePayload(values) {
   const {
     username,
-    email,
     password,
     password_confirm: _passwordConfirm,
     vinculo_nombre_display: _vinculoNombre,
+    vinculo_email_display: _vinculoEmail,
     rol_id,
     categoria_creacion,
     estudiante_id,
@@ -80,7 +80,6 @@ function buildCreatePayload(values) {
 
   const base = {
     username: String(username || '').trim(),
-    email: String(email || '').trim().toLowerCase(),
     password,
     rol_id,
     categoria_creacion,
@@ -112,7 +111,7 @@ const PERSONAL_FIELD_NAMES = [
 ];
 
 function fieldsToValidateOnFinish(categoria) {
-  const base = ['categoria_creacion', 'username', 'email', 'password', 'password_confirm', 'rol_id'];
+  const base = ['categoria_creacion', 'username', 'password', 'password_confirm', 'rol_id'];
   if (categoria === 'ASIGNAR_ESTUDIANTE') base.push('estudiante_id');
   if (categoria === 'ASIGNAR_DOCENTE') base.push('docente_id');
   if (categoria === 'PERSONAL_INSTITUCIONAL' || categoria === 'ACCESO_SISTEMA') {
@@ -179,11 +178,26 @@ export default function UsuarioCreatePage() {
     if (!ok) form.setFieldsValue({ rol_id: undefined });
   }, [categoria, rolesFiltrados, form]);
 
+  /** Admin / docente / estudiante: un solo rol permitido por categoría; se fija sin selector en credenciales. */
+  useEffect(() => {
+    if (!roles?.length || !categoria) return;
+    if (categoria === 'PERSONAL_INSTITUCIONAL') return;
+    const allowed = ROLES_POR_CATEGORIA[categoria];
+    if (!allowed?.length) return;
+    const candidates = roles.filter((r) => allowed.includes(r.codigo));
+    if (candidates.length === 0) return;
+    const rid = form.getFieldValue('rol_id');
+    const idNum = Number(rid);
+    const stillValid = Number.isFinite(idNum) && candidates.some((r) => r.id === idNum);
+    if (stillValid) return;
+    form.setFieldsValue({ rol_id: candidates[0].id });
+  }, [categoria, roles, form]);
+
   useEffect(() => {
     form.setFieldsValue({
       estudiante_id: undefined,
       docente_id: undefined,
-      email: undefined,
+      vinculo_email_display: undefined,
       vinculo_nombre_display: undefined,
       password_confirm: undefined,
     });
@@ -227,13 +241,7 @@ export default function UsuarioCreatePage() {
     }
 
     if (stepNumber === 3) {
-      return formInstance.validateFields([
-        'username',
-        'email',
-        'password',
-        'password_confirm',
-        'rol_id',
-      ]);
+      return formInstance.validateFields(['username', 'password', 'password_confirm', 'rol_id']);
     }
 
     return Promise.resolve();
@@ -273,12 +281,16 @@ export default function UsuarioCreatePage() {
       }
       if (sectionKey === 'cuenta') {
         return (
-          <UsuarioWizardCredencialesStepContent key="cuenta" form={formInstance} rolesFiltrados={rolesFiltrados} />
+          <UsuarioWizardCredencialesStepContent
+            key="cuenta"
+            form={formInstance}
+            rolesCatalog={roles}
+          />
         );
       }
       return null;
     },
-    [rolesFiltrados, roles]
+    [roles]
   );
 
   return (

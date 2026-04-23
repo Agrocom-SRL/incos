@@ -44,9 +44,6 @@ export class UserMapper {
     if ('username' in dataValues && dataValues.username !== undefined) {
       specificFields.username = dataValues.username;
     }
-    if ('email' in dataValues && dataValues.email !== undefined) {
-      specificFields.email = dataValues.email;
-    }
     if ('passwordHash' in dataValues && dataValues.passwordHash !== undefined) {
       specificFields.passwordHash = dataValues.passwordHash;
     }
@@ -128,9 +125,6 @@ export class UserMapper {
     // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
     if ('username' in data) {
       updateData.username = data.username;
-    }
-    if ('email' in data) {
-      updateData.email = data.email;
     }
     if ('passwordHash' in data) {
       updateData.passwordHash = data.passwordHash;

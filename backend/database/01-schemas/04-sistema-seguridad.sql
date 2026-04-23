@@ -133,7 +133,6 @@ COMMENT='Catálogo de acciones válidas por permiso.
 CREATE TABLE usuarios (
     id INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Identificador único',
     username VARCHAR(50) NOT NULL COMMENT 'Nombre de usuario para login',
-    email VARCHAR(150) NOT NULL COMMENT 'Email institucional',
     password_hash VARCHAR(255) NOT NULL COMMENT 'Hash bcrypt de la contraseña',
     foto_url VARCHAR(255) NULL COMMENT 'URL de la foto de perfil',
     rol_id INT NULL COMMENT 'Rol principal del usuario',
@@ -154,7 +153,6 @@ CREATE TABLE usuarios (
     -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
     FOREIGN KEY (rol_id) REFERENCES roles(id) ON DELETE SET NULL,
     INDEX idx_rol_id (rol_id),
-    INDEX idx_email (email),
     INDEX idx_username (username),
     INDEX idx_referencia (referencia_id, tipo_referencia),
     INDEX idx_tipo_referencia (tipo_referencia),
@@ -162,7 +160,6 @@ CREATE TABLE usuarios (
     INDEX idx_activo (activo),
     INDEX idx_deleted_at (deleted_at),
     INDEX idx_rol_estado (rol_id, estado, activo, deleted_at),
-    INDEX idx_email_activo (email, activo, deleted_at),
     INDEX idx_username_activo (username, activo, deleted_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Usuarios del sistema con referencia polimórfica al perfil';
