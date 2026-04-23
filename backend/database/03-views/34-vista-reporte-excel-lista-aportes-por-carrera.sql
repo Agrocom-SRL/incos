@@ -50,7 +50,23 @@ SELECT
   COALESCE(pl.saldo_pendiente, 0) AS saldo_pendiente,
   COALESCE(pl.cantidad_pagos, 0) AS cantidad_cuotas,
   pl.estado AS estado_aporte,
-  bd.nombre AS beca_descuento_nombre
+  bd.nombre AS beca_descuento_nombre,
+  COALESCE(bd.porcentaje, 0) AS beca_porcentaje,
+  CASE
+    WHEN pl.estudiante_beca_id IS NULL THEN 'NO APLICA'
+    WHEN bd.id IS NULL THEN 'NO APLICA'
+    ELSE bd.nombre
+  END AS beca_tipo_nombre,
+  (
+    SELECT GROUP_CONCAT(
+      TRIM(pc.descripcion) ORDER BY pc.fecha_pago ASC, pc.id ASC SEPARATOR ' | '
+    )
+    FROM pago_cuotas pc
+    WHERE pc.pago_aporte_id = pl.id
+      AND pc.activo = TRUE
+      AND pc.deleted_at IS NULL
+      AND TRIM(COALESCE(pc.descripcion, '')) <> ''
+  ) AS observaciones_cuotas
 FROM vista_reporte_excel_lista_inscritos ins
 LEFT JOIN vista_pago_aporte_listado pl
   ON pl.estudiante_id = ins.estudiante_id
