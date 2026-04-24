@@ -29,7 +29,7 @@ INSERT INTO permisos (id, codigo, nombre, dominio, modulo, grupo_ui, ruta_sideba
 (3,  'matricula.admision.editar', 'Admisión: editar datos, eliminar y activar',       'MATRICULA', 'MAT', 'mat_admision',    '/estudiantes/listar',       TRUE),
 (4,  'matricula.inscribir',           'Matrículas: listar, ver y crear inscripción; exportar Excel lista por carrera', 'MATRICULA', 'MAT', 'mat_inscripcion', '/matricula/listar', TRUE),
 (5,  'matricula.inscripcion.editar',  'Matrículas: editar y eliminar inscripción',   'MATRICULA', 'MAT', 'mat_inscripcion', '/matricula/listar',         TRUE),
-(6,  'matricula.beca.ver',     'Becas: listar asignaciones y ver detalle',           'MATRICULA', 'MAT', 'mat_becas',       '/estudiantes/becas/listar', TRUE),
+(6,  'matricula.beca.ver',     'Becas: listar asignaciones, ver detalle de asignación y ficha desde contexto', 'MATRICULA', 'MAT', 'mat_becas', '/estudiantes/becas/listar', TRUE),
 (7,  'matricula.beca.asignar', 'Becas: asignar, ajustar o quitar',                  'MATRICULA', 'MAT', 'mat_becas',       '/estudiantes/becas/listar', TRUE),
 (8,  'matricula.beca.aprobar', 'Becas: aprobar solicitudes',                         'MATRICULA', 'MAT', 'mat_becas',       '/estudiantes/becas/listar', TRUE),
 (9,  'matricula.documento.ver', 'Documentos: ver y generar PDFs (acta, declaración, formulario)', 'MATRICULA', 'MAT', 'mat_documentos', '/estudiantes/documentos', TRUE),

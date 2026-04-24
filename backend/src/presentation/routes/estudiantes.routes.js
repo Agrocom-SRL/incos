@@ -2,7 +2,12 @@ import express from 'express';
 import { authenticate } from '../middleware/auth.middleware.js';
 import { verificarPermiso, verificarPermisoCualquiera } from '../middleware/permisos.middleware.js';
 import { listValidator, idValidator, searchValidator } from '../validators/common/index.js';
-import { registerStudentValidator, updateStudentValidator, assignBecaValidator } from '../validators/estudiantes/index.js';
+import {
+    registerStudentValidator,
+    updateStudentValidator,
+    assignBecaValidator,
+    searchStudentsAsignacionBecaValidator,
+} from '../validators/estudiantes/index.js';
 
 /**
  * Construye el router del módulo Estudiantes
@@ -146,6 +151,19 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
     );
 
     /**
+     * GET /api/v1/estudiantes/buscar-asignacion-beca
+     * Muestra previa o búsqueda de estudiantes sin beca ACTIVA/PENDIENTE en gestión vigente.
+     * Debe ir antes de rutas con /:id.
+     */
+    router.get(
+        '/buscar-asignacion-beca',
+        ...becaAsignarCrear,
+        ...searchStudentsAsignacionBecaValidator,
+        validateRequest,
+        (req, res, next) => controllers.searchStudentsForBecaAsignacionController.handle(req, res, next)
+    );
+
+    /**
      * GET /api/v1/estudiantes/export/estadistica-inscritos
      * Descargar Excel de estadística de inscritos (vista_reporte_excel_inscritos).
      * Query: gestion_id (opcional; por defecto la gestión vigente)
@@ -192,6 +210,19 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
         listValidator,  // 1. Validator primero
         validateRequest,  // 2. Middleware que procesa errores
         (req, res, next) => controllers.listStudentScholarshipsController.handle(req, res, next)  // 3. Controller al final
+    );
+
+    /**
+     * GET /api/v1/estudiantes/becas/:id
+     * Detalle de una asignación de beca (enriquecido + pago de aporte vinculado si existe).
+     * Debe declararse después de GET /becas y antes de DELETE /becas/:id (mismo path, otro método).
+     */
+    router.get(
+        '/becas/:id',
+        ...becaDetalle,
+        idValidator,
+        validateRequest,
+        (req, res, next) => controllers.getStudentScholarshipByIdController.handle(req, res, next)
     );
 
     /**

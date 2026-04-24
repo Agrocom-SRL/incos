@@ -79,6 +79,8 @@ const createCRUDEndpoints = (basePath) => {
 // ============================================
 export const ESTUDIANTES_ENDPOINTS = {
   ...createCRUDEndpoints('/estudiantes'),
+  /** GET — Estudiantes sin beca vigente (preliminar=1 o q + limit) para asignar beca */
+  BUSCAR_ASIGNACION_BECA: `${API_BASE}/estudiantes/buscar-asignacion-beca`,
   /** GET — Excel estadística inscritos (query gestion_id opcional) */
   EXPORT_ESTADISTICA_INSCRITOS: `${API_BASE}/estudiantes/export/estadistica-inscritos`,
   /** GET — Excel lista inscritos por carrera (query carrera_id requerido; gestion_id opcional) */
@@ -93,6 +95,8 @@ export const ESTUDIANTES_BECAS_ENDPOINTS = {
   ...createCRUDEndpoints('/estudiantes'),
   // Endpoint para listar todas las becas asignadas a estudiantes
   LIST_ALL: `${API_BASE}/estudiantes/becas`,
+  /** GET — detalle de una fila del listado (asignación por ID de estudiantes_becas) */
+  DETALLE_ASIGNACION: (asignacionId) => `${API_BASE}/estudiantes/becas/${asignacionId}`,
   // Endpoint para eliminar una beca asignada (DELETE /v1/estudiantes/becas/:id)
   DELETE: (becaId) => `${API_BASE}/estudiantes/becas/${becaId}`,
   // Endpoint específico para becas de un estudiante
@@ -155,6 +159,8 @@ export const CONFIGURACION_APORTES_ENDPOINTS = createCRUDEndpoints('/configuraci
 export const PAGOS_APORTES_ENDPOINTS = {
   ...createCRUDEndpoints('/pagos-aportes'),
   UPDATE_CUOTA: (cuotaId) =>
+    `${API_BASE}/pagos-aportes/cuotas/${encodeURIComponent(String(cuotaId))}`,
+  DELETE_CUOTA: (cuotaId) =>
     `${API_BASE}/pagos-aportes/cuotas/${encodeURIComponent(String(cuotaId))}`,
   // Estado del aporte para el formulario de registro (estudiante_id, gestion_id opcional)
   ESTADO_REGISTRO: `${API_BASE}/pagos-aportes/estado-registro`,

@@ -25,8 +25,8 @@
 import { AsignarBecaContext } from '@application-estudiantes/context/AsignarBecaContext';
 import { useAsignarBecaData } from '@application-estudiantes/hooks';
 
-export const AsignarBecaProvider = ({ children, studentId, studentName }) => {
-    const value = useAsignarBecaData(studentId, { studentName });
+export const AsignarBecaProvider = ({ children, studentId, studentName, editBecaAsignada = null }) => {
+    const value = useAsignarBecaData(studentId, { studentName, editBecaAsignada });
 
     return (
         <AsignarBecaContext.Provider value={value}>

@@ -7,7 +7,7 @@ import {
     searchStudentsRegistroAporteValidator,
 } from '../validators/pagos/index.js';
 import { uploadPaymentDocument } from '../middleware/upload.middleware.js';
-import { listValidator } from '../validators/common/index.js';
+import { listValidator, idValidator } from '../validators/common/index.js';
 
 /**
  * Construye el router del recurso Pagos de Aportes Académicos
@@ -18,7 +18,8 @@ import { listValidator } from '../validators/common/index.js';
  *
  * Contrato de :id en rutas:
  * - GET /:id → id = cabecera id (pago_aporte). Retorna cabecera + cuotas.
- * - DELETE /:id → id = cuota id (pago_cuotas). Elimina un abono.
+ * - DELETE /:id → id = cabecera id (pago_aporte). Elimina cabecera y todas sus cuotas.
+ * - DELETE /cuotas/:id → id = cuota (pago_cuotas). Elimina un solo abono y recalcula estado.
  * - GET /:id/recibo → id = cuota id (pago_cuotas). Genera recibo de esa cuota.
  *
  * @param {Object} params - Dependencias inyectadas
@@ -160,6 +161,18 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
         (req, res, next) => controllers.updatePaymentInstallmentController.handle(req, res, next)
     );
 
+    /**
+     * DELETE /api/v1/pagos-aportes/cuotas/:id
+     * Eliminar una cuota (pago_cuotas.id). Soft delete; recalcula estado de la cabecera.
+     */
+    router.delete(
+        '/cuotas/:id',
+        ...pagoEliminar,
+        ...idValidator,
+        validateRequest,
+        (req, res, next) => controllers.deletePaymentInstallmentController.handle(req, res, next)
+    );
+
     router.post(
         '/',
         ...pagoRegistrar,
@@ -196,8 +209,7 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
 
     /**
      * DELETE /api/v1/pagos-aportes/:id
-     * Eliminar una cuota (abono) por id. :id = cuota id (pago_cuotas).
-     * Soft delete de la cuota; el caso de uso actualiza estado de la cabecera si aplica.
+     * Eliminar la cabecera de aporte y todas sus cuotas. :id = pago_aporte.id.
      */
     router.delete(
         '/:id',

@@ -285,6 +285,38 @@ export class EstudianteRepository extends IEstudianteRepository {
   }
 
   /**
+   * GET /v1/estudiantes/buscar-asignacion-beca
+   * @param {Object} options
+   * @param {string} [options.q]
+   * @param {number} [options.limit]
+   * @param {boolean} [options.preliminar]
+   */
+  async buscarAsignacionBeca(options = {}) {
+    try {
+      const { q = '', limit, preliminar } = options;
+      const params = {};
+      if (preliminar) {
+        params.preliminar = '1';
+      } else {
+        params.q = String(q).trim();
+      }
+      if (limit != null) params.limit = limit;
+      const response = await apiClient.get(ESTUDIANTES_ENDPOINTS.BUSCAR_ASIGNACION_BECA, { params });
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error || 'Error en la respuesta del servidor' };
+      }
+      if (responseData.error) {
+        return { success: false, error: responseData.error };
+      }
+      const data = Array.isArray(responseData.data) ? responseData.data : [];
+      return { success: true, data };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al buscar estudiantes');
+    }
+  }
+
+  /**
    * Elimina un estudiante por ID (soft delete)
    * DELETE /v1/estudiantes/:id
    * 

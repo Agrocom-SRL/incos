@@ -40,20 +40,23 @@ import {
  * @returns {Object} Objeto con todo el contexto de asignar beca
  */
 export const useAsignarBecaData = (studentId, options = {}) => {
-    const { studentName } = options;
+    const { studentName, editBecaAsignada } = options;
+    const isEditMode = Boolean(editBecaAsignada?.id);
 
     // 1. Hooks de feature
-    const pageData = useAsignarBecaPageData({ studentName, studentId });
+    const pageData = useAsignarBecaPageData({ studentName, studentId, isEditMode });
     
     // Crear formHandlers primero (crea el form)
     // selectedBecaDescuento se actualizará dinámicamente cuando se seleccione una beca
     const formHandlers = useAsignarBecaFormHandlers(studentId, {
         selectedBecaDescuento: null, // Se actualizará dinámicamente en handleFinish
+        editBecaAsignada,
     });
     
     // Obtener becasDescuentosData con el form (para que handleSelectBeca pueda actualizar el form)
     const becasDescuentosData = useAsignarBecaBecasDescuentos({
         form: formHandlers.form,
+        initialBecaDescuentoId: editBecaAsignada?.scholarshipId,
     });
     
     // Crear un wrapper para handleFinish que use selectedBecaDescuento actualizado
@@ -70,6 +73,7 @@ export const useAsignarBecaData = (studentId, options = {}) => {
         const current = {
             // ID del estudiante
             studentId,
+            isEditMode,
 
             // Datos de página (incluye handleVolver)
             ...pageData,
@@ -99,6 +103,7 @@ export const useAsignarBecaData = (studentId, options = {}) => {
         // Comparar valores, no solo referencias
         if (prev &&
             prev.studentId === current.studentId &&
+            prev.isEditMode === current.isEditMode &&
             prev.pageTitle === current.pageTitle &&
             prev.breadcrumbItems === current.breadcrumbItems &&
             prev.handleVolver === current.handleVolver &&
@@ -122,6 +127,7 @@ export const useAsignarBecaData = (studentId, options = {}) => {
         return current;
     }, [
         studentId,
+        isEditMode,
         pageData,
         formHandlers.form,
         formHandlers.getFormValues,

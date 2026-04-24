@@ -13,7 +13,7 @@ import { PageHeader } from '@molecules';
 import { usePagosDetailContext, useEstadoAporteRegistro, useDeletePagoAporte } from '@application-pagos/hooks';
 import dayjs from 'dayjs';
 import { Spin, Alert, Empty, Tabs, Tag, Button, Table, Modal, Form, Input, InputNumber, Select, DatePicker } from 'antd';
-import { DollarOutlined, UserOutlined, FileTextOutlined, DownloadOutlined, ArrowLeftOutlined, DeleteOutlined, PlusCircleOutlined, EditOutlined } from '@ant-design/icons';
+import { DollarOutlined, UserOutlined, FileTextOutlined, DownloadOutlined, ArrowLeftOutlined, DeleteOutlined, DeleteFilled, PlusCircleOutlined, EditOutlined } from '@ant-design/icons';
 import { downloadFile } from '@application/utils';
 import { useCasesFactory } from '@container';
 import { showDeleteConfirm } from '@molecules/DeleteConfirmModal';
@@ -101,6 +101,7 @@ const PagosDetail = () => {
   const { estadoAporte, loading: loadingEstado, refetch: refetchEstadoAporte } = useEstadoAporteRegistro(studentIdForEstado, gestionIdForEstado);
 
   const [downloadingCuotaId, setDownloadingCuotaId] = useState(null);
+  const [deletingCuotaId, setDeletingCuotaId] = useState(null);
   const [editCuotaModalOpen, setEditCuotaModalOpen] = useState(false);
   const [editCuotaRecord, setEditCuotaRecord] = useState(null);
   const [editCuotaForm] = Form.useForm();
@@ -269,6 +270,44 @@ const PagosDetail = () => {
       },
     });
   }, [modal, pago, deletePagoAporte, message, studentIdFromState, navigate, textoRecibosCuotas]);
+
+  const handleEliminarCuota = useCallback(
+    (record) => {
+      const cuotaId = record?.id;
+      if (!cuotaId) return;
+      showDeleteConfirm({
+        modal,
+        itemName: 'esta cuota de pago',
+        itemDetails: [
+          { label: 'Recibo', value: record.numero_recibo != null ? String(record.numero_recibo) : '—' },
+          { label: 'Fecha', value: formatFecha(record.fecha_pago) },
+          {
+            label: 'Monto',
+            value: `Bs. ${Number(record.monto ?? 0).toLocaleString('es-BO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+          },
+        ],
+        onConfirm: async () => {
+          setDeletingCuotaId(cuotaId);
+          try {
+            const uc = useCasesFactory.eliminarCuotaPagoAporte();
+            const result = await uc.ejecutar(cuotaId);
+            if (!result?.success) {
+              message.error(result?.error || result?.message || 'No se pudo eliminar la cuota', DURACION_MENSAJE_ERROR);
+              return;
+            }
+            message.success('Cuota eliminada correctamente');
+            await refetchEstadoAporte();
+            if (typeof refetch === 'function') {
+              await refetch();
+            }
+          } finally {
+            setDeletingCuotaId(null);
+          }
+        },
+      });
+    },
+    [modal, message, refetch, refetchEstadoAporte]
+  );
 
   const tabItems = useMemo(() => {
     if (!pago?.id) {
@@ -443,6 +482,27 @@ const PagosDetail = () => {
                           },
                         ]
                       : []),
+                    ...(puedeEliminarPagoPermiso
+                      ? [
+                          {
+                            title: '',
+                            key: 'eliminar_cuota',
+                            width: 44,
+                            align: 'center',
+                            render: (_, record) => (
+                              <Button
+                                type="text"
+                                size="small"
+                                danger
+                                icon={<DeleteFilled />}
+                                aria-label="Eliminar cuota"
+                                loading={deletingCuotaId === record.id}
+                                onClick={() => handleEliminarCuota(record)}
+                              />
+                            ),
+                          },
+                        ]
+                      : []),
                     {
                       title: '',
                       key: 'descargar',
@@ -525,6 +585,9 @@ const PagosDetail = () => {
     handleRegistrarSiguienteCuota,
     puedeEditarCuota,
     handleOpenEditCuota,
+    puedeEliminarPagoPermiso,
+    handleEliminarCuota,
+    deletingCuotaId,
   ]);
 
   if (loading) {

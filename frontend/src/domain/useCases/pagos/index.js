@@ -13,6 +13,7 @@ export { ObtenerTodosPagosAportesUseCase } from './ObtenerTodosPagosAportesUseCa
 export { ObtenerPagoAportePorIdUseCase } from './ObtenerPagoAportePorIdUseCase';
 export { EliminarPagoAporteUseCase } from './EliminarPagoAporteUseCase';
 export { ActualizarCuotaPagoAporteUseCase } from './ActualizarCuotaPagoAporteUseCase';
+export { EliminarCuotaPagoAporteUseCase } from './EliminarCuotaPagoAporteUseCase';
 export { GenerarReciboPagoUseCase } from './GenerarReciboPagoUseCase';
 export { ExportarListaAportesPorCarreraExcelUseCase } from './ExportarListaAportesPorCarreraExcelUseCase';
 export { BuscarEstudiantesRegistroAporteUseCase } from './BuscarEstudiantesRegistroAporteUseCase';

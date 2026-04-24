@@ -304,6 +304,22 @@ export class PagoAporteRepository extends IPagoAporteRepository {
   }
 
   /**
+   * DELETE /v1/pagos-aportes/cuotas/:id
+   * @param {string|number} cuotaId - ID de pago_cuotas
+   */
+  async eliminarCuota(cuotaId) {
+    try {
+      if (!cuotaId || (typeof cuotaId !== 'string' && typeof cuotaId !== 'number')) {
+        return { success: false, error: 'ID de cuota es requerido' };
+      }
+      const response = await apiClient.delete(PAGOS_APORTES_ENDPOINTS.DELETE_CUOTA(cuotaId));
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al eliminar la cuota de pago');
+    }
+  }
+
+  /**
    * Genera u obtiene el recibo de pago de un aporte académico
    * GET /v1/pagos-aportes/:id/recibo
    * 

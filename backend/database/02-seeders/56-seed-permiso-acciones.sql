@@ -6,7 +6,7 @@
 -- CAMBIOS respecto al legacy:
 --   [REMOVIDO] accion='VER' — no existe en vocabulario v2
 --   [NUEVO]    accion='LISTAR'      — item sidebar + pagina de listado
---   [NUEVO]    accion='DETALLE'     — boton "ver" en fila + URL /:id
+--   [NUEVO]    accion='DETALLE'     — boton "ver" en fila + URL /:id (p. ej. detalle asignación /estudiantes/becas/asignacion/:id)
 --   [NUEVO]    accion='ACTIVAR'     — toggle estado activo/bloqueado
 --   [NUEVO]    accion='GENERAR_PDF' — generacion de documentos PDF
 --   [NOTA]     EXPORTAR — Excel/API: estadística inscritos (perm.1), lista inscritos/carrera (1 o 4),

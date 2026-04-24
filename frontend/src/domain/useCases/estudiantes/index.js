@@ -8,10 +8,12 @@ export { ActualizarEstudianteUseCase } from './ActualizarEstudianteUseCase';
 export { BuscarEstudianteUseCase } from './BuscarEstudianteUseCase';
 export { ObtenerTodasBecasDescuentosUseCase } from './ObtenerTodasBecasDescuentosUseCase';
 export { ObtenerTodasBecasAsignadasUseCase } from './ObtenerTodasBecasAsignadasUseCase';
+export { ObtenerBecaAsignadaPorIdUseCase } from './ObtenerBecaAsignadaPorIdUseCase';
 export { CrearAsignarBecaUseCase } from './CrearAsignarBecaUseCase';
 export { EliminarEstudianteUseCase } from './EliminarEstudianteUseCase';
 export { EliminarBecaDescuentoUseCase } from './EliminarBecaDescuentoUseCase';
 export { EliminarBecaAsignadaUseCase } from './EliminarBecaAsignadaUseCase';
 export { ExportarEstadisticaInscritosExcelUseCase } from './ExportarEstadisticaInscritosExcelUseCase';
 export { ExportarListaInscritosPorCarreraExcelUseCase } from './ExportarListaInscritosPorCarreraExcelUseCase';
+export { BuscarEstudiantesAsignacionBecaUseCase } from './BuscarEstudiantesAsignacionBecaUseCase';
 

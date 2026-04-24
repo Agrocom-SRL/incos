@@ -17,12 +17,14 @@ import {
   BuscarEstudianteUseCase,
   ObtenerTodasBecasDescuentosUseCase,
   ObtenerTodasBecasAsignadasUseCase,
+  ObtenerBecaAsignadaPorIdUseCase,
   CrearAsignarBecaUseCase,
   EliminarEstudianteUseCase,
   EliminarBecaDescuentoUseCase,
   EliminarBecaAsignadaUseCase,
   ExportarEstadisticaInscritosExcelUseCase,
   ExportarListaInscritosPorCarreraExcelUseCase,
+  BuscarEstudiantesAsignacionBecaUseCase,
 } from '@useCases/estudiantes';
 
 // Repositorio principal
@@ -122,6 +124,10 @@ export function registerEstudiantesModule(factory) {
     return new ObtenerTodasBecasAsignadasUseCase(EstudianteBecaRepository);
   };
 
+  factory.obtenerBecaAsignadaPorId = () => {
+    return new ObtenerBecaAsignadaPorIdUseCase(EstudianteBecaRepository);
+  };
+
   // Use Case para crear asignación de beca
   factory.crearAsignarBeca = () => {
     return new CrearAsignarBecaUseCase(EstudianteBecaRepository);
@@ -148,6 +154,10 @@ export function registerEstudiantesModule(factory) {
 
   factory.exportarListaInscritosPorCarreraExcel = () => {
     return new ExportarListaInscritosPorCarreraExcelUseCase(estudianteRepository);
+  };
+
+  factory.buscarEstudiantesAsignacionBeca = () => {
+    return new BuscarEstudiantesAsignacionBecaUseCase(estudianteRepository);
   };
 
   return factory;

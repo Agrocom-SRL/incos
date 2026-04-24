@@ -149,6 +149,25 @@ export class EstudianteBecaRepository extends IEstudianteBecaRepository {
   }
 
   /**
+   * Detalle de asignación desde el listado global (sin studentId en path).
+   * GET /v1/estudiantes/becas/:id
+   *
+   * @param {string|number} id - ID estudiantes_becas
+   * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
+   */
+  async obtenerDetalleAsignacionPorId(id) {
+    try {
+      if (!id || (typeof id !== 'string' && typeof id !== 'number')) {
+        return { success: false, error: 'El ID de la asignación es requerido' };
+      }
+      const response = await apiClient.get(ESTUDIANTES_BECAS_ENDPOINTS.DETALLE_ASIGNACION(id));
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al obtener asignación de beca');
+    }
+  }
+
+  /**
    * Actualiza una asignación de beca existente
    * PUT /v1/estudiantes/:studentId/scholarships/:id
    * 
