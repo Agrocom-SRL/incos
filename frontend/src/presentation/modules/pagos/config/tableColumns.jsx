@@ -21,7 +21,7 @@ import PagoTableActions from './PagoTableActions';
  * @param {Object} [options] - viewNavigateState: estado al abrir detalle desde la tabla (ej. menú Matrícula > Aportes)
  */
 export const createPagosTableColumns = (navigate, refetch = null, deletePago = null, options = {}) => {
-    const { viewNavigateState } = options;
+    const { viewNavigateState, returnListPath } = options;
     return [
         {
             title: 'Gestión',
@@ -138,7 +138,7 @@ export const createPagosTableColumns = (navigate, refetch = null, deletePago = n
             title: 'Acciones',
             key: 'acciones',
             fixed: 'right',
-            width: 80,
+            width: 120,
             align: 'right',
             render: (_, record) => {
                 const e = record.estudiante;
@@ -169,10 +169,22 @@ export const createPagosTableColumns = (navigate, refetch = null, deletePago = n
                         itemName={itemName}
                         itemDetails={itemDetails}
                         viewNavigateState={viewNavigateState}
+                        onEdit={(r) => {
+                            navigate(`/pagos/${r.id}/editar`, {
+                                state: {
+                                    ...(viewNavigateState || {}),
+                                    ...(returnListPath ? { returnListPath } : {}),
+                                },
+                            });
+                        }}
                         permisos={{
                             ver: [
                                 { codigo: 'finanzas.pago.ver', accion: 'DETALLE' },
                                 { codigo: 'matricula.pago.aporte.ver', accion: 'DETALLE' },
+                            ],
+                            editar: [
+                                { codigo: 'finanzas.pago.editar', accion: 'EDITAR' },
+                                { codigo: 'matricula.pago.aporte.ver', accion: 'EDITAR' },
                             ],
                             eliminar: [
                                 { codigo: 'finanzas.pago.editar', accion: 'ELIMINAR' },

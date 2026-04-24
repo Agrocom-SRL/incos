@@ -11,8 +11,9 @@ import { App } from 'antd';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { usePagosDetailContext, useEstadoAporteRegistro, useDeletePagoAporte } from '@application-pagos/hooks';
-import { Spin, Alert, Empty, Tabs, Tag, Button, Table } from 'antd';
-import { DollarOutlined, UserOutlined, FileTextOutlined, DownloadOutlined, ArrowLeftOutlined, DeleteOutlined, PlusCircleOutlined } from '@ant-design/icons';
+import dayjs from 'dayjs';
+import { Spin, Alert, Empty, Tabs, Tag, Button, Table, Modal, Form, Input, InputNumber, Select, DatePicker } from 'antd';
+import { DollarOutlined, UserOutlined, FileTextOutlined, DownloadOutlined, ArrowLeftOutlined, DeleteOutlined, PlusCircleOutlined, EditOutlined } from '@ant-design/icons';
 import { downloadFile } from '@application/utils';
 import { useCasesFactory } from '@container';
 import { showDeleteConfirm } from '@molecules/DeleteConfirmModal';
@@ -83,6 +84,8 @@ const PagosDetail = () => {
   const puedeRegistrarPago = hasPermiso('finanzas.pago.registrar', 'CREAR');
   const puedeEliminarPagoPermiso = hasPermiso('finanzas.pago.editar', 'ELIMINAR')
     || hasPermiso('matricula.pago.aporte.ver', 'ELIMINAR');
+  const puedeEditarCuota = hasPermiso('finanzas.pago.editar', 'EDITAR')
+    || hasPermiso('matricula.pago.aporte.ver', 'EDITAR');
 
   const {
     pago,
@@ -95,9 +98,30 @@ const PagosDetail = () => {
 
   const studentIdForEstado = pago?.estudiante?.id ?? pago?.student_id ?? null;
   const gestionIdForEstado = pago?.gestion?.id ?? pago?.management_id ?? null;
-  const { estadoAporte, loading: loadingEstado } = useEstadoAporteRegistro(studentIdForEstado, gestionIdForEstado);
+  const { estadoAporte, loading: loadingEstado, refetch: refetchEstadoAporte } = useEstadoAporteRegistro(studentIdForEstado, gestionIdForEstado);
 
   const [downloadingCuotaId, setDownloadingCuotaId] = useState(null);
+  const [editCuotaModalOpen, setEditCuotaModalOpen] = useState(false);
+  const [editCuotaRecord, setEditCuotaRecord] = useState(null);
+  const [editCuotaForm] = Form.useForm();
+  const [catalogosPagoLoaded, setCatalogosPagoLoaded] = useState(false);
+  const [loadingCatalogosPago, setLoadingCatalogosPago] = useState(false);
+  const [savingCuotaEdit, setSavingCuotaEdit] = useState(false);
+  const [metodosPagoOptions, setMetodosPagoOptions] = useState([]);
+  const [cuentasPagoOptions, setCuentasPagoOptions] = useState([]);
+
+  const paymentMethodIdWatch = Form.useWatch('payment_method_id', editCuotaForm);
+
+  const textoRecibosCuotas = useMemo(() => {
+    const cuotas = estadoAporte?.cuotas;
+    if (!cuotas?.length) return null;
+    const nums = [...new Set(cuotas.map((c) => c.numero_recibo).filter(Boolean))];
+    nums.sort((a, b) => String(a).localeCompare(String(b), undefined, { numeric: true }));
+    if (!nums.length) return null;
+    return nums.join(', ');
+  }, [estadoAporte?.cuotas]);
+
+  const defaultTabPagos = location.state?.pagosTab === 'cuotas' ? 'cuotas' : 'resumen';
 
   const handleDownloadReciboCuota = useCallback(async (cuotaIdOrNumeroRecibo) => {
     try {
@@ -130,6 +154,99 @@ const PagosDetail = () => {
       setDownloadingCuotaId(null);
     }
   }, [message]);
+
+  const handleCloseEditCuotaModal = useCallback(() => {
+    setEditCuotaModalOpen(false);
+    setEditCuotaRecord(null);
+    editCuotaForm.resetFields();
+  }, [editCuotaForm]);
+
+  const handleOpenEditCuota = useCallback(async (record) => {
+    if (!record?.id) return;
+    setEditCuotaRecord(record);
+    editCuotaForm.setFieldsValue({
+      amount: Number(record.monto ?? 0),
+      payment_method_id: record.metodo_pago_id,
+      payment_account_id: record.cuenta_pago_id ?? undefined,
+      payment_date: record.fecha_pago ? dayjs(record.fecha_pago) : undefined,
+      transaction_number: record.numero_transaccion || '',
+      codigo_comprobante: record.codigo_comprobante || '',
+      descripcion: record.observacion || '',
+    });
+    setEditCuotaModalOpen(true);
+    if (!catalogosPagoLoaded) {
+      setLoadingCatalogosPago(true);
+      try {
+        const ucMet = useCasesFactory.listarMetodosPago();
+        const ucCue = useCasesFactory.listarCuentasPago();
+        const [rMet, rCue] = await Promise.all([
+          ucMet.ejecutar({ params: { pagina: 1, limite: 100 } }),
+          ucCue.ejecutar({ params: { pagina: 1, limite: 500 } }),
+        ]);
+        if (rMet.success && Array.isArray(rMet.data)) {
+          setMetodosPagoOptions(
+            rMet.data.map((m) => ({
+              value: m.id,
+              label: m.nombre || m.name || `Método ${m.id}`,
+            }))
+          );
+        }
+        if (rCue.success && Array.isArray(rCue.data)) {
+          setCuentasPagoOptions(
+            rCue.data.map((c) => {
+              const tit = c.nombreTitular || c.accountHolderName || c.nombre_titular || '';
+              const n = c.numeroCuenta || c.numero_cuenta || c.accountNumber || '';
+              const label = [tit, n].filter(Boolean).join(' · ') || `Cuenta ${c.id}`;
+              return { value: c.id, label };
+            })
+          );
+        }
+        setCatalogosPagoLoaded(true);
+      } catch {
+        message.error('No se pudieron cargar métodos o cuentas de pago');
+      } finally {
+        setLoadingCatalogosPago(false);
+      }
+    }
+  }, [catalogosPagoLoaded, editCuotaForm, message]);
+
+  const handleSubmitEditCuota = useCallback(async () => {
+    const cuotaId = editCuotaRecord?.id;
+    if (!cuotaId) return;
+    try {
+      const values = await editCuotaForm.validateFields();
+      setSavingCuotaEdit(true);
+      const methodId = values.payment_method_id;
+      const payload = {
+        amount: Number(values.amount),
+        payment_method_id: methodId,
+        payment_account_id: (methodId === 3 || methodId === 4) ? (values.payment_account_id ?? null) : null,
+        payment_date: dayjs(values.payment_date).format('YYYY-MM-DD'),
+        transaction_number: (methodId === 3 || methodId === 4) ? (values.transaction_number?.trim() || null) : null,
+        codigo_comprobante: (methodId === 2 || methodId === 3 || methodId === 4)
+          ? (values.codigo_comprobante?.trim() || null)
+          : null,
+        descripcion: values.descripcion?.trim() || null,
+      };
+      const uc = useCasesFactory.actualizarCuotaPagoAporte();
+      const result = await uc.ejecutar(cuotaId, payload);
+      if (!result?.success) {
+        message.error(result?.error || result?.message || 'No se pudo actualizar la cuota', DURACION_MENSAJE_ERROR);
+        return;
+      }
+      message.success('Cuota actualizada');
+      handleCloseEditCuotaModal();
+      await refetchEstadoAporte();
+      if (typeof refetch === 'function') {
+        await refetch();
+      }
+    } catch (err) {
+      if (err?.errorFields) return;
+      message.error(err?.message || 'Error al guardar la cuota', DURACION_MENSAJE_ERROR);
+    } finally {
+      setSavingCuotaEdit(false);
+    }
+  }, [editCuotaForm, editCuotaRecord, handleCloseEditCuotaModal, message, refetch, refetchEstadoAporte]);
 
   useEffect(() => {
     if (!loading && error) {
@@ -171,7 +288,7 @@ const PagosDetail = () => {
       modal,
       itemName: 'este pago de aporte',
       itemDetails: [
-        { label: 'Recibo', value: pago.receipt_number || pago.numeroRecibo || pago.id },
+        { label: 'Recibo(s)', value: textoRecibosCuotas || '—' },
         { label: 'Estudiante', value: pago.estudiante?.nombreCompleto || pago.estudiante?.codigoEstudiante || '—' },
         { label: 'Gestión', value: pago.gestion?.nombre || pago.gestion?.codigo || '—' },
       ],
@@ -189,7 +306,7 @@ const PagosDetail = () => {
         }
       },
     });
-  }, [modal, pago, deletePagoAporte, message, studentIdFromState, navigate]);
+  }, [modal, pago, deletePagoAporte, message, studentIdFromState, navigate, textoRecibosCuotas]);
 
   const tabItems = useMemo(() => {
     if (!pago?.id) {
@@ -281,7 +398,8 @@ const PagosDetail = () => {
         </InfoCard>
         {loadingEstado ? (
           <div className="sd-loading" style={{ padding: '40px' }}>
-            <Spin tip="Cargando detalle del aporte..." />
+            <Spin size="large" />
+            <p style={{ marginTop: 12 }}>Cargando detalle del aporte…</p>
           </div>
         ) : estadoAporte?.cuotas && estadoAporte.cuotas.length > 0 ? (
               <InfoCard title={`Cuotas registradas (${estadoAporte.cuotas.length})`} icon={<DownloadOutlined />} cols={1}>
@@ -343,6 +461,25 @@ const PagosDetail = () => {
                         return mp.nombre || mp.codigo || '—';
                       },
                     },
+                    ...(puedeEditarCuota
+                      ? [
+                          {
+                            title: '',
+                            key: 'editar',
+                            width: 100,
+                            render: (_, record) => (
+                              <Button
+                                type="link"
+                                size="small"
+                                icon={<EditOutlined />}
+                                onClick={() => handleOpenEditCuota(record)}
+                              >
+                                Editar
+                              </Button>
+                            ),
+                          },
+                        ]
+                      : []),
                     {
                       title: '',
                       key: 'descargar',
@@ -415,7 +552,17 @@ const PagosDetail = () => {
       items.push({ key: 'inscripcion', label: <span className="sd-tab-label"><FileTextOutlined /> Inscripción</span>, children: inscripcionChildren });
     }
     return items;
-  }, [pago, estadoAporte, loadingEstado, handleDownloadReciboCuota, downloadingCuotaId, studentIdForRegistrar, handleRegistrarSiguienteCuota]);
+  }, [
+    pago,
+    estadoAporte,
+    loadingEstado,
+    handleDownloadReciboCuota,
+    downloadingCuotaId,
+    studentIdForRegistrar,
+    handleRegistrarSiguienteCuota,
+    puedeEditarCuota,
+    handleOpenEditCuota,
+  ]);
 
   if (loading) {
     return (
@@ -442,7 +589,9 @@ const PagosDetail = () => {
   }
 
   const puedeEliminarPago = !pago.inscripcion;
-  const numeroRecibo = pago.receipt_number || pago.numeroRecibo || pago.id;
+  const tituloRecibosPerfil = textoRecibosCuotas
+    ? (String(textoRecibosCuotas).includes(',') ? `Recibos ${textoRecibosCuotas}` : `Recibo ${textoRecibosCuotas}`)
+    : 'Aporte académico';
   const estadoPago = pago.estado ?? pago.state;
   const montoObligatorio = pago.monto_obligatorio ?? pago.mandatoryAmount ?? pago.montoObligatorio ?? 0;
   const profileSubtitle = [
@@ -468,7 +617,7 @@ const PagosDetail = () => {
               </div>
             </div>
             <div className="sd-profile__name-block">
-              <h1 className="sd-profile__name">Pago #{numeroRecibo}</h1>
+              <h1 className="sd-profile__name">{tituloRecibosPerfil}</h1>
               <div className="sd-profile__meta">
                 <p className="sd-profile__sub">{profileSubtitle}</p>
               </div>
@@ -479,8 +628,8 @@ const PagosDetail = () => {
 
           <div className="sd-profile__stats">
             <div className="sd-stat">
-              <span className="sd-stat__label">Recibo</span>
-              <span className="sd-stat__value sd-stat__value--primary">{numeroRecibo}</span>
+              <span className="sd-stat__label">Recibo(s)</span>
+              <span className="sd-stat__value sd-stat__value--primary">{textoRecibosCuotas || '—'}</span>
             </div>
             <div className="sd-stat">
               <span className="sd-stat__label">Monto obligatorio</span>
@@ -535,8 +684,100 @@ const PagosDetail = () => {
 
         {/* ═══ TABS ═══ */}
         <div className="sd-tabs-shell">
-          <Tabs defaultActiveKey="resumen" items={tabItems} className="sd-tabs" />
+          <Tabs
+            key={`pagos-detail-tabs-${pago.id}-${defaultTabPagos}`}
+            defaultActiveKey={defaultTabPagos}
+            items={tabItems}
+            className="sd-tabs"
+          />
         </div>
+
+        <Modal
+          title={editCuotaRecord?.numero_recibo ? `Editar cuota · Recibo ${editCuotaRecord.numero_recibo}` : 'Editar cuota'}
+          open={editCuotaModalOpen}
+          onCancel={handleCloseEditCuotaModal}
+          onOk={handleSubmitEditCuota}
+          okText="Guardar"
+          confirmLoading={savingCuotaEdit}
+          destroyOnHidden
+          width={560}
+        >
+          <Spin spinning={loadingCatalogosPago}>
+            <Form
+              form={editCuotaForm}
+              layout="vertical"
+              style={{ marginTop: 12 }}
+              onValuesChange={(changed) => {
+                if (Object.prototype.hasOwnProperty.call(changed, 'payment_method_id') && changed.payment_method_id === 1) {
+                  editCuotaForm.setFieldValue('payment_account_id', undefined);
+                }
+              }}
+            >
+              <Form.Item
+                name="amount"
+                label="Monto (Bs.)"
+                rules={[{ required: true, message: 'Ingrese el monto' }]}
+              >
+                <InputNumber min={0} step={0.01} style={{ width: '100%' }} />
+              </Form.Item>
+              <Form.Item
+                name="payment_method_id"
+                label="Método de pago"
+                rules={[{ required: true, message: 'Seleccione el método' }]}
+              >
+                <Select
+                  options={metodosPagoOptions}
+                  placeholder="Método"
+                  loading={loadingCatalogosPago && !metodosPagoOptions.length}
+                />
+              </Form.Item>
+              {(paymentMethodIdWatch === 3 || paymentMethodIdWatch === 4) && (
+                <Form.Item
+                  name="payment_account_id"
+                  label="Cuenta de pago"
+                  rules={[{ required: true, message: 'Seleccione la cuenta' }]}
+                >
+                  <Select
+                    showSearch
+                    optionFilterProp="label"
+                    options={cuentasPagoOptions}
+                    placeholder="Cuenta"
+                    allowClear={false}
+                  />
+                </Form.Item>
+              )}
+              <Form.Item
+                name="payment_date"
+                label="Fecha de pago"
+                rules={[{ required: true, message: 'Seleccione la fecha' }]}
+              >
+                <DatePicker format="DD/MM/YYYY" style={{ width: '100%' }} />
+              </Form.Item>
+              {(paymentMethodIdWatch === 2 || paymentMethodIdWatch === 3 || paymentMethodIdWatch === 4) && (
+                <Form.Item
+                  name="codigo_comprobante"
+                  label="Código comprobante"
+                  rules={[
+                    {
+                      required: true,
+                      message: 'El código de comprobante es obligatorio para este método',
+                    },
+                  ]}
+                >
+                  <Input />
+                </Form.Item>
+              )}
+              {(paymentMethodIdWatch === 3 || paymentMethodIdWatch === 4) && (
+                <Form.Item name="transaction_number" label="Número de transacción (opcional)">
+                  <Input />
+                </Form.Item>
+              )}
+              <Form.Item name="descripcion" label="Observación (opcional)">
+                <Input.TextArea rows={2} maxLength={500} showCount />
+              </Form.Item>
+            </Form>
+          </Spin>
+        </Modal>
 
       </div>
     </PageTemplate>

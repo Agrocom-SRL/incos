@@ -15,6 +15,7 @@ export const PAGOS_TOKENS = {
     getPaymentAporteByIdUseCase: 'pagos.getPaymentAporteByIdUseCase',
     getEstadoAporteRegistroUseCase: 'pagos.getEstadoAporteRegistroUseCase',
     deletePaymentAporteUseCase: 'pagos.deletePaymentAporteUseCase',
+    updatePaymentInstallmentUseCase: 'pagos.updatePaymentInstallmentUseCase',
     generateReciboPagoUseCase: 'pagos.generateReciboPagoUseCase',
     exportPaymentAporteByCareerExcelUseCase: 'pagos.exportPaymentAporteByCareerExcelUseCase',
 
@@ -30,6 +31,7 @@ export const PAGOS_TOKENS = {
     getPaymentAporteByIdController: 'pagos.getPaymentAporteByIdController',
     getEstadoAporteRegistroController: 'pagos.getEstadoAporteRegistroController',
     deletePaymentAporteController: 'pagos.deletePaymentAporteController',
+    updatePaymentInstallmentController: 'pagos.updatePaymentInstallmentController',
     generateReciboPagoController: 'pagos.generateReciboPagoController',
     exportListaAportesPorCarreraExcelController: 'pagos.exportListaAportesPorCarreraExcelController',
 

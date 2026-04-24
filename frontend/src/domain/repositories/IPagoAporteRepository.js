@@ -52,6 +52,17 @@ export class IPagoAporteRepository extends IBaseRepository {
   }
 
   /**
+   * Actualiza una cuota (pago_cuotas) existente.
+   * PUT /v1/pagos-aportes/cuotas/:id
+   *
+   * @param {string|number} cuotaId
+   * @param {Object} payload
+   */
+  async actualizarCuota(cuotaId, payload) {
+    throw new Error('Method actualizarCuota must be implemented');
+  }
+
+  /**
    * Genera u obtiene el recibo de pago de un aporte académico
    * GET /v1/pagos-aportes/:id/recibo
    * 

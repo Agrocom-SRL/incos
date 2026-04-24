@@ -33,7 +33,7 @@ INSERT INTO permisos (id, codigo, nombre, dominio, modulo, grupo_ui, ruta_sideba
 (7,  'matricula.beca.asignar', 'Becas: asignar, ajustar o quitar',                  'MATRICULA', 'MAT', 'mat_becas',       '/estudiantes/becas/listar', TRUE),
 (8,  'matricula.beca.aprobar', 'Becas: aprobar solicitudes',                         'MATRICULA', 'MAT', 'mat_becas',       '/estudiantes/becas/listar', TRUE),
 (9,  'matricula.documento.ver', 'Documentos: ver y generar PDFs (acta, declaración, formulario)', 'MATRICULA', 'MAT', 'mat_documentos', '/estudiantes/documentos', TRUE),
-(10, 'matricula.pago.aporte.ver', 'Aportes: listar, anular, exportar recibo PDF y Excel estado por carrera', 'MATRICULA', 'MAT', 'mat_aportes', '/matricula/aportes/listar', TRUE),
+(10, 'matricula.pago.aporte.ver', 'Aportes: listar, detalle, editar cuotas, anular, exportar recibo PDF y Excel estado por carrera', 'MATRICULA', 'MAT', 'mat_aportes', '/matricula/aportes/listar', TRUE),
 (11, 'matricula.pasantia.ver',       'Pasantías estudiantiles: listar y ver',        'MATRICULA', 'MAT', 'mat_pasantias',   '/pasantias/listar',         TRUE),
 (12, 'matricula.pasantia.solicitar', 'Pasantías estudiantiles: solicitar',           'MATRICULA', 'MAT', 'mat_pasantias',   '/pasantias/listar',         TRUE),
 (13, 'matricula.pasantia.aprobar',   'Pasantías estudiantiles: aprobar',             'MATRICULA', 'MAT', 'mat_pasantias',   '/pasantias/listar',         TRUE),

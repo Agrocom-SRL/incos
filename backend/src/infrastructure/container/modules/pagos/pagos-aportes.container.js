@@ -19,6 +19,7 @@ import { ListPagosAportesUseCase } from '../../../../application/use-cases/pagos
 import { GetPaymentAporteByIdUseCase } from '../../../../application/use-cases/pagos/GetPaymentAporteByIdUseCase.js';
 import { GetEstadoAporteRegistroUseCase } from '../../../../application/use-cases/pagos/GetEstadoAporteRegistroUseCase.js';
 import { DeletePaymentAporteUseCase } from '../../../../application/use-cases/pagos/DeletePaymentAporteUseCase.js';
+import { UpdatePaymentInstallmentUseCase } from '../../../../application/use-cases/pagos/UpdatePaymentInstallmentUseCase.js';
 import { GenerateReciboPagoUseCase } from '../../../../application/use-cases/pagos/GenerateReciboPagoUseCase.js';
 import { ExportPaymentAporteByCareerExcelUseCase } from '../../../../application/use-cases/pagos/ExportPaymentAporteByCareerExcelUseCase.js';
 import {
@@ -27,6 +28,7 @@ import {
     GetPaymentAporteByIdController,
     GetEstadoAporteRegistroController,
     DeletePaymentAporteController,
+    UpdatePaymentInstallmentController,
     GenerateReciboPagoController,
     ExportListaAportesPorCarreraExcelController,
 } from '../../../../presentation/controllers/pagos/index.js';
@@ -115,6 +117,20 @@ export function registerPagosAportesResource(container) {
                 contributionPaymentInstallmentRepository: c.resolve(REPOSITORIOS_TOKENS.contributionPaymentInstallmentRepository),
                 studentDocumentRepository: c.resolve(REPOSITORIOS_TOKENS.studentDocumentRepository),
                 studentDocumentDeliveryRepository: c.resolve(REPOSITORIOS_TOKENS.studentDocumentDeliveryRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
+    registerComponent(
+        container,
+        PAGOS_TOKENS.updatePaymentInstallmentUseCase,
+        (c) =>
+            new UpdatePaymentInstallmentUseCase({
+                contributionPaymentInstallmentRepository: c.resolve(
+                    REPOSITORIOS_TOKENS.contributionPaymentInstallmentRepository
+                ),
+                contributionPaymentRepository: c.resolve(REPOSITORIOS_TOKENS.contributionPaymentRepository),
+                paymentMethodRepository: c.resolve(REPOSITORIOS_TOKENS.paymentMethodRepository),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
     );
@@ -211,6 +227,17 @@ export function registerPagosAportesResource(container) {
 
     registerComponent(
         container,
+        PAGOS_TOKENS.updatePaymentInstallmentController,
+        (c) =>
+            new UpdatePaymentInstallmentController({
+                updatePaymentInstallmentUseCase: c.resolve(PAGOS_TOKENS.updatePaymentInstallmentUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
+    );
+
+    registerComponent(
+        container,
         PAGOS_TOKENS.generateReciboPagoController,
         (c) =>
             new GenerateReciboPagoController({
@@ -245,6 +272,7 @@ export function registerPagosAportesResource(container) {
                 getPaymentAporteByIdController: c.resolve(PAGOS_TOKENS.getPaymentAporteByIdController),
                 getEstadoAporteRegistroController: c.resolve(PAGOS_TOKENS.getEstadoAporteRegistroController),
                 deletePaymentAporteController: c.resolve(PAGOS_TOKENS.deletePaymentAporteController),
+                updatePaymentInstallmentController: c.resolve(PAGOS_TOKENS.updatePaymentInstallmentController),
                 generateReciboPagoController: c.resolve(PAGOS_TOKENS.generateReciboPagoController),
                 exportListaAportesPorCarreraExcelController: c.resolve(
                     PAGOS_TOKENS.exportListaAportesPorCarreraExcelController

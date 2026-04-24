@@ -1,7 +1,7 @@
 import express from 'express';
 import { authenticate } from '../middleware/auth.middleware.js';
 import { verificarPermiso, verificarPermisoCualquiera } from '../middleware/permisos.middleware.js';
-import { registerPagoAporteValidator } from '../validators/pagos/index.js';
+import { registerPagoAporteValidator, updatePaymentCuotaValidator } from '../validators/pagos/index.js';
 import { uploadPaymentDocument } from '../middleware/upload.middleware.js';
 import { listValidator } from '../validators/common/index.js';
 
@@ -26,12 +26,26 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
     const router = express.Router();
     const { validateRequest } = middlewares;
 
-    /** Listado / estado registro: Finanzas o Matrícula (aportes). */
+    /** Listado: Finanzas o Matrícula (aportes). */
     const pagoListar = [
         authenticate,
         verificarPermisoCualquiera([
             ['finanzas.pago.ver', 'LISTAR'],
             ['matricula.pago.aporte.ver', 'LISTAR'],
+        ]),
+    ];
+    /**
+     * Estado del aporte para detalle / registro de cuotas (no es listado global).
+     * Alineado con quien puede ver detalle, listar o registrar pagos.
+     */
+    const pagoEstadoRegistro = [
+        authenticate,
+        verificarPermisoCualquiera([
+            ['finanzas.pago.ver', 'LISTAR'],
+            ['matricula.pago.aporte.ver', 'LISTAR'],
+            ['finanzas.pago.ver', 'DETALLE'],
+            ['matricula.pago.aporte.ver', 'DETALLE'],
+            ['finanzas.pago.registrar', 'CREAR'],
         ]),
     ];
     /** Detalle de cabecera por id. */
@@ -49,6 +63,14 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
         verificarPermisoCualquiera([
             ['finanzas.pago.editar', 'ELIMINAR'],
             ['matricula.pago.aporte.ver', 'ELIMINAR'],
+        ]),
+    ];
+    /** Editar cuota (pago_cuotas): Finanzas o Matrícula (aportes). */
+    const pagoEditarCuota = [
+        authenticate,
+        verificarPermisoCualquiera([
+            ['finanzas.pago.editar', 'EDITAR'],
+            ['matricula.pago.aporte.ver', 'EDITAR'],
         ]),
     ];
     /** Recibo PDF: EXPORTAR en Finanzas o en matricula.pago.aporte.ver. */
@@ -84,7 +106,7 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
      */
     router.get(
         '/estado-registro',
-        ...pagoListar,
+        ...pagoEstadoRegistro,
         (req, res, next) => controllers.getEstadoAporteRegistroController.handle(req, res, next)
     );
 
@@ -109,6 +131,18 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
      * Registrar una cuota (abono). Crea/actualiza cabecera si hace falta e inserta en pago_cuotas.
      * Body (multipart/form-data): student_id, management_id, amount, payment_method_id, payment_account_id, payment_date, transaction_number, codigo_comprobante, descripcion, documentoRespaldo (archivo)
      */
+    /**
+     * PUT /api/v1/pagos-aportes/cuotas/:id
+     * Actualizar una cuota existente (id = pago_cuotas.id). Recalcula estado de la cabecera.
+     */
+    router.put(
+        '/cuotas/:id',
+        ...pagoEditarCuota,
+        updatePaymentCuotaValidator,
+        validateRequest,
+        (req, res, next) => controllers.updatePaymentInstallmentController.handle(req, res, next)
+    );
+
     router.post(
         '/',
         ...pagoRegistrar,

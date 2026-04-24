@@ -244,6 +244,34 @@ export class PagoAporteRepository extends IPagoAporteRepository {
   }
 
   /**
+   * PUT /v1/pagos-aportes/cuotas/:id
+   * @param {string|number} cuotaId - ID de pago_cuotas
+   * @param {Object} payload - Campos de la cuota (amount, payment_method_id, …)
+   */
+  async actualizarCuota(cuotaId, payload) {
+    try {
+      if (!cuotaId || (typeof cuotaId !== 'string' && typeof cuotaId !== 'number')) {
+        return { success: false, error: 'ID de cuota es requerido' };
+      }
+      const body = {
+        amount: payload.amount,
+        payment_method_id: payload.payment_method_id,
+        payment_account_id: payload.payment_account_id ?? null,
+        payment_date: payload.payment_date,
+        transaction_number: payload.transaction_number ?? null,
+        codigo_comprobante: payload.codigo_comprobante ?? null,
+        descripcion: payload.descripcion ?? null,
+      };
+      const response = await apiClient.put(PAGOS_APORTES_ENDPOINTS.UPDATE_CUOTA(cuotaId), body, {
+        headers: { 'Content-Type': 'application/json' },
+      });
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al actualizar la cuota de pago');
+    }
+  }
+
+  /**
    * Genera u obtiene el recibo de pago de un aporte académico
    * GET /v1/pagos-aportes/:id/recibo
    * 

@@ -82,8 +82,9 @@ const PagosList = () => {
     () =>
       createPagosTableColumns(navigate, refetch, deletePago, {
         viewNavigateState: aportesNavState,
+        returnListPath: pathname,
       }),
-    [navigate, refetch, deletePago, aportesNavState]
+    [navigate, refetch, deletePago, aportesNavState, pathname]
   );
 
   const breadcrumbItems = useMemo(

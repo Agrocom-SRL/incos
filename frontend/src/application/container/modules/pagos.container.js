@@ -19,6 +19,7 @@ import {
   ObtenerTodosPagosAportesUseCase,
   ObtenerPagoAportePorIdUseCase,
   EliminarPagoAporteUseCase,
+  ActualizarCuotaPagoAporteUseCase,
   GenerarReciboPagoUseCase,
   ExportarListaAportesPorCarreraExcelUseCase,
 } from '@useCases/pagos';
@@ -80,6 +81,10 @@ export function registerPagosModule(factory) {
   // Registrar Use Cases de Eliminación de Pago de Aporte
   factory.eliminarPagoAporte = () => {
     return new EliminarPagoAporteUseCase({ pagoAporteRepository });
+  };
+
+  factory.actualizarCuotaPagoAporte = () => {
+    return new ActualizarCuotaPagoAporteUseCase({ pagoAporteRepository });
   };
 
   // Registrar Use Cases de Generación de Recibo de Pago

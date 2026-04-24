@@ -10,6 +10,7 @@ import { UnderConstruction } from '@components/pages';
 const PagosRegistrarConnector = lazy(() => import('./connectors/PagosRegistrarConnector'));
 const PagosListConnector = lazy(() => import('./connectors/ListConnector'));
 const PagosDetailConnector = lazy(() => import('./connectors/DetailConnector'));
+const PagosEditarCuotaConnector = lazy(() => import('./connectors/PagosEditarCuotaConnector'));
 
 export const pagosRoutes = [
   {
@@ -116,7 +117,7 @@ export const pagosRoutes = [
   },
   {
     path: '/pagos/:id/editar',
-    element: <UnderConstruction />,
+    element: <PagosEditarCuotaConnector />,
     key: 'PAG-EDITAR',
     permiso: 'finanzas.pago.editar',
     accion: 'EDITAR',
