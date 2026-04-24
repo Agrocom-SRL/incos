@@ -19,12 +19,23 @@ const DocentesList = () => {
   const screens = Grid.useBreakpoint();
   const isSmall = !screens.lg;
 
-  const { docentes = [], loading = false, error = null, searchText = '', setSearchText, refetch } =
-    useDocentesListContext();
+  const {
+    docentes = [],
+    loading = false,
+    error = null,
+    searchText = '',
+    setSearchText,
+    refetch,
+    deleteDocente,
+  } = useDocentesListContext();
 
   const tableColumns = useMemo(
-    () => createDocentesTableColumns(navigate, refetch, { isSmall, returnListPath: pathname }),
-    [navigate, refetch, isSmall, pathname]
+    () =>
+      createDocentesTableColumns(navigate, refetch, deleteDocente, {
+        isSmall,
+        returnListPath: pathname,
+      }),
+    [navigate, refetch, deleteDocente, isSmall, pathname]
   );
 
   const breadcrumbItems = useMemo(

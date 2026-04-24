@@ -11,7 +11,8 @@
 --   [NUEVO]   permisos 81-83: convenios (cfg)
 --   [NUEVO]   permiso 84:     config. pagos (cfg)
 --   [NUEVO]   permiso 85:     historial actividades (cfg)
---   [TOTAL]   95 permisos (antes 87)
+--   [NUEVO]   permiso 96: docentes.editar (ficha + eliminar cuando aplique API)
+--   [TOTAL]   96 permisos
 --
 -- Ejecutar después de: 53-seed-roles.sql
 -- Ejecutar antes de:   56-seed-permiso-acciones.sql, 55-seed-roles-permisos.sql
@@ -132,11 +133,12 @@ INSERT INTO permisos (id, codigo, nombre, dominio, modulo, grupo_ui, ruta_sideba
 -- DOMINIO: SEGURIDAD (módulo sidebar: SEG)
 (93, 'seguridad.usuario.crear',      'Usuarios: crear nuevo usuario',                 'SEGURIDAD', 'SEG', 'seg_usuarios', '/seguridad/usuarios', TRUE),
 (94, 'seguridad.usuario.administrar','Usuarios: listar, ver y administrar',           'SEGURIDAD', 'SEG', 'seg_usuarios', '/seguridad/usuarios', TRUE),
-(95, 'seguridad.rol.gestionar',      'Roles y permisos: ver y administrar',           'SEGURIDAD', 'SEG', 'seg_roles',    '/seguridad/roles',    TRUE);
+(95, 'seguridad.rol.gestionar',      'Roles y permisos: ver y administrar',           'SEGURIDAD', 'SEG', 'seg_roles',    '/seguridad/roles',    TRUE),
+(96, 'docentes.editar',              'Docentes: editar ficha y eliminar o desactivar registro', 'DOCENTES', 'DOC', 'doc_docentes', '/docentes/listar', TRUE);
 
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- Verificación post-insert:
--- SELECT COUNT(*) FROM permisos WHERE activo = 1;                        -- 95
+-- SELECT COUNT(*) FROM permisos WHERE activo = 1;                        -- 96
 -- SELECT COUNT(*) FROM permisos WHERE grupo_ui IS NULL AND activo = 1;   -- 0
 -- SELECT COUNT(*) FROM permisos WHERE ruta_sidebar IS NULL AND activo=1; -- 0

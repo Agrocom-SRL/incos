@@ -13,6 +13,7 @@ import {
   IdcardOutlined,
   ManOutlined,
   WomanOutlined,
+  ApartmentOutlined,
 } from '@ant-design/icons';
 import { TableCell } from '@molecules';
 import TableActions from '@molecules/TableActions';
@@ -49,12 +50,13 @@ const laborTagColor = (estado) => {
 /**
  * @param {Function} navigate
  * @param {Function} refetch
+ * @param {null | ((id: string | number) => Promise<{ success: boolean, error?: string }>)} deleteDocente
  * @param {Object} options
  * @param {boolean} [options.isSmall]
  * @param {string} [options.returnListPath]
  * @returns {import('antd').TableColumnType[]}
  */
-export const createDocentesTableColumns = (navigate, refetch = null, options = {}) => {
+export const createDocentesTableColumns = (navigate, refetch = null, deleteDocente = null, options = {}) => {
   const { isSmall = false, returnListPath = '/docentes/listar' } = options;
 
   return [
@@ -219,7 +221,7 @@ export const createDocentesTableColumns = (navigate, refetch = null, options = {
     {
       title: 'Acciones',
       key: 'acciones',
-      width: isSmall ? 120 : 150,
+      width: isSmall ? 168 : 200,
       align: 'right',
       responsive: ['xs', 'sm', 'md', 'lg', 'xl', 'xxl'],
       render: (_, record) => {
@@ -246,21 +248,37 @@ export const createDocentesTableColumns = (navigate, refetch = null, options = {
             record={record}
             navigate={navigate}
             refetch={refetch}
+            deleteFn={deleteDocente || undefined}
             itemName={itemName}
             itemDetails={itemDetails}
-            onView={() =>
-              navigate(`/docentes/${record.id}`, {
-                state: { menuSidebarKey: 'DOC-LIST', returnListPath },
-              })
-            }
+            viewPath="/docentes/:id"
+            viewNavigateState={{ menuSidebarKey: 'DOC-LIST', returnListPath }}
             onEdit={() =>
               navigate(`/docentes/${record.id}/editar`, {
                 state: { menuSidebarKey: 'DOC-LIST', returnListPath },
               })
             }
+            extraActions={[
+              {
+                icon: <ApartmentOutlined />,
+                variant: 'default',
+                tooltip: 'Asignar a cursos y paralelos',
+                permiso: 'docentes.asignar',
+                accion: 'EDITAR',
+                onClick: (r) =>
+                  navigate('/docentes/asignar', {
+                    state: {
+                      menuSidebarKey: 'DOC-LIST',
+                      returnListPath,
+                      docenteId: r.id,
+                    },
+                  }),
+              },
+            ]}
             permisos={{
               ver: { codigo: 'docentes.ver', accion: 'DETALLE' },
-              editar: { codigo: 'docentes.crear', accion: 'CREAR' },
+              editar: { codigo: 'docentes.editar', accion: 'EDITAR' },
+              eliminar: { codigo: 'docentes.editar', accion: 'ELIMINAR' },
             }}
           />
         );

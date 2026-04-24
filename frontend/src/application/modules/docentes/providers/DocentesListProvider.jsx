@@ -2,7 +2,7 @@
  * Provider: búsqueda en cliente sobre la lista de docentes (todos los campos mapeados + IDs).
  */
 
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useDocentesContext } from '@application-docentes/hooks';
 import { useTableData } from '@molecules';
 import { DocentesListContext } from '@application-docentes/context/DocentesListContext';
@@ -47,6 +47,14 @@ export const DocentesListProvider = ({ children }) => {
 
   const { searchText, setSearchText, filteredData } = useTableData(docentesData, getSearchFields);
 
+  /** Hasta existir DELETE /api/v1/docentes/:id — mantiene flujo UI + permiso ELIMINAR. */
+  const deleteDocente = useCallback(async (_id) => {
+    return {
+      success: false,
+      error: 'La eliminación de docentes aún no está disponible en el servidor.',
+    };
+  }, []);
+
   const value = {
     docentes: filteredData,
     loading,
@@ -54,6 +62,7 @@ export const DocentesListProvider = ({ children }) => {
     refetch,
     searchText,
     setSearchText,
+    deleteDocente,
   };
 
   return <DocentesListContext.Provider value={value}>{children}</DocentesListContext.Provider>;

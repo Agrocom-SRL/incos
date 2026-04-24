@@ -1,5 +1,5 @@
 # Matriz de Permisos - Instituto INCOS
-## Ultima actualizacion: 2026-04-07
+## Ultima actualizacion: 2026-04-24
 
 Documento de auditoria funcional (frontend + backend + seeds) sobre permisos por accion.
 
@@ -117,7 +117,7 @@ Este catalogo define las capacidades reales del sistema para evitar ambiguedad e
 ### Inventario frontend de permisos en rutas (single source UI)
 
 El barrido de `frontend/src/presentation/modules/**/routes.jsx` confirma que los codigos usados en UI
-estan alineados con `54-seed-permisos.sql` (1..87) y que la visibilidad del sidebar depende de accion `VER`.
+estan alineados con `54-seed-permisos.sql` (96 permisos; ultimo `docentes.editar` id 96) y que la visibilidad del sidebar en v2 depende de accion **LISTAR** (no existe `VER` en `permiso_acciones`).
 
 ### Recomendacion de normalizacion (siguiente paso de schema)
 
@@ -202,6 +202,13 @@ Permisos: `academico.nivelacion.*`, `academico.trazabilidad.*`, `academico.histo
 ### DOC - Docentes y supervision (`/docentes/*`, `/supervision/*`)
 Permisos: `docentes.*`, `docentes.supervision.*`
 
+| Codigo (seed) | Acciones v2 (`permiso_acciones`) | Uso principal (UI) |
+|---|---|---|
+| `docentes.ver` (41) | LISTAR, DETALLE, EXPORTAR | Listado, ficha, export (cuando exista) |
+| `docentes.crear` (42) | CREAR | Alta `/docentes/registrar` |
+| `docentes.editar` (96) | EDITAR, ELIMINAR | Formulario edicion ficha; baja (DELETE API pendiente) |
+| `docentes.asignar` (43) | EDITAR | Asignacion oferta/curso-paralelo `/docentes/asignar` |
+
 | Accion | Descripcion | Roles |
 |---|---|---|
 | VER | Ver docentes/supervision | ADM, REC, DIRA, DIRM, DOC |
@@ -238,6 +245,7 @@ Endpoint(s): `GET/POST/PUT/PATCH/DELETE /usuarios`, `GET/PUT /roles/:id/permisos
 
 ## Hallazgos de la auditoria
 
+- Docentes: permiso dedicado `docentes.editar` (id 96) separa **EDITAR** ficha de **CREAR** alta; **ELIMINAR** en UI queda listo; endpoint `DELETE /docentes/:id` pendiente de implementar.
 - Existen `DELETE` activos para estudiantes, becas asignadas, inscripciones, pagos y overrides de usuarios.
 - Existen `EXPORTAR` reales en estudiantes (excel) y pagos (recibo PDF).
 - `ADMIN_SISTEMA` debe ser inmutable en SEG; se protegio en backend y UI.
