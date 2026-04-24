@@ -19,9 +19,13 @@ import TableActions from '@molecules/TableActions';
  * @param {Function} navigate - Función de navegación de react-router
  * @param {Function} refetch - Función para recargar los datos después de eliminar
  * @param {Function} deleteBeca - Función para eliminar una beca asignada
+ * @param {Object} [options]
+ * @param {Object} [options.viewNavigateState] - Estado para navigate al ver detalle (ej. menuSidebarKey, returnListPath)
  * @returns {Array} Array de configuración de columnas para Ant Design Table
  */
-export const createBecasTableColumns = (navigate, refetch = null, deleteBeca = null) => {
+export const createBecasTableColumns = (navigate, refetch = null, deleteBeca = null, options = {}) => {
+  const { viewNavigateState } = options;
+  const returnListPath = viewNavigateState?.returnListPath || '/estudiantes/becas/listar';
 
   return [
     {
@@ -221,15 +225,24 @@ export const createBecasTableColumns = (navigate, refetch = null, deleteBeca = n
             deleteFn={deleteBeca}
             itemName={itemName}
             itemDetails={itemDetails}
-            viewPath={record.studentId ? `/estudiantes/:id` : null}
+            viewPath={record?.id ? `/estudiantes/becas/asignacion/:id` : null}
+            viewNavigateState={viewNavigateState}
             editPath={null}
+            permisos={{
+              ver: { codigo: 'matricula.beca.ver', accion: 'DETALLE' },
+              editar: [
+                { codigo: 'matricula.beca.asignar', accion: 'CREAR' },
+                { codigo: 'matricula.beca.asignar', accion: 'EDITAR' },
+              ],
+              eliminar: { codigo: 'matricula.beca.asignar', accion: 'ELIMINAR' },
+            }}
             onEdit={() => {
               if (!record?.studentId || !record?.id) return;
               navigate('/estudiantes/becas/asignar', {
                 state: {
                   studentId: Number(record.studentId),
                   studentName: record.student?.nombreCompleto || null,
-                  returnListPath: '/estudiantes/becas/listar',
+                  returnListPath,
                   editBecaAsignada: {
                     id: Number(record.id),
                     scholarshipId: record.scholarship?.id ? Number(record.scholarship.id) : null,
@@ -237,12 +250,6 @@ export const createBecasTableColumns = (navigate, refetch = null, deleteBeca = n
                   },
                 },
               });
-            }}
-            onView={() => {
-              // Ver detalle del estudiante si hay studentId
-              if (record.studentId) {
-                navigate(`/estudiantes/${record.studentId}`);
-              }
             }}
           />
         );

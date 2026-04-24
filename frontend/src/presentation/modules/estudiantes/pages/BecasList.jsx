@@ -46,8 +46,14 @@ const BecasList = () => {
 
     // Crear columnas de la tabla (memoizadas para evitar recrearlas en cada render)
     const tableColumns = useMemo(
-        () => createBecasTableColumns(navigate, refetch, deleteBeca),
-        [navigate, refetch, deleteBeca]
+        () =>
+            createBecasTableColumns(navigate, refetch, deleteBeca, {
+                viewNavigateState: {
+                    menuSidebarKey: 'MAT-BEC-LISTAR',
+                    returnListPath: pathname,
+                },
+            }),
+        [navigate, refetch, deleteBeca, pathname]
     );
 
     // Configurar breadcrumb items

@@ -95,6 +95,8 @@ export const ESTUDIANTES_BECAS_ENDPOINTS = {
   ...createCRUDEndpoints('/estudiantes'),
   // Endpoint para listar todas las becas asignadas a estudiantes
   LIST_ALL: `${API_BASE}/estudiantes/becas`,
+  /** GET — detalle de una fila del listado (asignación por ID de estudiantes_becas) */
+  DETALLE_ASIGNACION: (asignacionId) => `${API_BASE}/estudiantes/becas/${asignacionId}`,
   // Endpoint para eliminar una beca asignada (DELETE /v1/estudiantes/becas/:id)
   DELETE: (becaId) => `${API_BASE}/estudiantes/becas/${becaId}`,
   // Endpoint específico para becas de un estudiante

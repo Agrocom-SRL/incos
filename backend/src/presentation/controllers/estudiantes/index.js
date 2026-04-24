@@ -19,6 +19,7 @@ export { AsignarBecaController } from './becas/asignar.controller.js';
 export { DeleteStudentScholarshipController } from './becas/delete-student-scholarship.controller.js';
 export { GetStudentScholarshipsController } from './becas/get-scholarships.controller.js';
 export { ListStudentScholarshipsController } from './becas/list-student-scholarships.controller.js';
+export { GetStudentScholarshipByIdController } from './becas/get-student-scholarship-by-id.controller.js';
 export { SearchStudentsForBecaAsignacionController } from './becas/search-students-asignacion-beca.controller.js';
 // TODO: Agregar otros Controllers cuando se implementen sus endpoints
 // export { AprobarBecaController } from './becas/aprobar.controller.js';

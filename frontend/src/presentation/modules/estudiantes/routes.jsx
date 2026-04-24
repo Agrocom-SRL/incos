@@ -13,6 +13,7 @@ import {
   AsignarBecaConnector,
   BecasAsignarSeleccionConnector,
   BecasListConnector,
+  BecaAsignacionDetailConnector,
 } from '@estudiantes/connectors';
 
 export const estudiantesRoutes = [
@@ -70,6 +71,15 @@ export const estudiantesRoutes = [
       order: 5,
       labelByRole: { ESTUDIANTE: 'Mi beca' },
     },
+  },
+  {
+    path: '/estudiantes/becas/asignacion/:id',
+    element: <BecaAsignacionDetailConnector />,
+    key: 'MAT-BEC-ASIG-DET',
+    permiso: 'matricula.beca.ver',
+    accion: 'DETALLE',
+    menu: null,
+    breadcrumbParent: 'MAT-BEC-LISTAR',
   },
   {
     path: '/estudiantes/becas/asignar/seleccionar-estudiante',

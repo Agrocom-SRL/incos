@@ -213,6 +213,19 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
     );
 
     /**
+     * GET /api/v1/estudiantes/becas/:id
+     * Detalle de una asignación de beca (enriquecido + pago de aporte vinculado si existe).
+     * Debe declararse después de GET /becas y antes de DELETE /becas/:id (mismo path, otro método).
+     */
+    router.get(
+        '/becas/:id',
+        ...becaDetalle,
+        idValidator,
+        validateRequest,
+        (req, res, next) => controllers.getStudentScholarshipByIdController.handle(req, res, next)
+    );
+
+    /**
      * GET /api/v1/estudiantes/:id/scholarships
      * Obtener todas las becas de un estudiante con datos enriquecidos
      * Path: id (ID del estudiante)
