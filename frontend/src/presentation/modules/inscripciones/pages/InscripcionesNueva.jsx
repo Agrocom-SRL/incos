@@ -32,6 +32,7 @@ import {
 } from '@inscripciones/components/organisms';
 import { useInscripcionesNuevaContext } from '@application-inscripciones/hooks';
 import { downloadFile } from '@application/utils/fileDownload';
+import { MENU_SIDEBAR_KEY_MAT_APORTES } from '@navigation-services/routeMapper';
 
 const { Paragraph } = Typography;
 
@@ -87,7 +88,12 @@ const InscripcionesNueva = () => {
   const handleGoToRegistrarPago = useCallback(() => {
     if (paymentRequiredStudentId) {
       clearPaymentRequiredDialog();
-      navigate('/pagos/registrar', { state: { studentId: paymentRequiredStudentId } });
+      navigate('/pagos/registrar', {
+        state: {
+          studentId: paymentRequiredStudentId,
+          menuSidebarKey: MENU_SIDEBAR_KEY_MAT_APORTES,
+        },
+      });
     }
   }, [paymentRequiredStudentId, clearPaymentRequiredDialog, navigate]);
 
@@ -96,7 +102,7 @@ const InscripcionesNueva = () => {
     if (studentIdFromState) {
       navigate(`/estudiantes/${studentIdFromState}`);
     } else {
-      navigate('/inscripciones');
+      navigate('/matricula/listar');
     }
   }, [navigate, studentIdFromState]);
 

@@ -11,6 +11,7 @@ import { Space } from 'antd';
 import { UserOutlined, PhoneOutlined, MailOutlined, DollarOutlined, BankOutlined, BookOutlined, CalendarOutlined, TagOutlined, IdcardOutlined, ManOutlined, WomanOutlined } from '@ant-design/icons';
 import { TableCell } from '@molecules';
 import TableActions from '@molecules/TableActions';
+import { MENU_SIDEBAR_KEY_MAT_APORTES } from '@navigation-services/routeMapper';
 import { getAdmissionTypeTagStyle } from './admissionTypeColors';
 
 /** Construye nombre completo desde partes si no viene compuesto */
@@ -77,7 +78,7 @@ export const createEstudiantesTableColumns = (
     if (!studentId) {
       console.warn('[tableColumns] ID de estudiante no disponible');
       navigate('/pagos/registrar', {
-        state: { studentId: studentId }
+        state: { studentId: studentId, menuSidebarKey: MENU_SIDEBAR_KEY_MAT_APORTES },
       });
       return;
     }
@@ -113,7 +114,9 @@ export const createEstudiantesTableColumns = (
         // Navegar al detalle del pago más reciente (state para que Volver vaya al estudiante)
         const pagoId = pagoMasReciente.id;
         if (pagoId) {
-          navigate(`/pagos/${pagoId}`, { state: { studentId } });
+          navigate(`/pagos/${pagoId}`, {
+            state: { studentId, menuSidebarKey: MENU_SIDEBAR_KEY_MAT_APORTES },
+          });
           return;
         }
       }
@@ -121,7 +124,7 @@ export const createEstudiantesTableColumns = (
 
     // Si no hay pagos, navegar al registro
     navigate('/pagos/registrar', {
-      state: { studentId: studentId }
+      state: { studentId: studentId, menuSidebarKey: MENU_SIDEBAR_KEY_MAT_APORTES },
     });
   };
 
@@ -335,12 +338,19 @@ export const createEstudiantesTableColumns = (
                 navigate(`/estudiantes/${record.id}/editar`, { state: { initialStep: 2 } });
               }
             }}
+            permisos={{
+              ver: { codigo: 'matricula.admision.ver', accion: 'DETALLE' },
+              editar: { codigo: 'matricula.admision.editar', accion: 'EDITAR' },
+              eliminar: { codigo: 'matricula.admision.editar', accion: 'ELIMINAR' },
+            }}
             extraActions={[
               {
                 icon: <DollarOutlined />,
                 variant: 'primary',
                 tooltip: 'Registrar pago',
                 onClick: handleRegistrarPagoClick,
+                permiso: 'finanzas.pago.registrar',
+                accion: 'CREAR',
               },
             ]}
           />

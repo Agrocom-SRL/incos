@@ -26,6 +26,16 @@
  * @param {number} span - Span del campo (default: 24)
  * @returns {Object} Configuración de columnas responsive
  */
+/**
+ * Clave estable para React (soporta `name` anidado tipo `['personal', 'ci']`).
+ */
+export function fieldRowKey(field, index) {
+  if (field?.key != null) return field.key;
+  if (Array.isArray(field?.name)) return field.name.join('.');
+  if (field?.name != null) return String(field.name);
+  return `field-${index}`;
+}
+
 export const getFieldColumns = (span = 24) => {
   return {
     xs: 24,     // < 576px (Móviles): siempre 24 span (100% ancho)

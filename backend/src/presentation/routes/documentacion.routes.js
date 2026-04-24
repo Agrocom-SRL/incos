@@ -1,4 +1,5 @@
 import express from 'express';
+import { authenticate } from '../middleware/auth.middleware.js';
 import { listDocumentacionValidator } from '../validators/referencia/index.js';
 
 /**
@@ -21,6 +22,7 @@ import { listDocumentacionValidator } from '../validators/referencia/index.js';
 export function buildDocumentacionRouter({ controllers, middlewares }) {
     const router = express.Router();
     const { validateRequest } = middlewares;
+    // Catálogo de referencia: solo autenticación requerida, sin permiso específico
 
     // ============================================
     // CRUD BÁSICO
@@ -39,6 +41,7 @@ export function buildDocumentacionRouter({ controllers, middlewares }) {
      */
     router.get(
         '/',
+        authenticate,
         listDocumentacionValidator,
         validateRequest,
         (req, res, next) => controllers.listDocumentacionController.handle(req, res, next)

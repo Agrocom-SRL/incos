@@ -17,7 +17,7 @@
  * const errorHandler = createErrorHandler(logger, errorFormatter);
  * app.use(errorHandler); // Al final de todas las rutas
  */
-import { ValidationError } from '../../domain/errors/AppError.js';
+import { ValidationError, UnprocessableEntityError } from '../../domain/errors/AppError.js';
 
 export function createErrorHandler(logger, errorFormatter) {
   return function errorHandler(err, req, res, next) {
@@ -45,6 +45,12 @@ export function createErrorHandler(logger, errorFormatter) {
     if (err instanceof ValidationError) {
       const response = errorFormatter.formatValidationError(err, req);
       return res.status(400).json(response);
+    }
+
+    // 422 Unprocessable Entity (mismo cuerpo que validación)
+    if (err instanceof UnprocessableEntityError) {
+      const response = errorFormatter.formatValidationError(err, req);
+      return res.status(422).json(response);
     }
 
     // Error inesperado del sistema

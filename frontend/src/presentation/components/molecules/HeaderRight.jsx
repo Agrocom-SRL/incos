@@ -4,7 +4,6 @@ import { UserOutlined, LogoutOutlined } from '@ant-design/icons';
 import { Avatar } from '@atoms';
 import { allSpacing } from '@theme/tokens';
 import { useAuthContext } from '@application-auth';
-import { useNavigate } from 'react-router-dom';
 import { App } from 'antd';
 
 const { Text } = Typography;
@@ -15,14 +14,11 @@ const { Text } = Typography;
  */
 const HeaderRight = () => {
     const { user, logout } = useAuthContext();
-    const navigate = useNavigate();
     const { message } = App.useApp();
 
-    // Handler para logout
-    const handleLogout = () => {
-        logout();
+    const handleLogout = async () => {
         message.success('Sesión cerrada correctamente');
-        navigate('/login');
+        await logout();
     };
 
     // Items del menú dropdown

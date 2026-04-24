@@ -1,4 +1,6 @@
 import express from 'express';
+import { authenticate } from '../middleware/auth.middleware.js';
+import { verificarPermiso } from '../middleware/permisos.middleware.js';
 import { listValidator } from '../validators/common/index.js';
 
 /**
@@ -21,6 +23,7 @@ import { listValidator } from '../validators/common/index.js';
 export function buildGestionesRouter({ controllers, middlewares }) {
     const router = express.Router();
     const { validateRequest } = middlewares;
+    const listarGestiones = [authenticate, verificarPermiso('institucional.gestion.actual', 'LISTAR')];
 
     // ============================================
     // CRUD BÁSICO
@@ -40,6 +43,7 @@ export function buildGestionesRouter({ controllers, middlewares }) {
      */
     router.get(
         '/',
+        ...listarGestiones,
         listValidator,
         validateRequest,
         (req, res, next) => controllers.listGestionesController.handle(req, res, next)

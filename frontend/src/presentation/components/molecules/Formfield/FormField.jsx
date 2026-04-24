@@ -61,8 +61,9 @@ const FormField = ({ field, form, resolveOptions, minAge = null, readOnly = fals
 
   // Campo oculto: Form.Item sin label ni espacio (noStyle) para enviar id u otros valores
   if (field.type === 'hidden') {
+    const preserveHidden = field.preserve ? { preserve: true } : {};
     return (
-      <Form.Item name={fieldName} noStyle>
+      <Form.Item name={fieldName} noStyle {...preserveHidden}>
         {renderField()}
       </Form.Item>
     );
@@ -70,12 +71,14 @@ const FormField = ({ field, form, resolveOptions, minAge = null, readOnly = fals
 
   // Campos de tipo display: calculados automáticamente, no se guardan en el formulario
   if (field.type === 'display') {
+    const preserveDisplay = field.preserve ? { preserve: true } : {};
     return (
       <Form.Item
         label={field.label}
         labelCol={labelCol}
         wrapperCol={wrapperCol}
         className="form-field"
+        {...preserveDisplay}
         shouldUpdate={(prevValues, currentValues) => {
           // Actualizar cuando cambien los campos dependencies
           if (!field.dependencies || field.dependencies.length === 0) return false;
@@ -113,14 +116,26 @@ const FormField = ({ field, form, resolveOptions, minAge = null, readOnly = fals
     ? `form-field ${field.className}`.trim()
     : 'form-field';
 
+  const preserveProps = field.preserve ? { preserve: true } : {};
+  const extraRules = Array.isArray(field.rules) ? field.rules : [];
+  const mergedRules = extraRules.length > 0 ? [...rules, ...extraRules] : rules;
+  const depProps =
+    Array.isArray(field.dependencies) && field.dependencies.length > 0
+      ? { dependencies: field.dependencies }
+      : {};
+  const feedbackProps = field.hasFeedback === true ? { hasFeedback: true } : {};
+
   return (
     <Form.Item
       name={fieldName}
       label={field.label}
       labelCol={labelCol}
       wrapperCol={wrapperCol}
-      rules={rules}
+      rules={mergedRules}
       className={formItemClassName}
+      {...preserveProps}
+      {...depProps}
+      {...feedbackProps}
     >
       {renderField()}
     </Form.Item>

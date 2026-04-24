@@ -3,7 +3,10 @@ import { IRepository } from './IRepository.js';
 /**
  * Interfaz de Repositorio: IRolRepository
  * Define el contrato que debe cumplir el repositorio de roles
- * 
+ *
+ * Convención de capas: IRolRepository → models/rol.js (`roles`) → Role / RoleMapper / RoleRepository
+ * DDL: database/01-schemas/04-sistema-seguridad.sql (tabla roles)
+ *
  * NOTA: Solo extiende IRepository sin métodos adicionales.
  * La especialización está en la implementación (buildWhereClause), no en la interfaz.
  * 

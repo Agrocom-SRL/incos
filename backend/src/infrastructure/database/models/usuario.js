@@ -4,6 +4,10 @@ import { baseModelFields, baseModelOptions } from './base_model.js';
 import { TIPOS_REFERENCIA_VALUES } from '../../../domain/constants/usuarios.constants.js';
 import { ESTADOS_USUARIOS_VALUES } from '../../../domain/constants/usuarios.constants.js';
 
+/**
+ * Modelo ORM: Usuario — tabla `usuarios`
+ * DDL: database/01-schemas/04-sistema-seguridad.sql
+ */
 export const Usuario = sequelize.define(
   'Usuario',
   {
@@ -12,11 +16,6 @@ export const Usuario = sequelize.define(
       type: DataTypes.STRING(50),
       allowNull: false,
       comment: 'Nombre de usuario',
-    },
-    email: {
-      type: DataTypes.STRING(150),
-      allowNull: false,
-      comment: 'Email',
     },
     passwordHash: {
       type: DataTypes.STRING(255),

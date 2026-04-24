@@ -22,11 +22,34 @@
  * un hook puede retornar JSX estructurado para la UI.
  */
 
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import * as menuGenerator from '@navigation-services/menuGenerator';
 import { getRouteFromMenuKey, getMenuKeyFromRoute } from '@navigation-services/routeMapper';
 import MenuItem from '@atoms/MenuItem';
+import { useAuthContext } from '@application-auth';
+
+function filterMenuByPermiso(items, hasPermisoFn, userRole) {
+    if (!items?.length) return [];
+    return items
+      .map((item) => {
+        if (item.children?.length) {
+          const children = filterMenuByPermiso(item.children, hasPermisoFn, userRole);
+          if (children.length === 0) return null;
+          if (!item.permiso) return { ...item, children };
+          const accion = item.accion ?? 'LISTAR';
+          return hasPermisoFn(item.permiso, accion) ? { ...item, children } : null;
+        }
+        if (!item.permiso) return item;
+        const accion = item.accion ?? 'LISTAR';
+        if (!hasPermisoFn(item.permiso, accion)) return null;
+        if (item.menu?.labelByRole?.[userRole]) {
+          return { ...item, menu: { ...item.menu, label: item.menu.labelByRole[userRole] } };
+        }
+        return item;
+      })
+      .filter(Boolean);
+}
 
 /**
  * Hook que maneja toda la lógica del menú de navegación
@@ -38,14 +61,28 @@ import MenuItem from '@atoms/MenuItem';
 export const useNavigationMenu = (defaultSelectedKey = 'DASH', onMenuClick) => {
     const navigate = useNavigate();
     const location = useLocation();
+    const { hasPermiso, isAuthenticated, usuario } = useAuthContext();
     const [selectedKeys, setSelectedKeys] = useState([defaultSelectedKey]);
     const [openKeys, setOpenKeys] = useState([]);
     
     // Ref para detectar si es el mount inicial (refresh de página)
     const isInitialMount = useRef(true);
 
-    // Generar el menú desde las rutas (memoizado para evitar regeneraciones innecesarias)
-    const navigationMenuItems = useMemo(() => menuGenerator.generateNavigationMenu(), []);
+    const hasPermisoStable = useCallback(
+        (codigo, accion) => hasPermiso(codigo, accion),
+        [hasPermiso]
+    );
+
+    const rawNavigationMenu = useMemo(
+        () => menuGenerator.generateNavigationMenu(),
+        []
+    );
+
+    const navigationMenuItems = useMemo(() => {
+        if (!isAuthenticated) return rawNavigationMenu;
+        const userRole = usuario?.rol?.codigo;
+        return filterMenuByPermiso(rawNavigationMenu, hasPermisoStable, userRole);
+    }, [rawNavigationMenu, hasPermisoStable, isAuthenticated, usuario]);
 
     /**
      * Función recursiva para mapear items y subitems con iconos
@@ -142,10 +179,11 @@ export const useNavigationMenu = (defaultSelectedKey = 'DASH', onMenuClick) => {
      * - Si es el mount inicial (refresh), expande todos los padres del item seleccionado
      * - Esto permite ver la jerarquía completa cuando se refresca con una ruta específica
      */
+    const menuSidebarKeyFromState = location.state?.menuSidebarKey;
+
     useEffect(() => {
-        const currentRoute = location.pathname;
-        const menuKey = getMenuKeyFromRoute(currentRoute);
-        
+        const menuKey = getMenuKeyFromRoute(location.pathname, location.state);
+
         if (menuKey && menuKey !== selectedKeys[0]) {
             setSelectedKeys([menuKey]);
             expandParentKeysOnInitialMount(menuKey);
@@ -154,7 +192,7 @@ export const useNavigationMenu = (defaultSelectedKey = 'DASH', onMenuClick) => {
             isInitialMount.current = false;
         }
         // Si no hay key, no hacer nada - el createAppRouter maneja las redirecciones
-    }, [location.pathname, selectedKeys, navigationMenuItems]);
+    }, [location.pathname, menuSidebarKeyFromState, selectedKeys, navigationMenuItems]);
 
     /**
      * Maneja el click en un item del menú

@@ -33,6 +33,7 @@ import { Form } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { useMessage } from '@application/utils';
 import { useCreateAsignarBeca } from '@application-estudiantes/hooks';
+import { MENU_SIDEBAR_KEY_MAT_APORTES } from '@navigation-services/routeMapper';
 
 /**
  * Hook para gestionar handlers de submit del formulario de asignación de beca
@@ -178,10 +179,16 @@ export const useAsignarBecaFormHandlers = (studentId, options = {}) => {
 
             if (esBeca100 && pagoAporteId) {
                 // Beca 100%: ir al detalle del pago para permitir descargar el recibo
-                navigate(`/pagos/${pagoAporteId}`, { replace: true, state: { studentId, fromBeca100: true } });
+                navigate(`/pagos/${pagoAporteId}`, {
+                    replace: true,
+                    state: { studentId, fromBeca100: true, menuSidebarKey: MENU_SIDEBAR_KEY_MAT_APORTES },
+                });
             } else {
                 // Beca < 100%: ir a registrar pago con el estudiante
-                navigate('/pagos/registrar', { state: { studentId }, replace: true });
+                navigate('/pagos/registrar', {
+                    state: { studentId, menuSidebarKey: MENU_SIDEBAR_KEY_MAT_APORTES },
+                    replace: true,
+                });
             }
         } else {
             // Manejar error

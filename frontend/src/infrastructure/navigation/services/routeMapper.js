@@ -28,7 +28,72 @@
  * Las rutas son la fuente de verdad, y el mapeo se deriva de ellas.
  */
 
+import { matchPath } from 'react-router-dom';
 import { getAllRoutes } from '@routes';
+
+/** Resaltar "Lista de Aportes" en rutas /pagos/* compartidas con el flujo de matrícula (vía location.state). */
+export const MENU_SIDEBAR_KEY_MAT_APORTES = 'MAT-APO-LISTA';
+
+const PAGOS_ROUTES_WITH_MENU_OVERRIDE = new Set(['PAG-REGISTRAR', 'PAG-DETALLE', 'PAG-EDITAR']);
+
+/**
+ * Rutas que coinciden con el pathname (fin de URL), elegida la más específica.
+ * @param {string} pathname - pathname normalizado (sin barra final salvo raíz)
+ * @returns {Object|null} - Objeto ruta del registry o null
+ */
+export const findBestMatchingRoute = (pathname) => {
+    const allRoutes = getAllRoutes();
+    const matches = [];
+
+    for (const route of allRoutes) {
+        if (!route.path) continue;
+        const m = matchPath({ path: route.path, end: true }, pathname);
+        if (m) matches.push(route);
+    }
+
+    if (matches.length === 0) return null;
+
+    const segmentWeight = (path) => path.split('/').filter(Boolean).length;
+    matches.sort((a, b) => {
+        const w = segmentWeight(b.path) - segmentWeight(a.path);
+        if (w !== 0) return w;
+        return b.path.length - a.path.length;
+    });
+
+    return matches[0];
+};
+
+/**
+ * Key de menú para selección en sidebar: ruta con menú, o cadena breadcrumbParent.
+ */
+const resolveMenuSelectionKey = (route, navigationState = undefined) => {
+    if (!route) return null;
+
+    if (
+        PAGOS_ROUTES_WITH_MENU_OVERRIDE.has(route.key) &&
+        navigationState?.menuSidebarKey === MENU_SIDEBAR_KEY_MAT_APORTES
+    ) {
+        return MENU_SIDEBAR_KEY_MAT_APORTES;
+    }
+
+    if (route.menu) {
+        return route.key;
+    }
+
+    const allRoutes = getAllRoutes();
+    const visited = new Set();
+    let parentKey = route.breadcrumbParent;
+
+    while (parentKey && !visited.has(parentKey)) {
+        visited.add(parentKey);
+        const parent = allRoutes.find((r) => r.key === parentKey);
+        if (!parent) break;
+        if (parent.menu) return parent.key;
+        parentKey = parent.breadcrumbParent;
+    }
+
+    return null;
+};
 
 /**
  * Genera el mapeo entre keys del menú y rutas automáticamente
@@ -64,25 +129,31 @@ export const getRouteFromMenuKey = (menuKey) => {
 };
 
 /**
- * Obtiene la key del menú correspondiente a una ruta
- * @param {string} route - La ruta actual
- * @returns {string|null} - La key del menú correspondiente o null si no existe
+ * Obtiene la key del ítem de menú a resaltar para el pathname actual.
+ * Usa coincidencia de patrón (incl. :id) y, si la ruta no tiene menú, sube por breadcrumbParent.
+ *
+ * @param {string} pathname - pathname de la URL (ej. location.pathname)
+ * @param {Object} [navigationState] - location.state (opcional; menuSidebarKey para aportes bajo Matrícula)
+ * @returns {string|null} - Key del menú o null
  */
-export const getMenuKeyFromRoute = (route) => {
-    // Normalizar la ruta (remover trailing slash, excepto para la raíz)
-    const normalizedRoute = route === '/' ? '/' : route.replace(/\/$/, '');
-    
-    // Generar el mapeo y buscar la key correspondiente
+export const getMenuKeyFromRoute = (pathname, navigationState) => {
+    const normalizedRoute = pathname === '/' ? '/' : pathname.replace(/\/$/, '');
+
     const map = generateMenuKeyToRouteMap();
-    
-    // Buscar la key que corresponde a esta ruta
     for (const [key, mappedRoute] of Object.entries(map)) {
         if (mappedRoute === normalizedRoute) {
+            const routeObj = getAllRoutes().find((r) => r.key === key);
+            if (routeObj) {
+                return resolveMenuSelectionKey(routeObj, navigationState);
+            }
             return key;
         }
     }
-    
-    // Si no se encuentra, retornar null
-    // El createAppRouter maneja las redirecciones (como '/' -> '/dashboard')
-    return null;
+
+    const matched = findBestMatchingRoute(normalizedRoute);
+    if (!matched) {
+        return null;
+    }
+
+    return resolveMenuSelectionKey(matched, navigationState);
 };

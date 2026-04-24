@@ -59,12 +59,12 @@ export class RoleRepository extends BaseRepository {
    * 
    * Ejemplos de uso:
    * - findBy({ code: 'ADMIN' }) → Busca rol por código
-   * - findAll({ accessLevel: 5 }) → Busca roles con nivel de acceso 5
+   * - findAll({ isSystem: true }) → Busca roles de sistema
    * 
    * @param {Object} filters - Filtros de búsqueda
    *   - code: Código del rol (búsqueda exacta, para búsqueda de texto usar search())
    *   - name: Nombre del rol (búsqueda exacta, para búsqueda de texto usar search())
-   *   - accessLevel: Nivel de acceso (1-5)
+   *   - isSystem: Flag de rol protegido del sistema
    * @returns {Object} Objeto WHERE para Sequelize
    */
   buildWhereClause(filters) {
@@ -77,8 +77,8 @@ export class RoleRepository extends BaseRepository {
     if (filters.name !== undefined) {
       where.nombre = filters.name;
     }
-    if (filters.accessLevel !== undefined) {
-      where.nivelAcceso = filters.accessLevel;
+    if (filters.isSystem !== undefined) {
+      where.isSystem = Boolean(filters.isSystem);
     }
 
     return where;
@@ -135,6 +135,21 @@ export class RoleRepository extends BaseRepository {
    */
   getCollectionName() {
     return 'roles';
+  }
+
+  /**
+   * Roles activos ordenados por nombre (panel SEG).
+   */
+  async findAllOrderedByName() {
+    const Model = this.getModel();
+    const rows = await Model.findAll({
+      where: { activo: true },
+      order: [
+        ['nombre', 'ASC'],
+        ['id', 'ASC'],
+      ],
+    });
+    return rows.map((m) => this.toEntity(m));
   }
 }
 

@@ -1,25 +1,19 @@
 // src/presentation/modules/auth/routes.jsx
 /**
  * Rutas del módulo de Autenticación
- * 
- * Single Responsibility: Define todas las rutas del módulo de autenticación
- * 
- * Clean Architecture:
- * - Presentation Layer: Define rutas y metadata de UI
  */
 
 import { lazy } from 'react';
 
-// Lazy loading de la página de login
-const Login = lazy(() => import('./pages/Login'));
+const LoginPage = lazy(() => import('./pages/LoginPage.jsx'));
 
 export const authRoutes = [
-    {
-        path: '/login',
-        element: <Login />,
-        key: 'AUTH-LOGIN',
-        menu: null, // No aparece en el menú, es una ruta pública
-    },
+  {
+    path: '/login',
+    element: <LoginPage />,
+    key: 'AUTH-LOGIN',
+    menu: null,
+  },
 ];
 
 export default authRoutes;

@@ -4,6 +4,7 @@
 export {
   AppError,
   ValidationError,
+  UnprocessableEntityError,
   NotFoundError,
   UnauthorizedError,
   ForbiddenError,

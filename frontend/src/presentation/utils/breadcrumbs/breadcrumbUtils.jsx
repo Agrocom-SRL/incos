@@ -1,122 +1,70 @@
 /**
- * breadcrumbHelpers - Funciones genéricas para construir breadcrumbs
- * 
- * Single Responsibility: Proporcionar funciones reutilizables para generar breadcrumbs
- * 
- * Clean Architecture:
- * - Presentation Layer: Utilidades de UI (breadcrumbs son parte de la presentación)
- * 
- * SOLID Principles:
- * - Single Responsibility: Solo genera breadcrumbs, no tiene otra responsabilidad
- * - Open/Closed: Fácil de extender agregando nuevas funciones sin modificar existentes
- * - Dependency Inversion: Depende de abstracciones (rutas), no de implementaciones
- * 
- * Estas funciones son genéricas y pueden ser usadas por cualquier módulo
+ * Breadcrumbs: resuelve padres con todas las rutas registradas (dominios MAT, ACA, …).
  */
 
-// Iconos removidos - breadcrumbs solo usan texto
+import { getAllRoutes } from '@routes';
 
-/**
- * Construye recursivamente la cadena de breadcrumbs
- * 
- * @param {Array} routes - Array de rutas del módulo
- * @param {string} key - Key de la ruta actual
- * @param {string} routeKey - Key de la ruta objetivo
- * @param {string} rootKey - Key del módulo raíz
- * @param {Array} breadcrumbItems - Array donde se acumulan los items
- * @param {string|null} currentTitle - Título actual (si existe, es el último item)
- */
-const buildBreadcrumbChain = (routes, key, routeKey, rootKey, breadcrumbItems, currentTitle) => {
-  const route = routes.find(r => r.key === key);
+const buildBreadcrumbChain = (allRoutes, key, routeKey, breadcrumbItems, currentTitle) => {
+  const route = allRoutes.find(r => r.key === key);
   if (!route) return;
 
-  // Si tiene padre, agregarlo primero (recursión)
   if (route.menu?.parent) {
-    buildBreadcrumbChain(routes, route.menu.parent, routeKey, rootKey, breadcrumbItems, currentTitle);
+    buildBreadcrumbChain(allRoutes, route.menu.parent, routeKey, breadcrumbItems, currentTitle);
   }
 
-  // Agregar la ruta actual (solo si no es la última)
   if (key !== routeKey || currentTitle === null) {
-    breadcrumbItems.push({
-      href: route.path,
-      title: route.menu?.label || route.path,
-    });
+    const title = route.menu?.label || route.path;
+    const item = route.element ? { href: route.path, title } : { title };
+    breadcrumbItems.push(item);
   }
 };
 
 /**
- * Crea los items del breadcrumb basándose en la ruta actual
- * 
- * @param {Array} routes - Array de rutas del módulo
- * @param {string} routeKey - Key de la ruta (ej: 'EST', 'EST-REGISTRAR', 'INS-CREATE')
- * @param {string} rootKey - Key del módulo raíz (ej: 'EST', 'INS')
- * @param {string|null} currentTitle - Título actual de la página (para el último item del breadcrumb)
- * @param {React.ComponentType} fallbackIcon - Icono por defecto si no se encuentra el módulo
- * @param {string} fallbackLabel - Label por defecto si no se encuentra el módulo
- * @returns {Array} Array de items del breadcrumb para Ant Design
+ * @param {string} routeKey
+ * @param {string} rootKey — fallback si no hay cadena de padres
+ * @param {string|null} currentTitle
  */
 export const createBreadcrumbItems = (
-  routes,
   routeKey,
   rootKey,
   currentTitle = null,
   fallbackIcon = null,
   fallbackLabel = 'Módulo'
 ) => {
-  // Buscar la ruta actual
-  const currentRoute = routes.find(route => route.key === routeKey);
-  
+  const allRoutes = getAllRoutes();
+  const currentRoute = allRoutes.find(route => route.key === routeKey);
+
   if (!currentRoute) {
-    // Si no se encuentra la ruta, retornar breadcrumb básico
-    return [
-      {
-        href: '/',
-        title: 'Inicio',
-      },
-      {
-        title: fallbackLabel,
-      },
-    ];
+    return [{ href: '/', title: 'Inicio' }, { title: fallbackLabel }];
   }
 
-  // Construir la jerarquía de breadcrumbs desde la raíz
-  const breadcrumbItems = [];
-  
-  // Siempre agregar Home como primer item
-  breadcrumbItems.push({
-    href: '/',
-    title: 'Inicio',
-  });
+  const breadcrumbItems = [{ href: '/', title: 'Inicio' }];
 
-  // Construir la cadena de padres usando función recursiva
   const buildChain = (key) => {
-    buildBreadcrumbChain(routes, key, routeKey, rootKey, breadcrumbItems, currentTitle);
+    buildBreadcrumbChain(allRoutes, key, routeKey, breadcrumbItems, currentTitle);
   };
 
-  // Construir la cadena hasta el padre
-  if (currentRoute.menu?.parent) {
+  if (currentRoute.breadcrumbParent) {
+    buildChain(currentRoute.breadcrumbParent);
+  } else if (currentRoute.menu?.parent) {
     buildChain(currentRoute.menu.parent);
   } else if (currentRoute.key !== rootKey) {
-    // Si no tiene parent pero no es la raíz, agregar la raíz
-    const rootRoute = routes.find(r => r.key === rootKey);
+    const rootRoute = allRoutes.find(r => r.key === rootKey);
     if (rootRoute) {
-      breadcrumbItems.push({
-        href: rootRoute.path,
-        title: rootRoute.menu?.label || rootRoute.path,
-      });
+      const title = rootRoute.menu?.label || rootRoute.path;
+      breadcrumbItems.push(
+        rootRoute.element ? { href: rootRoute.path, title } : { title }
+      );
     }
   }
 
-  // Agregar el item actual (si hay currentTitle, es el último item sin href)
   if (currentTitle) {
-    breadcrumbItems.push({
-      title: currentTitle,
-    });
+    breadcrumbItems.push({ title: currentTitle });
   } else {
-    breadcrumbItems.push({
-      href: currentRoute.path,
-      title: currentRoute.menu?.label || currentRoute.path,
-    });
+    const title = currentRoute.menu?.label || currentRoute.path;
+    breadcrumbItems.push(
+      currentRoute.element ? { href: currentRoute.path, title } : { title }
+    );
   }
 
   return breadcrumbItems;

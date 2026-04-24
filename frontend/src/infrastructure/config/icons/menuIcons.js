@@ -30,7 +30,6 @@ import {
     FileAddOutlined,
     BookOutlined,
     CalendarOutlined,
-    CloseCircleOutlined,
     // Calificaciones
     EditOutlined,
     TableOutlined,
@@ -41,6 +40,7 @@ import {
     UsergroupAddOutlined,
     // Pasantías
     BankOutlined,
+    SolutionOutlined,
     FileSearchOutlined,
     EyeOutlined,
     // Supervisión
@@ -80,6 +80,10 @@ import {
     SwapOutlined,
     ExportOutlined,
     ImportOutlined,
+    // Dominios raíz (sidebar)
+    IdcardOutlined,
+    ReadOutlined,
+    HomeOutlined,
 } from '@ant-design/icons';
 
 /**
@@ -91,6 +95,15 @@ export const menuIconMap = {
     // Dashboard
     'DASH': DashboardOutlined,
 
+    // Dominios de negocio (sidebar v1.2)
+    'MAT': IdcardOutlined,
+    'ACA': ReadOutlined,
+    'DOC': UsergroupAddOutlined,
+    'FIN': DollarOutlined,
+    'INST': HomeOutlined,
+    'REP': LineChartOutlined,
+    'SEG': SafetyOutlined,
+
     // Gestiones - Nivel 1
     'GES': CalendarOutlined,
     'GES-ACTUAL': CalendarOutlined,
@@ -98,6 +111,9 @@ export const menuIconMap = {
     'GES-ETAPAS': ScheduleOutlined,
     'GES-OFERTA': BookOutlined,
     'GES-HORARIOS-ASIGNAR': CalendarOutlined,
+    'GES-MAT-INSCRIBIR': BookOutlined,
+    'GES-MAT-CURSO': TableOutlined,
+    'GES-HORARIO-GEN': SyncOutlined,
 
     // Configuración - Nivel 1
     'CFG': SettingOutlined,
@@ -117,78 +133,77 @@ export const menuIconMap = {
     'CFG-DOCUMENTACION-TRANSFERENCIA': ReloadOutlined,
     // Submenu Datos Complementarios
     'CFG-DATOS-COMPLEMENTARIOS': InfoCircleOutlined,
+    'CFG-COMPLEMENTARIO': InfoCircleOutlined,
     'CFG-DISCAPACIDAD': SafetyCertificateOutlined,
     'CFG-APODERADOS': UserOutlined,
     'CFG-IDIOMAS': GlobalOutlined,
+    'CFG-PAGOS': DollarOutlined,
+    'CFG-CONVENIOS': BankOutlined,
     // Historial de Actividades
     'CFG-HISTORIAL-ACTIVIDADES': HistoryOutlined,
 
-    // Estudiantes - Nivel 1
-    'EST': TeamOutlined,
-    'EST-LIST': UnorderedListOutlined,
-    'EST-REGISTRAR': UserAddOutlined,
-    'EST-BECAS': GiftOutlined,
-    'EST-BECAS-ASIGNAR': GiftOutlined,
-    'EST-BECAS-APROBAR': CheckCircleOutlined,
-    'EST-BECAS-LIST': UnorderedListOutlined,
-    'EST-LICENCIAS': FileTextOutlined,
-    'EST-LICENCIAS-SOLICITAR': FileAddOutlined,
-    'EST-LICENCIAS-APROBAR': CheckCircleOutlined,
-    'EST-LICENCIAS-LIST': UnorderedListOutlined,
-    'EST-DOCUMENTOS': FolderOutlined,
+    // Matrícula (sidebar v1.2)
+    'MAT-ADMISION': TeamOutlined,
+    'MAT-APO-LISTA': UnorderedListOutlined,
+    'MAT-ADM-NUEVA': UserAddOutlined,
+    'MAT-BEC-LISTAR': UnorderedListOutlined,
+    'MAT-BEC-ASIGNAR': GiftOutlined,
+    'MAT-BEC-APROBAR': CheckCircleOutlined,
+    'MAT-LICENCIAS': FileTextOutlined,
+    'MAT-LIC-LISTAR': UnorderedListOutlined,
+    'MAT-LIC-SOLICITAR': FileAddOutlined,
+    'MAT-LIC-APROBAR': CheckCircleOutlined,
+    'MAT-DOCUMENTOS': FolderOutlined,
+    'MAT-LISTA': UnorderedListOutlined,
+    'MAT-NUEVA': FileAddOutlined,
+    'MAT-PAS-LISTA': SolutionOutlined,
 
-    // Inscripciones - Nivel 1
-    'INS': FileAddOutlined,
-    'INS-LIST': UnorderedListOutlined,
-    'INS-CREATE': FileAddOutlined,
-    'INS-HORARIO': SyncOutlined,
-    'INS-MATERIAS-INSCRIBIR': BookOutlined,
-    'INS-MATERIAS-CURSO': TableOutlined,
-    'INS-ANULAR': CloseCircleOutlined,
+    // Académico — Licencias de estudiante
+    'ACA-LIC-EST': FileTextOutlined,
+    'ACA-LIC-EST-SOLICITAR': FileAddOutlined,
+    'ACA-LIC-EST-APROBAR': CheckCircleOutlined,
 
-    // Transitabilidad - Nivel 1
-    'TRA': SwapOutlined,
-    // Submenu Traspasos
-    'TRA-TRASPASOS': TransactionOutlined,
-    'TRA-TRASPASOS-LIST': UnorderedListOutlined,
-    'TRA-TRASPASOS-SOLICITAR': ExportOutlined,
-    'TRA-TRASPASOS-RECIBIR': ImportOutlined,
-    'TRA-TRASPASOS-CONVALIDAR-NOTAS': FileDoneOutlined,
-    'TRA-TRASPASOS-APROBAR': CheckCircleOutlined,
-    // Submenu Transitabilidad
-    'TRA-TRANSFERENCIAS': ReloadOutlined,
-    'TRA-TRANSFERENCIAS-LIST': UnorderedListOutlined,
-    'TRA-TRANSFERENCIAS-SOLICITAR': ExportOutlined,
-    'TRA-TRANSFERENCIAS-RECIBIR': ImportOutlined,
-    'TRA-TRANSFERENCIAS-CONVALIDAR-NOTAS': FileDoneOutlined,
-    'TRA-TRANSFERENCIAS-APROBAR': CheckCircleOutlined,
+    // Académico — Traspasos / Transitabilidad (nivel 2 bajo ACA)
+    'ACA-TRA': SwapOutlined,
+    'ACA-TRASPASOS': TransactionOutlined,
+    'ACA-TRA-TRASPASOS': TransactionOutlined,
+    'ACA-TRA-TRP-SOLICITAR': ExportOutlined,
+    'ACA-TRA-TRP-RECIBIR': ImportOutlined,
+    'ACA-TRA-TRP-CONVALIDAR': FileDoneOutlined,
+    'ACA-TRA-TRP-APROBAR': CheckCircleOutlined,
+    'ACA-TRA-TRANSIT': ReloadOutlined,
+    'ACA-TRANSIT': ReloadOutlined,
+    'ACA-TRA-TNS-SOLICITAR': ExportOutlined,
+    'ACA-TRA-TNS-RECIBIR': ImportOutlined,
+    'ACA-TRA-TNS-CONVALIDAR': FileDoneOutlined,
+    'ACA-TRA-TNS-APROBAR': CheckCircleOutlined,
 
-    // Calificaciones - Nivel 1
-    'CAL': CheckCircleOutlined,
-    'CAL-REGISTRAR': EditOutlined,
-    'CAL-REGISTRAR-PARCIAL': FileTextOutlined,
-    'CAL-REGISTRAR-PRACTICO': EditOutlined,
-    'CAL-REGISTRAR-RECUPERATORIO': SyncOutlined,
-    'CAL-CURSO': TableOutlined,
-    'CAL-PERIODO': FilePdfOutlined,
+    // Académico — Calificaciones
+    'ACA-CAL': CheckCircleOutlined,
+    'ACA-CAL-REGISTRAR': EditOutlined,
+    'ACA-CAL-REG-PARCIAL': FileTextOutlined,
+    'ACA-CAL-REG-PRACTICO': EditOutlined,
+    'ACA-CAL-REG-RECUP': SyncOutlined,
+    'ACA-CAL-CURSO': TableOutlined,
+    'ACA-CAL-PERIODO': FilePdfOutlined,
+    'ACA-CAL-MODIFICAR': EditOutlined,
 
-    // Nivelaciones - Nivel 1
-    'NIV': SyncOutlined,
-    'NIV-LIST': UnorderedListOutlined,
-    'NIV-INSCRIBIR': BookOutlined,
-    'NIV-APROBAR': CheckCircleOutlined,
+    // Académico — Nivelaciones
+    'ACA-NIV': SyncOutlined,
+    'ACA-NIV-INSCRIBIR': BookOutlined,
+    'ACA-NIV-APROBAR': CheckCircleOutlined,
 
-    // Docentes - Nivel 1
-    'DOC': UsergroupAddOutlined,
+    // Docentes
+    'DOC-GEST': UsergroupAddOutlined,
     'DOC-LIST': UnorderedListOutlined,
     'DOC-CREATE': UserAddOutlined,
-    'DOC-LICENCIAS': FileTextOutlined,
-    'DOC-LICENCIAS-LIST': UnorderedListOutlined,
-    'DOC-LICENCIAS-SOLICITAR': FileAddOutlined,
-    'DOC-LICENCIAS-APROBAR': CheckCircleOutlined,
+    'DOC-LIC': FileTextOutlined,
+    'DOC-LIC-SOLICITAR': FileAddOutlined,
+    'DOC-LIC-APROBAR': CheckCircleOutlined,
+    'DOC-PAS': BankOutlined,
 
-    // Supervisión - Nivel 1
-    'SUP': EyeOutlined,
+    // Supervisión (bajo dominio Docentes)
+    'DOC-SUP': EyeOutlined,
     'SUP-FICHA-VER': UsergroupAddOutlined,
     'SUP-REPORTE': BarChartOutlined,
     'SUP-PASANTIAS': BankOutlined,
@@ -198,7 +213,6 @@ export const menuIconMap = {
 
     // Pagos - Nivel 1
     'PAG': DollarOutlined,
-    'PAG-CONFIG': SettingOutlined,
     'PAG-LIST': UnorderedListOutlined,
     'PAG-REGISTRAR': CreditCardOutlined,
     'PAG-REPORTES': BarChartOutlined,
@@ -207,10 +221,10 @@ export const menuIconMap = {
     'PAG-REPORTES-GESTION': CalendarOutlined,
     'PAG-ADICIONALES': FileAddOutlined,
 
-    // Historial - Nivel 1
-    'HIS': HistoryOutlined,
-    'HIS-FOLIO': BookOutlined,
-    'HIS-ACADEMICO': FileTextOutlined,
+    // Académico — Historial
+    'ACA-HIS': HistoryOutlined,
+    'ACA-HIS-FOLIO': BookOutlined,
+    'ACA-AVANCE': LineChartOutlined,
 
     // Reportes - Nivel 1
     'REP': BarChartOutlined,
@@ -225,10 +239,11 @@ export const menuIconMap = {
     'REP-SOLICITUDES-TRANSFERENCIA': ReloadOutlined,
     'REP-SOLICITUDES-PASANTIA': BankOutlined,
 
-    // Usuarios - Nivel 1
-    'USR': UsergroupAddOutlined,
-    'USR-CREATE': UserAddOutlined,
-    'USR-LIST': SettingOutlined,
-    'USR-ROLES': UserSwitchOutlined,
+    // Seguridad (SEG) — menú
+    'SEG-USUARIO-CREAR': UserAddOutlined,
+    'SEG-USUARIOS': SettingOutlined,
+    'SEG-ROLES': UserSwitchOutlined,
+    'PERFIL': UserOutlined,
+    'PERFIL-PASSWORD': LockOutlined,
 };
 

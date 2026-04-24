@@ -1,4 +1,6 @@
 import express from 'express';
+import { authenticate } from '../middleware/auth.middleware.js';
+import { verificarPermiso } from '../middleware/permisos.middleware.js';
 import { listParalelosValidator } from '../validators/academico/index.js';
 import { idValidator } from '../validators/common/index.js';
 
@@ -22,6 +24,7 @@ import { idValidator } from '../validators/common/index.js';
 export function buildParalelosRouter({ controllers, middlewares }) {
     const router = express.Router();
     const { validateRequest } = middlewares;
+    const verHorarios = [authenticate, verificarPermiso('institucional.gestion.horarios', 'LISTAR')];
 
     // ============================================
     // CRUD BÁSICO
@@ -41,6 +44,7 @@ export function buildParalelosRouter({ controllers, middlewares }) {
      */
     router.get(
         '/',
+        ...verHorarios,
         listParalelosValidator,
         validateRequest,
         (req, res, next) => controllers.listParalelosController.handle(req, res, next)
@@ -59,6 +63,7 @@ export function buildParalelosRouter({ controllers, middlewares }) {
      */
     router.get(
         '/:id/schedule',
+        ...verHorarios,
         idValidator,
         validateRequest,
         (req, res, next) => controllers.getParaleloScheduleController.handle(req, res, next)

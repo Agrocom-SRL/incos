@@ -1,57 +1,57 @@
 // src/presentation/modules/historial/routes.jsx
 /**
- * Rutas del módulo de Historial
- * 
- * Single Responsibility: Define todas las rutas del módulo de historial
- * 
- * Clean Architecture:
- * - Presentation Layer: Define rutas y metadata de UI (labels del menú, orden)
+ * Rutas del módulo de Historial (dominio Académico).
  */
 
 import { UnderConstruction } from '@components/pages';
 
 export const historialRoutes = [
-    // Módulo raíz: Historial
-    {
-        path: '/historial',
-        element: null, // No tiene página propia, es solo un grupo
-        key: 'HIS',
-        menu: {
-            label: 'Historial',
-            module: 'HIS',
-            order: 9, // Usado ocasionalmente
-        },
+  {
+    path: '/historial/academico',
+    element: <UnderConstruction />,
+    key: 'ACA-HIS',
+    permiso: 'academico.historial.academico',
+    accion: 'LISTAR',
+    menu: {
+      label: 'Historial',
+      module: 'ACA',
+      parent: 'ACA',
+      order: 5,
+      labelByRole: { ESTUDIANTE: 'Mi historial' },
     },
-    {
-        path: '/historial/folio',
-        element: <UnderConstruction />,
-        key: 'HIS-FOLIO',
-        menu: {
-            label: 'Folio del Egresado',
-            module: 'HIS',
-            parent: 'HIS',
-            order: 1, // Folio primero (incluye libros y actas)
-        },
+  },
+  {
+    path: '/historial/folio',
+    element: <UnderConstruction />,
+    key: 'ACA-HIS-FOLIO',
+    permiso: 'academico.historial.folio',
+    accion: 'CREAR',
+    menu: null,
+    breadcrumbParent: 'ACA-HIS',
+  },
+  {
+    path: '/historial/validar',
+    element: <UnderConstruction />,
+    key: 'ACA-HIS-VALIDAR',
+    permiso: 'academico.historial.validar',
+    accion: 'APROBAR',
+    menu: null,
+    breadcrumbParent: 'ACA-HIS',
+  },
+  {
+    path: '/academico/avance',
+    element: <UnderConstruction />,
+    key: 'ACA-AVANCE',
+    permiso: 'academico.avance',
+    accion: 'LISTAR',
+    menu: {
+      label: 'Avance académico',
+      module: 'ACA',
+      parent: 'ACA',
+      order: 6,
+      labelByRole: { ESTUDIANTE: 'Mi avance' },
     },
-    {
-        path: '/historial/academico',
-        element: <UnderConstruction />,
-        key: 'HIS-ACADEMICO',
-        menu: {
-            label: 'Historial Académico',
-            module: 'HIS',
-            parent: 'HIS',
-            order: 2, // Incluye validación automática y generación
-        },
-    },
-    // Ruta sin menú (validación independiente de historiales existentes)
-    {
-        path: '/historial/validar',
-        element: <UnderConstruction />,
-        key: 'HIS-VALIDAR',
-        // Sin menu - validación independiente de historiales existentes (opcional)
-    },
+  },
 ];
 
 export default historialRoutes;
-

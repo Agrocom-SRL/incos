@@ -27,6 +27,7 @@ export { Rol } from './rol.js';
 export { Permiso } from './permiso.js';
 export { Usuario } from './usuario.js';
 export { RolPermiso } from './rol_permiso.js';
+export { UsuarioPermiso } from './usuario_permiso.js';
 export { Sesion } from './sesion.js';
 export { Personal } from './personal.js';
 export { Rector } from './rector.js';

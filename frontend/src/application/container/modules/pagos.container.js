@@ -19,8 +19,10 @@ import {
   ObtenerTodosPagosAportesUseCase,
   ObtenerPagoAportePorIdUseCase,
   EliminarPagoAporteUseCase,
+  ActualizarCuotaPagoAporteUseCase,
   GenerarReciboPagoUseCase,
   ExportarListaAportesPorCarreraExcelUseCase,
+  BuscarEstudiantesRegistroAporteUseCase,
 } from '@useCases/pagos';
 
 import PaymentAccountRepository from '@infrastructure/repositories/PaymentAccountRepository';
@@ -82,6 +84,10 @@ export function registerPagosModule(factory) {
     return new EliminarPagoAporteUseCase({ pagoAporteRepository });
   };
 
+  factory.actualizarCuotaPagoAporte = () => {
+    return new ActualizarCuotaPagoAporteUseCase({ pagoAporteRepository });
+  };
+
   // Registrar Use Cases de Generación de Recibo de Pago
   factory.generarReciboPago = () => {
     return new GenerarReciboPagoUseCase(pagoAporteRepository);
@@ -89,6 +95,10 @@ export function registerPagosModule(factory) {
 
   factory.exportarListaAportesPorCarreraExcel = () => {
     return new ExportarListaAportesPorCarreraExcelUseCase(pagoAporteRepository);
+  };
+
+  factory.buscarEstudiantesRegistroAporte = () => {
+    return new BuscarEstudiantesRegistroAporteUseCase(pagoAporteRepository);
   };
 
   return factory;

@@ -20,6 +20,7 @@ import { App } from 'antd';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { useInscripcionDetailContext, useGenerateBoletaInscripcion } from '@application-inscripciones/hooks';
+import { useAuthContext } from '@application-auth';
 import { Descriptions, Card, Spin, Alert, Empty, Tag } from 'antd';
 import { Button } from '@atoms';
 import { DownloadOutlined, FileTextOutlined, ArrowLeftOutlined, EditOutlined } from '@ant-design/icons';
@@ -29,6 +30,10 @@ const InscripcionesDetail = () => {
   const location = useLocation();
   const { id } = useParams(); // Obtener ID directamente de la URL (fuente de verdad)
   const { message } = App.useApp();
+  const { hasPermiso } = useAuthContext();
+
+  const puedeGenerarBoletaPdf = hasPermiso('matricula.documento.ver', 'GENERAR_PDF');
+  const puedeEditarInscripcion = hasPermiso('matricula.inscripcion.editar', 'EDITAR');
 
   // Obtener datos del contexto
   const {
@@ -48,7 +53,7 @@ const InscripcionesDetail = () => {
     if (!loading && error) {
       // Solo redirigir si es un error real (no solo falta de datos)
       // Por ejemplo, un error 404 o de servidor
-      navigate('/inscripciones', { replace: true });
+      navigate('/matricula/listar', { replace: true });
     }
   }, [loading, error, navigate]);
 
@@ -101,7 +106,7 @@ const InscripcionesDetail = () => {
       navigate(`/estudiantes/${studentId}`);
     } else {
       // Si no, volver a la lista de inscripciones
-      navigate('/inscripciones');
+      navigate('/matricula/listar');
     }
   }, [navigate, location.state, inscripcion]);
 
@@ -114,7 +119,7 @@ const InscripcionesDetail = () => {
   // Configurar breadcrumb items
   const breadcrumbItems = useMemo(() => [
     { title: 'Inicio', href: '/' },
-    { title: 'Inscripciones', href: '/inscripciones' },
+    { title: 'Lista de Matrículas', href: '/matricula/listar' },
     { title: 'Detalle de la Inscripción' },
   ], []);
 
@@ -125,15 +130,17 @@ const InscripcionesDetail = () => {
   // Acciones del header (Button de @atoms para variant warning/default)
   const headerActions = useMemo(() => (
     <>
-      <Button
-        variant="warning"
-        icon={<EditOutlined />}
-        onClick={handleEditar}
-        disabled={!canEdit}
-        style={{ marginRight: 8 }}
-      >
-        Editar
-      </Button>
+      {puedeEditarInscripcion ? (
+        <Button
+          variant="warning"
+          icon={<EditOutlined />}
+          onClick={handleEditar}
+          disabled={!canEdit}
+          style={{ marginRight: 8 }}
+        >
+          Editar
+        </Button>
+      ) : null}
       <Button
         variant="default"
         icon={<ArrowLeftOutlined />}
@@ -142,7 +149,7 @@ const InscripcionesDetail = () => {
         Volver
       </Button>
     </>
-  ), [handleVolverAtras, handleEditar, canEdit]);
+  ), [handleVolverAtras, handleEditar, canEdit, puedeEditarInscripcion]);
 
   // Si está cargando
   if (loading) {
@@ -251,60 +258,62 @@ const InscripcionesDetail = () => {
         }
       >
       <div style={{ padding: '24px' }}>
-        {/* Botones de descarga/generación de documentos */}
-        {boletaInscripcion ? (
-          <Card 
-            style={{ marginBottom: '24px', backgroundColor: '#f0f9ff', border: '1px solid #1890ff' }}
-            styles={{ body: { padding: '16px' } }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <h3 style={{ margin: 0, color: '#1890ff', fontSize: '16px' }}>
-                  📄 Documento de Inscripción Disponible
-                </h3>
-                <p style={{ margin: '4px 0 0 0', color: '#666', fontSize: '14px' }}>
-                  Puede descargar la Boleta de Inscripción en formato PDF
-                </p>
+        {/* Boleta PDF — mismo permiso que POST /inscripciones/:id/generar-formulario (GENERAR_PDF). */}
+        {puedeGenerarBoletaPdf ? (
+          boletaInscripcion ? (
+            <Card 
+              style={{ marginBottom: '24px', backgroundColor: '#f0f9ff', border: '1px solid #1890ff' }}
+              styles={{ body: { padding: '16px' } }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <h3 style={{ margin: 0, color: '#1890ff', fontSize: '16px' }}>
+                    📄 Documento de Inscripción Disponible
+                  </h3>
+                  <p style={{ margin: '4px 0 0 0', color: '#666', fontSize: '14px' }}>
+                    Puede descargar la Boleta de Inscripción en formato PDF
+                  </p>
+                </div>
+                <Button
+                  variant="primary"
+                  size="large"
+                  icon={<DownloadOutlined />}
+                  onClick={handleDownloadOrGenerateBoleta}
+                  loading={generatingBoleta}
+                  disabled={generatingBoleta || !studentId}
+                >
+                  {generatingBoleta ? 'Preparando...' : 'Descargar Boleta de Inscripción'}
+                </Button>
               </div>
-              <Button
-                variant="primary"
-                size="large"
-                icon={<DownloadOutlined />}
-                onClick={handleDownloadOrGenerateBoleta}
-                loading={generatingBoleta}
-                disabled={generatingBoleta || !studentId}
-              >
-                {generatingBoleta ? 'Preparando...' : 'Descargar Boleta de Inscripción'}
-              </Button>
-            </div>
-          </Card>
-        ) : (
-          <Card 
-            style={{ marginBottom: '24px', backgroundColor: '#fff7e6', border: '1px solid #faad14' }}
-            styles={{ body: { padding: '16px' } }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <h3 style={{ margin: 0, color: '#faad14', fontSize: '16px' }}>
-                  📋 Documento de Inscripción No Generado
-                </h3>
-                <p style={{ margin: '4px 0 0 0', color: '#666', fontSize: '14px' }}>
-                  Puede generar y descargar la Boleta de Inscripción en formato PDF. Este proceso puede tardar unos momentos.
-                </p>
+            </Card>
+          ) : (
+            <Card 
+              style={{ marginBottom: '24px', backgroundColor: '#fff7e6', border: '1px solid #faad14' }}
+              styles={{ body: { padding: '16px' } }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <h3 style={{ margin: 0, color: '#faad14', fontSize: '16px' }}>
+                    📋 Documento de Inscripción No Generado
+                  </h3>
+                  <p style={{ margin: '4px 0 0 0', color: '#666', fontSize: '14px' }}>
+                    Puede generar y descargar la Boleta de Inscripción en formato PDF. Este proceso puede tardar unos momentos.
+                  </p>
+                </div>
+                <Button
+                  variant="primary"
+                  size="large"
+                  icon={<FileTextOutlined />}
+                  onClick={handleDownloadOrGenerateBoleta}
+                  loading={generatingBoleta}
+                  disabled={generatingBoleta || !studentId}
+                >
+                  {generatingBoleta ? 'Generando...' : 'Generar Boleta de Inscripción'}
+                </Button>
               </div>
-              <Button
-                variant="primary"
-                size="large"
-                icon={<FileTextOutlined />}
-                onClick={handleDownloadOrGenerateBoleta}
-                loading={generatingBoleta}
-                disabled={generatingBoleta || !studentId}
-              >
-                {generatingBoleta ? 'Generando...' : 'Generar Boleta de Inscripción'}
-              </Button>
-            </div>
-          </Card>
-        )}
+            </Card>
+          )
+        ) : null}
 
         {/* Datos de la Inscripción */}
         <Card 

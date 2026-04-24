@@ -1,5 +1,6 @@
 import { IPermisoRepository } from '../../domain/interfaces/repositories/IPermisoRepository.js';
 import { Permiso as PermisoModel } from '../database/models/permiso.js';
+import { sequelize } from '../database/sequelize.js';
 import { BaseRepository } from './BaseRepository.js';
 import { PermissionMapper } from '../mappers/PermissionMapper.js';
 
@@ -26,10 +27,7 @@ import { PermissionMapper } from '../mappers/PermissionMapper.js';
  * - La especialización está en buildWhereClause(), no en métodos adicionales
  * - Usa los métodos base de BaseRepository para todas las operaciones de búsqueda
  * 
- * IMPORTANTE: Se eliminaron findByCodigo() y findByModulo() porque son redundantes.
- * Usar en su lugar:
- * - findBy({ code: 'PERMISO_X' }) → Reemplaza findByCodigo()
- * - findAll({ module: 'MODULO_X' }) → Reemplaza findByModulo()
+ * IMPORTANTE: Use findBy / findAll con criterios del dominio (code, domain, module, name).
  */
 export class PermissionRepository extends BaseRepository {
   /**
@@ -59,23 +57,40 @@ export class PermissionRepository extends BaseRepository {
    * sin necesidad de crear métodos adicionales en el repositorio.
    * 
    * Ejemplos de uso:
-   * - findAll({ module: 'ESTUDIANTES' }) → Busca permisos de un módulo
-   * - findBy({ code: 'ESTUDIANTES_CREATE' }) → Busca permiso por código
+   * - findAll({ module: 'MAT' }) → Por subdominio técnico (modulo)
+   * - findAll({ domain: 'ACADEMICO' }) → Por dominio de negocio
+   * - findBy({ code: 'academico.calificacion.ver' }) → Por código exacto
    * 
    * @param {Object} filters - Filtros de búsqueda
-   *   - code: Código del permiso (búsqueda exacta, para búsqueda de texto usar search())
-   *   - module: Módulo del sistema (búsqueda exacta, para búsqueda de texto usar search())
+   *   - code: Código del permiso (exacto)
+   *   - name: Nombre legible (exacto; texto libre → search())
+   *   - domain: Dominio de negocio (exacto)
+   *   - module: Subdominio técnico (exacto)
+   *   - uiGroup: Agrupador de UI
+   *   - sidebarRoute: Ruta de referencia de sidebar
    * @returns {Object} Objeto WHERE para Sequelize
    */
   buildWhereClause(filters) {
     const where = {};
 
-    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
+    // Mapeo: Dominio (camelCase inglés) → modelo Sequelize (permiso.js)
     if (filters.code !== undefined) {
       where.codigo = filters.code;
     }
+    if (filters.name !== undefined) {
+      where.nombre = filters.name;
+    }
+    if (filters.domain) {
+      where.dominio = filters.domain;
+    }
     if (filters.module) {
       where.modulo = filters.module;
+    }
+    if (filters.uiGroup !== undefined) {
+      where.grupoUi = filters.uiGroup;
+    }
+    if (filters.sidebarRoute !== undefined) {
+      where.rutaSidebar = filters.sidebarRoute;
     }
 
     return where;
@@ -86,7 +101,7 @@ export class PermissionRepository extends BaseRepository {
    * @returns {string[]}
    */
   getSearchFields() {
-    return ['codigo', 'modulo'];
+    return ['codigo', 'nombre', 'descripcion', 'dominio', 'modulo', 'grupoUi', 'rutaSidebar'];
   }
 
   /**
@@ -126,6 +141,82 @@ export class PermissionRepository extends BaseRepository {
    */
   getCollectionName() {
     return 'permissions';
+  }
+
+  /**
+   * Catálogo de permisos activos (raw), opcionalmente filtrado por dominio.
+   */
+  async findAllActivosPlano({ dominio = null } = {}) {
+    const dominioClause = dominio ? 'AND dominio = :dominio' : '';
+    const replacements = {};
+    if (dominio) {
+      replacements.dominio = dominio;
+    }
+    return sequelize.query(
+      `
+      SELECT
+        permiso_id AS id,
+        codigo,
+        nombre,
+        dominio,
+        modulo,
+        grupo_ui,
+        ruta_sidebar,
+        GROUP_CONCAT(accion ORDER BY accion SEPARATOR ',') AS acciones_validas
+      FROM vista_catalogo_acciones_permisos_activas
+      WHERE 1=1
+        ${dominioClause}
+      GROUP BY permiso_id, codigo, nombre, dominio, modulo, grupo_ui, ruta_sidebar
+      ORDER BY dominio, permiso_id
+      `,
+      { replacements, type: sequelize.QueryTypes.SELECT }
+    );
+  }
+
+  /**
+   * Valida si una combinación (permiso, acción) está habilitada en catálogo.
+   * @param {number} permisoId
+   * @param {string} accion
+   * @returns {Promise<boolean>}
+   */
+  async existsPermisoAccionValida(permisoId, accion) {
+    const rows = await sequelize.query(
+      `
+      SELECT 1
+      FROM vista_catalogo_acciones_permisos_activas
+      WHERE permiso_id = :permisoId
+        AND accion = :accion
+      LIMIT 1
+      `,
+      {
+        replacements: { permisoId, accion },
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+    return rows.length > 0;
+  }
+
+  /**
+   * Retorna catálogo completo de acciones válidas en formato plano por dominio.
+   * Útil para resolver dinámicamente ADMIN_SISTEMA sin roles_permisos físicos.
+   * @returns {Promise<Array<{permiso_id:number,codigo:string,nombre:string,dominio:string,accion:string}>>}
+   */
+  async findAllAccionesValidasFlat() {
+    return sequelize.query(
+      `
+      SELECT
+        permiso_id,
+        codigo,
+        nombre,
+        dominio,
+        accion
+      FROM vista_catalogo_acciones_permisos_activas
+      ORDER BY dominio, permiso_id, accion
+      `,
+      {
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
   }
 }
 

@@ -49,7 +49,7 @@ CREATE TABLE estudiantes (
     tiene_discapacidad BOOLEAN DEFAULT FALSE COMMENT 'Tiene discapacidad (los detalles están en estudiantes_discapacidades)',
     
     -- Contacto
-    email_personal VARCHAR(150) COMMENT 'Email personal (para emergencias, el email institucional está en usuarios) para el estudiante',
+    email_personal VARCHAR(150) COMMENT 'Correo de contacto del estudiante (también puede usarse para login si coincide con la ficha vinculada al usuario)',
     celular VARCHAR(20) NOT NULL COMMENT 'Teléfono celular',
     telefono_fijo VARCHAR(20) COMMENT 'Teléfono fijo',
     direccion TEXT COMMENT 'Dirección completa',

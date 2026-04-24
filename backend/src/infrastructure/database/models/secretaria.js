@@ -2,9 +2,13 @@ import { DataTypes } from 'sequelize';
 import { sequelize } from '../sequelize.js';
 import { baseModelFields, baseModelOptions } from './base_model.js';
 import { TIPOS_SECRETARIA_VALUES } from '../../../domain/constants/docentes.constants.js';
-import { NIVELES_ACADEMICOS_VALUES, NIVELES_ACADEMICOS } from '../../../domain/constants/docentes.constants.js';
+import { NIVELES_ACADEMICOS_VALUES } from '../../../domain/constants/docentes.constants.js';
 import { TIPOS_CONTRATO_SECRETARIA_VALUES } from '../../../domain/constants/docentes.constants.js';
 
+/**
+ * Modelo ORM: Secretaria — tabla `secretarias`
+ * DDL: database/01-schemas/22-personal-usuarios.sql
+ */
 export const Secretaria = sequelize.define(
   'Secretaria',
   {

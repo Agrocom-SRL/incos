@@ -705,13 +705,13 @@ const EstudiantesRegister = ({ mode = 'create', studentId = null }) => {
 
   // Handler para volver a la lista de estudiantes
   const handleVolverALista = useCallback(() => {
-    navigate('/estudiantes');
+    navigate('/estudiantes/listar');
   }, [navigate]);
 
   // Configurar breadcrumb items
   const breadcrumbItems = useMemo(() => [
     { title: 'Inicio', href: '/' },
-    { title: 'Estudiantes', href: '/estudiantes' },
+    { title: 'Listar Admisiones', href: '/estudiantes/listar' },
     { title: pageTitle },
   ], [pageTitle]);
 

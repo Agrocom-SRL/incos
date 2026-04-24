@@ -1,5 +1,11 @@
 import express from 'express';
-import { registerPagoAporteValidator } from '../validators/pagos/index.js';
+import { authenticate } from '../middleware/auth.middleware.js';
+import { verificarPermiso, verificarPermisoCualquiera } from '../middleware/permisos.middleware.js';
+import {
+    registerPagoAporteValidator,
+    updatePaymentCuotaValidator,
+    searchStudentsRegistroAporteValidator,
+} from '../validators/pagos/index.js';
 import { uploadPaymentDocument } from '../middleware/upload.middleware.js';
 import { listValidator } from '../validators/common/index.js';
 
@@ -24,6 +30,62 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
     const router = express.Router();
     const { validateRequest } = middlewares;
 
+    /** Listado: Finanzas o Matrícula (aportes). */
+    const pagoListar = [
+        authenticate,
+        verificarPermisoCualquiera([
+            ['finanzas.pago.ver', 'LISTAR'],
+            ['matricula.pago.aporte.ver', 'LISTAR'],
+        ]),
+    ];
+    /**
+     * Estado del aporte para detalle / registro de cuotas (no es listado global).
+     * Alineado con quien puede ver detalle, listar o registrar pagos.
+     */
+    const pagoEstadoRegistro = [
+        authenticate,
+        verificarPermisoCualquiera([
+            ['finanzas.pago.ver', 'LISTAR'],
+            ['matricula.pago.aporte.ver', 'LISTAR'],
+            ['finanzas.pago.ver', 'DETALLE'],
+            ['matricula.pago.aporte.ver', 'DETALLE'],
+            ['finanzas.pago.registrar', 'CREAR'],
+        ]),
+    ];
+    /** Detalle de cabecera por id. */
+    const pagoDetalle = [
+        authenticate,
+        verificarPermisoCualquiera([
+            ['finanzas.pago.ver', 'DETALLE'],
+            ['matricula.pago.aporte.ver', 'DETALLE'],
+        ]),
+    ];
+    const pagoRegistrar = [authenticate, verificarPermiso('finanzas.pago.registrar', 'CREAR')];
+    /** Anular cuota: Finanzas o permiso paralelo en Matrícula. */
+    const pagoEliminar = [
+        authenticate,
+        verificarPermisoCualquiera([
+            ['finanzas.pago.editar', 'ELIMINAR'],
+            ['matricula.pago.aporte.ver', 'ELIMINAR'],
+        ]),
+    ];
+    /** Editar cuota (pago_cuotas): Finanzas o Matrícula (aportes). */
+    const pagoEditarCuota = [
+        authenticate,
+        verificarPermisoCualquiera([
+            ['finanzas.pago.editar', 'EDITAR'],
+            ['matricula.pago.aporte.ver', 'EDITAR'],
+        ]),
+    ];
+    /** Recibo PDF: EXPORTAR en Finanzas o en matricula.pago.aporte.ver. */
+    const pagoExportar = [
+        authenticate,
+        verificarPermisoCualquiera([
+            ['finanzas.pago.ver', 'EXPORTAR'],
+            ['matricula.pago.aporte.ver', 'EXPORTAR'],
+        ]),
+    ];
+
     // ============================================
     // LISTADO DE CABECERAS DE APORTE
     // ============================================
@@ -35,6 +97,7 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
      */
     router.get(
         '/',
+        ...pagoListar,
         listValidator,
         validateRequest,
         (req, res, next) => controllers.listPagosAportesController.handle(req, res, next)
@@ -47,16 +110,32 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
      */
     router.get(
         '/estado-registro',
+        ...pagoEstadoRegistro,
         (req, res, next) => controllers.getEstadoAporteRegistroController.handle(req, res, next)
+    );
+
+    /**
+     * GET /api/v1/pagos-aportes/buscar-estudiantes-registro
+     * Búsqueda de estudiantes (contacto, CI, código, nombres, carrera) para flujo de registro de aporte.
+     * Query: q (min 2 salvo con preliminar=1), limit (opcional, 1–100), preliminar=1 (muestra con saldo pendiente).
+     */
+    router.get(
+        '/buscar-estudiantes-registro',
+        ...pagoEstadoRegistro,
+        searchStudentsRegistroAporteValidator,
+        validateRequest,
+        (req, res, next) => controllers.searchStudentsForAporteRegistroController.handle(req, res, next)
     );
 
     /**
      * GET /api/v1/pagos-aportes/export/lista-por-carrera
      * Excel: inscritos por carrera con monto de aporte, descuento, cuotas, saldo, etc.
      * Query: carrera_id (requerido), gestion_id (opcional; gestión vigente por defecto)
+     * Permiso: finanzas.pago.ver EXPORTAR o matricula.pago.aporte.ver EXPORTAR (pagoExportar).
      */
     router.get(
         '/export/lista-por-carrera',
+        ...pagoExportar,
         (req, res, next) => controllers.exportListaAportesPorCarreraExcelController.handle(req, res, next)
     );
 
@@ -69,8 +148,21 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
      * Registrar una cuota (abono). Crea/actualiza cabecera si hace falta e inserta en pago_cuotas.
      * Body (multipart/form-data): student_id, management_id, amount, payment_method_id, payment_account_id, payment_date, transaction_number, codigo_comprobante, descripcion, documentoRespaldo (archivo)
      */
+    /**
+     * PUT /api/v1/pagos-aportes/cuotas/:id
+     * Actualizar una cuota existente (id = pago_cuotas.id). Recalcula estado de la cabecera.
+     */
+    router.put(
+        '/cuotas/:id',
+        ...pagoEditarCuota,
+        updatePaymentCuotaValidator,
+        validateRequest,
+        (req, res, next) => controllers.updatePaymentInstallmentController.handle(req, res, next)
+    );
+
     router.post(
         '/',
+        ...pagoRegistrar,
         // Wrapper para manejar errores de multer
         (req, res, next) => {
             uploadPaymentDocument(req, res, (err) => {
@@ -98,6 +190,7 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
      */
     router.get(
         '/:id',
+        ...pagoDetalle,
         (req, res, next) => controllers.getPaymentAporteByIdController.handle(req, res, next)
     );
 
@@ -108,6 +201,7 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
      */
     router.delete(
         '/:id',
+        ...pagoEliminar,
         (req, res, next) => controllers.deletePaymentAporteController.handle(req, res, next)
     );
 
@@ -121,6 +215,7 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
      */
     router.get(
         '/:id/recibo',
+        ...pagoExportar,
         (req, res, next) => controllers.generateReciboPagoController.handle(req, res, next)
     );
 

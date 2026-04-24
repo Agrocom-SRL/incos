@@ -3,7 +3,11 @@ import { TIPOS_CONFIGURACION_VALUES, TIPOS_CONFIGURACION } from '../constants/in
 
 /**
  * Entidad de Dominio: SystemConfiguration
- * Representa una configuración del sistema
+ * Representa una configuración del sistema.
+ * Contiene la lógica de negocio pura del par clave/valor tipado.
+ *
+ * Mapeo con BD (tabla configuracion_sistema, 03-catalogos-referencia.sql):
+ * - key ← clave, value ← valor, type ← tipo, description ← descripcion
  */
 export class SystemConfiguration extends BaseEntity {
   constructor(data = {}) {

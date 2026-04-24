@@ -3,7 +3,13 @@ import { ESTADOS_USUARIOS_VALUES, ESTADOS_USUARIOS, TIPOS_REFERENCIA_VALUES } fr
 
 /**
  * Entidad de Dominio: User
- * Representa un usuario del sistema
+ * Representa un usuario del sistema.
+ * Contiene la lógica de negocio pura del usuario (estado, referencia polimórfica).
+ *
+ * Mapeo con BD (tabla usuarios, 04-sistema-seguridad.sql):
+ * - roleId ← rol_id, referenceId ← referencia_id, referenceType ← tipo_referencia
+ * - state ← estado, stateChangeDate ← fecha_cambio_estado, stateChangeReason ← motivo_cambio_estado
+ * - photoUrl ← foto_url, passwordHash ← password_hash
  */
 export class User extends BaseEntity {
   constructor(data = {}) {
@@ -12,9 +18,6 @@ export class User extends BaseEntity {
     // Esto permite usar attributes limitados sin inicializar campos no solicitados
     if (data.hasOwnProperty('username')) {
       this.username = data.username;
-    }
-    if (data.hasOwnProperty('email')) {
-      this.email = data.email;
     }
     if (data.hasOwnProperty('passwordHash')) {
       this.passwordHash = data.passwordHash;
@@ -67,16 +70,6 @@ export class User extends BaseEntity {
   }
 
   /**
-   * Valida el formato del email
-   * @returns {boolean}
-   */
-  isValidEmail() {
-    if (!this.email) return false;
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(this.email);
-  }
-
-  /**
    * Valida el tipo de referencia
    * @returns {boolean}
    */
@@ -105,9 +98,6 @@ export class User extends BaseEntity {
     // Solo incluir campos que fueron inicializados (existen en this)
     if (this.hasOwnProperty('username')) {
       plainObject.username = this.username;
-    }
-    if (this.hasOwnProperty('email')) {
-      plainObject.email = this.email;
     }
     if (this.hasOwnProperty('passwordHash')) {
       plainObject.passwordHash = this.passwordHash;

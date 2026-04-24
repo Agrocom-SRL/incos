@@ -1,6 +1,8 @@
 import express from 'express';
 import container from '../../infrastructure/container/index.js';
 import {
+    AUTH_TOKENS,
+    SEGURIDAD_TOKENS,
     ESTUDIANTES_TOKENS,
     CONFIGURACION_TOKENS,
     ACADEMICO_TOKENS,
@@ -17,9 +19,13 @@ const router = express.Router();
 // ============================================
 router.get('/', (req, res) => {
     res.json({
-        message: 'API Instituto INCOS v1',
-        version: '1.0.0',
+        message: 'API Instituto INCOS',
+        version: '1.2.0',
         endpoints: {
+            auth: '/api/v1/auth',
+            usuarios: '/api/v1/usuarios',
+            roles: '/api/v1/roles',
+            permisos: '/api/v1/permisos',
             // Módulo: Estudiantes
             estudiantes: '/api/v1/estudiantes',
             becasDescuentos: '/api/v1/becas-descuentos',
@@ -56,6 +62,18 @@ router.get('/', (req, res) => {
 // MÓDULOS - Rutas organizadas por dominio
 // ============================================
 // Estructura basada en frontend/src/infrastructure/api/endpoints.js
+
+// ============================================
+// 0. MÓDULO: AUTH
+// ============================================
+router.use('/auth', container.resolve(AUTH_TOKENS.authRouter));
+
+// ============================================
+// 0b. MÓDULO: SEGURIDAD (usuarios, roles, catálogo permisos)
+// ============================================
+router.use('/usuarios', container.resolve(SEGURIDAD_TOKENS.usuariosRouter));
+router.use('/roles', container.resolve(SEGURIDAD_TOKENS.rolesRouter));
+router.use('/permisos', container.resolve(SEGURIDAD_TOKENS.permisosRouter));
 
 // ============================================
 // 1. MÓDULO: ESTUDIANTES

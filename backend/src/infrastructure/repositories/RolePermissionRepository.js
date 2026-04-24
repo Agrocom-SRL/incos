@@ -1,5 +1,6 @@
 import { IRolPermisoRepository } from '../../domain/interfaces/repositories/IRolPermisoRepository.js';
 import { RolPermiso as RolPermisoModel } from '../database/models/rol_permiso.js';
+import { sequelize } from '../database/sequelize.js';
 import { BaseRepository } from './BaseRepository.js';
 import { RolePermissionMapper } from '../mappers/RolePermissionMapper.js';
 
@@ -131,6 +132,99 @@ export class RolePermissionRepository extends BaseRepository {
    */
   getCollectionName() {
     return 'rolePermissions';
+  }
+
+  /**
+   * Filas planas rol-permiso + metadatos del permiso (para agrupar por dominio).
+   */
+  async findFlatByRolId(rolId) {
+    return sequelize.query(
+      `
+      SELECT
+        id, accion,
+        permiso_id, codigo, nombre, dominio, modulo, grupo_ui, ruta_sidebar
+      FROM vista_roles_permisos_detalle_activos
+      WHERE rol_id = :rolId
+      ORDER BY dominio, codigo, accion
+      `,
+      { replacements: { rolId }, type: sequelize.QueryTypes.SELECT }
+    );
+  }
+
+  /**
+   * Permisos agrupados por grupo_ui para la grilla del panel de seguridad.
+   * Combina acciones validas del catalogo vs acciones asignadas al rol.
+   */
+  async findPermisosParaGrilla(rolId, dominio) {
+    const rows = await sequelize.query(
+      `
+      SELECT
+        grupo_ui,
+        ruta_sidebar,
+        codigos,
+        acciones_validas,
+        acciones_asignadas
+      FROM vista_grilla_roles_permisos_agrupada
+      WHERE rol_id = :rolId
+        AND dominio = :dominio
+      ORDER BY grupo_ui
+      `,
+      {
+        replacements: { rolId, dominio },
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+
+    return rows.map((r) => ({
+      grupoUi: r.grupo_ui,
+      rutaSidebar: r.ruta_sidebar,
+      codigos: r.codigos ? r.codigos.split(',') : [],
+      accionesValidas: r.acciones_validas ? r.acciones_validas.split(',') : [],
+      accionesAsignadas: r.acciones_asignadas
+        ? r.acciones_asignadas.split(',').filter(Boolean)
+        : [],
+    }));
+  }
+
+  /**
+   * Soft delete de todas las asignaciones activas del rol e inserción de nuevas filas.
+   * @param {number} rolId
+   * @param {{ permiso_id: number, accion: string }[]} asignaciones
+   */
+  async replaceAllAssignmentsForRol(rolId, asignaciones) {
+    return sequelize.transaction(async (t) => {
+      await sequelize.query(
+        `
+        UPDATE roles_permisos
+        SET activo = FALSE,
+            deleted_at = NOW(),
+            updated_at = NOW()
+        WHERE rol_id = :rolId
+          AND activo = TRUE
+          AND deleted_at IS NULL
+        `,
+        { replacements: { rolId }, transaction: t }
+      );
+
+      for (const row of asignaciones) {
+        await sequelize.query(
+          `
+          INSERT INTO roles_permisos
+            (rol_id, permiso_id, accion, activo, created_at, updated_at)
+          VALUES
+            (:rolId, :permisoId, :accion, TRUE, NOW(), NOW())
+          `,
+          {
+            replacements: {
+              rolId,
+              permisoId: row.permiso_id,
+              accion: row.accion,
+            },
+            transaction: t,
+          }
+        );
+      }
+    });
   }
 }
 

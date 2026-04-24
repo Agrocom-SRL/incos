@@ -67,7 +67,7 @@ const EstudiantesAsignarBeca = () => {
             actions={
               <Button
                 icon={<ArrowLeftOutlined />}
-                onClick={handleVolver || (() => { window.location.href = '/estudiantes'; })}
+                onClick={handleVolver || (() => { window.location.href = '/estudiantes/listar'; })}
                 variant="primary"
               >
                 Volver
@@ -84,7 +84,7 @@ const EstudiantesAsignarBeca = () => {
           action={
             <Button 
               size="small" 
-              onClick={() => window.location.href = '/estudiantes'}
+              onClick={() => window.location.href = '/estudiantes/listar'}
               variant="default"
             >
               Ir a Lista de Estudiantes

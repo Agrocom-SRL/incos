@@ -58,6 +58,9 @@ const WizardForm = ({
   initialStep = 0, // Paso inicial (índice 0-based interno: 0 = primer paso)
   // Contenido custom por sección: la página construye el panel (inscripciones step 1 carrera, estudiantes step 0 tipoAdmision/datosAcademicos)
   renderSectionContent, // (stepIndex, sectionKey, section, form) => ReactNode | null
+  prevLabel = 'Anterior',
+  nextLabel = 'Siguiente',
+  finishLabel = 'Finalizar Registro',
 }) => {
   // Hook que compone toda la lógica del wizard (navegación + formulario + cargadores)
   const {
@@ -187,6 +190,9 @@ const WizardForm = ({
         onFinish={onFinish}
         onSave={onSave}
         showSaveButton={showSaveButtonEffective}
+        prevLabel={prevLabel}
+        nextLabel={nextLabel}
+        finishLabel={finishLabel}
       />
     </FormCard>
   );

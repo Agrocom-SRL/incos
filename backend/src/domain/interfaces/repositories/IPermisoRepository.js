@@ -3,7 +3,16 @@ import { IRepository } from './IRepository.js';
 /**
  * Interfaz de Repositorio: IPermisoRepository
  * Define el contrato que debe cumplir el repositorio de permisos
- * 
+ *
+ * Convención de capas:
+ * - Interfaz: IPermisoRepository
+ * - Modelo ORM: models/permiso.js → tabla `permisos`
+ * - Entidad: domain/entities/Permission.js
+ * - Mapper: mappers/PermissionMapper.js
+ * - Implementación: repositories/PermissionRepository.js
+ *
+ * DDL: database/01-schemas/04-sistema-seguridad.sql (tabla permisos)
+ *
  * NOTA: Solo extiende IRepository sin métodos adicionales.
  * La especialización está en la implementación (buildWhereClause), no en la interfaz.
  * 

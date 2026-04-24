@@ -1,4 +1,5 @@
 import express from 'express';
+import { authenticate } from '../middleware/auth.middleware.js';
 import { listProvinciasValidator } from '../validators/geograficos/index.js';
 
 /**
@@ -21,6 +22,7 @@ import { listProvinciasValidator } from '../validators/geograficos/index.js';
 export function buildProvinciasRouter({ controllers, middlewares }) {
     const router = express.Router();
     const { validateRequest } = middlewares;
+    // Catálogo de referencia: solo autenticación requerida, sin permiso específico
 
     // ============================================
     // CRUD BÁSICO
@@ -39,6 +41,7 @@ export function buildProvinciasRouter({ controllers, middlewares }) {
      */
     router.get(
         '/',
+        authenticate,
         listProvinciasValidator,
         validateRequest,
         (req, res, next) => controllers.listProvinciasController.handle(req, res, next)

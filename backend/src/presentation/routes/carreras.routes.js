@@ -1,4 +1,6 @@
 import express from 'express';
+import { authenticate } from '../middleware/auth.middleware.js';
+import { verificarPermiso } from '../middleware/permisos.middleware.js';
 import { listValidator } from '../validators/common/index.js';
 
 /**
@@ -21,6 +23,7 @@ import { listValidator } from '../validators/common/index.js';
 export function buildCarrerasRouter({ controllers, middlewares }) {
     const router = express.Router();
     const { validateRequest } = middlewares;
+    const listarCarreras = [authenticate, verificarPermiso('cfg.academico.carreras', 'LISTAR')];
 
     // ============================================
     // CRUD BÁSICO
@@ -39,6 +42,7 @@ export function buildCarrerasRouter({ controllers, middlewares }) {
      */
     router.get(
         '/',
+        ...listarCarreras,
         listValidator,
         validateRequest,
         (req, res, next) => controllers.listCarrerasController.handle(req, res, next)

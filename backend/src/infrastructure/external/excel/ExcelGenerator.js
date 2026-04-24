@@ -369,13 +369,40 @@ class ExcelGenerator {
     }
   }
 
+  /** Porcentaje de beca para columna «% DE BECA» (0–100 con sufijo %). */
+  static _fmtPorcentajeBeca(raw) {
+    if (raw == null || raw === '') return '0%';
+    const n = Number(raw);
+    if (Number.isNaN(n)) return '0%';
+    const rounded = Math.abs(n - Math.round(n)) < 1e-6 ? Math.round(n) : Number(n.toFixed(2));
+    return `${rounded}%`;
+  }
+
+  /**
+   * Líneas aproximadas con texto ajustado (wrap) según ancho de columna en unidades Excel.
+   * @param {string} text
+   * @param {number} charsPerLine
+   */
+  static _estimateWrappedLines(text, charsPerLine) {
+    const s = String(text ?? '').trim();
+    if (!s) return 1;
+    const cpl = Math.max(10, Math.floor(Number(charsPerLine) || 40));
+    return Math.max(1, Math.ceil(s.length / cpl));
+  }
+
   static _buildListaAportesPorCarreraSheet(worksheet, rows, filtros, paraleloNombre, assets = {}) {
     const FONT_SIZE_LISTA = 14;
     const FONT_SIZE_TITULO = 18;
-    /** A:N°, B:C nombres, D:C.I., E–K montos/cuotas/estado (sin celular ni beca). */
-    const LAST_COL = 11;
+    /** A:N°, B:C nombres, D:C.I., E–M datos, N observaciones (G–H beca tras descuento). */
+    const LAST_COL = 14;
+    /** Ancho columna H (TIPO BECA); más ancho + fila más alta evita texto cortado. */
+    const WIDTH_TIPO_BECA = 54;
+    /** Ancho columna N (OBSERVACIONES); ~2× el anterior + una sola línea (sin wrap). */
+    const WIDTH_OBSERVACIONES = 88;
+    /** Caracteres efectivos por línea en B:C fusionadas (anchos B+C). */
+    const CHARS_PER_LINE_NOMBRE = 52;
     const gestionAnio = filtros?.gestion_anio ? String(filtros.gestion_anio) : '';
-    const carreraNombre = filtros?.carrera_nombre ? String(filtros.carrera_nombre) : '';
+    const carreraNombre = String(filtros?.carrera_nombre ?? '').toUpperCase();
     const instituteName = IncosPDFBase?.INSTITUTE?.name || 'INSTITUTO TÉCNICO INCOS SANTA CRUZ';
 
     const sample = rows?.[0] || {};
@@ -388,15 +415,18 @@ class ExcelGenerator {
     worksheet.columns = [
       { width: 8 },
       { width: 18 },
-      { width: 40 },
-      { width: 22 },
-      { width: 14 },
-      { width: 14 },
+      { width: 36 },
+      { width: 20 },
       { width: 12 },
       { width: 14 },
-      { width: 14 },
-      { width: 14 },
-      { width: 14 },
+      { width: 12 },
+      { width: WIDTH_TIPO_BECA },
+      { width: 11 },
+      { width: 12 },
+      { width: 12 },
+      { width: 12 },
+      { width: 12 },
+      { width: WIDTH_OBSERVACIONES },
     ];
 
     worksheet.getRow(1).height = 58;
@@ -413,8 +443,8 @@ class ExcelGenerator {
     }
     if (assets?.incosLogoId != null) {
       worksheet.addImage(assets.incosLogoId, {
-        tl: { col: LAST_COL - 1, row: 0 },
-        br: { col: LAST_COL, row: 1 },
+        tl: { col: LAST_COL - 2, row: 0 },
+        br: { col: LAST_COL - 1, row: 1 },
       });
     }
 
@@ -439,7 +469,7 @@ class ExcelGenerator {
     mergeVal(6, 'CARRERA:', carreraNombre);
     mergeVal(7, 'RÉGIMEN:', 'ANUAL');
 
-    // Fila CURSO/TURNO (11 cols): curso C:F, TURNO en G, valor H:K
+    // Fila CURSO/TURNO: curso C:F, TURNO en G, valor H:N
     worksheet.getCell('A8').value = 'CURSO:';
     worksheet.mergeCells('A8:B8');
     worksheet.mergeCells('C8:F8');
@@ -493,11 +523,14 @@ class ExcelGenerator {
       'C.I.',
       'APORTE BASE',
       'DESCUENTO (Bs.)',
+      '% DE BECA',
+      'TIPO BECA',
       'N° CUOTAS',
       'DEUDA TOTAL',
       'PAGADO',
       'SALDO',
       'ESTADO',
+      'OBSERVACIONES',
     ];
 
     worksheet.getCell(headerRowIdx, 1).value = headers[0];
@@ -519,11 +552,13 @@ class ExcelGenerator {
         bottom: { style: 'thin' },
         right: { style: 'thin' },
       };
-      // Nombres en B:C: la celda maestra B queda alineada a la izquierda (y C en el merge).
+      // Nombres B:C; tipo beca y observaciones alineados a la izquierda.
       const align =
-        colNumber === 2 || colNumber === 3
-          ? { horizontal: 'left', vertical: 'middle', wrapText: true }
-          : { horizontal: 'center', vertical: 'middle', wrapText: true };
+        colNumber === 14
+          ? { horizontal: 'left', vertical: 'middle', wrapText: false }
+          : colNumber === 2 || colNumber === 3 || colNumber === 8
+            ? { horizontal: 'left', vertical: 'middle', wrapText: true }
+            : { horizontal: 'center', vertical: 'middle', wrapText: true };
       cell.alignment = align;
     });
 
@@ -539,28 +574,49 @@ class ExcelGenerator {
       worksheet.getCell(rowIdx, 1).value = idx + 1;
       worksheet.mergeCells(`B${rowIdx}:C${rowIdx}`);
       worksheet.getCell(rowIdx, 2).value = nombre;
-      const alignNombreB = { horizontal: 'left', vertical: 'middle', wrapText: true };
+      const alignNombreB = { horizontal: 'left', vertical: 'top', wrapText: true };
       worksheet.getCell(rowIdx, 2).alignment = alignNombreB;
       worksheet.getCell(rowIdx, 3).alignment = alignNombreB;
       worksheet.getCell(rowIdx, 4).value = ci;
       this._setMontoCell(worksheet.getCell(rowIdx, 5), row.aporte_monto_base ?? row.aporteMontoBase);
       this._setMontoCell(worksheet.getCell(rowIdx, 6), row.descuento_beca ?? row.descuentoBeca);
-      worksheet.getCell(rowIdx, 7).value =
+      worksheet.getCell(rowIdx, 7).value = this._fmtPorcentajeBeca(
+        row.beca_porcentaje ?? row.becaPorcentaje
+      );
+      const tipoBecaStr = String(
+        row.beca_tipo_nombre ?? row.becaTipoNombre ?? 'NO APLICA'
+      ).trim();
+      worksheet.getCell(rowIdx, 8).value = tipoBecaStr;
+      worksheet.getCell(rowIdx, 9).value =
         row.pago_aporte_id == null && row.pagoAporteId == null
           ? '—'
           : Number(row.cantidad_cuotas ?? row.cantidadCuotas ?? 0);
-      this._setMontoCell(worksheet.getCell(rowIdx, 8), row.monto_total_deuda ?? row.montoTotalDeuda);
-      this._setMontoCell(worksheet.getCell(rowIdx, 9), row.monto_pagado ?? row.montoPagado);
-      this._setMontoCell(worksheet.getCell(rowIdx, 10), row.saldo_pendiente ?? row.saldoPendiente);
-      worksheet.getCell(rowIdx, 11).value = estado;
+      this._setMontoCell(worksheet.getCell(rowIdx, 10), row.monto_total_deuda ?? row.montoTotalDeuda);
+      this._setMontoCell(worksheet.getCell(rowIdx, 11), row.monto_pagado ?? row.montoPagado);
+      this._setMontoCell(worksheet.getCell(rowIdx, 12), row.saldo_pendiente ?? row.saldoPendiente);
+      worksheet.getCell(rowIdx, 13).value = estado;
+      const obsStr = String(row.observaciones_cuotas ?? row.observacionesCuotas ?? '').trim();
+      worksheet.getCell(rowIdx, 14).value = obsStr;
+
+      const linesNombre = this._estimateWrappedLines(nombre, CHARS_PER_LINE_NOMBRE);
+      const charsPerLineTipo = Math.floor(WIDTH_TIPO_BECA * 0.92);
+      const linesTipo = this._estimateWrappedLines(tipoBecaStr, charsPerLineTipo);
+      const maxWrappedLines = Math.max(linesNombre, linesTipo, 1);
+      const rowHeight = Math.min(160, Math.max(24, 18 + maxWrappedLines * 17));
 
       const r = worksheet.getRow(rowIdx);
-      r.height = 24;
+      r.height = rowHeight;
       r.font = { size: FONT_SIZE_LISTA };
       for (let c = 1; c <= LAST_COL; c++) {
         const cell = worksheet.getCell(rowIdx, c);
         if (c === 2 || c === 3) continue;
-        cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+        const alignObs =
+          c === 14
+            ? { horizontal: 'left', vertical: 'top', wrapText: false }
+            : c === 8
+              ? { horizontal: 'left', vertical: 'top', wrapText: true }
+              : { horizontal: 'center', vertical: 'middle', wrapText: true };
+        cell.alignment = alignObs;
         cell.border = {
           top: { style: 'thin' },
           left: { style: 'thin' },

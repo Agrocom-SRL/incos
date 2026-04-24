@@ -42,21 +42,49 @@ export const TIPOS_REFERENCIA = {
 export const TIPOS_REFERENCIA_VALUES = Object.values(TIPOS_REFERENCIA);
 
 /**
+ * Flujos de creación de usuario (administración SEG).
+ * - ACCESO_SISTEMA: solo tabla usuarios (rol administrador del sistema).
+ * - PERSONAL_INSTITUCIONAL: personal + fila de cargo + usuario vinculado a personal.id.
+ * - ASIGNAR_ESTUDIANTE / ASIGNAR_DOCENTE: crear usuario y enlazar ficha existente sin usuario.
+ */
+export const CATEGORIAS_CREACION_USUARIO = {
+  ACCESO_SISTEMA: 'ACCESO_SISTEMA',
+  PERSONAL_INSTITUCIONAL: 'PERSONAL_INSTITUCIONAL',
+  ASIGNAR_ESTUDIANTE: 'ASIGNAR_ESTUDIANTE',
+  ASIGNAR_DOCENTE: 'ASIGNAR_DOCENTE',
+};
+
+export const CATEGORIAS_CREACION_USUARIO_VALUES = Object.values(CATEGORIAS_CREACION_USUARIO);
+
+/**
  * Acciones permitidas en permisos
  */
 export const ACCIONES_PERMISOS = {
-  VER: 'VER',
+  LISTAR: 'LISTAR',
+  DETALLE: 'DETALLE',
   CREAR: 'CREAR',
   EDITAR: 'EDITAR',
   ELIMINAR: 'ELIMINAR',
+  ACTIVAR: 'ACTIVAR',
   APROBAR: 'APROBAR',
   EXPORTAR: 'EXPORTAR',
+  GENERAR_PDF: 'GENERAR_PDF',
 };
 
 /**
  * Array de acciones válidas (útil para validators)
  */
 export const ACCIONES_PERMISOS_VALUES = Object.values(ACCIONES_PERMISOS);
+
+/**
+ * Override de permiso por usuario (usuarios_permisos.tipo)
+ */
+export const TIPOS_USUARIO_PERMISO = {
+  GRANT: 'GRANT',
+  REVOKE: 'REVOKE',
+};
+
+export const TIPOS_USUARIO_PERMISO_VALUES = Object.values(TIPOS_USUARIO_PERMISO);
 
 /**
  * Tipos de dispositivo

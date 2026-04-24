@@ -17,8 +17,6 @@
 import { useEffect } from 'react';
 import { Form, Alert, Radio, Spin, Empty } from 'antd';
 import { CalendarOutlined } from '@ant-design/icons';
-import './GestionSelectionSection.css';
-
 const GestionSelectionSection = ({
   form,
   gestiones = [],

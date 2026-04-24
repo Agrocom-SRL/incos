@@ -1,117 +1,99 @@
 // src/presentation/modules/reportes/routes.jsx
 /**
- * Rutas del módulo de Reportes
- * 
- * Single Responsibility: Define todas las rutas del módulo de reportes
- * 
- * Clean Architecture:
- * - Presentation Layer: Define rutas y metadata de UI (labels del menú, orden)
+ * Rutas del módulo de Reportes (dominio Reportes).
  */
 
 import { UnderConstruction } from '@components/pages';
 
 export const reportesRoutes = [
-    // Módulo raíz: Reportes
-    {
-        path: '/reportes',
-        element: null, // No tiene página propia, es solo un grupo
-        key: 'REP',
-        menu: {
-            label: 'Reportes',
-            module: 'REP',
-            order: 11, // Usado ocasionalmente
-        },
+  {
+    path: '/reportes/avance-academico',
+    element: <UnderConstruction />,
+    key: 'REP-AVANCE-ACADEMICO',
+    permiso: 'reportes.avance_academico',
+    accion: 'LISTAR',
+    menu: {
+      label: 'Avance académico',
+      module: 'REP',
+      parent: 'REP',
+      order: 1,
     },
-    {
-        path: '/reportes/avance-academico',
-        element: <UnderConstruction />,
-        key: 'REP-AVANCE-ACADEMICO',
-        menu: {
-            label: 'Avance Académico',
-            module: 'REP',
-            parent: 'REP',
-            order: 1,
-        },
+  },
+  {
+    path: '/reportes/asistencia',
+    element: <UnderConstruction />,
+    key: 'REP-ASISTENCIA',
+    permiso: 'reportes.asistencia',
+    accion: 'LISTAR',
+    menu: {
+      label: 'Asistencia',
+      module: 'REP',
+      parent: 'REP',
+      order: 2,
     },
-    {
-        path: '/reportes/asistencia',
-        element: <UnderConstruction />,
-        key: 'REP-ASISTENCIA',
-        menu: {
-            label: 'Reporte de Asistencia',
-            module: 'REP',
-            parent: 'REP',
-            order: 2,
-        },
+  },
+  {
+    path: '/reportes/desercion',
+    element: <UnderConstruction />,
+    key: 'REP-DESERCION',
+    permiso: 'reportes.desercion',
+    accion: 'LISTAR',
+    menu: {
+      label: 'Deserción',
+      module: 'REP',
+      parent: 'REP',
+      order: 3,
     },
-    {
-        path: '/reportes/desercion',
-        element: <UnderConstruction />,
-        key: 'REP-DESERCION',
-        menu: {
-            label: 'Reporte de Deserción',
-            module: 'REP',
-            parent: 'REP',
-            order: 3,
-        },
+  },
+  {
+    path: '/reportes/solicitudes',
+    element: <UnderConstruction />,
+    key: 'REP-SOLICITUDES',
+    permiso: 'reportes.solicitudes.general',
+    accion: 'LISTAR',
+    menu: {
+      label: 'Solicitudes',
+      module: 'REP',
+      parent: 'REP',
+      order: 4,
     },
-    // Submenu: Solicitudes
-    {
-        path: '/reportes/solicitudes',
-        element: null, // No tiene página propia, es solo un grupo
-        key: 'REP-SOLICITUDES',
-        menu: {
-            label: 'Solicitudes',
-            module: 'REP',
-            parent: 'REP',
-            order: 4,
-        },
-    },
-    {
-        path: '/reportes/solicitudes/general',
-        element: <UnderConstruction />,
-        key: 'REP-SOLICITUDES-GENERAL',
-        menu: {
-            label: 'Reporte General',
-            module: 'REP',
-            parent: 'REP-SOLICITUDES',
-            order: 1,
-        },
-    },
-    {
-        path: '/reportes/solicitudes/becas',
-        element: <UnderConstruction />,
-        key: 'REP-SOLICITUDES-BECAS',
-        menu: {
-            label: 'Por Becas',
-            module: 'REP',
-            parent: 'REP-SOLICITUDES',
-            order: 2,
-        },
-    },
-    {
-        path: '/reportes/solicitudes/traspaso',
-        element: <UnderConstruction />,
-        key: 'REP-SOLICITUDES-TRASPASO',
-        menu: {
-            label: 'Por Traspaso',
-            module: 'REP',
-            parent: 'REP-SOLICITUDES',
-            order: 3,
-        },
-    },
-    {
-        path: '/reportes/solicitudes/pasantia',
-        element: <UnderConstruction />,
-        key: 'REP-SOLICITUDES-PASANTIA',
-        menu: {
-            label: 'Por Pasantía',
-            module: 'REP',
-            parent: 'REP-SOLICITUDES',
-            order: 5,
-        },
-    },
+  },
+  {
+    path: '/reportes/solicitudes/general',
+    element: <UnderConstruction />,
+    key: 'REP-SOLICITUDES-GENERAL',
+    permiso: 'reportes.solicitudes.general',
+    accion: 'LISTAR',
+    menu: null,
+    breadcrumbParent: 'REP-SOLICITUDES',
+  },
+  {
+    path: '/reportes/solicitudes/becas',
+    element: <UnderConstruction />,
+    key: 'REP-SOLICITUDES-BECAS',
+    permiso: 'reportes.solicitudes.becas',
+    accion: 'LISTAR',
+    menu: null,
+    breadcrumbParent: 'REP-SOLICITUDES',
+  },
+  {
+    path: '/reportes/solicitudes/traspaso',
+    element: <UnderConstruction />,
+    key: 'REP-SOLICITUDES-TRASPASO',
+    permiso: 'reportes.solicitudes.traspaso',
+    accion: 'LISTAR',
+    menu: null,
+    breadcrumbParent: 'REP-SOLICITUDES',
+  },
+  {
+    path: '/reportes/solicitudes/pasantia',
+    element: <UnderConstruction />,
+    key: 'REP-SOLICITUDES-PASANTIA',
+    permiso: 'reportes.solicitudes.pasantia',
+    accion: 'LISTAR',
+    menu: null,
+    breadcrumbParent: 'REP-SOLICITUDES',
+  },
 ];
 
 export default reportesRoutes;
-

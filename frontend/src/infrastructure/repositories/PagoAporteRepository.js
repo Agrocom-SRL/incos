@@ -158,6 +158,38 @@ export class PagoAporteRepository extends IPagoAporteRepository {
   }
 
   /**
+   * GET /v1/pagos-aportes/buscar-estudiantes-registro
+   * @param {Object} options
+   * @param {string} [options.q] - Búsqueda (min. 2 caracteres) salvo con preliminar
+   * @param {number} [options.limit]
+   * @param {boolean} [options.preliminar] - Muestra estudiantes con saldo en cabeceras (sin q)
+   */
+  async buscarEstudiantesRegistroAporte(options = {}) {
+    try {
+      const { q = '', limit, preliminar } = options;
+      const params = {};
+      if (preliminar) {
+        params.preliminar = '1';
+      } else {
+        params.q = String(q).trim();
+      }
+      if (limit != null) params.limit = limit;
+      const response = await apiClient.get(PAGOS_APORTES_ENDPOINTS.BUSCAR_ESTUDIANTES_REGISTRO, { params });
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error || 'Error en la respuesta del servidor' };
+      }
+      if (responseData.error) {
+        return { success: false, error: responseData.error };
+      }
+      const data = Array.isArray(responseData.data) ? responseData.data : [];
+      return { success: true, data };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al buscar estudiantes');
+    }
+  }
+
+  /**
    * Obtiene la lista de pagos de aportes con filtros y paginación (vista_pago_aporte_listado).
    * GET /v1/pagos-aportes?page=1&limit=50&search=...&sort=id:ASC&gestion_id=&estudiante_id=&estado=
    *
@@ -240,6 +272,34 @@ export class PagoAporteRepository extends IPagoAporteRepository {
       return result;
     } catch (error) {
       return handleErrorResponse(error, 'Error al eliminar pago de aporte');
+    }
+  }
+
+  /**
+   * PUT /v1/pagos-aportes/cuotas/:id
+   * @param {string|number} cuotaId - ID de pago_cuotas
+   * @param {Object} payload - Campos de la cuota (amount, payment_method_id, …)
+   */
+  async actualizarCuota(cuotaId, payload) {
+    try {
+      if (!cuotaId || (typeof cuotaId !== 'string' && typeof cuotaId !== 'number')) {
+        return { success: false, error: 'ID de cuota es requerido' };
+      }
+      const body = {
+        amount: payload.amount,
+        payment_method_id: payload.payment_method_id,
+        payment_account_id: payload.payment_account_id ?? null,
+        payment_date: payload.payment_date,
+        transaction_number: payload.transaction_number ?? null,
+        codigo_comprobante: payload.codigo_comprobante ?? null,
+        descripcion: payload.descripcion ?? null,
+      };
+      const response = await apiClient.put(PAGOS_APORTES_ENDPOINTS.UPDATE_CUOTA(cuotaId), body, {
+        headers: { 'Content-Type': 'application/json' },
+      });
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al actualizar la cuota de pago');
     }
   }
 

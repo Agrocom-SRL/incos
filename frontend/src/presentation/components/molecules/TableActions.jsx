@@ -14,6 +14,16 @@ import { Tooltip, Grid } from 'antd';
 import { getDataTableAction } from '@config/icons';
 import { useDeleteItem } from '@application/utils/useDeleteItem';
 import { useContainer } from '@container';
+import { useAuthContext } from '@application-auth';
+
+/**
+ * Un permiso { codigo, accion } o varios (OR): basta uno para habilitar la acción.
+ */
+function cumplePermisoRef(ref, hasPermiso) {
+  if (!ref) return true;
+  const opciones = Array.isArray(ref) ? ref : [ref];
+  return opciones.some((p) => p?.codigo && hasPermiso(p.codigo, p.accion));
+}
 
 /**
  * Componente genérico de acciones para tablas
@@ -27,11 +37,14 @@ import { useContainer } from '@container';
  * @param {string} props.itemName - Nombre del elemento para el mensaje (ej: 'el pago')
  * @param {Array} props.itemDetails - Detalles del elemento para mostrar en el diálogo (opcional)
  * @param {string} props.viewPath - Ruta para ver detalle (ej: '/pagos/:id')
+ * @param {Object} [props.viewNavigateState] - Estado opcional para navigate() al ver (ej. menuSidebarKey)
  * @param {string} props.editPath - Ruta para editar (opcional, ej: '/pagos/:id/editar')
  * @param {Function} props.onEdit - Función personalizada para editar (opcional)
  * @param {Function} props.onView - Función personalizada para ver (opcional)
  * @param {boolean} props.editDisabled - Si el botón de editar debe estar deshabilitado (opcional)
  * @param {Object} props.extraActions - Acciones adicionales (opcional)
+ * @param {Object} props.permisos - Permisos por acción; cada valor puede ser {codigo, accion} o array (OR).
+ *   En permisos v2 el ícono "ver detalle" de fila usa accion **DETALLE** (no existe VER).
  */
 const TableActions = ({
   record,
@@ -42,11 +55,13 @@ const TableActions = ({
   itemName,
   itemDetails,
   viewPath,
+  viewNavigateState,
   editPath,
   onEdit,
   onView,
   editDisabled = false,
   extraActions = [],
+  permisos,
 }) => {
   const screens = Grid.useBreakpoint();
   const isSmall = !screens.lg;
@@ -54,6 +69,7 @@ const TableActions = ({
   const actionsSize = isSmall ? 'small' : 'middle';
 
   const container = useContainer();
+  const { hasPermiso } = useAuthContext();
   const viewAction = getDataTableAction('view');
   const editAction = getDataTableAction('edit');
   const deleteAction = getDataTableAction('delete');
@@ -113,7 +129,8 @@ const TableActions = ({
     if (onView) {
       onView(record);
     } else if (viewPath) {
-      navigate(viewPath.replace(':id', record.id));
+      const path = viewPath.replace(':id', record.id);
+      navigate(path, viewNavigateState != null ? { state: viewNavigateState } : undefined);
     }
   };
 
@@ -125,6 +142,15 @@ const TableActions = ({
     }
   };
 
+  const puedeVer = cumplePermisoRef(permisos?.ver, hasPermiso);
+  const puedeEditar = cumplePermisoRef(permisos?.editar, hasPermiso);
+  const puedeEliminar = cumplePermisoRef(permisos?.eliminar, hasPermiso);
+
+  const extraActionsPermitidas = extraActions.filter((action) => {
+    if (!action?.permiso) return true;
+    return hasPermiso(action.permiso, action.accion || 'LISTAR');
+  });
+
   return (
     <TableCell
       actions
@@ -133,7 +159,7 @@ const TableActions = ({
       size={actionsSize}
       spaceStyle={{ gap: 4 }}
     >
-      {viewPath && (
+      {viewPath && puedeVer && (
         <Tooltip title={`${viewAction.tooltip} ${itemName || 'elemento'}`}>
           <IconButton
             icon={<viewAction.icon />}
@@ -142,7 +168,7 @@ const TableActions = ({
           />
         </Tooltip>
       )}
-      {(editPath || onEdit) && (
+      {(editPath || onEdit) && puedeEditar && (
         <Tooltip title={editDisabled 
           ? `No se puede editar este tipo de inscripción` 
           : `${editAction.tooltip} ${itemName || 'elemento'}`}>
@@ -159,7 +185,7 @@ const TableActions = ({
           />
         </Tooltip>
       )}
-      {extraActions.map((action, index) => (
+      {extraActionsPermitidas.map((action, index) => (
         <Tooltip key={index} title={action.tooltip || action.title}>
           <IconButton
             icon={action.icon}
@@ -168,7 +194,7 @@ const TableActions = ({
           />
         </Tooltip>
       ))}
-      {hasDeleteFunctionality && (
+      {hasDeleteFunctionality && puedeEliminar && (
         <Tooltip title={`${deleteAction.tooltip} ${itemName || 'elemento'}`}>
           <IconButton
             icon={<deleteAction.icon />}
@@ -177,7 +203,7 @@ const TableActions = ({
           />
         </Tooltip>
       )}
-      {!hasDeleteFunctionality && (useCaseKey || customDeleteFn) && (
+      {!hasDeleteFunctionality && (useCaseKey || customDeleteFn) && puedeEliminar && (
         <Tooltip title="Eliminación no disponible">
           <IconButton
             icon={<deleteAction.icon />}

@@ -1,4 +1,6 @@
 import express from 'express';
+import { authenticate } from '../middleware/auth.middleware.js';
+import { verificarPermiso, verificarPermisoCualquiera } from '../middleware/permisos.middleware.js';
 import { listValidator, idValidator, searchValidator } from '../validators/common/index.js';
 import { registerStudentValidator, updateStudentValidator, assignBecaValidator } from '../validators/estudiantes/index.js';
 
@@ -23,6 +25,26 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
     const router = express.Router();
     const { validateRequest } = middlewares;
 
+    const admisionListar = [authenticate, verificarPermiso('matricula.admision.ver', 'LISTAR')];
+    const admisionDetalle = [authenticate, verificarPermiso('matricula.admision.ver', 'DETALLE')];
+    const admisionCrear = [authenticate, verificarPermiso('matricula.admision.crear', 'CREAR')];
+    const admisionEditar = [authenticate, verificarPermiso('matricula.admision.editar', 'EDITAR')];
+    const admisionEliminar = [authenticate, verificarPermiso('matricula.admision.editar', 'ELIMINAR')];
+    const admisionExportar = [authenticate, verificarPermiso('matricula.admision.ver', 'EXPORTAR')];
+    /** Excel lista inscritos por carrera: admisión o módulo inscripciones (misma ruta API). */
+    const listaInscritosPorCarreraExportar = [
+        authenticate,
+        verificarPermisoCualquiera([
+            ['matricula.admision.ver', 'EXPORTAR'],
+            ['matricula.inscribir', 'EXPORTAR'],
+        ]),
+    ];
+    const documentoPdf = [authenticate, verificarPermiso('matricula.documento.ver', 'GENERAR_PDF')];
+    const becaListar = [authenticate, verificarPermiso('matricula.beca.ver', 'LISTAR')];
+    const becaDetalle = [authenticate, verificarPermiso('matricula.beca.ver', 'DETALLE')];
+    const becaAsignarCrear = [authenticate, verificarPermiso('matricula.beca.asignar', 'CREAR')];
+    const becaAsignarEliminar = [authenticate, verificarPermiso('matricula.beca.asignar', 'ELIMINAR')];
+
     // ============================================
     // CRUD BÁSICO
     // ============================================
@@ -34,6 +56,7 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
      */
     router.get(
         '/',
+        ...admisionListar,
         listValidator, // 1. Validator primero
         validateRequest, // 2. Middleware que procesa errores
         (req, res, next) => controllers.listStudentsController.handle(req, res, next) // 3. Controller al final
@@ -46,6 +69,7 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
      */
     router.post(
         '/',
+        ...admisionCrear,
         registerStudentValidator,  // 1. Validator primero
         validateRequest,            // 2. Middleware que procesa errores
         (req, res, next) => controllers.registerStudentController.handle(req, res, next)  // 3. Controller al final
@@ -65,6 +89,7 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
      */
     router.put(
         '/:id',
+        ...admisionEditar,
         idValidator,  // 1. Validator primero
         updateStudentValidator,  // 2. Validator de datos del body
         validateRequest,  // 3. Middleware que procesa errores
@@ -82,6 +107,7 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
      */
     router.post(
         '/:id/documentos/acta-compromiso',
+        ...documentoPdf,
         idValidator,  // 1. Validator primero
         validateRequest,  // 2. Middleware que procesa errores
         (req, res, next) => controllers.actaCompromisoController.handle(req, res, next)  // 3. Controller al final
@@ -94,6 +120,7 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
    */
   router.post(
     '/:id/documentos/declaracion-jurada',
+    ...documentoPdf,
     idValidator,  // 1. Validator primero
     validateRequest,  // 2. Middleware que procesa errores
     (req, res, next) => controllers.declaracionJuradaController.handle(req, res, next)  // 3. Controller al final
@@ -112,6 +139,7 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
      */
     router.get(
         '/search',
+        ...admisionListar,
         searchValidator,  // 1. Validator común de búsqueda
         validateRequest,  // 2. Middleware que procesa errores
         (req, res, next) => controllers.searchStudentController.handle(req, res, next)  // 3. Controller al final
@@ -126,6 +154,7 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
      */
     router.get(
         '/export/estadistica-inscritos',
+        ...admisionExportar,
         (req, res, next) => controllers.exportEstadisticaInscritosExcelController.handle(req, res, next)
     );
 
@@ -133,11 +162,13 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
      * GET /api/v1/estudiantes/export/lista-inscritos-por-carrera
      * Descargar Excel de lista de inscritos por carrera, una hoja por paralelo.
      * Query: carrera_id (requerido), gestion_id (opcional; por defecto la gestión vigente)
+     * Permiso: matricula.admision.ver EXPORTAR o matricula.inscribir EXPORTAR.
      *
      * Debe ir antes de rutas con /:id.
      */
     router.get(
         '/export/lista-inscritos-por-carrera',
+        ...listaInscritosPorCarreraExportar,
         (req, res, next) => controllers.exportListaInscritosPorCarreraExcelController.handle(req, res, next)
     );
 
@@ -157,6 +188,7 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
      */
     router.get(
         '/becas',
+        ...becaListar,
         listValidator,  // 1. Validator primero
         validateRequest,  // 2. Middleware que procesa errores
         (req, res, next) => controllers.listStudentScholarshipsController.handle(req, res, next)  // 3. Controller al final
@@ -174,6 +206,7 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
      */
     router.get(
         '/:id/scholarships',
+        ...becaDetalle,
         idValidator,  // 1. Validator primero
         validateRequest,  // 2. Middleware que procesa errores
         (req, res, next) => controllers.getStudentScholarshipsController.handle(req, res, next)  // 3. Controller al final
@@ -191,6 +224,7 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
      */
     router.post(
         '/:id/scholarships',
+        ...becaAsignarCrear,
         assignBecaValidator,  // 1. Validator primero
         validateRequest,  // 2. Middleware que procesa errores
         (req, res, next) => controllers.asignarBecaController.handle(req, res, next)  // 3. Controller al final
@@ -208,6 +242,7 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
      */
     router.delete(
         '/becas/:id',
+        ...becaAsignarEliminar,
         idValidator,  // 1. Validator primero
         validateRequest,  // 2. Middleware que procesa errores
         (req, res, next) => controllers.deleteStudentScholarshipController.handle(req, res, next)  // 3. Controller al final
@@ -239,6 +274,7 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
      */
     router.delete(
         '/:id',
+        ...admisionEliminar,
         idValidator,  // 1. Validator primero
         validateRequest,  // 2. Middleware que procesa errores
         (req, res, next) => controllers.deleteStudentController.handle(req, res, next)  // 3. Controller al final
@@ -258,6 +294,7 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
      */
     router.get(
         '/:id',
+        ...admisionDetalle,
         idValidator,  // 1. Validator primero
         validateRequest,  // 2. Middleware que procesa errores
         (req, res, next) => controllers.getStudentByIdController.handle(req, res, next)  // 3. Controller al final

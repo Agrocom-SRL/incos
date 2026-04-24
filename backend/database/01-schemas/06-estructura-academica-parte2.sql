@@ -48,7 +48,7 @@ CREATE TABLE docentes (
     -- Contacto
     telefono VARCHAR(20) COMMENT 'Teléfono fijo',
     celular VARCHAR(20) NOT NULL COMMENT 'Teléfono celular',
-    email_personal VARCHAR(150) COMMENT 'Email personal (para emergencias, el email institucional está en usuarios)',
+    email_personal VARCHAR(150) COMMENT 'Correo de contacto del docente (también puede usarse para login si coincide con la ficha vinculada al usuario)',
     direccion TEXT COMMENT 'Dirección completa',
     municipio_residencia_id INT NULL COMMENT 'Municipio de residencia',
     zona VARCHAR(100) COMMENT 'Zona/barrio',

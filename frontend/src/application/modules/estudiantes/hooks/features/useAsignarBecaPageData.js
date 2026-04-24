@@ -44,7 +44,7 @@ export const useAsignarBecaPageData = (options = {}) => {
     // Breadcrumb items
     const breadcrumbItems = useMemo(() => [
         { title: 'Inicio', href: '/' },
-        { title: 'Estudiantes', href: '/estudiantes' },
+        { title: 'Listar Admisiones', href: '/estudiantes/listar' },
         { title: 'Asignar Beca' },
     ], []);
 
@@ -53,7 +53,7 @@ export const useAsignarBecaPageData = (options = {}) => {
         if (studentId) {
             navigate(`/estudiantes/${studentId}`);
         } else {
-            navigate('/estudiantes');
+            navigate('/estudiantes/listar');
         }
     }, [studentId, navigate]);
 

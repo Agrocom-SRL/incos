@@ -1,32 +1,110 @@
 /**
- * Provider: AuthProvider
- * 
- * Single Responsibility: Proporcionar estado global de autenticación vía Context
- * 
- * Clean Architecture:
- * - Application Layer: Provider que expone estado global usando un hook dedicado
- * - NO contiene lógica, solo expone el estado vía Context
- * 
- * Ventajas:
- * - Separación de responsabilidades: la lógica está en useAuth
- * - Estado global: todos los componentes pueden acceder al estado de autenticación
- * - Persistencia: el estado se mantiene en localStorage
- * 
- * Estrategia:
- * - Usa useAuth para gestionar el estado global
- * - Expone el estado vía AuthContext
+ * Provider de autenticación (Application Layer).
+ * Estado: usuario, permisos, JWT; bootstrap con GET /auth/me.
  */
 
-import { useAuth } from '@application-auth/hooks';
-import { AuthContext } from '@application-auth/context/AuthContext';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
+import { useNavigate } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext.js';
+import { apiCall } from '@/infrastructure/http/apiClient.js';
+import { AUTH_ENDPOINTS } from '@api/endpoints.js';
+
+const initialState = {
+  usuario: null,
+  permisos: [],
+  token: null,
+  isAuthenticated: false,
+  isLoading: true,
+};
 
 export const AuthProvider = ({ children }) => {
-  // Hook dedicado para gestionar el estado global de autenticación
-  const authData = useAuth();
+  const navigate = useNavigate();
+  const [state, setState] = useState(initialState);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const bootstrap = async () => {
+      const token = localStorage.getItem('incos_token');
+      if (!token) {
+        if (!cancelled) setState({ ...initialState, isLoading: false });
+        return;
+      }
+
+      const res = await apiCall(AUTH_ENDPOINTS.ME);
+      if (cancelled) return;
+      if (!res) return;
+
+      if (res.ok) {
+        const json = await res.json();
+        setState({
+          usuario: json.data.usuario,
+          permisos: json.data.permisos,
+          token,
+          isAuthenticated: true,
+          isLoading: false,
+        });
+      } else {
+        localStorage.removeItem('incos_token');
+        localStorage.removeItem('incos_usuario');
+        setState({ ...initialState, isLoading: false });
+      }
+    };
+
+    bootstrap();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const login = useCallback((token, usuario, permisos) => {
+    localStorage.setItem('incos_token', token);
+    localStorage.setItem('incos_usuario', JSON.stringify(usuario));
+    setState({
+      usuario,
+      permisos: permisos ?? [],
+      token,
+      isAuthenticated: true,
+      isLoading: false,
+    });
+  }, []);
+
+  const logout = useCallback(async () => {
+    try {
+      await apiCall(AUTH_ENDPOINTS.LOGOUT, { method: 'POST' });
+    } catch {
+      /* ignorar */
+    }
+    localStorage.removeItem('incos_token');
+    localStorage.removeItem('incos_usuario');
+    setState({ ...initialState, isLoading: false });
+    navigate('/login', { replace: true });
+  }, [navigate]);
+
+  const hasPermiso = useCallback(
+    (codigo, accion) =>
+      state.permisos.some(
+        (p) => p.codigo === codigo && p.acciones.includes(accion)
+      ),
+    [state.permisos]
+  );
+
+  const value = useMemo(
+    () => ({
+      ...state,
+      login,
+      logout,
+      hasPermiso,
+    }),
+    [state, login, logout, hasPermiso]
+  );
 
   return (
-    <AuthContext.Provider value={authData}>
-      {children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
   );
 };

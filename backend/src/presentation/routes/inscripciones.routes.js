@@ -1,4 +1,6 @@
 import express from 'express';
+import { authenticate } from '../middleware/auth.middleware.js';
+import { verificarPermiso } from '../middleware/permisos.middleware.js';
 import { listValidator, idValidator } from '../validators/common/index.js';
 import { createEnrollmentValidator, updateEnrollmentValidator } from '../validators/inscripciones/index.js';
 
@@ -23,6 +25,13 @@ export function buildInscripcionesRouter({ controllers, middlewares }) {
     const router = express.Router();
     const { validateRequest } = middlewares;
 
+    const listarInscripciones = [authenticate, verificarPermiso('matricula.inscribir', 'LISTAR')];
+    const detalleInscripcion = [authenticate, verificarPermiso('matricula.inscribir', 'DETALLE')];
+    const crearInscripcion = [authenticate, verificarPermiso('matricula.inscribir', 'CREAR')];
+    const editarInscripcion = [authenticate, verificarPermiso('matricula.inscripcion.editar', 'EDITAR')];
+    const eliminarInscripcion = [authenticate, verificarPermiso('matricula.inscripcion.editar', 'ELIMINAR')];
+    const documentoPdf = [authenticate, verificarPermiso('matricula.documento.ver', 'GENERAR_PDF')];
+
     // ============================================
     // CRUD BÁSICO
     // ============================================
@@ -34,6 +43,7 @@ export function buildInscripcionesRouter({ controllers, middlewares }) {
      */
     router.get(
         '/',
+        ...listarInscripciones,
         listValidator,
         validateRequest,
         (req, res, next) => controllers.listEnrollmentsController.handle(req, res, next)
@@ -47,6 +57,7 @@ export function buildInscripcionesRouter({ controllers, middlewares }) {
      */
     router.post(
         '/',
+        ...crearInscripcion,
         createEnrollmentValidator, // 1. Validator primero
         validateRequest,            // 2. Middleware que procesa errores
         (req, res, next) => controllers.createEnrollmentController.handle(req, res, next)  // 3. Controller al final
@@ -59,6 +70,7 @@ export function buildInscripcionesRouter({ controllers, middlewares }) {
      */
     router.post(
         '/:id/generar-formulario',
+        ...documentoPdf,
         idValidator,
         validateRequest,
         (req, res, next) => controllers.generateFormularioInscripcionController.handle(req, res, next)
@@ -71,6 +83,7 @@ export function buildInscripcionesRouter({ controllers, middlewares }) {
      */
     router.get(
         '/:id',
+        ...detalleInscripcion,
         idValidator,
         validateRequest,
         (req, res, next) => controllers.getEnrollmentByIdController.handle(req, res, next)
@@ -84,6 +97,7 @@ export function buildInscripcionesRouter({ controllers, middlewares }) {
      */
     router.delete(
         '/:id',
+        ...eliminarInscripcion,
         idValidator,
         validateRequest,
         (req, res, next) => controllers.deleteEnrollmentController.handle(req, res, next)
@@ -95,6 +109,7 @@ export function buildInscripcionesRouter({ controllers, middlewares }) {
      */
     router.put(
         '/:id',
+        ...editarInscripcion,
         idValidator,
         updateEnrollmentValidator,
         validateRequest,

@@ -3,6 +3,10 @@ import { sequelize } from '../sequelize.js';
 import { baseModelFields, baseModelOptions } from './base_model.js';
 import { GENEROS_VALUES } from '../../../domain/constants/estudiantes.constants.js';
 
+/**
+ * Modelo ORM: Personal — tabla `personal`
+ * DDL: database/01-schemas/22-personal-usuarios.sql
+ */
 export const Personal = sequelize.define(
   'Personal',
   {
@@ -20,8 +24,8 @@ export const Personal = sequelize.define(
     },
     expedicion: {
       type: DataTypes.STRING(5),
-      allowNull: false,
-      comment: 'Expedición del CI (SC, LP, CB, etc.)',
+      allowNull: true,
+      comment: 'Expedición del CI (SC, LP, CB, etc.). Opcional.',
     },
     nombres: {
       type: DataTypes.STRING(150),

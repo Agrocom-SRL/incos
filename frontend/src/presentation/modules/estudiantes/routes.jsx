@@ -1,169 +1,178 @@
 // src/presentation/modules/estudiantes/routes.jsx
 /**
- * Rutas del módulo de Estudiantes
- * 
- * Single Responsibility: Define todas las rutas del módulo de estudiantes
- * 
- * Clean Architecture:
- * - Presentation Layer: Define rutas y metadata de UI (labels del menú, orden)
- * - Depende de: pages (dentro del mismo módulo), connectors
+ * Rutas de admisión, becas y documentos (MAT). Licencias de estudiante: keys ACA-* (menú Académico).
+ * Ítems de sidebar MAT: menu.parent = 'MAT' (sin padres intermedios MAT-* que generen sub-submenús).
  */
 
 import { UnderConstruction } from '@components/pages';
-import { ListConnector, RegisterConnector, DetailConnector, EditConnector, AsignarBecaConnector, BecasListConnector } from '@estudiantes/connectors';
+import {
+  ListConnector,
+  RegisterConnector,
+  DetailConnector,
+  EditConnector,
+  AsignarBecaConnector,
+  BecasListConnector,
+} from '@estudiantes/connectors';
 
 export const estudiantesRoutes = [
-    // Módulo raíz: Estudiantes (muestra la lista directamente)
-    {
-        path: '/estudiantes',
-        element: <ListConnector />,
-        key: 'EST',
-        menu: {
-            label: 'Estudiantes',
-            module: 'EST',
-            order: 2, // Módulo más usado, después de Dashboard
-        },
+  {
+    path: '/estudiantes/listar',
+    element: <ListConnector />,
+    key: 'MAT-ADMISION',
+    permiso: 'matricula.admision.ver',
+    accion: 'LISTAR',
+    menu: {
+      label: 'Admisión',
+      module: 'MAT',
+      parent: 'MAT',
+      order: 2,
     },
-    {
-        path: '/estudiantes/listar',
-        element: <ListConnector />,
-        key: 'EST-LIST',
-        menu: {
-            label: 'Listar Estudiantes',
-            module: 'EST',
-            parent: 'EST',
-            order: 1,
-        },
+  },
+  {
+    path: '/estudiantes/registrar',
+    element: <RegisterConnector />,
+    key: 'MAT-ADM-NUEVA',
+    permiso: 'matricula.admision.crear',
+    accion: 'CREAR',
+    menu: {
+      label: 'Nuevo estudiante',
+      module: 'MAT',
+      parent: 'MAT',
+      order: 1,
+      tipo: 'ACCION_DIRECTA',
     },
-    // Registrar (nuevo módulo)
-    {
-        path: '/estudiantes/registrar',
-        element: <RegisterConnector />,
-        key: 'EST-REGISTRAR',
-        menu: {
-            label: 'Nueva Admisión',
-            module: 'EST',
-            parent: 'EST',
-            order: 2,
-        },
+  },
+  {
+    path: '/pasantias/listar',
+    element: <UnderConstruction />,
+    key: 'MAT-PAS-LISTA',
+    permiso: 'matricula.pasantia.ver',
+    accion: 'LISTAR',
+    menu: {
+      label: 'Pasantías',
+      module: 'MAT',
+      parent: 'MAT',
+      order: 6,
+      labelByRole: { ESTUDIANTE: 'Mi pasantía' },
     },
-    // Detalle del estudiante (sin menú, se accede por URL con parámetro de ruta :id)
-    {
-        path: '/estudiantes/:id',
-        element: <DetailConnector />,
-        key: 'EST-DETALLE',
-        menu: null, // No aparece en el menú, se accede por URL con /estudiantes/:id
+  },
+  {
+    path: '/estudiantes/becas/listar',
+    element: <BecasListConnector />,
+    key: 'MAT-BEC-LISTAR',
+    permiso: 'matricula.beca.ver',
+    accion: 'LISTAR',
+    menu: {
+      label: 'Becas',
+      module: 'MAT',
+      parent: 'MAT',
+      order: 5,
+      labelByRole: { ESTUDIANTE: 'Mi beca' },
     },
-    // Editar estudiante (sin menú, se accede por URL con parámetro de ruta :id)
-    {
-        path: '/estudiantes/:id/editar',
-        element: <EditConnector />,
-        key: 'EST-EDITAR',
-        menu: null, // No aparece en el menú, se accede por URL con /estudiantes/:id/editar
+  },
+  {
+    path: '/estudiantes/becas/asignar',
+    element: <AsignarBecaConnector />,
+    key: 'MAT-BEC-ASIGNAR',
+    permiso: 'matricula.beca.asignar',
+    accion: 'CREAR',
+    menu: null,
+    breadcrumbParent: 'MAT-BEC-LISTAR',
+  },
+  {
+    path: '/estudiantes/becas/aprobar',
+    element: <UnderConstruction />,
+    key: 'MAT-BEC-APROBAR',
+    permiso: 'matricula.beca.aprobar',
+    accion: 'APROBAR',
+    menu: null,
+    breadcrumbParent: 'MAT-BEC-LISTAR',
+  },
+  {
+    path: '/estudiantes/licencias/listar',
+    element: <UnderConstruction />,
+    key: 'ACA-LIC-EST',
+    permiso: 'academico.licencia.ver',
+    accion: 'LISTAR',
+    menu: {
+      label: 'Licencias estudiantiles',
+      module: 'ACA',
+      parent: 'ACA',
+      order: 6,
     },
-    // Becas - Grupo padre (muestra la lista directamente)
-    {
-        path: '/estudiantes/becas',
-        element: <BecasListConnector />,
-        key: 'EST-BECAS',
-        menu: {
-            label: 'Becas',
-            module: 'EST',
-            parent: 'EST',
-            order: 3,
-        },
-    },
-    {
-        path: '/estudiantes/becas/listar',
-        element: <BecasListConnector />,
-        key: 'EST-BECAS-LIST',
-        menu: {
-            label: 'Listar Becas',
-            module: 'EST',
-            parent: 'EST-BECAS',
-            order: 1, // Listar primero
-        },
-    },
-    {
-        path: '/estudiantes/becas/asignar',
-        element: <AsignarBecaConnector />,
-        key: 'EST-BECAS-ASIGNAR',
-        menu: {
-            label: 'Asignar Beca',
-            module: 'EST',
-            parent: 'EST-BECAS',
-            order: 2, // Crear/Asignar segundo
-        },
-    },
-    {
-        path: '/estudiantes/becas/aprobar',
-        element: <UnderConstruction />,
-        key: 'EST-BECAS-APROBAR',
-        menu: {
-            label: 'Aprobar Beca',
-            module: 'EST',
-            parent: 'EST-BECAS',
-            order: 3, // Estados (Aprobar) tercero
-        },
-    },
-    // Licencias - Grupo padre
-    {
-        path: '/estudiantes/licencias',
-        element: null, // No tiene página propia, es solo un grupo
-        key: 'EST-LICENCIAS',
-        menu: {
-            label: 'Licencias',
-            module: 'EST',
-            parent: 'EST',
-            order: 4,
-        },
-    },
-    {
-        path: '/estudiantes/licencias/listar',
-        element: <UnderConstruction />,
-        key: 'EST-LICENCIAS-LIST',
-        menu: {
-            label: 'Listar Licencias',
-            module: 'EST',
-            parent: 'EST-LICENCIAS',
-            order: 1, // Listar primero
-        },
-    },
-    {
-        path: '/estudiantes/licencias/solicitar',
-        element: <UnderConstruction />,
-        key: 'EST-LICENCIAS-SOLICITAR',
-        menu: {
-            label: 'Solicitar Licencia',
-            module: 'EST',
-            parent: 'EST-LICENCIAS',
-            order: 2, // Crear/Solicitar segundo
-        },
-    },
-    {
-        path: '/estudiantes/licencias/aprobar',
-        element: <UnderConstruction />,
-        key: 'EST-LICENCIAS-APROBAR',
-        menu: {
-            label: 'Aprobar Licencia',
-            module: 'EST',
-            parent: 'EST-LICENCIAS',
-            order: 3, // Estados (Aprobar) tercero
-        },
-    },
-    // Documentos - Solo listar (verificar y estado son acciones dentro de la lista)
-    {
-        path: '/estudiantes/documentos',
-        element: <UnderConstruction />,
-        key: 'EST-DOCUMENTOS',
-        menu: {
-            label: 'Documentos',
-            module: 'EST',
-            parent: 'EST',
-            order: 6,
-        },
-    },
-    // Rutas sin menú (acciones que se manejan dentro de la página de documentos)
+  },
+  {
+    path: '/estudiantes/licencias/solicitar',
+    element: <UnderConstruction />,
+    key: 'ACA-LIC-EST-SOLICITAR',
+    permiso: 'academico.licencia.crear',
+    accion: 'CREAR',
+    menu: null,
+    breadcrumbParent: 'ACA-LIC-EST',
+  },
+  {
+    path: '/estudiantes/licencias/aprobar',
+    element: <UnderConstruction />,
+    key: 'ACA-LIC-EST-APROBAR',
+    permiso: 'academico.licencia.aprobar',
+    accion: 'APROBAR',
+    menu: null,
+    breadcrumbParent: 'ACA-LIC-EST',
+  },
+  {
+    path: '/estudiantes/:id/editar',
+    element: <EditConnector />,
+    key: 'MAT-ADM-EDITAR',
+    permiso: 'matricula.admision.editar',
+    accion: 'EDITAR',
+    menu: null,
+    breadcrumbParent: 'MAT-ADMISION',
+  },
+  {
+    path: '/estudiantes/:id',
+    element: <DetailConnector />,
+    key: 'MAT-ADM-DETALLE',
+    permiso: 'matricula.admision.ver',
+    accion: 'DETALLE',
+    menu: null,
+    breadcrumbParent: 'MAT-ADMISION',
+  },
+  {
+    path: '/estudiantes/documentos',
+    element: <UnderConstruction />,
+    key: 'MAT-DOCUMENTOS',
+    permiso: 'matricula.documento.ver',
+    accion: 'GENERAR_PDF',
+    menu: null,
+    breadcrumbParent: 'MAT-ADMISION',
+  },
+  {
+    path: '/pasantias/solicitar',
+    element: <UnderConstruction />,
+    key: 'MAT-PAS-SOLICITAR',
+    permiso: 'matricula.pasantia.solicitar',
+    accion: 'CREAR',
+    menu: null,
+    breadcrumbParent: 'MAT-PAS-LISTA',
+  },
+  {
+    path: '/pasantias/:id/editar',
+    element: <UnderConstruction />,
+    key: 'MAT-PAS-EDITAR',
+    permiso: 'matricula.pasantia.evaluar',
+    accion: 'EDITAR',
+    menu: null,
+    breadcrumbParent: 'MAT-PAS-LISTA',
+  },
+  {
+    path: '/pasantias/:id',
+    element: <UnderConstruction />,
+    key: 'MAT-PAS-DETALLE',
+    permiso: 'matricula.pasantia.ver',
+    accion: 'DETALLE',
+    menu: null,
+    breadcrumbParent: 'MAT-PAS-LISTA',
+  },
 ];
 
 export default estudiantesRoutes;

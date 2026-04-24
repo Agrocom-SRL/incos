@@ -139,7 +139,7 @@ export class ContributionPaymentRepository extends BaseRepository {
      * @param {Object} baseFilters - Filtros base (search, sort) de ListRequestDTO
      * @param {number} page - Página (1-based)
      * @param {number} limit - Límite por página
-     * @param {Object} queryParams - Parámetros de query (gestion_id, estudiante_id, estado, etc.)
+     * @param {Object} queryParams - Parámetros de query (gestion_id, estudiante_id, estado, estados CSV o IN, etc.)
      * @returns {Promise<{contributionPayments: Array, total: number}>}
      */
     async obtenerListadoPagosAportes(baseFilters = {}, page = 1, limit = 50, queryParams = {}) {
@@ -156,9 +156,23 @@ export class ContributionPaymentRepository extends BaseRepository {
             whereConditions.push('gestion_id = ?');
             replacements.push(filters.gestion_id);
         }
-        if (filters.estado !== undefined) {
-            whereConditions.push('estado = ?');
-            replacements.push(filters.estado);
+        const estadosPermitidos = new Set(['PENDIENTE', 'PARCIAL', 'CANCELADO']);
+        if (filters.estados !== undefined && filters.estados !== null && String(filters.estados).trim() !== '') {
+            const raw = Array.isArray(filters.estados) ? filters.estados : String(filters.estados).split(',');
+            const list = raw
+                .map((s) => String(s).trim().toUpperCase())
+                .filter((s) => estadosPermitidos.has(s));
+            if (list.length > 0) {
+                const placeholders = list.map(() => '?').join(', ');
+                whereConditions.push(`estado IN (${placeholders})`);
+                replacements.push(...list);
+            }
+        } else if (filters.estado !== undefined && filters.estado !== null && String(filters.estado).trim() !== '') {
+            const one = String(filters.estado).trim().toUpperCase();
+            if (estadosPermitidos.has(one)) {
+                whereConditions.push('estado = ?');
+                replacements.push(one);
+            }
         }
         if (filters.search && typeof filters.search === 'string') {
             const term = `%${filters.search.trim()}%`;
@@ -188,10 +202,30 @@ export class ContributionPaymentRepository extends BaseRepository {
      */
     _orderClauseForListado(sort) {
         const allowed = ['id', 'estado', 'created_at', 'gestion_anio', 'total_pagado', 'cantidad_pagos', 'saldo_pendiente', 'codigo_estudiante', 'gestion_nombre'];
-        if (!sort || typeof sort !== 'string') return 'ORDER BY id ASC';
+        const pendingFirstOrder = `
+ORDER BY
+  CASE
+    WHEN COALESCE(saldo_pendiente, 0) > 0 AND UPPER(COALESCE(estado, '')) = 'PENDIENTE' THEN 0
+    WHEN COALESCE(saldo_pendiente, 0) > 0 AND UPPER(COALESCE(estado, '')) = 'PARCIAL' THEN 1
+    WHEN COALESCE(saldo_pendiente, 0) > 0 THEN 2
+    WHEN UPPER(COALESCE(estado, '')) = 'CANCELADO' THEN 4
+    ELSE 3
+  END ASC
+`;
+
+        if (!sort || typeof sort !== 'string') {
+            return `${pendingFirstOrder}, COALESCE(saldo_pendiente, 0) DESC, created_at DESC, id DESC`;
+        }
+
         const [field, dir] = sort.trim().split(':');
-        const col = (field || 'id').toLowerCase();
-        const direction = (dir || 'ASC').toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
-        return allowed.includes(col) ? `ORDER BY ${col} ${direction}` : 'ORDER BY id ASC';
+        const col = (field || 'created_at').toLowerCase();
+        const direction = (dir || 'DESC').toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+
+        if (!allowed.includes(col)) {
+            return `${pendingFirstOrder}, COALESCE(saldo_pendiente, 0) DESC, created_at DESC, id DESC`;
+        }
+
+        // Mantiene pendientes primero y luego aplica el orden solicitado por el cliente.
+        return `${pendingFirstOrder}, ${col} ${direction}, id DESC`;
     }
 }

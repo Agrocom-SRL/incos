@@ -1,0 +1,149 @@
+/* ============================================================================
+   WIZARD SELECTION CARDS
+   Tarjetas tipo "Tipo de admisión" / "Tipo de alta de usuario" en wizards.
+   Colores de acento por tarjeta vía variables CSS (inyectadas en el wrapper):
+     --wizard-card-accent      (borde, icono activo, badge ✓)
+     --wizard-card-accent-bg   (fondo seleccionado)
+   Si no se definen, caen al color primario institucional (:root desde theme/root.js).
+   ============================================================================ */
+
+.wizard-selection-cards__section.card {
+  margin-top: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+  border-radius: var(--border-radius-lg, 12px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.wizard-selection-cards__card-title {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.wizard-selection-cards__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--spacing-md);
+  width: 100%;
+}
+
+/* Radio.Button como tarjeta */
+.wizard-selection-cards__radio.ant-radio-button-wrapper {
+  width: 100%;
+  height: auto;
+  padding: 0;
+  margin: 0 !important;
+  border: 2px solid var(--color-border, #e8e8e8) !important;
+  border-radius: var(--border-radius-lg, 12px) !important;
+  background-color: var(--color-bg-container, #fff) !important;
+  transition:
+    transform var(--transition-base, 0.2s ease),
+    box-shadow var(--transition-base, 0.2s ease),
+    border-color var(--transition-base, 0.2s ease),
+    background-color var(--transition-base, 0.2s ease);
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+.wizard-selection-cards__radio.ant-radio-button-wrapper-checked {
+  border-color: var(--wizard-card-accent, var(--color-primary)) !important;
+  background-color: var(--wizard-card-accent-bg, var(--color-primary-bg)) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.wizard-selection-cards__radio.ant-radio-button-wrapper-disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.wizard-selection-cards__radio.ant-radio-button-wrapper:hover:not(.ant-radio-button-wrapper-disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Quitar separadores y bordes internos del grupo Ant */
+.wizard-selection-cards__grid .wizard-selection-cards__radio::before {
+  display: none !important;
+}
+
+.wizard-selection-cards__grid .wizard-selection-cards__radio.ant-radio-button-wrapper-checked::before {
+  display: none !important;
+}
+
+.wizard-selection-cards__inner {
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.wizard-selection-cards__icon-wrap {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--border-radius-lg, 12px);
+  background-color: #f5f5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background-color var(--transition-base, 0.2s ease);
+}
+
+.wizard-selection-cards__radio.ant-radio-button-wrapper-checked .wizard-selection-cards__icon-wrap {
+  background-color: var(--wizard-card-accent, var(--color-primary));
+}
+
+.wizard-selection-cards__icon {
+  font-size: 28px;
+  color: #8c8c8c;
+  transition: color var(--transition-base, 0.2s ease);
+}
+
+.wizard-selection-cards__radio.ant-radio-button-wrapper-checked .wizard-selection-cards__icon {
+  color: var(--color-white, #fff);
+}
+
+.wizard-selection-cards__body {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+}
+
+.wizard-selection-cards__label {
+  font-weight: 600;
+  font-size: 16px;
+  color: #262626;
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
+
+.wizard-selection-cards__desc {
+  font-size: 13px;
+  line-height: 1.5;
+  display: block;
+  color: var(--color-text-tertiary, rgba(0, 0, 0, 0.45)) !important;
+}
+
+.wizard-selection-cards__desc.ant-typography {
+  color: var(--color-text-tertiary, rgba(0, 0, 0, 0.45)) !important;
+}
+
+/* Contenedor de pasos del wizard de usuario SEG (credenciales / perfil) */
+.usuario-wizard-step {
+  width: 100%;
+}
+
+.wizard-selection-cards__check {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: var(--wizard-card-accent, var(--color-primary));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--color-white, #fff);
+  font-size: 14px;
+  line-height: 1;
+}

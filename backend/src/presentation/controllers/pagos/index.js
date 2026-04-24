@@ -12,5 +12,7 @@ export { ListPagosAportesController } from './pagos-aportes/list.controller.js';
 export { GetPaymentAporteByIdController } from './pagos-aportes/detail.controller.js';
 export { GetEstadoAporteRegistroController } from './pagos-aportes/estado-registro.controller.js';
 export { DeletePaymentAporteController } from './pagos-aportes/delete.controller.js';
+export { UpdatePaymentInstallmentController } from './pagos-aportes/update-cuota.controller.js';
 export { GenerateReciboPagoController } from './pagos-aportes/generate-recibo.controller.js';
 export { ExportListaAportesPorCarreraExcelController } from './pagos-aportes/export-lista-por-carrera-excel.controller.js';
+export { SearchStudentsForAporteRegistroController } from './pagos-aportes/search-students-registro.controller.js';

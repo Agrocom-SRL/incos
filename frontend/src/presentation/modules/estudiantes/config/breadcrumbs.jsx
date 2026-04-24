@@ -11,24 +11,19 @@
  * permitiendo personalización por módulo si es necesario.
  */
 
-import { estudiantesRoutes } from '@estudiantes/routes';
 import { createBreadcrumbItems as createGenericBreadcrumbItems } from '@presentation-utils/breadcrumbs';
 
 /**
- * Crea los items del breadcrumb basándose en la ruta actual
- * 
- * @param {string} routeKey - Key de la ruta (ej: 'EST', 'EST-REGISTRAR', 'EST-LIST')
- * @param {string} currentTitle - Título actual de la página (para el último item del breadcrumb)
- * @returns {Array} Array de items del breadcrumb para Ant Design
+ * @param {string} routeKey
+ * @param {string} currentTitle
  */
 export const createBreadcrumbItems = (routeKey, currentTitle = null) => {
   return createGenericBreadcrumbItems(
-    estudiantesRoutes,
     routeKey,
-    'EST', // rootKey
+    'MAT',
     currentTitle,
-    null, // fallbackIcon (usa el del módulo)
-    'Estudiantes' // fallbackLabel
+    null,
+    'Matrícula'
   );
 };
 
@@ -38,7 +33,7 @@ export const createBreadcrumbItems = (routeKey, currentTitle = null) => {
  * @returns {Array} Array de items del breadcrumb
  */
 export const createListBreadcrumbItems = () => {
-  return createBreadcrumbItems('EST');
+  return createBreadcrumbItems('MAT-ADMISION');
 };
 
 /**
@@ -48,7 +43,7 @@ export const createListBreadcrumbItems = () => {
  * @returns {Array} Array de items del breadcrumb
  */
 export const createRegisterBreadcrumbItems = (title) => {
-  return createBreadcrumbItems('EST-REGISTRAR', title);
+  return createBreadcrumbItems('MAT-ADM-NUEVA', title);
 };
 
 /**
@@ -57,7 +52,7 @@ export const createRegisterBreadcrumbItems = (title) => {
  * @returns {Array} Array de items del breadcrumb
  */
 export const createDetailBreadcrumbItems = () => {
-  return createBreadcrumbItems('EST-DETALLE', 'Detalle del Estudiante');
+  return createBreadcrumbItems('MAT-ADM-DETALLE', 'Detalle del Estudiante');
 };
 
 /**
@@ -66,6 +61,6 @@ export const createDetailBreadcrumbItems = () => {
  * @returns {Array} Array de items del breadcrumb
  */
 export const createAsignarBecaBreadcrumbItems = () => {
-  return createBreadcrumbItems('EST-BECAS-ASIGNAR', 'Asignar Beca');
+  return createBreadcrumbItems('MAT-BEC-ASIGNAR', 'Asignar Beca');
 };
 

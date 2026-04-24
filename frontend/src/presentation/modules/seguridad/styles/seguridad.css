@@ -1,0 +1,573 @@
+.seg-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.seg-profile__sub {
+  margin: 0;
+  color: var(--text-500, #6b7280);
+}
+
+.seg-profile__stats .sd-stat__value .ant-tag {
+  margin-inline-end: 0;
+}
+
+.seg-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.seg-modal-help {
+  margin-top: 8px;
+  color: var(--color-text-secondary, #666666);
+}
+
+/* Contenedor: sin doble marco cuando usa .sd-tabs-shell (misma línea que detalle estudiante). */
+.seg-picker {
+  border: 1px solid var(--color-border, #e8e8e8);
+  border-radius: var(--radius-lg, 12px);
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  background: var(--color-bg-container, #ffffff);
+}
+
+.seg-picker--material {
+  border: none;
+  box-shadow: none;
+  background: transparent;
+  overflow: visible;
+}
+
+.seg-picker__empty {
+  padding: 16px;
+  text-align: center;
+  color: var(--color-text-secondary, #666666);
+}
+
+/* =====================================================
+   PESTAÑAS — Material Design elevado
+   Tab activo: blanco elevado + borde superior de acento
+   Tabs inactivos: superficie gris, separados visualmente
+   ===================================================== */
+
+/* Shell contenedor de pestañas */
+.seg-picker__tabs-shell.sd-tabs-shell {
+  --seg-ink: var(--primary);
+  border-radius: var(--radius-xl, 16px);
+  overflow: hidden;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.08),
+    0 4px 16px rgba(0, 0, 0, 0.10);
+  background: #f0f4f8;
+}
+
+/* Nav de pestañas: fondo gris base para que los tabs inactivos se vean distintos */
+.seg-picker__tabs.sd-tabs .ant-tabs-nav {
+  padding: 8px 16px 0 !important;
+  background: #e8edf2 !important;
+  margin-bottom: 0 !important;
+}
+
+/* Eliminar la línea divisoria por defecto de Ant Design */
+.seg-picker__tabs.sd-tabs .ant-tabs-nav::before {
+  border-bottom: none !important;
+}
+
+/* Anular margen global de .sd-tabs entre tabs (usamos separación propia) */
+.seg-picker__tabs.sd-tabs .ant-tabs-tab + .ant-tabs-tab {
+  margin-left: 0 !important;
+}
+
+/* TABS INACTIVOS */
+.seg-picker__tabs.sd-tabs .ant-tabs-tab {
+  background: var(--color-bg-layout) !important;
+  border: 1px solid #c8d0da !important;
+  border-bottom: none !important;
+  border-radius: 10px 10px 0 0 !important;
+  margin: 0 3px !important;
+  padding: 10px 16px !important;
+  transition: background 0.15s ease, box-shadow 0.15s ease !important;
+  position: relative;
+  top: 2px;
+}
+
+.seg-picker__tabs.sd-tabs .ant-tabs-tab:hover {
+  background: var(--color-bg-container) !important;
+  box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* TAB ACTIVO: elevado sobre los inactivos, fondo blanco, borde superior de acento */
+.seg-picker__tabs.sd-tabs .ant-tabs-tab-active {
+  background: #ffffff !important;
+  border: 1px solid #d0d7de !important;
+  border-bottom: 1px solid #ffffff !important;
+  border-top: 3px solid var(--seg-ink, var(--primary)) !important;
+  border-radius: 10px 10px 0 0 !important;
+  box-shadow:
+    0 -2px 8px rgba(0, 0, 0, 0.08),
+    -1px 0 4px rgba(0, 0, 0, 0.04),
+    1px 0 4px rgba(0, 0, 0, 0.04) !important;
+  top: 0 !important;
+  z-index: 2;
+}
+
+.seg-picker__tabs.sd-tabs .ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: var(--text-900, #111827) !important;
+}
+
+/* Ocultar ink bar — el borde superior del tab activo hace ese trabajo */
+.seg-picker__tabs.sd-tabs .ant-tabs-ink-bar {
+  display: none !important;
+}
+
+/* PANEL del tab activo: conectado con el tab (mismo fondo blanco) */
+.seg-picker__tab-panel {
+  padding: 20px 22px 24px;
+  background: #ffffff;
+  border: 1px solid #d0d7de;
+  border-top: none;
+  border-radius: 0 0 var(--radius-xl, 16px) var(--radius-xl, 16px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* Tabla dentro del panel */
+.seg-picker__table .ant-table {
+  background: var(--surface, #fff);
+  border-radius: var(--radius-md, 10px);
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Label del tab: alineación y espaciado */
+.seg-picker__tab-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: min(300px, 48vw);
+}
+
+/* Icono: color del acento del dominio */
+.seg-picker__tab-icon {
+  font-size: 16px;
+  color: var(--seg-tab-accent, var(--primary));
+  flex-shrink: 0;
+  transition: color 0.15s ease, transform 0.15s ease;
+}
+
+/* En tab activo, el icono toma el color de acento con más intensidad */
+.seg-picker__tabs.sd-tabs .ant-tabs-tab-active .seg-picker__tab-icon {
+  filter: saturate(1.3) brightness(0.9);
+  transform: scale(1.05);
+}
+
+.seg-picker__tabs.sd-tabs .ant-tabs-tab:hover .seg-picker__tab-icon {
+  transform: scale(1.08);
+}
+
+/* Título del tab */
+.seg-picker__tab-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.01em;
+  color: var(--text-700, #374151);
+}
+
+/* En tab activo, título más oscuro */
+.seg-picker__tabs.sd-tabs .ant-tabs-tab-active .seg-picker__tab-title {
+  color: var(--text-900, #111827);
+}
+
+/* Badge de conteo */
+.seg-picker__tab-badge {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.2;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  transition: opacity 0.15s ease;
+}
+
+/* Badge en tab inactivo: más apagado */
+.seg-picker__tabs.sd-tabs .ant-tabs-tab:not(.ant-tabs-tab-active) .seg-picker__tab-badge {
+  opacity: 0.65;
+}
+
+.seg-picker__tab-checkbox {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.seg-picker__no-aplica {
+  color: var(--text-400, #9ca3af);
+  font-size: 13px;
+}
+
+.seg-picker__permiso {
+  font-weight: 600;
+}
+
+.seg-picker__codigo {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--color-text-secondary, #666666);
+  font-size: 12px;
+}
+
+/* UsuarioPermisosPage: margen lateral en pestañas con tablas */
+.usuario-permisos__tab-gutter.sd-tab-body {
+  padding-left: 28px;
+  padding-right: 28px;
+}
+
+@media (max-width: 600px) {
+  .usuario-permisos__tab-gutter.sd-tab-body {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
+
+.usuario-permisos__permiso-nombre {
+  font-weight: 600;
+  color: var(--text-800, #1f2937);
+}
+
+.usuario-permisos__permiso-codigo {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  color: var(--text-500, #6b7280);
+  margin-top: 3px;
+  line-height: 1.35;
+}
+
+/* Celdas de tablas en permisos de usuario: aire lateral (nombre/código no pegado al borde) */
+.usuario-permisos__table .ant-table-cell {
+  padding-left: 20px !important;
+  padding-right: 20px !important;
+}
+
+/* Grilla permisos v2 (tabla nativa, capas de acciones) */
+.seg-grilla-v2 {
+  border: 1px solid var(--color-border, #e8e8e8);
+  border-radius: var(--radius-lg, 12px);
+  overflow: hidden;
+  background: var(--color-bg-container, #ffffff);
+}
+
+.seg-grilla-v2__scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.seg-grilla-v2__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.seg-grilla-v2__table th,
+.seg-grilla-v2__table td {
+  border: 1px solid var(--color-border, #e8e8e8);
+  padding: 8px 10px;
+  vertical-align: middle;
+}
+
+.seg-grilla-v2__th-func,
+.seg-grilla-v2__td-func {
+  text-align: left;
+  min-width: 200px;
+  background: var(--color-bg-layout, #fafafa);
+}
+
+.seg-grilla__grupo-titulo {
+  font-weight: 600;
+  color: var(--text-800, #1f2937);
+}
+
+.seg-grilla__grupo-ruta {
+  font-size: 12px;
+  color: var(--text-500, #6b7280);
+  margin-top: 2px;
+}
+
+.seg-grilla-v2__capa {
+  text-align: center;
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  padding: 10px 6px;
+}
+
+.seg-grilla-v2__capa--acceso {
+  background: #e3f2fd;
+  color: #0d47a1;
+}
+
+.seg-grilla-v2__capa--ops {
+  background: #e8f5e9;
+  color: #1b5e20;
+}
+
+.seg-grilla-v2__capa--flujos {
+  background: #fff8e1;
+  color: #f57f17;
+}
+
+.seg-grilla-v2__th-acc {
+  text-align: center;
+  font-weight: 600;
+  font-size: 11px;
+  padding: 8px 6px;
+  white-space: nowrap;
+}
+
+.seg-grilla-v2__th-acc--acceso {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
+.seg-grilla-v2__th-acc--ops {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.seg-grilla-v2__th-acc--flujos {
+  background: #fff8e1;
+  color: #ef6c00;
+}
+
+.seg-grilla__celda-na {
+  text-align: center;
+  color: var(--text-400, #9ca3af);
+  background: #f3f4f6;
+  user-select: none;
+}
+
+.seg-grilla__celda-check {
+  text-align: center;
+  background: var(--color-bg-container, #fff);
+}
+
+/* Wizard alta usuario: Form.Item sin etiqueta (el título de la card ya orienta). */
+.seg-cargo-form-item.ant-form-item {
+  margin-bottom: 0;
+}
+
+/* Rejilla horizontal de cargos: círculo del radio oculto; la tarjeta es el control visible. */
+.seg-cargo-radio-group.ant-radio-group {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  width: 100%;
+}
+
+@media (max-width: 1199px) {
+  .seg-cargo-radio-group.ant-radio-group {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 767px) {
+  .seg-cargo-radio-group.ant-radio-group {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 479px) {
+  .seg-cargo-radio-group.ant-radio-group {
+    grid-template-columns: 1fr;
+  }
+}
+
+.seg-cargo-radio-group .ant-radio-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  margin-inline-end: 0;
+  margin-bottom: 0;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  cursor: pointer;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.seg-cargo-radio-group .ant-radio-wrapper::after {
+  display: none !important;
+}
+
+/* Ocultar solo el control circular; el input sigue en el DOM (accesibilidad / teclado). */
+.seg-cargo-radio-group .ant-radio {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.seg-cargo-radio-group .ant-radio-input {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.seg-cargo-radio-group .ant-radio-input:focus,
+.seg-cargo-radio-group .ant-radio-input:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.seg-cargo-radio-group .ant-radio-inner {
+  display: none !important;
+}
+
+.seg-cargo-radio-group .ant-radio + span {
+  padding: 0;
+  width: 100%;
+}
+
+.seg-cargo-radio__card {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 128px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: center;
+  gap: 8px;
+  padding: 12px 10px;
+  border-radius: 10px;
+  border: 2px solid var(--color-border, #e8e8e8);
+  background: var(--color-bg-container, #fff);
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.seg-cargo-radio-group .ant-radio-wrapper:hover .seg-cargo-radio__card {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* El estado activo es solo borde/fondo de la tarjeta (inline); sin anillo extra del radio o del navegador. */
+.seg-cargo-radio-group .ant-radio-wrapper:focus-within .seg-cargo-radio__card {
+  outline: none;
+}
+
+.seg-cargo-radio-group .ant-radio-wrapper:focus-visible .seg-cargo-radio__card {
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.12);
+}
+
+.seg-cargo-radio__icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.seg-cargo-radio__body {
+  width: 100%;
+  min-width: 0;
+}
+
+.seg-cargo-radio__title {
+  display: block;
+  font-size: 13px;
+  line-height: 1.25;
+  word-break: break-word;
+}
+
+.seg-cargo-radio__tipo {
+  display: block;
+  font-size: 11px;
+  line-height: 1.2;
+  word-break: break-word;
+}
+
+.seg-cargo-resumen {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  border: 2px solid var(--color-border, #e8e8e8);
+  background: var(--color-bg-layout, #fafafa);
+  max-width: 480px;
+}
+
+.seg-cargo-resumen__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+
+/* Wizard credenciales — sección «Rol de acceso»: panel blanco, borde y textos en color del rol. */
+.seg-wizard-rol-asignado-panel {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 14px;
+  padding: 16px 18px;
+  border-radius: 10px;
+  border: 2px solid var(--color-border, #e8e8e8);
+  background: var(--color-bg-container, #ffffff);
+  max-width: 560px;
+  box-sizing: border-box;
+}
+
+.seg-wizard-rol-asignado-panel__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  border: 2px solid;
+  flex-shrink: 0;
+  background: var(--color-bg-container, #ffffff);
+}
+
+.seg-wizard-rol-asignado-panel__body {
+  min-width: 0;
+  flex: 1;
+}
+
+.seg-wizard-rol-asignado-panel__nombre {
+  display: block;
+  font-size: 16px;
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.seg-wizard-rol-asignado-panel__tipo {
+  display: block;
+  margin-top: 4px;
+  font-size: 13px;
+  line-height: 1.3;
+  opacity: 0.88;
+  word-break: break-word;
+}
+

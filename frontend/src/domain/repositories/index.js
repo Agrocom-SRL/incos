@@ -69,3 +69,9 @@ export { IAuthorizedBankRepository } from './IAuthorizedBankRepository';
 export { IPaymentMethodRepository } from './IPaymentMethodRepository';
 export { IContributionConfigurationRepository } from './IContributionConfigurationRepository';
 export { IPagoAporteRepository } from './IPagoAporteRepository';
+// ============================================
+// MÓDULO: SEGURIDAD
+// ============================================
+export { IUsuarioAdminRepository } from './IUsuarioAdminRepository';
+export { IRolAdminRepository } from './IRolAdminRepository';
+export { IPermisoRepository } from './IPermisoRepository';

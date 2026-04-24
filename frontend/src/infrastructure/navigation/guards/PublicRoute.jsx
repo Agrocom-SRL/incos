@@ -1,26 +1,15 @@
 /**
- * PublicRoute - Componente para rutas públicas (solo accesibles si NO está autenticado)
- * 
- * Single Responsibility: Redirigir a dashboard si ya está autenticado
- * 
- * Clean Architecture:
- * - Infrastructure Layer: Guard de navegación para rutas públicas
- * - Depende de: useAuthContext (Application Layer)
- * 
- * Funcionalidad:
- * - Si NO está autenticado: renderiza children (página de login)
- * - Si está autenticado: redirige a /dashboard
+ * Ruta pública: solo accesible sin sesión (login).
  */
 
 import { Navigate } from 'react-router-dom';
 import { Spin } from 'antd';
-import { useAuthContext } from '@application-auth';
+import { useAuth } from '@application-auth';
 
 export const PublicRoute = ({ children }) => {
-  const { isAuthenticated, loading } = useAuthContext();
+  const { isAuthenticated, isLoading } = useAuth();
 
-  // Mostrar loading mientras se verifica la autenticación
-  if (loading) {
+  if (isLoading) {
     return (
       <div
         style={{
@@ -35,11 +24,9 @@ export const PublicRoute = ({ children }) => {
     );
   }
 
-  // Si está autenticado, redirigir al dashboard
   if (isAuthenticated) {
     return <Navigate to="/dashboard" replace />;
   }
 
-  // Si no está autenticado, renderizar children (página de login)
   return children;
 };

@@ -1,4 +1,6 @@
 import express from 'express';
+import { authenticate } from '../middleware/auth.middleware.js';
+import { verificarPermiso } from '../middleware/permisos.middleware.js';
 import { listMateriasValidator } from '../validators/academico/index.js';
 
 /**
@@ -21,6 +23,7 @@ import { listMateriasValidator } from '../validators/academico/index.js';
 export function buildMateriasRouter({ controllers, middlewares }) {
     const router = express.Router();
     const { validateRequest } = middlewares;
+    const listarMaterias = [authenticate, verificarPermiso('cfg.academico.materias', 'LISTAR')];
 
     // ============================================
     // CRUD BÁSICO
@@ -39,6 +42,7 @@ export function buildMateriasRouter({ controllers, middlewares }) {
      */
     router.get(
         '/',
+        ...listarMaterias,
         listMateriasValidator,
         validateRequest,
         (req, res, next) => controllers.listMateriasController.handle(req, res, next)

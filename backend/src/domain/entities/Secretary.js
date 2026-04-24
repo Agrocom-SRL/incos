@@ -3,7 +3,12 @@ import { NIVELES_ACADEMICOS_VALUES, NIVELES_ACADEMICOS, TIPOS_SECRETARIA_VALUES,
 
 /**
  * Entidad de Dominio: Secretary
- * Representa una secretaria del instituto
+ * Representa una secretaria del instituto.
+ * Contiene la lógica de negocio pura del cargo (tipo de secretaría y contrato).
+ *
+ * Mapeo con BD (tabla secretarias, 22-personal-usuarios.sql):
+ * - staffId ← personal_id; type ← tipo; academicLevel ← nivel_academico;
+ *   hireDate ← fecha_contratacion; contractEndDate ← fecha_fin_contrato; contractType ← tipo_contrato
  */
 export class Secretary extends BaseEntity {
   constructor(data = {}) {

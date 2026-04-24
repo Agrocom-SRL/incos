@@ -15,6 +15,7 @@
 // Importar todas las rutas desde los módulos
 import { authRoutes } from './auth/routes.jsx';
 import { dashboardRoutes } from './dashboard/routes.jsx';
+import { dominiosRoutes } from './dominios/routes.jsx';
 import { estudiantesRoutes } from '@estudiantes/routes';
 import { inscripcionesRoutes } from './inscripciones/routes.jsx';
 import { trazabilidad } from './trazabilidad/routes.jsx';
@@ -37,6 +38,7 @@ export const getAllRoutes = () => {
     return [
         ...authRoutes,
         ...dashboardRoutes,
+        ...dominiosRoutes,
         ...estudiantesRoutes,
         ...inscripcionesRoutes,
         ...trazabilidad,
