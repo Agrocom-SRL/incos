@@ -22,6 +22,7 @@ import {
   ActualizarCuotaPagoAporteUseCase,
   GenerarReciboPagoUseCase,
   ExportarListaAportesPorCarreraExcelUseCase,
+  BuscarEstudiantesRegistroAporteUseCase,
 } from '@useCases/pagos';
 
 import PaymentAccountRepository from '@infrastructure/repositories/PaymentAccountRepository';
@@ -94,6 +95,10 @@ export function registerPagosModule(factory) {
 
   factory.exportarListaAportesPorCarreraExcel = () => {
     return new ExportarListaAportesPorCarreraExcelUseCase(pagoAporteRepository);
+  };
+
+  factory.buscarEstudiantesRegistroAporte = () => {
+    return new BuscarEstudiantesRegistroAporteUseCase(pagoAporteRepository);
   };
 
   return factory;

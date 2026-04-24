@@ -1,7 +1,11 @@
 import express from 'express';
 import { authenticate } from '../middleware/auth.middleware.js';
 import { verificarPermiso, verificarPermisoCualquiera } from '../middleware/permisos.middleware.js';
-import { registerPagoAporteValidator, updatePaymentCuotaValidator } from '../validators/pagos/index.js';
+import {
+    registerPagoAporteValidator,
+    updatePaymentCuotaValidator,
+    searchStudentsRegistroAporteValidator,
+} from '../validators/pagos/index.js';
 import { uploadPaymentDocument } from '../middleware/upload.middleware.js';
 import { listValidator } from '../validators/common/index.js';
 
@@ -108,6 +112,19 @@ export function buildPagosAportesRouter({ controllers, middlewares }) {
         '/estado-registro',
         ...pagoEstadoRegistro,
         (req, res, next) => controllers.getEstadoAporteRegistroController.handle(req, res, next)
+    );
+
+    /**
+     * GET /api/v1/pagos-aportes/buscar-estudiantes-registro
+     * Búsqueda de estudiantes (contacto, CI, código, nombres, carrera) para flujo de registro de aporte.
+     * Query: q (min 2 salvo con preliminar=1), limit (opcional, 1–100), preliminar=1 (muestra con saldo pendiente).
+     */
+    router.get(
+        '/buscar-estudiantes-registro',
+        ...pagoEstadoRegistro,
+        searchStudentsRegistroAporteValidator,
+        validateRequest,
+        (req, res, next) => controllers.searchStudentsForAporteRegistroController.handle(req, res, next)
     );
 
     /**

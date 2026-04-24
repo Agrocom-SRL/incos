@@ -79,8 +79,8 @@ const EstudiantesList = () => {
 
     // Configurar breadcrumb items
     const breadcrumbItems = useMemo(() => [
-      { title: 'Inicio', href: '/' },
-      { title: 'Estudiantes' },
+        { title: 'Inicio', href: '/' },
+        { title: 'Estudiantes' },
     ], []);
 
     return (

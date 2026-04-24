@@ -158,6 +158,38 @@ export class PagoAporteRepository extends IPagoAporteRepository {
   }
 
   /**
+   * GET /v1/pagos-aportes/buscar-estudiantes-registro
+   * @param {Object} options
+   * @param {string} [options.q] - Búsqueda (min. 2 caracteres) salvo con preliminar
+   * @param {number} [options.limit]
+   * @param {boolean} [options.preliminar] - Muestra estudiantes con saldo en cabeceras (sin q)
+   */
+  async buscarEstudiantesRegistroAporte(options = {}) {
+    try {
+      const { q = '', limit, preliminar } = options;
+      const params = {};
+      if (preliminar) {
+        params.preliminar = '1';
+      } else {
+        params.q = String(q).trim();
+      }
+      if (limit != null) params.limit = limit;
+      const response = await apiClient.get(PAGOS_APORTES_ENDPOINTS.BUSCAR_ESTUDIANTES_REGISTRO, { params });
+      const responseData = response.data;
+      if (responseData.success === false) {
+        return { success: false, error: responseData.error || 'Error en la respuesta del servidor' };
+      }
+      if (responseData.error) {
+        return { success: false, error: responseData.error };
+      }
+      const data = Array.isArray(responseData.data) ? responseData.data : [];
+      return { success: true, data };
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al buscar estudiantes');
+    }
+  }
+
+  /**
    * Obtiene la lista de pagos de aportes con filtros y paginación (vista_pago_aporte_listado).
    * GET /v1/pagos-aportes?page=1&limit=50&search=...&sort=id:ASC&gestion_id=&estudiante_id=&estado=
    *

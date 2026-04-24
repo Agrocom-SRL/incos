@@ -24,10 +24,19 @@ const money = (n) =>
     maximumFractionDigits: 2,
   })}`;
 
+/** Montos en Bs. con 2 decimales (alineado al backend y al recibo). */
+const roundBs = (n) => {
+  const x = Number(n);
+  if (Number.isNaN(x)) return 0;
+  return Math.round(x * 100) / 100;
+};
+
 const sumOtros = (cuotas, cuotaId) =>
-  cuotas
-    .filter((c) => c.id !== cuotaId)
-    .reduce((acc, c) => acc + Number(c.monto ?? 0), 0);
+  roundBs(
+    (cuotas || [])
+      .filter((c) => c.id !== cuotaId)
+      .reduce((acc, c) => acc + Number(c.monto ?? 0), 0)
+  );
 
 const buildStudent = (pago) => {
   const est = pago?.estudiante;
@@ -124,19 +133,46 @@ const PagosEditarCuota = () => {
     const fromPago = Number(
       pago?.monto_obligatorio ?? pago?.mandatoryAmount ?? pago?.montoObligatorio ?? NaN
     );
-    if (!Number.isNaN(fromPago) && fromPago > 0) return fromPago;
-    return Number(estadoAporte?.monto_obligatorio ?? estadoAporte?.monto_base ?? 0);
+    if (!Number.isNaN(fromPago) && fromPago > 0) return roundBs(fromPago);
+    return roundBs(Number(estadoAporte?.monto_obligatorio ?? estadoAporte?.monto_base ?? 0));
   }, [pago, estadoAporte]);
+
+  const descuentoDetalle = useMemo(
+    () =>
+      roundBs(
+        Number(
+          pago?.descuento_beca ??
+            pago?.scholarship_discount ??
+            pago?.descuentoBeca ??
+            estadoAporte?.descuento_beca ??
+            0
+        )
+      ),
+    [pago, estadoAporte]
+  );
+
+  const montoBaseDetalle = useMemo(() => {
+    const fromPago = Number(pago?.monto_base ?? pago?.baseAmount ?? pago?.montoBase ?? NaN);
+    if (!Number.isNaN(fromPago) && fromPago > 0) return roundBs(fromPago);
+    const fromEst = Number(estadoAporte?.monto_base ?? NaN);
+    if (!Number.isNaN(fromEst) && fromEst > 0) return roundBs(fromEst);
+    if (descuentoDetalle > 0) return roundBs(montoObligatorio + descuentoDetalle);
+    return roundBs(montoObligatorio);
+  }, [pago, estadoAporte, montoObligatorio, descuentoDetalle]);
 
   const totalOtros = useMemo(() => {
     if (!selectedCuota?.id) return 0;
     return sumOtros(cuotas, selectedCuota.id);
   }, [cuotas, selectedCuota]);
 
+  /** Máximo que puede llevar esta cuota: obligatorio − suma de las demás (no puede “comerse” el total a pagar). */
   const montoMaximoCuota = useMemo(() => {
     if (!selectedCuota?.id) return 0;
-    return Math.max(0, montoObligatorio - totalOtros);
+    return roundBs(Math.max(0, montoObligatorio - totalOtros));
   }, [selectedCuota, montoObligatorio, totalOtros]);
+
+  const montoCuotaNum = roundBs(Number(montoCuota));
+  const montoExcedeMaximo = selectedCuota != null && montoCuotaNum > montoMaximoCuota + 0.0001;
 
   const [selectedMetodoPago, setSelectedMetodoPago] = useState(null);
 
@@ -173,8 +209,9 @@ const PagosEditarCuota = () => {
   useEffect(() => {
     if (!selectedCuota) return;
 
-    const currentMonto = Number(selectedCuota.monto ?? 0);
-    const clamped = Math.min(currentMonto, montoMaximoCuota || currentMonto);
+    const currentMonto = roundBs(Number(selectedCuota.monto ?? 0));
+    const max = montoMaximoCuota;
+    const clamped = roundBs(Math.min(Math.max(0, currentMonto), max));
     setMontoCuota(clamped);
 
     const methodId = Number(selectedCuota.metodo_pago_id);
@@ -231,13 +268,15 @@ const PagosEditarCuota = () => {
     async (values) => {
       if (!selectedCuota?.id) return;
 
-      const amountNum = Number(montoCuota);
+      const amountNum = roundBs(Number(montoCuota));
       if (Number.isNaN(amountNum) || amountNum < 0) {
         message.error('Monto inválido');
         return;
       }
-      if (amountNum > montoMaximoCuota + 1e-9) {
-        message.error(`El monto no puede superar ${money(montoMaximoCuota)} en esta cuota`);
+      if (amountNum > montoMaximoCuota + 0.0001) {
+        message.error(
+          `El monto no puede superar ${money(montoMaximoCuota)} (total a pagar ${money(montoObligatorio)} menos otras cuotas ${money(totalOtros)})`
+        );
         return;
       }
 
@@ -303,6 +342,8 @@ const PagosEditarCuota = () => {
       selectedCuota,
       montoCuota,
       montoMaximoCuota,
+      montoObligatorio,
+      totalOtros,
       message,
       refetchEstado,
       refetchPago,
@@ -398,8 +439,25 @@ const PagosEditarCuota = () => {
           <Form form={form} layout="vertical" onFinish={handleSubmit}>
             <Card title="Detalle del Aporte" headerColor="primary" style={{ marginBottom: 24 }}>
               <div style={{ display: 'grid', gap: 14 }}>
+                <Text strong>
+                  Aporte Académico — Gestión {pago?.gestion?.nombre || pago?.gestion?.codigo || '—'}
+                </Text>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Text>Aporte Académico - Gestión {pago?.gestion?.nombre || pago?.gestion?.codigo || '—'}</Text>
+                  <Text>Monto base</Text>
+                  <Text strong>{money(montoBaseDetalle)}</Text>
+                </div>
+                {descuentoDetalle > 0 ? (
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <Text type="secondary">Descuento por beca</Text>
+                    <Text type="secondary" strong>
+                      −{money(descuentoDetalle)}
+                    </Text>
+                  </div>
+                ) : null}
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Text>
+                    {descuentoDetalle > 0 ? 'Total a pagar (después del descuento)' : 'Total a pagar'}
+                  </Text>
                   <Text strong>{money(montoObligatorio)}</Text>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -414,20 +472,34 @@ const PagosEditarCuota = () => {
                   <Text>Monto de esta cuota</Text>
                   <InputNumber
                     value={montoCuota}
+                    status={montoExcedeMaximo ? 'error' : undefined}
                     onChange={(v) => {
-                      const n = Math.floor(Number(v ?? 0));
-                      if (Number.isNaN(n) || n < 0) return setMontoCuota(0);
-                      setMontoCuota(Math.min(n, Math.floor(montoMaximoCuota)));
+                      if (v === null || v === undefined || v === '') {
+                        setMontoCuota(0);
+                        return;
+                      }
+                      const n = roundBs(Number(v));
+                      if (Number.isNaN(n) || n < 0) {
+                        setMontoCuota(0);
+                        return;
+                      }
+                      setMontoCuota(n);
                     }}
                     min={0}
-                    max={Math.floor(montoMaximoCuota)}
-                    step={1}
-                    style={{ width: 240, marginLeft: 16 }}
+                    step={0.01}
+                    precision={2}
+                    style={{ width: 260, marginLeft: 16 }}
                     prefix="Bs."
                   />
-                  <div style={{ marginTop: 8, color: '#b42318', fontSize: 12 }}>
-                    Tope aplicado por edición: obligatorio ({money(montoObligatorio)}) menos otras cuotas ({money(totalOtros)}).
+                  <div style={{ marginTop: 8, color: '#595959', fontSize: 12 }}>
+                    Máximo permitido: {money(montoMaximoCuota)} (tope según total a pagar {money(montoObligatorio)}
+                    {descuentoDetalle > 0 ? ', neto tras descuento' : ''} − otras cuotas {money(totalOtros)}).
                   </div>
+                  {montoExcedeMaximo ? (
+                    <div style={{ marginTop: 8, color: '#cf1322', fontSize: 13, fontWeight: 600 }}>
+                      El monto ingresado supera el máximo permitido para esta cuota.
+                    </div>
+                  ) : null}
                 </div>
               </div>
             </Card>
@@ -460,13 +532,30 @@ const PagosEditarCuota = () => {
                   requiereDocumentoRespaldo={paymentMethodId !== 1}
                   esQR={paymentMethodId === 2}
                 />
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
-                  <Button variant="default" onClick={handleBack}>
-                    Cancelar
-                  </Button>
-                  <Button variant="primary" htmlType="submit" loading={saving}>
-                    Guardar cambios
-                  </Button>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
+                  {montoExcedeMaximo ? (
+                    <Text type="danger" style={{ maxWidth: 420, textAlign: 'right' }}>
+                      Corrija el monto para poder guardar (máx. {money(montoMaximoCuota)}).
+                    </Text>
+                  ) : null}
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
+                    <Button variant="default" onClick={handleBack}>
+                      Cancelar
+                    </Button>
+                    <Button
+                      variant="primary"
+                      htmlType="submit"
+                      loading={saving}
+                      disabled={montoExcedeMaximo}
+                      title={
+                        montoExcedeMaximo
+                          ? `El monto no puede ser mayor a ${money(montoMaximoCuota)}`
+                          : undefined
+                      }
+                    >
+                      Guardar cambios
+                    </Button>
+                  </div>
                 </div>
               </Card>
             )}

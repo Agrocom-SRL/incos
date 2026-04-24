@@ -8,6 +8,7 @@ import { lazy } from 'react';
 import { UnderConstruction } from '@components/pages';
 
 const PagosRegistrarConnector = lazy(() => import('./connectors/PagosRegistrarConnector'));
+const PagosRegistrarSeleccionConnector = lazy(() => import('./connectors/PagosRegistrarSeleccionConnector'));
 const PagosListConnector = lazy(() => import('./connectors/ListConnector'));
 const PagosDetailConnector = lazy(() => import('./connectors/DetailConnector'));
 const PagosEditarCuotaConnector = lazy(() => import('./connectors/PagosEditarCuotaConnector'));
@@ -39,6 +40,15 @@ export const pagosRoutes = [
       order: 4,
       labelByRole: { ESTUDIANTE: 'Mis aportes' },
     },
+  },
+  {
+    path: '/pagos/registrar/seleccionar-estudiante',
+    element: <PagosRegistrarSeleccionConnector />,
+    key: 'PAG-REG-SEL',
+    permiso: 'finanzas.pago.registrar',
+    accion: 'CREAR',
+    menu: null,
+    breadcrumbParent: 'PAG-LIST',
   },
   {
     path: '/pagos/registrar',

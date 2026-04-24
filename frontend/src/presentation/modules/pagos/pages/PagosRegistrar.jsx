@@ -40,6 +40,9 @@ const PagosRegistrar = () => {
   // Obtener studentId del estado de navegación
   const studentId = location.state?.studentId || null;
   const menuSidebarKeyFromState = location.state?.menuSidebarKey;
+  /** Lista desde la que se llegó (p. ej. /matricula/aportes/listar) si no hay estudiante en contexto. */
+  const returnListPathFromState = location.state?.returnListPath || '/pagos/listar';
+  const returnListPath = location.state?.returnListPath;
 
   // Obtener datos del estudiante desde el contexto de detalle (para StudentInfoSection)
   const studentDetailContext = useStudentDetailContext();
@@ -132,8 +135,13 @@ const PagosRegistrar = () => {
     }
   }, [montoPagado, montoCuota]);
 
-  // Handler para volver
   const handleVolver = () => {
+    if (returnListPath) {
+      navigate(returnListPath, {
+        state: menuSidebarKeyFromState ? { menuSidebarKey: menuSidebarKeyFromState } : undefined,
+      });
+      return;
+    }
     navigate(`/estudiantes/${studentId}`);
   };
 
@@ -443,12 +451,12 @@ const PagosRegistrar = () => {
     { title: 'Registrar Pago' },
   ], []);
 
-  // Redirigir a lista de pagos si no hay studentId
+  // Sin estudiante no hay formulario: volver a la lista que originó el flujo (finanzas o matrícula/aportes)
   useEffect(() => {
     if (!studentId) {
-      navigate('/pagos/listar', { replace: true });
+      navigate(returnListPathFromState, { replace: true });
     }
-  }, [studentId, navigate]);
+  }, [studentId, navigate, returnListPathFromState]);
 
   // Si el saldo es 0 y existe cabecera, ir al detalle del pago (no mostrar formulario de registro)
   // No redirigir si estamos esperando descargar el recibo tras un pago recién registrado

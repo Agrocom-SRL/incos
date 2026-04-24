@@ -59,10 +59,12 @@ const PagosList = () => {
   } = usePagosListContext();
 
   const handleNuevoPago = () => {
-    navigate(
-      '/pagos/registrar',
-      aportesNavState != null ? { state: aportesNavState } : undefined
-    );
+    navigate('/pagos/registrar/seleccionar-estudiante', {
+      state: {
+        ...(aportesNavState || {}),
+        returnListPath: pathname,
+      },
+    });
   };
 
   const handleExportLista = async () => {

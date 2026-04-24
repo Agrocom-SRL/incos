@@ -5,3 +5,4 @@
 
 export { registerPagoAporteValidator } from './register-payment.validator.js';
 export { updatePaymentCuotaValidator } from './update-payment-cuota.validator.js';
+export { searchStudentsRegistroAporteValidator } from './search-students-registro-aporte.validator.js';

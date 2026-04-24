@@ -139,7 +139,7 @@ export class ContributionPaymentRepository extends BaseRepository {
      * @param {Object} baseFilters - Filtros base (search, sort) de ListRequestDTO
      * @param {number} page - Página (1-based)
      * @param {number} limit - Límite por página
-     * @param {Object} queryParams - Parámetros de query (gestion_id, estudiante_id, estado, etc.)
+     * @param {Object} queryParams - Parámetros de query (gestion_id, estudiante_id, estado, estados CSV o IN, etc.)
      * @returns {Promise<{contributionPayments: Array, total: number}>}
      */
     async obtenerListadoPagosAportes(baseFilters = {}, page = 1, limit = 50, queryParams = {}) {
@@ -156,9 +156,23 @@ export class ContributionPaymentRepository extends BaseRepository {
             whereConditions.push('gestion_id = ?');
             replacements.push(filters.gestion_id);
         }
-        if (filters.estado !== undefined) {
-            whereConditions.push('estado = ?');
-            replacements.push(filters.estado);
+        const estadosPermitidos = new Set(['PENDIENTE', 'PARCIAL', 'CANCELADO']);
+        if (filters.estados !== undefined && filters.estados !== null && String(filters.estados).trim() !== '') {
+            const raw = Array.isArray(filters.estados) ? filters.estados : String(filters.estados).split(',');
+            const list = raw
+                .map((s) => String(s).trim().toUpperCase())
+                .filter((s) => estadosPermitidos.has(s));
+            if (list.length > 0) {
+                const placeholders = list.map(() => '?').join(', ');
+                whereConditions.push(`estado IN (${placeholders})`);
+                replacements.push(...list);
+            }
+        } else if (filters.estado !== undefined && filters.estado !== null && String(filters.estado).trim() !== '') {
+            const one = String(filters.estado).trim().toUpperCase();
+            if (estadosPermitidos.has(one)) {
+                whereConditions.push('estado = ?');
+                replacements.push(one);
+            }
         }
         if (filters.search && typeof filters.search === 'string') {
             const term = `%${filters.search.trim()}%`;

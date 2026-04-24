@@ -284,5 +284,93 @@ export class StudentRepository extends BaseRepository {
       limit,
     };
   }
+
+  /**
+   * Búsqueda o muestra previa para registro de aporte (vista_estudiante_busqueda_registro_aporte).
+   *
+   * @param {Object} options
+   * @param {boolean} [options.preliminar=false] - Si true: estudiantes con cabeceras_con_saldo > 0, sin texto
+   * @param {string} [options.q] - Término LIKE (contacto, CI, código, nombres, carrera); mín. 2 caracteres si no es preliminar
+   * @param {number} [options.limit=50] - Máximo de filas (1–100)
+   * @returns {Promise<Array<Object>>} Filas planas con cabeceras_con_saldo, cabeceras_total, carrera_nombre
+   */
+  async buscarParaRegistroAporte(options = {}) {
+    const { preliminar = false, q, limit = 50 } = options;
+    const lim = Math.min(Math.max(parseInt(limit, 10) || 50, 1), 100);
+
+    if (preliminar) {
+      const queryPrelim = `
+        SELECT *
+        FROM vista_estudiante_busqueda_registro_aporte b
+        WHERE COALESCE(b.cabeceras_con_saldo, 0) > 0
+        ORDER BY b.created_at DESC
+        LIMIT ?
+      `;
+      return sequelize.query(queryPrelim, {
+        replacements: [lim],
+        type: sequelize.QueryTypes.SELECT,
+      });
+    }
+
+    const raw = String(q ?? '').trim();
+    if (raw.length < 2) {
+      return [];
+    }
+    const safe = raw.replace(/%/g, '').replace(/_/g, '');
+    const term = `%${safe}%`;
+    const tokens = safe
+      .split(/\s+/)
+      .map((t) => t.trim())
+      .filter((t) => t.length >= 2)
+      .slice(0, 6);
+    const tokenClauses = tokens.map(
+      () => `(COALESCE(b.nombres, '') LIKE ? OR COALESCE(b.apellido_paterno, '') LIKE ? OR COALESCE(b.apellido_materno, '') LIKE ? OR CONCAT_WS(' ', b.nombres, b.apellido_paterno, b.apellido_materno) LIKE ? OR CONCAT_WS(' ', b.apellido_paterno, b.apellido_materno, b.nombres) LIKE ? OR COALESCE(b.carrera_nombre, '') LIKE ? OR COALESCE(b.carrera_codigo, '') LIKE ? OR COALESCE(b.codigo_estudiante, '') LIKE ? OR COALESCE(b.ci, '') LIKE ?)`
+    );
+    const tokenSql = tokenClauses.length > 0 ? ` AND ${tokenClauses.join(' AND ')}` : '';
+
+    const query = `
+      SELECT *
+      FROM vista_estudiante_busqueda_registro_aporte b
+      WHERE (
+          COALESCE(b.email_personal, '') LIKE ?
+          OR COALESCE(b.celular, '') LIKE ?
+          OR COALESCE(b.telefono_fijo, '') LIKE ?
+          OR COALESCE(b.codigo_estudiante, '') LIKE ?
+          OR COALESCE(b.ci, '') LIKE ?
+          OR COALESCE(b.nombres, '') LIKE ?
+          OR COALESCE(b.apellido_paterno, '') LIKE ?
+          OR COALESCE(b.apellido_materno, '') LIKE ?
+          OR CONCAT_WS(' ', b.nombres, b.apellido_paterno, b.apellido_materno) LIKE ?
+          OR CONCAT_WS(' ', b.apellido_paterno, b.apellido_materno, b.nombres) LIKE ?
+          OR COALESCE(b.carrera_nombre, '') LIKE ?
+          OR COALESCE(b.carrera_codigo, '') LIKE ?
+        )
+      ${tokenSql}
+      ORDER BY CASE WHEN COALESCE(b.cabeceras_con_saldo, 0) > 0 THEN 0 ELSE 1 END, b.created_at DESC
+      LIMIT ?
+    `;
+
+    const replacements = [term, term, term, term, term, term, term, term, term, term, term, term];
+    for (const tk of tokens) {
+      const tokenLike = `%${tk}%`;
+      replacements.push(
+        tokenLike,
+        tokenLike,
+        tokenLike,
+        tokenLike,
+        tokenLike,
+        tokenLike,
+        tokenLike,
+        tokenLike,
+        tokenLike
+      );
+    }
+    replacements.push(lim);
+
+    return sequelize.query(query, {
+      replacements,
+      type: sequelize.QueryTypes.SELECT,
+    });
+  }
 }
 

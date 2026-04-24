@@ -31,7 +31,7 @@ export class ObtenerTodosPagosAportesUseCase {
    * Ejecuta el caso de uso de obtener todos los pagos de aportes (listado desde vista).
    *
    * @param {Object} options - Opciones para obtener pagos
-   * @param {Object} options.params - Parámetros HTTP (alineados al backend: page, limit, search, sort, gestion_id, estudiante_id, estado)
+   * @param {Object} options.params - Parámetros HTTP (page, limit, search, sort, gestion_id, estudiante_id, estado, estados)
    * @returns {Promise<{success: boolean, data?: Array, pagination?: {page, limit, total, totalPages}, error?: string}>}
    */
   async ejecutar(options = {}) {

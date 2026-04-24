@@ -158,6 +158,7 @@ export const PAGOS_APORTES_ENDPOINTS = {
     `${API_BASE}/pagos-aportes/cuotas/${encodeURIComponent(String(cuotaId))}`,
   // Estado del aporte para el formulario de registro (estudiante_id, gestion_id opcional)
   ESTADO_REGISTRO: `${API_BASE}/pagos-aportes/estado-registro`,
+  BUSCAR_ESTUDIANTES_REGISTRO: `${API_BASE}/pagos-aportes/buscar-estudiantes-registro`,
   // Endpoint específico para generar/obtener recibo de pago
   GENERATE_RECIBO: (paymentId) => `${API_BASE}/pagos-aportes/${encodeURIComponent(String(paymentId))}/recibo`,
   EXPORT_LISTA_POR_CARRERA: `${API_BASE}/pagos-aportes/export/lista-por-carrera`,

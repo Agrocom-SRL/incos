@@ -22,6 +22,7 @@ import { DeletePaymentAporteUseCase } from '../../../../application/use-cases/pa
 import { UpdatePaymentInstallmentUseCase } from '../../../../application/use-cases/pagos/UpdatePaymentInstallmentUseCase.js';
 import { GenerateReciboPagoUseCase } from '../../../../application/use-cases/pagos/GenerateReciboPagoUseCase.js';
 import { ExportPaymentAporteByCareerExcelUseCase } from '../../../../application/use-cases/pagos/ExportPaymentAporteByCareerExcelUseCase.js';
+import { SearchStudentsForAporteRegistroUseCase } from '../../../../application/use-cases/pagos/SearchStudentsForAporteRegistroUseCase.js';
 import {
     RegisterPagoAporteController,
     ListPagosAportesController,
@@ -31,6 +32,7 @@ import {
     UpdatePaymentInstallmentController,
     GenerateReciboPagoController,
     ExportListaAportesPorCarreraExcelController,
+    SearchStudentsForAporteRegistroController,
 } from '../../../../presentation/controllers/pagos/index.js';
 import { buildPagosAportesRouter } from '../../../../presentation/routes/pagos-aportes.routes.js';
 
@@ -167,6 +169,16 @@ export function registerPagosAportesResource(container) {
             })
     );
 
+    registerComponent(
+        container,
+        PAGOS_TOKENS.searchStudentsForAporteRegistroUseCase,
+        (c) =>
+            new SearchStudentsForAporteRegistroUseCase({
+                studentRepository: c.resolve(REPOSITORIOS_TOKENS.studentRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
     // ============================================
     // CONTROLLERS
     // ============================================
@@ -259,6 +271,17 @@ export function registerPagosAportesResource(container) {
             })
     );
 
+    registerComponent(
+        container,
+        PAGOS_TOKENS.searchStudentsForAporteRegistroController,
+        (c) =>
+            new SearchStudentsForAporteRegistroController({
+                searchStudentsForAporteRegistroUseCase: c.resolve(PAGOS_TOKENS.searchStudentsForAporteRegistroUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
+    );
+
     // ============================================
     // ROUTER
     // ============================================
@@ -271,6 +294,7 @@ export function registerPagosAportesResource(container) {
                 listPagosAportesController: c.resolve(PAGOS_TOKENS.listPagosAportesController),
                 getPaymentAporteByIdController: c.resolve(PAGOS_TOKENS.getPaymentAporteByIdController),
                 getEstadoAporteRegistroController: c.resolve(PAGOS_TOKENS.getEstadoAporteRegistroController),
+                searchStudentsForAporteRegistroController: c.resolve(PAGOS_TOKENS.searchStudentsForAporteRegistroController),
                 deletePaymentAporteController: c.resolve(PAGOS_TOKENS.deletePaymentAporteController),
                 updatePaymentInstallmentController: c.resolve(PAGOS_TOKENS.updatePaymentInstallmentController),
                 generateReciboPagoController: c.resolve(PAGOS_TOKENS.generateReciboPagoController),
