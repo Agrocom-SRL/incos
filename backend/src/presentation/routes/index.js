@@ -10,6 +10,7 @@ import {
     REFERENCIA_TOKENS,
     INSCRIPCIONES_TOKENS,
     PAGOS_TOKENS,
+    DASHBOARD_TOKENS,
 } from '../../infrastructure/container/tokens/index.js';
 
 const router = express.Router();
@@ -54,6 +55,7 @@ router.get('/', (req, res) => {
             cuentasPago: '/api/v1/cuentas-pago',
             configuracionAportes: '/api/v1/configuracion-aportes',
             pagosAportes: '/api/v1/pagos-aportes',
+            dashboard: '/api/v1/dashboard',
         },
     });
 });
@@ -123,6 +125,11 @@ router.use('/bancos-autorizados', container.resolve(PAGOS_TOKENS.bancosAutorizad
 router.use('/cuentas-pago', container.resolve(PAGOS_TOKENS.cuentasPagoRouter));
 router.use('/configuracion-aportes', container.resolve(PAGOS_TOKENS.configuracionAportesRouter));
 router.use('/pagos-aportes', container.resolve(PAGOS_TOKENS.pagosAportesRouter));
+
+// ============================================
+// 8. MÓDULO: DASHBOARD
+// ============================================
+router.use('/dashboard', container.resolve(DASHBOARD_TOKENS.dashboardRouter));
 
 // Para agregar un nuevo módulo:
 // 1. Crear archivo: routes/{modulo}.routes.js
