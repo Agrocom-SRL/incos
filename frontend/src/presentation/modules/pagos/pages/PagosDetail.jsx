@@ -161,54 +161,16 @@ const PagosDetail = () => {
     editCuotaForm.resetFields();
   }, [editCuotaForm]);
 
-  const handleOpenEditCuota = useCallback(async (record) => {
-    if (!record?.id) return;
-    setEditCuotaRecord(record);
-    editCuotaForm.setFieldsValue({
-      amount: Number(record.monto ?? 0),
-      payment_method_id: record.metodo_pago_id,
-      payment_account_id: record.cuenta_pago_id ?? undefined,
-      payment_date: record.fecha_pago ? dayjs(record.fecha_pago) : undefined,
-      transaction_number: record.numero_transaccion || '',
-      codigo_comprobante: record.codigo_comprobante || '',
-      descripcion: record.observacion || '',
+  const handleOpenEditCuota = useCallback((record) => {
+    if (!record?.id || !pago?.id) return;
+    navigate(`/pagos/${pago.id}/editar`, {
+      state: {
+        ...(menuSidebarKeyFromState ? { menuSidebarKey: menuSidebarKeyFromState } : {}),
+        returnListPath: `/pagos/${pago.id}`,
+        selectedCuotaId: record.id,
+      },
     });
-    setEditCuotaModalOpen(true);
-    if (!catalogosPagoLoaded) {
-      setLoadingCatalogosPago(true);
-      try {
-        const ucMet = useCasesFactory.listarMetodosPago();
-        const ucCue = useCasesFactory.listarCuentasPago();
-        const [rMet, rCue] = await Promise.all([
-          ucMet.ejecutar({ params: { pagina: 1, limite: 100 } }),
-          ucCue.ejecutar({ params: { pagina: 1, limite: 500 } }),
-        ]);
-        if (rMet.success && Array.isArray(rMet.data)) {
-          setMetodosPagoOptions(
-            rMet.data.map((m) => ({
-              value: m.id,
-              label: m.nombre || m.name || `Método ${m.id}`,
-            }))
-          );
-        }
-        if (rCue.success && Array.isArray(rCue.data)) {
-          setCuentasPagoOptions(
-            rCue.data.map((c) => {
-              const tit = c.nombreTitular || c.accountHolderName || c.nombre_titular || '';
-              const n = c.numeroCuenta || c.numero_cuenta || c.accountNumber || '';
-              const label = [tit, n].filter(Boolean).join(' · ') || `Cuenta ${c.id}`;
-              return { value: c.id, label };
-            })
-          );
-        }
-        setCatalogosPagoLoaded(true);
-      } catch {
-        message.error('No se pudieron cargar métodos o cuentas de pago');
-      } finally {
-        setLoadingCatalogosPago(false);
-      }
-    }
-  }, [catalogosPagoLoaded, editCuotaForm, message]);
+  }, [navigate, pago?.id, menuSidebarKeyFromState]);
 
   const handleSubmitEditCuota = useCallback(async () => {
     const cuotaId = editCuotaRecord?.id;
@@ -473,6 +435,7 @@ const PagosDetail = () => {
                                 size="small"
                                 icon={<EditOutlined />}
                                 onClick={() => handleOpenEditCuota(record)}
+                                style={{ color: 'var(--accent-600, #d48806)', fontWeight: 600 }}
                               >
                                 Editar
                               </Button>
@@ -575,7 +538,7 @@ const PagosDetail = () => {
   if (error) {
     return (
       <PageTemplate header={<PageHeader title="Detalle del Pago" breadcrumbItems={breadcrumbItems} />}>
-        <Alert message="Error al cargar el pago" description={error} type="error" showIcon />
+        <Alert title="Error al cargar el pago" description={error} type="error" showIcon />
       </PageTemplate>
     );
   }

@@ -8,6 +8,7 @@ import { PageHeader } from '@molecules';
 import { Button, Card } from '@atoms';
 import { useAuthContext } from '@application-auth';
 import { useCasesFactory } from '@container';
+import { downloadFile } from '@application/utils';
 import { useEstadoAporteRegistro, usePagosDetailContext } from '@application-pagos/hooks';
 import { StudentInfoSection } from '@estudiantes/components/organisms';
 import {
@@ -50,6 +51,7 @@ const PagosEditarCuota = () => {
   const pagoId = id ? parseInt(id, 10) : null;
   const returnListPath = location.state?.returnListPath || '/pagos/listar';
   const menuSidebarKeyFromState = location.state?.menuSidebarKey;
+  const selectedCuotaIdFromState = location.state?.selectedCuotaId;
 
   const puedeEditarCuota =
     hasPermiso('finanzas.pago.editar', 'EDITAR') ||
@@ -72,7 +74,9 @@ const PagosEditarCuota = () => {
     refetch: refetchEstado,
   } = useEstadoAporteRegistro(studentIdForEstado, gestionIdForEstado);
 
-  const [selectedCuotaId, setSelectedCuotaId] = useState(null);
+  const [selectedCuotaId, setSelectedCuotaId] = useState(
+    selectedCuotaIdFromState != null ? Number(selectedCuotaIdFromState) : null
+  );
   const [montoCuota, setMontoCuota] = useState(0);
   const [form] = Form.useForm();
   const [saving, setSaving] = useState(false);
@@ -105,8 +109,11 @@ const PagosEditarCuota = () => {
       setSelectedCuotaId(cuotas[0].id);
       return;
     }
-    setSelectedCuotaId((prev) => (prev && cuotas.some((c) => c.id === prev) ? prev : null));
-  }, [cuotas]);
+    setSelectedCuotaId((prev) => {
+      const preferred = prev ?? (selectedCuotaIdFromState != null ? Number(selectedCuotaIdFromState) : null);
+      return preferred && cuotas.some((c) => c.id === preferred) ? preferred : null;
+    });
+  }, [cuotas, selectedCuotaIdFromState]);
 
   const selectedCuota = useMemo(
     () => cuotas.find((c) => c.id === selectedCuotaId) || null,
@@ -210,6 +217,16 @@ const PagosEditarCuota = () => {
     });
   }, [navigate, returnListPath, menuSidebarKeyFromState]);
 
+  const handleGoToDetail = useCallback(() => {
+    if (!pagoId) return;
+    navigate(`/pagos/${pagoId}`, {
+      state: {
+        ...(menuSidebarKeyFromState ? { menuSidebarKey: menuSidebarKeyFromState } : {}),
+        pagosTab: 'cuotas',
+      },
+    });
+  }, [navigate, pagoId, menuSidebarKeyFromState]);
+
   const handleSubmit = useCallback(
     async (values) => {
       if (!selectedCuota?.id) return;
@@ -256,9 +273,25 @@ const PagosEditarCuota = () => {
         }
 
         message.success('Cuota actualizada correctamente');
+
+        // Regenerar y descargar automáticamente el recibo actualizado de la cuota editada.
+        try {
+          const ucRecibo = useCasesFactory.generarReciboPago();
+          const reciboResult = await ucRecibo.ejecutar(selectedCuota.id);
+          const reciboData = reciboResult?.data;
+          if (reciboResult?.success && reciboData?.filePath) {
+            await downloadFile(reciboData.filePath, reciboData.fileName || 'recibo_cuota.pdf');
+            message.success('Recibo actualizado descargado');
+          } else {
+            message.warning('La cuota se actualizó, pero no se pudo descargar el recibo automáticamente');
+          }
+        } catch {
+          message.warning('La cuota se actualizó, pero falló la descarga automática del recibo');
+        }
+
         await refetchEstado();
         if (typeof refetchPago === 'function') await refetchPago();
-        handleBack();
+        handleGoToDetail();
       } catch (err) {
         if (err?.errorFields) return;
         message.error(err?.message || 'Error al actualizar cuota');
@@ -273,7 +306,7 @@ const PagosEditarCuota = () => {
       message,
       refetchEstado,
       refetchPago,
-      handleBack,
+      handleGoToDetail,
     ]
   );
 
@@ -289,7 +322,7 @@ const PagosEditarCuota = () => {
   if (!pagoId || Number.isNaN(pagoId)) {
     return (
       <PageTemplate header={<PageHeader title="Editar cuota" breadcrumbItems={breadcrumbItems} />}>
-        <Alert type="error" message="Identificador de pago no válido" showIcon />
+        <Alert type="error" title="Identificador de pago no válido" showIcon />
       </PageTemplate>
     );
   }
@@ -307,7 +340,7 @@ const PagosEditarCuota = () => {
   if (errorPago || !pago?.id) {
     return (
       <PageTemplate header={<PageHeader title="Editar cuota" breadcrumbItems={breadcrumbItems} />}>
-        <Alert type="error" message="No se pudo cargar el pago" description={errorPago || 'Pago no encontrado'} showIcon />
+        <Alert type="error" title="No se pudo cargar el pago" description={errorPago || 'Pago no encontrado'} showIcon />
       </PageTemplate>
     );
   }
@@ -333,7 +366,7 @@ const PagosEditarCuota = () => {
             type="warning"
             showIcon
             style={{ marginBottom: 16 }}
-            message="No se pudo cargar el estado del aporte"
+            title="No se pudo cargar el estado del aporte"
             description={String(errorEstado)}
           />
         )}
@@ -347,7 +380,7 @@ const PagosEditarCuota = () => {
               onChange={(e) => setSelectedCuotaId(e.target.value)}
               style={{ width: '100%' }}
             >
-              <Space direction="vertical" style={{ width: '100%' }}>
+              <Space orientation="vertical" style={{ width: '100%' }}>
                 {cuotas.map((c) => (
                   <Radio key={c.id} value={c.id}>
                     <Text strong>Recibo {c.numero_recibo ?? c.id}</Text>
@@ -360,7 +393,7 @@ const PagosEditarCuota = () => {
         )}
 
         {!selectedCuota ? (
-          <Alert showIcon type="info" message="Seleccione una cuota para editar" />
+          <Alert showIcon type="info" title="Seleccione una cuota para editar" />
         ) : (
           <Form form={form} layout="vertical" onFinish={handleSubmit}>
             <Card title="Detalle del Aporte" headerColor="primary" style={{ marginBottom: 24 }}>
