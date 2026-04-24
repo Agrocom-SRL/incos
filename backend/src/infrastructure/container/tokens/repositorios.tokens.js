@@ -91,5 +91,8 @@ export const REPOSITORIOS_TOKENS = {
     // TRANSITABILIDAD Y TRASPASOS
     transitabilityRepository: 'transitabilityRepository',
     transferRepository: 'transferRepository',
+
+    // DASHBOARD
+    dashboardRepository: 'dashboardRepository',
 };
 

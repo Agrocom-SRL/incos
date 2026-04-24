@@ -171,6 +171,13 @@ export const PAGOS_APORTES_ENDPOINTS = {
 };
 
 // ============================================
+// MÓDULO: DASHBOARD
+// ============================================
+export const DASHBOARD_ENDPOINTS = {
+  RESUMEN: `${API_BASE}/dashboard/resumen`,
+};
+
+// ============================================
 // MÓDULO: AUTENTICACIÓN (JWT, sesión)
 // Backend: router.use('/auth', ...) bajo /api/v1 → base pública '/api/v1/auth'
 // (ver backend/src/presentation/routes/index.js → endpoints.auth)

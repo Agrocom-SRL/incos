@@ -124,6 +124,7 @@ import { PaymentAccountRepository } from '../../repositories/PaymentAccountRepos
 import { ContributionPaymentRepository } from '../../repositories/ContributionPaymentRepository.js';
 import { ContributionPaymentInstallmentRepository } from '../../repositories/ContributionPaymentInstallmentRepository.js';
 import { PaymentAporteCareerExcelReportRepository } from '../../repositories/PaymentAporteCareerExcelReportRepository.js';
+import { DashboardRepository } from '../../repositories/DashboardRepository.js';
 
 /**
  * Registra todas las dependencias de repositorios
@@ -243,6 +244,11 @@ export function registerRepositoriesModule(container) {
     registerRepository(container, REPOSITORIOS_TOKENS.contributionPaymentRepository, ContributionPaymentRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.contributionPaymentInstallmentRepository, ContributionPaymentInstallmentRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.paymentAporteCareerExcelReportRepository, PaymentAporteCareerExcelReportRepository);
+
+    // ============================================
+    // DASHBOARD
+    // ============================================
+    registerRepository(container, REPOSITORIOS_TOKENS.dashboardRepository, DashboardRepository);
 
     return container;
 }
