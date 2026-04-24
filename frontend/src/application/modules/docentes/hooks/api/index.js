@@ -1,0 +1,1 @@
+export { useDocentesApi } from './useDocentesApi';

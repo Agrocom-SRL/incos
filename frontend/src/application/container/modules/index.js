@@ -15,7 +15,7 @@ import { registerInscripcionesModule } from '@container/modules/inscripciones.co
 import { registerPagosModule } from '@container/modules/pagos.container.js';
 import { registerSeguridadModule } from '@container/modules/seguridad.container.js';
 import { registerDashboardModule } from '@container/modules/dashboard.container.js';
-// Futuro: import { registerDocentesModule } from './docentes.container.js';
+import { registerDocentesModule } from '@container/modules/docentes.container.js';
 
 /**
  * Registra todos los módulos en el factory
@@ -32,7 +32,7 @@ export function registerAllModules(factory) {
   registerPagosModule(factory);
   registerSeguridadModule(factory);
   registerDashboardModule(factory);
-  // registerDocentesModule(factory);
+  registerDocentesModule(factory);
   // registerGestionesModule(factory);
   // etc.
 

@@ -1,0 +1,1 @@
+export { ObtenerTodosDocentesUseCase } from './ObtenerTodosDocentesUseCase';

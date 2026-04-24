@@ -75,6 +75,11 @@ const createCRUDEndpoints = (basePath) => {
 };
 
 // ============================================
+// MÓDULO: DOCENTES
+// ============================================
+export const DOCENTES_ENDPOINTS = createCRUDEndpoints('/docentes');
+
+// ============================================
 // MÓDULO: ESTUDIANTES
 // ============================================
 export const ESTUDIANTES_ENDPOINTS = {

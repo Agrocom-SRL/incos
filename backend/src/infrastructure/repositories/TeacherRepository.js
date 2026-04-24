@@ -184,7 +184,26 @@ export class TeacherRepository extends BaseRepository {
    * @returns {string[]} Array de nombres de campos del modelo Sequelize
    */
   getSearchFields() {
-    return ['nombres', 'apellidoPaterno', 'apellidoMaterno', 'ci', 'emailPersonal', 'tituloProfesional', 'especialidad'];
+    return [
+      'nombres',
+      'apellidoPaterno',
+      'apellidoMaterno',
+      'ci',
+      'expedicion',
+      'telefono',
+      'celular',
+      'emailPersonal',
+      'nacionalidad',
+      'direccion',
+      'zona',
+      'tituloProfesional',
+      'especialidad',
+      'institucionEgreso',
+      'observaciones',
+      'tipoContrato',
+      'estadoLaboral',
+      'nivelAcademico',
+    ];
   }
 
   /**

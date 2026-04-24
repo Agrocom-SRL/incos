@@ -4,11 +4,12 @@
  */
 
 import { UnderConstruction } from '@components/pages';
+import { DocentesListConnector } from '@docentes/connectors';
 
 export const docentesRoutes = [
   {
     path: '/docentes/listar',
-    element: <UnderConstruction />,
+    element: <DocentesListConnector />,
     key: 'DOC-LIST',
     permiso: 'docentes.ver',
     accion: 'LISTAR',
@@ -25,6 +26,24 @@ export const docentesRoutes = [
     key: 'DOC-CREATE',
     permiso: 'docentes.crear',
     accion: 'CREAR',
+    menu: null,
+    breadcrumbParent: 'DOC-LIST',
+  },
+  {
+    path: '/docentes/:id/editar',
+    element: <UnderConstruction />,
+    key: 'DOC-EDIT',
+    permiso: 'docentes.crear',
+    accion: 'CREAR',
+    menu: null,
+    breadcrumbParent: 'DOC-LIST',
+  },
+  {
+    path: '/docentes/:id',
+    element: <UnderConstruction />,
+    key: 'DOC-DETAIL',
+    permiso: 'docentes.ver',
+    accion: 'DETALLE',
     menu: null,
     breadcrumbParent: 'DOC-LIST',
   },

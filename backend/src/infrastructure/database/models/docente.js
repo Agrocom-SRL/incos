@@ -135,20 +135,6 @@ export const Docente = sequelize.define(
       field: 'estado_laboral',
       defaultValue: ESTADOS_LABORALES.ACTIVO,
     },
-    cargaHorariaSemanal: {
-      type: DataTypes.INTEGER,
-      field: 'carga_horaria_semanal',
-      defaultValue: 0,
-    },
-    banco: {
-      type: DataTypes.STRING(100),
-      allowNull: true,
-    },
-    numeroCuenta: {
-      type: DataTypes.STRING(50),
-      field: 'numero_cuenta',
-      allowNull: true,
-    },
     observaciones: {
       type: DataTypes.TEXT,
       allowNull: true,

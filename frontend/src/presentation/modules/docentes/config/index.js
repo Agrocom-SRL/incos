@@ -1,0 +1,1 @@
+export { createDocentesTableColumns } from './tableColumns';
