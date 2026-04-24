@@ -63,6 +63,17 @@ export class IPagoAporteRepository extends IBaseRepository {
   }
 
   /**
+   * Elimina una cuota (abono) por id de pago_cuotas (soft delete en servidor).
+   * DELETE /v1/pagos-aportes/cuotas/:id
+   *
+   * @param {string|number} cuotaId
+   * @returns {Promise<{success: boolean, error?: string}>}
+   */
+  async eliminarCuota(cuotaId) {
+    throw new Error('Method eliminarCuota must be implemented');
+  }
+
+  /**
    * Genera u obtiene el recibo de pago de un aporte académico
    * GET /v1/pagos-aportes/:id/recibo
    * 

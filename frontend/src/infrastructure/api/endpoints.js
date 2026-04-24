@@ -160,6 +160,8 @@ export const PAGOS_APORTES_ENDPOINTS = {
   ...createCRUDEndpoints('/pagos-aportes'),
   UPDATE_CUOTA: (cuotaId) =>
     `${API_BASE}/pagos-aportes/cuotas/${encodeURIComponent(String(cuotaId))}`,
+  DELETE_CUOTA: (cuotaId) =>
+    `${API_BASE}/pagos-aportes/cuotas/${encodeURIComponent(String(cuotaId))}`,
   // Estado del aporte para el formulario de registro (estudiante_id, gestion_id opcional)
   ESTADO_REGISTRO: `${API_BASE}/pagos-aportes/estado-registro`,
   BUSCAR_ESTUDIANTES_REGISTRO: `${API_BASE}/pagos-aportes/buscar-estudiantes-registro`,
