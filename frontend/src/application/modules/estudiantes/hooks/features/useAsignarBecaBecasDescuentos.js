@@ -22,7 +22,7 @@
  * - Separa la lógica del Provider (Provider solo orquesta)
  */
 
-import { useState, useCallback, useMemo, useRef } from 'react';
+import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { useBecasDescuentosApi } from '@application-estudiantes/hooks';
 
 /**
@@ -33,7 +33,7 @@ import { useBecasDescuentosApi } from '@application-estudiantes/hooks';
  * @returns {Object} Objeto con becasDescuentos, loading, error, refetch, selectedBecaDescuento, onSelectBecaDescuento, handleSelectBeca
  */
 export const useAsignarBecaBecasDescuentos = (options = {}) => {
-  const { form } = options;
+  const { form, initialBecaDescuentoId = null } = options;
 
   // Usar el hook genérico de becas y descuentos
   const { becasDescuentos, loading, error, refetch } = useBecasDescuentosApi();
@@ -80,6 +80,15 @@ export const useAsignarBecaBecasDescuentos = (options = {}) => {
       form.setFieldsValue({ becaDescuentoId: beca.id });
     }
   }, [onSelectBecaDescuento, form]);
+
+  useEffect(() => {
+    if (!initialBecaDescuentoId || !Array.isArray(becasDescuentos) || becasDescuentos.length === 0) return;
+    if (selectedBecaDescuento?.id === Number(initialBecaDescuentoId)) return;
+    const initial = becasDescuentos.find((b) => Number(b.id) === Number(initialBecaDescuentoId));
+    if (initial) {
+      handleSelectBeca(initial);
+    }
+  }, [initialBecaDescuentoId, becasDescuentos, selectedBecaDescuento?.id, handleSelectBeca]);
 
   // MANTENER REFERENCIA ESTABLE
   // Comparar valores, no solo referencias, para evitar recálculos innecesarios

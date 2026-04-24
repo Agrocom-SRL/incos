@@ -20,6 +20,7 @@ const AsignarBecaConnector = () => {
   const studentId = location.state?.studentId || null;
   // Obtener nombre del estudiante del estado si está disponible (para título dinámico)
   const studentName = location.state?.studentName || null;
+  const editBecaAsignada = location.state?.editBecaAsignada || null;
 
   // Siempre proporcionar todos los providers necesarios
   // Si no hay studentId, los providers manejarán el caso sin cargar datos
@@ -27,7 +28,11 @@ const AsignarBecaConnector = () => {
   return (
     <StudentProvider>
       <StudentDetailProvider studentId={studentId}>
-        <AsignarBecaProvider studentId={studentId} studentName={studentName}>
+        <AsignarBecaProvider
+          studentId={studentId}
+          studentName={studentName}
+          editBecaAsignada={editBecaAsignada}
+        >
           <EstudiantesAsignarBeca />
         </AsignarBecaProvider>
       </StudentDetailProvider>

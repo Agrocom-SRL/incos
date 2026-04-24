@@ -2,7 +2,12 @@ import express from 'express';
 import { authenticate } from '../middleware/auth.middleware.js';
 import { verificarPermiso, verificarPermisoCualquiera } from '../middleware/permisos.middleware.js';
 import { listValidator, idValidator, searchValidator } from '../validators/common/index.js';
-import { registerStudentValidator, updateStudentValidator, assignBecaValidator } from '../validators/estudiantes/index.js';
+import {
+    registerStudentValidator,
+    updateStudentValidator,
+    assignBecaValidator,
+    searchStudentsAsignacionBecaValidator,
+} from '../validators/estudiantes/index.js';
 
 /**
  * Construye el router del módulo Estudiantes
@@ -143,6 +148,19 @@ export function buildEstudiantesRouter({ controllers, middlewares }) {
         searchValidator,  // 1. Validator común de búsqueda
         validateRequest,  // 2. Middleware que procesa errores
         (req, res, next) => controllers.searchStudentController.handle(req, res, next)  // 3. Controller al final
+    );
+
+    /**
+     * GET /api/v1/estudiantes/buscar-asignacion-beca
+     * Muestra previa o búsqueda de estudiantes sin beca ACTIVA/PENDIENTE en gestión vigente.
+     * Debe ir antes de rutas con /:id.
+     */
+    router.get(
+        '/buscar-asignacion-beca',
+        ...becaAsignarCrear,
+        ...searchStudentsAsignacionBecaValidator,
+        validateRequest,
+        (req, res, next) => controllers.searchStudentsForBecaAsignacionController.handle(req, res, next)
     );
 
     /**

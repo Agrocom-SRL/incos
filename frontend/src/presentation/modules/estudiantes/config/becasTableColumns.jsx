@@ -224,8 +224,19 @@ export const createBecasTableColumns = (navigate, refetch = null, deleteBeca = n
             viewPath={record.studentId ? `/estudiantes/:id` : null}
             editPath={null}
             onEdit={() => {
-              // TODO: Implementar edición de beca asignada
-              console.log('Editar beca asignada:', record.id);
+              if (!record?.studentId || !record?.id) return;
+              navigate('/estudiantes/becas/asignar', {
+                state: {
+                  studentId: Number(record.studentId),
+                  studentName: record.student?.nombreCompleto || null,
+                  returnListPath: '/estudiantes/becas/listar',
+                  editBecaAsignada: {
+                    id: Number(record.id),
+                    scholarshipId: record.scholarship?.id ? Number(record.scholarship.id) : null,
+                    observations: record.observations || '',
+                  },
+                },
+              });
             }}
             onView={() => {
               // Ver detalle del estudiante si hay studentId

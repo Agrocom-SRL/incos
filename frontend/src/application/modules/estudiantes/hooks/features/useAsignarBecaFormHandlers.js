@@ -32,7 +32,7 @@ import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import { Form } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { useMessage } from '@application/utils';
-import { useCreateAsignarBeca } from '@application-estudiantes/hooks';
+import { useCreateAsignarBeca, useDeleteBecaAsignada } from '@application-estudiantes/hooks';
 import { MENU_SIDEBAR_KEY_MAT_APORTES } from '@navigation-services/routeMapper';
 
 /**
@@ -49,7 +49,8 @@ import { MENU_SIDEBAR_KEY_MAT_APORTES } from '@navigation-services/routeMapper';
  * @returns {Object} Objeto con form, handleFinish, handleSave, getFormValues, loading, error, validationErrors, asignarBecaResult
  */
 export const useAsignarBecaFormHandlers = (studentId, options = {}) => {
-    const { selectedBecaDescuento } = options;
+    const { selectedBecaDescuento, editBecaAsignada = null } = options;
+    const isEditMode = Boolean(editBecaAsignada?.id);
     
     // Hook genérico compartido para mostrar mensajes
     const showMessage = useMessage();
@@ -59,9 +60,10 @@ export const useAsignarBecaFormHandlers = (studentId, options = {}) => {
     
     // Hook de API para crear asignación de beca
     const { createAsignarBeca, loading: loadingCreate, error: errorCreate, validationErrors: validationErrorsCreate } = useCreateAsignarBeca();
+    const { deleteBecaAsignada, loading: loadingDelete } = useDeleteBecaAsignada();
     
     // Usar estados del hook de API
-    const loading = loadingCreate;
+    const loading = loadingCreate || loadingDelete;
     const error = errorCreate;
     const validationErrors = validationErrorsCreate;
     
@@ -80,6 +82,11 @@ export const useAsignarBecaFormHandlers = (studentId, options = {}) => {
             formRef.current = form;
         }
     }, [form]);
+
+    useEffect(() => {
+        if (!form || !isEditMode) return;
+        form.setFieldsValue({ observaciones: editBecaAsignada?.observations || '' });
+    }, [form, isEditMode, editBecaAsignada?.observations]);
 
     // Función para obtener los valores del formulario
     const getFormValues = useCallback(() => {
@@ -160,6 +167,18 @@ export const useAsignarBecaFormHandlers = (studentId, options = {}) => {
             // estado se establece automáticamente como PENDIENTE
         };
 
+        if (isEditMode && editBecaAsignada?.id) {
+            const deleteResult = await deleteBecaAsignada(editBecaAsignada.id);
+            if (!deleteResult?.success) {
+                handleSubmitResult(
+                    deleteResult,
+                    'Asignación actual eliminada',
+                    'No se pudo preparar la edición de la beca'
+                );
+                return deleteResult;
+            }
+        }
+
         // Llamar al hook de API para crear la asignación de beca
         const result = await createAsignarBeca(asignarBecaData);
 
@@ -167,7 +186,7 @@ export const useAsignarBecaFormHandlers = (studentId, options = {}) => {
         if (result?.success) {
             // Mostrar mensaje de éxito
             if (showMessage) {
-                showMessage('success', 'Beca asignada correctamente');
+                showMessage('success', isEditMode ? 'Asignación de beca actualizada correctamente' : 'Beca asignada correctamente');
             }
             
             // Guardar resultado para que la página pueda reaccionar
@@ -194,13 +213,13 @@ export const useAsignarBecaFormHandlers = (studentId, options = {}) => {
             // Manejar error
             handleSubmitResult(
                 result,
-                'Beca asignada correctamente',
-                'Error al asignar la beca'
+                isEditMode ? 'Asignación de beca actualizada correctamente' : 'Beca asignada correctamente',
+                isEditMode ? 'Error al actualizar la asignación de beca' : 'Error al asignar la beca'
             );
         }
 
         return result;
-    }, [studentId, selectedBecaDescuento, getFormValues, createAsignarBeca, showMessage, handleSubmitResult, navigate]);
+    }, [studentId, selectedBecaDescuento, getFormValues, createAsignarBeca, showMessage, handleSubmitResult, navigate, isEditMode, editBecaAsignada?.id, deleteBecaAsignada]);
 
     // Memoizar el objeto retornado para mantener referencia estable
     // Esto permite que el useMemo del Provider sea más efectivo

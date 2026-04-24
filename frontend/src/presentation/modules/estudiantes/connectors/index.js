@@ -20,4 +20,5 @@ export const RegisterConnector = lazy(() => import('@estudiantes/connectors/Regi
 export const DetailConnector = lazy(() => import('@estudiantes/connectors/DetailConnector'));
 export const EditConnector = lazy(() => import('@estudiantes/connectors/EditConnector'));
 export const AsignarBecaConnector = lazy(() => import('@estudiantes/connectors/AsignarBecaConnector'));
+export const BecasAsignarSeleccionConnector = lazy(() => import('@estudiantes/connectors/BecasAsignarSeleccionConnector'));
 export const BecasListConnector = lazy(() => import('@estudiantes/connectors/BecasListConnector'));

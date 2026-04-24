@@ -17,6 +17,7 @@ export { ExportStudentEnrollmentStudentListExcelUseCase } from './ExportStudentE
 // ============================================
 export { CreateStudentScholarshipUseCase } from './becas/CreateStudentScholarshipUseCase.js';
 export { DeleteStudentScholarshipUseCase } from './becas/DeleteStudentScholarshipUseCase.js';
+export { SearchStudentsForBecaAsignacionUseCase } from './becas/SearchStudentsForBecaAsignacionUseCase.js';
 // TODO: Agregar otros Use Cases cuando se implementen sus endpoints
 // export { ListBecasUseCase } from './becas/ListBecasUseCase.js';
 // export { AprobarBecaUseCase } from './becas/AprobarBecaUseCase.js';

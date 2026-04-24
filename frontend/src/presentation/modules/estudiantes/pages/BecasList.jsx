@@ -11,7 +11,7 @@
  */
 
 import { useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { PlusOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { TableListView } from '@organisms';
@@ -22,6 +22,7 @@ import { createBecasTableColumns } from '@estudiantes/config';
 
 const BecasList = () => {
     const navigate = useNavigate();
+    const { pathname } = useLocation();
 
     // Obtener datos del contexto (toda la lógica está en el Provider)
     const {
@@ -35,7 +36,12 @@ const BecasList = () => {
     } = useBecasListContext();
 
     const handleNuevaBeca = () => {
-        navigate('/estudiantes/becas/asignar');
+        navigate('/estudiantes/becas/asignar/seleccionar-estudiante', {
+            state: {
+                returnListPath: pathname,
+                menuSidebarKey: 'MAT-BEC-LISTAR',
+            },
+        });
     };
 
     // Crear columnas de la tabla (memoizadas para evitar recrearlas en cada render)
@@ -47,7 +53,7 @@ const BecasList = () => {
     // Configurar breadcrumb items
     const breadcrumbItems = useMemo(() => [
       { title: 'Inicio', href: '/' },
-      { title: 'Listar Admisiones', href: '/estudiantes/listar' },
+      { title: 'Admisión', href: '/estudiantes/listar' },
       { title: 'Becas' },
     ], []);
 
@@ -63,7 +69,7 @@ const BecasList = () => {
                             icon={<PlusOutlined />}
                             onClick={handleNuevaBeca}
                         >
-                            Nueva Beca
+                            Nueva Asignación de Beca
                         </Button>
                     }
                 />
