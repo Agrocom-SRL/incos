@@ -124,26 +124,22 @@ export class CourseScheduleRepository extends BaseRepository {
 
     const sql = `
       SELECT
-        ch.id AS id,
-        ch.curso_id AS cursoId,
-        ch.orden_secuencia AS ordenSecuencia,
-        ch.horario_id AS horarioId,
-        h.nombre AS horarioNombre,
-        h.dia AS dia,
-        h.hora_inicio AS horaInicio,
-        h.hora_fin AS horaFin,
-        h.turno AS turno,
-        h.numero_bloque AS numeroBloque,
-        ch.aula_id AS aulaId,
-        a.codigo AS aulaCodigo,
-        a.nombre AS aulaNombre
-      FROM cursos_horarios ch
-      LEFT JOIN horarios h ON h.id = ch.horario_id AND h.deleted_at IS NULL
-      LEFT JOIN aulas a ON a.id = ch.aula_id AND a.deleted_at IS NULL
-      WHERE ch.curso_id = :cursoId
-        AND ch.deleted_at IS NULL
-        AND ch.activo = 1
-      ORDER BY ch.orden_secuencia ASC, ch.id ASC
+        b.id AS id,
+        b.cursoId AS cursoId,
+        b.ordenSecuencia AS ordenSecuencia,
+        b.horarioId AS horarioId,
+        b.horarioNombre AS horarioNombre,
+        b.dia AS dia,
+        b.horaInicio AS horaInicio,
+        b.horaFin AS horaFin,
+        b.turno AS turno,
+        b.numeroBloque AS numeroBloque,
+        b.aulaId AS aulaId,
+        b.aulaCodigo AS aulaCodigo,
+        b.aulaNombre AS aulaNombre
+      FROM vista_base_curso_bloques_horario b
+      WHERE b.cursoId = :cursoId
+      ORDER BY b.ordenSecuencia ASC, b.id ASC
     `;
 
     return sequelize.query(sql, { replacements: { cursoId: id }, type: QueryTypes.SELECT });

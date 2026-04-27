@@ -3,7 +3,8 @@
 -- Pieza modular: cursos + asignaturas_plan (2 tablas)
 --
 -- Propósito: Vista que une cursos + asignaturas_plan.
--- Expone curso_id, paralelo_id, materia_id, periodo_id, horas_semanales, créditos, modalidad.
+-- Expone curso_id, asignatura_plan_id, plan_estudio_id, paralelo_id, materia_id, periodo_id,
+-- horas_semanales, créditos, modalidad, orden_visualización.
 -- Reutilizable para construir vistas más complejas.
 --
 -- Relaciones:
@@ -18,6 +19,8 @@ CREATE VIEW vista_base_cursos_asignaturas AS
 SELECT
   c.id AS curso_id,
   c.codigo AS curso_codigo,
+  c.asignatura_plan_id,
+  ap.plan_estudio_id,
   c.paralelo_id,
   c.cupo_maximo AS curso_cupo_maximo,
   c.cupo_minimo AS curso_cupo_minimo,

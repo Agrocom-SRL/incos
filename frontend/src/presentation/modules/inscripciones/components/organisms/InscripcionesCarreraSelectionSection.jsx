@@ -50,21 +50,34 @@ const InscripcionesCarreraSelectionSection = ({
     const carreraId = e.target.value;
     if (form) form.setFieldsValue({ [fieldName]: carreraId });
     if (onCarreraChange) {
-      const carrera = carreras.find((c) => c.id === carreraId);
+      const carrera = carreras.find((c) => Number(c.id) === Number(carreraId));
       onCarreraChange(carrera);
     }
   };
 
-  const selectedValue = form?.getFieldValue(fieldName) ?? initialCareerId ?? null;
+  const rawSelected = form?.getFieldValue(fieldName) ?? initialCareerId ?? null;
+  const selectedValue =
+    rawSelected != null && rawSelected !== '' ? Number(rawSelected) : null;
 
   const getImageUrl = (imagenRuta) => {
     if (!imagenRuta) return null;
     if (imagenRuta.startsWith('http://') || imagenRuta.startsWith('https://')) {
+      try {
+        const u = new URL(imagenRuta);
+        if (u.pathname.startsWith('/api/uploads/')) {
+          u.pathname = u.pathname.replace(/^\/api(?=\/uploads)/, '');
+          return u.toString();
+        }
+      } catch {
+        /* URL inválida: devolver tal cual */
+      }
       return imagenRuta;
     }
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
-    const serverBaseUrl = apiBaseUrl.replace(/\/api\/?$/, '');
-    return `${serverBaseUrl}${imagenRuta.startsWith('/') ? imagenRuta : '/' + imagenRuta}`;
+    const serverBaseUrl = apiBaseUrl.replace(/\/api\/?$/, '').replace(/\/$/, '');
+    let path = imagenRuta.startsWith('/') ? imagenRuta : `/${imagenRuta}`;
+    path = path.replace(/^\/api(?=\/uploads)/, '');
+    return `${serverBaseUrl}${path}`;
   };
 
   const content = (
@@ -107,7 +120,7 @@ const InscripcionesCarreraSelectionSection = ({
               }}
             >
               {carreras.map((carrera) => {
-                const isSelected = selectedValue === carrera.id;
+                const isSelected = Number(selectedValue) === Number(carrera.id);
                 const isDisabled =
                   Array.isArray(disabledCareerIds) && disabledCareerIds.includes(carrera.id);
                 const imagenUrl = getImageUrl(

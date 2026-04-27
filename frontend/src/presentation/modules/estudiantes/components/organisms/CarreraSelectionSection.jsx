@@ -53,15 +53,26 @@ const CarreraSelectionSection = ({
   // Obtener el valor seleccionado del formulario
   const selectedValue = form?.getFieldValue('carreraId') || null;
 
-  // Función para obtener la URL completa de la imagen (mismo criterio que Dashboard)
+  // Función para obtener la URL completa de la imagen (base sin /api + rutas /api/uploads → /uploads)
   const getImageUrl = (imagenRuta) => {
     if (!imagenRuta) return null;
     if (imagenRuta.startsWith('http://') || imagenRuta.startsWith('https://')) {
+      try {
+        const u = new URL(imagenRuta);
+        if (u.pathname.startsWith('/api/uploads/')) {
+          u.pathname = u.pathname.replace(/^\/api(?=\/uploads)/, '');
+          return u.toString();
+        }
+      } catch {
+        /* URL inválida */
+      }
       return imagenRuta;
     }
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
-    const serverBaseUrl = apiBaseUrl.replace(/\/api\/?$/, '');
-    return `${serverBaseUrl}${imagenRuta.startsWith('/') ? imagenRuta : '/' + imagenRuta}`;
+    const serverBaseUrl = apiBaseUrl.replace(/\/api\/?$/, '').replace(/\/$/, '');
+    let path = imagenRuta.startsWith('/') ? imagenRuta : `/${imagenRuta}`;
+    path = path.replace(/^\/api(?=\/uploads)/, '');
+    return `${serverBaseUrl}${path}`;
   };
 
   const content = (

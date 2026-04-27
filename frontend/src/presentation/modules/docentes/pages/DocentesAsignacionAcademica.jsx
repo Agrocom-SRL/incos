@@ -4,10 +4,9 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
-import { App, Alert, Spin, Table, Tabs, Typography, Form } from 'antd';
-import DocenteSchedulesSection from '@docentes/components/organisms/DocenteSchedulesSection';
+import { App, Alert, Form } from 'antd';
 import { bloquesToCourseSchedules } from '@docentes/utils/asignacionCursoHorariosToGrid';
-import { ArrowLeftOutlined, ApartmentOutlined, ScheduleOutlined, UserOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { Button } from '@atoms';
@@ -21,10 +20,6 @@ import DocentesAsignacionCursoSection from '@docentes/components/organisms/Docen
 import DocentesAsignacionConfirmarSection from '@docentes/components/organisms/DocentesAsignacionConfirmarSection';
 import '@modules/seguridad/styles/seguridad.css';
 import '@docentes/styles/docentes-asignacion-academica.css';
-
-const { Paragraph, Text } = Typography;
-
-const tabKeyFromFocus = (focus) => (focus === 'horarios' ? 'horarios' : 'cursos');
 
 const asignacionesColumns = [
   { title: 'ID', dataIndex: 'id', key: 'id', width: 72 },
@@ -53,7 +48,6 @@ const DocentesAsignacionAcademica = () => {
   const docenteId = st.docenteId != null && Number.isFinite(Number(st.docenteId)) ? Number(st.docenteId) : null;
   const docenteNombre = typeof st.docenteNombre === 'string' && st.docenteNombre.trim() ? st.docenteNombre.trim() : null;
 
-  const [activeTab, setActiveTab] = useState(() => tabKeyFromFocus(st.asignacionFocus));
   const [asignaciones, setAsignaciones] = useState([]);
   const [loadingAsignaciones, setLoadingAsignaciones] = useState(false);
   const [errorAsignaciones, setErrorAsignaciones] = useState(null);
@@ -109,10 +103,6 @@ const DocentesAsignacionAcademica = () => {
     }
     setLoadingAsignaciones(false);
   }, [docenteId]);
-
-  useEffect(() => {
-    setActiveTab(tabKeyFromFocus(st.asignacionFocus));
-  }, [location.key, st.asignacionFocus]);
 
   useEffect(() => {
     reloadAsignaciones();
@@ -425,8 +415,6 @@ const DocentesAsignacionAcademica = () => {
     await reloadAsignaciones();
   }, [docenteId, gestionPlanId, periodoId, paraleloId, cursoId, cargaHorariaOpt, message, reloadAsignaciones]);
 
-  const cursoSeleccionadoLabel = resumenCursoLabel;
-
   const onValidateBeforeNext = useCallback(
     (stepNumber) =>
       new Promise((resolve, reject) => {
@@ -588,83 +576,6 @@ const DocentesAsignacionAcademica = () => {
     ]
   );
 
-  const tabHorariosContent = (
-    <div className="daa-tab-body">
-      <Paragraph className="daa-tab-lede">
-        Los bloques semanales viven en <Text strong>cursos_horarios</Text> (curso + bloque + aula). Se muestran para el
-        curso elegido en el asistente (pestaña «Cursos y docente», último paso).
-      </Paragraph>
-      {!cursoId ? (
-        <Alert
-          type="info"
-          showIcon
-          message="Elegí un curso en el asistente"
-          description="Completá el wizard hasta el curso; podés volver a esta pestaña para ver la parrilla."
-        />
-      ) : (
-        <>
-          <div className="daa-horario-curso-meta">
-            <Text type="secondary">
-              {cursoSeleccionadoLabel}
-              {horarioMeta.cursoCodigo && !String(cursoSeleccionadoLabel || '').includes(horarioMeta.cursoCodigo)
-                ? ` · ${horarioMeta.cursoCodigo}`
-                : ''}
-            </Text>
-          </div>
-          {errorHorarios && <Alert type="error" showIcon style={{ marginBottom: 12 }} message={errorHorarios} />}
-          <Spin spinning={loadingHorarios}>
-            <DocenteSchedulesSection courseSchedules={courseSchedulesDesdeBloques} puedeAsignarMaterias={false} />
-          </Spin>
-        </>
-      )}
-    </div>
-  );
-
-  const tabItems = [
-    {
-      key: 'cursos',
-      label: (
-        <span className="sd-tab-label">
-          <ApartmentOutlined /> Cursos y docente
-        </span>
-      ),
-      children: (
-        <div className="daa-tab-body">
-          <Paragraph className="daa-tab-lede" style={{ marginBottom: 16 }}>
-            Usá <Text strong>Siguiente</Text> para avanzar: mismo patrón que la inscripción de estudiantes (pasos claros,
-            validación al avanzar). El registro se envía en el último paso con <Text strong>Registrar asignación</Text>.
-          </Paragraph>
-          <div className="daa-asignacion-wizard-wrap">
-            <WizardForm
-              className="daa-asignacion-wizard"
-              steps={wizardSteps}
-              form={form}
-              loading={submittingAsignacion}
-              viewMode={false}
-              resolveOptions={() => []}
-              onFinish={handleWizardFinish}
-              showSaveButton={false}
-              renderSectionContent={renderSectionContent}
-              onValidateBeforeNext={onValidateBeforeNext}
-              finishLabel="Registrar asignación"
-              nextLabel="Siguiente"
-              prevLabel="Anterior"
-            />
-          </div>
-        </div>
-      ),
-    },
-    {
-      key: 'horarios',
-      label: (
-        <span className="sd-tab-label">
-          <ScheduleOutlined /> Horarios del curso
-        </span>
-      ),
-      children: tabHorariosContent,
-    },
-  ];
-
   return (
     <PageTemplate
       header={
@@ -697,30 +608,22 @@ const DocentesAsignacionAcademica = () => {
           />
         )}
 
-        {docenteId != null && (
-          <div className="sd-profile daa-docente-profile" style={{ marginBottom: 20 }}>
-            <div className="sd-profile__identity">
-              <div className="sd-profile__avatar-wrap">
-                <div className="sd-profile__avatar sd-profile__avatar--default" aria-hidden>
-                  <UserOutlined />
-                </div>
-              </div>
-              <div className="sd-profile__name-block">
-                <h1 className="sd-profile__name" style={{ fontSize: '1.25rem' }}>
-                  {docenteNombre ?? `Docente #${docenteId}`}
-                </h1>
-                <div className="sd-profile__meta">
-                  <Link to={`/docentes/${docenteId}`} state={{ returnListPath: '/docentes/listar', menuSidebarKey }}>
-                    Ver ficha del docente
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <div className="sd-tabs-shell">
-          <Tabs activeKey={activeTab} onChange={setActiveTab} items={tabItems} className="sd-tabs" />
+        <div className="daa-asignacion-wizard-wrap">
+          <WizardForm
+            className="daa-asignacion-wizard"
+            steps={wizardSteps}
+            form={form}
+            loading={submittingAsignacion}
+            viewMode={false}
+            resolveOptions={() => []}
+            onFinish={handleWizardFinish}
+            showSaveButton={false}
+            renderSectionContent={renderSectionContent}
+            onValidateBeforeNext={onValidateBeforeNext}
+            finishLabel="Registrar asignación"
+            nextLabel="Siguiente"
+            prevLabel="Anterior"
+          />
         </div>
       </div>
     </PageTemplate>

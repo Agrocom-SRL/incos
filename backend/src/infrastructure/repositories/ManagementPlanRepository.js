@@ -128,33 +128,34 @@ export class ManagementPlanRepository extends BaseRepository {
     const offset = (page - 1) * limit;
     const gestionId = opts.gestionId != null && Number.isFinite(Number(opts.gestionId)) ? Number(opts.gestionId) : 0;
 
-    const whereGestion = gestionId > 0 ? 'AND gp.gestion_id = :gestionId' : '';
+    const whereGestion = gestionId > 0 ? 'AND v.gestionId = :gestionId' : '';
 
     const countSql = `
       SELECT COUNT(*) AS total
-      FROM gestiones_planes gp
-      INNER JOIN gestiones g ON g.id = gp.gestion_id AND g.deleted_at IS NULL
-      WHERE gp.deleted_at IS NULL
-        AND gp.activo = 1
+      FROM vista_catalogo_planes_habilitados_gestion v
+      WHERE 1 = 1
         ${whereGestion}
     `;
 
     const listSql = `
       SELECT
-        gp.id AS id,
-        gp.gestion_id AS gestionId,
-        g.codigo AS gestionCodigo,
-        g.nombre AS gestionNombre,
-        g.anio AS gestionAnio,
-        gp.plan_estudio_id AS planEstudioId,
-        gp.nombre AS nombre,
-        gp.estado AS estado
-      FROM gestiones_planes gp
-      INNER JOIN gestiones g ON g.id = gp.gestion_id AND g.deleted_at IS NULL
-      WHERE gp.deleted_at IS NULL
-        AND gp.activo = 1
+        v.id AS id,
+        v.gestionId AS gestionId,
+        v.gestionCodigo AS gestionCodigo,
+        v.gestionNombre AS gestionNombre,
+        v.gestionAnio AS gestionAnio,
+        v.planEstudioId AS planEstudioId,
+        v.nombre AS nombre,
+        v.estado AS estado,
+        v.carreraId AS carreraId,
+        v.carreraNombre AS carreraNombre,
+        v.carreraCodigo AS carreraCodigo,
+        v.carreraImagenRuta AS carreraImagenRuta,
+        v.carreraColorHex AS carreraColorHex
+      FROM vista_catalogo_planes_habilitados_gestion v
+      WHERE 1 = 1
         ${whereGestion}
-      ORDER BY g.anio DESC, gp.id DESC
+      ORDER BY v.gestionAnio DESC, v.id DESC
       LIMIT :limit OFFSET :offset
     `;
 

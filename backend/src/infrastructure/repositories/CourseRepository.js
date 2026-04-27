@@ -165,25 +165,19 @@ export class CourseRepository extends BaseRepository {
 
     const countSql = `
       SELECT COUNT(*) AS total
-      FROM cursos c
-      INNER JOIN asignaturas_plan ap ON ap.id = c.asignatura_plan_id AND ap.deleted_at IS NULL
-      WHERE c.deleted_at IS NULL
-        AND c.activo = 1
-        AND ap.plan_estudio_id = :planId
+      FROM vista_catalogo_cursos_oferta_docente v
+      WHERE v.planEstudioId = :planId
     `;
 
     const listSql = `
       SELECT
-        c.id AS id,
-        c.codigo AS codigo,
-        c.paralelo_id AS paraleloId,
-        c.asignatura_plan_id AS asignaturaPlanId
-      FROM cursos c
-      INNER JOIN asignaturas_plan ap ON ap.id = c.asignatura_plan_id AND ap.deleted_at IS NULL
-      WHERE c.deleted_at IS NULL
-        AND c.activo = 1
-        AND ap.plan_estudio_id = :planId
-      ORDER BY c.codigo ASC
+        v.id AS id,
+        v.codigo AS codigo,
+        v.paraleloId AS paraleloId,
+        v.asignaturaPlanId AS asignaturaPlanId
+      FROM vista_catalogo_cursos_oferta_docente v
+      WHERE v.planEstudioId = :planId
+      ORDER BY v.codigo ASC
       LIMIT :limit OFFSET :offset
     `;
 
@@ -210,29 +204,22 @@ export class CourseRepository extends BaseRepository {
 
     const countSql = `
       SELECT COUNT(*) AS total
-      FROM cursos c
-      INNER JOIN asignaturas_plan ap ON ap.id = c.asignatura_plan_id AND ap.deleted_at IS NULL
-      WHERE c.deleted_at IS NULL
-        AND c.activo = 1
-        AND c.paralelo_id = :paraleloId
+      FROM vista_catalogo_cursos_oferta_docente v
+      WHERE v.paraleloId = :paraleloId
     `;
 
     const listSql = `
       SELECT
-        c.id AS id,
-        c.codigo AS codigo,
-        c.paralelo_id AS paraleloId,
-        c.asignatura_plan_id AS asignaturaPlanId,
-        m.nombre AS materiaNombre,
-        m.sigla AS materiaSigla,
-        ap.periodo_id AS periodoId
-      FROM cursos c
-      INNER JOIN asignaturas_plan ap ON ap.id = c.asignatura_plan_id AND ap.deleted_at IS NULL
-      LEFT JOIN materias m ON m.id = ap.materia_id AND m.deleted_at IS NULL
-      WHERE c.deleted_at IS NULL
-        AND c.activo = 1
-        AND c.paralelo_id = :paraleloId
-      ORDER BY ap.orden_visualizacion ASC, c.codigo ASC
+        v.id AS id,
+        v.codigo AS codigo,
+        v.paraleloId AS paraleloId,
+        v.asignaturaPlanId AS asignaturaPlanId,
+        v.materiaNombre AS materiaNombre,
+        v.materiaSigla AS materiaSigla,
+        v.periodoId AS periodoId
+      FROM vista_catalogo_cursos_oferta_docente v
+      WHERE v.paraleloId = :paraleloId
+      ORDER BY v.ordenVisualizacion ASC, v.codigo ASC
       LIMIT :limit OFFSET :offset
     `;
 

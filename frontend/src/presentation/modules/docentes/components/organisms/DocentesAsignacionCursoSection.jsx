@@ -45,57 +45,50 @@ export default function DocentesAsignacionCursoSection({
       ) : !cursos.length ? (
         <Alert type="warning" showIcon message="No hay cursos en este paralelo." />
       ) : (
-        <Card
-          className="wizard-selection-cards__section"
-          title={<span className="wizard-selection-cards__card-title">Seleccioná la materia / curso</span>}
-          shadow
-          headerColor="primary"
+        <Radio.Group
+          value={selectedCursoId ?? undefined}
+          onChange={(e) => onSelectCurso?.(e.target.value)}
+          style={{ width: '100%' }}
         >
-          <Radio.Group
-            value={selectedCursoId ?? undefined}
-            onChange={(e) => onSelectCurso?.(e.target.value)}
-            style={{ width: '100%' }}
-          >
-            <div className="wizard-selection-cards__grid">
-              {cursos.map((c, idx) => {
-                const acc = ACCENTS[idx % ACCENTS.length];
-                const isSelected = Number(selectedCursoId) === Number(c.id);
-                const titulo = c.materiaNombre || c.codigo || `Curso ${c.id}`;
-                const sub = [c.codigo, c.materiaSigla].filter(Boolean).join(' · ');
-                return (
-                  <Radio.Button
-                    key={c.id}
-                    value={c.id}
-                    className="wizard-selection-cards__radio"
-                    style={{
-                      '--wizard-card-accent': acc.color,
-                      '--wizard-card-accent-bg': acc.bg,
-                    }}
-                  >
-                    <div className="wizard-selection-cards__inner">
-                      <div className="wizard-selection-cards__icon-wrap">
-                        <BookOutlined className="wizard-selection-cards__icon" />
-                      </div>
-                      <div className="wizard-selection-cards__body">
-                        <div className="wizard-selection-cards__label">{titulo}</div>
-                        {sub ? (
-                          <Text type="secondary" className="wizard-selection-cards__desc">
-                            {sub}
-                          </Text>
-                        ) : null}
-                      </div>
-                      {isSelected ? (
-                        <div className="wizard-selection-cards__check" aria-hidden>
-                          ✓
-                        </div>
+          <div className="wizard-selection-cards__grid">
+            {cursos.map((c, idx) => {
+              const acc = ACCENTS[idx % ACCENTS.length];
+              const isSelected = Number(selectedCursoId) === Number(c.id);
+              const titulo = c.materiaNombre || c.codigo || `Curso ${c.id}`;
+              const sub = [c.codigo, c.materiaSigla].filter(Boolean).join(' · ');
+              return (
+                <Radio.Button
+                  key={c.id}
+                  value={c.id}
+                  className="wizard-selection-cards__radio"
+                  style={{
+                    '--wizard-card-accent': acc.color,
+                    '--wizard-card-accent-bg': acc.bg,
+                  }}
+                >
+                  <div className="wizard-selection-cards__inner">
+                    <div className="wizard-selection-cards__icon-wrap">
+                      <BookOutlined className="wizard-selection-cards__icon" />
+                    </div>
+                    <div className="wizard-selection-cards__body">
+                      <div className="wizard-selection-cards__label">{titulo}</div>
+                      {sub ? (
+                        <Text type="secondary" className="wizard-selection-cards__desc">
+                          {sub}
+                        </Text>
                       ) : null}
                     </div>
-                  </Radio.Button>
-                );
-              })}
-            </div>
-          </Radio.Group>
-        </Card>
+                    {isSelected ? (
+                      <div className="wizard-selection-cards__check" aria-hidden>
+                        ✓
+                      </div>
+                    ) : null}
+                  </div>
+                </Radio.Button>
+              );
+            })}
+          </div>
+        </Radio.Group>
       )}
     </Card>
   );

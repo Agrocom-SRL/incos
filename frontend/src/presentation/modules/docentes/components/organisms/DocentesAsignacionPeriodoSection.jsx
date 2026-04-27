@@ -44,57 +44,50 @@ export default function DocentesAsignacionPeriodoSection({
       ) : !periodos.length ? (
         <Alert type="warning" showIcon message="No hay periodos para este plan habilitado." />
       ) : (
-        <Card
-          className="wizard-selection-cards__section"
-          title={<span className="wizard-selection-cards__card-title">Seleccioná el periodo</span>}
-          shadow
-          headerColor="primary"
+        <Radio.Group
+          value={selectedPeriodoId ?? undefined}
+          onChange={(e) => onSelectPeriodo?.(e.target.value)}
+          style={{ width: '100%' }}
         >
-          <Radio.Group
-            value={selectedPeriodoId ?? undefined}
-            onChange={(e) => onSelectPeriodo?.(e.target.value)}
-            style={{ width: '100%' }}
-          >
-            <div className="wizard-selection-cards__grid">
-              {periodos.map((p, idx) => {
-                const acc = ACCENTS[idx % ACCENTS.length];
-                const isSelected = Number(selectedPeriodoId) === Number(p.id);
-                return (
-                  <Radio.Button
-                    key={p.id}
-                    value={p.id}
-                    className="wizard-selection-cards__radio"
-                    style={{
-                      '--wizard-card-accent': acc.color,
-                      '--wizard-card-accent-bg': acc.bg,
-                    }}
-                  >
-                    <div className="wizard-selection-cards__inner">
-                      <div className="wizard-selection-cards__icon-wrap">
-                        <CalendarOutlined className="wizard-selection-cards__icon" />
+          <div className="wizard-selection-cards__grid">
+            {periodos.map((p, idx) => {
+              const acc = ACCENTS[idx % ACCENTS.length];
+              const isSelected = Number(selectedPeriodoId) === Number(p.id);
+              return (
+                <Radio.Button
+                  key={p.id}
+                  value={p.id}
+                  className="wizard-selection-cards__radio"
+                  style={{
+                    '--wizard-card-accent': acc.color,
+                    '--wizard-card-accent-bg': acc.bg,
+                  }}
+                >
+                  <div className="wizard-selection-cards__inner">
+                    <div className="wizard-selection-cards__icon-wrap">
+                      <CalendarOutlined className="wizard-selection-cards__icon" />
+                    </div>
+                    <div className="wizard-selection-cards__body">
+                      <div className="wizard-selection-cards__label">
+                        {p.nombre || `Periodo ${p.id}`}
                       </div>
-                      <div className="wizard-selection-cards__body">
-                        <div className="wizard-selection-cards__label">
-                          {p.nombre || `Periodo ${p.id}`}
-                        </div>
-                        {p.numero != null ? (
-                          <Text type="secondary" className="wizard-selection-cards__desc">
-                            Año {p.numero} del plan de estudios
-                          </Text>
-                        ) : null}
-                      </div>
-                      {isSelected ? (
-                        <div className="wizard-selection-cards__check" aria-hidden>
-                          ✓
-                        </div>
+                      {p.numero != null ? (
+                        <Text type="secondary" className="wizard-selection-cards__desc">
+                          Año {p.numero} del plan de estudios
+                        </Text>
                       ) : null}
                     </div>
-                  </Radio.Button>
-                );
-              })}
-            </div>
-          </Radio.Group>
-        </Card>
+                    {isSelected ? (
+                      <div className="wizard-selection-cards__check" aria-hidden>
+                        ✓
+                      </div>
+                    ) : null}
+                  </div>
+                </Radio.Button>
+              );
+            })}
+          </div>
+        </Radio.Group>
       )}
     </Card>
   );

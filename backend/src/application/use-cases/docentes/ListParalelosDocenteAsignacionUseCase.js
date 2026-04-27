@@ -102,8 +102,49 @@ export class ListParalelosDocenteAsignacionUseCase {
     const pageNum = Math.max(1, parseInt(String(page), 10) || 1);
     const totalPages = Math.ceil(total / limitNum) || 0;
 
+    const managementId = Number(managementPlan.managementId);
+    const parallelIds = raw
+      .map((e) => {
+        const o = e?.toPlainObject?.() ?? e ?? {};
+        const id = Number(o.id);
+        return Number.isFinite(id) && id > 0 ? id : null;
+      })
+      .filter((id) => id != null);
+
+    let statsByParaleloId = new Map();
+    if (Number.isFinite(managementId) && managementId > 0 && parallelIds.length > 0) {
+      const statsRows = await this.parallelRepository.obtenerEstadisticasYPeriodoPorGestion(
+        parallelIds,
+        managementId
+      );
+      statsByParaleloId = new Map(
+        (statsRows || []).map((row) => {
+          const pid = Number(row.paralelo_id ?? row.PARALELO_ID);
+          return [
+            pid,
+            {
+              totalInscritos: Number(row.total_inscritos ?? row.TOTAL_INSCRITOS) || 0,
+              totalHombres: Number(row.total_hombres ?? row.TOTAL_HOMBRES) || 0,
+              totalMujeres: Number(row.total_mujeres ?? row.TOTAL_MUJERES) || 0,
+            },
+          ];
+        })
+      );
+    }
+
+    const paralelos = raw.map((entity) => {
+      const row = paraleloToRow(entity);
+      const sid = Number(row.id);
+      const estadisticas = statsByParaleloId.get(sid) ?? {
+        totalInscritos: 0,
+        totalHombres: 0,
+        totalMujeres: 0,
+      };
+      return { ...row, estadisticas };
+    });
+
     return {
-      paralelos: raw.map(paraleloToRow),
+      paralelos,
       total,
       page: pageNum,
       limit: limitNum,

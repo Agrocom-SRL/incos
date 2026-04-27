@@ -19,13 +19,25 @@ const accentFromId = (id) => {
 };
 
 function mapPlanesToCardItems(planes) {
-  return (planes || []).map((p) => ({
-    id: p.id,
-    nombre: p.nombre || `Plan habilitado #${p.id}`,
-    codigo: p.planEstudioId != null ? `Plan est. ${p.planEstudioId}` : p.gestionCodigo || '',
-    imagenRuta: null,
-    colorHex: accentFromId(p.id),
-  }));
+  return (planes || []).map((p) => {
+    const carreraCodigo = p.carreraCodigo ?? p.carrera_codigo;
+    const carreraNombre = p.carreraNombre ?? p.carrera_nombre;
+    const imagen =
+      p.carreraImagenRuta ?? p.carrera_imagen_ruta ?? p.imagenRuta ?? p.imagen_ruta ?? null;
+    const colorCareer = p.carreraColorHex ?? p.carrera_color_hex;
+    const subline = [carreraCodigo, carreraNombre].filter(Boolean).join(' · ');
+    return {
+      id: p.id,
+      nombre: p.nombre || `Plan habilitado #${p.id}`,
+      codigo:
+        subline ||
+        (p.planEstudioId != null ? `Plan est. ${p.planEstudioId}` : '') ||
+        p.gestionCodigo ||
+        '',
+      imagenRuta: imagen,
+      colorHex: colorCareer || accentFromId(p.id),
+    };
+  });
 }
 
 export default function DocentesAsignacionPlanSection({
