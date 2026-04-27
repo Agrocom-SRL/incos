@@ -54,6 +54,17 @@ export const useDocenteDetail = (docenteIdRaw) => {
     });
   }, [navigate, docenteId, returnListPath]);
 
+  const handleAsignarMaterias = useCallback(() => {
+    if (!Number.isFinite(docenteId) || docenteId < 1) return;
+    navigate('/docentes/asignar', {
+      state: {
+        menuSidebarKey: location.state?.menuSidebarKey ?? 'DOC-LIST',
+        returnListPath: `/docentes/${docenteId}`,
+        docenteId,
+      },
+    });
+  }, [navigate, docenteId, location.state?.menuSidebarKey]);
+
   return {
     docenteId: Number.isFinite(docenteId) && docenteId > 0 ? docenteId : null,
     loading,
@@ -69,5 +80,6 @@ export const useDocenteDetail = (docenteIdRaw) => {
     returnListPath,
     handleVolver,
     handleEditar,
+    handleAsignarMaterias,
   };
 };

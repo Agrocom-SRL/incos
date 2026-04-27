@@ -2,6 +2,7 @@ import express from 'express';
 import { authenticate } from '../middleware/auth.middleware.js';
 import { verificarPermiso } from '../middleware/permisos.middleware.js';
 import { listValidator, idValidator } from '../validators/common/index.js';
+import { createTeacherValidator, updateTeacherValidator } from '../validators/docentes/index.js';
 
 /**
  * Router del módulo Docentes.
@@ -17,6 +18,8 @@ export function buildDocentesRouter({ controllers, middlewares }) {
 
   const docentesListar = [authenticate, verificarPermiso('docentes.ver', 'LISTAR')];
   const docenteDetalle = [authenticate, verificarPermiso('docentes.ver', 'DETALLE')];
+  const docenteCrear = [authenticate, verificarPermiso('docentes.crear', 'CREAR')];
+  const docenteEditar = [authenticate, verificarPermiso('docentes.editar', 'EDITAR')];
 
   router.get(
     '/',
@@ -24,6 +27,23 @@ export function buildDocentesRouter({ controllers, middlewares }) {
     listValidator,
     validateRequest,
     (req, res, next) => controllers.listTeachersController.handle(req, res, next)
+  );
+
+  router.post(
+    '/',
+    ...docenteCrear,
+    createTeacherValidator,
+    validateRequest,
+    (req, res, next) => controllers.createTeacherController.handle(req, res, next)
+  );
+
+  router.put(
+    '/:id',
+    ...docenteEditar,
+    ...idValidator,
+    updateTeacherValidator,
+    validateRequest,
+    (req, res, next) => controllers.updateTeacherController.handle(req, res, next)
   );
 
   router.get(

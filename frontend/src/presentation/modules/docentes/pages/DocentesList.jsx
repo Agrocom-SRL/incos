@@ -47,7 +47,9 @@ const DocentesList = () => {
   );
 
   const handleNuevoDocente = () => {
-    navigate('/docentes/registrar');
+    navigate('/docentes/registrar', {
+      state: { returnListPath: pathname, menuSidebarKey: 'DOC-LIST' },
+    });
   };
 
   return (

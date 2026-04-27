@@ -1,6 +1,7 @@
 /**
  * Mapea el bundle crudo del repositorio a la respuesta HTTP del detalle de docente.
- * Sin exponer IDs de tablas foráneas; solo etiquetas legibles y datos de negocio.
+ * `profile` combina datos de ficha (etiquetas legibles) con campos necesarios para edición
+ * (ci, nombres, IDs de estado civil y geografía de residencia en cascada, etc.).
  */
 
 function fmtDate(d) {
@@ -78,9 +79,22 @@ export class TeacherDetailPresentationMapper {
     const profile = {
       nombreCompleto: nombreCompleto || null,
       ciCompleto,
+      ci: t.ci ?? null,
+      expedicion: t.expedicion ?? null,
+      nombres: t.nombres ?? null,
+      apellidoPaterno: t.apellido_paterno ?? null,
+      apellidoMaterno: t.apellido_materno ?? null,
       fechaNacimiento: fmtDate(t.fecha_nacimiento),
       genero: t.genero,
       nacionalidad: t.nacionalidad,
+      estadoCivilId: t.estado_civil_id != null && t.estado_civil_id !== '' ? Number(t.estado_civil_id) : null,
+      municipioResidenciaId: t.municipio_residencia_id != null && t.municipio_residencia_id !== '' ? Number(t.municipio_residencia_id) : null,
+      residenciaProvinciaId:
+        t.residencia_provincia_id != null && t.residencia_provincia_id !== '' ? Number(t.residencia_provincia_id) : null,
+      residenciaDepartamentoId:
+        t.residencia_departamento_id != null && t.residencia_departamento_id !== ''
+          ? Number(t.residencia_departamento_id)
+          : null,
       telefono: t.telefono,
       celular: t.celular,
       emailPersonal: t.email_personal,

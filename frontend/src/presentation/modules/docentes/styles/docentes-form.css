@@ -1,0 +1,8 @@
+/* Wizard alta/edición docente — mismo criterio que seg-usuario-create-wizard */
+.doc-docente-form-wizard .ant-steps {
+  margin-bottom: 24px;
+}
+
+.doc-docente-form-wizard .ant-form-item-label {
+  font-weight: 500;
+}

@@ -52,9 +52,11 @@ const DocentesDetail = () => {
     breadcrumbItems,
     handleVolver,
     handleEditar,
+    handleAsignarMaterias,
   } = useDocentesDetailContext();
 
   const puedeEditar = hasPermiso('docentes.editar', 'EDITAR');
+  const puedeAsignarMaterias = hasPermiso('docentes.asignar', 'EDITAR');
   const puedeCrearUsuario = hasPermiso('seguridad.usuario.crear', 'CREAR');
   const puedeEditarUsuario = hasPermiso('seguridad.usuario.administrar', 'EDITAR');
 
@@ -135,7 +137,11 @@ const DocentesDetail = () => {
         ),
         children: (
           <div className="sd-tab-body">
-            <DocenteAssignmentsSection assignments={assignments} />
+            <DocenteAssignmentsSection
+              assignments={assignments}
+              puedeAsignarMaterias={puedeAsignarMaterias}
+              onAsignarMaterias={handleAsignarMaterias}
+            />
           </div>
         ),
       },
@@ -148,7 +154,11 @@ const DocentesDetail = () => {
         ),
         children: (
           <div className="sd-tab-body">
-            <DocenteSchedulesSection courseSchedules={courseSchedules} />
+            <DocenteSchedulesSection
+              courseSchedules={courseSchedules}
+              puedeAsignarMaterias={puedeAsignarMaterias}
+              onAsignarMaterias={handleAsignarMaterias}
+            />
           </div>
         ),
       },
@@ -183,6 +193,8 @@ const DocentesDetail = () => {
       docenteId,
       puedeCrearUsuario,
       puedeEditarUsuario,
+      puedeAsignarMaterias,
+      handleAsignarMaterias,
     ]
   );
 

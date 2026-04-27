@@ -3,7 +3,8 @@
  */
 
 import { Empty } from 'antd';
-import { BookOutlined } from '@ant-design/icons';
+import { ApartmentOutlined, BookOutlined } from '@ant-design/icons';
+import { Button } from '@atoms';
 import DetailInfoCard from '@docentes/components/molecules/DetailInfoCard';
 import DocenteAssignmentCard from '@docentes/components/molecules/DocenteAssignmentCard';
 import { sanitizeDocenteColorHex, docenteCarreraTitleStyles } from '@docentes/components/atoms/DocenteColorBar';
@@ -50,13 +51,24 @@ function groupByCarreraThenPeriodo(assignments) {
   });
 }
 
-const DocenteAssignmentsSection = ({ assignments = [] }) => {
+const DocenteAssignmentsSection = ({ assignments = [], puedeAsignarMaterias = false, onAsignarMaterias }) => {
   const grouped = groupByCarreraThenPeriodo(assignments);
+
+  const emptyExtra =
+    puedeAsignarMaterias && typeof onAsignarMaterias === 'function' ? (
+      <Button variant="primary" icon={<ApartmentOutlined />} onClick={onAsignarMaterias}>
+        Asignar materias y paralelos
+      </Button>
+    ) : null;
 
   return (
     <DetailInfoCard title="Carga académica asignada" icon={<BookOutlined />} cols={1}>
       {assignments.length === 0 ? (
-        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Sin asignaciones a cursos registradas" />
+        <Empty
+          image={Empty.PRESENTED_IMAGE_SIMPLE}
+          description="Sin asignaciones a cursos registradas"
+          extra={emptyExtra}
+        />
       ) : (
         <div className="da-carga">
           {grouped.map(({ carrera, carreraColorHex, periodos }, carreraIdx) => (

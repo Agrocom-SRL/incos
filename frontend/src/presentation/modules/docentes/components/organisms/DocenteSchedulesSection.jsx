@@ -3,14 +3,22 @@
  */
 
 import { Empty } from 'antd';
-import { ScheduleOutlined } from '@ant-design/icons';
+import { ApartmentOutlined, ScheduleOutlined } from '@ant-design/icons';
+import { Button } from '@atoms';
 import DocenteHorarioSemanalGrid from '@docentes/components/organisms/DocenteHorarioSemanalGrid';
 
 const countBloques = (courseSchedules) =>
   (courseSchedules || []).reduce((n, c) => n + (c.bloques?.length ?? 0), 0);
 
-const DocenteSchedulesSection = ({ courseSchedules = [] }) => {
+const DocenteSchedulesSection = ({ courseSchedules = [], puedeAsignarMaterias = false, onAsignarMaterias }) => {
   const total = countBloques(courseSchedules);
+
+  const emptyExtra =
+    puedeAsignarMaterias && typeof onAsignarMaterias === 'function' ? (
+      <Button variant="primary" icon={<ApartmentOutlined />} onClick={onAsignarMaterias}>
+        Asignar materias y paralelos
+      </Button>
+    ) : null;
 
   return (
     <section className="da-cal-semanal-section" aria-labelledby="da-cal-semanal-section-title">
@@ -22,7 +30,11 @@ const DocenteSchedulesSection = ({ courseSchedules = [] }) => {
       </header>
       <p className="da-cal-semanal-section__lede">Franjas según bloques reales del horario (normalmente de 45 min), separando lunes-viernes y sábado cuando tienen parrillas distintas. En cada celda: horario del bloque, curso, aula, turno y paralelo.</p>
       {total === 0 ? (
-        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Sin bloques de horario vinculados a cursos vigentes" />
+        <Empty
+          image={Empty.PRESENTED_IMAGE_SIMPLE}
+          description="Sin bloques de horario vinculados a cursos vigentes"
+          extra={emptyExtra}
+        />
       ) : (
         <DocenteHorarioSemanalGrid courseSchedules={courseSchedules} />
       )}
