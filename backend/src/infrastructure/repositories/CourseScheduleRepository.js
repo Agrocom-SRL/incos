@@ -1,5 +1,7 @@
+import { QueryTypes } from 'sequelize';
 import { ICourseScheduleRepository } from '../../domain/interfaces/repositories/ICourseScheduleRepository.js';
 import { CursoHorario as CursoHorarioModel } from '../database/models/curso_horario.js';
+import { sequelize } from '../database/sequelize.js';
 import { BaseRepository } from './BaseRepository.js';
 import { CourseScheduleMapper } from '../mappers/CourseScheduleMapper.js';
 
@@ -109,5 +111,41 @@ export class CourseScheduleRepository extends BaseRepository {
    */
   getCollectionName() {
     return 'courseSchedules';
+  }
+
+  /**
+   * Bloques de horario de un curso con datos de bloque y aula (solo lectura).
+   * @param {number} cursoId
+   * @returns {Promise<Array<Object>>}
+   */
+  async findBloquesByCursoIdForPresentation(cursoId) {
+    const id = Number(cursoId);
+    if (!Number.isFinite(id) || id < 1) return [];
+
+    const sql = `
+      SELECT
+        ch.id AS id,
+        ch.curso_id AS cursoId,
+        ch.orden_secuencia AS ordenSecuencia,
+        ch.horario_id AS horarioId,
+        h.nombre AS horarioNombre,
+        h.dia AS dia,
+        h.hora_inicio AS horaInicio,
+        h.hora_fin AS horaFin,
+        h.turno AS turno,
+        h.numero_bloque AS numeroBloque,
+        ch.aula_id AS aulaId,
+        a.codigo AS aulaCodigo,
+        a.nombre AS aulaNombre
+      FROM cursos_horarios ch
+      LEFT JOIN horarios h ON h.id = ch.horario_id AND h.deleted_at IS NULL
+      LEFT JOIN aulas a ON a.id = ch.aula_id AND a.deleted_at IS NULL
+      WHERE ch.curso_id = :cursoId
+        AND ch.deleted_at IS NULL
+        AND ch.activo = 1
+      ORDER BY ch.orden_secuencia ASC, ch.id ASC
+    `;
+
+    return sequelize.query(sql, { replacements: { cursoId: id }, type: QueryTypes.SELECT });
   }
 }

@@ -2,7 +2,18 @@ import express from 'express';
 import { authenticate } from '../middleware/auth.middleware.js';
 import { verificarPermiso } from '../middleware/permisos.middleware.js';
 import { listValidator, idValidator } from '../validators/common/index.js';
-import { createTeacherValidator, updateTeacherValidator } from '../validators/docentes/index.js';
+import {
+  createTeacherValidator,
+  updateTeacherValidator,
+  listTeacherAssignmentsValidator,
+  createTeacherAssignmentValidator,
+  listPlanesDocenteValidator,
+  listPeriodosDocenteValidator,
+  listParalelosDocenteValidator,
+  listCursosParaleloDocenteValidator,
+  listCursosDisponiblesDocenteValidator,
+  cursoIdParamValidator,
+} from '../validators/docentes/index.js';
 
 /**
  * Router del módulo Docentes.
@@ -20,6 +31,7 @@ export function buildDocentesRouter({ controllers, middlewares }) {
   const docenteDetalle = [authenticate, verificarPermiso('docentes.ver', 'DETALLE')];
   const docenteCrear = [authenticate, verificarPermiso('docentes.crear', 'CREAR')];
   const docenteEditar = [authenticate, verificarPermiso('docentes.editar', 'EDITAR')];
+  const docenteAsignar = [authenticate, verificarPermiso('docentes.asignar', 'EDITAR')];
 
   router.get(
     '/',
@@ -35,6 +47,70 @@ export function buildDocentesRouter({ controllers, middlewares }) {
     createTeacherValidator,
     validateRequest,
     (req, res, next) => controllers.createTeacherController.handle(req, res, next)
+  );
+
+  router.get(
+    '/planes-habilitados',
+    ...docenteAsignar,
+    ...listPlanesDocenteValidator,
+    validateRequest,
+    (req, res, next) => controllers.listPlanesHabilitadosDocenteController.handle(req, res, next)
+  );
+
+  router.get(
+    '/periodos-disponibles',
+    ...docenteAsignar,
+    ...listPeriodosDocenteValidator,
+    validateRequest,
+    (req, res, next) => controllers.listPeriodosDocenteAsignacionController.handle(req, res, next)
+  );
+
+  router.get(
+    '/paralelos-disponibles',
+    ...docenteAsignar,
+    ...listParalelosDocenteValidator,
+    validateRequest,
+    (req, res, next) => controllers.listParalelosDocenteAsignacionController.handle(req, res, next)
+  );
+
+  router.get(
+    '/cursos-por-paralelo',
+    ...docenteAsignar,
+    ...listCursosParaleloDocenteValidator,
+    validateRequest,
+    (req, res, next) => controllers.listCursosPorParaleloDocenteController.handle(req, res, next)
+  );
+
+  router.get(
+    '/cursos-disponibles',
+    ...docenteAsignar,
+    ...listCursosDisponiblesDocenteValidator,
+    validateRequest,
+    (req, res, next) => controllers.listCursosDisponiblesDocenteController.handle(req, res, next)
+  );
+
+  router.get(
+    '/cursos/:cursoId/horarios',
+    ...docenteAsignar,
+    ...cursoIdParamValidator,
+    validateRequest,
+    (req, res, next) => controllers.getCursoHorariosDocenteController.handle(req, res, next)
+  );
+
+  router.get(
+    '/asignaciones',
+    ...docenteAsignar,
+    ...listTeacherAssignmentsValidator,
+    validateRequest,
+    (req, res, next) => controllers.listTeacherAssignmentsController.handle(req, res, next)
+  );
+
+  router.post(
+    '/asignaciones',
+    ...docenteAsignar,
+    ...createTeacherAssignmentValidator,
+    validateRequest,
+    (req, res, next) => controllers.createTeacherAssignmentController.handle(req, res, next)
   );
 
   router.put(

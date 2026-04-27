@@ -52,7 +52,7 @@ const DocentesDetail = () => {
     breadcrumbItems,
     handleVolver,
     handleEditar,
-    handleAsignarMaterias,
+    handleAsignacionAcademica,
   } = useDocentesDetailContext();
 
   const puedeEditar = hasPermiso('docentes.editar', 'EDITAR');
@@ -140,7 +140,7 @@ const DocentesDetail = () => {
             <DocenteAssignmentsSection
               assignments={assignments}
               puedeAsignarMaterias={puedeAsignarMaterias}
-              onAsignarMaterias={handleAsignarMaterias}
+              onAsignarMaterias={() => handleAsignacionAcademica({ focus: 'cursos' })}
             />
           </div>
         ),
@@ -157,7 +157,7 @@ const DocentesDetail = () => {
             <DocenteSchedulesSection
               courseSchedules={courseSchedules}
               puedeAsignarMaterias={puedeAsignarMaterias}
-              onAsignarMaterias={handleAsignarMaterias}
+              onAsignarMaterias={() => handleAsignacionAcademica({ focus: 'horarios' })}
             />
           </div>
         ),
@@ -194,7 +194,7 @@ const DocentesDetail = () => {
       puedeCrearUsuario,
       puedeEditarUsuario,
       puedeAsignarMaterias,
-      handleAsignarMaterias,
+      handleAsignacionAcademica,
     ]
   );
 

@@ -58,6 +58,13 @@ router.get('/', (req, res) => {
             pagosAportes: '/api/v1/pagos-aportes',
             dashboard: '/api/v1/dashboard',
             docentes: '/api/v1/docentes',
+            docentesAsignaciones: '/api/v1/docentes/asignaciones',
+            docentesPlanesHabilitados: '/api/v1/docentes/planes-habilitados',
+            docentesPeriodosDisponibles: '/api/v1/docentes/periodos-disponibles?gestionPlanId=',
+            docentesParalelosDisponibles: '/api/v1/docentes/paralelos-disponibles',
+            docentesCursosPorParalelo: '/api/v1/docentes/cursos-por-paralelo?paraleloId=',
+            docentesCursosDisponibles: '/api/v1/docentes/cursos-disponibles?gestionPlanId=',
+            docentesCursoHorarios: '/api/v1/docentes/cursos/:cursoId/horarios',
         },
     });
 });

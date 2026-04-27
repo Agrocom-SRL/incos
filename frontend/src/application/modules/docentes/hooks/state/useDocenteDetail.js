@@ -54,16 +54,22 @@ export const useDocenteDetail = (docenteIdRaw) => {
     });
   }, [navigate, docenteId, returnListPath]);
 
-  const handleAsignarMaterias = useCallback(() => {
-    if (!Number.isFinite(docenteId) || docenteId < 1) return;
-    navigate('/docentes/asignar', {
-      state: {
-        menuSidebarKey: location.state?.menuSidebarKey ?? 'DOC-LIST',
-        returnListPath: `/docentes/${docenteId}`,
-        docenteId,
-      },
-    });
-  }, [navigate, docenteId, location.state?.menuSidebarKey]);
+  const handleAsignacionAcademica = useCallback(
+    (options = {}) => {
+      if (!Number.isFinite(docenteId) || docenteId < 1) return;
+      const focus = options.focus === 'horarios' ? 'horarios' : 'cursos';
+      navigate('/docentes/asignar', {
+        state: {
+          menuSidebarKey: location.state?.menuSidebarKey ?? 'DOC-LIST',
+          returnListPath: `/docentes/${docenteId}`,
+          docenteId,
+          docenteNombre: nombreCompleto,
+          asignacionFocus: focus,
+        },
+      });
+    },
+    [navigate, docenteId, location.state?.menuSidebarKey, nombreCompleto]
+  );
 
   return {
     docenteId: Number.isFinite(docenteId) && docenteId > 0 ? docenteId : null,
@@ -80,6 +86,6 @@ export const useDocenteDetail = (docenteIdRaw) => {
     returnListPath,
     handleVolver,
     handleEditar,
-    handleAsignarMaterias,
+    handleAsignacionAcademica,
   };
 };

@@ -1,5 +1,7 @@
+import { QueryTypes } from 'sequelize';
 import { ICursoRepository } from '../../domain/interfaces/repositories/ICursoRepository.js';
 import { Curso as CursoModel } from '../database/models/curso.js';
+import { sequelize } from '../database/sequelize.js';
 import { BaseRepository } from './BaseRepository.js';
 import { CourseMapper } from '../mappers/CourseMapper.js';
 
@@ -144,6 +146,100 @@ export class CourseRepository extends BaseRepository {
    */
   getCollectionName() {
     return 'courses';
+  }
+
+  /**
+   * Cursos del maestro de oferta cuya asignatura pertenece al plan de estudios indicado.
+   * @param {number} studyPlanId
+   * @param {{ page?: number, limit?: number }} opts
+   * @returns {Promise<{ rows: Array<Object>, total: number }>}
+   */
+  async findCursosByStudyPlanIdForCatalog(studyPlanId, opts = {}) {
+    const planId = Number(studyPlanId);
+    if (!Number.isFinite(planId) || planId < 1) {
+      return { rows: [], total: 0 };
+    }
+    const page = Math.max(1, parseInt(String(opts.page ?? 1), 10) || 1);
+    const limit = Math.min(10000, Math.max(1, parseInt(String(opts.limit ?? 500), 10) || 500));
+    const offset = (page - 1) * limit;
+
+    const countSql = `
+      SELECT COUNT(*) AS total
+      FROM cursos c
+      INNER JOIN asignaturas_plan ap ON ap.id = c.asignatura_plan_id AND ap.deleted_at IS NULL
+      WHERE c.deleted_at IS NULL
+        AND c.activo = 1
+        AND ap.plan_estudio_id = :planId
+    `;
+
+    const listSql = `
+      SELECT
+        c.id AS id,
+        c.codigo AS codigo,
+        c.paralelo_id AS paraleloId,
+        c.asignatura_plan_id AS asignaturaPlanId
+      FROM cursos c
+      INNER JOIN asignaturas_plan ap ON ap.id = c.asignatura_plan_id AND ap.deleted_at IS NULL
+      WHERE c.deleted_at IS NULL
+        AND c.activo = 1
+        AND ap.plan_estudio_id = :planId
+      ORDER BY c.codigo ASC
+      LIMIT :limit OFFSET :offset
+    `;
+
+    const countRows = await sequelize.query(countSql, { replacements: { planId }, type: QueryTypes.SELECT });
+    const total = Number(countRows[0]?.total ?? countRows[0]?.TOTAL ?? 0) || 0;
+    const rows = await sequelize.query(listSql, { replacements: { planId, limit, offset }, type: QueryTypes.SELECT });
+    return { rows, total };
+  }
+
+  /**
+   * Cursos ofertados en un paralelo (maestro de oferta) con materia para UI de asignación docente.
+   * @param {number} paraleloId
+   * @param {{ page?: number, limit?: number }} opts
+   * @returns {Promise<{ rows: Array<Object>, total: number }>}
+   */
+  async findCursosByParaleloIdForCatalog(paraleloId, opts = {}) {
+    const pid = Number(paraleloId);
+    if (!Number.isFinite(pid) || pid < 1) {
+      return { rows: [], total: 0 };
+    }
+    const page = Math.max(1, parseInt(String(opts.page ?? 1), 10) || 1);
+    const limit = Math.min(10000, Math.max(1, parseInt(String(opts.limit ?? 500), 10) || 500));
+    const offset = (page - 1) * limit;
+
+    const countSql = `
+      SELECT COUNT(*) AS total
+      FROM cursos c
+      INNER JOIN asignaturas_plan ap ON ap.id = c.asignatura_plan_id AND ap.deleted_at IS NULL
+      WHERE c.deleted_at IS NULL
+        AND c.activo = 1
+        AND c.paralelo_id = :paraleloId
+    `;
+
+    const listSql = `
+      SELECT
+        c.id AS id,
+        c.codigo AS codigo,
+        c.paralelo_id AS paraleloId,
+        c.asignatura_plan_id AS asignaturaPlanId,
+        m.nombre AS materiaNombre,
+        m.sigla AS materiaSigla,
+        ap.periodo_id AS periodoId
+      FROM cursos c
+      INNER JOIN asignaturas_plan ap ON ap.id = c.asignatura_plan_id AND ap.deleted_at IS NULL
+      LEFT JOIN materias m ON m.id = ap.materia_id AND m.deleted_at IS NULL
+      WHERE c.deleted_at IS NULL
+        AND c.activo = 1
+        AND c.paralelo_id = :paraleloId
+      ORDER BY ap.orden_visualizacion ASC, c.codigo ASC
+      LIMIT :limit OFFSET :offset
+    `;
+
+    const countRows = await sequelize.query(countSql, { replacements: { paraleloId: pid }, type: QueryTypes.SELECT });
+    const total = Number(countRows[0]?.total ?? countRows[0]?.TOTAL ?? 0) || 0;
+    const rows = await sequelize.query(listSql, { replacements: { paraleloId: pid, limit, offset }, type: QueryTypes.SELECT });
+    return { rows, total };
   }
 }
 

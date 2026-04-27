@@ -16,6 +16,10 @@
  * @param {boolean} embedded - Si true, no renderiza Card
  * @param {Array<number>} disabledCareerIds - IDs de carreras a deshabilitar (est. antiguo: todas menos la asignada)
  * @param {number} initialCareerId - Carrera pre-seleccionada (est. antiguo)
+ * @param {string} [fieldName='carrera'] - Nombre del campo en el Form (p. ej. plan habilitado en docentes)
+ * @param {string} [requiredMessage] - Mensaje de validación required
+ * @param {string} [loadingHint] - Texto bajo el Spin de carga
+ * @param {string} [emptyDescription] - Descripción del Empty sin datos
  */
 
 import { Form, Alert, Radio, Spin, Empty, Typography } from 'antd';
@@ -34,8 +38,12 @@ const InscripcionesCarreraSelectionSection = ({
   embedded = false,
   disabledCareerIds = null,
   initialCareerId = null,
+  /** Permite reutilizar el grid en otros wizards (ej. plan habilitado docente). */
+  fieldName = 'carrera',
+  requiredMessage = 'Por favor seleccione una carrera',
+  loadingHint = 'Cargando carreras...',
+  emptyDescription = 'No hay carreras disponibles',
 }) => {
-  const fieldName = 'carrera';
   const cardHeight = CARD_HEIGHT_DEFAULT;
 
   const handleRadioChange = (e) => {
@@ -75,20 +83,20 @@ const InscripcionesCarreraSelectionSection = ({
         <div style={{ textAlign: 'center', padding: '60px 40px' }}>
           <Spin size="large">
             <div style={{ minHeight: 100 }}>
-              <p style={{ marginTop: '16px', color: '#8c8c8c' }}>Cargando carreras...</p>
+              <p style={{ marginTop: '16px', color: '#8c8c8c' }}>{loadingHint}</p>
             </div>
           </Spin>
         </div>
       ) : !carreras || carreras.length === 0 ? (
         <Empty
-          description="No hay carreras disponibles"
+          description={emptyDescription}
           image={Empty.PRESENTED_IMAGE_SIMPLE}
           style={{ padding: '40px 0' }}
         />
       ) : (
         <Form.Item
           name={fieldName}
-          rules={[{ required: true, message: 'Por favor seleccione una carrera' }]}
+          rules={[{ required: true, message: requiredMessage }]}
         >
           <Radio.Group onChange={handleRadioChange} style={{ width: '100%' }}>
             <div

@@ -9,6 +9,7 @@ import {
   DocentesDetailConnector,
   DocentesCreateConnector,
   DocentesEditConnector,
+  DocentesAsignacionAcademicaConnector,
 } from '@docentes/connectors';
 
 export const docentesRoutes = [
@@ -31,6 +32,15 @@ export const docentesRoutes = [
     key: 'DOC-CREATE',
     permiso: 'docentes.crear',
     accion: 'CREAR',
+    menu: null,
+    breadcrumbParent: 'DOC-LIST',
+  },
+  {
+    path: '/docentes/asignar',
+    element: <DocentesAsignacionAcademicaConnector />,
+    key: 'DOC-ASIGNAR',
+    permiso: 'docentes.asignar',
+    accion: 'EDITAR',
     menu: null,
     breadcrumbParent: 'DOC-LIST',
   },
@@ -82,15 +92,6 @@ export const docentesRoutes = [
     accion: 'APROBAR',
     menu: null,
     breadcrumbParent: 'DOC-LIC',
-  },
-  {
-    path: '/docentes/asignar',
-    element: <UnderConstruction />,
-    key: 'DOC-ASIGNAR',
-    permiso: 'docentes.asignar',
-    accion: 'EDITAR',
-    menu: null,
-    breadcrumbParent: 'DOC-LIST',
   },
 ];
 

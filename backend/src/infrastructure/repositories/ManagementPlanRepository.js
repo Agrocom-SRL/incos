@@ -1,5 +1,7 @@
+import { QueryTypes } from 'sequelize';
 import { IManagementPlanRepository } from '../../domain/interfaces/repositories/IManagementPlanRepository.js';
 import { GestionPlan as GestionPlanModel } from '../database/models/gestion_plan.js';
+import { sequelize } from '../database/sequelize.js';
 import { BaseRepository } from './BaseRepository.js';
 import { ManagementPlanMapper } from '../mappers/ManagementPlanMapper.js';
 
@@ -113,5 +115,55 @@ export class ManagementPlanRepository extends BaseRepository {
    */
   getCollectionName() {
     return 'managementPlans';
+  }
+
+  /**
+   * Planes habilitados con datos de gestión (catálogo para asignación docente).
+   * @param {{ gestionId?: number|null, page?: number, limit?: number }} opts
+   * @returns {Promise<{ rows: Array<Object>, total: number }>}
+   */
+  async findPlanesDocenteAsignacionCatalog(opts = {}) {
+    const page = Math.max(1, parseInt(String(opts.page ?? 1), 10) || 1);
+    const limit = Math.min(10000, Math.max(1, parseInt(String(opts.limit ?? 200), 10) || 200));
+    const offset = (page - 1) * limit;
+    const gestionId = opts.gestionId != null && Number.isFinite(Number(opts.gestionId)) ? Number(opts.gestionId) : 0;
+
+    const whereGestion = gestionId > 0 ? 'AND gp.gestion_id = :gestionId' : '';
+
+    const countSql = `
+      SELECT COUNT(*) AS total
+      FROM gestiones_planes gp
+      INNER JOIN gestiones g ON g.id = gp.gestion_id AND g.deleted_at IS NULL
+      WHERE gp.deleted_at IS NULL
+        AND gp.activo = 1
+        ${whereGestion}
+    `;
+
+    const listSql = `
+      SELECT
+        gp.id AS id,
+        gp.gestion_id AS gestionId,
+        g.codigo AS gestionCodigo,
+        g.nombre AS gestionNombre,
+        g.anio AS gestionAnio,
+        gp.plan_estudio_id AS planEstudioId,
+        gp.nombre AS nombre,
+        gp.estado AS estado
+      FROM gestiones_planes gp
+      INNER JOIN gestiones g ON g.id = gp.gestion_id AND g.deleted_at IS NULL
+      WHERE gp.deleted_at IS NULL
+        AND gp.activo = 1
+        ${whereGestion}
+      ORDER BY g.anio DESC, gp.id DESC
+      LIMIT :limit OFFSET :offset
+    `;
+
+    const countReplacements = gestionId > 0 ? { gestionId } : {};
+    const listReplacements = gestionId > 0 ? { gestionId, limit, offset } : { limit, offset };
+
+    const countRows = await sequelize.query(countSql, { replacements: countReplacements, type: QueryTypes.SELECT });
+    const total = Number(countRows[0]?.total ?? countRows[0]?.TOTAL ?? 0) || 0;
+    const rows = await sequelize.query(listSql, { replacements: listReplacements, type: QueryTypes.SELECT });
+    return { rows, total };
   }
 }

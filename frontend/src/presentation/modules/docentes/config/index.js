@@ -1,5 +1,6 @@
 export { createDocentesTableColumns } from './tableColumns';
 export { createDocenteWizardSteps, DOCENTE_WIZARD_ALL_FIELD_NAMES } from './docenteWizardSteps';
+export { createDocenteAsignacionAcademicaWizardSteps } from './docenteAsignacionAcademicaWizardSteps';
 export {
   createDocenteDatosPersonalesFields,
   DOCENTE_DATOS_PERSONALES_FIELD_NAMES,
