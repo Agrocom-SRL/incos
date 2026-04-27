@@ -1,5 +1,7 @@
+import { QueryTypes } from 'sequelize';
 import { IDocenteRepository } from '../../domain/interfaces/repositories/IDocenteRepository.js';
 import { Docente as DocenteModel } from '../database/models/docente.js';
+import { sequelize } from '../database/sequelize.js';
 import { BaseRepository } from './BaseRepository.js';
 import { TeacherMapper } from '../mappers/TeacherMapper.js';
 
@@ -247,6 +249,66 @@ export class TeacherRepository extends BaseRepository {
    */
   getCollectionName() {
     return 'teachers';
+  }
+
+  /**
+   * Detalle enriquecido para ficha docente (vistas SQL en `database/03-views/`):
+   * - 50-vista-base-docente-ficha.sql → vista_base_docente_ficha
+   * - 51-vista-base-docente-asignaciones-curso.sql → vista_base_docente_asignaciones_curso
+   * - 52-vista-base-docente-curso-bloques-horario.sql → vista_base_docente_curso_bloques_horario
+   * - 53-vista-docente-carga-por-gestion.sql → vista_docente_carga_por_gestion (agregado; no usada aquí)
+   *
+   * @param {number} teacherId
+   * @returns {Promise<{ teacher: Object|null, assignments: Object[], schedules: Object[] }>}
+   */
+  async findDetailBundleByTeacherId(teacherId) {
+    const id = Number(teacherId);
+    if (!Number.isFinite(id) || id <= 0) {
+      return { teacher: null, assignments: [], schedules: [] };
+    }
+
+    const sqlFicha = `
+      SELECT * FROM vista_base_docente_ficha
+      WHERE docente_id = :id
+      LIMIT 1
+    `;
+
+    const teacherRows = await sequelize.query(sqlFicha, {
+      replacements: { id },
+      type: QueryTypes.SELECT,
+    });
+    const teacher = Array.isArray(teacherRows) && teacherRows.length ? teacherRows[0] : null;
+    if (!teacher) {
+      return { teacher: null, assignments: [], schedules: [] };
+    }
+
+    const sqlAsignaciones = `
+      SELECT * FROM vista_base_docente_asignaciones_curso
+      WHERE docente_id = :id
+      ORDER BY vigente DESC, gestion_anio DESC, curso_codigo
+    `;
+
+    const assignments = await sequelize.query(sqlAsignaciones, {
+      replacements: { id },
+      type: QueryTypes.SELECT,
+    });
+
+    const sqlHorarios = `
+      SELECT * FROM vista_base_docente_curso_bloques_horario
+      WHERE docente_id = :id
+      ORDER BY curso_codigo, orden_secuencia
+    `;
+
+    const schedules = await sequelize.query(sqlHorarios, {
+      replacements: { id },
+      type: QueryTypes.SELECT,
+    });
+
+    return {
+      teacher,
+      assignments: Array.isArray(assignments) ? assignments : [],
+      schedules: Array.isArray(schedules) ? schedules : [],
+    };
   }
 }
 

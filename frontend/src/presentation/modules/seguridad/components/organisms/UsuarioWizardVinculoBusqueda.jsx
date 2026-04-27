@@ -45,6 +45,7 @@ export default function UsuarioWizardVinculoBusqueda({
   intro,
   fieldName,
   placeholder = 'Escriba al menos 2 caracteres para buscar',
+  prefillDocenteUsuario,
 }) {
   const [options, setOptions] = useState([]);
   const [fetching, setFetching] = useState(false);
@@ -117,6 +118,38 @@ export default function UsuarioWizardVinculoBusqueda({
     },
     []
   );
+
+  useEffect(() => {
+    if (kind !== 'docente' || fieldName !== 'docente_id' || !prefillDocenteUsuario?.docenteId) return;
+    const id = Number(prefillDocenteUsuario.docenteId);
+    if (!Number.isFinite(id) || id < 1) return;
+    const label = [
+      prefillDocenteUsuario.nombreCompleto,
+      prefillDocenteUsuario.ciCompleto && `CI ${prefillDocenteUsuario.ciCompleto}`,
+    ]
+      .filter(Boolean)
+      .join(' · ') || `Docente #${id}`;
+    const opt = {
+      value: id,
+      label,
+      datosVinculo: {
+        id,
+        nombres: prefillDocenteUsuario.nombreCompleto || '',
+        apellidoPaterno: '',
+        apellidoMaterno: '',
+        email_personal: prefillDocenteUsuario.emailPersonal || null,
+      },
+    };
+    setOptions((prev) => (prev.some((o) => o.value === id) ? prev : [opt, ...prev]));
+    const current = form.getFieldValue(fieldName);
+    if (current !== id) {
+      form.setFieldsValue({
+        [fieldName]: id,
+        vinculo_nombre_display: prefillDocenteUsuario.nombreCompleto || undefined,
+        vinculo_email_display: prefillDocenteUsuario.emailPersonal || undefined,
+      });
+    }
+  }, [kind, fieldName, prefillDocenteUsuario, form]);
 
   return (
     <div className="usuario-wizard-step">

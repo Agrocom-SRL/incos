@@ -121,6 +121,20 @@ INSERT INTO cursos (id, codigo, paralelo_id, asignatura_plan_id, cupo_maximo, cu
 (139, 'CON-3B-TARDE-AEF307', 18, 68, 35, 10, '#EFEFEF'), -- AEF-307: ANÁLISIS E INTERPRETACIONES DE ESTADOS FINANCIEROS
 (140, 'CON-3B-TARDE-TMG308', 18, 69, 35, 10, '#5EF927'); -- TMG-308: TALLER DE MODALIDAD DE GRADUACIÓN
 
+-- ============================================
+-- PALETA AUTOMÁTICA POR CÓDIGO DE CURSO
+-- ============================================
+-- Regla: color derivado de CRC32(codigo), con rango RGB 96-223
+-- para asegurar mezcla amplia y evitar colores extremos (muy oscuros/muy claros).
+UPDATE cursos
+SET color_hex = CONCAT(
+  '#',
+  LPAD(HEX(96 + ((CRC32(codigo) >> 16) & 127)), 2, '0'),
+  LPAD(HEX(96 + ((CRC32(codigo) >> 8) & 127)), 2, '0'),
+  LPAD(HEX(96 + (CRC32(codigo) & 127)), 2, '0')
+)
+WHERE id BETWEEN 75 AND 140;
+
 -- Rehabilitar foreign key checks
 SET FOREIGN_KEY_CHECKS = 1;
 

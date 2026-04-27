@@ -34,6 +34,8 @@ Documento de auditoria funcional (frontend + backend + seeds) sobre permisos por
 | `auth.routes.js` | POST | `/api/v1/auth/login` | Autenticar |
 | `auth.routes.js` | GET | `/api/v1/auth/me` | Perfil + permisos |
 | `auth.routes.js` | POST | `/api/v1/auth/logout` | Cerrar sesion |
+| `docentes.routes.js` | GET | `/api/v1/docentes` | LISTAR |
+| `docentes.routes.js` | GET | `/api/v1/docentes/:id` | DETALLE ficha |
 | `estudiantes.routes.js` | GET | `/api/v1/estudiantes` | VER listado |
 | `estudiantes.routes.js` | POST | `/api/v1/estudiantes` | CREAR |
 | `estudiantes.routes.js` | PUT | `/api/v1/estudiantes/:id` | EDITAR |

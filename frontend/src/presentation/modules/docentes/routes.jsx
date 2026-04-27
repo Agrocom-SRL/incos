@@ -4,7 +4,7 @@
  */
 
 import { UnderConstruction } from '@components/pages';
-import { DocentesListConnector } from '@docentes/connectors';
+import { DocentesListConnector, DocentesDetailConnector } from '@docentes/connectors';
 
 export const docentesRoutes = [
   {
@@ -40,7 +40,7 @@ export const docentesRoutes = [
   },
   {
     path: '/docentes/:id',
-    element: <UnderConstruction />,
+    element: <DocentesDetailConnector />,
     key: 'DOC-DETAIL',
     permiso: 'docentes.ver',
     accion: 'DETALLE',

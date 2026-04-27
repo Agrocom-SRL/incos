@@ -8,6 +8,15 @@ import { DOCENTES_ENDPOINTS } from '@api/endpoints';
 import { handleSuccessResponse, handleErrorResponse } from '@api/responseHandler';
 
 export class DocenteRepository extends IDocenteRepository {
+  async obtenerPorId(id) {
+    try {
+      const response = await apiClient.get(DOCENTES_ENDPOINTS.BY_ID(id));
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al obtener el docente');
+    }
+  }
+
   async obtenerTodos(options = {}) {
     try {
       const { params = {} } = options;

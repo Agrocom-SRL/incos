@@ -2,6 +2,8 @@
 
 **Complemento de:** `docs/04_guia_implementacion_listado_modulo.md`  
 
+**Detalle / ficha:** `docs/05a_checklist_detalle_una_pagina.md`
+
 Marca en orden. Si un ítem no aplica, táchalo y anota por qué.
 
 ---

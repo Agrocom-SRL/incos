@@ -4,7 +4,9 @@
 **Versión:** 1.0  
 **Fecha:** 2026-04-24  
 
-**Checklist compacto (una página):** `docs/04a_checklist_listado_una_pagina.md`
+**Checklist compacto (una página):** `docs/04a_checklist_listado_una_pagina.md`  
+
+**Ficha / detalle por ID:** `docs/05_guia_implementacion_detalle_modulo.md` y `docs/05a_checklist_detalle_una_pagina.md`
 
 **Relación con otros documentos**
 

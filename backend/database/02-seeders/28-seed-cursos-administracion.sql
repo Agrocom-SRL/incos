@@ -93,6 +93,20 @@ INSERT INTO cursos (id, codigo, paralelo_id, asignatura_plan_id, cupo_maximo, cu
 (73, 'ADM-3A-NOCHE-CMI306', 10, 44, 35, 10, '#00FFFF'), -- CMI-306: COMERCIO INTERNACIONAL
 (74, 'ADM-3A-NOCHE-GEE307', 10, 45, 35, 10, '#FFC000'); -- GEE-307: GESTIÓN ESTRATÉGICA
 
+-- ============================================
+-- PALETA AUTOMÁTICA POR CÓDIGO DE CURSO
+-- ============================================
+-- Regla: color derivado de CRC32(codigo), con rango RGB 96-223
+-- para asegurar mezcla amplia y evitar colores extremos (muy oscuros/muy claros).
+UPDATE cursos
+SET color_hex = CONCAT(
+  '#',
+  LPAD(HEX(96 + ((CRC32(codigo) >> 16) & 127)), 2, '0'),
+  LPAD(HEX(96 + ((CRC32(codigo) >> 8) & 127)), 2, '0'),
+  LPAD(HEX(96 + (CRC32(codigo) & 127)), 2, '0')
+)
+WHERE id BETWEEN 31 AND 74;
+
 -- Rehabilitar foreign key checks
 SET FOREIGN_KEY_CHECKS = 1;
 

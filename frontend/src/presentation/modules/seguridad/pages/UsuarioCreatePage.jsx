@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Alert, App, Form, Typography } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { PermisoGuard } from '@/presentation/guards/PermisoGuard.jsx';
@@ -134,6 +134,8 @@ function perfilFieldNamesForCategory(categoria) {
 
 export default function UsuarioCreatePage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const prefillDocenteUsuario = location.state?.prefillDocenteUsuario;
   const { message } = App.useApp();
   const [form] = Form.useForm();
   const { crear } = useUsuarioDetail();
@@ -141,6 +143,26 @@ export default function UsuarioCreatePage() {
   const [loading, setLoading] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const categoria = Form.useWatch('categoria_creacion', form);
+  const prevCategoriaRef = useRef(undefined);
+
+  const usuarioAltaInitialValues = useMemo(() => {
+    const base = { categoria_creacion: 'ACCESO_SISTEMA' };
+    const p = location.state?.prefillDocenteUsuario;
+    if (!p?.docenteId) return base;
+    const id = Number(p.docenteId);
+    if (!Number.isFinite(id) || id < 1) return base;
+    return {
+      categoria_creacion: 'ASIGNAR_DOCENTE',
+      docente_id: id,
+      vinculo_nombre_display: p.nombreCompleto || undefined,
+      vinculo_email_display: p.emailPersonal || undefined,
+    };
+  }, [location.state?.prefillDocenteUsuario]);
+
+  const wizardFormMountKey = useMemo(
+    () => (prefillDocenteUsuario?.docenteId ? `prefill-docente-${prefillDocenteUsuario.docenteId}` : 'usuario-nuevo'),
+    [prefillDocenteUsuario?.docenteId]
+  );
 
   const breadcrumbItems = useMemo(
     () => [
@@ -194,13 +216,28 @@ export default function UsuarioCreatePage() {
   }, [categoria, roles, form]);
 
   useEffect(() => {
-    form.setFieldsValue({
-      estudiante_id: undefined,
-      docente_id: undefined,
-      vinculo_email_display: undefined,
-      vinculo_nombre_display: undefined,
-      password_confirm: undefined,
-    });
+    const prev = prevCategoriaRef.current;
+    prevCategoriaRef.current = categoria;
+    const patch = { password_confirm: undefined };
+    if (categoria === 'ASIGNAR_ESTUDIANTE') {
+      patch.docente_id = undefined;
+      if (prev && prev !== 'ASIGNAR_ESTUDIANTE') {
+        patch.vinculo_email_display = undefined;
+        patch.vinculo_nombre_display = undefined;
+      }
+    } else if (categoria === 'ASIGNAR_DOCENTE') {
+      patch.estudiante_id = undefined;
+      if (prev && prev !== 'ASIGNAR_DOCENTE') {
+        patch.vinculo_email_display = undefined;
+        patch.vinculo_nombre_display = undefined;
+      }
+    } else {
+      patch.estudiante_id = undefined;
+      patch.docente_id = undefined;
+      patch.vinculo_email_display = undefined;
+      patch.vinculo_nombre_display = undefined;
+    }
+    form.setFieldsValue(patch);
   }, [categoria, form]);
 
   const wizardSteps = useMemo(
@@ -277,7 +314,14 @@ export default function UsuarioCreatePage() {
         return <UsuarioCategoriaCreacionStepContent key="categoria" form={formInstance} />;
       }
       if (sectionKey === 'perfil') {
-        return <UsuarioWizardPerfilStepContent key="perfil" form={formInstance} rolesCatalog={roles} />;
+        return (
+          <UsuarioWizardPerfilStepContent
+            key="perfil"
+            form={formInstance}
+            rolesCatalog={roles}
+            prefillDocenteUsuario={prefillDocenteUsuario}
+          />
+        );
       }
       if (sectionKey === 'cuenta') {
         return (
@@ -290,7 +334,7 @@ export default function UsuarioCreatePage() {
       }
       return null;
     },
-    [roles]
+    [roles, prefillDocenteUsuario]
   );
 
   return (
@@ -318,13 +362,14 @@ export default function UsuarioCreatePage() {
           <Alert type="error" showIcon message={submitError} style={{ marginBottom: 16 }} />
         ) : null}
         <WizardForm
+          key={wizardFormMountKey}
           className="seg-usuario-create-wizard"
           steps={wizardSteps}
           form={form}
           loading={loading}
           viewMode={false}
           resolveOptions={() => []}
-          initialValues={{ categoria_creacion: 'ACCESO_SISTEMA' }}
+          initialValues={usuarioAltaInitialValues}
           onFinish={handleFinish}
           showSaveButton={false}
           renderSectionContent={renderSectionContent}
