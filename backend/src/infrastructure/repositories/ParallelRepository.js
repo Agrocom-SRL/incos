@@ -118,7 +118,8 @@ export class ParallelRepository extends BaseRepository {
 
   /**
    * Obtiene estadísticas de inscripción por paralelo para una gestión y datos del periodo.
-   * Consulta la vista vista_paralelos_estadisticas_periodo (backend/database/03-views/24-vista-paralelos-estadisticas-periodo.sql).
+   * Consulta la vista vista_paralelos_estadisticas_gestion_resueltas
+   * (backend/database/03-views/57-vista-paralelos-estadisticas-gestion-resueltas.sql).
    *
    * @param {number[]} parallelIds - IDs de paralelos
    * @param {number} managementId - ID de la gestión académica
@@ -139,19 +140,13 @@ export class ParallelRepository extends BaseRepository {
         total_mujeres,
         periodo_numero,
         periodo_nombre
-      FROM (
-        SELECT
-          *,
-          ROW_NUMBER() OVER (PARTITION BY paralelo_id ORDER BY (CASE WHEN gestion_id = ? THEN 0 WHEN gestion_id IS NULL THEN 1 ELSE 2 END)) AS rn
-        FROM vista_paralelos_estadisticas_periodo
-        WHERE paralelo_id IN (${placeholders})
-          AND (gestion_id = ? OR gestion_id IS NULL)
-      ) t
-      WHERE rn = 1
+      FROM vista_paralelos_estadisticas_gestion_resueltas
+      WHERE paralelo_id IN (${placeholders})
+        AND gestion_id = ?
     `;
 
     const results = await sequelize.query(query, {
-      replacements: [managementId, ...parallelIds, managementId],
+      replacements: [...parallelIds, managementId],
       type: sequelize.QueryTypes.SELECT,
     });
 

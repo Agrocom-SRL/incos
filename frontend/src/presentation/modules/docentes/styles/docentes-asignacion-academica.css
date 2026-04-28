@@ -83,6 +83,82 @@
   max-width: min(420px, 100%);
 }
 
+.daa-cursos-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.daa-cursos-card .wizard-selection-cards__inner {
+  align-items: flex-start;
+  position: relative;
+  padding: 18px 52px 18px 18px;
+  gap: 12px;
+}
+
+.daa-cursos-card .wizard-selection-cards__icon-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: linear-gradient(145deg, rgba(24, 144, 255, 0.1), rgba(24, 144, 255, 0.02));
+}
+
+.daa-cursos-card .wizard-selection-cards__icon {
+  font-size: 22px;
+}
+
+.daa-cursos-card__label {
+  margin-bottom: 10px;
+}
+
+.daa-cursos-card__chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 0 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--color-text-secondary, rgba(0, 0, 0, 0.65));
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.daa-cursos-card__chip--sigla {
+  color: var(--wizard-card-accent, var(--color-primary));
+  background: var(--wizard-card-accent-bg, rgba(24, 144, 255, 0.12));
+}
+
+.daa-cursos-card .wizard-selection-cards__check {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.daa-cursos-card .wizard-selection-cards__body {
+  min-width: 0;
+}
+
+@media (max-width: 1200px) {
+  .daa-cursos-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 992px) {
+  .daa-cursos-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .daa-cursos-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .daa-acad-pick-card__title {
   margin: 0 0 0.35rem;
   font-size: var(--font-size-md, 15px);

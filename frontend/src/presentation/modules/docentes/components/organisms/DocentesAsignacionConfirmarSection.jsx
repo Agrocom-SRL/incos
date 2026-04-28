@@ -1,11 +1,9 @@
 /**
- * Último paso del wizard: vista previa tipo ficha (carga + calendario), resumen, carga horaria y tabla de asignaciones.
+ * Último paso del wizard: resumen, horario semanal, carga horaria estimada y tabla de asignaciones.
  */
 
-import { Link } from 'react-router-dom';
-import { Alert, InputNumber, Spin, Table, Typography, Space, Divider } from 'antd';
+import { Alert, Spin, Table, Typography } from 'antd';
 import { Card } from '@atoms';
-import DocenteAssignmentsSection from '@docentes/components/organisms/DocenteAssignmentsSection';
 import DocenteSchedulesSection from '@docentes/components/organisms/DocenteSchedulesSection';
 
 const { Text, Paragraph } = Typography;
@@ -18,21 +16,14 @@ export default function DocentesAsignacionConfirmarSection({
   docenteId,
   docenteNombre,
   cargaHorariaOpt,
-  onCargaHorariaChange,
   asignaciones = [],
   loadingAsignaciones = false,
   errorAsignaciones = null,
   asignacionesColumns,
-  returnListPath = '/docentes/listar',
-  menuSidebarKey = 'DOC-LIST',
-  /** Fila única para DocenteAssignmentCard (curso a registrar) */
-  previewAssignment = null,
   courseSchedulesPreview = [],
   loadingHorariosPreview = false,
   errorHorariosPreview = null,
 }) {
-  const previewList = previewAssignment ? [previewAssignment] : [];
-
   return (
     <Card
       title="Resumen y registro"
@@ -55,7 +46,7 @@ export default function DocentesAsignacionConfirmarSection({
           <ul className="daa-asignacion-resumen-list">
             {docenteId != null && (
               <li>
-                <Text strong>Docente:</Text> {docenteNombre || `ID ${docenteId}`}
+                <Text strong>Docente:</Text> {docenteNombre || 'No especificado'}
               </li>
             )}
             <li>
@@ -74,45 +65,25 @@ export default function DocentesAsignacionConfirmarSection({
         }
       />
 
-      {previewAssignment ? (
-        <>
-          <Typography.Title level={5} style={{ marginTop: 4, marginBottom: 8 }}>
-            Vista previa de la asignación
-          </Typography.Title>
-          <DocenteAssignmentsSection assignments={previewList} puedeAsignarMaterias={false} />
-          <Divider style={{ margin: '20px 0' }} />
-          <Typography.Title level={5} style={{ marginTop: 0, marginBottom: 8 }}>
-            Horario semanal del curso elegido
-          </Typography.Title>
-          {errorHorariosPreview ? (
-            <Alert type="error" showIcon style={{ marginBottom: 12 }} message={errorHorariosPreview} />
-          ) : null}
-          <Spin spinning={loadingHorariosPreview}>
-            <DocenteSchedulesSection courseSchedules={courseSchedulesPreview} puedeAsignarMaterias={false} />
-          </Spin>
-          <Divider style={{ margin: '24px 0' }} />
-        </>
+      <Typography.Title level={5} style={{ marginTop: 4, marginBottom: 8 }}>
+        Horario semanal del curso elegido
+      </Typography.Title>
+      {errorHorariosPreview ? (
+        <Alert type="error" showIcon style={{ marginBottom: 12 }} message={errorHorariosPreview} />
       ) : null}
+      <Spin spinning={loadingHorariosPreview}>
+        <DocenteSchedulesSection courseSchedules={courseSchedulesPreview} puedeAsignarMaterias={false} />
+      </Spin>
 
       {docenteId != null ? (
         <div className="daa-asignacion-actions" style={{ marginBottom: 16 }}>
           <div className="daa-asignacion-actions__inner">
-            <Space wrap align="end">
-              <div>
-                <Text type="secondary" style={{ display: 'block', marginBottom: 4 }}>
-                  Carga horaria (opcional)
-                </Text>
-                <InputNumber
-                  min={0}
-                  max={200}
-                  value={cargaHorariaOpt}
-                  onChange={onCargaHorariaChange}
-                  placeholder="—"
-                />
-              </div>
-            </Space>
+            <Text type="secondary" style={{ display: 'block', marginBottom: 4 }}>
+              Carga horaria semanal estimada
+            </Text>
+            <Text strong>{cargaHorariaOpt ?? '—'} h</Text>
             <Paragraph type="secondary" style={{ marginTop: 12, marginBottom: 0, fontSize: 13 }}>
-              Usá el botón <Text strong>Registrar asignación</Text> en la barra inferior del asistente para guardar.
+              Se calcula automáticamente según la cantidad de bloques del horario del curso.
             </Paragraph>
           </div>
         </div>
@@ -146,11 +117,6 @@ export default function DocentesAsignacionConfirmarSection({
               locale={{ emptyText: loadingAsignaciones ? ' ' : 'Sin asignaciones para este docente' }}
             />
           </Spin>
-          <div style={{ marginTop: 12 }}>
-            <Link to={`/docentes/${docenteId}`} state={{ returnListPath, menuSidebarKey }}>
-              Ver ficha del docente
-            </Link>
-          </div>
         </>
       )}
     </Card>

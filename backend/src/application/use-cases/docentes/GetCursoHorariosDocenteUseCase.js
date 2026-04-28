@@ -31,6 +31,11 @@ export class GetCursoHorariosDocenteUseCase {
     }
 
     const bloques = await this.courseScheduleRepository.findBloquesByCursoIdForPresentation(id);
-    return { bloques, cursoId: id, cursoCodigo: course.code ?? null };
+    return {
+      bloques,
+      cursoId: id,
+      cursoCodigo: course.code ?? null,
+      cursoColorHex: course.colorHex ?? null,
+    };
   }
 }

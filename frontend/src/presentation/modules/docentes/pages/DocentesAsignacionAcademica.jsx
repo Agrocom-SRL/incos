@@ -22,9 +22,6 @@ import '@modules/seguridad/styles/seguridad.css';
 import '@docentes/styles/docentes-asignacion-academica.css';
 
 const asignacionesColumns = [
-  { title: 'ID', dataIndex: 'id', key: 'id', width: 72 },
-  { title: 'Plan hab.', dataIndex: 'gestionPlanId', key: 'gestionPlanId', width: 88 },
-  { title: 'Curso', dataIndex: 'cursoId', key: 'cursoId', width: 88 },
   { title: 'Carga h.', dataIndex: 'cargaHoraria', key: 'cargaHoraria', width: 90, render: (v) => v ?? '—' },
   {
     title: 'Vigente',
@@ -35,6 +32,13 @@ const asignacionesColumns = [
   },
   { title: 'Desde', dataIndex: 'fechaAsignacion', key: 'fechaAsignacion', ellipsis: true },
 ];
+
+function toMinutes(hhmm) {
+  if (hhmm == null || hhmm === '') return null;
+  const m = String(hhmm).match(/(\d{1,2}):(\d{2})/);
+  if (!m) return null;
+  return parseInt(m[1], 10) * 60 + parseInt(m[2], 10);
+}
 
 const DocentesAsignacionAcademica = () => {
   const { message } = App.useApp();
@@ -73,10 +77,9 @@ const DocentesAsignacionAcademica = () => {
   const [cursoId, setCursoId] = useState(null);
 
   const [submittingAsignacion, setSubmittingAsignacion] = useState(false);
-  const [cargaHorariaOpt, setCargaHorariaOpt] = useState(null);
 
   const [bloques, setBloques] = useState([]);
-  const [horarioMeta, setHorarioMeta] = useState({ cursoCodigo: null, materiaNombre: null });
+  const [horarioMeta, setHorarioMeta] = useState({ cursoCodigo: null, cursoColorHex: null, materiaNombre: null });
   const [loadingHorarios, setLoadingHorarios] = useState(false);
   const [errorHorarios, setErrorHorarios] = useState(null);
 
@@ -266,6 +269,7 @@ const DocentesAsignacionAcademica = () => {
     const curso = cursoId ? cursos.find((c) => Number(c.id) === Number(cursoId)) : null;
     setHorarioMeta({
       cursoCodigo: curso?.codigo ?? null,
+      cursoColorHex: curso?.colorHex ?? curso?.color_hex ?? null,
       materiaNombre: curso?.materiaNombre ?? null,
     });
   }, [cursoId, cursos]);
@@ -292,6 +296,11 @@ const DocentesAsignacionAcademica = () => {
       } else {
         const payload = res.data && typeof res.data === 'object' ? res.data : {};
         setBloques(Array.isArray(payload.bloques) ? payload.bloques : []);
+        setHorarioMeta((prev) => ({
+          ...prev,
+          cursoCodigo: payload.cursoCodigo ?? prev.cursoCodigo ?? null,
+          cursoColorHex: payload.cursoColorHex ?? payload.curso_color_hex ?? prev.cursoColorHex ?? null,
+        }));
       }
       setLoadingHorarios(false);
     })();
@@ -320,34 +329,42 @@ const DocentesAsignacionAcademica = () => {
   }, [paralelos, paraleloId]);
 
   const courseSchedulesDesdeBloques = useMemo(
-    () => bloquesToCourseSchedules(bloques, horarioMeta.cursoCodigo, paraleloNombreParaHorario),
-    [bloques, horarioMeta.cursoCodigo, paraleloNombreParaHorario]
+    () =>
+      bloquesToCourseSchedules(
+        bloques,
+        horarioMeta.cursoCodigo,
+        paraleloNombreParaHorario,
+        horarioMeta.cursoColorHex
+      ),
+    [bloques, horarioMeta.cursoCodigo, horarioMeta.cursoColorHex, paraleloNombreParaHorario]
   );
 
-  const previewAssignment = useMemo(() => {
+  const cargaHorariaOpt = useMemo(() => {
     if (!cursoId) return null;
-    const c = cursos.find((x) => Number(x.id) === Number(cursoId));
-    const par = paralelos.find((x) => Number(x.id) === Number(paraleloId));
-    const per = periodos.find((x) => Number(x.id) === Number(periodoId));
-    return {
-      vigente: true,
-      materia: c?.materiaNombre ?? '—',
-      siglaMateria: c?.materiaSigla ?? '—',
-      paralelo: par?.nombre ?? '—',
-      turnoParalelo: par?.turno ?? null,
-      periodoParalelo: per?.nombre ?? null,
-      periodoMateriaPlan: per?.nombre ?? null,
-      cursoCodigo: c?.codigo ?? horarioMeta.cursoCodigo ?? '—',
-      cursoColorHex: null,
-      carrera: null,
-      carreraColorHex: null,
-      cargaHorariaSemanal: null,
-      fechaAsignacion: null,
-      gestion: null,
-      planHabilitado: null,
-      horasPlanMateria: null,
-    };
-  }, [cursoId, cursos, paralelos, paraleloId, periodos, periodoId, horarioMeta.cursoCodigo]);
+    const uniqueBlocks = new Map();
+    for (const b of bloques || []) {
+      const key = `${b.dia ?? ''}-${String(b.horaInicio ?? '')}-${String(b.horaFin ?? '')}-${String(
+        b.ordenSecuencia ?? b.orden_secuencia ?? ''
+      )}`;
+      if (!uniqueBlocks.has(key)) uniqueBlocks.set(key, b);
+    }
+    if (!uniqueBlocks.size) return null;
+
+    let totalMinutes = 0;
+    for (const b of uniqueBlocks.values()) {
+      const start = toMinutes(b.horaInicio);
+      const end = toMinutes(b.horaFin);
+      if (start != null && end != null && end > start) {
+        totalMinutes += end - start;
+      } else {
+        // Fallback: bloque académico típico de 45 min.
+        totalMinutes += 45;
+      }
+    }
+
+    const academicHours = Math.round(totalMinutes / 45);
+    return academicHours > 0 ? academicHours : null;
+  }, [bloques, cursoId]);
 
   const resumenPeriodoLabel = useMemo(() => {
     const p = periodos.find((x) => Number(x.id) === Number(periodoId));
@@ -521,14 +538,10 @@ const DocentesAsignacionAcademica = () => {
               docenteId={docenteId}
               docenteNombre={docenteNombre}
               cargaHorariaOpt={cargaHorariaOpt}
-              onCargaHorariaChange={setCargaHorariaOpt}
               asignaciones={asignaciones}
               loadingAsignaciones={loadingAsignaciones}
               errorAsignaciones={errorAsignaciones}
               asignacionesColumns={asignacionesColumns}
-              returnListPath={returnListPath}
-              menuSidebarKey={menuSidebarKey}
-              previewAssignment={previewAssignment}
               courseSchedulesPreview={courseSchedulesDesdeBloques}
               loadingHorariosPreview={loadingHorarios}
               errorHorariosPreview={errorHorarios}
@@ -567,9 +580,6 @@ const DocentesAsignacionAcademica = () => {
       asignaciones,
       loadingAsignaciones,
       errorAsignaciones,
-      returnListPath,
-      menuSidebarKey,
-      previewAssignment,
       courseSchedulesDesdeBloques,
       loadingHorarios,
       errorHorarios,

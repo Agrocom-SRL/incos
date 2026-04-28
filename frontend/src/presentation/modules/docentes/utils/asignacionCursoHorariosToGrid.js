@@ -13,9 +13,10 @@ function aulaLabel(b) {
  * @param {object[]} bloques
  * @param {string|null} cursoCodigo
  * @param {string|null} paraleloNombre
- * @returns {{ cursoCodigo: string, cursoColorHex: null, bloques: object[] }[]}
+ * @param {string|null} cursoColorHex
+ * @returns {{ cursoCodigo: string, cursoColorHex: string, bloques: object[] }[]}
  */
-export function bloquesToCourseSchedules(bloques, cursoCodigo, paraleloNombre = null) {
+export function bloquesToCourseSchedules(bloques, cursoCodigo, paraleloNombre = null, cursoColorHex = null) {
   const list = (bloques || []).map((b) => ({
     orden: b.ordenSecuencia ?? b.orden_secuencia,
     dia: b.dia,
@@ -29,7 +30,7 @@ export function bloquesToCourseSchedules(bloques, cursoCodigo, paraleloNombre = 
   return [
     {
       cursoCodigo: cursoCodigo || '—',
-      cursoColorHex: null,
+      cursoColorHex,
       bloques: list,
     },
   ];

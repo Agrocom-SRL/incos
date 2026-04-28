@@ -50,17 +50,17 @@ export default function DocentesAsignacionCursoSection({
           onChange={(e) => onSelectCurso?.(e.target.value)}
           style={{ width: '100%' }}
         >
-          <div className="wizard-selection-cards__grid">
+          <div className="wizard-selection-cards__grid daa-cursos-grid">
             {cursos.map((c, idx) => {
               const acc = ACCENTS[idx % ACCENTS.length];
               const isSelected = Number(selectedCursoId) === Number(c.id);
               const titulo = c.materiaNombre || c.codigo || `Curso ${c.id}`;
-              const sub = [c.codigo, c.materiaSigla].filter(Boolean).join(' · ');
+              const sigla = c.materiaSigla || null;
               return (
                 <Radio.Button
                   key={c.id}
                   value={c.id}
-                  className="wizard-selection-cards__radio"
+                  className="wizard-selection-cards__radio daa-cursos-card"
                   style={{
                     '--wizard-card-accent': acc.color,
                     '--wizard-card-accent-bg': acc.bg,
@@ -71,12 +71,8 @@ export default function DocentesAsignacionCursoSection({
                       <BookOutlined className="wizard-selection-cards__icon" />
                     </div>
                     <div className="wizard-selection-cards__body">
-                      <div className="wizard-selection-cards__label">{titulo}</div>
-                      {sub ? (
-                        <Text type="secondary" className="wizard-selection-cards__desc">
-                          {sub}
-                        </Text>
-                      ) : null}
+                      <div className="wizard-selection-cards__label daa-cursos-card__label">{titulo}</div>
+                      {sigla ? <span className="daa-cursos-card__chip daa-cursos-card__chip--sigla">{sigla}</span> : null}
                     </div>
                     {isSelected ? (
                       <div className="wizard-selection-cards__check" aria-hidden>
