@@ -79,7 +79,7 @@ export default function DocentesAsignacionParaleloSection({
       {error ? <Alert type="error" showIcon style={{ marginBottom: 12 }} message={error} /> : null}
 
       {disabled ? (
-        <Alert type="info" showIcon message="Elegí plan y periodo primero." />
+        <Alert type="info" showIcon title="Elegí plan y periodo primero." />
       ) : (
         <>
           <Title level={5} className="step2-paralelos-columns-title" style={{ marginTop: 0 }}>

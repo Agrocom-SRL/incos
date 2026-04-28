@@ -16,24 +16,6 @@
 import { getAllRoutes } from '@routes';
 
 /**
- * Claves de ítems raíz del menú que no se muestran en el sidebar.
- * Las rutas (`/seguridad/*`, `/perfil`) siguen registradas; solo se oculta la entrada visual.
- * Quitar de esta lista cuando el módulo esté aprobado para la versión en producción.
- * @type {string[]}
- */
-const SIDEBAR_MENU_HIDDEN_ROOT_KEYS = ['SEG', 'PERFIL'];
-
-/**
- * @param {Array} rootItems
- * @returns {Array}
- */
-const filterOutHiddenMenuRoots = (rootItems) => {
-  if (!rootItems?.length) return rootItems;
-  const hidden = new Set(SIDEBAR_MENU_HIDDEN_ROOT_KEYS);
-  return rootItems.filter((item) => !hidden.has(item.key));
-};
-
-/**
  * Construye la estructura jerárquica del menú desde las rutas
  * @param {Array} routes - Array de rutas con metadata
  * @returns {Array} - Estructura jerárquica del menú
@@ -109,7 +91,7 @@ const buildMenuHierarchy = (routes) => {
  */
 export const generateNavigationMenu = () => {
     const allRoutes = getAllRoutes();
-    return filterOutHiddenMenuRoots(buildMenuHierarchy(allRoutes));
+    return buildMenuHierarchy(allRoutes);
 };
 
 /**

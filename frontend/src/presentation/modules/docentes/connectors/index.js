@@ -7,3 +7,6 @@ export const DocentesEditConnector = lazy(() => import('@docentes/connectors/Doc
 export const DocentesAsignacionAcademicaConnector = lazy(() =>
   import('@docentes/connectors/DocentesAsignacionAcademicaConnector')
 );
+export const DocentesAsignacionesGestionConnector = lazy(() =>
+  import('@docentes/connectors/DocentesAsignacionesGestionConnector')
+);

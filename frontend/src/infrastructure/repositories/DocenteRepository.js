@@ -40,6 +40,15 @@ export class DocenteRepository extends IDocenteRepository {
     }
   }
 
+  async eliminar(id) {
+    try {
+      const response = await apiClient.delete(DOCENTES_ENDPOINTS.BY_ID(id));
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al eliminar docente');
+    }
+  }
+
   /**
    * Lista asignaciones docentes (requiere al menos docenteId, gestionPlanId o cursoId en params).
    * @param {{ docenteId?: number, gestionPlanId?: number, cursoId?: number, page?: number, limit?: number, vigente?: string }} params
@@ -63,6 +72,29 @@ export class DocenteRepository extends IDocenteRepository {
       return handleSuccessResponse(response);
     } catch (error) {
       return handleErrorResponse(error, 'Error al crear asignación docente');
+    }
+  }
+
+  /**
+   * Actualiza campos editables de una asignación docente.
+   * @param {number} asignacionId
+   * @param {{ docenteId?: number|null, cargaHoraria?: number|null, vigente?: boolean, motivo?: string|null, fechaAsignacion?: string|null }} data
+   */
+  async actualizarAsignacion(asignacionId, data) {
+    try {
+      const response = await apiClient.patch(DOCENTES_ENDPOINTS.ASIGNACION_BY_ID(asignacionId), data);
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al actualizar asignación docente');
+    }
+  }
+
+  async eliminarAsignacion(asignacionId) {
+    try {
+      const response = await apiClient.delete(DOCENTES_ENDPOINTS.ASIGNACION_BY_ID(asignacionId));
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al eliminar asignación docente');
     }
   }
 

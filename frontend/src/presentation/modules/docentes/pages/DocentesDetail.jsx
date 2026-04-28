@@ -7,6 +7,7 @@ import { useMemo } from 'react';
 import { Spin, Alert, Tabs } from 'antd';
 import {
   ArrowLeftOutlined,
+  ApartmentOutlined,
   UserOutlined,
   EnvironmentOutlined,
   BookOutlined,
@@ -17,6 +18,7 @@ import {
 } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
+import { Button } from '@atoms';
 import { useAuthContext } from '@application-auth';
 import { useDocentesDetailContext } from '@application-docentes/hooks';
 import DetailField from '@docentes/components/atoms/DetailField';
@@ -57,6 +59,11 @@ const DocentesDetail = () => {
 
   const puedeEditar = hasPermiso('docentes.editar', 'EDITAR');
   const puedeAsignarMaterias = hasPermiso('docentes.asignar', 'EDITAR');
+  const puedeGestionarAsignaciones =
+    hasPermiso('docentes.asignar', 'CREAR') ||
+    hasPermiso('docentes.asignar', 'EDITAR') ||
+    hasPermiso('docentes.asignar', 'ELIMINAR') ||
+    hasPermiso('docentes.editar', 'EDITAR');
   const puedeCrearUsuario = hasPermiso('seguridad.usuario.crear', 'CREAR');
   const puedeEditarUsuario = hasPermiso('seguridad.usuario.administrar', 'EDITAR');
 
@@ -137,6 +144,13 @@ const DocentesDetail = () => {
         ),
         children: (
           <div className="sd-tab-body">
+            {puedeGestionarAsignaciones ? (
+              <div style={{ marginBottom: 12 }}>
+                <Button variant="default" icon={<ApartmentOutlined />} onClick={() => handleAsignacionAcademica({ focus: 'cursos' })}>
+                  Gestionar asignaciones
+                </Button>
+              </div>
+            ) : null}
             <DocenteAssignmentsSection
               assignments={assignments}
               puedeAsignarMaterias={puedeAsignarMaterias}
@@ -194,6 +208,7 @@ const DocentesDetail = () => {
       puedeCrearUsuario,
       puedeEditarUsuario,
       puedeAsignarMaterias,
+      puedeGestionarAsignaciones,
       handleAsignacionAcademica,
     ]
   );
@@ -208,7 +223,7 @@ const DocentesDetail = () => {
       <Spin spinning={loading} size="large" tip="Cargando ficha…">
         <div className="sd sd-spin-body">
           {!loading && error && (
-            <Alert type="error" message="No se pudo cargar la ficha" description={error} showIcon style={{ marginBottom: 16 }} />
+            <Alert type="error" title="No se pudo cargar la ficha" description={error} showIcon style={{ marginBottom: 16 }} />
           )}
           {!loading && !error && (
             <>

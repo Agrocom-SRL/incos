@@ -81,6 +81,8 @@ export const DOCENTES_ENDPOINTS = {
   ...createCRUDEndpoints('/docentes'),
   /** GET (query) / POST — asignaciones docente ↔ curso ↔ plan habilitado */
   ASIGNACIONES: `${API_BASE}/docentes/asignaciones`,
+  /** PATCH — actualizar asignación docente */
+  ASIGNACION_BY_ID: (asignacionId) => `${API_BASE}/docentes/asignaciones/${asignacionId}`,
   /** GET — catálogo de planes habilitados (asignación docente) */
   PLANES_HABILITADOS: `${API_BASE}/docentes/planes-habilitados`,
   /** GET — periodos del plan de estudios del plan habilitado (query gestionPlanId) */

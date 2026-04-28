@@ -192,7 +192,7 @@ export default function UsuarioPermisosPage() {
             <Alert
               type="info"
               showIcon
-              message="Administrador del sistema"
+              title="Administrador del sistema"
               description="Este usuario tiene el rol Administrador del sistema. Aquí se muestra el catálogo completo de permisos disponibles en la aplicación (referencia equivalente a las acciones válidas por permiso)."
               style={{ marginBottom: 16 }}
             />

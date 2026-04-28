@@ -8,13 +8,17 @@ import { ListTeachersUseCase } from '../../../../application/use-cases/docentes/
 import { GetTeacherDetailUseCase } from '../../../../application/use-cases/docentes/GetTeacherDetailUseCase.js';
 import { CreateTeacherUseCase } from '../../../../application/use-cases/docentes/CreateTeacherUseCase.js';
 import { UpdateTeacherUseCase } from '../../../../application/use-cases/docentes/UpdateTeacherUseCase.js';
+import { DeleteTeacherUseCase } from '../../../../application/use-cases/docentes/DeleteTeacherUseCase.js';
 import {
   ListTeachersController,
   GetTeacherByIdController,
   CreateTeacherController,
   UpdateTeacherController,
+  DeleteTeacherController,
   ListTeacherAssignmentsController,
   CreateTeacherAssignmentController,
+  UpdateTeacherAssignmentController,
+  DeleteTeacherAssignmentController,
   ListPlanesHabilitadosDocenteController,
   ListCursosDisponiblesDocenteController,
   GetCursoHorariosDocenteController,
@@ -24,6 +28,8 @@ import {
 } from '../../../../presentation/controllers/docentes/index.js';
 import { ListTeacherAssignmentsUseCase } from '../../../../application/use-cases/docentes/ListTeacherAssignmentsUseCase.js';
 import { CreateTeacherAssignmentUseCase } from '../../../../application/use-cases/docentes/CreateTeacherAssignmentUseCase.js';
+import { UpdateTeacherAssignmentUseCase } from '../../../../application/use-cases/docentes/UpdateTeacherAssignmentUseCase.js';
+import { DeleteTeacherAssignmentUseCase } from '../../../../application/use-cases/docentes/DeleteTeacherAssignmentUseCase.js';
 import { ListPlanesHabilitadosDocenteUseCase } from '../../../../application/use-cases/docentes/ListPlanesHabilitadosDocenteUseCase.js';
 import { ListCursosDisponiblesDocenteUseCase } from '../../../../application/use-cases/docentes/ListCursosDisponiblesDocenteUseCase.js';
 import { GetCursoHorariosDocenteUseCase } from '../../../../application/use-cases/docentes/GetCursoHorariosDocenteUseCase.js';
@@ -97,6 +103,17 @@ export function registerDocentesModule(container) {
 
   registerComponent(
     container,
+    DOCENTES_TOKENS.deleteTeacherUseCase,
+    (c) =>
+      new DeleteTeacherUseCase({
+        teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
+        teacherAssignmentRepository: c.resolve(REPOSITORIOS_TOKENS.teacherAssignmentRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      })
+  );
+
+  registerComponent(
+    container,
     DOCENTES_TOKENS.createTeacherController,
     (c) =>
       new CreateTeacherController({
@@ -112,6 +129,17 @@ export function registerDocentesModule(container) {
     (c) =>
       new UpdateTeacherController({
         updateTeacherUseCase: c.resolve(DOCENTES_TOKENS.updateTeacherUseCase),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+      })
+  );
+
+  registerComponent(
+    container,
+    DOCENTES_TOKENS.deleteTeacherController,
+    (c) =>
+      new DeleteTeacherController({
+        deleteTeacherUseCase: c.resolve(DOCENTES_TOKENS.deleteTeacherUseCase),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
         responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
       })
@@ -143,6 +171,30 @@ export function registerDocentesModule(container) {
 
   registerComponent(
     container,
+    DOCENTES_TOKENS.updateTeacherAssignmentUseCase,
+    (c) =>
+      new UpdateTeacherAssignmentUseCase({
+        teacherAssignmentRepository: c.resolve(REPOSITORIOS_TOKENS.teacherAssignmentRepository),
+        teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
+        courseRepository: c.resolve(REPOSITORIOS_TOKENS.courseRepository),
+        planSubjectRepository: c.resolve(REPOSITORIOS_TOKENS.planSubjectRepository),
+        managementPlanRepository: c.resolve(REPOSITORIOS_TOKENS.managementPlanRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      })
+  );
+
+  registerComponent(
+    container,
+    DOCENTES_TOKENS.deleteTeacherAssignmentUseCase,
+    (c) =>
+      new DeleteTeacherAssignmentUseCase({
+        teacherAssignmentRepository: c.resolve(REPOSITORIOS_TOKENS.teacherAssignmentRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      })
+  );
+
+  registerComponent(
+    container,
     DOCENTES_TOKENS.listTeacherAssignmentsController,
     (c) =>
       new ListTeacherAssignmentsController({
@@ -158,6 +210,28 @@ export function registerDocentesModule(container) {
     (c) =>
       new CreateTeacherAssignmentController({
         createTeacherAssignmentUseCase: c.resolve(DOCENTES_TOKENS.createTeacherAssignmentUseCase),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+      })
+  );
+
+  registerComponent(
+    container,
+    DOCENTES_TOKENS.updateTeacherAssignmentController,
+    (c) =>
+      new UpdateTeacherAssignmentController({
+        updateTeacherAssignmentUseCase: c.resolve(DOCENTES_TOKENS.updateTeacherAssignmentUseCase),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+      })
+  );
+
+  registerComponent(
+    container,
+    DOCENTES_TOKENS.deleteTeacherAssignmentController,
+    (c) =>
+      new DeleteTeacherAssignmentController({
+        deleteTeacherAssignmentUseCase: c.resolve(DOCENTES_TOKENS.deleteTeacherAssignmentUseCase),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
         responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
       })
@@ -305,8 +379,11 @@ export function registerDocentesModule(container) {
         getTeacherByIdController: c.resolve(DOCENTES_TOKENS.getTeacherByIdController),
         createTeacherController: c.resolve(DOCENTES_TOKENS.createTeacherController),
         updateTeacherController: c.resolve(DOCENTES_TOKENS.updateTeacherController),
+        deleteTeacherController: c.resolve(DOCENTES_TOKENS.deleteTeacherController),
         listTeacherAssignmentsController: c.resolve(DOCENTES_TOKENS.listTeacherAssignmentsController),
         createTeacherAssignmentController: c.resolve(DOCENTES_TOKENS.createTeacherAssignmentController),
+        updateTeacherAssignmentController: c.resolve(DOCENTES_TOKENS.updateTeacherAssignmentController),
+        deleteTeacherAssignmentController: c.resolve(DOCENTES_TOKENS.deleteTeacherAssignmentController),
         listPlanesHabilitadosDocenteController: c.resolve(DOCENTES_TOKENS.listPlanesHabilitadosDocenteController),
         listPeriodosDocenteAsignacionController: c.resolve(DOCENTES_TOKENS.listPeriodosDocenteAsignacionController),
         listParalelosDocenteAsignacionController: c.resolve(DOCENTES_TOKENS.listParalelosDocenteAsignacionController),

@@ -7,6 +7,7 @@ import {
   updateTeacherValidator,
   listTeacherAssignmentsValidator,
   createTeacherAssignmentValidator,
+  updateTeacherAssignmentValidator,
   listPlanesDocenteValidator,
   listPeriodosDocenteValidator,
   listParalelosDocenteValidator,
@@ -31,7 +32,9 @@ export function buildDocentesRouter({ controllers, middlewares }) {
   const docenteDetalle = [authenticate, verificarPermiso('docentes.ver', 'DETALLE')];
   const docenteCrear = [authenticate, verificarPermiso('docentes.crear', 'CREAR')];
   const docenteEditar = [authenticate, verificarPermiso('docentes.editar', 'EDITAR')];
+  const docenteEliminar = [authenticate, verificarPermiso('docentes.editar', 'ELIMINAR')];
   const docenteAsignar = [authenticate, verificarPermiso('docentes.asignar', 'EDITAR')];
+  const docenteAsignarEliminar = [authenticate, verificarPermiso('docentes.asignar', 'ELIMINAR')];
 
   router.get(
     '/',
@@ -113,6 +116,23 @@ export function buildDocentesRouter({ controllers, middlewares }) {
     (req, res, next) => controllers.createTeacherAssignmentController.handle(req, res, next)
   );
 
+  router.patch(
+    '/asignaciones/:id',
+    ...docenteAsignar,
+    ...idValidator,
+    ...updateTeacherAssignmentValidator,
+    validateRequest,
+    (req, res, next) => controllers.updateTeacherAssignmentController.handle(req, res, next)
+  );
+
+  router.delete(
+    '/asignaciones/:id',
+    ...docenteAsignarEliminar,
+    ...idValidator,
+    validateRequest,
+    (req, res, next) => controllers.deleteTeacherAssignmentController.handle(req, res, next)
+  );
+
   router.put(
     '/:id',
     ...docenteEditar,
@@ -120,6 +140,14 @@ export function buildDocentesRouter({ controllers, middlewares }) {
     updateTeacherValidator,
     validateRequest,
     (req, res, next) => controllers.updateTeacherController.handle(req, res, next)
+  );
+
+  router.delete(
+    '/:id',
+    ...docenteEliminar,
+    ...idValidator,
+    validateRequest,
+    (req, res, next) => controllers.deleteTeacherController.handle(req, res, next)
   );
 
   router.get(

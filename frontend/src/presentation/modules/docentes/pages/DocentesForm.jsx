@@ -329,7 +329,7 @@ const DocentesForm = ({ mode = 'create' }) => {
           />
         }
       >
-        <Alert type="error" showIcon message="Identificador de docente inválido" />
+        <Alert type="error" showIcon title="Identificador de docente inválido" />
       </PageTemplate>
     );
   }

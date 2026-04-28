@@ -38,11 +38,11 @@ export default function DocentesAsignacionPeriodoSection({
       {error ? <Alert type="error" showIcon style={{ marginBottom: 12 }} message={error} /> : null}
 
       {disabled ? (
-        <Alert type="info" showIcon message="Elegí primero un plan habilitado en el paso anterior." />
+        <Alert type="info" showIcon title="Elegí primero un plan habilitado en el paso anterior." />
       ) : loading ? (
-        <Alert type="info" showIcon message="Cargando periodos…" />
+        <Alert type="info" showIcon title="Cargando periodos…" />
       ) : !periodos.length ? (
-        <Alert type="warning" showIcon message="No hay periodos para este plan habilitado." />
+        <Alert type="warning" showIcon title="No hay periodos para este plan habilitado." />
       ) : (
         <Radio.Group
           value={selectedPeriodoId ?? undefined}

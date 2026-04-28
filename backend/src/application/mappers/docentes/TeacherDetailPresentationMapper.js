@@ -132,24 +132,39 @@ export class TeacherDetailPresentationMapper {
         }
       : { tieneAcceso: false };
 
-    const assignments = (bundle.assignments || []).map((a) => ({
-      vigente: Boolean(a.vigente),
-      cargaHorariaSemanal: a.carga_horaria != null ? a.carga_horaria : a.horas_plan ?? null,
-      fechaAsignacion: fmtDate(a.fecha_asignacion),
-      gestion: a.gestion_nombre ? `${a.gestion_nombre}${a.gestion_anio ? ` (${a.gestion_anio})` : ''}` : null,
-      planHabilitado: a.gestion_plan_nombre,
-      carrera: a.carrera_nombre,
-      carreraColorHex: normalizeHex(a.carrera_color_hex),
-      cursoColorHex: normalizeHex(a.curso_color_hex),
-      paralelo: a.paralelo_nombre,
-      turnoParalelo: a.paralelo_turno,
-      periodoParalelo: a.paralelo_periodo_nombre,
-      materia: a.materia_nombre,
-      siglaMateria: a.materia_sigla,
-      periodoMateriaPlan: a.asignatura_periodo_nombre,
-      cursoCodigo: a.curso_codigo,
-      horasPlanMateria: a.horas_plan,
-    }));
+    const assignments = (bundle.assignments || []).map((a) => {
+      const conflictCurso = Boolean(a.conflict_curso);
+      const conflictHorario = Boolean(a.conflict_horario);
+      const conflictAula = Boolean(a.conflict_aula);
+      const total = (conflictCurso ? 1 : 0) + (conflictHorario ? 1 : 0) + (conflictAula ? 1 : 0);
+
+      return {
+        id: a.asignacion_docente_id != null ? Number(a.asignacion_docente_id) : null,
+        vigente: Boolean(a.vigente),
+        cargaHorariaSemanal: a.carga_horaria != null ? a.carga_horaria : a.horas_plan ?? null,
+        fechaAsignacion: fmtDate(a.fecha_asignacion),
+        gestion: a.gestion_nombre ? `${a.gestion_nombre}${a.gestion_anio ? ` (${a.gestion_anio})` : ''}` : null,
+        planHabilitado: a.gestion_plan_nombre,
+        carrera: a.carrera_nombre,
+        carreraColorHex: normalizeHex(a.carrera_color_hex),
+        cursoColorHex: normalizeHex(a.curso_color_hex),
+        paralelo: a.paralelo_nombre,
+        turnoParalelo: a.paralelo_turno,
+        periodoParalelo: a.paralelo_periodo_nombre,
+        materia: a.materia_nombre,
+        siglaMateria: a.materia_sigla,
+        periodoMateriaPlan: a.asignatura_periodo_nombre,
+        cursoCodigo: a.curso_codigo,
+        horasPlanMateria: a.horas_plan,
+        conflictos: {
+          curso: conflictCurso,
+          horario: conflictHorario,
+          aula: conflictAula,
+          total,
+          hasConflictos: total > 0,
+        },
+      };
+    });
 
     const courseSchedules = groupSchedules(bundle.schedules);
 

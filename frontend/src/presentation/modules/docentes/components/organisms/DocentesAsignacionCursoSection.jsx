@@ -4,7 +4,7 @@
 
 import { BookOutlined } from '@ant-design/icons';
 import { Card } from '@atoms';
-import { Alert, Radio, Typography } from 'antd';
+import { Alert, Radio, Skeleton, Typography } from 'antd';
 
 const { Text, Paragraph } = Typography;
 
@@ -15,6 +15,7 @@ const ACCENTS = [
   { color: '#08979c', bg: 'rgba(8, 151, 156, 0.1)' },
   { color: '#d46b08', bg: 'rgba(212, 107, 8, 0.1)' },
 ];
+const CURSO_SKELETON_ROWS = 6;
 
 export default function DocentesAsignacionCursoSection({
   cursos = [],
@@ -36,14 +37,37 @@ export default function DocentesAsignacionCursoSection({
         Cada opción es un curso del maestro de oferta vinculado a una <Text strong>materia del plan</Text>. Podés ver el
         calendario semanal en el paso final antes de registrar.
       </Paragraph>
-      {error ? <Alert type="error" showIcon style={{ marginBottom: 12 }} message={error} /> : null}
+      {error ? <Alert type="error" showIcon style={{ marginBottom: 12 }} title={error} /> : null}
 
       {disabled ? (
-        <Alert type="info" showIcon message="Elegí un paralelo primero." />
-      ) : loading ? (
-        <Alert type="info" showIcon message="Cargando cursos…" />
+        <div className="wizard-selection-cards__grid daa-cursos-grid" aria-live="polite" aria-busy="true">
+          {Array.from({ length: CURSO_SKELETON_ROWS }).map((_, idx) => {
+            const acc = ACCENTS[idx % ACCENTS.length];
+            return (
+              <div
+                key={`curso-skeleton-${idx}`}
+                className="wizard-selection-cards__radio daa-cursos-card"
+                style={{
+                  '--wizard-card-accent': acc.color,
+                  '--wizard-card-accent-bg': acc.bg,
+                  pointerEvents: 'none',
+                }}
+              >
+                <div className="wizard-selection-cards__inner">
+                  <div className="wizard-selection-cards__icon-wrap">
+                    <BookOutlined className="wizard-selection-cards__icon" />
+                  </div>
+                  <div className="wizard-selection-cards__body" style={{ width: '100%' }}>
+                    <Skeleton.Input active size="small" style={{ width: '70%', marginBottom: 8 }} />
+                    <Skeleton.Input active size="small" style={{ width: '38%' }} />
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       ) : !cursos.length ? (
-        <Alert type="warning" showIcon message="No hay cursos en este paralelo." />
+        <Alert type="warning" showIcon title="No hay cursos en este paralelo." />
       ) : (
         <Radio.Group
           value={selectedCursoId ?? undefined}

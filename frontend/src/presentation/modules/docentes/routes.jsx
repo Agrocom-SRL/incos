@@ -10,6 +10,7 @@ import {
   DocentesCreateConnector,
   DocentesEditConnector,
   DocentesAsignacionAcademicaConnector,
+  DocentesAsignacionesGestionConnector,
 } from '@docentes/connectors';
 
 export const docentesRoutes = [
@@ -39,6 +40,15 @@ export const docentesRoutes = [
     path: '/docentes/asignar',
     element: <DocentesAsignacionAcademicaConnector />,
     key: 'DOC-ASIGNAR',
+    permiso: 'docentes.asignar',
+    accion: 'EDITAR',
+    menu: null,
+    breadcrumbParent: 'DOC-LIST',
+  },
+  {
+    path: '/docentes/:id/asignaciones',
+    element: <DocentesAsignacionesGestionConnector />,
+    key: 'DOC-ASIGNACIONES-GESTION',
     permiso: 'docentes.asignar',
     accion: 'EDITAR',
     menu: null,

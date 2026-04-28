@@ -96,7 +96,7 @@ export default function DocentesAsignacionPlanSection({
             type="info"
             showIcon
             style={{ borderRadius: 8 }}
-            message="Gestión académica y oferta"
+            title="Gestión académica y oferta"
             description={
               selected ? (
                 <>
@@ -129,7 +129,7 @@ export default function DocentesAsignacionPlanSection({
             type="success"
             showIcon
             style={{ borderRadius: 8 }}
-            message="Solo planes activos"
+            title="Solo planes activos"
             description="Se listan habilitaciones vigentes (gestión + plan) marcadas como activas en el sistema."
           />
         </Col>

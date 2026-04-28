@@ -21,18 +21,6 @@ import DocentesAsignacionConfirmarSection from '@docentes/components/organisms/D
 import '@modules/seguridad/styles/seguridad.css';
 import '@docentes/styles/docentes-asignacion-academica.css';
 
-const asignacionesColumns = [
-  { title: 'Carga h.', dataIndex: 'cargaHoraria', key: 'cargaHoraria', width: 90, render: (v) => v ?? '—' },
-  {
-    title: 'Vigente',
-    dataIndex: 'vigente',
-    key: 'vigente',
-    width: 80,
-    render: (v) => (v ? 'Sí' : 'No'),
-  },
-  { title: 'Desde', dataIndex: 'fechaAsignacion', key: 'fechaAsignacion', ellipsis: true },
-];
-
 function toMinutes(hhmm) {
   if (hhmm == null || hhmm === '') return null;
   const m = String(hhmm).match(/(\d{1,2}):(\d{2})/);
@@ -46,15 +34,15 @@ const DocentesAsignacionAcademica = () => {
   const location = useLocation();
   const st = location.state ?? {};
   const [form] = Form.useForm();
+  const editingAssignment = st.editAssignment && typeof st.editAssignment === 'object' ? st.editAssignment : null;
+  const editingAssignmentId =
+    editingAssignment?.id != null && Number.isFinite(Number(editingAssignment.id)) ? Number(editingAssignment.id) : null;
 
   const returnListPath = typeof st.returnListPath === 'string' && st.returnListPath ? st.returnListPath : '/docentes/listar';
   const menuSidebarKey = st.menuSidebarKey ?? 'DOC-LIST';
   const docenteId = st.docenteId != null && Number.isFinite(Number(st.docenteId)) ? Number(st.docenteId) : null;
   const docenteNombre = typeof st.docenteNombre === 'string' && st.docenteNombre.trim() ? st.docenteNombre.trim() : null;
-
-  const [asignaciones, setAsignaciones] = useState([]);
-  const [loadingAsignaciones, setLoadingAsignaciones] = useState(false);
-  const [errorAsignaciones, setErrorAsignaciones] = useState(null);
+  const initialStep = editingAssignmentId ? 3 : 0;
 
   const [planes, setPlanes] = useState([]);
   const [loadingPlanes, setLoadingPlanes] = useState(false);
@@ -82,34 +70,7 @@ const DocentesAsignacionAcademica = () => {
   const [horarioMeta, setHorarioMeta] = useState({ cursoCodigo: null, cursoColorHex: null, materiaNombre: null });
   const [loadingHorarios, setLoadingHorarios] = useState(false);
   const [errorHorarios, setErrorHorarios] = useState(null);
-
   const wizardSteps = useMemo(() => createDocenteAsignacionAcademicaWizardSteps(), []);
-
-  const reloadAsignaciones = useCallback(async () => {
-    if (!docenteId) {
-      setAsignaciones([]);
-      setErrorAsignaciones(null);
-      return;
-    }
-    setLoadingAsignaciones(true);
-    setErrorAsignaciones(null);
-    const res = await docenteRepository.listarAsignaciones({ docenteId, page: 1, limit: 500 });
-    if (!res.success) {
-      const msg =
-        typeof res.error === 'string'
-          ? res.error
-          : res.error?.message || 'No se pudieron cargar las asignaciones';
-      setErrorAsignaciones(msg);
-      setAsignaciones([]);
-    } else {
-      setAsignaciones(Array.isArray(res.data) ? res.data : []);
-    }
-    setLoadingAsignaciones(false);
-  }, [docenteId]);
-
-  useEffect(() => {
-    reloadAsignaciones();
-  }, [reloadAsignaciones]);
 
   useEffect(() => {
     let cancelled = false;
@@ -134,6 +95,18 @@ const DocentesAsignacionAcademica = () => {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    if (!editingAssignment || gestionPlanId) return;
+    if (editingAssignment.gestionPlanId != null && Number.isFinite(Number(editingAssignment.gestionPlanId))) {
+      setGestionPlanId(Number(editingAssignment.gestionPlanId));
+      return;
+    }
+    if (editingAssignment.planHabilitado) {
+      const plan = planes.find((p) => String(p.nombre || '').trim() === String(editingAssignment.planHabilitado).trim());
+      if (plan?.id != null) setGestionPlanId(Number(plan.id));
+    }
+  }, [editingAssignment, planes, gestionPlanId]);
 
   const handleGestionPlanChange = useCallback((id) => {
     setGestionPlanId(id);
@@ -187,6 +160,18 @@ const DocentesAsignacionAcademica = () => {
   }, [gestionPlanId]);
 
   useEffect(() => {
+    if (!editingAssignment || !gestionPlanId || periodoId || !periodos.length) return;
+    if (editingAssignment.periodoId != null && Number.isFinite(Number(editingAssignment.periodoId))) {
+      setPeriodoId(Number(editingAssignment.periodoId));
+      return;
+    }
+    const periodNameTarget = editingAssignment.periodoMateriaPlan || editingAssignment.periodoParalelo;
+    if (!periodNameTarget) return;
+    const period = periodos.find((p) => String(p.nombre || '').trim() === String(periodNameTarget).trim());
+    if (period?.id != null) setPeriodoId(Number(period.id));
+  }, [editingAssignment, gestionPlanId, periodos, periodoId]);
+
+  useEffect(() => {
     if (!gestionPlanId || !periodoId) {
       setParalelos([]);
       setParaleloId(null);
@@ -230,6 +215,22 @@ const DocentesAsignacionAcademica = () => {
   }, [gestionPlanId, periodoId]);
 
   useEffect(() => {
+    if (!editingAssignment || !gestionPlanId || !periodoId || paraleloId || !paralelos.length) return;
+    if (editingAssignment.paraleloId != null && Number.isFinite(Number(editingAssignment.paraleloId))) {
+      setParaleloId(Number(editingAssignment.paraleloId));
+      return;
+    }
+    const paralelo = paralelos.find((p) => {
+      const sameName = String(p.nombre || '').trim() === String(editingAssignment.paralelo || '').trim();
+      const sameTurno =
+        !editingAssignment.turnoParalelo ||
+        String(p.turno || '').trim().toUpperCase() === String(editingAssignment.turnoParalelo || '').trim().toUpperCase();
+      return sameName && sameTurno;
+    });
+    if (paralelo?.id != null) setParaleloId(Number(paralelo.id));
+  }, [editingAssignment, gestionPlanId, periodoId, paraleloId, paralelos]);
+
+  useEffect(() => {
     if (!paraleloId) {
       setCursos([]);
       setCursoId(null);
@@ -264,6 +265,27 @@ const DocentesAsignacionAcademica = () => {
       cancelled = true;
     };
   }, [paraleloId]);
+
+  useEffect(() => {
+    if (!editingAssignment || !paraleloId || cursoId || !cursos.length) return;
+    if (editingAssignment.cursoId != null && Number.isFinite(Number(editingAssignment.cursoId))) {
+      setCursoId(Number(editingAssignment.cursoId));
+      return;
+    }
+    const course = cursos.find((c) => {
+      const matchesCode =
+        editingAssignment.cursoCodigo &&
+        String(c.codigo || '').trim().toUpperCase() === String(editingAssignment.cursoCodigo).trim().toUpperCase();
+      const matchesMateria =
+        editingAssignment.materia &&
+        String(c.materiaNombre || '').trim().toUpperCase() === String(editingAssignment.materia).trim().toUpperCase();
+      const matchesSigla =
+        editingAssignment.siglaMateria &&
+        String(c.materiaSigla || '').trim().toUpperCase() === String(editingAssignment.siglaMateria).trim().toUpperCase();
+      return matchesCode || matchesMateria || matchesSigla;
+    });
+    if (course?.id != null) setCursoId(Number(course.id));
+  }, [editingAssignment, paraleloId, cursos, cursoId]);
 
   useEffect(() => {
     const curso = cursoId ? cursos.find((c) => Number(c.id) === Number(cursoId)) : null;
@@ -429,8 +451,46 @@ const DocentesAsignacionAcademica = () => {
       return;
     }
     message.success('Asignación registrada');
-    await reloadAsignaciones();
-  }, [docenteId, gestionPlanId, periodoId, paraleloId, cursoId, cargaHorariaOpt, message, reloadAsignaciones]);
+  }, [docenteId, gestionPlanId, periodoId, paraleloId, cursoId, cargaHorariaOpt, message]);
+
+  const handleActualizarAsignacion = useCallback(async () => {
+    if (!editingAssignmentId) return;
+    if (!cursoId) {
+      message.warning('Elegí un curso (materia) para actualizar la asignación.');
+      return;
+    }
+    setSubmittingAsignacion(true);
+    const payload = {
+      cursoId,
+    };
+    if (docenteId) payload.docenteId = docenteId;
+    if (cargaHorariaOpt != null && Number.isFinite(Number(cargaHorariaOpt))) {
+      payload.cargaHoraria = Number(cargaHorariaOpt);
+    }
+    const res = await docenteRepository.actualizarAsignacion(editingAssignmentId, payload);
+    setSubmittingAsignacion(false);
+    if (!res.success) {
+      const msg =
+        typeof res.error === 'string'
+          ? res.error
+          : res.error?.message || 'No se pudo actualizar la asignación';
+      message.error(msg);
+      return;
+    }
+    message.success('Asignación actualizada');
+    navigate(returnListPath.startsWith('/') ? returnListPath : '/docentes/listar', {
+      state: { menuSidebarKey },
+    });
+  }, [
+    editingAssignmentId,
+    cursoId,
+    docenteId,
+    cargaHorariaOpt,
+    message,
+    navigate,
+    returnListPath,
+    menuSidebarKey,
+  ]);
 
   const onValidateBeforeNext = useCallback(
     (stepNumber) =>
@@ -461,8 +521,12 @@ const DocentesAsignacionAcademica = () => {
   );
 
   const handleWizardFinish = useCallback(async () => {
+    if (editingAssignmentId) {
+      await handleActualizarAsignacion();
+      return;
+    }
     await handleRegistrarAsignacion();
-  }, [handleRegistrarAsignacion]);
+  }, [editingAssignmentId, handleActualizarAsignacion, handleRegistrarAsignacion]);
 
   const renderSectionContent = useCallback(
     (stepIndex, sectionKey, _section, wizardForm) => {
@@ -538,10 +602,6 @@ const DocentesAsignacionAcademica = () => {
               docenteId={docenteId}
               docenteNombre={docenteNombre}
               cargaHorariaOpt={cargaHorariaOpt}
-              asignaciones={asignaciones}
-              loadingAsignaciones={loadingAsignaciones}
-              errorAsignaciones={errorAsignaciones}
-              asignacionesColumns={asignacionesColumns}
               courseSchedulesPreview={courseSchedulesDesdeBloques}
               loadingHorariosPreview={loadingHorarios}
               errorHorariosPreview={errorHorarios}
@@ -577,9 +637,6 @@ const DocentesAsignacionAcademica = () => {
       docenteId,
       docenteNombre,
       cargaHorariaOpt,
-      asignaciones,
-      loadingAsignaciones,
-      errorAsignaciones,
       courseSchedulesDesdeBloques,
       loadingHorarios,
       errorHorarios,
@@ -607,7 +664,7 @@ const DocentesAsignacionAcademica = () => {
             type="warning"
             showIcon
             style={{ marginBottom: 16 }}
-            message="Ningún docente preseleccionado"
+            title="Ningún docente preseleccionado"
             description={
               <>
                 Elegí un docente desde la{' '}
@@ -620,6 +677,7 @@ const DocentesAsignacionAcademica = () => {
 
         <div className="daa-asignacion-wizard-wrap">
           <WizardForm
+            key={editingAssignmentId ? `edit-${editingAssignmentId}` : 'create'}
             className="daa-asignacion-wizard"
             steps={wizardSteps}
             form={form}
@@ -630,7 +688,8 @@ const DocentesAsignacionAcademica = () => {
             showSaveButton={false}
             renderSectionContent={renderSectionContent}
             onValidateBeforeNext={onValidateBeforeNext}
-            finishLabel="Registrar asignación"
+            initialStep={initialStep}
+            finishLabel={editingAssignmentId ? 'Guardar cambios de asignación' : 'Registrar asignación'}
             nextLabel="Siguiente"
             prevLabel="Anterior"
           />

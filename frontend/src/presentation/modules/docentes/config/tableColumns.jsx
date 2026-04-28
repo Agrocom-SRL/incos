@@ -14,6 +14,7 @@ import {
   ManOutlined,
   WomanOutlined,
   ApartmentOutlined,
+  WarningOutlined,
 } from '@ant-design/icons';
 import { TableCell } from '@molecules';
 import TableActions from '@molecules/TableActions';
@@ -210,6 +211,54 @@ export const createDocentesTableColumns = (navigate, refetch = null, deleteDocen
           .localeCompare([b.tituloProfesional, b.especialidad, b.nivelAcademico].filter(Boolean).join(' ')),
     },
     {
+      title: 'Carga y conflictos',
+      key: 'cargaConflictos',
+      width: 220,
+      responsive: ['sm', 'md', 'lg', 'xl', 'xxl'],
+      render: (_, record) => {
+        const stats = record.teachingStats || {};
+        const conflictos = stats.conflictos || {};
+        const totalAsignaciones = Number(stats.totalAsignaciones) || 0;
+        const totalMaterias = Number(stats.totalMaterias) || 0;
+        const totalParalelos = Number(stats.totalParalelos) || 0;
+        const totalConflictos = Number(conflictos.total) || 0;
+        const hasAsignaciones = Boolean(stats.hasAsignaciones) && totalAsignaciones > 0;
+
+        if (!hasAsignaciones) {
+          return (
+            <Space orientation="vertical" size={4}>
+              <Tag>Sin asignaciones</Tag>
+            </Space>
+          );
+        }
+
+        return (
+          <Space orientation="vertical" size={4} style={{ width: '100%' }}>
+            <TableCell icon={<BookOutlined />} textStyle={{ fontSize: 'var(--font-size-sm)' }} size="small">
+              {totalMaterias} materia{totalMaterias === 1 ? '' : 's'}
+            </TableCell>
+            <TableCell icon={<ApartmentOutlined />} textStyle={{ fontSize: 'var(--font-size-sm)' }} size="small">
+              {totalParalelos} paralelo{totalParalelos === 1 ? '' : 's'}
+            </TableCell>
+            <TableCell icon={<IdcardOutlined />} textStyle={{ fontSize: 'var(--font-size-sm)' }} size="small">
+              {totalAsignaciones} asignación{totalAsignaciones === 1 ? '' : 'es'}
+            </TableCell>
+            <Tag
+              color={totalConflictos > 0 ? 'error' : 'success'}
+              style={{ margin: 0, width: 'fit-content' }}
+              icon={totalConflictos > 0 ? <WarningOutlined /> : undefined}
+            >
+              {totalConflictos > 0
+                ? `${totalConflictos} conflicto${totalConflictos === 1 ? '' : 's'} (H:${conflictos.horario || 0} · A:${conflictos.aula || 0} · C:${conflictos.curso || 0})`
+                : 'Sin conflictos'}
+            </Tag>
+          </Space>
+        );
+      },
+      sorter: (a, b) =>
+        (Number(a?.teachingStats?.conflictos?.total) || 0) - (Number(b?.teachingStats?.conflictos?.total) || 0),
+    },
+    {
       title: 'Estado laboral',
       key: 'estadoLaboral',
       dataIndex: 'estadoLaboral',
@@ -266,7 +315,7 @@ export const createDocentesTableColumns = (navigate, refetch = null, deleteDocen
                 permiso: 'docentes.asignar',
                 accion: 'EDITAR',
                 onClick: (r) =>
-                  navigate('/docentes/asignar', {
+                  navigate(`/docentes/${r.id}/asignaciones`, {
                     state: {
                       menuSidebarKey: 'DOC-LIST',
                       returnListPath,

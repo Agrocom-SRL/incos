@@ -494,7 +494,7 @@ const EstudiantesDetail = () => {
 
   if (error) return (
     <PageTemplate header={<PageHeader title="Detalle del Estudiante" breadcrumbItems={breadcrumbItems} />}>
-      <Alert message="Error al cargar el estudiante" description={error} type="error" showIcon />
+      <Alert title="Error al cargar el estudiante" description={error} type="error" showIcon />
     </PageTemplate>
   );
 

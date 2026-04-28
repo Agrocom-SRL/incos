@@ -353,7 +353,7 @@ const BecaAsignacionDetail = () => {
   if (error) {
     return (
       <PageTemplate header={<PageHeader title="Asignación de beca" breadcrumbItems={breadcrumbItems} />}>
-        <Alert message="No se pudo cargar el detalle" description={error} type="error" showIcon />
+        <Alert title="No se pudo cargar el detalle" description={error} type="error" showIcon />
       </PageTemplate>
     );
   }

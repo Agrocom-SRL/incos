@@ -34,9 +34,9 @@ const DocenteHorarioSemanaCell = ({ items = [] }) => {
           ev.horaInicio || ev.horaFin ? `${fmtHora(ev.horaInicio)}–${fmtHora(ev.horaFin)}` : '—';
         const chipStyle = rgb
           ? {
-              borderColor: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.7)`,
-              backgroundColor: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.2)`,
-              boxShadow: `inset 0 0 0 1px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.15)`,
+              borderColor: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 1)`,
+              backgroundColor: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.5)`,
+              boxShadow: `inset 0 0 0 1px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.2)`,
             }
           : undefined;
         return (

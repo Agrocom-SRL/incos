@@ -51,7 +51,14 @@ function groupByCarreraThenPeriodo(assignments) {
   });
 }
 
-const DocenteAssignmentsSection = ({ assignments = [], puedeAsignarMaterias = false, onAsignarMaterias }) => {
+const DocenteAssignmentsSection = ({
+  assignments = [],
+  puedeAsignarMaterias = false,
+  onAsignarMaterias,
+  showAssignmentActions = false,
+  onEditAssignment = null,
+  onDeleteAssignment = null,
+}) => {
   const grouped = groupByCarreraThenPeriodo(assignments);
 
   const emptyExtra =
@@ -89,7 +96,13 @@ const DocenteAssignmentsSection = ({ assignments = [], puedeAsignarMaterias = fa
                   <div className="da-carga__periodo-label">{periodo}</div>
                   <div className="da-carga__materias-grid">
                     {rows.map((a) => (
-                      <DocenteAssignmentCard key={assignmentRowKey(a)} assignment={a} />
+                      <DocenteAssignmentCard
+                        key={assignmentRowKey(a)}
+                        assignment={a}
+                        showActions={showAssignmentActions}
+                        onEdit={onEditAssignment}
+                        onDelete={onDeleteAssignment}
+                      />
                     ))}
                   </div>
                 </div>

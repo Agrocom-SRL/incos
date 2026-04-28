@@ -26,4 +26,34 @@ export class ListTeachersUseCase extends BaseListUseCase {
   getMapper() {
     return TeacherListMapper;
   }
+
+  async enrichData(data) {
+    const teacherIds = (data || [])
+      .map((row) => Number(row?.id))
+      .filter((id) => Number.isFinite(id) && id > 0);
+
+    if (!teacherIds.length) return data;
+
+    const statsByTeacherId = await this.repository.getTeachingLoadAndConflictStats(teacherIds);
+    return data.map((row) => {
+      const id = Number(row?.id);
+      const stats = statsByTeacherId[id] || {
+        totalAsignaciones: 0,
+        totalMaterias: 0,
+        totalParalelos: 0,
+        hasAsignaciones: false,
+        conflictos: {
+          curso: 0,
+          horario: 0,
+          aula: 0,
+          total: 0,
+          hasConflictos: false,
+        },
+      };
+      return {
+        ...row,
+        teachingStats: stats,
+      };
+    });
+  }
 }
