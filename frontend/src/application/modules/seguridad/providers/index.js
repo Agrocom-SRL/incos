@@ -1,0 +1,1 @@
+export { SeguridadUsuariosListProvider } from './SeguridadUsuariosListProvider';

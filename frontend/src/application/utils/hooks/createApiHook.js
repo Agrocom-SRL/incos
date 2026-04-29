@@ -59,9 +59,11 @@ import {
   createOptimizedArraySetter,
   createOptimizedPrimitiveSetter,
   createOptimizedObjectSetter,
+} from '@application/utils/state';
+import {
   extractErrorFromResult,
   normalizeError,
-} from '@application/utils';
+} from '@application/utils/error';
 import { useStableApiResult } from './useStableApiResult';
 
 /**

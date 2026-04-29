@@ -6,10 +6,8 @@
  */
 
 import { lazy } from 'react';
+import { UsuariosListConnector } from '@modules/seguridad/connectors';
 
-const UsuariosListPage = lazy(() =>
-  import('@modules/seguridad/pages/UsuariosListPage.jsx')
-);
 const UsuarioCreatePage = lazy(() =>
   import('@modules/seguridad/pages/UsuarioCreatePage.jsx')
 );
@@ -62,7 +60,7 @@ export const seguridadRoutes = [
   },
   {
     path: '/seguridad/usuarios',
-    element: <UsuariosListPage />,
+    element: <UsuariosListConnector />,
     key: 'SEG-USUARIOS',
     permiso: 'seguridad.usuario.administrar',
     accion: 'LISTAR',
