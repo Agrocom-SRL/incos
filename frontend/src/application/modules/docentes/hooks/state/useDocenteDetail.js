@@ -71,11 +71,16 @@ export const useDocenteDetail = (docenteIdRaw) => {
     [navigate, docenteId, location.state?.menuSidebarKey, nombreCompleto]
   );
 
+  const refetchWithDocenteId = useCallback(async () => {
+    if (!Number.isFinite(docenteId) || docenteId <= 0) return;
+    await refetch(docenteId);
+  }, [docenteId, refetch]);
+
   return {
     docenteId: Number.isFinite(docenteId) && docenteId > 0 ? docenteId : null,
     loading,
     error,
-    refetch,
+    refetch: refetchWithDocenteId,
     profile,
     assignments,
     courseSchedules,

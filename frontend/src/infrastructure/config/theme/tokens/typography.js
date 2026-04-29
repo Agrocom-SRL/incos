@@ -45,7 +45,7 @@ export const typography = {
   // PESO DE FUENTE
   // ========================================
   // Peso fuerte para texto destacado (bold, strong)
-  fontWeightStrong: 600,
+  fontWeightStrong: 700,
 
   // ========================================
   // ALTURA DE LÍNEA - BASE

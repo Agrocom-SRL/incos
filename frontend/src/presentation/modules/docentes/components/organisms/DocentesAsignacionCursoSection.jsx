@@ -24,7 +24,12 @@ export default function DocentesAsignacionCursoSection({
   selectedCursoId = null,
   onSelectCurso,
   disabled = false,
+  paraleloNombre = null,
+  paraleloTurno = null,
+  carreraNombre = null,
 }) {
+  const contextoParalelo = [paraleloNombre, paraleloTurno].filter(Boolean).join(' · ');
+
   return (
     <Card
       title="Curso (materia en el paralelo)"
@@ -33,10 +38,17 @@ export default function DocentesAsignacionCursoSection({
       headerColor="primary"
       className="form-section daa-asignacion-section"
     >
-      <Paragraph type="secondary" style={{ marginTop: 0, marginBottom: 12 }}>
+      <Paragraph type="secondary" style={{ marginTop: 0, marginBottom: 8 }}>
         Cada opción es un curso del maestro de oferta vinculado a una <Text strong>materia del plan</Text>. Podés ver el
         calendario semanal en el paso final antes de registrar.
       </Paragraph>
+      {carreraNombre || contextoParalelo ? (
+        <Paragraph type="secondary" style={{ marginTop: 0, marginBottom: 12 }}>
+          {[carreraNombre && `Carrera: ${carreraNombre}`, contextoParalelo && `Paralelo: ${contextoParalelo}`]
+            .filter(Boolean)
+            .join(' | ')}
+        </Paragraph>
+      ) : null}
       {error ? <Alert type="error" showIcon style={{ marginBottom: 12 }} title={error} /> : null}
 
       {disabled ? (
@@ -97,6 +109,10 @@ export default function DocentesAsignacionCursoSection({
                     <div className="wizard-selection-cards__body">
                       <div className="wizard-selection-cards__label daa-cursos-card__label">{titulo}</div>
                       {sigla ? <span className="daa-cursos-card__chip daa-cursos-card__chip--sigla">{sigla}</span> : null}
+                      <div className="daa-cursos-card__meta">
+                        {carreraNombre ? <div>{`Carrera: ${carreraNombre}`}</div> : null}
+                        {contextoParalelo ? <div>{`Paralelo: ${contextoParalelo}`}</div> : null}
+                      </div>
                     </div>
                     {isSelected ? (
                       <div className="wizard-selection-cards__check" aria-hidden>

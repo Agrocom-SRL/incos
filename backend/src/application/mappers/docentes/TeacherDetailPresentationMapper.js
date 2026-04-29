@@ -35,14 +35,31 @@ function normalizeHex(v) {
   return null;
 }
 
-function groupSchedules(scheduleRows) {
+function groupSchedules(scheduleRows, assignments = []) {
+  const courseMetaByCode = new Map();
+  for (const a of assignments || []) {
+    const code = a?.cursoCodigo ? String(a.cursoCodigo) : null;
+    if (!code || courseMetaByCode.has(code)) continue;
+    courseMetaByCode.set(code, {
+      materiaNombre: a?.materia ?? null,
+      materiaSigla: a?.siglaMateria ?? null,
+      carrera: a?.carrera ?? null,
+      periodoParalelo: a?.periodoParalelo ?? null,
+    });
+  }
+
   const byCourse = new Map();
   for (const r of scheduleRows || []) {
     const code = r.curso_codigo || '—';
+    const meta = courseMetaByCode.get(String(code)) || {};
     if (!byCourse.has(code)) {
       byCourse.set(code, {
         cursoCodigo: code,
         cursoColorHex: normalizeHex(r.curso_color_hex),
+        materiaNombre: meta.materiaNombre ?? null,
+        materiaSigla: meta.materiaSigla ?? null,
+        carrera: meta.carrera ?? null,
+        periodoParalelo: meta.periodoParalelo ?? null,
         bloques: [],
       });
     }
@@ -166,7 +183,7 @@ export class TeacherDetailPresentationMapper {
       };
     });
 
-    const courseSchedules = groupSchedules(bundle.schedules);
+    const courseSchedules = groupSchedules(bundle.schedules, assignments);
 
     return {
       profile,

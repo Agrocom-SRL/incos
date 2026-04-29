@@ -350,6 +350,16 @@ const DocentesAsignacionAcademica = () => {
     return p?.nombre ?? null;
   }, [paralelos, paraleloId]);
 
+  const paraleloTurnoParaHorario = useMemo(() => {
+    const p = paralelos.find((x) => Number(x.id) === Number(paraleloId));
+    return p?.turno ?? null;
+  }, [paralelos, paraleloId]);
+
+  const carreraNombreActual = useMemo(() => {
+    const p = planes.find((x) => Number(x.id) === Number(gestionPlanId));
+    return p?.carreraNombre ?? null;
+  }, [planes, gestionPlanId]);
+
   const courseSchedulesDesdeBloques = useMemo(
     () =>
       bloquesToCourseSchedules(
@@ -589,6 +599,9 @@ const DocentesAsignacionAcademica = () => {
               selectedCursoId={cursoId}
               onSelectCurso={setCursoId}
               disabled={!paraleloId}
+              paraleloNombre={paraleloNombreParaHorario}
+              paraleloTurno={paraleloTurnoParaHorario}
+              carreraNombre={carreraNombreActual}
             />
           );
         case 4:
@@ -622,6 +635,9 @@ const DocentesAsignacionAcademica = () => {
       errorPeriodos,
       periodoId,
       periodoNombreActual,
+      paraleloNombreParaHorario,
+      paraleloTurnoParaHorario,
+      carreraNombreActual,
       paralelos,
       loadingParalelos,
       errorParalelos,

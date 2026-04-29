@@ -42,6 +42,10 @@ function flattenEvents(courseSchedules) {
   for (const c of courseSchedules || []) {
     const codigo = c.cursoCodigo || '—';
     const color = c.cursoColorHex ?? null;
+    const materiaNombre = c.materiaNombre ?? null;
+    const materiaSigla = c.materiaSigla ?? null;
+    const carrera = c.carrera ?? null;
+    const periodoParalelo = c.periodoParalelo ?? null;
     for (const b of c.bloques || []) {
       const dia = normalizeDiaDb(b.dia);
       const start = horaToMinutes(b.horaInicio);
@@ -56,6 +60,10 @@ function flattenEvents(courseSchedules) {
         aula: b.aula ?? null,
         turno: b.turno ?? null,
         paralelo: b.paralelo ?? null,
+        materiaNombre,
+        materiaSigla,
+        carrera,
+        periodoParalelo,
         orden: b.orden,
       });
     }

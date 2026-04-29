@@ -34,10 +34,10 @@ const DocenteHorarioSemanaCell = ({ items = [] }) => {
           ev.horaInicio || ev.horaFin ? `${fmtHora(ev.horaInicio)}–${fmtHora(ev.horaFin)}` : '—';
         const chipStyle = rgb
           ? {
-              borderColor: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 1)`,
-              backgroundColor: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.5)`,
-              boxShadow: `inset 0 0 0 1px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.2)`,
-            }
+            borderColor: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 1)`,
+            backgroundColor: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.5)`,
+            boxShadow: `inset 0 0 0 1px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.2)`,
+          }
           : undefined;
         return (
           <div
@@ -46,10 +46,18 @@ const DocenteHorarioSemanaCell = ({ items = [] }) => {
             style={chipStyle}
           >
             <div className="da-cal-semanal__chip-hora">{hora}</div>
-            <div className="da-cal-semanal__chip-curso">{ev.cursoCodigo || '—'}</div>
+            {ev.materiaSigla || ev.materiaNombre ? (
+              <>
+                <div className="da-cal-semanal__chip-curso">
+                  {ev.materiaNombre}
+                </div>
+              </>
+            ) : (
+              <div className="da-cal-semanal__chip-curso">Materia sin detalle</div>
+            )}
+            {ev.carrera ? <div className="da-cal-semanal__chip-line">{ev.carrera}</div> : null}
+            {ev.paralelo ? <div className="da-cal-semanal__chip-line text-bold">{ev.paralelo} - {ev.turno}</div> : null}
             {ev.aula ? <div className="da-cal-semanal__chip-line">Aula: {ev.aula}</div> : null}
-            {ev.turno ? <div className="da-cal-semanal__chip-line">Turno: {ev.turno}</div> : null}
-            {ev.paralelo ? <div className="da-cal-semanal__chip-line">Paralelo: {ev.paralelo}</div> : null}
           </div>
         );
       })}

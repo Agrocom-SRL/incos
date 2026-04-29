@@ -768,8 +768,8 @@
 }
 
 .da-carga__card--conflict {
-  border-color: rgba(220, 38, 38, 0.55);
-  box-shadow: 0 0 0 1px rgba(220, 38, 38, 0.2);
+  border-color: rgba(220, 38, 38, 0.85);
+  box-shadow: 0 0 0 1px rgba(220, 38, 38, 0.4);
   background: linear-gradient(180deg, rgba(254, 242, 242, 0.55) 0%, #ffffff 45%);
 }
 
@@ -1049,9 +1049,13 @@
 }
 
 .da-cal-semanal__chip-line {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-700);
   word-break: break-word;
+}
+
+.da-cal-semanal__chip-line.text-bold {
+  font-weight: var(--font-weight-strong);
 }
 
 @media (max-width: 1080px) {
