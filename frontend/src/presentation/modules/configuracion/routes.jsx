@@ -20,14 +20,14 @@ export const configuracionRoutes = [
     // Módulo raíz: Configuración
     {
         path: '/configuracion',
-        element: null, // No tiene página propia, es solo un grupo
+        element: <UnderConstruction />, // Fallback navegable para accesos directos
         key: 'CFG-ROOT',
         menu: null,
     },
     // Submenu: Académico
     {
         path: '/configuracion/academico',
-        element: null,
+        element: <UnderConstruction />,
         key: 'CFG-ACADEMICO',
         permiso: null,
         accion: null,
@@ -86,7 +86,7 @@ export const configuracionRoutes = [
     // Submenu: Documentación
     {
         path: '/configuracion/documentacion',
-        element: null,
+        element: <UnderConstruction />,
         key: 'CFG-DOCUMENTACION',
         permiso: null,
         accion: null,
@@ -136,7 +136,7 @@ export const configuracionRoutes = [
     // Submenu: Datos Complementarios
     {
         path: '/configuracion/datos-complementarios',
-        element: null,
+        element: <UnderConstruction />,
         key: 'CFG-COMPLEMENTARIO',
         permiso: null,
         accion: null,

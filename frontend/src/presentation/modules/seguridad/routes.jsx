@@ -25,6 +25,15 @@ export const seguridadRoutes = [
     breadcrumbParent: 'SEG-USUARIOS',
   },
   {
+    path: '/seguridad/usuarios/:id/editar',
+    element: <UsuarioCreateConnector />,
+    key: 'SEG-USUARIO-EDITAR',
+    permiso: 'seguridad.usuario.administrar',
+    accion: 'EDITAR',
+    menu: null,
+    breadcrumbParent: 'SEG-USUARIOS',
+  },
+  {
     path: '/seguridad/usuarios/:id/permisos',
     element: <UsuarioPermisosConnector />,
     key: 'SEG-USUARIO-PERMISOS',

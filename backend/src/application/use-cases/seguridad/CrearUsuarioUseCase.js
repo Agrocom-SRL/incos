@@ -77,6 +77,26 @@ function toPlain(entity) {
   return entity?.toPlainObject ? entity.toPlainObject() : entity || {};
 }
 
+async function runWithCompensation(work) {
+  const rollbackSteps = [];
+  const registerRollback = (fn) => {
+    if (typeof fn === 'function') rollbackSteps.push(fn);
+  };
+
+  try {
+    return await work(registerRollback);
+  } catch (error) {
+    for (let i = rollbackSteps.length - 1; i >= 0; i -= 1) {
+      try {
+        await rollbackSteps[i]();
+      } catch {
+        // Rollback best-effort: no ocultar error original de negocio.
+      }
+    }
+    throw error;
+  }
+}
+
 export class CrearUsuarioUseCase {
   /**
    * @param {Object} deps
@@ -190,22 +210,27 @@ export class CrearUsuarioUseCase {
         ]);
       }
 
-      const personalEntity = await this.staffRepository.create({
-        ...staffData,
-        userId: null,
+      return runWithCompensation(async (registerRollback) => {
+        const personalEntity = await this.staffRepository.create({
+          ...staffData,
+          userId: null,
+        });
+        const personalId = personalEntity.id;
+        registerRollback(() => this.staffRepository.delete(personalId));
+
+        const created = await this.userRepository.create({
+          ...userPayloadBase,
+          referenceId: personalId,
+          referenceType: null,
+        });
+        registerRollback(() => this.userRepository.delete(created.id));
+
+        await this.staffRepository.update(personalId, { userId: created.id });
+        registerRollback(() => this.staffRepository.update(personalId, { userId: null }));
+
+        const row = await this.userRepository.findByIdWithRoleForAdmin(created.id);
+        return mapUsuarioAdminRow(row);
       });
-      const personalId = personalEntity.id;
-
-      const created = await this.userRepository.create({
-        ...userPayloadBase,
-        referenceId: personalId,
-        referenceType: null,
-      });
-
-      await this.staffRepository.update(personalId, { userId: created.id });
-
-      const row = await this.userRepository.findByIdWithRoleForAdmin(created.id);
-      return mapUsuarioAdminRow(row);
     }
 
     if (categoria === CATEGORIAS_CREACION_USUARIO.ASIGNAR_ESTUDIANTE) {
@@ -232,16 +257,20 @@ export class CrearUsuarioUseCase {
         ]);
       }
 
-      const created = await this.userRepository.create({
-        ...userPayloadBase,
-        referenceId: estudianteId,
-        referenceType: TIPOS_REFERENCIA.ESTUDIANTE,
+      return runWithCompensation(async (registerRollback) => {
+        const created = await this.userRepository.create({
+          ...userPayloadBase,
+          referenceId: estudianteId,
+          referenceType: TIPOS_REFERENCIA.ESTUDIANTE,
+        });
+        registerRollback(() => this.userRepository.delete(created.id));
+
+        await this.studentRepository.update(estudianteId, { userId: created.id });
+        registerRollback(() => this.studentRepository.update(estudianteId, { userId: null }));
+
+        const row = await this.userRepository.findByIdWithRoleForAdmin(created.id);
+        return mapUsuarioAdminRow(row);
       });
-
-      await this.studentRepository.update(estudianteId, { userId: created.id });
-
-      const row = await this.userRepository.findByIdWithRoleForAdmin(created.id);
-      return mapUsuarioAdminRow(row);
     }
 
     if (categoria === CATEGORIAS_CREACION_USUARIO.ASIGNAR_DOCENTE) {
@@ -268,16 +297,20 @@ export class CrearUsuarioUseCase {
         ]);
       }
 
-      const created = await this.userRepository.create({
-        ...userPayloadBase,
-        referenceId: docenteId,
-        referenceType: TIPOS_REFERENCIA.DOCENTE,
+      return runWithCompensation(async (registerRollback) => {
+        const created = await this.userRepository.create({
+          ...userPayloadBase,
+          referenceId: docenteId,
+          referenceType: TIPOS_REFERENCIA.DOCENTE,
+        });
+        registerRollback(() => this.userRepository.delete(created.id));
+
+        await this.teacherRepository.update(docenteId, { userId: created.id });
+        registerRollback(() => this.teacherRepository.update(docenteId, { userId: null }));
+
+        const row = await this.userRepository.findByIdWithRoleForAdmin(created.id);
+        return mapUsuarioAdminRow(row);
       });
-
-      await this.teacherRepository.update(docenteId, { userId: created.id });
-
-      const row = await this.userRepository.findByIdWithRoleForAdmin(created.id);
-      return mapUsuarioAdminRow(row);
     }
 
     if (categoria === CATEGORIAS_CREACION_USUARIO.PERSONAL_INSTITUCIONAL) {
@@ -308,46 +341,56 @@ export class CrearUsuarioUseCase {
         ]);
       }
 
-      const personalEntity = await this.staffRepository.create({
-        ...staffData,
-        userId: null,
+      return runWithCompensation(async (registerRollback) => {
+        const personalEntity = await this.staffRepository.create({
+          ...staffData,
+          userId: null,
+        });
+        const personalId = personalEntity.id;
+        registerRollback(() => this.staffRepository.delete(personalId));
+
+        if (role.code === 'RECTOR') {
+          const rector = await this.rectorRepository.create({ staffId: personalId });
+          registerRollback(() => this.rectorRepository.delete(rector.id));
+        } else if (role.code === 'DIR_ACADEMICO') {
+          const director = await this.directorRepository.create({
+            staffId: personalId,
+            type: TIPOS_DIRECTOR.ACADEMICO,
+          });
+          registerRollback(() => this.directorRepository.delete(director.id));
+        } else if (role.code === 'DIR_ADMIN') {
+          const director = await this.directorRepository.create({
+            staffId: personalId,
+            type: TIPOS_DIRECTOR.ADMINISTRATIVO,
+          });
+          registerRollback(() => this.directorRepository.delete(director.id));
+        } else if (role.code === 'SEC_ACADEMICA') {
+          const secretary = await this.secretaryRepository.create({
+            staffId: personalId,
+            type: TIPOS_SECRETARIA.ACADEMICA,
+          });
+          registerRollback(() => this.secretaryRepository.delete(secretary.id));
+        } else if (role.code === 'SEC_ADMIN') {
+          const secretary = await this.secretaryRepository.create({
+            staffId: personalId,
+            type: TIPOS_SECRETARIA.ADMINISTRATIVA,
+          });
+          registerRollback(() => this.secretaryRepository.delete(secretary.id));
+        }
+
+        const created = await this.userRepository.create({
+          ...userPayloadBase,
+          referenceId: personalId,
+          referenceType: tipoRef,
+        });
+        registerRollback(() => this.userRepository.delete(created.id));
+
+        await this.staffRepository.update(personalId, { userId: created.id });
+        registerRollback(() => this.staffRepository.update(personalId, { userId: null }));
+
+        const row = await this.userRepository.findByIdWithRoleForAdmin(created.id);
+        return mapUsuarioAdminRow(row);
       });
-      const personalId = personalEntity.id;
-
-      if (role.code === 'RECTOR') {
-        await this.rectorRepository.create({ staffId: personalId });
-      } else if (role.code === 'DIR_ACADEMICO') {
-        await this.directorRepository.create({
-          staffId: personalId,
-          type: TIPOS_DIRECTOR.ACADEMICO,
-        });
-      } else if (role.code === 'DIR_ADMIN') {
-        await this.directorRepository.create({
-          staffId: personalId,
-          type: TIPOS_DIRECTOR.ADMINISTRATIVO,
-        });
-      } else if (role.code === 'SEC_ACADEMICA') {
-        await this.secretaryRepository.create({
-          staffId: personalId,
-          type: TIPOS_SECRETARIA.ACADEMICA,
-        });
-      } else if (role.code === 'SEC_ADMIN') {
-        await this.secretaryRepository.create({
-          staffId: personalId,
-          type: TIPOS_SECRETARIA.ADMINISTRATIVA,
-        });
-      }
-
-      const created = await this.userRepository.create({
-        ...userPayloadBase,
-        referenceId: personalId,
-        referenceType: tipoRef,
-      });
-
-      await this.staffRepository.update(personalId, { userId: created.id });
-
-      const row = await this.userRepository.findByIdWithRoleForAdmin(created.id);
-      return mapUsuarioAdminRow(row);
     }
 
     throw new UnprocessableEntityError('categoria_creacion no reconocida', [

@@ -5,7 +5,7 @@
 
 import { Tag } from 'antd';
 import { IdcardOutlined, UserAddOutlined, SettingOutlined } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import DetailInfoCard from '@docentes/components/molecules/DetailInfoCard';
 import DetailField from '@docentes/components/atoms/DetailField';
 
@@ -19,11 +19,20 @@ const DocenteAccessSection = ({
   puedeEditarUsuario,
 }) => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleCrearUsuario = () => {
+    if (access?.tieneAcceso && access?.usuarioId) {
+      navigate(`/seguridad/usuarios/${access.usuarioId}`);
+      return;
+    }
     if (!docenteId) return;
     navigate('/seguridad/usuarios/nuevo', {
       state: {
+        createInitialStep: 1, // abrir en paso 2 (datos del perfil) para confirmar vínculo docente
+        forceCategoriaCreacion: 'ASIGNAR_DOCENTE',
+        forceRoleCode: 'DOCENTE',
+        returnToPath: location.pathname,
         prefillDocenteUsuario: {
           docenteId,
           nombreCompleto: docenteNombreCompleto || null,
@@ -36,7 +45,7 @@ const DocenteAccessSection = ({
 
   const handleEditarUsuario = () => {
     if (!access?.usuarioId) return;
-    navigate(`/seguridad/usuarios/${access.usuarioId}`, { state: { quickAction: 'edit' } });
+    navigate(`/seguridad/usuarios/${access.usuarioId}`);
   };
 
   const estado =

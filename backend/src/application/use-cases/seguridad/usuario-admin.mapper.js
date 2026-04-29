@@ -13,6 +13,8 @@ export function mapUsuarioAdminRow(u) {
     updated_at: u.updated_at ?? null,
     fecha_cambio_estado: u.fecha_cambio_estado ?? null,
     motivo_cambio_estado: u.motivo_cambio_estado ?? null,
+    referencia_id: u.referencia_id ?? null,
+    tipo_referencia: u.tipo_referencia ?? null,
     rol: u.rol_id
       ? {
           id: u.rol_id,

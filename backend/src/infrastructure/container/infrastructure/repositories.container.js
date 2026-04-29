@@ -50,6 +50,7 @@ import { ConfiguracionSistemaRepository } from '../../repositories/Configuracion
 import { RoleRepository } from '../../repositories/RoleRepository.js';
 import { PermissionRepository } from '../../repositories/PermissionRepository.js';
 import { UserRepository } from '../../repositories/UserRepository.js';
+import { SeguridadAltaUsuarioLookupRepository } from '../../repositories/SeguridadAltaUsuarioLookupRepository.js';
 import { UsuarioReferenciaVinculoRepository } from '../../repositories/UsuarioReferenciaVinculoRepository.js';
 import { RolePermissionRepository } from '../../repositories/RolePermissionRepository.js';
 import { UserPermissionRepository } from '../../repositories/UserPermissionRepository.js';
@@ -162,6 +163,11 @@ export function registerRepositoriesModule(container) {
     registerRepository(container, REPOSITORIOS_TOKENS.roleRepository, RoleRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.permissionRepository, PermissionRepository);
     registerRepository(container, REPOSITORIOS_TOKENS.userRepository, UserRepository);
+    registerRepository(
+        container,
+        REPOSITORIOS_TOKENS.seguridadAltaUsuarioLookupRepository,
+        SeguridadAltaUsuarioLookupRepository
+    );
     registerRepository(
         container,
         REPOSITORIOS_TOKENS.usuarioReferenciaVinculoRepository,

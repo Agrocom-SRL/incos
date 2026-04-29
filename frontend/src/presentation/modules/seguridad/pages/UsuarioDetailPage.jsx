@@ -12,8 +12,6 @@ import { Button, Card } from '@atoms';
 import { PermisoGuard } from '@/presentation/guards/PermisoGuard.jsx';
 import { useSeguridadUsuarioDetailPageContext } from '@/application/modules/seguridad/hooks';
 import CambiarPasswordModal from '@modules/seguridad/components/modals/CambiarPasswordModal.jsx';
-import CambiarEstadoModal from '@modules/seguridad/components/modals/CambiarEstadoModal.jsx';
-import EditarUsuarioModal from '@modules/seguridad/components/modals/EditarUsuarioModal.jsx';
 import '@modules/seguridad/styles/seguridad.css';
 
 function fmtDateTime(value) {
@@ -27,21 +25,15 @@ export default function UsuarioDetailPage() {
   const {
     uid,
     usuario,
-    roles,
     loading,
     saving,
-    openEdit,
-    openEstado,
     openPass,
     puedeEditar,
     puedeVerPermisos,
     breadcrumbItems,
-    setOpenEdit,
-    setOpenEstado,
     setOpenPass,
-    saveBasic,
-    saveEstado,
     savePass,
+    goToUsuarioEdit,
     goToUsuariosList,
     goToUsuarioPermisos,
   } = useSeguridadUsuarioDetailPageContext();
@@ -116,11 +108,8 @@ export default function UsuarioDetailPage() {
                   <button type="button" className="sd-btn sd-btn--outline" onClick={() => setOpenPass(true)}>
                     <LockOutlined /> Cambiar contraseña
                   </button>
-                  <button type="button" className="sd-btn sd-btn--primary" onClick={() => setOpenEdit(true)}>
+                  <button type="button" className="sd-btn sd-btn--warn" onClick={goToUsuarioEdit}>
                     <EditOutlined /> Editar datos
-                  </button>
-                  <button type="button" className="sd-btn sd-btn--warn" onClick={() => setOpenEstado(true)}>
-                    <InfoCircleOutlined /> Cambiar estado
                   </button>
                 </>
               ) : null}
@@ -195,25 +184,6 @@ export default function UsuarioDetailPage() {
           </div>
         </div>
 
-        <EditarUsuarioModal
-          open={openEdit}
-          loading={saving}
-          roles={roles}
-          initialValues={{
-            username: usuario.username,
-            rol_id: usuario.rol?.id,
-            foto_url: usuario.foto_url,
-          }}
-          onCancel={() => setOpenEdit(false)}
-          onSubmit={saveBasic}
-        />
-        <CambiarEstadoModal
-          open={openEstado}
-          loading={saving}
-          initialValues={{ estado: usuario.estado ?? null, motivo: usuario.motivo_cambio_estado ?? '' }}
-          onCancel={() => setOpenEstado(false)}
-          onSubmit={saveEstado}
-        />
         <CambiarPasswordModal
           open={openPass}
           loading={saving}

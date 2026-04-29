@@ -19,6 +19,9 @@ export default function UsuarioCreatePage() {
     loading,
     submitError,
     prefillDocenteUsuario,
+    isEditMode,
+    categoriaFijada,
+    wizardInitialStep,
     wizardFormMountKey,
     breadcrumbItems,
     wizardSteps,
@@ -31,7 +34,13 @@ export default function UsuarioCreatePage() {
   const renderSectionContent = useCallback(
     (_stepIndex, sectionKey, _section, formInstance) => {
       if (sectionKey === 'categoria') {
-        return <UsuarioCategoriaCreacionStepContent key="categoria" form={formInstance} />;
+        return (
+          <UsuarioCategoriaCreacionStepContent
+            key="categoria"
+            form={formInstance}
+            isEditMode={isEditMode}
+          />
+        );
       }
       if (sectionKey === 'perfil') {
         return (
@@ -40,6 +49,8 @@ export default function UsuarioCreatePage() {
             form={formInstance}
             rolesCatalog={roles}
             prefillDocenteUsuario={prefillDocenteUsuario}
+            isEditMode={isEditMode}
+            categoriaFijada={categoriaFijada}
           />
         );
       }
@@ -49,12 +60,13 @@ export default function UsuarioCreatePage() {
             key="cuenta"
             form={formInstance}
             rolesCatalog={roles}
+            isEditMode={isEditMode}
           />
         );
       }
       return null;
     },
-    [roles, prefillDocenteUsuario]
+    [roles, prefillDocenteUsuario, isEditMode, categoriaFijada]
   );
 
   return (
@@ -68,7 +80,7 @@ export default function UsuarioCreatePage() {
       <PageTemplate
         header={
           <PageHeader
-            title="Nuevo Usuario"
+            title={isEditMode ? 'Editar Usuario' : 'Nuevo Usuario'}
             breadcrumbItems={breadcrumbItems}
             actions={
               <Button variant="default" icon={<ArrowLeftOutlined />} onClick={goToUsuariosList}>
@@ -89,12 +101,13 @@ export default function UsuarioCreatePage() {
           loading={loading}
           viewMode={false}
           resolveOptions={() => []}
+          initialStep={wizardInitialStep}
           initialValues={usuarioAltaInitialValues}
           onFinish={handleFinish}
           showSaveButton={false}
           renderSectionContent={renderSectionContent}
           onValidateBeforeNext={onValidateBeforeNext}
-          finishLabel="Crear usuario"
+          finishLabel={isEditMode ? 'Guardar cambios' : 'Crear usuario'}
           nextLabel="Siguiente"
           prevLabel="Anterior"
         />

@@ -1,158 +1,70 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { App, Form } from 'antd';
 import { useUsuarioDetail } from '@/application/modules/seguridad/hooks/state/useUsuarioDetail';
 import { useRolesList } from '@/application/modules/seguridad/hooks/state/useRolesList';
-
-const ROLES_POR_CATEGORIA = {
-  ACCESO_SISTEMA: ['ADMIN_SISTEMA'],
-  PERSONAL_INSTITUCIONAL: ['RECTOR', 'DIR_ACADEMICO', 'DIR_ADMIN', 'SEC_ACADEMICA', 'SEC_ADMIN'],
-  ASIGNAR_ESTUDIANTE: ['ESTUDIANTE'],
-  ASIGNAR_DOCENTE: ['DOCENTE'],
-};
-
-function errMsg(json) {
-  const e = json?.error;
-  if (json?.error?.details?.length) {
-    return json.error.details.map((d) => d.message).join('. ');
-  }
-  return typeof e === 'string' ? e : e?.message || 'Error';
-}
-
-function loadRolesErrorMessage(e) {
-  const msg = e?.message || '';
-  if (e?.name === 'TypeError' && (msg.includes('fetch') || msg.includes('Load failed'))) {
-    return 'No se pudo conectar con el API. Inicie el backend en el puerto 3000 (p. ej. npm run dev en la carpeta backend) o revise VITE_API_URL / VITE_API_BASE_URL.';
-  }
-  return errMsg(e);
-}
-
-function personalPayloadFromForm(personal) {
-  if (!personal || typeof personal !== 'object') return undefined;
-  const p = { ...personal };
-  delete p.departamentoId;
-  delete p.provinciaId;
-
-  const birth = p.birthDate;
-  if (birth) {
-    try {
-      if (typeof birth === 'object' && typeof birth.format === 'function') {
-        p.birthDate = birth.format('YYYY-MM-DD');
-      } else if (birth instanceof Date && !Number.isNaN(birth.getTime())) {
-        p.birthDate = birth.toISOString().slice(0, 10);
-      } else if (typeof birth === 'string' && /^\d{2}-\d{2}-\d{4}$/.test(birth)) {
-        const [dd, mm, yyyy] = birth.split('-');
-        p.birthDate = `${yyyy}-${mm}-${dd}`;
-      }
-    } catch {
-      // El backend validará el formato
-    }
-  }
-
-  Object.keys(p).forEach((k) => {
-    if (p[k] === '' || p[k] === undefined) delete p[k];
-  });
-  return Object.keys(p).length ? p : undefined;
-}
-
-function buildCreatePayload(values) {
-  const {
-    username,
-    password,
-    password_confirm: _passwordConfirm,
-    vinculo_nombre_display: _vinculoNombre,
-    vinculo_email_display: _vinculoEmail,
-    rol_id,
-    categoria_creacion,
-    estudiante_id,
-    docente_id,
-    personal,
-  } = values;
-
-  const base = {
-    username: String(username || '').trim(),
-    password,
-    rol_id,
-    categoria_creacion,
-  };
-
-  const out = { ...base };
-  if (categoria_creacion === 'ASIGNAR_ESTUDIANTE') {
-    out.estudiante_id = estudiante_id != null ? Number(estudiante_id) : undefined;
-  }
-  if (categoria_creacion === 'ASIGNAR_DOCENTE') {
-    out.docente_id = docente_id != null ? Number(docente_id) : undefined;
-  }
-  if (
-    (categoria_creacion === 'PERSONAL_INSTITUCIONAL' || categoria_creacion === 'ACCESO_SISTEMA') &&
-    personal &&
-    typeof personal === 'object'
-  ) {
-    const cleaned = personalPayloadFromForm(personal);
-    if (cleaned) out.personal = cleaned;
-  }
-  return out;
-}
-
-const PERSONAL_FIELD_NAMES = [
-  ['personal', 'ci'],
-  ['personal', 'expedition'],
-  ['personal', 'firstName'],
-  ['personal', 'lastName'],
-];
-
-function fieldsToValidateOnFinish(categoria) {
-  const base = ['categoria_creacion', 'username', 'password', 'password_confirm', 'rol_id'];
-  if (categoria === 'ASIGNAR_ESTUDIANTE') base.push('estudiante_id');
-  if (categoria === 'ASIGNAR_DOCENTE') base.push('docente_id');
-  if (categoria === 'PERSONAL_INSTITUCIONAL' || categoria === 'ACCESO_SISTEMA') {
-    base.push(...PERSONAL_FIELD_NAMES);
-  }
-  return base;
-}
-
-function perfilFieldNamesForCategory(categoria) {
-  if (categoria === 'ASIGNAR_ESTUDIANTE') return ['estudiante_id'];
-  if (categoria === 'ASIGNAR_DOCENTE') return ['docente_id'];
-  if (categoria === 'PERSONAL_INSTITUCIONAL') {
-    return [...PERSONAL_FIELD_NAMES, 'rol_id'];
-  }
-  if (categoria === 'ACCESO_SISTEMA') {
-    return [...PERSONAL_FIELD_NAMES];
-  }
-  return [];
-}
+import {
+  ROLES_POR_CATEGORIA,
+  buildCreatePayload,
+  categoriaDesdeUsuario,
+  errMsg,
+  fieldsToValidateOnFinish,
+  fieldsToValidateOnFinishEdit,
+  getCategoriaResetPatch,
+  getCreatePageInitialValues,
+  getEditPageInitialValues,
+  loadRolesErrorMessage,
+  perfilFieldNamesForCategory,
+} from './useSeguridadUsuarioCreatePage.helpers.js';
 
 export const useSeguridadUsuarioCreatePage = () => {
+  const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
+  const isEditMode = Number.isFinite(Number(id)) && String(location.pathname).includes('/editar');
+  const editingUserId = isEditMode ? Number(id) : null;
+  const requestedInitialStepRaw = isEditMode
+    ? location.state?.editInitialStep
+    : location.state?.createInitialStep;
+  const requestedInitialStep = Number(requestedInitialStepRaw);
+  const forcedCategoriaCreacion = location.state?.forceCategoriaCreacion;
+  const forcedRoleCode = location.state?.forceRoleCode;
   const prefillDocenteUsuario = location.state?.prefillDocenteUsuario;
+  const isCreateFromDocenteDetail =
+    !isEditMode &&
+    forcedCategoriaCreacion === 'ASIGNAR_DOCENTE' &&
+    Number.isFinite(Number(prefillDocenteUsuario?.docenteId));
   const { message } = App.useApp();
   const [form] = Form.useForm();
-  const { crear } = useUsuarioDetail();
+  const { crear, actualizar, cargar } = useUsuarioDetail();
   const { roles, cargar: cargarRoles } = useRolesList();
   const [loading, setLoading] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const [usuarioEditando, setUsuarioEditando] = useState(null);
   const categoria = Form.useWatch('categoria_creacion', form);
   const prevCategoriaRef = useRef(undefined);
+  const categoriaFijada = useMemo(
+    () => (isEditMode ? categoriaDesdeUsuario(usuarioEditando) : undefined),
+    [isEditMode, usuarioEditando]
+  );
+  const wizardInitialStep = useMemo(() => {
+    if (Number.isFinite(requestedInitialStep) && requestedInitialStep >= 0) {
+      return requestedInitialStep;
+    }
+    if (isEditMode && categoriaFijada === 'ACCESO_SISTEMA') {
+      return 1; // paso 2: Datos del perfil
+    }
+    return 0;
+  }, [requestedInitialStep, isEditMode, categoriaFijada]);
 
   const usuarioAltaInitialValues = useMemo(() => {
-    const base = { categoria_creacion: 'ACCESO_SISTEMA' };
-    const p = location.state?.prefillDocenteUsuario;
-    if (!p?.docenteId) return base;
-    const id = Number(p.docenteId);
-    if (!Number.isFinite(id) || id < 1) return base;
-    return {
-      categoria_creacion: 'ASIGNAR_DOCENTE',
-      docente_id: id,
-      vinculo_nombre_display: p.nombreCompleto || undefined,
-      vinculo_email_display: p.emailPersonal || undefined,
-    };
-  }, [location.state?.prefillDocenteUsuario]);
+    if (isEditMode) return getEditPageInitialValues(usuarioEditando);
+    return getCreatePageInitialValues(location.state?.prefillDocenteUsuario);
+  }, [isEditMode, usuarioEditando, location.state?.prefillDocenteUsuario]);
 
   const wizardFormMountKey = useMemo(
-    () => (prefillDocenteUsuario?.docenteId ? `prefill-docente-${prefillDocenteUsuario.docenteId}` : 'usuario-nuevo'),
-    [prefillDocenteUsuario?.docenteId]
+    () => (isEditMode ? `usuario-editar-${editingUserId}` : (prefillDocenteUsuario?.docenteId ? `prefill-docente-${prefillDocenteUsuario.docenteId}` : 'usuario-nuevo')),
+    [isEditMode, editingUserId, prefillDocenteUsuario?.docenteId]
   );
 
   const breadcrumbItems = useMemo(
@@ -160,9 +72,9 @@ export const useSeguridadUsuarioCreatePage = () => {
       { title: 'Inicio', href: '/' },
       { title: 'Seguridad', href: '/seguridad/usuarios' },
       { title: 'Usuarios', href: '/seguridad/usuarios' },
-      { title: 'Nuevo Usuario' },
+      { title: isEditMode ? `Editar Usuario #${editingUserId}` : 'Nuevo Usuario' },
     ],
-    []
+    [isEditMode, editingUserId]
   );
 
   const rolesFiltrados = useMemo(() => {
@@ -172,6 +84,25 @@ export const useSeguridadUsuarioCreatePage = () => {
     const filtered = roles.filter((r) => set.has(r.codigo));
     return filtered.length ? filtered : roles;
   }, [categoria, roles]);
+
+  useEffect(() => {
+    if (!isEditMode || !editingUserId) return;
+    const run = async () => {
+      setLoading(true);
+      try {
+        const usuario = await cargar(editingUserId);
+        setUsuarioEditando(usuario || null);
+        form.setFieldsValue(getEditPageInitialValues(usuario));
+      } catch (e) {
+        const text = errMsg(e);
+        setSubmitError(text);
+        message.error(text);
+      } finally {
+        setLoading(false);
+      }
+    };
+    run();
+  }, [isEditMode, editingUserId, cargar, form, message]);
 
   useEffect(() => {
     const run = async () => {
@@ -192,6 +123,52 @@ export const useSeguridadUsuarioCreatePage = () => {
   }, [categoria, rolesFiltrados, form]);
 
   useEffect(() => {
+    if (isEditMode) return;
+    if (!forcedCategoriaCreacion) return;
+    const current = form.getFieldValue('categoria_creacion');
+    if (current !== forcedCategoriaCreacion) {
+      form.setFieldsValue({ categoria_creacion: forcedCategoriaCreacion });
+    }
+  }, [isEditMode, forcedCategoriaCreacion, form]);
+
+  useEffect(() => {
+    if (!isCreateFromDocenteDetail) return;
+    const docenteId = Number(prefillDocenteUsuario?.docenteId);
+    if (!Number.isFinite(docenteId) || docenteId < 1) return;
+    const patch = {};
+    const currentCategoria = form.getFieldValue('categoria_creacion');
+    const currentDocenteId = Number(form.getFieldValue('docente_id'));
+    const currentNombre = form.getFieldValue('vinculo_nombre_display');
+    const currentEmail = form.getFieldValue('vinculo_email_display');
+    const currentCi = form.getFieldValue('vinculo_ci_display');
+    if (currentCategoria !== 'ASIGNAR_DOCENTE') {
+      patch.categoria_creacion = 'ASIGNAR_DOCENTE';
+    }
+    if (!Number.isFinite(currentDocenteId) || currentDocenteId !== docenteId) {
+      patch.docente_id = docenteId;
+    }
+    if (!currentNombre && prefillDocenteUsuario?.nombreCompleto) {
+      patch.vinculo_nombre_display = prefillDocenteUsuario.nombreCompleto;
+    }
+    if (!currentEmail && prefillDocenteUsuario?.emailPersonal) {
+      patch.vinculo_email_display = prefillDocenteUsuario.emailPersonal;
+    }
+    if (!currentCi && prefillDocenteUsuario?.ciCompleto) {
+      patch.vinculo_ci_display = prefillDocenteUsuario.ciCompleto;
+    }
+    if (Object.keys(patch).length > 0) {
+      form.setFieldsValue(patch);
+    }
+  }, [isCreateFromDocenteDetail, prefillDocenteUsuario, form]);
+
+  useEffect(() => {
+    if (!isEditMode && forcedRoleCode && roles?.length) {
+      const forced = roles.find((r) => r.codigo === forcedRoleCode);
+      const rid = Number(form.getFieldValue('rol_id'));
+      if (forced && rid !== forced.id) {
+        form.setFieldsValue({ rol_id: forced.id });
+      }
+    }
     if (!roles?.length || !categoria) return;
     if (categoria === 'PERSONAL_INSTITUCIONAL') return;
     const allowed = ROLES_POR_CATEGORIA[categoria];
@@ -202,41 +179,33 @@ export const useSeguridadUsuarioCreatePage = () => {
     const idNum = Number(rid);
     const stillValid = Number.isFinite(idNum) && candidates.some((r) => r.id === idNum);
     if (stillValid) return;
+    if (!isEditMode && forcedRoleCode) {
+      const forced = candidates.find((r) => r.codigo === forcedRoleCode);
+      if (forced) {
+        form.setFieldsValue({ rol_id: forced.id });
+        return;
+      }
+    }
     form.setFieldsValue({ rol_id: candidates[0].id });
-  }, [categoria, roles, form]);
+  }, [categoria, roles, form, isEditMode, forcedRoleCode]);
 
   useEffect(() => {
+    if (isEditMode && categoriaFijada && categoria && categoria !== categoriaFijada) {
+      form.setFieldsValue({ categoria_creacion: categoriaFijada });
+    }
     const prev = prevCategoriaRef.current;
     prevCategoriaRef.current = categoria;
-    const patch = { password_confirm: undefined };
-    if (categoria === 'ASIGNAR_ESTUDIANTE') {
-      patch.docente_id = undefined;
-      if (prev && prev !== 'ASIGNAR_ESTUDIANTE') {
-        patch.vinculo_email_display = undefined;
-        patch.vinculo_nombre_display = undefined;
-      }
-    } else if (categoria === 'ASIGNAR_DOCENTE') {
-      patch.estudiante_id = undefined;
-      if (prev && prev !== 'ASIGNAR_DOCENTE') {
-        patch.vinculo_email_display = undefined;
-        patch.vinculo_nombre_display = undefined;
-      }
-    } else {
-      patch.estudiante_id = undefined;
-      patch.docente_id = undefined;
-      patch.vinculo_email_display = undefined;
-      patch.vinculo_nombre_display = undefined;
-    }
-    form.setFieldsValue(patch);
-  }, [categoria, form]);
+    if (isEditMode) return;
+    form.setFieldsValue(getCategoriaResetPatch(categoria, prev));
+  }, [categoria, form, isEditMode, categoriaFijada]);
 
   const wizardSteps = useMemo(
     () => [
-      { title: 'Tipo de alta', formTitle: 'Nuevo usuario', sections: ['categoria'], config: { categoria: {} } },
+      { title: 'Tipo de alta', formTitle: isEditMode ? 'Editar usuario' : 'Nuevo usuario', sections: ['categoria'], config: { categoria: {} } },
       { title: 'Datos del perfil', formTitle: 'Ficha o vínculo institucional', sections: ['perfil'], config: { perfil: {} } },
       { title: 'Credenciales y rol', formTitle: 'Acceso al sistema', sections: ['cuenta'], config: { cuenta: {} } },
     ],
-    []
+    [isEditMode]
   );
 
   const onValidateBeforeNext = useCallback((stepNumber, formInstance) => {
@@ -248,16 +217,19 @@ export const useSeguridadUsuarioCreatePage = () => {
       return formInstance.validateFields(names);
     }
     if (stepNumber === 3) {
+      if (isEditMode) {
+        return formInstance.validateFields(['username', 'rol_id']);
+      }
       return formInstance.validateFields(['username', 'password', 'password_confirm', 'rol_id']);
     }
     return Promise.resolve();
-  }, []);
+  }, [isEditMode]);
 
   const handleFinish = useCallback(async () => {
     setSubmitError('');
     const cat = form.getFieldValue('categoria_creacion');
     try {
-      await form.validateFields(fieldsToValidateOnFinish(cat));
+      await form.validateFields(isEditMode ? fieldsToValidateOnFinishEdit(cat) : fieldsToValidateOnFinish(cat));
     } catch {
       message.error('Revise los campos obligatorios del último paso.');
       return;
@@ -265,9 +237,16 @@ export const useSeguridadUsuarioCreatePage = () => {
     setLoading(true);
     try {
       const values = form.getFieldsValue(true);
-      const data = await crear(buildCreatePayload(values));
-      message.success('Usuario creado');
-      navigate(`/seguridad/usuarios/${data?.id || ''}`);
+      const payload = buildCreatePayload(values, { isEditMode });
+      if (isEditMode && editingUserId) {
+        await actualizar(editingUserId, payload);
+        message.success('Usuario actualizado');
+        navigate(`/seguridad/usuarios/${editingUserId}`);
+      } else {
+        const data = await crear(payload);
+        message.success('Usuario creado');
+        navigate(`/seguridad/usuarios/${data?.id || ''}`);
+      }
     } catch (e) {
       const text = errMsg(e);
       setSubmitError(text);
@@ -275,11 +254,16 @@ export const useSeguridadUsuarioCreatePage = () => {
     } finally {
       setLoading(false);
     }
-  }, [form, crear, message, navigate]);
+  }, [form, isEditMode, editingUserId, crear, actualizar, message, navigate]);
 
   const goToUsuariosList = useCallback(() => {
+    const returnTo = location.state?.returnToPath;
+    if (typeof returnTo === 'string' && returnTo.trim() !== '') {
+      navigate(returnTo);
+      return;
+    }
     navigate('/seguridad/usuarios');
-  }, [navigate]);
+  }, [navigate, location.state]);
 
   return {
     form,
@@ -287,6 +271,9 @@ export const useSeguridadUsuarioCreatePage = () => {
     loading,
     submitError,
     prefillDocenteUsuario,
+    isEditMode,
+    categoriaFijada,
+    wizardInitialStep,
     wizardFormMountKey,
     breadcrumbItems,
     wizardSteps,

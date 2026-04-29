@@ -11,9 +11,9 @@ import InstitutionalRoleRadioOption from './InstitutionalRoleRadioOption.jsx';
  * @param {(e: { target: { value: number } }) => void} props.onChange
  * @param {Array<{ id: number, nombre: string, codigo: string, tipo?: string }>} props.roles - ya ordenados
  */
-export default function InstitutionalRoleRadioGroup({ value, onChange, roles = [] }) {
+export default function InstitutionalRoleRadioGroup({ value, onChange, roles = [], disabled = false }) {
   return (
-    <Radio.Group className="seg-cargo-radio-group" value={value} onChange={onChange}>
+    <Radio.Group className="seg-cargo-radio-group" value={value} onChange={onChange} disabled={disabled}>
       {roles.map((role) => (
         <InstitutionalRoleRadioOption key={role.id} role={role} selected={value === role.id} />
       ))}

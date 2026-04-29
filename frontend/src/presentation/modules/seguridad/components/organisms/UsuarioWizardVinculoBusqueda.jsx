@@ -3,11 +3,12 @@
  * Al elegir un registro rellena `vinculo_email_display` y `vinculo_nombre_display` (paso Credenciales).
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Form, Input, Select, Spin, Typography } from 'antd';
+import { Form, Input } from 'antd';
+import { UserOutlined } from '@ant-design/icons';
 import { Card } from '@atoms';
+import { FormSection } from '@molecules';
+import { Text } from '@atoms';
 import usuarioAltaLookupRepository from '@/infrastructure/repositories/seguridad/UsuarioAltaLookupRepository.js';
-
-const { Paragraph } = Typography;
 
 const DEBOUNCE_MS = 380;
 
@@ -38,6 +39,17 @@ function emailReferencia(row) {
   return String(e).trim().toLowerCase();
 }
 
+function ciCompletoReferencia(row) {
+  if (!row) return '';
+  if (row.ci && row.expedicion) return `${row.ci} ${row.expedicion}`;
+  return row.ci || '';
+}
+
+function codigoReferencia(row) {
+  if (!row) return '';
+  return row.codigoEstudiante ?? row.codigo_estudiante ?? '';
+}
+
 export default function UsuarioWizardVinculoBusqueda({
   form,
   kind,
@@ -46,8 +58,10 @@ export default function UsuarioWizardVinculoBusqueda({
   fieldName,
   placeholder = 'Escriba al menos 2 caracteres para buscar',
   prefillDocenteUsuario,
+  isEditMode = false,
 }) {
-  const [options, setOptions] = useState([]);
+  const selectedFieldValue = Form.useWatch(fieldName, form);
+  const [rows, setRows] = useState([]);
   const [fetching, setFetching] = useState(false);
   const timerRef = useRef(null);
 
@@ -55,61 +69,50 @@ export default function UsuarioWizardVinculoBusqueda({
     async (q) => {
       const term = String(q || '').trim();
       if (term.length < 2) {
+        setRows([]);
         return;
       }
       setFetching(true);
       try {
-        const rows =
+        const resultRows =
           kind === 'estudiante'
             ? await usuarioAltaLookupRepository.buscarEstudiantesSinCuenta(term, 20)
             : await usuarioAltaLookupRepository.buscarDocentesSinCuenta(term, 20);
-        const mapped = rows.map((row) => ({
-          value: row.id,
-          label: kind === 'estudiante' ? labelEstudiante(row) : labelDocente(row),
-          datosVinculo: row,
-        }));
-        setOptions((prev) => {
-          const sid = form.getFieldValue(fieldName);
-          if (sid == null) return mapped;
-          if (mapped.some((m) => m.value === sid)) return mapped;
-          const keep = prev.find((p) => p.value === sid);
-          return keep ? [keep, ...mapped] : mapped;
-        });
+        setRows(Array.isArray(resultRows) ? resultRows : []);
       } catch {
-        setOptions([]);
+        setRows([]);
       } finally {
         setFetching(false);
       }
     },
-    [kind, form, fieldName]
+    [kind]
   );
 
   const onSearch = useCallback(
     (q) => {
+      if (isEditMode) return;
       if (timerRef.current) clearTimeout(timerRef.current);
       timerRef.current = setTimeout(() => {
         runSearch(q);
       }, DEBOUNCE_MS);
     },
-    [runSearch]
+    [runSearch, isEditMode]
   );
 
-  const onSelectChange = useCallback(
-    (id, option) => {
-      if (id == null || id === undefined) {
-        form.setFieldsValue({ vinculo_email_display: undefined, vinculo_nombre_display: undefined });
-        return;
-      }
-      const row = option?.datosVinculo ?? options.find((o) => o.value === id)?.datosVinculo;
-      if (!row) return;
+  const onSelectRow = useCallback(
+    (row) => {
+      if (isEditMode || !row?.id) return;
       const mail = emailReferencia(row);
       const nombre = nombreCompletoReferencia(row);
       form.setFieldsValue({
+        [fieldName]: Number(row.id),
         vinculo_email_display: mail || undefined,
         vinculo_nombre_display: nombre || undefined,
+        vinculo_ci_display: ciCompletoReferencia(row) || undefined,
+        vinculo_codigo_display: codigoReferencia(row) || undefined,
       });
     },
-    [form, options]
+    [fieldName, form, isEditMode]
   );
 
   useEffect(
@@ -130,59 +133,117 @@ export default function UsuarioWizardVinculoBusqueda({
       .filter(Boolean)
       .join(' · ') || `Docente #${id}`;
     const opt = {
-      value: id,
-      label,
-      datosVinculo: {
-        id,
-        nombres: prefillDocenteUsuario.nombreCompleto || '',
-        apellidoPaterno: '',
-        apellidoMaterno: '',
-        email_personal: prefillDocenteUsuario.emailPersonal || null,
-      },
+      id,
+      nombres: prefillDocenteUsuario.nombreCompleto || '',
+      apellidoPaterno: '',
+      apellidoMaterno: '',
+      email_personal: prefillDocenteUsuario.emailPersonal || null,
+      ci: prefillDocenteUsuario.ciCompleto || null,
+      etiqueta_prefill: label,
     };
-    setOptions((prev) => (prev.some((o) => o.value === id) ? prev : [opt, ...prev]));
+    setRows((prev) => (prev.some((o) => Number(o.id) === id) ? prev : [opt, ...prev]));
     const current = form.getFieldValue(fieldName);
     if (current !== id) {
       form.setFieldsValue({
         [fieldName]: id,
         vinculo_nombre_display: prefillDocenteUsuario.nombreCompleto || undefined,
         vinculo_email_display: prefillDocenteUsuario.emailPersonal || undefined,
+        vinculo_ci_display: prefillDocenteUsuario.ciCompleto || undefined,
+        vinculo_codigo_display: undefined,
       });
     }
   }, [kind, fieldName, prefillDocenteUsuario, form]);
 
+  const selectedId = Number(selectedFieldValue || 0);
+  const isEstudiante = kind === 'estudiante';
+  const selectedRow = rows.find((row) => Number(row.id) === selectedId) || null;
+
+  const buildListItem = useCallback(
+    (row) => {
+      const title = row.etiqueta_prefill || (isEstudiante ? labelEstudiante(row) : labelDocente(row));
+      const extra = [];
+      if (row.ci && row.expedicion) extra.push(`CI: ${row.ci} ${row.expedicion}`);
+      if (isEstudiante && (row.codigoEstudiante || row.codigo_estudiante)) {
+        extra.push(`Código: ${row.codigoEstudiante ?? row.codigo_estudiante}`);
+      }
+      const caption = extra.length > 0 ? extra.join(' | ') : null;
+      return {
+        avatar: <UserOutlined />,
+        title,
+        caption: caption ? <Text type="secondary">{caption}</Text> : null,
+      };
+    },
+    [isEstudiante]
+  );
+
+  const fields = [
+    {
+      name: `${fieldName}_search`,
+      type: 'search',
+      label: isEstudiante ? 'Buscar Estudiante' : 'Buscar Docente',
+      placeholder,
+      required: true,
+      span: 12,
+      allowClear: true,
+      onSearch,
+      disabled: isEditMode,
+    },
+    {
+      name: `${fieldName}_info`,
+      type: 'alert',
+      label: '',
+      message: `Instrucciones de búsqueda (${isEstudiante ? 'estudiantes' : 'docentes'})`,
+      description: intro,
+      alertType: 'info',
+      span: 12,
+      required: false,
+    },
+    {
+      name: `${fieldName}_results`,
+      type: 'list',
+      label: '',
+      span: 24,
+      required: false,
+      items: rows,
+      loading: fetching,
+      emptyMessage: `No se encontraron ${isEstudiante ? 'estudiantes' : 'docentes'} sin usuario asociado.`,
+      renderItem: buildListItem,
+      onSelect: onSelectRow,
+      selectedItem: selectedRow,
+      isSelected: (item) => Number(item?.id) === selectedId,
+      disabled: isEditMode,
+    },
+  ];
+
   return (
     <div className="usuario-wizard-step">
       <Card className="form-section" variant="outlined" shadow={false} headerColor="primary" title={title}>
-        {intro ? (
-          <Paragraph type="secondary" style={{ marginBottom: 16 }}>
-            {intro}
-          </Paragraph>
-        ) : null}
+        <Form.Item
+          name={fieldName}
+          preserve
+          hidden
+          rules={[{ required: true, message: 'Seleccione un registro de la lista' }]}
+        >
+          <Input type="hidden" />
+        </Form.Item>
         <Form.Item name="vinculo_nombre_display" preserve hidden>
           <Input type="hidden" />
         </Form.Item>
         <Form.Item name="vinculo_email_display" preserve hidden>
           <Input type="hidden" />
         </Form.Item>
-        <Form.Item
-          name={fieldName}
-          preserve
-          label={kind === 'estudiante' ? 'Estudiante' : 'Docente'}
-          rules={[{ required: true, message: 'Seleccione un registro de la lista' }]}
-        >
-          <Select
-            showSearch
-            allowClear
-            filterOption={false}
-            placeholder={placeholder}
-            notFoundContent={fetching ? <Spin size="small" /> : null}
-            options={options}
-            onSearch={onSearch}
-            onChange={onSelectChange}
-            optionFilterProp="label"
-          />
+        <Form.Item name="vinculo_ci_display" preserve hidden>
+          <Input type="hidden" />
         </Form.Item>
+        <Form.Item name="vinculo_codigo_display" preserve hidden>
+          <Input type="hidden" />
+        </Form.Item>
+        <FormSection title={null} fields={fields} form={form} resolveOptions={() => []} readOnly={false} />
+        <Text type="secondary">
+          {isEditMode
+            ? 'En edición no se permite cambiar el vínculo de referencia para mantener consistencia del usuario.'
+            : 'Solo se muestran registros que todavia no tienen usuario asociado para evitar duplicar accesos.'}
+        </Text>
       </Card>
     </div>
   );

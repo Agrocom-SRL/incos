@@ -11,7 +11,12 @@ import { INSTITUTIONAL_ROLE_ORDER, sortInstitutionalRoles } from '@modules/segur
 /** Códigos de rol institucional (tabla `roles` / seeder 53): solo estos, nunca ADMIN/DOCENTE/ESTUDIANTE. */
 const CODIGOS_ROL_INSTITUCIONAL = new Set(INSTITUTIONAL_ROLE_ORDER);
 
-export default function UsuarioWizardPerfilStepContent({ form, rolesCatalog = [], prefillDocenteUsuario }) {
+export default function UsuarioWizardPerfilStepContent({
+  form,
+  rolesCatalog = [],
+  prefillDocenteUsuario,
+  isEditMode = false,
+}) {
   const watchedCategoria = Form.useWatch('categoria_creacion', form);
   const categoria = watchedCategoria ?? form?.getFieldValue('categoria_creacion');
 
@@ -33,6 +38,7 @@ export default function UsuarioWizardPerfilStepContent({ form, rolesCatalog = []
             aparecen candidatos sin usuario asignado.
           </>
         }
+        isEditMode={isEditMode}
       />
     );
   }
@@ -45,6 +51,7 @@ export default function UsuarioWizardPerfilStepContent({ form, rolesCatalog = []
         fieldName="docente_id"
         title="Vínculo con docente"
         prefillDocenteUsuario={prefillDocenteUsuario}
+        isEditMode={isEditMode}
         intro={
           <>
             Busque al docente que ya está registrado y <strong>aún no tiene cuenta de acceso</strong>. Solo aparecen
@@ -89,7 +96,7 @@ export default function UsuarioWizardPerfilStepContent({ form, rolesCatalog = []
             </>
           }
         />
-        <UsuarioWizardCargoInstitucionalBlock rolesInstitucional={rolesInstitucional} />
+        <UsuarioWizardCargoInstitucionalBlock rolesInstitucional={rolesInstitucional} isEditMode={isEditMode} />
       </>
     );
   }

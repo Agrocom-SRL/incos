@@ -250,7 +250,7 @@ export default function UsuarioPermisosPage() {
     puedeEditar,
     esAdminSistema,
     payloadUsuario,
-    removeOv,
+    removeOverride,
   ]);
 
   const headerActions = (
