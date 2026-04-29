@@ -5,20 +5,14 @@
  * Orden: rutas estáticas (`nuevo`) y subpaths (`.../permisos`) antes que `:id`.
  */
 
-import { lazy } from 'react';
 import {
   UsuarioCreateConnector,
   UsuarioDetailConnector,
   UsuarioPermisosConnector,
+  RolPermisosConnector,
+  RolesListConnector,
   UsuariosListConnector,
 } from '@modules/seguridad/connectors';
-
-const RolesListPage = lazy(() =>
-  import('@modules/seguridad/pages/RolesListPage.jsx')
-);
-const RolPermisosPage = lazy(() =>
-  import('@modules/seguridad/pages/RolPermisosPage.jsx')
-);
 
 export const seguridadRoutes = [
   {
@@ -40,7 +34,7 @@ export const seguridadRoutes = [
   },
   {
     path: '/seguridad/roles/:id/permisos',
-    element: <RolPermisosPage />,
+    element: <RolPermisosConnector />,
     key: 'SEG-ROL-PERMISOS',
     permiso: 'seguridad.rol.gestionar',
     accion: 'EDITAR',
@@ -69,7 +63,7 @@ export const seguridadRoutes = [
   },
   {
     path: '/seguridad/roles',
-    element: <RolesListPage />,
+    element: <RolesListConnector />,
     key: 'SEG-ROLES',
     permiso: 'seguridad.rol.gestionar',
     accion: 'LISTAR',

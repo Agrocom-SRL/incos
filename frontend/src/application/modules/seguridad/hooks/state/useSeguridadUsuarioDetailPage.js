@@ -3,7 +3,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { App } from 'antd';
 import { usePermiso } from '@/presentation/hooks/usePermiso.js';
 import { useRolesList } from '@/application/modules/seguridad/hooks/state/useRolesList';
-import { useUsuarioDetail } from '@/application/modules/seguridad/hooks/useUsuarioDetail';
+import { useUsuarioDetail } from '@/application/modules/seguridad/hooks/state/useUsuarioDetail';
 
 function errMsg(json) {
   const e = json?.error;

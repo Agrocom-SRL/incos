@@ -28,4 +28,3 @@ export function useUsuarioDetail() {
 
   return { usuario, loading, error, cargar, crear, actualizar, cambiarEstado, cambiarPassword };
 }
-

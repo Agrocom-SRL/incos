@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { App } from 'antd';
-import { useUsuariosList } from '@/application/modules/seguridad/hooks/useUsuariosList';
+import { useUsuariosList } from '@/application/modules/seguridad/hooks/state/useUsuariosList';
 import { createUsuariosTableColumns } from '@modules/seguridad/config/usuariosTableColumns.jsx';
 
 function errorMessage(error) {

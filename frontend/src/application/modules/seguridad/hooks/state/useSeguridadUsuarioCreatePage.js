@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { App, Form } from 'antd';
-import { useUsuarioDetail } from '@/application/modules/seguridad/hooks/useUsuarioDetail';
+import { useUsuarioDetail } from '@/application/modules/seguridad/hooks/state/useUsuarioDetail';
 import { useRolesList } from '@/application/modules/seguridad/hooks/state/useRolesList';
 
 const ROLES_POR_CATEGORIA = {

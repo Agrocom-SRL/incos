@@ -30,4 +30,3 @@ export function useUsuariosList() {
 
   return { usuarios, loading, error, searchText, setSearchText, pagination, cargar };
 }
-
