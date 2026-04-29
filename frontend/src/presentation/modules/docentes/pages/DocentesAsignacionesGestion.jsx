@@ -58,7 +58,7 @@ const DocentesAsignacionesGestion = () => {
         </span>
       ),
       children: (
-        <Card variant="borderless" shadow={false} headerColor="primary" >
+        <Card variant="borderless" shadow={false} headerColor="primary">
           <DocenteSchedulesSection
             courseSchedules={courseSchedules}
             puedeAsignarMaterias={puedeAsignarMaterias}

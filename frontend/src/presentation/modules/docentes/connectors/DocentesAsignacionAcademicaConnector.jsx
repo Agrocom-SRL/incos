@@ -1,5 +1,5 @@
 /**
- * Conector: asignación académica (sin provider hasta existan casos de uso / catálogos).
+ * Conector: asignación académica (Provider + página).
  */
 
 import { DocentesAsignacionAcademicaProvider } from '@application-docentes/providers';

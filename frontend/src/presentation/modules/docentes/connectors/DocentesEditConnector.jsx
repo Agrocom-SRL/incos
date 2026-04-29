@@ -1,5 +1,6 @@
 import { Typography } from 'antd';
 import { PermisoGuard } from '@/presentation/guards/PermisoGuard.jsx';
+import { DocentesFormProvider } from '@application-docentes/providers';
 import DocentesForm from '@docentes/pages/DocentesForm';
 
 const fallbackDetalle = (
@@ -15,7 +16,9 @@ const fallbackEditar = (
 const DocentesEditConnector = () => (
   <PermisoGuard codigo="docentes.ver" accion="DETALLE" fallback={fallbackDetalle}>
     <PermisoGuard codigo="docentes.editar" accion="EDITAR" fallback={fallbackEditar}>
-      <DocentesForm mode="edit" />
+      <DocentesFormProvider mode="edit">
+        <DocentesForm />
+      </DocentesFormProvider>
     </PermisoGuard>
   </PermisoGuard>
 );
