@@ -19,6 +19,11 @@
 export { IBaseRepository } from './IBaseRepository';
 
 // ============================================
+// MÓDULO: DOCENTES
+// ============================================
+export { IDocenteRepository } from './IDocenteRepository';
+
+// ============================================
 // MÓDULO: ESTUDIANTES
 // ============================================
 export { IEstudianteRepository } from './IEstudianteRepository';

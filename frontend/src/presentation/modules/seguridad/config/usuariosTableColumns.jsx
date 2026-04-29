@@ -99,7 +99,13 @@ export const createUsuariosTableColumns = (navigate) => [
             icon: <EditOutlined />,
             variant: 'primary',
             tooltip: 'Editar datos',
-            onClick: () => navigate(`/seguridad/usuarios/${record.id}`, { state: { quickAction: 'edit' } }),
+            onClick: () =>
+              navigate(`/seguridad/usuarios/${record.id}/editar`, {
+                state:
+                  record?.rol?.codigo === 'ADMIN_SISTEMA'
+                    ? { editInitialStep: 1 }
+                    : undefined,
+              }),
             permiso: 'seguridad.usuario.administrar',
             accion: 'EDITAR',
           },

@@ -1,7 +1,30 @@
 # Matriz de Permisos - Instituto INCOS
-## Ultima actualizacion: 2026-04-07
+## Ultima actualizacion: 2026-04-24
 
 Documento de auditoria funcional (frontend + backend + seeds) sobre permisos por accion.
+
+## Criterio canon para nuevas funciones (ABM limpio + seguridad)
+
+Todo alta/baja/modificacion (ABM) o nueva pantalla de un modulo debe cumplir estas restricciones minimas:
+
+1. **Arquitectura limpia por capa**
+   - `presentation/pages`: UI pura.
+   - `application/hooks/state`: logica de pantalla.
+   - `application/providers`: inyeccion de contexto.
+   - `presentation/connectors`: composicion Provider + Page.
+2. **Permisos coherentes extremo a extremo**
+   - misma accion entre `routes.jsx`, `PermisoGuard/ActionButton/TableActions/useAcciones` y `verificarPermiso` backend.
+3. **Accion correcta segun flujo**
+   - listado/menu: `LISTAR`
+   - ficha: `DETALLE`
+   - alta: `CREAR`
+   - edicion: `EDITAR`
+   - baja: `ELIMINAR`
+   - exportaciones: `EXPORTAR`
+4. **Sin bypass en UI**
+   - no mostrar CTA de accion si el permiso/accion no existe o no esta asignado al rol.
+5. **Trazabilidad de navegacion**
+   - cuando exista flujo multi-pantalla, propagar `returnListPath` y ruta de origen (`gestionReturnPath` o equivalente).
 
 ## Resumen de roles
 
@@ -34,6 +57,8 @@ Documento de auditoria funcional (frontend + backend + seeds) sobre permisos por
 | `auth.routes.js` | POST | `/api/v1/auth/login` | Autenticar |
 | `auth.routes.js` | GET | `/api/v1/auth/me` | Perfil + permisos |
 | `auth.routes.js` | POST | `/api/v1/auth/logout` | Cerrar sesion |
+| `docentes.routes.js` | GET | `/api/v1/docentes` | LISTAR |
+| `docentes.routes.js` | GET | `/api/v1/docentes/:id` | DETALLE ficha |
 | `estudiantes.routes.js` | GET | `/api/v1/estudiantes` | VER listado |
 | `estudiantes.routes.js` | POST | `/api/v1/estudiantes` | CREAR |
 | `estudiantes.routes.js` | PUT | `/api/v1/estudiantes/:id` | EDITAR |
@@ -117,7 +142,11 @@ Este catalogo define las capacidades reales del sistema para evitar ambiguedad e
 ### Inventario frontend de permisos en rutas (single source UI)
 
 El barrido de `frontend/src/presentation/modules/**/routes.jsx` confirma que los codigos usados en UI
-estan alineados con `54-seed-permisos.sql` (1..87) y que la visibilidad del sidebar depende de accion `VER`.
+estan alineados con `54-seed-permisos.sql` (96 permisos; ultimo `docentes.editar` id 96) y que la visibilidad del sidebar en v2 depende de accion **LISTAR** (no existe `VER` en `permiso_acciones`).
+
+### Nota de compatibilidad documental
+
+Si algun documento legado usa `VER` como sinonimo de lectura, al implementar nuevas funciones priorizar `LISTAR` y `DETALLE` en frontend, y documentar cualquier excepcion temporal hasta completar la normalizacion.
 
 ### Recomendacion de normalizacion (siguiente paso de schema)
 
@@ -202,6 +231,13 @@ Permisos: `academico.nivelacion.*`, `academico.trazabilidad.*`, `academico.histo
 ### DOC - Docentes y supervision (`/docentes/*`, `/supervision/*`)
 Permisos: `docentes.*`, `docentes.supervision.*`
 
+| Codigo (seed) | Acciones v2 (`permiso_acciones`) | Uso principal (UI) |
+|---|---|---|
+| `docentes.ver` (41) | LISTAR, DETALLE, EXPORTAR | Listado, ficha, export (cuando exista) |
+| `docentes.crear` (42) | CREAR | Alta `/docentes/registrar` |
+| `docentes.editar` (96) | EDITAR, ELIMINAR | Formulario edicion ficha; baja (DELETE API pendiente) |
+| `docentes.asignar` (43) | EDITAR | Asignacion oferta/curso-paralelo `/docentes/asignar` |
+
 | Accion | Descripcion | Roles |
 |---|---|---|
 | VER | Ver docentes/supervision | ADM, REC, DIRA, DIRM, DOC |
@@ -238,6 +274,7 @@ Endpoint(s): `GET/POST/PUT/PATCH/DELETE /usuarios`, `GET/PUT /roles/:id/permisos
 
 ## Hallazgos de la auditoria
 
+- Docentes: permiso dedicado `docentes.editar` (id 96) separa **EDITAR** ficha de **CREAR** alta; **ELIMINAR** en UI queda listo; endpoint `DELETE /docentes/:id` pendiente de implementar.
 - Existen `DELETE` activos para estudiantes, becas asignadas, inscripciones, pagos y overrides de usuarios.
 - Existen `EXPORTAR` reales en estudiantes (excel) y pagos (recibo PDF).
 - `ADMIN_SISTEMA` debe ser inmutable en SEG; se protegio en backend y UI.

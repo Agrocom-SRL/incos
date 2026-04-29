@@ -54,6 +54,16 @@ export const actualizarUsuarioValidator = [
     .withMessage('username máximo 50 caracteres'),
   body('rol_id').optional().isInt({ min: 1 }),
   body('foto_url').optional({ nullable: true }).isString(),
+  body('password')
+    .optional({ nullable: true })
+    .isLength({ min: 8, max: 100 })
+    .withMessage('password debe tener entre 8 y 100 caracteres'),
+  body('categoria_creacion')
+    .optional({ nullable: true })
+    .isIn(['ACCESO_SISTEMA', 'PERSONAL_INSTITUCIONAL', 'ASIGNAR_ESTUDIANTE', 'ASIGNAR_DOCENTE']),
+  body('estudiante_id').optional({ nullable: true }).isInt({ min: 1 }),
+  body('docente_id').optional({ nullable: true }).isInt({ min: 1 }),
+  body('personal').optional({ nullable: true }).isObject(),
 ];
 
 /** Permite estado null explícito (reactivar) */

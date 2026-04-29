@@ -5,31 +5,19 @@
  * Orden: rutas estáticas (`nuevo`) y subpaths (`.../permisos`) antes que `:id`.
  */
 
-import { lazy } from 'react';
-
-const UsuariosListPage = lazy(() =>
-  import('@modules/seguridad/pages/UsuariosListPage.jsx')
-);
-const UsuarioCreatePage = lazy(() =>
-  import('@modules/seguridad/pages/UsuarioCreatePage.jsx')
-);
-const UsuarioDetailPage = lazy(() =>
-  import('@modules/seguridad/pages/UsuarioDetailPage.jsx')
-);
-const UsuarioPermisosPage = lazy(() =>
-  import('@modules/seguridad/pages/UsuarioPermisosPage.jsx')
-);
-const RolesListPage = lazy(() =>
-  import('@modules/seguridad/pages/RolesListPage.jsx')
-);
-const RolPermisosPage = lazy(() =>
-  import('@modules/seguridad/pages/RolPermisosPage.jsx')
-);
+import {
+  UsuarioCreateConnector,
+  UsuarioDetailConnector,
+  UsuarioPermisosConnector,
+  RolPermisosConnector,
+  RolesListConnector,
+  UsuariosListConnector,
+} from '@modules/seguridad/connectors';
 
 export const seguridadRoutes = [
   {
     path: '/seguridad/usuarios/nuevo',
-    element: <UsuarioCreatePage />,
+    element: <UsuarioCreateConnector />,
     key: 'SEG-USUARIO-CREAR',
     permiso: 'seguridad.usuario.crear',
     accion: 'CREAR',
@@ -37,8 +25,17 @@ export const seguridadRoutes = [
     breadcrumbParent: 'SEG-USUARIOS',
   },
   {
+    path: '/seguridad/usuarios/:id/editar',
+    element: <UsuarioCreateConnector />,
+    key: 'SEG-USUARIO-EDITAR',
+    permiso: 'seguridad.usuario.administrar',
+    accion: 'EDITAR',
+    menu: null,
+    breadcrumbParent: 'SEG-USUARIOS',
+  },
+  {
     path: '/seguridad/usuarios/:id/permisos',
-    element: <UsuarioPermisosPage />,
+    element: <UsuarioPermisosConnector />,
     key: 'SEG-USUARIO-PERMISOS',
     permiso: 'seguridad.rol.gestionar',
     accion: 'EDITAR',
@@ -46,7 +43,7 @@ export const seguridadRoutes = [
   },
   {
     path: '/seguridad/roles/:id/permisos',
-    element: <RolPermisosPage />,
+    element: <RolPermisosConnector />,
     key: 'SEG-ROL-PERMISOS',
     permiso: 'seguridad.rol.gestionar',
     accion: 'EDITAR',
@@ -54,7 +51,7 @@ export const seguridadRoutes = [
   },
   {
     path: '/seguridad/usuarios/:id',
-    element: <UsuarioDetailPage />,
+    element: <UsuarioDetailConnector />,
     key: 'SEG-USUARIO-DETALLE',
     permiso: 'seguridad.usuario.administrar',
     accion: 'DETALLE',
@@ -62,7 +59,7 @@ export const seguridadRoutes = [
   },
   {
     path: '/seguridad/usuarios',
-    element: <UsuariosListPage />,
+    element: <UsuariosListConnector />,
     key: 'SEG-USUARIOS',
     permiso: 'seguridad.usuario.administrar',
     accion: 'LISTAR',
@@ -75,7 +72,7 @@ export const seguridadRoutes = [
   },
   {
     path: '/seguridad/roles',
-    element: <RolesListPage />,
+    element: <RolesListConnector />,
     key: 'SEG-ROLES',
     permiso: 'seguridad.rol.gestionar',
     accion: 'LISTAR',

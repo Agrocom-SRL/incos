@@ -9,8 +9,7 @@ export class SeguridadUsuariosController {
     listarUsuariosUseCase,
     obtenerUsuarioUseCase,
     crearUsuarioUseCase,
-    buscarParaAltaUsuarioEstudiantesUseCase,
-    buscarParaAltaUsuarioDocentesUseCase,
+    buscarParaAltaUsuarioVinculosUseCase,
     actualizarUsuarioUseCase,
     cambiarEstadoUsuarioUseCase,
     cambiarPasswordUsuarioUseCase,
@@ -22,8 +21,7 @@ export class SeguridadUsuariosController {
     this.listarUsuariosUseCase = listarUsuariosUseCase;
     this.obtenerUsuarioUseCase = obtenerUsuarioUseCase;
     this.crearUsuarioUseCase = crearUsuarioUseCase;
-    this.buscarParaAltaUsuarioEstudiantesUseCase = buscarParaAltaUsuarioEstudiantesUseCase;
-    this.buscarParaAltaUsuarioDocentesUseCase = buscarParaAltaUsuarioDocentesUseCase;
+    this.buscarParaAltaUsuarioVinculosUseCase = buscarParaAltaUsuarioVinculosUseCase;
     this.actualizarUsuarioUseCase = actualizarUsuarioUseCase;
     this.cambiarEstadoUsuarioUseCase = cambiarEstadoUsuarioUseCase;
     this.cambiarPasswordUsuarioUseCase = cambiarPasswordUsuarioUseCase;
@@ -70,7 +68,11 @@ export class SeguridadUsuariosController {
   buscarEstudiantesParaAlta = async (req, res, next) => {
     try {
       const limit = req.query.limit ?? 20;
-      const rows = await this.buscarParaAltaUsuarioEstudiantesUseCase.execute(req.query.query, limit);
+      const rows = await this.buscarParaAltaUsuarioVinculosUseCase.execute(
+        'estudiantes',
+        req.query.query,
+        limit
+      );
       return this.responseFormatter._success(
         res,
         { estudiantes: rows },
@@ -85,7 +87,11 @@ export class SeguridadUsuariosController {
   buscarDocentesParaAlta = async (req, res, next) => {
     try {
       const limit = req.query.limit ?? 20;
-      const rows = await this.buscarParaAltaUsuarioDocentesUseCase.execute(req.query.query, limit);
+      const rows = await this.buscarParaAltaUsuarioVinculosUseCase.execute(
+        'docentes',
+        req.query.query,
+        limit
+      );
       return this.responseFormatter._success(
         res,
         { docentes: rows },

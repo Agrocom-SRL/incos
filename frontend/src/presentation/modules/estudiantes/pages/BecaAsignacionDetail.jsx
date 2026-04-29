@@ -268,9 +268,9 @@ const BecaAsignacionDetail = () => {
               }
             >
               {loadingEstadoAporte ? (
-                <div className="sd-loading" style={{ padding: '32px' }}>
-                  <Spin tip="Cargando cuotas..." />
-                </div>
+                <Spin tip="Cargando cuotas…" spinning>
+                  <div className="sd-spin-body" style={{ minHeight: 100 }} aria-hidden />
+                </Spin>
               ) : estadoAporte?.cabecera?.id && Array.isArray(estadoAporte?.cuotas) && estadoAporte.cuotas.length > 0 ? (
                 <>
                   <Field label="Descuento aplicado">
@@ -353,7 +353,7 @@ const BecaAsignacionDetail = () => {
   if (error) {
     return (
       <PageTemplate header={<PageHeader title="Asignación de beca" breadcrumbItems={breadcrumbItems} />}>
-        <Alert message="No se pudo cargar el detalle" description={error} type="error" showIcon />
+        <Alert title="No se pudo cargar el detalle" description={error} type="error" showIcon />
       </PageTemplate>
     );
   }

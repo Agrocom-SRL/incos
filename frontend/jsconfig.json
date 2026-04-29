@@ -30,6 +30,12 @@
             "@useCases-academico/*": [
                 "./src/domain/useCases/academico/*"
             ],
+            "@useCases-docentes": [
+                "./src/domain/useCases/docentes"
+            ],
+            "@useCases-docentes/*": [
+                "./src/domain/useCases/docentes/*"
+            ],
             "@repositories/*": [
                 "src/domain/repositories/*"
             ],
@@ -97,6 +103,12 @@
             ],
             "@application-auth/*": [
                 "./src/application/modules/auth/*"
+            ],
+            "@application-docentes": [
+                "./src/application/modules/docentes"
+            ],
+            "@application-docentes/*": [
+                "./src/application/modules/docentes/*"
             ],
             "@container": [
                 "./src/application/container/index.js"

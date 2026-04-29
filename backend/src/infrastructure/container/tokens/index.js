@@ -40,4 +40,5 @@ export { PAGOS_TOKENS } from './pagos.tokens.js';
 export { AUTH_TOKENS } from './auth.tokens.js';
 export { SEGURIDAD_TOKENS } from './seguridad.tokens.js';
 export { DASHBOARD_TOKENS } from './dashboard.tokens.js';
+export { DOCENTES_TOKENS } from './docentes.tokens.js';
 

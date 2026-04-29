@@ -75,6 +75,29 @@ const createCRUDEndpoints = (basePath) => {
 };
 
 // ============================================
+// MÓDULO: DOCENTES
+// ============================================
+export const DOCENTES_ENDPOINTS = {
+  ...createCRUDEndpoints('/docentes'),
+  /** GET (query) / POST — asignaciones docente ↔ curso ↔ plan habilitado */
+  ASIGNACIONES: `${API_BASE}/docentes/asignaciones`,
+  /** PATCH — actualizar asignación docente */
+  ASIGNACION_BY_ID: (asignacionId) => `${API_BASE}/docentes/asignaciones/${asignacionId}`,
+  /** GET — catálogo de planes habilitados (asignación docente) */
+  PLANES_HABILITADOS: `${API_BASE}/docentes/planes-habilitados`,
+  /** GET — periodos del plan de estudios del plan habilitado (query gestionPlanId) */
+  PERIODOS_DISPONIBLES: `${API_BASE}/docentes/periodos-disponibles`,
+  /** GET — paralelos por carrera del plan y periodo (query gestionPlanId, periodoId) */
+  PARALELOS_DISPONIBLES: `${API_BASE}/docentes/paralelos-disponibles`,
+  /** GET — cursos ofertados en un paralelo (query paraleloId) */
+  CURSOS_POR_PARALELO: `${API_BASE}/docentes/cursos-por-paralelo`,
+  /** GET — cursos del plan de estudios del plan habilitado (query gestionPlanId) */
+  CURSOS_DISPONIBLES: `${API_BASE}/docentes/cursos-disponibles`,
+  /** GET — bloques de horario + aula de un curso */
+  CURSO_HORARIOS: (cursoId) => `${API_BASE}/docentes/cursos/${cursoId}/horarios`,
+};
+
+// ============================================
 // MÓDULO: ESTUDIANTES
 // ============================================
 export const ESTUDIANTES_ENDPOINTS = {

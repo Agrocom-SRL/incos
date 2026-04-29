@@ -1,5 +1,7 @@
+import { QueryTypes } from 'sequelize';
 import { IManagementPlanRepository } from '../../domain/interfaces/repositories/IManagementPlanRepository.js';
 import { GestionPlan as GestionPlanModel } from '../database/models/gestion_plan.js';
+import { sequelize } from '../database/sequelize.js';
 import { BaseRepository } from './BaseRepository.js';
 import { ManagementPlanMapper } from '../mappers/ManagementPlanMapper.js';
 
@@ -113,5 +115,56 @@ export class ManagementPlanRepository extends BaseRepository {
    */
   getCollectionName() {
     return 'managementPlans';
+  }
+
+  /**
+   * Planes habilitados con datos de gestión (catálogo para asignación docente).
+   * @param {{ gestionId?: number|null, page?: number, limit?: number }} opts
+   * @returns {Promise<{ rows: Array<Object>, total: number }>}
+   */
+  async findPlanesDocenteAsignacionCatalog(opts = {}) {
+    const page = Math.max(1, parseInt(String(opts.page ?? 1), 10) || 1);
+    const limit = Math.min(10000, Math.max(1, parseInt(String(opts.limit ?? 200), 10) || 200));
+    const offset = (page - 1) * limit;
+    const gestionId = opts.gestionId != null && Number.isFinite(Number(opts.gestionId)) ? Number(opts.gestionId) : 0;
+
+    const whereGestion = gestionId > 0 ? 'AND v.gestionId = :gestionId' : '';
+
+    const countSql = `
+      SELECT COUNT(*) AS total
+      FROM vista_catalogo_planes_habilitados_gestion v
+      WHERE 1 = 1
+        ${whereGestion}
+    `;
+
+    const listSql = `
+      SELECT
+        v.id AS id,
+        v.gestionId AS gestionId,
+        v.gestionCodigo AS gestionCodigo,
+        v.gestionNombre AS gestionNombre,
+        v.gestionAnio AS gestionAnio,
+        v.planEstudioId AS planEstudioId,
+        v.nombre AS nombre,
+        v.estado AS estado,
+        v.carreraId AS carreraId,
+        v.carreraNombre AS carreraNombre,
+        v.carreraCodigo AS carreraCodigo,
+        v.carreraImagenRuta AS carreraImagenRuta,
+        v.carreraColorHex AS carreraColorHex
+      FROM vista_catalogo_planes_habilitados_gestion v
+      WHERE 1 = 1
+        ${whereGestion}
+      ORDER BY v.gestionAnio DESC, v.id DESC
+      LIMIT :limit OFFSET :offset
+    `;
+
+    const countReplacements = gestionId > 0 ? { gestionId } : {};
+    const listReplacements = gestionId > 0 ? { gestionId, limit, offset } : { limit, offset };
+
+    const countRows = await sequelize.query(countSql, { replacements: countReplacements, type: QueryTypes.SELECT });
+    const total = Number(countRows[0]?.total ?? countRows[0]?.TOTAL ?? 0) || 0;
+    const rows = await sequelize.query(listSql, { replacements: listReplacements, type: QueryTypes.SELECT });
+    return { rows, total };
   }
 }

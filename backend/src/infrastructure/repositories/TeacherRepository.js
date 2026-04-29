@@ -1,5 +1,7 @@
+import { QueryTypes } from 'sequelize';
 import { IDocenteRepository } from '../../domain/interfaces/repositories/IDocenteRepository.js';
 import { Docente as DocenteModel } from '../database/models/docente.js';
+import { sequelize } from '../database/sequelize.js';
 import { BaseRepository } from './BaseRepository.js';
 import { TeacherMapper } from '../mappers/TeacherMapper.js';
 
@@ -184,7 +186,26 @@ export class TeacherRepository extends BaseRepository {
    * @returns {string[]} Array de nombres de campos del modelo Sequelize
    */
   getSearchFields() {
-    return ['nombres', 'apellidoPaterno', 'apellidoMaterno', 'ci', 'emailPersonal', 'tituloProfesional', 'especialidad'];
+    return [
+      'nombres',
+      'apellidoPaterno',
+      'apellidoMaterno',
+      'ci',
+      'expedicion',
+      'telefono',
+      'celular',
+      'emailPersonal',
+      'nacionalidad',
+      'direccion',
+      'zona',
+      'tituloProfesional',
+      'especialidad',
+      'institucionEgreso',
+      'observaciones',
+      'tipoContrato',
+      'estadoLaboral',
+      'nivelAcademico',
+    ];
   }
 
   /**
@@ -228,6 +249,186 @@ export class TeacherRepository extends BaseRepository {
    */
   getCollectionName() {
     return 'teachers';
+  }
+
+  /**
+   * Detalle enriquecido para ficha docente (vistas SQL en `database/03-views/`):
+   * - 50-vista-base-docente-ficha.sql → vista_base_docente_ficha
+   * - 51-vista-base-docente-asignaciones-curso.sql → vista_base_docente_asignaciones_curso
+   * - 52-vista-base-docente-curso-bloques-horario.sql → vista_base_docente_curso_bloques_horario
+   * - 53-vista-docente-carga-por-gestion.sql → vista_docente_carga_por_gestion (agregado; no usada aquí)
+   *
+   * @param {number} teacherId
+   * @returns {Promise<{ teacher: Object|null, assignments: Object[], schedules: Object[] }>}
+   */
+  async findDetailBundleByTeacherId(teacherId) {
+    const id = Number(teacherId);
+    if (!Number.isFinite(id) || id <= 0) {
+      return { teacher: null, assignments: [], schedules: [] };
+    }
+
+    const sqlFicha = `
+      SELECT * FROM vista_base_docente_ficha
+      WHERE docente_id = :id
+      LIMIT 1
+    `;
+
+    const teacherRows = await sequelize.query(sqlFicha, {
+      replacements: { id },
+      type: QueryTypes.SELECT,
+    });
+    const teacher = Array.isArray(teacherRows) && teacherRows.length ? teacherRows[0] : null;
+    if (!teacher) {
+      return { teacher: null, assignments: [], schedules: [] };
+    }
+
+    const sqlAsignaciones = `
+      SELECT * FROM vista_base_docente_asignaciones_curso
+      WHERE docente_id = :id
+      ORDER BY vigente DESC, gestion_anio DESC, curso_codigo
+    `;
+
+    const assignments = await sequelize.query(sqlAsignaciones, {
+      replacements: { id },
+      type: QueryTypes.SELECT,
+    });
+
+    const sqlAssignmentConflicts = `
+      SELECT
+        asignacion_docente_id AS assignmentId,
+        conflicto_curso AS conflictCurso,
+        conflicto_horario AS conflictHorario,
+        conflicto_aula AS conflictAula
+      FROM vista_base_docente_asignacion_conflictos
+      WHERE docente_id = :id
+    `;
+
+    const assignmentConflictRows = await sequelize.query(sqlAssignmentConflicts, {
+      replacements: { id },
+      type: QueryTypes.SELECT,
+    });
+
+    const conflictsByAssignmentId = new Map();
+    for (const row of assignmentConflictRows || []) {
+      const assignmentId = Number(row.assignmentId);
+      if (!Number.isFinite(assignmentId)) continue;
+      conflictsByAssignmentId.set(assignmentId, {
+        conflictCurso: Number(row.conflictCurso) === 1,
+        conflictHorario: Number(row.conflictHorario) === 1,
+        conflictAula: Number(row.conflictAula) === 1,
+      });
+    }
+
+    const sqlHorarios = `
+      SELECT * FROM vista_base_docente_curso_bloques_horario
+      WHERE docente_id = :id
+      ORDER BY curso_codigo, orden_secuencia
+    `;
+
+    const schedules = await sequelize.query(sqlHorarios, {
+      replacements: { id },
+      type: QueryTypes.SELECT,
+    });
+
+    return {
+      teacher,
+      assignments: Array.isArray(assignments)
+        ? assignments.map((assignment) => {
+            const assignmentId = Number(assignment?.asignacion_docente_id);
+            const conflict = conflictsByAssignmentId.get(assignmentId) || {
+              conflictCurso: false,
+              conflictHorario: false,
+              conflictAula: false,
+            };
+            return {
+              ...assignment,
+              conflict_curso: conflict.conflictCurso,
+              conflict_horario: conflict.conflictHorario,
+              conflict_aula: conflict.conflictAula,
+            };
+          })
+        : [],
+      schedules: Array.isArray(schedules) ? schedules : [],
+    };
+  }
+
+  /**
+   * Métricas de carga y conflictos para un conjunto de docentes.
+   * - carga: materias/asignaciones/paralelos
+   * - conflictos:
+   *   - curso: duplicidad activa del mismo curso para el mismo docente
+   *   - horario: mismo bloque horario en cursos distintos del mismo docente
+   *   - aula: bloque aula+horario compartido con otra asignación activa
+   *
+   * @param {number[]} teacherIds
+   * @returns {Promise<Record<number, {
+   *   totalAsignaciones:number,
+   *   totalMaterias:number,
+   *   totalParalelos:number,
+   *   hasAsignaciones:boolean,
+   *   conflictos:{ curso:number, horario:number, aula:number, total:number, hasConflictos:boolean }
+   * }>>}
+   */
+  async getTeachingLoadAndConflictStats(teacherIds = []) {
+    const ids = (teacherIds || []).map((v) => Number(v)).filter((v) => Number.isFinite(v) && v > 0);
+    if (!ids.length) return {};
+    const statsRows = await sequelize.query(
+      `
+      SELECT
+        docente_id AS teacherId,
+        total_asignaciones AS totalAsignaciones,
+        total_materias AS totalMaterias,
+        total_paralelos AS totalParalelos,
+        conflicto_curso AS conflictoCurso,
+        conflicto_horario AS conflictoHorario,
+        conflicto_aula AS conflictoAula
+      FROM vista_docente_resumen_conflictos
+      WHERE docente_id IN (:teacherIds)
+      `,
+      {
+        replacements: { teacherIds: ids },
+        type: QueryTypes.SELECT,
+      }
+    );
+
+    const result = {};
+    ids.forEach((id) => {
+      result[id] = {
+        totalAsignaciones: 0,
+        totalMaterias: 0,
+        totalParalelos: 0,
+        hasAsignaciones: false,
+        conflictos: {
+          curso: 0,
+          horario: 0,
+          aula: 0,
+          total: 0,
+          hasConflictos: false,
+        },
+      };
+    });
+
+    for (const row of statsRows) {
+      const teacherId = Number(row.teacherId);
+      if (!result[teacherId]) continue;
+      result[teacherId].totalAsignaciones = Number(row.totalAsignaciones) || 0;
+      result[teacherId].totalMaterias = Number(row.totalMaterias) || 0;
+      result[teacherId].totalParalelos = Number(row.totalParalelos) || 0;
+      result[teacherId].hasAsignaciones = result[teacherId].totalAsignaciones > 0;
+      const cursoConflicts = Number(row.conflictoCurso) || 0;
+      const horarioConflicts = Number(row.conflictoHorario) || 0;
+      const aulaConflicts = Number(row.conflictoAula) || 0;
+      const totalConflicts = cursoConflicts + horarioConflicts + aulaConflicts;
+      result[teacherId].conflictos = {
+        curso: cursoConflicts,
+        horario: horarioConflicts,
+        aula: aulaConflicts,
+        total: totalConflicts,
+        hasConflictos: totalConflicts > 0,
+      };
+    }
+
+    return result;
   }
 }
 

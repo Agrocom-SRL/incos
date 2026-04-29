@@ -1,5 +1,7 @@
+import { QueryTypes } from 'sequelize';
 import { ICursoRepository } from '../../domain/interfaces/repositories/ICursoRepository.js';
 import { Curso as CursoModel } from '../database/models/curso.js';
+import { sequelize } from '../database/sequelize.js';
 import { BaseRepository } from './BaseRepository.js';
 import { CourseMapper } from '../mappers/CourseMapper.js';
 
@@ -144,6 +146,87 @@ export class CourseRepository extends BaseRepository {
    */
   getCollectionName() {
     return 'courses';
+  }
+
+  /**
+   * Cursos del maestro de oferta cuya asignatura pertenece al plan de estudios indicado.
+   * @param {number} studyPlanId
+   * @param {{ page?: number, limit?: number }} opts
+   * @returns {Promise<{ rows: Array<Object>, total: number }>}
+   */
+  async findCursosByStudyPlanIdForCatalog(studyPlanId, opts = {}) {
+    const planId = Number(studyPlanId);
+    if (!Number.isFinite(planId) || planId < 1) {
+      return { rows: [], total: 0 };
+    }
+    const page = Math.max(1, parseInt(String(opts.page ?? 1), 10) || 1);
+    const limit = Math.min(10000, Math.max(1, parseInt(String(opts.limit ?? 500), 10) || 500));
+    const offset = (page - 1) * limit;
+
+    const countSql = `
+      SELECT COUNT(*) AS total
+      FROM vista_catalogo_cursos_oferta_docente v
+      WHERE v.planEstudioId = :planId
+    `;
+
+    const listSql = `
+      SELECT
+        v.id AS id,
+        v.codigo AS codigo,
+        v.paraleloId AS paraleloId,
+        v.asignaturaPlanId AS asignaturaPlanId
+      FROM vista_catalogo_cursos_oferta_docente v
+      WHERE v.planEstudioId = :planId
+      ORDER BY v.codigo ASC
+      LIMIT :limit OFFSET :offset
+    `;
+
+    const countRows = await sequelize.query(countSql, { replacements: { planId }, type: QueryTypes.SELECT });
+    const total = Number(countRows[0]?.total ?? countRows[0]?.TOTAL ?? 0) || 0;
+    const rows = await sequelize.query(listSql, { replacements: { planId, limit, offset }, type: QueryTypes.SELECT });
+    return { rows, total };
+  }
+
+  /**
+   * Cursos ofertados en un paralelo (maestro de oferta) con materia para UI de asignación docente.
+   * @param {number} paraleloId
+   * @param {{ page?: number, limit?: number }} opts
+   * @returns {Promise<{ rows: Array<Object>, total: number }>}
+   */
+  async findCursosByParaleloIdForCatalog(paraleloId, opts = {}) {
+    const pid = Number(paraleloId);
+    if (!Number.isFinite(pid) || pid < 1) {
+      return { rows: [], total: 0 };
+    }
+    const page = Math.max(1, parseInt(String(opts.page ?? 1), 10) || 1);
+    const limit = Math.min(10000, Math.max(1, parseInt(String(opts.limit ?? 500), 10) || 500));
+    const offset = (page - 1) * limit;
+
+    const countSql = `
+      SELECT COUNT(*) AS total
+      FROM vista_catalogo_cursos_oferta_docente v
+      WHERE v.paraleloId = :paraleloId
+    `;
+
+    const listSql = `
+      SELECT
+        v.id AS id,
+        v.codigo AS codigo,
+        v.paraleloId AS paraleloId,
+        v.asignaturaPlanId AS asignaturaPlanId,
+        v.materiaNombre AS materiaNombre,
+        v.materiaSigla AS materiaSigla,
+        v.periodoId AS periodoId
+      FROM vista_catalogo_cursos_oferta_docente v
+      WHERE v.paraleloId = :paraleloId
+      ORDER BY v.ordenVisualizacion ASC, v.codigo ASC
+      LIMIT :limit OFFSET :offset
+    `;
+
+    const countRows = await sequelize.query(countSql, { replacements: { paraleloId: pid }, type: QueryTypes.SELECT });
+    const total = Number(countRows[0]?.total ?? countRows[0]?.TOTAL ?? 0) || 0;
+    const rows = await sequelize.query(listSql, { replacements: { paraleloId: pid, limit, offset }, type: QueryTypes.SELECT });
+    return { rows, total };
   }
 }
 

@@ -66,4 +66,5 @@
 
 /* 8. Pages - Estilos genéricos para todas las páginas */
 @import './pages/page.css';
+@import './pages/detail-page.css';
 @import './pages/step2-periodo-materias.css';

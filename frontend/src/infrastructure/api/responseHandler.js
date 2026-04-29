@@ -47,11 +47,15 @@ export function handleSuccessResponse(response) {
   
   // Si hay data, retornar los datos
   const data = responseData.data || null;
-  
-  return {
+
+  const out = {
     success: true,
-    data: data,
+    data,
   };
+  if (responseData.pagination) {
+    out.pagination = responseData.pagination;
+  }
+  return out;
 }
 
 /**

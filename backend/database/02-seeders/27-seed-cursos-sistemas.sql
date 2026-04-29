@@ -73,6 +73,20 @@ INSERT INTO cursos (id, codigo, paralelo_id, asignatura_plan_id, cupo_maximo, cu
 (29, 'SIS-3A-NOCHE-PDM307', 4, 22, 35, 10, '#69A84F'), -- PDM-307: PROGRAMACIÓN PARA DISPOSITIVOS MOVILES II
 (30, 'SIS-3A-NOCHE-BDD308', 4, 23, 35, 10, '#66FFFF'); -- BDD-308: BASE DE DATOS II
 
+-- ============================================
+-- PALETA AUTOMÁTICA POR CÓDIGO DE CURSO
+-- ============================================
+-- Regla: color derivado de CRC32(codigo), con rango RGB 96-223
+-- para asegurar mezcla amplia y evitar colores extremos (muy oscuros/muy claros).
+UPDATE cursos
+SET color_hex = CONCAT(
+  '#',
+  LPAD(HEX(96 + ((CRC32(codigo) >> 16) & 127)), 2, '0'),
+  LPAD(HEX(96 + ((CRC32(codigo) >> 8) & 127)), 2, '0'),
+  LPAD(HEX(96 + (CRC32(codigo) & 127)), 2, '0')
+)
+WHERE id BETWEEN 1 AND 30;
+
 -- Rehabilitar foreign key checks
 SET FOREIGN_KEY_CHECKS = 1;
 

@@ -10,7 +10,7 @@ import { CARGO_INSTITUCIONAL_WIZARD_INTRO, sortInstitutionalRoles } from '@modul
 
 const { Paragraph } = Typography;
 
-export default function UsuarioWizardCargoInstitucionalBlock({ rolesInstitucional = [] }) {
+export default function UsuarioWizardCargoInstitucionalBlock({ rolesInstitucional = [], isEditMode = false }) {
   const sortedRoles = useMemo(() => sortInstitutionalRoles(rolesInstitucional), [rolesInstitucional]);
 
   return (
@@ -31,7 +31,7 @@ export default function UsuarioWizardCargoInstitucionalBlock({ rolesInstituciona
         preserve
         rules={[{ required: true, message: 'Seleccione un cargo' }]}
       >
-        <InstitutionalRoleRadioGroup roles={sortedRoles} />
+        <InstitutionalRoleRadioGroup roles={sortedRoles} disabled={isEditMode} />
       </Form.Item>
     </Card>
   );

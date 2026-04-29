@@ -43,7 +43,7 @@ const OPCIONES = [
   },
 ];
 
-export default function UsuarioCategoriaCreacionStepContent({ form }) {
+export default function UsuarioCategoriaCreacionStepContent({ form, isEditMode = false }) {
   const watched = Form.useWatch('categoria_creacion', form);
   const selectedValue = watched ?? form?.getFieldValue('categoria_creacion') ?? 'ACCESO_SISTEMA';
 
@@ -72,7 +72,7 @@ export default function UsuarioCategoriaCreacionStepContent({ form }) {
         preserve
         rules={[{ required: true, message: 'Seleccione un tipo de alta' }]}
       >
-        <Radio.Group onChange={handleRadioChange} style={{ width: '100%' }}>
+        <Radio.Group onChange={handleRadioChange} disabled={isEditMode} style={{ width: '100%' }}>
           <div className="wizard-selection-cards__grid">
             {OPCIONES.map((opt) => {
               const isSelected = selectedValue === opt.value;

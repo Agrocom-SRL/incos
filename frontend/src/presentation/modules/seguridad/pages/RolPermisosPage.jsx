@@ -1,73 +1,31 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { Alert, App, Descriptions, Select, Space, Tag, Typography } from 'antd';
+import { Alert, Descriptions, Select, Space, Tag, Typography } from 'antd';
 import { ArrowLeftOutlined, KeyOutlined } from '@ant-design/icons';
 import { PermisoGuard } from '@/presentation/guards/PermisoGuard.jsx';
 import PermisosDominioPicker from '@modules/seguridad/components/PermisosDominioPicker.jsx';
-import { usePermisosCatalogo, useRolPermisos } from '@/application/modules/seguridad/hooks';
+import { useSeguridadRolPermisosPageContext } from '@/application/modules/seguridad/hooks';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { Button, Card } from '@atoms';
 
-function errMsg(json) {
-  const e = json?.error;
-  if (json?.error?.details?.length) {
-    return json.error.details.map((d) => d.message).join('. ');
-  }
-  return typeof e === 'string' ? e : e?.message || 'Error';
-}
-
 export default function RolPermisosPage() {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const { message } = App.useApp();
-  const rolId = parseInt(id, 10);
-  const [dominioSeleccionado, setDominioSeleccionado] = useState('MATRICULA');
-  const { dominios } = usePermisosCatalogo();
   const {
-    rol: rolInfo,
+    rolId,
+    rolInfo,
     grupos,
     delta,
+    dominios,
     loading,
     saving,
-    hayaCambios: hasChanges,
-    cargar,
-    guardar,
-    cancelarCambios,
+    hasChanges,
+    esAdminSistema,
+    dominioSeleccionado,
+    breadcrumbItems,
+    setDominioSeleccionado,
     toggleAccion,
-  } = useRolPermisos();
-  const esAdminSistema = rolInfo?.id === 1 || rolInfo?.codigo === 'ADMIN_SISTEMA';
-  const breadcrumbItems = useMemo(
-    () => [
-      { title: 'Inicio', href: '/' },
-      { title: 'Seguridad', href: '/seguridad/roles' },
-      { title: 'Roles', href: '/seguridad/roles' },
-      { title: rolInfo?.nombre || 'Permisos de Rol' },
-    ],
-    [rolInfo]
-  );
-
-  useEffect(() => {
-    if (!rolId) return;
-    (async () => {
-      try {
-        await cargar(rolId, dominioSeleccionado);
-      } catch (e) {
-        message.error(errMsg(e));
-      }
-    })();
-    // message estable de App.useApp()
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- solo recargar al cambiar rol o dominio
-  }, [rolId, dominioSeleccionado, cargar]);
-
-  const guardarCambios = async () => {
-    try {
-      await guardar(rolId);
-      message.success('Permisos guardados');
-    } catch (e) {
-      message.error(errMsg(e));
-    }
-  };
+    guardarCambios,
+    cancelarCambios,
+    goToRolesList,
+  } = useSeguridadRolPermisosPageContext();
 
   return (
     <PermisoGuard
@@ -86,7 +44,7 @@ export default function RolPermisosPage() {
               <button
                 type="button"
                 className="sd-btn sd-btn--outline"
-                onClick={() => navigate('/seguridad/roles')}
+                onClick={goToRolesList}
               >
                 <ArrowLeftOutlined /> Volver
               </button>

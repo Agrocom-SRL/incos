@@ -401,9 +401,9 @@ const EstudiantesDetail = () => {
       children: (
         <div className="sd-tab-body">
           {loadingEstadoAporte ? (
-            <div className="sd-loading" style={{ padding: '40px' }}>
-              <Spin tip="Cargando estado del aporte…" />
-            </div>
+            <Spin tip="Cargando estado del aporte…" spinning>
+              <div className="sd-spin-body" style={{ minHeight: 120 }} aria-hidden />
+            </Spin>
           ) : estadoAporte ? (
             <InfoCard
               title="Resumen del aporte"
@@ -494,7 +494,7 @@ const EstudiantesDetail = () => {
 
   if (error) return (
     <PageTemplate header={<PageHeader title="Detalle del Estudiante" breadcrumbItems={breadcrumbItems} />}>
-      <Alert message="Error al cargar el estudiante" description={error} type="error" showIcon />
+      <Alert title="Error al cargar el estudiante" description={error} type="error" showIcon />
     </PageTemplate>
   );
 

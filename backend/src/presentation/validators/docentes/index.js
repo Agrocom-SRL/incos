@@ -1,0 +1,11 @@
+export { createTeacherValidator } from './create-teacher.validator.js';
+export { updateTeacherValidator } from './update-teacher.validator.js';
+export { listTeacherAssignmentsValidator } from './list-teacher-assignments.validator.js';
+export { createTeacherAssignmentValidator } from './create-teacher-assignment.validator.js';
+export { updateTeacherAssignmentValidator } from './update-teacher-assignment.validator.js';
+export { listPlanesDocenteValidator } from './list-planes-docente.validator.js';
+export { listCursosDisponiblesDocenteValidator } from './list-cursos-disponibles-docente.validator.js';
+export { listPeriodosDocenteValidator } from './list-periodos-docente.validator.js';
+export { listParalelosDocenteValidator } from './list-paralelos-docente.validator.js';
+export { listCursosParaleloDocenteValidator } from './list-cursos-paralelo-docente.validator.js';
+export { cursoIdParamValidator } from './curso-id-param.validator.js';

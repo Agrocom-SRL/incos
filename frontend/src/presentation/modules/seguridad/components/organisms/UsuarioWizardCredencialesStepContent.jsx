@@ -4,7 +4,7 @@
  * no hay selector de `rol_id` aquí. El valor queda por el paso perfil o por reglas en `UsuarioCreatePage`.
  */
 import { useMemo } from 'react';
-import { Form, Typography, Input } from 'antd';
+import { Alert, Col, Flex, Form, Input, Row, Space, Typography } from 'antd';
 import { Card } from '@atoms';
 import { FormSection } from '@molecules';
 import { createUsuarioWizardCredencialesFields } from '@modules/seguridad/config/usuarioWizardCredencialesFields.jsx';
@@ -75,39 +75,66 @@ function CredencialesRolAsignadoPanel({ role }) {
   const tipoLabel = TIPO_CONFIG[role.tipo]?.label ?? role.tipo ?? '—';
 
   return (
-    <div
+    <Flex
       className="seg-wizard-rol-asignado-panel"
       style={{ borderColor: visual.color }}
       role="status"
       aria-label={`Rol asignado: ${role.nombre}`}
+      align="center"
+      gap={12}
     >
-      <div
+      <Flex
         className="seg-wizard-rol-asignado-panel__icon"
         style={{ borderColor: visual.color, color: visual.color }}
+        align="center"
+        justify="center"
       >
         <Icon style={{ fontSize: 24 }} />
-      </div>
-      <div className="seg-wizard-rol-asignado-panel__body">
+      </Flex>
+      <Flex className="seg-wizard-rol-asignado-panel__body" vertical>
         <Text strong className="seg-wizard-rol-asignado-panel__nombre" style={{ color: visual.color }}>
           {role.nombre}
         </Text>
         <Text className="seg-wizard-rol-asignado-panel__tipo" style={{ color: visual.color }}>
           {tipoLabel}
         </Text>
-      </div>
-    </div>
+      </Flex>
+    </Flex>
   );
 }
 
-export default function UsuarioWizardCredencialesStepContent({ form, rolesCatalog = [] }) {
+function adaptFieldsForEdit(flatFields, isEditMode) {
+  if (!isEditMode) return flatFields;
+  return flatFields.map((field) => {
+    if (field.name === 'password' || field.name === 'password_confirm') {
+      return {
+        ...field,
+        required: false,
+        rules: [],
+        placeholder: field.name === 'password' ? 'Dejar vacío para conservar actual' : 'Solo si cambia contraseña',
+      };
+    }
+    return field;
+  });
+}
+
+export default function UsuarioWizardCredencialesStepContent({ form, rolesCatalog = [], isEditMode = false }) {
   const watchedCategoria = Form.useWatch('categoria_creacion', form);
   const categoria = watchedCategoria ?? form?.getFieldValue('categoria_creacion');
   const esVinculoReferencia =
     categoria === 'ASIGNAR_ESTUDIANTE' || categoria === 'ASIGNAR_DOCENTE';
-  const vinculoNombre = Form.useWatch('vinculo_nombre_display', form);
-  const vinculoEmail = Form.useWatch('vinculo_email_display', form);
-  const estudianteId = Form.useWatch('estudiante_id', form);
-  const docenteId = Form.useWatch('docente_id', form);
+  const watchedVinculoNombre = Form.useWatch('vinculo_nombre_display', form);
+  const watchedVinculoEmail = Form.useWatch('vinculo_email_display', form);
+  const watchedEstudianteId = Form.useWatch('estudiante_id', form);
+  const watchedDocenteId = Form.useWatch('docente_id', form);
+  const watchedVinculoCi = Form.useWatch('vinculo_ci_display', form);
+  const watchedVinculoCodigo = Form.useWatch('vinculo_codigo_display', form);
+  const vinculoNombre = watchedVinculoNombre ?? form?.getFieldValue('vinculo_nombre_display');
+  const vinculoEmail = watchedVinculoEmail ?? form?.getFieldValue('vinculo_email_display');
+  const estudianteId = watchedEstudianteId ?? form?.getFieldValue('estudiante_id');
+  const docenteId = watchedDocenteId ?? form?.getFieldValue('docente_id');
+  const vinculoCi = watchedVinculoCi ?? form?.getFieldValue('vinculo_ci_display');
+  const vinculoCodigo = watchedVinculoCodigo ?? form?.getFieldValue('vinculo_codigo_display');
   const personalEmail = Form.useWatch(['personal', 'personalEmail'], form);
   const rolId = Form.useWatch('rol_id', form);
 
@@ -126,8 +153,23 @@ export default function UsuarioWizardCredencialesStepContent({ form, rolesCatalo
           : 'Defina el usuario y la contraseña con la que ingresará al sistema. El correo de contacto queda en la ficha personal del paso anterior, si lo registró.'}
       </Paragraph>
     );
+    if (isEditMode) {
+      lines.push(
+        <Paragraph key="edit-help" type="secondary" style={{ marginBottom: 0, marginTop: 8 }}>
+          Puede cambiar usuario y rol. La contraseña es opcional: solo complete ambos campos si desea reemplazarla.
+        </Paragraph>
+      );
+    }
 
-    if (esVinculoReferencia && (estudianteId != null || docenteId != null)) {
+    const tieneVinculoSeleccionado =
+      estudianteId != null ||
+      docenteId != null ||
+      Boolean(vinculoNombre) ||
+      Boolean(vinculoEmail) ||
+      Boolean(vinculoCi) ||
+      Boolean(vinculoCodigo);
+
+    if (esVinculoReferencia && tieneVinculoSeleccionado) {
       lines.push(
         <Paragraph key="vinc-nom" style={{ marginBottom: 4, marginTop: 12 }}>
           <Text type="secondary">Persona vinculada: </Text>
@@ -155,17 +197,37 @@ export default function UsuarioWizardCredencialesStepContent({ form, rolesCatalo
     return <>{lines}</>;
   }, [
     esVinculoReferencia,
+    isEditMode,
     estudianteId,
     docenteId,
     vinculoNombre,
     vinculoEmail,
+    vinculoCi,
+    vinculoCodigo,
     personalEmail,
   ]);
 
-  const flatFields = useMemo(() => createUsuarioWizardCredencialesFields(), []);
+  const vinculoResumenDescription = useMemo(() => {
+    const lines = [];
+    if (vinculoNombre) lines.push(`Nombre: ${vinculoNombre}`);
+    if (vinculoCi) lines.push(`CI: ${vinculoCi}`);
+    if (vinculoCodigo) lines.push(`Código: ${vinculoCodigo}`);
+    if (vinculoEmail) lines.push(`Correo: ${vinculoEmail}`);
+    return lines.join(' | ');
+  }, [vinculoNombre, vinculoCi, vinculoCodigo, vinculoEmail]);
+
+  const mostrarResumenVinculo = useMemo(() => {
+    if (!esVinculoReferencia) return false;
+    return Boolean(estudianteId || docenteId || vinculoNombre || vinculoEmail || vinculoCi || vinculoCodigo);
+  }, [esVinculoReferencia, estudianteId, docenteId, vinculoNombre, vinculoEmail, vinculoCi, vinculoCodigo]);
+
+  const flatFields = useMemo(
+    () => adaptFieldsForEdit(createUsuarioWizardCredencialesFields(), isEditMode),
+    [isEditMode]
+  );
 
   return (
-    <div className="usuario-wizard-step">
+    <Space orientation="vertical" size={24} style={{ width: '100%' }} className="usuario-wizard-step">
       <Form.Item
         name="rol_id"
         preserve
@@ -190,18 +252,30 @@ export default function UsuarioWizardCredencialesStepContent({ form, rolesCatalo
         <Paragraph type="secondary" style={{ marginBottom: 0 }}>
           {mensajeOrigenRolAsignacion(categoria)}
         </Paragraph>
-        <CredencialesRolAsignadoPanel role={selectedRole} />
+        <Row gutter={[16, 16]} style={{ marginTop: 12 }}>
+          {mostrarResumenVinculo ? (
+            <Col xs={24} md={12}>
+              <Alert
+                type="info"
+                showIcon
+                title={estudianteId ? 'Estudiante vinculado' : 'Docente vinculado'}
+                description={vinculoResumenDescription || 'Se vinculó una persona en el paso anterior.'}
+              />
+            </Col>
+          ) : null}
+          <Col xs={24} md={mostrarResumenVinculo ? 12 : 24}>
+            <CredencialesRolAsignadoPanel role={selectedRole} />
+          </Col>
+        </Row>
       </Card>
 
-      <div style={{ marginTop: 24 }}>
-        <FormSection
-          title="Credenciales y acceso al sistema"
-          description={credencialesDescription}
-          fields={flatFields}
-          form={form}
-          resolveOptions={() => []}
-        />
-      </div>
-    </div>
+      <FormSection
+        title="Credenciales y acceso al sistema"
+        description={credencialesDescription}
+        fields={flatFields}
+        form={form}
+        resolveOptions={() => []}
+      />
+    </Space>
   );
 }

@@ -72,7 +72,7 @@ const Dashboard = () => {
                         <Alert
                             type="warning"
                             showIcon
-                            message="No se pudo cargar el resumen en vivo"
+                            title="No se pudo cargar el resumen en vivo"
                             description={dashboardError}
                             style={{ marginBottom: allSpacing.marginLG }}
                         />

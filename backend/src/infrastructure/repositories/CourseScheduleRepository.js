@@ -1,5 +1,7 @@
+import { QueryTypes } from 'sequelize';
 import { ICourseScheduleRepository } from '../../domain/interfaces/repositories/ICourseScheduleRepository.js';
 import { CursoHorario as CursoHorarioModel } from '../database/models/curso_horario.js';
+import { sequelize } from '../database/sequelize.js';
 import { BaseRepository } from './BaseRepository.js';
 import { CourseScheduleMapper } from '../mappers/CourseScheduleMapper.js';
 
@@ -109,5 +111,37 @@ export class CourseScheduleRepository extends BaseRepository {
    */
   getCollectionName() {
     return 'courseSchedules';
+  }
+
+  /**
+   * Bloques de horario de un curso con datos de bloque y aula (solo lectura).
+   * @param {number} cursoId
+   * @returns {Promise<Array<Object>>}
+   */
+  async findBloquesByCursoIdForPresentation(cursoId) {
+    const id = Number(cursoId);
+    if (!Number.isFinite(id) || id < 1) return [];
+
+    const sql = `
+      SELECT
+        b.id AS id,
+        b.cursoId AS cursoId,
+        b.ordenSecuencia AS ordenSecuencia,
+        b.horarioId AS horarioId,
+        b.horarioNombre AS horarioNombre,
+        b.dia AS dia,
+        b.horaInicio AS horaInicio,
+        b.horaFin AS horaFin,
+        b.turno AS turno,
+        b.numeroBloque AS numeroBloque,
+        b.aulaId AS aulaId,
+        b.aulaCodigo AS aulaCodigo,
+        b.aulaNombre AS aulaNombre
+      FROM vista_base_curso_bloques_horario b
+      WHERE b.cursoId = :cursoId
+      ORDER BY b.ordenSecuencia ASC, b.id ASC
+    `;
+
+    return sequelize.query(sql, { replacements: { cursoId: id }, type: QueryTypes.SELECT });
   }
 }

@@ -4,11 +4,19 @@
  */
 
 import { UnderConstruction } from '@components/pages';
+import {
+  DocentesListConnector,
+  DocentesDetailConnector,
+  DocentesCreateConnector,
+  DocentesEditConnector,
+  DocentesAsignacionAcademicaConnector,
+  DocentesAsignacionesGestionConnector,
+} from '@docentes/connectors';
 
 export const docentesRoutes = [
   {
     path: '/docentes/listar',
-    element: <UnderConstruction />,
+    element: <DocentesListConnector />,
     key: 'DOC-LIST',
     permiso: 'docentes.ver',
     accion: 'LISTAR',
@@ -21,10 +29,46 @@ export const docentesRoutes = [
   },
   {
     path: '/docentes/registrar',
-    element: <UnderConstruction />,
+    element: <DocentesCreateConnector />,
     key: 'DOC-CREATE',
     permiso: 'docentes.crear',
     accion: 'CREAR',
+    menu: null,
+    breadcrumbParent: 'DOC-LIST',
+  },
+  {
+    path: '/docentes/asignar',
+    element: <DocentesAsignacionAcademicaConnector />,
+    key: 'DOC-ASIGNAR',
+    permiso: 'docentes.asignar',
+    accion: 'EDITAR',
+    menu: null,
+    breadcrumbParent: 'DOC-LIST',
+  },
+  {
+    path: '/docentes/:id/asignaciones',
+    element: <DocentesAsignacionesGestionConnector />,
+    key: 'DOC-ASIGNACIONES-GESTION',
+    permiso: 'docentes.asignar',
+    accion: 'EDITAR',
+    menu: null,
+    breadcrumbParent: 'DOC-LIST',
+  },
+  {
+    path: '/docentes/:id/editar',
+    element: <DocentesEditConnector />,
+    key: 'DOC-EDIT',
+    permiso: 'docentes.editar',
+    accion: 'EDITAR',
+    menu: null,
+    breadcrumbParent: 'DOC-LIST',
+  },
+  {
+    path: '/docentes/:id',
+    element: <DocentesDetailConnector />,
+    key: 'DOC-DETAIL',
+    permiso: 'docentes.ver',
+    accion: 'DETALLE',
     menu: null,
     breadcrumbParent: 'DOC-LIST',
   },
@@ -58,15 +102,6 @@ export const docentesRoutes = [
     accion: 'APROBAR',
     menu: null,
     breadcrumbParent: 'DOC-LIC',
-  },
-  {
-    path: '/docentes/asignar',
-    element: <UnderConstruction />,
-    key: 'DOC-ASIGNAR',
-    permiso: 'docentes.asignar',
-    accion: 'EDITAR',
-    menu: null,
-    breadcrumbParent: 'DOC-LIST',
   },
 ];
 

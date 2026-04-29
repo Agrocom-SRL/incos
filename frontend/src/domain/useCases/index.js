@@ -1,3 +1,4 @@
+export * from './docentes';
 export * from './estudiantes';
 export * from './configuracion/academico/carreras';
 export * from './configuracion/academico/materias';
