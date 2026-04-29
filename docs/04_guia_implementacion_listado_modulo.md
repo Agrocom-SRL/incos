@@ -104,6 +104,18 @@ No sustituye el código: sirve como **checklist** y mapa de archivos para nuevas
 
 **Referencia:** carpeta `frontend/src/application/modules/docentes/`.
 
+### 4.2.1 Regla de arquitectura limpia (obligatoria en ABM)
+
+Para nuevos módulos o nuevas features dentro de un módulo existente, mantener esta separación mínima:
+
+- `presentation/modules/<modulo>/pages/*` = solo UI (render, composición visual, wiring de props).
+- `application/modules/<modulo>/hooks/state/*` = orquestación de estado de pantalla (fetch, derivaciones, navegación, handlers).
+- `application/modules/<modulo>/providers/*` = inyección de hooks a contextos (sin lógica de negocio adicional).
+- `application/modules/<modulo>/context/*` = contratos de consumo entre app y presentación.
+- `presentation/modules/<modulo>/connectors/*` = ensamblaje final (Provider + Page).
+
+Regla práctica: si una página supera ~150-200 líneas por lógica no visual, extraerla a hook de estado.
+
 ### 4.3 Alias y configuración del bundler
 
 - Añadir alias **`@application-<modulo>`** en `frontend/vite.config.js` y paths en `frontend/jsconfig.json` para imports estables.
@@ -116,6 +128,17 @@ No sustituye el código: sirve como **checklist** y mapa de archivos para nuevas
 - **Rutas del módulo:** `path`, `element`, `key`, `permiso`, `accion`, `menu` / `breadcrumbParent` según `02_estructura_sidebar.md`. Rutas dinámicas **`/:id`** después de las rutas estáticas para no colisionar con segmentos fijos.
 
 **Referencia:** `DocentesList.jsx`, `tableColumns.jsx`, `DocentesListConnector.jsx`, `routes.jsx`.
+
+### 4.5 Seguridad y permisos (restricción transversal)
+
+Cada nueva función de listado/acciones debe validar permisos en 3 capas al mismo tiempo:
+
+1. **Ruta frontend** (`routes.jsx`): `permiso` + `accion` correctos.
+2. **Controles UI** (`ActionButton`, `TableActions`, `PermisoGuard`, `useAcciones`): misma acción que en ruta.
+3. **Backend** (`verificarPermiso`): misma acción en endpoint real.
+
+No mezclar vocabulario antiguo (`VER`) con el esquema operativo del módulo cuando use `LISTAR` / `DETALLE` en frontend.
+Si existe divergencia temporal por legado, documentarla explícitamente en `docs/matriz-permisos-sistema.md` antes del merge.
 
 ---
 
@@ -154,6 +177,8 @@ No sustituye el código: sirve como **checklist** y mapa de archivos para nuevas
 - [ ] ¿Las rutas dinámicas no “secuestran” rutas estáticas (`/registrar`, `/listar`, etc.)?
 - [ ] ¿`TableActions` solo muestra eliminar si hay `deleteFn` o use case real?
 - [ ] ¿Conector exportado como `lazy` y envuelto por `Suspense` en el layout (patrón actual del proyecto)?
+- [ ] ¿La página quedó liviana (UI) y la lógica principal está en hook de estado + provider?
+- [ ] ¿La acción de permiso coincide en `routes.jsx`, controles UI y `verificarPermiso` backend?
 
 ---
 

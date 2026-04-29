@@ -3,6 +3,29 @@
 
 Documento de auditoria funcional (frontend + backend + seeds) sobre permisos por accion.
 
+## Criterio canon para nuevas funciones (ABM limpio + seguridad)
+
+Todo alta/baja/modificacion (ABM) o nueva pantalla de un modulo debe cumplir estas restricciones minimas:
+
+1. **Arquitectura limpia por capa**
+   - `presentation/pages`: UI pura.
+   - `application/hooks/state`: logica de pantalla.
+   - `application/providers`: inyeccion de contexto.
+   - `presentation/connectors`: composicion Provider + Page.
+2. **Permisos coherentes extremo a extremo**
+   - misma accion entre `routes.jsx`, `PermisoGuard/ActionButton/TableActions/useAcciones` y `verificarPermiso` backend.
+3. **Accion correcta segun flujo**
+   - listado/menu: `LISTAR`
+   - ficha: `DETALLE`
+   - alta: `CREAR`
+   - edicion: `EDITAR`
+   - baja: `ELIMINAR`
+   - exportaciones: `EXPORTAR`
+4. **Sin bypass en UI**
+   - no mostrar CTA de accion si el permiso/accion no existe o no esta asignado al rol.
+5. **Trazabilidad de navegacion**
+   - cuando exista flujo multi-pantalla, propagar `returnListPath` y ruta de origen (`gestionReturnPath` o equivalente).
+
 ## Resumen de roles
 
 | ID | Codigo | Nombre | Nivel |
@@ -120,6 +143,10 @@ Este catalogo define las capacidades reales del sistema para evitar ambiguedad e
 
 El barrido de `frontend/src/presentation/modules/**/routes.jsx` confirma que los codigos usados en UI
 estan alineados con `54-seed-permisos.sql` (96 permisos; ultimo `docentes.editar` id 96) y que la visibilidad del sidebar en v2 depende de accion **LISTAR** (no existe `VER` en `permiso_acciones`).
+
+### Nota de compatibilidad documental
+
+Si algun documento legado usa `VER` como sinonimo de lectura, al implementar nuevas funciones priorizar `LISTAR` y `DETALLE` en frontend, y documentar cualquier excepcion temporal hasta completar la normalizacion.
 
 ### Recomendacion de normalizacion (siguiente paso de schema)
 

@@ -29,12 +29,13 @@ Marca en orden. Si un ítem no aplica, táchalo y anota por qué.
 | 1 | `I*Repository` + `ObtenerTodos*UseCase` + `*Repository` HTTP + `endpoints.js`. |
 | 2 | `register*Module` en `application/container/modules/index.js`. |
 | 3 | `use*Api` (`createApiHook`) con `page: 1`, `limit: 10000`, `mapper`, `dataKey`. |
-| 4 | Provider lista + `useTableData` + `getSearchFields` exhaustivo. |
+| 4 | Hook de estado (`hooks/state`) separado de la página; Provider solo inyecta contexto. |
 | 5 | Alias `@application-*` en `vite.config.js` y `jsconfig.json`. |
 | 6 | Página: `PageTemplate` / `PageHeader` / `TableListView`. |
 | 7 | `tableColumns.jsx`: `TableCell` + tema; `TableActions` con permisos reales. |
 | 8 | Connector lazy + rutas en `routes.jsx` (`key`, `permiso`, `accion`, menú). |
 | 9 | Rutas `/:id` **después** de rutas estáticas del mismo prefijo. |
+| 10 | Permisos consistentes entre `routes.jsx`, `PermisoGuard/ActionButton/TableActions` y backend `verificarPermiso`. |
 
 ---
 

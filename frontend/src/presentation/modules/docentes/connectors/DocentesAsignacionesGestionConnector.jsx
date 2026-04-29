@@ -3,15 +3,15 @@
  */
 
 import { useParams } from 'react-router-dom';
-import { DocentesDetailProvider } from '@application-docentes/providers';
+import { DocentesAsignacionesGestionProvider } from '@application-docentes/providers';
 import DocentesAsignacionesGestion from '@docentes/pages/DocentesAsignacionesGestion';
 
 const DocentesAsignacionesGestionConnector = () => {
   const { id } = useParams();
   return (
-    <DocentesDetailProvider docenteId={id}>
+    <DocentesAsignacionesGestionProvider docenteId={id}>
       <DocentesAsignacionesGestion />
-    </DocentesDetailProvider>
+    </DocentesAsignacionesGestionProvider>
   );
 };
 

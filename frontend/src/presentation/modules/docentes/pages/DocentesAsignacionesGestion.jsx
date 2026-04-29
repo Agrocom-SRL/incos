@@ -2,24 +2,16 @@
  * Panel de gestión de asignaciones docentes (base para CRUD de asignación/horario).
  */
 
-import { useMemo } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
 import { Alert, Space, Spin, Tabs } from 'antd';
 import { ArrowLeftOutlined, ApartmentOutlined, BookOutlined, ScheduleOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { Button, Card } from '@atoms';
-import { useAuthContext } from '@application-auth';
-import { useDocentesDetailContext } from '@application-docentes/hooks';
-import { useDeleteItem } from '@application/utils/useDeleteItem';
-import docenteRepository from '@implementations/DocenteRepository';
+import { useDocentesAsignacionesGestionContext } from '@application-docentes/hooks';
 import DocenteAssignmentsSection from '@docentes/components/organisms/DocenteAssignmentsSection';
 import DocenteSchedulesSection from '@docentes/components/organisms/DocenteSchedulesSection';
 
 const DocentesAsignacionesGestion = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { hasPermiso } = useAuthContext();
   const {
     docenteId,
     nombreCompleto,
@@ -27,77 +19,15 @@ const DocentesAsignacionesGestion = () => {
     courseSchedules,
     loading,
     error,
-    returnListPath,
+    breadcrumbItems,
     handleVolver,
-    refetch,
-  } = useDocentesDetailContext();
-
-  const puedeGestionarAsignaciones =
-    hasPermiso('docentes.asignar', 'CREAR') ||
-    hasPermiso('docentes.asignar', 'EDITAR') ||
-    hasPermiso('docentes.asignar', 'ELIMINAR') ||
-    hasPermiso('docentes.editar', 'EDITAR');
-  const puedeEditarAsignaciones = hasPermiso('docentes.asignar', 'EDITAR');
-  const puedeEliminarAsignaciones = hasPermiso('docentes.asignar', 'ELIMINAR');
-  const puedeAsignarMaterias = puedeGestionarAsignaciones;
-  const gestionReturnPath = location.state?.gestionReturnPath || returnListPath || '/docentes/listar';
-
-  const breadcrumbItems = useMemo(
-    () => [
-      { title: 'Inicio', href: '/' },
-      { title: 'Docentes', href: returnListPath || '/docentes/listar' },
-      { title: 'Gestión de asignaciones' },
-    ],
-    [returnListPath]
-  );
-
-  const handleIrWizardAsignacion = () => {
-    if (!docenteId) return;
-    navigate('/docentes/asignar', {
-      state: {
-        menuSidebarKey: 'DOC-LIST',
-        returnListPath: `/docentes/${docenteId}/asignaciones`,
-        gestionReturnPath,
-        docenteId,
-        docenteNombre: nombreCompleto,
-        asignacionFocus: 'cursos',
-      },
-    });
-  };
-
-  const handleEditAssignment = (assignment) => {
-    if (!docenteId || !assignment?.id) return;
-    navigate('/docentes/asignar', {
-      state: {
-        menuSidebarKey: 'DOC-LIST',
-        returnListPath: `/docentes/${docenteId}/asignaciones`,
-        gestionReturnPath,
-        docenteId,
-        docenteNombre: nombreCompleto,
-        asignacionFocus: 'cursos',
-        editAssignment: assignment,
-      },
-    });
-  };
-
-  const { deleteItem } = useDeleteItem({
-    deleteFn: (id) => docenteRepository.eliminarAsignacion(id),
-    itemName: 'la asignación',
-    onSuccess: async () => {
-      await refetch?.();
-    },
-  });
-
-  const handleDeleteAssignment = (assignment) => {
-    if (!assignment?.id) return;
-    deleteItem(assignment.id, `la asignación de ${assignment.materia || 'materia'}`, [
-      { label: 'Materia', value: assignment.materia || '—' },
-      { label: 'Paralelo', value: assignment.paralelo || '—' },
-      { label: 'Turno', value: assignment.turnoParalelo || '—' },
-      { label: 'Horas / sem.', value: assignment.cargaHorariaSemanal ?? '—' },
-      { label: 'Fecha asignación', value: assignment.fechaAsignacion || '—' },
-    ]);
-  };
+    puedeAsignarMaterias,
+    puedeEditarAsignaciones,
+    puedeEliminarAsignaciones,
+    handleIrWizardAsignacion,
+    handleEditAssignment,
+    handleDeleteAssignment,
+  } = useDocentesAsignacionesGestionContext();
 
   const tabItems = [
     {

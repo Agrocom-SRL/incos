@@ -35,6 +35,8 @@ Marca en orden. Si un ítem no aplica, táchalo y anota por qué.
 | 9 | `routes.jsx`: ruta `/:id` con `accion: 'DETALLE'` y **después** de rutas estáticas del mismo prefijo. |
 | 10 | Listado: `navigate` al detalle con `state` (`returnListPath`, `menuSidebarKey` si aplica). |
 | 11 | Connector de detalle exportado como **`lazy`** y `Suspense` en el layout (mismo criterio que listado). |
+| 12 | Si hay pantallas intermedias, conservar ruta de origen (`gestionReturnPath` o equivalente) además de `returnListPath`. |
+| 13 | Permisos consistentes entre ruta frontend, guards/botones UI y middleware backend. |
 
 ---
 

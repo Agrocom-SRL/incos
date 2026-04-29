@@ -83,6 +83,17 @@ Patrón de referencia: **`/docentes/:id`** (`DocentesDetail`, contexto de detall
 - **Contexto** (`DocentesDetailContext`) + **Provider** (`DocentesDetailProvider`) que solo envuelve la página de ficha.
 - **Registro en factory** del caso de uso `obtener*PorId` en `*.container.js`.
 
+### 4.2.1 Regla de arquitectura limpia (obligatoria en ABM)
+
+Para detalle/edición/gestión relacionadas al mismo recurso:
+
+- `pages/*` no debe contener lógica de carga ni reglas de navegación complejas.
+- La orquestación se concentra en `hooks/state/*` (ej. `use*Detail`, `use*Gestion`, `use*Form`).
+- `providers/*` deben permanecer delgados: crean valor de contexto y envuelven children.
+- `connectors/*` componen Provider + Page y son el punto de entrada en rutas.
+
+Objetivo: mantener SRP por capa y permitir migraciones incrementales sin romper rutas existentes.
+
 ### 4.3 Presentación — página y layout
 
 - **`PageTemplate`**, **`PageHeader`**, **`Spin`** mientras carga, **`Alert`** si hay error.
@@ -103,7 +114,16 @@ Patrón de referencia: **`/docentes/:id`** (`DocentesDetail`, contexto de detall
 - En columnas / `TableActions`, **`viewPath`** y **`viewNavigateState`** con `returnListPath` (pathname actual del listado) y `menuSidebarKey` para restaurar menú al volver.
 - Referencia: `tableColumns.jsx` (`createDocentesTableColumns`), `DocentesList.jsx` (`handleVer`).
 
-### 4.6 Alias y bundler
+### 4.6 Detalle → gestión → wizard (trazabilidad de retorno)
+
+Cuando una ficha abre pantallas intermedias (gestión/asignación wizard), propagar dos rutas:
+
+- `returnListPath`: retorno funcional inmediato (p. ej. volver del wizard a gestión).
+- `gestionReturnPath` (o equivalente): retorno de origen (p. ej. detalle vs listado).
+
+Así el botón `Volver` siempre respeta el punto de entrada real y evita perder contexto de navegación.
+
+### 4.7 Alias y bundler
 
 - Mismo criterio que el listado: alias **`@application-<modulo>`** en `vite.config.js` y `jsconfig.json` para imports del módulo vertical.
 
@@ -144,7 +164,9 @@ Patrón de referencia: **`/docentes/:id`** (`DocentesDetail`, contexto de detall
 - [ ] ¿La ruta `/…/:id` no intercepta rutas estáticas del mismo prefijo?
 - [ ] ¿`accion: 'DETALLE'` en frontend coincide con `verificarPermiso(..., 'DETALLE')` en backend?
 - [ ] ¿“Volver” respeta `returnListPath` y opcionalmente `menuSidebarKey`?
+- [ ] ¿En flujos encadenados (detalle→gestión→wizard) se conserva también una ruta de origen (`gestionReturnPath` o equivalente)?
 - [ ] ¿Componentes pesados del detalle están en **organismos/moléculas** y la página solo orquesta?
+- [ ] ¿La acción de permiso coincide en frontend (`routes.jsx`, guards/botones) y backend (`verificarPermiso`)?
 
 ---
 
