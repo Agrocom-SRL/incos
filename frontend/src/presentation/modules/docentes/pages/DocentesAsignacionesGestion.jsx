@@ -3,7 +3,7 @@
  */
 
 import { useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Alert, Space, Spin, Tabs } from 'antd';
 import { ArrowLeftOutlined, ApartmentOutlined, BookOutlined, ScheduleOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
@@ -18,6 +18,7 @@ import DocenteSchedulesSection from '@docentes/components/organisms/DocenteSched
 
 const DocentesAsignacionesGestion = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { hasPermiso } = useAuthContext();
   const {
     docenteId,
@@ -39,6 +40,7 @@ const DocentesAsignacionesGestion = () => {
   const puedeEditarAsignaciones = hasPermiso('docentes.asignar', 'EDITAR');
   const puedeEliminarAsignaciones = hasPermiso('docentes.asignar', 'ELIMINAR');
   const puedeAsignarMaterias = puedeGestionarAsignaciones;
+  const gestionReturnPath = location.state?.gestionReturnPath || returnListPath || '/docentes/listar';
 
   const breadcrumbItems = useMemo(
     () => [
@@ -55,6 +57,7 @@ const DocentesAsignacionesGestion = () => {
       state: {
         menuSidebarKey: 'DOC-LIST',
         returnListPath: `/docentes/${docenteId}/asignaciones`,
+        gestionReturnPath,
         docenteId,
         docenteNombre: nombreCompleto,
         asignacionFocus: 'cursos',
@@ -68,6 +71,7 @@ const DocentesAsignacionesGestion = () => {
       state: {
         menuSidebarKey: 'DOC-LIST',
         returnListPath: `/docentes/${docenteId}/asignaciones`,
+        gestionReturnPath,
         docenteId,
         docenteNombre: nombreCompleto,
         asignacionFocus: 'cursos',

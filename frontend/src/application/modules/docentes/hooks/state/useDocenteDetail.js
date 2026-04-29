@@ -11,6 +11,7 @@ export const useDocenteDetail = (docenteIdRaw) => {
   const navigate = useNavigate();
   const location = useLocation();
   const returnListPath = location.state?.returnListPath || '/docentes/listar';
+  const gestionReturnPath = location.state?.gestionReturnPath || returnListPath;
 
   const { docente, loading, error, getDocenteById, refetch } = useGetDocenteById();
 
@@ -44,8 +45,8 @@ export const useDocenteDetail = (docenteIdRaw) => {
   );
 
   const handleVolver = useCallback(() => {
-    navigate(returnListPath, { state: { menuSidebarKey: location.state?.menuSidebarKey ?? 'DOC-LIST' } });
-  }, [navigate, returnListPath, location.state?.menuSidebarKey]);
+    navigate(gestionReturnPath, { state: { menuSidebarKey: location.state?.menuSidebarKey ?? 'DOC-LIST' } });
+  }, [navigate, gestionReturnPath, location.state?.menuSidebarKey]);
 
   const handleEditar = useCallback(() => {
     if (!Number.isFinite(docenteId) || docenteId < 1) return;
@@ -62,6 +63,7 @@ export const useDocenteDetail = (docenteIdRaw) => {
         state: {
           menuSidebarKey: location.state?.menuSidebarKey ?? 'DOC-LIST',
           returnListPath: `/docentes/${docenteId}`,
+          gestionReturnPath: `/docentes/${docenteId}`,
           docenteId,
           docenteNombre: nombreCompleto,
           asignacionFocus: focus,

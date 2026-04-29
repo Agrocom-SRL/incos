@@ -7,7 +7,6 @@ import { useMemo } from 'react';
 import { Spin, Alert, Tabs } from 'antd';
 import {
   ArrowLeftOutlined,
-  ApartmentOutlined,
   UserOutlined,
   EnvironmentOutlined,
   BookOutlined,
@@ -18,7 +17,6 @@ import {
 } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
-import { Button } from '@atoms';
 import { useAuthContext } from '@application-auth';
 import { useDocentesDetailContext } from '@application-docentes/hooks';
 import DetailField from '@docentes/components/atoms/DetailField';
@@ -144,17 +142,11 @@ const DocentesDetail = () => {
         ),
         children: (
           <div className="sd-tab-body">
-            {puedeGestionarAsignaciones ? (
-              <div style={{ marginBottom: 12 }}>
-                <Button variant="default" icon={<ApartmentOutlined />} onClick={() => handleAsignacionAcademica({ focus: 'cursos' })}>
-                  Gestionar asignaciones
-                </Button>
-              </div>
-            ) : null}
             <DocenteAssignmentsSection
               assignments={assignments}
               puedeAsignarMaterias={puedeAsignarMaterias}
               onAsignarMaterias={() => handleAsignacionAcademica({ focus: 'cursos' })}
+              showManageButtonInCard={puedeGestionarAsignaciones}
             />
           </div>
         ),

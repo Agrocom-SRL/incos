@@ -39,6 +39,8 @@ const DocentesAsignacionAcademica = () => {
     editingAssignment?.id != null && Number.isFinite(Number(editingAssignment.id)) ? Number(editingAssignment.id) : null;
 
   const returnListPath = typeof st.returnListPath === 'string' && st.returnListPath ? st.returnListPath : '/docentes/listar';
+  const gestionReturnPath =
+    typeof st.gestionReturnPath === 'string' && st.gestionReturnPath ? st.gestionReturnPath : '/docentes/listar';
   const menuSidebarKey = st.menuSidebarKey ?? 'DOC-LIST';
   const docenteId = st.docenteId != null && Number.isFinite(Number(st.docenteId)) ? Number(st.docenteId) : null;
   const docenteNombre = typeof st.docenteNombre === 'string' && st.docenteNombre.trim() ? st.docenteNombre.trim() : null;
@@ -428,9 +430,9 @@ const DocentesAsignacionAcademica = () => {
 
   const handleVolver = useCallback(() => {
     navigate(returnListPath.startsWith('/') ? returnListPath : '/docentes/listar', {
-      state: { menuSidebarKey },
+      state: { menuSidebarKey, gestionReturnPath },
     });
-  }, [navigate, returnListPath, menuSidebarKey]);
+  }, [navigate, returnListPath, menuSidebarKey, gestionReturnPath]);
 
   const handleRegistrarAsignacion = useCallback(async () => {
     if (!docenteId) {
@@ -489,7 +491,7 @@ const DocentesAsignacionAcademica = () => {
     }
     message.success('Asignación actualizada');
     navigate(returnListPath.startsWith('/') ? returnListPath : '/docentes/listar', {
-      state: { menuSidebarKey },
+      state: { menuSidebarKey, gestionReturnPath },
     });
   }, [
     editingAssignmentId,
@@ -500,6 +502,7 @@ const DocentesAsignacionAcademica = () => {
     navigate,
     returnListPath,
     menuSidebarKey,
+    gestionReturnPath,
   ]);
 
   const onValidateBeforeNext = useCallback(

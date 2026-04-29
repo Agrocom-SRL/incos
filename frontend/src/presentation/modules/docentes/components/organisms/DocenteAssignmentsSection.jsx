@@ -4,7 +4,6 @@
 
 import { Empty } from 'antd';
 import { ApartmentOutlined, BookOutlined } from '@ant-design/icons';
-import { Button } from '@atoms';
 import DetailInfoCard from '@docentes/components/molecules/DetailInfoCard';
 import DocenteAssignmentCard from '@docentes/components/molecules/DocenteAssignmentCard';
 import { sanitizeDocenteColorHex, docenteCarreraTitleStyles } from '@docentes/components/atoms/DocenteColorBar';
@@ -58,18 +57,26 @@ const DocenteAssignmentsSection = ({
   showAssignmentActions = false,
   onEditAssignment = null,
   onDeleteAssignment = null,
+  showManageButtonInCard = false,
 }) => {
   const grouped = groupByCarreraThenPeriodo(assignments);
+  const canManageAssignments = puedeAsignarMaterias && typeof onAsignarMaterias === 'function';
 
-  const emptyExtra =
-    puedeAsignarMaterias && typeof onAsignarMaterias === 'function' ? (
-      <Button variant="primary" icon={<ApartmentOutlined />} onClick={onAsignarMaterias}>
-        Asignar materias y paralelos
-      </Button>
+  const cardExtra =
+    showManageButtonInCard && canManageAssignments ? (
+      <button type="button" className="sd-btn sd-btn--primary" onClick={onAsignarMaterias}>
+        <ApartmentOutlined /> Gestionar asignaciones
+      </button>
     ) : null;
 
+  const emptyExtra = canManageAssignments ? (
+    <button type="button" className="sd-btn sd-btn--primary" onClick={onAsignarMaterias}>
+      <ApartmentOutlined /> Asignar materias y paralelos
+    </button>
+  ) : null;
+
   return (
-    <DetailInfoCard title="Carga académica asignada" icon={<BookOutlined />} cols={1}>
+    <DetailInfoCard title="Carga académica asignada" icon={<BookOutlined />} cols={1} extra={cardExtra}>
       {assignments.length === 0 ? (
         <Empty
           image={Empty.PRESENTED_IMAGE_SIMPLE}

@@ -319,6 +319,7 @@ export const createDocentesTableColumns = (navigate, refetch = null, deleteDocen
                     state: {
                       menuSidebarKey: 'DOC-LIST',
                       returnListPath,
+                      gestionReturnPath: returnListPath,
                       docenteId: r.id,
                       docenteNombre: nombreCompleto,
                       asignacionFocus: 'cursos',
