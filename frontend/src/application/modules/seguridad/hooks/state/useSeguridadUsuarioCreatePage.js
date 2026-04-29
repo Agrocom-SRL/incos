@@ -1,0 +1,298 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { App, Form } from 'antd';
+import { useUsuarioDetail } from '@/application/modules/seguridad/hooks/useUsuarioDetail';
+import { useRolesList } from '@/application/modules/seguridad/hooks/state/useRolesList';
+
+const ROLES_POR_CATEGORIA = {
+  ACCESO_SISTEMA: ['ADMIN_SISTEMA'],
+  PERSONAL_INSTITUCIONAL: ['RECTOR', 'DIR_ACADEMICO', 'DIR_ADMIN', 'SEC_ACADEMICA', 'SEC_ADMIN'],
+  ASIGNAR_ESTUDIANTE: ['ESTUDIANTE'],
+  ASIGNAR_DOCENTE: ['DOCENTE'],
+};
+
+function errMsg(json) {
+  const e = json?.error;
+  if (json?.error?.details?.length) {
+    return json.error.details.map((d) => d.message).join('. ');
+  }
+  return typeof e === 'string' ? e : e?.message || 'Error';
+}
+
+function loadRolesErrorMessage(e) {
+  const msg = e?.message || '';
+  if (e?.name === 'TypeError' && (msg.includes('fetch') || msg.includes('Load failed'))) {
+    return 'No se pudo conectar con el API. Inicie el backend en el puerto 3000 (p. ej. npm run dev en la carpeta backend) o revise VITE_API_URL / VITE_API_BASE_URL.';
+  }
+  return errMsg(e);
+}
+
+function personalPayloadFromForm(personal) {
+  if (!personal || typeof personal !== 'object') return undefined;
+  const p = { ...personal };
+  delete p.departamentoId;
+  delete p.provinciaId;
+
+  const birth = p.birthDate;
+  if (birth) {
+    try {
+      if (typeof birth === 'object' && typeof birth.format === 'function') {
+        p.birthDate = birth.format('YYYY-MM-DD');
+      } else if (birth instanceof Date && !Number.isNaN(birth.getTime())) {
+        p.birthDate = birth.toISOString().slice(0, 10);
+      } else if (typeof birth === 'string' && /^\d{2}-\d{2}-\d{4}$/.test(birth)) {
+        const [dd, mm, yyyy] = birth.split('-');
+        p.birthDate = `${yyyy}-${mm}-${dd}`;
+      }
+    } catch {
+      // El backend validará el formato
+    }
+  }
+
+  Object.keys(p).forEach((k) => {
+    if (p[k] === '' || p[k] === undefined) delete p[k];
+  });
+  return Object.keys(p).length ? p : undefined;
+}
+
+function buildCreatePayload(values) {
+  const {
+    username,
+    password,
+    password_confirm: _passwordConfirm,
+    vinculo_nombre_display: _vinculoNombre,
+    vinculo_email_display: _vinculoEmail,
+    rol_id,
+    categoria_creacion,
+    estudiante_id,
+    docente_id,
+    personal,
+  } = values;
+
+  const base = {
+    username: String(username || '').trim(),
+    password,
+    rol_id,
+    categoria_creacion,
+  };
+
+  const out = { ...base };
+  if (categoria_creacion === 'ASIGNAR_ESTUDIANTE') {
+    out.estudiante_id = estudiante_id != null ? Number(estudiante_id) : undefined;
+  }
+  if (categoria_creacion === 'ASIGNAR_DOCENTE') {
+    out.docente_id = docente_id != null ? Number(docente_id) : undefined;
+  }
+  if (
+    (categoria_creacion === 'PERSONAL_INSTITUCIONAL' || categoria_creacion === 'ACCESO_SISTEMA') &&
+    personal &&
+    typeof personal === 'object'
+  ) {
+    const cleaned = personalPayloadFromForm(personal);
+    if (cleaned) out.personal = cleaned;
+  }
+  return out;
+}
+
+const PERSONAL_FIELD_NAMES = [
+  ['personal', 'ci'],
+  ['personal', 'expedition'],
+  ['personal', 'firstName'],
+  ['personal', 'lastName'],
+];
+
+function fieldsToValidateOnFinish(categoria) {
+  const base = ['categoria_creacion', 'username', 'password', 'password_confirm', 'rol_id'];
+  if (categoria === 'ASIGNAR_ESTUDIANTE') base.push('estudiante_id');
+  if (categoria === 'ASIGNAR_DOCENTE') base.push('docente_id');
+  if (categoria === 'PERSONAL_INSTITUCIONAL' || categoria === 'ACCESO_SISTEMA') {
+    base.push(...PERSONAL_FIELD_NAMES);
+  }
+  return base;
+}
+
+function perfilFieldNamesForCategory(categoria) {
+  if (categoria === 'ASIGNAR_ESTUDIANTE') return ['estudiante_id'];
+  if (categoria === 'ASIGNAR_DOCENTE') return ['docente_id'];
+  if (categoria === 'PERSONAL_INSTITUCIONAL') {
+    return [...PERSONAL_FIELD_NAMES, 'rol_id'];
+  }
+  if (categoria === 'ACCESO_SISTEMA') {
+    return [...PERSONAL_FIELD_NAMES];
+  }
+  return [];
+}
+
+export const useSeguridadUsuarioCreatePage = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const prefillDocenteUsuario = location.state?.prefillDocenteUsuario;
+  const { message } = App.useApp();
+  const [form] = Form.useForm();
+  const { crear } = useUsuarioDetail();
+  const { roles, cargar: cargarRoles } = useRolesList();
+  const [loading, setLoading] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+  const categoria = Form.useWatch('categoria_creacion', form);
+  const prevCategoriaRef = useRef(undefined);
+
+  const usuarioAltaInitialValues = useMemo(() => {
+    const base = { categoria_creacion: 'ACCESO_SISTEMA' };
+    const p = location.state?.prefillDocenteUsuario;
+    if (!p?.docenteId) return base;
+    const id = Number(p.docenteId);
+    if (!Number.isFinite(id) || id < 1) return base;
+    return {
+      categoria_creacion: 'ASIGNAR_DOCENTE',
+      docente_id: id,
+      vinculo_nombre_display: p.nombreCompleto || undefined,
+      vinculo_email_display: p.emailPersonal || undefined,
+    };
+  }, [location.state?.prefillDocenteUsuario]);
+
+  const wizardFormMountKey = useMemo(
+    () => (prefillDocenteUsuario?.docenteId ? `prefill-docente-${prefillDocenteUsuario.docenteId}` : 'usuario-nuevo'),
+    [prefillDocenteUsuario?.docenteId]
+  );
+
+  const breadcrumbItems = useMemo(
+    () => [
+      { title: 'Inicio', href: '/' },
+      { title: 'Seguridad', href: '/seguridad/usuarios' },
+      { title: 'Usuarios', href: '/seguridad/usuarios' },
+      { title: 'Nuevo Usuario' },
+    ],
+    []
+  );
+
+  const rolesFiltrados = useMemo(() => {
+    const codes = ROLES_POR_CATEGORIA[categoria];
+    if (!codes) return roles;
+    const set = new Set(codes);
+    const filtered = roles.filter((r) => set.has(r.codigo));
+    return filtered.length ? filtered : roles;
+  }, [categoria, roles]);
+
+  useEffect(() => {
+    const run = async () => {
+      try {
+        await cargarRoles();
+      } catch (e) {
+        message.error(loadRolesErrorMessage(e));
+      }
+    };
+    run();
+  }, [cargarRoles, message]);
+
+  useEffect(() => {
+    const rid = form.getFieldValue('rol_id');
+    if (!rid || !rolesFiltrados.length) return;
+    const ok = rolesFiltrados.some((r) => r.id === rid);
+    if (!ok) form.setFieldsValue({ rol_id: undefined });
+  }, [categoria, rolesFiltrados, form]);
+
+  useEffect(() => {
+    if (!roles?.length || !categoria) return;
+    if (categoria === 'PERSONAL_INSTITUCIONAL') return;
+    const allowed = ROLES_POR_CATEGORIA[categoria];
+    if (!allowed?.length) return;
+    const candidates = roles.filter((r) => allowed.includes(r.codigo));
+    if (candidates.length === 0) return;
+    const rid = form.getFieldValue('rol_id');
+    const idNum = Number(rid);
+    const stillValid = Number.isFinite(idNum) && candidates.some((r) => r.id === idNum);
+    if (stillValid) return;
+    form.setFieldsValue({ rol_id: candidates[0].id });
+  }, [categoria, roles, form]);
+
+  useEffect(() => {
+    const prev = prevCategoriaRef.current;
+    prevCategoriaRef.current = categoria;
+    const patch = { password_confirm: undefined };
+    if (categoria === 'ASIGNAR_ESTUDIANTE') {
+      patch.docente_id = undefined;
+      if (prev && prev !== 'ASIGNAR_ESTUDIANTE') {
+        patch.vinculo_email_display = undefined;
+        patch.vinculo_nombre_display = undefined;
+      }
+    } else if (categoria === 'ASIGNAR_DOCENTE') {
+      patch.estudiante_id = undefined;
+      if (prev && prev !== 'ASIGNAR_DOCENTE') {
+        patch.vinculo_email_display = undefined;
+        patch.vinculo_nombre_display = undefined;
+      }
+    } else {
+      patch.estudiante_id = undefined;
+      patch.docente_id = undefined;
+      patch.vinculo_email_display = undefined;
+      patch.vinculo_nombre_display = undefined;
+    }
+    form.setFieldsValue(patch);
+  }, [categoria, form]);
+
+  const wizardSteps = useMemo(
+    () => [
+      { title: 'Tipo de alta', formTitle: 'Nuevo usuario', sections: ['categoria'], config: { categoria: {} } },
+      { title: 'Datos del perfil', formTitle: 'Ficha o vínculo institucional', sections: ['perfil'], config: { perfil: {} } },
+      { title: 'Credenciales y rol', formTitle: 'Acceso al sistema', sections: ['cuenta'], config: { cuenta: {} } },
+    ],
+    []
+  );
+
+  const onValidateBeforeNext = useCallback((stepNumber, formInstance) => {
+    const cat = formInstance.getFieldValue('categoria_creacion');
+    if (stepNumber === 1) return formInstance.validateFields(['categoria_creacion']);
+    if (stepNumber === 2) {
+      const names = perfilFieldNamesForCategory(cat);
+      if (!names.length) return Promise.resolve();
+      return formInstance.validateFields(names);
+    }
+    if (stepNumber === 3) {
+      return formInstance.validateFields(['username', 'password', 'password_confirm', 'rol_id']);
+    }
+    return Promise.resolve();
+  }, []);
+
+  const handleFinish = useCallback(async () => {
+    setSubmitError('');
+    const cat = form.getFieldValue('categoria_creacion');
+    try {
+      await form.validateFields(fieldsToValidateOnFinish(cat));
+    } catch {
+      message.error('Revise los campos obligatorios del último paso.');
+      return;
+    }
+    setLoading(true);
+    try {
+      const values = form.getFieldsValue(true);
+      const data = await crear(buildCreatePayload(values));
+      message.success('Usuario creado');
+      navigate(`/seguridad/usuarios/${data?.id || ''}`);
+    } catch (e) {
+      const text = errMsg(e);
+      setSubmitError(text);
+      message.error(text);
+    } finally {
+      setLoading(false);
+    }
+  }, [form, crear, message, navigate]);
+
+  const goToUsuariosList = useCallback(() => {
+    navigate('/seguridad/usuarios');
+  }, [navigate]);
+
+  return {
+    form,
+    roles,
+    loading,
+    submitError,
+    prefillDocenteUsuario,
+    wizardFormMountKey,
+    breadcrumbItems,
+    wizardSteps,
+    usuarioAltaInitialValues,
+    onValidateBeforeNext,
+    handleFinish,
+    goToUsuariosList,
+  };
+};

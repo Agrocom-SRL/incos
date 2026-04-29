@@ -6,17 +6,13 @@
  */
 
 import { lazy } from 'react';
-import { UsuariosListConnector } from '@modules/seguridad/connectors';
+import {
+  UsuarioCreateConnector,
+  UsuarioDetailConnector,
+  UsuarioPermisosConnector,
+  UsuariosListConnector,
+} from '@modules/seguridad/connectors';
 
-const UsuarioCreatePage = lazy(() =>
-  import('@modules/seguridad/pages/UsuarioCreatePage.jsx')
-);
-const UsuarioDetailPage = lazy(() =>
-  import('@modules/seguridad/pages/UsuarioDetailPage.jsx')
-);
-const UsuarioPermisosPage = lazy(() =>
-  import('@modules/seguridad/pages/UsuarioPermisosPage.jsx')
-);
 const RolesListPage = lazy(() =>
   import('@modules/seguridad/pages/RolesListPage.jsx')
 );
@@ -27,7 +23,7 @@ const RolPermisosPage = lazy(() =>
 export const seguridadRoutes = [
   {
     path: '/seguridad/usuarios/nuevo',
-    element: <UsuarioCreatePage />,
+    element: <UsuarioCreateConnector />,
     key: 'SEG-USUARIO-CREAR',
     permiso: 'seguridad.usuario.crear',
     accion: 'CREAR',
@@ -36,7 +32,7 @@ export const seguridadRoutes = [
   },
   {
     path: '/seguridad/usuarios/:id/permisos',
-    element: <UsuarioPermisosPage />,
+    element: <UsuarioPermisosConnector />,
     key: 'SEG-USUARIO-PERMISOS',
     permiso: 'seguridad.rol.gestionar',
     accion: 'EDITAR',
@@ -52,7 +48,7 @@ export const seguridadRoutes = [
   },
   {
     path: '/seguridad/usuarios/:id',
-    element: <UsuarioDetailPage />,
+    element: <UsuarioDetailConnector />,
     key: 'SEG-USUARIO-DETALLE',
     permiso: 'seguridad.usuario.administrar',
     accion: 'DETALLE',

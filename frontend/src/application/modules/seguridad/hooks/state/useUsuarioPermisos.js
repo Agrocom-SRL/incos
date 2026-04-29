@@ -25,4 +25,3 @@ export function useUsuarioPermisos() {
 
   return { permisos_rol, overrides, efectivos, loading, cargar, agregarOverride, eliminarOverride };
 }
-

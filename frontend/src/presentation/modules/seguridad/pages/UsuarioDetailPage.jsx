@@ -1,6 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { App, Empty, Space, Spin, Tabs, Tag, Typography } from 'antd';
+import { Empty, Space, Spin, Tabs, Tag, Typography } from 'antd';
 import {
   EditOutlined,
   InfoCircleOutlined,
@@ -12,20 +10,11 @@ import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { Button, Card } from '@atoms';
 import { PermisoGuard } from '@/presentation/guards/PermisoGuard.jsx';
-import { usePermiso } from '@/presentation/hooks/usePermiso.js';
-import { useRolesList, useUsuarioDetail } from '@/application/modules/seguridad/hooks';
+import { useSeguridadUsuarioDetailPageContext } from '@/application/modules/seguridad/hooks';
 import CambiarPasswordModal from '@modules/seguridad/components/modals/CambiarPasswordModal.jsx';
 import CambiarEstadoModal from '@modules/seguridad/components/modals/CambiarEstadoModal.jsx';
 import EditarUsuarioModal from '@modules/seguridad/components/modals/EditarUsuarioModal.jsx';
 import '@modules/seguridad/styles/seguridad.css';
-
-function errMsg(json) {
-  const e = json?.error;
-  if (json?.error?.details?.length) {
-    return json.error.details.map((d) => d.message).join('. ');
-  }
-  return typeof e === 'string' ? e : e?.message || 'Error';
-}
 
 function fmtDateTime(value) {
   if (!value) return '—';
@@ -35,99 +24,27 @@ function fmtDateTime(value) {
 }
 
 export default function UsuarioDetailPage() {
-  const { id } = useParams();
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { message } = App.useApp();
   const {
+    uid,
     usuario,
+    roles,
     loading,
-    cargar,
-    actualizar,
-    cambiarEstado,
-    cambiarPassword,
-  } = useUsuarioDetail();
-  const { roles, cargar: cargarRoles } = useRolesList();
-  const puedeEditar = usePermiso('seguridad.usuario.administrar', 'EDITAR');
-  const puedeVerPermisos = usePermiso('seguridad.rol.gestionar', 'LISTAR');
-
-  const [saving, setSaving] = useState(false);
-  const [openEdit, setOpenEdit] = useState(false);
-  const [openEstado, setOpenEstado] = useState(false);
-  const [openPass, setOpenPass] = useState(false);
-
-  const uid = parseInt(id, 10);
-
-  const load = async () => {
-    if (!uid) return;
-    try {
-      await cargar(uid);
-    } catch (e) {
-      message.error(errMsg(e));
-    }
-  };
-
-  useEffect(() => {
-    load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [uid]);
-
-  useEffect(() => {
-    const run = async () => {
-      await cargarRoles();
-    };
-    run();
-  }, [cargarRoles]);
-
-  useEffect(() => {
-    const action = location.state?.quickAction;
-    if (!action || !puedeEditar) return;
-    if (action === 'edit') setOpenEdit(true);
-    if (action === 'estado') setOpenEstado(true);
-    if (action === 'password') setOpenPass(true);
-    navigate(location.pathname, { replace: true, state: null });
-  }, [location.pathname, location.state, navigate, puedeEditar]);
-
-  const saveBasic = async (v) => {
-    setSaving(true);
-    try {
-      await actualizar(uid, v);
-      setSaving(false);
-      message.success('Actualizado');
-      setOpenEdit(false);
-      load();
-    } catch (e) {
-      setSaving(false);
-      message.error(errMsg(e));
-    }
-  };
-
-  const saveEstado = async (v) => {
-    setSaving(true);
-    try {
-      await cambiarEstado(uid, v.estado, v.motivo);
-      setSaving(false);
-      message.success('Estado actualizado');
-      setOpenEstado(false);
-      load();
-    } catch (e) {
-      setSaving(false);
-      message.error(errMsg(e));
-    }
-  };
-
-  const savePass = async (passwordNuevo) => {
-    setSaving(true);
-    try {
-      await cambiarPassword(uid, passwordNuevo);
-      setSaving(false);
-      setOpenPass(false);
-      message.success('Contraseña actualizada');
-    } catch (e) {
-      setSaving(false);
-      message.error(errMsg(e));
-    }
-  };
+    saving,
+    openEdit,
+    openEstado,
+    openPass,
+    puedeEditar,
+    puedeVerPermisos,
+    breadcrumbItems,
+    setOpenEdit,
+    setOpenEstado,
+    setOpenPass,
+    saveBasic,
+    saveEstado,
+    savePass,
+    goToUsuariosList,
+    goToUsuarioPermisos,
+  } = useSeguridadUsuarioDetailPageContext();
 
   const estadoTag = (estado) => {
     if (!estado) return <Tag color="success">Activo</Tag>;
@@ -136,16 +53,6 @@ export default function UsuarioDetailPage() {
     if (estado === 'RETIRADO') return <Tag>RETIRADO</Tag>;
     return <Tag>{estado}</Tag>;
   };
-
-  const breadcrumbItems = useMemo(
-    () => [
-      { title: 'Inicio', href: '/' },
-      { title: 'Seguridad', href: '/seguridad/usuarios' },
-      { title: 'Usuarios', href: '/seguridad/usuarios' },
-      { title: usuario?.username || `Usuario ${uid}` },
-    ],
-    [usuario, uid]
-  );
 
   if (loading) {
     return <div className="sd-loading"><Spin size="large" /></div>;
@@ -168,7 +75,7 @@ export default function UsuarioDetailPage() {
           <PageHeader
             title={`Usuario ${usuario.username}`}
             breadcrumbItems={breadcrumbItems}
-            actions={<Button variant="default" onClick={() => navigate('/seguridad/usuarios')}>Volver</Button>}
+            actions={<Button variant="default" onClick={goToUsuariosList}>Volver</Button>}
           />
         }
       >
@@ -218,7 +125,7 @@ export default function UsuarioDetailPage() {
                 </>
               ) : null}
               {puedeVerPermisos ? (
-                <button type="button" className="sd-btn sd-btn--primary" onClick={() => navigate(`/seguridad/usuarios/${uid}/permisos`)}>
+                <button type="button" className="sd-btn sd-btn--primary" onClick={goToUsuarioPermisos}>
                   <KeyOutlined /> Ver permisos
                 </button>
               ) : null}

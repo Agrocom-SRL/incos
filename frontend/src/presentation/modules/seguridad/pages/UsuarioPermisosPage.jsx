@@ -1,7 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useMemo } from 'react';
 import {
-  App,
   Alert,
   Table,
   Tabs,
@@ -19,30 +17,11 @@ import {
 } from '@ant-design/icons';
 import '@modules/seguridad/styles/seguridad.css';
 import { PermisoGuard } from '@/presentation/guards/PermisoGuard.jsx';
-import { usePermiso } from '@/presentation/hooks/usePermiso.js';
-import { usePermisosCatalogo, useUsuarioPermisos } from '@/application/modules/seguridad/hooks';
+import { useSeguridadUsuarioPermisosPageContext } from '@/application/modules/seguridad/hooks';
 import AgregarOverrideModal from '@modules/seguridad/components/modals/AgregarOverrideModal.jsx';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { Button } from '@atoms';
-
-function errMsg(json) {
-  const e = json?.error;
-  if (json?.error?.details?.length) {
-    return json.error.details.map((d) => d.message).join('. ');
-  }
-  return typeof e === 'string' ? e : e?.message || 'Error';
-}
-
-function agruparRol(flat) {
-  const m = {};
-  (flat || []).forEach((row) => {
-    const key = row.dominio || 'GENERAL';
-    if (!m[key]) m[key] = [];
-    m[key].push(row);
-  });
-  return Object.entries(m).map(([dominio, items]) => ({ dominio, items }));
-}
 
 function inicialesUsername(username) {
   const u = (username || '').trim();
@@ -84,95 +63,23 @@ function celdaPermisoNombreCodigo(_, r) {
 }
 
 export default function UsuarioPermisosPage() {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const { message } = App.useApp();
-  const uid = parseInt(id, 10);
-  const { permisos_rol, overrides, efectivos, loading, cargar, agregarOverride, eliminarOverride } = useUsuarioPermisos();
-  const { cargar: cargarCatalogo } = usePermisosCatalogo();
-  const puedeEditar = usePermiso('seguridad.rol.gestionar', 'EDITAR');
-  const [payloadUsuario, setPayloadUsuario] = useState(null);
-  const [permisoOptions, setPermisoOptions] = useState([]);
-  const [overrideOpen, setOverrideOpen] = useState(false);
-  const [savingOverride, setSavingOverride] = useState(false);
-
-  const esAdminSistema = useMemo(
-    () => Number(payloadUsuario?.rol?.id) === 1 || payloadUsuario?.rol?.codigo === 'ADMIN_SISTEMA',
-    [payloadUsuario]
-  );
-
-  const load = useCallback(async () => {
-    if (!uid) return;
-    try {
-      const data = await cargar(uid);
-      setPayloadUsuario(data?.usuario ?? null);
-    } catch (e) {
-      message.error(errMsg(e));
-    }
-  }, [uid, cargar, message]);
-
-  useEffect(() => {
-    load();
-  }, [load]);
-
-  useEffect(() => {
-    const run = async () => {
-      const grouped = await cargarCatalogo();
-      const opts = [];
-      Object.keys(grouped)
-        .sort()
-        .forEach((dom) => {
-          (grouped[dom] || []).forEach((p) => {
-            opts.push({
-              value: p.id,
-              label: `[${dom}] ${p.nombre} (${p.codigo})`,
-            });
-          });
-        });
-      setPermisoOptions(opts);
-    };
-    run();
-  }, [cargarCatalogo]);
-
-  const rolRows = useMemo(
-    () => agruparRol(permisos_rol),
-    [permisos_rol]
-  );
-
-  const breadcrumbItems = useMemo(
-    () => [
-      { title: 'Inicio', href: '/' },
-      { title: 'Seguridad', href: '/seguridad/usuarios' },
-      { title: 'Usuarios', href: '/seguridad/usuarios' },
-      { title: payloadUsuario?.username || `Usuario ${uid}` },
-      { title: 'Permisos' },
-    ],
-    [payloadUsuario, uid]
-  );
-
-  const onAddOverride = async (v) => {
-    setSavingOverride(true);
-    try {
-      await agregarOverride(uid, v);
-      setSavingOverride(false);
-      message.success('Ajuste registrado');
-      setOverrideOpen(false);
-      load();
-    } catch (e) {
-      setSavingOverride(false);
-      message.error(errMsg(e));
-    }
-  };
-
-  const removeOv = useCallback(async (overrideId) => {
-    try {
-      await eliminarOverride(uid, overrideId);
-      message.success('Eliminado');
-      load();
-    } catch (e) {
-      message.error(errMsg(e));
-    }
-  }, [uid, eliminarOverride, message, load]);
+  const {
+    loading,
+    payloadUsuario,
+    rolRows,
+    overrides,
+    efectivos,
+    permisoOptions,
+    breadcrumbItems,
+    puedeEditar,
+    esAdminSistema,
+    overrideOpen,
+    savingOverride,
+    setOverrideOpen,
+    onAddOverride,
+    removeOverride,
+    goToUsuarioDetail,
+  } = useSeguridadUsuarioPermisosPageContext();
 
   const columnasAccion = (a) => (
     <Tag color={ACCION_TAG_COLOR[a] || 'default'}>{a}</Tag>
@@ -277,7 +184,7 @@ export default function UsuarioPermisosPage() {
                         key: 'x',
                         width: 120,
                         render: (_, row) => (
-                          <Button icon={<DeleteOutlined />} variant="error" onClick={() => removeOv(row.id)}>
+                          <Button icon={<DeleteOutlined />} variant="error" onClick={() => removeOverride(row.id)}>
                             Quitar
                           </Button>
                         ),
@@ -350,7 +257,7 @@ export default function UsuarioPermisosPage() {
     <button
       type="button"
       className="sd-btn sd-btn--outline"
-      onClick={() => navigate(`/seguridad/usuarios/${uid}`)}
+      onClick={goToUsuarioDetail}
     >
       <ArrowLeftOutlined /> Volver
     </button>
