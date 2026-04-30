@@ -1,50 +1,42 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-
-const HORARIOS_STEPS = [
-    { key: 'gestion', label: 'Gestion', path: '/institucional/horarios' },
-    { key: 'plantilla', label: 'Plantilla', path: '/institucional/horarios/plantilla' },
-    { key: 'armado', label: 'Armado', path: '/institucional/horarios/armado' },
-    { key: 'conflictos', label: 'Conflictos', path: '/institucional/horarios/conflictos' },
-    { key: 'publicacion', label: 'Publicacion', path: '/institucional/horarios/publicacion' },
-];
+import { HORARIOS_STEPS } from '@application-institucional/horarios/utils/horarios.steps';
+import { resolveStepByKey, resolveStepByPath, resolveStepIndex } from '@application-institucional/horarios/utils/flowStepResolvers';
 
 export const useHorariosFlowState = () => {
     const navigate = useNavigate();
-    const location = useLocation();
+    const { pathname } = useLocation();
 
-    const currentStep = useMemo(() => {
-        return HORARIOS_STEPS.find((step) => step.path === location.pathname) || HORARIOS_STEPS[0];
-    }, [location.pathname]);
+    const { currentStep, currentIndex } = useMemo(() => {
+        const step = resolveStepByPath(pathname, HORARIOS_STEPS);
+        const index = resolveStepIndex(step.key, HORARIOS_STEPS);
+        return { currentStep: step, currentIndex: index };
+    }, [pathname]);
 
-    const currentIndex = useMemo(() => {
-        return HORARIOS_STEPS.findIndex((step) => step.key === currentStep.key);
-    }, [currentStep.key]);
-
-    const goToStep = (stepKey) => {
-        const target = HORARIOS_STEPS.find((step) => step.key === stepKey);
+    const goToStep = useCallback((stepKey) => {
+        const target = resolveStepByKey(stepKey, HORARIOS_STEPS);
         if (!target) return;
         navigate(target.path);
-    };
+    }, [navigate]);
 
-    const goNextStep = () => {
+    const goNextStep = useCallback(() => {
         const next = HORARIOS_STEPS[currentIndex + 1];
         if (!next) return;
         navigate(next.path);
-    };
+    }, [currentIndex, navigate]);
 
-    const goPrevStep = () => {
+    const goPrevStep = useCallback(() => {
         const prev = HORARIOS_STEPS[currentIndex - 1];
         if (!prev) return;
         navigate(prev.path);
-    };
+    }, [currentIndex, navigate]);
 
     return {
         steps: HORARIOS_STEPS,
         currentStep,
         currentIndex,
-        isFirstStep: currentIndex <= 0,
-        isLastStep: currentIndex >= HORARIOS_STEPS.length - 1,
+        isFirstStep: currentIndex === 0,
+        isLastStep: currentIndex === HORARIOS_STEPS.length - 1,
         goToStep,
         goNextStep,
         goPrevStep,

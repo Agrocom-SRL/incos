@@ -72,6 +72,36 @@ export class ParaleloRepository extends IParaleloRepository {
     }
   }
 
+  async obtenerParalelosEstadoDashboard(options = {}) {
+    try {
+      const { params = {} } = options;
+      const response = await apiClient.get(PARALELOS_ENDPOINTS.DASHBOARD_PARALELOS_ESTADO, { params });
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al obtener estado de paralelos del dashboard');
+    }
+  }
+
+  async obtenerAsignaturasSinCursoDashboard(options = {}) {
+    try {
+      const { params = {} } = options;
+      const response = await apiClient.get(PARALELOS_ENDPOINTS.DASHBOARD_ASIGNATURAS_SIN_CURSO, { params });
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al obtener asignaturas sin curso del dashboard');
+    }
+  }
+
+  async obtenerCapacidadTurnoDashboard(options = {}) {
+    try {
+      const { params = {} } = options;
+      const response = await apiClient.get(PARALELOS_ENDPOINTS.DASHBOARD_CAPACIDAD_TURNO, { params });
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al obtener capacidad por turno del dashboard');
+    }
+  }
+
 }
 
 export default new ParaleloRepository();

@@ -152,4 +152,48 @@ export class ParallelRepository extends BaseRepository {
 
     return results;
   }
+
+  async obtenerParalelosEstadoDashboard(filters = {}) {
+    const where = [];
+    const replacements = {};
+
+    if (filters.carrera_id != null) {
+      where.push('carrera_id = :carrera_id');
+      replacements.carrera_id = Number(filters.carrera_id);
+    }
+    if (filters.turno) {
+      where.push('turno = :turno');
+      replacements.turno = String(filters.turno).toUpperCase();
+    }
+
+    const query = `
+      SELECT *
+      FROM vista_horarios_paralelo_estado
+      ${where.length ? `WHERE ${where.join(' AND ')}` : ''}
+      ORDER BY carrera_id ASC, periodo_numero ASC, paralelo_nombre ASC
+    `;
+
+    return sequelize.query(query, {
+      replacements,
+      type: sequelize.QueryTypes.SELECT,
+    });
+  }
+
+  async obtenerAsignaturasSinCursoDashboard() {
+    const query = `
+      SELECT *
+      FROM vista_horarios_asignaturas_sin_curso
+      ORDER BY carrera_nombre ASC, periodo_numero ASC, materia_nombre ASC
+    `;
+    return sequelize.query(query, { type: sequelize.QueryTypes.SELECT });
+  }
+
+  async obtenerCapacidadTurnoDashboard() {
+    const query = `
+      SELECT *
+      FROM vista_horarios_capacidad_turno
+      ORDER BY turno ASC
+    `;
+    return sequelize.query(query, { type: sequelize.QueryTypes.SELECT });
+  }
 }

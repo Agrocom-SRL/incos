@@ -318,7 +318,8 @@
         "checkJs": false,
         "esModuleInterop": true,
         "skipLibCheck": true,
-        "resolveJsonModule": true
+        "resolveJsonModule": true,
+        "ignoreDeprecations": "6.0"
     },
     "include": [
         "src/**/*"

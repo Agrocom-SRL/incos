@@ -10,7 +10,13 @@
  * - Features: Paralelos, Gestiones
  */
 
-import { GetTodosParalelosUseCase, GetParaleloHorariosUseCase } from '@useCases/academico/paralelos';
+import {
+  GetAsignaturasSinCursoUseCase,
+  GetCapacidadTurnoUseCase,
+  GetParaleloHorariosUseCase,
+  GetParalelosEstadoDashboardUseCase,
+  GetTodosParalelosUseCase,
+} from '@useCases/academico/paralelos';
 import { GetTodasGestionesUseCase } from '@useCases/academico/gestiones';
 import ParaleloRepository from '@infrastructure/repositories/ParaleloRepository';
 import GestionRepository from '@infrastructure/repositories/GestionRepository';
@@ -32,6 +38,18 @@ export function registerAcademicoModule(factory) {
 
   factory.obtenerParaleloHorarios = () => {
     return new GetParaleloHorariosUseCase(paraleloRepository);
+  };
+
+  factory.obtenerParalelosEstadoDashboard = () => {
+    return new GetParalelosEstadoDashboardUseCase(paraleloRepository);
+  };
+
+  factory.obtenerAsignaturasSinCurso = () => {
+    return new GetAsignaturasSinCursoUseCase(paraleloRepository);
+  };
+
+  factory.obtenerCapacidadTurno = () => {
+    return new GetCapacidadTurnoUseCase(paraleloRepository);
   };
 
   // Registrar Use Cases de Gestiones

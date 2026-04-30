@@ -17,7 +17,7 @@ const GestionHorariosPublicacionConnector = lazy(() => import('./horarios/connec
 export const institucionalRoutes = [
     {
         path: '/institucional',
-        element: null,
+        element: <UnderConstruction />,
         key: 'INST-ROOT',
         menu: null,
     },

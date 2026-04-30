@@ -29,4 +29,16 @@ export class IParallelRepository extends IRepository {
   async obtenerEstadisticasYPeriodoPorGestion(parallelIds, managementId) {
     throw new Error('Method obtenerEstadisticasYPeriodoPorGestion must be implemented by subclass');
   }
+
+  async obtenerParalelosEstadoDashboard(_filters = {}) {
+    throw new Error('Method obtenerParalelosEstadoDashboard must be implemented by subclass');
+  }
+
+  async obtenerAsignaturasSinCursoDashboard() {
+    throw new Error('Method obtenerAsignaturasSinCursoDashboard must be implemented by subclass');
+  }
+
+  async obtenerCapacidadTurnoDashboard() {
+    throw new Error('Method obtenerCapacidadTurnoDashboard must be implemented by subclass');
+  }
 }

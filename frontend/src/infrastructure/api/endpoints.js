@@ -144,6 +144,9 @@ export const PARALELOS_ENDPOINTS = {
   ...createCRUDEndpoints('/paralelos'),
   // Endpoint específico para obtener horarios de un paralelo
   SCHEDULE: (id) => `${API_BASE}/paralelos/${id}/schedule`,
+  DASHBOARD_PARALELOS_ESTADO: `${API_BASE}/paralelos/dashboard/paralelos-estado`,
+  DASHBOARD_ASIGNATURAS_SIN_CURSO: `${API_BASE}/paralelos/dashboard/asignaturas-sin-curso`,
+  DASHBOARD_CAPACIDAD_TURNO: `${API_BASE}/paralelos/dashboard/capacidad-turno`,
 };
 export const GESTIONES_ENDPOINTS = createCRUDEndpoints('/gestiones');
 

@@ -69,6 +69,24 @@ export function buildParalelosRouter({ controllers, middlewares }) {
         (req, res, next) => controllers.getParaleloScheduleController.handle(req, res, next)
     );
 
+    router.get(
+        '/dashboard/paralelos-estado',
+        ...verHorarios,
+        (req, res, next) => controllers.getDashboardParalelosEstadoController.handle(req, res, next)
+    );
+
+    router.get(
+        '/dashboard/asignaturas-sin-curso',
+        ...verHorarios,
+        (req, res, next) => controllers.getDashboardAsignaturasSinCursoController.handle(req, res, next)
+    );
+
+    router.get(
+        '/dashboard/capacidad-turno',
+        ...verHorarios,
+        (req, res, next) => controllers.getDashboardCapacidadTurnoController.handle(req, res, next)
+    );
+
     // ============================================
     // ENDPOINTS FUTUROS (TODO: Implementar cuando se necesiten)
     // ============================================

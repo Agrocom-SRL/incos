@@ -3,3 +3,8 @@ export { useCarrerasCatalogApi } from './useCarrerasCatalogApi';
 export { useMateriasCatalogApi } from './useMateriasCatalogApi';
 export { useGestionesCatalogApi } from './useGestionesCatalogApi';
 export { useParalelosCatalogApi } from './useParalelosCatalogApi';
+export { useCursosDelParaleloApi } from './useCursosDelParaleloApi';
+export { useCursosHorariosApi } from './useCursosHorariosApi';
+export { useParalelosEstadoApi } from './useParalelosEstadoApi';
+export { useAsignaturasSinCursoApi } from './useAsignaturasSinCursoApi';
+export { useCapacidadTurnoApi } from './useCapacidadTurnoApi';
