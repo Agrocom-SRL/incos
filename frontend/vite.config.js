@@ -37,6 +37,7 @@ export default defineConfig({
             '@application-academico': path.resolve(__dirname, './src/application/modules/academico'),
             '@application-auth': path.resolve(__dirname, './src/application/modules/auth'),
             '@application-docentes': path.resolve(__dirname, './src/application/modules/docentes'),
+            '@application-institucional': path.resolve(__dirname, './src/application/modules/institucional'),
 
             // Infrastructure Layer
             '@infrastructure': path.resolve(__dirname, './src/infrastructure'),

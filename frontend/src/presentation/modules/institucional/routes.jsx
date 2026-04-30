@@ -8,7 +8,7 @@
 import { lazy } from 'react';
 import { UnderConstruction } from '@components/pages';
 
-const GestionHorariosConnector = lazy(() => import('./horarios/connectors/ListConnector'));
+const GestionHorariosConnector = lazy(() => import('./horarios/connectors'));
 const GestionHorariosPlantillaConnector = lazy(() => import('./horarios/connectors/PlantillaConnector'));
 const GestionHorariosArmadoConnector = lazy(() => import('./horarios/connectors/ArmadoConnector'));
 const GestionHorariosConflictosConnector = lazy(() => import('./horarios/connectors/ConflictosConnector'));
