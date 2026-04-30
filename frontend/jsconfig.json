@@ -208,11 +208,11 @@
             "@docentes/*": [
                 "./src/presentation/modules/docentes/*"
             ],
-            "@gestiones": [
-                "./src/presentation/modules/gestiones"
+            "@institucional": [
+                "./src/presentation/modules/institucional"
             ],
-            "@gestiones/*": [
-                "./src/presentation/modules/gestiones/*"
+            "@institucional/*": [
+                "./src/presentation/modules/institucional/*"
             ],
             "@historial": [
                 "./src/presentation/modules/historial"

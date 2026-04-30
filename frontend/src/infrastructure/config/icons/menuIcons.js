@@ -104,16 +104,20 @@ export const menuIconMap = {
     'REP': LineChartOutlined,
     'SEG': SafetyOutlined,
 
-    // Gestiones - Nivel 1
-    'GES': CalendarOutlined,
-    'GES-ACTUAL': CalendarOutlined,
-    'GES-LIST': UnorderedListOutlined,
-    'GES-ETAPAS': ScheduleOutlined,
-    'GES-OFERTA': BookOutlined,
-    'GES-HORARIOS-ASIGNAR': CalendarOutlined,
-    'GES-MAT-INSCRIBIR': BookOutlined,
-    'GES-MAT-CURSO': TableOutlined,
-    'GES-HORARIO-GEN': SyncOutlined,
+    // Institucional - Nivel 1
+    'INST-ROOT': HomeOutlined,
+    'INST-GESTION-ACTUAL': CalendarOutlined,
+    'INST-GESTIONES-PASADAS': UnorderedListOutlined,
+    'INST-CRONOGRAMAS': ScheduleOutlined,
+    'INST-OFERTA-ACADEMICA': BookOutlined,
+    'INST-HORARIOS': CalendarOutlined,
+    'INST-OFERTA-MAT-INSCRIBIR': BookOutlined,
+    'INST-OFERTA-MAT-CURSO': TableOutlined,
+    'INST-HORARIO-GENERAR': SyncOutlined,
+    'INST-HORARIO-PLANTILLA': CalendarOutlined,
+    'INST-HORARIO-ARMADO': TableOutlined,
+    'INST-HORARIO-CONFLICTOS': WarningOutlined,
+    'INST-HORARIO-PUBLICACION': SendOutlined,
 
     // Configuración - Nivel 1
     'CFG': SettingOutlined,

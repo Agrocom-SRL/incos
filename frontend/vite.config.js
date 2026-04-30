@@ -63,7 +63,7 @@ export default defineConfig({
             '@configuracion': path.resolve(__dirname, './src/presentation/modules/configuracion'),
             '@calificaciones': path.resolve(__dirname, './src/presentation/modules/calificaciones'),
             '@docentes': path.resolve(__dirname, './src/presentation/modules/docentes'),
-            '@gestiones': path.resolve(__dirname, './src/presentation/modules/gestiones'),
+            '@institucional': path.resolve(__dirname, './src/presentation/modules/institucional'),
             '@historial': path.resolve(__dirname, './src/presentation/modules/historial'),
             '@inscripciones': path.resolve(__dirname, './src/presentation/modules/inscripciones'),
             '@nivelaciones': path.resolve(__dirname, './src/presentation/modules/nivelaciones'),

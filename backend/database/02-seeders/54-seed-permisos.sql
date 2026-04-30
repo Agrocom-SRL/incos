@@ -12,7 +12,8 @@
 --   [NUEVO]   permiso 84:     config. pagos (cfg)
 --   [NUEVO]   permiso 85:     historial actividades (cfg)
 --   [NUEVO]   permiso 96: docentes.editar (ficha + eliminar cuando aplique API)
---   [TOTAL]   96 permisos
+--   [NUEVO]   permisos 97-100: gestión de horarios por etapas (plantilla, armado, conflictos, publicación)
+--   [TOTAL]   100 permisos
 --
 -- Ejecutar después de: 53-seed-roles.sql
 -- Ejecutar antes de:   56-seed-permiso-acciones.sql, 55-seed-roles-permisos.sql
@@ -94,13 +95,13 @@ INSERT INTO permisos (id, codigo, nombre, dominio, modulo, grupo_ui, ruta_sideba
 (61, 'finanzas.pago.reporte.gestion',   'Reportes de pagos: por gestión',             'FINANZAS', 'FIN', 'fin_reportes',    '/pagos/reportes',      TRUE),
 
 -- DOMINIO: INSTITUCIONAL (módulo sidebar: INST)
-(62, 'institucional.gestion.actual',    'Gestión actual: ver',                        'INSTITUCIONAL', 'INST', 'inst_gestion',    '/gestiones/actual',          TRUE),
-(63, 'institucional.gestion.cronograma','Cronogramas: gestionar',                     'INSTITUCIONAL', 'INST', 'inst_cronograma', '/gestiones/cronograma',      TRUE),
-(64, 'institucional.gestion.oferta',    'Oferta académica: gestionar',                'INSTITUCIONAL', 'INST', 'inst_oferta',     '/gestiones/oferta',          TRUE),
-(65, 'institucional.gestion.horarios',  'Horarios: asignar',                          'INSTITUCIONAL', 'INST', 'inst_horarios',   '/gestiones/horarios/asignar',TRUE),
-(66, 'institucional.oferta.gestionar',  'Inscripción por materia o curso',            'INSTITUCIONAL', 'INST', 'inst_oferta',     '/gestiones/oferta',          TRUE),
-(67, 'institucional.horario.asignar',   'Generar horarios',                           'INSTITUCIONAL', 'INST', 'inst_horarios',   '/gestiones/horarios/asignar',TRUE),
-(68, 'institucional.gestion.pasadas',   'Gestiones pasadas: ver',                     'INSTITUCIONAL', 'INST', 'inst_pasadas',    '/gestiones/pasadas',         TRUE),
+(62, 'institucional.gestion.actual',    'Gestión actual: ver',                        'INSTITUCIONAL', 'INST', 'inst_gestion',    '/institucional/actual',                  TRUE),
+(63, 'institucional.gestion.cronograma','Cronogramas: gestionar',                     'INSTITUCIONAL', 'INST', 'inst_cronograma', '/institucional/cronogramas',             TRUE),
+(64, 'institucional.gestion.oferta',    'Oferta académica: gestionar',                'INSTITUCIONAL', 'INST', 'inst_oferta',     '/institucional/oferta',                  TRUE),
+(65, 'institucional.gestion.horarios',  'Horarios: asignar',                          'INSTITUCIONAL', 'INST', 'inst_horarios',   '/institucional/horarios',                TRUE),
+(66, 'institucional.oferta.gestionar',  'Inscripción por materia o curso',            'INSTITUCIONAL', 'INST', 'inst_oferta',     '/institucional/oferta',                  TRUE),
+(67, 'institucional.horario.asignar',   'Generar horarios',                           'INSTITUCIONAL', 'INST', 'inst_horarios',   '/institucional/horarios/generar',        TRUE),
+(68, 'institucional.gestion.pasadas',   'Gestiones pasadas: ver',                     'INSTITUCIONAL', 'INST', 'inst_pasadas',    '/institucional/pasadas',                 TRUE),
 
 -- DOMINIO: CONFIGURACION (módulo sidebar: CFG)
 (69, 'cfg.academico.carreras', 'Config. académica: carreras',                         'CONFIGURACION', 'CFG', 'cfg_academico', '/configuracion/academico', TRUE),
@@ -134,11 +135,15 @@ INSERT INTO permisos (id, codigo, nombre, dominio, modulo, grupo_ui, ruta_sideba
 (93, 'seguridad.usuario.crear',      'Usuarios: crear nuevo usuario',                 'SEGURIDAD', 'SEG', 'seg_usuarios', '/seguridad/usuarios', TRUE),
 (94, 'seguridad.usuario.administrar','Usuarios: listar, ver y administrar',           'SEGURIDAD', 'SEG', 'seg_usuarios', '/seguridad/usuarios', TRUE),
 (95, 'seguridad.rol.gestionar',      'Roles y permisos: ver y administrar',           'SEGURIDAD', 'SEG', 'seg_roles',    '/seguridad/roles',    TRUE),
-(96, 'docentes.editar',              'Docentes: editar ficha y eliminar o desactivar registro', 'DOCENTES', 'DOC', 'doc_docentes', '/docentes/listar', TRUE);
+(96, 'docentes.editar',              'Docentes: editar ficha y eliminar o desactivar registro', 'DOCENTES', 'DOC', 'doc_docentes', '/docentes/listar', TRUE),
+(97, 'institucional.horario.plantilla',  'Gestión de horarios: trabajar plantilla base',         'INSTITUCIONAL', 'INST', 'inst_horarios', '/institucional/horarios/plantilla',      TRUE),
+(98, 'institucional.horario.armado',     'Gestión de horarios: armado operativo de bloques',     'INSTITUCIONAL', 'INST', 'inst_horarios', '/institucional/horarios/armado',         TRUE),
+(99, 'institucional.horario.conflictos', 'Gestión de horarios: revisión y resolución de conflictos', 'INSTITUCIONAL', 'INST', 'inst_horarios', '/institucional/horarios/conflictos',     TRUE),
+(100, 'institucional.horario.publicacion', 'Gestión de horarios: publicación de horarios vigentes', 'INSTITUCIONAL', 'INST', 'inst_horarios', '/institucional/horarios/publicacion',    TRUE);
 
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- Verificación post-insert:
--- SELECT COUNT(*) FROM permisos WHERE activo = 1;                        -- 96
+-- SELECT COUNT(*) FROM permisos WHERE activo = 1;                        -- 100
 -- SELECT COUNT(*) FROM permisos WHERE grupo_ui IS NULL AND activo = 1;   -- 0
 -- SELECT COUNT(*) FROM permisos WHERE ruta_sidebar IS NULL AND activo=1; -- 0
