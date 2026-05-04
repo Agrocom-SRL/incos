@@ -6,3 +6,4 @@
 
 export { useParalelosApi } from './useParalelosApi';
 export { useParaleloScheduleApi } from './useParaleloScheduleApi';
+export { usePersistParaleloScheduleApi } from './usePersistParaleloScheduleApi';

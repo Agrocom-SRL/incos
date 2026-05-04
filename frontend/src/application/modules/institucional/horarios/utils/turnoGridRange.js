@@ -12,12 +12,15 @@ export function getTurnoGridRangeMinutes(turnoRaw) {
         .normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '');
     if (t === 'NOCHE') {
-        return { start: 18 * 60, end: 23 * 60 + 45 };
+        // Seed `horarios`: 18:15–22:00 (bloques de 45 min)
+        return { start: 18 * 60 + 15, end: 22 * 60 };
     }
     if (t === 'TARDE') {
-        return { start: 14 * 60, end: 21 * 60 + 45 };
+        // Seed `horarios`: 13:45–18:15 (bloques de 45 min)
+        return { start: 13 * 60 + 45, end: 18 * 60 + 15 };
     }
     if (t === 'MANANA') {
+        // No hay seed de mañana todavía: mantener rango amplio (fallback)
         return { start: 7 * 60 + 30, end: 14 * 60 };
     }
     return { start: 8 * 60, end: 22 * 60 };
@@ -30,5 +33,6 @@ export function getTurnoGridRangeMinutes(turnoRaw) {
  * @returns {{ start: number, end: number }}
  */
 export function getSabadoArmadoGridRangeMinutes() {
-    return { start: 13 * 60, end: 24 * 60 };
+    // Seed `horarios` sábado: 15:00–19:00 (bloques de 45 min)
+    return { start: 15 * 60, end: 19 * 60 };
 }

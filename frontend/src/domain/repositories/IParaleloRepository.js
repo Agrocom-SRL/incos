@@ -27,6 +27,18 @@ export class IParaleloRepository extends IBaseRepository {
     throw new Error('Method obtenerHorarios() must be implemented');
   }
 
+  /**
+   * Persiste el plan semanal (bloques) del paralelo.
+   * PUT /v1/paralelos/:id/schedule
+   *
+   * @param {Object} options
+   * @param {number} options.parallelId
+   * @param {Array} options.schedules - courseSchedules (cursoId + bloques)
+   */
+  async persistirHorarios(options = {}) {
+    throw new Error('Method persistirHorarios() must be implemented');
+  }
+
   async obtenerParalelosEstadoDashboard(options = {}) {
     throw new Error('Method obtenerParalelosEstadoDashboard() must be implemented');
   }

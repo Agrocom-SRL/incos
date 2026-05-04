@@ -3,7 +3,7 @@
  */
 
 import { useCallback, useMemo, useState } from 'react';
-import { Flex, Form, message, Modal, Select, Space, Typography } from 'antd';
+import { Alert, Flex, Form, message, Modal, Select, Space, Typography } from 'antd';
 import { Button } from '@atoms';
 import DocenteHorarioSemanalGrid from '@docentes/components/organisms/DocenteHorarioSemanalGrid';
 import {
@@ -47,6 +47,9 @@ const ParaleloArmadoPlanSection = ({
     editable = false,
     turnoLabel,
     onRequestPersist,
+    persistLoading = false,
+    persistError = null,
+    persistSuccess = false,
 }) => {
     const [addOpen, setAddOpen] = useState(false);
     const [form] = Form.useForm();
@@ -164,7 +167,7 @@ const ParaleloArmadoPlanSection = ({
                             <Button variant="secondary" buttonStyle="outlined" onClick={() => setAddOpen(true)}>
                                 Añadir bloque
                             </Button>
-                            <Button variant="primary" onClick={handleSaveClick}>
+                            <Button variant="primary" onClick={handleSaveClick} loading={persistLoading}>
                                 Guardar cambios
                             </Button>
                         </>
@@ -173,6 +176,31 @@ const ParaleloArmadoPlanSection = ({
                     )}
                 </Space>
             </Flex>
+            {editable && persistLoading ? (
+                <Alert
+                    type="info"
+                    showIcon
+                    style={{ marginBottom: 12 }}
+                    message="Guardando cambios del plan semanal..."
+                />
+            ) : null}
+            {editable && persistError ? (
+                <Alert
+                    type="error"
+                    showIcon
+                    style={{ marginBottom: 12 }}
+                    message="No se pudo guardar el plan"
+                    description={persistError}
+                />
+            ) : null}
+            {editable && !persistLoading && !persistError && persistSuccess ? (
+                <Alert
+                    type="success"
+                    showIcon
+                    style={{ marginBottom: 12 }}
+                    message="Plan semanal guardado correctamente."
+                />
+            ) : null}
             <DocenteHorarioSemanalGrid
                 courseSchedules={schedules}
                 CellComponent={ParaleloPlanSemanaCell}

@@ -10,6 +10,7 @@ import {
     extractParaleloScheduleMeta,
     paraleloScheduleToCourseSchedules,
 } from '@application-institucional/horarios';
+import { usePersistParaleloScheduleApi } from '@application-academico/paralelos/hooks';
 import { blockDurationMinutes } from '../utils/planSemanalBlockOps';
 import ParaleloArmadoPlanSection from '../components/organisms/ParaleloArmadoPlanSection';
 import '@presentation/styles/pages/detail-page.css';
@@ -81,6 +82,12 @@ const GestionHorariosArmadoPage = () => {
     const turnoParam = searchParams.get('turno') || '';
 
     const { schedule, loading, error, fetch } = useParaleloScheduleApi();
+    const {
+        result: persistResult,
+        loading: persistLoading,
+        error: persistError,
+        fetch: persist,
+    } = usePersistParaleloScheduleApi();
 
     const paraleloApiMeta = useMemo(() => extractParaleloScheduleMeta(schedule), [schedule]);
     const turnoEfectivo = (turnoParam || paraleloApiMeta?.turno || '').trim();
@@ -115,6 +122,10 @@ const GestionHorariosArmadoPage = () => {
     );
 
     const serverSchedules = useMemo(() => paraleloScheduleToCourseSchedules(schedule, meta), [schedule, meta]);
+    const missingSubjects = useMemo(() => {
+        if (!schedule || Array.isArray(schedule)) return [];
+        return Array.isArray(schedule.missingSubjects) ? schedule.missingSubjects : [];
+    }, [schedule]);
 
     const [draftSchedules, setDraftSchedules] = useState([]);
 
@@ -127,6 +138,13 @@ const GestionHorariosArmadoPage = () => {
             fetch(Number(paraleloId));
         }
     }, [paraleloId, fetch]);
+
+    useEffect(() => {
+        // Si guardamos ok, rehidratar desde servidor
+        if (!persistLoading && persistResult && paraleloId) {
+            fetch(Number(paraleloId));
+        }
+    }, [persistLoading, persistResult, paraleloId, fetch]);
 
     const setTab = useCallback(
         (key) => {
@@ -165,6 +183,35 @@ const GestionHorariosArmadoPage = () => {
                             />
                         ) : (
                             <Flex vertical gap={12}>
+                                {missingSubjects.length ? (
+                                    <Alert
+                                        type="warning"
+                                        showIcon
+                                        title={`Materias del periodo sin curso (${missingSubjects.length})`}
+                                        description={
+                                            <ul className="horarios-armado-cursos__lista">
+                                                {missingSubjects.map((m, idx) => (
+                                                    <li key={`${m.asignaturaPlanId || m.materiaId || idx}`}>
+                                                        <Text type="secondary">
+                                                            {m.materiaSigla && m.materiaNombre
+                                                                ? `${m.materiaSigla} — ${m.materiaNombre}`
+                                                                : m.materiaNombre || m.materiaSigla || 'Materia sin nombre'}{' '}
+                                                            {m.horasSemanalesPlan != null
+                                                                ? `· ${m.horasSemanalesPlan} h/semana`
+                                                                : ''}
+                                                        </Text>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        }
+                                    />
+                                ) : (
+                                    <Alert
+                                        type="success"
+                                        showIcon
+                                        title="Todas las materias del periodo ya tienen curso."
+                                    />
+                                )}
                                 {draftSchedules.map((c) => {
                                     const titulo = c.materiaNombre || c.materiaSigla || 'Materia sin nombre';
                                     const { horasGrilla, horasPlan, diasOrd, lineas } = resumenBloquesCurso(c);
@@ -243,6 +290,13 @@ const GestionHorariosArmadoPage = () => {
                             onSchedulesChange={setDraftSchedules}
                             editable
                             turnoLabel={turnoEfectivo || undefined}
+                            persistLoading={persistLoading}
+                            persistError={persistError}
+                            persistSuccess={Boolean(!persistLoading && !persistError && persistResult)}
+                            onRequestPersist={() => {
+                                if (!paraleloId) return;
+                                persist(Number(paraleloId), draftSchedules);
+                            }}
                         />
                     </div>
                 ),
@@ -267,7 +321,7 @@ const GestionHorariosArmadoPage = () => {
                 ),
             },
         ],
-        [draftSchedules, turnoEfectivo],
+        [draftSchedules, missingSubjects, turnoEfectivo, persistLoading, persistError, persistResult, paraleloId, persist],
     );
 
     const headerActions = (

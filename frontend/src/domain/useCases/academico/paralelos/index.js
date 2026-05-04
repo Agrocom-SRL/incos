@@ -6,6 +6,7 @@
 
 export { GetTodosParalelosUseCase } from './GetTodosParalelosUseCase';
 export { GetParaleloHorariosUseCase } from './GetParaleloHorariosUseCase';
+export { PutParaleloHorariosUseCase } from './PutParaleloHorariosUseCase';
 export { GetParalelosEstadoDashboardUseCase } from './GetParalelosEstadoDashboardUseCase';
 export { GetAsignaturasSinCursoUseCase } from './GetAsignaturasSinCursoUseCase';
 export { GetCapacidadTurnoUseCase } from './GetCapacidadTurnoUseCase';

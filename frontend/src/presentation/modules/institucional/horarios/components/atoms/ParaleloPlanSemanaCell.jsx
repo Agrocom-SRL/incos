@@ -92,7 +92,9 @@ const ParaleloPlanSemanaCell = ({
                                 {ev.turno ? ` · ${ev.turno}` : ''}
                             </div>
                         ) : null}
-                        {ev.aula ? <div className="da-cal-semanal__chip-line">Aula: {ev.aula}</div> : null}
+                        {!editable && ev.aula ? (
+                            <div className="da-cal-semanal__chip-line">Aula: {ev.aula}</div>
+                        ) : null}
                     </div>
                 );
             })}

@@ -137,6 +137,9 @@ export class GetParaleloHorariosUseCase {
         null
       );
       const cursos = cursosResult.courses || [];
+      const assignedPlanSubjectIds = new Set(
+        cursos.map((c) => Number(c.planSubjectId)).filter((n) => Number.isFinite(n) && n > 0),
+      );
 
       this.logger.info('[Académico] Cursos encontrados', {
         parallelId: paralelo.id,
@@ -266,6 +269,52 @@ export class GetParaleloHorariosUseCase {
       // Filtrar cursos nulos (errores)
       const cursosValidos = horariosCompletos.filter((c) => c !== null);
 
+      // 4. Detectar materias del periodo que todavía no tienen curso en este paralelo
+      let missingSubjects = [];
+      if (paralelo.periodId) {
+        try {
+          const planSubjectsResult = await this.planSubjectRepository.findAll(
+            { periodId: paralelo.periodId },
+            null,
+            null,
+          );
+          const planSubjects = planSubjectsResult.planSubjects || [];
+          const missingPlanSubjects = planSubjects.filter(
+            (ps) => !assignedPlanSubjectIds.has(Number(ps.id)),
+          );
+
+          missingSubjects = await Promise.all(
+            missingPlanSubjects.map(async (ps) => {
+              let materia = null;
+              if (ps.subjectId) {
+                try {
+                  materia = await this.subjectRepository.findById(ps.subjectId);
+                } catch (e) {
+                  this.logger.warn('[Académico] No se pudo cargar materia faltante', {
+                    planSubjectId: ps.id,
+                    subjectId: ps.subjectId,
+                    error: e.message,
+                  });
+                }
+              }
+              return {
+                asignaturaPlanId: ps.id,
+                materiaId: ps.subjectId ?? null,
+                materiaSigla: materia?.acronym ?? null,
+                materiaNombre: materia?.name ?? null,
+                horasSemanalesPlan: ps.weeklyHours ?? null,
+              };
+            }),
+          );
+        } catch (e) {
+          this.logger.warn('[Académico] No se pudo construir listado de materias sin curso', {
+            parallelId: paralelo.id,
+            periodId: paralelo.periodId,
+            error: e.message,
+          });
+        }
+      }
+
       // Logging final
       this.logger.info('[Académico] Horarios de paralelo obtenidos exitosamente', {
         parallelId: paralelo.id,
@@ -276,6 +325,7 @@ export class GetParaleloHorariosUseCase {
       return {
         paralelo: paraleloResumen,
         schedule: cursosValidos,
+        missingSubjects,
       };
     } catch (error) {
       // Manejo de errores

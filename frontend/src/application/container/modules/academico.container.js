@@ -16,6 +16,7 @@ import {
   GetParaleloHorariosUseCase,
   GetParalelosEstadoDashboardUseCase,
   GetTodosParalelosUseCase,
+  PutParaleloHorariosUseCase,
 } from '@useCases/academico/paralelos';
 import { GetTodasGestionesUseCase } from '@useCases/academico/gestiones';
 import ParaleloRepository from '@infrastructure/repositories/ParaleloRepository';
@@ -38,6 +39,10 @@ export function registerAcademicoModule(factory) {
 
   factory.obtenerParaleloHorarios = () => {
     return new GetParaleloHorariosUseCase(paraleloRepository);
+  };
+
+  factory.persistirParaleloHorarios = () => {
+    return new PutParaleloHorariosUseCase(paraleloRepository);
   };
 
   factory.obtenerParalelosEstadoDashboard = () => {

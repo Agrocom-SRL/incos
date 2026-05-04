@@ -1,7 +1,7 @@
 import express from 'express';
 import { authenticate } from '../middleware/auth.middleware.js';
 import { verificarPermiso } from '../middleware/permisos.middleware.js';
-import { listParalelosValidator } from '../validators/academico/index.js';
+import { listParalelosValidator, putParaleloScheduleValidator } from '../validators/academico/index.js';
 import { idValidator } from '../validators/common/index.js';
 
 /**
@@ -67,6 +67,21 @@ export function buildParalelosRouter({ controllers, middlewares }) {
         idValidator,
         validateRequest,
         (req, res, next) => controllers.getParaleloScheduleController.handle(req, res, next)
+    );
+
+    /**
+     * PUT /api/v1/paralelos/:id/schedule
+     * Persistir el plan semanal (bloques) del paralelo.
+     *
+     * Nota: por ahora se omiten aulas (aula_id = NULL).
+     */
+    router.put(
+        '/:id/schedule',
+        ...verHorarios,
+        idValidator,
+        putParaleloScheduleValidator,
+        validateRequest,
+        (req, res, next) => controllers.putParaleloScheduleController.handle(req, res, next)
     );
 
     router.get(
