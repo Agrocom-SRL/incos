@@ -19,8 +19,12 @@ const ParaleloCursoOfertaModal = ({
     /** Tras guardar exitoso (p. ej. recargar oferta) */
     onSaved,
     initialAsignaturaPlanId,
+    /** ID del paralelo (validación en PATCH). */
+    parallelId,
     /** @returns {Promise<{ success: boolean, error?: string, data?: object }>} */
     onCrearCurso,
+    /** (courseId, payload) — payload incluye parallelId, codigo, cupos, colorHex */
+    onActualizarCurso,
 }) => {
     const { message } = App.useApp();
     const [form] = Form.useForm();
@@ -55,6 +59,7 @@ const ParaleloCursoOfertaModal = ({
         if (!open) return;
         if (isEdit && cursoEdit) {
             form.setFieldsValue({
+                codigo: cursoEdit.codigo ?? '',
                 asignaturaPlanId: Number(cursoEdit.asignaturaPlanId),
                 cupoMinimo: cursoEdit.cupoMinimo ?? 10,
                 cupoMaximo: cursoEdit.cupoMaximo ?? 35,
@@ -80,7 +85,28 @@ const ParaleloCursoOfertaModal = ({
         try {
             const values = await form.validateFields();
             if (isEdit) {
-                message.info('La edición del curso estará disponible en la siguiente fase.');
+                if (!cursoEdit?.cursoId) {
+                    message.error('Curso no válido');
+                    return;
+                }
+                if (typeof onActualizarCurso !== 'function') {
+                    message.error('No hay handler de actualización configurado.');
+                    return;
+                }
+                setSaving(true);
+                const res = await onActualizarCurso(cursoEdit.cursoId, {
+                    parallelId,
+                    codigo: values.codigo,
+                    cupoMinimo: values.cupoMinimo,
+                    cupoMaximo: values.cupoMaximo,
+                    colorHex: values.colorHex,
+                });
+                if (!res?.success) {
+                    message.error(res?.error || 'No se pudo actualizar el curso');
+                    return;
+                }
+                message.success('Curso actualizado');
+                onSaved?.();
                 onClose();
                 return;
             }

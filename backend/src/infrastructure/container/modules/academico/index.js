@@ -15,9 +15,7 @@
 
 import { registerParalelosResource } from './paralelos.container.js';
 import { registerGestionesResource } from './gestiones.container.js';
-// TODO: Agregar otros recursos cuando se implementen
-// import { registerCursosResource } from './cursos.container.js';
-// import { registerHorariosResource } from './horarios.container.js';
+import { registerCursosResource } from './cursos.container.js';
 
 /**
  * Registra el módulo completo de Académico en el contenedor
@@ -29,10 +27,7 @@ export function registerAcademicoModule(container) {
     // Registrar cada recurso individualmente
     registerParalelosResource(container);
     registerGestionesResource(container);
-    
-    // TODO: Agregar otros recursos cuando se implementen
-    // registerCursosResource(container);
-    // registerHorariosResource(container);
+    registerCursosResource(container);
 
     return container;
 }

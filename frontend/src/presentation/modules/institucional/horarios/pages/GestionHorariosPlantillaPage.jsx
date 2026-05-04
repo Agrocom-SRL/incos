@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { App, Alert, Flex, Spin, Table, Tag, Tooltip, Typography, Button as AntButton } from 'antd';
+import { App, Alert, Flex, Modal, Spin, Table, Tag, Tooltip, Typography, Button as AntButton } from 'antd';
 import { ArrowLeftOutlined, BookOutlined, DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
@@ -160,9 +160,31 @@ const GestionHorariosPlantillaPage = () => {
 
     const onEliminarCurso = useCallback(
         (record) => {
-            message.info(`Eliminar curso #${record.cursoId}: pendiente de API.`);
+            if (!validParaleloId || !record?.cursoId) return;
+            const label = record.codigo || record.materiaSigla || `ID ${record.cursoId}`;
+            Modal.confirm({
+                title: 'Eliminar curso del paralelo',
+                content: `¿Dar de baja el curso «${label}»? No se puede eliminar si ya tiene bloques de horario en el armado semanal.`,
+                okText: 'Eliminar',
+                okType: 'danger',
+                cancelText: 'Cancelar',
+                onOk: async () => {
+                    const uc = getUseCase('eliminarCursoOferta');
+                    if (!uc) {
+                        message.error('No se pudo inicializar la operación');
+                        throw new Error('no-use-case');
+                    }
+                    const res = await uc.ejecutar(record.cursoId, validParaleloId);
+                    if (!res?.success) {
+                        message.error(res?.error || 'No se pudo eliminar el curso');
+                        throw new Error('delete-failed');
+                    }
+                    message.success('Curso eliminado');
+                    fetch(validParaleloId);
+                },
+            });
         },
-        [message],
+        [validParaleloId, message, fetch],
     );
 
     const handleCrearCursoOferta = useCallback(
@@ -182,6 +204,17 @@ const GestionHorariosPlantillaPage = () => {
             });
         },
         [validParaleloId],
+    );
+
+    const handleActualizarCursoOferta = useCallback(
+        async (courseId, payload) => {
+            const uc = getUseCase('actualizarCursoOferta');
+            if (!uc) {
+                return { success: false, error: 'No se pudo inicializar la operación' };
+            }
+            return uc.ejecutar(courseId, payload);
+        },
+        [],
     );
 
     const headerActions = (
@@ -485,7 +518,9 @@ const GestionHorariosPlantillaPage = () => {
                     cursoEdit={cursoModal.cursoEdit}
                     missingSubjects={missingSubjects}
                     initialAsignaturaPlanId={cursoModal.prefillAsignaturaPlanId}
+                    parallelId={validParaleloId}
                     onCrearCurso={handleCrearCursoOferta}
+                    onActualizarCurso={handleActualizarCursoOferta}
                     onSaved={() => fetch(validParaleloId)}
                 />
             ) : null}

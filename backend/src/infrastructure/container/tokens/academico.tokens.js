@@ -30,7 +30,14 @@ export const ACADEMICO_TOKENS = {
     getDashboardAsignaturasSinCursoController: 'academico.getDashboardAsignaturasSinCursoController',
     getDashboardCapacidadTurnoController: 'academico.getDashboardCapacidadTurnoController',
 
+    updateCursoOfertaUseCase: 'academico.updateCursoOfertaUseCase',
+    deleteCursoOfertaUseCase: 'academico.deleteCursoOfertaUseCase',
+
+    patchCursoOfertaController: 'academico.patchCursoOfertaController',
+    deleteCursoOfertaController: 'academico.deleteCursoOfertaController',
+
     // ROUTERS
     paralelosRouter: 'academico.paralelosRouter',
     gestionesRouter: 'academico.gestionesRouter',
+    cursosRouter: 'academico.cursosRouter',
 };

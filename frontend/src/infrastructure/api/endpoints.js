@@ -140,6 +140,10 @@ export const DISCAPACIDAD_ENDPOINTS = createCRUDEndpoints('/discapacidad');
 // ============================================
 // MÓDULO: ACADÉMICO
 // ============================================
+export const CURSOS_ENDPOINTS = {
+  BY_ID: (id) => `${API_BASE}/cursos/${id}`,
+};
+
 export const PARALELOS_ENDPOINTS = {
   ...createCRUDEndpoints('/paralelos'),
   CURSOS_OFERTA: (id) => `${API_BASE}/paralelos/${id}/cursos-oferta`,

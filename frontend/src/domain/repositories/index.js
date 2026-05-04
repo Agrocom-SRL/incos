@@ -43,6 +43,7 @@ export { IDiscapacidadRepository } from './IDiscapacidadRepository';
 // MÓDULO: ACADÉMICO
 // ============================================
 export { IParaleloRepository } from './IParaleloRepository';
+export { ICursoRepository } from './ICursoRepository';
 export { IGestionRepository } from './IGestionRepository';
 
 // ============================================

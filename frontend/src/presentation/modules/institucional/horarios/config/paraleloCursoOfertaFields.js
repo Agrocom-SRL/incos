@@ -4,7 +4,7 @@
  * Consumido por FormSection dentro de WizardForm (un paso). Opciones dinámicas vía resolveOptions:
  * - `asignaturasPlanPendientes`: materias del periodo sin curso en el paralelo (alta); en edición, solo la materia del curso (select deshabilitado).
  *
- * El código interno del curso lo genera el backend (carrera, paralelo, turno, sigla).
+ * En alta, el código puede autogenerarse en backend; en edición se muestra y puede ajustarse.
  *
  * @param {{ isEdit?: boolean }} options
  * @returns {Object} Secciones con arrays de definición de campo para FormSection.
@@ -12,7 +12,21 @@
 export const createParaleloCursoOfertaFields = (options = {}) => {
     const { isEdit = false } = options;
 
-    const fields = [
+    const fields = [];
+
+    if (isEdit) {
+        fields.push({
+            name: 'codigo',
+            label: 'Código del curso',
+            type: 'input',
+            required: true,
+            span: 24,
+            maxLength: 50,
+            placeholder: 'Ej: SIS-1A-NOCHE-PRG102',
+        });
+    }
+
+    fields.push(
         {
             name: 'asignaturaPlanId',
             label: 'Materia',
@@ -49,7 +63,7 @@ export const createParaleloCursoOfertaFields = (options = {}) => {
             span: 24,
             helperText: 'Elegí un color para identificar el curso en la grilla.',
         },
-    ];
+    );
 
     return {
         datosCurso: {

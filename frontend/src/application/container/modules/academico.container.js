@@ -20,8 +20,10 @@ import {
   GetTodosParalelosUseCase,
   PutParaleloHorariosUseCase,
 } from '@useCases/academico/paralelos';
+import { ActualizarCursoOfertaUseCase, EliminarCursoOfertaUseCase } from '@useCases/academico/cursos';
 import { GetTodasGestionesUseCase } from '@useCases/academico/gestiones';
 import ParaleloRepository from '@infrastructure/repositories/ParaleloRepository';
+import CursoRepository from '@infrastructure/repositories/CursoRepository';
 import GestionRepository from '@infrastructure/repositories/GestionRepository';
 
 /**
@@ -32,6 +34,7 @@ import GestionRepository from '@infrastructure/repositories/GestionRepository';
 export function registerAcademicoModule(factory) {
   // Repositorios singleton (stateless)
   const paraleloRepository = ParaleloRepository;
+  const cursoRepository = CursoRepository;
   const gestionRepository = GestionRepository;
 
   // Registrar Use Cases de Paralelos
@@ -49,6 +52,14 @@ export function registerAcademicoModule(factory) {
 
   factory.crearParaleloCursoOferta = () => {
     return new CrearParaleloCursoOfertaUseCase(paraleloRepository);
+  };
+
+  factory.actualizarCursoOferta = () => {
+    return new ActualizarCursoOfertaUseCase(cursoRepository);
+  };
+
+  factory.eliminarCursoOferta = () => {
+    return new EliminarCursoOfertaUseCase(cursoRepository);
   };
 
   factory.persistirParaleloHorarios = () => {
