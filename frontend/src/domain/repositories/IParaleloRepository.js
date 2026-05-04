@@ -35,6 +35,16 @@ export class IParaleloRepository extends IBaseRepository {
   }
 
   /**
+   * POST /v1/paralelos/:id/cursos
+   * @param {Object} options
+   * @param {number} options.parallelId
+   * @param {Object} options.payload — asignaturaPlanId, cupoMinimo?, cupoMaximo?, colorHex?, codigo?
+   */
+  async crearCursoOferta(options = {}) {
+    throw new Error('Method crearCursoOferta() must be implemented');
+  }
+
+  /**
    * Persiste el plan semanal (bloques) del paralelo.
    * PUT /v1/paralelos/:id/schedule
    *

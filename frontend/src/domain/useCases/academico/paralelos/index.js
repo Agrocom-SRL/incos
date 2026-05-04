@@ -7,6 +7,7 @@
 export { GetTodosParalelosUseCase } from './GetTodosParalelosUseCase';
 export { GetParaleloHorariosUseCase } from './GetParaleloHorariosUseCase';
 export { GetParaleloCursosOfertaUseCase } from './GetParaleloCursosOfertaUseCase';
+export { CrearParaleloCursoOfertaUseCase } from './CrearParaleloCursoOfertaUseCase';
 export { PutParaleloHorariosUseCase } from './PutParaleloHorariosUseCase';
 export { GetParalelosEstadoDashboardUseCase } from './GetParalelosEstadoDashboardUseCase';
 export { GetAsignaturasSinCursoUseCase } from './GetAsignaturasSinCursoUseCase';

@@ -5,6 +5,7 @@ import { ArrowLeftOutlined, BookOutlined, DeleteOutlined, EditOutlined, PlusOutl
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { useParaleloCursosOfertaApi } from '@application-academico/paralelos/hooks';
+import { getUseCase } from '@container';
 import DetailInfoCard from '@docentes/components/molecules/DetailInfoCard';
 import '@presentation/styles/pages/detail-page.css';
 import '../styles/gestion-horarios-page.css';
@@ -162,6 +163,25 @@ const GestionHorariosPlantillaPage = () => {
             message.info(`Eliminar curso #${record.cursoId}: pendiente de API.`);
         },
         [message],
+    );
+
+    const handleCrearCursoOferta = useCallback(
+        async (formValues) => {
+            if (!validParaleloId) {
+                return { success: false, error: 'Paralelo no válido' };
+            }
+            const uc = getUseCase('crearParaleloCursoOferta');
+            if (!uc) {
+                return { success: false, error: 'No se pudo inicializar la operación' };
+            }
+            return uc.ejecutar(validParaleloId, {
+                asignaturaPlanId: formValues.asignaturaPlanId,
+                cupoMinimo: formValues.cupoMinimo,
+                cupoMaximo: formValues.cupoMaximo,
+                colorHex: formValues.colorHex,
+            });
+        },
+        [validParaleloId],
     );
 
     const headerActions = (
@@ -465,6 +485,7 @@ const GestionHorariosPlantillaPage = () => {
                     cursoEdit={cursoModal.cursoEdit}
                     missingSubjects={missingSubjects}
                     initialAsignaturaPlanId={cursoModal.prefillAsignaturaPlanId}
+                    onCrearCurso={handleCrearCursoOferta}
                     onSaved={() => fetch(validParaleloId)}
                 />
             ) : null}

@@ -14,6 +14,7 @@ import {
   GetAsignaturasSinCursoUseCase,
   GetCapacidadTurnoUseCase,
   GetParaleloCursosOfertaUseCase,
+  CrearParaleloCursoOfertaUseCase,
   GetParaleloHorariosUseCase,
   GetParalelosEstadoDashboardUseCase,
   GetTodosParalelosUseCase,
@@ -44,6 +45,10 @@ export function registerAcademicoModule(factory) {
 
   factory.obtenerParaleloCursosOferta = () => {
     return new GetParaleloCursosOfertaUseCase(paraleloRepository);
+  };
+
+  factory.crearParaleloCursoOferta = () => {
+    return new CrearParaleloCursoOfertaUseCase(paraleloRepository);
   };
 
   factory.persistirParaleloHorarios = () => {

@@ -1,7 +1,11 @@
 import express from 'express';
 import { authenticate } from '../middleware/auth.middleware.js';
 import { verificarPermiso } from '../middleware/permisos.middleware.js';
-import { listParalelosValidator, putParaleloScheduleValidator } from '../validators/academico/index.js';
+import {
+    listParalelosValidator,
+    postParaleloCursoValidator,
+    putParaleloScheduleValidator,
+} from '../validators/academico/index.js';
 import { idValidator } from '../validators/common/index.js';
 
 /**
@@ -25,6 +29,7 @@ export function buildParalelosRouter({ controllers, middlewares }) {
     const router = express.Router();
     const { validateRequest } = middlewares;
     const verHorarios = [authenticate, verificarPermiso('institucional.gestion.horarios', 'LISTAR')];
+    const crearCursoOferta = [authenticate, verificarPermiso('institucional.gestion.horarios', 'CREAR')];
 
     // ============================================
     // CRUD BÁSICO
@@ -71,6 +76,19 @@ export function buildParalelosRouter({ controllers, middlewares }) {
         idValidator,
         validateRequest,
         (req, res, next) => controllers.getParaleloCursosOfertaController.handle(req, res, next)
+    );
+
+    /**
+     * POST /api/v1/paralelos/:id/cursos
+     * Crea un curso (oferta) para una asignatura_plan del mismo periodo/carrera que el paralelo.
+     */
+    router.post(
+        '/:id/cursos',
+        ...crearCursoOferta,
+        idValidator,
+        postParaleloCursoValidator,
+        validateRequest,
+        (req, res, next) => controllers.postParaleloCursoController.handle(req, res, next)
     );
 
     router.get(

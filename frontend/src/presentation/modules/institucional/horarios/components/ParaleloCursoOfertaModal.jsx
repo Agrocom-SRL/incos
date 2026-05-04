@@ -2,7 +2,7 @@
  * Modal alta / edición de curso en la oferta del paralelo (misma config que paraleloCursoOfertaFields).
  */
 
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { App, Form, Modal, Space } from 'antd';
 import { FormSection } from '@molecules';
 import { Button } from '@atoms';
@@ -19,9 +19,12 @@ const ParaleloCursoOfertaModal = ({
     /** Tras guardar exitoso (p. ej. recargar oferta) */
     onSaved,
     initialAsignaturaPlanId,
+    /** @returns {Promise<{ success: boolean, error?: string, data?: object }>} */
+    onCrearCurso,
 }) => {
     const { message } = App.useApp();
     const [form] = Form.useForm();
+    const [saving, setSaving] = useState(false);
 
     const section = useMemo(() => {
         const { datosCurso } = createParaleloCursoOfertaFields({ isEdit });
@@ -73,14 +76,33 @@ const ParaleloCursoOfertaModal = ({
         }
     }, [open, isEdit, cursoEdit, initialAsignaturaPlanId, form]);
 
-    const handleOk = () => {
-        form.validateFields()
-            .then(() => {
-                message.success('Datos listos (pendiente de conectar POST / PUT).');
-                onSaved?.();
+    const handleOk = async () => {
+        try {
+            const values = await form.validateFields();
+            if (isEdit) {
+                message.info('La edición del curso estará disponible en la siguiente fase.');
                 onClose();
-            })
-            .catch(() => {});
+                return;
+            }
+            if (typeof onCrearCurso !== 'function') {
+                message.error('No hay handler de creación configurado.');
+                return;
+            }
+            setSaving(true);
+            const res = await onCrearCurso(values);
+            if (!res?.success) {
+                message.error(res?.error || 'No se pudo crear el curso');
+                return;
+            }
+            message.success('Curso creado correctamente');
+            onSaved?.();
+            onClose();
+        } catch (e) {
+            if (e?.errorFields) return;
+            message.error(e?.message || 'Error al guardar');
+        } finally {
+            setSaving(false);
+        }
     };
 
     const title = isEdit ? `Editar curso #${cursoEdit?.cursoId ?? ''}` : 'Nuevo curso del paralelo';
@@ -97,7 +119,7 @@ const ParaleloCursoOfertaModal = ({
                     <Button variant="default" onClick={onClose}>
                         Cancelar
                     </Button>
-                    <Button variant="primary" onClick={handleOk}>
+                    <Button variant="primary" onClick={handleOk} loading={saving} disabled={saving}>
                         Guardar
                     </Button>
                 </Space>

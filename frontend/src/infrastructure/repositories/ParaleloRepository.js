@@ -85,6 +85,22 @@ export class ParaleloRepository extends IParaleloRepository {
     }
   }
 
+  async crearCursoOferta(options = {}) {
+    try {
+      const { parallelId, payload } = options;
+      if (!parallelId) {
+        return { success: false, error: 'ID del paralelo es requerido' };
+      }
+      if (!payload || payload.asignaturaPlanId == null) {
+        return { success: false, error: 'asignaturaPlanId es requerido' };
+      }
+      const response = await apiClient.post(PARALELOS_ENDPOINTS.CURSOS_POST(parallelId), payload);
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al crear el curso del paralelo');
+    }
+  }
+
   /**
    * Persiste el plan semanal (bloques) del paralelo.
    * PUT /v1/paralelos/:id/schedule
