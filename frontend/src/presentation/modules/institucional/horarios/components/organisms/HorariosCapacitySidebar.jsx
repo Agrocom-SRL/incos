@@ -13,7 +13,6 @@ const HorariosCapacitySidebar = () => {
     const turnos = [
         { key: 'TARDE', label: 'Tarde' },
         { key: 'NOCHE', label: 'Noche' },
-        { key: 'MANANA', altKey: 'MAÑANA', label: 'Manana' },
     ].map((turno) => {
         const row = turnosCapacity?.[turno.key] || turnosCapacity?.[turno.altKey] || {};
         return {
@@ -26,7 +25,7 @@ const HorariosCapacitySidebar = () => {
 
     return (
         <Card size="small" title="Capacidad por turno">
-            <Space direction="vertical" style={{ width: '100%' }}>
+            <Space orientation="vertical" style={{ width: '100%' }}>
                 {turnos.map((t) => (
                     <div key={t.label} style={{ marginBottom: 10 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>

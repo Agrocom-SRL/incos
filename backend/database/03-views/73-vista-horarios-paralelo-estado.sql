@@ -13,15 +13,10 @@ SELECT
     req.paralelo_id,
     req.paralelo_nombre,
     req.turno,
-    req.carrera_id,
     req.carrera_nombre,
-    req.periodo_id,
-    req.periodo_numero,
     req.periodo_nombre,
     req.asignaturas_requeridas,
-    COALESCE(cur.cursos_creados, 0)      AS cursos_creados,
-    COALESCE(cur.cursos_con_horario, 0)  AS cursos_con_horario,
-    COALESCE(conf.conflictos_aula, 0)    AS conflictos_aula,
+    COALESCE(cur.cursos_con_horario, 0) AS cursos_con_horario,
     CASE
         WHEN COALESCE(cur.cursos_creados, 0) < req.asignaturas_requeridas THEN 'incompleto'
         WHEN COALESCE(cur.cursos_con_horario, 0) < COALESCE(cur.cursos_creados, 0) THEN 'sin_horario'

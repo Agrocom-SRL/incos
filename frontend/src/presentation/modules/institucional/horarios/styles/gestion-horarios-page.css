@@ -1,0 +1,140 @@
+/**
+ * Gestión de horarios — layout alineado con dashboard (shell + planificación).
+ */
+
+.horarios-gestion-planificacion .sd-tabs-shell {
+    margin-top: 0;
+}
+
+.horarios-gestion-planificacion .ant-tabs-content-holder {
+    padding-top: 0;
+}
+
+/* Pestañas Tablero / Tabla: icono + texto; activo resaltado con color primario */
+.horarios-plan-tab-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.horarios-gestion-planificacion__tabs .horarios-plan-tab-label__icon {
+    font-size: 16px;
+    color: var(--ant-color-text-secondary);
+    transition: color 0.2s ease;
+}
+
+.horarios-gestion-planificacion__tabs .ant-tabs-tab-active .horarios-plan-tab-label__icon {
+    color: var(--ant-color-primary);
+}
+
+.horarios-gestion-planificacion__tabs .ant-tabs-tab-active .horarios-plan-tab-label span:last-child {
+    font-weight: 600;
+}
+
+.horarios-gestion-board__status-dot {
+    display: inline-block;
+    flex-shrink: 0;
+    width: 12px;
+    height: 12px;
+    border-radius: 999px;
+}
+
+/* Filtros: título + limpiar en la misma fila superior */
+.horarios-filters-bar__header {
+    width: 100%;
+    min-width: 0;
+}
+
+.horarios-filters-bar__clear {
+    flex-shrink: 0;
+}
+
+/* Tablero: lista de tarjetas con altura máxima y scroll */
+.horarios-gestion-board__scroll {
+    max-height: min(650px, 55vh);
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 4px;
+    margin-inline: -2px;
+}
+
+/* Tarjeta de paralelo: borde + sombra para separar ítems dentro del grupo y del resto del tablero */
+.horarios-paralelo-card.card {
+    border-radius: 10px;
+    border-color: var(--color-border);
+    background: var(--ant-color-bg-container);
+    transition:
+        box-shadow 0.2s ease,
+        transform 0.2s ease;
+}
+
+.horarios-paralelo-card.card:hover {
+    box-shadow:
+        0 0 0 1px var(--ant-color-border),
+        0 6px 16px rgba(15, 23, 42, 0.08),
+        0 2px 4px rgba(15, 23, 42, 0.05) !important;
+    transform: translateY(-1px);
+}
+
+.horarios-paralelo-card.card .ant-card-head {
+    background: linear-gradient(180deg, var(--ant-color-fill-quaternary) 0%, var(--ant-color-bg-container) 100%);
+    border-bottom-color: var(--ant-color-border-secondary);
+}
+
+.horarios-paralelo-card .horarios-paralelo-card__meta {
+    margin-bottom: 6px !important;
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.horarios-paralelo-card .horarios-paralelo-card__courses {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 12px;
+}
+
+/* Tabla agrupada */
+.horarios-paralelos-table-embedded {
+    width: 100%;
+    min-width: 0;
+}
+
+.horarios-paralelos-table-scroll {
+    max-height: min(520px, 58vh);
+    overflow: auto;
+    padding-bottom: 4px;
+}
+
+.horarios-table-group + .horarios-table-group {
+    margin-top: 16px;
+}
+
+.horarios-table-group__heading {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    margin-bottom: 8px;
+    padding: 8px 10px;
+    background: var(--ant-color-fill-quaternary);
+    border-radius: 8px;
+    border: 1px solid var(--ant-color-border-secondary);
+}
+
+.horarios-table-group__sub {
+    font-size: 12px;
+}
+
+.horarios-paralelos-table__inner .ant-table-thead > tr > th {
+    font-size: 12px;
+}
+
+.horarios-paralelos-table__action-btn {
+    min-width: 132px;
+    white-space: nowrap;
+}
+
+/* Pestañas: el panel no estira la página indefinidamente */
+.horarios-gestion-planificacion__tabs .ant-tabs-content-holder {
+    min-height: 0;
+}

@@ -17,7 +17,7 @@ const KpiCard = ({ label, value, sub, badgeText, intent = 'neutral', percent = 0
             <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: allSpacing.marginSM, background: color }} />
             <div style={{ paddingLeft: allSpacing.marginSM }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Typography.Text type="secondary">{label}</Typography.Text>
+                    <Typography.Text type="bold">{label}</Typography.Text>
                     <span style={{ fontSize: typography.fontSizeXS, borderRadius: allSpacing.borderRadius, padding: `${allSpacing.marginXS}px ${allSpacing.paddingSM}px`, background: `${color}20`, color }}>
                         {badgeText}
                     </span>

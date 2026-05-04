@@ -10,8 +10,6 @@ DROP VIEW IF EXISTS vista_horarios_capacidad_turno;
 CREATE VIEW vista_horarios_capacidad_turno AS
 SELECT
     b.turno,
-    b.total_bloques_disponibles,
-    b.bloques_ocupados,
     b.aulas_en_uso,
     (
         SELECT COUNT(*)

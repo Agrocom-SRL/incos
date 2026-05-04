@@ -167,10 +167,18 @@ export class ParallelRepository extends BaseRepository {
     }
 
     const query = `
-      SELECT *
+      SELECT
+        paralelo_id,
+        paralelo_nombre,
+        turno,
+        carrera_nombre,
+        periodo_nombre,
+        asignaturas_requeridas,
+        cursos_con_horario,
+        estado
       FROM vista_horarios_paralelo_estado
       ${where.length ? `WHERE ${where.join(' AND ')}` : ''}
-      ORDER BY carrera_id ASC, periodo_numero ASC, paralelo_nombre ASC
+      ORDER BY carrera_nombre ASC, periodo_nombre ASC, paralelo_nombre ASC
     `;
 
     return sequelize.query(query, {
@@ -181,16 +189,27 @@ export class ParallelRepository extends BaseRepository {
 
   async obtenerAsignaturasSinCursoDashboard() {
     const query = `
-      SELECT *
+      SELECT
+        carrera_id,
+        carrera_nombre,
+        periodo_id,
+        periodo_nombre,
+        materia_sigla,
+        materia_nombre,
+        horas_semanales
       FROM vista_horarios_asignaturas_sin_curso
-      ORDER BY carrera_nombre ASC, periodo_numero ASC, materia_nombre ASC
+      ORDER BY carrera_nombre ASC, periodo_nombre ASC, materia_nombre ASC
     `;
     return sequelize.query(query, { type: sequelize.QueryTypes.SELECT });
   }
 
   async obtenerCapacidadTurnoDashboard() {
     const query = `
-      SELECT *
+      SELECT
+        turno,
+        aulas_en_uso,
+        total_aulas,
+        porcentaje_ocupacion
       FROM vista_horarios_capacidad_turno
       ORDER BY turno ASC
     `;

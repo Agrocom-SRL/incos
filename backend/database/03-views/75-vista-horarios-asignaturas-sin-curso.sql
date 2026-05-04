@@ -12,14 +12,10 @@ SELECT
     carrera_id,
     carrera_nombre,
     periodo_id,
-    periodo_numero,
     periodo_nombre,
-    asignatura_plan_id,
     materia_nombre,
     materia_sigla,
-    horas_semanales,
-    paralelos_del_periodo,
-    cursos_creados
+    horas_semanales
 FROM vista_base_horarios_asignaturas_cobertura
 WHERE cursos_creados = 0
   AND paralelos_del_periodo > 0;

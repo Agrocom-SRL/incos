@@ -1,9 +1,7 @@
 export const FILTER_DEFAULTS = {
-    gestion: 'all',
     carrera: 'all',
     periodo: 'all',
     turno: 'all',
-    estado: 'all',
 };
 
 export const STATUS_LABELS = {

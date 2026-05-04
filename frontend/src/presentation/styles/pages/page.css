@@ -36,7 +36,6 @@
 /* Móviles y Tablets (<= md) - InfoSidebar abajo, ambos ocupan 100% */
 @media (max-width: 767px) {
     .page-container {
-        margin-top: 0;
         flex-direction: column;
         flex-wrap: nowrap;
         gap: var(--spacing-base);
@@ -48,7 +47,6 @@
 /* Desktop (>= md) - MainContent e InfoSidebar lado a lado */
 @media (min-width: 768px) {
     .page-container {
-        margin-top: var(--spacing-base);
         flex-direction: row;
         /* Permitir wrap cuando no hay espacio suficiente (min-width de MainContent fuerza el wrap) */
         flex-wrap: wrap;
