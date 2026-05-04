@@ -31,6 +31,8 @@ export class GetParaleloHorariosUseCase {
    * @param {Object} params.subjectRepository - Repositorio de materias
    * @param {Object} params.scheduleRepository - Repositorio de horarios
    * @param {Object} params.classroomRepository - Repositorio de aulas
+   * @param {Object} params.careerRepository - Repositorio de carreras
+   * @param {Object} params.periodRepository - Repositorio de periodos
    * @param {ILogger} params.logger - Logger para registro de eventos
    */
   constructor({
@@ -41,6 +43,8 @@ export class GetParaleloHorariosUseCase {
     subjectRepository,
     scheduleRepository,
     classroomRepository,
+    careerRepository,
+    periodRepository,
     logger,
   }) {
     this.parallelRepository = parallelRepository;
@@ -50,6 +54,8 @@ export class GetParaleloHorariosUseCase {
     this.subjectRepository = subjectRepository;
     this.scheduleRepository = scheduleRepository;
     this.classroomRepository = classroomRepository;
+    this.careerRepository = careerRepository;
+    this.periodRepository = periodRepository;
     this.logger = logger;
   }
 
@@ -87,6 +93,42 @@ export class GetParaleloHorariosUseCase {
         parallelId: paralelo.id,
         nombre: paralelo.name,
       });
+
+      let carrera = null;
+      if (paralelo.careerId) {
+        try {
+          carrera = await this.careerRepository.findById(paralelo.careerId);
+        } catch (e) {
+          this.logger.warn('[Académico] No se pudo cargar carrera del paralelo', {
+            careerId: paralelo.careerId,
+            error: e.message,
+          });
+        }
+      }
+
+      let periodo = null;
+      if (paralelo.periodId) {
+        try {
+          periodo = await this.periodRepository.findById(paralelo.periodId);
+        } catch (e) {
+          this.logger.warn('[Académico] No se pudo cargar periodo del paralelo', {
+            periodId: paralelo.periodId,
+            error: e.message,
+          });
+        }
+      }
+
+      const paraleloResumen = {
+        nombre: paralelo.name ?? null,
+        turno: paralelo.shift ?? null,
+        descripcion: paralelo.description ?? null,
+        periodoNombre: periodo?.name ?? null,
+        periodoNumero: periodo?.number ?? null,
+        carreraNombre: carrera?.name ?? null,
+        carreraCodigo: carrera?.code ?? null,
+        carreraImagenRuta: carrera?.imagePath ?? null,
+        carreraColorHex: carrera?.colorHex ?? null,
+      };
 
       // 2. Obtener todos los cursos del paralelo
       const cursosResult = await this.courseRepository.findAll(
@@ -205,6 +247,9 @@ export class GetParaleloHorariosUseCase {
             return {
               cursoId: curso.id,
               materiaId: materia ? materia.id : null,
+              materiaNombre: materia?.name ?? null,
+              materiaSigla: materia?.acronym ?? null,
+              horasSemanalesPlan: asignaturaPlan?.weeklyHours ?? null,
               color: curso.colorHex || null,
               horarios: horariosValidos,
             };
@@ -228,8 +273,10 @@ export class GetParaleloHorariosUseCase {
         totalCursos: cursos.length,
       });
 
-      // Retornar estructura (sin paralelo, solo horarios directamente en el array)
-      return cursosValidos;
+      return {
+        paralelo: paraleloResumen,
+        schedule: cursosValidos,
+      };
     } catch (error) {
       // Manejo de errores
       this.logger.error('[Académico] Error al obtener horarios de paralelo por ID', {

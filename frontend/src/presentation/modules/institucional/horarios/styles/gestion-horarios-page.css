@@ -138,3 +138,81 @@
 .horarios-gestion-planificacion__tabs .ant-tabs-content-holder {
     min-height: 0;
 }
+
+/* Armado: chip en plan semanal */
+.horarios-plan-chip__remove {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: none;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.06);
+    color: var(--ant-color-text);
+    cursor: pointer;
+    line-height: 1;
+}
+
+.horarios-plan-chip__remove:hover {
+    background: rgba(255, 77, 79, 0.15);
+    color: var(--ant-color-error);
+}
+
+.da-cal-semanal__chip.da-cal-semanal__chip--draggable {
+    position: relative;
+    cursor: grab;
+}
+
+.da-cal-semanal__chip--draggable:active {
+    cursor: grabbing;
+}
+
+.horarios-armado-plan {
+    min-width: 0;
+}
+
+/* Armado de horarios — mismo patrón de pestañas que docentes / sd-tabs */
+.horarios-armado-page {
+    width: 100%;
+    min-width: 0;
+}
+
+.horarios-armado-tab-body {
+    min-width: 0;
+}
+
+.horarios-armado-page .sd-tabs .horarios-armado-tab__icon {
+    font-size: 16px;
+    color: var(--ant-color-text-secondary);
+    transition: color 0.2s ease;
+}
+
+.horarios-armado-page .sd-tabs .ant-tabs-tab-active .horarios-armado-tab__icon {
+    color: var(--ant-color-primary);
+}
+
+.horarios-armado-page .sd-tabs .ant-tabs-tab-active .sd-tab-label span:last-child {
+    font-weight: 600;
+}
+
+.horarios-armado-context {
+    padding: 16px;
+    border-radius: 10px;
+    border: 1px solid var(--ant-color-border-secondary, #e8e8e8);
+    background: var(--ant-color-fill-quaternary, #fafafa);
+}
+
+.horarios-armado-context__img {
+    display: block;
+}
+
+.horarios-armado-cursos__lista {
+    margin: 0;
+    padding-left: 1.1rem;
+}

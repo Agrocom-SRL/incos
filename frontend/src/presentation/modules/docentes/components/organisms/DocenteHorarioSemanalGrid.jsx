@@ -36,11 +36,16 @@ function normalizeDiaDb(raw) {
   return allowed.has(s) ? s : null;
 }
 
-/** @param {{ cursoCodigo?: string, cursoColorHex?: string|null, bloques?: object[] }[]} courseSchedules */
-function flattenEvents(courseSchedules) {
+/** @param {{ cursoCodigo?: string, cursoId?: number, cursoColorHex?: string|null, bloques?: object[] }[]} courseSchedules */
+function flattenEvents(
+  courseSchedules,
+  clipStart = SLOT_MINUTE_START,
+  clipEnd = SLOT_MINUTE_END,
+) {
   const out = [];
   for (const c of courseSchedules || []) {
     const codigo = c.cursoCodigo || '—';
+    const cursoId = c.cursoId ?? null;
     const color = c.cursoColorHex ?? null;
     const materiaNombre = c.materiaNombre ?? null;
     const materiaSigla = c.materiaSigla ?? null;
@@ -50,7 +55,10 @@ function flattenEvents(courseSchedules) {
       const dia = normalizeDiaDb(b.dia);
       const start = horaToMinutes(b.horaInicio);
       if (!dia || start == null) continue;
+      if (start < clipStart || start >= clipEnd) continue;
       out.push({
+        cursoId,
+        cursoHorarioId: b.cursoHorarioId ?? null,
         cursoCodigo: codigo,
         cursoColorHex: color,
         diaDb: dia,
@@ -72,10 +80,10 @@ function flattenEvents(courseSchedules) {
 }
 
 /** @param {ReturnType<typeof flattenEvents>} events */
-function buildCellMap(events) {
+function buildCellMap(events, clipStart = SLOT_MINUTE_START, clipEnd = SLOT_MINUTE_END) {
   const map = new Map();
   for (const ev of events) {
-    if (ev.startMinutes < SLOT_MINUTE_START || ev.startMinutes >= SLOT_MINUTE_END) continue;
+    if (ev.startMinutes < clipStart || ev.startMinutes >= clipEnd) continue;
     const key = `${ev.diaDb}-${ev.startMinutes}`;
     if (!map.has(key)) map.set(key, []);
     map.get(key).push(ev);
@@ -86,21 +94,86 @@ function buildCellMap(events) {
   return map;
 }
 
-const slotsRange = (events) => {
+const slotsRange = (events, rangeStart = SLOT_MINUTE_START, rangeEnd = SLOT_MINUTE_END) => {
   const withinRange = events
     .map((ev) => ev.startMinutes)
-    .filter((m) => m >= SLOT_MINUTE_START && m < SLOT_MINUTE_END);
+    .filter((m) => m >= rangeStart && m < rangeEnd);
 
   if (!withinRange.length) {
-    return [SLOT_MINUTE_START];
+    return [rangeStart];
   }
 
   return [...new Set(withinRange)].sort((a, b) => a - b);
 };
 
-const slotsRangeByDays = (events, dayKeys) => {
+const slotsRangeByDays = (events, dayKeys, rangeStart, rangeEnd) => {
   const allowed = new Set(dayKeys);
-  return slotsRange(events.filter((ev) => allowed.has(ev.diaDb)));
+  return slotsRange(events.filter((ev) => allowed.has(ev.diaDb)), rangeStart, rangeEnd);
+};
+
+/** Une franjas regulares (paso fijo) con los horarios de inicio reales de los eventos. */
+function mergeSlotsForRange(events, dayKeys, rangeStart, rangeEnd, stepMinutes) {
+  const set = new Set();
+  for (let m = rangeStart; m < rangeEnd; m += stepMinutes) {
+    set.add(m);
+  }
+  const allowed = new Set(dayKeys);
+  for (const ev of events) {
+    if (!allowed.has(ev.diaDb)) continue;
+    if (ev.startMinutes >= rangeStart && ev.startMinutes < rangeEnd) {
+      set.add(ev.startMinutes);
+    }
+  }
+  return [...set].sort((a, b) => a - b);
+}
+
+/**
+ * Vista previa: filas cada `stepMinutes` de forma continua (sin mezclar inicios sueltos que rompen el paso).
+ * Primera fila = primer inicio de evento en ese grupo de días, o `rangeStart` si no hay eventos.
+ */
+function uniformSlotsPreview(events, dayKeys, rangeStart, rangeEnd, stepMinutes) {
+  const allowed = new Set(dayKeys);
+  const evs = events.filter(
+    (e) =>
+      allowed.has(e.diaDb) && e.startMinutes >= rangeStart && e.startMinutes < rangeEnd,
+  );
+  const anchor = evs.length ? Math.min(...evs.map((e) => e.startMinutes)) : rangeStart;
+  const out = [];
+  for (let m = anchor; m < rangeEnd; m += stepMinutes) {
+    out.push(m);
+  }
+  return out;
+}
+
+/** Mapa celda día×franja: eventos cuyo inicio cae en [slot, slot + step). */
+function buildCellMapBucketed(events, dayKeys, slots, stepMinutes, rangeStart, rangeEnd) {
+  const map = new Map();
+  const allowed = new Set(dayKeys);
+  for (const slot of slots) {
+    for (const dia of dayKeys) {
+      if (!allowed.has(dia)) continue;
+      const key = `${dia}-${slot}`;
+      const items = events.filter(
+        (ev) =>
+          ev.diaDb === dia &&
+          ev.startMinutes >= slot &&
+          ev.startMinutes < slot + stepMinutes &&
+          ev.startMinutes >= rangeStart &&
+          ev.startMinutes < rangeEnd,
+      );
+      items.sort((a, b) => String(a.cursoCodigo).localeCompare(String(b.cursoCodigo)));
+      if (items.length) map.set(key, items);
+    }
+  }
+  return map;
+}
+
+const allQuarterSlots = () => {
+  const out = [];
+  for (let m = SLOT_MINUTE_START; m < SLOT_MINUTE_END; m += 15) {
+    out.push(m);
+  }
+  return out;
 };
 
 const fmtHourLabel = (minutes) => {
@@ -109,13 +182,108 @@ const fmtHourLabel = (minutes) => {
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
 };
 
-const DocenteHorarioSemanalGrid = ({ courseSchedules = [] }) => {
-  const events = useMemo(() => flattenEvents(courseSchedules), [courseSchedules]);
-  const cellMap = useMemo(() => buildCellMap(events), [events]);
-  const weekdaySlots = useMemo(() => slotsRangeByDays(events, DIAS_SEMANA), [events]);
-  const saturdaySlots = useMemo(() => slotsRangeByDays(events, DIAS_SABADO), [events]);
+const DocenteHorarioSemanalGrid = ({
+  courseSchedules = [],
+  CellComponent = DocenteHorarioSemanaCell,
+  forceAllTimeSlots = false,
+  /** Ventana horaria lun–vie (turno del paralelo). */
+  gridTimeRange = null,
+  /** Ventana horaria solo sábado (independiente; ej. tarde–noche). Si null, se usa `gridTimeRange`. */
+  saturdayGridTimeRange = null,
+  /** Paso de la grilla en minutos (p. ej. 45). Requiere `gridTimeRange`. */
+  slotStepMinutes = null,
+  /**
+   * true = filas solo cada `slotStepMinutes` (vista lectura); eventos agrupados por franja.
+   * false = mezcla franjas regulares + inicios reales (edición / drop fino).
+   */
+  uniformSlotGrid = false,
+  editable = false,
+  onSlotDrop,
+  cellExtraProps = {},
+}) => {
+  const Cell = CellComponent;
+  const gridStart = gridTimeRange?.start ?? SLOT_MINUTE_START;
+  const gridEnd = gridTimeRange?.end ?? SLOT_MINUTE_END;
+  const satStart = saturdayGridTimeRange?.start ?? gridStart;
+  const satEnd = saturdayGridTimeRange?.end ?? gridEnd;
+  const clipStart = Math.min(gridStart, satStart);
+  const clipEnd = Math.max(gridEnd, satEnd);
+  const useMergedStepGrid =
+    gridTimeRange != null && slotStepMinutes != null && Number(slotStepMinutes) > 0;
 
-  const renderTable = (dayKeys, slots, caption) => (
+  const events = useMemo(
+    () => flattenEvents(courseSchedules, clipStart, clipEnd),
+    [courseSchedules, clipStart, clipEnd],
+  );
+  const allSlots = useMemo(() => allQuarterSlots(), []);
+  const weekdaySlots = useMemo(() => {
+    if (useMergedStepGrid && uniformSlotGrid) {
+      return uniformSlotsPreview(events, DIAS_SEMANA, gridStart, gridEnd, slotStepMinutes);
+    }
+    if (useMergedStepGrid) {
+      return mergeSlotsForRange(events, DIAS_SEMANA, gridStart, gridEnd, slotStepMinutes);
+    }
+    if (forceAllTimeSlots) return allSlots;
+    return slotsRangeByDays(events, DIAS_SEMANA, gridStart, gridEnd);
+  }, [
+    events,
+    forceAllTimeSlots,
+    allSlots,
+    useMergedStepGrid,
+    uniformSlotGrid,
+    gridStart,
+    gridEnd,
+    slotStepMinutes,
+  ]);
+  const saturdaySlots = useMemo(() => {
+    if (useMergedStepGrid && uniformSlotGrid) {
+      return uniformSlotsPreview(events, DIAS_SABADO, satStart, satEnd, slotStepMinutes);
+    }
+    if (useMergedStepGrid) {
+      return mergeSlotsForRange(events, DIAS_SABADO, satStart, satEnd, slotStepMinutes);
+    }
+    if (forceAllTimeSlots) return allSlots;
+    return slotsRangeByDays(events, DIAS_SABADO, satStart, satEnd);
+  }, [
+    events,
+    forceAllTimeSlots,
+    allSlots,
+    useMergedStepGrid,
+    uniformSlotGrid,
+    satStart,
+    satEnd,
+    slotStepMinutes,
+  ]);
+
+  const cellMap = useMemo(() => {
+    if (useMergedStepGrid && uniformSlotGrid) {
+      const m = new Map();
+      for (const [dayKeys, slots, r0, r1] of [
+        [DIAS_SEMANA, weekdaySlots, gridStart, gridEnd],
+        [DIAS_SABADO, saturdaySlots, satStart, satEnd],
+      ]) {
+        const part = buildCellMapBucketed(events, dayKeys, slots, slotStepMinutes, r0, r1);
+        for (const [k, v] of part) m.set(k, v);
+      }
+      return m;
+    }
+    return buildCellMap(events, clipStart, clipEnd);
+  }, [
+    events,
+    clipStart,
+    clipEnd,
+    useMergedStepGrid,
+    uniformSlotGrid,
+    weekdaySlots,
+    saturdaySlots,
+    slotStepMinutes,
+    gridStart,
+    gridEnd,
+    satStart,
+    satEnd,
+  ]);
+
+  const renderTable = (dayKeys, slots, caption, stripeBaseMinutes) => (
     <div
       className={`da-cal-semanal__subgrid ${
         dayKeys.length === 1 ? 'da-cal-semanal__subgrid--sabado' : 'da-cal-semanal__subgrid--semana'
@@ -137,21 +305,59 @@ const DocenteHorarioSemanalGrid = ({ courseSchedules = [] }) => {
           </tr>
         </thead>
         <tbody>
-          {slots.map((slotMinutes) => (
+          {slots.map((slotMinutes, rowIdx) => (
             <tr
               key={slotMinutes}
               className={
-                Math.floor(slotMinutes / 15) % 2 === 0
-                  ? 'da-cal-semanal__tr da-cal-semanal__tr--alt'
-                  : 'da-cal-semanal__tr'
+                (() => {
+                  if (useMergedStepGrid && uniformSlotGrid) {
+                    return rowIdx % 2 === 0
+                      ? 'da-cal-semanal__tr da-cal-semanal__tr--alt'
+                      : 'da-cal-semanal__tr';
+                  }
+                  if (useMergedStepGrid) {
+                    const base = stripeBaseMinutes ?? gridStart;
+                    return Math.floor((slotMinutes - base) / slotStepMinutes) % 2 === 0
+                      ? 'da-cal-semanal__tr da-cal-semanal__tr--alt'
+                      : 'da-cal-semanal__tr';
+                  }
+                  return Math.floor(slotMinutes / 15) % 2 === 0
+                    ? 'da-cal-semanal__tr da-cal-semanal__tr--alt'
+                    : 'da-cal-semanal__tr';
+                })()
               }
             >
               <th scope="row" className="da-cal-semanal__td da-cal-semanal__td--hora">
                 {fmtHourLabel(slotMinutes)}
               </th>
               {dayKeys.map((dia) => (
-                <td key={`${dia}-${slotMinutes}`} className="da-cal-semanal__td">
-                  <DocenteHorarioSemanaCell items={cellMap.get(`${dia}-${slotMinutes}`) || []} />
+                <td
+                  key={`${dia}-${slotMinutes}`}
+                  className="da-cal-semanal__td"
+                  onDragOver={
+                    editable && onSlotDrop
+                      ? (e) => {
+                          e.preventDefault();
+                          e.dataTransfer.dropEffect = 'move';
+                      }
+                      : undefined
+                  }
+                  onDrop={
+                    editable && onSlotDrop
+                      ? (e) => {
+                          e.preventDefault();
+                          onSlotDrop(e, dia, slotMinutes);
+                      }
+                      : undefined
+                  }
+                >
+                  <Cell
+                    items={cellMap.get(`${dia}-${slotMinutes}`) || []}
+                    slotDia={dia}
+                    slotMinutes={slotMinutes}
+                    editable={editable}
+                    {...cellExtraProps}
+                  />
                 </td>
               ))}
             </tr>
@@ -164,8 +370,8 @@ const DocenteHorarioSemanalGrid = ({ courseSchedules = [] }) => {
   return (
     <div className="da-cal-semanal">
       <div className="da-cal-semanal__scroll">
-        {renderTable(DIAS_SEMANA, weekdaySlots, 'Lunes a viernes')}
-        {renderTable(DIAS_SABADO, saturdaySlots, 'Sábado')}
+        {renderTable(DIAS_SEMANA, weekdaySlots, 'Lunes a viernes', gridStart)}
+        {renderTable(DIAS_SABADO, saturdaySlots, 'Sábado', satStart)}
       </div>
     </div>
   );

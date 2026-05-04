@@ -42,6 +42,15 @@
   color: var(--color-error-hover);
 }
 
+/* Header con color de curso / materia (hex vía prop `headerAccentHex` en Card) */
+.card--header-accent-hex .ant-card-head {
+  border-bottom: none;
+}
+
+.card--header-accent-hex .ant-card-head-title {
+  font-weight: var(--font-weight-strong, 600);
+}
+
 /* ============================================================================
    AJUSTES PARA DATA CARDS
    ============================================================================

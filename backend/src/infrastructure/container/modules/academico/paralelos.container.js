@@ -64,6 +64,8 @@ export function registerParalelosResource(container) {
                 subjectRepository: c.resolve(REPOSITORIOS_TOKENS.subjectRepository),
                 scheduleRepository: c.resolve(REPOSITORIOS_TOKENS.scheduleRepository),
                 classroomRepository: c.resolve(REPOSITORIOS_TOKENS.classroomRepository),
+                careerRepository: c.resolve(REPOSITORIOS_TOKENS.careerRepository),
+                periodRepository: c.resolve(REPOSITORIOS_TOKENS.periodRepository),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
     );

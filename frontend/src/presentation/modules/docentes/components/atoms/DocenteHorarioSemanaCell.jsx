@@ -21,7 +21,15 @@ const hexToRgb = (hex) => {
   };
 };
 
-const DocenteHorarioSemanaCell = ({ items = [] }) => {
+const DocenteHorarioSemanaCell = ({
+    items = [],
+    // Props opcionales usados por ParaleloPlanSemanaCell / grilla extendida (no se reenvían al DOM)
+    slotDia: _slotDia,
+    slotMinutes: _slotMinutes,
+    editable: _editable,
+    onBeginDragChip: _onBeginDragChip,
+    onDeleteChip: _onDeleteChip,
+}) => {
   if (!items.length) {
     return <div className="da-cal-semanal__cell-inner da-cal-semanal__cell-inner--empty" aria-hidden />;
   }

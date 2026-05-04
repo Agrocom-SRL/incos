@@ -81,10 +81,13 @@ export const useGestionHorariosDashboardState = () => {
     }, [gestiones, currentGestion]);
 
     const getParaleloAction = useCallback((paralelo) => {
-        if (paralelo.estado === 'incompleto') return `/institucional/horarios/armado?paralelo=${paralelo.id}&tab=cursos`;
-        if (paralelo.estado === 'sin_horario') return `/institucional/horarios/armado?paralelo=${paralelo.id}&tab=horarios`;
-        if (paralelo.estado === 'conflicto') return `/institucional/horarios/conflictos?paralelo=${paralelo.id}`;
-        return `/institucional/horarios/armado?paralelo=${paralelo.id}&tab=vista`;
+        const turno = encodeURIComponent(paralelo.turno || '');
+        const base = `/institucional/horarios/armado?paralelo=${paralelo.id}&turno=${turno}`;
+        if (paralelo.estado === 'incompleto') return `${base}&tab=cursos`;
+        if (paralelo.estado === 'sin_horario') return `${base}&tab=plan`;
+        if (paralelo.estado === 'conflicto') return `${base}&tab=plan`;
+        if (paralelo.estado === 'completo') return `${base}&tab=vista`;
+        return `${base}&tab=plan`;
     }, []);
 
     const onOpenArmado = useCallback((paralelo) => navigate(getParaleloAction(paralelo)), [getParaleloAction, navigate]);
