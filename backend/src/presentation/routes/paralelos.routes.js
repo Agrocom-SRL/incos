@@ -61,6 +61,18 @@ export function buildParalelosRouter({ controllers, middlewares }) {
      * - Información del paralelo
      * - Lista de cursos con sus horarios, aulas y materias
      */
+    /**
+     * GET /api/v1/paralelos/:id/cursos-oferta
+     * Oferta del paralelo: cursos + materias del periodo sin curso (sin detalle de bloques).
+     */
+    router.get(
+        '/:id/cursos-oferta',
+        ...verHorarios,
+        idValidator,
+        validateRequest,
+        (req, res, next) => controllers.getParaleloCursosOfertaController.handle(req, res, next)
+    );
+
     router.get(
         '/:id/schedule',
         ...verHorarios,

@@ -142,6 +142,7 @@ export const DISCAPACIDAD_ENDPOINTS = createCRUDEndpoints('/discapacidad');
 // ============================================
 export const PARALELOS_ENDPOINTS = {
   ...createCRUDEndpoints('/paralelos'),
+  CURSOS_OFERTA: (id) => `${API_BASE}/paralelos/${id}/cursos-oferta`,
   // Endpoint específico para obtener horarios de un paralelo
   SCHEDULE: (id) => `${API_BASE}/paralelos/${id}/schedule`,
   // PUT /v1/paralelos/:id/schedule — persistir plan semanal

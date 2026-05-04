@@ -2,7 +2,7 @@
  * Plan semanal de un paralelo: grilla compartida con docentes + edición local (drag, quitar, añadir bloque).
  */
 
-import { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Alert, Flex, Form, message, Modal, Select, Space, Typography } from 'antd';
 import { Button } from '@atoms';
 import DocenteHorarioSemanalGrid from '@docentes/components/organisms/DocenteHorarioSemanalGrid';
@@ -55,11 +55,6 @@ const ParaleloArmadoPlanSection = ({
     const [form] = Form.useForm();
     const gridRange = useMemo(() => getTurnoGridRangeMinutes(turnoLabel), [turnoLabel]);
     const sabadoRange = useMemo(() => getSabadoArmadoGridRangeMinutes(), []);
-    const slotOptions = useMemo(
-        () => slotOptionsForRange(gridRange.start, gridRange.end, SLOT_STEP_ADD),
-        [gridRange.start, gridRange.end],
-    );
-
     const handleBeginDragChip = useCallback((e, item, sourceDia, sourceSlotMinutes) => {
         const payload = {
             cursoId: item.cursoId,
@@ -108,14 +103,18 @@ const ParaleloArmadoPlanSection = ({
         [editable, onSchedulesChange, schedules],
     );
 
-    const cursoOptions = useMemo(
-        () =>
-            (schedules || []).map((c) => ({
-                value: c.cursoId,
-                label: c.materiaNombre || c.materiaSigla || 'Materia sin nombre',
-            })),
-        [schedules],
-    );
+    const cursoOptions = useMemo(() => {
+        if (!addOpen) return [];
+        return (schedules || []).map((c) => ({
+            value: c.cursoId,
+            label: c.materiaNombre || c.materiaSigla || 'Materia sin nombre',
+        }));
+    }, [addOpen, schedules]);
+
+    const slotOptionsLazy = useMemo(() => {
+        if (!addOpen) return [];
+        return slotOptionsForRange(gridRange.start, gridRange.end, SLOT_STEP_ADD);
+    }, [addOpen, gridRange.start, gridRange.end]);
 
     const submitAddBlock = useCallback(() => {
         form.validateFields().then((values) => {
@@ -247,7 +246,7 @@ const ParaleloArmadoPlanSection = ({
                         <Select options={DIA_OPTIONS} />
                     </Form.Item>
                     <Form.Item name="slotMinutes" label="Hora de inicio" rules={[{ required: true }]}>
-                        <Select options={slotOptions} showSearch optionFilterProp="label" />
+                        <Select options={slotOptionsLazy} showSearch optionFilterProp="label" />
                     </Form.Item>
                     <Text type="secondary">Duración por defecto del nuevo bloque: 45 minutos.</Text>
                 </Form>
@@ -256,4 +255,4 @@ const ParaleloArmadoPlanSection = ({
     );
 };
 
-export default ParaleloArmadoPlanSection;
+export default React.memo(ParaleloArmadoPlanSection);

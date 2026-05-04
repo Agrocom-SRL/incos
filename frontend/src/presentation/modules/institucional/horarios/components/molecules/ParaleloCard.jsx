@@ -9,7 +9,7 @@ const ctaByState = {
     completo: 'Ver horario',
 };
 
-const ParaleloCard = ({ paralelo, onOpen }) => {
+const ParaleloCard = ({ paralelo, onOpen, onGestionCursos }) => {
     const title = (
         <Typography.Text ellipsis={{ tooltip: `${paralelo.paralelo} — ${paralelo.carrera}` }}>
             {paralelo.paralelo} — {paralelo.carrera}
@@ -54,6 +54,11 @@ const ParaleloCard = ({ paralelo, onOpen }) => {
             >
                 {ctaByState[paralelo.estado] || 'Abrir'}
             </Button>
+            {typeof onGestionCursos === 'function' ? (
+                <Button block size="small" variant="default" onClick={() => onGestionCursos(paralelo)}>
+                    Gestionar cursos
+                </Button>
+            ) : null}
         </Card>
     );
 };

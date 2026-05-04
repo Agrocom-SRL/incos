@@ -115,8 +115,9 @@ export const menuIconMap = {
     'INST-OFERTA-MAT-CURSO': TableOutlined,
     'INST-HORARIO-GENERAR': SyncOutlined,
     'INST-HORARIO-PLANTILLA': CalendarOutlined,
+    'INST-HORARIO-PARALELO-GESTION': BookOutlined,
     'INST-HORARIO-ARMADO': TableOutlined,
-    'INST-HORARIO-CONFLICTOS': WarningOutlined,
+    'INST-HORARIO-AULAS': HomeOutlined,
     'INST-HORARIO-PUBLICACION': SendOutlined,
 
     // Configuración - Nivel 1

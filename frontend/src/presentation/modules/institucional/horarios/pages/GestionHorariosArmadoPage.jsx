@@ -70,7 +70,7 @@ const resumenBloquesCurso = (c) => {
 
 const normalizeTab = (raw) => {
     if (raw === 'cursos' || raw === 'plan' || raw === 'vista') return raw;
-    if (raw === 'horarios') return 'plan';
+    if (raw === 'horarios' || raw === 'conflicto') return 'plan';
     return 'plan';
 };
 
@@ -99,17 +99,15 @@ const GestionHorariosArmadoPage = () => {
             { title: 'Inicio', href: '/' },
             { title: 'Institucional', href: '/institucional' },
             { title: 'Gestión de horarios', href: '/institucional/horarios' },
-            { title: 'Armado' },
+            { title: 'Plan semanal' },
         ],
         [],
     );
 
     const pageTitle = useMemo(() => {
-        if (!paraleloId) return 'Armado de horarios';
+        if (!paraleloId) return 'Plan semanal del paralelo';
         const nombre = paraleloApiMeta?.nombre;
-        const base = nombre
-            ? `Armado de horarios — ${nombre}`
-            : `Armado de horarios — Paralelo #${paraleloId}`;
+        const base = nombre ? `Plan semanal — ${nombre}` : `Plan semanal — Paralelo #${paraleloId}`;
         return turnoEfectivo ? `${base} · Turno ${turnoEfectivo}` : base;
     }, [paraleloId, paraleloApiMeta?.nombre, turnoEfectivo]);
 
@@ -130,7 +128,14 @@ const GestionHorariosArmadoPage = () => {
     const [draftSchedules, setDraftSchedules] = useState([]);
 
     useEffect(() => {
-        setDraftSchedules(serverSchedules);
+        setDraftSchedules((prev) => {
+            try {
+                if (JSON.stringify(prev) === JSON.stringify(serverSchedules)) return prev;
+            } catch {
+                /* comparación no bloqueante */
+            }
+            return serverSchedules;
+        });
     }, [serverSchedules]);
 
     useEffect(() => {
@@ -162,6 +167,12 @@ const GestionHorariosArmadoPage = () => {
         [setSearchParams, paraleloId, turnoParam],
     );
 
+    const irAGestionCursos = useCallback(() => {
+        if (!paraleloId) return;
+        const tp = encodeURIComponent(turnoEfectivo || turnoParam || '');
+        navigate(`/institucional/horarios/paralelo/${paraleloId}/gestion?turno=${tp}&returnTab=cursos`);
+    }, [paraleloId, turnoEfectivo, turnoParam, navigate]);
+
     const tabItems = useMemo(
         () => [
             {
@@ -174,12 +185,24 @@ const GestionHorariosArmadoPage = () => {
                 ),
                 children: (
                     <div className="sd-tab-body horarios-armado-tab-body">
+                        <Flex justify="flex-end" style={{ marginBottom: 12 }}>
+                            <Button variant="primary" onClick={irAGestionCursos}>
+                                Gestionar cursos del paralelo
+                            </Button>
+                        </Flex>
                         {!draftSchedules.length ? (
                             <Alert
                                 type="info"
                                 showIcon
                                 title="Sin cursos"
-                                description="No hay cursos cargados para este paralelo."
+                                description={
+                                    <Flex vertical gap={8} align="flex-start">
+                                        <span>No hay cursos cargados para este paralelo.</span>
+                                        <Button variant="default" size="small" onClick={irAGestionCursos}>
+                                            Ir a oferta de cursos
+                                        </Button>
+                                    </Flex>
+                                }
                             />
                         ) : (
                             <Flex vertical gap={12}>
@@ -321,13 +344,23 @@ const GestionHorariosArmadoPage = () => {
                 ),
             },
         ],
-        [draftSchedules, missingSubjects, turnoEfectivo, persistLoading, persistError, persistResult, paraleloId, persist],
+        [
+            draftSchedules,
+            missingSubjects,
+            turnoEfectivo,
+            persistLoading,
+            persistError,
+            persistResult,
+            paraleloId,
+            persist,
+            irAGestionCursos,
+        ],
     );
 
     const headerActions = (
-        <Button variant="default" icon={<ArrowLeftOutlined />} onClick={() => navigate('/institucional/horarios')}>
-            Volver a gestión
-        </Button>
+        <button type="button" className="sd-btn sd-btn--outline" onClick={() => navigate('/institucional/horarios')}>
+            <ArrowLeftOutlined /> Volver
+        </button>
     );
 
     return (
@@ -409,8 +442,7 @@ const GestionHorariosArmadoPage = () => {
                                                 <Text type="secondary" style={{ marginTop: 8 }}>
                                                     Revisá las materias del periodo, editá el plan semanal (arrastrá
                                                     bloques entre celdas de la misma ventana del turno) y usá la vista
-                                                    previa. El guardado en servidor se habilitará cuando exista el
-                                                    endpoint de persistencia.
+                                                    previa.
                                                 </Text>
                                             </Flex>
                                         </Flex>

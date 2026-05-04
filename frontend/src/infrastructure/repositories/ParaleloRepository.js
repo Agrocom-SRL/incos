@@ -72,6 +72,19 @@ export class ParaleloRepository extends IParaleloRepository {
     }
   }
 
+  async obtenerCursosOferta(options = {}) {
+    try {
+      const { parallelId } = options;
+      if (!parallelId) {
+        return { success: false, error: 'ID del paralelo es requerido' };
+      }
+      const response = await apiClient.get(PARALELOS_ENDPOINTS.CURSOS_OFERTA(parallelId));
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al obtener la oferta de cursos del paralelo');
+    }
+  }
+
   /**
    * Persiste el plan semanal (bloques) del paralelo.
    * PUT /v1/paralelos/:id/schedule

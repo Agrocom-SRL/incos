@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Table, Typography } from 'antd';
+import { Space, Table, Typography } from 'antd';
 import { Button, Card } from '@atoms';
 import { StatusTag } from '../atoms';
 
@@ -45,7 +45,7 @@ const groupParallels = (rows) => {
     return groups;
 };
 
-const ParalelosTable = ({ filteredParallels, onOpenArmado, embedded = false }) => {
+const ParalelosTable = ({ filteredParallels, onOpenArmado, onOpenGestionCursos, embedded = false }) => {
     const groups = useMemo(() => groupParallels(filteredParallels), [filteredParallels]);
 
     const columns = [
@@ -66,16 +66,23 @@ const ParalelosTable = ({ filteredParallels, onOpenArmado, embedded = false }) =
             title: 'Acción',
             key: 'accion',
             align: 'right',
-            width: 168,
+            width: 260,
             render: (_, row) => (
-                <Button
-                    size="small"
-                    variant={actionVariant(row.estado)}
-                    className="horarios-paralelos-table__action-btn"
-                    onClick={() => onOpenArmado(row)}
-                >
-                    {ctaByState[row.estado] || 'Abrir'}
-                </Button>
+                <Space size={8} wrap>
+                    <Button
+                        size="small"
+                        variant={actionVariant(row.estado)}
+                        className="horarios-paralelos-table__action-btn"
+                        onClick={() => onOpenArmado(row)}
+                    >
+                        {ctaByState[row.estado] || 'Abrir'}
+                    </Button>
+                    {typeof onOpenGestionCursos === 'function' ? (
+                        <Button size="small" variant="default" onClick={() => onOpenGestionCursos(row)}>
+                            Cursos
+                        </Button>
+                    ) : null}
+                </Space>
             ),
         },
     ];

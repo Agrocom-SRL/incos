@@ -16,6 +16,7 @@ import { ACADEMICO_TOKENS, REPOSITORIOS_TOKENS, SERVICIOS_TOKENS } from '../../t
 import { registerComponent } from '../../utils/container.helpers.js';
 import { ListParalelosUseCase } from '../../../../application/use-cases/academico/ListParalelosUseCase.js';
 import { GetParaleloHorariosUseCase } from '../../../../application/use-cases/academico/GetParaleloHorariosUseCase.js';
+import { GetParaleloCursosOfertaUseCase } from '../../../../application/use-cases/academico/GetParaleloCursosOfertaUseCase.js';
 import { PutParaleloScheduleUseCase } from '../../../../application/use-cases/academico/PutParaleloScheduleUseCase.js';
 import { GetAsignaturasSinCursoDashboardUseCase } from '../../../../application/use-cases/academico/GetAsignaturasSinCursoDashboardUseCase.js';
 import { GetCapacidadTurnoDashboardUseCase } from '../../../../application/use-cases/academico/GetCapacidadTurnoDashboardUseCase.js';
@@ -25,6 +26,7 @@ import {
     GetDashboardCapacidadTurnoController,
     GetDashboardParalelosEstadoController,
     GetParaleloScheduleController,
+    GetParaleloCursosOfertaController,
     PutParaleloScheduleController,
     ListParalelosController,
 } from '../../../../presentation/controllers/academico/index.js';
@@ -66,6 +68,22 @@ export function registerParalelosResource(container) {
                 subjectRepository: c.resolve(REPOSITORIOS_TOKENS.subjectRepository),
                 scheduleRepository: c.resolve(REPOSITORIOS_TOKENS.scheduleRepository),
                 classroomRepository: c.resolve(REPOSITORIOS_TOKENS.classroomRepository),
+                careerRepository: c.resolve(REPOSITORIOS_TOKENS.careerRepository),
+                periodRepository: c.resolve(REPOSITORIOS_TOKENS.periodRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
+    registerComponent(
+        container,
+        ACADEMICO_TOKENS.getParaleloCursosOfertaUseCase,
+        (c) =>
+            new GetParaleloCursosOfertaUseCase({
+                parallelRepository: c.resolve(REPOSITORIOS_TOKENS.parallelRepository),
+                courseRepository: c.resolve(REPOSITORIOS_TOKENS.courseRepository),
+                courseScheduleRepository: c.resolve(REPOSITORIOS_TOKENS.courseScheduleRepository),
+                planSubjectRepository: c.resolve(REPOSITORIOS_TOKENS.planSubjectRepository),
+                subjectRepository: c.resolve(REPOSITORIOS_TOKENS.subjectRepository),
                 careerRepository: c.resolve(REPOSITORIOS_TOKENS.careerRepository),
                 periodRepository: c.resolve(REPOSITORIOS_TOKENS.periodRepository),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
@@ -142,6 +160,17 @@ export function registerParalelosResource(container) {
 
     registerComponent(
         container,
+        ACADEMICO_TOKENS.getParaleloCursosOfertaController,
+        (c) =>
+            new GetParaleloCursosOfertaController({
+                getParaleloCursosOfertaUseCase: c.resolve(ACADEMICO_TOKENS.getParaleloCursosOfertaUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
+    );
+
+    registerComponent(
+        container,
         ACADEMICO_TOKENS.putParaleloScheduleController,
         (c) =>
             new PutParaleloScheduleController({
@@ -194,6 +223,7 @@ export function registerParalelosResource(container) {
             const controllers = {
                 listParalelosController: c.resolve(ACADEMICO_TOKENS.listParalelosController),
                 getParaleloScheduleController: c.resolve(ACADEMICO_TOKENS.getParaleloScheduleController),
+                getParaleloCursosOfertaController: c.resolve(ACADEMICO_TOKENS.getParaleloCursosOfertaController),
                 putParaleloScheduleController: c.resolve(ACADEMICO_TOKENS.putParaleloScheduleController),
                 getDashboardParalelosEstadoController: c.resolve(ACADEMICO_TOKENS.getDashboardParalelosEstadoController),
                 getDashboardAsignaturasSinCursoController: c.resolve(ACADEMICO_TOKENS.getDashboardAsignaturasSinCursoController),

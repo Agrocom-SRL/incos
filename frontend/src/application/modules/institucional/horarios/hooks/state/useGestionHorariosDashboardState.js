@@ -85,13 +85,22 @@ export const useGestionHorariosDashboardState = () => {
         const base = `/institucional/horarios/armado?paralelo=${paralelo.id}&turno=${turno}`;
         if (paralelo.estado === 'incompleto') return `${base}&tab=cursos`;
         if (paralelo.estado === 'sin_horario') return `${base}&tab=plan`;
-        if (paralelo.estado === 'conflicto') return `${base}&tab=plan`;
+        if (paralelo.estado === 'conflicto') return `${base}&tab=conflicto`;
         if (paralelo.estado === 'completo') return `${base}&tab=vista`;
         return `${base}&tab=plan`;
     }, []);
 
     const onOpenArmado = useCallback((paralelo) => navigate(getParaleloAction(paralelo)), [getParaleloAction, navigate]);
-    const onViewConflicts = useCallback(() => navigate('/institucional/horarios/conflictos'), [navigate]);
+
+    const onOpenGestionCursos = useCallback(
+        (paralelo) => {
+            const turno = encodeURIComponent(paralelo.turno || '');
+            navigate(`/institucional/horarios/paralelo/${paralelo.id}/gestion?turno=${turno}&returnTab=cursos`);
+        },
+        [navigate],
+    );
+
+    const onVerHorariosAulas = useCallback(() => navigate('/institucional/horarios/aulas'), [navigate]);
     const onPublish = useCallback(() => navigate('/institucional/horarios/publicacion'), [navigate]);
 
     const turnosCapacityReal = useMemo(() => {
@@ -131,7 +140,8 @@ export const useGestionHorariosDashboardState = () => {
         onFilterChange,
         clearFilters,
         onOpenArmado,
-        onViewConflicts,
+        onOpenGestionCursos,
+        onVerHorariosAulas,
         onPublish,
         hayAlertas: kpis.incompletos > 0 || kpis.conConflicto > 0,
         turnosCapacity: turnosCapacityReal,

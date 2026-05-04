@@ -28,6 +28,13 @@ export class IParaleloRepository extends IBaseRepository {
   }
 
   /**
+   * GET /v1/paralelos/:id/cursos-oferta — oferta de cursos y materias sin curso.
+   */
+  async obtenerCursosOferta(options = {}) {
+    throw new Error('Method obtenerCursosOferta() must be implemented');
+  }
+
+  /**
    * Persiste el plan semanal (bloques) del paralelo.
    * PUT /v1/paralelos/:id/schedule
    *

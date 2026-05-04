@@ -43,7 +43,8 @@ const GestionHorariosPage = () => {
         setViewMode,
         onFilterChange,
         onOpenArmado,
-        onViewConflicts,
+        onOpenGestionCursos,
+        onVerHorariosAulas,
         onPublish,
         clearFilters,
         hayAlertas,
@@ -82,12 +83,13 @@ const GestionHorariosPage = () => {
                     <ParalelosTable
                         filteredParallels={filteredParallels}
                         onOpenArmado={onOpenArmado}
+                        onOpenGestionCursos={onOpenGestionCursos}
                         embedded
                     />
                 ),
             },
         ],
-        [boardByStatus, filteredParallels, onOpenArmado],
+        [boardByStatus, filteredParallels, onOpenArmado, onOpenGestionCursos],
     );
 
     return (
@@ -98,11 +100,8 @@ const GestionHorariosPage = () => {
                     breadcrumbItems={breadcrumbItems}
                     actions={
                         <Flex wrap="wrap" gap={allSpacing.marginSM} justify="flex-end">
-                            <Button
-                                variant={kpis?.conConflicto > 0 ? 'warning' : 'default'}
-                                onClick={onViewConflicts}
-                            >
-                                Ver conflictos ({kpis?.conConflicto || 0})
+                            <Button variant="default" onClick={onVerHorariosAulas}>
+                                Horarios en aulas
                             </Button>
                             <Button variant="primary" onClick={onPublish}>
                                 Publicar cambios
@@ -134,9 +133,9 @@ const GestionHorariosPage = () => {
                                         onFilterChange={onFilterChange}
                                         onClearFilters={clearFilters}
                                     />
-                                    <div className="sd-tabs-shell horarios-gestion-planificacion__tabs">
+                                    <div className="sd-tabs-shell horarios-gestion-planificacion__tabs horarios-armado-page">
                                         <Tabs
-                                            className="sd-tabs"
+                                            className="sd-tabs horarios-gestion-planificacion__tabs-inner"
                                             activeKey={viewMode}
                                             onChange={setViewMode}
                                             items={planificacionTabItems}
