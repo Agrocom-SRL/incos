@@ -1,30 +1,23 @@
 import { useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { Alert, Typography } from 'antd';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
+import { useHorariosAulasContext } from '@application-institucional/horarios';
 import '@presentation/styles/pages/detail-page.css';
 
 const { Paragraph } = Typography;
 
 const GestionHorariosAulasPage = () => {
-    const navigate = useNavigate();
+    const { breadcrumbItems, handleVolver } = useHorariosAulasContext();
 
-    const breadcrumbItems = useMemo(
-        () => [
-            { title: 'Inicio', href: '/' },
-            { title: 'Institucional', href: '/institucional' },
-            { title: 'Gestión de horarios', href: '/institucional/horarios' },
-            { title: 'Horarios en aulas' },
-        ],
-        [],
-    );
-
-    const headerActions = (
-        <button type="button" className="sd-btn sd-btn--outline" onClick={() => navigate('/institucional/horarios')}>
-            <ArrowLeftOutlined /> Volver
-        </button>
+    const headerActions = useMemo(
+        () => (
+            <button type="button" className="sd-btn sd-btn--outline" onClick={handleVolver}>
+                <ArrowLeftOutlined /> Volver
+            </button>
+        ),
+        [handleVolver],
     );
 
     return (

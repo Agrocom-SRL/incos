@@ -1,11 +1,11 @@
-import { HorariosProvider } from '@application-institucional/horarios';
+import { HorariosArmadoProvider } from '@application-institucional/horarios';
 import GestionHorariosArmadoPage from '../pages/GestionHorariosArmadoPage';
 
 const ArmadoConnector = () => {
     return (
-        <HorariosProvider>
+        <HorariosArmadoProvider>
             <GestionHorariosArmadoPage />
-        </HorariosProvider>
+        </HorariosArmadoProvider>
     );
 };
 

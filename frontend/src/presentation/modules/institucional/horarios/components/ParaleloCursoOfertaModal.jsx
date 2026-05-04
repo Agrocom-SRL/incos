@@ -21,9 +21,11 @@ const ParaleloCursoOfertaModal = ({
     initialAsignaturaPlanId,
     /** ID del paralelo (validación en PATCH). */
     parallelId,
+    /** Si es false, el botón Guardar queda deshabilitado (permisos insuficientes). */
+    canSubmit = true,
     /** @returns {Promise<{ success: boolean, error?: string, data?: object }>} */
     onCrearCurso,
-    /** (courseId, payload) — payload incluye parallelId, codigo, cupos, colorHex */
+    /** (courseId, payload) — payload incluye parallelId, cupos, colorHex (sin código; lo mantiene el backend). */
     onActualizarCurso,
 }) => {
     const { message } = App.useApp();
@@ -59,7 +61,6 @@ const ParaleloCursoOfertaModal = ({
         if (!open) return;
         if (isEdit && cursoEdit) {
             form.setFieldsValue({
-                codigo: cursoEdit.codigo ?? '',
                 asignaturaPlanId: Number(cursoEdit.asignaturaPlanId),
                 cupoMinimo: cursoEdit.cupoMinimo ?? 10,
                 cupoMaximo: cursoEdit.cupoMaximo ?? 35,
@@ -82,6 +83,7 @@ const ParaleloCursoOfertaModal = ({
     }, [open, isEdit, cursoEdit, initialAsignaturaPlanId, form]);
 
     const handleOk = async () => {
+        if (!canSubmit) return;
         try {
             const values = await form.validateFields();
             if (isEdit) {
@@ -96,7 +98,6 @@ const ParaleloCursoOfertaModal = ({
                 setSaving(true);
                 const res = await onActualizarCurso(cursoEdit.cursoId, {
                     parallelId,
-                    codigo: values.codigo,
                     cupoMinimo: values.cupoMinimo,
                     cupoMaximo: values.cupoMaximo,
                     colorHex: values.colorHex,
@@ -145,7 +146,12 @@ const ParaleloCursoOfertaModal = ({
                     <Button variant="default" onClick={onClose}>
                         Cancelar
                     </Button>
-                    <Button variant="primary" onClick={handleOk} loading={saving} disabled={saving}>
+                    <Button
+                        variant="primary"
+                        onClick={handleOk}
+                        loading={saving}
+                        disabled={saving || !canSubmit}
+                    >
                         Guardar
                     </Button>
                 </Space>

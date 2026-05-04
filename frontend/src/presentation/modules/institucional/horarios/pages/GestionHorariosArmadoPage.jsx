@@ -1,177 +1,40 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useMemo } from 'react';
 import { Alert, Divider, Flex, Spin, Tabs, Typography } from 'antd';
 import { ArrowLeftOutlined, BookOutlined, EyeOutlined, ScheduleOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
-import { Button, Card } from '@atoms';
-import { useParaleloScheduleApi } from '@application-academico/paralelos/hooks';
-import {
-    extractParaleloScheduleMeta,
-    paraleloScheduleToCourseSchedules,
-} from '@application-institucional/horarios';
-import { usePersistParaleloScheduleApi } from '@application-academico/paralelos/hooks';
-import { blockDurationMinutes } from '../utils/planSemanalBlockOps';
+import { Button, Card, ActionButton } from '@atoms';
+import { useHorariosArmadoContext } from '@application-institucional/horarios';
+import { resumenBloquesCurso } from '@application-institucional/horarios/utils/resumenBloquesCurso';
+import { buildCarreraImageUrl } from '@application-institucional/horarios/utils/buildCarreraImageUrl';
 import ParaleloArmadoPlanSection from '../components/organisms/ParaleloArmadoPlanSection';
 import '@presentation/styles/pages/detail-page.css';
 import '../styles/gestion-horarios-page.css';
 
 const { Text, Title } = Typography;
 
-const DIA_ETIQUETA = {
-    LUNES: 'Lunes',
-    MARTES: 'Martes',
-    MIERCOLES: 'Miércoles',
-    JUEVES: 'Jueves',
-    VIERNES: 'Viernes',
-    SABADO: 'Sábado',
-};
-
-const fmtHoraCorta = (t) => {
-    if (t == null || t === '') return '—';
-    const s = String(t);
-    return s.length >= 5 ? s.slice(0, 5) : s;
-};
-
-const buildCarreraImageUrl = (ruta) => {
-    if (!ruta) return null;
-    if (ruta.startsWith('http://') || ruta.startsWith('https://')) return ruta;
-    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
-    const serverBaseUrl = apiBaseUrl.replace(/\/api\/?$/, '');
-    const path = ruta.startsWith('/') ? ruta : `/${ruta}`;
-    return `${serverBaseUrl}${path}`;
-};
-
-const resumenBloquesCurso = (c) => {
-    const bloques = c.bloques || [];
-    let minutos = 0;
-    const diasOrd = [];
-    const visto = new Set();
-    const lineas = [];
-    for (const b of bloques) {
-        const d = b.dia ? String(b.dia).toUpperCase() : '';
-        const mins = blockDurationMinutes(b.horaInicio, b.horaFin);
-        minutos += mins;
-        if (d && !visto.has(d)) {
-            visto.add(d);
-            diasOrd.push(DIA_ETIQUETA[d] || d);
-        }
-        if (d) {
-            lineas.push(
-                `${DIA_ETIQUETA[d] || d}: ${fmtHoraCorta(b.horaInicio)}–${fmtHoraCorta(b.horaFin)}${b.aula ? ` · ${b.aula}` : ''
-                }`,
-            );
-        }
-    }
-    const horasGrilla = Math.round((minutos / 60) * 100) / 100;
-    const horasPlan = c.horasSemanalesPlan != null ? Number(c.horasSemanalesPlan) : null;
-    return { horasGrilla, horasPlan, diasOrd, lineas };
-};
-
-const normalizeTab = (raw) => {
-    if (raw === 'cursos' || raw === 'plan' || raw === 'vista') return raw;
-    if (raw === 'horarios' || raw === 'conflicto') return 'plan';
-    return 'plan';
-};
-
 const GestionHorariosArmadoPage = () => {
-    const navigate = useNavigate();
-    const [searchParams, setSearchParams] = useSearchParams();
-    const paraleloId = searchParams.get('paralelo');
-    const tab = normalizeTab(searchParams.get('tab'));
-    const turnoParam = searchParams.get('turno') || '';
-
-    const { schedule, loading, error, fetch } = useParaleloScheduleApi();
     const {
-        result: persistResult,
-        loading: persistLoading,
-        error: persistError,
-        fetch: persist,
-    } = usePersistParaleloScheduleApi();
-
-    const paraleloApiMeta = useMemo(() => extractParaleloScheduleMeta(schedule), [schedule]);
-    const turnoEfectivo = (turnoParam || paraleloApiMeta?.turno || '').trim();
-    const paraleloNombre =
-        paraleloApiMeta?.nombre || (paraleloId ? `Paralelo #${paraleloId}` : null);
-
-    const breadcrumbItems = useMemo(
-        () => [
-            { title: 'Inicio', href: '/' },
-            { title: 'Institucional', href: '/institucional' },
-            { title: 'Gestión de horarios', href: '/institucional/horarios' },
-            { title: 'Plan semanal' },
-        ],
-        [],
-    );
-
-    const pageTitle = useMemo(() => {
-        if (!paraleloId) return 'Plan semanal del paralelo';
-        const nombre = paraleloApiMeta?.nombre;
-        const base = nombre ? `Plan semanal — ${nombre}` : `Plan semanal — Paralelo #${paraleloId}`;
-        return turnoEfectivo ? `${base} · Turno ${turnoEfectivo}` : base;
-    }, [paraleloId, paraleloApiMeta?.nombre, turnoEfectivo]);
-
-    const meta = useMemo(
-        () => ({
-            turno: turnoEfectivo || null,
-            paraleloNombre,
-        }),
-        [turnoEfectivo, paraleloNombre],
-    );
-
-    const serverSchedules = useMemo(() => paraleloScheduleToCourseSchedules(schedule, meta), [schedule, meta]);
-    const missingSubjects = useMemo(() => {
-        if (!schedule || Array.isArray(schedule)) return [];
-        return Array.isArray(schedule.missingSubjects) ? schedule.missingSubjects : [];
-    }, [schedule]);
-
-    const [draftSchedules, setDraftSchedules] = useState([]);
-
-    useEffect(() => {
-        setDraftSchedules((prev) => {
-            try {
-                if (JSON.stringify(prev) === JSON.stringify(serverSchedules)) return prev;
-            } catch {
-                /* comparación no bloqueante */
-            }
-            return serverSchedules;
-        });
-    }, [serverSchedules]);
-
-    useEffect(() => {
-        if (paraleloId) {
-            fetch(Number(paraleloId));
-        }
-    }, [paraleloId, fetch]);
-
-    useEffect(() => {
-        // Si guardamos ok, rehidratar desde servidor
-        if (!persistLoading && persistResult && paraleloId) {
-            fetch(Number(paraleloId));
-        }
-    }, [persistLoading, persistResult, paraleloId, fetch]);
-
-    const setTab = useCallback(
-        (key) => {
-            setSearchParams(
-                (prev) => {
-                    const n = new URLSearchParams(prev);
-                    n.set('tab', key);
-                    if (paraleloId) n.set('paralelo', paraleloId);
-                    if (turnoParam) n.set('turno', turnoParam);
-                    return n;
-                },
-                { replace: true },
-            );
-        },
-        [setSearchParams, paraleloId, turnoParam],
-    );
-
-    const irAGestionCursos = useCallback(() => {
-        if (!paraleloId) return;
-        const tp = encodeURIComponent(turnoEfectivo || turnoParam || '');
-        navigate(`/institucional/horarios/paralelo/${paraleloId}/gestion?turno=${tp}&returnTab=cursos`);
-    }, [paraleloId, turnoEfectivo, turnoParam, navigate]);
+        paraleloId,
+        tab,
+        setTab,
+        turnoEfectivo,
+        breadcrumbItems,
+        pageTitle,
+        loading,
+        error,
+        persistResult,
+        persistLoading,
+        persistError,
+        paraleloApiMeta,
+        paraleloNombre,
+        missingSubjects,
+        draftSchedules,
+        setDraftSchedules,
+        irAGestionCursos,
+        onRequestPersist,
+        handleVolver,
+    } = useHorariosArmadoContext();
 
     const tabItems = useMemo(
         () => [
@@ -186,9 +49,14 @@ const GestionHorariosArmadoPage = () => {
                 children: (
                     <div className="sd-tab-body horarios-armado-tab-body">
                         <Flex justify="flex-end" style={{ marginBottom: 12 }}>
-                            <Button variant="primary" onClick={irAGestionCursos}>
+                            <ActionButton
+                                permiso="institucional.gestion.horarios"
+                                accion="LISTAR"
+                                variant="primary"
+                                onClick={irAGestionCursos}
+                            >
                                 Gestionar cursos del paralelo
-                            </Button>
+                            </ActionButton>
                         </Flex>
                         {!draftSchedules.length ? (
                             <Alert
@@ -198,9 +66,15 @@ const GestionHorariosArmadoPage = () => {
                                 description={
                                     <Flex vertical gap={8} align="flex-start">
                                         <span>No hay cursos cargados para este paralelo.</span>
-                                        <Button variant="default" size="small" onClick={irAGestionCursos}>
+                                        <ActionButton
+                                            permiso="institucional.gestion.horarios"
+                                            accion="LISTAR"
+                                            variant="default"
+                                            size="small"
+                                            onClick={irAGestionCursos}
+                                        >
                                             Ir a oferta de cursos
-                                        </Button>
+                                        </ActionButton>
                                     </Flex>
                                 }
                             />
@@ -229,11 +103,7 @@ const GestionHorariosArmadoPage = () => {
                                         }
                                     />
                                 ) : (
-                                    <Alert
-                                        type="success"
-                                        showIcon
-                                        title="Todas las materias del periodo ya tienen curso."
-                                    />
+                                    <Alert type="success" showIcon title="Todas las materias del periodo ya tienen curso." />
                                 )}
                                 {draftSchedules.map((c) => {
                                     const titulo = c.materiaNombre || c.materiaSigla || 'Materia sin nombre';
@@ -268,9 +138,7 @@ const GestionHorariosArmadoPage = () => {
                                                 </Text>
                                                 <Text type="secondary">
                                                     Días con clase:{' '}
-                                                    <Text strong>
-                                                        {diasOrd.length ? diasOrd.join(', ') : '—'}
-                                                    </Text>
+                                                    <Text strong>{diasOrd.length ? diasOrd.join(', ') : '—'}</Text>
                                                 </Text>
                                                 {lineas.length ? (
                                                     <>
@@ -316,10 +184,7 @@ const GestionHorariosArmadoPage = () => {
                             persistLoading={persistLoading}
                             persistError={persistError}
                             persistSuccess={Boolean(!persistLoading && !persistError && persistResult)}
-                            onRequestPersist={() => {
-                                if (!paraleloId) return;
-                                persist(Number(paraleloId), draftSchedules);
-                            }}
+                            onRequestPersist={onRequestPersist}
                         />
                     </div>
                 ),
@@ -336,7 +201,7 @@ const GestionHorariosArmadoPage = () => {
                     <div className="sd-tab-body horarios-armado-tab-body">
                         <ParaleloArmadoPlanSection
                             schedules={draftSchedules}
-                            onSchedulesChange={() => { }}
+                            onSchedulesChange={() => {}}
                             editable={false}
                             turnoLabel={turnoEfectivo || undefined}
                         />
@@ -351,14 +216,14 @@ const GestionHorariosArmadoPage = () => {
             persistLoading,
             persistError,
             persistResult,
-            paraleloId,
-            persist,
+            setDraftSchedules,
             irAGestionCursos,
+            onRequestPersist,
         ],
     );
 
     const headerActions = (
-        <button type="button" className="sd-btn sd-btn--outline" onClick={() => navigate('/institucional/horarios')}>
+        <button type="button" className="sd-btn sd-btn--outline" onClick={handleVolver}>
             <ArrowLeftOutlined /> Volver
         </button>
     );
@@ -413,26 +278,27 @@ const GestionHorariosArmadoPage = () => {
                                                 </Title>
                                                 <Text type="secondary">
                                                     {paraleloApiMeta?.carreraNombre
-                                                        ? `${paraleloApiMeta.carreraNombre}${paraleloApiMeta.carreraCodigo
-                                                            ? ` (${paraleloApiMeta.carreraCodigo})`
-                                                            : ''
-                                                        }`
+                                                        ? `${paraleloApiMeta.carreraNombre}${
+                                                              paraleloApiMeta.carreraCodigo
+                                                                  ? ` (${paraleloApiMeta.carreraCodigo})`
+                                                                  : ''
+                                                          }`
                                                         : 'Carrera: —'}
                                                 </Text>
                                                 <Text type="secondary">
                                                     Periodo:{' '}
                                                     <Text strong>
                                                         {paraleloApiMeta?.periodoNombre
-                                                            ? `${paraleloApiMeta.periodoNombre}${paraleloApiMeta.periodoNumero != null
-                                                                ? ` (n.º ${paraleloApiMeta.periodoNumero})`
-                                                                : ''
-                                                            }`
+                                                            ? `${paraleloApiMeta.periodoNombre}${
+                                                                  paraleloApiMeta.periodoNumero != null
+                                                                      ? ` (n.º ${paraleloApiMeta.periodoNumero})`
+                                                                      : ''
+                                                              }`
                                                             : '—'}
                                                     </Text>
                                                 </Text>
                                                 <Text type="secondary">
-                                                    Turno:{' '}
-                                                    <Text strong>{turnoEfectivo || '—'}</Text>
+                                                    Turno: <Text strong>{turnoEfectivo || '—'}</Text>
                                                 </Text>
                                                 {paraleloApiMeta?.descripcion ? (
                                                     <Text type="secondary" style={{ marginTop: 4 }}>
@@ -440,9 +306,8 @@ const GestionHorariosArmadoPage = () => {
                                                     </Text>
                                                 ) : null}
                                                 <Text type="secondary" style={{ marginTop: 8 }}>
-                                                    Revisá las materias del periodo, editá el plan semanal (arrastrá
-                                                    bloques entre celdas de la misma ventana del turno) y usá la vista
-                                                    previa.
+                                                    Revisá las materias del periodo, editá el plan semanal (arrastrá bloques
+                                                    entre celdas de la misma ventana del turno) y usá la vista previa.
                                                 </Text>
                                             </Flex>
                                         </Flex>

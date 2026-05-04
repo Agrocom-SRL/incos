@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { Space, Table, Typography } from 'antd';
-import { Button, Card } from '@atoms';
+import { Card, ActionButton } from '@atoms';
 import { StatusTag } from '../atoms';
 
 const ctaByState = {
@@ -69,18 +69,26 @@ const ParalelosTable = ({ filteredParallels, onOpenArmado, onOpenGestionCursos, 
             width: 260,
             render: (_, row) => (
                 <Space size={8} wrap>
-                    <Button
+                    <ActionButton
+                        permiso="institucional.horario.armado"
+                        accion="EDITAR"
                         size="small"
                         variant={actionVariant(row.estado)}
                         className="horarios-paralelos-table__action-btn"
                         onClick={() => onOpenArmado(row)}
                     >
                         {ctaByState[row.estado] || 'Abrir'}
-                    </Button>
+                    </ActionButton>
                     {typeof onOpenGestionCursos === 'function' ? (
-                        <Button size="small" variant="default" onClick={() => onOpenGestionCursos(row)}>
+                        <ActionButton
+                            permiso="institucional.gestion.horarios"
+                            accion="LISTAR"
+                            size="small"
+                            variant="default"
+                            onClick={() => onOpenGestionCursos(row)}
+                        >
                             Cursos
-                        </Button>
+                        </ActionButton>
                     ) : null}
                 </Space>
             ),

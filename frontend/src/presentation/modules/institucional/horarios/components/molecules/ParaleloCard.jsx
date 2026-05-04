@@ -1,6 +1,6 @@
 import { Typography } from 'antd';
 import { allSpacing } from '@theme/tokens';
-import { Button, Card } from '@atoms';
+import { Card, ActionButton } from '@atoms';
 
 const ctaByState = {
     incompleto: 'Completar cursos',
@@ -35,7 +35,9 @@ const ParaleloCard = ({ paralelo, onOpen, onGestionCursos }) => {
             <Typography.Text type="secondary" className="horarios-paralelo-card__courses">
                 Cursos con horario: {paralelo.cursosAsignados}/{paralelo.cursosTotales}
             </Typography.Text>
-            <Button
+            <ActionButton
+                permiso="institucional.horario.armado"
+                accion="EDITAR"
                 block
                 size="small"
                 className="horarios-paralelo-card__cta"
@@ -53,11 +55,18 @@ const ParaleloCard = ({ paralelo, onOpen, onGestionCursos }) => {
                 onClick={() => onOpen(paralelo)}
             >
                 {ctaByState[paralelo.estado] || 'Abrir'}
-            </Button>
+            </ActionButton>
             {typeof onGestionCursos === 'function' ? (
-                <Button block size="small" variant="default" onClick={() => onGestionCursos(paralelo)}>
+                <ActionButton
+                    permiso="institucional.gestion.horarios"
+                    accion="LISTAR"
+                    block
+                    size="small"
+                    variant="default"
+                    onClick={() => onGestionCursos(paralelo)}
+                >
                     Gestionar cursos
-                </Button>
+                </ActionButton>
             ) : null}
         </Card>
     );

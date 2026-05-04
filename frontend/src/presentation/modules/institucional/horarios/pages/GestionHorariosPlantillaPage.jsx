@@ -1,11 +1,9 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { App, Alert, Flex, Modal, Spin, Table, Tag, Tooltip, Typography, Button as AntButton } from 'antd';
+import { useMemo } from 'react';
+import { Alert, Flex, Spin, Table, Tag, Tooltip, Typography, Button as AntButton } from 'antd';
 import { ArrowLeftOutlined, BookOutlined, DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
-import { useParaleloCursosOfertaApi } from '@application-academico/paralelos/hooks';
-import { getUseCase } from '@container';
+import { useHorariosPlantillaContext } from '@application-institucional/horarios';
 import DetailInfoCard from '@docentes/components/molecules/DetailInfoCard';
 import '@presentation/styles/pages/detail-page.css';
 import '../styles/gestion-horarios-page.css';
@@ -13,215 +11,33 @@ import ParaleloCursoOfertaModal from '../components/ParaleloCursoOfertaModal';
 
 const { Text, Title } = Typography;
 
-const buildCarreraImageUrl = (ruta) => {
-    if (!ruta) return null;
-    if (ruta.startsWith('http://') || ruta.startsWith('https://')) return ruta;
-    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
-    const serverBaseUrl = apiBaseUrl.replace(/\/api\/?$/, '');
-    const path = ruta.startsWith('/') ? ruta : `/${ruta}`;
-    return `${serverBaseUrl}${path}`;
-};
-
 const GestionHorariosPlantillaPage = () => {
-    const { message } = App.useApp();
-    const navigate = useNavigate();
-    const location = useLocation();
-    const { paraleloId: paraleloIdParam } = useParams();
-    const [searchParams] = useSearchParams();
-    const queryParalelo = searchParams.get('paralelo');
-    const turnoParam = searchParams.get('turno') || '';
-    const returnTab =
-        searchParams.get('returnTab') === 'plan' || searchParams.get('returnTab') === 'vista'
-            ? searchParams.get('returnTab')
-            : 'cursos';
-
-    const paraleloIdResolved = paraleloIdParam || queryParalelo;
-    const numericParaleloId = paraleloIdResolved ? Number(paraleloIdResolved) : null;
-    const validParaleloId = numericParaleloId != null && !Number.isNaN(numericParaleloId) ? numericParaleloId : null;
-
-    const { oferta, loading, error, fetch } = useParaleloCursosOfertaApi();
-
-    const [cursoModal, setCursoModal] = useState({
-        open: false,
-        isEdit: false,
-        cursoEdit: null,
-        prefillAsignaturaPlanId: undefined,
-    });
-
-    useEffect(() => {
-        if (location.pathname.endsWith('/horarios/plantilla') && queryParalelo) {
-            const next = new URLSearchParams(searchParams);
-            next.delete('paralelo');
-            const suffix = next.toString();
-            navigate(`/institucional/horarios/paralelo/${queryParalelo}/gestion${suffix ? `?${suffix}` : ''}`, {
-                replace: true,
-            });
-        }
-    }, [location.pathname, queryParalelo, navigate, searchParams]);
-
-    useEffect(() => {
-        if (validParaleloId) {
-            fetch(validParaleloId);
-        }
-    }, [validParaleloId, fetch]);
-
-    const meta = oferta?.paralelo || null;
-    const cursos = Array.isArray(oferta?.cursos) ? oferta.cursos : [];
-    const missingSubjects = Array.isArray(oferta?.missingSubjects) ? oferta.missingSubjects : [];
-
-    const turnoEfectivo = (turnoParam || meta?.turno || '').trim();
-
-    const filasOferta = useMemo(() => {
-        const sinCurso = missingSubjects.map((m) => ({
-            _rowKey: `sin-curso-${m.asignaturaPlanId ?? m.materiaId}`,
-            rowKind: 'sin_curso',
-            asignaturaPlanId: m.asignaturaPlanId,
-            materiaId: m.materiaId,
-            materiaNombre: m.materiaNombre,
-            materiaSigla: m.materiaSigla,
-            horasSemanalesPlan: m.horasSemanalesPlan,
-        }));
-        const conCurso = cursos.map((c) => ({
-            _rowKey: `curso-${c.cursoId}`,
-            rowKind: 'curso',
-            ...c,
-        }));
-        return [...sinCurso, ...conCurso];
-    }, [missingSubjects, cursos]);
-
-    const breadcrumbItems = useMemo(
-        () => [
-            { title: 'Inicio', href: '/' },
-            { title: 'Institucional', href: '/institucional' },
-            { title: 'Gestión de horarios', href: '/institucional/horarios' },
-            { title: 'Oferta de cursos' },
-        ],
-        [],
-    );
-
-    const pageTitle = useMemo(() => {
-        if (!validParaleloId) return 'Gestión del paralelo — oferta de cursos';
-        const nombre = meta?.nombre;
-        const base = nombre
-            ? `Oferta de cursos — ${nombre}`
-            : `Oferta de cursos — Paralelo #${validParaleloId}`;
-        return turnoEfectivo ? `${base} · Turno ${turnoEfectivo}` : base;
-    }, [validParaleloId, meta?.nombre, turnoEfectivo]);
-
-    const handleVolver = useCallback(() => {
-        navigate('/institucional/horarios');
-    }, [navigate]);
-
-    const openCursoModalCrear = useCallback((prefillAsignaturaPlanId) => {
-        if (!validParaleloId) return;
-        setCursoModal({
-            open: true,
-            isEdit: false,
-            cursoEdit: null,
-            prefillAsignaturaPlanId:
-                prefillAsignaturaPlanId != null && prefillAsignaturaPlanId !== ''
-                    ? Number(prefillAsignaturaPlanId)
-                    : undefined,
-        });
-    }, [validParaleloId]);
-
-    const openCursoModalEditar = useCallback((record) => {
-        if (!validParaleloId || !record?.cursoId) return;
-        setCursoModal({
-            open: true,
-            isEdit: true,
-            cursoEdit: record,
-            prefillAsignaturaPlanId: undefined,
-        });
-    }, [validParaleloId]);
-
-    const closeCursoModal = useCallback(() => {
-        setCursoModal((s) => ({ ...s, open: false }));
-    }, []);
-
-    const onNuevoCurso = useCallback(() => {
-        openCursoModalCrear(undefined);
-    }, [openCursoModalCrear]);
-
-    const onEditarCurso = useCallback(
-        (record) => {
-            openCursoModalEditar(record);
-        },
-        [openCursoModalEditar],
-    );
-
-    const onCrearCursoDesdeMateria = useCallback(
-        (row) => {
-            if (row?.asignaturaPlanId == null) return;
-            openCursoModalCrear(row.asignaturaPlanId);
-        },
-        [openCursoModalCrear],
-    );
-
-    const onEliminarCurso = useCallback(
-        (record) => {
-            if (!validParaleloId || !record?.cursoId) return;
-            const label = record.codigo || record.materiaSigla || `ID ${record.cursoId}`;
-            Modal.confirm({
-                title: 'Eliminar curso del paralelo',
-                content: `¿Dar de baja el curso «${label}»? No se puede eliminar si ya tiene bloques de horario en el armado semanal.`,
-                okText: 'Eliminar',
-                okType: 'danger',
-                cancelText: 'Cancelar',
-                onOk: async () => {
-                    const uc = getUseCase('eliminarCursoOferta');
-                    if (!uc) {
-                        message.error('No se pudo inicializar la operación');
-                        throw new Error('no-use-case');
-                    }
-                    const res = await uc.ejecutar(record.cursoId, validParaleloId);
-                    if (!res?.success) {
-                        message.error(res?.error || 'No se pudo eliminar el curso');
-                        throw new Error('delete-failed');
-                    }
-                    message.success('Curso eliminado');
-                    fetch(validParaleloId);
-                },
-            });
-        },
-        [validParaleloId, message, fetch],
-    );
-
-    const handleCrearCursoOferta = useCallback(
-        async (formValues) => {
-            if (!validParaleloId) {
-                return { success: false, error: 'Paralelo no válido' };
-            }
-            const uc = getUseCase('crearParaleloCursoOferta');
-            if (!uc) {
-                return { success: false, error: 'No se pudo inicializar la operación' };
-            }
-            return uc.ejecutar(validParaleloId, {
-                asignaturaPlanId: formValues.asignaturaPlanId,
-                cupoMinimo: formValues.cupoMinimo,
-                cupoMaximo: formValues.cupoMaximo,
-                colorHex: formValues.colorHex,
-            });
-        },
-        [validParaleloId],
-    );
-
-    const handleActualizarCursoOferta = useCallback(
-        async (courseId, payload) => {
-            const uc = getUseCase('actualizarCursoOferta');
-            if (!uc) {
-                return { success: false, error: 'No se pudo inicializar la operación' };
-            }
-            return uc.ejecutar(courseId, payload);
-        },
-        [],
-    );
-
-    const headerActions = (
-        <button type="button" className="sd-btn sd-btn--outline" onClick={handleVolver}>
-            <ArrowLeftOutlined /> Volver
-        </button>
-    );
+    const {
+        validParaleloId,
+        canCrear,
+        canEditar,
+        canEliminar,
+        meta,
+        missingSubjects,
+        turnoEfectivo,
+        filasOferta,
+        breadcrumbItems,
+        pageTitle,
+        loading,
+        error,
+        refetchOferta,
+        buildCarreraImageUrl,
+        handleVolver,
+        cursoModal,
+        closeCursoModal,
+        onNuevoCurso,
+        onEditarCurso,
+        onCrearCursoDesdeMateria,
+        requestDeleteCurso,
+        deleteCursoLoading,
+        handleCrearCursoOferta,
+        handleActualizarCursoOferta,
+    } = useHorariosPlantillaContext();
 
     const columnasOferta = useMemo(
         () => [
@@ -303,53 +119,75 @@ const GestionHorariosPlantillaPage = () => {
                 render: (_, row) =>
                     row.rowKind === 'sin_curso' ? (
                         <Flex gap={4} justify="flex-end" wrap="wrap">
-                            <Tooltip title="Crear curso para esta materia">
-                                <AntButton
-                                    type="text"
-                                    size="small"
-                                    icon={<PlusOutlined />}
-                                    aria-label="Crear curso para esta materia"
-                                    onClick={() => onCrearCursoDesdeMateria(row)}
-                                    style={{ color: 'var(--ant-color-success, #52c41a)' }}
-                                />
-                            </Tooltip>
+                            {canCrear ? (
+                                <Tooltip title="Crear curso para esta materia">
+                                    <AntButton
+                                        type="text"
+                                        size="small"
+                                        icon={<PlusOutlined />}
+                                        aria-label="Crear curso para esta materia"
+                                        onClick={() => onCrearCursoDesdeMateria(row)}
+                                        style={{ color: 'var(--ant-color-success, #52c41a)' }}
+                                    />
+                                </Tooltip>
+                            ) : null}
                         </Flex>
                     ) : (
                         <Flex gap={4} justify="flex-end" wrap="wrap">
-                            <Tooltip title="Editar curso">
-                                <AntButton
-                                    type="text"
-                                    size="small"
-                                    icon={<EditOutlined />}
-                                    aria-label="Editar curso"
-                                    onClick={() => onEditarCurso(row)}
-                                    style={{ color: 'var(--accent-600, #d48806)' }}
-                                />
-                            </Tooltip>
-                            <Tooltip title="Eliminar curso">
-                                <AntButton
-                                    type="text"
-                                    size="small"
-                                    danger
-                                    icon={<DeleteOutlined />}
-                                    aria-label="Eliminar curso"
-                                    onClick={() => onEliminarCurso(row)}
-                                />
-                            </Tooltip>
+                            {canEditar ? (
+                                <Tooltip title="Editar curso">
+                                    <AntButton
+                                        type="text"
+                                        size="small"
+                                        icon={<EditOutlined />}
+                                        aria-label="Editar curso"
+                                        onClick={() => onEditarCurso(row)}
+                                        style={{ color: 'var(--accent-600, #d48806)' }}
+                                    />
+                                </Tooltip>
+                            ) : null}
+                            {canEliminar ? (
+                                <Tooltip title="Eliminar curso">
+                                    <AntButton
+                                        type="text"
+                                        size="small"
+                                        danger
+                                        icon={<DeleteOutlined />}
+                                        aria-label="Eliminar curso"
+                                        loading={deleteCursoLoading}
+                                        disabled={deleteCursoLoading}
+                                        onClick={() => requestDeleteCurso(row)}
+                                    />
+                                </Tooltip>
+                            ) : null}
                         </Flex>
                     ),
             },
         ],
-        [onEditarCurso, onEliminarCurso, onCrearCursoDesdeMateria],
+        [
+            onEditarCurso,
+            requestDeleteCurso,
+            onCrearCursoDesdeMateria,
+            deleteCursoLoading,
+            canCrear,
+            canEditar,
+            canEliminar,
+        ],
     );
 
     const tituloTabla = `Cursos del periodo (${filasOferta.length})`;
 
-    const extraCard = (
+    const headerActions = (
+        <button type="button" className="sd-btn sd-btn--outline" onClick={handleVolver}>
+            <ArrowLeftOutlined /> Volver
+        </button>
+    );
+
+    const extraCard = canCrear ? (
         <AntButton type="primary" icon={<PlusOutlined />} onClick={onNuevoCurso}>
             Nuevo curso
         </AntButton>
-    );
+    ) : null;
 
     return (
         <PageTemplate
@@ -521,7 +359,8 @@ const GestionHorariosPlantillaPage = () => {
                     parallelId={validParaleloId}
                     onCrearCurso={handleCrearCursoOferta}
                     onActualizarCurso={handleActualizarCursoOferta}
-                    onSaved={() => fetch(validParaleloId)}
+                    onSaved={() => refetchOferta()}
+                    canSubmit={cursoModal.isEdit ? canEditar : canCrear}
                 />
             ) : null}
         </PageTemplate>

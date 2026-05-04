@@ -1,11 +1,11 @@
-import { HorariosProvider } from '@application-institucional/horarios';
+import { HorariosPlantillaProvider } from '@application-institucional/horarios';
 import GestionHorariosPlantillaPage from '../pages/GestionHorariosPlantillaPage';
 
 const PlantillaConnector = () => {
     return (
-        <HorariosProvider>
+        <HorariosPlantillaProvider>
             <GestionHorariosPlantillaPage />
-        </HorariosProvider>
+        </HorariosPlantillaProvider>
     );
 };
 

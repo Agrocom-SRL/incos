@@ -10,7 +10,7 @@ const colorByKey = {
 
 const ProgresoGestionPanel = ({ progresoGestion }) => {
     return (
-        <Card size="small" title="Progreso de gestion">
+        <Card size="small" title="Progreso de gestión">
             <Space orientation="vertical" style={{ width: '100%' }}>
                 {(progresoGestion || []).map((item) => (
                     <div key={item.key}>

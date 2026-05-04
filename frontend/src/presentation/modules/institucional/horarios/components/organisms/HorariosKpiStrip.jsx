@@ -45,7 +45,7 @@ const HorariosKpiStrip = ({ kpis, variant = 'all' }) => {
                 <KpiCard
                     label="Conflictos"
                     value={kpis.conConflicto}
-                    sub="Choque en aulas"
+                    sub="Mismo aula y horario en más de un curso"
                     badgeText="Riesgo"
                     intent="danger"
                     percent={Math.round((kpis.conConflicto / total) * 100)}

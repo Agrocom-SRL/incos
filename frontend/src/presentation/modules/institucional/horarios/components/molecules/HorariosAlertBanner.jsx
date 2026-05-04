@@ -6,7 +6,7 @@ const HorariosAlertBanner = ({ incompletos = 0, conflictos = 0 }) => {
         <Alert
             type={conflictos > 0 ? 'error' : 'warning'}
             showIcon
-            title="Requiere atencion operativa"
+            title="Requiere atención operativa"
             description={`Incompletos: ${incompletos} | Conflictos: ${conflictos}`}
         />
     );
