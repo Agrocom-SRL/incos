@@ -49,7 +49,11 @@ export const createAppRouter = () => {
                 },
                 ...protectedRoutes.map((route) => ({
                   path: route.path,
-                  element: route.element,
+                  element: (
+                    <PrivateRoute permiso={route.permiso} accion={route.accion}>
+                      {route.element}
+                    </PrivateRoute>
+                  ),
                 })),
               ],
             },

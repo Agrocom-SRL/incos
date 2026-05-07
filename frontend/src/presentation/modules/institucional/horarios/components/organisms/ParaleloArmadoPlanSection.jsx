@@ -4,7 +4,7 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, Flex, Form, message, Modal, Select, Space, Typography } from 'antd';
-import { Button } from '@atoms';
+import { ActionButton } from '@atoms';
 import DocenteHorarioSemanalGrid from '@docentes/components/organisms/DocenteHorarioSemanalGrid';
 import {
     getSabadoArmadoGridRangeMinutes,
@@ -183,12 +183,24 @@ const ParaleloArmadoPlanSection = ({
                 <Space wrap>
                     {editable ? (
                         <>
-                            <Button variant="secondary" buttonStyle="outlined" onClick={() => setAddOpen(true)}>
+                            <ActionButton
+                                permiso="institucional.horario.armado"
+                                accion="EDITAR"
+                                variant="secondary"
+                                buttonStyle="outlined"
+                                onClick={() => setAddOpen(true)}
+                            >
                                 Añadir bloque
-                            </Button>
-                            <Button variant="primary" onClick={handleSaveClick} loading={persistLoading}>
+                            </ActionButton>
+                            <ActionButton
+                                permiso="institucional.horario.armado"
+                                accion="EDITAR"
+                                variant="primary"
+                                onClick={handleSaveClick}
+                                loading={persistLoading}
+                            >
                                 Guardar cambios
-                            </Button>
+                            </ActionButton>
                         </>
                     ) : (
                         <Text type="secondary">Solo lectura</Text>

@@ -1,4 +1,4 @@
-import { Alert, Col, Divider, Flex, Row, Typography, Button as AntButton } from 'antd';
+import { Alert, Col, Divider, Flex, Row, Typography } from 'antd';
 import { TeamOutlined } from '@ant-design/icons';
 import { Card, ActionButton } from '@atoms';
 import { resumenBloquesCurso } from '@application-institucional/horarios/utils/resumenBloquesCurso';
@@ -69,13 +69,15 @@ const ParaleloCursosTabSection = ({ draftSchedules, missingSubjects, setTab, onO
                 headerAccentHex={c.cursoColorHex}
                 title={titulo}
                 extra={
-                  <AntButton
-                    type="primary"
+                  <ActionButton
+                    permiso="docentes.asignar"
+                    accion="EDITAR"
+                    variant="primary"
                     icon={<TeamOutlined />}
                     onClick={() => onOpenDocenteAsignacion({ ...c, docente: docenteActual })}
                   >
                     {docenteActual ? 'Reasignar docente' : 'Asignar docente'}
-                  </AntButton>
+                  </ActionButton>
                 }
               >
                 <Flex vertical gap={6}>

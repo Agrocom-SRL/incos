@@ -120,7 +120,9 @@ INSERT INTO roles_permisos (rol_id, permiso_id, accion, activo) VALUES
 
 -- ROL 8: ESTUDIANTE
 (8,10,'LISTAR',TRUE),(8,6,'LISTAR',TRUE),(8,6,'DETALLE',TRUE),(8,11,'LISTAR',TRUE),(8,11,'DETALLE',TRUE),(8,12,'CREAR',TRUE),(8,18,'LISTAR',TRUE),
-(8,21,'LISTAR',TRUE),(8,35,'LISTAR',TRUE),(8,35,'DETALLE',TRUE),(8,37,'LISTAR',TRUE),(8,38,'LISTAR',TRUE),(8,39,'CREAR',TRUE);
+(8,21,'LISTAR',TRUE),(8,35,'LISTAR',TRUE),(8,35,'DETALLE',TRUE),(8,37,'LISTAR',TRUE),(8,38,'LISTAR',TRUE),(8,39,'CREAR',TRUE),
+-- Catálogos de referencia API (país, ubicación, listas formularios): validacion sistema.catalogo.referencia + LISTAR
+(2,101,'LISTAR',TRUE),(3,101,'LISTAR',TRUE),(4,101,'LISTAR',TRUE),(5,101,'LISTAR',TRUE),(6,101,'LISTAR',TRUE),(7,101,'LISTAR',TRUE),(8,101,'LISTAR',TRUE);
 
 SET FOREIGN_KEY_CHECKS = 1;
 
