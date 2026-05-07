@@ -5,6 +5,7 @@ export { UpdateTeacherController } from './update.controller.js';
 export { DeleteTeacherController } from './delete.controller.js';
 export { ListTeacherAssignmentsController } from './list-assignments.controller.js';
 export { CreateTeacherAssignmentController } from './create-assignment.controller.js';
+export { AssignTeacherToCourseController } from './assign-teacher-course.controller.js';
 export { UpdateTeacherAssignmentController } from './update-assignment.controller.js';
 export { DeleteTeacherAssignmentController } from './delete-assignment.controller.js';
 export { ListPlanesHabilitadosDocenteController } from './list-planes-docente.controller.js';

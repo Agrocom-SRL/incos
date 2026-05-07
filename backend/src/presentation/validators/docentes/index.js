@@ -2,6 +2,7 @@ export { createTeacherValidator } from './create-teacher.validator.js';
 export { updateTeacherValidator } from './update-teacher.validator.js';
 export { listTeacherAssignmentsValidator } from './list-teacher-assignments.validator.js';
 export { createTeacherAssignmentValidator } from './create-teacher-assignment.validator.js';
+export { assignTeacherToCourseValidator } from './assign-teacher-course.validator.js';
 export { updateTeacherAssignmentValidator } from './update-teacher-assignment.validator.js';
 export { listPlanesDocenteValidator } from './list-planes-docente.validator.js';
 export { listCursosDisponiblesDocenteValidator } from './list-cursos-disponibles-docente.validator.js';

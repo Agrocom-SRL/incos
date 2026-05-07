@@ -45,7 +45,7 @@ const ParaleloPlanSemanaCell = ({
                 const chipStyle = rgb
                     ? {
                         borderColor: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 1)`,
-                        backgroundColor: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.45)`,
+                        backgroundColor: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.38)`,
                         boxShadow: `inset 0 0 0 1px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.2)`,
                     }
                     : undefined;
@@ -80,16 +80,16 @@ const ParaleloPlanSemanaCell = ({
                         <div className="da-cal-semanal__chip-curso">
                             {ev.materiaNombre || ev.materiaSigla || `Asignación ${ev.cursoCodigo}`}
                         </div>
-                        {ev.materiaNombre && ev.materiaSigla ? (
-                            <div className="da-cal-semanal__chip-line" style={{ fontSize: 11, opacity: 0.85 }}>
-                                {ev.materiaSigla}
-                            </div>
-                        ) : null}
                         {ev.carrera ? <div className="da-cal-semanal__chip-line">{ev.carrera}</div> : null}
                         {ev.paralelo ? (
                             <div className="da-cal-semanal__chip-line text-bold">
                                 {ev.paralelo}
                                 {ev.turno ? ` · ${ev.turno}` : ''}
+                            </div>
+                        ) : null}
+                        {ev.docente ? (
+                            <div className="da-cal-semanal__chip-line">
+                                Docente: {editable ? ev.docente : <strong>{ev.docente}</strong>}
                             </div>
                         ) : null}
                         {!editable && ev.aula ? (

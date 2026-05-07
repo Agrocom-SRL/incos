@@ -31,7 +31,7 @@ export function paraleloScheduleToCourseSchedules(apiPayload, ctx = {}) {
         materiaNombre: curso.materiaNombre ?? null,
         materiaSigla: curso.materiaSigla ?? null,
         docenteId: curso.docenteId ?? null,
-        docente: curso.docenteNombre ?? null,
+        docente: curso.docenteNombre ?? curso.docente ?? null,
         horasSemanalesPlan: curso.horasSemanalesPlan ?? null,
         bloques: (curso.horarios || []).map((h) => ({
             orden: h.ordenSecuencia,
