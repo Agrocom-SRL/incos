@@ -27,12 +27,28 @@ export function getTurnoGridRangeMinutes(turnoRaw) {
 }
 
 /**
+ * Inicios de franja (minutos desde medianoche) que existen en el seed `horarios`
+ * para SÁBADO / TARDE / CLASES. No son un aritmético +45 continuo: tras 16:30–17:15
+ * el catálogo salta a 17:30–18:15 (no hay 17:00 ni 18:00 como inicio de bloque).
+ */
+export const SABADO_CLASES_TARDE_SLOT_STARTS_MINUTES = [
+    15 * 60, // 15:00
+    15 * 60 + 45, // 15:45
+    16 * 60 + 30, // 16:30
+    17 * 60 + 30, // 17:30
+    18 * 60 + 15, // 18:15
+];
+
+/**
  * Sábado: sin turno institucional; solo franja tarde–noche (sin mañana).
  * Independiente del rango lun–vie del paralelo.
  *
- * @returns {{ start: number, end: number }}
+ * @returns {{ start: number, end: number, fixedSlotStartsMinutes: number[] }}
  */
 export function getSabadoArmadoGridRangeMinutes() {
-    // Seed `horarios` sábado: 15:00–19:00 (bloques de 45 min)
-    return { start: 15 * 60, end: 19 * 60 };
+    return {
+        start: 15 * 60,
+        end: 19 * 60,
+        fixedSlotStartsMinutes: SABADO_CLASES_TARDE_SLOT_STARTS_MINUTES,
+    };
 }

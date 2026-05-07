@@ -33,6 +33,8 @@ export class GetParaleloHorariosUseCase {
    * @param {Object} params.classroomRepository - Repositorio de aulas
    * @param {Object} params.careerRepository - Repositorio de carreras
    * @param {Object} params.periodRepository - Repositorio de periodos
+   * @param {Object} params.teacherAssignmentRepository - Repositorio de asignaciones docentes
+   * @param {Object} params.teacherRepository - Repositorio de docentes
    * @param {ILogger} params.logger - Logger para registro de eventos
    */
   constructor({
@@ -45,6 +47,8 @@ export class GetParaleloHorariosUseCase {
     classroomRepository,
     careerRepository,
     periodRepository,
+    teacherAssignmentRepository,
+    teacherRepository,
     logger,
   }) {
     this.parallelRepository = parallelRepository;
@@ -56,6 +60,8 @@ export class GetParaleloHorariosUseCase {
     this.classroomRepository = classroomRepository;
     this.careerRepository = careerRepository;
     this.periodRepository = periodRepository;
+    this.teacherAssignmentRepository = teacherAssignmentRepository;
+    this.teacherRepository = teacherRepository;
     this.logger = logger;
   }
 
@@ -182,6 +188,30 @@ export class GetParaleloHorariosUseCase {
             );
             const cursosHorarios = cursosHorariosResult.courseSchedules || [];
 
+            // 3c.1 Obtener asignación docente vigente del curso (si existe)
+            let docenteId = null;
+            let docenteNombre = null;
+            try {
+              const asignacionesResult = await this.teacherAssignmentRepository.findAll(
+                { courseId: curso.id, active: true },
+                { page: 1, limit: 1 },
+                null,
+              );
+              const firstAsignacion = asignacionesResult?.teacherAssignments?.[0] || null;
+              docenteId = firstAsignacion?.teacherId ?? null;
+              if (docenteId) {
+                const docente = await this.teacherRepository.findById(docenteId);
+                docenteNombre = docente
+                  ? [docente.firstName, docente.lastName, docente.motherLastName].filter(Boolean).join(' ')
+                  : null;
+              }
+            } catch (e) {
+              this.logger.warn('[Académico] No se pudo cargar asignación docente del curso', {
+                cursoId: curso.id,
+                error: e.message,
+              });
+            }
+
             this.logger.debug('[Académico] Cursos horarios encontrados', {
               cursoId: curso.id,
               count: cursosHorarios.length,
@@ -253,6 +283,9 @@ export class GetParaleloHorariosUseCase {
               materiaNombre: materia?.name ?? null,
               materiaSigla: materia?.acronym ?? null,
               horasSemanalesPlan: asignaturaPlan?.weeklyHours ?? null,
+              gestionPlanId: curso.managementPlanId ?? null,
+              docenteId,
+              docenteNombre,
               color: curso.colorHex || null,
               horarios: horariosValidos,
             };

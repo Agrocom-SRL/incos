@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useParaleloCursosOfertaApi } from '@application-academico/paralelos/hooks';
 import { getUseCase } from '@container';
 import { useDeleteItem } from '@application/utils/useDeleteItem';
@@ -9,7 +9,6 @@ import { useHorariosOfertaPermisos } from '../useHorariosOfertaPermisos';
 export const useGestionHorariosPlantillaState = () => {
     const { canCrear, canEditar, canEliminar } = useHorariosOfertaPermisos();
     const navigate = useNavigate();
-    const location = useLocation();
     const { paraleloId: paraleloIdParam } = useParams();
     const [searchParams] = useSearchParams();
     const queryParalelo = searchParams.get('paralelo');
@@ -27,17 +26,6 @@ export const useGestionHorariosPlantillaState = () => {
         cursoEdit: null,
         prefillAsignaturaPlanId: undefined,
     });
-
-    useEffect(() => {
-        if (location.pathname.endsWith('/horarios/plantilla') && queryParalelo) {
-            const next = new URLSearchParams(searchParams);
-            next.delete('paralelo');
-            const suffix = next.toString();
-            navigate(`/institucional/horarios/paralelo/${queryParalelo}/gestion${suffix ? `?${suffix}` : ''}`, {
-                replace: true,
-            });
-        }
-    }, [location.pathname, queryParalelo, navigate, searchParams]);
 
     useEffect(() => {
         if (validParaleloId) {

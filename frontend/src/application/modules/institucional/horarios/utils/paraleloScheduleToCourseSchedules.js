@@ -25,10 +25,13 @@ export function paraleloScheduleToCourseSchedules(apiPayload, ctx = {}) {
 
     return rows.map((curso) => ({
         cursoId: curso.cursoId,
+        gestionPlanId: curso.gestionPlanId ?? null,
         cursoCodigo: curso.materiaSigla || curso.materiaNombre || '—',
         cursoColorHex: curso.color ?? null,
         materiaNombre: curso.materiaNombre ?? null,
         materiaSigla: curso.materiaSigla ?? null,
+        docenteId: curso.docenteId ?? null,
+        docente: curso.docenteNombre ?? null,
         horasSemanalesPlan: curso.horasSemanalesPlan ?? null,
         bloques: (curso.horarios || []).map((h) => ({
             orden: h.ordenSecuencia,

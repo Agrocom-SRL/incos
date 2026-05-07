@@ -148,6 +148,11 @@
     border: 1px solid var(--color-border);
 }
 
+/* Tinte viene del inline style; refuerzo legibilidad del subtítulo sobre fondo coloreado */
+.horarios-table-group__heading--carrera .horarios-table-group__sub {
+    color: var(--ant-color-text-secondary);
+}
+
 .horarios-table-group__sub {
     font-size: 14px;
 }

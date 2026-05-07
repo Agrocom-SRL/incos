@@ -1,34 +1,68 @@
-/**
- * InscripcionesDetail - Página para ver el detalle de una inscripción
- * 
- * Single Responsibility: Mostrar los datos completos de la inscripción recuperados
- * 
- * Atomic Design: Page
- * - Orquesta datos + componentes
- * - Pasa HEADER al Template (estructura)
- * - Muestra los datos de la inscripción en formato de "print"
- * 
- * Arquitectura:
- * Page → Template (header) + Contenido (datos de la inscripción)
- * - Template maneja: estructura/layout (header, content)
- * - Contenido muestra: datos de la inscripción y sus relaciones
- */
-
-import { useMemo, useEffect, useState, useCallback } from 'react';
+import { useMemo, useCallback } from 'react';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { App } from 'antd';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { useInscripcionDetailContext, useGenerateBoletaInscripcion } from '@application-inscripciones/hooks';
 import { useAuthContext } from '@application-auth';
-import { Descriptions, Card, Spin, Alert, Empty, Tag } from 'antd';
+import { Spin, Alert, Empty, Tag, Tabs, Tooltip, Table } from 'antd';
 import { Button } from '@atoms';
-import { DownloadOutlined, FileTextOutlined, ArrowLeftOutlined, EditOutlined } from '@ant-design/icons';
+import {
+  DownloadOutlined,
+  FileTextOutlined,
+  ArrowLeftOutlined,
+  EditOutlined,
+  BookOutlined,
+  UserOutlined,
+  CalendarOutlined,
+  EnvironmentOutlined,
+} from '@ant-design/icons';
+import DocenteHorarioSemanalGrid from '@docentes/components/organisms/DocenteHorarioSemanalGrid';
+import '@presentation/styles/pages/detail-page.css';
+
+const Field = ({ label, children, span = 1 }) => (
+  <div className={`sd-field sd-field--span-${span}`}>
+    <span className="sd-field__label">{label}</span>
+    <span className="sd-field__value">{children ?? '—'}</span>
+  </div>
+);
+
+const InfoCard = ({ title, icon, extra, children, cols = 2, headVariant }) => (
+  <div className="sd-card">
+    <div className={`sd-card__head${headVariant ? ` sd-card__head--${headVariant}` : ''}`}>
+      <span className="sd-card__title">
+        {icon && <span className="sd-card__title-icon">{icon}</span>}
+        {title}
+      </span>
+      {extra && <div className="sd-card__extra">{extra}</div>}
+    </div>
+    <div className={`sd-card__body sd-card__body--cols-${cols}`}>{children}</div>
+  </div>
+);
+
+const initialsFromName = (name) => {
+  const parts = String(name || '')
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+  if (!parts.length) return 'IN';
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return `${parts[0][0] || ''}${parts[1][0] || ''}`.toUpperCase();
+};
+
+const normalizeAulaLabel = (aula) => {
+  if (!aula) return null;
+  if (typeof aula === 'string') return aula;
+  if (typeof aula === 'object') {
+    return aula.nombre || aula.codigo || aula.name || aula.code || null;
+  }
+  return null;
+};
 
 const InscripcionesDetail = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { id } = useParams(); // Obtener ID directamente de la URL (fuente de verdad)
+  const { id } = useParams();
   const { message } = App.useApp();
   const { hasPermiso } = useAuthContext();
 
@@ -42,32 +76,12 @@ const InscripcionesDetail = () => {
     error = null,
   } = useInscripcionDetailContext();
 
-  // Hook para generar boleta de inscripción
-  const { generateBoletaInscripcion, loading: generatingBoleta, error: errorGeneratingBoleta } = useGenerateBoletaInscripcion();
+  const { generateBoletaInscripcion, loading: generatingBoleta } = useGenerateBoletaInscripcion();
 
-  // Redirigir a la lista solo si hay un error definitivo (no mientras carga)
-  // No redirigir automáticamente si no hay inscripción, dejar que el componente muestre el estado Empty
-  useEffect(() => {
-    // Solo redirigir si ya terminó de cargar Y hay un error específico (no solo falta de datos)
-    // No redirigir si está cargando o si simplemente no hay datos (el componente mostrará Empty)
-    if (!loading && error) {
-      // Solo redirigir si es un error real (no solo falta de datos)
-      // Por ejemplo, un error 404 o de servidor
-      navigate('/matricula/listar', { replace: true });
-    }
-  }, [loading, error, navigate]);
-
-  // Obtener el formulario de inscripción (boleta PDF) desde los datos de la inscripción
-  // Soporta respuesta en raíz o anidada en .data (según capa API)
   const boletaInscripcion =
     inscripcion?.formularioInscripcion ?? inscripcion?.data?.formularioInscripcion ?? null;
-
-  // Obtener studentId una vez para descarga y generación
   const studentId = inscripcion?.student?.id || inscripcion?.enrollment?.studentId;
 
-  // Descargar o generar boleta: siempre se llama al caso de uso (API). El backend verifica
-  // si el archivo existe en disco; si existe lo retorna sin regenerar, si no lo genera.
-  // boletaInscripcion solo se usa para mostrar la tarjeta "Descargar" vs "Generar".
   const handleDownloadOrGenerateBoleta = async () => {
     if (!studentId) {
       message.error('No se puede continuar: ID del estudiante no disponible');
@@ -93,137 +107,47 @@ const InscripcionesDetail = () => {
     }
   };
 
-  // Handler para volver atrás
-  // Si viene del detalle de estudiante, volver allí; si no, a la lista de inscripciones
   const handleVolverAtras = useCallback(() => {
-    // Intentar obtener studentId del state de navegación o de los datos de la inscripción
     const studentIdFromState = location.state?.studentId;
     const studentIdFromData = inscripcion?.student?.id || inscripcion?.enrollment?.studentId;
-    const studentId = studentIdFromState || studentIdFromData;
-    
-    if (studentId) {
-      // Si hay studentId, significa que viene del detalle de estudiante o podemos navegar allí
-      navigate(`/estudiantes/${studentId}`);
+    const targetStudentId = studentIdFromState || studentIdFromData;
+
+    if (targetStudentId) {
+      navigate(`/estudiantes/${targetStudentId}`);
     } else {
-      // Si no, volver a la lista de inscripciones
       navigate('/matricula/listar');
     }
   }, [navigate, location.state, inscripcion]);
 
-  // Ir al formulario de edición (misma ruta que el icono Editar de la lista)
   const handleEditar = useCallback(() => {
     if (!id) return;
     navigate(`/inscripciones/${id}/editar`);
   }, [navigate, id]);
 
-  // Configurar breadcrumb items
   const breadcrumbItems = useMemo(() => [
     { title: 'Inicio', href: '/' },
     { title: 'Lista de Matrículas', href: '/matricula/listar' },
     { title: 'Detalle de la Inscripción' },
   ], []);
 
-  // Misma lógica que la lista: solo NUEVO, REINGRESO y CONTINUIDAD son editables
   const tipoInscripcion = inscripcion?.enrollment?.tipoInscripcion ?? inscripcion?.enrollment?.tipo_inscripcion ?? null;
   const canEdit = tipoInscripcion && ['NUEVO', 'REINGRESO', 'CONTINUIDAD'].includes(tipoInscripcion);
 
-  // Acciones del header (Button de @atoms para variant warning/default)
-  const headerActions = useMemo(() => (
-    <>
-      {puedeEditarInscripcion ? (
-        <Button
-          variant="warning"
-          icon={<EditOutlined />}
-          onClick={handleEditar}
-          disabled={!canEdit}
-          style={{ marginRight: 8 }}
-        >
-          Editar
-        </Button>
-      ) : null}
-      <Button
-        variant="default"
-        icon={<ArrowLeftOutlined />}
-        onClick={handleVolverAtras}
-      >
-        Volver
-      </Button>
-    </>
-  ), [handleVolverAtras, handleEditar, canEdit, puedeEditarInscripcion]);
+  const headerActions = (
+    <button type="button" className="sd-btn sd-btn--outline" onClick={handleVolverAtras}>
+      <ArrowLeftOutlined /> Volver
+    </button>
+  );
 
-  // Si está cargando
-  if (loading) {
-    return (
-      <PageTemplate
-        header={
-          <PageHeader
-            title="Detalle de la Inscripción"
-            breadcrumbItems={breadcrumbItems}
-            actions={headerActions}
-          />
-        }
-      >
-        <div style={{ textAlign: 'center', padding: '50px' }}>
-          <Spin size="large">
-            <div style={{ minHeight: '200px' }}>
-              <p>Cargando datos de la inscripción...</p>
-            </div>
-          </Spin>
-        </div>
-      </PageTemplate>
-    );
-  }
-
-  // Si hay error
-  if (error) {
-    return (
-      <PageTemplate
-        header={
-          <PageHeader
-            title="Detalle de la Inscripción"
-            breadcrumbItems={breadcrumbItems}
-            actions={headerActions}
-          />
-        }
-      >
-        <Alert
-          title="Error al cargar la inscripción"
-          description={error}
-          type="error"
-          showIcon
-        />
-      </PageTemplate>
-    );
-  }
-
-  // Si no hay inscripción o datos básicos
-  if (!inscripcion || !inscripcion.enrollment) {
-    return (
-      <PageTemplate
-        header={
-          <PageHeader
-            title="Detalle de la Inscripción"
-            breadcrumbItems={breadcrumbItems}
-            actions={headerActions}
-          />
-        }
-      >
-        <Empty description="No se encontró información de la inscripción" />
-      </PageTemplate>
-    );
-  }
-
-  // Extraer todas las entidades del contexto
-  const { 
-    enrollment, 
-    studentAcademicData, 
-    management, 
-    student, 
+  const {
+    enrollment,
+    studentAcademicData,
+    management,
+    student,
     career,
-    enrollmentSubjects = [] // Por ahora vacío, se implementará después
-  } = inscripcion;
+    enrollmentSubjects = [],
+  } = inscripcion ?? {};
 
-  // Función para obtener el color del tag según el estado
   const getStatusColor = (status) => {
     const statusColors = {
       'INSCRITO': 'blue',
@@ -235,7 +159,6 @@ const InscripcionesDetail = () => {
     return statusColors[status] || 'default';
   };
 
-  // Función para obtener el color del tag según el tipo de inscripción
   const getEnrollmentTypeColor = (type) => {
     const typeColors = {
       'NUEVO': 'green',
@@ -247,240 +170,341 @@ const InscripcionesDetail = () => {
     return typeColors[type] || 'default';
   };
 
+  const nombreCompleto = [student?.nombres, student?.apellidoPaterno, student?.apellidoMaterno]
+    .filter(Boolean)
+    .join(' ')
+    .trim();
+
+  const avatarText = initialsFromName(nombreCompleto || `INS-${enrollment?.id || ''}`);
+
+  const columnasMaterias = useMemo(
+    () => [
+      {
+        title: 'Sigla',
+        dataIndex: 'materiaSigla',
+        key: 'materiaSigla',
+        width: 110,
+        render: (v) => v || '—',
+      },
+      {
+        title: 'Materia',
+        dataIndex: 'materiaNombre',
+        key: 'materiaNombre',
+        render: (v) => v || '—',
+      },
+      {
+        title: 'Estado',
+        dataIndex: 'status',
+        key: 'status',
+        width: 130,
+        render: (status) => (status ? <Tag color={getStatusColor(status)}>{status}</Tag> : '—'),
+      },
+      {
+        title: 'Docente',
+        key: 'docente',
+        render: (_, row) => row.docente?.nombreCompleto || 'Sin docente asignado',
+      },
+      {
+        title: 'Horarios',
+        key: 'horarios',
+        width: 180,
+        render: (_, row) => {
+          const total = Array.isArray(row.horarios) ? row.horarios.length : 0;
+          return total > 0 ? `${total} bloque(s)` : 'Sin bloques';
+        },
+      },
+    ],
+    [],
+  );
+
+  const materiasConHorario = useMemo(
+    () =>
+      (enrollmentSubjects || []).filter(
+        (materia) => Array.isArray(materia?.horarios) && materia.horarios.length > 0,
+      ),
+    [enrollmentSubjects],
+  );
+
+  const courseSchedules = useMemo(
+    () =>
+      materiasConHorario.map((materia) => ({
+        cursoId: materia.courseId ?? materia.cursoId ?? materia.id ?? null,
+        cursoCodigo: materia.courseCode ?? materia.cursoCodigo ?? materia.curso ?? materia.materiaSigla ?? '—',
+        cursoColorHex: materia.colorHex ?? materia.color ?? null,
+        materiaNombre: materia.materiaNombre ?? materia.name ?? 'Materia sin nombre',
+        materiaSigla: materia.materiaSigla ?? materia.sigla ?? null,
+        paralelo:
+          materia.paralelo?.nombre ??
+          materia.parallel?.nombre ??
+          materia.parallelName ??
+          enrollment?.parallel?.nombre ??
+          enrollment?.parallelName ??
+          null,
+        turno:
+          materia.paralelo?.turno ??
+          materia.parallel?.turno ??
+          materia.shift ??
+          enrollment?.parallel?.turno ??
+          enrollment?.shift ??
+          null,
+        docente: materia.docente?.nombreCompleto ?? null,
+        bloques: (materia.horarios || [])
+          .map((item, idx) => {
+            const horario = item?.horario || item;
+            if (!horario?.dia || !horario?.horaInicio) return null;
+            return {
+              cursoHorarioId: item?.id ?? `${materia.id || materia.materiaSigla || 'm'}-${idx}`,
+              dia: horario.dia,
+              horaInicio: horario.horaInicio,
+              horaFin: horario.horaFin,
+              aula: normalizeAulaLabel(item?.aula),
+              orden: item?.ordenSecuencia ?? item?.orden ?? idx + 1,
+            };
+          })
+          .filter(Boolean),
+      })),
+    [materiasConHorario, enrollment],
+  );
+
+  const tabItems = useMemo(
+    () => [
+      {
+        key: 'inscripcion',
+        label: (
+          <span className="sd-tab-label">
+            <BookOutlined /> Inscripción
+          </span>
+        ),
+        children: (
+          <div className="sd-tab-body">
+            <InfoCard title="Estudiante" icon={<UserOutlined />} cols={3} headVariant="resumen">
+              <Field label="Código">{student?.codigoEstudiante}</Field>
+              <Field label="CI">
+                {student?.ci ? `${student.ci}${student.expedicion ? ` ${student.expedicion}` : ''}` : '—'}
+              </Field>
+              <Field label="Género">{student?.genero}</Field>
+              <Field label="Nombre completo" span={2}>{nombreCompleto || '—'}</Field>
+              <Field label="Celular">{student?.celular}</Field>
+            </InfoCard>
+
+            <InfoCard title="Inscripción y carrera" icon={<EnvironmentOutlined />} cols={3}>
+              <Field label="Tipo de inscripción">
+                {enrollment?.tipoInscripcion ? (
+                  <Tag color={getEnrollmentTypeColor(enrollment.tipoInscripcion)} style={{ margin: 0 }}>
+                    {enrollment.tipoInscripcion}
+                  </Tag>
+                ) : '—'}
+              </Field>
+              <Field label="Estado de registro">
+                {studentAcademicData?.estadoRegistro ? (
+                  <Tag color={studentAcademicData.estadoRegistro === 'ADMITIDO' ? 'success' : 'warning'} style={{ margin: 0 }}>
+                    {studentAcademicData.estadoRegistro}
+                  </Tag>
+                ) : '—'}
+              </Field>
+              <Field label="Tipo de gestión">{management?.tipo || '—'}</Field>
+              <Field label="Gestión">
+                {management?.nombre
+                  ? `${management.nombre}${management.anio ? ` (${management.anio})` : ''}`
+                  : '—'}
+              </Field>
+              <Field label="Carrera código">{career?.codigo || '—'}</Field>
+              <Field label="Carrera">{career?.nombre || '—'}</Field>
+              <Field label="Título otorgado" span={3}>{career?.tituloOtorgado || '—'}</Field>
+              <Field label="Materias inscritas" span={3}>
+                {enrollmentSubjects.length > 0 ? (
+                  <span className="sd-badge sd-badge--blue">{enrollmentSubjects.length} materia(s)</span>
+                ) : '—'}
+              </Field>
+            </InfoCard>
+          </div>
+        ),
+      },
+      {
+        key: 'materias',
+        label: (
+          <span className="sd-tab-label">
+            <BookOutlined /> Materias
+          </span>
+        ),
+        children: (
+          <div className="sd-tab-body">
+            {enrollmentSubjects.length === 0 ? (
+              <div className="sd-empty">
+                <BookOutlined className="sd-empty__icon" />
+                <p className="sd-empty__text">No hay materias inscritas para esta inscripción</p>
+              </div>
+            ) : (
+              <InfoCard title={`Materias inscritas (${enrollmentSubjects.length})`} icon={<BookOutlined />} cols={1}>
+                <Table
+                  dataSource={enrollmentSubjects}
+                  columns={columnasMaterias}
+                  rowKey={(row, idx) => row.id || `${row.materiaSigla || 'materia'}-${idx}`}
+                  size="small"
+                  pagination={false}
+                />
+              </InfoCard>
+            )}
+          </div>
+        ),
+      },
+      {
+        key: 'horarios',
+        label: (
+          <span className="sd-tab-label">
+            <CalendarOutlined /> Horarios
+          </span>
+        ),
+        children: (
+          <div className="sd-tab-body">
+            <section className="da-cal-semanal-section" aria-labelledby="inscripcion-horarios-title">
+              <header className="da-cal-semanal-section__head">
+                <CalendarOutlined className="da-cal-semanal-section__icon" aria-hidden />
+                <h2 id="inscripcion-horarios-title" className="da-cal-semanal-section__title">
+                  Calendario semanal de materias inscritas
+                </h2>
+              </header>
+              <p className="da-cal-semanal-section__lede">
+                Vista consolidada de bloques por materia, usando el mismo formato de grilla semanal del detalle de docentes.
+              </p>
+              {courseSchedules.length > 0 ? (
+                <DocenteHorarioSemanalGrid courseSchedules={courseSchedules} />
+              ) : (
+                <Empty
+                  image={Empty.PRESENTED_IMAGE_SIMPLE}
+                  description="Sin horarios asignados en las materias inscritas"
+                />
+              )}
+            </section>
+          </div>
+        ),
+      },
+    ],
+    [
+      enrollment,
+      studentAcademicData,
+      management,
+      student,
+      career,
+      enrollmentSubjects,
+      columnasMaterias,
+      courseSchedules,
+      nombreCompleto,
+    ],
+  );
+
+  if (loading) {
+    return (
+      <PageTemplate header={<PageHeader title="Detalle de la Inscripción" breadcrumbItems={breadcrumbItems} actions={headerActions} />}>
+        <div className="sd-loading">
+          <Spin size="large" />
+          <p>Cargando datos de la inscripción…</p>
+        </div>
+      </PageTemplate>
+    );
+  }
+
+  if (error) {
+    return (
+      <PageTemplate header={<PageHeader title="Detalle de la Inscripción" breadcrumbItems={breadcrumbItems} actions={headerActions} />}>
+        <Alert
+          title="Error al cargar la inscripción"
+          description={error}
+          type="error"
+          showIcon
+        />
+      </PageTemplate>
+    );
+  }
+
+  if (!inscripcion || !inscripcion.enrollment) {
+    return (
+      <PageTemplate header={<PageHeader title="Detalle de la Inscripción" breadcrumbItems={breadcrumbItems} actions={headerActions} />}>
+        <Empty description="No se encontró información de la inscripción" />
+      </PageTemplate>
+    );
+  }
+
   return (
-      <PageTemplate
-        header={
-          <PageHeader
-            title={`Detalle de la Inscripción #${enrollment?.id || 'N/A'}`}
-            breadcrumbItems={breadcrumbItems}
-            actions={headerActions}
-          />
-        }
-      >
-      <div style={{ padding: '24px' }}>
-        {/* Boleta PDF — mismo permiso que POST /inscripciones/:id/generar-formulario (GENERAR_PDF). */}
-        {puedeGenerarBoletaPdf ? (
-          boletaInscripcion ? (
-            <Card 
-              style={{ marginBottom: '24px', backgroundColor: '#f0f9ff', border: '1px solid #1890ff' }}
-              styles={{ body: { padding: '16px' } }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <h3 style={{ margin: 0, color: '#1890ff', fontSize: '16px' }}>
-                    📄 Documento de Inscripción Disponible
-                  </h3>
-                  <p style={{ margin: '4px 0 0 0', color: '#666', fontSize: '14px' }}>
-                    Puede descargar la Boleta de Inscripción en formato PDF
-                  </p>
-                </div>
-                <Button
-                  variant="primary"
-                  size="large"
-                  icon={<DownloadOutlined />}
-                  onClick={handleDownloadOrGenerateBoleta}
-                  loading={generatingBoleta}
-                  disabled={generatingBoleta || !studentId}
-                >
-                  {generatingBoleta ? 'Preparando...' : 'Descargar Boleta de Inscripción'}
-                </Button>
+    <PageTemplate
+      header={
+        <PageHeader
+          title="Detalle de la Inscripción"
+          breadcrumbItems={breadcrumbItems}
+          actions={headerActions}
+        />
+      }
+    >
+      <div className="sd">
+        <div className="sd-profile">
+          {puedeEditarInscripcion ? (
+            <Tooltip title="Editar inscripción">
+              <button
+                type="button"
+                className="sd-profile__edit-btn"
+                onClick={handleEditar}
+                aria-label="Editar inscripción"
+                disabled={!canEdit}
+              >
+                <EditOutlined />
+              </button>
+            </Tooltip>
+          ) : null}
+
+          <div className="sd-profile__identity">
+            <div className="sd-profile__avatar-wrap">
+              <div className="sd-profile__avatar sd-profile__avatar--default">{avatarText}</div>
+              <span className="sd-profile__status-dot" />
+            </div>
+            <div className="sd-profile__name-block">
+              <h1 className="sd-profile__name">{nombreCompleto || 'Estudiante sin nombre'}</h1>
+              <div className="sd-profile__meta">
+                <p className="sd-profile__sub">
+                  <BookOutlined /> Resumen de matrícula
+                </p>
+                {tipoInscripcion ? (
+                  <span className="sd-profile__admission-pill sd-profile__admission-pill--default">
+                    {tipoInscripcion}
+                  </span>
+                ) : null}
               </div>
-            </Card>
-          ) : (
-            <Card 
-              style={{ marginBottom: '24px', backgroundColor: '#fff7e6', border: '1px solid #faad14' }}
-              styles={{ body: { padding: '16px' } }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <h3 style={{ margin: 0, color: '#faad14', fontSize: '16px' }}>
-                    📋 Documento de Inscripción No Generado
-                  </h3>
-                  <p style={{ margin: '4px 0 0 0', color: '#666', fontSize: '14px' }}>
-                    Puede generar y descargar la Boleta de Inscripción en formato PDF. Este proceso puede tardar unos momentos.
-                  </p>
-                </div>
-                <Button
-                  variant="primary"
-                  size="large"
-                  icon={<FileTextOutlined />}
-                  onClick={handleDownloadOrGenerateBoleta}
-                  loading={generatingBoleta}
-                  disabled={generatingBoleta || !studentId}
-                >
-                  {generatingBoleta ? 'Generando...' : 'Generar Boleta de Inscripción'}
-                </Button>
-              </div>
-            </Card>
-          )
-        ) : null}
+            </div>
+          </div>
 
-        {/* Datos de la Inscripción */}
-        <Card 
-          title="Datos de la Inscripción"
-          style={{ marginBottom: '24px' }}
-        >
-          <Descriptions column={2} bordered>
-            <Descriptions.Item label="Tipo de Inscripción">
-              {enrollment?.tipoInscripcion ? (
-                <Tag color={getEnrollmentTypeColor(enrollment.tipoInscripcion)}>
-                  {enrollment.tipoInscripcion}
-                </Tag>
-              ) : 'N/A'}
-            </Descriptions.Item>
-            <Descriptions.Item label="Gestión">
-              {management?.nombre ? (
-                <span>{management.nombre} ({management.anio})</span>
-              ) : enrollment?.gestionId ? `ID: ${enrollment.gestionId}` : 'N/A'}
-            </Descriptions.Item>
-            <Descriptions.Item label="Estado de Registro">
-              {studentAcademicData?.estadoRegistro ? (
-                <Tag color={studentAcademicData.estadoRegistro === 'ADMITIDO' ? 'success' : 'warning'}>
-                  {studentAcademicData.estadoRegistro}
-                </Tag>
-              ) : 'N/A'}
-            </Descriptions.Item>
-            <Descriptions.Item label="Tipo de Gestión">
-              {management?.tipo ? (
-                <Tag>{management.tipo}</Tag>
-              ) : 'N/A'}
-            </Descriptions.Item>
-          </Descriptions>
-        </Card>
+          <div className="sd-profile__divider" />
 
-        {/* Datos del Estudiante */}
-        {student && (
-          <Card title="Datos del Estudiante" style={{ marginBottom: '24px' }}>
-            <Descriptions column={2} bordered>
-              <Descriptions.Item label="Código de Estudiante">
-                {student.codigoEstudiante || 'N/A'}
-              </Descriptions.Item>
-              <Descriptions.Item label="CI">
-                {student.ci ? `${student.ci} ${student.expedicion || ''}` : 'N/A'}
-              </Descriptions.Item>
-              <Descriptions.Item label="Nombres Completos">
-                {student.nombres || 'N/A'} {student.apellidoPaterno || ''} {student.apellidoMaterno || ''}
-              </Descriptions.Item>
-              <Descriptions.Item label="Género">
-                {student.genero || 'N/A'}
-              </Descriptions.Item>
-              <Descriptions.Item label="Celular">
-                {student.celular || 'N/A'}
-              </Descriptions.Item>
-            </Descriptions>
-          </Card>
-        )}
+          <div className="sd-profile__stats">
+            <div className="sd-stat">
+              <span className="sd-stat__label">Código estudiante</span>
+              <span className="sd-stat__value sd-stat__value--primary">{student?.codigoEstudiante || '—'}</span>
+            </div>
+            <div className="sd-stat">
+              <span className="sd-stat__label">Gestión</span>
+              <span className="sd-stat__value">
+                {management?.nombre ? `${management.nombre}${management?.anio ? ` (${management.anio})` : ''}` : '—'}
+              </span>
+            </div>
+            <div className="sd-stat">
+              <span className="sd-stat__label">Materias</span>
+              <span className="sd-stat__value">{enrollmentSubjects.length || 0}</span>
+            </div>
+          </div>
 
-        {/* Datos de la Carrera */}
-        {career && (
-          <Card title="Datos de la Carrera" style={{ marginBottom: '24px' }}>
-            <Descriptions column={2} bordered>
-              <Descriptions.Item label="Código">
-                {career.codigo || 'N/A'}
-              </Descriptions.Item>
-              <Descriptions.Item label="Nombre">
-                {career.nombre || 'N/A'}
-              </Descriptions.Item>
-              <Descriptions.Item label="Título Otorgado" span={2}>
-                {career.tituloOtorgado || 'N/A'}
-              </Descriptions.Item>
-            </Descriptions>
-          </Card>
-        )}
+          <div className="sd-profile__divider" />
 
-        {/* Materias Inscritas */}
-        {enrollmentSubjects && enrollmentSubjects.length > 0 && (
-          <Card title={`Materias Inscritas (${enrollmentSubjects.length})`}>
-            {enrollmentSubjects.map((materia, index) => {
-              // Obtener el color del curso (convertir hex a rgba para el fondo)
-              const borderColor = materia.color || '#d9d9d9';
-              // Convertir hex a rgba con opacidad
-              const getBackgroundColor = (hex) => {
-                if (!hex) return 'transparent';
-                // Remover # si existe
-                const hexColor = hex.replace('#', '');
-                // Convertir a RGB
-                const r = parseInt(hexColor.substring(0, 2), 16);
-                const g = parseInt(hexColor.substring(2, 4), 16);
-                const b = parseInt(hexColor.substring(4, 6), 16);
-                // Retornar rgba con 15% de opacidad (0.15)
-                return `rgba(${r}, ${g}, ${b}, 0.15)`;
-              };
-              const backgroundColor = getBackgroundColor(materia.color);
-              
-              return (
-                <div 
-                  key={materia.id || index} 
-                  style={{ 
-                    marginBottom: '24px',
-                    borderLeft: `4px solid ${borderColor}`,
-                    backgroundColor: backgroundColor,
-                    padding: '16px',
-                    borderRadius: '4px',
-                  }}
-                >
-                  <Descriptions column={2} bordered size="small">
-                    <Descriptions.Item label="Materia" span={2}>
-                      {materia.materiaNombre ? (
-                        <span>
-                          {materia.materiaSigla && <strong>{materia.materiaSigla} - </strong>}
-                          {materia.materiaNombre}
-                        </span>
-                      ) : 'N/A'}
-                    </Descriptions.Item>
-                    <Descriptions.Item label="Estado" span={2}>
-                      {materia.status ? (
-                        <Tag color={getStatusColor(materia.status)}>
-                          {materia.status}
-                        </Tag>
-                      ) : 'N/A'}
-                    </Descriptions.Item>
-                    {materia.docente && (
-                      <Descriptions.Item label="Docente" span={2}>
-                        {materia.docente.nombreCompleto || 'N/A'}
-                      </Descriptions.Item>
-                    )}
-                  {materia.horarios && materia.horarios.length > 0 && (
-                    <Descriptions.Item label="Horarios" span={2}>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        {materia.horarios.map((horario, hIndex) => (
-                          <div key={horario.id || hIndex} style={{ padding: '8px' }}>
-                            {horario.horario ? (
-                              <div>
-                                <strong>{horario.horario.dia}:</strong> {horario.horario.horaInicio} - {horario.horario.horaFin}
-                                {horario.aula && <span> | Aula: {horario.aula}</span>}
-                              </div>
-                            ) : (
-                              <div>Sin horario asignado</div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </Descriptions.Item>
-                  )}
-                  {materia.observations && (
-                    <Descriptions.Item label="Observaciones" span={2}>
-                      {materia.observations}
-                    </Descriptions.Item>
-                  )}
-                  {materia.teacherObservations && (
-                    <Descriptions.Item label="Observaciones del Docente" span={2}>
-                      {materia.teacherObservations}
-                    </Descriptions.Item>
-                  )}
-                  </Descriptions>
-                </div>
-              );
-            })}
-          </Card>
-        )}
+          <div className="sd-profile__actions">
+            {puedeGenerarBoletaPdf ? (
+              <button type="button" className="sd-btn sd-btn--primary" onClick={handleDownloadOrGenerateBoleta}
+                disabled={generatingBoleta || !studentId}>
+                {boletaInscripcion ? <DownloadOutlined /> : <FileTextOutlined />} {boletaInscripcion ? 'Descargar boleta' : 'Generar boleta'}
+              </button>
+            ) : null}
+          </div>
+        </div>
 
-        {/* Mensaje si no hay materias inscritas */}
-        {(!enrollmentSubjects || enrollmentSubjects.length === 0) && (
-          <Card title="Materias Inscritas">
-            <Empty description="No hay materias inscritas para esta inscripción" />
-          </Card>
-        )}
+        <div className="sd-tabs-shell">
+          <Tabs defaultActiveKey="inscripcion" items={tabItems} className="sd-tabs" />
+        </div>
       </div>
     </PageTemplate>
   );

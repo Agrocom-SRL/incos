@@ -14,6 +14,7 @@ SELECT
     p.turno,
     p.carrera_id,
     car.nombre                            AS carrera_nombre,
+    car.color_hex                         AS carrera_color_hex,
     p.periodo_id,
     per.numero                            AS periodo_numero,
     per.nombre                            AS periodo_nombre,
@@ -40,5 +41,5 @@ INNER JOIN asignaturas_plan ap
 WHERE p.deleted_at IS NULL
   AND p.activo = TRUE
 GROUP BY
-    p.id, p.nombre, p.turno, p.carrera_id, car.nombre, p.periodo_id,
+    p.id, p.nombre, p.turno, p.carrera_id, car.nombre, car.color_hex, p.periodo_id,
     per.numero, per.nombre;

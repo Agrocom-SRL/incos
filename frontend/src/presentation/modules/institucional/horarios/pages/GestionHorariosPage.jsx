@@ -43,7 +43,6 @@ const GestionHorariosPage = () => {
         setViewMode,
         onFilterChange,
         onOpenArmado,
-        onOpenGestionCursos,
         onVerHorariosAulas,
         onPublish,
         clearFilters,
@@ -83,13 +82,12 @@ const GestionHorariosPage = () => {
                     <ParalelosTable
                         filteredParallels={filteredParallels}
                         onOpenArmado={onOpenArmado}
-                        onOpenGestionCursos={onOpenGestionCursos}
                         embedded
                     />
                 ),
             },
         ],
-        [boardByStatus, filteredParallels, onOpenArmado, onOpenGestionCursos],
+        [boardByStatus, filteredParallels, onOpenArmado],
     );
 
     return (
@@ -124,6 +122,7 @@ const GestionHorariosPage = () => {
                             {hayAlertas ? (
                                 <HorariosAlertBanner
                                     incompletos={kpis.incompletos}
+                                    sinHorario={kpis.sinHorario}
                                     conflictos={kpis.conConflicto}
                                 />
                             ) : null}
@@ -138,9 +137,9 @@ const GestionHorariosPage = () => {
                                         onFilterChange={onFilterChange}
                                         onClearFilters={clearFilters}
                                     />
-                                    <div className="sd-tabs-shell horarios-gestion-planificacion__tabs horarios-armado-page">
+                                    <div className="sd-tabs-shell">
                                         <Tabs
-                                            className="sd-tabs horarios-gestion-planificacion__tabs-inner"
+                                            className="sd-tabs"
                                             activeKey={viewMode}
                                             onChange={setViewMode}
                                             items={planificacionTabItems}
@@ -165,8 +164,8 @@ const GestionHorariosPage = () => {
                         <ProgresoGestionPanel progresoGestion={progresoGestion} />
                     </Flex>
                 </InfoSidebar>
-            </DashboardPageShell>
-        </Flex>
+            </DashboardPageShell >
+        </Flex >
     );
 };
 

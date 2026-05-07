@@ -379,7 +379,7 @@
 .sd-btn--outline {
   background: transparent;
   color: var(--text-700, #374151);
-  border: 1.5px solid var(--border, #e5e7eb);
+  border: 1px solid var(--border, #082032);
   border-radius: var(--radius-lg, 14px);
   box-shadow: none;
 }

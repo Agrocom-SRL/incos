@@ -3,7 +3,7 @@ import { useAuthContext } from '@application-auth';
 
 /**
  * Permisos para la oferta de cursos del paralelo:
- * - Rol con `institucional.gestion.horarios` (65): CRUD en `/paralelo/:id/gestion`.
+ * - Rol con `institucional.gestion.horarios` (65): CRUD de oferta desde Armado (tab gestión).
  * - Rol con `institucional.horario.plantilla` (97): misma capacidad si el catálogo incluye CREAR/EDITAR/ELIMINAR (seed F).
  */
 export const useHorariosOfertaPermisos = () => {

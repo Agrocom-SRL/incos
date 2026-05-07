@@ -51,6 +51,7 @@ function flattenEvents(
     const materiaSigla = c.materiaSigla ?? null;
     const carrera = c.carrera ?? null;
     const periodoParalelo = c.periodoParalelo ?? null;
+    const docente = c.docente ?? null;
     for (const b of c.bloques || []) {
       const dia = normalizeDiaDb(b.dia);
       const start = horaToMinutes(b.horaInicio);
@@ -72,6 +73,7 @@ function flattenEvents(
         materiaSigla,
         carrera,
         periodoParalelo,
+        docente,
         orden: b.orden,
       });
     }
@@ -116,6 +118,25 @@ function mergeSlotsForRange(events, dayKeys, rangeStart, rangeEnd, stepMinutes) 
   const set = new Set();
   for (let m = rangeStart; m < rangeEnd; m += stepMinutes) {
     set.add(m);
+  }
+  const allowed = new Set(dayKeys);
+  for (const ev of events) {
+    if (!allowed.has(ev.diaDb)) continue;
+    if (ev.startMinutes >= rangeStart && ev.startMinutes < rangeEnd) {
+      set.add(ev.startMinutes);
+    }
+  }
+  return [...set].sort((a, b) => a - b);
+}
+
+/**
+ * Catálogo con inicios no equidistantes (p. ej. sábado en `horarios`): solo esas filas + inicios de eventos.
+ * @param {number[]} fixedStartsMin — minutos de inicio válidos (orden arbitrario)
+ */
+function mergeSlotsForFixedStarts(events, dayKeys, fixedStartsMin, rangeStart, rangeEnd) {
+  const set = new Set();
+  for (const m of fixedStartsMin || []) {
+    if (m >= rangeStart && m < rangeEnd) set.add(m);
   }
   const allowed = new Set(dayKeys);
   for (const ev of events) {
@@ -206,6 +227,9 @@ const DocenteHorarioSemanalGrid = ({
   const gridEnd = gridTimeRange?.end ?? SLOT_MINUTE_END;
   const satStart = saturdayGridTimeRange?.start ?? gridStart;
   const satEnd = saturdayGridTimeRange?.end ?? gridEnd;
+  const satFixedStarts = Array.isArray(saturdayGridTimeRange?.fixedSlotStartsMinutes)
+    ? saturdayGridTimeRange.fixedSlotStartsMinutes
+    : null;
   const clipStart = Math.min(gridStart, satStart);
   const clipEnd = Math.max(gridEnd, satEnd);
   const useMergedStepGrid =
@@ -236,6 +260,9 @@ const DocenteHorarioSemanalGrid = ({
     slotStepMinutes,
   ]);
   const saturdaySlots = useMemo(() => {
+    if (useMergedStepGrid && satFixedStarts?.length) {
+      return mergeSlotsForFixedStarts(events, DIAS_SABADO, satFixedStarts, satStart, satEnd);
+    }
     if (useMergedStepGrid && uniformSlotGrid) {
       return uniformSlotsPreview(events, DIAS_SABADO, satStart, satEnd, slotStepMinutes);
     }
@@ -253,6 +280,7 @@ const DocenteHorarioSemanalGrid = ({
     satStart,
     satEnd,
     slotStepMinutes,
+    satFixedStarts,
   ]);
 
   const cellMap = useMemo(() => {

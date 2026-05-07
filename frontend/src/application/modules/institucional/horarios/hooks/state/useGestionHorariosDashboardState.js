@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCapacidadTurnoApi, useGestionesCatalogApi, useParalelosEstadoApi } from '@application/modules/shared/hooks';
 import { BOARD_COLUMNS, FILTER_DEFAULTS, STATUS_LABELS } from '@application-institucional/horarios/config/dashboardConstants';
@@ -9,7 +9,7 @@ export const useGestionHorariosDashboardState = () => {
     const { paralelos: paralelosEstado, loading: estadoLoading, error: estadoError } = useParalelosEstadoApi();
     const { capacidad: capacidadTurno } = useCapacidadTurnoApi();
     const [filters, setFilters] = useState(FILTER_DEFAULTS);
-    const [viewMode, setViewMode] = useState('board');
+    const [viewMode, setViewMode] = useState('table');
 
     const currentGestion = useMemo(() => {
         return String(gestiones?.[0]?.nombre || gestiones?.[0]?.gestion || 'Actual');
@@ -20,6 +20,8 @@ export const useGestionHorariosDashboardState = () => {
             id: row.paralelo_id,
             paralelo: row.paralelo_nombre,
             carrera: row.carrera_nombre || 'Carrera no definida',
+            carreraId: row.carrera_id != null ? Number(row.carrera_id) : null,
+            carreraColorHex: row.carrera_color_hex ?? null,
             periodo: row.periodo_nombre,
             turno: row.turno,
             estado: row.estado,
@@ -56,6 +58,14 @@ export const useGestionHorariosDashboardState = () => {
         return { total, incompletos, sinHorario, conConflicto, completos };
     }, [filteredParallels]);
 
+    /** Tablero si hay trabajo pendiente; tabla si todos los paralelos visibles están completos. */
+    useEffect(() => {
+        if (estadoLoading) return;
+        const requiereAtencion =
+            kpis.incompletos > 0 || kpis.conConflicto > 0 || kpis.sinHorario > 0;
+        setViewMode(requiereAtencion ? 'board' : 'table');
+    }, [estadoLoading, kpis.incompletos, kpis.conConflicto, kpis.sinHorario]);
+
     const boardByStatus = useMemo(() => {
         return BOARD_COLUMNS.map((statusKey) => ({
             key: statusKey,
@@ -83,7 +93,7 @@ export const useGestionHorariosDashboardState = () => {
     const getParaleloAction = useCallback((paralelo) => {
         const turno = encodeURIComponent(paralelo.turno || '');
         const base = `/institucional/horarios/armado?paralelo=${paralelo.id}&turno=${turno}`;
-        if (paralelo.estado === 'incompleto') return `${base}&tab=cursos`;
+        if (paralelo.estado === 'incompleto') return `${base}&tab=gestion`;
         if (paralelo.estado === 'sin_horario') return `${base}&tab=plan`;
         if (paralelo.estado === 'conflicto') return `${base}&tab=conflicto`;
         if (paralelo.estado === 'completo') return `${base}&tab=vista`;
@@ -91,14 +101,6 @@ export const useGestionHorariosDashboardState = () => {
     }, []);
 
     const onOpenArmado = useCallback((paralelo) => navigate(getParaleloAction(paralelo)), [getParaleloAction, navigate]);
-
-    const onOpenGestionCursos = useCallback(
-        (paralelo) => {
-            const turno = encodeURIComponent(paralelo.turno || '');
-            navigate(`/institucional/horarios/paralelo/${paralelo.id}/gestion?turno=${turno}&returnTab=cursos`);
-        },
-        [navigate],
-    );
 
     const onVerHorariosAulas = useCallback(() => navigate('/institucional/horarios/aulas'), [navigate]);
     const onPublish = useCallback(() => navigate('/institucional/horarios/publicacion'), [navigate]);
@@ -140,10 +142,9 @@ export const useGestionHorariosDashboardState = () => {
         onFilterChange,
         clearFilters,
         onOpenArmado,
-        onOpenGestionCursos,
         onVerHorariosAulas,
         onPublish,
-        hayAlertas: kpis.incompletos > 0 || kpis.conConflicto > 0,
+        hayAlertas: kpis.incompletos > 0 || kpis.conConflicto > 0 || kpis.sinHorario > 0,
         turnosCapacity: turnosCapacityReal,
         progresoGestion,
         getParaleloAction,

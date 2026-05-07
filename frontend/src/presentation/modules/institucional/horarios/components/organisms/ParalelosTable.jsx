@@ -1,6 +1,10 @@
 import { useMemo } from 'react';
 import { Space, Table, Typography } from 'antd';
 import { Card, ActionButton } from '@atoms';
+import {
+    buildCarreraHeadingSurfaceStyle,
+    resolveCarreraDashboardColor,
+} from '@application-institucional/horarios/utils/carreraDashboardColor';
 import { StatusTag } from '../atoms';
 
 const ctaByState = {
@@ -34,10 +38,9 @@ const groupParallels = (rows) => {
     for (const row of list) {
         const carrera = row.carrera || '—';
         const periodo = row.periodo || '—';
-        const turno = row.turno || '—';
-        const key = `${carrera}\u0000${periodo}\u0000${turno}`;
+        const key = `${carrera}\u0000${periodo}`;
         if (!current || current.key !== key) {
-            current = { key, carrera, periodo, turno, items: [] };
+            current = { key, carrera, periodo, items: [] };
             groups.push(current);
         }
         current.items.push(row);
@@ -45,7 +48,7 @@ const groupParallels = (rows) => {
     return groups;
 };
 
-const ParalelosTable = ({ filteredParallels, onOpenArmado, onOpenGestionCursos, embedded = false }) => {
+const ParalelosTable = ({ filteredParallels, onOpenArmado, embedded = false }) => {
     const groups = useMemo(() => groupParallels(filteredParallels), [filteredParallels]);
 
     const columns = [
@@ -54,6 +57,14 @@ const ParalelosTable = ({ filteredParallels, onOpenArmado, onOpenGestionCursos, 
             dataIndex: 'paralelo',
             key: 'paralelo',
             ellipsis: true,
+        },
+        {
+            title: 'Turno',
+            dataIndex: 'turno',
+            key: 'turno',
+            width: 110,
+            ellipsis: true,
+            render: (v) => v || '—',
         },
         {
             title: 'Estado',
@@ -79,17 +90,6 @@ const ParalelosTable = ({ filteredParallels, onOpenArmado, onOpenGestionCursos, 
                     >
                         {ctaByState[row.estado] || 'Abrir'}
                     </ActionButton>
-                    {typeof onOpenGestionCursos === 'function' ? (
-                        <ActionButton
-                            permiso="institucional.gestion.horarios"
-                            accion="LISTAR"
-                            size="small"
-                            variant="default"
-                            onClick={() => onOpenGestionCursos(row)}
-                        >
-                            Cursos
-                        </ActionButton>
-                    ) : null}
                 </Space>
             ),
         },
@@ -100,14 +100,25 @@ const ParalelosTable = ({ filteredParallels, onOpenArmado, onOpenGestionCursos, 
             {groups.length === 0 ? (
                 <Typography.Text type="secondary">Sin paralelos con los filtros actuales.</Typography.Text>
             ) : (
-                groups.map((g) => (
+                groups.map((g) => {
+                    const primera = g.items[0];
+                    const carreraHex = resolveCarreraDashboardColor({
+                        carreraId: primera?.carreraId,
+                        carreraNombre: g.carrera,
+                        carreraColorHex: primera?.carreraColorHex,
+                    });
+                    const headingStyle = carreraHex ? buildCarreraHeadingSurfaceStyle(carreraHex) : undefined;
+                    return (
                     <div key={g.key} className="horarios-table-group">
-                        <div className="horarios-table-group__heading">
+                        <div
+                            className={`horarios-table-group__heading${carreraHex ? ' horarios-table-group__heading--carrera' : ''}`}
+                            style={headingStyle}
+                        >
                             <Typography.Text strong ellipsis>
                                 {g.carrera}
                             </Typography.Text>
                             <Typography.Text type="secondary" className="horarios-table-group__sub">
-                                {g.periodo} · Turno {g.turno} · {g.items.length} paralelo{g.items.length === 1 ? '' : 's'}
+                                {g.periodo} · {g.items.length} paralelo{g.items.length === 1 ? '' : 's'}
                             </Typography.Text>
                         </div>
                         <Table
@@ -122,7 +133,8 @@ const ParalelosTable = ({ filteredParallels, onOpenArmado, onOpenGestionCursos, 
                             showHeader
                         />
                     </div>
-                ))
+                    );
+                })
             )}
         </div>
     );

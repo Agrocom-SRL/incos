@@ -2,7 +2,7 @@
  * Plan semanal de un paralelo: grilla compartida con docentes + edición local (drag, quitar, añadir bloque).
  */
 
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, Flex, Form, message, Modal, Select, Space, Typography } from 'antd';
 import { Button } from '@atoms';
 import DocenteHorarioSemanalGrid from '@docentes/components/organisms/DocenteHorarioSemanalGrid';
@@ -53,6 +53,7 @@ const ParaleloArmadoPlanSection = ({
 }) => {
     const [addOpen, setAddOpen] = useState(false);
     const [form] = Form.useForm();
+    const diaAddWatch = Form.useWatch('dia', form);
     const gridRange = useMemo(() => getTurnoGridRangeMinutes(turnoLabel), [turnoLabel]);
     const sabadoRange = useMemo(() => getSabadoArmadoGridRangeMinutes(), []);
     const handleBeginDragChip = useCallback((e, item, sourceDia, sourceSlotMinutes) => {
@@ -111,10 +112,29 @@ const ParaleloArmadoPlanSection = ({
         }));
     }, [addOpen, schedules]);
 
-    const slotOptionsLazy = useMemo(() => {
+    const slotOptionsAdd = useMemo(() => {
         if (!addOpen) return [];
+        const dia = diaAddWatch ?? 'LUNES';
+        const fixed = sabadoRange.fixedSlotStartsMinutes;
+        if (dia === 'SABADO' && Array.isArray(fixed) && fixed.length) {
+            return fixed.map((m) => {
+                const h = Math.floor(m / 60);
+                const min = m % 60;
+                const label = `${String(h).padStart(2, '0')}:${String(min).padStart(2, '0')}`;
+                return { value: m, label };
+            });
+        }
         return slotOptionsForRange(gridRange.start, gridRange.end, SLOT_STEP_ADD);
-    }, [addOpen, gridRange.start, gridRange.end]);
+    }, [addOpen, diaAddWatch, sabadoRange.fixedSlotStartsMinutes, gridRange.start, gridRange.end]);
+
+    useEffect(() => {
+        if (!addOpen || !slotOptionsAdd.length) return;
+        const cur = form.getFieldValue('slotMinutes');
+        const ok = slotOptionsAdd.some((o) => o.value === cur);
+        if (!ok) {
+            form.setFieldsValue({ slotMinutes: slotOptionsAdd[0].value });
+        }
+    }, [addOpen, slotOptionsAdd, form]);
 
     const submitAddBlock = useCallback(() => {
         form.validateFields().then((values) => {
@@ -180,7 +200,7 @@ const ParaleloArmadoPlanSection = ({
                     type="info"
                     showIcon
                     style={{ marginBottom: 12 }}
-                    message="Guardando cambios del plan semanal..."
+                    title="Guardando cambios del plan semanal..."
                 />
             ) : null}
             {editable && persistError ? (
@@ -188,8 +208,10 @@ const ParaleloArmadoPlanSection = ({
                     type="error"
                     showIcon
                     style={{ marginBottom: 12 }}
-                    message="No se pudo guardar el plan"
-                    description={persistError}
+                    title="No se pudo guardar el plan"
+                    description={
+                        <span style={{ whiteSpace: 'pre-wrap' }}>{persistError}</span>
+                    }
                 />
             ) : null}
             {editable && !persistLoading && !persistError && persistSuccess ? (
@@ -197,7 +219,7 @@ const ParaleloArmadoPlanSection = ({
                     type="success"
                     showIcon
                     style={{ marginBottom: 12 }}
-                    message="Plan semanal guardado correctamente."
+                    title="Plan semanal guardado correctamente."
                 />
             ) : null}
             <DocenteHorarioSemanalGrid
@@ -246,7 +268,7 @@ const ParaleloArmadoPlanSection = ({
                         <Select options={DIA_OPTIONS} />
                     </Form.Item>
                     <Form.Item name="slotMinutes" label="Hora de inicio" rules={[{ required: true }]}>
-                        <Select options={slotOptionsLazy} showSearch optionFilterProp="label" />
+                        <Select options={slotOptionsAdd} showSearch optionFilterProp="label" />
                     </Form.Item>
                     <Text type="secondary">Duración por defecto del nuevo bloque: 45 minutos.</Text>
                 </Form>

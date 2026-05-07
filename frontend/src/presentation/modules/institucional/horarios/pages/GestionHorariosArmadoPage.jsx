@@ -1,13 +1,15 @@
-import { useMemo } from 'react';
-import { Alert, Divider, Flex, Spin, Tabs, Typography } from 'antd';
-import { ArrowLeftOutlined, BookOutlined, EyeOutlined, ScheduleOutlined } from '@ant-design/icons';
+import { useMemo, useState } from 'react';
+import { Alert, Col, Divider, Flex, Row, Spin, Tabs, Typography, Button as AntButton } from 'antd';
+import { ArrowLeftOutlined, BookOutlined, EyeOutlined, ScheduleOutlined, TeamOutlined, SettingOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
-import { Button, Card, ActionButton } from '@atoms';
+import { Card, ActionButton } from '@atoms';
 import { useHorariosArmadoContext } from '@application-institucional/horarios';
 import { resumenBloquesCurso } from '@application-institucional/horarios/utils/resumenBloquesCurso';
 import { buildCarreraImageUrl } from '@application-institucional/horarios/utils/buildCarreraImageUrl';
 import ParaleloArmadoPlanSection from '../components/organisms/ParaleloArmadoPlanSection';
+import ParaleloCursosGestionSection from '../components/organisms/ParaleloCursosGestionSection';
+import DocenteAsignacionCursoModal from '../components/organisms/DocenteAsignacionCursoModal';
 import '@presentation/styles/pages/detail-page.css';
 import '../styles/gestion-horarios-page.css';
 
@@ -31,10 +33,47 @@ const GestionHorariosArmadoPage = () => {
         missingSubjects,
         draftSchedules,
         setDraftSchedules,
-        irAGestionCursos,
         onRequestPersist,
         handleVolver,
+        ofertaParalelo,
     } = useHorariosArmadoContext();
+    const [docenteModalOpen, setDocenteModalOpen] = useState(false);
+    const [selectedCourse, setSelectedCourse] = useState(null);
+
+    const handleOpenDocenteAsignacion = (row) => {
+        if (!row?.cursoId) return;
+        const source = draftSchedules.find((c) => Number(c.cursoId) === Number(row.cursoId));
+        const fallback = {
+            ...row,
+            bloques: [],
+            docente: row.docente || null,
+            cursoColorHex: row.colorHex || row.cursoColorHex || null,
+        };
+        setSelectedCourse(source || fallback);
+        setDocenteModalOpen(true);
+    };
+
+    const handleDocenteAssigned = ({ cursoId, docenteNombre }) => {
+        const docente = docenteNombre || null;
+        setDraftSchedules((prev) =>
+            prev.map((c) =>
+                Number(c.cursoId) === Number(cursoId)
+                    ? {
+                          ...c,
+                          docente,
+                      }
+                    : c,
+            ),
+        );
+        setSelectedCourse((prev) =>
+            prev && Number(prev.cursoId) === Number(cursoId)
+                ? {
+                      ...prev,
+                      docente,
+                  }
+                : prev,
+        );
+    };
 
     const tabItems = useMemo(
         () => [
@@ -48,16 +87,6 @@ const GestionHorariosArmadoPage = () => {
                 ),
                 children: (
                     <div className="sd-tab-body horarios-armado-tab-body">
-                        <Flex justify="flex-end" style={{ marginBottom: 12 }}>
-                            <ActionButton
-                                permiso="institucional.gestion.horarios"
-                                accion="LISTAR"
-                                variant="primary"
-                                onClick={irAGestionCursos}
-                            >
-                                Gestionar cursos del paralelo
-                            </ActionButton>
-                        </Flex>
                         {!draftSchedules.length ? (
                             <Alert
                                 type="info"
@@ -71,9 +100,9 @@ const GestionHorariosArmadoPage = () => {
                                             accion="LISTAR"
                                             variant="default"
                                             size="small"
-                                            onClick={irAGestionCursos}
+                                            onClick={() => setTab('gestion')}
                                         >
-                                            Ir a oferta de cursos
+                                            Ir a gestión de cursos
                                         </ActionButton>
                                     </Flex>
                                 }
@@ -105,64 +134,115 @@ const GestionHorariosArmadoPage = () => {
                                 ) : (
                                     <Alert type="success" showIcon title="Todas las materias del periodo ya tienen curso." />
                                 )}
-                                {draftSchedules.map((c) => {
-                                    const titulo = c.materiaNombre || c.materiaSigla || 'Materia sin nombre';
-                                    const { horasGrilla, horasPlan, diasOrd, lineas } = resumenBloquesCurso(c);
-                                    return (
-                                        <Card
-                                            key={c.cursoId}
-                                            variant="default"
-                                            shadow={true}
-                                            headerColor="primary"
-                                            headerAccentHex={c.cursoColorHex}
-                                            title={titulo}
-                                        >
-                                            <Flex vertical gap={6}>
-                                                {c.materiaSigla && c.materiaNombre ? (
-                                                    <Text type="secondary">
-                                                        Sigla: <Text strong>{c.materiaSigla}</Text>
-                                                    </Text>
-                                                ) : null}
-                                                <Text type="secondary">
-                                                    Carga horaria del periodo (plan):{' '}
-                                                    <Text strong>
-                                                        {horasPlan != null && !Number.isNaN(horasPlan)
-                                                            ? `${horasPlan} h/semana`
-                                                            : '—'}
-                                                    </Text>
-                                                </Text>
-                                                <Text type="secondary">
-                                                    Horas acumuladas en la grilla (bloques):{' '}
-                                                    <Text strong>{horasGrilla} h</Text> (
-                                                    {c.bloques?.length ?? 0} bloques)
-                                                </Text>
-                                                <Text type="secondary">
-                                                    Días con clase:{' '}
-                                                    <Text strong>{diasOrd.length ? diasOrd.join(', ') : '—'}</Text>
-                                                </Text>
-                                                {lineas.length ? (
-                                                    <>
-                                                        <Divider plain style={{ margin: '8px 0' }} />
-                                                        <Text strong>Detalle por combinación día / horario</Text>
-                                                        <ul className="horarios-armado-cursos__lista">
-                                                            {lineas.map((ln, idx) => (
-                                                                <li key={`${c.cursoId}-${idx}`}>
-                                                                    <Text type="secondary">{ln}</Text>
-                                                                </li>
-                                                            ))}
-                                                        </ul>
-                                                    </>
-                                                ) : (
-                                                    <Text type="secondary" italic>
-                                                        Aún no hay bloques cargados en el plan para esta materia.
-                                                    </Text>
-                                                )}
-                                            </Flex>
-                                        </Card>
-                                    );
-                                })}
+                                <Row gutter={[12, 12]}>
+                                    {draftSchedules.map((c) => {
+                                        const titulo = c.materiaNombre || c.materiaSigla || 'Materia sin nombre';
+                                        const { horasGrilla, horasPlan, diasOrd, lineas } = resumenBloquesCurso(c);
+                                        const docenteActual = c.docente || null;
+                                        return (
+                                            <Col key={c.cursoId} xs={24} lg={12}>
+                                                <Card
+                                                    variant="default"
+                                                    shadow={true}
+                                                    headerColor="primary"
+                                                    headerAccentHex={c.cursoColorHex}
+                                                    title={titulo}
+                                                    extra={
+                                                        <AntButton
+                                                            type="primary"
+                                                            icon={<TeamOutlined />}
+                                                            onClick={() => handleOpenDocenteAsignacion({ ...c, docente: docenteActual })}
+                                                        >
+                                                            {docenteActual ? 'Reasignar docente' : 'Asignar docente'}
+                                                        </AntButton>
+                                                    }
+                                                >
+                                                    <Flex vertical gap={6}>
+                                                        {c.materiaSigla && c.materiaNombre ? (
+                                                            <Text type="secondary">
+                                                                Sigla: <Text strong>{c.materiaSigla}</Text>
+                                                            </Text>
+                                                        ) : null}
+                                                        <Text type="secondary">
+                                                            Docente:{' '}
+                                                            <Text strong>{docenteActual || 'Sin asignar'}</Text>
+                                                        </Text>
+                                                        <Text type="secondary">
+                                                            Carga horaria del periodo (plan):{' '}
+                                                            <Text strong>
+                                                                {horasPlan != null && !Number.isNaN(horasPlan)
+                                                                    ? `${horasPlan} h/semana`
+                                                                    : '—'}
+                                                            </Text>
+                                                        </Text>
+                                                        <Text type="secondary">
+                                                            Horas acumuladas en la grilla (bloques):{' '}
+                                                            <Text strong>{horasGrilla} h</Text> (
+                                                            {c.bloques?.length ?? 0} bloques)
+                                                        </Text>
+                                                        <Text type="secondary">
+                                                            Días con clase:{' '}
+                                                            <Text strong>{diasOrd.length ? diasOrd.join(', ') : '—'}</Text>
+                                                        </Text>
+                                                        {lineas.length ? (
+                                                            <>
+                                                                <Divider plain style={{ margin: '8px 0' }} />
+                                                                <Text strong>Detalle por combinación día / horario</Text>
+                                                                <ul className="horarios-armado-cursos__lista">
+                                                                    {lineas.map((ln, idx) => (
+                                                                        <li key={`${c.cursoId}-${idx}`}>
+                                                                            <Text type="secondary">{ln}</Text>
+                                                                        </li>
+                                                                    ))}
+                                                                </ul>
+                                                            </>
+                                                        ) : (
+                                                            <Text type="secondary" italic>
+                                                                Aún no hay bloques cargados en el plan para esta materia.
+                                                            </Text>
+                                                        )}
+                                                    </Flex>
+                                                </Card>
+                                            </Col>
+                                        );
+                                    })}
+                                </Row>
                             </Flex>
                         )}
+                    </div>
+                ),
+            },
+            {
+                key: 'gestion',
+                label: (
+                    <span className="sd-tab-label">
+                        <SettingOutlined className="horarios-armado-tab__icon" aria-hidden />
+                        <span>Gestión de cursos</span>
+                    </span>
+                ),
+                children: (
+                    <div className="sd-tab-body horarios-armado-tab-body horarios-oferta-cursos-card">
+                        <Spin spinning={Boolean(ofertaParalelo?.validParaleloId) && Boolean(ofertaParalelo?.loading)} tip="Cargando oferta…">
+                            <ParaleloCursosGestionSection
+                                validParaleloId={ofertaParalelo.validParaleloId}
+                                canCrear={ofertaParalelo.canCrear}
+                                canEditar={ofertaParalelo.canEditar}
+                                canEliminar={ofertaParalelo.canEliminar}
+                                missingSubjects={ofertaParalelo.missingSubjects}
+                                filasOferta={ofertaParalelo.filasOferta}
+                                cursoModal={ofertaParalelo.cursoModal}
+                                closeCursoModal={ofertaParalelo.closeCursoModal}
+                                onNuevoCurso={ofertaParalelo.onNuevoCurso}
+                                onEditarCurso={ofertaParalelo.onEditarCurso}
+                                onCrearCursoDesdeMateria={ofertaParalelo.onCrearCursoDesdeMateria}
+                                requestDeleteCurso={ofertaParalelo.requestDeleteCurso}
+                                deleteCursoLoading={ofertaParalelo.deleteCursoLoading}
+                                handleCrearCursoOferta={ofertaParalelo.handleCrearCursoOferta}
+                                handleActualizarCursoOferta={ofertaParalelo.handleActualizarCursoOferta}
+                                refetchOferta={ofertaParalelo.refetchOferta}
+                                ofertaError={ofertaParalelo.error}
+                            />
+                        </Spin>
                     </div>
                 ),
             },
@@ -201,7 +281,7 @@ const GestionHorariosArmadoPage = () => {
                     <div className="sd-tab-body horarios-armado-tab-body">
                         <ParaleloArmadoPlanSection
                             schedules={draftSchedules}
-                            onSchedulesChange={() => {}}
+                            onSchedulesChange={() => { }}
                             editable={false}
                             turnoLabel={turnoEfectivo || undefined}
                         />
@@ -217,8 +297,9 @@ const GestionHorariosArmadoPage = () => {
             persistError,
             persistResult,
             setDraftSchedules,
-            irAGestionCursos,
             onRequestPersist,
+            setTab,
+            ofertaParalelo,
         ],
     );
 
@@ -278,22 +359,20 @@ const GestionHorariosArmadoPage = () => {
                                                 </Title>
                                                 <Text type="secondary">
                                                     {paraleloApiMeta?.carreraNombre
-                                                        ? `${paraleloApiMeta.carreraNombre}${
-                                                              paraleloApiMeta.carreraCodigo
-                                                                  ? ` (${paraleloApiMeta.carreraCodigo})`
-                                                                  : ''
-                                                          }`
+                                                        ? `${paraleloApiMeta.carreraNombre}${paraleloApiMeta.carreraCodigo
+                                                            ? ` (${paraleloApiMeta.carreraCodigo})`
+                                                            : ''
+                                                        }`
                                                         : 'Carrera: —'}
                                                 </Text>
                                                 <Text type="secondary">
                                                     Periodo:{' '}
                                                     <Text strong>
                                                         {paraleloApiMeta?.periodoNombre
-                                                            ? `${paraleloApiMeta.periodoNombre}${
-                                                                  paraleloApiMeta.periodoNumero != null
-                                                                      ? ` (n.º ${paraleloApiMeta.periodoNumero})`
-                                                                      : ''
-                                                              }`
+                                                            ? `${paraleloApiMeta.periodoNombre}${paraleloApiMeta.periodoNumero != null
+                                                                ? ` (n.º ${paraleloApiMeta.periodoNumero})`
+                                                                : ''
+                                                            }`
                                                             : '—'}
                                                     </Text>
                                                 </Text>
@@ -327,6 +406,15 @@ const GestionHorariosArmadoPage = () => {
                     )}
                 </div>
             </Spin>
+            {docenteModalOpen ? (
+                <DocenteAsignacionCursoModal
+                    open={docenteModalOpen}
+                    onClose={() => setDocenteModalOpen(false)}
+                    selectedCourse={selectedCourse}
+                    paraleloLabel={paraleloNombre || `#${paraleloId || '—'}`}
+                    onAssigned={handleDocenteAssigned}
+                />
+            ) : null}
         </PageTemplate>
     );
 };

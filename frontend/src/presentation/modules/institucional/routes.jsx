@@ -7,9 +7,12 @@
 
 import { lazy } from 'react';
 import { UnderConstruction } from '@components/pages';
+import {
+    ArmadoGestionRedirectFromParaleloPath,
+    ArmadoGestionRedirectFromPlantillaPath,
+} from './horarios/connectors/HorariosArmadoEntryRedirects';
 
 const GestionHorariosConnector = lazy(() => import('./horarios/connectors'));
-const GestionHorariosPlantillaConnector = lazy(() => import('./horarios/connectors/PlantillaConnector'));
 const GestionHorariosArmadoConnector = lazy(() => import('./horarios/connectors/ArmadoConnector'));
 const GestionHorariosAulasConnector = lazy(() => import('./horarios/connectors/AulasConnector'));
 const GestionHorariosPublicacionConnector = lazy(() => import('./horarios/connectors/PublicacionConnector'));
@@ -102,7 +105,7 @@ export const institucionalRoutes = [
     },
     {
         path: '/institucional/horarios/plantilla',
-        element: <GestionHorariosPlantillaConnector />,
+        element: <ArmadoGestionRedirectFromPlantillaPath />,
         key: 'INST-HORARIO-PLANTILLA',
         permiso: 'institucional.horario.plantilla',
         accion: 'LISTAR',
@@ -111,7 +114,7 @@ export const institucionalRoutes = [
     },
     {
         path: '/institucional/horarios/paralelo/:paraleloId/gestion',
-        element: <GestionHorariosPlantillaConnector />,
+        element: <ArmadoGestionRedirectFromParaleloPath />,
         key: 'INST-HORARIO-PARALELO-GESTION',
         permiso: 'institucional.gestion.horarios',
         accion: 'LISTAR',

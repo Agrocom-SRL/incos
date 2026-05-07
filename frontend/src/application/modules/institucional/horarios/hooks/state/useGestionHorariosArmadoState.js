@@ -101,12 +101,6 @@ export const useGestionHorariosArmadoState = () => {
         [setSearchParams, paraleloId, turnoParam],
     );
 
-    const irAGestionCursos = useCallback(() => {
-        if (!paraleloId) return;
-        const tp = encodeURIComponent(turnoEfectivo || turnoParam || '');
-        navigate(`/institucional/horarios/paralelo/${paraleloId}/gestion?turno=${tp}&returnTab=cursos`);
-    }, [paraleloId, turnoEfectivo, turnoParam, navigate]);
-
     const onRequestPersist = useCallback(() => {
         if (!paraleloId) return;
         persist(Number(paraleloId), draftSchedules);
@@ -133,7 +127,6 @@ export const useGestionHorariosArmadoState = () => {
         missingSubjects,
         draftSchedules,
         setDraftSchedules,
-        irAGestionCursos,
         onRequestPersist,
         handleVolver,
     };

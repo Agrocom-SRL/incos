@@ -1,7 +1,10 @@
 /**
- * Baja lógica de un curso. No permite eliminar si tiene bloques en `cursos_horarios`.
+ * Baja lógica de un curso y sus bloques (`cursos_horarios`) asociados.
  */
-import { ConflictError, NotFoundError, ValidationError } from '../../../domain/errors/AppError.js';
+import { NotFoundError, ValidationError } from '../../../domain/errors/AppError.js';
+import { sequelize } from '../../../infrastructure/database/sequelize.js';
+import { Curso as CursoModel } from '../../../infrastructure/database/models/curso.js';
+import { CursoHorario as CursoHorarioModel } from '../../../infrastructure/database/models/curso_horario.js';
 
 export class DeleteCursoOfertaUseCase {
   constructor({ courseRepository, courseScheduleRepository, logger }) {
@@ -33,24 +36,36 @@ export class DeleteCursoOfertaUseCase {
       throw new ValidationError('El curso no pertenece al paralelo indicado');
     }
 
-    let bloquesCount = 0;
-    try {
-      bloquesCount = await this.courseScheduleRepository.count({ courseId });
-    } catch (e) {
-      this.logger.warn('[Académico] No se pudo contar bloques del curso a eliminar', { courseId, error: e.message });
-    }
+    const result = await sequelize.transaction(async (t) => {
+      const cursoModel = await CursoModel.findByPk(courseId, { transaction: t });
+      if (!cursoModel) {
+        throw new NotFoundError('curso');
+      }
 
-    if (bloquesCount > 0) {
-      throw new ConflictError(
-        'No se puede eliminar el curso mientras tenga horarios (bloques) asignados. Quitá los bloques desde el armado semanal.',
-      );
-    }
+      const updateAudit = { activo: false };
+      if (userId) updateAudit.deletedBy = userId;
 
-    const ok = await this.courseRepository.delete(courseId, userId);
-    if (!ok) {
-      throw new NotFoundError('curso');
-    }
+      // 1) Dar de baja todos los bloques del curso.
+      await CursoHorarioModel.update(updateAudit, {
+        where: { cursoId: courseId },
+        transaction: t,
+      });
+      const deletedBloques = await CursoHorarioModel.destroy({
+        where: { cursoId: courseId },
+        transaction: t,
+      });
 
-    return { courseId };
+      // 2) Dar de baja el curso.
+      await CursoModel.update(updateAudit, { where: { id: courseId }, transaction: t });
+      await cursoModel.destroy({ transaction: t });
+
+      return { deletedBloques };
+    });
+
+    this.logger.info('[Académico] Curso eliminado con sus bloques', {
+      courseId,
+      deletedBloques: result.deletedBloques,
+    });
+    return { courseId, deletedBloques: result.deletedBloques };
   }
 }
