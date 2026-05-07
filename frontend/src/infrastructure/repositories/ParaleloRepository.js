@@ -72,6 +72,91 @@ export class ParaleloRepository extends IParaleloRepository {
     }
   }
 
+  async obtenerCursosOferta(options = {}) {
+    try {
+      const { parallelId } = options;
+      if (!parallelId) {
+        return { success: false, error: 'ID del paralelo es requerido' };
+      }
+      const response = await apiClient.get(PARALELOS_ENDPOINTS.CURSOS_OFERTA(parallelId));
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al obtener la oferta de cursos del paralelo');
+    }
+  }
+
+  async crearCursoOferta(options = {}) {
+    try {
+      const { parallelId, payload } = options;
+      if (!parallelId) {
+        return { success: false, error: 'ID del paralelo es requerido' };
+      }
+      if (!payload || payload.asignaturaPlanId == null) {
+        return { success: false, error: 'asignaturaPlanId es requerido' };
+      }
+      const response = await apiClient.post(PARALELOS_ENDPOINTS.CURSOS_POST(parallelId), payload);
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al crear el curso del paralelo');
+    }
+  }
+
+  /**
+   * Persiste el plan semanal (bloques) del paralelo.
+   * PUT /v1/paralelos/:id/schedule
+   *
+   * @param {Object} options
+   * @param {number} options.parallelId
+   * @param {Array} options.schedules - courseSchedules (cursoId + bloques)
+   */
+  async persistirHorarios(options = {}) {
+    try {
+      const { parallelId, schedules } = options;
+
+      if (!parallelId) {
+        return { success: false, error: 'ID del paralelo es requerido' };
+      }
+      if (!Array.isArray(schedules)) {
+        return { success: false, error: '`schedules` debe ser un array' };
+      }
+
+      const response = await apiClient.put(PARALELOS_ENDPOINTS.SCHEDULE_PUT(parallelId), { schedules });
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al guardar el plan semanal del paralelo');
+    }
+  }
+
+  async obtenerParalelosEstadoDashboard(options = {}) {
+    try {
+      const { params = {} } = options;
+      const response = await apiClient.get(PARALELOS_ENDPOINTS.DASHBOARD_PARALELOS_ESTADO, { params });
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al obtener estado de paralelos del dashboard');
+    }
+  }
+
+  async obtenerAsignaturasSinCursoDashboard(options = {}) {
+    try {
+      const { params = {} } = options;
+      const response = await apiClient.get(PARALELOS_ENDPOINTS.DASHBOARD_ASIGNATURAS_SIN_CURSO, { params });
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al obtener asignaturas sin curso del dashboard');
+    }
+  }
+
+  async obtenerCapacidadTurnoDashboard(options = {}) {
+    try {
+      const { params = {} } = options;
+      const response = await apiClient.get(PARALELOS_ENDPOINTS.DASHBOARD_CAPACIDAD_TURNO, { params });
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al obtener capacidad por turno del dashboard');
+    }
+  }
+
 }
 
 export default new ParaleloRepository();

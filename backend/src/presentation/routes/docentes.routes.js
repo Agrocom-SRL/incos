@@ -7,6 +7,7 @@ import {
   updateTeacherValidator,
   listTeacherAssignmentsValidator,
   createTeacherAssignmentValidator,
+  assignTeacherToCourseValidator,
   updateTeacherAssignmentValidator,
   listPlanesDocenteValidator,
   listPeriodosDocenteValidator,
@@ -114,6 +115,14 @@ export function buildDocentesRouter({ controllers, middlewares }) {
     ...createTeacherAssignmentValidator,
     validateRequest,
     (req, res, next) => controllers.createTeacherAssignmentController.handle(req, res, next)
+  );
+
+  router.post(
+    '/asignaciones/curso',
+    ...docenteAsignar,
+    ...assignTeacherToCourseValidator,
+    validateRequest,
+    (req, res, next) => controllers.assignTeacherToCourseController.handle(req, res, next)
   );
 
   router.patch(

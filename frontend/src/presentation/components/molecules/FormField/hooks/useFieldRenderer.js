@@ -67,6 +67,10 @@ export const useFieldRenderer = ({
     if (fieldType === 'date') {
       return renderer(field, disabled, readOnly, minAge);
     }
+
+    if (fieldType === 'number' || fieldType === 'color') {
+      return renderer(field, disabled, readOnly);
+    }
     
     // Para search: necesita form, resolveOptions, minAge para renderizar children
     if (fieldType === 'search') {

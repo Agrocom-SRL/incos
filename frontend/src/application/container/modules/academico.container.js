@@ -10,9 +10,20 @@
  * - Features: Paralelos, Gestiones
  */
 
-import { GetTodosParalelosUseCase, GetParaleloHorariosUseCase } from '@useCases/academico/paralelos';
+import {
+  GetAsignaturasSinCursoUseCase,
+  GetCapacidadTurnoUseCase,
+  GetParaleloCursosOfertaUseCase,
+  CrearParaleloCursoOfertaUseCase,
+  GetParaleloHorariosUseCase,
+  GetParalelosEstadoDashboardUseCase,
+  GetTodosParalelosUseCase,
+  PutParaleloHorariosUseCase,
+} from '@useCases/academico/paralelos';
+import { ActualizarCursoOfertaUseCase, EliminarCursoOfertaUseCase } from '@useCases/academico/cursos';
 import { GetTodasGestionesUseCase } from '@useCases/academico/gestiones';
 import ParaleloRepository from '@infrastructure/repositories/ParaleloRepository';
+import CursoRepository from '@infrastructure/repositories/CursoRepository';
 import GestionRepository from '@infrastructure/repositories/GestionRepository';
 
 /**
@@ -23,6 +34,7 @@ import GestionRepository from '@infrastructure/repositories/GestionRepository';
 export function registerAcademicoModule(factory) {
   // Repositorios singleton (stateless)
   const paraleloRepository = ParaleloRepository;
+  const cursoRepository = CursoRepository;
   const gestionRepository = GestionRepository;
 
   // Registrar Use Cases de Paralelos
@@ -32,6 +44,38 @@ export function registerAcademicoModule(factory) {
 
   factory.obtenerParaleloHorarios = () => {
     return new GetParaleloHorariosUseCase(paraleloRepository);
+  };
+
+  factory.obtenerParaleloCursosOferta = () => {
+    return new GetParaleloCursosOfertaUseCase(paraleloRepository);
+  };
+
+  factory.crearParaleloCursoOferta = () => {
+    return new CrearParaleloCursoOfertaUseCase(paraleloRepository);
+  };
+
+  factory.actualizarCursoOferta = () => {
+    return new ActualizarCursoOfertaUseCase(cursoRepository);
+  };
+
+  factory.eliminarCursoOferta = () => {
+    return new EliminarCursoOfertaUseCase(cursoRepository);
+  };
+
+  factory.persistirParaleloHorarios = () => {
+    return new PutParaleloHorariosUseCase(paraleloRepository);
+  };
+
+  factory.obtenerParalelosEstadoDashboard = () => {
+    return new GetParalelosEstadoDashboardUseCase(paraleloRepository);
+  };
+
+  factory.obtenerAsignaturasSinCurso = () => {
+    return new GetAsignaturasSinCursoUseCase(paraleloRepository);
+  };
+
+  factory.obtenerCapacidadTurno = () => {
+    return new GetCapacidadTurnoUseCase(paraleloRepository);
   };
 
   // Registrar Use Cases de Gestiones

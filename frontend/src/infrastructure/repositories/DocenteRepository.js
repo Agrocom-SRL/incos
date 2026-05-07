@@ -89,6 +89,19 @@ export class DocenteRepository extends IDocenteRepository {
     }
   }
 
+  /**
+   * Alta/reasignación docente por curso (backend resuelve gestionPlanId si no se envía).
+   * @param {{ cursoId: number, docenteId: number, gestionPlanId?: number, vigente?: boolean }} data
+   */
+  async asignarDocenteCurso(data) {
+    try {
+      const response = await apiClient.post(DOCENTES_ENDPOINTS.ASIGNAR_CURSO, data);
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al guardar la asignación docente del curso');
+    }
+  }
+
   async eliminarAsignacion(asignacionId) {
     try {
       const response = await apiClient.delete(DOCENTES_ENDPOINTS.ASIGNACION_BY_ID(asignacionId));

@@ -26,6 +26,42 @@
  * @param {Object} response - Respuesta de axios
  * @returns {{success: boolean, data?: Array|Object, error?: string|Object}}
  */
+/**
+ * @param {string} baseMessage
+ * @param {{ details?: unknown } | null} errorData
+ */
+function appendValidationDetailsToMessage(baseMessage, errorData) {
+  const details = errorData?.details;
+  if (!Array.isArray(details) || !details.length) {
+    return baseMessage;
+  }
+  const lines = details.map((d) => {
+    if (d == null) return null;
+    if (typeof d === 'string') return `• ${d}`;
+    if (typeof d !== 'object') return `• ${String(d)}`;
+    const { cursoId, dia, horaInicio, horaFin, reason, field, invalid } = d;
+    if (field != null && invalid != null) {
+      return `• ${field}: ${Array.isArray(invalid) ? invalid.join(', ') : String(invalid)}`;
+    }
+    const time =
+      horaInicio != null && horaFin != null ? `${horaInicio} – ${horaFin}` : '';
+    const curso = cursoId != null ? `curso #${cursoId}` : '';
+    let cause = '';
+    if (reason === 'HORARIO_NO_EXISTE') {
+      cause = 'esa franja no existe en el catálogo de horarios del sistema.';
+    } else if (reason) {
+      cause = String(reason);
+    }
+    if (dia && time) {
+      return `• ${dia} ${time}${curso ? ` (${curso})` : ''}: ${cause || 'revisar datos.'}`;
+    }
+    return `• ${JSON.stringify(d)}`;
+  });
+  const filtered = lines.filter(Boolean);
+  if (!filtered.length) return baseMessage;
+  return `${baseMessage}\n\n${filtered.join('\n')}`;
+}
+
 export function handleSuccessResponse(response) {
   const responseData = response.data;
   
@@ -93,11 +129,16 @@ export function handleErrorResponse(error, defaultMessage = 'Error en la petici�
         errorMessage = JSON.stringify(errorData);
       }
     }
-    
+
+    const withDetails =
+      typeof errorData === 'object' && errorData != null
+        ? appendValidationDetailsToMessage(errorMessage, errorData)
+        : errorMessage;
+
     // Retornar objeto con error como string y opcionalmente el objeto completo para casos especiales
     return {
       success: false,
-      error: errorMessage, // Siempre string para evitar problemas de renderizado
+      error: withDetails,
       errorDetails: typeof errorData === 'object' ? errorData : null, // Objeto completo opcional
     };
   }

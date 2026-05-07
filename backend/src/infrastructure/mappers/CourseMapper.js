@@ -82,13 +82,17 @@ export class CourseMapper {
     const data = entity instanceof Course ? entity.toPlainObject() : entity;
 
     // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
-    return {
+    const row = {
       codigo: data.code,
       paraleloId: data.parallelId || null,
       asignaturaPlanId: data.planSubjectId || null,
       cupoMaximo: data.maxCapacity !== undefined ? data.maxCapacity : 35,
       cupoMinimo: data.minCapacity !== undefined ? data.minCapacity : 10,
     };
+    if (data.colorHex != null && String(data.colorHex).trim() !== '') {
+      row.colorHex = String(data.colorHex).trim();
+    }
+    return row;
   }
 
   /**

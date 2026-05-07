@@ -83,6 +83,8 @@ export const DOCENTES_ENDPOINTS = {
   ASIGNACIONES: `${API_BASE}/docentes/asignaciones`,
   /** PATCH — actualizar asignación docente */
   ASIGNACION_BY_ID: (asignacionId) => `${API_BASE}/docentes/asignaciones/${asignacionId}`,
+  /** POST — alta/reasignación por curso (upsert) */
+  ASIGNAR_CURSO: `${API_BASE}/docentes/asignaciones/curso`,
   /** GET — catálogo de planes habilitados (asignación docente) */
   PLANES_HABILITADOS: `${API_BASE}/docentes/planes-habilitados`,
   /** GET — periodos del plan de estudios del plan habilitado (query gestionPlanId) */
@@ -140,10 +142,21 @@ export const DISCAPACIDAD_ENDPOINTS = createCRUDEndpoints('/discapacidad');
 // ============================================
 // MÓDULO: ACADÉMICO
 // ============================================
+export const CURSOS_ENDPOINTS = {
+  BY_ID: (id) => `${API_BASE}/cursos/${id}`,
+};
+
 export const PARALELOS_ENDPOINTS = {
   ...createCRUDEndpoints('/paralelos'),
+  CURSOS_OFERTA: (id) => `${API_BASE}/paralelos/${id}/cursos-oferta`,
+  CURSOS_POST: (id) => `${API_BASE}/paralelos/${id}/cursos`,
   // Endpoint específico para obtener horarios de un paralelo
   SCHEDULE: (id) => `${API_BASE}/paralelos/${id}/schedule`,
+  // PUT /v1/paralelos/:id/schedule — persistir plan semanal
+  SCHEDULE_PUT: (id) => `${API_BASE}/paralelos/${id}/schedule`,
+  DASHBOARD_PARALELOS_ESTADO: `${API_BASE}/paralelos/dashboard/paralelos-estado`,
+  DASHBOARD_ASIGNATURAS_SIN_CURSO: `${API_BASE}/paralelos/dashboard/asignaturas-sin-curso`,
+  DASHBOARD_CAPACIDAD_TURNO: `${API_BASE}/paralelos/dashboard/capacidad-turno`,
 };
 export const GESTIONES_ENDPOINTS = createCRUDEndpoints('/gestiones');
 

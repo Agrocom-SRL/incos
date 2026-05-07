@@ -15,8 +15,9 @@
  * Uso: Solo dentro del componente FormField
  */
 
-import { Form, Typography } from 'antd';
+import { Form, Typography, InputNumber, Flex } from 'antd';
 import { useEffect } from 'react';
+import { HexColorPicker } from 'react-colorful';
 import {
   FieldInput,
   FieldSelect,
@@ -30,11 +31,57 @@ import {
   Alert
 } from '@atoms';
 
-const { Paragraph } = Typography;
+const { Paragraph, Text } = Typography;
 
 /**
- * Renderer para campo de tipo input
+ * HexColorPicker (react-colorful): el Form.Item inyecta value/onChange como string #RRGGBB.
  */
+const FormHexColorPicker = ({ value, onChange, disabled, readOnly, field }) => {
+    const d = disabled || readOnly;
+    const safe = typeof value === 'string' && /^#[0-9A-Fa-f]{6}$/i.test(value) ? value : '#1890ff';
+    return (
+        <Flex vertical gap={8} style={{ maxWidth: 280 }}>
+            <div
+                style={{ opacity: d ? 0.55 : 1, pointerEvents: d ? 'none' : 'auto' }}
+                aria-label={field?.ariaLabel || field?.label}
+            >
+                <HexColorPicker
+                    color={safe}
+                    onChange={onChange}
+                    style={{ width: '100%', height: 140, borderRadius: 8 }}
+                />
+            </div>
+            {field?.helperText ? (
+                <Text type="secondary" style={{ fontSize: 13 }}>
+                    {field.helperText}
+                </Text>
+            ) : null}
+            <Text type="secondary" code style={{ fontSize: 12 }}>
+                {safe}
+            </Text>
+        </Flex>
+    );
+};
+
+const renderColor = (field, disabled, readOnly) => (
+    <FormHexColorPicker disabled={disabled} readOnly={readOnly} field={field} />
+);
+
+/**
+ * Renderer para números enteros (cupo, cantidades) con InputNumber de Ant Design
+ */
+const renderNumber = (field, disabled, readOnly) => (
+  <InputNumber
+    className={field.className ? `field-input ${field.className}`.trim() : 'field-input'}
+    style={{ width: '100%', ...(field.style || {}) }}
+    placeholder={field.placeholder}
+    disabled={disabled || readOnly}
+    min={field.min}
+    max={field.max}
+    step={field.step ?? 1}
+  />
+);
+
 const renderInput = (field, disabled, readOnly) => (
   <FieldInput
     placeholder={field.placeholder}
@@ -339,6 +386,8 @@ const renderHidden = () => <input type="hidden" />;
 export const fieldRenderers = {
   hidden: renderHidden,
   input: renderInput,
+  number: renderNumber,
+  color: renderColor,
   search: renderSearch,
   select: renderSelect,
   date: renderDate,
@@ -359,6 +408,8 @@ export const fieldRenderers = {
 const fieldRendererParams = {
   hidden: ['field', 'disabled', 'readOnly'],
   input: ['field', 'disabled', 'readOnly'],
+  number: ['field', 'disabled', 'readOnly'],
+  color: ['field', 'disabled', 'readOnly'],
   search: ['field', 'disabled', 'readOnly'],
   switch: ['field', 'disabled', 'readOnly'],
   textarea: ['field', 'disabled', 'readOnly'],

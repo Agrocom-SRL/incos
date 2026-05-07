@@ -1,5 +1,5 @@
 # Matriz de Permisos - Instituto INCOS
-## Ultima actualizacion: 2026-04-24
+## Ultima actualizacion: 2026-04-30
 
 Documento de auditoria funcional (frontend + backend + seeds) sobre permisos por accion.
 
@@ -142,7 +142,7 @@ Este catalogo define las capacidades reales del sistema para evitar ambiguedad e
 ### Inventario frontend de permisos en rutas (single source UI)
 
 El barrido de `frontend/src/presentation/modules/**/routes.jsx` confirma que los codigos usados en UI
-estan alineados con `54-seed-permisos.sql` (96 permisos; ultimo `docentes.editar` id 96) y que la visibilidad del sidebar en v2 depende de accion **LISTAR** (no existe `VER` en `permiso_acciones`).
+estan alineados con `54-seed-permisos.sql` (100 permisos; ultimo `institucional.horario.publicacion` id 100) y que la visibilidad del sidebar en v2 depende de accion **LISTAR** (no existe `VER` en `permiso_acciones`).
 
 ### Nota de compatibilidad documental
 
@@ -245,8 +245,28 @@ Permisos: `docentes.*`, `docentes.supervision.*`
 | EDITAR | Ajustes supervision | ADM, REC, DIRA |
 | APROBAR | Licencias docentes | ADM, REC, DIRA |
 
-### INST - Gestiones y configuracion (`/gestiones/*`, `/configuracion/*`)
+### INST - Institucional (`/institucional/*`)
 Permisos: `institucional.*`
+
+Rutas simplificadas vigentes del modulo:
+- `/institucional/actual`
+- `/institucional/cronogramas`
+- `/institucional/oferta`
+- `/institucional/horarios`
+- `/institucional/pasadas`
+
+Subrutas operativas de horarios:
+- `/institucional/horarios/generar`
+- `/institucional/horarios/plantilla`
+- `/institucional/horarios/armado`
+- `/institucional/horarios/conflictos`
+- `/institucional/horarios/publicacion`
+
+Permisos nuevos por etapas de horarios:
+- `97 institucional.horario.plantilla`
+- `98 institucional.horario.armado`
+- `99 institucional.horario.conflictos`
+- `100 institucional.horario.publicacion`
 
 | Accion | Descripcion | Roles |
 |---|---|---|

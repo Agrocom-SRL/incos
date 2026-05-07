@@ -21,7 +21,15 @@ const hexToRgb = (hex) => {
   };
 };
 
-const DocenteHorarioSemanaCell = ({ items = [] }) => {
+const DocenteHorarioSemanaCell = ({
+  items = [],
+  // Props opcionales usados por ParaleloPlanSemanaCell / grilla extendida (no se reenvían al DOM)
+  slotDia: _slotDia,
+  slotMinutes: _slotMinutes,
+  editable = false,
+  onBeginDragChip: _onBeginDragChip,
+  onDeleteChip: _onDeleteChip,
+}) => {
   if (!items.length) {
     return <div className="da-cal-semanal__cell-inner da-cal-semanal__cell-inner--empty" aria-hidden />;
   }
@@ -35,7 +43,7 @@ const DocenteHorarioSemanaCell = ({ items = [] }) => {
         const chipStyle = rgb
           ? {
             borderColor: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 1)`,
-            backgroundColor: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.5)`,
+            backgroundColor: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.38)`,
             boxShadow: `inset 0 0 0 1px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.2)`,
           }
           : undefined;

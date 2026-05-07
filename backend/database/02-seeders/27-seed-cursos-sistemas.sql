@@ -76,14 +76,16 @@ INSERT INTO cursos (id, codigo, paralelo_id, asignatura_plan_id, cupo_maximo, cu
 -- ============================================
 -- PALETA AUTOMÁTICA POR CÓDIGO DE CURSO
 -- ============================================
--- Regla: color derivado de CRC32(codigo), con rango RGB 96-223
--- para asegurar mezcla amplia y evitar colores extremos (muy oscuros/muy claros).
+-- Regla nueva:
+-- - Color único por curso usando el id global (1-140).
+-- - Salto fuerte entre tonos para evitar cursos vecinos con color similar.
+-- - No depende de bloques/periodos para no "agrupar" visualmente por gama.
 UPDATE cursos
 SET color_hex = CONCAT(
   '#',
-  LPAD(HEX(96 + ((CRC32(codigo) >> 16) & 127)), 2, '0'),
-  LPAD(HEX(96 + ((CRC32(codigo) >> 8) & 127)), 2, '0'),
-  LPAD(HEX(96 + (CRC32(codigo) & 127)), 2, '0')
+  LPAD(HEX((id * 47 + 83) % 256), 2, '0'),
+  LPAD(HEX((id * 91 + 149) % 256), 2, '0'),
+  LPAD(HEX((id * 163 + 37) % 256), 2, '0')
 )
 WHERE id BETWEEN 1 AND 30;
 

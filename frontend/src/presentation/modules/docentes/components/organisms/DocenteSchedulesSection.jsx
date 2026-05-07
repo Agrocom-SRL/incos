@@ -10,7 +10,13 @@ import DocenteHorarioSemanalGrid from '@docentes/components/organisms/DocenteHor
 const countBloques = (courseSchedules) =>
   (courseSchedules || []).reduce((n, c) => n + (c.bloques?.length ?? 0), 0);
 
-const DocenteSchedulesSection = ({ courseSchedules = [], puedeAsignarMaterias = false, onAsignarMaterias }) => {
+const DocenteSchedulesSection = ({
+  courseSchedules = [],
+  puedeAsignarMaterias = false,
+  onAsignarMaterias,
+  compact = false,
+  emptyDescription = 'Sin bloques de horario vinculados a cursos vigentes',
+}) => {
   const total = countBloques(courseSchedules);
 
   const emptyExtra =
@@ -22,17 +28,21 @@ const DocenteSchedulesSection = ({ courseSchedules = [], puedeAsignarMaterias = 
 
   return (
     <section className="da-cal-semanal-section" aria-labelledby="da-cal-semanal-section-title">
-      <header className="da-cal-semanal-section__head">
-        <ScheduleOutlined className="da-cal-semanal-section__icon" aria-hidden />
-        <h2 id="da-cal-semanal-section-title" className="da-cal-semanal-section__title">
-          Calendario semanal
-        </h2>
-      </header>
-      <p className="da-cal-semanal-section__lede">Franjas según bloques reales del horario (normalmente de 45 min), separando lunes-viernes y sábado cuando tienen parrillas distintas. En cada celda: horario del bloque, curso, aula, turno y paralelo.</p>
+      {!compact ? (
+        <>
+          <header className="da-cal-semanal-section__head">
+            <ScheduleOutlined className="da-cal-semanal-section__icon" aria-hidden />
+            <h2 id="da-cal-semanal-section-title" className="da-cal-semanal-section__title">
+              Calendario semanal
+            </h2>
+          </header>
+          <p className="da-cal-semanal-section__lede">Franjas según bloques reales del horario (normalmente de 45 min), separando lunes-viernes y sábado cuando tienen parrillas distintas. En cada celda: horario del bloque, curso, aula, turno y paralelo.</p>
+        </>
+      ) : null}
       {total === 0 ? (
         <Empty
           image={Empty.PRESENTED_IMAGE_SIMPLE}
-          description="Sin bloques de horario vinculados a cursos vigentes"
+          description={emptyDescription}
           extra={emptyExtra}
         />
       ) : (

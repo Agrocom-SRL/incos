@@ -110,6 +110,12 @@
             "@application-docentes/*": [
                 "./src/application/modules/docentes/*"
             ],
+            "@application-institucional": [
+                "./src/application/modules/institucional"
+            ],
+            "@application-institucional/*": [
+                "./src/application/modules/institucional/*"
+            ],
             "@container": [
                 "./src/application/container/index.js"
             ],
@@ -208,11 +214,11 @@
             "@docentes/*": [
                 "./src/presentation/modules/docentes/*"
             ],
-            "@gestiones": [
-                "./src/presentation/modules/gestiones"
+            "@institucional": [
+                "./src/presentation/modules/institucional"
             ],
-            "@gestiones/*": [
-                "./src/presentation/modules/gestiones/*"
+            "@institucional/*": [
+                "./src/presentation/modules/institucional/*"
             ],
             "@historial": [
                 "./src/presentation/modules/historial"

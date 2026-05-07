@@ -1,0 +1,250 @@
+/**
+ * Gestión de horarios — layout alineado con dashboard (shell + planificación).
+ */
+
+.horarios-gestion-planificacion .sd-tabs-shell {
+    margin-top: 0;
+}
+
+.horarios-gestion-planificacion .ant-tabs-content-holder {
+    padding-top: 0;
+}
+
+/* Pestañas Tablero / Tabla: icono + texto; activo resaltado con color primario */
+.horarios-plan-tab-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.horarios-gestion-planificacion__tabs .horarios-plan-tab-label__icon {
+    font-size: 16px;
+    color: var(--ant-color-text-secondary);
+    transition: color 0.2s ease;
+}
+
+.horarios-gestion-planificacion__tabs .ant-tabs-tab-active .horarios-plan-tab-label__icon {
+    color: var(--ant-color-primary);
+}
+
+.horarios-gestion-planificacion__tabs .ant-tabs-tab-active .horarios-plan-tab-label span:last-child {
+    font-weight: 600;
+}
+
+/* Shell con .horarios-armado-page: mismo lenguaje de pestañas que el armado (ink bar + hover) */
+.horarios-armado-page.sd-tabs-shell .sd-tabs .ant-tabs-tab {
+    border-radius: 8px 8px 0 0;
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease;
+}
+
+.horarios-armado-page.sd-tabs-shell .sd-tabs .ant-tabs-tab:hover:not(.ant-tabs-tab-active) {
+    background: var(--ant-color-fill-secondary);
+}
+
+.horarios-armado-page.sd-tabs-shell .sd-tabs .ant-tabs-tab:hover:not(.ant-tabs-tab-active) .horarios-plan-tab-label__icon,
+.horarios-armado-page.sd-tabs-shell .sd-tabs .ant-tabs-tab:hover:not(.ant-tabs-tab-active) .horarios-armado-tab__icon {
+    color: var(--ant-color-primary);
+}
+
+.horarios-armado-page.sd-tabs-shell .sd-tabs .ant-tabs-tab-active {
+    background: var(--ant-color-fill-quaternary);
+}
+
+.horarios-armado-page.sd-tabs-shell .sd-tabs .ant-tabs-ink-bar {
+    height: 3px;
+    border-radius: 3px 3px 0 0;
+    background: var(--ant-color-primary);
+}
+
+.horarios-gestion-board__status-dot {
+    display: inline-block;
+    flex-shrink: 0;
+    width: 12px;
+    height: 12px;
+    border-radius: 999px;
+}
+
+/* Filtros: título + limpiar en la misma fila superior */
+.horarios-filters-bar__header {
+    width: 100%;
+    min-width: 0;
+}
+
+.horarios-filters-bar__clear {
+    flex-shrink: 0;
+}
+
+/* Tablero: lista de tarjetas con altura máxima y scroll */
+.horarios-gestion-board__scroll {
+    max-height: min(650px, 55vh);
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 4px;
+    margin-inline: -2px;
+}
+
+/* Tarjeta de paralelo: borde + sombra para separar ítems dentro del grupo y del resto del tablero */
+.horarios-paralelo-card.card {
+    border-radius: 10px;
+    border-color: var(--color-border);
+    background: var(--ant-color-bg-container);
+    transition:
+        box-shadow 0.2s ease,
+        transform 0.2s ease;
+}
+
+.horarios-paralelo-card.card:hover {
+    box-shadow:
+        0 0 0 1px var(--ant-color-border),
+        0 6px 16px rgba(15, 23, 42, 0.08),
+        0 2px 4px rgba(15, 23, 42, 0.05) !important;
+    transform: translateY(-1px);
+}
+
+.horarios-paralelo-card.card .ant-card-head {
+    background: linear-gradient(180deg, var(--ant-color-fill-quaternary) 0%, var(--ant-color-bg-container) 100%);
+    border-bottom-color: var(--ant-color-border-secondary);
+}
+
+.horarios-paralelo-card .horarios-paralelo-card__meta {
+    margin-bottom: 6px !important;
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.horarios-paralelo-card .horarios-paralelo-card__courses {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 12px;
+}
+
+/* Tabla agrupada */
+.horarios-paralelos-table-embedded {
+    width: 100%;
+    min-width: 0;
+}
+
+.horarios-paralelos-table-scroll {
+    max-height: min(520px, 58vh);
+    overflow: auto;
+    padding-bottom: 4px;
+}
+
+.horarios-table-group + .horarios-table-group {
+    margin-top: 16px;
+}
+
+.horarios-table-group__heading {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    margin-bottom: 8px;
+    padding: 8px 10px;
+    background: var(--ant-color-fill-secondary);
+    border-radius: 8px;
+    border: 1px solid var(--color-border);
+}
+
+/* Tinte viene del inline style; refuerzo legibilidad del subtítulo sobre fondo coloreado */
+.horarios-table-group__heading--carrera .horarios-table-group__sub {
+    color: var(--ant-color-text-secondary);
+}
+
+.horarios-table-group__sub {
+    font-size: 14px;
+}
+
+.horarios-paralelos-table__inner .ant-table-thead > tr > th {
+    font-size: 12px;
+}
+
+.horarios-paralelos-table__action-btn {
+    min-width: 132px;
+    white-space: nowrap;
+}
+
+/* Pestañas: el panel no estira la página indefinidamente */
+.horarios-gestion-planificacion__tabs .ant-tabs-content-holder {
+    min-height: 0;
+}
+
+/* Armado: chip en plan semanal */
+.horarios-plan-chip__remove {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: none;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.06);
+    color: var(--ant-color-text);
+    cursor: pointer;
+    line-height: 1;
+}
+
+.horarios-plan-chip__remove:hover {
+    background: rgba(255, 77, 79, 0.15);
+    color: var(--ant-color-error);
+}
+
+.da-cal-semanal__chip.da-cal-semanal__chip--draggable {
+    position: relative;
+    cursor: grab;
+}
+
+.da-cal-semanal__chip--draggable:active {
+    cursor: grabbing;
+}
+
+.horarios-armado-plan {
+    min-width: 0;
+}
+
+/* Armado de horarios — mismo patrón de pestañas que docentes / sd-tabs */
+.horarios-armado-page {
+    width: 100%;
+    min-width: 0;
+}
+
+.horarios-armado-tab-body {
+    min-width: 0;
+}
+
+.horarios-armado-page .sd-tabs .horarios-armado-tab__icon {
+    font-size: 16px;
+    color: var(--ant-color-text-secondary);
+    transition: color 0.2s ease;
+}
+
+.horarios-armado-page .sd-tabs .ant-tabs-tab-active .horarios-armado-tab__icon {
+    color: var(--ant-color-primary);
+}
+
+.horarios-armado-page .sd-tabs .ant-tabs-tab-active .sd-tab-label span:last-child {
+    font-weight: 600;
+}
+
+.horarios-armado-context {
+    padding: 16px;
+    border-radius: 10px;
+    border: 1px solid var(--ant-color-border-secondary, #e8e8e8);
+    background: var(--ant-color-fill-quaternary, #fafafa);
+}
+
+.horarios-armado-context__img {
+    display: block;
+}
+
+.horarios-armado-cursos__lista {
+    margin: 0;
+    padding-left: 1.1rem;
+}
