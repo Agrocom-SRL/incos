@@ -1,5 +1,5 @@
 import express from 'express';
-import { authenticate } from '../middleware/auth.middleware.js';
+import { listarCatalogoReferencia } from '../middleware/permisos.middleware.js';
 import { listMunicipiosValidator } from '../validators/geograficos/index.js';
 
 /**
@@ -22,7 +22,7 @@ import { listMunicipiosValidator } from '../validators/geograficos/index.js';
 export function buildMunicipiosRouter({ controllers, middlewares }) {
     const router = express.Router();
     const { validateRequest } = middlewares;
-    // Catálogo de referencia: solo autenticación requerida, sin permiso específico
+    // Catálogo de referencia: `sistema.catalogo.referencia` + LISTAR (seed 101)
 
     // ============================================
     // CRUD BÁSICO
@@ -41,7 +41,7 @@ export function buildMunicipiosRouter({ controllers, middlewares }) {
      */
     router.get(
         '/',
-        authenticate,
+        ...listarCatalogoReferencia,
         listMunicipiosValidator,
         validateRequest,
         (req, res, next) => controllers.listMunicipiosController.handle(req, res, next)

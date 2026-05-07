@@ -30,6 +30,8 @@ export function buildParalelosRouter({ controllers, middlewares }) {
     const { validateRequest } = middlewares;
     const verHorarios = [authenticate, verificarPermiso('institucional.gestion.horarios', 'LISTAR')];
     const crearCursoOferta = [authenticate, verificarPermiso('institucional.gestion.horarios', 'CREAR')];
+    /** Persistir bloques del plan semanal: mismo criterio que ruta `/institucional/horarios/armado` (permiso 98). */
+    const persistirPlanArmado = [authenticate, verificarPermiso('institucional.horario.armado', 'EDITAR')];
 
     // ============================================
     // CRUD BÁSICO
@@ -107,7 +109,7 @@ export function buildParalelosRouter({ controllers, middlewares }) {
      */
     router.put(
         '/:id/schedule',
-        ...verHorarios,
+        ...persistirPlanArmado,
         idValidator,
         putParaleloScheduleValidator,
         validateRequest,

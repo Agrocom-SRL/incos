@@ -13,7 +13,7 @@
 --   [NUEVO]   permiso 85:     historial actividades (cfg)
 --   [NUEVO]   permiso 96: docentes.editar (ficha + eliminar cuando aplique API)
 --   [NUEVO]   permisos 97-100: gestión de horarios por etapas (plantilla, armado, conflictos, publicación)
---   [TOTAL]   100 permisos
+--   [TOTAL]   101 permisos (incluye sistema.catalogo.referencia)
 --
 -- Ejecutar después de: 53-seed-roles.sql
 -- Ejecutar antes de:   56-seed-permiso-acciones.sql, 55-seed-roles-permisos.sql
@@ -139,11 +139,12 @@ INSERT INTO permisos (id, codigo, nombre, dominio, modulo, grupo_ui, ruta_sideba
 (97, 'institucional.horario.plantilla',  'Gestión de horarios: trabajar plantilla base',         'INSTITUCIONAL', 'INST', 'inst_horarios', '/institucional/horarios/plantilla',      TRUE),
 (98, 'institucional.horario.armado',     'Gestión de horarios: armado operativo de bloques',     'INSTITUCIONAL', 'INST', 'inst_horarios', '/institucional/horarios/armado',         TRUE),
 (99, 'institucional.horario.conflictos', 'Gestión de horarios: revisión y resolución de conflictos', 'INSTITUCIONAL', 'INST', 'inst_horarios', '/institucional/horarios/conflictos',     TRUE),
-(100, 'institucional.horario.publicacion', 'Gestión de horarios: publicación de horarios vigentes', 'INSTITUCIONAL', 'INST', 'inst_horarios', '/institucional/horarios/publicacion',    TRUE);
+(100, 'institucional.horario.publicacion', 'Gestión de horarios: publicación de horarios vigentes', 'INSTITUCIONAL', 'INST', 'inst_horarios', '/institucional/horarios/publicacion',    TRUE),
+(101, 'sistema.catalogo.referencia', 'Catálogos de referencia (ubicación, tipos y listas de apoyo a formularios)', 'CONFIGURACION', 'CFG', 'cfg_catalogos', '/configuracion/academico', TRUE);
 
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- Verificación post-insert:
--- SELECT COUNT(*) FROM permisos WHERE activo = 1;                        -- 100
+-- SELECT COUNT(*) FROM permisos WHERE activo = 1;                        -- 101
 -- SELECT COUNT(*) FROM permisos WHERE grupo_ui IS NULL AND activo = 1;   -- 0
 -- SELECT COUNT(*) FROM permisos WHERE ruta_sidebar IS NULL AND activo=1; -- 0

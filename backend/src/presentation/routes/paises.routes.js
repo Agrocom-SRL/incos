@@ -1,5 +1,5 @@
 import express from 'express';
-import { authenticate } from '../middleware/auth.middleware.js';
+import { listarCatalogoReferencia } from '../middleware/permisos.middleware.js';
 import { listValidator } from '../validators/common/index.js';
 
 /**
@@ -22,7 +22,7 @@ import { listValidator } from '../validators/common/index.js';
 export function buildPaisesRouter({ controllers, middlewares }) {
     const router = express.Router();
     const { validateRequest } = middlewares;
-    // Catálogo de referencia: solo autenticación requerida, sin permiso específico
+    // Catálogo de referencia: `sistema.catalogo.referencia` + LISTAR (seed 101)
 
     // ============================================
     // CRUD BÁSICO
@@ -41,7 +41,7 @@ export function buildPaisesRouter({ controllers, middlewares }) {
      */
     router.get(
         '/',
-        authenticate,
+        ...listarCatalogoReferencia,
         listValidator,
         validateRequest,
         (req, res, next) => controllers.listPaisesController.handle(req, res, next)

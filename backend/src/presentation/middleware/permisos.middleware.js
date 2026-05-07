@@ -1,3 +1,4 @@
+import { authenticate } from './auth.middleware.js';
 import { getAppContainer } from './container-ref.js';
 import { REPOSITORIOS_TOKENS } from '../../infrastructure/container/tokens/index.js';
 
@@ -59,3 +60,12 @@ export function verificarPermisoCualquiera(pares) {
     }
   };
 }
+
+/**
+ * Listados de catálogo de referencia (país, ubicación, tipos, métodos de pago, etc.).
+ * Permiso `sistema.catalogo.referencia` (id 101) + LISTAR — debe existir en `permiso_acciones` y en `roles_permisos` para cada rol operativo (ADMIN_SISTEMA lo hereda del catálogo).
+ */
+export const listarCatalogoReferencia = [
+  authenticate,
+  verificarPermiso('sistema.catalogo.referencia', 'LISTAR'),
+];

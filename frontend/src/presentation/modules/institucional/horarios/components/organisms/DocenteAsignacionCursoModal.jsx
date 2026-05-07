@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Badge, Col, Flex, Modal, Row, Space, Tag, Typography, message } from 'antd';
+import { Alert, Badge, Col, Flex, Modal, Row, Space, Tag, Typography, message } from 'antd';
 import { TeamOutlined } from '@ant-design/icons';
 import { SearchBar } from '@atoms';
+import { useAuthContext } from '@application-auth';
 import { useDocentesApi } from '@application-docentes/hooks/api';
 import DocenteRepository from '@implementations/DocenteRepository';
 import DocenteHorarioSemanalGrid from '@docentes/components/organisms/DocenteHorarioSemanalGrid';
@@ -36,6 +37,8 @@ const DocenteAsignacionCursoModal = ({
     const [loadingAsignacion, setLoadingAsignacion] = useState(false);
     const [cursoAsignacion, setCursoAsignacion] = useState(null);
     const { docentes = [] } = useDocentesApi();
+    const { hasPermiso } = useAuthContext();
+    const puedeGuardarAsignacion = hasPermiso('docentes.asignar', 'EDITAR');
 
     const docenteCandidates = useMemo(() => {
         const query = candidateSearch.trim().toLowerCase();
@@ -84,7 +87,7 @@ const DocenteAsignacionCursoModal = ({
     }, [open, selectedCourse?.cursoId]);
 
     const handleConfirm = async () => {
-        if (!selectedCourse?.cursoId || !selectedDocenteId) return;
+        if (!puedeGuardarAsignacion || !selectedCourse?.cursoId || !selectedDocenteId) return;
         setSaving(true);
         try {
             const result = await DocenteRepository.asignarDocenteCurso({
@@ -138,11 +141,21 @@ const DocenteAsignacionCursoModal = ({
                 destroyOnHidden
                 okText="Guardar asignacion"
                 onOk={handleConfirm}
-                okButtonProps={{ disabled: !selectedDocente || saving, loading: saving }}
+                okButtonProps={{
+                    disabled: !selectedDocente || saving || !puedeGuardarAsignacion,
+                    loading: saving,
+                }}
                 cancelText="Cancelar"
             >
                 <Flex gap={16} vertical>
-                    
+                    {!puedeGuardarAsignacion ? (
+                        <Alert
+                            type="warning"
+                            showIcon
+                            title="Sin permiso para asignar docente"
+                            description="Se requiere docentes.asignar (EDITAR). Podés revisar el horario; para guardar cambios pedí acceso al administrador."
+                        />
+                    ) : null}
                     <Text type="secondary">
                         Paralelo: {paraleloLabel || '—'} · Materia: {selectedCourse?.materiaNombre || '—'}
                     </Text>

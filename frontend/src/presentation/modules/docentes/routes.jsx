@@ -1,6 +1,11 @@
 // src/presentation/modules/docentes/routes.jsx
 /**
  * Rutas del módulo de Docentes (dominio Docentes).
+ *
+ * Orden: todas las rutas literales (`/docentes/listar`, `/docentes/asignar`, `/docentes/licencias/...`)
+ * deben declararse antes de `/docentes/:id` para que React Router no interprete segmentos fijos como `:id`.
+ *
+ * Los campos `permiso` + `accion` se aplican en `routerFactory` vía `PrivateRoute` (RBAC alineado con seeders).
  */
 
 import { UnderConstruction } from '@components/pages';
@@ -46,33 +51,6 @@ export const docentesRoutes = [
     breadcrumbParent: 'DOC-LIST',
   },
   {
-    path: '/docentes/:id/asignaciones',
-    element: <DocentesAsignacionesGestionConnector />,
-    key: 'DOC-ASIGNACIONES-GESTION',
-    permiso: 'docentes.asignar',
-    accion: 'EDITAR',
-    menu: null,
-    breadcrumbParent: 'DOC-LIST',
-  },
-  {
-    path: '/docentes/:id/editar',
-    element: <DocentesEditConnector />,
-    key: 'DOC-EDIT',
-    permiso: 'docentes.editar',
-    accion: 'EDITAR',
-    menu: null,
-    breadcrumbParent: 'DOC-LIST',
-  },
-  {
-    path: '/docentes/:id',
-    element: <DocentesDetailConnector />,
-    key: 'DOC-DETAIL',
-    permiso: 'docentes.ver',
-    accion: 'DETALLE',
-    menu: null,
-    breadcrumbParent: 'DOC-LIST',
-  },
-  {
     path: '/docentes/licencias/listar',
     element: <UnderConstruction />,
     key: 'DOC-LIC',
@@ -102,6 +80,33 @@ export const docentesRoutes = [
     accion: 'APROBAR',
     menu: null,
     breadcrumbParent: 'DOC-LIC',
+  },
+  {
+    path: '/docentes/:id/asignaciones',
+    element: <DocentesAsignacionesGestionConnector />,
+    key: 'DOC-ASIGNACIONES-GESTION',
+    permiso: 'docentes.asignar',
+    accion: 'EDITAR',
+    menu: null,
+    breadcrumbParent: 'DOC-LIST',
+  },
+  {
+    path: '/docentes/:id/editar',
+    element: <DocentesEditConnector />,
+    key: 'DOC-EDIT',
+    permiso: 'docentes.editar',
+    accion: 'EDITAR',
+    menu: null,
+    breadcrumbParent: 'DOC-LIST',
+  },
+  {
+    path: '/docentes/:id',
+    element: <DocentesDetailConnector />,
+    key: 'DOC-DETAIL',
+    permiso: 'docentes.ver',
+    accion: 'DETALLE',
+    menu: null,
+    breadcrumbParent: 'DOC-LIST',
   },
 ];
 

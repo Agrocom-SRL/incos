@@ -1,5 +1,5 @@
 import express from 'express';
-import { authenticate } from '../middleware/auth.middleware.js';
+import { listarCatalogoReferencia } from '../middleware/permisos.middleware.js';
 
 /**
  * Rutas del resumen del dashboard (panel principal).
@@ -12,7 +12,7 @@ export function buildDashboardRouter({ controllers }) {
 
   router.get(
     '/resumen',
-    authenticate,
+    ...listarCatalogoReferencia,
     (req, res, next) => controllers.getDashboardResumenController.handle(req, res, next)
   );
 
