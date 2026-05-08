@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Alert, Button as AntButton, Col, Flex, Row, Tabs } from 'antd';
-import { ActionButton } from '@atoms';
+import { Button } from '@atoms';
 import { PlusOutlined } from '@ant-design/icons';
 import { useAcciones } from '@application/modules/shared/hooks/useAcciones';
 import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
@@ -30,6 +30,7 @@ const GestionHorariosAulasAsignarSection = ({
 }) => {
   const { puedeEditar } = useAcciones('institucional.horario.armado');
   const [modoVista, setModoVista] = useState('lectura');
+  const [dragHorarioId, setDragHorarioId] = useState(null);
   const esModoEdicion = modoVista === 'edicion' && puedeEditar;
   const bloquesDia = useMemo(() => (bloques || []).filter((b) => b.dia === diaActivo), [bloques, diaActivo]);
   const bloquesDiaFiltrados = useMemo(
@@ -37,6 +38,18 @@ const GestionHorariosAulasAsignarSection = ({
     [bloquesFiltrados, diaActivo]
   );
   const sinAula = useMemo(() => bloquesDiaFiltrados.filter((b) => !b.aula_id), [bloquesDiaFiltrados]);
+  const sinAulaDiaOrdenados = useMemo(
+    () =>
+      (bloquesDia || [])
+        .filter((b) => Number(b.curso_horario_id) > 0 && !b.aula_id)
+        .sort(
+          (a, b) =>
+            String(a.curso_codigo || '').localeCompare(String(b.curso_codigo || '')) ||
+            Number(a.orden_secuencia || 0) - Number(b.orden_secuencia || 0) ||
+            String(a.hora_inicio || '').localeCompare(String(b.hora_inicio || ''))
+        ),
+    [bloquesDia]
+  );
   const rows = useMemo(() => {
     const map = new Map();
     bloquesDia.forEach((b) => {
@@ -68,7 +81,13 @@ const GestionHorariosAulasAsignarSection = ({
   return (
     <>
       <Row gutter={[12, 12]} align="middle" justify="space-between" style={{ marginBottom: 12 }}>
-        <Col><Tabs activeKey={diaActivo} onChange={setDiaActivo} items={DIAS.map((d) => ({ key: d, label: d }))} /></Col>
+        <Col>
+          <Tabs
+            activeKey={diaActivo}
+            onChange={esModoEdicion ? undefined : setDiaActivo}
+            items={DIAS.map((d) => ({ key: d, label: d, disabled: esModoEdicion }))}
+          />
+        </Col>
         <Col>
           {esModoEdicion ? null : (
             <AntButton type="primary" icon={<PlusOutlined />} onClick={() => setModoVista('edicion')} disabled={!puedeEditar}>
@@ -78,14 +97,14 @@ const GestionHorariosAulasAsignarSection = ({
         </Col>
       </Row>
 
-      <Row gutter={12}>
+      <Row gutter={12} align="stretch" className={esModoEdicion ? 'horarios-aulas-edicion-layout' : undefined}>
         {esModoEdicion ? (
           <Col flex="220px">
-            {sinAula.length === 0 ? (
+            {sinAulaDiaOrdenados.length === 0 ? (
               <Alert type="success" showIcon title="Todos los bloques del día tienen aula asignada." />
             ) : (
-              <div style={{ display: 'grid', gap: 8 }}>
-                {sinAula.map((b) => (
+              <div className="horarios-aulas-edicion-layout__left-scroll" style={{ display: 'grid', gap: 8 }}>
+                {sinAulaDiaOrdenados.map((b) => (
                   <div
                     key={b.curso_horario_id}
                     className="da-cal-semanal__chip"
@@ -100,12 +119,17 @@ const GestionHorariosAulasAsignarSection = ({
                           horarioId: b.horario_id,
                         })
                       );
+                      setDragHorarioId(b.horario_id);
                     }}
+                    onDragEnd={() => setDragHorarioId(null)}
                     style={{ backgroundColor: withAlpha(b.curso_color_hex) }}
                   >
                     <div className="da-cal-semanal__chip-hora">{fmtTime(b.hora_inicio)}-{fmtTime(b.hora_fin)}</div>
                     <div className="da-cal-semanal__chip-curso">{b.materia_sigla || b.materia_nombre}</div>
                     <div className="da-cal-semanal__chip-line">{b.paralelo_nombre} · {b.paralelo_turno}</div>
+                    {b.docente_nombre ? <div className="da-cal-semanal__chip-line">Docente: {b.docente_nombre}</div> : null}
+                    {b.carrera_nombre ? <div className="da-cal-semanal__chip-line"><strong>{b.carrera_nombre}</strong></div> : null}
+                    {b.periodo_nombre ? <div className="da-cal-semanal__chip-line">Periodo: {b.periodo_nombre}</div> : null}
                   </div>
                 ))}
               </div>
@@ -119,17 +143,20 @@ const GestionHorariosAulasAsignarSection = ({
             bloques={bloquesDiaFiltrados}
             puedeEditar={esModoEdicion}
             onDropAsignacion={onDropAsignacion}
+            activeDragHorarioId={dragHorarioId}
+            onSetActiveDragHorarioId={setDragHorarioId}
+            onClearActiveDragHorarioId={() => setDragHorarioId(null)}
           />
         </Col>
       </Row>
       {esModoEdicion ? (
         <Flex justify="flex-end" gap={8} style={{ marginTop: 12 }}>
-          <AntButton onClick={() => setModoVista('lectura')} disabled={patchLoading}>
+          <Button variant="default" onClick={() => setModoVista('lectura')} disabled={patchLoading}>
             Cancelar
-          </AntButton>
-          <ActionButton permiso="institucional.horario.armado" accion="EDITAR" loading={patchLoading}>
+          </Button>
+          <Button variant="primary" onClick={() => setModoVista('lectura')} disabled={patchLoading} loading={patchLoading}>
             Guardar cambios
-          </ActionButton>
+          </Button>
         </Flex>
       ) : null}
     </>
