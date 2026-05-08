@@ -98,7 +98,7 @@ const GestionHorariosPage = () => {
                     breadcrumbItems={breadcrumbItems}
                     actions={
                         <Flex wrap="wrap" gap={allSpacing.marginSM} justify="flex-end">
-                            <Button variant="default" onClick={onVerHorariosAulas}>
+                            <Button variant="warning" onClick={onVerHorariosAulas}>
                                 Horarios en aulas
                             </Button>
                             <ActionButton

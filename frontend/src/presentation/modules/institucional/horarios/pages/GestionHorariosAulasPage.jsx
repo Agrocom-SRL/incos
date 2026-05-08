@@ -1,15 +1,43 @@
 import { useMemo } from 'react';
 import { ArrowLeftOutlined } from '@ant-design/icons';
-import { Alert, Typography } from 'antd';
+import { Card, Flex } from 'antd';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
+import { allColors, allSpacing, componentConfig, shadows } from '@theme/tokens';
 import { useHorariosAulasContext } from '@application-institucional/horarios';
+import { HorariosFiltersBar } from '../components';
+import { GestionHorariosAulasAsignarSection } from '../components/organisms';
 import '@presentation/styles/pages/detail-page.css';
+import '../styles/gestion-horarios-page.css';
 
-const { Paragraph } = Typography;
+const sectionCardProps = {
+    style: {
+        borderRadius: `${componentConfig.Card.borderRadiusLG}px`,
+        boxShadow: shadows.shadowElevation2,
+        border: `1px solid ${allColors.colorBorder}`,
+        backgroundColor: allColors.colorBgContainer,
+    },
+    styles: {
+        body: { padding: `${componentConfig.Card.paddingLG}px` },
+    },
+};
 
 const GestionHorariosAulasPage = () => {
-    const { breadcrumbItems, handleVolver } = useHorariosAulasContext();
+    const {
+        breadcrumbItems,
+        handleVolver,
+        diaActivo,
+        filters,
+        options,
+        onFilterChange,
+        clearFilters,
+        setDiaActivo,
+        bloques,
+        bloquesFiltrados,
+        aulas,
+        onAsignarAula,
+        patchLoading,
+    } = useHorariosAulasContext();
 
     const headerActions = useMemo(
         () => (
@@ -27,19 +55,27 @@ const GestionHorariosAulasPage = () => {
             }
             sidebar={null}
         >
-            <div className="sd sd-spin-body" style={{ padding: '0 8px' }}>
-                <Alert
-                    type="info"
-                    showIcon
-                    title="Vista en construcción"
-                    description={
-                        <Paragraph style={{ marginBottom: 0 }}>
-                            Acá se mostrará la ocupación de aulas y la asignación de espacios físicos a los bloques de
-                            horario. Reemplaza la antigua vista de «conflictos».
-                        </Paragraph>
-                    }
-                />
-            </div>
+            <Card className="horarios-gestion-planificacion" {...sectionCardProps}>
+                <Flex vertical gap={allSpacing.marginLG}>
+                    <HorariosFiltersBar
+                        filters={filters}
+                        options={options}
+                        onFilterChange={onFilterChange}
+                        onClearFilters={clearFilters}
+                        title="Aulas y planificación semanal"
+                        visibleFields={['carrera', 'periodo']}
+                    />
+                    <GestionHorariosAulasAsignarSection
+                        diaActivo={diaActivo}
+                        setDiaActivo={setDiaActivo}
+                        bloques={bloques}
+                        bloquesFiltrados={bloquesFiltrados}
+                        aulas={aulas}
+                        onAsignarAula={onAsignarAula}
+                        patchLoading={patchLoading}
+                    />
+                </Flex>
+            </Card>
         </PageTemplate>
     );
 };

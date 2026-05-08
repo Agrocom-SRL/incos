@@ -19,6 +19,8 @@ import {
   GetParalelosEstadoDashboardUseCase,
   GetTodosParalelosUseCase,
   PutParaleloHorariosUseCase,
+  GetAulasHorariosUseCase,
+  PatchAulaHorarioUseCase,
 } from '@useCases/academico/paralelos';
 import { ActualizarCursoOfertaUseCase, EliminarCursoOfertaUseCase } from '@useCases/academico/cursos';
 import { GetTodasGestionesUseCase } from '@useCases/academico/gestiones';
@@ -76,6 +78,14 @@ export function registerAcademicoModule(factory) {
 
   factory.obtenerCapacidadTurno = () => {
     return new GetCapacidadTurnoUseCase(paraleloRepository);
+  };
+
+  factory.obtenerAulasHorarios = () => {
+    return new GetAulasHorariosUseCase(paraleloRepository);
+  };
+
+  factory.asignarAulaHorario = () => {
+    return new PatchAulaHorarioUseCase(paraleloRepository);
   };
 
   // Registrar Use Cases de Gestiones

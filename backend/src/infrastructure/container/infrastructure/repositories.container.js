@@ -126,6 +126,7 @@ import { ContributionPaymentRepository } from '../../repositories/ContributionPa
 import { ContributionPaymentInstallmentRepository } from '../../repositories/ContributionPaymentInstallmentRepository.js';
 import { PaymentAporteCareerExcelReportRepository } from '../../repositories/PaymentAporteCareerExcelReportRepository.js';
 import { DashboardRepository } from '../../repositories/DashboardRepository.js';
+import { AulasHorariosSemanaRepository } from '../../repositories/AulasHorariosSemanaRepository.js';
 
 /**
  * Registra todas las dependencias de repositorios
@@ -255,6 +256,7 @@ export function registerRepositoriesModule(container) {
     // DASHBOARD
     // ============================================
     registerRepository(container, REPOSITORIOS_TOKENS.dashboardRepository, DashboardRepository);
+    registerRepository(container, REPOSITORIOS_TOKENS.aulasHorariosSemanaRepository, AulasHorariosSemanaRepository);
 
     return container;
 }

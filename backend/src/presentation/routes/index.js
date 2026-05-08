@@ -12,6 +12,7 @@ import {
     PAGOS_TOKENS,
     DASHBOARD_TOKENS,
     DOCENTES_TOKENS,
+    AULAS_HORARIOS_TOKENS,
 } from '../../infrastructure/container/tokens/index.js';
 
 const router = express.Router();
@@ -66,6 +67,7 @@ router.get('/', (req, res) => {
             docentesCursosPorParalelo: '/api/v1/docentes/cursos-por-paralelo?paraleloId=',
             docentesCursosDisponibles: '/api/v1/docentes/cursos-disponibles?gestionPlanId=',
             docentesCursoHorarios: '/api/v1/docentes/cursos/:cursoId/horarios',
+            aulasHorarios: '/api/v1/aulas/horarios',
         },
     });
 });
@@ -146,6 +148,7 @@ router.use('/dashboard', container.resolve(DASHBOARD_TOKENS.dashboardRouter));
 // 9. MÓDULO: DOCENTES
 // ============================================
 router.use('/docentes', container.resolve(DOCENTES_TOKENS.docentesRouter));
+router.use('/aulas', container.resolve(AULAS_HORARIOS_TOKENS.aulasHorariosRouter));
 
 // Para agregar un nuevo módulo:
 // 1. Crear archivo: routes/{modulo}.routes.js

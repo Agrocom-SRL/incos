@@ -36,15 +36,31 @@ const FilterField = ({ label, value, rawOptions, onChange }) => {
     );
 };
 
-const HorariosFiltersBar = ({ filters, options, onFilterChange, onClearFilters }) => {
-    const hayFiltrosActivos =
-        filters?.carrera !== 'all' || filters?.periodo !== 'all' || filters?.turno !== 'all';
+const DEFAULT_FIELDS = ['carrera', 'periodo', 'turno'];
 
-    const fields = [
-        { key: 'carrera', label: 'Carrera', raw: options.carreras },
-        { key: 'periodo', label: 'Periodo / año', raw: options.periodos },
-        { key: 'turno', label: 'Turno', raw: options.turnos },
-    ];
+const FIELD_CONFIG = {
+    carrera: { label: 'Carrera', optionKey: 'carreras' },
+    periodo: { label: 'Periodo / año', optionKey: 'periodos' },
+    turno: { label: 'Turno', optionKey: 'turnos' },
+};
+
+const HorariosFiltersBar = ({
+    filters,
+    options,
+    onFilterChange,
+    onClearFilters,
+    title = 'Vista de planificación',
+    visibleFields = DEFAULT_FIELDS,
+}) => {
+    const fields = (visibleFields || [])
+        .map((key) => {
+            const config = FIELD_CONFIG[key];
+            if (!config) return null;
+            return { key, label: config.label, raw: options?.[config.optionKey] || [] };
+        })
+        .filter(Boolean);
+
+    const hayFiltrosActivos = fields.some((field) => (filters?.[field.key] || 'all') !== 'all');
 
     return (
         <Flex vertical gap={allSpacing.marginMD} style={{ width: '100%' }}>
@@ -66,7 +82,7 @@ const HorariosFiltersBar = ({ filters, options, onFilterChange, onClearFilters }
                         fontWeight: typography.fontWeightStrong,
                     }}
                 >
-                    Vista de planificación
+                    {title}
                 </Title>
                 {hayFiltrosActivos ? (
                     <Flex flex="0 0 auto" align="center" className="horarios-filters-bar__clear">
