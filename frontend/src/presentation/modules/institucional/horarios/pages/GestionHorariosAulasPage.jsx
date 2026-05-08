@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { Card, Flex } from 'antd';
 import { PageTemplate } from '@templates';
@@ -23,6 +23,7 @@ const sectionCardProps = {
 };
 
 const GestionHorariosAulasPage = () => {
+    const [enModoEdicion, setEnModoEdicion] = useState(false);
     const {
         breadcrumbItems,
         handleVolver,
@@ -64,6 +65,7 @@ const GestionHorariosAulasPage = () => {
                         onClearFilters={clearFilters}
                         title="Aulas y planificación semanal"
                         visibleFields={['carrera', 'periodo']}
+                        disabled={enModoEdicion}
                     />
                     <GestionHorariosAulasAsignarSection
                         diaActivo={diaActivo}
@@ -73,6 +75,7 @@ const GestionHorariosAulasPage = () => {
                         aulas={aulas}
                         onAsignarAula={onAsignarAula}
                         patchLoading={patchLoading}
+                        onEditModeChange={setEnModoEdicion}
                     />
                 </Flex>
             </Card>

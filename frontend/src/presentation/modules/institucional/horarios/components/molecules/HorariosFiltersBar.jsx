@@ -10,7 +10,7 @@ const toSelectOptions = (values) => [
     ...(values || []).map((opt) => ({ value: opt, label: opt })),
 ];
 
-const FilterField = ({ label, value, rawOptions, onChange }) => {
+const FilterField = ({ label, value, rawOptions, onChange, disabled = false }) => {
     const active = value !== 'all';
     return (
         <Flex vertical gap={allSpacing.marginXS} style={{ minWidth: 0, width: '100%' }}>
@@ -31,6 +31,7 @@ const FilterField = ({ label, value, rawOptions, onChange }) => {
                 style={{ width: '100%', minWidth: 0 }}
                 size="middle"
                 allowClear={false}
+                disabled={disabled}
             />
         </Flex>
     );
@@ -51,6 +52,7 @@ const HorariosFiltersBar = ({
     onClearFilters,
     title = 'Vista de planificación',
     visibleFields = DEFAULT_FIELDS,
+    disabled = false,
 }) => {
     const fields = (visibleFields || [])
         .map((key) => {
@@ -89,10 +91,11 @@ const HorariosFiltersBar = ({
                         <IconButton
                             variant="error"
                             icon={<CloseOutlined />}
-                            onClick={onClearFilters}
+                            onClick={disabled ? undefined : onClearFilters}
                             size="middle"
                             aria-label="Limpiar filtros"
                             title="Limpiar filtros"
+                            disabled={disabled}
                         />
                     </Flex>
                 ) : null}
@@ -105,6 +108,7 @@ const HorariosFiltersBar = ({
                             value={filters[item.key]}
                             rawOptions={item.raw}
                             onChange={(v) => onFilterChange(item.key, v)}
+                            disabled={disabled}
                         />
                     </Col>
                 ))}

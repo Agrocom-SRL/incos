@@ -258,7 +258,22 @@
 
 .horarios-aulas-edicion-layout .da-cal-semanal__scroll,
 .horarios-aulas-edicion-layout__left-scroll {
-    max-height: min(640px, 62vh);
+    max-height: min(740px, 82vh);
+}
+
+.horarios-aulas-edicion-layout {
+    width: 100%;
+}
+
+.horarios-aulas-edicion-layout__left-col {
+    flex: 0 0 220px;
+    min-width: 220px;
+    max-width: 220px;
+}
+
+.horarios-aulas-edicion-layout__grid-col {
+    flex: 1 1 auto;
+    min-width: 0;
 }
 
 .horarios-aulas-edicion-layout__left-scroll {
@@ -272,11 +287,23 @@
 }
 
 .horarios-aulas-drop--allowed {
-    outline: 2px dashed rgba(22, 163, 74, 0.75);
+    outline: 2px dashed #134d32;
     outline-offset: -2px;
     background: rgba(34, 197, 94, 0.12) !important;
 }
 
 .horarios-aulas-drop--blocked {
     background: rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Grilla de aulas: columnas con ancho mínimo + scroll horizontal */
+.horarios-aulas-grid .da-cal-semanal__table {
+    width: max-content;
+    min-width: 100%;
+}
+
+.horarios-aulas-grid .da-cal-semanal__th:not(.da-cal-semanal__th--hora),
+.horarios-aulas-grid .da-cal-semanal__td:not(.da-cal-semanal__td--hora) {
+    min-width: 250px;
+    max-width: none;
 }

@@ -1,4 +1,5 @@
 import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
+import { CloseOutlined } from '@ant-design/icons';
 
 export const AULA_ASIGN_MIME = 'application/x-aula-asignacion';
 
@@ -21,6 +22,7 @@ const AulasAsignacionGrid = ({
   activeDragHorarioId = null,
   onSetActiveDragHorarioId,
   onClearActiveDragHorarioId,
+  onRemoveAsignacion,
 }) => {
   const dragHorarioId = activeDragHorarioId;
 
@@ -39,7 +41,7 @@ const AulasAsignacionGrid = ({
       );
 
   return (
-    <div className="da-cal-semanal">
+    <div className="da-cal-semanal horarios-aulas-grid">
       <div className="da-cal-semanal__scroll">
         <table className="da-cal-semanal__table">
           <thead>
@@ -91,7 +93,7 @@ const AulasAsignacionGrid = ({
                               onClearActiveDragHorarioId?.();
                               return;
                             }
-                            onDropAsignacion(e, a.id, r.horarioId);
+                            onDropAsignacion(e, a.id, r.horarioId, payload);
                             onClearActiveDragHorarioId?.();
                           }
                           : undefined
@@ -119,6 +121,7 @@ const AulasAsignacionGrid = ({
                                   cursoHorarioId: item.curso_horario_id,
                                   cursoId: item.curso_id,
                                   horarioId: item.horario_id,
+                                  sourceAulaId: item.aula_id ?? null,
                                 })
                               );
                               onSetActiveDragHorarioId?.(item.horario_id);
@@ -136,6 +139,19 @@ const AulasAsignacionGrid = ({
                                 : {}),
                             }}
                           >
+                            {puedeEditar && onRemoveAsignacion ? (
+                              <button
+                                type="button"
+                                className="horarios-plan-chip__remove"
+                                aria-label="Quitar aula asignada"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onRemoveAsignacion(item.curso_horario_id);
+                                }}
+                              >
+                                <CloseOutlined />
+                              </button>
+                            ) : null}
                             <div className="da-cal-semanal__chip-hora">
                               {String(item.hora_inicio || '').slice(0, 5)}-{String(item.hora_fin || '').slice(0, 5)}
                             </div>

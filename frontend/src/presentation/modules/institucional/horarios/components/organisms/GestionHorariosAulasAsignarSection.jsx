@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Alert, Button as AntButton, Col, Flex, Row, Tabs } from 'antd';
 import { Button } from '@atoms';
 import { PlusOutlined } from '@ant-design/icons';
@@ -27,32 +27,35 @@ const GestionHorariosAulasAsignarSection = ({
   aulas,
   onAsignarAula,
   patchLoading,
+  onEditModeChange,
 }) => {
   const { puedeEditar } = useAcciones('institucional.horario.armado');
   const [modoVista, setModoVista] = useState('lectura');
   const [dragHorarioId, setDragHorarioId] = useState(null);
+  const [workingBloquesDia, setWorkingBloquesDia] = useState([]);
+  const [originalBloquesDia, setOriginalBloquesDia] = useState([]);
+  const [savingDraft, setSavingDraft] = useState(false);
   const esModoEdicion = modoVista === 'edicion' && puedeEditar;
   const bloquesDia = useMemo(() => (bloques || []).filter((b) => b.dia === diaActivo), [bloques, diaActivo]);
   const bloquesDiaFiltrados = useMemo(
     () => (bloquesFiltrados || []).filter((b) => b.dia === diaActivo),
     [bloquesFiltrados, diaActivo]
   );
-  const sinAula = useMemo(() => bloquesDiaFiltrados.filter((b) => !b.aula_id), [bloquesDiaFiltrados]);
-  const sinAulaDiaOrdenados = useMemo(
-    () =>
-      (bloquesDia || [])
-        .filter((b) => Number(b.curso_horario_id) > 0 && !b.aula_id)
-        .sort(
-          (a, b) =>
-            String(a.curso_codigo || '').localeCompare(String(b.curso_codigo || '')) ||
-            Number(a.orden_secuencia || 0) - Number(b.orden_secuencia || 0) ||
-            String(a.hora_inicio || '').localeCompare(String(b.hora_inicio || ''))
-        ),
-    [bloquesDia]
-  );
+  const bloquesDiaVista = esModoEdicion ? workingBloquesDia : bloquesDiaFiltrados;
+  const sinAulaDiaOrdenados = useMemo(() => {
+    const source = esModoEdicion ? (workingBloquesDia || []) : (bloquesDia || []);
+    return source
+      .filter((b) => Number(b.curso_horario_id) > 0 && !b.aula_id)
+      .sort(
+        (a, b) =>
+          String(a.curso_codigo || '').localeCompare(String(b.curso_codigo || '')) ||
+          Number(a.orden_secuencia || 0) - Number(b.orden_secuencia || 0) ||
+          String(a.hora_inicio || '').localeCompare(String(b.hora_inicio || ''))
+      );
+  }, [esModoEdicion, workingBloquesDia, bloquesDia]);
   const rows = useMemo(() => {
     const map = new Map();
-    bloquesDia.forEach((b) => {
+    (bloquesDia || []).forEach((b) => {
       if (!b?.horario_id || !b?.hora_inicio || !b?.hora_fin) return;
       if (map.has(b.horario_id)) return;
       map.set(b.horario_id, {
@@ -66,15 +69,119 @@ const GestionHorariosAulasAsignarSection = ({
     );
   }, [bloquesDia]);
 
-  const onDropAsignacion = async (e, aulaId, horarioId) => {
+  useEffect(() => {
+    if (!esModoEdicion) {
+      const snapshot = (bloquesDia || []).map((b) => ({ ...b }));
+      setWorkingBloquesDia(snapshot);
+      setOriginalBloquesDia(snapshot);
+    }
+  }, [bloquesDia, esModoEdicion]);
+
+  useEffect(() => {
+    onEditModeChange?.(esModoEdicion);
+  }, [esModoEdicion, onEditModeChange]);
+
+  const onDropAsignacion = async (e, aulaId, horarioId, payloadFromGrid = null) => {
     const raw = e.dataTransfer.getData(AULA_ASIGN_MIME);
-    if (!raw) return;
     try {
-      const payload = JSON.parse(raw);
+      const payload = payloadFromGrid || (raw ? JSON.parse(raw) : null);
+      if (!payload) return;
       if (Number(payload.horarioId) !== Number(horarioId)) return;
-      await onAsignarAula(payload.cursoHorarioId, aulaId);
+      setWorkingBloquesDia((prev) => {
+        const next = (prev || []).map((b) => ({ ...b }));
+        const draggedIdx = next.findIndex((b) => Number(b.curso_horario_id) === Number(payload.cursoHorarioId));
+        if (draggedIdx < 0) return prev;
+
+        const targetIdx = next.findIndex(
+          (b) =>
+            Number(b.curso_horario_id) !== Number(payload.cursoHorarioId) &&
+            Number(b.horario_id) === Number(horarioId) &&
+            Number(b.aula_id) === Number(aulaId) &&
+            Number(b.curso_horario_id) > 0
+        );
+
+        const sourceAulaId = payload.sourceAulaId == null ? null : Number(payload.sourceAulaId);
+        if (targetIdx >= 0 && Number.isFinite(sourceAulaId) && sourceAulaId > 0) {
+          next[targetIdx].aula_id = sourceAulaId;
+          next[targetIdx].aula_codigo = next[draggedIdx].aula_codigo || null;
+          next[targetIdx].aula_nombre = next[draggedIdx].aula_nombre || null;
+          next[targetIdx].aula_categoria = next[draggedIdx].aula_categoria || null;
+          next[targetIdx].aula_capacidad = next[draggedIdx].aula_capacidad || null;
+        } else if (targetIdx >= 0) {
+          return prev;
+        }
+
+        const aulaTarget = (aulas || []).find((a) => Number(a.id) === Number(aulaId));
+        next[draggedIdx].aula_id = Number(aulaId);
+        next[draggedIdx].aula_codigo = aulaTarget?.codigo || null;
+        next[draggedIdx].aula_nombre = aulaTarget?.nombre || null;
+        next[draggedIdx].aula_categoria = aulaTarget?.categoria || null;
+        next[draggedIdx].aula_capacidad = aulaTarget?.capacidad || null;
+        return next;
+      });
     } catch {
       return;
+    }
+  };
+
+  const onRemoveAsignacion = (cursoHorarioId) => {
+    setWorkingBloquesDia((prev) =>
+      (prev || []).map((b) =>
+        Number(b.curso_horario_id) === Number(cursoHorarioId)
+          ? {
+            ...b,
+            aula_id: null,
+            aula_codigo: null,
+            aula_nombre: null,
+            aula_categoria: null,
+            aula_capacidad: null,
+          }
+          : b
+      )
+    );
+  };
+
+  const handleCancelarEdicion = () => {
+    setWorkingBloquesDia((originalBloquesDia || []).map((b) => ({ ...b })));
+    setDragHorarioId(null);
+    setModoVista('lectura');
+  };
+
+  const handleHabilitarEdicion = () => {
+    const snapshot = (bloquesDia || []).map((b) => ({ ...b }));
+    setWorkingBloquesDia(snapshot);
+    setOriginalBloquesDia(snapshot);
+    setModoVista('edicion');
+  };
+
+  const handleGuardarEdicion = async () => {
+    const originalMap = new Map(
+      (originalBloquesDia || [])
+        .filter((b) => Number(b.curso_horario_id) > 0)
+        .map((b) => [Number(b.curso_horario_id), b])
+    );
+    const changes = (workingBloquesDia || [])
+      .filter((b) => Number(b.curso_horario_id) > 0)
+      .filter((b) => {
+        const original = originalMap.get(Number(b.curso_horario_id));
+        if (!original) return false;
+        return Number(original.aula_id || 0) !== Number(b.aula_id || 0);
+      });
+
+    if (!changes.length) {
+      setModoVista('lectura');
+      return;
+    }
+
+    setSavingDraft(true);
+    try {
+      for (const change of changes) {
+        // null desasigna aula y devuelve el bloque al panel izquierdo
+        await onAsignarAula(change.curso_horario_id, change.aula_id ?? null);
+      }
+      setModoVista('lectura');
+    } finally {
+      setSavingDraft(false);
     }
   };
 
@@ -90,16 +197,21 @@ const GestionHorariosAulasAsignarSection = ({
         </Col>
         <Col>
           {esModoEdicion ? null : (
-            <AntButton type="primary" icon={<PlusOutlined />} onClick={() => setModoVista('edicion')} disabled={!puedeEditar}>
+            <AntButton type="primary" icon={<PlusOutlined />} onClick={handleHabilitarEdicion} disabled={!puedeEditar}>
               Habilitar edición
             </AntButton>
           )}
         </Col>
       </Row>
 
-      <Row gutter={12} align="stretch" className={esModoEdicion ? 'horarios-aulas-edicion-layout' : undefined}>
+      <Row
+        gutter={12}
+        align="stretch"
+        wrap={false}
+        className={esModoEdicion ? 'horarios-aulas-edicion-layout' : undefined}
+      >
         {esModoEdicion ? (
-          <Col flex="220px">
+          <Col flex="220px" className="horarios-aulas-edicion-layout__left-col">
             {sinAulaDiaOrdenados.length === 0 ? (
               <Alert type="success" showIcon title="Todos los bloques del día tienen aula asignada." />
             ) : (
@@ -136,25 +248,26 @@ const GestionHorariosAulasAsignarSection = ({
             )}
           </Col>
         ) : null}
-        <Col flex="auto">
+        <Col flex="auto" className="horarios-aulas-edicion-layout__grid-col">
           <AulasAsignacionGrid
             aulas={aulas}
             rows={rows}
-            bloques={bloquesDiaFiltrados}
+            bloques={bloquesDiaVista}
             puedeEditar={esModoEdicion}
             onDropAsignacion={onDropAsignacion}
             activeDragHorarioId={dragHorarioId}
             onSetActiveDragHorarioId={setDragHorarioId}
             onClearActiveDragHorarioId={() => setDragHorarioId(null)}
+            onRemoveAsignacion={onRemoveAsignacion}
           />
         </Col>
       </Row>
       {esModoEdicion ? (
         <Flex justify="flex-end" gap={8} style={{ marginTop: 12 }}>
-          <Button variant="default" onClick={() => setModoVista('lectura')} disabled={patchLoading}>
+          <Button variant="default" onClick={handleCancelarEdicion} disabled={patchLoading || savingDraft}>
             Cancelar
           </Button>
-          <Button variant="primary" onClick={() => setModoVista('lectura')} disabled={patchLoading} loading={patchLoading}>
+          <Button variant="primary" onClick={handleGuardarEdicion} disabled={patchLoading || savingDraft} loading={patchLoading || savingDraft}>
             Guardar cambios
           </Button>
         </Flex>
