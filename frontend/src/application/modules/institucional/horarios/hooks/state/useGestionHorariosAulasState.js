@@ -2,8 +2,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSearchParams } from 'react-router-dom';
 import { useAcciones } from '@application/modules/shared/hooks/useAcciones';
+import { extractErrorFromResult } from '@application/utils';
+import { useCasesFactory } from '@container';
 import { useAulasHorariosApi } from '../api/useAulasHorariosApi';
-import { usePatchAulaHorarioApi } from '../api/usePatchAulaHorarioApi';
 
 const DIAS = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO'];
 
@@ -39,7 +40,7 @@ export const useGestionHorariosAulasState = () => {
 
     const { puedeEditar } = useAcciones('institucional.horario.armado');
     const { bloques, loading: bloquesLoading, fetch: fetchBloques } = useAulasHorariosApi();
-    const { loading: patchLoading, fetch: patchAula } = usePatchAulaHorarioApi();
+    const [patchLoading, setPatchLoading] = useState(false);
 
     const breadcrumbItems = useMemo(
         () => [
@@ -128,13 +129,21 @@ export const useGestionHorariosAulasState = () => {
     const onAsignarAula = useCallback(
       async (cursoHorarioId, aulaId) => {
         if (!puedeEditar) return;
-        await patchAula(cursoHorarioId, aulaId);
-        await fetchBloques({
-          dia: diaActivo,
-          ...(turno !== 'TODOS' ? { turno } : {}),
-        });
+        setPatchLoading(true);
+        try {
+          const result = await useCasesFactory.asignarAulaHorario().ejecutar(cursoHorarioId, aulaId);
+          if (!result?.success) {
+            throw new Error(extractErrorFromResult(result, 'Error al asignar aula'));
+          }
+          await fetchBloques({
+            dia: diaActivo,
+            ...(turno !== 'TODOS' ? { turno } : {}),
+          });
+        } finally {
+          setPatchLoading(false);
+        }
       },
-      [puedeEditar, patchAula, fetchBloques, diaActivo, turno]
+      [puedeEditar, fetchBloques, diaActivo, turno]
     );
 
     const handleVolver = useCallback(() => {

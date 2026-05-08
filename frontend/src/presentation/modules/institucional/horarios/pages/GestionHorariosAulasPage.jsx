@@ -1,8 +1,9 @@
-import { useMemo, useState } from 'react';
-import { ArrowLeftOutlined } from '@ant-design/icons';
-import { Card, Flex } from 'antd';
+import { useEffect, useMemo, useState } from 'react';
+import { ArrowLeftOutlined, CompressOutlined, ExpandOutlined } from '@ant-design/icons';
+import { Button, Card, Flex } from 'antd';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
+import { IconButton } from '@atoms';
 import { allColors, allSpacing, componentConfig, shadows } from '@theme/tokens';
 import { useHorariosAulasContext } from '@application-institucional/horarios';
 import { HorariosFiltersBar } from '../components';
@@ -24,6 +25,16 @@ const sectionCardProps = {
 
 const GestionHorariosAulasPage = () => {
     const [enModoEdicion, setEnModoEdicion] = useState(false);
+    const [vistaExpandida, setVistaExpandida] = useState(false);
+
+    useEffect(() => {
+        if (!vistaExpandida) return undefined;
+        const prev = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        return () => {
+            document.body.style.overflow = prev;
+        };
+    }, [vistaExpandida]);
     const {
         breadcrumbItems,
         handleVolver,
@@ -56,29 +67,83 @@ const GestionHorariosAulasPage = () => {
             }
             sidebar={null}
         >
-            <Card className="horarios-gestion-planificacion" {...sectionCardProps}>
-                <Flex vertical gap={allSpacing.marginLG}>
-                    <HorariosFiltersBar
-                        filters={filters}
-                        options={options}
-                        onFilterChange={onFilterChange}
-                        onClearFilters={clearFilters}
-                        title="Aulas y planificación semanal"
-                        visibleFields={['carrera', 'periodo']}
-                        disabled={enModoEdicion}
-                    />
-                    <GestionHorariosAulasAsignarSection
-                        diaActivo={diaActivo}
-                        setDiaActivo={setDiaActivo}
-                        bloques={bloques}
-                        bloquesFiltrados={bloquesFiltrados}
-                        aulas={aulas}
-                        onAsignarAula={onAsignarAula}
-                        patchLoading={patchLoading}
-                        onEditModeChange={setEnModoEdicion}
-                    />
-                </Flex>
-            </Card>
+            <div
+                className={[
+                    'horarios-aulas-page-root',
+                    vistaExpandida ? 'horarios-aulas-page-root--expanded' : '',
+                ]
+                    .filter(Boolean)
+                    .join(' ')}
+            >
+                <Card
+                    className={[
+                        'horarios-gestion-planificacion',
+                        vistaExpandida ? 'horarios-gestion-planificacion--expanded' : '',
+                    ]
+                        .filter(Boolean)
+                        .join(' ')}
+                    {...sectionCardProps}
+                    styles={{
+                        ...sectionCardProps.styles,
+                        body: {
+                            ...sectionCardProps.styles.body,
+                            ...(vistaExpandida
+                                ? {
+                                    flex: 1,
+                                    minHeight: 0,
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    overflow: 'hidden',
+                                }
+                                : {}),
+                        },
+                    }}
+                >
+                    <Flex
+                        vertical
+                        gap={allSpacing.marginLG}
+                        className={[
+                            'horarios-aulas-page__inner-flex',
+                            vistaExpandida ? 'horarios-aulas-page__inner-flex--expanded' : '',
+                        ]
+                            .filter(Boolean)
+                            .join(' ')}
+                    >
+                        <HorariosFiltersBar
+                            filters={filters}
+                            options={options}
+                            onFilterChange={onFilterChange}
+                            onClearFilters={clearFilters}
+                            title="Aulas y planificación semanal"
+                            visibleFields={['carrera', 'periodo']}
+                            disabled={enModoEdicion}
+                            ocultarSelectoresFiltro={enModoEdicion}
+                            headerTrailing={
+                                <IconButton
+                                    variant="info"
+                                    icon={vistaExpandida ? <CompressOutlined /> : <ExpandOutlined />}
+                                    onClick={() => setVistaExpandida((v) => !v)}
+                                    size="middle"
+                                    circle={true}
+                                    aria-label={vistaExpandida ? 'Salir de pantalla completa' : 'Expandir planificación a pantalla completa'}
+                                    title={vistaExpandida ? 'Restaurar vista' : 'Pantalla completa'}
+                                />
+                            }
+                        />
+                        <GestionHorariosAulasAsignarSection
+                            diaActivo={diaActivo}
+                            setDiaActivo={setDiaActivo}
+                            bloques={bloques}
+                            bloquesFiltrados={bloquesFiltrados}
+                            aulas={aulas}
+                            onAsignarAula={onAsignarAula}
+                            patchLoading={patchLoading}
+                            onEditModeChange={setEnModoEdicion}
+                            vistaExpandida={vistaExpandida}
+                        />
+                    </Flex>
+                </Card>
+            </div>
         </PageTemplate>
     );
 };

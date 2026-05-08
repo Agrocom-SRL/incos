@@ -20,12 +20,13 @@ const IconButton = ({
     variant = 'default', // 'default' | 'info' | 'success' | 'warning' | 'error'
     className = '',
     style = {},
+    circle = false,
     ...props
 }) => {
     const baseClassName = 'icon-button';
     const variantClassName = variant !== 'default' ? `icon-button--${variant}` : '';
-    const iconButtonClassName = className 
-        ? `${baseClassName} ${variantClassName} ${className}`.trim() 
+    const iconButtonClassName = className
+        ? `${baseClassName} ${variantClassName} ${className}`.trim()
         : `${baseClassName} ${variantClassName}`.trim();
 
     return (
@@ -33,6 +34,7 @@ const IconButton = ({
             type="text"
             size={size}
             icon={icon}
+            shape={circle ? 'circle' : 'square'}
             onClick={onClick}
             disabled={disabled}
             className={iconButtonClassName}

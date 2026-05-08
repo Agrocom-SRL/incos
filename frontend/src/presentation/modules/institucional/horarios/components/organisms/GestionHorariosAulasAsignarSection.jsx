@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Alert, Button as AntButton, Col, Flex, Row, Tabs } from 'antd';
+import { Alert, Button as AntButton, Col, Flex, Row, Tabs, message } from 'antd';
 import { Button } from '@atoms';
 import { PlusOutlined } from '@ant-design/icons';
 import { useAcciones } from '@application/modules/shared/hooks/useAcciones';
@@ -28,6 +28,7 @@ const GestionHorariosAulasAsignarSection = ({
   onAsignarAula,
   patchLoading,
   onEditModeChange,
+  vistaExpandida = false,
 }) => {
   const { puedeEditar } = useAcciones('institucional.horario.armado');
   const [modoVista, setModoVista] = useState('lectura');
@@ -179,15 +180,37 @@ const GestionHorariosAulasAsignarSection = ({
         // null desasigna aula y devuelve el bloque al panel izquierdo
         await onAsignarAula(change.curso_horario_id, change.aula_id ?? null);
       }
+      message.success(
+        changes.length === 1
+          ? 'Asignación de aula guardada correctamente.'
+          : `${changes.length} asignaciones de aula guardadas correctamente.`
+      );
       setModoVista('lectura');
+    } catch (err) {
+      message.error(err?.message || 'No se pudieron guardar los cambios. Revisa la consola o vuelve a intentar.');
     } finally {
       setSavingDraft(false);
     }
   };
 
+  const mainRowClassName = [
+    'horarios-aulas-asignar-root__main-row',
+    esModoEdicion ? 'horarios-aulas-edicion-layout' : null,
+    vistaExpandida ? 'horarios-aulas-asignar-root__main-row--expanded' : null,
+  ]
+    .filter(Boolean)
+    .join(' ');
+
   return (
-    <>
-      <Row gutter={[12, 12]} align="middle" justify="space-between" style={{ marginBottom: 12 }}>
+    <div
+      className={[
+        'horarios-aulas-asignar-root',
+        vistaExpandida ? 'horarios-aulas-asignar-root--fill' : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+    >
+      <Row gutter={[12, 12]} align="middle" justify="space-between" style={{ marginBottom: 12 }} className="horarios-aulas-asignar-root__toolbar">
         <Col>
           <Tabs
             activeKey={diaActivo}
@@ -204,12 +227,7 @@ const GestionHorariosAulasAsignarSection = ({
         </Col>
       </Row>
 
-      <Row
-        gutter={12}
-        align="stretch"
-        wrap={false}
-        className={esModoEdicion ? 'horarios-aulas-edicion-layout' : undefined}
-      >
+      <Row gutter={12} align="stretch" wrap={false} className={mainRowClassName}>
         {esModoEdicion ? (
           <Col flex="220px" className="horarios-aulas-edicion-layout__left-col">
             {sinAulaDiaOrdenados.length === 0 ? (
@@ -263,7 +281,12 @@ const GestionHorariosAulasAsignarSection = ({
         </Col>
       </Row>
       {esModoEdicion ? (
-        <Flex justify="flex-end" gap={8} style={{ marginTop: 12 }}>
+        <Flex
+          justify="flex-end"
+          gap={8}
+          style={{ marginTop: 12 }}
+          className="horarios-aulas-asignar-root__footer-actions"
+        >
           <Button variant="default" onClick={handleCancelarEdicion} disabled={patchLoading || savingDraft}>
             Cancelar
           </Button>
@@ -272,7 +295,7 @@ const GestionHorariosAulasAsignarSection = ({
           </Button>
         </Flex>
       ) : null}
-    </>
+    </div>
   );
 };
 

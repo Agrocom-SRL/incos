@@ -30,6 +30,7 @@
 /* Variante Info (azul) - para editar/ver */
 .icon-button--info.ant-btn-text {
     color: var(--color-info);
+    border: 1px solid var(--color-info);
 }
 
 .icon-button--info.ant-btn-text .anticon {
@@ -53,6 +54,7 @@
 /* Variante Success (verde) - para completar */
 .icon-button--success.ant-btn-text {
     color: var(--color-success);
+    border: 1px solid var(--color-success);
 }
 
 .icon-button--success.ant-btn-text .anticon {
@@ -76,6 +78,7 @@
 /* Variante Warning (amarillo) - para advertencias */
 .icon-button--warning.ant-btn-text {
     color: var(--color-warning);
+    border: 1px solid var(--color-warning);
 }
 
 .icon-button--warning.ant-btn-text .anticon {
@@ -99,6 +102,7 @@
 /* Variante Error (rojo) - para eliminar */
 .icon-button--error.ant-btn-text {
     color: var(--color-error);
+    border: 1px solid var(--color-error);
 }
 
 .icon-button--error.ant-btn-text .anticon {

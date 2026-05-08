@@ -72,7 +72,8 @@
     min-width: 0;
 }
 
-.horarios-filters-bar__clear {
+.horarios-filters-bar__clear,
+.horarios-filters-bar__actions {
     flex-shrink: 0;
 }
 
@@ -306,4 +307,140 @@
 .horarios-aulas-grid .da-cal-semanal__td:not(.da-cal-semanal__td--hora) {
     min-width: 250px;
     max-width: none;
+}
+
+/* === Horarios en aulas: pantalla completa (card ~100dvh, scroll interno en grilla / panel) === */
+.horarios-aulas-page-root {
+    width: 100%;
+    position: relative;
+}
+
+.horarios-aulas-page-root--expanded {
+    position: fixed;
+    inset: 0;
+    z-index: 1050;
+    width: 100vw;
+    height: 100dvh;
+    max-height: 100dvh;
+    box-sizing: border-box;
+    padding: 12px;
+    margin: 0;
+    background: var(--ant-color-bg-layout, #f0f2f5);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.horarios-aulas-page-root--expanded .horarios-gestion-planificacion--expanded.ant-card {
+    flex: 1;
+    min-height: 0;
+    max-height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.horarios-aulas-page-root--expanded .horarios-gestion-planificacion--expanded .ant-card-body {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.horarios-aulas-page__inner-flex--expanded {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.horarios-aulas-page__inner-flex--expanded > *:first-child {
+    flex-shrink: 0;
+}
+
+.horarios-aulas-page__inner-flex--expanded > *:nth-child(2) {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.horarios-aulas-asignar-root--fill {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.horarios-aulas-asignar-root__toolbar {
+    flex-shrink: 0;
+}
+
+.horarios-aulas-asignar-root__footer-actions {
+    flex-shrink: 0;
+}
+
+.horarios-aulas-asignar-root__main-row--expanded {
+    flex: 1 !important;
+    min-height: 0 !important;
+    overflow: hidden;
+}
+
+.horarios-aulas-page-root--expanded .horarios-aulas-asignar-root__main-row--expanded > .ant-col {
+    min-height: 0;
+}
+
+.horarios-aulas-page-root--expanded .horarios-aulas-asignar-root__main-row--expanded > .horarios-aulas-edicion-layout__grid-col {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto !important;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.horarios-aulas-page-root--expanded .horarios-aulas-asignar-root__main-row--expanded > .horarios-aulas-edicion-layout__left-col {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    align-self: stretch;
+}
+
+.horarios-aulas-page-root--expanded .horarios-aulas-edicion-layout__left-scroll {
+    max-height: none !important;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.horarios-aulas-page-root--expanded .horarios-aulas-edicion-layout .da-cal-semanal__scroll {
+    max-height: none !important;
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+}
+
+.horarios-aulas-page-root--expanded .da-cal-semanal.horarios-aulas-grid {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    flex: 1;
+    overflow: hidden;
+}
+
+.horarios-aulas-page-root--expanded .horarios-aulas-grid .da-cal-semanal__scroll {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+}
+
+/* Solo grilla (lectura): una columna que llena y delega scroll al .da-cal-semanal__scroll */
+.horarios-aulas-page-root--expanded .horarios-aulas-asignar-root__main-row--expanded:not(.horarios-aulas-edicion-layout) > .ant-col {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto !important;
+    min-height: 0;
+    overflow: hidden;
 }

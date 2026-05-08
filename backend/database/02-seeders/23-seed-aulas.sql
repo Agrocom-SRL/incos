@@ -29,7 +29,9 @@ INSERT INTO aulas (id, codigo, nombre, categoria, capacidad, observaciones) VALU
 -- AULAS TEÓRICAS
 INSERT INTO aulas (id, codigo, nombre, categoria, capacidad, observaciones) VALUES
 (5, 'AULA-6', 'Aula 6', 'AULA', 40, 'Aula teórica - Turno Tarde/Noche'),
-(6, 'AULA-8', 'Aula 8', 'AULA', 40, 'Aula teórica - Turno Noche');
+(6, 'AULA-8', 'Aula 8', 'AULA', 40, 'Aula teórica - Turno Tarde'),
+(8, 'AULA-9', 'Aula 9', 'AULA', 40, 'Aula teórica - Turno Tarde/Noche'),
+(9, 'AULA-10', 'Aula 10', 'AULA', 40, 'Aula teórica - Turno Noche');
 
 -- Rehabilitar foreign key checks
 SET FOREIGN_KEY_CHECKS = 1;

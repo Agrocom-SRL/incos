@@ -53,6 +53,9 @@ const HorariosFiltersBar = ({
     title = 'Vista de planificación',
     visibleFields = DEFAULT_FIELDS,
     disabled = false,
+    headerTrailing = null,
+    /** Si true, no se renderizan los select ni las etiquetas de filtro (p. ej. modo edición en grilla). */
+    ocultarSelectoresFiltro = false,
 }) => {
     const fields = (visibleFields || [])
         .map((key) => {
@@ -86,33 +89,39 @@ const HorariosFiltersBar = ({
                 >
                     {title}
                 </Title>
-                {hayFiltrosActivos ? (
-                    <Flex flex="0 0 auto" align="center" className="horarios-filters-bar__clear">
-                        <IconButton
-                            variant="error"
-                            icon={<CloseOutlined />}
-                            onClick={disabled ? undefined : onClearFilters}
-                            size="middle"
-                            aria-label="Limpiar filtros"
-                            title="Limpiar filtros"
-                            disabled={disabled}
-                        />
+                {headerTrailing || hayFiltrosActivos ? (
+                    <Flex flex="0 0 auto" align="center" gap={allSpacing.marginSM} className="horarios-filters-bar__actions">
+                        {headerTrailing}
+                        {hayFiltrosActivos ? (
+                            <IconButton
+                                variant="error"
+                                icon={<CloseOutlined />}
+                                onClick={disabled ? undefined : onClearFilters}
+                                size="middle"
+                                circle={true}
+                                aria-label="Limpiar filtros"
+                                title="Limpiar filtros"
+                                disabled={disabled}
+                            />
+                        ) : null}
                     </Flex>
                 ) : null}
             </Flex>
-            <Row gutter={[allSpacing.marginLG, allSpacing.marginMD]} align="bottom">
-                {fields.map((item) => (
-                    <Col key={item.key} xs={24} sm={24} md={12} xl={8}>
-                        <FilterField
-                            label={item.label}
-                            value={filters[item.key]}
-                            rawOptions={item.raw}
-                            onChange={(v) => onFilterChange(item.key, v)}
-                            disabled={disabled}
-                        />
-                    </Col>
-                ))}
-            </Row>
+            {ocultarSelectoresFiltro ? null : (
+                <Row gutter={[allSpacing.marginLG, allSpacing.marginMD]} align="bottom">
+                    {fields.map((item) => (
+                        <Col key={item.key} xs={24} sm={24} md={12} xl={8}>
+                            <FilterField
+                                label={item.label}
+                                value={filters[item.key]}
+                                rawOptions={item.raw}
+                                onChange={(v) => onFilterChange(item.key, v)}
+                                disabled={disabled}
+                            />
+                        </Col>
+                    ))}
+                </Row>
+            )}
         </Flex>
     );
 };
