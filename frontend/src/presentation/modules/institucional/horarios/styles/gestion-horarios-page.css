@@ -250,6 +250,33 @@
 }
 
 .horarios-aulas-chip--conflicto {
-    border: 1px solid var(--ant-color-error);
-    background: var(--color-background-danger, rgba(255, 77, 79, 0.2));
+    border: 2px dashed var(--ant-color-error);
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 77, 79, 0.25),
+        0 2px 6px rgba(255, 77, 79, 0.18);
+}
+
+.horarios-aulas-edicion-layout .da-cal-semanal__scroll,
+.horarios-aulas-edicion-layout__left-scroll {
+    max-height: min(640px, 62vh);
+}
+
+.horarios-aulas-edicion-layout__left-scroll {
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 6px;
+}
+
+.horarios-aulas-edicion-layout .da-cal-semanal__scroll {
+    overflow-y: auto;
+}
+
+.horarios-aulas-drop--allowed {
+    outline: 2px dashed rgba(22, 163, 74, 0.75);
+    outline-offset: -2px;
+    background: rgba(34, 197, 94, 0.12) !important;
+}
+
+.horarios-aulas-drop--blocked {
+    background: rgba(0, 0, 0, 0.08) !important;
 }
