@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Flex, Tooltip, Typography } from 'antd';
+import { Card, Flex, Tag, Tooltip, Typography } from 'antd';
 import { EditOutlined } from '@ant-design/icons';
 import DocenteHorarioSemanalGrid from '@docentes/components/organisms/DocenteHorarioSemanalGrid';
 import {
@@ -8,7 +8,12 @@ import {
     getTurnoGridRangeMinutes,
 } from '@application-institucional/horarios/utils/turnoGridRange';
 import { paraleloScheduleToCourseSchedules } from '@application-institucional/horarios/utils/paraleloScheduleToCourseSchedules';
+import {
+    appendParaleloEstadoLineas,
+    buildHorariosPlanPendientesDetalleLines,
+} from '@application-institucional/horarios/utils/buildHorariosPlanPendientesDetalle';
 import ParaleloPlanSemanaCell from '../atoms/ParaleloPlanSemanaCell';
+import HorariosPlanPendientesLista from './HorariosPlanPendientesLista';
 
 const { Text, Title } = Typography;
 
@@ -22,7 +27,15 @@ const cardShell = (accentBorder) => ({
     },
 });
 
-const HorariosPublicacionParaleloCard = ({ plan }) => {
+const estadoTag = (estado) => {
+    if (estado === 'completo') return { color: 'success', label: 'Listo para publicar' };
+    if (estado === 'conflicto') return { color: 'error', label: 'Con conflictos' };
+    if (estado === 'sin_horario') return { color: 'processing', label: 'Pendiente de horarios/aulas' };
+    if (estado === 'incompleto') return { color: 'warning', label: 'Incompleto' };
+    return { color: 'default', label: estado || '—' };
+};
+
+const HorariosPublicacionParaleloCard = ({ plan, paraleloEstado }) => {
     const navigate = useNavigate();
     const { paralelo, schedule } = plan || {};
     const gridRange = useMemo(() => getTurnoGridRangeMinutes(paralelo?.turno), [paralelo?.turno]);
@@ -37,6 +50,27 @@ const HorariosPublicacionParaleloCard = ({ plan }) => {
     );
 
     const border = paralelo?.carreraColorHex ? `${paralelo.carreraColorHex}55` : undefined;
+    const estado = paraleloEstado?.estado || null;
+    const pendientesLineas = useMemo(() => {
+        const fromPlan = buildHorariosPlanPendientesDetalleLines(courseSchedules);
+        let merged = appendParaleloEstadoLineas(fromPlan, paraleloEstado);
+        if (
+            paraleloEstado?.conflictoDocenteHorario &&
+            !merged.some((l) => String(l).startsWith('Choque de docente'))
+        ) {
+            merged = [
+                ...merged,
+                'El sistema marca choque de horario de docente; no aparecen choques listables en el plan cargado (revisá docentes sin identificar o sincronización).',
+            ];
+        }
+        return merged;
+    }, [courseSchedules, paraleloEstado]);
+    const tag = useMemo(() => estadoTag(estado), [estado]);
+    const okPublicacion = estado === 'completo' && pendientesLineas.length === 0;
+    const mensajeVacio =
+        paraleloEstado == null
+            ? 'No hay datos de estado para este paralelo.'
+            : 'No se listaron pendientes en el plan cargado; si el estado sigue incompleto, revisá otras pestañas o la sincronización.';
 
     const onEditarPlan = () => {
         const id = paralelo?.id;
@@ -61,9 +95,12 @@ const HorariosPublicacionParaleloCard = ({ plan }) => {
                             </button>
                         </Tooltip>
                     ) : null}
-                    <Title level={5} style={{ margin: 0 }}>
-                        {paralelo?.nombre || 'Paralelo'}
-                    </Title>
+                    <Flex align="center" gap={8} wrap="wrap">
+                        <Title level={5} style={{ margin: 0 }}>
+                            {paralelo?.nombre || 'Paralelo'}
+                        </Title>
+                        <Tag color={tag.color}>{tag.label}</Tag>
+                    </Flex>
                     <Text type="secondary">
                         {paralelo?.carreraNombre || '—'}
                         {paralelo?.carreraCodigo ? ` (${paralelo.carreraCodigo})` : ''}
@@ -82,6 +119,14 @@ const HorariosPublicacionParaleloCard = ({ plan }) => {
                         uniformSlotGrid
                         editable={false}
                         cellExtraProps={{}}
+                    />
+                </div>
+                <div>
+                    <HorariosPlanPendientesLista
+                        ok={okPublicacion}
+                        lineas={pendientesLineas}
+                        mensajeExito="Estado publicación: sin observaciones en el plan ni en validaciones del sistema."
+                        mensajeVacio={mensajeVacio}
                     />
                 </div>
             </Flex>

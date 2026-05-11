@@ -38,6 +38,15 @@ const GestionHorariosPublicacionPage = () => {
 
     const planes = useMemo(() => publicacionPayload?.planes || [], [publicacionPayload]);
 
+    const paraleloEstadoById = useMemo(() => {
+        const map = new Map();
+        (paralelosCatalog || []).forEach((p) => {
+            if (p?.id == null) return;
+            map.set(Number(p.id), p);
+        });
+        return map;
+    }, [paralelosCatalog]);
+
     const carreraIdFromFiltro = useCallback(() => {
         if (filters.carrera === 'all') return null;
         const hit = (paralelosCatalog || []).find((p) => p.carrera === filters.carrera);
@@ -110,9 +119,17 @@ const GestionHorariosPublicacionPage = () => {
                                 />
                             ) : null}
                             <Flex vertical gap={allSpacing.marginLG} style={{ width: '100%', minWidth: 0 }}>
-                                {planes.map((plan) => (
-                                    <HorariosPublicacionParaleloCard key={plan.paralelo?.id ?? plan.paralelo?.nombre} plan={plan} />
-                                ))}
+                                {planes.map((plan) => {
+                                    const pid = plan?.paralelo?.id != null ? Number(plan.paralelo.id) : null;
+                                    const paraleloEstado = pid != null ? paraleloEstadoById.get(pid) : null;
+                                    return (
+                                        <HorariosPublicacionParaleloCard
+                                            key={plan.paralelo?.id ?? plan.paralelo?.nombre}
+                                            plan={plan}
+                                            paraleloEstado={paraleloEstado}
+                                        />
+                                    );
+                                })}
                             </Flex>
                         </Flex>
                     </Card>

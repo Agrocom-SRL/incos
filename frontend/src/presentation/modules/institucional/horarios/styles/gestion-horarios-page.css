@@ -152,6 +152,61 @@
     min-width: 0;
 }
 
+/* Resumen de pendientes del plan (publicación / vista previa) */
+.horarios-plan-pendientes {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.horarios-plan-pendientes--success {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.horarios-plan-pendientes--error {
+    margin-top: 4px;
+}
+
+.horarios-plan-pendientes__item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-top: 8px;
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.horarios-plan-pendientes__item:first-child {
+    margin-top: 0;
+}
+
+.horarios-plan-pendientes__icon {
+    flex-shrink: 0;
+    margin-top: 2px;
+    font-size: 14px;
+    color: var(--ant-color-error, #ff4d4f);
+}
+
+.horarios-plan-pendientes__icon--success {
+    margin-top: 1px;
+    color: var(--ant-color-success, #52c41a);
+}
+
+.horarios-plan-pendientes__text {
+    flex: 1;
+    min-width: 0;
+    color: var(--ant-color-error, #ff4d4f) !important;
+}
+
+.horarios-plan-pendientes__empty {
+    display: block;
+    margin-top: 4px;
+    font-size: 12px;
+}
+
 /* Tabla agrupada */
 .horarios-paralelos-table-embedded {
     width: 100%;

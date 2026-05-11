@@ -257,6 +257,7 @@ const GestionHorariosArmadoPage = () => {
                             editable={false}
                             turnoLabel={turnoEfectivo || undefined}
                             vistaExpandida={vistaExpandida}
+                            showPendientesDetalle
                         />
                     </div>
                 ),
