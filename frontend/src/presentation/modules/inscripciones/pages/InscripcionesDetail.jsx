@@ -17,8 +17,15 @@ import {
   CalendarOutlined,
   EnvironmentOutlined,
 } from '@ant-design/icons';
+import {
+  getSabadoArmadoGridRangeMinutes,
+  getTurnoGridRangeMinutes,
+} from '@application-institucional/horarios/utils/turnoGridRange';
 import DocenteHorarioSemanalGrid from '@docentes/components/organisms/DocenteHorarioSemanalGrid';
+import ParaleloPlanSemanaCell from '@institucional/horarios/components/atoms/ParaleloPlanSemanaCell';
 import '@presentation/styles/pages/detail-page.css';
+
+const SLOT_STEP_INSCRIPCION = 45;
 
 const Field = ({ label, children, span = 1 }) => (
   <div className={`sd-field sd-field--span-${span}`}>
@@ -225,6 +232,23 @@ const InscripcionesDetail = () => {
     [enrollmentSubjects],
   );
 
+  const turnoParaGrillaInscripcion = useMemo(
+    () =>
+      enrollment?.parallel?.turno ??
+      enrollment?.shift ??
+      materiasConHorario[0]?.paralelo?.turno ??
+      materiasConHorario[0]?.parallel?.turno ??
+      materiasConHorario[0]?.shift ??
+      null,
+    [enrollment, materiasConHorario],
+  );
+
+  const gridRangeInscripcion = useMemo(
+    () => getTurnoGridRangeMinutes(turnoParaGrillaInscripcion),
+    [turnoParaGrillaInscripcion],
+  );
+  const sabadoRangeInscripcion = useMemo(() => getSabadoArmadoGridRangeMinutes(), []);
+
   const courseSchedules = useMemo(
     () =>
       materiasConHorario.map((materia) => ({
@@ -233,6 +257,7 @@ const InscripcionesDetail = () => {
         cursoColorHex: materia.colorHex ?? materia.color ?? null,
         materiaNombre: materia.materiaNombre ?? materia.name ?? 'Materia sin nombre',
         materiaSigla: materia.materiaSigla ?? materia.sigla ?? null,
+        carrera: career?.nombre ?? null,
         paralelo:
           materia.paralelo?.nombre ??
           materia.parallel?.nombre ??
@@ -263,7 +288,7 @@ const InscripcionesDetail = () => {
           })
           .filter(Boolean),
       })),
-    [materiasConHorario, enrollment],
+    [materiasConHorario, enrollment, career],
   );
 
   const tabItems = useMemo(
@@ -365,10 +390,20 @@ const InscripcionesDetail = () => {
                 </h2>
               </header>
               <p className="da-cal-semanal-section__lede">
-                Vista consolidada de bloques por materia, usando el mismo formato de grilla semanal del detalle de docentes.
+                Cada bloque muestra hora, sigla, nombre de la materia, paralelo, turno, docente y aula para que puedas
+                ubicarte en la semana.
               </p>
               {courseSchedules.length > 0 ? (
-                <DocenteHorarioSemanalGrid courseSchedules={courseSchedules} />
+                <DocenteHorarioSemanalGrid
+                  courseSchedules={courseSchedules}
+                  CellComponent={ParaleloPlanSemanaCell}
+                  gridTimeRange={gridRangeInscripcion}
+                  saturdayGridTimeRange={sabadoRangeInscripcion}
+                  slotStepMinutes={SLOT_STEP_INSCRIPCION}
+                  uniformSlotGrid
+                  editable={false}
+                  cellExtraProps={{}}
+                />
               ) : (
                 <Empty
                   image={Empty.PRESENTED_IMAGE_SIMPLE}
@@ -390,6 +425,8 @@ const InscripcionesDetail = () => {
       columnasMaterias,
       courseSchedules,
       nombreCompleto,
+      gridRangeInscripcion,
+      sabadoRangeInscripcion,
     ],
   );
 

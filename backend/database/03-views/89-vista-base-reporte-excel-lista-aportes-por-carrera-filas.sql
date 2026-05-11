@@ -1,22 +1,20 @@
 -- ============================================
--- VISTA: vista_reporte_excel_lista_aportes_por_carrera
--- Lista de inscritos por carrera/paralelo con estado del aporte voluntario (pago_aporte + cuotas).
+-- VISTA BASE: vista_base_reporte_excel_lista_aportes_por_carrera_filas
+-- Inscripción-paralelo ya deduplicada + cabecera de aporte y beca (sin texto de cuotas).
 --
--- Objetivo:
--- - Misma granularidad que vista_reporte_excel_lista_inscritos (una fila por inscripción + paralelo).
--- - LEFT JOIN a cabecera de aporte: monto base, descuento, beca, cuotas, pagado, saldo, estado.
+-- Propósito:
+-- - Encapsular JOIN a vista_pago_aporte_listado y tablas de beca para el Excel de aportes.
 --
--- Uso:
--- SELECT * FROM vista_reporte_excel_lista_aportes_por_carrera
--- WHERE gestion_id = 1 AND carrera_id = 1
--- ORDER BY periodo_numero, paralelo_nombre, nombre_completo;
+-- Reutiliza:
+-- - vista_base_reporte_excel_inscripcion_paralelo_max_periodo (35a)
+-- - vista_pago_aporte_listado (35)
 -- ============================================
 
 USE instituto_incos;
 
-DROP VIEW IF EXISTS vista_reporte_excel_lista_aportes_por_carrera;
+DROP VIEW IF EXISTS vista_base_reporte_excel_lista_aportes_por_carrera_filas;
 
-CREATE VIEW vista_reporte_excel_lista_aportes_por_carrera AS
+CREATE VIEW vista_base_reporte_excel_lista_aportes_por_carrera_filas AS
 SELECT
   ins.gestion_id,
   ins.gestion_nombre,
@@ -56,18 +54,8 @@ SELECT
     WHEN pl.estudiante_beca_id IS NULL THEN 'NO APLICA'
     WHEN bd.id IS NULL THEN 'NO APLICA'
     ELSE bd.nombre
-  END AS beca_tipo_nombre,
-  (
-    SELECT GROUP_CONCAT(
-      TRIM(pc.descripcion) ORDER BY pc.fecha_pago ASC, pc.id ASC SEPARATOR ' | '
-    )
-    FROM pago_cuotas pc
-    WHERE pc.pago_aporte_id = pl.id
-      AND pc.activo = TRUE
-      AND pc.deleted_at IS NULL
-      AND TRIM(COALESCE(pc.descripcion, '')) <> ''
-  ) AS observaciones_cuotas
-FROM vista_reporte_excel_lista_inscritos ins
+  END AS beca_tipo_nombre
+FROM vista_base_reporte_excel_inscripcion_paralelo_max_periodo ins
 LEFT JOIN vista_pago_aporte_listado pl
   ON pl.estudiante_id = ins.estudiante_id
   AND pl.gestion_id = ins.gestion_id

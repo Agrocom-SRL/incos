@@ -748,7 +748,7 @@
 
 .da-carga__materias-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 12px;
 }
 
@@ -1061,8 +1061,17 @@
   word-break: break-word;
 }
 
+/** Sigla de materia (referencia rápida en chips de grilla). */
+.da-cal-semanal__chip-sigla {
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: 0.03em;
+  color: var(--text-900, #111827);
+  line-height: 1.25;
+}
+
 .da-cal-semanal__chip-line {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-700, #374151);
   word-break: break-word;
 }

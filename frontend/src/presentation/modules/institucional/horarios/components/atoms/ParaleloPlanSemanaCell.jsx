@@ -77,14 +77,22 @@ const ParaleloPlanSemanaCell = ({
                             </button>
                         ) : null}
                         <div className="da-cal-semanal__chip-hora">{hora}</div>
-                        <div className="da-cal-semanal__chip-curso">
-                            {ev.materiaNombre || ev.materiaSigla || `Asignación ${ev.cursoCodigo}`}
-                        </div>
+                        {ev.materiaSigla ? (
+                            <div className="da-cal-semanal__chip-sigla">{ev.materiaSigla}</div>
+                        ) : null}
+                        {(() => {
+                            const nom = ev.materiaNombre != null ? String(ev.materiaNombre).trim() : '';
+                            const sig = ev.materiaSigla != null ? String(ev.materiaSigla).trim() : '';
+                            let label = '';
+                            if (nom && sig && nom !== sig) label = nom;
+                            else if (nom) label = nom;
+                            else if (!sig) label = `Asignación ${ev.cursoCodigo}`;
+                            return label ? <div className="da-cal-semanal__chip-curso">{label}</div> : null;
+                        })()}
                         {ev.carrera ? <div className="da-cal-semanal__chip-line">{ev.carrera}</div> : null}
-                        {ev.paralelo ? (
+                        {ev.paralelo || ev.turno ? (
                             <div className="da-cal-semanal__chip-line text-bold">
-                                {ev.paralelo}
-                                {ev.turno ? ` · ${ev.turno}` : ''}
+                                {[ev.paralelo, ev.turno].filter(Boolean).join(' · ')}
                             </div>
                         ) : null}
                         {ev.docente ? (
