@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { ArrowLeftOutlined, CompressOutlined, ExpandOutlined } from '@ant-design/icons';
 import { Button, Card, Flex } from 'antd';
 import { PageTemplate } from '@templates';
@@ -24,6 +25,7 @@ const sectionCardProps = {
 };
 
 const GestionHorariosAulasPage = () => {
+    const [searchParams] = useSearchParams();
     const [enModoEdicion, setEnModoEdicion] = useState(false);
     const [vistaExpandida, setVistaExpandida] = useState(false);
 
@@ -49,7 +51,10 @@ const GestionHorariosAulasPage = () => {
         aulas,
         onAsignarAula,
         patchLoading,
+        bloquesLoading,
     } = useHorariosAulasContext();
+
+    const initialForzarEdicion = searchParams.get('edicion') === '1';
 
     const headerActions = useMemo(
         () => (
@@ -138,6 +143,8 @@ const GestionHorariosAulasPage = () => {
                             aulas={aulas}
                             onAsignarAula={onAsignarAula}
                             patchLoading={patchLoading}
+                            bloquesLoading={bloquesLoading}
+                            initialForzarEdicion={initialForzarEdicion}
                             onEditModeChange={setEnModoEdicion}
                             vistaExpandida={vistaExpandida}
                         />

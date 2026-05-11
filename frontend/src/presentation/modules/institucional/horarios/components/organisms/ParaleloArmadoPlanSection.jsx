@@ -50,6 +50,7 @@ const ParaleloArmadoPlanSection = ({
     persistLoading = false,
     persistError = null,
     persistSuccess = false,
+    vistaExpandida = false,
 }) => {
     const [addOpen, setAddOpen] = useState(false);
     const [form] = Form.useForm();
@@ -169,8 +170,22 @@ const ParaleloArmadoPlanSection = ({
     }, [onRequestPersist]);
 
     return (
-        <section className="horarios-armado-plan" aria-label="Plan semanal del paralelo">
-            <Flex justify="space-between" align="center" wrap="wrap" gap={12} style={{ marginBottom: 12 }}>
+        <section
+            className={[
+                'horarios-armado-plan',
+                vistaExpandida ? 'horarios-armado-plan--fill' : '',
+            ]
+                .filter(Boolean)
+                .join(' ')}
+            aria-label="Plan semanal del paralelo"
+        >
+            <Flex
+                justify="space-between"
+                align="center"
+                wrap="wrap"
+                gap={12}
+                style={{ marginBottom: 12, flexShrink: 0 }}
+            >
                 <div>
                     <Text strong>Plan semanal</Text>
                     {turnoLabel ? (
@@ -211,7 +226,7 @@ const ParaleloArmadoPlanSection = ({
                 <Alert
                     type="info"
                     showIcon
-                    style={{ marginBottom: 12 }}
+                    style={{ marginBottom: 12, flexShrink: 0 }}
                     title="Guardando cambios del plan semanal..."
                 />
             ) : null}
@@ -219,7 +234,7 @@ const ParaleloArmadoPlanSection = ({
                 <Alert
                     type="error"
                     showIcon
-                    style={{ marginBottom: 12 }}
+                    style={{ marginBottom: 12, flexShrink: 0 }}
                     title="No se pudo guardar el plan"
                     description={
                         <span style={{ whiteSpace: 'pre-wrap' }}>{persistError}</span>
@@ -230,24 +245,28 @@ const ParaleloArmadoPlanSection = ({
                 <Alert
                     type="success"
                     showIcon
-                    style={{ marginBottom: 12 }}
+                    style={{ marginBottom: 12, flexShrink: 0 }}
                     title="Plan semanal guardado correctamente."
                 />
             ) : null}
-            <DocenteHorarioSemanalGrid
-                courseSchedules={schedules}
-                CellComponent={ParaleloPlanSemanaCell}
-                gridTimeRange={gridRange}
-                saturdayGridTimeRange={sabadoRange}
-                slotStepMinutes={SLOT_STEP_ADD}
-                uniformSlotGrid={!editable}
-                editable={editable}
-                onSlotDrop={handleSlotDrop}
-                cellExtraProps={{
-                    onBeginDragChip: handleBeginDragChip,
-                    onDeleteChip: handleDeleteChip,
-                }}
-            />
+            <div
+                className={vistaExpandida ? 'horarios-armado-plan__grid-host' : undefined}
+            >
+                <DocenteHorarioSemanalGrid
+                    courseSchedules={schedules}
+                    CellComponent={ParaleloPlanSemanaCell}
+                    gridTimeRange={gridRange}
+                    saturdayGridTimeRange={sabadoRange}
+                    slotStepMinutes={SLOT_STEP_ADD}
+                    uniformSlotGrid={!editable}
+                    editable={editable}
+                    onSlotDrop={handleSlotDrop}
+                    cellExtraProps={{
+                        onBeginDragChip: handleBeginDragChip,
+                        onDeleteChip: handleDeleteChip,
+                    }}
+                />
+            </div>
             <Modal
                 title="Añadir bloque al plan"
                 open={addOpen}

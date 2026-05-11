@@ -1,0 +1,507 @@
+import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { AppstoreOutlined, RightOutlined, TeamOutlined, TableOutlined } from '@ant-design/icons';
+import { Button, Card, Flex, Modal, Table, Tag, Typography } from 'antd';
+import { allSpacing, allColors, componentConfig, shadows, typography, gradients } from '@theme/tokens';
+import { resolveCarreraDashboardColor } from '@application-institucional/horarios/utils/carreraDashboardColor';
+
+const { Text, Title } = Typography;
+
+const DIAS_ORDEN = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO'];
+
+const fmtHora = (t) => (t == null ? '' : String(t).slice(0, 5));
+
+const estadoColor = (estado) => {
+    if (estado === 'completo') return 'success';
+    if (estado === 'conflicto') return 'error';
+    if (estado === 'sin_horario') return 'processing';
+    if (estado === 'incompleto') return 'warning';
+    return 'default';
+};
+
+const diaIndex = (dia) => {
+    const i = DIAS_ORDEN.indexOf(String(dia || '').toUpperCase());
+    return i >= 0 ? i : 99;
+};
+
+/**
+ * Sidebar gestión de horarios: tarjetas tipo dashboard; el detalle abre en modal.
+ */
+const HorariosGestionSidebarResumen = ({
+    filteredParallels = [],
+    bloquesSinAulaPorParalelo = [],
+    cursosSinDocentePorParalelo = [],
+}) => {
+    const navigate = useNavigate();
+    const [modal, setModal] = useState({ open: false, kind: null });
+    const [aulasDiaFiltro, setAulasDiaFiltro] = useState(null);
+
+    const counts = useMemo(() => {
+        const paralelos = (filteredParallels || []).length;
+        const turnosUnicos = new Set((filteredParallels || []).map((p) => p.turno).filter(Boolean)).size;
+        let bloques = 0;
+        (bloquesSinAulaPorParalelo || []).forEach((g) => {
+            if (Array.isArray(g.items)) bloques += g.items.length;
+        });
+        let cursos = 0;
+        (cursosSinDocentePorParalelo || []).forEach((g) => {
+            if (Array.isArray(g.items)) cursos += g.items.length;
+        });
+        return { paralelos, turnosUnicos, bloques, cursos };
+    }, [filteredParallels, bloquesSinAulaPorParalelo, cursosSinDocentePorParalelo]);
+
+    /** Árbol: turno → carrera → periodo → paralelos */
+    const arbolTurnos = useMemo(() => {
+        const byTurno = new Map();
+        (filteredParallels || []).forEach((p) => {
+            const turno = p.turno || 'Sin turno';
+            if (!byTurno.has(turno)) byTurno.set(turno, new Map());
+            const carreraNombre = p.carrera || 'Sin carrera';
+            const carreras = byTurno.get(turno);
+            if (!carreras.has(carreraNombre)) {
+                carreras.set(carreraNombre, {
+                    carreraNombre,
+                    carreraId: p.carreraId,
+                    carreraColorHex: p.carreraColorHex,
+                    byPeriodo: new Map(),
+                });
+            }
+            const node = carreras.get(carreraNombre);
+            const periodo = p.periodo || '—';
+            if (!node.byPeriodo.has(periodo)) node.byPeriodo.set(periodo, []);
+            node.byPeriodo.get(periodo).push(p);
+        });
+        return [...byTurno.entries()]
+            .sort((a, b) => String(a[0]).localeCompare(String(b[0])))
+            .map(([turno, carrerasMap]) => ({
+                turno,
+                carreras: [...carrerasMap.values()]
+                    .sort((a, b) => String(a.carreraNombre).localeCompare(String(b.carreraNombre)))
+                    .map((c) => ({
+                        ...c,
+                        periodos: [...c.byPeriodo.entries()]
+                            .sort(([pa], [pb]) => String(pa).localeCompare(String(pb)))
+                            .map(([periodo, paralelos]) => ({
+                                periodo,
+                                paralelos: [...paralelos].sort((x, y) =>
+                                    String(x.paralelo || '').localeCompare(String(y.paralelo || '')),
+                                ),
+                            })),
+                    })),
+            }));
+    }, [filteredParallels]);
+
+    const tablaBloquesRows = useMemo(() => {
+        const rows = [];
+        (bloquesSinAulaPorParalelo || []).forEach((g) => {
+            (g.items || []).forEach((it, idx) => {
+                rows.push({
+                    key: `${g.paraleloId}-${it.cursoCodigo || it.materiaSigla || idx}-${idx}`,
+                    paraleloEtiqueta: `${g.paraleloNombre || `Paralelo #${g.paraleloId}`}${g.paraleloTurno ? ` · ${g.paraleloTurno}` : ''}`,
+                    materia: it.materiaSigla || it.materiaNombre || it.cursoCodigo || '—',
+                    dia: it.dia || '—',
+                    hora: `${fmtHora(it.horaInicio)}–${fmtHora(it.horaFin)}`,
+                });
+            });
+        });
+        rows.sort(
+            (a, b) =>
+                diaIndex(a.dia) - diaIndex(b.dia) ||
+                String(a.hora || '').localeCompare(String(b.hora || '')) ||
+                String(a.paraleloEtiqueta).localeCompare(String(b.paraleloEtiqueta)),
+        );
+        return rows;
+    }, [bloquesSinAulaPorParalelo]);
+
+    const diasUnicosBloques = useMemo(() => {
+        const s = new Set(tablaBloquesRows.map((r) => r.dia).filter((d) => d && d !== '—'));
+        return DIAS_ORDEN.filter((d) => s.has(d));
+    }, [tablaBloquesRows]);
+
+    useEffect(() => {
+        if (!modal.open || modal.kind !== 'aulas') return;
+        if (!diasUnicosBloques.length) {
+            setAulasDiaFiltro(null);
+            return;
+        }
+        setAulasDiaFiltro((prev) => (prev && diasUnicosBloques.includes(prev) ? prev : diasUnicosBloques[0]));
+    }, [modal.open, modal.kind, diasUnicosBloques]);
+
+    const tablaBloquesFiltrada = useMemo(() => {
+        if (!aulasDiaFiltro) return tablaBloquesRows;
+        return tablaBloquesRows.filter((r) => r.dia === aulasDiaFiltro);
+    }, [tablaBloquesRows, aulasDiaFiltro]);
+
+    const docenteListItems = useMemo(() => {
+        const rows = [];
+        (cursosSinDocentePorParalelo || []).forEach((g) => {
+            (g.items || []).forEach((it, idx) => {
+                if (it.cursoId == null) return;
+                const hex = resolveCarreraDashboardColor({
+                    carreraId: g.carreraId,
+                    carreraNombre: g.carreraNombre,
+                });
+                rows.push({
+                    key: `d-${g.paraleloId}-${it.cursoId}-${idx}`,
+                    carreraNombre: g.carreraNombre || '—',
+                    periodoNombre: g.periodoNombre || '—',
+                    paraleloNombre: g.paraleloNombre || `Paralelo #${g.paraleloId}`,
+                    paraleloTurno: g.paraleloTurno || '',
+                    paraleloId: g.paraleloId,
+                    cursoId: it.cursoId,
+                    materiaLabel: it.materiaSigla || it.materiaNombre || it.cursoCodigo || 'Curso',
+                    carreraColor: hex || allColors.colorPrimary,
+                });
+            });
+        });
+        return rows;
+    }, [cursosSinDocentePorParalelo]);
+
+    const openKind = (kind) => setModal({ open: true, kind });
+    const close = () => setModal({ open: false, kind: null });
+
+    const modalTitle =
+        modal.kind === 'paralelos'
+            ? 'Paralelos por turno'
+            : modal.kind === 'aulas'
+              ? 'Bloques sin aula'
+              : modal.kind === 'docentes'
+                ? 'Cursos sin docente asignado'
+                : '';
+
+    const bloquesColumns = useMemo(
+        () => [
+            { title: 'Día', dataIndex: 'dia', key: 'dia', width: 100 },
+            { title: 'Horario', dataIndex: 'hora', key: 'hora', width: 120 },
+            { title: 'Paralelo', dataIndex: 'paraleloEtiqueta', key: 'paraleloEtiqueta', ellipsis: true },
+            { title: 'Materia', dataIndex: 'materia', key: 'materia', ellipsis: true },
+        ],
+        [],
+    );
+
+    const resumenStatCard = (kind, { gradient, icon, etiqueta, titulo, valor, detalle }) => (
+        <Card
+            key={kind}
+            role="button"
+            tabIndex={0}
+            hoverable
+            onClick={() => openKind(kind)}
+            onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    openKind(kind);
+                }
+            }}
+            className="horarios-sidebar-resumen-stat"
+            style={{
+                background: gradient,
+                borderRadius: `${componentConfig.Card.borderRadiusLG}px`,
+                boxShadow: shadows.shadowPrimary,
+                border: 'none',
+                cursor: 'pointer',
+            }}
+        >
+            <Flex vertical gap={allSpacing.marginSM} style={{ minWidth: 0, position: 'relative' }}>
+                <Flex justify="space-between" align="flex-start" wrap="nowrap">
+                    <Text
+                        style={{
+                            color: allColors.colorTextSecondaryOnDark,
+                            fontSize: `${typography.fontSizeSM}px`,
+                            margin: 0,
+                            letterSpacing: '0.02em',
+                            textTransform: 'uppercase',
+                        }}
+                    >
+                        {etiqueta}
+                    </Text>
+                    <span style={{ color: allColors.colorTextOnDark, fontSize: 22, opacity: 0.95 }} aria-hidden>
+                        {icon}
+                    </span>
+                </Flex>
+                <Title
+                    level={3}
+                    style={{
+                        color: allColors.colorTextOnDark,
+                        fontSize: 36,
+                        fontWeight: typography.fontWeightStrong,
+                        margin: 0,
+                        lineHeight: 1.1,
+                    }}
+                >
+                    {valor}
+                </Title>
+                <Title
+                    level={5}
+                    style={{
+                        color: allColors.colorTextOnDark,
+                        fontSize: `${typography.fontSizeHeading5}px`,
+                        fontWeight: typography.fontWeightStrong,
+                        margin: 0,
+                        lineHeight: 1.35,
+                    }}
+                >
+                    {titulo}
+                </Title>
+                <Text style={{ color: allColors.colorTextTertiaryOnDark, fontSize: typography.fontSizeSM }}>
+                    {detalle}
+                </Text>
+                <Flex justify="flex-end" align="center" style={{ marginTop: 4 }}>
+                    <Text style={{ color: allColors.colorTextSecondaryOnDark, fontSize: typography.fontSizeSM }}>
+                        Ver detalle <RightOutlined style={{ fontSize: 12 }} aria-hidden />
+                    </Text>
+                </Flex>
+            </Flex>
+        </Card>
+    );
+
+    return (
+        <Flex vertical gap={allSpacing.marginMD} style={{ width: '100%', minWidth: 0 }}>
+            {resumenStatCard('paralelos', {
+                gradient: gradients.gradientPrimary,
+                icon: <AppstoreOutlined />,
+                etiqueta: 'Planificación',
+                valor: counts.paralelos,
+                titulo: 'Paralelos por turno',
+                detalle: `${counts.turnosUnicos} turno(s) distintos con los filtros actuales`,
+            })}
+            {resumenStatCard('aulas', {
+                gradient: counts.bloques > 0 ? gradients.gradientWarning : gradients.gradientSuccess,
+                icon: <TableOutlined />,
+                etiqueta: 'Aulas',
+                valor: counts.bloques,
+                titulo: 'Bloques sin aula',
+                detalle:
+                    counts.bloques > 0
+                        ? 'Franjas con aula pendiente de asignación'
+                        : 'Todo en orden: sin franjas pendientes',
+            })}
+            {resumenStatCard('docentes', {
+                gradient: counts.cursos > 0 ? gradients.gradientInfo : gradients.gradientSuccess,
+                icon: <TeamOutlined />,
+                etiqueta: 'Docencia',
+                valor: counts.cursos,
+                titulo: 'Cursos sin docente',
+                detalle:
+                    counts.cursos > 0
+                        ? 'Materias sin asignación docente vigente'
+                        : 'Todos los cursos tienen docente asignado',
+            })}
+
+            <Modal
+                title={modalTitle}
+                open={modal.open}
+                onCancel={close}
+                width={Math.min(920, typeof window !== 'undefined' ? window.innerWidth - 32 : 920)}
+                footer={[
+                    <Button key="close" onClick={close}>
+                        Cerrar
+                    </Button>,
+                ]}
+                destroyOnHidden
+            >
+                {modal.kind === 'paralelos' ? (
+                    <Flex vertical gap={allSpacing.marginMD} style={{ minWidth: 0 }}>
+                        <Text type="secondary" style={{ fontSize: typography.fontSizeSM }}>
+                            Estructura por turno, carrera, periodo y paralelo (estado).
+                        </Text>
+                        {arbolTurnos.length === 0 ? (
+                            <Text type="secondary">No hay paralelos con los filtros actuales.</Text>
+                        ) : (
+                            <div className="horarios-sidebar-modal-tree">
+                                {arbolTurnos.map((nTurno) => (
+                                    <div key={nTurno.turno} className="horarios-sidebar-modal-tree__nodo">
+                                        <Text strong className="horarios-sidebar-modal-tree__raiz">
+                                            Turno {nTurno.turno}
+                                        </Text>
+                                        {nTurno.carreras.map((c) => {
+                                            const colorHex = resolveCarreraDashboardColor({
+                                                carreraId: c.carreraId,
+                                                carreraNombre: c.carreraNombre,
+                                                carreraColorHex: c.carreraColorHex,
+                                            });
+                                            return (
+                                                <div key={c.carreraNombre} className="horarios-sidebar-modal-tree__rama">
+                                                    <Text
+                                                        strong
+                                                        className="horarios-sidebar-modal-tree__carrera"
+                                                        style={{ color: colorHex || allColors.colorPrimary }}
+                                                    >
+                                                        {c.carreraNombre}
+                                                    </Text>
+                                                    {c.periodos.map((pe) => (
+                                                        <div
+                                                            key={`${c.carreraNombre}-${pe.periodo}`}
+                                                            className="horarios-sidebar-modal-tree__subrama"
+                                                        >
+                                                            <Text type="secondary" className="horarios-sidebar-modal-tree__periodo">
+                                                                {pe.periodo}
+                                                            </Text>
+                                                            <Flex vertical gap={6} className="horarios-sidebar-modal-tree__hojas">
+                                                                {pe.paralelos.map((p) => (
+                                                                    <Flex
+                                                                        key={p.id}
+                                                                        justify="space-between"
+                                                                        align="center"
+                                                                        gap={8}
+                                                                        wrap="wrap"
+                                                                        className="horarios-sidebar-modal-tree__fila"
+                                                                    >
+                                                                        <Text style={{ flex: '1 1 120px', minWidth: 0 }} ellipsis>
+                                                                            {p.paralelo}
+                                                                        </Text>
+                                                                        <Tag
+                                                                            color={estadoColor(p.estado)}
+                                                                            style={{ margin: 0, flexShrink: 0 }}
+                                                                        >
+                                                                            {p.estado?.replace(/_/g, ' ') || '—'}
+                                                                        </Tag>
+                                                                    </Flex>
+                                                                ))}
+                                                            </Flex>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </Flex>
+                ) : null}
+
+                {modal.kind === 'aulas' ? (
+                    <Flex vertical gap={allSpacing.marginMD} style={{ minWidth: 0 }}>
+                        <Text type="secondary" style={{ fontSize: typography.fontSizeSM }}>
+                            Filtrá por día; la tabla muestra solo ese día. Usá el botón inferior para abrir la pantalla de
+                            aulas en modo edición con ese día activo.
+                        </Text>
+                        {tablaBloquesRows.length === 0 ? (
+                            <Text type="secondary">No hay bloques sin aula para mostrar.</Text>
+                        ) : (
+                            <>
+                                <div className="horarios-sidebar-modal-dia-tabs" role="tablist" aria-label="Filtrar por día">
+                                    {diasUnicosBloques.map((dia) => (
+                                        <button
+                                            key={dia}
+                                            type="button"
+                                            role="tab"
+                                            aria-selected={aulasDiaFiltro === dia}
+                                            className={[
+                                                'horarios-sidebar-modal-dia-tabs__btn',
+                                                aulasDiaFiltro === dia ? 'horarios-sidebar-modal-dia-tabs__btn--active' : '',
+                                            ]
+                                                .filter(Boolean)
+                                                .join(' ')}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setAulasDiaFiltro(dia);
+                                            }}
+                                        >
+                                            {dia}
+                                        </button>
+                                    ))}
+                                </div>
+                                <Table
+                                    size="small"
+                                    pagination={{ pageSize: 14, showSizeChanger: false }}
+                                    columns={bloquesColumns}
+                                    dataSource={tablaBloquesFiltrada}
+                                    scroll={{ x: 'max-content' }}
+                                />
+                                <Flex vertical gap={8}>
+                                    <Button
+                                        type="primary"
+                                        size="large"
+                                        block
+                                        disabled={!aulasDiaFiltro}
+                                        onClick={() => {
+                                            if (!aulasDiaFiltro) return;
+                                            navigate(
+                                                `/institucional/horarios/aulas?dia=${encodeURIComponent(aulasDiaFiltro)}&edicion=1`,
+                                            );
+                                            close();
+                                        }}
+                                    >
+                                        Completar en aulas — {aulasDiaFiltro || '…'}
+                                    </Button>
+                                    <Text type="secondary" style={{ fontSize: typography.fontSizeSM }}>
+                                        Se abre la vista de aulas con el día seleccionado y la edición habilitada.
+                                    </Text>
+                                </Flex>
+                            </>
+                        )}
+                    </Flex>
+                ) : null}
+
+                {modal.kind === 'docentes' ? (
+                    <Flex vertical gap={allSpacing.marginMD} style={{ minWidth: 0 }}>
+                        <Text type="secondary" style={{ fontSize: typography.fontSizeSM }}>
+                            Cada fila enlaza al armado del paralelo y abre el cuadro de asignación docente para esa materia.
+                        </Text>
+                        {docenteListItems.length === 0 ? (
+                            <Text type="secondary">No hay cursos sin docente.</Text>
+                        ) : (
+                            <Flex
+                                vertical
+                                className="horarios-sidebar-modal-docentes-list"
+                                style={{
+                                    border: `1px solid ${allColors.colorBorder}`,
+                                    borderRadius: `${componentConfig.borderRadiusLG}px`,
+                                    overflow: 'hidden',
+                                }}
+                            >
+                                {docenteListItems.map((row, idx) => (
+                                    <Flex
+                                        key={row.key}
+                                        align="flex-start"
+                                        justify="space-between"
+                                        gap={12}
+                                        wrap="wrap"
+                                        className="horarios-sidebar-modal-docentes-list__row"
+                                        style={{
+                                            padding: `${allSpacing.paddingSM}px ${allSpacing.padding}px`,
+                                            borderTop: idx > 0 ? `1px solid ${allColors.colorBorder}` : undefined,
+                                            backgroundColor: allColors.colorBgContainer,
+                                        }}
+                                    >
+                                        <Flex vertical gap={2} style={{ flex: '1 1 200px', minWidth: 0 }}>
+                                            <Text
+                                                strong
+                                                className="horarios-sidebar-modal-docentes-list__title"
+                                                style={{ color: row.carreraColor }}
+                                            >
+                                                {row.carreraNombre}
+                                            </Text>
+                                            <Text type="secondary" style={{ fontSize: typography.fontSizeSM }}>
+                                                {row.periodoNombre} · {row.paraleloNombre}
+                                                {row.paraleloTurno ? ` · ${row.paraleloTurno}` : ''}
+                                            </Text>
+                                            <Text strong>{row.materiaLabel}</Text>
+                                        </Flex>
+                                        <Button
+                                            type="primary"
+                                            icon={<TeamOutlined />}
+                                            style={{ flexShrink: 0 }}
+                                            onClick={() => {
+                                                const turnoQ = encodeURIComponent(row.paraleloTurno || '');
+                                                navigate(
+                                                    `/institucional/horarios/armado?paralelo=${row.paraleloId}&turno=${turnoQ}&tab=cursos&asignarCurso=${row.cursoId}`,
+                                                );
+                                                close();
+                                            }}
+                                        >
+                                            Asignar docente
+                                        </Button>
+                                    </Flex>
+                                ))}
+                            </Flex>
+                        )}
+                    </Flex>
+                ) : null}
+            </Modal>
+        </Flex>
+    );
+};
+
+export default HorariosGestionSidebarResumen;

@@ -1012,6 +1012,19 @@
   max-width: 180px;
 }
 
+/** Contenedor por celda día×franja (lectura y edición). */
+.da-cal-semanal__slot-wrap {
+  min-height: 100%;
+  box-sizing: border-box;
+}
+
+/** Dos o más bloques en la misma celda (solape). */
+.da-cal-semanal__slot-wrap--conflict {
+  border: 2px dashed var(--ant-color-error, #ff4d4f);
+  border-radius: 6px;
+  background: rgba(214, 4, 4, 0.479);
+}
+
 .da-cal-semanal__cell-inner {
   min-height: 36px;
   padding: 4px;

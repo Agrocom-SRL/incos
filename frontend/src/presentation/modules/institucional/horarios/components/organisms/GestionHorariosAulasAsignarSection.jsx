@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Button as AntButton, Col, Flex, Row, Tabs, message } from 'antd';
 import { Button } from '@atoms';
 import { PlusOutlined } from '@ant-design/icons';
@@ -27,11 +27,15 @@ const GestionHorariosAulasAsignarSection = ({
   aulas,
   onAsignarAula,
   patchLoading,
+  bloquesLoading = false,
+  initialForzarEdicion = false,
   onEditModeChange,
   vistaExpandida = false,
 }) => {
   const { puedeEditar } = useAcciones('institucional.horario.armado');
+  const [messageApi, contextHolder] = message.useMessage();
   const [modoVista, setModoVista] = useState('lectura');
+  const edicionDesdeQueryAplicada = useRef(false);
   const [dragHorarioId, setDragHorarioId] = useState(null);
   const [workingBloquesDia, setWorkingBloquesDia] = useState([]);
   const [originalBloquesDia, setOriginalBloquesDia] = useState([]);
@@ -81,6 +85,16 @@ const GestionHorariosAulasAsignarSection = ({
   useEffect(() => {
     onEditModeChange?.(esModoEdicion);
   }, [esModoEdicion, onEditModeChange]);
+
+  useEffect(() => {
+    if (!initialForzarEdicion || !puedeEditar || edicionDesdeQueryAplicada.current) return;
+    if (bloquesLoading) return;
+    edicionDesdeQueryAplicada.current = true;
+    const snapshot = (bloquesDia || []).map((b) => ({ ...b }));
+    setWorkingBloquesDia(snapshot);
+    setOriginalBloquesDia(snapshot);
+    setModoVista('edicion');
+  }, [initialForzarEdicion, puedeEditar, bloquesLoading, bloquesDia]);
 
   const onDropAsignacion = async (e, aulaId, horarioId, payloadFromGrid = null) => {
     const raw = e.dataTransfer.getData(AULA_ASIGN_MIME);
@@ -174,20 +188,32 @@ const GestionHorariosAulasAsignarSection = ({
       return;
     }
 
+    const cambiosConAulaPrevia = changes.filter((b) => {
+      const original = originalMap.get(Number(b.curso_horario_id));
+      const originalAulaId = original?.aula_id == null ? null : Number(original.aula_id);
+      const nextAulaId = b.aula_id == null ? null : Number(b.aula_id);
+      return Number.isFinite(originalAulaId) && originalAulaId > 0 && originalAulaId !== nextAulaId;
+    });
+
     setSavingDraft(true);
     try {
+      // Fase 1: liberar aulas actuales para evitar conflictos transitorios en swaps.
+      for (const change of cambiosConAulaPrevia) {
+        await onAsignarAula(change.curso_horario_id, null);
+      }
+
+      // Fase 2: aplicar destino final (incluye desasignaciones definitivas y nuevas asignaciones).
       for (const change of changes) {
-        // null desasigna aula y devuelve el bloque al panel izquierdo
         await onAsignarAula(change.curso_horario_id, change.aula_id ?? null);
       }
-      message.success(
+      messageApi.success(
         changes.length === 1
           ? 'Asignación de aula guardada correctamente.'
           : `${changes.length} asignaciones de aula guardadas correctamente.`
       );
       setModoVista('lectura');
     } catch (err) {
-      message.error(err?.message || 'No se pudieron guardar los cambios. Revisa la consola o vuelve a intentar.');
+      messageApi.error(err?.message || 'No se pudieron guardar los cambios. Revisa la consola o vuelve a intentar.');
     } finally {
       setSavingDraft(false);
     }
@@ -210,6 +236,7 @@ const GestionHorariosAulasAsignarSection = ({
         .filter(Boolean)
         .join(' ')}
     >
+      {contextHolder}
       <Row gutter={[12, 12]} align="middle" justify="space-between" style={{ marginBottom: 12 }} className="horarios-aulas-asignar-root__toolbar">
         <Col>
           <Tabs

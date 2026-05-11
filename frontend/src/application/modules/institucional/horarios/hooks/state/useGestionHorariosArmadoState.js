@@ -126,6 +126,7 @@ export const useGestionHorariosArmadoState = () => {
         paraleloNombre,
         missingSubjects,
         draftSchedules,
+        serverSchedules,
         setDraftSchedules,
         onRequestPersist,
         handleVolver,

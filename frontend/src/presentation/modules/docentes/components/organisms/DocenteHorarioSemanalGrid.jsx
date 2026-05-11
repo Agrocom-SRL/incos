@@ -358,36 +358,48 @@ const DocenteHorarioSemanalGrid = ({
               <th scope="row" className="da-cal-semanal__td da-cal-semanal__td--hora">
                 {fmtHourLabel(slotMinutes)}
               </th>
-              {dayKeys.map((dia) => (
-                <td
-                  key={`${dia}-${slotMinutes}`}
-                  className="da-cal-semanal__td"
-                  onDragOver={
-                    editable && onSlotDrop
-                      ? (e) => {
-                          e.preventDefault();
-                          e.dataTransfer.dropEffect = 'move';
+              {dayKeys.map((dia) => {
+                const cellItems = cellMap.get(`${dia}-${slotMinutes}`) || [];
+                const slotHasConflict = cellItems.length >= 2;
+                return (
+                  <td
+                    key={`${dia}-${slotMinutes}`}
+                    className="da-cal-semanal__td"
+                    onDragOver={
+                      editable && onSlotDrop
+                        ? (e) => {
+                            e.preventDefault();
+                            e.dataTransfer.dropEffect = 'move';
+                        }
+                        : undefined
+                    }
+                    onDrop={
+                      editable && onSlotDrop
+                        ? (e) => {
+                            e.preventDefault();
+                            onSlotDrop(e, dia, slotMinutes);
+                        }
+                        : undefined
+                    }
+                  >
+                    <div
+                      className={
+                        slotHasConflict
+                          ? 'da-cal-semanal__slot-wrap da-cal-semanal__slot-wrap--conflict'
+                          : 'da-cal-semanal__slot-wrap'
                       }
-                      : undefined
-                  }
-                  onDrop={
-                    editable && onSlotDrop
-                      ? (e) => {
-                          e.preventDefault();
-                          onSlotDrop(e, dia, slotMinutes);
-                      }
-                      : undefined
-                  }
-                >
-                  <Cell
-                    items={cellMap.get(`${dia}-${slotMinutes}`) || []}
-                    slotDia={dia}
-                    slotMinutes={slotMinutes}
-                    editable={editable}
-                    {...cellExtraProps}
-                  />
-                </td>
-              ))}
+                    >
+                      <Cell
+                        items={cellItems}
+                        slotDia={dia}
+                        slotMinutes={slotMinutes}
+                        editable={editable}
+                        {...cellExtraProps}
+                      />
+                    </div>
+                  </td>
+                );
+              })}
             </tr>
           ))}
         </tbody>

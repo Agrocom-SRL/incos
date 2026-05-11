@@ -14,6 +14,16 @@ const ctaByState = {
     completo: 'Ver horario',
 };
 
+const ctaLabelForRow = (row) => {
+    if (row.estado !== 'incompleto') return ctaByState[row.estado] || 'Abrir';
+    const cursosTotales = Number(row.cursosTotales) || 0;
+    const cursosCreados = Number(row.cursosCreados) || 0;
+    const faltaCursos = Math.max(0, cursosTotales - cursosCreados);
+    const sinDoc = Number(row.cursosSinDocente) || 0;
+    if (faltaCursos === 0 && sinDoc > 0 && cursosTotales > 0) return 'Asignar docentes';
+    return ctaByState.incompleto;
+};
+
 const actionVariant = (estado) => {
     if (estado === 'conflicto') return 'error';
     if (estado === 'completo') return 'success';
@@ -88,7 +98,7 @@ const ParalelosTable = ({ filteredParallels, onOpenArmado, embedded = false }) =
                         className="horarios-paralelos-table__action-btn"
                         onClick={() => onOpenArmado(row)}
                     >
-                        {ctaByState[row.estado] || 'Abrir'}
+                        {ctaLabelForRow(row)}
                     </ActionButton>
                 </Space>
             ),

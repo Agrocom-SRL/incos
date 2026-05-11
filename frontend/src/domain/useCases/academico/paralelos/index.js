@@ -14,3 +14,5 @@ export { GetAsignaturasSinCursoUseCase } from './GetAsignaturasSinCursoUseCase';
 export { GetCapacidadTurnoUseCase } from './GetCapacidadTurnoUseCase';
 export { GetAulasHorariosUseCase } from './GetAulasHorariosUseCase';
 export { PatchAulaHorarioUseCase } from './PatchAulaHorarioUseCase';
+export { GetHorariosPendientesSidebarUseCase } from './GetHorariosPendientesSidebarUseCase';
+export { GetHorariosPublicacionPlanesUseCase } from './GetHorariosPublicacionPlanesUseCase';

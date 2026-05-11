@@ -157,6 +157,26 @@ export class ParaleloRepository extends IParaleloRepository {
     }
   }
 
+  async obtenerHorariosPendientesSidebar(options = {}) {
+    try {
+      const { params = {} } = options;
+      const response = await apiClient.get(PARALELOS_ENDPOINTS.DASHBOARD_HORARIOS_PENDIENTES, { params });
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al obtener pendientes de horarios');
+    }
+  }
+
+  async obtenerHorariosPublicacionPlanes(options = {}) {
+    try {
+      const { params = {} } = options;
+      const response = await apiClient.get(PARALELOS_ENDPOINTS.DASHBOARD_HORARIOS_PUBLICACION, { params });
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al obtener planes de publicación de horarios');
+    }
+  }
+
   async obtenerAulasHorarios(options = {}) {
     try {
       const { params = {} } = options;

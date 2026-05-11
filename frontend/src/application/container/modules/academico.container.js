@@ -21,6 +21,8 @@ import {
   PutParaleloHorariosUseCase,
   GetAulasHorariosUseCase,
   PatchAulaHorarioUseCase,
+  GetHorariosPendientesSidebarUseCase,
+  GetHorariosPublicacionPlanesUseCase,
 } from '@useCases/academico/paralelos';
 import { ActualizarCursoOfertaUseCase, EliminarCursoOfertaUseCase } from '@useCases/academico/cursos';
 import { GetTodasGestionesUseCase } from '@useCases/academico/gestiones';
@@ -86,6 +88,14 @@ export function registerAcademicoModule(factory) {
 
   factory.asignarAulaHorario = () => {
     return new PatchAulaHorarioUseCase(paraleloRepository);
+  };
+
+  factory.obtenerHorariosPendientesSidebar = () => {
+    return new GetHorariosPendientesSidebarUseCase(paraleloRepository);
+  };
+
+  factory.obtenerHorariosPublicacionPlanes = () => {
+    return new GetHorariosPublicacionPlanesUseCase(paraleloRepository);
   };
 
   // Registrar Use Cases de Gestiones

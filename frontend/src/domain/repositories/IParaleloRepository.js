@@ -75,4 +75,12 @@ export class IParaleloRepository extends IBaseRepository {
   async asignarAulaHorario(options = {}) {
     throw new Error('Method asignarAulaHorario() must be implemented');
   }
+
+  async obtenerHorariosPendientesSidebar(options = {}) {
+    throw new Error('Method obtenerHorariosPendientesSidebar() must be implemented');
+  }
+
+  async obtenerHorariosPublicacionPlanes(options = {}) {
+    throw new Error('Method obtenerHorariosPublicacionPlanes() must be implemented');
+  }
 }

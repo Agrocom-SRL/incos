@@ -11,12 +11,11 @@ import '@presentation/styles/pages/detail-page.css';
 import '../styles/gestion-horarios-page.css';
 import {
     HorariosAlertBanner,
-    HorariosCapacitySidebar,
     HorariosFiltersBar,
+    HorariosGestionSidebarResumen,
     HorariosKpiStrip,
     ParalelosBoard,
     ParalelosTable,
-    ProgresoGestionPanel,
 } from '../components';
 
 const sectionCardProps = {
@@ -47,7 +46,7 @@ const GestionHorariosPage = () => {
         onPublish,
         clearFilters,
         hayAlertas,
-        progresoGestion,
+        pendientesSidebar,
         loading,
         error,
     } = useHorariosContext();
@@ -153,15 +152,12 @@ const GestionHorariosPage = () => {
 
                 <InfoSidebar>
                     <Flex vertical gap={allSpacing.marginMD} style={{ width: '100%', minWidth: 0 }}>
-                        <Alert
-                            type="info"
-                            showIcon
-                            title="Acciones rápidas"
-                            description={`Incompletos: ${kpis.incompletos} | Sin horario: ${kpis.sinHorario} | Conflictos: ${kpis.conConflicto}`}
-                        />
                         <HorariosKpiStrip kpis={kpis} variant="total" />
-                        <HorariosCapacitySidebar />
-                        <ProgresoGestionPanel progresoGestion={progresoGestion} />
+                        <HorariosGestionSidebarResumen
+                            filteredParallels={filteredParallels}
+                            bloquesSinAulaPorParalelo={pendientesSidebar?.bloquesSinAulaPorParalelo}
+                            cursosSinDocentePorParalelo={pendientesSidebar?.cursosSinDocentePorParalelo}
+                        />
                     </Flex>
                 </InfoSidebar>
             </DashboardPageShell >
