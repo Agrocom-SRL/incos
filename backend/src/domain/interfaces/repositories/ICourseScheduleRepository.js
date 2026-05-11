@@ -18,5 +18,11 @@ import { IRepository } from './IRepository.js';
  * - count(filters)
  */
 export class ICourseScheduleRepository extends IRepository {
-  // Solo hereda métodos de IRepository
+  async hasClassroomConflict({ scheduleId, classroomId, excludeCourseScheduleId = null }) {
+    throw new Error('Method hasClassroomConflict() must be implemented');
+  }
+
+  async findClassroomConflict({ scheduleId, classroomId, excludeCourseScheduleId = null }) {
+    throw new Error('Method findClassroomConflict() must be implemented');
+  }
 }

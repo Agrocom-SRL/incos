@@ -29,6 +29,7 @@ export function buildParalelosRouter({ controllers, middlewares }) {
     const router = express.Router();
     const { validateRequest } = middlewares;
     const verHorarios = [authenticate, verificarPermiso('institucional.gestion.horarios', 'LISTAR')];
+    const verPublicacionHorarios = [authenticate, verificarPermiso('institucional.horario.publicacion', 'LISTAR')];
     const crearCursoOferta = [authenticate, verificarPermiso('institucional.gestion.horarios', 'CREAR')];
     /** Persistir bloques del plan semanal: mismo criterio que ruta `/institucional/horarios/armado` (permiso 98). */
     const persistirPlanArmado = [authenticate, verificarPermiso('institucional.horario.armado', 'EDITAR')];
@@ -132,6 +133,18 @@ export function buildParalelosRouter({ controllers, middlewares }) {
         '/dashboard/capacidad-turno',
         ...verHorarios,
         (req, res, next) => controllers.getDashboardCapacidadTurnoController.handle(req, res, next)
+    );
+
+    router.get(
+        '/dashboard/horarios-pendientes',
+        ...verHorarios,
+        (req, res, next) => controllers.getDashboardHorariosPendientesController.handle(req, res, next)
+    );
+
+    router.get(
+        '/dashboard/horarios-publicacion',
+        ...verPublicacionHorarios,
+        (req, res, next) => controllers.getHorariosPublicacionPlanesController.handle(req, res, next)
     );
 
     // ============================================

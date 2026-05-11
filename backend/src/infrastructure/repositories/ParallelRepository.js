@@ -1,3 +1,4 @@
+import { QueryTypes } from 'sequelize';
 import { IParallelRepository } from '../../domain/interfaces/repositories/IParallelRepository.js';
 import { Paralelo as ParaleloModel } from '../database/models/paralelo.js';
 import { BaseRepository } from './BaseRepository.js';
@@ -176,7 +177,13 @@ export class ParallelRepository extends BaseRepository {
         carrera_color_hex,
         periodo_nombre,
         asignaturas_requeridas,
+        cursos_creados,
         cursos_con_horario,
+        cursos_sin_docente,
+        bloques_sin_aula,
+        conflictos_solape_mismo_bloque,
+        conflictos_aula,
+        conflicto_docente_horario,
         estado
       FROM vista_horarios_paralelo_estado
       ${where.length ? `WHERE ${where.join(' AND ')}` : ''}
@@ -216,5 +223,124 @@ export class ParallelRepository extends BaseRepository {
       ORDER BY turno ASC
     `;
     return sequelize.query(query, { type: sequelize.QueryTypes.SELECT });
+  }
+
+  async obtenerBloquesSinAulaDashboard() {
+    const query = `
+      SELECT
+        curso_horario_id,
+        curso_id,
+        curso_codigo,
+        materia_sigla,
+        materia_nombre,
+        paralelo_id,
+        paralelo_nombre,
+        paralelo_turno,
+        periodo_nombre,
+        carrera_id,
+        carrera_nombre,
+        dia,
+        hora_inicio,
+        hora_fin,
+        orden_secuencia
+      FROM vista_bloques_horarios_sin_aula
+      ORDER BY
+        carrera_nombre ASC,
+        periodo_nombre ASC,
+        paralelo_turno ASC,
+        paralelo_nombre ASC,
+        materia_sigla ASC,
+        dia ASC,
+        hora_inicio ASC
+    `;
+    return sequelize.query(query, { type: QueryTypes.SELECT });
+  }
+
+  async obtenerCursosSinDocenteDashboard() {
+    const query = `
+      SELECT
+        curso_id,
+        curso_codigo,
+        materia_sigla,
+        materia_nombre,
+        paralelo_id,
+        paralelo_nombre,
+        paralelo_turno,
+        periodo_nombre,
+        carrera_id,
+        carrera_nombre
+      FROM vista_horarios_cursos_sin_docente
+      ORDER BY
+        carrera_nombre ASC,
+        periodo_nombre ASC,
+        paralelo_turno ASC,
+        paralelo_nombre ASC,
+        materia_sigla ASC
+    `;
+    return sequelize.query(query, { type: QueryTypes.SELECT });
+  }
+
+  /**
+   * @param {{ carrera_id?: number|null, turno?: string|null, periodo?: string|null }} filters
+   */
+  async obtenerPublicacionBloques(filters = {}) {
+    const where = [];
+    const replacements = {};
+
+    if (filters.carrera_id != null && Number.isFinite(Number(filters.carrera_id))) {
+      where.push('carrera_id = :carrera_id');
+      replacements.carrera_id = Number(filters.carrera_id);
+    }
+    if (filters.turno) {
+      where.push('UPPER(paralelo_turno) = UPPER(:turno)');
+      replacements.turno = String(filters.turno);
+    }
+    if (filters.periodo) {
+      where.push('periodo_nombre = :periodo');
+      replacements.periodo = String(filters.periodo);
+    }
+
+    const query = `
+      SELECT
+        paralelo_id,
+        paralelo_nombre,
+        paralelo_turno,
+        carrera_id,
+        carrera_nombre,
+        carrera_codigo,
+        carrera_color_hex,
+        periodo_nombre,
+        curso_id,
+        curso_codigo,
+        curso_color_hex,
+        materia_id,
+        materia_sigla,
+        materia_nombre,
+        docente_nombre,
+        curso_horario_id,
+        horario_id,
+        dia,
+        hora_inicio,
+        hora_fin,
+        orden_secuencia,
+        aula_id,
+        aula_codigo,
+        aula_nombre
+      FROM vista_horarios_publicacion_bloque
+      ${where.length ? `WHERE ${where.join(' AND ')}` : ''}
+      ORDER BY
+        carrera_nombre ASC,
+        periodo_nombre ASC,
+        paralelo_turno ASC,
+        paralelo_nombre ASC,
+        curso_id ASC,
+        orden_secuencia ASC,
+        curso_horario_id ASC
+    `;
+
+    return sequelize.query(query, {
+      replacements,
+      type: QueryTypes.SELECT,
+    });
   }
 }

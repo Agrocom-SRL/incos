@@ -175,4 +175,36 @@ export class CourseScheduleRepository extends BaseRepository {
     );
     return rows.length > 0;
   }
+
+  async findClassroomConflict({ scheduleId, classroomId, excludeCourseScheduleId = null }) {
+    const sid = Number(scheduleId);
+    const aid = Number(classroomId);
+    const excludeId = excludeCourseScheduleId == null ? null : Number(excludeCourseScheduleId);
+    if (!Number.isFinite(sid) || sid < 1 || !Number.isFinite(aid) || aid < 1) {
+      return null;
+    }
+
+    const rows = await sequelize.query(
+      `
+      SELECT id
+      FROM cursos_horarios
+      WHERE horario_id = :scheduleId
+        AND aula_id = :classroomId
+        AND deleted_at IS NULL
+        AND activo = 1
+        ${Number.isFinite(excludeId) && excludeId > 0 ? 'AND id <> :excludeId' : ''}
+      ORDER BY id ASC
+      LIMIT 1
+      `,
+      {
+        replacements: {
+          scheduleId: sid,
+          classroomId: aid,
+          ...(Number.isFinite(excludeId) && excludeId > 0 ? { excludeId } : {}),
+        },
+        type: QueryTypes.SELECT,
+      }
+    );
+    return rows.length > 0 ? Number(rows[0].id) : null;
+  }
 }

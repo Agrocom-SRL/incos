@@ -41,4 +41,16 @@ export class IParallelRepository extends IRepository {
   async obtenerCapacidadTurnoDashboard() {
     throw new Error('Method obtenerCapacidadTurnoDashboard must be implemented by subclass');
   }
+
+  async obtenerBloquesSinAulaDashboard() {
+    throw new Error('Method obtenerBloquesSinAulaDashboard must be implemented by subclass');
+  }
+
+  async obtenerCursosSinDocenteDashboard() {
+    throw new Error('Method obtenerCursosSinDocenteDashboard must be implemented by subclass');
+  }
+
+  async obtenerPublicacionBloques(_filters = {}) {
+    throw new Error('Method obtenerPublicacionBloques must be implemented by subclass');
+  }
 }

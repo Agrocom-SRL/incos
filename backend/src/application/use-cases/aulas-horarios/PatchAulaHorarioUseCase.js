@@ -27,13 +27,23 @@ export class PatchAulaHorarioUseCase {
       const aula = await this.classroomRepository.findById(nextAulaId);
       if (!aula) throw new NotFoundError('Aula');
 
-      const hasConflict = await this.courseScheduleRepository.hasClassroomConflict({
+      const conflictCourseScheduleId = await this.courseScheduleRepository.findClassroomConflict({
         scheduleId: schedule.scheduleId,
         classroomId: nextAulaId,
         excludeCourseScheduleId: id,
       });
-      if (hasConflict) {
-        throw new ValidationError('La aula ya está asignada en ese mismo bloque horario');
+
+      if (Number.isFinite(conflictCourseScheduleId) && conflictCourseScheduleId > 0) {
+        this.logger?.warn('Conflicto de aula resuelto por reasignación automática', {
+          scheduleId: schedule.scheduleId,
+          classroomId: nextAulaId,
+          requestedCourseScheduleId: id,
+          previousCourseScheduleId: conflictCourseScheduleId,
+        });
+
+        // Regla de negocio: el bloque editado por el usuario queda como oficial
+        // y el bloque previo en conflicto se desasigna.
+        await this.courseScheduleRepository.update(conflictCourseScheduleId, { classroomId: null }, userId);
       }
     }
 
