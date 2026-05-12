@@ -11,7 +11,14 @@ function toMinutes(hhmm) {
 
 export const useDocentesAsignacionHorario = ({ cursoId, cursos, paraleloNombreParaHorario }) => {
   const [bloques, setBloques] = useState([]);
-  const [horarioMeta, setHorarioMeta] = useState({ cursoCodigo: null, cursoColorHex: null, materiaNombre: null });
+  const [horarioMeta, setHorarioMeta] = useState({
+    cursoCodigo: null,
+    cursoColorHex: null,
+    materiaNombre: null,
+    materiaSigla: null,
+    carrera: null,
+    docente: null,
+  });
   const [loadingHorarios, setLoadingHorarios] = useState(false);
   const [errorHorarios, setErrorHorarios] = useState(null);
 
@@ -20,7 +27,10 @@ export const useDocentesAsignacionHorario = ({ cursoId, cursos, paraleloNombrePa
     setHorarioMeta({
       cursoCodigo: curso?.codigo ?? null,
       cursoColorHex: curso?.colorHex ?? curso?.color_hex ?? null,
-      materiaNombre: curso?.materiaNombre ?? null,
+      materiaNombre: curso?.materiaNombre ?? curso?.materia ?? curso?.name ?? null,
+      materiaSigla: curso?.materiaSigla ?? curso?.siglaMateria ?? curso?.sigla ?? null,
+      carrera: curso?.carreraNombre ?? curso?.carrera ?? null,
+      docente: curso?.docenteNombre ?? curso?.docente ?? null,
     });
   }, [cursoId, cursos]);
 
@@ -57,8 +67,19 @@ export const useDocentesAsignacionHorario = ({ cursoId, cursos, paraleloNombrePa
   }, [cursoId]);
 
   const courseSchedulesDesdeBloques = useMemo(
-    () => bloquesToCourseSchedules(bloques, horarioMeta.cursoCodigo, paraleloNombreParaHorario, horarioMeta.cursoColorHex),
-    [bloques, horarioMeta.cursoCodigo, horarioMeta.cursoColorHex, paraleloNombreParaHorario]
+    () =>
+      bloquesToCourseSchedules(
+        bloques,
+        horarioMeta.cursoCodigo,
+        paraleloNombreParaHorario,
+        horarioMeta.cursoColorHex,
+        horarioMeta.materiaNombre,
+        horarioMeta.materiaSigla,
+        horarioMeta.carrera,
+        null,
+        horarioMeta.docente,
+      ),
+    [bloques, horarioMeta.cursoCodigo, horarioMeta.cursoColorHex, horarioMeta.materiaNombre, horarioMeta.materiaSigla, horarioMeta.carrera, horarioMeta.docente, paraleloNombreParaHorario]
   );
 
   const cargaHorariaOpt = useMemo(() => {

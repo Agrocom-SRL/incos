@@ -4,8 +4,8 @@
 
 import { useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { Alert } from 'antd';
-import { ArrowLeftOutlined } from '@ant-design/icons';
+import { Alert, Modal, Typography } from 'antd';
+import { ArrowLeftOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
 import { Button } from '@atoms';
@@ -18,6 +18,8 @@ import DocentesAsignacionCursoSection from '@docentes/components/organisms/Docen
 import DocentesAsignacionConfirmarSection from '@docentes/components/organisms/DocentesAsignacionConfirmarSection';
 import '@modules/seguridad/styles/seguridad.css';
 import '@docentes/styles/docentes-asignacion-academica.css';
+
+const { Paragraph } = Typography;
 
 const DocentesAsignacionAcademica = () => {
   const {
@@ -64,6 +66,9 @@ const DocentesAsignacionAcademica = () => {
     courseSchedulesDesdeBloques,
     loadingHorarios,
     errorHorarios,
+    existingAssignmentDialog,
+    handleClearExistingAssignmentDialog,
+    handleGoToExistingDocente,
   } = useDocentesAsignacionAcademicaContext();
 
   const renderSectionContent = useCallback(
@@ -178,58 +183,83 @@ const DocentesAsignacionAcademica = () => {
   );
 
   return (
-    <PageTemplate
-      header={
-        <PageHeader
-          title="Asignación académica"
-          breadcrumbItems={breadcrumbItems}
-          actions={
-            <Button variant="default" icon={<ArrowLeftOutlined />} onClick={handleVolver}>
-              Volver
-            </Button>
-          }
-        />
-      }
-      sidebar={null}
-    >
-      <div className="daa-shell daa-page--wizard">
-        {!docenteId && (
-          <Alert
-            type="warning"
-            showIcon
-            style={{ marginBottom: 16 }}
-            title="Ningún docente preseleccionado"
-            description={
-              <>
-                Elegí un docente desde la{' '}
-                <Link to="/docentes/listar">lista de docentes</Link> (acción en la fila) o abrí esta pantalla desde la
-                ficha del docente.
-              </>
+    <>
+      <PageTemplate
+        header={
+          <PageHeader
+            title="Asignación académica"
+            breadcrumbItems={breadcrumbItems}
+            actions={
+              <Button variant="default" icon={<ArrowLeftOutlined />} onClick={handleVolver}>
+                Volver
+              </Button>
             }
           />
-        )}
+        }
+        sidebar={null}
+      >
+        <div className="daa-shell daa-page--wizard">
+          {!docenteId && (
+            <Alert
+              type="warning"
+              showIcon
+              style={{ marginBottom: 16 }}
+              title="Ningún docente preseleccionado"
+              description={
+                <>
+                  Elegí un docente desde la{' '}
+                  <Link to="/docentes/listar">lista de docentes</Link> (acción en la fila) o abrí esta pantalla desde la
+                  ficha del docente.
+                </>
+              }
+            />
+          )}
 
-        <div className="daa-asignacion-wizard-wrap">
-          <WizardForm
-            key={editingAssignmentId ? `edit-${editingAssignmentId}` : 'create'}
-            className="daa-asignacion-wizard"
-            steps={wizardSteps}
-            form={form}
-            loading={submittingAsignacion}
-            viewMode={false}
-            resolveOptions={() => []}
-            onFinish={handleWizardFinish}
-            showSaveButton={false}
-            renderSectionContent={renderSectionContent}
-            onValidateBeforeNext={onValidateBeforeNext}
-            initialStep={initialStep}
-            finishLabel={editingAssignmentId ? 'Guardar cambios de asignación' : 'Registrar asignación'}
-            nextLabel="Siguiente"
-            prevLabel="Anterior"
-          />
+          <div className="daa-asignacion-wizard-wrap">
+            <WizardForm
+              key={editingAssignmentId ? `edit-${editingAssignmentId}` : 'create'}
+              className="daa-asignacion-wizard"
+              steps={wizardSteps}
+              form={form}
+              loading={submittingAsignacion}
+              viewMode={false}
+              resolveOptions={() => []}
+              onFinish={handleWizardFinish}
+              showSaveButton={false}
+              renderSectionContent={renderSectionContent}
+              onValidateBeforeNext={onValidateBeforeNext}
+              initialStep={initialStep}
+              finishLabel={editingAssignmentId ? 'Guardar cambios de asignación' : 'Registrar asignación'}
+              nextLabel="Siguiente"
+              prevLabel="Anterior"
+            />
+          </div>
         </div>
-      </div>
-    </PageTemplate>
+      </PageTemplate>
+
+      <Modal
+        title={
+          <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <ExclamationCircleOutlined style={{ color: '#faad14', fontSize: 28 }} />
+            Asignación ya existente
+          </span>
+        }
+        open={!!existingAssignmentDialog}
+        onCancel={handleClearExistingAssignmentDialog}
+        onOk={handleGoToExistingDocente}
+        okText="Ver docente asignado"
+        cancelText="Cancelar"
+        width={480}
+        closable
+      >
+        <Paragraph style={{ marginBottom: 0 }}>
+          El curso ya está asignado al docente <strong>{existingAssignmentDialog?.docenteNombre}</strong>.
+        </Paragraph>
+        <Paragraph type="secondary" style={{ marginTop: 8, marginBottom: 0 }}>
+          ¿Desea ver el detalle de las asignaciones de este docente?
+        </Paragraph>
+      </Modal>
+    </>
   );
 };
 
