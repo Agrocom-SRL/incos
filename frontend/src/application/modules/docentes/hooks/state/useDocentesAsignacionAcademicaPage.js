@@ -25,7 +25,7 @@ export const useDocentesAsignacionAcademicaPage = () => {
   const initialStep = editingAssignmentId ? 3 : 0;
 
   const [submittingAsignacion, setSubmittingAsignacion] = useState(false);
-  const wizardSteps = useMemo(() => createDocenteAsignacionAcademicaWizardSteps(), []);
+  const [existingAssignmentDialog, setExistingAssignmentDialog] = useState(null); // { docenteId, docenteNombre, asignacionId }
 
   const {
     planes,
@@ -107,9 +107,16 @@ export const useDocentesAsignacionAcademicaPage = () => {
     []
   );
 
-  const handleVolver = useCallback(() => {
-    navigate(returnListPath.startsWith('/') ? returnListPath : '/docentes/listar', { state: { menuSidebarKey, gestionReturnPath } });
-  }, [navigate, returnListPath, menuSidebarKey, gestionReturnPath]);
+  const handleClearExistingAssignmentDialog = useCallback(() => {
+    setExistingAssignmentDialog(null);
+  }, []);
+
+  const handleGoToExistingDocente = useCallback(() => {
+    if (existingAssignmentDialog?.docenteId) {
+      handleClearExistingAssignmentDialog();
+      navigate(`/docentes/${existingAssignmentDialog.docenteId}/asignaciones`);
+    }
+  }, [existingAssignmentDialog, handleClearExistingAssignmentDialog, navigate]);
 
   const handleRegistrarAsignacion = useCallback(async () => {
     if (!docenteId) return message.warning('Necesitás un docente seleccionado para registrar la asignación.');
@@ -123,6 +130,32 @@ export const useDocentesAsignacionAcademicaPage = () => {
     setSubmittingAsignacion(false);
     if (!res.success) {
       const msg = typeof res.error === 'string' ? res.error : res.error?.message || 'No se pudo registrar la asignación';
+      // Verificar si es el error de asignación existente
+      if (msg.includes('Ya existe una asignación vigente')) {
+        // Consultar la asignación existente
+        const existingRes = await docenteRepository.listarAsignaciones({
+          cursoId,
+          gestionPlanId,
+          vigente: 'true'
+        });
+        if (existingRes.success && existingRes.data && existingRes.data.length > 0) {
+          const existing = existingRes.data[0];
+          let docenteNombreResuelto = 'Docente desconocido';
+          if (existing.docenteId) {
+            const docenteRes = await docenteRepository.obtenerPorId(existing.docenteId);
+            if (docenteRes.success && docenteRes.data) {
+              const profile = docenteRes.data.profile ?? docenteRes.data;
+              docenteNombreResuelto = profile.nombreCompleto || `Docente #${existing.docenteId}`;
+            }
+          }
+          setExistingAssignmentDialog({
+            docenteId: existing.docenteId,
+            docenteNombre: docenteNombreResuelto,
+            asignacionId: existing.id,
+          });
+          return;
+        }
+      }
       message.error(msg);
       return;
     }
@@ -180,6 +213,14 @@ export const useDocentesAsignacionAcademicaPage = () => {
     return handleRegistrarAsignacion();
   }, [editingAssignmentId, handleActualizarAsignacion, handleRegistrarAsignacion]);
 
+  const wizardSteps = useMemo(() => createDocenteAsignacionAcademicaWizardSteps(), []);
+
+  const handleVolver = useCallback(() => {
+    navigate(returnListPath.startsWith('/') ? returnListPath : '/docentes/listar', {
+      state: { menuSidebarKey, gestionReturnPath },
+    });
+  }, [navigate, returnListPath, menuSidebarKey, gestionReturnPath]);
+
   return {
     form,
     editingAssignmentId,
@@ -224,6 +265,9 @@ export const useDocentesAsignacionAcademicaPage = () => {
     courseSchedulesDesdeBloques,
     loadingHorarios,
     errorHorarios,
+    existingAssignmentDialog,
+    handleClearExistingAssignmentDialog,
+    handleGoToExistingDocente,
   };
 };
 
