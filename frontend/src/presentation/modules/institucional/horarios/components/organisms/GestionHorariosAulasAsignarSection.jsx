@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Button as AntButton, Col, Flex, Row, Tabs, message } from 'antd';
-import { Button } from '@atoms';
+import { Button, FieldSelect } from '@atoms';
+import { allColors, typography } from '@theme/tokens';
 import { PlusOutlined } from '@ant-design/icons';
 import { useAcciones } from '@application/modules/shared/hooks/useAcciones';
 import { sanitizeDocenteColorHex } from '@docentes/components/atoms/DocenteColorBar';
@@ -41,6 +42,7 @@ const GestionHorariosAulasAsignarSection = ({
   const [workingBloquesDia, setWorkingBloquesDia] = useState([]);
   const [originalBloquesDia, setOriginalBloquesDia] = useState([]);
   const [savingDraft, setSavingDraft] = useState(false);
+  const [filtroParalelo, setFiltroParalelo] = useState('all');
   const esModoEdicion = modoVista === 'edicion' && puedeEditar;
   const bloquesDia = useMemo(() => (bloques || []).filter((b) => b.dia === diaActivo), [bloques, diaActivo]);
   const bloquesDiaFiltrados = useMemo(
@@ -52,17 +54,36 @@ const GestionHorariosAulasAsignarSection = ({
     [paraleloFocoId, bloquesDiaFiltrados, bloquesDia]
   );
   const bloquesDiaVista = esModoEdicion ? workingBloquesDia : bloquesDiaFiltrados;
-  const sinAulaDiaOrdenados = useMemo(() => {
+  const sinAulaDiaBase = useMemo(() => {
     const source = esModoEdicion ? (workingBloquesDia || []) : (bloquesBaseDia || []);
-    return source
-      .filter((b) => Number(b.curso_horario_id) > 0 && !b.aula_id)
+    return source.filter((b) => Number(b.curso_horario_id) > 0 && !b.aula_id);
+  }, [esModoEdicion, workingBloquesDia, bloquesBaseDia]);
+
+  const paralelosDisponibles = useMemo(() => {
+    const seen = new Map();
+    sinAulaDiaBase.forEach((b) => {
+      if (b.paralelo_id && !seen.has(b.paralelo_id)) {
+        seen.set(b.paralelo_id, {
+          value: Number(b.paralelo_id),
+          label: b.paralelo_nombre || `Paralelo ${b.paralelo_id}`,
+          carrera: b.carrera_nombre || '',
+          periodo: b.periodo_nombre || '',
+        });
+      }
+    });
+    return [...seen.values()].sort((a, b) => String(a.label).localeCompare(String(b.label)));
+  }, [sinAulaDiaBase]);
+
+  const sinAulaDiaOrdenados = useMemo(() => {
+    return sinAulaDiaBase
+      .filter((b) => filtroParalelo === 'all' || Number(b.paralelo_id) === filtroParalelo)
       .sort(
         (a, b) =>
           String(a.curso_codigo || '').localeCompare(String(b.curso_codigo || '')) ||
           Number(a.orden_secuencia || 0) - Number(b.orden_secuencia || 0) ||
           String(a.hora_inicio || '').localeCompare(String(b.hora_inicio || ''))
       );
-  }, [esModoEdicion, workingBloquesDia, bloquesBaseDia]);
+  }, [sinAulaDiaBase, filtroParalelo]);
   const rows = useMemo(() => {
     const map = new Map();
     (bloquesDia || []).forEach((b) => {
@@ -118,6 +139,10 @@ const GestionHorariosAulasAsignarSection = ({
   useEffect(() => {
     onEditModeChange?.(esModoEdicion);
   }, [esModoEdicion, onEditModeChange]);
+
+  useEffect(() => {
+    if (!esModoEdicion) setFiltroParalelo('all');
+  }, [esModoEdicion]);
 
   const onDropAsignacion = async (e, aulaId, horarioId, payloadFromGrid = null) => {
     const raw = e.dataTransfer.getData(AULA_ASIGN_MIME);
@@ -281,8 +306,39 @@ const GestionHorariosAulasAsignarSection = ({
       <Row gutter={12} align="stretch" wrap={false} className={mainRowClassName}>
         {esModoEdicion ? (
           <Col flex="220px" className="horarios-aulas-edicion-layout__left-col">
+            {paralelosDisponibles.length > 1 && (
+              <FieldSelect
+                value={filtroParalelo}
+                onChange={(v) => setFiltroParalelo(v ?? 'all')}
+                options={[
+                  { value: 'all', label: 'Todos los paralelos' },
+                  ...paralelosDisponibles,
+                ]}
+                size="middle"
+                allowClear={false}
+                style={{ width: '100%', marginBottom: 8 }}
+                optionRender={(option) => (
+                  <Flex vertical gap={2}>
+                    <span>{option.label}</span>
+                    {(option.data?.carrera || option.data?.periodo) ? (
+                      <span style={{ fontSize: typography.fontSizeSM - 1, color: allColors.colorTextSecondary, lineHeight: 1.3 }}>
+                        {[option.data.carrera, option.data.periodo].filter(Boolean).join(' · ')}
+                      </span>
+                    ) : null}
+                  </Flex>
+                )}
+              />
+            )}
             {sinAulaDiaOrdenados.length === 0 ? (
-              <Alert type="success" showIcon title="Todos los bloques del día tienen aula asignada." />
+              <Alert
+                type={sinAulaDiaBase.length === 0 ? 'success' : 'info'}
+                showIcon
+                message={
+                  sinAulaDiaBase.length === 0
+                    ? 'Todos los bloques del día tienen aula asignada.'
+                    : 'No hay bloques sin aula para el paralelo seleccionado.'
+                }
+              />
             ) : (
               <div className="horarios-aulas-edicion-layout__left-scroll" style={{ display: 'grid', gap: 8 }}>
                 {sinAulaDiaOrdenados.map((b) => (
