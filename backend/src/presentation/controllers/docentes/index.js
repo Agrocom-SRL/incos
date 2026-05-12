@@ -14,3 +14,4 @@ export { GetCursoHorariosDocenteController } from './get-curso-horarios-docente.
 export { ListPeriodosDocenteAsignacionController } from './list-periodos-docente.controller.js';
 export { ListParalelosDocenteAsignacionController } from './list-paralelos-docente.controller.js';
 export { ListCursosPorParaleloDocenteController } from './list-cursos-paralelo-docente.controller.js';
+export { GetDocentesConflictoBloquesController } from './get-conflicto-bloques-curso.controller.js';

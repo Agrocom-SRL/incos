@@ -53,6 +53,15 @@ export class DocenteRepository extends IDocenteRepository {
    * Lista asignaciones docentes (requiere al menos docenteId, gestionPlanId o cursoId en params).
    * @param {{ docenteId?: number, gestionPlanId?: number, cursoId?: number, page?: number, limit?: number, vigente?: string }} params
    */
+  async getConflictoBloquesCurso(cursoId) {
+    try {
+      const response = await apiClient.get(DOCENTES_ENDPOINTS.CONFLICTO_BLOQUES(cursoId));
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al obtener conflicto de bloques');
+    }
+  }
+
   async listarAsignaciones(params = {}) {
     try {
       const response = await apiClient.get(DOCENTES_ENDPOINTS.ASIGNACIONES, { params });

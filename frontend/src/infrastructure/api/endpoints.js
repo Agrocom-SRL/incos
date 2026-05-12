@@ -97,6 +97,8 @@ export const DOCENTES_ENDPOINTS = {
   CURSOS_DISPONIBLES: `${API_BASE}/docentes/cursos-disponibles`,
   /** GET — bloques de horario + aula de un curso */
   CURSO_HORARIOS: (cursoId) => `${API_BASE}/docentes/cursos/${cursoId}/horarios`,
+  /** GET — IDs de docentes con choque en los bloques de un curso (?cursoId=X) */
+  CONFLICTO_BLOQUES: (cursoId) => `${API_BASE}/docentes/conflicto-bloques?cursoId=${cursoId}`,
 };
 
 // ============================================

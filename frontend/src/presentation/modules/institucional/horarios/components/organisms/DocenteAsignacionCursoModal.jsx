@@ -37,13 +37,14 @@ const DocenteAsignacionCursoModal = ({
     const [saving, setSaving] = useState(false);
     const [loadingAsignacion, setLoadingAsignacion] = useState(false);
     const [cursoAsignacion, setCursoAsignacion] = useState(null);
+    const [docentesConChoque, setDocentesConChoque] = useState(new Set());
     const { docentes = [] } = useDocentesApi();
     const { hasPermiso } = useAuthContext();
     const puedeGuardarAsignacion = hasPermiso('docentes.asignar', 'EDITAR');
 
     const docenteCandidates = useMemo(() => {
         const query = candidateSearch.trim().toLowerCase();
-        return docentes
+        const mapped = docentes
             .filter((d) => {
                 if (!query) return true;
                 return String(d.nombreCompleto || '').toLowerCase().includes(query);
@@ -51,18 +52,41 @@ const DocenteAsignacionCursoModal = ({
             .map((d) => {
                 const totalAsignaciones = Number(d.teachingStats?.totalAsignaciones || 0);
                 const hasConflicts = Boolean(d.teachingStats?.conflictos?.hasConflictos);
-                const semaforo = hasConflicts ? 'rojo' : totalAsignaciones >= 5 ? 'amarillo' : 'verde';
-                return {
-                    ...d,
-                    semaforo,
-                };
+                const chocaBloques = docentesConChoque.has(Number(d.id));
+                const semaforo = chocaBloques
+                    ? 'rojo'
+                    : hasConflicts || totalAsignaciones >= 5
+                        ? 'amarillo'
+                        : 'verde';
+                return { ...d, semaforo, chocaBloques };
             });
-    }, [docentes, candidateSearch]);
+
+        // Libres primero; garantizar al menos 50% del total visible
+        const libres = mapped.filter((d) => d.semaforo === 'verde');
+        const otros = mapped.filter((d) => d.semaforo !== 'verde');
+        const MAX = 10;
+        const libresSlot = Math.min(libres.length, Math.ceil(MAX / 2)); // hasta 5
+        const otrosSlot = MAX - libresSlot;
+        return [...libres.slice(0, libresSlot), ...otros.slice(0, otrosSlot)];
+    }, [docentes, candidateSearch, docentesConChoque]);
 
     const selectedDocente = useMemo(
         () => docenteCandidates.find((d) => Number(d.id) === Number(selectedDocenteId)) || null,
         [docenteCandidates, selectedDocenteId],
     );
+
+    useEffect(() => {
+        if (!open || !selectedCourse?.cursoId) return;
+        DocenteRepository.getConflictoBloquesCurso(selectedCourse.cursoId)
+            .then((res) => {
+                if (res?.success && Array.isArray(res.data?.docenteIdsConChoque)) {
+                    setDocentesConChoque(new Set(res.data.docenteIdsConChoque.map(Number)));
+                } else {
+                    setDocentesConChoque(new Set());
+                }
+            })
+            .catch(() => setDocentesConChoque(new Set()));
+    }, [open, selectedCourse?.cursoId]);
 
     useEffect(() => {
         if (!open || !selectedCourse?.cursoId) return;
@@ -205,14 +229,14 @@ const DocenteAsignacionCursoModal = ({
                         </Col>
                     </Row>
                     <div className="ant-list ant-list-bordered ant-list-sm">
-                        {docenteCandidates.slice(0, 10).map((item) => {
+                        {docenteCandidates.map((item) => {
                             const color = item.semaforo === 'rojo' ? 'red' : item.semaforo === 'amarillo' ? 'gold' : 'green';
                             const label =
                                 item.semaforo === 'rojo'
-                                    ? 'Choque detectado'
+                                    ? 'Choque en estos bloques: '
                                     : item.semaforo === 'amarillo'
-                                        ? 'Carga alta'
-                                        : 'Libre total';
+                                        ? 'Carga alta o conflicto general: '
+                                        : 'Libre en estos bloques: ';
                             const selected = Number(selectedDocenteId) === Number(item.id);
                             return (
                                 <button
