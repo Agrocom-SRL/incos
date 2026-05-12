@@ -10,6 +10,9 @@
    - success: Verde (para acciones de éxito/completar)
    - warning: Amarillo (para acciones de advertencia)
    - error: Rojo (para acciones destructivas/eliminar)
+
+   Bordes: solo en forma circular (icon-button--circle), p. ej. filtros o pantalla completa.
+   Botones cuadrados (icon-button--square, por defecto) sin borde — p. ej. TableActions en tablas.
    ============================================================================ */
 
 .icon-button {
@@ -27,9 +30,17 @@
     color: var(--color-icon-button) !important;
 }
 
+/* Solo círculos: borde neutro si no hay variante semántica */
+.icon-button--circle.ant-btn-text:not(.icon-button--info):not(.icon-button--success):not(.icon-button--warning):not(.icon-button--error) {
+    border: 1px solid var(--color-border);
+}
+
 /* Variante Info (azul) - para editar/ver */
 .icon-button--info.ant-btn-text {
     color: var(--color-info);
+}
+
+.icon-button--circle.icon-button--info.ant-btn-text {
     border: 1px solid var(--color-info);
 }
 
@@ -54,6 +65,9 @@
 /* Variante Success (verde) - para completar */
 .icon-button--success.ant-btn-text {
     color: var(--color-success);
+}
+
+.icon-button--circle.icon-button--success.ant-btn-text {
     border: 1px solid var(--color-success);
 }
 
@@ -78,6 +92,9 @@
 /* Variante Warning (amarillo) - para advertencias */
 .icon-button--warning.ant-btn-text {
     color: var(--color-warning);
+}
+
+.icon-button--circle.icon-button--warning.ant-btn-text {
     border: 1px solid var(--color-warning);
 }
 
@@ -102,6 +119,9 @@
 /* Variante Error (rojo) - para eliminar */
 .icon-button--error.ant-btn-text {
     color: var(--color-error);
+}
+
+.icon-button--circle.icon-button--error.ant-btn-text {
     border: 1px solid var(--color-error);
 }
 
