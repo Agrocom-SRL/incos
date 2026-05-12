@@ -34,5 +34,7 @@ export const DOCENTES_TOKENS = {
   listParalelosDocenteAsignacionController: 'docentes.listParalelosDocenteAsignacionController',
   listCursosPorParaleloDocenteUseCase: 'docentes.listCursosPorParaleloDocenteUseCase',
   listCursosPorParaleloDocenteController: 'docentes.listCursosPorParaleloDocenteController',
+  getDocentesConflictoBloquesUseCase: 'docentes.getDocentesConflictoBloquesUseCase',
+  getDocentesConflictoBloquesController: 'docentes.getDocentesConflictoBloquesController',
   docentesRouter: 'docentes.docentesRouter',
 };

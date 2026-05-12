@@ -289,7 +289,7 @@ const HorariosGestionSidebarResumen = ({
 
     return (
         <Flex vertical gap={allSpacing.marginMD} style={{ width: '100%', minWidth: 0 }}>
-            {resumenStatCard('paralelos', {
+            {counts.paralelos > 0 && resumenStatCard('paralelos', {
                 gradient: gradients.gradientPrimary,
                 icon: <AppstoreOutlined />,
                 etiqueta: 'Planificación',
@@ -297,38 +297,29 @@ const HorariosGestionSidebarResumen = ({
                 titulo: 'Paralelos por turno',
                 detalle: `${counts.turnosUnicos} turno(s) distintos con los filtros actuales`,
             })}
-            {resumenStatCard('aulas', {
-                gradient: counts.bloques > 0 ? gradients.gradientWarning : gradients.gradientSuccess,
+            {counts.bloques > 0 && resumenStatCard('aulas', {
+                gradient: gradients.gradientWarning,
                 icon: <TableOutlined />,
                 etiqueta: 'Aulas',
                 valor: counts.bloques,
                 titulo: 'Bloques sin aula',
-                detalle:
-                    counts.bloques > 0
-                        ? 'Franjas con aula pendiente de asignación'
-                        : 'Todo en orden: sin franjas pendientes',
+                detalle: 'Franjas con aula pendiente de asignación',
             })}
-            {resumenStatCard('docentes', {
-                gradient: counts.cursos > 0 ? gradients.gradientInfo : gradients.gradientSuccess,
+            {counts.cursos > 0 && resumenStatCard('docentes', {
+                gradient: gradients.gradientInfo,
                 icon: <TeamOutlined />,
                 etiqueta: 'Docencia',
                 valor: counts.cursos,
                 titulo: 'Cursos sin docente',
-                detalle:
-                    counts.cursos > 0
-                        ? 'Materias sin asignación docente vigente'
-                        : 'Todos los cursos tienen docente asignado',
+                detalle: 'Materias sin asignación docente vigente',
             })}
-            {resumenStatCard('conflictos', {
-                gradient: counts.docentesConflictos > 0 ? gradients.gradientError : gradients.gradientSuccess,
+            {counts.docentesConflictos > 0 && resumenStatCard('conflictos', {
+                gradient: gradients.gradientError,
                 icon: <WarningOutlined />,
                 etiqueta: 'Alertas',
                 valor: counts.docentesConflictos,
                 titulo: 'Docentes con conflictos',
-                detalle:
-                    counts.docentesConflictos > 0
-                        ? 'Choque de franja, aula u asignación duplicada al mismo curso'
-                        : 'Sin conflictos operativos detectados',
+                detalle: 'Choque de franja, aula u asignación duplicada al mismo curso',
             })}
 
             <Modal

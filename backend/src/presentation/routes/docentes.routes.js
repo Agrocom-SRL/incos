@@ -94,6 +94,12 @@ export function buildDocentesRouter({ controllers, middlewares }) {
   );
 
   router.get(
+    '/conflicto-bloques',
+    ...docentesListar,
+    (req, res, next) => controllers.getDocentesConflictoBloquesController.handle(req, res, next)
+  );
+
+  router.get(
     '/cursos/:cursoId/horarios',
     ...docenteAsignar,
     ...cursoIdParamValidator,

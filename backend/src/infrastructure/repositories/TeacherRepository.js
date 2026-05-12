@@ -369,6 +369,19 @@ export class TeacherRepository extends BaseRepository {
    *   conflictos:{ curso:number, horario:number, aula:number, total:number, hasConflictos:boolean }
    * }>>}
    */
+  async getDocentesConChoqueBloques(cursoId) {
+    const id = Number(cursoId);
+    if (!Number.isFinite(id) || id < 1) return [];
+    // Vista: 93-vista-base-docentes-choque-bloques-por-curso.sql
+    const rows = await sequelize.query(
+      `SELECT DISTINCT docente_id AS docenteId
+       FROM vista_base_docentes_choque_bloques_por_curso
+       WHERE curso_id = :cursoId`,
+      { replacements: { cursoId: id }, type: QueryTypes.SELECT }
+    );
+    return rows.map((r) => Number(r.docenteId));
+  }
+
   async getTeachingLoadAndConflictStats(teacherIds = []) {
     const ids = (teacherIds || []).map((v) => Number(v)).filter((v) => Number.isFinite(v) && v > 0);
     if (!ids.length) return {};

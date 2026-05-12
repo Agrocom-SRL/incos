@@ -26,7 +26,9 @@ import {
   ListPeriodosDocenteAsignacionController,
   ListParalelosDocenteAsignacionController,
   ListCursosPorParaleloDocenteController,
+  GetDocentesConflictoBloquesController,
 } from '../../../../presentation/controllers/docentes/index.js';
+import { GetDocentesConflictoBloquesCursoUseCase } from '../../../../application/use-cases/docentes/GetDocentesConflictoBloquesCursoUseCase.js';
 import { ListTeacherAssignmentsUseCase } from '../../../../application/use-cases/docentes/ListTeacherAssignmentsUseCase.js';
 import { CreateTeacherAssignmentUseCase } from '../../../../application/use-cases/docentes/CreateTeacherAssignmentUseCase.js';
 import { AssignTeacherToCourseUseCase } from '../../../../application/use-cases/docentes/AssignTeacherToCourseUseCase.js';
@@ -401,6 +403,27 @@ export function registerDocentesModule(container) {
 
   registerComponent(
     container,
+    DOCENTES_TOKENS.getDocentesConflictoBloquesUseCase,
+    (c) =>
+      new GetDocentesConflictoBloquesCursoUseCase({
+        teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+      })
+  );
+
+  registerComponent(
+    container,
+    DOCENTES_TOKENS.getDocentesConflictoBloquesController,
+    (c) =>
+      new GetDocentesConflictoBloquesController({
+        getDocentesConflictoBloquesCursoUseCase: c.resolve(DOCENTES_TOKENS.getDocentesConflictoBloquesUseCase),
+        logger: c.resolve(SERVICIOS_TOKENS.logger),
+        responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+      })
+  );
+
+  registerComponent(
+    container,
     DOCENTES_TOKENS.docentesRouter,
     (c) => {
       const controllers = {
@@ -420,6 +443,7 @@ export function registerDocentesModule(container) {
         listCursosPorParaleloDocenteController: c.resolve(DOCENTES_TOKENS.listCursosPorParaleloDocenteController),
         listCursosDisponiblesDocenteController: c.resolve(DOCENTES_TOKENS.listCursosDisponiblesDocenteController),
         getCursoHorariosDocenteController: c.resolve(DOCENTES_TOKENS.getCursoHorariosDocenteController),
+        getDocentesConflictoBloquesController: c.resolve(DOCENTES_TOKENS.getDocentesConflictoBloquesController),
       };
       const middlewares = {
         validateRequest: c.resolve(SERVICIOS_TOKENS.validateRequest),

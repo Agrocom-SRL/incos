@@ -160,7 +160,8 @@ export const useDocentesAsignacionAcademicaPage = () => {
       return;
     }
     message.success('Asignación registrada');
-  }, [docenteId, gestionPlanId, periodoId, paraleloId, cursoId, cargaHorariaOpt, message]);
+    navigate(returnListPath.startsWith('/') ? returnListPath : '/docentes/listar', { state: { menuSidebarKey, gestionReturnPath } });
+  }, [docenteId, gestionPlanId, periodoId, paraleloId, cursoId, cargaHorariaOpt, message, navigate, returnListPath, menuSidebarKey, gestionReturnPath]);
 
   const handleActualizarAsignacion = useCallback(async () => {
     if (!editingAssignmentId) return;
