@@ -1,5 +1,5 @@
 /**
- * Lista bloques sin aula y cursos sin docente, agrupados por paralelo (panel lateral).
+ * Lista bloques sin aula, cursos sin docente (por paralelo) y docentes con conflictos operativos (panel lateral).
  */
 function groupBloquesSinAula(rows) {
   const map = new Map();
@@ -58,6 +58,26 @@ function groupCursosSinDocente(rows) {
   return [...map.values()].sort((a, b) => String(a.paraleloNombre || '').localeCompare(String(b.paraleloNombre || '')));
 }
 
+function groupDocentesConflictosDetalle(flatRows) {
+  const map = new Map();
+  for (const r of flatRows || []) {
+    const id = Number(r.docente_id);
+    if (!Number.isFinite(id)) continue;
+    const name =
+      r.docente_nombre != null ? String(r.docente_nombre).replace(/\s+/g, ' ').trim() || null : null;
+    const line = String(r.detalle_linea || '').trim();
+    if (!line) continue;
+    if (!map.has(id)) {
+      map.set(id, { docenteId: id, docenteNombre: name, lineasDetalle: [] });
+    }
+    const arr = map.get(id).lineasDetalle;
+    if (!arr.includes(line)) arr.push(line);
+  }
+  return [...map.values()].sort((a, b) =>
+    String(a.docenteNombre || '').localeCompare(String(b.docenteNombre || ''), 'es'),
+  );
+}
+
 export class GetHorariosSidebarPendientesUseCase {
   constructor({ parallelRepository, logger }) {
     this.parallelRepository = parallelRepository;
@@ -66,13 +86,15 @@ export class GetHorariosSidebarPendientesUseCase {
 
   async execute() {
     this.logger.info('[Academico] Dashboard horarios — pendientes sidebar');
-    const [bloquesRows, cursosRows] = await Promise.all([
+    const [bloquesRows, cursosRows, docentesConflictosRows] = await Promise.all([
       this.parallelRepository.obtenerBloquesSinAulaDashboard(),
       this.parallelRepository.obtenerCursosSinDocenteDashboard(),
+      this.parallelRepository.obtenerDocentesConflictosDetalleDashboard(),
     ]);
     return {
       bloquesSinAulaPorParalelo: groupBloquesSinAula(bloquesRows),
       cursosSinDocentePorParalelo: groupCursosSinDocente(cursosRows),
+      docentesConConflictosOperativos: groupDocentesConflictosDetalle(docentesConflictosRows),
     };
   }
 }

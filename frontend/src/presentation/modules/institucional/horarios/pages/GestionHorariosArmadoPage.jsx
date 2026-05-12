@@ -59,11 +59,13 @@ const GestionHorariosArmadoPage = () => {
         onRequestPersist,
         handleVolver,
         ofertaParalelo,
+        refetchSchedule,
     } = useHorariosArmadoContext();
     const [searchParams, setSearchParams] = useSearchParams();
     const [vistaExpandida, setVistaExpandida] = useState(false);
     const [docenteModalOpen, setDocenteModalOpen] = useState(false);
     const [selectedCourse, setSelectedCourse] = useState(null);
+    const [docentePreview, setDocentePreview] = useState(null);
     const lastHandledAsignarCursoKey = useRef(null);
 
     useEffect(() => {
@@ -89,6 +91,7 @@ const GestionHorariosArmadoPage = () => {
             cursoColorHex: row.colorHex || row.cursoColorHex || null,
         };
         setSelectedCourse(source || fallback);
+        setDocentePreview(null);
         setDocenteModalOpen(true);
     }, [draftSchedules]);
 
@@ -126,6 +129,7 @@ const GestionHorariosArmadoPage = () => {
             return;
         }
         lastHandledAsignarCursoKey.current = key;
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- enlace profundo `asignarCurso`: abrir modal cuando el tab y el plan están listos
         handleOpenDocenteAsignacion(row);
         clearParam();
     }, [
@@ -140,27 +144,39 @@ const GestionHorariosArmadoPage = () => {
         setTab,
     ]);
 
-    const handleDocenteAssigned = ({ cursoId, docenteNombre }) => {
-        const docente = docenteNombre || null;
-        setDraftSchedules((prev) =>
-            prev.map((c) =>
-                Number(c.cursoId) === Number(cursoId)
+    const handleDocenteAssigned = useCallback(
+        ({ cursoId, docenteNombre }) => {
+            const docente = docenteNombre || null;
+            setDocentePreview(null);
+            setDraftSchedules((prev) =>
+                prev.map((c) =>
+                    Number(c.cursoId) === Number(cursoId)
+                        ? {
+                              ...c,
+                              docente,
+                          }
+                        : c,
+                ),
+            );
+            setSelectedCourse((prev) =>
+                prev && Number(prev.cursoId) === Number(cursoId)
                     ? {
-                          ...c,
+                          ...prev,
                           docente,
                       }
-                    : c,
-            ),
-        );
-        setSelectedCourse((prev) =>
-            prev && Number(prev.cursoId) === Number(cursoId)
-                ? {
-                      ...prev,
-                      docente,
-                  }
-                : prev,
-        );
-    };
+                    : prev,
+            );
+            if (paraleloId) {
+                refetchSchedule?.(Number(paraleloId));
+            }
+        },
+        [paraleloId, refetchSchedule, setDraftSchedules],
+    );
+
+    const handleDocenteModalClose = useCallback(() => {
+        setDocentePreview(null);
+        setDocenteModalOpen(false);
+    }, []);
 
     const tabItems = useMemo(
         () => [
@@ -179,6 +195,7 @@ const GestionHorariosArmadoPage = () => {
                             missingSubjects={missingSubjects}
                             setTab={setTab}
                             onOpenDocenteAsignacion={handleOpenDocenteAsignacion}
+                            docentePreview={docentePreview}
                         />
                     </div>
                 ),
@@ -275,6 +292,8 @@ const GestionHorariosArmadoPage = () => {
             setTab,
             ofertaParalelo,
             vistaExpandida,
+            docentePreview,
+            handleOpenDocenteAsignacion,
         ],
     );
 
@@ -453,10 +472,11 @@ const GestionHorariosArmadoPage = () => {
             {docenteModalOpen ? (
                 <DocenteAsignacionCursoModal
                     open={docenteModalOpen}
-                    onClose={() => setDocenteModalOpen(false)}
+                    onClose={handleDocenteModalClose}
                     selectedCourse={selectedCourse}
                     paraleloLabel={paraleloNombre || `#${paraleloId || '—'}`}
                     onAssigned={handleDocenteAssigned}
+                    onPreviewDocenteChange={setDocentePreview}
                     onWarning={(suggestedTab) => {
                         if (suggestedTab === 'gestion' || suggestedTab === 'plan') setTab(suggestedTab);
                     }}

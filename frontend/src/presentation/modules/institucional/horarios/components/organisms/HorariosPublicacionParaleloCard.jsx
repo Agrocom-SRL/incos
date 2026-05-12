@@ -9,9 +9,11 @@ import {
 } from '@application-institucional/horarios/utils/turnoGridRange';
 import { paraleloScheduleToCourseSchedules } from '@application-institucional/horarios/utils/paraleloScheduleToCourseSchedules';
 import {
-    appendParaleloEstadoLineas,
+    appendParaleloDashboardPendientesLineas,
     buildHorariosPlanPendientesDetalleLines,
 } from '@application-institucional/horarios/utils/buildHorariosPlanPendientesDetalle';
+import { BOARD_COLUMN_LABELS } from '@application-institucional/horarios/config/dashboardConstants';
+import { resolveHorariosBoardBucket } from '@application-institucional/horarios/utils/horariosBoardBucket';
 import ParaleloPlanSemanaCell from '../atoms/ParaleloPlanSemanaCell';
 import HorariosPlanPendientesLista from './HorariosPlanPendientesLista';
 
@@ -27,12 +29,21 @@ const cardShell = (accentBorder) => ({
     },
 });
 
-const estadoTag = (estado) => {
-    if (estado === 'completo') return { color: 'success', label: 'Listo para publicar' };
-    if (estado === 'conflicto') return { color: 'error', label: 'Con conflictos' };
-    if (estado === 'sin_horario') return { color: 'processing', label: 'Pendiente de horarios/aulas' };
-    if (estado === 'incompleto') return { color: 'warning', label: 'Incompleto' };
-    return { color: 'default', label: estado || '—' };
+/** Tag según `tablero_grupo` del catálogo de paralelos (misma nomenclatura que el tablero de gestión). */
+const grupoTableroTag = (bucket) => {
+    const label = BOARD_COLUMN_LABELS[bucket] || bucket || '—';
+    switch (bucket) {
+        case 'completo':
+            return { color: 'success', label };
+        case 'sin_horarios':
+            return { color: 'error', label };
+        case 'sin_docentes':
+            return { color: 'warning', label };
+        case 'sin_aulas':
+            return { color: 'processing', label };
+        default:
+            return { color: 'default', label };
+    }
 };
 
 const HorariosPublicacionParaleloCard = ({ plan, paraleloEstado }) => {
@@ -50,10 +61,10 @@ const HorariosPublicacionParaleloCard = ({ plan, paraleloEstado }) => {
     );
 
     const border = paralelo?.carreraColorHex ? `${paralelo.carreraColorHex}55` : undefined;
-    const estado = paraleloEstado?.estado || null;
+    const boardBucket = useMemo(() => resolveHorariosBoardBucket(paraleloEstado || {}), [paraleloEstado]);
     const pendientesLineas = useMemo(() => {
         const fromPlan = buildHorariosPlanPendientesDetalleLines(courseSchedules);
-        let merged = appendParaleloEstadoLineas(fromPlan, paraleloEstado);
+        let merged = appendParaleloDashboardPendientesLineas(fromPlan, paraleloEstado);
         if (
             paraleloEstado?.conflictoDocenteHorario &&
             !merged.some((l) => String(l).startsWith('Choque de docente'))
@@ -65,18 +76,17 @@ const HorariosPublicacionParaleloCard = ({ plan, paraleloEstado }) => {
         }
         return merged;
     }, [courseSchedules, paraleloEstado]);
-    const tag = useMemo(() => estadoTag(estado), [estado]);
-    const okPublicacion = estado === 'completo' && pendientesLineas.length === 0;
+    const tag = useMemo(() => grupoTableroTag(boardBucket), [boardBucket]);
+    const okPublicacion = boardBucket === 'completo' && pendientesLineas.length === 0;
     const mensajeVacio =
         paraleloEstado == null
             ? 'No hay datos de estado para este paralelo.'
-            : 'No se listaron pendientes en el plan cargado; si el estado sigue incompleto, revisá otras pestañas o la sincronización.';
+            : 'No se listaron pendientes en el plan cargado; si el grupo del tablero no es Completo, revisá otras pestañas o la sincronización.';
 
     const onEditarPlan = () => {
         const id = paralelo?.id;
         if (id == null) return;
-        const turnoQ = encodeURIComponent(paralelo?.turno || '');
-        navigate(`/institucional/horarios/armado?paralelo=${id}&turno=${turnoQ}&tab=plan`);
+        navigate(`/institucional/horarios/armado?paralelo=${id}&tab=plan`);
     };
 
     return (

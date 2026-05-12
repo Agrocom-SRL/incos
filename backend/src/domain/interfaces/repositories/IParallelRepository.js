@@ -50,7 +50,20 @@ export class IParallelRepository extends IRepository {
     throw new Error('Method obtenerCursosSinDocenteDashboard must be implemented by subclass');
   }
 
+  async obtenerDocentesConflictosDetalleDashboard() {
+    throw new Error('Method obtenerDocentesConflictosDetalleDashboard must be implemented by subclass');
+  }
+
   async obtenerPublicacionBloques(_filters = {}) {
     throw new Error('Method obtenerPublicacionBloques must be implemented by subclass');
+  }
+
+  /**
+   * Cursos de un paralelo cuya asignación docente vigente participa en choque de franja (misma horario_id con otro curso del mismo docente).
+   * @param {number} _paraleloId
+   * @returns {Promise<Array<{ curso_id: number }>>}
+   */
+  async obtenerCursoIdsChoqueDocenteHorarioPorParalelo(_paraleloId) {
+    throw new Error('Method obtenerCursoIdsChoqueDocenteHorarioPorParalelo must be implemented by subclass');
   }
 }

@@ -52,6 +52,7 @@ const GestionHorariosAulasPage = () => {
         onAsignarAula,
         patchLoading,
         bloquesLoading,
+        paraleloFocoId,
     } = useHorariosAulasContext();
 
     const initialForzarEdicion = searchParams.get('edicion') === '1';
@@ -147,6 +148,7 @@ const GestionHorariosAulasPage = () => {
                             initialForzarEdicion={initialForzarEdicion}
                             onEditModeChange={setEnModoEdicion}
                             vistaExpandida={vistaExpandida}
+                            paraleloFocoId={paraleloFocoId}
                         />
                     </Flex>
                 </Card>

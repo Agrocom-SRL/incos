@@ -120,9 +120,9 @@ const GestionHorariosPage = () => {
                             {error ? <Alert type="error" showIcon message={error} /> : null}
                             {hayAlertas ? (
                                 <HorariosAlertBanner
-                                    incompletos={kpis.incompletos}
-                                    sinHorario={kpis.sinHorario}
-                                    conflictos={kpis.conConflicto}
+                                    sinDocentes={kpis.sinDocentes}
+                                    sinAulas={kpis.sinAulas}
+                                    sinHorarios={kpis.sinHorarios}
                                 />
                             ) : null}
 
@@ -157,6 +157,7 @@ const GestionHorariosPage = () => {
                             filteredParallels={filteredParallels}
                             bloquesSinAulaPorParalelo={pendientesSidebar?.bloquesSinAulaPorParalelo}
                             cursosSinDocentePorParalelo={pendientesSidebar?.cursosSinDocentePorParalelo}
+                            docentesConConflictosOperativos={pendientesSidebar?.docentesConConflictosOperativos}
                         />
                     </Flex>
                 </InfoSidebar>

@@ -76,6 +76,12 @@ export const useGestionHorariosAulasState = () => {
     const turno = ['TARDE', 'NOCHE', 'TODOS'].includes(searchParams.get('turno')) ? searchParams.get('turno') : turnoInicial;
     const tipoAula = 'TODOS';
 
+    const paraleloFocoRaw = searchParams.get('paralelo');
+    const paraleloFocoId = (() => {
+        const n = Number(paraleloFocoRaw);
+        return Number.isFinite(n) && n > 0 ? n : null;
+    })();
+
     const toPeriodo = useCallback((row) => {
       return row?.periodo_nombre || row?.periodo || row?.gestion_nombre || row?.gestion || null;
     }, []);
@@ -103,11 +109,12 @@ export const useGestionHorariosAulasState = () => {
 
     const bloquesFiltrados = useMemo(() => {
       return (bloques || []).filter((b) => {
+        if (paraleloFocoId != null && Number(b.paralelo_id) !== paraleloFocoId) return false;
         if (filters.carrera !== 'all' && b.carrera_nombre !== filters.carrera) return false;
         if (filters.periodo !== 'all' && toPeriodo(b) !== filters.periodo) return false;
         return true;
       });
-    }, [bloques, filters, toPeriodo]);
+    }, [bloques, filters, toPeriodo, paraleloFocoId]);
 
     const aulas = useMemo(() => {
       const map = new Map();
@@ -163,6 +170,7 @@ export const useGestionHorariosAulasState = () => {
         options,
         onFilterChange,
         clearFilters,
+        paraleloFocoId,
         bloques: bloques || [],
         bloquesFiltrados,
         aulas,

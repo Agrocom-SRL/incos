@@ -1,6 +1,8 @@
 import { useMemo } from 'react';
 import { Card, Flex, Tag, Typography } from 'antd';
 import { allSpacing, allColors, componentConfig, shadows, typography } from '@theme/tokens';
+import { BOARD_COLUMN_LABELS } from '@application-institucional/horarios/config/dashboardConstants';
+import { resolveHorariosBoardBucket } from '@application-institucional/horarios/utils/horariosBoardBucket';
 
 const { Title, Text } = Typography;
 
@@ -14,11 +16,12 @@ const cardShell = {
     styles: { body: { padding: `${componentConfig.Card.paddingLG}px` } },
 };
 
-const estadoColor = (estado) => {
-    if (estado === 'completo') return 'success';
-    if (estado === 'conflicto') return 'error';
-    if (estado === 'sin_horario') return 'processing';
-    if (estado === 'incompleto') return 'warning';
+const tableroGrupoColor = (p) => {
+    const b = p?.boardBucket ?? resolveHorariosBoardBucket(p);
+    if (b === 'completo') return 'success';
+    if (b === 'sin_horarios') return 'error';
+    if (b === 'sin_docentes') return 'warning';
+    if (b === 'sin_aulas') return 'processing';
     return 'default';
 };
 
@@ -64,8 +67,8 @@ const HorariosParalelosPorTurnoSidebar = ({ filteredParallels = [] }) => {
                                         <Text style={{ flex: '1 1 140px', minWidth: 0 }} ellipsis>
                                             {p.paralelo}
                                         </Text>
-                                        <Tag color={estadoColor(p.estado)} style={{ margin: 0, flexShrink: 0 }}>
-                                            {p.estado?.replace(/_/g, ' ') || '—'}
+                                        <Tag color={tableroGrupoColor(p)} style={{ margin: 0, flexShrink: 0 }}>
+                                            {BOARD_COLUMN_LABELS[p.boardBucket ?? resolveHorariosBoardBucket(p)] || '—'}
                                         </Tag>
                                     </Flex>
                                 ))}

@@ -345,6 +345,10 @@
     padding-left: 1.1rem;
 }
 
+.horarios-armado-docente--conflicto {
+    color: var(--ant-color-error, #ff4d4f);
+}
+
 .horarios-aulas-chip--conflicto {
     border: 2px dashed var(--ant-color-error);
     box-shadow:

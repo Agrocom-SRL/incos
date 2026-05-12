@@ -12,7 +12,6 @@ export const useGestionHorariosPlantillaState = () => {
     const { paraleloId: paraleloIdParam } = useParams();
     const [searchParams] = useSearchParams();
     const queryParalelo = searchParams.get('paralelo');
-    const turnoParam = searchParams.get('turno') || '';
 
     const paraleloIdResolved = paraleloIdParam || queryParalelo;
     const numericParaleloId = paraleloIdResolved ? Number(paraleloIdResolved) : null;
@@ -40,7 +39,7 @@ export const useGestionHorariosPlantillaState = () => {
         [oferta],
     );
 
-    const turnoEfectivo = (turnoParam || meta?.turno || '').trim();
+    const turnoEfectivo = (meta?.turno || '').trim();
 
     const filasOferta = useMemo(() => {
         const sinCurso = missingSubjects.map((m) => ({

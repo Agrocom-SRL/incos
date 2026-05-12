@@ -29,6 +29,7 @@ const DocenteAsignacionCursoModal = ({
     paraleloLabel,
     onAssigned,
     onWarning,
+    onPreviewDocenteChange,
 }) => {
     const [messageApi, contextHolder] = message.useMessage();
     const [candidateSearch, setCandidateSearch] = useState('');
@@ -85,6 +86,35 @@ const DocenteAsignacionCursoModal = ({
             })
             .finally(() => setLoadingAsignacion(false));
     }, [open, selectedCourse?.cursoId]);
+
+    useEffect(() => {
+        if (!open || typeof onPreviewDocenteChange !== 'function') return;
+        if (!selectedCourse?.cursoId || selectedDocenteId == null) {
+            onPreviewDocenteChange(null);
+            return;
+        }
+        const d =
+            docentes.find((x) => Number(x.id) === Number(selectedDocenteId)) ||
+            docenteCandidates.find((x) => Number(x.id) === Number(selectedDocenteId)) ||
+            null;
+        if (!d) {
+            onPreviewDocenteChange(null);
+            return;
+        }
+        const hasConflicts = Boolean(d.teachingStats?.conflictos?.hasConflictos);
+        onPreviewDocenteChange({
+            cursoId: Number(selectedCourse.cursoId),
+            docenteNombre: d.nombreCompleto || null,
+            docenteEnConflictoHorario: hasConflicts,
+        });
+    }, [
+        open,
+        onPreviewDocenteChange,
+        selectedCourse?.cursoId,
+        selectedDocenteId,
+        docentes,
+        docenteCandidates,
+    ]);
 
     const handleConfirm = async () => {
         if (!puedeGuardarAsignacion || !selectedCourse?.cursoId || !selectedDocenteId) return;

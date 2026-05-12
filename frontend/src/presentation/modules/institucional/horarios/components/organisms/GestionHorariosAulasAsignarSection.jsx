@@ -31,11 +31,12 @@ const GestionHorariosAulasAsignarSection = ({
   initialForzarEdicion = false,
   onEditModeChange,
   vistaExpandida = false,
+  paraleloFocoId = null,
 }) => {
   const { puedeEditar } = useAcciones('institucional.horario.armado');
   const [messageApi, contextHolder] = message.useMessage();
   const [modoVista, setModoVista] = useState('lectura');
-  const edicionDesdeQueryAplicada = useRef(false);
+  const edicionAutoQueryKeyRef = useRef('');
   const [dragHorarioId, setDragHorarioId] = useState(null);
   const [workingBloquesDia, setWorkingBloquesDia] = useState([]);
   const [originalBloquesDia, setOriginalBloquesDia] = useState([]);
@@ -46,9 +47,13 @@ const GestionHorariosAulasAsignarSection = ({
     () => (bloquesFiltrados || []).filter((b) => b.dia === diaActivo),
     [bloquesFiltrados, diaActivo]
   );
+  const bloquesBaseDia = useMemo(
+    () => (paraleloFocoId != null ? bloquesDiaFiltrados : bloquesDia),
+    [paraleloFocoId, bloquesDiaFiltrados, bloquesDia]
+  );
   const bloquesDiaVista = esModoEdicion ? workingBloquesDia : bloquesDiaFiltrados;
   const sinAulaDiaOrdenados = useMemo(() => {
-    const source = esModoEdicion ? (workingBloquesDia || []) : (bloquesDia || []);
+    const source = esModoEdicion ? (workingBloquesDia || []) : (bloquesBaseDia || []);
     return source
       .filter((b) => Number(b.curso_horario_id) > 0 && !b.aula_id)
       .sort(
@@ -57,7 +62,7 @@ const GestionHorariosAulasAsignarSection = ({
           Number(a.orden_secuencia || 0) - Number(b.orden_secuencia || 0) ||
           String(a.hora_inicio || '').localeCompare(String(b.hora_inicio || ''))
       );
-  }, [esModoEdicion, workingBloquesDia, bloquesDia]);
+  }, [esModoEdicion, workingBloquesDia, bloquesBaseDia]);
   const rows = useMemo(() => {
     const map = new Map();
     (bloquesDia || []).forEach((b) => {
@@ -76,25 +81,43 @@ const GestionHorariosAulasAsignarSection = ({
 
   useEffect(() => {
     if (!esModoEdicion) {
-      const snapshot = (bloquesDia || []).map((b) => ({ ...b }));
+      const snapshot = (bloquesBaseDia || []).map((b) => ({ ...b }));
       setWorkingBloquesDia(snapshot);
       setOriginalBloquesDia(snapshot);
     }
-  }, [bloquesDia, esModoEdicion]);
+  }, [bloquesBaseDia, esModoEdicion]);
+
+  useEffect(() => {
+    if (!initialForzarEdicion) {
+      edicionAutoQueryKeyRef.current = '';
+    }
+  }, [initialForzarEdicion]);
+
+  useEffect(() => {
+    if (!initialForzarEdicion || !puedeEditar) return;
+    if (bloquesLoading) return;
+    const snapshotSource = paraleloFocoId != null ? bloquesDiaFiltrados : bloquesDia;
+    const snapshot = (snapshotSource || []).map((b) => ({ ...b }));
+    if (snapshot.length === 0) return;
+    const key = `1|${paraleloFocoId ?? ''}|${diaActivo}`;
+    if (edicionAutoQueryKeyRef.current === key) return;
+    edicionAutoQueryKeyRef.current = key;
+    setWorkingBloquesDia(snapshot);
+    setOriginalBloquesDia(snapshot);
+    setModoVista('edicion');
+  }, [
+    initialForzarEdicion,
+    puedeEditar,
+    bloquesLoading,
+    bloquesDia,
+    bloquesDiaFiltrados,
+    paraleloFocoId,
+    diaActivo,
+  ]);
 
   useEffect(() => {
     onEditModeChange?.(esModoEdicion);
   }, [esModoEdicion, onEditModeChange]);
-
-  useEffect(() => {
-    if (!initialForzarEdicion || !puedeEditar || edicionDesdeQueryAplicada.current) return;
-    if (bloquesLoading) return;
-    edicionDesdeQueryAplicada.current = true;
-    const snapshot = (bloquesDia || []).map((b) => ({ ...b }));
-    setWorkingBloquesDia(snapshot);
-    setOriginalBloquesDia(snapshot);
-    setModoVista('edicion');
-  }, [initialForzarEdicion, puedeEditar, bloquesLoading, bloquesDia]);
 
   const onDropAsignacion = async (e, aulaId, horarioId, payloadFromGrid = null) => {
     const raw = e.dataTransfer.getData(AULA_ASIGN_MIME);
@@ -163,7 +186,8 @@ const GestionHorariosAulasAsignarSection = ({
   };
 
   const handleHabilitarEdicion = () => {
-    const snapshot = (bloquesDia || []).map((b) => ({ ...b }));
+    const base = paraleloFocoId != null ? bloquesDiaFiltrados : bloquesDia;
+    const snapshot = (base || []).map((b) => ({ ...b }));
     setWorkingBloquesDia(snapshot);
     setOriginalBloquesDia(snapshot);
     setModoVista('edicion');

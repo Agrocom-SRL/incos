@@ -1,9 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AppstoreOutlined, RightOutlined, TeamOutlined, TableOutlined } from '@ant-design/icons';
+import { AppstoreOutlined, RightOutlined, TeamOutlined, TableOutlined, WarningOutlined } from '@ant-design/icons';
 import { Button, Card, Flex, Modal, Table, Tag, Typography } from 'antd';
 import { allSpacing, allColors, componentConfig, shadows, typography, gradients } from '@theme/tokens';
 import { resolveCarreraDashboardColor } from '@application-institucional/horarios/utils/carreraDashboardColor';
+import { BOARD_COLUMN_LABELS } from '@application-institucional/horarios/config/dashboardConstants';
+import { resolveHorariosBoardBucket } from '@application-institucional/horarios/utils/horariosBoardBucket';
 
 const { Text, Title } = Typography;
 
@@ -11,11 +13,35 @@ const DIAS_ORDEN = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO
 
 const fmtHora = (t) => (t == null ? '' : String(t).slice(0, 5));
 
-const estadoColor = (estado) => {
-    if (estado === 'completo') return 'success';
-    if (estado === 'conflicto') return 'error';
-    if (estado === 'sin_horario') return 'processing';
-    if (estado === 'incompleto') return 'warning';
+/**
+ * Comprime `lineasDetalle` del backend (una línea por franja) a pocas líneas por materia (primer token antes de " · ").
+ */
+const resumenLineasConflictoPorMateria = (lineasDetalle) => {
+    const lineas = (lineasDetalle || []).map((l) => String(l).trim()).filter(Boolean);
+    if (!lineas.length) return [];
+    const counts = new Map();
+    for (const line of lineas) {
+        const sigla = line.split(' · ')[0]?.trim() || line;
+        counts.set(sigla, (counts.get(sigla) || 0) + 1);
+    }
+    const sorted = [...counts.entries()].sort((a, b) => b[1] - a[1]);
+    const maxBullets = 3;
+    const out = sorted.slice(0, maxBullets).map(([sigla, n]) => `${sigla} · ${n} aviso(s)`);
+    const rest = sorted.slice(maxBullets);
+    if (rest.length > 0) {
+        const otrosAvisos = rest.reduce((s, [, n]) => s + n, 0);
+        out.push(`Otras materias (${rest.length}) · ${otrosAvisos} aviso(s)`);
+    }
+    return out;
+};
+
+/** Color de tag según grupo del tablero (`tablero_grupo` / `board_bucket` en API). */
+const tableroGrupoColor = (p) => {
+    const b = p?.boardBucket ?? resolveHorariosBoardBucket(p);
+    if (b === 'completo') return 'success';
+    if (b === 'sin_horarios') return 'error';
+    if (b === 'sin_docentes') return 'warning';
+    if (b === 'sin_aulas') return 'processing';
     return 'default';
 };
 
@@ -31,10 +57,11 @@ const HorariosGestionSidebarResumen = ({
     filteredParallels = [],
     bloquesSinAulaPorParalelo = [],
     cursosSinDocentePorParalelo = [],
+    docentesConConflictosOperativos = [],
 }) => {
     const navigate = useNavigate();
     const [modal, setModal] = useState({ open: false, kind: null });
-    const [aulasDiaFiltro, setAulasDiaFiltro] = useState(null);
+    const [aulasDiaFiltroPreferido, setAulasDiaFiltroPreferido] = useState(null);
 
     const counts = useMemo(() => {
         const paralelos = (filteredParallels || []).length;
@@ -47,8 +74,9 @@ const HorariosGestionSidebarResumen = ({
         (cursosSinDocentePorParalelo || []).forEach((g) => {
             if (Array.isArray(g.items)) cursos += g.items.length;
         });
-        return { paralelos, turnosUnicos, bloques, cursos };
-    }, [filteredParallels, bloquesSinAulaPorParalelo, cursosSinDocentePorParalelo]);
+        const docentesConflictos = (docentesConConflictosOperativos || []).filter((d) => d?.docenteId != null).length;
+        return { paralelos, turnosUnicos, bloques, cursos, docentesConflictos };
+    }, [filteredParallels, bloquesSinAulaPorParalelo, cursosSinDocentePorParalelo, docentesConConflictosOperativos]);
 
     /** Árbol: turno → carrera → periodo → paralelos */
     const arbolTurnos = useMemo(() => {
@@ -118,14 +146,14 @@ const HorariosGestionSidebarResumen = ({
         return DIAS_ORDEN.filter((d) => s.has(d));
     }, [tablaBloquesRows]);
 
-    useEffect(() => {
-        if (!modal.open || modal.kind !== 'aulas') return;
-        if (!diasUnicosBloques.length) {
-            setAulasDiaFiltro(null);
-            return;
+    const aulasDiaFiltro = useMemo(() => {
+        if (!modal.open || modal.kind !== 'aulas') return null;
+        if (!diasUnicosBloques.length) return null;
+        if (aulasDiaFiltroPreferido && diasUnicosBloques.includes(aulasDiaFiltroPreferido)) {
+            return aulasDiaFiltroPreferido;
         }
-        setAulasDiaFiltro((prev) => (prev && diasUnicosBloques.includes(prev) ? prev : diasUnicosBloques[0]));
-    }, [modal.open, modal.kind, diasUnicosBloques]);
+        return diasUnicosBloques[0];
+    }, [modal.open, modal.kind, diasUnicosBloques, aulasDiaFiltroPreferido]);
 
     const tablaBloquesFiltrada = useMemo(() => {
         if (!aulasDiaFiltro) return tablaBloquesRows;
@@ -158,16 +186,21 @@ const HorariosGestionSidebarResumen = ({
     }, [cursosSinDocentePorParalelo]);
 
     const openKind = (kind) => setModal({ open: true, kind });
-    const close = () => setModal({ open: false, kind: null });
+    const close = () => {
+        setModal({ open: false, kind: null });
+        setAulasDiaFiltroPreferido(null);
+    };
 
     const modalTitle =
         modal.kind === 'paralelos'
             ? 'Paralelos por turno'
             : modal.kind === 'aulas'
-              ? 'Bloques sin aula'
-              : modal.kind === 'docentes'
-                ? 'Cursos sin docente asignado'
-                : '';
+                ? 'Bloques sin aula'
+                : modal.kind === 'docentes'
+                    ? 'Cursos sin docente asignado'
+                    : modal.kind === 'conflictos'
+                        ? 'Docentes con conflictos operativos'
+                        : '';
 
     const bloquesColumns = useMemo(
         () => [
@@ -201,7 +234,7 @@ const HorariosGestionSidebarResumen = ({
                 cursor: 'pointer',
             }}
         >
-            <Flex vertical gap={allSpacing.marginSM} style={{ minWidth: 0, position: 'relative' }}>
+            <Flex vertical style={{ minWidth: 0, position: 'relative' }}>
                 <Flex justify="space-between" align="flex-start" wrap="nowrap">
                     <Text
                         style={{
@@ -286,6 +319,17 @@ const HorariosGestionSidebarResumen = ({
                         ? 'Materias sin asignación docente vigente'
                         : 'Todos los cursos tienen docente asignado',
             })}
+            {resumenStatCard('conflictos', {
+                gradient: counts.docentesConflictos > 0 ? gradients.gradientError : gradients.gradientSuccess,
+                icon: <WarningOutlined />,
+                etiqueta: 'Alertas',
+                valor: counts.docentesConflictos,
+                titulo: 'Docentes con conflictos',
+                detalle:
+                    counts.docentesConflictos > 0
+                        ? 'Choque de franja, aula u asignación duplicada al mismo curso'
+                        : 'Sin conflictos operativos detectados',
+            })}
 
             <Modal
                 title={modalTitle}
@@ -350,10 +394,12 @@ const HorariosGestionSidebarResumen = ({
                                                                             {p.paralelo}
                                                                         </Text>
                                                                         <Tag
-                                                                            color={estadoColor(p.estado)}
+                                                                            color={tableroGrupoColor(p)}
                                                                             style={{ margin: 0, flexShrink: 0 }}
                                                                         >
-                                                                            {p.estado?.replace(/_/g, ' ') || '—'}
+                                                                            {BOARD_COLUMN_LABELS[
+                                                                                p.boardBucket ?? resolveHorariosBoardBucket(p)
+                                                                            ] || '—'}
                                                                         </Tag>
                                                                     </Flex>
                                                                 ))}
@@ -395,7 +441,7 @@ const HorariosGestionSidebarResumen = ({
                                                 .join(' ')}
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                setAulasDiaFiltro(dia);
+                                                setAulasDiaFiltroPreferido(dia);
                                             }}
                                         >
                                             {dia}
@@ -437,8 +483,9 @@ const HorariosGestionSidebarResumen = ({
                 {modal.kind === 'docentes' ? (
                     <Flex vertical gap={allSpacing.marginMD} style={{ minWidth: 0 }}>
                         <Text type="secondary" style={{ fontSize: typography.fontSizeSM }}>
-                            Cada fila enlaza al armado del paralelo y abre el cuadro de asignación docente para esa materia.
+                            Cada fila enlaza al armado del paralelo para asignar docente a esa materia.
                         </Text>
+                        <Text strong>Cursos sin docente</Text>
                         {docenteListItems.length === 0 ? (
                             <Text type="secondary">No hay cursos sin docente.</Text>
                         ) : (
@@ -484,9 +531,8 @@ const HorariosGestionSidebarResumen = ({
                                             icon={<TeamOutlined />}
                                             style={{ flexShrink: 0 }}
                                             onClick={() => {
-                                                const turnoQ = encodeURIComponent(row.paraleloTurno || '');
                                                 navigate(
-                                                    `/institucional/horarios/armado?paralelo=${row.paraleloId}&turno=${turnoQ}&tab=cursos&asignarCurso=${row.cursoId}`,
+                                                    `/institucional/horarios/armado?paralelo=${row.paraleloId}&tab=cursos&asignarCurso=${row.cursoId}`,
                                                 );
                                                 close();
                                             }}
@@ -495,6 +541,82 @@ const HorariosGestionSidebarResumen = ({
                                         </Button>
                                     </Flex>
                                 ))}
+                            </Flex>
+                        )}
+                    </Flex>
+                ) : null}
+
+                {modal.kind === 'conflictos' ? (
+                    <Flex vertical gap={allSpacing.marginMD} style={{ minWidth: 0 }}>
+                        <Text type="secondary" style={{ fontSize: typography.fontSizeSM }}>
+                            Resumen por materia; en el calendario semanal del docente ves día y hora de cada franja.
+                        </Text>
+                        {!docentesConConflictosOperativos.length ? (
+                            <Text type="secondary">No hay docentes con conflictos operativos.</Text>
+                        ) : (
+                            <Flex
+                                vertical
+                                className="horarios-sidebar-modal-docentes-list"
+                                style={{
+                                    border: `1px solid ${allColors.colorBorder}`,
+                                    borderRadius: `${componentConfig.borderRadiusLG}px`,
+                                    overflow: 'hidden',
+                                }}
+                            >
+                                {docentesConConflictosOperativos.map((d, idx) => {
+                                    const bullets = resumenLineasConflictoPorMateria(d.lineasDetalle);
+                                    return (
+                                        <Flex
+                                            key={`dc-${d.docenteId}-${idx}`}
+                                            align="flex-start"
+                                            justify="space-between"
+                                            gap={12}
+                                            wrap="wrap"
+                                            className="horarios-sidebar-modal-docentes-list__row"
+                                            style={{
+                                                padding: `${allSpacing.paddingSM}px ${allSpacing.padding}px`,
+                                                borderTop: idx > 0 ? `1px solid ${allColors.colorBorder}` : undefined,
+                                                backgroundColor: allColors.colorBgContainer,
+                                            }}
+                                        >
+                                            <Flex vertical gap={6} style={{ flex: '1 1 220px', minWidth: 0 }}>
+                                                <Text strong>{d.docenteNombre || `Docente #${d.docenteId}`}</Text>
+                                                {bullets.length ? (
+                                                    <Flex vertical gap={2}>
+                                                        {bullets.map((line, li) => (
+                                                            <Text
+                                                                key={`${d.docenteId}-dl-${li}`}
+                                                                type="secondary"
+                                                                style={{
+                                                                    fontSize: typography.fontSizeSM,
+                                                                    lineHeight: 1.45,
+                                                                }}
+                                                            >
+                                                                {line}
+                                                            </Text>
+                                                        ))}
+                                                    </Flex>
+                                                ) : (
+                                                    <Text type="secondary" style={{ fontSize: typography.fontSizeSM }}>
+                                                        Sin resumen disponible.
+                                                    </Text>
+                                                )}
+                                            </Flex>
+                                            <Button
+                                                type="primary"
+                                                style={{ flexShrink: 0 }}
+                                                disabled={d.docenteId == null}
+                                                onClick={() => {
+                                                    if (d.docenteId == null) return;
+                                                    navigate(`/docentes/${d.docenteId}/asignaciones?tab=horarios`);
+                                                    close();
+                                                }}
+                                            >
+                                                Ver calendario semanal
+                                            </Button>
+                                        </Flex>
+                                    );
+                                })}
                             </Flex>
                         )}
                     </Flex>

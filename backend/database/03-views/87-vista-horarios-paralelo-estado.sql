@@ -1,20 +1,27 @@
 -- ============================================
 -- VISTA FINAL: vista_horarios_paralelo_estado
--- Estado de cada paralelo para dashboard de gestión de horarios.
+-- Agrupación única del paralelo para dashboard / KPI / tablero.
 --
--- Prioridad estado: incompleto > sin_horario > conflicto > completo
+-- tablero_grupo (único estado expuesto):
+--   sin_horarios > sin_docentes > sin_aulas > completo
 --
--- incompleto:
---   - cursos del paralelo por debajo de las asignaturas requeridas del plan, o
---   - curso activo sin asignación docente vigente con docente_id
--- sin_horario:
---   - curso con al menos un bloque esperado pero sin filas en cursos_horarios, o
---   - bloque en cursos_horarios sin aula_id
--- conflicto:
---   - dos o más cursos distintos del mismo paralelo comparten el mismo horario_id, o
---   - mismo aula_id + horario_id ocupado por más de un curso (cruce global), o
---   - mismo docente con dos asignaciones vigentes que comparten franja (horario_id)
--- completo: resto
+--   sin_horarios:
+--     - cursos creados por debajo de asignaturas requeridas del plan, o
+--     - curso sin ninguna fila activa en cursos_horarios (ver vista_base_horarios_paralelo_cursos), o
+--     - solape de franja entre cursos del mismo paralelo (vista_base_horarios_paralelo_conflictos_solape_bloque)
+--
+--   sin_docentes:
+--     - curso activo sin asignación docente vigente (vista_base_horarios_paralelo_cursos_sin_docente), o
+--     - mismo docente con dos cursos distintos en la misma horario_id en este u otros paralelos
+--       (vista_base_horarios_paralelo_docente_choque_horario; alineado a detección tipo
+--       vista_base_docente_asignacion_conflicto_horario / vista_docente_resumen_conflictos.conflicto_horario)
+--
+--   sin_aulas:
+--     - bloque en cursos_horarios activo sin aula_id (vista_base_horarios_paralelo_bloques_sin_aula), o
+--     - cruce global mismo aula_id + horario_id en más de un curso (vista_base_horarios_paralelo_conflictos_aula;
+--       relacionado con ocupación de slot que también alimenta vista_base_docente_conflicto_aula a nivel docente)
+--
+--   completo: ninguna de las condiciones anteriores.
 --
 -- Reutiliza:
 -- - vista_base_horarios_paralelo_requeridos (70)
@@ -25,8 +32,8 @@
 -- - vista_base_horarios_paralelo_conflictos_solape_bloque (72c)
 -- - vista_base_horarios_paralelo_docente_choque_horario (72d)
 --
--- Métricas expuestas para UI: cursos_creados, cursos_sin_docente, bloques_sin_aula,
--- conflictos_solape_mismo_bloque, conflictos_aula, conflicto_docente_horario
+-- Métricas expuestas: cursos_creados, cursos_con_horario, cursos_sin_docente, bloques_sin_aula,
+-- conflictos_solape_mismo_bloque, conflictos_aula, conflicto_docente_horario, tablero_grupo
 -- ============================================
 
 USE instituto_incos;
@@ -51,15 +58,15 @@ SELECT
     COALESCE(conf.conflictos_aula, 0) AS conflictos_aula,
     CASE WHEN dchoque.paralelo_id IS NOT NULL THEN 1 ELSE 0 END AS conflicto_docente_horario,
     CASE
-        WHEN COALESCE(cur.cursos_creados, 0) < req.asignaturas_requeridas THEN 'incompleto'
-        WHEN COALESCE(nodoc.cursos_sin_docente, 0) > 0 THEN 'incompleto'
-        WHEN COALESCE(cur.cursos_con_horario, 0) < COALESCE(cur.cursos_creados, 0) THEN 'sin_horario'
-        WHEN COALESCE(sinaula.bloques_sin_aula, 0) > 0 THEN 'sin_horario'
-        WHEN COALESCE(solape.conflictos_solape_mismo_bloque, 0) > 0 THEN 'conflicto'
-        WHEN COALESCE(conf.conflictos_aula, 0) > 0 THEN 'conflicto'
-        WHEN dchoque.paralelo_id IS NOT NULL THEN 'conflicto'
+        WHEN COALESCE(cur.cursos_creados, 0) < req.asignaturas_requeridas THEN 'sin_horarios'
+        WHEN COALESCE(cur.cursos_con_horario, 0) < COALESCE(cur.cursos_creados, 0) THEN 'sin_horarios'
+        WHEN COALESCE(solape.conflictos_solape_mismo_bloque, 0) > 0 THEN 'sin_horarios'
+        WHEN COALESCE(nodoc.cursos_sin_docente, 0) > 0 THEN 'sin_docentes'
+        WHEN dchoque.paralelo_id IS NOT NULL THEN 'sin_docentes'
+        WHEN COALESCE(sinaula.bloques_sin_aula, 0) > 0 THEN 'sin_aulas'
+        WHEN COALESCE(conf.conflictos_aula, 0) > 0 THEN 'sin_aulas'
         ELSE 'completo'
-    END AS estado
+    END AS tablero_grupo
 FROM vista_base_horarios_paralelo_requeridos req
 LEFT JOIN vista_base_horarios_paralelo_cursos cur
     ON cur.paralelo_id = req.paralelo_id

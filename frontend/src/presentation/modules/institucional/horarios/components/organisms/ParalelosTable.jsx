@@ -5,30 +5,33 @@ import {
     buildCarreraHeadingSurfaceStyle,
     resolveCarreraDashboardColor,
 } from '@application-institucional/horarios/utils/carreraDashboardColor';
+import { resolveHorariosBoardBucket } from '@application-institucional/horarios/utils/horariosBoardBucket';
 import { StatusTag } from '../atoms';
 
-const ctaByState = {
-    incompleto: 'Completar cursos',
-    sin_horario: 'Asignar horarios',
-    conflicto: 'Resolver conflictos',
+const ctaByBucket = {
+    sin_horarios: 'Completar plan',
+    sin_docentes: 'Asignar docentes',
+    sin_aulas: 'Ir a aulas',
     completo: 'Ver horario',
 };
 
 const ctaLabelForRow = (row) => {
-    if (row.estado !== 'incompleto') return ctaByState[row.estado] || 'Abrir';
-    const cursosTotales = Number(row.cursosTotales) || 0;
-    const cursosCreados = Number(row.cursosCreados) || 0;
-    const faltaCursos = Math.max(0, cursosTotales - cursosCreados);
-    const sinDoc = Number(row.cursosSinDocente) || 0;
-    if (faltaCursos === 0 && sinDoc > 0 && cursosTotales > 0) return 'Asignar docentes';
-    return ctaByState.incompleto;
+    const bucket = row.boardBucket ?? resolveHorariosBoardBucket(row);
+    if (bucket === 'sin_horarios') {
+        const cursosTotales = Number(row.cursosTotales) || 0;
+        const cursosCreados = Number(row.cursosCreados) || 0;
+        const faltaCursos = Math.max(0, cursosTotales - cursosCreados);
+        if (faltaCursos > 0) return 'Completar cursos';
+        return 'Asignar horarios';
+    }
+    return ctaByBucket[bucket] || 'Abrir';
 };
 
-const actionVariant = (estado) => {
-    if (estado === 'conflicto') return 'error';
-    if (estado === 'completo') return 'success';
-    if (estado === 'sin_horario') return 'info';
-    if (estado === 'incompleto') return 'warning';
+const actionVariantForBucket = (bucket) => {
+    if (bucket === 'sin_horarios') return 'error';
+    if (bucket === 'sin_docentes') return 'warning';
+    if (bucket === 'sin_aulas') return 'info';
+    if (bucket === 'completo') return 'success';
     return 'primary';
 };
 
@@ -77,11 +80,15 @@ const ParalelosTable = ({ filteredParallels, onOpenArmado, embedded = false }) =
             render: (v) => v || '—',
         },
         {
-            title: 'Estado',
-            dataIndex: 'estado',
-            key: 'estado',
-            width: 130,
-            render: (value) => <StatusTag status={value}>{value}</StatusTag>,
+            title: 'Grupo',
+            dataIndex: 'boardBucket',
+            key: 'boardBucket',
+            width: 150,
+            ellipsis: true,
+            render: (_, row) => {
+                const bucket = row.boardBucket ?? resolveHorariosBoardBucket(row);
+                return <StatusTag status={bucket} />;
+            },
         },
         {
             title: 'Acción',
@@ -94,7 +101,7 @@ const ParalelosTable = ({ filteredParallels, onOpenArmado, embedded = false }) =
                         permiso="institucional.horario.armado"
                         accion="EDITAR"
                         size="small"
-                        variant={actionVariant(row.estado)}
+                        variant={actionVariantForBucket(row.boardBucket ?? resolveHorariosBoardBucket(row))}
                         className="horarios-paralelos-table__action-btn"
                         onClick={() => onOpenArmado(row)}
                     >

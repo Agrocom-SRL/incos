@@ -261,13 +261,13 @@ export function buildHorariosPlanPendientesDetalleLines(courseSchedules, opts = 
 }
 
 /**
- * Añade líneas solo disponibles en el resumen de gestión (vista SQL / dashboard).
+ * Añade líneas a partir de métricas del dashboard de paralelos (vista SQL / API).
  * @param {string[]} base
- * @param {Record<string, unknown>|null|undefined} paraleloEstado
+ * @param {Record<string, unknown>|null|undefined} paraleloDashboardRow — fila con cursosTotales, cursosCreados, cursosSinBloquesHorario, conflictosAula, etc.
  */
-export function appendParaleloEstadoLineas(base, paraleloEstado) {
+export function appendParaleloDashboardPendientesLineas(base, paraleloDashboardRow) {
     const out = [...(base || [])];
-    const st = paraleloEstado || {};
+    const st = paraleloDashboardRow || {};
     const cursosTotales = Number(st.cursosTotales) || 0;
     const cursosCreados = Number(st.cursosCreados) || 0;
     const cursosAsignados = Number(st.cursosAsignados) || 0;
