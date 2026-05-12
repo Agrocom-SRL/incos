@@ -134,13 +134,13 @@ class ExcelGenerator {
       ? Array.from(grouped.values())
       : [{ sheetName: 'SIN_DATOS', paraleloNombre: 'SIN_DATOS', rows: [] }];
 
-    sheets.forEach((s) => {
+    for (const s of sheets) {
       const ws = workbook.addWorksheet(s.sheetName);
-      this._buildListaAportesPorCarreraSheet(ws, s.rows, filtros, s.paraleloNombre, {
+      await this._buildListaAportesPorCarreraSheet(ws, s.rows, filtros, s.paraleloNombre, {
         logoId,
         incosLogoId,
       });
-    });
+    }
 
     return workbook.xlsx.writeBuffer();
   }
@@ -390,7 +390,33 @@ class ExcelGenerator {
     return Math.max(1, Math.ceil(s.length / cpl));
   }
 
-  static _buildListaAportesPorCarreraSheet(worksheet, rows, filtros, paraleloNombre, assets = {}) {
+  /**
+   * Bloquea edición de la hoja en Excel (protección de hoja con contraseña; no cifra el archivo .xlsx completo).
+   * No impide copiar datos a otro libro.
+   * @param {import('exceljs').Worksheet} worksheet
+   * @param {string} password - Contraseña para quitar la protección en Excel (Revisar > Desproteger hoja).
+   */
+  static async _protectWorksheetSoloLectura(worksheet, password) {
+    const pwd = String(password ?? '').trim() || 'INSTITUTO TÉCNICO INCOS SANTA CRUZ';
+    await worksheet.protect(pwd, {
+      selectLockedCells: true,
+      selectUnlockedCells: true,
+      formatCells: false,
+      formatColumns: false,
+      formatRows: false,
+      insertRows: false,
+      insertColumns: false,
+      insertHyperlinks: false,
+      deleteRows: false,
+      deleteColumns: false,
+      sort: false,
+      autoFilter: false,
+      pivotTables: false,
+      spinCount: 10000,
+    });
+  }
+
+  static async _buildListaAportesPorCarreraSheet(worksheet, rows, filtros, paraleloNombre, assets = {}) {
     const FONT_SIZE_LISTA = 14;
     const FONT_SIZE_TITULO = 18;
     /** A:N°, B:C nombres, D:C.I., E–M datos, N observaciones (G–H beca tras descuento). */
@@ -425,7 +451,7 @@ class ExcelGenerator {
       { width: 12 },
       { width: 12 },
       { width: 12 },
-      { width: 12 },
+      { width: 16 },
       { width: WIDTH_OBSERVACIONES },
     ];
 
@@ -542,7 +568,7 @@ class ExcelGenerator {
 
     const headerRow = worksheet.getRow(headerRowIdx);
     headerRow.font = { bold: true, size: FONT_SIZE_LISTA };
-    headerRow.height = 36;
+    headerRow.height = 40;
     headerRow.eachCell({ includeEmpty: true }, (cell, colNumber) => {
       if (colNumber > LAST_COL) return;
       cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDDEAD0' } };
@@ -643,6 +669,8 @@ class ExcelGenerator {
     });
 
     worksheet.views = [{ state: 'frozen', ySplit: headerRowIdx, showGridLines: false }];
+
+    await this._protectWorksheetSoloLectura(worksheet, instituteName);
   }
 
   static async _tryAddMinisterioLogo(workbook) {
