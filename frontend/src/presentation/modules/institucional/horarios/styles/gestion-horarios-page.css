@@ -787,3 +787,20 @@
     display: block;
     margin-bottom: 2px;
 }
+
+/* === Sticky header en modo edición de aulas === */
+.horarios-aulas-grid--edicion .da-cal-semanal__th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    /* background-color da la base opaca; background-image superpone el tint semitransparente */
+    /* Resultado: el color visual es idéntico al original pero sin dejar pasar las filas al hacer scroll */
+    background-color: var(--ant-color-bg-container, #fff);
+    background-image: linear-gradient(rgba(25, 107, 69, 0.08), rgba(25, 107, 69, 0.08));
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+.horarios-aulas-grid--edicion .da-cal-semanal__th--hora {
+    z-index: 3;
+    background-image: linear-gradient(rgba(25, 107, 69, 0.06), rgba(25, 107, 69, 0.06));
+}

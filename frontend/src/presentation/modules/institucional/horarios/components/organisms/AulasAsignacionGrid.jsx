@@ -41,7 +41,7 @@ const AulasAsignacionGrid = ({
       );
 
   return (
-    <div className="da-cal-semanal horarios-aulas-grid">
+    <div className={`da-cal-semanal horarios-aulas-grid${puedeEditar ? ' horarios-aulas-grid--edicion' : ''}`}>
       <div className="da-cal-semanal__scroll">
         <table className="da-cal-semanal__table">
           <thead>
