@@ -1,3 +1,8 @@
+import {
+  buildHorariosParaleloDashboardKpis,
+  computeHorariosParaleloBoardBucket,
+} from '../../utils/horariosParaleloBoardBucket.js';
+
 export class GetParalelosEstadoDashboardUseCase {
   constructor({ parallelRepository, logger }) {
     this.parallelRepository = parallelRepository;
@@ -7,6 +12,12 @@ export class GetParalelosEstadoDashboardUseCase {
   async execute(filters = {}) {
     this.logger.info('[Academico] Dashboard horarios - paralelos estado', { filters });
     const rows = await this.parallelRepository.obtenerParalelosEstadoDashboard(filters);
-    return rows || [];
+    const list = Array.isArray(rows) ? rows : [];
+    const paralelos = list.map((r) => ({
+      ...r,
+      board_bucket: r.tablero_grupo || computeHorariosParaleloBoardBucket(r),
+    }));
+    const kpis = buildHorariosParaleloDashboardKpis(paralelos);
+    return { paralelos, kpis };
   }
 }

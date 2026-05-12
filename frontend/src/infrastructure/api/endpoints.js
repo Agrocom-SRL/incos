@@ -157,6 +157,13 @@ export const PARALELOS_ENDPOINTS = {
   DASHBOARD_PARALELOS_ESTADO: `${API_BASE}/paralelos/dashboard/paralelos-estado`,
   DASHBOARD_ASIGNATURAS_SIN_CURSO: `${API_BASE}/paralelos/dashboard/asignaturas-sin-curso`,
   DASHBOARD_CAPACIDAD_TURNO: `${API_BASE}/paralelos/dashboard/capacidad-turno`,
+  DASHBOARD_HORARIOS_PENDIENTES: `${API_BASE}/paralelos/dashboard/horarios-pendientes`,
+  DASHBOARD_HORARIOS_PUBLICACION: `${API_BASE}/paralelos/dashboard/horarios-publicacion`,
+};
+
+export const AULAS_HORARIOS_ENDPOINTS = {
+  BLOQUES: `${API_BASE}/aulas/horarios`,
+  PATCH_AULA: (cursoHorarioId) => `${API_BASE}/aulas/horarios/${cursoHorarioId}/aula`,
 };
 export const GESTIONES_ENDPOINTS = createCRUDEndpoints('/gestiones');
 

@@ -2,6 +2,8 @@
  * Panel de gestión de asignaciones docentes (base para CRUD de asignación/horario).
  */
 
+import { useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Alert, Space, Spin, Tabs } from 'antd';
 import { ArrowLeftOutlined, ApartmentOutlined, BookOutlined, ScheduleOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
@@ -12,8 +14,25 @@ import DocenteAssignmentsSection from '@docentes/components/organisms/DocenteAss
 import DocenteSchedulesSection from '@docentes/components/organisms/DocenteSchedulesSection';
 
 const DocentesAsignacionesGestion = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get('tab') === 'horarios' ? 'horarios' : 'carga';
+
+  const handleTabChange = useCallback(
+    (key) => {
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          if (key === 'horarios') next.set('tab', 'horarios');
+          else next.delete('tab');
+          return next;
+        },
+        { replace: true },
+      );
+    },
+    [setSearchParams],
+  );
+
   const {
-    docenteId,
     nombreCompleto,
     assignments,
     courseSchedules,
@@ -102,7 +121,7 @@ const DocentesAsignacionesGestion = () => {
             description="Desde aquí revisás la carga y el calendario semanal del docente. También podés crear, editar y dar de baja asignaciones del docente."
           />
           <div className="sd-tabs-shell">
-            <Tabs defaultActiveKey="carga" items={tabItems} className="sd-tabs" />
+            <Tabs activeKey={activeTab} onChange={handleTabChange} items={tabItems} className="sd-tabs" />
           </div>
         </div>
       </Spin>

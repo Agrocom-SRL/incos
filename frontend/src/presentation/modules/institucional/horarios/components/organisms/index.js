@@ -1,5 +1,11 @@
 export { default as HorariosKpiStrip } from './HorariosKpiStrip';
 export { default as ParalelosBoard } from './ParalelosBoard';
 export { default as ParalelosTable } from './ParalelosTable';
-export { default as HorariosCapacitySidebar } from './HorariosCapacitySidebar';
-export { default as ProgresoGestionPanel } from './ProgresoGestionPanel';
+export { default as HorariosParalelosPorTurnoSidebar } from './HorariosParalelosPorTurnoSidebar';
+export { default as HorariosBloquesSinAulaPanel } from './HorariosBloquesSinAulaPanel';
+export { default as HorariosCursosSinDocentePanel } from './HorariosCursosSinDocentePanel';
+export { default as HorariosGestionSidebarResumen } from './HorariosGestionSidebarResumen';
+export { default as HorariosPublicacionParaleloCard } from './HorariosPublicacionParaleloCard';
+export { default as HorariosPlanPendientesLista } from './HorariosPlanPendientesLista';
+export { default as GestionHorariosAulasAsignarSection } from './GestionHorariosAulasAsignarSection';
+export { default as AulasAsignacionGrid } from './AulasAsignacionGrid';

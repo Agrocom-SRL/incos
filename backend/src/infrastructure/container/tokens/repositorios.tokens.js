@@ -95,5 +95,6 @@ export const REPOSITORIOS_TOKENS = {
 
     // DASHBOARD
     dashboardRepository: 'dashboardRepository',
+    aulasHorariosSemanaRepository: 'aulasHorariosSemanaRepository',
 };
 

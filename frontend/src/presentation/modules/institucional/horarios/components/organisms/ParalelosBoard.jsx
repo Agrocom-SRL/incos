@@ -3,9 +3,9 @@ import { Card } from '@atoms';
 import { ParaleloCard } from '../molecules';
 
 const STATUS_DECORATOR = {
-    incompleto: { dot: 'var(--color-warning)', accent: 'var(--color-warning)' },
-    sin_horario: { dot: 'var(--color-info)', accent: 'var(--color-info)' },
-    conflicto: { dot: 'var(--color-error)', accent: 'var(--color-error)' },
+    sin_horarios: { dot: 'var(--color-error)', accent: 'var(--color-error)' },
+    sin_docentes: { dot: 'var(--color-warning)', accent: 'var(--color-warning)' },
+    sin_aulas: { dot: 'var(--color-info)', accent: 'var(--color-info)' },
     completo: { dot: 'var(--color-primary)', accent: 'var(--color-primary)' },
 };
 
@@ -40,7 +40,11 @@ const ParalelosBoard = ({ boardByStatus, onOpenArmado }) => {
                                     <ParaleloCard key={item.id} paralelo={item} onOpen={onOpenArmado} />
                                 ))}
                                 {column.items.length === 0 ? (
-                                    <Alert type="info" showIcon title="Sin paralelos para este estado con los filtros actuales." />
+                                    <Alert
+                                        type="info"
+                                        showIcon
+                                        title="Sin paralelos en este grupo con los filtros actuales."
+                                    />
                                 ) : null}
                             </Space>
                         </div>

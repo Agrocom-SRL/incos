@@ -1,13 +1,24 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useCapacidadTurnoApi, useGestionesCatalogApi, useParalelosEstadoApi } from '@application/modules/shared/hooks';
-import { BOARD_COLUMNS, FILTER_DEFAULTS, STATUS_LABELS } from '@application-institucional/horarios/config/dashboardConstants';
+import { useGestionesCatalogApi, useParalelosEstadoApi } from '@application/modules/shared/hooks';
+import { useHorariosPendientesSidebarApi } from '../api/useHorariosPendientesSidebarApi';
+import {
+    BOARD_COLUMNS,
+    BOARD_COLUMN_LABELS,
+    FILTER_DEFAULTS,
+} from '@application-institucional/horarios/config/dashboardConstants';
+import { resolveHorariosBoardBucket } from '@application-institucional/horarios/utils/horariosBoardBucket';
 
 export const useGestionHorariosDashboardState = () => {
     const navigate = useNavigate();
     const { gestiones } = useGestionesCatalogApi();
-    const { paralelos: paralelosEstado, loading: estadoLoading, error: estadoError } = useParalelosEstadoApi();
-    const { capacidad: capacidadTurno } = useCapacidadTurnoApi();
+    const { paralelosEstadoDashboard, loading: estadoLoading, error: estadoError } = useParalelosEstadoApi();
+    const paralelosEstado = paralelosEstadoDashboard?.paralelos ?? [];
+    const {
+        data: pendientesSidebarRaw,
+        loading: pendientesSidebarLoading,
+        error: pendientesSidebarError,
+    } = useHorariosPendientesSidebarApi();
     const [filters, setFilters] = useState(FILTER_DEFAULTS);
     const [viewMode, setViewMode] = useState('table');
 
@@ -16,20 +27,35 @@ export const useGestionHorariosDashboardState = () => {
     }, [gestiones]);
 
     const paralelosDashboard = useMemo(() => {
-        return (paralelosEstado || []).map((row) => ({
-            id: row.paralelo_id,
-            paralelo: row.paralelo_nombre,
-            carrera: row.carrera_nombre || 'Carrera no definida',
-            carreraId: row.carrera_id != null ? Number(row.carrera_id) : null,
-            carreraColorHex: row.carrera_color_hex ?? null,
-            periodo: row.periodo_nombre,
-            turno: row.turno,
-            estado: row.estado,
-            cursosAsignados: row.cursos_con_horario,
-            cursosTotales: row.asignaturas_requeridas,
-            bloquesAsignados: (row.cursos_con_horario || 0) * 3,
-            bloquesRequeridos: (row.asignaturas_requeridas || 0) * 3,
-        }));
+        return (paralelosEstado || []).map((row) => {
+            const cursosTotales = row.asignaturas_requeridas ?? 0;
+            const cursosCreados = row.cursos_creados ?? 0;
+            const cursosConHorario = row.cursos_con_horario ?? 0;
+            const mapped = {
+                id: row.paralelo_id,
+                paralelo: row.paralelo_nombre,
+                carrera: row.carrera_nombre || 'Carrera no definida',
+                carreraId: row.carrera_id != null ? Number(row.carrera_id) : null,
+                carreraColorHex: row.carrera_color_hex ?? null,
+                periodo: row.periodo_nombre,
+                turno: row.turno,
+                cursosAsignados: cursosConHorario,
+                cursosTotales,
+                cursosCreados,
+                cursosSinDocente: row.cursos_sin_docente ?? 0,
+                cursosSinBloquesHorario: Math.max(0, cursosCreados - cursosConHorario),
+                bloquesSinAula: row.bloques_sin_aula ?? 0,
+                conflictosSolapeMismoBloque: row.conflictos_solape_mismo_bloque ?? 0,
+                conflictosAula: row.conflictos_aula ?? 0,
+                conflictoDocenteHorario: Number(row.conflicto_docente_horario) === 1,
+                bloquesAsignados: (cursosConHorario || 0) * 3,
+                bloquesRequeridos: cursosTotales * 3,
+            };
+            return {
+                ...mapped,
+                boardBucket: row.board_bucket ?? row.tablero_grupo ?? resolveHorariosBoardBucket(mapped),
+            };
+        });
     }, [paralelosEstado]);
 
     const onFilterChange = useCallback((key, value) => {
@@ -51,26 +77,28 @@ export const useGestionHorariosDashboardState = () => {
 
     const kpis = useMemo(() => {
         const total = filteredParallels.length;
-        const incompletos = filteredParallels.filter((item) => item.estado === 'incompleto').length;
-        const sinHorario = filteredParallels.filter((item) => item.estado === 'sin_horario').length;
-        const conConflicto = filteredParallels.filter((item) => item.estado === 'conflicto').length;
-        const completos = filteredParallels.filter((item) => item.estado === 'completo').length;
-        return { total, incompletos, sinHorario, conConflicto, completos };
+        const sinDocentes = filteredParallels.filter((item) => resolveHorariosBoardBucket(item) === 'sin_docentes')
+            .length;
+        const sinAulas = filteredParallels.filter((item) => resolveHorariosBoardBucket(item) === 'sin_aulas').length;
+        const sinHorarios = filteredParallels.filter((item) => resolveHorariosBoardBucket(item) === 'sin_horarios')
+            .length;
+        const completos = filteredParallels.filter((item) => resolveHorariosBoardBucket(item) === 'completo').length;
+        return { total, sinDocentes, sinAulas, sinHorarios, completos };
     }, [filteredParallels]);
 
     /** Tablero si hay trabajo pendiente; tabla si todos los paralelos visibles están completos. */
     useEffect(() => {
         if (estadoLoading) return;
         const requiereAtencion =
-            kpis.incompletos > 0 || kpis.conConflicto > 0 || kpis.sinHorario > 0;
+            kpis.sinDocentes > 0 || kpis.sinAulas > 0 || kpis.sinHorarios > 0;
         setViewMode(requiereAtencion ? 'board' : 'table');
-    }, [estadoLoading, kpis.incompletos, kpis.conConflicto, kpis.sinHorario]);
+    }, [estadoLoading, kpis.sinDocentes, kpis.sinAulas, kpis.sinHorarios]);
 
     const boardByStatus = useMemo(() => {
-        return BOARD_COLUMNS.map((statusKey) => ({
-            key: statusKey,
-            title: STATUS_LABELS[statusKey],
-            items: filteredParallels.filter((item) => item.estado === statusKey),
+        return BOARD_COLUMNS.map((bucketKey) => ({
+            key: bucketKey,
+            title: BOARD_COLUMN_LABELS[bucketKey],
+            items: filteredParallels.filter((item) => resolveHorariosBoardBucket(item) === bucketKey),
         }));
     }, [filteredParallels]);
 
@@ -91,13 +119,20 @@ export const useGestionHorariosDashboardState = () => {
     }, [gestiones, currentGestion]);
 
     const getParaleloAction = useCallback((paralelo) => {
-        const turno = encodeURIComponent(paralelo.turno || '');
-        const base = `/institucional/horarios/armado?paralelo=${paralelo.id}&turno=${turno}`;
-        if (paralelo.estado === 'incompleto') return `${base}&tab=gestion`;
-        if (paralelo.estado === 'sin_horario') return `${base}&tab=plan`;
-        if (paralelo.estado === 'conflicto') return `${base}&tab=conflicto`;
-        if (paralelo.estado === 'completo') return `${base}&tab=vista`;
-        return `${base}&tab=plan`;
+        const baseArmado = `/institucional/horarios/armado?paralelo=${paralelo.id}`;
+        const bucket = paralelo.boardBucket ?? resolveHorariosBoardBucket(paralelo);
+        if (bucket === 'completo') return `${baseArmado}&tab=vista`;
+        if (bucket === 'sin_docentes') return `${baseArmado}&tab=cursos`;
+        if (bucket === 'sin_aulas') {
+            return '/institucional/horarios/aulas';
+        }
+        if (bucket === 'sin_horarios') {
+            const planIncompleto =
+                (paralelo.cursosTotales ?? 0) > 0 &&
+                (paralelo.cursosCreados ?? 0) < (paralelo.cursosTotales ?? 0);
+            return planIncompleto ? `${baseArmado}&tab=gestion` : `${baseArmado}&tab=plan`;
+        }
+        return `${baseArmado}&tab=plan`;
     }, []);
 
     const onOpenArmado = useCallback((paralelo) => navigate(getParaleloAction(paralelo)), [getParaleloAction, navigate]);
@@ -105,30 +140,23 @@ export const useGestionHorariosDashboardState = () => {
     const onVerHorariosAulas = useCallback(() => navigate('/institucional/horarios/aulas'), [navigate]);
     const onPublish = useCallback(() => navigate('/institucional/horarios/publicacion'), [navigate]);
 
-    const turnosCapacityReal = useMemo(() => {
-        const map = {};
-        (capacidadTurno || []).forEach((row) => {
-            map[row.turno] = {
-                porcentaje: row.porcentaje_ocupacion,
-                aulasEnUso: row.aulas_en_uso,
-                totalAulas: row.total_aulas,
+    const pendientesSidebar = useMemo(() => {
+        if (!pendientesSidebarRaw || typeof pendientesSidebarRaw !== 'object') {
+            return {
+                bloquesSinAulaPorParalelo: [],
+                cursosSinDocentePorParalelo: [],
+                docentesConConflictosOperativos: [],
             };
-        });
-        return map;
-    }, [capacidadTurno]);
+        }
+        return {
+            bloquesSinAulaPorParalelo: pendientesSidebarRaw.bloquesSinAulaPorParalelo || [],
+            cursosSinDocentePorParalelo: pendientesSidebarRaw.cursosSinDocentePorParalelo || [],
+            docentesConConflictosOperativos: pendientesSidebarRaw.docentesConConflictosOperativos || [],
+        };
+    }, [pendientesSidebarRaw]);
 
-    const progresoGestion = useMemo(() => {
-        const total = kpis.total || 1;
-        return [
-            { key: 'completo', label: 'Completos', value: kpis.completos, percent: Math.round((kpis.completos / total) * 100) },
-            { key: 'conflicto', label: 'Con conflictos', value: kpis.conConflicto, percent: Math.round((kpis.conConflicto / total) * 100) },
-            { key: 'sin_horario', label: 'Sin horario', value: kpis.sinHorario, percent: Math.round((kpis.sinHorario / total) * 100) },
-            { key: 'incompleto', label: 'Incompletos', value: kpis.incompletos, percent: Math.round((kpis.incompletos / total) * 100) },
-        ];
-    }, [kpis]);
-
-    const loading = estadoLoading;
-    const error = estadoError || null;
+    const loading = estadoLoading || pendientesSidebarLoading;
+    const error = estadoError || pendientesSidebarError || null;
 
     return {
         title: currentGestionLabel,
@@ -137,6 +165,7 @@ export const useGestionHorariosDashboardState = () => {
         viewMode,
         kpis,
         filteredParallels,
+        paralelosCatalog: paralelosDashboard,
         boardByStatus,
         setViewMode,
         onFilterChange,
@@ -144,9 +173,8 @@ export const useGestionHorariosDashboardState = () => {
         onOpenArmado,
         onVerHorariosAulas,
         onPublish,
-        hayAlertas: kpis.incompletos > 0 || kpis.conConflicto > 0 || kpis.sinHorario > 0,
-        turnosCapacity: turnosCapacityReal,
-        progresoGestion,
+        hayAlertas: kpis.sinDocentes > 0 || kpis.sinAulas > 0 || kpis.sinHorarios > 0,
+        pendientesSidebar,
         getParaleloAction,
         loading,
         error,

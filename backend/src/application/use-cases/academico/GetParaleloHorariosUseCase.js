@@ -302,6 +302,24 @@ export class GetParaleloHorariosUseCase {
       // Filtrar cursos nulos (errores)
       const cursosValidos = horariosCompletos.filter((c) => c !== null);
 
+      let choqueCursoIds = new Set();
+      try {
+        const choqueRows = await this.parallelRepository.obtenerCursoIdsChoqueDocenteHorarioPorParalelo(paralelo.id);
+        choqueCursoIds = new Set(
+          (choqueRows || []).map((r) => Number(r.curso_id)).filter((n) => Number.isFinite(n) && n > 0),
+        );
+      } catch (e) {
+        this.logger.warn('[Académico] No se pudo resolver choques docente-horario por paralelo', {
+          parallelId: paralelo.id,
+          error: e.message,
+        });
+      }
+
+      const scheduleConConflictoDocente = cursosValidos.map((c) => ({
+        ...c,
+        docenteEnConflictoHorario: choqueCursoIds.has(Number(c.cursoId)),
+      }));
+
       // 4. Detectar materias del periodo que todavía no tienen curso en este paralelo
       let missingSubjects = [];
       if (paralelo.periodId) {
@@ -351,13 +369,13 @@ export class GetParaleloHorariosUseCase {
       // Logging final
       this.logger.info('[Académico] Horarios de paralelo obtenidos exitosamente', {
         parallelId: paralelo.id,
-        cursosCount: cursosValidos.length,
+        cursosCount: scheduleConConflictoDocente.length,
         totalCursos: cursos.length,
       });
 
       return {
         paralelo: paraleloResumen,
-        schedule: cursosValidos,
+        schedule: scheduleConConflictoDocente,
         missingSubjects,
       };
     } catch (error) {

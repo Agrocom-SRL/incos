@@ -5,7 +5,13 @@ import { resumenBloquesCurso } from '@application-institucional/horarios/utils/r
 
 const { Text } = Typography;
 
-const ParaleloCursosTabSection = ({ draftSchedules, missingSubjects, setTab, onOpenDocenteAsignacion }) => {
+const ParaleloCursosTabSection = ({
+    draftSchedules,
+    missingSubjects,
+    setTab,
+    onOpenDocenteAsignacion,
+    docentePreview = null,
+}) => {
   if (!draftSchedules.length) {
     return (
       <Alert
@@ -60,6 +66,12 @@ const ParaleloCursosTabSection = ({ draftSchedules, missingSubjects, setTab, onO
           const titulo = c.materiaNombre || c.materiaSigla || 'Materia sin nombre';
           const { horasGrilla, horasPlan, diasOrd, lineas } = resumenBloquesCurso(c);
           const docenteActual = c.docente || null;
+          const previewMatch =
+            docentePreview != null && Number(docentePreview.cursoId) === Number(c.cursoId);
+          const docenteDisplay = previewMatch ? docentePreview.docenteNombre : docenteActual;
+          const docenteEnConflictoHorario = previewMatch
+            ? Boolean(docentePreview.docenteEnConflictoHorario)
+            : Boolean(c.docenteEnConflictoHorario);
           return (
             <Col key={c.cursoId} xs={24} lg={12}>
               <Card
@@ -87,7 +99,19 @@ const ParaleloCursosTabSection = ({ draftSchedules, missingSubjects, setTab, onO
                     </Text>
                   ) : null}
                   <Text type="secondary">
-                    Docente: <Text strong>{docenteActual || 'Sin asignar'}</Text>
+                    Docente:{' '}
+                    <Text
+                        strong
+                        type={docenteEnConflictoHorario ? 'danger' : undefined}
+                        className={docenteEnConflictoHorario ? 'horarios-armado-docente--conflicto' : undefined}
+                    >
+                        {docenteDisplay || 'Sin asignar'}
+                    </Text>
+                    {docenteEnConflictoHorario ? (
+                        <Text type="danger" style={{ marginLeft: 8 }}>
+                            (choque de horario)
+                        </Text>
+                    ) : null}
                   </Text>
                   <Text type="secondary">
                     Carga horaria del periodo (plan):{' '}

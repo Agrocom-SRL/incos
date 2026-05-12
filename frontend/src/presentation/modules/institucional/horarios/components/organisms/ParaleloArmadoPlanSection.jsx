@@ -10,7 +10,9 @@ import {
     getSabadoArmadoGridRangeMinutes,
     getTurnoGridRangeMinutes,
 } from '@application-institucional/horarios/utils/turnoGridRange';
+import { buildHorariosPlanPendientesDetalleLines } from '@application-institucional/horarios/utils/buildHorariosPlanPendientesDetalle';
 import ParaleloPlanSemanaCell, { DRAG_MIME } from '../atoms/ParaleloPlanSemanaCell';
+import HorariosPlanPendientesLista from './HorariosPlanPendientesLista';
 import {
     appendBlockToCourse,
     moveBlockToSlot,
@@ -50,12 +52,20 @@ const ParaleloArmadoPlanSection = ({
     persistLoading = false,
     persistError = null,
     persistSuccess = false,
+    vistaExpandida = false,
+    /** Si es true, bajo la grilla se muestra el detalle de solapes / sin aula / docentes (vista previa). */
+    showPendientesDetalle = false,
 }) => {
     const [addOpen, setAddOpen] = useState(false);
     const [form] = Form.useForm();
     const diaAddWatch = Form.useWatch('dia', form);
     const gridRange = useMemo(() => getTurnoGridRangeMinutes(turnoLabel), [turnoLabel]);
     const sabadoRange = useMemo(() => getSabadoArmadoGridRangeMinutes(), []);
+    const pendientesLineas = useMemo(() => {
+        if (!showPendientesDetalle) return [];
+        return buildHorariosPlanPendientesDetalleLines(schedules || []);
+    }, [showPendientesDetalle, schedules]);
+    const tieneCursos = (schedules || []).length > 0;
     const handleBeginDragChip = useCallback((e, item, sourceDia, sourceSlotMinutes) => {
         const payload = {
             cursoId: item.cursoId,
@@ -169,8 +179,22 @@ const ParaleloArmadoPlanSection = ({
     }, [onRequestPersist]);
 
     return (
-        <section className="horarios-armado-plan" aria-label="Plan semanal del paralelo">
-            <Flex justify="space-between" align="center" wrap="wrap" gap={12} style={{ marginBottom: 12 }}>
+        <section
+            className={[
+                'horarios-armado-plan',
+                vistaExpandida ? 'horarios-armado-plan--fill' : '',
+            ]
+                .filter(Boolean)
+                .join(' ')}
+            aria-label="Plan semanal del paralelo"
+        >
+            <Flex
+                justify="space-between"
+                align="center"
+                wrap="wrap"
+                gap={12}
+                style={{ marginBottom: 12, flexShrink: 0 }}
+            >
                 <div>
                     <Text strong>Plan semanal</Text>
                     {turnoLabel ? (
@@ -211,7 +235,7 @@ const ParaleloArmadoPlanSection = ({
                 <Alert
                     type="info"
                     showIcon
-                    style={{ marginBottom: 12 }}
+                    style={{ marginBottom: 12, flexShrink: 0 }}
                     title="Guardando cambios del plan semanal..."
                 />
             ) : null}
@@ -219,7 +243,7 @@ const ParaleloArmadoPlanSection = ({
                 <Alert
                     type="error"
                     showIcon
-                    style={{ marginBottom: 12 }}
+                    style={{ marginBottom: 12, flexShrink: 0 }}
                     title="No se pudo guardar el plan"
                     description={
                         <span style={{ whiteSpace: 'pre-wrap' }}>{persistError}</span>
@@ -230,24 +254,41 @@ const ParaleloArmadoPlanSection = ({
                 <Alert
                     type="success"
                     showIcon
-                    style={{ marginBottom: 12 }}
+                    style={{ marginBottom: 12, flexShrink: 0 }}
                     title="Plan semanal guardado correctamente."
                 />
             ) : null}
-            <DocenteHorarioSemanalGrid
-                courseSchedules={schedules}
-                CellComponent={ParaleloPlanSemanaCell}
-                gridTimeRange={gridRange}
-                saturdayGridTimeRange={sabadoRange}
-                slotStepMinutes={SLOT_STEP_ADD}
-                uniformSlotGrid={!editable}
-                editable={editable}
-                onSlotDrop={handleSlotDrop}
-                cellExtraProps={{
-                    onBeginDragChip: handleBeginDragChip,
-                    onDeleteChip: handleDeleteChip,
-                }}
-            />
+            <div
+                className={vistaExpandida ? 'horarios-armado-plan__grid-host' : undefined}
+            >
+                <DocenteHorarioSemanalGrid
+                    courseSchedules={schedules}
+                    CellComponent={ParaleloPlanSemanaCell}
+                    gridTimeRange={gridRange}
+                    saturdayGridTimeRange={sabadoRange}
+                    slotStepMinutes={SLOT_STEP_ADD}
+                    uniformSlotGrid={!editable}
+                    editable={editable}
+                    onSlotDrop={handleSlotDrop}
+                    cellExtraProps={{
+                        onBeginDragChip: handleBeginDragChip,
+                        onDeleteChip: handleDeleteChip,
+                    }}
+                />
+            </div>
+            {showPendientesDetalle ? (
+                <div className="horarios-armado-plan__pendientes" style={{ marginTop: 12, flexShrink: 0 }}>
+                    <Text strong style={{ display: 'block', marginBottom: 6 }}>
+                        Resumen del plan
+                    </Text>
+                    <HorariosPlanPendientesLista
+                        ok={tieneCursos && pendientesLineas.length === 0}
+                        lineas={pendientesLineas}
+                        mensajeExito="Vista previa: no se detectan solapes, choques de docente ni bloques sin aula en esta grilla."
+                        mensajeVacio="No hay cursos en el paralelo para evaluar la vista previa."
+                    />
+                </div>
+            ) : null}
             <Modal
                 title="Añadir bloque al plan"
                 open={addOpen}

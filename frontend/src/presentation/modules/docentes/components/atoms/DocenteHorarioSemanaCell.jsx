@@ -26,7 +26,7 @@ const DocenteHorarioSemanaCell = ({
   // Props opcionales usados por ParaleloPlanSemanaCell / grilla extendida (no se reenvían al DOM)
   slotDia: _slotDia,
   slotMinutes: _slotMinutes,
-  editable = false,
+  editable: _editable = false,
   onBeginDragChip: _onBeginDragChip,
   onDeleteChip: _onDeleteChip,
 }) => {
@@ -47,6 +47,11 @@ const DocenteHorarioSemanaCell = ({
             boxShadow: `inset 0 0 0 1px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.2)`,
           }
           : undefined;
+        const nombreMateria =
+          ev.materiaNombre && ev.materiaSigla && String(ev.materiaNombre).trim() !== String(ev.materiaSigla).trim()
+            ? ev.materiaNombre
+            : ev.materiaNombre || null;
+
         return (
           <div
             key={`${ev.cursoCodigo}-${ev.orden}-${idx}`}
@@ -54,17 +59,25 @@ const DocenteHorarioSemanaCell = ({
             style={chipStyle}
           >
             <div className="da-cal-semanal__chip-hora">{hora}</div>
-            {ev.materiaSigla || ev.materiaNombre ? (
-              <>
-                <div className="da-cal-semanal__chip-curso">
-                  {ev.materiaNombre}
-                </div>
-              </>
-            ) : (
+            {ev.materiaSigla ? (
+              <div className="da-cal-semanal__chip-sigla">{ev.materiaSigla}</div>
+            ) : null}
+            {nombreMateria ? (
+              <div className="da-cal-semanal__chip-curso">{nombreMateria}</div>
+            ) : ev.materiaSigla ? null : (
               <div className="da-cal-semanal__chip-curso">Materia sin detalle</div>
             )}
             {ev.carrera ? <div className="da-cal-semanal__chip-line">{ev.carrera}</div> : null}
-            {ev.paralelo ? <div className="da-cal-semanal__chip-line text-bold">{ev.paralelo} - {ev.turno}</div> : null}
+            {ev.paralelo || ev.turno ? (
+              <div className="da-cal-semanal__chip-line text-bold">
+                {[ev.paralelo, ev.turno].filter(Boolean).join(' · ')}
+              </div>
+            ) : null}
+            {ev.docente ? (
+              <div className="da-cal-semanal__chip-line">
+                Docente: <strong>{ev.docente}</strong>
+              </div>
+            ) : null}
             {ev.aula ? <div className="da-cal-semanal__chip-line">Aula: {ev.aula}</div> : null}
           </div>
         );

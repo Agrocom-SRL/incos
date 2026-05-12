@@ -10,7 +10,7 @@ const toSelectOptions = (values) => [
     ...(values || []).map((opt) => ({ value: opt, label: opt })),
 ];
 
-const FilterField = ({ label, value, rawOptions, onChange }) => {
+const FilterField = ({ label, value, rawOptions, onChange, disabled = false }) => {
     const active = value !== 'all';
     return (
         <Flex vertical gap={allSpacing.marginXS} style={{ minWidth: 0, width: '100%' }}>
@@ -31,20 +31,41 @@ const FilterField = ({ label, value, rawOptions, onChange }) => {
                 style={{ width: '100%', minWidth: 0 }}
                 size="middle"
                 allowClear={false}
+                disabled={disabled}
             />
         </Flex>
     );
 };
 
-const HorariosFiltersBar = ({ filters, options, onFilterChange, onClearFilters }) => {
-    const hayFiltrosActivos =
-        filters?.carrera !== 'all' || filters?.periodo !== 'all' || filters?.turno !== 'all';
+const DEFAULT_FIELDS = ['carrera', 'periodo', 'turno'];
 
-    const fields = [
-        { key: 'carrera', label: 'Carrera', raw: options.carreras },
-        { key: 'periodo', label: 'Periodo / año', raw: options.periodos },
-        { key: 'turno', label: 'Turno', raw: options.turnos },
-    ];
+const FIELD_CONFIG = {
+    carrera: { label: 'Carrera', optionKey: 'carreras' },
+    periodo: { label: 'Periodo / año', optionKey: 'periodos' },
+    turno: { label: 'Turno', optionKey: 'turnos' },
+};
+
+const HorariosFiltersBar = ({
+    filters,
+    options,
+    onFilterChange,
+    onClearFilters,
+    title = 'Vista de planificación',
+    visibleFields = DEFAULT_FIELDS,
+    disabled = false,
+    headerTrailing = null,
+    /** Si true, no se renderizan los select ni las etiquetas de filtro (p. ej. modo edición en grilla). */
+    ocultarSelectoresFiltro = false,
+}) => {
+    const fields = (visibleFields || [])
+        .map((key) => {
+            const config = FIELD_CONFIG[key];
+            if (!config) return null;
+            return { key, label: config.label, raw: options?.[config.optionKey] || [] };
+        })
+        .filter(Boolean);
+
+    const hayFiltrosActivos = fields.some((field) => (filters?.[field.key] || 'all') !== 'all');
 
     return (
         <Flex vertical gap={allSpacing.marginMD} style={{ width: '100%' }}>
@@ -66,33 +87,41 @@ const HorariosFiltersBar = ({ filters, options, onFilterChange, onClearFilters }
                         fontWeight: typography.fontWeightStrong,
                     }}
                 >
-                    Vista de planificación
+                    {title}
                 </Title>
-                {hayFiltrosActivos ? (
-                    <Flex flex="0 0 auto" align="center" className="horarios-filters-bar__clear">
-                        <IconButton
-                            variant="error"
-                            icon={<CloseOutlined />}
-                            onClick={onClearFilters}
-                            size="middle"
-                            aria-label="Limpiar filtros"
-                            title="Limpiar filtros"
-                        />
+                {headerTrailing || hayFiltrosActivos ? (
+                    <Flex flex="0 0 auto" align="center" gap={allSpacing.marginSM} className="horarios-filters-bar__actions">
+                        {headerTrailing}
+                        {hayFiltrosActivos ? (
+                            <IconButton
+                                variant="error"
+                                icon={<CloseOutlined />}
+                                onClick={disabled ? undefined : onClearFilters}
+                                size="middle"
+                                circle={true}
+                                aria-label="Limpiar filtros"
+                                title="Limpiar filtros"
+                                disabled={disabled}
+                            />
+                        ) : null}
                     </Flex>
                 ) : null}
             </Flex>
-            <Row gutter={[allSpacing.marginLG, allSpacing.marginMD]} align="bottom">
-                {fields.map((item) => (
-                    <Col key={item.key} xs={24} sm={24} md={12} xl={8}>
-                        <FilterField
-                            label={item.label}
-                            value={filters[item.key]}
-                            rawOptions={item.raw}
-                            onChange={(v) => onFilterChange(item.key, v)}
-                        />
-                    </Col>
-                ))}
-            </Row>
+            {ocultarSelectoresFiltro ? null : (
+                <Row gutter={[allSpacing.marginLG, allSpacing.marginMD]} align="bottom">
+                    {fields.map((item) => (
+                        <Col key={item.key} xs={24} sm={24} md={12} xl={8}>
+                            <FilterField
+                                label={item.label}
+                                value={filters[item.key]}
+                                rawOptions={item.raw}
+                                onChange={(v) => onFilterChange(item.key, v)}
+                                disabled={disabled}
+                            />
+                        </Col>
+                    ))}
+                </Row>
+            )}
         </Flex>
     );
 };

@@ -13,7 +13,7 @@
 
 import apiClient from '@api-client';
 import { IParaleloRepository } from '@domain/repositories';
-import { PARALELOS_ENDPOINTS } from '@api/endpoints';
+import { PARALELOS_ENDPOINTS, AULAS_HORARIOS_ENDPOINTS } from '@api/endpoints';
 import { handleSuccessResponse, handleErrorResponse } from '@api/responseHandler';
 
 export class ParaleloRepository extends IParaleloRepository {
@@ -154,6 +154,47 @@ export class ParaleloRepository extends IParaleloRepository {
       return handleSuccessResponse(response);
     } catch (error) {
       return handleErrorResponse(error, 'Error al obtener capacidad por turno del dashboard');
+    }
+  }
+
+  async obtenerHorariosPendientesSidebar(options = {}) {
+    try {
+      const { params = {} } = options;
+      const response = await apiClient.get(PARALELOS_ENDPOINTS.DASHBOARD_HORARIOS_PENDIENTES, { params });
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al obtener pendientes de horarios');
+    }
+  }
+
+  async obtenerHorariosPublicacionPlanes(options = {}) {
+    try {
+      const { params = {} } = options;
+      const response = await apiClient.get(PARALELOS_ENDPOINTS.DASHBOARD_HORARIOS_PUBLICACION, { params });
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al obtener planes de publicación de horarios');
+    }
+  }
+
+  async obtenerAulasHorarios(options = {}) {
+    try {
+      const { params = {} } = options;
+      const response = await apiClient.get(AULAS_HORARIOS_ENDPOINTS.BLOQUES, { params });
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al obtener bloques de horarios en aulas');
+    }
+  }
+
+  async asignarAulaHorario(options = {}) {
+    try {
+      const { cursoHorarioId, aulaId } = options;
+      if (!cursoHorarioId) return { success: false, error: 'cursoHorarioId es requerido' };
+      const response = await apiClient.patch(AULAS_HORARIOS_ENDPOINTS.PATCH_AULA(cursoHorarioId), { aulaId });
+      return handleSuccessResponse(response);
+    } catch (error) {
+      return handleErrorResponse(error, 'Error al asignar aula al bloque');
     }
   }
 

@@ -4,12 +4,16 @@ export const FILTER_DEFAULTS = {
     turno: 'all',
 };
 
-export const STATUS_LABELS = {
-    incompleto: 'Incompleto',
-    sin_horario: 'Sin horario',
-    conflicto: 'Con conflictos',
+/** Etiquetas del tablero / KPI (misma nomenclatura que columnas del kanban y tags en tabla). */
+export const BOARD_COLUMN_LABELS = {
+    sin_horarios: 'Sin horarios',
+    sin_docentes: 'Sin docentes',
+    sin_aulas: 'Sin aulas',
     completo: 'Completo',
 };
 
-export const STATUS_ORDER = ['incompleto', 'sin_horario', 'conflicto', 'completo'];
-export const BOARD_COLUMNS = ['incompleto', 'sin_horario', 'conflicto', 'completo'];
+/** Columnas del tablero (orden visual): sin horarios → sin docentes → sin aulas → completos. */
+export const BOARD_COLUMNS = ['sin_horarios', 'sin_docentes', 'sin_aulas', 'completo'];
+
+/** Orden alineado al tablero (KPI / columnas). */
+export const STATUS_ORDER = BOARD_COLUMNS;

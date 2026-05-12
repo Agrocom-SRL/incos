@@ -8,6 +8,9 @@
  * CSS solo para layout y espaciado
  * 
  * Soporta variantes semánticas de color mediante el prop 'variant'
+ *
+ * Forma: con circle={true} el borde de las variantes se muestra (botón redondo);
+ * cuadrados (por defecto) van sin borde para integrarse mejor en tablas y filas densas.
  */
 
 import { Button as AntButton } from 'antd';
@@ -20,19 +23,23 @@ const IconButton = ({
     variant = 'default', // 'default' | 'info' | 'success' | 'warning' | 'error'
     className = '',
     style = {},
+    circle = false,
     ...props
 }) => {
     const baseClassName = 'icon-button';
+    const shapeClassName = circle ? 'icon-button--circle' : 'icon-button--square';
     const variantClassName = variant !== 'default' ? `icon-button--${variant}` : '';
-    const iconButtonClassName = className 
-        ? `${baseClassName} ${variantClassName} ${className}`.trim() 
-        : `${baseClassName} ${variantClassName}`.trim();
+    const iconButtonClassName = [baseClassName, shapeClassName, variantClassName, className]
+        .filter(Boolean)
+        .join(' ')
+        .trim();
 
     return (
         <AntButton
             type="text"
             size={size}
             icon={icon}
+            shape={circle ? 'circle' : 'square'}
             onClick={onClick}
             disabled={disabled}
             className={iconButtonClassName}

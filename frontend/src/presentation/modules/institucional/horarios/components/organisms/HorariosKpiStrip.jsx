@@ -10,7 +10,7 @@ const HorariosKpiStrip = ({ kpis, variant = 'all' }) => {
                 <KpiCard
                     label="Total paralelos"
                     value={kpis.total}
-                    sub="Base de gestión"
+                    sub="Total de paralelos"
                     badgeText="100%"
                     intent="neutral"
                     percent={100}
@@ -23,32 +23,32 @@ const HorariosKpiStrip = ({ kpis, variant = 'all' }) => {
         <Row gutter={[12, 12]}>
             <Col xs={24} md={12} xxl={6}>
                 <KpiCard
-                    label="Incompletos"
-                    value={kpis.incompletos}
-                    sub="Sin cursos creados"
-                    badgeText="Cobertura"
-                    intent="warning"
-                    percent={Math.round((kpis.incompletos / total) * 100)}
-                />
-            </Col>
-            <Col xs={24} md={12} xxl={6}>
-                <KpiCard
-                    label="Sin horario"
-                    value={kpis.sinHorario}
-                    sub="Cursos sin bloques"
-                    badgeText="Pendiente"
-                    intent="info"
-                    percent={Math.round((kpis.sinHorario / total) * 100)}
-                />
-            </Col>
-            <Col xs={24} md={12} xxl={6}>
-                <KpiCard
-                    label="Conflictos"
-                    value={kpis.conConflicto}
-                    sub="Cursos con conflicto"
-                    badgeText="Riesgo"
+                    label="Sin horarios"
+                    value={kpis.sinHorarios}
+                    sub="Horarios pendientes"
+                    badgeText="Horarios"
                     intent="danger"
-                    percent={Math.round((kpis.conConflicto / total) * 100)}
+                    percent={Math.round((kpis.sinHorarios / total) * 100)}
+                />
+            </Col>
+            <Col xs={24} md={12} xxl={6}>
+                <KpiCard
+                    label="Sin docentes"
+                    value={kpis.sinDocentes}
+                    sub="Docentes sin asignar"
+                    badgeText="Docentes"
+                    intent="warning"
+                    percent={Math.round((kpis.sinDocentes / total) * 100)}
+                />
+            </Col>
+            <Col xs={24} md={12} xxl={6}>
+                <KpiCard
+                    label="Sin aulas"
+                    value={kpis.sinAulas}
+                    sub="Bloques sin aula"
+                    badgeText="Aulas"
+                    intent="info"
+                    percent={Math.round((kpis.sinAulas / total) * 100)}
                 />
             </Col>
             <Col xs={24} md={12} xxl={6}>

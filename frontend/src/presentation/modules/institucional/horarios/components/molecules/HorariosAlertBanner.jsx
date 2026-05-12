@@ -1,14 +1,14 @@
 import { Alert } from 'antd';
 
-const HorariosAlertBanner = ({ incompletos = 0, conflictos = 0, sinHorario = 0 }) => {
-    if (incompletos <= 0 && conflictos <= 0 && sinHorario <= 0) return null;
-    const type = conflictos > 0 ? 'error' : incompletos > 0 ? 'warning' : 'info';
+const HorariosAlertBanner = ({ sinDocentes = 0, sinAulas = 0, sinHorarios = 0 }) => {
+    if (sinDocentes <= 0 && sinAulas <= 0 && sinHorarios <= 0) return null;
+    const type = sinHorarios > 0 ? 'error' : sinDocentes > 0 ? 'warning' : 'info';
     return (
         <Alert
             type={type}
             showIcon
             title="Requiere atención operativa"
-            description={`Incompletos: ${incompletos} | Sin horario: ${sinHorario} | Conflictos: ${conflictos}`}
+            description={`Sin horarios: ${sinHorarios} | Sin docentes: ${sinDocentes} | Sin aulas: ${sinAulas}`}
         />
     );
 };

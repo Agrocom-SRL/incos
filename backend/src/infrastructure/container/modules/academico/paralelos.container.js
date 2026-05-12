@@ -22,10 +22,14 @@ import { PutParaleloScheduleUseCase } from '../../../../application/use-cases/ac
 import { GetAsignaturasSinCursoDashboardUseCase } from '../../../../application/use-cases/academico/GetAsignaturasSinCursoDashboardUseCase.js';
 import { GetCapacidadTurnoDashboardUseCase } from '../../../../application/use-cases/academico/GetCapacidadTurnoDashboardUseCase.js';
 import { GetParalelosEstadoDashboardUseCase } from '../../../../application/use-cases/academico/GetParalelosEstadoDashboardUseCase.js';
+import { GetHorariosSidebarPendientesUseCase } from '../../../../application/use-cases/academico/GetHorariosSidebarPendientesUseCase.js';
+import { GetHorariosPublicacionPlanesUseCase } from '../../../../application/use-cases/academico/GetHorariosPublicacionPlanesUseCase.js';
 import {
     GetDashboardAsignaturasSinCursoController,
     GetDashboardCapacidadTurnoController,
+    GetDashboardHorariosPendientesController,
     GetDashboardParalelosEstadoController,
+    GetHorariosPublicacionPlanesController,
     GetParaleloScheduleController,
     GetParaleloCursosOfertaController,
     PostParaleloCursoController,
@@ -152,6 +156,26 @@ export function registerParalelosResource(container) {
             })
     );
 
+    registerComponent(
+        container,
+        ACADEMICO_TOKENS.getHorariosSidebarPendientesUseCase,
+        (c) =>
+            new GetHorariosSidebarPendientesUseCase({
+                parallelRepository: c.resolve(REPOSITORIOS_TOKENS.parallelRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
+    registerComponent(
+        container,
+        ACADEMICO_TOKENS.getHorariosPublicacionPlanesUseCase,
+        (c) =>
+            new GetHorariosPublicacionPlanesUseCase({
+                parallelRepository: c.resolve(REPOSITORIOS_TOKENS.parallelRepository),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+            })
+    );
+
     // ============================================
     // CONTROLLERS
     // ============================================
@@ -243,6 +267,28 @@ export function registerParalelosResource(container) {
             })
     );
 
+    registerComponent(
+        container,
+        ACADEMICO_TOKENS.getDashboardHorariosPendientesController,
+        (c) =>
+            new GetDashboardHorariosPendientesController({
+                getHorariosSidebarPendientesUseCase: c.resolve(ACADEMICO_TOKENS.getHorariosSidebarPendientesUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
+    );
+
+    registerComponent(
+        container,
+        ACADEMICO_TOKENS.getHorariosPublicacionPlanesController,
+        (c) =>
+            new GetHorariosPublicacionPlanesController({
+                getHorariosPublicacionPlanesUseCase: c.resolve(ACADEMICO_TOKENS.getHorariosPublicacionPlanesUseCase),
+                logger: c.resolve(SERVICIOS_TOKENS.logger),
+                responseFormatter: c.resolve(SERVICIOS_TOKENS.responseFormatter),
+            })
+    );
+
     // ============================================
     // ROUTER
     // ============================================
@@ -259,6 +305,8 @@ export function registerParalelosResource(container) {
                 getDashboardParalelosEstadoController: c.resolve(ACADEMICO_TOKENS.getDashboardParalelosEstadoController),
                 getDashboardAsignaturasSinCursoController: c.resolve(ACADEMICO_TOKENS.getDashboardAsignaturasSinCursoController),
                 getDashboardCapacidadTurnoController: c.resolve(ACADEMICO_TOKENS.getDashboardCapacidadTurnoController),
+                getDashboardHorariosPendientesController: c.resolve(ACADEMICO_TOKENS.getDashboardHorariosPendientesController),
+                getHorariosPublicacionPlanesController: c.resolve(ACADEMICO_TOKENS.getHorariosPublicacionPlanesController),
             };
 
             const middlewares = {

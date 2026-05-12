@@ -10,7 +10,14 @@ export class GetParalelosEstadoDashboardUseCase {
     try {
       const result = await this.paraleloRepository.obtenerParalelosEstadoDashboard({ params });
       if (!result.success) return result;
-      return { success: true, data: result.data || [] };
+      const raw = result.data;
+      if (raw && typeof raw === 'object' && !Array.isArray(raw) && Array.isArray(raw.paralelos)) {
+        return { success: true, data: raw };
+      }
+      if (Array.isArray(raw)) {
+        return { success: true, data: { paralelos: raw, kpis: null } };
+      }
+      return { success: true, data: { paralelos: [], kpis: null } };
     } catch (error) {
       return {
         success: false,

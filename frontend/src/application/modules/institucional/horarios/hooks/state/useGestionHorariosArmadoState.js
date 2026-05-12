@@ -12,7 +12,6 @@ export const useGestionHorariosArmadoState = () => {
     const [searchParams, setSearchParams] = useSearchParams();
     const paraleloId = searchParams.get('paralelo');
     const tab = normalizeArmadoTab(searchParams.get('tab'));
-    const turnoParam = searchParams.get('turno') || '';
 
     const { schedule, loading, error, fetch } = useParaleloScheduleApi();
     const {
@@ -23,7 +22,7 @@ export const useGestionHorariosArmadoState = () => {
     } = usePersistParaleloScheduleApi();
 
     const paraleloApiMeta = useMemo(() => extractParaleloScheduleMeta(schedule), [schedule]);
-    const turnoEfectivo = (turnoParam || paraleloApiMeta?.turno || '').trim();
+    const turnoEfectivo = (paraleloApiMeta?.turno || '').trim();
     const paraleloNombre =
         paraleloApiMeta?.nombre || (paraleloId ? `Paralelo #${paraleloId}` : null);
 
@@ -80,6 +79,18 @@ export const useGestionHorariosArmadoState = () => {
     }, [paraleloId, fetch]);
 
     useEffect(() => {
+        if (!searchParams.get('turno')) return;
+        setSearchParams(
+            (prev) => {
+                const n = new URLSearchParams(prev);
+                n.delete('turno');
+                return n;
+            },
+            { replace: true },
+        );
+    }, [setSearchParams, searchParams]);
+
+    useEffect(() => {
         if (!persistLoading && persistResult && paraleloId) {
             fetch(Number(paraleloId));
         }
@@ -92,13 +103,13 @@ export const useGestionHorariosArmadoState = () => {
                     const n = new URLSearchParams(prev);
                     n.set('tab', key);
                     if (paraleloId) n.set('paralelo', paraleloId);
-                    if (turnoParam) n.set('turno', turnoParam);
+                    n.delete('turno');
                     return n;
                 },
                 { replace: true },
             );
         },
-        [setSearchParams, paraleloId, turnoParam],
+        [setSearchParams, paraleloId],
     );
 
     const onRequestPersist = useCallback(() => {
@@ -126,8 +137,10 @@ export const useGestionHorariosArmadoState = () => {
         paraleloNombre,
         missingSubjects,
         draftSchedules,
+        serverSchedules,
         setDraftSchedules,
         onRequestPersist,
         handleVolver,
+        refetchSchedule: fetch,
     };
 };
