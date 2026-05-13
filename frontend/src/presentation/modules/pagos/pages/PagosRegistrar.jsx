@@ -44,18 +44,6 @@ const PagosRegistrar = () => {
   const returnListPathFromState = location.state?.returnListPath || '/pagos/listar';
   const returnListPath = location.state?.returnListPath;
 
-  // Redirigir a lista de pagos si no hay studentId (ANTES de otros hooks)
-  useEffect(() => {
-    if (!studentId) {
-      navigate('/pagos/listar', { replace: true });
-    }
-  }, [studentId, navigate]);
-
-  // Si no hay studentId, no renderizar nada (se redirige automáticamente)
-  // IMPORTANTE: Este return debe estar DESPUÉS de todos los hooks
-  // pero React requiere que todos los hooks se llamen incondicionalmente
-  // Por eso movemos la redirección al useEffect y renderizamos un loading
-
   // Obtener datos del estudiante desde el contexto de detalle (para StudentInfoSection)
   const studentDetailContext = useStudentDetailContext();
   const student = studentDetailContext?.student?.student || null;

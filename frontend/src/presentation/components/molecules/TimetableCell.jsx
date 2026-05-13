@@ -89,7 +89,7 @@ export const TimetableCell = ({
       </div>
       {classData.aula && (
         <div className="timetable-tooltip-row">
-          📍 Aula: {classData.aula}
+          📍 {classData.aula}
         </div>
       )}
     </div>

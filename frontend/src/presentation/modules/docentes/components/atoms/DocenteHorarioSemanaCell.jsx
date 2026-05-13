@@ -78,7 +78,7 @@ const DocenteHorarioSemanaCell = ({
                 Docente: <strong>{ev.docente}</strong>
               </div>
             ) : null}
-            {ev.aula ? <div className="da-cal-semanal__chip-line">Aula: {ev.aula}</div> : null}
+            {ev.aula ? <div className="da-cal-semanal__chip-line">{ev.aula}</div> : null}
           </div>
         );
       })}

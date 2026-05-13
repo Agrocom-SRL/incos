@@ -32,22 +32,9 @@ export const useGenerateBoletaInscripcion = () => {
       // Vite tiene un proxy configurado para /uploads que redirige al backend
       const baseUrl = window.location.origin;
       
-      // Normalizar el filePath:
-      // - Remover cualquier prefijo relativo (./, ../)
-      // - Asegurar que empiece con /
-      // - Remover dobles barras
       let normalizedPath = (filePath || '').trim();
-      
-      // Remover prefijos relativos si existen
-      normalizedPath = normalizedPath.replace(/^\.\//, '');
-      normalizedPath = normalizedPath.replace(/^\.\.\//, '');
-      
-      // Asegurar que empiece con /
-      if (!normalizedPath.startsWith('/')) {
-        normalizedPath = `/${normalizedPath}`;
-      }
-      
-      // Remover dobles barras
+      normalizedPath = normalizedPath.replace(/^(\.\.?\/)+/, '');
+      if (!normalizedPath.startsWith('/')) normalizedPath = `/${normalizedPath}`;
       normalizedPath = normalizedPath.replace(/\/+/g, '/');
       
       const fileUrl = `${baseUrl}${normalizedPath}`;
