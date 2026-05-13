@@ -207,6 +207,18 @@ const InscripcionesDetail = () => {
         render: (status) => (status ? <Tag color={getStatusColor(status)}>{status}</Tag> : '—'),
       },
       {
+        title: 'Paralelo',
+        key: 'paralelo',
+        width: 120,
+        render: (_, row) => row.paralelo?.nombre ?? '—',
+      },
+      {
+        title: 'Turno',
+        key: 'turno',
+        width: 100,
+        render: (_, row) => row.paralelo?.turno ?? '—',
+      },
+      {
         title: 'Docente',
         key: 'docente',
         render: (_, row) => row.docente?.nombreCompleto || 'Sin docente asignado',
@@ -232,22 +244,31 @@ const InscripcionesDetail = () => {
     [enrollmentSubjects],
   );
 
-  const turnoParaGrillaInscripcion = useMemo(
-    () =>
-      enrollment?.parallel?.turno ??
-      enrollment?.shift ??
-      materiasConHorario[0]?.paralelo?.turno ??
-      materiasConHorario[0]?.parallel?.turno ??
-      materiasConHorario[0]?.shift ??
-      null,
-    [enrollment, materiasConHorario],
-  );
-
-  const gridRangeInscripcion = useMemo(
-    () => getTurnoGridRangeMinutes(turnoParaGrillaInscripcion),
-    [turnoParaGrillaInscripcion],
-  );
-  const sabadoRangeInscripcion = useMemo(() => getSabadoArmadoGridRangeMinutes(), []);
+  const gridRangeInscripcion = useMemo(() => {
+    const turnos = [
+      ...new Set(
+        materiasConHorario
+          .map((m) => m.paralelo?.turno ?? null)
+          .filter(Boolean),
+      ),
+    ];
+    if (turnos.length === 0) return getTurnoGridRangeMinutes(null);
+    if (turnos.length === 1) return getTurnoGridRangeMinutes(turnos[0]);
+    const ranges = turnos.map(getTurnoGridRangeMinutes);
+    return {
+      start: Math.min(...ranges.map((r) => r.start)),
+      end: Math.max(...ranges.map((r) => r.end)),
+    };
+  }, [materiasConHorario]);
+  const sabadoRangeInscripcion = useMemo(() => {
+    const base = getSabadoArmadoGridRangeMinutes();
+    const hasNoche = materiasConHorario.some((m) => {
+      const t = String(m.paralelo?.turno || '').toUpperCase().trim();
+      return t === 'NOCHE';
+    });
+    if (!hasNoche) return base;
+    return { ...base, end: Math.max(base.end, 22 * 60) };
+  }, [materiasConHorario]);
 
   const courseSchedules = useMemo(
     () =>
@@ -262,15 +283,11 @@ const InscripcionesDetail = () => {
           materia.paralelo?.nombre ??
           materia.parallel?.nombre ??
           materia.parallelName ??
-          enrollment?.parallel?.nombre ??
-          enrollment?.parallelName ??
           null,
         turno:
           materia.paralelo?.turno ??
           materia.parallel?.turno ??
           materia.shift ??
-          enrollment?.parallel?.turno ??
-          enrollment?.shift ??
           null,
         docente: materia.docente?.nombreCompleto ?? null,
         bloques: (materia.horarios || [])

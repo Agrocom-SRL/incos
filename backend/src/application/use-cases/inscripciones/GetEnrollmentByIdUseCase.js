@@ -63,6 +63,7 @@ export class GetEnrollmentByIdUseCase {
     scheduleRepository,
     classroomRepository,
     teacherRepository,
+    parallelRepository,
     studentDocumentRepository,
     logger,
   }) {
@@ -81,6 +82,7 @@ export class GetEnrollmentByIdUseCase {
     this.scheduleRepository = scheduleRepository;
     this.classroomRepository = classroomRepository;
     this.teacherRepository = teacherRepository;
+    this.parallelRepository = parallelRepository;
     this.studentDocumentRepository = studentDocumentRepository;
     this.logger = logger;
   }
@@ -411,12 +413,12 @@ export class GetEnrollmentByIdUseCase {
                                 ordenSecuencia: cursoHorario.sequenceOrder,
                                 horario: horario
                                   ? {
-                                      dia: horario.day,
-                                      horaInicio: horario.startTime,
-                                      horaFin: horario.endTime,
-                                    }
+                                    dia: horario.day,
+                                    horaInicio: horario.startTime,
+                                    horaFin: horario.endTime,
+                                  }
                                   : null,
-                                aula: aula ? aula.name : null,
+                                aula: aula ? `${aula.code} - ${aula.name}` : null,
                               };
                             } catch (error) {
                               this.logger.warn('[Inscripciones] Error al obtener horario o aula', {
@@ -461,6 +463,29 @@ export class GetEnrollmentByIdUseCase {
             const periodoId = planSubject?.periodId ?? planSubject?.periodoId ?? null;
             const paraleloId = course?.parallelId ?? course?.paraleloId ?? null;
 
+            let paralelo = null;
+            if (paraleloId) {
+              try {
+                const paraleloRaw = await this.parallelRepository.findById(paraleloId, {
+                  attributes: ['id', 'nombre', 'turno'],
+                });
+                const paraleloPlain = paraleloRaw?.toPlainObject ? paraleloRaw.toPlainObject() : paraleloRaw;
+                if (paraleloPlain) {
+                  paralelo = {
+                    id: paraleloPlain.id,
+                    nombre: paraleloPlain.name ?? paraleloPlain.nombre ?? null,
+                    turno: paraleloPlain.shift ?? paraleloPlain.turno ?? null,
+                  };
+                }
+              } catch (err) {
+                this.logger.warn('[Inscripciones] Error al obtener paralelo', {
+                  enrollmentSubjectId: enrollmentSubjectPlain.id,
+                  paraleloId,
+                  error: err.message,
+                });
+              }
+            }
+
             return {
               ...enrollmentSubjectPlain,
               materiaId: subject ? subject.id : null,
@@ -469,21 +494,22 @@ export class GetEnrollmentByIdUseCase {
               color: course ? course.colorHex : null,
               periodoId,
               paraleloId,
+              paralelo,
               docente: teacher
                 ? {
-                    id: teacher.id,
-                    nombres: teacher.firstName,
-                    apellidoPaterno: teacher.lastName,
-                    apellidoMaterno: teacher.motherLastName || null,
-                    nombreCompleto: teacher.firstName && teacher.lastName
-                      ? `${teacher.firstName} ${teacher.lastName}${teacher.motherLastName ? ` ${teacher.motherLastName}` : ''}`
-                      : null,
-                    ci: teacher.ci || null,
-                    expedicion: teacher.expedition || null,
-                    telefono: teacher.phone || null,
-                    celular: teacher.mobilePhone || null,
-                    email: teacher.personalEmail || null,
-                  }
+                  id: teacher.id,
+                  nombres: teacher.firstName,
+                  apellidoPaterno: teacher.lastName,
+                  apellidoMaterno: teacher.motherLastName || null,
+                  nombreCompleto: teacher.firstName && teacher.lastName
+                    ? `${teacher.firstName} ${teacher.lastName}${teacher.motherLastName ? ` ${teacher.motherLastName}` : ''}`
+                    : null,
+                  ci: teacher.ci || null,
+                  expedicion: teacher.expedition || null,
+                  telefono: teacher.phone || null,
+                  celular: teacher.mobilePhone || null,
+                  email: teacher.personalEmail || null,
+                }
                 : null,
               horarios,
             };
@@ -533,7 +559,7 @@ export class GetEnrollmentByIdUseCase {
           );
 
           const documentos = documentosResult.studentDocuments || [];
-          
+
           this.logger.info('[Inscripciones] Documentos encontrados para estudiante', {
             studentId: student.id,
             totalDocumentos: documentos.length,
@@ -542,7 +568,7 @@ export class GetEnrollmentByIdUseCase {
               return docPlain.tipoDocumento === 'INSCRIPCION';
             }).length,
           });
-          
+
           // Filtrar solo documentos que sean boleta/formulario de inscripción (PDF)
           // Nombres aceptados: BOLETA_INSCRIPCION, FORMULARIO_INSCRIPCION, o formulario_inscripcion_* (GenerateFormularioInscripcionUseCase)
           // Ordenar por fecha de creación descendente para obtener el más reciente
@@ -564,7 +590,7 @@ export class GetEnrollmentByIdUseCase {
                 fileNameLower.includes('formulario_inscripcion');
               const isPdf = extension === 'pdf' || fileNameLower.endsWith('.pdf');
               const matches = doc.tipoDocumento === 'INSCRIPCION' && isFormularioOrBoleta && isPdf;
-              
+
               if (doc.tipoDocumento === 'INSCRIPCION') {
                 this.logger.debug('[Inscripciones] Documento INSCRIPCION encontrado', {
                   fileName: fileName,
@@ -573,7 +599,7 @@ export class GetEnrollmentByIdUseCase {
                   matches: matches,
                 });
               }
-              
+
               return matches;
             })
             .sort((a, b) => {
@@ -591,17 +617,17 @@ export class GetEnrollmentByIdUseCase {
             // El documento puede tener filePath (desde entidad) o rutaArchivo (desde modelo Sequelize directo)
             const filePathRaw = formularioDoc.filePath || formularioDoc.rutaArchivo || '';
             const fileNameRaw = formularioDoc.fileName || formularioDoc.nombreArchivo || 'formulario_inscripcion.pdf';
-            
+
             // El filePath ya incluye la ruta relativa desde uploads/, solo necesitamos agregar el prefijo
-            const filePath = filePathRaw.startsWith('/') 
-              ? filePathRaw 
+            const filePath = filePathRaw.startsWith('/')
+              ? filePathRaw
               : `/${uploadDir}/${filePathRaw}`.replace(/\\/g, '/');
-            
+
             formularioInscripcion = {
               filePath: filePath,
               fileName: fileNameRaw,
             };
-            
+
             this.logger.info('[Inscripciones] Formulario de inscripción encontrado', {
               fileName: formularioDoc.fileName,
               filePath: filePath,
