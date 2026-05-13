@@ -178,6 +178,11 @@ const GestionHorariosArmadoPage = () => {
         setDocenteModalOpen(false);
     }, []);
 
+    const handleCursoOfertaSaved = useCallback(() => {
+        ofertaParalelo.refetchOferta();
+        if (paraleloId) refetchSchedule?.(Number(paraleloId));
+    }, [ofertaParalelo, paraleloId, refetchSchedule]);
+
     const tabItems = useMemo(
         () => [
             {
@@ -227,7 +232,7 @@ const GestionHorariosArmadoPage = () => {
                                 deleteCursoLoading={ofertaParalelo.deleteCursoLoading}
                                 handleCrearCursoOferta={ofertaParalelo.handleCrearCursoOferta}
                                 handleActualizarCursoOferta={ofertaParalelo.handleActualizarCursoOferta}
-                                refetchOferta={ofertaParalelo.refetchOferta}
+                                refetchOferta={handleCursoOfertaSaved}
                                 ofertaError={ofertaParalelo.error}
                             />
                         </Spin>
@@ -294,6 +299,7 @@ const GestionHorariosArmadoPage = () => {
             vistaExpandida,
             docentePreview,
             handleOpenDocenteAsignacion,
+            handleCursoOfertaSaved,
         ],
     );
 
