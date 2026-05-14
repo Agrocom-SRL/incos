@@ -14,6 +14,7 @@ USE instituto_incos;
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- Eliminar todas las tablas (orden no importa con foreign key checks deshabilitado)
+DROP TABLE IF EXISTS asignaciones_docentes;
 DROP TABLE IF EXISTS actividades_calendario;
 DROP TABLE IF EXISTS periodos_academicos;
 DROP TABLE IF EXISTS gestiones_planes;
@@ -299,21 +300,52 @@ COMMENT='Calendario académico: instancias de actividades con fechas específica
 -- Vincula QUÉ curso se dicta EN QUÉ plan habilitado CON QUÉ docente.
 -- Preserva historial de asignaciones por gestión para auditoría.
 -- El plan habilitado (gestiones_planes) garantiza coherencia entre curso y plan.
+--
+-- Cambios sincronizados desde servidor/phpMyAdmin:
+-- - practico_override
+-- - teorico_override
+-- - politica_asistencia
+-- - minimo_asistencia
+-- - nota_reprobada
+-- - peso_asistencia
+-- - índice idx_politica_asistencia
+--
+-- Reglas mantenidas:
+-- - Todas las FKs permiten NULL
+-- - Todas las FKs usan ON DELETE SET NULL
+-- - Sin UNIQUE
+-- - Sin CHECK
+-- - Auditoría estándar conservada
+-- ============================================
 
 CREATE TABLE asignaciones_docentes (
     id INT AUTO_INCREMENT PRIMARY KEY,
+
     gestion_plan_id INT NULL COMMENT 'Plan habilitado en la gestión (garantiza que curso pertenece al plan correcto)',
     curso_id INT NULL COMMENT 'Curso (paralelo + materia) que se dicta',
     docente_id INT NULL COMMENT 'Docente asignado (NULL = pendiente de asignación)',
-    
+
     -- Carga horaria
     carga_horaria INT NULL COMMENT 'Horas de docencia por semana en este curso (hereda de asignaturas_plan.horas_semanales si NULL)',
-    
+
+    -- Overrides económicos por docente/asignación
+    practico_override DECIMAL(5,2) NULL COMMENT 'Override de la cuota práctica institucional (cuota_teorico_practico). NULL = usar la cuota institucional de la gestión.',
+    teorico_override DECIMAL(5,2) NULL COMMENT 'Override de la cuota teórica institucional (cuota_teorico_practico). NULL = usar la cuota institucional de la gestión.',
+
+    -- Política de asistencia definida para esta asignación docente
+    politica_asistencia ENUM('NO_AFECTA','COMPUTA_NOTA','CAUSA_REPROBACION')
+        DEFAULT 'NO_AFECTA'
+        COMMENT 'Política del docente sobre asistencia: NO_AFECTA (no influye en la nota), COMPUTA_NOTA (es componente de la nota), CAUSA_REPROBACION (si baja del mínimo, reprueba sin importar las notas)',
+
+    minimo_asistencia DECIMAL(5,2) NULL COMMENT 'Porcentaje mínimo de asistencia exigido (0-100). Solo aplica si politica_asistencia = CAUSA_REPROBACION. Si el estudiante baja de este porcentaje, se aplica nota_si_reprueba_por_asistencia.',
+    nota_reprobada DECIMAL(5,2) NULL COMMENT 'Nota final asignada al estudiante si reprueba por asistencia (ej: 0 o 50). Solo aplica si politica_asistencia = CAUSA_REPROBACION.',
+    peso_asistencia DECIMAL(5,2) NULL COMMENT 'Peso de la asistencia en la nota_final (0-100). Solo aplica si politica_asistencia = COMPUTA_NOTA.',
+
     -- Estado de la asignación
-    vigente BOOLEAN DEFAULT TRUE COMMENT 'Si la asignación está vigente (FALSE = cancelada o rechazada)',
-    motivo TEXT COMMENT 'Motivo de cancelación o rechazo (solo si vigente=FALSE)',
     fecha_asignacion DATE NULL COMMENT 'Fecha en que se asignó el docente',
-    
+    motivo TEXT COMMENT 'Motivo de cancelación o rechazo (solo si vigente=FALSE)',
+    vigente BOOLEAN DEFAULT TRUE COMMENT 'Si la asignación está vigente (FALSE = cancelada o rechazada)',
+
     -- Campos de auditoría y control (ESTÁNDAR)
     activo BOOLEAN DEFAULT TRUE COMMENT 'Indica si el registro está activo',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación del registro',
@@ -322,14 +354,14 @@ CREATE TABLE asignaciones_docentes (
     created_by INT NULL COMMENT 'Usuario que creó',
     updated_by INT NULL COMMENT 'Usuario que modificó',
     deleted_by INT NULL COMMENT 'Usuario que eliminó',
-    
+
     -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
     -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
-    
+
     FOREIGN KEY (gestion_plan_id) REFERENCES gestiones_planes(id) ON DELETE SET NULL,
     FOREIGN KEY (curso_id) REFERENCES cursos(id) ON DELETE SET NULL,
     FOREIGN KEY (docente_id) REFERENCES docentes(id) ON DELETE SET NULL,
-    
+
     INDEX idx_gestion_plan_id (gestion_plan_id) COMMENT 'Búsqueda por plan habilitado',
     INDEX idx_curso_id (curso_id) COMMENT 'Búsqueda por curso',
     INDEX idx_docente_id (docente_id) COMMENT 'Búsqueda por docente',
@@ -338,10 +370,12 @@ CREATE TABLE asignaciones_docentes (
     INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
     INDEX idx_gestion_plan_curso (gestion_plan_id, curso_id, deleted_at) COMMENT 'Búsqueda por plan y curso',
     INDEX idx_gestion_plan_docente (gestion_plan_id, docente_id, vigente, deleted_at) COMMENT 'Carga horaria del docente por gestión',
-    INDEX idx_curso_vigente (curso_id, vigente, deleted_at) COMMENT 'Asignaciones vigentes por curso'
-    
+    INDEX idx_curso_vigente (curso_id, vigente, deleted_at) COMMENT 'Asignaciones vigentes por curso',
+    INDEX idx_politica_asistencia (politica_asistencia) COMMENT 'Filtrado por política de asistencia'
+
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Asignación de docentes a cursos por plan habilitado. Vincula curso + plan_habilitado + docente. Preserva historial para auditoría académica. El docente puede ser NULL (pendiente).';
+
 
 -- ============================================
 -- FASE 3: REHABILITAR FOREIGN KEY CHECKS
