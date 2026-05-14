@@ -45,10 +45,9 @@ DROP TABLE IF EXISTS inscripciones;
 -- ============================================
 -- FASE 2: CREACIÓN DE TABLAS
 -- ============================================
-
 -- ============================================
 -- TABLA: inscripciones
--- Matriculación del estudiante a una gestión académica
+-- Matriculación anual del estudiante a una gestión académica
 -- ============================================
 -- Una inscripción representa la matrícula del estudiante en una gestión específica.
 -- Vincula al estudiante, mediante estudiantes_datos_academicos, con una gestión académica.
@@ -58,32 +57,33 @@ DROP TABLE IF EXISTS inscripciones;
 -- tipo_inscripcion ya no diferencia CONTINUIDAD y REINGRESO.
 -- Ambos casos se agrupan en ANTIGUO, porque el estudiante ya pertenece al instituto.
 --
--- Reglas mantenidas:
--- - Todas las FKs permiten NULL
--- - Todas las FKs usan ON DELETE SET NULL
--- - Sin UNIQUE
--- - Sin CHECK
--- - Auditoría estándar conservada
+-- IMPORTANTE:
+-- estudiantes_datos_academicos.tipo_admision almacena el ORIGEN de admisión del estudiante.
+-- inscripciones.tipo_inscripcion almacena el tipo de inscripción para ESTA gestión.
+--
+-- Ejemplo:
+-- - Primer año: TRASPASO o TRANSITABILIDAD
+-- - Siguiente gestión: ANTIGUO
+--
+-- Los datos específicos de traspaso/transitabilidad se consultan desde sus propias tablas,
+-- mediante estudiantes_datos_academicos.estudiante_id.
 -- ============================================
 
 CREATE TABLE inscripciones (
     id INT AUTO_INCREMENT PRIMARY KEY,
 
     -- Relaciones principales
-    estudiante_datos_academicos_id INT NULL COMMENT 'Datos académicos del estudiante (referencia a estudiantes_datos_academicos). Contiene la carrera y gestión de ingreso.',
-    gestion_id INT NULL COMMENT 'Gestión académica (año lectivo) en la que se inscribe (referencia a gestiones)',
+    datos_academicos_id INT NULL COMMENT 'Datos académicos del estudiante. Permite llegar al estudiante, carrera, gestión de ingreso y tipo de admisión.',
+    gestion_id INT NULL COMMENT 'Gestión académica anual en la que se inscribe',
 
-    -- Tipo de inscripción y vínculos con admisiones especiales
+    -- Tipo de inscripción de esta gestión
     tipo_inscripcion ENUM(
         'NUEVO',
         'ANTIGUO',
         'TRASPASO',
         'TRANSITABILIDAD'
     ) DEFAULT 'ANTIGUO'
-        COMMENT 'Tipo de inscripción alineado con estudiantes_datos_academicos.tipo_admision. ANTIGUO agrupa continuidad y reingreso.',
-
-    traspaso_id INT NULL COMMENT 'Si tipo_inscripcion=TRASPASO, referencia a traspasos. FK se añade en el módulo correspondiente.',
-    transitabilidad_id INT NULL COMMENT 'Si tipo_inscripcion=TRANSITABILIDAD, referencia a transitabilidades. FK se añade en el módulo correspondiente.',
+        COMMENT 'Tipo de inscripción para esta gestión. NUEVO/TRASPASO/TRANSITABILIDAD aplican normalmente a la primera gestión; en gestiones posteriores corresponde ANTIGUO.',
 
     -- Datos del proceso
     fecha_inscripcion DATE NULL COMMENT 'Fecha en que se realizó la inscripción',
@@ -101,22 +101,20 @@ CREATE TABLE inscripciones (
     -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
     -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
 
-    FOREIGN KEY (estudiante_datos_academicos_id) REFERENCES estudiantes_datos_academicos(id) ON DELETE SET NULL,
+    FOREIGN KEY (datos_academicos_id) REFERENCES estudiantes_datos_academicos(id) ON DELETE SET NULL,
     FOREIGN KEY (gestion_id) REFERENCES gestiones(id) ON DELETE SET NULL,
 
     -- Índices para optimización
-    INDEX idx_estudiante_datos_academicos_id (estudiante_datos_academicos_id) COMMENT 'Búsqueda por datos académicos del estudiante',
+    INDEX idx_datos_academicos_id (datos_academicos_id) COMMENT 'Búsqueda por datos académicos del estudiante',
     INDEX idx_gestion_id (gestion_id) COMMENT 'Búsqueda por gestión',
-    INDEX idx_tipo_inscripcion (tipo_inscripcion) COMMENT 'Filtrado por tipo de inscripción',
-    INDEX idx_traspaso_id (traspaso_id) COMMENT 'Búsqueda por traspaso',
-    INDEX idx_transitabilidad_id (transitabilidad_id) COMMENT 'Búsqueda por transitabilidad',
+    INDEX idx_tipo_inscripcion (tipo_inscripcion) COMMENT 'Filtrado por tipo de inscripción en la gestión',
     INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
     INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
-    INDEX idx_estudiante_gestion (estudiante_datos_academicos_id, gestion_id, activo, deleted_at) COMMENT 'Búsqueda de inscripciones por estudiante y gestión',
+    INDEX idx_estudiante_gestion (datos_academicos_id, gestion_id, activo, deleted_at) COMMENT 'Búsqueda de inscripciones por estudiante y gestión',
     INDEX idx_gestion_activo (gestion_id, activo, deleted_at) COMMENT 'Búsqueda de inscripciones por gestión'
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Matriculación del estudiante a una gestión. traspaso_id/transitabilidad_id vinculan con sus módulos. El tipo_inscripcion describe el origen de la admisión.';
+COMMENT='Matriculación anual del estudiante a una gestión. No duplica traspaso_id/transitabilidad_id; esos procesos se consultan desde sus propias tablas mediante el estudiante.';
 
 -- ============================================
 -- TABLA: matriculas_materia
@@ -132,11 +130,16 @@ COMMENT='Matriculación del estudiante a una gestión. traspaso_id/transitabilid
 -- Esta tabla guarda el estado actual consolidado de la materia.
 -- No se inserta una nueva fila por cada cambio de estado.
 --
--- CÁLCULO DE NOTA FINAL (lógica de aplicación):
---   Si nota_final_forzada IS NOT NULL → nota_final = nota_final_forzada
---   Sino → nota_final = SUMA_PONDERADA(4 bimestres + N evaluaciones_finales) / SUMA(pesos)
---   Si nota_final < 61 y hay nota_recuperatorio_anual ≥ 61 → considerar aprobado
---   Estado APROBADO si nota_final >= 61, REPROBADO si < 61.
+-- No guarda recuperatorio anual ni nota forzada. Esos casos viven en
+-- historial_matricula con tipo_estado, nota_resultante y nota_forzada.
+--
+-- CÁLCULO CONSOLIDADO EN APLICACIÓN:
+--   1. Si existe historial_matricula vigente con nota_forzada=TRUE:
+--        nota_final = historial_matricula.nota_resultante
+--   2. Sino, si existe RECUPERATORIO_ANUAL vigente con nota_resultante >= 61:
+--        nota_final = historial_matricula.nota_resultante
+--   3. Sino:
+--        nota_final = SUMA_PONDERADA(4 bimestres + evaluaciones finales)
 -- ============================================
 
 CREATE TABLE matriculas_materia (
@@ -147,14 +150,8 @@ CREATE TABLE matriculas_materia (
     asignacion_docente_id INT NULL COMMENT 'Asignación docente específica: curso + docente + gestion_plan',
     asignatura_plan_id INT NULL COMMENT 'Asignatura del plan. Redundancia controlada para preservar la materia original aunque cambie o se elimine la asignación docente.',
 
-    -- Resumen académico
-    nota_final DECIMAL(5,2) NULL COMMENT 'Nota final calculada (0-100). Caché del cálculo académico final.',
-    nota_recuperatorio_anual DECIMAL(5,2) NULL COMMENT 'Nota del recuperatorio anual de fin de año (0-100)',
-    fecha_recuperatorio_anual DATE NULL COMMENT 'Fecha en que se rindió el recuperatorio anual',
-
-    -- Nota forzada
-    nota_final_forzada DECIMAL(5,2) NULL COMMENT 'Nota final asignada manualmente. Sobrescribe el cálculo automático en casos especiales.',
-    motivo_nota_forzada TEXT COMMENT 'Motivo por el que se forzó la nota final',
+    -- Resultado consolidado/cacheado
+    nota_final DECIMAL(5,2) NULL COMMENT 'Nota final consolidada/cacheada (0-100). Se calcula desde evaluaciones y/o historial_matricula según reglas de aplicación.',
 
     -- Estado actual consolidado de la materia
     estado ENUM(
@@ -192,13 +189,14 @@ CREATE TABLE matriculas_materia (
     INDEX idx_asignacion_docente_id (asignacion_docente_id) COMMENT 'Búsqueda por asignación docente',
     INDEX idx_asignatura_plan_id (asignatura_plan_id) COMMENT 'Búsqueda por asignatura del plan',
     INDEX idx_estado (estado) COMMENT 'Filtrado por estado actual',
+    INDEX idx_nota_final (nota_final) COMMENT 'Búsqueda por nota final consolidada',
     INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
     INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
     INDEX idx_inscripcion_estado (inscripcion_id, estado, activo, deleted_at) COMMENT 'Materias de una inscripción por estado',
     INDEX idx_asignatura_estado (asignatura_plan_id, estado, activo, deleted_at) COMMENT 'Búsqueda de aprobados/reprobados por asignatura'
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Detalle de materias matriculadas por inscripción anual. Guarda una fila por materia cursada en la gestión. El estado actual vive en estado; las fechas normales pueden guardarse en historial_estados JSON; los sucesos especiales viven en historial_matricula.';
+COMMENT='Detalle de materias matriculadas por inscripción anual. Guarda una fila por materia cursada en la gestión; los recuperatorios, notas forzadas y sucesos especiales viven en historial_matricula.';
 
 -- ============================================
 -- TABLA: historial_matricula
@@ -236,6 +234,7 @@ CREATE TABLE historial_matricula (
     tipo_estado ENUM(
         'NIVELACION_1RA',
         'NIVELACION_2DA',
+        'RECUPERATORIO_ANUAL',
         'PRUEBA_EXCEPCIONAL',
         'VENCIDA',
         'CHOQUE_HORARIO',
@@ -249,8 +248,10 @@ CREATE TABLE historial_matricula (
         'OTRO'
     ) NOT NULL COMMENT 'Tipo de suceso especial u operativo según reglamento académico INCOS',
 
-    -- Fecha del suceso
+    -- Fecha y resultado del suceso
     fecha_transicion DATE NULL COMMENT 'Fecha en que ocurrió o se registró el suceso especial',
+    nota_resultante DECIMAL(5,2) NULL COMMENT 'Nota asociada al suceso especial, si aplica. Ej: recuperatorio anual, prueba excepcional, abandono o retiro con nota administrativa.',
+    nota_forzada BOOLEAN DEFAULT FALSE COMMENT 'TRUE si nota_resultante debe sobrescribir el cálculo normal de nota_final de la matrícula.',
 
     -- Detalle del suceso
     observaciones TEXT COMMENT 'Detalle u observación del suceso especial',
@@ -276,14 +277,17 @@ CREATE TABLE historial_matricula (
     INDEX idx_matricula_materia_id (matricula_materia_id) COMMENT 'Búsqueda por matrícula de materia',
     INDEX idx_tipo_estado (tipo_estado) COMMENT 'Filtrado por tipo de suceso especial',
     INDEX idx_fecha_transicion (fecha_transicion) COMMENT 'Búsqueda por fecha del suceso',
+    INDEX idx_nota_resultante (nota_resultante) COMMENT 'Búsqueda por nota asociada al suceso',
+    INDEX idx_nota_forzada (nota_forzada) COMMENT 'Filtrado por notas que sobrescriben el cálculo normal',
     INDEX idx_vigente (vigente) COMMENT 'Filtrado por sucesos vigentes',
     INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
     INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
     INDEX idx_matricula_tipo (matricula_materia_id, tipo_estado, activo, deleted_at) COMMENT 'Historial por tipo de suceso',
-    INDEX idx_matricula_vigente (matricula_materia_id, vigente, activo, deleted_at) COMMENT 'Sucesos vigentes por matrícula'
+    INDEX idx_matricula_vigente (matricula_materia_id, vigente, activo, deleted_at) COMMENT 'Sucesos vigentes por matrícula',
+    INDEX idx_matricula_nota_forzada (matricula_materia_id, nota_forzada, vigente, activo, deleted_at) COMMENT 'Búsqueda de nota forzada vigente por matrícula'
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Historial de sucesos especiales de una matrícula de materia. No registra el ciclo normal de estado; registra nivelaciones, vencimientos, choques de horario, homologaciones, artículo 18, abandonos, retiros y otros casos reglamentarios.';
+COMMENT='Historial de sucesos especiales de una matrícula de materia. Incluye recuperatorio anual y notas forzadas mediante nota_resultante/nota_forzada.';
 
 -- ============================================
 -- FASE 3: REHABILITAR FOREIGN KEY CHECKS
