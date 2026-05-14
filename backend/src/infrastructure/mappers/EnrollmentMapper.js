@@ -1,142 +1,127 @@
 import { Enrollment } from '../../domain/entities/Enrollment.js';
 import { BaseMapper } from './BaseMapper.js';
+import { TIPOS_INSCRIPCION } from '../../domain/constants/inscripciones.constants.js';
 
 /**
  * Mapper: EnrollmentMapper
- * 
- * Responsabilidad única: Conversión entre Modelo ORM (Sequelize) ↔ Entidad de Dominio (Enrollment)
- * 
- * Patrón: Usa BaseMapper para campos comunes, solo maneja campos específicos de Enrollment
- * 
- * Ubicación: Infrastructure Layer (es un detalle de implementación específico de Sequelize)
- * 
- * Principios SOLID aplicados:
- * - Single Responsibility: Solo se encarga de mapear campos específicos de Enrollment
- * - Open/Closed: Extiende funcionalidad de BaseMapper sin modificarlo
- * - Dependency Inversion: Depende de la entidad de dominio, no de implementaciones concretas
- * 
- * Clean Architecture:
- * - Domain Layer: Enrollment (entidad pura)
- * - Infrastructure Layer: BaseMapper (campos comunes) + EnrollmentMapper (campos específicos)
- * - Infrastructure Layer: EnrollmentRepository (usa el mapper para conversiones)
+ *
+ * Convierte entre:
+ * Modelo Sequelize en español: Inscripcion
+ * Entidad de dominio en inglés: Enrollment
+ *
+ * Mapeo:
+ * datosAcademicosId  → academicDataId
+ * gestionId          → managementId
+ * tipoInscripcion    → enrollmentType
+ * fechaInscripcion   → enrollmentDate
+ * observaciones      → observations
  */
 export class EnrollmentMapper {
-  /**
-   * Convierte un modelo Sequelize a entidad de dominio
-   * Usa BaseMapper para campos comunes y solo mapea campos específicos de Enrollment
-   * Solo incluye campos que existen en el modelo (útil cuando se usan attributes limitados)
-   * 
-   * Flujo: Base de Datos → ORM Model → Domain Entity
-   * 
-   * @param {Object|null} model - Modelo Sequelize de Inscripcion
-   * @returns {Enrollment|null} Entidad de dominio Enrollment
-   */
-  static toEntity(model) {
-    if (!model) return null;
+    /**
+     * Convierte un modelo Sequelize a entidad de dominio.
+     *
+     * @param {Object|null} model - Modelo Sequelize Inscripcion
+     * @returns {Enrollment|null}
+     */
+    static toEntity(model) {
+        if (!model) return null;
 
-    // Campos específicos de Enrollment (campos del dominio)
-    // Acceder a dataValues para obtener solo los campos solicitados
-    // Cuando se usan attributes limitados, Sequelize almacena los campos en dataValues
-    const dataValues = model.dataValues || model;
-    const specificFields = {};
-    
-    // Mapeo: BD (snake_case español) → Dominio (camelCase inglés)
-    if ('estudianteDatosAcademicosId' in dataValues && dataValues.estudianteDatosAcademicosId !== undefined) {
-      specificFields.studentAcademicDataId = dataValues.estudianteDatosAcademicosId;
-    }
-    if ('gestionId' in dataValues && dataValues.gestionId !== undefined) {
-      specificFields.managementId = dataValues.gestionId;
-    }
-    if ('tipoInscripcion' in dataValues && dataValues.tipoInscripcion !== undefined) {
-      specificFields.enrollmentType = dataValues.tipoInscripcion;
-    }
-    if ('fechaInscripcion' in dataValues && dataValues.fechaInscripcion !== undefined) {
-      specificFields.enrollmentDate = dataValues.fechaInscripcion;
-    }
-    if ('observaciones' in dataValues && dataValues.observaciones !== undefined) {
-      specificFields.observations = dataValues.observaciones;
-    }
+        const dataValues = model.dataValues || model;
+        const specificFields = {};
 
-    // Combina campos base (id, active, timestamps, audit) con campos específicos
-    const entityData = BaseMapper.combineBaseAndSpecificFields(model, specificFields);
-    
-    return new Enrollment(entityData);
-  }
+        if ('datosAcademicosId' in dataValues && dataValues.datosAcademicosId !== undefined) {
+            specificFields.academicDataId = dataValues.datosAcademicosId;
+        }
 
-  /**
-   * Convierte una entidad de dominio a formato del modelo Sequelize (para creación)
-   * 
-   * Flujo: Domain Entity → ORM Model → Base de Datos (INSERT)
-   * 
-   * NOTA: 'activo' NO se incluye aquí porque BaseRepository.create() lo maneja
-   * BaseRepository establece: activo: data.activo !== undefined ? data.activo : true
-   * 
-   * @param {Enrollment|Object} entity - Entidad Enrollment o objeto con datos de dominio
-   * @returns {Object} Objeto con formato del modelo Sequelize
-   */
-  static toModel(entity) {
-    // Acepta tanto entidad Enrollment como objeto plano
-    const data = entity instanceof Enrollment ? entity.toPlainObject() : entity;
+        if ('gestionId' in dataValues && dataValues.gestionId !== undefined) {
+            specificFields.managementId = dataValues.gestionId;
+        }
 
-    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
-    return {
-      estudianteDatosAcademicosId: data.studentAcademicDataId || null,
-      gestionId: data.managementId || null,
-      tipoInscripcion: data.enrollmentType || 'CONTINUIDAD',
-      fechaInscripcion: data.enrollmentDate || null,
-      observaciones: data.observations || null,
-    };
-  }
+        if ('tipoInscripcion' in dataValues && dataValues.tipoInscripcion !== undefined) {
+            specificFields.enrollmentType = dataValues.tipoInscripcion;
+        }
 
-  /**
-   * Convierte una entidad de dominio a formato del modelo Sequelize (para actualización)
-   * Solo incluye los campos que están definidos (que existen en la entidad)
-   * Usa BaseMapper para campos comunes y solo mapea campos específicos de Enrollment
-   * 
-   * Flujo: Domain Entity → ORM Model → Base de Datos (UPDATE)
-   * 
-   * @param {Enrollment|Object} entity - Entidad Enrollment o objeto con datos de dominio
-   * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
-   */
-  static toModelForUpdate(entity) {
-    // Acepta tanto entidad Enrollment como objeto plano
-    const data = entity instanceof Enrollment ? entity.toPlainObject() : entity;
-    const updateData = {};
+        if ('fechaInscripcion' in dataValues && dataValues.fechaInscripcion !== undefined) {
+            specificFields.enrollmentDate = dataValues.fechaInscripcion;
+        }
 
-    // Campos específicos de Enrollment
-    // Solo incluir campos que existen en la entidad (usando operador 'in')
-    // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
-    if ('studentAcademicDataId' in data) {
-      updateData.estudianteDatosAcademicosId = data.studentAcademicDataId || null;
-    }
-    if ('managementId' in data) {
-      updateData.gestionId = data.managementId || null;
-    }
-    if ('enrollmentType' in data) {
-      updateData.tipoInscripcion = data.enrollmentType;
-    }
-    if ('enrollmentDate' in data) {
-      updateData.fechaInscripcion = data.enrollmentDate || null;
-    }
-    if ('observations' in data) {
-      updateData.observaciones = data.observations || null;
+        if ('observaciones' in dataValues && dataValues.observaciones !== undefined) {
+            specificFields.observations = dataValues.observaciones;
+        }
+
+        const entityData = BaseMapper.combineBaseAndSpecificFields(model, specificFields);
+
+        return new Enrollment(entityData);
     }
 
-    // Campos base (active/activo)
-    const baseFields = BaseMapper.baseFieldsToModelForUpdate(entity);
-    Object.assign(updateData, baseFields);
+    /**
+     * Convierte entidad de dominio a formato del modelo Sequelize para creación.
+     *
+     * @param {Enrollment|Object} entity
+     * @returns {Object}
+     */
+    static toModel(entity) {
+        const data = entity instanceof Enrollment ? entity.toPlainObject() : entity;
 
-    return updateData;
-  }
+        return {
+            datosAcademicosId: data.academicDataId ?? null,
+            gestionId: data.managementId ?? null,
+            tipoInscripcion: data.enrollmentType ?? TIPOS_INSCRIPCION.ANTIGUO,
+            fechaInscripcion: data.enrollmentDate ?? null,
+            observaciones: data.observations ?? null,
+        };
+    }
 
-  /**
-   * Convierte un array de modelos Sequelize a array de entidades de dominio
-   * 
-   * @param {Array} models - Array de modelos Sequelize
-   * @returns {Enrollment[]} Array de entidades Enrollment
-   */
-  static toEntityList(models) {
-    if (!models || !Array.isArray(models)) return [];
-    return models.map((model) => this.toEntity(model)).filter((entity) => entity !== null);
-  }
+    /**
+     * Convierte entidad de dominio a formato del modelo Sequelize para actualización.
+     * Solo incluye campos definidos.
+     *
+     * @param {Enrollment|Object} entity
+     * @returns {Object}
+     */
+    static toModelForUpdate(entity) {
+        const data = entity instanceof Enrollment ? entity.toPlainObject() : entity;
+        const updateData = {};
+
+        if ('academicDataId' in data) {
+            updateData.datosAcademicosId = data.academicDataId ?? null;
+        }
+
+        if ('managementId' in data) {
+            updateData.gestionId = data.managementId ?? null;
+        }
+
+        if ('enrollmentType' in data) {
+            updateData.tipoInscripcion = data.enrollmentType;
+        }
+
+        if ('enrollmentDate' in data) {
+            updateData.fechaInscripcion = data.enrollmentDate ?? null;
+        }
+
+        if ('observations' in data) {
+            updateData.observaciones = data.observations ?? null;
+        }
+
+        const baseFields = BaseMapper.baseFieldsToModelForUpdate(entity);
+        Object.assign(updateData, baseFields);
+
+        return updateData;
+    }
+
+    /**
+     * Convierte un array de modelos Sequelize a entidades.
+     *
+     * @param {Array} models
+     * @returns {Enrollment[]}
+     */
+    static toEntityList(models) {
+        if (!models || !Array.isArray(models)) return [];
+
+        return models
+            .map((model) => this.toEntity(model))
+            .filter((entity) => entity !== null);
+    }
 }
+
+export default EnrollmentMapper;

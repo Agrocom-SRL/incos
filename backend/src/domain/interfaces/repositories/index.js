@@ -89,8 +89,9 @@ export { IEstudianteApoderadoRepository } from './IEstudianteApoderadoRepository
 // ============================================
 // INSCRIPCIONES
 // ============================================
-export { IEnrollmentRepository } from './IEnrollmentRepository.js';
-export { IEnrollmentSubjectRepository } from './IEnrollmentSubjectRepository.js';
+export { IInscripcionRepository } from './IInscripcionRepository.js';
+export { IMatriculaMateriaRepository } from './IMatriculaMateriaRepository.js';
+export { IHistorialMatriculaRepository } from './IHistorialMatriculaRepository.js';
 
 // ============================================
 // PAGOS ACADÉMICOS

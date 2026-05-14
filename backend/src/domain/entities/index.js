@@ -87,7 +87,8 @@ export { StudentGuardian } from './StudentGuardian.js';
 // INSCRIPCIONES
 // ============================================
 export { Enrollment } from './Enrollment.js';
-export { EnrollmentSubject } from './EnrollmentSubject.js';
+export { SubjectEnrollment } from './SubjectEnrollment.js';
+export { SubjectEnrollmentHistory } from './SubjectEnrollmentHistory.js';
 
 // ============================================
 // CONFIGURACIÓN DEL SISTEMA

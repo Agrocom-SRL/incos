@@ -1,119 +1,102 @@
 import { BaseEntity } from './BaseEntity.js';
-import { TIPOS_INSCRIPCION_VALUES, TIPOS_INSCRIPCION } from '../constants/inscripciones.constants.js';
+import {
+    TIPOS_INSCRIPCION_VALUES,
+    TIPOS_INSCRIPCION,
+} from '../constants/inscripciones.constants.js';
 
 /**
- * Entidad de Dominio: Enrollment
- * Representa la inscripción de un estudiante a una gestión académica
+ * Domain Entity: Enrollment
+ * Represents the annual enrollment of a student in an academic management period.
  */
 export class Enrollment extends BaseEntity {
-  constructor(data = {}) {
-    super(data);
-    // Solo inicializar campos si fueron proporcionados explícitamente
-    // Esto permite usar attributes limitados sin inicializar campos no solicitados
-    if (data.hasOwnProperty('studentAcademicDataId')) {
-      this.studentAcademicDataId = data.studentAcademicDataId;
-    }
-    if (data.hasOwnProperty('managementId')) {
-      this.managementId = data.managementId;
-    }
-    if (data.hasOwnProperty('enrollmentType')) {
-      this.enrollmentType = data.enrollmentType;
-    } else if (!data.hasOwnProperty('studentAcademicDataId')) {
-      // Solo usar valor por defecto si no se está usando attributes limitados
-      // (si no tiene studentAcademicDataId, asumimos que es una entidad completa)
-      this.enrollmentType = TIPOS_INSCRIPCION.NUEVO;
-    }
-    if (data.hasOwnProperty('enrollmentDate')) {
-      this.enrollmentDate = data.enrollmentDate;
-    }
-    if (data.hasOwnProperty('observations')) {
-      this.observations = data.observations;
-    }
-  }
+    constructor(data = {}) {
+        super(data);
 
-  /**
-   * Valida el tipo de inscripción
-   * @returns {boolean}
-   */
-  isValidEnrollmentType() {
-    if (!this.enrollmentType) return false;
-    return TIPOS_INSCRIPCION_VALUES.includes(this.enrollmentType);
-  }
+        if (data.hasOwnProperty('academicDataId')) {
+            this.academicDataId = data.academicDataId;
+        }
 
-  /**
-   * Verifica si es una inscripción de estudiante nuevo
-   * @returns {boolean}
-   */
-  isNewStudent() {
-    return this.enrollmentType === TIPOS_INSCRIPCION.NUEVO;
-  }
+        if (data.hasOwnProperty('managementId')) {
+            this.managementId = data.managementId;
+        }
 
-  /**
-   * Verifica si es una inscripción de continuidad
-   * @returns {boolean}
-   */
-  isContinuity() {
-    return this.enrollmentType === TIPOS_INSCRIPCION.CONTINUIDAD;
-  }
+        if (data.hasOwnProperty('enrollmentType')) {
+            this.enrollmentType = data.enrollmentType;
+        } else if (!data.hasOwnProperty('academicDataId')) {
+            this.enrollmentType = TIPOS_INSCRIPCION.ANTIGUO;
+        }
 
-  /**
-   * Verifica si es una inscripción de reingreso
-   * @returns {boolean}
-   */
-  isReentry() {
-    return this.enrollmentType === TIPOS_INSCRIPCION.REINGRESO;
-  }
+        if (data.hasOwnProperty('enrollmentDate')) {
+            this.enrollmentDate = data.enrollmentDate;
+        }
 
-  /**
-   * Verifica si es un traspaso (de otro instituto)
-   * @returns {boolean}
-   */
-  isTransferBetweenCampuses() {
-    return this.enrollmentType === TIPOS_INSCRIPCION.TRASPASO;
-  }
-
-  /**
-   * Verifica si es transitabilidad (Técnico Medio → solo materias complementarias)
-   * @returns {boolean}
-   */
-  isTransitabilidadEntrada() {
-    return this.enrollmentType === TIPOS_INSCRIPCION.TRANSITABILIDAD;
-  }
-
-  /**
-   * Convierte la entidad a objeto plano
-   * Solo incluye campos que existen en la instancia (fueron inicializados)
-   * @returns {Object}
-   */
-  toPlainObject() {
-    const plainObject = super.toPlainObject();
-    
-    // Solo incluir campos que fueron inicializados (existen en this)
-    if (this.hasOwnProperty('studentAcademicDataId')) {
-      plainObject.studentAcademicDataId = this.studentAcademicDataId;
-    }
-    if (this.hasOwnProperty('managementId')) {
-      plainObject.managementId = this.managementId;
-    }
-    if (this.hasOwnProperty('enrollmentType')) {
-      plainObject.enrollmentType = this.enrollmentType;
-    }
-    if (this.hasOwnProperty('enrollmentDate')) {
-      plainObject.enrollmentDate = this.enrollmentDate;
-    }
-    if (this.hasOwnProperty('observations')) {
-      plainObject.observations = this.observations;
+        if (data.hasOwnProperty('observations')) {
+            this.observations = data.observations;
+        }
     }
 
-    return plainObject;
-  }
+    isValidEnrollmentType() {
+        if (!this.enrollmentType) return false;
+        return TIPOS_INSCRIPCION_VALUES.includes(this.enrollmentType);
+    }
 
-  /**
-   * Convierte la entidad a JSON
-   * Usa toPlainObject() para serialización
-   * @returns {Object}
-   */
-  toJSON() {
-    return this.toPlainObject();
-  }
+    isNewStudent() {
+        return this.enrollmentType === TIPOS_INSCRIPCION.NUEVO;
+    }
+
+    isOldStudent() {
+        return this.enrollmentType === TIPOS_INSCRIPCION.ANTIGUO;
+    }
+
+    isTransfer() {
+        return this.enrollmentType === TIPOS_INSCRIPCION.TRASPASO;
+    }
+
+    isTransitability() {
+        return this.enrollmentType === TIPOS_INSCRIPCION.TRANSITABILIDAD;
+    }
+
+    /**
+     * Backward compatibility.
+     * REINGRESO and CONTINUIDAD are now represented as ANTIGUO.
+     */
+    isContinuity() {
+        return this.isOldStudent();
+    }
+
+    isReentry() {
+        return this.isOldStudent();
+    }
+
+    toPlainObject() {
+        const plainObject = super.toPlainObject();
+
+        if (this.hasOwnProperty('academicDataId')) {
+            plainObject.academicDataId = this.academicDataId;
+        }
+
+        if (this.hasOwnProperty('managementId')) {
+            plainObject.managementId = this.managementId;
+        }
+
+        if (this.hasOwnProperty('enrollmentType')) {
+            plainObject.enrollmentType = this.enrollmentType;
+        }
+
+        if (this.hasOwnProperty('enrollmentDate')) {
+            plainObject.enrollmentDate = this.enrollmentDate;
+        }
+
+        if (this.hasOwnProperty('observations')) {
+            plainObject.observations = this.observations;
+        }
+
+        return plainObject;
+    }
+
+    toJSON() {
+        return this.toPlainObject();
+    }
 }
+
+export default Enrollment;

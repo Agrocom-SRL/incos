@@ -86,7 +86,8 @@ export { EstudianteApoderado } from './estudiante_apoderado.js';
 // INSCRIPCIONES
 // ============================================
 export { Inscripcion } from './inscripcion.js';
-export { InscripcionMateria } from './inscripcion_materia.js';
+export { MatriculaMateria } from './matricula_materia.js';
+export { HistorialMatricula } from './historial_matricula.js';
 
 // ============================================
 // PAGOS ACADÉMICOS
