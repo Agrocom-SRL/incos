@@ -227,7 +227,7 @@ export const createInscripcionesTableColumns = (navigate, refetch = null, delete
           { label: 'Gestión', value: gestionAnio },
         ].filter(detail => detail.value && detail.value !== 'N/A' && detail.value !== 'Sin nombre');
 
-        // Permitir editar todos los tipos de inscripción (NUEVO, REINGRESO, CONTINUIDAD, TRASPASO, TRANSITABILIDAD)
+        // Permitir editar todos los tipos de inscripción (NUEVO, ANTIGUO, TRASPASO, TRANSITABILIDAD)
         const canEdit = true;
 
         // Extraer datos necesarios para la edición

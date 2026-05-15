@@ -217,8 +217,7 @@ export const useInscripcionNuevaFormHandlers = (mode = 'nuevo', options = {}) =>
         }
 
         const periodoId = selectedPeriod?.id ?? formValues.periodo_id ?? formValues.periodo;
-        const rawEnrollmentType = formValues.enrollment_type || tipoAdmision || 'NUEVO';
-        const enrollmentTypeForApi = rawEnrollmentType === 'ANTIGUO' ? 'CONTINUIDAD' : rawEnrollmentType;
+        const enrollmentTypeForApi = formValues.enrollment_type || tipoAdmision || 'NUEVO';
         const inscripcionData = {
             student_id: studentId,
             periodo_id: periodoId ?? undefined,
@@ -319,8 +318,7 @@ export const useInscripcionNuevaFormHandlers = (mode = 'nuevo', options = {}) =>
         }
 
         const periodoId = selectedPeriod?.id ?? formValues.periodo_id ?? formValues.periodo;
-        const rawEnrollmentTypeSave = formValues.enrollment_type || tipoAdmision || 'NUEVO';
-        const enrollmentTypeForApiSave = rawEnrollmentTypeSave === 'ANTIGUO' ? 'CONTINUIDAD' : rawEnrollmentTypeSave;
+        const enrollmentTypeForApiSave = formValues.enrollment_type || tipoAdmision || 'NUEVO';
         const inscripcionData = {
             student_id: studentId,
             periodo_id: periodoId ?? undefined,

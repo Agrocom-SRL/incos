@@ -55,7 +55,7 @@ export const useCreateInscripcion = () => {
    * @param {Object} formValues - Valores del formulario
    * @param {number} formValues.student_id - ID del estudiante (requerido)
    * @param {number} formValues.parallel_id - ID del paralelo (requerido)
-   * @param {string} [formValues.enrollment_type] - Tipo de inscripción (NUEVO, CONTINUIDAD, REINGRESO, etc.) - opcional
+   * @param {string} [formValues.enrollment_type] - Tipo de inscripción (NUEVO, ANTIGUO, TRASPASO, TRANSITABILIDAD, etc.) - opcional
    * @param {string} [formValues.observations] - Observaciones (opcional)
    * @returns {Promise<{success: boolean, data?: Object, error?: string, validationErrors?: Array}>}
    */

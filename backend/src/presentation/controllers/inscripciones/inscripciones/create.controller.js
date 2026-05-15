@@ -15,7 +15,7 @@
  * - student_id: ID del estudiante (requerido)
  * - parallel_id: ID del paralelo (opcional si se envía teacher_assignment_ids)
  * - teacher_assignment_ids: Array de IDs de asignaciones docentes (opcional)
- * - enrollment_type: Tipo de inscripción (NUEVO, CONTINUIDAD, REINGRESO, etc.) - opcional
+ * - enrollment_type: Tipo de inscripción (NUEVO, ANTIGUO, TRASPASO, TRANSITABILIDAD, etc.) - opcional
  * - observations: Observaciones (opcional)
  * 
  * NOTA: enrollment_date NO se envía desde el frontend; el backend lo genera automáticamente

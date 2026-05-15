@@ -134,7 +134,7 @@ export class CreateEnrollmentUseCase {
    * @param {number} [data.parallelId] - ID del paralelo (requerido si no se envía teacherAssignmentIds)
    * @param {number[]} [data.teacherAssignmentIds] - IDs de asignaciones docentes (opcional; permite inscribir
    *   materias de diferentes paralelos/periodos en una sola inscripción. Todas deben pertenecer al mismo plan habilitado)
-   * @param {string} [data.enrollmentType] - Tipo de inscripción (NUEVO, REINGRESO, CONTINUIDAD, etc.)
+   * @param {string} [data.enrollmentType] - Tipo de inscripción (NUEVO, ANTIGUO, TRASPASO, TRANSITABILIDAD, etc.)
    * @param {string} [data.observations] - Observaciones (opcional)
    * @returns {Promise<Object>} Inscripción creada con materias asociadas
    * 

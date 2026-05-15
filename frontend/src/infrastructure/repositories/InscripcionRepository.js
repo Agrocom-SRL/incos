@@ -85,7 +85,7 @@ export class InscripcionRepository extends IInscripcionRepository {
    * @param {Object} data - Datos de la inscripción a crear
    * @param {number} data.student_id - ID del estudiante (requerido)
    * @param {number} data.parallel_id - ID del paralelo (requerido)
-   * @param {string} [data.enrollment_type] - Tipo de inscripción (NUEVO, CONTINUIDAD, REINGRESO, etc.) - opcional
+   * @param {string} [data.enrollment_type] - Tipo de inscripción (NUEVO, ANTIGUO, TRASPASO, TRANSITABILIDAD, etc.) - opcional
    * @param {string} [data.observations] - Observaciones (opcional)
    * @returns {Promise<{success: boolean, data?: Object, error?: string, validationErrors?: Object}>}
    */

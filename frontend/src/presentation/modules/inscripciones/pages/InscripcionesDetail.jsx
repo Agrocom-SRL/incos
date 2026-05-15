@@ -138,7 +138,7 @@ const InscripcionesDetail = () => {
   ], []);
 
   const tipoInscripcion = inscripcion?.enrollment?.tipoInscripcion ?? inscripcion?.enrollment?.tipo_inscripcion ?? null;
-  const canEdit = tipoInscripcion && ['NUEVO', 'REINGRESO', 'CONTINUIDAD'].includes(tipoInscripcion);
+  const canEdit = tipoInscripcion && ['NUEVO', 'ANTIGUO', 'TRASPASO', 'TRANSITABILIDAD'].includes(tipoInscripcion);
 
   const headerActions = (
     <button type="button" className="sd-btn sd-btn--outline" onClick={handleVolverAtras}>
@@ -169,8 +169,7 @@ const InscripcionesDetail = () => {
   const getEnrollmentTypeColor = (type) => {
     const typeColors = {
       'NUEVO': 'green',
-      'REINGRESO': 'orange',
-      'CONTINUIDAD': 'blue',
+      'ANTIGUO': 'orange',
       'TRASPASO': 'cyan',
       'TRANSITABILIDAD': 'gold',
     };

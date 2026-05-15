@@ -58,7 +58,7 @@ export class Enrollment extends BaseEntity {
 
     /**
      * Backward compatibility.
-     * REINGRESO and CONTINUIDAD are now represented as ANTIGUO.
+     * ANTIGUO is now represented as ANTIGUO.
      */
     isContinuity() {
         return this.isOldStudent();

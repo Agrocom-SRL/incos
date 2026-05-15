@@ -37,7 +37,7 @@ export class CrearInscripcionUseCase {
    * @param {number} [datosInscripcion.parallel_id] - ID del paralelo (requerido si no se envía selección por periodo)
    * @param {Object} [datosInscripcion.parallel_ids_by_period] - { periodId: parallelId } para inscripción por materias (ANTIGUO)
    * @param {Object} [datosInscripcion.materia_ids_by_period] - { periodId: [materiaIds] } para inscripción por materias (ANTIGUO)
-   * @param {string} [datosInscripcion.enrollment_type] - Tipo de inscripción (NUEVO, CONTINUIDAD, REINGRESO, etc.) - opcional
+   * @param {string} [datosInscripcion.enrollment_type] - Tipo de inscripción (NUEVO, ANTIGUO, TRASPASO, TRANSITABILIDAD, etc.) - opcional
    * @param {string} [datosInscripcion.observations] - Observaciones (opcional)
    * @returns {Promise<{success: boolean, data?: Object, error?: string, validationErrors?: Array}>}
    * 

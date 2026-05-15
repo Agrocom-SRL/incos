@@ -96,8 +96,8 @@ export const createEnrollmentValidator = [
   // ============================================
   body('enrollment_type')
     .optional()
-    .isIn(['NUEVO', 'REINGRESO', 'CONTINUIDAD', 'TRASPASO', 'TRANSITABILIDAD'])
-    .withMessage('El tipo de inscripción debe ser uno de: NUEVO, REINGRESO, CONTINUIDAD, TRASPASO, TRANSITABILIDAD'),
+    .isIn(['NUEVO', 'ANTIGUO', 'TRASPASO', 'TRANSITABILIDAD'])
+    .withMessage('El tipo de inscripción debe ser uno de: NUEVO, ANTIGUO, TRASPASO, TRANSITABILIDAD'),
 
   // NOTA: enrollment_date NO se valida aquí porque el backend lo genera automáticamente
   // en CreateEnrollmentUseCase._createEnrollment() usando la fecha actual
