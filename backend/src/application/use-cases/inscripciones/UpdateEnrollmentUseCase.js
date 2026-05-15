@@ -28,7 +28,7 @@ export class UpdateEnrollmentUseCase {
    */
   constructor({
     enrollmentRepository,
-    enrollmentSubjectRepository,
+    subjectEnrollmentRepository,
     studentAcademicDataRepository,
     parallelRepository,
     courseRepository,
@@ -40,7 +40,7 @@ export class UpdateEnrollmentUseCase {
     logger,
   }) {
     this.enrollmentRepository = enrollmentRepository;
-    this.enrollmentSubjectRepository = enrollmentSubjectRepository;
+    this.subjectEnrollmentRepository = subjectEnrollmentRepository;
     this.studentAcademicDataRepository = studentAcademicDataRepository;
     this.parallelRepository = parallelRepository;
     this.courseRepository = courseRepository;
@@ -141,17 +141,17 @@ export class UpdateEnrollmentUseCase {
    * @private
    */
   async _resolveTeacherAssignmentsForUpdate(enrollmentPlain, parallelId, teacherAssignmentIds) {
-    const studentAcademicDataId = enrollmentPlain.studentAcademicDataId ?? enrollmentPlain.studentAcademicData_id;
+    const academicDataId = enrollmentPlain.academicDataId ?? enrollmentPlain.studentAcademicData_id;
     const managementId = enrollmentPlain.managementId ?? enrollmentPlain.management_id;
-    if (!studentAcademicDataId || !managementId) {
+    if (!academicDataId || !managementId) {
       throw new ValidationError(
         'La inscripción no tiene datos académicos o gestión asociados; no se puede actualizar el detalle de materias.'
       );
     }
 
-    const studentAcademicData = await this.studentAcademicDataRepository.findById(studentAcademicDataId);
+    const studentAcademicData = await this.studentAcademicDataRepository.findById(academicDataId);
     if (!studentAcademicData) {
-      throw new NotFoundError(`Datos académicos con ID ${studentAcademicDataId}`);
+      throw new NotFoundError(`Datos académicos con ID ${academicDataId}`);
     }
     const management = await this.managementRepository.findById(managementId);
     if (!management) {
@@ -185,11 +185,11 @@ export class UpdateEnrollmentUseCase {
     );
     if (periodIds.length === 0) return [];
 
-    const studentAcademicDataId = enrollmentPlain.studentAcademicDataId ?? enrollmentPlain.studentAcademicData_id;
+    const academicDataId = enrollmentPlain.academicDataId ?? enrollmentPlain.studentAcademicData_id;
     const managementId = enrollmentPlain.managementId ?? enrollmentPlain.management_id;
-    if (!studentAcademicDataId || !managementId) return [];
+    if (!academicDataId || !managementId) return [];
 
-    const studentAcademicData = await this.studentAcademicDataRepository.findById(studentAcademicDataId);
+    const studentAcademicData = await this.studentAcademicDataRepository.findById(academicDataId);
     const management = await this.managementRepository.findById(managementId);
     if (!studentAcademicData || !management) return [];
 
@@ -344,7 +344,7 @@ export class UpdateEnrollmentUseCase {
   }
 
   async _deleteEnrollmentSubjects(enrollmentId) {
-    const result = await this.enrollmentSubjectRepository.findAll(
+    const result = await this.subjectEnrollmentRepository.findAll(
       { enrollmentId, active: true },
       null,
       null
@@ -353,7 +353,7 @@ export class UpdateEnrollmentUseCase {
     for (const es of list) {
       const plain = es.toPlainObject ? es.toPlainObject() : es;
       if (plain.id) {
-        await this.enrollmentSubjectRepository.delete(plain.id);
+        await this.subjectEnrollmentRepository.delete(plain.id);
       }
     }
     this.logger.info('[Inscripciones] Materias inscritas anteriores eliminadas', {
@@ -366,7 +366,7 @@ export class UpdateEnrollmentUseCase {
     const enrollmentId = enrollment.id ?? enrollment.Id;
     for (const assignment of teacherAssignments) {
       const assignmentId = assignment.id ?? assignment.Id;
-      await this.enrollmentSubjectRepository.create({
+      await this.subjectEnrollmentRepository.create({
         enrollmentId,
         teacherAssignmentId: assignmentId,
         status: ESTADOS_MATERIA_INSCRITA.INSCRITO,
@@ -381,7 +381,7 @@ export class UpdateEnrollmentUseCase {
   }
 
   async _findEnrollmentSubjects(enrollmentId) {
-    const result = await this.enrollmentSubjectRepository.findAll(
+    const result = await this.subjectEnrollmentRepository.findAll(
       { enrollmentId, active: true },
       null,
       null

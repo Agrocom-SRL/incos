@@ -33,7 +33,7 @@ export function entityToPresentation(enrollment) {
   // Mapear campos específicos de Enrollment
   // Solo incluir campos que existen en la entidad (usando mapFieldIfExists)
   // Esto es importante cuando se usan attributes limitados en las consultas
-  BaseMapper.mapFieldIfExists(enrollment, 'studentAcademicDataId', 'estudianteDatosAcademicosId', presentation);
+  BaseMapper.mapFieldIfExists(enrollment, 'academicDataId', 'datosAcademicosId', presentation);
   BaseMapper.mapFieldIfExists(enrollment, 'managementId', 'gestionId', presentation);
   BaseMapper.mapFieldIfExists(enrollment, 'enrollmentType', 'tipoInscripcion', presentation);
   BaseMapper.mapFieldIfExists(enrollment, 'enrollmentDate', 'fechaInscripcion', presentation);

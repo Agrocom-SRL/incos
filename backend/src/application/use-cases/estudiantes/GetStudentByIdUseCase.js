@@ -328,7 +328,7 @@ export class GetStudentByIdUseCase {
               if (academicDataPlain.id) {
                 try {
                   const enrollmentsResult = await this.enrollmentRepository.findAll(
-                    { studentAcademicDataId: academicDataPlain.id },
+                    { academicDataId: academicDataPlain.id },
                     null,
                     null
                   );

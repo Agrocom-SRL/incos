@@ -31,7 +31,7 @@ export class GetEnrollmentByIdUseCase {
   /**
    * @param {Object} params - Dependencias inyectadas
    * @param {Object} params.enrollmentRepository - Repositorio de inscripciones
-   * @param {Object} params.enrollmentSubjectRepository - Repositorio de materias inscritas
+   * @param {Object} params.subjectEnrollmentRepository - Repositorio de materias inscritas
    * @param {Object} params.studentAcademicDataRepository - Repositorio de datos académicos
    * @param {Object} params.studentRepository - Repositorio de estudiantes
    * @param {Object} params.careerRepository - Repositorio de carreras
@@ -49,7 +49,7 @@ export class GetEnrollmentByIdUseCase {
    */
   constructor({
     enrollmentRepository,
-    enrollmentSubjectRepository,
+    subjectEnrollmentRepository,
     studentAcademicDataRepository,
     studentRepository,
     careerRepository,
@@ -68,7 +68,7 @@ export class GetEnrollmentByIdUseCase {
     logger,
   }) {
     this.enrollmentRepository = enrollmentRepository;
-    this.enrollmentSubjectRepository = enrollmentSubjectRepository;
+    this.subjectEnrollmentRepository = subjectEnrollmentRepository;
     this.studentAcademicDataRepository = studentAcademicDataRepository;
     this.studentRepository = studentRepository;
     this.careerRepository = careerRepository;
@@ -90,7 +90,7 @@ export class GetEnrollmentByIdUseCase {
   /**
    * Método interno para obtener una inscripción por ID
    * Valida que la inscripción exista y lanza ValidationError si no se encuentra
-   * Solo recupera los campos necesarios: id, studentAcademicDataId, managementId, enrollmentType
+   * Solo recupera los campos necesarios: id, academicDataId, managementId, enrollmentType
    * 
    * @private
    * @param {number} enrollmentId - ID de la inscripción a obtener
@@ -100,7 +100,7 @@ export class GetEnrollmentByIdUseCase {
   async _getEnrollmentById(enrollmentId) {
     // Obtener solo los campos necesarios usando los nombres del modelo Sequelize
     const enrollment = await this.enrollmentRepository.findById(enrollmentId, {
-      attributes: ['id', 'estudianteDatosAcademicosId', 'gestionId', 'tipoInscripcion'],
+      attributes: ['id', 'datosAcademicosId', 'gestionId', 'tipoInscripcion'],
     });
 
     // Si se proporciona ID pero no se encuentra, lanzar ValidationError (inconsistencia de datos)
@@ -119,19 +119,19 @@ export class GetEnrollmentByIdUseCase {
    * Solo recupera los campos necesarios: estudianteId, carreraId, estadoRegistro
    * 
    * @private
-   * @param {number|null|undefined} studentAcademicDataId - ID de los datos académicos del estudiante
+   * @param {number|null|undefined} academicDataId - ID de los datos académicos del estudiante
    * @returns {Promise<Object|null>} Datos académicos encontrados o null si no se proporciona ID
    * @throws {ValidationError} Si se proporciona ID pero no se encuentra el registro
    */
-  async _getStudentAcademicDataById(studentAcademicDataId) {
+  async _getStudentAcademicDataById(academicDataId) {
     // Si no se proporciona ID, retornar null (es opcional)
-    if (!studentAcademicDataId) {
+    if (!academicDataId) {
       return null;
     }
 
     // Obtener solo los campos necesarios usando los nombres del modelo Sequelize
     const studentAcademicData = await this.studentAcademicDataRepository.findById(
-      studentAcademicDataId,
+      academicDataId,
       {
         attributes: ['id', 'estudianteId', 'carreraId', 'estadoRegistro'],
       }
@@ -140,7 +140,7 @@ export class GetEnrollmentByIdUseCase {
     // Si se proporciona ID pero no se encuentra, lanzar ValidationError (inconsistencia de datos)
     if (!studentAcademicData) {
       throw new ValidationError(
-        `No se encontraron datos académicos del estudiante con ID ${studentAcademicDataId}`,
+        `No se encontraron datos académicos del estudiante con ID ${academicDataId}`,
       );
     }
 
@@ -268,7 +268,7 @@ export class GetEnrollmentByIdUseCase {
 
       // 2. Obtener datos académicos del estudiante (usando la entidad enrollment)
       const studentAcademicData = await this._getStudentAcademicDataById(
-        enrollment.studentAcademicDataId
+        enrollment.academicDataId
       );
 
       // 3. Obtener gestión académica (usando la entidad enrollment)
@@ -287,7 +287,7 @@ export class GetEnrollmentByIdUseCase {
       );
 
       // 6. Obtener materias inscritas (múltiples)
-      const enrollmentSubjectsResult = await this.enrollmentSubjectRepository.findAll(
+      const enrollmentSubjectsResult = await this.subjectEnrollmentRepository.findAll(
         { enrollmentId: enrollment.id },
         null,
         null

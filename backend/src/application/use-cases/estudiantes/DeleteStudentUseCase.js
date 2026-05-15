@@ -30,7 +30,7 @@
  * - Application Layer: Orquesta la eliminación de un estudiante
  * - Depende de: StudentRepository, StudentGuardianRepository, StudentDisabilityRepository,
  *   StudentOriginRepository, StudentDocumentDeliveryRepository, StudentDocumentRepository,
- *   StudentAcademicDataRepository, EnrollmentRepository, EnrollmentSubjectRepository,
+ *   StudentAcademicDataRepository, EnrollmentRepository, subjectEnrollmentRepository,
  *   ContributionPaymentRepository, ContributionPaymentInstallmentRepository, StudentScholarshipRepository,
  *   LicenseRequestRepository, TransferRepository, TransitabilityRepository
  */
@@ -55,7 +55,7 @@ export class DeleteStudentUseCase {
    * @param {Object} dependencies.studentDocumentRepository - Repositorio de documentos de estudiantes
    * @param {Object} dependencies.studentAcademicDataRepository - Repositorio de datos académicos
    * @param {Object} dependencies.enrollmentRepository - Repositorio de inscripciones
-   * @param {Object} dependencies.enrollmentSubjectRepository - Repositorio de inscripciones_materias
+   * @param {Object} dependencies.subjectEnrollmentRepository - Repositorio de inscripciones_materias
    * @param {Object} dependencies.contributionPaymentRepository - Repositorio de cabecera de aporte (pago_aporte)
    * @param {Object} dependencies.contributionPaymentInstallmentRepository - Repositorio de cuotas (pago_cuotas)
    * @param {Object} dependencies.studentScholarshipRepository - Repositorio de becas asignadas
@@ -73,7 +73,7 @@ export class DeleteStudentUseCase {
     studentDocumentRepository,
     studentAcademicDataRepository,
     enrollmentRepository,
-    enrollmentSubjectRepository,
+    subjectEnrollmentRepository,
     contributionPaymentRepository,
     contributionPaymentInstallmentRepository,
     studentScholarshipRepository,
@@ -90,7 +90,7 @@ export class DeleteStudentUseCase {
     this.studentDocumentRepository = studentDocumentRepository;
     this.studentAcademicDataRepository = studentAcademicDataRepository;
     this.enrollmentRepository = enrollmentRepository;
-    this.enrollmentSubjectRepository = enrollmentSubjectRepository;
+    this.subjectEnrollmentRepository = subjectEnrollmentRepository;
     this.contributionPaymentRepository = contributionPaymentRepository;
     this.contributionPaymentInstallmentRepository = contributionPaymentInstallmentRepository;
     this.studentScholarshipRepository = studentScholarshipRepository;
@@ -213,13 +213,13 @@ export class DeleteStudentUseCase {
           : academicData;
         const academicDataId =
           academicDataPlain.id ||
-          academicDataPlain.studentAcademicDataId ||
-          academicDataPlain.estudianteDatosAcademicosId;
+          academicDataPlain.academicDataId ||
+          academicDataPlain.datosAcademicosId;
 
         if (!academicDataId) continue;
 
         const enrollmentsResult = await this.enrollmentRepository.findAll(
-          { studentAcademicDataId: academicDataId, active: true },
+          { academicDataId: academicDataId, active: true },
           null,
           null
         );
@@ -269,7 +269,7 @@ export class DeleteStudentUseCase {
    * @returns {Promise<number>} Cantidad de inscripciones_materias eliminadas
    */
   async _deleteEnrollmentSubjectsForEnrollment(enrollmentId) {
-    const enrollmentSubjectsResult = await this.enrollmentSubjectRepository.findAll(
+    const enrollmentSubjectsResult = await this.subjectEnrollmentRepository.findAll(
       { enrollmentId, active: true },
       null,
       null
@@ -286,7 +286,7 @@ export class DeleteStudentUseCase {
       const plain = row.toPlainObject ? row.toPlainObject() : row;
       const id = plain.id;
       if (id != null) {
-        await this.enrollmentSubjectRepository.delete(id);
+        await this.subjectEnrollmentRepository.delete(id);
         count += 1;
       }
     }

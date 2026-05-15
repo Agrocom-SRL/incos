@@ -50,7 +50,7 @@ export class CreateEnrollmentUseCase {
   /**
    * @param {Object} params - Dependencias inyectadas
    * @param {Object} params.enrollmentRepository - Repositorio de inscripciones
-   * @param {Object} params.enrollmentSubjectRepository - Repositorio de materias inscritas
+   * @param {Object} params.subjectEnrollmentRepository - Repositorio de materias inscritas
    * @param {Object} params.studentRepository - Repositorio de estudiantes
    * @param {Object} params.studentAcademicDataRepository - Repositorio de datos académicos
    * @param {Object} params.parallelRepository - Repositorio de paralelos
@@ -74,7 +74,7 @@ export class CreateEnrollmentUseCase {
    */
   constructor({
     enrollmentRepository,
-    enrollmentSubjectRepository,
+    subjectEnrollmentRepository,
     studentRepository,
     studentAcademicDataRepository,
     parallelRepository,
@@ -97,7 +97,7 @@ export class CreateEnrollmentUseCase {
     logger,
   }) {
     this.enrollmentRepository = enrollmentRepository;
-    this.enrollmentSubjectRepository = enrollmentSubjectRepository;
+    this.subjectEnrollmentRepository = subjectEnrollmentRepository;
     this.studentRepository = studentRepository;
     this.studentAcademicDataRepository = studentAcademicDataRepository;
     this.parallelRepository = parallelRepository;
@@ -637,7 +637,7 @@ export class CreateEnrollmentUseCase {
   async _validateNoExistingEnrollment(studentAcademicData, management) {
     const result = await this.enrollmentRepository.findAll(
       {
-        studentAcademicDataId: studentAcademicData.id,
+        academicDataId: studentAcademicData.id,
         managementId: management.id,
         active: true,
       },
@@ -652,7 +652,7 @@ export class CreateEnrollmentUseCase {
     }
 
     this.logger.info('[Inscripciones] Validación de inscripción previa exitosa', {
-      studentAcademicDataId: studentAcademicData.id,
+      academicDataId: studentAcademicData.id,
       managementId: management.id,
     });
   }
@@ -849,7 +849,7 @@ export class CreateEnrollmentUseCase {
    */
   async _createEnrollment(studentAcademicData, management, enrollmentType, observations) {
     const enrollmentData = {
-      studentAcademicDataId: studentAcademicData.id,
+      academicDataId: studentAcademicData.id,
       managementId: management.id,
       enrollmentType,
       enrollmentDate: new Date().toISOString().split('T')[0], // Fecha actual
@@ -884,7 +884,7 @@ export class CreateEnrollmentUseCase {
         teacherObservations: null,
       };
 
-      const enrollmentSubject = await this.enrollmentSubjectRepository.create(
+      const enrollmentSubject = await this.subjectEnrollmentRepository.create(
         enrollmentSubjectData
       );
       enrollmentSubjects.push(enrollmentSubject);

@@ -17,7 +17,7 @@ export class ListEnrollmentsUseCase extends BaseListUseCase {
   /**
    * @param {Object} params - Dependencias inyectadas
    * @param {Object} params.enrollmentRepository - Repositorio de inscripciones
-   * @param {Object} params.enrollmentSubjectRepository - Repositorio de materias inscritas (para cantidad)
+   * @param {Object} params.subjectEnrollmentRepository - Repositorio de materias inscritas (para cantidad)
    * @param {Object} params.studentAcademicDataRepository - Repositorio de datos académicos del estudiante
    * @param {Object} params.studentRepository - Repositorio de estudiantes
    * @param {Object} params.careerRepository - Repositorio de carreras
@@ -26,7 +26,7 @@ export class ListEnrollmentsUseCase extends BaseListUseCase {
    */
   constructor({
     enrollmentRepository,
-    enrollmentSubjectRepository,
+    subjectEnrollmentRepository,
     studentAcademicDataRepository,
     studentRepository,
     careerRepository,
@@ -42,7 +42,7 @@ export class ListEnrollmentsUseCase extends BaseListUseCase {
       dataFieldName: 'inscripciones',
     });
 
-    this.enrollmentSubjectRepository = enrollmentSubjectRepository;
+    this.subjectEnrollmentRepository = subjectEnrollmentRepository;
     this.studentAcademicDataRepository = studentAcademicDataRepository;
     this.studentRepository = studentRepository;
     this.careerRepository = careerRepository;
@@ -79,17 +79,17 @@ export class ListEnrollmentsUseCase extends BaseListUseCase {
 
     try {
       // Recopilar todos los IDs únicos para hacer consultas en batch
-      // NOTA: Los datos vienen en snake_case después del mapper (estudianteDatosAcademicosId, gestionId)
-      const studentAcademicDataIds = new Set();
+      // NOTA: Los datos vienen en snake_case después del mapper (datosAcademicosId, gestionId)
+      const academicDataIds = new Set();
       const managementIds = new Set();
 
       data.forEach((enrollment) => {
         // Usar snake_case que viene del mapper
-        const academicDataId = enrollment.estudianteDatosAcademicosId || enrollment.studentAcademicDataId;
+        const academicDataId = enrollment.datosAcademicosId || enrollment.academicDataId;
         const managementId = enrollment.gestionId || enrollment.managementId;
         
         if (academicDataId) {
-          studentAcademicDataIds.add(academicDataId);
+          academicDataIds.add(academicDataId);
         }
         if (managementId) {
           managementIds.add(managementId);
@@ -98,7 +98,7 @@ export class ListEnrollmentsUseCase extends BaseListUseCase {
 
       // Obtener datos académicos y gestiones en paralelo
       const [academicDataMap, managements] = await Promise.all([
-        this._fetchStudentAcademicData(Array.from(studentAcademicDataIds)),
+        this._fetchStudentAcademicData(Array.from(academicDataIds)),
         this._fetchManagements(Array.from(managementIds)),
       ]);
 
@@ -133,7 +133,7 @@ export class ListEnrollmentsUseCase extends BaseListUseCase {
         const enriched = { ...enrollment };
 
         // Obtener datos académicos usando snake_case del mapper
-        const academicDataId = enrollment.estudianteDatosAcademicosId || enrollment.studentAcademicDataId;
+        const academicDataId = enrollment.datosAcademicosId || enrollment.academicDataId;
         const academicData = academicDataId ? academicDataMap[academicDataId] : null;
 
         // Estudiante - las entidades usan camelCase (studentId)
@@ -186,10 +186,10 @@ export class ListEnrollmentsUseCase extends BaseListUseCase {
    */
   async _fetchSubjectCountByEnrollmentIds(enrollmentIds) {
     if (!enrollmentIds || enrollmentIds.length === 0) return {};
-    if (!this.enrollmentSubjectRepository) return {};
+    if (!this.subjectEnrollmentRepository) return {};
 
     try {
-      const result = await this.enrollmentSubjectRepository.findAll(
+      const result = await this.subjectEnrollmentRepository.findAll(
         { enrollmentIds },
         null,
         null
@@ -215,11 +215,11 @@ export class ListEnrollmentsUseCase extends BaseListUseCase {
    * Obtiene datos académicos del estudiante por IDs
    * @private
    */
-  async _fetchStudentAcademicData(studentAcademicDataIds) {
-    if (studentAcademicDataIds.length === 0) return {};
+  async _fetchStudentAcademicData(academicDataIds) {
+    if (academicDataIds.length === 0) return {};
 
     const academicDataMap = {};
-    for (const academicDataId of studentAcademicDataIds) {
+    for (const academicDataId of academicDataIds) {
       try {
         const academicData = await this.studentAcademicDataRepository.findById(academicDataId, {
           attributes: ['id', 'estudianteId', 'carreraId', 'estadoRegistro'],

@@ -33,20 +33,20 @@ export class DeleteEnrollmentUseCase {
   /**
    * @param {Object} params - Dependencias inyectadas
    * @param {Object} params.enrollmentRepository - Repositorio de inscripciones
-   * @param {Object} params.enrollmentSubjectRepository - Repositorio de materias inscritas
+   * @param {Object} params.subjectEnrollmentRepository - Repositorio de materias inscritas
    * @param {Object} params.studentAcademicDataRepository - Repositorio de datos académicos
    * @param {Object} params.studentDocumentRepository - Repositorio de documentos de estudiantes
    * @param {ILogger} params.logger - Logger para registro de eventos
    */
   constructor({
     enrollmentRepository,
-    enrollmentSubjectRepository,
+    subjectEnrollmentRepository,
     studentAcademicDataRepository,
     studentDocumentRepository,
     logger,
   }) {
     this.enrollmentRepository = enrollmentRepository;
-    this.enrollmentSubjectRepository = enrollmentSubjectRepository;
+    this.subjectEnrollmentRepository = subjectEnrollmentRepository;
     this.studentAcademicDataRepository = studentAcademicDataRepository;
     this.studentDocumentRepository = studentDocumentRepository;
     this.logger = logger;
@@ -72,20 +72,20 @@ export class DeleteEnrollmentUseCase {
 
       // 2. Obtener datos académicos del estudiante desde la inscripción
       const enrollmentPlain = enrollment.toPlainObject ? enrollment.toPlainObject() : enrollment;
-      const studentAcademicDataId = enrollmentPlain.studentAcademicDataId || enrollmentPlain.estudianteDatosAcademicosId;
+      const academicDataId = enrollmentPlain.academicDataId || enrollmentPlain.datosAcademicosId;
 
-      if (!studentAcademicDataId) {
+      if (!academicDataId) {
         throw new ValidationError('La inscripción no tiene datos académicos asociados');
       }
 
       // 3. Obtener el estudiante desde los datos académicos
       // Necesitamos el studentId para buscar documentos
-      const studentAcademicData = await this.studentAcademicDataRepository.findById(studentAcademicDataId);
+      const studentAcademicData = await this.studentAcademicDataRepository.findById(academicDataId);
       if (!studentAcademicData) {
         // Si no podemos obtener los datos académicos, continuamos sin eliminar documentos físicos
         this.logger.warn('[Inscripciones] No se pudieron obtener datos académicos, continuando sin eliminar documentos físicos', {
           enrollmentId,
-          studentAcademicDataId,
+          academicDataId,
         });
       }
 
@@ -103,7 +103,7 @@ export class DeleteEnrollmentUseCase {
 
       // 6. Actualizar estado de registro de datos académicos si no hay otras inscripciones activas
       // Si se elimina la inscripción y no hay otras inscripciones activas, el estado vuelve a PENDIENTE
-      await this._updateRegistrationStatusIfNeeded(studentAcademicDataId, enrollmentId, enrollmentPlain.managementId);
+      await this._updateRegistrationStatusIfNeeded(academicDataId, enrollmentId, enrollmentPlain.managementId);
 
       // 7. Eliminar la inscripción principal (soft delete)
       const deleted = await this.enrollmentRepository.delete(enrollmentId);
@@ -136,7 +136,7 @@ export class DeleteEnrollmentUseCase {
   async _deleteEnrollmentSubjects(enrollmentId) {
     try {
       // Buscar todas las materias inscritas de esta inscripción
-      const enrollmentSubjectsResult = await this.enrollmentSubjectRepository.findAll(
+      const enrollmentSubjectsResult = await this.subjectEnrollmentRepository.findAll(
         {
           enrollmentId: enrollmentId,
           active: true,
@@ -160,7 +160,7 @@ export class DeleteEnrollmentUseCase {
         const subjectId = subjectPlain.id;
 
         if (subjectId) {
-          await this.enrollmentSubjectRepository.delete(subjectId);
+          await this.subjectEnrollmentRepository.delete(subjectId);
           this.logger.info('[Inscripciones] Materia inscrita eliminada', {
             enrollmentId,
             enrollmentSubjectId: subjectId,
@@ -252,16 +252,16 @@ export class DeleteEnrollmentUseCase {
    * el estado de registro vuelve a PENDIENTE (ya no está ADMITIDO)
    * 
    * @private
-   * @param {number} studentAcademicDataId - ID de los datos académicos
+   * @param {number} academicDataId - ID de los datos académicos
    * @param {number} enrollmentId - ID de la inscripción que se está eliminando
    * @param {number} managementId - ID de la gestión
    */
-  async _updateRegistrationStatusIfNeeded(studentAcademicDataId, enrollmentId, managementId) {
+  async _updateRegistrationStatusIfNeeded(academicDataId, enrollmentId, managementId) {
     try {
       // Verificar si hay otras inscripciones activas para estos datos académicos en la misma gestión
       const otherEnrollmentsResult = await this.enrollmentRepository.findAll(
         {
-          studentAcademicDataId: studentAcademicDataId,
+          academicDataId: academicDataId,
           managementId: managementId,
           active: true,
         },
@@ -281,19 +281,19 @@ export class DeleteEnrollmentUseCase {
 
       // Si no hay otras inscripciones activas, actualizar el estado de registro a PENDIENTE
       if (activeEnrollments.length === 0) {
-        await this.studentAcademicDataRepository.update(studentAcademicDataId, {
+        await this.studentAcademicDataRepository.update(academicDataId, {
           registrationState: ESTADOS_REGISTRO_ESTUDIANTE.PENDIENTE,
         });
 
         this.logger.info('[Inscripciones] Estado de registro actualizado a PENDIENTE', {
-          studentAcademicDataId,
+          academicDataId,
           enrollmentId,
           managementId,
           reason: 'No hay otras inscripciones activas',
         });
       } else {
         this.logger.info('[Inscripciones] Estado de registro mantenido (hay otras inscripciones activas)', {
-          studentAcademicDataId,
+          academicDataId,
           enrollmentId,
           managementId,
           activeEnrollmentsCount: activeEnrollments.length,
@@ -301,7 +301,7 @@ export class DeleteEnrollmentUseCase {
       }
     } catch (error) {
       this.logger.error('[Inscripciones] Error al actualizar estado de registro', {
-        studentAcademicDataId,
+        academicDataId,
         enrollmentId,
         error: error.message,
         stack: error.stack,
