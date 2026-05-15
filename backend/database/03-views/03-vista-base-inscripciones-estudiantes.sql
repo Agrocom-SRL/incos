@@ -1,12 +1,18 @@
 -- ============================================
 -- VISTA BASE: vista_base_inscripciones_estudiantes
 -- Información de inscripciones con datos de estudiantes
--- 
--- Propósito: Vista base que une inscripciones + estudiantes_datos_academicos + estudiantes (3 tablas)
--- Reutilizable para construir vistas más complejas
--- 
--- Relaciones según schemas:
--- - inscripciones.estudiante_datos_academicos_id → estudiantes_datos_academicos.id
+--
+-- Propósito:
+-- Vista base que une inscripciones + estudiantes_datos_academicos + estudiantes.
+-- Reutilizable para construir vistas más complejas.
+--
+-- Ajuste al nuevo schema:
+-- - inscripciones.estudiante_datos_academicos_id se reemplaza por inscripciones.datos_academicos_id.
+-- - inscripciones.tipo_inscripcion ahora usa: NUEVO, ANTIGUO, TRASPASO, TRANSITABILIDAD.
+-- - traspaso_id y transitabilidad_id ya no viven en inscripciones.
+--
+-- Relaciones según nuevo schema:
+-- - inscripciones.datos_academicos_id → estudiantes_datos_academicos.id
 -- - estudiantes_datos_academicos.estudiante_id → estudiantes.id
 -- ============================================
 
@@ -15,15 +21,17 @@ USE instituto_incos;
 DROP VIEW IF EXISTS vista_base_inscripciones_estudiantes;
 
 CREATE VIEW vista_base_inscripciones_estudiantes AS
-SELECT 
+SELECT
   i.id AS inscripcion_id,
-  i.estudiante_datos_academicos_id,
+  i.datos_academicos_id,
   i.gestion_id,
   i.tipo_inscripcion,
   i.fecha_inscripcion,
+
   eda.estudiante_id,
   eda.carrera_id,
   eda.gestion_ingreso_id,
+
   est.codigo_estudiante,
   est.nombres,
   est.apellido_paterno,
@@ -32,11 +40,13 @@ SELECT
   est.ci,
   est.expedicion
 FROM inscripciones i
-INNER JOIN estudiantes_datos_academicos eda ON eda.id = i.estudiante_datos_academicos_id
-  AND eda.activo = TRUE 
+INNER JOIN estudiantes_datos_academicos eda
+  ON eda.id = i.datos_academicos_id
+  AND eda.activo = TRUE
   AND eda.deleted_at IS NULL
-INNER JOIN estudiantes est ON est.id = eda.estudiante_id
-  AND est.activo = TRUE 
+INNER JOIN estudiantes est
+  ON est.id = eda.estudiante_id
+  AND est.activo = TRUE
   AND est.deleted_at IS NULL
-WHERE i.activo = TRUE 
+WHERE i.activo = TRUE
   AND i.deleted_at IS NULL;

@@ -23,7 +23,8 @@ SELECT
   per.numero AS periodo_numero,
   per.nombre AS periodo_nombre
 FROM paralelos p
-LEFT JOIN vista_estadisticas_paralelos_por_gestion v ON v.paralelo_id = p.id
+LEFT JOIN vista_estadisticas_paralelos_por_gestion v 
+  ON v.paralelo_id = p.id
 LEFT JOIN periodos per
   ON per.id = p.periodo_id
   AND per.activo = TRUE

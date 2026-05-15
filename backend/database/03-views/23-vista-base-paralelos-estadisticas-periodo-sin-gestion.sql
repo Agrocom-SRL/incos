@@ -23,11 +23,16 @@ SELECT
   per.numero AS periodo_numero,
   per.nombre AS periodo_nombre
 FROM paralelos p
-INNER JOIN vista_estadisticas_paralelos_por_gestion v ON v.paralelo_id = p.id
+INNER JOIN vista_estadisticas_paralelos_por_gestion v 
+  ON v.paralelo_id = p.id
 LEFT JOIN periodos per
   ON per.id = p.periodo_id
   AND per.activo = TRUE
   AND per.deleted_at IS NULL
 WHERE p.activo = TRUE
   AND p.deleted_at IS NULL
-GROUP BY p.id, per.id, per.numero, per.nombre;
+GROUP BY 
+  p.id, 
+  per.id, 
+  per.numero, 
+  per.nombre;

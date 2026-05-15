@@ -28,7 +28,9 @@ SELECT
   bpg.periodo_numero,
   bpg.periodo_nombre
 FROM vista_base_paralelos_estadisticas_periodo_gestion bpg
+
 UNION ALL
+
 SELECT
   bpsg.paralelo_id,
   bpsg.gestion_id,

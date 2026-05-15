@@ -3,12 +3,21 @@
 -- Vista para exportar la lista de estudiantes inscritos (por carrera y paralelo) en una gestión.
 --
 -- Objetivo:
--- - Una fila por inscripción (estudiante) y paralelo (sin duplicar por materia).
+-- - Una fila por inscripción (estudiante) y paralelo, sin duplicar por materia.
 -- - Campos mínimos para el Excel:
 --   nombre completo, celular, CI, sexo, observaciones, carrera/paralelo/gestión.
 --
+-- Dependencias:
+-- - vista_base_inscripciones_estudiantes
+-- - vista_base_inscripciones_paralelos
+-- - inscripciones
+-- - estudiantes
+-- - gestiones
+--
 -- Uso:
--- SELECT * FROM vista_reporte_excel_lista_inscritos WHERE gestion_id = 2 AND carrera_id = 1
+-- SELECT *
+-- FROM vista_reporte_excel_lista_inscritos
+-- WHERE gestion_id = 2 AND carrera_id = 1
 -- ORDER BY paralelo_nombre, apellido_paterno, apellido_materno, nombres;
 -- ============================================
 
@@ -46,23 +55,34 @@ SELECT DISTINCT
 
   est.ci,
   est.expedicion,
+
   CASE
     WHEN est.genero = 'MASCULINO' THEN 'M'
     WHEN est.genero = 'FEMENINO' THEN 'F'
     ELSE NULL
   END AS sexo,
+
   est.celular,
 
   i.observaciones AS observaciones
+
 FROM vista_base_inscripciones_estudiantes vie
-INNER JOIN gestiones g ON g.id = vie.gestion_id
+
+INNER JOIN gestiones g
+  ON g.id = vie.gestion_id
   AND g.activo = TRUE
   AND g.deleted_at IS NULL
-INNER JOIN inscripciones i ON i.id = vie.inscripcion_id
+
+INNER JOIN inscripciones i
+  ON i.id = vie.inscripcion_id
   AND i.activo = TRUE
   AND i.deleted_at IS NULL
-INNER JOIN estudiantes est ON est.id = vie.estudiante_id
+
+INNER JOIN estudiantes est
+  ON est.id = vie.estudiante_id
   AND est.activo = TRUE
   AND est.deleted_at IS NULL
-INNER JOIN vista_base_inscripciones_paralelos vip ON vip.inscripcion_id = vie.inscripcion_id;
 
+INNER JOIN vista_base_inscripciones_paralelos vip
+  ON vip.inscripcion_id = vie.inscripcion_id;
+  

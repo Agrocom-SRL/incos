@@ -27,29 +27,40 @@ SELECT
   eda.tipo_admision,
   eda.promedio_anual,
   eda.foto_url,
-  -- Estudiante básico (para filtros)
+
+  -- Estudiante básico
   est.codigo_estudiante,
   est.ci,
   est.expedicion,
+
   -- Carrera
   car.nombre AS carrera_nombre,
   car.codigo AS carrera_codigo,
   car.descripcion AS carrera_descripcion,
   car.area_formacion AS carrera_area_formacion,
   car.titulo_otorgado AS carrera_titulo_otorgado,
+
   -- Gestión de ingreso
   g.nombre AS gestion_ingreso_nombre,
   g.anio AS gestion_ingreso_anio,
   g.vigente AS gestion_ingreso_vigente
+
 FROM estudiantes_datos_academicos eda
-INNER JOIN estudiantes est ON est.id = eda.estudiante_id
+
+INNER JOIN estudiantes est 
+  ON est.id = eda.estudiante_id
   AND est.activo = TRUE
   AND est.deleted_at IS NULL
-LEFT JOIN carreras car ON car.id = eda.carrera_id
+
+LEFT JOIN carreras car 
+  ON car.id = eda.carrera_id
   AND car.activo = TRUE
   AND car.deleted_at IS NULL
-LEFT JOIN gestiones g ON g.id = eda.gestion_ingreso_id
+
+LEFT JOIN gestiones g 
+  ON g.id = eda.gestion_ingreso_id
   AND g.activo = TRUE
   AND g.deleted_at IS NULL
+
 WHERE eda.activo = TRUE
   AND eda.deleted_at IS NULL;

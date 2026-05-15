@@ -30,8 +30,10 @@ SELECT
   vpi.periodo_numero,
   vpi.periodo_nombre
 FROM vista_base_asignaciones_inscripciones vai
-INNER JOIN vista_base_cursos_paralelos vcp ON vcp.curso_id = vai.curso_id
-INNER JOIN vista_base_paralelos_info vpi ON vpi.paralelo_id = vcp.paralelo_id
+INNER JOIN vista_base_cursos_paralelos vcp 
+  ON vcp.curso_id = vai.curso_id
+INNER JOIN vista_base_paralelos_info vpi 
+  ON vpi.paralelo_id = vcp.paralelo_id
 GROUP BY
   vai.inscripcion_id,
   vcp.paralelo_id,

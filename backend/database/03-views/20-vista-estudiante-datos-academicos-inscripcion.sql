@@ -24,33 +24,41 @@ DROP VIEW IF EXISTS vista_estudiante_inscripcion_actual;
 
 CREATE VIEW vista_estudiante_inscripcion_actual AS
 SELECT
-  -- Estudiante basico (para filtros, desde vista_base_inscripciones_estudiantes)
+  -- Estudiante básico
   vie.estudiante_id,
   vie.codigo_estudiante,
   vie.ci,
   vie.expedicion,
-  -- Inscripcion (por gestion, desde vista_base_inscripciones_estudiantes)
+
+  -- Inscripción por gestión
   vie.inscripcion_id,
-  vie.estudiante_datos_academicos_id,
+  vie.datos_academicos_id,
   vie.gestion_id,
   vie.tipo_inscripcion,
   vie.fecha_inscripcion,
   i.observaciones AS inscripcion_observaciones,
-  -- Gestion
+
+  -- Gestión
   g.nombre AS gestion_nombre,
   g.anio AS gestion_anio,
   g.vigente AS gestion_vigente,
-  -- Materia inscrita (una fila por materia)
-  vai.inscripcion_materia_id,
+
+  -- Matrícula de materia
+  vai.matricula_materia_id,
   vai.asignacion_docente_id,
   vai.curso_id,
   vai.docente_id,
+  vai.asignatura_plan_id,
+  vai.nota_final,
   vai.materia_estado,
-  im.observaciones AS materia_observaciones,
+  vai.historial_estados,
+  mm.observaciones AS materia_observaciones,
+
   -- Curso
   vca.curso_codigo,
   vca.paralelo_id,
-  -- Paralelo, periodo, carrera (complementarios desde el curso)
+
+  -- Paralelo, periodo y carrera
   vpi.paralelo_nombre,
   vpi.paralelo_turno,
   vpi.paralelo_descripcion,
@@ -60,7 +68,8 @@ SELECT
   vpi.periodo_id,
   vpi.periodo_numero,
   vpi.periodo_nombre,
-  -- Materia (datos completos)
+
+  -- Materia
   vam.materia_id,
   vam.periodo_id AS materia_periodo_id,
   vam.horas_semanales,
@@ -72,19 +81,36 @@ SELECT
   vam.materia_objetivos,
   vam.materia_clasificacion,
   vam.materia_tipo
+
 FROM vista_base_inscripciones_estudiantes vie
-LEFT JOIN gestiones g ON g.id = vie.gestion_id
+
+LEFT JOIN gestiones g 
+  ON g.id = vie.gestion_id
   AND g.activo = TRUE
   AND g.deleted_at IS NULL
-LEFT JOIN inscripciones i ON i.id = vie.inscripcion_id
+
+LEFT JOIN inscripciones i 
+  ON i.id = vie.inscripcion_id
   AND i.activo = TRUE
   AND i.deleted_at IS NULL
-INNER JOIN vista_base_asignaciones_inscripciones vai ON vai.inscripcion_id = vie.inscripcion_id
-INNER JOIN inscripciones_materias im ON im.id = vai.inscripcion_materia_id
-  AND im.activo = TRUE
-  AND im.deleted_at IS NULL
-INNER JOIN vista_base_cursos_asignaturas vca ON vca.curso_id = vai.curso_id
-INNER JOIN vista_base_cursos_paralelos vcp ON vcp.curso_id = vai.curso_id
-INNER JOIN vista_base_paralelos_info vpi ON vpi.paralelo_id = vcp.paralelo_id
-INNER JOIN vista_base_asignaturas_materias vam ON vam.materia_id = vca.materia_id
+
+INNER JOIN vista_base_asignaciones_inscripciones vai 
+  ON vai.inscripcion_id = vie.inscripcion_id
+
+INNER JOIN matriculas_materia mm 
+  ON mm.id = vai.matricula_materia_id
+  AND mm.activo = TRUE
+  AND mm.deleted_at IS NULL
+
+INNER JOIN vista_base_cursos_asignaturas vca 
+  ON vca.curso_id = vai.curso_id
+
+INNER JOIN vista_base_cursos_paralelos vcp 
+  ON vcp.curso_id = vai.curso_id
+
+INNER JOIN vista_base_paralelos_info vpi 
+  ON vpi.paralelo_id = vcp.paralelo_id
+
+INNER JOIN vista_base_asignaturas_materias vam 
+  ON vam.materia_id = vca.materia_id
   AND vam.periodo_id = vca.periodo_id;
