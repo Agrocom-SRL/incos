@@ -15,7 +15,7 @@ import { getAdmissionTypeTagStyle } from '../../estudiantes/config/admissionType
 const mapEstadoToAdmissionType = (valor) => {
   const v = String(valor || '').toUpperCase();
   if (v === 'NUEVO' || v === 'ACTIVA') return 'NUEVO';
-  if (v === 'REINGRESO' || v === 'CONTINUIDAD') return 'ANTIGUO';
+  if (v === 'ANTIGUO') return 'ANTIGUO';
   if (v === 'TRASPASO') return 'TRASPASO';
   if (v === 'TRANSITABILIDAD') return 'TRANSITABILIDAD';
   return null;
@@ -176,7 +176,7 @@ export const createInscripcionesTableColumns = (navigate, refetch = null, delete
       ellipsis: true,
       responsive: ['md', 'lg', 'xl', 'xxl'],
       render: (_, record) => {
-        const cantidad = record.cantidadMaterias ?? record.enrollmentSubjects?.length ?? null;
+        const cantidad = record.cantidadMaterias ?? record.subjectEnrollments?.length ?? null;
         if (cantidad == null || cantidad === '') {
           return (
             <TableCell icon={<UnorderedListOutlined />} fallback="—" textStyle={{ fontSize: 'var(--font-size-sm)' }}>
@@ -192,8 +192,8 @@ export const createInscripcionesTableColumns = (navigate, refetch = null, delete
         );
       },
       sorter: (a, b) => {
-        const countA = a.cantidadMaterias ?? a.enrollmentSubjects?.length ?? 0;
-        const countB = b.cantidadMaterias ?? b.enrollmentSubjects?.length ?? 0;
+        const countA = a.cantidadMaterias ?? a.subjectEnrollments?.length ?? 0;
+        const countB = b.cantidadMaterias ?? b.subjectEnrollments?.length ?? 0;
         return countA - countB;
       },
     },

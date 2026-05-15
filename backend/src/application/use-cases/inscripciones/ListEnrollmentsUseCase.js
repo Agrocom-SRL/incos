@@ -194,7 +194,7 @@ export class ListEnrollmentsUseCase extends BaseListUseCase {
         null,
         null
       );
-      const list = result.enrollmentSubjects || result.enrollmentsSubjects || [];
+      const list = result.subjectEnrollments || result.enrollmentsSubjects || [];
       const countByEnrollmentId = {};
       list.forEach((item) => {
         const eid = item.enrollmentId ?? item.inscripcionId ?? (item.toPlainObject && item.toPlainObject().enrollmentId);

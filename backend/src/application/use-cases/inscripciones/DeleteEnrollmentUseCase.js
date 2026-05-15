@@ -94,7 +94,7 @@ export class DeleteEnrollmentUseCase {
 
       // 4. Buscar y eliminar inscripciones de materias relacionadas
       // Esto eliminará también las calificaciones relacionadas (si existen) debido a las foreign keys
-      await this._deleteEnrollmentSubjects(enrollmentId);
+      await this._deletesubjectEnrollments(enrollmentId);
 
       // 5. Buscar y eliminar boletas de inscripción asociadas
       if (studentId) {
@@ -133,10 +133,10 @@ export class DeleteEnrollmentUseCase {
    * @private
    * @param {number} enrollmentId - ID de la inscripción
    */
-  async _deleteEnrollmentSubjects(enrollmentId) {
+  async _deletesubjectEnrollments(enrollmentId) {
     try {
       // Buscar todas las materias inscritas de esta inscripción
-      const enrollmentSubjectsResult = await this.subjectEnrollmentRepository.findAll(
+      const subjectEnrollmentsResult = await this.subjectEnrollmentRepository.findAll(
         {
           enrollmentId: enrollmentId,
           active: true,
@@ -145,9 +145,9 @@ export class DeleteEnrollmentUseCase {
         null
       );
 
-      const enrollmentSubjects = enrollmentSubjectsResult.enrollmentSubjects || enrollmentSubjectsResult.enrollmentMaterias || [];
+      const subjectEnrollments = subjectEnrollmentsResult.subjectEnrollments || subjectEnrollmentsResult.enrollmentMaterias || [];
 
-      if (enrollmentSubjects.length === 0) {
+      if (subjectEnrollments.length === 0) {
         this.logger.info('[Inscripciones] No se encontraron materias inscritas para eliminar', {
           enrollmentId,
         });
@@ -155,7 +155,7 @@ export class DeleteEnrollmentUseCase {
       }
 
       // Eliminar cada inscripción de materia (soft delete)
-      for (const enrollmentSubject of enrollmentSubjects) {
+      for (const enrollmentSubject of subjectEnrollments) {
         const subjectPlain = enrollmentSubject.toPlainObject ? enrollmentSubject.toPlainObject() : enrollmentSubject;
         const subjectId = subjectPlain.id;
 
@@ -170,7 +170,7 @@ export class DeleteEnrollmentUseCase {
 
       this.logger.info('[Inscripciones] Materias inscritas eliminadas', {
         enrollmentId,
-        materiasEliminadas: enrollmentSubjects.length,
+        materiasEliminadas: subjectEnrollments.length,
       });
     } catch (error) {
       this.logger.error('[Inscripciones] Error al eliminar materias inscritas', {

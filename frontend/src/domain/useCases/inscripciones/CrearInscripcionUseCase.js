@@ -44,7 +44,7 @@ export class CrearInscripcionUseCase {
    * validationErrors: Array con errores de validación del backend
    * Formato: [{ field: 'campo', message: 'mensaje' }, ...]
    * 
-   * data: Objeto con { enrollment, enrollmentSubjects }
+   * data: Objeto con { enrollment, subjectEnrollments }
    */
   async ejecutar(datosInscripcion) {
     try {
@@ -113,7 +113,7 @@ export class CrearInscripcionUseCase {
       }
 
       // 4. Retornar datos de la inscripción creada con todas sus materias
-      // El backend retorna: { enrollment, enrollmentSubjects }
+      // El backend retorna: { enrollment, subjectEnrollments }
       return {
         success: true,
         data: result.data,

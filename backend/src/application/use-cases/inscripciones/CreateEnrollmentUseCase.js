@@ -236,13 +236,13 @@ export class CreateEnrollmentUseCase {
           enrollmentType,
           observations
         );
-        const enrollmentSubjects = await this._createEnrollmentSubjects(
+        const subjectEnrollments = await this._createsubjectEnrollments(
           enrollment,
           teacherAssignments
         );
         return this._buildResponse(
           enrollment,
-          enrollmentSubjects,
+          subjectEnrollments,
           studentId,
           parallel.id,
           management
@@ -279,13 +279,13 @@ export class CreateEnrollmentUseCase {
         enrollmentType,
         observations
       );
-      const enrollmentSubjects = await this._createEnrollmentSubjects(
+      const subjectEnrollments = await this._createsubjectEnrollments(
         enrollment,
         teacherAssignments
       );
       return this._buildResponse(
         enrollment,
-        enrollmentSubjects,
+        subjectEnrollments,
         studentId,
         parallelId,
         management
@@ -872,8 +872,8 @@ export class CreateEnrollmentUseCase {
    * @param {Array} teacherAssignments - Array de entidades TeacherAssignment
    * @returns {Promise<Array>} Array de entidades EnrollmentSubject
    */
-  async _createEnrollmentSubjects(enrollment, teacherAssignments) {
-    const enrollmentSubjects = [];
+  async _createsubjectEnrollments(enrollment, teacherAssignments) {
+    const subjectEnrollments = [];
 
     for (const assignment of teacherAssignments) {
       const enrollmentSubjectData = {
@@ -887,7 +887,7 @@ export class CreateEnrollmentUseCase {
       const enrollmentSubject = await this.subjectEnrollmentRepository.create(
         enrollmentSubjectData
       );
-      enrollmentSubjects.push(enrollmentSubject);
+      subjectEnrollments.push(enrollmentSubject);
 
       this.logger.info('[Inscripciones] Materia inscrita creada', {
         enrollmentId: enrollment.id,
@@ -898,33 +898,33 @@ export class CreateEnrollmentUseCase {
 
     this.logger.info('[Inscripciones] Todas las materias inscritas creadas', {
       enrollmentId: enrollment.id,
-      totalSubjects: enrollmentSubjects.length,
+      totalSubjects: subjectEnrollments.length,
     });
 
-    return enrollmentSubjects;
+    return subjectEnrollments;
   }
 
   /**
    * Construye la respuesta final del caso de uso
    * @private
    * @param {Object} enrollment - Entidad Enrollment
-   * @param {Array} enrollmentSubjects - Array de entidades EnrollmentSubject
+   * @param {Array} subjectEnrollments - Array de entidades EnrollmentSubject
    * @param {number} studentId - ID del estudiante
    * @param {number} parallelId - ID del paralelo
    * @param {Object} management - Entidad Management
    * @returns {Object} Respuesta formateada
    */
-  _buildResponse(enrollment, enrollmentSubjects, studentId, parallelId, management) {
+  _buildResponse(enrollment, subjectEnrollments, studentId, parallelId, management) {
     const result = {
       enrollment: enrollment.toPlainObject ? enrollment.toPlainObject() : enrollment,
-      enrollmentSubjects: enrollmentSubjects.map((es) =>
+      subjectEnrollments: subjectEnrollments.map((es) =>
         es.toPlainObject ? es.toPlainObject() : es
       ),
     };
 
     this.logger.info('[Inscripciones] Inscripción creada exitosamente', {
       enrollmentId: enrollment.id,
-      enrollmentSubjectsCount: enrollmentSubjects.length,
+      subjectEnrollmentsCount: subjectEnrollments.length,
       studentId,
       parallelId,
       managementId: management.id,

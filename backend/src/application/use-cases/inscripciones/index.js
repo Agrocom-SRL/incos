@@ -11,6 +11,6 @@ export { UpdateEnrollmentUseCase } from './UpdateEnrollmentUseCase.js';
 // ============================================
 // USE CASES FUTUROS - MATERIAS INSCRITAS
 // ============================================
-// export { ListEnrollmentSubjectsUseCase } from './materias/ListEnrollmentSubjectsUseCase.js';
+// export { ListsubjectEnrollmentsUseCase } from './materias/ListsubjectEnrollmentsUseCase.js';
 // export { CreateEnrollmentSubjectUseCase } from './materias/CreateEnrollmentSubjectUseCase.js';
 // export { GetEnrollmentSubjectByIdUseCase } from './materias/GetEnrollmentSubjectByIdUseCase.js';

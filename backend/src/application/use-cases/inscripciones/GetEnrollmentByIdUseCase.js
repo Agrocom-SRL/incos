@@ -287,21 +287,21 @@ export class GetEnrollmentByIdUseCase {
       );
 
       // 6. Obtener materias inscritas (múltiples)
-      const enrollmentSubjectsResult = await this.subjectEnrollmentRepository.findAll(
+      const subjectEnrollmentsResult = await this.subjectEnrollmentRepository.findAll(
         { enrollmentId: enrollment.id },
         null,
         null
       );
-      const enrollmentSubjects = enrollmentSubjectsResult.enrollmentSubjects || [];
+      const subjectEnrollments = subjectEnrollmentsResult.subjectEnrollments || [];
 
       this.logger.info('[Inscripciones] Materias inscritas encontradas', {
         enrollmentId: enrollment.id,
-        count: enrollmentSubjects.length,
+        count: subjectEnrollments.length,
       });
 
       // 7. Para cada materia inscrita, obtener datos relacionados (teacherAssignment, course, planSubject, subject, horarios)
       const materiasConDetalles = await Promise.all(
-        enrollmentSubjects.map(async (enrollmentSubject) => {
+        subjectEnrollments.map(async (enrollmentSubject) => {
           try {
             const enrollmentSubjectPlain = enrollmentSubject?.toPlainObject
               ? enrollmentSubject.toPlainObject()
@@ -662,7 +662,7 @@ export class GetEnrollmentByIdUseCase {
         hasManagement: !!management,
         hasStudent: !!student,
         hasCareer: !!career,
-        enrollmentSubjectsCount: materiasValidas.length,
+        subjectEnrollmentsCount: materiasValidas.length,
       });
 
       // Retornar todas las entidades en formato de presentación
@@ -672,7 +672,7 @@ export class GetEnrollmentByIdUseCase {
         management: managementPresentation,
         student: studentPresentation,
         career: careerPresentation,
-        enrollmentSubjects: materiasValidas,
+        subjectEnrollments: materiasValidas,
         selectedPeriodIds: selectedPeriodIds.length > 0 ? selectedPeriodIds : undefined,
         parallelIdsByPeriod: Object.keys(parallelIdsByPeriod).length > 0 ? parallelIdsByPeriod : undefined,
         materiaIdsByPeriod: Object.keys(byPeriod).length > 0

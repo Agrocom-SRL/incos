@@ -61,7 +61,7 @@ export class UpdateEnrollmentUseCase {
    * @param {string} [payload.enrollmentDate] - Fecha de inscripción (YYYY-MM-DD)
    * @param {number} [payload.parallelId] - Para tipo NUEVO: nuevo paralelo (reemplaza todas las materias del paralelo)
    * @param {number[]} [payload.teacherAssignmentIds] - Para ANTIGUO: IDs de asignaciones docentes (reemplaza materias por estas)
-   * @returns {Promise<Object>} Inscripción actualizada en formato de presentación (con enrollmentSubjects si se actualizaron materias)
+   * @returns {Promise<Object>} Inscripción actualizada en formato de presentación (con subjectEnrollments si se actualizaron materias)
    */
   async execute(enrollmentId, payload = {}) {
     this.logger.info('[Inscripciones] Iniciando actualización de inscripción', {
@@ -108,7 +108,7 @@ export class UpdateEnrollmentUseCase {
       (payload.parallelId != null && payload.parallelId !== '') ||
       (Array.isArray(resolvedTeacherAssignmentIds) && resolvedTeacherAssignmentIds.length > 0);
 
-    let newEnrollmentSubjects = null;
+    let newsubjectEnrollments = null;
 
     if (hasMateriasUpdate) {
       const teacherAssignments = await this._resolveTeacherAssignmentsForUpdate(
@@ -116,8 +116,8 @@ export class UpdateEnrollmentUseCase {
         payload.parallelId,
         resolvedTeacherAssignmentIds
       );
-      await this._replaceEnrollmentSubjects(enrollmentId, enrollment, teacherAssignments);
-      newEnrollmentSubjects = await this._findEnrollmentSubjects(enrollmentId);
+      await this._replacesubjectEnrollments(enrollmentId, enrollment, teacherAssignments);
+      newsubjectEnrollments = await this._findsubjectEnrollments(enrollmentId);
     }
 
     if (Object.keys(updateData).length > 0) {
@@ -130,8 +130,8 @@ export class UpdateEnrollmentUseCase {
 
     const updated = await this.enrollmentRepository.findById(enrollmentId);
     const result = EnrollmentMapper.entityToPresentation(updated);
-    if (newEnrollmentSubjects && newEnrollmentSubjects.length > 0) {
-      result.enrollmentSubjects = EnrollmentSubjectMapper.entitiesToPresentation(newEnrollmentSubjects);
+    if (newsubjectEnrollments && newsubjectEnrollments.length > 0) {
+      result.subjectEnrollments = EnrollmentSubjectMapper.entitiesToPresentation(newsubjectEnrollments);
     }
     return result;
   }
@@ -338,18 +338,18 @@ export class UpdateEnrollmentUseCase {
    * Reemplaza todas las inscripciones_materias de la inscripción: elimina las actuales y crea las nuevas.
    * @private
    */
-  async _replaceEnrollmentSubjects(enrollmentId, enrollment, teacherAssignments) {
-    await this._deleteEnrollmentSubjects(enrollmentId);
-    await this._createEnrollmentSubjects(enrollment, teacherAssignments);
+  async _replacesubjectEnrollments(enrollmentId, enrollment, teacherAssignments) {
+    await this._deletesubjectEnrollments(enrollmentId);
+    await this._createsubjectEnrollments(enrollment, teacherAssignments);
   }
 
-  async _deleteEnrollmentSubjects(enrollmentId) {
+  async _deletesubjectEnrollments(enrollmentId) {
     const result = await this.subjectEnrollmentRepository.findAll(
       { enrollmentId, active: true },
       null,
       null
     );
-    const list = result.enrollmentSubjects || result.enrollmentMaterias || [];
+    const list = result.subjectEnrollments || result.enrollmentMaterias || [];
     for (const es of list) {
       const plain = es.toPlainObject ? es.toPlainObject() : es;
       if (plain.id) {
@@ -362,7 +362,7 @@ export class UpdateEnrollmentUseCase {
     });
   }
 
-  async _createEnrollmentSubjects(enrollment, teacherAssignments) {
+  async _createsubjectEnrollments(enrollment, teacherAssignments) {
     const enrollmentId = enrollment.id ?? enrollment.Id;
     for (const assignment of teacherAssignments) {
       const assignmentId = assignment.id ?? assignment.Id;
@@ -380,12 +380,12 @@ export class UpdateEnrollmentUseCase {
     });
   }
 
-  async _findEnrollmentSubjects(enrollmentId) {
+  async _findsubjectEnrollments(enrollmentId) {
     const result = await this.subjectEnrollmentRepository.findAll(
       { enrollmentId, active: true },
       null,
       null
     );
-    return result.enrollmentSubjects || result.enrollmentMaterias || [];
+    return result.subjectEnrollments || result.enrollmentMaterias || [];
   }
 }

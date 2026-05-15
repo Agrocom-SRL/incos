@@ -21,7 +21,7 @@ import InscripcionesNueva from '@inscripciones/pages/InscripcionesNueva';
 /**
  * Construye editData para InscripcionesNuevaProvider a partir de la inscripción cargada por GetEnrollmentById.
  * Usa selectedPeriodIds, materiaIdsByPeriod y parallelIdsByPeriod devueltos por la API cuando existen;
- * si no, los deriva de enrollmentSubjects (retrocompatibilidad).
+ * si no, los deriva de subjectEnrollments (retrocompatibilidad).
  */
 function buildEditDataFromInscripcion(inscripcion) {
   if (!inscripcion?.enrollment) return null;
@@ -29,7 +29,7 @@ function buildEditDataFromInscripcion(inscripcion) {
   const enrollment = inscripcion.enrollment;
   const student = inscripcion.student;
   const career = inscripcion.career;
-  const enrollmentSubjects = inscripcion.enrollmentSubjects ?? [];
+  const subjectEnrollments = inscripcion.subjectEnrollments ?? [];
 
   const studentId = student?.id ?? enrollment?.estudianteId ?? enrollment?.studentId ?? null;
   const carreraId = career?.id ?? inscripcion.studentAcademicData?.carreraId ?? enrollment?.carreraId ?? null;
@@ -49,9 +49,9 @@ function buildEditDataFromInscripcion(inscripcion) {
   let materiaIdsByPeriod = inscripcion.materiaIdsByPeriod ?? null;
   let parallelIdsByPeriod = inscripcion.parallelIdsByPeriod ?? null;
 
-  if ((!selectedPeriodIds?.length || !materiaIdsByPeriod || !Object.keys(materiaIdsByPeriod).length) && enrollmentSubjects.length > 0) {
+  if ((!selectedPeriodIds?.length || !materiaIdsByPeriod || !Object.keys(materiaIdsByPeriod).length) && subjectEnrollments.length > 0) {
     const byPeriod = {};
-    enrollmentSubjects.forEach((item) => {
+    subjectEnrollments.forEach((item) => {
       const pid = item?.periodoId ?? item?.periodo_id ?? item?.periodId;
       const plid = item?.paraleloId ?? item?.paralelo_id ?? item?.parallelId;
       const mid = item?.materiaId ?? item?.materia_id ?? item?.subjectId;
@@ -74,7 +74,7 @@ function buildEditDataFromInscripcion(inscripcion) {
       });
     }
 
-    const first = enrollmentSubjects[0];
+    const first = subjectEnrollments[0];
     periodoId = first?.periodoId ?? first?.periodo_id ?? first?.periodId ?? selectedPeriodIds?.[0] ?? null;
     paraleloId = first?.paraleloId ?? first?.paralelo_id ?? first?.parallelId ?? (selectedPeriodIds?.[0] != null ? parallelIdsByPeriod[String(selectedPeriodIds[0])] : null) ?? null;
   } else if (selectedPeriodIds?.length) {

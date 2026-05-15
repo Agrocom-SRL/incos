@@ -49,7 +49,7 @@ export class ObtenerInscripcionPorIdUseCase {
       }
 
       // Retornar datos directamente del backend
-      // El backend retorna: { enrollment, enrollmentSubjects, studentAcademicData, management }
+      // El backend retorna: { enrollment, subjectEnrollments, studentAcademicData, management }
       // No hay lógica adicional de negocio en este caso
       return {
         success: true,

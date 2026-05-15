@@ -152,7 +152,7 @@ const InscripcionesDetail = () => {
     management,
     student,
     career,
-    enrollmentSubjects = [],
+    subjectEnrollments = [],
   } = inscripcion ?? {};
 
   const getStatusColor = (status) => {
@@ -238,10 +238,10 @@ const InscripcionesDetail = () => {
 
   const materiasConHorario = useMemo(
     () =>
-      (enrollmentSubjects || []).filter(
+      (subjectEnrollments || []).filter(
         (materia) => Array.isArray(materia?.horarios) && materia.horarios.length > 0,
       ),
-    [enrollmentSubjects],
+    [subjectEnrollments],
   );
 
   const gridRangeInscripcion = useMemo(() => {
@@ -354,8 +354,8 @@ const InscripcionesDetail = () => {
               <Field label="Carrera">{career?.nombre || '—'}</Field>
               <Field label="Título otorgado" span={3}>{career?.tituloOtorgado || '—'}</Field>
               <Field label="Materias inscritas" span={3}>
-                {enrollmentSubjects.length > 0 ? (
-                  <span className="sd-badge sd-badge--blue">{enrollmentSubjects.length} materia(s)</span>
+                {subjectEnrollments.length > 0 ? (
+                  <span className="sd-badge sd-badge--blue">{subjectEnrollments.length} materia(s)</span>
                 ) : '—'}
               </Field>
             </InfoCard>
@@ -371,17 +371,23 @@ const InscripcionesDetail = () => {
         ),
         children: (
           <div className="sd-tab-body">
-            {enrollmentSubjects.length === 0 ? (
+            {subjectEnrollments.length === 0 ? (
               <div className="sd-empty">
                 <BookOutlined className="sd-empty__icon" />
                 <p className="sd-empty__text">No hay materias inscritas para esta inscripción</p>
               </div>
             ) : (
-              <InfoCard title={`Materias inscritas (${enrollmentSubjects.length})`} icon={<BookOutlined />} cols={1}>
+              <InfoCard title={`Materias inscritas (${subjectEnrollments.length})`} icon={<BookOutlined />} cols={1}>
                 <Table
-                  dataSource={enrollmentSubjects}
+                  dataSource={subjectEnrollments}
                   columns={columnasMaterias}
-                  rowKey={(row, idx) => row.id || `${row.materiaSigla || 'materia'}-${idx}`}
+                  rowKey={(row) =>
+                    row.id ||
+                    row.matriculaMateriaId ||
+                    row.materiaId ||
+                    row.courseId ||
+                    `${row.materiaSigla || 'materia'}-${row.paralelo?.id || row.paralelo?.nombre || 'sin-paralelo'}`
+                  }
                   size="small"
                   pagination={false}
                 />
@@ -438,7 +444,7 @@ const InscripcionesDetail = () => {
       management,
       student,
       career,
-      enrollmentSubjects,
+      subjectEnrollments,
       columnasMaterias,
       courseSchedules,
       nombreCompleto,
@@ -540,7 +546,7 @@ const InscripcionesDetail = () => {
             </div>
             <div className="sd-stat">
               <span className="sd-stat__label">Materias</span>
-              <span className="sd-stat__value">{enrollmentSubjects.length || 0}</span>
+              <span className="sd-stat__value">{subjectEnrollments.length || 0}</span>
             </div>
           </div>
 

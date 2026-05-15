@@ -37,12 +37,12 @@ export function entityToPresentation(enrollmentSubject) {
 
 /**
  * Convierte un array de entidades EnrollmentSubject a formato de presentación
- * @param {EnrollmentSubject[]} enrollmentSubjects - Array de entidades de dominio EnrollmentSubject
+ * @param {EnrollmentSubject[]} subjectEnrollments - Array de entidades de dominio EnrollmentSubject
  * @returns {Object[]} Array de objetos en formato de presentación
  */
-export function entitiesToPresentation(enrollmentSubjects) {
-  if (!Array.isArray(enrollmentSubjects)) return [];
-  return enrollmentSubjects.map(entityToPresentation);
+export function entitiesToPresentation(subjectEnrollments) {
+  if (!Array.isArray(subjectEnrollments)) return [];
+  return subjectEnrollments.map(entityToPresentation);
 }
 
 /**
@@ -53,7 +53,7 @@ export class EnrollmentSubjectMapper {
     return entityToPresentation(enrollmentSubject);
   }
 
-  static entitiesToPresentation(enrollmentSubjects) {
-    return entitiesToPresentation(enrollmentSubjects);
+  static entitiesToPresentation(subjectEnrollments) {
+    return entitiesToPresentation(subjectEnrollments);
   }
 }

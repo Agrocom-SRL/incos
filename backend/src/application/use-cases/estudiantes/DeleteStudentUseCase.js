@@ -241,7 +241,7 @@ export class DeleteStudentUseCase {
 
           if (!enrollmentId) continue;
 
-          const n = await this._deleteEnrollmentSubjectsForEnrollment(enrollmentId);
+          const n = await this._deletesubjectEnrollmentsForEnrollment(enrollmentId);
           subjectsDeleted += n;
           await this.enrollmentRepository.delete(enrollmentId);
           enrollmentsDeleted += 1;
@@ -268,21 +268,21 @@ export class DeleteStudentUseCase {
    * @param {number} enrollmentId
    * @returns {Promise<number>} Cantidad de inscripciones_materias eliminadas
    */
-  async _deleteEnrollmentSubjectsForEnrollment(enrollmentId) {
-    const enrollmentSubjectsResult = await this.subjectEnrollmentRepository.findAll(
+  async _deletesubjectEnrollmentsForEnrollment(enrollmentId) {
+    const subjectEnrollmentsResult = await this.subjectEnrollmentRepository.findAll(
       { enrollmentId, active: true },
       null,
       null
     );
 
-    const enrollmentSubjects =
-      enrollmentSubjectsResult.enrollmentSubjects ||
-      enrollmentSubjectsResult.enrollmentMaterias ||
-      enrollmentSubjectsResult.data ||
+    const subjectEnrollments =
+      subjectEnrollmentsResult.subjectEnrollments ||
+      subjectEnrollmentsResult.enrollmentMaterias ||
+      subjectEnrollmentsResult.data ||
       [];
 
     let count = 0;
-    for (const row of enrollmentSubjects) {
+    for (const row of subjectEnrollments) {
       const plain = row.toPlainObject ? row.toPlainObject() : row;
       const id = plain.id;
       if (id != null) {

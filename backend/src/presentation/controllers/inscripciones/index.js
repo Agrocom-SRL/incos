@@ -11,6 +11,6 @@ export { UpdateEnrollmentController } from './inscripciones/update.controller.js
 // ============================================
 // CONTROLLERS FUTUROS - MATERIAS INSCRITAS
 // ============================================
-// export { ListEnrollmentSubjectsController } from './materias/list.controller.js';
+// export { ListsubjectEnrollmentsController } from './materias/list.controller.js';
 // export { CreateEnrollmentSubjectController } from './materias/create.controller.js';
 // export { GetEnrollmentSubjectByIdController } from './materias/get-by-id.controller.js';

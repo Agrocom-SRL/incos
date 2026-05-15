@@ -331,8 +331,8 @@ const EstudiantesDetail = () => {
                   : null}
               </Field>
               <Field label="Materias inscritas">
-                {inscripcion.enrollmentSubjects?.length > 0
-                  ? <span className="sd-badge sd-badge--blue">{inscripcion.enrollmentSubjects.length} materia(s)</span>
+                {inscripcion.subjectEnrollments?.length > 0
+                  ? <span className="sd-badge sd-badge--blue">{inscripcion.subjectEnrollments.length} materia(s)</span>
                   : null}
               </Field>
             </InfoCard>
