@@ -35,7 +35,7 @@ export function registerInscripcionesResource(container) {
         (c) =>
             new ListEnrollmentsUseCase({
                 enrollmentRepository: c.resolve(REPOSITORIOS_TOKENS.enrollmentRepository),
-                enrollmentSubjectRepository: c.resolve(REPOSITORIOS_TOKENS.enrollmentSubjectRepository),
+                subjectEnrollmentRepository: c.resolve(REPOSITORIOS_TOKENS.subjectEnrollmentRepository),
                 studentAcademicDataRepository: c.resolve(REPOSITORIOS_TOKENS.studentAcademicDataRepository),
                 studentRepository: c.resolve(REPOSITORIOS_TOKENS.studentRepository),
                 careerRepository: c.resolve(REPOSITORIOS_TOKENS.careerRepository),
@@ -50,7 +50,7 @@ export function registerInscripcionesResource(container) {
         (c) =>
             new CreateEnrollmentUseCase({
                 enrollmentRepository: c.resolve(REPOSITORIOS_TOKENS.enrollmentRepository),
-                enrollmentSubjectRepository: c.resolve(REPOSITORIOS_TOKENS.enrollmentSubjectRepository),
+                subjectEnrollmentRepository: c.resolve(REPOSITORIOS_TOKENS.subjectEnrollmentRepository),
                 studentRepository: c.resolve(REPOSITORIOS_TOKENS.studentRepository),
                 studentAcademicDataRepository: c.resolve(REPOSITORIOS_TOKENS.studentAcademicDataRepository),
                 parallelRepository: c.resolve(REPOSITORIOS_TOKENS.parallelRepository),
@@ -80,7 +80,7 @@ export function registerInscripcionesResource(container) {
         (c) =>
             new GetEnrollmentByIdUseCase({
                 enrollmentRepository: c.resolve(REPOSITORIOS_TOKENS.enrollmentRepository),
-                enrollmentSubjectRepository: c.resolve(REPOSITORIOS_TOKENS.enrollmentSubjectRepository),
+                subjectEnrollmentRepository: c.resolve(REPOSITORIOS_TOKENS.subjectEnrollmentRepository),
                 studentAcademicDataRepository: c.resolve(REPOSITORIOS_TOKENS.studentAcademicDataRepository),
                 studentRepository: c.resolve(REPOSITORIOS_TOKENS.studentRepository),
                 careerRepository: c.resolve(REPOSITORIOS_TOKENS.careerRepository),
@@ -106,7 +106,7 @@ export function registerInscripcionesResource(container) {
         (c) =>
             new DeleteEnrollmentUseCase({
                 enrollmentRepository: c.resolve(REPOSITORIOS_TOKENS.enrollmentRepository),
-                enrollmentSubjectRepository: c.resolve(REPOSITORIOS_TOKENS.enrollmentSubjectRepository),
+                subjectEnrollmentRepository: c.resolve(REPOSITORIOS_TOKENS.subjectEnrollmentRepository),
                 studentAcademicDataRepository: c.resolve(REPOSITORIOS_TOKENS.studentAcademicDataRepository),
                 studentDocumentRepository: c.resolve(REPOSITORIOS_TOKENS.studentDocumentRepository),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
@@ -137,7 +137,7 @@ export function registerInscripcionesResource(container) {
         (c) =>
             new UpdateEnrollmentUseCase({
                 enrollmentRepository: c.resolve(REPOSITORIOS_TOKENS.enrollmentRepository),
-                enrollmentSubjectRepository: c.resolve(REPOSITORIOS_TOKENS.enrollmentSubjectRepository),
+                subjectEnrollmentRepository: c.resolve(REPOSITORIOS_TOKENS.subjectEnrollmentRepository),
                 studentAcademicDataRepository: c.resolve(REPOSITORIOS_TOKENS.studentAcademicDataRepository),
                 parallelRepository: c.resolve(REPOSITORIOS_TOKENS.parallelRepository),
                 courseRepository: c.resolve(REPOSITORIOS_TOKENS.courseRepository),

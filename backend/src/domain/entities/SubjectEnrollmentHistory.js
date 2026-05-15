@@ -2,8 +2,6 @@ import { BaseEntity } from './BaseEntity.js';
 import {
     TIPOS_ESTADO_HISTORIAL_MATRICULA,
     TIPOS_ESTADO_HISTORIAL_MATRICULA_VALUES,
-    TIPOS_ESTADO_HISTORIAL_MATRICULA_INTENTO_ACADEMICO,
-    TIPOS_ESTADO_HISTORIAL_MATRICULA_NOTA_ADMINISTRATIVA,
 } from '../constants/inscripciones.constants.js';
 
 /**
@@ -125,10 +123,6 @@ export class SubjectEnrollmentHistory extends BaseEntity {
         return this.current === true;
     }
 
-    isAcademicAttempt() {
-        return TIPOS_ESTADO_HISTORIAL_MATRICULA_INTENTO_ACADEMICO.includes(this.stateType);
-    }
-
     isLeveling() {
         return [
             TIPOS_ESTADO_HISTORIAL_MATRICULA.NIVELACION_1RA,
@@ -164,10 +158,6 @@ export class SubjectEnrollmentHistory extends BaseEntity {
 
     isWithdrawn() {
         return this.stateType === TIPOS_ESTADO_HISTORIAL_MATRICULA.RETIRADO;
-    }
-
-    isAdministrativeGradeState() {
-        return TIPOS_ESTADO_HISTORIAL_MATRICULA_NOTA_ADMINISTRATIVA.includes(this.stateType);
     }
 
     /**
