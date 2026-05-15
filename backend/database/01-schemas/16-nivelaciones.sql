@@ -65,12 +65,12 @@ DROP TABLE IF EXISTS historial_previo;
 --
 --   2. TRASPASO (institucion_origen_id = ID del ITT origen):
 --      Estudiantes que vienen de otro ITT con materias aprobadas. Se cargan
---      sus notas reales con tipo_aprobacion = CONVALIDACION.
+--      sus notas reales.
 --
 --   3. TRANSITABILIDAD (institucion_origen_id = ID de UETHP/CEA origen):
 --      Estudiantes con Título Técnico Medio que ingresan directamente a 2do año.
 --      Se cargan las materias del 1er año del plan INCOS como CONVALIDADAS con
---      nota genérica institucional, tipo_aprobacion = CONVALIDACION.
+--      nota genérica institucional.
 --
 -- DISEÑO COMO TABLA SEPARADA (no como matricula sintética con FKs en NULL):
 -- El contexto pre-sistema / convalidación es estructuralmente distinto al
@@ -120,7 +120,6 @@ CREATE TABLE historial_previo (
     INDEX idx_gestion_id (gestion_id) COMMENT 'Búsqueda por gestión',
     INDEX idx_institucion_origen_id (institucion_origen_id) COMMENT 'Búsqueda por institución de origen',
     INDEX idx_estado (estado) COMMENT 'Filtrado por estado',
-    INDEX idx_tipo_aprobacion (tipo_aprobacion) COMMENT 'Filtrado por tipo de aprobación',
     INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
     INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
     INDEX idx_estudiante_asignatura (estudiante_id, asignatura_plan_id, activo, deleted_at) COMMENT 'Validación de prerrequisitos: ¿aprobó esta asignatura?',

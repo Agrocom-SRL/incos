@@ -49,10 +49,7 @@ SELECT
   vai.curso_id,
   vai.docente_id,
   vai.asignatura_plan_id,
-  vai.nota_final,
-  vai.materia_estado,
-  vai.historial_estados,
-  mm.observaciones AS materia_observaciones,
+  vai.matricula_estado,
 
   -- Curso
   vca.curso_codigo,

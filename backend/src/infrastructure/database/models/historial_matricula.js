@@ -14,7 +14,15 @@ export const HistorialMatricula = sequelize.define(
             type: DataTypes.INTEGER,
             field: 'matricula_materia_id',
             allowNull: true,
-            comment: 'Matrícula de materia a la que pertenece este suceso especial.',
+            comment: 'Matrícula a la que pertenece este estado. Referencia a matriculas_materia.',
+        },
+
+        nivelacionId: {
+            type: DataTypes.INTEGER,
+            field: 'nivelacion_id',
+            allowNull: true,
+            comment:
+                'Si el tipo_estado es un intento académico, apunta a nivelaciones. NULL para decisiones administrativas o transiciones sin nota.',
         },
 
         tipoEstado: {
@@ -22,14 +30,7 @@ export const HistorialMatricula = sequelize.define(
             field: 'tipo_estado',
             allowNull: false,
             comment:
-                'Tipo de suceso especial u operativo según reglamento académico INCOS.',
-        },
-
-        fechaTransicion: {
-            type: DataTypes.DATEONLY,
-            field: 'fecha_transicion',
-            allowNull: true,
-            comment: 'Fecha en que ocurrió o se registró el suceso especial.',
+                'Tipo de estado operativo según reglamento INCOS. Cubre nivelaciones, vencidas, choques, prerequisitos, abandonos, retiros y otros casos.',
         },
 
         notaResultante: {
@@ -37,7 +38,7 @@ export const HistorialMatricula = sequelize.define(
             field: 'nota_resultante',
             allowNull: true,
             comment:
-                'Nota asociada al suceso especial, si aplica. Ejemplo: recuperatorio anual o prueba excepcional.',
+                'Nota fijada por decisión administrativa. Aplica solo para ABANDONO, RETIRADO o ARTICULO_18.',
         },
 
         notaForzada: {
@@ -46,14 +47,21 @@ export const HistorialMatricula = sequelize.define(
             allowNull: true,
             defaultValue: false,
             comment:
-                'TRUE si nota_resultante debe sobrescribir el cálculo normal de nota_final.',
+                'TRUE si nota_resultante sobrescribe el cálculo regular de matriculas_materia.nota_final.',
+        },
+
+        fechaTransicion: {
+            type: DataTypes.DATEONLY,
+            field: 'fecha_transicion',
+            allowNull: true,
+            comment: 'Fecha en que ocurrió la transición a este estado.',
         },
 
         observaciones: {
             type: DataTypes.TEXT,
             field: 'observaciones',
             allowNull: true,
-            comment: 'Detalle u observación del suceso especial.',
+            comment: 'Observaciones adicionales del estado operativo.',
         },
 
         vigente: {
@@ -61,7 +69,7 @@ export const HistorialMatricula = sequelize.define(
             field: 'vigente',
             allowNull: true,
             defaultValue: true,
-            comment: 'Indica si este suceso especial sigue vigente o ya fue superado.',
+            comment: 'Indica si este estado está vigente o ya fue reemplazado por uno posterior.',
         },
     },
     {

@@ -7,28 +7,24 @@ import { SubjectEnrollmentHistoryMapper } from '../mappers/SubjectEnrollmentHist
 /**
  * Implementación del repositorio de historial de matrícula usando Sequelize.
  *
- * Convención de capas:
- * IHistorialMatriculaRepository → models/historial_matricula.js (`historial_matricula`)
- * → SubjectEnrollmentHistory / SubjectEnrollmentHistoryMapper / SubjectEnrollmentHistoryRepository
+ * Mapeo:
+ * subjectEnrollmentId → matriculaMateriaId → matricula_materia_id
+ * levelingId          → nivelacionId       → nivelacion_id
+ * stateType           → tipoEstado         → tipo_estado
+ * transitionDate      → fechaTransicion    → fecha_transicion
+ * resultingGrade      → notaResultante     → nota_resultante
+ * forcedGrade         → notaForzada        → nota_forzada
+ * current             → vigente            → vigente
  *
  * @implements {IHistorialMatriculaRepository}
  */
-export class SubjectEnrollmentHistoryRepository extends BaseRepository {
-    /**
-     * Obtiene el modelo Sequelize de historial de matrícula.
-     *
-     * @returns {Object} Modelo HistorialMatricula
-     */
+export class SubjectEnrollmentHistoryRepository
+    extends BaseRepository
+    /* implements IHistorialMatriculaRepository */ {
     getModel() {
         return HistorialMatriculaModel;
     }
 
-    /**
-     * Convierte un modelo Sequelize a entidad de dominio.
-     *
-     * @param {Object} model - Modelo Sequelize
-     * @returns {SubjectEnrollmentHistory|null}
-     */
     toEntity(model) {
         return SubjectEnrollmentHistoryMapper.toEntity(model);
     }
@@ -36,39 +32,52 @@ export class SubjectEnrollmentHistoryRepository extends BaseRepository {
     /**
      * Construye la cláusula WHERE para filtros específicos.
      *
-     * Mapeo:
-     * - subjectEnrollmentId   → matriculaMateriaId  → matricula_materia_id
-     * - stateType             → tipoEstado          → tipo_estado
-     * - transitionDate        → fechaTransicion     → fecha_transicion
-     * - resultingGrade        → notaResultante      → nota_resultante
-     * - forcedGrade           → notaForzada         → nota_forzada
-     * - current               → vigente             → vigente
-     * - observations          → observaciones       → observaciones
-     *
-     * @param {Object} filters
-     *   - subjectEnrollmentId
-     *   - subjectEnrollmentIds
-     *   - stateType
-     *   - stateTypes
-     *   - transitionDate
-     *   - resultingGrade
-     *   - forcedGrade
-     *   - current
-     *   - observations
-     *
-     * @returns {Object}
+     * Filtros soportados:
+     * - subjectEnrollmentId
+     * - subjectEnrollmentIds
+     * - enrollmentSubjectId              Alias viejo
+     * - enrollmentSubjectIds             Alias viejo
+     * - levelingId
+     * - levelingIds
+     * - stateType
+     * - stateTypes
+     * - transitionDate
+     * - transitionDateFrom
+     * - transitionDateTo
+     * - resultingGrade
+     * - forcedGrade
+     * - current
+     * - observations
      */
     buildWhereClause(filters = {}) {
         const where = {};
 
+        const subjectEnrollmentId =
+            filters.subjectEnrollmentId ??
+            filters.enrollmentSubjectId;
+
+        const subjectEnrollmentIds =
+            filters.subjectEnrollmentIds ??
+            filters.enrollmentSubjectIds;
+
         if (
-            filters.subjectEnrollmentIds &&
-            Array.isArray(filters.subjectEnrollmentIds) &&
-            filters.subjectEnrollmentIds.length > 0
+            subjectEnrollmentIds &&
+            Array.isArray(subjectEnrollmentIds) &&
+            subjectEnrollmentIds.length > 0
         ) {
-            where.matriculaMateriaId = { [Op.in]: filters.subjectEnrollmentIds };
-        } else if (filters.subjectEnrollmentId) {
-            where.matriculaMateriaId = filters.subjectEnrollmentId;
+            where.matriculaMateriaId = { [Op.in]: subjectEnrollmentIds };
+        } else if (subjectEnrollmentId) {
+            where.matriculaMateriaId = subjectEnrollmentId;
+        }
+
+        if (
+            filters.levelingIds &&
+            Array.isArray(filters.levelingIds) &&
+            filters.levelingIds.length > 0
+        ) {
+            where.nivelacionId = { [Op.in]: filters.levelingIds };
+        } else if (filters.levelingId) {
+            where.nivelacionId = filters.levelingId;
         }
 
         if (
@@ -83,6 +92,20 @@ export class SubjectEnrollmentHistoryRepository extends BaseRepository {
 
         if (filters.transitionDate) {
             where.fechaTransicion = filters.transitionDate;
+        } else {
+            const transitionDateRange = {};
+
+            if (filters.transitionDateFrom) {
+                transitionDateRange[Op.gte] = filters.transitionDateFrom;
+            }
+
+            if (filters.transitionDateTo) {
+                transitionDateRange[Op.lte] = filters.transitionDateTo;
+            }
+
+            if (Object.keys(transitionDateRange).length > 0) {
+                where.fechaTransicion = transitionDateRange;
+            }
         }
 
         if (filters.resultingGrade !== undefined) {
@@ -104,20 +127,10 @@ export class SubjectEnrollmentHistoryRepository extends BaseRepository {
         return where;
     }
 
-    /**
-     * Campos usados para búsqueda de texto.
-     *
-     * @returns {string[]}
-     */
     getSearchFields() {
         return ['observaciones'];
     }
 
-    /**
-     * Orden por defecto.
-     *
-     * @returns {Array}
-     */
     getDefaultSort() {
         return [
             ['fechaTransicion', 'ASC'],
@@ -125,34 +138,101 @@ export class SubjectEnrollmentHistoryRepository extends BaseRepository {
         ];
     }
 
-    /**
-     * Mapea datos de dominio a formato Sequelize para creación.
-     *
-     * @param {SubjectEnrollmentHistory|Object} data
-     * @param {number|null} userId
-     * @returns {Object}
-     */
     mapDataToModel(data, userId = null) {
-        return SubjectEnrollmentHistoryMapper.toModel(data);
+        const modelData = SubjectEnrollmentHistoryMapper.toModel(data);
+
+        if (userId !== null && userId !== undefined) {
+            modelData.createdBy = userId;
+        }
+
+        return modelData;
     }
 
-    /**
-     * Mapea datos de dominio a formato Sequelize para actualización.
-     *
-     * @param {SubjectEnrollmentHistory|Object} data
-     * @param {number|null} userId
-     * @returns {Object}
-     */
     mapDataToUpdate(data, userId = null) {
-        return SubjectEnrollmentHistoryMapper.toModelForUpdate(data);
+        const modelData = SubjectEnrollmentHistoryMapper.toModelForUpdate(data);
+
+        if (userId !== null && userId !== undefined) {
+            modelData.updatedBy = userId;
+        }
+
+        return modelData;
     }
 
-    /**
-     * Nombre de la colección en la respuesta JSON.
-     *
-     * @returns {string}
-     */
     getCollectionName() {
         return 'subjectEnrollmentHistories';
     }
+
+    /**
+     * Obtiene el estado vigente de una matrícula de materia.
+     */
+    async findCurrentBySubjectEnrollmentId(subjectEnrollmentId, options = {}) {
+        const model = await HistorialMatriculaModel.findOne({
+            where: {
+                matriculaMateriaId: subjectEnrollmentId,
+                vigente: true,
+                activo: true,
+                deletedAt: null,
+            },
+            order: [
+                ['fechaTransicion', 'DESC'],
+                ['id', 'DESC'],
+            ],
+            transaction: options.transaction,
+        });
+
+        return this.toEntity(model);
+    }
+
+    /**
+     * Busca historial asociado a una nivelación.
+     */
+    async findByLevelingId(levelingId, options = {}) {
+        const models = await HistorialMatriculaModel.findAll({
+            where: {
+                nivelacionId: levelingId,
+                activo: true,
+                deletedAt: null,
+            },
+            order: [
+                ['fechaTransicion', 'ASC'],
+                ['id', 'ASC'],
+            ],
+            transaction: options.transaction,
+        });
+
+        return models.map((model) => this.toEntity(model));
+    }
+
+    /**
+     * Marca como no vigentes los estados actuales de una matrícula.
+     *
+     * Útil antes de crear un nuevo registro vigente.
+     */
+    async expireCurrentBySubjectEnrollmentId(
+        subjectEnrollmentId,
+        userId = null,
+        options = {}
+    ) {
+        const updateData = {
+            vigente: false,
+        };
+
+        if (userId !== null && userId !== undefined) {
+            updateData.updatedBy = userId;
+        }
+
+        const [affectedRows] = await HistorialMatriculaModel.update(updateData, {
+            where: {
+                matriculaMateriaId: subjectEnrollmentId,
+                vigente: true,
+                activo: true,
+                deletedAt: null,
+            },
+            transaction: options.transaction,
+        });
+
+        return affectedRows;
+    }
 }
+
+export default SubjectEnrollmentHistoryRepository;

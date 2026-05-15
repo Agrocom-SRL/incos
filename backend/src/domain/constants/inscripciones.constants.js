@@ -62,11 +62,13 @@ export const ESTADOS_MATERIA_INSCRITA_VALUES = Object.values(
  *
  * Estos estados viven en historial_matricula.tipo_estado.
  */
-export const TIPOS_ESTADO_HISTORIAL_MATRICULA = {
+// domain/constants/inscripciones.constants.js
+
+export const TIPOS_ESTADO_HISTORIAL_MATRICULA = Object.freeze({
     NIVELACION_1RA: 'NIVELACION_1RA',
     NIVELACION_2DA: 'NIVELACION_2DA',
-    RECUPERATORIO_ANUAL: 'RECUPERATORIO_ANUAL',
     PRUEBA_EXCEPCIONAL: 'PRUEBA_EXCEPCIONAL',
+    RECUPERATORIO_ANUAL: 'RECUPERATORIO_ANUAL',
     VENCIDA: 'VENCIDA',
     CHOQUE_HORARIO: 'CHOQUE_HORARIO',
     PRE_REQUISITO: 'PRE_REQUISITO',
@@ -77,11 +79,11 @@ export const TIPOS_ESTADO_HISTORIAL_MATRICULA = {
     ABANDONO: 'ABANDONO',
     RETIRADO: 'RETIRADO',
     OTRO: 'OTRO',
-};
+});
 
 /**
  * Array de tipos de historial de matrícula válidos
  */
-export const TIPOS_ESTADO_HISTORIAL_MATRICULA_VALUES = Object.values(
-    TIPOS_ESTADO_HISTORIAL_MATRICULA
+export const TIPOS_ESTADO_HISTORIAL_MATRICULA_VALUES = Object.freeze(
+    Object.values(TIPOS_ESTADO_HISTORIAL_MATRICULA)
 );

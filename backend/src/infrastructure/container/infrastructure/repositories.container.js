@@ -113,7 +113,8 @@ import { TransferRepository } from '../../repositories/TransferRepository.js';
 // INSCRIPCIONES
 // ============================================
 import { EnrollmentRepository } from '../../repositories/EnrollmentRepository.js';
-import { EnrollmentSubjectRepository } from '../../repositories/EnrollmentSubjectRepository.js';
+import { SubjectEnrollmentRepository } from '../../repositories/SubjectEnrollmentRepository.js';
+import { SubjectEnrollmentHistoryRepository } from '../../repositories/SubjectEnrollmentHistoryRepository.js';
 
 // ============================================
 // PAGOS ACADÉMICOS
@@ -239,7 +240,8 @@ export function registerRepositoriesModule(container) {
     // INSCRIPCIONES
     // ============================================
     registerRepository(container, REPOSITORIOS_TOKENS.enrollmentRepository, EnrollmentRepository);
-    registerRepository(container, REPOSITORIOS_TOKENS.enrollmentSubjectRepository, EnrollmentSubjectRepository);
+    registerRepository(container, REPOSITORIOS_TOKENS.subjectEnrollmentRepository, SubjectEnrollmentRepository);
+    registerRepository(container, REPOSITORIOS_TOKENS.subjectEnrollmentHistoryRepository, SubjectEnrollmentHistoryRepository);
 
     // ============================================
     // PAGOS ACADÉMICOS
