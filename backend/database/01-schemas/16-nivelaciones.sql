@@ -2,29 +2,30 @@
 -- MÓDULO DE HISTORIAL Y NIVELACIONES (PARTE 3 de 4)
 -- Sistema de Gestión Académica - Instituto INCOS
 -- 2 Tablas: historial_previo, nivelaciones
--- 1 ALTER: asignaciones_docentes (política asistencia + cuotas override)
+-- 2 ALTERS: asignaciones_docentes (política asistencia + cuotas override),
+--           historial_matricula (FK a nivelaciones)
 -- ============================================
 --
--- Este archivo cierra el módulo académico con dos componentes:
+-- Este archivo cierra el módulo académico con tres componentes:
 --
--- A) HISTORIAL PREVIO Y NIVELACIONES
---    - historial_previo: materias aprobadas POR FUERA del flujo regular del
---      sistema. Sirve TRES casos:
---        1. ANTIGUO: cursó en INCOS pre-sistema (institucion_origen_id = NULL)
---        2. TRASPASO: materias aprobadas en otro ITT (institucion_origen_id = ITT)
---        3. TRANSITABILIDAD: convalidación en bloque del 1er año de INCOS por
---           Título Técnico Medio (institucion_origen_id = UETHP/CEA)
---    - nivelaciones: hasta 3 intentos de examen de nivelación para materias
---      reprobadas que el estudiante arrastra a gestiones posteriores.
+-- A) HISTORIAL PREVIO
+--    historial_previo: materias aprobadas POR FUERA del flujo regular del
+--    sistema. Sirve TRES casos diferenciados por institucion_origen_id:
+--      1. ANTIGUO: cursó en INCOS pre-sistema (institucion_origen_id = NULL)
+--      2. TRASPASO: materias aprobadas en otro ITT (institucion_origen_id = ITT)
+--      3. TRANSITABILIDAD: convalidación en bloque del 1er año de INCOS por
+--         Título Técnico Medio (institucion_origen_id = UETHP/CEA)
 --
--- B) ALTER A asignaciones_docentes
---    Cada docente decide al inicio del año:
---      - Política de asistencia (NO_AFECTA, COMPUTA_NOTA, CAUSA_REPROBACION)
---      - Parámetros asociados a esa política
---      - Override opcional de la cuota teórico/práctico institucional
---
--- NOTA: El ALTER a asistencias (FK a licencias) ya no vive aquí; ahora ambas
--- tablas se modelan integradas en 20-asistencias-y-licencias.sql.
+-- B) NIVELACIONES (intentos académicos de recuperación)
+--    Tabla unificada para los 4 tipos de intentos académicos donde el
+--    estudiante recupera una materia reprobada:
+--      - RECUPERATORIO_ANUAL: examen al cierre de la misma gestión (último
+--        intento antes de declarar la materia reprobada)
+--      - NIVELACION_1RA: primer intento en gestiones posteriores
+--      - NIVELACION_2DA: segundo intento si falló el primero
+--      - PRUEBA_EXCEPCIONAL: tercer y último intento (Art. 18 del reglamento)
+--    Después de PRUEBA_EXCEPCIONAL reprobada o vencimiento del plazo, el
+--    derecho VENCE y el estudiante debe re-cursar como matrícula regular.
 --
 -- RESTRICCIONES DE DISEÑO:
 --   - Todas las FKs permiten NULL
@@ -80,13 +81,6 @@ DROP TABLE IF EXISTS historial_previo;
 -- ALCANCE: Solo se registran materias APROBADAS. Las reprobadas no se cargan
 -- porque el estudiante debe re-cursarlas en la gestión vigente como matrícula
 -- regular en su paralelo.
---
--- VINCULACIÓN: Se vincula directamente a estudiante_id porque el historial
--- es del estudiante como persona, no de una matrícula específica.
---
--- USO: Para validar prerrequisitos al matricular materias y para emitir
--- certificados. La aplicación consulta esta tabla en paralelo con
--- matriculas_materia (estado=APROBADO) cuando necesita el historial completo.
 
 CREATE TABLE historial_previo (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -102,15 +96,7 @@ CREATE TABLE historial_previo (
     -- Resultado académico
     nota_final DECIMAL(5,2) NULL COMMENT 'Nota final obtenida (0-100). Nota mínima para aprobar: 61. Para TRANSITABILIDAD puede ser nota genérica institucional (ej. 70) ya que la convalidación es legal en bloque.',
     estado ENUM('APROBADO', 'CONVALIDADO') DEFAULT 'APROBADO' COMMENT 'Estado: APROBADO (cursó y aprobó), CONVALIDADO (por convalidación de otra institución o transitabilidad legal). Solo se registran resultados positivos.',
-    tipo_aprobacion ENUM('REGULAR', 'NIVELACION', 'RECUPERATORIO', 'CONVALIDACION') DEFAULT 'REGULAR' COMMENT 'Cómo se aprobó: REGULAR (cursando normal en INCOS pre-sistema), NIVELACION (examen de nivelación), RECUPERATORIO (recuperatorio anual), CONVALIDACION (de otra institución, incluye TRASPASO y TRANSITABILIDAD).',
-
-    -- Respaldo documental
-    respaldo_documento TEXT COMMENT 'Descripción del documento de respaldo (ej: Certificado de Calificaciones N° 123, Boletín Original Gestión 2023, Título de Técnico Medio UETHP)',
-    fecha_carga DATE NULL COMMENT 'Fecha en que se cargó este registro al sistema',
-
-    -- Observaciones
-    observaciones TEXT COMMENT 'Observaciones de la carga (ej: documento parcialmente legible, nota estimada, convalidación por transitabilidad con nota genérica)',
-
+    
     -- Campos de auditoría y control (ESTÁNDAR)
     activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
@@ -145,40 +131,62 @@ COMMENT='Materias aprobadas por fuera del flujo regular: ANTIGUO (INCOS pre-sist
 
 -- ============================================
 -- TABLA: nivelaciones
--- Exámenes de nivelación para materias reprobadas
+-- Intentos académicos de recuperación de materia reprobada
 -- ============================================
--- Cuando un estudiante reprueba una materia y queda con derecho a nivelación,
--- rinde un examen único de recuperación en gestiones posteriores. Tiene hasta
--- 3 intentos antes de perder el derecho:
---   - Intento 1 (NIVELACION_1RA): primera vez en la siguiente gestión
---   - Intento 2 (NIVELACION_2DA): segunda nivelación si falló la primera
---   - Intento 3 (PRUEBA_EXCEPCIONAL): tercer y último intento, Art. 18 reglamento
+-- Tabla unificada para los 4 tipos de intentos académicos donde el estudiante
+-- recupera una materia reprobada. Cada fila representa UN intento con su nota,
+-- fecha, evaluador y resultado.
 --
--- Si falla los 3 intentos o vence el plazo, el derecho VENCE y el estudiante
--- debe re-cursar la materia como matrícula regular (matriculas_materia).
+-- TIPOS DE INTENTO (campo tipo_intento):
+--   - RECUPERATORIO_ANUAL: examen al cierre de la MISMA gestión. Último
+--     intento antes de declarar la materia reprobada. Lo evalúa típicamente
+--     el mismo docente de la materia.
+--   - NIVELACION_1RA: primer intento en gestiones POSTERIORES. Si reprobó la
+--     materia en gestión X, puede rendir nivelación en X+1.
+--   - NIVELACION_2DA: segundo intento si falló la primera nivelación.
+--   - PRUEBA_EXCEPCIONAL: tercer y último intento, conforme Art. 18 del
+--     reglamento. Después de fallar este, el derecho VENCE y debe re-cursar.
 --
--- El estado paralelo en historial_matricula registra estas transiciones:
--- NIVELACION_1RA, NIVELACION_2DA, PRUEBA_EXCEPCIONAL, VENCIDA.
+-- RELACIÓN CON historial_matricula:
+-- Cada fila aquí se vincula con UNA fila en historial_matricula cuyo
+-- tipo_estado coincide (RECUPERATORIO_ANUAL, NIVELACION_1RA, NIVELACION_2DA,
+-- PRUEBA_EXCEPCIONAL). El vínculo se mantiene mediante la FK
+-- historial_matricula.nivelacion_id (agregada vía ALTER en este archivo).
+-- historial_matricula registra "qué pasó y cuándo"; nivelaciones registra
+-- "los datos académicos del intento".
+--
+-- CONTROL DE INTENTOS:
+-- numero_intento se incrementa secuencialmente: 0 para RECUPERATORIO_ANUAL
+-- (intento 0 = recuperación en la misma gestión), 1 para NIVELACION_1RA,
+-- 2 para NIVELACION_2DA, 3 para PRUEBA_EXCEPCIONAL. La validación de no
+-- exceder 3 intentos (sin contar el recuperatorio anual) vive en la aplicación.
 
 CREATE TABLE nivelaciones (
     id INT AUTO_INCREMENT PRIMARY KEY,
 
     -- Relaciones principales
-    estudiante_id INT NULL COMMENT 'Estudiante en nivelación (referencia a estudiantes)',
-    matricula_materia_id INT NULL COMMENT 'Materia reprobada original que genera el derecho a nivelación (referencia a matriculas_materia)',
-    asignatura_plan_id INT NULL COMMENT 'Asignatura del plan a nivelar (referencia a asignaturas_plan). Puede ser la misma que la reprobada o una equivalente.',
-    gestion_nivelacion_id INT NULL COMMENT 'Gestión en la que se rinde la nivelación (referencia a gestiones)',
-    docente_evaluador_id INT NULL COMMENT 'Docente que evaluó la nivelación (referencia a docentes)',
+    estudiante_id INT NULL COMMENT 'Estudiante que rinde el intento (referencia a estudiantes)',
+    matricula_materia_id INT NULL COMMENT 'Materia reprobada original que genera el derecho a recuperar (referencia a matriculas_materia)',
+    asignatura_plan_id INT NULL COMMENT 'Asignatura del plan a recuperar (referencia a asignaturas_plan). Puede ser la misma que la reprobada o una equivalente.',
+    gestion_id INT NULL COMMENT 'Gestión en la que se rinde el intento (referencia a gestiones). Para RECUPERATORIO_ANUAL es la misma gestión de la matrícula; para NIVELACION/PRUEBA_EXCEPCIONAL es una posterior.',
+    docente_evaluador_id INT NULL COMMENT 'Docente que evaluó el intento (referencia a docentes)',
 
+    -- Tipo y control de intento
+    tipo_intento ENUM(
+        'RECUPERATORIO_ANUAL',
+        'NIVELACION_1RA',
+        'NIVELACION_2DA',
+        'PRUEBA_EXCEPCIONAL'
+    ) NOT NULL DEFAULT 'NIVELACION_1RA' COMMENT 'Tipo de intento académico: RECUPERATORIO_ANUAL (al cierre de la misma gestión, intento 0), NIVELACION_1RA (intento 1, gestión siguiente), NIVELACION_2DA (intento 2), PRUEBA_EXCEPCIONAL (intento 3, último según Art. 18).',
+    
     -- Datos del intento
-    numero_intento INT NULL DEFAULT 1 COMMENT 'Número de intento (1, 2 o 3 según normativa)',
-    fecha_inicio DATE NULL COMMENT 'Fecha de inicio del proceso',
-    fecha_examen DATE NULL COMMENT 'Fecha del examen de nivelación',
+    fecha_examen DATE NULL COMMENT 'Fecha del examen',
+    numero_intento INT NULL DEFAULT 1 COMMENT 'Número secuencial de intento: 0 = RECUPERATORIO_ANUAL, 1 = NIVELACION_1RA, 2 = NIVELACION_2DA, 3 = PRUEBA_EXCEPCIONAL. Los intentos académicos posteriores al recuperatorio anual no deben exceder 3 (validación de aplicación).',
 
     -- Resultado
     nota_nivelacion DECIMAL(5,2) NULL COMMENT 'Nota obtenida (0-100). Mínima de aprobación: 61.',
     estado ENUM('PROGRAMADA', 'EN_CURSO', 'APROBADA', 'REPROBADA', 'CANCELADA') DEFAULT 'PROGRAMADA' COMMENT 'Estado del proceso',
-    aprobado BOOLEAN NULL COMMENT 'TRUE si aprobó la nivelación, FALSE si reprobó',
+    aprobado BOOLEAN NULL COMMENT 'TRUE si aprobó (nota_nivelacion >= 61), FALSE si reprobó',
 
     -- Observaciones
     observaciones TEXT COMMENT 'Observaciones del proceso',
@@ -198,58 +206,30 @@ CREATE TABLE nivelaciones (
     FOREIGN KEY (estudiante_id) REFERENCES estudiantes(id) ON DELETE SET NULL,
     FOREIGN KEY (matricula_materia_id) REFERENCES matriculas_materia(id) ON DELETE SET NULL,
     FOREIGN KEY (asignatura_plan_id) REFERENCES asignaturas_plan(id) ON DELETE SET NULL,
-    FOREIGN KEY (gestion_nivelacion_id) REFERENCES gestiones(id) ON DELETE SET NULL,
+    FOREIGN KEY (gestion_id) REFERENCES gestiones(id) ON DELETE SET NULL,
     FOREIGN KEY (docente_evaluador_id) REFERENCES docentes(id) ON DELETE SET NULL,
 
     -- Índices para optimización
     INDEX idx_estudiante_id (estudiante_id) COMMENT 'Búsqueda por estudiante',
     INDEX idx_matricula_materia_id (matricula_materia_id) COMMENT 'Búsqueda por materia reprobada original',
     INDEX idx_asignatura_plan_id (asignatura_plan_id) COMMENT 'Búsqueda por asignatura del plan',
-    INDEX idx_gestion_nivelacion_id (gestion_nivelacion_id) COMMENT 'Búsqueda por gestión',
+    INDEX idx_gestion_id (gestion_id) COMMENT 'Búsqueda por gestión',
+    INDEX idx_tipo_intento (tipo_intento) COMMENT 'Filtrado por tipo de intento',
     INDEX idx_estado (estado) COMMENT 'Filtrado por estado',
+    INDEX idx_aprobado (aprobado) COMMENT 'Filtrado por intentos aprobados/reprobados',
     INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
     INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
-    INDEX idx_estudiante_asignatura_intento (estudiante_id, asignatura_plan_id, numero_intento, activo, deleted_at) COMMENT 'Control de intentos por estudiante y asignatura'
+    INDEX idx_estudiante_asignatura_tipo (estudiante_id, asignatura_plan_id, tipo_intento, activo, deleted_at) COMMENT 'Control de intentos por estudiante, asignatura y tipo',
+    INDEX idx_matricula_tipo (matricula_materia_id, tipo_intento, activo, deleted_at) COMMENT 'Intentos asociados a una matrícula específica'
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Exámenes de nivelación (máximo 3 intentos por materia). Si el estudiante reprueba los 3, pierde el derecho (VENCIDA en historial_matricula) y debe re-cursar.';
+COMMENT='Intentos académicos de recuperación de materia reprobada. 4 tipos: RECUPERATORIO_ANUAL (misma gestión), NIVELACION_1RA/2DA (gestiones posteriores), PRUEBA_EXCEPCIONAL (último intento Art. 18). Vinculado con historial_matricula vía nivelacion_id.';
 
 -- ============================================
 -- FASE 3: REHABILITAR FOREIGN KEY CHECKS
 -- ============================================
 
 SET FOREIGN_KEY_CHECKS = 1;
-
--- ============================================
--- FASE 4: ALTER A asignaciones_docentes
--- Política de asistencia + override de cuota teórico/práctico
--- ============================================
--- Cada docente, al inicio del año, decide la política de asistencia de su curso:
---   - NO_AFECTA: la asistencia no influye en la nota
---   - COMPUTA_NOTA: la asistencia es un componente más, con un peso en la nota
---   - CAUSA_REPROBACION: no entra en la nota pero si baja del mínimo se reprueba
---
--- Adicionalmente, si la materia justifica un split distinto al institucional
--- (ej. taller con 20/80 en lugar del 30/70 estándar), se sobreescribe aquí.
--- Si los campos override son NULL, se usa la cuota institucional de
--- cuota_teorico_practico para la gestión correspondiente.
-
-ALTER TABLE asignaciones_docentes
-    ADD COLUMN politica_asistencia ENUM('NO_AFECTA', 'COMPUTA_NOTA', 'CAUSA_REPROBACION') DEFAULT 'NO_AFECTA'
-        COMMENT 'Política del docente sobre asistencia: NO_AFECTA (no influye en la nota), COMPUTA_NOTA (es componente de la nota), CAUSA_REPROBACION (si baja del mínimo, reprueba sin importar las notas)',
-    ADD COLUMN peso_asistencia DECIMAL(5,2) NULL
-        COMMENT 'Peso de la asistencia en la nota_final (0-100). Solo aplica si politica_asistencia = COMPUTA_NOTA.',
-    ADD COLUMN porcentaje_minimo_asistencia DECIMAL(5,2) NULL
-        COMMENT 'Porcentaje mínimo de asistencia exigido (0-100). Solo aplica si politica_asistencia = CAUSA_REPROBACION. Si el estudiante baja de este porcentaje, se aplica nota_si_reprueba_por_asistencia.',
-    ADD COLUMN nota_si_reprueba_por_asistencia DECIMAL(5,2) NULL
-        COMMENT 'Nota final asignada al estudiante si reprueba por asistencia (ej: 0 o 50). Solo aplica si politica_asistencia = CAUSA_REPROBACION.',
-    ADD COLUMN cuota_teorico_override DECIMAL(5,2) NULL
-        COMMENT 'Override de la cuota teórica institucional (cuota_teorico_practico). NULL = usar la cuota institucional de la gestión.',
-    ADD COLUMN cuota_practico_override DECIMAL(5,2) NULL
-        COMMENT 'Override de la cuota práctica institucional (cuota_teorico_practico). NULL = usar la cuota institucional de la gestión.';
-
-ALTER TABLE asignaciones_docentes
-    ADD INDEX idx_politica_asistencia (politica_asistencia) COMMENT 'Filtrado por política de asistencia';
 
 -- ============================================
 -- FIN DEL SCRIPT

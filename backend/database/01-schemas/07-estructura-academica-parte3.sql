@@ -301,14 +301,12 @@ COMMENT='Calendario académico: instancias de actividades con fechas específica
 -- Preserva historial de asignaciones por gestión para auditoría.
 -- El plan habilitado (gestiones_planes) garantiza coherencia entre curso y plan.
 --
--- Cambios sincronizados desde servidor/phpMyAdmin:
--- - practico_override
--- - teorico_override
--- - politica_asistencia
--- - minimo_asistencia
--- - nota_reprobada
--- - peso_asistencia
--- - índice idx_politica_asistencia
+-- Integra directamente:
+-- - Política de asistencia
+-- - Peso de asistencia
+-- - Mínimo de asistencia
+-- - Nota por reprobación de asistencia
+-- - Override teórico/práctico por asignación docente
 --
 -- Reglas mantenidas:
 -- - Todas las FKs permiten NULL
@@ -328,22 +326,33 @@ CREATE TABLE asignaciones_docentes (
     -- Carga horaria
     carga_horaria INT NULL COMMENT 'Horas de docencia por semana en este curso (hereda de asignaturas_plan.horas_semanales si NULL)',
 
-    -- Overrides económicos por docente/asignación
-    practico_override DECIMAL(5,2) NULL COMMENT 'Override de la cuota práctica institucional (cuota_teorico_practico). NULL = usar la cuota institucional de la gestión.',
-    teorico_override DECIMAL(5,2) NULL COMMENT 'Override de la cuota teórica institucional (cuota_teorico_practico). NULL = usar la cuota institucional de la gestión.',
+    -- Overrides económicos/académicos por docente/asignación
+    teorico_override DECIMAL(5,2) NULL
+        COMMENT 'Override de la cuota teórica institucional. NULL = usar la cuota institucional de la gestión desde cuota_teorico_practico.',
+
+    practico_override DECIMAL(5,2) NULL
+        COMMENT 'Override de la cuota práctica institucional. NULL = usar la cuota institucional de la gestión desde cuota_teorico_practico.',
 
     -- Política de asistencia definida para esta asignación docente
-    politica_asistencia ENUM('NO_AFECTA','COMPUTA_NOTA','CAUSA_REPROBACION')
-        DEFAULT 'NO_AFECTA'
-        COMMENT 'Política del docente sobre asistencia: NO_AFECTA (no influye en la nota), COMPUTA_NOTA (es componente de la nota), CAUSA_REPROBACION (si baja del mínimo, reprueba sin importar las notas)',
+    politica_asistencia ENUM(
+        'NO_AFECTA',
+        'COMPUTA_NOTA',
+        'CAUSA_REPROBACION'
+    ) DEFAULT 'NO_AFECTA'
+        COMMENT 'Política del docente sobre asistencia: NO_AFECTA no influye en la nota; COMPUTA_NOTA es componente de la nota; CAUSA_REPROBACION reprueba si baja del mínimo.',
 
-    minimo_asistencia DECIMAL(5,2) NULL COMMENT 'Porcentaje mínimo de asistencia exigido (0-100). Solo aplica si politica_asistencia = CAUSA_REPROBACION. Si el estudiante baja de este porcentaje, se aplica nota_si_reprueba_por_asistencia.',
-    nota_reprobada DECIMAL(5,2) NULL COMMENT 'Nota final asignada al estudiante si reprueba por asistencia (ej: 0 o 50). Solo aplica si politica_asistencia = CAUSA_REPROBACION.',
-    peso_asistencia DECIMAL(5,2) NULL COMMENT 'Peso de la asistencia en la nota_final (0-100). Solo aplica si politica_asistencia = COMPUTA_NOTA.',
+    peso_asistencia DECIMAL(5,2) NULL
+        COMMENT 'Peso de la asistencia en la nota_final (0-100). Solo aplica si politica_asistencia = COMPUTA_NOTA.',
+
+    minimo_asistencia DECIMAL(5,2) NULL
+        COMMENT 'Porcentaje mínimo de asistencia exigido (0-100). Solo aplica si politica_asistencia = CAUSA_REPROBACION.',
+
+    nota_reprobada DECIMAL(5,2) NULL
+        COMMENT 'Nota final asignada al estudiante si reprueba por asistencia. Solo aplica si politica_asistencia = CAUSA_REPROBACION.',
 
     -- Estado de la asignación
     fecha_asignacion DATE NULL COMMENT 'Fecha en que se asignó el docente',
-    motivo TEXT COMMENT 'Motivo de cancelación o rechazo (solo si vigente=FALSE)',
+    motivo TEXT COMMENT 'Motivo de cancelación o rechazo (solo si vigente = FALSE)',
     vigente BOOLEAN DEFAULT TRUE COMMENT 'Si la asignación está vigente (FALSE = cancelada o rechazada)',
 
     -- Campos de auditoría y control (ESTÁNDAR)
@@ -375,7 +384,6 @@ CREATE TABLE asignaciones_docentes (
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Asignación de docentes a cursos por plan habilitado. Vincula curso + plan_habilitado + docente. Preserva historial para auditoría académica. El docente puede ser NULL (pendiente).';
-
 
 -- ============================================
 -- FASE 3: REHABILITAR FOREIGN KEY CHECKS

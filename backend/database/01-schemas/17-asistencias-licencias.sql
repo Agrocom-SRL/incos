@@ -1,39 +1,60 @@
 -- ============================================
 -- MÓDULO DE ASISTENCIAS Y LICENCIAS (PARTE 4 de 4)
 -- Sistema de Gestión Académica - Instituto INCOS
--- 2 Tablas: licencias, asistencias
+-- 3 Tablas: licencias, clases_no_dictadas, asistencias
 -- ============================================
 --
 -- Este archivo cierra el módulo académico modelando el dominio operativo de
--- presencia en clase: cuándo el estudiante asistió, cuándo no, y cuándo su
--- ausencia está justificada por una licencia formal.
+-- presencia en clase: cuándo el estudiante asistió, cuándo no, y cuándo la
+-- clase misma no se dictó (licencia del docente, suspensión institucional, etc.).
 --
--- DECISIÓN DE DISEÑO (asistencias y licencias en el MISMO archivo):
--- Estas dos tablas resuelven la misma pregunta operativa: "¿el estudiante
--- asistió a clase? Si no, ¿hay justificación válida?". Modelar la licencia
--- por separado del registro de asistencia genera workarounds y duplicación
--- de lógica. Al integrarlas en un dominio único:
---   - La aplicación tiene UNA fuente de verdad para "presencia/ausencia"
---   - El estado LICENCIA en asistencias se vincula directamente a la licencia
---   - La validación "si hay licencia activa → forzar LICENCIA" se hace en una
---     sola capa, sin riesgo de inconsistencia
+-- DECISIÓN DE DISEÑO (tres tablas integradas en un mismo dominio):
+-- Las tres responden al mismo conjunto de preguntas operativas:
+--   - ¿Hubo clase ese día de esa materia? (clases_no_dictadas + actividades_calendario)
+--   - Si hubo clase, ¿el estudiante asistió? (asistencias)
+--   - Si no asistió, ¿tiene licencia formal que justifique? (licencias)
+-- Integradas como un solo dominio, la aplicación tiene UNA fuente de verdad para
+-- cada pregunta y validaciones consistentes.
 --
--- REGLA DE NEGOCIO PRINCIPAL (validación de aplicación):
--- Al registrar una asistencia, el sistema verifica si existe una licencia
--- APROBADA y vigente para esa fecha y estudiante. Si existe:
---   1. El estado se FUERZA automáticamente a 'LICENCIA'
---   2. La FK licencia_id se asigna a esa licencia
---   3. El docente NO puede marcar AUSENTE/TARDANZA en su lugar
--- Esto garantiza que las ausencias justificadas por licencia formal nunca
--- entren al cómputo de asistencia que afecta la nota o causa reprobación.
+-- JERARQUÍA DE VALIDACIÓN al calcular asistencia de un estudiante a una materia:
+--   1. ¿Tocaba clase ese día según horario? (cursos_horarios)
+--      NO → el día no se considera para nada
+--      SÍ → continuar
+--   2. ¿La clase se dictó? Cruce de dos fuentes:
+--      a. ¿Hay actividad institucional ese día? (actividades_calendario:
+--         FERIADO o RECESO) → no hubo clase, día neutro
+--      b. ¿Hay registro en clases_no_dictadas para ese curso+fecha? → no hubo
+--         clase, día neutro
+--      Si ambos NO → continuar
+--   3. ¿Cuál es la asistencia del estudiante? (asistencias)
+--      PRESENTE / AUSENTE / TARDANZA / LICENCIA según corresponda
+--
+-- ESTRATEGIA "FORMA B" PARA CLASES NO DICTADAS (sin duplicación):
+-- actividades_calendario gestiona eventos institucionales globales (feriados,
+-- recesos). clases_no_dictadas registra SOLO cancelaciones específicas NO
+-- cubiertas por el calendario: licencia del docente, suspensión puntual, otros.
+-- Los feriados no se replican aquí, viven solo en su fuente original. La
+-- aplicación, al calcular % de asistencia, hace UNION lógico entre ambas fuentes.
+--
+-- REGLA DE NEGOCIO PRINCIPAL para LICENCIA del estudiante:
+-- Al registrar una asistencia, si existe una licencia APROBADA y vigente para
+-- esa fecha y estudiante, el sistema FUERZA estado='LICENCIA' y vincula licencia_id.
+-- Esto garantiza que las ausencias justificadas por licencia formal nunca cuenten
+-- como AUSENTE en el cómputo que afecta la nota o causa reprobación.
 --
 -- INTEGRACIÓN CON POLÍTICAS DE ASISTENCIA (asignaciones_docentes):
 -- El cálculo de "porcentaje de asistencia" o "días ausentes" considera:
 --   - PRESENTE  → cuenta como asistencia completa
---   - TARDANZA  → cuenta según política del docente (típicamente como medio día)
+--   - TARDANZA  → cuenta según política del docente (típicamente medio día)
 --   - AUSENTE   → cuenta como ausencia (afecta política CAUSA_REPROBACION)
 --   - LICENCIA  → NO cuenta como ausencia ni asistencia (neutral)
--- El detalle de cómo cada política computa esto vive en la lógica de aplicación.
+--   - Día sin clase (clases_no_dictadas ∪ actividades_calendario) → NO cuenta
+--
+-- LICENCIAS DEL DOCENTE (fuera de alcance por ahora):
+-- Cuando un docente falta, esa ausencia se refleja indirectamente en
+-- clases_no_dictadas con motivo='LICENCIA_DOCENTE'. La gestión administrativa
+-- de la licencia del docente (solicitud, aprobación, respaldo, días totales)
+-- se modela aparte en un módulo de Recursos Humanos futuro.
 --
 -- RESTRICCIONES DE DISEÑO:
 --   - Todas las FKs permiten NULL
@@ -48,7 +69,6 @@ USE instituto_incos;
 
 -- ============================================
 -- FASE 1: ELIMINACIÓN DE TABLAS
--- Deshabilitamos foreign key checks para poder eliminar en cualquier orden
 -- ============================================
 
 SET FOREIGN_KEY_CHECKS = 0;
@@ -58,7 +78,6 @@ DROP TABLE IF EXISTS licencias;
 
 -- ============================================
 -- FASE 2: CREACIÓN DE TABLAS
--- Las foreign key checks siguen deshabilitadas durante la creación
 -- ============================================
 
 -- ============================================
@@ -77,13 +96,8 @@ DROP TABLE IF EXISTS licencias;
 --
 -- BLOQUEO AUTOMÁTICO DE ASISTENCIAS:
 -- Solo las licencias en estado APROBADA bloquean el registro de AUSENTE/TARDANZA
--- durante su rango de fechas (fecha_inicio a fecha_fin). Las demás (SOLICITADA,
--- RECHAZADA, CANCELADA) son informativas pero no bloquean.
---
--- ALCANCE: Una licencia puede aplicar a una inscripción específica (todas las
--- materias de esa gestión) o a un periodo del estudiante en general. El campo
--- inscripcion_id NULL indica que aplica a cualquier inscripción activa del
--- estudiante en el rango de fechas.
+-- durante su rango de fechas. Las demás (SOLICITADA, RECHAZADA, CANCELADA) son
+-- informativas pero no bloquean.
 
 CREATE TABLE licencias (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -144,44 +158,124 @@ CREATE TABLE licencias (
 COMMENT='Solicitudes de licencia del estudiante. Solo las APROBADAS bloquean el registro de AUSENTE/TARDANZA en asistencias durante su rango de fechas (validación de aplicación).';
 
 -- ============================================
+-- TABLA: clases_no_dictadas
+-- Cancelaciones específicas del dictado (Forma B: sin duplicar calendario)
+-- ============================================
+-- Registra cancelaciones específicas del dictado normal, NO cubiertas por
+-- actividades_calendario. La presencia de un registro aquí indica que ese día
+-- no debe contar para el cálculo de asistencia del estudiante (neutralidad total).
+--
+-- ESTRATEGIA FORMA B (sin duplicación con actividades_calendario):
+-- Los feriados y recesos académicos NO se duplican en esta tabla: viven
+-- únicamente en actividades_calendario (su fuente original). La aplicación,
+-- al calcular % de asistencia, hace UNION lógico entre ambas:
+--   días_sin_clase_curso_X =
+--       feriados/recesos de actividades_calendario que caen en día de clase de X
+--     ∪ filas en clases_no_dictadas para asignacion_docente_id = X
+--
+-- Esta tabla SOLO guarda cancelaciones específicas no globales:
+--   - LICENCIA_DOCENTE: el docente faltó (licencia médica, laboral, etc.).
+--     El detalle administrativo de la licencia del docente se modela en otro
+--     módulo a futuro (Recursos Humanos).
+--   - SUSPENSION_INSTITUCIONAL: paro, emergencia, evento institucional puntual
+--     que impide el dictado de uno o varios cursos específicos.
+--   - OTRO: cualquier otro motivo, especificado en descripcion_motivo
+--     (ej: corte de luz, problema de infraestructura en aula específica).
+--
+-- GRANULARIDAD (1 fila = 1 día de 1 curso):
+-- El docente o administrativo registra una fila por cada curso afectado en cada
+-- día sin clase. Esto NO se hace por estudiante (sería 35 inserts por día), sino
+-- por asignacion_docente_id (todos los estudiantes de ese curso se ven afectados
+-- automáticamente al calcular asistencia).
+
+CREATE TABLE clases_no_dictadas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+
+    -- Relaciones principales
+    asignacion_docente_id INT NULL COMMENT 'Asignación docente del curso afectado (referencia a asignaciones_docentes). Identifica la materia, paralelo y docente.',
+    docente_ausente_id INT NULL COMMENT 'Docente que faltó (referencia a docentes). Solo se llena si motivo = LICENCIA_DOCENTE. Útil para reportes de inasistencia docente.',
+    actividad_calendario_id INT NULL COMMENT 'Referencia opcional a una actividad institucional (referencia a actividades_calendario). Por Forma B generalmente NULL: los feriados y recesos no se replican aquí. Se usa solo si una SUSPENSION_INSTITUCIONAL también se modeló como actividad.',
+
+    -- Fecha y hora afectada
+    fecha_clase DATE NOT NULL COMMENT 'Fecha de la clase que no se dictó',
+    hora_clase TIME NULL COMMENT 'Hora específica del bloque afectado (opcional, si la cancelación afecta solo un bloque del día)',
+
+    -- Motivo de la no clase (3 motivos: Forma B sin duplicar calendario)
+    motivo ENUM(
+        'LICENCIA_DOCENTE',
+        'SUSPENSION_INSTITUCIONAL',
+        'OTRO'
+    ) NOT NULL COMMENT 'Motivo: LICENCIA_DOCENTE (el docente faltó); SUSPENSION_INSTITUCIONAL (paro, emergencia, evento puntual); OTRO (corte de luz, problema de infraestructura, etc.). Los feriados y recesos viven en actividades_calendario, NO se replican aquí (Forma B).',
+    descripcion_motivo TEXT COMMENT 'Descripción detallada (obligatorio si motivo = OTRO; opcional para los demás)',
+
+    -- Recuperación de la clase (opcional)
+    se_recupera BOOLEAN DEFAULT FALSE COMMENT 'Indica si la clase se va a recuperar en otra fecha (decisión del docente o dirección)',
+    fecha_recuperacion DATE NULL COMMENT 'Fecha programada para recuperar la clase, si aplica',
+    observaciones TEXT COMMENT 'Observaciones adicionales sobre la cancelación o recuperación',
+
+    -- Registrado por
+    registrado_por INT NULL COMMENT 'Usuario que registró la no clase (docente, coordinador, dirección académica)',
+    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha y hora en que se registró',
+
+    -- Campos de auditoría y control (ESTÁNDAR)
+    activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
+    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
+    created_by INT NULL COMMENT 'Usuario que creó',
+    updated_by INT NULL COMMENT 'Usuario que modificó',
+    deleted_by INT NULL COMMENT 'Usuario que eliminó',
+
+    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
+    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
+
+    FOREIGN KEY (asignacion_docente_id) REFERENCES asignaciones_docentes(id) ON DELETE SET NULL,
+    FOREIGN KEY (docente_ausente_id) REFERENCES docentes(id) ON DELETE SET NULL,
+    FOREIGN KEY (actividad_calendario_id) REFERENCES actividades_calendario(id) ON DELETE SET NULL,
+
+    -- Índices para optimización
+    INDEX idx_asignacion_docente_id (asignacion_docente_id) COMMENT 'Búsqueda por curso afectado',
+    INDEX idx_docente_ausente_id (docente_ausente_id) COMMENT 'Búsqueda por docente que faltó (reportes)',
+    INDEX idx_actividad_calendario_id (actividad_calendario_id) COMMENT 'Búsqueda por actividad de calendario',
+    INDEX idx_fecha_clase (fecha_clase) COMMENT 'Búsqueda por fecha',
+    INDEX idx_motivo (motivo) COMMENT 'Filtrado por motivo',
+    INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
+    INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
+    INDEX idx_asignacion_fecha (asignacion_docente_id, fecha_clase, activo, deleted_at) COMMENT 'Verificación rápida: ¿este curso tuvo clase este día?',
+    INDEX idx_fecha_motivo (fecha_clase, motivo, activo, deleted_at) COMMENT 'Reportes por día y tipo de cancelación'
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+COMMENT='Cancelaciones específicas del dictado NO cubiertas por actividades_calendario (Forma B). 3 motivos: LICENCIA_DOCENTE, SUSPENSION_INSTITUCIONAL, OTRO. Feriados y recesos viven en actividades_calendario y se cruzan dinámicamente al calcular asistencia.';
+
+-- ============================================
 -- TABLA: asistencias
 -- Registro de asistencia del estudiante a clases
 -- ============================================
--- Refactorización del modelo anterior. Cambios principales:
+-- Estado simplificado a 4 valores:
+--   - PRESENTE: el estudiante asistió a la clase
+--   - AUSENTE:  el estudiante no asistió, sin justificación válida
+--   - TARDANZA: el estudiante llegó tarde
+--   - LICENCIA: ausencia cubierta por licencia formal aprobada
 --
--- 1. Estado simplificado a 4 valores únicos:
---    - PRESENTE: el estudiante asistió a la clase
---    - AUSENTE:  el estudiante no asistió, sin justificación válida
---    - TARDANZA: el estudiante llegó tarde
---    - LICENCIA: ausencia cubierta por licencia formal aprobada
---
--- 2. Eliminados los campos motivo_justificacion y documento_justificacion_id:
---    la justificación ahora vive exclusivamente en la tabla licencias
---    (única fuente de verdad). Si la ausencia está justificada por licencia,
---    estado = 'LICENCIA' y licencia_id apunta a la licencia. Si no hay
---    licencia, la ausencia es simplemente AUSENTE.
---
--- 3. Agregada FK directa a licencia_id: vínculo formal con la licencia que
---    justifica esta ausencia. NULL para PRESENTE, AUSENTE y TARDANZA.
---    Obligatorio (en lógica de aplicación) cuando estado = LICENCIA.
---
--- 4. FK renombrada: inscripcion_materia_id → matricula_materia_id, alineado
---    con el nuevo nombre de la tabla en archivo 17.
+-- La justificación vive exclusivamente en la tabla licencias (única fuente de
+-- verdad). Si la ausencia está justificada, estado='LICENCIA' y licencia_id
+-- apunta a la licencia. Si no hay licencia, la ausencia es AUSENTE.
 --
 -- REGLA AUTOMÁTICA (validación de aplicación):
 -- Al insertar/actualizar una asistencia, el sistema:
---   1. Consulta si existe una licencia APROBADA y vigente para esa fecha y
---      estudiante (via matricula_materia → inscripcion → estudiante)
---   2. Si existe: fuerza estado = 'LICENCIA' y asigna licencia_id
---   3. Si no existe: respeta lo que el docente marcó (PRESENTE/AUSENTE/TARDANZA)
--- Esto garantiza que las ausencias con licencia formal nunca cuenten como
--- AUSENTE en el cómputo de asistencia que afecta nota o causa reprobación.
+--   1. Verifica que NO sea día de feriado/receso (actividades_calendario) ni
+--      día con cancelación específica (clases_no_dictadas).
+--      Si existe → bloquea, no se registra asistencia ese día.
+--   2. Consulta si existe una licencia APROBADA y vigente para esa fecha y
+--      estudiante (via matricula_materia → inscripcion → estudiante).
+--   3. Si existe licencia: fuerza estado='LICENCIA' y asigna licencia_id.
+--   4. Si no existe licencia: respeta lo que el docente marcó.
 
 CREATE TABLE asistencias (
     id INT AUTO_INCREMENT PRIMARY KEY,
 
     -- Relaciones principales
-    matricula_materia_id INT NULL COMMENT 'Matrícula a la materia a la que pertenece esta asistencia (referencia a matriculas_materia). Permite obtener el estudiante y la materia.',
+    matricula_materia_id INT NULL COMMENT 'Matrícula a la materia (referencia a matriculas_materia). Permite obtener el estudiante y la materia.',
     licencia_id INT NULL COMMENT 'Licencia que justifica la ausencia (referencia a licencias). Obligatorio si estado = LICENCIA. NULL para PRESENTE, AUSENTE o TARDANZA.',
 
     -- Fecha y hora de la clase
@@ -193,11 +287,11 @@ CREATE TABLE asistencias (
         COMMENT 'Estado: PRESENTE (asistió), AUSENTE (no asistió sin justificación), TARDANZA (llegó tarde), LICENCIA (ausencia justificada por licencia formal, fuerza vínculo con licencia_id)',
 
     -- Observaciones
-    observaciones TEXT NULL COMMENT 'Observaciones adicionales del docente sobre la asistencia (ej: motivo de tardanza, comportamiento)',
+    observaciones TEXT NULL COMMENT 'Observaciones adicionales del docente sobre la asistencia',
 
     -- Registrado por
     registrado_por INT NULL COMMENT 'Usuario que registró la asistencia (típicamente el docente)',
-    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha y hora exacta en que se registró la asistencia',
+    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha y hora exacta en que se registró',
 
     -- Campos de auditoría y control (ESTÁNDAR)
     activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
@@ -227,7 +321,7 @@ CREATE TABLE asistencias (
     INDEX idx_registrado_por (registrado_por) COMMENT 'Búsqueda por usuario que registró'
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Registro de asistencia por clase. Estado simple (PRESENTE/AUSENTE/TARDANZA/LICENCIA). Si hay licencia APROBADA vigente para la fecha, el sistema fuerza estado=LICENCIA y vincula licencia_id (validación de aplicación).';
+COMMENT='Registro de asistencia por clase. Estado simple (PRESENTE/AUSENTE/TARDANZA/LICENCIA). Si hay licencia APROBADA vigente, sistema fuerza estado=LICENCIA. No se registra asistencia en días sin clase (cruce con actividades_calendario y clases_no_dictadas).';
 
 -- ============================================
 -- FASE 3: REHABILITAR FOREIGN KEY CHECKS
