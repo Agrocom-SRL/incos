@@ -149,5 +149,61 @@ export class TeacherAssignmentRepository extends BaseRepository {
   getCollectionName() {
     return 'teacherAssignments';
   }
+
+  /**
+   * @param {Object} filters
+   * @param {boolean} [filters.includeDeleted] - Incluye filas con soft delete (paranoid: false).
+   * @param {number|null} page
+   * @param {number|null} limit
+   * @returns {Promise<Object>}
+   */
+  async findAll(filters = {}, page = null, limit = null) {
+    if (!filters.includeDeleted) {
+      return super.findAll(filters, page, limit);
+    }
+
+    const Model = this.getModel();
+    const where = {
+      ...this.buildWhereClause(filters),
+    };
+
+    if (!filters.includeInactive) {
+      where.activo = true;
+    }
+
+    const options = {
+      where,
+      paranoid: false,
+      order: filters.sort
+        ? [[filters.sort.split(':')[0], filters.sort.includes(':') ? filters.sort.split(':')[1] : 'ASC']]
+        : this._getEffectiveSort(),
+    };
+
+    if (filters.attributes && Array.isArray(filters.attributes) && filters.attributes.length > 0) {
+      options.attributes = filters.attributes;
+    }
+
+    if (page && limit) {
+      const offset = (page - 1) * limit;
+      options.limit = limit;
+      options.offset = offset;
+
+      const { count, rows } = await Model.findAndCountAll(options);
+      const collectionName = this.getCollectionName();
+      return {
+        [collectionName]: rows.map((model) => this.toEntity(model)),
+        total: count,
+        page,
+        limit,
+      };
+    }
+
+    const rows = await Model.findAll(options);
+    const collectionName = this.getCollectionName();
+    return {
+      [collectionName]: rows.map((model) => this.toEntity(model)),
+      total: rows.length,
+    };
+  }
 }
 

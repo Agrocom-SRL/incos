@@ -5,6 +5,7 @@
 import { NotFoundError, UnprocessableEntityError } from '../../../domain/errors/index.js';
 import { TeacherAssignment } from '../../../domain/entities/TeacherAssignment.js';
 import { TeacherAssignmentListMapper } from '../../mappers/docentes/TeacherAssignmentListMapper.js';
+import { todayDateOnlyLocal, defaultWeeklyHoursFromPlan } from '../../utils/teacherAssignmentFieldDefaults.js';
 
 function hasOwn(obj, key) {
   return Object.prototype.hasOwnProperty.call(obj || {}, key);
@@ -147,6 +148,30 @@ export class UpdateTeacherAssignmentUseCase {
     if (hasOwn(payload, 'fechaAsignacion')) {
       updateData.assignmentDate =
         payload.fechaAsignacion == null || payload.fechaAsignacion === '' ? null : payload.fechaAsignacion;
+    }
+
+    if (updateData.teacherId !== undefined) {
+      const prev = existing.teacherId != null ? Number(existing.teacherId) : null;
+      const next = updateData.teacherId != null ? Number(updateData.teacherId) : null;
+      const docenteCambio = prev !== next;
+      if (docenteCambio && !hasOwn(payload, 'fechaAsignacion')) {
+        updateData.assignmentDate = todayDateOnlyLocal();
+      }
+      if (
+        docenteCambio &&
+        !hasOwn(payload, 'cargaHoraria') &&
+        (existing.hours == null || existing.hours === '')
+      ) {
+        const courseRow = await this.courseRepository.findById(existing.courseId);
+        const planSubjectId = courseRow?.planSubjectId ?? null;
+        if (planSubjectId) {
+          const ps = await this.planSubjectRepository.findById(planSubjectId);
+          const ph = defaultWeeklyHoursFromPlan(ps?.weeklyHours);
+          if (ph != null) {
+            updateData.hours = ph;
+          }
+        }
+      }
     }
 
     if (Object.keys(updateData).length === 0) {

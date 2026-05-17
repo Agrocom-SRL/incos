@@ -94,11 +94,6 @@ LEFT JOIN inscripciones i
 INNER JOIN vista_base_asignaciones_inscripciones vai 
   ON vai.inscripcion_id = vie.inscripcion_id
 
-INNER JOIN matriculas_materia mm 
-  ON mm.id = vai.matricula_materia_id
-  AND mm.activo = TRUE
-  AND mm.deleted_at IS NULL
-
 INNER JOIN vista_base_cursos_asignaturas vca 
   ON vca.curso_id = vai.curso_id
 

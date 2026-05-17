@@ -12,8 +12,10 @@ import { IRepository } from './IRepository.js';
  * database/01-schemas/17-inscripciones-parte1.sql
  *
  * NOTA:
- * Solo extiende IRepository sin métodos adicionales.
- * La especialización está en la implementación concreta mediante buildWhereClause().
+ * Solo extiende IRepository sin métodos adicionales de dominio cruzado.
+ * La especialización de consulta vive en SubjectEnrollmentRepository.buildWhereClause()
+ * (p. ej. teacherAssignmentIds para filtros IN); la orquestación entre asignación docente
+ * y matrícula de materia va en casos de uso de la capa application.
  *
  * Métodos heredados de IRepository:
  * - findById(id)

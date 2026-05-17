@@ -9,6 +9,7 @@ import {
   ConflictError,
 } from '../../../domain/errors/index.js';
 import { TeacherAssignmentListMapper } from '../../mappers/docentes/TeacherAssignmentListMapper.js';
+import { todayDateOnlyLocal, defaultWeeklyHoursFromPlan } from '../../utils/teacherAssignmentFieldDefaults.js';
 
 export class CreateTeacherAssignmentUseCase {
   /**
@@ -26,6 +27,7 @@ export class CreateTeacherAssignmentUseCase {
     courseRepository,
     managementPlanRepository,
     planSubjectRepository,
+    syncMatriculasTeacherAssignmentUseCase,
     logger,
   }) {
     this.teacherAssignmentRepository = teacherAssignmentRepository;
@@ -33,6 +35,7 @@ export class CreateTeacherAssignmentUseCase {
     this.courseRepository = courseRepository;
     this.managementPlanRepository = managementPlanRepository;
     this.planSubjectRepository = planSubjectRepository;
+    this.syncMatriculasTeacherAssignmentUseCase = syncMatriculasTeacherAssignmentUseCase;
     this.logger = logger;
   }
 
@@ -106,13 +109,25 @@ export class CreateTeacherAssignmentUseCase {
       );
     }
 
-    const carga = body.cargaHoraria != null && body.cargaHoraria !== '' ? Number(body.cargaHoraria) : undefined;
-    const hours = Number.isFinite(carga) && carga >= 0 ? carga : undefined;
+    const planHours = defaultWeeklyHoursFromPlan(planSubject.weeklyHours);
+    let hours;
+    if (body.cargaHoraria != null && body.cargaHoraria !== '') {
+      const carga = Number(body.cargaHoraria);
+      hours =
+        Number.isFinite(carga) && carga >= 0 ? Math.round(carga) : planHours ?? undefined;
+    } else {
+      hours = planHours ?? undefined;
+    }
 
     const vigente =
       body.vigente === undefined || body.vigente === null
         ? true
         : body.vigente === true || body.vigente === 'true' || body.vigente === 1 || body.vigente === '1';
+
+    const assignmentDate =
+      body.fechaAsignacion != null && String(body.fechaAsignacion).trim() !== ''
+        ? body.fechaAsignacion
+        : todayDateOnlyLocal();
 
     const entity = new TeacherAssignment({
       managementPlanId: gestionPlanId,
@@ -120,10 +135,17 @@ export class CreateTeacherAssignmentUseCase {
       teacherId: docenteId,
       hours,
       active: vigente,
-      assignmentDate: body.fechaAsignacion ?? undefined,
+      assignmentDate,
     });
 
     const created = await this.teacherAssignmentRepository.create(entity, userId);
+
+    await this.syncMatriculasTeacherAssignmentUseCase.repointAfterAssignmentCreated({
+      managementPlanId: gestionPlanId,
+      courseId: cursoId,
+      newTeacherAssignmentId: created.id,
+      userId,
+    });
 
     return {
       asignacion: TeacherAssignmentListMapper.entityToPresentation(created),

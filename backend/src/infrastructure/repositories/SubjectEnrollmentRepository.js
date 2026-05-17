@@ -49,6 +49,7 @@ export class SubjectEnrollmentRepository extends BaseRepository {
      *   - enrollmentId
      *   - enrollmentIds
      *   - teacherAssignmentId
+     *   - teacherAssignmentIds
      *   - curriculumSubjectId
      *   - finalGrade
      *   - status
@@ -69,7 +70,13 @@ export class SubjectEnrollmentRepository extends BaseRepository {
             where.inscripcionId = filters.enrollmentId;
         }
 
-        if (filters.teacherAssignmentId) {
+        if (
+            filters.teacherAssignmentIds &&
+            Array.isArray(filters.teacherAssignmentIds) &&
+            filters.teacherAssignmentIds.length > 0
+        ) {
+            where.asignacionDocenteId = { [Op.in]: filters.teacherAssignmentIds };
+        } else if (filters.teacherAssignmentId) {
             where.asignacionDocenteId = filters.teacherAssignmentId;
         }
 

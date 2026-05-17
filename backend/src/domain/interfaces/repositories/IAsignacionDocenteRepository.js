@@ -4,8 +4,10 @@ import { IRepository } from './IRepository.js';
  * Interfaz de Repositorio: IAsignacionDocenteRepository
  * Define el contrato que debe cumplir el repositorio de asignaciones de docentes
  * 
- * NOTA: Solo extiende IRepository sin métodos adicionales.
- * La especialización está en la implementación (buildWhereClause), no en la interfaz.
+ * NOTA: Solo extiende IRepository sin métodos adicionales de dominio cruzado.
+ * La especialización de consulta está en TeacherAssignmentRepository (buildWhereClause,
+ * findAll con includeDeleted). La sincronización con matriculas_materia se orquesta
+ * en casos de uso (application), no en este repositorio.
  * 
  * Métodos heredados de IRepository:
  * - findById(id)

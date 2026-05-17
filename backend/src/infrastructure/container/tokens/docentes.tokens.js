@@ -14,6 +14,7 @@ export const DOCENTES_TOKENS = {
   deleteTeacherController: 'docentes.deleteTeacherController',
   listTeacherAssignmentsUseCase: 'docentes.listTeacherAssignmentsUseCase',
   listTeacherAssignmentsController: 'docentes.listTeacherAssignmentsController',
+  syncMatriculasTeacherAssignmentUseCase: 'docentes.syncMatriculasTeacherAssignmentUseCase',
   createTeacherAssignmentUseCase: 'docentes.createTeacherAssignmentUseCase',
   createTeacherAssignmentController: 'docentes.createTeacherAssignmentController',
   assignTeacherToCourseUseCase: 'docentes.assignTeacherToCourseUseCase',

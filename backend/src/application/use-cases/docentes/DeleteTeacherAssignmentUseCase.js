@@ -6,12 +6,14 @@ import { NotFoundError } from '../../../domain/errors/index.js';
 
 export class DeleteTeacherAssignmentUseCase {
   /**
-   * @param {Object} deps
-   * @param {import('../../../infrastructure/repositories/TeacherAssignmentRepository.js').TeacherAssignmentRepository} deps.teacherAssignmentRepository
-   * @param {Object} deps.logger
+ * @param {Object} deps
+ * @param {import('../../../infrastructure/repositories/TeacherAssignmentRepository.js').TeacherAssignmentRepository} deps.teacherAssignmentRepository
+ * @param {import('./SyncMatriculasTeacherAssignmentUseCase.js').SyncMatriculasTeacherAssignmentUseCase} deps.syncMatriculasTeacherAssignmentUseCase
+ * @param {Object} deps.logger
    */
-  constructor({ teacherAssignmentRepository, logger }) {
+  constructor({ teacherAssignmentRepository, syncMatriculasTeacherAssignmentUseCase, logger }) {
     this.teacherAssignmentRepository = teacherAssignmentRepository;
+    this.syncMatriculasTeacherAssignmentUseCase = syncMatriculasTeacherAssignmentUseCase;
     this.logger = logger;
   }
 
@@ -30,6 +32,11 @@ export class DeleteTeacherAssignmentUseCase {
     if (!existing) {
       throw new NotFoundError('Asignación docente');
     }
+
+    await this.syncMatriculasTeacherAssignmentUseCase.clearBeforeAssignmentDelete({
+      teacherAssignmentId: id,
+      userId,
+    });
 
     const deleted = await this.teacherAssignmentRepository.delete(id, userId);
     if (!deleted) {

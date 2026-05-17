@@ -1,6 +1,10 @@
 import { TeacherAssignment } from '../../../domain/entities/TeacherAssignment.js';
 import { NotFoundError, UnprocessableEntityError } from '../../../domain/errors/index.js';
 import { TeacherAssignmentListMapper } from '../../mappers/docentes/TeacherAssignmentListMapper.js';
+import {
+  todayDateOnlyLocal,
+  defaultWeeklyHoursFromPlan,
+} from '../../utils/teacherAssignmentFieldDefaults.js';
 
 export class AssignTeacherToCourseUseCase {
   constructor({
@@ -11,6 +15,7 @@ export class AssignTeacherToCourseUseCase {
     planSubjectRepository,
     managementPlanRepository,
     managementRepository,
+    syncMatriculasTeacherAssignmentUseCase,
     logger,
   }) {
     this.teacherAssignmentRepository = teacherAssignmentRepository;
@@ -20,6 +25,7 @@ export class AssignTeacherToCourseUseCase {
     this.planSubjectRepository = planSubjectRepository;
     this.managementPlanRepository = managementPlanRepository;
     this.managementRepository = managementRepository;
+    this.syncMatriculasTeacherAssignmentUseCase = syncMatriculasTeacherAssignmentUseCase;
     this.logger = logger;
   }
 
@@ -68,14 +74,34 @@ export class AssignTeacherToCourseUseCase {
       active: true,
     });
 
+    const planHours = defaultWeeklyHoursFromPlan(planSubject.weeklyHours);
+
     let asignacion;
     if (existing) {
+      const patch = {
+        teacherId: docenteId,
+        active: vigente,
+      };
+
+      const prevDocente = existing.teacherId != null ? Number(existing.teacherId) : null;
+      const docenteCambio = prevDocente !== docenteId;
+      const sinFecha =
+        existing.assignmentDate == null ||
+        existing.assignmentDate === '' ||
+        (typeof existing.assignmentDate === 'string' && String(existing.assignmentDate).trim() === '');
+
+      if (docenteCambio || sinFecha) {
+        patch.assignmentDate = todayDateOnlyLocal();
+      }
+
+      const sinCarga = existing.hours == null || existing.hours === '';
+      if (sinCarga && planHours != null) {
+        patch.hours = planHours;
+      }
+
       const updated = await this.teacherAssignmentRepository.update(
         existing.id,
-        new TeacherAssignment({
-          teacherId: docenteId,
-          active: vigente,
-        }),
+        new TeacherAssignment(patch),
         userId
       );
       asignacion = TeacherAssignmentListMapper.entityToPresentation(updated);
@@ -86,9 +112,17 @@ export class AssignTeacherToCourseUseCase {
           courseId: cursoId,
           teacherId: docenteId,
           active: vigente,
+          hours: planHours ?? undefined,
+          assignmentDate: todayDateOnlyLocal(),
         }),
         userId
       );
+      await this.syncMatriculasTeacherAssignmentUseCase.repointAfterAssignmentCreated({
+        managementPlanId,
+        courseId: cursoId,
+        newTeacherAssignmentId: created.id,
+        userId,
+      });
       asignacion = TeacherAssignmentListMapper.entityToPresentation(created);
     }
 

@@ -42,6 +42,17 @@ const DocenteAsignacionCursoModal = ({
     const { hasPermiso } = useAuthContext();
     const puedeGuardarAsignacion = hasPermiso('docentes.asignar', 'EDITAR');
 
+    const horasPlanReferencia = useMemo(() => {
+        const v =
+            selectedCourse?.horasSemanalesPlan ??
+            selectedCourse?.horasPlan ??
+            selectedCourse?.horas_semanales_plan ??
+            null;
+        if (v == null || v === '') return null;
+        const n = Number(v);
+        return Number.isFinite(n) ? n : null;
+    }, [selectedCourse]);
+
     const docenteCandidates = useMemo(() => {
         const query = candidateSearch.trim().toLowerCase();
         const mapped = docentes
@@ -213,6 +224,40 @@ const DocenteAsignacionCursoModal = ({
                     <Text type="secondary">
                         Paralelo: {paraleloLabel || '—'} · Materia: {selectedCourse?.materiaNombre || '—'}
                     </Text>
+                    <Alert
+                        type="info"
+                        showIcon
+                        style={{ marginBottom: 4 }}
+                        title="Fecha y carga de la asignación"
+                        description={
+                            <div style={{ fontSize: 13 }}>
+                                <div>
+                                    <Text strong>Fecha de asignación: </Text>
+                                    {cursoAsignacion?.fechaAsignacion ? (
+                                        <Text>{String(cursoAsignacion.fechaAsignacion)}</Text>
+                                    ) : (
+                                        <Text type="secondary">
+                                            Sin fecha registrada — al guardar se usará la fecha de hoy.
+                                        </Text>
+                                    )}
+                                </div>
+                                <div style={{ marginTop: 6 }}>
+                                    <Text strong>Carga horaria: </Text>
+                                    {cursoAsignacion?.cargaHoraria != null && cursoAsignacion?.cargaHoraria !== '' ? (
+                                        <Text>{cursoAsignacion.cargaHoraria} h/semana</Text>
+                                    ) : (
+                                        <Text type="secondary">
+                                            Sin carga registrada — al guardar se tomará la del plan de la materia
+                                            {horasPlanReferencia != null
+                                                ? ` (${horasPlanReferencia} h/semana según esta oferta)`
+                                                : ''}
+                                            .
+                                        </Text>
+                                    )}
+                                </div>
+                            </div>
+                        }
+                    />
                     <DocenteHorarioSemanalGrid
                         courseSchedules={selectedCourse ? [selectedCourse] : []}
                         editable={false}
