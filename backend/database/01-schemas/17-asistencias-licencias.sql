@@ -100,7 +100,6 @@ CREATE TABLE licencias (
     deleted_by INT NULL COMMENT 'Usuario que eliminó',
 
     FOREIGN KEY (inscripcion_id) REFERENCES inscripciones(id) ON DELETE SET NULL,
-    FOREIGN KEY (documento_respaldo_id) REFERENCES documentos_estudiante(id) ON DELETE SET NULL,
 
     INDEX idx_inscripcion_id (inscripcion_id) COMMENT 'Búsqueda por inscripción',
     INDEX idx_estado (estado) COMMENT 'Filtrado por estado',
@@ -108,14 +107,12 @@ CREATE TABLE licencias (
     INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
     INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
     INDEX idx_inscripcion_fechas (inscripcion_id, fecha_inicio, fecha_fin, estado, activo, deleted_at) COMMENT 'Licencias vigentes para cruce dinámico con asistencias',
-    INDEX idx_inscripcion_estado (inscripcion_id, estado, activo, deleted_at) COMMENT 'Licencias por inscripción y estado',
-    INDEX idx_fecha_decision (fecha_decision, estado) COMMENT 'Búsqueda por fecha de decisión'
+    INDEX idx_inscripcion_estado (inscripcion_id, estado, activo, deleted_at) COMMENT 'Licencias por inscripción y estado'
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Licencias estudiantiles por inscripción y rango de fechas. Solo APROBADAS neutralizan ausencias (cruce dinámico, sin FK en asistencias). Máx. 15 días/gestión.';
 
 -- ============================================
--- TABLA: clases_no_dictadas
 -- TABLA: clases_no_dictadas
 -- Cancelaciones específicas del dictado (Forma B: sin duplicar calendario)
 -- ============================================
