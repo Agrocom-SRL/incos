@@ -9,7 +9,7 @@ import { IRepository } from './IRepository.js';
  * → SubjectEnrollmentHistory / SubjectEnrollmentHistoryMapper / SubjectEnrollmentHistoryRepository
  *
  * DDL:
- * database/01-schemas/17-inscripciones-parte1.sql
+ * database/01-schemas/17-historial-matricula.sql
  *
  * NOTA:
  * Solo extiende IRepository sin métodos adicionales.

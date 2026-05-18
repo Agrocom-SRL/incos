@@ -1,13 +1,13 @@
 -- ============================================
--- MÓDULO DE EVALUACIONES (PARTE 2 de 3)
+-- MÓDULO DE EVALUACIONES (PARTE 2 de 5)
 -- Sistema de Gestión Académica - Instituto INCOS
 -- 5 Tablas: tipos_evaluacion, cuota_teorico_practico,
 --           bimestres_matricula, evaluaciones, evaluaciones_finales
 -- ============================================
 --
 -- Este archivo modela el SISTEMA DE NOTAS Y EVALUACIONES de la gestión vigente.
--- Las inscripciones y matrículas viven en 17-inscripciones.sql.
--- El historial previo y nivelaciones en 19-historial-y-nivelaciones.sql.
+-- Las inscripciones y matrículas viven en 12-inscripciones.sql.
+-- El historial previo y nivelaciones en 16-nivelaciones.sql.
 --
 -- JERARQUÍA DE EVALUACIÓN (modelo oficial del Registro Académico de Notas INCOS):
 --
@@ -32,7 +32,7 @@
 -- CUOTA TEÓRICO / PRÁCTICO:
 --   - Default institucional por gestión (típicamente 30/70) en cuota_teorico_practico
 --   - Override por asignacion_docente si la materia lo justifica (campos agregados
---     a asignaciones_docentes vía ALTER en archivo 19)
+--     a asignaciones_docentes (pendiente de ALTER en schema de asignaciones)
 --   - Las evaluaciones componente=TEORICO se promedian ponderado y se reescalan a
 --     la cuota_teorico; lo mismo para práctico
 --   - nota_bimestre = nota_teorico + nota_practico (≤ 100)
@@ -40,9 +40,9 @@
 -- HABILITACIÓN vs RECUPERATORIO:
 --   - Habilitación bimestral: campo nota_habilitacion en bimestres_matricula.
 --     Reemplaza la nota_bimestre original si el estudiante reprueba UN bimestre.
---   - Recuperatorio anual: campo nota_recuperatorio_anual en matriculas_materia
---     (archivo 17). Aplica a TODA la materia al cierre del año.
---   - Nivelación: tabla nivelaciones (archivo 19). Hasta 3 intentos en años siguientes.
+--   - Recuperatorio anual: tabla nivelaciones (16-nivelaciones.sql) vinculada
+--     vía historial_matricula (17-historial-matricula.sql). Aplica a TODA la materia al cierre del año.
+--   - Nivelación: tabla nivelaciones (16-nivelaciones.sql). Hasta 3 intentos en años siguientes.
 --
 -- RESTRICCIONES DE DISEÑO:
 --   - Todas las FKs permiten NULL
@@ -138,7 +138,7 @@ COMMENT='Catálogo de tipos de evaluación reutilizable entre gestiones. ámbito
 -- Una sola configuración por gestión vale como DEFAULT para todas las carreras.
 -- Si una materia específica necesita un split distinto (ej. taller 20/80), se
 -- sobreescribe en asignaciones_docentes (campos cuota_teorico_override y
--- cuota_practico_override agregados vía ALTER en archivo 19).
+-- cuota_practico_override agregados vía ALTER en schema de asignaciones).
 --
 -- USO: Al cerrar un bimestre, las evaluaciones componente=TEORICO se promedian
 -- ponderado y el resultado se reescala a la cuota_teorico (ej. si promedio 80

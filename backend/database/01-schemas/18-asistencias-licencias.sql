@@ -1,5 +1,5 @@
 -- ============================================
--- MÓDULO DE ASISTENCIAS Y LICENCIAS (PARTE 4 de 4)
+-- MÓDULO DE ASISTENCIAS Y LICENCIAS (PARTE 5 de 5)
 -- Sistema de Gestión Académica - Instituto INCOS
 -- 3 Tablas: licencias, clases_no_dictadas, asistencias
 -- ============================================
@@ -74,6 +74,7 @@ USE instituto_incos;
 SET FOREIGN_KEY_CHECKS = 0;
 
 DROP TABLE IF EXISTS asistencias;
+DROP TABLE IF EXISTS clases_no_dictadas;
 DROP TABLE IF EXISTS licencias;
 
 -- ============================================

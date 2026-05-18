@@ -7,7 +7,7 @@ import { TIPOS_CONTRATO_SECRETARIA_VALUES } from '../../../domain/constants/doce
 
 /**
  * Modelo ORM: Secretaria — tabla `secretarias`
- * DDL: database/01-schemas/22-personal-usuarios.sql
+ * DDL: database/01-schemas/23-personal-usuarios.sql
  */
 export const Secretaria = sequelize.define(
   'Secretaria',

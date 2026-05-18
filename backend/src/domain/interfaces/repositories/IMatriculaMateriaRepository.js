@@ -9,7 +9,7 @@ import { IRepository } from './IRepository.js';
  * → SubjectEnrollment / SubjectEnrollmentMapper / SubjectEnrollmentRepository
  *
  * DDL:
- * database/01-schemas/17-inscripciones-parte1.sql
+ * database/01-schemas/12-inscripciones.sql
  *
  * NOTA:
  * Solo extiende IRepository sin métodos adicionales de dominio cruzado.

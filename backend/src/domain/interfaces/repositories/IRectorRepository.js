@@ -5,7 +5,7 @@ import { IRepository } from './IRepository.js';
  *
  * Convención de capas: IRectorRepository → models/rector.js (`rectores`)
  * → Rector / RectorMapper / RectorRepository
- * DDL: database/01-schemas/22-personal-usuarios.sql (tabla rectores)
+ * DDL: database/01-schemas/23-personal-usuarios.sql (tabla rectores)
  *
  * Métodos heredados de IRepository: findById, findBy, findAll, create, update, delete, search, count
  */

@@ -5,7 +5,7 @@ import { GENEROS_VALUES } from '../../../domain/constants/estudiantes.constants.
 
 /**
  * Modelo ORM: Personal — tabla `personal`
- * DDL: database/01-schemas/22-personal-usuarios.sql
+ * DDL: database/01-schemas/23-personal-usuarios.sql
  */
 export const Personal = sequelize.define(
   'Personal',

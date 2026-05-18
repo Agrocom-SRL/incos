@@ -5,7 +5,7 @@ import { NIVELES_ACADEMICOS_PERSONAL_VALUES } from '../../../domain/constants/do
 
 /**
  * Modelo ORM: Rector — tabla `rectores`
- * DDL: database/01-schemas/22-personal-usuarios.sql
+ * DDL: database/01-schemas/23-personal-usuarios.sql
  */
 export const Rector = sequelize.define(
   'Rector',

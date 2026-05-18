@@ -1,9 +1,8 @@
 -- ============================================
--- MÓDULO DE HISTORIAL Y NIVELACIONES (PARTE 3 de 4)
+-- MÓDULO DE HISTORIAL Y NIVELACIONES (PARTE 3 de 5)
 -- Sistema de Gestión Académica - Instituto INCOS
 -- 2 Tablas: historial_previo, nivelaciones
--- 2 ALTERS: asignaciones_docentes (política asistencia + cuotas override),
---           historial_matricula (FK a nivelaciones)
+-- historial_matricula (FK a nivelaciones) vive en 17-historial-matricula.sql
 -- ============================================
 --
 -- Este archivo cierra el módulo académico con tres componentes:
@@ -150,7 +149,7 @@ COMMENT='Materias aprobadas por fuera del flujo regular: ANTIGUO (INCOS pre-sist
 -- Cada fila aquí se vincula con UNA fila en historial_matricula cuyo
 -- tipo_estado coincide (RECUPERATORIO_ANUAL, NIVELACION_1RA, NIVELACION_2DA,
 -- PRUEBA_EXCEPCIONAL). El vínculo se mantiene mediante la FK
--- historial_matricula.nivelacion_id (agregada vía ALTER en este archivo).
+-- historial_matricula.nivelacion_id (tabla en 17-historial-matricula.sql).
 -- historial_matricula registra "qué pasó y cuándo"; nivelaciones registra
 -- "los datos académicos del intento".
 --

@@ -6,7 +6,7 @@ import { IRepository } from './IRepository.js';
  *
  * Convención de capas: IPersonalRepository → models/personal.js (`personal`)
  * → Staff / StaffMapper / StaffRepository
- * DDL: database/01-schemas/22-personal-usuarios.sql (tabla personal)
+ * DDL: database/01-schemas/23-personal-usuarios.sql (tabla personal)
  *
  * NOTA: Solo extiende IRepository sin métodos adicionales.
  * La especialización está en la implementación (buildWhereClause), no en la interfaz.

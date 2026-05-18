@@ -5,7 +5,7 @@ import { IRepository } from './IRepository.js';
  *
  * Convención de capas: IDirectorRepository → models/director.js (`directores`)
  * → Director / DirectorMapper / DirectorRepository
- * DDL: database/01-schemas/22-personal-usuarios.sql (tabla directores)
+ * DDL: database/01-schemas/23-personal-usuarios.sql (tabla directores)
  *
  * Métodos heredados de IRepository: findById, findBy, findAll, create, update, delete, search, count
  */

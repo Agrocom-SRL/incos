@@ -9,7 +9,7 @@ import { IRepository } from './IRepository.js';
  * → Enrollment / EnrollmentMapper / EnrollmentRepository
  *
  * DDL:
- * database/01-schemas/17-inscripciones-parte1.sql
+ * database/01-schemas/12-inscripciones.sql
  *
  * Métodos heredados de IRepository:
  * - findById(id)

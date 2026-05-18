@@ -6,7 +6,7 @@ import { NIVELES_ACADEMICOS_PERSONAL_VALUES, TIPOS_DIRECTOR_VALUES, TIPOS_DIRECT
  * Representa un director del instituto.
  * Contiene la lógica de negocio pura del cargo (tipo académico/administrativo).
  *
- * Mapeo con BD (tabla directores, 22-personal-usuarios.sql):
+ * Mapeo con BD (tabla directores, 23-personal-usuarios.sql):
  * - staffId ← personal_id; type ← tipo; appointmentDate ← fecha_nombramiento;
  *   appointmentResolution ← resolucion_nombramiento; professionalTitle ← titulo_profesional;
  *   specialty ← especialidad; academicLevel ← nivel_academico;

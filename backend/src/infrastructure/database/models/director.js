@@ -6,7 +6,7 @@ import { NIVELES_ACADEMICOS_PERSONAL_VALUES } from '../../../domain/constants/do
 
 /**
  * Modelo ORM: Director — tabla `directores`
- * DDL: database/01-schemas/22-personal-usuarios.sql
+ * DDL: database/01-schemas/23-personal-usuarios.sql
  */
 export const Director = sequelize.define(
   'Director',
