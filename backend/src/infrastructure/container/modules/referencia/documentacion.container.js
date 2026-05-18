@@ -33,7 +33,7 @@ export function registerDocumentacionResource(container) {
         REFERENCIA_TOKENS.listDocumentacionUseCase,
         (c) =>
             new ListDocumentacionUseCase({
-                documentacionRepository: c.resolve(REPOSITORIOS_TOKENS.documentacionRepository),
+                documentacionRepository: c.resolve(REPOSITORIOS_TOKENS.documentationRepository),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             }),
     );

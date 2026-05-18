@@ -16,7 +16,7 @@ export function registerAulasHorariosModule(container) {
     AULAS_HORARIOS_TOKENS.listAulasHorariosUseCase,
     (c) =>
       new ListAulasHorariosUseCase({
-        aulasHorariosSemanaRepository: c.resolve(REPOSITORIOS_TOKENS.aulasHorariosSemanaRepository),
+        aulasHorariosSemanaRepository: c.resolve(REPOSITORIOS_TOKENS.weeklyClassroomScheduleRepository),
         logger: c.resolve(SERVICIOS_TOKENS.logger),
       })
   );

@@ -1,8 +1,9 @@
 /**
  * Tokens de Repositorios
- * 
+ *
  * Convenciones:
- * - Repositorios: camelCase + 'Repository' (ej: 'studentRepository')
+ * - Claves en inglés, camelCase + 'Repository' (ej: 'studentRepository')
+ * - Interfaces de dominio en español (IEstudianteRepository); implementaciones en inglés (StudentRepository)
  */
 
 export const REPOSITORIOS_TOKENS = {
@@ -17,18 +18,18 @@ export const REPOSITORIOS_TOKENS = {
     civilStatusRepository: 'civilStatusRepository',
     disabilityTypeRepository: 'disabilityTypeRepository',
     relationshipTypeRepository: 'relationshipTypeRepository',
-    documentacionRepository: 'documentacionRepository',
+    documentationRepository: 'documentationRepository',
     institutionRepository: 'institutionRepository',
 
     // CONFIGURACIÓN DEL SISTEMA
-    configuracionSistemaRepository: 'configuracionSistemaRepository',
+    systemConfigurationRepository: 'systemConfigurationRepository',
 
     // SISTEMA DE SEGURIDAD
     roleRepository: 'roleRepository',
     permissionRepository: 'permissionRepository',
     userRepository: 'userRepository',
-    seguridadAltaUsuarioLookupRepository: 'seguridadAltaUsuarioLookupRepository',
-    usuarioReferenciaVinculoRepository: 'usuarioReferenciaVinculoRepository',
+    securityUserRegistrationLookupRepository: 'securityUserRegistrationLookupRepository',
+    userReferenceLinkRepository: 'userReferenceLinkRepository',
     rolePermissionRepository: 'rolePermissionRepository',
     userPermissionRepository: 'userPermissionRepository',
     sessionRepository: 'sessionRepository',
@@ -74,27 +75,27 @@ export const REPOSITORIOS_TOKENS = {
     studentEnrollmentStudentListExcelReportRepository: 'studentEnrollmentStudentListExcelReportRepository',
     scholarshipRepository: 'scholarshipRepository',
     studentScholarshipRepository: 'studentScholarshipRepository',
-    licenciaRepository: 'licenciaRepository',
+    licenseRepository: 'licenseRepository',
 
     // INSCRIPCIONES
     enrollmentRepository: 'enrollmentRepository',
     subjectEnrollmentRepository: 'subjectEnrollmentRepository',
     subjectEnrollmentHistoryRepository: 'subjectEnrollmentHistoryRepository',
-    historialPrevioRepository: 'historialPrevioRepository',
+    priorEnrollmentHistoryRepository: 'priorEnrollmentHistoryRepository',
 
     // EVALUACIONES
-    tipoEvaluacionRepository: 'tipoEvaluacionRepository',
-    configuracionEvaluacionRepository: 'configuracionEvaluacionRepository',
-    bimestreMatriculaRepository: 'bimestreMatriculaRepository',
-    evaluacionRepository: 'evaluacionRepository',
-    evaluacionFinalRepository: 'evaluacionFinalRepository',
+    evaluationTypeRepository: 'evaluationTypeRepository',
+    evaluationConfigurationRepository: 'evaluationConfigurationRepository',
+    subjectEnrollmentBimesterRepository: 'subjectEnrollmentBimesterRepository',
+    bimesterEvaluationRepository: 'bimesterEvaluationRepository',
+    finalEvaluationRepository: 'finalEvaluationRepository',
 
     // NIVELACIONES
-    nivelacionRepository: 'nivelacionRepository',
+    levelingRepository: 'levelingRepository',
 
     // ASISTENCIAS
-    asistenciaRepository: 'asistenciaRepository',
-    claseNoDictadaRepository: 'claseNoDictadaRepository',
+    attendanceRepository: 'attendanceRepository',
+    missedClassRepository: 'missedClassRepository',
 
     // PAGOS ACADÉMICOS
     contributionConfigurationRepository: 'contributionConfigurationRepository',
@@ -103,7 +104,7 @@ export const REPOSITORIOS_TOKENS = {
     paymentAccountRepository: 'paymentAccountRepository',
     contributionPaymentRepository: 'contributionPaymentRepository',
     contributionPaymentInstallmentRepository: 'contributionPaymentInstallmentRepository',
-    paymentAporteCareerExcelReportRepository: 'paymentAporteCareerExcelReportRepository',
+    contributionPaymentByCareerExcelReportRepository: 'contributionPaymentByCareerExcelReportRepository',
 
     // TRANSITABILIDAD Y TRASPASOS
     transitabilityRepository: 'transitabilityRepository',
@@ -111,6 +112,5 @@ export const REPOSITORIOS_TOKENS = {
 
     // DASHBOARD
     dashboardRepository: 'dashboardRepository',
-    aulasHorariosSemanaRepository: 'aulasHorariosSemanaRepository',
+    weeklyClassroomScheduleRepository: 'weeklyClassroomScheduleRepository',
 };
-

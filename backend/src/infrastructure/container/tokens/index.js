@@ -6,7 +6,7 @@
  * 
  * Convenciones:
  * - Servicios base: camelCase (ej: 'logger', 'fileUploadService')
- * - Repositorios: camelCase + 'Repository' (ej: 'studentRepository')
+ * - Repositorios: inglés, camelCase + 'Repository' (ej: 'studentRepository', 'licenseRepository')
  * - Use Cases: {modulo}.{action}{Entity}UseCase (ej: 'estudiantes.listStudentsUseCase')
  * - Controllers: {modulo}.{action}{Entity}Controller (ej: 'estudiantes.listStudentsController')
  * - Routers: {modulo}.{entity}Router (ej: 'estudiantes.estudiantesRouter')

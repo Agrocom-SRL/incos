@@ -59,7 +59,7 @@ export class DeleteStudentUseCase {
    * @param {Object} dependencies.contributionPaymentRepository - Repositorio de cabecera de aporte (pago_aporte)
    * @param {Object} dependencies.contributionPaymentInstallmentRepository - Repositorio de cuotas (pago_cuotas)
    * @param {Object} dependencies.studentScholarshipRepository - Repositorio de becas asignadas
-   * @param {Object} dependencies.licenciaRepository - Repositorio de licencias (`licencias`)
+   * @param {Object} dependencies.licenseRepository - Repositorio de licencias (`licencias`)
    * @param {Object} dependencies.transferRepository - Repositorio de traspasos
    * @param {Object} dependencies.transitabilityRepository - Repositorio de transitabilidades
    * @param {ILogger} dependencies.logger - Logger para registro de eventos
@@ -77,7 +77,7 @@ export class DeleteStudentUseCase {
     contributionPaymentRepository,
     contributionPaymentInstallmentRepository,
     studentScholarshipRepository,
-    licenciaRepository,
+    licenseRepository,
     transferRepository,
     transitabilityRepository,
     logger,
@@ -94,7 +94,7 @@ export class DeleteStudentUseCase {
     this.contributionPaymentRepository = contributionPaymentRepository;
     this.contributionPaymentInstallmentRepository = contributionPaymentInstallmentRepository;
     this.studentScholarshipRepository = studentScholarshipRepository;
-    this.licenciaRepository = licenciaRepository;
+    this.licenseRepository = licenseRepository;
     this.transferRepository = transferRepository;
     this.transitabilityRepository = transitabilityRepository;
     this.logger = logger;
@@ -489,7 +489,7 @@ export class DeleteStudentUseCase {
         return;
       }
 
-      const result = await this.licenciaRepository.findAll(
+      const result = await this.licenseRepository.findAll(
         { enrollmentIds, includeInactive: true },
         null,
         null
@@ -499,7 +499,7 @@ export class DeleteStudentUseCase {
       for (const row of rows) {
         const plain = row.toPlainObject ? row.toPlainObject() : row;
         if (plain.id != null) {
-          await this.licenciaRepository.delete(plain.id);
+          await this.licenseRepository.delete(plain.id);
         }
       }
 

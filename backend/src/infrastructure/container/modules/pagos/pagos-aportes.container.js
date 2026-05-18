@@ -176,7 +176,7 @@ export function registerPagosAportesResource(container) {
         (c) =>
             new ExportPaymentAporteByCareerExcelUseCase({
                 paymentAporteCareerExcelReportRepository: c.resolve(
-                    REPOSITORIOS_TOKENS.paymentAporteCareerExcelReportRepository
+                    REPOSITORIOS_TOKENS.contributionPaymentByCareerExcelReportRepository
                 ),
                 managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
                 careerRepository: c.resolve(REPOSITORIOS_TOKENS.careerRepository),

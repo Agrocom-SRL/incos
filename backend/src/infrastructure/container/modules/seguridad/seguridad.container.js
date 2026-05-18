@@ -48,7 +48,7 @@ export function registerSeguridadModule(container) {
         userRepository: c.resolve(REPOSITORIOS_TOKENS.userRepository),
         userPermissionRepository: c.resolve(REPOSITORIOS_TOKENS.userPermissionRepository),
         usuarioReferenciaVinculoRepository: c.resolve(
-          REPOSITORIOS_TOKENS.usuarioReferenciaVinculoRepository
+          REPOSITORIOS_TOKENS.userReferenceLinkRepository
         ),
         staffRepository: c.resolve(REPOSITORIOS_TOKENS.staffRepository),
       })
@@ -76,7 +76,7 @@ export function registerSeguridadModule(container) {
     (c) =>
       new BuscarParaAltaUsuarioVinculosUseCase({
         seguridadAltaUsuarioLookupRepository: c.resolve(
-          REPOSITORIOS_TOKENS.seguridadAltaUsuarioLookupRepository
+          REPOSITORIOS_TOKENS.securityUserRegistrationLookupRepository
         ),
       })
   );
