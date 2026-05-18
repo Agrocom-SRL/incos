@@ -1,4 +1,4 @@
-import { IScheduleRepository } from '../../domain/interfaces/repositories/IScheduleRepository.js';
+import { IHorarioRepository } from '../../domain/interfaces/repositories/IHorarioRepository.js';
 import { Horario as HorarioModel } from '../database/models/horario.js';
 import { BaseRepository } from './BaseRepository.js';
 import { ScheduleMapper } from '../mappers/ScheduleMapper.js';
@@ -16,12 +16,12 @@ import { ScheduleMapper } from '../mappers/ScheduleMapper.js';
  * - Dependency Inversion: Usa ScheduleMapper para conversiones (depende de abstracción)
  * 
  * Clean Architecture:
- * - Infrastructure Layer: Implementación concreta de IScheduleRepository
+ * - Infrastructure Layer: Implementación concreta de IHorarioRepository
  * - Usa ScheduleMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
  * 
- * @implements {IScheduleRepository}
+ * @implements {IHorarioRepository}
  * 
- * Esta clase cumple con el contrato IScheduleRepository:
+ * Esta clase cumple con el contrato IHorarioRepository:
  * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findBy, findAll, create, update, delete, search, count)
  * - La especialización está en buildWhereClause(), no en métodos adicionales
  * - Usa los métodos base de BaseRepository para todas las operaciones de búsqueda

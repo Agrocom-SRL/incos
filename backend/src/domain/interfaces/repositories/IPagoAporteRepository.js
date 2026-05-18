@@ -1,7 +1,7 @@
 import { IRepository } from './IRepository.js';
 
 /**
- * Interfaz de Repositorio: IContributionPaymentRepository
+ * Interfaz de Repositorio: IPagoAporteRepository
  * Define el contrato que debe cumplir el repositorio de pagos de aporte
  *
  * Métodos heredados de IRepository:
@@ -17,7 +17,7 @@ import { IRepository } from './IRepository.js';
  * Métodos específicos:
  * - obtenerListadoPagosAportes(baseFilters, page, limit, queryParams) - Listado desde vista_pago_aporte_listado
  */
-export class IContributionPaymentRepository extends IRepository {
+export class IPagoAporteRepository extends IRepository {
   /**
    * Obtiene el listado de pagos de aportes desde vista_pago_aporte_listado.
    * Retorna objetos planos (no entidades). El repositorio fusiona baseFilters + queryParams internamente.

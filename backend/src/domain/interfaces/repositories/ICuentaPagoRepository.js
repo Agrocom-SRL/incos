@@ -1,8 +1,8 @@
 import { IRepository } from './IRepository.js';
 
 /**
- * Interfaz de Repositorio: IAuthorizedBankRepository
- * Define el contrato que debe cumplir el repositorio de bancos autorizados
+ * Interfaz de Repositorio: ICuentaPagoRepository
+ * Define el contrato que debe cumplir el repositorio de cuentas de pago
  * 
  * NOTA: Solo extiende IRepository sin métodos adicionales.
  * La especialización está en la implementación (buildWhereClause), no en la interfaz.
@@ -17,6 +17,6 @@ import { IRepository } from './IRepository.js';
  * - search(searchTerm, options)
  * - count(filters)
  */
-export class IAuthorizedBankRepository extends IRepository {
+export class ICuentaPagoRepository extends IRepository {
   // Solo hereda métodos de IRepository
 }

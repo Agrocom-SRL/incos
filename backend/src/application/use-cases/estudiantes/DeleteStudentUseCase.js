@@ -9,7 +9,7 @@
  *   - Inscripciones (inscripciones) e inscripciones_materias del estudiante vía datos académicos
  *   - pago_cuotas y pago_aporte
  *   - estudiantes_becas
- *   - licencias_solicitudes, traspasos, transitabilidades (estudiante_id)
+ *   - licencias (vía inscripcion_id), traspasos, transitabilidades (estudiante_id)
  *   - documentos_estudiante (y archivos), estudiantes_documentos_entrega
  *   - estudiantes_origenes, estudiantes_discapacidades, estudiantes_apoderados
  *   - estudiantes_datos_academicos
@@ -32,7 +32,7 @@
  *   StudentOriginRepository, StudentDocumentDeliveryRepository, StudentDocumentRepository,
  *   StudentAcademicDataRepository, EnrollmentRepository, subjectEnrollmentRepository,
  *   ContributionPaymentRepository, ContributionPaymentInstallmentRepository, StudentScholarshipRepository,
- *   LicenseRequestRepository, TransferRepository, TransitabilityRepository
+ *   LicenseRepository, TransferRepository, TransitabilityRepository
  */
 
 import { NotFoundError } from '../../../domain/errors/AppError.js';
@@ -59,7 +59,7 @@ export class DeleteStudentUseCase {
    * @param {Object} dependencies.contributionPaymentRepository - Repositorio de cabecera de aporte (pago_aporte)
    * @param {Object} dependencies.contributionPaymentInstallmentRepository - Repositorio de cuotas (pago_cuotas)
    * @param {Object} dependencies.studentScholarshipRepository - Repositorio de becas asignadas
-   * @param {Object} dependencies.licenseRequestRepository - Repositorio de licencias_solicitudes
+   * @param {Object} dependencies.licenciaRepository - Repositorio de licencias (`licencias`)
    * @param {Object} dependencies.transferRepository - Repositorio de traspasos
    * @param {Object} dependencies.transitabilityRepository - Repositorio de transitabilidades
    * @param {ILogger} dependencies.logger - Logger para registro de eventos
@@ -77,7 +77,7 @@ export class DeleteStudentUseCase {
     contributionPaymentRepository,
     contributionPaymentInstallmentRepository,
     studentScholarshipRepository,
-    licenseRequestRepository,
+    licenciaRepository,
     transferRepository,
     transitabilityRepository,
     logger,
@@ -94,7 +94,7 @@ export class DeleteStudentUseCase {
     this.contributionPaymentRepository = contributionPaymentRepository;
     this.contributionPaymentInstallmentRepository = contributionPaymentInstallmentRepository;
     this.studentScholarshipRepository = studentScholarshipRepository;
-    this.licenseRequestRepository = licenseRequestRepository;
+    this.licenciaRepository = licenciaRepository;
     this.transferRepository = transferRepository;
     this.transitabilityRepository = transitabilityRepository;
     this.logger = logger;
@@ -126,21 +126,23 @@ export class DeleteStudentUseCase {
         ? student.toPlainObject()
         : student;
 
-      // 2. Inscripciones e inscripciones_materias (soft delete)
+      // 2. Licencias (antes de inscripciones: FK inscripcion_id)
+      await this._deleteLicensesForStudent(studentId);
+
+      // 3. Inscripciones e inscripciones_materias (soft delete)
       await this._deleteEnrollmentsForStudent(studentId);
 
-      // 3. Cuotas y cabeceras de aporte (soft delete)
+      // 4. Cuotas y cabeceras de aporte (soft delete)
       await this._deleteContributionPaymentsForStudent(studentId);
 
-      // 4. Becas asignadas (soft delete)
+      // 5. Becas asignadas (soft delete)
       await this._deleteStudentScholarshipsForStudent(studentId);
 
-      // 5. Licencias, traspasos y transitabilidades (soft delete)
-      await this._deleteLicenseRequestsForStudent(studentId);
+      // 6. Traspasos y transitabilidades (soft delete)
       await this._deleteTransfersForStudent(studentId);
       await this._deleteTransitabilitiesForStudent(studentId);
 
-      // 6. Documentos del estudiante (incluyendo archivos físicos)
+      // 7. Documentos del estudiante (incluyendo archivos físicos)
       await this._deleteStudentDocuments(studentId);
 
       // 7. Entregas de documentos
@@ -410,26 +412,94 @@ export class DeleteStudentUseCase {
   }
 
   /**
+   * Recolecta IDs de inscripciones activas del estudiante (vía datos académicos).
    * @private
    * @param {number} studentId
+   * @returns {Promise<number[]>}
    */
-  async _deleteLicenseRequestsForStudent(studentId) {
-    try {
-      const result = await this.licenseRequestRepository.findAll(
-        { studentId, active: true },
+  async _collectEnrollmentIdsForStudent(studentId) {
+    const academicDataResult = await this.studentAcademicDataRepository.findAll(
+      { studentId },
+      null,
+      null
+    );
+
+    const academicDataList =
+      academicDataResult.studentAcademicData ||
+      academicDataResult.datosAcademicos ||
+      academicDataResult.data ||
+      [];
+
+    const enrollmentIds = [];
+
+    for (const academicData of academicDataList) {
+      const academicDataPlain = academicData.toPlainObject
+        ? academicData.toPlainObject()
+        : academicData;
+      const academicDataId =
+        academicDataPlain.id ||
+        academicDataPlain.academicDataId ||
+        academicDataPlain.datosAcademicosId;
+
+      if (!academicDataId) continue;
+
+      const enrollmentsResult = await this.enrollmentRepository.findAll(
+        { academicDataId },
         null,
         null
       );
-      const rows =
-        result.licenseRequests ||
-        result.licencias ||
-        result.data ||
+
+      const enrollments =
+        enrollmentsResult.enrollments ||
+        enrollmentsResult.inscripciones ||
+        enrollmentsResult.data ||
         [];
+
+      for (const enrollment of enrollments) {
+        const enrollmentPlain = enrollment.toPlainObject
+          ? enrollment.toPlainObject()
+          : enrollment;
+        const enrollmentId =
+          enrollmentPlain.id ||
+          enrollmentPlain.enrollmentId ||
+          enrollmentPlain.inscripcionId;
+
+        if (enrollmentId != null) {
+          enrollmentIds.push(enrollmentId);
+        }
+      }
+    }
+
+    return enrollmentIds;
+  }
+
+  /**
+   * Soft delete de licencias vinculadas a inscripciones del estudiante.
+   * @private
+   * @param {number} studentId
+   */
+  async _deleteLicensesForStudent(studentId) {
+    try {
+      const enrollmentIds = await this._collectEnrollmentIdsForStudent(studentId);
+
+      if (enrollmentIds.length === 0) {
+        this.logger.info('[Estudiantes] Sin licencias que eliminar (sin inscripciones)', {
+          studentId,
+        });
+        return;
+      }
+
+      const result = await this.licenciaRepository.findAll(
+        { enrollmentIds, includeInactive: true },
+        null,
+        null
+      );
+      const rows = result.licenses || result.data || [];
 
       for (const row of rows) {
         const plain = row.toPlainObject ? row.toPlainObject() : row;
         if (plain.id != null) {
-          await this.licenseRequestRepository.delete(plain.id);
+          await this.licenciaRepository.delete(plain.id);
         }
       }
 

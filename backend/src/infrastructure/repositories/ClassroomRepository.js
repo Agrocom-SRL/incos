@@ -1,5 +1,5 @@
 import { Op } from 'sequelize';
-import { IClassroomRepository } from '../../domain/interfaces/repositories/IClassroomRepository.js';
+import { IAulaRepository } from '../../domain/interfaces/repositories/IAulaRepository.js';
 import { Aula as AulaModel } from '../database/models/aula.js';
 import { BaseRepository } from './BaseRepository.js';
 import { ClassroomMapper } from '../mappers/ClassroomMapper.js';
@@ -17,12 +17,12 @@ import { ClassroomMapper } from '../mappers/ClassroomMapper.js';
  * - Dependency Inversion: Usa ClassroomMapper para conversiones (depende de abstracción)
  * 
  * Clean Architecture:
- * - Infrastructure Layer: Implementación concreta de IClassroomRepository
+ * - Infrastructure Layer: Implementación concreta de IAulaRepository
  * - Usa ClassroomMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
  * 
- * @implements {IClassroomRepository}
+ * @implements {IAulaRepository}
  * 
- * Esta clase cumple con el contrato IClassroomRepository:
+ * Esta clase cumple con el contrato IAulaRepository:
  * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findBy, findAll, create, update, delete, search, count)
  * - La especialización está en buildWhereClause(), no en métodos adicionales
  * - Usa los métodos base de BaseRepository para todas las operaciones de búsqueda

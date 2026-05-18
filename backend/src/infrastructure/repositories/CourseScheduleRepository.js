@@ -1,5 +1,5 @@
 import { QueryTypes } from 'sequelize';
-import { ICourseScheduleRepository } from '../../domain/interfaces/repositories/ICourseScheduleRepository.js';
+import { ICursoHorarioRepository } from '../../domain/interfaces/repositories/ICursoHorarioRepository.js';
 import { CursoHorario as CursoHorarioModel } from '../database/models/curso_horario.js';
 import { sequelize } from '../database/sequelize.js';
 import { BaseRepository } from './BaseRepository.js';
@@ -18,12 +18,12 @@ import { CourseScheduleMapper } from '../mappers/CourseScheduleMapper.js';
  * - Dependency Inversion: Usa CourseScheduleMapper para conversiones (depende de abstracción)
  * 
  * Clean Architecture:
- * - Infrastructure Layer: Implementación concreta de ICourseScheduleRepository
+ * - Infrastructure Layer: Implementación concreta de ICursoHorarioRepository
  * - Usa CourseScheduleMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
  * 
- * @implements {ICourseScheduleRepository}
+ * @implements {ICursoHorarioRepository}
  * 
- * Esta clase cumple con el contrato ICourseScheduleRepository:
+ * Esta clase cumple con el contrato ICursoHorarioRepository:
  * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findBy, findAll, create, update, delete, search, count)
  * - La especialización está en buildWhereClause(), no en métodos adicionales
  * - Usa los métodos base de BaseRepository para todas las operaciones de búsqueda

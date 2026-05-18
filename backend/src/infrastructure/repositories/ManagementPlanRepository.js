@@ -1,5 +1,5 @@
 import { QueryTypes } from 'sequelize';
-import { IManagementPlanRepository } from '../../domain/interfaces/repositories/IManagementPlanRepository.js';
+import { IGestionPlanRepository } from '../../domain/interfaces/repositories/IGestionPlanRepository.js';
 import { GestionPlan as GestionPlanModel } from '../database/models/gestion_plan.js';
 import { sequelize } from '../database/sequelize.js';
 import { BaseRepository } from './BaseRepository.js';
@@ -18,12 +18,12 @@ import { ManagementPlanMapper } from '../mappers/ManagementPlanMapper.js';
  * - Dependency Inversion: Usa ManagementPlanMapper para conversiones (depende de abstracción)
  * 
  * Clean Architecture:
- * - Infrastructure Layer: Implementación concreta de IManagementPlanRepository
+ * - Infrastructure Layer: Implementación concreta de IGestionPlanRepository
  * - Usa ManagementPlanMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
  * 
- * @implements {IManagementPlanRepository}
+ * @implements {IGestionPlanRepository}
  * 
- * Esta clase cumple con el contrato IManagementPlanRepository:
+ * Esta clase cumple con el contrato IGestionPlanRepository:
  * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findBy, findAll, create, update, delete, search, count)
  * - La especialización está en buildWhereClause(), no en métodos adicionales
  * - Usa los métodos base de BaseRepository para todas las operaciones de búsqueda

@@ -1,7 +1,7 @@
 import { IRepository } from './IRepository.js';
 
 /**
- * Interfaz de Repositorio: IParallelRepository
+ * Interfaz de Repositorio: IParaleloRepository
  * Define el contrato que debe cumplir el repositorio de paralelos
  *
  * Métodos heredados de IRepository:
@@ -17,7 +17,7 @@ import { IRepository } from './IRepository.js';
  * Métodos específicos:
  * - obtenerEstadisticasYPeriodoPorGestion(parallelIds, managementId) - Consulta vista_estadisticas_paralelos_por_gestion + periodos
  */
-export class IParallelRepository extends IRepository {
+export class IParaleloRepository extends IRepository {
   /**
    * Obtiene estadísticas de inscripción por paralelo para una gestión y datos del periodo.
    * Consulta la vista vista_estadisticas_paralelos_por_gestion (LEFT JOIN) y periodos.

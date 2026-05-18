@@ -1,4 +1,4 @@
-import { IAuthorizedBankRepository } from '../../domain/interfaces/repositories/IAuthorizedBankRepository.js';
+import { IBancoAutorizadoRepository } from '../../domain/interfaces/repositories/IBancoAutorizadoRepository.js';
 import { BancoAutorizado as BancoAutorizadoModel } from '../database/models/banco_autorizado.js';
 import { BaseRepository } from './BaseRepository.js';
 import { AuthorizedBankMapper } from '../mappers/AuthorizedBankMapper.js';
@@ -7,7 +7,7 @@ import { AuthorizedBankMapper } from '../mappers/AuthorizedBankMapper.js';
  * Implementación del repositorio de bancos autorizados usando Sequelize
  * Utiliza el patrón Template Method heredando de BaseRepository
  * 
- * @implements {IAuthorizedBankRepository}
+ * @implements {IBancoAutorizadoRepository}
  */
 export class AuthorizedBankRepository extends BaseRepository {
   getModel() {

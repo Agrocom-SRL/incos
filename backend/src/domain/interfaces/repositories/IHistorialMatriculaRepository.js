@@ -2,29 +2,32 @@ import { IRepository } from './IRepository.js';
 
 /**
  * Interfaz de Repositorio: IHistorialMatriculaRepository
- * Define el contrato que debe cumplir el repositorio de historial de matrícula.
  *
  * Convención de capas:
  * IHistorialMatriculaRepository → models/historial_matricula.js (`historial_matricula`)
  * → SubjectEnrollmentHistory / SubjectEnrollmentHistoryMapper / SubjectEnrollmentHistoryRepository
  *
- * DDL:
- * database/01-schemas/17-historial-matricula.sql
+ * DDL: database/01-schemas/16-nivelaciones.sql
  *
- * NOTA:
- * Solo extiende IRepository sin métodos adicionales.
- * La especialización está en la implementación concreta mediante buildWhereClause().
- *
- * Métodos heredados de IRepository:
- * - findById(id)
- * - findBy(criteria, options)
- * - findAll(filters, page, limit)
- * - create(data, userId)
- * - update(id, data, userId)
- * - delete(id, userId)
- * - search(searchTerm, options)
- * - count(filters)
+ * Métodos específicos:
+ * - findCurrentBySubjectEnrollmentId(subjectEnrollmentId, options)
+ * - findByLevelingId(levelingId, options)
+ * - expireCurrentBySubjectEnrollmentId(subjectEnrollmentId, userId, options)
  */
 export class IHistorialMatriculaRepository extends IRepository {
-    // Solo hereda métodos de IRepository
+    async findCurrentBySubjectEnrollmentId(subjectEnrollmentId, options = {}) {
+        throw new Error('Method findCurrentBySubjectEnrollmentId must be implemented by subclass');
+    }
+
+    async findByLevelingId(levelingId, options = {}) {
+        throw new Error('Method findByLevelingId must be implemented by subclass');
+    }
+
+    async expireCurrentBySubjectEnrollmentId(
+        subjectEnrollmentId,
+        userId = null,
+        options = {}
+    ) {
+        throw new Error('Method expireCurrentBySubjectEnrollmentId must be implemented by subclass');
+    }
 }

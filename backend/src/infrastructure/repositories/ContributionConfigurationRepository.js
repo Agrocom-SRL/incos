@@ -1,4 +1,4 @@
-import { IContributionConfigurationRepository } from '../../domain/interfaces/repositories/IContributionConfigurationRepository.js';
+import { IConfiguracionAporteRepository } from '../../domain/interfaces/repositories/IConfiguracionAporteRepository.js';
 import { ConfiguracionAporte as ConfiguracionAporteModel } from '../database/models/configuracion_aporte.js';
 import { BaseRepository } from './BaseRepository.js';
 import { ContributionConfigurationMapper } from '../mappers/ContributionConfigurationMapper.js';
@@ -7,7 +7,7 @@ import { ContributionConfigurationMapper } from '../mappers/ContributionConfigur
  * Implementación del repositorio de configuración de aportes usando Sequelize
  * Utiliza el patrón Template Method heredando de BaseRepository
  * 
- * @implements {IContributionConfigurationRepository}
+ * @implements {IConfiguracionAporteRepository}
  */
 export class ContributionConfigurationRepository extends BaseRepository {
   getModel() {

@@ -1,4 +1,4 @@
-import { IPaymentAccountRepository } from '../../domain/interfaces/repositories/IPaymentAccountRepository.js';
+import { ICuentaPagoRepository } from '../../domain/interfaces/repositories/ICuentaPagoRepository.js';
 import { CuentaPago as CuentaPagoModel } from '../database/models/cuenta_pago.js';
 import { BaseRepository } from './BaseRepository.js';
 import { PaymentAccountMapper } from '../mappers/PaymentAccountMapper.js';
@@ -7,7 +7,7 @@ import { PaymentAccountMapper } from '../mappers/PaymentAccountMapper.js';
  * Implementación del repositorio de cuentas de pago usando Sequelize
  * Utiliza el patrón Template Method heredando de BaseRepository
  * 
- * @implements {IPaymentAccountRepository}
+ * @implements {ICuentaPagoRepository}
  */
 export class PaymentAccountRepository extends BaseRepository {
   getModel() {

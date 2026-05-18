@@ -265,7 +265,7 @@ export function registerEstudiantesResource(container) {
                 contributionPaymentRepository: c.resolve(REPOSITORIOS_TOKENS.contributionPaymentRepository),
                 contributionPaymentInstallmentRepository: c.resolve(REPOSITORIOS_TOKENS.contributionPaymentInstallmentRepository),
                 studentScholarshipRepository: c.resolve(REPOSITORIOS_TOKENS.studentScholarshipRepository),
-                licenseRequestRepository: c.resolve(REPOSITORIOS_TOKENS.licenseRequestRepository),
+                licenciaRepository: c.resolve(REPOSITORIOS_TOKENS.licenciaRepository),
                 transferRepository: c.resolve(REPOSITORIOS_TOKENS.transferRepository),
                 transitabilityRepository: c.resolve(REPOSITORIOS_TOKENS.transitabilityRepository),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),

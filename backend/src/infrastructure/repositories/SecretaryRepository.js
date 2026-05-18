@@ -1,10 +1,10 @@
-import { ISecretaryRepository } from '../../domain/interfaces/repositories/ISecretaryRepository.js';
+import { ISecretariaRepository } from '../../domain/interfaces/repositories/ISecretariaRepository.js';
 import { Secretaria as SecretariaModel } from '../database/models/secretaria.js';
 import { BaseRepository } from './BaseRepository.js';
 import { SecretaryMapper } from '../mappers/SecretaryMapper.js';
 
 /**
- * @implements {ISecretaryRepository}
+ * @implements {ISecretariaRepository}
  */
 export class SecretaryRepository extends BaseRepository {
   getModel() {

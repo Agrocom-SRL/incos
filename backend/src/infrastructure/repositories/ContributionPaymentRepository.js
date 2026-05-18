@@ -1,4 +1,4 @@
-import { IContributionPaymentRepository } from '../../domain/interfaces/repositories/IContributionPaymentRepository.js';
+import { IPagoAporteRepository } from '../../domain/interfaces/repositories/IPagoAporteRepository.js';
 import { PagoAporte as PagoAporteModel } from '../database/models/pago_aporte.js';
 import { BaseRepository } from './BaseRepository.js';
 import { ContributionPaymentMapper } from '../mappers/ContributionPaymentMapper.js';
@@ -13,7 +13,7 @@ import { ContributionPaymentMapper } from '../mappers/ContributionPaymentMapper.
  * - Acceso a datos (consultas, persistencia)
  * - Delegar conversión ORM ↔ Entidad a ContributionPaymentMapper
  *
- * @implements {IContributionPaymentRepository}
+ * @implements {IPagoAporteRepository}
  */
 export class ContributionPaymentRepository extends BaseRepository {
     /**

@@ -74,12 +74,27 @@ export const REPOSITORIOS_TOKENS = {
     studentEnrollmentStudentListExcelReportRepository: 'studentEnrollmentStudentListExcelReportRepository',
     scholarshipRepository: 'scholarshipRepository',
     studentScholarshipRepository: 'studentScholarshipRepository',
-    licenseRequestRepository: 'licenseRequestRepository',
+    licenciaRepository: 'licenciaRepository',
 
     // INSCRIPCIONES
     enrollmentRepository: 'enrollmentRepository',
     subjectEnrollmentRepository: 'subjectEnrollmentRepository',
     subjectEnrollmentHistoryRepository: 'subjectEnrollmentHistoryRepository',
+    historialPrevioRepository: 'historialPrevioRepository',
+
+    // EVALUACIONES
+    tipoEvaluacionRepository: 'tipoEvaluacionRepository',
+    configuracionEvaluacionRepository: 'configuracionEvaluacionRepository',
+    bimestreMatriculaRepository: 'bimestreMatriculaRepository',
+    evaluacionRepository: 'evaluacionRepository',
+    evaluacionFinalRepository: 'evaluacionFinalRepository',
+
+    // NIVELACIONES
+    nivelacionRepository: 'nivelacionRepository',
+
+    // ASISTENCIAS
+    asistenciaRepository: 'asistenciaRepository',
+    claseNoDictadaRepository: 'claseNoDictadaRepository',
 
     // PAGOS ACADÉMICOS
     contributionConfigurationRepository: 'contributionConfigurationRepository',

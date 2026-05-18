@@ -1,8 +1,8 @@
 import { IRepository } from './IRepository.js';
 
 /**
- * Interfaz de Repositorio: ILicenciaSolicitudRepository
- * Define el contrato que debe cumplir el repositorio de solicitudes de licencias
+ * Interfaz de Repositorio: IGestionPlanRepository
+ * Define el contrato que debe cumplir el repositorio de planes habilitados por gestión
  * 
  * NOTA: Solo extiende IRepository sin métodos adicionales.
  * La especialización está en la implementación (buildWhereClause), no en la interfaz.
@@ -17,6 +17,6 @@ import { IRepository } from './IRepository.js';
  * - search(searchTerm, options)
  * - count(filters)
  */
-export class ILicenciaSolicitudRepository extends IRepository {
+export class IGestionPlanRepository extends IRepository {
   // Solo hereda métodos de IRepository
 }

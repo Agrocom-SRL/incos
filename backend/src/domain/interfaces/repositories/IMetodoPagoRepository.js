@@ -1,8 +1,8 @@
 import { IRepository } from './IRepository.js';
 
 /**
- * Interfaz de Repositorio: IContributionConfigurationRepository
- * Define el contrato que debe cumplir el repositorio de configuración de aportes
+ * Interfaz de Repositorio: IMetodoPagoRepository
+ * Define el contrato que debe cumplir el repositorio de métodos de pago
  * 
  * NOTA: Solo extiende IRepository sin métodos adicionales.
  * La especialización está en la implementación (buildWhereClause), no en la interfaz.
@@ -17,6 +17,6 @@ import { IRepository } from './IRepository.js';
  * - search(searchTerm, options)
  * - count(filters)
  */
-export class IContributionConfigurationRepository extends IRepository {
+export class IMetodoPagoRepository extends IRepository {
   // Solo hereda métodos de IRepository
 }

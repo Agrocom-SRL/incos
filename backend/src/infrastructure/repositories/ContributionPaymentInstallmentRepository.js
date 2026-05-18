@@ -1,4 +1,4 @@
-import { IContributionPaymentInstallmentRepository } from '../../domain/interfaces/repositories/IContributionPaymentInstallmentRepository.js';
+import { IPagoCuotasRepository } from '../../domain/interfaces/repositories/IPagoCuotasRepository.js';
 import { PagoCuotas as PagoCuotasModel } from '../database/models/pago_cuotas.js';
 import { BaseRepository } from './BaseRepository.js';
 import { ContributionPaymentInstallmentMapper } from '../mappers/ContributionPaymentInstallmentMapper.js';
@@ -13,7 +13,7 @@ import { ContributionPaymentInstallmentMapper } from '../mappers/ContributionPay
  * - Acceso a datos (consultas, persistencia)
  * - Delegar conversión ORM ↔ Entidad a ContributionPaymentInstallmentMapper
  *
- * @implements {IContributionPaymentInstallmentRepository}
+ * @implements {IPagoCuotasRepository}
  */
 export class ContributionPaymentInstallmentRepository extends BaseRepository {
   /**

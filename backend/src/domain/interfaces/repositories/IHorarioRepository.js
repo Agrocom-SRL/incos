@@ -1,8 +1,8 @@
 import { IRepository } from './IRepository.js';
 
 /**
- * Interfaz de Repositorio: IPaymentMethodRepository
- * Define el contrato que debe cumplir el repositorio de métodos de pago
+ * Interfaz de Repositorio: IHorarioRepository
+ * Define el contrato que debe cumplir el repositorio de horarios
  * 
  * NOTA: Solo extiende IRepository sin métodos adicionales.
  * La especialización está en la implementación (buildWhereClause), no en la interfaz.
@@ -17,6 +17,6 @@ import { IRepository } from './IRepository.js';
  * - search(searchTerm, options)
  * - count(filters)
  */
-export class IPaymentMethodRepository extends IRepository {
+export class IHorarioRepository extends IRepository {
   // Solo hereda métodos de IRepository
 }

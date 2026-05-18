@@ -1,7 +1,7 @@
 import { IRepository } from './IRepository.js';
 
 /**
- * Interfaz de Repositorio: IContributionPaymentInstallmentRepository
+ * Interfaz de Repositorio: IPagoCuotasRepository
  * Define el contrato para el repositorio de cuotas de aporte (pago_cuotas).
  *
  * Métodos heredados de IRepository:
@@ -14,4 +14,4 @@ import { IRepository } from './IRepository.js';
  * - search(searchTerm, options)
  * - count(filters)
  */
-export class IContributionPaymentInstallmentRepository extends IRepository {}
+export class IPagoCuotasRepository extends IRepository {}

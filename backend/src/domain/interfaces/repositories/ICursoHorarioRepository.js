@@ -1,7 +1,7 @@
 import { IRepository } from './IRepository.js';
 
 /**
- * Interfaz de Repositorio: ICourseScheduleRepository
+ * Interfaz de Repositorio: ICursoHorarioRepository
  * Define el contrato que debe cumplir el repositorio de horarios de cursos
  * 
  * NOTA: Solo extiende IRepository sin métodos adicionales.
@@ -17,7 +17,7 @@ import { IRepository } from './IRepository.js';
  * - search(searchTerm, options)
  * - count(filters)
  */
-export class ICourseScheduleRepository extends IRepository {
+export class ICursoHorarioRepository extends IRepository {
   async hasClassroomConflict({ scheduleId, classroomId, excludeCourseScheduleId = null }) {
     throw new Error('Method hasClassroomConflict() must be implemented');
   }

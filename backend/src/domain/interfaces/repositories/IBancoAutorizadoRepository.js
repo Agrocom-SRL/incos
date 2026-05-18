@@ -1,8 +1,8 @@
 import { IRepository } from './IRepository.js';
 
 /**
- * Interfaz de Repositorio: IClassroomRepository
- * Define el contrato que debe cumplir el repositorio de aulas
+ * Interfaz de Repositorio: IBancoAutorizadoRepository
+ * Define el contrato que debe cumplir el repositorio de bancos autorizados
  * 
  * NOTA: Solo extiende IRepository sin métodos adicionales.
  * La especialización está en la implementación (buildWhereClause), no en la interfaz.
@@ -17,6 +17,6 @@ import { IRepository } from './IRepository.js';
  * - search(searchTerm, options)
  * - count(filters)
  */
-export class IClassroomRepository extends IRepository {
+export class IBancoAutorizadoRepository extends IRepository {
   // Solo hereda métodos de IRepository
 }

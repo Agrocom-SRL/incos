@@ -1,6 +1,8 @@
 /**
  * Exportación centralizada de todas las interfaces de repositorios
  * Organizadas por categorías
+ *
+ * Convención: interfaces en español (I*Repository); implementaciones en inglés (*Repository).
  */
 
 // ============================================
@@ -24,6 +26,7 @@ export { IEstadoCivilRepository } from './IEstadoCivilRepository.js';
 export { ITipoDiscapacidadRepository } from './ITipoDiscapacidadRepository.js';
 export { ITipoParentescoRepository } from './ITipoParentescoRepository.js';
 export { IDocumentacionRepository } from './IDocumentacionRepository.js';
+export { IInstitucionRepository } from './IInstitucionRepository.js';
 
 // ============================================
 // SISTEMA DE SEGURIDAD
@@ -38,7 +41,7 @@ export { ISesionRepository } from './ISesionRepository.js';
 export { IPersonalRepository } from './IPersonalRepository.js';
 export { IRectorRepository } from './IRectorRepository.js';
 export { IDirectorRepository } from './IDirectorRepository.js';
-export { ISecretaryRepository } from './ISecretaryRepository.js';
+export { ISecretariaRepository } from './ISecretariaRepository.js';
 export { IConfiguracionSistemaRepository } from './IConfiguracionSistemaRepository.js';
 
 // ============================================
@@ -56,8 +59,7 @@ export { IAsignaturaPlanRepository } from './IAsignaturaPlanRepository.js';
 // ESTRUCTURA ACADÉMICA - PARTE 3 (Calendario)
 // ============================================
 export { IActividadRepository } from './IActividadRepository.js';
-export { IGestionRepository } from './IGestionRepository.js';
-export { IManagementPlanRepository } from './IManagementPlanRepository.js';
+export { IGestionPlanRepository } from './IGestionPlanRepository.js';
 export { IPeriodoAcademicoRepository } from './IPeriodoAcademicoRepository.js';
 export { IActividadCalendarioRepository } from './IActividadCalendarioRepository.js';
 
@@ -65,11 +67,11 @@ export { IActividadCalendarioRepository } from './IActividadCalendarioRepository
 // ESTRUCTURA ACADÉMICA - PARTE 2
 // ============================================
 export { IDocenteRepository } from './IDocenteRepository.js';
-export { IParallelRepository } from './IParallelRepository.js';
-export { IClassroomRepository } from './IClassroomRepository.js';
-export { IScheduleRepository } from './IScheduleRepository.js';
+export { IParaleloRepository } from './IParaleloRepository.js';
+export { IAulaRepository } from './IAulaRepository.js';
+export { IHorarioRepository } from './IHorarioRepository.js';
 export { ICursoRepository } from './ICursoRepository.js';
-export { ICourseScheduleRepository } from './ICourseScheduleRepository.js';
+export { ICursoHorarioRepository } from './ICursoHorarioRepository.js';
 export { IAsignacionDocenteRepository } from './IAsignacionDocenteRepository.js';
 
 // ============================================
@@ -83,8 +85,14 @@ export { IEstudianteDiscapacidadRepository } from './IEstudianteDiscapacidadRepo
 export { IEstudianteOrigenRepository } from './IEstudianteOrigenRepository.js';
 export { IBecaDescuentoRepository } from './IBecaDescuentoRepository.js';
 export { IEstudianteBecaRepository } from './IEstudianteBecaRepository.js';
-export { ILicenciaSolicitudRepository } from './ILicenciaSolicitudRepository.js';
+export { ILicenciaRepository } from './ILicenciaRepository.js';
 export { IEstudianteApoderadoRepository } from './IEstudianteApoderadoRepository.js';
+
+// ============================================
+// TRANSITABILIDAD Y TRASPASOS
+// ============================================
+export { ITransitabilidadRepository } from './ITransitabilidadRepository.js';
+export { ITraspasoRepository } from './ITraspasoRepository.js';
 
 // ============================================
 // INSCRIPCIONES
@@ -92,13 +100,34 @@ export { IEstudianteApoderadoRepository } from './IEstudianteApoderadoRepository
 export { IInscripcionRepository } from './IInscripcionRepository.js';
 export { IMatriculaMateriaRepository } from './IMatriculaMateriaRepository.js';
 export { IHistorialMatriculaRepository } from './IHistorialMatriculaRepository.js';
+export { IHistorialPrevioRepository } from './IHistorialPrevioRepository.js';
+
+// ============================================
+// EVALUACIONES
+// ============================================
+export { ITipoEvaluacionRepository } from './ITipoEvaluacionRepository.js';
+export { IConfiguracionEvaluacionRepository } from './IConfiguracionEvaluacionRepository.js';
+export { IBimestreMatriculaRepository } from './IBimestreMatriculaRepository.js';
+export { IEvaluacionRepository } from './IEvaluacionRepository.js';
+export { IEvaluacionFinalRepository } from './IEvaluacionFinalRepository.js';
+
+// ============================================
+// NIVELACIONES
+// ============================================
+export { INivelacionRepository } from './INivelacionRepository.js';
+
+// ============================================
+// ASISTENCIAS Y LICENCIAS
+// ============================================
+export { IAsistenciaRepository } from './IAsistenciaRepository.js';
+export { IClaseNoDictadaRepository } from './IClaseNoDictadaRepository.js';
 
 // ============================================
 // PAGOS ACADÉMICOS
 // ============================================
-export { IContributionConfigurationRepository } from './IContributionConfigurationRepository.js';
-export { IPaymentMethodRepository } from './IPaymentMethodRepository.js';
-export { IAuthorizedBankRepository } from './IAuthorizedBankRepository.js';
-export { IPaymentAccountRepository } from './IPaymentAccountRepository.js';
-export { IContributionPaymentRepository } from './IContributionPaymentRepository.js';
-export { IContributionPaymentInstallmentRepository } from './IContributionPaymentInstallmentRepository.js';
+export { IConfiguracionAporteRepository } from './IConfiguracionAporteRepository.js';
+export { IMetodoPagoRepository } from './IMetodoPagoRepository.js';
+export { IBancoAutorizadoRepository } from './IBancoAutorizadoRepository.js';
+export { ICuentaPagoRepository } from './ICuentaPagoRepository.js';
+export { IPagoAporteRepository } from './IPagoAporteRepository.js';
+export { IPagoCuotasRepository } from './IPagoCuotasRepository.js';

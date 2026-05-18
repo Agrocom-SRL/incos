@@ -1,5 +1,5 @@
 import { QueryTypes } from 'sequelize';
-import { IParallelRepository } from '../../domain/interfaces/repositories/IParallelRepository.js';
+import { IParaleloRepository } from '../../domain/interfaces/repositories/IParaleloRepository.js';
 import { Paralelo as ParaleloModel } from '../database/models/paralelo.js';
 import { BaseRepository } from './BaseRepository.js';
 import { ParallelMapper } from '../mappers/ParallelMapper.js';
@@ -18,12 +18,12 @@ import { sequelize } from '../database/sequelize.js';
  * - Dependency Inversion: Usa ParallelMapper para conversiones (depende de abstracción)
  * 
  * Clean Architecture:
- * - Infrastructure Layer: Implementación concreta de IParallelRepository
+ * - Infrastructure Layer: Implementación concreta de IParaleloRepository
  * - Usa ParallelMapper (Infrastructure) para adaptar Modelo ORM ↔ Entidad (Domain)
  * 
- * @implements {IParallelRepository}
+ * @implements {IParaleloRepository}
  * 
- * Esta clase cumple con el contrato IParallelRepository:
+ * Esta clase cumple con el contrato IParaleloRepository:
  * - Hereda de BaseRepository que extiende IRepository (métodos base: findById, findBy, findAll, create, update, delete, search, count)
  * - La especialización está en buildWhereClause(), no en métodos adicionales
  * - Usa los métodos base de BaseRepository para todas las operaciones de búsqueda

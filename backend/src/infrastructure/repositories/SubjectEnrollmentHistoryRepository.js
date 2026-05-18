@@ -18,9 +18,7 @@ import { SubjectEnrollmentHistoryMapper } from '../mappers/SubjectEnrollmentHist
  *
  * @implements {IHistorialMatriculaRepository}
  */
-export class SubjectEnrollmentHistoryRepository
-    extends BaseRepository
-    /* implements IHistorialMatriculaRepository */ {
+export class SubjectEnrollmentHistoryRepository extends BaseRepository {
     getModel() {
         return HistorialMatriculaModel;
     }
