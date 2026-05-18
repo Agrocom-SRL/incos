@@ -328,10 +328,10 @@ CREATE TABLE asignaciones_docentes (
 
     -- Overrides económicos/académicos por docente/asignación
     teorico_override DECIMAL(5,2) NULL
-        COMMENT 'Override de la cuota teórica institucional. NULL = usar la cuota institucional de la gestión desde cuota_teorico_practico.',
+        COMMENT 'Override de la cuota teórica institucional. NULL = usar la configuración de la gestión desde configuracion_evaluacion.',
 
     practico_override DECIMAL(5,2) NULL
-        COMMENT 'Override de la cuota práctica institucional. NULL = usar la cuota institucional de la gestión desde cuota_teorico_practico.',
+        COMMENT 'Override de la cuota práctica institucional. NULL = usar la configuración de la gestión desde configuracion_evaluacion.',
 
     -- Política de asistencia definida para esta asignación docente
     politica_asistencia ENUM(

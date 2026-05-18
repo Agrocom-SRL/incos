@@ -1,13 +1,13 @@
 -- ============================================
 -- MÓDULO DE EVALUACIONES (PARTE 2 de 5)
 -- Sistema de Gestión Académica - Instituto INCOS
--- 5 Tablas: tipos_evaluacion, cuota_teorico_practico,
+-- 5 Tablas: tipos_evaluacion, configuracion_evaluacion,
 --           bimestres_matricula, evaluaciones, evaluaciones_finales
 -- ============================================
 --
 -- Este archivo modela el SISTEMA DE NOTAS Y EVALUACIONES de la gestión vigente.
--- Las inscripciones y matrículas viven en 12-inscripciones.sql.
--- El historial previo y nivelaciones en 16-nivelaciones.sql.
+-- Inscripciones, historial_previo y matrículas en 12-inscripciones.sql.
+-- historial_matricula y nivelaciones en 16-nivelaciones.sql.
 --
 -- JERARQUÍA DE EVALUACIÓN (modelo oficial del Registro Académico de Notas INCOS):
 --
@@ -29,8 +29,8 @@
 --              ├── peso en la nota_final (junto con los 4 bimestres)
 --              └── No pertenecen a ningún bimestre específico
 --
--- CUOTA TEÓRICO / PRÁCTICO:
---   - Default institucional por gestión (típicamente 30/70) en cuota_teorico_practico
+-- CONFIGURACIÓN TEÓRICO / PRÁCTICO:
+--   - Default institucional por gestión (típicamente 30/70) en configuracion_evaluacion
 --   - Override por asignacion_docente si la materia lo justifica (campos agregados
 --     a asignaciones_docentes (pendiente de ALTER en schema de asignaciones)
 --   - Las evaluaciones componente=TEORICO se promedian ponderado y se reescalan a
@@ -41,7 +41,7 @@
 --   - Habilitación bimestral: campo nota_habilitacion en bimestres_matricula.
 --     Reemplaza la nota_bimestre original si el estudiante reprueba UN bimestre.
 --   - Recuperatorio anual: tabla nivelaciones (16-nivelaciones.sql) vinculada
---     vía historial_matricula (17-historial-matricula.sql). Aplica a TODA la materia al cierre del año.
+--     vía historial_matricula (16-nivelaciones.sql). Aplica a TODA la materia al cierre del año.
 --   - Nivelación: tabla nivelaciones (16-nivelaciones.sql). Hasta 3 intentos en años siguientes.
 --
 -- RESTRICCIONES DE DISEÑO:
@@ -64,7 +64,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 DROP TABLE IF EXISTS evaluaciones_finales;
 DROP TABLE IF EXISTS evaluaciones;
 DROP TABLE IF EXISTS bimestres_matricula;
-DROP TABLE IF EXISTS cuota_teorico_practico;
+DROP TABLE IF EXISTS configuracion_evaluacion;
 DROP TABLE IF EXISTS tipos_evaluacion;
 
 -- ============================================
@@ -129,9 +129,12 @@ CREATE TABLE tipos_evaluacion (
 COMMENT='Catálogo de tipos de evaluación reutilizable entre gestiones. ámbito distingue evaluaciones de bimestre vs evaluaciones de materia completa.';
 
 -- ============================================
--- TABLA: cuota_teorico_practico
--- Cuota institucional de componentes teórico y práctico por gestión
+-- TABLA: configuracion_evaluacion
+-- Configuración institucional de componentes teórico y práctico por gestión
 -- ============================================
+-- Par con tipos_evaluacion (catálogo = QUÉ tipos existen; esta tabla = CÓMO
+-- se reparte la nota por gestión). Mismo patrón que configuracion_aportes en pagos.
+--
 -- Define la cuota institucional para los componentes oficiales del boletín:
 -- TEÓRICO + PRÁCTICO = 100 puntos por bimestre. Típicamente 30/70 en INCOS.
 --
@@ -141,11 +144,11 @@ COMMENT='Catálogo de tipos de evaluación reutilizable entre gestiones. ámbito
 -- cuota_practico_override agregados vía ALTER en schema de asignaciones).
 --
 -- USO: Al cerrar un bimestre, las evaluaciones componente=TEORICO se promedian
--- ponderado y el resultado se reescala a la cuota_teorico (ej. si promedio 80
+-- ponderado y el resultado se reescala a cuota_teorico (ej. si promedio 80
 -- sobre 100, con cuota 30 → 80 * 30 / 100 = 24). Lo mismo para práctico.
 -- nota_bimestre = nota_teorico + nota_practico.
 
-CREATE TABLE cuota_teorico_practico (
+CREATE TABLE configuracion_evaluacion (
     id INT AUTO_INCREMENT PRIMARY KEY,
 
     -- Alcance
@@ -178,7 +181,7 @@ CREATE TABLE cuota_teorico_practico (
     INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete'
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Cuota institucional teórico/práctico por gestión (default 30/70). Aplica a todas las materias salvo override en asignaciones_docentes.';
+COMMENT='Configuración institucional del reparto teórico/práctico (default 30/70) por gestión. Aplica a todas las materias salvo override en asignaciones_docentes.';
 
 -- ============================================
 -- TABLA: bimestres_matricula

@@ -1,30 +1,25 @@
 -- ============================================
--- MÓDULO DE HISTORIAL Y NIVELACIONES (PARTE 3 de 5)
+-- MÓDULO DE HISTORIAL DE MATRÍCULA Y NIVELACIONES (PARTE 3 de 5)
 -- Sistema de Gestión Académica - Instituto INCOS
--- 2 Tablas: historial_previo, nivelaciones
--- historial_matricula (FK a nivelaciones) vive en 17-historial-matricula.sql
+-- 2 Tablas: historial_matricula, nivelaciones
 -- ============================================
 --
--- Este archivo cierra el módulo académico con tres componentes:
+-- Requiere ejecutarse DESPUÉS de:
+--   12-inscripciones.sql      (inscripciones, historial_previo, matriculas_materia)
+--   13-evaluaciones.sql       (orden lógico del módulo académico)
 --
--- A) HISTORIAL PREVIO
---    historial_previo: materias aprobadas POR FUERA del flujo regular del
---    sistema. Sirve TRES casos diferenciados por institucion_origen_id:
---      1. ANTIGUO: cursó en INCOS pre-sistema (institucion_origen_id = NULL)
---      2. TRASPASO: materias aprobadas en otro ITT (institucion_origen_id = ITT)
---      3. TRANSITABILIDAD: convalidación en bloque del 1er año de INCOS por
---         Título Técnico Medio (institucion_origen_id = UETHP/CEA)
+-- historial_previo vive en 12-inscripciones.sql (anclado a inscripcion_id).
 --
--- B) NIVELACIONES (intentos académicos de recuperación)
---    Tabla unificada para los 4 tipos de intentos académicos donde el
---    estudiante recupera una materia reprobada:
---      - RECUPERATORIO_ANUAL: examen al cierre de la misma gestión (último
---        intento antes de declarar la materia reprobada)
---      - NIVELACION_1RA: primer intento en gestiones posteriores
---      - NIVELACION_2DA: segundo intento si falló el primero
---      - PRUEBA_EXCEPCIONAL: tercer y último intento (Art. 18 del reglamento)
---    Después de PRUEBA_EXCEPCIONAL reprobada o vencimiento del plazo, el
---    derecho VENCE y el estudiante debe re-cursar como matrícula regular.
+-- ORDEN DE EJECUCIÓN (ecosistema): 05/06 → 07 → 08 → 12 → 13 → 16 → 18
+--
+-- Dentro de este script: historial_matricula → nivelaciones
+-- (nivelaciones.historial_matricula_id referencia historial_matricula)
+--
+-- SEPARACIÓN DE RESPONSABILIDADES:
+--   historial_matricula → QUÉ proceso es (tipo_estado: RECUPERATORIO_ANUAL,
+--     NIVELACION_1RA, NIVELACION_2DA, PRUEBA_EXCEPCIONAL, VENCIDA, etc.)
+--   nivelaciones → CÓMO fue el examen (fecha, nota, evaluador, aprobado).
+--     Sin tipo_intento ni matricula_materia_id: derivables vía historial_matricula.
 --
 -- RESTRICCIONES DE DISEÑO:
 --   - Todas las FKs permiten NULL
@@ -44,59 +39,77 @@ USE instituto_incos;
 SET FOREIGN_KEY_CHECKS = 0;
 
 DROP TABLE IF EXISTS nivelaciones;
-DROP TABLE IF EXISTS historial_previo;
+DROP TABLE IF EXISTS historial_matricula;
 
 -- ============================================
 -- FASE 2: CREACIÓN DE TABLAS
 -- ============================================
 
 -- ============================================
--- TABLA: historial_previo
--- Materias aprobadas por fuera del flujo regular del sistema
+-- TABLA: historial_matricula
+-- Ciclo de vida operativo de cada matrícula. Bitácora de transiciones.
 -- ============================================
--- Registro de materias aprobadas que NO provienen del flujo regular de
--- matriculas_materia. Cubre tres casos diferenciados por institucion_origen_id:
+-- Registra cada transición de estado operativo de una matrícula, permitiendo
+-- reconstruir la historia completa. Es el ANCLA de los eventos del ciclo de
+-- vida; los intentos académicos (nivelaciones) apuntan AQUÍ, no al revés.
 --
---   1. ANTIGUO (institucion_origen_id = NULL):
---      Estudiantes que cursaron en INCOS antes de la implementación del sistema
---      (típicamente 2021-2025). Se carga manualmente desde certificados o
---      registros en papel al matricularlos en la gestión vigente.
+-- TRES MODALIDADES SEGÚN tipo_estado:
 --
---   2. TRASPASO (institucion_origen_id = ID del ITT origen):
---      Estudiantes que vienen de otro ITT con materias aprobadas. Se cargan
---      sus notas reales.
+-- 1. INTENTOS ACADÉMICOS
+--    tipo_estado en: RECUPERATORIO_ANUAL, NIVELACION_1RA, NIVELACION_2DA,
+--                    PRUEBA_EXCEPCIONAL
+--    NO hay FK a nivelaciones. El vínculo es INVERSO:
+--    nivelaciones.historial_matricula_id apunta a esta fila.
+--    nota_resultante y nota_forzada quedan NULL.
 --
---   3. TRANSITABILIDAD (institucion_origen_id = ID de UETHP/CEA origen):
---      Estudiantes con Título Técnico Medio que ingresan directamente a 2do año.
---      Se cargan las materias del 1er año del plan INCOS como CONVALIDADAS con
---      nota genérica institucional.
+-- 2. DECISIONES ADMINISTRATIVAS (ABANDONO, RETIRADO, ARTICULO_18)
+--    nota_resultante + nota_forzada=TRUE. Sin fila en nivelaciones.
 --
--- DISEÑO COMO TABLA SEPARADA (no como matricula sintética con FKs en NULL):
--- El contexto pre-sistema / convalidación es estructuralmente distinto al
--- flujo regular: no hay asignacion_docente, no se conoce el paralelo, no hay
--- bimestres ni evaluaciones, no hay gestion_plan. Forzar el modelo regular
--- obligaría a dejar la mayoría de FKs en NULL permanentemente, violando 3FN.
+-- 3. TRANSICIONES SIN NOTA (VENCIDA, CHOQUE_HORARIO, PRE_REQUISITO, etc.)
+--    Solo cronología.
 --
--- ALCANCE: Solo se registran materias APROBADAS. Las reprobadas no se cargan
--- porque el estudiante debe re-cursarlas en la gestión vigente como matrícula
--- regular en su paralelo.
+-- CÁLCULO DE NOTA EFECTIVA (lógica de aplicación):
+--   1. ¿historial_matricula vigente con nota_forzada=TRUE? → nota_resultante
+--   2. SINO ¿nivelacion APROBADA con historial_matricula_id → historial vigente
+--      de esta matrícula? → nivelaciones.nota_nivelacion
+--   3. SINO → matriculas_materia.nota_final
 
-CREATE TABLE historial_previo (
+CREATE TABLE historial_matricula (
     id INT AUTO_INCREMENT PRIMARY KEY,
 
-    -- Relaciones principales
-    estudiante_id INT NULL COMMENT 'Estudiante propietario del historial (referencia a estudiantes)',
-    asignatura_plan_id INT NULL COMMENT 'Asignatura del plan que aprobó (referencia a asignaturas_plan)',
-    gestion_id INT NULL COMMENT 'Gestión en que cursó la materia (referencia a gestiones). Para ANTIGUO típicamente 2021-2025; para TRASPASO/TRANSITABILIDAD: gestión de admisión o NULL.',
+    matricula_materia_id INT NULL COMMENT 'Matrícula a la que pertenece este evento (referencia a matriculas_materia). Estudiante y gestión derivables vía matricula → inscripcion.',
 
-    -- Origen de la aprobación (diferencia ANTIGUO de TRASPASO / TRANSITABILIDAD)
-    institucion_origen_id INT NULL COMMENT 'Institución donde se aprobó la materia (referencia a instituciones). NULL = INCOS pre-sistema (caso ANTIGUO). Con valor = TRASPASO (ITT) o TRANSITABILIDAD (UETHP/CEA).',
+    -- NOTA DE DISEÑO: NO existe nivelacion_id. El vínculo es INVERSO:
+    -- nivelaciones.historial_matricula_id apunta a esta tabla.
 
-    -- Resultado académico
-    nota_final DECIMAL(5,2) NULL COMMENT 'Nota final obtenida (0-100). Nota mínima para aprobar: 61. Para TRANSITABILIDAD puede ser nota genérica institucional (ej. 70) ya que la convalidación es legal en bloque.',
-    estado ENUM('APROBADO', 'CONVALIDADO') DEFAULT 'APROBADO' COMMENT 'Estado: APROBADO (cursó y aprobó), CONVALIDADO (por convalidación de otra institución o transitabilidad legal). Solo se registran resultados positivos.',
-    
-    -- Campos de auditoría y control (ESTÁNDAR)
+    tipo_estado ENUM(
+        'NIVELACION_1RA',
+        'NIVELACION_2DA',
+        'PRUEBA_EXCEPCIONAL',
+        'RECUPERATORIO_ANUAL',
+        'VENCIDA',
+        'CHOQUE_HORARIO',
+        'PRE_REQUISITO',
+        'NO_LLEVA_POR_VOLUNTAD',
+        'HOMOLOGACION',
+        'LLEVA_EN_GESTION',
+        'ARTICULO_18',
+        'ABANDONO',
+        'RETIRADO',
+        'OTRO'
+    ) NOT NULL COMMENT 'Naturaleza del proceso según reglamento INCOS. Para intentos académicos distingue RECUPERATORIO_ANUAL (preventivo, misma gestión) de NIVELACION_1RA/2DA/PRUEBA_EXCEPCIONAL (recuperación posterior). La nota del examen vive en nivelaciones.',
+
+    nota_resultante DECIMAL(5,2) NULL
+        COMMENT 'Nota fijada por decisión administrativa (0-100). Solo ABANDONO, RETIRADO o ARTICULO_18.',
+
+    nota_forzada BOOLEAN DEFAULT FALSE
+        COMMENT 'TRUE si nota_resultante sobrescribe matriculas_materia.nota_final.',
+
+    fecha_transicion DATE NULL COMMENT 'Fecha en que ocurrió la transición a este estado',
+    observaciones TEXT COMMENT 'Observaciones adicionales',
+
+    vigente BOOLEAN DEFAULT TRUE COMMENT 'Indica si este estado está vigente o ya fue reemplazado por uno posterior',
+
     activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
@@ -105,91 +118,57 @@ CREATE TABLE historial_previo (
     updated_by INT NULL COMMENT 'Usuario que modificó',
     deleted_by INT NULL COMMENT 'Usuario que eliminó',
 
-    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
-    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
+    FOREIGN KEY (matricula_materia_id) REFERENCES matriculas_materia(id) ON DELETE SET NULL,
 
-    FOREIGN KEY (estudiante_id) REFERENCES estudiantes(id) ON DELETE SET NULL,
-    FOREIGN KEY (asignatura_plan_id) REFERENCES asignaturas_plan(id) ON DELETE SET NULL,
-    FOREIGN KEY (gestion_id) REFERENCES gestiones(id) ON DELETE SET NULL,
-    FOREIGN KEY (institucion_origen_id) REFERENCES instituciones(id) ON DELETE SET NULL,
-
-    -- Índices para optimización
-    INDEX idx_estudiante_id (estudiante_id) COMMENT 'Búsqueda por estudiante',
-    INDEX idx_asignatura_plan_id (asignatura_plan_id) COMMENT 'Búsqueda por asignatura del plan',
-    INDEX idx_gestion_id (gestion_id) COMMENT 'Búsqueda por gestión',
-    INDEX idx_institucion_origen_id (institucion_origen_id) COMMENT 'Búsqueda por institución de origen',
-    INDEX idx_estado (estado) COMMENT 'Filtrado por estado',
+    INDEX idx_matricula_materia_id (matricula_materia_id) COMMENT 'Búsqueda por matrícula',
+    INDEX idx_tipo_estado (tipo_estado) COMMENT 'Filtrado por tipo de estado',
+    INDEX idx_vigente (vigente) COMMENT 'Filtrado por estados vigentes',
+    INDEX idx_nota_forzada (nota_forzada) COMMENT 'Búsqueda de transiciones con nota forzada',
     INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
     INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
-    INDEX idx_estudiante_asignatura (estudiante_id, asignatura_plan_id, activo, deleted_at) COMMENT 'Validación de prerrequisitos: ¿aprobó esta asignatura?',
-    INDEX idx_estudiante_gestion (estudiante_id, gestion_id, activo, deleted_at) COMMENT 'Historial de un estudiante en una gestión específica'
+    INDEX idx_matricula_vigente (matricula_materia_id, vigente, activo, deleted_at) COMMENT 'Estado vigente de una matrícula',
+    INDEX idx_matricula_tipo (matricula_materia_id, tipo_estado, activo, deleted_at) COMMENT 'Historia de un tipo de estado específico',
+    INDEX idx_matricula_forzada (matricula_materia_id, nota_forzada, vigente, activo, deleted_at) COMMENT 'Nota forzada vigente para cálculo de nota efectiva'
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Materias aprobadas por fuera del flujo regular: ANTIGUO (INCOS pre-sistema, institucion_origen_id NULL), TRASPASO (otro ITT) y TRANSITABILIDAD (UETHP/CEA, convalidación legal de 1er año).';
+COMMENT='Bitácora operativa de matrículas. Intentos académicos: tipo_estado aquí, hecho del examen en nivelaciones vía historial_matricula_id. Administrativos: nota_resultante + nota_forzada.';
 
 -- ============================================
 -- TABLA: nivelaciones
--- Intentos académicos de recuperación de materia reprobada
+-- Hecho concreto de un examen extraordinario
 -- ============================================
--- Tabla unificada para los 4 tipos de intentos académicos donde el estudiante
--- recupera una materia reprobada. Cada fila representa UN intento con su nota,
--- fecha, evaluador y resultado.
+-- Registro neutro del examen: cuándo, qué nota, quién evaluó, si aprobó.
+-- El significado del proceso (recuperatorio vs 1ra/2da nivelación vs Art. 18)
+-- NO vive aquí: se lee de historial_matricula.tipo_estado del evento vinculado.
 --
--- TIPOS DE INTENTO (campo tipo_intento):
---   - RECUPERATORIO_ANUAL: examen al cierre de la MISMA gestión. Último
---     intento antes de declarar la materia reprobada. Lo evalúa típicamente
---     el mismo docente de la materia.
---   - NIVELACION_1RA: primer intento en gestiones POSTERIORES. Si reprobó la
---     materia en gestión X, puede rendir nivelación en X+1.
---   - NIVELACION_2DA: segundo intento si falló la primera nivelación.
---   - PRUEBA_EXCEPCIONAL: tercer y último intento, conforme Art. 18 del
---     reglamento. Después de fallar este, el derecho VENCE y debe re-cursar.
+-- NORMALIZACIÓN (3FN):
+--   - SE ELIMINÓ estudiante_id, asignatura_plan_id: derivables vía
+--     historial_matricula → matricula_materia → inscripcion (y asignacion).
+--   - SE ELIMINÓ matricula_materia_id: transitivo vía historial_matricula.
+--   - SE ELIMINÓ tipo_intento y numero_intento: duplican tipo_estado del historial.
+--   - historial_matricula_id: ancla del evento que habilitó el examen.
+--   - gestion_id SE MANTIENE: el examen puede ser en la gestión de la matrícula
+--     o en una posterior; no es derivable solo de la matrícula.
 --
--- RELACIÓN CON historial_matricula:
--- Cada fila aquí se vincula con UNA fila en historial_matricula cuyo
--- tipo_estado coincide (RECUPERATORIO_ANUAL, NIVELACION_1RA, NIVELACION_2DA,
--- PRUEBA_EXCEPCIONAL). El vínculo se mantiene mediante la FK
--- historial_matricula.nivelacion_id (tabla en 17-historial-matricula.sql).
--- historial_matricula registra "qué pasó y cuándo"; nivelaciones registra
--- "los datos académicos del intento".
---
--- CONTROL DE INTENTOS:
--- numero_intento se incrementa secuencialmente: 0 para RECUPERATORIO_ANUAL
--- (intento 0 = recuperación en la misma gestión), 1 para NIVELACION_1RA,
--- 2 para NIVELACION_2DA, 3 para PRUEBA_EXCEPCIONAL. La validación de no
--- exceder 3 intentos (sin contar el recuperatorio anual) vive en la aplicación.
+-- Cubre dos procesos con el mismo esquema:
+--   - Preventivo: RECUPERATORIO_ANUAL al cierre de la misma gestión
+--   - Recuperación: NIVELACION_1RA/2DA, PRUEBA_EXCEPCIONAL en gestiones posteriores
 
 CREATE TABLE nivelaciones (
     id INT AUTO_INCREMENT PRIMARY KEY,
 
-    -- Relaciones principales
-    estudiante_id INT NULL COMMENT 'Estudiante que rinde el intento (referencia a estudiantes)',
-    matricula_materia_id INT NULL COMMENT 'Materia reprobada original que genera el derecho a recuperar (referencia a matriculas_materia)',
-    asignatura_plan_id INT NULL COMMENT 'Asignatura del plan a recuperar (referencia a asignaturas_plan). Puede ser la misma que la reprobada o una equivalente.',
-    gestion_id INT NULL COMMENT 'Gestión en la que se rinde el intento (referencia a gestiones). Para RECUPERATORIO_ANUAL es la misma gestión de la matrícula; para NIVELACION/PRUEBA_EXCEPCIONAL es una posterior.',
+    historial_matricula_id INT NULL COMMENT 'Evento de historial que habilitó y contextualiza este examen (referencia a historial_matricula). El tipo_estado del historial distingue RECUPERATORIO_ANUAL, NIVELACION_1RA, etc.',
+    gestion_id INT NULL COMMENT 'Gestión en la que se rinde el examen (referencia a gestiones). Puede ser la de la matrícula original o una posterior.',
     docente_evaluador_id INT NULL COMMENT 'Docente que evaluó el intento (referencia a docentes)',
 
-    -- Tipo y control de intento
-    tipo_intento ENUM(
-        'RECUPERATORIO_ANUAL',
-        'NIVELACION_1RA',
-        'NIVELACION_2DA',
-        'PRUEBA_EXCEPCIONAL'
-    ) NOT NULL DEFAULT 'NIVELACION_1RA' COMMENT 'Tipo de intento académico: RECUPERATORIO_ANUAL (al cierre de la misma gestión, intento 0), NIVELACION_1RA (intento 1, gestión siguiente), NIVELACION_2DA (intento 2), PRUEBA_EXCEPCIONAL (intento 3, último según Art. 18).',
-    
-    -- Datos del intento
     fecha_examen DATE NULL COMMENT 'Fecha del examen',
-    numero_intento INT NULL DEFAULT 1 COMMENT 'Número secuencial de intento: 0 = RECUPERATORIO_ANUAL, 1 = NIVELACION_1RA, 2 = NIVELACION_2DA, 3 = PRUEBA_EXCEPCIONAL. Los intentos académicos posteriores al recuperatorio anual no deben exceder 3 (validación de aplicación).',
 
-    -- Resultado
     nota_nivelacion DECIMAL(5,2) NULL COMMENT 'Nota obtenida (0-100). Mínima de aprobación: 61.',
-    estado ENUM('PROGRAMADA', 'EN_CURSO', 'APROBADA', 'REPROBADA', 'CANCELADA') DEFAULT 'PROGRAMADA' COMMENT 'Estado del proceso',
+    estado ENUM('PROGRAMADA', 'EN_CURSO', 'APROBADA', 'REPROBADA', 'CANCELADA') DEFAULT 'PROGRAMADA' COMMENT 'Estado del proceso del examen',
     aprobado BOOLEAN NULL COMMENT 'TRUE si aprobó (nota_nivelacion >= 61), FALSE si reprobó',
 
-    -- Observaciones
     observaciones TEXT COMMENT 'Observaciones del proceso',
 
-    -- Campos de auditoría y control (ESTÁNDAR)
     activo BOOLEAN DEFAULT TRUE COMMENT 'Registro activo/inactivo',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha de creación',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de modificación',
@@ -198,30 +177,23 @@ CREATE TABLE nivelaciones (
     updated_by INT NULL COMMENT 'Usuario que modificó',
     deleted_by INT NULL COMMENT 'Usuario que eliminó',
 
-    -- NOTA: Las Foreign Keys a usuarios se omiten para evitar dependencias circulares
-    -- Los campos created_by, updated_by, deleted_by se mantienen para auditoría
-
-    FOREIGN KEY (estudiante_id) REFERENCES estudiantes(id) ON DELETE SET NULL,
-    FOREIGN KEY (matricula_materia_id) REFERENCES matriculas_materia(id) ON DELETE SET NULL,
-    FOREIGN KEY (asignatura_plan_id) REFERENCES asignaturas_plan(id) ON DELETE SET NULL,
+    FOREIGN KEY (historial_matricula_id) REFERENCES historial_matricula(id) ON DELETE SET NULL,
     FOREIGN KEY (gestion_id) REFERENCES gestiones(id) ON DELETE SET NULL,
     FOREIGN KEY (docente_evaluador_id) REFERENCES docentes(id) ON DELETE SET NULL,
 
-    -- Índices para optimización
-    INDEX idx_estudiante_id (estudiante_id) COMMENT 'Búsqueda por estudiante',
-    INDEX idx_matricula_materia_id (matricula_materia_id) COMMENT 'Búsqueda por materia reprobada original',
-    INDEX idx_asignatura_plan_id (asignatura_plan_id) COMMENT 'Búsqueda por asignatura del plan',
-    INDEX idx_gestion_id (gestion_id) COMMENT 'Búsqueda por gestión',
-    INDEX idx_tipo_intento (tipo_intento) COMMENT 'Filtrado por tipo de intento',
-    INDEX idx_estado (estado) COMMENT 'Filtrado por estado',
+    INDEX idx_historial_matricula_id (historial_matricula_id) COMMENT 'Búsqueda por evento de historial',
+    INDEX idx_gestion_id (gestion_id) COMMENT 'Búsqueda por gestión del examen',
+    INDEX idx_docente_evaluador_id (docente_evaluador_id) COMMENT 'Búsqueda por evaluador',
+    INDEX idx_estado (estado) COMMENT 'Filtrado por estado del proceso',
     INDEX idx_aprobado (aprobado) COMMENT 'Filtrado por intentos aprobados/reprobados',
     INDEX idx_activo (activo) COMMENT 'Filtrado por estado activo',
     INDEX idx_deleted_at (deleted_at) COMMENT 'Filtrado de soft delete',
-    INDEX idx_estudiante_asignatura_tipo (estudiante_id, asignatura_plan_id, tipo_intento, activo, deleted_at) COMMENT 'Control de intentos por estudiante, asignatura y tipo',
-    INDEX idx_matricula_tipo (matricula_materia_id, tipo_intento, activo, deleted_at) COMMENT 'Intentos asociados a una matrícula específica'
+    INDEX idx_historial_estado (historial_matricula_id, estado, activo, deleted_at) COMMENT 'Exámenes por evento de historial',
+    INDEX idx_historial_aprobado (historial_matricula_id, aprobado, activo, deleted_at) COMMENT 'Intento aprobado para cálculo de nota efectiva',
+    INDEX idx_gestion_aprobado (gestion_id, aprobado, activo, deleted_at) COMMENT 'Resultados por gestión'
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Intentos académicos de recuperación de materia reprobada. 4 tipos: RECUPERATORIO_ANUAL (misma gestión), NIVELACION_1RA/2DA (gestiones posteriores), PRUEBA_EXCEPCIONAL (último intento Art. 18). Vinculado con historial_matricula vía nivelacion_id.';
+COMMENT='Hecho del examen extraordinario. Ancla a historial_matricula_id; tipo de proceso en historial_matricula.tipo_estado. Sin matricula_materia_id, tipo_intento ni numero_intento.';
 
 -- ============================================
 -- FASE 3: REHABILITAR FOREIGN KEY CHECKS
