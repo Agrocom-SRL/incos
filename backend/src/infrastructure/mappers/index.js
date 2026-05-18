@@ -34,10 +34,6 @@ export { PermissionMapper } from './PermissionMapper.js';
 export { RolePermissionMapper } from './RolePermissionMapper.js';
 export { TeacherMapper } from './TeacherMapper.js';
 export { StaffMapper } from './StaffMapper.js';
-// TODO: Agregar otros mappers cuando se refactorizen sus repositorios
-// export { RectorMapper } from './RectorMapper.js';
-// export { DirectorMapper } from './DirectorMapper.js';
-// export { SecretaryMapper } from './SecretaryMapper.js';
 
 // ============================================
 // ESTRUCTURA ACADÉMICA
@@ -54,14 +50,12 @@ export { ScholarshipMapper } from './ScholarshipMapper.js';
 export { StudyPlanMapper } from './StudyPlanMapper.js';
 export { PlanSubjectMapper } from './PlanSubjectMapper.js';
 export { PrerequisiteMapper } from './PrerequisiteMapper.js';
-export { TeacherMapper } from './TeacherMapper.js';
 export { ParallelMapper } from './ParallelMapper.js';
 export { ClassroomMapper } from './ClassroomMapper.js';
 export { ScheduleMapper } from './ScheduleMapper.js';
 export { CourseMapper } from './CourseMapper.js';
 export { CourseScheduleMapper } from './CourseScheduleMapper.js';
 export { TeacherAssignmentMapper } from './TeacherAssignmentMapper.js';
-// TODO: Agregar otros mappers académicos cuando se refactorizen sus repositorios
 
 // ============================================
 // ESTUDIANTES
@@ -79,13 +73,30 @@ export { StudentOriginMapper } from './StudentOriginMapper.js';
 // INSCRIPCIONES
 // ============================================
 export { EnrollmentMapper } from './EnrollmentMapper.js';
+export { PriorEnrollmentHistoryMapper } from './PriorEnrollmentHistoryMapper.js';
 export { SubjectEnrollmentMapper } from './SubjectEnrollmentMapper.js';
 export { SubjectEnrollmentHistoryMapper } from './SubjectEnrollmentHistoryMapper.js';
 
 // ============================================
-// LICENCIAS
+// EVALUACIONES
 // ============================================
-export { LicenseRequestMapper } from './LicenseRequestMapper.js';
+export { EvaluationTypeMapper } from './EvaluationTypeMapper.js';
+export { EvaluationConfigurationMapper } from './EvaluationConfigurationMapper.js';
+export { SubjectEnrollmentBimesterMapper } from './SubjectEnrollmentBimesterMapper.js';
+export { BimesterEvaluationMapper } from './BimesterEvaluationMapper.js';
+export { FinalEvaluationMapper } from './FinalEvaluationMapper.js';
+
+// ============================================
+// NIVELACIONES
+// ============================================
+export { LevelingMapper } from './LevelingMapper.js';
+
+// ============================================
+// ASISTENCIAS Y LICENCIAS
+// ============================================
+export { LicenseMapper } from './LicenseMapper.js';
+export { MissedClassMapper } from './MissedClassMapper.js';
+export { AttendanceMapper } from './AttendanceMapper.js';
 
 // ============================================
 // SESIONES
@@ -102,4 +113,3 @@ export { ContributionPaymentInstallmentMapper } from './ContributionPaymentInsta
 // CONFIGURACIÓN
 // ============================================
 export { SystemConfigurationMapper } from './SystemConfigurationMapper.js';
-

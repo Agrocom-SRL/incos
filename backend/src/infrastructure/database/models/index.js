@@ -79,15 +79,43 @@ export { EstudianteOrigen } from './estudiante_origen.js';
 // ============================================
 export { BecaDescuento } from './beca_descuento.js';
 export { EstudianteBeca } from './estudiante_beca.js';
-export { LicenciaSolicitud } from './licencia_solicitud.js';
 export { EstudianteApoderado } from './estudiante_apoderado.js';
+
+// ============================================
+// TRANSITABILIDADES Y TRASPASOS
+// ============================================
+export { Institucion } from './institucion.js';
+export { Transitabilidad } from './transitabilidad.js';
+export { Traspaso } from './traspaso.js';
 
 // ============================================
 // INSCRIPCIONES
 // ============================================
 export { Inscripcion } from './inscripcion.js';
+export { HistorialPrevio } from './historial_previo.js';
 export { MatriculaMateria } from './matricula_materia.js';
 export { HistorialMatricula } from './historial_matricula.js';
+
+// ============================================
+// EVALUACIONES
+// ============================================
+export { TipoEvaluacion } from './tipo_evaluacion.js';
+export { ConfiguracionEvaluacion } from './configuracion_evaluacion.js';
+export { BimestreMatricula } from './bimestre_matricula.js';
+export { Evaluacion } from './evaluacion.js';
+export { EvaluacionFinal } from './evaluacion_final.js';
+
+// ============================================
+// NIVELACIONES
+// ============================================
+export { Nivelacion } from './nivelacion.js';
+
+// ============================================
+// ASISTENCIAS Y LICENCIAS
+// ============================================
+export { Licencia } from './licencia.js';
+export { ClaseNoDictada } from './clase_no_dictada.js';
+export { Asistencia } from './asistencia.js';
 
 // ============================================
 // PAGOS ACADÉMICOS

@@ -1,6 +1,7 @@
 import { Op } from 'sequelize';
 import { IHistorialMatriculaRepository } from '../../domain/interfaces/repositories/IHistorialMatriculaRepository.js';
 import { HistorialMatricula as HistorialMatriculaModel } from '../database/models/historial_matricula.js';
+import { Nivelacion as NivelacionModel } from '../database/models/nivelacion.js';
 import { BaseRepository } from './BaseRepository.js';
 import { SubjectEnrollmentHistoryMapper } from '../mappers/SubjectEnrollmentHistoryMapper.js';
 
@@ -9,7 +10,6 @@ import { SubjectEnrollmentHistoryMapper } from '../mappers/SubjectEnrollmentHist
  *
  * Mapeo:
  * subjectEnrollmentId → matriculaMateriaId → matricula_materia_id
- * levelingId          → nivelacionId       → nivelacion_id
  * stateType           → tipoEstado         → tipo_estado
  * transitionDate      → fechaTransicion    → fecha_transicion
  * resultingGrade      → notaResultante     → nota_resultante
@@ -37,8 +37,6 @@ export class SubjectEnrollmentHistoryRepository
      * - subjectEnrollmentIds
      * - enrollmentSubjectId              Alias viejo
      * - enrollmentSubjectIds             Alias viejo
-     * - levelingId
-     * - levelingIds
      * - stateType
      * - stateTypes
      * - transitionDate
@@ -68,16 +66,6 @@ export class SubjectEnrollmentHistoryRepository
             where.matriculaMateriaId = { [Op.in]: subjectEnrollmentIds };
         } else if (subjectEnrollmentId) {
             where.matriculaMateriaId = subjectEnrollmentId;
-        }
-
-        if (
-            filters.levelingIds &&
-            Array.isArray(filters.levelingIds) &&
-            filters.levelingIds.length > 0
-        ) {
-            where.nivelacionId = { [Op.in]: filters.levelingIds };
-        } else if (filters.levelingId) {
-            where.nivelacionId = filters.levelingId;
         }
 
         if (
@@ -187,20 +175,29 @@ export class SubjectEnrollmentHistoryRepository
      * Busca historial asociado a una nivelación.
      */
     async findByLevelingId(levelingId, options = {}) {
-        const models = await HistorialMatriculaModel.findAll({
+        const nivelacion = await NivelacionModel.findOne({
             where: {
-                nivelacionId: levelingId,
+                id: levelingId,
                 activo: true,
                 deletedAt: null,
             },
-            order: [
-                ['fechaTransicion', 'ASC'],
-                ['id', 'ASC'],
-            ],
             transaction: options.transaction,
         });
 
-        return models.map((model) => this.toEntity(model));
+        if (!nivelacion?.historialMatriculaId) {
+            return [];
+        }
+
+        const model = await HistorialMatriculaModel.findOne({
+            where: {
+                id: nivelacion.historialMatriculaId,
+                activo: true,
+                deletedAt: null,
+            },
+            transaction: options.transaction,
+        });
+
+        return model ? [this.toEntity(model)] : [];
     }
 
     /**

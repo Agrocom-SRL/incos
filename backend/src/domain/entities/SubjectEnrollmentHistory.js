@@ -11,8 +11,8 @@ import {
  *
  * Mapeo principal:
  * - subjectEnrollmentId → matricula_materia_id
- * - levelingId          → nivelacion_id
  * - stateType           → tipo_estado
+ * (Los intentos académicos enlazan vía nivelaciones.historial_matricula_id → esta fila)
  * - resultingGrade      → nota_resultante
  * - forcedGrade         → nota_forzada
  * - transitionDate      → fecha_transicion
@@ -30,13 +30,6 @@ export class SubjectEnrollmentHistory extends BaseEntity {
                 data.subjectEnrollmentId ??
                 data.enrollmentSubjectId ??
                 data.matriculaMateriaId ??
-                null;
-        }
-
-        if (has('levelingId') || has('nivelacionId')) {
-            this.levelingId =
-                data.levelingId ??
-                data.nivelacionId ??
                 null;
         }
 
@@ -160,8 +153,15 @@ export class SubjectEnrollmentHistory extends BaseEntity {
         return this.stateType === TIPOS_ESTADO_HISTORIAL_MATRICULA.RETIRADO;
     }
 
+    isAdministrativeGradeState() {
+        return this.isAbandonment() || this.isWithdrawn() || this.isArticle18();
+    }
+
+    isAcademicAttempt() {
+        return this.isLeveling() || this.isAnnualRecovery();
+    }
+
     /**
-     * Regla nueva según tu DDL:
      * nota_resultante solo aplica para ABANDONO, RETIRADO o ARTICULO_18.
      */
     canUseDirectResultingGrade() {
@@ -200,12 +200,6 @@ export class SubjectEnrollmentHistory extends BaseEntity {
             );
         }
 
-        if (this.isAcademicAttempt() && !this.levelingId) {
-            errors.push(
-                'Los intentos académicos deben vincularse a levelingId/nivelacion_id.'
-            );
-        }
-
         return errors;
     }
 
@@ -218,10 +212,6 @@ export class SubjectEnrollmentHistory extends BaseEntity {
 
         if (this.hasOwnProperty('subjectEnrollmentId')) {
             plainObject.subjectEnrollmentId = this.subjectEnrollmentId;
-        }
-
-        if (this.hasOwnProperty('levelingId')) {
-            plainObject.levelingId = this.levelingId;
         }
 
         if (this.hasOwnProperty('stateType')) {

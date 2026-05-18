@@ -1,7 +1,7 @@
 import { ILicenciaSolicitudRepository } from '../../domain/interfaces/repositories/ILicenciaSolicitudRepository.js';
-import { LicenciaSolicitud as LicenciaSolicitudModel } from '../database/models/licencia_solicitud.js';
+import { Licencia as LicenciaModel } from '../database/models/licencia.js';
 import { BaseRepository } from './BaseRepository.js';
-import { LicenseRequestMapper } from '../mappers/LicenseRequestMapper.js';
+import { LicenseMapper } from '../mappers/LicenseMapper.js';
 
 /**
  * Implementación del repositorio de solicitudes de licencias usando Sequelize
@@ -34,10 +34,10 @@ import { LicenseRequestMapper } from '../mappers/LicenseRequestMapper.js';
 export class LicenseRequestRepository extends BaseRepository {
   /**
    * Obtiene el modelo Sequelize de solicitudes de licencias
-   * @returns {Object} Modelo LicenciaSolicitud
+   * @returns {Object} Modelo Licencia
    */
   getModel() {
-    return LicenciaSolicitudModel;
+    return LicenciaModel;
   }
 
   /**
@@ -48,7 +48,7 @@ export class LicenseRequestRepository extends BaseRepository {
    * @returns {LicenseRequest|null} Entidad de dominio
    */
   toEntity(model) {
-    return LicenseRequestMapper.toEntity(model);
+    return LicenseMapper.toEntity(model);
   }
 
   /**
@@ -64,10 +64,7 @@ export class LicenseRequestRepository extends BaseRepository {
    * - findBy({ studentId: 1, requestDate: '2025-01-15' }) → Busca solicitud específica
    * 
    * @param {Object} filters - Filtros de búsqueda
-   *   - studentId: ID del estudiante
-   *   - careerId: ID de la carrera
-   *   - managementId: ID de la gestión
-   *   - courseShiftId: ID del curso (curso_id; nombre histórico en dominio/API)
+   *   - enrollmentId: ID de la inscripción (inscripcion_id)
    *   - requestDate: Fecha de solicitud
    *   - startDate: Fecha de inicio de la licencia
    *   - endDate: Fecha de fin de la licencia
@@ -75,13 +72,7 @@ export class LicenseRequestRepository extends BaseRepository {
    *   - reason: Motivo (ENFERMEDAD, TRABAJO, FAMILIAR, etc.)
    *   - reasonDetail: Detalle del motivo (búsqueda exacta, para búsqueda de texto usar search())
    *   - state: Estado (PENDIENTE, APROBADA, RECHAZADA, etc.)
-   *   - decisionDate: Fecha de decisión
-   *   - decidedBy: ID del usuario que decidió
    *   - rejectionReason: Motivo de rechazo (búsqueda exacta, para búsqueda de texto usar search())
-   *   - documentsComplete: Si los documentos están completos (true/false)
-   *   - documentDeliveryStartDate: Fecha de inicio de entrega de documentos
-   *   - documentDeliveryEndDate: Fecha de fin de entrega de documentos
-   *   - observations: Observaciones (búsqueda exacta, para búsqueda de texto usar search())
    *   - decisionObservations: Observaciones de decisión (búsqueda exacta, para búsqueda de texto usar search())
    * @returns {Object} Objeto WHERE para Sequelize
    */
@@ -89,26 +80,17 @@ export class LicenseRequestRepository extends BaseRepository {
     const where = {};
 
     // Mapeo: Dominio (camelCase inglés) → BD (snake_case español)
-    if (filters.studentId) {
-      where.estudianteId = filters.studentId;
-    }
-    if (filters.careerId) {
-      where.carreraId = filters.careerId;
-    }
-    if (filters.managementId) {
-      where.gestionId = filters.managementId;
-    }
-    if (filters.courseShiftId) {
-      where.cursoId = filters.courseShiftId;
+    if (filters.enrollmentId) {
+      where.inscripcionId = filters.enrollmentId;
     }
     if (filters.requestDate !== undefined) {
       where.fechaSolicitud = filters.requestDate;
     }
     if (filters.startDate !== undefined) {
-      where.fechaDesde = filters.startDate;
+      where.fechaInicio = filters.startDate;
     }
     if (filters.endDate !== undefined) {
-      where.fechaHasta = filters.endDate;
+      where.fechaFin = filters.endDate;
     }
     if (filters.totalDays !== undefined) {
       where.totalDias = filters.totalDays;
@@ -122,26 +104,8 @@ export class LicenseRequestRepository extends BaseRepository {
     if (filters.state) {
       where.estado = filters.state;
     }
-    if (filters.decisionDate !== undefined) {
-      where.fechaDecision = filters.decisionDate;
-    }
-    if (filters.decidedBy) {
-      where.decididoPor = filters.decidedBy;
-    }
     if (filters.rejectionReason !== undefined) {
       where.motivoRechazo = filters.rejectionReason;
-    }
-    if (filters.documentsComplete !== undefined) {
-      where.documentosCompletos = filters.documentsComplete;
-    }
-    if (filters.documentDeliveryStartDate !== undefined) {
-      where.fechaInicioEntregaDocumentos = filters.documentDeliveryStartDate;
-    }
-    if (filters.documentDeliveryEndDate !== undefined) {
-      where.fechaFinEntregaDocumentos = filters.documentDeliveryEndDate;
-    }
-    if (filters.observations !== undefined) {
-      where.observaciones = filters.observations;
     }
     if (filters.decisionObservations !== undefined) {
       where.observacionesDecision = filters.decisionObservations;
@@ -155,7 +119,7 @@ export class LicenseRequestRepository extends BaseRepository {
    * @returns {string[]}
    */
   getSearchFields() {
-    return ['detalleMotivo', 'observaciones', 'observacionesDecision'];
+    return ['detalleMotivo', 'observacionesDecision', 'motivoRechazo'];
   }
 
   /**
@@ -173,7 +137,7 @@ export class LicenseRequestRepository extends BaseRepository {
    * @returns {Object} Objeto con formato del modelo Sequelize
    */
   mapDataToModel(data, userId = null) {
-    return LicenseRequestMapper.toModel(data);
+    return LicenseMapper.toModel(data);
   }
 
   /**
@@ -185,7 +149,7 @@ export class LicenseRequestRepository extends BaseRepository {
    * @returns {Object} Objeto con formato del modelo Sequelize (solo campos definidos)
    */
   mapDataToUpdate(data, userId = null) {
-    return LicenseRequestMapper.toModelForUpdate(data);
+    return LicenseMapper.toModelForUpdate(data);
   }
 
   /**
@@ -194,6 +158,6 @@ export class LicenseRequestRepository extends BaseRepository {
    * @returns {string} Nombre de la colección para la respuesta JSON
    */
   getCollectionName() {
-    return 'licenseRequests';
+    return 'licenses';
   }
 }

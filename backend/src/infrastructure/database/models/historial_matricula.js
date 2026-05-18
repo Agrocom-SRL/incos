@@ -17,14 +17,6 @@ export const HistorialMatricula = sequelize.define(
             comment: 'Matrícula a la que pertenece este estado. Referencia a matriculas_materia.',
         },
 
-        nivelacionId: {
-            type: DataTypes.INTEGER,
-            field: 'nivelacion_id',
-            allowNull: true,
-            comment:
-                'Si el tipo_estado es un intento académico, apunta a nivelaciones. NULL para decisiones administrativas o transiciones sin nota.',
-        },
-
         tipoEstado: {
             type: DataTypes.ENUM(...TIPOS_ESTADO_HISTORIAL_MATRICULA_VALUES),
             field: 'tipo_estado',

@@ -80,20 +80,43 @@ export { StudentDisability } from './StudentDisability.js';
 export { StudentOrigin } from './StudentOrigin.js';
 export { Scholarship } from './Scholarship.js';
 export { StudentScholarship } from './StudentScholarship.js';
-export { LicenseRequest } from './LicenseRequest.js';
 export { StudentGuardian } from './StudentGuardian.js';
+
+// ============================================
+// TRANSITABILIDADES Y TRASPASOS
+// ============================================
+export { Institution } from './Institution.js';
+export { Transitability } from './Transitability.js';
+export { Transfer } from './Transfer.js';
 
 // ============================================
 // INSCRIPCIONES
 // ============================================
 export { Enrollment } from './Enrollment.js';
+export { PriorEnrollmentHistory } from './PriorEnrollmentHistory.js';
 export { SubjectEnrollment } from './SubjectEnrollment.js';
 export { SubjectEnrollmentHistory } from './SubjectEnrollmentHistory.js';
 
 // ============================================
-// CONFIGURACIÓN DEL SISTEMA
+// EVALUACIONES
 // ============================================
-export { SystemConfiguration } from './SystemConfiguration.js';
+export { EvaluationType } from './EvaluationType.js';
+export { EvaluationConfiguration } from './EvaluationConfiguration.js';
+export { SubjectEnrollmentBimester } from './SubjectEnrollmentBimester.js';
+export { BimesterEvaluation } from './BimesterEvaluation.js';
+export { FinalEvaluation } from './FinalEvaluation.js';
+
+// ============================================
+// NIVELACIONES
+// ============================================
+export { Leveling } from './Leveling.js';
+
+// ============================================
+// ASISTENCIAS Y LICENCIAS
+// ============================================
+export { License } from './License.js';
+export { MissedClass } from './MissedClass.js';
+export { Attendance } from './Attendance.js';
 
 // ============================================
 // PAGOS ACADÉMICOS
@@ -104,3 +127,8 @@ export { AuthorizedBank } from './AuthorizedBank.js';
 export { PaymentAccount } from './PaymentAccount.js';
 export { ContributionPayment } from './ContributionPayment.js';
 export { ContributionPaymentInstallment } from './ContributionPaymentInstallment.js';
+
+// ============================================
+// CONFIGURACIÓN DEL SISTEMA
+// ============================================
+export { SystemConfiguration } from './SystemConfiguration.js';

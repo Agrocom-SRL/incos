@@ -38,6 +38,9 @@ export * from './cursos.constants.js';
 // Re-exportar constantes de inscripciones
 export * from './inscripciones.constants.js';
 
+// Re-exportar constantes de evaluaciones, nivelaciones y asistencias
+export * from './evaluaciones.constants.js';
+
 // Re-exportar constantes de pagos
 export * from './pagos.constants.js';
 
