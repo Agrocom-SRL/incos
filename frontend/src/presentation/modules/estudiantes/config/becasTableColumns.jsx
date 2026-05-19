@@ -11,7 +11,7 @@
 import { Tag } from 'antd';
 import { DollarOutlined, PercentageOutlined, UserOutlined, CalendarOutlined } from '@ant-design/icons';
 import { TableCell } from '@molecules';
-import TableActions from '@molecules/TableActions';
+import { TableActions } from '@molecules';
 
 /**
  * Crea las columnas de la tabla de becas asignadas

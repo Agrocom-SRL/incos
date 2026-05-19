@@ -40,6 +40,9 @@ export function registerInscripcionesResource(container) {
                 studentRepository: c.resolve(REPOSITORIOS_TOKENS.studentRepository),
                 careerRepository: c.resolve(REPOSITORIOS_TOKENS.careerRepository),
                 managementRepository: c.resolve(REPOSITORIOS_TOKENS.managementRepository),
+                priorEnrollmentHistoryRepository: c.resolve(
+                  REPOSITORIOS_TOKENS.priorEnrollmentHistoryRepository
+                ),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
     );
@@ -70,6 +73,9 @@ export function registerInscripcionesResource(container) {
                 languageRepository: c.resolve(REPOSITORIOS_TOKENS.languageRepository),
                 planSubjectRepository: c.resolve(REPOSITORIOS_TOKENS.planSubjectRepository),
                 contributionPaymentRepository: c.resolve(REPOSITORIOS_TOKENS.contributionPaymentRepository),
+                priorEnrollmentHistoryRepository: c.resolve(
+                  REPOSITORIOS_TOKENS.priorEnrollmentHistoryRepository
+                ),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
     );
@@ -96,6 +102,9 @@ export function registerInscripcionesResource(container) {
                 teacherRepository: c.resolve(REPOSITORIOS_TOKENS.teacherRepository),
                 parallelRepository: c.resolve(REPOSITORIOS_TOKENS.parallelRepository),
                 studentDocumentRepository: c.resolve(REPOSITORIOS_TOKENS.studentDocumentRepository),
+                priorEnrollmentHistoryRepository: c.resolve(
+                  REPOSITORIOS_TOKENS.priorEnrollmentHistoryRepository
+                ),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
     );
@@ -146,6 +155,9 @@ export function registerInscripcionesResource(container) {
                 managementPlanRepository: c.resolve(REPOSITORIOS_TOKENS.managementPlanRepository),
                 studyPlanRepository: c.resolve(REPOSITORIOS_TOKENS.studyPlanRepository),
                 planSubjectRepository: c.resolve(REPOSITORIOS_TOKENS.planSubjectRepository),
+                priorEnrollmentHistoryRepository: c.resolve(
+                  REPOSITORIOS_TOKENS.priorEnrollmentHistoryRepository
+                ),
                 logger: c.resolve(SERVICIOS_TOKENS.logger),
             })
     );

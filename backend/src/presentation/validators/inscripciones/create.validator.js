@@ -102,6 +102,39 @@ export const createEnrollmentValidator = [
   // NOTA: enrollment_date NO se valida aquí porque el backend lo genera automáticamente
   // en CreateEnrollmentUseCase._createEnrollment() usando la fecha actual
 
+  body('prior_history')
+    .optional({ nullable: true })
+    .isArray()
+    .withMessage('prior_history debe ser un arreglo')
+    .custom((value) => {
+      if (value == null) return true;
+      if (!Array.isArray(value) || value.length === 0) return true;
+      return value.every((row) => {
+        if (!row || typeof row !== 'object') return false;
+        const materiaId = row.materia_id ?? row.materiaId;
+        const periodId = row.period_id ?? row.periodId;
+        const grade = row.final_grade ?? row.finalGrade ?? row.nota_final;
+        const status = row.status ?? row.estado;
+        const gradeNum = Number(grade);
+        const statusOk =
+          status == null ||
+          ['APROBADO', 'CONVALIDADO'].includes(String(status).toUpperCase());
+        return (
+          Number.isInteger(Number(materiaId)) &&
+          Number(materiaId) >= 1 &&
+          Number.isInteger(Number(periodId)) &&
+          Number(periodId) >= 1 &&
+          !Number.isNaN(gradeNum) &&
+          gradeNum >= 0 &&
+          gradeNum <= 100 &&
+          statusOk
+        );
+      });
+    })
+    .withMessage(
+      'Cada elemento de prior_history debe incluir materia_id, period_id, final_grade (0-100) y status opcional (APROBADO|CONVALIDADO)'
+    ),
+
   body('observations')
     .optional({ nullable: true, checkFalsy: true })
     .customSanitizer((value) => {

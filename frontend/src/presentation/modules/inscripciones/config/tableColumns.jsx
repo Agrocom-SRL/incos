@@ -8,8 +8,9 @@
 import { Tag, Space } from 'antd';
 import { UserOutlined, BookOutlined, CalendarOutlined, TagOutlined, IdcardOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import { TableCell } from '@molecules';
-import TableActions from '@molecules/TableActions';
+import { TableActions } from '@molecules';
 import { getAdmissionTypeTagStyle } from '../../estudiantes/config/admissionTypeColors';
+import { historialPrevioEstadoLabel } from '@application-inscripciones/utils/historialPrevioHelpers';
 
 /** Mapear tipo de inscripción → tipo de admisión para reutilizar getAdmissionTypeTagStyle (mismos colores que estudiantes) */
 const mapEstadoToAdmissionType = (valor) => {
@@ -170,6 +171,33 @@ export const createInscripcionesTableColumns = (navigate, refetch = null, delete
       },
     },
     {
+      title: 'Historial previo',
+      key: 'historialPrevio',
+      width: 160,
+      responsive: ['md', 'lg', 'xl', 'xxl'],
+      render: (_, record) => {
+        const estado =
+          record.historialPrevioEstado ??
+          (record.requiereHistorialPrevio === false
+            ? 'NO_APLICA'
+            : (record.cantidadHistorialPrevio ?? 0) > 0
+              ? 'REGISTRADO'
+              : 'PENDIENTE');
+        const { text, color } = historialPrevioEstadoLabel(estado);
+        const count = record.cantidadHistorialPrevio ?? 0;
+        return (
+          <Space orientation="vertical" size={2}>
+            <Tag color={color}>{text}</Tag>
+            {estado === 'REGISTRADO' && count > 0 ? (
+              <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
+                {count} materia(s)
+              </span>
+            ) : null}
+          </Space>
+        );
+      },
+    },
+    {
       title: 'Materias',
       key: 'materias',
       width: 140,
@@ -229,6 +257,13 @@ export const createInscripcionesTableColumns = (navigate, refetch = null, delete
 
         // Permitir editar todos los tipos de inscripción (NUEVO, ANTIGUO, TRASPASO, TRANSITABILIDAD)
         const canEdit = true;
+        const historialPendiente =
+          record.historialPrevioEstado === 'PENDIENTE' ||
+          (record.requiereHistorialPrevio &&
+            (record.cantidadHistorialPrevio ?? 0) === 0 &&
+            ['ANTIGUO', 'TRASPASO', 'TRANSITABILIDAD'].includes(
+              String(record.tipoInscripcion ?? record.enrollment?.tipoInscripcion ?? '').toUpperCase()
+            ));
 
         // Extraer datos necesarios para la edición
         const estudianteId = student?.id || record.estudianteId || record.enrollment?.estudianteId;
@@ -254,6 +289,7 @@ export const createInscripcionesTableColumns = (navigate, refetch = null, delete
             editPath={null}
             onEdit={handleEdit}
             editDisabled={!canEdit}
+            editTitle={historialPendiente ? 'Completar historial previo y editar' : 'Editar inscripción'}
           />
         );
       },

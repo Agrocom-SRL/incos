@@ -33,7 +33,9 @@ import {
     useInscripcionNuevaParalelos,
     useInscripcionNuevaMaterias,
     useInscripcionNuevaMateriasByPeriods,
+    useInscripcionNuevaHistorialPrevio,
 } from '@application-inscripciones/hooks';
+import { computeConcludedPeriods } from '@application-inscripciones/utils/historialPrevioHelpers';
 import { useEnrichWizardSteps } from '@application-utils/hooks';
 import { studentEnrichers, buildStep0StudentDescription } from '@application-inscripciones/hooks/features/enrichers/studentEnrichers';
 import { periodoEnrichers } from '@application-inscripciones/hooks/features/enrichers/periodoEnrichers';
@@ -132,7 +134,11 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
     const tipoAdmision =
       editData?.tipoAdmision ?? studentSearch?.selectedStudent?.tipoAdmision ?? null;
     const anioCursadoTraspaso =
-      tipoAdmision === 'TRASPASO' ? (studentSearch?.selectedStudent?.traspasoAnioCursado ?? null) : null;
+      tipoAdmision === 'TRASPASO'
+        ? (editData?.traspasoAnioCursado ??
+            studentSearch?.selectedStudent?.traspasoAnioCursado ??
+            null)
+        : null;
     const initialSelectedPeriodIds = editData?.selectedPeriodIds ?? undefined;
     const periodosData = useInscripcionNuevaPeriodos({
       carreraId: carreraIdForParalelos ?? undefined,
@@ -179,6 +185,51 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
         initialParallelIdsByPeriod: editData?.parallelIdsByPeriod ?? undefined,
     });
 
+    const materiasData = useInscripcionNuevaMaterias({
+        periodoId: selectedPeriod?.id,
+    });
+
+    // Periodos concluidos (historial previo): cargar sus materias además de los periodos a cursar
+    const concludedPeriodsForLoad = useMemo(
+      () =>
+        computeConcludedPeriods({
+          tipoAdmision,
+          periodos: periodosData.periodos ?? [],
+          selectedPeriodIds: periodosData.selectedPeriodIds ?? [],
+          periodosDisabledByTraspaso: periodosData.periodosDisabledByTraspaso ?? null,
+        }),
+      [
+        tipoAdmision,
+        periodosData.periodos,
+        periodosData.selectedPeriodIds,
+        periodosData.periodosDisabledByTraspaso,
+      ]
+    );
+
+    const periodIdsForMateriasLoad = useMemo(() => {
+      const ids = new Set([
+        ...(periodosData.selectedPeriodIds ?? []).map(Number),
+        ...concludedPeriodsForLoad.map((p) => Number(p.periodId)),
+      ]);
+      return [...ids].filter((id) => !Number.isNaN(id) && id > 0);
+    }, [periodosData.selectedPeriodIds, concludedPeriodsForLoad]);
+
+    const materiasByPeriodsData = useInscripcionNuevaMateriasByPeriods(
+      periodIdsForMateriasLoad,
+      carreraIdForParalelos ?? null
+    );
+
+    const historialPrevioData = useInscripcionNuevaHistorialPrevio({
+      tipoAdmision,
+      periodos: periodosData.periodos ?? [],
+      selectedPeriodIds: periodosData.selectedPeriodIds ?? [],
+      periodosDisabledByTraspaso: periodosData.periodosDisabledByTraspaso ?? null,
+      materiasByPeriod: materiasByPeriodsData.materiasByPeriod ?? {},
+      materiasLoading: materiasByPeriodsData.loading ?? false,
+      initialPriorHistories: editData?.priorEnrollmentHistories ?? null,
+      isEditMode: Boolean(editData?.inscripcionId),
+    });
+
     const formHandlers = useInscripcionNuevaFormHandlers(mode, {
         selectedStudent: studentSearch.selectedStudent,
         selectedParalelo: paralelosData.selectedParalelo,
@@ -187,17 +238,11 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
         selectedParalelosByPeriod: paralelosData.selectedParalelosByPeriod ?? {},
         selectedMateriaIdsByPeriod,
         inscripcionId: editData?.inscripcionId ?? null,
+        buildPriorHistory: historialPrevioData.buildPayload,
+        validatePriorHistory: historialPrevioData.validate,
+        historialPrevioHasRows: historialPrevioData.hasRows,
+        completarSoloHistorialPrevio: Boolean(editData?.completarSoloHistorialPrevio),
     });
-
-    const materiasData = useInscripcionNuevaMaterias({
-        periodoId: selectedPeriod?.id,
-    });
-
-    // Materias por periodo (Step 2: NUEVO = primer año; ANTIGUO = materias por periodo con checkboxes)
-    const materiasByPeriodsData = useInscripcionNuevaMateriasByPeriods(
-      periodosData.selectedPeriodIds ?? [],
-      carreraIdForParalelos ?? null
-    );
 
     // 2. Callbacks memoizados para los enrichers
     const handleSearchStudent = useCallback((value) => {
@@ -302,6 +347,7 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
         },
         selectedMateriaIdsByPeriod,
         onToggleMaterias: handleToggleMaterias,
+        historialPrevioData,
     }), [
         handleSearchStudent,
         handleSelectStudent,
@@ -340,6 +386,7 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
         materiasByPeriodsData.error,
         selectedMateriaIdsByPeriod,
         handleToggleMaterias,
+        historialPrevioData,
     ]);
 
     // 4. Enriquecer wizardSteps (step 0: buscador o datos del estudiante si viene pre-seleccionado)
@@ -414,6 +461,8 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
         selectedMateriaIdsByPeriod,
         onToggleMaterias: handleToggleMaterias,
 
+        historialPrevioData,
+
         editData,
     }), [
         pageData,
@@ -429,6 +478,7 @@ export const useInscripcionNuevaData = (mode = 'nuevo', options = {}) => {
         materiasByPeriodsData,
         selectedMateriaIdsByPeriod,
         handleToggleMaterias,
+        historialPrevioData,
         editData,
     ]);
 };

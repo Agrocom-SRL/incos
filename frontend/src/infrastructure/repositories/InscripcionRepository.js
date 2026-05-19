@@ -133,8 +133,8 @@ export class InscripcionRepository extends IInscripcionRepository {
    * DELETE /v1/inscripciones/:id
    * 
    * Elimina la inscripción y todas sus relaciones:
-   * - inscripciones_materias (materias inscritas)
-   * - calificaciones relacionadas (si existen)
+   * - matriculas_materia (materias de la gestión)
+   * - historial_previo (materias concluidas al inscribir)
    * - boletas de inscripción (documentos físicos y registros en BD)
    * 
    * @param {string|number} id - ID de la inscripción a eliminar

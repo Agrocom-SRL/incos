@@ -82,6 +82,12 @@ function buildEditDataFromInscripcion(inscripcion) {
     paraleloId = parallelIdsByPeriod?.[String(selectedPeriodIds[0])] ?? null;
   }
 
+  const traspasoAnioCursado =
+    student?.traspasoAnioCursado ??
+    student?.transfer?.anioCursado ??
+    inscripcion.traspasoAnioCursado ??
+    null;
+
   return {
     inscripcionId,
     studentId,
@@ -90,9 +96,16 @@ function buildEditDataFromInscripcion(inscripcion) {
     paraleloId,
     tipoInscripcion,
     tipoAdmision,
+    traspasoAnioCursado,
     selectedPeriodIds: selectedPeriodIds?.length ? selectedPeriodIds : null,
     materiaIdsByPeriod: materiaIdsByPeriod && Object.keys(materiaIdsByPeriod).length ? materiaIdsByPeriod : null,
     parallelIdsByPeriod: parallelIdsByPeriod && Object.keys(parallelIdsByPeriod).length ? parallelIdsByPeriod : null,
+    priorEnrollmentHistories: inscripcion.priorEnrollmentHistories ?? [],
+    historialPrevioEstado: inscripcion.historialPrevioEstado ?? null,
+    completarSoloHistorialPrevio:
+      (inscripcion.historialPrevioEstado === 'PENDIENTE' ||
+        inscripcion.requiereHistorialPrevio === true) &&
+      (inscripcion.cantidadHistorialPrevio ?? 0) === 0,
   };
 }
 

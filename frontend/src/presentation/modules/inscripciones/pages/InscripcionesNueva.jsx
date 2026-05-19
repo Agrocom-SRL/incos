@@ -19,7 +19,7 @@
 
 import { useEffect, useMemo, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { App, Modal, Typography } from 'antd';
+import { Alert, App, Modal, Typography } from 'antd';
 import { DollarOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import { PageTemplate } from '@templates';
 import { PageHeader } from '@molecules';
@@ -116,6 +116,7 @@ const InscripcionesNueva = () => {
     selectedMateriaIdsByPeriod,
     onToggleMaterias,
     onSelectParalelo,
+    historialPrevioData,
   } = context;
 
   // Tipo de estudiante según datos académicos (no el tipo de inscripción)
@@ -128,6 +129,7 @@ const InscripcionesNueva = () => {
   // Lanzamiento: ANTIGUO → step 3 (Periodo y materias); NUEVO → step 4 (Paralelo)
   const initialStep = useMemo(() => {
     if (editData) {
+      if (editData.completarSoloHistorialPrevio) return 2;
       return isNuevoEstudiante ? 3 : 2; // NUEVO → Paralelo (4); ANTIGUO → Periodo y materias (3)
     }
     const hasStudent = studentSearch?.selectedStudent && !studentSearch?.loading;
@@ -136,7 +138,7 @@ const InscripcionesNueva = () => {
     }
     if (hasStudent) return 1;
     return 0;
-  }, [editData, isNuevoEstudiante, studentSearch?.selectedStudent, studentSearch?.loading, carrerasData?.selectedCarrera]);
+  }, [editData, editData?.completarSoloHistorialPrevio, isNuevoEstudiante, studentSearch?.selectedStudent, studentSearch?.loading, carrerasData?.selectedCarrera]);
 
   // Pre-cargar valores iniciales del formulario en modo edición
   // Nota: Los paralelos se pre-seleccionan automáticamente mediante los hooks
@@ -222,6 +224,19 @@ const InscripcionesNueva = () => {
             return;
           }
         }
+
+        if (historialPrevioData?.hasRows && historialPrevioData?.validate) {
+          const histValidation = historialPrevioData.validate();
+          if (!histValidation.valid) {
+            const msg =
+              histValidation.missing > 0
+                ? `Complete la nota de las ${histValidation.missing} materia(s) ya concluida(s) (historial previo).`
+                : (histValidation.invalid[0]?.reason || 'Revise las notas del historial previo.');
+            message.error(msg);
+            reject(new Error('Historial previo incompleto'));
+            return;
+          }
+        }
         
         // Paso 3 validado correctamente - NO validar paralelos aquí
         resolve();
@@ -280,7 +295,7 @@ const InscripcionesNueva = () => {
       // Otros pasos: permitir avanzar sin validación adicional
       resolve();
     });
-  }, [carrerasData?.selectedCarrera, periodosData, selectedMateriaIdsByPeriod, paralelosData?.selectedParalelosByPeriod, paralelosData?.loading, paralelosData?.paralelos, isNuevoEstudiante]);
+  }, [carrerasData?.selectedCarrera, periodosData, selectedMateriaIdsByPeriod, paralelosData?.selectedParalelosByPeriod, paralelosData?.loading, paralelosData?.paralelos, isNuevoEstudiante, historialPrevioData, message]);
 
   // Contenido custom por paso
   // IMPORTANTE: stepIndex es 0-based según la estructura del array de pasos:
@@ -321,6 +336,11 @@ const InscripcionesNueva = () => {
             resolveOptions={() => []}
             readOnly={!!editData && isNuevoEstudiante}
             isEditModeAntiguo={!!editData && !isNuevoEstudiante}
+            historialPrevioData={
+              !isNuevoEstudiante && historialPrevioData?.needsHistorial
+                ? historialPrevioData
+                : null
+            }
           />
         );
       }
@@ -356,6 +376,7 @@ const InscripcionesNueva = () => {
       selectedMateriaIdsByPeriod,
       onToggleMaterias,
       onSelectParalelo,
+      historialPrevioData,
     ]
   );
 
@@ -402,6 +423,15 @@ const InscripcionesNueva = () => {
         }
         sidebar={null}
       >
+        {editData?.completarSoloHistorialPrevio ? (
+          <Alert
+            type="warning"
+            showIcon
+            style={{ marginBottom: 16 }}
+            title="Completar historial previo"
+            description="Esta inscripción es de tipo antiguo, traspaso o transitabilidad y aún no tiene registradas las notas de periodos anteriores. Ingrese la nota (61–100) o estado convalidado según corresponda y guarde. Puede continuar al paso de materias si también desea ajustar la matrícula actual."
+          />
+        ) : null}
         {/* Contenido principal - Wizard de inscripción */}
         <WizardForm
         steps={wizardSteps}

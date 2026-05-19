@@ -47,6 +47,7 @@ export { useInscripcionNuevaParalelos } from './features/useInscripcionNuevaPara
 export { useInscripcionNuevaParaleloHorarios } from './features/useInscripcionNuevaParaleloHorarios';
 export { useInscripcionNuevaMaterias } from './features/useInscripcionNuevaMaterias';
 export { useInscripcionNuevaMateriasByPeriods } from './features/useInscripcionNuevaMateriasByPeriods';
+export { useInscripcionNuevaHistorialPrevio } from './features/useInscripcionNuevaHistorialPrevio';
 export { useGenerateBoletaInscripcion } from './features/useGenerateBoletaInscripcion';
 export { useExportListaInscritosPorCarreraExcel } from './features/useExportListaInscritosPorCarreraExcel';
 // Nota: useEnrichWizardSteps está en @application-utils/hooks (hook genérico reutilizable)

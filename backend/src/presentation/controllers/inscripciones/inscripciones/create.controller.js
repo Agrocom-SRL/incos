@@ -75,6 +75,7 @@ export class CreateEnrollmentController extends BaseCreateController {
       enrollmentType: body.enrollment_type || body.enrollmentType,
       // enrollmentDate se genera automáticamente en el use case, no se envía desde el frontend
       observations: body.observations || null,
+      priorHistory: body.prior_history || body.priorHistory || null,
     };
   }
 }

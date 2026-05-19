@@ -17,7 +17,7 @@ import {
   WarningOutlined,
 } from '@ant-design/icons';
 import { TableCell } from '@molecules';
-import TableActions from '@molecules/TableActions';
+import { TableActions } from '@molecules';
 
 const getNombreCompleto = (record) =>
   record.nombreCompleto ||

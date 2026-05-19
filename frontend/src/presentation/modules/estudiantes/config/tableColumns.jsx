@@ -10,7 +10,7 @@
 import { Space } from 'antd';
 import { UserOutlined, PhoneOutlined, MailOutlined, DollarOutlined, BankOutlined, BookOutlined, CalendarOutlined, TagOutlined, IdcardOutlined, ManOutlined, WomanOutlined } from '@ant-design/icons';
 import { TableCell } from '@molecules';
-import TableActions from '@molecules/TableActions';
+import { TableActions } from '@molecules';
 import { MENU_SIDEBAR_KEY_MAT_APORTES } from '@navigation-services/routeMapper';
 import { getAdmissionTypeTagStyle } from './admissionTypeColors';
 

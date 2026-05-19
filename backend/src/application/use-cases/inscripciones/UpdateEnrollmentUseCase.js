@@ -20,6 +20,7 @@
 
 import { NotFoundError, ValidationError } from '../../../domain/errors/AppError.js';
 import { ESTADOS_MATERIA_INSCRITA } from '../../../domain/constants/inscripciones.constants.js';
+import { ESTADOS_HISTORIAL_PREVIO_VALUES } from '../../../domain/constants/evaluaciones.constants.js';
 import { EnrollmentMapper, EnrollmentSubjectMapper } from '../../mappers/inscripciones/index.js';
 
 export class UpdateEnrollmentUseCase {
@@ -37,6 +38,7 @@ export class UpdateEnrollmentUseCase {
     managementPlanRepository,
     studyPlanRepository,
     planSubjectRepository,
+    priorEnrollmentHistoryRepository,
     logger,
   }) {
     this.enrollmentRepository = enrollmentRepository;
@@ -49,6 +51,7 @@ export class UpdateEnrollmentUseCase {
     this.managementPlanRepository = managementPlanRepository;
     this.studyPlanRepository = studyPlanRepository;
     this.planSubjectRepository = planSubjectRepository;
+    this.priorEnrollmentHistoryRepository = priorEnrollmentHistoryRepository;
     this.logger = logger;
   }
 
@@ -118,6 +121,18 @@ export class UpdateEnrollmentUseCase {
       );
       await this._replacesubjectEnrollments(enrollmentId, enrollment, teacherAssignments);
       newsubjectEnrollments = await this._findsubjectEnrollments(enrollmentId);
+    }
+
+    if (payload.priorHistory !== undefined && Array.isArray(payload.priorHistory)) {
+      const academicDataId = enrollmentPlain.academicDataId ?? enrollmentPlain.studentAcademicData_id;
+      const managementId = enrollmentPlain.managementId ?? enrollmentPlain.management_id;
+      const studentAcademicData = await this.studentAcademicDataRepository.findById(academicDataId);
+      const management = await this.managementRepository.findById(managementId);
+      const { managementPlan } = await this._getStudyPlanAndManagementPlan(
+        studentAcademicData,
+        management
+      );
+      await this._replacePriorEnrollmentHistory(enrollmentId, payload.priorHistory, managementPlan);
     }
 
     if (Object.keys(updateData).length > 0) {
@@ -387,5 +402,87 @@ export class UpdateEnrollmentUseCase {
       null
     );
     return result.subjectEnrollments || result.enrollmentMaterias || [];
+  }
+
+  /**
+   * Reemplaza historial_previo de la inscripción (soft delete + alta).
+   * @private
+   */
+  async _replacePriorEnrollmentHistory(enrollmentId, priorHistory, managementPlan) {
+    if (!this.priorEnrollmentHistoryRepository) return;
+
+    const existing = await this.priorEnrollmentHistoryRepository.findAll(
+      { enrollmentId },
+      null,
+      null
+    );
+    const list = existing.priorEnrollmentHistories || [];
+    for (const row of list) {
+      const plain = row.toPlainObject ? row.toPlainObject() : row;
+      if (plain.id) {
+        await this.priorEnrollmentHistoryRepository.delete(plain.id);
+      }
+    }
+
+    if (!priorHistory.length) {
+      this.logger.info('[Inscripciones] Historial previo vaciado', { enrollmentId });
+      return;
+    }
+
+    const planPlain = managementPlan?.toPlainObject ? managementPlan.toPlainObject() : managementPlan;
+    const studyPlanId = planPlain?.studyPlanId ?? planPlain?.planEstudioId;
+    if (!studyPlanId) {
+      throw new ValidationError(
+        'No se pudo resolver el plan de estudios para actualizar el historial previo'
+      );
+    }
+
+    for (const item of priorHistory) {
+      const materiaId = Number(item.materiaId ?? item.materia_id);
+      const periodId = Number(item.periodId ?? item.period_id);
+      const finalGrade = Number(item.finalGrade ?? item.final_grade ?? item.nota_final);
+      const status = String(item.status ?? item.estado ?? 'APROBADO').toUpperCase();
+
+      if (!materiaId || !periodId) {
+        throw new ValidationError('Cada fila de historial previo requiere materia_id y period_id');
+      }
+      if (Number.isNaN(finalGrade) || finalGrade < 0 || finalGrade > 100) {
+        throw new ValidationError('La nota del historial previo debe estar entre 0 y 100');
+      }
+      if (finalGrade < 61) {
+        throw new ValidationError('La nota mínima de aprobación en historial previo es 61');
+      }
+      if (!ESTADOS_HISTORIAL_PREVIO_VALUES.includes(status)) {
+        throw new ValidationError(
+          `Estado de historial previo inválido. Valores: ${ESTADOS_HISTORIAL_PREVIO_VALUES.join(', ')}`
+        );
+      }
+
+      const planSubjectsResult = await this.planSubjectRepository.findAll(
+        { studyPlanId, periodId, subjectId: materiaId },
+        null,
+        null
+      );
+      const planSubjects = planSubjectsResult?.planSubjects ?? [];
+      if (!planSubjects.length) {
+        throw new ValidationError(
+          `No se encontró asignatura de plan para materia ${materiaId} en periodo ${periodId}`
+        );
+      }
+      const ps = planSubjects[0];
+      const psPlain = ps.toPlainObject ? ps.toPlainObject() : ps;
+
+      await this.priorEnrollmentHistoryRepository.create({
+        enrollmentId,
+        curriculumSubjectId: psPlain.id,
+        finalGrade,
+        status,
+      });
+    }
+
+    this.logger.info('[Inscripciones] Historial previo actualizado', {
+      enrollmentId,
+      count: priorHistory.length,
+    });
   }
 }

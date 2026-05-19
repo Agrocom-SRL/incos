@@ -9,7 +9,7 @@
  * - Si no: usa useCaseKey (eliminarPagoAporte) y itemName genérico
  */
 
-import TableActions from '@molecules/TableActions';
+import { TableActions } from '@molecules';
 
 const PagoTableActions = ({
   record,

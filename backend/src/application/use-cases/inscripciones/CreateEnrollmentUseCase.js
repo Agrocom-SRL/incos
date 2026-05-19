@@ -7,6 +7,7 @@ import {
   TIPOS_INSCRIPCION,
   ESTADOS_MATERIA_INSCRITA,
 } from '../../../domain/constants/inscripciones.constants.js';
+import { ESTADOS_HISTORIAL_PREVIO_VALUES } from '../../../domain/constants/evaluaciones.constants.js';
 
 /**
  * Use Case: CreateEnrollmentUseCase
@@ -94,6 +95,7 @@ export class CreateEnrollmentUseCase {
     languageRepository,
     planSubjectRepository,
     contributionPaymentRepository,
+    priorEnrollmentHistoryRepository,
     logger,
   }) {
     this.enrollmentRepository = enrollmentRepository;
@@ -117,6 +119,7 @@ export class CreateEnrollmentUseCase {
     this.languageRepository = languageRepository;
     this.planSubjectRepository = planSubjectRepository;
     this.contributionPaymentRepository = contributionPaymentRepository;
+    this.priorEnrollmentHistoryRepository = priorEnrollmentHistoryRepository;
     this.logger = logger;
   }
 
@@ -150,6 +153,7 @@ export class CreateEnrollmentUseCase {
       materiaIdsByPeriod,
       enrollmentType = TIPOS_INSCRIPCION.NUEVO,
       observations,
+      priorHistory = null,
     } = data;
 
     // Determinar si el frontend envió selección por periodo (ANTIGUO) para resolver a teacherAssignmentIds
@@ -240,12 +244,18 @@ export class CreateEnrollmentUseCase {
           enrollment,
           teacherAssignments
         );
+        const priorEnrollmentHistories = await this._createPriorEnrollmentHistory(
+          enrollment,
+          priorHistory,
+          managementPlan
+        );
         return this._buildResponse(
           enrollment,
           subjectEnrollments,
           studentId,
           parallel.id,
-          management
+          management,
+          priorEnrollmentHistories
         );
       }
 
@@ -283,12 +293,18 @@ export class CreateEnrollmentUseCase {
         enrollment,
         teacherAssignments
       );
+      const priorEnrollmentHistories = await this._createPriorEnrollmentHistory(
+        enrollment,
+        priorHistory,
+        managementPlan
+      );
       return this._buildResponse(
         enrollment,
         subjectEnrollments,
         studentId,
         parallelId,
-        management
+        management,
+        priorEnrollmentHistories
       );
     } catch (error) {
       this.logger.error('[Inscripciones] Error al crear inscripción', {
@@ -905,6 +921,91 @@ export class CreateEnrollmentUseCase {
   }
 
   /**
+   * Crea registros en historial_previo (materias concluidas al inscribir).
+   * @private
+   * @param {Object} enrollment - Inscripción creada
+   * @param {Array|null} priorHistory - [{ materiaId, periodId, finalGrade, status }]
+   * @param {Object} managementPlan - Plan habilitado (para resolver plan de estudios)
+   */
+  async _createPriorEnrollmentHistory(enrollment, priorHistory, managementPlan) {
+    if (
+      !this.priorEnrollmentHistoryRepository ||
+      !Array.isArray(priorHistory) ||
+      priorHistory.length === 0
+    ) {
+      return [];
+    }
+
+    const planPlain = managementPlan?.toPlainObject ? managementPlan.toPlainObject() : managementPlan;
+    const studyPlanId = planPlain?.studyPlanId ?? planPlain?.planEstudioId;
+    if (!studyPlanId) {
+      throw new ValidationError(
+        'No se pudo resolver el plan de estudios para registrar el historial previo'
+      );
+    }
+
+    const created = [];
+    const enrollmentId = enrollment.id;
+
+    for (const item of priorHistory) {
+      const materiaId = Number(item.materiaId ?? item.materia_id);
+      const periodId = Number(item.periodId ?? item.period_id);
+      const finalGrade = Number(item.finalGrade ?? item.final_grade ?? item.nota_final);
+      const status = String(item.status ?? item.estado ?? 'APROBADO').toUpperCase();
+
+      if (!materiaId || !periodId) {
+        throw new ValidationError('Cada fila de historial previo requiere materia_id y period_id');
+      }
+      if (Number.isNaN(finalGrade) || finalGrade < 0 || finalGrade > 100) {
+        throw new ValidationError('La nota del historial previo debe estar entre 0 y 100');
+      }
+      if (finalGrade < 61) {
+        throw new ValidationError('La nota mínima de aprobación en historial previo es 61');
+      }
+      if (!ESTADOS_HISTORIAL_PREVIO_VALUES.includes(status)) {
+        throw new ValidationError(
+          `Estado de historial previo inválido. Valores: ${ESTADOS_HISTORIAL_PREVIO_VALUES.join(', ')}`
+        );
+      }
+
+      const planSubjectsResult = await this.planSubjectRepository.findAll(
+        { studyPlanId, periodId, subjectId: materiaId },
+        null,
+        null
+      );
+      const planSubjects = planSubjectsResult?.planSubjects ?? [];
+      if (!planSubjects.length) {
+        throw new ValidationError(
+          `No se encontró asignatura de plan para materia ${materiaId} en periodo ${periodId}`
+        );
+      }
+
+      const planSubject = planSubjects[0];
+      const planSubjectPlain = planSubject.toPlainObject ? planSubject.toPlainObject() : planSubject;
+      const curriculumSubjectId = planSubjectPlain.id;
+
+      const record = await this.priorEnrollmentHistoryRepository.create({
+        enrollmentId,
+        curriculumSubjectId,
+        finalGrade,
+        status,
+      });
+      created.push(record);
+
+      this.logger.info('[Inscripciones] Historial previo registrado', {
+        enrollmentId,
+        curriculumSubjectId,
+        materiaId,
+        periodId,
+        finalGrade,
+        status,
+      });
+    }
+
+    return created;
+  }
+
+  /**
    * Construye la respuesta final del caso de uso
    * @private
    * @param {Object} enrollment - Entidad Enrollment
@@ -912,13 +1013,24 @@ export class CreateEnrollmentUseCase {
    * @param {number} studentId - ID del estudiante
    * @param {number} parallelId - ID del paralelo
    * @param {Object} management - Entidad Management
+   * @param {Array} [priorEnrollmentHistories] - Filas de historial_previo creadas
    * @returns {Object} Respuesta formateada
    */
-  _buildResponse(enrollment, subjectEnrollments, studentId, parallelId, management) {
+  _buildResponse(
+    enrollment,
+    subjectEnrollments,
+    studentId,
+    parallelId,
+    management,
+    priorEnrollmentHistories = []
+  ) {
     const result = {
       enrollment: enrollment.toPlainObject ? enrollment.toPlainObject() : enrollment,
       subjectEnrollments: subjectEnrollments.map((es) =>
         es.toPlainObject ? es.toPlainObject() : es
+      ),
+      priorEnrollmentHistories: priorEnrollmentHistories.map((h) =>
+        h.toPlainObject ? h.toPlainObject() : h
       ),
     };
 

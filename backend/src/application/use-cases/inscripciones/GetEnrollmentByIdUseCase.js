@@ -21,7 +21,8 @@
  */
 
 import { ValidationError } from '../../../domain/errors/AppError.js';
-import { EnrollmentMapper } from '../../mappers/inscripciones/index.js';
+import { EnrollmentMapper, PriorEnrollmentHistoryMapper } from '../../mappers/inscripciones/index.js';
+import { TIPOS_INSCRIPCION } from '../../../domain/constants/inscripciones.constants.js';
 import { StudentAcademicDataMapper, StudentMapper } from '../../mappers/estudiantes/index.js';
 import { ManagementMapper } from '../../mappers/academico/index.js';
 import { CareerMapper } from '../../mappers/configuracion/index.js';
@@ -65,6 +66,7 @@ export class GetEnrollmentByIdUseCase {
     teacherRepository,
     parallelRepository,
     studentDocumentRepository,
+    priorEnrollmentHistoryRepository,
     logger,
   }) {
     this.enrollmentRepository = enrollmentRepository;
@@ -84,6 +86,7 @@ export class GetEnrollmentByIdUseCase {
     this.teacherRepository = teacherRepository;
     this.parallelRepository = parallelRepository;
     this.studentDocumentRepository = studentDocumentRepository;
+    this.priorEnrollmentHistoryRepository = priorEnrollmentHistoryRepository;
     this.logger = logger;
   }
 
@@ -647,6 +650,18 @@ export class GetEnrollmentByIdUseCase {
         }
       }
 
+      // 8b. Historial previo (materias concluidas al inscribir)
+      const priorEnrollmentHistories = await this._fetchPriorEnrollmentHistoriesPresentation(
+        enrollment.id
+      );
+      const tipoInscripcion =
+        enrollment.enrollmentType ?? enrollment.tipoInscripcion ?? null;
+      const requiereHistorialPrevio = this._requiereHistorialPrevio(tipoInscripcion);
+      const historialPrevioEstado = this._historialPrevioEstado(
+        requiereHistorialPrevio,
+        priorEnrollmentHistories.length
+      );
+
       // 9. Convertir entidades de dominio a formato de presentación usando mappers
       // Los mappers pueden trabajar directamente con entidades (no necesitan aplanado)
       const enrollmentPresentation = EnrollmentMapper.entityToPresentation(enrollment);
@@ -663,6 +678,7 @@ export class GetEnrollmentByIdUseCase {
         hasStudent: !!student,
         hasCareer: !!career,
         subjectEnrollmentsCount: materiasValidas.length,
+        priorEnrollmentHistoriesCount: priorEnrollmentHistories.length,
       });
 
       // Retornar todas las entidades en formato de presentación
@@ -678,6 +694,10 @@ export class GetEnrollmentByIdUseCase {
         materiaIdsByPeriod: Object.keys(byPeriod).length > 0
           ? Object.fromEntries(Object.entries(byPeriod).map(([k, v]) => [k, v.materiaIds]))
           : undefined,
+        priorEnrollmentHistories,
+        requiereHistorialPrevio,
+        cantidadHistorialPrevio: priorEnrollmentHistories.length,
+        historialPrevioEstado,
       };
 
       // Agregar formulario de inscripción si existe
@@ -697,5 +717,83 @@ export class GetEnrollmentByIdUseCase {
       // Re-lanzar el error para que el controlador/middleware lo maneje
       throw error;
     }
+  }
+
+  _requiereHistorialPrevio(tipoInscripcion) {
+    const t = String(tipoInscripcion ?? '').toUpperCase();
+    return [
+      TIPOS_INSCRIPCION.ANTIGUO,
+      TIPOS_INSCRIPCION.TRASPASO,
+      TIPOS_INSCRIPCION.TRANSITABILIDAD,
+    ].includes(t);
+  }
+
+  _historialPrevioEstado(requiere, cantidad) {
+    if (!requiere) return 'NO_APLICA';
+    if (cantidad > 0) return 'REGISTRADO';
+    return 'PENDIENTE';
+  }
+
+  /**
+   * @private
+   */
+  async _fetchPriorEnrollmentHistoriesPresentation(enrollmentId) {
+    if (!this.priorEnrollmentHistoryRepository || !enrollmentId) return [];
+
+    const result = await this.priorEnrollmentHistoryRepository.findAll(
+      { enrollmentId },
+      null,
+      null
+    );
+    const list = result.priorEnrollmentHistories || [];
+    const enriched = [];
+
+    for (const row of list) {
+      const plain = row.toPlainObject ? row.toPlainObject() : row;
+      let materiaId = null;
+      let periodId = null;
+      let materiaNombre = null;
+      let materiaSigla = null;
+      let periodName = null;
+
+      const asignaturaPlanId = plain.curriculumSubjectId ?? plain.asignaturaPlanId;
+      if (asignaturaPlanId && this.planSubjectRepository) {
+        try {
+          const planSubject = await this.planSubjectRepository.findById(asignaturaPlanId);
+          const ps = planSubject?.toPlainObject ? planSubject.toPlainObject() : planSubject;
+          if (ps) {
+            periodId = ps.periodId ?? ps.periodoId ?? null;
+            materiaId = ps.subjectId ?? ps.materiaId ?? null;
+            if (materiaId && this.subjectRepository) {
+              const subject = await this.subjectRepository.findById(materiaId);
+              const sp = subject?.toPlainObject ? subject.toPlainObject() : subject;
+              materiaNombre = sp?.name ?? sp?.nombre ?? null;
+              materiaSigla = sp?.acronym ?? sp?.sigla ?? null;
+            }
+            if (periodId) {
+              periodName = `Periodo ${ps.periodNumber ?? ps.periodoNumero ?? periodId}`;
+            }
+          }
+        } catch (err) {
+          this.logger.warn('[Inscripciones] Error al enriquecer historial previo', {
+            asignaturaPlanId,
+            error: err.message,
+          });
+        }
+      }
+
+      enriched.push(
+        PriorEnrollmentHistoryMapper.entityToPresentation(plain, {
+          materiaId,
+          periodoId: periodId,
+          periodId,
+          materiaNombre,
+          materiaSigla,
+          periodName,
+        })
+      );
+    }
+
+    return enriched;
   }
 }

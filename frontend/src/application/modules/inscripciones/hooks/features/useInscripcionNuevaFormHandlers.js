@@ -60,7 +60,19 @@ const PAYMENT_REQUIRED_ERROR_PATTERNS = [
  * @returns {Object} Objeto con form, handleFinish, handleSave, getFormValues, loading, error, validationErrors, inscripcionResult
  */
 export const useInscripcionNuevaFormHandlers = (mode = 'nuevo', options = {}) => {
-    const { selectedStudent, selectedParalelo, selectedPeriod, selectedPeriodIds = [], selectedParalelosByPeriod = {}, selectedMateriaIdsByPeriod = {}, inscripcionId = null } = options;
+    const {
+        selectedStudent,
+        selectedParalelo,
+        selectedPeriod,
+        selectedPeriodIds = [],
+        selectedParalelosByPeriod = {},
+        selectedMateriaIdsByPeriod = {},
+        inscripcionId = null,
+        buildPriorHistory = null,
+        validatePriorHistory = null,
+        historialPrevioHasRows = false,
+        completarSoloHistorialPrevio = false,
+    } = options;
     const isEditMode = Boolean(inscripcionId);
 
     const showMessage = useMessage();
@@ -210,10 +222,29 @@ export const useInscripcionNuevaFormHandlers = (mode = 'nuevo', options = {}) =>
             return { success: false, error: errorMessage };
         }
 
-        if (!hasSelectionByPeriod && !parallelId) {
+        const soloHistorial =
+            isEditMode &&
+            completarSoloHistorialPrevio &&
+            historialPrevioHasRows &&
+            validatePriorHistory;
+
+        if (!soloHistorial && !hasSelectionByPeriod && !parallelId) {
             const errorMessage = 'Debe seleccionar un paralelo o completar periodo y materias por periodo';
             if (showMessage) showMessage('error', errorMessage);
             return { success: false, error: errorMessage };
+        }
+
+        if (historialPrevioHasRows && validatePriorHistory) {
+            const histValidation = validatePriorHistory();
+            if (!histValidation.valid) {
+                const errorMessage =
+                    histValidation.missing > 0
+                        ? `Complete la nota de las ${histValidation.missing} materia(s) concluida(s) pendiente(s) en historial previo.`
+                        : (histValidation.invalid[0]?.reason ||
+                            'Revise las notas del historial previo (0–100, mínimo 61 para aprobar).');
+                if (showMessage) showMessage('error', errorMessage);
+                return { success: false, error: errorMessage };
+            }
         }
 
         const periodoId = selectedPeriod?.id ?? formValues.periodo_id ?? formValues.periodo;
@@ -224,6 +255,13 @@ export const useInscripcionNuevaFormHandlers = (mode = 'nuevo', options = {}) =>
             enrollment_type: enrollmentTypeForApi,
             observations: formValues.observations || null,
         };
+
+        if (buildPriorHistory) {
+            const priorHistory = buildPriorHistory();
+            if (Array.isArray(priorHistory) && priorHistory.length > 0) {
+                inscripcionData.prior_history = priorHistory;
+            }
+        }
 
         if (hasSelectionByPeriod) {
             const parallelIdsByPeriod = {};
@@ -246,6 +284,12 @@ export const useInscripcionNuevaFormHandlers = (mode = 'nuevo', options = {}) =>
         }
         if (!inscripcionData.parallel_ids_by_period && parallelId) {
             inscripcionData.parallel_id = parallelId;
+        }
+
+        if (soloHistorial && !hasSelectionByPeriod && !parallelId) {
+            delete inscripcionData.parallel_id;
+            delete inscripcionData.parallel_ids_by_period;
+            delete inscripcionData.materia_ids_by_period;
         }
 
         const result = isEditMode
@@ -275,7 +319,7 @@ export const useInscripcionNuevaFormHandlers = (mode = 'nuevo', options = {}) =>
         }
 
         return result;
-    }, [isEditMode, inscripcionId, selectedStudent, selectedParalelo, selectedPeriod, selectedPeriodIds, selectedParalelosByPeriod, selectedMateriaIdsByPeriod, getFormValues, createInscripcion, updateInscripcion, showMessage, handleSubmitResult, navigate, isPaymentRequiredError]);
+    }, [isEditMode, inscripcionId, selectedStudent, selectedParalelo, selectedPeriod, selectedPeriodIds, selectedParalelosByPeriod, selectedMateriaIdsByPeriod, getFormValues, createInscripcion, updateInscripcion, showMessage, handleSubmitResult, navigate, isPaymentRequiredError, buildPriorHistory, validatePriorHistory, historialPrevioHasRows, completarSoloHistorialPrevio]);
 
     // Handler para guardar parcialmente
     // NOTA: Por ahora, el guardado parcial también crea la inscripción completa
@@ -317,6 +361,18 @@ export const useInscripcionNuevaFormHandlers = (mode = 'nuevo', options = {}) =>
             return { success: false, error: 'Debe seleccionar un paralelo o completar periodo y materias por periodo' };
         }
 
+        if (historialPrevioHasRows && validatePriorHistory) {
+            const histValidation = validatePriorHistory();
+            if (!histValidation.valid) {
+                const errorMessage =
+                    histValidation.missing > 0
+                        ? `Complete la nota de las materias concluidas en historial previo.`
+                        : (histValidation.invalid[0]?.reason || 'Revise las notas del historial previo.');
+                if (showMessage) showMessage('error', errorMessage);
+                return { success: false, error: errorMessage };
+            }
+        }
+
         const periodoId = selectedPeriod?.id ?? formValues.periodo_id ?? formValues.periodo;
         const enrollmentTypeForApiSave = formValues.enrollment_type || tipoAdmision || 'NUEVO';
         const inscripcionData = {
@@ -325,6 +381,12 @@ export const useInscripcionNuevaFormHandlers = (mode = 'nuevo', options = {}) =>
             enrollment_type: enrollmentTypeForApiSave,
             observations: formValues.observations || null,
         };
+        if (buildPriorHistory) {
+            const priorHistory = buildPriorHistory();
+            if (Array.isArray(priorHistory) && priorHistory.length > 0) {
+                inscripcionData.prior_history = priorHistory;
+            }
+        }
         if (hasSelectionByPeriod) {
             const parallelIdsByPeriod = {};
             const materiaIdsByPeriod = {};

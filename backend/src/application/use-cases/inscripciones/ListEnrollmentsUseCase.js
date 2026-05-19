@@ -12,6 +12,7 @@
 
 import { BaseListUseCase } from '../base/BaseListUseCase.js';
 import { EnrollmentMapper } from '../../mappers/inscripciones/index.js';
+import { TIPOS_INSCRIPCION } from '../../../domain/constants/inscripciones.constants.js';
 
 export class ListEnrollmentsUseCase extends BaseListUseCase {
   /**
@@ -31,6 +32,7 @@ export class ListEnrollmentsUseCase extends BaseListUseCase {
     studentRepository,
     careerRepository,
     managementRepository,
+    priorEnrollmentHistoryRepository,
     logger,
   }) {
     super({
@@ -47,6 +49,7 @@ export class ListEnrollmentsUseCase extends BaseListUseCase {
     this.studentRepository = studentRepository;
     this.careerRepository = careerRepository;
     this.managementRepository = managementRepository;
+    this.priorEnrollmentHistoryRepository = priorEnrollmentHistoryRepository;
   }
 
   /**
@@ -122,10 +125,11 @@ export class ListEnrollmentsUseCase extends BaseListUseCase {
 
       // Obtener estudiantes, carreras y conteo de materias por inscripción en paralelo
       const enrollmentIds = data.map((e) => e.id).filter((id) => id != null);
-      const [students, careers, subjectCounts] = await Promise.all([
+      const [students, careers, subjectCounts, priorHistoryCounts] = await Promise.all([
         this._fetchStudents(Array.from(studentIds)),
         this._fetchCareers(Array.from(careerIds)),
         this._fetchSubjectCountByEnrollmentIds(enrollmentIds),
+        this._fetchPriorHistoryCountByEnrollmentIds(enrollmentIds),
       ]);
 
       // Enriquecer cada inscripción con sus relaciones
@@ -157,6 +161,19 @@ export class ListEnrollmentsUseCase extends BaseListUseCase {
         // Cantidad de materias inscritas (para columna en listado)
         enriched.cantidadMaterias = subjectCounts[enrollment.id] ?? 0;
 
+        const tipo =
+          enrollment.tipoInscripcion ||
+          enrollment.enrollmentType ||
+          null;
+        const requiereHistorial = this._requiereHistorialPrevio(tipo);
+        const cantidadHistorialPrevio = priorHistoryCounts[enrollment.id] ?? 0;
+        enriched.requiereHistorialPrevio = requiereHistorial;
+        enriched.cantidadHistorialPrevio = cantidadHistorialPrevio;
+        enriched.historialPrevioEstado = this._historialPrevioEstado(
+          requiereHistorial,
+          cantidadHistorialPrevio
+        );
+
         return enriched;
       });
 
@@ -184,6 +201,49 @@ export class ListEnrollmentsUseCase extends BaseListUseCase {
    * @returns {Promise<Object>} Mapa { enrollmentId: cantidad }
    * @private
    */
+  _requiereHistorialPrevio(tipoInscripcion) {
+    const t = String(tipoInscripcion ?? '').toUpperCase();
+    return [
+      TIPOS_INSCRIPCION.ANTIGUO,
+      TIPOS_INSCRIPCION.TRASPASO,
+      TIPOS_INSCRIPCION.TRANSITABILIDAD,
+    ].includes(t);
+  }
+
+  _historialPrevioEstado(requiere, cantidad) {
+    if (!requiere) return 'NO_APLICA';
+    if (cantidad > 0) return 'REGISTRADO';
+    return 'PENDIENTE';
+  }
+
+  /**
+   * Cantidad de filas en historial_previo por inscripción.
+   * @private
+   */
+  async _fetchPriorHistoryCountByEnrollmentIds(enrollmentIds) {
+    if (!enrollmentIds?.length || !this.priorEnrollmentHistoryRepository) return {};
+    try {
+      const result = await this.priorEnrollmentHistoryRepository.findAll(
+        { enrollmentIds },
+        null,
+        null
+      );
+      const list = result.priorEnrollmentHistories || [];
+      const countByEnrollmentId = {};
+      list.forEach((item) => {
+        const plain = item.toPlainObject ? item.toPlainObject() : item;
+        const eid = plain.enrollmentId ?? plain.inscripcionId;
+        if (eid != null) {
+          countByEnrollmentId[eid] = (countByEnrollmentId[eid] || 0) + 1;
+        }
+      });
+      return countByEnrollmentId;
+    } catch (err) {
+      this.logger.warn('[Inscripciones] Error al contar historial previo', { error: err.message });
+      return {};
+    }
+  }
+
   async _fetchSubjectCountByEnrollmentIds(enrollmentIds) {
     if (!enrollmentIds || enrollmentIds.length === 0) return {};
     if (!this.subjectEnrollmentRepository) return {};

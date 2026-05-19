@@ -16,7 +16,9 @@ import {
   UserOutlined,
   CalendarOutlined,
   EnvironmentOutlined,
+  HistoryOutlined,
 } from '@ant-design/icons';
+import { historialPrevioEstadoLabel } from '@application-inscripciones/utils/historialPrevioHelpers';
 import {
   getSabadoArmadoGridRangeMinutes,
   getTurnoGridRangeMinutes,
@@ -153,15 +155,30 @@ const InscripcionesDetail = () => {
     student,
     career,
     subjectEnrollments = [],
+    priorEnrollmentHistories = [],
+    historialPrevioEstado,
+    requiereHistorialPrevio,
+    cantidadHistorialPrevio,
   } = inscripcion ?? {};
+
+  const historialEstadoInfo = historialPrevioEstadoLabel(
+    historialPrevioEstado ??
+      (requiereHistorialPrevio === false
+        ? 'NO_APLICA'
+        : (cantidadHistorialPrevio ?? priorEnrollmentHistories.length) > 0
+          ? 'REGISTRADO'
+          : 'PENDIENTE')
+  );
 
   const getStatusColor = (status) => {
     const statusColors = {
-      'INSCRITO': 'blue',
-      'EN_CURSO': 'processing',
-      'APROBADO': 'success',
-      'REPROBADO': 'error',
-      'ANULADO': 'default',
+      INSCRITO: 'blue',
+      CURSANDO: 'processing',
+      EN_CURSO: 'processing',
+      APROBADO: 'success',
+      REPROBADO: 'error',
+      ABANDONO: 'warning',
+      RETIRADO: 'default',
     };
     return statusColors[status] || 'default';
   };
@@ -229,6 +246,53 @@ const InscripcionesDetail = () => {
         render: (_, row) => {
           const total = Array.isArray(row.horarios) ? row.horarios.length : 0;
           return total > 0 ? `${total} bloque(s)` : 'Sin bloques';
+        },
+      },
+    ],
+    [],
+  );
+
+  const columnasHistorialPrevio = useMemo(
+    () => [
+      {
+        title: 'Periodo',
+        key: 'periodo',
+        width: 140,
+        render: (_, row) =>
+          row.periodoNombre ??
+          row.periodo?.nombre ??
+          (row.periodoNumero != null ? `Periodo ${row.periodoNumero}` : '—'),
+      },
+      {
+        title: 'Sigla',
+        dataIndex: 'materiaSigla',
+        key: 'materiaSigla',
+        width: 100,
+        render: (v, row) => v ?? row.materia?.sigla ?? '—',
+      },
+      {
+        title: 'Materia',
+        key: 'materia',
+        render: (_, row) => row.materiaNombre ?? row.materia?.nombre ?? '—',
+      },
+      {
+        title: 'Estado',
+        dataIndex: 'estado',
+        key: 'estado',
+        width: 130,
+        render: (estado) => {
+          const e = String(estado ?? '').toUpperCase();
+          const color = e === 'CONVALIDADO' ? 'cyan' : e === 'APROBADO' ? 'success' : 'default';
+          return estado ? <Tag color={color}>{estado}</Tag> : '—';
+        },
+      },
+      {
+        title: 'Nota',
+        key: 'nota',
+        width: 80,
+        render: (_, row) => {
+          const nota = row.notaFinal ?? row.finalGrade ?? row.final_grade;
+          return nota != null ? Number(nota) : '—';
         },
       },
     ],
@@ -357,7 +421,64 @@ const InscripcionesDetail = () => {
                   <span className="sd-badge sd-badge--blue">{subjectEnrollments.length} materia(s)</span>
                 ) : '—'}
               </Field>
+              {requiereHistorialPrevio !== false ? (
+                <Field label="Historial previo" span={3}>
+                  <Tag color={historialEstadoInfo.color}>{historialEstadoInfo.text}</Tag>
+                  {(cantidadHistorialPrevio ?? priorEnrollmentHistories.length) > 0 ? (
+                    <span style={{ marginLeft: 8, color: 'var(--color-text-secondary)' }}>
+                      {(cantidadHistorialPrevio ?? priorEnrollmentHistories.length)} materia(s) registrada(s)
+                    </span>
+                  ) : null}
+                </Field>
+              ) : null}
             </InfoCard>
+          </div>
+        ),
+      },
+      {
+        key: 'historial-previo',
+        label: (
+          <span className="sd-tab-label">
+            <HistoryOutlined /> Historial previo
+          </span>
+        ),
+        children: (
+          <div className="sd-tab-body">
+            {requiereHistorialPrevio === false ? (
+              <div className="sd-empty">
+                <HistoryOutlined className="sd-empty__icon" />
+                <p className="sd-empty__text">El tipo de inscripción NUEVO no requiere historial previo.</p>
+              </div>
+            ) : priorEnrollmentHistories.length === 0 ? (
+              <div className="sd-empty">
+                <HistoryOutlined className="sd-empty__icon" />
+                <p className="sd-empty__text">
+                  No hay notas de periodos anteriores registradas. Use Editar para cargar el historial previo.
+                </p>
+                {puedeEditarInscripcion && canEdit ? (
+                  <Button variant="primary" icon={<EditOutlined />} onClick={handleEditar} style={{ marginTop: 12 }}>
+                    Completar historial previo
+                  </Button>
+                ) : null}
+              </div>
+            ) : (
+              <InfoCard
+                title={`Historial previo (${priorEnrollmentHistories.length})`}
+                icon={<HistoryOutlined />}
+                cols={1}
+              >
+                <Table
+                  dataSource={priorEnrollmentHistories}
+                  columns={columnasHistorialPrevio}
+                  rowKey={(row) =>
+                    row.id ||
+                    `${row.materiaId ?? row.materia_id}-${row.periodoId ?? row.periodId ?? row.period_id}`
+                  }
+                  size="small"
+                  pagination={false}
+                />
+              </InfoCard>
+            )}
           </div>
         ),
       },
@@ -444,11 +565,19 @@ const InscripcionesDetail = () => {
       student,
       career,
       subjectEnrollments,
+      priorEnrollmentHistories,
+      requiereHistorialPrevio,
+      cantidadHistorialPrevio,
+      historialEstadoInfo,
       columnasMaterias,
+      columnasHistorialPrevio,
       courseSchedules,
       nombreCompleto,
       gridRangeInscripcion,
       sabadoRangeInscripcion,
+      puedeEditarInscripcion,
+      canEdit,
+      handleEditar,
     ],
   );
 
@@ -497,7 +626,13 @@ const InscripcionesDetail = () => {
       <div className="sd">
         <div className="sd-profile">
           {puedeEditarInscripcion ? (
-            <Tooltip title="Editar inscripción">
+            <Tooltip
+              title={
+                historialEstadoInfo.text === 'Historial pendiente'
+                  ? 'Completar historial previo y editar'
+                  : 'Editar inscripción'
+              }
+            >
               <button
                 type="button"
                 className="sd-profile__edit-btn"

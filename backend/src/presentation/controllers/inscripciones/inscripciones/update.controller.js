@@ -57,6 +57,11 @@ export class UpdateEnrollmentController {
     if (body.materia_ids_by_period != null && typeof body.materia_ids_by_period === 'object') {
       data.materiaIdsByPeriod = body.materia_ids_by_period;
     }
+    if (body.prior_history !== undefined) {
+      data.priorHistory = body.prior_history;
+    } else if (body.priorHistory !== undefined) {
+      data.priorHistory = body.priorHistory;
+    }
     return data;
   }
 }

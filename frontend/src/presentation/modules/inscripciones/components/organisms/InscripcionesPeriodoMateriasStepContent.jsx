@@ -14,6 +14,7 @@ import { Card } from '@atoms';
 import { FormField } from '@molecules';
 import { getFieldColumns } from '@molecules/FormSection/utils/fieldColumns';
 import MateriasList from './MateriasList';
+import HistorialPrevioNotasSection from './HistorialPrevioNotasSection';
 
 function buildMateriasGroups(materiasByPeriod, selectedPeriodIds, periodos) {
   if (!selectedPeriodIds?.length) return [];
@@ -39,6 +40,7 @@ const InscripcionesPeriodoMateriasStepContent = ({
   resolveOptions,
   readOnly = false,
   isEditModeAntiguo = false,
+  historialPrevioData = null,
 }) => {
   const periodos = periodosData?.periodos ?? [];
   const selectedPeriodIds = periodosData?.selectedPeriodIds ?? [];
@@ -104,10 +106,19 @@ const InscripcionesPeriodoMateriasStepContent = ({
           ))}
       </Row>
 
+      {historialPrevioData?.hasRows && !readOnly && (
+        <HistorialPrevioNotasSection
+          rows={historialPrevioData.rows}
+          loading={loading}
+          tipoAdmision={tipoAdmision}
+          onGradeChange={historialPrevioData.setGrade}
+        />
+      )}
+
       {selectedPeriodIds.length > 0 && (
         <>
           <Typography.Title level={5} className="step2-materias-list-title">
-            {isNuevo ? 'Materias del primer año' : 'Materias por periodo'}
+            {isNuevo ? 'Materias del primer año' : 'Materias a cursar en esta gestión'}
           </Typography.Title>
 
           {error && (
