@@ -78,96 +78,100 @@ const MatriculaListV2 = () => {
     handleExportLista,
   } = useMatriculaListV2();
 
-  const compactTable = useCompactTableLayout();
-  const { fullColumns, compactColumns } = useMemo(
-    () => buildMatriculaTableColumns({ handleView, handleEdit }, { menuOnly: compactTable }),
-    [handleEdit, handleView, compactTable],
+  const tableLayout = useCompactTableLayout();
+  const { columns: tableColumns } = useMemo(
+    () => buildMatriculaTableColumns({ handleView, handleEdit }, { layout: tableLayout }),
+    [handleEdit, handleView, tableLayout],
   );
-  const tableColumns = compactTable ? compactColumns : fullColumns;
 
-  const tableExpandable = useMemo(
-    () =>
-      compactTable
-        ? {
-            expandedRowRender: (record) => <MatriculaTableRowDetails record={record} />,
-            rowExpandable: () => true,
-            expandRowByClick: false,
-            columnWidth: 44,
-          }
-        : undefined,
-    [compactTable],
-  );
+  const tableWrapClass =
+    tableLayout === 'full'
+      ? ''
+      : ` matricula-v2-table-wrap--${tableLayout}`;
+
+  const tableExpandable = useMemo(() => {
+    if (tableLayout === 'full') return undefined;
+
+    return {
+      expandedRowRender: (record) => (
+        <MatriculaTableRowDetails record={record} variant={tableLayout} />
+      ),
+      rowExpandable: () => true,
+      expandRowByClick: false,
+      columnWidth: 44,
+    };
+  }, [tableLayout]);
 
 
   return (
     <div className="matricula-v2-root">
       <div className="matricula-v2-page-header">
-      <Breadcrumb
-        className="matricula-v2-breadcrumb"
-        items={breadcrumbItems.map((item, i) => ({
-          title:
-            item.href && i === 0 ? (
-              <span>
-                <HomeOutlined style={{ marginRight: 4 }} />
+        <Breadcrumb
+          className="matricula-v2-breadcrumb"
+          items={breadcrumbItems.map((item, i) => ({
+            title:
+              item.href && i === 0 ? (
+                <span>
+                  <HomeOutlined style={{ marginRight: 4 }} />
+                  <a href={item.href}>{item.title}</a>
+                </span>
+              ) : item.href ? (
                 <a href={item.href}>{item.title}</a>
-              </span>
-            ) : item.href ? (
-              <a href={item.href}>{item.title}</a>
-            ) : (
-              item.title
-            ),
-        }))}
-      />
-      <div className="matricula-v2-page-header-row">
-        <div className="matricula-v2-page-header-main">
-          <h1 className="matricula-v2-page-title">Lista de Inscripciones</h1>
-          <p className="matricula-v2-page-subtitle">
-            {gestionLabel} · Administra las matrículas de estudiantes activos del instituto.
-          </p>
+              ) : (
+                item.title
+              ),
+          }))}
+        />
+        <div className="matricula-v2-page-header-row">
+          <div className="matricula-v2-page-header-main">
+            <h1 className="matricula-v2-page-title">Lista de Inscripciones</h1>
+            <p className="matricula-v2-page-subtitle">
+              {gestionLabel} · Administra las matrículas de estudiantes activos del instituto.
+            </p>
+          </div>
+          <Space wrap className="matricula-v2-page-header-actions">
+            {puedeExportarLista ? (
+              <>
+                <Select
+                  {...mv2SelectPopupProps}
+                  placeholder="Carrera para exportar"
+                  style={{ width: 220 }}
+                  loading={carrerasLoading}
+                  value={selectedCarreraId}
+                  onChange={setSelectedCarreraId}
+                  allowClear
+                  showSearch
+                  optionFilterProp="label"
+                  options={carreraSelectOptions.map((c) => ({
+                    value: c.value,
+                    label: c.nombre,
+                  }))}
+                />
+                <Button
+                  icon={<DownloadOutlined />}
+                  loading={exportLoading}
+                  disabled={!selectedCarreraId}
+                  onClick={handleExportLista}
+                  style={
+                    selectedCarreraId
+                      ? { backgroundColor: carreraColor, borderColor: carreraColor, color: '#fff' }
+                      : undefined
+                  }
+                >
+                  Exportar
+                </Button>
+              </>
+            ) : null}
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={handleNuevaInscripcion}
+              style={{ background: 'var(--brand-700)', borderColor: 'var(--brand-700)' }}
+            >
+              Nueva Inscripción
+            </Button>
+          </Space>
         </div>
-        <Space wrap className="matricula-v2-page-header-actions">
-          {puedeExportarLista ? (
-            <>
-              <Select
-                {...mv2SelectPopupProps}
-                placeholder="Carrera para exportar"
-                style={{ width: 220 }}
-                loading={carrerasLoading}
-                value={selectedCarreraId}
-                onChange={setSelectedCarreraId}
-                allowClear
-                showSearch
-                optionFilterProp="label"
-                options={carreraSelectOptions.map((c) => ({
-                  value: c.value,
-                  label: c.nombre,
-                }))}
-              />
-              <Button
-                icon={<DownloadOutlined />}
-                loading={exportLoading}
-                disabled={!selectedCarreraId}
-                onClick={handleExportLista}
-                style={
-                  selectedCarreraId
-                    ? { backgroundColor: carreraColor, borderColor: carreraColor, color: '#fff' }
-                    : undefined
-                }
-              >
-                Exportar
-              </Button>
-            </>
-          ) : null}
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={handleNuevaInscripcion}
-            style={{ background: 'var(--brand-700)', borderColor: 'var(--brand-700)' }}
-          >
-            Nueva Inscripción
-          </Button>
-        </Space>
-      </div>
       </div>
 
       <div className="matricula-v2-kpis">
@@ -268,13 +272,14 @@ const MatriculaListV2 = () => {
       </div>
 
       <div
-        className={`matricula-v2-table-wrap${compactTable ? ' matricula-v2-table-wrap--compact' : ''}`}
+        className={`matricula-v2-table-wrap${tableWrapClass}`}
       >
         <Spin spinning={loading} tip="Cargando inscripciones...">
           <div>
             {viewMode === 'table' ? (
               <div
-                className={`matricula-v2-table-scroll${compactTable ? '' : ' matricula-v2-table-scroll--wide'}`}
+                className={`matricula-v2-table-scroll${tableLayout === 'full' ? ' matricula-v2-table-scroll--wide' : ''
+                  }`}
               >
                 <Table
                   rowKey="id"
@@ -282,9 +287,17 @@ const MatriculaListV2 = () => {
                   dataSource={paged}
                   pagination={false}
                   size="middle"
-                  tableLayout={compactTable ? 'auto' : 'fixed'}
+                  tableLayout={tableLayout === 'compact' ? 'auto' : 'fixed'}
                   expandable={tableExpandable}
-                  scroll={compactTable ? undefined : { x: 900 }}
+                  scroll={
+                    tableLayout === 'full'
+                      ? { x: 880 }
+                      : tableLayout === 'medium'
+                        ? { x: 640 }
+                        : tableLayout === 'narrow'
+                          ? { x: 480 }
+                          : undefined
+                  }
                   rowSelection={{
                     selectedRowKeys,
                     onChange: setSelectedRowKeys,

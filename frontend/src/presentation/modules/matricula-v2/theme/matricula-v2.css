@@ -564,6 +564,65 @@
   width: 100% !important;
 }
 
+/* Vista estrecha (768–991px): 3 columnas */
+.matricula-v2-table-wrap--narrow .matricula-v2-table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.matricula-v2-table-wrap--narrow .ant-table {
+  min-width: 480px;
+}
+
+/* Vista intermedia (992–1199px): 4 columnas */
+.matricula-v2-table-wrap--medium .matricula-v2-table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.matricula-v2-table-wrap--medium .ant-table {
+  min-width: 640px;
+}
+
+/* Celda de acciones: ancho fijo para que el menú ⋮ no se recorte */
+.matricula-v2-app .matricula-v2-table-wrap th.matricula-v2-table-col-actions,
+.matricula-v2-app .matricula-v2-table-wrap td.matricula-v2-table-col-actions {
+  width: 112px !important;
+  min-width: 112px !important;
+  max-width: 112px !important;
+  padding-left: 8px !important;
+  padding-right: 10px !important;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.matricula-v2-app .matricula-v2-table-wrap--compact th.matricula-v2-table-col-actions,
+.matricula-v2-app .matricula-v2-table-wrap--compact td.matricula-v2-table-col-actions {
+  width: 56px !important;
+  min-width: 56px !important;
+  max-width: 56px !important;
+  padding-right: 8px !important;
+}
+
+.matricula-v2-table-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.matricula-v2-app .matricula-v2-table-actions .ant-btn {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+}
+
 /* Sin sombra de columna fija (franja vertical entre estudiante y acciones) */
 .matricula-v2-app .ant-table-cell-fix-right,
 .matricula-v2-app .ant-table-cell-fix-right-first,
@@ -579,17 +638,21 @@
   box-shadow: none !important;
 }
 
-.matricula-v2-app .matricula-v2-table-wrap--compact .ant-table-tbody > tr > td,
-.matricula-v2-app .matricula-v2-table-wrap--compact .ant-table-thead > tr > th,
+.matricula-v2-app .matricula-v2-table-wrap--compact .ant-table-tbody>tr>td,
+.matricula-v2-app .matricula-v2-table-wrap--compact .ant-table-thead>tr>th,
 .matricula-v2-app .matricula-v2-table-wrap .ant-table-content,
 .matricula-v2-app .matricula-v2-table-wrap .ant-table-body,
 .matricula-v2-app .matricula-v2-table-wrap .ant-table-container {
   background: var(--surface) !important;
 }
 
-/* La columna estudiante ocupa el espacio libre en vista compacta */
-.matricula-v2-table-wrap--compact .ant-table-thead > tr > th.matricula-v2-table-col-student,
-.matricula-v2-table-wrap--compact .ant-table-tbody > tr > td.matricula-v2-table-col-student {
+/* La columna estudiante ocupa el espacio libre en vistas reducidas */
+.matricula-v2-table-wrap--compact .ant-table-thead>tr>th.matricula-v2-table-col-student,
+.matricula-v2-table-wrap--compact .ant-table-tbody>tr>td.matricula-v2-table-col-student,
+.matricula-v2-table-wrap--narrow .ant-table-thead>tr>th.matricula-v2-table-col-student,
+.matricula-v2-table-wrap--narrow .ant-table-tbody>tr>td.matricula-v2-table-col-student,
+.matricula-v2-table-wrap--medium .ant-table-thead>tr>th.matricula-v2-table-col-student,
+.matricula-v2-table-wrap--medium .ant-table-tbody>tr>td.matricula-v2-table-col-student {
   width: auto !important;
 }
 
@@ -635,6 +698,23 @@
 .matricula-v2-table-gestion__date {
   font-size: 11px;
   color: var(--text-soft);
+}
+
+.matricula-v2-table-gestion__tipo {
+  display: inline-block;
+  margin-top: 6px;
+}
+
+.matricula-v2-table-gestion__tipo .matricula-v2-table-tag {
+  margin: 0 !important;
+  font-size: 10px !important;
+  line-height: 1.2 !important;
+  padding: 0 8px !important;
+}
+
+.matricula-v2-table-expand__tipo {
+  display: inline-block;
+  margin-top: 6px;
 }
 
 .matricula-v2-table-compact-student__hint {
@@ -735,16 +815,22 @@
   color: var(--info);
 }
 
-.matricula-v2-app .matricula-v2-table-wrap--compact .ant-table-row-expand-icon-cell {
+.matricula-v2-app .matricula-v2-table-wrap--compact .ant-table-row-expand-icon-cell,
+.matricula-v2-app .matricula-v2-table-wrap--narrow .ant-table-row-expand-icon-cell,
+.matricula-v2-app .matricula-v2-table-wrap--medium .ant-table-row-expand-icon-cell {
   width: 40px;
 }
 
-.matricula-v2-app .matricula-v2-table-wrap--compact .ant-table-row-expand-icon {
+.matricula-v2-app .matricula-v2-table-wrap--compact .ant-table-row-expand-icon,
+.matricula-v2-app .matricula-v2-table-wrap--narrow .ant-table-row-expand-icon,
+.matricula-v2-app .matricula-v2-table-wrap--medium .ant-table-row-expand-icon {
   color: var(--brand-600);
   border-color: var(--border-strong);
 }
 
-.matricula-v2-app .matricula-v2-table-wrap--compact .ant-table-row-expand-icon:hover {
+.matricula-v2-app .matricula-v2-table-wrap--compact .ant-table-row-expand-icon:hover,
+.matricula-v2-app .matricula-v2-table-wrap--narrow .ant-table-row-expand-icon:hover,
+.matricula-v2-app .matricula-v2-table-wrap--medium .ant-table-row-expand-icon:hover {
   color: var(--brand-700);
   border-color: var(--brand-500);
 }
@@ -1186,7 +1272,7 @@
   font-family: 'Inter', sans-serif !important;
 }
 
-.matricula-v2-app .ant-table-thead > tr > th {
+.matricula-v2-app .ant-table-thead>tr>th {
   font-size: 11px !important;
   font-weight: 600 !important;
   letter-spacing: 0.5px !important;
@@ -1197,23 +1283,23 @@
   border-bottom: 1px solid var(--divider) !important;
 }
 
-.matricula-v2-app .ant-table-thead > tr > th::before {
+.matricula-v2-app .ant-table-thead>tr>th::before {
   display: none !important;
 }
 
-.matricula-v2-app .ant-table-tbody > tr > td {
+.matricula-v2-app .ant-table-tbody>tr>td {
   background: var(--surface) !important;
   color: var(--text) !important;
   padding: 14px 16px !important;
   border-bottom: 1px solid var(--divider) !important;
 }
 
-.matricula-v2-app .ant-table-tbody > tr:last-child > td {
+.matricula-v2-app .ant-table-tbody>tr:last-child>td {
   border-bottom: none !important;
 }
 
-.matricula-v2-app .ant-table-tbody > tr.ant-table-row:hover > td,
-.matricula-v2-app .ant-table-tbody > tr.ant-table-row-selected > td {
+.matricula-v2-app .ant-table-tbody>tr.ant-table-row:hover>td,
+.matricula-v2-app .ant-table-tbody>tr.ant-table-row-selected>td {
   background: var(--surface-hover) !important;
 }
 
@@ -1295,6 +1381,12 @@
 }
 
 /* Iconos de acción — info / warning para contraste en ambos temas */
+.matricula-v2-app .matricula-v2-table-wrap--narrow .matricula-v2-table-actions,
+.matricula-v2-app .matricula-v2-table-wrap--medium .matricula-v2-table-actions,
+.matricula-v2-app .matricula-v2-table-wrap:not(.matricula-v2-table-wrap--compact):not(.matricula-v2-table-wrap--narrow):not(.matricula-v2-table-wrap--medium) .matricula-v2-table-actions {
+  padding: 2px 0;
+}
+
 .matricula-v2-app .matricula-v2-action-icon--info.ant-btn {
   color: var(--info) !important;
 }

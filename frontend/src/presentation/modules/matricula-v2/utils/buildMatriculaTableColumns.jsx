@@ -1,5 +1,5 @@
 /**
- * Columnas de la tabla de inscripciones (vista completa y compacta).
+ * Columnas de la tabla de inscripciones (4 layouts responsive).
  */
 import {
   DeleteOutlined,
@@ -10,7 +10,8 @@ import {
   MoreOutlined,
   PrinterOutlined,
 } from '@ant-design/icons';
-import { Button, Dropdown, Space, Tag, Tooltip } from 'antd';
+import { Button, Dropdown, Tooltip } from 'antd';
+import AdmissionTypeTag from '../components/AdmissionTypeTag';
 import StatusPill from '../components/StatusPill';
 import StudentCell from '../components/StudentCell';
 import { mv2DropdownPopupProps, mv2TooltipProps } from '../theme/popupClass';
@@ -30,6 +31,12 @@ function rowActionMenuItems(r, { handleView, handleEdit }) {
       onClick: () => handleEdit(r),
     },
     { type: 'divider' },
+    ...rowOverflowMenuItems(),
+  ];
+}
+
+function rowOverflowMenuItems() {
+  return [
     {
       key: 'print',
       icon: <PrinterOutlined style={{ color: 'var(--info)' }} />,
@@ -50,160 +57,200 @@ function rowActionMenuItems(r, { handleView, handleEdit }) {
   ];
 }
 
+function TableRowActions({ record, handlers, menuOnly }) {
+  const fullMenu = { items: rowActionMenuItems(record, handlers) };
+  const overflowMenu = { items: rowOverflowMenuItems() };
+
+  if (menuOnly) {
+    return (
+      <div className="matricula-v2-table-actions">
+        <Dropdown {...mv2DropdownPopupProps} menu={fullMenu} trigger={['click']}>
+          <Button
+            type="text"
+            size="small"
+            className="matricula-v2-action-icon--muted"
+            icon={<MoreOutlined />}
+            onClick={(e) => e.stopPropagation()}
+            aria-label="Acciones"
+          />
+        </Dropdown>
+      </div>
+    );
+  }
+
+  return (
+    <div className="matricula-v2-table-actions" onClick={(e) => e.stopPropagation()}>
+      <Tooltip title="Ver detalle" {...mv2TooltipProps}>
+        <Button
+          type="text"
+          size="small"
+          className="matricula-v2-action-icon--info"
+          icon={<EyeOutlined />}
+          onClick={() => handlers.handleView(record)}
+          aria-label="Ver detalle"
+        />
+      </Tooltip>
+      <Tooltip title="Editar" {...mv2TooltipProps}>
+        <Button
+          type="text"
+          size="small"
+          className="matricula-v2-action-icon--warning"
+          icon={<EditOutlined />}
+          onClick={() => handlers.handleEdit(record)}
+          aria-label="Editar"
+        />
+      </Tooltip>
+      <Dropdown {...mv2DropdownPopupProps} menu={overflowMenu} trigger={['click']}>
+        <Button
+          type="text"
+          size="small"
+          className="matricula-v2-action-icon--muted"
+          icon={<MoreOutlined />}
+          aria-label="Más acciones"
+        />
+      </Dropdown>
+    </div>
+  );
+}
+
 function buildActionsColumn(handlers, { menuOnly = false } = {}) {
   return {
     title: '',
     key: 'actions',
-    width: menuOnly ? 52 : 72,
+    className: 'matricula-v2-table-col-actions',
+    width: menuOnly ? 56 : 112,
     align: 'right',
-    render: (_, r) => {
-      const menu = { items: rowActionMenuItems(r, handlers) };
-
-      if (menuOnly) {
-        return (
-          <Dropdown {...mv2DropdownPopupProps} menu={menu} trigger={['click']}>
-            <Button
-              type="text"
-              size="small"
-              className="matricula-v2-action-icon--muted"
-              icon={<MoreOutlined />}
-              onClick={(e) => e.stopPropagation()}
-              aria-label="Acciones"
-            />
-          </Dropdown>
-        );
-      }
-
-      return (
-        <Space size={2} onClick={(e) => e.stopPropagation()}>
-          <Tooltip title="Ver detalle" {...mv2TooltipProps}>
-            <Button
-              type="text"
-              size="small"
-              className="matricula-v2-action-icon--info"
-              icon={<EyeOutlined />}
-              onClick={() => handlers.handleView(r)}
-            />
-          </Tooltip>
-          <Tooltip title="Editar" {...mv2TooltipProps}>
-            <Button
-              type="text"
-              size="small"
-              className="matricula-v2-action-icon--warning"
-              icon={<EditOutlined />}
-              onClick={() => handlers.handleEdit(r)}
-            />
-          </Tooltip>
-        </Space>
-      );
-    },
+    render: (_, r) => <TableRowActions record={r} handlers={handlers} menuOnly={menuOnly} />,
   };
 }
 
+const studentColumn = {
+  title: 'Estudiante',
+  key: 'student',
+  width: 280,
+  ellipsis: true,
+  render: (_, r) => <StudentCell student={r} />,
+};
+
+const careerColumn = {
+  title: 'Carrera',
+  key: 'career',
+  width: 180,
+  ellipsis: true,
+  render: (_, r) => (
+    <div>
+      <div className="matricula-v2-table-career">
+        <span
+          className="matricula-v2-table-career__bar"
+          style={{ background: r.career.color }}
+          aria-hidden
+        />
+        {r.career.name}
+      </div>
+      <div className="matricula-v2-table-career__sub">
+        {r.semestre}° semestre · {r.materias} materias
+      </div>
+    </div>
+  ),
+};
+
+const historyColumn = {
+  title: 'Historial',
+  key: 'history',
+  width: 150,
+  render: (_, r) => <StatusPill statusKey={r.historial} label={r.historyState?.label} />,
+};
+
+const pagoColumn = {
+  title: 'Pago',
+  key: 'pago',
+  width: 96,
+  render: (_, r) => (
+    <span
+      className="matricula-v2-table-expand__pago"
+      data-status={r.estadoPago === 'Al día' ? 'ok' : r.estadoPago === 'Pendiente' ? 'err' : 'info'}
+    >
+      {r.estadoPago}
+    </span>
+  ),
+};
+
+/** Gestión + fecha + tipo (6 columnas en vista full, sin columna Tipo aparte). */
+const gestionColumn = {
+  title: 'Gestión',
+  key: 'gestion',
+  width: 128,
+  render: (_, r) => (
+    <div className="matricula-v2-table-gestion">
+      <div className="matricula-v2-table-gestion__year">{r.gestion}</div>
+      <div className="matricula-v2-table-gestion__date">{r.fechaMatricula}</div>
+      <span className="matricula-v2-table-gestion__tipo">
+        <AdmissionTypeTag tipo={r.tipo} />
+      </span>
+    </div>
+  ),
+};
+
+const compactStudentColumn = {
+  title: 'Estudiante',
+  key: 'student',
+  className: 'matricula-v2-table-col-student',
+  ellipsis: true,
+  render: (_, r) => (
+    <div className="matricula-v2-table-compact-student">
+      <StudentCell student={r} />
+      <div className="matricula-v2-table-compact-student__hint">
+        Pulsa <strong>+</strong> para ver carrera, historial y más
+      </div>
+    </div>
+  ),
+};
+
 /**
  * @param {{ handleView: Function, handleEdit: Function }} handlers
- * @param {{ menuOnly?: boolean }} options
+ * @param {{ layout?: 'compact' | 'narrow' | 'medium' | 'full' }} options
  */
-export function buildMatriculaTableColumns(handlers, { menuOnly = false } = {}) {
+export function buildMatriculaTableColumns(handlers, { layout = 'full' } = {}) {
+  const menuOnly = layout === 'compact';
   const actionsCol = buildActionsColumn(handlers, { menuOnly });
 
+  /** 6 columnas: estudiante, carrera, historial, pago, gestión (+ tipo), acciones */
   const fullColumns = [
-    {
-      title: 'Estudiante',
-      key: 'student',
-      width: 300,
-      ellipsis: true,
-      render: (_, r) => <StudentCell student={r} />,
-    },
-    {
-      title: 'Carrera',
-      key: 'career',
-      width: 200,
-      ellipsis: true,
-      render: (_, r) => (
-        <div>
-          <div className="matricula-v2-table-career">
-            <span
-              className="matricula-v2-table-career__bar"
-              style={{ background: r.career.color }}
-              aria-hidden
-            />
-            {r.career.name}
-          </div>
-          <div className="matricula-v2-table-career__sub">
-            {r.semestre}° semestre · {r.materias} materias
-          </div>
-        </div>
-      ),
-    },
-    {
-      title: 'Tipo',
-      key: 'tipo',
-      width: 100,
-      render: (_, r) => (
-        <Tag
-          className="matricula-v2-table-tag"
-          style={{
-            background: r.isAntiguo ? 'var(--pill-warn-bg)' : 'var(--pill-ok-bg)',
-            color: r.isAntiguo ? 'var(--pill-warn-fg)' : 'var(--pill-ok-fg)',
-          }}
-        >
-          {r.tipo}
-        </Tag>
-      ),
-    },
-    {
-      title: 'Historial',
-      key: 'history',
-      width: 160,
-      render: (_, r) => <StatusPill statusKey={r.historial} label={r.historyState?.label} />,
-    },
-    {
-      title: 'Pago',
-      key: 'pago',
-      width: 100,
-      render: (_, r) => (
-        <span
-          className="matricula-v2-table-expand__pago"
-          data-status={
-            r.estadoPago === 'Al día' ? 'ok' : r.estadoPago === 'Pendiente' ? 'err' : 'info'
-          }
-        >
-          {r.estadoPago}
-        </span>
-      ),
-    },
-    {
-      title: 'Gestión',
-      key: 'fecha',
-      width: 120,
-      render: (_, r) => (
-        <div className="matricula-v2-table-gestion">
-          <div className="matricula-v2-table-gestion__year">{r.gestion}</div>
-          <div className="matricula-v2-table-gestion__date">{r.fechaMatricula}</div>
-        </div>
-      ),
-    },
+    { ...studentColumn, width: 280 },
+    { ...careerColumn, width: 190 },
+    historyColumn,
+    pagoColumn,
+    gestionColumn,
     actionsCol,
   ];
 
-  const compactColumns = [
-    {
-      title: 'Estudiante',
-      key: 'student',
-      className: 'matricula-v2-table-col-student',
-      ellipsis: true,
-      render: (_, r) => (
-        <div className="matricula-v2-table-compact-student">
-          <StudentCell student={r} />
-          <div className="matricula-v2-table-compact-student__hint">
-            Pulsa <strong>+</strong> para ver carrera, historial y más
-          </div>
-        </div>
-      ),
-    },
+  const mediumColumns = [
+    { ...studentColumn, width: 200, className: 'matricula-v2-table-col-student' },
+    { ...careerColumn, width: 160 },
+    { ...historyColumn, width: 140 },
     actionsCol,
   ];
 
-  return { fullColumns, compactColumns };
+  const narrowColumns = [
+    { ...studentColumn, width: 220, className: 'matricula-v2-table-col-student' },
+    { ...careerColumn, width: 180 },
+    actionsCol,
+  ];
+
+  const compactColumns = [compactStudentColumn, actionsCol];
+
+  const columnsByLayout = {
+    full: fullColumns,
+    medium: mediumColumns,
+    narrow: narrowColumns,
+    compact: compactColumns,
+  };
+
+  return {
+    fullColumns,
+    mediumColumns,
+    narrowColumns,
+    compactColumns,
+    columns: columnsByLayout[layout] ?? fullColumns,
+  };
 }

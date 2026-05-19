@@ -30,13 +30,17 @@ export function adaptInscripcionToMatriculado(record) {
   const periodo = record.periodo || record.enrollment?.periodo;
 
   const tipoRaw = String(record.tipoInscripcion ?? record.enrollment?.tipoInscripcion ?? '').toUpperCase();
-  const isAntiguo = tipoRaw !== 'NUEVO';
   const tipo =
     tipoRaw === 'NUEVO'
       ? 'NUEVO'
       : tipoRaw === 'ANTIGUO'
         ? 'ANTIGUO'
-        : tipoRaw || 'ANTIGUO';
+        : tipoRaw === 'TRASPASO'
+          ? 'TRASPASO'
+          : tipoRaw === 'TRANSITABILIDAD'
+            ? 'TRANSITABILIDAD'
+            : tipoRaw || 'ANTIGUO';
+  const isAntiguo = tipo !== 'NUEVO';
 
   const historialKey = mapHistorialEstado(record.historialPrevioEstado);
   const historyState = HISTORY_STATES[historialKey] || HISTORY_STATES.completo;
