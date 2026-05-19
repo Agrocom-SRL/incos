@@ -509,10 +509,145 @@
   color: var(--brand-700) !important;
 }
 
-.matricula-v2-app .ant-select:not(.ant-select-customize-input) .ant-select-selector {
+/* Select (Ant Design 6 — variables CSS del input) */
+.matricula-v2-app .ant-select {
+  --select-background: var(--surface-alt) !important;
+  --select-color: var(--text) !important;
+  --select-border-color: var(--border) !important;
+}
+
+.matricula-v2-app .ant-select:not(.ant-select-disabled):hover {
+  --select-background: var(--surface-hover) !important;
+  --select-border-color: var(--border-strong) !important;
+}
+
+.matricula-v2-app .ant-select.ant-select-focused {
+  --select-border-color: var(--brand-500) !important;
+  --select-background: var(--surface) !important;
+}
+
+.matricula-v2-app .ant-select .ant-select-selection-placeholder,
+.matricula-v2-app .ant-select .ant-select-placeholder {
+  color: var(--text-soft) !important;
+}
+
+.matricula-v2-app .ant-select .ant-select-arrow,
+.matricula-v2-app .ant-select .ant-select-suffix {
+  color: var(--text-soft) !important;
+}
+
+/* Paginación — enlaces y selector de tamaño */
+.matricula-v2-app .ant-pagination {
+  color: var(--text-muted);
+}
+
+.matricula-v2-app .ant-pagination .ant-pagination-item a {
+  color: var(--text) !important;
+}
+
+.matricula-v2-app .ant-pagination .ant-pagination-item-link {
+  color: var(--text) !important;
+  background: var(--surface) !important;
+}
+
+.matricula-v2-app .ant-pagination .ant-pagination-disabled .ant-pagination-item-link {
+  color: var(--text-soft) !important;
   background: var(--surface-alt) !important;
   border-color: var(--border) !important;
+}
+
+.matricula-v2-app .ant-pagination .ant-pagination-options .ant-select {
+  --select-background: var(--surface) !important;
+  --select-color: var(--text) !important;
+  --select-border-color: var(--border) !important;
+}
+
+.matricula-v2-app .ant-pagination .ant-pagination-options-size-changer {
+  color: var(--text);
+}
+
+/* Iconos de acción — info / warning para contraste en ambos temas */
+.matricula-v2-app .matricula-v2-action-icon--info.ant-btn {
+  color: var(--info) !important;
+}
+
+.matricula-v2-app .matricula-v2-action-icon--info.ant-btn:hover {
+  color: var(--info) !important;
+  background: color-mix(in srgb, var(--info) 14%, transparent) !important;
+}
+
+.matricula-v2-app .matricula-v2-action-icon--warning.ant-btn {
+  color: var(--warning) !important;
+}
+
+.matricula-v2-app .matricula-v2-action-icon--warning.ant-btn:hover {
+  color: var(--warning) !important;
+  background: color-mix(in srgb, var(--warning) 14%, transparent) !important;
+}
+
+.matricula-v2-app .matricula-v2-action-icon--muted.ant-btn {
+  color: var(--text-muted) !important;
+}
+
+.matricula-v2-app .matricula-v2-action-icon--muted.ant-btn:hover {
   color: var(--text) !important;
+  background: var(--surface-hover) !important;
+}
+
+/* Popups portados a body (Select dropdown + menú Dropdown) */
+.matricula-v2-ant-popup.ant-select-dropdown,
+.matricula-v2-ant-popup .ant-select-dropdown {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: var(--shadow-md) !important;
+  border-radius: 10px !important;
+}
+
+.matricula-v2-ant-popup .ant-select-item,
+.matricula-v2-ant-popup .ant-select-item-option {
+  color: var(--text) !important;
+}
+
+.matricula-v2-ant-popup .ant-select-item-option-active,
+.matricula-v2-ant-popup .ant-select-item-option:hover {
+  background: var(--surface-hover) !important;
+}
+
+.matricula-v2-ant-popup .ant-select-item-option-selected {
+  background: var(--brand-50) !important;
+  color: var(--brand-700) !important;
+  font-weight: 600;
+}
+
+.matricula-v2-ant-popup .ant-dropdown-menu {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: var(--shadow-md) !important;
+  border-radius: 10px !important;
+  padding: 4px !important;
+}
+
+.matricula-v2-ant-popup .ant-dropdown-menu-item {
+  color: var(--text) !important;
+  border-radius: 6px !important;
+}
+
+.matricula-v2-ant-popup .ant-dropdown-menu-item:hover {
+  background: var(--surface-hover) !important;
+  color: var(--brand-700) !important;
+}
+
+.matricula-v2-ant-popup .ant-dropdown-menu-item-danger {
+  color: var(--danger) !important;
+}
+
+.matricula-v2-ant-popup .ant-dropdown-menu-item-danger:hover {
+  background: color-mix(in srgb, var(--danger) 12%, transparent) !important;
+  color: var(--danger) !important;
+}
+
+.matricula-v2-ant-popup .ant-dropdown-menu-item-divider {
+  background: var(--divider) !important;
 }
 
 .matricula-v2-app .ant-checkbox-checked .ant-checkbox-inner {

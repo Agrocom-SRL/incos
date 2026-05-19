@@ -39,6 +39,7 @@ import StudentCard from '../components/StudentCard';
 import StudentCell from '../components/StudentCell';
 import StudentDrawer from '../components/StudentDrawer';
 import { useMatriculaListV2 } from '../hooks/useMatriculaListV2';
+import { mv2DropdownPopupProps, mv2SelectPopupProps } from '../theme/popupClass';
 
 const MatriculaListV2 = () => {
   const {
@@ -192,32 +193,50 @@ const MatriculaListV2 = () => {
               <Button
                 type="text"
                 size="small"
+                className="matricula-v2-action-icon--info"
                 icon={<EyeOutlined />}
                 onClick={() => setDrawerStudent(r)}
-                style={{ color: 'var(--brand-600)' }}
               />
             </Tooltip>
             <Tooltip title="Editar">
               <Button
                 type="text"
                 size="small"
+                className="matricula-v2-action-icon--warning"
                 icon={<EditOutlined />}
-                style={{ color: 'var(--accent-gold)' }}
                 onClick={() => handleEdit(r)}
               />
             </Tooltip>
             <Dropdown
+              {...mv2DropdownPopupProps}
               menu={{
                 items: [
-                  { key: 'print', icon: <PrinterOutlined />, label: 'Imprimir comprobante' },
-                  { key: 'mail', icon: <MailOutlined />, label: 'Enviar correo' },
-                  { key: 'doc', icon: <FileTextOutlined />, label: 'Generar reporte' },
+                  {
+                    key: 'print',
+                    icon: <PrinterOutlined style={{ color: 'var(--info)' }} />,
+                    label: 'Imprimir comprobante',
+                  },
+                  {
+                    key: 'mail',
+                    icon: <MailOutlined style={{ color: 'var(--info)' }} />,
+                    label: 'Enviar correo',
+                  },
+                  {
+                    key: 'doc',
+                    icon: <FileTextOutlined style={{ color: 'var(--info)' }} />,
+                    label: 'Generar reporte',
+                  },
                   { type: 'divider' },
                   { key: 'del', icon: <DeleteOutlined />, label: 'Eliminar', danger: true },
                 ],
               }}
             >
-              <Button type="text" size="small" icon={<MoreOutlined />} style={{ color: 'var(--text-muted)' }} />
+              <Button
+                type="text"
+                size="small"
+                className="matricula-v2-action-icon--muted"
+                icon={<MoreOutlined />}
+              />
             </Dropdown>
           </Space>
         ),
@@ -256,6 +275,7 @@ const MatriculaListV2 = () => {
           {puedeExportarLista ? (
             <>
               <Select
+                {...mv2SelectPopupProps}
                 placeholder="Carrera para exportar"
                 style={{ width: 220 }}
                 loading={carrerasLoading}
@@ -447,7 +467,7 @@ const MatriculaListV2 = () => {
               setPage(1);
               setPageSize(s);
             }}
-            showSizeChanger
+            showSizeChanger={{ ...mv2SelectPopupProps }}
             pageSizeOptions={['10', '20', '50', '100']}
             locale={{ items_per_page: '/ página' }}
           />

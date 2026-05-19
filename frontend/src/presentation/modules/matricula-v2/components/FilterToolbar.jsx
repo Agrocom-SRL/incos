@@ -11,6 +11,7 @@ import {
 } from '@ant-design/icons';
 import { Button, Input, Segmented, Select, Space } from 'antd';
 import { HISTORY_FILTER_OPTIONS } from '../utils/historyStates';
+import { mv2SelectPopupProps } from '../theme/popupClass';
 
 /**
  * @param {object} props
@@ -49,6 +50,7 @@ const FilterToolbar = ({
       ]}
     />
     <Select
+      {...mv2SelectPopupProps}
       placeholder="Historial"
       value={historyFilter}
       onChange={onHistoryFilterChange}

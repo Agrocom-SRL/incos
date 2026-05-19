@@ -13,6 +13,7 @@ import {
 } from '@ant-design/icons';
 import { Dropdown } from 'antd';
 import { avatarFor } from '../utils/avatarFor';
+import { mv2DropdownPopupProps } from '../theme/popupClass';
 
 function StatBlock({ label, value, accent = 'var(--text)' }) {
   return (
@@ -59,9 +60,21 @@ const StudentCard = ({ student, onOpen, onEdit, onView }) => {
   const promedio = student.promedio ?? student.avgGrade ?? '—';
 
   const menuItems = [
-    { key: 'print', icon: <PrinterOutlined />, label: 'Imprimir comprobante' },
-    { key: 'mail', icon: <MailOutlined />, label: 'Enviar correo' },
-    { key: 'doc', icon: <FileTextOutlined />, label: 'Generar reporte' },
+    {
+      key: 'print',
+      icon: <PrinterOutlined style={{ color: 'var(--info)' }} />,
+      label: 'Imprimir comprobante',
+    },
+    {
+      key: 'mail',
+      icon: <MailOutlined style={{ color: 'var(--info)' }} />,
+      label: 'Enviar correo',
+    },
+    {
+      key: 'doc',
+      icon: <FileTextOutlined style={{ color: 'var(--info)' }} />,
+      label: 'Generar reporte',
+    },
     { type: 'divider' },
     { key: 'del', icon: <DeleteOutlined />, label: 'Eliminar', danger: true },
   ];
@@ -297,7 +310,7 @@ const StudentCard = ({ student, onOpen, onEdit, onView }) => {
           style={{
             flex: 1,
             background: 'var(--surface)',
-            color: 'var(--brand-600)',
+            color: 'var(--info)',
             border: '1px solid var(--border-strong)',
             borderRadius: 8,
             padding: '6px 0',
@@ -322,7 +335,7 @@ const StudentCard = ({ student, onOpen, onEdit, onView }) => {
             width: 32,
             height: 32,
             background: 'var(--surface)',
-            color: 'var(--accent-gold)',
+            color: 'var(--warning)',
             border: '1px solid var(--border-strong)',
             borderRadius: 8,
             cursor: 'pointer',
@@ -334,7 +347,7 @@ const StudentCard = ({ student, onOpen, onEdit, onView }) => {
         >
           <EditOutlined />
         </button>
-        <Dropdown menu={{ items: menuItems }} trigger={['click']}>
+        <Dropdown {...mv2DropdownPopupProps} menu={{ items: menuItems }} trigger={['click']}>
           <button
             type="button"
             onClick={(e) => e.stopPropagation()}
