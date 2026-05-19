@@ -16,15 +16,19 @@
   --accent-gold: #b8860b;
   --accent-sky: #2f7fb8;
 
-  --bg-page: #f3f4f5;
-  --bg-page-2: #e8eaed;
-  --surface: #ffffff;
-  --surface-alt: #f7f8f9;
-  --surface-hover: #f0f8f3;
+  /* Fondo principal: gris verdoso (no neutro frío) */
+  --bg-page: #e6ece8;
+  --bg-page-2: #d8e3dc;
+  /* Sidebar y topbar: verde muy suave, distinto del blanco puro */
+  --surface-chrome: #fafcfb;
+  --chrome-input-bg: #e4ebe6;
+  --surface: #fafcfb;
+  --surface-alt: #edf3ef;
+  --surface-hover: #e2ede6;
 
-  --border: #e4e7ea;
-  --border-strong: #d1d5da;
-  --divider: #eceff2;
+  --border: #c8d6cc;
+  --border-strong: #b3c5b9;
+  --divider: #d8e4dc;
 
   --text: #0a1f15;
   --text-2: #2a3a32;
@@ -50,6 +54,15 @@
   --shadow-md: 0 8px 24px rgba(8, 80, 42, 0.1), 0 2px 6px rgba(8, 80, 42, 0.06);
   --shadow-lg: 0 12px 40px rgba(8, 80, 42, 0.14);
 
+  /* Navegación sidebar — activo debe contrastar con surface-chrome */
+  --nav-item-fg: var(--text-2);
+  --nav-item-hover-bg: rgba(10, 101, 50, 0.1);
+  --nav-item-active-bg: #e3f3e2;
+  --nav-item-active-fg: #0a5028;
+  --nav-item-active-border: #2a8d57;
+  --nav-item-active-bar: #0d7a3d;
+  --nav-item-active-shadow: 0 1px 4px rgba(8, 80, 42, 0.12);
+
   color-scheme: light;
 }
 
@@ -71,6 +84,8 @@
 
   --bg-page: #07140e;
   --bg-page-2: #0a1d14;
+  --surface-chrome: #0c1812;
+  --chrome-input-bg: #0f2118;
   --surface: #102019;
   --surface-alt: #0c1812;
   --surface-hover: #15291f;
@@ -102,6 +117,14 @@
   --shadow: 0 2px 8px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.3);
   --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.6);
+
+  --nav-item-fg: var(--text-2);
+  --nav-item-hover-bg: rgba(79, 179, 126, 0.12);
+  --nav-item-active-bg: #1a5239;
+  --nav-item-active-fg: #a7f3c8;
+  --nav-item-active-border: #2e9d68;
+  --nav-item-active-bar: #4fb37e;
+  --nav-item-active-shadow: 0 1px 6px rgba(0, 0, 0, 0.35);
 
   color-scheme: dark;
 }

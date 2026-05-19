@@ -61,7 +61,7 @@
 /* --- Sidebar --- */
 .matricula-v2-sidebar {
   flex-shrink: 0;
-  background: var(--surface);
+  background: var(--surface-chrome);
   border-right: 1px solid var(--border);
   height: 100vh;
   display: flex;
@@ -122,19 +122,48 @@
   margin: 2px 10px;
   border-radius: 10px;
   cursor: pointer;
-  font-size: 14;
+  font-size: 14px;
   position: relative;
-  transition: background 0.15s ease, color 0.15s ease;
+  color: var(--nav-item-fg);
+  font-weight: 500;
+  border: 1px solid transparent;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.matricula-v2-sidebar__item:hover:not(.matricula-v2-sidebar__item--active) {
+  background: var(--nav-item-hover-bg);
+}
+
+.matricula-v2-sidebar__item--active {
+  background: var(--nav-item-active-bg);
+  color: var(--nav-item-active-fg);
+  font-weight: 600;
+  border-color: var(--nav-item-active-border);
+  box-shadow: var(--nav-item-active-shadow);
+}
+
+.matricula-v2-sidebar__item--active .matricula-v2-sidebar__item-icon {
+  color: var(--nav-item-active-fg);
+}
+
+.matricula-v2-sidebar__item--sub {
+  margin-left: 6px;
+  margin-right: 6px;
 }
 
 .matricula-v2-sidebar__item-bar {
   position: absolute;
   left: -10px;
-  top: 8px;
-  bottom: 8px;
-  width: 3px;
-  background: var(--brand-600);
+  top: 6px;
+  bottom: 6px;
+  width: 4px;
+  background: var(--nav-item-active-bar);
   border-radius: 4px;
+  box-shadow: 0 0 6px color-mix(in srgb, var(--nav-item-active-bar) 50%, transparent);
 }
 
 .matricula-v2-sidebar__item-icon {
@@ -181,7 +210,7 @@
 /* --- TopBar --- */
 .matricula-v2-topbar {
   height: 64px;
-  background: var(--surface);
+  background: var(--surface-chrome);
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
@@ -199,7 +228,7 @@
   max-width: 460px;
   flex: 0 1 460px;
   border-radius: 10px !important;
-  background: var(--surface-alt) !important;
+  background: var(--chrome-input-bg) !important;
   border-color: var(--border) !important;
 }
 

@@ -23,9 +23,13 @@ import {
 import logoHorizontal from '@assets/images/branding/logo-horizontal.webp';
 
 function SidebarItem({ icon, label, active, sub, onClick, collapsed }) {
-  const [hover, setHover] = useState(false);
-  const bg = active ? 'var(--brand-50)' : hover ? 'rgba(13,110,61,0.05)' : 'transparent';
-  const color = active ? 'var(--brand-700)' : 'var(--text-2)';
+  const itemClass = [
+    'matricula-v2-sidebar__item',
+    active ? 'matricula-v2-sidebar__item--active' : '',
+    sub ? 'matricula-v2-sidebar__item--sub' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return (
     <div
@@ -35,21 +39,14 @@ function SidebarItem({ icon, label, active, sub, onClick, collapsed }) {
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') onClick?.();
       }}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
-      className="matricula-v2-sidebar__item"
+      className={itemClass}
       style={{
-        background: bg,
-        color,
-        fontWeight: active ? 600 : 500,
         padding: collapsed ? '10px 0' : '10px 14px',
         justifyContent: collapsed ? 'center' : 'flex-start',
         paddingLeft: sub && !collapsed ? 44 : collapsed ? 0 : 14,
       }}
     >
-      {active && !collapsed ? (
-        <span className="matricula-v2-sidebar__item-bar" aria-hidden />
-      ) : null}
+      {active ? <span className="matricula-v2-sidebar__item-bar" aria-hidden /> : null}
       <span className="matricula-v2-sidebar__item-icon">{icon}</span>
       {!collapsed ? <span style={{ flex: 1 }}>{label}</span> : null}
     </div>
@@ -58,7 +55,6 @@ function SidebarItem({ icon, label, active, sub, onClick, collapsed }) {
 
 function SidebarSection({ icon, label, children, defaultOpen, collapsed }) {
   const [open, setOpen] = useState(defaultOpen);
-  const [hover, setHover] = useState(false);
 
   return (
     <div>
@@ -69,13 +65,8 @@ function SidebarSection({ icon, label, children, defaultOpen, collapsed }) {
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') setOpen((o) => !o);
         }}
-        onMouseEnter={() => setHover(true)}
-        onMouseLeave={() => setHover(false)}
         className="matricula-v2-sidebar__item"
         style={{
-          background: hover ? 'rgba(13,110,61,0.05)' : 'transparent',
-          color: 'var(--text-2)',
-          fontWeight: 500,
           padding: collapsed ? '10px 0' : '10px 14px',
           justifyContent: collapsed ? 'center' : 'flex-start',
         }}

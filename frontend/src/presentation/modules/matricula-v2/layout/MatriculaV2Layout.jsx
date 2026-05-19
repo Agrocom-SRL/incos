@@ -24,11 +24,11 @@ function MatriculaV2Shell() {
           colorPrimary: '#0a6532',
           colorInfo: theme === 'dark' ? '#60a5fa' : '#2f7fb8',
           colorWarning: theme === 'dark' ? '#fbbf24' : '#d97706',
-          colorBgContainer: theme === 'dark' ? '#102019' : '#ffffff',
-          colorBgElevated: theme === 'dark' ? '#102019' : '#ffffff',
+          colorBgContainer: theme === 'dark' ? '#102019' : '#fafcfb',
+          colorBgElevated: theme === 'dark' ? '#102019' : '#fafcfb',
           colorText: theme === 'dark' ? '#e8f0ea' : '#0a1f15',
           colorTextSecondary: theme === 'dark' ? '#8aa094' : '#5e6c64',
-          colorBorder: theme === 'dark' ? '#1d3528' : '#e4e7ea',
+          colorBorder: theme === 'dark' ? '#1d3528' : '#c8d6cc',
           borderRadius: 8,
           fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
           fontSize: 14,
@@ -43,7 +43,7 @@ function MatriculaV2Shell() {
             optionSelectedBg: theme === 'dark' ? '#133224' : '#e8f4ec',
           },
           Dropdown: {
-            colorBgElevated: theme === 'dark' ? '#102019' : '#ffffff',
+            colorBgElevated: theme === 'dark' ? '#102019' : '#fafcfb',
           },
         },
       }}
