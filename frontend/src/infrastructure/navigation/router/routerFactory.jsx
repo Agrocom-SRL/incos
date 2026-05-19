@@ -9,6 +9,7 @@ import { getAllRoutes } from '@routes';
 import { normalizeRoutes } from '@navigation-services/routeNormalizer';
 import { filterRoutesWithElements } from '@navigation-services/routeFilter';
 import { MainLayout } from '@templates';
+import MatriculaV2Layout from '@/presentation/modules/matricula-v2/layout/MatriculaV2Layout.jsx';
 import { PublicRoute } from '@navigation-guards';
 import { PrivateRoute } from '@/presentation/guards/PrivateRoute.jsx';
 import RootAuthOutlet from '@components-router/RootAuthOutlet';
@@ -21,6 +22,8 @@ export const createAppRouter = () => {
 
   const publicRoutes = normalizedRoutes.filter((route) => route.path === 'login');
   const protectedRoutes = normalizedRoutes.filter((route) => route.path !== 'login');
+  const matriculaV2Routes = protectedRoutes.filter((route) => route.layout === 'matricula-v2');
+  const mainLayoutRoutes = protectedRoutes.filter((route) => route.layout !== 'matricula-v2');
 
   const loginElement = publicRoutes[0]?.element;
 
@@ -47,7 +50,7 @@ export const createAppRouter = () => {
                   index: true,
                   element: <Navigate to="/dashboard" replace />,
                 },
-                ...protectedRoutes.map((route) => ({
+                ...mainLayoutRoutes.map((route) => ({
                   path: route.path,
                   element: (
                     <PrivateRoute permiso={route.permiso} accion={route.accion}>
@@ -57,6 +60,20 @@ export const createAppRouter = () => {
                 })),
               ],
             },
+            ...matriculaV2Routes.map((route) => ({
+              path: route.path,
+              element: (
+                <PrivateRoute permiso={route.permiso} accion={route.accion}>
+                  <MatriculaV2Layout />
+                </PrivateRoute>
+              ),
+              children: [
+                {
+                  index: true,
+                  element: route.element,
+                },
+              ],
+            })),
           ],
         },
       ],

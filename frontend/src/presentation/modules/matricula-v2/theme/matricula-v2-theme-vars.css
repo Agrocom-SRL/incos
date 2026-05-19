@@ -1,0 +1,115 @@
+/* Variables de tema INCOS — claro / oscuro */
+
+:root[data-theme='light'] {
+  --brand-50: #e8f4ec;
+  --brand-100: #c8e4d2;
+  --brand-200: #93cba8;
+  --brand-300: #5fae7f;
+  --brand-400: #2a8d57;
+  --brand-500: #0d7a3d;
+  --brand-600: #0a6532;
+  --brand-700: #0a5028;
+  --brand-800: #073f22;
+  --brand-900: #052e1a;
+
+  --accent-red: #b8312a;
+  --accent-gold: #b8860b;
+  --accent-sky: #2f7fb8;
+
+  --bg-page: #f3f4f5;
+  --bg-page-2: #e8eaed;
+  --surface: #ffffff;
+  --surface-alt: #f7f8f9;
+  --surface-hover: #f0f8f3;
+
+  --border: #e4e7ea;
+  --border-strong: #d1d5da;
+  --divider: #eceff2;
+
+  --text: #0a1f15;
+  --text-2: #2a3a32;
+  --text-muted: #5e6c64;
+  --text-soft: #8a958f;
+
+  --success: #16a34a;
+  --warning: #d97706;
+  --danger: #dc2626;
+  --info: #1d4e89;
+
+  --pill-warn-bg: #fef3c7;
+  --pill-warn-fg: #92400e;
+  --pill-ok-bg: #d4ebdc;
+  --pill-ok-fg: #0a4f2d;
+  --pill-err-bg: #fde0de;
+  --pill-err-fg: #8a1a18;
+  --pill-info-bg: #dbeafe;
+  --pill-info-fg: #1e3a8a;
+
+  --shadow-sm: 0 1px 2px rgba(8, 80, 42, 0.06);
+  --shadow: 0 2px 8px rgba(8, 80, 42, 0.08), 0 1px 2px rgba(8, 80, 42, 0.04);
+  --shadow-md: 0 8px 24px rgba(8, 80, 42, 0.1), 0 2px 6px rgba(8, 80, 42, 0.06);
+  --shadow-lg: 0 12px 40px rgba(8, 80, 42, 0.14);
+
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  --brand-50: #0e2218;
+  --brand-100: #133224;
+  --brand-200: #1a5239;
+  --brand-300: #2a7050;
+  --brand-400: #3f9468;
+  --brand-500: #4fb37e;
+  --brand-600: #2e9d68;
+  --brand-700: #1a8454;
+  --brand-800: #126a44;
+  --brand-900: #0a4f2d;
+
+  --accent-red: #e55a52;
+  --accent-gold: #f0c14c;
+  --accent-sky: #5fa3d8;
+
+  --bg-page: #07140e;
+  --bg-page-2: #0a1d14;
+  --surface: #102019;
+  --surface-alt: #0c1812;
+  --surface-hover: #15291f;
+
+  --border: #1d3528;
+  --border-strong: #2a4838;
+  --divider: #172a20;
+
+  --text: #e8f0ea;
+  --text-2: #c5d4cb;
+  --text-muted: #8aa094;
+  --text-soft: #5e7570;
+
+  --success: #34d399;
+  --warning: #fbbf24;
+  --danger: #f87171;
+  --info: #60a5fa;
+
+  --pill-warn-bg: #3a2810;
+  --pill-warn-fg: #fbbf24;
+  --pill-ok-bg: #103820;
+  --pill-ok-fg: #6ee7b0;
+  --pill-err-bg: #3a1818;
+  --pill-err-fg: #fca5a5;
+  --pill-info-bg: #102540;
+  --pill-info-fg: #93c5fd;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.6);
+
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  background: var(--bg-page);
+  color: var(--text);
+  transition: background 0.25s ease, color 0.25s ease;
+}

@@ -12,6 +12,7 @@ const MatriculaNuevaConnector = lazy(() => import('./connectors/InscripcionesNue
 const MatriculaEditarConnector = lazy(() => import('./connectors/InscripcionesEditarConnector'));
 const MatriculaDetailConnector = lazy(() => import('./connectors/DetailConnector'));
 const MatriculaListConnector = lazy(() => import('./connectors/ListConnector'));
+const MatriculaListV2Connector = lazy(() => import('../matricula-v2/connectors/ListV2Connector'));
 
 export const matriculaRoutes = [
   {
@@ -25,6 +26,20 @@ export const matriculaRoutes = [
       module: 'MAT',
       parent: 'MAT',
       order: 3,
+    },
+  },
+  {
+    path: '/matricula/listar-v2',
+    layout: 'matricula-v2',
+    element: <MatriculaListV2Connector />,
+    key: 'MAT-LISTA-V2',
+    permiso: 'matricula.inscribir',
+    accion: 'LISTAR',
+    menu: {
+      label: 'Matrículas (v2)',
+      module: 'MAT',
+      parent: 'MAT',
+      order: 4,
     },
   },
   {
