@@ -375,6 +375,270 @@
   gap: 18px;
 }
 
+/* --- Student card (grid) --- */
+.matricula-v2-student-card {
+  --card-career-color: var(--brand-600);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+}
+
+.matricula-v2-student-card:hover {
+  border-color: color-mix(in srgb, var(--card-career-color) 32%, var(--border-strong));
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.matricula-v2-student-card__accent {
+  height: 4px;
+  background: var(--card-career-color);
+  opacity: 0.72;
+  flex-shrink: 0;
+}
+
+.matricula-v2-student-card__header {
+  padding: 16px 18px 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.matricula-v2-student-card__avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 17px;
+  border: 3px solid var(--surface);
+  box-shadow: var(--shadow-sm);
+  flex-shrink: 0;
+}
+
+.matricula-v2-student-card__identity {
+  flex: 1;
+  min-width: 0;
+  padding-top: 2px;
+}
+
+.matricula-v2-student-card__code {
+  font-size: 11px;
+  color: var(--text-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+.matricula-v2-student-card__name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.25;
+  letter-spacing: -0.2px;
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.matricula-v2-student-card__tipo {
+  flex-shrink: 0;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  line-height: 1.2;
+}
+
+.matricula-v2-student-card__tipo--nuevo {
+  background: var(--pill-ok-bg);
+  color: var(--pill-ok-fg);
+}
+
+.matricula-v2-student-card__tipo--antiguo {
+  background: var(--pill-warn-bg);
+  color: var(--pill-warn-fg);
+}
+
+.matricula-v2-student-card__body {
+  padding: 12px 18px 0;
+}
+
+.matricula-v2-student-card__career {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.25px;
+  text-transform: uppercase;
+  color: var(--text-2);
+  background: color-mix(in srgb, var(--card-career-color) 10%, var(--surface-alt));
+  border: 1px solid color-mix(in srgb, var(--card-career-color) 22%, var(--border));
+}
+
+.matricula-v2-student-card__career-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--card-career-color);
+  flex-shrink: 0;
+}
+
+.matricula-v2-student-card__career-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.matricula-v2-student-card__enrollment {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--surface-alt);
+  border: 1px solid var(--divider);
+  display: grid;
+  gap: 6px;
+}
+
+.matricula-v2-student-card__meta-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 11px;
+  line-height: 1.3;
+}
+
+.matricula-v2-student-card__meta-label {
+  color: var(--text-soft);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.matricula-v2-student-card__meta-value {
+  color: var(--text);
+  font-weight: 600;
+  text-align: right;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.matricula-v2-student-card__status {
+  padding: 12px 18px 0;
+}
+
+.matricula-v2-student-card__history {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.matricula-v2-student-card__stats {
+  margin: 14px 18px 0;
+  padding: 12px 0;
+  border-top: 1px solid var(--divider);
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+
+.matricula-v2-student-card__progress {
+  margin: 0 18px;
+  padding: 10px 0 14px;
+  border-top: 1px solid var(--divider);
+}
+
+.matricula-v2-student-card__progress-head {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--text-soft);
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+
+.matricula-v2-student-card__progress-track {
+  height: 6px;
+  border-radius: 4px;
+  background: var(--bg-page-2);
+  overflow: hidden;
+}
+
+.matricula-v2-student-card__progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--brand-500), var(--brand-700));
+  border-radius: 4px;
+}
+
+.matricula-v2-student-card__footer {
+  background: var(--surface-alt);
+  padding: 10px 16px;
+  display: flex;
+  gap: 8px;
+  border-top: 1px solid var(--divider);
+  margin-top: auto;
+}
+
+.matricula-v2-student-card__btn {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.matricula-v2-student-card__btn--primary {
+  flex: 1;
+  color: var(--info);
+  padding: 6px 0;
+  font-size: 12px;
+  font-weight: 600;
+  gap: 6px;
+}
+
+.matricula-v2-student-card__btn--icon {
+  width: 32px;
+  height: 32px;
+}
+
+.matricula-v2-student-card__btn--edit {
+  color: var(--warning);
+}
+
+.matricula-v2-student-card__btn--more {
+  color: var(--text-muted);
+}
+
 /* --- Ant Design overrides (scoped) --- */
 .matricula-v2-app .ant-input,
 .matricula-v2-app .ant-input-affix-wrapper {
