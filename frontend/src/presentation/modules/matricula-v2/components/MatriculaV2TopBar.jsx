@@ -88,18 +88,6 @@ const MatriculaV2TopBar = ({ onMenuClick }) => {
       />
       <div className="matricula-v2-topbar__spacer" />
       <div className="matricula-v2-topbar__end">
-        <div className="matricula-v2-topbar__profile">
-          <div className="matricula-v2-topbar__profile-text">
-            <div className="matricula-v2-topbar__profile-name" title={displayName}>
-              {displayName}
-            </div>
-            <div className="matricula-v2-topbar__profile-meta">{gestionLabel}</div>
-          </div>
-          <div className="matricula-v2-topbar__profile-avatar" aria-hidden>
-            {initials}
-          </div>
-        </div>
-
         {compactUtilities ? (
           <Dropdown {...mv2DropdownPopupProps} menu={utilityMenu} trigger={['click']}>
             <Button
@@ -134,6 +122,19 @@ const MatriculaV2TopBar = ({ onMenuClick }) => {
             <ThemeToggle />
           </div>
         )}
+        
+        <div className="matricula-v2-topbar__profile">
+          <div className="matricula-v2-topbar__profile-text">
+            <div className="matricula-v2-topbar__profile-name" title={displayName}>
+              {displayName}
+            </div>
+            <div className="matricula-v2-topbar__profile-meta">{gestionLabel}</div>
+          </div>
+          <div className="matricula-v2-topbar__profile-avatar" aria-hidden>
+            {initials}
+          </div>
+        </div>
+
       </div>
     </header>
   );
