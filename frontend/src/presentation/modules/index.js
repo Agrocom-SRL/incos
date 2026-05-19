@@ -17,7 +17,7 @@ import { authRoutes } from './auth/routes.jsx';
 import { dashboardRoutes } from './dashboard/routes.jsx';
 import { dominiosRoutes } from './dominios/routes.jsx';
 import { estudiantesRoutes } from '@estudiantes/routes';
-import { inscripcionesRoutes } from './inscripciones/routes.jsx';
+import { matriculaRoutes } from './matricula/routes.jsx';
 import { trazabilidad } from './trazabilidad/routes.jsx';
 import { calificacionesRoutes } from './calificaciones/routes.jsx';
 import { nivelacionesRoutes } from './nivelaciones/routes.jsx';
@@ -40,7 +40,7 @@ export const getAllRoutes = () => {
         ...dashboardRoutes,
         ...dominiosRoutes,
         ...estudiantesRoutes,
-        ...inscripcionesRoutes,
+        ...matriculaRoutes,
         ...trazabilidad,
         ...calificacionesRoutes,
         ...nivelacionesRoutes,

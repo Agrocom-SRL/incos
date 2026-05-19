@@ -12,7 +12,7 @@
  * - Dependency Inversion: Depende de hooks (abstracciones)
  * 
  * Ventajas:
- * - Simplificado: Toda la lógica está en useInscripcionNuevaData
+ * - Simplificado: Toda la lógica está en useMatriculaWizardContext
  * - Testeable: Se puede testear el hook independientemente
  * - Mantenible: Separación clara entre Provider y lógica
  * 
@@ -24,10 +24,10 @@
  */
 
 import { InscripcionesNuevaContext } from '@application-inscripciones/context/InscripcionesNuevaContext';
-import { useInscripcionNuevaData } from '@application-inscripciones/hooks';
+import { useMatriculaWizardContext } from '@application-inscripciones/hooks';
 
 export const InscripcionesNuevaProvider = ({ children, mode = 'nuevo', studentId = null, editData = null }) => {
-    const value = useInscripcionNuevaData(mode, { studentId, editData });
+    const value = useMatriculaWizardContext(mode, { studentId, editData });
 
     return (
         <InscripcionesNuevaContext.Provider value={value}>

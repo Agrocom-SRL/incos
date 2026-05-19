@@ -1,0 +1,134 @@
+/**
+ * Validaciones al avanzar pasos del wizard de matrícula.
+ */
+
+import { useCallback } from 'react';
+import { App } from 'antd';
+
+export const useMatriculaWizardPageWizardValidation = ({
+  isNuevoEstudiante,
+  carrerasData,
+  periodosData,
+  selectedMateriaIdsByPeriod,
+  paralelosData,
+  historialPrevioData,
+}) => {
+  const { message } = App.useApp();
+
+  const handleValidateBeforeNext = useCallback(
+    (stepNumber, formInstance) => {
+      return new Promise((resolve, reject) => {
+        if (stepNumber === 2) {
+          const carreraId =
+            formInstance?.getFieldValue('carrera') ?? carrerasData?.selectedCarrera?.id;
+          if (!carreraId) {
+            message.error('Por favor seleccione una carrera antes de continuar.');
+            reject(new Error('Carrera no seleccionada'));
+            return;
+          }
+          resolve();
+          return;
+        }
+
+        if (stepNumber === 3) {
+          const selectedPeriodIds = periodosData?.selectedPeriodIds ?? [];
+          if (!selectedPeriodIds.length) {
+            message.error('Por favor seleccione al menos un periodo académico antes de continuar.');
+            reject(new Error('Periodos no seleccionados'));
+            return;
+          }
+
+          if (!isNuevoEstudiante) {
+            const periodosSinMaterias = selectedPeriodIds.filter((periodId) => {
+              const materiasDelPeriodo = selectedMateriaIdsByPeriod?.[periodId] ?? [];
+              return materiasDelPeriodo.length === 0;
+            });
+            if (periodosSinMaterias.length > 0) {
+              const periodosNombres = periodosSinMaterias
+                .map((pid) => {
+                  const periodo = periodosData?.periodos?.find((p) => p.id === pid);
+                  return periodo?.nombre ?? `Periodo ${pid}`;
+                })
+                .join(', ');
+              message.error(`Por favor seleccione al menos una materia para: ${periodosNombres}`);
+              reject(new Error('Materias no seleccionadas'));
+              return;
+            }
+          }
+
+          if (historialPrevioData?.hasRows && historialPrevioData?.validate) {
+            const histValidation = historialPrevioData.validate();
+            if (!histValidation.valid) {
+              const msg =
+                histValidation.missing > 0
+                  ? `Complete la nota de las ${histValidation.missing} materia(s) ya concluida(s) (historial previo).`
+                  : histValidation.invalid[0]?.reason || 'Revise las notas del historial previo.';
+              message.error(msg);
+              reject(new Error('Historial previo incompleto'));
+              return;
+            }
+          }
+          resolve();
+          return;
+        }
+
+        if (stepNumber === 4) {
+          const selectedPeriodIds = periodosData?.selectedPeriodIds ?? [];
+          const selectedParalelosByPeriod = paralelosData?.selectedParalelosByPeriod ?? {};
+          const paralelosLoading = paralelosData?.loading ?? false;
+          const paralelosAvailable = (paralelosData?.paralelos ?? []).length > 0;
+
+          if (!selectedPeriodIds.length) {
+            message.error('No hay periodos seleccionados. Por favor regrese al paso anterior.');
+            reject(new Error('Periodos no seleccionados'));
+            return;
+          }
+          if (paralelosLoading) {
+            message.warning('Cargando paralelos disponibles. Por favor espere...');
+            reject(new Error('Paralelos cargando'));
+            return;
+          }
+          if (!paralelosAvailable) {
+            message.error(
+              'No hay paralelos disponibles para los periodos seleccionados. Por favor regrese al paso anterior y seleccione otros periodos.',
+            );
+            reject(new Error('No hay paralelos disponibles'));
+            return;
+          }
+
+          const periodosSinParalelo = selectedPeriodIds.filter(
+            (periodId) => !selectedParalelosByPeriod[periodId]?.id,
+          );
+          if (periodosSinParalelo.length > 0) {
+            const periodosNombres = periodosSinParalelo
+              .map((pid) => {
+                const periodo = periodosData?.periodos?.find((p) => p.id === pid);
+                return periodo?.nombre ?? `Periodo ${pid}`;
+              })
+              .join(', ');
+            message.error(`Por favor seleccione un paralelo para: ${periodosNombres}`);
+            reject(new Error('Paralelos no seleccionados'));
+            return;
+          }
+          resolve();
+          return;
+        }
+
+        resolve();
+      });
+    },
+    [
+      carrerasData?.selectedCarrera,
+      periodosData,
+      selectedMateriaIdsByPeriod,
+      paralelosData?.selectedParalelosByPeriod,
+      paralelosData?.loading,
+      paralelosData?.paralelos,
+      isNuevoEstudiante,
+      historialPrevioData,
+      message,
+    ],
+  );
+
+  return { handleValidateBeforeNext };
+};

@@ -22,7 +22,14 @@ export { useInscripcionesListContext } from './context/useInscripcionesListConte
 // ============================================
 // Exporta directamente desde el archivo (el index.js intermedio es opcional)
 export { useInscripcionesData } from './state/useInscripcionesData';
-export { useInscripcionNuevaData } from './state/useInscripcionNuevaData';
+export { useMatriculaWizardContext } from './state/matricula-wizard-context';
+export { useMatriculaWizardPage } from './state/matricula-wizard-page';
+export { useMatriculaDetail, useMatriculaDetailPage } from './state/matricula-detail';
+export { useMatriculaListPage } from './state/matricula-list';
+/** @deprecated useMatriculaDetail / useMatriculaDetailPage */
+export { useMatriculaDetail as useInscripcionDetail, useMatriculaDetailPage as useInscripcionesDetailPage } from './state/matricula-detail';
+/** @deprecated useMatriculaListPage */
+export { useMatriculaListPage as useInscripcionesListPage } from './state/matricula-list';
 
 // ============================================
 // 3. API / DATA FETCHING (Application Layer)

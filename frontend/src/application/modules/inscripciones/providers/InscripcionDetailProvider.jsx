@@ -15,34 +15,11 @@
  * - Carga automática: carga la inscripción automáticamente cuando se proporciona inscripcionId
  */
 
-import { useEffect } from 'react';
-import { useGetInscripcionById } from '@application-inscripciones/hooks';
+import { useMatriculaDetailPage } from '@application-inscripciones/hooks';
 import { InscripcionDetailContext } from '@application-inscripciones/context/InscripcionDetailContext';
 
 export const InscripcionDetailProvider = ({ children, inscripcionId }) => {
-  // Hook para obtener la inscripción por ID
-  // El hook retorna { inscripcion: data, ... } donde data contiene:
-  // { enrollment, studentAcademicData, management, student, career }
-  const { inscripcion: inscripcionRaw, loading, error, getInscripcionById, refetch } = useGetInscripcionById();
-
-  // Cargar automáticamente la inscripción cuando se proporciona inscripcionId
-  useEffect(() => {
-    if (inscripcionId) {
-      getInscripcionById(inscripcionId);
-    }
-  }, [inscripcionId, getInscripcionById]);
-
-  // inscripcionRaw contiene toda la estructura: { enrollment, studentAcademicData, management, student, career }
-  // La pasamos directamente al contexto
-  const inscripcion = inscripcionRaw;
-
-  const value = {
-    inscripcion, // Contiene: { enrollment, studentAcademicData, management, student, career }
-    loading,
-    error,
-    getInscripcionById,
-    refetch: () => refetch(inscripcionId),
-  };
+  const value = useMatriculaDetailPage(inscripcionId);
 
   return (
     <InscripcionDetailContext.Provider value={value}>
