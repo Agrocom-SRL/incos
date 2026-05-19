@@ -182,4 +182,114 @@ export class EnrollmentRepository extends BaseRepository {
             type: sequelize.QueryTypes.SELECT,
         });
     }
+
+    /**
+     * Listado de matrículas desde vista_base_matricula_resumen_inscripcion.
+     *
+     * @param {Object} baseFilters - Filtros base (search, sort) de ListRequestDTO
+     * @param {number} page - Página (1-based)
+     * @param {number} limit - Límite por página
+     * @param {Object} queryParams - Filtros adicionales (gestion_id, carrera_id, paralelo_id, periodo_id, tipo_inscripcion, historial_previo_estado, estudiante_id)
+     * @returns {Promise<{enrollments: Array, total: number}>}
+     */
+    async obtenerListadoMatriculas(baseFilters = {}, page = 1, limit = 50, queryParams = {}) {
+        const filters = { ...baseFilters, ...queryParams };
+
+        const whereConditions = [];
+        const replacements = [];
+
+        if (filters.gestion_id !== undefined) {
+            whereConditions.push('gestion_id = ?');
+            replacements.push(filters.gestion_id);
+        }
+        if (filters.carrera_id !== undefined) {
+            whereConditions.push('carrera_id = ?');
+            replacements.push(filters.carrera_id);
+        }
+        if (filters.paralelo_id !== undefined) {
+            whereConditions.push('paralelo_id = ?');
+            replacements.push(filters.paralelo_id);
+        }
+        if (filters.periodo_id !== undefined) {
+            whereConditions.push('periodo_id = ?');
+            replacements.push(filters.periodo_id);
+        }
+        if (
+            filters.historial_previo_estado !== undefined &&
+            String(filters.historial_previo_estado).trim() !== ''
+        ) {
+            const estadosHistorial = new Set(['NO_APLICA', 'REGISTRADO', 'PENDIENTE']);
+            const estadoHist = String(filters.historial_previo_estado).trim().toUpperCase();
+            if (estadosHistorial.has(estadoHist)) {
+                whereConditions.push('historial_previo_estado = ?');
+                replacements.push(estadoHist);
+            }
+        }
+        if (filters.estudiante_id !== undefined) {
+            whereConditions.push('estudiante_id = ?');
+            replacements.push(filters.estudiante_id);
+        }
+        if (filters.tipo_inscripcion !== undefined && String(filters.tipo_inscripcion).trim() !== '') {
+            whereConditions.push('tipo_inscripcion = ?');
+            replacements.push(String(filters.tipo_inscripcion).trim().toUpperCase());
+        }
+        if (filters.enrollment_type !== undefined && String(filters.enrollment_type).trim() !== '') {
+            whereConditions.push('tipo_inscripcion = ?');
+            replacements.push(String(filters.enrollment_type).trim().toUpperCase());
+        }
+        if (filters.search && typeof filters.search === 'string' && filters.search.trim() !== '') {
+            const term = `%${filters.search.trim()}%`;
+            whereConditions.push(
+                '(estudiante_nombre_completo LIKE ? OR codigo_estudiante LIKE ? OR estudiante_ci LIKE ? OR carrera_nombre LIKE ? OR carrera_codigo LIKE ? OR gestion_nombre LIKE ? OR CAST(gestion_anio AS CHAR) LIKE ? OR paralelo_nombre LIKE ? OR periodo_nombre LIKE ?)'
+            );
+            replacements.push(term, term, term, term, term, term, term, term, term);
+        }
+
+        const orderClause = this._orderClauseForMatriculaListado(filters.sort);
+
+        const { rows, total } = await this._queryViewPaged(
+            'vista_base_matricula_resumen_inscripcion',
+            whereConditions,
+            replacements,
+            orderClause,
+            page,
+            limit
+        );
+
+        return { enrollments: rows, total };
+    }
+
+    /**
+     * Orden para vista_base_matricula_resumen_inscripcion.
+     * @private
+     */
+    _orderClauseForMatriculaListado(sort) {
+        const allowed = [
+            'inscripcion_id',
+            'fecha_inscripcion',
+            'tipo_inscripcion',
+            'created_at',
+            'gestion_anio',
+            'carrera_nombre',
+            'codigo_estudiante',
+            'cantidad_materias',
+            'cantidad_historial_previo',
+            'paralelo_nombre',
+            'periodo_numero',
+            'historial_previo_estado',
+        ];
+
+        if (!sort || typeof sort !== 'string') {
+            return 'ORDER BY fecha_inscripcion DESC, inscripcion_id DESC';
+        }
+
+        const [field, dir] = sort.split(':');
+        const direction = (dir || 'DESC').toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+        const sortField = field === 'id' ? 'inscripcion_id' : field;
+        if (sortField && allowed.includes(sortField)) {
+            return `ORDER BY ${sortField} ${direction}, inscripcion_id DESC`;
+        }
+
+        return 'ORDER BY fecha_inscripcion DESC, inscripcion_id DESC';
+    }
 }

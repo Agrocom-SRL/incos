@@ -13,6 +13,27 @@ export function requiereHistorialPrevio(tipoAdmision) {
 }
 
 /**
+ * Indica si la inscripción debe mostrar aviso de historial académico previo pendiente
+ * (solo ANTIGUO, TRASPASO, TRANSITABILIDAD sin filas en historial_previo).
+ */
+export function isHistorialPrevioPendiente(record) {
+  const tipo = String(
+    record?.tipoInscripcion ?? record?.enrollment?.tipoInscripcion ?? ''
+  ).toUpperCase();
+  if (!requiereHistorialPrevio(tipo)) return false;
+
+  const estado =
+    record?.historialPrevioEstado ??
+    (record?.requiereHistorialPrevio === false
+      ? 'NO_APLICA'
+      : (record?.cantidadHistorialPrevio ?? 0) > 0
+        ? 'REGISTRADO'
+        : 'PENDIENTE');
+
+  return estado === 'PENDIENTE';
+}
+
+/**
  * Periodos cuyas materias van a historial_previo (no se matriculan en la gestión).
  * @returns {Array<{ periodId, periodNumero, periodName, status: 'APROBADO'|'CONVALIDADO' }>}
  */

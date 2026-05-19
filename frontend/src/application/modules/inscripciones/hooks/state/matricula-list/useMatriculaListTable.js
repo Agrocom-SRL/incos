@@ -21,6 +21,15 @@ export const useMatriculaListTable = () => {
     searchText = '',
     setSearchText,
     refetch,
+    listFilters,
+    setListFilter,
+    clearListFilters,
+    hasActiveListFilters,
+    listFilterOptions,
+    paralelosForCarrera,
+    tipoInscripcionOptions,
+    historialEstadoOptions,
+    totalBeforeFilters = 0,
   } = useInscripcionesListContext();
 
   let deleteInscripcion = null;
@@ -58,5 +67,14 @@ export const useMatriculaListTable = () => {
     handleNuevaInscripcion,
     tableColumns,
     breadcrumbItems,
+    listFilters,
+    setListFilter,
+    clearListFilters,
+    hasActiveListFilters,
+    listFilterOptions,
+    paralelosForCarrera,
+    tipoInscripcionOptions,
+    historialEstadoOptions,
+    totalBeforeFilters,
   };
 };

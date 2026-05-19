@@ -18,10 +18,23 @@ import { useMemo } from 'react';
 import { useInscripcionesContext } from '@application-inscripciones/hooks';
 import { useTableData } from '@molecules';
 import { InscripcionesListContext } from '@application-inscripciones/context/InscripcionesListContext';
+import { useMatriculaListFilters } from '@application-inscripciones/hooks/state/matricula-list/useMatriculaListFilters';
 
 export const InscripcionesListProvider = ({ children }) => {
     // Obtener datos compartidos del estado en memoria
     const { inscripciones: inscripcionesData, loading, error, refetch } = useInscripcionesContext();
+
+    const {
+        filters,
+        setFilter,
+        clearFilters,
+        hasActiveFilters,
+        filterOptions,
+        paralelosForCarrera,
+        filteredRows: criteriaFilteredRows,
+        tipoInscripcionOptions,
+        historialEstadoOptions,
+    } = useMatriculaListFilters(inscripcionesData);
 
     // Función para obtener los campos de búsqueda de una inscripción
     const getSearchFields = useMemo(
@@ -30,6 +43,8 @@ export const InscripcionesListProvider = ({ children }) => {
             const student = inscripcion.estudiante || inscripcion.student || inscripcion.enrollment?.student;
             const carrera = inscripcion.carrera || inscripcion.enrollment?.carrera;
             const gestion = inscripcion.gestion || inscripcion.enrollment?.gestion;
+            const paralelo = inscripcion.paralelo || inscripcion.enrollment?.paralelo;
+            const periodo = inscripcion.periodo || inscripcion.enrollment?.periodo;
             return [
                 student?.nombreCompleto || student?.nombre || '',
                 student?.codigoEstudiante || '',
@@ -38,7 +53,10 @@ export const InscripcionesListProvider = ({ children }) => {
                 carrera?.nombre || carrera?.codigo || '',
                 gestion?.nombre || gestion?.anio || '',
                 inscripcion.anioCarrera || inscripcion.enrollment?.anioCarrera || '',
-                inscripcion.paralelo?.nombre || inscripcion.enrollment?.paralelo?.nombre || '',
+                paralelo?.nombre || '',
+                paralelo?.turno || '',
+                periodo?.nombre || '',
+                inscripcion.tipoInscripcion || '',
             ];
         },
         []
@@ -46,7 +64,7 @@ export const InscripcionesListProvider = ({ children }) => {
 
     // Hook genérico para manejo de búsqueda y filtrado (solo lógica de UI)
     const { searchText, setSearchText, filteredData } = useTableData(
-        inscripcionesData,
+        criteriaFilteredRows,
         getSearchFields
     );
 
@@ -57,6 +75,15 @@ export const InscripcionesListProvider = ({ children }) => {
         refetch,
         searchText,
         setSearchText,
+        listFilters: filters,
+        setListFilter: setFilter,
+        clearListFilters: clearFilters,
+        hasActiveListFilters: hasActiveFilters,
+        listFilterOptions: filterOptions,
+        paralelosForCarrera,
+        tipoInscripcionOptions,
+        historialEstadoOptions,
+        totalBeforeFilters: inscripcionesData?.length ?? 0,
     };
 
     return (

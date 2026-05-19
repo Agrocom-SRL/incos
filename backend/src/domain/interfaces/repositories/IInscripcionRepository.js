@@ -24,6 +24,8 @@ import { IRepository } from './IRepository.js';
  * Métodos específicos:
  * - obtenerInscripcionActual(filters)
  *   Obtiene la inscripción actual del estudiante desde vista_estudiante_inscripcion_actual.
+ * - obtenerListadoMatriculas(baseFilters, page, limit, queryParams)
+ *   Listado paginado desde vista_base_matricula_resumen_inscripcion.
  */
 export class IInscripcionRepository extends IRepository {
     /**
@@ -40,5 +42,16 @@ export class IInscripcionRepository extends IRepository {
      */
     async obtenerInscripcionActual(filters = {}) {
         throw new Error('Method obtenerInscripcionActual must be implemented by subclass');
+    }
+
+    /**
+     * @param {Object} baseFilters
+     * @param {number} page
+     * @param {number} limit
+     * @param {Object} queryParams
+     * @returns {Promise<{enrollments: Array, total: number}>}
+     */
+    async obtenerListadoMatriculas(baseFilters = {}, page = 1, limit = 50, queryParams = {}) {
+        throw new Error('Method obtenerListadoMatriculas must be implemented by subclass');
     }
 }
